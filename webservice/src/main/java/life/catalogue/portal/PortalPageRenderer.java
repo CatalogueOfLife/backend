@@ -79,7 +79,7 @@ public class PortalPageRenderer {
     if (factory != null) {
       try (SqlSession session = factory.openSession()) {
         var dm = session.getMapper(DatasetMapper.class);
-        for (var r : dm.listReleasesQuick(Datasets.COL)) {
+        for (var r : dm.listReleasesQuick(Datasets.COL, true, true)) {
           releases.put(r.getKey(), r);
         }
       }

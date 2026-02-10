@@ -255,14 +255,19 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       final var latestReleaseKey = dm.latestRelease(project.getKey(), true, origin);
+      if (latestReleaseKey == null) {
+        LOG.warn("No {} releases found for project {}", origin, project.getKey());
+        return;
+      }
+
       LOG.info("Latest {} of project {} is {}", origin, project.getKey(), latestReleaseKey);
       // list all releases in chronological order, starting with the very first release
-      var iter = PeekingIterator.peekingIterator(dm.listReleases(project.getKey()).iterator());
+      var iter = PeekingIterator.peekingIterator(dm.listReleases(project.getKey(), false, false).iterator());
       DOI prev = null;
       while (iter.hasNext()) {
         var release = iter.next();
-        // ignore private releases, only public ones have a DOI
-        if (release.isPrivat() || release.getOrigin() != origin) continue;
+        // ignore other release types
+        if (release.getOrigin() != origin) continue;
 
         boolean create = assertDoiExists(release);
         var next = iter.peek();

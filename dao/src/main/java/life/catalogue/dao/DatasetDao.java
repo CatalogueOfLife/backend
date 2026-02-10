@@ -385,7 +385,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
     if (old != null && old.getOrigin() == DatasetOrigin.PROJECT) {
       // This is a recursive project delete.
-      List<Dataset> releases = mapper.listReleases(key);
+      var releases = mapper.listReleasesQuick(key, true, true);
       LOG.warn("Deleting project {} with all its {} releases and source information!", key, releases.size());
 
       // Simplify the DOI updates by deleting ALL DOIs for ALL releases and ALL sources at the beginning

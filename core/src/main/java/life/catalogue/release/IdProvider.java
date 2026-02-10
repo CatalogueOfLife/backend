@@ -362,15 +362,13 @@ public class IdProvider {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       lrkey = dm.latestRelease(projectKey, true, prCfg.ignoredReleases, origin);
       // we now load all known public release attempts as the usage archive can contain any of them
-      dm.listReleasesQuick(projectKey).forEach(d -> {
-        if (!d.isDeleted() && !d.isPrivat()) {
-          dataset2release.put(d.getKey(), new Release(d.getKey(), d.getOrigin(), d.getAttempt()));
-          if (d.getKey() != releaseDatasetKey) {
-            if (prCfg.ignoredReleases.contains(d.getKey())) {
-              LOG.info("Configured to ignore release {}", d.getKey());
-            } else {
-              dataset2attempt.put(d.getKey(), d.getAttempt());
-            }
+      dm.listReleasesQuick(projectKey, false, false).forEach(d -> {
+        dataset2release.put(d.getKey(), new Release(d.getKey(), d.getOrigin(), d.getAttempt()));
+        if (d.getKey() != releaseDatasetKey) {
+          if (prCfg.ignoredReleases.contains(d.getKey())) {
+            LOG.info("Configured to ignore release {}", d.getKey());
+          } else {
+            dataset2attempt.put(d.getKey(), d.getAttempt());
           }
         }
       });

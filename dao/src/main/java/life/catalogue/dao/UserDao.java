@@ -148,7 +148,7 @@ public class UserDao extends UserCrudDao {
         var dm = session.getMapper(DatasetMapper.class);
         for (int projKey : projectKeys) {
           if (DatasetInfoCache.CACHE.info(projKey, true).origin == DatasetOrigin.PROJECT) {
-            var res = dm.listReleaseKeys(projKey);
+            var res = dm.listReleaseKeys(projKey, false, true);
             if (res != null) {
               keys.addAll(res);
             }

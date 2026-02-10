@@ -309,27 +309,6 @@ public class DatasetImportDao {
     }
   }
 
-  /**
-   * @return the aggregated metrics for all releases of the project
-   * @param projectKey
-   * @param inclDeleted if true also aggregate metrics from deleted releases
-   * @return
-   */
-  public ImportMetrics getReleaseMetrics(int projectKey, boolean inclDeleted) {
-    ImportMetrics metrics = new ImportMetrics();
-    try (SqlSession session = factory.openSession(true)) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      DatasetImportMapper dim = session.getMapper(DatasetImportMapper.class);
-      for (var d : dm.listReleases(projectKey)) {
-        if (d.hasDeletedDate() && !inclDeleted) {
-          continue;
-        }
-        metrics.add(dim.get(projectKey, d.getAttempt()));
-      }
-    }
-    return metrics;
-  }
-
   public void delete(int datasetKey, int attempt) {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper dim = session.getMapper(DatasetImportMapper.class);

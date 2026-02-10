@@ -179,12 +179,6 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Integer> searchKeys(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey);
 
   /**
-   * List all dataset keys of (x)releases for the given project.
-   * This includes both private and public datasets.
-   */
-  List<Integer> listReleaseKeys(@Param("projectKey") int projectKey);
-
-  /**
    * List all dataset keys of all project which are not deleted.
    * This includes both private and public datasets.
    */
@@ -194,13 +188,19 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * List all releases of a project, including deleted and private ones.
    * Ordered chronologically starting with the first release. Sorted by attempt, key
    */
-  List<Dataset> listReleases(@Param("projectKey") int projectKey);
+  List<Dataset> listReleases(@Param("projectKey") int projectKey, @Param("inclDeleted") boolean inclDeleted, @Param("inclPrivate") boolean inclPrivate);
 
   /**
    * Same as above, but returning just a minimal object which is much quicker to load.
    * Ordered chronologically starting with the first release. Sorted by attempt, key
    */
-  List<DatasetRelease> listReleasesQuick(@Param("projectKey") int projectKey);
+  List<DatasetRelease> listReleasesQuick(@Param("projectKey") int projectKey, @Param("inclDeleted") boolean inclDeleted, @Param("inclPrivate") boolean inclPrivate);
+
+  /**
+   * List all dataset keys of (x)releases for the given project.
+   * This includes both private and public datasets.
+   */
+  List<Integer> listReleaseKeys(@Param("projectKey") int projectKey, @Param("inclDeleted") boolean inclDeleted, @Param("inclPrivate") boolean inclPrivate);
 
   /**
    * Retrieves a release quickly with minimal information.

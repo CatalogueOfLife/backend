@@ -372,30 +372,36 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
-  <select id="listReleaseKeys" resultType="integer">
-    SELECT d.key
-    FROM dataset d
-    WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey} AND d.deleted IS NULL
-  </select>
-
   <select id="listProjectKeys" resultType="integer">
     SELECT d.key
     FROM dataset d
     WHERE d.origin='PROJECT'::DATASETORIGIN AND d.deleted IS NULL
   </select>
 
+  <sql id="WHERE_PROJECT_RELEASE">
+    <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
+    <if test="!inclDeleted">AND d.deleted IS NULL</if>
+    <if test="!inclPrivate">AND NOT d.private</if>
+  </sql>
+
   <select id="listReleases" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
+    WHERE <include refid="WHERE_PROJECT_RELEASE"/>
     ORDER BY d.created, d.key
   </select>
 
   <select id="listReleasesQuick" resultMap="releaseResultMap">
     SELECT key, #{projectKey} AS projectKey, attempt, origin, alias, version, private, deleted IS NOT NULL AS deleted
     FROM dataset d
-    WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
+    WHERE <include refid="WHERE_PROJECT_RELEASE"/>
     ORDER BY d.attempt, d.key
+  </select>
+
+  <select id="listReleaseKeys" resultType="integer">
+    SELECT d.key
+    FROM dataset d
+    WHERE <include refid="WHERE_PROJECT_RELEASE"/>
   </select>
 
   <select id="getRelease" resultMap="releaseResultMap">

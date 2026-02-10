@@ -193,8 +193,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       project = dm.get(key);
-      releases = dm.listReleases(key);
-      releases.removeIf(Dataset::hasDeletedDate);
+      releases = dm.listReleases(key, false, true);
     }
 
     // first update the latest version of the project itself - it might have newer syncs

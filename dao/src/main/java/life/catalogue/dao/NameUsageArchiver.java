@@ -88,8 +88,7 @@ public class NameUsageArchiver {
         throw new IllegalArgumentException("Project "+projectKey+" already contains "+count+" archived name usages");
       }
       // finally allow the rebuild for each release
-      var datasets = dm.listReleasesQuick(projectKey);
-      releases = datasets.stream().filter(d -> !d.isDeleted() && !d.isPrivat()).collect(Collectors.toList());
+      releases = dm.listReleasesQuick(projectKey, false, false);
     }
 
     try {

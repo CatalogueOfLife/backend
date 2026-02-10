@@ -322,7 +322,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     mapper().create(r);
     final int r3 = r.getKey();
 
-    var rels = mapper().listReleasesQuick(p.getKey());
+    var rels = mapper().listReleasesQuick(p.getKey(), true, true);
     assertEquals(3, rels.size());
     assertEquals(0, rels.stream().filter(DatasetRelease::isDeleted).count());
 
@@ -333,7 +333,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     assertEquals(r3Expected, r3b);
 
     mapper().delete(r2);
-    rels = mapper().listReleasesQuick(p.getKey());
+    rels = mapper().listReleasesQuick(p.getKey(), true, true);
     assertEquals(3, rels.size());
     assertEquals(1, rels.stream().filter(DatasetRelease::isDeleted).count());
   }
