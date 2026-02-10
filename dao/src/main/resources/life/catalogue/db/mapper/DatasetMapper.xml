@@ -618,6 +618,11 @@
     WHERE key = #{key}
   </update>
 
+  <update id="updateIdentifiers" parameterType="map">
+    UPDATE dataset SET (identifier, modified) = (#{doi, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler}, now())
+    WHERE key = #{key}
+  </update>
+
   <update id="updateDOI" parameterType="map">
     UPDATE dataset SET (doi, modified) = (#{doi, typeHandler=life.catalogue.db.type.DoiTypeHandler}, now())
     WHERE key = #{key}

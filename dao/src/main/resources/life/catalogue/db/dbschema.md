@@ -18,8 +18,6 @@ ALTER TABLE dataset_archive ADD COLUMN version_doi TEXT;
 ALTER TABLE dataset_source ADD COLUMN version_doi TEXT;
 ALTER TABLE dataset_patch DROP COLUMN doi;
 
-ALTER TABLE dataset DROP COLUMN doc;
-
 ALTER TABLE dataset ADD COLUMN identifier_txt TEXT[];
 ALTER TABLE dataset_archive ADD COLUMN identifier_txt TEXT[];
 ALTER TABLE dataset_source ADD COLUMN identifier_txt TEXT[];
@@ -36,10 +34,12 @@ UPDATE dataset_archive SET identifier_txt = array_prepend('doi:' || doi, identif
 UPDATE dataset_source SET identifier_txt = array_prepend('doi:' || doi, identifier_txt)  WHERE doi IS NOT NULL AND NOT (doi ~ '^10.48580/' OR doi ~ '^10.80631/');
 
 -- drop old columns
+ALTER TABLE dataset DROP COLUMN doc;
 ALTER TABLE dataset DROP COLUMN identifier;
 ALTER TABLE dataset_archive DROP COLUMN identifier;
 ALTER TABLE dataset_source DROP COLUMN identifier;
 ALTER TABLE dataset_patch DROP COLUMN identifier;
+-- rename new columns
 ALTER TABLE dataset RENAME COLUMN identifier_txt TO identifier;
 ALTER TABLE dataset_archive RENAME COLUMN identifier_txt TO identifier;
 ALTER TABLE dataset_source RENAME COLUMN identifier_txt TO identifier;

@@ -63,6 +63,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   void updateSettings(@Param("key") int key, @Param("settings") DatasetSettings settings, @Param("userKey") int userKey);
 
   /**
+   * Updates only the identifiers of a dataset.
+   */
+  void updateIdentifiers(@Param("key") int key, @Param("identifiers") List<Identifier> identifiers);
+
+  /**
    * Updates only the DOI of a dataset.
    * @param key
    * @param doi

@@ -3,6 +3,7 @@ package life.catalogue.command;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Identifier;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -190,7 +191,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         DOI next = null;
         // first update the current version of the dataset itself
         boolean createV = false;
-        if (d.getVersionDoi() == null) {
+        if (d.getVersionDoi() == null && d.getAttempt() != null) {
           createV = true;
           d.setVersionDoi(cfg.doi.datasetVersionDOI(d.getKey(), d.getAttempt()));
           dm.updateVersionDOI(d.getKey(), d.getVersionDoi());
@@ -279,9 +280,30 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     }
   }
 
+  private boolean doiExists(DOI doi, List<Identifier> identifiers) {
+    if (identifiers != null) {
+      for (Identifier id : identifiers) {
+        if (id != null && id.isDOI() && id.asDOI().equals(doi)) return true;
+      }
+    }
+    return false;
+  }
+
   private boolean assertDoiExists(Dataset d) {
-    if (d.getDoi() == null) {
-      d.setDoi(cfg.doi.datasetDOI(d.getKey()));
+    if (d.getDoi() == null || !d.getDoi().isCOL()) {
+      DOI clbDOI = cfg.doi.datasetDOI(d.getKey());
+      if (d.getDoi() != null) {
+        LOG.info("Replace DOI {} with CLB DOI {} for dataset {}", d.getDoi(), clbDOI, d.getKey());
+        if (!doiExists(d.getDoi(), d.getIdentifier())) {
+          LOG.warn("Original DOI {} from dataset {} is missing in identifier list. Adding.", d.getDoi(), d.getKey());
+          d.addIdentifier(d.getDoi());
+          try (SqlSession session = factory.openSession(true)) {
+            DatasetMapper dm = session.getMapper(DatasetMapper.class);
+            dm.updateIdentifiers(d.getKey(), d.getIdentifier());
+          }
+        }
+      }
+      d.setDoi(clbDOI);
       try (SqlSession session = factory.openSession(true)) {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         dm.updateDOI(d.getKey(), d.getDoi());
