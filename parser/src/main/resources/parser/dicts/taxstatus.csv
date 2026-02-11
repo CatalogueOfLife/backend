@@ -28,7 +28,6 @@ undetermined,PROVISIONALLY_ACCEPTED
 to be done,PROVISIONALLY_ACCEPTED
 tbd,PROVISIONALLY_ACCEPTED
 species_inquirenda,PROVISIONALLY_ACCEPTED
-uncertain,PROVISIONALLY_ACCEPTED
 
 5,SYNONYM
 alternaterepresentation,SYNONYM
@@ -89,3 +88,4 @@ misappliedname,MISAPPLIED
 bare,BARE_NAME
 unplaced,BARE_NAME
 unresolved,BARE_NAME
+uncertain,BARE_NAME
