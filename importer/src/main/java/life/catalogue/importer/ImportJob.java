@@ -216,7 +216,6 @@ public class ImportJob implements Runnable {
     final File lastArchive = dataset.getImportAttempt() == null ? null : nCfg.archive(datasetKey, dataset.getImportAttempt());
     archive.getParentFile().mkdirs();
 
-    boolean doImport = true;
     if (req.reimportAttempt != null) {
       // copy previous up/downloaded archive to repository
       Path prev = nCfg.archive(datasetKey, req.reimportAttempt).toPath();
@@ -244,18 +243,10 @@ public class ImportJob implements Runnable {
         setFormat(proxy.format);
       } else {
         // download archive directly
-        if (req.force) {
-          LOG.info("Force download of source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), archive);
-          downloader.download(di.getDownloadUri(), archive);
-        } else {
-          LOG.info("Download source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), archive);
-          var lmod = DownloadUtil.lastModified(lastArchive);
-          doImport = downloader.downloadIfModified(di.getDownloadUri(), archive, lmod);
-        }
+        LOG.info("Download of source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), archive);
+        downloader.download(di.getDownloadUri(), archive);
         // make sure we received a real archive and not just a plain text error response
-        if (doImport) {
-          verifyDownload(archivePath);
-        }
+        verifyDownload(archivePath);
       }
 
     } else {
@@ -264,7 +255,7 @@ public class ImportJob implements Runnable {
     }
 
     // update current MD5, check if it has changed and adjust symlinks in case of forced imports
-    doImport = doImport && hasMD5Changed(archive, lastArchive, archivePath);
+    boolean doImport = hasMD5Changed(archive, lastArchive, archivePath);
 
     // decompress and import?
     if (doImport) {
@@ -302,7 +293,7 @@ public class ImportJob implements Runnable {
    * @param archive the current archive file to check the MD5 checksum for
    * @param lastArchive the last archive file from the previous import, used for comparison
    * @param archivePath the path to the archive file, which may be replaced with a symbolic link
-   * @return true if the MD5 checksum of the archive has changed, false otherwise
+   * @return true if the archive file exists and its MD5 checksum has changed or if a forced import was requested. False otherwise
    * @throws IOException if an I/O error occurs during the checksum calculation or file operations
    */
   private boolean hasMD5Changed(File archive, File lastArchive, Path archivePath) throws IOException {
