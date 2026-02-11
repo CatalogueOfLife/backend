@@ -619,7 +619,7 @@
   </update>
 
   <update id="updateIdentifiers" parameterType="map">
-    UPDATE dataset SET (identifier, modified) = (#{doi, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler}, now())
+    UPDATE dataset SET (identifier, modified) = (#{identifiers, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler}, now())
     WHERE key = #{key}
   </update>
 
