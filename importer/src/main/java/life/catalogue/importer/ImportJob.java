@@ -263,51 +263,14 @@ public class ImportJob implements Runnable {
       throw new IllegalStateException("Dataset " + datasetKey + " is not external and there are no uploads to be imported");
     }
 
-    // in case we haven't downloaded anything and do not want any import,
-    // this import attempt will be removed alltogether at the end of the method,
-    // so wrong MD5s from symlinks don't matter
-    di.setMd5(ChecksumUtils.getMD5Checksum(archive));
-    di.setDownload(DownloadUtil.lastModified(archive));
-    dao.update(di);
+    // update current MD5, check if it has changed and adjust symlinks in case of forced imports
+    doImport = doImport && hasMD5Changed(archive, lastArchive, archivePath);
 
-    // if we have a new archive test its MD5 to see if anything has changed
-    if (doImport && dataset.getImportAttempt() != null) {
-      try (SqlSession session = factory.openSession()) {
-        final String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dataset.getImportAttempt());
-        if (Objects.equals(lastMD5, di.getMd5())) {
-          // replace archive with symlink to last archive to save space
-          if (lastArchive != null && lastArchive.exists()) {
-            // we have seen wrong MD5 hashes being stored (BDJ), so lets recalculate the last one from the file to make sure!
-            var lastMD5Redone = ChecksumUtils.getMD5Checksum(lastArchive);
-            if (lastMD5Redone.equals(lastMD5)) {
-              LOG.info("MD5 unchanged: {}{}", di.getMd5(), req.force ? " (force import)" : "");
-              // only do an import with equal sources if we force it
-              doImport = req.force;
-              Path lastReal = lastArchive.toPath().toRealPath();
-              try {
-                Files.delete(archivePath);
-              } catch (NoSuchFileException e) {
-                // ignore, we want it gone anyways
-              }
-              try {
-                Files.createSymbolicLink(archivePath, lastReal);
-              } catch (IOException e) {
-                LOG.error("Failed to replace unchanged archive {} with symlink. Keep it. {}", archivePath, e.getMessage(), e);
-              }
-
-            } else {
-              LOG.info("MD5 stored for attempt {} differs from stored file. Consider archive {}#{} modified", dataset.getImportAttempt(), datasetKey, getAttempt());
-            }
-          }
-        } else {
-          LOG.info("MD5 changed from attempt {}: {} to {}", dataset.getImportAttempt(), lastMD5, di.getMd5());
-        }
-      }
-    }
-
-    checkIfCancelled();
     // decompress and import?
     if (doImport) {
+      // keep this import, update its state
+      dao.update(di);
+
       LOG.info("Extracting files from archive {}", datasetKey);
       CompressionUtil.decompressFile(sourceDir.toFile(), archive);
 
@@ -329,6 +292,53 @@ public class ImportJob implements Runnable {
       }
       return false;
     }
+  }
+
+  /**
+   * Checks if the MD5 checksum of the given archive file has changed compared to the previous import attempt.
+   * If the checksum remains unchanged and a forced import was request,
+   * the current archive will be replaced with a symbolic link to the last archive to save space.
+   *
+   * @param archive the current archive file to check the MD5 checksum for
+   * @param lastArchive the last archive file from the previous import, used for comparison
+   * @param archivePath the path to the archive file, which may be replaced with a symbolic link
+   * @return true if the MD5 checksum of the archive has changed, false otherwise
+   * @throws IOException if an I/O error occurs during the checksum calculation or file operations
+   */
+  private boolean hasMD5Changed(File archive, File lastArchive, Path archivePath) throws IOException {
+    // update current MD5
+    if (archive.exists()) {
+      var md5 = ChecksumUtils.getMD5Checksum(archive);
+      di.setMd5(md5);
+      di.setDownload(DownloadUtil.lastModified(archive));
+      if (dataset.getImportAttempt() != null) {
+        try (SqlSession session = factory.openSession()) {
+          final String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dataset.getImportAttempt());
+          if (Objects.equals(lastMD5, md5)) {
+            LOG.info("MD5 unchanged: {}{}", md5, req.force ? " (force import)" : "");
+            try {
+              Files.delete(archivePath);
+            } catch (NoSuchFileException e) {
+              // ignore, we want it gone anyways
+            }
+            // replace archive with symlink to last archive to save space in case we need it for a forced import
+            if (req.force && lastArchive != null && lastArchive.exists()) {
+              try {
+                Path lastReal = lastArchive.toPath().toRealPath();
+                Files.createSymbolicLink(archivePath, lastReal);
+              } catch (IOException e) {
+                LOG.error("Failed to replace unchanged archive {} with symlink. Keep it. {}", archivePath, e.getMessage(), e);
+              }
+            }
+            return req.force;
+          } else {
+            LOG.info("MD5 changed from attempt {}: {} to {}", dataset.getImportAttempt(), lastMD5, md5);
+          }
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   private void updateLatestSymlink(Path archivePath) throws IOException {
@@ -370,6 +380,7 @@ public class ImportJob implements Runnable {
     final Path sourceDir = nCfg.sourceDir(datasetKey).toPath();
     try {
       final boolean doImport = prepareSourceData(sourceDir);
+      checkIfCancelled();
       if (doImport) {
         try (ImportStore store = importStoreFactory.create(datasetKey, getAttempt())) {
           LOG.info("Normalizing {}", datasetKey);

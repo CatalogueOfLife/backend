@@ -74,6 +74,7 @@ public class ImportJobIT {
   @Before
   public void init() throws Exception {
     cfg = TestConfigs.build();
+    cfg.removeCfgDirs();
     hc = HttpClients.createDefault();
     importStoreFactory = new ImportStoreFactory(cfg.normalizer);
     diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
@@ -146,6 +147,21 @@ public class ImportJobIT {
 
     run(false);
     verifyLatest(2);
+
+    // try another archive with different md5
+    d.setDataFormat(DataFormat.COLDP);
+    d.setDataAccess(nginxRule.getArchive(DataFormat.COLDP));
+    try(SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)){
+      session.getMapper(DatasetMapper.class).updateSettings(d.getKey(), d.getSettings(), Users.TESTER);
+    }
+    run(false);
+    verifyLatest(3);
+
+    run(false);
+    verifyLatest(3);
+
+    run(false);
+    verifyLatest(3);
   }
 
   private void verifyLatest(int attempt) {
