@@ -58,7 +58,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   private CountMap<DatasetOrigin> published = new CountMap<>();
   private ExecutorService executor;
   private EventBroker events;
-  private long suspended = 0; // millis
+  private volatile long suspended = 0; // millis
 
   public DoiUpdateCmd() {
     super("doi", true, "Update all project, release and release source DOIs for the given project dataset key");
@@ -301,8 +301,8 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   }
 
   private boolean assertDoiExists(Dataset d) {
-    if (d.getDoi() == null || !d.getDoi().isCOL()) {
-      DOI clbDOI = cfg.doi.datasetDOI(d.getKey());
+    final DOI clbDOI = cfg.doi.datasetDOI(d.getKey());
+    if (d.getDoi() == null || !clbDOI.equals(d.getDoi())) {
       if (d.getDoi() != null) {
         LOG.info("Replace DOI {} with CLB DOI {} for dataset {}", d.getDoi(), clbDOI, d.getKey());
         if (!doiExists(d.getDoi(), d.getIdentifier())) {
