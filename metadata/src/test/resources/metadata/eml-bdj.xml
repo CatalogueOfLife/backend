@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:md="eml://ecoinformatics.org/methods-2.1.1" xmlns:proj="eml://ecoinformatics.org/project-2.1.1" xmlns:d="eml://ecoinformatics.org/dataset-2.1.1" xmlns:res="eml://ecoinformatics.org/resource-2.1.1" xmlns:dc="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.0.1/eml.xsd" packageId="10.3897/BDJ.12.e124067" system="https://bdj.pensoft.net/" scope="system" xml:lang="eng">
+	<dataset>
+		<title xml:lang="eng">A new species of the genus Euxiphocerus (Diptera, Dolichopodidae) from Korea with checklist and key to species of the genus</title>
+		<creator>
+			<individualName>
+				<givenName>Young-Kun</givenName>
+				<surName>Kim</surName>
+			</individualName>
+			<organizationName>School of Applied Biosciences, Kyungpook National University</organizationName>
+			<positionName>Mr</positionName>
+			<address>
+				<city>Daegu</city>
+				<country>Republic of Korea</country>
+			</address>
+			<electronicMailAddress>youngk804@naver.com</electronicMailAddress>
+		</creator>
+		<metadataProvider>
+			<individualName>
+				<givenName>Young-Kun</givenName>
+				<surName>Kim</surName>
+			</individualName>
+			<organizationName>School of Applied Biosciences, Kyungpook National University</organizationName>
+			<positionName>Mr</positionName>
+			<address>
+				<city>Daegu</city>
+				<country>Republic of Korea</country>
+			</address>
+			<electronicMailAddress>youngk804@naver.com</electronicMailAddress>
+		</metadataProvider>
+		<pubDate>2024-07-05</pubDate>
+		<language>eng</language>
+		<abstract>
+			<para>Euxiphocerus Parent, 1935 is a small genus consisting of three species only from the Afrotropical region.During a survey of the long-legged flies from Korea, the authors discovered a new species, Euxiphocerus lignicola sp. nov. Detailed morphological characters and photographs of the new species, as well as a checklist and key to species of this genus, are provided herein. The two species described from Oriental China, Systenus jinxiuensis Lin &amp; Yang, 2022 and S. sinensis Yang &amp; Gaimari, 2004, are transferred to Euxiphocerus Parent, 1935 (comb. nov.) by similarity in external morphological characters.</para>
+		</abstract>
+		<intellectualRights>
+			<para>This work is licensed under a <ulink url="http://creativecommons.org/licenses/by/4.0/legalcode"><citetitle>Creative Commons Attribution (CC-BY) 4.0 License</citetitle></ulink>.</para>
+		</intellectualRights>
+		<distribution scope="document">
+		  <online>
+		    <url function="information">10.3897/BDJ.12.e124067</url>
+		  </online>
+		</distribution>
+		<contact>
+			<individualName>
+				<givenName>Young-Kun</givenName>
+				<surName>Kim</surName>
+			</individualName>
+			<organizationName>School of Applied Biosciences, Kyungpook National University</organizationName>
+			<positionName>Mr</positionName>
+			<address>
+				<city>Daegu</city>
+				<country>Republic of Korea</country>
+			</address>
+			<electronicMailAddress>youngk804@naver.com</electronicMailAddress>
+		</contact>
+	</dataset>
+	<additionalMetadata>
+		<metadata>
+			<gbif>
+				<dateStamp>2024-07-05</dateStamp>
+				<hierarchyLevel>dataset</hierarchyLevel>
+				<citation identifier="Citation Identifier">Kim Y-K, Suh SJ, Kim D (2024) A new species of the genus Euxiphocerus (Diptera, Dolichopodidae) from Korea with checklist and key to species of the genus. Biodiversity Data Journal 12: e124067. https://doi.org/10.3897/BDJ.12.e124067</citation>
+			</gbif>
+		</metadata>
+	</additionalMetadata>
+</eml:eml>

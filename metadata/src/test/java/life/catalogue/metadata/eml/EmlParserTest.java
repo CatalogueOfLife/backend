@@ -1,9 +1,6 @@
 package life.catalogue.metadata.eml;
 
-import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.CslName;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
@@ -11,6 +8,7 @@ import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.Resources;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +24,17 @@ public class EmlParserTest {
 
   private DatasetWithSettings read(String name) throws IOException {
     return EmlParser.parse(getClass().getResourceAsStream("/metadata/" + name)).get();
+  }
+
+  @Test
+  public void bdjDOI() throws Exception {
+    Optional<DatasetWithSettings> m = EmlParser.parse(Resources.stream("metadata/eml-bdj.xml"));
+    Dataset d = m.get().getDataset();
+    assertEquals("A new species of the genus Euxiphocerus (Diptera, Dolichopodidae) from Korea with checklist and key to species of the genus", d.getTitle());
+    assertNull(d.getDoi());
+    final var doi = new DOI("10.3897/BDJ.12.e124067");
+    assertEquals(doi, d.getIdentifier().getFirst().asDOI());
+    assertEquals(doi.getUrl(), d.getUrl());
   }
 
   @Test
@@ -48,8 +57,8 @@ public class EmlParserTest {
   public void pensoft() throws Exception {
     Optional<DatasetWithSettings> m = EmlParser.parse(Resources.stream("metadata/pensoft.xml"));
     Dataset d = m.get().getDataset();
-    // relative path - bad DOI
-    assertNull(d.getUrl());
+    // simple DOI given - convert to URI
+    assertEquals(URI.create("https://doi.org/10.3897/bdj.9.e70141"), d.getUrl());
   }
 
   @Test

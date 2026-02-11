@@ -238,7 +238,13 @@ public class EmlParser {
                   d.setDescription(para.toString());
                   break;
                 case "distribution":
-                  d.setUrl(url);
+                  if (d.getUrl() == null) {
+                    d.setUrl(url);
+                  }
+                  // also set DOI?
+                  DOI.parse(url.toString()).ifPresent(doi -> {
+                    d.addIdentifier(new Identifier(doi));
+                  });
                   break;
                 case "pubDate":
                   FuzzyDate fuzzy = date(text);
@@ -398,6 +404,11 @@ public class EmlParser {
     return null;
   }
 
+  /**
+   * Deals with all kinds of URIs including DOIs
+   * @param text
+   * @return
+   */
   private static URI getAbsoluteUri(StringBuilder text) {
     if (text != null && text.length() > 1) {
       return getAbsoluteUri(text.toString());
@@ -407,6 +418,10 @@ public class EmlParser {
 
   private static URI getAbsoluteUri(String text) {
     if (text != null && text.length() > 1) {
+      var doi = DOI.parse(text);
+      if (doi.isPresent()) {
+        return doi.get().getUrl();
+      }
       return SafeParser.parse(UriParser.PARSER, text).orNull();
     }
     return null;
