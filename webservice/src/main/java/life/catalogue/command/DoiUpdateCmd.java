@@ -18,6 +18,7 @@ import life.catalogue.doi.datacite.model.DoiState;
 import life.catalogue.doi.service.*;
 import life.catalogue.event.EventBroker;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -330,6 +331,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
 
   void suspend() {
     suspended = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(RATE_LIMIT_PERIOD_MIN);
+    LOG.warn("We have been rate limited by Datacite. Suspend updates until {}", Instant.ofEpochMilli(suspended));
   }
 
   class DataciteSync implements Runnable {
@@ -349,6 +351,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     public void run() {
       try {
         while (isSuspended()) {
+          LOG.info("Sleeping for a minute before retrying to update DOI {}", doi);
           TimeUnit.MINUTES.sleep(1);
         }
         metadata.setDoi(doi);
@@ -374,12 +377,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         if (e.getStatus() == 429) {
           LOG.error("We have been rate limited by Datacite. Suspend updates for {} minutes.", RATE_LIMIT_PERIOD_MIN);
           suspend();
-          try {
-            TimeUnit.SECONDS.sleep(10);
-          } catch (InterruptedException ie) {
-            throw new RuntimeException(e);
-          }
-          // try again
+          // try again - it will wait until the suspension period is over
           run();
         }
         LOG.error("Failed to sync with Datacite DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst(), e);
