@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections4.iterators.PeekingIterator;
 import org.apache.ibatis.session.SqlSession;
@@ -42,6 +42,7 @@ import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
  */
 public class DoiUpdateCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(DoiUpdateCmd.class);
+  private static final int RATE_LIMIT_PERIOD_MIN = 6;
   private static final String ARG_KEY = "key";
   private static final String ARG_DOI = "doi";
   private static final String ARG_ALL = "all";
@@ -57,6 +58,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   private CountMap<DatasetOrigin> published = new CountMap<>();
   private ExecutorService executor;
   private EventBroker events;
+  private long suspended = 0; // millis
 
   public DoiUpdateCmd() {
     super("doi", true, "Update all project, release and release source DOIs for the given project dataset key");
@@ -322,6 +324,14 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     return false;
   }
 
+  boolean isSuspended() {
+    return System.currentTimeMillis() < suspended;
+  }
+
+  void suspend() {
+    suspended = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(RATE_LIMIT_PERIOD_MIN);
+  }
+
   class DataciteSync implements Runnable {
     private final DOI doi;
     private final boolean create;
@@ -338,6 +348,9 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     @Override
     public void run() {
       try {
+        while (isSuspended()) {
+          TimeUnit.MINUTES.sleep(1);
+        }
         metadata.setDoi(doi);
         if (create) {
           LOG.info("Create DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst());
@@ -354,8 +367,28 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
           doiService.publish(doi);
           published.inc(info.origin);
         }
+
+      } catch (DoiHttpException e) {
+        // have we been rate limited?
+        // https://support.datacite.org/docs/rate-limit
+        if (e.getStatus() == 429) {
+          LOG.error("We have been rate limited by Datacite. Suspend updates for {} minutes.", RATE_LIMIT_PERIOD_MIN);
+          suspend();
+          try {
+            TimeUnit.SECONDS.sleep(10);
+          } catch (InterruptedException ie) {
+            throw new RuntimeException(e);
+          }
+          // try again
+          run();
+        }
+        LOG.error("Failed to sync with Datacite DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst(), e);
+
       } catch (DoiException e) {
         LOG.error("Failed to sync with Datacite DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst(), e);
+
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
       }
     }
   }
