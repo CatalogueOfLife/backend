@@ -216,7 +216,7 @@ public class ImportJob implements Runnable {
     final File lastArchive = dataset.getImportAttempt() == null ? null : nCfg.archive(datasetKey, dataset.getImportAttempt());
     archive.getParentFile().mkdirs();
 
-    boolean isModified = true;
+    boolean doImport = true;
     if (req.reimportAttempt != null) {
       // copy previous up/downloaded archive to repository
       Path prev = nCfg.archive(datasetKey, req.reimportAttempt).toPath();
@@ -244,26 +244,17 @@ public class ImportJob implements Runnable {
         setFormat(proxy.format);
       } else {
         // download archive directly
-        boolean downloaded;
         if (req.force) {
           LOG.info("Force download of source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), archive);
           downloader.download(di.getDownloadUri(), archive);
-          downloaded = true;
         } else {
           LOG.info("Download source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), archive);
           var lmod = DownloadUtil.lastModified(lastArchive);
-          downloaded = downloader.downloadIfModified(di.getDownloadUri(), archive, lmod);
+          doImport = downloader.downloadIfModified(di.getDownloadUri(), archive, lmod);
         }
         // make sure we received a real archive and not just a plain text error response
-        if (downloaded) {
+        if (doImport) {
           verifyDownload(archivePath);
-        } else if (lastArchive != null){
-          isModified = false;
-          // symlink last one in case we want to force imports
-          Files.createSymbolicLink(archivePath, lastArchive.toPath());
-        } else {
-          // no download and no prev file should never happen!
-          throw new IllegalStateException("Download for dataset " + datasetKey + " does not exist. Skip import");
         }
       }
 
@@ -272,14 +263,15 @@ public class ImportJob implements Runnable {
       throw new IllegalStateException("Dataset " + datasetKey + " is not external and there are no uploads to be imported");
     }
 
-    // in case we haven't downloaded anything and this method returns false for not modified,
-    // the parent ImportJob will deleted this import attempt alltogether, so wrong MD5s from symlinks don't matter
+    // in case we haven't downloaded anything and do not want any import,
+    // this import attempt will be removed alltogether at the end of the method,
+    // so wrong MD5s from symlinks don't matter
     di.setMd5(ChecksumUtils.getMD5Checksum(archive));
     di.setDownload(DownloadUtil.lastModified(archive));
     dao.update(di);
 
     // if we have a new archive test its MD5 to see if anything has changed
-    if (isModified && dataset.getImportAttempt() != null) {
+    if (doImport && dataset.getImportAttempt() != null) {
       try (SqlSession session = factory.openSession()) {
         final String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dataset.getImportAttempt());
         if (Objects.equals(lastMD5, di.getMd5())) {
@@ -288,8 +280,9 @@ public class ImportJob implements Runnable {
             // we have seen wrong MD5 hashes being stored (BDJ), so lets recalculate the last one from the file to make sure!
             var lastMD5Redone = ChecksumUtils.getMD5Checksum(lastArchive);
             if (lastMD5Redone.equals(lastMD5)) {
-              isModified = false;
-              LOG.info("MD5 unchanged: {}", di.getMd5());
+              LOG.info("MD5 unchanged: {}{}", di.getMd5(), req.force ? " (force import)" : "");
+              // only do an import with equal sources if we force it
+              doImport = req.force;
               Path lastReal = lastArchive.toPath().toRealPath();
               try {
                 Files.delete(archivePath);
@@ -314,10 +307,7 @@ public class ImportJob implements Runnable {
 
     checkIfCancelled();
     // decompress and import?
-    if (isModified || req.force) {
-      if (req.force) {
-        LOG.info("Force reimport of unchanged archive {}", datasetKey);
-      }
+    if (doImport) {
       LOG.info("Extracting files from archive {}", datasetKey);
       CompressionUtil.decompressFile(sourceDir.toFile(), archive);
 
