@@ -181,7 +181,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
   }
 
-  public List<SimpleNameWithNidx> related(int datasetKey, String id,
+  public List<SimpleNameInDataset> related(int datasetKey, String id,
                                      @Nullable Collection<DatasetType> datasetTypes,
                                      @Nullable Collection<Integer> datasetKeys,
                                      @Nullable Collection<UUID> publisherKeys) {

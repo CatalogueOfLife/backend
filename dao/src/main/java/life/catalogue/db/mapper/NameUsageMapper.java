@@ -167,7 +167,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param publisherKeys optional filter by a target GBIF publisher key
    * @return
    */
-  List<SimpleNameWithNidx> listRelated(@Param("key") DSID<String> key,
+  List<SimpleNameInDataset> listRelated(@Param("key") DSID<String> key,
                                @Param("datasetTypes") @Nullable Collection<DatasetType> datasetTypes,
                                @Param("datasetKeys") @Nullable Collection<Integer> datasetKeys,
                                @Param("publisherKeys") @Nullable Collection<UUID> publisherKeys);

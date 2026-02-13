@@ -123,7 +123,7 @@ public class NameUsageResource {
 
   @GET
   @Path("{id}/related")
-  public List<SimpleNameWithNidx> related(@PathParam("key") int datasetKey,
+  public List<SimpleNameInDataset> related(@PathParam("key") int datasetKey,
                                          @PathParam("id") String id,
                                          @QueryParam("datasetType") List<DatasetType> datasetTypes,
                                          @QueryParam("datasetKey") List<Integer> datasetKeys,

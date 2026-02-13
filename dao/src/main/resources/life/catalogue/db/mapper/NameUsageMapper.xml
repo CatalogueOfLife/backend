@@ -284,6 +284,14 @@
     <result property="namesIndexMatchType" column="type" />
   </resultMap>
 
+  <resultMap id="simpleInDatasetResultMap" type="SimpleNameInDataset" autoMapping="true">
+    <id property="id" column="id"/>
+    <result property="datasetKey" column="dataset_key"/>
+    <result property="name" column="scientific_name"/>
+    <result property="parent" column="parent_id"/>
+    <result property="phrase" column="name_phrase" />
+  </resultMap>
+
   <resultMap id="simpleVerbatimResultMap" type="SimpleNameVerbatim" autoMapping="true" extends="simpleResultMap">
     <id property="id" column="id"/>
     <result property="verbatimSourceKey" column="verbatim_source_key" />
@@ -515,8 +523,8 @@
     WHERE id=#{id}
   </select>
 
-  <select id="listRelated" resultMap="simpleNidxResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, ni.canonical_id, nm.type
+  <select id="listRelated" resultMap="simpleInDatasetResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>, u.dataset_key
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
       JOIN names_index ni ON ni.id=nmo.index_id
