@@ -43,7 +43,7 @@ import jakarta.ws.rs.core.StreamingOutput;
 @Path("/dataset/{key}/taxon")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, TaxonResource.TaxonSearchRequest> {
+public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, Page> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
   private final SqlSessionFactory factory;
@@ -55,16 +55,6 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
     this.factory = factory;
     this.txtTreeDao = txtTreeDao;
     this.dao = dao;
-  }
-
-  public static class TaxonSearchRequest {
-    @QueryParam("root")
-    boolean root;
-  }
-
-  @Override
-  ResultPage<Taxon> searchImpl(int datasetKey, TaxonSearchRequest req, Page page) {
-    return req.root ? dao.listRoot(datasetKey, page) : dao.list(datasetKey, page);
   }
 
   @GET

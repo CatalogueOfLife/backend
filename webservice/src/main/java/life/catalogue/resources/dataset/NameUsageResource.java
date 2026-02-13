@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.id.ShortUUID;
@@ -27,6 +28,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,6 +49,8 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
+
+import javax.annotation.Nullable;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")
@@ -76,23 +80,8 @@ public class NameUsageResource {
                                         @QueryParam("q") String q,
                                         @QueryParam("rank") Rank rank,
                                         @QueryParam("nidx") Integer namesIndexID,
-                                        @Valid @BeanParam Page page,
-                                        @Context SqlSession session) {
-    Page p = page == null ? new Page() : page;
-    NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-    List<NameUsageBase> result;
-    Supplier<Integer> count;
-    if (namesIndexID != null) {
-      result = mapper.listByNamesIndexOrCanonicalID(datasetKey, namesIndexID, p);
-      count = () -> mapper.countByNamesIndexID(namesIndexID, datasetKey);
-    } else if (q != null) {
-      result = mapper.listByName(datasetKey, q, rank, p);
-      count = () -> result.size();
-    } else {
-      result = mapper.list(datasetKey, p);
-      count = () -> mapper.count(datasetKey);
-    }
-    return new ResultPage<>(p, result, count);
+                                        @Valid @BeanParam Page page) {
+    return dao.list(datasetKey, q, rank, namesIndexID, page);
   }
 
   @GET
@@ -134,15 +123,12 @@ public class NameUsageResource {
 
   @GET
   @Path("{id}/related")
-  public List<NameUsageBase> related(@PathParam("key") int datasetKey,
-                                     @PathParam("id") String id,
-                                     @QueryParam("datasetKey") List<Integer> datasetKeys,
-                                     @QueryParam("publisherKey") UUID publisherKey,
-                                     @Context SqlSession session) {
-    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    var key = DSID.of(datasetKey, id);
-    num.existsOrThrow(key);
-    return num.listRelated(key, datasetKeys, publisherKey);
+  public List<SimpleNameWithNidx> related(@PathParam("key") int datasetKey,
+                                         @PathParam("id") String id,
+                                         @QueryParam("datasetType") List<DatasetType> datasetTypes,
+                                         @QueryParam("datasetKey") List<Integer> datasetKeys,
+                                         @QueryParam("publisherKey") List<UUID> publisherKeys) {
+    return dao.related(datasetKey, id, datasetTypes, datasetKeys, publisherKeys);
   }
 
   @GET

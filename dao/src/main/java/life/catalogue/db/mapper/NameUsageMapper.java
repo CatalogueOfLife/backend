@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
@@ -161,13 +162,15 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Returns related name usages based on the same name as matched against the names index.
    *
    * @param key the key of any name usage
+   * @param datasetTypes optional filter by target dataset type
    * @param datasetKeys optional filter by target dataset keys
-   * @param publisherKey optional filter by a target GBIF publisher key
+   * @param publisherKeys optional filter by a target GBIF publisher key
    * @return
    */
-  List<NameUsageBase> listRelated(@Param("key") DSID<String> key,
-                                  @Param("datasetKeys") @Nullable Collection<Integer> datasetKeys,
-                                  @Param("publisherKey") @Nullable UUID publisherKey);
+  List<SimpleNameWithNidx> listRelated(@Param("key") DSID<String> key,
+                               @Param("datasetTypes") @Nullable Collection<DatasetType> datasetTypes,
+                               @Param("datasetKeys") @Nullable Collection<Integer> datasetKeys,
+                               @Param("publisherKeys") @Nullable Collection<UUID> publisherKeys);
 
   /**
    * Warning, this does not return bare names, only true usages!

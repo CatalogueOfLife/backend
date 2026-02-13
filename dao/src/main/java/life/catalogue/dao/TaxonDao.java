@@ -1,5 +1,11 @@
 package life.catalogue.dao;
 
+import jakarta.validation.Valid;
+import jakarta.ws.rs.BeanParam;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+
 import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
@@ -24,6 +30,7 @@ import org.gbif.nameparser.util.RankUtils;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -154,15 +161,38 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
   }
 
-  public ResultPage<Taxon> listRoot(Integer datasetKey, Page page) {
-    try (SqlSession session = factory.openSession(false)) {
+  public ResultPage<NameUsageBase> list(int datasetKey, String q, Rank rank, Integer namesIndexID, Page page) {
+    try (SqlSession session = factory.openSession()) {
       Page p = page == null ? new Page() : page;
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      List<Taxon> result = tm.listRoot(datasetKey, p);
-      return new ResultPage<>(p, result, () -> tm.countRoot(datasetKey));
+      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
+      List<NameUsageBase> result;
+      Supplier<Integer> count;
+      if (namesIndexID != null) {
+        result = mapper.listByNamesIndexOrCanonicalID(datasetKey, namesIndexID, p);
+        count = () -> mapper.countByNamesIndexID(namesIndexID, datasetKey);
+      } else if (q != null) {
+        result = mapper.listByName(datasetKey, q, rank, p);
+        count = () -> result.size();
+      } else {
+        result = mapper.list(datasetKey, p);
+        count = () -> mapper.count(datasetKey);
+      }
+      return new ResultPage<>(p, result, count);
     }
   }
-  
+
+  public List<SimpleNameWithNidx> related(int datasetKey, String id,
+                                     @Nullable Collection<DatasetType> datasetTypes,
+                                     @Nullable Collection<Integer> datasetKeys,
+                                     @Nullable Collection<UUID> publisherKeys) {
+    try (SqlSession session = factory.openSession()) {
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      var key = DSID.of(datasetKey, id);
+      num.existsOrThrow(key);
+      return num.listRelated(key, datasetTypes, datasetKeys, publisherKeys);
+    }
+  }
+
   /**
    * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
    */

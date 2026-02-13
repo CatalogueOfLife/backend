@@ -30,6 +30,10 @@ public class TreeDao {
     this.factory = factory;
   }
 
+  public ResultPage<TreeNode> root(int datasetKey, Page page) {
+    return rootOrChildren(DSID.root(datasetKey), datasetKey, false, true, null, page);
+  }
+
   public ResultPage<TreeNode> root(int datasetKey, int projectKey, boolean placeholder, boolean inclExtinct, TreeNode.Type type, Page page) {
     return rootOrChildren(DSID.root(datasetKey), projectKey, placeholder, inclExtinct, type, page);
   }

@@ -70,6 +70,7 @@ public class PgImportITBase {
   DatasetDao ddao;
   SynonymDao sdao;
   TaxonDao tdao;
+  TreeDao treeDao;
   NameDao ndao;
   ReferenceDao rdao;
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();

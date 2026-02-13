@@ -515,8 +515,8 @@
     WHERE id=#{id}
   </select>
 
-  <select id="listRelated" resultMap="usageResultMap">
-    SELECT <include refid="SELECT"/>
+  <select id="listRelated" resultMap="simpleNidxResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, ni.canonical_id, nm.type
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
       JOIN names_index ni ON ni.id=nmo.index_id
@@ -526,20 +526,21 @@
     <!-- now join the related usages -->
     JOIN name n ON nm.name_id=n.id AND nm.dataset_key=n.dataset_key
     JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
-    LEFT JOIN reference r ON r.id=u.according_to_id AND r.dataset_key=u.dataset_key
-    <if test="publisherKey != null">
+    <if test="publisherKeys != null || datasetTypes != null">
       JOIN dataset d ON d.key=u.dataset_key
     </if>
-    <include refid="FROM_ACCEPTED"/>
     WHERE orig.dataset_key=#{key.datasetKey} AND orig.id=#{key.id}
       AND (u.dataset_key!=#{key.datasetKey} OR u.id!=#{key.id})
+    <if test="datasetTypes != null and !datasetTypes.isEmpty()">
+      AND d.type IN <foreach item="t" collection="datasetTypes" open="(" separator="," close=")">#{t}</foreach>
+    </if>
     <if test="datasetKeys != null and !datasetKeys.isEmpty()">
       AND n.dataset_key IN <foreach item="id" collection="datasetKeys" open="(" separator="," close=")">#{id}</foreach>
     </if>
-    <if test="publisherKey != null">
-      AND d.gbif_publisher_key = #{publisherKey}
+    <if test="publisherKeys != null and !publisherKeys.isEmpty()">
+      AND d.gbif_publisher_key IN <foreach item="uuid" collection="publisherKeys" open="(" separator="," close=")">#{uuid}</foreach>
     </if>
-    ORDER BY u.dataset_key, u.id
+    LIMIT 100; -- safeguard for extreme cases like Animalia
   </select>
 
   <select id="listByName" resultMap="usageResultMap">

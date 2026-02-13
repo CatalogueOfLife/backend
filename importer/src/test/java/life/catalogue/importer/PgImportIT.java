@@ -430,7 +430,7 @@ public class PgImportIT extends PgImportITBase {
       Name n = ndao.get(key(dataset.getKey(), "30405"));
       assertEquals("Haematomma ochroleucum var. porphyrium", n.getScientificName());
       assertEquals("30405", n.getId());
-      assertEquals(2, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
+      assertEquals(2, treeDao.root(dataset.getKey(), new Page()).getResult().size());
     }
     assertTree();
   }
@@ -465,7 +465,7 @@ public class PgImportIT extends PgImportITBase {
       assertEquals(Rank.SPECIES, n.getRank());
     
       // one root
-      assertEquals(1, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
+      assertEquals(1, treeDao.root(dataset.getKey(), new Page()).getResult().size());
   
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       List<NameUsageBase> syns = um.listByNameID(dataset.getKey(), "1006-s3", new Page());
@@ -595,7 +595,7 @@ public class PgImportIT extends PgImportITBase {
       assertEquals(Rank.SPECIES, n.getRank());
 
       // one root
-      assertEquals(1, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
+      assertEquals(1, treeDao.root(dataset.getKey(), new Page()).getResult().size());
 
       // test taxa & synonyms
       assertEquals(n, tdao.get(key(dataset.getKey(), "1")).getName());
