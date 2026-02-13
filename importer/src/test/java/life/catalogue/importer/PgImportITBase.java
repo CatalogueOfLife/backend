@@ -102,6 +102,7 @@ public class PgImportITBase {
     tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, null, new ThumborService(new ThumborConfig()), indexService, null, validator);
     rdao = new ReferenceDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, validator);
     ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,null, validator, TestUtils.mockedBroker());
+    treeDao = new TreeDao(SqlSessionFactoryRule.getSqlSessionFactory());
   }
   
   @After
