@@ -125,10 +125,11 @@ public class NameUsageResource {
   @Path("{id}/related")
   public List<SimpleNameInDataset> related(@PathParam("key") int datasetKey,
                                          @PathParam("id") String id,
+                                         @QueryParam("latestReleaseOnly") boolean latestReleaseOnly,
                                          @QueryParam("datasetType") List<DatasetType> datasetTypes,
                                          @QueryParam("datasetKey") List<Integer> datasetKeys,
                                          @QueryParam("publisherKey") List<UUID> publisherKeys) {
-    return dao.related(datasetKey, id, datasetTypes, datasetKeys, publisherKeys);
+    return dao.related(datasetKey, id, latestReleaseOnly, datasetTypes, datasetKeys, publisherKeys);
   }
 
   @GET

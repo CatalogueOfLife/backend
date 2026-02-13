@@ -13,6 +13,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.*;
+import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
@@ -181,7 +182,18 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
   }
 
+  /**
+   *
+   * @param datasetKey
+   * @param id
+   * @param latestReleaseOnly if true only related names from the latest release(s) are returned. XR and BR are treated as separate releases.
+   * @param datasetTypes
+   * @param datasetKeys
+   * @param publisherKeys
+   * @return
+   */
   public List<SimpleNameInDataset> related(int datasetKey, String id,
+                                     boolean latestReleaseOnly,
                                      @Nullable Collection<DatasetType> datasetTypes,
                                      @Nullable Collection<Integer> datasetKeys,
                                      @Nullable Collection<UUID> publisherKeys) {
@@ -189,7 +201,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       var key = DSID.of(datasetKey, id);
       num.existsOrThrow(key);
-      return num.listRelated(key, datasetTypes, datasetKeys, publisherKeys);
+      return num.listRelated(key, latestReleaseOnly, datasetTypes, datasetKeys, publisherKeys);
     }
   }
 

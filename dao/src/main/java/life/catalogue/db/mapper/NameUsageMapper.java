@@ -162,15 +162,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Returns related name usages based on the same name as matched against the names index.
    *
    * @param key the key of any name usage
+   * @param latestReleaseOnly if true only return usages from the latest release of the dataset and no other releases or the project itself
    * @param datasetTypes optional filter by target dataset type
    * @param datasetKeys optional filter by target dataset keys
    * @param publisherKeys optional filter by a target GBIF publisher key
    * @return
    */
   List<SimpleNameInDataset> listRelated(@Param("key") DSID<String> key,
-                               @Param("datasetTypes") @Nullable Collection<DatasetType> datasetTypes,
-                               @Param("datasetKeys") @Nullable Collection<Integer> datasetKeys,
-                               @Param("publisherKeys") @Nullable Collection<UUID> publisherKeys);
+                                        @Param("latestReleaseOnly") boolean latestReleaseOnly,
+                                        @Param("datasetTypes") @Nullable Collection<DatasetType> datasetTypes,
+                                        @Param("datasetKeys") @Nullable Collection<Integer> datasetKeys,
+                                        @Param("publisherKeys") @Nullable Collection<UUID> publisherKeys);
 
   /**
    * Warning, this does not return bare names, only true usages!

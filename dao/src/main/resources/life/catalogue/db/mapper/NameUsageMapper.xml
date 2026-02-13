@@ -524,6 +524,13 @@
   </select>
 
   <select id="listRelated" resultMap="simpleInDatasetResultMap">
+    <if test="latestReleaseOnly">
+      WITH lr AS (
+        SELECT source_key, origin, max(key) AS key FROM dataset
+        WHERE deleted IS NULL AND NOT private AND origin IN ('RELEASE','XRELEASE')
+        GROUP BY 1,2
+      )
+    </if>
     SELECT <include refid="SELECT_SIMPLE"/>, u.dataset_key
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
@@ -534,19 +541,25 @@
     <!-- now join the related usages -->
     JOIN name n ON nm.name_id=n.id AND nm.dataset_key=n.dataset_key
     JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
-    <if test="publisherKeys != null || datasetTypes != null">
+    <if test="publisherKeys != null || datasetTypes != null || latestReleaseOnly">
       JOIN dataset d ON d.key=u.dataset_key
+    </if>
+    <if test="latestReleaseOnly">
+      LEFT JOIN lr ON lr.origin=d.origin AND lr.source_key=d.source_key AND lr.key=d.key
     </if>
     WHERE orig.dataset_key=#{key.datasetKey} AND orig.id=#{key.id}
       AND (u.dataset_key!=#{key.datasetKey} OR u.id!=#{key.id})
     <if test="datasetTypes != null and !datasetTypes.isEmpty()">
-      AND d.type IN <foreach item="t" collection="datasetTypes" open="(" separator="," close=")">#{t}</foreach>
+      AND d.type IN <foreach item="t" collection="datasetTypes" open="(" separator="," close=")">#{t}::DATASETTYPE</foreach>
     </if>
     <if test="datasetKeys != null and !datasetKeys.isEmpty()">
       AND n.dataset_key IN <foreach item="id" collection="datasetKeys" open="(" separator="," close=")">#{id}</foreach>
     </if>
     <if test="publisherKeys != null and !publisherKeys.isEmpty()">
       AND d.gbif_publisher_key IN <foreach item="uuid" collection="publisherKeys" open="(" separator="," close=")">#{uuid}</foreach>
+    </if>
+    <if test="latestReleaseOnly">
+      AND d.origin='EXTERNAL' OR (lr.key IS NOT NULL)
     </if>
     LIMIT 100; -- safeguard for extreme cases like Animalia
   </select>
