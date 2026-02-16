@@ -356,17 +356,17 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         }
         metadata.setDoi(doi);
         if (create) {
-          LOG.info("Create DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst());
+          LOG.info("Create DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst().getTitle());
           doiService.create(metadata);
           created.inc(info.origin);
         } else if (!noUpdate){
-          LOG.info("Update DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst());
+          LOG.info("Update DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst().getTitle());
           doiService.update(metadata);
           updated.inc(info.origin);
         }
         var data = doiService.resolve(doi);
         if (data.getState() != DoiState.FINDABLE) {
-          LOG.info("Publish DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst());
+          LOG.info("Publish DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst().getTitle());
           doiService.publish(doi);
           published.inc(info.origin);
         }
