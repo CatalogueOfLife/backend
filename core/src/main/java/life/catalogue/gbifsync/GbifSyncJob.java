@@ -180,7 +180,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
         ) {
           // we modify core metadata (title, description, contacts, version) via the dwc archive metadata
           // gbif syncs only change one of the following
-          // - dwca access url
+          // - dwca/coldp access url
           // - license
           // - publisher (publishOrgKey)
           // - gbif publisher key

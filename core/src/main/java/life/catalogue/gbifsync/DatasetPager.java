@@ -12,6 +12,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -40,6 +41,7 @@ public class DatasetPager {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetPager.class);
   private static final Pattern SUFFIX_KEY = Pattern.compile("^(.+)-(\\d+)$");
   private static final Pattern domain = Pattern.compile("([^.]+)\\.[a-z]+$", Pattern.CASE_INSENSITIVE);
+  private static final int MAX_OFFSET = 100_000;
 
   private final Page page = new Page(100);
   private boolean hasNext = true;
@@ -65,10 +67,10 @@ public class DatasetPager {
     organization = client.target(UriBuilder.fromUri(gbif.api).path("/organization/"));
     installation = client.target(UriBuilder.fromUri(gbif.api).path("/installation/"));
     publisherCache = Caffeine.newBuilder()
-                             .maximumSize(1000)
+                             .maximumSize(2000)
                              .build(this::loadPublisher);
     hostCache = Caffeine.newBuilder()
-                        .maximumSize(1000)
+                        .maximumSize(2000)
                         .build(this::loadHost);
     LOG.info("Created dataset pager for {}", datasets.getUri());
   }
@@ -141,33 +143,40 @@ public class DatasetPager {
       .count;
   }
 
-  public List<GbifDataset> next() {
+  protected List<GbifDataset> next() throws InterruptedException {
     LOG.debug("retrieve {}", page);
-    try {
-      return datasetPage()
-          .request()
-          .accept(MediaType.APPLICATION_JSON_TYPE)
-          .rx()
-          .get(GResp.class)
-          .thenApply(resp -> {
-            hasNext = !resp.endOfRecords;
-            return resp;
-          })
-          .thenApply(resp -> resp.results.stream()
-              .map(this::convert)
-              .filter(Objects::nonNull)
-              .collect(Collectors.toList())
-          )
-          .toCompletableFuture()
-          .join();
-      
-    } catch (Exception e) {
-      hasNext = false;
-      throw new IllegalStateException(e);
-      
-    } finally {
-      page.next();
+    GResp resp;
+    int tries = 0;
+    while (tries < 12) {
+      try {
+        resp = pageGBIF();
+        hasNext = !resp.endOfRecords;
+        var list = resp.results.stream()
+          .map(this::convert)
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList());
+        page.next();
+        if (page.getOffset() > MAX_OFFSET) {
+          hasNext = false;
+          LOG.warn("Stop paging. We've hit the maximum page offset {}: {}", MAX_OFFSET, page);
+        }
+        return list;
+
+      } catch (Exception e) {
+        tries++;
+        LOG.warn("Paging error {}: {}", page, e.getMessage(), e);
+        TimeUnit.MINUTES.sleep(tries * tries);
+      }
     }
+    LOG.warn("Reached maximum retries for page {}", page);
+    return Collections.emptyList();
+  }
+
+  private GResp pageGBIF() {
+    return datasetPage()
+      .request()
+      .accept(MediaType.APPLICATION_JSON_TYPE)
+      .get(GResp.class);
   }
 
   protected static class GbifDataset {
