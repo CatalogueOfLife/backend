@@ -168,7 +168,7 @@ public class DatasetPager {
         TimeUnit.MINUTES.sleep(tries * tries);
       }
     }
-    LOG.warn("Reached maximum retries for page {}", page);
+    LOG.error("Reached maximum retries for page {}", page);
     return Collections.emptyList();
   }
 

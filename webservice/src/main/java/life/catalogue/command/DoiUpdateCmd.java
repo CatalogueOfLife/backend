@@ -375,7 +375,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         // have we been rate limited?
         // https://support.datacite.org/docs/rate-limit
         if (e.getStatus() == 429) {
-          LOG.error("We have been rate limited by Datacite. Suspend updates for {} minutes.", RATE_LIMIT_PERIOD_MIN);
+          LOG.warn("We have been rate limited by Datacite. Suspend updates for {} minutes.", RATE_LIMIT_PERIOD_MIN);
           suspend();
           // try again - it will wait until the suspension period is over
           run();
