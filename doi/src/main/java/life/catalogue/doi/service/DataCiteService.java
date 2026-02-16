@@ -2,7 +2,6 @@ package life.catalogue.doi.service;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DOI;
-import life.catalogue.common.id.IdConverter;
 import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.datacite.model.DoiState;
 import life.catalogue.doi.datacite.model.EventType;
@@ -95,14 +94,7 @@ public class DataCiteService implements DoiService {
       DataCiteWrapper data = new DataCiteWrapper(attr);
       LOG.debug("DOI {} JSON: {}", attr.getDoi(), ApiModule.MAPPER.writeValueAsString(data));
       resp = request().post(Entity.json(data));
-      if (resp.getStatus() != 201) {
-        if (resp.getEntity() != null) {
-          String message = resp.readEntity(String.class);
-          throw new DoiHttpException(resp.getStatus(), attr.getDoi(), message);
-        }
-        throw new DoiHttpException(resp.getStatus(), attr.getDoi());
-      }
-      resp.close();
+      throwIfNotSuccessful(attr.getDoi(), resp);
 
     } catch (RuntimeException | JsonProcessingException e) {
       throw new DoiException(attr.getDoi(), e);
@@ -111,6 +103,16 @@ public class DataCiteService implements DoiService {
       if (resp != null) {
         resp.close();
       }
+    }
+  }
+
+  private void throwIfNotSuccessful(DOI doi, Response resp) throws DoiHttpException {
+    if (resp.getStatus() / 100 != 2 ) {
+      if (resp.getEntity() != null) {
+        String message = resp.readEntity(String.class);
+        throw new DoiHttpException(resp.getStatus(), doi, message);
+      }
+      throw new DoiHttpException(resp.getStatus(), doi);
     }
   }
 
@@ -125,13 +127,7 @@ public class DataCiteService implements DoiService {
       if (attr != null) {
         if (DoiState.DRAFT == attr.getState()) {
           resp = request(doi).delete();
-          if (resp.getStatus() != 200 && resp.getStatus() != 204) {
-            if (resp.getEntity() != null) {
-              String message = resp.readEntity(String.class);
-              throw new DoiHttpException(resp.getStatus(), doi, message);
-            }
-            throw new DoiHttpException(resp.getStatus(), doi);
-          }
+          throwIfNotSuccessful(doi, resp);
         } else {
           // hide
           DoiAttributes attr2 = new DoiAttributes(doi);
@@ -171,14 +167,7 @@ public class DataCiteService implements DoiService {
       DataCiteWrapper data = new DataCiteWrapper(attr);
       LOG.debug("DOI {} JSON: {}", attr.getDoi(), ApiModule.MAPPER.writeValueAsString(data));
       resp = request(attr.getDoi()).put(Entity.json(data));
-
-      if (resp.getStatus() != 200 && resp.getStatus() != 204) {
-        if (resp.getEntity() != null) {
-          String message = resp.readEntity(String.class);
-          throw new DoiHttpException(resp.getStatus(), attr.getDoi(), message);
-        }
-        throw new DoiHttpException(resp.getStatus(), attr.getDoi());
-      }
+      throwIfNotSuccessful(attr.getDoi(), resp);
 
     } catch (RuntimeException | JsonProcessingException e) {
       throw new DoiException(attr.getDoi(), e);

@@ -379,11 +379,12 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
           suspend();
           // try again - it will wait until the suspension period is over
           run();
+        } else {
+          LOG.error("Failed to sync with Datacite DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst().getTitle(), e);
         }
-        LOG.error("Failed to sync with Datacite DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst(), e);
 
       } catch (DoiException e) {
-        LOG.error("Failed to sync with Datacite DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst(), e);
+        LOG.error("Failed to sync with Datacite DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst().getTitle(), e);
 
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
