@@ -13,7 +13,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import com.google.common.annotations.VisibleForTesting;
 
 import de.undercouch.citeproc.csl.CSLType;
 import jakarta.ws.rs.client.Client;
@@ -149,17 +147,16 @@ public class DatasetPager {
     int tries = 0;
     while (tries < 12) {
       try {
-        resp = pageGBIF();
+        resp = datasetPage()
+          .request()
+          .accept(MediaType.APPLICATION_JSON_TYPE)
+          .get(GResp.class);
         hasNext = !resp.endOfRecords;
         var list = resp.results.stream()
           .map(this::convert)
           .filter(Objects::nonNull)
           .collect(Collectors.toList());
-        page.next();
-        if (page.getOffset() > MAX_OFFSET) {
-          hasNext = false;
-          LOG.warn("Stop paging. We've hit the maximum page offset {}: {}", MAX_OFFSET, page);
-        }
+        nextPage();
         return list;
 
       } catch (Exception e) {
@@ -169,14 +166,16 @@ public class DatasetPager {
       }
     }
     LOG.error("Reached maximum retries for page {}", page);
+    nextPage();
     return Collections.emptyList();
   }
 
-  private GResp pageGBIF() {
-    return datasetPage()
-      .request()
-      .accept(MediaType.APPLICATION_JSON_TYPE)
-      .get(GResp.class);
+  private void nextPage() {
+    page.next();
+    if (page.getOffset() > MAX_OFFSET) {
+      hasNext = false;
+      LOG.warn("Stop paging. We've hit the maximum page offset {}: {}", MAX_OFFSET, page);
+    }
   }
 
   protected static class GbifDataset {
