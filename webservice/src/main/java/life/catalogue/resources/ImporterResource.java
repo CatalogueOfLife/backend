@@ -87,7 +87,9 @@ public class ImporterResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed({Roles.ADMIN})
   @Path("/batch")
-  public int scheduleMultipleExternal(@Auth User user, @Valid @BeanParam DatasetSearchRequest request) {
+  public int scheduleMultipleExternal(@Auth User user,
+                                      @QueryParam("force") boolean force,
+                                      @Valid @BeanParam DatasetSearchRequest request) {
     // enforce to only schedule external datasets, never projects or releases
     request.setOrigin(List.of(DatasetOrigin.EXTERNAL));
     final List<Integer> keys = ddao.searchKeys(request);
@@ -95,7 +97,7 @@ public class ImporterResource {
     int counter = 0;
     for (int key : keys) {
       try {
-        ImportRequest req = ImportRequest.external(key, user.getKey(), true);
+        ImportRequest req = ImportRequest.external(key, user.getKey(), force);
         req.createdBy = user.getKey();
 
         importManager.submit(req);
