@@ -1,5 +1,7 @@
 package life.catalogue.api.search;
 
+import com.esotericsoftware.minlog.Log;
+
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.Issue;
 
@@ -10,7 +12,15 @@ import javax.annotation.Nullable;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang3.EnumUtils;
+
+import org.gbif.nameparser.api.Rank;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValue<T>> {
+  private static final Logger LOG = LoggerFactory.getLogger(FacetValue.class);
 
   public static FacetValue<String> forString(Object val, int count) {
     return new FacetValue<>(val.toString(), count);
@@ -38,10 +48,21 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
     return new FacetValue<>(UUID.fromString(val.toString()), count);
   }
 
-  public static <U extends Enum<U>> FacetValue<U> forEnum(Class<U> enumClass, Object val, int count) {
-    // Enums are always stored using their ordinal value
-    int ordinal = ((Integer) val).intValue();
-    return new FacetValue<>(enumClass.getEnumConstants()[ordinal], count);
+  public static <U extends Enum<U>> FacetValue<U> forEnum(Class<U> enumClass, String val, int count) {
+    // Enums are always stored using their name - apart from Rank which uses it's ordinal number for ranges & sorting !!!
+    try {
+      U enumVal;
+      if (enumClass.equals(Rank.class)) {
+        int ord = Integer.parseInt(val);
+        enumVal = enumClass.getEnumConstants()[ord];
+      } else {
+        enumVal = EnumUtils.getEnum(enumClass, val);
+      }
+      return new FacetValue<>(enumVal, count);
+    } catch (IllegalArgumentException e) {
+      LOG.warn("Invalid enum fact value: {} for enum {}", val, enumClass.getSimpleName());
+      return new FacetValue<>(null, count);
+    }
   }
 
   /*

@@ -37,13 +37,14 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
 
   @Test
   public void processDatasetBareNames() throws Exception {
-    Cursor<NameUsageWrapper> c = mapper().processDatasetBareNames(NAME4.getDatasetKey(), null);
-    c.forEach(obj -> {
-        counter.incrementAndGet();
-        assertNotNull(obj);
-        assertNotNull(obj.getUsage());
-        assertNotNull(obj.getUsage().getName());
-    });
+    try (Cursor<NameUsageWrapper> c = mapper().processDatasetBareNames(NAME4.getDatasetKey(), null)) {
+      c.forEach(obj -> {
+          counter.incrementAndGet();
+          assertNotNull(obj);
+          assertNotNull(obj.getUsage());
+          assertNotNull(obj.getUsage().getName());
+      });
+    }
     Assert.assertEquals(1, counter.get());
   }
 
@@ -129,7 +130,6 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     // sector props and main publisher key is not set!
     assertNull(w.getSectorDatasetKey());
     assertNull(w.getUsage().getSectorMode());
-    assertNull(w.getPublisherKey());
 
     //
     // try with sector source record after adding a decision and some issues
@@ -202,7 +202,6 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     // sector props and main publisher key is not set!
     assertNull(w.getSectorDatasetKey());
     assertNull(w.getUsage().getSectorMode());
-    assertNull(w.getPublisherKey());
 
 
     // test wrapped project usage

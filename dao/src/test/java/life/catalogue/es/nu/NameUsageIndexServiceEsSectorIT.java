@@ -33,7 +33,7 @@ public class NameUsageIndexServiceEsSectorIT extends EsPgTestBase {
     assertEquals(33, res.size());
     int taxCounter = 0;
     for (var nuw : res.getResult()) {
-      if (nuw.getUsage().isTaxon()) {
+      if (nuw.getUsage().getStatus() != null && nuw.getUsage().getStatus().isTaxon()) {
         taxCounter++;
         assertTrue(nuw.getClassification().size() > 0);
       }
@@ -54,7 +54,7 @@ public class NameUsageIndexServiceEsSectorIT extends EsPgTestBase {
     //assertEquals(4, res.size());
     int taxCounter = 0;
     for (var nuw : res.getResult()) {
-      if (nuw.getUsage().isTaxon()) {
+      if (nuw.getUsage().getStatus() != null && nuw.getUsage().getStatus().isTaxon()) {
         taxCounter++;
         assertTrue(nuw.getClassification().size() > 2);
       }
@@ -65,7 +65,7 @@ public class NameUsageIndexServiceEsSectorIT extends EsPgTestBase {
     res = search(req);
     taxCounter = 0;
     for (var nuw : res.getResult()) {
-      if (nuw.getUsage().isTaxon()) {
+      if (nuw.getUsage().getStatus() != null && nuw.getUsage().getStatus().isTaxon()) {
         taxCounter++;
         assertTrue(nuw.getClassification().size() > 2);
       }

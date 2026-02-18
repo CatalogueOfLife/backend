@@ -2,19 +2,21 @@ package life.catalogue.es.nu;
 
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.es.ddl.MultiField;
-import life.catalogue.es.query.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+
 /**
- * Generates the queries for the suggest service and the search service. See also {@link MultiField}
- * for consideration about how & why.
+ * Generates the queries for the suggest service and the search service.
  */
 public abstract class QMatcher {
 
-  static final int MIN_NGRAM_SIZE = 2; // see es-settings.json
+  static final int MIN_NGRAM_SIZE = 2; // see schema.json
   static final int MAX_NGRAM_SIZE = 10;
 
   private static final Logger LOG = LoggerFactory.getLogger(QMatcher.class);
@@ -78,8 +80,7 @@ public abstract class QMatcher {
 
   public Query getAuthorshipQuery() {
     String q = request.getQ().toLowerCase();
-    return new DisMaxQuery()
-        .subquery(new StandardAsciiQuery(FLD_AUTHOR, q));
+    return Query.of(qb -> qb.match(m -> m.field(FLD_AUTHOR + ".std").query(q)));
   }
 
   public Query getScientificNameQuery() {
@@ -102,11 +103,32 @@ public abstract class QMatcher {
 
   abstract Query matchAsTrinomial();
 
-  DisMaxQuery sciNameBaseQuery() {
-    return new DisMaxQuery()
-        // Make sure exact matches (even on small scientific names like genus "Ara") always prevail
-        .subquery(new SciNameEqualsQuery(FLD_SCINAME, request.getQ()).withBoost(100.0))
-        .subquery(new SciNameMatchQuery(FLD_SCINAME, request.getQ()));
+  /**
+   * Returns the base scientific name subqueries: an exact match (case-insensitive) and a whole-word match.
+   * Subclasses add epithet-based queries and combine everything into a disMax.
+   */
+  List<Query> sciNameBaseQueries() {
+    String q = request.getQ();
+    List<Query> queries = new ArrayList<>();
+    // Make sure exact matches (even on small scientific names like genus "Ara") always prevail
+    queries.add(Query.of(qb -> qb.match(m -> m.field(FLD_SCINAME + ".sic").query(q).boost(100.0f))));
+    queries.add(Query.of(qb -> qb.match(m -> m.field(FLD_SCINAME + ".sww").query(q))));
+    return queries;
+  }
+
+  /**
+   * Default scientific name query when no epithet-based matching is possible.
+   */
+  Query sciNameBaseQuery() {
+    List<Query> queries = sciNameBaseQueries();
+    return Query.of(q -> q.disMax(d -> d.queries(queries)));
+  }
+
+  /**
+   * Wraps a query with an explicit boost value.
+   */
+  public static Query withBoost(Query query, float boost) {
+    return Query.of(q -> q.bool(b -> b.must(query).boost(boost)));
   }
 
   private boolean couldBeEpithets() {
@@ -151,7 +173,7 @@ public abstract class QMatcher {
     return new QMatcher(request) {
 
       public Query getScientificNameQuery() {
-        return new TermQuery(FLD_SCINAME, request.getQ());
+        return Query.of(q -> q.term(t -> t.field(FLD_SCINAME).value(request.getQ())));
       }
 
       Query matchAsTrinomial() {

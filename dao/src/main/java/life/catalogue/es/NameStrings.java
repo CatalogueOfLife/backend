@@ -2,15 +2,12 @@ package life.catalogue.es;
 
 import life.catalogue.api.model.Name;
 import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.es.ddl.Analyzers;
 
 import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
-import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
-import static life.catalogue.es.ddl.Analyzer.SCINAME_IGNORE_CASE;
 import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
 
 /**
@@ -27,13 +24,9 @@ public class NameStrings {
 
   private char sciNameLetter; // Used for alphabetical index
   private char genusLetter; // Used for fast term queries with search phrases like "H sapiens"
-  @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String[] genusOrMonomial; // Lower case and weakly normalized versions of genus/uninomial
-  @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String[] infragenericEpithet; // Lower case and strongly normalized versions of infrageneric epithet
-  @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String[] specificEpithet; // Lower case and strongly normalized versions of specific epithet
-  @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String[] infraspecificEpithet; // Lower case and strongly normalized versions of infraspecific epithet
 
   /**

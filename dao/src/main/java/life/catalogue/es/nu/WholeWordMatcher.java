@@ -1,7 +1,6 @@
 package life.catalogue.es.nu;
 
-import life.catalogue.es.query.Query;
-import life.catalogue.es.query.SciNameEqualsQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 
 /**
  * Mix-in interface for whole-word matching
@@ -9,8 +8,9 @@ import life.catalogue.es.query.SciNameEqualsQuery;
 interface WholeWordMatcher extends MatcherMixIn {
 
   @Override
-  default Query matchAsEpithet(String field, String term) {
-    return new SciNameEqualsQuery(field, term).withBoost(5.0);
+  default Query matchAsEpithet(String field, String term, Float boost) {
+    float b = boost != null ? boost : 5.0f;
+    return Query.of(q -> q.match(m -> m.field(field + ".sic").query(term).boost(b)));
   }
 
 }

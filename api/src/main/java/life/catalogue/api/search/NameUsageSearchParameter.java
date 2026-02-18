@@ -19,6 +19,8 @@ public enum NameUsageSearchParameter {
 
   USAGE_ID(String.class),
 
+  NAME_ID(String.class),
+
   DATASET_KEY(Integer.class),
 
   /**
@@ -40,8 +42,6 @@ public enum NameUsageSearchParameter {
 
   GROUP(TaxGroup.class),
 
-  NAME_ID(String.class),
-
   /**
    * Nomenclatural code.
    */
@@ -51,11 +51,6 @@ public enum NameUsageSearchParameter {
    * Nomenclatural status of the name alone
    */
   NOM_STATUS(NomStatus.class),
-
-  /**
-   * The GBIF publisher key from the dataset
-   */
-  PUBLISHER_KEY(UUID.class),
 
   /**
    * Rank
@@ -137,13 +132,7 @@ public enum NameUsageSearchParameter {
   /**
    * The name usage origin
    */
-  ORIGIN(Origin.class),
-
-  /**
-   * Unsafe mode that avoids request validations
-   */
-  UNSAFE(Boolean.class)
-  ;
+  ORIGIN(Origin.class);
 
   private final Class<?> type;
 

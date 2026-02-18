@@ -1,18 +1,14 @@
 package life.catalogue.es;
 
-import life.catalogue.concurrent.NamedThreadFactory;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 
 import com.google.common.base.Preconditions;
 
@@ -26,46 +22,31 @@ public class EsClientFactory {
     this.cfg = Preconditions.checkNotNull(cfg, "ES config required");
   }
 
-  public RestClient createClient() {
-    return createClientBuilder().build();
-  }
-
-  public RestClientBuilder createClientBuilder() {
+  /**
+   * Creates an ElasticsearchClient using the ES 9.x builder API.
+   */
+  public ElasticsearchClient createClient() {
     String[] hosts = cfg.hosts == null ? new String[]{"localhost"} : cfg.hosts.split(",");
     String[] ports = cfg.ports == null ? new String[]{"9200"} : cfg.ports.split(",");
-    HttpHost[] httpHosts = new HttpHost[hosts.length];
-    for(int i = 0; i < hosts.length; i++) {
-      int port = Integer.parseInt(ports[i]);
-      httpHosts[i] = new HttpHost(hosts[i], port);
+
+    List<URI> uris = new ArrayList<>();
+    for (int i = 0; i < hosts.length; i++) {
+      String port = ports.length > i ? ports[i] : ports[0];
+      uris.add(URI.create("http://" + hosts[i].trim() + ":" + port.trim()));
     }
-    var builder = RestClient.builder(httpHosts)
-        .setCompressionEnabled(true)
-        .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
-          @Override
-          public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
-            return httpClientBuilder.setThreadFactory(new NamedThreadFactory("es-client"));
-          }
-        })
-        .setRequestConfigCallback(new RestClientBuilder.RequestConfigCallback() {
-          @Override
-          public RequestConfig.Builder customizeRequestConfig(RequestConfig.Builder requestConfigBuilder) {
-            return requestConfigBuilder
-                .setConnectTimeout(cfg.connectTimeout)
-                .setSocketTimeout(cfg.socketTimeout);
-          }
-        });
 
     LOG.info("Connecting to Elasticsearch using hosts={}; ports={}", cfg.hosts, (cfg.ports == null ? "9200" : cfg.ports));
-    if (cfg.user != null) {
-      final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-      credentialsProvider.setCredentials(AuthScope.ANY,
-        new UsernamePasswordCredentials(cfg.user, cfg.password)
-      );
-      // add authentication
-      builder.setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider));
-      LOG.info("Adding authentication for user {} to Elasticsearch client", cfg.user);
-    }
-    return builder;
+
+    return ElasticsearchClient.of(b -> {
+      b.hosts(uris)
+       .useCompression(true)
+       .jsonMapper(new JacksonJsonpMapper(EsModule.contentMapper()));
+      if (cfg.user != null) {
+        b.usernameAndPassword(cfg.user, cfg.password);
+        LOG.info("Adding authentication for user {} to Elasticsearch client", cfg.user);
+      }
+      return b;
+    });
   }
 
 }

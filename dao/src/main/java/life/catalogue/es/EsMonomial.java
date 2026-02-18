@@ -1,7 +1,5 @@
 package life.catalogue.es;
 
-import life.catalogue.es.ddl.NotIndexed;
-
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
@@ -19,9 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class EsMonomial {
 
-  @NotIndexed
   private Rank rank;
-  @NotIndexed
   private String name;
 
   @JsonCreator

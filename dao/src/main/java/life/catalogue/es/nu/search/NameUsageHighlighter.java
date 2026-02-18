@@ -22,12 +22,7 @@ import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
 
 /*
  * A DIY highlighter we use in stead of Elasticsearch's highlight capabilities.
- * 
- * The life.catalogue.es.query package does contain the classes to specify and serialize a
- * Elasticsearch-native highlight request, but we currently don't use them. The reason is that the
- * things we want to apply the highlighting to are tucked away within the payload field, which is
- * completely opaque to Elasticsearch.
- * 
+ *
  * With respect to scientific names, the highlighting may be imprecise. The highlighting is based on
  * occurences of a normalized Q within the normalized name. The start and end positions are used to
  * insert the <em> tags in the original name, so we take a chance and hope that the name and
@@ -112,12 +107,6 @@ class NameUsageHighlighter {
       int prevEnd = 0;
       do {
         int start = matcher.start();
-        /*
-         * For scientific names, we get the begin/end string indexes of matches within the normalized name,
-         * and use these to insert <em> tags in the original name. But theoretically the normalized name
-         * could be bigger than the original name. Anyhow, to be safe it's best to make zero assumptions
-         * regarding how much the normalized name deviates from the original name:
-         */
         if (start < value.length()) {
           highlighted.append(value.substring(prevEnd, start)).append(HIGHLIGHT_BEGIN);
           prevEnd = Math.min(value.length(), matcher.end());

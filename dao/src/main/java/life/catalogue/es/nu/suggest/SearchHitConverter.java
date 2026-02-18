@@ -3,8 +3,6 @@ package life.catalogue.es.nu.suggest;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.es.EsMonomial;
 import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.UpwardConverter;
-import life.catalogue.es.response.SearchHit;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -14,17 +12,19 @@ import java.util.ListIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import co.elastic.clients.elasticsearch.core.search.Hit;
+
 /**
- * Converts an ES SearchHit instance into a NameUsageSuggestion object.
+ * Converts an ES Hit instance into a NameUsageSuggestion object.
  */
-class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, NameUsageSuggestion> {
+class SearchHitConverter {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SearchHitConverter.class);
 
-  NameUsageSuggestion createSuggestion(SearchHit<EsNameUsage> hit) {
-    EsNameUsage doc = hit.getSource();
+  NameUsageSuggestion createSuggestion(Hit<EsNameUsage> hit) {
+    EsNameUsage doc = hit.source();
     NameUsageSuggestion suggestion = new NameUsageSuggestion();
-    suggestion.setScore(hit.getScore());
+    suggestion.setScore(hit.score() != null ? hit.score().floatValue() : 0f);
     suggestion.setMatch(doc.getScientificName());
     suggestion.setUsageId(doc.getUsageId());
     suggestion.setNameId(doc.getNameId());

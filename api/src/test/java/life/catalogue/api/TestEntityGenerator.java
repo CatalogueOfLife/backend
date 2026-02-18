@@ -743,7 +743,6 @@ public class TestEntityGenerator {
   public static NameUsageWrapper newNameUsageTaxonWrapperComplete() {
     var nuw = newNameUsageTaxonWrapper();
     nuw.setGroup(TaxGroup.Algae);
-    nuw.setPublisherKey(UUID.randomUUID());
     nuw.setSectorDatasetKey(4567);
     nuw.setDecisions(new ArrayList<>(List.of( // array list to avoid kryo not doing a deep copy
       new SimpleDecision(66, 456, EditorialDecision.Mode.UPDATE),

@@ -7,9 +7,7 @@ import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
-import life.catalogue.es.response.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -17,52 +15,65 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
+
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
  */
-class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, NameUsageSearchResponse> {
+class ResponseConverter {
 
-  private final EsResponse<EsNameUsage> esResponse;
+  private final SearchResponse<EsNameUsage> esResponse;
 
-  ResponseConverter(EsResponse<EsNameUsage> esResponse) {
+  ResponseConverter(SearchResponse<EsNameUsage> esResponse) {
     this.esResponse = esResponse;
   }
 
-  /**
-   * Converts the Elasticsearch response object to a NameSearchResponse instance.
-   * 
-   * @param page
-   * @return
-   * @throws IOException
-   */
   NameUsageSearchResponse convertEsResponse(Page page) throws IOException {
-    int total = esResponse.getHits().getTotalNumHits();
+    int total = (int) esResponse.hits().total().value();
     List<NameUsageWrapper> nameUsages = convertNameUsageDocuments();
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = generateFacets();
     return new NameUsageSearchResponse(page, total, nameUsages, facets);
   }
 
   private List<NameUsageWrapper> convertNameUsageDocuments() throws IOException {
-    List<SearchHit<EsNameUsage>> hits = esResponse.getHits().getHits();
+    List<Hit<EsNameUsage>> hits = esResponse.hits().hits();
     List<NameUsageWrapper> nuws = new ArrayList<>(hits.size());
-    for (SearchHit<EsNameUsage> hit : hits) {
-      String payload = hit.getSource().getPayload();
+    for (Hit<EsNameUsage> hit : hits) {
+      EsNameUsage doc = hit.source();
+      if (doc == null) continue;
+      String payload = doc.getPayload();
       NameUsageWrapper nuw = NameUsageWrapperConverter.decode(payload);
-      NameUsageWrapperConverter.enrichPayload(nuw, hit.getSource());
+      NameUsageWrapperConverter.enrichPayload(nuw, doc);
       nuws.add(nuw);
     }
     return nuws;
   }
 
   private Map<NameUsageSearchParameter, Set<FacetValue<?>>> generateFacets() {
-    FacetsContainer facets = extractFacetsFromResponse();
-    if (facets == null) {
+    if (esResponse.aggregations() == null || esResponse.aggregations().isEmpty()) {
       return Collections.emptyMap();
     }
+
+    Aggregate globalAgg = esResponse.aggregations().get(FacetsTranslator.GLOBAL_AGG_LABEL);
+    if (globalAgg == null || !globalAgg.isGlobal()) {
+      return Collections.emptyMap();
+    }
+
+    Map<String, Aggregate> globalSubs = globalAgg.global().aggregations();
+    Aggregate filterAgg = globalSubs.get(FacetsTranslator.FILTER_AGG_LABEL);
+    if (filterAgg == null || !filterAgg.isFilter()) {
+      return Collections.emptyMap();
+    }
+
+    Map<String, Aggregate> facetAggs = filterAgg.filter().aggregations();
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> result = new EnumMap<>(NameUsageSearchParameter.class);
-    for (String paramName : facets.keySet()) {
-      if (Character.isLowerCase(paramName.codePointAt(0))) { // some native ES property in the response
-        continue;
+
+    for (Map.Entry<String, Aggregate> entry : facetAggs.entrySet()) {
+      String paramName = entry.getKey();
+      if (Character.isLowerCase(paramName.codePointAt(0))) {
+        continue; // some native ES property
       }
       NameUsageSearchParameter param;
       try {
@@ -70,84 +81,86 @@ class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, Name
       } catch (IllegalArgumentException e) {
         continue;
       }
-      EsFacet esFacet = facets.getFacet(param);
-      result.put(param, convert(param, esFacet));
+
+      Aggregate facetFilterAgg = entry.getValue();
+      if (!facetFilterAgg.isFilter()) continue;
+
+      Aggregate termsAgg = facetFilterAgg.filter().aggregations().get(FacetsTranslator.FACET_AGG_LABEL);
+      if (termsAgg == null) continue;
+
+      result.put(param, extractBuckets(param, termsAgg));
     }
     return result;
   }
 
-  @SuppressWarnings("unchecked")
-  private FacetsContainer extractFacetsFromResponse() {
-    Map<String, Object> aggs = esResponse.getAggregations();
-    if (aggs != null) {
-      Map<String, Object> globalAgg = (Map<String, Object>) aggs.get(FacetsTranslator.GLOBAL_AGG_LABEL);
-      if (globalAgg != null) {
-        // should always be the case as soon as we have aggregations in the first place, but let's check anyhow
-        Map<String, Object> filterAgg = (Map<String, Object>) globalAgg.get(FacetsTranslator.FILTER_AGG_LABEL);
-        if (filterAgg != null) { // idem
-          return new FacetsContainer(filterAgg);
-        }
+  private static Set<FacetValue<?>> extractBuckets(NameUsageSearchParameter param, Aggregate termsAgg) {
+    List<BucketEntry> entries = new ArrayList<>();
+    if (termsAgg.isSterms()) {
+      for (var b : termsAgg.sterms().buckets().array()) {
+        entries.add(new BucketEntry(b.key().stringValue(), b.docCount()));
+      }
+    } else if (termsAgg.isLterms()) {
+      for (var b : termsAgg.lterms().buckets().array()) {
+        entries.add(new BucketEntry(String.valueOf(b.key()), b.docCount()));
+      }
+    } else if (termsAgg.isDterms()) {
+      for (var b : termsAgg.dterms().buckets().array()) {
+        entries.add(new BucketEntry(String.valueOf(b.key()), b.docCount()));
       }
     }
-    return null;
+    return convert(param, entries);
   }
 
-  private static Set<FacetValue<?>> convert(NameUsageSearchParameter param, EsFacet esFacet) {
+  private record BucketEntry(String key, long docCount) {}
+
+  private static Set<FacetValue<?>> convert(NameUsageSearchParameter param, List<BucketEntry> entries) {
     if (param == NameUsageSearchParameter.DATASET_KEY) {
-      return createIntBuckets(esFacet, DatasetInfoCache.CACHE.labels::get);
+      return createIntBuckets(entries, DatasetInfoCache.CACHE.labels::get);
     } else if (param.type() == Integer.class) {
-      return createIntBuckets(esFacet);
+      return createIntBuckets(entries);
     } else if (param.type() == UUID.class) {
-      return createUuidBuckets(esFacet);
+      return createUuidBuckets(entries);
     } else if (param.type().isEnum()) {
-      return createEnumBuckets(esFacet, param);
+      return createEnumBuckets(entries, param);
     } else {
-      return createStringBuckets(esFacet);
+      return createStringBuckets(entries);
     }
   }
 
-  private static Set<FacetValue<?>> createStringBuckets(EsFacet esFacet) {
+  private static Set<FacetValue<?>> createStringBuckets(List<BucketEntry> entries) {
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
-    if (esFacet.getFacetValues() != null && esFacet.getFacetValues().getBuckets() != null) {
-      for (Bucket b : esFacet.getFacetValues().getBuckets()) {
-        facet.add(FacetValue.forString(b.getKey(), b.getDocCount()));
-      }
+    for (BucketEntry b : entries) {
+      facet.add(FacetValue.forString(b.key(), (int) b.docCount()));
     }
     return facet;
   }
 
-  private static Set<FacetValue<?>> createIntBuckets(EsFacet esFacet) {
-    return createIntBuckets(esFacet, null);
+  private static Set<FacetValue<?>> createIntBuckets(List<BucketEntry> entries) {
+    return createIntBuckets(entries, null);
   }
 
-  private static Set<FacetValue<?>> createIntBuckets(EsFacet esFacet, @Nullable Function<Integer, String> labelFunc) {
+  private static Set<FacetValue<?>> createIntBuckets(List<BucketEntry> entries, @Nullable Function<Integer, String> labelFunc) {
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
-    if (esFacet.getFacetValues() != null && esFacet.getFacetValues().getBuckets() != null) {
-      for (Bucket b : esFacet.getFacetValues().getBuckets()) {
-        facet.add(FacetValue.forInteger(b.getKey(), b.getDocCount(), labelFunc));
-      }
+    for (BucketEntry b : entries) {
+      facet.add(FacetValue.forInteger(b.key(), (int) b.docCount(), labelFunc));
     }
     return facet;
   }
 
-  private static Set<FacetValue<?>> createUuidBuckets(EsFacet esFacet) {
+  private static Set<FacetValue<?>> createUuidBuckets(List<BucketEntry> entries) {
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
-    if (esFacet.getFacetValues() != null && esFacet.getFacetValues().getBuckets() != null) {
-      for (Bucket b : esFacet.getFacetValues().getBuckets()) {
-        facet.add(FacetValue.forUuid(b.getKey(), b.getDocCount()));
-      }
+    for (BucketEntry b : entries) {
+      facet.add(FacetValue.forUuid(b.key(), (int) b.docCount()));
     }
     return facet;
   }
 
-  private static <U extends Enum<U>> Set<FacetValue<?>> createEnumBuckets(EsFacet esFacet, NameUsageSearchParameter param) {
+  private static <U extends Enum<U>> Set<FacetValue<?>> createEnumBuckets(List<BucketEntry> entries, NameUsageSearchParameter param) {
     @SuppressWarnings("unchecked")
     Class<U> enumClass = (Class<U>) param.type();
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
-    if (esFacet.getFacetValues() != null && esFacet.getFacetValues().getBuckets() != null) {
-      for (Bucket b : esFacet.getFacetValues().getBuckets()) {
-        facet.add(FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()));
-      }
+    for (BucketEntry b : entries) {
+      facet.add(FacetValue.forEnum(enumClass, b.key(), (int) b.docCount()));
     }
     return facet;
   }

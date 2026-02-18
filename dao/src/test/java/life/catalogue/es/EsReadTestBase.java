@@ -9,8 +9,6 @@ import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.Query;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -21,11 +19,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.elasticsearch.client.RestClient;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.google.common.base.Preconditions;
@@ -55,7 +55,7 @@ public class EsReadTestBase {
     return esSetupRule.getEsConfig();
   }
 
-  protected RestClient getEsClient() {
+  protected ElasticsearchClient getEsClient() {
     return esSetupRule.getClient();
   }
 
@@ -63,7 +63,7 @@ public class EsReadTestBase {
   protected static void destroyAndCreateIndex() {
     try {
       EsUtil.deleteIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
-      EsUtil.createIndex(esSetupRule.getClient(), EsNameUsage.class, esSetupRule.getEsConfig().nameUsage);
+      EsUtil.createIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -113,13 +113,8 @@ public class EsReadTestBase {
     indexRaw(Arrays.asList(documents));
   }
 
-  protected List<EsNameUsage> queryRaw(Query query) {
-    EsSearchRequest esr = EsSearchRequest.emptyRequest().where(query);
-    return new NameUsageSearchServiceEs(indexName(), getEsClient()).getDocuments(esr);
-  }
-
-  protected List<EsNameUsage> queryRaw(EsSearchRequest rawRequest) {
-    return new NameUsageSearchServiceEs(indexName(), getEsClient()).getDocuments(rawRequest);
+  protected List<EsNameUsage> queryRaw(SearchRequest searchRequest) {
+    return new NameUsageSearchServiceEs(indexName(), getEsClient()).getDocuments(searchRequest);
   }
 
   protected EsNameUsage toDocument(NameUsageWrapper nu) {
@@ -190,7 +185,7 @@ public class EsReadTestBase {
 
   /**
    * Creates the requested number of name usages (all taxa) with just enough fields set to be indexed straight away without NPEs.
-   * 
+   *
    * @param howmany
    * @return
    */
@@ -205,31 +200,27 @@ public class EsReadTestBase {
     n.setRank(rank);
     Taxon t = new Taxon();
     t.setName(n);
-    NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(t);
-    return nuw;
+    return new NameUsageWrapper(t);
   }
 
   /**
    * Creates a new Taxon instance with just enough fields set to be indexed straight away without NPEs.
-   * 
+   *
    * @return
    */
   protected NameUsageWrapper minimalTaxon() {
     Taxon t = new Taxon();
     t.setName(new Name());
-    NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(t);
-    return nuw;
+    return new NameUsageWrapper(t);
   }
 
   protected NameUsageWrapper minimalSynonym() {
     Synonym s = new Synonym();
     s.setName(new Name());
-    s.setAccepted((Taxon) minimalTaxon().getUsage());
-    NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(s);
-    return nuw;
+    Taxon accepted = new Taxon();
+    accepted.setName(new Name());
+    s.setAccepted(accepted);
+    return new NameUsageWrapper(s);
   }
 
   protected List<VernacularName> create(List<String> names) {

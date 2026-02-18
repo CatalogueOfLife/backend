@@ -23,6 +23,7 @@ import life.catalogue.dw.tasks.ClearCachesTask;
 import life.catalogue.dw.tasks.EventQueueTask;
 import life.catalogue.dw.tasks.ReloadPortalTemplatesTask;
 import life.catalogue.es.EsClientFactory;
+import life.catalogue.es.EsUtil;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
@@ -56,7 +57,7 @@ import org.apache.hc.core5.util.Timeout;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.eclipse.jetty.ee10.servlet.ServletHandler;
-import org.elasticsearch.client.RestClient;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.RequestEntityProcessing;
@@ -221,7 +222,7 @@ public class WsROServer extends Application<WsServerConfig> {
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
     NameUsageSearchService searchService;
     NameUsageSuggestionService suggestService;
-    final RestClient esClient;
+    final ElasticsearchClient esClient;
     if (cfg.es == null || cfg.es.isEmpty()) {
       esClient = null;
       LOG.warn("No Elastic Search configured, use pass through indexing & searching");
@@ -229,7 +230,7 @@ public class WsROServer extends Application<WsServerConfig> {
       suggestService = NameUsageSuggestionService.passThru();
     } else {
       esClient = new EsClientFactory(cfg.es).createClient();
-      env.lifecycle().manage(ManagedUtils.from(esClient));
+      env.lifecycle().manage(ManagedUtils.from((AutoCloseable) () -> EsUtil.close(esClient)));
       searchService = new NameUsageSearchServiceEs(cfg.es.nameUsage.name, esClient);
       suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
     }
@@ -287,7 +288,7 @@ public class WsROServer extends Application<WsServerConfig> {
     broker.register(DatasetInfoCache.CACHE);
   }
 
-  static void registerReadOnlyHealthChecks(Environment env, EventBroker broker, @Nullable RestClient esClient, WsServerConfig cfg) {
+  static void registerReadOnlyHealthChecks(Environment env, EventBroker broker, @Nullable ElasticsearchClient esClient, WsServerConfig cfg) {
     env.healthChecks().register("event-broker", new EventBrokerHealthCheck(broker));
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
     if (esClient != null) {

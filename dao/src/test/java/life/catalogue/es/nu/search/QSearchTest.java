@@ -163,7 +163,7 @@ public class QSearchTest extends EsReadTestBase {
     NameUsageSearchResponse response = search(request);
 
     assertEquals(1, response.getResult().size());
-    assertEquals("COVID-19",response.getResult().get(0).getUsage().getName().getScientificName());
+    assertEquals("COVID-19",response.getResult().get(0).getUsage().getName());
   }
 
 }

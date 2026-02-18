@@ -2,32 +2,32 @@ package life.catalogue.es.nu.search;
 
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.es.DownwardConverter;
 import life.catalogue.es.nu.FiltersTranslator;
 import life.catalogue.es.nu.SortByTranslator;
-import life.catalogue.es.query.BoolQuery;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.MatchAllQuery;
-import life.catalogue.es.query.Query;
+
+import java.util.Map;
+
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 
 /**
- * Translates a {@link NameUsageSearchRequest} into a native Elasticsearch search request. Mostly manages the other translators in this
- * package.
+ * Translates a {@link NameUsageSearchRequest} into a native Elasticsearch search request.
  */
-class RequestTranslator implements DownwardConverter<NameUsageSearchRequest, EsSearchRequest> {
+class RequestTranslator {
 
   static Query generateQuery(NameUsageSearchRequest request) {
     if (FiltersTranslator.mustGenerateFilters(request)) {
       if (request.hasQ()) {
-        return BoolQuery.withFilters(
-            new FiltersTranslator(request).translate(),
-            new QTranslator(request).translate());
+        Query filterQuery = new FiltersTranslator(request).translate();
+        Query qQuery = new QTranslator(request).translate();
+        return Query.of(q -> q.bool(b -> b.filter(filterQuery).must(qQuery)));
       }
       return new FiltersTranslator(request).translate();
     } else if (request.hasQ()) {
       return new QTranslator(request).translate();
     }
-    return new MatchAllQuery();
+    return Query.of(q -> q.matchAll(m -> m));
   }
 
   private final NameUsageSearchRequest request;
@@ -40,24 +40,26 @@ class RequestTranslator implements DownwardConverter<NameUsageSearchRequest, EsS
 
   /**
    * Translates the NameUsageSearchRequest into a real Elasticsearch search request.
-   * 
-   * @return
    */
-  EsSearchRequest translateRequest() {
-    EsSearchRequest es = new EsSearchRequest();
-    es.setFrom(page.getOffset());
-    es.setSize(page.getLimit());
-    es.setQuery(generateQuery(request));
-    es.setSort(new SortByTranslator(request).translate());
-    // Unless explicitly specified otherwise, set to true:
-    if (es.getTrackTotalHits() == null) {
-      es.setTrackTotalHits(Boolean.TRUE);
-    }
-    if (!request.getFacets().isEmpty()) {
-      FacetsTranslator ft = new FacetsTranslator(request);
-      es.setAggregations(ft.translate());
-    }
-    return es;
+  SearchRequest translateRequest(String index) {
+    Query query = generateQuery(request);
+    var sortOptions = new SortByTranslator(request).translate();
+
+    return SearchRequest.of(s -> {
+      s.index(index)
+       .from(page.getOffset())
+       .size(page.getLimit())
+       .query(query)
+       .sort(sortOptions)
+       .trackTotalHits(th -> th.enabled(true));
+
+      if (!request.getFacets().isEmpty()) {
+        FacetsTranslator ft = new FacetsTranslator(request);
+        Map<String, Aggregation> aggs = ft.translate();
+        s.aggregations(aggs);
+      }
+      return s;
+    });
   }
 
 }

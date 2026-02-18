@@ -15,8 +15,6 @@ import life.catalogue.dao.DecisionDao;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.es.*;
-import life.catalogue.es.query.TermQuery;
-import life.catalogue.es.query.TermsQuery;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
 import life.catalogue.matching.nidx.NameIndexFactory;
@@ -34,15 +32,16 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+
 import static java.util.stream.Collectors.toList;
 import static life.catalogue.junit.PgSetupRule.getSqlSessionFactory;
 import static org.junit.Assert.*;
 
 /*
  * Full round-trips into Postgres via DAOs, out of Postgres via the NameUsageWrapperMapper, into Elasticsearch via the NameUsageIndexService
- * and finally out of Elasticsearch via the NameUsageSearchService. We have to massage the in-going out-going name usages slightly to allow
- * them to be compared, but not much. (For example the recursive query we execute in Postgres, and the resulting sort order, cannot be
- * emulated with Elasticsearch.)
+ * and finally out of Elasticsearch via the NameUsageSearchService.
  */
 public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
 
@@ -54,15 +53,18 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     List<Taxon> pgTaxa = createPgTaxa(7);
     createIndexService().indexDataset(EsSetupRule.DATASET_KEY);
     List<String> ids = pgTaxa.stream().map(Taxon::getId).collect(toList());
-    NameUsageSearchResponse res = query(new TermsQuery("usageId", ids));
-    List<Taxon> esTaxa = res.getResult().stream().map(nuw -> (Taxon) nuw.getUsage()).collect(toList());
-    massageTaxa(pgTaxa);
-    massageTaxa(esTaxa);
-    assertEquals(pgTaxa.size(), esTaxa.size());
+    NameUsageSearchResponse res = query(Query.of(q -> q.terms(t -> t
+      .field("usageId")
+      .terms(v -> v.value(ids.stream().map(FieldValue::of).collect(toList())))
+    )));
+    List<String> esIds = res.getResult().stream().map(nuw -> nuw.getUsage().getId()).sorted().collect(toList());
+    pgTaxa.sort(Comparator.comparing(Taxon::getId));
+    List<String> pgIds = pgTaxa.stream().map(Taxon::getId).collect(toList());
+    assertEquals(pgIds.size(), esIds.size());
     System.out.println("+++ DIFF TAXA LIST +++");
-    for (int i = 0; i < pgTaxa.size(); i++) {
+    for (int i = 0; i < pgIds.size(); i++) {
       System.out.println(" idx="+i);
-      assertEquals(pgTaxa.get(i), esTaxa.get(i));
+      assertEquals(pgIds.get(i), esIds.get(i));
     }
   }
 
@@ -109,8 +111,7 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     int USER_ID = 10;
     int DATASET_KEY = 11;
 
-    // Extract a taxon from the JSON pasted by thomas into #407. That JSON doesn't have a JSON key (that was the issue), but
-    // that suits us fine now.
+    // Extract a taxon from the JSON pasted by thomas into #407.
     InputStream is = getClass().getResourceAsStream("/elastic/Issue407_document.json");
     EsNameUsage doc = EsModule.readDocument(is);
     NameUsageWrapper nuw = NameUsageWrapperConverter.decode(doc.getPayload());
@@ -130,38 +131,36 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     svc.indexDataset(DATASET_KEY);
 
     // make sure the decision is empty
-    NameUsageSearchResponse res = query(new TermQuery("usageId", dsid.getId())); // Query ES for the usage
-    assertEquals(1, res.getResult().size()); // Yes, it's there!
-    assertNull(res.getResult().get(0).getDecisions()); // and no decision key yet
+    final String taxonId = dsid.getId();
+    NameUsageSearchResponse res = query(Query.of(q -> q.term(t -> t.field("usageId").value(taxonId))));
+    assertEquals(1, res.getResult().size());
+    assertNull(res.getResult().get(0).getDecisions());
 
     // Now create the decision
     is = getClass().getResourceAsStream("/elastic/Issue407_decision.json");
     EditorialDecision decision = ApiModule.MAPPER.readValue(is, EditorialDecision.class);
 
-    // the taxon has been assigned a new id, use it for the decision
     decision.getSubject().setId(taxon.getId());
 
     DecisionDao ddao = new DecisionDao(getSqlSessionFactory(), svc, validator);
     int key = ddao.create(decision, USER_ID).getId();
     LOG.info(">>>>>>> Decision inserted into database: {}\n", EsModule.writeDebug(decision));
 
-    res = query(new TermQuery("decisionKey", key)); // Query ES for the decision key
-    assertEquals(1, res.getResult().size()); // Yes, it's there!
-    assertEquals(taxon.getId(), res.getResult().get(0).getUsage().getId()); // And it belongs to the taxon we just inserted
+    res = query(Query.of(q -> q.term(t -> t.field("decisionKey").value(key))));
+    assertEquals(1, res.getResult().size());
+    assertEquals(taxon.getId(), res.getResult().get(0).getUsage().getId());
 
-    res = query(new TermQuery("usageId", dsid.getId())); // Query ES for the usage
-    assertEquals(1, res.getResult().size()); // Yes, it's there!
-    assertEquals(key, (int) res.getResult().get(0).getDecisions().get(0).getId()); // make sure it has the decision key
+    final String usageId = dsid.getId();
+    res = query(Query.of(q -> q.term(t -> t.field("usageId").value(usageId))));
+    assertEquals(1, res.getResult().size());
+    assertEquals(key, (int) res.getResult().get(0).getDecisions().get(0).getId());
   }
 
   @Test
   public void updateEditorialDecision() {
-    // Insert 3 taxa into postgresindexDatasetTaxaOnly
     NameUsageIndexService svc = createIndexService();
     List<Taxon> pgTaxa = createPgTaxa(3);
-    // Pump them over to Elasticsearch
     svc.indexDataset(EsSetupRule.DATASET_KEY);
-    // Make 1st taxon the "subject" of an editorial decision
     Taxon edited = pgTaxa.get(0);
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(SimpleNameLink.of(edited));
@@ -170,7 +169,6 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
-    // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc, validator);
     int key = dao.create(decision, edited.getCreatedBy()).getId();
 
@@ -181,23 +179,20 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
 
     assertEquals(pgTaxa.get(0).getId(), res.getResult().get(0).getUsage().getId());
     decision.setId(key);
-    // Change subject of the decision so now 2 taxa should be deleted first and then re-indexed.
     decision.setSubject(SimpleNameLink.of(pgTaxa.get(1)));
     dao.update(decision, edited.getCreatedBy());
 
     res = search(request);
 
-    assertEquals(1, res.getResult().size()); // Still only 1 document with this decision key
-    assertEquals(pgTaxa.get(1).getId(), res.getResult().get(0).getUsage().getId()); // But it's another document now
+    assertEquals(1, res.getResult().size());
+    assertEquals(pgTaxa.get(1).getId(), res.getResult().get(0).getUsage().getId());
   }
 
   @Test
   public void deleteEditorialDecision() throws IOException {
     NameUsageIndexService svc = createIndexService();
     List<Taxon> pgTaxa = createPgTaxa(4);
-    // Pump them over to Elasticsearch
     svc.indexDataset(EsSetupRule.DATASET_KEY);
-    // Make 1st taxon the "subject" of an editorial decision
     Taxon edited = pgTaxa.get(2);
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(SimpleNameLink.of(edited));
@@ -206,7 +201,6 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
-    // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc, validator);
     DSID<Integer> key = dao.create(decision, edited.getCreatedBy());
 
@@ -217,7 +211,8 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
 
     assertEquals(pgTaxa.get(2).getId(), res.getResult().get(0).getUsage().getId());
     dao.delete(key, 0);
-    res = query(new TermQuery("usageId", pgTaxa.get(2).getId()));
+    String usageId = pgTaxa.get(2).getId();
+    res = query(Query.of(q -> q.term(t -> t.field("usageId").value(usageId))));
     assertTrue(res.getResult().get(0).getDecisions().isEmpty());
   }
 
@@ -234,15 +229,12 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
   }
 
   private static void massageTaxa(List<Taxon> taxa) {
-    // Cannot compare created and modified fields (probably current time when null)
     taxa.forEach(t -> {
       t.setCreated(null);
       t.setModified(null);
       t.getName().setCreated(null);
       t.getName().setModified(null);
     });
-    // The order in which taxa flow from Postgres to Elasticsearch is impossible to reproduce with an es query, so just
-    // re-order by id
     taxa.sort(Comparator.comparing(Taxon::getId));
   }
 

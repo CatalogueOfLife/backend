@@ -28,10 +28,6 @@ class RequestValidator {
         throw invalidSearchRequest("When specifying a decision mode, a single catalogue key must also be specified");
       }
     }
-    // remove UNSAFE - it did its job
-    if (request.hasFilter(UNSAFE)) {
-      request.getFilters().remove(UNSAFE);
-    }
   }
 
   private static InvalidQueryException invalidSearchRequest(String msg, Object... msgArgs) {

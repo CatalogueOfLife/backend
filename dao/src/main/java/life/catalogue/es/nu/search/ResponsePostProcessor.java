@@ -3,7 +3,6 @@ package life.catalogue.es.nu.search;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.SimpleDecision;
-import life.catalogue.es.UpwardConverter;
 
 import java.util.Arrays;
 
@@ -13,11 +12,10 @@ import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
 
 /**
- * The last "converter" that the data pass through on the way upward before becoming a full-blown API object. Doesn't create a new type of
+ * The last processing step before returning a full-blown API object. Doesn't create a new type of
  * object but enhances it.
- *
  */
-class ResponsePostProcessor implements UpwardConverter<NameUsageSearchResponse, NameUsageSearchResponse> {
+class ResponsePostProcessor {
 
   private NameUsageSearchRequest request;
   private NameUsageSearchResponse response;

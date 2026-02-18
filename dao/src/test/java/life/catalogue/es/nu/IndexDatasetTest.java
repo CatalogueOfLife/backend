@@ -8,21 +8,21 @@ import life.catalogue.junit.SqlSessionFactoryRule;
 
 import java.io.IOException;
 
-import org.elasticsearch.client.RestClient;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 @Disabled @Ignore // Only for playing around with big datasets
 public class IndexDatasetTest extends EsReadWriteTestBase {
 
   @Test
   public void indexDataset() throws IOException, EsException {
-    try (RestClient client = EsReadWriteTestBase.esSetupRule.getClient()) {
-      EsConfig config = EsReadWriteTestBase.esSetupRule.getEsConfig();
-      NameUsageIndexServiceEs svc = new NameUsageIndexServiceEs(client, config, TempFile.directoryFile(), SqlSessionFactoryRule.getSqlSessionFactory());
-      svc.indexDataset(1000);
-    }
+    ElasticsearchClient client = EsReadWriteTestBase.esSetupRule.getClient();
+    EsConfig config = EsReadWriteTestBase.esSetupRule.getEsConfig();
+    NameUsageIndexServiceEs svc = new NameUsageIndexServiceEs(client, config, TempFile.directoryFile(), SqlSessionFactoryRule.getSqlSessionFactory());
+    svc.indexDataset(1000);
   }
 
 }

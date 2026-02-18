@@ -2,40 +2,19 @@ package life.catalogue.es.nu;
 
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.query.BoolQuery;
-import life.catalogue.es.query.NestedQuery;
-import life.catalogue.es.query.Query;
-import life.catalogue.es.query.RangeQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
 
 /**
- * <p>
- * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless there is just one query parameter, this will
- * result in an AND query. For example: <code>?rank=genus&nom_status=available</code> is translated into:
- * </p>
- * 
- * <pre>
- * (rank=genus AND nom_status=available)
- * </pre>
- * <p>
- * request parameter is multi-valued, this will result in a nested OR query. For example:
- * <code>?nom_status=available&rank=family&rank=genus</code> is translated into:
- * </p>
- * 
- * <pre>
- * (nom_status=available AND (rank=family OR rank=genus))
- * </pre>
- * <p>
- * The translation of any single parameter if left to the {@link FilterTranslator} except for decision-related filters as they require a lot
- * of extra logic, and the minRank/maxRank filters as they don't translate into simple term queries.
- * </p>
+ * Translates all query parameters except the "q" parameter into an Elasticsearch query.
  */
 public class FiltersTranslator {
 
@@ -59,39 +38,58 @@ public class FiltersTranslator {
     if (subqueries.size() == 1) {
       return subqueries.get(0);
     }
-    BoolQuery query = new BoolQuery();
-    subqueries.forEach(query::filter);
-    return query;
+    final List<Query> filters = subqueries;
+    return Query.of(q -> q.bool(b -> {
+      filters.forEach(b::filter);
+      return b;
+    }));
   }
 
   private List<Query> processDecisionFilters() {
     final String path = "decisions";
     if (request.hasFilter(DECISION_MODE)) {
-      // the request validator mandates a single catalogue key in this case!
       FilterTranslator ft = new FilterTranslator(request);
       if (request.getFilterValue(DECISION_MODE).equals(IS_NULL)) {
-        // The user wants nameusages which do *NOT* have a decision with the provided catalog key!
-        return List.of(new BoolQuery().mustNot(new NestedQuery(path, ft.translate(CATALOGUE_KEY))));
+        Query catQuery = ft.translate(CATALOGUE_KEY);
+        return List.of(Query.of(q -> q.bool(b -> b
+          .mustNot(mn -> mn.nested(n -> n.path(path).query(catQuery)))
+        )));
       } else if (request.getFilterValue(DECISION_MODE).equals(IS_NOT_NULL)) {
-        return List.of(new BoolQuery().must(new NestedQuery(path, ft.translate(CATALOGUE_KEY))));
+        Query catQuery = ft.translate(CATALOGUE_KEY);
+        return List.of(Query.of(q -> q.bool(b -> b
+          .must(m -> m.nested(n -> n.path(path).query(catQuery)))
+        )));
       } else {
-        return List.of(new NestedQuery(path, BoolQuery.withFilters(ft.translate(DECISION_MODE), ft.translate(CATALOGUE_KEY))));
+        Query modeQuery = ft.translate(DECISION_MODE);
+        Query catQuery = ft.translate(CATALOGUE_KEY);
+        return List.of(Query.of(q -> q.nested(n -> n.path(path).query(
+          Query.of(inner -> inner.bool(b -> b.filter(modeQuery).filter(catQuery)))
+        ))));
       }
     }
     return Collections.emptyList();
   }
 
-  // Little gotcha here: the higher the rank, the lower the ordinal!
   public static List<Query> processMinMaxRank(NameUsageRequest request) {
+    String rankField = NameUsageFieldLookup.INSTANCE.lookupSingle(RANK);
     if (request.getMinRank() != null) {
+      int minOrd = request.getMinRank().ordinal();
       if (request.getMaxRank() != null) {
-        return List.of(RangeQuery.on(RANK)
-            .lessOrEqual(request.getMinRank().ordinal())
-            .greaterOrEqual(request.getMaxRank().ordinal()));
+        int maxOrd = request.getMaxRank().ordinal();
+        return List.of(Query.of(q -> q.range(r -> r
+          .number(n -> n.field(rankField)
+            .lte((double) minOrd)
+            .gte((double) maxOrd))
+        )));
       }
-      return List.of(RangeQuery.on(RANK).lessOrEqual(request.getMinRank().ordinal()));
+      return List.of(Query.of(q -> q.range(r -> r
+        .number(n -> n.field(rankField).lte((double) minOrd))
+      )));
     } else if (request.getMaxRank() != null) {
-      return List.of(RangeQuery.on(RANK).greaterOrEqual(request.getMaxRank().ordinal()));
+      int maxOrd = request.getMaxRank().ordinal();
+      return List.of(Query.of(q -> q.range(r -> r
+        .number(n -> n.field(rankField).gte((double) maxOrd))
+      )));
     }
     return Collections.emptyList();
   }

@@ -79,9 +79,10 @@ public class NameUsageResource {
   public ResultPage<NameUsageBase> list(@PathParam("key") int datasetKey,
                                         @QueryParam("q") String q,
                                         @QueryParam("rank") Rank rank,
+                                        @QueryParam("nid") String nameID,
                                         @QueryParam("nidx") Integer namesIndexID,
                                         @Valid @BeanParam Page page) {
-    return dao.list(datasetKey, q, rank, namesIndexID, page);
+    return dao.list(datasetKey, q, rank, nameID, namesIndexID, page);
   }
 
   @GET

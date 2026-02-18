@@ -528,7 +528,6 @@ public class PgImport implements Callable<Boolean> {
             // index into ES later when we "end" so we can add issues still, but build up the instance here already
             NameUsageWrapper nuw = new NameUsageWrapper(u.usage);
             //nuw.setId(u.getId()); // for some reason we need to do this here again
-            nuw.setPublisherKey(dataset.getGbifPublisherKey());
             nuw.setClassification(new ArrayList<>(parents));
             nuw.setIssues(mergeIssues(vKeys));
             if (u.usage.isSynonym()) {
@@ -575,7 +574,6 @@ public class PgImport implements Callable<Boolean> {
         updateNameData(nn, vKeys);
         BareName bn = new BareName(nn.getName());
         NameUsageWrapper nuw = new NameUsageWrapper(bn);
-        nuw.setPublisherKey(dataset.getGbifPublisherKey());
         nuw.setIssues(mergeIssues(vKeys));
         indexer.accept(nuw);
         runtimeInterruptIfCancelled();

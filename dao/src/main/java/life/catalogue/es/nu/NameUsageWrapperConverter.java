@@ -25,7 +25,7 @@ import static life.catalogue.common.collection.CollectionUtils.notEmpty;
  * that the <i>entire</i> NameUsageWrapper instance is serialized (and possibly zipped) and placed into the payload field of the NameUsage
  * document.
  */
-public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWrapper, EsNameUsage> {
+public class NameUsageWrapperConverter {
   final private static EsKryoPool pool = new EsKryoPool(8);
   final private static int bufferSize = 1024;
 
@@ -51,7 +51,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
 
   /**
    * Base64-decodes and deserializes the provided kryo payload string back to a NameUsageWrapper instance.
-   * 
+   *
    * @param payload Base64 encoded kryo byte array for a NameUsageWrapper
    * @return
    * @throws IOException
@@ -88,7 +88,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
 
   /**
    * Extracts the classification from the provided document.
-   * 
+   *
    * @param doc
    * @return
    */
@@ -108,7 +108,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
 
   /**
    * Copies the provided classification into the provided document.
-   * 
+   *
    * @param document
    * @param classification
    */
@@ -135,8 +135,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    * @param nuw
    */
   public static void prunePayload(NameUsageWrapper nuw) {
-    // wrapper
-    nuw.setPublisherKey(null);
     nuw.setIssues(null);
     nuw.setGroup(null);
     nuw.setClassification(null);
@@ -178,13 +176,10 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
 
   /**
    * Puts the nullified fields back onto the NameUsageWrapper object.
-   * 
-   * @param nuw
-   * @param doc
+   * With SimpleName as usage, we restore wrapper-level fields and enrich the SimpleName from the ES document.
    */
   public static void enrichPayload(NameUsageWrapper nuw, EsNameUsage doc) {
     // wrapper
-    nuw.setPublisherKey(doc.getPublisherKey());
     nuw.setIssues(doc.getIssues());
     nuw.setGroup(doc.getGroup());
     nuw.setClassification(extractClassifiction(doc));
@@ -224,10 +219,9 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
 
   /**
    * Converts a NameUsageWrapper to an Elasticsearch document. Main method of this class.
-   * Warning !!!
-   * This method modifies the original NameUsageWrapper instance and nullifies some values.
-   * Be sure to make a defensive copy if you don't want that!
-   * 
+   * Uses the transient indexingUsage field for full NameUsage data extraction.
+   * The payload stores the SimpleName-based NameUsageWrapper.
+   *
    * @param nuw
    * @return
    * @throws IOException
@@ -237,7 +231,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     // wrapper
     doc.setIssues(nuw.getIssues());
     doc.setGroup(nuw.getGroup());
-    doc.setPublisherKey(nuw.getPublisherKey());
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setSectorPublisherKey(nuw.getSectorPublisherKey());
     // name
@@ -261,12 +254,10 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     doc.setSecondarySourceGroup(nuw.getSecondarySourceGroups());
     doc.setSecondarySourceKey(nuw.getSecondarySourceKeys());
     saveClassification(doc, nuw);
-    if (nuw.getUsage().getClass() == Taxon.class) {
-      Taxon t = (Taxon) nuw.getUsage();
+    if (nuw.getUsage() instanceof Taxon t) {
       doc.setExtinct(t.isExtinct());
       doc.setEnvironments(t.getEnvironments());
-    } else if (nuw.getUsage().getClass() == Synonym.class) {
-      Synonym s = (Synonym) nuw.getUsage();
+    } else if (nuw.getUsage() instanceof Synonym s) {
       doc.setSectorKey(s.getAccepted().getSectorKey());
       doc.setAcceptedName(s.getAccepted().getName().getScientificName());
     }
@@ -275,7 +266,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
 
     // WARN !!!
     // TODO: Something wrong, we get null dataset keys and maybe other null properties in ES for some reason with this !!!
-    //
     //prunePayload(nuw);
     doc.setPayload(encode(nuw));
     return doc;

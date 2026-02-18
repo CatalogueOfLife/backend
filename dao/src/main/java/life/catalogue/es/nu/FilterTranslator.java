@@ -3,18 +3,21 @@ package life.catalogue.es.nu;
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.query.*;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+
+import org.gbif.nameparser.api.Rank;
 
 import static java.util.stream.Collectors.toList;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
 
 /**
- * Translates a single request parameter into an Elasticsearch query. If the parameter is multi-valued and contains no symbolic values (like
- * _NULL), a terms query will be generated; if it has a mixture of literal and symbolic values, an OR query will generated.
+ * Translates a single request parameter into an Elasticsearch query.
  */
 public class FilterTranslator {
 
@@ -29,24 +32,48 @@ public class FilterTranslator {
     String[] fields = NameUsageFieldLookup.INSTANCE.lookup(param);
     for (String field : fields) {
       if (containsNullValue(param)) {
-        queries.add(new IsNullQuery(field));
+        // IS NULL = must not exist
+        queries.add(Query.of(q -> q.bool(b -> b.mustNot(mn -> mn.exists(e -> e.field(field))))));
       }
       if (containsNotNullValue(param)) {
-        queries.add(new IsNotNullQuery(field));
+        // IS NOT NULL = must exist
+        queries.add(Query.of(q -> q.exists(e -> e.field(field))));
       }
       List<?> paramValues = getLiteralValues(param);
       if (paramValues.size() == 1) {
-        queries.add(new TermQuery(field, paramValues.get(0)));
+        Object val = paramValues.get(0);
+        queries.add(Query.of(q -> q.term(t -> t.field(field).value(toFieldValue(val)))));
       } else if (paramValues.size() > 1) {
-        queries.add(new TermsQuery(field, paramValues));
+        List<FieldValue> fvs = paramValues.stream().map(FilterTranslator::toFieldValue).collect(toList());
+        queries.add(Query.of(q -> q.terms(t -> t.field(field).terms(tv -> tv.value(fvs)))));
       }
       if (queries.size() == 1) {
         return queries.get(0);
       }
     }
-    BoolQuery query = new BoolQuery();
-    queries.forEach(query::should); // should=OR
-    return query;
+    // Multiple conditions -> OR (should)
+    final List<Query> finalQueries = queries;
+    return Query.of(q -> q.bool(b -> {
+      finalQueries.forEach(b::should);
+      return b;
+    }));
+  }
+
+  static FieldValue toFieldValue(Object val) {
+    if (val instanceof Number n) {
+      if (val instanceof Integer || val instanceof Long || val instanceof Short || val instanceof Byte) {
+        return FieldValue.of(n.longValue());
+      }
+      return FieldValue.of(n.doubleValue());
+    } else if (val instanceof Boolean b) {
+      return FieldValue.of(b);
+    } else if (val instanceof Rank r) {
+      return FieldValue.of(r.ordinal());
+    } else if (val instanceof Enum<?> e) {
+      return FieldValue.of(e.name());
+    } else {
+      return FieldValue.of(val.toString());
+    }
   }
 
   private List<?> getLiteralValues(NameUsageSearchParameter param) throws InvalidQueryException {
@@ -57,12 +84,10 @@ public class FilterTranslator {
     return !o.equals(IS_NULL) && !o.equals(IS_NOT_NULL);
   }
 
-  // Is one of the values of the query parameter the symbol for IS NULL?
   private boolean containsNullValue(NameUsageSearchParameter param) {
     return request.getFilterValues(param).contains(IS_NULL);
   }
 
-  // Is one of the values of the query parameter the symbol for IS NOT NULL?
   private boolean containsNotNullValue(NameUsageSearchParameter param) {
     return request.getFilterValues(param).contains(IS_NOT_NULL);
   }

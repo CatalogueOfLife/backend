@@ -1,21 +1,21 @@
 package life.catalogue.es.nu;
 
-import life.catalogue.es.query.Query;
-import life.catalogue.es.query.SciNameEdgeNgramQuery;
-import life.catalogue.es.query.SciNamePrefixQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 
 import static life.catalogue.es.nu.QMatcher.MAX_NGRAM_SIZE;
 import static life.catalogue.es.nu.QMatcher.MIN_NGRAM_SIZE;
-import static life.catalogue.es.query.AbstractMatchQuery.Operator.AND;
 
 interface PrefixMatcher extends MatcherMixIn {
 
   @Override
-  default Query matchAsEpithet(String field, String term) {
+  default Query matchAsEpithet(String field, String term, Float boost) {
     if (term.length() > MAX_NGRAM_SIZE || term.length() < MIN_NGRAM_SIZE) {
-      return new SciNamePrefixQuery(field, term).withBoost(0.1 * term.length());
+      float b = boost != null ? boost : 0.1f * term.length();
+      return Query.of(q -> q.match(m -> m.field(field + ".sac").query(term).boost(b)));
     }
-    return new SciNameEdgeNgramQuery(field, term).withOperator(AND).withBoost(3.5);
+    float b = boost != null ? boost : 3.5f;
+    return Query.of(q -> q.match(m -> m.field(field + ".sac").query(term).operator(Operator.And).boost(b)));
   }
 
 }

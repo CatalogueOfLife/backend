@@ -3,18 +3,16 @@ package life.catalogue.es.nu.suggest;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.es.DownwardConverter;
 import life.catalogue.es.nu.FilterTranslator;
 import life.catalogue.es.nu.FiltersTranslator;
 import life.catalogue.es.nu.NameUsageFieldLookup;
 import life.catalogue.es.nu.SortByTranslator;
-import life.catalogue.es.query.BoolQuery;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.IsNotNullQuery;
-import life.catalogue.es.query.Query;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 
 import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
@@ -24,7 +22,7 @@ import static life.catalogue.api.vocab.TaxonomicStatus.PROVISIONALLY_ACCEPTED;
 /**
  * Translates the {@code NameSuggestRequest} into a native Elasticsearch search request.
  */
-class RequestTranslator implements DownwardConverter<NameUsageSuggestRequest, EsSearchRequest> {
+class RequestTranslator {
   private static final Logger LOG = LoggerFactory.getLogger(RequestTranslator.class);
 
   private final NameUsageSuggestRequest request;
@@ -33,13 +31,16 @@ class RequestTranslator implements DownwardConverter<NameUsageSuggestRequest, Es
     this.request = request;
   }
 
-  EsSearchRequest translate() {
+  SearchRequest translate(String index) {
     Query query = generateQuery(request);
-    EsSearchRequest req = new EsSearchRequest()
-      .where(query)
-      .size(request.getLimit());
-    req.setSort(new SortByTranslator(request).translate());
-    return req;
+    var sortOptions = new SortByTranslator(request).translate();
+
+    return SearchRequest.of(s -> s
+      .index(index)
+      .query(query)
+      .sort(sortOptions)
+      .size(request.getLimit())
+    );
   }
 
   static Query generateQuery(NameUsageSuggestRequest request) {
@@ -60,18 +61,31 @@ class RequestTranslator implements DownwardConverter<NameUsageSuggestRequest, Es
       }
     }
 
-    BoolQuery q = new BoolQuery();
     // always avoid bare names
     final String statusField = NameUsageFieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.STATUS);
-    q.filter(new IsNotNullQuery(statusField));
-    q.must(new QTranslator(request).translate());
+    Query existsFilter = Query.of(q -> q.exists(e -> e.field(statusField)));
+    Query snQuery = new QTranslator(request).translate();
 
     if (request.hasFilter(USAGE_ID)) {
-      q.filter(new FilterTranslator(request).translate(DATASET_KEY));
-      q.filter(new FilterTranslator(request).translate(USAGE_ID));
+      Query dkFilter = new FilterTranslator(request).translate(DATASET_KEY);
+      Query idFilter = new FilterTranslator(request).translate(USAGE_ID);
+      return Query.of(q -> q.bool(b -> b
+        .filter(existsFilter)
+        .filter(dkFilter)
+        .filter(idFilter)
+        .must(snQuery)
+      ));
     } else if (FiltersTranslator.mustGenerateFilters(request)) {
-      q.filter(new FiltersTranslator(request).translate());
+      Query filtersQuery = new FiltersTranslator(request).translate();
+      return Query.of(q -> q.bool(b -> b
+        .filter(existsFilter)
+        .filter(filtersQuery)
+        .must(snQuery)
+      ));
     }
-    return q;
+    return Query.of(q -> q.bool(b -> b
+      .filter(existsFilter)
+      .must(snQuery)
+    ));
   }
 }

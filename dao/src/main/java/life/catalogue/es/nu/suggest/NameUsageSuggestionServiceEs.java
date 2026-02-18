@@ -3,19 +3,20 @@ package life.catalogue.es.nu.suggest;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.es.*;
-import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.nu.NameUsageQueryService;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.response.EsResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -26,7 +27,7 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSuggestionServiceEs.class);
 
-  public NameUsageSuggestionServiceEs(String indexName, RestClient client) {
+  public NameUsageSuggestionServiceEs(String indexName, ElasticsearchClient client) {
     super(indexName, client);
   }
 
@@ -42,18 +43,18 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
   @VisibleForTesting
   public List<NameUsageSuggestion> suggest(String index, NameUsageSuggestRequest request) throws IOException {
     validateRequest(request);
-    String[] terms = EsUtil.getSearchTerms(client, index, Analyzer.SCINAME_AUTO_COMPLETE, request.getQ());
+    String[] terms = EsUtil.getSearchTerms(client, index, "sciname_autocomplete_querytime", request.getQ());
     request.setSciNameSearchTerms(terms);
     RequestTranslator translator = new RequestTranslator(request);
-    EsSearchRequest query = translator.translate();
-    EsResponse<EsNameUsage> esResponse = executeSearchRequest(index, query);
+    SearchRequest searchRequest = translator.translate(index);
+    SearchResponse<EsNameUsage> esResponse = executeSearchRequest(index, searchRequest);
     final List<NameUsageSuggestion> suggestions = new ArrayList<>();
-    SearchHitConverter suggestionFactory = new SearchHitConverter();
-    esResponse.getHits().getHits().forEach(hit -> {
-      if (hit.matchedQuery(QTranslator.SN_QUERY_NAME)) {
-        suggestions.add(suggestionFactory.createSuggestion(hit));
+    SearchHitConverter converter = new SearchHitConverter();
+    for (Hit<EsNameUsage> hit : esResponse.hits().hits()) {
+      if (hit.source() != null) {
+        suggestions.add(converter.createSuggestion(hit));
       }
-    });
+    }
     return suggestions;
   }
 

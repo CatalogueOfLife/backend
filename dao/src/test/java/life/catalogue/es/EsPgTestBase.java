@@ -3,21 +3,27 @@ package life.catalogue.es;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
+import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
+import life.catalogue.es.nu.NameUsageWrapperConverter;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.Query;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -42,7 +48,7 @@ public abstract class EsPgTestBase {
       LOG.debug("Dumping test index \"{}\"", esSetupRule.getEsConfig().nameUsage);
       EsUtil.deleteIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
       LOG.debug("Creating test index \"{}\"", esSetupRule.getEsConfig().nameUsage);
-      EsUtil.createIndex(esSetupRule.getClient(), EsNameUsage.class, esSetupRule.getEsConfig().nameUsage);
+      EsUtil.createIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -70,12 +76,25 @@ public abstract class EsPgTestBase {
   }
 
   /**
-   * Executes the provided query against the text index. The number of returned documents is capped on {Page#MAX_LIMIT Page.MAX_LIMIT}, so
-   * make sure the provided query will yield less documents.
+   * Executes the provided raw ES query against the index and converts results back to NameUsageSearchResponse.
    */
   protected NameUsageSearchResponse query(Query query) throws IOException {
-    EsSearchRequest req = EsSearchRequest.emptyRequest().where(query).size(Page.MAX_LIMIT);
-    return createSearchService().search(esSetupRule.getEsConfig().nameUsage.name, req, new Page(Page.MAX_LIMIT));
+    String indexName = esSetupRule.getEsConfig().nameUsage.name;
+    EsUtil.refreshIndex(esSetupRule.getClient(), indexName);
+    SearchRequest searchRequest = SearchRequest.of(s -> s
+      .index(indexName)
+      .query(query)
+      .size(Page.MAX_LIMIT)
+      .trackTotalHits(th -> th.enabled(true))
+    );
+    List<EsNameUsage> docs = createSearchService().getDocuments(searchRequest);
+    List<NameUsageWrapper> wrappers = new ArrayList<>();
+    for (EsNameUsage doc : docs) {
+      NameUsageWrapper nuw = NameUsageWrapperConverter.decode(doc.getPayload());
+      NameUsageWrapperConverter.enrichPayload(nuw, doc);
+      wrappers.add(nuw);
+    }
+    return new NameUsageSearchResponse(new Page(Page.MAX_LIMIT), wrappers.size(), wrappers, Collections.emptyMap());
   }
 
 }

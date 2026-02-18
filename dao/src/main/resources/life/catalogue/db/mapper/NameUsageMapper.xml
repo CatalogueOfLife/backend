@@ -517,6 +517,15 @@
     </if>
   </select>
 
+  <select id="countByNameID" resultType="integer">
+    SELECT count(*)
+    FROM name_usage u
+    WHERE u.name_id=#{nid}
+    <if test="datasetKey != null">
+      AND u.dataset_key = #{datasetKey}
+    </if>
+  </select>
+
   <select id="countByUsageID" resultType="integer">
     SELECT count(*)
     FROM name_usage

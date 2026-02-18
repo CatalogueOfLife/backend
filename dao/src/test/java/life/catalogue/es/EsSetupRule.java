@@ -2,13 +2,12 @@ package life.catalogue.es;
 
 import life.catalogue.api.TestEntityGenerator;
 
-import java.io.IOException;
-
-import org.elasticsearch.client.RestClient;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 /**
  * Spins up an elasticsearch test container.
@@ -16,7 +15,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
  */
 public class EsSetupRule extends ExternalResource {
 
-  public static String VERSION = "8.15.4";
+  public static String VERSION = "9.3.0";
 
   /**
    * Dataset key used by default for tests.
@@ -29,7 +28,7 @@ public class EsSetupRule extends ExternalResource {
   private static String PASSWORD = "ase213HUithbnjk";
 
   private EsConfig cfg;
-  private RestClient client;
+  private ElasticsearchClient client;
 
   @Override
   protected void before() throws Throwable {
@@ -57,16 +56,14 @@ public class EsSetupRule extends ExternalResource {
     cfg.password = PASSWORD;
     cfg.nameUsage = new IndexConfig();
     cfg.nameUsage.name = "test_name_usage";
-    System.out.println("Postgres container using port " + cfg.ports);
+    System.out.println("ES container using port " + cfg.ports);
     return cfg;
   }
 
   /**
-   * Returns an Elasticsearch REST client. Do NOT call using try-with-resources block. The client will be torn down by EsSetupRule.
-   * 
-   * @return
+   * Returns the Elasticsearch client. Do NOT call close on this client. It will be torn down by EsSetupRule.
    */
-  public RestClient getClient() {
+  public ElasticsearchClient getClient() {
     return client;
   }
 
@@ -79,8 +76,8 @@ public class EsSetupRule extends ExternalResource {
     super.after();
     if (client != null) {
       try {
-        client.close();
-      } catch (IOException e) {
+        EsUtil.close(client);
+      } catch (java.io.IOException e) {
         throw new RuntimeException(e);
       }
       client = null;

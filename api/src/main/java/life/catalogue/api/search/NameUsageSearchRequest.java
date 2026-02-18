@@ -20,7 +20,7 @@ import jakarta.ws.rs.QueryParam;
 public class NameUsageSearchRequest extends NameUsageRequest {
 
   public enum SearchContent {
-    SCIENTIFIC_NAME, AUTHORSHIP
+    SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
   }
 
   static final Set<SearchContent> DEFAULT_CONTENT = Sets.immutableEnumSet(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP);

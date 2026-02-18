@@ -44,7 +44,7 @@ public class NameUsageProcessor {
     this.factory = factory;
     this.tmpDir = tmpDir;
   }
-  
+
   /**
    * to avoid large in memory or even external pg temp files dissect the problem into the following steps:
    *
@@ -111,8 +111,6 @@ public class NameUsageProcessor {
       // reusable dsids for this dataset
       final DSID<String> uKey = DSID.root(datasetKey);
       final DSID<Integer> sKey = DSID.root(datasetKey);
-      // we exclude some rather static info from our already massive joins and set them manually in code:
-      final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
       // we prefetch sectorKey to the sectors subject dataset key depending whether we process a sector or entire dataset
       final Map<Integer, SectorProps> sectors = new HashMap<>();
       if (sectorKey != null) {
@@ -133,15 +131,11 @@ public class NameUsageProcessor {
         // processing first returns all taxa before any synonym is returned - cache these and process them at the end
         PgUtils.consume(() -> nuwm.processWithoutClassification(datasetKey, sectorKey), nuw -> {
           // set preloaded infos excluded in sql results as they are very repetitive
-          nuw.setPublisherKey(publisher);
           if (nuw.getUsage().getSectorKey() != null) {
             addUsageSectorData(nuw, sectors.get(nuw.getUsage().getSectorKey()));
           }
-          if (nuw.getUsage().getName() != null && nuw.getUsage().getName().getSectorKey() != null) {
-            addNameSectorData(nuw, sectors.get(nuw.getUsage().getName().getSectorKey()));
-          }
 
-          if (nuw.getUsage().isTaxon()) {
+          if (nuw.getUsage().getStatus().isTaxon()) {
             taxa.put(nuw);
             // dont do anything else here now - we load all taxa first and process them later to build up the classification
             if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
@@ -150,12 +144,12 @@ public class NameUsageProcessor {
 
           } else {
             // synonym or bare name
-            if (nuw.getUsage().isSynonym()) {
+            if (nuw.getUsage().getStatus().isSynonym()) {
+              var syn = nuw.getUsage();
               // when we see a synonym all taxa must already been loaded
-              Synonym syn = (Synonym) nuw.getUsage();
               if (syn.getParentId()==null) {
                 // major data inconsistency - cant work with this one!
-                LOG.warn("Synonym {} without parentID found {}", syn.getId(), syn.getLabel());
+                LOG.warn("Synonym {} without parentID found {}", nuw.getUsage().getId(), nuw.getUsage().getLabel());
                 return;
               }
               // we list all accepted first, so the key must exist UNLESS we have a merged synonym pointing to an accepted name outside of its sector!
@@ -176,7 +170,6 @@ public class NameUsageProcessor {
               } else {
                 acc = taxa.get(syn.getParentId()).getUsage();
               }
-              syn.setAccepted((Taxon)acc);
               addClassification(nuw, taxa, usageCache, loader);
             }
             nuw.setGroup(groupAnalyzer.analyze(nuw.getUsage().toSimpleNameLink(), nuw.getClassification()));

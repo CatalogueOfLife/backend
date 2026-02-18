@@ -3,9 +3,12 @@ package life.catalogue.es.nu.search;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.nu.NameUsageFieldLookup;
-import life.catalogue.es.query.*;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 
 import static java.util.Collections.singletonMap;
 import static life.catalogue.es.nu.search.RequestTranslator.generateQuery;
@@ -24,7 +27,7 @@ public class FacetsTranslator {
   public static final String GLOBAL_AGG_LABEL = "_global_";
   public static final String FILTER_AGG_LABEL = "_filter_";
   public static final String FACET_AGG_LABEL = "_values_";
-  
+
   private final NameUsageSearchRequest request;
 
   FacetsTranslator(NameUsageSearchRequest request) {
@@ -35,19 +38,36 @@ public class FacetsTranslator {
     NameUsageSearchRequest copy = request.copy();
     copy.getFilters().keySet().retainAll(request.getFacets());
     copy.setQ(null);
-    GlobalAggregation globalAgg = new GlobalAggregation();
-    FilterAggregation filterAgg = new FilterAggregation(getContextFilter());
-    globalAgg.nest(FILTER_AGG_LABEL, filterAgg);
+
+    // Build per-facet aggregations
+    Map<String, Aggregation> facetAggs = new LinkedHashMap<>();
     for (NameUsageSearchParameter facet : copy.getFacets()) {
       String field = NameUsageFieldLookup.INSTANCE.lookupSingle(facet);
-      // Temporarily remove the filter corresponding to the facet (if any), otherwise the values retrieved for the facet would collapse to
-      // those specified by the filter.
+      // Temporarily remove the filter corresponding to the facet (if any), otherwise the values retrieved
+      // for the facet would collapse to those specified by the filter.
       NameUsageSearchRequest temp = copy.copy();
       temp.removeFilter(facet);
-      Aggregation agg = new FacetAggregation(field, generateQuery(temp), request.getFacetLimit());
-      filterAgg.nest(facet.name(), agg);
+      Query facetQuery = generateQuery(temp);
+      var limit = request.getFacetLimit();
+      facetAggs.put(facet.name(), Aggregation.of(a -> a
+        .filter(facetQuery)
+        .aggregations(FACET_AGG_LABEL, Aggregation.of(a2 -> a2
+          .terms(t -> t.field(field).size(limit))
+        ))
+      ));
     }
-    return singletonMap(GLOBAL_AGG_LABEL, globalAgg);
+
+    // Context filter
+    Query contextFilter = getContextFilter();
+
+    // Global → Filter → Facets
+    return singletonMap(GLOBAL_AGG_LABEL, Aggregation.of(a -> a
+      .global(g -> g)
+      .aggregations(FILTER_AGG_LABEL, Aggregation.of(a2 -> a2
+        .filter(contextFilter)
+        .aggregations(facetAggs)
+      ))
+    ));
   }
 
   private Query getContextFilter() {

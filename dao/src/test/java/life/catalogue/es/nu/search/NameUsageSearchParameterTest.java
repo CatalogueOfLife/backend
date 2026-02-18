@@ -124,125 +124,6 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
   }
 
   @Test
-  public void testPublisherKey1() {
-    UUID uuid1 = UUID.randomUUID();
-    UUID uuid2 = UUID.randomUUID();
-    NameUsageWrapper nuw1 = minimalTaxon();
-
-    nuw1.setPublisherKey(uuid1);
-    NameUsageWrapper nuw2 = minimalTaxon();
-
-    nuw2.setPublisherKey(uuid1);
-    NameUsageWrapper nuw3 = minimalTaxon();
-
-    nuw3.setPublisherKey(uuid2);
-    NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.setPublisherKey(null);
-
-    index(nuw1, nuw2, nuw3, nuw4);
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(PUBLISHER_KEY, uuid1);
-
-    /*
-     * Yikes - again, remember to resurrect the expected result, because NameUsageWrappers will get pruned on insert !!!
-     */
-    nuw1.setPublisherKey(uuid1);
-    nuw2.setPublisherKey(uuid1);
-    nuw3.setPublisherKey(uuid2);
-    nuw4.setPublisherKey(null);
-
-    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2);
-
-    assertEquals(expected, search(query).getResult());
-
-    countdown(PUBLISHER_KEY);
-
-  }
-
-  @Test
-  public void testPublisherKey2() {
-    UUID uuid1 = UUID.randomUUID();
-    UUID uuid2 = UUID.randomUUID();
-    NameUsageWrapper nuw1 = minimalTaxon();
-
-    nuw1.setPublisherKey(uuid1);
-    NameUsageWrapper nuw2 = minimalTaxon();
-
-    nuw2.setPublisherKey(uuid1);
-    NameUsageWrapper nuw3 = minimalTaxon();
-
-    nuw3.setPublisherKey(uuid2);
-    NameUsageWrapper nuw4 = minimalTaxon();
-
-    nuw4.setPublisherKey(null);
-
-    index(nuw1, nuw2, nuw3, nuw4);
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(PUBLISHER_KEY, IS_NULL);
-
-    List<NameUsageWrapper> expected = Arrays.asList(nuw4);
-    assertEquals(expected, search(query).getResult());
-
-    countdown(PUBLISHER_KEY);
-  }
-
-  @Test
-  public void testPublisherKey3() {
-    UUID uuid1 = UUID.randomUUID();
-    UUID uuid2 = UUID.randomUUID();
-    NameUsageWrapper nuw1 = minimalTaxon();
-
-    nuw1.setPublisherKey(uuid1);
-    NameUsageWrapper nuw2 = minimalTaxon();
-
-    nuw2.setPublisherKey(uuid1);
-    NameUsageWrapper nuw3 = minimalTaxon();
-
-    nuw3.setPublisherKey(uuid2);
-    NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.setPublisherKey(null);
-
-    index(nuw1, nuw2, nuw3, nuw4);
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(PUBLISHER_KEY, IS_NULL);
-
-    List<NameUsageWrapper> expected = Arrays.asList(nuw4);
-    assertEquals(expected, search(query).getResult());
-
-    countdown(PUBLISHER_KEY);
-  }
-
-  @Test
-  public void testPublisherKey4() {
-    UUID uuid1 = UUID.randomUUID();
-    UUID uuid2 = UUID.randomUUID();
-    NameUsageWrapper nuw1 = minimalTaxon();
-
-    nuw1.setPublisherKey(uuid1);
-    NameUsageWrapper nuw2 = minimalTaxon();
-
-    nuw2.setPublisherKey(uuid1);
-    NameUsageWrapper nuw3 = minimalTaxon();
-
-    nuw3.setPublisherKey(uuid2);
-    NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.setPublisherKey(null);
-
-    index(nuw1, nuw2, nuw3, nuw4);
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(PUBLISHER_KEY, IS_NOT_NULL);
-
-    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
-    assertEquals(expected, search(query).getResult());
-
-    countdown(PUBLISHER_KEY);
-  }
-
-  @Test
   public void testSectorPublisherKey() {
     UUID uuid1 = UUID.randomUUID();
     UUID uuid2 = UUID.randomUUID();
@@ -654,16 +535,16 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalTaxon();
-    ((Taxon) nuw1.getUsage()).setSectorKey(key1);
+    nuw1.getUsage().setSectorKey(key1);
 
     NameUsageWrapper nuw2 = minimalTaxon();
-    ((Taxon) nuw2.getUsage()).setSectorKey(key1);
+    nuw2.getUsage().setSectorKey(key1);
 
     NameUsageWrapper nuw3 = minimalTaxon();
-    ((Taxon) nuw3.getUsage()).setSectorKey(key2);
+    nuw3.getUsage().setSectorKey(key2);
 
     NameUsageWrapper nuw4 = minimalTaxon();
-    ((Taxon) nuw4.getUsage()).setSectorKey(null);
+    nuw4.getUsage().setSectorKey(null);
 
     index(nuw1, nuw2, nuw3, nuw4);
 
@@ -694,13 +575,11 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     Name n = new Name();
     n.setBasionymAuthorship(a1);
     n.setCombinationAuthorship(a2);
-    NameUsageWrapper nuw1 = minimalTaxon();
-    nuw1.setUsage(new BareName(n));
+    NameUsageWrapper nuw1 = new NameUsageWrapper(new BareName(n));
 
     n = new Name();
     n.setBasionymAuthorship(a3);
-    NameUsageWrapper nuw2 = minimalTaxon();
-    nuw2.setUsage(new BareName(n));
+    NameUsageWrapper nuw2 = new NameUsageWrapper(new BareName(n));
 
     // Let's also check that the conversion from NameUsageWrapperConverter to document is as expected
     EsNameUsage doc = NameUsageWrapperConverter.toDocument(nuw1);

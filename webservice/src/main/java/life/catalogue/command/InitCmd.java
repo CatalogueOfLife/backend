@@ -8,7 +8,6 @@ import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgUtils;
 import life.catalogue.es.EsClientFactory;
-import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsUtil;
 
 import java.io.File;
@@ -19,9 +18,10 @@ import java.sql.Connection;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 import io.dropwizard.core.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -61,7 +61,7 @@ public class InitCmd extends AbstractPromptCmd {
     try (Connection con = cfg.db.connect(cfg.adminDb)) {
       PgUtils.createDatabase(con, cfg.db.database, cfg.db.user);
     }
-    
+
     try (Connection con = cfg.db.connect()) {
       ScriptRunner runner = PgConfig.scriptRunner(con);
       // run sql schema
@@ -86,7 +86,7 @@ public class InitCmd extends AbstractPromptCmd {
       LOG.info("Create {} partitions", partitions);
       Partitioner.createPartitions(factory, partitions);
     }
-    
+
     // cleanup names index
     if (cfg.namesIndex.file != null && cfg.namesIndex.file.exists()) {
       LOG.info("Clear names index at {}", cfg.namesIndex.file.getAbsolutePath());
@@ -95,21 +95,21 @@ public class InitCmd extends AbstractPromptCmd {
         throw new IllegalStateException("Unable to delete names index at " + cfg.namesIndex.file.getAbsolutePath());
       }
     }
-    
+
     // clear images, scratch dir & archive repo
     LOG.info("Clear image cache {}", cfg.img.repo);
     PathUtils.cleanDirectory(cfg.img.repo);
-  
+
     LOG.info("Clear scratch dir {}", cfg.normalizer.scratchDir);
     if (cfg.normalizer.scratchDir.exists()) {
       FileUtils.cleanDirectory(cfg.normalizer.scratchDir);
     }
-  
+
     LOG.info("Clear archive repo {}", cfg.normalizer.archiveDir);
     if (cfg.normalizer.archiveDir.exists()) {
       FileUtils.cleanDirectory(cfg.normalizer.archiveDir);
     }
-  
+
     LOG.info("Clear metrics repo {}", cfg.metricsRepo);
     if (cfg.metricsRepo.exists()) {
       FileUtils.cleanDirectory(cfg.metricsRepo);
@@ -121,7 +121,8 @@ public class InitCmd extends AbstractPromptCmd {
       final String indexAlias = cfg.es.nameUsage.name;
       final String indexToday = IndexCmd.indexNameToday(cfg.es);
       LOG.info("Create new elasticsearch index {} with alias {}", indexToday, indexAlias);
-      try (RestClient client = new EsClientFactory(cfg.es).createClient()) {
+      ElasticsearchClient client = new EsClientFactory(cfg.es).createClient();
+      try {
         if (EsUtil.indexExists(client, index.name)) {
           EsUtil.deleteIndex(client, index); // alias
         }
@@ -129,10 +130,12 @@ public class InitCmd extends AbstractPromptCmd {
         if (EsUtil.indexExists(client, index.name)) {
           EsUtil.deleteIndex(client, index); // today - just in case we use the command several times a day
         }
-        EsUtil.createIndex(client, EsNameUsage.class, index);
+        EsUtil.createIndex(client, index);
         LOG.info("Bind alias {} to new search index {}", indexAlias, index.name);
         EsUtil.createAlias(client, index.name, indexAlias);
         index.name = indexAlias;
+      } finally {
+        EsUtil.close(client);
       }
     }
   }
@@ -145,7 +148,7 @@ public class InitCmd extends AbstractPromptCmd {
     } catch (RuntimeException e) {
       LOG.error("Failed to execute {}", name);
       throw e;
-      
+
     } catch (Exception e) {
       LOG.error("Failed to execute {}", name);
       throw new RuntimeException("Fail to execute sql file: " + name, e);

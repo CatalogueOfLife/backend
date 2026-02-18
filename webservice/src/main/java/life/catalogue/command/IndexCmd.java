@@ -4,6 +4,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.EsConfig;
+import life.catalogue.es.EsUtil;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 
@@ -16,9 +17,10 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 import com.google.common.base.Preconditions;
 
@@ -108,7 +110,8 @@ public class IndexCmd extends AbstractMybatisCmd {
 
   @Override
   public void execute() throws Exception {
-    try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
+    ElasticsearchClient esClient = new EsClientFactory(cfg.es).createClient();
+    try {
       NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("cli-es-tmp"), factory);
       if (ns.getBoolean(ARG_CREATE)) {
         svc.createEmptyIndex();
@@ -150,6 +153,8 @@ public class IndexCmd extends AbstractMybatisCmd {
       } else {
         System.out.println("No indexing argument given. See help for options");
       }
+    } finally {
+      EsUtil.close(esClient);
     }
   }
 }

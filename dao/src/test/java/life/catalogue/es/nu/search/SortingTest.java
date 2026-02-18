@@ -5,7 +5,6 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.query.EsSearchRequest;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -16,6 +15,8 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 
 import static org.junit.Assert.assertEquals;
 
@@ -45,7 +46,7 @@ public class SortingTest extends EsReadTestBase {
 
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(SortBy.NAME);
-    EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest();
+    SearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest(indexName());
     List<EsNameUsage> result = queryRaw(esQuery);
     assertEquals(expected, result);
   }
@@ -70,7 +71,7 @@ public class SortingTest extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(SortBy.NAME);
     query.setReverse(true);
-    EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest();
+    SearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest(indexName());
     List<EsNameUsage> result = queryRaw(esQuery);
     assertEquals(expected, result);
   }
@@ -94,7 +95,7 @@ public class SortingTest extends EsReadTestBase {
 
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(null);
-    EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest();
+    SearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest(indexName());
     List<EsNameUsage> result = queryRaw(esQuery);
     assertEquals(docs, result);
   }
@@ -160,14 +161,14 @@ public class SortingTest extends EsReadTestBase {
 
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(SortBy.TAXONOMIC);
-    EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest();
+    SearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest(indexName());
 
     List<EsNameUsage> result = queryRaw(esQuery);
     assertEquals(expected, result);
 
     // Let's just do this one more time.
     destroyAndCreateIndex();
-    
+
     docs = new ArrayList<EsNameUsage>(expected);
     Collections.shuffle(docs);
     indexRaw(docs);
@@ -240,14 +241,14 @@ public class SortingTest extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(SortBy.TAXONOMIC);
     query.setReverse(true);
-    EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest();
+    SearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest(indexName());
 
     List<EsNameUsage> result = queryRaw(esQuery);
     assertEquals(expected, result);
 
     // Let's just do this one more time.
     destroyAndCreateIndex();
-    
+
     docs = new ArrayList<EsNameUsage>(expected);
     Collections.shuffle(docs);
     indexRaw(docs);

@@ -1,10 +1,11 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.search.NameUsageRequest;
-import life.catalogue.es.query.CollapsibleList;
-import life.catalogue.es.query.SortField;
 
 import java.util.List;
+
+import co.elastic.clients.elasticsearch._types.SortOptions;
+import co.elastic.clients.elasticsearch._types.SortOrder;
 
 import static life.catalogue.api.search.NameUsageSearchRequest.SortBy.TAXONOMIC;
 
@@ -16,23 +17,29 @@ public class SortByTranslator {
     this.request = request;
   }
 
-  public List<SortField> translate() {
+  public List<SortOptions> translate() {
     if (request.getSortBy() == null) {
       request.setSortBy(TAXONOMIC);
     }
 
+    SortOrder order = request.isReverse() ? SortOrder.Desc : SortOrder.Asc;
+    SortOrder reverseOrder = request.isReverse() ? SortOrder.Asc : SortOrder.Desc;
+
     switch (request.getSortBy()) {
       case INDEX_NAME_ID:
-        return CollapsibleList.of(new SortField("nameIndexId", !request.isReverse()));
+        return List.of(SortOptions.of(s -> s.field(f -> f.field("nameIndexId").order(order))));
       case NAME:
-        return CollapsibleList.of(new SortField("scientificName", !request.isReverse()));
+        return List.of(SortOptions.of(s -> s.field(f -> f.field("scientificName").order(order))));
       case NATIVE:
-        return CollapsibleList.of(SortField.DOC);
+        return List.of(SortOptions.of(s -> s.doc(d -> d)));
       case RELEVANCE:
-        return CollapsibleList.of(SortField.SCORE);
+        return List.of(SortOptions.of(s -> s.score(sc -> sc.order(SortOrder.Desc))));
       case TAXONOMIC:
       default:
-        return CollapsibleList.of(new SortField("rank", !request.isReverse()), new SortField("scientificName"));
+        return List.of(
+          SortOptions.of(s -> s.field(f -> f.field("rank").order(order))),
+          SortOptions.of(s -> s.field(f -> f.field("scientificName").order(SortOrder.Asc)))
+        );
     }
   }
 

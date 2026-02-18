@@ -6,11 +6,12 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Publishers;
-import life.catalogue.es.query.Query;
 
 import java.util.Set;
 
 import org.junit.Test;
+
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -24,7 +25,6 @@ public class RequestTranslatorTest {
     req.addFilter(NameUsageSearchParameter.USAGE_ID, "abcdef");
     assertNotNull(RequestTranslator.generateQuery(req));
 
-    req.addFilter(NameUsageSearchParameter.PUBLISHER_KEY, Publishers.PLAZI);
     assertNotNull(RequestTranslator.generateQuery(req));
 
     req = new NameUsageSearchRequest();

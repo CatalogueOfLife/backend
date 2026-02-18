@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 
-import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -27,6 +26,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
@@ -38,7 +39,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceTest.class);
 
-  private static RestClient client;
+  private static ElasticsearchClient client;
   private static NameUsageSearchServiceEs svc;
 
   @BeforeClass
@@ -316,7 +317,6 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     ResultPage<NameUsageWrapper> result = svc.search(indexName(), nsr, new Page());
     assertEquals(1, result.getResult().size());
     assertEquals(ids.get(0), result.getResult().get(0).getUsage().getId());
-    assertEquals(datasetKey, (int) result.getResult().get(0).getUsage().getDatasetKey());
 
     nsr.addFilter(NameUsageSearchParameter.USAGE_ID, ids.get(2));
     nsr.addFilter(NameUsageSearchParameter.USAGE_ID, ids.get(4));
@@ -731,7 +731,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageWrapper mis2 = fill(minimalSynonym(), "mis2", acc);
     mis2.getUsage().setNamePhrase(null);
     mis2.getUsage().setAccordingToId("r1");
-    ((Synonym)mis2.getUsage()).setAccordingTo("Miller 1901");
+    mis2.getUsage().setAccordingTo("Miller 1901");
     mis2.getUsage().setStatus(TaxonomicStatus.MISAPPLIED);
 
     index(nuw1, syn, mis, mis2);

@@ -210,6 +210,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Warning, this does not count bare names, only true usages!
    */
   Integer countByNamesIndexID(@Param("nidx") int nidx, @Nullable @Param("datasetKey") Integer datasetKey);
+  Integer countByNameID(@Param("nid") String nid, @Nullable @Param("datasetKey") Integer datasetKey);
   Integer countByUsageID(@Param("id") String id);
 
   List<NameUsageBase> listByName(@Param("datasetKey") int datasetKey,

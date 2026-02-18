@@ -2,7 +2,6 @@ package life.catalogue.es.nu;
 
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.query.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +12,11 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -64,15 +68,20 @@ public class ClassificationUpdater implements Consumer<List<SimpleNameClassifica
    * they can be matched to the Postgres records).
    */
   private List<EsNameUsage> loadChunk(List<String> terms) {
-    EsSearchRequest query = EsSearchRequest.emptyRequest()
-        .select("usageId")
-        .where(BoolQuery.withFilters(
-            new TermQuery("datasetKey", datasetKey),
-            new TermsQuery("usageId", terms)))
-        .sortBy(SortField.DOC)
-        .size(terms.size());
+    List<FieldValue> termValues = terms.stream().map(FieldValue::of).toList();
+    Query query = Query.of(q -> q.bool(b -> b
+      .filter(f -> f.term(t -> t.field("datasetKey").value(datasetKey)))
+      .filter(f -> f.terms(ts -> ts.field("usageId").terms(tv -> tv.value(termValues))))
+    ));
+    SearchRequest searchRequest = SearchRequest.of(s -> s
+      .index(indexer.getIndexName())
+      .query(query)
+      .source(src -> src.filter(f -> f.includes("usageId")))
+      .sort(so -> so.doc(d -> d.order(SortOrder.Asc)))
+      .size(terms.size())
+    );
     NameUsageQueryService svc = new NameUsageQueryService(indexer.getIndexName(), indexer.getEsClient());
-    return svc.getDocumentsWithDocId(query);
+    return svc.getDocumentsWithDocId(searchRequest);
   }
 
 }

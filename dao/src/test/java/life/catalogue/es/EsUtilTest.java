@@ -3,15 +3,15 @@ package life.catalogue.es;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
-import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 
 import java.io.IOException;
 
-import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 
 public class EsUtilTest extends EsReadTestBase {
 
-  private static RestClient client;
+  private static ElasticsearchClient client;
 
   @BeforeClass
   public static void init() {
@@ -116,13 +116,13 @@ public class EsUtilTest extends EsReadTestBase {
 
   @Test
   public void getSearchTerms() throws IOException {
-    String[] terms = EsUtil.getSearchTerms(client, indexName(), Analyzer.AUTO_COMPLETE, "Rosy bee-eater");
+    String[] terms = EsUtil.getSearchTerms(client, indexName(), "autocomplete_querytime", "Rosy bee-eater");
     assertArrayEquals(new String[] {"rosy", "bee", "eater"}, terms);
-    terms = EsUtil.getSearchTerms(client, indexName(), Analyzer.SCINAME_AUTO_COMPLETE, "Rosy bee-eater");
+    terms = EsUtil.getSearchTerms(client, indexName(), "sciname_autocomplete_querytime", "Rosy bee-eater");
     assertArrayEquals(new String[] {"rosy", "beeeater"}, terms);
-    terms = EsUtil.getSearchTerms(client, indexName(), Analyzer.SCINAME_AUTO_COMPLETE, "Ro,sy bee,eater");
+    terms = EsUtil.getSearchTerms(client, indexName(), "sciname_autocomplete_querytime", "Ro,sy bee,eater");
     assertArrayEquals(new String[] {"ro", "sy", "bee", "eater"}, terms);
-    terms = EsUtil.getSearchTerms(client, indexName(), Analyzer.SCINAME_AUTO_COMPLETE, "Acer nigrÜm × Açer saccharùm");
+    terms = EsUtil.getSearchTerms(client, indexName(), "sciname_autocomplete_querytime", "Acer nigrÜm × Açer saccharùm");
     assertArrayEquals(new String[] {"acer", "nigrum", "acer", "saccharum"}, terms);
   }
 

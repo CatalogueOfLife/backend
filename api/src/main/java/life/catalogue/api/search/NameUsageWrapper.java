@@ -1,8 +1,7 @@
 package life.catalogue.api.search;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.SimpleNameClassification;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxGroup;
@@ -12,16 +11,17 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class NameUsageWrapper extends SimpleNameClassification {
 
   private NameUsage usage;
-  // publisher of the usages dataset
-  private UUID publisherKey;
   private Set<Issue> issues;
   // decisions about this usage in any number of project or releases
   private List<SimpleDecision> decisions;
+  // mode of the sector
+  private Sector.Mode sectorMode;
   // subject datasetKey of usage sector
   private Integer sectorDatasetKey;
   // publisher of the usage sectors subject dataset
@@ -29,6 +29,18 @@ public class NameUsageWrapper extends SimpleNameClassification {
   private Set<InfoGroup> secondarySourceGroups;
   private Set<Integer> secondarySourceKeys;
   private TaxGroup group;
+  private List<SimpleVernacularName> vernacularNames;
+
+  public NameUsageWrapper() {}
+
+  /**
+   * Creates a wrapper from a full NameUsage, converting it to SimpleName for the usage field
+   * and storing the original as indexingUsage for ES field extraction.
+   */
+  public NameUsageWrapper(NameUsage usage) {
+    this.usage = usage;
+    super.setId(usage.getId());
+  }
 
   @Override
   public void setId(String id) {
@@ -44,13 +56,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
 
   public void setIssues(Set<Issue> issues) {
     this.issues = issues;
-  }
-
-  public NameUsageWrapper() {}
-
-  public NameUsageWrapper(NameUsage usage) {
-    this.usage = usage;
-    this.setId(usage.getId());
   }
 
   public NameUsage getUsage() {
@@ -69,6 +74,14 @@ public class NameUsageWrapper extends SimpleNameClassification {
     this.decisions = decisions;
   }
 
+  public Sector.Mode getSectorMode() {
+    return sectorMode;
+  }
+
+  public void setSectorMode(Sector.Mode sectorMode) {
+    this.sectorMode = sectorMode;
+  }
+
   public Integer getSectorDatasetKey() {
     return sectorDatasetKey;
   }
@@ -77,18 +90,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
     this.sectorDatasetKey = sectorDatasetKey;
   }
 
-  public UUID getPublisherKey() {
-    return publisherKey;
-  }
-
-  public void setPublisherKey(UUID publisherKey) {
-    this.publisherKey = publisherKey;
-  }
-
-  /**
-   *
-   * @return
-   */
   public UUID getSectorPublisherKey() {
     return sectorPublisherKey;
   }
@@ -121,6 +122,14 @@ public class NameUsageWrapper extends SimpleNameClassification {
     this.group = group;
   }
 
+  public List<SimpleVernacularName> getVernacularNames() {
+    return vernacularNames;
+  }
+
+  public void setVernacularNames(List<SimpleVernacularName> vernacularNames) {
+    this.vernacularNames = vernacularNames;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -132,7 +141,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
       Objects.equals(decisions, that.decisions) &&
       Objects.equals(sectorDatasetKey, that.sectorDatasetKey) &&
       Objects.equals(sectorPublisherKey, that.sectorPublisherKey) &&
-      Objects.equals(publisherKey, that.publisherKey) &&
       Objects.equals(secondarySourceGroups, that.secondarySourceGroups) &&
       Objects.equals(secondarySourceKeys, that.secondarySourceKeys) &&
       group == that.group;
@@ -140,7 +148,7 @@ public class NameUsageWrapper extends SimpleNameClassification {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, sectorPublisherKey, publisherKey, secondarySourceGroups, secondarySourceKeys, group);
+    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, sectorPublisherKey, secondarySourceGroups, secondarySourceKeys, group);
   }
 
   @Override

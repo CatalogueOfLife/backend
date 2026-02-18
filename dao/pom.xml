@@ -215,10 +215,10 @@
 			<artifactId>java-diff-utils</artifactId>
 		</dependency>
 
-		<!-- Elasticsearch / Lucene -->
+		<!-- Elasticsearch -->
 		<dependency>
-          <groupId>org.elasticsearch.client</groupId>
-          <artifactId>elasticsearch-rest-client</artifactId>
+          <groupId>co.elastic.clients</groupId>
+          <artifactId>elasticsearch-java</artifactId>
 		</dependency>
 
       <!-- TEST SCOPE -->

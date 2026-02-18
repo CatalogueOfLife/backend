@@ -32,9 +32,10 @@ import java.util.stream.Collectors;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
@@ -46,13 +47,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexServiceEs.class);
   private static final int BATCH_SIZE = 1000;
-  private final RestClient client;
+  private final ElasticsearchClient client;
   private final EsConfig esConfig;
   private final SqlSessionFactory factory;
   private final NameUsageProcessor processor;
   private final TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
 
-  public NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, File tmpDir, SqlSessionFactory factory) {
+  public NameUsageIndexServiceEs(ElasticsearchClient client, EsConfig esConfig, File tmpDir, SqlSessionFactory factory) {
     this.client = client;
     this.esConfig = esConfig;
     this.factory = factory;
@@ -318,7 +319,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public int createEmptyIndex() {
     try {
       EsUtil.deleteIndex(client, esConfig.nameUsage);
-      return EsUtil.createIndex(client, EsNameUsage.class, esConfig.nameUsage);
+      return EsUtil.createIndex(client, esConfig.nameUsage);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -347,7 +348,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.deleteDataset(client, esConfig.nameUsage.name, datasetKey);
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
     } else {
-      EsUtil.createIndex(client, EsNameUsage.class, esConfig.nameUsage);
+      EsUtil.createIndex(client, esConfig.nameUsage);
     }
   }
 
@@ -376,7 +377,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       var dm = session.getMapper(DatasetMapper.class);
       var sm = session.getMapper(SectorMapper.class);
 
-      final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
       final LoadingCache<Integer, NameUsageProcessor.SectorProps> sectors = Caffeine.newBuilder()
         .maximumSize(1000)
         .build(id -> loadSectorProp(datasetKey, id, sm, dm));
@@ -389,7 +389,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
           // this already contains the classification, issues, decisions & secondary sources
           var nuw = mapper.get(datasetKey, isProjectOrRelease, id);
           if (nuw != null) {
-            nuw.setPublisherKey(publisher);
             if (nuw.getUsage().getSectorKey() != null) {
               NameUsageProcessor.addUsageSectorData(nuw, sectors.get(nuw.getUsage().getSectorKey()));
             }

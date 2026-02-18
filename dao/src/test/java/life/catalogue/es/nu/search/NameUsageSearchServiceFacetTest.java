@@ -4,10 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.es.EsModule;
-import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.NameStrings;
+import life.catalogue.es.*;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 
 import org.gbif.nameparser.api.Rank;
@@ -128,11 +125,11 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
     Set<FacetValue<?>> facetValues = new TreeSet<>();
-    facetValues.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4));
-    facetValues.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 4));
-    facetValues.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
-    facetValues.add(FacetValue.forEnum(Rank.class, Rank.CLASS.ordinal(), 2));
-    facetValues.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
+    facetValues.add(FacetValue.forEnum(Rank.class, rankVal(Rank.KINGDOM), 4));
+    facetValues.add(FacetValue.forEnum(Rank.class, rankVal(Rank.PHYLUM), 4));
+    facetValues.add(FacetValue.forEnum(Rank.class, rankVal(Rank.GENUS), 3));
+    facetValues.add(FacetValue.forEnum(Rank.class, rankVal(Rank.CLASS), 2));
+    facetValues.add(FacetValue.forEnum(Rank.class, rankVal(Rank.SPECIES), 1));
     expected.put(NameUsageSearchParameter.RANK, facetValues);
 
     assertEquals(expected, result.getFacets());
@@ -143,8 +140,8 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     result = svc.search(indexName(), request, page);
     expected = new HashMap<>();
     facetValues = new TreeSet<>();
-    facetValues.add(FacetValue.forEnum(Sector.Mode.class, Sector.Mode.MERGE.ordinal(), 2));
-    facetValues.add(FacetValue.forEnum(Sector.Mode.class, Sector.Mode.ATTACH.ordinal(), 1));
+    facetValues.add(FacetValue.forEnum(Sector.Mode.class, Sector.Mode.MERGE.name(), 2));
+    facetValues.add(FacetValue.forEnum(Sector.Mode.class, Sector.Mode.ATTACH.name(), 1));
     expected.put(SECTOR_MODE, facetValues);
     assertEquals(expected, result.getFacets());
   }
@@ -161,6 +158,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     EsNameUsage doc = newDocument();
     doc.setRank(Rank.KINGDOM);
     doc.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCEPTED_ID_INVALID));
+    System.out.println(EsModule.write(doc));
     indexRaw(doc);
 
     doc = newDocument();
@@ -234,19 +232,19 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
     Set<FacetValue<?>> rankFacet = new TreeSet<>();
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 4));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.CLASS.ordinal(), 2));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.KINGDOM), 4));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.PHYLUM), 4));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.GENUS), 3));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.CLASS), 2));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.SPECIES), 1));
     expected.put(NameUsageSearchParameter.RANK, rankFacet);
 
     Set<FacetValue<?>> issueFacet = new TreeSet<>();
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.ordinal(), 5));
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.ordinal(), 3));
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_ID_INVALID.ordinal(), 2));
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CITATION_UNPARSED.ordinal(), 2));
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CLASSIFICATION_NOT_APPLIED.ordinal(), 1));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.name(), 5));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.name(), 3));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_ID_INVALID.name(), 2));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CITATION_UNPARSED.name(), 2));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CLASSIFICATION_NOT_APPLIED.name(), 1));
     expected.put(NameUsageSearchParameter.ISSUE, issueFacet);
 
     assertEquals(expected, result.getFacets());
@@ -361,19 +359,19 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
     Set<FacetValue<?>> rankFacet = new TreeSet<>();
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4)); // Descending doc count !!!
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 4));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.CLASS.ordinal(), 2));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.KINGDOM), 4)); // Descending doc count !!!
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.PHYLUM), 4));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.GENUS), 3));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.CLASS), 2));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.SPECIES), 1));
     expected.put(NameUsageSearchParameter.RANK, rankFacet);
 
     Set<FacetValue<?>> issueFacet = new TreeSet<>();
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.ordinal(), 5));
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.ordinal(), 3));
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_ID_INVALID.ordinal(), 2));
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CITATION_UNPARSED.ordinal(), 2));
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CLASSIFICATION_NOT_APPLIED.ordinal(), 1));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.name(), 5));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.name(), 3));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_ID_INVALID.name(), 2));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CITATION_UNPARSED.name(), 2));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CLASSIFICATION_NOT_APPLIED.name(), 1));
     expected.put(NameUsageSearchParameter.ISSUE, issueFacet);
 
     Set<FacetValue<?>> pubIdFacet = new TreeSet<>();
@@ -383,6 +381,10 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     assertEquals(expected, result.getFacets());
 
+  }
+
+  private static String rankVal(Rank rank) {
+    return String.valueOf(rank.ordinal());
   }
 
   @Test
@@ -496,14 +498,14 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
     Set<FacetValue<?>> rankFacet = new TreeSet<>();
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 3));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 1));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 2));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.KINGDOM), 3));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.PHYLUM), 1));
+    rankFacet.add(FacetValue.forEnum(Rank.class, rankVal(Rank.GENUS), 2));
     expected.put(NameUsageSearchParameter.RANK, rankFacet);
 
     Set<FacetValue<?>> issueFacet = new TreeSet<>();
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.ordinal(), 2));
-    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.ordinal(), 3));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.name(), 2));
+    issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.name(), 3));
     expected.put(NameUsageSearchParameter.ISSUE, issueFacet);
 
     Set<FacetValue<?>> pubIdFacet = new TreeSet<>();
@@ -514,61 +516,8 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     // System.out.println("====================================================================");
     // EsModule.writeDebug(System.out,expected);
     // System.out.println("====================================================================");
-    EsModule.writeDebug(System.out, result.getFacets());
+    System.out.println(EsModule.writeDebug(result.getFacets()));
     // System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-
-    assertEquals(expected, result.getFacets());
-
-  }
-
-  @Test // Make sure UUID facets work OK
-  public void testPublisherKey() throws IOException {
-    // Define search
-    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
-    nsr.addFacet(NameUsageSearchParameter.PUBLISHER_KEY);
-    Page page = new Page(100);
-
-    UUID uuid1 = UUID.randomUUID();
-    UUID uuid2 = UUID.randomUUID();
-
-    // UUID1
-    NameUsageWrapper nuw1 = minimalNameUsage();
-    nuw1.setPublisherKey(uuid1);
-    NameUsageWrapper nuw2 = minimalNameUsage();
-    nuw2.setPublisherKey(uuid1);
-    NameUsageWrapper nuw3 = minimalNameUsage();
-    nuw3.setPublisherKey(uuid1);
-
-    // UUID2
-    NameUsageWrapper nuw4 = minimalNameUsage();
-    nuw4.setPublisherKey(uuid2);
-    NameUsageWrapper nuw5 = minimalNameUsage();
-    nuw5.setPublisherKey(uuid2);
-
-    // NO UUID
-    NameUsageWrapper nuw6 = minimalNameUsage();
-    nuw6.setPublisherKey(null);
-    NameUsageWrapper nuw7 = minimalNameUsage();
-    nuw7.setPublisherKey(null);
-
-    index(nuw1, nuw2, nuw3, nuw4, nuw5, nuw6, nuw7);
-
-    // Resurrect NameUsageWrapper instances b/c they got pruned upon indexRaw.
-    nuw1.setPublisherKey(uuid1);
-    nuw2.setPublisherKey(uuid1);
-    nuw3.setPublisherKey(uuid1);
-    nuw4.setPublisherKey(uuid2);
-    nuw5.setPublisherKey(uuid2);
-    nuw6.setPublisherKey(null);
-    nuw7.setPublisherKey(null);
-
-    Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
-    Set<FacetValue<?>> pkFacet = new TreeSet<>();
-    pkFacet.add(FacetValue.forUuid(uuid1, 3));
-    pkFacet.add(FacetValue.forUuid(uuid2, 2));
-    expected.put(NameUsageSearchParameter.PUBLISHER_KEY, pkFacet);
-
-    NameUsageSearchResponse result = svc.search(indexName(), nsr, page);
 
     assertEquals(expected, result.getFacets());
 

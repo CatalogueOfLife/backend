@@ -8,12 +8,6 @@
     <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
   </resultMap>
 
-  <!--
-  <resultMap id="taxResultMap" type="Taxon" extends="life.catalogue.db.mapper.TaxonMapper.taxonResultMap">
-    <result property="sectorMode" column="sector_mode"/>
-  </resultMap>
--->
-
   <resultMap id="usageResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
     <id column="uid"/>
     <result property="secondarySourceGroups" column="groups" typeHandler="life.catalogue.db.type2.InfoGroupSetTypeHandler"/>
@@ -50,7 +44,6 @@
 
   <sql id="taxonSelectFrom">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
-    d.gbif_publisher_key AS publisherKey,
     s.subject_dataset_key AS sector_dataset_key,
     s.mode AS sector_mode,
     ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,

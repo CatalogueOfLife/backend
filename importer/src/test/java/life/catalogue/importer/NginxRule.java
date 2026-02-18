@@ -11,11 +11,6 @@ import java.nio.file.Path;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.TempFile;
-import life.catalogue.es.EsClientFactory;
-import life.catalogue.es.EsConfig;
-import life.catalogue.es.IndexConfig;
-
-import org.elasticsearch.client.RestClient;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
