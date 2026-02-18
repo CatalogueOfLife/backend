@@ -554,6 +554,17 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertTree();
   }
 
+  /**
+   * Interpret as bare names, ignore accordingTo
+   * See https://github.com/CatalogueOfLife/data/issues/1468
+   */
+  @Test
+  public void wormsUncertain() throws Exception {
+    normalize(55);
+    printTree();
+    assertTree();
+  }
+
   @Test
   @Disabled @Ignore
   public void testExternal() throws Exception {

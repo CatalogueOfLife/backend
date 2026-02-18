@@ -54,6 +54,9 @@ public class RankedName {
     if (author != null) {
       sb.append(' ').append(author);
     }
+    if (sensu != null) {
+      sb.append(' ').append(sensu);
+    }
     if (rank != null) {
       sb.append(" [").append(rank.name().toLowerCase()).append(']');
     }

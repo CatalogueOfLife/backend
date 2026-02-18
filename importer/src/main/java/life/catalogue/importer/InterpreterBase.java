@@ -139,17 +139,22 @@ public class InterpreterBase {
   protected void setTaxonomicNote(NameUsage u, String taxNote, VerbatimRecord v) {
     if (!StringUtils.isBlank(taxNote)) {
       v.add(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
-      Matcher m = SEC_REF.matcher(taxNote);
-      if (m.find()) {
-        String remainder = m.replaceFirst("");
-        if (!StringUtils.isBlank(remainder)) {
-          u.setNamePhrase(remainder.trim());
-        }
-        setAccordingTo(u, m.group(2).trim(), v);
+      if (u.getStatus().isBareName()) {
+        // bare names are not allowed to have taxonomic notes
+        u.addRemarks(taxNote);
       } else {
-        u.setNamePhrase(taxNote);
+        Matcher m = SEC_REF.matcher(taxNote);
+        if (m.find()) {
+          String remainder = m.replaceFirst("");
+          if (!StringUtils.isBlank(remainder)) {
+            u.setNamePhrase(remainder.trim());
+          }
+          setAccordingTo(u, m.group(2).trim(), v);
+        } else {
+          u.setNamePhrase(taxNote);
+        }
+        NameValidator.flagSuspicousPhrase(u.getNamePhrase(), v, Issue.NAME_PHRASE_UNLIKELY);
       }
-      NameValidator.flagSuspicousPhrase(u.getNamePhrase(), v, Issue.NAME_PHRASE_UNLIKELY);
     }
   }
 
