@@ -15,12 +15,14 @@ import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.event.EventBroker;
+import life.catalogue.exporter.ColReleaseExportJob;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.release.ProjectRelease;
 import life.catalogue.release.PublishReleaseListener;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -43,7 +45,6 @@ public class ExportCmd extends AbstractMybatisCmd {
   private JobExecutor exec;
   private ExportManager manager;
   private final MailBundle mail = new MailBundle();
-  private PublishReleaseListener copy;
   private Set<DataFormat> formats;
   private final Map<Integer, List<ExpFormat>> exportsByDatasetKey = new HashMap<>();
   private boolean force;
@@ -96,7 +97,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       formats = Set.of(df);
     } else {
       formats = Arrays.stream(DataFormat.values())
-                      .filter(ProjectRelease.EXPORT_FORMATS::contains)
+                      .filter(PublishReleaseListener.EXPORT_FORMATS::contains)
                       .collect(Collectors.toSet());
     }
     System.out.printf("Export format(s): %s\n", formats.stream().map(DataFormat::getName).collect(Collectors.joining(", ")));
@@ -114,7 +115,6 @@ public class ExportCmd extends AbstractMybatisCmd {
     final ImageService imageService = new ImageServiceFS(cfg.img, bus);
     final DatasetExportDao exportDao = new DatasetExportDao(cfg.job, factory, validator);
     manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
-    copy = new PublishReleaseListener(cfg.release, cfg.job, factory, httpClient, exportDao, bus);
   }
 
   @Override
@@ -167,7 +167,8 @@ public class ExportCmd extends AbstractMybatisCmd {
       System.out.println("Move exports to COL download dir " + cfg.release.colDownloadDir);
       for (Dataset de : datasets) {
         for (var exp : exportsByDatasetKey.get(de.getKey())) {
-          copy.copyExportToColDownload(de, exp.format, exp.key, Objects.equals(latestReleaseKey, de.getKey()));
+          File source = cfg.job.downloadFile(exp.key);
+          ColReleaseExportJob.copyToCol(de, cfg.release.colDownloadDir, exp.format, exp.key, source, Objects.equals(latestReleaseKey, de.getKey()));
         }
       }
     }

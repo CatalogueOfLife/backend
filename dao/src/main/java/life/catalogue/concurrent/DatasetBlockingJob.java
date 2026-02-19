@@ -23,10 +23,15 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   protected final int datasetKey;
   protected Dataset dataset;
   private int retry = 0;
+  private boolean skipLock;
 
   public DatasetBlockingJob(int datasetKey, int userKey, @Nullable JobPriority priority) {
     super(priority, userKey);
     this.datasetKey = datasetKey;
+  }
+
+  public void skipLock() {
+    this.skipLock = true;
   }
 
   public int getDatasetKey() {
@@ -69,12 +74,18 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
       TimeUnit.SECONDS.sleep(10);
     } else if (retry >2) {
       TimeUnit.SECONDS.sleep(1);
-    } else {
+    } else if (!skipLock){
       TimeUnit.MILLISECONDS.sleep(100);
     }
 
-    // try to acquire a lock, otherwise fail
-    UUID proc = DatasetLock.lock(datasetKey, getKey());
+    UUID proc;
+    if (skipLock) {
+      proc = getKey();
+    } else {
+      // try to acquire a lock, otherwise fail
+      proc = DatasetLock.lock(datasetKey, getKey());
+    }
+
     if (getKey().equals(proc)) {
       LoggingUtils.setDatasetMDC(datasetKey, getClass());
       runWithLock();
@@ -89,7 +100,9 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
     try {
       onFinishLocked();
     } finally {
-      DatasetLock.unlock(datasetKey);
+      if (!skipLock) {
+        DatasetLock.unlock(datasetKey);
+      }
     }
   }
 

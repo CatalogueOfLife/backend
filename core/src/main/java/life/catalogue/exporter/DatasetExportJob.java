@@ -36,7 +36,7 @@ import com.google.common.base.Preconditions;
  * Base class for all dataset exporter that blocks parallel exports for the same dataset
  * and tracks exports by users in the database.
  */
-abstract class DatasetExportJob extends DatasetBlockingJob {
+public abstract class DatasetExportJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExportJob.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
   protected final SqlSessionFactory factory;

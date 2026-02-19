@@ -182,13 +182,13 @@ public class JobExecutor implements Managed, Idle {
     return null;
   }
 
-  public boolean isQueued(UUID key) {
-    BackgroundJob job = getJob(key);
-    return job != null;
-  }
-
-  public boolean isQueued(ComparableFutureTask f) {
-    return queue.contains(f);
+  /**
+   * Checks if a job with the given key is currently queued or running.
+   * @param key
+   * @return
+   */
+  public boolean exists(UUID key) {
+    return futures.containsKey(key);
   }
 
   public <T extends BackgroundJob> List<T> getQueueByJobClass(Class<T> jobClass) {
