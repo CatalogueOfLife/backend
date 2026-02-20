@@ -3,7 +3,6 @@ package life.catalogue.es;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
 
 import java.io.IOException;
 

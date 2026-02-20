@@ -1,14 +1,11 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
-import life.catalogue.doi.service.DataCiteService;
-import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
@@ -27,8 +24,8 @@ import life.catalogue.es.EsUtil;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
+import life.catalogue.es.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.event.EventBroker;
 import life.catalogue.feedback.FeedbackService;
 import life.catalogue.img.ImageService;
@@ -231,8 +228,8 @@ public class WsROServer extends Application<WsServerConfig> {
     } else {
       esClient = new EsClientFactory(cfg.es).createClient();
       env.lifecycle().manage(ManagedUtils.from((AutoCloseable) () -> EsUtil.close(esClient)));
-      searchService = new NameUsageSearchServiceEs(cfg.es.nameUsage.name, esClient);
-      suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
+      searchService = new NameUsageSearchServiceEs(cfg.es.index.name, esClient);
+      suggestService = new NameUsageSuggestionServiceEs(cfg.es.index.name, esClient);
     }
 
     // images

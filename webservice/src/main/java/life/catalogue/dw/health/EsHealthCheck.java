@@ -1,7 +1,7 @@
 package life.catalogue.dw.health;
 
 
-import life.catalogue.es.EsConfig;
+import life.catalogue.config.EsConfig;
 import life.catalogue.es.EsUtil;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -23,7 +23,7 @@ public class EsHealthCheck extends HealthCheck {
 
   @Override
   protected Result check() throws Exception {
-    String idxName = cfg.nameUsage.name;
+    String idxName = cfg.index.name;
     if (!EsUtil.indexExists(client, idxName)) {
       return Result.unhealthy("Cannot contact ES index %s on %s", idxName, cfg.hosts);
     }

@@ -39,15 +39,16 @@ public class EsKryoPool extends Pool<Kryo> {
     kryo.setRegistrationRequired(true);
 
     // wrapper classes
+    kryo.register(Authorship.class);
+    kryo.register(BareName.class);
+    kryo.register(Identifier.class);
+    kryo.register(Name.class);
     kryo.register(NameUsageWrapper.class);
     kryo.register(SimpleDecision.class);
-    kryo.register(Taxon.class);
-    kryo.register(Synonym.class);
-    kryo.register(BareName.class);
-    kryo.register(Name.class);
-    kryo.register(Identifier.class);
-    kryo.register(Authorship.class);
     kryo.register(SimpleName.class);
+    kryo.register(SimpleVernacularName.class);
+    kryo.register(Synonym.class);
+    kryo.register(Taxon.class);
 
     // date/time
     kryo.register(LocalDate.class);

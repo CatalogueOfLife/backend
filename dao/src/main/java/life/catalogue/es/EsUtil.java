@@ -3,14 +3,14 @@ package life.catalogue.es;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.es.nu.NameUsageFieldLookup;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import life.catalogue.config.IndexConfig;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,14 +20,10 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.*;
-import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.indices.*;
 import co.elastic.clients.elasticsearch.indices.analyze.AnalyzeToken;
-import co.elastic.clients.json.JsonData;
 import co.elastic.clients.transport.ElasticsearchTransport;
 
-
-import com.google.common.base.Preconditions;
 
 import static life.catalogue.common.text.StringUtils.EMPTY_STRING_ARRAY;
 

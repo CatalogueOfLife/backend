@@ -5,9 +5,7 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.common.io.TempFile;
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 
@@ -45,10 +43,10 @@ public abstract class EsPgTestBase {
   @Before
   public void before() throws Throwable {
     try {
-      LOG.debug("Dumping test index \"{}\"", esSetupRule.getEsConfig().nameUsage);
-      EsUtil.deleteIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
-      LOG.debug("Creating test index \"{}\"", esSetupRule.getEsConfig().nameUsage);
-      EsUtil.createIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
+      LOG.debug("Dumping test index \"{}\"", esSetupRule.getEsConfig().index);
+      EsUtil.deleteIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().index);
+      LOG.debug("Creating test index \"{}\"", esSetupRule.getEsConfig().index);
+      EsUtil.createIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().index);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -56,7 +54,7 @@ public abstract class EsPgTestBase {
 
   @After
   public void after() {
-    LOG.debug("Test index \"{}\" kept around for inspection", esSetupRule.getEsConfig().nameUsage);
+    LOG.debug("Test index \"{}\" kept around for inspection", esSetupRule.getEsConfig().index);
   }
 
   protected NameUsageIndexServiceEs createIndexService() {
@@ -68,7 +66,7 @@ public abstract class EsPgTestBase {
   }
 
   protected NameUsageSearchServiceEs createSearchService() {
-    return new NameUsageSearchServiceEs(esSetupRule.getEsConfig().nameUsage.name, esSetupRule.getClient());
+    return new NameUsageSearchServiceEs(esSetupRule.getEsConfig().index.name, esSetupRule.getClient());
   }
 
   protected NameUsageSearchResponse search(NameUsageSearchRequest query) {
@@ -79,7 +77,7 @@ public abstract class EsPgTestBase {
    * Executes the provided raw ES query against the index and converts results back to NameUsageSearchResponse.
    */
   protected NameUsageSearchResponse query(Query query) throws IOException {
-    String indexName = esSetupRule.getEsConfig().nameUsage.name;
+    String indexName = esSetupRule.getEsConfig().index.name;
     EsUtil.refreshIndex(esSetupRule.getClient(), indexName);
     SearchRequest searchRequest = SearchRequest.of(s -> s
       .index(indexName)

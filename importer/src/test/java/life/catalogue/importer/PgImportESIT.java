@@ -5,20 +5,14 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.TempFile;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.EsSetupRule;
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.junit.PgSetupRule;
+import life.catalogue.es.NameUsageIndexServiceEs;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
 import life.catalogue.junit.SqlSessionFactoryRule;
-
-import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -46,7 +40,7 @@ public class PgImportESIT extends PgImportITBase {
       esSetupRule.getEsConfig(),
       TempFile.directoryFile(),
       SqlSessionFactoryRule.getSqlSessionFactory());
-    searchService = new NameUsageSearchServiceEs(esSetupRule.getEsConfig().nameUsage.name, esSetupRule.getClient());
+    searchService = new NameUsageSearchServiceEs(esSetupRule.getEsConfig().index.name, esSetupRule.getClient());
   }
 
   NameUsageSearchResponse search(NameUsageSearchRequest query) {

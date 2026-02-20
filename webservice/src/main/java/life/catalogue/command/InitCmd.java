@@ -117,8 +117,8 @@ public class InitCmd extends AbstractPromptCmd {
 
     // create new ES index
     if (cfg.es != null) {
-      final var index = cfg.es.nameUsage;
-      final String indexAlias = cfg.es.nameUsage.name;
+      final var index = cfg.es.index;
+      final String indexAlias = cfg.es.index.name;
       final String indexToday = IndexCmd.indexNameToday(cfg.es);
       LOG.info("Create new elasticsearch index {} with alias {}", indexToday, indexAlias);
       ElasticsearchClient client = new EsClientFactory(cfg.es).createClient();

@@ -1,7 +1,6 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
@@ -42,9 +41,9 @@ import life.catalogue.es.EsUtil;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.es.NameUsageIndexServiceEs;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
+import life.catalogue.es.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.feedback.EmailEncryption;
@@ -78,9 +77,6 @@ import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
 
 import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
-import org.apache.hc.client5.http.protocol.RedirectStrategy;
-
-import org.eclipse.jetty.http.UriCompliance;
 
 import org.gbif.dwc.terms.TermFactory;
 
@@ -307,8 +303,8 @@ public class WsServer extends Application<WsServerConfig> {
       esClient = new EsClientFactory(cfg.es).createClient();
       env.lifecycle().manage(ManagedUtils.from((AutoCloseable) () -> EsUtil.close(esClient)));
       indexService = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("nuproc"), getSqlSessionFactory());
-      searchService = new NameUsageSearchServiceEs(cfg.es.nameUsage.name, esClient);
-      suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
+      searchService = new NameUsageSearchServiceEs(cfg.es.index.name, esClient);
+      suggestService = new NameUsageSuggestionServiceEs(cfg.es.index.name, esClient);
     }
 
     // Docker

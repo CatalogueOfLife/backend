@@ -60,15 +60,17 @@ public abstract class NameUsageRequest {
    */
   public static enum SearchType {
     /**
-     * Matches a search term to the beginning of the epithets within a scientific name. This is the only
+     * Matches a search term to the beginning of the words of a scientific name. This is the only
      * available search type for the suggest service. Whole-word and exact matching defies the purpose
      * of auto-completion. However, you still have the option of fuzzy/non-fuzzy matching.
      */
     PREFIX,
+
     /**
      * Matches a search term to entire epithets within a scientific name.
      */
     WHOLE_WORDS,
+
     /**
      * Matches the entire search phrase to the entire scientific name. When choosing this type you
      * cannot also opt for fuzzy matching. The "fuzzy" parameter is silently ignored.

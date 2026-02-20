@@ -2,6 +2,9 @@ package life.catalogue.es;
 
 import life.catalogue.api.TestEntityGenerator;
 
+import life.catalogue.config.EsConfig;
+import life.catalogue.config.IndexConfig;
+
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,8 +57,8 @@ public class EsSetupRule extends ExternalResource {
     cfg.ports = container.getFirstMappedPort().toString();
     cfg.user = "elastic";
     cfg.password = PASSWORD;
-    cfg.nameUsage = new IndexConfig();
-    cfg.nameUsage.name = "test_name_usage";
+    cfg.index = new IndexConfig();
+    cfg.index.name = "test_name_usage";
     System.out.println("ES container using port " + cfg.ports);
     return cfg;
   }

@@ -8,7 +8,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
-import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
+import static life.catalogue.es.NameUsageWrapperConverter.normalizeWeakly;
 
 /**
  * An object embedded within the name usage document solely aimed at optimizing searchability. The name strings within this class do not

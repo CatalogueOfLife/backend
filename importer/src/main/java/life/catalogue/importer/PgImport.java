@@ -9,19 +9,16 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.ParentStack;
 import life.catalogue.dao.TaxonMetricsBuilder;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
+import life.catalogue.es.NameUsageIndexServiceEs;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.TreeWalker;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.UsageData;
-
-import life.catalogue.release.TreeCleanerAndValidator;
 
 import org.gbif.nameparser.api.Rank;
 

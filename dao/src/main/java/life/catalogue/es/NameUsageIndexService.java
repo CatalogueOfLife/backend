@@ -2,15 +2,11 @@ package life.catalogue.es;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.common.func.BatchConsumer;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

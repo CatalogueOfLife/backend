@@ -6,9 +6,10 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.kryo.ApiKryoPool;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.config.EsConfig;
+import life.catalogue.config.IndexConfig;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
+import life.catalogue.es.suggest.NameUsageSuggestionServiceEs;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -37,10 +38,7 @@ import static java.util.stream.Collectors.toList;
  */
 public class EsReadTestBase {
 
-  final static Kryo kryo = ApiKryoPool.configure(new Kryo());
-  static {
-    kryo.register(NameUsageWrapper.class);
-  }
+  final static Kryo kryo = EsKryoPool.configure(new Kryo());
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(EsReadTestBase.class);
@@ -62,15 +60,15 @@ public class EsReadTestBase {
   // Useful for @Before or @BeforeClass methods
   protected static void destroyAndCreateIndex() {
     try {
-      EsUtil.deleteIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
-      EsUtil.createIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
+      EsUtil.deleteIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().index);
+      EsUtil.createIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().index);
     } catch (IOException e) {
       throw new EsException(e);
     }
   }
 
   public IndexConfig index() {
-    return esSetupRule.getEsConfig().nameUsage;
+    return esSetupRule.getEsConfig().index;
   }
 
   public String indexName() {

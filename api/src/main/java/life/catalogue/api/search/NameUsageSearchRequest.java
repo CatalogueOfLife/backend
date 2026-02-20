@@ -26,7 +26,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   static final Set<SearchContent> DEFAULT_CONTENT = Sets.immutableEnumSet(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP);
 
   public enum SortBy {
-    NAME, TAXONOMIC, INDEX_NAME_ID, NATIVE, RELEVANCE
+    NAME, TAXONOMIC, NATIVE, RELEVANCE
   }
 
   @QueryParam("facet")
