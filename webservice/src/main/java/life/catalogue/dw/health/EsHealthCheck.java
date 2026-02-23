@@ -2,7 +2,7 @@ package life.catalogue.dw.health;
 
 
 import life.catalogue.config.EsConfig;
-import life.catalogue.es.EsUtil;
+import life.catalogue.es2.EsUtil;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 

@@ -9,7 +9,7 @@ import life.catalogue.dao.DaoUtils;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 import life.catalogue.release.TreeCleanerAndValidator;
 
 import java.time.LocalDateTime;

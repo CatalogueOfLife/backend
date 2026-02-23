@@ -14,7 +14,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 
 import org.gbif.nameparser.api.Rank;

@@ -1,11 +1,5 @@
 package life.catalogue.dao;
 
-import jakarta.validation.Valid;
-import jakarta.ws.rs.BeanParam;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-
 import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
@@ -13,13 +7,12 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.*;
-import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.NameUsageSearchService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es2.search.NameUsageSearchService;
 import life.catalogue.img.ThumborService;
 import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.printer.JsonTreePrinter;

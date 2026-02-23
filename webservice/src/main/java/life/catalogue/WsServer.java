@@ -36,14 +36,14 @@ import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.dw.tasks.ClearCachesTask;
 import life.catalogue.dw.tasks.DeleteTmpDatasetsTask;
 import life.catalogue.dw.tasks.EventQueueTask;
-import life.catalogue.es.EsClientFactory;
-import life.catalogue.es.EsUtil;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.NameUsageSearchService;
-import life.catalogue.es.NameUsageSuggestionService;
-import life.catalogue.es.NameUsageIndexServiceEs;
-import life.catalogue.es.search.NameUsageSearchServiceEs;
-import life.catalogue.es.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.es2.EsClientFactory;
+import life.catalogue.es2.EsUtil;
+import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexServiceEs;
+import life.catalogue.es2.search.NameUsageSearchService;
+import life.catalogue.es2.search.NameUsageSearchServiceEs;
+import life.catalogue.es2.suggest.NameUsageSuggestionService;
+import life.catalogue.es2.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.feedback.EmailEncryption;
@@ -76,8 +76,6 @@ import life.catalogue.resources.parser.NameParserAdminResource;
 import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
 
-import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
-
 import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
@@ -86,11 +84,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.util.Timeout;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.ibatis.session.SqlSessionFactory;
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.RequestEntityProcessing;
@@ -103,6 +101,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.google.common.annotations.VisibleForTesting;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;

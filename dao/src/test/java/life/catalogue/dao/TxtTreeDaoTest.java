@@ -1,6 +1,6 @@
 package life.catalogue.dao;
 
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 

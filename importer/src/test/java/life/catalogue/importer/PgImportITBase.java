@@ -12,7 +12,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;

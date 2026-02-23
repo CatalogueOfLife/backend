@@ -9,7 +9,7 @@ import life.catalogue.dao.NameDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
 import life.catalogue.junit.MybatisTestUtils;

@@ -4,7 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.search.FacetValue;
 import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 
 import java.util.ArrayList;
 import java.util.List;

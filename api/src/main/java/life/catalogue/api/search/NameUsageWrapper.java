@@ -14,6 +14,8 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import life.catalogue.common.tax.SciNameNormalizer;
+
 public class NameUsageWrapper extends SimpleNameClassification {
 
   private NameUsage usage;

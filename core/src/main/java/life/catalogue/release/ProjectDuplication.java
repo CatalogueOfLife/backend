@@ -4,7 +4,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 

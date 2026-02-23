@@ -12,7 +12,7 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 import life.catalogue.event.BrokerConfig;
 import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageServiceFS;

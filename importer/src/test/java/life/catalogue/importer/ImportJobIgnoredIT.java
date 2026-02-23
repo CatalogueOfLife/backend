@@ -11,7 +11,7 @@ import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;

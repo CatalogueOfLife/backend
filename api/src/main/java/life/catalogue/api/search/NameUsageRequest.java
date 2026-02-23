@@ -62,7 +62,7 @@ public abstract class NameUsageRequest {
     /**
      * Matches a search term to the beginning of the words of a scientific name. This is the only
      * available search type for the suggest service. Whole-word and exact matching defies the purpose
-     * of auto-completion. However, you still have the option of fuzzy/non-fuzzy matching.
+     * of auto-completion.
      */
     PREFIX,
 
@@ -72,17 +72,18 @@ public abstract class NameUsageRequest {
     WHOLE_WORDS,
 
     /**
-     * Matches the entire search phrase to the entire scientific name. When choosing this type you
-     * cannot also opt for fuzzy matching. The "fuzzy" parameter is silently ignored.
+     * Matches the entire search phrase to the entire scientific name.
      */
-    EXACT
+    EXACT,
+
+    /**
+     * Matches the search phrase to the entire scientific name using a fuzzy algorithm.
+     */
+    FUZZY
   }
 
   @QueryParam("q")
   protected String q;
-
-  @QueryParam("fuzzy")
-  protected boolean fuzzy = false;
 
   @QueryParam("minRank")
   private Rank minRank;
@@ -104,9 +105,8 @@ public abstract class NameUsageRequest {
   public NameUsageRequest() {
   }
 
-  public NameUsageRequest(String q, boolean fuzzy, Rank minRank, Rank maxRank, NameUsageSearchRequest.SortBy sortBy, boolean reverse) {
+  public NameUsageRequest(String q, Rank minRank, Rank maxRank, NameUsageSearchRequest.SortBy sortBy, boolean reverse) {
     this.q = q;
-    this.fuzzy = fuzzy;
     this.minRank = minRank;
     this.maxRank = maxRank;
     this.sortBy = sortBy;
@@ -115,7 +115,6 @@ public abstract class NameUsageRequest {
 
   public NameUsageRequest(NameUsageRequest other) {
     this.q = other.q;
-    this.fuzzy = other.fuzzy;
     this.searchTerms = other.searchTerms;
     this.minRank = other.minRank;
     this.maxRank = other.maxRank;
@@ -294,7 +293,6 @@ public abstract class NameUsageRequest {
   @JsonIgnore
   public boolean isEmpty() {
     return q == null
-      && !fuzzy
       && minRank==null
       && maxRank==null
       && sortBy == null
@@ -327,14 +325,6 @@ public abstract class NameUsageRequest {
 
   public void setQ(String q) {
     this.q = q;
-  }
-
-  public boolean isFuzzy() {
-    return fuzzy;
-  }
-
-  public void setFuzzy(boolean fuzzy) {
-    this.fuzzy = fuzzy;
   }
 
   public Rank getMinRank() {
@@ -379,8 +369,7 @@ public abstract class NameUsageRequest {
     if (this == o) return true;
     if (!(o instanceof NameUsageRequest)) return false;
     NameUsageRequest that = (NameUsageRequest) o;
-    return fuzzy == that.fuzzy &&
-      Objects.equals(q, that.q) &&
+    return Objects.equals(q, that.q) &&
       Arrays.equals(searchTerms, that.searchTerms) &&
       minRank == that.minRank &&
       maxRank == that.maxRank &&
@@ -391,7 +380,7 @@ public abstract class NameUsageRequest {
 
   @Override
   public int hashCode() {
-    int result = Objects.hash(q, fuzzy, minRank, maxRank, sortBy, reverse, filters);
+    int result = Objects.hash(q, minRank, maxRank, sortBy, reverse, filters);
     result = 31 * result + Arrays.hashCode(searchTerms);
     return result;
   }

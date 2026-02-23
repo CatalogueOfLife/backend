@@ -4,7 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.SynonymMapper;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 

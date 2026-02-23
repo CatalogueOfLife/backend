@@ -60,11 +60,10 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("q") String q,
       @JsonProperty("highlight") boolean highlight,
       @JsonProperty("reverse") boolean reverse,
-      @JsonProperty("fuzzy") boolean fuzzy,
       @JsonProperty("type") SearchType searchType,
       @JsonProperty("minRank") Rank minRank,
       @JsonProperty("maxRank") Rank maxRank) {
-    super(q, fuzzy, minRank, maxRank, sortBy, reverse);
+    super(q, minRank, maxRank, sortBy, reverse);
     this.highlight = highlight;
     this.searchType = searchType;
     this.facetLimit = facetLimit;
@@ -108,7 +107,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         && (facets == null || facets.isEmpty())
         && (getFilters() == null || getFilters().isEmpty())
         && !highlight
-        && !fuzzy
         && searchType == null;
   }
 

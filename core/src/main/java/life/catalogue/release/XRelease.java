@@ -18,7 +18,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.*;

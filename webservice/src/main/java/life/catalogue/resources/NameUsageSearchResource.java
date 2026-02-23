@@ -8,8 +8,8 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.NameUsageSearchService;
+import life.catalogue.es2.query.InvalidQueryException;
+import life.catalogue.es2.search.NameUsageSearchService;
 
 import org.gbif.nameparser.api.Rank;
 

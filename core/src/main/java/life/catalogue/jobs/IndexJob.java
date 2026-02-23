@@ -4,7 +4,7 @@ import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobPriority;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 
 import javax.annotation.Nullable;

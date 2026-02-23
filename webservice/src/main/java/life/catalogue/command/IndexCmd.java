@@ -2,11 +2,11 @@ package life.catalogue.command;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.es.EsClientFactory;
 import life.catalogue.config.EsConfig;
-import life.catalogue.es.EsUtil;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.NameUsageIndexServiceEs;
+import life.catalogue.es2.EsClientFactory;
+import life.catalogue.es2.EsUtil;
+import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es2.indexing.NameUsageIndexServiceEs;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,10 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-
 import com.google.common.base.Preconditions;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import io.dropwizard.core.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;

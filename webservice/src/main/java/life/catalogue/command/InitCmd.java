@@ -7,8 +7,8 @@ import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgUtils;
-import life.catalogue.es.EsClientFactory;
-import life.catalogue.es.EsUtil;
+import life.catalogue.es2.EsClientFactory;
+import life.catalogue.es2.EsUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
