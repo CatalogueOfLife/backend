@@ -10,6 +10,8 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
+import java.time.LocalDate;
+
 /**
  * Spins up an elasticsearch test container.
  * To be used as a ClassRule.
@@ -31,6 +33,8 @@ public class EsSetupRule extends ExternalResource {
     CONTAINER = setupElastic();
     CONTAINER.start();
     cfg = buildContainerConfig(CONTAINER);
+    System.out.println("ES container using index " + cfg.index.name + " on port " + cfg.ports);
+
     client = new EsClientFactory(cfg).createClient();
     LOG.info("Using Elasticsearch on {}:{}", cfg.hosts, cfg.ports);
   }
@@ -50,6 +54,7 @@ public class EsSetupRule extends ExternalResource {
     cfg.user = USER;
     cfg.password = PASSWORD;
     cfg.index = new IndexConfig();
+    cfg.index.name = LocalDate.now() + "-" + System.currentTimeMillis();
     System.out.println("ES container using port " + cfg.ports);
     return cfg;
   }

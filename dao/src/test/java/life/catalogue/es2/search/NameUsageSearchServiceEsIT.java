@@ -427,8 +427,9 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     req.setQ("Felis cat");
     req.setSearchType(PREFIX);
     req.setSingleContent(SCIENTIFIC_NAME);
-    assertFalse("PREFIX simple: 'Felis catus' should return results",
-        search(req).getResult().isEmpty());
+    assertFalse("PREFIX simple: 'Felis catus' should return results", search(req).getResult().isEmpty());
+    req.addFilter(DATASET_KEY, NameUsageRequest.IS_NULL);
+    assertTrue(search(req).getResult().isEmpty());
   }
 
   /**
