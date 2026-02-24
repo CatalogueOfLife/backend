@@ -1,6 +1,5 @@
 package life.catalogue.es2.search;
 
-import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.Issue;
 

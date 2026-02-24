@@ -1,24 +1,25 @@
-package life.catalogue.es2.query;
+package life.catalogue.es2.search;
 
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.es2.query.InvalidQueryException;
 
 import java.util.Set;
 
 import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
 
-public class RequestValidator {
+public class SearchRequestValidator {
 
   private final NameUsageSearchRequest request;
 
-  public RequestValidator(NameUsageSearchRequest request) {
+  public SearchRequestValidator(NameUsageSearchRequest request) {
     this.request = request;
   }
 
   public void validateRequest() {
     if (NameUsageRequest.SearchType.EXACT == request.getSearchType()){
-      request.setContent(Set.of(NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME));
+      request.setContent(Set.of(NameUsageRequest.SearchContent.SCIENTIFIC_NAME));
     } else if (request.getContent() == null || request.getContent().isEmpty()) {
        request.setContentDefault();
     }

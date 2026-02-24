@@ -1,14 +1,14 @@
 package life.catalogue.es2;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-
 import life.catalogue.config.IndexConfig;
+
+import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 
-import java.io.IOException;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 public class EsTestBase {
   @ClassRule

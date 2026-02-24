@@ -20,11 +20,11 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
  */
-class ResponseConverter {
+class SearchResponseConverter {
 
   private final SearchResponse<NameUsageWrapper> esResponse;
 
-  ResponseConverter(SearchResponse<NameUsageWrapper> esResponse) {
+  SearchResponseConverter(SearchResponse<NameUsageWrapper> esResponse) {
     this.esResponse = esResponse;
   }
 

@@ -58,7 +58,7 @@ public abstract class NameUsageRequest {
   /**
    * Symbolic constants for the available search types within the Catalogue of Life.
    */
-  public static enum SearchType {
+  public enum SearchType {
     /**
      * Matches a search term to the beginning of the words of a scientific name. This is the only
      * available search type for the suggest service. Whole-word and exact matching defies the purpose
@@ -82,6 +82,14 @@ public abstract class NameUsageRequest {
     FUZZY
   }
 
+  public enum SearchContent {
+    SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
+  }
+
+  public enum SortBy {
+    NAME, TAXONOMIC, NATIVE, RELEVANCE
+  }
+
   @QueryParam("q")
   protected String q;
 
@@ -92,14 +100,12 @@ public abstract class NameUsageRequest {
   private Rank maxRank;
 
   @QueryParam("sortBy")
-  private NameUsageSearchRequest.SortBy sortBy;
+  private SortBy sortBy;
 
   @QueryParam("reverse")
   private boolean reverse;
 
   private EnumMap<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters = new EnumMap<>(NameUsageSearchParameter.class);
-
-  protected String[] searchTerms;
 
 
   public NameUsageRequest() {
@@ -115,7 +121,6 @@ public abstract class NameUsageRequest {
 
   public NameUsageRequest(NameUsageRequest other) {
     this.q = other.q;
-    this.searchTerms = other.searchTerms;
     this.minRank = other.minRank;
     this.maxRank = other.maxRank;
     this.sortBy = other.sortBy;
@@ -196,6 +201,8 @@ public abstract class NameUsageRequest {
   }
 
   public abstract SearchType getSearchType();
+
+  public abstract Set<NameUsageSearchRequest.SearchContent> getContent();
 
   /**
    * Extracts all query parameters that match a NameSearchParameter and registers them as query
@@ -299,22 +306,6 @@ public abstract class NameUsageRequest {
       && !reverse;
   }
 
-  /**
-   * The search terms analyzed as appropriate for scientific name searches. Should not be used for
-   * vernacular name and authorship searches. The search terms are derived from the Q and are set
-   * programmatically.
-   * 
-   * @return
-   */
-  @JsonIgnore
-  public String[] getSciNameSearchTerms() {
-    return searchTerms;
-  }
-
-  public void setSciNameSearchTerms(String[] searchTerms) {
-    this.searchTerms = searchTerms;
-  }
-
   public boolean hasQ() {
     return StringUtils.isNotBlank(q);
   }
@@ -366,22 +357,18 @@ public abstract class NameUsageRequest {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof NameUsageRequest)) return false;
-    NameUsageRequest that = (NameUsageRequest) o;
-    return Objects.equals(q, that.q) &&
-      Arrays.equals(searchTerms, that.searchTerms) &&
+    if (!(o instanceof NameUsageRequest that)) return false;
+
+    return reverse == that.reverse &&
+      Objects.equals(q, that.q) &&
       minRank == that.minRank &&
       maxRank == that.maxRank &&
       sortBy == that.sortBy &&
-      reverse == that.reverse &&
       Objects.equals(filters, that.filters);
   }
 
   @Override
   public int hashCode() {
-    int result = Objects.hash(q, minRank, maxRank, sortBy, reverse, filters);
-    result = 31 * result + Arrays.hashCode(searchTerms);
-    return result;
+    return Objects.hash(q, minRank, maxRank, sortBy, reverse, filters);
   }
 }

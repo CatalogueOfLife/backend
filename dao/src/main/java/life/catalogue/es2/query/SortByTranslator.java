@@ -7,7 +7,7 @@ import java.util.List;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 
-import static life.catalogue.api.search.NameUsageSearchRequest.SortBy.TAXONOMIC;
+import static life.catalogue.api.search.NameUsageRequest.SortBy.TAXONOMIC;
 
 public class SortByTranslator {
 

@@ -1,6 +1,7 @@
 package life.catalogue.es2;
 
 import life.catalogue.config.EsConfig;
+import life.catalogue.es2.json.EsModule;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -13,8 +14,6 @@ import java.util.List;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
-import life.catalogue.es2.json.EsModule;
 
 import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;

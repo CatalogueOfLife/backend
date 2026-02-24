@@ -11,7 +11,7 @@ import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 
 import static java.util.Collections.singletonMap;
-import static life.catalogue.es2.search.RequestTranslator.generateQuery;
+import static life.catalogue.es2.search.SearchRequestTranslator.generateQuery;
 
 /**
  * Translates the facets in the NameSearchRequest object into a set of suitable aggregations. There is one edge case here, namely if there

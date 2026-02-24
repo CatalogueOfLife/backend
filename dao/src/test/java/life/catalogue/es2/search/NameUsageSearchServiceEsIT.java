@@ -1,13 +1,11 @@
 package life.catalogue.es2.search;
 
-import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.config.IndexConfig;
 import life.catalogue.es2.EsTestBase;
 import life.catalogue.es2.EsUtil;
-import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -20,9 +18,10 @@ import org.junit.*;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
+import static life.catalogue.api.search.NameUsageRequest.SearchContent.SCIENTIFIC_NAME;
 import static life.catalogue.api.search.NameUsageRequest.SearchType.*;
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
-import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;
+import static life.catalogue.es2.TestIndexUtils.*;
 import static org.junit.Assert.*;
 
 /**
@@ -89,13 +88,13 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     insert(c, cfg, w6);
 
     insert(c, cfg, taxon("t7", "Felis silvestris", "Schreber, 1775", Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, null, null));
-    synonym(c, cfg, "s1", "Felis domesticus", "Erxleben, 1777",  Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, "t6");
+    insert(c, cfg, synonym("s1", "Felis domesticus", "Erxleben, 1777",  Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, "t6"));
 
     // ---- Dataset 200: BOTANICAL (3 taxa + 1 synonym = 4) ----
     insert(c, cfg, taxon("t8",  "Plantae",    null,  Rank.KINGDOM, NomCode.BOTANICAL, DS2, null, null));
     insert(c, cfg, taxon("t9",  "Rosa",       null,  Rank.GENUS,   NomCode.BOTANICAL, DS2, null, REF_B));
     insert(c, cfg, taxon("t10", "Rosa canina", "L.", Rank.SPECIES, NomCode.BOTANICAL, DS2, null, REF_B));
-    synonym(c, cfg, "s2", "Rosa rubiginosa", "L.",  Rank.SPECIES,  NomCode.BOTANICAL, DS2, "t10");
+    insert(c, cfg, synonym("s2", "Rosa rubiginosa", "L.",  Rank.SPECIES,  NomCode.BOTANICAL, DS2, "t10"));
 
     EsUtil.refreshIndex(c, cfg.name);
     service = new NameUsageSearchServiceEs(cfg.name, c);
@@ -109,43 +108,6 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
   /** Disable base class per-test setup/teardown; the index is shared across all tests. */
   @Override @Before  public void setUp() {}
   @Override @After   public void tearDown() {}
-
-  // -----------------------------------------------------------------------
-  // Index helpers
-  // -----------------------------------------------------------------------
-
-  static Name parseName(String name, String authorship, Rank rank, NomCode code) throws InterruptedException {
-    IssueContainer issues = IssueContainer.simple();
-    var opt = NameParser.PARSER.parse(name, authorship, rank, code, issues);
-    return opt.get().getName();
-  }
-
-  /** Build a taxon wrapper (not yet inserted). */
-  private static NameUsageWrapper taxon(String id, String sciName, String authorship,
-      Rank rank, NomCode code, int datasetKey, Integer sectorKey, String publishedInId) throws Exception {
-    Name n = parseName(sciName, authorship, rank, code);
-    n.setDatasetKey(datasetKey);
-    n.setId(id + "_n");
-    if (publishedInId != null) n.setPublishedInId(publishedInId);
-    Taxon t = TestEntityGenerator.newTaxon(n, id, null);
-    if (sectorKey != null) t.setSectorKey(sectorKey);
-    return TestEntityGenerator.newNameUsageWrapper(t);
-  }
-
-  private static void insert(ElasticsearchClient c, IndexConfig cfg, NameUsageWrapper w) throws Exception {
-    EsUtil.insert(c, cfg.name, w);
-  }
-
-  private static void synonym(ElasticsearchClient c, IndexConfig cfg,
-      String id, String sciName, String authorship, Rank rank, NomCode code,
-      int datasetKey, String acceptedId) throws Exception {
-    Name n = parseName(sciName, authorship, rank, code);
-    n.setDatasetKey(datasetKey);
-    n.setId(id + "_n");
-    Synonym s = TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, n, acceptedId);
-    s.setId(id);
-    insert(c, cfg, TestEntityGenerator.newNameUsageWrapper(s));
-  }
 
   // -----------------------------------------------------------------------
   // Search helpers
@@ -347,14 +309,14 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
   public void testSorting() {
     // NAME: alphabetical ascending
     NameUsageSearchRequest nameReq = new NameUsageSearchRequest();
-    nameReq.setSortBy(NameUsageSearchRequest.SortBy.NAME);
+    nameReq.setSortBy(NameUsageRequest.SortBy.NAME);
     List<NameUsageWrapper> byName = search(nameReq).getResult();
     assertEquals(TOTAL, byName.size());
     assertNameOrder(byName, false);
 
     // NAME reversed: alphabetical descending
     NameUsageSearchRequest nameRevReq = new NameUsageSearchRequest();
-    nameRevReq.setSortBy(NameUsageSearchRequest.SortBy.NAME);
+    nameRevReq.setSortBy(NameUsageRequest.SortBy.NAME);
     nameRevReq.setReverse(true);
     List<NameUsageWrapper> byNameRev = search(nameRevReq).getResult();
     assertEquals(TOTAL, byNameRev.size());
@@ -362,7 +324,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
     // TAXONOMIC: kingdoms (lower ordinal) must appear before species (higher ordinal)
     NameUsageSearchRequest taxReq = new NameUsageSearchRequest();
-    taxReq.setSortBy(NameUsageSearchRequest.SortBy.TAXONOMIC);
+    taxReq.setSortBy(NameUsageRequest.SortBy.TAXONOMIC);
     List<NameUsageWrapper> byTax = search(taxReq).getResult();
     assertEquals(TOTAL, byTax.size());
     int firstKingdom = -1, firstSpecies = -1;
@@ -376,12 +338,12 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
     // NATIVE: doc insertion order – just verify 12 results
     NameUsageSearchRequest nativeReq = new NameUsageSearchRequest();
-    nativeReq.setSortBy(NameUsageSearchRequest.SortBy.NATIVE);
+    nativeReq.setSortBy(NameUsageRequest.SortBy.NATIVE);
     assertEquals(TOTAL, count(nativeReq));
 
     // RELEVANCE: score-based – without a q all scores are equal, just verify 12 results
     NameUsageSearchRequest relReq = new NameUsageSearchRequest();
-    relReq.setSortBy(NameUsageSearchRequest.SortBy.RELEVANCE);
+    relReq.setSortBy(NameUsageRequest.SortBy.RELEVANCE);
     assertEquals(TOTAL, count(relReq));
   }
 

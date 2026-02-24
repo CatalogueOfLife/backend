@@ -52,7 +52,7 @@ public class PgImportESIT extends PgImportITBase {
     normalizeAndImport(COLDP, 0);
     printTree();
     NameUsageSearchRequest req = new NameUsageSearchRequest();
-    req.setSingleContent(NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME);
+    req.setSingleContent(NameUsageRequest.SearchContent.SCIENTIFIC_NAME);
     req.addFilter(NameUsageSearchParameter.DATASET_KEY, dataset.getKey());
     req.addFacet(NameUsageSearchParameter.STATUS);
     req.addFacet(NameUsageSearchParameter.ISSUE);

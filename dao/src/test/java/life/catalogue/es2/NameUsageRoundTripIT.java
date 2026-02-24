@@ -1,7 +1,10 @@
 package life.catalogue.es2;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.BareName;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.Synonym;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageWrapper;
 
 import java.io.IOException;

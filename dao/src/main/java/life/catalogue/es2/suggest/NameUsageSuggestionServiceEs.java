@@ -1,22 +1,37 @@
 package life.catalogue.es2.suggest;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import jakarta.validation.constraints.NotNull;
-
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestion;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.es2.EsException;
+import life.catalogue.es2.EsQueryService;
 
+import java.io.IOException;
 import java.util.List;
 
-public class NameUsageSuggestionServiceEs implements NameUsageSuggestionService {
-  public NameUsageSuggestionServiceEs(@NotNull String name, ElasticsearchClient esClient) {
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import jakarta.validation.constraints.NotNull;
 
+public class NameUsageSuggestionServiceEs extends EsQueryService implements NameUsageSuggestionService {
+
+  public NameUsageSuggestionServiceEs(@NotNull String name, ElasticsearchClient esClient) {
+    super(name, esClient);
   }
 
   @Override
   public List<NameUsageSuggestion> suggest(NameUsageSuggestRequest request) {
-    // .size(10)
-    //.trackTotalHits(false)
-    return List.of();
+    try {
+      new SuggestRequestValidator(request).validateRequest();
+      var translator = new SuggestRequestTranslator(request);
+      SearchRequest esSearchRequest = translator.translateRequest(index);
+      SearchResponse<NameUsageWrapper> esResponse = client.search(esSearchRequest, NameUsageWrapper.class);
+      return new ResponseConverter(esResponse).convertEsResponse();
+
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
   }
+
 }

@@ -1,16 +1,17 @@
 package life.catalogue.es2;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.es2.json.EsModule;
 
 import org.gbif.nameparser.api.Rank;
 
+import org.junit.Test;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 

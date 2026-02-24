@@ -3,14 +3,14 @@ package life.catalogue.es2;
 import life.catalogue.config.EsConfig;
 import life.catalogue.config.IndexConfig;
 
+import java.time.LocalDate;
+
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-
-import java.time.LocalDate;
 
 /**
  * Spins up an elasticsearch test container.

@@ -30,7 +30,15 @@ public class SimpleNameClassification implements HasID<String> {
   public void setClassification(List<SimpleName> classification) {
     this.classification = classification;
   }
-  
+
+  /**
+   * Returns the parent taxon, i.e. the second last usage in the classification, of this usage.
+   * @return
+   */
+  public SimpleName getParent() {
+    return classification.size() > 1 ? classification.get(classification.size()-2) : null;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

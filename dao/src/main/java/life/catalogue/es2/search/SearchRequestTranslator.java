@@ -15,7 +15,7 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 /**
  * Translates a {@link NameUsageSearchRequest} into a native Elasticsearch search request.
  */
-class RequestTranslator {
+class SearchRequestTranslator {
 
   static Query generateQuery(NameUsageSearchRequest request) {
     if (FiltersTranslator.mustGenerateFilters(request)) {
@@ -34,7 +34,7 @@ class RequestTranslator {
   private final NameUsageSearchRequest request;
   private final Page page;
 
-  RequestTranslator(NameUsageSearchRequest request, Page page) {
+  SearchRequestTranslator(NameUsageSearchRequest request, Page page) {
     this.request = request;
     this.page = page;
   }

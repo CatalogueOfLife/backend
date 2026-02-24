@@ -9,8 +9,6 @@ import life.catalogue.es2.EsQueryService;
 
 import java.io.IOException;
 
-import life.catalogue.es2.query.RequestValidator;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,11 +26,11 @@ public class NameUsageSearchServiceEs extends EsQueryService implements NameUsag
 
   public NameUsageSearchResponse search(NameUsageSearchRequest request, Page page) {
     try {
-      new RequestValidator(request).validateRequest();
-      RequestTranslator translator = new RequestTranslator(request, page);
+      new SearchRequestValidator(request).validateRequest();
+      SearchRequestTranslator translator = new SearchRequestTranslator(request, page);
       SearchRequest esSearchRequest = translator.translateRequest(index);
       SearchResponse<NameUsageWrapper> esResponse = client.search(esSearchRequest, NameUsageWrapper.class);
-      ResponseConverter converter = new ResponseConverter(esResponse);
+      SearchResponseConverter converter = new SearchResponseConverter(esResponse);
       return converter.convertEsResponse(page);
     } catch (IOException e) {
       throw new EsException(e);
