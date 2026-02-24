@@ -1,7 +1,5 @@
 package life.catalogue.assembly;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -14,7 +12,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 
 import org.gbif.nameparser.api.Rank;

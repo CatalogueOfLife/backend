@@ -12,7 +12,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.PgImportRule;
 import life.catalogue.junit.*;

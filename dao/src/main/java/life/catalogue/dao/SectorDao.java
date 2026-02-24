@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.License;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 
 import org.gbif.nameparser.api.Rank;
 

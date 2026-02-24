@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.junit.MybatisTestUtils;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;

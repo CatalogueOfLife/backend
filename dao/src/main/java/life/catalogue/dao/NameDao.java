@@ -3,7 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.matching.nidx.NameIndex;
 
 import java.time.LocalDateTime;

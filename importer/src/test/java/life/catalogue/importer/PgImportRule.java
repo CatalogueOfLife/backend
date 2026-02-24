@@ -15,7 +15,7 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.UserMapper;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.ImportStoreFactory;

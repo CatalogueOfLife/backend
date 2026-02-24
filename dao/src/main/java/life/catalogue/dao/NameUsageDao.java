@@ -10,7 +10,7 @@ import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NameType;

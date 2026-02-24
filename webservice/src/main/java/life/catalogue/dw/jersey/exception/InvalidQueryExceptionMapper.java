@@ -1,6 +1,6 @@
 package life.catalogue.dw.jersey.exception;
 
-import life.catalogue.es2.query.InvalidQueryException;
+import life.catalogue.es.query.InvalidQueryException;
 
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;

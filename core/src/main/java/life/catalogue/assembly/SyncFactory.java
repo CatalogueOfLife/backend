@@ -1,13 +1,11 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Sector;
 import life.catalogue.common.id.ShortUUID;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherFactory;

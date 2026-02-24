@@ -3,7 +3,7 @@ package life.catalogue.release;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 

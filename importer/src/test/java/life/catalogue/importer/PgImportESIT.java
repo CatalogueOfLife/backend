@@ -5,9 +5,9 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.TempFile;
-import life.catalogue.es2.EsSetupRule;
-import life.catalogue.es2.indexing.NameUsageIndexServiceEs;
-import life.catalogue.es2.search.NameUsageSearchServiceEs;
+import life.catalogue.es.EsSetupRule;
+import life.catalogue.es.indexing.NameUsageIndexServiceEs;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
 import life.catalogue.junit.SqlSessionFactoryRule;
 
 import org.gbif.nameparser.api.Rank;

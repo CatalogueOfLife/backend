@@ -63,6 +63,6 @@ public class SimpleVernacularName {
 
   @Override
   public String toString() {
-    return "VN{" + name + "@" + language +  "}";
+    return language + ":" + name;
   }
 }

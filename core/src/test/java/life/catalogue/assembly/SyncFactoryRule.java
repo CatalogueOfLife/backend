@@ -3,7 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.TestUtils;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
 import life.catalogue.junit.NameMatchingRule;

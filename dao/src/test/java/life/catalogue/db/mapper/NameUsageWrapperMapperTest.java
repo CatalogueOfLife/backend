@@ -9,12 +9,12 @@ import life.catalogue.api.vocab.*;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import life.catalogue.coldp.ColdpTerm;
 
-import life.catalogue.common.text.StringUtils;
-import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.PgUtils;
 
 import org.apache.ibatis.cursor.Cursor;
 
@@ -78,6 +78,26 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     tm.create(tax);
 
     return tax;
+  }
+
+
+  @Test
+  public void vernacularNames() throws Exception {
+    var nuwm = mapper(NameUsageWrapperMapper.class);
+    var nuw = nuwm.get(DATASET11.getKey(), false, "root-1");
+    assertEquals(3, nuw.getVernacularNames().size());
+
+    AtomicBoolean found = new AtomicBoolean(false);
+    // we need a tmp issues table first
+    var ism = mapper(TmpIssueMapper.class);
+    ism.createTmpIssuesTable(DATASET11.getKey(), null);
+    PgUtils.consume(() -> nuwm.processWithoutClassification(DATASET11.getKey(), null), w -> {
+      if ("root-1".equals(w.getId())) {
+        assertEquals(3, w.getVernacularNames().size());
+        found.set(true);
+      }
+    });
+    assertTrue(found.get());
   }
 
   @Test

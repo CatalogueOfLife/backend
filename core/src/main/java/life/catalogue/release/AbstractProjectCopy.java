@@ -10,7 +10,7 @@ import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 
 import java.time.LocalDateTime;
 

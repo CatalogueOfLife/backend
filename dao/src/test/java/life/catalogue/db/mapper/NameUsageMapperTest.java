@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
@@ -22,8 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.ibatis.cursor.Cursor;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.annotation.Nullable;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;

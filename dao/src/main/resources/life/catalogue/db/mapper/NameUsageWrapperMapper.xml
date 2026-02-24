@@ -22,6 +22,7 @@
       <id property="id" column="id"/>
       <id property="datasetKey" column="dataset_key"/>
     </collection>
+    <collection property="vernacularNames" ofType="SimpleVernacularName" autoMapping="true" columnPrefix="vn_" notNullColumn="name" />
   </resultMap>
 
   <resultMap id="classificationResultMap" type="SimpleNameClassification">
@@ -191,12 +192,14 @@
 
     SELECT u.id AS uid,
       <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
+      v.issues, secsrc.sources, secsrc.groups,
       ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
-      v.issues, secsrc.sources, secsrc.groups
+      vn.name AS vn_name, vn.language AS vn_language
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
       LEFT JOIN nuissues v ON v.id=u.id
       LEFT JOIN secsrc ON secsrc.id=u.id
       LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
+      LEFT JOIN vernacular_name vn ON vn.dataset_key=#{datasetKey} AND vn.taxon_id=u.id
     WHERE u.dataset_key=#{datasetKey} AND u.id = #{id}
   </select>
 
@@ -205,11 +208,13 @@
       <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT_BASE" />,
       r.citation AS according_to,
       v.issues, v2.sources, v2.groups,
-      ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode
+      ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
+      vn.name AS vn_name, vn.language AS vn_language
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_NO_ACCEPTED"/>
       LEFT JOIN tmp_usage_issues v ON v.id=u.id
       LEFT JOIN tmp_usage_sources v2 ON v2.id=u.id
       LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
+      LEFT JOIN vernacular_name vn ON vn.dataset_key=#{datasetKey} AND vn.taxon_id=u.id
     WHERE u.dataset_key=#{datasetKey}
     <if test="sectorKey != null">
       AND u.sector_key = #{sectorKey}

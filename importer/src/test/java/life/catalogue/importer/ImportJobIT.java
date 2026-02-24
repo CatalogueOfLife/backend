@@ -5,10 +5,9 @@ import life.catalogue.TestUtils;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.common.io.Resources;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
@@ -20,7 +19,6 @@ import life.catalogue.junit.TreeRepoRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import java.net.URI;
-import java.net.URL;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;

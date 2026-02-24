@@ -1,7 +1,6 @@
 package life.catalogue.dao;
 
 import life.catalogue.TestUtils;
-import life.catalogue.api.exception.NotUniqueException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -15,7 +14,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.doi.service.DoiConfig;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;

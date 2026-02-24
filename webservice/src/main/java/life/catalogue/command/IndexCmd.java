@@ -3,10 +3,10 @@ package life.catalogue.command;
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.config.EsConfig;
-import life.catalogue.es2.EsClientFactory;
-import life.catalogue.es2.EsUtil;
-import life.catalogue.es2.indexing.NameUsageIndexService;
-import life.catalogue.es2.indexing.NameUsageIndexServiceEs;
+import life.catalogue.es.EsClientFactory;
+import life.catalogue.es.EsUtil;
+import life.catalogue.es.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexServiceEs;
 
 import java.io.BufferedReader;
 import java.io.File;

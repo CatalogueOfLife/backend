@@ -15,10 +15,10 @@ import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es2.query.InvalidQueryException;
-import life.catalogue.es2.indexing.NameUsageIndexService;
-import life.catalogue.es2.search.NameUsageSearchService;
-import life.catalogue.es2.suggest.NameUsageSuggestionService;
+import life.catalogue.es.query.InvalidQueryException;
+import life.catalogue.es.indexing.NameUsageIndexService;
+import life.catalogue.es.search.NameUsageSearchService;
+import life.catalogue.es.suggest.NameUsageSuggestionService;
 import life.catalogue.feedback.Feedback;
 import life.catalogue.feedback.FeedbackService;
 import life.catalogue.resources.NameUsageSearchResource;
@@ -28,11 +28,9 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cursor.Cursor;
@@ -49,8 +47,6 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
-
-import javax.annotation.Nullable;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")

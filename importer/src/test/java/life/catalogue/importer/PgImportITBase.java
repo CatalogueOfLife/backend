@@ -5,14 +5,13 @@ import life.catalogue.api.RandomUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncTestBase;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
-import life.catalogue.es2.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
@@ -32,7 +31,6 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -50,8 +48,6 @@ import com.google.common.io.Files;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-
-import javax.annotation.Nullable;
 
 import static org.junit.Assert.*;
 
