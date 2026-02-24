@@ -104,13 +104,12 @@ public class NameUsageSearchResource {
         @JsonProperty("sortBy") NameUsageSearchRequest.SortBy sortBy,
         @JsonProperty("q") String q,
         @JsonProperty("reverse") @DefaultValue("false") boolean reverse,
-        @JsonProperty("fuzzy") @DefaultValue("false") boolean fuzzy,
         @JsonProperty("offset") @DefaultValue("0") int offset,
         @JsonProperty("limit") @DefaultValue("10") int limit,
         @JsonProperty("type") NameUsageRequest.SearchType searchType,
         @JsonProperty("minRank") Rank minRank,
         @JsonProperty("maxRank") Rank maxRank) {
-      request = new NameUsageSearchRequest(filter, facet, facetLimit, content, sortBy, q, reverse, fuzzy, searchType, minRank, maxRank);
+      request = new NameUsageSearchRequest(filter, facet, facetLimit, content, sortBy, q, reverse, searchType, minRank, maxRank);
       page = new Page(offset, limit);
     }
   }

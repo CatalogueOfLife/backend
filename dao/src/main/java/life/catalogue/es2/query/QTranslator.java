@@ -76,8 +76,8 @@ public class QTranslator {
         );
       case WHOLE_WORDS
         -> Query.of(q -> q
-          .term(t -> t.field("usage.name.scientificName.word")
-            .value(request.getQ())
+          .match(t -> t.field("usage.name.scientificName.word")
+            .query(request.getQ())
           )
         );
       case FUZZY
@@ -94,10 +94,18 @@ public class QTranslator {
   }
 
   public Query buildAuthorshipQuery() {
-    return Query.of(q -> q.term(t -> t.field(FLD_AUTHORSHIP).value(request.getQ())));
+    return Query.of(q -> q
+      .match(t -> t.field(FLD_AUTHORSHIP)
+        .query(request.getQ())
+      )
+    );
   }
 
   public Query buildVernacularQuery() {
-    return Query.of(q -> q.term(t -> t.field(FLD_VERNACULAR).value(request.getQ())));
+    return Query.of(q -> q
+      .match(m -> m.field(FLD_VERNACULAR)
+        .query(request.getQ())
+      )
+    );
   }
 }

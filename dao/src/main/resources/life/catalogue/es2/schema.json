@@ -12,6 +12,10 @@
         }
       },
       "analyzer": {
+        "standard_ascii": {
+          "tokenizer": "standard",
+          "filter": ["lowercase", "asciifolding"]
+        },
         "suggest": {
           "tokenizer": "standard",
           "filter": [
@@ -27,9 +31,13 @@
             "asciifolding"
           ]
         },
-        "standard_ascii": {
+        "vernacular_name_analyzer": {
           "tokenizer": "standard",
-          "filter": ["lowercase", "asciifolding"]
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "stemmer"
+          ]
         }
       }
     }
@@ -137,13 +145,8 @@
                 "analyzer": "standard_ascii"
               },
               "authorship": {
-                "type": "keyword",
-                "fields": {
-                  "std": {
-                    "type": "text",
-                    "analyzer": "standard_ascii"
-                  }
-                }
+                "type": "text",
+                "analyzer": "standard_ascii"
               },
               "author": {
                 "type": "keyword"
@@ -216,7 +219,7 @@
         "properties": {
           "name": {
             "type": "text",
-            "analyzer": "standard_ascii"
+            "analyzer": "vernacular_name_analyzer"
           }
         }
       }

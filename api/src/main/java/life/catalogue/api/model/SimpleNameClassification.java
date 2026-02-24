@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -35,6 +37,7 @@ public class SimpleNameClassification implements HasID<String> {
    * Returns the parent taxon, i.e. the second last usage in the classification, of this usage.
    * @return
    */
+  @JsonIgnore
   public SimpleName getParent() {
     return classification != null && classification.size() > 1 ? classification.get(classification.size()-2) : null;
   }

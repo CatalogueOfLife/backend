@@ -19,6 +19,7 @@ import org.junit.*;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 import static life.catalogue.api.search.NameUsageRequest.SearchContent.SCIENTIFIC_NAME;
+import static life.catalogue.api.search.NameUsageRequest.SearchContent.VERNACULAR_NAME;
 import static life.catalogue.api.search.NameUsageRequest.SearchType.*;
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
 import static life.catalogue.es2.TestIndexUtils.*;
@@ -91,9 +92,13 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     insert(c, cfg, synonym("s1", "Felis domesticus", "Erxleben, 1777",  Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, "t6"));
 
     // ---- Dataset 200: BOTANICAL (3 taxa + 1 synonym = 4) ----
-    insert(c, cfg, taxon("t8",  "Plantae",    null,  Rank.KINGDOM, NomCode.BOTANICAL, DS2, null, null));
+    insert(c, cfg, withVernacular(taxon("t8",  "Plantae",    null,  Rank.KINGDOM, NomCode.BOTANICAL, DS2, null, null),
+      "deu:Pflanzen", "fre:Plante", "eng:Plants"
+    ));
     insert(c, cfg, taxon("t9",  "Rosa",       null,  Rank.GENUS,   NomCode.BOTANICAL, DS2, null, REF_B));
-    insert(c, cfg, taxon("t10", "Rosa canina", "L.", Rank.SPECIES, NomCode.BOTANICAL, DS2, null, REF_B));
+    insert(c, cfg, withVernacular(taxon("t10", "Rosa canina", "L.", Rank.SPECIES, NomCode.BOTANICAL, DS2, null, REF_B),
+      "deu:Hundsrose", "ita:Rosa selvatica comune", "eng:dog rose", "vie:tầm xuân", "heb:ורד הכלב"
+    ));
     insert(c, cfg, synonym("s2", "Rosa rubiginosa", "L.",  Rank.SPECIES,  NomCode.BOTANICAL, DS2, "t10"));
 
     EsUtil.refreshIndex(c, cfg.name);
@@ -102,7 +107,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
   @AfterClass
   public static void deleteTestIndex() throws IOException {
-    EsUtil.deleteIndex(esSetup.getClient(), esSetup.getEsConfig().index);
+    //EsUtil.deleteIndex(esSetup.getClient(), esSetup.getEsConfig().index);
   }
 
   /** Disable base class per-test setup/teardown; the index is shared across all tests. */
@@ -418,5 +423,35 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     req.setSingleContent(SCIENTIFIC_NAME);
     assertFalse("WHOLE_WORDS fuzzy: 'Rosa canina' should return results",
         search(req).getResult().isEmpty());
+  }
+
+  @Test
+  public void testVernacularNames() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.setSingleContent(VERNACULAR_NAME);
+    req.setQ("Rose");
+    List<NameUsageWrapper> results = search(req).getResult();
+    assertEquals("Vernacular 'Rose' should match exactly 1 document", 1, results.size());
+    assertEquals("t10", results.getFirst().getId());
+  }
+
+
+  @Test
+  public void testAuthorships() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.setSingleContent(NameUsageRequest.SearchContent.AUTHORSHIP);
+    req.setQ("Linnaeus");
+    List<NameUsageWrapper> results = search(req).getResult();
+    assertEquals("Authorship 'Linnaeus' should match exactly 1 document", 1, results.size());
+    assertEquals("t5", results.getFirst().getId());
+
+    req.setSingleContent(SCIENTIFIC_NAME);
+    results = search(req).getResult();
+    assertTrue("ScientificName 'Linnaeus' should match exactly 0 document", results.isEmpty());
+
+    req.setSingleContent(NameUsageRequest.SearchContent.AUTHORSHIP);
+    req.setQ("1758");
+    results = search(req).getResult();
+    assertEquals("Authorship '1758' should match exactly 2 documents", 2, results.size());
   }
 }

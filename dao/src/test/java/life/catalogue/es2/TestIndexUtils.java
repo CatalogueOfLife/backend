@@ -10,6 +10,7 @@ import life.catalogue.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -59,6 +60,16 @@ public class TestIndexUtils {
 
   public static NameUsageWrapper withExtinct(NameUsageWrapper nuw, boolean extinct) {
     ((Taxon)nuw.getUsage()).setExtinct(extinct);
+    return nuw;
+  }
+
+  public static NameUsageWrapper withVernacular(NameUsageWrapper nuw, String... vernacularNames) {
+    List<SimpleVernacularName> vns = new ArrayList<>();
+    for (var vn : vernacularNames) {
+      String[] parsed = vn.split(":");
+      vns.add(new SimpleVernacularName(parsed[0], parsed[1]));
+    }
+    nuw.setVernacularNames(vns);
     return nuw;
   }
 

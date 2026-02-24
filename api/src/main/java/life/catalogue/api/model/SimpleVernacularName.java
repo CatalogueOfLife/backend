@@ -15,6 +15,11 @@ public class SimpleVernacularName {
   public SimpleVernacularName() {
   }
 
+  public SimpleVernacularName(String language, String name) {
+    this.language = language;
+    this.name = name;
+  }
+
   public SimpleVernacularName(VernacularName vn) {
     this.name = vn.getName();
     this.language = vn.getLanguage();

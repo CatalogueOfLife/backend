@@ -31,9 +31,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("content")
   private Set<SearchContent> content = EnumSet.copyOf(DEFAULT_CONTENT);
 
-  @QueryParam("highlight")
-  private boolean highlight;
-
   @QueryParam("type")
   private SearchType searchType;
 
@@ -50,13 +47,11 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("content") Set<SearchContent> content,
       @JsonProperty("sortBy") SortBy sortBy,
       @JsonProperty("q") String q,
-      @JsonProperty("highlight") boolean highlight,
       @JsonProperty("reverse") boolean reverse,
       @JsonProperty("type") SearchType searchType,
       @JsonProperty("minRank") Rank minRank,
       @JsonProperty("maxRank") Rank maxRank) {
     super(q, minRank, maxRank, sortBy, reverse);
-    this.highlight = highlight;
     this.searchType = searchType;
     this.facetLimit = facetLimit;
     setFilters(filters);
@@ -73,7 +68,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    */
   public NameUsageSearchRequest(NameUsageSearchRequest other) {
     super(other);
-    this.highlight = other.highlight;
     this.searchType = other.searchType;
     this.facetLimit = other.facetLimit;
     setFacets(other.facets);
@@ -98,7 +92,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         (content == null || content.isEmpty())
         && (facets == null || facets.isEmpty())
         && (getFilters() == null || getFilters().isEmpty())
-        && !highlight
         && searchType == null;
   }
 
@@ -142,14 +135,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.content = EnumSet.copyOf(DEFAULT_CONTENT);
   }
 
-  public boolean isHighlight() {
-    return highlight;
-  }
-
-  public void setHighlight(boolean highlight) {
-    this.highlight = highlight;
-  }
-
   @Override
   public SearchType getSearchType() {
     return searchType;
@@ -165,8 +150,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     if (!(o instanceof NameUsageSearchRequest)) return false;
     if (!super.equals(o)) return false;
     NameUsageSearchRequest that = (NameUsageSearchRequest) o;
-    return highlight == that.highlight
-           && Objects.equals(facets, that.facets)
+    return Objects.equals(facets, that.facets)
            && Objects.equals(facetLimit, that.facetLimit)
            && Objects.equals(content, that.content)
            && searchType == that.searchType;
@@ -174,6 +158,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), facets, facetLimit, content, highlight, searchType);
+    return Objects.hash(super.hashCode(), facets, facetLimit, content, searchType);
   }
 }

@@ -25,6 +25,10 @@ public class NameUsageSuggestionServiceEsIT extends EsTestBase {
 
   private static NameUsageSuggestionServiceEs service;
 
+  public NameUsageSuggestionServiceEsIT() {
+    super();
+  }
+
   @BeforeClass
   public static void indexTestData() throws Exception {
     ElasticsearchClient c = esSetup.getClient();
