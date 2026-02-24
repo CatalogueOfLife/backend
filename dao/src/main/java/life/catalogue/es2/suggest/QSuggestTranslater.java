@@ -4,9 +4,9 @@ import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.es2.query.QTranslator;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 
 public class QSuggestTranslater extends QTranslator {
+  protected static final String FLD_SCINAME = "usage.name.scientificName.suggest";
 
   public QSuggestTranslater(NameUsageRequest request) {
     super(request);
@@ -15,10 +15,9 @@ public class QSuggestTranslater extends QTranslator {
   @Override
   public Query buildSciNameQuery() {
     return Query.of(q -> q
-      .multiMatch(m -> m
+      .match(m -> m
         .query(request.getQ())
-        .type(TextQueryType.BoolPrefix)
-        .fields(FLD_SCINAME, FLD_SCINAME+"._2gram", FLD_SCINAME+"._3gram")
+        .field(FLD_SCINAME)
       )
     );
   }

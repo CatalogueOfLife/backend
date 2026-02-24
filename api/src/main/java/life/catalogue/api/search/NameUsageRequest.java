@@ -139,7 +139,7 @@ public abstract class NameUsageRequest {
 
   public void addFilter(NameUsageSearchParameter param, Enum<?> value) {
     nonNull(value);
-    addFilter(param, String.valueOf(value.ordinal()));
+    addFilterValue(param, value);
   }
 
   public void addFilter(NameUsageSearchParameter param, UUID value) {
@@ -277,11 +277,11 @@ public abstract class NameUsageRequest {
         if (i < 0 || i >= param.type().getEnumConstants().length) {
           throw illegalValueForParameter(param, value);
         }
-        addFilterValue(param, Integer.valueOf(i));
+        addFilterValue(param, param.type().getEnumConstants()[i]);
       } catch (NumberFormatException e) {
         @SuppressWarnings("unchecked")
         Enum<?> c = VocabularyUtils.lookupEnum(value, (Class<? extends Enum<?>>) param.type());
-        addFilterValue(param, Integer.valueOf(c.ordinal()));
+        addFilterValue(param, c);
       }
     } else {
       throw new IllegalArgumentException("Unexpected parameter type: " + param.type());

@@ -30,7 +30,11 @@ public class QTranslator {
   public Query translate() {
     List<Query> queries = new ArrayList<>(request.getContent().size());
     if (request.getContent().contains(SCIENTIFIC_NAME)) {
-      queries.add(withBoost(buildSciNameQuery(), SCINAME_EXTRA_BOOST));
+      // always make sure the exact match is first
+      if (request.getSearchType() != NameUsageRequest.SearchType.EXACT) {
+        queries.add(withBoost(buildSciNameExactQuery(), 2*SCINAME_EXTRA_BOOST));
+      }
+      queries.add(buildSciNameQuery());
     }
     if (request.getContent().contains(AUTHORSHIP)) {
       queries.add(buildAuthorshipQuery());
@@ -54,11 +58,15 @@ public class QTranslator {
     return Query.of(q -> q.bool(b -> b.must(query).boost(boost)));
   }
 
+  public Query buildSciNameExactQuery() {
+    return Query.of(q -> q.term(t -> t.field(FLD_SCINAME).value(request.getQ())));
+  }
+
   public Query buildSciNameQuery() {
     // default to WHOLE_WORDS
     Query query = switch (ObjectUtils.coalesce(request.getSearchType(), NameUsageRequest.SearchType.WHOLE_WORDS)) {
       case EXACT
-        -> Query.of(q -> q.term(t -> t.field(FLD_SCINAME).value(request.getQ())));
+        -> buildSciNameExactQuery();
       case PREFIX
         -> Query.of(q -> q
           .prefix(p -> p
@@ -67,7 +75,11 @@ public class QTranslator {
           )
         );
       case WHOLE_WORDS
-        -> Query.of(q -> q.term(t -> t.field("usage.name.scientificName.word").value(request.getQ())));
+        -> Query.of(q -> q
+          .term(t -> t.field("usage.name.scientificName.word")
+            .value(request.getQ())
+          )
+        );
       case FUZZY
         -> Query.of(q -> q
           .fuzzy(f -> f

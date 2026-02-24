@@ -1,5 +1,7 @@
 package life.catalogue.es2.suggest;
 
+import co.elastic.clients.elasticsearch.core.search.SourceConfig;
+
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.es2.query.FiltersTranslator;
@@ -13,6 +15,9 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
  * Translates a {@link NameUsageSearchRequest} into a native Elasticsearch search request.
  */
 class SuggestRequestTranslator {
+  static final SourceConfig sourceConfig = new SourceConfig.Builder().filter(f -> f
+    .includes("id","group", "classification", "usage.*")
+  ).build();
 
   static Query generateQuery(NameUsageSuggestRequest request) {
     // q param is required for suggest requests and enforced by validator
@@ -39,6 +44,7 @@ class SuggestRequestTranslator {
 
     return SearchRequest.of(s -> {
       s.index(index)
+       .source(sourceConfig) // only return the subset we actually need
        .from(0)
        .size(request.getLimit())
        .query(query)

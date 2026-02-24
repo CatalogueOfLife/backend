@@ -37,14 +37,6 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
     this.accepted = accepted;
   }
 
-  public Boolean getAccepted() {
-    return accepted;
-  }
-
-  public void setAccepted(Boolean accepted) {
-    this.accepted = accepted;
-  }
-
   public boolean isExclBareNames() {
     return exclBareNames;
   }

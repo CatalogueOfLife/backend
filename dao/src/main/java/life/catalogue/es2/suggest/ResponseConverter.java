@@ -41,17 +41,17 @@ class ResponseConverter {
     if (nuw.getUsage() == null) {
       return null;
     }
-    var u = nuw.getUsage();
-    var n = u.getName();
     NameUsageSuggestion suggestion = new NameUsageSuggestion();
     suggestion.setScore(hit.score() == null ? 0 : hit.score().floatValue());
-    suggestion.setMatch(u.getLabel());
     suggestion.setUsageId(nuw.getId());
-    suggestion.setNameId(n.getId());
     suggestion.setGroup(nuw.getGroup());
+    var u = nuw.getUsage();
+    suggestion.setMatch(u.getLabel());
+    suggestion.setStatus(u.getStatus());
+    var n = u.getName();
+    suggestion.setNameId(n.getId());
     suggestion.setNomCode(n.getCode());
     suggestion.setRank(n.getRank());
-    suggestion.setStatus(u.getStatus());
     if (u.getStatus() != null && u.getStatus().isSynonym()) { // a synonym
       var acc = nuw.getParent();
       suggestion.setAcceptedName(acc.getLabel());

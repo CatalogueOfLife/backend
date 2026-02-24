@@ -1,6 +1,7 @@
 package life.catalogue.es2.suggest;
 
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.config.IndexConfig;
 import life.catalogue.es2.EsTestBase;
@@ -57,6 +58,17 @@ public class NameUsageSuggestionServiceEsIT extends EsTestBase {
     insert(c, cfg, withClassification(classifications,
       taxon("t7", "Felis silvestris", "Schreber, 1775", Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, null, null)
     ));
+    insert(c, cfg, withClassification(classifications,
+      taxon("t8", "Felis silvestris silvestris", "Schreber, 1775", Rank.SUBSPECIES, NomCode.ZOOLOGICAL, DS1, null, null)
+    ));
+    classifications.removeLast(); // Felis catus
+    insert(c, cfg, withClassification(classifications,
+      taxon("t9", "Felis silvestris vulgaris", "Döring, 1993", Rank.SUBSPECIES, NomCode.ZOOLOGICAL, DS1, null, null)
+    ));
+    classifications.removeLast(); // Felis catus
+    insert(c, cfg, withClassification(classifications,
+      taxon("t10", "Felis silvestris anatolica", "Greg, 1887", Rank.SUBSPECIES, NomCode.ZOOLOGICAL, DS1, null, null)
+    ));
 
     EsUtil.refreshIndex(c, cfg.name);
     service = new NameUsageSuggestionServiceEs(cfg.name, c);
@@ -77,7 +89,42 @@ public class NameUsageSuggestionServiceEsIT extends EsTestBase {
     req.setDatasetFilter(DS1);
     req.setQ("feli");
     var resp = service.suggest(req);
-    assertEquals(5, resp.size());
+    assertEquals(8, resp.size());
+
+    req.setQ("cat");
+    resp = service.suggest(req);
+    assertEquals(1, resp.size());
+
+    req.setQ("dom");
+    req.setAccepted(true);
+    resp = service.suggest(req);
+    assertEquals(0, resp.size());
+
+    req.setQ("feli");
+    req.setMaxRank(Rank.GENUS);
+    resp = service.suggest(req);
+    assertEquals(6, resp.size());
+    assertEquals("t5", resp.getFirst().getUsageId());
+    assertEquals("t6", resp.get(1).getUsageId());
+    assertEquals("t7", resp.get(2).getUsageId());
+
+    req.setMinRank(Rank.SPECIES);
+    resp = service.suggest(req);
+    assertEquals(3, resp.size());
+
+    req = new NameUsageSuggestRequest();
+    req.setDatasetFilter(DS1);
+    req.setQ("silv");
+    resp = service.suggest(req);
+    assertEquals(4, resp.size());
+    assertEquals("t7", resp.getFirst().getUsageId());
+    assertEquals("t10", resp.get(1).getUsageId()); // sorted by rank, then name
+
+    req.setSortBy(NameUsageRequest.SortBy.RELEVANCE);
+    resp = service.suggest(req);
+    assertEquals(4, resp.size());
+    assertEquals("t8", resp.getFirst().getUsageId()); // sorted by relevance - autonym as query term twice
+    assertEquals("t7", resp.get(1).getUsageId());
   }
 
 }
