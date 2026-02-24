@@ -12,8 +12,8 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 public class EsTestBase {
   @ClassRule
-  public static EsConnectRule esSetup = new EsConnectRule();
-  //public static EsSetupRule esSetup = new EsSetupRule();
+  //public static EsConnectRule esSetup = new EsConnectRule();
+  public static EsSetupRule esSetup = new EsSetupRule();
 
   protected ElasticsearchClient client;
   protected IndexConfig cfg;

@@ -64,6 +64,7 @@ public abstract class SerdeTestBase<T> {
     String json = ApiModule.MAPPER.writeValueAsString(wrapper);
     System.out.println(json);
     Wrapper<T> wrapper2 = ApiModule.MAPPER.readValue(json, type);
+    System.out.println(ApiModule.MAPPER.writeValueAsString(wrapper2));
     assertEquals(wrapper.value, wrapper2.value);
     return json;
   }
