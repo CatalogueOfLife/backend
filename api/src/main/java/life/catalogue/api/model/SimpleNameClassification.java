@@ -36,7 +36,7 @@ public class SimpleNameClassification implements HasID<String> {
    * @return
    */
   public SimpleName getParent() {
-    return classification.size() > 1 ? classification.get(classification.size()-2) : null;
+    return classification != null && classification.size() > 1 ? classification.get(classification.size()-2) : null;
   }
 
   @Override

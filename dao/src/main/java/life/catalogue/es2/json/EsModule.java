@@ -25,17 +25,17 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
  */
 public class EsModule extends SimpleModule {
 
-  static final ObjectMapper contentMapper = configureMapper(new ObjectMapper());
+  static final ObjectMapper MAPPER = configureMapper(new ObjectMapper());
 
   /**
    * Returns the content mapper configured for ES document serialization (enums as ints, field-level access).
    * Used by the ES Java client's JacksonJsonpMapper transport layer.
    */
   public static ObjectMapper contentMapper() {
-    return contentMapper;
+    return MAPPER;
   }
 
-  private static final ObjectWriter DEBUG_WRITER = contentMapper.writer().withDefaultPrettyPrinter();
+  private static final ObjectWriter DEBUG_WRITER = MAPPER.writer().withDefaultPrettyPrinter();
 
   public static String writeDebug(Object obj) {
     try {
