@@ -31,16 +31,16 @@ public class NameUsageRoundTripIT extends EsTestBase {
     NameUsageWrapper synonymWrapper = buildSynonymWrapper();
     NameUsageWrapper bareNameWrapper = buildBareNameWrapper();
 
-    EsUtil.insert(client, cfg.name, taxonWrapper);
-    EsUtil.insert(client, cfg.name, synonymWrapper);
-    EsUtil.insert(client, cfg.name, bareNameWrapper);
-    EsUtil.refreshIndex(client, cfg.name);
+    EsUtil.insert(client, cfg.index.name, taxonWrapper);
+    EsUtil.insert(client, cfg.index.name, synonymWrapper);
+    EsUtil.insert(client, cfg.index.name, bareNameWrapper);
+    EsUtil.refreshIndex(client, cfg.index.name);
 
     SearchRequest req = SearchRequest.of(s -> s
-        .index(cfg.name)
+        .index(cfg.index.name)
         .query(q -> q.matchAll(m -> m))
         .size(10));
-    List<NameUsageWrapper> results = new EsQueryService(cfg.name, client).search(req);
+    List<NameUsageWrapper> results = new EsQueryService(cfg.index.name, client).search(req);
 
     assertEquals(3, results.size());
 
