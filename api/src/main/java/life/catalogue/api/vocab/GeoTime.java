@@ -1,5 +1,7 @@
 package life.catalogue.api.vocab;
 
+import jakarta.validation.constraints.NotNull;
+
 import life.catalogue.api.jackson.GeoTimeSerde;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.text.CSVUtils;
@@ -9,8 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import org.jetbrains.annotations.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

@@ -1,11 +1,11 @@
 package life.catalogue.api.model;
 
+import jakarta.validation.constraints.NotNull;
+
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import java.util.Comparator;
 import java.util.Objects;
-
-import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Preconditions;
 

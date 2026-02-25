@@ -9,7 +9,7 @@ import life.catalogue.importer.IdGenerator;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.mapdb.DB;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;

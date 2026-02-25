@@ -9,7 +9,7 @@ import java.util.function.BiFunction;
 import life.catalogue.api.model.SimpleNameWithNidx;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import it.unimi.dsi.fastutil.ints.*;
 

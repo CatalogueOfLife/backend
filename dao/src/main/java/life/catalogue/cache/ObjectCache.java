@@ -6,7 +6,7 @@ import java.util.*;
 
 import life.catalogue.common.collection.IterUtils;
 
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

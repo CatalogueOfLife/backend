@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class LineReader implements Iterable<String>, AutoCloseable {
   private final BufferedReader br;

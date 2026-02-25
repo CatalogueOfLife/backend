@@ -10,7 +10,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
