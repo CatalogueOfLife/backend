@@ -16,7 +16,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer;
  */
 public class EsSetupRule extends ExternalResource {
 
-  public static String VERSION = "9.3.0";
+  public static String VERSION = "8.15.4";
 
   /**
    * Dataset key used by default for tests.
