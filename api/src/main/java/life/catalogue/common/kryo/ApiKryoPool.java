@@ -92,6 +92,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     // search
     kryo.register(NameUsageWrapper.class);
     kryo.register(SimpleDecision.class);
+    kryo.register(SimpleVernacularName.class);
 
     // CSL classes & enums
     kryo.register(CslData.class);
