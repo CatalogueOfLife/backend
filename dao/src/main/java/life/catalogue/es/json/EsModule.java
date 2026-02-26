@@ -1,16 +1,15 @@
 package life.catalogue.es.json;
 
+import com.fasterxml.jackson.annotation.*;
+
 import life.catalogue.api.jackson.FastutilsSerde;
 import life.catalogue.api.jackson.LabelPropertyFilter;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.NameField;
 import life.catalogue.es.EsException;
 
 import org.gbif.nameparser.api.Rank;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,6 +18,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import java.util.Set;
 
 /**
  * Jackson module to configure object mappers for serialising content to ES.
@@ -68,6 +69,7 @@ public class EsModule extends SimpleModule {
   abstract static class NameUsageMixIn {
     @JsonIgnore abstract String getLabel();
     @JsonIgnore abstract String getLabelHtml();
+    @JsonIgnore(false) @JsonProperty("nameFields") abstract Set<NameField> nonNullNameFields();
   }
   abstract static class NameMixIn {
     @JsonIgnore abstract String getLabelHtml();

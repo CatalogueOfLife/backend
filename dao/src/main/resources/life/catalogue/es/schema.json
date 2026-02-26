@@ -108,6 +108,9 @@
           "label": {
             "type": "keyword"
           },
+          "nameFields": {
+            "type": "keyword"
+          },
           "name": {
             "type": "object",
             "dynamic": false,
@@ -165,11 +168,11 @@
                   },
                   "authors": {
                     "type": "keyword",
-                    "copy_to": "author"
+                    "copy_to": "usage.name.author"
                   },
                   "exAuthors": {
                     "type": "keyword",
-                    "copy_to": "author"
+                    "copy_to": "usage.name.author"
                   }
                 }
               },
@@ -179,11 +182,11 @@
                 "properties": {
                   "authors": {
                     "type": "keyword",
-                    "copy_to": "author"
+                    "copy_to": "usage.name.author"
                   },
                   "exAuthors": {
                     "type": "keyword",
-                    "copy_to": "author"
+                    "copy_to": "usage.name.author"
                   }
                 }
               },

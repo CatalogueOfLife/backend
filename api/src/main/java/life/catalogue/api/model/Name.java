@@ -1,10 +1,7 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.jackson.IsEmptyFilter;
-import life.catalogue.api.vocab.Gender;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.NomStatus;
-import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 
@@ -12,9 +9,7 @@ import org.gbif.nameparser.api.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -24,6 +19,29 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import static life.catalogue.api.vocab.NameField.*;
+import static life.catalogue.api.vocab.NameField.ACCORDING_TO;
+import static life.catalogue.api.vocab.NameField.BASIONYM_AUTHORS;
+import static life.catalogue.api.vocab.NameField.BASIONYM_EX_AUTHORS;
+import static life.catalogue.api.vocab.NameField.BASIONYM_YEAR;
+import static life.catalogue.api.vocab.NameField.CANDIDATUS;
+import static life.catalogue.api.vocab.NameField.CODE;
+import static life.catalogue.api.vocab.NameField.COMBINATION_AUTHORS;
+import static life.catalogue.api.vocab.NameField.COMBINATION_EX_AUTHORS;
+import static life.catalogue.api.vocab.NameField.COMBINATION_YEAR;
+import static life.catalogue.api.vocab.NameField.CULTIVAR_EPITHET;
+import static life.catalogue.api.vocab.NameField.INFRASPECIFIC_EPITHET;
+import static life.catalogue.api.vocab.NameField.NAME_PHRASE;
+import static life.catalogue.api.vocab.NameField.NOMENCLATURAL_NOTE;
+import static life.catalogue.api.vocab.NameField.NOM_STATUS;
+import static life.catalogue.api.vocab.NameField.NOTHO;
+import static life.catalogue.api.vocab.NameField.PUBLISHED_IN;
+import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_PAGE;
+import static life.catalogue.api.vocab.NameField.REMARKS;
+import static life.catalogue.api.vocab.NameField.SANCTIONING_AUTHOR;
+import static life.catalogue.api.vocab.NameField.SPECIFIC_EPITHET;
+import static life.catalogue.api.vocab.NameField.UNPARSED;
+import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 import static life.catalogue.common.text.StringUtils.rmWS;
 

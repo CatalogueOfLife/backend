@@ -11,6 +11,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -74,6 +75,7 @@ public class TestIndexUtils {
   }
 
   public static SimpleName insert(ElasticsearchClient c, IndexConfig cfg, NameUsageWrapper w) throws Exception {
+    System.out.println(Arrays.toString(w.getUsage().nonNullNameFields().toArray()));
     EsUtil.insert(c, cfg.name, w);
     return w.getUsage() instanceof NameUsageBase nub ? new SimpleName(nub) : null;
   }

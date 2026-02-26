@@ -319,6 +319,8 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     facets = resp.getFacets();
     assertNotNull(facets);
 
+    assertNotNull(facets.get(FIELD));
+    assertNotNull(facets.get(AUTHORSHIP));
   }
 
   // -----------------------------------------------------------------------
@@ -407,6 +409,26 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     assertFalse("PREFIX simple: 'Felis catus' should return results", search(req).getResult().isEmpty());
     req.addFilter(DATASET_KEY, NameUsageRequest.IS_NULL);
     assertTrue(search(req).getResult().isEmpty());
+  }
+
+  @Test
+  public void testNameFields() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(FIELD, NameField.UNINOMIAL.name());
+    var resp = search(req);
+    assertEquals("FIELD: 'UNINOMIAL' should return 7 results", 7, resp.getResult().size());
+
+    req.addFilter(FIELD, NameField.SPECIFIC_EPITHET.name());
+    resp = search(req);
+    assertEquals("FIELD: 'UNINOMIAL' should return all 12 results", 12, resp.getResult().size());
+  }
+
+  @Test
+  public void testAuthors() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(AUTHORSHIP, "Schreber");
+    var resp = search(req);
+    assertEquals("AUTHORSHIP: 'Schreber' should return 1 result", 1, resp.getResult().size());
   }
 
   /**

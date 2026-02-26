@@ -34,7 +34,7 @@ public class FieldLookup extends EnumMap<NameUsageSearchParameter, String[]> {
     putSingle(DECISION_MODE, "decisions.mode");
     putSingle(ENVIRONMENT, "usage.environments");
     putSingle(EXTINCT, "usage.extinct");
-    putSingle(FIELD, "nameField");
+    putSingle(FIELD, "usage.nameFields");
     putSingle(GROUP, "group");
     putSingle(ISSUE, "issues");
     putSingle(NAME_ID, "usage.name.id");
