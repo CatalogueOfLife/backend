@@ -145,8 +145,13 @@
                 "analyzer": "standard_ascii"
               },
               "authorship": {
-                "type": "text",
-                "analyzer": "standard_ascii"
+                "type": "keyword",
+                "fields": {
+                  "word": {
+                    "type": "text",
+                    "analyzer": "standard_ascii"
+                  }
+                }
               },
               "author": {
                 "type": "keyword"

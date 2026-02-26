@@ -27,16 +27,14 @@ public class SortByTranslator {
     switch (request.getSortBy()) {
       case NAME:
         return List.of(SortOptions.of(s -> s.field(f -> f.field("usage.name.scientificName").order(order))));
-      case NATIVE:
-        return List.of(SortOptions.of(s -> s.doc(d -> d)));
-      case RELEVANCE:
-        return List.of(SortOptions.of(s -> s.score(sc -> sc.order(SortOrder.Desc))));
       case TAXONOMIC:
-      default:
         return List.of(
           SortOptions.of(s -> s.field(f -> f.field("usage.name.rank").order(order))),
           SortOptions.of(s -> s.field(f -> f.field("usage.name.scientificName").order(SortOrder.Asc)))
         );
+      case RELEVANCE:
+      default:
+        return List.of(SortOptions.of(s -> s.score(sc -> sc.order(SortOrder.Desc))));
     }
   }
 

@@ -88,7 +88,7 @@ public abstract class NameUsageRequest {
   }
 
   public enum SortBy {
-    NAME, TAXONOMIC, NATIVE, RELEVANCE
+    NAME, TAXONOMIC, RELEVANCE
   }
 
   @QueryParam("q")

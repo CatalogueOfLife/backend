@@ -1,0 +1,33 @@
+Eukaryota
+  Plantae [kingdom]
+    Pteridobiotina
+      Tracheophyta
+        Magnoliopsida
+          Rosales [order]
+            Rhamnaceae [family]
+              Gouanieae
+                Crumenaria Mart. [genus] {ID=9XNHG CODE=BOTANICAL }
+                  Crumenaria choretroides Mart. ex Reissek [species] {ID=ZRY4 CODE=BOTANICAL LINK=http://www.worldplants.de/?deeplink=Crumenaria-choretroides}
+                    =Crumenaria choretroides var. hirtella Hassl. [variety] {ID=9YV5J CODE=BOTANICAL}
+                    =Crumenaria choretroides Reissek [species] {ID=MWWBP CODE=BOTANICAL MERGED=true}
+                    =Crumenaria polygaloides subsp. paraguariensis Hassl. [subspecies] {ID=MWWF2 CODE=BOTANICAL MERGED=true LINK=https://treatment.plazi.org/id/03B987A5FFC2D00B2C27C8BFFAF3FD1D}
+                    =Crumenaria polygaloides var. lancifolia Chodat & Hassl. [variety] {ID=5ND4V CODE=BOTANICAL}
+                    =Crumenaria polygaloides var. paraguariensis Hassl. [variety] {ID=5ND4W CODE=BOTANICAL}
+                    =Crumenaria polygaloides Reissek [species] {ID=6BJXD CODE=BOTANICAL}
+                    Crumenaria polygaloides var. lancifolia Chodat. En TORTOSA, 2008 [variety] {ID=V56F2 CODE=BOTANICAL MERGED=true LINK=https://treatment.plazi.org/id/03B987A5FFC2D00B2F7EC970FBCCFA18}
+                  Crumenaria decumbens Mart. [species] {ID=ZRY5 CODE=BOTANICAL LINK=http://www.worldplants.de/?deeplink=Crumenaria-decumbens}
+                    =Crumenaria diffusa Suess. [species] {ID=ZRY6 CODE=BOTANICAL}
+                    =Crumenaria steyermarkii Standl. [species] {ID=ZRYB CODE=BOTANICAL}
+                  Crumenaria erecta Reissek [species] {ID=ZRY7 CODE=BOTANICAL LINK=http://www.worldplants.de/?deeplink=Crumenaria-erecta}
+                    =Crumenaria polygaloides var. lancifolia Chodat. En TORTOSA, 2008 [variety] {ID=MWWDY CODE=BOTANICAL MERGED=true}
+                    SH0092828.10FU [unranked] {ID=K8HDV MERGED=true LINK=http://dx.doi.org/10.15156/BIO/SH0092828.10FU}
+                      SH0872117.10FU [unranked] {ID=K8HDX MERGED=true LINK=http://dx.doi.org/10.15156/BIO/SH0872117.10FU}
+                        SH1225055.10FU [unranked] {ID=K8HDY MERGED=true LINK=http://dx.doi.org/10.15156/BIO/SH1225055.10FU}
+                  Crumenaria glaziovii Urb. [species] {ID=ZRY8 CODE=BOTANICAL LINK=http://www.worldplants.de/?deeplink=Crumenaria-glaziovii}
+                  Crumenaria lilloi Suess. [species] {ID=ZRY9 CODE=BOTANICAL LINK=http://www.worldplants.de/?deeplink=Crumenaria-lilloi}
+                    =Crumenaria polygaloides f. glabrata Chodat & Hassl. [form] {ID=7N6Y8 CODE=BOTANICAL}
+                    =Crumenaria polygaloides var. aurea Chodat & Hassl. [variety] {ID=5ND4Q CODE=BOTANICAL}
+                    =Crumenaria polygaloides var. aurea Hassl. [variety] {ID=MWWDD CODE=BOTANICAL MERGED=true}
+                    =Crumenaria polygaloides var. discolor Hassl. [variety] {ID=5ND4R CODE=BOTANICAL}
+                    =Crumenaria polygaloides var. foliosa Chodat & Hassl. [variety] {ID=5ND4S CODE=BOTANICAL}
+                    =Crumenaria polygaloides var. glabrescens Hassl. [variety] {ID=5ND4T CODE=BOTANICAL}

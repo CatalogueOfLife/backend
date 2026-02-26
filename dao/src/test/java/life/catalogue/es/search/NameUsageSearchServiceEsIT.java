@@ -119,7 +119,10 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
   // -----------------------------------------------------------------------
 
   private NameUsageSearchResponse search(NameUsageSearchRequest req) {
-    return service.search(req, new Page(0, 100));
+    return search(req, 100);
+  }
+  private NameUsageSearchResponse search(NameUsageSearchRequest req, int limit) {
+    return service.search(req, new Page(0, limit));
   }
 
   private int count(NameUsageSearchRequest req) {
@@ -304,6 +307,18 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     assertNotNull(filteredDsFacet);
     assertEquals("DATASET_KEY facet should still show both datasets even when filtered to one",
         2, filteredDsFacet.size());
+
+    // now test ALL FACETS are working
+    req = new NameUsageSearchRequest();
+    for (NameUsageSearchParameter p : NameUsageSearchParameter.values()) {
+      req.addFacet(p);
+    }
+    req.setFacetLimit(20);
+
+    resp = search(req, 0);
+    facets = resp.getFacets();
+    assertNotNull(facets);
+
   }
 
   // -----------------------------------------------------------------------
@@ -340,11 +355,6 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     }
     assertTrue("kingdoms should appear before species in TAXONOMIC sort",
         firstKingdom >= 0 && firstSpecies > firstKingdom);
-
-    // NATIVE: doc insertion order – just verify 12 results
-    NameUsageSearchRequest nativeReq = new NameUsageSearchRequest();
-    nativeReq.setSortBy(NameUsageRequest.SortBy.NATIVE);
-    assertEquals(TOTAL, count(nativeReq));
 
     // RELEVANCE: score-based – without a q all scores are equal, just verify 12 results
     NameUsageSearchRequest relReq = new NameUsageSearchRequest();

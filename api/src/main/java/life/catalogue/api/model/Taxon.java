@@ -32,6 +32,11 @@ public class Taxon extends NameUsageBase {
     super(n);
   }
 
+  public Taxon(Name n, TaxonomicStatus status) {
+    super(n);
+    setStatus(status);
+  }
+
   public Taxon(NameUsageBase other) {
     super(other);
   }

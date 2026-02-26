@@ -19,11 +19,13 @@ public class EsTestBase {
 
   protected ElasticsearchClient client;
   protected EsConfig cfg;
+  protected String indexName;
 
   @Before
   public void setUp() throws IOException {
     client = esSetup.getClient();
     cfg = esSetup.getEsConfig();
+    indexName = cfg.index.name;
     EsUtil.createIndex(client, cfg.index);
   }
 

@@ -1,5 +1,7 @@
 package life.catalogue.es.search;
 
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
@@ -32,6 +34,10 @@ public class NameUsageSearchServiceEs extends EsQueryService implements NameUsag
       SearchResponse<NameUsageWrapper> esResponse = client.search(esSearchRequest, NameUsageWrapper.class);
       SearchResponseConverter converter = new SearchResponseConverter(esResponse);
       return converter.convertEsResponse(page);
+
+    } catch (ElasticsearchException e) {
+      LOG.error("Elasticsearch error: {} => {}", e.getMessage(), e.response().error());
+      throw new EsException(e);
     } catch (IOException e) {
       throw new EsException(e);
     }
