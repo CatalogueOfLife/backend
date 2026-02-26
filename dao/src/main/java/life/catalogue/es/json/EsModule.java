@@ -75,6 +75,7 @@ public class EsModule extends SimpleModule {
     @JsonIgnore abstract String getLabelHtml();
     @JsonIgnore abstract String getBasionymOrCombinationAuthorship();
     @JsonIgnore(false) abstract String getScientificNameNormalized();
+    @JsonIgnore(false) abstract String getAlphaIndex();
   }
 
   private static ObjectMapper configureMapper(ObjectMapper mapper) {

@@ -129,6 +129,9 @@
                 "type": "keyword",
                 "copy_to": "sectorMode"
               },
+              "alphaIndex": {
+                "type": "keyword"
+              },
               "scientificName": {
                 "type": "keyword",
                 "fields": {

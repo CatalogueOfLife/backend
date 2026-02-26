@@ -125,4 +125,13 @@ public interface FormattableName extends LinneanName, ScientificName {
   default String getScientificNameNormalized() {
     return SciNameNormalizer.normalize(getScientificName());
   }
+
+  /**
+   * @return the first upper cased character of the scientific name.
+   */
+  @JsonIgnore
+  default String getAlphaIndex() {
+    var sn = getScientificName();
+    return sn == null || sn.length() < 2 ? null : sn.substring(0, 1).toUpperCase();
+  }
 }
