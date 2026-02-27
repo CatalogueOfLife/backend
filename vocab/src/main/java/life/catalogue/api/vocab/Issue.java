@@ -1,6 +1,6 @@
 package life.catalogue.api.vocab;
 
-import com.google.common.base.Preconditions;
+import java.util.Objects;
 
 import static life.catalogue.api.vocab.EntityType.*;
 
@@ -508,8 +508,8 @@ public enum Issue {
   public final String description;
   
   Issue(EntityType group, Level level, String description) {
-    this.level = Preconditions.checkNotNull(level);
-    this.group = Preconditions.checkNotNull(group);
+    this.level = Objects.requireNonNull(level);
+    this.group = Objects.requireNonNull(group);
     this.description = description;
   }
 }

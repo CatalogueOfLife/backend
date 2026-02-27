@@ -15,6 +15,10 @@
     <dependencies>
         <!-- col -->
         <dependency>
+          <groupId>org.catalogueoflife</groupId>
+          <artifactId>vocab</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.catalogueoflife</groupId>
             <artifactId>api</artifactId>
         </dependency>

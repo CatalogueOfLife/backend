@@ -48,14 +48,18 @@
         <groupId>org.catalogueoflife</groupId>
         <artifactId>coldp</artifactId>
       </dependency>
-		<dependency>
-			<groupId>org.catalogueoflife</groupId>
-			<artifactId>api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.catalogueoflife</groupId>
-			<artifactId>parser</artifactId>
-		</dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>vocab</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.catalogueoflife</groupId>
+          <artifactId>api</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.catalogueoflife</groupId>
+          <artifactId>parser</artifactId>
+      </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>
         <artifactId>pgcopy</artifactId>

@@ -8,8 +8,6 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import com.google.common.base.Preconditions;
-
 import static life.catalogue.api.vocab.DatasetOrigin.*;
 
 
@@ -209,14 +207,16 @@ public enum Setting {
   Setting(Class type, boolean multiple, DatasetOrigin... origin) {
     this.multiple = multiple;
     this.origin = origin;
-    Preconditions.checkArgument(type.equals(String.class)
+    if(! type.equals(String.class)
       || type.equals(Character.class)
       || type.equals(Integer.class)
       || type.equals(Boolean.class)
       || type.equals(LocalDate.class)
       || type.equals(UUID.class)
       || type.equals(URI.class)
-      || type.isEnum(), "Unsupported type"); // see SettingsDeserializer
+      || type.isEnum()) {
+      throw new IllegalArgumentException("Unsupported type"); // see SettingsDeserializer
+    }
     this.type = type;
   }
 
