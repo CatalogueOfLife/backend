@@ -31,7 +31,7 @@ public class SearchRequestValidator {
       }
     }
     // we set a maximum limit for performance reasons
-    if (request.getFacetLimit() > MAX_SIZE_AGGS) {
+    if (request.getFacetLimit() != null && request.getFacetLimit() > MAX_SIZE_AGGS) {
       throw new IllegalArgumentException("Facets paging is only supported up to " + MAX_SIZE_AGGS + " elements");
     }
   }
