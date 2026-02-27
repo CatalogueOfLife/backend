@@ -1,11 +1,15 @@
 package life.catalogue.es.search;
 
+import co.elastic.clients.elasticsearch._types.aggregations.AggregationBuilders;
+import co.elastic.clients.elasticsearch._types.aggregations.TermsAggregation;
+
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.query.FieldLookup;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -49,10 +53,20 @@ public class FacetsTranslator {
       temp.removeFilter(facet);
       Query facetQuery = generateQuery(temp);
       var limit = request.getFacetLimit();
+      var offset = request.getFacetOffset();
+      var minCnt = request.getFacetMinCount();
+      // ES terms aggregation has no native offset; request limit+offset so the response translator can skip the first offset entries
+      Integer effectiveSize = (limit != null || offset != null)
+          ? (limit != null ? limit : 0) + (offset != null ? offset : 0)
+          : null;
       facetAggs.put(facet.name(), Aggregation.of(a -> a
         .filter(facetQuery)
         .aggregations(FACET_AGG_LABEL, Aggregation.of(a2 -> a2
-          .terms(t -> t.field(field).size(limit))
+          .terms(t -> t
+            .field(field)
+            .minDocCount(minCnt)
+            .size(effectiveSize)
+          )
         ))
       ));
     }

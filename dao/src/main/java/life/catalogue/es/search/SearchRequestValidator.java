@@ -10,6 +10,7 @@ import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
 
 public class SearchRequestValidator {
+  private static final int MAX_SIZE_AGGS = 100000;
 
   private final NameUsageSearchRequest request;
 
@@ -28,6 +29,10 @@ public class SearchRequestValidator {
       if (!request.hasFilter(CATALOGUE_KEY) || request.getFilterValues(CATALOGUE_KEY).size() > 1) {
         throw invalidSearchRequest("When specifying a decision mode, a single catalogue key must also be specified");
       }
+    }
+    // we set a maximum limit for performance reasons
+    if (request.getFacetLimit() > MAX_SIZE_AGGS) {
+      throw new IllegalArgumentException("Facets paging is only supported up to " + MAX_SIZE_AGGS + " elements");
     }
   }
 

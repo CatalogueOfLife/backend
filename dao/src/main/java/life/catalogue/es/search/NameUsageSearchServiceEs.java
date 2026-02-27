@@ -32,7 +32,7 @@ public class NameUsageSearchServiceEs extends EsQueryService implements NameUsag
       SearchRequestTranslator translator = new SearchRequestTranslator(request, page);
       SearchRequest esSearchRequest = translator.translateRequest(index);
       SearchResponse<NameUsageWrapper> esResponse = client.search(esSearchRequest, NameUsageWrapper.class);
-      SearchResponseConverter converter = new SearchResponseConverter(esResponse);
+      SearchResponseConverter converter = new SearchResponseConverter(esResponse, request);
       return converter.convertEsResponse(page);
 
     } catch (ElasticsearchException e) {

@@ -3,6 +3,7 @@ package life.catalogue.es.search;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.FacetValue;
 import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.dao.DatasetInfoCache;
@@ -23,9 +24,11 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 class SearchResponseConverter {
 
   private final SearchResponse<NameUsageWrapper> esResponse;
+  private final int facetOffset;
 
-  SearchResponseConverter(SearchResponse<NameUsageWrapper> esResponse) {
+  SearchResponseConverter(SearchResponse<NameUsageWrapper> esResponse, NameUsageSearchRequest request) {
     this.esResponse = esResponse;
+    this.facetOffset = request.getFacetOffset() != null ? request.getFacetOffset() : 0;
   }
 
   NameUsageSearchResponse convertEsResponse(Page page) throws IOException {
@@ -78,12 +81,12 @@ class SearchResponseConverter {
       Aggregate termsAgg = facetFilterAgg.filter().aggregations().get(FacetsTranslator.FACET_AGG_LABEL);
       if (termsAgg == null) continue;
 
-      result.put(param, extractBuckets(param, termsAgg));
+      result.put(param, extractBuckets(param, termsAgg, facetOffset));
     }
     return result;
   }
 
-  private static Set<FacetValue<?>> extractBuckets(NameUsageSearchParameter param, Aggregate termsAgg) {
+  private static Set<FacetValue<?>> extractBuckets(NameUsageSearchParameter param, Aggregate termsAgg, int offset) {
     List<BucketEntry> entries = new ArrayList<>();
     if (termsAgg.isSterms()) {
       for (var b : termsAgg.sterms().buckets().array()) {
@@ -97,6 +100,11 @@ class SearchResponseConverter {
       for (var b : termsAgg.dterms().buckets().array()) {
         entries.add(new BucketEntry(String.valueOf(b.key()), b.docCount()));
       }
+    }
+    if (offset > 0 && offset < entries.size()) {
+      entries = entries.subList(offset, entries.size());
+    } else if (offset >= entries.size()) {
+      entries = List.of();
     }
     return convert(param, entries);
   }

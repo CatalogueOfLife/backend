@@ -28,6 +28,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @Min(0)
   private Integer facetLimit;
 
+  @QueryParam("facetOffset")
+  @Min(0)
+  private Integer facetOffset;
+
+  @QueryParam("facetMinCount")
+  @Min(0)
+  private Integer facetMinCount;
+
   @QueryParam("content")
   private Set<SearchContent> content = EnumSet.copyOf(DEFAULT_CONTENT);
 
@@ -44,6 +52,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters,
       @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
       @JsonProperty("facetLimit") @Min(0) Integer facetLimit,
+      @JsonProperty("facetOffset") @Min(0) Integer facetOffset,
+      @JsonProperty("facetMinCount") @Min(0) Integer facetMinCount,
       @JsonProperty("content") Set<SearchContent> content,
       @JsonProperty("sortBy") SortBy sortBy,
       @JsonProperty("q") String q,
@@ -54,6 +64,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     super(q, minRank, maxRank, sortBy, reverse);
     this.searchType = searchType;
     this.facetLimit = facetLimit;
+    this.facetOffset = facetOffset;
+    this.facetMinCount = facetMinCount;
     setFilters(filters);
     setFacets(facets);
     setContent(content);
@@ -70,6 +82,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     super(other);
     this.searchType = other.searchType;
     this.facetLimit = other.facetLimit;
+    this.facetOffset = other.facetOffset;
+    this.facetMinCount = other.facetMinCount;
     setFacets(other.facets);
     setContent(other.content);
   }
@@ -115,6 +129,22 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.facetLimit = facetLimit;
   }
 
+  public Integer getFacetOffset() {
+    return facetOffset;
+  }
+
+  public void setFacetOffset(Integer facetOffset) {
+    this.facetOffset = facetOffset;
+  }
+
+  public Integer getFacetMinCount() {
+    return facetMinCount;
+  }
+
+  public void setFacetMinCount(Integer facetMinCount) {
+    this.facetMinCount = facetMinCount;
+  }
+
   public Set<SearchContent> getContent() {
     return content;
   }
@@ -152,12 +182,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     NameUsageSearchRequest that = (NameUsageSearchRequest) o;
     return Objects.equals(facets, that.facets)
            && Objects.equals(facetLimit, that.facetLimit)
+           && Objects.equals(facetOffset, that.facetOffset)
+           && Objects.equals(facetMinCount, that.facetMinCount)
            && Objects.equals(content, that.content)
            && searchType == that.searchType;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), facets, facetLimit, content, searchType);
+    return Objects.hash(super.hashCode(), facets, facetLimit, facetOffset, facetMinCount, content, searchType);
   }
 }
