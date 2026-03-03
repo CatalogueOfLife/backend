@@ -44,17 +44,15 @@ public class EsClientFactory {
    * Creates an ElasticsearchClient using the ES 9.x Rest5Client builder API.
    */
   public ElasticsearchClient createClient() {
-    String[] hosts = cfg.hosts == null ? new String[]{"localhost"} : cfg.hosts.split(",");
-    String[] ports = cfg.ports == null ? new String[]{"9200"} : cfg.ports.split(",");
+    String[] hosts = cfg.hosts.split(",");
     String scheme = cfg.ssl ? "https" : "http";
 
     List<URI> uris = new ArrayList<>();
     for (int i = 0; i < hosts.length; i++) {
-      String port = ports.length > i ? ports[i] : ports[0];
-      uris.add(URI.create(scheme + "://" + hosts[i].trim() + ":" + port.trim()));
+      uris.add(URI.create(scheme + "://" + hosts[i].trim()));
     }
 
-    LOG.info("Connecting to Elasticsearch using scheme={} hosts={}; ports={}", scheme, cfg.hosts, (cfg.ports == null ? "9200" : cfg.ports));
+    LOG.info("Connecting to Elasticsearch using scheme={} hosts={}", scheme, cfg.hosts);
 
     Rest5ClientBuilder builder = Rest5Client.builder(uris.toArray(URI[]::new))
       .setCompressionEnabled(true)

@@ -28,7 +28,7 @@ public class EsConnectRule extends ExternalResource {
     super.before();
     cfg = buildContainerConfig();
     client = new EsClientFactory(cfg).createClient();
-    LOG.info("Using Elasticsearch on {}:{}", cfg.hosts, cfg.ports);
+    LOG.info("Using Elasticsearch on {}@{}", cfg.index.name, cfg.hosts);
   }
 
   public EsConfig buildContainerConfig() {
@@ -38,7 +38,7 @@ public class EsConnectRule extends ExternalResource {
     cfg.ssl = true;
     cfg.index = new IndexConfig();
     cfg.index.name = LocalDate.now() + "-" + System.currentTimeMillis();
-    System.out.println("ES container using index " + cfg.index.name + " on port " + cfg.ports);
+    System.out.println("ES container using index " + cfg.index.name + " on host " + cfg.hosts);
     return cfg;
   }
 

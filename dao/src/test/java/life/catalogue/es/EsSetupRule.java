@@ -33,10 +33,10 @@ public class EsSetupRule extends ExternalResource {
     CONTAINER = setupElastic();
     CONTAINER.start();
     cfg = buildContainerConfig(CONTAINER);
-    System.out.println("ES container using index " + cfg.index.name + " on port " + cfg.ports);
+    System.out.println("ES container using index " + cfg.index.name + " on host " + cfg.hosts);
 
     client = new EsClientFactory(cfg).createClient();
-    LOG.info("Using Elasticsearch on {}:{}", cfg.hosts, cfg.ports);
+    LOG.info("Using Elasticsearch on {}", cfg.hosts);
   }
 
   private ElasticsearchContainer setupElastic() {
@@ -49,13 +49,12 @@ public class EsSetupRule extends ExternalResource {
 
   public EsConfig buildContainerConfig(ElasticsearchContainer container) {
     EsConfig cfg = new EsConfig();
-    cfg.hosts = container.getHost();
-    cfg.ports = container.getFirstMappedPort().toString();
+    cfg.hosts = container.getHost() + ":" + container.getFirstMappedPort().toString();
     cfg.user = USER;
     cfg.password = PASSWORD;
     cfg.index = new IndexConfig();
     cfg.index.name = LocalDate.now() + "-" + System.currentTimeMillis();
-    System.out.println("ES container using port " + cfg.ports);
+    System.out.println("ES container using hosts " + cfg.hosts);
     return cfg;
   }
 

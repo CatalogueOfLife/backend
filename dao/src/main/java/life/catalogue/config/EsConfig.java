@@ -11,16 +11,10 @@ import jakarta.validation.constraints.NotNull;
 public class EsConfig {
 
   /**
-   * Comma separated list of hosts with ES nodes
+   * Comma separated list of host:port entries for each ES node
    */
   @NotNull
-  public String hosts = "localhost";
-
-  /**
-   * Comma separated list of ports matching the hosts list
-   */
-  @NotNull
-  public String ports = "9200";
+  public String hosts = "localhost:9200";
 
   /**
    * Username to use for authentication.
@@ -95,7 +89,6 @@ public class EsConfig {
   public String toString() {
     return MoreObjects.toStringHelper(this)
       .add("hosts", hosts)
-      .add("ports", ports)
       .add("user", user)
       .add("index", index)
       .add("threads", indexingThreads)
