@@ -60,6 +60,27 @@ public class EsConfig {
   public boolean ssl = false;
 
   /**
+   * Maximum number of connections per ES node (route).
+   * Increase when heavy concurrent indexing saturates the default pool.
+   */
+  @Min(1)
+  public int maxConnPerRoute = 10;
+
+  /**
+   * Maximum total connections across all ES nodes.
+   * Should be >= maxConnPerRoute * number of nodes.
+   */
+  @Min(1)
+  public int maxConnTotal = 30;
+
+  /**
+   * Optional path prefix for every request, e.g. "/es" when Elasticsearch is behind
+   * a reverse proxy that exposes it under a sub-path.
+   */
+  @Nullable
+  public String pathPrefix;
+
+  /**
    * Number of parallel threads to use when indexing all datasets
    */
   @Min(1)

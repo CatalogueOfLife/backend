@@ -18,6 +18,7 @@ import javax.net.ssl.X509TrustManager;
 import org.apache.hc.client5.http.ssl.ClientTlsStrategyBuilder;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.core5.http.message.BasicHeader;
+import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class EsClientFactory {
   }
 
   /**
-   * Creates an ElasticsearchClient using the ES 9.x builder API.
+   * Creates an ElasticsearchClient using the ES 9.x Rest5Client builder API.
    */
   public ElasticsearchClient createClient() {
     String[] hosts = cfg.hosts == null ? new String[]{"localhost"} : cfg.hosts.split(",");
@@ -55,39 +56,36 @@ public class EsClientFactory {
 
     LOG.info("Connecting to Elasticsearch using scheme={} hosts={}; ports={}", scheme, cfg.hosts, (cfg.ports == null ? "9200" : cfg.ports));
 
-    if (cfg.ssl) {
-      return buildSslClient(uris);
-    }
-
-    return ElasticsearchClient.of(b -> {
-      b.hosts(uris)
-       .useCompression(true)
-       .jsonMapper(new JacksonJsonpMapper(EsModule.contentMapper()));
-      if (cfg.user != null) {
-        b.usernameAndPassword(cfg.user, cfg.password);
-        LOG.info("Adding authentication for user {} to Elasticsearch client", cfg.user);
-      }
-      return b;
-    });
-  }
-
-  private ElasticsearchClient buildSslClient(List<URI> uris) {
-    SSLContext sslContext = buildTrustAllSslContext();
-
     Rest5ClientBuilder builder = Rest5Client.builder(uris.toArray(URI[]::new))
-      .setSSLContext(sslContext)
-      .setConnectionManagerCallback(mgr -> mgr.setTlsStrategy(
-        ClientTlsStrategyBuilder.create()
-          .setSslContext(sslContext)
-          .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
-          .build()
-      ));
+      .setCompressionEnabled(true)
+      .setConnectionConfigCallback(b -> b.setConnectTimeout(Timeout.ofMilliseconds(cfg.connectTimeout)))
+      .setRequestConfigCallback(b -> b.setResponseTimeout(Timeout.ofMilliseconds(cfg.socketTimeout)));
+
+    if (cfg.ssl) {
+      SSLContext sslContext = buildTrustAllSslContext();
+      builder.setSSLContext(sslContext)
+             .setConnectionManagerCallback(mgr -> mgr
+               .setMaxConnPerRoute(cfg.maxConnPerRoute)
+               .setMaxConnTotal(cfg.maxConnTotal)
+               .setTlsStrategy(ClientTlsStrategyBuilder.create()
+                 .setSslContext(sslContext)
+                 .setHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                 .build()));
+    } else {
+      builder.setConnectionManagerCallback(mgr -> mgr
+        .setMaxConnPerRoute(cfg.maxConnPerRoute)
+        .setMaxConnTotal(cfg.maxConnTotal));
+    }
 
     if (cfg.user != null) {
       LOG.info("Adding authentication for user {} to Elasticsearch client", cfg.user);
       String credentials = Base64.getEncoder().encodeToString(
         (cfg.user + ":" + cfg.password).getBytes(StandardCharsets.UTF_8));
       builder.setDefaultHeaders(new BasicHeader[]{new BasicHeader("Authorization", "Basic " + credentials)});
+    }
+
+    if (cfg.pathPrefix != null) {
+      builder.setPathPrefix(cfg.pathPrefix);
     }
 
     var mapper = new JacksonJsonpMapper(EsModule.contentMapper());
