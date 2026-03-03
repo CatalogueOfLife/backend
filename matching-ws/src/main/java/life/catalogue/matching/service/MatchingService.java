@@ -601,6 +601,8 @@ public class MatchingService {
         && parsedName != null
         && parsedName.getRank() != null
         && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
+        // the ordinal comparison caused this issue:  https://github.com/gbif/portal-feedback/issues/6415
+        && parsedName.getRank() != Rank.UNRANKED
         && parsedName.getEpithet(NamePart.SPECIFIC) == null
       ){
           match1.getDiagnostics().setMatchType(MatchType.HIGHERRANK);
