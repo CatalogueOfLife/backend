@@ -515,6 +515,7 @@ public class MatchingService {
             || parsedName.isTrinomial()
             || (
               parsedName.getRank() != null
+                && parsedName.getRank().notOtherOrUnranked()
                 && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
                 && parsedName.getEpithet(NamePart.SPECIFIC) != null  //see https://github.com/CatalogueOfLife/data/issues/719
             )
@@ -602,7 +603,7 @@ public class MatchingService {
         && parsedName.getRank() != null
         && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
         // the ordinal comparison caused this issue:  https://github.com/gbif/portal-feedback/issues/6415
-        && parsedName.getRank() != Rank.UNRANKED
+        && parsedName.getRank().notOtherOrUnranked()
         && parsedName.getEpithet(NamePart.SPECIFIC) == null
       ){
           match1.getDiagnostics().setMatchType(MatchType.HIGHERRANK);
