@@ -194,7 +194,7 @@ public class NameUsageResource {
 
   @GET
   @Path("search")
-  public ResultPage<NameUsageWrapper> searchDataset(@PathParam("key") int datasetKey,
+  public ResultPage<NameUsageSearchResult> searchDataset(@PathParam("key") int datasetKey,
                                                     @BeanParam NameUsageSearchRequest query,
                                                     @Valid @BeanParam Page page,
                                                     @Context ContainerRequestContext ctx,
@@ -208,7 +208,7 @@ public class NameUsageResource {
 
   @POST
   @Path("search")
-  public ResultPage<NameUsageWrapper> searchPOST(@PathParam("key") int datasetKey,
+  public ResultPage<NameUsageSearchResult> searchPOST(@PathParam("key") int datasetKey,
                                                  @Valid NameUsageSearchResource.SearchRequestBody req,
                                                  @Context ContainerRequestContext ctx,
                                                  @Context UriInfo uri) throws InvalidQueryException {

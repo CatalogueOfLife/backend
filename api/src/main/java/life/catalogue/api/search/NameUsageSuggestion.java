@@ -26,7 +26,7 @@ public class NameUsageSuggestion {
   private Rank rank;
   private TaxonomicStatus status;
   private NomCode nomCode;
-  private float score;
+  private Double score;
   private TaxGroup group;
 
   /**
@@ -148,11 +148,11 @@ public class NameUsageSuggestion {
     this.nomCode = nomCode;
   }
 
-  public float getScore() {
+  public Double getScore() {
     return score;
   }
 
-  public void setScore(float score) {
+  public void setScore(Double score) {
     this.score = score;
   }
 
@@ -160,7 +160,7 @@ public class NameUsageSuggestion {
   public boolean equals(Object o) {
     if (!(o instanceof NameUsageSuggestion)) return false;
     NameUsageSuggestion that = (NameUsageSuggestion) o;
-    return Float.compare(score, that.score) == 0 && Objects.equals(match, that.match) && Objects.equals(context, that.context) && Objects.equals(usageId, that.usageId) && Objects.equals(nameId, that.nameId) && Objects.equals(acceptedUsageId, that.acceptedUsageId) && Objects.equals(acceptedName, that.acceptedName) && rank == that.rank && status == that.status && nomCode == that.nomCode && group == that.group;
+    return Objects.equals(score, that.score) && Objects.equals(match, that.match) && Objects.equals(context, that.context) && Objects.equals(usageId, that.usageId) && Objects.equals(nameId, that.nameId) && Objects.equals(acceptedUsageId, that.acceptedUsageId) && Objects.equals(acceptedName, that.acceptedName) && rank == that.rank && status == that.status && nomCode == that.nomCode && group == that.group;
   }
 
   @Override

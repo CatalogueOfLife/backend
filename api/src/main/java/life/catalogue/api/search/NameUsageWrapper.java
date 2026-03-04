@@ -44,6 +44,19 @@ public class NameUsageWrapper extends SimpleNameClassification {
     super.setId(usage.getId());
   }
 
+  public NameUsageWrapper(NameUsageWrapper other) {
+    this.usage = other.usage;
+    this.issues = other.issues;
+    this.decisions = other.decisions;
+    this.sectorMode = other.sectorMode;
+    this.sectorDatasetKey = other.sectorDatasetKey;
+    this.sectorPublisherKey = other.sectorPublisherKey;
+    this.secondarySourceGroups = other.secondarySourceGroups;
+    this.secondarySourceKeys = other.secondarySourceKeys;
+    this.group = other.group;
+    this.vernacularNames = other.vernacularNames;
+  }
+
   @Override
   public void setId(String id) {
     super.setId(id);

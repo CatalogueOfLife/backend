@@ -42,7 +42,7 @@ class ResponseConverter {
       return null;
     }
     NameUsageSuggestion suggestion = new NameUsageSuggestion();
-    suggestion.setScore(hit.score() == null ? 0 : hit.score().floatValue());
+    suggestion.setScore(hit.score());
     suggestion.setUsageId(nuw.getId());
     suggestion.setGroup(nuw.getGroup());
     var u = nuw.getUsage();

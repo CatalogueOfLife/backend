@@ -1,11 +1,7 @@
 package life.catalogue.es.search;
 
 import life.catalogue.api.model.Page;
-import life.catalogue.api.search.FacetValue;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.*;
 import life.catalogue.dao.DatasetInfoCache;
 
 import java.io.IOException;
@@ -33,15 +29,21 @@ class SearchResponseConverter {
 
   NameUsageSearchResponse convertEsResponse(Page page) throws IOException {
     int total = (int) esResponse.hits().total().value();
-    List<NameUsageWrapper> nameUsages = convertNameUsageDocuments();
+    List<NameUsageSearchResult> nameUsages = convertNameUsageDocuments();
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = generateFacets();
     return new NameUsageSearchResponse(page, total, nameUsages, facets);
   }
 
-  private List<NameUsageWrapper> convertNameUsageDocuments() throws IOException {
+  private List<NameUsageSearchResult> convertNameUsageDocuments() throws IOException {
     return esResponse.hits().hits().stream()
-      .map(Hit::source)
+      .map(this::build)
       .toList();
+  }
+
+  private NameUsageSearchResult build(Hit<NameUsageWrapper> hit) {
+    var nuw = new NameUsageSearchResult(hit.source());
+    nuw.setScore(hit.score());
+    return nuw;
   }
 
   private Map<NameUsageSearchParameter, Set<FacetValue<?>>> generateFacets() {
