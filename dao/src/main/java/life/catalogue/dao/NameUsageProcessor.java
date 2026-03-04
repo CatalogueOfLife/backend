@@ -124,7 +124,7 @@ public class NameUsageProcessor {
       var ism = session.getMapper(TmpIssueMapper.class);
       ism.createTmpIssuesTable(datasetKey, null);
 
-      try (ObjectCache<NameUsageWrapper> taxa = buildObjCache();
+      try (ObjectCache<NameUsageWrapper> taxa = buildObjCache(datasetKey);
            UsageCache usageCache = buildUsageCache(datasetKey)
       ) {
         final AtomicInteger counter = new AtomicInteger(0);
@@ -218,10 +218,10 @@ public class NameUsageProcessor {
     nuw.setClassification(classification);
   }
 
-  private ObjectCache<NameUsageWrapper> buildObjCache() throws IOException {
-    return new ObjectCacheMapDB<>(NameUsageWrapper.class, new File(tmpDir, UUID.randomUUID().toString()), new ApiKryoPool(8), false);
+  private ObjectCache<NameUsageWrapper> buildObjCache(int datasetKey) throws IOException {
+    return new ObjectCacheMapDB<>(NameUsageWrapper.class, new File(tmpDir, "OC" +datasetKey +"-" +UUID.randomUUID()), new ApiKryoPool(8), false);
   }
   private UsageCache buildUsageCache(int datasetKey) throws Exception {
-    return UsageCache.mapDB(datasetKey, new File(tmpDir, UUID.randomUUID().toString()));
+    return UsageCache.mapDB(datasetKey, new File(tmpDir, "UC" +datasetKey +"-" + UUID.randomUUID()));
   }
 }

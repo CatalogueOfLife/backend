@@ -15,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -110,8 +111,9 @@ public class IndexCmd extends AbstractMybatisCmd {
   @Override
   public void execute() throws Exception {
     ElasticsearchClient esClient = new EsClientFactory(cfg.es).createClient();
+    final File scratch = cfg.normalizer.scratchDir("cli-es-tmp");
     try {
-      NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("cli-es-tmp"), factory);
+      NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, scratch, factory);
       if (ns.getBoolean(ARG_CREATE)) {
         svc.createEmptyIndex();
       }
@@ -154,6 +156,10 @@ public class IndexCmd extends AbstractMybatisCmd {
       }
     } finally {
       EsUtil.close(esClient);
+      LOG.info("Remove temp indexing files in {}", scratch.getAbsolutePath());
+      if (!FileUtils.deleteQuietly(scratch)) {
+        LOG.warn("Could not delete scratch dir {}", scratch.getAbsolutePath());
+      }
     }
   }
 }

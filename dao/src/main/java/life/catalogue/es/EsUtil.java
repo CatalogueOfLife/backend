@@ -42,17 +42,12 @@ public class EsUtil {
     try (InputStream schemaStream = EsUtil.class.getResourceAsStream("schema.json")) {
       CreateIndexResponse response = client.indices().create(c -> c
         .index(config.name)
+        .settings(st -> st
+          .numberOfReplicas(String.valueOf(config.numReplicas))
+          .numberOfShards(String.valueOf(config.numShards))
+        )
         .withJson(schemaStream)
       );
-      // Override shard/replica settings if non-default
-      if (config.numShards != 1 || config.numReplicas != 0) {
-        client.indices().putSettings(s -> s
-          .index(config.name)
-          .settings(st -> st
-            .numberOfReplicas(String.valueOf(config.numReplicas))
-          )
-        );
-      }
       return response.acknowledged() ? 200 : 400;
     }
   }
