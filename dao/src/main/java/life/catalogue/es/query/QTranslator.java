@@ -1,8 +1,6 @@
 package life.catalogue.es.query;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScoreMode;
-import co.elastic.clients.elasticsearch._types.query_dsl.FunctionScoreQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.FunctionBoostMode;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 
 import co.elastic.clients.util.ObjectBuilder;
 
@@ -13,7 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import life.catalogue.api.vocab.TaxonomicStatus;
+
+import org.gbif.nameparser.api.Rank;
 
 import static life.catalogue.api.search.NameUsageRequest.SearchContent.*;
 
@@ -85,13 +85,26 @@ public class QTranslator {
           .filter(fq -> fq
             .term(t -> t
               .field("usage.status")
-              .value("ACCEPTED")
+              .value(TaxonomicStatus.ACCEPTED.name())
             )
           )
           .weight(1.2)
         )
-        .scoreMode(FunctionScoreMode.Multiply)
         .boostMode(FunctionBoostMode.Multiply)
+        .scoreMode(FunctionScoreMode.Multiply)
+
+        // higher ranks get more weight
+        .functions(f -> f
+          .fieldValueFactor(fvf -> fvf
+            .field("usage.name.rank")
+            .factor(0.01)              // very small influence
+            .modifier(FieldValueFactorModifier.Reciprocal)
+            .missing((double) Rank.UNRANKED.ordinal())            // worst case if missing
+          )
+        )
+        .boostMode(FunctionBoostMode.Sum)     // add to original score
+        .scoreMode(FunctionScoreMode.Sum)
+        .maxBoost(1.0)
       )
     );
   }
