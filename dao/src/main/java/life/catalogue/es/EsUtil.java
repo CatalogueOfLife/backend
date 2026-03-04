@@ -75,10 +75,10 @@ public class EsUtil {
   /**
    * Deletes the index with the provided name. Will silently do nothing if the index did not exist.
    */
-  public static int deleteIndex(ElasticsearchClient client, IndexConfig index) throws IOException {
-    LOG.warn("Deleting Elasticsearch Index {}", index.name);
+  public static int deleteIndex(ElasticsearchClient client, String index) throws IOException {
+    LOG.warn("Deleting Elasticsearch Index {}", index);
     try {
-      DeleteIndexResponse response = client.indices().delete(d -> d.index(index.name));
+      DeleteIndexResponse response = client.indices().delete(d -> d.index(index));
       return response.acknowledged() ? 200 : 400;
     } catch (ElasticsearchException e) {
       if (e.status() == 404) {

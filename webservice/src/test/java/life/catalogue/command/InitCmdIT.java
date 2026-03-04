@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 /**
  *
  */
-public class InitCmdIT extends CmdTestBase {
+public class InitCmdIT extends EsCmdTestBase {
   
   public InitCmdIT() {
     super(InitCmd::new);

@@ -321,7 +321,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   @Override
   public int createEmptyIndex() {
     try {
-      EsUtil.deleteIndex(client, esConfig.index);
+      EsUtil.deleteIndex(client, esConfig.index.name);
       return EsUtil.createIndex(client, esConfig.index);
     } catch (IOException e) {
       throw new EsException(e);

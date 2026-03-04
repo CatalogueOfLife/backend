@@ -80,7 +80,7 @@ public class NameUsageSuggestionServiceEsIT extends EsTestBase {
 
   @AfterClass
   public static void deleteTestIndex() throws IOException {
-    EsUtil.deleteIndex(esSetup.getClient(), esSetup.getEsConfig().index);
+    EsUtil.deleteIndex(esSetup.getClient(), esSetup.getEsConfig().index.name);
   }
 
   /** Disable base class per-test setup/teardown; the index is shared across all tests. */

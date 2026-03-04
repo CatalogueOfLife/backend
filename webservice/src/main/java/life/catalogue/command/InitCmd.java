@@ -118,22 +118,25 @@ public class InitCmd extends AbstractPromptCmd {
     // create new ES index
     if (cfg.es != null) {
       final var index = cfg.es.index;
-      final String indexAlias = cfg.es.index.name;
+      final String indexAlias = index.name;
       final String indexToday = IndexCmd.indexNameToday(cfg.es);
       LOG.info("Create new elasticsearch index {} with alias {}", indexToday, indexAlias);
       ElasticsearchClient client = new EsClientFactory(cfg.es).createClient();
       try {
-        if (EsUtil.indexExists(client, index.name)) {
-          EsUtil.deleteIndex(client, index); // alias
+        if (EsUtil.indexExists(client, indexAlias)) {
+          EsUtil.deleteIndex(client, indexAlias); // alias
+        }
+        if (EsUtil.indexExists(client, indexToday)) {
+          EsUtil.deleteIndex(client, indexToday); // today - just in case we use the command several times a day
         }
         index.name = indexToday;
-        if (EsUtil.indexExists(client, index.name)) {
-          EsUtil.deleteIndex(client, index); // today - just in case we use the command several times a day
-        }
         EsUtil.createIndex(client, index);
-        LOG.info("Bind alias {} to new search index {}", indexAlias, index.name);
-        EsUtil.createAlias(client, index.name, indexAlias);
-        index.name = indexAlias;
+
+        if (!indexToday.equalsIgnoreCase(indexAlias)) {
+          LOG.info("Bind alias {} to new search index {}", indexAlias, index.name);
+          EsUtil.createAlias(client, index.name, indexAlias);
+          index.name = indexAlias;
+        }
       } finally {
         EsUtil.close(client);
       }

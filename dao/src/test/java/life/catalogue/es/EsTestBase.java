@@ -31,7 +31,7 @@ public class EsTestBase {
 
   @After
   public void tearDown() throws IOException {
-    EsUtil.deleteIndex(client, cfg.index);
+    EsUtil.deleteIndex(client, cfg.index.name);
   }
 
 }

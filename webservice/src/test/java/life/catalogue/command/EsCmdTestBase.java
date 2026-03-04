@@ -45,6 +45,10 @@ public abstract class EsCmdTestBase extends CmdTestBase {
   public static EsSetupRule esRule = new EsSetupRule(2);
 
 
+  public EsCmdTestBase(Supplier<Command> cmdSupply) {
+    super(cmdSupply);
+  }
+
   public EsCmdTestBase(Supplier<Command> cmdSupply, TestDataRule rule) {
     super(cmdSupply, rule);
   }
