@@ -33,6 +33,14 @@ client:
   gzipEnabledForRequests: false
   chunkedEncodingEnabled: false
 es:
+  hosts: localhost:9200
+  indexingThreads: 4
+  connectTimeout: 2000
+  socketTimeout: 10000
+  index:
+    name: clb
+    numShards: 6
+    numReplicas: 1
 auth:
   type: map
   users:

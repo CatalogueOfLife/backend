@@ -97,7 +97,8 @@ public class IndexCmd extends AbstractMybatisCmd {
     if (StringUtils.isBlank(cfg.index.name)) {
       throw new IllegalStateException("index config is empty");
     } else if (cfg.index.name.length() > 10) {
-      throw new IllegalStateException("index config name is too long to be a prefix");
+      LOG.warn("index name {} is too long to be a prefix, using existing index name instead", cfg.index.name);
+      return cfg.index.name;
     }
     return cfg.index.name + "-" + date;
   }

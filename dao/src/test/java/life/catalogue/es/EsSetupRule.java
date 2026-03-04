@@ -24,8 +24,16 @@ public class EsSetupRule extends ExternalResource {
   protected static String PASSWORD = "ase213HUithbnjk";
   protected static String USER = "elastic";
 
+  private int shards;
   private EsConfig cfg;
   private ElasticsearchClient client;
+
+  public EsSetupRule() {
+    this(1);
+  }
+  public EsSetupRule(int shards) {
+    this.shards = shards;
+  }
 
   @Override
   protected void before() throws Throwable {
@@ -54,6 +62,7 @@ public class EsSetupRule extends ExternalResource {
     cfg.password = PASSWORD;
     cfg.index = new IndexConfig();
     cfg.index.name = LocalDate.now() + "-" + System.currentTimeMillis();
+    cfg.index.numShards = shards;
     System.out.println("ES container using hosts " + cfg.hosts);
     return cfg;
   }

@@ -5,7 +5,10 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.util.YamlUtils;
+import life.catalogue.config.EsConfig;
 import life.catalogue.db.PgDbConfig;
+import life.catalogue.es.EsConnectRule;
+import life.catalogue.es.EsSetupRule;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -19,6 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,13 +84,23 @@ public abstract class CmdTestBase {
           adb.user = db.user;
           YamlUtils.write(adb, 2, w);
         }
+
+        EsConfig es = configureES();
+        if (es != null) {
+          w.write("\nes:\n");
+          YamlUtils.write(es, 2, w);
+        }
       }
       LOG.info("Wrote cli config file to {}", cfg.file.getAbsolutePath());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
-  
+
+  protected EsConfig configureES() {
+    return null;
+  }
+
   @Before
   public void setUp() throws Exception {
     // Setup necessary mock

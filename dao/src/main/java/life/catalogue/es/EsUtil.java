@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.config.IndexConfig;
 import life.catalogue.es.query.FieldLookup;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -16,6 +17,9 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
@@ -40,13 +44,18 @@ public class EsUtil {
   public static int createIndex(ElasticsearchClient client, IndexConfig config) throws IOException {
     LOG.warn("Creating Elasticsearch index {}", config.name);
     try (InputStream schemaStream = EsUtil.class.getResourceAsStream("schema.json")) {
+      // Inject numShards/numReplicas into the schema JSON before passing to withJson.
+      // Calling .settings() before .withJson() doesn't work because withJson replaces
+      // the entire settings object when it deserializes the JSON.
+      ObjectMapper om = new ObjectMapper();
+      ObjectNode schema = (ObjectNode) om.readTree(schemaStream);
+      ObjectNode indexSettings = schema.with("settings").with("index");
+      indexSettings.put("number_of_shards", config.numShards);
+      indexSettings.put("number_of_replicas", config.numReplicas);
+      var schemaData = om.writeValueAsBytes(schema);
       CreateIndexResponse response = client.indices().create(c -> c
         .index(config.name)
-        .settings(st -> st
-          .numberOfReplicas(String.valueOf(config.numReplicas))
-          .numberOfShards(String.valueOf(config.numShards))
-        )
-        .withJson(schemaStream)
+        .withJson(new ByteArrayInputStream(schemaData))
       );
       return response.acknowledged() ? 200 : 400;
     }
