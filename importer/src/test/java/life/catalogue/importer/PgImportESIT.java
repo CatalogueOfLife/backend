@@ -85,7 +85,7 @@ public class PgImportESIT extends PgImportITBase {
     req.addFilter(NameUsageSearchParameter.USAGE_ID, "1001b");
     resp = search(req);
     assertEquals(1, resp.getTotal());
-    NameUsageWrapper nuw = resp.getResult().get(0);
+    NameUsageWrapper nuw = resp.getResult().getFirst();
     assertTrue(nuw.getUsage().isTaxon());
     assertEquals("1001b", nuw.getUsage().getId());
     assertEquals(Rank.SUBSPECIES, nuw.getUsage().getName().getRank());

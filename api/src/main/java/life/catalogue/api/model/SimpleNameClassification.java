@@ -12,6 +12,14 @@ public class SimpleNameClassification implements HasID<String> {
   private String id;
   private List<SimpleName> classification;
 
+  public SimpleNameClassification() {
+  }
+
+  public SimpleNameClassification(SimpleNameClassification other) {
+    this.id = other.id;
+    this.classification = other.classification;
+  }
+
   @Override
   public String getId() {
     return id;
