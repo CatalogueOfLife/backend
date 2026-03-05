@@ -201,6 +201,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
   public List<SimpleNameInDataset> related(int datasetKey, String id,
                                      boolean gbifOnly,
                                      @Nullable Collection<Integer> nonGbifDatasetKeys,
+                                     @Nullable Collection<DatasetOrigin> datasetOrigins,
                                      @Nullable Collection<DatasetType> datasetTypes,
                                      @Nullable Collection<Integer> datasetKeys,
                                      @Nullable Collection<UUID> publisherKeys) {
@@ -208,7 +209,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       var key = DSID.of(datasetKey, id);
       num.existsOrThrow(key);
-      return num.listRelated(key, gbifOnly, nonGbifDatasetKeys, datasetTypes, datasetKeys, publisherKeys);
+      return num.listRelated(key, gbifOnly, nonGbifDatasetKeys, datasetOrigins, datasetTypes, datasetKeys, publisherKeys);
     }
   }
 

@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
@@ -160,10 +161,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   /**
    * Returns related name usages based on the same name as matched against the names index.
+   * Only public datasets are included.
    *
    * @param key the key of any name usage
    * @param gbifOnly if true only datasets with a GBIF key are considered
    * @param nonGbifDatasetKeys optional setting when gbifOnly=true. Set of dataset keys to always consider even if they do not have a gbif key
+   * @param datasetOrigins optional set of dataset origins to consider, ignoring all others
    * @param datasetTypes optional set of dataset types to consider, ignoring all others
    * @param datasetKeys optional set of dataset keys to consider, ignoring all others
    * @param publisherKeys optional set of dataset GBIF publisher keys to consider, ignoring all others
@@ -172,6 +175,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<SimpleNameInDataset> listRelated(@Param("key") DSID<String> key,
                                         @Param("gbifOnly") boolean gbifOnly,
                                         @Param("nonGbifDatasetKeys") @Nullable Collection<Integer> nonGbifDatasetKeys,
+                                        @Param("datasetOrigins") @Nullable Collection<DatasetOrigin> datasetOrigins,
                                         @Param("datasetTypes") @Nullable Collection<DatasetType> datasetTypes,
                                         @Param("datasetKeys") @Nullable Collection<Integer> datasetKeys,
                                         @Param("publisherKeys") @Nullable Collection<UUID> publisherKeys);

@@ -543,13 +543,15 @@
     <!-- now join the related usages -->
     JOIN name n ON nm.name_id=n.id AND nm.dataset_key=n.dataset_key
     JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
-    <if test="publisherKeys != null || datasetTypes != null || gbifOnly">
-      JOIN dataset d ON d.key=u.dataset_key
-    </if>
+    JOIN dataset d ON d.key=u.dataset_key
     WHERE orig.dataset_key=#{key.datasetKey} AND orig.id=#{key.id}
       AND (u.dataset_key!=#{key.datasetKey} OR u.id!=#{key.id})
+      AND NOT d.private
     <if test="gbifOnly">
       AND (d.gbif_key IS NOT NULL <if test="nonGbifDatasetKeys != null and !nonGbifDatasetKeys.isEmpty()"> OR d.key IN <foreach item="key" collection="nonGbifDatasetKeys" open="(" separator="," close=")">#{key}</foreach></if>)
+    </if>
+    <if test="datasetOrigins != null and !datasetOrigins.isEmpty()">
+      AND d.origin IN <foreach item="o" collection="datasetOrigins" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
     </if>
     <if test="datasetTypes != null and !datasetTypes.isEmpty()">
       AND d.type IN <foreach item="t" collection="datasetTypes" open="(" separator="," close=")">#{t}::DATASETTYPE</foreach>
