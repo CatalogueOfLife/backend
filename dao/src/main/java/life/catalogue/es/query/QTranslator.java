@@ -88,23 +88,23 @@ public class QTranslator {
               .value(TaxonomicStatus.ACCEPTED.name())
             )
           )
-          .weight(1.2)
+          .weight(1.1)
         )
         .boostMode(FunctionBoostMode.Multiply)
         .scoreMode(FunctionScoreMode.Multiply)
 
         // higher ranks get more weight
-        .functions(f -> f
-          .fieldValueFactor(fvf -> fvf
-            .field("usage.name.rank")
-            .factor(0.01)              // very small influence
-            .modifier(FieldValueFactorModifier.Reciprocal)
-            .missing((double) Rank.UNRANKED.ordinal())            // worst case if missing
-          )
-        )
-        .boostMode(FunctionBoostMode.Sum)     // add to original score
-        .scoreMode(FunctionScoreMode.Sum)
-        .maxBoost(1.0)
+//        .functions(f -> f
+//          .fieldValueFactor(fvf -> fvf
+//            .field("usage.name.rank")
+//            .factor(0.01)              // very small influence
+//            .modifier(FieldValueFactorModifier.Reciprocal)
+//            .missing((double) Rank.UNRANKED.ordinal())            // worst case if missing
+//          )
+//        )
+//        .boostMode(FunctionBoostMode.Sum)     // add to original score
+//        .scoreMode(FunctionScoreMode.Sum)
+//        .maxBoost(1.0)
       )
     );
   }
