@@ -46,6 +46,7 @@ public class NameUsageWrapper extends SimpleNameClassification {
 
   public NameUsageWrapper(NameUsageWrapper other) {
     this.usage = other.usage;
+    super.setId(usage.getId());
     this.issues = other.issues;
     this.decisions = other.decisions;
     this.sectorMode = other.sectorMode;
