@@ -2,6 +2,8 @@ package life.catalogue.command;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.concurrent.SomeExecutor;
 import life.catalogue.config.EsConfig;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.EsUtil;
@@ -13,7 +15,12 @@ import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import life.catalogue.es.search.NameUsageSearchService;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
+import life.catalogue.jobs.ReindexSchedulerJob;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -34,6 +41,7 @@ public class IndexCmd extends AbstractMybatisCmd {
   private static final String ARG_FILE = "keys-file";
   private static final String ARG_KEY = "key";
   private static final String ARG_ALL = "all";
+  private static final String ARG_ALL_MISSING = "all-missing";
   private static final String ARG_KEY_IGNORE = "ignore";
   private static final String ARG_CREATE = "create";
   private static final String ARG_THREADS = "t";
@@ -64,6 +72,12 @@ public class IndexCmd extends AbstractMybatisCmd {
       .required(false)
       .setDefault(false)
       .help("index all datasets into a new index by date");
+    subparser.addArgument("--"+ ARG_ALL_MISSING)
+      .dest(ARG_ALL_MISSING)
+      .type(boolean.class)
+      .required(false)
+      .setDefault(false)
+      .help("index all datasets which have not been indexed or the wrong number of indexed records");
     subparser.addArgument("--"+ ARG_KEY_IGNORE, "-i")
        .dest(ARG_KEY_IGNORE)
        .nargs("*")
@@ -131,6 +145,10 @@ public class IndexCmd extends AbstractMybatisCmd {
           svc.indexAll();
         }
 
+      } else if (ns.get(ARG_ALL_MISSING)) {
+        NameUsageSearchService search = new NameUsageSearchServiceEs(cfg.es.index.name, esClient);
+        indexMissing(svc, search);
+
       } else if (ns.get(ARG_FILE) != null) {
         String fn = ns.getString(ARG_FILE);
         File file = new File(fn);
@@ -162,5 +180,15 @@ public class IndexCmd extends AbstractMybatisCmd {
         LOG.warn("Could not delete scratch dir {}", scratch.getAbsolutePath());
       }
     }
+  }
+
+  private void indexMissing(NameUsageIndexService indexService, NameUsageSearchService searchService) {
+    var exec = Executors.newFixedThreadPool(cfg.es.indexingThreads);
+    var scheduler = new ReindexSchedulerJob(user.getKey(), 0, factory, SomeExecutor.from(exec), searchService, indexService, null);
+    LOG.info("Start submitting index jobs");
+    scheduler.execute();
+    LOG.info("Finished submitting index jobs. Wait for indexing to finish");
+    ExecutorUtils.shutdown(exec);
+    LOG.info("Indexing executor has shutdown");
   }
 }

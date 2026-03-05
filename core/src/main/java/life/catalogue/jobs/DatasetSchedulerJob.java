@@ -4,10 +4,12 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.func.ThrowingConsumer;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.concurrent.SomeExecutor;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.SqlSession;
@@ -18,7 +20,7 @@ import org.slf4j.LoggerFactory;
 public abstract class DatasetSchedulerJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetSchedulerJob.class);
   protected final SqlSessionFactory factory;
-  private final JobExecutor exec;
+  private final SomeExecutor exec;
   private final double threshold;
   private final DatasetOrigin[] origins;
   private DatasetMapper dm;
@@ -28,7 +30,7 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
    *                  Can be zero or negative to process all incomplete datasets even if a single record is missing.
    * @param origins optional list of dataset origins to restrict the scheduler to
    */
-  public DatasetSchedulerJob(int userKey, final double threshold, SqlSessionFactory factory, JobExecutor exec, DatasetOrigin...origins) {
+  public DatasetSchedulerJob(int userKey, final double threshold, SqlSessionFactory factory, SomeExecutor exec, DatasetOrigin...origins) {
     super(userKey);
     this.exec = exec;
     this.factory = factory;

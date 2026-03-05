@@ -4,6 +4,7 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
+import life.catalogue.concurrent.SomeExecutor;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.es.search.NameUsageSearchService;
 import life.catalogue.event.EventBroker;
@@ -18,11 +19,11 @@ public class ReindexSchedulerJob extends DatasetSchedulerJob {
   private final EventBroker bus;
 
   /**
-   * @param threshold the lowest percentage of names already matched that triggers a reindex.
+   * @param threshold the lowest percentage of names already indexed that triggers a reindex.
    *                  Can be zero or negative to process all incomplete datasets even if a single record is missing.
    * @param bus event bus to send varnish cache flushes. If null no caches will be flushed
    */
-  public ReindexSchedulerJob(int userKey, double threshold, SqlSessionFactory factory, JobExecutor exec, NameUsageSearchService nuService,
+  public ReindexSchedulerJob(int userKey, double threshold, SqlSessionFactory factory, SomeExecutor exec, NameUsageSearchService nuService,
                              NameUsageIndexService indexService, @Nullable EventBroker bus) {
     super(userKey, threshold, factory, exec);
     this.nuService = nuService;
