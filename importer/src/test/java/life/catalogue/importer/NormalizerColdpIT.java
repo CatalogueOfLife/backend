@@ -665,4 +665,19 @@ public class NormalizerColdpIT extends NormalizerITBase {
     }
   }
 
+
+  /**
+   * SpeciesInteraction records flagged as Taxon ID Invalid if relatedTaxonID is missing
+   * https://github.com/CatalogueOfLife/backend/issues/1488
+   */
+  @Test
+  public void speciesInteractions() throws Exception {
+    normalize(42);
+
+    var un = usageByID("46577");
+    assertEquals(1, un.getSpiRelations().size());
+    var v = store.getVerbatim(un.getSpiRelations().getFirst().getVerbatimKey());
+    assertTrue(v.getIssues().isEmpty());
+  }
+
 }
