@@ -18,6 +18,8 @@ import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.printer.JsonTreePrinter;
 import life.catalogue.printer.PrinterFactory;
 
+import org.apache.ibatis.annotations.Param;
+
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
@@ -184,16 +186,21 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
 
   /**
    *
-   * @param datasetKey
-   * @param id
-   * @param latestReleaseOnly if true only related names from the latest release(s) are returned. XR and BR are treated as separate releases.
-   * @param datasetTypes
-   * @param datasetKeys
-   * @param publisherKeys
+   * Lists related usages from other datasets which are linked via names index matches.
+   * Various options to restrict the related datasets to be considered.
+   *
+   * @param datasetKey original dataset
+   * @param id original usageOD in the above dataset
+   * @param gbifOnly if true only datasets with a GBIF key are considered
+   * @param nonGbifDatasetKeys optional setting when gbifOnly=true. Set of dataset keys to always consider even if they do not have a gbif key
+   * @param datasetTypes optional set of dataset types to consider, ignoring all others
+   * @param datasetKeys optional set of dataset keys to consider, ignoring all others
+   * @param publisherKeys optional set of dataset GBIF publisher keys to consider, ignoring all others
    * @return
    */
   public List<SimpleNameInDataset> related(int datasetKey, String id,
-                                     boolean latestReleaseOnly,
+                                     boolean gbifOnly,
+                                     @Nullable Collection<Integer> nonGbifDatasetKeys,
                                      @Nullable Collection<DatasetType> datasetTypes,
                                      @Nullable Collection<Integer> datasetKeys,
                                      @Nullable Collection<UUID> publisherKeys) {
@@ -201,7 +208,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       var key = DSID.of(datasetKey, id);
       num.existsOrThrow(key);
-      return num.listRelated(key, latestReleaseOnly, datasetTypes, datasetKeys, publisherKeys);
+      return num.listRelated(key, gbifOnly, nonGbifDatasetKeys, datasetTypes, datasetKeys, publisherKeys);
     }
   }
 

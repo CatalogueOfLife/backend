@@ -28,6 +28,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,6 +48,8 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
+
+import javax.annotation.Nullable;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")
@@ -122,11 +125,12 @@ public class NameUsageResource {
   @Path("{id}/related")
   public List<SimpleNameInDataset> related(@PathParam("key") int datasetKey,
                                          @PathParam("id") String id,
-                                         @QueryParam("latestReleaseOnly") boolean latestReleaseOnly,
+                                         @QueryParam("gbifOnly") boolean gbifOnly,
+                                         @QueryParam("gbifOnly") Collection<Integer> nonGbifDatasetKeys,
                                          @QueryParam("datasetType") List<DatasetType> datasetTypes,
                                          @QueryParam("datasetKey") List<Integer> datasetKeys,
                                          @QueryParam("publisherKey") List<UUID> publisherKeys) {
-    return dao.related(datasetKey, id, latestReleaseOnly, datasetTypes, datasetKeys, publisherKeys);
+    return dao.related(datasetKey, id, gbifOnly, nonGbifDatasetKeys, datasetTypes, datasetKeys, publisherKeys);
   }
 
   @GET
