@@ -354,23 +354,25 @@ public class InterpreterBase {
     d.setRemarks(getFormattedText(rec, tRemarks));
     addReference.accept(d, rec);
 
-    var status = parse(DistributionStatusParser.PARSER, rec.get(tStatus));
-    if (status.isPresent()) {
-      switch (status.get()) {
-        case NATIVE:
-          d.setEstablishmentMeans(EstablishmentMeans.NATIVE);
-          d.setDegreeOfEstablishment(DegreeOfEstablishment.NATIVE);
-          break;
-        case DOMESTICATED:
-          d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
-          d.setDegreeOfEstablishment(DegreeOfEstablishment.CULTIVATED);
-          break;
-        case ALIEN:
-          d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
-          break;
-        case UNCERTAIN:
-          d.setEstablishmentMeans(EstablishmentMeans.UNCERTAIN);
-          break;
+    if (d.getEstablishmentMeans() == null) {
+      var status = parse(DistributionStatusParser.PARSER, rec.get(tStatus));
+      if (status.isPresent()) {
+        switch (status.get()) {
+          case NATIVE:
+            d.setEstablishmentMeans(EstablishmentMeans.NATIVE);
+            d.setDegreeOfEstablishment(DegreeOfEstablishment.NATIVE);
+            break;
+          case DOMESTICATED:
+            d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
+            d.setDegreeOfEstablishment(DegreeOfEstablishment.CULTIVATED);
+            break;
+          case ALIEN:
+            d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
+            break;
+          case UNCERTAIN:
+            d.setEstablishmentMeans(EstablishmentMeans.UNCERTAIN);
+            break;
+        }
       }
     }
     return d;
