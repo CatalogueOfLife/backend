@@ -1,8 +1,8 @@
 package life.catalogue.parser;
 
-import life.catalogue.api.vocab.Area;
-import life.catalogue.api.vocab.AreaImpl;
-import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.api.vocab.area.Area;
+import life.catalogue.api.vocab.area.GenericArea;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.common.kryo.AreaSerializer;
 
 import java.util.Optional;
@@ -20,6 +20,7 @@ public class AreaParser extends ParserBase<Area> {
   public static final AreaParser PARSER = new AreaParser();
   private static final Pattern PREFIX = Pattern.compile("^([a-z_0-9]+)\\s*:\\s*(.+)?\\s*$", Pattern.CASE_INSENSITIVE);
   private static final Pattern MRGID = Pattern.compile("^https?://marineregions.org/mrgid/(\\d+)$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern ISO_3166_2 = Pattern.compile("^([a-z]{2})-([a-z0-9]{1,3})$", Pattern.CASE_INSENSITIVE);
   private static final String ISO = "iso";
 
   public AreaParser() {
@@ -56,6 +57,9 @@ public class AreaParser extends ParserBase<Area> {
             return Optional.empty();
 
           } else if (scheme.equalsIgnoreCase(ISO) || scheme.equalsIgnoreCase("country") || scheme.equalsIgnoreCase("iso3166") || scheme.equalsIgnoreCase("3166")) {
+            if (value.length() > 3 && value.contains("-")) {
+              return parseIsoSubRegions(value);
+            }
             return CountryParser.PARSER.parse(value.trim());
 
           } else if (scheme.equalsIgnoreCase("realm") || scheme.equalsIgnoreCase("bio")) {
@@ -65,19 +69,31 @@ public class AreaParser extends ParserBase<Area> {
             // deal with known domains, others will become free text
             m = MRGID.matcher(area);
             if (m.find()) {
-              return Optional.of(new AreaImpl(Gazetteer.MRGID, m.group(1)));
+              return Optional.of(new GenericArea(Gazetteer.MRGID, m.group(1)));
             }
 
           } else {
             return Optional.ofNullable(AreaSerializer.parse(scheme + ":" + value.trim()));
           }
         }
-        return Optional.of(new AreaImpl(area));
+        return Optional.of(new GenericArea(area));
 
       } catch (IllegalArgumentException e) {
         throw new UnparsableException("Unparsable area " + area, e);
       }
     }
+  }
+
+  /**
+   * Parses ISO 3166-2 https://de.wikipedia.org/wiki/ISO_3166-2
+   */
+  private Optional<GenericArea> parseIsoSubRegions(String x) {
+    var areaID = StringUtils.deleteWhitespace(x).toUpperCase();
+    var m = ISO_3166_2.matcher(areaID);
+    if (m.find()) {
+      return Optional.of(new GenericArea(Gazetteer.ISO, areaID, null));
+    }
+    return Optional.empty();
   }
 
   @Override

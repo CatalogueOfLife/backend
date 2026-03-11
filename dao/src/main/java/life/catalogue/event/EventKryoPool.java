@@ -3,6 +3,7 @@ package life.catalogue.event;
 import life.catalogue.api.event.*;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.FuzzyDateSerializer;
 import life.catalogue.common.kryo.URISerializer;

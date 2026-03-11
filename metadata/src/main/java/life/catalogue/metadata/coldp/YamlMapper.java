@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.FuzzyDateISOSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.LicenseParser;

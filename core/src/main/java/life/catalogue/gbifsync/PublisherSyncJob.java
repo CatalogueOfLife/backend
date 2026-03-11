@@ -5,11 +5,10 @@ import com.google.common.annotations.VisibleForTesting;
 import jakarta.ws.rs.WebApplicationException;
 
 import life.catalogue.api.model.Publisher;
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.GbifConfig;
-import life.catalogue.dao.PublisherDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.PublisherMapper;
 

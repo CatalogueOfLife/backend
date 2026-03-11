@@ -6,7 +6,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.VernacularNameUsage;
 import life.catalogue.api.search.VernacularSearchRequest;
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.Sex;
 
 import java.util.ArrayList;

@@ -3,6 +3,7 @@ package life.catalogue.importer.store.kryo;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.importer.store.ImportKryoPool;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.RelationData;
@@ -21,8 +22,6 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
-
-import org.locationtech.jts.geom.Coordinates;
 
 import static org.junit.Assert.assertEquals;
 

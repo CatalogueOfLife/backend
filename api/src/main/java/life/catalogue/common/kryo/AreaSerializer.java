@@ -1,8 +1,8 @@
 package life.catalogue.common.kryo;
 
-import life.catalogue.api.vocab.*;
-
 import java.util.regex.Pattern;
+
+import life.catalogue.api.vocab.area.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public class AreaSerializer extends Serializer<Area> {
       return parse(value);
     } catch (IllegalArgumentException e) {
       LOG.warn("Unknown area scheme or bad enumeration: {}", value);
-      return new AreaImpl(value);
+      return new GenericArea(value);
     }
   }
 
@@ -64,10 +64,10 @@ public class AreaSerializer extends Serializer<Area> {
           return LonghurstArea.of(value);
         default:
           // we have not implemented other area enumerations yet!
-          return new AreaImpl(standard, value, null);
+          return new GenericArea(standard, value, null);
       }
     } else {
-      return new AreaImpl(prefixedIdOrName);
+      return new GenericArea(prefixedIdOrName);
     }
   }
 }

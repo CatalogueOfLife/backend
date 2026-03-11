@@ -3,10 +3,6 @@ package life.catalogue.api.model;
 import java.util.Objects;
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotNull;
-
-import life.catalogue.api.vocab.Country;
-
 /**
  * GBIF UUID based publisher to be used in projects and releases as sector publishers.
  */

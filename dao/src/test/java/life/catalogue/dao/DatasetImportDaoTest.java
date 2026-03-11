@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.vocab.*;
 
+import life.catalogue.api.vocab.area.Gazetteer;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;

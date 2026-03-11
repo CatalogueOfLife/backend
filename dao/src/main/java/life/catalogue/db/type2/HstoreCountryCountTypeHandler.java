@@ -1,6 +1,6 @@
 package life.catalogue.db.type2;
 
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 
 public class HstoreCountryCountTypeHandler extends HstoreEnumCountTypeHandlerBase<Country> {
 

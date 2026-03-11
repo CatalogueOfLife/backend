@@ -2,6 +2,7 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.parser.NameParser;

@@ -12,6 +12,7 @@
     d.verbatim_key,
     d.verbatim_source_key,
     d.area,
+    d.area_id,
     d.gazetteer,
     d.establishment_means,
     d.degree_of_establishment,
@@ -25,8 +26,7 @@
     d.created,
     d.created_by,
     d.modified,
-    d.modified_by,
-    d.gazetteer = 'TEXT' as istext
+    d.modified_by
   </sql>
 
   <sql id="COLS">
@@ -40,6 +40,7 @@
     verbatim_key,
     verbatim_source_key,
     area,
+    area_id,
     gazetteer,
     establishment_means,
     degree_of_establishment,
@@ -60,7 +61,8 @@
     #{obj.sectorKey},
     #{obj.verbatimKey},
     #{obj.verbatimSourceKey},
-    coalesce(#{obj.area.id}, #{obj.area.name}),
+    #{obj.area.name},
+    #{obj.area.id},
     #{obj.area.gazetteer}::GAZETTEER,
     #{obj.establishmentMeans}::ESTABLISHMENTMEANS,
     #{obj.degreeOfEstablishment}::DEGREEOFESTABLISHMENT,
@@ -80,16 +82,10 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="distributionResultMap" type="Distribution" autoMapping="true">
     <id property="id" column="id"/>
-    <association property="area" javaType="life.catalogue.api.vocab.AreaImpl">
+    <association property="area" javaType="life.catalogue.api.vocab.area.GenericArea">
       <result property="gazetteer" column="gazetteer" />
-      <discriminator javaType="boolean" column="istext">
-        <case value="true">
-          <result property="name" column="area" />
-        </case>
-        <case value="false">
-          <result property="id" column="area" />
-        </case>
-      </discriminator>
+      <result property="name" column="area" />
+      <result property="id" column="area_id" />
     </association>
   </resultMap>
 

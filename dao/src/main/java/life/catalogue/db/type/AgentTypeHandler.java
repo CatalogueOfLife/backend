@@ -1,7 +1,7 @@
 package life.catalogue.db.type;
 
 import life.catalogue.api.model.Agent;
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.db.type2.CustomAbstractTypeHandler;
 
 import java.sql.SQLException;

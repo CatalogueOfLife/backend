@@ -3,6 +3,9 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Distribution;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Area;
+import life.catalogue.api.vocab.area.GenericArea;
+import life.catalogue.api.vocab.area.Gazetteer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +25,9 @@ public class DistributionMapperTest extends TaxonExtensionMapperTest<Distributio
 		for (Gazetteer g : Gazetteer.values()) {
 			for (var em : EstablishmentMeans.values()) {
 				Distribution d = new Distribution();
-				Area area = new AreaImpl(g, "1234");
+				Area area = new GenericArea(g, "1234");
 				if (g == Gazetteer.TEXT) {
-          area = new AreaImpl("Europe");
+          area = new GenericArea("Europe");
         }
 				d.setArea(area);
 				d.setEstablishmentMeans(em);

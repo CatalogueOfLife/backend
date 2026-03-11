@@ -2,7 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.*;
@@ -10,8 +10,6 @@ import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-
-import life.catalogue.printer.PrinterUtils;
 
 import org.gbif.nameparser.api.NameType;
 

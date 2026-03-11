@@ -1,11 +1,5 @@
 package life.catalogue.dao;
 
-import jakarta.validation.Valid;
-import jakarta.ws.rs.BeanParam;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-
 import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
@@ -13,7 +7,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.*;
-import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.api.vocab.area.*;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
@@ -492,26 +486,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     if (isTaxon) {
       if (loadDistributions) {
         DistributionMapper dim = session.getMapper(DistributionMapper.class);
-        info.setDistributions(
-          dim.listByTaxon(usage).stream()
-             // replace will enums so we also get titles and other props - this is too hard to do in mybatis
-             .map(d -> {
-               if (d.getArea().getGazetteer() == Gazetteer.ISO) {
-                 Country.fromIsoCode(d.getArea().getId()).ifPresent(c ->
-                   d.setArea(new AreaImpl(c))
-                 );
-
-               } else if (d.getArea().getGazetteer() == Gazetteer.TDWG) {
-                 d.setArea(TdwgArea.of(d.getArea().getId()));
-
-               } else if (d.getArea().getGazetteer() == Gazetteer.LONGHURST) {
-                 d.setArea(LonghurstArea.of(d.getArea().getId()));
-               }
-               return d;
-             })
-             .filter(d -> d.getArea() != null)
-             .collect(Collectors.toList())
-        );
+        info.setDistributions(dim.listByTaxon(usage));
         info.getDistributions().forEach(d -> {
           refIds.add(d.getReferenceId());
           addSectorMode(d, sectorModes, sm);

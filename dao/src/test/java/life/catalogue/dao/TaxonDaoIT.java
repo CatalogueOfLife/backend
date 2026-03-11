@@ -4,6 +4,10 @@ import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.GenericArea;
+import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.Gazetteer;
+import life.catalogue.api.vocab.area.TdwgArea;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
@@ -91,7 +95,7 @@ public class TaxonDaoIT extends DaoTestBase {
           assertEquals("ref-1b" ,d.getReferenceId());
           break;
         case 4:
-          assertEquals(new AreaImpl(Country.GERMANY), d.getArea());
+          assertEquals(new GenericArea(Country.GERMANY), d.getArea());
           assertEquals(Gazetteer.ISO, d.getArea().getGazetteer());
           assertNull(d.getEstablishmentMeans());
           assertNotNull(d.getArea().getId());

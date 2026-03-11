@@ -3,6 +3,7 @@ package life.catalogue.importer.coldp;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
@@ -260,7 +261,7 @@ public class ColdpInterpreter extends InterpreterBase {
       );
 
     } else if (rec.hasTerm(ColdpTerm.area)) {
-      dists = createDistributions(Gazetteer.TEXT, null, rec.get(ColdpTerm.area), rec,
+      dists = createDistribution(Gazetteer.TEXT, null, rec.get(ColdpTerm.area), rec,
         ColdpTerm.status, // legacy
         ColdpTerm.establishmentMeans,
         ColdpTerm.degreeOfEstablishment,

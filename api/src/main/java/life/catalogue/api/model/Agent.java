@@ -3,7 +3,7 @@ package life.catalogue.api.model;
 import jakarta.validation.constraints.NotNull;
 
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.common.util.RegexUtils;
 
 import java.util.*;
@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import jakarta.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

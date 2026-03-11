@@ -11,6 +11,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-03-11 distribution area_id
+```
+ALTER TABLE distribution ADD COLUMN area_id TEXT;
+
+ALTER TYPE ISSUE ADD VALUE 'DISTRIBUTION_GAZETTEER_CONFLICT';
+```
+
+TODO: migrate distribution area to area_id and area name
+
+
 #### 2025-12-18 version DOIs
 ```
 ALTER TABLE dataset ADD COLUMN version_doi TEXT;

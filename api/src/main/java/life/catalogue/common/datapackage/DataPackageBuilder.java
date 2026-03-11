@@ -3,6 +3,8 @@ package life.catalogue.common.datapackage;
 import life.catalogue.api.datapackage.PackageDescriptor;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
 

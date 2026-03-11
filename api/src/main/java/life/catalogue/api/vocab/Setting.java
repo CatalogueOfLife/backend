@@ -1,5 +1,6 @@
 package life.catalogue.api.vocab;
 
+import life.catalogue.api.vocab.area.Gazetteer;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;

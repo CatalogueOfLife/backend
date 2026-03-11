@@ -2,6 +2,9 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.GenericArea;
+import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.UsageData;
@@ -579,15 +582,12 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertEquals(2, u.distributions.size());
     for (var d : u.distributions) {
       assertEquals(EstablishmentMeans.INTRODUCED, d.getEstablishmentMeans());
-      if (d.getArea() instanceof AreaImpl a) {
-        assertEquals("ISO_3166:BE-VLG", a.getId());
-        assertEquals("Flemish Region", a.getName());
-
-      } else if (d.getArea() instanceof Country c) {
-        assertEquals(Country.fromIsoCode("BE").get(), c);
+      if (d.getArea().getId().endsWith("-VLG")) {
+        assertEquals(new GenericArea(Gazetteer.ISO,"BE-VLG","Flemish Region"), d.getArea());
 
       } else {
-        fail("Unexpected area type: " + d.getArea());
+        assertEquals("BE", d.getArea().getId());
+        assertEquals(Country.BELGIUM.getName(), d.getArea().getName());
       }
       assertEquals((Integer)2023, d.getYear());
     }

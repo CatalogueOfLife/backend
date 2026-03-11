@@ -1,8 +1,8 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Country;
-import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.coldp.ColdpTerm;
@@ -238,7 +238,7 @@ public class InterpreterBaseTest {
   }
 
   @Test
-  public void createDistributions() throws Exception {
+  public void createDistribution() throws Exception {
     assertDistributions(Gazetteer.ISO, "DE", "DE");
     assertDistributions(Gazetteer.TEXT, "DE,fr,es", "DE,fr,es");
     assertDistributions(Gazetteer.TEXT, "az-tar; AZ; ", "az-tar; AZ;");
@@ -262,7 +262,7 @@ public class InterpreterBaseTest {
     assertDistributions(null, loc, expectedGazetteer, expectedIDs);
   }
   private void assertDistributions(Gazetteer std, String loc, Gazetteer expectedGazetteer, String... expectedIDs) {
-    List<Distribution> dis = InterpreterBase.createDistributions(std, loc, null, new VerbatimRecord(), null, null,null,null,null,null,null,null,null,
+    List<Distribution> dis = InterpreterBase.createDistribution(std, loc, null, new VerbatimRecord(), null, null,null,null,null,null,null,null,null,
       new BiConsumer<Distribution, VerbatimRecord>() {
       @Override
       public void accept(Distribution distribution, VerbatimRecord verbatimRecord) {

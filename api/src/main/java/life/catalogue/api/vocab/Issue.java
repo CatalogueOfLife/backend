@@ -489,7 +489,10 @@ public enum Issue {
     "A misspelled accepted names existed which has been converted into a synonym."),
 
   BAD_BASIONYM_AUTHORSHIP(NAME, Level.WARNING,
-    "A basionym has itself a basionym authorship, i.e. an author in brackets")
+    "A basionym has itself a basionym authorship, i.e. an author in brackets"),
+
+  DISTRIBUTION_GAZETTEER_CONFLICT(DISTRIBUTION, Level.WARNING,
+    "A distribution record contains a gazeteer value which is different from the given identifier for the area.")
   ;
 
   /**

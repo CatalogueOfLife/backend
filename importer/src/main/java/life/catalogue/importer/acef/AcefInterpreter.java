@@ -83,9 +83,9 @@ public class AcefInterpreter extends InterpreterBase {
   
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     var dists = super.interpretDistributionByGazetteer(rec, this::setReference,
-        AcefTerm.StandardInUse, // gazeteer
-        null,
-        AcefTerm.DistributionElement, // area
+        AcefTerm.StandardInUse, // gazetteer
+        AcefTerm.DistributionElement, // id
+        null, // area
         AcefTerm.DistributionStatus,
         null,null,null,null,null, null, null, null);
     return dists;

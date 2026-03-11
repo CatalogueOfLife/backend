@@ -3,6 +3,7 @@ package life.catalogue.exporter;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.terms.ClbTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.TermWriter;
@@ -21,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.SqlSession;

@@ -1,6 +1,6 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.Issue;
 
 import java.util.Map;

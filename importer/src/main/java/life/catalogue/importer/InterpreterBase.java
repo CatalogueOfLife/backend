@@ -3,6 +3,7 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.dao.ReferenceFactory;
@@ -272,15 +273,49 @@ public class InterpreterBase {
       gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
           .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
     }
-    return createDistributions(gazetteer, rec.get(tLocationID), rec.get(tLocation), rec, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference);
+    return createDistribution(gazetteer, rec.get(tLocationID), rec.get(tLocation), rec, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference);
   }
 
-  protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locationID, final String location, VerbatimRecord rec,
-                                                          Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
-                                                          Term tYear, Term tSeason, Term tLifeStage, Term tRemarks,
-                                                          BiConsumer<Distribution, VerbatimRecord> addReference) {
+  protected static List<Distribution> createDistribution(
+    @Nullable Gazetteer standard,
+    final String locationID,
+    final String location,
+    VerbatimRecord rec,
+    Term tStatus,
+    Term tEstablishmentMeans,
+    Term tDegreeOfEstablishment,
+    Term tPathway,
+    Term tThreatStatus,
+    Term tYear,
+    Term tSeason,
+    Term tLifeStage,
+    Term tRemarks,
+    BiConsumer<Distribution, VerbatimRecord> addReference) {
+
+    return interpretArea(standard, locationID, location, rec)
+      .stream()
+      .map(area -> createDistribution(
+        rec, area, tStatus, tEstablishmentMeans, tDegreeOfEstablishment,
+        tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference))
+      .toList();
+  }
+
+  protected static Optional<GenericArea> interpretArea(@Nullable Gazetteer standard, final String locationID, final String location, IssueContainer issues) {
     if (locationID != null || location != null) {
-      if (locationID != null && standard != Gazetteer.TEXT) {
+      GenericArea area;
+      if (standard == Gazetteer.TEXT) {
+        if (locationID != null && location != null) {
+          area = new GenericArea(Gazetteer.TEXT, locationID, location);
+        } else {
+          area = new GenericArea(ObjectUtils.coalesce(location, locationID));
+        }
+
+      } else if (locationID != null) {
+        // try to parse the locationID - note that some formats like ACEF do not differ between locationID and location,
+        // so we can also have free text in the locationID
+
+        // start with the given area, but we verify or add missing titles later on
+        area = new GenericArea(standard, locationID, location);
         String locID;
         // add gazetteer prefix for the parser if not yet included
         if (standard != null && locationID.indexOf(':') < 0) {
@@ -288,23 +323,39 @@ public class InterpreterBase {
         } else {
           locID = locationID;
         }
-        var area = SafeParser.parse(AreaParser.PARSER, locID).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
-        if (area != null) {
+        var parsed = SafeParser.parse(AreaParser.PARSER, locID).orNull(Issue.DISTRIBUTION_AREA_INVALID, issues);
+        if (parsed != null) {
           // check if we have extracted a contradicting gazetteer
-          if (standard != null && area.getGazetteer() != Gazetteer.TEXT && area.getGazetteer() != standard) {
-            LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
-              area.getGazetteer(), area.getGazetteer(), standard, rec);
+          if (standard != null && parsed.getGazetteer() != Gazetteer.TEXT && parsed.getGazetteer() != standard) {
+            issues.add(Issue.DISTRIBUTION_GAZETTEER_CONFLICT);
+          } else {
+            if (!locationID.equals(parsed.getId())) {
+              area.setId(parsed.getId());
+            }
           }
-          return Lists.newArrayList(
-            createDistribution(rec, area, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
-          );
+          // augment area with gazetteer and title
+          if (area.getGazetteer() == null) {
+            area.setGazetteer(parsed.getGazetteer());
+          }
+          if (area.getName() == null) {
+            area.setName(parsed.getName());
+          }
+
+        } else if (standard == null) {
+          if (location == null) {
+            // swap ID for location and treat it like text if we cannot parse it
+            area = new GenericArea(Gazetteer.TEXT, null, locationID);
+          } else {
+            area.setGazetteer(Gazetteer.TEXT);
+          }
         }
+      } else {
+        // only the name known
+        area = new GenericArea(location);
       }
-      return Lists.newArrayList(
-        createDistribution(rec, new AreaImpl(ObjectUtils.coalesce(locationID, location)), tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
-      );
+      return Optional.of(area);
     }
-    return Collections.emptyList();
+    return Optional.empty();
   }
 
   private static List<String> words(String x) {

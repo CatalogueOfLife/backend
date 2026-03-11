@@ -1,7 +1,7 @@
 package life.catalogue.db.type;
 
 
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 
 import org.apache.ibatis.type.MappedTypes;
 
