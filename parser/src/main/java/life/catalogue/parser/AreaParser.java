@@ -18,7 +18,7 @@ import com.google.common.base.CharMatcher;
  */
 public class AreaParser extends ParserBase<Area> {
   public static final AreaParser PARSER = new AreaParser();
-  private static final Pattern PREFIX = Pattern.compile("^([a-z]+)\\s*:\\s*(.+)?\\s*$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern PREFIX = Pattern.compile("^([a-z_0-9]+)\\s*:\\s*(.+)?\\s*$", Pattern.CASE_INSENSITIVE);
   private static final Pattern MRGID = Pattern.compile("^https?://marineregions.org/mrgid/(\\d+)$", Pattern.CASE_INSENSITIVE);
   private static final String ISO = "iso";
 
@@ -50,12 +50,12 @@ public class AreaParser extends ParserBase<Area> {
         area = area.trim();
         var m = PREFIX.matcher(area);
         if (m.find()) {
-          String scheme = m.group(1).toLowerCase();
+          String scheme = m.group(1).toLowerCase().replaceAll("[_-]", "");
           String value = m.group(2);
           if (StringUtils.isBlank(value)) {
             return Optional.empty();
 
-          } else if (scheme.equalsIgnoreCase(ISO)) {
+          } else if (scheme.equalsIgnoreCase(ISO) || scheme.equalsIgnoreCase("country") || scheme.equalsIgnoreCase("iso3166") || scheme.equalsIgnoreCase("3166")) {
             return CountryParser.PARSER.parse(value.trim());
 
           } else if (scheme.equalsIgnoreCase("realm") || scheme.equalsIgnoreCase("bio")) {

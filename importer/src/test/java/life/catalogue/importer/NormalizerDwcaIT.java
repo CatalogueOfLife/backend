@@ -518,7 +518,6 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     var settings = new DatasetSettings();
 
     normalize(51, settings);
-    printTree();
 
     store.usages().all().forEach( u -> {
       var n = store.name(u).getName();
@@ -539,8 +538,6 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     var settings = new DatasetSettings();
 
     normalize(52, settings);
-    printTree();
-
     assertEquals(11, store.usages().all().count());
   }
 
@@ -550,7 +547,6 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   @Test
   public void wormsCircularTree() throws Exception {
     normalize(54);
-    printTree();
     assertTree();
   }
 
@@ -561,8 +557,42 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   @Test
   public void wormsUncertain() throws Exception {
     normalize(55);
-    printTree();
     assertTree();
+  }
+
+  @Test
+  public void griisDistributions() throws Exception {
+    normalize(56);
+
+    var data = store.nameUsage("https://www.gbif.org/species/10071055");
+    var u = data.ud;
+    var p = u.properties;
+    assertEquals("dwc:habitat", p.getFirst().getProperty());
+    assertEquals("terrestrial", p.getFirst().getValue());
+    var v = store.getVerbatim(p.getFirst().getVerbatimKey());
+    assertNotNull(v);
+
+    data = store.nameUsage("https://www.gbif.org/species/8894817");
+    u = data.ud;
+    assertTrue(u.properties.isEmpty());
+
+    assertEquals(2, u.distributions.size());
+    for (var d : u.distributions) {
+      assertEquals(EstablishmentMeans.INTRODUCED, d.getEstablishmentMeans());
+      if (d.getArea() instanceof AreaImpl a) {
+        assertEquals("ISO_3166:BE-VLG", a.getId());
+        assertEquals("Flemish Region", a.getName());
+
+      } else if (d.getArea() instanceof Country c) {
+        assertEquals(Country.fromIsoCode("BE").get(), c);
+
+      } else {
+        fail("Unexpected area type: " + d.getArea());
+      }
+      assertEquals((Integer)2023, d.getYear());
+    }
+    v = store.getVerbatim(p.getFirst().getVerbatimKey());
+    assertNotNull(v);
   }
 
   @Test

@@ -21,12 +21,20 @@ public class YearExtractor implements DateStringFilter {
 
   @Override
   public String filter(String dateString) {
+    var year = extract(dateString);
+    if (year != null) {
+      return year.toString();
+    }
+    return null;
+  }
+
+  public Integer extract(String dateString) {
     Matcher matcher = PATTERN.matcher(dateString);
     if (matcher.find()) {
       String filtered = matcher.group(2);
       int year = Integer.parseInt(filtered);
       if (year >= MIN_YEAR && year <= MAX_YEAR) {
-        return filtered;
+        return year;
       }
     }
     return null;

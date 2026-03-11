@@ -245,8 +245,9 @@ public class ColdpInterpreter extends InterpreterBase {
     List<Distribution> dists;
     if (rec.hasTerm(ColdpTerm.areaID)) {
       dists = super.interpretDistributionByGazetteer(rec, this::setReference,
-        ColdpTerm.areaID,
         ColdpTerm.gazetteer,
+        ColdpTerm.areaID,
+        ColdpTerm.area,
         ColdpTerm.status, // legacy
         ColdpTerm.establishmentMeans,
         ColdpTerm.degreeOfEstablishment,
@@ -259,7 +260,7 @@ public class ColdpInterpreter extends InterpreterBase {
       );
 
     } else if (rec.hasTerm(ColdpTerm.area)) {
-      dists = createDistributions(Gazetteer.TEXT, rec.get(ColdpTerm.area), rec,
+      dists = createDistributions(Gazetteer.TEXT, null, rec.get(ColdpTerm.area), rec,
         ColdpTerm.status, // legacy
         ColdpTerm.establishmentMeans,
         ColdpTerm.degreeOfEstablishment,

@@ -4,6 +4,7 @@ import life.catalogue.api.vocab.*;
 
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +48,9 @@ public class AreaSerializer extends Serializer<Area> {
   }
 
   public static Area parse(String prefixedIdOrName) throws IllegalArgumentException {
+    if (StringUtils.isBlank(prefixedIdOrName)) {
+      return null;
+    }
     var m = PREFIX.matcher(prefixedIdOrName);
     if (m.find()) {
       final Gazetteer standard = Gazetteer.of(m.group(1));

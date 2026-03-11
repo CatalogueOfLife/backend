@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
@@ -260,63 +261,48 @@ public class InterpreterBase {
   }
 
   protected List<Distribution> interpretDistributionByGazetteer(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
-                                                                Term tArea, Term tGazetteer, Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
+                                                                Term tGazetteer, Term tLocationID, Term tLocation,
+                                                                Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
                                                                 Term tYear, Term tSeason, Term tLifeStage, Term tRemarks) {
-    // require location
-    if (rec.hasTerm(tArea)) {
-      // which standard?
-      Gazetteer gazetteer;
-      if (!rec.hasTerm(tGazetteer) && distributionStandard != null) {
-        gazetteer = distributionStandard;
-      } else {
-        gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
-            .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
-      }
-      return createDistributions(gazetteer, rec.get(tArea), rec, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference);
+    // which standard?
+    Gazetteer gazetteer;
+    if (!rec.hasTerm(tGazetteer) && distributionStandard != null) {
+      gazetteer = distributionStandard;
+    } else {
+      gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
+          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
     }
-    return Collections.emptyList();
+    return createDistributions(gazetteer, rec.get(tLocationID), rec.get(tLocation), rec, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference);
   }
-  
-  protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, VerbatimRecord rec,
-                              Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
-                              Term tYear, Term tSeason, Term tLifeStage, Term tRemarks,
-                               BiConsumer<Distribution, VerbatimRecord> addReference) {
-    if (locRaw != null) {
-      if (standard == Gazetteer.TEXT) {
-        return Lists.newArrayList(
-          createDistribution(rec, new AreaImpl(locRaw), tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
-        );
-      
-      } else {
-        List<Distribution> distributions = new ArrayList<>();
-        List<String> values;
 
-        var ns = AreaParser.parsePrefix(locRaw);
-        if (ns != null && (ns.equals("http") || ns.equals("https") || ns.equals("ftp") || ns.equals("urn"))) {
-          values = List.of(locRaw);
+  protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locationID, final String location, VerbatimRecord rec,
+                                                          Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
+                                                          Term tYear, Term tSeason, Term tLifeStage, Term tRemarks,
+                                                          BiConsumer<Distribution, VerbatimRecord> addReference) {
+    if (locationID != null || location != null) {
+      if (locationID != null && standard != Gazetteer.TEXT) {
+        String locID;
+        // add gazetteer prefix for the parser if not yet included
+        if (standard != null && locationID.indexOf(':') < 0) {
+          locID = standard.locationID(locationID);
         } else {
-          values = words(locRaw);
+          locID = locationID;
         }
-
-        for (String loc : values) {
-          // add gazetteer prefix for the parser if not yet included
-          if (standard != null && loc.indexOf(':') < 0) {
-            loc = standard.locationID(loc);
+        var area = SafeParser.parse(AreaParser.PARSER, locID).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
+        if (area != null) {
+          // check if we have extracted a contradicting gazetteer
+          if (standard != null && area.getGazetteer() != Gazetteer.TEXT && area.getGazetteer() != standard) {
+            LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
+              area.getGazetteer(), area.getGazetteer(), standard, rec);
           }
-          var area = SafeParser.parse(AreaParser.PARSER, loc).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
-          if (area != null) {
-            // check if we have contradicting extracted a gazetteer
-            if (standard != null && area.getGazetteer() != Gazetteer.TEXT && area.getGazetteer() != standard) {
-              LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
-                area.getGazetteer(), area.getGazetteer(), standard, rec);
-            }
-            distributions.add(
-              createDistribution(rec, area, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
-            );
-          }
+          return Lists.newArrayList(
+            createDistribution(rec, area, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
+          );
         }
-        return distributions;
       }
+      return Lists.newArrayList(
+        createDistribution(rec, new AreaImpl(ObjectUtils.coalesce(locationID, location)), tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
+      );
     }
     return Collections.emptyList();
   }
@@ -339,7 +325,7 @@ public class InterpreterBase {
     final var degree = parse(DegreeOfEstablishmentParser.PARSER, rec.get(tDegreeOfEstablishment)).orNull(Issue.DISTRIBUTION_INVALID, rec);
     final var threat = parse(ThreatStatusParser.PARSER, rec.get(tThreatStatus)).orNull(Issue.DISTRIBUTION_INVALID, rec);
     final var season = tSeason == null ? null : parse(SeasonParser.PARSER, rec.get(tSeason)).orNull(Issue.DISTRIBUTION_INVALID, rec);
-    final var year   = tYear == null ? null : parse(IntegerParser.PARSER, rec.get(tYear)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+    final var year   = tYear == null ? null : parse(YearParser.PARSER, rec.get(tYear)).orNull(Issue.DISTRIBUTION_INVALID, rec);
 
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getId());

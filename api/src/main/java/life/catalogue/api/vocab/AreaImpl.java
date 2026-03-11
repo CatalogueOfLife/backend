@@ -1,10 +1,13 @@
 package life.catalogue.api.vocab;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.URI;
 import java.util.Objects;
 
 /**
- * An area without any identifier and just an english name.
+ * A generic area implementation that cannot be mapped to a more specific one.
+ * With an identifier and (english) name.
  * Not enumerated.
  */
 public class AreaImpl implements Area {
@@ -15,8 +18,8 @@ public class AreaImpl implements Area {
 
   public AreaImpl(Gazetteer gazetteer, String id, String name) {
     this.gazetteer = gazetteer;
-    this.id = id;
-    this.name = name;
+    this.id = StringUtils.trimToNull(id);
+    this.name = StringUtils.trimToNull(name);
   }
 
   public AreaImpl(Gazetteer gazetteer, String id) {
@@ -88,6 +91,10 @@ public class AreaImpl implements Area {
 
   @Override
   public String toString() {
-    return gazetteer + ":" + id;
+    if (gazetteer == Gazetteer.TEXT) {
+      return name;
+    } else {
+      return gazetteer + ":" + id + (name != null ? " (" + name + ")" : "");
+    }
   }
 }
