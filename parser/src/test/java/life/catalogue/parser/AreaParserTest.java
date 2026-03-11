@@ -26,15 +26,15 @@ public class AreaParserTest extends ParserTestBase<Area> {
     assertParse(TdwgArea.of("CRL-PA"), "tdwg:crl-pa");
     assertParse(Country.GERMANY, "iso:de");
     assertParse(new GenericArea(Gazetteer.FAO, "ger"), "fao:ger");
-    assertParse(Country.ITALY, "iso:it-82");
-    assertParse(Country.FRANCE, "ISO:fr-h");
-    assertParse(Country.MICRONESIA, "ISO:FM-PNI");
+    assertParse(iso("IT-82"), "iso:it-82");
+    assertParse(iso("FR-H"), "ISO:fr-h");
+    assertParse(iso("FM-PNI"), "ISO:FM-PNI");
     assertParse(new GenericArea(Gazetteer.FAO,"37.4.1"), "fao:37.4.1");
     assertParse(new GenericArea(Gazetteer.FAO,"27.12.a.4"), "fao:27.12.a.4");
     assertParse(new GenericArea(Gazetteer.FAO,"27.12.C"), "fao:27.12.C");
     assertParse(new GenericArea(Gazetteer.FAO,"27.3.d.28.2"), "fao:27.3.d.28.2");
     assertParse(new GenericArea(Gazetteer.FAO,"37.4.1"), "FAO:37.4.1");
-    assertParse(Country.AZERBAIJAN, "iso:AZ-tar");
+    assertParse(iso("AZ-TAR"), "iso:AZ-tar");
     assertParse(new GenericArea(Gazetteer.MRGID,"3351"), "http://marineregions.org/mrgid/3351");
     assertParse(new GenericArea(Gazetteer.MRGID,"3351"), "https://marineregions.org/mrgid/3351");
     assertParse(BioGeoRealm.Neotropic, "realm:Neotropic");
@@ -46,6 +46,10 @@ public class AreaParserTest extends ParserTestBase<Area> {
     assertUnparsable("foo:bar");
 
     assertParse(new GenericArea("French Polynesia:"), "French Polynesia:");
+  }
+
+  static GenericArea iso(String code) {
+    return new GenericArea(Gazetteer.ISO, code);
   }
 
   @Override
