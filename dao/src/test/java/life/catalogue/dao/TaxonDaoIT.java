@@ -4,10 +4,7 @@ import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.api.vocab.area.GenericArea;
-import life.catalogue.api.vocab.area.Country;
-import life.catalogue.api.vocab.area.Gazetteer;
-import life.catalogue.api.vocab.area.TdwgArea;
+import life.catalogue.api.vocab.area.*;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
@@ -103,10 +100,10 @@ public class TaxonDaoIT extends DaoTestBase {
           assertNull(d.getReferenceId());
           break;
         case 5:
-          assertEquals(TdwgArea.of("BZE"), d.getArea());
+          assertEquals("BZE", d.getArea().getId());
+          assertEquals("Brazil", d.getArea().getName());
           assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
           assertNull(d.getEstablishmentMeans());
-          assertEquals("BZE", d.getArea().getId());
           assertNotNull(d.getArea().getName());
           assertNull(d.getReferenceId());
           break;
@@ -134,6 +131,10 @@ public class TaxonDaoIT extends DaoTestBase {
       assertNotNull(rel.getUsageId());
       assertNotNull(rel.getRelatedUsageId());
     }
+  }
+
+  private static GenericArea area(Area area) {
+    return new GenericArea(area);
   }
 
   @Test
