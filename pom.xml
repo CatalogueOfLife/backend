@@ -152,7 +152,7 @@
 
   <organization>
     <name>Catalogue of Life</name>
-    <url>http://www.catalogueoflife.org/</url>
+    <url>https://www.catalogueoflife.org/</url>
   </organization>
 
   <issueManagement>
@@ -211,11 +211,11 @@
   <distributionManagement>
     <repository>
       <id>gbif-release</id>
-      <url>http://repository.gbif.org/content/repositories/releases</url>
+      <url>https://repository.gbif.org/content/repositories/releases</url>
     </repository>
     <snapshotRepository>
       <id>gbif-deploy</id>
-      <url>http://repository.gbif.org/content/repositories/snapshots</url>
+      <url>https://repository.gbif.org/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
 
