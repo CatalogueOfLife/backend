@@ -72,7 +72,7 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
     this.area = area;
   }
 
-  public void setArea(Area area) {
+  public void copyArea(Area area) {
     setArea(new GenericArea(area));
   }
 

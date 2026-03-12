@@ -239,7 +239,7 @@ public class PgImportITBase {
   }
   static Distribution dist(Area area, EstablishmentMeans means, DegreeOfEstablishment degree) {
     Distribution d = new Distribution();
-    d.setArea(area);
+    d.copyArea(area);
     d.setEstablishmentMeans(means);
     d.setDegreeOfEstablishment(degree);
     return d;

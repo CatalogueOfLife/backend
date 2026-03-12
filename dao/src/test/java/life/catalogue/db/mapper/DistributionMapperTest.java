@@ -29,7 +29,7 @@ public class DistributionMapperTest extends TaxonExtensionMapperTest<Distributio
 				if (g == Gazetteer.TEXT) {
           area = new GenericArea("Europe");
         }
-				d.setArea(area);
+				d.copyArea(area);
 				d.setEstablishmentMeans(em);
         d.setLifeStage("egg");
         d.setSeason(Season.AUTUMN);

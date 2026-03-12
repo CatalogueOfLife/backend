@@ -108,10 +108,10 @@ public class ApiKryoPoolTest {
     d.setArea(new GenericArea("Berlin"));
     assertSerde(d);
 
-    d.setArea(Country.ALBANIA);
+    d.copyArea(Country.ALBANIA);
     assertSerde(d);
 
-    d.setArea(TdwgArea.of("BZN"));
+    d.copyArea(TdwgArea.of("BZN"));
     assertSerde(d);
   }
 

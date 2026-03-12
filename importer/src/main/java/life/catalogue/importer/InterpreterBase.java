@@ -380,7 +380,7 @@ public class InterpreterBase {
 
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getId());
-    d.setArea(area);
+    d.copyArea(area);
     d.setEstablishmentMeans(means);
     d.setDegreeOfEstablishment(degree);
     d.setThreatStatus(threat);
