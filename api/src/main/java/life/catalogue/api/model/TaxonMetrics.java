@@ -25,6 +25,7 @@ public class TaxonMetrics extends DatasetScopedEntityNotManaged<String> {
   private int taxonCount; // total count of all accepted names in the subtree, no matter their rank
   private int childCount;
   private int childExtantCount;
+  private int speciesExtantCount;
   private Map<Rank, Integer> taxaByRankCount;
   private Map<Integer, Integer> speciesBySourceCount;
 
@@ -85,6 +86,14 @@ public class TaxonMetrics extends DatasetScopedEntityNotManaged<String> {
     return taxaByRankCount == null || !taxaByRankCount.containsKey(Rank.SPECIES) ? 0 : taxaByRankCount.get(Rank.SPECIES);
   }
 
+  public int getSpeciesExtantCount() {
+    return speciesExtantCount;
+  }
+
+  public void setSpeciesExtantCount(int speciesExtantCount) {
+    this.speciesExtantCount = speciesExtantCount;
+  }
+
   public int getChildCount() {
     return childCount;
   }
@@ -105,6 +114,10 @@ public class TaxonMetrics extends DatasetScopedEntityNotManaged<String> {
   }
   public void incChildExtantCount() {
     this.childExtantCount++;
+  }
+
+  public void incSpeciesExtantCount() {
+    this.speciesExtantCount++;
   }
 
   public Map<Rank, Integer> getTaxaByRankCount() {
@@ -161,6 +174,7 @@ public class TaxonMetrics extends DatasetScopedEntityNotManaged<String> {
   public void add(TaxonMetrics m) {
     setMaxDepthIfHigher(m.maxDepth);
     taxonCount += m.taxonCount;
+    speciesExtantCount += m.speciesExtantCount;
     ((CountMap<Rank>)taxaByRankCount).inc(((CountMap<Rank>)m.taxaByRankCount));
     ((CountMap<Integer>)speciesBySourceCount).inc(((CountMap<Integer>)m.speciesBySourceCount));
     sourceDatasetKeys.addAll(m.sourceDatasetKeys);

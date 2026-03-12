@@ -23,7 +23,10 @@
       <when test="_parameter.containsKey('extinct') and !extinct">tm.child_extant_count</when>
       <otherwise>tm.child_count</otherwise>
     </choose> AS child_count,
-    tm.species_count AS count,
+    <choose>
+      <when test="_parameter.containsKey('extinct') and !extinct">tm.species_extant_count</when>
+      <otherwise>tm.species_count</otherwise>
+    </choose> AS count,
     <choose>
       <when test="type == null">
         NULL AS source_dataset_keys,

@@ -42,6 +42,7 @@ public class TaxonMetricsMapperTest extends MapperTestBase<TaxonMetricsMapper> {
     tm1.setDepth(13);
     tm1.setChildCount(7);
     tm1.setChildExtantCount(1);
+    tm1.setSpeciesExtantCount(2);
     tm1.setLft(1);
     tm1.setRgt(40);
     tm1.setTaxaByRankCount(Map.of(Rank.SPECIES, 13, Rank.GENUS, 7));

@@ -14,8 +14,13 @@ and done it manually. So we can as well log changes here.
 #### 2026-03-11 distribution area_id
 ```
 ALTER TABLE distribution ADD COLUMN area_id TEXT;
+UPDATE distribution SET area_id = split_part(area, ':', 2), area=null WHERE gazetteer IS NOT NULL AND gazetteer != 'TEXT';
 
 ALTER TYPE ISSUE ADD VALUE 'DISTRIBUTION_GAZETTEER_CONFLICT';
+
+ALTER TABLE taxon_metrics ADD COLUMN species_extant_count INTEGER;
+UPDATE TABLE taxon_metrics SET species_extant_count=species_count;
+
 ```
 
 TODO: migrate distribution area to area_id and area name

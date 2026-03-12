@@ -1683,6 +1683,7 @@ CREATE TABLE taxon_metrics (
   max_depth INTEGER,
   taxon_count INTEGER,
   species_count INTEGER,
+  species_extant_count INTEGER,
   child_count INTEGER,
   child_extant_count INTEGER,
   lft INTEGER,

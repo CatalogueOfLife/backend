@@ -82,6 +82,17 @@ public class CollectionUtils {
     return list;
   }
 
+  public static <T> ArrayList<T> mutable(List<T> arg) {
+    return new ArrayList<>(arg);
+  }
+
+  public static <K,V> HashMap<K,V> mutable(Map<K,V> arg) {
+    return new HashMap<>(arg);
+  }
+  public static <K> CountMap<K> countable(Map<K,Integer> arg) {
+    return new CountMap<>(arg);
+  }
+
   /**
    * Returns the first object from the given list if it matches the given predicate.
    */

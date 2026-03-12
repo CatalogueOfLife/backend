@@ -145,6 +145,9 @@ public class TaxonMetricsBuilder {
           m.getSourceDatasetKeys().add(sourceKey);
           ((CountMap<Integer>)m.getSpeciesBySourceCount()).inc(sourceKey);
         }
+        if (extinct == null || !extinct) {
+          m.incSpeciesExtantCount();
+        }
       }
       ((CountMap<Rank>)m.getTaxaByRankCount()).inc(sn.getRank());
       // now aggregate child metrics with parent

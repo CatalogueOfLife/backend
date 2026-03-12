@@ -1,8 +1,16 @@
 package life.catalogue.common.collection;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class CountMap<K> extends HashMap<K, Integer> {
+
+  public CountMap() {
+  }
+
+  public CountMap(Map<? extends K, ? extends Integer> m) {
+    super(m);
+  }
 
   /**
    * Increase counter by one or set to 1 if not existing already
@@ -30,6 +38,49 @@ public class CountMap<K> extends HashMap<K, Integer> {
       for (var entry : map.entrySet()) {
         inc(entry.getKey(), entry.getValue());
       }
+    }
+  }
+
+  /**
+   * Decreases the value linked to the given key by one.
+   * @param key
+   */
+  public void dec(K key) {
+    if (key != null) {
+      merge(key,-1, Integer::sum);
+    }
+  }
+
+  /**
+   * Decreases the value linked to the given key by the given amount.
+   * @param key
+   * @param diff
+   */
+  public void dec(K key, int diff) {
+    if (key != null) {
+      merge(key,-diff, Integer::sum);
+    }
+  }
+
+  /**
+   * Decreases all values by the given amount.
+   * @param map
+   */
+  public void dec(CountMap<K> map) {
+    if (map != null && !map.isEmpty()) {
+      for (var entry : map.entrySet()) {
+        dec(entry.getKey(), entry.getValue());
+      }
+    }
+  }
+
+  /**
+   * Multiplies all values by the given factor.
+   * @param factor
+   */
+  public void multiply(int factor) {
+    for (var entry : entrySet()) {
+      entry.setValue(entry.getValue() * factor);
     }
   }
 
