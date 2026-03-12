@@ -120,7 +120,7 @@ public class ImportManagerTest {
       // expected, its the draft
     }
     manager.upload(datasetKey, Resources.stream(resName), true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN);
-    TimeUnit.SECONDS.sleep(2);
+    TimeUnit.MILLISECONDS.sleep(100);
     assertTrue(manager.hasRunning());
   }
 
@@ -135,7 +135,7 @@ public class ImportManagerTest {
       // expected, its the draft
     }
     manager.uploadXls(datasetKey, data, TestEntityGenerator.USER_ADMIN);
-    TimeUnit.SECONDS.sleep(2);
+    TimeUnit.MILLISECONDS.sleep(100);
     assertTrue(manager.hasRunning());
   }
 
