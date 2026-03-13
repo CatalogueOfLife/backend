@@ -1,7 +1,9 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.dao.ReferenceFactory;
@@ -139,17 +141,22 @@ public class InterpreterBase {
   protected void setTaxonomicNote(NameUsage u, String taxNote, VerbatimRecord v) {
     if (!StringUtils.isBlank(taxNote)) {
       v.add(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
-      Matcher m = SEC_REF.matcher(taxNote);
-      if (m.find()) {
-        String remainder = m.replaceFirst("");
-        if (!StringUtils.isBlank(remainder)) {
-          u.setNamePhrase(remainder.trim());
-        }
-        setAccordingTo(u, m.group(2).trim(), v);
+      if (u.getStatus().isBareName()) {
+        // bare names are not allowed to have taxonomic notes
+        u.addRemarks(taxNote);
       } else {
-        u.setNamePhrase(taxNote);
+        Matcher m = SEC_REF.matcher(taxNote);
+        if (m.find()) {
+          String remainder = m.replaceFirst("");
+          if (!StringUtils.isBlank(remainder)) {
+            u.setNamePhrase(remainder.trim());
+          }
+          setAccordingTo(u, m.group(2).trim(), v);
+        } else {
+          u.setNamePhrase(taxNote);
+        }
+        NameValidator.flagSuspicousPhrase(u.getNamePhrase(), v, Issue.NAME_PHRASE_UNLIKELY);
       }
-      NameValidator.flagSuspicousPhrase(u.getNamePhrase(), v, Issue.NAME_PHRASE_UNLIKELY);
     }
   }
 
@@ -255,65 +262,100 @@ public class InterpreterBase {
   }
 
   protected List<Distribution> interpretDistributionByGazetteer(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
-                                                                Term tArea, Term tGazetteer, Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
+                                                                Term tGazetteer, Term tLocationID, Term tLocation,
+                                                                Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
                                                                 Term tYear, Term tSeason, Term tLifeStage, Term tRemarks) {
-    // require location
-    if (rec.hasTerm(tArea)) {
-      // which standard?
-      Gazetteer gazetteer;
-      if (!rec.hasTerm(tGazetteer) && distributionStandard != null) {
-        gazetteer = distributionStandard;
-      } else {
-        gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
-            .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
-      }
-      return createDistributions(gazetteer, rec.get(tArea), rec, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference);
+    // which standard?
+    Gazetteer gazetteer;
+    if (!rec.hasTerm(tGazetteer) && distributionStandard != null) {
+      gazetteer = distributionStandard;
+    } else {
+      gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
+          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
     }
-    return Collections.emptyList();
+    return createDistribution(gazetteer, rec.get(tLocationID), rec.get(tLocation), rec, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference);
   }
-  
-  protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, VerbatimRecord rec,
-                              Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
-                              Term tYear, Term tSeason, Term tLifeStage, Term tRemarks,
-                               BiConsumer<Distribution, VerbatimRecord> addReference) {
-    if (locRaw != null) {
+
+  protected static List<Distribution> createDistribution(
+    @Nullable Gazetteer standard,
+    final String locationID,
+    final String location,
+    VerbatimRecord rec,
+    Term tStatus,
+    Term tEstablishmentMeans,
+    Term tDegreeOfEstablishment,
+    Term tPathway,
+    Term tThreatStatus,
+    Term tYear,
+    Term tSeason,
+    Term tLifeStage,
+    Term tRemarks,
+    BiConsumer<Distribution, VerbatimRecord> addReference) {
+
+    return interpretArea(standard, locationID, location, rec)
+      .stream()
+      .map(area -> createDistribution(
+        rec, area, tStatus, tEstablishmentMeans, tDegreeOfEstablishment,
+        tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference))
+      .toList();
+  }
+
+  protected static Optional<GenericArea> interpretArea(@Nullable Gazetteer standard, final String locationID, final String location, IssueContainer issues) {
+    if (locationID != null || location != null) {
+      GenericArea area;
       if (standard == Gazetteer.TEXT) {
-        return Lists.newArrayList(
-          createDistribution(rec, new AreaImpl(locRaw), tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
-        );
-      
-      } else {
-        List<Distribution> distributions = new ArrayList<>();
-        List<String> values;
-
-        var ns = AreaParser.parsePrefix(locRaw);
-        if (ns != null && (ns.equals("http") || ns.equals("https") || ns.equals("ftp") || ns.equals("urn"))) {
-          values = List.of(locRaw);
+        if (locationID != null && location != null) {
+          area = new GenericArea(Gazetteer.TEXT, locationID, location);
         } else {
-          values = words(locRaw);
+          area = new GenericArea(ObjectUtils.coalesce(location, locationID));
         }
 
-        for (String loc : values) {
-          // add gazetteer prefix for the parser if not yet included
-          if (standard != null && loc.indexOf(':') < 0) {
-            loc = standard.locationID(loc);
-          }
-          var area = SafeParser.parse(AreaParser.PARSER, loc).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
-          if (area != null) {
-            // check if we have contradicting extracted a gazetteer
-            if (standard != null && area.getGazetteer() != Gazetteer.TEXT && area.getGazetteer() != standard) {
-              LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
-                area.getGazetteer(), area.getGazetteer(), standard, rec);
+      } else if (locationID != null) {
+        // try to parse the locationID - note that some formats like ACEF do not differ between locationID and location,
+        // so we can also have free text in the locationID
+
+        // start with the given area, but we verify or add missing titles later on
+        area = new GenericArea(standard, locationID, location);
+        String locID;
+        // add gazetteer prefix for the parser if not yet included
+        if (standard != null && locationID.indexOf(':') < 0) {
+          locID = standard.locationID(locationID);
+        } else {
+          locID = locationID;
+        }
+        var parsed = SafeParser.parse(AreaParser.PARSER, locID).orNull(Issue.DISTRIBUTION_AREA_INVALID, issues);
+        if (parsed != null) {
+          // check if we have extracted a contradicting gazetteer
+          if (standard != null && parsed.getGazetteer() != Gazetteer.TEXT && parsed.getGazetteer() != standard) {
+            issues.add(Issue.DISTRIBUTION_GAZETTEER_CONFLICT);
+          } else {
+            if (!locationID.equals(parsed.getId())) {
+              area.setId(parsed.getId());
             }
-            distributions.add(
-              createDistribution(rec, area, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
-            );
+          }
+          // augment area with gazetteer and title
+          if (area.getGazetteer() == null) {
+            area.setGazetteer(parsed.getGazetteer());
+          }
+          if (area.getName() == null) {
+            area.setName(parsed.getName());
+          }
+
+        } else if (standard == null) {
+          if (location == null) {
+            // swap ID for location and treat it like text if we cannot parse it
+            area = new GenericArea(Gazetteer.TEXT, null, locationID);
+          } else {
+            area.setGazetteer(Gazetteer.TEXT);
           }
         }
-        return distributions;
+      } else {
+        // only the name known
+        area = new GenericArea(location);
       }
+      return Optional.of(area);
     }
-    return Collections.emptyList();
+    return Optional.empty();
   }
 
   private static List<String> words(String x) {
@@ -334,11 +376,11 @@ public class InterpreterBase {
     final var degree = parse(DegreeOfEstablishmentParser.PARSER, rec.get(tDegreeOfEstablishment)).orNull(Issue.DISTRIBUTION_INVALID, rec);
     final var threat = parse(ThreatStatusParser.PARSER, rec.get(tThreatStatus)).orNull(Issue.DISTRIBUTION_INVALID, rec);
     final var season = tSeason == null ? null : parse(SeasonParser.PARSER, rec.get(tSeason)).orNull(Issue.DISTRIBUTION_INVALID, rec);
-    final var year   = tYear == null ? null : parse(IntegerParser.PARSER, rec.get(tYear)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+    final var year   = tYear == null ? null : parse(YearParser.PARSER, rec.get(tYear)).orNull(Issue.DISTRIBUTION_INVALID, rec);
 
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getId());
-    d.setArea(area);
+    d.copyArea(area);
     d.setEstablishmentMeans(means);
     d.setDegreeOfEstablishment(degree);
     d.setThreatStatus(threat);
@@ -349,23 +391,25 @@ public class InterpreterBase {
     d.setRemarks(getFormattedText(rec, tRemarks));
     addReference.accept(d, rec);
 
-    var status = parse(DistributionStatusParser.PARSER, rec.get(tStatus));
-    if (status.isPresent()) {
-      switch (status.get()) {
-        case NATIVE:
-          d.setEstablishmentMeans(EstablishmentMeans.NATIVE);
-          d.setDegreeOfEstablishment(DegreeOfEstablishment.NATIVE);
-          break;
-        case DOMESTICATED:
-          d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
-          d.setDegreeOfEstablishment(DegreeOfEstablishment.CULTIVATED);
-          break;
-        case ALIEN:
-          d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
-          break;
-        case UNCERTAIN:
-          d.setEstablishmentMeans(EstablishmentMeans.UNCERTAIN);
-          break;
+    if (d.getEstablishmentMeans() == null) {
+      var status = parse(DistributionStatusParser.PARSER, rec.get(tStatus));
+      if (status.isPresent()) {
+        switch (status.get()) {
+          case NATIVE:
+            d.setEstablishmentMeans(EstablishmentMeans.NATIVE);
+            d.setDegreeOfEstablishment(DegreeOfEstablishment.NATIVE);
+            break;
+          case DOMESTICATED:
+            d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
+            d.setDegreeOfEstablishment(DegreeOfEstablishment.CULTIVATED);
+            break;
+          case ALIEN:
+            d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
+            break;
+          case UNCERTAIN:
+            d.setEstablishmentMeans(EstablishmentMeans.UNCERTAIN);
+            break;
+        }
       }
     }
     return d;

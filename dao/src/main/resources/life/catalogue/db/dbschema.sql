@@ -328,7 +328,8 @@ CREATE TYPE ISSUE AS ENUM (
   'NOMENCLATURAL_CODE_DIFFERS',
   'MISSING_AUTHORSHIP',
   'MISSPELLING_CONSOLIDATION',
-  'BAD_BASIONYM_AUTHORSHIP'
+  'BAD_BASIONYM_AUTHORSHIP',
+  'DISTRIBUTION_GAZETTEER_CONFLICT'
 );
 
 CREATE TYPE JOBSTATUS AS ENUM (
@@ -1682,6 +1683,7 @@ CREATE TABLE taxon_metrics (
   max_depth INTEGER,
   taxon_count INTEGER,
   species_count INTEGER,
+  species_extant_count INTEGER,
   child_count INTEGER,
   child_extant_count INTEGER,
   lft INTEGER,
@@ -1815,7 +1817,8 @@ CREATE TABLE distribution (
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   taxon_id TEXT NOT NULL,
-  area TEXT NOT NULL,
+  area TEXT,
+  area_id TEXT,
   reference_id TEXT,
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
@@ -1831,6 +1834,7 @@ CREATE INDEX ON distribution (dataset_key, sector_key);
 CREATE INDEX ON distribution (dataset_key, verbatim_key);
 CREATE INDEX ON distribution (dataset_key, verbatim_source_key);
 CREATE INDEX ON distribution (dataset_key, reference_id);
+CREATE INDEX ON distribution (dataset_key, gazetteer);
 
 CREATE TABLE treatment (
   id TEXT NOT NULL,

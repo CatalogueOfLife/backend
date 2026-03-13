@@ -1,6 +1,6 @@
 package life.catalogue.api.jackson;
 
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 
 import org.gbif.dwc.terms.Term;
 

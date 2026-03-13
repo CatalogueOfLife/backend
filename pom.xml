@@ -45,8 +45,8 @@
         by these BOMs (use the right versions):
 
         Main two Dropwizard BOMs:
-        https://github.com/dropwizard/dropwizard/blob/v5.0.0/dropwizard-bom/pom.xml
-        https://github.com/dropwizard/dropwizard/blob/v5.0.0/dropwizard-dependencies/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v5.0.1/dropwizard-bom/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v5.0.1/dropwizard-dependencies/pom.xml
 
         Which also imports the
         Jersey BOM: https://github.com/eclipse-ee4j/jersey/blob/3.1.11/bom/pom.xml
@@ -57,7 +57,7 @@
         commons-lang3, caffeine, guava, jersey, commons-text, servlet api, httpclient,
         liquibase, freemarker, jetty, jackson, metrics, etc.
     -->
-    <dropwizard.version>5.0.0</dropwizard.version>
+    <dropwizard.version>5.0.1</dropwizard.version>
 
     <antlr.version>4.13.2</antlr.version>
     <assertj.version>3.11.1</assertj.version>
@@ -152,7 +152,7 @@
 
   <organization>
     <name>Catalogue of Life</name>
-    <url>http://www.catalogueoflife.org/</url>
+    <url>https://www.catalogueoflife.org/</url>
   </organization>
 
   <issueManagement>
@@ -174,7 +174,7 @@
       <url>https://repository.gbif.org/repository/thirdparty/</url>
     </repository>
     <repository>
-      <id>gbif-mirror</id>
+      <id>maven-central</id>
       <url>https://repo1.maven.org/maven2/</url>
     </repository>
   </repositories>

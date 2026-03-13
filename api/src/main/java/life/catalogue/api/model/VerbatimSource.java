@@ -4,7 +4,7 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 import java.io.Serializable;
 import java.util.*;

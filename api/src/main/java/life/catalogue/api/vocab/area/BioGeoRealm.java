@@ -1,4 +1,4 @@
-package life.catalogue.api.vocab;
+package life.catalogue.api.vocab.area;
 
 /**
  * https://en.wikipedia.org/wiki/Biogeographic_realm

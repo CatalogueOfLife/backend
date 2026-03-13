@@ -3,7 +3,7 @@ package life.catalogue.common.io;
 import java.io.IOException;
 import java.io.Writer;
 
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 public class DevNullWriter extends Writer {
   @Override

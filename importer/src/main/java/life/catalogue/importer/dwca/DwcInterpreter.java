@@ -2,6 +2,7 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.terms.InatTerm;
 import life.catalogue.api.vocab.terms.WfoTerm;
 import life.catalogue.coldp.ColdpTerm;
@@ -197,46 +198,44 @@ public class DwcInterpreter extends InterpreterBase {
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     // try to figure out an area
     if (rec.hasTerm(DwcTerm.locationID)) {
-      return createDistributions(null, rec.getRaw(DwcTerm.locationID), rec,
+      return createDistribution(null, rec.getRaw(DwcTerm.locationID), rec.get(DwcTerm.locality), rec,
           DwcTerm.occurrenceStatus,
           DwcTerm.establishmentMeans,
           DwcTerm.degreeOfEstablishment,
           DwcTerm.pathway,
           IucnTerm.threatStatus,
-          null,
+          DwcTerm.eventDate,
           null,
           DwcTerm.lifeStage,
           DwcTerm.occurrenceRemarks,
           this::setReference);
       
-    } else if (rec.hasTerm(DwcTerm.countryCode) || rec.hasTerm(DwcTerm.country)) {
-      return createDistributions(Gazetteer.ISO,
-          rec.getFirst(DwcTerm.countryCode, DwcTerm.country), rec,
+    } else if (rec.hasTerm(DwcTerm.countryCode) && !rec.hasTerm(DwcTerm.locality)) {
+      return createDistribution(Gazetteer.ISO, rec.get(DwcTerm.countryCode), rec.get(DwcTerm.country), rec,
           DwcTerm.occurrenceStatus,
           DwcTerm.establishmentMeans,
           DwcTerm.degreeOfEstablishment,
           DwcTerm.pathway,
           IucnTerm.threatStatus,
-          null,
+          DwcTerm.eventDate,
           null,
           DwcTerm.lifeStage,
           DwcTerm.occurrenceRemarks,
           this::setReference);
-      
-    } else if (rec.hasTerm(DwcTerm.locality)) {
-      return createDistributions(Gazetteer.TEXT,
-          rec.get(DwcTerm.locality),rec,
+
+    } else if (rec.hasTerm(DwcTerm.locality) || rec.hasTerm(DwcTerm.country)) {
+      return createDistribution(Gazetteer.TEXT, null, rec.getFirst(DwcTerm.locality, DwcTerm.country), rec,
           DwcTerm.occurrenceStatus,
           DwcTerm.establishmentMeans,
           DwcTerm.degreeOfEstablishment,
           DwcTerm.pathway,
           IucnTerm.threatStatus,
-          null,
+          DwcTerm.eventDate,
           null,
           DwcTerm.lifeStage,
           DwcTerm.occurrenceRemarks,
           this::setReference);
-      
+
     } else {
       rec.add(Issue.DISTRIBUTION_INVALID);
       return Collections.emptyList();

@@ -1,6 +1,6 @@
 package life.catalogue.parser;
 
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 
 import java.util.List;
 

@@ -1,6 +1,8 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Area;
+import life.catalogue.api.vocab.area.GenericArea;
 
 import java.util.Objects;
 
@@ -13,7 +15,7 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
   private Sector.Mode sectorMode;
   private Integer verbatimKey;
   private Integer verbatimSourceKey;
-  private Area area;
+  private GenericArea area;
   private EstablishmentMeans establishmentMeans;
   private DegreeOfEstablishment degreeOfEstablishment;
   private String pathway;
@@ -62,12 +64,16 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
     this.verbatimSourceKey = verbatimSourceKey;
   }
 
-  public Area getArea() {
+  public GenericArea getArea() {
     return area;
   }
   
-  public void setArea(Area area) {
+  public void setArea(GenericArea area) {
     this.area = area;
+  }
+
+  public void copyArea(Area area) {
+    setArea(new GenericArea(area));
   }
 
   public EstablishmentMeans getEstablishmentMeans() {

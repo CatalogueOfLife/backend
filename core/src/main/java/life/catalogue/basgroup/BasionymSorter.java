@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

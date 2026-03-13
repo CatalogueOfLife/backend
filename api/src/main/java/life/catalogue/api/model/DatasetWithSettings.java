@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.nameparser.api.NomCode;

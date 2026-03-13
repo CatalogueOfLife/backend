@@ -20,8 +20,6 @@ import life.catalogue.printer.JsonTreeCollector;
 import life.catalogue.printer.JsonTreePrinter;
 import life.catalogue.printer.PrinterFactory;
 
-import org.apache.ibatis.annotations.Param;
-
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
@@ -503,26 +501,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     if (isTaxon) {
       if (loadDistributions) {
         DistributionMapper dim = session.getMapper(DistributionMapper.class);
-        info.setDistributions(
-          dim.listByTaxon(usage).stream()
-             // replace will enums so we also get titles and other props - this is too hard to do in mybatis
-             .map(d -> {
-               if (d.getArea().getGazetteer() == Gazetteer.ISO) {
-                 Country.fromIsoCode(d.getArea().getId()).ifPresent(c ->
-                   d.setArea(new AreaImpl(c))
-                 );
-
-               } else if (d.getArea().getGazetteer() == Gazetteer.TDWG) {
-                 d.setArea(TdwgArea.of(d.getArea().getId()));
-
-               } else if (d.getArea().getGazetteer() == Gazetteer.LONGHURST) {
-                 d.setArea(LonghurstArea.of(d.getArea().getId()));
-               }
-               return d;
-             })
-             .filter(d -> d.getArea() != null)
-             .collect(Collectors.toList())
-        );
+        info.setDistributions(dim.listByTaxon(usage));
         info.getDistributions().forEach(d -> {
           refIds.add(d.getReferenceId());
           addSectorMode(d, sectorModes, sm);

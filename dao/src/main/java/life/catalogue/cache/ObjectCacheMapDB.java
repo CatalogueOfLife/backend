@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.*;
 
 import org.apache.commons.io.FileUtils;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;

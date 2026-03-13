@@ -48,7 +48,6 @@ import static life.catalogue.api.util.ObjectUtils.firstNonEmptyList;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final Logger LOG = LoggerFactory.getLogger(ProjectRelease.class);
-  public static Set<DataFormat> EXPORT_FORMATS = Set.of(DataFormat.TEXT_TREE, DataFormat.COLDP, DataFormat.DWCA);
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
   private static final String DEFAULT_VERSION_TEMPLATE = "{date}";
 
@@ -342,18 +341,6 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   protected void postMetrics() {
-    // kick off exports - this requires metrics to already exist!!!
-    if (prCfg.prepareDownloads) {
-      LOG.info("Prepare exports for release {}", newDatasetKey);
-      for (DataFormat df : EXPORT_FORMATS) {
-        ExportRequest req = new ExportRequest();
-        req.setDatasetKey(newDatasetKey);
-        req.setFormat(df);
-        req.setExcel(false);
-        req.setExtended(df != DataFormat.TEXT_TREE);
-        exportManager.submit(req, user);
-      }
-    }
     // generic hooks
     if (prCfg.actions != null) {
       LOG.info("{} post release actions to execute on release {}", prCfg.actions.size(), newDatasetKey);

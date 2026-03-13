@@ -3,15 +3,15 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.*;
-import life.catalogue.assembly.SectorSyncTestBase;
+import life.catalogue.api.vocab.area.GenericArea;
+import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.importer.store.model.RankedName;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.printer.PrinterFactory;
-import life.catalogue.printer.PrinterUtils;
 import life.catalogue.printer.TextTreePrinter;
 
 import org.gbif.dwc.terms.Term;
@@ -19,7 +19,6 @@ import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 
@@ -191,11 +190,6 @@ public class PgImportIT extends PgImportITBase {
       
       // check distributions
       List<Distribution> expD = expectedDwca24Distributions();
-      expD.stream().forEach(d -> {
-        if (d.getArea() instanceof Country) {
-          d.setArea(new AreaImpl(Gazetteer.ISO, d.getArea().getId(), d.getArea().getName()));
-        }
-      });
       assertEquals(expD.size(), info.getDistributions().size());
       // remove dist keys before we check equality
       info.getDistributions().forEach(d -> {

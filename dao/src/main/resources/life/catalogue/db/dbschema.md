@@ -11,6 +11,23 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-03-11 distribution area_id & extant species taxon metrics
+```
+ALTER TABLE distribution ADD COLUMN area_id TEXT;
+ALTER TABLE distribution ALTER COLUMN area DROP NOT NULL;
+UPDATE distribution SET area_id=area, area=null WHERE gazetteer IN ('TDWG', 'ISO', 'IHO');
+UPDATE distribution SET area_id=area, area=null WHERE gazetteer='MRGID' AND area ~ '^[0-9]+$';
+
+ALTER TYPE ISSUE ADD VALUE 'DISTRIBUTION_GAZETTEER_CONFLICT';
+
+ALTER TABLE taxon_metrics ADD COLUMN species_extant_count INTEGER;
+UPDATE taxon_metrics SET species_extant_count=species_count;
+
+```
+
+TODO: migrate distribution area to area_id and area name
+
+
 #### 2025-12-18 version DOIs
 ```
 ALTER TABLE dataset ADD COLUMN version_doi TEXT;

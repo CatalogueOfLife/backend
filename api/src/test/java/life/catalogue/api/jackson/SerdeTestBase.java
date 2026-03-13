@@ -1,16 +1,12 @@
 package life.catalogue.api.jackson;
 
-import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Reference;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JavaType;
 
-import java.lang.reflect.InvocationTargetException;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  *

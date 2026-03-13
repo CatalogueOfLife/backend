@@ -4,6 +4,9 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.GenericArea;
+import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.TdwgArea;
 import life.catalogue.api.vocab.terms.*;
 
 import org.gbif.dwc.terms.*;
@@ -102,13 +105,13 @@ public class ApiKryoPoolTest {
     d.setEstablishmentMeans(EstablishmentMeans.NATIVE);
     d.setSectorKey(13);
     d.setVerbatimKey(6789);
-    d.setArea(new AreaImpl("Berlin"));
+    d.setArea(new GenericArea("Berlin"));
     assertSerde(d);
 
-    d.setArea(Country.ALBANIA);
+    d.copyArea(Country.ALBANIA);
     assertSerde(d);
 
-    d.setArea(TdwgArea.of("BZN"));
+    d.copyArea(TdwgArea.of("BZN"));
     assertSerde(d);
   }
 

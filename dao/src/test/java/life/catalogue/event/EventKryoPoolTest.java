@@ -5,7 +5,7 @@ import life.catalogue.api.event.*;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.Users;
 
 import java.util.Set;

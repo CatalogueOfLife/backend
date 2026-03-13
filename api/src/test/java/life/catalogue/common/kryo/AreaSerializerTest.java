@@ -1,7 +1,8 @@
 package life.catalogue.common.kryo;
 
 import life.catalogue.api.RandomUtils;
-import life.catalogue.api.vocab.*;
+
+import life.catalogue.api.vocab.area.*;
 
 import org.junit.Test;
 
@@ -17,7 +18,7 @@ public class AreaSerializerTest {
   @Test
   public void parse() {
     var area = AreaSerializer.parse("Aha");
-    assertEquals(new AreaImpl("Aha"), area);
+    assertEquals(new GenericArea("Aha"), area);
 
     area = AreaSerializer.parse("iso:de");
     assertEquals(Country.GERMANY, area);
@@ -32,7 +33,7 @@ public class AreaSerializerTest {
   public void url() {
     var url = "http://vocab.getty.edu/tgn/1000226";
     var area = AreaSerializer.parse(url);
-    assertEquals(new AreaImpl(url), area);
+    assertEquals(new GenericArea(url), area);
     assertEquals(url, area.getName());
   }
 
@@ -56,10 +57,10 @@ public class AreaSerializerTest {
           area = LonghurstArea.AREAS.get(2);
           break;
         case TEXT:
-          area = new AreaImpl(text);
+          area = new GenericArea(text);
           break;
         default:
-          area = new AreaImpl(g, RandomUtils.randomUri().toASCIIString(), null);
+          area = new GenericArea(g, RandomUtils.randomUri().toASCIIString(), null);
       }
       System.out.println(area);
       ByteBufferOutput out = new ByteBufferOutput(100, 100000);

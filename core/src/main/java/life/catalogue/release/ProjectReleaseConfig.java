@@ -74,11 +74,6 @@ public class ProjectReleaseConfig {
    */
   public boolean removeBareNames = true;
 
-  /**
-   * If true a release will prepare exports for the entire release in all common formats.
-   */
-  public boolean prepareDownloads = false;
-
   // list of dataset keys of releases to ignore (e.g. they contain bad ids)
   @NotNull
   public List<Integer> ignoredReleases = new ArrayList<>();

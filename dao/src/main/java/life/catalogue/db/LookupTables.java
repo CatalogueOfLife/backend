@@ -1,6 +1,6 @@
 package life.catalogue.db;
 
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.common.func.Predicates;
 

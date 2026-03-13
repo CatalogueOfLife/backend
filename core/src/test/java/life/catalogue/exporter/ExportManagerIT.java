@@ -20,6 +20,8 @@ import java.io.File;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
+import life.catalogue.release.PublishReleaseListener;
+
 import org.junit.*;
 
 import com.codahale.metrics.MetricRegistry;
@@ -106,7 +108,7 @@ public class ExportManagerIT {
     ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class));
 
     // first schedule a block job that runs forever
-    for (DataFormat df : ProjectRelease.EXPORT_FORMATS) {
+    for (DataFormat df : PublishReleaseListener.EXPORT_FORMATS) {
       ExportRequest req = new ExportRequest();
       req.setDatasetKey(datasetKey);
       req.setFormat(df);

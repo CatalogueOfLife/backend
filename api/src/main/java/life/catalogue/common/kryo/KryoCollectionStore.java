@@ -3,7 +3,7 @@ package life.catalogue.common.kryo;
 import java.io.*;
 import java.util.Iterator;
 
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.InputChunked;

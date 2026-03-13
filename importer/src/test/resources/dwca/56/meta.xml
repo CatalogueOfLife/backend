@@ -1,0 +1,56 @@
+<archive xmlns="http://rs.tdwg.org/dwc/text/" metadata="eml.xml">
+  <core encoding="UTF-8" fieldsTerminatedBy="\t" linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.tdwg.org/dwc/terms/Taxon">
+    <files>
+      <location>taxon.txt</location>
+    </files>
+    <id index="0" />
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
+    <field index="2" term="http://rs.tdwg.org/dwc/terms/scientificName"/>
+    <field index="3" term="http://rs.tdwg.org/dwc/terms/kingdom"/>
+    <field index="4" term="http://rs.tdwg.org/dwc/terms/phylum"/>
+    <field index="5" term="http://rs.tdwg.org/dwc/terms/class"/>
+    <field index="6" term="http://rs.tdwg.org/dwc/terms/order"/>
+    <field index="7" term="http://rs.tdwg.org/dwc/terms/family"/>
+    <field index="8" term="http://rs.tdwg.org/dwc/terms/genus"/>
+    <field index="9" term="http://rs.tdwg.org/dwc/terms/specificEpithet"/>
+    <field index="10" term="http://rs.tdwg.org/dwc/terms/infraspecificEpithet"/>
+    <field index="11" term="http://rs.tdwg.org/dwc/terms/taxonRank"/>
+    <field index="12" term="http://rs.tdwg.org/dwc/terms/scientificNameAuthorship"/>
+    <field index="13" term="http://rs.tdwg.org/dwc/terms/taxonRemarks"/>
+    <field index="14" term="http://purl.org/dc/elements/1.1/language"/>
+    <field index="15" term="http://purl.org/dc/terms/license"/>
+    <field index="16" term="http://purl.org/dc/terms/rightsHolder"/>
+    <field index="17" term="http://purl.org/dc/terms/bibliographicCitation"/>
+    <field index="18" term="http://purl.org/dc/terms/references"/>
+    <field index="19" term="http://rs.tdwg.org/dwc/terms/institutionCode"/>
+    <field index="20" term="http://rs.tdwg.org/dwc/terms/datasetID"/>
+    <field index="21" term="http://rs.tdwg.org/dwc/terms/datasetName"/>
+  </core>
+  <extension encoding="UTF-8" fieldsTerminatedBy="\t" linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/Distribution">
+    <files>
+      <location>distribution.txt</location>
+    </files>
+    <coreid index="0" />
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/locationID"/>
+    <field index="2" term="http://rs.tdwg.org/dwc/terms/locality"/>
+    <field index="3" term="http://rs.tdwg.org/dwc/terms/countryCode"/>
+    <field index="4" term="http://rs.tdwg.org/dwc/terms/occurrenceStatus"/>
+    <field index="5" term="http://rs.tdwg.org/dwc/terms/establishmentMeans"/>
+    <field index="6" term="http://rs.tdwg.org/dwc/terms/degreeOfEstablishment"/>
+    <field index="7" term="http://rs.tdwg.org/dwc/terms/pathway"/>
+    <field index="8" term="http://rs.tdwg.org/dwc/terms/eventDate"/>
+    <field index="9" term="http://purl.org/dc/terms/source"/>
+  </extension>
+  <extension encoding="UTF-8" fieldsTerminatedBy="\t" linesTerminatedBy="\n" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/SpeciesProfile">
+    <files>
+      <location>speciesprofile.txt</location>
+    </files>
+    <coreid index="0" />
+    <field index="1" term="http://rs.gbif.org/terms/1.0/isMarine"/>
+    <field index="2" term="http://rs.gbif.org/terms/1.0/isFreshwater"/>
+    <field index="3" term="http://rs.gbif.org/terms/1.0/isTerrestrial"/>
+    <field index="4" term="http://rs.gbif.org/terms/1.0/isInvasive"/>
+    <field index="5" term="http://rs.tdwg.org/dwc/terms/habitat"/>
+    <field index="6" term="http://purl.org/dc/terms/source"/>
+  </extension>
+</archive>

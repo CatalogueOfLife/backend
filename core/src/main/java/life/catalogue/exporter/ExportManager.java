@@ -85,35 +85,33 @@ public class ExportManager implements DatasetListener {
     if (blocked.get()) {
       throw new UnavailableException("New export requests are currently not accepted.");
     }
-    DatasetExportJob job;
-    switch (req.getFormat()) {
-      case COLDP:
-        job = req.isExtended() ? new ColdpExtendedExport(req, userKey, factory, cfg, imageService) :
-                Boolean.TRUE.equals(req.isClassification()) ? new ColdpTreeExport(req, userKey, factory, cfg, imageService) :
-                  ColdpSimpleExport.build(req, userKey, factory, cfg, imageService);
-        break;
-      case DWCA:
-        job = req.isExtended() ? new DwcaExtendedExport(req, userKey, factory, cfg, imageService) :
-              Boolean.TRUE.equals(req.isClassification()) ? new DwcTreeExport(req, userKey, factory, cfg, imageService) :
-                    DwcaSimpleExport.build(req, userKey, factory, cfg, imageService);
-        break;
-      case ACEF:
-        job = new AcefExport(req, userKey, factory, cfg, imageService);
-        break;
-      case TEXT_TREE:
-        job = new TextTreeExport(req, userKey, factory, cfg, imageService);
-        break;
-      case NEWICK:
-        job = new NewickExport(req, userKey, factory, cfg, imageService);
-        break;
-      case DOT:
-        job = new DotExport(req, userKey, factory, cfg, imageService);
-        break;
-
-      default:
-        throw new IllegalArgumentException("Export format "+req.getFormat() + " is not supported yet");
-    }
+    DatasetExportJob job = buildExportJob(req, userKey);
     return submit(job);
+  }
+
+  private DatasetExportJob buildExportJob(ExportRequest req, int userKey) {
+    return switch (req.getFormat()) {
+      case COLDP -> req.isExtended() ? new ColdpExtendedExport(req, userKey, factory, cfg, imageService) :
+        Boolean.TRUE.equals(req.isClassification()) ? new ColdpTreeExport(req, userKey, factory, cfg, imageService) :
+          ColdpSimpleExport.build(req, userKey, factory, cfg, imageService);
+      case DWCA -> req.isExtended() ? new DwcaExtendedExport(req, userKey, factory, cfg, imageService) :
+        Boolean.TRUE.equals(req.isClassification()) ? new DwcTreeExport(req, userKey, factory, cfg, imageService) :
+          DwcaSimpleExport.build(req, userKey, factory, cfg, imageService);
+      case ACEF -> new AcefExport(req, userKey, factory, cfg, imageService);
+      case TEXT_TREE -> new TextTreeExport(req, userKey, factory, cfg, imageService);
+      case NEWICK -> new NewickExport(req, userKey, factory, cfg, imageService);
+      case DOT -> new DotExport(req, userKey, factory, cfg, imageService);
+      default -> throw new IllegalArgumentException("Export format " + req.getFormat() + " is not supported yet");
+    };
+  }
+
+  /**
+   * Checks if an export job with the given key is currently still queued or running.
+   * @param key
+   * @return true if the job is not queued or running anymore
+   */
+  public boolean hasCompleted(UUID key) {
+    return ! executor.exists(key);
   }
 
   @VisibleForTesting

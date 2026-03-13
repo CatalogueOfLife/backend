@@ -10,7 +10,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package life.catalogue.api.vocab;
+package life.catalogue.api.vocab.area;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +22,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import life.catalogue.api.vocab.Continent;
 
 /**
  * Enumeration for all current ISO 3166-1 ALPHA2 country codes using 2 letters,

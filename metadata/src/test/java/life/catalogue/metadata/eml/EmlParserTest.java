@@ -1,7 +1,7 @@
 package life.catalogue.metadata.eml;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;

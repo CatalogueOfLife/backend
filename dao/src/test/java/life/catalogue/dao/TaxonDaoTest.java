@@ -1,7 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.TypeMaterial;
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 
 import org.junit.Test;
 

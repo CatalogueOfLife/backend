@@ -1,6 +1,6 @@
 package life.catalogue.parser;
 
-import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.api.vocab.area.Gazetteer;
 
 import java.util.List;
 

@@ -3,7 +3,14 @@ package life.catalogue.dao;
 import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.area.Area;
+import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.Gazetteer;
+import life.catalogue.api.vocab.area.GenericArea;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ThumborConfig;
@@ -28,7 +35,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.*;
-import static life.catalogue.api.vocab.Datasets.COL;
 import static org.junit.Assert.*;
 
 public class TaxonDaoIT extends DaoTestBase {
@@ -92,7 +98,7 @@ public class TaxonDaoIT extends DaoTestBase {
           assertEquals("ref-1b" ,d.getReferenceId());
           break;
         case 4:
-          assertEquals(new AreaImpl(Country.GERMANY), d.getArea());
+          assertEquals(new GenericArea(Country.GERMANY), d.getArea());
           assertEquals(Gazetteer.ISO, d.getArea().getGazetteer());
           assertNull(d.getEstablishmentMeans());
           assertNotNull(d.getArea().getId());
@@ -100,10 +106,10 @@ public class TaxonDaoIT extends DaoTestBase {
           assertNull(d.getReferenceId());
           break;
         case 5:
-          assertEquals(TdwgArea.of("BZE"), d.getArea());
+          assertEquals("BZE", d.getArea().getId());
+          assertEquals("Brazil", d.getArea().getName());
           assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
           assertNull(d.getEstablishmentMeans());
-          assertEquals("BZE", d.getArea().getId());
           assertNotNull(d.getArea().getName());
           assertNull(d.getReferenceId());
           break;
@@ -131,6 +137,10 @@ public class TaxonDaoIT extends DaoTestBase {
       assertNotNull(rel.getUsageId());
       assertNotNull(rel.getRelatedUsageId());
     }
+  }
+
+  private static GenericArea area(Area area) {
+    return new GenericArea(area);
   }
 
   @Test

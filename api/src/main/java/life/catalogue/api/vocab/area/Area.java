@@ -1,4 +1,4 @@
-package life.catalogue.api.vocab;
+package life.catalogue.api.vocab.area;
 
 import java.net.URI;
 

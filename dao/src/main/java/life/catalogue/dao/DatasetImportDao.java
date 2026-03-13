@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetImportMapper;

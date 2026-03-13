@@ -2,7 +2,7 @@ package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Environment;
-import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.DataInserter;

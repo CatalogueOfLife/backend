@@ -2,7 +2,7 @@ package life.catalogue.api.jackson;
 
 import life.catalogue.api.model.EnumValue;
 import life.catalogue.api.util.VocabularyUtils;
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.common.func.Predicates;
 
 import org.gbif.dwc.terms.Term;

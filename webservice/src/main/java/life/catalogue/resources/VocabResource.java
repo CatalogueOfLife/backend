@@ -8,6 +8,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.*;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.parser.AreaParser;

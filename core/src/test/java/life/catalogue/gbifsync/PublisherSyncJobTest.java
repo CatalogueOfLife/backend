@@ -5,7 +5,7 @@ import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
 import jakarta.ws.rs.client.ClientBuilder;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.Publishers;
 import life.catalogue.config.GbifConfig;
 

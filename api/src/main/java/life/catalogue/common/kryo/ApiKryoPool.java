@@ -1,10 +1,10 @@
 package life.catalogue.common.kryo;
 
-import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.*;
 import life.catalogue.api.vocab.terms.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
@@ -63,6 +63,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Distribution.class);
     kryo.register(EditorialDecision.class);
     kryo.register(EditorialDecision.Mode.class);
+    kryo.register(GenericArea.class);
     kryo.register(Identifier.class);
     kryo.register(IndexName.class);
     kryo.register(Media.class);
@@ -117,7 +118,6 @@ public class ApiKryoPool extends Pool<Kryo> {
     // areas
     var areaSerde = new AreaSerializer();
     kryo.register(Area.class, areaSerde);
-    kryo.register(AreaImpl.class, areaSerde);
     kryo.register(LonghurstArea.class, areaSerde);
     kryo.register(TdwgArea.class, areaSerde);
 

@@ -4,6 +4,7 @@ import life.catalogue.TestUtils;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.*;
 import life.catalogue.assembly.SectorSyncTestBase;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
@@ -196,26 +197,36 @@ public class PgImportITBase {
     VerbatimRecord v = vMapper.get(DSID.vkey(ent));
     assertFalse(v.contains(issue));
   }
-  
+  private static Area area(String name) {
+    return new GenericArea(name);
+  }
+  private static Area iso(String id) {
+    return iso(id, null);
+  }
+  private static Area iso(String id, String name) {
+    return new GenericArea(Gazetteer.ISO, id, name);
+  }
+
   public static List<Distribution> expectedDwca24Distributions() {
     // TDWG:MOR-CE & TDWG:MOR-ME do not exist - will be removed
     List<Distribution> expD = new ArrayList<>();
-    expD.add(dist(new AreaImpl("All of Austria and the alps"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("DE"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("FR"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("DK"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("GB"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(area("Deutschland"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(area("France"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(area("All of Austria and the alps"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(iso("DK,UK"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(area("Nigeria,Kenia"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     expD.add(dist(Country.fromIsoCode("NG"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("KE"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("NG"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     expD.add(dist(TdwgArea.of("AGS"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(new AreaImpl(Gazetteer.FAO, "37.4.1"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(new GenericArea(Gazetteer.FAO, "37.4.1"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     expD.add(dist(TdwgArea.of("MOR-MO"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(TdwgArea.of("CPP"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(TdwgArea.of("NAM"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("IT"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("ES"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("FR"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(Country.fromIsoCode("FM"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(area("TDWG:MOR-MO,TDWG:MOR-CE,TDWG:MOR-ME"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(area("tdwg:cpp; tdwg:of; tdwg:nam"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(iso("IT-82"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(iso("ES-CN"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(iso("FR-H"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(iso("FM-PNI"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(iso("BE-VLG", "Flemish Region"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     return expD;
   }
   
@@ -228,7 +239,7 @@ public class PgImportITBase {
   }
   static Distribution dist(Area area, EstablishmentMeans means, DegreeOfEstablishment degree) {
     Distribution d = new Distribution();
-    d.setArea(area);
+    d.copyArea(area);
     d.setEstablishmentMeans(means);
     d.setDegreeOfEstablishment(degree);
     return d;

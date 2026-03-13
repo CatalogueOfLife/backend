@@ -2,11 +2,10 @@ package life.catalogue.printer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.dao.TaxonCounter;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorInfoCache;
 import life.catalogue.db.mapper.DistributionMapper;
 import life.catalogue.db.mapper.NameUsageMapper;

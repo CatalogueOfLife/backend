@@ -1,7 +1,7 @@
 package life.catalogue.dw.auth.gbif;
 
 import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.dw.auth.AuthenticationProvider;
 
 import java.io.IOException;

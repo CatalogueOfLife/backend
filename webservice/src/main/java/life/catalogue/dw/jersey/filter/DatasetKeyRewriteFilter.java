@@ -47,7 +47,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
   private static final Pattern REL_PATH = Pattern.compile("dataset/" + REL_PATTERN_STR);
 
-  private static final String COL_ALIAS = "(X?COL)(?:20)?(\\d\\d)(?:\\.(1?\\d))?";
+  private static final String COL_ALIAS = "COL(?:20)?(\\d\\d)(?:\\.(1?\\d))?(XR)?";
   private static final Pattern COL_PATTERN = Pattern.compile("^" + COL_ALIAS + "$");
   private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_ALIAS, Pattern.CASE_INSENSITIVE);
 
@@ -213,20 +213,23 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   }
 
   private Integer releaseKeyFromAlias(Matcher m) {
-    final boolean extended = m.group(1).startsWith("X");
+    final boolean extended = m.group(3) != null && m.group(3).equalsIgnoreCase("XR");
     // parsing cannot fail, we have a pattern
-    int year = Integer.parseInt(m.group(2));
+    int year = Integer.parseInt(m.group(1));
     // month is optional
     Integer releaseKey;
-    if (m.group(3) == null) {
+    if (m.group(2) == null) {
       releaseKey = cache.getColRelease(year, extended);
     } else {
-      releaseKey = cache.getColRelease(year, Integer.parseInt(m.group(3)), extended);
+      releaseKey = cache.getColRelease(year, Integer.parseInt(m.group(2)), extended);
     }
     if (releaseKey == null) {
-      String alias = m.group(1)+m.group(2);
-      if (m.group(3) != null) {
-        alias = alias + "." + m.group(3);
+      String alias = "COL"+m.group(1);
+      if (m.group(2) != null) {
+        alias = alias + "." + m.group(2);
+      }
+      if (extended) {
+        alias = alias + "XR";
       }
       throw new NotFoundException( alias + " was never released");
     }

@@ -5,7 +5,7 @@ import life.catalogue.api.model.SimpleNameCached;
 import java.io.IOException;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.mapdb.DataIO;
 import org.mapdb.DataInput2;
 import org.mapdb.DataOutput2;

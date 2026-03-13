@@ -1,6 +1,6 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.api.vocab.Sex;
 

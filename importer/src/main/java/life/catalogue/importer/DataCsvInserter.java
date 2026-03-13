@@ -282,7 +282,7 @@ public abstract class DataCsvInserter implements DataInserter {
           rec.add(invalidIdIssue);
           return false;
         }
-        if (rel.getToID() == null || !entityStore.exists(rel.getToID())) {
+        if ( (rel.getToID() == null && requireRelatedID) || (rel.getToID() != null && !entityStore.exists(rel.getToID())) ) {
           rec.add(invalidIdIssue);
           if (requireRelatedID) {
             return false;

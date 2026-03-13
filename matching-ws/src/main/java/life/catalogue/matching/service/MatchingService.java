@@ -29,7 +29,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -515,6 +515,7 @@ public class MatchingService {
             || parsedName.isTrinomial()
             || (
               parsedName.getRank() != null
+                && parsedName.getRank().notOtherOrUnranked()
                 && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
                 && parsedName.getEpithet(NamePart.SPECIFIC) != null  //see https://github.com/CatalogueOfLife/data/issues/719
             )
@@ -601,6 +602,8 @@ public class MatchingService {
         && parsedName != null
         && parsedName.getRank() != null
         && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
+        // the ordinal comparison caused this issue:  https://github.com/gbif/portal-feedback/issues/6415
+        && parsedName.getRank().notOtherOrUnranked()
         && parsedName.getEpithet(NamePart.SPECIFIC) == null
       ){
           match1.getDiagnostics().setMatchType(MatchType.HIGHERRANK);

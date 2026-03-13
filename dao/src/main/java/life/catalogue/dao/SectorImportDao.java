@@ -3,6 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 
