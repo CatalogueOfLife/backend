@@ -841,7 +841,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       this.taxon = taxon;
     }
   }
-  
+
   private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, Writer writer) {
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
