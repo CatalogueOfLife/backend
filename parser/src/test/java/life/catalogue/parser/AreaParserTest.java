@@ -37,8 +37,11 @@ public class AreaParserTest extends ParserTestBase<Area> {
     assertParse(iso("AZ-TAR"), "iso:AZ-tar");
     assertParse(new GenericArea(Gazetteer.MRGID,"3351"), "http://marineregions.org/mrgid/3351");
     assertParse(new GenericArea(Gazetteer.MRGID,"3351"), "https://marineregions.org/mrgid/3351");
+    assertParse(new GenericArea(Gazetteer.MRGID,"3351"), "mrgid:3351");
+    assertParse(new GenericArea("shipwreck"), "mrgid:shipwreck");
     assertParse(BioGeoRealm.Neotropic, "realm:Neotropic");
     assertParse(BioGeoRealm.Neotropic, "bio:neotropic");
+    assertUnparsable("realm:shipwreck");
     assertParse(BioGeoRealm.Oceania, "REALM:Oceania");
 
     assertEquals(Optional.empty(), parser.parse("iso: "));

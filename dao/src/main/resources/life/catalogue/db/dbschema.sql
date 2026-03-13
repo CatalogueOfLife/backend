@@ -1834,6 +1834,7 @@ CREATE INDEX ON distribution (dataset_key, sector_key);
 CREATE INDEX ON distribution (dataset_key, verbatim_key);
 CREATE INDEX ON distribution (dataset_key, verbatim_source_key);
 CREATE INDEX ON distribution (dataset_key, reference_id);
+CREATE INDEX ON distribution (dataset_key, gazetteer);
 
 CREATE TABLE treatment (
   id TEXT NOT NULL,

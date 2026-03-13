@@ -71,7 +71,7 @@ public class NameUsageMatchingResource extends AbstractNameUsageMatchingResource
   @POST
   @Path("job")
   @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_CSV_ALT2, MoreMediaTypes.TEXT_WILDCARD})
-  public MatchingJob matchTsvJob(@PathParam("key") int datasetKey,
+  public MatchingJob matchTxtJob(@PathParam("key") int datasetKey,
                                          @BeanParam @Valid MatchingRequest req,
                                          @Context HttpHeaders headers,
                                          InputStream data,

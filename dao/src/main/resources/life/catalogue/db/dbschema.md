@@ -11,15 +11,17 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2026-03-11 distribution area_id
+#### 2026-03-11 distribution area_id & extant species taxon metrics
 ```
 ALTER TABLE distribution ADD COLUMN area_id TEXT;
-UPDATE distribution SET area_id = split_part(area, ':', 2), area=null WHERE gazetteer IS NOT NULL AND gazetteer != 'TEXT';
+ALTER TABLE distribution ALTER COLUMN area DROP NOT NULL;
+UPDATE distribution SET area_id=area, area=null WHERE gazetteer IN ('TDWG', 'ISO', 'IHO');
+UPDATE distribution SET area_id=area, area=null WHERE gazetteer='MRGID' AND area ~ '^[0-9]+$';
 
 ALTER TYPE ISSUE ADD VALUE 'DISTRIBUTION_GAZETTEER_CONFLICT';
 
 ALTER TABLE taxon_metrics ADD COLUMN species_extant_count INTEGER;
-UPDATE TABLE taxon_metrics SET species_extant_count=species_count;
+UPDATE taxon_metrics SET species_extant_count=species_count;
 
 ```
 
