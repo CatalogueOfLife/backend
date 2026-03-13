@@ -823,14 +823,26 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
   }
 
   public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id) {
-    return childrenBreakdown(JsonTreeCollector.class, datasetKey, id, new StringWriter());
+    var wrapper = childrenBreakdown(JsonTreeCollector.class, datasetKey, id, new StringWriter());
+    wrapper.printer.setTaxon(wrapper.taxon);
+    return wrapper.printer;
   }
 
   public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
-    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, writer);
+    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, writer).printer;
   }
 
-  private <T extends AbstractPrinter> T childrenBreakdown(Class<T> clazz, int datasetKey, String id, Writer writer) {
+  private static class PrinterWrapper<T> {
+    T printer;
+    SimpleName taxon;
+
+    public PrinterWrapper(T printer, SimpleName taxon) {
+      this.printer = printer;
+      this.taxon = taxon;
+    }
+  }
+  
+  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, Writer writer) {
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
     var rank = tax.getRank();
@@ -866,6 +878,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       taxonCounter = metricsDao;
     }
 
-    return PrinterFactory.dataset(clazz, ttp, ranks, null, Rank.SPECIES, taxonCounter, factory, writer);
+    return new PrinterWrapper<>(PrinterFactory.dataset(clazz, ttp, ranks, null, Rank.SPECIES, taxonCounter, factory, writer), tax);
   }
 }
