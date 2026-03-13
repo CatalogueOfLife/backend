@@ -77,6 +77,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   SimpleName getSimple(@Param("key") DSID<String> key);
 
+  SimpleNameInDataset getSimpleInDataset(@Param("key") DSID<String> key);
+
   SimpleNameVerbatim getSimpleVerbatim(@Param("key") DSID<String> key);
   /**
    * SimpleName.parent=parent.id

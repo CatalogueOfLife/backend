@@ -56,6 +56,10 @@
     u.id, n.scientific_name, n.authorship, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id
   </sql>
 
+  <sql id="SELECT_SIMPLE_IN_DATASET">
+    <include refid="SELECT_SIMPLE"/>, u.dataset_key, u.link
+  </sql>
+
   <sql id="SELECT_SIMPLE_INCL_ACCORDING">
     u.id, n.scientific_name, n.authorship, concat_ws(' ', u.name_phrase, 'sensu ' || r.citation) AS name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id
   </sql>
@@ -341,6 +345,12 @@
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
+  <select id="getSimpleInDataset" resultMap="simpleInDatasetResultMap">
+    SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
+  </select>
+
   <select id="getSimpleVerbatim" resultMap="simpleVerbatimResultMap">
     SELECT <include refid="SELECT_SIMPLE_VERBATIM"/>
     FROM <include refid="FROM_SIMPLE"/>
@@ -533,7 +543,7 @@
   </select>
 
   <select id="listRelated" resultMap="simpleInDatasetResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>, u.dataset_key, u.link
+    SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
       JOIN names_index ni ON ni.id=nmo.index_id

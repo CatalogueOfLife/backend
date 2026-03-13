@@ -89,6 +89,11 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void getSimpleInDataset() throws Exception {
+    mapper().getSimpleInDataset(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
+  }
+
+  @Test
   public void processDatasetBareNames() throws Exception {
     assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, null, null), 1);
     assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, Rank.SPECIES, Rank.GENUS), 1);
