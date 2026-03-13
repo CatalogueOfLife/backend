@@ -1,15 +1,19 @@
 package life.catalogue.junit;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Origin;
+import life.catalogue.dao.TaxonMetricsBuilder;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+
+import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -53,6 +57,46 @@ public class MybatisTestUtils {
     
     session.commit();
   }
+  public static void populateDraftTree(SqlSession session) {
+    populateTestTree(COL, session);
+    session.commit();
+  }
+
+  public static void populateTestTreeWithSpecies(int datasetKey, SqlSession session) {
+    populateTestTree(datasetKey, session);
+    int speciesID = 100;
+    createSpecies(datasetKey, speciesID++, "t1", session);
+    createSpecies(datasetKey, speciesID++, "t2", session);
+    createSpecies(datasetKey, speciesID++, "t2", session);
+    createSpecies(datasetKey, speciesID++, "t4", session);
+    createSpecies(datasetKey, speciesID++, "t4", session);
+    createSpecies(datasetKey, speciesID++, "t4", session);
+    createSpecies(datasetKey, speciesID++, "t5", session);
+    createSpecies(datasetKey, speciesID++, "t5", session);
+    createSpecies(datasetKey, speciesID++, "t5", session);
+    createSpecies(datasetKey, speciesID++, "t5", session);
+  }
+  public static void populateTestTreeWithSpecies(SqlSession session) {
+    populateTestTreeWithSpecies(COL, session);
+    session.commit();
+  }
+
+  public static void rebuildMetrics(SqlSessionFactory factory) {
+    try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      for (var key : dm.listKeys()) {
+        TaxonMetricsBuilder.rebuildMetrics(factory, key);
+      }
+    }
+  }
+
+  private static void createSpecies(int datasetKey, int speciesID, String parentID, SqlSession session) {
+    NameMapper nm = session.getMapper(NameMapper.class);
+    TaxonMapper tm = session.getMapper(TaxonMapper.class);
+    Name n = uninomial(nm, datasetKey,"n"+speciesID, "Foo bar"+speciesID, Rank.SPECIES);
+    Taxon t = draftTaxon(tm,"t"+speciesID, n, DSID.of(datasetKey,parentID));
+  }
+
 
   public static void createSequences(SqlSession session, int datasetKey) {
     session.getMapper(DatasetPartitionMapper.class).createSequences(datasetKey);
@@ -68,10 +112,6 @@ public class MybatisTestUtils {
     return d;
   }
 
-  public static void populateDraftTree(SqlSession session) {
-    populateTestTree(COL, session);
-    session.commit();
-  }
   public static void replaceTestData(TestDataRule.TestData data) throws IOException, SQLException {
     TestDataRule rule = new TestDataRule(data);
     try {
@@ -97,7 +137,7 @@ public class MybatisTestUtils {
     return n;
   }
   
-  private static Taxon draftTaxon(TaxonMapper tm, String id, Name n, Taxon parent) {
+  private static Taxon draftTaxon(TaxonMapper tm, String id, Name n, DSID<String> parent) {
     Taxon t = TestEntityGenerator.newTaxon(n, id, parent==null ? null : parent.getId());
     t.setAccordingToId(null);
     tm.create(t);

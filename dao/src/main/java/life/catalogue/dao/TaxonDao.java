@@ -15,6 +15,8 @@ import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.es.search.NameUsageSearchService;
 import life.catalogue.img.ThumborService;
 import life.catalogue.matching.TaxGroupAnalyzer;
+import life.catalogue.printer.AbstractPrinter;
+import life.catalogue.printer.JsonTreeCollector;
 import life.catalogue.printer.JsonTreePrinter;
 import life.catalogue.printer.PrinterFactory;
 
@@ -23,6 +25,7 @@ import org.apache.ibatis.annotations.Param;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -819,7 +822,15 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     return null;
   }
 
+  public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id) {
+    return childrenBreakdown(JsonTreeCollector.class, datasetKey, id, new StringWriter());
+  }
+
   public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
+    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, writer);
+  }
+
+  private <T extends AbstractPrinter> T childrenBreakdown(Class<T> clazz, int datasetKey, String id, Writer writer) {
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
     var rank = tax.getRank();
@@ -855,6 +866,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       taxonCounter = metricsDao;
     }
 
-    return PrinterFactory.dataset(JsonTreePrinter.class, ttp, ranks, null, Rank.SPECIES, taxonCounter, factory, writer);
+    return PrinterFactory.dataset(clazz, ttp, ranks, null, Rank.SPECIES, taxonCounter, factory, writer);
   }
 }

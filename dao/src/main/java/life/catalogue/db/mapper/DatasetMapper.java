@@ -178,6 +178,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   );
 
   /**
+   * List all dataset keys including private datasets.
+   */
+  List<Integer> listKeys();
+
+  /**
    * List all dataset keys filtered by a search request.
    * Contrary to the regular search this will include private datasets.
    */
