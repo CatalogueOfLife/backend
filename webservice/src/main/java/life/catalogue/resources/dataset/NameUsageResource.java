@@ -3,15 +3,12 @@ package life.catalogue.resources.dataset;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.TaxonDao;
-import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
@@ -28,11 +25,9 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cursor.Cursor;
@@ -50,8 +45,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
 
-import javax.annotation.Nullable;
-
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")
 public class NameUsageResource {
@@ -61,16 +54,14 @@ public class NameUsageResource {
   private final NameUsageSearchService searchService;
   private final NameUsageIndexService indexService;
   private final NameUsageSuggestionService suggestService;
-  private final LatestDatasetKeyCache datasetKeyCache;
   private final TaxonDao dao;
   private final FeedbackService feedbackService;
 
   public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, NameUsageIndexService indexService,
-                           LatestDatasetKeyCache datasetKeyCache, TaxonDao dao, FeedbackService feedbackService) {
+                           TaxonDao dao, FeedbackService feedbackService) {
     this.searchService = search;
     this.suggestService = suggest;
     this.indexService = indexService;
-    this.datasetKeyCache = datasetKeyCache;
     this.dao = dao;
     this.feedbackService = feedbackService;
   }
@@ -86,25 +77,9 @@ public class NameUsageResource {
 
   @GET
   @Path("{id}")
-  public NameUsageBase get(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  public NameUsageBase get(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     var key = DSID.of(datasetKey, id);
-    var num = session.getMapper(NameUsageMapper.class);
-    NameUsageBase u = num.get(key);
-    if (u == null) {
-      var info = DatasetInfoCache.CACHE.info(datasetKey);
-      if (info.origin == DatasetOrigin.PROJECT) {
-        // try latest release first
-        var latest = datasetKeyCache.getLatestRelease(datasetKey, false);
-        if (latest != null) {
-          u = num.get(DSID.of(latest, id));
-        }
-        if (u == null) {
-          // try last archived usage with project key as last resort before we send a 404
-          u = session.getMapper(ArchivedNameUsageMapper.class).get(key);
-        }
-      }
-    }
-    return u;
+    return dao.get(key);
   }
 
   @PATCH

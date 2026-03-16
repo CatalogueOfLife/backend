@@ -156,26 +156,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
   }
 
-  public ResultPage<NameUsageBase> list(int datasetKey, String q, Rank rank, Integer namesIndexID, Page page) {
-    try (SqlSession session = factory.openSession()) {
-      Page p = page == null ? new Page() : page;
-      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      List<NameUsageBase> result;
-      Supplier<Integer> count;
-      if (namesIndexID != null) {
-        result = mapper.listByNamesIndexOrCanonicalID(datasetKey, namesIndexID, p);
-        count = () -> mapper.countByNamesIndexID(namesIndexID, datasetKey);
-      } else if (q != null) {
-        result = mapper.listByName(datasetKey, q, rank, p);
-        count = () -> result.size();
-      } else {
-        result = mapper.list(datasetKey, p);
-        count = () -> mapper.count(datasetKey);
-      }
-      return new ResultPage<>(p, result, count);
-    }
-  }
-
   /**
    *
    * @param datasetKey

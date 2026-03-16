@@ -23,7 +23,7 @@ public class SectorEntityDao<T extends DatasetScopedEntity<String> & SectorScope
   extends DatasetEntityDao<String, T, M> {
 
   protected final LoadingCache<DSID<Integer>, Sector.Mode> sectorModes = Caffeine.newBuilder()
-    .maximumSize(1000)
+    .maximumSize(2500)
     .build(this::lookupSectorMode);
 
   private Sector.Mode lookupSectorMode(DSID<Integer> key) {
