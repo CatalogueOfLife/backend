@@ -16,3 +16,35 @@ obscure,UNCERTAIN
 na,UNCERTAIN
 endemic,NATIVE_ENDEMIC
 endemism,NATIVE_ENDEMIC
+hjemmehørende,NATIVE
+nativní,NATIVE
+natif,NATIVE
+rodzimy,NATIVE
+einheimisch,NATIVE
+nativa,NATIVE
+native (indigenous),NATIVE
+hjemmehørende reintroduceret,NATIVE_REINTRODUCED
+nativa (reintroducida),NATIVE_REINTRODUCED
+native (reintroduced),NATIVE_REINTRODUCED
+indført,INTRODUCED
+zavlečený,INTRODUCED
+introduit,INTRODUCED
+introdukowany,INTRODUCED
+nicht heimisch,INTRODUCED
+introduzida,INTRODUCED
+introducida,INTRODUCED
+"introduced (alien, exotic, non-native, nonindigenous)",INTRODUCED
+tilfældig,VAGRANT
+transitoria (casual),VAGRANT
+vagrant (casual),VAGRANT
+usikker,UNCERTAIN
+nejisté,UNCERTAIN
+incertain,UNCERTAIN
+niepewny,UNCERTAIN
+unsicher,UNCERTAIN
+incerta,UNCERTAIN
+incierto (desconocido),UNCERTAIN
+"uncertain (unknown, cryptogenic)",UNCERTAIN
+indført assisteret kolonisering,INTRODUCED_ASSISTED_COLONISATION
+introducida (colonización asistida),INTRODUCED_ASSISTED_COLONISATION
+introduced (assisted colonisation),INTRODUCED_ASSISTED_COLONISATION

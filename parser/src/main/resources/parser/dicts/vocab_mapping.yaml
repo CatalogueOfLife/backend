@@ -1,0 +1,31 @@
+vocabularies:
+  - enum: EstablishmentMeans
+    file: establishmentmeans.csv
+    concepts:
+      - NATIVE: native
+      - NATIVE_ENDEMIC: nativeEndemic
+      - NATIVE_REINTRODUCED: nativeReintroduced
+      - INTRODUCED: introduced
+      - INTRODUCED_ASSISTED_COLONISATION: introducedAssistedColonisation
+      - VAGRANT: vagrant
+      - UNCERTAIN: uncertain
+  - enum: DegreeOfEstablishment
+    file: degreeofestablishment.csv
+    concepts:
+      - NATIVE: native
+      - CAPTIVE: captive
+      - CULTIVATED: cultivated
+      - RELEASED: released
+      - FAILING: failing
+      - CASUAL: casual
+      - REPRODUCING: reproducing
+      - ESTABLISHED: established
+      - COLONISING: colonising
+      - INVASIVE: invasive
+      - WIDESPREAD_INVASIVE: widespreadInvasive
+  - enum: Sex
+    file: sex.csv
+    concepts:
+      - FEMALE: Female
+      - MALE: Male
+      - HERMAPHRODITE: Other
