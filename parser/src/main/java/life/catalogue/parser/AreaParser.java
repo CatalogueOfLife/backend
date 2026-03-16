@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.common.kryo.AreaSerializer;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,11 +19,10 @@ import com.google.common.base.CharMatcher;
  */
 public class AreaParser extends ParserBase<Area> {
   public static final AreaParser PARSER = new AreaParser();
-  private static final Pattern PREFIX = Pattern.compile("^([a-z_0-9]+)\\s*:\\s*(.+)?\\s*$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern PREFIX = Pattern.compile("^([a-z_0-9-]+)\\s*:\\s*(.+)?\\s*$", Pattern.CASE_INSENSITIVE);
   private static final Pattern MRGID_URL = Pattern.compile("^https?://marineregions.org/mrgid/(\\d+)$", Pattern.CASE_INSENSITIVE);
   private static final Pattern ISO_3166_2 = Pattern.compile("^([a-z]{2})-([a-z0-9]{1,3})$", Pattern.CASE_INSENSITIVE);
-  private static final String ISO = "iso";
-
+  private static final Set<String> ISO_PREFIXES = Set.of("iso", "3166", "iso3166", "iso31662", "country");
   public AreaParser() {
     super(Area.class);
   }
@@ -43,7 +43,7 @@ public class AreaParser extends ParserBase<Area> {
           if (StringUtils.isBlank(value)) {
             return Optional.empty();
 
-          } else if (scheme.equalsIgnoreCase(ISO) || scheme.equalsIgnoreCase("country") || scheme.equalsIgnoreCase("iso3166") || scheme.equalsIgnoreCase("3166")) {
+          } else if (ISO_PREFIXES.contains(scheme)) {
             if (value.length() > 3 && value.contains("-")) {
               return parseIsoSubRegions(value);
             }

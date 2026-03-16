@@ -29,6 +29,7 @@ public class AreaParserTest extends ParserTestBase<Area> {
     assertParse(iso("IT-82"), "iso:it-82");
     assertParse(iso("FR-H"), "ISO:fr-h");
     assertParse(iso("FM-PNI"), "ISO:FM-PNI");
+    assertParse(iso("CA-YT"), "ISO3166-2:CA-YT");
     assertParse(new GenericArea(Gazetteer.FAO,"37.4.1"), "fao:37.4.1");
     assertParse(new GenericArea(Gazetteer.FAO,"27.12.a.4"), "fao:27.12.a.4");
     assertParse(new GenericArea(Gazetteer.FAO,"27.12.C"), "fao:27.12.C");
