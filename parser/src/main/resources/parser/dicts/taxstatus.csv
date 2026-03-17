@@ -89,3 +89,6 @@ bare,BARE_NAME
 unplaced,BARE_NAME
 unresolved,BARE_NAME
 uncertain,BARE_NAME
+unassessed,BARE_NAME
+nomendubium,BARE_NAME
+taxoninquirendum,BARE_NAME
