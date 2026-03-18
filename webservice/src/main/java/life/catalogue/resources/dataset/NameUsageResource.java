@@ -126,12 +126,11 @@ public class NameUsageResource {
   public List<SimpleNameInDataset> related(@PathParam("key") int datasetKey,
                                          @PathParam("id") String id,
                                          @QueryParam("gbifOnly") boolean gbifOnly,
-                                         @QueryParam("gbifOnly") Collection<Integer> nonGbifDatasetKeys,
-                                         @QueryParam("datasetType") List<DatasetOrigin> datasetOrigins,
+                                         @QueryParam("datasetOrigin") List<DatasetOrigin> datasetOrigins,
                                          @QueryParam("datasetType") List<DatasetType> datasetTypes,
                                          @QueryParam("datasetKey") List<Integer> datasetKeys,
                                          @QueryParam("publisherKey") List<UUID> publisherKeys) {
-    return dao.related(datasetKey, id, gbifOnly, nonGbifDatasetKeys, datasetOrigins, datasetTypes, datasetKeys, publisherKeys);
+    return dao.related(datasetKey, id, gbifOnly, null, datasetOrigins, datasetTypes, datasetKeys, publisherKeys);
   }
 
   @GET
