@@ -22,11 +22,7 @@ ALTER TYPE ISSUE ADD VALUE 'DISTRIBUTION_GAZETTEER_CONFLICT';
 
 ALTER TABLE taxon_metrics ADD COLUMN species_extant_count INTEGER;
 UPDATE taxon_metrics SET species_extant_count=species_count;
-
 ```
-
-TODO: migrate distribution area to area_id and area name
-
 
 #### 2025-12-18 version DOIs
 ```
