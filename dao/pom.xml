@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.catalogueoflife</groupId>
 		<artifactId>motherpom</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>1.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>dao</artifactId>
@@ -48,14 +48,18 @@
         <groupId>org.catalogueoflife</groupId>
         <artifactId>coldp</artifactId>
       </dependency>
-		<dependency>
-			<groupId>org.catalogueoflife</groupId>
-			<artifactId>api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.catalogueoflife</groupId>
-			<artifactId>parser</artifactId>
-		</dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>vocab</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.catalogueoflife</groupId>
+          <artifactId>api</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.catalogueoflife</groupId>
+          <artifactId>parser</artifactId>
+      </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>
         <artifactId>pgcopy</artifactId>
@@ -215,10 +219,10 @@
 			<artifactId>java-diff-utils</artifactId>
 		</dependency>
 
-		<!-- Elasticsearch / Lucene -->
+		<!-- Elasticsearch -->
 		<dependency>
-          <groupId>org.elasticsearch.client</groupId>
-          <artifactId>elasticsearch-rest-client</artifactId>
+          <groupId>co.elastic.clients</groupId>
+          <artifactId>elasticsearch-java</artifactId>
 		</dependency>
 
       <!-- TEST SCOPE -->

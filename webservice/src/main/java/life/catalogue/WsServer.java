@@ -1,7 +1,6 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
@@ -38,12 +37,13 @@ import life.catalogue.dw.tasks.ClearCachesTask;
 import life.catalogue.dw.tasks.DeleteTmpDatasetsTask;
 import life.catalogue.dw.tasks.EventQueueTask;
 import life.catalogue.es.EsClientFactory;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.NameUsageSearchService;
-import life.catalogue.es.NameUsageSuggestionService;
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.es.EsUtil;
+import life.catalogue.es.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexServiceEs;
+import life.catalogue.es.search.NameUsageSearchService;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
+import life.catalogue.es.suggest.NameUsageSuggestionService;
+import life.catalogue.es.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.feedback.EmailEncryption;
@@ -76,11 +76,6 @@ import life.catalogue.resources.parser.NameParserAdminResource;
 import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
 
-import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
-import org.apache.hc.client5.http.protocol.RedirectStrategy;
-
-import org.eclipse.jetty.http.UriCompliance;
-
 import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
@@ -89,11 +84,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.util.Timeout;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.RequestEntityProcessing;
@@ -106,6 +101,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.google.common.annotations.VisibleForTesting;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
@@ -295,7 +291,7 @@ public class WsServer extends Application<WsServerConfig> {
     NameUsageIndexService indexService;
     NameUsageSearchService searchService;
     NameUsageSuggestionService suggestService;
-    final RestClient esClient;
+    final ElasticsearchClient esClient;
     if (cfg.es == null || cfg.es.isEmpty()) {
       esClient = null;
       LOG.warn("No Elastic Search configured, use pass through indexing & searching");
@@ -304,10 +300,10 @@ public class WsServer extends Application<WsServerConfig> {
       suggestService = NameUsageSuggestionService.passThru();
     } else {
       esClient = new EsClientFactory(cfg.es).createClient();
-      env.lifecycle().manage(ManagedUtils.from(esClient));
+      env.lifecycle().manage(ManagedUtils.from((AutoCloseable) () -> EsUtil.close(esClient)));
       indexService = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("nuproc"), getSqlSessionFactory());
-      searchService = new NameUsageSearchServiceEs(cfg.es.nameUsage.name, esClient);
-      suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
+      searchService = new NameUsageSearchServiceEs(cfg.es.index.name, esClient);
+      suggestService = new NameUsageSuggestionServiceEs(cfg.es.index.name, esClient);
     }
 
     // Docker

@@ -3,13 +3,16 @@ package life.catalogue.dao;
 import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
-import life.catalogue.api.vocab.area.*;
-import life.catalogue.db.mapper.NameRelationMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.SectorMapperTest;
-import life.catalogue.db.mapper.SynonymMapper;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.area.Area;
+import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.Gazetteer;
+import life.catalogue.api.vocab.area.GenericArea;
+import life.catalogue.db.mapper.*;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
 import life.catalogue.junit.MybatisTestUtils;
@@ -21,6 +24,8 @@ import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -39,7 +44,8 @@ public class TaxonDaoIT extends DaoTestBase {
 
   public TaxonDaoIT() {
     nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
+    var mDao = new MetricsDao(SqlSessionFactoryRule.getSqlSessionFactory());
+    tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, mDao, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
     SectorDao sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tDao, validator);
     tDao.setSectorDao(sdao);
   }
@@ -324,6 +330,51 @@ public class TaxonDaoIT extends DaoTestBase {
     assertEquals("t3", t5.getParentId());
     t5.setParentId("t4");
     tDao.update(t5, USER_EDITOR.getKey());
+  }
+
+  private int setupTestTreeDataset() {
+    var d = TestEntityGenerator.newDataset("tree 1000");
+    d.setOrigin(DatasetOrigin.EXTERNAL);
+    TestEntityGenerator.setUser(d);
+    session.getMapper(DatasetMapper.class).create(d);
+
+    final int datasetKey = d.getKey();
+    MybatisTestUtils.populateTestTreeWithSpecies(datasetKey, session());
+    session.commit();
+    MybatisTestUtils.rebuildMetrics(SqlSessionFactoryRule.getSqlSessionFactory());
+
+    return datasetKey;
+  }
+
+  @Test
+  public void childrenBreakdownCollector() throws IOException {
+    final int datasetKey = setupTestTreeDataset();
+
+    var breakdown = tDao.childrenBreakdownCollector(datasetKey, "t2");
+    int cnt = breakdown.print();
+    assertEquals(1, breakdown.getRoot().size());
+    assertEquals(3, cnt);
+    assertEquals(2, breakdown.getRoot().getFirst().children.size());
+    assertEquals(0, breakdown.getRoot().getFirst().synonyms.size());
+    assertEquals(7, breakdown.getRoot().getFirst().count);
+
+    breakdown = tDao.childrenBreakdownCollector(datasetKey, "t3");
+    cnt = breakdown.print();
+    assertEquals(2, breakdown.getRoot().size());
+    assertEquals(2, cnt);
+    assertEquals(0, breakdown.getRoot().getFirst().children.size());
+    assertEquals(0, breakdown.getRoot().getFirst().synonyms.size());
+    assertEquals(3, breakdown.getRoot().getFirst().count);
+  }
+
+  @Test
+  public void childrenBreakdownPrinter() throws IOException {
+    final int datasetKey = setupTestTreeDataset();
+    var writer = new StringWriter();
+    var breakdown = tDao.childrenBreakdownPrinter(datasetKey, "t2", writer);
+    int cnt = breakdown.print();
+    System.out.println(writer);
+    assertEquals(3, cnt);
   }
 
   @Test(expected = IllegalArgumentException.class)

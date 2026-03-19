@@ -9,19 +9,16 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.ParentStack;
 import life.catalogue.dao.TaxonMetricsBuilder;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
+import life.catalogue.es.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexServiceEs;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.TreeWalker;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.UsageData;
-
-import life.catalogue.release.TreeCleanerAndValidator;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -528,7 +525,6 @@ public class PgImport implements Callable<Boolean> {
             // index into ES later when we "end" so we can add issues still, but build up the instance here already
             NameUsageWrapper nuw = new NameUsageWrapper(u.usage);
             //nuw.setId(u.getId()); // for some reason we need to do this here again
-            nuw.setPublisherKey(dataset.getGbifPublisherKey());
             nuw.setClassification(new ArrayList<>(parents));
             nuw.setIssues(mergeIssues(vKeys));
             if (u.usage.isSynonym()) {
@@ -575,7 +571,6 @@ public class PgImport implements Callable<Boolean> {
         updateNameData(nn, vKeys);
         BareName bn = new BareName(nn.getName());
         NameUsageWrapper nuw = new NameUsageWrapper(bn);
-        nuw.setPublisherKey(dataset.getGbifPublisherKey());
         nuw.setIssues(mergeIssues(vKeys));
         indexer.accept(nuw);
         runtimeInterruptIfCancelled();

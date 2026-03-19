@@ -12,16 +12,19 @@ import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.NameUsageSearchService;
+import life.catalogue.es.indexing.NameUsageIndexService;
+import life.catalogue.es.search.NameUsageSearchService;
 import life.catalogue.img.ThumborService;
 import life.catalogue.matching.TaxGroupAnalyzer;
+import life.catalogue.printer.AbstractPrinter;
+import life.catalogue.printer.JsonTreeCollector;
 import life.catalogue.printer.JsonTreePrinter;
 import life.catalogue.printer.PrinterFactory;
 
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -156,18 +159,51 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
   }
 
+  public ResultPage<NameUsageBase> list(int datasetKey, @Nullable String q, Rank rank,
+                                        @Nullable String nameID,
+                                        @Nullable Integer namesIndexID,
+                                        Page page)
+  {
+    try (SqlSession session = factory.openSession()) {
+      Page p = page == null ? new Page() : page;
+      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
+      List<NameUsageBase> result;
+      Supplier<Integer> count;
+      if (namesIndexID != null) {
+        result = mapper.listByNamesIndexOrCanonicalID(datasetKey, namesIndexID, p);
+        count = () -> mapper.countByNamesIndexID(namesIndexID, datasetKey);
+      } else if (nameID != null) {
+        result = mapper.listByNameID(datasetKey, nameID, p);
+        count = () -> mapper.countByNameID(nameID, datasetKey);
+      } else if (q != null) {
+        result = mapper.listByName(datasetKey, q, rank, p);
+        count = () -> result.size();
+      } else {
+        result = mapper.list(datasetKey, p);
+        count = () -> mapper.count(datasetKey);
+      }
+      return new ResultPage<>(p, result, count);
+    }
+  }
+
   /**
    *
-   * @param datasetKey
-   * @param id
-   * @param latestReleaseOnly if true only related names from the latest release(s) are returned. XR and BR are treated as separate releases.
-   * @param datasetTypes
-   * @param datasetKeys
-   * @param publisherKeys
+   * Lists related usages from other datasets which are linked via names index matches.
+   * Various options to restrict the related datasets to be considered.
+   *
+   * @param datasetKey original dataset
+   * @param id original usageOD in the above dataset
+   * @param gbifOnly if true only datasets with a GBIF key are considered
+   * @param nonGbifDatasetKeys optional setting when gbifOnly=true. Set of dataset keys to always consider even if they do not have a gbif key
+   * @param datasetTypes optional set of dataset types to consider, ignoring all others
+   * @param datasetKeys optional set of dataset keys to consider, ignoring all others
+   * @param publisherKeys optional set of dataset GBIF publisher keys to consider, ignoring all others
    * @return
    */
   public List<SimpleNameInDataset> related(int datasetKey, String id,
-                                     boolean latestReleaseOnly,
+                                     boolean gbifOnly,
+                                     @Nullable Collection<Integer> nonGbifDatasetKeys,
+                                     @Nullable Collection<DatasetOrigin> datasetOrigins,
                                      @Nullable Collection<DatasetType> datasetTypes,
                                      @Nullable Collection<Integer> datasetKeys,
                                      @Nullable Collection<UUID> publisherKeys) {
@@ -175,7 +211,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       var key = DSID.of(datasetKey, id);
       num.existsOrThrow(key);
-      return num.listRelated(key, latestReleaseOnly, datasetTypes, datasetKeys, publisherKeys);
+      return num.listRelated(key, gbifOnly, nonGbifDatasetKeys, datasetOrigins, datasetTypes, datasetKeys, publisherKeys);
     }
   }
 
@@ -766,7 +802,27 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     return null;
   }
 
+  public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id) {
+    var wrapper = childrenBreakdown(JsonTreeCollector.class, datasetKey, id, new StringWriter());
+    wrapper.printer.setTaxon(wrapper.taxon);
+    return wrapper.printer;
+  }
+
   public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
+    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, writer).printer;
+  }
+
+  private static class PrinterWrapper<T> {
+    T printer;
+    SimpleName taxon;
+
+    public PrinterWrapper(T printer, SimpleName taxon) {
+      this.printer = printer;
+      this.taxon = taxon;
+    }
+  }
+
+  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, Writer writer) {
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
     var rank = tax.getRank();
@@ -802,6 +858,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       taxonCounter = metricsDao;
     }
 
-    return PrinterFactory.dataset(JsonTreePrinter.class, ttp, ranks, null, Rank.SPECIES, taxonCounter, factory, writer);
+    return new PrinterWrapper<>(PrinterFactory.dataset(clazz, ttp, ranks, null, Rank.SPECIES, taxonCounter, factory, writer), tax);
   }
 }

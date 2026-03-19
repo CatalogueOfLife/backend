@@ -2,26 +2,35 @@ package life.catalogue.command;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.concurrent.SomeExecutor;
+import life.catalogue.config.EsConfig;
 import life.catalogue.es.EsClientFactory;
-import life.catalogue.es.EsConfig;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
+import life.catalogue.es.EsUtil;
+import life.catalogue.es.indexing.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexServiceEs;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import life.catalogue.es.search.NameUsageSearchService;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
+import life.catalogue.jobs.ReindexSchedulerJob;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import io.dropwizard.core.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
@@ -32,6 +41,7 @@ public class IndexCmd extends AbstractMybatisCmd {
   private static final String ARG_FILE = "keys-file";
   private static final String ARG_KEY = "key";
   private static final String ARG_ALL = "all";
+  private static final String ARG_ALL_MISSING = "all-missing";
   private static final String ARG_KEY_IGNORE = "ignore";
   private static final String ARG_CREATE = "create";
   private static final String ARG_THREADS = "t";
@@ -62,6 +72,12 @@ public class IndexCmd extends AbstractMybatisCmd {
       .required(false)
       .setDefault(false)
       .help("index all datasets into a new index by date");
+    subparser.addArgument("--"+ ARG_ALL_MISSING)
+      .dest(ARG_ALL_MISSING)
+      .type(boolean.class)
+      .required(false)
+      .setDefault(false)
+      .help("index all datasets which have not been indexed or the wrong number of indexed records");
     subparser.addArgument("--"+ ARG_KEY_IGNORE, "-i")
        .dest(ARG_KEY_IGNORE)
        .nargs("*")
@@ -84,32 +100,35 @@ public class IndexCmd extends AbstractMybatisCmd {
   public void prePromt(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg){
     if (namespace.getBoolean(ARG_ALL) || namespace.getBoolean(ARG_CREATE)) {
       // change index name, use current date
-      cfg.es.nameUsage.name = indexNameToday(cfg.es);
-      System.out.println("Creating new index " + cfg.es.nameUsage.name);
-      LOG.info("Creating new index {}", cfg.es.nameUsage.name);
+      cfg.es.index.name = indexNameToday(cfg.es);
+      System.out.println("Creating new index " + cfg.es.index.name);
+      LOG.info("Creating new index {}", cfg.es.index.name);
     }
   }
 
   public static String indexNameToday(EsConfig cfg){
     String date = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
-    if (StringUtils.isBlank(cfg.nameUsage.name)) {
+    if (StringUtils.isBlank(cfg.index.name)) {
       throw new IllegalStateException("index config is empty");
-    } else if (cfg.nameUsage.name.length() > 10) {
-      throw new IllegalStateException("index config name is too long to be a prefix");
+    } else if (cfg.index.name.length() > 10) {
+      LOG.warn("index name {} is too long to be a prefix, using existing index name instead", cfg.index.name);
+      return cfg.index.name;
     }
-    return cfg.nameUsage.name + "-" + date;
+    return cfg.index.name + "-" + date;
   }
 
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
     boolean create = namespace.getBoolean(ARG_CREATE) || namespace.getBoolean(ARG_ALL);
-    return String.format("Indexing DB %s on %s into %sES index %s on %s.\n", cfg.db.database, cfg.db.host, create ? "new " : "", cfg.es.nameUsage.name, cfg.es.hosts);
+    return String.format("Indexing DB %s on %s into %sES index %s on %s.\n", cfg.db.database, cfg.db.host, create ? "new " : "", cfg.es.index.name, cfg.es.hosts);
   }
 
   @Override
   public void execute() throws Exception {
-    try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
-      NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("cli-es-tmp"), factory);
+    ElasticsearchClient esClient = new EsClientFactory(cfg.es).createClient();
+    final File scratch = cfg.normalizer.scratchDir("cli-es-tmp");
+    try {
+      NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, scratch, factory);
       if (ns.getBoolean(ARG_CREATE)) {
         svc.createEmptyIndex();
       }
@@ -125,6 +144,10 @@ public class IndexCmd extends AbstractMybatisCmd {
         } else {
           svc.indexAll();
         }
+
+      } else if (ns.get(ARG_ALL_MISSING)) {
+        NameUsageSearchService search = new NameUsageSearchServiceEs(cfg.es.index.name, esClient);
+        indexMissing(svc, search);
 
       } else if (ns.get(ARG_FILE) != null) {
         String fn = ns.getString(ARG_FILE);
@@ -150,6 +173,22 @@ public class IndexCmd extends AbstractMybatisCmd {
       } else {
         System.out.println("No indexing argument given. See help for options");
       }
+    } finally {
+      EsUtil.close(esClient);
+      LOG.info("Remove temp indexing files in {}", scratch.getAbsolutePath());
+      if (!FileUtils.deleteQuietly(scratch)) {
+        LOG.warn("Could not delete scratch dir {}", scratch.getAbsolutePath());
+      }
     }
+  }
+
+  private void indexMissing(NameUsageIndexService indexService, NameUsageSearchService searchService) {
+    var exec = Executors.newFixedThreadPool(cfg.es.indexingThreads);
+    var scheduler = new ReindexSchedulerJob(user.getKey(), 0, factory, SomeExecutor.from(exec), searchService, indexService, null);
+    LOG.info("Start submitting index jobs");
+    scheduler.execute();
+    LOG.info("Finished submitting index jobs. Wait for indexing to finish");
+    ExecutorUtils.shutdown(exec);
+    LOG.info("Indexing executor has shutdown");
   }
 }

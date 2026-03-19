@@ -109,7 +109,7 @@ public class NameUsageProcessorMEM {
       assertNotNull(n);
       assertNotNull(n.getId());
       assertNotNull(n.getDatasetKey());
-      
+
       // classification should always include the taxon itself
       // https://github.com/Sp2000/colplus-backend/issues/326
       assertFalse(obj.getClassification().isEmpty());

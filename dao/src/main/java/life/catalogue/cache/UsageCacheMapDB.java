@@ -10,6 +10,7 @@ import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import java.io.File;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -32,6 +33,7 @@ public class UsageCacheMapDB implements UsageCache {
   private final DBMaker.Maker dbMaker;
   private final Pool<Kryo> pool;
   private final int datasetKey;
+  private final File dbFile;
   private Map<String, SimpleNameCached> usages;
   private DB db;
 
@@ -44,6 +46,7 @@ public class UsageCacheMapDB implements UsageCache {
   public UsageCacheMapDB(int datasetKey, File location, int kryoMaxCapacity) {
     LOG.info("Use persistent usage cache for dataset {} at {}", datasetKey, location.getAbsolutePath());
     this.datasetKey = datasetKey;
+    dbFile = location;
     dbMaker = DBMaker
       .fileDB(location)
       .fileMmapEnableIfSupported();
@@ -91,6 +94,10 @@ public class UsageCacheMapDB implements UsageCache {
     if (db != null) {
       db.close();
       db = null;
+      LOG.info("Deleting persistent usage cache at {}", dbFile.getAbsolutePath());
+      if (!FileUtils.deleteQuietly(dbFile)) {
+        LOG.warn("Failed to delete {}", dbFile.getAbsolutePath());
+      }
     }
   }
 

@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.catalogueoflife</groupId>
     <artifactId>motherpom</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>core</artifactId>
@@ -22,6 +22,10 @@
     <dependency>
       <groupId>org.catalogueoflife</groupId>
       <artifactId>metadata</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
+      <artifactId>vocab</artifactId>
     </dependency>
     <dependency>
       <groupId>org.catalogueoflife</groupId>
@@ -90,13 +94,6 @@
     <dependency>
       <groupId>org.apache.fory</groupId>
       <artifactId>fory-core</artifactId>
-    </dependency>
-
-    <!-- Elasticsearch / Lucene -->
-    <dependency>
-      <groupId>org.elasticsearch.client</groupId>
-      <artifactId>elasticsearch-rest-client</artifactId>
-      <version>${elasticsearch.version}</version>
     </dependency>
 
     <dependency>

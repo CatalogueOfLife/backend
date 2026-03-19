@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.catalogueoflife</groupId>
     <artifactId>motherpom</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
   <artifactId>webservice</artifactId>
   <name>CLB WS</name>
@@ -168,13 +168,6 @@
     <dependency>
       <groupId>org.apache.fory</groupId>
       <artifactId>fory-core</artifactId>
-    </dependency>
-
-    <!-- Elasticsearch / Lucene -->
-    <dependency>
-      <groupId>org.elasticsearch.client</groupId>
-      <artifactId>elasticsearch-rest-client</artifactId>
-      <version>${elasticsearch.version}</version>
     </dependency>
 
     <dependency>

@@ -8,7 +8,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 public class InfoCmd extends AbstractPromptCmd {
 
   public InfoCmd() {
-    super("info", "SHow current version and config infos");
+    super("info", "Show current version and config infos");
   }
 
   @Override

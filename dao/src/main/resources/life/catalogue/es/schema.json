@@ -1,0 +1,239 @@
+{
+  "settings": {
+    "index": {
+      "max_result_window": 2000000
+    },
+    "analysis": {
+      "filter": {
+        "suggest_filter": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 10
+        }
+      },
+      "analyzer": {
+        "standard_ascii": {
+          "tokenizer": "standard",
+          "filter": ["lowercase", "asciifolding"]
+        },
+        "suggest": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "suggest_filter"
+          ]
+        },
+        "suggest_search": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding"
+          ]
+        },
+        "vernacular_name_analyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "stemmer"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "dynamic": false,
+    "properties": {
+      "id": {
+        "type": "keyword"
+      },
+      "sectorKey": {
+        "type": "keyword"
+      },
+      "sectorMode": {
+        "type": "keyword"
+      },
+      "sectorDatasetKey": {
+        "type": "keyword"
+      },
+      "sectorPublisherKey": {
+        "type": "keyword"
+      },
+      "secondarySourceGroups": {
+        "type": "keyword"
+      },
+      "secondarySourceKeys": {
+        "type": "keyword"
+      },
+      "group": {
+        "type": "keyword"
+      },
+      "issues": {
+        "type": "keyword"
+      },
+      "classification": {
+        "type": "object",
+        "dynamic": false,
+        "properties": {
+          "id": {
+            "type": "keyword"
+          }
+        }
+      },
+      "usage": {
+        "type": "object",
+        "dynamic": false,
+        "properties": {
+          "sectorKey": {
+            "type": "keyword",
+            "copy_to": "sectorKey"
+          },
+          "sectorMode": {
+            "type": "keyword",
+            "copy_to": "sectorMode"
+          },
+          "status": {
+            "type": "keyword"
+          },
+          "origin": {
+            "type": "keyword"
+          },
+          "extinct": {
+            "type": "boolean"
+          },
+          "environments": {
+            "type": "keyword"
+          },
+          "label": {
+            "type": "keyword"
+          },
+          "nameFields": {
+            "type": "keyword"
+          },
+          "name": {
+            "type": "object",
+            "dynamic": false,
+            "properties": {
+              "id": {
+                "type": "keyword"
+              },
+              "datasetKey": {
+                "type": "keyword"
+              },
+              "sectorKey": {
+                "type": "keyword",
+                "copy_to": "sectorKey"
+              },
+              "sectorMode": {
+                "type": "keyword",
+                "copy_to": "sectorMode"
+              },
+              "alphaIndex": {
+                "type": "keyword"
+              },
+              "scientificName": {
+                "type": "keyword",
+                "fields": {
+                  "word": {
+                    "type": "text",
+                    "analyzer": "standard_ascii"
+                  },
+                  "suggest": {
+                    "type": "text",
+                    "analyzer": "suggest",
+                    "search_analyzer": "suggest_search"
+                  }
+                }
+              },
+              "scientificNameNormalized": {
+                "type": "text",
+                "analyzer": "standard_ascii"
+              },
+              "authorship": {
+                "type": "keyword",
+                "fields": {
+                  "word": {
+                    "type": "text",
+                    "analyzer": "standard_ascii"
+                  }
+                }
+              },
+              "author": {
+                "type": "keyword"
+              },
+              "combinationAuthorship": {
+                "type": "object",
+                "dynamic": false,
+                "properties": {
+                  "year": {
+                    "type": "keyword"
+                  },
+                  "authors": {
+                    "type": "keyword",
+                    "copy_to": "usage.name.author"
+                  },
+                  "exAuthors": {
+                    "type": "keyword",
+                    "copy_to": "usage.name.author"
+                  }
+                }
+              },
+              "basionymAuthorship": {
+                "type": "object",
+                "dynamic": false,
+                "properties": {
+                  "authors": {
+                    "type": "keyword",
+                    "copy_to": "usage.name.author"
+                  },
+                  "exAuthors": {
+                    "type": "keyword",
+                    "copy_to": "usage.name.author"
+                  }
+                }
+              },
+              "rank": {
+                "type": "integer"
+              },
+              "code": {
+                "type": "keyword"
+              },
+              "nomStatus": {
+                "type": "keyword"
+              },
+              "publishedInId": {
+                "type": "keyword"
+              },
+              "type": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      },
+      "decisions": {
+        "type": "nested",
+        "dynamic": false,
+        "properties": {
+          "datasetKey": {
+            "type": "keyword"
+          },
+          "mode": {
+            "type": "keyword"
+          }
+        }
+      },
+      "vernacularNames": {
+        "type": "object",
+        "dynamic": false,
+        "properties": {
+          "name": {
+            "type": "text",
+            "analyzer": "vernacular_name_analyzer"
+          }
+        }
+      }
+    }
+  }
+}

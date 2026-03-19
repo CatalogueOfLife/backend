@@ -8,8 +8,8 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.NameUsageSearchService;
+import life.catalogue.es.query.InvalidQueryException;
+import life.catalogue.es.search.NameUsageSearchService;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -100,18 +100,18 @@ public class NameUsageSearchResource {
     public SearchRequestBody(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filter,
         @JsonProperty("facet") Set<NameUsageSearchParameter> facet,
         @JsonProperty("facetLimit") @Min(0) Integer facetLimit,
+        @JsonProperty("facetOffset") @Min(0) Integer facetOffset,
+        @JsonProperty("facetMinCount") @Min(0) Integer facetMinCount,
         @JsonProperty("content") Set<NameUsageSearchRequest.SearchContent> content,
         @JsonProperty("sortBy") NameUsageSearchRequest.SortBy sortBy,
         @JsonProperty("q") String q,
-        @JsonProperty("highlight") @DefaultValue("false") boolean highlight,
         @JsonProperty("reverse") @DefaultValue("false") boolean reverse,
-        @JsonProperty("fuzzy") @DefaultValue("false") boolean fuzzy,
         @JsonProperty("offset") @DefaultValue("0") int offset,
         @JsonProperty("limit") @DefaultValue("10") int limit,
         @JsonProperty("type") NameUsageRequest.SearchType searchType,
         @JsonProperty("minRank") Rank minRank,
         @JsonProperty("maxRank") Rank maxRank) {
-      request = new NameUsageSearchRequest(filter, facet, facetLimit, content, sortBy, q, highlight, reverse, fuzzy, searchType, minRank, maxRank);
+      request = new NameUsageSearchRequest(filter, facet, facetLimit, facetOffset, facetMinCount, content, sortBy, q, reverse, searchType, minRank, maxRank);
       page = new Page(offset, limit);
     }
   }

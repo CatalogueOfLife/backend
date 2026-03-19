@@ -8,12 +8,6 @@
     <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
   </resultMap>
 
-  <!--
-  <resultMap id="taxResultMap" type="Taxon" extends="life.catalogue.db.mapper.TaxonMapper.taxonResultMap">
-    <result property="sectorMode" column="sector_mode"/>
-  </resultMap>
--->
-
   <resultMap id="usageResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
     <id column="uid"/>
     <result property="secondarySourceGroups" column="groups" typeHandler="life.catalogue.db.type2.InfoGroupSetTypeHandler"/>
@@ -28,6 +22,7 @@
       <id property="id" column="id"/>
       <id property="datasetKey" column="dataset_key"/>
     </collection>
+    <collection property="vernacularNames" ofType="SimpleVernacularName" autoMapping="true" columnPrefix="vn_" notNullColumn="name" />
   </resultMap>
 
   <resultMap id="classificationResultMap" type="SimpleNameClassification">
@@ -50,7 +45,6 @@
 
   <sql id="taxonSelectFrom">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
-    d.gbif_publisher_key AS publisherKey,
     s.subject_dataset_key AS sector_dataset_key,
     s.mode AS sector_mode,
     ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
@@ -198,12 +192,14 @@
 
     SELECT u.id AS uid,
       <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
+      v.issues, secsrc.sources, secsrc.groups,
       ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
-      v.issues, secsrc.sources, secsrc.groups
+      vn.name AS vn_name, vn.language AS vn_language
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
       LEFT JOIN nuissues v ON v.id=u.id
       LEFT JOIN secsrc ON secsrc.id=u.id
       LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
+      LEFT JOIN vernacular_name vn ON vn.dataset_key=#{datasetKey} AND vn.taxon_id=u.id
     WHERE u.dataset_key=#{datasetKey} AND u.id = #{id}
   </select>
 
@@ -212,11 +208,13 @@
       <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT_BASE" />,
       r.citation AS according_to,
       v.issues, v2.sources, v2.groups,
-      ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode
+      ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
+      vn.name AS vn_name, vn.language AS vn_language
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_NO_ACCEPTED"/>
       LEFT JOIN tmp_usage_issues v ON v.id=u.id
       LEFT JOIN tmp_usage_sources v2 ON v2.id=u.id
       LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
+      LEFT JOIN vernacular_name vn ON vn.dataset_key=#{datasetKey} AND vn.taxon_id=u.id
     WHERE u.dataset_key=#{datasetKey}
     <if test="sectorKey != null">
       AND u.sector_key = #{sectorKey}

@@ -145,12 +145,12 @@ To search for a name usage in the annual release 2023 you can use the plain sear
 You can filter the search by various options:
 
  - rank: https://api.checklistbank.org/dataset/COL2022/nameusage/search?q=Abies&rank=species
- - content: what to search on, SCIENTIFIC_NAME, AUTHORSHIP or both: https://api.checklistbank.org/dataset/COL2022/nameusage/search?q=Hobern&content=AUTHORSHIP
+ - content: what to search on, SCIENTIFIC_NAME, AUTHORSHIP or VERNACULAR_NAME. Can be multiple: https://api.checklistbank.org/dataset/COL2022/nameusage/search?q=Hobern&content=AUTHORSHIP
  - type: the kind of search to use. One of prefix, whole_words or exact: https://api.checklistbank.org/dataset/COL2022/nameusage/search?q=Hobern&content=AUTHORSHIP
-   + *prefix*: Matches a search term to the beginning of the epithets within a scientific name. This is the only available search type for the suggest service. Whole-word and exact matching defies the purpose of auto-completion. However, you still have the option of fuzzy/non-fuzzy matching.
-   + *whole_words*: Matches a search term to entire epithets within a scientific name.
-   + *exact*: Matches the entire search phrase to the entire scientific name. When choosing this type you cannot also opt for fuzzy matching. The "fuzzy" parameter is silently ignored.
- - fuzzy: allow for slightly fuzzy matching 
+   + *exact*: Matches the entire search phrase to the entire scientific name.
+   + *whole_words*: Matches a search term to entire words within a scientific name. This is the default.
+   + *prefix*: Matches a search term to the beginning of the epithets within a scientific name.
+   + *fuzzy*: A whole_words search against words of the scientific name, but accepts fuzzy matches with a small edit distance.
 
 
 ## Taxon info and vernacular names

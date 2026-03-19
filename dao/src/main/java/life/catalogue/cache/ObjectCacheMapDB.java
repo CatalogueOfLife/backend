@@ -73,8 +73,13 @@ public class ObjectCacheMapDB<T extends HasID<String>> implements ObjectCache<T>
         db.close();
       }
     } finally {
-      if (!reuse) {
-        FileUtils.deleteQuietly(dbFile);
+      if (reuse) {
+        LOG.info("Closing, but keeping persistent {} cache at {}", clazz.getSimpleName(), dbFile.getAbsolutePath());
+      } else {
+        LOG.info("Deleting persistent {} cache at {}", clazz.getSimpleName(), dbFile.getAbsolutePath());
+        if (!FileUtils.deleteQuietly(dbFile)) {
+          LOG.warn("Failed to delete {}", dbFile.getAbsolutePath());
+        }
       }
     }
   }

@@ -9,12 +9,12 @@ import life.catalogue.api.vocab.*;
 
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import life.catalogue.coldp.ColdpTerm;
 
-import life.catalogue.common.text.StringUtils;
-import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.PgUtils;
 
 import org.apache.ibatis.cursor.Cursor;
 
@@ -37,13 +37,14 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
 
   @Test
   public void processDatasetBareNames() throws Exception {
-    Cursor<NameUsageWrapper> c = mapper().processDatasetBareNames(NAME4.getDatasetKey(), null);
-    c.forEach(obj -> {
-        counter.incrementAndGet();
-        assertNotNull(obj);
-        assertNotNull(obj.getUsage());
-        assertNotNull(obj.getUsage().getName());
-    });
+    try (Cursor<NameUsageWrapper> c = mapper().processDatasetBareNames(NAME4.getDatasetKey(), null)) {
+      c.forEach(obj -> {
+          counter.incrementAndGet();
+          assertNotNull(obj);
+          assertNotNull(obj.getUsage());
+          assertNotNull(obj.getUsage().getName());
+      });
+    }
     Assert.assertEquals(1, counter.get());
   }
 
@@ -77,6 +78,26 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     tm.create(tax);
 
     return tax;
+  }
+
+
+  @Test
+  public void vernacularNames() throws Exception {
+    var nuwm = mapper(NameUsageWrapperMapper.class);
+    var nuw = nuwm.get(DATASET11.getKey(), false, "root-1");
+    assertEquals(3, nuw.getVernacularNames().size());
+
+    AtomicBoolean found = new AtomicBoolean(false);
+    // we need a tmp issues table first
+    var ism = mapper(TmpIssueMapper.class);
+    ism.createTmpIssuesTable(DATASET11.getKey(), null);
+    PgUtils.consume(() -> nuwm.processWithoutClassification(DATASET11.getKey(), null), w -> {
+      if ("root-1".equals(w.getId())) {
+        assertEquals(3, w.getVernacularNames().size());
+        found.set(true);
+      }
+    });
+    assertTrue(found.get());
   }
 
   @Test
@@ -129,7 +150,6 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     // sector props and main publisher key is not set!
     assertNull(w.getSectorDatasetKey());
     assertNull(w.getUsage().getSectorMode());
-    assertNull(w.getPublisherKey());
 
     //
     // try with sector source record after adding a decision and some issues
@@ -202,7 +222,6 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     // sector props and main publisher key is not set!
     assertNull(w.getSectorDatasetKey());
     assertNull(w.getUsage().getSectorMode());
-    assertNull(w.getPublisherKey());
 
 
     // test wrapped project usage

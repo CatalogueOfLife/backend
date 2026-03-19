@@ -32,7 +32,7 @@ public abstract class AbstractTreePrinter extends AbstractPrinter {
     super(true, params, ranks, extinct, countRank, taxonCounter, factory, writer);
   }
 
-  static class FilterSN {
+  protected static class FilterSN {
     final SimpleName sn;
     final boolean filtered;
 

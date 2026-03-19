@@ -7,7 +7,7 @@
 
   <groupId>org.catalogueoflife</groupId>
   <artifactId>motherpom</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>CLB motherpom</name>
@@ -72,7 +72,7 @@
     <docker-client.version>3.7.0</docker-client.version><!--keep in sync with test containers -->
     <dwc-api.version>2.1.4</dwc-api.version>
     <dwca-io.version>3.0.0</dwca-io.version>
-    <elasticsearch.version>8.19.11</elasticsearch.version>
+    <elasticsearch.version>9.3.0</elasticsearch.version>
     <expressly.version>5.0.0</expressly.version><!-- EL implementation for Hibernate Validator -->
     <fastutil.version>8.5.15</fastutil.version>
     <fory.version>0.13.2</fory.version>
@@ -205,6 +205,7 @@
     <module>pgcopy</module>
     <module>reader</module>
     <module>reader-xls</module>
+    <module>vocab</module>
     <module>webservice</module>
   </modules>
 
@@ -240,6 +241,11 @@
       <dependency>
         <groupId>org.catalogueoflife</groupId>
         <artifactId>metadata</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>vocab</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -557,24 +563,8 @@
 
       <!-- elastic -->
       <dependency>
-        <groupId>org.elasticsearch.client</groupId>
-        <artifactId>elasticsearch-rest-client</artifactId>
-        <version>${elasticsearch.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.elasticsearch</groupId>
-        <artifactId>elasticsearch-core</artifactId>
-        <version>${elasticsearch.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.elasticsearch</groupId>
-        <artifactId>elasticsearch</artifactId>
+        <groupId>co.elastic.clients</groupId>
+        <artifactId>elasticsearch-java</artifactId>
         <version>${elasticsearch.version}</version>
       </dependency>
       <!-- unicode, transliterations

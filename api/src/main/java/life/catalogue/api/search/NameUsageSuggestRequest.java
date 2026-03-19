@@ -1,6 +1,7 @@
 package life.catalogue.api.search;
 
 import java.util.Objects;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,9 +18,15 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   private Integer limit; // Desired number of suggestions
 
   @Override
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  @JsonIgnore
   public SearchType getSearchType() {
     return SearchType.PREFIX;
+  }
+
+  @Override
+  @JsonIgnore
+  public Set<SearchContent> getContent() {
+    return Set.of(SearchContent.SCIENTIFIC_NAME);
   }
 
   public boolean isAccepted() {
@@ -27,14 +34,6 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   }
 
   public void setAccepted(boolean accepted) {
-    this.accepted = accepted;
-  }
-
-  public Boolean getAccepted() {
-    return accepted;
-  }
-
-  public void setAccepted(Boolean accepted) {
     this.accepted = accepted;
   }
 

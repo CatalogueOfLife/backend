@@ -88,7 +88,7 @@ public class UserResource {
   }
   
   /**
-   * Makes surer a user has authenticated with BasicAuth and then returns a new JWT token if successful.
+   * Makes sure a user has authenticated with BasicAuth and then returns a new JWT token if successful.
    */
   @GET
   @Path("/login")
@@ -104,7 +104,7 @@ public class UserResource {
   }
 
   /**
-   * Makes surer a user has authenticated with BasicAuth and then returns a new JWT token if successful.
+   * Invalidates the JWT token and logs out.
    */
   @DELETE
   @Path("/logout")

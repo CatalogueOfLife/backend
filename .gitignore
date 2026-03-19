@@ -25,4 +25,5 @@ webservice/**/ManualLiveDebugging.java
 
 /webservice/src/main/resources/logback.xml
 
+requirements.md
 .claude/

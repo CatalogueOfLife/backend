@@ -3,11 +3,12 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
@@ -16,14 +17,13 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.annotation.Nullable;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
@@ -89,6 +89,11 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void getSimpleInDataset() throws Exception {
+    mapper().getSimpleInDataset(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
+  }
+
+  @Test
   public void processDatasetBareNames() throws Exception {
     assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, null, null), 1);
     assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, Rank.SPECIES, Rank.GENUS), 1);
@@ -146,23 +151,25 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void listRelated() throws Exception {
-    var results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null,null, null);
+    var results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null, null, null,null, null);
     assertEquals(1, results.size());
     assertEquals("s1", results.getFirst().getId());
 
-    results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null,null, null);
+    results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null, null, null,null, null);
     assertEquals(0, results.size());
 
-    results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false,null,List.of(testDataRule.testData.key), null);
+    results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null, null, null,List.of(testDataRule.testData.key), null);
     assertEquals(1, results.size());
     assertEquals("s1", results.getFirst().getId());
 
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true,null,null, List.of(UUID.randomUUID())).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true,null,List.of(1,2,3), List.of(UUID.randomUUID())).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true,null,List.of(1,2,3), null).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true,List.of(DatasetType.ARTICLE, DatasetType.NOMENCLATURAL),null, List.of(UUID.randomUUID())).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false,null,List.of(1,2,3), List.of(UUID.randomUUID())).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false,null,List.of(1,2,3), null).isEmpty());
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null, null,null,null, List.of(UUID.randomUUID())).isEmpty());
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null, null,null,List.of(1,2,3), List.of(UUID.randomUUID())).isEmpty());
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null, null,null,List.of(1,2,3), null).isEmpty());
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null, null,List.of(DatasetType.ARTICLE, DatasetType.NOMENCLATURAL),null, List.of(UUID.randomUUID())).isEmpty());
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null, null,null,List.of(1,2,3), List.of(UUID.randomUUID())).isEmpty());
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null, null,null,List.of(1,2,3), null).isEmpty());
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, Set.of(2345), null,null,List.of(1,2,3), null).isEmpty());
+    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null, Set.of(DatasetOrigin.PROJECT),null,List.of(1,2,3), null).isEmpty());
 
   }
 

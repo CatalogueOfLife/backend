@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
@@ -75,6 +76,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param key
    */
   SimpleName getSimple(@Param("key") DSID<String> key);
+
+  SimpleNameInDataset getSimpleInDataset(@Param("key") DSID<String> key);
 
   SimpleNameVerbatim getSimpleVerbatim(@Param("key") DSID<String> key);
   /**
@@ -160,16 +163,21 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   /**
    * Returns related name usages based on the same name as matched against the names index.
+   * Only public datasets are included.
    *
    * @param key the key of any name usage
-   * @param latestReleaseOnly if true only return usages from the latest release of the dataset and no other releases or the project itself
-   * @param datasetTypes optional filter by target dataset type
-   * @param datasetKeys optional filter by target dataset keys
-   * @param publisherKeys optional filter by a target GBIF publisher key
+   * @param gbifOnly if true only datasets with a GBIF key are considered
+   * @param nonGbifDatasetKeys optional setting when gbifOnly=true. Set of dataset keys to always consider even if they do not have a gbif key
+   * @param datasetOrigins optional set of dataset origins to consider, ignoring all others
+   * @param datasetTypes optional set of dataset types to consider, ignoring all others
+   * @param datasetKeys optional set of dataset keys to consider, ignoring all others
+   * @param publisherKeys optional set of dataset GBIF publisher keys to consider, ignoring all others
    * @return
    */
   List<SimpleNameInDataset> listRelated(@Param("key") DSID<String> key,
-                                        @Param("latestReleaseOnly") boolean latestReleaseOnly,
+                                        @Param("gbifOnly") boolean gbifOnly,
+                                        @Param("nonGbifDatasetKeys") @Nullable Collection<Integer> nonGbifDatasetKeys,
+                                        @Param("datasetOrigins") @Nullable Collection<DatasetOrigin> datasetOrigins,
                                         @Param("datasetTypes") @Nullable Collection<DatasetType> datasetTypes,
                                         @Param("datasetKeys") @Nullable Collection<Integer> datasetKeys,
                                         @Param("publisherKeys") @Nullable Collection<UUID> publisherKeys);
@@ -210,6 +218,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Warning, this does not count bare names, only true usages!
    */
   Integer countByNamesIndexID(@Param("nidx") int nidx, @Nullable @Param("datasetKey") Integer datasetKey);
+  Integer countByNameID(@Param("nid") String nid, @Nullable @Param("datasetKey") Integer datasetKey);
   Integer countByUsageID(@Param("id") String id);
 
   List<NameUsageBase> listByName(@Param("datasetKey") int datasetKey,

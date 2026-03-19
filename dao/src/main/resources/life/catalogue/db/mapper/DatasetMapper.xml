@@ -357,6 +357,13 @@
     LIMIT #{limit}
   </select>
 
+  <select id="listKeys" resultType="integer">
+    SELECT key
+    FROM dataset
+    WHERE deleted IS NULL
+    ORDER BY key
+  </select>
+
   <select id="searchKeys" resultType="integer">
     SELECT d.key
     FROM <include refid="FROM"/> <include refid="FROM_PROJ"/>

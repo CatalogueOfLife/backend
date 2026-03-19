@@ -5,23 +5,14 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.TempFile;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.EsSetupRule;
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.Query;
-import life.catalogue.junit.PgSetupRule;
+import life.catalogue.es.indexing.NameUsageIndexServiceEs;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
 import life.catalogue.junit.SqlSessionFactoryRule;
-
-import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -49,20 +40,11 @@ public class PgImportESIT extends PgImportITBase {
       esSetupRule.getEsConfig(),
       TempFile.directoryFile(),
       SqlSessionFactoryRule.getSqlSessionFactory());
-    searchService = new NameUsageSearchServiceEs(esSetupRule.getEsConfig().nameUsage.name, esSetupRule.getClient());
+    searchService = new NameUsageSearchServiceEs(esSetupRule.getEsConfig().index.name, esSetupRule.getClient());
   }
 
   NameUsageSearchResponse search(NameUsageSearchRequest query) {
     return searchService.search(query, new Page(Page.MAX_LIMIT));
-  }
-
-  /**
-   * Executes the provided query against the text index. The number of returned documents is capped on {Page#MAX_LIMIT Page.MAX_LIMIT}, so
-   * make sure the provided query will yield less documents.
-   */
-  NameUsageSearchResponse query(Query query) throws IOException {
-    EsSearchRequest req = EsSearchRequest.emptyRequest().where(query).size(Page.MAX_LIMIT);
-    return searchService.search(esSetupRule.getEsConfig().nameUsage.name, req, new Page(Page.MAX_LIMIT));
   }
 
   @Test
@@ -70,7 +52,7 @@ public class PgImportESIT extends PgImportITBase {
     normalizeAndImport(COLDP, 0);
     printTree();
     NameUsageSearchRequest req = new NameUsageSearchRequest();
-    req.setSingleContent(NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME);
+    req.setSingleContent(NameUsageRequest.SearchContent.SCIENTIFIC_NAME);
     req.addFilter(NameUsageSearchParameter.DATASET_KEY, dataset.getKey());
     req.addFacet(NameUsageSearchParameter.STATUS);
     req.addFacet(NameUsageSearchParameter.ISSUE);
@@ -103,14 +85,14 @@ public class PgImportESIT extends PgImportITBase {
     req.addFilter(NameUsageSearchParameter.USAGE_ID, "1001b");
     resp = search(req);
     assertEquals(1, resp.getTotal());
-    NameUsageWrapper nuw = resp.getResult().get(0);
+    NameUsageWrapper nuw = resp.getResult().getFirst();
     assertTrue(nuw.getUsage().isTaxon());
     assertEquals("1001b", nuw.getUsage().getId());
     assertEquals(Rank.SUBSPECIES, nuw.getUsage().getName().getRank());
     assertEquals("Crepis bakeri subsp. cusickii", nuw.getUsage().getName().getScientificName());
     assertEquals("(Eastw.) Babc. & Stebbins", nuw.getUsage().getName().getAuthorship());
     assertEquals("Crepis bakeri subsp. cusickii (Eastw.) Babc. & Stebbins", nuw.getUsage().getLabel());
-    assertEquals("1001", ((NameUsageBase) nuw.getUsage()).getParentId());
+    assertEquals("1001", nuw.getUsage().getParentId());
     assertEquals(7, nuw.getClassification().size());
     assertEquals(List.of(
       new SimpleName("1", "Plantae", Rank.KINGDOM),
@@ -135,7 +117,7 @@ public class PgImportESIT extends PgImportITBase {
     assertEquals("Leonida taraxacoida", nuw.getUsage().getName().getScientificName());
     assertEquals("Vill.", nuw.getUsage().getName().getAuthorship());
     assertEquals("Leonida taraxacoida Vill.", nuw.getUsage().getLabel());
-    assertEquals("1006", ((NameUsageBase) nuw.getUsage()).getParentId());
+    assertEquals("1006", nuw.getUsage().getParentId());
     assertEquals(7, nuw.getClassification().size());
     assertEquals(List.of(
       new SimpleName("1", "Plantae", Rank.KINGDOM),
@@ -146,12 +128,6 @@ public class PgImportESIT extends PgImportITBase {
       new SimpleName("1006", "Leontodon taraxacoides", Rank.SPECIES),
       new SimpleName("1006-1006-s3", "Leonida taraxacoida", Rank.SPECIES)
     ), nuw.getClassification());
-
-    Taxon acc = ((Synonym) nuw.getUsage()).getAccepted();
-    assertEquals("1006", acc.getId());
-    assertEquals("Leontodon taraxacoides", acc.getName().getScientificName());
-    assertEquals("(Vill.) Mérat", acc.getName().getAuthorship());
-    assertEquals("Leontodon taraxacoides (Vill.) Mérat", acc.getLabel());
 
     // test accordingTo
     req.setFilter(NameUsageSearchParameter.USAGE_ID, "Jarvis2007");

@@ -1,14 +1,11 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
-import life.catalogue.doi.service.DataCiteService;
-import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
@@ -23,11 +20,12 @@ import life.catalogue.dw.tasks.ClearCachesTask;
 import life.catalogue.dw.tasks.EventQueueTask;
 import life.catalogue.dw.tasks.ReloadPortalTemplatesTask;
 import life.catalogue.es.EsClientFactory;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.NameUsageSearchService;
-import life.catalogue.es.NameUsageSuggestionService;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.es.EsUtil;
+import life.catalogue.es.indexing.NameUsageIndexService;
+import life.catalogue.es.search.NameUsageSearchService;
+import life.catalogue.es.search.NameUsageSearchServiceEs;
+import life.catalogue.es.suggest.NameUsageSuggestionService;
+import life.catalogue.es.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.event.EventBroker;
 import life.catalogue.feedback.FeedbackService;
 import life.catalogue.img.ImageService;
@@ -56,7 +54,7 @@ import org.apache.hc.core5.util.Timeout;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.eclipse.jetty.ee10.servlet.ServletHandler;
-import org.elasticsearch.client.RestClient;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.RequestEntityProcessing;
@@ -221,7 +219,7 @@ public class WsROServer extends Application<WsServerConfig> {
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
     NameUsageSearchService searchService;
     NameUsageSuggestionService suggestService;
-    final RestClient esClient;
+    final ElasticsearchClient esClient;
     if (cfg.es == null || cfg.es.isEmpty()) {
       esClient = null;
       LOG.warn("No Elastic Search configured, use pass through indexing & searching");
@@ -229,9 +227,9 @@ public class WsROServer extends Application<WsServerConfig> {
       suggestService = NameUsageSuggestionService.passThru();
     } else {
       esClient = new EsClientFactory(cfg.es).createClient();
-      env.lifecycle().manage(ManagedUtils.from(esClient));
-      searchService = new NameUsageSearchServiceEs(cfg.es.nameUsage.name, esClient);
-      suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
+      env.lifecycle().manage(ManagedUtils.from((AutoCloseable) () -> EsUtil.close(esClient)));
+      searchService = new NameUsageSearchServiceEs(cfg.es.index.name, esClient);
+      suggestService = new NameUsageSuggestionServiceEs(cfg.es.index.name, esClient);
     }
 
     // images
@@ -287,7 +285,7 @@ public class WsROServer extends Application<WsServerConfig> {
     broker.register(DatasetInfoCache.CACHE);
   }
 
-  static void registerReadOnlyHealthChecks(Environment env, EventBroker broker, @Nullable RestClient esClient, WsServerConfig cfg) {
+  static void registerReadOnlyHealthChecks(Environment env, EventBroker broker, @Nullable ElasticsearchClient esClient, WsServerConfig cfg) {
     env.healthChecks().register("event-broker", new EventBrokerHealthCheck(broker));
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
     if (esClient != null) {

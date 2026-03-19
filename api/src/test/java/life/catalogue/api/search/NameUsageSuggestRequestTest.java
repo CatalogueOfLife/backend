@@ -13,7 +13,6 @@ public class NameUsageSuggestRequestTest extends SerdeTestBase<NameUsageSuggestR
     NameUsageSuggestRequest req = new NameUsageSuggestRequest();
     req.setQ("Abies");
     req.setAccepted(true);
-    req.setFuzzy(true);
     return req;
   }
 }

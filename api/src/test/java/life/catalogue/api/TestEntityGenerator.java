@@ -443,6 +443,12 @@ public class TestEntityGenerator {
     return (CslData) new RandomInstance().create(CslData.class, CslName.class, CslDate.class);
   }
 
+  public static Synonym newSynonym(Name n, Taxon accepted) {
+    var syn = newSynonym(n, accepted.getId());
+    syn.setAccepted(accepted);
+    return syn;
+  }
+
   public static Synonym newSynonym(Taxon accepted) {
     Name n = newName(accepted.getDatasetKey(), "n-" + ID_GEN.getAndIncrement());
     return newSynonym(n, accepted.getId());
@@ -730,21 +736,40 @@ public class TestEntityGenerator {
     return n;
   }
 
+  public static NameUsageWrapper newNameUsageWrapper(NameUsage usage) {
+    NameUsageWrapper nuw = new NameUsageWrapper(usage);
+    nuw.getUsage().setSectorMode(Sector.Mode.MERGE);
+    nuw.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT, Issue.DISTRIBUTION_AREA_INVALID));
+    nuw.setSectorDatasetKey(42);
+    nuw.setSectorPublisherKey(UUID.randomUUID());
+    nuw.setSecondarySourceGroups(new HashSet<>(Set.of(InfoGroup.AUTHORSHIP, InfoGroup.PUBLISHED_IN)));
+    nuw.setSecondarySourceKeys(new HashSet<>(Set.of(1010,  2123)));
+    nuw.setGroup(TaxGroup.Plants);
+    nuw.setDecisions(List.of(new SimpleDecision(1, 99, EditorialDecision.Mode.REVIEWED)));
+    nuw.setClassification(List.of(
+      SimpleName.sn(Rank.KINGDOM, "Animalia"),
+      SimpleName.sn(Rank.CLASS, "Mammalia"),
+      SimpleName.sn(Rank.ORDER, "Carnivora"),
+      SimpleName.sn(Rank.FAMILY, "Felidae", "Fischer, 1817"),
+      SimpleName.sn(Rank.SUBFAMILY, "Felinae", "Fischer, 1817")
+    ));
+    return copy(nuw);
+  }
+
   public static NameUsageWrapper newNameUsageTaxonWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
     nuw.setUsage(new Taxon(TAXON1));
     nuw.getUsage().setSectorMode(Sector.Mode.MERGE);
     nuw.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT, Issue.DISTRIBUTION_AREA_INVALID));
     nuw.setSectorPublisherKey(UUID.randomUUID());
-    nuw.setSecondarySourceGroups(Set.of(InfoGroup.AUTHORSHIP, InfoGroup.PUBLISHED_IN));
-    nuw.setSecondarySourceKeys(Set.of(1010,  2123));
+    nuw.setSecondarySourceGroups(new HashSet<>(Set.of(InfoGroup.AUTHORSHIP, InfoGroup.PUBLISHED_IN)));
+    nuw.setSecondarySourceKeys(new HashSet<>(Set.of(1010,  2123)));
     return copy(nuw);
   }
 
   public static NameUsageWrapper newNameUsageTaxonWrapperComplete() {
     var nuw = newNameUsageTaxonWrapper();
     nuw.setGroup(TaxGroup.Algae);
-    nuw.setPublisherKey(UUID.randomUUID());
     nuw.setSectorDatasetKey(4567);
     nuw.setDecisions(new ArrayList<>(List.of( // array list to avoid kryo not doing a deep copy
       new SimpleDecision(66, 456, EditorialDecision.Mode.UPDATE),

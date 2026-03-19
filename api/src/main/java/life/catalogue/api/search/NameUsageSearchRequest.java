@@ -19,15 +19,7 @@ import jakarta.ws.rs.QueryParam;
 
 public class NameUsageSearchRequest extends NameUsageRequest {
 
-  public enum SearchContent {
-    SCIENTIFIC_NAME, AUTHORSHIP
-  }
-
   static final Set<SearchContent> DEFAULT_CONTENT = Sets.immutableEnumSet(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP);
-
-  public enum SortBy {
-    NAME, TAXONOMIC, INDEX_NAME_ID, NATIVE, RELEVANCE
-  }
 
   @QueryParam("facet")
   private Set<NameUsageSearchParameter> facets = EnumSet.noneOf(NameUsageSearchParameter.class);
@@ -36,11 +28,16 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @Min(0)
   private Integer facetLimit;
 
+  @QueryParam("facetOffset")
+  @Min(0)
+  private Integer facetOffset;
+
+  @QueryParam("facetMinCount")
+  @Min(0)
+  private Integer facetMinCount;
+
   @QueryParam("content")
   private Set<SearchContent> content = EnumSet.copyOf(DEFAULT_CONTENT);
-
-  @QueryParam("highlight")
-  private boolean highlight;
 
   @QueryParam("type")
   private SearchType searchType;
@@ -55,19 +52,20 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters,
       @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
       @JsonProperty("facetLimit") @Min(0) Integer facetLimit,
+      @JsonProperty("facetOffset") @Min(0) Integer facetOffset,
+      @JsonProperty("facetMinCount") @Min(0) Integer facetMinCount,
       @JsonProperty("content") Set<SearchContent> content,
       @JsonProperty("sortBy") SortBy sortBy,
       @JsonProperty("q") String q,
-      @JsonProperty("highlight") boolean highlight,
       @JsonProperty("reverse") boolean reverse,
-      @JsonProperty("fuzzy") boolean fuzzy,
       @JsonProperty("type") SearchType searchType,
       @JsonProperty("minRank") Rank minRank,
       @JsonProperty("maxRank") Rank maxRank) {
-    super(q, fuzzy, minRank, maxRank, sortBy, reverse);
-    this.highlight = highlight;
+    super(q, minRank, maxRank, sortBy, reverse);
     this.searchType = searchType;
     this.facetLimit = facetLimit;
+    this.facetOffset = facetOffset;
+    this.facetMinCount = facetMinCount;
     setFilters(filters);
     setFacets(facets);
     setContent(content);
@@ -82,9 +80,10 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    */
   public NameUsageSearchRequest(NameUsageSearchRequest other) {
     super(other);
-    this.highlight = other.highlight;
     this.searchType = other.searchType;
     this.facetLimit = other.facetLimit;
+    this.facetOffset = other.facetOffset;
+    this.facetMinCount = other.facetMinCount;
     setFacets(other.facets);
     setContent(other.content);
   }
@@ -107,8 +106,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         (content == null || content.isEmpty())
         && (facets == null || facets.isEmpty())
         && (getFilters() == null || getFilters().isEmpty())
-        && !highlight
-        && !fuzzy
         && searchType == null;
   }
 
@@ -132,6 +129,22 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.facetLimit = facetLimit;
   }
 
+  public Integer getFacetOffset() {
+    return facetOffset;
+  }
+
+  public void setFacetOffset(Integer facetOffset) {
+    this.facetOffset = facetOffset;
+  }
+
+  public Integer getFacetMinCount() {
+    return facetMinCount;
+  }
+
+  public void setFacetMinCount(Integer facetMinCount) {
+    this.facetMinCount = facetMinCount;
+  }
+
   public Set<SearchContent> getContent() {
     return content;
   }
@@ -152,14 +165,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.content = EnumSet.copyOf(DEFAULT_CONTENT);
   }
 
-  public boolean isHighlight() {
-    return highlight;
-  }
-
-  public void setHighlight(boolean highlight) {
-    this.highlight = highlight;
-  }
-
   @Override
   public SearchType getSearchType() {
     return searchType;
@@ -175,15 +180,16 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     if (!(o instanceof NameUsageSearchRequest)) return false;
     if (!super.equals(o)) return false;
     NameUsageSearchRequest that = (NameUsageSearchRequest) o;
-    return highlight == that.highlight
-           && Objects.equals(facets, that.facets)
+    return Objects.equals(facets, that.facets)
            && Objects.equals(facetLimit, that.facetLimit)
+           && Objects.equals(facetOffset, that.facetOffset)
+           && Objects.equals(facetMinCount, that.facetMinCount)
            && Objects.equals(content, that.content)
            && searchType == that.searchType;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), facets, facetLimit, content, highlight, searchType);
+    return Objects.hash(super.hashCode(), facets, facetLimit, facetOffset, facetMinCount, content, searchType);
   }
 }

@@ -27,7 +27,7 @@ import com.codahale.metrics.Timer;
  * The background job executor using a priority ordered queue.
  * It supports notification of errors via email and blocking jobs that depend on a locked access to a single dataset.
  */
-public class JobExecutor implements Managed, Idle {
+public class JobExecutor implements Managed, Idle, SomeExecutor {
   private static final Logger LOG = LoggerFactory.getLogger(JobExecutor.class);
   private static final String METRIC_GROUP_NAME = "jobs";
 
@@ -220,6 +220,7 @@ public class JobExecutor implements Managed, Idle {
     );
   }
 
+  @Override
   public void submit(BackgroundJob job) {
     if (job == null) {
       throw new NullPointerException();

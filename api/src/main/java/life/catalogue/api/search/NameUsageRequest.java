@@ -6,6 +6,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -58,29 +59,40 @@ public abstract class NameUsageRequest {
   /**
    * Symbolic constants for the available search types within the Catalogue of Life.
    */
-  public static enum SearchType {
+  public enum SearchType {
     /**
-     * Matches a search term to the beginning of the epithets within a scientific name. This is the only
+     * Matches a search term to the beginning of the words of a scientific name. This is the only
      * available search type for the suggest service. Whole-word and exact matching defies the purpose
-     * of auto-completion. However, you still have the option of fuzzy/non-fuzzy matching.
+     * of auto-completion.
      */
     PREFIX,
+
     /**
      * Matches a search term to entire epithets within a scientific name.
      */
     WHOLE_WORDS,
+
     /**
-     * Matches the entire search phrase to the entire scientific name. When choosing this type you
-     * cannot also opt for fuzzy matching. The "fuzzy" parameter is silently ignored.
+     * Matches the entire search phrase to the entire scientific name.
      */
-    EXACT
+    EXACT,
+
+    /**
+     * Matches the search phrase to the entire scientific name using a fuzzy algorithm.
+     */
+    FUZZY
+  }
+
+  public enum SearchContent {
+    SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
+  }
+
+  public enum SortBy {
+    NAME, TAXONOMIC, RELEVANCE
   }
 
   @QueryParam("q")
   protected String q;
-
-  @QueryParam("fuzzy")
-  protected boolean fuzzy = false;
 
   @QueryParam("minRank")
   private Rank minRank;
@@ -89,22 +101,19 @@ public abstract class NameUsageRequest {
   private Rank maxRank;
 
   @QueryParam("sortBy")
-  private NameUsageSearchRequest.SortBy sortBy;
+  private SortBy sortBy;
 
   @QueryParam("reverse")
   private boolean reverse;
 
   private EnumMap<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters = new EnumMap<>(NameUsageSearchParameter.class);
 
-  protected String[] searchTerms;
-
 
   public NameUsageRequest() {
   }
 
-  public NameUsageRequest(String q, boolean fuzzy, Rank minRank, Rank maxRank, NameUsageSearchRequest.SortBy sortBy, boolean reverse) {
+  public NameUsageRequest(String q, Rank minRank, Rank maxRank, NameUsageSearchRequest.SortBy sortBy, boolean reverse) {
     this.q = q;
-    this.fuzzy = fuzzy;
     this.minRank = minRank;
     this.maxRank = maxRank;
     this.sortBy = sortBy;
@@ -113,8 +122,6 @@ public abstract class NameUsageRequest {
 
   public NameUsageRequest(NameUsageRequest other) {
     this.q = other.q;
-    this.fuzzy = other.fuzzy;
-    this.searchTerms = other.searchTerms;
     this.minRank = other.minRank;
     this.maxRank = other.maxRank;
     this.sortBy = other.sortBy;
@@ -124,25 +131,6 @@ public abstract class NameUsageRequest {
 
   public void clearFilter(NameUsageSearchParameter param) {
     getFilters().remove(param);
-  }
-
-  public void addFilter(NameUsageSearchParameter param, Integer value) {
-    nonNull(value);
-    addFilter(param, value.toString());
-  }
-
-  public void addFilter(NameUsageSearchParameter param, Enum<?> value) {
-    nonNull(value);
-    addFilter(param, String.valueOf(value.ordinal()));
-  }
-
-  public void addFilter(NameUsageSearchParameter param, UUID value) {
-    nonNull(value);
-    addFilter(param, String.valueOf(value));
-  }
-
-  private void addFilterValue(NameUsageSearchParameter param, Object value) {
-    getFilters().computeIfAbsent(param, k -> new LinkedHashSet<>()).add(value);
   }
 
   /**
@@ -187,7 +175,71 @@ public abstract class NameUsageRequest {
   }
 
   public void setFilters(Map<NameUsageSearchParameter, Set<Object>> filters) {
-    this.filters = filters == null || filters.isEmpty() ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
+    this.filters = new EnumMap<>(NameUsageSearchParameter.class);
+    if (filters != null) {
+      for (Map.Entry<NameUsageSearchParameter, Set<Object>> e : filters.entrySet()) {
+        NameUsageSearchParameter p = e.getKey();
+        Set<Object> vals = e.getValue();
+        if (vals != null) {
+          this.filters.put(p,
+            new HashSet<>(vals.stream().map(v -> toParamType(p,v)).toList())
+          );
+        }
+      }
+    }
+  }
+
+  private Object toParamType(NameUsageSearchParameter param, Object value) {
+    if (value instanceof String) {
+      value = StringUtils.trimToNull(value.toString());
+    }
+    if (value == null || value.equals(IS_NULL)) {
+      return IS_NULL;
+    } else if (value.equals(IS_NOT_NULL)) {
+      return IS_NOT_NULL;
+    } else if (param.type() == value.getClass()) {
+      return value;
+    } else if (param.type() == String.class) {
+      return value.toString();
+    } else if (param.type() == UUID.class) {
+      try {
+        return UUID.fromString(value.toString());
+      } catch (IllegalArgumentException e) {
+        throw illegalValueForParameter(param, value);
+      }
+    } else if (param.type() == Integer.class) {
+      try {
+        return Integer.valueOf(value.toString());
+      } catch (NumberFormatException e) {
+        throw illegalValueForParameter(param, value);
+      }
+    } else if (param.type() == Boolean.class) {
+      if (value.equals("-1") || value.equals("0") || value.toString().equalsIgnoreCase("f") || value.toString().equalsIgnoreCase("false")) {
+        return false;
+      } else if (value.equals("1") || value.toString().equalsIgnoreCase("t") || value.toString().equalsIgnoreCase("true")) {
+        return true;
+      } else {
+        throw illegalValueForParameter(param, value);
+      }
+    } else if (param.type().isEnum()) {
+      try {
+        int i;
+        if (value.getClass() == Integer.class) {
+          i = (int) value;
+        } else {
+          i = Integer.parseInt(value.toString());
+        }
+        if (i < 0 || i >= param.type().getEnumConstants().length) {
+          throw illegalValueForParameter(param, value);
+        }
+        return param.type().getEnumConstants()[i];
+      } catch (NumberFormatException e) {
+        //noinspection unchecked
+        return VocabularyUtils.lookupEnum(value.toString(), (Class<? extends Enum<?>>) param.type());
+      }
+    } else {
+      throw new IllegalArgumentException("Unexpected parameter type: " + param.type());
+    }
   }
 
   public Map<NameUsageSearchParameter, Set<Object>> getFilters() {
@@ -195,6 +247,8 @@ public abstract class NameUsageRequest {
   }
 
   public abstract SearchType getSearchType();
+
+  public abstract Set<NameUsageSearchRequest.SearchContent> getContent();
 
   /**
    * Extracts all query parameters that match a NameSearchParameter and registers them as query
@@ -210,11 +264,15 @@ public abstract class NameUsageRequest {
   }
 
   public void addFilter(NameUsageSearchParameter param, Iterable<?> values) {
-    values.forEach(v -> addFilter(param, v == null ? IS_NULL : v.toString()));
+    values.forEach(v -> addFilter(param, toParamType(param,v)));
   }
 
   public void addFilter(NameUsageSearchParameter param, Object... values) {
-    Arrays.stream(values).forEach(v -> addFilter(param, v == null ? IS_NULL : v.toString()));
+    Arrays.stream(values).forEach(v -> addFilterValue(param, toParamType(param,v)));
+  }
+
+  private void addFilterValue(NameUsageSearchParameter param, Object value) {
+    getFilters().computeIfAbsent(param, k -> new HashSet<>()).add(value);
   }
 
   public void setDatasetFilter(int datasetKey) {
@@ -224,67 +282,16 @@ public abstract class NameUsageRequest {
   /**
    * Sets a single filter, removing any existing filter for the given parameter.
    */
-  public void setFilter(NameUsageSearchParameter param, String value) {
+  public void setFilter(NameUsageSearchParameter param, Object value) {
     getFilters().remove(param);
     addFilter(param, value);
-  }
-
-  /*
-   * Primary usage case - parameter values coming in as strings from the HTTP request. Values are
-   * validated and converted to the type associated with the parameter.
-   */
-  public void addFilter(NameUsageSearchParameter param, String value) {
-    value = StringUtils.trimToNull(value);
-    if (value == null || value.equals(IS_NULL)) {
-      addFilterValue(param, IS_NULL);
-    } else if (value.equals(IS_NOT_NULL)) {
-      addFilterValue(param, IS_NOT_NULL);
-    } else if (param.type() == String.class) {
-      addFilterValue(param, value);
-    } else if (param.type() == UUID.class) {
-      try {
-        var uuid = UUID.fromString(value);
-        addFilterValue(param, uuid);
-      } catch (IllegalArgumentException e) {
-        throw illegalValueForParameter(param, value);
-      }
-    } else if (param.type() == Integer.class) {
-      try {
-        Integer i = Integer.valueOf(value);
-        addFilterValue(param, i);
-      } catch (NumberFormatException e) {
-        throw illegalValueForParameter(param, value);
-      }
-    } else if (param.type() == Boolean.class) {
-      if (value.equals("-1") || value.equals("0") || value.toLowerCase().equals("f") || value.toLowerCase().equals("false")) {
-        addFilterValue(param, false);
-      } else if (value.equals("1") || value.toLowerCase().equals("t") || value.toLowerCase().equals("true")) {
-        addFilterValue(param, true);
-      } else {
-        throw illegalValueForParameter(param, value);
-      }
-    } else if (param.type().isEnum()) {
-      try {
-        int i = Integer.parseInt(value);
-        if (i < 0 || i >= param.type().getEnumConstants().length) {
-          throw illegalValueForParameter(param, value);
-        }
-        addFilterValue(param, Integer.valueOf(i));
-      } catch (NumberFormatException e) {
-        @SuppressWarnings("unchecked")
-        Enum<?> c = VocabularyUtils.lookupEnum(value, (Class<? extends Enum<?>>) param.type());
-        addFilterValue(param, Integer.valueOf(c.ordinal()));
-      }
-    } else {
-      throw new IllegalArgumentException("Unexpected parameter type: " + param.type());
-    }
   }
 
   private static void nonNull(Object value) {
     Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
   }
 
-  private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {
+  private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, Object value) {
     String err = String.format("Illegal value for parameter %s: %s", param, value);
     return new IllegalArgumentException(err);
   }
@@ -292,27 +299,10 @@ public abstract class NameUsageRequest {
   @JsonIgnore
   public boolean isEmpty() {
     return q == null
-      && !fuzzy
       && minRank==null
       && maxRank==null
       && sortBy == null
       && !reverse;
-  }
-
-  /**
-   * The search terms analyzed as appropriate for scientific name searches. Should not be used for
-   * vernacular name and authorship searches. The search terms are derived from the Q and are set
-   * programmatically.
-   * 
-   * @return
-   */
-  @JsonIgnore
-  public String[] getSciNameSearchTerms() {
-    return searchTerms;
-  }
-
-  public void setSciNameSearchTerms(String[] searchTerms) {
-    this.searchTerms = searchTerms;
   }
 
   public boolean hasQ() {
@@ -325,14 +315,6 @@ public abstract class NameUsageRequest {
 
   public void setQ(String q) {
     this.q = q;
-  }
-
-  public boolean isFuzzy() {
-    return fuzzy;
-  }
-
-  public void setFuzzy(boolean fuzzy) {
-    this.fuzzy = fuzzy;
   }
 
   public Rank getMinRank() {
@@ -374,23 +356,18 @@ public abstract class NameUsageRequest {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof NameUsageRequest)) return false;
-    NameUsageRequest that = (NameUsageRequest) o;
-    return fuzzy == that.fuzzy &&
+    if (!(o instanceof NameUsageRequest that)) return false;
+
+    return reverse == that.reverse &&
       Objects.equals(q, that.q) &&
-      Arrays.equals(searchTerms, that.searchTerms) &&
       minRank == that.minRank &&
       maxRank == that.maxRank &&
       sortBy == that.sortBy &&
-      reverse == that.reverse &&
       Objects.equals(filters, that.filters);
   }
 
   @Override
   public int hashCode() {
-    int result = Objects.hash(q, fuzzy, minRank, maxRank, sortBy, reverse, filters);
-    result = 31 * result + Arrays.hashCode(searchTerms);
-    return result;
+    return Objects.hash(q, minRank, maxRank, sortBy, reverse, filters);
   }
 }

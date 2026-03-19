@@ -1,0 +1,268 @@
+Mustelidae G. Fischer von Waldheim, 1817 [family] {ID=L299D CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=180545 VERN=dan:Mårer,eng:mustelids,swe:mårddjur,nob:mårfamilien,fin:näätäeläimet,jpn:イタチ科}
+  =Mustilidae [family] {ID=624PJ CODE=ZOOLOGICAL}
+  Lutrinae Bonaparte, 1838 [subfamily] {ID=628LJ CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=552326 VERN=eng:otters}
+    Aonyx Lesson, 1827 [genus] {ID=XYM CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621802 VERN=eng:African Clawless Otter,eng:African Small-clawed Otter}
+      =Amblonyx Rafinesque, 1832 [genus] {ID=TF4 CODE=ZOOLOGICAL}
+      =Anahyster Murray, 1860 [genus] {ID=LKSNV CODE=ZOOLOGICAL MERGED=true}
+      =Anonyx Agassiz, 1846 [genus] {ID=LHSGS CODE=ZOOLOGICAL MERGED=true}
+      =Aonix Lesson, 1842 [genus] {ID=LSDRZ CODE=ZOOLOGICAL MERGED=true}
+      =Leptonix Lesson, 1842 [genus] {ID=QF8JP CODE=ZOOLOGICAL MERGED=true}
+      =Leptonyx Lesson, 1842 [genus] {ID=QDM8F CODE=ZOOLOGICAL MERGED=true}
+      =Micraonyx Allen, 1919 [genus] {ID=R5GXQ CODE=ZOOLOGICAL MERGED=true}
+      =Paraonyx Hinton, 1921 [genus] {ID=RQYXP CODE=ZOOLOGICAL MERGED=true}
+      Aonyx capensis (Schinz, 1821) [species] {ID=F65C CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621911 VERN=eng:African Clawless Otter,eng:African Small-clawed Otter,eng:Cape Clawless Otter,eng:Congo Clawless Otter,deu:Fingerotter,afr:Groot-otter,deu:Kapotter,fra:Loutre a joues blanches,fra:Loutre à joues blanches,spa:Nutria Africana,spa:Nutria de Cuello Blanco,eng:Swamp Otter}
+        =Anahyster calabaricus Murray, 1860 [species] {ID=66K2R CODE=ZOOLOGICAL}
+        =Aonyx capensis capensis (Schinz, 1821) [subspecies] {ID=7JB85 CODE=ZOOLOGICAL}
+        =Aonyx capensis hindei (Thomas, 1905) [subspecies] {ID=5FP7X CODE=ZOOLOGICAL}
+        =Aonyx capensis meneleki (Thomas, 1903) [subspecies] {ID=5FP7Y CODE=ZOOLOGICAL}
+        =Aonyx capensis microdon Pohle, 1920 [subspecies] {ID=5FP7Z CODE=ZOOLOGICAL}
+        =Aonyx capensis philippsi Hinton, 1921 [subspecies] {ID=5FP82 CODE=ZOOLOGICAL}
+        =Aonyx congicus microdon Pohle, 1920 [subspecies] {ID=5FP87 CODE=ZOOLOGICAL}
+        =Aonyx delalandi Lesson, 1827 [species] {ID=F65G CODE=ZOOLOGICAL}
+        =Lutra capensis Schinz, 1821 [species] {ID=7322N CODE=ZOOLOGICAL}
+        =Lutra inunguis F. G. Cuvier, 1823 [species] {ID=3WGFJ CODE=ZOOLOGICAL}
+        =Lutra lenoiri Rochebrune, 1888 [species] {ID=3WGFQ CODE=ZOOLOGICAL}
+      Aonyx cinereus (Illiger, 1815) [species] {ID=F65D CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=726286 VERN=eng:Asian Small-clawed Otter,deu:Kurzkrallenotter,fra:Loutre cendrée,spa:Nutria Cenicienta,spa:Nutria Inerme Asiatica,eng:Oriental Small-clawed Otter,eng:Small-clawed Otter,deu:Zwergotter}
+        =Amblonyx cinereus (Illiger, 1815) [species] {ID=65ZWR CODE=ZOOLOGICAL}
+        =Aonyx cinerea (Illiger, 1815) [species] {ID=67L4L CODE=ZOOLOGICAL}
+        =Lutra cinerea Illiger, 1815 [species] {ID=3WGF2 CODE=ZOOLOGICAL}
+        Aonyx cinereus cinereus (Illiger, 1815) [subspecies] {ID=5FP83 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727006}
+          =Amblonyx cinereus cinereus (Illiger, 1815) [subspecies] {ID=5FJW6 CODE=ZOOLOGICAL}
+          =Amblyocix sernaria Nelson, 1983 [species] {ID=CM2Y CODE=ZOOLOGICAL}
+          =Aonyx horsfieldii Gray, 1843 [species] {ID=F65H CODE=ZOOLOGICAL}
+          =Leptonyx barang Lesson, 1842 [species] {ID=6PFXX CODE=ZOOLOGICAL}
+          =Lutra leptonyx Horsfield, 1823 [species] {ID=3WGFR CODE=ZOOLOGICAL}
+          =Lutra swinhoei Gray, 1867 [species] {ID=3WGGT CODE=ZOOLOGICAL}
+        Aonyx cinereus concolor (Rafinesque, 1832) [subspecies] {ID=5FP84 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727007}
+          =Amblonyx cinerea fulvus Pohle, 1920 [subspecies] {ID=5FJW5 CODE=ZOOLOGICAL}
+          =Amblonyx cinereus concolor Rafinesque, 1832 [subspecies] {ID=5FJW7 CODE=ZOOLOGICAL}
+          =Amblonyx concolor Rafinesque, 1832 [species] {ID=65ZX3 CODE=ZOOLOGICAL}
+          =Aonyx fulvus Pohle, 1920 [species] {ID=V7XQG MERGED=true}
+          =Aonyx sikimensis Horsfield, 1855 [species] {ID=F65J CODE=ZOOLOGICAL}
+          =Aonyx wurmbi Sody, 1933 [species] {ID=F65K CODE=ZOOLOGICAL}
+          =Lutra indigitatus Hodgson, 1839 [species] {ID=3WGFG CODE=ZOOLOGICAL}
+        Aonyx cinereus nirnai (Pocock, 1940) [subspecies] {ID=5FP85 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727008}
+          =Amblonyx cinereus nirnai Pocock, 1940 [subspecies] {ID=5FJW8 CODE=ZOOLOGICAL}
+        BOLD:ACB0507 [unranked] {ID=F9JB5 MERGED=true LINK=http://bins.boldsystems.org/index.php/Public_BarcodeCluster?clusteruri=BOLD:ACB0507} # Species names applied to this BIN: Aonyx cinerea (61), Lutra lutra (2).
+        BOLD:AEW9407 [unranked] {ID=F9JB6 MERGED=true LINK=http://bins.boldsystems.org/index.php/Public_BarcodeCluster?clusteruri=BOLD:AEW9407} # Species names applied to this BIN: Aonyx cinerea (4).
+      Aonyx congicus (Lönnberg, 1910) [species] {ID=F65F CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621912 VERN=eng:Cameroon Clawless Otter,eng:Congo Clawless Otter,deu:Kleinkrallen-Fingerotter,deu:Kongo-Fingerotter,fra:Loutre à joues blanches du Cameroun,fra:Loutre à joues blanches du Congo,spa:Nutria Inerme de Camerún,fra:Paraonyx tacheté,eng:Small-clawed Otter,eng:Small-toothed Clawless Otter,eng:Zaire Clawless Otter}
+        =Aonyx capensis congica (Lönnberg, 1910) [subspecies] {ID=5FP7W CODE=ZOOLOGICAL}
+        =Aonyx capensis congicus (Lönnberg, 1910) [subspecies] {ID=99Y79 CODE=ZOOLOGICAL}
+        =Aonyx congicus congicus (Lönnberg, 1910) [subspecies] {ID=5FP86 CODE=ZOOLOGICAL}
+        =Lutra congica (Lönnberg, 1910) [species] {ID=V2Q4H CODE=ZOOLOGICAL MERGED=true}
+        =Paraonyx congicus Lönnberg, 1910 [species] {ID=4D6ZM CODE=ZOOLOGICAL}
+    Enhydra Fleming, 1822 [genus] {ID=62RW6 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=180546 VERN=eng:sea otters}
+      =Enhydria Zittel, 1893 [genus] {ID=NCMBD CODE=ZOOLOGICAL MERGED=true}
+      =Enhydris Temminck, 1839 [genus] {ID=NCMM6 CODE=ZOOLOGICAL MERGED=true}
+      =Enhydrus MacLeay, 1925 [genus] {ID=NCNT7 CODE=ZOOLOGICAL MERGED=true}
+      =Enydris Fischer, 1829 [genus] {ID=NK84Z CODE=ZOOLOGICAL MERGED=true}
+      =Euhydris Jordan, 1888 [genus] {ID=P8V4X CODE=ZOOLOGICAL MERGED=true}
+      =Pusa Oken, 1816 [genus] {ID=S5H58 CODE=ZOOLOGICAL MERGED=true}
+      Enhydra fluctuans [species] {ID=VBHQ6 CODE=BOTANICAL MERGED=true LINK=https://treatment.plazi.org/id/D466EDCCD7B2C6DDFF69061820FA0450 VERN=eng:Helencha}
+      Enhydra lutris (Linnaeus, 1758) [species] {ID=39TWB CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=180547 VERN=fra:Loutre de mer,deu:Meerotter,spa:Nutria Marina,spa:Nutria del Kamtchatka,eng:Sea Otter,jpn:ラッコ}
+        =Mustela lutris Linnaeus, 1758 [species] {ID=44QXM CODE=ZOOLOGICAL}
+        BOLD:AAF7438 [unranked] {ID=F9J9Z MERGED=true LINK=http://bins.boldsystems.org/index.php/Public_BarcodeCluster?clusteruri=BOLD:AAF7438} # Species names applied to this BIN: Enhydra lutris (5).
+        Enhydra lutris kenyoni Wilson, 1991 [subspecies] {ID=5H4F5 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=622038 VERN=eng:Eastern Sea Otter,eng:Northern Sea Otter}
+        Enhydra lutris lutris (Linnaeus, 1758) [subspecies] {ID=5H4F6 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=202389 VERN=eng:Sea Otter,eng:Western Sea Otter}
+          =Enhydra lutris kamtschatica Dybowski, 1922 [subspecies] {ID=5H4F4 CODE=ZOOLOGICAL}
+          =Lutra gracilis Bechstein, 1800 [species] {ID=3WGFB CODE=ZOOLOGICAL}
+          =Lutra marina Erxleben, 1777 [species] {ID=3WGFX CODE=ZOOLOGICAL}
+          =Lutra stelleri Lesson, 1827 [species] {ID=3WGGR CODE=ZOOLOGICAL}
+          =Pusa orientalis Oken, 1816 [species] {ID=4QKSN CODE=ZOOLOGICAL}
+        Enhydra lutris nereis (Merriam, 1904) [subspecies] {ID=5H4F7 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=202390 VERN=eng:Southern Sea Otter}
+          =Latax lutris nereis Merriam, 1904 [subspecies] {ID=5J9SB CODE=ZOOLOGICAL}
+    †Enhydriodon Falconer, 1868 [genus] {ID=NCML7 CODE=ZOOLOGICAL MERGED=true ENV=MARINE LINK=https://www.irmng.org/aphia.php?p=taxdetails&id=1013396}
+      Enhydriodon falconeri Pilgrim, 1931 [species] {ID=NCMLK CODE=ZOOLOGICAL MERGED=true LINK=https://treatment.plazi.org/id/FD0C1313FFBEA914FF1EFCDAAB17252B}
+    Hydrictis Pocock, 1921 [genus] {ID=4ZQC CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621844 VERN=eng:spotted-necked otters}
+      =Hydrogale Gray, 1865 [genus] {ID=PTJ4X CODE=ZOOLOGICAL MERGED=true}
+      Hydrictis maculicollis (Lichtenstein, 1835) [species] {ID=3N527 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=622024 VERN=deu:Fleckenhals-Otter,afr:Klein Otter,fra:Loutre a cou tacheté,fra:Loutre à cou tacheté,spa:Nutria de Cuello Manchado,eng:Speckle-throated Otter,eng:Spot-necked Otter,eng:Spotted-necked Otter}
+        =Hydrictis maculicollis chobiensis (Roberts, 1932) [subspecies] {ID=5HZSZ CODE=ZOOLOGICAL}
+        =Hydrictis maculicollis kivuana (Pohle, 1920) [subspecies] {ID=5HZT2 CODE=ZOOLOGICAL}
+        =Hydrictis maculicollis maculicollis (Lichtenstein, 1835) [subspecies] {ID=5HZT3 CODE=ZOOLOGICAL}
+        =Hydrictis maculicollis matschiei (Cabrera, 1903) [subspecies] {ID=5HZT4 CODE=ZOOLOGICAL}
+        =Hydrictis maculicollis nilotica (Thomas, 1911) [subspecies] {ID=5HZT5 CODE=ZOOLOGICAL}
+        =Lutra grayii Gerrard, 1862 [species] {ID=3WGFC CODE=ZOOLOGICAL}
+        =Lutra maculicollis nilotica Thomas, 1911 [subspecies] {ID=5JFSN CODE=ZOOLOGICAL}
+        =Lutra maculicollis Lichtenstein, 1835 [species] {ID=3WGFW CODE=ZOOLOGICAL}
+        =Lutra matschiei Cabrera, 1903 [species] {ID=3WGFY CODE=ZOOLOGICAL}
+        BOLD:AAX2386 [unranked] {ID=F9JB8 MERGED=true LINK=http://bins.boldsystems.org/index.php/Public_BarcodeCluster?clusteruri=BOLD:AAX2386} # Species names applied to this BIN: Hydrictis maculicollis (1).
+    Lontra Gray, 1843 [genus] {ID=5GFR CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=180548 VERN=eng:river otters}
+      =Lataxia Gervais, 1855 [genus] {ID=QBQMN CODE=ZOOLOGICAL MERGED=true}
+      =Latax Gray, 1843 [genus] {ID=QBQLR CODE=ZOOLOGICAL MERGED=true}
+      Lontra canadensis (Schreber, 1777) [species] {ID=3VZKQ CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=180549 VERN=eng:Common Otter,deu:Flußotter,fra:Loutre de Cánada,fra:Loutre de rivière,fra:Loutre du Canada,deu:Nordamerikanischer Fischotter,eng:North American Otter,eng:North American River Otter,eng:Northern River Otter,spa:Nutria Norteamericana,spa:Nutria de Canadá,spa:Nutria del Cánada,eng:River Otter}
+        =Lutra canadensis (Schreber, 1777) [species] {ID=72Q2N CODE=ZOOLOGICAL}
+        =Mustela lutra canadensis Schreber, 1777 [subspecies] {ID=5JSF5 CODE=ZOOLOGICAL}
+        =Mustela lutra Schreber, 1777 [species] {ID=QW3QQ CODE=ZOOLOGICAL MERGED=true}
+        BOLD:AAD6375 [unranked] {ID=F9JB7 MERGED=true LINK=http://bins.boldsystems.org/index.php/Public_BarcodeCluster?clusteruri=BOLD:AAD6375} # Species names applied to this BIN: Lontra canadensis (7).
+        Lontra canadensis canadensis (Schreber, 1777) [subspecies] {ID=5JF3J CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727009}
+          =Lutra americana Wyman, 1847 [species] {ID=72Q32 CODE=ZOOLOGICAL}
+          =Lutra canadensis chimo Anderson, 1945 [subspecies] {ID=5JFRM CODE=ZOOLOGICAL}
+          =Lutra degener Bangs, 1898 [species] {ID=3WGF4 CODE=ZOOLOGICAL}
+          =Lutra destructor Barnston, 1863 [species] {ID=3WGF5 CODE=ZOOLOGICAL}
+          =Mustela hudsonica Desmarest, 1803 [species] {ID=44QX4 CODE=ZOOLOGICAL}
+        Lontra canadensis kodiacensis (Goldman, 1935) [subspecies] {ID=5JF3K CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727010}
+          =Lutra canadensis kodiacensis Goldman, 1935 [subspecies] {ID=5JFRR CODE=ZOOLOGICAL}
+        Lontra canadensis lataxina (F. G. Cuvier, 1823) [subspecies] {ID=5JF3L CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727011}
+          =Lataxina mollis Gray, 1843 [species] {ID=3SHX7 CODE=ZOOLOGICAL}
+          =Lutra canadensis interior Swenk, 1920 [subspecies] {ID=5JFRQ CODE=ZOOLOGICAL}
+          =Lutra canadensis texensis Goldman, 1935 [subspecies] {ID=5JFRW CODE=ZOOLOGICAL}
+          =Lutra hudsonica lataxina F. G. Cuvier, 1823 [subspecies] {ID=5JFRY CODE=ZOOLOGICAL}
+          =Lutra hudsonica vaga Bangs, 1898 [subspecies] {ID=5JFS3 CODE=ZOOLOGICAL}
+          =Lutra lataxina F. G. Cuvier, 1823 [species] {ID=3WGFM CODE=ZOOLOGICAL}
+          =Lutra parviceps Gidley & Gazin, 1933 [species] {ID=3WGGD CODE=ZOOLOGICAL}
+          =Lutra rhoadsi Cope, 1897 [species] {ID=3WGGK CODE=ZOOLOGICAL}
+        Lontra canadensis mira (Goldman, 1935) [subspecies] {ID=5JF3M CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727012}
+          =Lutra mira Goldman, 1935 [species] {ID=3WGG3 CODE=ZOOLOGICAL}
+          =Lutra vancouverensis Goldman, 1935 [species] {ID=3WGGV CODE=ZOOLOGICAL}
+        Lontra canadensis pacifica (Rhoads, 1898) [subspecies] {ID=5JF3N CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727013}
+          =Lutra canadensis brevipilosus Grinnell, 1914 [subspecies] {ID=5JFRL CODE=ZOOLOGICAL}
+          =Lutra canadensis evexa Goldman, 1935 [subspecies] {ID=5JFRN CODE=ZOOLOGICAL}
+          =Lutra canadensis extera Goldman, 1935 [subspecies] {ID=5JFRP CODE=ZOOLOGICAL}
+          =Lutra canadensis nexa Goldman, 1935 [subspecies] {ID=5JFRS CODE=ZOOLOGICAL}
+          =Lutra canadensis optiva Goldman, 1935 [subspecies] {ID=5JFRT CODE=ZOOLOGICAL}
+          =Lutra canadensis preblei Goldman, 1935 [subspecies] {ID=7JZ3V CODE=ZOOLOGICAL}
+          =Lutra canadensis yukonensis Goldman, 1935 [subspecies] {ID=5JFRX CODE=ZOOLOGICAL}
+          =Lutra hudsonica pacifica Rhoads, 1898 [subspecies] {ID=5JFRZ CODE=ZOOLOGICAL}
+        Lontra canadensis periclyzomae (Elliot, 1905) [subspecies] {ID=5JF3P CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727014}
+          =Lutra periclyzomae Elliot, 1905 [species] {ID=7322L CODE=ZOOLOGICAL}
+        Lontra canadensis sonora (Rhoads, 1898) [subspecies] {ID=5JF3Q CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727015 VERN=eng:Sonoran River Otter,eng:Southwestern Otter}
+          =Lutra canadensis sonora Rhoads, 1898 [subspecies] {ID=5JFRV CODE=ZOOLOGICAL}
+          =Lutra hudsonica sonora Rhoads, 1898 [subspecies] {ID=5JFS2 CODE=ZOOLOGICAL}
+      Lontra felina (Molina, 1782) [species] {ID=3VZKR CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621913 VERN=spa:Anzumo,spa:Chinchimen,spa:Chingungo,spa:Gato Marino,spa:Gato de Mar,spa:Huallaca,fra:Loutre de mer,eng:Marine Otter,spa:Nutria de Mar,eng:Sea Cat,spa:chungungo}
+        =Lutra brachydactyla Wagner, 1841 [species] {ID=6QQ2N CODE=ZOOLOGICAL}
+        =Lutra californica Gray, 1837 [species] {ID=72PQN CODE=ZOOLOGICAL}
+        =Lutra felina (Molina, 1782) [species] {ID=3WGF9 CODE=ZOOLOGICAL}
+        =Lutra montana Tschudi, 1844 [species] {ID=3WGG5 CODE=ZOOLOGICAL}
+        =Lutra peruviensis Gervais, 1841 [species] {ID=3WGGF CODE=ZOOLOGICAL}
+        =Mustela chilensis Kerr, 1792 [species] {ID=44QWC CODE=ZOOLOGICAL}
+        =Mustela felina Molina, 1782 [species] {ID=44QWK CODE=ZOOLOGICAL}
+      Lontra longicaudis (Olfers, 1818) [species] {ID=3VZKS CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621914 VERN=eng:Amazonian River Otter,srm:Awapuya,spa:Gato de Agua,eng:La Plata Otter,spa:Lobito de Río,spa:Lobito del Plata,eng:Long-tailed Otter,fra:Loutre d'AmériquedDu Sud,fra:Loutre à longue queue,eng:Neotropical Otter,eng:Neotropical River Otter,spa:Nutria De Agua,spa:Perro De Agua,eng:South American River Otter,spa:Taira,nld:langstaartotter,nld:neotropische visotter}
+        =Lutra longicaudis longicaudis Olfers, 1818 [subspecies] {ID=QDMMC CODE=ZOOLOGICAL MERGED=true}
+        =Lutra longicaudis Olfers, 1818 [species] {ID=3WGFS CODE=ZOOLOGICAL}
+        Lontra longicaudis annectens (Major, 1897) [subspecies] {ID=5JF3R CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727017}
+          =Lontra annectens (Forsyth Major, 1897) [species] {ID=Q4YBJ CODE=ZOOLOGICAL MERGED=true VERN=+Póie,ycn:Apatume,Dauroa,Haroro,He wai,Jiituru,Menetsamuito,Mutaca taeú | Mutäka täu,Nandumaga,spa:Nutria | Lobito de río,Piachu,Píka | Pica,Sará,Sucú,Timí,Yenava,spa:nutria | lobito de río DIST=iso:CO} # Elevación (m): 0-3200
+          =Lutra annectens Major, 1897 [species] {ID=73232 CODE=ZOOLOGICAL}
+          =Lutra colombiana J. A. Allen, 1904 [species] {ID=3WGF3 CODE=ZOOLOGICAL}
+          =Lutra emerita Thomas, 1908 [species] {ID=3WGF7 CODE=ZOOLOGICAL}
+          =Lutra latidens J. A. Allen, 1908 [species] {ID=3WGFN CODE=ZOOLOGICAL}
+          =Lutra mesopetes Cabrera, 1924 [species] {ID=3WGFZ CODE=ZOOLOGICAL}
+          =Lutra parilina Thomas, 1914 [species] {ID=3WGGC CODE=ZOOLOGICAL}
+          =Lutra repanda Goldman, 1914 [species] {ID=3WGGJ CODE=ZOOLOGICAL}
+        Lontra longicaudis enudris (F. G. Cuvier, 1823) [subspecies] {ID=5JF3S CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727018}
+          =Lontra enudris (F. Cuvier, 1823) [species] {ID=Q4YDS CODE=ZOOLOGICAL MERGED=true DIST=iso:CO} # Elevación (m): 0-1000
+          =Lutra enudris F. G. Cuvier, 1823 [species] {ID=3WGF8 CODE=ZOOLOGICAL}
+          =Lutra incarum Thomas, 1908 [species] {ID=6R22L CODE=ZOOLOGICAL}
+          =Lutra insularis F. G. Cuvier, 1823 [species] {ID=3WGFH CODE=ZOOLOGICAL}
+          =Lutra mitis Thomas, 1908 [species] {ID=3WGG4 CODE=ZOOLOGICAL}
+        Lontra longicaudis longicaudis (Olfers, 1818) [subspecies] {ID=5JF3T CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=727016}
+          =Lutra latifrons Nehring, 1887 [species] {ID=3WGFP CODE=ZOOLOGICAL}
+          =Lutra platensis Waterhouse, 1838 [species] {ID=3WGGG CODE=ZOOLOGICAL}
+          =Lutra solitaria Wagner, 1842 [species] {ID=3WGGP CODE=ZOOLOGICAL}
+      Lontra provocax (Thomas, 1908) [species] {ID=3VZKT CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621915 VERN=eng:Huillin,spa:Huillín,eng:Large River Otter,spa:Lobito Patagonica,fra:Loutre du Chili,spa:Nutria de Chile,eng:River Wolf,eng:Southern River Otter}
+        =Lutra canadensis provocax (Thomas, 1908) [subspecies] {ID=QDMDL CODE=ZOOLOGICAL MERGED=true LINK=https://www.marinespecies.org/aphia.php?p=taxdetails&id=477320 VERN=eng:southern river otter,eng:southern river otter DIST=mrgid:1925:native}
+        =Lutra provocax Thomas, 1908 [species] {ID=3WGGH CODE=ZOOLOGICAL}
+        =Lutra provoeax Thomas, 1908 [species] {ID=QDMWP CODE=ZOOLOGICAL MERGED=true LINK=https://treatment.plazi.org/id/03AB87D2FFD6585AB8475BE9FB09EEEE}
+    Lutra Brisson, 1762 [genus] {ID=62Y4Q CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=726245 VERN=eng:Eurasian otters}
+      =Latra Zimmermann, 1780 [genus] {ID=PNCX4 CODE=ZOOLOGICAL MERGED=true}
+      =Leutronectes Gray, 1869 [genus] {ID=PZ4H2 CODE=ZOOLOGICAL MERGED=true}
+      =Loutra Schinz, 1824 [genus] {ID=Q8J36 CODE=ZOOLOGICAL MERGED=true}
+      =Lutra Brünnich, 1771 [genus] {ID=62Y52 CODE=ZOOLOGICAL}
+      =Lutris Duméril, 1805 [genus] {ID=QDP7G CODE=ZOOLOGICAL MERGED=true}
+      =Lutrix Rafinesque, 1815 [genus] {ID=QDP8B CODE=ZOOLOGICAL MERGED=true}
+      =Lutronectes Gray, 1867 [genus] {ID=5HF8 CODE=ZOOLOGICAL}
+      =Mamlutraus Herrera, 1899 [genus] {ID=QK77G CODE=ZOOLOGICAL MERGED=true}
+      =Nesolutra Bate, 1935 [genus] {ID=QQ5TR CODE=ZOOLOGICAL MERGED=true}
+      =Palaeoenydris Baryshnikov, 2024 [genus] {ID=V43FM CODE=ZOOLOGICAL MERGED=true}
+      =Sutra Oken, 1838 [genus] {ID=TDHN2 CODE=ZOOLOGICAL MERGED=true}
+      ?Lutra fatimazohrae Geraads, 1997 [species] {ID=QDMH6 CODE=ZOOLOGICAL MERGED=true LINK=http://zoobank.org/f81db689-77b0-4ba3-b616-9b6e77ecd160}
+      Lutra lutra (Linnaeus, 1758) [species] {ID=72PQL CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621916 VERN=eng:Common Otter,cym:Dyfrgwn,eng:Eurasian Otter,deu:Eurasischer Fischotter,eng:European Otter,eng:European River Otter,deu:Fischotter,fra:Loutre de rivière,spa:Nutria Común,eng:Old World Otter,nld:Visotter,gla:biast-dhubh,gla:biastan-dubha,cym:dyfrgi,gla:dòbhrain,gla:dòbhran,sqi:kajka,ita:lontra,ita:lontra comune,fra:loutre commune,fra:loutre d'Europe,sqi:lundra,sqi:lundërza,sqi:lunza,spa:nutria,dnj:odder,nob:oter,eng:otter,lit:paprastoji ūdra,fin:saukko,tur:su samuru,swe:utter,sqi:vidra,bul:vidrа,pol:wydra europejska,pol:wydra zwyczajna,sme:čeavrris,ell:Βίδρα,ell:Ευρωπαϊκή βίδρα,bul:Видра,ukr:Видра річкова,rus:обыкновенная,rus:порешня,rus:речная выдра,heb:לוטרה}
+        =Barangia nepalensis Gray, 1865 [species] {ID=5WC3Z CODE=ZOOLOGICAL}
+        =Lustra vulgaris Erxleben, 1777 [species] {ID=3WFYM CODE=ZOOLOGICAL}
+        =Lutra angustifrons Lataste, 1885 [species] {ID=7322Q CODE=ZOOLOGICAL}
+        =Lutra aurobrunneus Hodgson, 1839 [species] {ID=6QPQN CODE=ZOOLOGICAL}
+        =Lutra chinensis Gray, 1837 [species] {ID=6QPQL CODE=ZOOLOGICAL}
+        =Lutra fluviatilis Leach, 1816 [species] {ID=6QQ2L CODE=ZOOLOGICAL}
+        =Lutra hanensis Matschie, 1907 [species] {ID=3WGFD CODE=ZOOLOGICAL}
+        =Lutra indica Gray, 1837 [species] {ID=3WGFF CODE=ZOOLOGICAL}
+        =Lutra japonica Nehring, 1887 [species] {ID=3WGFK CODE=ZOOLOGICAL}
+        =Lutra kutab Schinz, 1844 [species] {ID=3WGFL CODE=ZOOLOGICAL}
+        =Lutra lutra angustifrons Lataste, 1885 [subspecies] {ID=5JFS4 CODE=ZOOLOGICAL}
+        =Lutra lutra aurobrunnea Hodgson, 1839 [subspecies] {ID=5JFS6 CODE=ZOOLOGICAL}
+        =Lutra lutra aurobrunneus Hodgson, 1839 [subspecies] {ID=BNM96 CODE=ZOOLOGICAL}
+        =Lutra lutra barang F. G. Cuvier, 1823 [subspecies] {ID=5JFS7 CODE=ZOOLOGICAL}
+        =Lutra lutra ceylonica Pohle, 1920 [subspecies] {ID=5JFS8 CODE=ZOOLOGICAL}
+        =Lutra lutra chinensis Gray, 1837 [subspecies] {ID=5JFS9 CODE=ZOOLOGICAL}
+        =Lutra lutra hainana Xu & Lu, 1983 [subspecies] {ID=7JZ47 CODE=ZOOLOGICAL}
+        =Lutra lutra kutab Schinz, 1844 [subspecies] {ID=5JFSB CODE=ZOOLOGICAL}
+        =Lutra lutra lutra (Linnaeus, 1758) [subspecies] {ID=5JFSC CODE=ZOOLOGICAL}
+        =Lutra lutra lutra Kishida & Mori, 1931 [subspecies] {ID=BNM9C CODE=ZOOLOGICAL MERGED=true}
+        =Lutra lutra meridionalis Ognev, 1931 [subspecies] {ID=5JFSD CODE=ZOOLOGICAL}
+        =Lutra lutra monticola Hodgson, 1839 [subspecies] {ID=5JFSF CODE=ZOOLOGICAL}
+        =Lutra lutra monticolus Hodgson, 1839 [subspecies] {ID=BNM9F CODE=ZOOLOGICAL}
+        =Lutra lutra nair F. G. Cuvier, 1823 [subspecies] {ID=5JFSG CODE=ZOOLOGICAL}
+        =Lutra lutra nippon Imaizumi & Yoshiyuki, 1989 [subspecies] {ID=5JFSH CODE=ZOOLOGICAL}
+        =Lutra lutra oxiana Birula, 1915 [subspecies] {ID=5JFSJ CODE=ZOOLOGICAL}
+        =Lutra lutra piscatoria (Kerr, 1792) [infraspecific_name] {ID=V7XQS MERGED=true}
+        =Lutra lutra seistanica Birula, 1913 [subspecies] {ID=5JFSK CODE=ZOOLOGICAL}
+        =Lutra lutra splendida Cabrera, 1906 [subspecies] {ID=5JFSL CODE=ZOOLOGICAL}
+        =Lutra lutra whiteleyi (Gray, 1867) [subspecies] {ID=5JFSM CODE=ZOOLOGICAL}
+        =Lutra monticolus Hodgson, 1839 [species] {ID=3WGG6 CODE=ZOOLOGICAL}
+        =Lutra nair F. G. Cuvier, 1823 [species] {ID=3WGG7 CODE=ZOOLOGICAL}
+        =Lutra nippon Imaizumi & Yoshiyuki, 1989 [species] {ID=3WGG8 CODE=ZOOLOGICAL}
+        =Lutra nudipes Melchior, 1834 [species] {ID=3WGG9 CODE=ZOOLOGICAL}
+        =Lutra piscatoria [species] {ID=DNBMG MERGED=true}
+        =Lutra roensis Ogilby, 1834 [species] {ID=3WGGL CODE=ZOOLOGICAL}
+        =Lutra sinensis Trouessart, 1897 [species] {ID=3WGGN CODE=ZOOLOGICAL}
+        =Lutra stejnegeri Goldman, 1936 [species] {ID=3WGGQ CODE=ZOOLOGICAL}
+        =Lutra vulgaris amurensis Dybowski, 1922 [subspecies] {ID=5JFSP CODE=ZOOLOGICAL}
+        =Lutra vulgaris baicalensis Dybowski, 1922 [subspecies] {ID=5JFSQ CODE=ZOOLOGICAL}
+        =Lutra vulgaris kamtschatica Dybowski, 1922 [subspecies] {ID=5JFSR CODE=ZOOLOGICAL}
+        =Lutra vulgaris marinus Billberg, 1827 [subspecies] {ID=5JFSS CODE=ZOOLOGICAL}
+        =Lutronectes whiteleyi Gray, 1867 [species] {ID=3WGKJ CODE=ZOOLOGICAL}
+        =Mustela lutra piscatoria Kerr, 1792 [subspecies] {ID=5JSF7 CODE=ZOOLOGICAL}
+        =Mustela lutra Linnaeus, 1758 [species] {ID=44QXH CODE=ZOOLOGICAL}
+        =Viverra lutra Linnaeus, 1758 [species] {ID=TVF53 CODE=ZOOLOGICAL MERGED=true}
+        BOLD:AAF0193 [unranked] {ID=F9JB3 MERGED=true LINK=http://bins.boldsystems.org/index.php/Public_BarcodeCluster?clusteruri=BOLD:AAF0193} # Species names applied to this BIN: Lutra lutra (13).
+      ?Lutra procovax Thomas, 1908 [species] {ID=QDMWJ CODE=ZOOLOGICAL MERGED=true LINK=http://zoobank.org/d2a394a1-1cb6-43a0-802d-821fdd0efd8e}
+      Lutra sumatrana (Gray, 1865) [species] {ID=3WGGS CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621918 VERN=eng:Hairy-nosed Otter,fra:Loutre de Sumatra,spa:Nutria de Sumatra}
+        =Barangia sumatrana Gray, 1865 [species] {ID=68BRZ CODE=ZOOLOGICAL}
+        BOLD:ADW8467 [unranked] {ID=F9JB4 MERGED=true LINK=http://bins.boldsystems.org/index.php/Public_BarcodeCluster?clusteruri=BOLD:ADW8467} # Species names applied to this BIN: Lutra sumatrana (2).
+    Lutrogale Gray, 1865 [genus] {ID=5HF7 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621803 VERN=eng:smooth-coated otters}
+      =Isolalutra Symeonidis & Sondaar, 1975 [genus] {ID=PQ6G6 CODE=ZOOLOGICAL MERGED=true}
+      =Lutrogale Gray, 1865 [subgenus] {ID=8NR5Y CODE=ZOOLOGICAL}
+      Lutrogale perspicillata (I. Geoffroy Saint-Hilaire, 1826) [species] {ID=3WGKH CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621919 VERN=eng:Indian Smooth-coated Otter,fra:Loutre d'Asie,spa:Nutria Lisa,spa:Nutria Simung,eng:Smooth-coated Otter,tur:duz kurklu susamuru}
+        =Lutra perspicillata I. Geoffroy Saint-Hilaire, 1826 [species] {ID=QDMW2 CODE=ZOOLOGICAL}
+        =Lutrogale macrodus Gray, 1865 [species] {ID=V7XQR MERGED=true}
+        BOLD:ADW0125 [unranked] {ID=F9JCF MERGED=true LINK=http://bins.boldsystems.org/index.php/Public_BarcodeCluster?clusteruri=BOLD:ADW0125} # Species names applied to this BIN: Lutrogale perspicillata (3).
+        Lutrogale perspicillata maxwelli Hayman, 1957 [subspecies] {ID=5JFT4 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=933407}
+        Lutrogale perspicillata perspicillata (I. Geoffroy Saint-Hilaire, 1826) [subspecies] {ID=5JFT5 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=622080}
+          =Lutra ellioti Anderson, 1879 [species] {ID=3WGF6 CODE=ZOOLOGICAL}
+          =Lutra macrodus Gray, 1879 [species] {ID=3WGFV CODE=ZOOLOGICAL}
+          =Lutra simung Lesson, 1827 [species] {ID=3WGGM CODE=ZOOLOGICAL}
+          =Lutra tarayensis Hodgson, 1839 [species] {ID=6QPQM CODE=ZOOLOGICAL}
+        Lutrogale perspicillata sindica Pocock, 1940 [subspecies] {ID=5JFT6 CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=622079}
+    Pteronura Gray, 1837 [genus] {ID=74SX CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=621804 VERN=eng:giant otters}
+      =Craspedura Gray, 1869 [genus] {ID=N2XKG CODE=ZOOLOGICAL MERGED=true}
+      =Pterura Wiegmann, 1838 [genus] {ID=SLLFM CODE=ZOOLOGICAL MERGED=true}
+      =Saricovia Lesson, 1842 [genus] {ID=SQV9S CODE=ZOOLOGICAL MERGED=true}
+      =Suricoria Palmer, 1904 [genus] {ID=TD62X CODE=ZOOLOGICAL MERGED=true}
+      Pteronura brasiliensis (Zimmermann, 1780) [species] {ID=4PZZS CODE=ZOOLOGICAL LINK=https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=1086352 VERN=eng:Giant Otter,fra:Loutre géante,deu:Riesenotter}
+        =Lutra brasiliana Shaw, 1800 [species] {ID=6R22N CODE=ZOOLOGICAL}
+        =Lutra brasiliensis (Gmelin, 1788) [species] {ID=QDM9L CODE=ZOOLOGICAL MERGED=true}
+        =Lutra brasiliensis Zimmermann, 1780 [species] {ID=C3MR3 CODE=ZOOLOGICAL}
+        =Lutra lupina Schinz, 1821 [species] {ID=3WGFT CODE=ZOOLOGICAL}
+        =Lutra paraguensis Schinz, 1821 [species] {ID=72Q2L CODE=ZOOLOGICAL}
+        =Lutra paranensis Rengger, 1830 [species] {ID=3WGGB CODE=ZOOLOGICAL}
+        =Mustela brasiliensis Gmelin, 1788 [species] {ID=QW2H8 CODE=ZOOLOGICAL MERGED=true}
+        =Mustela brasilinensis Gmelin, 1788 [species] {ID=QW2HM CODE=ZOOLOGICAL MERGED=true}
+        =Mustela lutris brasiliensis Gmelin, 1788 [subspecies] {ID=5JSFQ CODE=ZOOLOGICAL}
+        =Pteronura brasiliensis brasiliensis (Gmelin, 1788) [subspecies] {ID=5KRV3 CODE=ZOOLOGICAL}
+        =Pteronura brasiliensis paraguensis (Schinz, 1821) [subspecies] {ID=5KRV4 CODE=ZOOLOGICAL}
+        =Pteronura brasiliensis paranensis (Rengger, 1830) [subspecies] {ID=5KRV5 CODE=ZOOLOGICAL}
+        =Pteronura brasiliensis (Gmelin, 1788) [species] {ID=4PZZR CODE=ZOOLOGICAL}
+        =Pteronura sambachii Gray, 1837 [species] {ID=4PZZT CODE=ZOOLOGICAL}
+        =Pterura sanbachii Wiegmann, 1838 [species] {ID=4Q744 CODE=ZOOLOGICAL}
+        BOLD:AAB5101 [unranked] {ID=F9JB2 MERGED=true LINK=http://bins.boldsystems.org/index.php/Public_BarcodeCluster?clusteruri=BOLD:AAB5101} # Species names applied to this BIN: Pteronura brasiliensis (21).
+    †Sivaonyx Pilgrim, 1931 [genus] {ID=T2F5Q CODE=ZOOLOGICAL MERGED=true LINK=https://www.irmng.org/aphia.php?p=taxdetails&id=1335937}
+      Sivaonyx bathygnathus (Lydekker, 1884) GSI K [species] {ID=T2F5S CODE=ZOOLOGICAL MERGED=true LINK=https://treatment.plazi.org/id/FD0C1313FFBCA916FC62FF7BAAB92669}
+      ?Sivaonyx sarwari Mahmood, Morlo, Abbas, Babar & Khan, 2025 [species] {ID=V2M5Y CODE=ZOOLOGICAL MERGED=true LINK=http://zoobank.org/123ffcdf-ce50-4ae6-ab31-1f563001a874}

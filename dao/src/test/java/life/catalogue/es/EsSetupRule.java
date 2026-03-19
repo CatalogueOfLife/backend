@@ -1,35 +1,39 @@
 package life.catalogue.es;
 
-import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.config.EsConfig;
+import life.catalogue.config.IndexConfig;
 
-import java.io.IOException;
+import java.time.LocalDate;
 
-import org.elasticsearch.client.RestClient;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 
 /**
  * Spins up an elasticsearch test container.
  * To be used as a ClassRule.
  */
 public class EsSetupRule extends ExternalResource {
-
-  public static String VERSION = "8.15.4";
-
-  /**
-   * Dataset key used by default for tests.
-   */
-  public static final int DATASET_KEY = TestEntityGenerator.DATASET11.getKey();
-
   private static final Logger LOG = LoggerFactory.getLogger(EsSetupRule.class);
+  private static String VERSION = "9.3.0";
 
   private static ElasticsearchContainer CONTAINER;
-  private static String PASSWORD = "ase213HUithbnjk";
+  protected static String PASSWORD = "ase213HUithbnjk";
+  protected static String USER = "elastic";
 
+  private int shards;
   private EsConfig cfg;
-  private RestClient client;
+  private ElasticsearchClient client;
+
+  public EsSetupRule() {
+    this(1);
+  }
+  public EsSetupRule(int shards) {
+    this.shards = shards;
+  }
 
   @Override
   protected void before() throws Throwable {
@@ -37,8 +41,10 @@ public class EsSetupRule extends ExternalResource {
     CONTAINER = setupElastic();
     CONTAINER.start();
     cfg = buildContainerConfig(CONTAINER);
+    System.out.println("ES container using index " + cfg.index.name + " on host " + cfg.hosts);
+
     client = new EsClientFactory(cfg).createClient();
-    LOG.info("Using Elasticsearch on {}:{}", cfg.hosts, cfg.ports);
+    LOG.info("Using Elasticsearch on {}", cfg.hosts);
   }
 
   private ElasticsearchContainer setupElastic() {
@@ -51,22 +57,20 @@ public class EsSetupRule extends ExternalResource {
 
   public EsConfig buildContainerConfig(ElasticsearchContainer container) {
     EsConfig cfg = new EsConfig();
-    cfg.hosts = container.getHost();
-    cfg.ports = container.getFirstMappedPort().toString();
-    cfg.user = "elastic";
+    cfg.hosts = container.getHost() + ":" + container.getFirstMappedPort().toString();
+    cfg.user = USER;
     cfg.password = PASSWORD;
-    cfg.nameUsage = new IndexConfig();
-    cfg.nameUsage.name = "test_name_usage";
-    System.out.println("Postgres container using port " + cfg.ports);
+    cfg.index = new IndexConfig();
+    cfg.index.name = LocalDate.now() + "-" + System.currentTimeMillis();
+    cfg.index.numShards = shards;
+    System.out.println("ES container using hosts " + cfg.hosts);
     return cfg;
   }
 
   /**
-   * Returns an Elasticsearch REST client. Do NOT call using try-with-resources block. The client will be torn down by EsSetupRule.
-   * 
-   * @return
+   * Returns the Elasticsearch client. Do NOT call close on this client. It will be torn down by EsSetupRule.
    */
-  public RestClient getClient() {
+  public ElasticsearchClient getClient() {
     return client;
   }
 
@@ -79,8 +83,8 @@ public class EsSetupRule extends ExternalResource {
     super.after();
     if (client != null) {
       try {
-        client.close();
-      } catch (IOException e) {
+        EsUtil.close(client);
+      } catch (java.io.IOException e) {
         throw new RuntimeException(e);
       }
       client = null;

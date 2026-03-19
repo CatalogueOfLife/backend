@@ -215,6 +215,7 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     this.status = status;
   }
 
+  @JsonIgnore
   public String getParent() {
     return parent;
   }
@@ -244,6 +245,7 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     this.group = group;
   }
 
+  @JsonIgnore
   public String getLabel() {
     return strOrNull(appendFullName(new StringBuilder(), false));
   }

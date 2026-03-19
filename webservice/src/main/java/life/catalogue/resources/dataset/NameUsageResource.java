@@ -3,6 +3,7 @@ package life.catalogue.resources.dataset;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.ShortUUID;
@@ -12,10 +13,10 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.NameUsageSearchService;
-import life.catalogue.es.NameUsageSuggestionService;
+import life.catalogue.es.query.InvalidQueryException;
+import life.catalogue.es.indexing.NameUsageIndexService;
+import life.catalogue.es.search.NameUsageSearchService;
+import life.catalogue.es.suggest.NameUsageSuggestionService;
 import life.catalogue.feedback.Feedback;
 import life.catalogue.feedback.FeedbackService;
 import life.catalogue.resources.NameUsageSearchResource;
@@ -70,9 +71,10 @@ public class NameUsageResource {
   public ResultPage<NameUsageBase> list(@PathParam("key") int datasetKey,
                                         @QueryParam("q") String q,
                                         @QueryParam("rank") Rank rank,
+                                        @QueryParam("nid") String nameID,
                                         @QueryParam("nidx") Integer namesIndexID,
                                         @Valid @BeanParam Page page) {
-    return dao.list(datasetKey, q, rank, namesIndexID, page);
+    return dao.list(datasetKey, q, rank, nameID, namesIndexID, page);
   }
 
   @GET
@@ -100,11 +102,12 @@ public class NameUsageResource {
   @Path("{id}/related")
   public List<SimpleNameInDataset> related(@PathParam("key") int datasetKey,
                                          @PathParam("id") String id,
-                                         @QueryParam("latestReleaseOnly") boolean latestReleaseOnly,
+                                         @QueryParam("gbifOnly") boolean gbifOnly,
+                                         @QueryParam("datasetOrigin") List<DatasetOrigin> datasetOrigins,
                                          @QueryParam("datasetType") List<DatasetType> datasetTypes,
                                          @QueryParam("datasetKey") List<Integer> datasetKeys,
                                          @QueryParam("publisherKey") List<UUID> publisherKeys) {
-    return dao.related(datasetKey, id, latestReleaseOnly, datasetTypes, datasetKeys, publisherKeys);
+    return dao.related(datasetKey, id, gbifOnly, null, datasetOrigins, datasetTypes, datasetKeys, publisherKeys);
   }
 
   @GET
@@ -172,7 +175,7 @@ public class NameUsageResource {
 
   @GET
   @Path("search")
-  public ResultPage<NameUsageWrapper> searchDataset(@PathParam("key") int datasetKey,
+  public ResultPage<NameUsageSearchResult> searchDataset(@PathParam("key") int datasetKey,
                                                     @BeanParam NameUsageSearchRequest query,
                                                     @Valid @BeanParam Page page,
                                                     @Context ContainerRequestContext ctx,
@@ -186,7 +189,7 @@ public class NameUsageResource {
 
   @POST
   @Path("search")
-  public ResultPage<NameUsageWrapper> searchPOST(@PathParam("key") int datasetKey,
+  public ResultPage<NameUsageSearchResult> searchPOST(@PathParam("key") int datasetKey,
                                                  @Valid NameUsageSearchResource.SearchRequestBody req,
                                                  @Context ContainerRequestContext ctx,
                                                  @Context UriInfo uri) throws InvalidQueryException {

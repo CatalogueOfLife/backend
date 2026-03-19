@@ -37,8 +37,8 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
   public NameUsageSearchRequest genTestValue() throws Exception {
     NameUsageSearchRequest s = new NameUsageSearchRequest();
     s.setQ("Abies");
-    s.setContent(new HashSet<>(Arrays.asList(NameUsageSearchRequest.SearchContent.AUTHORSHIP)));
-    s.setSortBy(NameUsageSearchRequest.SortBy.TAXONOMIC);
+    s.setContent(new HashSet<>(Arrays.asList(NameUsageRequest.SearchContent.AUTHORSHIP)));
+    s.setSortBy(NameUsageRequest.SortBy.TAXONOMIC);
     s.addFilter(NameUsageSearchParameter.NOM_STATUS, NomStatus.MANUSCRIPT);
     s.addFilter(NameUsageSearchParameter.NOM_STATUS, NomStatus.CHRESONYM);
     return s;
@@ -83,9 +83,9 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
   @Test
   public void jsonConstructor() {
     // all nulls
-    NameUsageSearchRequest r = new NameUsageSearchRequest(null,null,null,null,null,null,false,false,false,null,null,null);
+    NameUsageSearchRequest r = new NameUsageSearchRequest(null,null,null,null,null,null,null,null,false,null,null,null);
     // empty collections
-    r = new NameUsageSearchRequest(Map.of(), Set.of(),null,Set.of(),null,null,false,false,false,null,null,null);
+    r = new NameUsageSearchRequest(Map.of(), Set.of(), null, null, null,Set.of(),null,null,false,null,null,null);
   }
 
   @Test
@@ -98,7 +98,7 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
     r.setSingleContent(null);
     assertEquals(r, r.copy());
 
-    r.setContent(Sets.newHashSet(NameUsageSearchRequest.SearchContent.AUTHORSHIP));
+    r.setContent(Sets.newHashSet(NameUsageRequest.SearchContent.AUTHORSHIP));
     assertEquals(r, r.copy());
 
     r.setContent(Sets.newHashSet());
