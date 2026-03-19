@@ -215,6 +215,9 @@ public class NameUsageSearchServiceEs2IT extends EsTestBase {
         // https://github.com/CatalogueOfLife/backend/issues/1466
         resp = search("Crumenaria polygaloides lancifolia", NameUsageRequest.SearchType.WHOLE_WORDS, NameUsageRequest.SortBy.RELEVANCE);
         assertID(resp.getResult().getFirst(), "V56F2"); // the only accepted
+
+        resp = search("Crumenaria polygaloides var. lancifolia", NameUsageRequest.SearchType.WHOLE_WORDS, NameUsageRequest.SortBy.RELEVANCE);
+        assertID(resp.getResult().getFirst(), "V56F2"); // the only accepted
         break;
 
     }
