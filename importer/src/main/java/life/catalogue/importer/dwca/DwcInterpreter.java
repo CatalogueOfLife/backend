@@ -259,6 +259,10 @@ public class DwcInterpreter extends InterpreterBase {
       if ((vn.getLanguage() == null || vn.getLanguage().equalsIgnoreCase("und")) && rec.hasTerm(InatTerm.lexicon)) {
         vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(InatTerm.lexicon)).orNull());
       }
+      // iNat also shares dc:contributor which we add to remarks
+      if (rec.hasTerm(DcTerm.contributor)) {
+        vn.addRemarks("Contributed by " + rec.get(DcTerm.contributor));
+      }
     }
     return vns;
   }
