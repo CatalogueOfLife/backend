@@ -34,14 +34,13 @@ public abstract class CustomArrayAbstractTypeHandler<T> extends BaseTypeHandler<
   
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, List<T> parameter, JdbcType jdbcType) throws SQLException {
-    Object[] pgParams = new Object[parameter.size()];
-    int x = 0;
+    List<Object> pgList = new ArrayList<>();
     for (T p : parameter) {
-      String[] cols = toAttributes(p);
-      pgParams[x] = CustomAbstractTypeHandler.buildPgObject(typeName, cols);
-      x++;
+      if (p != null) {
+        pgList.add(CustomAbstractTypeHandler.buildPgObject(typeName, toAttributes(p)));
+      }
     }
-    Array array = ps.getConnection().createArrayOf(typeName, pgParams);
+    Array array = ps.getConnection().createArrayOf(typeName, pgList.toArray());
     ps.setArray(i, array);
   }
   

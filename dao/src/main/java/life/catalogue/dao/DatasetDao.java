@@ -216,6 +216,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       if (d.getSource() != null && !d.getSource().isEmpty()) {
         try {
           d.getSource().removeIf(java.util.Objects::isNull);
+          // remove null CslName entries within each citation's name lists (can come from CrossRef/CSL-JSON with null array entries)
+          d.getSource().forEach(cite -> {
+            removeNullCslNames(cite.getAuthor());
+            removeNullCslNames(cite.getEditor());
+            removeNullCslNames(cite.getContainerAuthor());
+            removeNullCslNames(cite.getCollectionEditor());
+          });
         } catch (UnsupportedOperationException e) {
           // tests use immutable collections sometimes - ignore
         }
@@ -267,6 +274,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     return c.stream()
             .filter(a -> a != null && !a.isEmpty())
             .collect(Collectors.toList());
+  }
+
+  private static void removeNullCslNames(List<CslName> names) {
+    if (names != null) {
+      names.removeIf(java.util.Objects::isNull);
+    }
   }
 
   private static String buildID(Citation c) {
