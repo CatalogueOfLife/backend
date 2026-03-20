@@ -409,6 +409,16 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     assertFalse("PREFIX simple: 'Felis catus' should return results", search(req).getResult().isEmpty());
     req.addFilter(DATASET_KEY, NameUsageRequest.IS_NULL);
     assertTrue(search(req).getResult().isEmpty());
+
+    req = new NameUsageSearchRequest();
+    req.setQ("Felis s");
+    req.setSearchType(PREFIX);
+    req.setSingleContent(SCIENTIFIC_NAME);
+    assertEquals("PREFIX simple: 'Felis s' should return t7", "t7", search(req).getResult().getFirst().getId());
+
+    // https://github.com/CatalogueOfLife/backend/issues/1331
+    req.setQ("felis s");
+    assertEquals("PREFIX simple: 'felis s' should return t7", "t7", search(req).getResult().getFirst().getId());
   }
 
   @Test

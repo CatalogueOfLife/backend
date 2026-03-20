@@ -127,6 +127,7 @@ public class QTranslator {
         -> boostAcceptedQuery(q -> q
           .prefix(p -> p
             .field(FLD_SCINAME)
+            .caseInsensitive(true)
             .value(request.getQ())
           )
         );

@@ -18,11 +18,14 @@ import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+
+import javax.annotation.Nullable;
 
 /**
  * Interprets a verbatim record and transforms it into a name, taxon and unique references.
@@ -36,6 +39,7 @@ public class DwcInterpreter extends InterpreterBase {
     ALT_ID_TERMS.put(WfoTerm.tplID, Identifier.Scope.TPL);
     ALT_ID_TERMS.put(WfoTerm.ipniID, Identifier.Scope.IPNI);
   }
+  private static final Set<String> IS_TRUE = Set.of("isinvasive", "invasive", "ishybrid", "hybrid");
 
   private final Term idTerm;
   private final Map<String, String> dwcaID2taxonID = new HashMap<>();
@@ -105,8 +109,8 @@ public class DwcInterpreter extends InterpreterBase {
       tp.setTemporalRangeStart(v.get(GbifTerm.livingPeriod));
     }
     // all other flags as properties
-    addProperty(v, GbifTerm.isInvasive, tp.properties);
-    addProperty(v, GbifTerm.isHybrid, tp.properties);
+    addProperty(v, GbifTerm.isInvasive, tp.properties, this::normBoolean);
+    addProperty(v, GbifTerm.isHybrid, tp.properties, this::normBoolean);
     addProperty(v, GbifTerm.ageInDays, tp.properties);
     addProperty(v, GbifTerm.sizeInMillimeters, tp.properties);
     addProperty(v, GbifTerm.massInGrams, tp.properties);
@@ -121,9 +125,25 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   private void addProperty(VerbatimRecord v, Term term, Map<Term, String> properties) {
+    addProperty(v, term, properties, null);
+  }
+
+  private void addProperty(VerbatimRecord v, Term term, Map<Term, String> properties, @Nullable Function<String, String> valueTransformer) {
     if (v.hasTerm(term)) {
-      properties.put(term, v.get(term));
+      String value = valueTransformer == null ? v.get(term) : valueTransformer.apply(v.get(term));
+      properties.put(term, value);
     }
+  }
+
+  private String normBoolean(String value) {
+    if (value == null || value.isEmpty()) {
+      return null;
+    }
+    var bool = SafeParser.parse(BooleanParser.PARSER, value).orNull();
+    if (bool != null) {
+      return bool.toString();
+    }
+    return IS_TRUE.contains(value.toLowerCase().trim()) ? "true" : value;
   }
 
   public List<Taxon> interpretAltIdentifiers(VerbatimRecord v) {
