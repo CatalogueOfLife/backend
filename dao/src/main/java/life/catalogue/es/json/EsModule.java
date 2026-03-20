@@ -67,7 +67,7 @@ public class EsModule extends SimpleModule {
       @JsonSubTypes.Type(value = Synonym.class, name = "S")
   })
   abstract static class NameUsageMixIn {
-    @JsonIgnore abstract String getLabel();
+    @JsonIgnore(false) abstract String getLabel();
     @JsonIgnore abstract String getLabelHtml();
     @JsonIgnore(false) @JsonProperty("nameFields") abstract Set<NameField> nonNullNameFields();
   }

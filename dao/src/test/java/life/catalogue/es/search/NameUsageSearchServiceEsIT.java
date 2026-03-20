@@ -65,6 +65,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
   public static void indexTestData() throws Exception {
     ElasticsearchClient c = esSetup.getClient();
     IndexConfig cfg = esSetup.getEsConfig().index;
+    EsUtil.deleteIndex(c, cfg.name);
     EsUtil.createIndex(c, cfg);
 
     // ---- Dataset 100: ZOOLOGICAL (6 taxa + 1 synonym = 7; plus 1 special taxon = 8) ----
@@ -393,6 +394,21 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     // EXACT type forces SCIENTIFIC_NAME content (done by RequestValidator)
     List<NameUsageSearchResult> results = search(req).getResult();
     assertEquals("EXACT 'Felis catus' should match exactly 1 document", 1, results.size());
+    assertEquals("t6", results.get(0).getId());
+
+    req.setQ("†Felis catus L., 1758 Foo");
+    results = search(req).getResult();
+    assertEquals("EXACT 'Felis catus L., 1758' should match exactly 1 document", 1, results.size());
+    assertEquals("t6", results.get(0).getId());
+
+    req.setQ("Felis catus L., 1758 Foo");
+    results = search(req).getResult();
+    assertEquals("EXACT 'Felis catus L., 1758' should match exactly 1 document", 1, results.size());
+    assertEquals("t6", results.get(0).getId());
+
+    req.setQ("felis catus L., 1758 foo");
+    results = search(req).getResult();
+    assertEquals("EXACT 'Felis catus L., 1758' should match exactly 1 document", 1, results.size());
     assertEquals("t6", results.get(0).getId());
   }
 

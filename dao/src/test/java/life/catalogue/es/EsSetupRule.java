@@ -18,7 +18,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
  */
 public class EsSetupRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(EsSetupRule.class);
-  private static String VERSION = "9.3.0";
+  private static String VERSION = "9.3.1";
 
   private static ElasticsearchContainer CONTAINER;
   protected static String PASSWORD = "ase213HUithbnjk";

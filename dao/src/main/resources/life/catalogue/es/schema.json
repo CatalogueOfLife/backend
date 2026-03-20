@@ -4,6 +4,13 @@
       "max_result_window": 2000000
     },
     "analysis": {
+      "char_filter": {
+        "remove_leading_dagger": {
+          "type": "pattern_replace",
+          "pattern": "^†",
+          "replacement": ""
+        }
+      },
       "filter": {
         "suggest_filter": {
           "type": "edge_ngram",
@@ -37,6 +44,18 @@
             "lowercase",
             "asciifolding",
             "stemmer"
+          ]
+        }
+      },
+      "normalizer": {
+        "dagger_trim_normalizer": {
+          "type": "custom",
+          "char_filter": [
+            "remove_leading_dagger"
+          ],
+          "filter": [
+            "trim",
+            "lowercase"
           ]
         }
       }
@@ -106,7 +125,8 @@
             "type": "keyword"
           },
           "label": {
-            "type": "keyword"
+            "type": "keyword",
+            "normalizer": "dagger_trim_normalizer"
           },
           "nameFields": {
             "type": "keyword"

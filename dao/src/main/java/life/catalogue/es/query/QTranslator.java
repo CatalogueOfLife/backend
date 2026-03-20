@@ -21,6 +21,7 @@ public class QTranslator {
   protected static final String FLD_SCINAME = "usage.name.scientificName";
   static final String FLD_AUTHORSHIP = "usage.name.authorship";
   static final String FLD_VERNACULAR = "vernacularNames.name";
+  static final String FLD_LABEL = "usage.label";
   /**
    * The extra boost to give to exact scientific name or authorship matches.
    */
@@ -111,9 +112,20 @@ public class QTranslator {
 
   public Query buildSciNameExactQuery() {
     return boostAcceptedQuery(q -> q
-      .term(t -> t
-        .field(FLD_SCINAME)
-        .value(request.getQ())
+      .bool(or -> or
+        .should(b -> b.
+          term(t -> t
+            .field(FLD_SCINAME)
+            .value(request.getQ())
+          )
+        )
+        .should(b -> b.
+          term(t -> t
+            .field(FLD_LABEL)
+            .value(request.getQ())
+          )
+        )
+        .minimumShouldMatch("1")
       )
     );
   }
