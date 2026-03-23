@@ -289,7 +289,7 @@ public class AdminResource {
   /**
    * Reindex all datasets which have not been fully indexed before.
    */
-  public BackgroundJob reindexBroken(@Auth User user, @QueryParam("threshold") @DefaultValue("0.95") double threshold) {
+  public BackgroundJob reindexBroken(@Auth User user, @QueryParam("threshold") @DefaultValue("0.98") double threshold) {
     return runJob(new ReindexSchedulerJob(user.getKey(), threshold, factory, exec, searchService, indexService, bus));
   }
 

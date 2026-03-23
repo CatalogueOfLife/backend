@@ -106,7 +106,9 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
     AtomicInteger counter = new AtomicInteger();
     processDatasets( d -> {
       if ( (threshold <= 0 && !d.isComplete())  ||
-           (threshold > 0 && (d.done == 0 || d.percentage() < threshold))
+           (threshold > 0 && (
+             d.done == 0 || d.percentage() < threshold || d.percentage() > 2.0 - threshold
+           ))
       ) {
         var job = buildJob(d.datasetKey);
         exec.submit(job);
