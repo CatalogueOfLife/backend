@@ -8,6 +8,7 @@ import life.catalogue.config.IndexConfig;
 import life.catalogue.es.EsSetupRule;
 import life.catalogue.es.EsTestBase;
 
+import life.catalogue.es.search.NameUsageSearchServiceEs;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.TestDataRule;
 
@@ -32,6 +33,7 @@ public class NameUsageIndexServiceEsTest {
     .around(esSetup);
 
   NameUsageIndexServiceEs service;
+  NameUsageSearchServiceEs search;
   TempFile dir;
   final int datasetKey = 3;
 
@@ -41,6 +43,7 @@ public class NameUsageIndexServiceEsTest {
     var client = esSetup.getClient();
     var cfg = esSetup.getEsConfig();
     service = new NameUsageIndexServiceEs(client, cfg, dir.file, PgSetupRule.getSqlSessionFactory());
+    search = new NameUsageSearchServiceEs(cfg.index.name, client);
     // create empty index
     service.createEmptyIndex();
   }
@@ -48,6 +51,19 @@ public class NameUsageIndexServiceEsTest {
   @After
   public void tearDown() throws IOException {
     dir.close();
+  }
+
+  @Test
+  public void indexAndDeleteDataset() {
+    int num = 0;
+    for (int i=0; i<5; i++) {
+      service.indexDataset(datasetKey);
+      if (num > 0) {
+        assertEquals(num, search.count(datasetKey));
+      } else {
+        num = search.count(datasetKey);
+      }
+    }
   }
 
   @Test

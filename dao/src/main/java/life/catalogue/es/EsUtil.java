@@ -37,6 +37,11 @@ import co.elastic.clients.transport.ElasticsearchTransport;
 public class EsUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
+  private static final String DATASET_KEY_FIELD = FieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.DATASET_KEY);
+  private static final String SECTOR_KEY_FIELD = FieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.SECTOR_KEY);
+  private static final String STATUS_FIELD = FieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.STATUS);
+  private static final String TAXON_ID_FIELD = FieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.TAXON_ID);
+  private static final String USAGE_ID_FIELD = FieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.USAGE_ID);
 
   /**
    * Creates an index using the static schema JSON file (settings + mappings).
@@ -107,18 +112,17 @@ public class EsUtil {
    */
   public static int deleteDataset(ElasticsearchClient client, String index, int datasetKey) {
     return deleteByQuery(client, index,
-      Query.of(q -> q.term(t -> t.field("usage.datasetKey").value(datasetKey))));
+      Query.of(q -> q.term(t -> t.field(DATASET_KEY_FIELD).value(datasetKey))));
   }
 
   /**
    * Removes bare names for the dataset.
    */
   public static int deleteBareNames(ElasticsearchClient client, String index, int datasetKey) {
-    String statusField = FieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.STATUS);
     return deleteByQuery(client, index,
       Query.of(q -> q.bool(b -> b
-        .filter(f -> f.term(t -> t.field("usage.datasetKey").value(datasetKey)))
-        .filter(f -> f.term(t -> t.field(statusField).value(TaxonomicStatus.BARE_NAME.name())))
+        .filter(f -> f.term(t -> t.field(DATASET_KEY_FIELD).value(datasetKey)))
+        .filter(f -> f.term(t -> t.field(STATUS_FIELD).value(TaxonomicStatus.BARE_NAME.name())))
       )));
   }
 
@@ -128,8 +132,8 @@ public class EsUtil {
   public static int deleteSector(ElasticsearchClient client, String index, DSID<Integer> sectorKey) {
     return deleteByQuery(client, index,
       Query.of(q -> q.bool(b -> b
-        .filter(f -> f.term(t -> t.field("usage.datasetKey").value(sectorKey.getDatasetKey())))
-        .filter(f -> f.term(t -> t.field("usage.sectorKey").value(sectorKey.getId())))
+        .filter(f -> f.term(t -> t.field(DATASET_KEY_FIELD).value(sectorKey.getDatasetKey())))
+        .filter(f -> f.term(t -> t.field(SECTOR_KEY_FIELD).value(sectorKey.getId())))
       )));
   }
 
@@ -137,13 +141,12 @@ public class EsUtil {
    * Deletes a taxonomic subtree from a single dataset.
    */
   public static int deleteSubtree(ElasticsearchClient client, String index, DSID<String> root, boolean keepRoot) {
-    String taxonIdField = FieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.TAXON_ID);
     return deleteByQuery(client, index,
       Query.of(q -> q.bool(b -> {
-        b.filter(f -> f.term(t -> t.field("usage.datasetKey").value(root.getDatasetKey())))
-         .filter(f -> f.term(t -> t.field(taxonIdField).value(root.getId())));
+        b.filter(f -> f.term(t -> t.field(DATASET_KEY_FIELD).value(root.getDatasetKey())))
+         .filter(f -> f.term(t -> t.field(TAXON_ID_FIELD).value(root.getId())));
         if (keepRoot) {
-          b.mustNot(mn -> mn.term(t -> t.field("id").value(root.getId())));
+          b.mustNot(mn -> mn.term(t -> t.field(USAGE_ID_FIELD).value(root.getId())));
         }
         return b;
       })));
@@ -164,7 +167,7 @@ public class EsUtil {
       final List<String> batch = ids.subList(from, to);
       deleted += deleteByQuery(client, index,
         Query.of(q -> q.bool(b -> b
-          .filter(f -> f.term(t -> t.field("usage.datasetKey").value(datasetKey)))
+          .filter(f -> f.term(t -> t.field(DATASET_KEY_FIELD).value(datasetKey)))
           .filter(f -> f.terms(ts -> ts.field("id").terms(tv -> tv.value(batch.stream().map(co.elastic.clients.elasticsearch._types.FieldValue::of).toList()))))
         )));
       from = to;
