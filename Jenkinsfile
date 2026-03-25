@@ -9,6 +9,7 @@ pipeline {
   options {
     disableConcurrentBuilds()
     buildDiscarder(logRotator(numToKeepStr: '10'))
+    skipDefaultCheckout(true)   // disables auto checkout - we wipe the workspace here
     skipStagesAfterUnstable()
     timestamps()
   }
@@ -19,9 +20,10 @@ pipeline {
     string(name: 'DEVELOPMENT_VERSION', defaultValue: '', description: 'Development version (optional)')
   }
   stages {
-    stage('Clean workspace') {
+    stage('Checkout') {
       steps {
-        deleteDir()
+        deleteDir()             // clean workspace
+        checkout scm            // fresh clone
       }
     }
 
