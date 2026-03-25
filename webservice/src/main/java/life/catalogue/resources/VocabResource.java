@@ -57,12 +57,9 @@ public class VocabResource {
     LOG.info("Scan for available vocabularies");
     Map<String, Class<Enum>> enums = Maps.newHashMap();
     try {
-      for (Package p : Lists.newArrayList(DatasetOrigin.class.getPackage(), Rank.class.getPackage())) {
-        LOG.debug("Scan package {} for enums", p);
-        for (ClassPath.ClassInfo info : ClassPath.from(getClass().getClassLoader()).getTopLevelClasses(p.getName())) {
-          add(enums, info.load());
-        }
-      }
+      scanVocabPackage(DatasetOrigin.class, enums);
+      scanVocabPackage(Rank.class, enums);
+      scanVocabPackage(Gazetteer.class, enums);
 
       // manually add scattered enums
       for (Class<?> clazz : List.of(
@@ -87,7 +84,15 @@ public class VocabResource {
     Collections.sort(names);
     vocabNames = List.copyOf(names);
   }
-  
+
+  private static void scanVocabPackage(Class cl, Map<String, Class<Enum>> enums) throws IOException {
+    var p = cl.getPackage();
+    LOG.debug("Scan package {} for enums", p);
+    for (ClassPath.ClassInfo info : ClassPath.from(VocabResource.class.getClassLoader()).getTopLevelClasses(p.getName())) {
+      add(enums, info.load());
+    }
+  }
+
   private static void add(Map<String, Class<Enum>> enums, Class<?> clazz) {
     if (clazz.isEnum()) {
       LOG.debug("Adding enum {} to vocabularies", clazz.getSimpleName());
