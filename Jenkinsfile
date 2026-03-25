@@ -19,6 +19,12 @@ pipeline {
     string(name: 'DEVELOPMENT_VERSION', defaultValue: '', description: 'Development version (optional)')
   }
   stages {
+    stage('Clean workspace') {
+      steps {
+        deleteDir()
+      }
+    }
+
     stage('Maven build') {
       when {
         allOf {
@@ -51,7 +57,7 @@ pipeline {
             [configFile(fileId: 'org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig1387378707709',
               variable: 'MAVEN_SETTINGS_XML')]) {
             git 'https://github.com/CatalogueOfLife/backend.git'
-            sh "mvn -s \$MAVEN_SETTINGS_XML -B -Denforcer.skip=true -DskipTests=true -Dskip.surefire.tests=true release:prepare release:perform ${releaseArgs}"
+            sh "mvn -s \$MAVEN_SETTINGS_XML -B -Denforcer.skip=true -DskipTests=true -Dskip.surefire.tests=true release:prepare release:perform -Dtag=v${params.RELEASE_VERSION} ${releaseArgs}"
           }
         }
       }

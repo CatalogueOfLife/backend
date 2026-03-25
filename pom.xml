@@ -15,7 +15,6 @@
     <connection>scm:git:git@github.com:CatalogueOfLife/backend.git</connection>
     <url>https://github.com/CatalogueOfLife/backend</url>
     <developerConnection>scm:git:git@github.com:CatalogueOfLife/backend.git</developerConnection>
-    <tag>HEAD</tag>
   </scm>
 
   <properties>
