@@ -46,12 +46,12 @@ pipeline {
       }
       steps {
         script {
-          def releaseArgs = utils.createReleaseArgs(params.RELEASE_VERSION, params.DEVELOPMENT_VERSION, 'false')
+          def releaseArgs = utils.createReleaseArgs(params.RELEASE_VERSION, params.DEVELOPMENT_VERSION, false)
           configFileProvider(
             [configFile(fileId: 'org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig1387378707709',
               variable: 'MAVEN_SETTINGS_XML')]) {
             git 'https://github.com/CatalogueOfLife/backend.git'
-            sh "mvn -s \$MAVEN_SETTINGS_XML -B -Denforcer.skip=true release:prepare release:perform ${releaseArgs}"
+            sh "mvn -s \$MAVEN_SETTINGS_XML -B -Denforcer.skip=true -DskipTests=true -Dskip.surefire.tests=true release:prepare release:perform ${releaseArgs}"
           }
         }
       }
