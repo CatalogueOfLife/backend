@@ -200,7 +200,6 @@
     <module>doi</module>
     <module>importer</module>
     <module>metadata</module>
-    <module>matching-ws</module>
     <module>parser</module>
     <module>pgcopy</module>
     <module>reader</module>

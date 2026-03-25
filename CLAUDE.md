@@ -75,7 +75,7 @@ The project consists of 13 Maven modules with clear dependency relationships:
 ```
 api → dao → core → importer → webservice
   ↑     ↑     ↑        ↑
-parser, coldp, reader, reader-xls, pgcopy, metadata, doi, matching-ws
+parser, coldp, reader, reader-xls, pgcopy, metadata, doi
 ```
 
 **Module Responsibilities:**
@@ -109,7 +109,6 @@ parser, coldp, reader, reader-xls, pgcopy, metadata, doi, matching-ws
 - **metadata**: Dataset metadata handling (EML XML, DataCite)
 - **doi**: DOI registration with DataCite
 - **pgcopy**: PostgreSQL COPY command utilities for bulk loading
-- **matching-ws**: Standalone Spring Boot name matching service with Lucene indexes
 
 ### Data Flow: Import Pipeline
 
@@ -251,9 +250,6 @@ java -jar target/webservice-1.0-SNAPSHOT.jar export \
 # Via API
 GET /dataset/{key}/export.zip?format=COLDP
 ```
-
-### Running in Docker
-See `matching-ws/README.md` for Docker build examples. Main webservice typically runs via systemd/supervisor, not Docker in production.
 
 ## Important Files
 
