@@ -10,8 +10,19 @@ pipeline {
     skipStagesAfterUnstable()
     timestamps()
   }
+  parameters {
+    separator(name: "release_separator", sectionHeader: "Release Parameters")
+    booleanParam(name: 'RELEASE', defaultValue: false, description: 'Do a Maven release')
+    string(name: 'RELEASE_VERSION', defaultValue: '', description: 'Release version (optional)')
+    string(name: 'DEVELOPMENT_VERSION', defaultValue: '', description: 'Development version (optional)')
+  }
   stages {
     stage('Maven build') {
+      when {
+        allOf {
+          not { expression { params.RELEASE } };
+        }
+      }
       steps {
         withMaven(
           globalMavenSettingsConfig: 'org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig1387378707709',
@@ -20,6 +31,26 @@ pipeline {
           traceability: true
         ) {
           sh '''mvn clean -U -T 4 deploy'''
+        }
+      }
+    }
+
+    stage('Maven release: Main project') {
+      when {
+        allOf {
+          expression { params.RELEASE };
+          branch 'master';
+        }
+      }
+      environment {
+        RELEASE_ARGS = utils.createReleaseArgs(params.RELEASE_VERSION, params.DEVELOPMENT_VERSION, 'false')
+      }
+      steps {
+        configFileProvider(
+          [configFile(fileId: 'org.jenkinsci.plugins.configfiles.maven.GlobalMavenSettingsConfig1387378707709',
+            variable: 'MAVEN_SETTINGS_XML')]) {
+          git 'https://github.com/CatalogueOfLife/backend.git'
+          sh 'mvn -s $MAVEN_SETTINGS_XML -B -Denforcer.skip=true release:prepare release:perform $RELEASE_ARGS'
         }
       }
     }
