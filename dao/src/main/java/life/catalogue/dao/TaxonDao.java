@@ -279,23 +279,32 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       }
     }
 
+  /**
+   * @return highest to lowest rank
+   */
   public List<SimpleName> classificationSimple(DSID<String> key) {
     try (SqlSession session = factory.openSession(true)) {
       return classificationSimple(key, session);
     }
   }
+
+  /**
+   * @return highest to lowest rank
+   */
   private List<SimpleName> classificationSimple(DSID<String> key, SqlSession session) {
     if (!DatasetInfoCache.CACHE.info(key.getDatasetKey()).isProject()) {
       var m = session.getMapper(TaxonMetricsMapper.class).get(key);
       if (m == null) {
         LOG.warn("Missing taxon metrics for {}", key);
       } else {
-        // metrics start with highest to lowest rank - this methods dose it the other way around!
-        Collections.reverse(m.getClassification());
+        // metrics start with highest to lowest rank already
         return m.getClassification();
       }
     }
-    return session.getMapper(TaxonMapper.class).classificationSimple(key);
+    // wrong order, reverse
+    var cl = session.getMapper(TaxonMapper.class).classificationSimple(key);
+    Collections.reverse(cl);
+    return cl;
   }
 
   @Override
@@ -828,7 +837,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     var rank = tax.getRank();
     // lookup lowest concrete parent rank or default to kingdom
     if (rank.otherOrUnranked()) {
-      rank = classificationSimple(key).stream()
+      rank = classificationSimple(key).reversed().stream()
         .map(SimpleName::getRank)
         .filter(Rank::notOtherOrUnranked)
         .findFirst().orElse(Rank.DOMAIN);
