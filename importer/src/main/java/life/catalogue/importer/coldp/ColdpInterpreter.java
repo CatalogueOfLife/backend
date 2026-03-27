@@ -347,7 +347,8 @@ public class ColdpInterpreter extends InterpreterBase {
     }
 
     Optional<ParsedNameUsage> optPNU = nameInterpreter.interpret(v.getRaw(ColdpTerm.ID), v.get(ColdpTerm.rank), Rank.UNRANKED,
-        v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship), v.get(pubInYearTerm),
+        v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
+        v.getFirst(pubInYearTerm, ColdpTerm.namePublishedInYear, ColdpTerm.publishedInYear),
         v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet), v.get(ColdpTerm.cultivarEpithet),
         ColdpTerm.combinationAuthorship, ColdpTerm.combinationExAuthorship, ColdpTerm.combinationAuthorshipYear,
         ColdpTerm.basionymAuthorship, ColdpTerm.basionymExAuthorship,ColdpTerm.basionymAuthorshipYear,
@@ -367,10 +368,10 @@ public class ColdpInterpreter extends InterpreterBase {
       nd.basionymID = v.getRawButNot(ColdpTerm.basionymID, n.getId());
 
       // publishedIn
-      n.setPublishedInPageLink(v.get(pubInPageLinkTerm));
+      n.setPublishedInPageLink(v.getFirst(pubInPageLinkTerm, ColdpTerm.namePublishedInPageLink, ColdpTerm.publishedInPageLink));
       setReference(v, refIdTerm, rid -> {
           n.setPublishedInId(rid);
-          n.setPublishedInPage(v.get(pubInPageTerm));
+          n.setPublishedInPage(v.getFirst(pubInPageTerm, ColdpTerm.namePublishedInPage, ColdpTerm.publishedInPage));
           n.setPublishedInYear(InterpreterUtils.parseNomenYear(pubInYearTerm, v));
       });
       if (optPNU.get().getPublishedIn() != null) {
