@@ -164,9 +164,9 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.gender, n.getGender());
     writer.set(ColdpTerm.etymology, n.getEtymology());
     writer.set(ColdpTerm.nameReferenceID, n.getPublishedInId());
-    writer.set(ColdpTerm.publishedInYear, n.getPublishedInYear());
-    writer.set(ColdpTerm.publishedInPage, n.getPublishedInPage());
-    writer.set(ColdpTerm.publishedInPageLink, n.getPublishedInPageLink());
+    writer.set(ColdpTerm.namePublishedInYear, n.getPublishedInYear());
+    writer.set(ColdpTerm.namePublishedInPage, n.getPublishedInPage());
+    writer.set(ColdpTerm.namePublishedInPageLink, n.getPublishedInPageLink());
     writer.set(ColdpTerm.code, n.getCode());
     writer.set(ColdpTerm.nameStatus, n.getNomStatus());
     writer.set(ColdpTerm.link, n.getLink());

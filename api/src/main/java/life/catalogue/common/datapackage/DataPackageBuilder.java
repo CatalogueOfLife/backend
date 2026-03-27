@@ -6,12 +6,15 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.text.StringUtils;
 
+import org.apache.commons.lang3.Strings;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.UnicodeUtils;
 
+import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -57,34 +60,37 @@ public class DataPackageBuilder {
    * Vocabulary enums by term, then rowType.
    * If ColdpTerm.ID is given for the only rowType then it is assumed it applies to any rowType and is always the same enum.
    */
-  private static final Map<ColdpTerm, Map<ColdpTerm, Class<? extends Enum>>> enums = Map.of(
-    ColdpTerm.code, Map.of(ColdpTerm.ID, NomCode.class),
-    ColdpTerm.country, Map.of(ColdpTerm.ID, Country.class),
-    ColdpTerm.environment, Map.of(ColdpTerm.ID, Environment.class),
-    ColdpTerm.format, Map.of(ColdpTerm.ID, TreatmentFormat.class),
-    ColdpTerm.gazetteer, Map.of(ColdpTerm.ID, Gazetteer.class),
-    ColdpTerm.nameStatus, Map.of(ColdpTerm.ID, NomStatus.class),
-    ColdpTerm.rank, Map.of(ColdpTerm.ID, Rank.class),
-    ColdpTerm.sex, Map.of(ColdpTerm.ID, Sex.class),
+  private static final Map<ColdpTerm, Map<ColdpTerm, Class<? extends Enum<?>>>> enums;
+  static {
+    Map<ColdpTerm, Map<ColdpTerm, Class<? extends Enum<?>>>> map = new HashMap<>(Map.of(
+        ColdpTerm.code, Map.of(ColdpTerm.ID, NomCode.class),
+        ColdpTerm.country, Map.of(ColdpTerm.ID, Country.class),
+        ColdpTerm.environment, Map.of(ColdpTerm.ID, Environment.class),
+        ColdpTerm.format, Map.of(ColdpTerm.ID, TreatmentFormat.class),
+        ColdpTerm.gazetteer, Map.of(ColdpTerm.ID, Gazetteer.class),
+        ColdpTerm.nameStatus, Map.of(ColdpTerm.ID, NomStatus.class),
+        ColdpTerm.rank, Map.of(ColdpTerm.ID, Rank.class),
+        ColdpTerm.sex, Map.of(ColdpTerm.ID, Sex.class)
+    ));
+    map.put(ColdpTerm.type, Map.of(
+        ColdpTerm.Reference, CSLType.class,
+        ColdpTerm.NameRelation, NomRelType.class,
+        ColdpTerm.TaxonConceptRelation, TaxonConceptRelType.class,
+        ColdpTerm.SpeciesInteraction, SpeciesInteractionType.class,
+        ColdpTerm.Media, MediaType.class,
+        ColdpTerm.SpeciesEstimate, EstimateType.class
+    ));
+    map.put(ColdpTerm.status, Map.of(
+        ColdpTerm.Name, NomStatus.class,
+        ColdpTerm.TypeMaterial, TypeStatus.class,
+        ColdpTerm.Synonym, TaxonomicStatus.class,
+        ColdpTerm.Taxon, TaxonomicStatus.class,
+        ColdpTerm.NameUsage, TaxonomicStatus.class,
+        ColdpTerm.Distribution, DistributionStatus.class
+    ));
+    enums = Map.copyOf(map);
+  }
 
-    ColdpTerm.type, Map.of(
-      ColdpTerm.Reference, CSLType.class,
-      ColdpTerm.NameRelation, NomRelType.class,
-      ColdpTerm.TaxonConceptRelation, TaxonConceptRelType.class,
-      ColdpTerm.SpeciesInteraction, SpeciesInteractionType.class,
-      ColdpTerm.Media, MediaType.class,
-      ColdpTerm.SpeciesEstimate, EstimateType.class
-    ),
-    ColdpTerm.status, Map.of(
-      ColdpTerm.Name, NomStatus.class,
-      ColdpTerm.TypeMaterial, TypeStatus.class,
-      ColdpTerm.Synonym, TaxonomicStatus.class,
-      ColdpTerm.Taxon, TaxonomicStatus.class,
-      ColdpTerm.NameUsage, TaxonomicStatus.class,
-      ColdpTerm.Distribution, DistributionStatus.class
-    )
-  );
-  
   private static final Map<ColdpTerm, ForeignKey> foreignKeys = ImmutableMap.<ColdpTerm, ForeignKey>builder()
       .put(ColdpTerm.referenceID, new ForeignKey(ColdpTerm.referenceID, ColdpTerm.Reference, ColdpTerm.ID))
       .put(ColdpTerm.accordingToID, new ForeignKey(ColdpTerm.accordingToID, ColdpTerm.Reference, ColdpTerm.ID))
@@ -97,8 +103,8 @@ public class DataPackageBuilder {
 
   private static final Set<ColdpTerm> required = ImmutableSet.of(ColdpTerm.ID, ColdpTerm.scientificName);
 
-  private Map<ColdpTerm, String> resourceDescriptions = new HashMap<>();
-  private Map<ColdpTerm, Map<ColdpTerm, String>> resourceFieldDescriptions = new HashMap<>();
+  private final Map<ColdpTerm, String> resourceDescriptions = new HashMap<>();
+  private final Map<ColdpTerm, Map<ColdpTerm, String>> resourceFieldDescriptions = new HashMap<>();
 
   private String titleToName(String t) {
     if (StringUtils.hasContent(t)) {
@@ -107,12 +113,56 @@ public class DataPackageBuilder {
     return null;
   }
 
+  public static String bundledColdpSpecs() {
+    try {
+      return Resources.toString("coldp/readme.html");
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public DataPackageBuilder docs() {
+    return docs(bundledColdpSpecs());
+  }
+
   public DataPackageBuilder docs(String html) {
     var doc = Jsoup.parse(html);
     for (var rt : ColdpTerm.RESOURCES.keySet()) {
       readEntity(doc, rt);
     }
+    // updates for NameUsage which shares docs with Taxon/Synonym/Name
+    // and has special name clash variations
+    var fields = resourceFieldDescriptions.get(ColdpTerm.NameUsage);
+    var nFields = resourceFieldDescriptions.get(ColdpTerm.Name);
+    var tFields = resourceFieldDescriptions.get(ColdpTerm.Taxon);
+    var sFields = resourceFieldDescriptions.get(ColdpTerm.Synonym);
+    for (var ft : ColdpTerm.RESOURCES.get(ColdpTerm.NameUsage)) {
+      String docs;
+      switch (ft) {
+        case genericName:
+          docs = nFields.get(ColdpTerm.genus);
+          break;
+        default:
+          docs = getFirstDescription(ft, nFields, tFields, sFields);
+          if (docs == null && ft.name().startsWith("name")) {
+            var nt = ColdpTerm.find(Strings.CS.removeStart(ft.name(), "name"), false);
+            if (nt != null) {
+              docs = getFirstDescription(nt, nFields);
+            }
+          }
+      }
+      fields.put(ft, docs);
+    }
     return this;
+  }
+
+  private String getFirstDescription(ColdpTerm term, Map<ColdpTerm, String>... descriptions) {
+    for (Map<ColdpTerm, String> d : descriptions) {
+      if (d.containsKey(term)) {
+        return d.get(term);
+      }
+    }
+    return null;
   }
 
   private void readEntity(Document doc, ColdpTerm rt) {
@@ -122,24 +172,22 @@ public class DataPackageBuilder {
       LOG.warn("No entity anchor found for {}", rt);
       return;
     }
-    var clsDiv = anchs.get(0).parent();
-    resourceDescriptions.put(rt, getDescription(clsDiv));
+    var entityH2 = anchs.getFirst();
+    resourceDescriptions.put(rt, getDescription(entityH2));
     var fields = new HashMap<ColdpTerm, String>();
     resourceFieldDescriptions.put(rt, fields);
 
-    var sib = clsDiv.nextElementSibling();
+    var sib = entityH2.nextElementSibling();
     while (sib != null) {
-      if (sib.className().equals("markdown-heading")) {
-        if (sib.child(0).nodeName().equals("h2")) {
-          // next class, get out
-          return;
-        }
-        // field
-        if (sib.child(0).nodeName().equals("h4")) {
-          String fieldName = sib.child(0).text();
-          ColdpTerm ft = ColdpTerm.find(fieldName, false);
-          fields.put(ft, getDescription(sib));
-        }
+      if (sib.nodeName().equals("h2")) {
+        // next class, get out
+        return;
+      }
+      // field
+      if (sib.nodeName().equals("h4")) {
+        String fieldName = sib.text();
+        ColdpTerm ft = ColdpTerm.find(fieldName, false);
+        fields.put(ft, getDescription(sib));
       }
       sib = sib.nextElementSibling();
     }
@@ -165,24 +213,38 @@ public class DataPackageBuilder {
     DataPackage p = new DataPackage();
     p.setTitle(pd.getTitle());
     p.setName(titleToName(pd.getTitle()));
-    
+
+    var tr = new TreatmentResource();
     if (pd.getResources() == null || pd.getResources().isEmpty()) {
       // use all as default!
       pd.setResources(ColdpTerm.RESOURCES.keySet().stream()
-          .map(t -> t.name().toLowerCase() + ".tsv")
+          .map(t -> {
+            if (t == ColdpTerm.Treatment) {
+              return tr.getName();
+            } else {
+              return t.name().toLowerCase() + ".tsv";
+            }
+          })
           .collect(Collectors.toList())
       );
     }
     
     for (String res : pd.getResources()) {
-      Resource r = new Resource();
-      r.setPath(resourceUrl(pd.getBase(), res));
-      if (res.toLowerCase().endsWith("csv")) {
-        r.setDialect(Dialect.CSV);
+      Resource r;
+      if (res.equalsIgnoreCase(tr.getName())) {
+        r = tr;
       } else {
-        r.setDialect(Dialect.TSV);
+        r = new Resource();
+        r.setPath(resourceUrl(pd.getBase(), res));
+        if (res.toLowerCase().endsWith("csv")) {
+          r.setDialect(Dialect.CSV);
+        } else {
+          r.setDialect(Dialect.TSV);
+        }
+        var s = buildSchema(res);
+        r.setSchema(s);
+        r.setDescription(resourceDescriptions.get(s.getRowType()));
       }
-      r.setSchema(buildSchema(res));
       p.getResources().add(r);
     }
     return p;
@@ -203,7 +265,6 @@ public class DataPackageBuilder {
     
     Schema s = new Schema();
     s.setRowType(rowType);
-    s.setDescription(resourceDescriptions.get(rowType));
 
     var fieldDescriptions = resourceFieldDescriptions.get(rowType);
 
@@ -212,7 +273,10 @@ public class DataPackageBuilder {
       String format = dataFormats.getOrDefault(t.getType(), Field.FORMAT_DEFAULT);
       Map<String, Object> constraints = new HashMap<>();
       if (enums.containsKey(t)) {
-        constraints.put(Field.CONSTRAINT_KEY_ENUM, enumValues(rowType, t));
+        var values = enumValues(rowType, t);
+        if (!values.isEmpty()) {
+          constraints.put(Field.CONSTRAINT_KEY_ENUM, values);
+        }
       }
       if (required.contains(t)) {
         constraints.put(Field.CONSTRAINT_KEY_REQUIRED, true);

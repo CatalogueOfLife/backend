@@ -324,19 +324,30 @@ public class ColdpInterpreter extends InterpreterBase {
     Term remarksTerm = ColdpTerm.remarks;
     Term refIdTerm = ColdpTerm.referenceID;
     Term altIdTerm = ColdpTerm.alternativeID;
+    final Term pubInYearTerm;
+    final Term pubInPageTerm;
+    final Term pubInPageLinkTerm;
     if (ColdpTerm.NameUsage.equals(v.getType())) {
       nomStatusTerm = ColdpTerm.nameStatus;
       genusNameTerm = ColdpTerm.genericName;
       remarksTerm = ColdpTerm.nameRemarks;
       refIdTerm = ColdpTerm.nameReferenceID;
       altIdTerm = ColdpTerm.nameAlternativeID;
-    } else if(v.hasTerm(ColdpTerm.genericName)) {
-      // against COolDP specs, but people do sometimes use genericName also in Name files and we dont wanna break these
-      genusNameTerm = ColdpTerm.genericName;
+      pubInYearTerm = ColdpTerm.namePublishedInYear;
+      pubInPageTerm = ColdpTerm.namePublishedInPage;
+      pubInPageLinkTerm = ColdpTerm.namePublishedInPageLink;
+    } else {
+      pubInYearTerm = ColdpTerm.publishedInYear;
+      pubInPageTerm = ColdpTerm.publishedInPage;
+      pubInPageLinkTerm = ColdpTerm.publishedInPageLink;
+      if(v.hasTerm(ColdpTerm.genericName)) {
+        // against COolDP specs, but people do sometimes use genericName also in Name files and we dont wanna break these
+        genusNameTerm = ColdpTerm.genericName;
+      }
     }
 
     Optional<ParsedNameUsage> optPNU = nameInterpreter.interpret(v.getRaw(ColdpTerm.ID), v.get(ColdpTerm.rank), Rank.UNRANKED,
-        v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship), v.get(ColdpTerm.publishedInYear),
+        v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship), v.get(pubInYearTerm),
         v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet), v.get(ColdpTerm.cultivarEpithet),
         ColdpTerm.combinationAuthorship, ColdpTerm.combinationExAuthorship, ColdpTerm.combinationAuthorshipYear,
         ColdpTerm.basionymAuthorship, ColdpTerm.basionymExAuthorship,ColdpTerm.basionymAuthorshipYear,
@@ -356,11 +367,11 @@ public class ColdpInterpreter extends InterpreterBase {
       nd.basionymID = v.getRawButNot(ColdpTerm.basionymID, n.getId());
 
       // publishedIn
-      n.setPublishedInPageLink(v.get(ColdpTerm.publishedInPageLink));
+      n.setPublishedInPageLink(v.get(pubInPageLinkTerm));
       setReference(v, refIdTerm, rid -> {
           n.setPublishedInId(rid);
-          n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));
-          n.setPublishedInYear(InterpreterUtils.parseNomenYear(ColdpTerm.publishedInYear, v));
+          n.setPublishedInPage(v.get(pubInPageTerm));
+          n.setPublishedInYear(InterpreterUtils.parseNomenYear(pubInYearTerm, v));
       });
       if (optPNU.get().getPublishedIn() != null) {
         String pubInAuthorship = optPNU.get().getPublishedIn();

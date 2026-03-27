@@ -8,6 +8,7 @@ public class Resource {
   private String name;
   private String path;
   private Dialect dialect;
+  private String description;
   private Schema schema;
   private final String profile = "tabular-data-resource";
   
@@ -38,7 +39,15 @@ public class Resource {
   public Dialect getDialect() {
     return dialect;
   }
-  
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
   public String getPath() {
     return path;
   }
@@ -61,24 +70,23 @@ public class Resource {
   public String getProfile() {
     return profile;
   }
-  
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    Resource resource = (Resource) o;
+    if (!(o instanceof Resource resource)) return false;
+
     return Objects.equals(encoding, resource.encoding) &&
-        Objects.equals(format, resource.format) &&
+        format.equals(resource.format) &&
         Objects.equals(name, resource.name) &&
         Objects.equals(path, resource.path) &&
         Objects.equals(dialect, resource.dialect) &&
+        Objects.equals(description, resource.description) &&
         Objects.equals(schema, resource.schema) &&
-        Objects.equals(profile, resource.profile);
+        profile.equals(resource.profile);
   }
-  
+
   @Override
   public int hashCode() {
-    
-    return Objects.hash(encoding, format, name, path, dialect, schema, profile);
+    return Objects.hash(encoding, format, name, path, dialect, description, schema, profile);
   }
 }

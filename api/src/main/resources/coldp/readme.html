@@ -1,0 +1,1973 @@
+
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Begin Jekyll SEO tag v2.8.0 -->
+    <title>COL Data Package (ColDP) Specification | coldp</title>
+    <meta name="generator" content="Jekyll v3.10.0" />
+    <meta property="og:title" content="COL Data Package (ColDP) Specification" />
+    <meta property="og:locale" content="en_US" />
+    <link rel="canonical" href="https://catalogueoflife.github.io/coldp/" />
+    <meta property="og:url" content="https://catalogueoflife.github.io/coldp/" />
+    <meta property="og:site_name" content="coldp" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta property="twitter:title" content="COL Data Package (ColDP) Specification" />
+    <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"WebSite","headline":"COL Data Package (ColDP) Specification","name":"coldp","url":"https://catalogueoflife.github.io/coldp/"}</script>
+    <!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/coldp/assets/css/style.css?v=9bab0a030405497efcf8ea75853264079844d3b4">
+    <!-- start custom head snippets, customize with your own _includes/head-custom.html file -->
+
+    <!-- Setup Google Analytics -->
+
+
+
+    <!-- You can set your favicon here -->
+    <!-- link rel="shortcut icon" type="image/x-icon" href="/coldp/favicon.ico" -->
+
+    <!-- end custom head snippets -->
+
+</head>
+<body>
+<div class="container-lg px-3 my-5 markdown-body">
+
+    <h1><a href="https://catalogueoflife.github.io/coldp/">coldp</a></h1>
+
+
+
+    <h1 id="col-data-package-coldp-specification">COL Data Package (ColDP) Specification</h1>
+    <p>The recommended exchange format for data to and from COL ChecklistBank
+        is a tabular text format with a fixed set of files and columns.</p>
+
+    <ul>
+        <li><a href="#status--versioning">Status &amp; Versioning</a></li>
+        <li><a href="#schema">Schema</a></li>
+        <li><a href="#archive-files">Archive Files</a></li>
+        <li><a href="#default-values">Default Values</a></li>
+        <li><a href="#metadata">Dataset Metadata</a></li>
+        <li><a href="#changes">Document Changes</a></li>
+        <li><a href="#raw-source-data">Raw Source Data</a></li>
+        <li><a href="#identifiers">Identifiers</a></li>
+        <li><a href="#format-comparison">Format Comparison</a></li>
+        <li><a href="/coldp/docs/publishing-guide.html">Publishing Guidelines</a></li>
+        <li><a href="#best-practices">Best Practises</a></li>
+    </ul>
+
+    <h2 id="status--versioning">Status &amp; Versioning</h2>
+
+    <h3 id="latest-stable-release">Latest Stable Release</h3>
+    <p><strong>Version 1.2 of ColDP has been released on <a href="https://github.com/CatalogueOfLife/coldp/releases/tag/v1.2.0">October 30th 2025</a></strong>.</p>
+
+    <h3 id="development-branch">Development Branch</h3>
+    <p><strong>Version 2.0 of ColDP is still under development</strong>
+        and new fields are marked as such in the documentation below.</p>
+
+    <p>There is no guarantee that these fields might still change until the version is released.
+        <a href="https://www.checklistbank.org">ChecklistBank</a> tries it’s best to support already all new features, so it can be used already.</p>
+
+    <h3 id="versioning">Versioning</h3>
+    <p>ColDP adheres to <a href="http://semver.org/">semantic versioning</a>:</p>
+    <ul>
+        <li><strong>patch</strong> changes (1.0.x) do not alter the exchange schema at all. No more fields or entities will be renamed, removed or added. The documentation and enumeration of values are allowed to change.</li>
+        <li><strong>minor</strong> changes (1.x.0) preserve backwards compatibility. Fields or entities can be added, but not renamed or removed.</li>
+        <li><strong>major</strong> changes (x.0.0) break backwards compatibility. Fields or entities can be renamed, removed, added or changed in semantics.</li>
+    </ul>
+
+    <h3 id="history">History</h3>
+    <p>All <a href="/coldp/CHANGES.html">changes</a> are documented since the initial 1.0.0 release.</p>
+
+    <ul>
+        <li>ColDP 1.2.0, <a href="https://github.com/CatalogueOfLife/coldp/releases/tag/v1.2.0">October 30, 2025</a>.</li>
+        <li>ColDP 1.1.0, <a href="https://github.com/CatalogueOfLife/coldp/releases/tag/v1.1.0">September 26, 2024</a>.</li>
+        <li>ColDP 1.0.1, <a href="https://github.com/CatalogueOfLife/coldp/releases/tag/v1.0.1">April 7, 2022</a>.</li>
+        <li>ColDP 1.0.0, <a href="https://github.com/CatalogueOfLife/coldp/releases/tag/v1.0.0">October 25, 2021</a>.</li>
+    </ul>
+
+    <h2 id="schema">Schema</h2>
+
+    <p>The ColDP format is a single ZIP archive that bundles various delimited text files described below together with a metadata.yaml file
+        providing basic metadata about the entire dataset.
+        Each file holds records for the same class of things shown in this diagram with columns explained in more detail in the <a href="#data-file-columns">Data File section</a>.
+        It aligns closely to the Frictionless Tabular Data Package for which we provide a <a href="/coldp/docs/datapackage.json">datapackage.json</a> descriptor since release 1.2.0.</p>
+
+    <p><img src="/coldp/docs/schema.png" alt="schema" /></p>
+
+    <p>For simpler sharing ColDP also offers a merged <a href="#nameusage">NameUsage</a> entity,
+        which combines fields from the <a href="#taxon">Taxon</a>, <a href="#synonym">Synonym</a> and <a href="#name">Name</a> entity:</p>
+
+    <p><img src="/coldp/docs/schemaNU.png" alt="NameUsage schema" /></p>
+
+    <h2 id="archive-files">Archive Files</h2>
+    <p>A ColDP archive consists of several files in a folder.
+        These are either data files corresponding to the schema diagram above:</p>
+
+    <ul>
+        <li><a href="#name">Name</a></li>
+        <li><a href="#author">Author</a></li>
+        <li><a href="#namerelation">NameRelation</a></li>
+        <li><a href="#taxon">Taxon</a></li>
+        <li><a href="#synonym">Synonym</a></li>
+        <li><a href="#nameusage">NameUsage</a></li>
+        <li><a href="#taxonproperty">TaxonProperty</a></li>
+        <li><a href="#taxonconceptrelation">TaxonConceptRelation</a></li>
+        <li><a href="#speciesinteraction">SpeciesInteraction</a></li>
+        <li><a href="#speciesestimate">SpeciesEstimate</a></li>
+        <li><a href="#reference">Reference</a></li>
+        <li><a href="#reference-json-csl">Reference JSON-CSL</a></li>
+        <li><a href="#reference-bibtex">Reference BIBTEX</a></li>
+        <li><a href="#typematerial">TypeMaterial</a></li>
+        <li><a href="#distribution">Distribution</a></li>
+        <li><a href="#media">Media</a></li>
+        <li><a href="#vernacularname">VernacularName</a></li>
+        <li><a href="#treatment">Treatment documents</a></li>
+    </ul>
+
+    <p>or the following:</p>
+    <ul>
+        <li><a href="#metadatayaml">metadata.yaml</a></li>
+        <li><a href="#changes">CHANGES.md</a></li>
+        <li><code class="language-plaintext highlighter-rouge">logo.png</code> a logo image for the dataset</li>
+    </ul>
+
+    <h3 id="data-files">Data Files</h3>
+    <p>The filename for an entity in the above diagram is a case insensitive version of the class name, any number of ignored hyphens or underscores and a known tabular text suffix. The suffix specifies one of the two supported tabular flavours, comma separated or tab separated files:</p>
+
+    <ul>
+        <li><code class="language-plaintext highlighter-rouge">csv</code>: a comma separated, optionally quoted CSV file as per <a href="https://tools.ietf.org/html/rfc4180">RFC 4180</a></li>
+        <li><code class="language-plaintext highlighter-rouge">tsv</code>, <code class="language-plaintext highlighter-rouge">tab</code> or <code class="language-plaintext highlighter-rouge">txt</code>: indicates a tab separated file without quoting</li>
+    </ul>
+
+    <p>Valid examples are <code class="language-plaintext highlighter-rouge">Taxon.tsv</code> or <code class="language-plaintext highlighter-rouge">vernacular-name.csv</code>
+        <code class="language-plaintext highlighter-rouge">tsv</code> files are simpler to produce and handle, so if you have the option we recommend <code class="language-plaintext highlighter-rouge">tsv</code> over <code class="language-plaintext highlighter-rouge">csv</code>.</p>
+
+    <h3 id="quoting-and-escaping">Quoting and Escaping</h3>
+    <p><code class="language-plaintext highlighter-rouge">tsv</code> files do not have any quoting of values, i.e. values are represented as they are. There are just 2 characters that are special and one needs to escape to not break the format: <code class="language-plaintext highlighter-rouge">\t</code> tabs and <code class="language-plaintext highlighter-rouge">\n</code> new lines. As they are hardly ever important in ColDP data (they most often are dirty data) the simplest solution is to just replace them with an ordinary space if they appear in any value.</p>
+
+    <p>Otherwise <code class="language-plaintext highlighter-rouge">tsv</code> offers escaping  <code class="language-plaintext highlighter-rouge">\t</code>, <code class="language-plaintext highlighter-rouge">\n</code>, <code class="language-plaintext highlighter-rouge">\r</code> and <code class="language-plaintext highlighter-rouge">\</code> itself using the backslash <code class="language-plaintext highlighter-rouge">\</code> if you really want to keep these characters in your values.</p>
+
+    <p><code class="language-plaintext highlighter-rouge">csv</code> files use a comma as the delimiter which often also appears in values. The optional quoting of values using double quotes <code class="language-plaintext highlighter-rouge">"</code> at the beginning and end of the value allows to safely use a comma without escaping it. E.g. <code class="language-plaintext highlighter-rouge">1234,"Miller, 1887"</code> are 2 columns. That pushes the problem to the double quote symbol which then has to be escaped inside quoted values by doubling it, e.g. <code class="language-plaintext highlighter-rouge">1234,"Frederic ""The Great"", 1887"</code>. Here are the important rules from the <a href="https://tools.ietf.org/html/rfc4180">RFC 4180 specification</a></p>
+
+    <blockquote>
+        <ol>
+            <li>Within the header and each record, there may be one or more
+                fields, separated by commas.  Each line should contain the same
+                number of fields throughout the file.  Spaces are considered part
+                of a field and should not be ignored.  The last field in the
+                record must not be followed by a comma.  For example:</li>
+        </ol>
+    </blockquote>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   ```
+   aaa,bbb,ccc
+   ```
+</code></pre></div></div>
+
+    <blockquote>
+        <ol>
+            <li>Each field may or may not be enclosed in double quotes (however
+                some programs, such as Microsoft Excel, do not use double quotes
+                at all).  If fields are not enclosed with double quotes, then
+                double quotes may not appear inside the fields.  For example:</li>
+        </ol>
+    </blockquote>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   ```
+   "aaa","bbb","ccc" CRLF
+   zzz,yyy,xxx
+   ```
+</code></pre></div></div>
+
+    <blockquote>
+        <ol>
+            <li>Fields containing line breaks (CRLF), double quotes, and commas
+                should be enclosed in double-quotes.  For example:</li>
+        </ol>
+    </blockquote>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   ```
+   "aaa","b CRLF
+   bb","ccc" CRLF
+   zzz,yyy,xxx
+   ```
+</code></pre></div></div>
+
+    <blockquote>
+        <ol>
+            <li>If double-quotes are used to enclose fields, then a double-quote
+                appearing inside a field must be escaped by preceding it with
+                another double quote.  For example:</li>
+        </ol>
+    </blockquote>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   ```
+   "aaa","b""bb","ccc"
+   ```
+</code></pre></div></div>
+
+    <h3 id="character-encoding">Character Encoding</h3>
+    <p>All files <strong>must be encoded in UTF-8</strong>.</p>
+
+    <h2 id="default-values">Default Values</h2>
+    <p><em>added in v1.1</em></p>
+
+    <p>In some cases it is useful to declare a fixed, global value that applies to every record in the dataset,
+        for example if all taxa are animals it makes sense to declare <code class="language-plaintext highlighter-rouge">Name.code=zoological</code> only once.
+        This can be done in a single file default.yaml that provides default values for all terms.
+        Term  are organised under their entity/class name in the file.</p>
+
+    <p>Example of a <code class="language-plaintext highlighter-rouge">default.yaml</code> file:</p>
+
+    <div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">Name</span><span class="pi">:</span>
+  <span class="na">code</span><span class="pi">:</span> <span class="s">zoological</span>
+<span class="na">Taxon</span><span class="pi">:</span>
+  <span class="na">extinct</span><span class="pi">:</span> <span class="no">false</span>
+  <span class="na">environment</span><span class="pi">:</span> <span class="s">marine</span>
+  <span class="na">kingdom</span><span class="pi">:</span> <span class="s">Animalia</span>
+</code></pre></div></div>
+
+    <p>If the term is defined in the actual data, default values will only apply in case the value is null.
+        E.g. it can be used to have a default <em>code</em> value, but override it for exceptional records.
+        This is similar to the default feature in the meta.xml file of DwC archives.</p>
+
+    <h2 id="metadata">Metadata</h2>
+    <p>A <a href="/coldp/metadata.yaml">YAML file</a> called <code class="language-plaintext highlighter-rouge">metadata.yaml</code> with metadata about the entire data package should be included.
+        The file consists mostly of key value pairs like title, see the comments in <a href="/coldp/metadata.yaml">metadata.yaml</a> for all available keys.
+        There is also a <a href="/coldp/metadata.json">JSON schema</a> available for validation.</p>
+
+    <p>An exception are the contact and authors and editors properties which takes a compound person object
+        and the organisations list which takes a structured organisation object.
+        See <a href="/coldp/metadata.yaml">yaml example</a> for all available fields.
+        Additional entries to the YAML file are allowed to express non standard properties.</p>
+
+    <p>Note that there is no single preformatted citation string, but instead the structured metadata itself is the citation
+        which can be formatted according to <a href="https://www.zotero.org/styles">various styles</a> like <a href="https://apastyle.apa.org/products/publication-manual-7th-edition">APA</a> which is the default style in checklistbank.org.
+        For citations please pay special attention to the core fields <code class="language-plaintext highlighter-rouge">title</code>, <code class="language-plaintext highlighter-rouge">creator</code>, <code class="language-plaintext highlighter-rouge">editor</code>, <code class="language-plaintext highlighter-rouge">publisher</code> &amp; <code class="language-plaintext highlighter-rouge">issued</code>.</p>
+
+    <h2 id="changes">Changes</h2>
+    <p>To document past versions and changes in data it is recommended
+        to include a dedicated changelog markdown file named <code class="language-plaintext highlighter-rouge">CHANGES.md</code>.
+        See https://keepachangelog.com/en/1.0.0/ for best practices.</p>
+
+    <h2 id="raw-source-data">Raw Source Data</h2>
+    <p>In many cases it is desirable to also include the raw source data files like PDFs, Excel spreadsheets, database dumps, XML files
+        or any other custom or binary files inside the archive.
+        This allows users interested in details not captured by ColDP to access them, but also
+        improves transparency and increases trust.</p>
+
+    <p>ColDP recommends to use a special <code class="language-plaintext highlighter-rouge">raw</code> folder to hold all the original source files.
+        Please always consider the resulting total archive size and consider the inclusion of very large raw files if the total archive size exceeds 1GB.</p>
+
+    <h1 id="data-file-columns">Data File Columns</h1>
+    <p>All data files should contain a header row that specifies the name of the columns as given below.
+        In the absence of a header row it is expected that all columns exist in the exact order given below.
+        With headers given it is allowed to share additional columns which are not part of the standard as listed below.</p>
+
+    <h2 id="name">Name</h2>
+    <p>Names can be shared in a structured way using various fields,
+        but rank, scientificName and authorship alone are sufficient.
+        See <a href="https://github.com/Sp2000/colplus/blob/master/docs/"></a> for examples and rationales.</p>
+
+    <p>A structured <code class="language-plaintext highlighter-rouge">scientificName</code> can be given using the following fields:</p>
+    <ul>
+        <li><a href="#uninomial">uninomial</a></li>
+        <li><a href="#genus">genus</a></li>
+        <li><a href="#infragenericEpithet">infragenericEpithet</a></li>
+        <li><a href="#specificEpithet">specificEpithet</a></li>
+        <li><a href="#infraspecificEpithet">infraspecificEpithet</a></li>
+        <li><a href="#cultivarEpithet">cultivarEpithet</a></li>
+        <li><a href="#notho">notho</a></li>
+    </ul>
+
+    <p>An <code class="language-plaintext highlighter-rouge">authorship</code> of a name can be structured with:</p>
+    <ul>
+        <li><a href="#combinationAuthorship">combinationAuthorship</a></li>
+        <li><a href="#combinationExAuthorship">combinationExAuthorship</a></li>
+        <li><a href="#combinationAuthorshipYear">combinationAuthorshipYear</a></li>
+        <li><a href="#basionymAuthorship">basionymAuthorship</a></li>
+        <li><a href="#basionymExAuthorship">basionymExAuthorship</a></li>
+        <li><a href="#basionymAuthorshipYear">basionymAuthorshipYear</a></li>
+    </ul>
+
+    <p>or can make use of the <a href="#author">Author</a> entity and define authorships purely by using identifiers:</p>
+    <ul>
+        <li><a href="#combinationAuthorshipID">combinationAuthorshipID</a></li>
+        <li><a href="#combinationExAuthorshipID">combinationExAuthorshipID</a></li>
+        <li><a href="#combinationAuthorshipYear">combinationAuthorshipYear</a></li>
+        <li><a href="#basionymAuthorshipID">basionymAuthorshipID</a></li>
+        <li><a href="#basionymExAuthorshipID">basionymExAuthorshipID</a></li>
+        <li><a href="#basionymAuthorshipYear">basionymAuthorshipYear</a></li>
+    </ul>
+
+    <h4 id="id">ID</h4>
+    <p>Unique name identifier that is referred to elsewhere via <code class="language-plaintext highlighter-rouge">nameID</code>.</p>
+
+    <h4 id="alternativeid">alternativeID</h4>
+    <p>A comma concatenated list of alternative identifiers for the name.
+        Every alternative identifier must be a URI/URN/URL or given in the form of <code class="language-plaintext highlighter-rouge">scope:id</code>.
+        See <a href="#Identifiers">identifiers</a> for all details and common scopes.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="sourceid">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="basionymid">basionymID</h4>
+    <p>Identifier of the name which is the original combination of this name. Also known as the basionym.
+        Contrary to the strict basionym definition it is acceptable to populate this field also for original names which should point to itself.
+        A basionym is a terminal relationship which cannot be “chained”.
+        The original name itself should not have another basionym relation to another name.
+        When the basionym was established as a nomen novum to replace another name, e.g. a homonym,
+        it should not use basionymID to refer to the replaced name (which has an entirely different epithet),
+        but use the <a href="#namerelation">NameRelation</a> with <code class="language-plaintext highlighter-rouge">type=replacement name</code> instead.</p>
+
+    <p>Note there is an alternative way to share the information about an original name by using a <a href="#namerelation">NameRelation</a> with <code class="language-plaintext highlighter-rouge">type=basionym</code>.
+        The field basionymID exists for simplicity and because it is an important information to be shared.</p>
+
+    <h4 id="scientificname">scientificName</h4>
+    <p>Required scientific name excluding the authorship</p>
+
+    <h4 id="authorship">authorship</h4>
+    <p>Authorship of the scientificName</p>
+
+    <h4 id="rank">rank</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/rank">rank enum</a></p>
+
+    <p>The rank of the name preferably given in case insensitive english. The recommended vocabulary is included in <a href="http://api.checklistbank.org/vocab/rank">rank_enum</a>.</p>
+
+    <h4 id="uninomial">uninomial</h4>
+    <p>The single-word name of generic or higher rank names.</p>
+
+    <h4 id="genus">genus</h4>
+    <p>The genus part of a bi/trinomial.
+        Note that for generic names the uninomial field should be used, not genus!</p>
+
+    <h4 id="infragenericepithet">infragenericEpithet</h4>
+    <p>The infrageneric epithet. Used as the terminal epithet for names at infrageneric ranks and optionally also for bi/trinomials
+        In zoological names often the subgenus.</p>
+
+    <h4 id="specificepithet">specificEpithet</h4>
+    <p>The specific epithet in case of bi/trinomials.</p>
+
+    <h4 id="infraspecificepithet">infraspecificEpithet</h4>
+    <p>The infraspecific epithet in case of bi/trinomials.</p>
+
+    <h4 id="cultivarepithet">cultivarEpithet</h4>
+    <p>The name of the cultivar for name governed by the cultivar code.</p>
+
+    <h4 id="notho">notho</h4>
+    <p>For named hybrids the part of the name which is considered a hybrid
+        and which usually is prefixed with the hybrid marker <code class="language-plaintext highlighter-rouge">×</code>. One of:</p>
+
+    <ul>
+        <li>generic</li>
+        <li>infrageneric</li>
+        <li>specific</li>
+        <li>infraspecific</li>
+    </ul>
+
+    <p>type: <a href="https://api.checklistbank.org/vocab/namePart">namePart enum</a></p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="combinationauthorship">combinationAuthorship</h4>
+    <p>The authorteam of the main authorship for the exact combination (not the original combination).
+        Multiple authors should be concatenated with a pipe <code class="language-plaintext highlighter-rouge">|</code> symbol.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="combinationauthorshipid">combinationAuthorshipID</h4>
+    <p>A list of identifiers for authors of the exact combination (not the original combination).
+        Multiple author identifiers should be concatenated with a pipe <code class="language-plaintext highlighter-rouge">|</code> symbol.
+        If <code class="language-plaintext highlighter-rouge">combinationAuthorship</code> is given, the order and number of author names and identifiers must always match up.
+        Author identifiers must refer to an existing Author.ID within this data package.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="combinationexauthorship">combinationExAuthorship</h4>
+    <p>The ex-authors part of the main authorship for the very combination (not the original combination).
+        The <code class="language-plaintext highlighter-rouge">ex</code> prefix as normally found in the authorship should not be included here.
+        Multiple authors should be concatenated with a pipe <code class="language-plaintext highlighter-rouge">|</code> symbol.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="combinationexauthorshipid">combinationExAuthorshipID</h4>
+    <p>A list of identifiers for ex-authors of the exact combination (not the original combination).
+        Multiple author identifiers should be concatenated with a pipe <code class="language-plaintext highlighter-rouge">|</code> symbol.
+        If <code class="language-plaintext highlighter-rouge">combinationExAuthorship</code> is given, the order and number of author names and identifiers must always match up.
+        Author identifiers must refer to an existing Author.ID within this data package.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="combinationauthorshipyear">combinationAuthorshipYear</h4>
+    <p>The year given in the authorship for the very combination (not the original combination), given without brackets.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="basionymauthorship">basionymAuthorship</h4>
+    <p>The authorteam of the original name normally found in brackets, but given here without brackets.
+        Multiple authors should be concatenated with a pipe <code class="language-plaintext highlighter-rouge">|</code> symbol.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="basionymauthorshipid">basionymAuthorshipID</h4>
+    <p>A list of identifiers for authors of the original combination (basionym) normally found in brackets.
+        Multiple author identifiers should be concatenated with a pipe <code class="language-plaintext highlighter-rouge">|</code> symbol.
+        If <code class="language-plaintext highlighter-rouge">basionymAuthorship</code> is given, the order and number of author names and identifiers must always match up.
+        Author identifiers must refer to an existing Author.ID within this data package.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="basionymexauthorship">basionymExAuthorship</h4>
+    <p>The ex-authors of the original name normally found in brackets, but given here without brackets.
+        The <code class="language-plaintext highlighter-rouge">ex</code> prefix as normally found in the authorship should not be included here.
+        Multiple authors should be concatenated with a pipe <code class="language-plaintext highlighter-rouge">|</code> symbol.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="basionymexauthorshipid">basionymExAuthorshipID</h4>
+    <p>A list of identifiers for ex-authors of the original combination (basionym) normally found in brackets.
+        Multiple author identifiers should be concatenated with a pipe <code class="language-plaintext highlighter-rouge">|</code> symbol.
+        If <code class="language-plaintext highlighter-rouge">basionymExAuthorship</code> is given, the order and number of author names and identifiers must always match up.
+        Author identifiers must refer to an existing Author.ID within this data package.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="basionymauthorshipyear">basionymAuthorshipYear</h4>
+    <p>The year given in the authorship for the original combination normally found in brackets, but given here without brackets.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="code">code</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/nomCode">code enum</a></p>
+
+    <p>The nomenclatural code the name falls under.</p>
+
+    <h4 id="status">status</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/nomStatus">nomStatus enum</a></p>
+
+    <p>The broad nomenclatural status of the name.
+        For the exact status note, e.g. <em>nomen nudum</em>, the remarks field should additionally be used
+        Alternatively a URI or simple name from a class of the <a href="https://github.com/SpeciesFileGroup/nomen/blob/master/src/ontology/nomen.owl">NOMEN ontology</a> can be used.</p>
+
+    <h4 id="referenceid">referenceID</h4>
+    <p>A pointer to a Reference that is the publication in which the scientificName was originally established
+        under the rules of the associated nomenclatural code.</p>
+
+    <h4 id="publishedinyear">publishedInYear</h4>
+    <p>The effective year the name was published, given as a 4 digit integer.
+        It is the year that is nomenclaturally relevant for the given combination.
+        In most cases this will be the same as the publication year given in the linked reference record via referenceID.
+        But in some cases this might be different.</p>
+
+    <h4 id="publishedinpage">publishedInPage</h4>
+    <p>The exact single page number where the name was published.
+        If the description spans multiple pages, the first page should be given.</p>
+
+    <h4 id="publishedinpagelink">publishedInPageLink</h4>
+    <p>A URL to the exact page where the name was published.
+        If the description spans multiple pages, the link to the first page should be given.</p>
+
+    <h4 id="gender">gender</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/gender">gender enum</a></p>
+
+    <p>Gender of the name, i.e. the genus in case of bi/trinomials.
+        Values for the gender field should be one of <code class="language-plaintext highlighter-rouge">masculine</code>, <code class="language-plaintext highlighter-rouge">feminine</code> or <code class="language-plaintext highlighter-rouge">neuter</code>.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="genderagreement">genderAgreement</h4>
+    <p>type: <a href="https://frictionlessdata.io/specs/table-schema/#boolean">boolean</a></p>
+
+    <p>Flag that indicates for bi/trinomials whether the (infra)species epithet must follow and agree with the gender of the genus.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="originalspelling">originalSpelling</h4>
+    <p>type: <a href="https://frictionlessdata.io/specs/table-schema/#boolean">boolean</a></p>
+
+    <p>Flag indicating that the name is given in it’s original spelling when an emendation exists.
+        Only use the flag if there is a known correction existing.
+        The originalSpelling is usually indicated by placing [sic] after the name.</p>
+
+    <p>A <code class="language-plaintext highlighter-rouge">originalSpelling=false</code> flag instead is indicating that the name is a corrected spelling,
+        usually indicated by placing <code class="language-plaintext highlighter-rouge">corrig.</code> after the name.</p>
+
+    <p>In most cases when it is unknown or the original spelling was never revised leave this flag empty.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="etymology">etymology</h4>
+    <p>Etymology of the name, i.e. the origin or meaning of the words forming the scientific name.
+        Should be a short human readable paragraph.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="link">link</h4>
+    <p>A link to a webpage provided by the source depicting the name.</p>
+
+    <h4 id="remarks">remarks</h4>
+    <p>Additional nomenclatural remarks about the name. Often indicating its status or relevant rules in the code.</p>
+
+    <h4 id="modified">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="author">Author</h2>
+    <p>Normalised and structured authors that can be referred to by names, references and taxon scrutinizers.
+        All entities also allow to specify a modifedBy field which must reference an Author identifier here.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="id-1">ID</h4>
+    <p>Unique identifier for the author / person.
+        Can be referenced from any modifiedBy field.</p>
+
+    <h4 id="sourceid-1">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="alternativeid-1">alternativeID</h4>
+    <p>A comma concatenated list of alternative identifiers for the author.
+        Every alternative identifier must be in the form of <code class="language-plaintext highlighter-rouge">scope:id</code>.
+        See <a href="#Identifiers">identifiers</a> for all details and common scopes.
+        Recommended identifier scopes for authors are orcid, ipni, wikidata &amp; viaf.</p>
+
+    <h4 id="given">given</h4>
+    <p>List of given names, concatenated by a comma.</p>
+
+    <h4 id="family">family</h4>
+    <p>The family name including any leading particles if existing.</p>
+
+    <h4 id="suffix">suffix</h4>
+    <p>Optional suffix to distinguish persons with identical surnames.
+        In well known cases of father and son, the son should be distinguished by ‘f.’ or ‘filius’ in the suffix.</p>
+
+    <h4 id="abbreviationbotany">abbreviationBotany</h4>
+    <p>Standard form (official abbreviation) of the persons name for use in a botanical author citation.</p>
+
+    <h4 id="alternativenames">alternativeNames</h4>
+    <p>A <code class="language-plaintext highlighter-rouge">|</code> separated list of alternative names this person is known under.</p>
+
+    <h4 id="sex">sex</h4>
+    <p>Biological sex of the person.</p>
+
+    <h4 id="country">country</h4>
+    <p>Country of citizenship. Preferably as ISO code.
+        If multiple concatenated by a comma.</p>
+
+    <h4 id="birth">birth</h4>
+    <p>Date of birth, given as an ISO date string.</p>
+
+    <h4 id="birthplace">birthPlace</h4>
+    <p>Location the person was born at.</p>
+
+    <h4 id="death">death</h4>
+    <p>Date of death, given as an ISO date string.</p>
+
+    <h4 id="affiliation">affiliation</h4>
+    <p>Institution(s) the author is affiliated with.</p>
+
+    <h4 id="interest">interest</h4>
+    <p>List of taxonomic groups the person has worked on.</p>
+
+    <h4 id="referenceid-1">referenceID</h4>
+    <p>List of sources where the information was taken from or further information can be found about the author.</p>
+
+    <h4 id="link-1">link</h4>
+    <p>A link to a webpage provided by the source depicting the author.</p>
+
+    <h4 id="remarks-1">remarks</h4>
+    <p>Remarks about the person.</p>
+
+    <h4 id="modified-1">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-1">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="namerelation">NameRelation</h2>
+    <p>A directed nomenclatural name relation.
+        See <a href="https://github.com/Sp2000/colplus/blob/master/docs/#name-relations">#name-relations</a> for examples and definitions.</p>
+
+    <h4 id="nameid">nameID</h4>
+    <p>The subject name this relation originates from.
+        Refers to an existing Name.ID or NameUsage.ID within this data package.</p>
+
+    <h4 id="relatednameid">relatedNameID</h4>
+    <p>The object name this relation relates to.
+        Refers to an existing Name.ID or NameUsage.ID within this data package.</p>
+
+    <h4 id="sourceid-2">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="type">type</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/nomreltype">enum</a></p>
+
+    <p>The kind of directed nomenclatural relation.</p>
+
+    <h4 id="referenceid-2">referenceID</h4>
+    <p>The reference or nomenclatural act where this nomenclatural relation was established.</p>
+
+    <h4 id="page">page</h4>
+    <p>The exact single page number where the nomenclatural relation was published in the linked reference.
+        If the value spans multiple pages, the first page should be given.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="remarks-2">remarks</h4>
+    <p>Remarks about the relation.</p>
+
+    <h4 id="modified-2">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-2">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="typematerial">TypeMaterial</h2>
+    <p>Type material designated to names.
+        Type material should only be associated with the original name, not with a recombination.</p>
+
+    <h4 id="id-2">ID</h4>
+    <p>Optional unique identifier for the specimen.
+        If possible use the existing specimen identifier, e.g. the collection/institution code and catalogue number.
+        If coming from a Darwin Core world dwc:occurrenceID is a great fit.</p>
+
+    <h4 id="sourceid-3">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="nameid-1">nameID</h4>
+    <p>A comma concatenated list of name IDs pointing to the typified name of this specimen.
+        Each ID must refer to an existing Name.ID within this data package.
+        See <a href="#best-practices">best practices</a> for details on how to concatenate multi values.</p>
+
+    <h4 id="citation">citation</h4>
+    <p>Material citation of the type material, i.e. type specimen.
+        The citation is ideally given in the verbatim form as it was used in the original publication of the name or the subsequent designation. Otherwise it is recommended to follow the <a href="/coldp/docs/material_citations_formatting_guide.pdf">material citation guidelines published by European Journal of Taxonomy</a>.
+        If atomized fields below are given a citation is not needed. Otherwise it is required.</p>
+
+    <h4 id="status-1">status</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/typeStatus">type status enum</a>
+        The status of the type material, e.g. holotype</p>
+
+    <p>In case multiple names have been linked to the specimen through concatenated values in nameID,
+        a list of comma concatenated status values can be given in the same order as the name IDs.
+        If a single value is given it will be used for all names.</p>
+
+    <h4 id="referenceid-3">referenceID</h4>
+    <p>A referenceID pointing to the Reference table indicating the publication of the type designation.
+        Most often this is equivalent to the original names referenceID, but for subsequent designations a later reference should be cited.</p>
+
+    <h4 id="page-1">page</h4>
+    <p>The exact single page number where the type designation was published in the linked reference.
+        If the value spans multiple pages, the first page should be given.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="locality">locality</h4>
+    <p>The type locality. Ideally from largest area to smallest.</p>
+
+    <h4 id="country-1">country</h4>
+    <p>The country of the type locality. Preferably as ISO codes.</p>
+
+    <h4 id="latitude">latitude</h4>
+    <p>Decimal latitude of the type locality given in WGS84</p>
+
+    <h4 id="longitude">longitude</h4>
+    <p>Decimal longitude of the type locality given in WGS84</p>
+
+    <h4 id="altitude">altitude</h4>
+    <p>Altitude of the type locality. Ideally given as meters above mean seal level.
+        Depth should be given as negative altitudes.</p>
+
+    <h4 id="host">host</h4>
+    <p>Indicates the host organism from which the type specimen was obtained (symbiotype).</p>
+
+    <h4 id="date">date</h4>
+    <p>Date the type material was gathered. Recommended to be given as ISO 8601 dates.</p>
+
+    <h4 id="collector">collector</h4>
+    <p>The collectors name</p>
+
+    <h4 id="institutioncode">institutionCode</h4>
+    <p>The name or acronym in use by the institution having custody of the material.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="catalognumber">catalogNumber</h4>
+    <p>The identifier for the specimen in a collection.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="associatedsequences">associatedSequences</h4>
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="sex-1">sex</h4>
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="link-2">link</h4>
+    <p>A link to further information about the specimen, e.g. as provided by the institute holding the collection.</p>
+
+    <h4 id="remarks-3">remarks</h4>
+    <p>Any further remarks on the type material.</p>
+
+    <h4 id="modified-3">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-3">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="taxon">Taxon</h2>
+    <p>An accepted name with a taxonomic classification given either as a parent-child relation or as a flat, denormalized record.</p>
+
+    <h4 id="id-3">ID</h4>
+    <p>Unique taxon identifier that is referred to elsewhere via <code class="language-plaintext highlighter-rouge">taxonID</code>.</p>
+
+    <h4 id="alternativeid-2">alternativeID</h4>
+    <p>A comma concatenated list of alternative identifiers for the taxonomic concept.
+        Every alternative identifier must be a URI/URN/URL or given in the form of <code class="language-plaintext highlighter-rouge">scope:id</code>.
+        See <a href="#Identifiers">identifiers</a> for all details and common scopes.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="sourceid-4">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="parentid">parentID</h4>
+    <p>The direct parent taxon’s ID in the classification. This is the preferred way of exchanging a hierarchy and takes precedence over any classification given in the denormalized fields.</p>
+
+    <h4 id="ordinal">ordinal</h4>
+    <p>A integer to specify an optional custom sort order for sibling taxa sharing the same parentID in the datasets.
+        This can be used to define a traditional ordering of orders and families for example and can be existing for parts of the dataset, e.g. higher ranks, only. The natural ordering of integers from small to large should be applied.
+        Not that this does not have to be a unique, global index.</p>
+
+    <h4 id="branchlength">branchLength</h4>
+    <p>type: [number]
+        The optional length of the parent edge to represent phylogenetic trees.</p>
+
+    <h4 id="nameid-2">nameID</h4>
+    <p>Pointer to the accepted name referring to an existing Name.ID within this data package.</p>
+
+    <h4 id="namephrase">namePhrase</h4>
+    <p>An optional, unrestricted, lose phrase appended to the name just for this taxon.
+        E.g. the phrase “sensu lato” may be added to the name to describe this taxon more precisely.</p>
+
+    <h4 id="accordingtoid">accordingToID</h4>
+    <p>A reference ID to the publication that established the taxonomic concept used by this taxon.
+        The author &amp; year of the reference will be used to qualify the name with <code class="language-plaintext highlighter-rouge">sensu AUTHOR, YEAR</code>.
+        The ID must refer to an existing Reference.ID within this data package.</p>
+
+    <h4 id="accordingtopage">accordingToPage</h4>
+    <p>The exact single page number where the taxonomic concept was treated.
+        If the treatment spans multiple pages, the first page should be given.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="accordingtopagelink">accordingToPageLink</h4>
+    <p>A URL to the exact page where the taxonomic concept was published.
+        If the treatment spans multiple pages, the link to the first page should be given.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="scrutinizer">scrutinizer</h4>
+    <p>Name of the person who is the latest scrutinizer who revised or reviewed the taxonomic concept.</p>
+
+    <h4 id="scrutinizerid">scrutinizerID</h4>
+    <p>Identifier for the scrutinizer. Highly recommended are <a href="https://orcid.org">ORCID</a> ids.</p>
+
+    <h4 id="scrutinizerdate">scrutinizerDate</h4>
+    <p>type: <a href="https://frictionlessdata.io/specs/table-schema/#date">ISO8601 date</a>
+        The date when the taxonomic concept was last revised or reviewed by the scrutinizer.</p>
+
+    <h4 id="provisional">provisional</h4>
+    <p>type: <a href="https://frictionlessdata.io/specs/table-schema/#boolean">boolean</a></p>
+
+    <p>A flag indicating that the taxon is only provisionally accepted and should be handled with care.</p>
+
+    <h4 id="referenceid-4">referenceID</h4>
+    <p>A comma concatenated list of reference IDs supporting the taxonomic concept that has been reviewed by the scrutinizer.
+        Each ID must refer to an existing Reference.ID within this data package.
+        See <a href="#best-practices">best practices</a> for details on how to concatenate multi values.</p>
+
+    <h4 id="extinct">extinct</h4>
+    <p>type: <a href="https://frictionlessdata.io/specs/table-schema/#boolean">boolean</a></p>
+
+    <p>Nullable flag indicating that the taxon is extinct (true) or extant (false). This includes species that died out recently.</p>
+
+    <h4 id="temporalrangestart">temporalRangeStart</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/geotime">enum</a></p>
+
+    <p>Earliest appearance of the taxon in the geological time scale.
+        Recommended values are geochronological names from the official <a href="https://stratigraphy.org/chart">International Commission on Stratigraphy (ICS)</a>
+        or million years before present, given with the unit <code class="language-plaintext highlighter-rouge">Ma</code> after the number, e.g. <code class="language-plaintext highlighter-rouge">17.4 Ma</code>.</p>
+
+    <h4 id="temporalrangeend">temporalRangeEnd</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/geotime">enum</a></p>
+
+    <p>Latest appearance of the taxon in the geological time scale.
+        Recommended values are geochronological names from the official <a href="https://stratigraphy.org/chart">International Commission on Stratigraphy (ICS)</a>
+        or million years before present, given with the unit <code class="language-plaintext highlighter-rouge">Ma</code> after the number, e.g. <code class="language-plaintext highlighter-rouge">17.4 Ma</code>.</p>
+
+    <h4 id="environment">environment</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/environment">enum[]</a>
+        A comma delimited list of environments this taxon is known to exist in.</p>
+
+    <h4 id="species">species</h4>
+    <p>The species binomial the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="section">section</h4>
+    <p>The (botanical) section the taxon is classified in. Considered a botanical rank below subgenus, not a zoological above family.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="subgenus">subgenus</h4>
+    <p>The subgenus the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="genus-1">genus</h4>
+    <p>The genus the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="subtribe">subtribe</h4>
+    <p>The subtribe the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="tribe">tribe</h4>
+    <p>The tribe the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="subfamily">subfamily</h4>
+    <p>The subfamily the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="family-1">family</h4>
+    <p>The family the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="superfamily">superfamily</h4>
+    <p>The superfamily the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="suborder">suborder</h4>
+    <p>The suborder the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="order">order</h4>
+    <p>The order the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="subclass">subclass</h4>
+    <p>The subclass the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="class">class</h4>
+    <p>The class the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="subphylum">subphylum</h4>
+    <p>The subphylum the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="phylum">phylum</h4>
+    <p>The phylum the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="kingdom">kingdom</h4>
+    <p>The kingdom the taxon is classified in.
+        If parentID is given this field is ignored.</p>
+
+    <h4 id="link-3">link</h4>
+    <p>A link to a webpage provided by the source depicting the taxon.</p>
+
+    <h4 id="remarks-4">remarks</h4>
+    <p>Any further taxonomic remarks.</p>
+
+    <h4 id="modified-4">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-4">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="synonym">Synonym</h2>
+    <p>A synonymous name for a taxon.
+        Note that the same name can be linked to multiple taxa by having several Synonym records to model pro parte synonyms.</p>
+
+    <h4 id="id-4">ID</h4>
+    <p>Optional unique identifier for the synonym.
+        If given it should not clash with the taxon ids.</p>
+
+    <h4 id="sourceid-5">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="taxonid">taxonID</h4>
+    <p>Pointer to the taxon that this synonym is used for.
+        For pro parte synonyms with multiple accepted names several synonym records sharing the same name but having different taxonIDs should be created.
+        Refers to an existing Taxon.ID within this data package.</p>
+
+    <h4 id="nameid-3">nameID</h4>
+    <p>Pointer to the synonymous name referring to an existing Name.ID within this data package.</p>
+
+    <h4 id="namephrase-1">namePhrase</h4>
+    <p>An optional, unrestricted, lose phrase appended to the name just for this synonym.
+        E.g. the phrase “sensu lato” may be added to the name to describe this synonym more precisely.
+        Or “auct. mult.” or “auct. amer.” for misapplied names that cannot refer to a single publication.
+        Misapplied names that refer to a single publication should use <code class="language-plaintext highlighter-rouge">accordingToID</code> instead.</p>
+
+    <h4 id="accordingtoid-1">accordingToID</h4>
+    <p>A reference ID to the publication that established the taxonomic concept used by this taxon.
+        The author &amp; year of the reference will be used to qualify the name with <code class="language-plaintext highlighter-rouge">sensu AUTHOR, YEAR</code>.
+        Strongly recommended in case of misapplied names.
+        The ID must refer to an existing Reference.ID within this data package.</p>
+
+    <h4 id="accordingtopage-1">accordingToPage</h4>
+    <p>The exact single page number where the synonym was treated.
+        If the treatment spans multiple pages, the first page should be given.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="accordingtopagelink-1">accordingToPageLink</h4>
+    <p>A URL to the exact page where the synonym was published.
+        If the treatment spans multiple pages, the link to the first page should be given.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="status-2">status</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/taxonomicstatus">enum</a></p>
+
+    <p>The kind of synonym. One of <em>synonym</em>, <em>ambiguous synonym</em> or <em>misapplied</em>.
+        Defaults to <em>synonym</em>.</p>
+
+    <h4 id="referenceid-5">referenceID</h4>
+    <p>A comma concatenated list of reference IDs supporting the synonym status of the name.
+        Each ID must refer to an existing Reference.ID within this data package.</p>
+
+    <h4 id="link-4">link</h4>
+    <p>A link to a webpage provided by the source depicting the synonym.</p>
+
+    <h4 id="remarks-5">remarks</h4>
+    <p>Any further taxonomic remarks.</p>
+
+    <h4 id="modified-5">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-5">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="nameusage">NameUsage</h2>
+    <p>As a simpler alternative to the 3 entities <a href="#name">Name</a>, <a href="#taxon">Taxon</a> and <a href="#synonym">Synonym</a> a single <code class="language-plaintext highlighter-rouge">NameUsage</code> entity can be supplied.
+        A NameUsage record can either be an accepted Taxon or a Synonym and is easily distinguished by its status.
+        A NameUsage.ID acts both as a taxonID and nameID if referred to from other table, e.g TypeMaterial or VernacularName.
+        For synonyms the <code class="language-plaintext highlighter-rouge">parentID</code> field is used to link to the accepted taxon.</p>
+
+    <p>All properties available in the individual entities can also be used for the single NameUsage:</p>
+
+    <p><img src="/coldp/docs/schemaNU.png" alt="NameUsage schema" /></p>
+
+    <p>There are two clashing properties that exist both on a Name and Taxon/Synonym, but which have a slightly different meaning.
+        Therefore the following properties deviate slightly from their usage in their classic version:</p>
+
+    <ul>
+        <li><strong>parentID</strong>: for taxa it points to the next higher taxon’s ID to form the classification, for synonyms it points at the accepted taxon.</li>
+        <li><strong>status</strong>: is the taxonomic name usage status which includes Synonym.status and the Taxon.provisional flag.
+            A provisional taxon should be listed as <code class="language-plaintext highlighter-rouge">provisionally accepted</code>.
+            Unresolved names which are neither accepted nor synonyms can be listed with status=<code class="language-plaintext highlighter-rouge">bare name</code> in which case only the Name properties are relevant. This corresponds to a lone Name record without a Taxon or Synonym record.</li>
+        <li><strong>nameStatus</strong>: corresponds to the nomenclatural name status otherwise given in Name.status.</li>
+        <li><strong>nameRemarks</strong>: corresponds to the nomenclatural name remarks otherwise given in Name.remarks.</li>
+        <li><strong>genus</strong>: is the taxonomic classification of a name usage and corresponds to Taxon.genus. For synonyms it often is not the same as the genus part of the name</li>
+        <li><strong>genericName</strong>: corresponds to the genus field of a name and represents the atomized genus of a scientificName.</li>
+        <li><strong>referenceID</strong>: corresponds to the taxonomic reference(s) otherwise given in Taxon/Synonym.referenceID.</li>
+        <li><strong>nameReferenceID</strong>: corresponds to the nomenclatural reference otherwise given in Name.referenceID.</li>
+        <li><strong>namePublishedInYear</strong>: corresponds to Name.publishedInYear.</li>
+        <li><strong>namePublishedInPage</strong>: corresponds to Name.publishedInPage.</li>
+        <li><strong>namePublishedInPageLink</strong>: corresponds to Name.publishedInPageLink.</li>
+        <li><strong>nameAlternativeID</strong>: corresponds to Name.alternativeID. <em>added in v1.1</em></li>
+    </ul>
+
+    <p>If a single NameUsage entity is given no further Name, Taxon or Synonym entity must exist.</p>
+
+    <h2 id="taxonproperty">TaxonProperty</h2>
+    <p><em>added in v1.1</em></p>
+
+    <p>A flexible, generic way to assign arbitrary property values to a taxon.
+        It can be used to share species profiles, traits, descriptions and any other dynamic information about a taxon.
+        Every property value can optionally be referenced and ordered.</p>
+
+    <h4 id="taxonid-1">taxonID</h4>
+    <p>The subject taxon the property is about.</p>
+
+    <h4 id="sourceid-6">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="property">property</h4>
+    <p>The required name of the property the value is assigned to.
+        For example a text label like “Biology” or “Illustration”,
+        a <a href="https://www.tdwg.org/community/species/plinian-core/">Plinian core term</a> or some Wikidata P value like <a href="https://www.wikidata.org/wiki/Property:P2974">P2974</a>.</p>
+
+    <h4 id="value">value</h4>
+    <p>A required free text value for the given property.
+        If markup is needed <a href="https://de.wikipedia.org/wiki/Markdown">Markdown</a>        is preferred.</p>
+
+    <h4 id="referenceid-6">referenceID</h4>
+    <p>An optional reference where this property value was documented or who asserted it.</p>
+
+    <h4 id="page-2">page</h4>
+    <p>The exact single page number where the property value was published in the linked reference.
+        If the value spans multiple pages, the first page should be given.</p>
+
+    <h4 id="ordinal-1">ordinal</h4>
+    <p>An integer to specify an optional custom sort order for property values sharing the same taxonID in the dataset.</p>
+
+    <h4 id="remarks-6">remarks</h4>
+    <p>Remarks about the property value.</p>
+
+    <h4 id="modified-6">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-6">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="taxonconceptrelation">TaxonConceptRelation</h2>
+    <p>A directed taxon relation representing RCC5 taxon concept assertions.</p>
+
+    <h4 id="taxonid-2">taxonID</h4>
+    <p>The subject taxon this relation originates from.</p>
+
+    <h4 id="relatedtaxonid">relatedTaxonID</h4>
+    <p>The object this taxon relates to.</p>
+
+    <h4 id="sourceid-7">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="type-1">type</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/TaxonConceptRelType">enum</a>
+        The kind of directed RCC5 relation that specifies how the two taxon concepts are related.</p>
+
+    <h4 id="referenceid-7">referenceID</h4>
+    <p>A reference where this relation was documented or who asserted it.</p>
+
+    <h4 id="remarks-7">remarks</h4>
+    <p>Remarks about the concept relation.</p>
+
+    <h4 id="modified-7">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-7">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="speciesinteraction">SpeciesInteraction</h2>
+    <p>A directed taxon relation representing species interactions.
+        Different to a <a href="#taxonconceptrelation">TaxonConceptRelation</a> a species interaction can also point to a species (name) outside of the local dataset.</p>
+
+    <h4 id="taxonid-3">taxonID</h4>
+    <p>The subject taxon the species interaction is about. Always required to point to an existing taxonID in the local dataset.</p>
+
+    <h4 id="relatedtaxonid-1">relatedTaxonID</h4>
+    <p>The related taxon this interaction is describing. If given it must refer to a local taxonID from the dataset.
+        If missing, the ‘relatedTaxonScientificName’ must be given instead.</p>
+
+    <h4 id="sourceid-8">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="relatedtaxonscientificname">relatedTaxonScientificName</h4>
+    <p>The scientificName of the related taxon this interaction is describing. Includes the authorship if known.
+        It is mutually exclusive with relatedTaxonID and if given no relatedTaxonID should exist.
+        The relatedTaxonScientificName can be used to document species interactions without the need to have full blown name and taxon records.</p>
+
+    <h4 id="type-2">type</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/SpeciesInteractionType">enum</a></p>
+
+    <p>The kind of directed species interaction. Each interaction exists also in reverse to allow the alternative relatedTaxonScientificName field to be used.
+        Species interaction types are heavily inspired by https://www.globalbioticinteractions.org and the OBO Relation Ontology http://www.ontobee.org/ontology/RO
+        to which all entries are mapped.</p>
+
+    <h4 id="referenceid-8">referenceID</h4>
+    <p>A reference where the interaction was documented.</p>
+
+    <h4 id="remarks-8">remarks</h4>
+    <p>Remarks about the species interaction.</p>
+
+    <h4 id="modified-8">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-8">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="speciesestimate">SpeciesEstimate</h2>
+    <p>An estimation of the number of species for a given higher taxon, e.g. a family.
+        The estimation must be based on a reference and should give the number of species according to a certain “type” that is expected to exist.</p>
+
+    <h4 id="taxonid-4">taxonID</h4>
+    <p>The higher taxon’s ID that is the estimate refers to.</p>
+
+    <h4 id="sourceid-9">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="estimate">estimate</h4>
+    <p>type: [integer]
+        The estimated number of species.</p>
+
+    <h4 id="type-3">type</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/estimatetype">enum</a>
+        The exact kind of estimation, e.g. number of described living species or total estimated species including yet to be described organisms.
+        If none is given the type defaults to ‘described species living’.</p>
+
+    <h4 id="referenceid-9">referenceID</h4>
+    <p>A mandatory reference ID that supports the estimate and also provides a temporal context.</p>
+
+    <h4 id="remarks-9">remarks</h4>
+    <p>Remarks about the species estimate. Often used to explain the method used when the estimate is not directly taken from a publication.</p>
+
+    <h4 id="modified-9">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-9">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="reference">Reference</h2>
+    <p>Structured bibliographic references with a unique id to refer to from other entities.
+        References can be given either as a simple, single citation string, or in a structured form.</p>
+
+    <p>ColDP supports fully parsed references in CSV based on the CSL-JSON format.
+        Alternatively references can also be provided in the native file formats for the well established BibTex or CSL-JSON formats.
+        See the sections below with for how to share alternative formats that do not conform to tabular CSV/TSV files.</p>
+
+    <h4 id="id-5">ID</h4>
+    <p>The local identifier for the reference as used in referenceID in other entities.</p>
+
+    <h4 id="alternativeid-3">alternativeID</h4>
+    <p>A comma concatenated list of alternative identifiers for the reference.
+        Every alternative identifier must be a URI/URN/URL or given in the form of <code class="language-plaintext highlighter-rouge">scope:id</code>.
+        See <a href="#Identifiers">identifiers</a> for all details and common scopes.</p>
+
+    <h4 id="sourceid-10">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="citation-1">citation</h4>
+    <p>Full bibliographic citation as one single string as an alternative to the rest of the more structured fields.
+        If individual fields are given the full citation can be ignored.</p>
+
+    <h4 id="type-4">type</h4>
+    <p>type: <a href="http://api.catalogueoflife.org/vocab/csltype">enum</a>
+        CSL type that defines what kind of structured reference this is and which fields are applicable.
+        E.g. ARTICLE-JOURNAL, BOOK, CHAPTER, DATASET or WEBPAGE.
+        See also https://aurimasv.github.io/z2csl/typeMap.xml for mapping of CSL types from Zotero and to field sets.</p>
+
+    <h4 id="author-1">author</h4>
+    <p>The author(s) of the work. If multiple authors use a style that can safely be parsed.
+        Recommended are 2 common forms:</p>
+
+    <ol>
+        <li>family1, given1; family2, given2; …</li>
+        <li>given1 family1, given2 family2, …</li>
+    </ol>
+
+    <p>The first form using commas and semicolons can safely be parsed also for family names which include whitespace.
+        In accordance with BibTeX it is also permissable to use the english word <code class="language-plaintext highlighter-rouge">and</code> as a delimiter instead of the semicolon.</p>
+
+    <p>The second form requires the family name to be a single word, as all words before the last whitespace are considered given names.
+        If a comma is used to separate surname, firstname please use a semicolon to delimit individual authors.</p>
+
+    <h4 id="authorid">authorID</h4>
+    <p>List of Author.ID identifiers separated by a comma that act as authors for this reference.
+        Authors must exist in the local data package.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="editor">editor</h4>
+    <p>The editor(s) of the work.
+        See author for recommendations how to supply person names.</p>
+
+    <h4 id="editorid">editorID</h4>
+    <p>List of Author.ID identifiers separated by a comma that act as editors for this reference.
+        Authors must exist in the local data package.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="title">title</h4>
+    <p>The title of the work.
+        In case of journal articles the article title, not the journal itself.</p>
+
+    <h4 id="titleshort">titleShort</h4>
+    <p>The abbreviated title of the work.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="containerauthor">containerAuthor</h4>
+    <p>Author(s) of the container holding the item, e.g. the book author for a book chapter.
+        See author for recommendations how to supply person names.</p>
+
+    <h4 id="containerauthorid">containerAuthorID</h4>
+    <p>List of Author.ID identifiers separated by a comma that act as the container authors for this reference.
+        Authors must exist in the local data package.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="containertitle">containerTitle</h4>
+    <p>Title of the container holding the item, e.g. the book title for a book chapter, the journal title for a journal article.
+        The containerTitle should exclude volume, edition, pages and other specifics.</p>
+
+    <h4 id="containertitleshort">containerTitleShort</h4>
+    <p>The abbreviated container title.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="issued">issued</h4>
+    <p>type: <a href="https://frictionlessdata.io/specs/table-schema/#date">ISO8601 date</a>
+        Date the work was issued/published.
+        Use ISO dates that can be truncated to represent a year, year &amp; month or exact date, e.g. 1998, 1998-05 or 1998-05-21</p>
+
+    <h4 id="accessed">accessed</h4>
+    <p>type: <a href="https://frictionlessdata.io/specs/table-schema/#date">ISO8601 date</a>
+        Date the item has been accessed.
+        See issued for how to use ISO dates.</p>
+
+    <h4 id="collectiontitle">collectionTitle</h4>
+    <p>Title of the collection holding the item, e.g. the series title for a book.</p>
+
+    <h4 id="collectioneditor">collectionEditor</h4>
+    <p>Editor(s) of the collection holding the item, e.g. the series editor for a book.</p>
+
+    <h4 id="collectioneditorid">collectionEditorID</h4>
+    <p>List of Author.ID identifiers separated by a comma that act as collection editors for this reference.
+        Authors must exist in the local data package.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="volume">volume</h4>
+    <p>(container) volume number holding the item, e.g. <code class="language-plaintext highlighter-rouge">2</code> when citing a chapter from book volume 2.</p>
+
+    <h4 id="issue">issue</h4>
+    <p>(container) issue holding the item, e.g. <code class="language-plaintext highlighter-rouge">5</code> when citing a journal article from journal volume 2, issue 5.</p>
+
+    <h4 id="edition">edition</h4>
+    <p>(container) edition holding the item, e.g. <code class="language-plaintext highlighter-rouge">3</code> when citing a chapter in the third edition of a book.</p>
+
+    <h4 id="page-3">page</h4>
+    <p>Range of pages the item (e.g. a journal article) covers in a container (e.g. a journal issue)</p>
+
+    <h4 id="publisher">publisher</h4>
+    <p>Name of the publisher</p>
+
+    <h4 id="publisherplace">publisherPlace</h4>
+    <p>Geographic location of the publisher</p>
+
+    <h4 id="version">version</h4>
+    <p>Version of the item or dataset</p>
+
+    <h4 id="isbn">isbn</h4>
+    <p>International Standard Book Number</p>
+
+    <h4 id="issn">issn</h4>
+    <p>International Standard Serial Number</p>
+
+    <h4 id="doi">doi</h4>
+    <p>The DOI of the reference</p>
+
+    <h4 id="link-5">link</h4>
+    <p>A URL link to the reference. A link to a webpage for electronic resources.
+        <code class="language-plaintext highlighter-rouge">url</code> in CSL-JSON terminology, but we prefer link to be consistent with other ColDP entities.</p>
+
+    <h4 id="remarks-10">remarks</h4>
+    <p>Additional comments about the reference.
+        <code class="language-plaintext highlighter-rouge">note</code> in CSL-JSON terminology, but we prefer remarks to be consistent with other ColDP entities.</p>
+
+    <h4 id="modified-10">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-10">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="reference-json-csl">Reference JSON-CSL</h2>
+    <p>Instead of the main reference file a <code class="language-plaintext highlighter-rouge">reference.json</code> file can be added to provide a JSON array of highly structured references
+        in the <a href="https://citeproc-js.readthedocs.io/en/latest/csl-json/markup.html">CSL-JSON</a> format, e.g. as provided by CrossRef:</p>
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl --location --silent --header "Accept: application/vnd.citationstyles.csl+json" https://doi.org/10.1126/science.169.3946.635
+</code></pre></div></div>
+
+    <p>The <code class="language-plaintext highlighter-rouge">id</code> field in each record of the array is used as the primary key and referred to from <code class="language-plaintext highlighter-rouge">referenceID</code> fields elsewhere.</p>
+
+    <p>For efficient handling of larger lists the CSL data can also be formatted as <a href="https://jsonlines.org/">JSON Lines</a> with each reference on a single row
+        and no outer JSON array in a file called <code class="language-plaintext highlighter-rouge">reference.jsonl</code>.</p>
+
+    <h4 id="csl-json-example">CSL-JSON example</h4>
+
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[
+{
+    "id": "science.169.3946.635",
+    "publisher": "American Association for the Advancement of Science (AAAS)",
+    "issue": "3946",
+    "published-print": {
+        "date-parts": [
+            [
+                1970,
+                8,
+                14
+            ]
+        ]
+    },
+    "DOI": "10.1126/science.169.3946.635",
+    "type": "article-journal",
+    "created": {
+        "date-parts": [
+            [
+                2006,
+                10,
+                5
+            ]
+        ],
+        "date-time": "2006-10-05T12:56:56Z",
+        "timestamp": 1160053016000
+    },
+    "page": "635-641",
+    "source": "Crossref",
+    "title": "The Structure of Ordinary Water: New data and interpretations are yielding new insights into this fascinating substance",
+    "prefix": "10.1126",
+    "volume": "169",
+    "author": [
+        {
+            "given": "H. S.",
+            "family": "Frank",
+            "sequence": "first",
+            "affiliation": []
+        }
+    ],
+    "container-title": "Science",
+    "original-title": [],
+    "language": "en",
+    "link": [
+        {
+            "URL": "https://syndication.highwire.org/content/doi/10.1126/science.169.3946.635",
+            "content-type": "unspecified",
+            "content-version": "vor",
+            "intended-application": "similarity-checking"
+        }
+    ],
+    "deposited": {
+        "date-parts": [
+            [
+                2020,
+                2,
+                5
+            ]
+        ],
+        "date-time": "2020-02-05T16:15:06Z",
+        "timestamp": 1580919306000
+    },
+    "subtitle": [],
+    "short-title": [],
+    "issued": {
+        "date-parts": [
+            [
+                1970,
+                8,
+                14
+            ]
+        ]
+    },
+    "journal-issue": {
+        "published-print": {
+            "date-parts": [
+                [
+                    1970,
+                    8,
+                    14
+                ]
+            ]
+        },
+        "issue": "3946"
+    },
+    "URL": "http://dx.doi.org/10.1126/science.169.3946.635",
+    "ISSN": [
+        "0036-8075",
+        "1095-9203"
+    ],
+    "subject": [
+        "Multidisciplinary"
+    ],
+    "container-title-short": "Science"
+}
+]
+</code></pre></div></div>
+
+    <h2 id="reference-bibtex">Reference BIBTEX</h2>
+    <p>Alternatively to CSL-JSON a <a href="http://www.bibtex.org/Format/">BibTex</a> file <code class="language-plaintext highlighter-rouge">reference.bib</code> can be given to provide highly structured citations.</p>
+
+    <p>The <code class="language-plaintext highlighter-rouge">id</code> field following the curly opening bracket is used as the primary key and referred to from <code class="language-plaintext highlighter-rouge">referenceID</code> fields elsewhere.
+        You can also download BibTex records from CrossRef using curl:</p>
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl --location --silent --header "Accept: application/x-bibtex" https://doi.org/10.1080/11035890601282097
+</code></pre></div></div>
+
+    <p>For converting existing bibliographies into BibTex the <a href="https://anystyle.io">AnyStyle parser</a> is highly recommended.
+        It is free and quick to use online for a few hundred to thousand references. For much larger amounts it needs to be run locally.</p>
+
+    <h4 id="bibtex-example">Bibtex example</h4>
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> @article{Droege_2016,
+    title={The Global Genome Biodiversity Network (GGBN) Data Standard specification},
+    volume={2016},
+    ISSN={1758-0463},
+    url={http://dx.doi.org/10.1093/database/baw125},
+    DOI={10.1093/database/baw125},
+    journal={Database},
+    publisher={Oxford University Press (OUP)},
+    author={Droege, G. and Barker, K. and Seberg, O. and Coddington, J. and Benson, E. and Berendsohn, W. G. and Bunk, B. and Butler, C. and Cawsey, E. M. and Deck, J. and et al.},
+    year={2016},
+    pages={baw125}
+}
+
+@article{Frank_1970,
+    title     = {The Structure of Ordinary Water: New data and interpretations are yielding new insights into this fascinating substance},
+    volume    = {169},
+    ISSN      = {1095-9203},
+    url       = {http://dx.doi.org/10.1126/science.169.3946.635},
+    DOI       = {10.1126/science.169.3946.635},
+    number    = {3946},
+    journal   = {Science},
+    publisher = {American Association for the Advancement of Science (AAAS)},
+    author    = {Frank, H. S.},
+    year      = {1970},
+    month     = {Aug},
+    pages     = {635–641}
+}
+</code></pre></div></div>
+
+    <h2 id="distribution">Distribution</h2>
+    <p>A structured distribution record for a taxon in a given area.</p>
+
+    <h4 id="taxonid-5">taxonID</h4>
+    <p>Pointer to the taxon referring to an existing Taxon.ID within this data package.</p>
+
+    <h4 id="sourceid-11">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="areaid">areaID</h4>
+    <p>The identifier/code for the geographic area this distribution record is about.
+        The value must be taken from the gazetteer this record declares.
+        E.g. <code class="language-plaintext highlighter-rouge">ISO</code> 2 letter country codes, <code class="language-plaintext highlighter-rouge">TDWG</code> codes or <code class="language-plaintext highlighter-rouge">TEOW</code> identifiers.
+        If the <code class="language-plaintext highlighter-rouge">TEXT</code> gazetteer is used only the free text area should be given with no areaID.</p>
+
+    <h4 id="area">area</h4>
+    <p>The geographic area this distribution record is about.
+        The value provides a human label for the area specified by areaID.
+        Free text values can be provided here when the gazetteer is set to <code class="language-plaintext highlighter-rouge">TEXT</code>.</p>
+
+    <h4 id="gazetteer">gazetteer</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/gazetteer">enum</a></p>
+
+    <p>The geographic gazetteer the area is defined in.
+        If none is given defaults to free <code class="language-plaintext highlighter-rouge">TEXT</code>.</p>
+
+    <h4 id="establishmentmeans">establishmentMeans</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/establishmentmeans">enum</a>
+        Statement about whether the taxon has been introduced to the given area and time through the direct or indirect activity of modern humans.</p>
+
+    <p><em>added in v1.2</em></p>
+
+    <h4 id="degreeofestablishment">degreeOfEstablishment</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/degreeofestablishment">enum</a>
+        The degree to which the taxon survives, reproduces, and expands its range at the given area and time.</p>
+
+    <p><em>added in v1.2</em></p>
+
+    <h4 id="pathway">pathway</h4>
+    <p>The process by which the taxon came to be in the given area at the given time.</p>
+
+    <p><em>added in v1.2</em></p>
+
+    <h4 id="threatstatus">threatStatus</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/threatstatus">enum</a>
+        Threat status of a species as defined by IUCN.</p>
+
+    <p><em>added in v1.2</em></p>
+
+    <h4 id="year">year</h4>
+    <p>type: integer
+        Year in which the distribution was assessed.
+        Relevant temporal context for the distribution record including all properties.
+        Given as a single year on which the distribution record is valid.
+        For the same area and taxon there could therefore be several records with different temporal scopes, e.g. in 5 year intervals for invasive species.</p>
+
+    <p><em>added in v1.2</em></p>
+
+    <h4 id="season">season</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/season">enum</a>
+        Optional restriction of the distribution record to some season.</p>
+
+    <p><em>added in v1.2</em></p>
+
+    <h4 id="lifestage">lifeStage</h4>
+    <p>Optional restriction of the distribution record to just a particular life stage of the species.</p>
+
+    <p><em>added in v1.2</em></p>
+
+    <h4 id="referenceid-10">referenceID</h4>
+    <p>Pointer to the reference that supports this distribution. Refers to an existing Reference.ID within this data package.</p>
+
+    <h4 id="remarks-11">remarks</h4>
+    <p>Remarks about the distribution.</p>
+
+    <h4 id="modified-11">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-11">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="media">Media</h2>
+    <p>Multimedia items for a taxon such as an image, audio or video.</p>
+
+    <h4 id="taxonid-6">taxonID</h4>
+    <p>Pointer to the taxon referring to an existing Taxon.ID within this data package.</p>
+
+    <h4 id="sourceid-12">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="url">url</h4>
+    <p>The URL that resolves to the media item itself, not a webpage that depicts it.</p>
+
+    <h4 id="type-5">type</h4>
+    <p>The MIME-type of the media item the url identifies.
+        Preferably the full type/subtype combination, e.g <code class="language-plaintext highlighter-rouge">image/jpeg</code>, but the primary type alone is sufficient (<code class="language-plaintext highlighter-rouge">image</code>, <code class="language-plaintext highlighter-rouge">video</code>, <code class="language-plaintext highlighter-rouge">audio</code>).</p>
+
+    <h4 id="title-1">title</h4>
+    <p>Optional title for the item.</p>
+
+    <h4 id="created">created</h4>
+    <p>type: <a href="https://frictionlessdata.io/specs/table-schema/#date">ISO8601 date</a>
+        Date the media item was recorded.</p>
+
+    <h4 id="creator">creator</h4>
+    <p>Author of the media item.</p>
+
+    <h4 id="license">license</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/license">license</a></p>
+
+    <h4 id="link-6">link</h4>
+    <p>Optional webpage from the source this media item is shown on.</p>
+
+    <h4 id="remarks-12">remarks</h4>
+    <p>Remarks about the media item.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modified-12">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-12">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="vernacularname">VernacularName</h2>
+    <p>A vernacular or common name for a taxon.</p>
+
+    <h4 id="taxonid-7">taxonID</h4>
+    <p>Pointer to the taxon referring to an existing Taxon.ID within this data package.</p>
+
+    <h4 id="sourceid-13">sourceID</h4>
+    <p>Optional identifier for the source this record came from as listed in the <a href="/coldp/metadata.yaml">metadata.yaml</a></p>
+
+    <h4 id="name-1">name</h4>
+    <p>The vernacular name in the original script.</p>
+
+    <h4 id="transliteration">transliteration</h4>
+    <p>An optional transliteration of the vernacular name into the latin script.</p>
+
+    <h4 id="language">language</h4>
+    <p>Language of the vernacular name given as an ISO 639-3 letter code.</p>
+
+    <h4 id="preferred">preferred</h4>
+    <p>type: boolean
+        A flag to indicate if this vernacular name is the preferred name for the given language.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="country-2">country</h4>
+    <p>Country this vernacular name is used in given as an ISO 3166-2 letter code.</p>
+
+    <h4 id="area-1">area</h4>
+    <p>Optional area describing the geographic use of the vernacular name in free text within the given country.</p>
+
+    <h4 id="sex-2">sex</h4>
+    <p>type: <a href="http://api.checklistbank.org/vocab/sex">enum</a></p>
+
+    <p>Optional sex of the organism this vernacular name is restricted to.</p>
+
+    <h4 id="referenceid-11">referenceID</h4>
+    <p>Pointer to the reference that supports this vernacular name. Refers to an existing Reference.ID within this data package.</p>
+
+    <h4 id="remarks-13">remarks</h4>
+    <p>Remarks about the vernacular name.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modified-13">modified</h4>
+    <p>UTC timestamp in ISO format to represent the time the record was last modified.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h4 id="modifiedby-13">modifiedBy</h4>
+    <p>Author identifier indicating the person who has last modified the record.</p>
+
+    <p><em>added in v1.1</em></p>
+
+    <h2 id="treatment">Treatment</h2>
+    <p><a href="https://plazi.org/treatmentbank/what-treatment/">Treatments</a> are parts of publications that “treat” a single taxon.
+        They can be an original description for a new species, but also subsequent taxonomic works and usually include several sections such as a diagnosis, description, material examined, distribution, etc.
+        ColDP captures an entire treatment either as a PDF, TXT, HTML or XML document that lives as an individual file in a subfolder <code class="language-plaintext highlighter-rouge">treatments</code> and is named by the corresponding taxonID of the name usage it describes.
+        The taxons <code class="language-plaintext highlighter-rouge">accordingToID</code> should always point to the reference the treatment is published in.
+        Example: <code class="language-plaintext highlighter-rouge">treatments/19854332.html</code> would be an html document which is the marked up treatment for the taxon with ID <code class="language-plaintext highlighter-rouge">19854332</code>.</p>
+
+    <h1 id="identifiers">Identifiers</h1>
+    <p>Identifiers are important and often come embedded with some resolution URL to make them globally unique and actionable.
+        For sharing the true identifiers only, which often have a local scope, ColDP requires them to be prefixed with a known scope abbreviation.
+        For example COL identifiers should be shared not by their API or portal URL (http://www.catalogueoflife.org/data/taxon/NN), but instead as <code class="language-plaintext highlighter-rouge">col:NN</code>.</p>
+
+    <p>These type of compact identifiers are also known <a href="https://en.wikipedia.org/wiki/CURIE">CURIE</a>s.
+        Scopes that are also registered prefixes in <a href="https://registry.identifiers.org">identifiers.org</a> are linked.</p>
+
+    <h2 id="identifier-scopes">Identifier Scopes</h2>
+    <p>To avoid conflicts of naming scopes we strongly recommend to use the following scope names which are case insensitive:</p>
+
+    <ul>
+        <li>algaebase: AlgaeBase algae species - <a href="https://www.algaebase.org/search/species/detail/?species_id=90">algaebase:90</a></li>
+        <li>avibase: Avibase taxon concept - <a href="https://avibase.ca/D754DB85">avibase:D754DB8552A7AA42</a></li>
+        <li>bhl: Biodiversity Heritage Library page number - <a href="https://www.biodiversitylibrary.org/page/45607882">bhl:45607882</a></li>
+        <li><a href="https://registry.identifiers.org/registry/bold.taxonomy">bold</a>: BOLD BIN numbers - <a href="http://v3.boldsystems.org/index.php/Public_BarcodeCluster?clusteruri=BOLD:AAJ2287">BOLD:AAJ2287</a></li>
+        <li>clb: ChecklistBank identifier with a regex pattern of <code class="language-plaintext highlighter-rouge">clb:(\d+)(\/([unr])\.(.+))?</code> $1=datasetKey, $2=entity (<strong>u</strong>sage, <strong>n</strong>ame, <strong>r</strong>eference), $3=entity identifier
+            <ul>
+                <li>A dataset with just an integer key: <a href="https://www.checklistbank.org/dataset/2019/about">clb:2019</a>: Mammal Species of the World in ChecklistBank</li>
+                <li>A name usage with a compound key: <a href="https://www.checklistbank.org/dataset/2019/taxon/14000204">clb:2019/u.14000204</a>: Puma concolor (id 14000204) in Mammal Species of the World</li>
+                <li>A reference: <a href="https://www.checklistbank.org/dataset/2144/reference/10040">clb:2144/r.10040</a>: <em>The Cactus Family (2001)</em> in ITIS</li>
+            </ul>
+        </li>
+        <li><a href="https://registry.identifiers.org/registry/col">col</a>: Catalogue of Life Checklist- <a href="http://www.catalogueoflife.org/data/taxon/6W3C4">col:6W3C4</a></li>
+        <li><a href="https://registry.identifiers.org/registry/doi">doi</a>: any Digital Object Identifier - <a href="https://doi.org/10.5281/zenodo.6407053">doi:10.5281/zenodo.6407053</a></li>
+        <li>eunis: European Nature Information System - <a href="https://eunis.eea.europa.eu/species/193060">eunis:193060</a></li>
+        <li>gbif: GBIF Backbone Taxonomy - <a href="https://www.gbif.org/species/2704179">gbif:2704179</a></li>
+        <li>genbank: GenBank accession number - <a href="https://www.ncbi.nlm.nih.gov/nucleotide/U49845">genbank:U49845</a></li>
+        <li>hol: Hymenoptera Online ID - <a href="https://hol.osu.edu/index.html?id=31685">hol:31685</a></li>
+        <li>if: Index Fungorum - <a href="http://www.indexfungorum.org/Names/NamesRecord.asp?RecordID=550000">if:550000</a></li>
+        <li>ina: Index Nominum Algarum - <a href="http://ucjeps.berkeley.edu/cgi-bin/porp_cgi.pl?101744">ina:101744</a></li>
+        <li>inat: iNaturalist taxon identifier - <a href="https://www.inaturalist.org/observations?taxon_id=52808">inat:52808</a></li>
+        <li>ipni: International Plant Name Index - <a href="https://www.ipni.org/n/320035-2">ipni:320035-2</a></li>
+        <li><a href="https://registry.identifiers.org/registry/isbn">isbn</a>: International Standard Book Number, with 10 or 13 numbers - <a href="https://isbndb.com/book/9780393978674">isbn:9780393978674</a></li>
+        <li>irmng: Interim Register of Marine and Nonmarine Genera - <a href="[https://apiv3.iucnredlist.org/api/v3/taxonredirect/10335](https://www.irmng.org/aphia.php?p=taxdetails&amp;id=1038927)">irmng:1038927</a></li>
+        <li>iucn: IUCN Redlist species - <a href="https://apiv3.iucnredlist.org/api/v3/taxonredirect/10335">iucn:10335</a></li>
+        <li>mb: Mycobank Fungal Database - <a href="https://www.mycobank.org/page/Name%20details%20page/field/Mycobank%20%23/309626">mb:309626</a></li>
+        <li>ncbi: NCBI taxonomy - <a href="https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=93036">ncbi:93036</a></li>
+        <li>orcid: Open Researcher and Contributor ID - <a href="https://orcid.org/0000-0001-6492-4016">orcid:0000-0001-6492-4016</a></li>
+        <li>otl: Open Tree of Life - <a href="https://tree.opentreeoflife.org/taxonomy/browse?id=510850">otl:510850</a></li>
+        <li>pesi: Pan-European Species directories Infrastructure - <a href="http://www.eu-nomen.eu/portal/taxon.php?GUID=93A25572-521E-4130-B8C5-9C7D332E5605">pesi:93A25572-521E-4130-B8C5-9C7D332E5605</a></li>
+        <li>silva: SILVA taxonomy - https://www.arb-silva.de/documentation/silva-taxonomy/</li>
+        <li>taxonid: taxon concepts as Linked Data - <a href="http://taxonid.org/D92326">taxonid:D92326</a></li>
+        <li>tpl: The Plant List - <a href="http://www.theplantlist.org/tpl1.1/record/kew-435194">tpl:kew-435194</a></li>
+        <li>tropicos: Missource Botanical Gardens TROPICOS - <a href="https://www.tropicos.org/name/25509881">tropicos:25509881</a></li>
+        <li>tsn: ITIS Taxonomic Serial Number - <a href="https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&amp;search_value=41107#null">tsn:41107</a></li>
+        <li><a href="https://registry.identifiers.org/registry/ubio.namebank">ubio</a>: uBio - <a href="http://www.ubio.org/browser/details.php?namebankID=5408026">ubio:5408026</a></li>
+        <li>unite: UNITE Species Hypotheses - <a href="https://unite.ut.ee/sh/SH1659817.08FU">unite:SH1659817.08FU</a></li>
+        <li>usda: USDA Plants - <a href="https://plants.sc.egov.usda.gov/home/plantProfile?symbol=POAN">usda:POAN</a></li>
+        <li>viaf: <a href="https://viaf.org/">Virtual International Authority File database</a> - <a href="https://viaf.org/viaf/76389959">viaf:76389959</a></li>
+        <li>wfo: World Flora Online - <a href="http://www.worldfloraonline.org/taxon/wfo-0000891536">wfo:wfo-0000891536</a></li>
+        <li><a href="https://registry.identifiers.org/registry/wikidata">wikidata</a>: Wikidata items - <a href="https://www.wikidata.org/wiki/Q157571">wikidata:Q157571</a></li>
+        <li><a href="https://registry.identifiers.org/registry/worms">worms</a>: World Register of Marine Species - <a href="https://www.marinespecies.org/aphia.php?p=taxdetails&amp;id=212808">worms:212808</a></li>
+        <li>zoobank: ZooBank record - <a href="https://zoobank.org/NomenclaturalActs/eedea832-a8a9-44df-8f2f-684ffec9c19b">zoobank:EEDEA832-A8A9-44DF-8F2F-684FFEC9C19B</a></li>
+    </ul>
+
+    <p>We do recommend to share bare identifiers with their scope if possible.
+        But sharing globally unique URN, URI or URLs can be done without any further scope:</p>
+
+    <ul>
+        <li>https://species.wikimedia.org/wiki/Poa_annua</li>
+        <li>https://www.biodiversitylibrary.org/page/45607882</li>
+        <li>urn:lsid:zoobank.org:act:EEDEA832-A8A9-44DF-8F2F-684FFEC9C19B</li>
+        <li>urn:lsid:ipni.org:names:320035-2</li>
+        <li>urn:lsid:Blattodea.speciesfile.org:TaxonName:1287</li>
+    </ul>
+
+    <p>If you plan to share identifiers with other scopes we encourage users to tell us about them so we can “register” them to guarantee their uniqueness
+        and inform others about their semantics.</p>
+
+    <h1 id="format-comparison">Format Comparison</h1>
+
+    <p>The ColDP format was developed to overcome limitations existing in currently used formats for sharing taxonomic information, namely <a href="https://dwc.tdwg.org/text/">Darwin Core Archives</a> and the Catalogue of Life submission format also known as <a href="http://www.catalogueoflife.org/content/contributing-your-data#ACEF">ACEF</a> (Annual Checklist Exchange Format). Darwin Core Archives and ACEF could still be used for exchanging data to and from Catalogue of Life ChecklistBank, but the ColDP format will support the most features. The following table provides an overview of different features supported in each of the 3 formats:</p>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Feature</th>
+            <th style="text-align: center">ACEF</th>
+            <th style="text-align: center">DwC-A</th>
+            <th style="text-align: center">ColDP</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Linnean classification (KPCOFG)</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Extended Linnean classification (subranks)</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Flexible Parent-child classification</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Custom taxon ordering</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Phylo trees</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Unrestricted ranks</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Higher taxon details</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Infraspecific taxa</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Nested infraspecific taxa</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Basionyms</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Synonyms</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Synonyms for higher taxa</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Name identifier</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Nomenclatural status</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Fossils/extinction flags</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Name &amp; taxon separation</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Species interactions</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Species estimates</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Structured references</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Nomenclatural relations</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Type species</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Type specimen</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Taxon concepts</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Taxon concept relations</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Vernacular names</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Structured distributions</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Treatments</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        <tr>
+            <td>Multimedia metadata</td>
+            <td style="text-align: center">-</td>
+            <td style="text-align: center">x</td>
+            <td style="text-align: center">x</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <ul>
+        <li><code class="language-plaintext highlighter-rouge">x</code> = supported</li>
+        <li><code class="language-plaintext highlighter-rouge">-</code> = not supported</li>
+    </ul>
+
+    <h1 id="best-practices">Best Practices</h1>
+    <p>Please see also the <a href="/coldp/docs/publishing-guide.html">ColDP Publishing Guidelines</a> for concrete examples.</p>
+
+    <h2 id="multiple-value-concatenation">multiple value concatenation</h2>
+    <p>Some fields are allowed to contain multiple values. These must be concatenated by a simple comma. Any surrounding whitespace should be ignored.
+        If the value itself contains a comma, it should be escaped by a backslash, i.e. <code class="language-plaintext highlighter-rouge">foo,bar</code> should become <code class="language-plaintext highlighter-rouge">foo\,bar</code>.
+        Any other combinations of a backslash with some other characters will be take literally, i.e. <code class="language-plaintext highlighter-rouge">\n</code> will remain <code class="language-plaintext highlighter-rouge">\n</code>.</p>
+
+    <h2 id="parentid-vs-flat-ranks">parentID vs flat ranks</h2>
+    <p>A taxonomic hierarchy can be established either as a parent child relationship using <code class="language-plaintext highlighter-rouge">Taxon.parentID</code> or by using the flat, higher rank terms on each record.
+        If possible the parent child approach using <code class="language-plaintext highlighter-rouge">parentID</code> is preferable and the flat higher ranks are not needed in that case.</p>
+
+    <h2 id="species-with-an-uncertain-genus">Species with an uncertain genus</h2>
+    <p>Sometimes there a cases of a described species with a taxonomically unresolved placement.
+        It appears to be a valid species, but there has been no updated taxonomic placement yet (or can’t be because of missing types/information)
+        and a current placement into some other genus is not possible and/or no new combination has yet been published.
+        Instead of listing the same “split” genus twice COL strongly recommends to flag the species taxon with <code class="language-plaintext highlighter-rouge">provisional=true</code> and place it directly under it’s next higher taxon, e.g. the family.</p>
+
+    <h2 id="misapplied-names">Misapplied names</h2>
+    <p>A misapplied  name  is when  the  name  of  one  taxon  is  erroneously  applied  to  a  different  taxon.
+        When “misidentifications” are in widespread use in publications they are often included as part of the synonymy of a taxon.
+        A misapplied name may refer to a single misapplication, but frequently indicates all usages of a name are wrong in a specific, e.g. regional, context.
+        There are various conventions in use and phrases like <code class="language-plaintext highlighter-rouge">auct. nec Zeller, 1877</code>, <code class="language-plaintext highlighter-rouge">sensu Li &amp; Zheng 1997</code> or Ficus exasperata <code class="language-plaintext highlighter-rouge">auct. non Vahl: De Wildeman &amp; Durand</code>
+        strictly do not belong to the Name instance, but to the name usage, i.e. the Synonym or NameUsage coldp record.
+        Separating usage notes from the names authorship can be done in  2 ways in ColDP:</p>
+
+    <ol>
+        <li><code class="language-plaintext highlighter-rouge">accordingToID</code> can be used to refer to a single publication or author that contains the misapplication.</li>
+        <li><code class="language-plaintext highlighter-rouge">namePhrase</code> is used for any additions to the names authorship and can also be used for misapplications like <code class="language-plaintext highlighter-rouge">Leucospermum bolusii E.Phillips, 1910 auct. non Gandoger</code>
+            with <code class="language-plaintext highlighter-rouge">E.Phillips, 1910</code> being the Name.authorship and <code class="language-plaintext highlighter-rouge">auct. non Gandoger</code> the Synonym.namePhrase</li>
+    </ol>
+
+
+
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.1.0/anchor.min.js" integrity="sha256-lZaRhKri35AyJSypXXs4o6OPFTbTmUoltBbDCbdzegg=" crossorigin="anonymous"></script>
+<script>anchors.add();</script>
+</body>
+</html>

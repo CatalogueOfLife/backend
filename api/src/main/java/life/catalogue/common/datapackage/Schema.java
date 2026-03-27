@@ -17,7 +17,6 @@ public class Schema {
 
   private static final String VERSION = ColdpTerm.VERSION;
   private static final String IDENTIFIER = "http://rs.gbif.org/data-packages/coldp/";
-  private String description;
   @JsonIgnore
   private ColdpTerm rowType;
   private List<Field> fields = new ArrayList<>();
@@ -39,14 +38,6 @@ public class Schema {
 
   public String getTitle() {
     return rowType.simpleName();
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
   }
 
   public ColdpTerm getRowType() {
@@ -86,11 +77,11 @@ public class Schema {
     if (this == o) return true;
     if (!(o instanceof Schema)) return false;
     Schema schema = (Schema) o;
-    return Objects.equals(description, schema.description) && rowType == schema.rowType && Objects.equals(fields, schema.fields) && Objects.equals(primaryKey, schema.primaryKey) && Objects.equals(foreignKeys, schema.foreignKeys);
+    return rowType == schema.rowType && Objects.equals(fields, schema.fields) && Objects.equals(primaryKey, schema.primaryKey) && Objects.equals(foreignKeys, schema.foreignKeys);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(description, rowType, fields, primaryKey, foreignKeys);
+    return Objects.hash(rowType, fields, primaryKey, foreignKeys);
   }
 }
