@@ -21,12 +21,16 @@ public class LicenseParserTest extends ParserTestBase<License> {
     assertParse(CC0, "cc0");
     assertParse(CC0, "cc zero");
     assertParse(CC0, "publicdomain");
+    assertParse(CC0, "https://spdx.org/licenses/CC0-1.0");
+    assertParse(CC0, "https://creativecommons.org/publicdomain/zero/1.0/legalcode");
 
     assertParse(CC_BY, "CCBY");
     assertParse(CC_BY, "CC-BY");
     assertParse(CC_BY, "https://creativecommons.org/licenses/by/3.0/");
     assertParse(CC_BY, "http://creativecommons.org/licenses/by/3.0/");
     assertParse(CC_BY, "http://creativecommons.org/licenses/by/4.0/");
+    assertParse(CC_BY, "https://spdx.org/licenses/CC-BY-4.0");
+    assertParse(CC_BY, "CC-BY-4.0");
 
     assertParse(CC_BY_NC, "ccbync");
     assertParse(CC_BY_NC, "cc-by-nc");

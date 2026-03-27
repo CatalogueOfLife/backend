@@ -3,6 +3,7 @@ package life.catalogue.metadata.eml;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.parser.*;
@@ -70,6 +71,7 @@ public class EmlParser {
       EmlAgent agent = new EmlAgent();
       URI url = null;
       Citation cite = null;
+      String identifier = null;
       int event;
       
       while ((event = parser.next()) != XMLStreamConstants.END_DOCUMENT) {
@@ -171,6 +173,21 @@ public class EmlParser {
                 break;
               case "intellectualRights":
                 if (url != null) {
+                  d.setLicense(LicenseParser.PARSER.parseOrNull(url.toString()));
+                }
+                break;
+              //     <licensed>
+              //      <licenseName>Creative Commons Attribution 4.0 International</licenseName>
+              //      <url>https://spdx.org/licenses/CC-BY-4.0</url>
+              //      <identifier>CC-BY-4.0</identifier>
+              //    </licensed>
+              case "identifier":
+                identifier = text(text);
+                break;
+              case "licensed":
+                if (identifier != null) {
+                  d.setLicense(LicenseParser.PARSER.parseOrNull(identifier));
+                } else if (url != null && d.getLicense() != null) {
                   d.setLicense(LicenseParser.PARSER.parseOrNull(url.toString()));
                 }
                 break;

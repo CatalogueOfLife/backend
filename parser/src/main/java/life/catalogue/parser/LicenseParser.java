@@ -9,9 +9,10 @@ import java.util.regex.Pattern;
  * A parser for various license values.
  */
 public class LicenseParser extends EnumParser<License> {
-  private static final Pattern CC0 = Pattern.compile("/publicdomain", Pattern.CASE_INSENSITIVE);
-  private static final Pattern CCBY = Pattern.compile("/licenses/by/", Pattern.CASE_INSENSITIVE);
-  private static final Pattern CCBYNC = Pattern.compile("/licenses/by-nc/", Pattern.CASE_INSENSITIVE);
+  private static final Pattern PUBDOMAIN = Pattern.compile("/publicdomain(?=/|$)", Pattern.CASE_INSENSITIVE);
+  private static final Pattern CC0 = Pattern.compile("/licenses/cc0(-\\d\\.0)?(?=/|$)", Pattern.CASE_INSENSITIVE);
+  private static final Pattern CCBY = Pattern.compile("/licenses/(cc-)?by(-\\d\\.[05])?(?=/|$)", Pattern.CASE_INSENSITIVE);
+  private static final Pattern CCBYNC = Pattern.compile("/licenses/(cc-)?by-nc(-\\d\\.[05])?(?=/|$)", Pattern.CASE_INSENSITIVE);
 
   public static final LicenseParser PARSER = new LicenseParser();
 
@@ -26,7 +27,7 @@ public class LicenseParser extends EnumParser<License> {
   @Override
   public Optional<? extends License> parse(String value) throws UnparsableException {
     if (value != null) {
-      if (CC0.matcher(value).find()) {
+      if (CC0.matcher(value).find() || PUBDOMAIN.matcher(value).find()) {
         return Optional.of(License.CC0);
 
       } else if (CCBYNC.matcher(value).find()) {

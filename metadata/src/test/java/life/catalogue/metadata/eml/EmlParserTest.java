@@ -12,6 +12,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
+import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import org.junit.Test;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
@@ -24,6 +25,16 @@ public class EmlParserTest {
 
   private DatasetWithSettings read(String name) throws IOException {
     return EmlParser.parse(getClass().getResourceAsStream("/metadata/" + name)).get();
+  }
+
+  /**
+   * https://github.com/globalbioticinteractions/globalbioticinteractions/issues/1150#issuecomment-4130255667
+   */
+  @Test
+  public void pollinator() throws Exception {
+    Optional<DatasetWithSettings> m = EmlParser.parse(Resources.stream("metadata/eml-pollinator.xml"));
+    Dataset d = m.get().getDataset();
+    assertEquals(License.CC_BY, d.getLicense());
   }
 
   @Test

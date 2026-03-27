@@ -314,7 +314,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //modifiedBy
   ;
 
-  public final static String VERSION = "1.1"; // ColDP version supported
+  public final static String VERSION = "1.2"; // ColDP version supported
   private final static Map<String, ColdpTerm> LOOKUP = Arrays.stream(values()).collect(Collectors.toMap(ColdpTerm::normalize, Function.identity()));
   
   /**
