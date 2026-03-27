@@ -1,11 +1,15 @@
 package life.catalogue.release;
 
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.util.YamlUtils;
 
+import org.apache.commons.io.FileUtils;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.File;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -17,7 +21,6 @@ import static org.junit.Assert.*;
  * WARNING !!!
  * These test make use of some production configurations and need to be adjusted if these change considerably!
  */
-@Ignore("prod configs need to be changed when this branch is deployed. E.g remove issueSourceDOIs")
 public class ReleaseConfigTest {
 
   @Before
