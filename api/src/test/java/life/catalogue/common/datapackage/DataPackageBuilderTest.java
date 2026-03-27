@@ -22,7 +22,7 @@ public class DataPackageBuilderTest {
     assertEquals(ColdpTerm.RESOURCES.size(), dp.getResources().size());
 
     dp.getResources().forEach(r -> {
-      System.out.println(r.getName());
+      //System.out.println(r.getName());
       assertNotNull(r.getName());
       assertNotNull(r.getName(), r.getDescription());
       if (r instanceof TreatmentResource) {

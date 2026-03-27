@@ -3,6 +3,8 @@ package life.catalogue.es.suggest;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.search.NameUsageSuggestRequest;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.config.IndexConfig;
 import life.catalogue.es.EsTestBase;
 import life.catalogue.es.EsUtil;
@@ -22,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 
 public class NameUsageSuggestionServiceEsIT extends EsTestBase {
   static final int DS1 = 100;
+  static int idx = 100;
 
   private static NameUsageSuggestionServiceEs service;
 
@@ -74,8 +77,53 @@ public class NameUsageSuggestionServiceEsIT extends EsTestBase {
       taxon("t10", "Felis silvestris anatolica", "Greg, 1887", Rank.SUBSPECIES, NomCode.ZOOLOGICAL, DS1, null, null)
     ));
 
+
+    insert(c, cfg, tax(Rank.SPECIES, "Puma concolor", "(Linnaeus, 1771)"));
+    insert(c, cfg, tax(Rank.SUBSPECIES, "Puma concolor concolor", "(Linnaeus, 1771)"));
+    insert(c, cfg, syn(Rank.SUBSPECIES, "Puma concolor puma", "(Molina, 1782)"));
+    insert(c, cfg, tax(Rank.SUBSPECIES, "Puma concolor couguar", "(Kerr, 1792)"));
+    insert(c, cfg, tax(Rank.SPECIES, "Sanogasta puma", "Ramírez, 2003"));
+    insert(c, cfg, tax(Rank.SPECIES, "Pimelodus puma", "Girard, 1859"));
+    insert(c, cfg, tax(Rank.VARIETY, "Candelaria concolor var. concolor"));
+    insert(c, cfg, syn(Rank.SPECIES, "Loasa puma-chini", "Weigend"));
+    insert(c, cfg, tax(Rank.SUBSPECIES, "Ptyonoprogne concolor concolor", "(Sykes, 1832)"));
+    insert(c, cfg, tax(Rank.SPECIES, "Anolis concolor", "Cope, 1863"));
+    insert(c, cfg, syn(Rank.VARIETY, "Cypraea (Luria) lurida var. concolor", "Kobelt, 1906"));
+    insert(c, cfg, tax(Rank.VARIETY, "Camponotus rubripes var. concolor"));
+    insert(c, cfg, mis(Rank.SPECIES, "Mytilaspis concolor", "auct. non Essig & Baker, 1909"));
+
+    // Phocidae – used to verify rank-based scoring in RELEVANCE sort (t113–t117)
+    insert(c, cfg, tax(Rank.FAMILY,     "Phocidae",                   "Gray, 1821"));
+    insert(c, cfg, tax(Rank.GENUS,      "Phoca",                      "Linnaeus, 1758"));
+    insert(c, cfg, tax(Rank.SPECIES,    "Phoca vitulina",              "Linnaeus, 1758"));
+    insert(c, cfg, tax(Rank.SUBSPECIES, "Phoca vitulina vitulina",     "Linnaeus, 1758"));
+    insert(c, cfg, tax(Rank.SUBSPECIES, "Phoca vitulina mellonae",     "Doutt, 1942"));
+
     EsUtil.refreshIndex(c, cfg.name);
     service = new NameUsageSuggestionServiceEs(cfg.name, c);
+  }
+
+  private static NameUsageWrapper tax(Rank rank, String name) throws Exception {
+    return tax(rank, name, null);
+  }
+  private static NameUsageWrapper tax(Rank rank, String name, String author) throws Exception {
+    return any(TaxonomicStatus.ACCEPTED, rank, name, author);
+  }
+  private static NameUsageWrapper syn(Rank rank, String name, String author) throws Exception {
+    return any(TaxonomicStatus.SYNONYM, rank, name, author);
+  }
+  private static NameUsageWrapper mis(Rank rank, String name, String author) throws Exception {
+    return any(TaxonomicStatus.MISAPPLIED, rank, name, author);
+  }
+  private static NameUsageWrapper any(TaxonomicStatus status, Rank rank, String name, String author) throws Exception {
+    NameUsageWrapper nuw;
+    if (status.isSynonym()) {
+      nuw = synonym("s"+idx++, name, author, rank, NomCode.ZOOLOGICAL, DS1, "t7");
+    } else {
+      nuw = taxon("t"+idx++, name, author, rank, NomCode.ZOOLOGICAL, DS1, null, null);
+    }
+    nuw.getUsage().setNamePhrase(null);
+    return nuw;
   }
 
   @AfterClass
@@ -127,8 +175,67 @@ public class NameUsageSuggestionServiceEsIT extends EsTestBase {
     req.setSortBy(NameUsageRequest.SortBy.RELEVANCE);
     resp = service.suggest(req);
     assertEquals(4, resp.size());
-    assertEquals("t8", resp.getFirst().getUsageId()); // sorted by relevance - autonym as query term twice
-    assertEquals("t7", resp.get(1).getUsageId());
+    assertEquals("t7", resp.getFirst().getUsageId());
+    assertEquals("t8", resp.get(1).getUsageId());
+
+    req = new NameUsageSuggestRequest();
+    req.setDatasetFilter(DS1);
+
+    req.setQ("Puma concolor");
+    resp = service.suggest(req);
+    // expect Puma concolor as first suggestion
+    assertEquals("t100", resp.getFirst().getUsageId());
+
+    req.setQ("Puma con");
+    resp = service.suggest(req);
+    // expect Puma concolor as first suggestion
+    assertEquals("t100", resp.getFirst().getUsageId());
+
+    req.setQ("Puma co");
+    resp = service.suggest(req);
+    // expect Puma concolor as first suggestion
+    assertEquals("t100", resp.getFirst().getUsageId());
+
+    req.setQ("Puma concol");
+    resp = service.suggest(req);
+    // expect Puma concolor as first suggestion
+    assertEquals("t100", resp.getFirst().getUsageId());
+
+    // Rank-based scoring in RELEVANCE sort
+    // Single-word query: higher ranks (family, genus) score above species/subspecies
+    req = new NameUsageSuggestRequest();
+    req.setDatasetFilter(DS1);
+    req.setSortBy(NameUsageRequest.SortBy.RELEVANCE);
+
+    req.setQ("Phoc");
+    resp = service.suggest(req);
+    assertEquals("t113", resp.getFirst().getUsageId()); // Phocidae (FAMILY) – highest rank
+    assertEquals("t114", resp.get(1).getUsageId());     // Phoca (GENUS)
+    assertEquals("t115", resp.get(2).getUsageId());     // Phoca vitulina (SPECIES)
+
+    // make sure we're case insensitive
+    req.setQ("PHoC");
+    resp = service.suggest(req);
+    assertEquals("t113", resp.getFirst().getUsageId()); // Phocidae (FAMILY) – highest rank
+    assertEquals("t114", resp.get(1).getUsageId());     // Phoca (GENUS)
+    assertEquals("t115", resp.get(2).getUsageId());     // Phoca vitulina (SPECIES)
+
+    // Multi-word prefix: species ranked above subspecies
+    req.setQ("Phoca vit");
+    resp = service.suggest(req);
+    assertEquals("t115", resp.getFirst().getUsageId()); // Phoca vitulina (SPECIES)
+    assertEquals("t116", resp.get(1).getUsageId());     // Phoca vitulina vitulina (SUBSPECIES)
+
+    req.setQ("Phoca");
+    resp = service.suggest(req);
+    assertEquals("t114", resp.getFirst().getUsageId()); // exact match against Phoca (GENUS)
+    assertEquals("t115", resp.get(1).getUsageId());     // Phoca vitulina (SPECIES)
+
+
+    req.setQ("Phoca");
+    resp = service.suggest(req);
+    assertEquals("t114", resp.getFirst().getUsageId()); // exact match against Phoca (GENUS)
+    assertEquals("t115", resp.get(1).getUsageId());     // Phoca vitulina (SPECIES)
   }
 
 }

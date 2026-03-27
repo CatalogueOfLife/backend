@@ -78,7 +78,7 @@ public class QTranslator {
    * Wraps a query with a function score query that boosts accepted names.
    * @param query the main query to wrap
    */
-  private Query boostAcceptedQuery(Function<Query.Builder, ObjectBuilder<Query>> query) {
+  protected Query boostAcceptedQuery(Function<Query.Builder, ObjectBuilder<Query>> query) {
     return Query.of(q -> q
       .functionScore(fs -> fs
         .query(query)

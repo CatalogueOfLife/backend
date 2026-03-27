@@ -11,32 +11,10 @@
           "replacement": ""
         }
       },
-      "filter": {
-        "suggest_filter": {
-          "type": "edge_ngram",
-          "min_gram": 2,
-          "max_gram": 10
-        }
-      },
       "analyzer": {
         "standard_ascii": {
           "tokenizer": "standard",
           "filter": ["lowercase", "asciifolding"]
-        },
-        "suggest": {
-          "tokenizer": "standard",
-          "filter": [
-            "lowercase",
-            "asciifolding",
-            "suggest_filter"
-          ]
-        },
-        "suggest_search": {
-          "tokenizer": "standard",
-          "filter": [
-            "lowercase",
-            "asciifolding"
-          ]
         },
         "vernacular_name_analyzer": {
           "tokenizer": "standard",
@@ -158,11 +136,6 @@
                   "word": {
                     "type": "text",
                     "analyzer": "standard_ascii"
-                  },
-                  "suggest": {
-                    "type": "text",
-                    "analyzer": "suggest",
-                    "search_analyzer": "suggest_search"
                   }
                 }
               },
