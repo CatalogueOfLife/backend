@@ -57,7 +57,13 @@ public class ColdpTermTest {
   @Test
   public void testNameUsage(){
     for (ColdpTerm t : RESOURCES.get(Name)) {
-      if (t == genus) continue;
+      t = switch (t) {
+        case genus -> genericName;
+        case publishedInYear -> namePublishedInYear;
+        case publishedInPage -> namePublishedInPage;
+        case publishedInPageLink -> namePublishedInPageLink;
+        default -> t;
+      };
       assertTrue(t + " missing in NameUsage", RESOURCES.get(NameUsage).contains(t));
     }
     for (ColdpTerm t : RESOURCES.get(Taxon)) {
