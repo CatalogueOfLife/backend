@@ -1,0 +1,49 @@
+[
+  {
+    "match": "Quercus L.",
+    "context": "Fagaceae",
+    "usageId": "quercus-genus",
+    "nameId": "quercus-genus-n",
+    "rank": "GENUS",
+    "status": "ACCEPTED",
+    "nomCode": "BOTANICAL"
+  },
+  {
+    "match": "Quercus robur L.",
+    "context": "Fagaceae",
+    "usageId": "quercus-robur",
+    "nameId": "quercus-robur-n",
+    "rank": "SPECIES",
+    "status": "ACCEPTED",
+    "nomCode": "BOTANICAL"
+  },
+  {
+    "match": "Quercus robur subsp. robur",
+    "context": "Fagaceae",
+    "usageId": "quercus-robur-robur",
+    "nameId": "quercus-robur-robur-n",
+    "rank": "SUBSPECIES",
+    "status": "ACCEPTED",
+    "nomCode": "BOTANICAL"
+  },
+  {
+    "match": "Quercus pedunculata Ehrh.",
+    "context": "Fagaceae",
+    "usageId": "quercus-pedunculata",
+    "nameId": "quercus-pedunculata-n",
+    "acceptedUsageId": "quercus-robur",
+    "acceptedName": "Quercus robur L.",
+    "rank": "SPECIES",
+    "status": "SYNONYM",
+    "nomCode": "BOTANICAL"
+  },
+  {
+    "match": "Quercus petraea (Matt.) Liebl.",
+    "context": "Fagaceae",
+    "usageId": "quercus-petraea",
+    "nameId": "quercus-petraea-n",
+    "rank": "SPECIES",
+    "status": "ACCEPTED",
+    "nomCode": "BOTANICAL"
+  }
+]

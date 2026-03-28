@@ -1,0 +1,58 @@
+[
+  {
+    "match": "Taraxacum F.H.Wigg.",
+    "context": "Asteraceae",
+    "usageId": "taraxacum-genus",
+    "nameId": "taraxacum-genus-n",
+    "rank": "GENUS",
+    "status": "ACCEPTED",
+    "nomCode": "BOTANICAL"
+  },
+  {
+    "match": "Taraxacum officinale F.H.Wigg.",
+    "context": "Asteraceae",
+    "usageId": "taraxacum-officinale",
+    "nameId": "taraxacum-officinale-n",
+    "rank": "SPECIES",
+    "status": "ACCEPTED",
+    "nomCode": "BOTANICAL"
+  },
+  {
+    "match": "Taraxacum alpinum (Hoppe) Hegetschw. & Heer",
+    "context": "Asteraceae",
+    "usageId": "taraxacum-alpinum",
+    "nameId": "taraxacum-alpinum-n",
+    "rank": "SPECIES",
+    "status": "ACCEPTED",
+    "nomCode": "BOTANICAL"
+  },
+  {
+    "match": "Taraxacum atratum Dahlst.",
+    "context": "Asteraceae",
+    "usageId": "taraxacum-atratum",
+    "nameId": "taraxacum-atratum-n",
+    "rank": "SPECIES",
+    "status": "ACCEPTED",
+    "nomCode": "BOTANICAL"
+  },
+  {
+    "match": "Taraxacum palustre (Lyons) Symons",
+    "context": "Asteraceae",
+    "usageId": "taraxacum-palustre",
+    "nameId": "taraxacum-palustre-n",
+    "rank": "SPECIES",
+    "status": "ACCEPTED",
+    "nomCode": "BOTANICAL"
+  },
+  {
+    "match": "Leontodon taraxacum L.",
+    "context": "Asteraceae",
+    "usageId": "leontodon-taraxacum",
+    "nameId": "leontodon-taraxacum-n",
+    "acceptedUsageId": "taraxacum-officinale",
+    "acceptedName": "Taraxacum officinale F.H.Wigg.",
+    "rank": "SPECIES",
+    "status": "SYNONYM",
+    "nomCode": "BOTANICAL"
+  }
+]

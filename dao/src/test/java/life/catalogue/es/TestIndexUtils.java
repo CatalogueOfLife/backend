@@ -75,7 +75,7 @@ public class TestIndexUtils {
   }
 
   public static SimpleName insert(ElasticsearchClient c, IndexConfig cfg, NameUsageWrapper w) throws Exception {
-    System.out.println(Arrays.toString(w.getUsage().nonNullNameFields().toArray()));
+    System.out.println(w.getId() + " --> " + w.getUsage().getLabel() + " [" + w.getUsage().getRank() + "]");
     EsUtil.insert(c, cfg.name, w);
     return w.getUsage() instanceof NameUsageBase nub ? new SimpleName(nub) : null;
   }
