@@ -19,7 +19,11 @@ public class QSuggestTranslater extends QTranslator {
   }
 
   /**
-   * Phrase-prefix match on the word field so multi-word queries ("Puma con") work correctly.
+   * Phrase-prefix match on the search_as_you_type word field.
+   * ES automatically routes match_phrase_prefix through the _index_prefix sub-field for
+   * O(1) performance regardless of prefix length — no max_expansions needed.
+   * Phrase semantics ensure all tokens are required in order, so "Phoca vit" cannot
+   * match the genus "Phoca" alone.
    * Scoring ignores BM25 (boostMode=Replace) and instead sums:
    *   - accepted boost (weight 1.1 for accepted names)
    *   - rank boost   (reciprocal of rank ordinal × RANK_FACTOR — higher ranks score higher)
@@ -27,10 +31,9 @@ public class QSuggestTranslater extends QTranslator {
   @Override
   public Query buildSciNameQuery() {
     return Query.of(q -> q.functionScore(fs -> fs
-      .query(inner -> inner.matchPhrasePrefix(m -> m
-        .query(request.getQ())
+        .query(inner -> inner.matchPhrasePrefix(m -> m
         .field(FLD_WORD)
-        .maxExpansions(1000)
+        .query(request.getQ())
       ))
       .functions(f -> f
         .filter(fq -> fq.term(t -> t

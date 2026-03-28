@@ -134,8 +134,9 @@
                 "type": "keyword",
                 "fields": {
                   "word": {
-                    "type": "text",
-                    "analyzer": "standard_ascii"
+                    "type": "search_as_you_type",
+                    "analyzer": "standard_ascii",
+                    "max_shingle_size": 2
                   }
                 }
               },

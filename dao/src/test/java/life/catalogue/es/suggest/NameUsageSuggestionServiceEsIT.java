@@ -78,6 +78,7 @@ public class NameUsageSuggestionServiceEsIT extends EsTestBase {
     req = new NameUsageSuggestRequest();
     req.setDatasetFilter(DS1);
     req.setQ("silv");
+    req.setSortBy(NameUsageRequest.SortBy.TAXONOMIC);
     resp = service.suggest(req);
     assertEquals(4, resp.size());
     assertEquals("t7", resp.getFirst().getUsageId());
