@@ -7,6 +7,7 @@ import java.util.List;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 
+import static life.catalogue.api.search.NameUsageRequest.SortBy.RELEVANCE;
 import static life.catalogue.api.search.NameUsageRequest.SortBy.TAXONOMIC;
 
 public class SortByTranslator {
@@ -19,7 +20,7 @@ public class SortByTranslator {
 
   public List<SortOptions> translate() {
     if (request.getSortBy() == null) {
-      request.setSortBy(TAXONOMIC);
+      request.setSortBy(RELEVANCE);
     }
 
     SortOrder order = request.isReverse() ? SortOrder.Desc : SortOrder.Asc;

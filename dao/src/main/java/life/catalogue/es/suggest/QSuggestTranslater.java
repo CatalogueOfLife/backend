@@ -30,6 +30,7 @@ public class QSuggestTranslater extends QTranslator {
       .query(inner -> inner.matchPhrasePrefix(m -> m
         .query(request.getQ())
         .field(FLD_WORD)
+        .maxExpansions(1000)
       ))
       .functions(f -> f
         .filter(fq -> fq.term(t -> t
