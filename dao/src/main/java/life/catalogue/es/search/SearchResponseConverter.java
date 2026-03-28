@@ -1,18 +1,16 @@
 package life.catalogue.es.search;
 
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Hit;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.*;
 import life.catalogue.dao.DatasetInfoCache;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.search.Hit;
 
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
@@ -29,21 +27,19 @@ class SearchResponseConverter {
 
   NameUsageSearchResponse convertEsResponse(Page page) throws IOException {
     int total = (int) esResponse.hits().total().value();
-    List<NameUsageSearchResult> nameUsages = convertNameUsageDocuments();
+    List<NameUsageWrapper> nameUsages = convertNameUsageDocuments();
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = generateFacets();
     return new NameUsageSearchResponse(page, total, nameUsages, facets);
   }
 
-  private List<NameUsageSearchResult> convertNameUsageDocuments() throws IOException {
+  private List<NameUsageWrapper> convertNameUsageDocuments() throws IOException {
     return esResponse.hits().hits().stream()
       .map(this::build)
       .toList();
   }
 
-  private NameUsageSearchResult build(Hit<NameUsageWrapper> hit) {
-    var nuw = new NameUsageSearchResult(hit.source());
-    nuw.setScore(hit.score());
-    return nuw;
+  private NameUsageWrapper build(Hit<NameUsageWrapper> hit) {
+    return hit.source();
   }
 
   private Map<NameUsageSearchParameter, Set<FacetValue<?>>> generateFacets() {

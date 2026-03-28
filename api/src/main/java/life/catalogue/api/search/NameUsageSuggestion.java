@@ -3,7 +3,6 @@ package life.catalogue.api.search;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -26,7 +25,6 @@ public class NameUsageSuggestion {
   private Rank rank;
   private TaxonomicStatus status;
   private NomCode nomCode;
-  private Double score;
   private TaxGroup group;
 
   /**
@@ -148,23 +146,15 @@ public class NameUsageSuggestion {
     this.nomCode = nomCode;
   }
 
-  public Double getScore() {
-    return score;
-  }
-
-  public void setScore(Double score) {
-    this.score = score;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof NameUsageSuggestion)) return false;
     NameUsageSuggestion that = (NameUsageSuggestion) o;
-    return Objects.equals(score, that.score) && Objects.equals(match, that.match) && Objects.equals(context, that.context) && Objects.equals(usageId, that.usageId) && Objects.equals(nameId, that.nameId) && Objects.equals(acceptedUsageId, that.acceptedUsageId) && Objects.equals(acceptedName, that.acceptedName) && rank == that.rank && status == that.status && nomCode == that.nomCode && group == that.group;
+    return Objects.equals(match, that.match) && Objects.equals(context, that.context) && Objects.equals(usageId, that.usageId) && Objects.equals(nameId, that.nameId) && Objects.equals(acceptedUsageId, that.acceptedUsageId) && Objects.equals(acceptedName, that.acceptedName) && rank == that.rank && status == that.status && nomCode == that.nomCode && group == that.group;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(match, context, usageId, nameId, acceptedUsageId, acceptedName, rank, status, nomCode, score, group);
+    return Objects.hash(match, context, usageId, nameId, acceptedUsageId, acceptedName, rank, status, nomCode, group);
   }
 }

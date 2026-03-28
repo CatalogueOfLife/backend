@@ -1,5 +1,14 @@
 package life.catalogue.resources.dataset;
 
+import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
@@ -13,38 +22,26 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es.query.InvalidQueryException;
 import life.catalogue.es.indexing.NameUsageIndexService;
+import life.catalogue.es.query.InvalidQueryException;
 import life.catalogue.es.search.NameUsageSearchService;
 import life.catalogue.es.suggest.NameUsageSuggestionService;
 import life.catalogue.feedback.Feedback;
 import life.catalogue.feedback.FeedbackService;
 import life.catalogue.resources.NameUsageSearchResource;
 import life.catalogue.resources.ResourceUtils;
-
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.annotations.Hidden;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriInfo;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")
@@ -175,7 +172,7 @@ public class NameUsageResource {
 
   @GET
   @Path("search")
-  public ResultPage<NameUsageSearchResult> searchDataset(@PathParam("key") int datasetKey,
+  public ResultPage<NameUsageWrapper> searchDataset(@PathParam("key") int datasetKey,
                                                     @BeanParam NameUsageSearchRequest query,
                                                     @Valid @BeanParam Page page,
                                                     @Context ContainerRequestContext ctx,
@@ -189,7 +186,7 @@ public class NameUsageResource {
 
   @POST
   @Path("search")
-  public ResultPage<NameUsageSearchResult> searchPOST(@PathParam("key") int datasetKey,
+  public ResultPage<NameUsageWrapper> searchPOST(@PathParam("key") int datasetKey,
                                                  @Valid NameUsageSearchResource.SearchRequestBody req,
                                                  @Context ContainerRequestContext ctx,
                                                  @Context UriInfo uri) throws InvalidQueryException {

@@ -52,7 +52,6 @@ class SearchRequestTranslator {
        .size(page.getLimit())
        .query(query)
        .sort(sortOptions)
-       .trackScores(true)
        .trackTotalHits(th -> th.enabled(true));
 
       if (!request.getFacets().isEmpty()) {

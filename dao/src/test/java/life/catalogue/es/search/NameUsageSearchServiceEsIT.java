@@ -333,7 +333,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     // NAME: alphabetical ascending
     NameUsageSearchRequest nameReq = new NameUsageSearchRequest();
     nameReq.setSortBy(NameUsageRequest.SortBy.NAME);
-    List<NameUsageSearchResult> byName = search(nameReq).getResult();
+    List<NameUsageWrapper> byName = search(nameReq).getResult();
     assertEquals(TOTAL, byName.size());
     assertNameOrder(byName, false);
 
@@ -341,14 +341,14 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     NameUsageSearchRequest nameRevReq = new NameUsageSearchRequest();
     nameRevReq.setSortBy(NameUsageRequest.SortBy.NAME);
     nameRevReq.setReverse(true);
-    List<NameUsageSearchResult> byNameRev = search(nameRevReq).getResult();
+    List<NameUsageWrapper> byNameRev = search(nameRevReq).getResult();
     assertEquals(TOTAL, byNameRev.size());
     assertNameOrder(byNameRev, true);
 
     // TAXONOMIC: kingdoms (lower ordinal) must appear before species (higher ordinal)
     NameUsageSearchRequest taxReq = new NameUsageSearchRequest();
     taxReq.setSortBy(NameUsageRequest.SortBy.TAXONOMIC);
-    List<NameUsageSearchResult> byTax = search(taxReq).getResult();
+    List<NameUsageWrapper> byTax = search(taxReq).getResult();
     assertEquals(TOTAL, byTax.size());
     int firstKingdom = -1, firstSpecies = -1;
     for (int i = 0; i < byTax.size(); i++) {
@@ -365,7 +365,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     assertEquals(TOTAL, count(relReq));
   }
 
-  private static void assertNameOrder(List<NameUsageSearchResult> results, boolean reversed) {
+  private static void assertNameOrder(List<NameUsageWrapper> results, boolean reversed) {
     for (int i = 0; i < results.size() - 1; i++) {
       String curr = results.get(i).getUsage().getName().getScientificName();
       String next = results.get(i + 1).getUsage().getName().getScientificName();
@@ -392,7 +392,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     req.setQ("Felis catus");
     req.setSearchType(EXACT);
     // EXACT type forces SCIENTIFIC_NAME content (done by RequestValidator)
-    List<NameUsageSearchResult> results = search(req).getResult();
+    List<NameUsageWrapper> results = search(req).getResult();
     assertEquals("EXACT 'Felis catus' should match exactly 1 document", 1, results.size());
     assertEquals("t6", results.get(0).getId());
 
@@ -488,7 +488,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     NameUsageSearchRequest req = new NameUsageSearchRequest();
     req.setSingleContent(VERNACULAR_NAME);
     req.setQ("Rose");
-    List<NameUsageSearchResult> results = search(req).getResult();
+    List<NameUsageWrapper> results = search(req).getResult();
     assertEquals("Vernacular 'Rose' should match exactly 1 document", 1, results.size());
     assertEquals("t10", results.getFirst().getId());
   }
@@ -499,7 +499,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     NameUsageSearchRequest req = new NameUsageSearchRequest();
     req.setSingleContent(NameUsageRequest.SearchContent.AUTHORSHIP);
     req.setQ("Linnaeus");
-    List<NameUsageSearchResult> results = search(req).getResult();
+    List<NameUsageWrapper> results = search(req).getResult();
     assertEquals("Authorship 'Linnaeus' should match exactly 1 document", 1, results.size());
     assertEquals("t5", results.getFirst().getId());
 

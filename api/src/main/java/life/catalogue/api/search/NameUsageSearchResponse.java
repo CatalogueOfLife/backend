@@ -6,7 +6,7 @@ import life.catalogue.api.model.ResultPage;
 import java.util.*;
 import java.util.function.Supplier;
 
-public class NameUsageSearchResponse extends ResultPage<NameUsageSearchResult> {
+public class NameUsageSearchResponse extends ResultPage<NameUsageWrapper> {
 
   private final Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets;
 
@@ -15,17 +15,17 @@ public class NameUsageSearchResponse extends ResultPage<NameUsageSearchResult> {
     this.facets = null;
   }
 
-  public NameUsageSearchResponse(Page page, int total, List<NameUsageSearchResult> result) {
+  public NameUsageSearchResponse(Page page, int total, List<NameUsageWrapper> result) {
     this(page, total, result, Collections.emptyMap());
   }
 
-  public NameUsageSearchResponse(Page page, int total, List<NameUsageSearchResult> result,
+  public NameUsageSearchResponse(Page page, int total, List<NameUsageWrapper> result,
       Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets) {
     super(page, total, result);
     this.facets = facets;
   }
 
-  public NameUsageSearchResponse(Page page, List<NameUsageSearchResult> result, Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets,
+  public NameUsageSearchResponse(Page page, List<NameUsageWrapper> result, Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets,
       Supplier<Integer> count) {
     super(page, result, count);
     this.facets = facets;

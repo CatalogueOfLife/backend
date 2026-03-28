@@ -38,11 +38,10 @@ class ResponseConverter {
 
   NameUsageSuggestion createSuggestion(Hit<NameUsageWrapper> hit) {
     var nuw = hit.source();
-    if (nuw.getUsage() == null) {
+    if (nuw==null || nuw.getUsage() == null) {
       return null;
     }
     NameUsageSuggestion suggestion = new NameUsageSuggestion();
-    suggestion.setScore(hit.score());
     suggestion.setUsageId(nuw.getId());
     suggestion.setGroup(nuw.getGroup());
     var u = nuw.getUsage();

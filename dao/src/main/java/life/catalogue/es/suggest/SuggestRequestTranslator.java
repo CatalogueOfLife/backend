@@ -48,7 +48,6 @@ class SuggestRequestTranslator {
        .size(request.getLimit())
        .query(query)
        .sort(sortOptions)
-       .trackScores(true)
        .trackTotalHits(th -> th.enabled(false));
       return s;
     });
