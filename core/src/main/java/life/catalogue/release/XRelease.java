@@ -422,6 +422,7 @@ public class XRelease extends ProjectRelease {
         session.commit();
         final DSID<String> key = DSID.root(tmpProjectKey);
         for (String id : cycles) {
+          key.id(id);
           num.updateParentId(key, cycleParent.getId(), user);
           adder.addIssue(id, Issue.PARENT_CYCLE);
           session.commit();
@@ -442,6 +443,7 @@ public class XRelease extends ProjectRelease {
         }
         final DSID<String> key = DSID.root(tmpProjectKey);
         for (String id : missing) {
+          key.id(id);
           num.updateParentId(key, parent, user);
           adder.addIssue(id, Issue.PARENT_ID_INVALID);
           session.commit();
