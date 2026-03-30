@@ -523,7 +523,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   /**
    * Lists all usage ids of taxa which have synonyms as their parent.
    */
-  List<String> detectParentSynoynms(@Param("datasetKey") int datasetKey);
+  List<String> detectParentSynonyms(@Param("datasetKey") int datasetKey);
 
   /**
    * Lists all usage ids of synonyms that have a synonym as their parent

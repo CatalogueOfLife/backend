@@ -995,7 +995,7 @@
       AND is_synonym(p.status)
   </update>
 
-  <select id="detectParentSynoynms" parameterType="map" resultType="string">
+  <select id="detectParentSynonyms" parameterType="map" resultType="string">
     SELECT u.id
     FROM name_usage u
       JOIN name_usage s ON u.parent_id=s.id AND s.dataset_key=u.dataset_key

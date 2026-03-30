@@ -145,7 +145,7 @@ public class XRelease extends ProjectRelease {
 
     // create sequences
     try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DatasetPartitionMapper.class).createSequences(tmpProjectKey);;
+      session.getMapper(DatasetPartitionMapper.class).createSequences(tmpProjectKey);
     }
     createIdMapTables();
 
@@ -236,7 +236,7 @@ public class XRelease extends ProjectRelease {
     DateUtils.logDuration(LOG, "ID reporting", start);
     // drop tmp project sequences
     try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DatasetPartitionMapper.class).deleteSequences(tmpProjectKey);;
+      session.getMapper(DatasetPartitionMapper.class).deleteSequences(tmpProjectKey);
     }
   }
 
@@ -384,7 +384,7 @@ public class XRelease extends ProjectRelease {
         }
       }
       // any accepted names below synonyms? Move to accepted
-      var synParents = session.getMapper(NameUsageMapper.class).detectParentSynoynms(newDatasetKey);
+      var synParents = session.getMapper(NameUsageMapper.class).detectParentSynonyms(newDatasetKey);
       if (synParents != null && !synParents.isEmpty()) {
         LOG.error("{} taxa found in XRelease {} with synonyms as their parent", synParents.size(),newDatasetKey);
         var num = session.getMapper(NameUsageMapper.class);

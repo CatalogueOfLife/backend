@@ -155,6 +155,11 @@ All DAOs extend `DataEntityDao<Key, Entity, Mapper>`:
 **Name Index:**
 FastUtil-based in-memory index for rapid taxonomic name matching. Rebuilt from database on startup. Used during imports and sector synchronization.
 
+**Extended Release (XRelease):**
+The most complex pipeline in the codebase. Builds an extended release by merging external datasets (via sectors) into a base public release. 
+Uses a two-phase copy: base release → temporary project (for merging) → final release (with stable ID mapping). Key classes in `core/release/` and `core/assembly/`. 
+See [`XRELEASE.md`](XRELEASE.md) for detailed pipeline documentation. Important gotcha: `newDatasetKey` is temporarily reassigned to `tmpProjectKey` during `prepWork()` — methods called in that window operate on the temp dataset.
+
 ## Development Guidelines
 
 ### Code Style
