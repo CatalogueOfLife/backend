@@ -125,7 +125,7 @@ public class PgImportESIT extends PgImportITBase {
       new SimpleName("20", "Cichorioideae", Rank.SUBFAMILY),
       new SimpleName("30", "Cichorieae", Rank.TRIBE),
       new SimpleName("102", "Leontodon", Rank.GENUS),
-      accept(new SimpleName("1006", "Leontodon taraxacoides", Rank.SPECIES)),
+      new SimpleName("1006", "Leontodon taraxacoides", Rank.SPECIES),
       new SimpleName("1006-1006-s3", "Leonida taraxacoida", Rank.SPECIES)
     ), nuw.getClassification());
 
@@ -164,10 +164,5 @@ public class PgImportESIT extends PgImportITBase {
       }
     }
     fail("No facet value for " + value);
-  }
-
-  static SimpleName accept(SimpleName sn) {
-    sn.setStatus(TaxonomicStatus.ACCEPTED);
-    return sn;
   }
 }
