@@ -62,7 +62,6 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final URI portalURI;
   private final CloseableHttpClient client;
   private final ImageService imageService;
-  private final ExportManager exportManager;
   protected Integer prevReleaseKey; // of same origin!
   protected ProjectReleaseConfig prCfg;
   private IdProvider idProvider;
@@ -70,15 +69,15 @@ public class ProjectRelease extends AbstractProjectCopy {
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, ImageService imageService,
                  DatasetImportDao diDao, DatasetDao dDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
                  int datasetKey, int userKey, ReleaseConfig cfg, URI apiURI, URI clbURI,
-                 CloseableHttpClient client, ExportManager exportManager, Validator validator) {
+                 CloseableHttpClient client, Validator validator) {
     this("releasing", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, datasetKey, userKey,
-      cfg, apiURI, clbURI, client, exportManager, validator);
+      cfg, apiURI, clbURI, client, validator);
   }
 
   ProjectRelease(String action, SqlSessionFactory factory, NameUsageIndexService indexService, ImageService imageService,
                  DatasetImportDao diDao, DatasetDao dDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
                  int baseReleaseOrProjectKey, int userKey, ReleaseConfig cfg, URI apiURI, URI clbURI,
-                 CloseableHttpClient client, ExportManager exportManager, Validator validator) {
+                 CloseableHttpClient client, Validator validator) {
     // this loads and validates already the project release config
     super(action, factory, diDao, dDao, indexService, validator, userKey, baseReleaseOrProjectKey, true, cfg.deleteOnError);
     this.cfg = cfg;
@@ -93,7 +92,6 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.datasetApiBuilder = apiURI == null ? null : UriBuilder.fromUri(apiURI).path("dataset/{key}"+latestRelease);
     this.portalURI = apiURI == null ? null : UriBuilder.fromUri(apiURI).path("portal").build();
     this.client = client;
-    this.exportManager = exportManager;
     this.vDao = new VerbatimDao(factory);
   }
 
@@ -360,7 +358,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     super.onError(e);
     // remove reports
     File dir = cfg.reportDir(projectKey, attempt);
-    if (dir.exists()) {
+    if (dir.exists() && deleteOnError) {
       LOG.info("Remove release report {}-{} for failed dataset {}", projectKey, metrics.attempt(), newDatasetKey);
       FileUtils.deleteQuietly(dir);
     }

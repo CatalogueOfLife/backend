@@ -603,6 +603,12 @@ public class IdProvider {
           int intID = IdConverter.LATIN29.decode(id);
           if (ids.remove(intID) != null) {
             removed.incrementAndGet();
+          } else {
+            // ID exists in the dataset but was never in the xrelease archive
+            // (e.g. a regular-release ID that is new in the current base release).
+            // Bump keySequence past it so issueNewId() won't reassign this integer.
+            keySequence.getAndUpdate(cur -> Math.max(cur, intID));
+            other.incrementAndGet();
           }
           counter.incrementAndGet();
         } catch (IllegalArgumentException e) {
@@ -610,7 +616,7 @@ public class IdProvider {
           other.incrementAndGet();
         }
       });
-      LOG.info("Removed {} out of {} stable identifiers from dataset {}. Ignored {} other unstable identifiers", removed, counter, datasetKey, other);
+      LOG.info("Removed {} out of {} stable identifiers from dataset {}. Bumped keySequence for {} base-release identifiers not in xrelease archive", removed, counter, datasetKey, other);
     }
   }
 

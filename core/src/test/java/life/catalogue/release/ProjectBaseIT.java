@@ -61,7 +61,6 @@ public abstract class ProjectBaseIT {
     cfg.apiURI = null;
     cfg.clbURI = URI.create("https://www.dev.checklistbank.org");
     EventBroker bus = TestUtils.mockedBroker();
-    ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     ReferenceDao rdao = mock(ReferenceDao.class);
     validator = Validation.buildDefaultValidatorFactory().getValidator();
@@ -71,7 +70,7 @@ public abstract class ProjectBaseIT {
     var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
-      exm, NameUsageIndexService.passThru(), ImageService.passThru(), SqlSessionFactoryRule.getSqlSessionFactory(), validator,
+      NameUsageIndexService.passThru(), ImageService.passThru(), SqlSessionFactoryRule.getSqlSessionFactory(), validator,
       cfg.release, cfg.apiURI, cfg.clbURI
     );
   }

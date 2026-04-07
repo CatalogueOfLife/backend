@@ -82,7 +82,6 @@ public class XReleaseBasicIT {
     provider = new IdProvider(projectKey, projectKey, DatasetOrigin.XRELEASE,1, -1, cfg.release, cfg.projectRelease, factory);
 
     EventBroker bus = TestUtils.mockedBroker();
-    ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     ReferenceDao rdao = mock(ReferenceDao.class);
     var validator = Validation.buildDefaultValidatorFactory().getValidator();
@@ -93,7 +92,7 @@ public class XReleaseBasicIT {
     var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
-      exm, nuIdxService, imgService, factory, validator,
+      nuIdxService, imgService, factory, validator,
       cfg.release, cfg.apiURI, cfg.clbURI
     );
   }

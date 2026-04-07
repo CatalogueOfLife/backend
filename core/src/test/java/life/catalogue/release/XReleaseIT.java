@@ -166,9 +166,8 @@ public class XReleaseIT extends SectorSyncTestBase {
     var du = new DownloadUtil(hc);
     var dDao = new DatasetDao(factory, du, diDao, validator, broker);
     var rDao = mock(ReferenceDao.class);
-    var exportManager = mock(ExportManager.class);
     projectCopyFactory = new ProjectCopyFactory(hc, NameMatchingRule.getIndex(), syncFactory, matcherFactory, diDao, dDao, siDao, rDao, nDao, sdao,
-      exportManager, NameUsageIndexService.passThru(), ImageService.passThru(),
+      NameUsageIndexService.passThru(), ImageService.passThru(),
       SqlSessionFactoryRule.getSqlSessionFactory(), validator,
       cfg.release, cfg.apiURI, cfg.clbURI
     );

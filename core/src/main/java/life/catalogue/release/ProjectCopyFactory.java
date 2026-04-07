@@ -18,7 +18,6 @@ import jakarta.validation.Validator;
 
 
 public class ProjectCopyFactory {
-  private final ExportManager exportManager;
   private final DatasetImportDao diDao;
   private final DatasetDao dDao;
   private final ReferenceDao rDao;
@@ -39,7 +38,7 @@ public class ProjectCopyFactory {
 
   public ProjectCopyFactory(CloseableHttpClient client, NameIndex nameIndex, SyncFactory syncFactory, UsageMatcherFactory matcherFactory,
                             DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
-                            ExportManager exportManager, NameUsageIndexService indexService, ImageService imageService,
+                            NameUsageIndexService indexService, ImageService imageService,
                             SqlSessionFactory factory, Validator validator,
                             ReleaseConfig cfg, URI apiURI, URI clbURI
   ) {
@@ -47,7 +46,6 @@ public class ProjectCopyFactory {
     this.nameIndex = nameIndex;
     this.syncFactory = syncFactory;
     this.matcherFactory = matcherFactory;
-    this.exportManager = exportManager;
     this.diDao = diDao;
     this.dDao = dDao;
     this.rDao = rDao;
@@ -71,12 +69,12 @@ public class ProjectCopyFactory {
    */
   public XRelease buildExtendedRelease(final int releaseKey, final int userKey) {
     return new XRelease(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
-      cfg, apiURI, clbURI, client, exportManager, validator);
+      cfg, apiURI, clbURI, client, validator);
   }
 
   public XRelease buildDebugXRelease(final int releaseKey, final int userKey) {
     return new XReleaseDebug(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
-      cfg, apiURI, clbURI, client, exportManager, validator);
+      cfg, apiURI, clbURI, client, validator);
   }
 
   /**
@@ -87,7 +85,7 @@ public class ProjectCopyFactory {
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
     return new ProjectRelease(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, projectKey, userKey,
-      cfg, apiURI, clbURI, client, exportManager, validator);
+      cfg, apiURI, clbURI, client, validator);
   }
 
   /**

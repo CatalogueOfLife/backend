@@ -47,7 +47,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   protected boolean mapIds;
   protected DatasetSettings settings;
   protected Dataset base;
-  private final boolean deleteOnError;
+  protected final boolean deleteOnError;
 
   private static int projectKey(int baseReleaseOrProjectKey) {
     return DatasetInfoCache.CACHE.info(baseReleaseOrProjectKey).keyOrProjectKey();
@@ -236,7 +236,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     metrics.setFinished(LocalDateTime.now());
     LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDuration(metrics.getDuration(), "HH:mm:ss"));
     diDao.update(metrics);
-    if (mapIds) {
+    if (mapIds && deleteOnError) {
       LOG.info("Remove id mapping tables for scope {}", idMapDatasetKey);
       try (SqlSession session = factory.openSession(true)) {
         DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);

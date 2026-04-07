@@ -66,9 +66,9 @@ public class XRelease extends ProjectRelease {
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherFactory matcherFactory, NameIndex nidx, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
-           int releaseKey, int userKey, ReleaseConfig cfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager, Validator validator
+           int releaseKey, int userKey, ReleaseConfig cfg, URI apiURI, URI clbURI, CloseableHttpClient client, Validator validator
   ) {
-    super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, releaseKey, userKey, cfg, apiURI, clbURI, client, exportManager, validator);
+    super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, releaseKey, userKey, cfg, apiURI, clbURI, client, validator);
     this.siDao = siDao;
     this.syncFactory = syncFactory;
     this.matcherFactory = matcherFactory;

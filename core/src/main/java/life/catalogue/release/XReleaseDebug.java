@@ -24,8 +24,8 @@ import jakarta.validation.Validator;
 public class XReleaseDebug extends XRelease{
   private static final int SECTOR_SYNCS_LIMIT = 4;
 
-  public XReleaseDebug(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherFactory matcherFactory, NameIndex nidx, NameUsageIndexService indexService, ImageService imageService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao, int releaseKey, int userKey, ReleaseConfig cfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager, Validator validator) {
-    super(factory, syncFactory, matcherFactory, nidx, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey, cfg, apiURI, clbURI, client, exportManager, validator);
+  public XReleaseDebug(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherFactory matcherFactory, NameIndex nidx, NameUsageIndexService indexService, ImageService imageService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao, int releaseKey, int userKey, ReleaseConfig cfg, URI apiURI, URI clbURI, CloseableHttpClient client, Validator validator) {
+    super(factory, syncFactory, matcherFactory, nidx, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey, cfg, apiURI, clbURI, client, validator);
   }
 
   @Override
