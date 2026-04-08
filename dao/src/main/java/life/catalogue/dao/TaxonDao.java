@@ -6,8 +6,8 @@ import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
-import life.catalogue.api.vocab.area.*;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
@@ -869,4 +869,70 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
 
     return new PrinterWrapper<>(PrinterFactory.dataset(clazz, ttp, ranks, null, Rank.SPECIES, taxonCounter, factory, writer), tax);
   }
+
+  /**
+   * Use ES search to count a dataset by taxonomic groups
+   * and deal with hierarchical vocabulary, ignoring the highest groups Eukaryota and Prokaryotes
+   * @param datasetKey
+   * @param rank
+   * @return
+   */
+  public DatasetBreakdown breakdown(int datasetKey, Rank rank, boolean onlyAccepted) {
+    DatasetInfoCache.CACHE.exists(datasetKey);
+
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.setDatasetFilter(datasetKey);
+    req.setFilter(NameUsageSearchParameter.RANK, rank);
+    if (onlyAccepted) {
+      req.addFilter(NameUsageSearchParameter.STATUS,  TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    }
+    req.setFacets(Set.of(NameUsageSearchParameter.GROUP));
+    req.setFacetLimit(TaxGroup.values().length+1);
+
+    final var page = new Page(0, 0);
+    var resp = searchService.search(req, page);
+    var facets = resp.getFacets().get(NameUsageSearchParameter.GROUP);
+    if (facets != null) {
+      final var breakdown = new DatasetBreakdown();
+      breakdown.setBreakdown(new ArrayList<>());
+      for (var f : facets) {
+        TaxGroup tg = VocabularyUtils.lookupEnum(f.getValue().toString(), TaxGroup.class);
+        var breakdowns = breakdown.getBreakdown();
+        for (var g : primaryParents(tg)) {
+          var bd = findOrCreateBreakdown(breakdowns, g);
+          bd.setCount(bd.getCount() + f.getCount());
+          breakdowns = bd.getBreakdown();
+        }
+      }
+      return breakdown;
+    }
+    return null;
+  }
+
+  /**
+   * List a single linneage of parents for a given group, including the group itself.
+   * If multiple parents are found for the group only the first is used.
+   * Ordered by root to tip.
+   */
+  private static List<TaxGroup> primaryParents(TaxGroup tg) {
+    List<TaxGroup> parents = new ArrayList<>();
+    while (tg != null) {
+      parents.add(tg);
+      tg = tg.getPrimaryParent();
+    }
+    return parents.reversed();
+  }
+
+  private static DatasetBreakdown.GroupBreakdown findOrCreateBreakdown(List<DatasetBreakdown.GroupBreakdown> breakdowns, TaxGroup tg) {
+    var bd = breakdowns.stream()
+      .filter(b -> b.getGroup() == tg)
+      .findFirst()
+      .orElse(null);
+    if (bd == null) {
+      bd = new DatasetBreakdown.GroupBreakdown(tg);
+      breakdowns.add(bd);
+    }
+    return bd;
+  }
+
 }

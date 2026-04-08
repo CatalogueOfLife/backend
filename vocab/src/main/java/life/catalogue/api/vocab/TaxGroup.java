@@ -1,11 +1,10 @@
 package life.catalogue.api.vocab;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -81,7 +80,7 @@ public enum TaxGroup {
 
   final private String phylopic;
   final private String description;
-  final Set<TaxGroup> parents = new HashSet<>();
+  final LinkedHashSet<TaxGroup> parents = new LinkedHashSet<>();
   final Set<NomCode> codes = new HashSet<>();
 
 
@@ -193,7 +192,12 @@ public enum TaxGroup {
   }
 
   public Set<String> getParents() {
-    return parents == null ? null : parents.stream().map(Enum::name).collect(Collectors.toSet());
+    return parents.isEmpty() ? null : parents.stream().map(Enum::name).collect(Collectors.toSet());
+  }
+
+  @JsonIgnore
+  public TaxGroup getPrimaryParent() {
+    return parents.isEmpty() ? null : parents.getFirst();
   }
 
   public Set<NomCode> getCodes() {

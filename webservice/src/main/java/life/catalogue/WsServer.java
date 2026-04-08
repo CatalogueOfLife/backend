@@ -453,6 +453,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetExportResource(getSqlSessionFactory(), mdao, exportManager, cfg));
     j.register(new DatasetJobResource(getSqlSessionFactory(), ddao, syncManager, copyFactory, executor));
     j.register(new DatasetReviewerResource(adao));
+    j.register(new DatasetBreakdownResource(tdao));
     j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
     j.register(new NameUsageMatchingResource(cfg.matching, executor, getSqlSessionFactory(), matcherFactory));
     j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
