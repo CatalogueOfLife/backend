@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
@@ -80,6 +81,12 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
       }
     }
     return null;
+  }
+
+  @Override
+  @JsonIgnore(false)
+  public String getLabel() {
+    return super.getLabel();
   }
 
   @Override
