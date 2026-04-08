@@ -15,6 +15,11 @@ public class DatasetBreakdown {
   private Rank countBy;
   private List<GroupBreakdown> breakdown;
 
+  public DatasetBreakdown(int datasetKey, Rank countBy) {
+    this.datasetKey = datasetKey;
+    this.countBy = countBy;
+  }
+
   public int getDatasetKey() {
     return datasetKey;
   }

@@ -877,12 +877,14 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
    * @param rank
    * @return
    */
-  public DatasetBreakdown breakdown(int datasetKey, Rank rank, boolean inclSynonyms) {
+  public DatasetBreakdown breakdown(int datasetKey, @Nullable Rank rank, boolean inclSynonyms) {
     DatasetInfoCache.CACHE.exists(datasetKey);
 
     NameUsageSearchRequest req = new NameUsageSearchRequest();
     req.setDatasetFilter(datasetKey);
-    req.setFilter(NameUsageSearchParameter.RANK, rank);
+    if (rank != null) {
+      req.setFilter(NameUsageSearchParameter.RANK, rank);
+    }
     if (!inclSynonyms) {
       req.addFilter(NameUsageSearchParameter.STATUS,  TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     }
@@ -893,7 +895,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     var resp = searchService.search(req, page);
     var facets = resp.getFacets().get(NameUsageSearchParameter.GROUP);
     if (facets != null) {
-      final var breakdown = new DatasetBreakdown();
+      final var breakdown = new DatasetBreakdown(datasetKey, rank);
       breakdown.setBreakdown(new ArrayList<>());
       for (var f : facets) {
         TaxGroup tg = VocabularyUtils.lookupEnum(f.getValue().toString(), TaxGroup.class);
