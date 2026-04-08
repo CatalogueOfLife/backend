@@ -320,7 +320,7 @@ public class XRelease extends ProjectRelease {
       if (xCfg.misspellingConsolidation) {
         hc.consolidateMisspellings();
       }
-      hc.consolidate(xCfg.homotypicConsolidationThreads);
+      hc.consolidate(xCfg.homotypicConsolidationThreads, getKey());
       DateUtils.logDuration(LOG, hc.getClass(), start);
 
     } else {

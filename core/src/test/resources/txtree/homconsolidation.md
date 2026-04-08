@@ -1,6 +1,8 @@
 Various homotypic consolidation tests in one, organised by fake families.
 This prevents homotypic grouping across families and isolates problems.
 
+A source priority can be given in the name properties with PRIO=1234
+
 # Aus bus
 Basic priority consolidation
 
@@ -18,3 +20,7 @@ There is another version under family Moneraceae which is not provisional.
 # Langeraceae
 ## Solter vulgaris Wheeler, 1906
  is a pro parte synonym. Together with Persus vulgaris it stays as the source said - they all share the same priority! 
+
+# Bdellidae
+Difficult authorships
+https://github.com/CatalogueOfLife/data/issues/1465

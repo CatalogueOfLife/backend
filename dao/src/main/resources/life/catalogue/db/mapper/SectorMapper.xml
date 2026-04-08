@@ -118,7 +118,7 @@
   </sql>
 
   <sql id="PRIORITY_ORDER">
-    ORDER BY priority NULLS LAST, id desc
+    ORDER BY priority NULLS LAST, id asc
   </sql>
 
   <sql id="WHERE">

@@ -48,6 +48,7 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
 
   /**
    * List all sectors for a given dataset and mode ordered by priority starting with the lowest priority and sorting nulls last.
+   * Sectors with no/null priority are ordered by their id starting with the lowest id, i.e. oldest sector.
    * @param datasetKey project or release key
    * @param modes modes to include in the sector listing. If null all modes will be considered
    */

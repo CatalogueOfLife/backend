@@ -1,12 +1,15 @@
 package life.catalogue.basgroup;
 
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.junit.*;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
+import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,9 +31,14 @@ public class HomotypicConsolidatorIT {
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(dataRule)
-    .around(new TxtTreeDataRule(datasetKey, "txtree/homconsolidation.txtree")) // loads prio values into sector keys
+    .around(new TxtTreeDataRule(datasetKey, "txtree/homconsolidation.txtree")) // loads prio values into sector keys - lower is better
     .around(matchingRule);
 
+  /**
+   * Superfamily Bdelloidea: https://github.com/CatalogueOfLife/data/issues/1465
+   *
+   * @throws IOException
+   */
   @Test
   public void homconsolidation() throws IOException {
     var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey,

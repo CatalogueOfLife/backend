@@ -9,6 +9,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.IssueAdder;
@@ -119,14 +120,14 @@ public class HomotypicConsolidator {
   }
 
   public void consolidate() {
-    consolidate(4);
+    consolidate(4, null);
   }
-  public void consolidate(int threads) {
+  public void consolidate(int threads, @Nullable UUID jobKey) {
     try {
-      LOG.info("Discover homotypic relations in {} accepted taxa of dataset {}, using {} threads", taxa.size(), datasetKey, threads);
+      LOG.info("Discover homotypic relations in {} distinct higher groups from dataset {}, using {} threads", taxa.size(), datasetKey, threads);
       var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("ht-consolidator-worker"));
       for (var tax : taxa) {
-        var task = new ConsolidatorTask(tax, consolidateMisspellings);
+        var task = new ConsolidatorTask(tax, consolidateMisspellings, jobKey);
         exec.submit(task);
       }
       ExecutorUtils.shutdown(exec);
@@ -161,11 +162,19 @@ public class HomotypicConsolidator {
     private final boolean consolidateMisspellings;
     private int synCounter;
     private Map<String, LinneanNameUsage> usages; // lookup by id for each taxon group being consolidated
+    private final UUID parentJobKey;
 
-    private ConsolidatorTask(SimpleName tax, boolean consolidateMisspellings) {
+    /**
+     *
+     * @param tax
+     * @param consolidateMisspellings
+     * @param jobKey sets the MDC logging properties to the parent job key. Required for debugging multi-threaded jobs..
+     */
+    private ConsolidatorTask(SimpleName tax, boolean consolidateMisspellings, @Nullable  UUID jobKey) {
       this.tax = tax;
       this.dsid = DSID.root(datasetKey);
       this.consolidateMisspellings = consolidateMisspellings;
+      parentJobKey = jobKey;
     }
 
     private boolean isSameName(ConsolidationName n1, ConsolidationName n2) {
@@ -174,9 +183,16 @@ public class HomotypicConsolidator {
 
     @Override
     public void run() {
-      homotypicConsolidation();
-      if (consolidateMisspellings) {
-        misspellingConsolidation();
+      if (parentJobKey != null) {
+        LoggingUtils.setJobMDC(parentJobKey, getClass());
+      }
+      try {
+        homotypicConsolidation();
+        if (consolidateMisspellings) {
+          misspellingConsolidation();
+        }
+      } finally {
+        LoggingUtils.removeJobMDC();
       }
     }
 
