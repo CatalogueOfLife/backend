@@ -24,8 +24,8 @@ public class DatasetBreakdownResource {
   @GET
   public DatasetBreakdown breakdown(@PathParam("key") int datasetKey,
                                     @QueryParam("rank") Rank rank,
-                                    @QueryParam("acceptedOnly") boolean acceptedOnly
+                                    @QueryParam("inclSynonyms") boolean inclSynonyms
   ) {
-    return dao.breakdown(datasetKey, rank, acceptedOnly);
+    return dao.breakdown(datasetKey, rank, inclSynonyms);
   }
 }

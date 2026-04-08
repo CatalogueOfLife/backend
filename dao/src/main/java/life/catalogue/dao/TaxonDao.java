@@ -877,13 +877,13 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
    * @param rank
    * @return
    */
-  public DatasetBreakdown breakdown(int datasetKey, Rank rank, boolean onlyAccepted) {
+  public DatasetBreakdown breakdown(int datasetKey, Rank rank, boolean inclSynonyms) {
     DatasetInfoCache.CACHE.exists(datasetKey);
 
     NameUsageSearchRequest req = new NameUsageSearchRequest();
     req.setDatasetFilter(datasetKey);
     req.setFilter(NameUsageSearchParameter.RANK, rank);
-    if (onlyAccepted) {
+    if (!inclSynonyms) {
       req.addFilter(NameUsageSearchParameter.STATUS,  TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     }
     req.setFacets(Set.of(NameUsageSearchParameter.GROUP));
