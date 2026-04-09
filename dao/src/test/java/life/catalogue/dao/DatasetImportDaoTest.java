@@ -10,6 +10,7 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.File;
 import java.sql.SQLException;
 
 import org.junit.Before;
@@ -24,7 +25,7 @@ public class DatasetImportDaoTest extends DaoTestBase {
 
   @Before
   public void init() {
-    dao = new DatasetImportDao(factory(), null);
+    dao = new DatasetImportDao(factory(), (File)null);
   }
 
   @Test
