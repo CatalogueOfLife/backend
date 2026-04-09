@@ -405,6 +405,13 @@
     ORDER BY d.attempt, d.key
   </select>
 
+  <select id="listDeletedQuick" resultMap="releaseResultMap">
+    SELECT key, source_key AS projectKey, attempt, origin, alias, version, private, true AS deleted
+    FROM dataset d
+    WHERE d.deleted IS NOT NULL
+    ORDER BY d.key
+  </select>
+
   <select id="listReleaseKeys" resultType="integer">
     SELECT d.key
     FROM dataset d

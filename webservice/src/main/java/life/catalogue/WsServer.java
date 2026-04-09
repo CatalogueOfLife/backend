@@ -154,6 +154,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.setObjectMapper(om);
 
     // add some cli commands not accessible via the admin interface
+    bootstrap.addCommand(new CleanFileRepoCmd());
     bootstrap.addCommand(new PartitionCmd());
     bootstrap.addCommand(new DockerCmd());
     bootstrap.addCommand(new ExecSqlCmd());

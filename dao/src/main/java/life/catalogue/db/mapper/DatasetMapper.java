@@ -207,6 +207,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<DatasetRelease> listReleasesQuick(@Param("projectKey") int projectKey, @Param("inclDeleted") boolean inclDeleted, @Param("inclPrivate") boolean inclPrivate);
 
   /**
+   * @return all deleted datasets incl regular datasets, not just releases.
+   */
+  List<DatasetRelease> listDeletedQuick();
+
+  /**
    * List all dataset keys of (x)releases for the given project.
    * This includes both private and public datasets.
    */
