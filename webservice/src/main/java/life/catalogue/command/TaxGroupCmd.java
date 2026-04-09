@@ -119,7 +119,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
     public void run() {
       LOG.info("Starting analyzer {}", id);
       try (var con = cfg.db.connect();
-           PreparedStatement pStmt = con.prepareStatement("INSERT INTO tax_groups (dataset_key, id, tg) VALUES (?, ?, ?::TAX_GROUP)")
+           PreparedStatement pStmt = con.prepareStatement("INSERT INTO tax_groups (dataset_key, id, tg) VALUES (?, ?, ?::TAXGROUP)")
       ) {
         con.setAutoCommit(false);
         for (var sn : names) {
@@ -145,22 +145,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
          var stmt = con.createStatement();
     ) {
       stmt.execute("DROP TABLE IF EXISTS tax_groups");
-      stmt.execute("DROP TYPE IF EXISTS TAX_GROUP");
-      StringBuilder sb = new StringBuilder();
-      sb.append("CREATE TYPE TAX_GROUP AS ENUM (");
-      boolean first = true;
-      for (TaxGroup tg : TaxGroup.values()) {
-        if (!first) {
-          sb.append(",");
-        }
-        first = false;
-        sb.append("'");
-        sb.append(tg.name());
-        sb.append("'");
-      }
-      sb.append(")");
-      stmt.execute(sb.toString());
-      stmt.execute("CREATE TABLE tax_groups (dataset_key INTEGER, id TEXT, tg TAX_GROUP)");
+      stmt.execute("CREATE TABLE tax_groups (dataset_key INTEGER, id TEXT, tg TAXGROUP)");
     }
   }
 
