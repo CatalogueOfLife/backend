@@ -471,6 +471,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         LOG.info("Delete exports for private dataset {}", key);
         exportDao.deleteByDataset(key, user);
       }
+      // remove file metrics for private releases
+      if (old.getOrigin().isRelease() && old.getAttempt() != null) {
+        var projKey = old.getSourceKey();
+        var attempt = old.getAttempt();
+        LOG.info("Delete name & tree files for release attempt {} of project {}", attempt, projKey);
+        diDao.getFileMetricsDao().deleteAttempt(projKey, attempt);
+      }
     }
     // trigger DOI update at the very end for the now removed sources!
     dois.forEach(doi -> bus.publish(DoiChange.update(doi)));

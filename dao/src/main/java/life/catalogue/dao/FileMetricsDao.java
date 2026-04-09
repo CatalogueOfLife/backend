@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * DAO giving read and write access to potentially large text trees and name lists
- * stored on the filesystem. We use compression to keep storage small.
+ * stored on the filesystem. We use GZIP compression to keep storage small.
  */
 public abstract class FileMetricsDao<K> {
   private static final Logger LOG = LoggerFactory.getLogger(FileMetricsDao.class);
@@ -41,6 +41,11 @@ public abstract class FileMetricsDao<K> {
     this.repo = repo;
   }
 
+  /**
+   * The type of metrics stored by this DAO.
+   * Used for logging and error messages.
+   * @return
+   */
   public String getType() {
     return type;
   }
@@ -77,6 +82,21 @@ public abstract class FileMetricsDao<K> {
     File dir = subdir(key);
     FileUtils.deleteDirectory(dir);
     LOG.info("Deleted all file metrics for {} {}", type, key);
+  }
+
+  /**
+   * Deletes both the names and tree file for a given import/release attempt
+   */
+  public void deleteAttempt(K key, int attempt) {
+    deleteOrWarn(namesFile(key, attempt));
+  }
+
+  protected void deleteOrWarn(File file) {
+    if (file.exists()) {
+      if (!FileUtils.deleteQuietly(file)) {
+        LOG.warn("Failed to delete file {}", file);
+      }
+    }
   }
 
   /**
@@ -164,6 +184,12 @@ public abstract class FileMetricsDao<K> {
 
   public abstract File subdir(K key);
 
+  /**
+   * Converts the given key into a DSID for a sector,
+   * i.e. a dataset key and a sector key.
+   *
+   * In case of dataset metrics the sector key is null.
+   */
   abstract DSID<Integer> sectorKey(K key);
 }
 

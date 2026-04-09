@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 /**
  * DAO giving read and write access to potentially large text trees and name lists
- * stored on the filesystem. We use compression to keep storage small.
+ * stored on the filesystem. We use GZIP compression to keep storage small.
  */
 public class FileMetricsDatasetDao extends FileMetricsDao<Integer> {
   private static final Logger LOG = LoggerFactory.getLogger(FileMetricsDatasetDao.class);
@@ -56,6 +57,15 @@ public class FileMetricsDatasetDao extends FileMetricsDao<Integer> {
   }
   public File treeFile(Integer datasetKey, int attempt) {
     return new File(subdir(datasetKey), attempt+"-tree.txt.gz");
+  }
+
+  /**
+   * Deletes both the names and tree file for a given import/release attempt
+   */
+  @Override
+  public void deleteAttempt(Integer datasetKey, int attempt) {
+    super.deleteAttempt(datasetKey, attempt);
+    deleteOrWarn(treeFile(datasetKey, attempt));
   }
 
   /**

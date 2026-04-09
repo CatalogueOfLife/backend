@@ -44,10 +44,14 @@ public class DatasetImportDao {
   
   
   public DatasetImportDao(SqlSessionFactory factory, File repo) {
-    this.factory = factory;
-    this.fileMetricsDao = new FileMetricsDatasetDao(factory, repo);
+    this(factory, new FileMetricsDatasetDao(factory, repo));
   }
-  
+
+  public DatasetImportDao(SqlSessionFactory factory, FileMetricsDatasetDao fmDao) {
+    this.factory = factory;
+    this.fileMetricsDao = fmDao;
+  }
+
   public FileMetricsDatasetDao getFileMetricsDao() {
     return fileMetricsDao;
   }

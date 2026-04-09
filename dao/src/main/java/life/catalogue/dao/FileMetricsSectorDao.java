@@ -13,7 +13,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 public class FileMetricsSectorDao extends FileMetricsDao<DSID<Integer>> {
 
   public FileMetricsSectorDao(SqlSessionFactory factory, File repo) {
-    super("dataset", factory, repo);
+    super("sector", factory, repo);
   }
 
   @Override

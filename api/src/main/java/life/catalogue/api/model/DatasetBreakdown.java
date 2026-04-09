@@ -18,6 +18,7 @@ public class DatasetBreakdown {
   public DatasetBreakdown(int datasetKey, Rank countBy) {
     this.datasetKey = datasetKey;
     this.countBy = countBy;
+    this.breakdown = new ArrayList<>();
   }
 
   public int getDatasetKey() {

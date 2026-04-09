@@ -323,10 +323,10 @@ public class WsServer extends Application<WsServerConfig> {
       ni = NameIndexFactory.passThru();
     }
 
-    final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
-    final SectorImportDao siDao = new SectorImportDao(getSqlSessionFactory(), cfg.metricsRepo);
     final FileMetricsDatasetDao fmdDao = new FileMetricsDatasetDao(getSqlSessionFactory(), cfg.metricsRepo);
     final FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(getSqlSessionFactory(), cfg.metricsRepo);
+    final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), fmdDao);
+    final SectorImportDao siDao = new SectorImportDao(getSqlSessionFactory(), fmsDao);
 
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao, cfg.diffTimeout);

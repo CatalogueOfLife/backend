@@ -29,8 +29,12 @@ public class SectorImportDao {
   private final FileMetricsSectorDao fileMetricsDao;
 
   public SectorImportDao(SqlSessionFactory factory, File repo) {
+    this(factory, new FileMetricsSectorDao(factory, repo));
+  }
+
+  public SectorImportDao(SqlSessionFactory factory, FileMetricsSectorDao fmsDao) {
     this.factory = factory;
-    this.fileMetricsDao = new FileMetricsSectorDao(factory, repo);
+    this.fileMetricsDao = fmsDao;
   }
 
   /**
@@ -122,11 +126,20 @@ public class SectorImportDao {
   }
 
   public void deleteAll(DSID<Integer> sectorKey) throws IOException {
-    LOG.info("Remove import and file metrics for sector {}", sectorKey);
+    LOG.info("Remove import metrics for sector {}", sectorKey);
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(SectorImportMapper.class).delete(sectorKey);
     }
+    deleteFiles(sectorKey);
+  }
+
+  public void deleteFiles(DSID<Integer> sectorKey) throws IOException {
+    LOG.info("Remove name files for sector {}", sectorKey);
     fileMetricsDao.deleteAll(sectorKey);
+  }
+
+  public FileMetricsSectorDao getFileMetricsDao() {
+    return fileMetricsDao;
   }
 
   public SectorImport getAttempt(DSID<Integer> sectorKey, int attempt) {

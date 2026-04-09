@@ -103,6 +103,10 @@ public abstract class BaseDiffService<K> {
     }
   }
 
+  /**
+   * Warn: Only use this in tests - it reads all data into memory !!!
+   */
+  @Deprecated
   @VisibleForTesting
   protected NamesDiff diff(K key, int[] atts, Function<Integer, File> getFile) {
     File[] files = attemptToFiles(key, atts, getFile);

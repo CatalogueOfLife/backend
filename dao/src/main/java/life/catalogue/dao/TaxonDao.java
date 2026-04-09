@@ -896,7 +896,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     var facets = resp.getFacets().get(NameUsageSearchParameter.GROUP);
     if (facets != null) {
       final var breakdown = new DatasetBreakdown(datasetKey, rank);
-      breakdown.setBreakdown(new ArrayList<>());
       for (var f : facets) {
         TaxGroup tg = VocabularyUtils.lookupEnum(f.getValue().toString(), TaxGroup.class);
         var breakdowns = breakdown.getBreakdown();

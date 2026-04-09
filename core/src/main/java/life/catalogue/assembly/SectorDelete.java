@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Deletes a sector but keeps its imports so we can still show historical releases properly which access the sync history of projects.
+ * File based metrics are removed, i.e. the names files for each sync.
+ *
  * A sector deletion keeps synced data of rank genus or above by default!
  * Names and taxa of rank genus or above are kept, but the sectorKey is removed from all entities that previously belonged to the deleted sector.
  * At the same time all verbatim source records and other associated data like vernacular names are entirely removed.
@@ -52,14 +54,15 @@ public class SectorDelete extends SectorRunnable {
 
   @Override
   void doMetrics() throws Exception {
-    // we don't remove any sector metric anymore to avoid previous releases to be broken
+    // we don't remove any sector sync metric anymore to avoid previous releases to be broken
     // see https://github.com/CatalogueOfLife/backend/issues/986
 
-    //try {
-    //  sid.deleteAll(sectorKey);
-    //} catch (IOException e) {
-    //  LOG.error("Failed to delete metrics files for sector {}", sectorKey, e);
-    //}
+    // but we can still remove the sector name files for the diffs
+    try {
+      sid.deleteFiles(sectorKey);
+    } catch (IOException e) {
+      LOG.error("Failed to delete metrics files for sector {}", sectorKey, e);
+    }
   }
 
   @Override
