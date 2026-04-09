@@ -54,8 +54,8 @@ public class CleanFileRepoCmd extends AbstractMybatisCmd {
       if (d.getOrigin().isRelease()) {
         if (d.getProjectKey() == 0 || d.getAttempt() == 0) {
           LOG.warn("Bad project/attempt key ({}/{}) for {} {}", d.getProjectKey(), d.getAttempt(), d.getOrigin(), d.getKey());
-        } else {
-          LOG.info("Delete file metrics for deleted {} {} of project {} (datasetKey={})", d.getOrigin(), d.getAttempt(), d.getProjectKey(), d.getKey());
+        } else if (d.isPrivat()){
+          LOG.info("Delete file metrics for private deleted {} {} of project {} (datasetKey={})", d.getOrigin(), d.getAttempt(), d.getProjectKey(), d.getKey());
           did.getFileMetricsDao().deleteAttempt(d.getProjectKey(), d.getAttempt());
         }
 
