@@ -1,7 +1,6 @@
 package life.catalogue.es;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -232,13 +231,8 @@ public class EsUtil {
 
   /**
    * Inserts the provided object into the provided index and returns the generated document ID.
-   * Copies sectorMode from the usage to the wrapper so it survives the JSON round-trip
-   * (usage.sectorMode is @JsonIgnore, but NameUsageWrapper.sectorMode is not).
    */
   public static String insert(ElasticsearchClient client, String index, NameUsageWrapper obj) throws IOException {
-    if (obj.getUsage() instanceof NameUsageBase nub && nub.getSectorMode() != null && obj.getSectorMode() == null) {
-      obj.setSectorMode(nub.getSectorMode());
-    }
     IndexResponse response = client.index(i -> i.index(index).document(obj));
     return response.id();
   }

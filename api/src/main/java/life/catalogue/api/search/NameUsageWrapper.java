@@ -22,8 +22,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
   private Set<Issue> issues;
   // decisions about this usage in any number of project or releases
   private List<SimpleDecision> decisions;
-  // mode of the sector
-  private Sector.Mode sectorMode;
   // subject datasetKey of usage sector
   private Integer sectorDatasetKey;
   // publisher of the usage sectors subject dataset
@@ -49,7 +47,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
     this.usage = other.usage;
     this.issues = other.issues;
     this.decisions = other.decisions;
-    this.sectorMode = other.sectorMode;
     this.sectorDatasetKey = other.sectorDatasetKey;
     this.sectorPublisherKey = other.sectorPublisherKey;
     this.secondarySourceGroups = other.secondarySourceGroups;
@@ -89,14 +86,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
 
   public void setDecisions(List<SimpleDecision> decisions) {
     this.decisions = decisions;
-  }
-
-  public Sector.Mode getSectorMode() {
-    return sectorMode;
-  }
-
-  public void setSectorMode(Sector.Mode sectorMode) {
-    this.sectorMode = sectorMode;
   }
 
   public Integer getSectorDatasetKey() {

@@ -58,6 +58,7 @@ public class EsModule extends SimpleModule {
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(NameUsage.class, NameUsageMixIn.class);
     ctxt.setMixInAnnotations(Name.class, NameMixIn.class);
+    ctxt.setMixInAnnotations(SectorScoped.class, SectorScopedMixIn.class);
   }
 
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "@")
@@ -76,6 +77,12 @@ public class EsModule extends SimpleModule {
     @JsonIgnore abstract String getBasionymOrCombinationAuthorship();
     @JsonIgnore(false) abstract String getScientificNameNormalized();
     @JsonIgnore(false) abstract String getAlphaIndex();
+  }
+
+  // Override @JsonIgnore from SectorScoped so sectorMode is serialized into ES documents.
+  // It remains @JsonIgnore in the ApiModule context (public API).
+  abstract static class SectorScopedMixIn {
+    @JsonIgnore(false) abstract Sector.Mode getSectorMode();
   }
 
   private static ObjectMapper configureMapper(ObjectMapper mapper) {
