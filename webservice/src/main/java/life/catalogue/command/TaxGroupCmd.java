@@ -84,7 +84,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
       LOG.info("Updating dataset group scope now...");
       try (SqlSession session = factory.openSession(true);
            var con = session.getConnection();
-           PreparedStatement pStmt = con.prepareStatement("SELECT DISTINCT tg FROM tax_groups WHERE dataset_key=?")
+           PreparedStatement pStmt = con.prepareStatement("SELECT DISTINCT tg FROM tax_groups WHERE dataset_key=? AND tg IS NOT NULL");
       ) {
         var dm = session.getMapper(DatasetMapper.class);
         for (int key : dm.keys(false)) {
