@@ -905,9 +905,29 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
           breakdowns = bd.getBreakdown();
         }
       }
+      // insert unknown - parent counts often exceed the sum of their children
+      for (var bd : breakdown.getBreakdown()) {
+        insertUnknown(bd.getCount(), bd.getBreakdown());
+      }
       return breakdown;
     }
     return null;
+  }
+
+  private static void insertUnknown(int total, List<DatasetBreakdown.GroupBreakdown> children) {
+    // recursively treat all children
+    for (var bd : children) {
+      if (!bd.getBreakdown().isEmpty()) {
+        insertUnknown(bd.getCount(), bd.getBreakdown());
+      }
+    }
+    // now add the null children
+    int sum = children.stream().mapToInt(DatasetBreakdown.GroupBreakdown::getCount).sum();
+    if (sum < total) {
+      var nullBD = new DatasetBreakdown.GroupBreakdown(null);
+      nullBD.setCount(total-sum);
+      children.add(nullBD);
+    }
   }
 
   /**

@@ -1389,6 +1389,9 @@ CREATE INDEX ON api_logs(request text_pattern_ops);
 
 CREATE TABLE api_logs_2025 PARTITION OF api_logs FOR VALUES FROM (timestamp '2025-01-01 00:00:00') TO (timestamp '2026-01-01 00:00:00');
 CREATE TABLE api_logs_2026 PARTITION OF api_logs FOR VALUES FROM (timestamp '2026-01-01 00:00:00') TO (timestamp '2027-01-01 00:00:00');
+CREATE TABLE api_logs_2027 PARTITION OF api_logs FOR VALUES FROM (timestamp '2027-01-01 00:00:00') TO (timestamp '2028-01-01 00:00:00');
+CREATE TABLE api_logs_2028 PARTITION OF api_logs FOR VALUES FROM (timestamp '2028-01-01 00:00:00') TO (timestamp '2029-01-01 00:00:00');
+CREATE TABLE api_logs_2029 PARTITION OF api_logs FOR VALUES FROM (timestamp '2029-01-01 00:00:00') TO (timestamp '2030-01-01 00:00:00');
 CREATE TABLE api_logs_default PARTITION OF api_logs DEFAULT;
 
 --
