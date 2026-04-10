@@ -63,8 +63,9 @@ public interface NameUsageIndexService {
   /**
    * Indexes several datasets, potentially in parallel, not deleting any existing information.
    * Targets building new indices instead.
+   * @param clearIndex if true first removes data from the index for the given dataset keys.
    */
-  Stats indexDatasets(List<Integer> datasetKeys);
+  Stats indexDatasets(List<Integer> datasetKeys, boolean clearIndex);
 
   BatchConsumer<NameUsageWrapper> buildDatasetIndexingHandler(int datasetKey);
 
@@ -152,7 +153,7 @@ public interface NameUsageIndexService {
       }
 
       @Override
-      public Stats indexDatasets(List<Integer> datasetKeys) {
+      public Stats indexDatasets(List<Integer> datasetKeys, boolean clearIndex) {
         LOG.info("No Elastic Search configured, pass through {} datasets", datasetKeys.size());
         return new Stats();
       }

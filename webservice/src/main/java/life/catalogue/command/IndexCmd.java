@@ -164,11 +164,11 @@ public class IndexCmd extends AbstractMybatisCmd {
             .collect(Collectors.toUnmodifiableList());
         }
         LOG.info("Found {} datasets for indexing listed in {}", keys.size(), file.getAbsolutePath());
-        svc.indexDatasets(keys);
+        svc.indexDatasets(keys, true);
 
       } else if (ns.getList(ARG_KEY) != null) {
         List<Integer> keys = ns.getList(ARG_KEY);
-        svc.indexDatasets(keys);
+        svc.indexDatasets(keys, true);
 
       } else {
         System.out.println("No indexing argument given. See help for options");

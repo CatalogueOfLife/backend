@@ -72,14 +72,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
    * Parallelize indexing of several datasets.
    */
   @Override
-  public Stats indexDatasets(List<Integer> keys) {
+  public Stats indexDatasets(List<Integer> keys, boolean clearIndex) {
     LOG.info("Index {} datasets", keys.size());
     final Stats total = new Stats();
 
     final AtomicInteger counter = new AtomicInteger(0);
     ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
     for (Integer datasetKey : keys) {
-      CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, true), exec)
+      CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, clearIndex), exec)
         .exceptionally(ex -> {
           counter.incrementAndGet();
           LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
@@ -343,7 +343,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       }
       LOG.info("Index {} datasets out of all {} datasets", keys.size(), allDatasets);
     }
-    return indexDatasets(keys);
+    return indexDatasets(keys, false);
   }
 
   private void createOrEmptyIndex(int datasetKey) throws IOException {
