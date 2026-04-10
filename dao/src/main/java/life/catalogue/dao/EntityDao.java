@@ -89,7 +89,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
 
   public T get(K key) {
     try (SqlSession session = factory.openSession()) {
-      return session.getMapper(mapperClass).get(key);
+       return session.getMapper(mapperClass).get(key);
     }
   }
 

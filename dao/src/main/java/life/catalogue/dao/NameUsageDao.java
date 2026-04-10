@@ -1,79 +1,49 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.exception.NotFoundException;
+import jakarta.ws.rs.PathParam;
 import life.catalogue.api.model.*;
-import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.db.CRUD;
-import life.catalogue.db.DatasetPageable;
-import life.catalogue.db.DatasetProcessable;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.NameUsageWrapperMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
-import life.catalogue.parser.NameParser;
-
-import org.gbif.nameparser.api.NameType;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Supplier;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import jakarta.validation.Validator;
-
 import org.gbif.nameparser.api.Rank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>> extends SectorEntityDao<T, M> {
-  protected final NameUsageIndexService indexService;
-  protected final NameDao nameDao;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Supplier;
 
-  /**
-   * Warn: you must set a sector dao manually before using the TaxonDao.
-   * We have circular dependency that cannot be satisfied with final properties through constructors
-   */
-  public NameUsageDao(Class<T> clazz, Class<M> mapperClass, SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService, Validator validator) {
-    super(true, factory, clazz, mapperClass, validator);
+public class NameUsageDao {
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageDao.class);
+  private final SqlSessionFactory factory;
+  private final NameUsageIndexService indexService;
+
+  public NameUsageDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
+    this.factory = factory;
     this.indexService = indexService;
-    this.nameDao = nameDao;
-  }
-
-  @Override
-  public T get(DSID<String> key) {
-    T u = super.get(key);
-    // add the sector mode also to name
-    if (u != null && u.getName() != null && u.getName().getSectorKey() != null) {
-      u.getName().setSectorMode(sectorModes.get(u.getName().getSectorDSID()));
-    }
-    return u;
-  }
-
-  public SimpleName getSimpleOr404(DSID<String> key) {
-    try (SqlSession session = factory.openSession(false)) {
-      var sn = session.getMapper(NameUsageMapper.class).getSimple(key);
-      if (sn == null) {
-        throw NotFoundException.notFound(SimpleName.class, key);
-      }
-      return sn;
-    }
   }
 
   /**
-   * @param key name usage key
-   * @return the verbatim source record with 2ndary sources for the given name usage key or null if none exists
+   * Returns a taxon with the specified key or throws:
+   *  - a SynonymException in case the id belongs to a synonym
+   *  - a NotFoundException if the id is no name usage at all
    */
-  public VerbatimSource getSourceByUsageKey(final DSID<String> key) {
-    try (SqlSession session = factory.openSession(false)) {
-      var vsm = session.getMapper(VerbatimSourceMapper.class);
-      var v = vsm.getByUsage(key);
-      return vsm.addSources(v);
+  public NameUsageBase get(DSID<String> key) {
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(NameUsageMapper.class).get(key);
     }
   }
 
-  public ResultPage<NameUsageBase> list(int datasetKey, String q, Rank rank, Integer namesIndexID, Page page) {
+  public ResultPage<NameUsageBase> list(int datasetKey, @Nullable String q, Rank rank,
+                                        @Nullable String nameID,
+                                        @Nullable Integer namesIndexID,
+                                        Page page)
+  {
     try (SqlSession session = factory.openSession()) {
       Page p = page == null ? new Page() : page;
       NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
@@ -82,6 +52,9 @@ abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>
       if (namesIndexID != null) {
         result = mapper.listByNamesIndexOrCanonicalID(datasetKey, namesIndexID, p);
         count = () -> mapper.countByNamesIndexID(namesIndexID, datasetKey);
+      } else if (nameID != null) {
+        result = mapper.listByNameID(datasetKey, nameID, p);
+        count = () -> mapper.countByNameID(nameID, datasetKey);
       } else if (q != null) {
         result = mapper.listByName(datasetKey, q, rank, p);
         count = () -> result.size();
@@ -94,110 +67,41 @@ abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>
   }
 
   /**
-   * Creates a new usage including a name instance if no name id is already given.
    *
-   * @param t
-   * @param user
-   * @return newly created taxon id
+   * Lists related usages from other datasets which are linked via names index matches.
+   * Various options to restrict the related datasets to be considered.
+   *
+   * @param datasetKey original dataset
+   * @param id original usageOD in the above dataset
+   * @param gbifOnly if true only datasets with a GBIF key are considered
+   * @param nonGbifDatasetKeys optional setting when gbifOnly=true. Set of dataset keys to always consider even if they do not have a gbif key
+   * @param datasetTypes optional set of dataset types to consider, ignoring all others
+   * @param datasetKeys optional set of dataset keys to consider, ignoring all others
+   * @param publisherKeys optional set of dataset GBIF publisher keys to consider, ignoring all others
+   * @return
    */
-  @Override
-  public DSID<String> create(T t, int user) {
-    return create(t, user, true);
-  }
-
-  /**
-   * Creates a new Taxon including a name instance if no name id is already given.
-   * If desired the search index is updated too.
-   * @param u
-   * @param user
-   * @param indexImmediately if true the search index is also updated
-   * @return newly created taxon id
-   */
-  public DSID<String> create(T u, int user, boolean indexImmediately) {
-    try (SqlSession session = factory.openSession(false)) {
-      final int datasetKey = u.getDatasetKey();
-      Name n = u.getName();
-      if (n.getId() == null) {
-        if (!n.isParsed() && StringUtils.isBlank(n.getScientificName())) {
-          throw new IllegalArgumentException("Existing nameId, scientificName or atomized name field required");
-        }
-        newKey(n);
-        n.setOrigin(Origin.USER);
-        n.applyUser(user);
-        // make sure we use the same dataset
-        n.setDatasetKey(datasetKey);
-        // does the name need parsing?
-        parseName(n);
-        nameDao.create(n, user); // this also adds the name match
-      } else {
-        Name nExisting = nameDao.get(DSID.of(datasetKey, n.getId()));
-        if (nExisting == null) {
-          throw new IllegalArgumentException("No name exists with ID " + n.getId() + " in dataset " + datasetKey);
-        }
-      }
-      
-      newKey(u);
-      u.setOrigin(Origin.USER);
-      u.applyUser(user);
-      session.getMapper(mapperClass).create(u);
-      
-      session.commit();
-
-      // create taxon in ES
-      if (indexImmediately) {
-        indexService.update(u.getDatasetKey(), List.of(u.getId()));
-      }
-      return u;
-    }
-  }
-  
-  static void parseName(Name n) {
-    if (!n.isParsed()) {
-      try {
-        NameParser.PARSER.parse(n, VerbatimRecord.VOID);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt(); // reset flag
-      }
-
-    } else {
-      if (n.getType() == null) {
-        n.setType(NameType.SCIENTIFIC);
-      }
-      n.rebuildScientificName();
-      if (n.getAuthorship() == null) {
-        n.rebuildAuthorship();
-      }
+  public List<SimpleNameInDataset> related(int datasetKey, String id,
+                                     boolean gbifOnly,
+                                     @Nullable Collection<Integer> nonGbifDatasetKeys,
+                                     @Nullable Collection<DatasetOrigin> datasetOrigins,
+                                     @Nullable Collection<DatasetType> datasetTypes,
+                                     @Nullable Collection<Integer> datasetKeys,
+                                     @Nullable Collection<UUID> publisherKeys) {
+    try (SqlSession session = factory.openSession()) {
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      var key = DSID.of(datasetKey, id);
+      num.existsOrThrow(key);
+      return num.listRelated(key, gbifOnly, nonGbifDatasetKeys, datasetOrigins, datasetTypes, datasetKeys, publisherKeys);
     }
   }
 
-  @Override
-  protected void updateBefore(T obj, T old, int user, M mapper, SqlSession session) {
-    // only allow parent changes if they are not part of a sector
-    if (!Objects.equals(old.getParentId(), obj.getParentId()) && old.getSectorKey() != null) {
-      throw new IllegalArgumentException("You cannot move a taxon or synonym which is part of sector " + obj.getSectorKey());
+  public SimpleName reindex(int datasetKey, String id) {
+    SimpleName sn;
+    try (var session = factory.openSession()) {
+      var num = session.getMapper(NameUsageMapper.class);
+      sn = num.getSimple(DSID.of(datasetKey, id));
     }
-  }
-
-  @Override
-  protected boolean updateAfter(T t, T old, int user, M mapper, SqlSession session, boolean keepSessionOpen) {
-    session.commit();
-    if (!keepSessionOpen) {
-      session.close();
-    }
-    // update single taxon in ES
-    indexService.update(t.getDatasetKey(), List.of(t.getId()));
-    return keepSessionOpen;
-  }
-
-  @Override
-  protected boolean deleteAfter(DSID<String> did, T old, int user, M mapper, SqlSession session) {
-    NameUsageWrapper bare = old == null ? null : session.getMapper(NameUsageWrapperMapper.class).getBareName(did.getDatasetKey(), old.getName().getId());
-    session.close();
-    // update ES. there is probably a bare name now to be indexed!
-    indexService.delete(did);
-    if (bare != null) {
-      indexService.add(List.of(bare));
-    }
-    return false;
+    indexService.update(datasetKey, id);
+    return sn;
   }
 }

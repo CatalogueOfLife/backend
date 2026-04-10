@@ -18,7 +18,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.TaxonDao;
+import life.catalogue.dao.NameUsageDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
@@ -50,16 +50,14 @@ public class NameUsageResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageResource.class);
   private final NameUsageSearchService searchService;
-  private final NameUsageIndexService indexService;
   private final NameUsageSuggestionService suggestService;
-  private final TaxonDao dao;
+  private final NameUsageDao dao;
   private final FeedbackService feedbackService;
 
-  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, NameUsageIndexService indexService,
-                           TaxonDao dao, FeedbackService feedbackService) {
+  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest,
+                           NameUsageDao dao, FeedbackService feedbackService) {
     this.searchService = search;
     this.suggestService = suggest;
-    this.indexService = indexService;
     this.dao = dao;
     this.feedbackService = feedbackService;
   }
@@ -86,13 +84,7 @@ public class NameUsageResource {
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN})
   public SimpleName reindex(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    SimpleName sn;
-    try (var session = dao.getFactory().openSession()) {
-      var num = session.getMapper(NameUsageMapper.class);
-      sn = num.getSimple(DSID.of(datasetKey, id));
-    }
-    indexService.update(datasetKey, id);
-    return sn;
+    return dao.reindex(datasetKey, id);
   }
 
   @GET
@@ -117,17 +109,6 @@ public class NameUsageResource {
       return vsm.addSources(v);
     }
     throw new NotFoundException(info.origin + " datasets do not have verbatim source records.");
-  }
-
-  @GET
-  @Hidden
-  @Path("{id}/info")
-  public UsageInfo info(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    UsageInfo info = dao.getUsageInfo(DSID.of(datasetKey, id));
-    if (info == null) {
-      throw NotFoundException.notFound(NameUsage.class, datasetKey, id);
-    }
-    return info;
   }
 
   @POST

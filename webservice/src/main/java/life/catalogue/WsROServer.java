@@ -249,6 +249,7 @@ public class WsROServer extends Application<WsServerConfig> {
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
+    var nudao = new NameUsageDao(getSqlSessionFactory(), indexService);
     PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), validator);
     SectorPublisherDao spdao = new SectorPublisherDao(getSqlSessionFactory(), broker, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
@@ -266,9 +267,9 @@ public class WsROServer extends Application<WsServerConfig> {
     // shared read only resources
     registerReadOnlyResources(j, cfg, getSqlSessionFactory(), null,
       ddao, dsdao, new AtomicBoolean(),
-      diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
-      searchService, suggestService, indexService, imgService,
-      FeedbackService.passThru(), doiResolver, coljersey
+      diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
+      searchService, suggestService, imgService,
+      FeedbackService.passThru(), doiResolver
     );
 
     // healthchecks
@@ -295,9 +296,11 @@ public class WsROServer extends Application<WsServerConfig> {
 
   static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory,
                                         @Nullable JobExecutor exec, DatasetDao ddao, DatasetSourceDao dsdao, AtomicBoolean exportBlocker,
-                                        DatasetImportDao diDao, DuplicateDao dupeDao, EstimateDao edao, DatasetExportDao exdao, NameDao ndao, PublisherDao pdao, SectorPublisherDao spdao, ReferenceDao rdao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
-                                        NameUsageSearchService searchService, NameUsageSuggestionService suggestService, NameUsageIndexService indexService,
-                                        ImageService imgService, FeedbackService feedbackService, DoiResolver doiResolver, ColJerseyBundle coljersey) {
+                                        DatasetImportDao diDao, DuplicateDao dupeDao, EstimateDao edao, DatasetExportDao exdao,
+                                        NameDao ndao, PublisherDao pdao, SectorPublisherDao spdao, ReferenceDao rdao,
+                                        NameUsageDao nudao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
+                                        NameUsageSearchService searchService, NameUsageSuggestionService suggestService,
+                                        ImageService imgService, FeedbackService feedbackService, DoiResolver doiResolver) {
     // dataset scoped resources
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetImportResource(diDao));
@@ -310,7 +313,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new EstimateResource(edao));
     j.register(new ImageResource(imgService, factory));
     j.register(new NameResource(ndao));
-    j.register(new NameUsageResource(searchService, suggestService, indexService, tdao, feedbackService));
+    j.register(new NameUsageResource(searchService, suggestService, nudao, feedbackService));
     j.register(new SectorPublisherResource(spdao));
     j.register(new ReferenceResource(rdao));
     j.register(new SynonymResource(sdao));

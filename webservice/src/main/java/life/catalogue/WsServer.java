@@ -357,6 +357,7 @@ public class WsServer extends Application<WsServerConfig> {
     SectorPublisherDao spdao = new SectorPublisherDao(getSqlSessionFactory(), broker, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
+    NameUsageDao nudao = new NameUsageDao(getSqlSessionFactory(), indexService);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
@@ -463,9 +464,9 @@ public class WsServer extends Application<WsServerConfig> {
 
     // shared read only resources
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
-      ddao, dsdao, exportManager.blocked(), diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
-      searchService, suggestService, indexService,
-      imgService, feedback, doiResolver, coljersey
+      ddao, dsdao, exportManager.blocked(), diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
+      searchService, suggestService,
+      imgService, feedback, doiResolver
     );
 
     // global

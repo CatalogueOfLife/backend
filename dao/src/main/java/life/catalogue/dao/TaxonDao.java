@@ -46,7 +46,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import jakarta.validation.Validator;
 
-public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonCounter {
+public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements TaxonCounter {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   private static final Pattern TAG = Pattern.compile("(?<!<)([ib])>(.+)</\\1(?!>)");
   private SectorDao sectorDao;
@@ -156,62 +156,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
         // rethrow the original 404
         throw e;
       }
-    }
-  }
-
-  public ResultPage<NameUsageBase> list(int datasetKey, @Nullable String q, Rank rank,
-                                        @Nullable String nameID,
-                                        @Nullable Integer namesIndexID,
-                                        Page page)
-  {
-    try (SqlSession session = factory.openSession()) {
-      Page p = page == null ? new Page() : page;
-      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      List<NameUsageBase> result;
-      Supplier<Integer> count;
-      if (namesIndexID != null) {
-        result = mapper.listByNamesIndexOrCanonicalID(datasetKey, namesIndexID, p);
-        count = () -> mapper.countByNamesIndexID(namesIndexID, datasetKey);
-      } else if (nameID != null) {
-        result = mapper.listByNameID(datasetKey, nameID, p);
-        count = () -> mapper.countByNameID(nameID, datasetKey);
-      } else if (q != null) {
-        result = mapper.listByName(datasetKey, q, rank, p);
-        count = () -> result.size();
-      } else {
-        result = mapper.list(datasetKey, p);
-        count = () -> mapper.count(datasetKey);
-      }
-      return new ResultPage<>(p, result, count);
-    }
-  }
-
-  /**
-   *
-   * Lists related usages from other datasets which are linked via names index matches.
-   * Various options to restrict the related datasets to be considered.
-   *
-   * @param datasetKey original dataset
-   * @param id original usageOD in the above dataset
-   * @param gbifOnly if true only datasets with a GBIF key are considered
-   * @param nonGbifDatasetKeys optional setting when gbifOnly=true. Set of dataset keys to always consider even if they do not have a gbif key
-   * @param datasetTypes optional set of dataset types to consider, ignoring all others
-   * @param datasetKeys optional set of dataset keys to consider, ignoring all others
-   * @param publisherKeys optional set of dataset GBIF publisher keys to consider, ignoring all others
-   * @return
-   */
-  public List<SimpleNameInDataset> related(int datasetKey, String id,
-                                     boolean gbifOnly,
-                                     @Nullable Collection<Integer> nonGbifDatasetKeys,
-                                     @Nullable Collection<DatasetOrigin> datasetOrigins,
-                                     @Nullable Collection<DatasetType> datasetTypes,
-                                     @Nullable Collection<Integer> datasetKeys,
-                                     @Nullable Collection<UUID> publisherKeys) {
-    try (SqlSession session = factory.openSession()) {
-      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      var key = DSID.of(datasetKey, id);
-      num.existsOrThrow(key);
-      return num.listRelated(key, gbifOnly, nonGbifDatasetKeys, datasetOrigins, datasetTypes, datasetKeys, publisherKeys);
     }
   }
 

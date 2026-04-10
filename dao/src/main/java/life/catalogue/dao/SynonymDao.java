@@ -10,7 +10,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import jakarta.validation.Validator;
 
-public class SynonymDao extends NameUsageDao<Synonym, SynonymMapper> {
+public class SynonymDao extends NameUsageBaseDao<Synonym, SynonymMapper> {
   public SynonymDao(SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService, Validator validator) {
     super(Synonym.class, SynonymMapper.class, factory, nameDao, indexService, validator);
   }
