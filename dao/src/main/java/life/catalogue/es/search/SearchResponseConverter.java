@@ -4,6 +4,8 @@ import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Synonym;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.*;
 import life.catalogue.dao.DatasetInfoCache;
 
@@ -39,7 +41,13 @@ class SearchResponseConverter {
   }
 
   private NameUsageWrapper build(Hit<NameUsageWrapper> hit) {
-    return hit.source();
+    var nuw = hit.source();
+    // the accepted field is always null in ES - populate it with a basic Taxon instance
+    if (nuw != null && nuw.getUsage() != null && nuw.getUsage() instanceof Synonym syn && syn.getAccepted() == null) {
+      Taxon acc = new Taxon(nuw.getParent());
+      syn.setAccepted(acc);
+    }
+    return nuw;
   }
 
   private Map<NameUsageSearchParameter, Set<FacetValue<?>>> generateFacets() {
