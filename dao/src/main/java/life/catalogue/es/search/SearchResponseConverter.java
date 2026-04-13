@@ -7,6 +7,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.*;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.DatasetInfoCache;
 
 import javax.annotation.Nullable;
@@ -44,8 +45,14 @@ class SearchResponseConverter {
     var nuw = hit.source();
     // the accepted field is always null in ES - populate it with a basic Taxon instance
     if (nuw != null && nuw.getUsage() != null && nuw.getUsage() instanceof Synonym syn && syn.getAccepted() == null) {
-      Taxon acc = new Taxon(nuw.getParent());
-      syn.setAccepted(acc);
+      var p = nuw.getParent();
+      if (p != null && (p.getStatus() == null || p.getStatus().isTaxon())) {
+        if (p.getStatus() == null) {
+          p.setStatus(TaxonomicStatus.ACCEPTED);
+        }
+        Taxon acc = new Taxon(p);
+        syn.setAccepted(acc);
+      }
     }
     return nuw;
   }
