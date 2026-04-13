@@ -6,9 +6,11 @@ import co.elastic.clients.util.ObjectBuilder;
 
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.common.tax.SciNameNormalizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -151,11 +153,12 @@ public class QTranslator {
         );
       case FUZZY
         -> boostAcceptedQuery(q -> q
-          .fuzzy(f -> f
-            .field(FLD_SCINAME+"Normalized")
-            .value(request.getQ())
+          .match(m -> m
+            .field(FLD_SCINAME + "Normalized")
+            .query(SciNameNormalizer.normalize(request.getQ()).toLowerCase(Locale.ROOT))
             .fuzziness("AUTO")
             .prefixLength(2)
+            .operator(Operator.And)
           )
         );
     };

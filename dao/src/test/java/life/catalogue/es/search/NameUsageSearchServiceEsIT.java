@@ -43,7 +43,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
   static final int DS1 = 100;
   static final int DS2 = 200;
-  static final int TOTAL = 12;
+  static final int TOTAL = 14;
   /** Catalogue key used in all SimpleDecision entries (set by newNameUsageWrapper helper). */
   static final int CAT99 = 99;
   /** sector dataset key set by the newNameUsageWrapper helper for all usages. */
@@ -101,6 +101,10 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
       "deu:Hundsrose", "ita:Rosa selvatica comune", "eng:dog rose", "vie:tầm xuân", "heb:ורד הכלב"
     ));
     insert(c, cfg, synonym("s2", "Rosa rubiginosa", "L.",  Rank.SPECIES,  NomCode.BOTANICAL, DS2, "t10"));
+
+    // Issue #1498: fuzzy search regression test data
+    insert(c, cfg, taxon("t11", "Centaurea rothmalerana", null, Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null));
+    insert(c, cfg, taxon("t12", "Dryopteris fragrans",    null, Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null));
 
     EsUtil.refreshIndex(c, cfg.name);
     service = new NameUsageSearchServiceEs(cfg.name, c);
@@ -160,7 +164,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
     // DATASET_KEY (keyword field storing integer "100"/"200")
     assertFilterCount(8, DATASET_KEY, DS1);
-    assertFilterCount(4, DATASET_KEY, DS2);
+    assertFilterCount(6, DATASET_KEY, DS2);
 
     // USAGE_ID (keyword field, exact string match on the usage's id)
     assertFilterCount(1, USAGE_ID, "t6");
@@ -184,17 +188,17 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
     // EXTINCT (boolean field; only t6=Felis catus has extinct=true)
     assertFilterCount(1, EXTINCT, true);
-    assertFilterCount(9, EXTINCT, false); // 9 taxa with explicit false; synonyms have no extinct field
+    assertFilterCount(11, EXTINCT, false); // 11 taxa with explicit false; synonyms have no extinct field
 
     // RANK (integer field; stored as Rank ordinal via RankOrdinalSerde)
     assertFilterCount(2, RANK, Rank.KINGDOM); // Animalia (t1) + Plantae (t8)
-    assertFilterCount(5, RANK, Rank.SPECIES);  // t6, t7, t10, s1, s2
+    assertFilterCount(7, RANK, Rank.SPECIES);  // t6, t7, t10, s1, s2, t11, t12
 
     // TAXON_ID (keyword field on classification[].id)
     // t6 (Felis catus) was given a classification containing t5 (Felis) with id="t5"
     assertFilterCount(1, TAXON_ID, "t5");
 
-    // DECISION_MODE with IS_NOT_NULL: all 12 usages have a decision with catalogue key 99
+    // DECISION_MODE with IS_NOT_NULL: all usages have a decision with catalogue key 99
     NameUsageSearchRequest decisionNotNull = new NameUsageSearchRequest();
     decisionNotNull.addFilter(DECISION_MODE, NameUsageRequest.IS_NOT_NULL);
     decisionNotNull.addFilter(CATALOGUE_KEY, String.valueOf(CAT99));
@@ -279,12 +283,12 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     req.setFacetLimit(20);
 
     NameUsageSearchResponse resp = search(req);
-    assertEquals("all 12 usages should be in result", TOTAL, resp.getTotal());
+    assertEquals("all usages should be in result", TOTAL, resp.getTotal());
 
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = resp.getFacets();
     assertNotNull(facets);
 
-    // DATASET_KEY facet: 2 buckets (DS1=8, DS2=4)
+    // DATASET_KEY facet: 2 buckets (DS1=8, DS2=6)
     Set<FacetValue<?>> dsFacet = facets.get(DATASET_KEY);
     assertNotNull("DATASET_KEY facet should be present", dsFacet);
     assertEquals("DATASET_KEY facet should have 2 buckets", 2, dsFacet.size());
@@ -359,7 +363,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     assertTrue("kingdoms should appear before species in TAXONOMIC sort",
         firstKingdom >= 0 && firstSpecies > firstKingdom);
 
-    // RELEVANCE: score-based – without a q all scores are equal, just verify 12 results
+    // RELEVANCE: score-based – without a q all scores are equal, just verify TOTAL results
     NameUsageSearchRequest relReq = new NameUsageSearchRequest();
     relReq.setSortBy(NameUsageRequest.SortBy.RELEVANCE);
     assertEquals(TOTAL, count(relReq));
@@ -446,7 +450,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
     req.addFilter(FIELD, NameField.SPECIFIC_EPITHET.name());
     resp = search(req);
-    assertEquals("FIELD: 'UNINOMIAL' should return all 12 results", 12, resp.getResult().size());
+    assertEquals("FIELD: 'UNINOMIAL' should return all results", TOTAL, resp.getResult().size());
   }
 
   @Test
@@ -480,6 +484,48 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     req.setSearchType(FUZZY);
     req.setSingleContent(SCIENTIFIC_NAME);
     assertFalse("WHOLE_WORDS fuzzy: 'Rosa canina' should return results",
+        search(req).getResult().isEmpty());
+  }
+
+  /**
+   * Issue #1498: fuzzy search with an extra letter in the epithet.
+   * The user searched "Centaurea rothmaleerana" (extra 'e') expecting "Centaurea rothmalerana".
+   */
+  @Test
+  public void testQFuzzyIssue1498ExtraLetter() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.setQ("Centaurea rothmaleerana"); // extra 'e' vs indexed "rothmalerana"
+    req.setSearchType(FUZZY);
+    req.setSingleContent(SCIENTIFIC_NAME);
+    assertFalse("FUZZY: 'Centaurea rothmaleerana' should match 'Centaurea rothmalerana' (1 char off)",
+        search(req).getResult().isEmpty());
+  }
+
+  /**
+   * Issue #1498: fuzzy search with a missing letter in the epithet.
+   * The user searched "Dryopteris fragans" (missing 'r') expecting "Dryopteris fragrans".
+   */
+  @Test
+  public void testQFuzzyIssue1498MissingLetter() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.setQ("Dryopteris fragans"); // missing 'r' vs indexed "fragrans"
+    req.setSearchType(FUZZY);
+    req.setSingleContent(SCIENTIFIC_NAME);
+    assertFalse("FUZZY: 'Dryopteris fragans' should match 'Dryopteris fragrans' (1 char off)",
+        search(req).getResult().isEmpty());
+  }
+
+  /**
+   * Issue #1498: naturally capitalised user input breaks prefixLength=2 check.
+   * "Caninae" (capital C, 1 char off) should still match "Rosa canina".
+   */
+  @Test
+  public void testQFuzzyCapitalizedInput() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.setQ("Caninae"); // capital C + 1 char off from "canina"
+    req.setSearchType(FUZZY);
+    req.setSingleContent(SCIENTIFIC_NAME);
+    assertFalse("FUZZY: capitalized 'Caninae' should match 'Rosa canina'",
         search(req).getResult().isEmpty());
   }
 
