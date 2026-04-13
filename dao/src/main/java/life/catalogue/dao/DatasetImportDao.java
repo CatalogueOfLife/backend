@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.JobSearchRequest;
@@ -41,8 +42,13 @@ public class DatasetImportDao {
   
   private final SqlSessionFactory factory;
   private final FileMetricsDatasetDao fileMetricsDao;
-  
-  
+
+
+  @VisibleForTesting
+  public DatasetImportDao(SqlSessionFactory factory) {
+    this(factory, new FileMetricsDatasetDao(factory, null));
+  }
+
   public DatasetImportDao(SqlSessionFactory factory, File repo) {
     this(factory, new FileMetricsDatasetDao(factory, repo));
   }
