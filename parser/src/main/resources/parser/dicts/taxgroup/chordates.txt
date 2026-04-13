@@ -858,6 +858,7 @@ Euchoreutinae
 Euclichthyidae
 Eucrocopoda
 Eugeneodontiformes
+Eugnathostomata
 Eugongylidae
 Eugongylinae
 Euhelopodidae
@@ -961,6 +962,7 @@ Glossophaginae
 Glossophagini
 Glyphonycterinae
 Gnathanacanthidae
+Gnathostomata
 Gobiesocidae
 Gobiesociformes
 Gobiidae
@@ -1527,6 +1529,7 @@ Odontophrynidae
 Ogcocephalidae
 Oikopleuridae
 Oikopleurinae
+Olfactores
 Olyridae
 Omeisauridae
 Omosudidae

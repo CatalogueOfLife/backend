@@ -51,6 +51,7 @@ Aulacoseiraceae
 Aulacoseirales
 Aurearenaceae
 Aurearenales
+Aurearenophyceae
 Aureophycaceae
 Auriculaceae
 Bachelotiaceae
@@ -539,6 +540,7 @@ Notheiaceae
 Ochromonadaceae
 Ochromonadales
 Ochromonadineae
+Ochrophyta
 Ochrophytina
 Oedogoniaceae
 Oedogoniales
@@ -612,6 +614,7 @@ Phyllosiphonales
 Picocystophyceae
 Picophagaceae
 Picophagales
+Picophagea
 Picophagophyceae
 Picophyta
 Picozoa
