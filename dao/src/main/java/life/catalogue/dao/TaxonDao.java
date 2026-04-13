@@ -853,6 +853,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
       for (var bd : breakdown.getBreakdown()) {
         insertUnknown(bd.getCount(), bd.getBreakdown());
       }
+      breakdown.sort();
       return breakdown;
     }
     return null;

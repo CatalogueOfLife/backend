@@ -4,6 +4,7 @@ import life.catalogue.api.vocab.TaxGroup;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,6 +60,15 @@ public class DatasetBreakdown {
     return Objects.hash(datasetKey, countBy, breakdown);
   }
 
+  public void sort() {
+    breakdown.sort(COMP);
+    for (GroupBreakdown b : breakdown) {
+      b.sort();
+    }
+  }
+
+  private static final Comparator<GroupBreakdown> COMP = Comparator.comparing(GroupBreakdown::getGroup, Comparator.nullsLast(Comparator.naturalOrder()));
+
   public static class GroupBreakdown {
     private TaxGroup group;
     private int count;
@@ -105,6 +115,13 @@ public class DatasetBreakdown {
     @Override
     public int hashCode() {
       return Objects.hash(group, count, breakdown);
+    }
+
+    public void sort() {
+      breakdown.sort(COMP);
+      for (GroupBreakdown b : breakdown) {
+        b.sort();
+      }
     }
   }
 
