@@ -46,9 +46,12 @@ Oomycetes
 Oomycota
 Peronosporaceae
 Peronosporales
+Peronosporea # oomycetes (water moulds, Peronosporales)
 Peronosporidae
 Peronosporomycetes
+Pontismaceae # oomycete family (Oomycota; parasites of red algae)
 Pontismataceae
+Pontismatales # parasitic oomycetes on red algae (Oomycota)
 Pseudofungi
 Pseudosphaeritaceae
 Pythiaceae

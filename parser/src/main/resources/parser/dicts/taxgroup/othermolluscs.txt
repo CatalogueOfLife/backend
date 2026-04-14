@@ -1,112 +1,542 @@
+Acanthoceratidae # ammonoid family (Cretaceous)
+Acanthochitonidae # chiton family (Polyplacophora)
+Acanthoclymeniidae # ammonoid family (Devonian)
 Acanthomeniidae
+Acrioceratidae # ammonoid family
+Acrocanitidae # ammonoid family
+Acrochordiceratidae # ammonoid family (Triassic)
 Aculifera
+Adrianitaceae # ammonoid superfamily (Permian)
+Adrianitidae # ammonoid family (Permian)
+Adygeitidae # ammonoid family
+Aegocrioceratidae # ammonoid family (Cretaceous)
+Aegyrianidae # ammonoid family
+Agathiceratoidea # ammonoid superfamily
+Agoniatitaceae # ammonoid superfamily (Devonian)
 Alloposidae
+Amaltheidae # ammonoid family (Jurassic)
+Ammonoidea # ammonites, extinct cephalopods
 Amphimeniidae
 Amphineura
 Amphitretidae
+Anarcestaceae # ammonoid superfamily (Devonian)
+Anarcestidae # ammonoid family (Devonian)
 Ancistrocheiridae
+Ancylocerataceae # heteromorph ammonoid superfamily (Cretaceous)
+Ancyloceratidae # heteromorph ammonoid family (Cretaceous)
+Anderssonoceratidae # ammonoid family
+Anisoceratidae # heteromorph ammonoid family (Cretaceous)
+Anthracoceratidae # ammonoid family (Carboniferous)
+Aplococeratidae # ammonoid family
 Apodomeniidae
+Araxoceratidae # ammonoid family (Permian)
+Arcestaceae # ammonoid superfamily (Triassic)
+Arcestidae # ammonoid family (Triassic)
 Architeuthidae
+Arctoceratidae # ammonoid family
 Argonautidae
+Arietitidae # ammonoid family (Jurassic)
+Arpaditidae # ammonoid family (Triassic)
+Aspenitidae # ammonoid family
+Aspidoceratidae # ammonoid family (Jurassic)
+Asteroceratidae # ammonoid family (Triassic)
+Ataxioceratidae # ammonoid family
+Atlantoceratidae # ammonoid family
+Auguritidae # ammonoid family
+Aulacostephanidae # ammonoid family (Jurassic)
+Aveliidae # ammonoid family (Triassic)
+Baculitidae # heteromorph ammonoid family (Cretaceous)
+Badiotitidae # ammonoid family (Triassic)
+Bakuellidae # ammonoid family (Jurassic)
+Balatonitidae # ammonoid family (Triassic)
+Bathypolypodidae # octopod family (Cephalopoda)
 Bathyteuthida
 Bathyteuthidae
 Batoteuthidae
+Belemnitellidae # belemnite family
+Belemnitida # belemnites, extinct cephalopods
+Belemnitidae # belemnite family
+Belemnopseidae # belemnite family
+Belocerataceae # ammonoid superfamily (Devonian)
+Beloceratidae # ammonoid family (Devonian)
+Berkhoceratidae # ammonoid family
+Binneyitidae # ammonoid family (Carboniferous)
+Bisatoceratidae # ammonoid family
+Bochianitidae # ammonoid family
+Bochianitoidea # heteromorph ammonoid superfamily
 Bolitaenidae
+Bonetocardiellidae # ammonoid family
 Brachioteuthidae
+Brancoceratidae # ammonoid family (Cretaceous)
+Byrrangoceratidae # ammonoid family (Triassic)
+Callistoplacidae # chiton family (Polyplacophora)
 Callochitonida
+Callochitonidae # chiton family (Polyplacophora)
+Cardioceratidae # ammonoid family (Jurassic)
+Carinoclymeniidae # ammonoid family (Devonian)
+Carnitidae # ammonoid family (Triassic)
 Caudofoveata
+Cavibelonia # spiny chitons (Polyplacophora)
+Celtitidae # ammonoid family (Permian-Triassic)
 Cephalopoda
+Ceratitaceae # ammonoid superfamily (Triassic)
 Chaetodermatida
 Chaetodermatidae
 Chaetodermomorpha
 Chiroteuthidae
 Chitonida
+Choristocerataceae # heteromorph ammonoid superfamily
+Choristoceratidae # heteromorph ammonoid family
+Christioceratidae # ammonoid family
 Chtenopterygidae
 Cirrina
 Cirroteuthidae
+Cladiscitidae # ammonoid family (Triassic)
+Clionititidae # ammonoid family
+Clydoniceratidae # ammonoid family
+Clydonitaceae # ammonoid superfamily
+Clydonitidae # ammonoid family
+Clymeniaceae # ammonoid superfamily (Devonian)
+Clymeniidae # ammonoid family (Devonian)
+Cochloceratidae # ammonoid family
+Coeloceratidae # ammonoid family (Jurassic)
+Coilopoceratidae # ammonoid family
 Coleoidea
+Collignoniceratidae # ammonoid family (Cretaceous)
+Columbitidae # ammonoid family (Triassic)
+Conchophyllidae # ammonoid family
+Costaclymeniidae # ammonoid family (Devonian)
 Cranchiidae
+Cravenoceratidae # ammonoid family (Carboniferous)
+Cycloceltitidae # ammonoid family (Permian)
+Cyclochlamydidae # ammonoid family
+Cyclogrammidae # ammonoid family (Devonian)
+Cyclolobaceae # ammonoid superfamily (Permian)
+Cyclolobidae # ammonoid family (Permian)
 Cycloteuthidae
+Cymaclymeniidae # ammonoid family (Devonian)
+Cyrtoclymeniaceae # ammonoid superfamily (Devonian)
+Cyrtoclymeniidae # ammonoid family (Devonian)
+Dactylioceratidae # ammonoid family (Jurassic)
+Danubitaceae # ammonoid superfamily (Triassic)
+Danubitidae # ammonoid family (Triassic)
+Daraelitidae # ammonoid family
 Decapodiformes
+Delepinoceratidae # ammonoid family (Carboniferous)
 Dentaliida
+Dentaliidae # tusk shell family (Scaphopoda)
+Deshayesitaceae # ammonoid superfamily (Cretaceous)
+Deshayesitidae # ammonoid family (Cretaceous)
+Desmocerataceae # ammonoid superfamily (Cretaceous)
+Desmoceratidae # ammonoid family (Cretaceous)
+Devonopronoritidae # ammonoid family
+Didymitidae # ammonoid family
+Dieneroceratidae # ammonoid family
+Dimeroceratidae # ammonoid family
+Dimeroceratoidea # ammonoid superfamily
+Dimitobelidae # belemnite family
+Dimorphocerataceae # ammonoid superfamily (Carboniferous)
+Dimorphoceratidae # ammonoid family (Carboniferous)
+Dinaritaceae # ammonoid superfamily (Triassic)
+Dinaritidae # ammonoid family (Triassic)
+Diplomoceratidae # heteromorph ammonoid family (Cretaceous)
+Dipoloceratidae # ammonoid family
+Discophyllitidae # ammonoid family
+Distichitidae # ammonoid family
 Dondersiidae
+Douvilleicerataceae # ammonoid superfamily (Cretaceous)
+Douvilleiceratidae # ammonoid family (Cretaceous)
 Drepanomeniidae
+Dronovitidae # ammonoid family
+Duvaliidae # belemnite family
+Dzhulfitidae # ammonoid family (Permian-Triassic)
+Echioceratidae # ammonoid family (Jurassic)
+Engonoceratidae # ammonoid family
+Engonoceratoidea # ammonoid superfamily
 Enoploteuthidae
+Entalinidae # tusk shell family (Scaphopoda)
+Entogonitidae # ammonoid family
+Eoderocerataceae # ammonoid superfamily (Jurassic)
+Eoderoceratidae # ammonoid family (Jurassic)
+Eogonioloboceratidae # ammonoid family
+Eosagenitidae # ammonoid family
+Eoshumarditidae # ammonoid family
 Epimeniidae
+Episculitidae # ammonoid family
+Eriphantidae # ammonoid family (Triassic)
+Eupleuroceratidae # ammonoid family
+Fauriellidae # ammonoid family
+Ferganoceratidae # ammonoid family
+Flemingitidae # ammonoid family (Triassic)
+Flickiidae # ammonoid family
+Forbesiceratidae # ammonoid family
+Fustiariidae # tusk shell family (Scaphopoda)
 Gadilida
+Gadilidae # tusk shell family (Scaphopoda)
+Gadilinidae # tusk shell family (Scaphopoda)
+Gastriocerataceae # ammonoid superfamily (Carboniferous)
+Gastrioceratidae # ammonoid family (Carboniferous)
+Gattendorfiidae # ammonoid family (Devonian)
+Gaudryceratidae # ammonoid family (Cretaceous)
+Gephurocerataceae # ammonoid superfamily (Devonian)
+Gephuroceratidae # ammonoid family (Devonian)
+Girtyocerataceae # ammonoid superfamily (Carboniferous)
+Girtyoceratidae # ammonoid family (Carboniferous)
+Glaphyritidae # ammonoid family
+Glatziellidae # ammonoid family (Devonian)
 Gonatidae
+Goniatitaceae # ammonoid superfamily (Carboniferous)
+Goniatitidae # ammonoid family (Carboniferous)
+Gonibregmatidae # ammonoid family
+Gonioclymeniaceae # ammonoid superfamily (Devonian)
+Goniolobocerataceae # ammonoid superfamily
+Gonioloboceratidae # ammonoid family
+Graphoceratidae # ammonoid family (Jurassic)
+Gullmarellidae # ammonoid family
+Gymnitidae # ammonoid family (Triassic)
 Gymnomeniidae
+Gyronitidae # ammonoid family (Triassic)
+Haloritidae # ammonoid family (Triassic)
+Hamitidae # heteromorph ammonoid family
+Hammatoceratidae # ammonoid family (Jurassic)
+Hamulinidae # ammonoid family (Triassic)
+Hanleyidae # chiton family (Polyplacophora)
+Haplocerataceae # ammonoid superfamily (Jurassic)
+Haploceratidae # ammonoid family (Jurassic)
+Hedenstroemiidae # ammonoid family (Triassic)
+Hellenitidae # ammonoid family (Triassic)
 Hemimeniidae
+Heraclitidae # ammonoid family
+Heteroceratidae # ammonoid family
 Heteroherpiidae
+Hildocerataceae # ammonoid superfamily (Jurassic)
+Hildoceratidae # ammonoid family (Jurassic)
+Himalayitidae # ammonoid family (Jurassic)
+Himantoceratidae # ammonoid family
 Histioteuthidae
+Holcodiscidae # ammonoid family (Cretaceous)
+Homoceratidae # ammonoid family (Carboniferous)
+Hoplitaceaea # ammonoid superfamily (Cretaceous)
+Hoplitidae # ammonoid family (Cretaceous)
+Huananoceratidae # ammonoid family
+Hungaritidae # ammonoid family (Triassic)
 Idioctopodidae
 Idiosepida
 Idiosepiidae
 Imeroherpiidae
 Incirrina
+Inyoitidae # ammonoid family
+Ischnochitonidae # chiton family (Polyplacophora)
+Isculitidae # ammonoid family
+Japonitidae # ammonoid family (Triassic)
+Joannitidae # ammonoid family (Triassic)
 Joubiniteuthidae
+Juraphyllitidae # ammonoid family (Jurassic)
+Juvavitidae # ammonoid family (Triassic)
+Karagandoceratoidea # ammonoid superfamily
+Kashmiritidae # ammonoid family
+Kirsoceratidae # ammonoid family
+Klamathitidae # ammonoid family (Triassic)
+Knemiceratidae # ammonoid family
+Kosmoclymeniidae # ammonoid family (Devonian)
+Kossmaticeratidae # ammonoid family (Cretaceous)
+Labeceratidae # ammonoid family
+Lanceolitidae # ammonoid family
+Latanarcestidae # ammonoid family (Devonian)
+Lecanitidae # ammonoid family
 Lepidomeniidae
 Lepidopleurida
 Lepidoteuthidae
+Leptochitonidae # chiton family (Polyplacophora)
+Leymeriellidae # ammonoid family (Cretaceous)
 Limifossoridae
+Liparoceratidae # ammonoid family (Jurassic)
+Lissoceratidae # ammonoid family (Jurassic)
+Liuchengoceratidae # ammonoid family
+Lobitaceae # ammonoid superfamily (Triassic)
+Lobitidae # ammonoid family (Triassic)
 Loliginidae
+Longobarditidae # ammonoid family (Triassic)
 Lycoteuthidae
+Lyelliceratidae # ammonoid family (Cretaceous)
+Lytocerataceae # ammonoid superfamily (Jurassic-Cretaceous)
+Lytoceratidae # ammonoid family (Jurassic-Cretaceous)
 Macellomeniidae
+Macrocephalitidae # ammonoid family (Jurassic)
+Macroscaphitidae # ammonoid family (Cretaceous)
+Maenioceratidae # ammonoid family (Devonian)
+Maizaniidae # ammonoid family
+Marathonitaceae # ammonoid superfamily (Permian)
+Marathonitidae # ammonoid family (Permian)
 Mastigoteuthidae
+Maxigoniatitidae # ammonoid family
+Maximitidae # ammonoid family
+Medlicottiaceae # ammonoid superfamily (Permian)
+Medlicottiidae # ammonoid family (Permian)
+Meekocerataceae # ammonoid superfamily (Triassic)
+Meekoceratoidea # ammonoid superfamily (Triassic)
+Megacrioceratidae # ammonoid family (Cretaceous)
+Megaphyllitaceae # ammonoid superfamily (Triassic)
+Megaphyllitidae # ammonoid family (Triassic)
+Megateuthididae # belemnite family
 Meiomeniidae
+Melagathiceratidae # ammonoid family
+Mesnilellidae # ammonoid family
+Metalegoceratidae # ammonoid family (Permian)
+Metasibiritidae # ammonoid family (Triassic)
+Mimagoniatitaceae # ammonoid superfamily (Devonian)
+Mimagoniatitidae # ammonoid family (Devonian)
+Mimoceratidae # ammonoid family (Devonian)
+Mimosphinctaceae # ammonoid superfamily
+Mimosphinctidae # ammonoid family
+Mongoloceratidae # ammonoid family
 Monoplacophora
+Mopaliidae # chiton family (Polyplacophora)
+Morphoceratidae # ammonoid family
+Muensteroceratidae # ammonoid family
+Mullericeratidae # ammonoid family
+Muniericeratidae # ammonoid family
 Myopsida
 Myopsina
+Nathorstitaceae # ammonoid superfamily (Triassic)
+Nathorstitidae # ammonoid family (Triassic)
 Nautilida
 Nautilidae
 Nautilidia
 Nautiloida
 Neocephalopoda
+Neocomitidae # ammonoid family (Cretaceous)
+Neodimorphocerataceae # ammonoid superfamily
+Neodimorphoceratidae # ammonoid family
+Neoglyphiocerataceae # ammonoid superfamily
+Neoglyphioceratidae # ammonoid family
+Neoicocerataceae # ammonoid superfamily
+Neoicoceratidae # ammonoid family
 Neoloricata
 Neomeniidae
+Neostacheoceratidae # ammonoid family
 Neoteuthidae
+Nipponoteuthidae # belemnite family
+Nomismocerataceae # ammonoid superfamily
+Nomismoceratidae # ammonoid family
+Nordiceratidae # ammonoid family
+Nordophiceratidae # ammonoid family
+Noridiscitidae # ammonoid family
+Noritaceae # ammonoid superfamily (Triassic)
+Noritidae # ammonoid family (Triassic)
+Noritidea # ammonoid family (Triassic; alternate/variant of Noritidae)
+Nostoceratidae # heteromorph ammonoid family (Cretaceous)
 Notomeniidae
 Octopoda
 Octopodidae
 Octopodiformes
 Octopoteuthidae
 Ocythoidae
+Oecoptychiidae # ammonoid family
 Oegopsida
 Oegopsina
+Olcostephanidae # ammonoid family (Cretaceous)
 Ommastrephidae
 Onychoteuthidae
+Oosterellidae # ammonoid family
+Ophiceratidae # ammonoid family (Triassic)
 Opisthoteuthidae
+Oppeliidae # ammonoid family (Jurassic)
+Otocerataceae # ammonoid superfamily (Permian-Triassic)
+Otoceratidae # ammonoid family (Permian)
+Otoitidae # ammonoid family (Jurassic)
+Oxynoticeratidae # ammonoid family
+Ozdikmenellidae # ammonoid family
+Pachyceratidae # ammonoid family
+Pachydiscidae # ammonoid family (Cretaceous)
+Palaeophyllitidae # ammonoid family
 Palcephalopoda
+Paraceltitidae # ammonoid family (Permian-Triassic)
+Paragastrioceratidae # ammonoid family (Carboniferous)
+Paragoceratidae # ammonoid family
+Parahoplitidae # ammonoid family (Cretaceous)
+Paranoritidae # ammonoid family
+Parawocklumeriidae # ammonoid family (Devonian)
+Parkinsoniidae # ammonoid family (Jurassic)
+Parodoceratidae # ammonoid family
+Passaloteuthidae # belemnite family
+Pericyclaceae # ammonoid superfamily (Carboniferous)
+Pericyclidae # ammonoid family (Carboniferous)
+Perisphinctaceae # ammonoid superfamily (Jurassic)
+Perisphinctidae # ammonoid family (Jurassic)
+Perisphinctoidea # ammonoid superfamily (Jurassic)
+Perrinitidae # ammonoid family (Permian)
+Petteroceratidae # ammonoid family
+Pharcicerataceae # ammonoid superfamily (Devonian)
+Pharciceratidae # ammonoid family (Devonian)
+Pholidoskepia # aplacophoran molluscs (Caudofoveata)
+Pholidoteuthidae # squid family (Cephalopoda)
+Phyllocerataceae # ammonoid superfamily (Jurassic-Cretaceous)
+Phylloceratidae # ammonoid family (Jurassic-Cretaceous)
 Phyllomeniidae
+Phymatoceratidae # ammonoid family (Jurassic)
+Pinacitidae # ammonoid family (Carboniferous)
+Pinacocerataceae # ammonoid superfamily (Triassic)
+Pinacoceratidae # ammonoid family (Triassic)
+Pisanianuridae # ammonoid family
+Placenticeratidae # ammonoid family (Cretaceous)
 Placophora
+Platyclymeniaceae # ammonoid superfamily (Devonian)
+Platyclymeniidae # ammonoid family (Devonian)
+Platylenticeratidae # ammonoid family
+Pleuronodoceratidae # ammonoid family
+Polymorphitidae # ammonoid family (Jurassic)
 Polyplacophora
 Polyplaxiphora
+Polyptychitidae # ammonoid family (Cretaceous)
+Ponticeratidae # ammonoid family
+Popanocerataceae # ammonoid superfamily (Permian)
+Popanoceratidae # ammonoid family (Permian)
+Posttornoceratidae # ammonoid family
+Praeglyphioceratidae # ammonoid family
+Prionitidae # ammonoid family
+Prionocerataceae # ammonoid superfamily (Devonian)
+Prionoceratidae # ammonoid family (Devonian)
+Proarcestidae # ammonoid family (Triassic)
+Procarnitidae # ammonoid family (Triassic)
 Prochaetodermatidae
+Prodromitidae # ammonoid family (Triassic)
+Prolecanitaceae # ammonoid superfamily
+Prolecanitidae # ammonoid family
+Prolobitidae # ammonoid family (Devonian)
+Prolyelliceratidae # ammonoid family (Cretaceous)
 Promachoteuthidae
 Proneomeniidae
+Pronoritidae # ammonoid family (Permian-Triassic)
+Proptychitidae # ammonoid family (Triassic)
+Prosphingitidae # ammonoid family
+Protancyloceratidae # ammonoid family
+Protancyloceratoidea # heteromorph ammonoid superfamily
+Proteusitidae # ammonoid family
 Pruvotinidae
+Pseudoclymeniidae # ammonoid family (Devonian)
+Pseudohaloritaceae # ammonoid superfamily (Permian)
+Pseudohaloritidae # ammonoid family (Permian)
+Pseudoparalegoceratidae # ammonoid family
+Pseudotirolitidae # ammonoid family (Permian-Triassic)
+Pseudotissotidae # ammonoid family (Cretaceous)
+Psilocerataceae # ammonoid superfamily (Jurassic)
+Psiloceratidae # ammonoid family (Jurassic)
 Psychroteuthidae
+Ptychitaceae # ammonoid superfamily (Triassic)
+Ptychitidae # ammonoid family (Triassic)
+Ptychoceratidae # heteromorph ammonoid family
+Ptychoceratoidea # heteromorph ammonoid superfamily
+Pulchelliaceae # ammonoid superfamily (Cretaceous)
+Pulchelliidae # ammonoid family (Cretaceous)
+Pulsellidae # tusk shell family (Scaphopoda)
 Pyroteuthidae
+Ramositidae # ammonoid family
+Rectoclymeniidae # ammonoid family (Devonian)
+Reineckeiidae # ammonoid family (Jurassic)
+Reticuloceratidae # ammonoid family (Carboniferous)
+Rhabdoceratidae # ammonoid family
 Rhipidoherpiidae
 Rhopalomeniidae
+Rhymmoceratidae # ammonoid family
+Rotopericyclidae # ammonoid family
+Sagecerataceae # ammonoid superfamily (Triassic)
+Sageceratidae # ammonoid family (Triassic)
+Salpingoteuthididae # belemnite family
 Sandalomeniidae
+Sandlingitidae # ammonoid family
+Scaphitaceae # heteromorph ammonoid superfamily (Cretaceous)
+Scaphitidae # heteromorph ammonoid family (Cretaceous)
+Scaphopoda # tusk shells; distinct mollusc class
+Schistocerataceae # ammonoid superfamily (Carboniferous)
+Schistoceratidae # ammonoid family (Carboniferous)
+Schloenbachiidae # ammonoid family (Cretaceous)
+Schlotheimiidae # ammonoid family (Jurassic)
+Sellaclymeniidae # ammonoid family (Devonian)
 Sepiadariidae
 Sepiida
 Sepiidae
 Sepiolida
 Sepiolidae
+Shumarditaceae # ammonoid superfamily (Permian)
+Shumarditidae # ammonoid family (Permian)
+Sibiritidae # ammonoid family (Triassic)
+Silesitidae # ammonoid family (Cretaceous)
+Simoceratidae # ammonoid family
 Simrothiellidae
+Sinuiceratidae # ammonoid family
+Sobolewiidae # ammonoid family
 Solenogastres
+Somoholitaceae # ammonoid superfamily
+Somoholitidae # ammonoid family
+Sonniniidae # ammonoid family (Jurassic)
+Sphaeroceratidae # ammonoid family (Jurassic)
+Sphenoclymeniidae # ammonoid family (Devonian)
+Sphenodiscidae # ammonoid family (Cretaceous)
+Sphingitidae # ammonoid family (Triassic)
+Spirocerataceae # heteromorph ammonoid superfamily
+Spiroceratidae # heteromorph ammonoid family
+Spirolegoceratidae # ammonoid family
 Spirulida
 Spirulidae
+Sporadoceratidae # ammonoid family
 Stauroteuthidae
+Steinmannitidae # ammonoid family
+Stephanocerataceae # ammonoid superfamily (Jurassic)
+Stephanoceratidae # ammonoid family (Jurassic)
+Strigoceratidae # ammonoid family (Jurassic)
 Strophomeniidae
+Sturiidae # ammonoid family
 Syngenoherpiidae
+Tamaritidae # ammonoid family
+Tampiyidae # ammonoid family (Cretaceous)
+Taouzitidae # ammonoid family
+Tapashanitidae # ammonoid family
+Teicherticeratidae # ammonoid family
+Temertassetiidae # ammonoid family
+Tetragonitaceae # ammonoid superfamily (Cretaceous)
+Tetragonitidae # ammonoid family (Cretaceous)
 Teuthida
+Thalassocerataceae # ammonoid superfamily (Triassic)
+Thalassoceratidae # ammonoid family (Triassic)
+Thamboceratidae # ammonoid family
+Thanamitidae # ammonoid family
+Thetiditidae # ammonoid family (Triassic)
+Thisbitidae # ammonoid family
 Thysanoteuthidae
+Tibetitidae # ammonoid family (Triassic)
+Tissotiidae # ammonoid family (Cretaceous)
+Tornocerataceae # ammonoid superfamily (Devonian)
+Tornoceratidae # ammonoid family (Devonian)
+Tornoceratoidea # ammonoid superfamily (Devonian)
+Trachycerataceae # ammonoid superfamily (Triassic)
+Trachyceratidae # ammonoid family (Triassic)
 Tremoctopodidae
+Triainoceratidae # ammonoid family
+Tropiceltitidae # ammonoid family (Triassic)
+Tropitaceae # ammonoid superfamily (Triassic)
+Tropitidae # ammonoid family (Triassic)
+Tropitoidea # ammonoid superfamily (Triassic)
+Tryblidiida # monoplacophorans (living fossils)
+Tulitidae # ammonoid family (Jurassic)
+Turrilitaceae # heteromorph ammonoid superfamily (Cretaceous)
+Turrilitidae # heteromorph ammonoid family (Cretaceous)
+Urozonatidae # ammonoid family
+Ussuriidae # ammonoid family (Permian)
+Ussuritaceae # ammonoid superfamily (Permian)
+Ussuritidae # ammonoid family (Permian)
 Vampyromorpha
 Vampyromorphida
 Vampyroteuthidae
+Vascoceratidae # ammonoid family (Cretaceous)
+Vidrioceratidae # ammonoid family
 Vitreledonellidae
 Walvisteuthidae
+Welleritidae # ammonoid family (Carboniferous)
+Werneroceratidae # ammonoid family
+Wiedeyoceratidae # ammonoid family
+Wocklumeriaceae # ammonoid superfamily (Devonian)
+Wocklumeriidae # ammonoid family (Devonian)
+Xenoceltitidae # ammonoid family (Triassic)
+Xenodiscaceae # ammonoid superfamily (Permian)
+Xenodiscidae # ammonoid family (Permian)

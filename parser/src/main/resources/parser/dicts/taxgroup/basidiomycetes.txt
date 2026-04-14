@@ -57,13 +57,16 @@ Classiculomycetes
 Claustulaceae
 Clavariaceae
 Clavariadelphaceae
+Clavulinaceae # coral fungus family (Cantharellales)
 Clintamraceae
 Coleosporiaceae
+Coltriciaceae # polypore family (Hymenochaetales)
 Coniophoraceae
 Corticiaceae
 Corticiales
 Cortinariaceae
 Crassisporiaceae
+Crepidotaceae # mushroom family (Agaricales)
 Cronartiaceae
 Cryptobasidiaceae
 Cryptomycocolacaceae
@@ -98,6 +101,7 @@ Eocronartiaceae
 Erratomycetaceae
 Erythrobasidiaceae
 Erythrobasidiales
+Exidiaceae # jelly fungus family (Auriculariales)
 Exobasidiaceae
 Exobasidiales
 Exobasidiomycetes
@@ -136,6 +140,7 @@ Gyroporaceae
 Helicobasidiaceae
 Helicobasidiales
 Hemigasteraceae
+Hemileiidae # rust fungus family (Pucciniales; coffee leaf rust)
 Hericiaceae
 Heterogastridiaceae
 Heterogastridiales
@@ -143,6 +148,7 @@ Holtermanniaceae
 Holtermanniales
 Hyaloriaceae
 Hybogasteraceae
+Hydnaceae # tooth fungus family (Cantharellales)
 Hydnangiaceae
 Hydnodontaceae
 Hygrophoraceae
@@ -150,10 +156,12 @@ Hygrophoropsidaceae
 Hymenochaetaceae
 Hymenochaetales
 Hymenogastraceae
+Hyphodermataceae # crust fungus family (Polyporales)
 Hysterangiaceae
 Hysterangiales
 Incrustoporiaceae
 Inocybaceae
+Irpicaceae # bracket fungus family (Polyporales)
 Jaapiaceae
 Jaapiales
 Kondoaceae
@@ -165,6 +173,7 @@ Lepidostromataceae
 Lepidostromatales
 Leucosporidiaceae
 Leucosporidiales
+Lycoperdaceae # puffball family (Agaricales)
 Lyophyllaceae
 Malasseziaceae
 Malasseziales
@@ -239,6 +248,7 @@ Raveneliaceae
 Rhamphosporaceae
 Rhizopogonaceae
 Rhynchogastremaceae
+Rickenellaceae # small mushroom family (Hymenochaetales)
 Robbaueraceae
 Robbauerales
 Ruineniaceae
@@ -257,7 +267,9 @@ Septobasidiaceae
 Septobasidiales
 Serpulaceae
 Sirobasidiaceae
+Sistotremataceae # crust fungus family (Cantharellales)
 Sparassidaceae
+Sphaerobolaceae # artillery fungus family (Agaricales)
 Sphaerophragmiaceae
 Spiculogloeaceae
 Spiculogloeales
@@ -272,6 +284,7 @@ Stereopsidales
 Strophariaceae
 Suillaceae
 Symmetrosporaceae
+Syzygosporaceae # jelly fungus family (Cantharellales)
 Talbotiomycetaceae
 Talbotiomycetales
 Tapinellaceae
@@ -296,6 +309,7 @@ Tritirachiaceae
 Tritirachiales
 Tritirachiomycetes
 Tubariaceae
+Tubulicrinaceae # crust fungus family (Trechisporales)
 Tulasnellaceae
 Typhulaceae
 Uleiellaceae

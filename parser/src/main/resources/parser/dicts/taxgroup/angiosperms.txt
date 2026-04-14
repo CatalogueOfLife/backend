@@ -1,6 +1,8 @@
+Acalyphoideae # euphorb subfamily (Euphorbiaceae)
 Acanthaceae
 Acanthogilioideae
 Acanthoideae
+Aceraceae # maple family (now Sapindaceae)
 Achariaceae
 Achatocarpaceae
 Acoraceae
@@ -11,12 +13,14 @@ Actinidioideae
 Adoxaceae
 Adoxoideae
 Aextoxicaceae
+Agavaceae # agave family (now Asparagaceae)
 Agdestidaceae
 Aizoaceae
 Aizooideae
 Akaniaceae
 Alismataceae
 Alismatales
+Alliaceae # onion family (now Amaryllidaceae)
 Alseuosmiaceae
 Alstroemeriaceae
 Altingiaceae
@@ -62,6 +66,7 @@ Argophyllaceae
 Aristolochiaceae
 Aristolochioideae
 Asaroideae
+Asclepiadaceae # milkweed family (now Apocynaceae)
 Asclepiadoideae
 Asparagaceae
 Asparagales
@@ -84,6 +89,7 @@ Balanopaceae
 Balanophoraceae
 Balanophoroideae
 Balsaminaceae
+Bambusoideae # bamboo subfamily (Poaceae)
 Barbeuiaceae
 Barbeyaceae
 Barnadesioideae
@@ -102,6 +108,7 @@ Biebersteiniaceae
 Bignoniaceae
 Bixaceae
 Blandfordiaceae
+Bombacaceae # kapok/balsa family (now Malvaceae)
 Bombacoideae
 Bonnetiaceae
 Boraginaceae
@@ -132,7 +139,9 @@ Cabombaceae
 Cabomboideae
 Cactaceae
 Cactoideae
+Caesalpiniaceae # caesalpinia subfamily/family (now Fabaceae)
 Calceolariaceae
+Callitrichaceae # water-starwort family (now Plantaginaceae)
 Callitrichoideae
 Calophyllaceae
 Calycanthaceae
@@ -178,6 +187,7 @@ Cervantesiaceae
 Cestroideae
 Chasmantheroideae
 Chelonoideae
+Chenopodiaceae # goosefoot family (now Amaranthaceae)
 Chenopodioideae
 Chloranthaceae
 Chloranthales
@@ -205,6 +215,7 @@ Commelinales
 Compositae
 Connaraceae
 Connaroideae
+Convallariaceae # lily-of-the-valley family (now Asparagaceae)
 Convolvulaceae
 Convolvuloideae
 Coptidoideae
@@ -235,9 +246,11 @@ Cymodoceaceae
 Cynoglossoideae
 Cynomoriaceae
 Cyperaceae
+Cyperales # sedges and grasses (now in Poales)
 Cyrillaceae
 Cytinaceae
 Dampieroideae
+Danthonioideae # oatgrass subfamily (Poaceae)
 Daphniphyllaceae
 Dasypogonaceae
 Datiscaceae
@@ -280,6 +293,7 @@ Drosophyllaceae
 Dryadoideae
 Duckeodendroideae
 Ebenaceae
+Ebenales # ebony and relatives (now in Ericales)
 Ecdeiocoleaceae
 Echiochiloideae
 Ehretiaceae
@@ -289,6 +303,7 @@ Elatinaceae
 Emblingiaceae
 Engelhardioideae
 Enkianthoideae
+Epidendroideae # orchid subfamily (Orchidaceae)
 Eremosynoideae
 Ericaceae
 Ericales
@@ -304,6 +319,7 @@ Eucnidoideae
 Eucommiaceae
 Eudicots
 Euphorbiaceae
+Euphorbiales # euphorbs (now in Malpighiales)
 Euphroniaceae
 Eupomatiaceae
 Eupteleaceae
@@ -313,10 +329,12 @@ Fabales
 Fagaceae
 Fagales
 Famatinanthoideae
+Flacourtiaceae # flacourtia family (now Salicaceae)
 Flagellariaceae
 Fouquieriaceae
 Francoaceae
 Frankeniaceae
+Fumariaceae # fumitory family (now Papaveraceae)
 Fumarioideae
 Fusispermoideae
 Garryaceae
@@ -371,11 +389,13 @@ Helicteroideae
 Heliotropiaceae
 Helosoideae
 Helwingiaceae
+Hemerocallidaceae # daylily family (now Asphodelaceae)
 Hemimeridoideae
 Hermas
 Hernandiaceae
 Hernandioideae
 Himantandraceae
+Hippocastanaceae # horse-chestnut family (now Sapindaceae)
 Hippocastanoideae
 Hippocrateoideae
 Hoplestigmataceae
@@ -384,6 +404,7 @@ Huaceae
 Huerteales
 Humbertioideae
 Humiriaceae
+Hyacinthaceae # hyacinth family (now Asparagaceae)
 Hydatellaceae
 Hydnoraceae
 Hydrangeaceae
@@ -411,6 +432,7 @@ Jamesioideae
 Joinvilleaceae
 Jollydoroideae
 Juglandaceae
+Juglandales # walnuts, hickories (now in Fagales)
 Juglandoideae
 Juncaceae
 Juncaginaceae
@@ -437,6 +459,7 @@ Lecythidaceae
 Ledocarpaceae
 Leeoideae
 Leguminosae
+Lemnaceae # duckweed family (now Araceae)
 Lennoaceae
 Lentibulariaceae
 Lepidobotryaceae
@@ -534,6 +557,7 @@ Myricaceae
 Myristicaceae
 Myrothamnaceae
 Myrothamnanae
+Myrsinaceae # myrsine family (now Primulaceae)
 Myrsinoideae
 Myrtaceae
 Myrtales
@@ -574,6 +598,7 @@ Opiliaceae
 Opuloideae
 Opuntioideae
 Orchidaceae
+Orchidoideae # orchid subfamily (Orchidaceae)
 Orobanchaceae
 Oxalidaceae
 Oxalidales
@@ -611,6 +636,7 @@ Pertyoideae
 Petalonychoideae
 Petenaeaceae
 Petermanniaceae
+Petiveriaceae # pokeweed-relative family (Caryophyllales)
 Petrosaviaceae
 Petrosaviales
 Phellinaceae
@@ -648,6 +674,7 @@ Polemonioideae
 Polycnemoideae
 Polygalaceae
 Polygonaceae
+Polygonales # buckwheat family (now in Caryophyllales)
 Polygonoideae
 Polyosmoideae
 Pontederiaceae
@@ -657,6 +684,7 @@ Posidoniaceae
 Potamogetonaceae
 Pottingerioideae
 Primulaceae
+Primulales # primrose family (now in Ericales)
 Primuloideae
 Proteaceae
 Proteales
@@ -680,6 +708,7 @@ Resedaceae
 Restionaceae
 Rhabdodendraceae
 Rhamnaceae
+Rhamnales # buckthorn family (now in Rosales)
 Rhipogonaceae
 Rhizophoraceae
 Rhoipteleaceae
@@ -693,7 +722,10 @@ Rosoideae
 Rousseaceae
 Rousseoideae
 Rubiaceae
+Rubiales # coffee/madder family (now in Gentianales)
+Rubioideae # rubiaceae subfamily
 Ruppiaceae
+Ruscaceae # ruscus family (now Asparagaceae)
 Ruschioideae
 Rutaceae
 Rutoideae
@@ -731,6 +763,7 @@ Schizanthoideae
 Schlegeliaceae
 Schoepfiaceae
 Scrophulariaceae
+Scrophulariales # figwort family (now in Lamiales)
 Scrophularioideae
 Scybalioideae
 Secamonoideae
@@ -758,6 +791,7 @@ Staticoideae
 Stegnospermataceae
 Stemonaceae
 Stemonuraceae
+Sterculiaceae # cacao-relative family (now Malvaceae)
 Sterculioideae
 Stifftioideae
 Stilbaceae
@@ -789,6 +823,8 @@ Tetramelaceae
 Tetrameristaceae
 Thalictroideae
 Theaceae
+Theales # tea family and relatives (now in Malpighiales/Ericales)
+Theophrastaceae # theophrastia family (Ericales)
 Theophrastoideae
 Thesiaceae
 Thismiaceae
@@ -799,10 +835,12 @@ Thymelaeaceae
 Thymelaeoideae
 Ticodendraceae
 Tiganophytaceae
+Tiliaceae # lime/linden family (now Malvaceae)
 Tilioideae
 Tofieldiaceae
 Torricelliaceae
 Tovariaceae
+Tribuloideae # tribulus-relative subfamily (Zygophyllaceae)
 Trigoniaceae
 Trimeniaceae
 Tristichoideae
@@ -817,6 +855,7 @@ Typhaceae
 Ulmaceae
 Umbelliferae
 Urticaceae
+Urticales # nettle/hemp family (now in Rosales)
 Urticoideae
 Utricularioideae
 Vaccinioideae
@@ -830,6 +869,7 @@ Verhuellioideae
 Vernonioideae
 Viburnaceae
 Violaceae
+Violales # violet family (now in Malpighiales)
 Violoideae
 Viscaceae
 Vitaceae

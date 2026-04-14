@@ -38,6 +38,7 @@ Ampullarioidea
 Ampullinidae
 Anabathridae
 Anadenidae
+Anaspidea # sea hares (Opisthobranchia)
 Anatomidae
 Ancillariidae
 Angariidae
@@ -47,6 +48,7 @@ Aplysiida
 Aplysiidae
 Aplysioidea
 Aporrhaidae
+Architaenioglossa # freshwater and land snails (Caenogastropoda)
 Architectonicidae
 Architectonicoidea
 Areneidae
@@ -67,6 +69,7 @@ Azecidae
 Babakinidae
 Babyloniidae
 Barleeiidae
+Basommatophora # freshwater pulmonate snails
 Bathydorididae
 Bathydoridoidea
 Bathydoridoidei
@@ -84,6 +87,7 @@ Bornellidae
 Borsoniidae
 Bothriembryontidae
 Bouchetispiridae
+Bradybaenidae # land snail family (Stylommatophora)
 Buccinidae
 Buccinoidea
 Bulimulidae
@@ -246,6 +250,7 @@ Falsicingulidae
 Fasciolariidae
 Fauxulidae
 Ferrussaciidae
+Ferussaciidae # land snail family (Stylommatophora)
 Ficidae
 Ficoidea
 Fionidae
@@ -337,6 +342,7 @@ Lironobidae
 Lithoglyphidae
 Litiopidae
 Littorinidae
+Littorinimorpha # periwinkles and relatives (Caenogastropoda)
 Littorinoidea
 Lomanotidae
 Lottiidae
@@ -383,6 +389,7 @@ Neomphalida
 Neomphalidae
 Neomphaliones
 Neomphaloidea
+Neotaenioglossa # large caenogastropod order (cowries, periwinkles etc.)
 Neritidae
 Neritiliidae
 Neritimorpha
@@ -482,6 +489,7 @@ Pneumodermatidae
 Polyceridae
 Polyceroidea
 Polygyridae
+Pomatiasidae # land snail family (Caenogastropoda)
 Pomatiidae
 Pomatiopsidae
 Potamididae
@@ -501,6 +509,7 @@ Pteropoda
 Pterotracheidae
 Pterotracheoidea
 Ptychatractidae
+Pulmonata # pulmonate gastropods (land snails, slugs)
 Punctidae
 Punctoidea
 Pupillidae
@@ -581,6 +590,7 @@ Stromboidea
 Strophocheilidae
 Struthiolariidae
 Stylommatophora
+Subulinidae # land snail family (Stylommatophora)
 Succineidae
 Succineoidea
 Succineoidei

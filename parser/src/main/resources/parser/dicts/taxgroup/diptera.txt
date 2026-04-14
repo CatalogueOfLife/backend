@@ -153,6 +153,7 @@ Campylomyzini
 Canacidae
 Canacinae
 Canacini
+Canthyloscelidae # moth fly-relative family (Psychodomorpha)
 Canthyloscelididae
 Carnidae
 Carnoidea
@@ -377,6 +378,7 @@ Forbesomyiini
 Forcipomyiinae
 Foveoladiplosini
 Freraeiini
+Gasterophilidae # bot fly family (Oestridae)
 Gasterophilinae
 Gasterophilini
 Germariini
@@ -632,6 +634,7 @@ Nothoschistini
 Nothotrichocerini
 Nothybidae
 Notoconopinae
+Nycteribiidae # bat fly family (Hippoboscoidea)
 Nycteribiini
 Nycteriboscini
 Nycterophilini
@@ -917,6 +920,7 @@ Stratiomyiinae
 Stratiomyinae
 Stratiomyini
 Stratiomyoidea
+Streblidae # bat fly family (Hippoboscoidea)
 Streblinae
 Streblini
 Strobliellini
@@ -973,6 +977,7 @@ Terelliini
 Termitoxeniinae
 Tetanocerini
 Tethepomyiidae
+Tethinidae # beach fly family (Ephydroidea)
 Tethininae
 Tetragoneurinae
 Thaumacecidomyiinae

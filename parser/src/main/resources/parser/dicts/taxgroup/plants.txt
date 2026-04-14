@@ -15,6 +15,7 @@ Plantae
 Plants
 Pteridobiotina
 Regnum Vegetabile
+Spermatophyta # seed plants sensu lato (spans both Angiosperms and Gymnosperms)
 Telomobionta
 Tracheophyta
 Vegetabile

@@ -295,6 +295,7 @@ Helotiaceae
 Helotiales
 Helvellaceae
 Hemiphacidiaceae
+Heppiaceae # cyanolichen family (Lichinales)
 Hermatomycetaceae
 Herpomycetaceae
 Herpomycetales

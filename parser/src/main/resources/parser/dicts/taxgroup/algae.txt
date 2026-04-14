@@ -71,6 +71,7 @@ Bangiales
 Bangiophyceae
 Barrancaceae
 Bathycoccaceae
+Batrachospermaceae # red alga family (Rhodophyta, Batrachospermales)
 Batrachospermales
 Batrochospermaceae
 Bellerocheaceae
@@ -103,6 +104,7 @@ Bryopsidaceae
 Bryopsidales
 Calcidiscaceae
 Calciosoleniaceae
+Callithamniaceae # red alga family (Rhodophyta, Ceramiales)
 Calosiphoniaceae
 Calyptrosphaeraceae
 Campylomonadaceae
@@ -119,6 +121,7 @@ Ceramiaceae
 Ceramiales
 Chaetocerales
 Chaetocerotaceae
+Chaetocerotales # centric diatoms (Bacillariophyta)
 Chaetopeltidaceae
 Chaetopeltidales
 Chaetophoraceae
@@ -137,6 +140,7 @@ Charophyceae
 Charophyta
 Charophytes
 Chattonella
+Chattonellaceae # raphidophyte family (heterokont algae)
 Chattonellales
 Chlamydomonadaceae
 Chlamydomonadales
@@ -261,6 +265,7 @@ Cryptophyta
 Ctenocladaceae
 Cubiculosporaceae
 Cutleriaceae
+Cutleriales # brown algae (Phaeophyceae)
 Cyanidiaceae
 Cyanidiales
 Cyanidiophyceae
@@ -287,6 +292,8 @@ Desmarestiales
 Desmidiaceae
 Desmidiales
 Desmids
+Developayellaceae # heterokont ochrophyte alga family
+Developayellales # heterokont ochrophyte algae
 Diadesmidaceae
 Diatomea
 Diatomeae
@@ -433,6 +440,7 @@ Hibberdiaceae
 Hibberdiales
 Hildebrandiales
 Hildenbrandiaceae
+Hildenbrandiales # crustose red algae (Rhodophyta)
 Hilleaceae
 Himanthaliaceae
 Hormosiraceae
@@ -750,6 +758,7 @@ Schizomeridaceae
 Schizymeniaceae
 Schmitziellaceae
 Schroederiaceae
+Scinaiaceae # red alga family (Rhodophyta, Nemaliales)
 Scolioneidaceae
 Scoliotropidaceae
 Scoresbyellaceae
@@ -759,6 +768,7 @@ Scotinosphaerales
 Scourfieldiaceae
 Scourfieldiales
 Scytosiphonaceae
+Scytosiphonales # brown algae (Phaeophyceae)
 Scytothamnaceae
 Scytothamnales
 Sebdeniaceae
@@ -830,6 +840,7 @@ Tetracystaceae
 Tetragonidiaceae
 Tetragonidiales
 Tetrasporaceae
+Tetrasporales # colonial green algae (Chlorophyta)
 Thalassionemataceae
 Thalassionematales
 Thalassiophysaceae
@@ -875,6 +886,7 @@ Vaucheriaceae
 Vaucheriales
 Viridilobus
 Volvocaceae
+Volvocales # volvocine green algae (Chlorophyta)
 Witrockiellaceae
 Wrangeliaceae
 Xanthonemataceae

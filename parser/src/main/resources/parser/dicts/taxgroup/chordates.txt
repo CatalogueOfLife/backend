@@ -8,6 +8,7 @@ Acanthodii
 Acanthopterygii
 Acanthothoraci
 Acanthuridae
+Acanthuriformes # surgeonfish, tangs (Perciformes)
 Accipitridae
 Accipitriformes
 Accipitrinae
@@ -181,6 +182,7 @@ Arctocephalinae
 Ardeidae
 Ardeinae
 Argentinidae
+Argentiniformes # smelts and relatives (Teleostei)
 Arhynchobatidae
 Ariidae
 Ariommatidae
@@ -255,6 +257,7 @@ Bathylutichthyidae
 Bathymasteridae
 Bathysauridae
 Bathysauroididae
+Bathysauropsidae # deep-sea lizardfish family (Aulopiformes)
 Batoidea
 Batrachoididae
 Batrachoidiformes
@@ -276,6 +279,7 @@ Blanidae
 Blarinellini
 Blarinini
 Blenniidae
+Blenniiformes # blennies
 Boidae
 Boinae
 Bolitoglossinae
@@ -304,6 +308,7 @@ Bramidae
 Braminae
 Branchiosauridae
 Branchiostomatidae
+Branchiostomidae # lancelet family (Cephalochordata)
 Bregmacerotidae
 Brevicipitidae
 Brevicipitinae
@@ -348,6 +353,7 @@ Calomyscidae
 Calomyscinae
 Caluromyinae
 Calyptocephalellidae
+Calyptomenidae # African broadbill family (Aves)
 Calyptomeninae
 Camarasauridae
 Camelidae
@@ -369,7 +375,9 @@ Caproidae
 Capromyidae
 Capromyinae
 Captorhinidae
+Caracanthidae # velvetfish family (Scorpaeniformes)
 Carangidae
+Carangiformes # jacks, pompanos
 Carapidae
 Carcharhinidae
 Carcharhiniformes
@@ -392,6 +400,7 @@ Castorimorpha
 Casuariidae
 Casuariiformes
 Cathartidae
+Cathartiformes # New World vultures (Aves)
 Catostomidae
 Caudata
 Caulophrynidae
@@ -399,6 +408,7 @@ Caviidae
 Caviinae
 Cebidae
 Cebinae
+Centracanthidae # picarel family (Spariformes)
 Centrarchidae
 Centriscidae
 Centrogenyidae
@@ -410,6 +420,7 @@ Centrophrynidae
 Centropodidae
 Centropodinae
 Centropomidae
+Cephalaspidomorphi # class of jawless vertebrates: lampreys and extinct relatives
 Cephalochordata
 Cephalochordates
 Cephalophinae
@@ -437,6 +448,7 @@ Cervinae
 Cerylidae
 Cerylinae
 Cetacea
+Cetartiodactyla # whales + even-toed ungulates (Mammalia)
 Cetiosauridae
 Cetomimidae
 Cetomimiformes
@@ -509,6 +521,7 @@ Chrysochloridea
 Chrysochlorinae
 Chrysotrichinae
 Cichlidae
+Cichliformes # cichlids
 Ciconiidae
 Ciconiiformes
 Cimoliasauridae
@@ -662,6 +675,7 @@ Dactylopteriformes
 Dactyloscopidae
 Dalatiidae
 Damalidae
+Danionidae # danio/minnow family (Cypriniformes)
 Dapedidae
 Dasyatidae
 Dasyornithidae
@@ -744,6 +758,7 @@ Dipodinae
 Dipodoidea
 Dipodomyinae
 Diprotodontia
+Dipsadidae # rear-fanged snake family (Squamata)
 Dipsadinae
 Dipsidae
 Diretmidae
@@ -826,6 +841,7 @@ Emydidae
 Enantiornithes
 Engraulidae
 Enoplosidae
+Enterogona # tunicates (Ascidiacea, Urochordata)
 Eonycterini
 Ephippidae
 Epictinae
@@ -863,6 +879,7 @@ Eugongylidae
 Eugongylinae
 Euhelopodidae
 Euherdmaniidae
+Eulipotyphla # hedgehogs, shrews, moles (Mammalia)
 Eumysopinae
 Euparkeriidae
 Eupelycosauria
@@ -966,6 +983,7 @@ Gnathostomata
 Gobiesocidae
 Gobiesociformes
 Gobiidae
+Gobiiformes # gobies
 Goniopholididae
 Gonorhynchiformes
 Gonorynchidae
@@ -1447,6 +1465,7 @@ Narcinidae
 Narkidae
 Nasikabatrachidae
 Natalidae
+Natricidae # water snake family (Squamata)
 Natricinae
 Nectariniidae
 Nectogalini
@@ -1512,6 +1531,7 @@ Nycticeiini
 Nyctimeninae
 Nyctophilini
 Occidozyginae
+Oceanitidae # austral storm petrel family (Aves)
 Oceanitinae
 Ochotonidae
 Ochrotomyini
@@ -1634,6 +1654,7 @@ Pareidae
 Paridae
 Parodontidae
 Parulidae
+Passerellidae # New World sparrow family (Aves)
 Passeridae
 Passeriformes
 Pataecidae
@@ -1656,6 +1677,7 @@ Pelomedusoidea
 Peltopleuriformes
 Pempheridae
 Penelopinae
+Pentanchidae # finback catshark family (Carcharhiniformes)
 Peramelemorphia
 Peramelidae
 Peramelinae
@@ -1855,6 +1877,7 @@ Prionodontidae
 Prionodontinae
 Prionopidae
 Pristidae
+Pristiformes # sawfish (Elasmobranchii)
 Pristigasteridae
 Pristiophoridae
 Pristiophoriformes
@@ -1915,11 +1938,13 @@ Psittacidae
 Psittaciformes
 Psittacinae
 Psittacosauridae
+Psittaculidae # Old World parrot family (Aves)
 Psittrichadinae
 Psophiidae
 Psophodidae
 Psychrolutidae
 Pteralopini
+Ptereleotridae # fire goby family (Gobiiformes)
 Pterocletes
 Pteroclidae
 Pteroclididae
@@ -2016,6 +2041,7 @@ Rhomaleosauridae
 Rhombomyinae
 Rhyacichthyidae
 Rhyacotritonidae
+Rhynchobatidae # wedgefish family (Elasmobranchii)
 Rhynchocephalia
 Rhynchomyinae
 Rhynchosauridae
@@ -2055,6 +2081,8 @@ Saltoposuchidae
 Samaridae
 Sanziniinae
 Sapayoaidae
+Sarcopterygii # lobe-finned fishes and tetrapods
+Sarothruridae # flufftail family (Aves)
 Saurichthyiformes
 Saurischia
 Sauropoda
@@ -2347,6 +2375,7 @@ Tripterygiidae
 Trochili
 Trochilidae
 Trochiliformes
+Trochiliidae # hummingbird family (Aves)
 Trochilinae
 Troglodytidae
 Trogonidae
@@ -2398,6 +2427,7 @@ Ursinae
 Vaillantellidae
 Valenciidae
 Vampyrini
+Vanellidae # lapwing family (Aves)
 Vangidae
 Varanidae
 Veliferidae
@@ -2427,6 +2457,7 @@ Xenacanthiformes
 Xenarthra
 Xenicidae
 Xenisthmidae
+Xenocyprididae # Asian cyprinid family (Cypriniformes)
 Xenodermatidae
 Xenodermidae
 Xenopeltidae
@@ -2446,6 +2477,7 @@ Zaproridae
 Zeidae
 Zeiformes
 Zenarchopteridae
+Zenionidae # zeiform-relative family (Teleostei)
 Zeniontidae
 Zenkerellinae
 Ziphiidae

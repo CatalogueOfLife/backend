@@ -82,9 +82,11 @@ Dicranales
 Dicranidae
 Diettertiaceae
 Diphysciaceae
+Diphysciales # mosses (Bryophyta)
 Dipsychiales
 Dipsychiidae
 Disceliaceae
+Distichiaceae # moss family (Bryophyta)
 Ditrichaceae
 Drummondiaceae
 Dumortieraceae
@@ -187,6 +189,7 @@ Metzgeriaceae
 Metzgeriales
 Metzgeriidae
 Microtheciellaceae
+Mielichhoferioideae # moss subfamily (Bartramiaceae)
 Mitteniaceae
 Mizutaniaceae
 Mniaceae
@@ -276,6 +279,7 @@ Riellaceae
 Rigodiaceae
 Rutenbergiaceae
 Saccogynaceae
+Saelaniaceae # moss family (Bryophyta)
 Sandeothallaceae
 Saulomataceae
 Scapaniaceae
@@ -319,6 +323,7 @@ Thuidiaceae
 Timmiaceae
 Timmiales
 Timmidae
+Timmiellaceae # moss family (Bryophyta)
 Trachylomataceae
 Trachypodaceae
 Treubiaceae

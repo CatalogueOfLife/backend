@@ -558,6 +558,7 @@ Persicobacteraceae
 Petrotogaceae
 Petrotogales
 Phaselicystidaceae
+Phormidiaceae # cyanobacteria family (filamentous)
 Phycisphaeraceae
 Phycisphaerae
 Phycisphaerales
@@ -586,6 +587,7 @@ Propionibacteriales
 Propionibacterineae
 Proteobacteria
 Pseudanabaenaceae
+Pseudanabaenales # filamentous cyanobacteria
 Pseudoalteromonadaceae
 Pseudobacteriovoracaceae
 Pseudomonadaceae

@@ -1,7 +1,9 @@
 Ablaberini
 Abraeinae
 Abraeini
+Acanthocinini # longhorn beetle tribe (Cerambycidae: Lamiinae)
 Acanthocnemidae
+Acanthoderini # longhorn beetle tribe (Cerambycidae: Lamiinae)
 Acidocerinae
 Aciliini
 Aclopinae
@@ -31,11 +33,13 @@ Agabetini
 Agabinae
 Agabini
 Agaocephalini
+Agapanthiini # longhorn beetle tribe (Cerambycidae: Lamiinae)
 Agapythidae
 Agathidiidae
 Agonoderi
 Agraeformes
 Agraphini
+Agrypninae # click beetle subfamily (Elateridae)
 Agyrtidae
 Agyrtinae
 Agyrtodini
@@ -93,18 +97,21 @@ Anthiini
 Anthobiini
 Anthophagini
 Anthribidae
+Anthribinae # fungus weevil subfamily (Anthribidae)
 Antillusini
 Anypotactini
 Apateticinae
 Apatinae
 Apatini
 Aphaenostemmini
+Aphodiidae # dung beetle family (Scarabaeoidea)
 Aphodiinae
 Aphodiini
 Apionidae
 Aploderini
 Apocellini
 Apoderigerini
+Apomecynini # longhorn beetle tribe (Cerambycidae: Lamiinae)
 Apotominae
 Aproidini
 Aptinini
@@ -170,6 +177,7 @@ Blediini
 Blosyrini
 Boganiidae
 Bolbelasmini
+Bolboceratidae # earth-boring dung beetle family (Scarabaeoidea)
 Bolboceratinae
 Bolboceratini
 Bolbochromini
@@ -202,6 +210,7 @@ Broscini
 Bruchinae
 Bryaxina
 Buprestidae
+Buprestinae # jewel beetle subfamily (Buprestidae)
 Buprestoidea
 Byrrhidae
 Byrrhidiini
@@ -218,6 +227,7 @@ Camaragnathinae
 Camiarinae
 Camiarini
 Cantharidae
+Cantharinae # soldier beetle subfamily (Cantharidae)
 Cantharoidea
 Capreolucanini
 Carabdytini
@@ -227,6 +237,7 @@ Carabini
 Caraboidea
 Caridae
 Carpelimini
+Carpophilinae # sap beetle subfamily (Nitidulidae)
 Casignetini
 Cassidinae
 Cassidini
@@ -242,6 +253,8 @@ Cephenniini
 Cephenniitae
 Ceracupedini
 Cerambycidae
+Cerambycinae # longhorn beetle subfamily (Cerambycidae)
+Cerambycini # longhorn beetle tribe (Cerambycidae: Cerambycinae)
 Cerambyciscaphini
 Cerambyscaphini
 Ceratocanthinae
@@ -252,6 +265,7 @@ Cerophytidae
 Ceruchini
 Ceruchitinae
 Cerylonidae
+Cetoniidae # flower chafer family (Scarabaeoidea)
 Cetoniinae
 Cetoniini
 Chaeridionini
@@ -303,12 +317,14 @@ Cleroidea
 Clidicini
 Clinidiini
 Clivinini
+Clytini # longhorn beetle tribe (Cerambycidae: Cerambycinae)
 Clytrini
 Cnemacanthini
 Cnemalobini
 Cneoglossidae
 Cneorhinini
 Coccinellidae
+Coccinellinae # ladybird subfamily (Coccinellidae)
 Coccinelloidea
 Coelaenomenoderini
 Coelometoponini
@@ -316,6 +332,7 @@ Coelostomatini
 Coleoptera
 Colilodionini
 Collyridini
+Colobotheini # longhorn beetle tribe (Cerambycidae: Lamiinae)
 Coloninae
 Colymbetinae
 Colymbetini
@@ -339,6 +356,7 @@ Corylophidae
 Coryphiini
 Corythoderini
 Cosciniinae
+Cossoninae # weevil subfamily (Curculionidae)
 Cratocarini
 Cratocerini
 Cratomorphinae
@@ -373,6 +391,7 @@ Cucujoidea
 Cupedidae
 Cupesidae
 Curculionidae
+Curculioninae # weevil subfamily (Curculionidae)
 Curculionoidea
 Cyathigerini
 Cybistrinae
@@ -400,6 +419,7 @@ Dalyatini
 Dascillidae
 Dascilloidea
 Dasycerinae
+Dasytidae # soft-wing flower beetle family (Cleroidea)
 Decliniidae
 Deinopsini
 Deleasterini
@@ -416,6 +436,7 @@ Derodontidae
 Derodontoidea
 Derolathriinae
 Deropini
+Desmiphorini # longhorn beetle tribe (Cerambycidae: Lamiinae)
 Dhysorini
 Dichelonychini
 Dichirotrichi
@@ -440,6 +461,7 @@ Diplotaxini
 Disarthricerini
 Discheramocephalini
 Discolomatidae
+Disteniidae # longhorn beetle family (Cerambycoidea)
 Donaciinae
 Donaciini
 Dorcini
@@ -453,6 +475,7 @@ Dryopidae
 Dryptinae
 Dryptini
 Dynamopodinae
+Dynastidae # rhinoceros beetle family (Scarabaeoidea)
 Dynastinae
 Dynastini
 Dyschiriini
@@ -461,15 +484,18 @@ Dytiscidae
 Dytiscinae
 Dytiscini
 Dytiscoidea
+Eburiini # longhorn beetle tribe (Cerambycidae: Cerambycinae)
 Eccoptarthridae
 Ecitocharini
 Ecitoclimacini
 Ecitogastrini
 Ectemnorhinini
 Elachistarthronini
+Elaphidiini # longhorn beetle tribe (Cerambycidae: Cerambycinae)
 Elaphrinae
 Elateridae
 Elateriformia
+Elaterinae # click beetle subfamily (Elateridae)
 Elateroidea
 Electrorubesopsinae
 Eleusinini
@@ -604,11 +630,13 @@ Hameedini
 Hapsomelitae
 Harpalinae
 Harpalini
+Heleoperidae # darkling beetle family (Tenebrionoidea)
 Helluodini
 Helluonini
 Helmidae
 Helophoridae
 Helotidae
+Hemilophini # longhorn beetle tribe (Cerambycidae: Lamiinae)
 Hemisphaerotini
 Hetaeriinae
 Hetaeriini
@@ -704,6 +732,7 @@ Laccornini
 Lachnophorini
 Laemophloeidae
 Lagriidae
+Lamiinae # longhorn beetle subfamily (Cerambycidae)
 Lamingtoniidae
 Lampriminae
 Lamprimini
@@ -748,6 +777,7 @@ Leptostethini
 Leptotrachelini
 Leptotyphlinae
 Leptotyphlini
+Lepturinae # longhorn beetle subfamily (Cerambycidae)
 Lestevina
 Lethrini
 Leucocraspedini
@@ -760,6 +790,7 @@ Limnichidae
 Limnichinae
 Limulodidae
 Limulodinae
+Liodidae # round fungus beetle family (Staphylinoidea)
 Liodini
 Liparetrini
 Liparocephalini
@@ -781,6 +812,7 @@ Lucaninae
 Lucanini
 Luciolinae
 Luciolini
+Ludioidae # click beetle family (Elateridae)
 Lunillini
 Lupercini
 Luperini
@@ -800,7 +832,9 @@ Madagastrini
 Madahopliini
 Maechidiini
 Magnocoleidae
+Malachiidae # soft-wing flower beetle family (Cleroidea)
 Malachiusidae
+Malthininae # soldier beetle subfamily (Cantharidae)
 Mandini
 Mantichorini
 Manticorini
@@ -828,9 +862,11 @@ Megalopsidiinae
 Megalopsinae
 Megarthrini
 Megasternini
+Megatominae # carpet beetle subfamily (Dermestidae)
 Melaeninae
 Melandryidae
 Meloidae
+Melolonthidae # cockchafer/May beetle family (Scarabaeoidea)
 Melolonthinae
 Melolonthini
 Melyandrida
@@ -863,6 +899,7 @@ Mimecitini
 Mimecitonini
 Mirini
 Miroclavigerini
+Molytinae # weevil subfamily (Curculionidae)
 Monolobini
 Monotomidae
 Mordellidae
@@ -895,6 +932,7 @@ Nematoscelini
 Nemonychidae
 Neoceratopsini
 Neocerini
+Neoibidionini # longhorn beetle tribe (Cerambycidae: Cerambycinae)
 Neopelatopini
 Neophoninae
 Neotyphlini
@@ -907,6 +945,7 @@ Nicrophorinae
 Nicrophorini
 Nilionidae n
 Nitidulidae
+Nitidulinae # sap beetle subfamily (Nitidulidae)
 Nomiusini
 Nordenskioldiini
 Noseolucanini
@@ -957,6 +996,7 @@ Omophroninae
 Omorginae
 Omphreini
 Oncerinae
+Onciderini # longhorn beetle tribe (Cerambycidae: Lamiinae)
 Oncocephalini
 Oniticellini
 Onitini
@@ -1053,6 +1093,7 @@ Phengodini
 Pheropsophini
 Philacamatini
 Phileurini
+Philonthina # rove beetle subtribe (Staphylinidae: Staphylininae)
 Philotermitini
 Phl?obiens
 Phloeobiinae
@@ -1116,6 +1157,7 @@ Polyphaga
 Porphyraspidini
 Premnotrypini
 Priasilphidae
+Prioninae # longhorn beetle subfamily (Cerambycidae)
 Prionoceridae
 Priopterini
 Pristolycini
@@ -1174,6 +1216,7 @@ Pterogeniidae
 Pterolomatinae
 Pteroniinae
 Pteronini
+Pteropliini # longhorn beetle tribe (Cerambycidae: Lamiinae)
 Pterosthetopini
 Pterostichinae
 Pterostichini
@@ -1201,9 +1244,12 @@ Rhadalidae
 Rhagocrepini
 Rhagophthalmidae
 Rhinorhipidae
+Rhinotragini # longhorn beetle tribe (Cerambycidae: Cerambycinae)
 Rhipiceridae
 Rhipiphoridae
 Rhizotrogini
+Rhopalophorini # longhorn beetle tribe (Cerambycidae: Cerambycinae)
+Rhynchitidae # toothed-snout weevil family (Curculionoidea)
 Rhyncogonini
 Rhyparini
 Rhysodidae
@@ -1211,6 +1257,7 @@ Rhysodinae
 Rhysodini
 Rhyssonotini
 Ripiphoridae
+Rutelidae # shining leaf chafer family (Scarabaeoidea)
 Rutelinae
 Rutelini
 Rygmodini
@@ -1343,6 +1390,7 @@ Taurocerastinae
 Taxicerini
 Telegeusidae
 Tenebrionidae
+Tenebrioninae # darkling beetle subfamily (Tenebrionidae)
 Tenebrionoidea
 Teredidae
 Teretriini
@@ -1373,6 +1421,7 @@ Thoracophorini
 Throscidae
 Thymalidae
 Thysdariini
+Tillinae # checkered beetle subfamily (Cleridae)
 Timarchini
 Tiracerini
 Tmesiphorini
@@ -1380,6 +1429,7 @@ Tormissini
 Torridincolidae
 Toxidiini
 Trachelostenidae
+Trachyderini # longhorn beetle tribe (Cerambycidae: Cerambycinae)
 Trachypachidae
 Trachypachinae
 Trachypachini
@@ -1416,6 +1466,7 @@ Trypanaeinae
 Trypeticinae
 Tychini
 Tylonotinae
+Typhaeini # darkling beetle tribe (Tenebrionidae)
 Typhlorhinini
 Typophorini
 Tyrina

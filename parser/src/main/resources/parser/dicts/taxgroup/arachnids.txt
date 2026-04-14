@@ -48,6 +48,7 @@ Alycoidea
 Amaurobiidae
 Amblypigi
 Amblypygi
+Amblyseiinae # predatory mite subfamily (Phytoseiidae)
 Ameridae
 Amerobelbidae
 Ameroidea
@@ -518,6 +519,7 @@ Heterocranainae
 Heterocranaini
 Heteropachylinae
 Heterophryninae
+Heteropodinae # huntsman spider subfamily (Sparassidae)
 Heteroscorpionidae
 Heterosphyronida
 Heterostygninae
@@ -602,13 +604,16 @@ Kaszabjbaloghiidae
 Kimulidae
 Kiwilichidae
 Klinckowstroemiidae
+Knemidokoptidae # sarcoptiform mite family (scaly-leg mites)
 Kodiakellidae
+Koenenitidae # palpigrade family (micro-arachnids)
 Kramerellidae
 Krendowskiidae
 Kustarachnidae
 Labidostommatidae
 Labidostommatina
 Labidostommatoidea
+Labidostommidae # water mite family (Trombidiformes)
 Lacurbsinae
 Laelapidae
 Laelaptonyssidae
@@ -922,6 +927,7 @@ Philodanidae
 Philodromidae
 Philomaoriinae
 Pholcidae
+Pholcinae # cellar spider subfamily (Pholcidae)
 Phrurolithidae
 Phrynichidae
 Phrynichinae
@@ -931,6 +937,7 @@ Phrynoidea
 Phthiracaridae
 Phthiracaroidea
 Phyllochthoniidae
+Phyllocoptinae # eriophyid mite subfamily (Eriophyidae)
 Phymatodiscidae
 Physoglenidae
 Phytoptidae
@@ -979,6 +986,7 @@ Protodinychidae
 Protolophidae
 Protoplophoridae
 Protoplophoroidea
+Protoribatidae # oribatid mite family (Sarcoptiformes)
 Protoschizomidae
 Protosolpugidae
 Protowithiini
@@ -1008,6 +1016,7 @@ Ptilonyssinae
 Ptiloxenidae
 Ptochacaridae
 Ptyssalgidae
+Punctoribatidae # oribatid mite family (Sarcoptiformes)
 Pungoicinae
 Pycnocheiridiinae
 Pycnothelidae
@@ -1047,6 +1056,7 @@ Rugodentidae
 Rutripalpidae
 Sabaconidae
 Salticidae
+Salticinae # jumping spider subfamily (Salticidae)
 Saltiseiidae
 Samoidae
 Samooidea
@@ -1093,7 +1103,9 @@ Sicariidae
 Sidaminae
 Sinopimoidae
 Sironidae
+Siteroptidae # astigmatan mite family
 Smarididae
+Smaridiidae # harvest mite family (Trombidiformes)
 Smaridinae
 Sodreaninae
 Solifugae
@@ -1218,6 +1230,7 @@ Triaenonychinae
 Triaenonychini
 Triaenonychoidea
 Trichocyllibidae
+Trichosidae # spider family (Araneomorphae)
 Trichouropodellidae
 Trichthoniidae
 Tricommatinae
@@ -1293,6 +1306,7 @@ Winterschmidtiidae
 Withiidae
 Withiinae
 Withiini
+Xenillidae # oribatid mite family (Sarcoptiformes)
 Xenocaligonellididae
 Xenoctenidae
 Xolalgidae

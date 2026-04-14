@@ -16,6 +16,7 @@ Acrophyllini
 Adeloneuridae
 Ademosynidae
 Aenigmatidiidae
+Aeolothripidae # thrips family (Thysanoptera)
 Aeshnidae
 Aethalochroini
 Aetheogrammatidae
@@ -93,6 +94,7 @@ Apachyidae
 Apachyinae
 Apachyoidea
 Aphyopsocinae
+Apicotermitinae # termite subfamily (Blattodea: Isoptera)
 Apithanidae
 Aporembiinae
 Appertiidae
@@ -210,6 +212,7 @@ Boopiinae
 Boreidae
 Borisoperlinae
 Bovicolidae
+Bovicoliidae # chewing louse family (Phthiraptera)
 Brachydermaptera
 Brachylabididae
 Brachylabidinae
@@ -254,6 +257,7 @@ Capillopsocini
 Capniidae
 Capniinae
 Capnini
+Carcinophoridae # earwig family (Dermaptera)
 Carcinophorinae
 Cardiopterinae
 Caulopteridae
@@ -348,12 +352,14 @@ Cryptocercidae
 Cryptocercinae
 Cryptocercoidae
 Cryptovenidae
+Ctenophtalmidae # flea family (Siphonaptera)
 Ctenoptilidae
 Cycetini
 Cyclolachesillinae
 Cylindrogastrinae
 Cymbopsidae
 Cymenophlebidae
+Cyphoderidae # springtail family (Collembola)
 Dactylopterygidae
 Dajacini
 Daldubidae
@@ -627,6 +633,7 @@ Hylechthridae
 Hymenopodidae
 Hymenopodinae
 Hymenopodini
+Hypogasturidae # springtail family (Collembola)
 Hypoperlida
 Hypoperlidae
 Hystrichopsyllidae
@@ -636,11 +643,13 @@ Ideliidae
 Idelinellidae
 Idolomantini
 Idolopsalidinae
+Idolothripinae # thrips subfamily (Thysanoptera: Phlaeothripidae)
 Inocelliidae
 Irdexinaea
 Irdicinae
 Iridinae
 Iridini
+Iridopterygidae # mantis family (Mantodea)
 Iridopteryginae
 Iridopterygini
 Ischnocera
@@ -801,6 +810,7 @@ Megaptilidae
 Megasecoptera
 Meinertellidae
 Melanemerellidae
+Melanthripidae # thrips family (Thysanoptera)
 Mellierinae
 Mellierini
 Menexenini
@@ -811,6 +821,7 @@ Menoponidae
 Menoponinae
 Menoponoidea
 Meropeidae
+Merothripidae # thrips family (Thysanoptera)
 Mesembiinae
 Mesembiini
 Mesoberothidae
@@ -863,10 +874,12 @@ Nanomantinae
 Nanophylliini
 Nanopsocetae
 Nanosialidae
+Nasutitermitinae # termite subfamily (Blattodea: Isoptera)
 Nauphoetini
 Necroscidae
 Necrosciinae
 Necrosciini
+Necrotauliidae # extinct caddisfly family (Trichoptera; Triassic)
 Neleidae
 Nemopteridae
 Nemouridae
@@ -957,6 +970,7 @@ Palicinae
 Palingeniidae
 Palophinae
 Palophini
+Panchaetothripinae # thrips subfamily (Thysanoptera)
 Panchlorinae
 Panesthiinae
 Panfiloviidae
@@ -1057,6 +1071,8 @@ Philopteroidea
 Philotarsetae
 Philotarsidae
 Philotarsinae
+Phlaeothripidae # thrips family (Thysanoptera: Phlaeothripidae)
+Phlaeothripinae # thrips subfamily (Thysanoptera: Phlaeothripidae)
 Phoraspidini
 Photinaidae
 Photinainae
@@ -1252,6 +1268,7 @@ Sheimiinae
 Sialidae
 Siamoglaridini
 Siberioperlidae
+Sibyllidae # mantis family (Mantodea)
 Sibyllinae
 Sigmatoneurini
 Sinembiidae
@@ -1333,6 +1350,7 @@ Tanzaniophasmatinae
 Tapinellinae
 Tarachininae
 Tarachinini
+Tarachodidae # mantis family (Mantodea)
 Tarachodinae
 Tarachodini
 Tchirkovaeidae
@@ -1343,6 +1361,7 @@ Tenoderinae
 Tenoderini
 Teratembiidae
 Termitidae
+Termitinae # termite subfamily (Blattodea: Isoptera)
 Termopsidae
 Termopsinae
 Teruelphasmini
@@ -1354,9 +1373,12 @@ Thespini
 Thoracini
 Thoracotroctinae
 Thoronysididae
+Thripidae # thrips family (Thysanoptera)
+Thripinae # thrips subfamily (Thysanoptera: Thripidae)
 Thylacellinae
 Thyrsophorinae
 Thyrsophorini
+Thysanoptera # thrips
 Timematidae
 Timematinae
 Timematini

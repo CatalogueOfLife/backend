@@ -144,6 +144,7 @@ Arrugadini
 Artheneidae
 Artheneinae
 Asiaticaphididae
+Asopinae # stink bug subfamily (Pentatomidae)
 Astegopterycina
 Astegopteryxina
 Asterolecaniidae
@@ -355,6 +356,7 @@ Cinarinae
 Cinarini
 Citroriginini
 Cixiidae
+Cixiinae # planthopper subfamily (Cixiidae)
 Clastopteridae
 Clavicornia
 Clavigrallaria
@@ -364,6 +366,7 @@ Cloresmaria
 Cloresmini
 Coccavinae
 Coccidae
+Coccidomorpha # infraorder: scale insects, whiteflies, aphids (Sternorrhyncha)
 Coccoidea
 Cochlorhiini
 Cochlorhini
@@ -735,6 +738,7 @@ Israelaphidina
 Israelaphidinae
 Israelaphidini
 Issidae
+Issinae # planthopper subfamily (Issidae)
 Ivaiinae
 Iziphyini
 Jascopini
@@ -991,6 +995,7 @@ Mindarina
 Mindarinae
 Mindarini
 Miridae
+Mirinae # mirid bug subfamily (Miridae)
 Miroidea
 Moganiini
 Moganini
@@ -1102,6 +1107,8 @@ Oregmini
 Orsillinae
 Orsillini
 Ortheziidae
+Orthotylinae # mirid bug subfamily (Miridae)
+Otiocerinae # planthopper subfamily (Issidae)
 Oviparosiphidae
 Oviparosiphinae
 Ovojassinae
@@ -1170,6 +1177,7 @@ Pentaloniina
 Pentalonina
 Pentaphides
 Pentatomidae
+Pentatominae # stink bug subfamily (Pentatomidae)
 Pentatomoidea
 Pentatomomorpha
 Pentheminae

@@ -25,6 +25,7 @@ Botryopteridaceae
 Cardiomanioideae
 Ceratopteridaceae
 Cheilanthaceae
+Cheilanthoideae # lip fern subfamily (Pteridaceae)
 Cheiropleuriaceae
 Christenseniaceae
 Christenseniales
@@ -81,6 +82,7 @@ Hemionitidaceae
 Heterosporae
 Heterosporeae
 Huperziaceae
+Huperzioideae # clubmoss subfamily (Lycopodiaceae)
 Hymenophyllaceae
 Hymenophyllales
 Hymenophyllopsida
@@ -106,11 +108,13 @@ Lonchitidaceae
 Lonchitidales
 Lophosoriaceae
 Loxogrammaceae
+Loxogrammoideae # ribbon fern subfamily (Polypodiaceae)
 Loxsomataceae
 Loxsomatales
 Lycopodiaceae
 Lycopodiales
 Lycopodiellaceae
+Lycopodielloideae # clubmoss subfamily (Lycopodiaceae)
 Lycopodiidae
 Lycopodiophyta
 Lycopodiopsida
@@ -205,5 +209,6 @@ Tmesipteridaceae
 Trichomanaceae
 Urostachyaceae
 Vittariaceae
+Vittarioideae # ribbon fern subfamily (Pteridaceae)
 Woodsiaceae
 Woodsieae

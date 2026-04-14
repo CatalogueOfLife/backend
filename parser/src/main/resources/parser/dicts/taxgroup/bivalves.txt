@@ -60,6 +60,7 @@ Cleidothaeridae
 Clistoconchidae
 Condylocardiidae
 Congeriomorphidae
+Corbiculidae # freshwater clam family (Veneroidea)
 Corbulidae
 Crassatellidae
 Crassatelloidea
@@ -146,6 +147,7 @@ Jilinoconchidae
 Kalenteridae
 Kalenteroidea
 Kelliellidae
+Kelliidae # small bivalve family (Cyamiida)
 Laevitrigoniidae
 Lametilidae
 Lasaeidae
@@ -188,6 +190,7 @@ Modiomorphida
 Modiomorphidae
 Modiomorphoidea
 Monopleuridae
+Montacutidae # small bivalve family (Galeommatoidea)
 Montanariidae
 Mycetopodidae
 Myida

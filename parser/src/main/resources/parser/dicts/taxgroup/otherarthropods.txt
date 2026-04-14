@@ -120,6 +120,7 @@ Austrodecidae
 Austrotylinae
 Aztecolini
 Bacillidesminae
+Ballophilidae # geophilomorph centipede family (Myriapoda)
 Barydesminae
 Bathynotidae
 Bathyuridae
@@ -221,6 +222,7 @@ Chelojulidae
 Chengkouaspidae
 Chengkouiidae
 Chilognatha
+Chilopoda # class of centipedes (Myriapoda)
 Choctellidae
 Cholidyinae
 Chonaphinae
@@ -269,12 +271,15 @@ Craspedosomatidae
 Craspedosomatidea
 Craspedosomatinae
 Craspedosomatoidea
+Craterostigmidae # craterostigmomorph centipede family (Myriapoda)
+Craterostigmomorpha # single-species centipede order (Myriapoda)
 Cremastocephalini
 Crepicephalidae
 Cribrochiurini
 Cryptodesmidae
 Cryptodesminae
 Cryptodesmini
+Cryptopidae # scolopendromorph centipede family (Myriapoda)
 Crypturodesmidae
 Ctenoiulini
 Cumoniscidae
@@ -317,6 +322,7 @@ Dicellurata
 Dicyrtomidae
 Dicyrtominae
 Dicyrtomoidea
+Dignathodontidae # geophilomorph centipede family (Myriapoda)
 Dikelocephalidae
 Dimastosterninae
 Dimeropygidae
@@ -423,6 +429,8 @@ Fujientomidae
 Galliobatidae
 Galliobatini
 Gaspestriidae
+Geophilidae # geophilomorph centipede family (Myriapoda)
+Geophilomorpha # soil centipedes (Myriapoda)
 Gigantopygidae
 Glomerida
 Glomeridae
@@ -481,6 +489,7 @@ Helodesmidae
 Helodesminae
 Hemicampinae
 Hemimesochrinae
+Henicopidae # lithobiomorph centipede family (Myriapoda)
 Hercodesmidae
 Hesperentomidae
 Hesperentominae
@@ -499,6 +508,7 @@ Heterozoniini
 Hexamerocerata
 Hexecontasomatidae
 Hexodontiinae
+Himantariidae # geophilomorph centipede family (Myriapoda)
 Himatiopodinae
 Hinomotentominae
 Hirudisomatidae
@@ -602,10 +612,13 @@ Lichakephalidae
 Lichida
 Lichidae
 Limacomorpha
+Linotaeniidae # geophilomorph centipede family (Myriapoda)
 Liostracinidae
 Lisaniidae
 Lissopyginae
 Lissopygini
+Lithobiidae # lithobiomorph centipede family (Myriapoda)
+Lithobiomorpha # stone centipedes (Myriapoda)
 Llanoaspididae
 Lobellini
 Lonchocephalidae
@@ -627,6 +640,7 @@ Macrochironinae
 Macrocoxodesmini
 Macrolenostreptini
 Macromastinae
+Macronicophilidae # millipede family (Diplopoda)
 Macrosternodesmidae
 Macrosternodesmini
 Malayomerini
@@ -641,12 +655,14 @@ Mastigophorophyllidae
 Mastigophorophyllinae
 Mastigophorophyllini
 Mauriesiinae
+Mecistocephalidae # geophilomorph centipede family (Myriapoda)
 Megalotylidae
 Megapharanaspidae
 Melaphinae
 Menomoniidae
 Merocheta
 Merodesmini
+Merostomata # horseshoe crabs + extinct eurypterids (Chelicerata, not Arachnida)
 Mesaphorurinae
 Mesoblaniulinae
 Mesoblaniulini
@@ -695,6 +711,7 @@ Neoatractosomatinae
 Neoatractosomatini
 Neoatractosomatoidea
 Neodesmini
+Neogeophilidae # geophilomorph centipede family (Myriapoda)
 Neophorellini
 Nepalellinae
 Nesoressini
@@ -765,6 +782,7 @@ Orthochordeumatini
 Orthogoneptini
 Orthomorphini
 Oryctocephalidae
+Oryidae # geophilomorph centipede family (Myriapoda)
 Osellasomatini
 Otarionidae
 Otodesmidae
@@ -995,6 +1013,7 @@ Sandalodesmini
 Sardoblaniulini
 Saukiidae
 Scharyiidae
+Schendylidae # geophilomorph centipede family (Myriapoda)
 Schindalomonotinae
 Schizogomphodesmini
 Schizopetalidae
@@ -1005,9 +1024,15 @@ Schizophyllini
 Scleropauropodidae
 Scolopendrellidae
 Scolopendrellinae
+Scolopendridae # scolopendromorph centipede family (Myriapoda)
+Scolopendromorpha # tropical centipedes (Myriapoda)
+Scolopocryptopidae # scolopendromorph centipede family (Myriapoda)
 Scutelluidae
 Scutigerellidae
 Scutigerellinae
+Scutigeridae # scutigeromorph centipede family (Myriapoda)
+Scutigerinidae # scutigeromorph centipede family (Myriapoda)
+Scutigeromorpha # house centipedes (Myriapoda)
 Scutogoninae
 Scutogonini
 Scytonotidae

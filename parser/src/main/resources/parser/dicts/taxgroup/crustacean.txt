@@ -44,6 +44,7 @@ Alicelloidea
 Allocrangonyctidae
 Allocrangonyctoidea
 Alloniscidae
+Aloninae # cladoceran subfamily (Branchiopoda)
 Alpheidae
 Alpheoidea
 Alvinocarididae
@@ -89,6 +90,7 @@ Anelasmatidae
 Anfedatiidae
 Anisogammaridae
 Anomoclausiidae
+Anomopoda # water fleas (Cladocera, Branchiopoda)
 Anomura
 Anostraca
 Anostracina
@@ -267,6 +269,7 @@ Bradophilidae
 Bradycypridinae
 Branchinectidae
 Branchiopoda
+Branchiopodidae # branchiopod family (Crustacea)
 Branchipodidae
 Branchiura
 Brankocleistostomidae
@@ -315,6 +318,7 @@ Cambarellinae
 Cambaridae
 Cambarinae
 Cambaroididae
+Camptandriidae # crab family (Brachyura)
 Campylonotidae
 Campylonotoidea
 Cancerillidae
@@ -588,6 +592,7 @@ Dikwidae
 Dillobellinae
 Dinopontiidae
 Diogenidae
+Diosaccidae # copepod family (Harpacticoida)
 Diplostraca
 Dirivultidae
 Disciadidae
@@ -600,15 +605,18 @@ Domeciidae
 Dorippidae
 Dorippoidea
 Doryphallophoridae
+Dotillidae # fiddler crab family (Ocypodoidea)
 Drepanellacea
 Drepanellidae
 Drepanelloidea
+Dromiidae # sponge crab family (Brachyura)
 Dubioniscidae
 Dulichiidae
 Dumontidae
 Dumontiidae
 Duplorbidae
 Dussartiellidae
+Dynomenidae # primitive crab family (Dromiacea)
 Ecbathyriontidae
 Echinocythereidinae
 Echinothambematidae
@@ -620,6 +628,7 @@ Edwinjoyceinae
 Egorovellidae
 Eiconaxiidae
 Eiconaxiopsididae
+Elminiidae # barnacle family (Cirripedia)
 Enantiopoda
 Endevouridae
 Enoplometopidae
@@ -645,6 +654,7 @@ Eolepadidae
 Eophliantidae
 Eosymtinae
 Epacteriscidae
+Epialtidae # spider crab family (Majoidea)
 Epicaridea
 Epimeriidae
 Erebonasteridae
@@ -801,6 +811,7 @@ Haustorioidea
 Healdiidae
 Healdiopsidinae
 Hekelidae
+Hemiarthridae # copepod family (Harpacticoida)
 Hemiarthrinae
 Hemicyclopinidae
 Hemicytheridae
@@ -815,6 +826,7 @@ Heteralepadomorpha
 Heteropsyllidae
 Heterorhabdidae
 Heterotanoididae
+Hexanauplia # class of copepods and barnacles (Multicrustacea)
 Hexapodidae
 Hexapodoidea
 Hippidae
@@ -879,6 +891,8 @@ Ilyocryptidae
 Ilyocyprididae
 Ilyocypridinae
 Imangditidae
+Inachidae # spider crab family (Majoidea)
+Inachoididae # spider crab family (Majoidea)
 Indivisiidae
 Indosquillidae
 Ingolfiellida
@@ -1077,11 +1091,14 @@ Macrocyprididae
 Macrocypridoidea
 Macrohectopidae
 Macromaxillocarididae
+Macrophthalmidae # crab family (Ocypodoidea)
 Macrostylidae
 Macrothricidae
 Maeridae
 Magnovidae
 Magnovioidea
+Majidae # spider crab family (Majoidea)
+Majoidea # superfamily: spider crabs (Brachyura)
 Majungaellini
 Makawidae
 Makrostrotidae
@@ -1136,6 +1153,7 @@ Microcheilinellidae
 Microcytheridae
 Microdajidae
 Microlepadidae
+Microniscidae # isopod family (Gnathia-related parasites)
 Micropacteridae
 Microparasellidae
 Microphasmidae
@@ -1150,6 +1168,7 @@ Micruropodinae
 Mictacea
 Mictocarididae
 Mictosomatidae
+Mictyridae # soldier crab family (Brachyura)
 Miltonellidae
 Mimonecteolidae
 Mimonectidae
@@ -1161,6 +1180,7 @@ Mirocarididae
 Mirocaridinae
 Misophriidae
 Misophrioida
+Mithracidae # decorator crab family (Majoidea)
 Moinidae
 Monoceratininae
 Monodellidae
@@ -1252,6 +1272,7 @@ Nymphatelinidae
 Nymphatelinoidea
 Ochlesidae
 Octopicolidae
+Ocypodidae # fiddler crab family (Ocypodoidea)
 Odiidae
 Odontodactylidae
 Odontogammarinae
@@ -1278,6 +1299,7 @@ Oplophoroidea
 Orbioninae
 Orcofabellidae
 Ordovizonidae
+Oregoniidae # snow/spider crab family (Majoidea)
 Orithyiidae
 Orithyioidea
 Orthopsyllidae
@@ -1325,6 +1347,7 @@ Pancolini
 Pandalidae
 Pandaloidea
 Pandaridae
+Panopeidae # mud crab family (Xanthoidea)
 Parabathynellidae
 Paraberounellinae
 Paraberounellini
@@ -1435,6 +1458,8 @@ Physosomatidira
 Pilumnidae
 Pilumnoidea
 Pilumnoididae
+Pinnotheridae # pea crab family (Pinnotheroidea)
+Pinnotheroidea # superfamily: pea crabs (Brachyura)
 Pionodesmotidae
 Piretellinae
 Pirimelidae
@@ -1502,6 +1527,7 @@ Pontocypridoidea
 Pontoeciellidae
 Pontogammaridae
 Pontogeneiidae
+Pontoniinae # commensal shrimp subfamily (Palaemonidae)
 Pontoporeiidae
 Porcellanidae
 Porcellidiidae
@@ -1511,6 +1537,7 @@ Porocephalidae
 Portunidae
 Portunoidea
 Potamidae
+Potamiscinae # freshwater crab subfamily
 Potamoidea
 Potamonautidae
 Poupiniidae
@@ -1585,6 +1612,7 @@ Pseudosquillidae
 Pseudotachidiidae
 Pseudotanaidae
 Pseudotanainae
+Pseudothelphusidae # freshwater crab family (Brachyura)
 Pseudozeuxidae
 Pseudoziidae
 Pseudozioidea
@@ -1963,6 +1991,8 @@ Wandinidae
 Wehrliinae
 Wehrlinini
 Whiteleggiidae
+Xanthidae # mud crab family (Xanthoidea)
+Xanthoidea # superfamily: mud crabs and relatives (Brachyura)
 Xarifiidae
 Xenarcturidae
 Xenocoelomatidae

@@ -1,6 +1,7 @@
 Acaulosporaceae
 Alphamycetaceae
 Ambisporaceae
+Ancylistaceae # entomophthoralean fungus family (Entomophthoromycota)
 Angulomycetaceae
 Aquamycetaceae
 Archaeosporaceae
@@ -48,9 +49,13 @@ Dimargaritomycetes
 Dinomycetaceae
 Diversisporaceae
 Diversisporales
+Eccrinaceae # trichomycete family (Kickxellomycotina: Eccrinales)
+Eccriniidae # trichomycete family (alternate spelling of Eccrinaceae)
 Endochytriaceae
 Endogonaceae
 Endogonales
+Entomophthoraceae # entomophthoralean fungus family (insect pathogens)
+Entomophthorales # insect-pathogenic fungi (Entomophthoromycota)
 Entomophthoromycetes
 Entomophthoromycota
 Entomophthoromycotina
@@ -104,6 +109,7 @@ Neocallimastigaceae
 Neocallimastigales
 Neocallimastigomycetes
 Neocallimastigomycota
+Neozygitaceae # entomophthoralean fungus family (Entomophthoromycota)
 Neozygitomycetes
 Nephridiophagales
 Nowakowskiellaceae
@@ -118,6 +124,7 @@ Paraglomeraceae
 Paraglomerales
 Paraglomeromycetes
 Pateramycetaceae
+Periconiaceae # hyphomycete family (conidial fungi, Fungi incertae sedis)
 Pervetustaceae
 Phycomycetaceae
 Physodermataceae

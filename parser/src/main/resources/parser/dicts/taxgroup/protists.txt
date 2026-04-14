@@ -2,24 +2,32 @@ Abelsporidae
 Abolliferidae
 Acanthamoebidae
 Acantharea
+Acantharia # alternate spelling of Acantharea (radiolarians, Rhizaria)
 Acanthochiasmidae
 Acanthocollidae
 Acanthocystida
 Acanthocystidae
+Acanthoecaceae # loricate choanoflagellate family
 Acanthoeccidae
 Acanthoecida
+Acanthoecidae # loricate choanoflagellate family
 Acanthometridae
 Acanthoperlidae
 Acanthoplegmida
 Acanthoplegmidae
+Acanthopodida # acanthopodid amoebae (Amoebozoa)
+Acanthopodina # class of lobose amoebae (Amoebozoa)
+Acarpomyxa # class of myxomycete-like amoebozoans (Myxogastria)
 Acavomonea
 Acavomonida
 Acervulinidae
 Acinetactidae
 Acinetidae
 Acinetopsidae
+Aconchulinida # naked filose amoebae (Cercozoa)
 Aconoidia
 Acramoebidae
+Acrasiaceae # cellular slime mould family (Heterolobosea/Acrasida)
 Acrasida
 Acrocoelida
 Acroglissia
@@ -32,6 +40,7 @@ Actinobolinidae
 Actinocephalidae
 Actinocephaloidea
 Actinommidae
+Acytosteliaceae # dictyostelid cellular slime mould family (Amoebozoa)
 Acytosteliales
 Acytosteliidae
 Adeleida
@@ -61,6 +70,7 @@ Ammobaculinidae
 Ammodiscidae
 Ammolagenidae
 Ammosphaeroidinidae
+Amoebida # lobose amoebae (Amoebozoa)
 Amoebidae
 Amoebidiidae
 Amoebina
@@ -76,6 +86,7 @@ Amphileptidae
 Amphilithidae
 Amphilothaceae
 Amphilothales
+Amphimonadidae # choanoflagellate family
 Amphisiellidae
 Amphisoleniaceae
 Amphisteginidae
@@ -95,6 +106,7 @@ Anisonemida
 Anisonemidae
 Annulopatellinidae
 Anoecida
+Anophryidae # scuticociliate family (Ciliophora)
 Anoplophryidae
 Anthemosomatidae
 Anurosporiidae
@@ -103,6 +115,7 @@ Aphelida
 Aphelidea
 Aphelidida
 Aphelidiidae
+Aphilodontidae # oligotrich ciliate family
 Apicomonada
 Apicomonadea
 Apicomplexa
@@ -126,6 +139,8 @@ Archezoa
 Archigregarinida
 Archiphormididae
 Archistomatina
+Arcuospathidiidae # litostome ciliate family
+Arcyriaceae # myxomycete family (Amoebozoa)
 Arcyriidae
 Areosporiidae
 Armophorea
@@ -172,6 +187,7 @@ Bicoecida
 Bicosidia
 Bicosoecidae
 Bigyra
+Bigyromonadea # class of heterokont protists (Bigyra/Stramenopiles)
 Bihospitida
 Bihospitidae
 Bikosea
@@ -216,6 +232,7 @@ Buliminidae
 Buliminoididae
 Burenellidae
 Burkeidae
+Burmanymphidae # hypermastigote flagellate family (Parabasalia)
 Bursaridiidae
 Bursariidae
 Bursariomorphida
@@ -227,12 +244,15 @@ Calcarinidae
 Calciodinellaceae
 Calkinsiidae
 Calonymphidae
+Calpionellidae # Jurassic-Cretaceous tintinnid ciliate family
+Calpionellopsidae # Jurassic-Cretaceous tintinnid ciliate family
 Calyptosporidae
 Calyptotrichidae
 Candeinidae
 Cannobotryidae
 Cannosphaeridae
 Capsasporidae
+Carpediemonadea # class of excavate flagellates (Metamonada)
 Carpediemonadia
 Carpediemonadida
 Carpediemonadidae
@@ -250,11 +270,14 @@ Cavosteliidae
 Centramoebida
 Centrodiniaceae
 Centrohelea
+Centrohelida # centrohelid heliozoans
 Centropixidae
 Centroplasthelida
+Centropyxidae # testate amoeba family (Arcellinida)
 Cephaloidophoridae
 Ceratiaceae
 Ceratiomixidae
+Ceratiomyxaceae # myxomycete family (Amoebozoa)
 Ceratiomyxida
 Ceratobuliminidae
 Ceratocoryaceae
@@ -265,16 +288,19 @@ Cercozoa
 Cerelasmidae
 Certesiidae
 Chaeneidae
+Chaetospiridae # oligotrich ciliate family
 Challengeridae
 Chattonidiidae
 Chaunacanthida
 Cheilochanidae
 Chilodochonidae
+Chilodonellida # cyrtophorid ciliates
 Chilodonellidae
 Chiloguembelinidae
 Chilomastigida
 Chilomastigidae
 Chilostomellidae
+Chitinoidellidae # Jurassic tintinnid family
 Chitonellidae
 Chlamydodontida
 Chlamydodontidae
@@ -283,6 +309,7 @@ Chlorarachniida
 Choanocystidae
 Choanofila
 Choanoflagellatea
+Choanoflagellida # choanoflagellates (closest protist relatives of animals)
 Choanophryidae
 Choanozoa
 Chonotrichia
@@ -293,11 +320,13 @@ Chytridiopsidae
 Chytridopsida
 Chytriodiniaceae
 Cibicididae
+Ciliofaureidae # tintinnid ciliate family
 Ciliophora
 Cinetochilidae
 Circoporidae
 Citharistaceae
 Cladopyxidaceae
+Clastodermataceae # myxomycete family (Amoebozoa)
 Clastodermidae
 Clathrellidae
 Clathrostomatidae
@@ -314,16 +343,24 @@ Coccidiniaceae
 Coccidiomorphea
 Coccodiscidae
 Cochliopodiidae
+Cochlosomatidae # diplomonad/hexamitid flagellate family (bird parasites)
+Cochlosomidae # diplomonad/hexamitid flagellate family (alternate spelling)
 Codonellidae
 Codonellopsidae
+Codonosigaceae # choanoflagellate family
+Codonosigidae # choanoflagellate family
+Codosigaceae # choanoflagellate family
+Codosigidae # choanoflagellate family
 Coelodendridae
 Coelosomidiidae
+Coelosporidiidae # microsporidian-like intracellular parasite family
 Coelotrophia
 Coelotrophiida
 Cohnilembidae
 Colepidae
 Colliniidae
 Collodarida
+Collodictyonidae # collodictyonid protist family (Collodictyonida)
 Collophidae
 Collosphaeridae
 Collozoidae
@@ -344,17 +381,23 @@ Concharidae
 Conchophthiridae
 Condylostomatidae
 Conidophryidae
+Conoidasida # class of apicomplexan parasites (Apicomplexa)
 Conosa
+Conosea # informal group of Amoebozoa incl. Archamoebae and Mycetozoa
 Contophryidae
 Corallochytrea
 Corallochytrida
 Corallochytriidae
+Corallomyxidae # myxomycete-like amoeba family
 Cornuspiridae
 Corynophryidae
 Coscinophragmatidae
 Cougourdellidae
 Craspedida
+Craspedomonadidae # choanoflagellate family
+Crassicollariidae # Cretaceous tintinnid ciliate family
 Creolimacidae
+Cribrariaceae # myxomycete family (Amoebozoa)
 Cribrariidae
 Cribrolinoididae
 Cristamonadida
@@ -369,6 +412,7 @@ Cryptogemmida
 Cryptogregaria
 Cryptogregarida
 Cryptopharyngidae
+Ctedectomatidae # hypermastigote flagellate family (Parabasalia)
 Ctedoctematidae
 Culicosporellidae
 Curimostomatidae
@@ -378,6 +422,7 @@ Cyathodiniidae
 Cyclamminidae
 Cyclidiidae
 Cycloposthiidae
+Cyclotrichida # karyorelict ciliates
 Cyclotrichiida
 Cylindrosporidae
 Cymbaloporidae
@@ -387,14 +432,18 @@ Cyrtocaryidae
 Cyrtolophosidida
 Cyrtolophosididae
 Cyrtophoria
+Cyrtophorida # cyrtophorid ciliates
+Cyttarocylidae # tintinnid ciliate family
 Cyttarocylididae
 Dactylophoridae
+Dactylopodida # dactylopodid amoebae (Amoebozoa)
 Dactylopodina
 Dactylostomatidae
 Decastavida
 Decastavidae
 Deflandreaceae
 Delosinidae
+Deltopyluidae # tintinnid ciliate family
 Dendrocometidae
 Dendrosomatidae
 Dendrosomididae
@@ -406,25 +455,36 @@ Desmomastigaceae
 Desmomastigales
 Desmothoracida
 Devescovinidae
+Dianemataceae # myxomycete family (Amoebozoa)
 Dianemidae
 Dicroerismataceae
 Dictyacanthidae
 Dictyamoebidae
+Dictydiaethaliaceae # myxomycete family (Amoebozoa)
 Dictydiaethaliidae
 Dictyocystidae
 Dictyostelea
+Dictyosteliaceae # dictyostelid slime mould family (Amoebozoa)
 Dictyosteliales
 Dictyosteliidae
 Didiniida
 Didiniidae
+Didymiaceae # myxomycete family (Amoebozoa)
 Didymiidae
 Dientamoebidae
+Difflugiidae # testate amoeba family (Arcellinida)
 Dileptida
+Dileptidae # litostome ciliate family
+Dimacrocaryonidae # hypermastigote flagellate family (Parabasalia)
 Dinamoebaceae
 Dinamoebales
+Dinenymphaceae # oxymonad flagellate family (Preaxostyla)
 Dinoflagellata
 Dinokaryota
 Dinomonadidae
+Dinophysaceae # dinoflagellate family (Dinophyceae)
+Dinophysiaceae # dinoflagellate family (Dinophyceae; alternate family name)
+Dinophysiales # dinoflagellates (Dinophyceae), mostly photosynthetic
 Dinophysoidia
 Dinophyta
 Dinosphaeraceae
@@ -477,12 +537,15 @@ Echinamoebia
 Echinamoebida
 Echinamoebidae
 Echinichonidae
+Echinosteliaceae # myxomycete family (Amoebozoa)
+Echinosteliales # myxomycetes (Amoebozoa)
 Echinosteliida
 Echinosteliidae
 Ectoreta
 Eggerellidae
 Eimeriida
 Eimeriidae
+Elaeomyxaceae # myxomycete family (Amoebozoa)
 Eleutheroschizonidae
 Elleipsisomatidae
 Ellipsolagenidae
@@ -494,12 +557,14 @@ Encephalitozoonidae
 Enchelyidae
 Enchelyomorphidae
 Endemosarcaceae
+Endemosarcidae # myxomycete-like amoeba family
 Endodinea
 Endodiniaceae
 Endogenida
 Endolimacidae
 Endomyxa
 Endosphaeridae
+Endosphaeriidae # apostome ciliate family (epibionts on crustaceans)
 Entamoebida
 Entamoebidae
 Enteridiidae
@@ -537,7 +602,10 @@ Erastophryidae
 Euamoebida
 Eubodonida
 Eubodonidina
+Eucomonymphidae # hypermastigote flagellate family (Parabasalia)
 Euduboscquellidae
+Euglenaceae # euglenid flagellate family
+Euglenales # euglenid flagellates
 Euglenamorphidae
 Euglenida
 Euglenidae
@@ -559,6 +627,7 @@ Eutreptiida
 Eutreptiidae
 Evaginogenida
 Excavata
+Exocolpodidae # ciliate family (Exocolpoda)
 Exogemmiida
 Exogenida
 Exoschizonidae
@@ -568,20 +637,25 @@ Filamoebidae
 Filasterea
 Filichonidae
 Filidae
+Filosia # filose amoebae (Cercozoa + Foraminifera)
 Fischerinidae
 Fiscullidae
 Fiscullina
+Flabellinea # flabellate lobose amoebae (Amoebozoa)
 Flabellulidae
 Flamellidae
 Foettingeriidae
 Folliculinidae
+Fonticulaceae # Fonticula slime mould family (Opisthokonta incertae sedis)
 Fonticulida
 Fonticulidae
 Foraminifera
 Fornicata
+Frontonidae # ciliate family (Prostomatea)
 Frontoniidae
 Furgasoniidae
 Fursenkoinidae
+Fuscheriidae # colpodean ciliate family (Fuscheria)
 Fuscisporida
 Ganymedidae
 Gastrocirrhidae
@@ -590,6 +664,7 @@ Gavelinellidae
 Geleiidae
 Gemmocystidae
 Gephyramoebidae
+Giardiida # diplomonad flagellates incl. Giardia
 Gigarticonidae
 Gilchristidae
 Glabratellidae
@@ -617,6 +692,7 @@ Goniodomataceae
 Gonyaulacaceae
 Gonyaulacales
 Gonyaulacoidia
+Gracilipodida # gracilipodid amoebae (Amoebozoa)
 Grandoriidae
 Granofilosea
 Gregarinidae
@@ -626,23 +702,30 @@ Grelliidae
 Gromiida
 Gromiidae
 Gromiidea
+Grossglockneriida # grossglocknerid ciliates (Colpodea)
 Grossglockneriidae
+Gruberellidae # litostome ciliate family
 Guembelitriidae
 Gurleyidae
 Guttulinopsidae
 Gymnochloridae
 Gymnodiniaceae
 Gymnodiniales
+Gymnosphaeridae # centrohelid heliozoan family
+Gymnostomatea # primitive gymnostome ciliates
 Gyrodinida
 Haddoniidae
 Haemohormidiidae
 Haemosporida
 Haemosporidia
+Halteriida # oligotrich ciliates
 Halteriidae
 Halyphysemidae
 Haplodiniaceae
 Haplophragmoididae
+Haplosporea # haplosporidian parasites (Rhizaria/Cercozoa)
 Haplosporida
+Haplosporidiidae # haplosporidian parasite family (Rhizaria/Cercozoa)
 Haplosporiidae
 Haplozoonales
 Haplozoonidae
@@ -651,6 +734,7 @@ Haptoria
 Haptorida
 Hartmannellidae
 Hartmannulidae
+Hastatellidae # suctorian ciliate family
 Hastigerinidae
 Hauerinidae
 Hausmanniellidae
@@ -688,6 +772,7 @@ Heterotrichida
 Heterovesiculidae
 Hexalaspidae
 Hexamastigidae
+Hexamitaceae # diplomonad flagellate family (Hexamita)
 Hexamitidae
 Hilomonadea
 Himatismenida
@@ -697,9 +782,12 @@ Histionidae
 Histogregaria
 Histogregarida
 Holacanthida
+Holomastigea # hypermastigote flagellates (Parabasalia), gut symbionts of termites
 Holomastigida
+Holomastigotidae # hypermastigote flagellate family
 Holomastigotoididae
 Holophryidae
+Holostichidae # hypotrich ciliate family
 Homalozoonidae
 Homostavia
 Homotrematidae
@@ -712,9 +800,15 @@ Hormosinidae
 Hyalodiscidae
 Hyalospheniidae
 Hymenostomatia
+Hymenostomatida # hymenostome ciliates (incl. Paramecium)
+Hypermastigia # hypermastigote flagellates (Parabasalia)
+Hypermastigida # hypermastigote flagellates (Parabasalia)
+Hypermastigidae # hypermastigote flagellate family
 Hypocomatida
 Hypocomidae
+Hypotrichea # hypotrich ciliates
 Hypotrichia
+Hypotrichidiidae # hypotrich ciliate family (Hypotrichidium)
 Hypotrichomonadidae
 Hysterocinetidae
 Hystrichosphaeridiaceae
@@ -742,14 +836,17 @@ Jakobida
 Jakobidae
 Janacekiidae
 Jaroschiidae
+Joeniidae # oxymonad flagellate family
 Jugimuramminidae
 Kahliellidae
+Kamburophryidae # suctorian ciliate family
 Kapelodiniaceae
 Kareniaceae
 Karlodinia
 Karotomorphidae
 Karreriidae
 Karyorelictea
+Karyorelictida # karyorelict ciliates (primitive, marine interstitial)
 Keelungiidae
 Kentrophoridae
 Kentrophyllidae
@@ -758,8 +855,10 @@ Keronidae
 Kiitoksiidae
 Kiitrichida
 Kiitrichidae
+Kinetofragminophora # older polyphyletic ciliate class, now split
 Kinetoplastea
 Kipferliidae
+Kofoidiidae # parabasalid flagellate family
 Kofoidiniaceae
 Kolkwitziellaceae
 Komokiidae
@@ -770,17 +869,21 @@ Kreyellidae
 Kryoprorodontidae
 Kyaroikeidae
 Labromonadidae
+Labyrinthulaceae # labyrinthulean stramenopile family
 Labyrinthulea
 Labyrinthulida
 Labyrinthulidae
 Lacrymariida
 Lacrymariidae
+Lagenaceae # foraminifera family (Lagenida)
 Lagenida
 Lagenidae
 Lagenophryidae
 Lagynidae
+Lagynophryidae # suctorian ciliate family
 Lamprodermidae
 Lamptopixidae
+Lamtopyxidae # testate amoeba family (Arcellinida)
 Lecanophryidae
 Lecudinidae
 Leegaardiellidae
@@ -792,11 +895,16 @@ Leptodiscaceae
 Leptomixidae
 Leptomyxia
 Leptomyxida
+Leptomyxidae # lobose amoeba family (Amoebozoa)
 Leptopharyngidae
+Leptopharynidae # ciliate family
 Leptophryidae
+Lesquereusiidae # testate amoeba family (Arcellinida)
 Lessardiaceae
 Leucodictyida
 Leucodictyidae
+Liceaceae # myxomycete family (Amoebozoa)
+Liceales # myxomycetes (Amoebozoa)
 Liceida
 Liceidae
 Licnophoria
@@ -822,13 +930,16 @@ Lohmanniellidae
 Lohmanniellina
 Lophodinales
 Lophodiniaceae
+Lophomonadaceae # hypermastigote flagellate family (Parabasalia)
 Lophomonadida
 Lophomonadidae
+Loricophryidae # suctorian ciliate family
 Lotharellidae
 Loukozoa
 Loxocephalidae
 Loxodida
 Loxodidae
+Loxophyllidae # litostome ciliate family
 Lucisporidia
 Lynchellidae
 Lyromonadea
@@ -862,6 +973,7 @@ Merogregarinidae
 Mesodiniidae
 Mesofilidae
 Metacinetidae
+Metacyclididae # oligotrich ciliate family
 Metacylididae
 Metacystidae
 Metakinetoplastina
@@ -879,6 +991,10 @@ Metromonadidae
 Microchlamyiidae
 Microcoryciidae
 Microfilidae
+Microhelida # microhelid amoebae (Variosea/Amoebozoa)
+Microheliellidae # centrohelid heliozoan family
+Microjoeniidae # oxymonad flagellate family
+Micromitriaceae # myxomycete family (Amoebozoa)
 Micronucleariidae
 Microspora
 Microsporea
@@ -902,9 +1018,12 @@ Mobilida
 Monadofilosa
 Monocercomonadidae
 Monocystidae
+Monosigaceae # choanoflagellate family
 Monothalamea
 Mrazekiidae
+Multiciliaceae # apusomonad flagellate family (Multicilia)
 Multiciliidae
+Multifasciculatidae # hypermastigote flagellate family (Parabasalia)
 Mycetozoa
 Mylestomatidae
 Myriosporidae
@@ -923,12 +1042,15 @@ Nassellaria
 Nassophorea
 Nassulida
 Nassulidae
+Nassulopsida # nassulid ciliates (used at order or class rank in different sources)
 Nassulopsidae
 Natomonadida
+Nebelidae # testate amoeba family (Arcellinida)
 Neobodonida
 Neobodonidae
 Neobodonina
 Neobursaridiidae
+Neokeronopsidae # hypotrich ciliate family
 Neolobosia
 Neolouka
 Neometanemidae
@@ -939,6 +1061,7 @@ Nephromycida
 Neradidae
 Netzeliidae
 Noctilucaceae
+Noctilucales # mostly heterotrophic dinoflagellates (Noctiluca etc.)
 Noctilucea
 Noctilucida
 Nodosariidae
@@ -962,7 +1085,10 @@ Oblongichytriidae
 Odontostomatida
 Olgiidae
 Oligohymenophorea
+Oligotrichea # oligotrich ciliates
 Oligotrichia
+Oligotrichida # oligotrich ciliates
+Onychodromusidae # hypotrich ciliate family
 Oodiniaceae
 Opalinata
 Opalinea
@@ -976,6 +1102,7 @@ Ophrydiidae
 Ophryocystidae
 Ophryodendridae
 Ophryoglenidae
+Ophryoscolcidae # entodiniomorphid ciliate family (rumen ciliates)
 Ophryoscolecidae
 Opisthonectidae
 Opthalimidiidae
@@ -985,12 +1112,14 @@ Orchitorphryidae
 Ordosporidae
 Oridorsalidae
 Orosphaeridae
+Orthoamphisiellidae # hypotrich ciliate family
 Orthodonellidae
 Orthogregarinia
 Osangulariidae
 Ostreopsidaceae
 Ovavesiculidae
 Oxnerellidae
+Oxymonadaceae # oxymonad flagellate family (Preaxostyla)
 Oxymonadea
 Oxymonadida
 Oxymonadidae
@@ -999,6 +1128,7 @@ Oxyrrhea
 Oxyrrhida
 Oxyrrhinaceae
 Oxytoxaceae
+Oxytrichida # oxytrichid hypotrich ciliates
 Oxytrichidae
 Padaungiellidae
 Palustrimonadida
@@ -1012,20 +1142,26 @@ Parabodonidae
 Parabodonidina
 Paracercomonada
 Paracercomonadida
+Paracinetida # suctorian ciliates (Ciliophora)
 Paracinetidae
 Paraconoidia
 Paradinida
 Paragregarea
 Paraisotrichidae
+Parakahliellidae # ciliate family
 Paralembidae
+Paramastigaceae # parabasalid flagellate family
 Parameciidae
 Paramoebidae
 Paramonadidae
 Paramycia
 Paramyxida
 Paranassulidae
+Paranophryidae # scuticociliate family
+Parapodophryidae # suctorian ciliate family
 Paraptychostomidae
 Paraquadrulidae
+Parataeniellaceae # dinoflagellate family
 Paratrimastigidae
 Parauronematidae
 Parentodiniidae
@@ -1037,14 +1173,17 @@ Paulinellidae
 Pavonidae
 Pediglissa
 Pegidiidae
+Pelagostrombidiidae # oligotrich ciliate family
 Pellitidae
 Pellitina
 Pelobiontida
 Pelomixidae
+Pelomyxidae # lobose amoeba family (Amoebozoa; Pelomyxa)
 Peneroplidae
 Peniculia
 Peniculida
 Peniculistomatidae
+Peniculostomatidae # ciliate family
 Peranematidae
 Peranemea
 Peranemia
@@ -1062,6 +1201,7 @@ Peridiniopsidaceae
 Peridinoidia
 Perigriniidae
 Peritrichia
+Peritrichida # peritrich ciliates (incl. Vorticella)
 Peritromidae
 Perkinsea
 Perkinsida
@@ -1084,6 +1224,7 @@ Phaeosphaeridae
 Phagodinida
 Phagomyxida
 Phalacrocleptidae
+Phalansteriaceae # choanoflagellate-relative flagellate family (Phalansterium)
 Phalansteriida
 Phalansteriidae
 Pharyngomonada
@@ -1097,14 +1238,18 @@ Phthanotrochidae
 Phyllochonidae
 Phyllopharyngea
 Phyllostauridae
+Physaraceae # myxomycete family (Amoebozoa)
+Physarales # myxomycetes (Physarum etc., Amoebozoa)
 Physaridae
 Phytodiniaceae
 Phytodiniales
+Phytomastigophora # obsolete class for plant-like flagellates (heterogeneous)
 Phytomyxea
 Pilisuctorida
 Pinaciophoridae
 Piridae
 Piroplasmida
+Pithonellidae # Cretaceous calcified tintinnid family
 Placentulinidae
 Placidae
 Placididea
@@ -1121,6 +1266,7 @@ Plagiopylea
 Plagiopylida
 Plagiopylidae
 Plagiopyxidae
+Plagiotomida # plagiotomid ciliates
 Plagiotomidae
 Planispirillinidae
 Planomonadida
@@ -1131,6 +1277,7 @@ Planuloididae
 Plasmodiidae
 Plasmodiophoraceae
 Plasmodiophorida
+Plasmodiophoridae # plasmodiophorid family (Phytomyxea/Rhizaria)
 Platyophryidae
 Pleistophoridae
 Pleistosporidiidae
@@ -1150,6 +1297,7 @@ Polycyclidae
 Polycystinea
 Polydiniellidae
 Polykrikaceae
+Polymastigaceae # diplomonad flagellate family
 Polymastigidae
 Polymorphinidae
 Polyplicariidae
@@ -1201,9 +1349,11 @@ Protolitonotidae
 Protoperidiniaceae
 Protosporangida
 Protosporangiidae
+Protosteliales # protostelid myxomycetes (Amoebozoa)
 Protostelida
 Protosteliidae
 Protostomatida
+Prototrachelocercidae # karyorelict ciliate family
 Protozoa
 Psammettidae
 Psamminida
@@ -1221,9 +1371,11 @@ Pseudodifflugiidae
 Pseudoentodiniidae
 Pseudogaudryinidae
 Pseudogemmidae
+Pseudoholophryida # prostome ciliates
 Pseudoholophryidae
 Pseudokeronopsidae
 Pseudolithidae
+Pseudomicrothoracidae # ciliate family
 Pseudonosematidae
 Pseudoparrellidae
 Pseudophyllomitidae
@@ -1236,6 +1388,7 @@ Psorospermidae
 Pterocorythidae
 Pterocystida
 Pterocystidae
+Ptychocylidae # tintinnid ciliate family (Ptychocylus)
 Ptychocylididae
 Ptychodiscaceae
 Pulleniatinidae
@@ -1245,6 +1398,7 @@ Pyrocystaceae
 Pyrocystales
 Pyrophacaceae
 Pyrsonympha
+Pyrsonymphaceae # oxymonad flagellate family (Preaxostyla)
 Pyrsonymphidae
 Quadriciliidae
 Quadrimorphinidae
@@ -1265,6 +1419,8 @@ Reophacellidae
 Retaria
 Reticulofilosa
 Reticulosida
+Reticulowoodruffiidae # hypotrich ciliate family
+Retortamonadaceae # retortamonad flagellate family
 Retortamonadida
 Retortamonadidae
 Reussellidae
@@ -1281,6 +1437,7 @@ Rhizaspididae
 Rhizomastigida
 Rhizomastigidae
 Rhizomonadidae
+Rhizonymphidae # hypermastigote flagellate family (Parabasalia)
 Rhizoplasmidae
 Rhogostomidae
 Rhynchetidae
@@ -1293,6 +1450,7 @@ Rhytidocystidae
 Rictida
 Rictidae
 Rigidomastigidae
+Rigidothrichidae # ciliate family
 Rigifilida
 Rigifilidae
 Rigimonada
@@ -1302,6 +1460,7 @@ Robertinidae
 Rosalinidae
 Rotaliellidae
 Rotaliida
+Rotaliidae # foraminifera family (Rotaliida)
 Rotallidae
 Rotosphaerida
 Rovinjellidae
@@ -1315,6 +1474,7 @@ Sagenista
 Sagosphaeridae
 Sainouridae
 Sainouroidea
+Salpingoecaceae # choanoflagellate family
 Salpingoecidae
 Sandonidae
 Sandonina
@@ -1330,6 +1490,7 @@ Schizocaryidae
 Schizoplasmodiidae
 Schizopyrenida
 Scuticociliatia
+Scuticociliatida # scuticociliate ciliates
 Scyphidiidae
 Scytomonadidae
 Selenaionida
@@ -1381,6 +1542,7 @@ Spirotectinidae
 Spirotrichea
 Spirotrichia
 Spirotrichonymphida
+Spirotrichonymphidae # hypermastigote flagellate family (Parabasalia)
 Spirotrichosomidae
 Spirozonidae
 Spongodiscidae
@@ -1403,13 +1565,17 @@ Stauraconidae
 Staurojoeninidae
 Stavomonadea
 Stelamoeba
+Stemonitales # myxomycetes (Amoebozoa)
+Stemonitidaceae # myxomycete family (Amoebozoa)
 Stemonitidae
 Stenamoebidae
 Stenophorida
 Stenophoridae
 Stentoridae
 Stephanoecidae
+Stephanomonadaceae # flagellate family
 Stephanopogonidae
+Stereomyxida # stereomyxid amoebae (Endomyxa/Rhizaria)
 Stereomyxidae
 Sticholonchea
 Stichotrichia
@@ -1431,12 +1597,14 @@ Stylocephaloidea
 Stylochonidae
 Stylocometidae
 Suctoria
+Suctorida # suctorian ciliates
 Suessiaceae
 Suessiales
 Suessioidia
 Sulcodinea
 Sulcomonadidae
 Sulcozoa
+Sultanophryidae # suctorian ciliate family
 Symbiontida
 Symphyacanthida
 Syncystidae
@@ -1490,6 +1658,8 @@ Thigmophryidae
 Thigmotrichida
 Tholoniidae
 Thoracosphaeraceae
+Thraustochytriaceae # thraustochytrid stramenopile family (Labyrinthulea)
+Thraustochytrida # thraustochytrids (Labyrinthulea, Stramenopiles)
 Thraustochytriida
 Thraustochytriidae
 Thyrophylacidae
@@ -1507,19 +1677,23 @@ Tovelliaceae
 Toxoglugeidae
 Tracheliida
 Tracheliidae
+Trachelocercida # karyorelict ciliates
 Trachelocercidae
 Trachelophyllidae
 Trachelostylidae
 Tremulida
 Tremulidae
+Trepomonadea # diplomonad flagellates (relatives of Giardia)
 Triadiniaceae
 Tricercomitidae
+Trichiales # myxomycetes (Amoebozoa)
 Trichiida
 Trichiidae
 Trichodinidae
 Trichodinopsidae
 Trichohyalidae
 Tricholimacidae
+Trichomonadaceae # trichomonad flagellate family (Parabasalia)
 Trichomonadea
 Trichomonadida
 Trichomonadidae
@@ -1533,11 +1707,14 @@ Trichosida
 Trichosphaeriidae
 Trichospiridae
 Trichostomatia
+Trichostomatida # trichostome ciliates
 Trichotokaridae
 Trichozoa
 Trigonopixidae
+Trigonopyxidae # testate amoeba family (Arcellinida)
 Trihymenidae
 Trilocularenidae
+Trimastigaceae # oxymonad flagellate family (Preaxostyla)
 Trimastigida
 Trimastigidae
 Trimosinidae
@@ -1558,6 +1735,7 @@ Trypanosomatidae
 Tsukubamonadida
 Tsukubamonadidae
 Tsukubea
+Tubiferaceae # myxomycete family (Amoebozoa)
 Tubothalamea
 Tubulinea
 Tubulinosematidae
@@ -1573,6 +1751,7 @@ Uniciliatida
 Unikaryonidae
 Uradiophoridae
 Urceolariidae
+Urnulidae # foraminifera family (Rhizaria)
 Urocentrida
 Urocentridae
 Uronematidae
@@ -1586,11 +1765,13 @@ Usconophryidae
 Uvigerinidae
 Vaginicolidae
 Vaginulinidae
+Vahlkampfidae # heterolobosean amoeba family (Excavata)
 Vahlkampfiidae
 Valvulinidae
 Vampyrellida
 Vampyrellidae
 Vampyrellidea
+Vannellida # vannellid amoebae (Amoebozoa)
 Vannellidae
 Vannellina
 Variglissida
@@ -1630,5 +1811,6 @@ Xystonellidae
 Yogsothothidae
 Zoelucasida
 Zoelucasidae
+Zoomastigophora # obsolete class for animal-like flagellates (heterogeneous)
 Zoothamniidae
 Zoyaellidae

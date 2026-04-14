@@ -13,6 +13,25 @@ The groups are called OtherXyz.
 For each of the groups we maintain a text file listing higher names down to families that unambiguously indicate such a group. 
 For example 'Asteraceae' clearly point to [Angiosperms](https://github.com/CatalogueOfLife/backend/blob/master/parser/src/main/resources/parser/dicts/taxgroup/angiosperms.txt).
 
+## Sources for looking up names
+Various taxonomic sources can be consulted for the classification of names
+and to see if there are homonyms or other ambiguous names.
+
+Use the following to query for "Acanthoecaceae":
+ - https://www.catalogueoflife.org
+   - https://api.checklistbank.org/dataset/3LXR/nameusage/search?limit=10&rank=FAMILY&q=Acanthoecaceae
+ - https://www.marinespecies.org
+ - https://www.algaebase.org
+ - Wikipedias
+   - https://en.wikipedia.org/
+   - https://de.wikipedia.org/
+   - https://fr.wikipedia.org/
+ - https://www.wikidata.org
+ - https://www.ncbi.nlm.nih.gov/taxonomy/?term=Acanthoecaceae
+ - https://www.irmng.org
+ - https://www.inaturalist.org/taxa
+ - https://www.opentreeoflife.org
+ - https://www.gbif.org
 
 ## Ambiguous names
 The following taxon names are found as suprageneric names across different kingdoms and are therefore not indicative for any clear taxonomic group:
@@ -37,8 +56,11 @@ The following taxon names are found as suprageneric names across different kingd
 
 
 
-## UNIX tools for managing
-The ```clean.sh``` script goes through all dictionary files, sorts them and makes them unique.
+## UNIX tools for managing dictionaries
+The ```clean.sh``` script goes through all dictionary files, sorts them and makes them unique ignoring potential comments.
+
+The TaxGroupParserTest.java class contains a test suite that can be used to check if the dictionaries are consistent
+and do not have overlapping entries.
 
 In order to add new entries to a single dictionary and also remove potentially already existing entries from other files,
 you can use the unix ```comm``` tool manually or run the ```merge.sh newnames chordates.txt``` script,

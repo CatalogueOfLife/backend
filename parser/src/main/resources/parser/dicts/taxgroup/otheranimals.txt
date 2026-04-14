@@ -137,6 +137,7 @@ Adeloporinae
 Adenobrechmoinae
 Adenodidymocystiinae
 Adenogasterinae
+Adenophorea # class of free-living and parasitic nematodes (roundworms)
 Adenorhynchidae
 Adenorhynchinae
 Adensuidae
@@ -307,6 +308,7 @@ Amphiastraeinae
 Amphiastreidae
 Amphibdellatidae
 Amphibiophilidae
+Amphibothrellidae # monogenean flatworm family (Monogenea)
 Amphicaryonidae
 Amphicaryoninae
 Amphicteinae
@@ -388,6 +390,7 @@ Angiodictyidae
 Angiostomatidae
 Angiostomatina
 Angiostomatoidea
+Angiostrongylidae # nematode family (Strongylida; lungworm relatives)
 Anguillicolidae
 Anguillicolinae
 Anguillicoloidea
@@ -646,6 +649,7 @@ Aspidosiphonidae
 Aspidosiphoniformes
 Aspidostomatidae
 Asplanchnidae
+Asplanchnoidae # rotifer family (Monogononta; Asplanchna)
 Asteriidae
 Asterinidae
 Asterininae
@@ -973,6 +977,7 @@ Bougainvilliidae
 Bourgueticrinida
 Bourgueticrinidae
 Bourgueticrinina
+Boveriidae # ciliate family (Scuticociliatida) — alternatively monogenean; placed here as ciliate
 Brachionidae
 Brachiopoda
 Brachycladiidae
@@ -1313,6 +1318,7 @@ Cestoplanidae
 Cestoplanoidea
 Cestrahelminae
 Cetitrematinae
+Chabertiidae # nematode family (Strongylida)
 Chaetasteridae
 Chaetogastridae
 Chaetogastrinae
@@ -1555,6 +1561,7 @@ Collaspidae
 Collastominae
 Collosclerophoreae
 Collosclerophoridae
+Collothecacea # rotifers (Monogononta)
 Collothecaceae
 Collothecidae
 Collyriclidae
@@ -2007,6 +2014,7 @@ Dicrocoeliinae
 Dicrogasterinae
 Dicteroidae
 Dictyangiinae
+Dictyocaulidae # nematode family (Strongylida; lungworms)
 Dictyoceratida
 Dictyoclostinae
 Dictyodendrillidae
@@ -3048,6 +3056,7 @@ Heliasteridae
 Helicometrinae
 Helicoplacoidea
 Helicotrematinae
+Heligmonellidae # nematode family (Trichostrongylida)
 Heligmonellinae
 Heligmosomidae
 Heliodomidae
@@ -3230,6 +3239,7 @@ Homalometrinae
 Homalorhagae
 Homalorhagida
 Homalozoa
+Homalozoidae # extinct echinoderm family (carpoids; Homalozoa)
 Homoiostelea
 Homoscleromorpha
 Homosclerophorida
@@ -3585,6 +3595,7 @@ Lecithochiriidae
 Lecithochiriinae
 Lecithodendriidae
 Lecithodesminae
+Lecithoepitheliata # flatworms (Platyhelminthes, Rhabditophora)
 Lecithophyllinae
 Lecithostaphylinae
 Leilasteridae
@@ -3731,6 +3742,7 @@ Linoproductidae
 Linoproductidina
 Linoproductinae
 Linoproductoidea
+Linstowiidae # tapeworm family (Cestoda)
 Lintaxininae
 Lintoniinae
 Linuchidae
@@ -5612,6 +5624,7 @@ Protorthida
 Protorthidae
 Protorthoidea
 Protoscutellidae
+Protostrongylidae # nematode family (Strongylida; lungworms)
 Protozygidae
 Protozygoidea
 Protrelloididae
@@ -6195,6 +6208,7 @@ Septoporidae
 Septosyringothyridinae
 Serendipeidae
 Sergospiriferinae
+Seriata # flatworms (Platyhelminthes, Proseriata + Tricladida)
 Seriatoporidae
 Serpianotiaridae
 Serpulidae
@@ -6274,6 +6288,7 @@ Skenidiidae
 Skenidioidea
 Skrjabillanidae
 Skrjabillaninae
+Skrjabingylidae # nematode family (Strongylida)
 Skrjabinocoelinae
 Skrjabinovermiinae
 Skrjabinozoinae
@@ -6517,6 +6532,7 @@ Stromatoporida
 Stromatoporoidea
 Strongylida
 Strongylidae
+Strongylidiidae # nematode family (Strongylida)
 Strongylocentrotidae
 Strongyloidea
 Strongyloididae

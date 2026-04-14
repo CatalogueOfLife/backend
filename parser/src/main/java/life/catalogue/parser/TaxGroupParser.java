@@ -32,6 +32,9 @@ public class TaxGroupParser extends EnumParser<TaxGroup> {
       } else {
         try (BufferedReader br = UTF8IoUtils.readerFromStream(stream)) {
           br.lines().forEach( name -> {
+            // strip inline comments and leading/trailing whitespace
+            int commentIdx = name.indexOf('#');
+            if (commentIdx >= 0) name = name.substring(0, commentIdx);
             if (!StringUtils.isBlank(name)) {
               var prev = add(name, tg);
               if (prev != null && prev != tg) {

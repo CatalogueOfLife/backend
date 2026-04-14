@@ -22,6 +22,7 @@ Agathiphagoidea
 Agdistinae
 Agliinae
 Aglossata
+Agonoxenidae # moth family (Gelechioidea)
 Agonoxininae
 Aididae
 Alsophilinae
@@ -50,6 +51,7 @@ Aphnaeini
 Apoprogoninae
 Archaeolepidae
 Archiearinae
+Arctiidae # tiger/lichen moth family (now Erebidae)
 Arctiinae
 Arctiini
 Argyresthiidae
@@ -131,6 +133,7 @@ Coeliadinae
 Coelopoetidae
 Coelopoetinae
 Coleophoridae
+Coliadinae # sulphur butterfly subfamily (Pieridae)
 Collomeninae
 Compsocteninae
 Condicinae
@@ -203,6 +206,7 @@ Eriocottinae
 Eriocraniidae
 Eriocranioidea
 Eriopinae
+Ethmiidae # moth family (Gelechioidea)
 Ethmiinae
 Eublemminae
 Eucestidae
@@ -295,6 +299,7 @@ Lasiocampinae
 Lasiocampoidea
 Lecithoceridae
 Lecithocerinae
+Lemoniidae # moth family (Zygaenoidea)
 Lepidoptera
 Libytheinae
 Limacodidae
@@ -316,6 +321,7 @@ Luciini
 Lycaenesthini
 Lycaenidae
 Lycaeninae
+Lymantriidae # tussock moth family (now Erebidae)
 Lymantriinae
 Lyonetiidae
 Lyonetiinae
@@ -529,6 +535,7 @@ Stygiinae
 Stygiini
 Stygini
 Symmachiini
+Symmocidae # moth family (Gelechioidea)
 Symmocinae
 Syringopaidae
 Syringopainae
@@ -545,6 +552,7 @@ Thyatirinae
 Thyrididae
 Thyridinae
 Thyridoidea
+Tincidae # clothes moth family (Tineidae; alternate spelling)
 Tineidae
 Tineodidae
 Tineoidea
