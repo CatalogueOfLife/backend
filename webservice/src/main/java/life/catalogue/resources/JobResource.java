@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import life.catalogue.api.model.JobResult;
 import life.catalogue.api.model.User;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.BackgroundJob;
@@ -9,6 +10,7 @@ import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
+import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,6 +62,17 @@ public class JobResource {
                    .location(cfg.downloadURI(key))
                    .header(MoreHttpHeaders.CONTENT_DISPOSITION, ResourceUtils.fileAttachment("result-" + key + ".zip"))
                    .build();
+  }
+
+  @GET
+  @VaryAccept
+  @Path("{key}")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response redirectToLogFile(@PathParam("key") UUID key) {
+    return Response.status(Response.Status.FOUND)
+        .location(cfg.logURI(key))
+        .header(MoreHttpHeaders.CONTENT_DISPOSITION, ResourceUtils.fileAttachment("job-" + key + ".log.gz"))
+        .build();
   }
 
   @DELETE

@@ -78,6 +78,9 @@ public class JobConfig {
   public URI downloadURI(UUID key) {
     return downloadURI.resolve(JobResult.downloadFilePath(key));
   }
+  public URI logURI(UUID key) {
+    return downloadURI.resolve(JobResult.downloadLogFilePath(key));
+  }
 
   public static File jobLog(File directory, String key) {
     return new File(directory, "job-" + key + ".log.gz");

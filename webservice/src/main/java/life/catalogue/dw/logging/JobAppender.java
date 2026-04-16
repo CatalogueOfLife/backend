@@ -151,7 +151,7 @@ public class JobAppender extends AppenderBase<ILoggingEvent> {
       LOG.info("Copy logs for job {} from {}", key, logFile);
       try {
         var uuid = UUID.fromString(key.trim());
-        var df = new File(downloadDir, JobResult.downloadFilePath(uuid, "log.gz"));
+        var df = new File(downloadDir, JobResult.downloadLogFilePath(uuid));
         FileUtils.copyFile(logFile, df);
       } catch (IllegalArgumentException e) {
         LOG.error("Not a job key. Cannot copy logs for {}", key, e);

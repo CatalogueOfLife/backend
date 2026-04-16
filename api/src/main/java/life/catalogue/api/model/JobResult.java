@@ -57,6 +57,10 @@ public class JobResult extends DataEntity<UUID> {
     return key.toString().substring(0,2) + "/" + key + "." + suffix;
   }
 
+  public static String downloadLogFilePath(UUID key) {
+    return downloadFilePath(key, "log.gz");
+  }
+
   @Override
   public UUID getKey() {
     return key;
