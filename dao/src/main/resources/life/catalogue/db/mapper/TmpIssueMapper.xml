@@ -56,6 +56,7 @@
   </sql>
 
   <update id="createTmpIssuesTableFromVerbatim" parameterType="map">
+    DROP TABLE IF EXISTS tmp_usage_issues;
     WITH nu AS (
     SELECT u.id, u.name_id, u.verbatim_key AS uvkey, n.verbatim_key AS nvkey
     FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
@@ -74,6 +75,7 @@
   </update>
 
   <update id="createTmpSourcesTableFromVerbatim" parameterType="map">
+    DROP TABLE IF EXISTS tmp_usage_sources;
     CREATE TEMPORARY TABLE tmp_usage_sources (id TEXT, groups INFOGROUP[], sources int[]);
   </update>
 
@@ -87,6 +89,7 @@
   </sql>
 
   <update id="createTmpIssuesTableFromVerbatimSource" parameterType="map">
+    DROP TABLE IF EXISTS tmp_usage_issues;
     WITH nu AS (
       SELECT u.id, u.name_id, u.verbatim_source_key AS uvkey, n.verbatim_source_key AS nvkey
       FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
@@ -105,6 +108,7 @@
   </update>
 
   <update id="createTmpSourcesTableFromVerbatimSource" parameterType="map">
+    DROP TABLE IF EXISTS tmp_usage_sources;
     SELECT u.id, array_agg(DISTINCT v.type) AS groups, array_agg(DISTINCT v.source_dataset_key) AS sources
     INTO TEMPORARY TABLE tmp_usage_sources
     FROM verbatim_source_secondary v
