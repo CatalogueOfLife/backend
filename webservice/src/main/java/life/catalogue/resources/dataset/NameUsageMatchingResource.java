@@ -59,8 +59,8 @@ public class NameUsageMatchingResource extends AbstractNameUsageMatchingResource
   @POST
   @Path("job")
   public MatchingJob matchSourceJob(@PathParam("key") int datasetKey,
-                                            @BeanParam @Valid MatchingRequest req,
-                                            @Auth User user) throws IOException {
+                                    @BeanParam @Valid MatchingRequest req,
+                                    @Auth User user) throws IOException {
     req.setDatasetKey(datasetKey);
     if (req.getSourceDatasetKey() == null) {
       throw new IllegalArgumentException("sourceDatasetKey parameter or CSV/TSV data upload required");
@@ -72,10 +72,10 @@ public class NameUsageMatchingResource extends AbstractNameUsageMatchingResource
   @Path("job")
   @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_CSV_ALT2, MoreMediaTypes.TEXT_WILDCARD})
   public MatchingJob matchTxtJob(@PathParam("key") int datasetKey,
-                                         @BeanParam @Valid MatchingRequest req,
-                                         @Context HttpHeaders headers,
-                                         InputStream data,
-                                         @Auth User user) throws IOException {
+                                 @BeanParam @Valid MatchingRequest req,
+                                 @Context HttpHeaders headers,
+                                 InputStream data,
+                                 @Auth User user) throws IOException {
     req.setDatasetKey(datasetKey);
     req.setUpload(upload(data, user, ImporterResource.contentType2Suffix(headers)));
     return submit(req, user);

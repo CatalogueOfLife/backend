@@ -6,10 +6,7 @@ import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.common.io.CharsetDetectingStream;
-import life.catalogue.common.io.TabReader;
-import life.catalogue.common.io.TempFile;
-import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.io.*;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
@@ -58,7 +55,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 /**
- * Matching job for users that does not the power to insert names into the names index.
+ * Matching job for users that does not have the power to insert names into the names index.
  * Rematching of datasets is done by the DatasetMatcher instead.
  */
 public abstract class AbstractMatchingJob extends DatasetBlockingJob {
@@ -134,7 +131,7 @@ public abstract class AbstractMatchingJob extends DatasetBlockingJob {
                                  new TsvWriter(zos, StandardCharsets.UTF_8, new TsvWriterSettings());
       // match
       if (req.getUpload() != null) {
-        LOG.info("Match uploaded names from {} file {}", req.getFormat(), req.getUpload());
+        LOG.info("Match uploaded names from {}", req.getUpload());
         var mstream = streamUpload();
         writeMatches(writer, mstream.mapper.rawHeader, mstream.stream);
         // delete file upload
@@ -315,11 +312,13 @@ public abstract class AbstractMatchingJob extends DatasetBlockingJob {
   }
   private MappedStream streamUpload() throws IOException {
     final InputStream data = new FileInputStream(req.getUpload());
-    final AbstractParser<?> parser = req.getFormat() == TabularFormat.CSV ?
+    var reader  = CharsetDetectingStream.createReader(data);
+    final var fileFormat = TabularFormatDetection.detectFormat(req.getUpload(), reader.charset);
+    LOG.info("Treat upload file {} as {} with {} encoding", req.getUpload(), fileFormat, reader.charset);
+    final AbstractParser<?> parser = fileFormat == TabularFormat.CSV ?
                                TabReader.newParser(CsvReader.csvSetting()) :
                                TabReader.newParser(CsvReader.tsvSetting());
 
-    BufferedReader reader  = CharsetDetectingStream.createReader(data);
     parser.beginParsing(reader);
     ResultIterator<String[], ParsingContext> iter = parser.iterate(reader).iterator();
     final RowMapper mapper = new RowMapper(iter.next());

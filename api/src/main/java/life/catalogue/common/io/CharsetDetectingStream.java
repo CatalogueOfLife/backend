@@ -29,23 +29,31 @@ public class CharsetDetectingStream extends InputStream {
     this.input = in;
     this.charset = charset;
   }
-  
+
+  public static class CharsetBufferedReader extends BufferedReader {
+    public final Charset charset;
+    public CharsetBufferedReader(@org.jetbrains.annotations.NotNull Reader in, Charset charset) {
+      super(in);
+      this.charset = charset;
+    }
+  }
+
   /**
    * Creates a buffered reader skipping potential bom start sequences
    */
-  public static BufferedReader createReader(InputStream in, Charset charset) throws IOException {
+  public static CharsetBufferedReader createReader(InputStream in, Charset charset) throws IOException {
     Preconditions.checkNotNull(in);
     Preconditions.checkNotNull(charset);
-    return new BufferedReader(new InputStreamReader(new BOMInputStream(in), charset));
+    return new CharsetBufferedReader(new InputStreamReader(new BOMInputStream(in), charset), charset);
   }
 
   /**
    * Creates a buffered reader using the charset detecting stream to identify the charset.
    */
-  public static BufferedReader createReader(InputStream in) throws IOException {
+  public static CharsetBufferedReader createReader(InputStream in) throws IOException {
     Preconditions.checkNotNull(in);
     var cs = create(in);
-    return new BufferedReader(new InputStreamReader(cs, cs.charset));
+    return new CharsetBufferedReader(new InputStreamReader(cs, cs.charset), cs.charset);
   }
   
   public static CharsetDetectingStream create(InputStream in) throws IOException {
