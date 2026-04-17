@@ -115,6 +115,7 @@ public class UsageMatcherIT {
     m = match(Rank.SUBFAMILY, "Metopiinae", "Förster", cl());
     assertMatch(m, "SYN");
 
+    // Metopiinae is in reality a Hymenoptera wasp - so the tax group analysis gets confused here
     m = match(Rank.SUBFAMILY, "Metopiinae", "Förster", cl().kingdom("Animalia").phylum("Arthropoda").class_("Insecta").order("Hymenoptera").family("Ichneumonidae"));
     assertNoMatch(m);
   }
