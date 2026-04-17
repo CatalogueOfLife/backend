@@ -84,7 +84,7 @@ public class TaxGroupAnalyzer {
   }
 
   private boolean considerName(SimpleName sn) {
-    return sn.getStatus() == null || sn.getStatus().isTaxon() && (
+    return (sn.getStatus() == null || sn.getStatus().isTaxon()) && (
         sn.getRank() == null || sn.getRank().otherOrUnranked() || sn.getRank().higherOrEqualsTo(Rank.SUPRAGENERIC_NAME)
     );
   }
