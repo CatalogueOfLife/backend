@@ -11,7 +11,6 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.NameUsageArchiver;
 import life.catalogue.db.mapper.DatasetMapper;
 
@@ -63,6 +62,39 @@ public class PublishReleaseListener implements DatasetListener {
     this.bus = bus;
   }
 
+  private void publishCOL(DatasetChanged event){
+    LOG.info("Publish COL {} specifics", event.obj.getOrigin());
+    // generate downloads for COL releases
+    for (var format : EXPORT_FORMATS) {
+      try {
+        var expJob = new ColReleaseExportJob(event.obj.getKey(), event.user, true, format, rCfg, eCfg, factory);
+        executor.submit(expJob);
+      } catch (Exception e) {
+        LOG.error("Failed to generate COL {} export for release {}", format, event.obj.getKey(), e);
+      }
+    }
+
+    // symlink latest logs
+    if (event.obj.getAttempt() != null) {
+      try {
+        // set latest_logs -> /mnt/auto/col/releases/3/410
+        File logs = rCfg.reportDir(Datasets.COL, event.obj.getAttempt());
+        File symlink = new File(rCfg.colDownloadDir, ColReleaseExportJob.prefix(event.obj.getOrigin()) + "latest_logs");
+        PathUtils.symlink(symlink, logs);
+      } catch (IOException e) {
+        LOG.error("Failed to symlink latest {} logs", event.obj.getOrigin(), e);
+      }
+    }
+
+    // update DOI URL for last release
+    try (SqlSession session = factory.openSession(true)) {
+      var prevRelKey = session.getMapper(DatasetMapper.class).previousRelease(event.obj.getKey());
+      var prev = new Dataset();
+      prev.setKey(prevRelKey);
+      bus.publish(DoiChange.update(prev.getDoi())); // the DOI is built only from the key
+    }
+  }
+
   @Override
   public void datasetChanged(DatasetChanged event){
     if (event.isUpdated() // assures we got both obj and old
@@ -72,34 +104,17 @@ public class PublishReleaseListener implements DatasetListener {
     ) {
 
       LOG.info("Publish {} {} {} from project {} by user {}.", event.obj.getOrigin(), event.obj.getKey(), event.obj.getAliasOrTitle(), event.obj.getSourceKey(), event.obj.getModifiedBy());
+      // publish the DOI(s)
+      if (event.obj.getDoi() != null) {
+        bus.publish(DoiChange.publish(event.obj.getDoi()));
+      }
+      if (event.obj.getVersionDoi() != null) {
+        bus.publish(DoiChange.publish(event.obj.getVersionDoi()));
+      }
+
       // COL release specifics
       if (Datasets.COL == event.obj.getSourceKey() && event.obj.getOrigin().isRelease()) {
-        LOG.info("Publish COL {} specifics", event.obj.getOrigin());
-        // generate downloads for COL releases
-        for (var format : EXPORT_FORMATS) {
-          var expJob = new ColReleaseExportJob(event.obj.getKey(), event.user, true, format, rCfg, eCfg, factory);
-          executor.submit(expJob);
-        }
-
-        // symlink latest logs
-        if (event.obj.getAttempt() != null) {
-          try {
-            // set latest_logs -> /mnt/auto/col/releases/3/410
-            File logs = rCfg.reportDir(Datasets.COL, event.obj.getAttempt());
-            File symlink = new File(rCfg.colDownloadDir, ColReleaseExportJob.prefix(event.obj.getOrigin()) + "latest_logs");
-            PathUtils.symlink(symlink, logs);
-          } catch (IOException e) {
-            LOG.error("Failed to symlink latest {} logs", event.obj.getOrigin(), e);
-          }
-        }
-
-        // update DOI URL for last release
-        try (SqlSession session = factory.openSession(true)) {
-          var prevRelKey = session.getMapper(DatasetMapper.class).previousRelease(event.obj.getKey());
-          var prev = new Dataset();
-          prev.setKey(prevRelKey);
-          bus.publish(DoiChange.update(prev.getDoi())); // the DOI is built only from the key
-        }
+        publishCOL(event);
       }
 
       // When a release gets published we need to modify the projects name archive:

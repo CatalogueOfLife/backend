@@ -50,6 +50,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   private static final String ARG_VERSIONS = "versions";
   private static final String ARG_THREADS = "threads";
   private static final String ARG_NO_UPDATE = "noUpdate";
+  private static final String ARG_PUBLISH_ONLY = "publishOnly";
   private Integer versions  ;
   private boolean noUpdate = false;
   private DoiService doiService;
@@ -89,6 +90,12 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       .required(false)
       .setDefault(false)
       .help("Do not update DOIs, only create new ones or publish existing ones");
+    subparser.addArgument("--"+ ARG_PUBLISH_ONLY)
+        .dest(ARG_PUBLISH_ONLY)
+        .type(Boolean.class)
+        .required(false)
+        .setDefault(false)
+        .help("Do only publish existing DOIs which are not yet publish, do not create or update their metadata.");
     subparser.addArgument("--"+ ARG_VERSIONS)
       .dest(ARG_VERSIONS)
       .type(Integer.class)
@@ -122,14 +129,17 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
 
       var doiStr = ns.getString(ARG_DOI);
       var key = ns.getInt(ARG_KEY);
+      var publishOnly = ns.getBoolean(ARG_PUBLISH_ONLY);
+      var all = ns.getBoolean(ARG_ALL);
 
       if (doiStr != null) {
         var doi = new DOI(doiStr);
         updateDOI(doi);
       } else if (key != null) {
         updateDataset(key);
+      } else if (publishOnly) {
+        publishExisting();
       } else {
-        var all = ns.getBoolean(ARG_ALL);
         if (Boolean.TRUE.equals(all)) {
           updateAll();
         }
@@ -144,6 +154,29 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     }
     LOG.info("Done");
     LOG.info("Created {}, updated {} and published {} DOIs", created.total(), updated.total(), published.total());
+  }
+
+  private void publishExisting() {
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      var keys = dm.publicKeys();
+      int counter = 0;
+      for (var key : keys) {
+        for (var doi : dm.getDois(key)) {
+          try {
+            var data = doiService.resolve(doi);
+            if (data.getState() != DoiState.FINDABLE) {
+              LOG.info("Publish DOI {} for dataset {}: {}", doi, key, data.getTitles().getFirst().getTitle());
+              doiService.publish(doi);
+              counter++;
+            }
+          } catch (DoiException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+      LOG.info("Published {} DOIs", counter);
+    }
   }
 
   private void updateDOI(DOI doi) throws DoiException {

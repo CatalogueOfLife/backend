@@ -466,6 +466,16 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   @Test
+  public void getDois() throws Exception {
+    var d = create();
+    mapper().create(d);
+    commit();
+    var dois = mapper().getDois(d.getKey());
+    assertEquals(1, dois.size());
+    assertEquals(d.getDoi(), dois.getFirst());
+  }
+
+  @Test
   public void list() throws Exception {
     List<Dataset> ds = createExpected();
     for (Dataset d : ds) {

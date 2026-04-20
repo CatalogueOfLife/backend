@@ -256,18 +256,20 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
     @Override
     public void run() {
       List<XDoiChange> all = list();
-      Collections.sort(all);
-      int counter = 0;
-      LOG.debug("Found {} DOI events to process", all.size());
-      for (XDoiChange event : all) {
-        if (event.time < System.currentTimeMillis()) {
-          events.remove(event.getId());
-          executor.submit(new DoiChangeJob(event));
-          counter++;
+      if (!all.isEmpty()) {
+        Collections.sort(all);
+        int counter = 0;
+        LOG.debug("Found {} DOI events to process", all.size());
+        for (XDoiChange event : all) {
+          if (event.time < System.currentTimeMillis()) {
+            events.remove(event.getId());
+            executor.submit(new DoiChangeJob(event));
+            counter++;
+          }
         }
-      }
-      if (counter > 0) {
-        LOG.info("Executed {} DOI events from {}", counter, all.size());
+        if (counter > 0) {
+          LOG.info("Executed {} DOI events from {}", counter, all.size());
+        }
       }
     }
   }

@@ -39,6 +39,13 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    */
   DatasetSimple getSimple(@Param("key") int key);
 
+  /**
+   * List both concept and version DOI for the given dataset key.
+   * @param key dataset key
+   * @return list of dois, might be empty
+   */
+  List<DOI> getDois(@Param("key") int key);
+
   void deletePhysically(@Param("key") int key);
 
   default void createAll(DatasetWithSettings d) {
@@ -235,15 +242,26 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Duplicate.IntKeys> duplicates(@Param("minCount") Integer minCount, @Param("gbifPublisherKey") UUID gbifPublisherKey);
 
   /**
+   * @param inclDeleted optional include also deleted datasets, default false
    * @param origin optional dataset origin filter, combined with OR if multiple
    * @return list of all dataset keys which have not been deleted
    */
   default List<Integer> keys(@Param("inclDeleted") boolean inclDeleted, @Param("origin") DatasetOrigin... origin) {
     DatasetSearchRequest req = new DatasetSearchRequest();
+    req.setInclDeleted(inclDeleted);
     if (origin != null) {
       req.setOrigin(List.of(origin));
-      req.setInclDeleted(inclDeleted);
     }
+    return searchKeys(req, MAGIC_ADMIN_USER_KEY);
+  }
+
+  /**
+   * @return list of all dataset keys which are not deleted and public
+   */
+  default List<Integer> publicKeys() {
+    DatasetSearchRequest req = new DatasetSearchRequest();
+    req.setInclDeleted(false);
+    req.setPrivat(false);
     return searchKeys(req, MAGIC_ADMIN_USER_KEY);
   }
 

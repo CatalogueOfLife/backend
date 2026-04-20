@@ -88,6 +88,8 @@ public interface DoiService {
    * referenced by the identifier changes (e.g. a dataset gets republished, a dataset is replaced by
    * a new major version, etc).
    *
+   * This never publishes the DOI.
+   *
    * @throws DoiException if the operation failed for any reason
    */
   void update(DoiAttributes doi) throws DoiException;

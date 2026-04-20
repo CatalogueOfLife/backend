@@ -548,6 +548,16 @@
     WHERE key = #{key}
   </select>
 
+  <select id="getDois" resultType="DOI">
+    SELECT doi
+    FROM dataset d
+    WHERE key = #{key} AND doi IS NOT NULL
+      UNION
+    SELECT version_doi
+    FROM dataset d
+    WHERE key = #{key} AND version_doi IS NOT NULL
+  </select>
+
   <select id="getMaxKey" parameterType="map" resultType="integer">
     SELECT max(key) FROM dataset
     <if test="limit">

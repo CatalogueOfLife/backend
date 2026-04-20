@@ -774,7 +774,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   /**
-   * Convenience method to make a dataset private again.
+   * Convenience method to make a dataset private again. Note this does not revert the already published DOI(s)!
    * Internally this loads the dataset instance, changes its private value and calls an update which does trigger the publication procedures.
    * @return true if the private flag has changed and the dataset was unpublished
    */
