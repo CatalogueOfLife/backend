@@ -201,13 +201,17 @@ public class DatasetConverter {
   public List<Creator> toCreators(List<Agent> agents) {
     return agents.stream()
                  .map(a -> {
-                   if (a.isPerson()) {
+                   if (a.isPerson() && !StringUtils.isBlank(a.getFamily())) {
                      Creator c = new Creator(StringUtils.trimToNull(a.getGiven()), StringUtils.trimToNull(a.getFamily()), StringUtils.trimToNull(a.getOrcid()));
                      addAffiliation(c, a);
                      return c;
+                   } else if (a.getName() != null) {
+                     return new Creator(a.getName(), NameType.ORGANIZATIONAL);
+                   } else {
+                     return null;
                    }
-                   return new Creator(a.getName(), NameType.ORGANIZATIONAL);
                  })
+                 .filter(Objects::nonNull)
                  .collect(Collectors.toList());
   }
 
@@ -230,7 +234,7 @@ public class DatasetConverter {
         type = ContributorType.OTHER;
       }
     }
-    if (a.isPerson()) {
+    if (a.isPerson() && !StringUtils.isBlank(a.getFamily())) {
       Contributor c = new Contributor(StringUtils.trimToNull(a.getGiven()), StringUtils.trimToNull(a.getFamily()), StringUtils.trimToNull(a.getOrcid()), type);
       addAffiliation(c, a);
       return c;

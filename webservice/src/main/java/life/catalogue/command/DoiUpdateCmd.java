@@ -177,7 +177,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       int counterAll = 0;
       for (var key : keys) {
         if (counterAll++ % 1000 == 0) {
-          LOG.info("Processed {} datasets", counterAll);
+          LOG.info("Processed {} datasets. Current key={}", counterAll, key);
         }
         var dois = dm.getDois(key);
         if (dois == null || dois.isEmpty()) {
@@ -205,7 +205,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
           }
         }
       }
-      LOG.info("Published {} DOIs", counter);
+      LOG.info("Published {} DOIs, {} DOIs failed", counter, failed);
     }
   }
 

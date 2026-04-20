@@ -23,13 +23,14 @@ public class Creator {
     this.nameType = nameType;
   }
 
-  public Creator(String givenName, String familyName) {
+  public Creator(String givenName, @NotNull String familyName) {
     this.givenName = givenName;
     this.familyName = familyName;
     this.nameType = NameType.PERSONAL;
+    this.name = givenName == null ? familyName : familyName + ", " + givenName;
   }
 
-  public Creator(String givenName, String familyName, String orcid) {
+  public Creator(String givenName, @NotNull String familyName, String orcid) {
     this(givenName, familyName);
     if (orcid != null) {
       this.nameIdentifiers = List.of(NameIdentifier.orcid(orcid));
