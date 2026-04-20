@@ -160,18 +160,28 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       var keys = dm.publicKeys();
+      LOG.info("Verify DOIs for {} public datasets", keys.size());
       int counter = 0;
+      int counterAll = 0;
       for (var key : keys) {
-        for (var doi : dm.getDois(key)) {
-          try {
-            var data = doiService.resolve(doi);
-            if (data.getState() != DoiState.FINDABLE) {
-              LOG.info("Publish DOI {} for dataset {}: {}", doi, key, data.getTitles().getFirst().getTitle());
-              doiService.publish(doi);
-              counter++;
+        if (counterAll++ % 1000 == 0) {
+          LOG.info("Processed {} datasets", counterAll);
+        }
+        var dois = dm.getDois(key);
+        if (dois == null || dois.isEmpty()) {
+          LOG.warn("No DOIs found for public dataset {}", key);
+        } else {
+          for (var doi : dois) {
+            try {
+              var data = doiService.resolve(doi);
+              if (data.getState() != DoiState.FINDABLE) {
+                LOG.info("Publish DOI {} for dataset {}: {}", doi, key, data.getTitles().getFirst().getTitle());
+                doiService.publish(doi);
+                counter++;
+              }
+            } catch (DoiException e) {
+              throw new RuntimeException(e);
             }
-          } catch (DoiException e) {
-            throw new RuntimeException(e);
           }
         }
       }
