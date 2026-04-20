@@ -384,10 +384,9 @@ public class ImportJob implements Runnable {
 
           LOG.info("Writing {} to Postgres & Elastic!", datasetKey);
           updateState(ImportState.INSERTING);
+          var vDOI = dCfg.datasetVersionDOI(datasetKey, getAttempt());
           // this does write to both pg and elastic!
           // pgimport also updates the datasets import attempt & version DOI at the very end - only if successful!
-          // and it moves the previous dataset metadata into the dataset archive
-          var vDOI = dCfg.datasetVersionDOI(datasetKey, getAttempt());
           var pgImport = new PgImport(di.getAttempt(), vDOI, dataset, req.createdBy, store, factory, iCfg, dDao, indexService);
           pgImport.call();
 
@@ -398,9 +397,7 @@ public class ImportJob implements Runnable {
 
           // flush dataset in varnish, update matcher, etc
           bus.publish(new DatasetDataChanged(datasetKey, req.createdBy));
-          if (dataset.getVersionDoi() != null) {
-            bus.publish(DoiChange.create(dataset.getVersionDoi()));
-          }
+          bus.publish(DoiChange.create(vDOI));
 
           if (rematchDecisions()) {
             updateState(ImportState.MATCHING);

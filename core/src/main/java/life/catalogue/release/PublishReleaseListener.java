@@ -32,9 +32,9 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * Class to listen to dataset changes and act if a non project dataset was changed from private to public.
+ * Class to listen to dataset changes and act if a release dataset was changed from private to public.
  * It then
- *  - publishes the DOI & Version DOI
+ *  - publishes the concept DOI
  * For COL releases it also does:
  *  - copies existing exports to the COL export folder
  *  - inserts deleted ids from the reports into the names archive
@@ -104,12 +104,9 @@ public class PublishReleaseListener implements DatasetListener {
     ) {
 
       LOG.info("Publish {} {} {} from project {} by user {}.", event.obj.getOrigin(), event.obj.getKey(), event.obj.getAliasOrTitle(), event.obj.getSourceKey(), event.obj.getModifiedBy());
-      // publish the DOI(s)
+      // publish the concept DOI — releases do not carry a version DOI
       if (event.obj.getDoi() != null) {
         bus.publish(DoiChange.publish(event.obj.getDoi()));
-      }
-      if (event.obj.getVersionDoi() != null) {
-        bus.publish(DoiChange.publish(event.obj.getVersionDoi()));
       }
 
       // COL release specifics

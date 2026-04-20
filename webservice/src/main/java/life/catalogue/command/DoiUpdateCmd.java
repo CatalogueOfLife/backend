@@ -36,6 +36,8 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import net.sourceforge.argparse4j.inf.Subparser;
 
+import javax.annotation.Nullable;
+
 import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
 
 /**
@@ -51,6 +53,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   private static final String ARG_THREADS = "threads";
   private static final String ARG_NO_UPDATE = "noUpdate";
   private static final String ARG_PUBLISH_ONLY = "publishOnly";
+  private static final String ARG_START_KEY = "startKey";
   private Integer versions  ;
   private boolean noUpdate = false;
   private DoiService doiService;
@@ -74,6 +77,11 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       .type(Integer.class)
       .required(false)
       .help("Dataset key for project and all it's release or a single dataset to update");
+    subparser.addArgument("--"+ ARG_START_KEY)
+        .dest(ARG_START_KEY)
+        .type(Integer.class)
+        .required(false)
+        .help("Dataset key to start processing from if all datasets have been requested");
     subparser.addArgument("--"+ ARG_DOI)
       .dest(ARG_DOI)
       .type(DOI.class)
@@ -138,7 +146,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       } else if (key != null) {
         updateDataset(key);
       } else if (publishOnly) {
-        publishExisting();
+        publishExisting(ns.getInt(ARG_START_KEY));
       } else {
         if (Boolean.TRUE.equals(all)) {
           updateAll();
@@ -156,11 +164,15 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     LOG.info("Created {}, updated {} and published {} DOIs", created.total(), updated.total(), published.total());
   }
 
-  private void publishExisting() {
+  private void publishExisting(@Nullable Integer startKey) {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       var keys = dm.publicKeys();
-      LOG.info("Verify DOIs for {} public datasets", keys.size());
+      if (startKey != null) {
+        keys = keys.stream().filter(k -> k >= startKey).toList();
+      }
+      LOG.info("Verify DOIs for {} public datasets. Start with dataset {}", keys.size(), keys.getFirst());
+      int failed = 0;
       int counter = 0;
       int counterAll = 0;
       for (var key : keys) {
@@ -169,15 +181,23 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         }
         var dois = dm.getDois(key);
         if (dois == null || dois.isEmpty()) {
-          LOG.warn("No DOIs found for public dataset {}", key);
+          var d = dm.get(key);
+          if (d.getOrigin() != PROJECT) {
+            LOG.warn("No DOIs found for public {} dataset {}: {}", d.getOrigin(), key, d.getTitle());
+          }
         } else {
           for (var doi : dois) {
             try {
               var data = doiService.resolve(doi);
               if (data.getState() != DoiState.FINDABLE) {
                 LOG.info("Publish DOI {} for dataset {}: {}", doi, key, data.getTitles().getFirst().getTitle());
-                doiService.publish(doi);
-                counter++;
+                try {
+                  doiService.publish(doi);
+                  counter++;
+                } catch (DoiException e) {
+                  failed++;
+                  LOG.error("Failed to publish DOI {} for dataset {}: {}", doi, key, data.getTitles().getFirst().getTitle(), e);
+                }
               }
             } catch (DoiException e) {
               throw new RuntimeException(e);

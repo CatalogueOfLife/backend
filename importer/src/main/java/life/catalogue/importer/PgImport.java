@@ -50,6 +50,10 @@ import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
  * For associated entity table like vernacular names the mappers expect a postgres sequence to exist.
  * These are created before the import and removed afterwards again.
  *
+ * We also update the datasets import attempt & version DOI at the very end - only if successful!
+ * And publish the version doi in that case if the dataset is public
+ *
+ * Moves the previous dataset metadata into the dataset archive
  * See also https://github.com/CatalogueOfLife/backend/issues/918
  */
 public class PgImport implements Callable<Boolean> {
@@ -190,10 +194,6 @@ public class PgImport implements Callable<Boolean> {
       dataset.getDataset().setAttempt(attempt);
       dataset.getDataset().setVersionDoi(versionDOI);
       LOG.info("Updated last successful import attempt {} and version doi {} for dataset {}: {}", attempt, versionDOI, dataset.getKey(), dataset.getTitle());
-
-      if (!dataset.getDataset().isPrivat()) {
-      LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());
-      }
     }
   }
 

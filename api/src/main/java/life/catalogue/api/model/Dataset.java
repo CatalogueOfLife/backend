@@ -693,6 +693,10 @@ public class Dataset extends DataEntity<Integer> {
   public boolean isPrivat() {
     return privat;
   }
+  @JsonIgnore
+  public boolean isPublic() {
+    return ! isPrivat();
+  }
 
   public void setPrivat(boolean privat) {
     this.privat = privat;
