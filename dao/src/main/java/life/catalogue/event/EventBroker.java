@@ -109,30 +109,33 @@ public class EventBroker implements AutoCloseable {
       // we wind to the end to only consume new messages as the queue likely already exists
       tailer.toEnd();
       // Continuously read messages and distribute them to listeners
-      while (!Thread.currentThread().isInterrupted() && !tailer.isClosing()) {
-        try {
-          // If no message was available, pause for a short time to avoid busy-waiting
-          var dc = tailer.readingDocument();
-          if (dc.wire() == null) {
-            // check for rolling file deletions once a day
-            if (System.currentTimeMillis() - lastDeleteCheck > 24*60*60*1000) {
-              removeUnusedFiles();
-              lastDeleteCheck = System.currentTimeMillis();
-            } else {
-              try {
-                Thread.sleep(cfg.pollingLatency);
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
+      try {
+        while (!Thread.currentThread().isInterrupted() && !tailer.isClosing()) {
+          try (var dc = tailer.readingDocument()) {
+            // If no message was available, pause for a short time to avoid busy-waiting
+            if (dc.wire() == null) {
+              // check for rolling file deletions once a day
+              if (System.currentTimeMillis() - lastDeleteCheck > 24*60*60*1000) {
+                removeUnusedFiles();
+                lastDeleteCheck = System.currentTimeMillis();
+              } else {
+                try {
+                  Thread.sleep(cfg.pollingLatency);
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                  break;
+                }
               }
-            }
 
-          } else {
-            broker(io.read(dc.wire().bytes().inputStream()));
+            } else {
+              broker(io.read(dc.wire().bytes().inputStream()));
+            }
+          } catch (Exception e) {
+            LOG.error("Event polling throws exception", e);
           }
-        } catch (Exception e) {
-          LOG.error("Event polling throws exception", e);
         }
+      } finally {
+        tailer.close();
       }
       LOG.warn("Event polling stopped!");
     }

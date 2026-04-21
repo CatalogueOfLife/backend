@@ -78,11 +78,11 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       .required(false)
       .help("Dataset key for project and all it's release or a single dataset to update");
     subparser.addArgument("--"+ ARG_START_KEY)
-        .dest(ARG_START_KEY)
-        .type(Integer.class)
-        .required(false)
-        .help("Dataset key to start processing from if all datasets have been requested");
-    subparser.addArgument("--"+ ARG_DOI)
+      .dest(ARG_START_KEY)
+      .type(Integer.class)
+      .required(false)
+      .help("Dataset key to start processing from if all datasets have been requested");
+  subparser.addArgument("--"+ ARG_DOI)
       .dest(ARG_DOI)
       .type(DOI.class)
       .required(false)
@@ -99,11 +99,11 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       .setDefault(false)
       .help("Do not update DOIs, only create new ones or publish existing ones");
     subparser.addArgument("--"+ ARG_PUBLISH_ONLY)
-        .dest(ARG_PUBLISH_ONLY)
-        .type(Boolean.class)
-        .required(false)
-        .setDefault(false)
-        .help("Do only publish existing DOIs which are not yet publish, do not create or update their metadata.");
+      .dest(ARG_PUBLISH_ONLY)
+      .type(Boolean.class)
+      .required(false)
+      .setDefault(false)
+      .help("Do only publish existing DOIs which are not yet publish, do not create or update their metadata.");
     subparser.addArgument("--"+ ARG_VERSIONS)
       .dest(ARG_VERSIONS)
       .type(Integer.class)
