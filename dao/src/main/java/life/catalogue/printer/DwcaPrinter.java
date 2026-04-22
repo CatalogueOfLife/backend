@@ -47,8 +47,8 @@ public abstract class DwcaPrinter extends RowTermPrinter{
     }
 
     @Override
-    public void write(SimpleName sn) {
-      super.write(sn);
+    public void write(SimpleName sn, Integer count) {
+      super.write(sn, count);
     }
   }
   public static class CSV extends DwcaPrinter{
@@ -60,7 +60,7 @@ public abstract class DwcaPrinter extends RowTermPrinter{
   }
 
   @Override
-  void write(SimpleName sn) {
+  void write(SimpleName sn, Integer count) {
     writeSimpleColumns(sn, tw);
   }
 

@@ -40,12 +40,12 @@ public abstract class RowTermPrinter extends AbstractPrinter {
   @Override
   public void print(SimpleName u) {
     try {
-      write(u);
+      write(u, countRank == null ? null : taxonCount);
       tw.next();
     } catch (IOException e) {
       throw new PrinterException(e);
     }
   }
 
-  abstract void write(SimpleName sn) throws IOException;
+  abstract void write(SimpleName sn, Integer count) throws IOException;
 }

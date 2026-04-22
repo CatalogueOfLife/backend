@@ -9,10 +9,13 @@ import life.catalogue.dao.TaxonCounter;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -30,8 +33,19 @@ public abstract class ColdpPrinter extends RowTermPrinter{
     ColdpTerm.authorship
   );
 
+  private static Term countTerm;
+
   private ColdpPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer, TabularFormat tabFormat) throws IOException {
-    super(params, ranks, extinct, countRank, taxonCounter, factory, writer, tabFormat, ColdpTerm.NameUsage, COLUMNS);
+    super(params, ranks, extinct, countRank, taxonCounter, factory, writer, tabFormat, ColdpTerm.NameUsage, columns(countRank));
+  }
+
+  private static List<Term> columns(Rank countRank) {
+    var cols = new ArrayList<>(ColdpPrinter.COLUMNS);
+    if (countRank != null) {
+      countTerm = UnknownTerm.build(countRank.name().toLowerCase() + "Count", false);
+      cols.add(countTerm);
+    }
+    return List.copyOf(cols);
   }
 
   public static class TSV extends ColdpPrinter{
@@ -46,8 +60,11 @@ public abstract class ColdpPrinter extends RowTermPrinter{
   }
 
   @Override
-  void write(SimpleName sn) {
+  void write(SimpleName sn, Integer count) {
     writeSimpleColumns(sn, tw);
+    if (countTerm != null) {
+      tw.set(countTerm, count);
+    }
   }
 
   static void writeSimpleColumns(SimpleName sn, TermWriter tw) {

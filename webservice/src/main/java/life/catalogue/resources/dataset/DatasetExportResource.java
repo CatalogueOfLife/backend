@@ -175,8 +175,7 @@ public class DatasetExportResource {
   @VaryAccept
   @Produces(MoreMediaTypes.TEXT_TSV)
   public Response exportTsv(@PathParam("key") int key,
-                                    @BeanParam ExportQueryParams params,
-                                    @Context SqlSession session) {
+                            @BeanParam ExportQueryParams params) {
     return printerExport(ColdpPrinter.TSV.class, key, params, p->{});
   }
 
@@ -185,8 +184,7 @@ public class DatasetExportResource {
   @VaryAccept
   @Produces({MoreMediaTypes.TEXT_CSV})
   public Response exportCsv(@PathParam("key") int key,
-                                    @BeanParam ExportQueryParams params,
-                                    @Context SqlSession session) {
+                            @BeanParam ExportQueryParams params) {
     return printerExport(ColdpPrinter.CSV.class, key, params, p->{});
   }
 
