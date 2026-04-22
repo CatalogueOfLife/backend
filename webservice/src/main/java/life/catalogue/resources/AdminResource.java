@@ -157,6 +157,11 @@ public class AdminResource {
     return matcherFactory.prepare(key, user.getKey());
   }
 
+  @POST
+  @Path("/matcher/reload")
+  public int reloadMatcher() {
+    return matcherFactory.reload();
+  }
 
   @GET
   @PermitAll

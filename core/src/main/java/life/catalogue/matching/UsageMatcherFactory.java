@@ -94,15 +94,29 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     this.dir = cfg.storageDir;
     this.cfg = cfg;
     // validate files on disk
+    loadFromFS();
+  }
+
+  /**
+   * Checks if all datasets referenced in the storage dir exist and deletes the storage dir if not.
+   * It also removes all matchers for those datasets.
+   */
+  private void loadFromFS() {
+    LOG.info("Load existing file based matchers from {}", dir);
     for (var key : listFS()) {
       try {
         DatasetInfoCache.CACHE.info(key);
+        var m = persistent(key);
+        LOG.info("Loaded matcher with {} usages for dataset {}", m.store().size(), key);
       } catch (NotFoundException e) {
         File f = cfg.dir(key);
         LOG.warn("Dataset {} not existing, delete matching storage folder {}", key, f);
         FileUtils.deleteQuietly(f);
+      } catch (IOException e) {
+        LOG.warn("Matcher for dataset {} cannot be loaded. Delete storage files", key);
       }
     }
+    LOG.info("Loaded {} matchers from {}", matchers.size(), dir);
   }
 
   public NameIndex getNameIndex() {
@@ -218,7 +232,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return new UsageMatcher(datasetKey, nameIndex, store, false);
   }
 
-  public UsageMatcher persistent(int datasetKey) throws IOException {
+  public synchronized UsageMatcher persistent(int datasetKey) throws IOException {
     if (!matchers.containsKey(datasetKey)) {
       UsageMatcher m = buildPersistentMatcher(datasetKey);
       matchers.put(datasetKey, m);
@@ -234,7 +248,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     try {
       try (SqlSession s = factory.openSession()) {
         var um = s.getMapper(NameUsageMapper.class);
-        int count = 1000 + um.count(datasetKey);
+        int count = 10 + um.count(datasetKey);
         var samples = um.listSN(datasetKey, new Page(0,5));
         return buildPersistentMatcher(datasetKey, samples, count, cfg, nameIndex);
       }
@@ -377,6 +391,12 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return new FactoryMetadata(matchers);
   }
 
+  public int reload() {
+    close();
+    loadFromFS();
+    return matchers.size();
+  }
+
   private List<Integer> listFS() {
     List<Integer> keys = new ArrayList<>();
     if (dir != null && dir.isDirectory()) {
@@ -395,7 +415,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     for (UsageMatcher m : matchers.values()) {
       try {
         m.store().close();
