@@ -79,6 +79,12 @@ public class ExportCmd extends AbstractMybatisCmd {
       .setDefault(false)
       .required(false)
       .help("flag to force a new export even if it exists already");
+    subparser.addArgument("--"+ARG_EXTENDED)
+        .dest(ARG_EXTENDED)
+        .type(Boolean.class)
+        .setDefault(false)
+        .required(false)
+        .help("flag to use extended exports unless it is a text tree export");
     subparser.addArgument("--"+ARG_FORMAT)
       .dest(ARG_FORMAT)
       .type(DataFormat.class)
