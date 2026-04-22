@@ -1,5 +1,14 @@
 package life.catalogue.resources;
 
+import com.google.common.base.Preconditions;
+import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.model.DOI;
@@ -35,8 +44,10 @@ import life.catalogue.jobs.*;
 import life.catalogue.matching.GlobalMatcherJob;
 import life.catalogue.matching.RematchArchiveJob;
 import life.catalogue.matching.RematchJob;
-import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.List;
@@ -45,21 +56,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
-
-import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.annotations.Hidden;
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 
 import static life.catalogue.common.ws.MoreMediaTypes.TEXT_CSV;
 import static life.catalogue.common.ws.MoreMediaTypes.TEXT_TSV;
@@ -88,11 +84,10 @@ public class AdminResource {
   private final ManagedService componedService;
   private final EventBroker bus;
   private final EmailEncryption encryption;
-  private final UsageMatcherFactory matcherFactory;
   private final DoiChangeListener doiListener;
 
   public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader,
-                       WsServerConfig cfg, ImageService imgService, NameIndex ni, UsageMatcherFactory matcherFactory,
+                       WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
                        JobExecutor executor, EventBroker bus, EmailEncryption encryption, DoiChangeListener doiListener) {
@@ -100,7 +95,6 @@ public class AdminResource {
     this.doiListener = doiListener;
     this.encryption = encryption;
     this.bus = bus;
-    this.matcherFactory = matcherFactory;
     this.componedService = managedService;
     this.ddao = ddao;
     this.assembly = assembly;
@@ -130,37 +124,6 @@ public class AdminResource {
     }
     LOG.info("Set maintenance mode={}", maintenance);
     return maintenance;
-  }
-
-  @GET
-  @PermitAll
-  @Path("/matcher")
-  public UsageMatcherFactory.FactoryMetadata listMatcher(@QueryParam("decorate") boolean decorate) {
-    return matcherFactory.metadata(decorate);
-  }
-
-  @GET
-  @Path("/matcher/{key}")
-  public UsageMatcherFactory.MatcherMetadata matcherMetadata(@PathParam("key") int key) {
-    return matcherFactory.metadata(key);
-  }
-
-  @DELETE
-  @Path("/matcher/{key}")
-  public void removeMatcher(@PathParam("key") int key) throws IOException {
-    matcherFactory.remove(key);
-  }
-
-  @POST
-  @Path("/matcher/{key}")
-  public BackgroundJob buildMatcher(@PathParam("key") int key, @Auth User user) throws IOException {
-    return matcherFactory.prepare(key, user.getKey());
-  }
-
-  @POST
-  @Path("/matcher/reload")
-  public int reloadMatcher() {
-    return matcherFactory.reload();
   }
 
   @GET
