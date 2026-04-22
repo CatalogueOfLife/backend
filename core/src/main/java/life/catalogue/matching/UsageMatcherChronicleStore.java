@@ -50,11 +50,17 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
       .valueMarshaller(MARSHALLER)
       .createPersistedTo(keysF);
 
-    var byCanonNidx = ChronicleMapBuilder.of(Integer.class, String[].class)
-      .name("canonical")
-      .entries(count)
-      .averageValue(samples.stream().map(SimpleNameCached::getId).toArray(String[]::new))
-      .createPersistedTo(canonicalF);
+    ChronicleMap<Integer, String[]> byCanonNidx;
+    try {
+      byCanonNidx = ChronicleMapBuilder.of(Integer.class, String[].class)
+        .name("canonical")
+        .entries(count)
+        .averageValue(samples.stream().map(SimpleNameCached::getId).toArray(String[]::new))
+        .createPersistedTo(canonicalF);
+    } catch (IOException e) {
+      usages.close();
+      throw e;
+    }
 
     return new UsageMatcherChronicleStore(datasetKey, usages, byCanonNidx);
   }

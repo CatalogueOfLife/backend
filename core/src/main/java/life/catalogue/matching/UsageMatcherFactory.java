@@ -117,7 +117,9 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
         LOG.warn("Dataset {} not existing, delete matching storage folder {}", key, f);
         FileUtils.deleteQuietly(f);
       } catch (IOException e) {
-        LOG.warn("Matcher for dataset {} cannot be loaded. Delete storage files", key);
+        File f = cfg.dir(key);
+        LOG.warn("Matcher for dataset {} cannot be loaded. Delete storage files {}", key, f);
+        FileUtils.deleteQuietly(f);
       }
     }
     LOG.info("Loaded {} matchers from {}", matchers.size(), dir);

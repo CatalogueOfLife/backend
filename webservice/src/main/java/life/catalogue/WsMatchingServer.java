@@ -125,7 +125,6 @@ public class WsMatchingServer extends Application<WsMatchingServerConfig> {
     UsageMatcher matcher = UsageMatcherFactory.buildPersistentMatcher(
       cfg.matchingDatasetKey, List.of(), dataset.getSize()+1, cfg.matching, nidx
     );
-
     j.register(new NameParserResource());
     j.register(new FixedNameUsageMatchingResource(cfg.matching, dataset, matcher));
     j.register(new VersionResource(cfg.versionString(), LocalDateTime.now()));
