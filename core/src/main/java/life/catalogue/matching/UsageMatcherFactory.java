@@ -293,7 +293,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       var m = matchers.remove(datasetKey);
       if (m != null) {
         try {
-          m.close();
+          m.store().close();
         } catch (Exception e) {
           LOG.error("Failed to close matcher for dataset {}", datasetKey, e);
         }
@@ -398,7 +398,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   public void close() throws Exception {
     for (UsageMatcher m : matchers.values()) {
       try {
-        m.close();
+        m.store().close();
       } catch (Exception e) {
         LOG.error("Failed to close matcher for dataset {}", m.datasetKey, e);
       }
