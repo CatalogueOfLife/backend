@@ -1,11 +1,7 @@
 package life.catalogue.command;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import life.catalogue.WsMatchingServerConfig;
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -20,12 +16,9 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.coldp.DatasetJsonWriter;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.api.ws.mixin.DatasetMixin;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,15 +31,15 @@ import io.dropwizard.jackson.Jackson;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
-public class MatcherIndexCmd extends ConfiguredCommand<WsMatchingServerConfig> {
-  private static final Logger LOG = LoggerFactory.getLogger(MatcherIndexCmd.class);
+public class MatchingServerBuildCmd extends ConfiguredCommand<WsMatchingServerConfig> {
+  private static final Logger LOG = LoggerFactory.getLogger(MatchingServerBuildCmd.class);
   private static final String ARG_KEY = "key";
   private static final String ARG_DIR = "dir";
   private static final String ARG_DELETE = "delete";
   private File buildDir;
 
-  public MatcherIndexCmd() {
-    super("matcher", "Rebuilt new matching and names index for a given dataset to support a WsMatchingServer");
+  public MatchingServerBuildCmd() {
+    super("matchingServerBuild", "Rebuilt new matching and names index for a given dataset to support a WsMatchingServer");
   }
 
   @Override

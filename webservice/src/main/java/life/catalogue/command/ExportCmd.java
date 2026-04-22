@@ -38,7 +38,6 @@ import net.sourceforge.argparse4j.inf.Subparser;
  */
 public class ExportCmd extends AbstractMybatisCmd {
   private static final String ARG_KEY = "key";
-  private static final String ARG_PRIVATE = "private";
   private static final String ARG_FORCE = "force";
   private static final String ARG_FORMAT = "format";
 
@@ -72,12 +71,6 @@ public class ExportCmd extends AbstractMybatisCmd {
         .type(Integer.class)
         .required(true)
         .help("dataset key of the release or project to export");
-    subparser.addArgument("--"+ARG_PRIVATE)
-      .dest(ARG_PRIVATE)
-      .type(Boolean.class)
-      .setDefault(false)
-      .required(false)
-      .help("flag to also include private releases for exported projects");
     subparser.addArgument("--"+ARG_FORCE)
       .dest(ARG_FORCE)
       .type(Boolean.class)
@@ -126,7 +119,7 @@ public class ExportCmd extends AbstractMybatisCmd {
 
     Dataset d;
     List<Dataset> datasets;
-    Integer latestReleaseKey = null;
+    Set<Integer> latestReleaseKeyS = new HashSet<>();
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       d = dm.get(ns.getInt(ARG_KEY));
@@ -135,11 +128,12 @@ public class ExportCmd extends AbstractMybatisCmd {
       }
 
       if (d.getOrigin() == DatasetOrigin.PROJECT) {
-        latestReleaseKey = dm.latestRelease(d.getKey(), true, DatasetOrigin.RELEASE);
-        boolean inclPrivate = ns.getBoolean(ARG_PRIVATE);
+        for (var rt : List.of(DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE)) {
+          latestReleaseKeyS.add(dm.latestRelease(d.getKey(), true, rt));
+        }
         DatasetSearchRequest req = new DatasetSearchRequest();
         req.setReleasedFrom(d.getKey());
-        req.setPrivat(inclPrivate);
+        req.setPrivat(false);
         datasets = dm.search(req, userKey, new Page(0, 1000));
 
         System.out.printf("Exporting %s releases of project %s\n", datasets.size(), d.getKey());
@@ -168,7 +162,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       for (Dataset de : datasets) {
         for (var exp : exportsByDatasetKey.get(de.getKey())) {
           File source = cfg.job.downloadFile(exp.key);
-          ColReleaseExportJob.copyToCol(de, cfg.release.colDownloadDir, exp.format, exp.key, source, Objects.equals(latestReleaseKey, de.getKey()));
+          ColReleaseExportJob.copyToCol(de, cfg.release.colDownloadDir, exp.format, exp.key, source, latestReleaseKeyS.contains(de.getKey()));
         }
       }
     }

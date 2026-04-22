@@ -2,42 +2,31 @@ package life.catalogue;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.command.MatcherIndexCmd;
+import life.catalogue.command.MatchingServerBuildCmd;
 import life.catalogue.common.Managed;
 import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.db.EmptySqlSessionFactory;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.health.NameParserHealthCheck;
 import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
 import life.catalogue.dw.jersey.filter.CreatedResponseFilter;
 import life.catalogue.dw.jersey.provider.EnumParamConverterProvider;
-import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
 import life.catalogue.dw.jersey.writers.TsvBodyWriter;
-import life.catalogue.dw.mail.MailBundle;
-import life.catalogue.dw.managed.Component;
-import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
-import life.catalogue.metadata.eml.EmlParser;
 import life.catalogue.parser.NameParser;
-import life.catalogue.resources.JobResource;
 import life.catalogue.resources.VersionResource;
 import life.catalogue.resources.matching.FixedNameUsageMatchingResource;
 import life.catalogue.resources.parser.NameParserResource;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.dwc.terms.TermFactory;
 
@@ -89,7 +78,7 @@ public class WsMatchingServer extends Application<WsMatchingServerConfig> {
     bootstrap.setObjectMapper(om);
     ApiModule.MAPPER.addMixIn(Dataset.class, DatasetSizeMixin.class);
     // commands
-    bootstrap.addCommand(new MatcherIndexCmd());
+    bootstrap.addCommand(new MatchingServerBuildCmd());
   }
 
   private abstract class DatasetSizeMixin {
