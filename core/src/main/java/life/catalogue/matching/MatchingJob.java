@@ -56,7 +56,8 @@ public class MatchingJob extends AbstractMatchingJob {
   }
 
   @Override
-  public final void runWithLock() throws Exception {
+  public final void execute() throws Exception {
+    super.execute();
     File resultFile = cfg.randomUploadFile(".zip");
     try (TempFile tmp = TempFile.created(resultFile)) {
       LOG.info("Write matches for job {} to temp file {}", getKey(), tmp.file.getAbsolutePath());

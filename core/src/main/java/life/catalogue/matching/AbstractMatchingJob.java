@@ -7,10 +7,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.*;
-import life.catalogue.concurrent.BackgroundJob;
-import life.catalogue.concurrent.DatasetBlockingJob;
-import life.catalogue.concurrent.JobPriority;
-import life.catalogue.concurrent.UsageCounter;
+import life.catalogue.concurrent.*;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.dao.TreeStreams;
@@ -58,7 +55,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
  * Matching job for users that does not have the power to insert names into the names index.
  * Rematching of datasets is done by the DatasetMatcher instead.
  */
-public abstract class AbstractMatchingJob extends DatasetBlockingJob {
+public abstract class AbstractMatchingJob extends DatasetJob {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractMatchingJob.class);
   private static final String CUSTOM_COL_PREFIX = "original_";
   private static final CsvWriterSettings CSV = new CsvWriterSettings();

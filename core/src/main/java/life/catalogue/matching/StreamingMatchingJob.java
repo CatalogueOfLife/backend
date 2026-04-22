@@ -42,7 +42,8 @@ public class StreamingMatchingJob extends AbstractMatchingJob {
   }
 
   @Override
-  public void runWithLock() throws Exception {
+  public void execute() throws Exception {
+    super.execute();
     matchToOut(out);
   }
 

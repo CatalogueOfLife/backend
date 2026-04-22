@@ -17,29 +17,18 @@ import org.slf4j.LoggerFactory;
 /**
  * Marks a Runnable that requires a dataset lock to run.
  */
-public abstract class DatasetBlockingJob extends BackgroundJob {
+public abstract class DatasetBlockingJob extends DatasetJob {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetBlockingJob.class);
 
-  protected final int datasetKey;
-  protected Dataset dataset;
   private int retry = 0;
   private boolean skipLock;
 
   public DatasetBlockingJob(int datasetKey, int userKey, @Nullable JobPriority priority) {
-    super(priority, userKey);
-    this.datasetKey = datasetKey;
+    super(datasetKey, userKey, priority);
   }
 
   public void skipLock() {
     this.skipLock = true;
-  }
-
-  public int getDatasetKey() {
-    return datasetKey;
-  }
-
-  public Dataset getDataset() {
-    return dataset;
   }
 
   public int getRetry() {
@@ -47,19 +36,6 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   }
 
   protected abstract void runWithLock() throws Exception;
-
-  /**
-   * Loads the dataset and throws an IAE if it does not exist, is deleted or does not contain and data yet.
-   */
-  protected static Dataset loadDataset(SqlSessionFactory factory, int datasetKey){
-    try (SqlSession session = factory.openSession(false)) {
-      Dataset dataset = session.getMapper(DatasetMapper.class).get(datasetKey);
-      if (dataset == null || dataset.getDeleted() != null) {
-        throw new NotFoundException("Dataset " + datasetKey + " does not exist");
-      }
-      return dataset;
-    }
-  }
 
   @Override
   public final void execute() throws Exception {
@@ -106,21 +82,10 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
     }
   }
 
-  @Override
-  protected void onLogAppenderClose() {
-    super.onLogAppenderClose();
-    LoggingUtils.removeDatasetMDC();
-  }
-
   /**
    * Override the onFinish method which is made final to make sure to unlock the dataset.
    * @throws Exception
    */
   protected void onFinishLocked() throws Exception {
-  }
-
-  @Override
-  public String toString() {
-    return getClass().getSimpleName() + " #" + datasetKey + " " + getKey() + ": " + getStatus();
   }
 }

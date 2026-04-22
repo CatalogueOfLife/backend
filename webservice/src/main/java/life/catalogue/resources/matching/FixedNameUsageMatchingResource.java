@@ -50,7 +50,7 @@ public class FixedNameUsageMatchingResource extends AbstractNameUsageMatchingRes
     StreamingOutput stream = os -> {
       var job = new StreamingMatchingJob(req, user.getKey(), dataset, matcher, cfg, os);
       try {
-        job.runWithLock();
+        job.execute();
       } catch (Exception e) {
         throw new MappableException(e); // jersey unwraps this before applying exception mappings
       }
