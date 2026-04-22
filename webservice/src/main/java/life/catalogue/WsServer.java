@@ -503,7 +503,7 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.apiURI != null) {
       broker.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    broker.register(new PublishReleaseListener(cfg.release, cfg, getSqlSessionFactory(), httpClient, executor, broker));
+    broker.register(new PublishReleaseListener(cfg.release, cfg, getSqlSessionFactory(), httpClient, executor, broker, matcherFactory));
     broker.register(new PublisherChangeListener(getSqlSessionFactory()));
     broker.register(doiChangeListener);
     broker.register(exportManager);

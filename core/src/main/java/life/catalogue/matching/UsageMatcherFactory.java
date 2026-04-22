@@ -4,6 +4,7 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleNameCached;
@@ -18,6 +19,8 @@ import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.metadata.coldp.ColdpMetadataParser;
+import life.catalogue.metadata.coldp.DatasetJsonWriter;
 
 import org.apache.commons.io.filefilter.FileFileFilter;
 
@@ -25,6 +28,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -185,6 +189,15 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       try {
         runningBuilds.put(matcher.datasetKey, LocalDateTime.now());
         matcher.store().load(factory);
+        try (var s = factory.openSession()) {
+          Dataset d = s.getMapper(DatasetMapper.class).get(matcher.datasetKey);
+          if (d != null) {
+            DatasetJsonWriter.write(d, UsageMatcherFactory.this.cfg.datasetJson(matcher.datasetKey));
+            LOG.info("Wrote dataset sidecar for matcher {} with attempt {}", matcher.datasetKey, d.getAttempt());
+          }
+        } catch (Exception e) {
+          LOG.warn("Failed to write sidecar for matcher {}", matcher.datasetKey, e);
+        }
       } finally {
         matcher.close();
         var start = runningBuilds.remove(matcher.datasetKey);
@@ -283,6 +296,23 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return new UsageMatcher(datasetKey, nameIndex, store, false);
   }
 
+  // package-private for testing
+  boolean matcherExists(int datasetKey) {
+    return matchers.containsKey(datasetKey) || (cfg.storageDir != null && cfg.dir(datasetKey).exists());
+  }
+
+  private Integer readStoredAttempt(int datasetKey) {
+    var sidecar = cfg.datasetJson(datasetKey);
+    if (!sidecar.exists()) return null;
+    try {
+      var opt = ColdpMetadataParser.readJSON(new FileInputStream(sidecar));
+      return opt.map(dws -> dws.getDataset().getAttempt()).orElse(null);
+    } catch (Exception e) {
+      LOG.warn("Could not read sidecar for dataset {}", datasetKey, e);
+      return null;
+    }
+  }
+
   @Override
   public void datasetChanged(DatasetChanged d) {
     if (d.isDeletion()) {
@@ -292,10 +322,15 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
   @Override
   public void datasetDataChanged(DatasetDataChanged event) {
+    var info = DatasetInfoCache.CACHE.info(event.datasetKey);
+    if (info.origin == DatasetOrigin.PROJECT || info.origin.isRelease()) {
+      return;
+    }
+    if (!matcherExists(event.datasetKey)) {
+      return;
+    }
     try {
-      // remove any persistent matcher for the dataset that changed
       remove(event.datasetKey);
-      // recreate
       prepare(event.datasetKey, event.user);
     } catch (Exception e) {
       LOG.error("Failed to recreate persistent matcher for dataset {}", event.datasetKey, e);
@@ -315,8 +350,8 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       }
     }
     if (dir != null) {
-      var file = cfg.dir(datasetKey);
-      FileUtils.deleteQuietly(file);
+      FileUtils.deleteQuietly(cfg.dir(datasetKey));
+      FileUtils.deleteQuietly(cfg.datasetJson(datasetKey));
     }
   }
 
@@ -329,6 +364,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       this.instances = matchers.stream().filter(m -> m.online).count();
     }
   }
+
   public static class MatcherMetadata implements Comparable<MatcherMetadata> {
     @Override
     public int compareTo(@NotNull MatcherMetadata o) {
@@ -338,25 +374,27 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     public final int datasetKey;
     public final boolean online;
     public final Integer size;
+    public final Integer attempt; // from sidecar JSON, null if absent
     public DatasetSimple dataset;
 
-    public MatcherMetadata(int datasetKey, boolean online, Integer size) {
+    public MatcherMetadata(int datasetKey, boolean online, Integer size, Integer attempt) {
       this.datasetKey = datasetKey;
       this.online = online;
       this.size = size;
+      this.attempt = attempt;
     }
   }
 
   public MatcherMetadata metadata(int datasetKey) {
     if (matchers.containsKey(datasetKey)) {
       var m = matchers.get(datasetKey);
-      return new MatcherMetadata(datasetKey, true, m.store().size());
+      return new MatcherMetadata(datasetKey, true, m.store().size(), readStoredAttempt(datasetKey));
     }
     var f = cfg.dir(datasetKey);
     if (f.isDirectory()) {
       try {
         var m = persistent(datasetKey);
-        return new MatcherMetadata(datasetKey, true, m.store().size());
+        return new MatcherMetadata(datasetKey, true, m.store().size(), readStoredAttempt(datasetKey));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -368,13 +406,13 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     List<MatcherMetadata> matchers = new ArrayList<>();
     IntSet keys = new IntOpenHashSet();
     for (var e : this.matchers.int2ObjectEntrySet()) {
-      matchers.add(new MatcherMetadata(e.getIntKey(), true, e.getValue().store().size()));
+      matchers.add(new MatcherMetadata(e.getIntKey(), true, e.getValue().store().size(), readStoredAttempt(e.getIntKey())));
       keys.add(e.getIntKey());
     }
     // look for more on disk
     for (var key : listFS()) {
       if (!keys.contains(key)) {
-        matchers.add(new MatcherMetadata(key, false, null));
+        matchers.add(new MatcherMetadata(key, false, null, readStoredAttempt(key)));
         keys.add(key);
       }
     }
@@ -396,6 +434,39 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     close();
     loadFromFS();
     return matchers.size();
+  }
+
+  /**
+   * Removes matchers whose stored Dataset attempt (from the sidecar JSON) no longer matches
+   * the current attempt in the database. Does not trigger rebuilds — callers get a fresh
+   * matcher lazily on next use.
+   *
+   * @return number of stale matchers removed
+   */
+  public int cleanup() {
+    int removed = 0;
+    try (SqlSession session = factory.openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      for (int key : listFS()) {
+        var sidecar = cfg.datasetJson(key);
+        if (!sidecar.exists()) continue;
+        try {
+          var opt = ColdpMetadataParser.readJSON(new FileInputStream(sidecar));
+          if (opt.isEmpty()) continue;
+          Integer stored = opt.get().getDataset().getAttempt();
+          Dataset current = dm.get(key);
+          if (stored != null && current != null && !stored.equals(current.getAttempt())) {
+            LOG.info("Removing stale matcher for dataset {}: stored attempt {} != current {}",
+              key, stored, current.getAttempt());
+            remove(key);
+            removed++;
+          }
+        } catch (Exception e) {
+          LOG.warn("Could not validate sidecar for dataset {}, skipping", key, e);
+        }
+      }
+    }
+    return removed;
   }
 
   private List<Integer> listFS() {

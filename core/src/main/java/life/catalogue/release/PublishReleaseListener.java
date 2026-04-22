@@ -12,6 +12,7 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.NameUsageArchiver;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.matching.UsageMatcherFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,8 +51,11 @@ public class PublishReleaseListener implements DatasetListener {
   private final CloseableHttpClient httpClient;
   private final EventBroker bus;
   private final JobExecutor executor;
+  private final UsageMatcherFactory matcherFactory;
 
-  public PublishReleaseListener(ReleaseConfig rCfg, ExporterConfig eCfg, SqlSessionFactory factory, CloseableHttpClient httpClient, JobExecutor executor, EventBroker bus) {
+  public PublishReleaseListener(ReleaseConfig rCfg, ExporterConfig eCfg, SqlSessionFactory factory,
+                                 CloseableHttpClient httpClient, JobExecutor executor, EventBroker bus,
+                                 UsageMatcherFactory matcherFactory) {
     this.rCfg = rCfg;
     this.eCfg = eCfg;
     this.factory = factory;
@@ -59,6 +63,7 @@ public class PublishReleaseListener implements DatasetListener {
     this.httpClient = httpClient;
     this.archiver = new NameUsageArchiver(factory);
     this.bus = bus;
+    this.matcherFactory = matcherFactory;
   }
 
   private void publishCOL(DatasetChanged event){
@@ -95,6 +100,13 @@ public class PublishReleaseListener implements DatasetListener {
           bus.publish(DoiChange.update(prevRel.getDoi()));
         }
       }
+    }
+
+    // build a persistent matcher for this COL release while publishing
+    try {
+      matcherFactory.prepare(event.obj.getKey(), event.user);
+    } catch (Exception e) {
+      LOG.error("Failed to prepare matcher for COL release {}", event.obj.getKey(), e);
     }
   }
 
