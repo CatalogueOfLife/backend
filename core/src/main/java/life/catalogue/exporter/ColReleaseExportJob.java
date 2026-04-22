@@ -42,9 +42,7 @@ public class ColReleaseExportJob extends DatasetBlockingJob {
       throw new IllegalArgumentException("Only COL releases are supported, not dataset " + datasetKey);
     }
 
-    ExportRequest req = new ExportRequest();
-    req.setDatasetKey(datasetKey);
-    req.setFormat(format);
+    ExportRequest req = new ExportRequest(datasetKey, format);
     req.setExcel(false);
     req.setExtended(format != DataFormat.TEXT_TREE);
 

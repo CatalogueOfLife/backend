@@ -39,6 +39,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
 public class ExportCmd extends AbstractMybatisCmd {
   private static final String ARG_KEY = "key";
   private static final String ARG_FORCE = "force";
+  private static final String ARG_EXTENDED = "extended";
   private static final String ARG_FORMAT = "format";
 
   private JobExecutor exec;
@@ -47,6 +48,7 @@ public class ExportCmd extends AbstractMybatisCmd {
   private Set<DataFormat> formats;
   private final Map<Integer, List<ExpFormat>> exportsByDatasetKey = new HashMap<>();
   private boolean force;
+  private boolean extended;
 
   static class ExpFormat {
     final UUID key;
@@ -98,6 +100,11 @@ public class ExportCmd extends AbstractMybatisCmd {
     force = ns.getBoolean(ARG_FORCE);
     if (force) {
       System.out.printf("Enforce new exports\n");
+    }
+
+    extended = ns.getBoolean(ARG_EXTENDED);
+    if (extended) {
+      System.out.printf("Use extended exports\n");
     }
 
     EventBroker bus = new EventBroker(cfg.broker);
@@ -173,7 +180,9 @@ public class ExportCmd extends AbstractMybatisCmd {
 
     for (DataFormat df : formats) {
       ExportRequest req = new ExportRequest(d.getKey(), df);
+      req.setExcel(false);
       req.setForce(force);
+      req.setExtended(extended && df != DataFormat.TEXT_TREE);
       UUID key = manager.submit(req, userKey);
       exportsByDatasetKey.putIfAbsent(d.getKey(), new ArrayList<>());
       exportsByDatasetKey.get(d.getKey()).add(new ExpFormat(key, df));

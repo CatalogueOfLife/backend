@@ -147,6 +147,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
    * Loading matchers can take a while so this method prepares them async
    * @param datasetKey
    * @return true if a matcher is being prepared, false if it already existed.
+   * @throws IllegalArgumentException if the datasetKey is a project
    */
   public BackgroundJob prepare(int datasetKey, int userKey) throws IOException {
     if (matchers.containsKey(datasetKey) && !matchers.get(datasetKey).store().isEmpty()) {
