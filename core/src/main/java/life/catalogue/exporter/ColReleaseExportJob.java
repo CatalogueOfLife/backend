@@ -36,6 +36,7 @@ public class ColReleaseExportJob extends DatasetBlockingJob {
     this.format = format;
     this.latest = latest;
     this.rCfg = rcfg;
+    this.dataset = loadDataset(factory, datasetKey);
 
     if (!dataset.getOrigin().isRelease() || dataset.getSourceKey() != Datasets.COL) {
       throw new IllegalArgumentException("Only COL releases are supported, not dataset " + datasetKey);
