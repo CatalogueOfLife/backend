@@ -3,7 +3,6 @@ package life.catalogue.release;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.event.DoiChange;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
@@ -86,12 +85,16 @@ public class PublishReleaseListener implements DatasetListener {
       }
     }
 
-    // update DOI URL for last release
+    // update DOI URL for the previously-latest release so it no longer resolves as "latest"
     try (SqlSession session = factory.openSession(true)) {
-      var prevRelKey = session.getMapper(DatasetMapper.class).previousRelease(event.obj.getKey());
-      var prev = new Dataset();
-      prev.setKey(prevRelKey);
-      bus.publish(DoiChange.update(prev.getDoi())); // the DOI is built only from the key
+      var dm = session.getMapper(DatasetMapper.class);
+      var prevRelKey = dm.previousRelease(event.obj.getKey());
+      if (prevRelKey != null) {
+        var prevRel = dm.get(prevRelKey);
+        if (prevRel != null && prevRel.getDoi() != null) {
+          bus.publish(DoiChange.update(prevRel.getDoi()));
+        }
+      }
     }
   }
 
