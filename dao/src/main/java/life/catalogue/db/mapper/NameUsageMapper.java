@@ -507,7 +507,19 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param minLength minimum length of the usage identifier. Usages with shorter ids will be excluded.
    * @return
    */
-  Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms, @Param("minLength") Integer minLength);
+  Cursor<String> processIds(@Param("datasetKey") int datasetKey,
+                            @Param("synonyms") boolean includeSynonyms,
+                            @Param("minLength") Integer minLength);
+
+  List<String> pageIds(@Param("datasetKey") int datasetKey,
+                       @Param("synonyms") boolean includeSynonyms,
+                       @Param("minLength") Integer minLength,
+                       @Param("page") Page page
+  );
+  int countIds(@Param("datasetKey") int datasetKey,
+               @Param("synonyms") boolean includeSynonyms,
+               @Param("minLength") Integer minLength
+  );
 
   /**
    * Checks whether any parents (of both synonyms or accepted) exist that are synonyms.

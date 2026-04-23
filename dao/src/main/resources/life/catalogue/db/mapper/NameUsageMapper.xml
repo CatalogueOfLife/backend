@@ -966,6 +966,27 @@
     </if>
   </select>
 
+  <select id="pageIds" parameterType="map" resultType="string">
+    SELECT id FROM name_usage WHERE dataset_key=#{datasetKey}
+    <if test="!synonyms">
+      AND NOT is_synonym(status)
+    </if>
+    <if test="minLength != null">
+      AND length(id) >= #{minLength}
+    </if>
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="countIds" parameterType="map" resultType="integer">
+    SELECT count(*) FROM name_usage WHERE dataset_key=#{datasetKey}
+    <if test="!synonyms">
+      AND NOT is_synonym(status)
+    </if>
+    <if test="minLength != null">
+      AND length(id) >= #{minLength}
+    </if>
+  </select>
+
   <delete id="delete" parameterType="map">
     DELETE FROM name_usage
     WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}

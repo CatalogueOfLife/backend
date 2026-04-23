@@ -76,6 +76,23 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void pageIds() throws Exception {
+    assertEquals(4, mapper().pageIds(testDataRule.testData.key, true, null, new Page()).size());
+    assertEquals(4, mapper().pageIds(testDataRule.testData.key, true, null, new Page(0,5)).size());
+    assertEquals(2, mapper().pageIds(testDataRule.testData.key, false, null, new Page(0,10)).size());
+    assertEquals(2, mapper().pageIds(testDataRule.testData.key, true, null, new Page(0,2)).size());
+    assertEquals(0, mapper().pageIds(testDataRule.testData.key, true, null, new Page(10, 10)).size());
+    assertEquals(0, mapper().pageIds(testDataRule.testData.key, true, 100, new Page()).size());
+  }
+
+  @Test
+  public void countIds() throws Exception {
+    assertEquals(4, mapper().countIds(testDataRule.testData.key, true, null));
+    assertEquals(2, mapper().countIds(testDataRule.testData.key, false, null));
+    assertEquals(0, mapper().countIds(testDataRule.testData.key, true, 100));
+  }
+
+  @Test
   public void processTreeConsolidationName() throws Exception {
     assertSize(mapper().processTreeConsolidationName(DSID.of(testDataRule.testData.key, "swedrftgzhuj")), 0);
     assertSize(mapper().processTreeConsolidationName(DSID.of(testDataRule.testData.key, "root-1")), 1);
