@@ -971,8 +971,8 @@
     <if test="!synonyms">
       AND NOT is_synonym(status)
     </if>
-    <if test="minLength != null">
-      AND length(id) >= #{minLength}
+    <if test="maxLength != null">
+      AND length(id) &lt;= #{maxLength}
     </if>
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -982,8 +982,8 @@
     <if test="!synonyms">
       AND NOT is_synonym(status)
     </if>
-    <if test="minLength != null">
-      AND length(id) >= #{minLength}
+    <if test="maxLength != null">
+      AND length(id) &lt;= #{maxLength}
     </if>
   </select>
 

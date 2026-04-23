@@ -511,14 +511,22 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                             @Param("synonyms") boolean includeSynonyms,
                             @Param("minLength") Integer minLength);
 
+  /**
+   * Lists all usage ids for a given dataset, optionally filtered by a minimum, inclusive string length.
+   * @param datasetKey
+   * @param includeSynonyms
+   * @param maxLength
+   * @param page
+   * @return
+   */
   List<String> pageIds(@Param("datasetKey") int datasetKey,
                        @Param("synonyms") boolean includeSynonyms,
-                       @Param("minLength") Integer minLength,
+                       @Param("maxLength") Integer maxLength,
                        @Param("page") Page page
   );
   int countIds(@Param("datasetKey") int datasetKey,
                @Param("synonyms") boolean includeSynonyms,
-               @Param("minLength") Integer minLength
+               @Param("maxLength") Integer maxLength
   );
 
   /**
