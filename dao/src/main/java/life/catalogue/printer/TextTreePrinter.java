@@ -186,12 +186,12 @@ public class TextTreePrinter extends AbstractTreePrinter {
           if (t.getTemporalRangeStart() != null || t.getTemporalRangeEnd() != null) {
             addInfos(TxtTreeTerm.CHRONO, str(t.getTemporalRangeStart()) + "-" + str(t.getTemporalRangeEnd()), infos.props);
           }
+          addInfos(TxtTreeTerm.VERN, VernacularNameMapper.class, this::encode, infos.props);
+          addInfos(TxtTreeTerm.DIST, DistributionMapper.class, this::encode, infos.props);
         }
         addInfos(TxtTreeTerm.LINK, nu.getLink(), infos.props);
         infos.remarks = nu.getRemarks();
       }
-      addInfos(TxtTreeTerm.VERN, VernacularNameMapper.class, this::encode, infos.props);
-      addInfos(TxtTreeTerm.DIST, DistributionMapper.class, this::encode, infos.props);
     }
     if (countRank != null) {
       infos.props.add("NUM_"+countRank.name() + "=" + taxonCount);
