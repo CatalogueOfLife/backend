@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.CopyUtil;
@@ -65,38 +66,46 @@ public class TreeCopyHandler extends TreeBaseHandler {
 
   private void copyTaxonRelations() {
     // TODO: copy taxon relations
-    LOG.info("Synced {} taxon relations from sector {} - NOT IMPLEMENTED", 0, sector.getKey());
+    if (entities.contains(EntityType.SPECIES_INTERACTION)) {
+      LOG.warn("Species interaction sync is not yet supported");
+    }
+    if (entities.contains(EntityType.TAXON_CONCEPT_RELATION)) {
+      LOG.warn("Taxon concept relation sync is not yet supported");
+    }
   }
 
   private void copyNameRelations(){
-    // copy name relations
-    NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
-    NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
-    int counter = 0;
-    IntSet relIds = new IntOpenHashSet();
+    if (entities.contains(EntityType.NAME_RELATION)) {
+      LOG.debug("Sync name relations from sector {}", sector.getKey());
+      // copy name relations
+      NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
+      NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
+      int counter = 0;
+      IntSet relIds = new IntOpenHashSet();
 
-    var key = DSID.of(sector.getSubjectDatasetKey(), "");
-    for (Map.Entry<String, String> n : nameIds.entrySet()) {
-      for (NameRelation nr : nrm.listByName(key.id(n.getKey()))) {
-        if (!relIds.contains((int)nr.getId())) {
-          updateFKs(nr);
-          nr.setSectorKey(sector.getId());
-          nr.setNameId(nameIds.get(nr.getNameId()));
-          nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
-          if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
-            nrmWrite.create(nr);
-            relIds.add((int)nr.getId());
-            if (counter++ % 2500 == 0) {
-              batchSession.commit();
+      var key = DSID.of(sector.getSubjectDatasetKey(), "");
+      for (Map.Entry<String, String> n : nameIds.entrySet()) {
+        for (NameRelation nr : nrm.listByName(key.id(n.getKey()))) {
+          if (!relIds.contains((int)nr.getId())) {
+            updateFKs(nr);
+            nr.setSectorKey(sector.getId());
+            nr.setNameId(nameIds.get(nr.getNameId()));
+            nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
+            if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
+              nrmWrite.create(nr);
+              relIds.add((int)nr.getId());
+              if (counter++ % 2500 == 0) {
+                batchSession.commit();
+              }
+            } else {
+              LOG.info("Name relation {} outside of synced sector {}", nr.getKey(), sector.getKey());
             }
-          } else {
-            LOG.info("Name relation {} outside of synced sector {}", nr.getKey(), sector.getKey());
           }
         }
       }
+      batchSession.commit();
+      LOG.info("Synced {} name relations from sector {}", relIds.size(), sector.getKey());
     }
-    batchSession.commit();
-    LOG.info("Synced {} name relations from sector {}", relIds.size(), sector.getKey());
   }
 
   private void updateFKs(DatasetScopedEntity<?> obj){
