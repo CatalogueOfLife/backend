@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-@Path("/admin")
 @Hidden
+@Path("/matcher")
 @Produces(MediaType.APPLICATION_JSON)
 public class MatcherManagementResource {
 
@@ -31,33 +31,32 @@ public class MatcherManagementResource {
   }
 
   @GET
-  @Path("/matcher")
   public UsageMatcherFactory.FactoryMetadata listMatcher(@QueryParam("decorate") boolean decorate) {
     return matcherFactory.metadata(decorate);
   }
 
   @GET
-  @Path("/matcher/{key}")
+  @Path("{key}")
   public UsageMatcherFactory.MatcherMetadata matcherMetadata(@PathParam("key") int key) {
     return matcherFactory.metadata(key);
   }
 
   @DELETE
-  @Path("/matcher/{key}")
+  @Path("{key}")
   @RolesAllowed({Roles.ADMIN})
   public void removeMatcher(@PathParam("key") int key) {
     matcherFactory.remove(key);
   }
 
   @POST
-  @Path("/matcher/{key}")
+  @Path("{key}")
   public BackgroundJob buildMatcher(@PathParam("key") int key, @Auth User user) throws IOException {
     LOG.info("User {} request new matcher for dataset {}", user, key);
     return matcherFactory.prepare(key, user.getKey());
   }
 
   @POST
-  @Path("/matcher/reload")
+  @Path("reload")
   @RolesAllowed({Roles.ADMIN})
   public int reloadMatcher() {
     return matcherFactory.reload();
