@@ -42,14 +42,14 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
       .averageKeySize(10)
       .averageValueSize(64)
       .valueMarshaller(MARSHALLER)
-      .recoverPersistedTo(keysF, false);
+      .createPersistedTo(keysF);
     ChronicleMap<Integer, String[]> byCanonNidx;
     try {
       byCanonNidx = ChronicleMapBuilder.of(Integer.class, String[].class)
         .name("canonical")
         .entries(1)
         .averageValueSize(32)
-        .recoverPersistedTo(canonicalF, false);
+        .createPersistedTo(canonicalF);
     } catch (IOException e) {
       usages.close();
       throw e;
