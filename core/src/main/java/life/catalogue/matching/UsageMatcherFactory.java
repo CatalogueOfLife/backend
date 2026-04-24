@@ -13,7 +13,9 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -36,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -102,27 +105,64 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   /**
-   * Checks if all datasets referenced in the storage dir exist and deletes the storage dir if not.
-   * It also removes all matchers for those datasets.
+   * Loads all persisted matchers from the storage directory.
+   * Warms the DatasetInfoCache with all datasets in one batch query, then validates and
+   * reopens chronicle/mapdb files in parallel without any further DB queries.
    */
   private void loadFromFS() {
     LOG.info("Load existing file based matchers from {}", dir);
-    for (var key : listFS()) {
+    var fsKeys = listFS();
+    if (fsKeys.isEmpty()) return;
+
+    // warm the info cache for all components in one batch query
+    DatasetInfoCache.CACHE.warmUp(factory);
+
+    var validKeys = new ArrayList<Integer>();
+    for (int key : fsKeys) {
       try {
         DatasetInfoCache.CACHE.info(key);
-        var m = persistent(key);
-        LOG.info("Loaded matcher with {} usages for dataset {}", m.store().size(), key);
+        validKeys.add(key);
       } catch (NotFoundException e) {
         File f = cfg.dir(key);
         LOG.warn("Dataset {} not existing, delete matching storage folder {}", key, f);
         FileUtils.deleteQuietly(f);
-      } catch (IOException e) {
-        File f = cfg.dir(key);
-        LOG.warn("Matcher for dataset {} cannot be loaded. Delete storage files {}", key, f);
-        FileUtils.deleteQuietly(f);
       }
     }
+    if (validKeys.isEmpty()) return;
+
+    int threads = Math.min(8, validKeys.size());
+    var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("matcher-loader"));
+    var loaded = new ConcurrentHashMap<Integer, UsageMatcher>();
+    for (int key : validKeys) {
+      final int k = key;
+      exec.submit(() -> {
+        try {
+          var store = reopenStore(k);
+          loaded.put(k, new UsageMatcher(k, nameIndex, store, true));
+          LOG.info("Loaded matcher with {} usages for dataset {}", store.size(), k);
+        } catch (IOException e) {
+          File f = cfg.dir(k);
+          LOG.warn("Matcher for dataset {} cannot be loaded. Delete storage files {}", k, f, e);
+          FileUtils.deleteQuietly(f);
+        }
+      });
+    }
+    ExecutorUtils.shutdown(exec);
+
+    synchronized (this) {
+      loaded.forEach((k, v) -> matchers.put((int) k, v));
+    }
     LOG.info("Loaded {} matchers from {}", matchers.size(), dir);
+  }
+
+  private UsageMatcherAbstractStore reopenStore(int datasetKey) throws IOException {
+    var f = cfg.dir(datasetKey);
+    if (cfg.chronicle) {
+      return UsageMatcherChronicleStore.reopen(datasetKey, f);
+    } else {
+      return UsageMatcherMapDBStore.build(datasetKey,
+        DBMaker.fileDB(f).fileMmapEnableIfSupported().make());
+    }
   }
 
   public NameIndex getNameIndex() {

@@ -40,6 +40,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   DatasetSimple getSimple(@Param("key") int key);
 
   /**
+   * Lists all non-temp datasets in simple form, including deleted ones.
+   * Intended for bulk cache warm-up at startup.
+   */
+  List<DatasetSimple> listAllSimple();
+
+  /**
    * List both concept and version DOI for the given dataset key.
    * @param key dataset key
    * @return list of dois, might be empty

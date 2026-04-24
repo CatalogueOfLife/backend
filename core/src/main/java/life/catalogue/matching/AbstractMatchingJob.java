@@ -118,6 +118,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
    * @throws Exception
    */
   protected void matchToOut(OutputStream os) throws Exception {
+    LOG.info("Matching names against dataset {}", matcher.datasetKey);
     try (BufferedOutputStream bos = new BufferedOutputStream(os);
          ZipOutputStream zos = new ZipOutputStream(bos)
     ) {
@@ -257,7 +258,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
         writer.writeRow(row);
         counter.inc(n.name);
         if (counter.get() % 10_000 == 0) {
-          LOG.debug("Matched {} out of {} names so far", counter.get() - none.get(), counter);
+          LOG.debug("Matched {} out of {} names against dataset {} so far", counter.get() - none.get(), counter, matcher.datasetKey);
         }
       });
 
@@ -269,7 +270,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
 
     } finally {
       writer.flush();
-      LOG.info("Matched {} out of {} names", counter.get()-none.get(), counter);
+      LOG.info("Matched {} out of {} names against dataset {}", counter.get()-none.get(), counter, matcher.datasetKey);
     }
   }
 

@@ -548,6 +548,12 @@
     WHERE key = #{key}
   </select>
 
+  <select id="listAllSimple" resultMap="datasetSimpleResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM dataset d
+    WHERE <include refid="NOT_TEMP"/>
+  </select>
+
   <select id="getDois" resultType="DOI">
     SELECT doi
     FROM dataset d

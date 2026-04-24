@@ -49,6 +49,22 @@ public class DatasetInfoCache implements DatasetListener {
     this.factory = factory;
   }
 
+  /**
+   * Bulk-loads all non-temp datasets (including deleted) into the info cache in a single query
+   * and sets the session factory for subsequent cache misses.
+   * Subsequent calls to info() for cached keys hit the map without touching the database.
+   */
+  public void warmUp(SqlSessionFactory factory) {
+    this.factory = factory;
+    try (SqlSession session = factory.openSession()) {
+      var datasets = session.getMapper(DatasetMapper.class).listAllSimple();
+      for (var d : datasets) {
+        infos.put(d.getKey(), new DatasetInfo(d.getKey(), d.getOrigin(), d.getSourceKey(), d.getGbifPublisherKey(), d.isDeleted()));
+      }
+      LOG.info("Warmed dataset info cache with {} entries", datasets.size());
+    }
+  }
+
   private String buildLabel(int key) {
     if (factory == null) {
       LOG.warn("No session factory created, cannot lookup dataset title for key {}", key);

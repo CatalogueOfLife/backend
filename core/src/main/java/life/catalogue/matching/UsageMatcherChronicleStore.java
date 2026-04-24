@@ -28,6 +28,35 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
   private final ChronicleMap<Integer, String[]> byCanonNidx;
   private final ChronicleMap<String, SimpleNameCached> usageCMap;
 
+  /**
+   * Opens existing persisted ChronicleMap files without querying the DB.
+   * ChronicleMap reads sizing from the stored file header; builder params are ignored for existing files.
+   */
+  public static UsageMatcherChronicleStore reopen(int datasetKey, File dir) throws IOException {
+    var keysF      = new File(dir, "usages");
+    var canonicalF = new File(dir, "canonical");
+    // Dummy sizing — overridden by values stored in the file header.
+    var usages = ChronicleMapBuilder.of(String.class, SimpleNameCached.class)
+      .name("usages")
+      .entries(1)
+      .averageKeySize(10)
+      .averageValueSize(64)
+      .valueMarshaller(MARSHALLER)
+      .recoverPersistedTo(keysF, false);
+    ChronicleMap<Integer, String[]> byCanonNidx;
+    try {
+      byCanonNidx = ChronicleMapBuilder.of(Integer.class, String[].class)
+        .name("canonical")
+        .entries(1)
+        .averageValueSize(32)
+        .recoverPersistedTo(canonicalF, false);
+    } catch (IOException e) {
+      usages.close();
+      throw e;
+    }
+    return new UsageMatcherChronicleStore(datasetKey, usages, byCanonNidx);
+  }
+
   public static UsageMatcherChronicleStore build(int datasetKey, File dir, long count, List<SimpleNameCached> samples) throws IOException {
     if (!dir.exists()) {
       FileUtils.forceMkdir(dir);
