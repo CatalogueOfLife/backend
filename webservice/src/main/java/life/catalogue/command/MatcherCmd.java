@@ -67,17 +67,7 @@ public class MatcherCmd extends AbstractMybatisCmd {
   private void deleteSmallMatcher(Integer min) {
     var matcher = matcherFactory.metadata(false);
     for (var m : matcher.matchers) {
-      try {
-        if (m.online) {
-          removeIfSmall(m.datasetKey, m.size, min);
-        } else {
-          LOG.info("Load offline matcher for dataset {}", m.datasetKey);
-          var m2 = matcherFactory.persistent(m.datasetKey);
-          removeIfSmall(m.datasetKey, m2.store().size(), min);
-        }
-      } catch (IOException e) {
-        LOG.error("Failed to process matcher for dataset {}", m.datasetKey, e);
-      }
+      removeIfSmall(m.datasetKey, m.size, min);
     }
   }
 

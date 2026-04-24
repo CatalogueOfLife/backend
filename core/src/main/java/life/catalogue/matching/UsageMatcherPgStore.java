@@ -6,32 +6,55 @@ import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * Does not store or cache anything, but reads directly from Postgres
  * relying on external code to keep the DB in sync with the source of truth.
  *
- * Note that the all iterators are unsupported.
+ * Supports two modes:
+ * - Session mode: a pre-opened SqlSession is provided (e.g. by SyncFactory to expose uncommitted
+ *   batch data). The session lifecycle is entirely the caller's responsibility — it is never closed here.
+ * - Factory mode: a SqlSessionFactory is provided. A fresh session is opened and immediately
+ *   closed for each top-level operation, so no connection is held between calls.
+ *
+ * Note that all iterators are unsupported.
  */
 public class UsageMatcherPgStore implements UsageMatcherStore {
   private final int datasetKey;
-  private final boolean closeSession;
-  private final SqlSession session;
-  private final NameUsageMapper num;
+  private final SqlSessionFactory sessionFactory; // factory mode
+  private final NameUsageMapper num;              // non-null only in session mode
   private final DSID<String> key;
 
-  public UsageMatcherPgStore(int datasetKey, SqlSession session, boolean closeSession) {
+  /** Session mode: uses the given session for all queries. Session lifecycle is the caller's responsibility. */
+  public UsageMatcherPgStore(int datasetKey, SqlSession session) {
     this.datasetKey = datasetKey;
-    this.closeSession = closeSession;
+    this.sessionFactory = null;
     this.key = DSID.root(datasetKey);
-    this.session = session;
     this.num = session.getMapper(NameUsageMapper.class);
+  }
+
+  /** Factory mode: opens and closes a fresh session per top-level operation. */
+  public UsageMatcherPgStore(int datasetKey, SqlSessionFactory sessionFactory) {
+    this.datasetKey = datasetKey;
+    this.sessionFactory = sessionFactory;
+    this.key = DSID.root(datasetKey);
+    this.num = null;
+  }
+
+  private <T> T withMapper(Function<NameUsageMapper, T> action) {
+    if (sessionFactory != null) {
+      try (var s = sessionFactory.openSession()) {
+        return action.apply(s.getMapper(NameUsageMapper.class));
+      }
+    }
+    return action.apply(num);
   }
 
   @Override
@@ -46,26 +69,38 @@ public class UsageMatcherPgStore implements UsageMatcherStore {
 
   @Override
   public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalId(int canonId) {
-    var sns = num.listByCanonNIDX(datasetKey, canonId);
-    if (sns != null) {
-      List<SimpleNameClassified<SimpleNameCached>> list = new ArrayList<>(sns.size());
+    return withMapper(m -> {
+      var sns = m.listByCanonNIDX(datasetKey, canonId);
+      if (sns == null) return null;
+      var list = new ArrayList<SimpleNameClassified<SimpleNameCached>>(sns.size());
       for (SimpleNameCached sn : sns) {
-        var cl = getClassification(sn.getParentId());
-        list.add(new SimpleNameClassified<>(sn, cl));
+        list.add(new SimpleNameClassified<>(sn, buildClassification(m, sn.getParentId())));
       }
       return list;
+    });
+  }
+
+  private List<SimpleNameCached> buildClassification(NameUsageMapper m, String parentId) {
+    var cl = new ArrayList<SimpleNameCached>();
+    var visited = new HashSet<String>();
+    var cur = parentId;
+    while (cur != null && visited.add(cur)) {
+      var p = m.getSimpleCached(key.id(cur));
+      if (p == null) break;
+      cl.add(p);
+      cur = p.getParent();
     }
-    return null;
+    return cl;
   }
 
   @Override
   public List<SimpleNameCached> simpleNamesByCanonicalId(int canonId) {
-    return num.listByCanonNIDX(datasetKey, canonId);
+    return withMapper(m -> m.listByCanonNIDX(datasetKey, canonId));
   }
 
   @Override
   public SimpleNameCached get(String usageID) throws NotFoundException {
-    return num.getSimpleCached(key.id(usageID));
+    return withMapper(m -> m.getSimpleCached(key.id(usageID)));
   }
 
   @Override
@@ -85,19 +120,16 @@ public class UsageMatcherPgStore implements UsageMatcherStore {
 
   @Override
   public void add(SimpleNameCached sn) {
-    // nothing cached - straight db
+    // nothing cached — straight db
   }
 
   @Override
   public void updateParentId(String usageID, String parentId) {
-    // nothing cached - straight db
+    // nothing cached — straight db
   }
 
   @Override
   public void close() {
-    if (closeSession) {
-      session.close();
-    }
+    // session lifecycle is managed by the caller in session mode; nothing to close in factory mode
   }
-
 }

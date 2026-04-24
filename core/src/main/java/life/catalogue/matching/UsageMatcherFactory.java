@@ -1,5 +1,9 @@
 package life.catalogue.matching;
 
+import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import jakarta.validation.constraints.NotNull;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
@@ -23,11 +27,20 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.coldp.DatasetJsonWriter;
-
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
-
+import org.apache.fory.Fory;
+import org.apache.fory.ThreadLocalFory;
+import org.apache.fory.ThreadSafeFory;
+import org.apache.fory.config.CompatibleMode;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+import org.mapdb.DBMaker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,26 +52,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.fory.Fory;
-import org.apache.fory.ThreadLocalFory;
-import org.apache.fory.ThreadSafeFory;
-import org.apache.fory.config.CompatibleMode;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import jakarta.validation.constraints.NotNull;
-import org.mapdb.DBMaker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * Factory to create and reuse persistent usage matchers,
@@ -175,19 +168,32 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
   /**
    * Depending on the dataset origin either a persistent or postgres matcher is created.
-   * Persistnent matchers are reused and should be closed after use.
+   * Persistent matchers are reused and should be closed after use.
    * @param datasetKey
    * @return
    */
   public UsageMatcher build(int datasetKey) throws IOException {
     var info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.origin == DatasetOrigin.PROJECT) {
-      var session = factory.openSession();
-      return postgres(datasetKey, session, true);
-    } else if (dir != null){
-      return persistent(datasetKey);
+      return postgres(datasetKey);
+    } else if (dir != null) {
+      int count;
+      try (SqlSession s = factory.openSession()) {
+        count = s.getMapper(NameUsageMapper.class).count(datasetKey);
+      }
+      if (cfg.pgMatcherThreshold > 0 && count < cfg.pgMatcherThreshold) {
+        return postgres(datasetKey);
+      }
+      return persistent(datasetKey, count);
     } else {
       return memory(datasetKey);
+    }
+  }
+
+  private boolean isSmallDataset(int datasetKey) {
+    if (cfg.pgMatcherThreshold <= 0) return false;
+    try (SqlSession s = factory.openSession()) {
+      return s.getMapper(NameUsageMapper.class).count(datasetKey) < cfg.pgMatcherThreshold;
     }
   }
 
@@ -200,8 +206,12 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
    * @throws IllegalArgumentException if the datasetKey is a project
    */
   public BackgroundJob prepare(int datasetKey, int userKey) throws IOException {
-    if (matchers.containsKey(datasetKey) && !matchers.get(datasetKey).store().isEmpty()) {
+    var m = matchers.get(datasetKey);
+    if (m != null && !m.store().isEmpty()) {
       return null;
+    } else if (m != null && m.store().isEmpty()) {
+      LOG.warn("Rebuild empty existing matcher for dataset {}", datasetKey);
+      remove(datasetKey);
     }
     if (dir == null) {
       throw new IllegalStateException("Cannot prepare persistent matcher for dataset " + datasetKey + " because no storage dir is configured");
@@ -210,11 +220,8 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     if (info.origin == DatasetOrigin.PROJECT) {
       throw new IllegalArgumentException("Cannot prepare persistent matcher for projects");
     }
-    var m = persistent(datasetKey);
-    if (!m.store().isEmpty()) {
-      throw new IllegalArgumentException("Persistent matcher store for dataset " + datasetKey + " already contains data");
-    }
-    var job = new AsyncMatchLoader(m, userKey);
+    var newMatcher = persistent(datasetKey);
+    var job = new AsyncMatchLoader(newMatcher, userKey);
     executor.submit(job);
     return job;
   }
@@ -276,41 +283,56 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     if (f.isDirectory()) {
       return persistent(datasetKey);
     }
-    return postgres(datasetKey, factory.openSession(), true);
+    return postgres(datasetKey);
   }
 
   /**
-   * Creates a matcher that reads directly from Postgres and does not cache anything.
-   * The given session is used and optionally closed when the matcher is closed.
-   * @param datasetKey
-   * @param session
-   * @param closeSession if true the given session is closed when the matcher is closed
+   * Creates a matcher that reads directly from Postgres using the given session.
+   * The session lifecycle is entirely the caller's responsibility.
    */
-  public UsageMatcher postgres(int datasetKey, SqlSession session, boolean closeSession) {
-    LOG.info("Create new postgres matcher for dataset {}", datasetKey);
-    var store = new UsageMatcherPgStore(datasetKey, session, closeSession);
-    return new UsageMatcher(datasetKey, nameIndex, store, false);
+  public UsageMatcher postgres(int datasetKey, SqlSession session) {
+    LOG.info("Create new postgres session matcher for dataset {}", datasetKey);
+    return new UsageMatcher(datasetKey, nameIndex, new UsageMatcherPgStore(datasetKey, session), false);
+  }
+
+  /**
+   * Creates a matcher that reads directly from Postgres, opening a fresh session per operation.
+   * No connection is held between calls.
+   */
+  public UsageMatcher postgres(int datasetKey) {
+    LOG.info("Create new postgres factory matcher for dataset {}", datasetKey);
+    return new UsageMatcher(datasetKey, nameIndex, new UsageMatcherPgStore(datasetKey, factory), false);
   }
 
   public synchronized UsageMatcher persistent(int datasetKey) throws IOException {
     if (!matchers.containsKey(datasetKey)) {
-      UsageMatcher m = buildPersistentMatcher(datasetKey);
-      matchers.put(datasetKey, m);
+      matchers.put(datasetKey, buildPersistentMatcher(datasetKey));
+    }
+    return matchers.get(datasetKey);
+  }
+
+  public synchronized UsageMatcher persistent(int datasetKey, int count) throws IOException {
+    if (!matchers.containsKey(datasetKey)) {
+      matchers.put(datasetKey, buildPersistentMatcher(datasetKey, count));
     }
     return matchers.get(datasetKey);
   }
 
   private UsageMatcher buildPersistentMatcher(int datasetKey) throws IOException {
+    try (SqlSession s = factory.openSession()) {
+      return buildPersistentMatcher(datasetKey, s.getMapper(NameUsageMapper.class).count(datasetKey));
+    }
+  }
+
+  private UsageMatcher buildPersistentMatcher(int datasetKey, int count) throws IOException {
     if (runningBuilds.containsKey(datasetKey)) {
       throw new IllegalStateException("Matcher for dataset " + datasetKey + " is already being built. Please try again in a few minutes");
     }
     runningBuilds.put(datasetKey, LocalDateTime.now());
     try {
       try (SqlSession s = factory.openSession()) {
-        var um = s.getMapper(NameUsageMapper.class);
-        int count = 10 + um.count(datasetKey);
-        var samples = um.listSN(datasetKey, new Page(0,5));
-        return buildPersistentMatcher(datasetKey, samples, count, cfg, nameIndex);
+        var samples = s.getMapper(NameUsageMapper.class).listSN(datasetKey, new Page(0, 5));
+        return buildPersistentMatcher(datasetKey, samples, count + 1, cfg, nameIndex);
       }
     } finally {
       var start = runningBuilds.remove(datasetKey);
@@ -377,7 +399,9 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
     try {
       remove(event.datasetKey);
-      prepare(event.datasetKey, event.user);
+      if (!isSmallDataset(event.datasetKey)) {
+        prepare(event.datasetKey, event.user);
+      }
     } catch (Exception e) {
       LOG.error("Failed to recreate persistent matcher for dataset {}", event.datasetKey, e);
     }
@@ -385,7 +409,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
   public void remove(int datasetKey) {
     if (matchers.containsKey(datasetKey)) {
-      LOG.info("Delete matcher for dataset {} due to changed data", datasetKey);
+      LOG.info("Delete matcher for dataset {}", datasetKey);
       var m = matchers.remove(datasetKey);
       if (m != null) {
         try {
@@ -402,12 +426,12 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   public static class FactoryMetadata {
-    public final long instances;
+    public final int count;
     public final List<MatcherMetadata> matchers;
 
     public FactoryMetadata(List<MatcherMetadata> matchers) {
       this.matchers = matchers;
-      this.instances = matchers.stream().filter(m -> m.online).count();
+      this.count = matchers.size();
     }
   }
 
@@ -418,14 +442,12 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
 
     public final int datasetKey;
-    public final boolean online;
     public final Integer size;
     public final Integer attempt; // from sidecar JSON, null if absent
     public DatasetSimple dataset;
 
-    public MatcherMetadata(int datasetKey, boolean online, Integer size, Integer attempt) {
+    public MatcherMetadata(int datasetKey, Integer size, Integer attempt) {
       this.datasetKey = datasetKey;
-      this.online = online;
       this.size = size;
       this.attempt = attempt;
     }
@@ -434,33 +456,15 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   public MatcherMetadata metadata(int datasetKey) {
     if (matchers.containsKey(datasetKey)) {
       var m = matchers.get(datasetKey);
-      return new MatcherMetadata(datasetKey, true, m.store().size(), readStoredAttempt(datasetKey));
-    }
-    var f = cfg.dir(datasetKey);
-    if (f.isDirectory()) {
-      try {
-        var m = persistent(datasetKey);
-        return new MatcherMetadata(datasetKey, true, m.store().size(), readStoredAttempt(datasetKey));
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+      return new MatcherMetadata(datasetKey, m.store().size(), readStoredAttempt(datasetKey));
     }
     return null;
   }
 
   public FactoryMetadata metadata(boolean decorate) {
     List<MatcherMetadata> matchers = new ArrayList<>();
-    IntSet keys = new IntOpenHashSet();
     for (var e : this.matchers.int2ObjectEntrySet()) {
-      matchers.add(new MatcherMetadata(e.getIntKey(), true, e.getValue().store().size(), readStoredAttempt(e.getIntKey())));
-      keys.add(e.getIntKey());
-    }
-    // look for more on disk
-    for (var key : listFS()) {
-      if (!keys.contains(key)) {
-        matchers.add(new MatcherMetadata(key, false, null, readStoredAttempt(key)));
-        keys.add(key);
-      }
+      matchers.add(new MatcherMetadata(e.getIntKey(), e.getValue().store().size(), readStoredAttempt(e.getIntKey())));
     }
     // decorate with dataset metadata
     if (decorate) {

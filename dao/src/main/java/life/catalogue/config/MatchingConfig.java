@@ -16,6 +16,12 @@ public class MatchingConfig {
   public File storageDir;
 
   /**
+   * Datasets with fewer usages than this value use a Postgres-backed matcher instead of a
+   * persistent file store. 0 disables the threshold (all datasets use persistent matchers).
+   */
+  public int pgMatcherThreshold = 100;
+
+  /**
    * Temporary folder for file uploads.
    */
   @NotNull

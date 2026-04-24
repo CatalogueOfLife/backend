@@ -61,7 +61,7 @@ public class SyncFactory {
   }
 
   private Function<SqlSession, UsageMatcher> supplyPgMatcher(int datasetKey) {
-    return sess -> matcherFactory.postgres(datasetKey, sess, false);
+    return sess -> matcherFactory.postgres(datasetKey, sess);
   }
 
   /**
