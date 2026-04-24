@@ -54,8 +54,7 @@ public class DatasetInfoCache implements DatasetListener {
    * and sets the session factory for subsequent cache misses.
    * Subsequent calls to info() for cached keys hit the map without touching the database.
    */
-  public void warmUp(SqlSessionFactory factory) {
-    this.factory = factory;
+  public void warmUp() {
     try (SqlSession session = factory.openSession()) {
       var datasets = session.getMapper(DatasetMapper.class).listAllSimple();
       for (var d : datasets) {

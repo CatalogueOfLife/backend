@@ -261,7 +261,9 @@ public class WsServer extends Application<WsServerConfig> {
     auth.setClient(httpClient);
     log.setSqlSessionFactory(mybatis.getSqlSessionFactory());
 
+    // warm the info cache for all components in one batch query
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
+    DatasetInfoCache.CACHE.warmUp();
 
     HttpUtils http = new HttpUtils();
 

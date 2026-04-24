@@ -114,9 +114,6 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     var fsKeys = listFS();
     if (fsKeys.isEmpty()) return;
 
-    // warm the info cache for all components in one batch query
-    DatasetInfoCache.CACHE.warmUp(factory);
-
     var validKeys = new ArrayList<Integer>();
     for (int key : fsKeys) {
       try {
@@ -138,8 +135,15 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       exec.submit(() -> {
         try {
           var store = reopenStore(k);
-          loaded.put(k, new UsageMatcher(k, nameIndex, store, true));
-          LOG.info("Loaded matcher with {} usages for dataset {}", store.size(), k);
+          var m = new UsageMatcher(k, nameIndex, store, true);
+          if (m.store().isEmpty()) {
+            LOG.warn("Matcher for dataset {} is empty, delete storage files {}", k, cfg.dir(k));
+            m.close();
+            FileUtils.deleteQuietly(cfg.dir(k));
+          } else {
+            loaded.put(k, m);
+            LOG.info("Loaded matcher with {} usages for dataset {}", store.size(), k);
+          }
         } catch (IOException e) {
           File f = cfg.dir(k);
           LOG.warn("Matcher for dataset {} cannot be loaded. Delete storage files {}", k, f, e);
