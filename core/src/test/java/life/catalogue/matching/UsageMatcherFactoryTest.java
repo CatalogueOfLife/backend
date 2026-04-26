@@ -49,11 +49,11 @@ public class UsageMatcherFactoryTest {
   }
 
   private UsageMatcherFactory factoryWithDatasets(DatasetSimple... datasets) {
+    DatasetInfoCache.CACHE.setFactory(sqlSessionFactory);
     SqlSession session = mock(SqlSession.class);
     DatasetMapper dm = mock(DatasetMapper.class);
     when(sqlSessionFactory.openSession()).thenReturn(session);
     when(session.getMapper(DatasetMapper.class)).thenReturn(dm);
-    when(dm.listAllSimple()).thenReturn(List.of(datasets));
 
     MatchingConfig cfg = new MatchingConfig();
     cfg.storageDir = tmp.getRoot();
