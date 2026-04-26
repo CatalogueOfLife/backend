@@ -23,7 +23,7 @@ public class UsageMatcherPgStoreTest {
   @Test
   public void basics() {
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    try (var store = new UsageMatcherPgStore(102, factory.openSession(), true)) {
+    try (var store = new UsageMatcherPgStore(102, factory)) {
       var u1 = store.get("u1x");
       assertEquals("u1x", u1.getId());
 
