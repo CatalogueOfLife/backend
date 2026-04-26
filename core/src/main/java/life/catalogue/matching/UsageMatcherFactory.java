@@ -1,8 +1,7 @@
 package life.catalogue.matching;
 
 import com.google.common.base.Preconditions;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import jakarta.validation.constraints.NotNull;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
@@ -64,7 +63,8 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   private final MatchingConfig cfg;
   private final File dir;
   private final ConcurrentHashMap<Integer, LocalDateTime> runningBuilds = new ConcurrentHashMap<>();
-  private final Int2ObjectMap<UsageMatcher> matchers = new Int2ObjectOpenHashMap<>();
+  private final ConcurrentHashMap<Integer, UsageMatcher> matchers = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<Integer, ReentrantLock> buildLocks = new ConcurrentHashMap<>();
   private final JobExecutor executor;
 
   static final ThreadSafeFory FURY = new ThreadLocalFory(classLoader -> {
@@ -146,9 +146,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
     ExecutorUtils.shutdown(exec);
 
-    synchronized (this) {
-      loaded.forEach((k, v) -> matchers.put((int) k, v));
-    }
+    matchers.putAll(loaded);
     LOG.info("Loaded {} matchers from {}", matchers.size(), dir);
   }
 
@@ -304,18 +302,40 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return new UsageMatcher(datasetKey, nameIndex, new UsageMatcherPgStore(datasetKey, factory), false);
   }
 
-  public synchronized UsageMatcher persistent(int datasetKey) throws IOException {
-    if (!matchers.containsKey(datasetKey)) {
-      matchers.put(datasetKey, buildPersistentMatcher(datasetKey));
-    }
-    return matchers.get(datasetKey);
+  private ReentrantLock lockFor(int datasetKey) {
+    return buildLocks.computeIfAbsent(datasetKey, k -> new ReentrantLock());
   }
 
-  public synchronized UsageMatcher persistent(int datasetKey, int count) throws IOException {
-    if (!matchers.containsKey(datasetKey)) {
-      matchers.put(datasetKey, buildPersistentMatcher(datasetKey, count));
+  public UsageMatcher persistent(int datasetKey) throws IOException {
+    UsageMatcher existing = matchers.get(datasetKey);
+    if (existing != null) return existing;
+    ReentrantLock lock = lockFor(datasetKey);
+    lock.lock();
+    try {
+      existing = matchers.get(datasetKey); // double-check
+      if (existing != null) return existing;
+      UsageMatcher m = buildPersistentMatcher(datasetKey);
+      matchers.put(datasetKey, m);
+      return m;
+    } finally {
+      lock.unlock();
     }
-    return matchers.get(datasetKey);
+  }
+
+  public UsageMatcher persistent(int datasetKey, int count) throws IOException {
+    UsageMatcher existing = matchers.get(datasetKey);
+    if (existing != null) return existing;
+    ReentrantLock lock = lockFor(datasetKey);
+    lock.lock();
+    try {
+      existing = matchers.get(datasetKey); // double-check
+      if (existing != null) return existing;
+      UsageMatcher m = buildPersistentMatcher(datasetKey, count);
+      matchers.put(datasetKey, m);
+      return m;
+    } finally {
+      lock.unlock();
+    }
   }
 
   private UsageMatcher buildPersistentMatcher(int datasetKey) throws IOException {
@@ -408,6 +428,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   public void remove(int datasetKey) {
+    buildLocks.remove(datasetKey);
     if (matchers.containsKey(datasetKey)) {
       LOG.info("Delete matcher for dataset {}", datasetKey);
       var m = matchers.remove(datasetKey);
@@ -463,8 +484,8 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
   public FactoryMetadata metadata(boolean decorate) {
     List<MatcherMetadata> matchers = new ArrayList<>();
-    for (var e : this.matchers.int2ObjectEntrySet()) {
-      matchers.add(new MatcherMetadata(e.getIntKey(), e.getValue().store().size(), readStoredAttempt(e.getIntKey())));
+    for (var e : this.matchers.entrySet()) {
+      matchers.add(new MatcherMetadata(e.getKey(), e.getValue().store().size(), readStoredAttempt(e.getKey())));
     }
     // decorate with dataset metadata
     if (decorate) {

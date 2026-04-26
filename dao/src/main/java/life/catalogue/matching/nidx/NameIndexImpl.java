@@ -25,6 +25,7 @@ import org.gbif.nameparser.util.UnicodeUtils;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 
 import org.apache.ibatis.session.SqlSession;
@@ -56,6 +57,7 @@ public class NameIndexImpl implements NameIndex {
   private final SqlSessionFactory sqlFactory;
   private final boolean hasPg;
   private final AtomicInteger keyGen = new AtomicInteger(0); // only used when we have no database
+  private final ReentrantLock insertLock = new ReentrantLock();
   /**
    * @param sqlFactory sql session factory to talk to the data store backend if needed for inserts or initial loading
    * @throws IllegalStateException when db is in a bad state
@@ -384,23 +386,28 @@ public class NameIndexImpl implements NameIndex {
    *
    * This method assumes the name is well formatted and tested to be eligable to be inserted
    */
-  private synchronized NameMatch tryToAdd(Name orig, NameMatch match, boolean verbose) {
-    LOG.trace("{} match, try to add {}", match.getType(), orig.getLabel());
-    var match2 = match(orig, false, verbose);
-    if (needsInsert(match2, orig)) {
-      LOG.debug("{} match, adding {}", match.getType(), orig.getLabel());
-      // verified we still do not have that name - insert the original match for real!
-      IndexName n = new IndexName(orig);
-      add(n);
-      match.setName(n);
-      if (n.getScientificName().equalsIgnoreCase(orig.getScientificName())) {
-        match.setType(MatchType.EXACT);
-      } else {
-        match.setType(MatchType.VARIANT);
+  private NameMatch tryToAdd(Name orig, NameMatch match, boolean verbose) {
+    insertLock.lock();
+    try {
+      LOG.trace("{} match, try to add {}", match.getType(), orig.getLabel());
+      var match2 = match(orig, false, verbose);
+      if (needsInsert(match2, orig)) {
+        LOG.debug("{} match, adding {}", match.getType(), orig.getLabel());
+        // verified we still do not have that name - insert the original match for real!
+        IndexName n = new IndexName(orig);
+        add(n);
+        match.setName(n);
+        if (n.getScientificName().equalsIgnoreCase(orig.getScientificName())) {
+          match.setType(MatchType.EXACT);
+        } else {
+          match.setType(MatchType.VARIANT);
+        }
+        return match;
       }
-      return match;
+      return match2;
+    } finally {
+      insertLock.unlock();
     }
-    return match2;
   }
 
   @Override
