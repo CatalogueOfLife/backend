@@ -11,6 +11,34 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-04-27 special query planer stats: https://github.com/CatalogueOfLife/backend/issues/1503
+```
+CREATE STATISTICS name_usage_corr_0 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod0;
+CREATE STATISTICS name_usage_corr_1 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod1;
+CREATE STATISTICS name_usage_corr_2 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod2;
+CREATE STATISTICS name_usage_corr_3 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod3;
+CREATE STATISTICS name_usage_corr_4 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod4;
+CREATE STATISTICS name_usage_corr_5 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod5;
+CREATE STATISTICS name_usage_corr_6 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod6;
+CREATE STATISTICS name_usage_corr_7 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod7;
+CREATE STATISTICS name_usage_corr_8 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod8;
+CREATE STATISTICS name_usage_corr_9 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod9;
+CREATE STATISTICS name_usage_corr_10 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod10;
+CREATE STATISTICS name_usage_corr_11 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod11;
+CREATE STATISTICS name_usage_corr_12 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod12;
+CREATE STATISTICS name_usage_corr_13 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod13;
+CREATE STATISTICS name_usage_corr_14 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod14;
+CREATE STATISTICS name_usage_corr_15 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod15;
+CREATE STATISTICS name_usage_corr_16 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod16;
+CREATE STATISTICS name_usage_corr_17 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod17;
+CREATE STATISTICS name_usage_corr_18 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod18;
+CREATE STATISTICS name_usage_corr_19 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod19;
+CREATE STATISTICS name_usage_corr_20 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod20;
+CREATE STATISTICS name_usage_corr_21 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod21;
+CREATE STATISTICS name_usage_corr_22 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod22;
+CREATE STATISTICS name_usage_corr_23 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod23;
+```
+
 #### 2026-03-11 distribution area_id & extant species taxon metrics
 ```
 ALTER TABLE distribution ADD COLUMN area_id TEXT;

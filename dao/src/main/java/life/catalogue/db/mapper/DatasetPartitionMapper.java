@@ -75,6 +75,7 @@ public interface DatasetPartitionMapper {
     for (int i=0; i<number; i++) {
       String suffix = "mod"+i;
       attachTriggers(suffix);
+      attachStatistics(suffix);
     }
   }
 
@@ -144,6 +145,13 @@ public interface DatasetPartitionMapper {
    * @param suffix partition suffix, e.g. mod1
    */
   void attachTriggers(@Param("suffix") String suffix);
+
+  /**
+   * Similar to attachTriggers but adds special statistics for the analyzer to the name usage partition only.
+   * See https://github.com/CatalogueOfLife/backend/issues/1503
+   * @param suffix
+   */
+  void attachStatistics(@Param("suffix") String suffix);
 
   /**
    * Return the list of columns for a given table igoring "doc" columns

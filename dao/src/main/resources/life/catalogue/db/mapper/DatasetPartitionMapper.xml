@@ -47,6 +47,10 @@
     EXECUTE FUNCTION track_usage_count();
   </update>
 
+  <update id="attachStatistics" parameterType="map">
+    CREATE STATISTICS name_usage_corr_${suffix} (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_${suffix};
+  </update>
+
   <update id="deleteData">
     DELETE FROM ${table} WHERE dataset_key=#{key};
   </update>
