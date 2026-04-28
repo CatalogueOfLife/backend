@@ -128,6 +128,11 @@
   resolver: https://www.ncbi.nlm.nih.gov/nucleotide/{id}
   example: U49845
 
+- scope: grin
+  title: Germplasm Resources Information Network (GRIN) Taxonomy
+  link: https://npgsweb.ars-grin.gov/gringlobal/taxon/abouttaxonomy
+  example: '2263'
+
 - scope: hol
   title: Hymenoptera Online
   link: https://hol.osu.edu
@@ -198,16 +203,13 @@
   resolver: http://www.eu-nomen.eu/portal/taxon.php?GUID={id}
   example: 93A25572-521E-4130-B8C5-9C7D332E5605
 
-- scope: silva
-  title: SILVA Taxonomy
+- scope: silva-ssu
+  title: SILVA Taxonomy for Small Subunit rRNA
   link: https://www.arb-silva.de/documentation/silva-taxonomy/
 
-- scope: taxonid
-  title: TaxonID
-  description: Taxon concepts as Linked Data.
-  link: http://taxonid.org
-  resolver: http://taxonid.org/{id}
-  example: D92326
+- scope: silva-lsu
+  title: SILVA Taxonomy for Large Subunit rRNA
+  link: https://www.arb-silva.de/documentation/silva-taxonomy/
 
 - scope: tpl
   title: The Plant List
