@@ -176,7 +176,16 @@ public enum Setting {
   /**
    * If null or true creates implicit names during syncs.
    */
-  SECTOR_CREATE_IMPLICIT_NAMES(Boolean.class, false, DatasetOrigin.PROJECT);
+  SECTOR_CREATE_IMPLICIT_NAMES(Boolean.class, false, DatasetOrigin.PROJECT),
+
+  /**
+   * If set, every imported usage is matched against the dataset with the given key
+   * and the matched usageID is stored as an identifier on the imported usage,
+   * scoped via the identifier scope registry mapping for that target dataset.
+   * The configured matcher must already exist in the UsageMatcherFactory cache;
+   * imports fail early otherwise.
+   */
+  MATCH_DATASET(Integer.class, DatasetOrigin.EXTERNAL, DatasetOrigin.PROJECT);
 
   private final Class type;
   private final DatasetOrigin[] origin;

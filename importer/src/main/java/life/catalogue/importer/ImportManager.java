@@ -30,6 +30,8 @@ import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.store.ImportStoreFactory;
+import life.catalogue.matching.IdentifierScopeResolver;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.release.AbstractProjectCopy;
@@ -95,12 +97,15 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   private final DecisionDao decisionDao;
   private final ImageService imgService;
   private final Validator validator;
+  private final UsageMatcherFactory matcherFactory;
+  private final IdentifierScopeResolver scopeResolver;
   private final Timer importTimer;
   private final Counter failed;
 
   public ImportManager(ImporterConfig iCfg, NormalizerConfig nCfg, DoiConfig dCfg, MetricRegistry registry, CloseableHttpClient client, EventBroker bus,
                        SqlSessionFactory factory, NameIndex index, DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
-                       NameUsageIndexService indexService, ImageService imgService, JobExecutor jobExecutor, Validator validator, DoiResolver resolver) {
+                       NameUsageIndexService indexService, ImageService imgService, JobExecutor jobExecutor, Validator validator, DoiResolver resolver,
+                       UsageMatcherFactory matcherFactory, IdentifierScopeResolver scopeResolver) {
     this.iCfg = iCfg;
     this.nCfg = nCfg;
     this.dCfg = dCfg;
@@ -118,6 +123,8 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     this.sDao = sDao;
     this.decisionDao = decisionDao;
     this.dao = diao;
+    this.matcherFactory = matcherFactory;
+    this.scopeResolver = scopeResolver;
     importTimer = registry.timer("life.catalogue.import.timer");
     failed = registry.counter("life.catalogue.import.failed");
   }
@@ -449,6 +456,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
       return new ImportJob(req, new DatasetWithSettings(d, ds), iCfg, nCfg, dCfg, downloader, factory, importStoreFactory, index, validator, resolver, indexService, imgService, dao, dDao, sDao, decisionDao, bus,
+        matcherFactory, scopeResolver,
         req::start, this::successCallBack, this::errorCallBack
       );
     }

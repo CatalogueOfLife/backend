@@ -11,6 +11,14 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-04-28 import-time matching issues
+```
+ALTER TYPE ISSUE ADD VALUE 'MATCHING_AMBIGUOUS';
+ALTER TYPE ISSUE ADD VALUE 'MATCHING_NONE';
+ALTER TYPE ISSUE ADD VALUE 'MATCHING_UNSUPPORTED';
+ALTER TYPE ISSUE ADD VALUE 'MATCHING_HIGHERRANK';
+```
+
 #### 2026-04-27 special query planer stats: https://github.com/CatalogueOfLife/backend/issues/1503
 ```
 CREATE STATISTICS name_usage_corr_0 (dependencies, ndistinct) ON dataset_key, parent_id, status FROM name_usage_mod0;

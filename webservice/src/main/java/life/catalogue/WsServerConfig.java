@@ -158,6 +158,15 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public MatchingConfig matching = new MatchingConfig();
 
   /**
+   * Per-deployment mapping from dataset keys to identifier scope strings.
+   * Used by the identifier scope registry to attach scoped identifiers during
+   * sector merging and import-time matching. See {@link IdentifierScopeConfig}.
+   */
+  @Valid
+  @NotNull
+  public IdentifierScopeConfig identifierScopes = new IdentifierScopeConfig();
+
+  /**
    * Directory to store text tree, name index lists and other metrics for each dataset and sector import attempt
    * on disc.
    */

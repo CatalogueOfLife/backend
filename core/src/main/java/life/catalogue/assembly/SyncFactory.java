@@ -7,6 +7,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
+import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
@@ -37,10 +38,12 @@ public class SyncFactory {
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
   private final EventBroker bus;
+  private final IdentifierScopeResolver scopeResolver;
 
   public SyncFactory(SqlSessionFactory factory, UsageMatcherFactory matcherFactory, NameIndex nameIndex,
                      SectorDao sd, SectorImportDao sid, EstimateDao estimateDao,
-                     NameUsageIndexService indexService, EventBroker bus) {
+                     NameUsageIndexService indexService, EventBroker bus,
+                     @Nullable IdentifierScopeResolver scopeResolver) {
     this.bus = bus;
     this.sd = sd;
     this.sid = sid;
@@ -49,6 +52,7 @@ public class SyncFactory {
     this.factory = factory;
     this.indexService = indexService;
     this.matcherFactory = matcherFactory;
+    this.scopeResolver = scopeResolver;
   }
 
   /**
@@ -57,7 +61,7 @@ public class SyncFactory {
   public SectorSync project(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
     return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex,
       supplyPgMatcher(sectorKey.getDatasetKey()), bus, indexService, sd, sid, estimateDao,
-      successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, user);
+      successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, scopeResolver, user);
   }
 
   private Function<SqlSession, UsageMatcher> supplyPgMatcher(int datasetKey) {
@@ -72,7 +76,7 @@ public class SyncFactory {
     Preconditions.checkArgument(releaseDatasetKey == matcher.getDatasetKey(), "Matcher and release dataset key must be the same");
     return new SectorSync(sectorKey, releaseDatasetKey, false, cfg, factory, nameIndex, session -> matcher, bus, indexService, sd, sid, estimateDao,
       x -> {}, (s,e) -> LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e),
-      nameIdGen, typeMaterialIdGen, usageIdGen, user);
+      nameIdGen, typeMaterialIdGen, usageIdGen, scopeResolver, user);
   }
 
   public SectorDelete delete(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {

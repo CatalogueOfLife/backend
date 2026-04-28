@@ -52,14 +52,15 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private Throwable exception;
   private final @Nullable TreeMergeHandlerConfig cfg;
   private final DSID<Integer> vKey;
-  private final Identifier.Scope nameIdScope;
-  private final Identifier.Scope usageIdScope;
+  private final String nameIdScope;
+  private final String usageIdScope;
   SqlSessionFactory factory;
 
   TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory,
                    Function<SqlSession, UsageMatcher> matcherSupplier, NameIndex nameIndex,
                    int user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
-                   Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
+                   Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
+                   @Nullable IdentifierScopeResolver scopeResolver) {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
     // this causes postgres to use a lot of memory and creates very large temporary files
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, typeMaterialIdGen, usageIdGen);
@@ -124,47 +125,19 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
     }
 
-    // add known identifiers?
-    if (source.getType() == DatasetType.NOMENCLATURAL && source.getAlias() != null) {
-      switch (source.getAlias().toUpperCase()) {
-        case "ZOOBANK":
-          nameIdScope = Identifier.Scope.ZOOBANK;
-          break;
-        case "IF":
-        case "Index Fungorum":
-          nameIdScope = Identifier.Scope.IF;
-          break;
-        case "INA":
-          nameIdScope = Identifier.Scope.INA;
-          break;
-        case "IPNI":
-          nameIdScope = Identifier.Scope.IPNI;
-          break;
-        default:
-          nameIdScope = null;
-      }
+    // resolve the identifier scope for the source dataset from the central registry.
+    // a single scope is configured per dataset; we route it to either name- or usage-id
+    // depending on the dataset type (nomenclatural sources publish well-known name IDs,
+    // taxonomic sources publish well-known usage IDs).
+    String resolvedScope = scopeResolver != null ? scopeResolver.resolve(source) : null;
+    if (resolvedScope != null && source.getType() == DatasetType.NOMENCLATURAL) {
+      nameIdScope = resolvedScope;
+      usageIdScope = null;
+    } else if (resolvedScope != null && source.getType() == DatasetType.TAXONOMIC) {
+      nameIdScope = null;
+      usageIdScope = resolvedScope;
     } else {
       nameIdScope = null;
-    }
-    // known usage id scope?
-    if (source.getType() == DatasetType.TAXONOMIC && source.getAlias() != null) {
-      switch (source.getAlias().toUpperCase()) {
-        case "WFO":
-          usageIdScope = Identifier.Scope.WFO;
-          break;
-        case "ITIS":
-          usageIdScope = Identifier.Scope.TSN;
-          break;
-        case "INAT":
-          usageIdScope = Identifier.Scope.INAT;
-          break;
-        case "GBIF":
-          usageIdScope = Identifier.Scope.GBIF;
-          break;
-        default:
-          usageIdScope = null;
-      }
-    } else {
       usageIdScope = null;
     }
   }

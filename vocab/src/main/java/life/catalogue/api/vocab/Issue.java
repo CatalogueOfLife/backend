@@ -492,7 +492,19 @@ public enum Issue {
     "A basionym has itself a basionym authorship, i.e. an author in brackets"),
 
   DISTRIBUTION_GAZETTEER_CONFLICT(DISTRIBUTION, Level.WARNING,
-    "A distribution record contains a gazeteer value which is different from the given identifier for the area.")
+    "A distribution record contains a gazeteer value which is different from the given identifier for the area."),
+
+  MATCHING_AMBIGUOUS(NAME_USAGE, Level.WARNING,
+    "Multiple usages matched in the configured target dataset; no identifier added."),
+
+  MATCHING_NONE(NAME_USAGE, Level.WARNING,
+    "No matching usage found in the configured target dataset; no identifier added."),
+
+  MATCHING_UNSUPPORTED(NAME_USAGE, Level.WARNING,
+    "Name not supported by the matcher; no identifier added."),
+
+  MATCHING_HIGHERRANK(NAME_USAGE, Level.INFO,
+    "Only matched to a higher rank in the configured target dataset; identifier added for the higher-ranked match.")
   ;
 
   /**

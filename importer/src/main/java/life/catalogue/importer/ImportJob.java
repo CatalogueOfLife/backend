@@ -33,6 +33,8 @@ import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.ImportStoreFactory;
 import life.catalogue.importer.proxy.ArchiveDescriptor;
 import life.catalogue.importer.proxy.DistributedArchiveService;
+import life.catalogue.matching.IdentifierScopeResolver;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.SectorRematchRequest;
@@ -95,6 +97,8 @@ public class ImportJob implements Runnable {
   private final DoiResolver resolver;
   private final DistributedArchiveService distributedArchiveService;
   private final EventBroker bus;
+  private final UsageMatcherFactory matcherFactory;
+  private final IdentifierScopeResolver scopeResolver;
   private final StartNotifier notifier;
   private final Consumer<ImportRequest> successCallback;
   private final BiConsumer<ImportRequest, Exception> errorCallback;
@@ -104,6 +108,7 @@ public class ImportJob implements Runnable {
             DownloadUtil downloader, SqlSessionFactory factory, ImportStoreFactory importStoreFactory, NameIndex index, Validator validator, DoiResolver resolver,
             NameUsageIndexService indexService, ImageService imgService,
             DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBroker bus,
+            UsageMatcherFactory matcherFactory, IdentifierScopeResolver scopeResolver,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
             BiConsumer<ImportRequest, Exception> errorCallback
@@ -128,6 +133,8 @@ public class ImportJob implements Runnable {
     this.dao = diao;
     this.imgService = imgService;
     this.bus = bus;
+    this.matcherFactory = matcherFactory;
+    this.scopeResolver = scopeResolver;
 
     this.notifier = notifier;
     this.successCallback = successCallback;
@@ -155,6 +162,32 @@ public class ImportJob implements Runnable {
 
     } else if (!dataset.has(Setting.DATA_ACCESS)) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a data access URL");
+    }
+
+    // fail early if MATCH_DATASET is configured but no matcher exists for it - we never trigger a build here
+    if (dataset.has(Setting.MATCH_DATASET)) {
+      Integer targetKey = (Integer) dataset.getSettings().get(Setting.MATCH_DATASET);
+      if (targetKey == null) {
+        // unreachable but keeps the type-checker happy
+      } else if (matcherFactory == null) {
+        throw new IllegalStateException("Dataset " + datasetKey + " is configured to match against "
+          + targetKey + " but no UsageMatcherFactory is available");
+      } else if (targetKey == datasetKey) {
+        throw new IllegalArgumentException("Dataset " + datasetKey + " cannot match against itself");
+      } else {
+        try {
+          if (matcherFactory.get(targetKey) == null) {
+            throw new IllegalArgumentException("Dataset " + datasetKey
+              + " is configured to match against " + targetKey + " but no matcher exists for it");
+          }
+        } catch (IOException e) {
+          throw new IllegalStateException("Failed to access matcher for dataset " + targetKey, e);
+        }
+        if (scopeResolver == null || scopeResolver.resolve(targetKey) == null) {
+          throw new IllegalArgumentException("Dataset " + datasetKey
+            + " matches against " + targetKey + " but no identifier scope is configured for that dataset");
+        }
+      }
     }
   }
   
@@ -387,7 +420,7 @@ public class ImportJob implements Runnable {
           var vDOI = dCfg.datasetVersionDOI(datasetKey, getAttempt());
           // this does write to both pg and elastic!
           // pgimport also updates the datasets import attempt & version DOI at the very end - only if successful!
-          var pgImport = new PgImport(di.getAttempt(), vDOI, dataset, req.createdBy, store, factory, iCfg, dDao, indexService);
+          var pgImport = new PgImport(di.getAttempt(), vDOI, dataset, req.createdBy, store, factory, iCfg, dDao, indexService, matcherFactory, scopeResolver);
           pgImport.call();
 
           LOG.info("Build import metrics for dataset {}", datasetKey);

@@ -147,7 +147,7 @@ public class PgImportITBase {
       norm.call();
       
       // import into postgres
-      PgImport importer = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), dataset, Users.IMPORTER, store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, indexService);
+      PgImport importer = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), dataset, Users.IMPORTER, store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, indexService, null, null);
       importer.call();
       
     } catch (Exception e) {

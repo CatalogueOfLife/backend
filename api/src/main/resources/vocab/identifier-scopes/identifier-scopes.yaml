@@ -1,0 +1,105 @@
+# Curated registry of identifier scopes used in CURIEs across ChecklistBank datasets.
+# A scope is a short, case-insensitive string used as the prefix in `scope:id`.
+# This file is checked into git and shipped on the classpath; the per-deployment
+# datasetKey -> scope mapping lives in WsServerConfig.identifierScopes.
+#
+# Schema:
+#   scope            unique short string (lowercased on load)
+#   title            human-readable name
+#   description      optional, short
+#   link             optional, canonical homepage
+#   resolverTemplate optional, contains literal {id} placeholder
+#   example          optional, sample local id
+#   regex            optional, validates the local id
+#   datasetKey       optional, projectKey in CLB (releases share their project's scope)
+
+- scope: local
+  title: Local identifier
+  description: A local identifier with no public scope.
+
+- scope: doi
+  title: Digital Object Identifier
+  link: https://www.doi.org
+  resolverTemplate: https://doi.org/{id}
+  example: 10.1234/abcd
+
+- scope: url
+  title: URL
+  description: An HTTP(S) or FTP URL used as an identifier.
+
+- scope: urn
+  title: Uniform Resource Name
+
+- scope: lsid
+  title: Life Science Identifier
+  description: An OASIS LSID URN.
+  example: urn:lsid:zoobank.org:act:6F2BC2EE-4F89-4D8A-A1A4-C2AEDF0C2A7A
+
+- scope: col
+  title: Catalogue of Life
+  description: ChecklistBank usage IDs of the COL project and its releases.
+  link: https://www.catalogueoflife.org
+  resolverTemplate: https://www.checklistbank.org/dataset/3LM5N/taxon/{id}
+  example: 3LM5N
+  datasetKey: 3
+
+- scope: gbif
+  title: GBIF Backbone Taxonomy
+  link: https://www.gbif.org
+  resolverTemplate: https://www.gbif.org/species/{id}
+  example: 5231190
+  regex: '^[0-9]+$'
+
+- scope: wfo
+  title: World Flora Online
+  link: https://www.worldfloraonline.org
+  resolverTemplate: https://www.worldfloraonline.org/taxon/{id}
+  example: wfo-0000000003
+
+- scope: tpl
+  title: The Plant List
+  link: http://www.theplantlist.org
+
+- scope: tsn
+  title: ITIS Taxonomic Serial Number
+  link: https://www.itis.gov
+  resolverTemplate: https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value={id}
+  example: '180092'
+  regex: '^[0-9]+$'
+
+- scope: ipni
+  title: International Plant Names Index
+  link: https://www.ipni.org
+  resolverTemplate: https://www.ipni.org/n/{id}
+  example: 60447188-2
+
+- scope: if
+  title: Index Fungorum
+  link: https://www.indexfungorum.org
+  resolverTemplate: https://www.indexfungorum.org/Names/NamesRecord.asp?RecordID={id}
+  example: '90156'
+  regex: '^[0-9]+$'
+
+- scope: zoobank
+  title: ZooBank
+  link: https://zoobank.org
+  resolverTemplate: https://zoobank.org/{id}
+  example: 6F2BC2EE-4F89-4D8A-A1A4-C2AEDF0C2A7A
+
+- scope: inat
+  title: iNaturalist Taxon
+  link: https://www.inaturalist.org
+  resolverTemplate: https://www.inaturalist.org/taxa/{id}
+  example: '47126'
+  regex: '^[0-9]+$'
+
+- scope: ina
+  title: Index Nominum Algarum
+  link: https://ucjeps.berkeley.edu/INA.html
+
+- scope: worms
+  title: World Register of Marine Species
+  link: https://www.marinespecies.org
+  resolverTemplate: https://www.marinespecies.org/aphia.php?p=taxdetails&id={id}
+  example: '105838'
+  regex: '^[0-9]+$'

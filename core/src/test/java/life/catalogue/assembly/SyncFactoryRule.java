@@ -53,7 +53,7 @@ public class SyncFactoryRule extends ExternalResource {
     sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
-    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, NameMatchingRule.getIndex(), sdao, siDao, eDao, NameUsageIndexService.passThru(), TestUtils.mockedBroker());
+    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, NameMatchingRule.getIndex(), sdao, siDao, eDao, NameUsageIndexService.passThru(), TestUtils.mockedBroker(), null);
   }
 
   public static SyncFactory getFactory() {

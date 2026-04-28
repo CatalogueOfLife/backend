@@ -59,6 +59,7 @@ import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.jobs.cron.CronExecutor;
 import life.catalogue.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.jobs.cron.TempDatasetCleanup;
+import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
@@ -371,6 +372,10 @@ public class WsServer extends Application<WsServerConfig> {
     final var matcherFactory = new UsageMatcherFactory(cfg.matching, ni, getSqlSessionFactory(), executor);
     env.lifecycle().manage(ManagedUtils.from(matcherFactory));
 
+    // identifier scope resolver: map dataset keys to scopes from the central registry
+    cfg.identifierScopes.validate();
+    final var identifierScopeResolver = new IdentifierScopeResolver(cfg.identifierScopes, getSqlSessionFactory());
+
     // cron jobs
     var cron = CronExecutor.startWith(
       new TempDatasetCleanup(ddao),
@@ -394,7 +399,7 @@ public class WsServer extends Application<WsServerConfig> {
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
 
     // syncs and releases
-    final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker);
+    final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker, identifierScopeResolver);
     final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, matcherFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       indexService, imgService, getSqlSessionFactory(), validator,
       cfg.release, cfg.apiURI, cfg.clbURI
@@ -411,7 +416,8 @@ public class WsServer extends Application<WsServerConfig> {
       indexService,
       imgService,
       executor,
-      validator, doiResolver
+      validator, doiResolver,
+      matcherFactory, identifierScopeResolver
     );
     managedService.manage(Component.DatasetImporter, importManager);
 

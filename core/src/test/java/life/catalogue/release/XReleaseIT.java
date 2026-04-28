@@ -158,7 +158,7 @@ public class XReleaseIT extends SectorSyncTestBase {
     var broker = TestUtils.mockedBroker();
     var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, NameMatchingRule.getIndex(), sdao, siDao, eDao,
-      NameUsageIndexService.passThru(), broker
+      NameUsageIndexService.passThru(), broker, null
     );
     var cfg = TestConfigs.build();
 

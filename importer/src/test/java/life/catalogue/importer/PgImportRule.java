@@ -245,7 +245,7 @@ public class PgImportRule extends ExternalResource {
     norm.call();
 
     // import into postgres
-    PgImport importer = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), dataset, IMPORT_USER.getKey(), store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru());
+    PgImport importer = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), dataset, IMPORT_USER.getKey(), store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru(), null, null);
     importer.call();
   }
 }

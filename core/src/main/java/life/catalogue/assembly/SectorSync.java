@@ -12,6 +12,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
+import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.MatchingDao;
@@ -60,6 +61,7 @@ public class SectorSync extends SectorRunnable {
   private final UsageIdGen usageIdGen;
   private final Supplier<String> nameIdGen;
   private final Supplier<String> typeMaterialIdGen;
+  private final @Nullable IdentifierScopeResolver scopeResolver;
   private Throwable exception;
 
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean projectTarget, @Nullable TreeMergeHandlerConfig mergeCfg,
@@ -67,6 +69,7 @@ public class SectorSync extends SectorRunnable {
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
              Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
+             @Nullable IdentifierScopeResolver scopeResolver,
              int user) throws IllegalArgumentException {
     super(sectorKey, true, factory, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
     this.projectTarget = projectTarget;
@@ -81,6 +84,7 @@ public class SectorSync extends SectorRunnable {
     this.nameIdGen = nameIdGen;
     this.usageIdGen = usageIdGen;
     this.typeMaterialIdGen = typeMaterialIdGen;
+    this.scopeResolver = scopeResolver;
     this.mergeCfg = mergeCfg;
   }
 
@@ -344,7 +348,7 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, matcherSupplier, nameIndex, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen);
+      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, matcherSupplier, nameIndex, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, scopeResolver);
     }
     return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }

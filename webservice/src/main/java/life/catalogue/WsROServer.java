@@ -331,6 +331,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new VernacularGlobalResource());
     j.register(new VersionResource(cfg.versionString(), LocalDateTime.now()));
     j.register(new VocabResource());
+    j.register(new IdentifierScopeResource());
 
     // global parsers
     j.register(new HomotypicGroupingResource());

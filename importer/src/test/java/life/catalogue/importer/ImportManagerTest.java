@@ -96,7 +96,7 @@ public class ImportManagerTest {
     final TestConfigs cfg = TestConfigs.build();
     hc = HttpClients.createDefault();
     manager = new ImportManager(cfg.importer, cfg.normalizer, cfg.doi, metrics, hc, broker, SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
-      diDao, datasetDao, sDao, dDao, indexService, imgService, jobExecutor, validator, null);
+      diDao, datasetDao, sDao, dDao, indexService, imgService, jobExecutor, validator, null, null, null);
     manager.start();
   }
 

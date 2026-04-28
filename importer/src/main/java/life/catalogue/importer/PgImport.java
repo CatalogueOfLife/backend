@@ -19,6 +19,10 @@ import life.catalogue.importer.store.TreeWalker;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.UsageData;
+import life.catalogue.matching.IdentifierScopeResolver;
+import life.catalogue.matching.UsageMatch;
+import life.catalogue.matching.UsageMatcher;
+import life.catalogue.matching.UsageMatcherFactory;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -64,6 +68,8 @@ public class PgImport implements Callable<Boolean> {
   private final SqlSessionFactory sessionFactory;
   private final DatasetDao datasetDao;
   private final NameUsageIndexService indexService;
+  private final UsageMatcherFactory matcherFactory;
+  private final IdentifierScopeResolver scopeResolver;
   private final int attempt;
   private final DOI versionDOI;
   private final DatasetWithSettings dataset;
@@ -88,7 +94,8 @@ public class PgImport implements Callable<Boolean> {
   private int userKey;
 
   public PgImport(int attempt, DOI versionDOI, DatasetWithSettings dataset, int userKey, ImportStore store,
-                  SqlSessionFactory sessionFactory, ImporterConfig cfg, DatasetDao datasetDao, NameUsageIndexService indexService) {
+                  SqlSessionFactory sessionFactory, ImporterConfig cfg, DatasetDao datasetDao, NameUsageIndexService indexService,
+                  @Nullable UsageMatcherFactory matcherFactory, @Nullable IdentifierScopeResolver scopeResolver) {
     this.attempt = attempt;
     this.versionDOI = versionDOI;
     this.dataset = dataset;
@@ -98,6 +105,8 @@ public class PgImport implements Callable<Boolean> {
     this.sessionFactory = sessionFactory;
     this.indexService = indexService;
     this.datasetDao = datasetDao;
+    this.matcherFactory = matcherFactory;
+    this.scopeResolver = scopeResolver;
     verbatimIssueCache = Caffeine.newBuilder()
       .maximumSize(10000)
       .build(key -> store.getVerbatim(key).getIssues());
@@ -386,6 +395,28 @@ public class PgImport implements Callable<Boolean> {
    * This also indexes usages into the ES search index!
    */
   private void insertUsages() throws InterruptedException {
+    // optionally set up cross-dataset matching: for each imported usage we add the matched usageID
+    // as an Identifier on the imported usage, scoped via the identifier scope registry.
+    final UsageMatcher matchTarget;
+    final String matchScope;
+    if (matcherFactory != null && dataset.has(Setting.MATCH_DATASET)) {
+      Integer targetKey = (Integer) dataset.getSettings().get(Setting.MATCH_DATASET);
+      try {
+        matchTarget = matcherFactory.get(targetKey);
+      } catch (java.io.IOException e) {
+        throw new RuntimeException("Failed to access matcher for dataset " + targetKey, e);
+      }
+      matchScope = scopeResolver != null ? scopeResolver.resolve(targetKey) : null;
+      if (matchTarget == null || matchScope == null) {
+        // ImportJob.validate should have caught this; defensive fallback
+        LOG.warn("MATCH_DATASET={} configured but matcher or scope is not available; skipping import matching", targetKey);
+      } else {
+        LOG.info("Matching dataset {} usages against {} (scope '{}')", dataset.getKey(), targetKey, matchScope);
+      }
+    } else {
+      matchTarget = null;
+      matchScope = null;
+    }
     try (var indexer = indexService.buildDatasetIndexingHandler(dataset.getKey())) {
       // load all decisions so we can include them in the ES usage index later
       final Map<String, List<SimpleDecision>> decisions = new HashMap<>();
@@ -431,6 +462,10 @@ public class PgImport implements Callable<Boolean> {
 
             var u = nu.ud;
             fillUsageData(u, vKeys);
+            // optional cross-dataset matching: add a scoped Identifier from the configured target dataset
+            if (matchTarget != null && matchScope != null && (u.isTaxon() || u.isSynonym())) {
+              matchUsage(u, vKey, matchTarget, matchScope, verbatimRecordMapper);
+            }
             // update depth
             if (maxDepth.get() < parents.size()) {
               maxDepth.set(parents.size());
@@ -584,6 +619,52 @@ public class PgImport implements Callable<Boolean> {
           dm.updateTaxonomicGroupScope(dataset.getKey(), ibc.indexer.getTaxGroups());
         }
       }
+    }
+  }
+
+  /**
+   * Matches the imported usage against the configured target dataset and either attaches an
+   * {@link Identifier} (for clean and HIGHERRANK matches) or flags a MATCHING_* issue on the
+   * verbatim record (for AMBIGUOUS, NONE, UNSUPPORTED, and additionally HIGHERRANK).
+   */
+  private void matchUsage(UsageData u, DSID<Integer> vKey, UsageMatcher matcher, String scope, VerbatimRecordMapper verbatimRecordMapper) {
+    UsageMatch m;
+    try {
+      m = matcher.parseAndMatch(u.usage.toSimpleNameLink());
+    } catch (RuntimeException e) {
+      LOG.warn("Match failed for usage {} {}", u.getId(), u.usage.getName().getLabel(), e);
+      return;
+    }
+    if (m == null || m.type == null) return;
+    switch (m.type) {
+      case EXACT:
+      case VARIANT:
+      case CANONICAL:
+        if (m.usage != null) {
+          u.usage.asUsageBase().addIdentifier(new Identifier(scope, m.usage.getId()));
+        }
+        break;
+      case HIGHERRANK:
+        if (m.usage != null) {
+          u.usage.asUsageBase().addIdentifier(new Identifier(scope, m.usage.getId()));
+        }
+        addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_HIGHERRANK);
+        break;
+      case AMBIGUOUS:
+        addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_AMBIGUOUS);
+        break;
+      case NONE:
+        addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_NONE);
+        break;
+      case UNSUPPORTED:
+        addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_UNSUPPORTED);
+        break;
+    }
+  }
+
+  private void addVerbatimIssue(VerbatimRecordMapper mapper, DSID<Integer> vKey, Integer verbatimKey, Issue issue) {
+    if (verbatimKey != null) {
+      mapper.addIssue(vKey.id(verbatimKey), issue);
     }
   }
 

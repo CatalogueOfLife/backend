@@ -51,7 +51,7 @@ public class PgImportTest {
     DatasetWithSettings ds = new DatasetWithSettings(d2, new DatasetSettings());
     d2.setAlias(d.getAlias());
     PgImport imp = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), ds, Users.TESTER, null,
-      SqlSessionFactoryRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null);
+      SqlSessionFactoryRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null, null, null);
     imp.updateMetadata();
   }
 
