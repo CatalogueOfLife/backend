@@ -16,7 +16,7 @@ public class IdentifierScope {
   private String title;
   private String description;
   private String link;
-  private String resolverTemplate;
+  private String resolver;
   private String example;
   private String regex;
   private Integer datasetKey;
@@ -28,7 +28,7 @@ public class IdentifierScope {
                          @JsonProperty("title") String title,
                          @JsonProperty("description") String description,
                          @JsonProperty("link") String link,
-                         @JsonProperty("resolverTemplate") String resolverTemplate,
+                         @JsonProperty("resolver") String resolver,
                          @JsonProperty("example") String example,
                          @JsonProperty("regex") String regex,
                          @JsonProperty("datasetKey") Integer datasetKey) {
@@ -36,7 +36,7 @@ public class IdentifierScope {
     this.title = title;
     this.description = description;
     this.link = link;
-    this.resolverTemplate = resolverTemplate;
+    this.resolver = resolver;
     this.example = example;
     this.regex = regex;
     this.datasetKey = datasetKey;
@@ -54,8 +54,8 @@ public class IdentifierScope {
   public String getLink() { return link; }
   public void setLink(String link) { this.link = link; }
 
-  public String getResolverTemplate() { return resolverTemplate; }
-  public void setResolverTemplate(String resolverTemplate) { this.resolverTemplate = resolverTemplate; }
+  public String getResolver() { return resolver; }
+  public void setResolver(String resolver) { this.resolver = resolver; }
 
   public String getExample() { return example; }
   public void setExample(String example) { this.example = example; }
@@ -75,7 +75,7 @@ public class IdentifierScope {
       && Objects.equals(title, that.title)
       && Objects.equals(description, that.description)
       && Objects.equals(link, that.link)
-      && Objects.equals(resolverTemplate, that.resolverTemplate)
+      && Objects.equals(resolver, that.resolver)
       && Objects.equals(example, that.example)
       && Objects.equals(regex, that.regex)
       && Objects.equals(datasetKey, that.datasetKey);
@@ -83,7 +83,7 @@ public class IdentifierScope {
 
   @Override
   public int hashCode() {
-    return Objects.hash(scope, title, description, link, resolverTemplate, example, regex, datasetKey);
+    return Objects.hash(scope, title, description, link, resolver, example, regex, datasetKey);
   }
 
   @Override

@@ -374,7 +374,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // identifier scope resolver: map dataset keys to scopes from the central registry
     cfg.identifierScopes.validate();
-    final var identifierScopeResolver = new IdentifierScopeResolver(cfg.identifierScopes, getSqlSessionFactory());
+    final var identifierScopeResolver = new IdentifierScopeResolver(cfg.identifierScopes);
 
     // cron jobs
     var cron = CronExecutor.startWith(

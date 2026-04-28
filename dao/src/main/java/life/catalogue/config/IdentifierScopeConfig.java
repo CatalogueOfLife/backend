@@ -1,10 +1,13 @@
 package life.catalogue.config;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import life.catalogue.api.vocab.IdentifierScopes;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +24,9 @@ import jakarta.validation.constraints.NotNull;
 public class IdentifierScopeConfig {
   private static final Logger LOG = LoggerFactory.getLogger(IdentifierScopeConfig.class);
 
-  /** datasetKey (project, not release) -> scope string from {@link IdentifierScopes}. */
+  /** scope string from {@link IdentifierScopes} -> datasetKey (or project key, never release key) */
   @NotNull
-  public Map<Integer, String> mapping = new HashMap<>();
+  public BiMap<String, Integer> mapping = HashBiMap.create();
 
   /**
    * Validates that all configured scopes exist in the registry. Unknown scopes are dropped with a warning,
@@ -33,12 +36,12 @@ public class IdentifierScopeConfig {
     var iter = mapping.entrySet().iterator();
     while (iter.hasNext()) {
       var e = iter.next();
-      if (e.getValue() == null || IdentifierScopes.byScope(e.getValue()) == null) {
-        LOG.warn("Dropping unknown identifier scope '{}' configured for datasetKey {}", e.getValue(), e.getKey());
+      if (e.getKey() == null || e.getValue() == null || IdentifierScopes.byScope(e.getKey()) == null) {
+        LOG.warn("Dropping unknown identifier scope '{}' configured for datasetKey {}", e.getKey(), e.getValue());
         iter.remove();
-      } else {
-        // normalise to the canonical lowercase scope string
-        e.setValue(IdentifierScopes.byScope(e.getValue()).getScope());
+      } else if (!StringUtils.isAllLowerCase(e.getKey())) {
+        LOG.warn("Dropping identifier scope '{}' which is not lower case", e.getKey());
+        iter.remove();
       }
     }
   }

@@ -17,9 +17,9 @@ public class IdentifierScopesTest {
       assertNotNull("scope is required: " + s, s.getScope());
       assertEquals("scope must be lowercased: " + s.getScope(), s.getScope().toLowerCase(), s.getScope());
       assertNotNull("title is required for scope " + s.getScope(), s.getTitle());
-      if (s.getResolverTemplate() != null) {
-        assertTrue("resolverTemplate must contain the {id} placeholder: " + s,
-          s.getResolverTemplate().contains("{id}"));
+      if (s.getResolver() != null) {
+        assertTrue("resolver must contain the {id} placeholder: " + s,
+          s.getResolver().contains("{id}"));
       }
       if (s.getRegex() != null) {
         // must be a valid Java regex

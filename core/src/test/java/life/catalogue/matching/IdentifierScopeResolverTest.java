@@ -3,36 +3,45 @@ package life.catalogue.matching;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.config.IdentifierScopeConfig;
 
+import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.junit.DatasetInfoCacheMockRule;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.*;
 
+@RunWith(MockitoJUnitRunner.class)
 public class IdentifierScopeResolverTest {
 
   private IdentifierScopeConfig cfg;
   private IdentifierScopeResolver resolver;
+  @Rule
+  public DatasetInfoCacheMockRule infocacheRule = new DatasetInfoCacheMockRule();
 
   @Before
   public void setUp() {
     cfg = new IdentifierScopeConfig();
-    cfg.mapping.put(3, "col");
-    cfg.mapping.put(2030, "wfo");
-    resolver = new IdentifierScopeResolver(cfg, null); // no DB lookups in these tests
+    cfg.mapping.put("col", 3);
+    cfg.mapping.put("wfo", 2030);
+    resolver = new IdentifierScopeResolver(cfg); // no DB lookups in these tests
   }
 
   @Test
   public void resolveByDatasetAndSourceKey() {
     // project itself: sourceKey is null
-    assertEquals("col", resolver.resolve(3, null));
-    // a release of project 3: sourceKey points to the project
-    assertEquals("col", resolver.resolve(99, 3));
+    assertEquals("col", resolver.resolve(3));
     // unmapped dataset
-    assertNull(resolver.resolve(12345, null));
+    assertNull(resolver.resolve(12345));
     // unmapped release whose project is also unmapped
-    assertNull(resolver.resolve(99, 12345));
+    assertNull(resolver.resolve(99));
   }
 
   @Test
@@ -60,21 +69,17 @@ public class IdentifierScopeResolverTest {
   }
 
   @Test
-  public void effectiveKeyHelper() {
-    assertEquals(3, IdentifierScopeResolver.effectiveKey(3, null));
-    assertEquals(3, IdentifierScopeResolver.effectiveKey(99, 3));
-    assertEquals(2030, IdentifierScopeResolver.effectiveKey(2030, null));
-  }
-
-  @Test
   public void configValidationDropsUnknownScopes() {
     IdentifierScopeConfig c = new IdentifierScopeConfig();
-    c.mapping.put(3, "COL");           // case differs - should be normalised
-    c.mapping.put(7, "not-a-scope");   // unknown - should be dropped
-    c.mapping.put(8, null);            // null - should be dropped
+    c.mapping.put("col", 3);           // case differs - should be normalised
+    c.mapping.put("not-a-scope", 7);   // unknown - should be dropped
+    c.mapping.put(null, 8);            // null - should be dropped
+    c.mapping.put("worms", null);      // null - should be dropped
+    c.mapping.put("ITIS", 321);        // not lower case
     c.validate();
     assertEquals(1, c.mapping.size());
-    assertEquals("col", c.mapping.get(3));
+    assertEquals(Datasets.COL, (int) c.mapping.get("col"));
+    assertEquals("col", c.mapping.inverse().get(3));
     assertFalse(c.mapping.containsKey(7));
     assertFalse(c.mapping.containsKey(8));
   }
