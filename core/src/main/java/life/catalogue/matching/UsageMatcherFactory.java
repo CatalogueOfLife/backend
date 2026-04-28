@@ -165,6 +165,20 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   /**
+   * Get an existing matcher or null if none exists.
+   */
+  public UsageMatcher get(int datasetKey) throws IOException {
+    return matchers.get(datasetKey);
+  }
+
+  /**
+   * @return true if a matcher for the given datasetKey already exists, false otherwise.
+   */
+  public boolean exists(int datasetKey) throws IOException {
+    return matchers.containsKey(datasetKey);
+  }
+
+  /**
    * Depending on the dataset origin either a persistent or postgres matcher is created.
    * Persistent matchers are reused and should be closed after use.
    * @param datasetKey
