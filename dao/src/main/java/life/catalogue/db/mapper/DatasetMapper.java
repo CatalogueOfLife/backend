@@ -166,6 +166,17 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
                        @Param("page") Page page
   );
 
+  /**
+   * Same as the regular search, but does return only information needed for the CLB search interface,
+   *               i.e. no description, contributors, identifiers, sources, etc
+   * @param userKey optional user key so that private datasets for that user will be included in the results.
+   *                Use -42 for admins and other roles that should always see all private datasets
+   */
+  List<Dataset> searchSimple(@Param("req") DatasetSearchRequest request,
+                       @Param("userKey") Integer userKey,
+                       @Param("page") Page page
+  );
+
   default List<DatasetSimple> suggest(@Param("q") String query,
                               @Param("contributesTo") Integer contributesTo,
                               @Param("inclMerge") boolean inclMergeSources,

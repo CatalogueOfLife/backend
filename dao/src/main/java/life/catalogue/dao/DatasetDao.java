@@ -319,7 +319,14 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
-  public ResultPage<Dataset> search(@Nullable DatasetSearchRequest nullableRequest, @Nullable Integer userKey, @Nullable Page page) {
+  /**
+   * Searches for datasets matching the given request.
+   * @param simple if true, only information needed for the CLB search interface is included.
+   *               i.e. no description, contributors, identifiers, sources, etc
+   * @param userKey optional user key so that private datasets for that user will be included in the results.
+   *                Use -42 for admins and other roles that should always see all private datasets
+   */
+  public ResultPage<Dataset> search(@Nullable DatasetSearchRequest nullableRequest, boolean simple, @Nullable Integer userKey, @Nullable Page page) {
     page = page == null ? new Page() : page;
     final DatasetSearchRequest req = nullableRequest == null ? new DatasetSearchRequest() : nullableRequest;
     if (req.getSortBy() == null) {
@@ -335,7 +342,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      List<Dataset> result = dm.search(req, userKey, page);
+      List<Dataset> result = simple ? dm.searchSimple(req, userKey, page) : dm.search(req, userKey, page);
       return new ResultPage<>(page, result, () -> dm.count(req, userKey));
     }
   }

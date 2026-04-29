@@ -66,8 +66,11 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @VaryAccept
-  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth Optional<User> user) {
-    return dao.search(req, userkey(user), page);
+  public ResultPage<Dataset> search(@Valid @BeanParam Page page,
+                                    @QueryParam("full") @DefaultValue("false") boolean full,
+                                    @BeanParam DatasetSearchRequest req,
+                                    @Auth Optional<User> user) {
+    return dao.search(req, !full, userkey(user), page);
   }
 
   @GET

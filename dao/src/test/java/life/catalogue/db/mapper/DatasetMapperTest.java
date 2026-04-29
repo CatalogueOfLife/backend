@@ -839,6 +839,226 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     assertEquals(2, mapper().search(query, null, new Page()).size());
   }
 
+  @Test
+  public void searchSimple() throws Exception {
+    final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms");
+    commit();
+
+    final Integer d2 = createSearchableDataset("BIZ", "bob;jim", "CUIT", "A sentence with worms and worms");
+    commit();
+
+    final Integer d3 = createSearchableDataset("WORMS", "Bart", "WORMS", "The Worms dataset");
+    final Integer d4 = createSearchableDataset("FOO", "bar;Döring", "BAR", null);
+    final Integer d5 = createSearchableDataset("WORMS worms", "beard", "WORMS", "Worms with even more worms than worms");
+    mapper().delete(d5);
+    createSector(Datasets.COL, d3);
+    createSector(Datasets.COL, d4);
+    createSector(d4, d3);
+    commit();
+
+    DatasetSearchRequest query = new DatasetSearchRequest();
+    query.setCreated(LocalDate.parse("2031-12-31"));
+    assertTrue(mapper().searchSimple(query, null, new Page()).isEmpty());
+
+    // apple.sql contains one dataset from 2017
+    query.setCreated(LocalDate.parse("2018-02-01"));
+    assertEquals(6, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setCreated(LocalDate.parse("2016-02-01"));
+    assertEquals(7, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setCreatedBefore(LocalDate.parse("2020-01-01"));
+    assertEquals(2, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setCreated(LocalDate.parse("2018-02-01"));
+    assertEquals(1, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setIssued(FuzzyDate.of("2007-11-21"));
+    query.setModified(LocalDate.parse("2031-12-31"));
+    assertEquals(0, mapper().searchSimple(query, null, new Page()).size());
+
+
+    // check different orderings
+    query = DatasetSearchRequest.byQuery("worms");
+    for (DatasetSearchRequest.SortBy by : DatasetSearchRequest.SortBy.values()) {
+      query.setSortBy(by);
+      List<Dataset> datasets = mapper().searchSimple(query, null, new Page());
+      assertEquals(3, datasets.size());
+      datasets.forEach(c -> Assert.assertNotEquals("FOO", c.getTitle()));
+      switch (by) {
+        case CREATED:
+        case RELEVANCE:
+          assertEquals("Bad ordering by " + by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d1, datasets.get(2).getKey());
+          break;
+        case TITLE:
+          assertEquals("Bad ordering by " + by, d2, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d1, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d3, datasets.get(2).getKey());
+          break;
+        case CREATOR:
+          assertEquals("Bad ordering by " + by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d1, datasets.get(2).getKey());
+          break;
+        case KEY:
+          assertEquals("Bad ordering by " + by, d1, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d3, datasets.get(2).getKey());
+        case SIZE:
+        case MODIFIED:
+          // nothing, from import and all null
+      }
+    }
+
+    // now try reversed
+    query.setReverse(true);
+    for (DatasetSearchRequest.SortBy by : DatasetSearchRequest.SortBy.values()) {
+      query.setSortBy(by);
+      List<Dataset> datasets = mapper().searchSimple(query, null, new Page());
+      assertEquals(3, datasets.size());
+      switch (by) {
+        case CREATED:
+          assertEquals("Bad ordering by " + by, d1, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d3, datasets.get(2).getKey());
+          break;
+        case RELEVANCE:
+          // relevance cannot be reverted
+          assertEquals("Bad ordering by " + by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d1, datasets.get(2).getKey());
+          break;
+        case TITLE:
+          assertEquals("Bad ordering by " + by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d1, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d2, datasets.get(2).getKey());
+          break;
+        case CREATOR:
+          assertEquals("Bad ordering by " + by, d1, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d3, datasets.get(2).getKey());
+          break;
+        case KEY:
+          assertEquals("Bad ordering by " + by, d3, datasets.get(0).getKey());
+          assertEquals("Bad ordering by " + by, d2, datasets.get(1).getKey());
+          assertEquals("Bad ordering by " + by, d1, datasets.get(2).getKey());
+        case SIZE:
+        case MODIFIED:
+          // nothing, from import and all null
+      }
+    }
+
+
+    query = DatasetSearchRequest.byQuery("worms");
+    query.setContributesTo(Datasets.COL);
+    assertEquals(1, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setQ(null);
+    assertEquals(2, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setContributesTo(d4);
+    assertEquals(1, mapper().searchSimple(query, null, new Page()).size());
+
+    // non existing catalogue
+    query.setContributesTo(99);
+    assertEquals(0, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setContributesTo(Datasets.COL);
+    assertEquals(2, mapper().searchSimple(query, null, new Page()).size());
+
+    // by source dataset
+    query = new DatasetSearchRequest();
+    query.setHasSourceDataset(d3);
+    assertEquals(2, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setHasSourceDataset(d4);
+    assertEquals(1, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setHasSourceDataset(99); // non existing
+    assertEquals(0, mapper().searchSimple(query, null, new Page()).size());
+
+    // create another catalogue to test non draft sectors
+    Dataset cat = TestEntityGenerator.newDataset("cat2");
+    TestEntityGenerator.setUser(cat);
+    mapper(DatasetMapper.class).create(cat);
+    mapper(DatasetPartitionMapper.class).createSequences(cat.getKey());
+    // new sectors
+    createSector(cat.getKey(), d1);
+    createSector(cat.getKey(), d5);
+    commit();
+
+    // old query should still be the same
+    query = DatasetSearchRequest.byQuery("worms");
+    query.setContributesTo(Datasets.COL);
+    assertEquals(1, mapper().searchSimple(query, null, new Page()).size());
+
+    query = new DatasetSearchRequest();
+    query.setContributesTo(Datasets.COL);
+    assertEquals(2, mapper().searchSimple(query, null, new Page()).size());
+
+    query = new DatasetSearchRequest();
+    query.setContributesTo(cat.getKey());
+    // d5 was deleted!
+    assertEquals(1, mapper().searchSimple(query, null, new Page()).size());
+
+    // by origin
+    query = new DatasetSearchRequest();
+    query.setOrigin(List.of(DatasetOrigin.PROJECT));
+    assertEquals(7, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setOrigin(List.of(DatasetOrigin.EXTERNAL));
+    assertEquals(1, mapper().searchSimple(query, null, new Page()).size());
+
+    query.setOrigin(List.of(DatasetOrigin.PROJECT, DatasetOrigin.EXTERNAL));
+    assertEquals(8, mapper().searchSimple(query, null, new Page()).size());
+
+    // by code
+    query = new DatasetSearchRequest();
+    query.setCode(NomCode.CULTIVARS);
+    assertEquals(0, mapper().searchSimple(query, null, new Page()).size());
+
+    // by release
+    query = new DatasetSearchRequest();
+    query.setReleasedFrom(Datasets.COL);
+    assertEquals(0, mapper().searchSimple(query, null, new Page()).size());
+
+    // private only
+    query = new DatasetSearchRequest();
+    query.setPrivat(true);
+    assertEquals(0, mapper().searchSimple(query, null, new Page()).size());
+    query.setPrivat(false);
+    assertEquals(8, mapper().searchSimple(query, null, new Page()).size());
+
+    // rowType queries
+    query = new DatasetSearchRequest();
+    query.setRowType(List.of(ColdpTerm.TypeMaterial));
+    assertEquals(0, mapper().searchSimple(query, null, new Page()).size());
+
+    // Umlauts in query
+    query = new DatasetSearchRequest();
+    query.setQ("Döring");
+    var res = mapper().search(query, null, new Page());
+    assertEquals(d4, res.get(0).getKey());
+
+    // lastImportState
+    query = new DatasetSearchRequest();
+    assertEquals(8, mapper().searchSimple(query, null, new Page()).size());
+    query.setLastImportState(ImportState.FAILED);
+    assertEquals(0, mapper().searchSimple(query, null, new Page()).size());
+
+    // tax group
+    query = new DatasetSearchRequest();
+    query.setGroup(List.of(TaxGroup.Animals, TaxGroup.Plants));
+    assertEquals(0, mapper().searchSimple(query, null, new Page()).size());
+
+    mapper().updateTaxonomicGroupScope(d1, Set.of(TaxGroup.Animals, TaxGroup.Arthropods, TaxGroup.Insects, TaxGroup.Coleoptera));
+    mapper().updateTaxonomicGroupScope(d2, Set.of(TaxGroup.Plants, TaxGroup.Gymnosperms));
+    mapper().updateTaxonomicGroupScope(d3, Set.of(TaxGroup.Viruses));
+    assertEquals(2, mapper().searchSimple(query, null, new Page()).size());
+  }
+
   private int createSearchableDataset(String title, String author, String organisation, String description) {
     return createSearchableDataset(title, author, organisation, description, DatasetOrigin.PROJECT, null, null).getKey();
   }

@@ -14,6 +14,29 @@
     <include refid="size"/> AS size
   </sql>
 
+  <sql id="SELECT_SIMPLE_SEARCH">
+    d.key,
+    d.title,
+    d.alias,
+    d.issued,
+    d.version,
+    d.publisher,
+    d.license,
+    d.created,
+    d.modified,
+    d.doi,
+    d.version_doi,
+    d.gbif_key,
+    d.gbif_publisher_key,
+    d.attempt,
+    d.origin,
+    d.type,
+    d.source_key,
+    di.finished AS imported,
+    d.private,
+    <include refid="size"/> AS size
+  </sql>
+
   <sql id="SELECT_SIMPLE">
     d.key,
     d.source_key,
@@ -221,6 +244,12 @@
     <collection property="source" ofType="Citation" column="{datasetKey=key}" select="life.catalogue.db.mapper.CitationMapper.list" />
   </resultMap>
 
+  <resultMap id="datasetSimpleSearchResultMap" type="Dataset" autoMapping="true">
+    <id property="key" column="key"/>
+    <result property="privat" column="private"/>
+    <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
+  </resultMap>
+
   <resultMap id="datasetAttResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetAttempt" autoMapping="true">
     <id property="key" column="key"/>
   </resultMap>
@@ -281,8 +310,7 @@
     WHERE <include refid="SEARCH_WHERE"/>
   </select>
 
-  <select id="search" resultMap="datasetResultMap">
-    SELECT <include refid="SELECT"/>
+  <sql id="SEARCH_FROM_WHERE">
     FROM <include refid="FROM"/> <include refid="FROM_PROJ"/>
     WHERE <include refid="SEARCH_WHERE"/>
     ORDER BY
@@ -330,6 +358,16 @@
       </otherwise>
     </choose>
     <include refid="life.catalogue.db.Common.limit"/>
+  </sql>
+
+  <select id="search" resultMap="datasetResultMap">
+    SELECT <include refid="SELECT"/>
+    <include refid="SEARCH_FROM_WHERE"/>
+  </select>
+
+  <select id="searchSimple" resultMap="datasetSimpleSearchResultMap">
+    SELECT <include refid="SELECT_SIMPLE_SEARCH"/>
+    <include refid="SEARCH_FROM_WHERE"/>
   </select>
 
   <select id="suggestInternal" resultMap="datasetSimpleResultMap">
