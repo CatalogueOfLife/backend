@@ -10,7 +10,6 @@ import life.catalogue.parser.SafeParser;
 import org.gbif.dwc.terms.Term;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -96,7 +95,7 @@ public class InterpreterUtils {
       }
       return ids;
     }
-    return Collections.emptyList();
+    return new ArrayList<>();
   }
 
   public static String normGeoTime(String gt, IssueContainer issues){
