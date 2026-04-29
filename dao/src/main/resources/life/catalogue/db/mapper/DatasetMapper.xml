@@ -22,8 +22,6 @@
     d.version,
     d.publisher,
     d.license,
-    d.created,
-    d.modified,
     d.doi,
     d.version_doi,
     d.gbif_key,
@@ -32,8 +30,13 @@
     d.origin,
     d.type,
     d.source_key,
-    di.finished AS imported,
+    d.taxonomic_group_scope,
+    d.last_import_attempt,
+    d.created,
+    d.modified,
     d.private,
+    di.finished AS imported,
+    dli.state AS last_import_state,
     <include refid="size"/> AS size
   </sql>
 
@@ -248,6 +251,7 @@
     <id property="key" column="key"/>
     <result property="privat" column="private"/>
     <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
+    <result property="taxonomicGroupScope" column="taxonomic_group_scope" typeHandler="life.catalogue.db.type2.TaxGroupSetTypeHandler"/>
   </resultMap>
 
   <resultMap id="datasetAttResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetAttempt" autoMapping="true">
