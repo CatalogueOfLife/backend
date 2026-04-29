@@ -186,7 +186,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       LOG.info("Merge dataset metadata {}: {}", d.getKey(), d.getTitle());
     }
 
-    Set<String> nonNullProps = Set.of("title", "alias", "license");
+    Set<String> nonNullProps = Set.of("title", "alias", "license", "doi", "versionDoi");
     try {
       for (PropertyDescriptor prop : Dataset.PATCH_PROPS) {
         Object val = prop.getReadMethod().invoke(update);
