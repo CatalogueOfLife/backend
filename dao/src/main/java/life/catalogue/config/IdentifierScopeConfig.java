@@ -1,17 +1,15 @@
 package life.catalogue.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import life.catalogue.api.vocab.IdentifierScopes;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import jakarta.validation.constraints.NotNull;
 
 /**
  * Per-deployment mapping from a CLB datasetKey to a scope string from the identifier scope registry.
@@ -25,8 +23,15 @@ public class IdentifierScopeConfig {
   private static final Logger LOG = LoggerFactory.getLogger(IdentifierScopeConfig.class);
 
   /** scope string from {@link IdentifierScopes} -> datasetKey (or project key, never release key) */
-  @NotNull
   public BiMap<String, Integer> mapping = HashBiMap.create();
+
+  @JsonProperty("mapping")
+  public void setMapping(Map<String, Integer> m) {
+    mapping = HashBiMap.create();
+    m.forEach((k, v) -> {
+      if (k != null && v != null) mapping.put(k, v);
+    });
+  }
 
   /**
    * Validates that all configured scopes exist in the registry. Unknown scopes are dropped with a warning,
