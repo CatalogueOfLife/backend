@@ -179,13 +179,22 @@ public enum Setting {
   SECTOR_CREATE_IMPLICIT_NAMES(Boolean.class, false, DatasetOrigin.PROJECT),
 
   /**
-   * If set, every imported usage is matched against the dataset with the given key
-   * and the matched usageID is stored as an identifier on the imported usage,
-   * scoped via the identifier scope registry mapping for that target dataset.
+   * If set, every imported usage is matched against the specified dataset and the matched usageID
+   * is stored as an identifier on the imported usage.
+   *
+   * <p>Format: {@code {integer}(LXR|LR)?}
+   * <ul>
+   *   <li>{@code "1000"} — match against dataset 1000 directly</li>
+   *   <li>{@code "2207LR"} — match against the latest release of project 2207</li>
+   *   <li>{@code "2207LXR"} — match against the latest extended release of project 2207</li>
+   * </ul>
+   *
+   * <p>The identifier scope is taken from the configured scope registry for the project/dataset key,
+   * or falls back to {@code clb{resolvedDatasetKey}}.
    * The configured matcher must already exist in the UsageMatcherFactory cache;
    * imports fail early otherwise.
    */
-  MATCH_DATASET(Integer.class, DatasetOrigin.EXTERNAL, DatasetOrigin.PROJECT);
+  ADD_IDENTIFIERS_FROM(String.class, DatasetOrigin.EXTERNAL, DatasetOrigin.PROJECT);
 
   private final Class type;
   private final DatasetOrigin[] origin;

@@ -33,6 +33,7 @@ import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.ImportStoreFactory;
 import life.catalogue.importer.proxy.ArchiveDescriptor;
 import life.catalogue.importer.proxy.DistributedArchiveService;
+import life.catalogue.matching.AddIdentifiersSpec;
 import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.decision.DecisionRematchRequest;
@@ -164,28 +165,30 @@ public class ImportJob implements Runnable {
       throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a data access URL");
     }
 
-    // fail early if MATCH_DATASET is configured but no matcher exists for it - we never trigger a build here
-    if (dataset.has(Setting.MATCH_DATASET)) {
-      Integer targetKey = (Integer) dataset.getSettings().get(Setting.MATCH_DATASET);
-      if (targetKey == null) {
-        // unreachable but keeps the type-checker happy
-      } else if (matcherFactory == null) {
-        throw new IllegalStateException("Dataset " + datasetKey + " is configured to match against "
-          + targetKey + " but no UsageMatcherFactory is available");
-      } else if (targetKey == datasetKey) {
-        throw new IllegalArgumentException("Dataset " + datasetKey + " cannot match against itself");
-      } else {
+    // fail early if ADD_IDENTIFIERS_FROM is configured but no matcher exists for it - we never trigger a build here
+    if (dataset.has(Setting.ADD_IDENTIFIERS_FROM)) {
+      String rawValue = (String) dataset.getSettings().get(Setting.ADD_IDENTIFIERS_FROM);
+      if (rawValue != null) {
+        AddIdentifiersSpec spec = AddIdentifiersSpec.parse(rawValue);
+        if (matcherFactory == null) {
+          throw new IllegalStateException("Dataset " + datasetKey + " is configured to add identifiers from "
+            + spec + " but no UsageMatcherFactory is available");
+        }
+        int resolvedKey;
+        try (SqlSession session = factory.openSession()) {
+          resolvedKey = spec.resolveDatasetKey(session.getMapper(DatasetMapper.class));
+        }
+        if (resolvedKey == datasetKey) {
+          throw new IllegalArgumentException("Dataset " + datasetKey + " cannot match against itself");
+        }
         try {
-          if (matcherFactory.get(targetKey) == null) {
+          if (matcherFactory.get(resolvedKey) == null) {
             throw new IllegalArgumentException("Dataset " + datasetKey
-              + " is configured to match against " + targetKey + " but no matcher exists for it");
+              + " is configured to add identifiers from " + spec + " (resolved key=" + resolvedKey
+              + ") but no matcher exists for it");
           }
         } catch (IOException e) {
-          throw new IllegalStateException("Failed to access matcher for dataset " + targetKey, e);
-        }
-        if (scopeResolver == null || scopeResolver.resolve(targetKey) == null) {
-          throw new IllegalArgumentException("Dataset " + datasetKey
-            + " matches against " + targetKey + " but no identifier scope is configured for that dataset");
+          throw new IllegalStateException("Failed to access matcher for dataset " + resolvedKey, e);
         }
       }
     }

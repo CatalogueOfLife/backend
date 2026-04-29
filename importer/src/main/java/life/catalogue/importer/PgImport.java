@@ -19,6 +19,7 @@ import life.catalogue.importer.store.TreeWalker;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.UsageData;
+import life.catalogue.matching.AddIdentifiersSpec;
 import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
@@ -399,19 +400,28 @@ public class PgImport implements Callable<Boolean> {
     // as an Identifier on the imported usage, scoped via the identifier scope registry.
     final UsageMatcher matchTarget;
     final String matchScope;
-    if (matcherFactory != null && dataset.has(Setting.MATCH_DATASET)) {
-      Integer targetKey = (Integer) dataset.getSettings().get(Setting.MATCH_DATASET);
-      try {
-        matchTarget = matcherFactory.get(targetKey);
-      } catch (java.io.IOException e) {
-        throw new RuntimeException("Failed to access matcher for dataset " + targetKey, e);
+    if (matcherFactory != null && dataset.has(Setting.ADD_IDENTIFIERS_FROM)) {
+      String rawValue = (String) dataset.getSettings().get(Setting.ADD_IDENTIFIERS_FROM);
+      AddIdentifiersSpec spec = AddIdentifiersSpec.parse(rawValue);
+      int resolvedKey;
+      try (SqlSession resolveSession = sessionFactory.openSession()) {
+        resolvedKey = spec.resolveDatasetKey(resolveSession.getMapper(DatasetMapper.class));
       }
-      matchScope = scopeResolver != null ? scopeResolver.resolve(targetKey) : null;
-      if (matchTarget == null || matchScope == null) {
+      UsageMatcher matcher;
+      try {
+        matcher = matcherFactory.get(resolvedKey);
+      } catch (java.io.IOException e) {
+        throw new RuntimeException("Failed to access matcher for dataset " + resolvedKey, e);
+      }
+      if (matcher == null) {
         // ImportJob.validate should have caught this; defensive fallback
-        LOG.warn("MATCH_DATASET={} configured but matcher or scope is not available; skipping import matching", targetKey);
+        LOG.warn("ADD_IDENTIFIERS_FROM={} (resolved={}) configured but no matcher available; skipping import matching", spec, resolvedKey);
+        matchTarget = null;
+        matchScope = null;
       } else {
-        LOG.info("Matching dataset {} usages against {} (scope '{}')", dataset.getKey(), targetKey, matchScope);
+        matchScope = spec.resolveScope(scopeResolver, resolvedKey);
+        matchTarget = matcher;
+        LOG.info("Matching dataset {} usages against {} resolved={} (scope '{}')", dataset.getKey(), spec, resolvedKey, matchScope);
       }
     } else {
       matchTarget = null;
