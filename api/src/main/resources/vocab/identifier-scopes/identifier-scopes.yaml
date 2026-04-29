@@ -27,7 +27,6 @@
 
 - scope: url
   title: URL
-  resolver: "{id}"
   description: An HTTP(S) or FTP URL used as an identifier.
 
 - scope: urn
@@ -103,8 +102,8 @@
 - scope: col
   title: Catalogue of Life
   description: ChecklistBank usage IDs of the COL project and its releases.
-  link: https://registry.identifiers.org/registry/col
-  resolver: https://www.checklistbank.org/dataset/3LXR/nameusage/{id}
+  link: https://www.catalogueoflife.org/building/identifier
+  resolver: https://www.catalogueoflife.org/data/taxon/{id}
   example: 6W3C4
   datasetKey: 3
 
@@ -131,6 +130,7 @@
 - scope: grin
   title: Germplasm Resources Information Network (GRIN) Taxonomy
   link: https://npgsweb.ars-grin.gov/gringlobal/taxon/abouttaxonomy
+  resolver: https://npgsweb.ars-grin.gov/gringlobal/taxon/taxonomydetail?id={id}
   example: '2263'
 
 - scope: hol
