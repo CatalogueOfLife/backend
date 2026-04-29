@@ -74,7 +74,7 @@ public class AddIdentifiersSpec {
   public int resolveDatasetKey(DatasetMapper dm) {
     if (suffix == Suffix.NONE) return projectOrDatasetKey;
     DatasetOrigin origin = suffix == Suffix.LR ? DatasetOrigin.RELEASE : DatasetOrigin.XRELEASE;
-    Integer resolved = dm.latestRelease(projectOrDatasetKey, false, origin);
+    Integer resolved = dm.latestRelease(projectOrDatasetKey, true, origin);
     if (resolved == null) {
       throw new IllegalStateException("No " + suffix + " found for project " + projectOrDatasetKey);
     }
