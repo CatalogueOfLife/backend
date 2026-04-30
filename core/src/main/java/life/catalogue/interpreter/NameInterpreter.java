@@ -255,8 +255,11 @@ public class NameInterpreter {
         }
         // we ignore inferred ranks for uninomials above genera as these are suffix based
         // infrageneric names for plants mostly contain explicit rank markers, so we keep those
-        // Also require the name to be a proper scientific name (not a placeholder)
-        if (!inferred.isGenusOrSuprageneric() && pnu.getName().getType() == NameType.SCIENTIFIC) {
+        // Also require the name to be a proper scientific name starting uppercase (not a placeholder
+        // like NCBI "cellular organisms" whose lowercase-starting two-word form fools the parser into SPECIES)
+        if (!inferred.isGenusOrSuprageneric()
+            && pnu.getName().getType() == NameType.SCIENTIFIC
+            && (StringUtils.isBlank(sciname) || !Character.isLowerCase(sciname.charAt(0)))) {
           rank = inferred;
         }
       }

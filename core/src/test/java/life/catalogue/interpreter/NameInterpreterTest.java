@@ -395,6 +395,11 @@ public class NameInterpreterTest {
     n = pnu.getName();
     assertEquals(Rank.UNRANKED, n.getRank());
 
+    // empty/missing rank for indet names
+    pnu = interpret(null, "Abies sp.", null, v);
+    n = pnu.getName();
+    assertEquals(Rank.UNRANKED, n.getRank());
+
     // daggers should be removed from name parts, not just entire names
     // https://github.com/CatalogueOfLife/data/issues/417
     pnu = interpret("species", null, "Hamilton, 1990",null,
