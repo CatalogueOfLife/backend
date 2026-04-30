@@ -60,8 +60,6 @@ public class DataCiteServiceIT {
     client = ClientBuilder.newClient(cfg);
 
     DoiConfig doiCfg = YamlUtils.read(DoiConfig.class, "/datacite.yaml");
-    doiCfg.username="GBIF.COL";
-    doiCfg.password="Symphony9Idiocy9enrich";
     doiCfg.validateMetadata = false; // we want to see the original http exceptions from datacite!
     service = new DataCiteService(doiCfg, client);
 
