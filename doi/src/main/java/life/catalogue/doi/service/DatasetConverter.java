@@ -114,14 +114,14 @@ public class DatasetConverter {
     }
     // version
     attr.setVersion(d.getVersion());
-    // creator
-    if (d.getCreator() != null && !d.getCreator().isEmpty()) {
-      attr.setCreators(toCreators(d.getCreator()));
-    } else if (d.getEditor() != null && !d.getEditor().isEmpty()) {
-      LOG.debug("No authors given. Use dataset editors instead");
-      attr.setCreators(toCreators(d.getEditor()));
-    } else {
-      LOG.debug("No authors given. Use dataset creator instead");
+    // creator — evaluate the conversion result, not the raw list size
+    List<Creator> creators = d.getCreator() != null ? toCreators(d.getCreator()) : List.of();
+    if (creators.isEmpty() && d.getEditor() != null && !d.getEditor().isEmpty()) {
+      LOG.warn("Dataset {} has no usable creators, falling back to {} editor(s)", d.getKey(), d.getEditor().size());
+      creators = toCreators(d.getEditor());
+    }
+    if (creators.isEmpty()) {
+      LOG.warn("Dataset {} has no usable creators or editors, falling back to system user {}", d.getKey(), d.getCreatedBy());
       User user = userByID.apply(d.getCreatedBy());
       Creator creator;
       if (user.getLastname() != null) {
@@ -130,8 +130,9 @@ public class DatasetConverter {
         creator = new Creator(user.getUsername(), NameType.PERSONAL);
       }
       creator.setNameIdentifiers(List.of(NameIdentifier.gbif(user.getUsername())));
-      attr.setCreators(List.of(creator));
+      creators = List.of(creator);
     }
+    attr.setCreators(creators);
     // contributors
     List<Contributor> contribs = new ArrayList<>();
     if (d.getContributor() != null) {
@@ -205,10 +206,14 @@ public class DatasetConverter {
                      Creator c = new Creator(StringUtils.trimToNull(a.getGiven()), StringUtils.trimToNull(a.getFamily()), StringUtils.trimToNull(a.getOrcid()));
                      addAffiliation(c, a);
                      return c;
-                   } else if (a.getName() != null) {
-                     return new Creator(a.getName(), NameType.ORGANIZATIONAL);
                    } else {
-                     return null;
+                     String name = StringUtils.trimToNull(a.getName());
+                     if (name != null) {
+                       return new Creator(name, NameType.ORGANIZATIONAL);
+                     } else {
+                       LOG.warn("Skipping creator agent with no usable name: email={}", a.getEmail());
+                       return null;
+                     }
                    }
                  })
                  .filter(Objects::nonNull)
@@ -238,9 +243,13 @@ public class DatasetConverter {
       Contributor c = new Contributor(StringUtils.trimToNull(a.getGiven()), StringUtils.trimToNull(a.getFamily()), StringUtils.trimToNull(a.getOrcid()), type);
       addAffiliation(c, a);
       return c;
-    } else if (a.getName() != null) {
-      return new Contributor(a.getName(), NameType.ORGANIZATIONAL, type);
+    } else {
+      String name = StringUtils.trimToNull(a.getName());
+      if (name != null) {
+        return new Contributor(name, NameType.ORGANIZATIONAL, type);
+      }
     }
+    LOG.warn("Skipping contributor agent with no usable name: email={}", a.getEmail());
     return null;
   }
 

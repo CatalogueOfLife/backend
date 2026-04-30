@@ -24,7 +24,9 @@ import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiException;
+import life.catalogue.doi.service.DoiHttpException;
 import life.catalogue.doi.service.DoiService;
+import life.catalogue.doi.service.InvalidMetadataException;
 
 import java.io.File;
 import java.io.IOException;
@@ -289,6 +291,19 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
           case DELETE -> delete(event.getDoi());
           case PUBLISH -> publish(event.getDoi());
           case UPDATE -> doiService.update(metadata(event.getDoi()));
+        }
+      } catch (InvalidMetadataException e) {
+        // pre-flight validation failed — permanent failure, do not re-queue
+        LOG.error("Permanent metadata failure for {} event on DOI {} — not retrying: {}", event.getType(), event.getDoi(), e.getMessage());
+        doiService.notifyException(event.getDoi(), event.getType().name(), e);
+      } catch (DoiHttpException e) {
+        if (e.getStatus() == 422) {
+          // DataCite rejected metadata as invalid — permanent failure, do not re-queue
+          LOG.error("DataCite rejected metadata (HTTP 422) for {} event on DOI {} — not retrying: {}", event.getType(), event.getDoi(), e.getMessage());
+          doiService.notifyException(event.getDoi(), event.getType().name(), e);
+        } else {
+          LOG.error("HTTP {} error processing {} DOI event for DOI {}", e.getStatus(), event.getType(), event.getDoi(), e);
+          events.put(new XDoiChange(event, event.fails+1));
         }
       } catch (Exception e) {
         LOG.error("Error processing {} DOI event for DOI {}", event.getType(), event.getDoi(), e);

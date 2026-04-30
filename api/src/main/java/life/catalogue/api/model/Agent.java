@@ -246,6 +246,11 @@ public class Agent implements Comparable<Agent> {
     return !StringUtils.isBlank(organisation) || !StringUtils.isBlank(department);
   }
 
+  @JsonIgnore
+  public boolean hasUsableName() {
+    return !StringUtils.isBlank(getName());
+  }
+
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getName(){
     StringBuilder sb = new StringBuilder();

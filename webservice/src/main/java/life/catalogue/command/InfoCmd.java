@@ -5,6 +5,10 @@ import life.catalogue.WsServerConfig;
 import io.dropwizard.core.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 
+/**
+ * Prints the application version and the key configuration values (DB, Elasticsearch, DOI, GBIF)
+ * to stdout. Useful for quickly verifying that a config file is parsed correctly.
+ */
 public class InfoCmd extends AbstractPromptCmd {
 
   public InfoCmd() {

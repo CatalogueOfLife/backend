@@ -33,6 +33,13 @@ import jakarta.ws.rs.client.Client;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
+/**
+ * Base class for CLI commands that require a live MyBatis / PostgreSQL connection.
+ * Sets up the HikariCP connection pool, MyBatis {@link SqlSessionFactory}, and
+ * {@link DatasetInfoCache}, resolves the optional {@code --user} argument, and optionally
+ * initialises a Jersey HTTP client when {@code initJersey=true}. Subclasses implement
+ * {@link #execute()}.
+ */
 public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractMybatisCmd.class);
   private static final String ARG_USER = "user";

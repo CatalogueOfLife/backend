@@ -11,8 +11,12 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
@@ -86,8 +90,30 @@ public class DataCiteService implements DoiService {
     }
   }
 
+  private void validateMetadata(DoiAttributes attr) throws InvalidMetadataException {
+    if (cfg.validateMetadata) {
+      List<String> problems = new ArrayList<>();
+      if (attr.getCreators() == null || attr.getCreators().isEmpty()) {
+        problems.add("creators is empty or null");
+      }
+      if (attr.getTitles() == null || attr.getTitles().isEmpty()) {
+        problems.add("titles is empty or null");
+      }
+      if (StringUtils.isBlank(attr.getPublisher())) {
+        problems.add("publisher is blank or null");
+      }
+      if (attr.getPublicationYear() == null) {
+        problems.add("publicationYear is null");
+      }
+      if (!problems.isEmpty()) {
+        throw new InvalidMetadataException("Invalid DataCite metadata for " + attr.getDoi() + ": " + String.join("; ", problems));
+      }
+    }
+  }
+
   @Override
   public void create(DoiAttributes attr) throws DoiException {
+    validateMetadata(attr);
     LOG.info("create new draft DOI {}", attr.getDoi());
     Response resp = null;
     try {
@@ -160,7 +186,10 @@ public class DataCiteService implements DoiService {
   public void update(DoiAttributes attr) throws DoiException {
     Preconditions.checkNotNull(attr.getDoi());
     Preconditions.checkArgument(attr.getDoi().isComplete(), "DOI suffix required");
-
+    // only validate full metadata updates; URL-only or event-only updates have null creators/titles
+    if (attr.getCreators() != null || attr.getTitles() != null) {
+      validateMetadata(attr);
+    }
     LOG.info("update metadata for {}", attr.getDoi());
     Response resp = null;
     try {

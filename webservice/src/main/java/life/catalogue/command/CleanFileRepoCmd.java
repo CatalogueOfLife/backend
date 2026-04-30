@@ -1,28 +1,19 @@
 package life.catalogue.command;
 
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.model.DatasetRelease;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.SectorImportDao;
-import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.SectorImportMapper;
-import life.catalogue.db.mapper.SectorMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *
+ * Removes on-disk import and sector metric files that are no longer needed.
+ * For deleted release datasets only private releases have their metric files removed;
+ * for deleted external and project datasets all metric files (including sector sub-directories)
+ * are deleted.
  */
 public class CleanFileRepoCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(CleanFileRepoCmd.class);

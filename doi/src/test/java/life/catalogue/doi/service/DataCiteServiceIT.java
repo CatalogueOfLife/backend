@@ -60,6 +60,9 @@ public class DataCiteServiceIT {
     client = ClientBuilder.newClient(cfg);
 
     DoiConfig doiCfg = YamlUtils.read(DoiConfig.class, "/datacite.yaml");
+    doiCfg.username="GBIF.COL";
+    doiCfg.password="Symphony9Idiocy9enrich";
+    doiCfg.validateMetadata = false; // we want to see the original http exceptions from datacite!
     service = new DataCiteService(doiCfg, client);
 
     DoiConfig prodCfg = new DoiConfig();
@@ -248,5 +251,133 @@ public class DataCiteServiceIT {
     assertNotNull(resp);
 
     assertEquals(DoiState.REGISTERED, resp.getState());
+  }
+
+  /**
+   * Probes which invalid metadata the DataCite test API rejects with HTTP 422.
+   * Run manually against api.test.datacite.org (configured via datacite.yaml).
+   * Results are logged so they can be used to tune the pre-flight validateMetadata() checks.
+   */
+  @Test
+  public void invalidMetadata_emptyCreators() throws Exception {
+    DOI doi = DOI.test("DataCiteServiceIT-inv-" + UUID.randomUUID());
+    dois.add(doi);
+    DoiAttributes attr = generate(doi);
+    attr.setCreators(List.of());
+    try {
+      service.create(attr);
+      service.publish(doi);
+      LOG.warning("DataCite accepted empty creators list for draft — no 422");
+    } catch (DoiHttpException ex) {
+      LOG.info("HTTP " + ex.getStatus() + " for empty creators: " + ex.getMessage());
+    }
+  }
+
+  @Test
+  public void invalidMetadata_emptyCreatorName() throws Exception {
+    DOI doi = DOI.test("DataCiteServiceIT-inv-" + UUID.randomUUID());
+    dois.add(doi);
+    DoiAttributes attr = generate(doi);
+    attr.setCreators(List.of(new Creator("", NameType.ORGANIZATIONAL)));
+    try {
+      service.create(attr);
+      service.publish(doi);
+      LOG.warning("DataCite accepted empty creator name for draft — no 422");
+    } catch (DoiHttpException ex) {
+      LOG.info("HTTP " + ex.getStatus() + " for empty creator name: " + ex.getMessage());
+    }
+  }
+
+  @Test
+  public void invalidMetadata_emptyContributorName() throws Exception {
+    // Reproduces the observed production error: contributorName with length 0
+    DOI doi = DOI.test("DataCiteServiceIT-inv-" + UUID.randomUUID());
+    dois.add(doi);
+    DoiAttributes attr = generate(doi);
+    attr.setContributors(List.of(new Contributor("", NameType.ORGANIZATIONAL, ContributorType.DATA_CURATOR)));
+    try {
+      service.create(attr);
+      service.publish(doi);
+      LOG.warning("DataCite accepted empty contributor name at publish — no 422");
+    } catch (DoiHttpException ex) {
+      LOG.info("HTTP " + ex.getStatus() + " for empty contributor name: " + ex.getMessage());
+    }
+  }
+
+  @Test
+  public void invalidMetadata_whitespaceContributorName() throws Exception {
+    // Whitespace names pass a null-check but DataCite trims them to empty
+    DOI doi = DOI.test("DataCiteServiceIT-inv-" + UUID.randomUUID());
+    dois.add(doi);
+    DoiAttributes attr = generate(doi);
+    attr.setContributors(List.of(new Contributor(" ", NameType.ORGANIZATIONAL, ContributorType.DATA_CURATOR)));
+    try {
+      service.create(attr);
+      service.publish(doi);
+      LOG.warning("DataCite accepted whitespace contributor name at publish — no 422");
+    } catch (DoiHttpException ex) {
+      LOG.info("HTTP " + ex.getStatus() + " for whitespace contributor name: " + ex.getMessage());
+    }
+  }
+
+  @Test
+  public void invalidMetadata_missingTitle() throws Exception {
+    DOI doi = DOI.test("DataCiteServiceIT-inv-" + UUID.randomUUID());
+    dois.add(doi);
+    DoiAttributes attr = generate(doi);
+    attr.setTitles(List.of());
+    try {
+      service.create(attr);
+      service.publish(doi);
+      LOG.warning("DataCite accepted empty titles for draft — no 422");
+    } catch (DoiHttpException ex) {
+      LOG.info("HTTP " + ex.getStatus() + " for empty titles: " + ex.getMessage());
+    }
+  }
+
+  @Test
+  public void invalidMetadata_missingPublisher() throws Exception {
+    DOI doi = DOI.test("DataCiteServiceIT-inv-" + UUID.randomUUID());
+    dois.add(doi);
+    DoiAttributes attr = generate(doi);
+    attr.setPublisher(null);
+    try {
+      service.create(attr);
+      service.publish(doi);
+      LOG.warning("DataCite accepted null publisher for draft — no 422");
+    } catch (DoiHttpException ex) {
+      LOG.info("HTTP " + ex.getStatus() + " for null publisher: " + ex.getMessage());
+    }
+  }
+
+  @Test
+  public void invalidMetadata_missingPublicationYear() throws Exception {
+    DOI doi = DOI.test("DataCiteServiceIT-inv-" + UUID.randomUUID());
+    dois.add(doi);
+    DoiAttributes attr = generate(doi);
+    attr.setPublicationYear(null);
+    try {
+      service.create(attr);
+      service.publish(doi);
+      LOG.warning("DataCite accepted null publicationYear for draft — no 422");
+    } catch (DoiHttpException ex) {
+      LOG.info("HTTP " + ex.getStatus() + " for null publicationYear: " + ex.getMessage());
+    }
+  }
+
+  @Test
+  public void invalidMetadata_missingUrl() throws Exception {
+    // Draft DOIs may not require a URL — this test documents whether they do
+    DOI doi = DOI.test("DataCiteServiceIT-inv-" + UUID.randomUUID());
+    dois.add(doi);
+    DoiAttributes attr = generate(doi);
+    attr.setUrl(null);
+    try {
+      service.create(attr);
+      service.publish(doi);
+      LOG.warning("DataCite accepted null url for draft — no 422 (expected for drafts)");
+    } catch (DoiHttpException ex) {
+      LOG.info("HTTP " + ex.getStatus() + " for null url: " + ex.getMessage());
+    }
   }
 }

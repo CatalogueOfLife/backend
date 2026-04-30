@@ -29,6 +29,13 @@ import com.google.common.collect.ImmutableList;
 
 import net.sourceforge.argparse4j.inf.Subparser;
 
+/**
+ * Builds the {@code tax_groups} scratch table that maps every name to its analyzed
+ * {@link life.catalogue.api.vocab.TaxGroup}. The table is recreated from scratch on each run
+ * using a fixed-thread-pool for parallel analysis and bulk inserts.
+ * With {@code --update-datasets} the command additionally updates the taxonomic group scope
+ * stored on each dataset record.
+ */
 public class TaxGroupCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(TaxGroupCmd.class);
   private final static AtomicInteger COUNTER = new AtomicInteger(1);

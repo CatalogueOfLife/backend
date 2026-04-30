@@ -46,6 +46,30 @@ import com.google.common.base.Preconditions;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
+/**
+ * Rebuilds the names index and rematches every name (and archived name) in the database.
+ *
+ * <p>Full rebuild ({@code nidx} command without flags):
+ * <ol>
+ *   <li>Creates a temporary PostgreSQL schema ({@code nidx}) to stage new matches without
+ *       disturbing the live index.</li>
+ *   <li>Dumps all names via binary PostgreSQL COPY, splits the dump into chunks, and matches
+ *       each chunk in parallel using the configured number of threads.</li>
+ *   <li>Bulk-loads the resulting match files back into the {@code nidx} schema and builds
+ *       indices and constraints.</li>
+ *   <li>The new index (postgres schema + file) must be promoted to live manually after the
+ *       command completes.</li>
+ * </ol>
+ *
+ * <p>Flag combinations:
+ * <ul>
+ *   <li>{@code --file-only}: Rebuilds only the on-disk names-index file; skips DB rematching.</li>
+ *   <li>{@code --pg-insert-matches N}: Inserts N pre-existing {@code matches.pg} files into
+ *       postgres — useful for resuming a half-finished rebuild.</li>
+ *   <li>{@code --pg-insert-archived-matches N}: Same for archived-name match files.</li>
+ *   <li>{@code --limit N}: Caps the number of names exported (for testing).</li>
+ * </ul>
+ */
 public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";

@@ -19,11 +19,10 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
- * Command to execute given SQL statements for each dataset partition.
- * The command executes a SQL template passed into the command for each dataset where data partitions exist.
- * Before execution of the SQL the command replaces all {datasetKey} variables in the template with the actual integer key.
- *
- * The command will look at the existing name partition tables to find the datasets with data.
+ * Base class for CLI commands that display a countdown prompt before executing a potentially
+ * destructive database operation. Subclasses implement {@link #execute} and optionally override
+ * {@link #describeCmd} to provide a human-readable summary shown during the prompt window.
+ * The prompt delay (default 5 s) can be set to zero via {@code --prompt 0} to skip it.
  */
 public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractPromptCmd.class);

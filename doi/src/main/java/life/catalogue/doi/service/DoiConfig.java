@@ -47,6 +47,11 @@ public class DoiConfig {
   @Max(24*60*60)  // 1 day
   public int waitPeriod = 5*60; // 5 minutes
 
+  /**
+   * If true validates datacite metadata before sending it to the API.
+   */
+  public boolean validateMetadata = true;
+
   public boolean hasCredentials() {
     return username != null && password != null;
   }

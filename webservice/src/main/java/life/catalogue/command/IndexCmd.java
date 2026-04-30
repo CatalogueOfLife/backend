@@ -36,6 +36,22 @@ import io.dropwizard.core.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
+/**
+ * Re-indexes name usages into Elasticsearch.
+ *
+ * <p>Flag combinations:
+ * <ul>
+ *   <li>{@code --all}: Creates a fresh dated index (e.g. {@code col-2026-04-30}), indexes every
+ *       dataset into it, and binds the configured alias to the new index.</li>
+ *   <li>{@code --all-missing}: Indexes only datasets whose ES record count does not match the
+ *       database, leaving already-correct datasets untouched.</li>
+ *   <li>{@code --key K [K ...]}: Indexes one or more specific datasets by key.</li>
+ *   <li>{@code --keys-file FILE}: Reads dataset keys (one per line) from a UTF-8 text file.</li>
+ *   <li>{@code --create}: Creates a new dated index without indexing any data (useful before
+ *       running a partial index operation).</li>
+ *   <li>{@code --ignore K [K ...]}: Excludes the listed dataset keys when using {@code --all}.</li>
+ * </ul>
+ */
 public class IndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(IndexCmd.class);
 

@@ -32,6 +32,12 @@ import io.dropwizard.jackson.Jackson;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
+/**
+ * Builds the names index and usage-matcher index for a given dataset so that a
+ * {@code WsMatchingServer} can serve name-matching requests for it.
+ * The output is written to {@code cfg.matching.storageDir} (or a custom {@code --dir}).
+ * Use {@code --delete} to wipe a pre-existing build directory before starting.
+ */
 public class MatchingServerBuildCmd extends ConfiguredCommand<WsMatchingServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingServerBuildCmd.class);
   private static final String ARG_KEY = "key";

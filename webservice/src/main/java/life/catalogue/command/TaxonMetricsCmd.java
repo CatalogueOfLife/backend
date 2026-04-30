@@ -18,6 +18,12 @@ import org.slf4j.LoggerFactory;
 
 import net.sourceforge.argparse4j.inf.Subparser;
 
+/**
+ * Rebuilds taxon metrics for all external, release, and xrelease datasets in parallel.
+ * Metrics are computed via {@link life.catalogue.jobs.RebuildMetricsJob} and cover
+ * counts of accepted taxa, synonyms, bare names, etc. used by the API and UI.
+ * Requires {@code -t} (thread count).
+ */
 public class TaxonMetricsCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonMetricsCmd.class);
 

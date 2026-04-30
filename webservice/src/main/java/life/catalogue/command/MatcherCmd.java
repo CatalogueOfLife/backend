@@ -13,6 +13,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+/**
+ * Manages on-disk usage-matcher indices stored in {@code cfg.matching.storageDir}.
+ * Currently supports removing matchers whose name count falls below a minimum threshold
+ * via {@code --delete-small N}, which frees disk space for small or stale datasets.
+ * Single-dataset management via {@code --key} is not yet implemented.
+ */
 public class MatcherCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(MatcherCmd.class);
   private static final String ARG_KEY = "key";
