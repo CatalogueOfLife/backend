@@ -17,6 +17,7 @@ import life.catalogue.pgcopy.PgBinarySplitter;
 import life.catalogue.pgcopy.PgBinaryWriter;
 import life.catalogue.pgcopy.PgCopyUtils;
 
+import net.sourceforge.argparse4j.impl.Arguments;
 import org.gbif.nameparser.api.*;
 
 import java.io.File;
@@ -100,10 +101,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       .help("number of threads to use for rematching. Defaults to " + threads);
     subparser.addArgument("--"+ ARG_FILE_ONLY)
        .dest(ARG_FILE_ONLY)
-       .type(Boolean.class)
-       .required(false)
-       .setDefault(false)
-       .help("If true only rebuild the namesindex file, but do not rematch the database.");
+       .action(Arguments.storeTrue())
+       .help("Flag to only rebuild the namesindex file, but do not rematch the database.");
     subparser.addArgument("--"+ ARG_INSERT_MATCHES)
       .dest(ARG_INSERT_MATCHES)
       .type(Integer.class)

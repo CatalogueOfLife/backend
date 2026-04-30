@@ -7,6 +7,7 @@ import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import java.util.List;
 
+import net.sourceforge.argparse4j.impl.Arguments;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +34,8 @@ public class UpdSequencesCmd extends AbstractMybatisCmd {
     super.configure(subparser);
     subparser.addArgument("--"+ ARG_ALL)
       .dest(ARG_ALL)
-      .type(Boolean.class)
-      .required(false)
-      .setDefault(false)
-      .help("Update all projects");
+      .action(Arguments.storeTrue())
+      .help("Flag to update all projects");
     subparser.addArgument("--"+ ARG_KEY, "-k")
       .dest(ARG_KEY)
       .type(Integer.class)

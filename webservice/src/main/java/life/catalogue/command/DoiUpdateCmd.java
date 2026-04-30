@@ -34,6 +34,7 @@ import com.google.common.base.Preconditions;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 import javax.annotation.Nullable;
@@ -102,19 +103,16 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       .help("Specific DOI to update");
     subparser.addArgument("--"+ ARG_ALL)
       .dest(ARG_ALL)
-      .type(Boolean.class)
-      .required(false)
+      .action(Arguments.storeTrue())
       .help("Update all DOIs for all releases and external datasets, including their versions");
     subparser.addArgument("--"+ ARG_NO_UPDATE)
       .dest(ARG_NO_UPDATE)
-      .type(Boolean.class)
-      .required(false)
+      .action(Arguments.storeTrue())
       .setDefault(false)
       .help("Do not update DOIs, only create new ones or publish existing ones");
     subparser.addArgument("--"+ ARG_PUBLISH_ONLY)
       .dest(ARG_PUBLISH_ONLY)
-      .type(Boolean.class)
-      .required(false)
+      .action(Arguments.storeTrue())
       .setDefault(false)
       .help("Do only publish existing DOIs which are not yet publish, do not create or update their metadata.");
     subparser.addArgument("--"+ ARG_VERSIONS)
@@ -431,8 +429,24 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         metadata.setDoi(doi);
         if (create) {
           LOG.info("Create DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst().getTitle());
-          doiService.create(metadata);
-          created.inc(info.origin);
+          try {
+            doiService.create(metadata);
+            created.inc(info.origin);
+          } catch (DoiHttpException ex) {
+            if (ex.getStatus() == 422) {
+              // DOI already registered in DataCite but was lost from our DB — fall back to update
+              if (ex.getMessage().contains("taken")) {
+                LOG.warn("DOI {} already exists in DataCite, updating metadata instead", doi);
+              } else {
+                LOG.warn("DOI {} could not be created in DataCite, updating metadata instead", doi, ex);
+              }
+              // we force an update and ignore the noUpdate flag in these cases
+              doiService.update(metadata);
+              updated.inc(info.origin);
+            } else {
+              throw ex;
+            }
+          }
         } else if (!noUpdate){
           LOG.info("Update DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst().getTitle());
           doiService.update(metadata);

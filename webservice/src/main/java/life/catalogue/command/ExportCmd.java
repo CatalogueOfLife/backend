@@ -27,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import net.sourceforge.argparse4j.impl.Arguments;
 import org.apache.ibatis.session.SqlSession;
 
 import jakarta.validation.Validation;
@@ -75,15 +76,11 @@ public class ExportCmd extends AbstractMybatisCmd {
         .help("dataset key of the release or project to export");
     subparser.addArgument("--"+ARG_FORCE)
       .dest(ARG_FORCE)
-      .type(Boolean.class)
-      .setDefault(false)
-      .required(false)
+      .action(Arguments.storeTrue())
       .help("flag to force a new export even if it exists already");
     subparser.addArgument("--"+ARG_EXTENDED)
         .dest(ARG_EXTENDED)
-        .type(Boolean.class)
-        .setDefault(false)
-        .required(false)
+        .action(Arguments.storeTrue())
         .help("flag to use extended exports unless it is a text tree export");
     subparser.addArgument("--"+ARG_FORMAT)
       .dest(ARG_FORMAT)

@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.sourceforge.argparse4j.impl.Arguments;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,15 +56,11 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     super.configure(subparser);
     subparser.addArgument("--"+ ARG_ALL)
       .dest(ARG_ALL)
-      .type(Boolean.class)
-      .required(false)
-      .setDefault(false)
+      .action(Arguments.storeTrue())
       .help("Flag forcing an update of all metrics for all datasets");
     subparser.addArgument("--"+ ARG_UPDATE)
       .dest(ARG_UPDATE)
-      .type(Boolean.class)
-      .setDefault(false)
-      .required(false)
+      .action(Arguments.storeTrue())
       .help("Flag to update also existing metrics");
     subparser.addArgument("--"+ ARG_KEY, "-k")
       .dest(ARG_KEY)

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
+import net.sourceforge.argparse4j.impl.Arguments;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -54,9 +55,8 @@ public class ExportSourcesCmd extends AbstractPromptCmd {
         .help("dataset key of the project to export");
     subparser.addArgument("--"+ARG_INCL_PUBLISHER)
       .dest(ARG_INCL_PUBLISHER)
-      .type(Boolean.class)
-      .setDefault(false)
-      .help("set to true if sources from sector publishers should be included");
+      .action(Arguments.storeTrue())
+      .help("Flag if sources from sector publishers should be included");
   }
 
   @Override

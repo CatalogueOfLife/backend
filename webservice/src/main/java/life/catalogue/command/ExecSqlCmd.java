@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.sql.Connection;
 
+import net.sourceforge.argparse4j.impl.Arguments;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.slf4j.Logger;
@@ -47,10 +48,8 @@ public class ExecSqlCmd extends AbstractPromptCmd {
       .help("File that contains SQL in plain text UTF8 to be executed per partition");
     subparser.addArgument("--" + ARG_SILENT)
       .dest(ARG_SILENT)
-      .type(Boolean.class)
-      .required(false)
-      .setDefault(false)
-      .help("If true continue on errors and catch exceptions per dataset");
+      .action(Arguments.storeTrue())
+      .help("If set continue on errors and catch exceptions per dataset");
   }
 
   @Override
