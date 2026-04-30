@@ -390,6 +390,11 @@ public class NameInterpreterTest {
     assertTrue(n.getCombinationAuthorship().isEmpty());
     assertNull(n.getCombinationAuthorship().getYear());
 
+    // empty/missing rank for informal multi-word names (e.g. ENA DwCA "cellular organisms") must not infer SPECIES
+    pnu = interpret(null, "cellular organisms", null, v);
+    n = pnu.getName();
+    assertEquals(Rank.UNRANKED, n.getRank());
+
     // daggers should be removed from name parts, not just entire names
     // https://github.com/CatalogueOfLife/data/issues/417
     pnu = interpret("species", null, "Hamilton, 1990",null,

@@ -41,15 +41,18 @@ public class NameInterpreter {
 
   protected final DatasetSettings settings;
   private final boolean preferAtoms;
+  private final boolean dontInferRanks;
 
   /**
    * Used settings for interpreting a name:
    * Setting.EPITHET_ADD_HYPHEN
    * Setting.NOMENCLATURAL_CODE
+   * Setting.DONT_INFER_RANKS
    */
   public NameInterpreter(DatasetSettings settings, boolean preferAtomsDefault) {
     this.settings = settings;
     preferAtoms = settings.getBoolDefault(Setting.PREFER_NAME_ATOMS, preferAtomsDefault);
+    dontInferRanks = settings.isEnabled(Setting.DONT_INFER_RANKS);
   }
 
   public Optional<ParsedNameUsage> interpret(SimpleName sn, IssueContainer issues) {
@@ -241,7 +244,7 @@ public class NameInterpreter {
       // we potentially have an explicit one and one coming from the name parser that does inferal based on rank markers and suffices
       // we dont want to infer uninomials by their name endings - it works in most cases, but the few errors we get are really bad
       // see https://github.com/CatalogueOfLife/data/issues/438
-      if (allowToInferRank && rank.otherOrUnranked()) {
+      if (allowToInferRank && !dontInferRanks && rank.otherOrUnranked()) {
         // we can infer the rank a little but be careful
         Rank inferred;
         if (pnu.getName().getRank() != null && pnu.getName().getRank().notOtherOrUnranked()) {
@@ -252,7 +255,8 @@ public class NameInterpreter {
         }
         // we ignore inferred ranks for uninomials above genera as these are suffix based
         // infrageneric names for plants mostly contain explicit rank markers, so we keep those
-        if (!inferred.isGenusOrSuprageneric()) {
+        // Also require the name to be a proper scientific name (not a placeholder)
+        if (!inferred.isGenusOrSuprageneric() && pnu.getName().getType() == NameType.SCIENTIFIC) {
           rank = inferred;
         }
       }

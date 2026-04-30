@@ -169,6 +169,14 @@ public enum Setting {
   PREFER_NAME_ATOMS(Boolean.class, false, DatasetOrigin.EXTERNAL),
 
   /**
+   * If true, rank inference from the name structure is disabled during imports.
+   * Useful for datasets like NCBI/ENA taxonomy that contain placeholder names (e.g. "cellular organisms")
+   * without explicit ranks, which would otherwise be incorrectly inferred as species.
+   * When disabled, names without an explicit rank remain UNRANKED.
+   */
+  DONT_INFER_RANKS(Boolean.class, false, DatasetOrigin.EXTERNAL),
+
+  /**
    * If true no merge syncs into the project will be allowed.
    */
   BLOCK_MERGE_SYNCS(Boolean.class, false, DatasetOrigin.PROJECT),
