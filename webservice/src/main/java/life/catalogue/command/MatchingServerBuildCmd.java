@@ -17,6 +17,7 @@ import life.catalogue.metadata.coldp.DatasetJsonWriter;
 
 import java.io.File;
 
+import net.sourceforge.argparse4j.impl.Arguments;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 
@@ -56,9 +57,7 @@ public class MatchingServerBuildCmd extends ConfiguredCommand<WsMatchingServerCo
        .required(false);
     subparser.addArgument("--"+ ARG_DELETE)
       .dest(ARG_DELETE)
-      .type(boolean.class)
-      .required(false)
-      .setDefault(false);
+      .action(Arguments.storeTrue());
   }
 
   @Override

@@ -22,6 +22,7 @@ import life.catalogue.es.search.NameUsageSearchService;
 import life.catalogue.es.search.NameUsageSearchServiceEs;
 import life.catalogue.jobs.ReindexSchedulerJob;
 
+import net.sourceforge.argparse4j.impl.Arguments;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -68,15 +69,11 @@ public class IndexCmd extends AbstractMybatisCmd {
       .help("Dataset key to index");
     subparser.addArgument("--"+ ARG_ALL)
       .dest(ARG_ALL)
-      .type(boolean.class)
-      .required(false)
-      .setDefault(false)
+      .action(Arguments.storeTrue())
       .help("index all datasets into a new index by date");
     subparser.addArgument("--"+ ARG_ALL_MISSING)
       .dest(ARG_ALL_MISSING)
-      .type(boolean.class)
-      .required(false)
-      .setDefault(false)
+      .action(Arguments.storeTrue())
       .help("index all datasets which have not been indexed or the wrong number of indexed records");
     subparser.addArgument("--"+ ARG_KEY_IGNORE, "-i")
        .dest(ARG_KEY_IGNORE)
@@ -86,9 +83,7 @@ public class IndexCmd extends AbstractMybatisCmd {
        .help("Dataset key to be excluded from full indexing");
     subparser.addArgument("--"+ ARG_CREATE)
       .dest(ARG_CREATE)
-      .type(boolean.class)
-      .required(false)
-      .setDefault(false)
+      .action(Arguments.storeTrue())
       .help("create a new index by date");
     subparser.addArgument("-"+ ARG_THREADS)
       .dest(ARG_THREADS)

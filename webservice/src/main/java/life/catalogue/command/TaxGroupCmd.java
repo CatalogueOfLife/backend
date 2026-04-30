@@ -8,6 +8,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.matching.TaxGroupAnalyzer;
 
+import net.sourceforge.argparse4j.impl.Arguments;
 import org.gbif.nameparser.api.Rank;
 
 import java.sql.PreparedStatement;
@@ -49,10 +50,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
       .help("number of threads to use for analyzing and writing. Defaults to " + threads);
     subparser.addArgument("--" + ARG_DATASETS)
       .dest(ARG_DATASETS)
-      .type(boolean.class)
-      .nargs("?")
-      .setConst(true)
-      .setDefault(false)
+      .action(Arguments.storeTrue())
       .help("analyze all name usages of all datasets and update all dataset scopes.");
   }
 
