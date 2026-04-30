@@ -42,6 +42,19 @@ import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
 
 /**
  * Tool for managing / updating DOIs for projects releases and dataset version DOIs.
+ *
+ * <p>Common flag combinations:
+ * <ul>
+ *   <li>{@code --all --noUpdate}: Safe, idempotent pass over every project release and external
+ *       dataset. Creates DOIs that are missing in DataCite, publishes (makes FINDABLE) any that
+ *       are still in draft state, and skips metadata updates for DOIs that already exist. Version
+ *       DOIs are not touched unless {@code --versions} is also supplied.</li>
+ *   <li>{@code --all}: Full sync — creates missing DOIs, updates metadata of existing ones, and
+ *       publishes drafts.</li>
+ *   <li>{@code --key K}: Processes only the dataset or project with key K and its releases.</li>
+ *   <li>{@code --publishOnly}: Only publishes (makes FINDABLE) DOIs that are still in draft state;
+ *       does not create or update metadata.</li>
+ * </ul>
  */
 public class DoiUpdateCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(DoiUpdateCmd.class);
@@ -147,10 +160,8 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         updateDataset(key);
       } else if (publishOnly) {
         publishExisting(ns.getInt(ARG_START_KEY));
-      } else {
-        if (Boolean.TRUE.equals(all)) {
-          updateAll();
-        }
+      } else if (Boolean.TRUE.equals(all)) {
+        updateAll();
       }
     } finally {
       if (executor != null) {
