@@ -166,52 +166,63 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     return getSynonymy(taxon.getDatasetKey(), taxon.getId(), taxon.getName().getId());
   }
 
+  public Synonymy getSynonymy(Taxon taxon, SqlSession session) {
+    return getSynonymy(taxon.getDatasetKey(), taxon.getId(), taxon.getName().getId(), session);
+  }
+
   /**
    * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
    */
   public Synonymy getSynonymy(int datasetKey, String taxonId, @Nullable String nameId) {
     try (SqlSession session = factory.openSession(false)) {
-      NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
-      SynonymMapper sm = session.getMapper(SynonymMapper.class);
-      // load accepted name id if unknown
-      if (nameId == null) {
-        NameMapper nm = session.getMapper(NameMapper.class);
-        nameId = nm.getNameIdByUsage(datasetKey, taxonId);
-      }
+      return getSynonymy(datasetKey, taxonId, nameId, session);
+    }
+  }
 
-      Synonymy syn = new Synonymy();
-      var homotypicNamesIds = nrm.listRelatedNameIDs(DSID.of(datasetKey, nameId), NomRelType.HOMOTYPIC_RELATIONS);
+  /**
+   * Assemble a synonymy object from the list of synonymy names for a given accepted taxon.
+   */
+  public Synonymy getSynonymy(int datasetKey, String taxonId, @Nullable String nameId, SqlSession session) {
+    NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
+    SynonymMapper sm = session.getMapper(SynonymMapper.class);
+    // load accepted name id if unknown
+    if (nameId == null) {
+      NameMapper nm = session.getMapper(NameMapper.class);
+      nameId = nm.getNameIdByUsage(datasetKey, taxonId);
+    }
 
-      // now go through synonym usages and add to misapplied, heterotypic or skip if seen before
-      List<HomGroup> heterotypics = new ArrayList<>();
-      for (Synonym s : sm.listByTaxon(DSID.of(datasetKey, taxonId))) {
-        if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
-          syn.getMisapplied().add(s);
-        } else if (homotypicNamesIds.contains(s.getName().getId())) {
-          syn.getHomotypic().add(s);
-        } else {
-          syn.getHeterotypic().add(s);
-          boolean found = false;
-          for (var hg : heterotypics) {
-            if (hg.nameIds.contains(s.getName().getId())) {
-              found = true;
-              hg.homotypic.add(s);
-              break;
-            }
-          }
-          if (!found) {
-            var hg = new HomGroup(s, nrm.listRelatedNameIDs(DSID.of(datasetKey, s.getName().getId()), NomRelType.HOMOTYPIC_RELATIONS));
-            heterotypics.add(hg);
-            syn.getHeterotypicGroups().add(hg.homotypic);
+    Synonymy syn = new Synonymy();
+    var homotypicNamesIds = nrm.listRelatedNameIDs(DSID.of(datasetKey, nameId), NomRelType.HOMOTYPIC_RELATIONS);
+
+    // now go through synonym usages and add to misapplied, heterotypic or skip if seen before
+    List<HomGroup> heterotypics = new ArrayList<>();
+    for (Synonym s : sm.listByTaxon(DSID.of(datasetKey, taxonId))) {
+      if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
+        syn.getMisapplied().add(s);
+      } else if (homotypicNamesIds.contains(s.getName().getId())) {
+        syn.getHomotypic().add(s);
+      } else {
+        syn.getHeterotypic().add(s);
+        boolean found = false;
+        for (var hg : heterotypics) {
+          if (hg.nameIds.contains(s.getName().getId())) {
+            found = true;
+            hg.homotypic.add(s);
+            break;
           }
         }
+        if (!found) {
+          var hg = new HomGroup(s, nrm.listRelatedNameIDs(DSID.of(datasetKey, s.getName().getId()), NomRelType.HOMOTYPIC_RELATIONS));
+          heterotypics.add(hg);
+          syn.getHeterotypicGroups().add(hg.homotypic);
+        }
       }
-      // sort homotypic groups by year, then name
-      syn.getHeterotypicGroups().forEach(Collections::sort);
-      // finally sort the groups themselves by their first entry
-      syn.getHeterotypicGroups().sort(Comparator.comparing(hg -> hg.get(0)));
-      return syn;
     }
+    // sort homotypic groups by year, then name
+    syn.getHeterotypicGroups().forEach(Collections::sort);
+    // finally sort the groups themselves by their first entry
+    syn.getHeterotypicGroups().sort(Comparator.comparing(hg -> hg.get(0)));
+    return syn;
   }
 
   public TaxonMetrics getMetrics(int datasetKey, String id) {
@@ -353,7 +364,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
 
     // synonyms
     if (isTaxon && loadSynonyms) {
-      var syns = getSynonymy((Taxon)usage);
+      var syns = getSynonymy((Taxon)usage, session);
       info.setSynonyms(syns); // never NULL, but only set for accepted Taxon usages!!!
       info.getSynonyms().forEach(s -> {
         refIds.add(s.getName().getPublishedInId());
