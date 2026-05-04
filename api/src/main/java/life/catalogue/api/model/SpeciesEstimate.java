@@ -4,7 +4,7 @@ import life.catalogue.api.vocab.EstimateType;
 
 import java.util.Objects;
 
-public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements VerbatimEntity, Referenced, Remarkable {
+public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements VerbatimEntity, Referenced, Remarkable, SameAs<SpeciesEstimate> {
   private Integer verbatimKey;
   private Integer verbatimSourceKey;
   private SimpleNameLink target;
@@ -111,5 +111,13 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements Ver
   public String toString() {
     return "Estimate{" + getId() + ": " + estimate + " species in " + target + '}';
   }
-  
+
+  @Override
+  public boolean sameAs(SpeciesEstimate that) {
+    return Objects.equals(target, that.target) &&
+        Objects.equals(estimate, that.estimate) &&
+        type == that.type &&
+        Objects.equals(referenceId, that.referenceId) &&
+        Objects.equals(remarks, that.remarks);
+  }
 }

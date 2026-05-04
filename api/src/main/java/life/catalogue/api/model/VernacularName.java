@@ -8,7 +8,7 @@ import java.util.Objects;
 
 import jakarta.validation.constraints.Size;
 
-public class VernacularName extends DatasetScopedEntity<Integer> implements ExtensionEntity {
+public class VernacularName extends DatasetScopedEntity<Integer> implements ExtensionEntity, SameAs<VernacularName> {
 
   private Integer sectorKey;
   private Sector.Mode sectorMode;
@@ -176,5 +176,18 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Exte
   @Override
   public String toString() {
     return "VernacularName{" + getId() + " " + name + "/" + language +  "}";
+  }
+
+  @Override
+  public boolean sameAs(VernacularName that) {
+    return Objects.equals(name, that.name) &&
+        Objects.equals(latin, that.latin) &&
+        Objects.equals(preferred, that.preferred) &&
+        Objects.equals(language, that.language) &&
+        country == that.country &&
+        Objects.equals(area, that.area) &&
+        sex == that.sex &&
+        Objects.equals(referenceId, that.referenceId) &&
+        Objects.equals(remarks, that.remarks);
   }
 }

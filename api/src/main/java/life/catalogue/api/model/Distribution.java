@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  *
  */
-public class Distribution extends DatasetScopedEntity<Integer> implements ExtensionEntity {
+public class Distribution extends DatasetScopedEntity<Integer> implements ExtensionEntity, SameAs<Distribution> {
 
   private Integer sectorKey;
   private Sector.Mode sectorMode;
@@ -172,6 +172,20 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
       Objects.equals(lifeStage, that.lifeStage) &&
       Objects.equals(referenceId, that.referenceId) &&
       Objects.equals(remarks, that.remarks);
+  }
+
+  @Override
+  public boolean sameAs(Distribution that) {
+    return Objects.equals(area, that.area) &&
+        establishmentMeans == that.establishmentMeans &&
+        degreeOfEstablishment == that.degreeOfEstablishment &&
+        Objects.equals(pathway, that.pathway) &&
+        threatStatus == that.threatStatus &&
+        Objects.equals(year, that.year) &&
+        season == that.season &&
+        Objects.equals(lifeStage, that.lifeStage) &&
+        Objects.equals(referenceId, that.referenceId) &&
+        Objects.equals(remarks, that.remarks);
   }
 
   @Override

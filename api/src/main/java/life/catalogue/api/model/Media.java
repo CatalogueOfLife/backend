@@ -7,7 +7,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public class Media extends DatasetScopedEntity<Integer> implements ExtensionEntity {
+public class Media extends DatasetScopedEntity<Integer> implements ExtensionEntity, SameAs<Media> {
 
   private Integer sectorKey;
   private Sector.Mode sectorMode;
@@ -181,5 +181,20 @@ public class Media extends DatasetScopedEntity<Integer> implements ExtensionEnti
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, url, thumbnail, type, format, title, captured, capturedBy, license, link, referenceId, remarks);
+  }
+
+  @Override
+  public boolean sameAs(Media media) {
+    return Objects.equals(url, media.url) &&
+        Objects.equals(thumbnail, media.thumbnail) &&
+        type == media.type &&
+        Objects.equals(format, media.format) &&
+        Objects.equals(title, media.title) &&
+        Objects.equals(captured, media.captured) &&
+        Objects.equals(capturedBy, media.capturedBy) &&
+        license == media.license &&
+        Objects.equals(link, media.link) &&
+        Objects.equals(referenceId, media.referenceId) &&
+        Objects.equals(remarks, media.remarks);
   }
 }

@@ -504,7 +504,18 @@ public enum Issue {
     "Name not supported by the matcher; no identifier added."),
 
   MATCHING_HIGHERRANK(NAME_USAGE, Level.INFO,
-    "Only matched to a higher rank in the configured target dataset; identifier added for the higher-ranked match.")
+    "Only matched to a higher rank in the configured target dataset; identifier added for the higher-ranked match."),
+
+  DUPLICATE_DISTRIBUTIONS(NAME_USAGE, Level.WARNING,
+      "Same distribution record appears several times for the same taxon."),
+  DUPLICATE_MEDIA(NAME_USAGE, Level.WARNING,
+      "Same media record appears several times for the same taxon."),
+  DUPLICATE_VERNACULAR_NAMES(NAME_USAGE, Level.WARNING,
+      "Same vernacular name record appears several times for the same taxon."),
+  DUPLICATE_ESTIMATES(NAME_USAGE, Level.WARNING,
+      "Same species estimate record appears several times for the same taxon."),
+  DUPLICATE_TAXON_PROPERTIES(NAME_USAGE, Level.WARNING,
+      "Same taxon property record appears several times for the same taxon.")
   ;
 
   /**

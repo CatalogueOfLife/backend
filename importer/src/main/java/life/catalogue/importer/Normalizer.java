@@ -60,6 +60,8 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import jakarta.validation.Validator;
 
+import static life.catalogue.api.vocab.Issue.*;
+
 /**
  *
  */
@@ -250,6 +252,9 @@ public class Normalizer implements Callable<Boolean> {
           .map(nr -> store.names().objByID(nr.getToID()).getName())
           .collect(Collectors.toList());
         TreeCleanerAndValidator.validateAndPush(lnu, parents, basionyms, issues);
+        // look for redundant supplementary infos: https://github.com/CatalogueOfLife/backend/issues/1504
+        flagRedundantRecords(nu, issues);
+
         if (issues.hasIssues()) {
           // all usages should have a verbatim record by now - even implicit ones!
           VerbatimRecord v = store.getVerbatim(nu.ud.getVerbatimKey());
@@ -283,6 +288,26 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("All validations completed");
   }
 
+  private void flagRedundantRecords(NameUsageData nu, IssueContainer issues) {
+    flagSameAs(DUPLICATE_DISTRIBUTIONS, nu.ud.distributions, issues);
+    flagSameAs(DUPLICATE_MEDIA, nu.ud.media, issues);
+    flagSameAs(DUPLICATE_VERNACULAR_NAMES, nu.ud.vernacularNames, issues);
+    flagSameAs(DUPLICATE_ESTIMATES, nu.ud.estimates, issues);
+    flagSameAs(DUPLICATE_TAXON_PROPERTIES, nu.ud.properties, issues);
+  }
+
+  private static <T extends SameAs<T>> void flagSameAs(Issue issue, Collection<T> coll, IssueContainer issues) {
+    for (var rec : coll) {
+      if (rec != null) {
+        for (var ex : coll) {
+          if (ex.sameAs(rec)) {
+            issues.add(issue);
+            return;
+          }
+        }
+      }
+    }
+  }
   private void check(VerbatimEntity ent, boolean assertion, String msg) {
     if (!assertion) {
       // failed assertion
@@ -531,15 +556,9 @@ public class Normalizer implements Callable<Boolean> {
         if (u.hasSupplementaryInfos()) {
           boolean hasAccepted = false;
           for (var acc : store.usages().accepted(u)) {
-            acc.distributions.addAll(u.distributions);
-            acc.media.addAll(u.media);
-            acc.vernacularNames.addAll(u.vernacularNames);
-            acc.estimates.addAll(u.estimates);
-            acc.properties.addAll(u.properties);
-            store.usages().update(acc);
+            addSupplementaryInfos(acc, u);
             hasAccepted=true;
           }
-
           u.distributions.clear();
           u.media.clear();
           u.vernacularNames.clear();
@@ -557,6 +576,29 @@ public class Normalizer implements Callable<Boolean> {
     });
     LOG.info("Moved associated data from {} synonyms to their accepted taxon", moved);
     LOG.info("Removed associated data from {} synonyms without accepted taxon", removed);
+  }
+
+  private void addSupplementaryInfos(UsageData acc, UsageData u) {
+    addIfNotTheSame(acc.distributions, u.distributions);
+    addIfNotTheSame(acc.media, u.media);
+    addIfNotTheSame(acc.vernacularNames, u.vernacularNames);
+    addIfNotTheSame(acc.estimates, u.estimates);
+    addIfNotTheSame(acc.properties, u.properties);
+    store.usages().update(acc);
+  }
+
+  private static <T extends SameAs<T>> void addIfNotTheSame(Collection<T> coll, Collection<T> toAdd) {
+    outer:
+    for (var t : toAdd) {
+      if (t != null) {
+        for (var ex : coll) {
+          if (ex.sameAs(t)) {
+            continue outer;
+          }
+        }
+        coll.add(t);
+      }
+    }
   }
 
   /**

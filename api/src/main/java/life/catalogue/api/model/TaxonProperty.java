@@ -2,7 +2,7 @@ package life.catalogue.api.model;
 
 import java.util.Objects;
 
-public class TaxonProperty extends DatasetScopedEntity<Integer> implements ExtensionEntity {
+public class TaxonProperty extends DatasetScopedEntity<Integer> implements ExtensionEntity, SameAs<TaxonProperty> {
 
   private Integer sectorKey;
   private Sector.Mode sectorMode;
@@ -121,6 +121,16 @@ public class TaxonProperty extends DatasetScopedEntity<Integer> implements Exten
       Objects.equals(page, that.page) &&
       Objects.equals(ordinal, that.ordinal) &&
       Objects.equals(remarks, that.remarks);
+  }
+
+  @Override
+  public boolean sameAs(TaxonProperty that) {
+    return Objects.equals(property, that.property) &&
+        Objects.equals(value, that.value) &&
+        Objects.equals(referenceId, that.referenceId) &&
+        Objects.equals(page, that.page) &&
+        Objects.equals(ordinal, that.ordinal) &&
+        Objects.equals(remarks, that.remarks);
   }
 
   @Override
