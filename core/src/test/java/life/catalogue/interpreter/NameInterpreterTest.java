@@ -395,10 +395,10 @@ public class NameInterpreterTest {
     n = pnu.getName();
     assertEquals(Rank.UNRANKED, n.getRank());
 
-    // empty/missing rank for indet names
+    // infer rank for indet names - otherwise we loose the rank part of the name
     pnu = interpret(null, "Abies sp.", null, v);
     n = pnu.getName();
-    assertEquals(Rank.UNRANKED, n.getRank());
+    assertEquals(Rank.SPECIES, n.getRank());
 
     // daggers should be removed from name parts, not just entire names
     // https://github.com/CatalogueOfLife/data/issues/417
