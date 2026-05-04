@@ -31,6 +31,6 @@ public class UpdMetricCmdIT extends CmdTestBase {
 
   @Test
   public void testRebuildAll() throws Exception {
-    assertTrue(run("updMetrics", "--prompt", "0", "--user", "tester", "--all", "true").isEmpty());
+    assertTrue(run("updMetrics", "--prompt", "0", "--user", "tester", "--all").isEmpty());
   }
 }

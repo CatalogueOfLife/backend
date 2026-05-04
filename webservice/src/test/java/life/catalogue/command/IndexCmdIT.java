@@ -28,6 +28,6 @@ public class IndexCmdIT extends EsCmdTestBase {
   }
   @Test
   public void testRebuild() throws Exception {
-    assertTrue(run("index", "--prompt", "0", "--all", "true").isEmpty());
+    assertTrue(run("index", "--prompt", "0", "--all").isEmpty());
   }
 }

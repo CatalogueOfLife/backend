@@ -26,6 +26,6 @@ public class TaxGroupCmdIT extends CmdTestBase {
   
   @Test
   public void testRebuildCol() throws Exception {
-    assertTrue(run("taxgroup", "--prompt", "0", "--user", "tester", "--update-datasets", "true").isEmpty());
+    assertTrue(run("taxgroup", "--prompt", "0", "--user", "tester", "--update-datasets").isEmpty());
   }
 }

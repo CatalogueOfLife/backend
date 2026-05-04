@@ -300,7 +300,7 @@ public class Normalizer implements Callable<Boolean> {
     for (var rec : coll) {
       if (rec != null) {
         for (var ex : coll) {
-          if (ex.sameAs(rec)) {
+          if (ex != rec && ex.sameAs(rec)) {
             issues.add(issue);
             return;
           }

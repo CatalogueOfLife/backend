@@ -22,7 +22,7 @@ public class MatchingServerBuildCmdIT extends CmdTestBase {
 
   @Test
   public void testBuild() throws Exception {
-    assertTrue(run("matchingServerBuild", "--delete", "true", "--key", Integer.toString(TestDataRule.APPLE.key)).isEmpty());
+    assertTrue(run("matchingServerBuild", "--delete", "--key", Integer.toString(TestDataRule.APPLE.key)).isEmpty());
   }
 
 }
