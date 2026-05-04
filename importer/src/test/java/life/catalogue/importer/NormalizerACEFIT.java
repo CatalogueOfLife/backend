@@ -63,7 +63,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
 
     var acc = accepted(t);
     assertEquals(1, acc.ud.vernacularNames.size());
-    assertEquals(2, acc.ud.distributions.size());
+    assertEquals(2, acc.ud.distributions.size()); // ignore distributions linked to synonyms
     assertNull(acc.ud.treatment);
     assertEquals(0, acc.ud.media.size());
     assertEquals(1, acc.ud.asNameUsageBase().getReferenceIds().size());

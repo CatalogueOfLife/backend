@@ -587,16 +587,20 @@ public class Normalizer implements Callable<Boolean> {
     store.usages().update(acc);
   }
 
-  private static <T extends SameAs<T>> void addIfNotTheSame(Collection<T> coll, Collection<T> toAdd) {
-    outer:
-    for (var t : toAdd) {
-      if (t != null) {
-        for (var ex : coll) {
-          if (ex.sameAs(t)) {
-            continue outer;
+  private <T extends SameAs<T>> void addIfNotTheSame(Collection<T> coll, Collection<T> toAdd) {
+    if (format == DataFormat.ACEF) {
+      coll.addAll(toAdd);
+    } else {
+      outer:
+      for (var t : toAdd) {
+        if (t != null) {
+          for (var ex : coll) {
+            if (ex.sameAs(t)) {
+              continue outer;
+            }
           }
+          coll.add(t);
         }
-        coll.add(t);
       }
     }
   }

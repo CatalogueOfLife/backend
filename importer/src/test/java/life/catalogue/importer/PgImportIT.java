@@ -36,9 +36,6 @@ import static life.catalogue.api.TestEntityGenerator.setUserDate;
 import static life.catalogue.api.vocab.DataFormat.*;
 import static org.junit.Assert.*;
 
-/**
- *
- */
 public class PgImportIT extends PgImportITBase {
 
   @Test
