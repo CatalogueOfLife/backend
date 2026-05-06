@@ -49,8 +49,11 @@ public class FacetsTranslator {
       String field = FieldLookup.INSTANCE.lookupSingle(facet);
       // Temporarily remove the filter corresponding to the facet (if any), otherwise the values retrieved
       // for the facet would collapse to those specified by the filter.
+      // When facetIncludeSelf=true this removal is intentionally skipped so counts reflect all active filters.
       NameUsageSearchRequest temp = copy.copy();
-      temp.removeFilter(facet);
+      if (!Boolean.TRUE.equals(request.getFacetIncludeSelf())) {
+        temp.removeFilter(facet);
+      }
       Query facetQuery = generateQuery(temp);
       var limit = request.getFacetLimit();
       var offset = request.getFacetOffset();

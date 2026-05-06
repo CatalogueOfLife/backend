@@ -36,6 +36,9 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @Min(0)
   private Integer facetMinCount;
 
+  @QueryParam("facetIncludeSelf")
+  private Boolean facetIncludeSelf;
+
   @QueryParam("content")
   private Set<SearchContent> content = EnumSet.copyOf(DEFAULT_CONTENT);
 
@@ -54,6 +57,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("facetLimit") @Min(0) Integer facetLimit,
       @JsonProperty("facetOffset") @Min(0) Integer facetOffset,
       @JsonProperty("facetMinCount") @Min(0) Integer facetMinCount,
+      @JsonProperty("facetIncludeSelf") Boolean facetIncludeSelf,
       @JsonProperty("content") Set<SearchContent> content,
       @JsonProperty("sortBy") SortBy sortBy,
       @JsonProperty("q") String q,
@@ -66,6 +70,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.facetLimit = facetLimit;
     this.facetOffset = facetOffset;
     this.facetMinCount = facetMinCount;
+    this.facetIncludeSelf = facetIncludeSelf;
     setFilters(filters);
     setFacets(facets);
     setContent(content);
@@ -84,6 +89,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.facetLimit = other.facetLimit;
     this.facetOffset = other.facetOffset;
     this.facetMinCount = other.facetMinCount;
+    this.facetIncludeSelf = other.facetIncludeSelf;
     setFacets(other.facets);
     setContent(other.content);
   }
@@ -145,6 +151,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.facetMinCount = facetMinCount;
   }
 
+  public Boolean getFacetIncludeSelf() {
+    return facetIncludeSelf;
+  }
+
+  public void setFacetIncludeSelf(Boolean facetIncludeSelf) {
+    this.facetIncludeSelf = facetIncludeSelf;
+  }
+
   public Set<SearchContent> getContent() {
     return content;
   }
@@ -184,12 +198,13 @@ public class NameUsageSearchRequest extends NameUsageRequest {
            && Objects.equals(facetLimit, that.facetLimit)
            && Objects.equals(facetOffset, that.facetOffset)
            && Objects.equals(facetMinCount, that.facetMinCount)
+           && Objects.equals(facetIncludeSelf, that.facetIncludeSelf)
            && Objects.equals(content, that.content)
            && searchType == that.searchType;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), facets, facetLimit, facetOffset, facetMinCount, content, searchType);
+    return Objects.hash(super.hashCode(), facets, facetLimit, facetOffset, facetMinCount, facetIncludeSelf, content, searchType);
   }
 }
