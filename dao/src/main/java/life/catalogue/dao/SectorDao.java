@@ -238,7 +238,8 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (tax == null) {
         throw new IllegalArgumentException(kind + " ID " + did.getId() + " not existing in dataset " + did.getDatasetKey());
       }
-    } else if (s.getMode() != Sector.Mode.MERGE){
+    } else if (s.getMode() != Sector.Mode.MERGE && s.getMode() != Sector.Mode.HIERARCHY){
+      // MERGE and HIERARCHY sectors don't have a subject/target taxon
       throw new IllegalArgumentException(kind + " required for " + s.getMode() + " sector");
     }
     return tax;
@@ -257,7 +258,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @Override
   protected void updateBefore(Sector s, Sector old, int user, SectorMapper mapper, SqlSession session) {
     parsePlaceholderRank(s);
-    if (s.getMode() != Sector.Mode.MERGE && s.getTarget() == null) {
+    if (s.getMode() != Sector.Mode.MERGE && s.getMode() != Sector.Mode.HIERARCHY && s.getTarget() == null) {
       throw new IllegalArgumentException(String.format("%s sector %s must have a target", s.getMode(), s.getKey()));
     }
     if (s.getMode() != old.getMode()) {

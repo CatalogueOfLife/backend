@@ -35,6 +35,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private String originalSubjectId;
   private Rank placeholderRank; // optional placeholder rank for the subject, i.e. children of higher ranks than this will be ignored
   private Mode mode = Sector.Mode.ATTACH;
+  private boolean preferXRelease = true; // only relevant for HIERARCHY mode when subjectDatasetKey is a project
   private Integer priority; // the lower the higher prio. NULL sorts last
   private Integer syncAttempt;
   private Integer datasetAttempt;
@@ -70,7 +71,16 @@ public class Sector extends DatasetScopedEntity<Integer> {
      * Merge all descendants of subject under the target taxon, but exclude the subject taxon itself.
      * This operation will only create new names and try to avoid the creation of duplicates automatically.
      */
-    MERGE
+    MERGE,
+
+    /**
+     * Delegate the higher classification of the project to a target dataset.
+     * subjectDatasetKey holds the target (a project, release or external dataset).
+     * If it is a project, the latest public (X)Release at sync time is used; the {@link #preferXRelease}
+     * flag selects between X-Release and plain Release.
+     * No subject taxon is needed; the sector's records are tagged with sectorKey for repeatable wipes.
+     */
+    HIERARCHY
   }
 
   public Sector() {
@@ -86,6 +96,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.subject = other.subject == null ? null : SimpleNameLink.of(other.subject);
     this.originalSubjectId = other.originalSubjectId;
     this.mode = other.mode;
+    this.preferXRelease = other.preferXRelease;
     this.priority = other.priority;
     this.syncAttempt = other.syncAttempt;
     this.datasetAttempt = other.datasetAttempt;
@@ -167,6 +178,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
   
   public void setMode(Mode mode) {
     this.mode = mode;
+  }
+
+  public boolean isPreferXRelease() {
+    return preferXRelease;
+  }
+
+  public void setPreferXRelease(boolean preferXRelease) {
+    this.preferXRelease = preferXRelease;
   }
 
   public Integer getPriority() {
@@ -311,6 +330,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
            && Objects.equals(originalSubjectId, sector.originalSubjectId)
            && placeholderRank == sector.placeholderRank
            && mode == sector.mode
+           && preferXRelease == sector.preferXRelease
            && Objects.equals(priority, sector.priority)
            && Objects.equals(syncAttempt, sector.syncAttempt)
            && Objects.equals(datasetAttempt, sector.datasetAttempt)
@@ -326,7 +346,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, priority, syncAttempt, datasetAttempt, code, createImplicitNames, ranks, entities, nameTypes, nameStatusExclusion, extinctFilter, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, preferXRelease, priority, syncAttempt, datasetAttempt, code, createImplicitNames, ranks, entities, nameTypes, nameStatusExclusion, extinctFilter, note);
   }
 
   @Override
@@ -356,6 +376,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     private String originalSubjectId;
     private Rank placeholderRank;
     private Mode mode;
+    private boolean preferXRelease = true;
     private Integer priority;
     private Integer syncAttempt;
     private Integer datasetAttempt;
@@ -430,6 +451,11 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
     public Builder mode(Mode mode) {
       this.mode = mode;
+      return this;
+    }
+
+    public Builder preferXRelease(boolean preferXRelease) {
+      this.preferXRelease = preferXRelease;
       return this;
     }
 
@@ -512,6 +538,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
       sector.setOriginalSubjectId(originalSubjectId);
       sector.setPlaceholderRank(placeholderRank);
       sector.setMode(mode);
+      sector.setPreferXRelease(preferXRelease);
       sector.setPriority(priority);
       sector.setSyncAttempt(syncAttempt);
       sector.setDatasetAttempt(datasetAttempt);

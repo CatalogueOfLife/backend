@@ -11,6 +11,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-05-07 hierarchy sync sector mode
+```
+ALTER TYPE SECTOR_MODE ADD VALUE 'HIERARCHY';
+ALTER TABLE sector ADD COLUMN prefer_x_release BOOLEAN NOT NULL DEFAULT TRUE;
+```
+
 #### 2026-05-04 redundant data issues
 ```
 ALTER TYPE ISSUE ADD VALUE 'DUPLICATE_DISTRIBUTIONS';
