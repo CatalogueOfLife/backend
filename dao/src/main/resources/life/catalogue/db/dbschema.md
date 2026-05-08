@@ -14,7 +14,7 @@ and done it manually. So we can as well log changes here.
 #### 2026-05-07 hierarchy sync sector mode
 ```
 ALTER TYPE SECTOR_MODE ADD VALUE 'HIERARCHY';
-ALTER TABLE sector ADD COLUMN prefer_x_release BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE sector ADD COLUMN use_x_release BOOLEAN NOT NULL DEFAULT TRUE;
 ```
 
 #### 2026-05-04 redundant data issues

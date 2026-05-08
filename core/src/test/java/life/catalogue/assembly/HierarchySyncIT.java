@@ -350,7 +350,7 @@ public class HierarchySyncIT {
       sector.setMode(Sector.Mode.HIERARCHY);
       sector.setDatasetKey(PROJECT_KEY);
       sector.setSubjectDatasetKey(targetDatasetKey);
-      sector.setPreferXRelease(true);
+      sector.setUseXRelease(true);
       sector.applyUser(USER);
       s.getMapper(SectorMapper.class).create(sector);
       return sector;

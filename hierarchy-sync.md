@@ -217,7 +217,7 @@ These are deliberately deferred from v1 and tracked inline in the source as
 | Sync runnable | `core/src/main/java/life/catalogue/assembly/HierarchySync.java` |
 | Mode + preferXRelease on the sector model | `api/src/main/java/life/catalogue/api/model/Sector.java` |
 | Schema additions (enum value + column) | `dao/src/main/resources/life/catalogue/db/dbschema.sql` |
-| Mapper round-trip of `prefer_x_release` | `dao/src/main/resources/life/catalogue/db/mapper/SectorMapper.xml` |
+| Mapper round-trip of `use_x_release` | `dao/src/main/resources/life/catalogue/db/mapper/SectorMapper.xml` |
 | Factory wiring | `core/src/main/java/life/catalogue/assembly/SyncFactory.java` |
 | Mode dispatch | `core/src/main/java/life/catalogue/assembly/SyncManager.java` |
 | Latest-release lookup (reused) | `dao/src/main/java/life/catalogue/cache/LatestDatasetKeyCacheImpl.java` |

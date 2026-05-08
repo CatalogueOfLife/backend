@@ -93,7 +93,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>The target dataset is held in {@link Sector#getSubjectDatasetKey()}: if that dataset is a
  * {@link DatasetOrigin#PROJECT}, the latest public release is resolved at run time
- * (X-Release vs plain Release controlled by {@link Sector#isPreferXRelease()}). Concrete RELEASE,
+ * (X-Release vs plain Release controlled by {@link Sector#useXRelease()}). Concrete RELEASE,
  * XRELEASE or EXTERNAL dataset keys are used as-is. See {@code HIERARCHY-SYNC.md} at the project
  * root for the full pipeline reference.
  *
@@ -167,23 +167,23 @@ public class HierarchySync extends SectorRunnable {
     super.init(false);
     targetDatasetKey = resolveTargetDatasetKey();
     LOG.info("HierarchySync sector {}: resolved target dataset {} (configured subject dataset {}, preferXRelease={})",
-      sectorKey, targetDatasetKey, subjectDatasetKey, sector.isPreferXRelease());
+      sectorKey, targetDatasetKey, subjectDatasetKey, sector.useXRelease());
   }
 
   /**
    * Resolves the effective source dataset to read the higher classification from.
    * If the configured subject dataset is a PROJECT, the latest public (X)Release is picked
-   * according to {@link Sector#isPreferXRelease()}. Other origins are used as-is.
+   * according to {@link Sector#useXRelease()}. Other origins are used as-is.
    */
   private int resolveTargetDatasetKey() {
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(subjectDatasetKey);
     DatasetOrigin origin = info.origin;
     if (origin == DatasetOrigin.PROJECT) {
-      Integer key = latestKeyCache.getLatestRelease(subjectDatasetKey, sector.isPreferXRelease());
+      Integer key = latestKeyCache.getLatestRelease(subjectDatasetKey, sector.useXRelease());
       if (key == null) {
         throw new NotFoundException(String.format(
           "No public %s found for project %d configured as hierarchy target of sector %s",
-          sector.isPreferXRelease() ? "X-Release" : "Release", subjectDatasetKey, sectorKey));
+          sector.useXRelease() ? "XRelease" : "Release", subjectDatasetKey, sectorKey));
       }
       return key;
     }

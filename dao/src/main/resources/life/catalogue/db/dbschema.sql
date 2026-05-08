@@ -1125,7 +1125,7 @@ CREATE TABLE sector (
   target_rank RANK,
   target_code NOMCODE,
   mode SECTOR_MODE NOT NULL,
-  prefer_x_release BOOLEAN NOT NULL DEFAULT TRUE,
+  use_x_release BOOLEAN NOT NULL DEFAULT TRUE,
   code NOMCODE,
   sync_attempt INTEGER,
   dataset_attempt INTEGER,
