@@ -33,7 +33,7 @@ living on the project. The sector carries:
 |---|---|
 | `datasetKey` | the project that delegates its higher classification |
 | `subjectDatasetKey` | the configured target dataset (project, release or external) |
-| `preferXRelease` | when the configured target is a project, pick its latest X-Release vs latest plain Release |
+| `useXRelease` | when the configured target is a project, pick its latest X-Release vs latest plain Release |
 | `mode = HIERARCHY` | distinguishes from ATTACH / UNION / MERGE |
 | `id` | the sectorKey tagged on every record produced by the sync |
 
@@ -55,7 +55,7 @@ by three semantic phases.
 `HierarchySync.init()` resolves the effective source dataset:
 
 - if `sector.subjectDatasetKey` is of origin **PROJECT**, calls
-  `LatestDatasetKeyCache.getLatestRelease(projectKey, sector.preferXRelease)`. Throws
+  `LatestDatasetKeyCache.getLatestRelease(projectKey, sector.useXRelease)`. Throws
   `NotFoundException` if no public release of the requested kind exists.
 - if it is **RELEASE**, **XRELEASE**, or **EXTERNAL**, used as-is.
 - any other origin is rejected with `IllegalArgumentException`.
@@ -215,7 +215,7 @@ These are deliberately deferred from v1 and tracked inline in the source as
 | Purpose | Path |
 |---|---|
 | Sync runnable | `core/src/main/java/life/catalogue/assembly/HierarchySync.java` |
-| Mode + preferXRelease on the sector model | `api/src/main/java/life/catalogue/api/model/Sector.java` |
+| Mode + useXRelease on the sector model | `api/src/main/java/life/catalogue/api/model/Sector.java` |
 | Schema additions (enum value + column) | `dao/src/main/resources/life/catalogue/db/dbschema.sql` |
 | Mapper round-trip of `use_x_release` | `dao/src/main/resources/life/catalogue/db/mapper/SectorMapper.xml` |
 | Factory wiring | `core/src/main/java/life/catalogue/assembly/SyncFactory.java` |

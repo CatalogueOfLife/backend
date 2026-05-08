@@ -99,7 +99,7 @@
     #{target.rank}::RANK,
     #{target.code}::NOMCODE,
     #{mode}::SECTOR_MODE,
-    #{preferXRelease},
+    #{useXRelease},
     #{priority},
     #{code}::NOMCODE,
     #{placeholderRank}::RANK,

@@ -184,8 +184,8 @@ public class Sector extends DatasetScopedEntity<Integer> {
     return useXRelease;
   }
 
-  public void setUseXRelease(boolean preferXRelease) {
-    this.useXRelease = preferXRelease;
+  public void setUseXRelease(boolean useXRelease) {
+    this.useXRelease = useXRelease;
   }
 
   public Integer getPriority() {
@@ -376,7 +376,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     private String originalSubjectId;
     private Rank placeholderRank;
     private Mode mode;
-    private boolean preferXRelease = true;
+    private boolean useXRelease = true;
     private Integer priority;
     private Integer syncAttempt;
     private Integer datasetAttempt;
@@ -454,8 +454,8 @@ public class Sector extends DatasetScopedEntity<Integer> {
       return this;
     }
 
-    public Builder preferXRelease(boolean preferXRelease) {
-      this.preferXRelease = preferXRelease;
+    public Builder useXRelease(boolean useXRelease) {
+      this.useXRelease = useXRelease;
       return this;
     }
 
@@ -538,7 +538,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
       sector.setOriginalSubjectId(originalSubjectId);
       sector.setPlaceholderRank(placeholderRank);
       sector.setMode(mode);
-      sector.setUseXRelease(preferXRelease);
+      sector.setUseXRelease(useXRelease);
       sector.setPriority(priority);
       sector.setSyncAttempt(syncAttempt);
       sector.setDatasetAttempt(datasetAttempt);

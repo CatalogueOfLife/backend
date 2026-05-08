@@ -166,7 +166,7 @@ public class HierarchySync extends SectorRunnable {
   void init() throws Exception {
     super.init(false);
     targetDatasetKey = resolveTargetDatasetKey();
-    LOG.info("HierarchySync sector {}: resolved target dataset {} (configured subject dataset {}, preferXRelease={})",
+    LOG.info("HierarchySync sector {}: resolved target dataset {} (configured subject dataset {}, useXRelease={})",
       sectorKey, targetDatasetKey, subjectDatasetKey, sector.useXRelease());
   }
 
