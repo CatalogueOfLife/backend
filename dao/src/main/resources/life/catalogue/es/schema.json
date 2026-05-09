@@ -9,11 +9,21 @@
           "type": "pattern_replace",
           "pattern": "^†",
           "replacement": ""
+        },
+        "sciname_brackets": {
+          "type": "pattern_replace",
+          "pattern": "[()\\[\\]]",
+          "replacement": " "
         }
       },
       "analyzer": {
         "standard_ascii": {
           "tokenizer": "standard",
+          "filter": ["lowercase", "asciifolding"]
+        },
+        "sciname_ascii": {
+          "char_filter": ["sciname_brackets"],
+          "tokenizer": "whitespace",
           "filter": ["lowercase", "asciifolding"]
         },
         "vernacular_name_analyzer": {
@@ -135,7 +145,7 @@
                 "fields": {
                   "word": {
                     "type": "search_as_you_type",
-                    "analyzer": "standard_ascii",
+                    "analyzer": "sciname_ascii",
                     "max_shingle_size": 2
                   }
                 }

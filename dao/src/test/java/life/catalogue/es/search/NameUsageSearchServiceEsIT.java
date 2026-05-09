@@ -43,7 +43,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
   static final int DS1 = 100;
   static final int DS2 = 200;
-  static final int TOTAL = 14;
+  static final int TOTAL = 17;
   /** Catalogue key used in all SimpleDecision entries (set by newNameUsageWrapper helper). */
   static final int CAT99 = 99;
   /** sector dataset key set by the newNameUsageWrapper helper for all usages. */
@@ -106,6 +106,25 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     insert(c, cfg, taxon("t11", "Centaurea rothmalerana", null, Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null));
     insert(c, cfg, taxon("t12", "Dryopteris fragrans",    null, Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null));
 
+    // WHOLE_WORDS analyzer fixtures: punctuation cases that the standard tokenizer would mishandle.
+    // The scientificName is overridden after parsing so the indexed value matches the literal we
+    // want to test (parser may otherwise normalise these).
+
+    // t13: leading '?' as a standalone token (genus uncertain) — taken from real moth records in dataset 55434
+    NameUsageWrapper w13 = taxon("t13", "Albisignata albisignata", null, Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, null, null);
+    w13.getUsage().getName().setScientificName("? albisignata");
+    insert(c, cfg, w13);
+
+    // t14: zoological convention with subgenus in parentheses (real mosquito)
+    NameUsageWrapper w14 = taxon("t14", "Aedes aegypti", null, Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, null, null);
+    w14.getUsage().getName().setScientificName("Aedes (Stegomyia) aegypti");
+    insert(c, cfg, w14);
+
+    // t15: botanical with hyphenated specific epithet (real ornamental shrub)
+    NameUsageWrapper w15 = taxon("t15", "Hibiscus rosa", null, Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null);
+    w15.getUsage().getName().setScientificName("Hibiscus rosa-sinensis");
+    insert(c, cfg, w15);
+
     EsUtil.refreshIndex(c, cfg.name);
     service = new NameUsageSearchServiceEs(cfg.name, c);
   }
@@ -163,8 +182,8 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     // --- Integer/string parameters that work correctly ---
 
     // DATASET_KEY (keyword field storing integer "100"/"200")
-    assertFilterCount(8, DATASET_KEY, DS1);
-    assertFilterCount(6, DATASET_KEY, DS2);
+    assertFilterCount(10, DATASET_KEY, DS1);
+    assertFilterCount(7, DATASET_KEY, DS2);
 
     // USAGE_ID (keyword field, exact string match on the usage's id)
     assertFilterCount(1, USAGE_ID, "t6");
@@ -188,11 +207,11 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
     // EXTINCT (boolean field; only t6=Felis catus has extinct=true)
     assertFilterCount(1, EXTINCT, true);
-    assertFilterCount(11, EXTINCT, false); // 11 taxa with explicit false; synonyms have no extinct field
+    assertFilterCount(14, EXTINCT, false); // 14 taxa with explicit false; synonyms have no extinct field
 
     // RANK (integer field; stored as Rank ordinal via RankOrdinalSerde)
     assertFilterCount(2, RANK, Rank.KINGDOM); // Animalia (t1) + Plantae (t8)
-    assertFilterCount(7, RANK, Rank.SPECIES);  // t6, t7, t10, s1, s2, t11, t12
+    assertFilterCount(10, RANK, Rank.SPECIES);  // t6, t7, t10, s1, s2, t11, t12, t13, t14, t15
 
     // TAXON_ID (keyword field on classification[].id)
     // t6 (Felis catus) was given a classification containing t5 (Felis) with id="t5"
@@ -288,7 +307,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = resp.getFacets();
     assertNotNull(facets);
 
-    // DATASET_KEY facet: 2 buckets (DS1=8, DS2=6)
+    // DATASET_KEY facet: 2 buckets (DS1=10, DS2=7)
     Set<FacetValue<?>> dsFacet = facets.get(DATASET_KEY);
     assertNotNull("DATASET_KEY facet should be present", dsFacet);
     assertEquals("DATASET_KEY facet should have 2 buckets", 2, dsFacet.size());
@@ -306,7 +325,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     filtered.setFacetLimit(20);
 
     NameUsageSearchResponse filteredResp = search(filtered);
-    assertEquals("filter on DS1 should return 8 results", 8, filteredResp.getTotal());
+    assertEquals("filter on DS1 should return 10 results", 10, filteredResp.getTotal());
 
     Set<FacetValue<?>> filteredDsFacet = filteredResp.getFacets().get(DATASET_KEY);
     assertNotNull(filteredDsFacet);
@@ -462,16 +481,57 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
   }
 
   /**
-   * WholeWordMatcherSimple (WHOLE_WORDS, non-fuzzy): currently a stub delegating to the base term query.
+   * WHOLE_WORDS scientific name search.
+   * <p>
+   * Backed by a match query on the {@code usage.name.scientificName.word} subfield, which is
+   * indexed with the {@code sciname_ascii} analyzer (whitespace tokenizer + bracket char filter +
+   * lowercase + asciifolding). The cases below pin down the analyzer's behaviour on punctuation:
+   * leading {@code ?}, parenthesised subgenus, and hyphenated epithet.
    */
   @Test
   public void testQWholeWords() {
+    // baseline: a plain epithet still works
     NameUsageSearchRequest req = new NameUsageSearchRequest();
     req.setQ("canina");
     req.setSearchType(WHOLE_WORDS);
     req.setSingleContent(SCIENTIFIC_NAME);
-    assertFalse("WHOLE_WORDS simple: 'Rosa canina' should return results",
+    assertFalse("WHOLE_WORDS 'canina' should return Rosa canina",
         search(req).getResult().isEmpty());
+
+    // '?' as a standalone token (genus uncertain) — t13 = "? albisignata"
+    req.setQ("?");
+    var hits = search(req).getResult();
+    assertFalse("WHOLE_WORDS '?' should match '? albisignata'", hits.isEmpty());
+    assertTrue("WHOLE_WORDS '?' should include t13", hits.stream().anyMatch(h -> "t13".equals(h.getId())));
+
+    req.setQ("albisignata");
+    assertEquals("WHOLE_WORDS 'albisignata' should match t13",
+        "t13", search(req).getResult().getFirst().getId());
+
+    // zoological subgenus in parentheses — t14 = "Aedes (Stegomyia) aegypti"
+    // bracket char filter strips '(' and ')' before tokenization, so 'Stegomyia' is a whole word
+    req.setQ("Stegomyia");
+    assertEquals("WHOLE_WORDS 'Stegomyia' should match t14 despite parens",
+        "t14", search(req).getResult().getFirst().getId());
+
+    req.setQ("Aedes");
+    assertTrue("WHOLE_WORDS 'Aedes' should include t14",
+        search(req).getResult().stream().anyMatch(h -> "t14".equals(h.getId())));
+
+    req.setQ("aegypti");
+    assertEquals("WHOLE_WORDS 'aegypti' should match t14",
+        "t14", search(req).getResult().getFirst().getId());
+
+    // hyphenated specific epithet — t15 = "Hibiscus rosa-sinensis"
+    // Whitespace tokenizer keeps the hyphenated epithet as a single token.
+    req.setQ("rosa-sinensis");
+    assertEquals("WHOLE_WORDS 'rosa-sinensis' should match t15",
+        "t15", search(req).getResult().getFirst().getId());
+
+    // documented trade-off: a half of a hyphenated epithet is NOT a whole word match
+    req.setQ("sinensis");
+    assertTrue("WHOLE_WORDS 'sinensis' should NOT match the hyphenated 'rosa-sinensis' epithet",
+        search(req).getResult().stream().noneMatch(h -> "t15".equals(h.getId())));
   }
 
   /**
