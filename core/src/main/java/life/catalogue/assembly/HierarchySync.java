@@ -398,9 +398,13 @@ public class HierarchySync extends SectorRunnable {
           // tag with sector before copying (CopyUtil propagates Taxon.sectorKey to the Name)
           t.setSectorKey(sector.getId());
           t.setSectorMode(Sector.Mode.HIERARCHY);
+          // null verbatim_source_key — the loaded value points at the target dataset's verbatim_source
+          // and would violate the project's FK. CopyUtil nulls verbatim_key but not this one.
+          t.setVerbatimSourceKey(null);
           if (t.getName() != null) {
             t.getName().setSectorKey(sector.getId());
             t.getName().setSectorMode(Sector.Mode.HIERARCHY);
+            t.getName().setVerbatimSourceKey(null);
           }
           // copy. No extension entities; reference linkage is dropped in this phase.
           CopyUtil.copyUsage(batch, t, DSID.of(projectKey, projectParentId), user, Set.of(),
@@ -651,9 +655,12 @@ public class HierarchySync extends SectorRunnable {
           // tag with sector before copying (CopyUtil propagates Taxon/Synonym.sectorKey to the Name)
           syn.setSectorKey(sector.getId());
           syn.setSectorMode(Sector.Mode.HIERARCHY);
+          // null verbatim_source_key — see phase 1 insertAncestorsTopDown for rationale
+          syn.setVerbatimSourceKey(null);
           if (syn.getName() != null) {
             syn.getName().setSectorKey(sector.getId());
             syn.getName().setSectorMode(Sector.Mode.HIERARCHY);
+            syn.getName().setVerbatimSourceKey(null);
           }
           // copy. parent = the project's accepted taxon. No extension entities; reference linkage dropped.
           CopyUtil.copyUsage(batch, syn, DSID.of(projectKey, projectAcceptedId), user, Set.of(),
