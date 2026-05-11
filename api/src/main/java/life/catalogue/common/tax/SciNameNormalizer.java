@@ -114,14 +114,15 @@ public class SciNameNormalizer {
     // Remove a hybrid cross, or a likely hybrid cross.
     s = removeHybridMarker(s);
     
-    // Only for bi/trinomials, otherwise we mix up ranks.
-    if (normMonomials) {
-      s = normStrongly(s, stemming);
-      
-    } else if (s.indexOf(' ') > 2) {
+    // by default only for bi/trinomials, otherwise we mix up ranks.
+    if (s.indexOf(' ') > 2) {
       String[] parts = s.split(" +");
       StringBuilder sb = new StringBuilder();
-      sb.append(parts[0]);
+      if (normMonomials) {
+        sb.append(normStrongly(parts[0], stemming));
+      } else {
+        sb.append(parts[0]);
+      }
       for (int i = 1; i < parts.length; i++) {
         sb.append(" ");
         if (Character.isLowerCase(parts[i].charAt(0))) {
@@ -131,6 +132,8 @@ public class SciNameNormalizer {
         }
       }
       s = sb.toString();
+    } else if (normMonomials) {
+      s = normStrongly(s, stemming);
     }
     
     return s.trim();
