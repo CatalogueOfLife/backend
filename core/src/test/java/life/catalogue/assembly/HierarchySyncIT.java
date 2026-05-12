@@ -166,6 +166,11 @@ public class HierarchySyncIT {
     assertEquals("Felis should now be under Felidae", felidae.getId(), pFelis.getParentId());
     assertEquals("Canis should now be under Canidae", canidae.getId(), pCanis.getParentId());
 
+    // Phase 1: matched accepted species keeps its existing matched genus parent (Felis catus must
+    // stay under project Felis, not be re-anchored under the imported Felidae).
+    NameUsageBase pFelisCatus = getByID(PROJECT_KEY, P_Felis_catus);
+    assertEquals("Felis catus should stay under project Felis, not jump to Felidae", P_Felis, pFelisCatus.getParentId());
+
     // Phase 2: Lynx demoted to synonym, parent pointing at Felis
     NameUsageBase pLynx = getByID(PROJECT_KEY, P_Lynx);
     assertTrue("Lynx should now be a synonym", pLynx.getStatus().isSynonym());
@@ -185,6 +190,106 @@ public class HierarchySyncIT {
     List<NameUsageBase> lynxes = listByName(PROJECT_KEY, Rank.GENUS, "Lynx");
     assertEquals("expected exactly one Lynx in the project", 1, lynxes.size());
     assertEquals(P_Lynx, lynxes.get(0).getId());
+  }
+
+  /**
+   * Regression for the Sabulina parent-cycle bug. Project sec X has an inverted synonymy compared
+   * to the target: A is accepted with B as its synonym in the project, but the target has B
+   * accepted with A as its synonym. Phase 2 must not produce the 2-cycle A ↔ B (which the old
+   * code did, because it happily resolved a target accepted id to the project synonym that
+   * carried that id and used the synonym as a parent_id).
+   */
+  @Test
+  public void invertedSynonymyDoesNotCreateCycle() throws Exception {
+    final String P_A = "p_invertedA";
+    final String P_B = "p_invertedB";
+    final String T_A = "T_invertedA"; // synonym in target
+    final String T_B = "T_invertedB"; // accepted in target
+    final String T_TestGenus = "T_TestGenus";
+
+    // Target: TestGenus (root genus) > B (accepted species) > A (synonym of B)
+    insertTaxon(targetKey, T_TestGenus, null, Rank.GENUS, "Testgenus");
+    insertTaxon(targetKey, T_B, T_TestGenus, Rank.SPECIES, "Testgenus betaspec");
+    insertSynonym(targetKey, T_A, T_B, Rank.SPECIES, "Testgenus alphaspec");
+
+    // Project: A accepted (root, identifier=T_A), B synonym of A (identifier=T_B) — INVERTED vs target.
+    insertTaxonWithIdentifier(PROJECT_KEY, P_A, null, Rank.SPECIES, "Testgenus alphaspec", T_A);
+    insertSynonymWithIdentifier(PROJECT_KEY, P_B, P_A, Rank.SPECIES, "Testgenus betaspec", T_B);
+
+    runHierarchySync();
+
+    NameUsageBase a = getByID(PROJECT_KEY, P_A);
+    NameUsageBase b = getByID(PROJECT_KEY, P_B);
+    assertNotNull(a);
+    assertNotNull(b);
+
+    // The cycle guard must have blocked the demote of A — leaving A accepted with its original
+    // (non-B) parent. The only forbidden outcome is A.parent_id == B, which would close the loop.
+    assertNotEquals("P_A.parent_id must not equal P_B (would close a parent cycle)", P_B, a.getParentId());
+
+    // No project-side cycle anywhere in this pair.
+    if (P_A.equals(b.getParentId())) {
+      assertNotEquals("If P_B still points at P_A, then P_A must not point back at P_B", P_B, a.getParentId());
+    }
+  }
+
+  /**
+   * Regression for the Vicia/Lentilla reassignment scenario. Target reassigns Vicia and its
+   * species under a different accepted genus (Lentilla) by treating the project's accepted names
+   * as synonyms of accepted Lentilla counterparts. The hierarchy sync must demote both accepted
+   * project records into synonyms of the target-accepted equivalents, rather than rewiring them
+   * under a higher classification rank.
+   */
+  @Test
+  public void viciaLentillaReassignmentDemotesAcceptedToSynonym() throws Exception {
+    final String T_Fabaceae = "T_Fabaceae";
+    final String T_Lentilla = "T_Lentilla";
+    final String T_Lentilla_faba = "T_Lentilla_faba";
+    final String T_Vicia = "T_Vicia";
+    final String T_Vicia_faba = "T_Vicia_faba";
+
+    // Target: Animalia (already in fixture) > Fabaceae (family) > Lentilla (acc) > Lentilla faba (acc);
+    // Vicia is a synonym of Lentilla, Vicia faba is a synonym of Lentilla faba.
+    insertTaxon(targetKey, T_Fabaceae, T_Animalia, Rank.FAMILY, "Fabaceae");
+    insertTaxon(targetKey, T_Lentilla, T_Fabaceae, Rank.GENUS, "Lentilla");
+    insertTaxon(targetKey, T_Lentilla_faba, T_Lentilla, Rank.SPECIES, "Lentilla faba");
+    insertSynonym(targetKey, T_Vicia, T_Lentilla, Rank.GENUS, "Vicia");
+    insertSynonym(targetKey, T_Vicia_faba, T_Lentilla_faba, Rank.SPECIES, "Vicia faba");
+
+    // Project: Lentilla / Lentilla faba and Vicia / Vicia faba all accepted; identifiers point at
+    // the corresponding target ids (accepted ids for Lentilla pair, synonym ids for Vicia pair).
+    final String P_Lentilla = "p_Lentilla";
+    final String P_Lentilla_faba = "p_Lentilla_faba";
+    final String P_Vicia = "p_Vicia";
+    final String P_Vicia_faba = "p_Vicia_faba";
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Lentilla, null, Rank.GENUS, "Lentilla", T_Lentilla);
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Lentilla_faba, P_Lentilla, Rank.SPECIES, "Lentilla faba", T_Lentilla_faba);
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Vicia, null, Rank.GENUS, "Vicia", T_Vicia);
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Vicia_faba, P_Vicia, Rank.SPECIES, "Vicia faba", T_Vicia_faba);
+
+    runHierarchySync();
+
+    // Lentilla and Lentilla faba stay accepted.
+    NameUsageBase pLentilla = getByID(PROJECT_KEY, P_Lentilla);
+    NameUsageBase pLentillaFaba = getByID(PROJECT_KEY, P_Lentilla_faba);
+    assertNotNull(pLentilla);
+    assertNotNull(pLentillaFaba);
+    assertTrue("Lentilla should stay accepted", pLentilla.getStatus().isTaxon());
+    assertTrue("Lentilla faba should stay accepted", pLentillaFaba.getStatus().isTaxon());
+    // Lentilla faba sits under its matched genus Lentilla (species-under-matched-genus, not jumping to family).
+    assertEquals("Lentilla faba should stay under project Lentilla", P_Lentilla, pLentillaFaba.getParentId());
+
+    // Vicia: demoted to synonym, parent = project Lentilla.
+    NameUsageBase pVicia = getByID(PROJECT_KEY, P_Vicia);
+    assertNotNull(pVicia);
+    assertTrue("Vicia should now be a synonym", pVicia.getStatus().isSynonym());
+    assertEquals("Vicia synonym should point at project Lentilla", P_Lentilla, pVicia.getParentId());
+
+    // Vicia faba: demoted to synonym, parent = project Lentilla faba.
+    NameUsageBase pViciaFaba = getByID(PROJECT_KEY, P_Vicia_faba);
+    assertNotNull(pViciaFaba);
+    assertTrue("Vicia faba should now be a synonym", pViciaFaba.getStatus().isSynonym());
+    assertEquals("Vicia faba synonym should point at project Lentilla faba", P_Lentilla_faba, pViciaFaba.getParentId());
   }
 
   @Test
@@ -307,6 +412,23 @@ public class HierarchySyncIT {
       Taxon t = buildTaxon(datasetKey, id, parentId, n, TaxonomicStatus.ACCEPTED);
       t.setIdentifier(new java.util.ArrayList<>(List.of(new Identifier(SCOPE, targetId))));
       s.getMapper(TaxonMapper.class).create(t);
+    }
+  }
+
+  private static void insertSynonymWithIdentifier(int datasetKey, String id, String acceptedId, Rank rank, String scientificName, String targetId) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      Name n = buildName(datasetKey, id, scientificName, rank);
+      s.getMapper(NameMapper.class).create(n);
+      Synonym syn = new Synonym();
+      syn.setDatasetKey(datasetKey);
+      syn.setId(id);
+      syn.setName(n);
+      syn.setStatus(TaxonomicStatus.SYNONYM);
+      syn.setParentId(acceptedId);
+      syn.setOrigin(life.catalogue.api.vocab.Origin.SOURCE);
+      syn.setIdentifier(new java.util.ArrayList<>(List.of(new Identifier(SCOPE, targetId))));
+      syn.applyUser(USER);
+      s.getMapper(SynonymMapper.class).create(syn);
     }
   }
 

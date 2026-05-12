@@ -133,10 +133,16 @@ public class HierarchySync extends SectorRunnable {
   private final Map<String, String> projectMatches = new LinkedHashMap<>();
   /** project usage id -> its current TaxonomicStatus at sync start. */
   private final Map<String, TaxonomicStatus> projectStatuses = new HashMap<>();
+  /** project usage id -> its current parent_id (captured for matched usages; populated lazily for non-matched
+   *  parents we touch via the cycle guard / synonym walk-up). */
+  private final Map<String, String> projectParents = new HashMap<>();
   /** target usage id -> newly created project usage id (above-genus ancestors imported in phase 1). */
   private final Map<String, String> targetToProject = new HashMap<>();
-  /** target usage id -> matched project usage id (reverse of projectMatches; built lazily for lookups). */
+  /** target usage id -> matched project usage id (reverse of projectMatches; built eagerly at start of phase 1). */
   private Map<String, String> matchReverse = null;
+
+  /** Cap on how many hops we walk to reach an accepted from a matched synonym, or to detect a cycle. */
+  private static final int MAX_WALK_DEPTH = 20;
 
   HierarchySync(DSID<Integer> sectorKey,
                 SqlSessionFactory factory,
@@ -243,22 +249,28 @@ public class HierarchySync extends SectorRunnable {
       LOG.info("Hierarchy sector {}: matching identifiers in scope '{}' against target dataset {}", sectorKey, targetScope, targetDatasetKey);
     }
 
-    // Pass 1: discover project usages that match a target id (also captures their current status for phase 2)
+    // Pass 1: discover project usages that match a target id (also captures their current status
+    // and parent_id for use in phases 2 + 3 and the synonym walk-up).
     discoverIdentifierMatches(projectKey, targetScope);
     if (projectMatches.isEmpty()) {
       LOG.info("Hierarchy sector {}: no project usages matched to target dataset {} - phase 1 has nothing to do", sectorKey, targetDatasetKey);
       return;
     }
     LOG.info("Hierarchy sector {}: matched {} project usages to target dataset {}", sectorKey, projectMatches.size(), targetDatasetKey);
+    // Build matchReverse eagerly so phase 1 rewiring (and phase 2) can resolve target ids through it.
+    buildMatchReverse();
 
-    // Pass 2: walk parent chains, collect above-genus ancestor Taxon objects.
-    // Synonyms are skipped here for the rewire mapping — their parent_id should keep pointing at the
-    // accepted taxon in the project, not at a high-rank ancestor. (Walking from a synonym would
-    // surface the accepted taxon's chain, but it's the *accepted* project usage that needs rewiring.)
-    Map<String, String> immediateAncestorForAccepted = new HashMap<>();
-    Map<String, Taxon> ancestorsToInsert = collectAncestors(immediateAncestorForAccepted);
-    if (ancestorsToInsert.isEmpty()) {
-      LOG.info("Hierarchy sector {}: no above-genus ancestors required - phase 1 done", sectorKey);
+    // Pass 2: walk parent chains. For each matched project usage, collect every above-genus target
+    // ancestor for import. For each matched ACCEPTED project usage, also record the full target
+    // classification chain (immediate parent first) — phase 1's rewire walks that chain looking for
+    // the closest ancestor that already has a project equivalent (an imported above-genus ancestor
+    // or another matched accepted project usage), so an existing matched genus is preferred over
+    // jumping all the way to family. Synonyms are intentionally skipped for the rewire mapping —
+    // their parent_id must keep pointing at an accepted taxon and is handled by phase 2.
+    Map<String, List<String>> targetChainForAccepted = new LinkedHashMap<>();
+    Map<String, Taxon> ancestorsToInsert = collectAncestors(targetChainForAccepted);
+    if (ancestorsToInsert.isEmpty() && targetChainForAccepted.isEmpty()) {
+      LOG.info("Hierarchy sector {}: no above-genus ancestors required and no accepted matches - phase 1 done", sectorKey);
       return;
     }
     LOG.info("Hierarchy sector {}: {} unique above-genus ancestors will be imported", sectorKey, ancestorsToInsert.size());
@@ -266,8 +278,21 @@ public class HierarchySync extends SectorRunnable {
     // Pass 3: insert ancestors top-down (parent_id topological order); populates targetToProject
     insertAncestorsTopDown(projectKey, ancestorsToInsert, targetScope);
 
-    // Pass 4: rewire ACCEPTED project usages to point at their newly imported immediate ancestor.
-    rewireProjectParents(projectKey, immediateAncestorForAccepted);
+    // Pass 4: rewire ACCEPTED project usages to point at their closest project ancestor.
+    rewireProjectParents(projectKey, targetChainForAccepted);
+  }
+
+  /**
+   * Builds the {@code target id -> project id} reverse lookup once, eagerly, so it is available to
+   * both phase 1 rewiring and phase 2. Last write wins on duplicates — if two project usages map
+   * to the same target id we keep the most-recently-seen one (deterministic via the LinkedHashMap
+   * iteration order of {@link #projectMatches}).
+   */
+  private void buildMatchReverse() {
+    matchReverse = new HashMap<>(projectMatches.size());
+    for (Map.Entry<String, String> e : projectMatches.entrySet()) {
+      matchReverse.put(e.getValue(), e.getKey());
+    }
   }
 
   /**
@@ -295,6 +320,7 @@ public class HierarchySync extends SectorRunnable {
           if (u.getStatus() != null) {
             projectStatuses.put(u.getId(), u.getStatus());
           }
+          projectParents.put(u.getId(), u.getParentId());
         }
       }
     } catch (java.io.IOException e) {
@@ -315,33 +341,29 @@ public class HierarchySync extends SectorRunnable {
 
   /**
    * For each matched (project usage, target id) pair, walks the target's parent chain and collects
-   * every ancestor whose rank is strictly higher than {@link Rank#GENUS}. The result map is keyed
-   * by target ancestor id; {@code immediateAncestorForAccepted} is populated only for project
-   * usages that are currently accepted — synonyms keep their parent (it should point at the
-   * accepted taxon, not a higher-classification ancestor).
+   * every ancestor whose rank is strictly higher than {@link Rank#GENUS} for the import pass. For
+   * each matched ACCEPTED project usage, also records the full target classification chain
+   * (immediate parent first, root last) into {@code targetChainForAccepted} so phase 1's rewire
+   * can resolve it to the closest existing project ancestor.
    */
-  private Map<String, Taxon> collectAncestors(Map<String, String> immediateAncestorForAccepted) {
+  private Map<String, Taxon> collectAncestors(Map<String, List<String>> targetChainForAccepted) {
     Map<String, Taxon> ancestors = new LinkedHashMap<>();
     try (SqlSession session = factory.openSession(true)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       for (Map.Entry<String, String> e : projectMatches.entrySet()) {
         // classification yields the parent chain ordered from immediate parent up to root, excluding the start node
         List<Taxon> chain = tm.classification(DSID.of(targetDatasetKey, e.getValue()));
-        Taxon immediate = null;
+        List<String> chainIds = new ArrayList<>(chain.size());
         for (Taxon t : chain) {
+          chainIds.add(t.getId());
           Rank r = t.getRank();
           if (r != null && r.higherThan(Rank.GENUS)) {
             ancestors.putIfAbsent(t.getId(), t);
-            if (immediate == null) {
-              immediate = t;
-            }
           }
         }
-        if (immediate != null) {
-          TaxonomicStatus ps = projectStatuses.get(e.getKey());
-          if (ps != null && ps.isTaxon()) {
-            immediateAncestorForAccepted.put(e.getKey(), immediate.getId());
-          }
+        TaxonomicStatus ps = projectStatuses.get(e.getKey());
+        if (ps != null && ps.isTaxon() && !chainIds.isEmpty()) {
+          targetChainForAccepted.put(e.getKey(), chainIds);
         }
       }
     }
@@ -430,31 +452,54 @@ public class HierarchySync extends SectorRunnable {
   }
 
   /**
-   * For every matched <em>accepted</em> project usage, rewires its parent_id to the newly imported
-   * immediate ancestor. Project usages whose immediate ancestor could not be inserted are left
-   * untouched.
+   * For every matched <em>accepted</em> project usage, walks the target classification chain
+   * (immediate parent first) and rewires its {@code parent_id} to the closest ancestor that has a
+   * project equivalent — either an above-genus ancestor that we just imported, or another matched
+   * accepted project usage (so the existing matched genus is preferred over the imported family).
+   * Updates are skipped when the new parent matches the current one. Usages whose entire chain has
+   * no project equivalent are left untouched.
    */
-  private void rewireProjectParents(int projectKey, Map<String, String> immediateAncestorForAccepted) {
-    if (immediateAncestorForAccepted.isEmpty()) return;
+  private void rewireProjectParents(int projectKey, Map<String, List<String>> targetChainForAccepted) {
+    if (targetChainForAccepted.isEmpty()) return;
     int rewired = 0;
-    int skipped = 0;
+    int unchanged = 0;
+    int unresolved = 0;
     try (SqlSession batch = factory.openSession(ExecutorType.BATCH, false)) {
       NameUsageMapper num = batch.getMapper(NameUsageMapper.class);
-      for (Map.Entry<String, String> e : immediateAncestorForAccepted.entrySet()) {
-        String newParent = targetToProject.get(e.getValue());
+      for (Map.Entry<String, List<String>> e : targetChainForAccepted.entrySet()) {
+        final String projectId = e.getKey();
+        String newParent = null;
+        for (String ancestorTargetId : e.getValue()) {
+          String resolved = resolveProjectIdForTarget(ancestorTargetId);
+          if (resolved != null) {
+            newParent = resolved;
+            break;
+          }
+        }
         if (newParent == null) {
-          skipped++;
+          unresolved++;
           continue;
         }
-        num.updateParentId(DSID.of(projectKey, e.getKey()), newParent, user);
+        if (newParent.equals(projectId)) {
+          // would create a self-loop (e.g. cached projectParents already had us here); skip
+          unchanged++;
+          continue;
+        }
+        String currentParent = projectParents.get(projectId);
+        if (newParent.equals(currentParent)) {
+          unchanged++;
+          continue;
+        }
+        num.updateParentId(DSID.of(projectKey, projectId), newParent, user);
+        projectParents.put(projectId, newParent);
         if (++rewired % 1000 == 0) {
           batch.commit();
         }
       }
       batch.commit();
     }
-    LOG.info("Hierarchy sector {}: rewired {} accepted project usages to imported higher classification (skipped {} without resolvable ancestor)",
-      sectorKey, rewired, skipped);
+    LOG.info("Hierarchy sector {}: rewired {} accepted project usages to closest project ancestor (unchanged {}, unresolvable {})",
+      sectorKey, rewired, unchanged, unresolved);
   }
 
 
@@ -484,11 +529,12 @@ public class HierarchySync extends SectorRunnable {
       return;
     }
     final int projectKey = sectorKey.getDatasetKey();
-    int demoted = 0, promoted = 0, synonymRetargeted = 0, unchanged = 0, unresolved = 0;
+    int demoted = 0, promoted = 0, synonymRetargeted = 0, unchanged = 0, unresolved = 0, cycleBlocked = 0;
 
     try (SqlSession session = factory.openSession(true);
          SqlSession batch = factory.openSession(ExecutorType.BATCH, false)) {
       NameUsageMapper targetNum = session.getMapper(NameUsageMapper.class);
+      NameUsageMapper readNum = session.getMapper(NameUsageMapper.class);
       NameUsageMapper writeNum = batch.getMapper(NameUsageMapper.class);
       int written = 0;
 
@@ -523,8 +569,14 @@ public class HierarchySync extends SectorRunnable {
             unresolved++;
             continue;
           }
+          if (wouldCreateCycle(projectKey, projectId, newProjectParent, readNum)) {
+            LOG.warn("Hierarchy sector {}: skipping demote of {} - new parent {} would create a cycle", sectorKey, projectId, newProjectParent);
+            cycleBlocked++;
+            continue;
+          }
           writeNum.updateParentAndStatus(DSID.of(projectKey, projectId), newProjectParent, tStatus, user);
           projectStatuses.put(projectId, tStatus);
+          projectParents.put(projectId, newProjectParent);
           demoted++;
           if (++written % 1000 == 0) batch.commit();
           continue;
@@ -537,8 +589,14 @@ public class HierarchySync extends SectorRunnable {
             unresolved++;
             continue;
           }
+          if (wouldCreateCycle(projectKey, projectId, newProjectParent, readNum)) {
+            LOG.warn("Hierarchy sector {}: skipping promote of {} - new parent {} would create a cycle", sectorKey, projectId, newProjectParent);
+            cycleBlocked++;
+            continue;
+          }
           writeNum.updateParentAndStatus(DSID.of(projectKey, projectId), newProjectParent, tStatus, user);
           projectStatuses.put(projectId, tStatus);
+          projectParents.put(projectId, newProjectParent);
           promoted++;
           if (++written % 1000 == 0) batch.commit();
           continue;
@@ -547,9 +605,15 @@ public class HierarchySync extends SectorRunnable {
         // both synonym - retarget if the accepted differs, plus tweak status subtype if needed
         if (pStatus.isSynonym() && tStatus.isSynonym()) {
           if (newProjectParent != null) {
+            if (wouldCreateCycle(projectKey, projectId, newProjectParent, readNum)) {
+              LOG.warn("Hierarchy sector {}: skipping synonym retarget of {} - new parent {} would create a cycle", sectorKey, projectId, newProjectParent);
+              cycleBlocked++;
+              continue;
+            }
             // even if status subtype matches, retarget the parent to the project's accepted equivalent
             writeNum.updateParentAndStatus(DSID.of(projectKey, projectId), newProjectParent, tStatus, user);
             projectStatuses.put(projectId, tStatus);
+            projectParents.put(projectId, newProjectParent);
             synonymRetargeted++;
             if (++written % 1000 == 0) batch.commit();
           } else if (pStatus != tStatus) {
@@ -565,26 +629,88 @@ public class HierarchySync extends SectorRunnable {
       }
       batch.commit();
     }
-    LOG.info("Hierarchy sector {}: phase 2 done - demoted={}, promoted={}, synonyms retargeted/realigned={}, unchanged={}, unresolved={}",
-      sectorKey, demoted, promoted, synonymRetargeted, unchanged, unresolved);
+    LOG.info("Hierarchy sector {}: phase 2 done - demoted={}, promoted={}, synonyms retargeted/realigned={}, unchanged={}, unresolved={}, cycle-blocked={}",
+      sectorKey, demoted, promoted, synonymRetargeted, unchanged, unresolved, cycleBlocked);
   }
 
   /**
    * Returns the project usage id corresponding to a target usage id, by checking (a) the ancestors
-   * imported in phase 1 and (b) the existing matched project usages. Returns {@code null} if no
-   * project equivalent is known.
+   * imported in phase 1 and (b) the existing matched project usages. When a matchReverse hit is a
+   * project synonym we walk its in-project {@code parent_id} chain (bounded by
+   * {@link #MAX_WALK_DEPTH}) to find the accepted taxon it belongs to — a {@code parent_id} must
+   * point at an accepted, and a project synonym carrying a target accepted's identifier is the
+   * common case in COL data. Returns {@code null} if no project equivalent (or no reachable
+   * accepted) is known.
    */
   private @Nullable String resolveProjectIdForTarget(@Nullable String targetId) {
     if (targetId == null) return null;
     String pid = targetToProject.get(targetId);
     if (pid != null) return pid;
     if (matchReverse == null) {
-      matchReverse = new HashMap<>(projectMatches.size());
-      for (Map.Entry<String, String> e : projectMatches.entrySet()) {
-        matchReverse.put(e.getValue(), e.getKey());
-      }
+      buildMatchReverse();
     }
-    return matchReverse.get(targetId);
+    String matched = matchReverse.get(targetId);
+    if (matched == null) return null;
+    return resolveToAccepted(matched);
+  }
+
+  /**
+   * Defensive cycle guard for phase 2 parent updates. Returns true if setting
+   * {@code projectId.parent_id = newParent} would close a cycle on {@code projectId} — either a
+   * self-loop or a chain that walks back to {@code projectId} within {@link #MAX_WALK_DEPTH} hops.
+   * Walks via the {@link #projectParents} cache and falls back to {@code NameUsageMapper.get} for
+   * intermediate ancestors not yet cached, populating the cache as it goes.
+   */
+  private boolean wouldCreateCycle(int projectKey, String projectId, @Nullable String newParent, NameUsageMapper readNum) {
+    if (newParent == null) return false;
+    if (newParent.equals(projectId)) return true;
+    Set<String> seen = new HashSet<>();
+    String current = newParent;
+    for (int i = 0; i < MAX_WALK_DEPTH; i++) {
+      if (current == null) return false;
+      if (current.equals(projectId)) return true;
+      if (!seen.add(current)) return false; // pre-existing cycle that doesn't include projectId
+      String parent;
+      if (projectParents.containsKey(current)) {
+        parent = projectParents.get(current);
+      } else {
+        NameUsageBase u = readNum.get(DSID.of(projectKey, current));
+        if (u == null) return false;
+        parent = u.getParentId();
+        projectParents.put(current, parent);
+      }
+      current = parent;
+    }
+    return false;
+  }
+
+  /**
+   * If {@code projectId} is (cached as) an accepted taxon, returns it. Otherwise walks
+   * {@link #projectParents} up to {@link #MAX_WALK_DEPTH} hops looking for an accepted ancestor.
+   * Unmatched ancestors that aren't in {@link #projectStatuses} are trusted as accepted (the
+   * {@code parent_id} of a synonym in the project should always point at an accepted taxon by the
+   * data model). Returns {@code null} on cycles or when the walk runs out of cached parents.
+   */
+  private @Nullable String resolveToAccepted(String projectId) {
+    TaxonomicStatus st = projectStatuses.get(projectId);
+    if (st == null || st.isTaxon()) {
+      // not a known synonym in our match cache — trust it's accepted (data model invariant)
+      return projectId;
+    }
+    Set<String> seen = new HashSet<>();
+    String current = projectId;
+    for (int i = 0; i < MAX_WALK_DEPTH; i++) {
+      if (!seen.add(current)) return null; // cycle in pre-existing data
+      String parent = projectParents.get(current);
+      if (parent == null) return null; // walked off the cached chain
+      TaxonomicStatus parentStatus = projectStatuses.get(parent);
+      if (parentStatus == null || parentStatus.isTaxon()) {
+        // either an unmatched usage (trusted accepted by invariant) or an accepted match
+        return parent;
+      }
+      current = parent;
+    }
+    return null;
   }
 
   /**
