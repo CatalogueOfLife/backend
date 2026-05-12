@@ -8,7 +8,9 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.CacheLoader;
@@ -22,6 +24,7 @@ import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.matching.IdentifierScopeResolver;
@@ -150,6 +153,8 @@ public class HierarchySync extends SectorRunnable {
   private UsageCache sourceCache;
   /** Loader that feeds {@link #sourceCache} on misses via a long-lived read session. */
   private CacheLoader sourceLoader;
+  /** Next VerbatimSource id to assign (resets at the start of every doWork via getMaxID + 1). */
+  private int vsIdGen;
 
   /** Cap on how many hops we walk to reach an accepted from a matched synonym, or to detect a cycle. */
   private static final int MAX_WALK_DEPTH = 20;
@@ -223,6 +228,12 @@ public class HierarchySync extends SectorRunnable {
       state.setState(ImportState.DELETING);
       deleteOld();
       checkIfCancelled();
+
+      // verbatim_source ids are dataset-wide; start fresh from the current max after old sec records are wiped
+      try (SqlSession s = factory.openSession(true)) {
+        vsIdGen = s.getMapper(VerbatimSourceMapper.class).getMaxID(sectorKey.getDatasetKey()) + 1;
+      }
+      LOG.info("Hierarchy sector {}: starting new verbatim source ids from {}", sectorKey, vsIdGen);
 
       state.setState(ImportState.INSERTING);
       syncHigherClassification();
@@ -421,6 +432,7 @@ public class HierarchySync extends SectorRunnable {
     try (SqlSession batch = factory.openSession(ExecutorType.BATCH, false);
          SqlSession read = factory.openSession(true)) {
       NameUsageMapper num = batch.getMapper(NameUsageMapper.class);
+      VerbatimSourceMapper vsm = batch.getMapper(VerbatimSourceMapper.class);
       TaxonMapper readTm = read.getMapper(TaxonMapper.class);
       while (!remaining.isEmpty()) {
         // find every ancestor whose parent is already resolved: parent_id is null, or parent is not in
@@ -461,13 +473,16 @@ public class HierarchySync extends SectorRunnable {
           // tag with sector before copying (CopyUtil propagates Taxon.sectorKey to the Name)
           t.setSectorKey(sector.getId());
           t.setSectorMode(Sector.Mode.HIERARCHY);
-          // null verbatim_source_key — the loaded value points at the source dataset's verbatim_source
-          // and would violate the project's FK. CopyUtil nulls verbatim_key but not this one.
-          t.setVerbatimSourceKey(null);
+          // Create a fresh project-side VerbatimSource that links the new copy back to the source
+          // record. The loaded value points at the source dataset's verbatim_source and would
+          // violate the project's FK; we replace it with our newly minted key instead of nulling.
+          VerbatimSource v = new VerbatimSource(projectKey, vsIdGen++, sector.getId(), sourceDatasetKey, origSourceId, EntityType.NAME_USAGE);
+          vsm.create(v);
+          t.setVerbatimSourceKey(v.getId());
           if (t.getName() != null) {
             t.getName().setSectorKey(sector.getId());
             t.getName().setSectorMode(Sector.Mode.HIERARCHY);
-            t.getName().setVerbatimSourceKey(null);
+            t.getName().setVerbatimSourceKey(v.getId());
           }
           // copy. No extension entities; reference linkage is dropped in this phase.
           CopyUtil.copyUsage(batch, t, DSID.of(projectKey, projectParentId), user, Set.of(),
@@ -805,6 +820,7 @@ public class HierarchySync extends SectorRunnable {
          SqlSession batch = factory.openSession(ExecutorType.BATCH, false)) {
       SynonymMapper readSyn = readSession.getMapper(SynonymMapper.class);
       NameUsageMapper writeNum = batch.getMapper(NameUsageMapper.class);
+      VerbatimSourceMapper vsm = batch.getMapper(VerbatimSourceMapper.class);
 
       for (Map.Entry<String, String> pair : acceptedPairs.entrySet()) {
         final String projectAcceptedId = pair.getKey();
@@ -821,12 +837,15 @@ public class HierarchySync extends SectorRunnable {
           // tag with sector before copying (CopyUtil propagates Taxon/Synonym.sectorKey to the Name)
           syn.setSectorKey(sector.getId());
           syn.setSectorMode(Sector.Mode.HIERARCHY);
-          // null verbatim_source_key — see phase 1 insertAncestorsTopDown for rationale
-          syn.setVerbatimSourceKey(null);
+          // Create a fresh project-side VerbatimSource that links the new copy back to the source
+          // synonym, replacing the loaded value which points at the source dataset's verbatim_source.
+          VerbatimSource v = new VerbatimSource(projectKey, vsIdGen++, sector.getId(), sourceDatasetKey, origSourceId, EntityType.NAME_USAGE);
+          vsm.create(v);
+          syn.setVerbatimSourceKey(v.getId());
           if (syn.getName() != null) {
             syn.getName().setSectorKey(sector.getId());
             syn.getName().setSectorMode(Sector.Mode.HIERARCHY);
-            syn.getName().setVerbatimSourceKey(null);
+            syn.getName().setVerbatimSourceKey(v.getId());
           }
           // copy. parent = the project's accepted taxon. No extension entities; reference linkage dropped.
           CopyUtil.copyUsage(batch, syn, DSID.of(projectKey, projectAcceptedId), user, Set.of(),

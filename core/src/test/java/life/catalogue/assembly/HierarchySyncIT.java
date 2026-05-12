@@ -185,6 +185,13 @@ public class HierarchySyncIT {
     assertEquals("Felis silvestris should be tagged with the hierarchy sector", hierarchySector.getId(), syn.getSectorKey());
     assertHasIdentifier(syn, SCOPE, T_Felis_silvestris);
 
+    // VerbatimSource: every synced record (imported ancestor + copied synonym) must carry a
+    // verbatim_source row linking it back to its origin in the source dataset.
+    assertVerbatimSource(felidae, targetKey, T_Felidae);
+    assertVerbatimSource(animalia, targetKey, T_Animalia);
+    assertVerbatimSource(canidae, targetKey, T_Canidae);
+    assertVerbatimSource(syn, targetKey, T_Felis_silvestris);
+
     // Phase 3: Lynx is NOT additionally copied as a synonym under project Felis — its target id is
     // already mapped to a project usage (the demoted p_Lynx)
     List<NameUsageBase> lynxes = listByName(PROJECT_KEY, Rank.GENUS, "Lynx");
@@ -506,6 +513,18 @@ public class HierarchySyncIT {
         return s.getMapper(SynonymMapper.class).count(datasetKey);
       }
       return s.getMapper(TaxonMapper.class).count(datasetKey);
+    }
+  }
+
+  private static void assertVerbatimSource(NameUsageBase u, int expectedSourceDatasetKey, String expectedSourceId) {
+    assertNotNull("usage should not be null", u);
+    assertNotNull("usage " + u.getId() + " should carry a verbatim_source_key", u.getVerbatimSourceKey());
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var v = s.getMapper(life.catalogue.db.mapper.VerbatimSourceMapper.class)
+        .get(DSID.of(u.getDatasetKey(), u.getVerbatimSourceKey()));
+      assertNotNull("expected verbatim_source row for " + u.getId(), v);
+      assertEquals("verbatim_source should record the source dataset", Integer.valueOf(expectedSourceDatasetKey), v.getSourceDatasetKey());
+      assertEquals("verbatim_source.source_id should point at the original source record", expectedSourceId, v.getSourceId());
     }
   }
 
