@@ -338,7 +338,11 @@ public class HierarchySync extends SectorRunnable {
     if (sourceScope == null) {
       return;
     }
-    try (SqlSession session = factory.openSession(true);
+    // autoCommit=false: the Postgres JDBC driver needs an explicit transaction to keep a
+    // server-side cursor (portal) alive across FETCH calls with fetchSize > 0. With autoCommit=true
+    // the implicit transaction is committed mid-iteration and the next FETCH would fail with
+    // "portal C_NNN does not exist". Mirrors UsageCache.load(SqlSessionFactory).
+    try (SqlSession session = factory.openSession(false);
          Cursor<NameUsageBase> cursor = session.getMapper(NameUsageMapper.class).processDataset(projectKey, null, null)) {
       for (NameUsageBase u : cursor) {
         if (Objects.equals(sectorKey.getId(), u.getSectorKey())) {
