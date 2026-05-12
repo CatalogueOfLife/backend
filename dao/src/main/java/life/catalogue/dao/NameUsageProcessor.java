@@ -102,12 +102,19 @@ public class NameUsageProcessor {
     }
   }
   private void processTree(int datasetKey, @Nullable Integer sectorKey, Consumer<NameUsageWrapper> consumer) {
-    try (SqlSession session = factory.openSession()) {
+    // The cursor below uses a server-side portal that survives statement execution on the same
+    // connection but NOT a commit. We therefore run the CacheLoader and the in-loop num.get on a
+    // SECOND, isolated session: that way nothing executed inside the cursor's consumer can
+    // commit, rollback or otherwise invalidate the cursor's portal (seen as
+    // "ERROR: portal C_NNN does not exist" once a fallback parent-lookup tripped the loader's
+    // commit-on-miss path).
+    try (SqlSession session = factory.openSession();
+         SqlSession loaderSession = factory.openSession(true)) {
       final NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
-      final NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      final NameUsageMapper num = loaderSession.getMapper(NameUsageMapper.class);
       final var sm = session.getMapper(SectorMapper.class);
       final var dm = session.getMapper(DatasetMapper.class);
-      final CacheLoader loader = new CacheLoader.MybatisSession(session, datasetKey);
+      final CacheLoader loader = new CacheLoader.MybatisSession(loaderSession, datasetKey);
 
       // reusable dsids for this dataset
       final DSID<String> uKey = DSID.root(datasetKey);
