@@ -34,6 +34,7 @@ import life.catalogue.img.ThumborService;
 import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
+import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.parser.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
 import life.catalogue.resources.*;
@@ -257,6 +258,7 @@ public class WsROServer extends Application<WsServerConfig> {
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
+    tdao.setAreaLabelLookup(new AreaLabelLookup(cfg.gazetteerDir));
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
 
@@ -330,7 +332,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new RobotsResource());
     j.register(new VernacularGlobalResource());
     j.register(new VersionResource(cfg.versionString(), LocalDateTime.now()));
-    j.register(new VocabResource());
+    j.register(new VocabResource(cfg.gazetteerDir));
     j.register(new IdentifierScopeResource());
 
     // global parsers

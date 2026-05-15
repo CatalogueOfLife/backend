@@ -10,6 +10,7 @@ import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.*;
 import life.catalogue.common.ws.MoreMediaTypes;
+import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.UnparsableException;
@@ -19,13 +20,17 @@ import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -40,6 +45,8 @@ import com.google.common.reflect.ClassPath;
 import de.undercouch.citeproc.csl.CSLType;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 @Path("/vocab")
 @Produces(MediaType.APPLICATION_JSON)
@@ -52,8 +59,14 @@ public class VocabResource {
   );
   private final Map<String, Class<Enum>> vocabs;
   private final List<String> vocabNames;
+  private final File gazetteerDir;
 
   public VocabResource() {
+    this(null);
+  }
+
+  public VocabResource(@Nullable File gazetteerDir) {
+    this.gazetteerDir = gazetteerDir;
     LOG.info("Scan for available vocabularies");
     Map<String, Class<Enum>> enums = Maps.newHashMap();
     try {
@@ -227,10 +240,58 @@ public class VocabResource {
   }
 
   @GET
+  @VaryAccept
   @Path("area/{id}")
   public Optional<? extends Area> area(@PathParam("id") String id) throws UnparsableException {
     return AreaParser.PARSER.parse(id);
   }
+
+  /**
+   * Returns the GeoJSON Feature for an area id within a gazetteer.
+   * Backed by static files served from the configured gazetteer directory; 404 if the directory is
+   * unconfigured or no file exists for that id.
+   */
+  @GET
+  @VaryAccept
+  @Path("area/{id}")
+  @Produces({MoreMediaTypes.APP_GEOJSON})
+  public Response areaGeojson(@PathParam("id") String id) {
+    if (gazetteerDir == null || id == null || !id.contains(":")) {
+      throw new NotFoundException();
+    }
+    String[] parts = id.trim().split(":", 2);
+    if (parts.length != 2 || parts[0].isEmpty() || parts[1].isEmpty()) {
+      throw new NotFoundException();
+    }
+    String prefix = normalizeFilename(parts[0]);
+    String feat = normalizeFilename(parts[1]);
+    if (prefix.isEmpty() || feat.isEmpty()) {
+      throw new NotFoundException();
+    }
+    java.nio.file.Path base = gazetteerDir.toPath()
+        .resolve(prefix)
+        .resolve("features")
+        .toAbsolutePath().normalize();
+    java.nio.file.Path feature = base.resolve(feat + ".geojson").toAbsolutePath().normalize();
+    if (!feature.startsWith(base) || !Files.isRegularFile(feature)) {
+      throw new NotFoundException();
+    }
+    StreamingOutput out = output -> Files.copy(feature, output);
+    return Response.ok(out, MoreMediaTypes.APP_GEOJSON).build();
+  }
+
+  /**
+   * Matches the col-gazetteers build-script filename normalization:
+   * lowercase, replace `/` and `:` with `-`, strip whitespace.
+   */
+  @VisibleForTesting
+  static String normalizeFilename(String s) {
+    return WHITESPACE.matcher(s.toLowerCase()).replaceAll("")
+        .replace('/', '-')
+        .replace(':', '-');
+  }
+
+  private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
 
   @GET

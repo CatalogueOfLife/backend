@@ -27,6 +27,36 @@ public class AreaParser extends ParserBase<Area> {
     super(Area.class);
   }
 
+  public static class AreaID {
+    public final Gazetteer gazetteer;
+    public final String id;
+
+    public AreaID(Gazetteer gazetteer, String id) {
+      this.gazetteer = gazetteer;
+      this.id = id;
+    }
+
+    public boolean isISO2() {
+      return gazetteer == Gazetteer.ISO && id.length() == 2;
+    }
+    public boolean isISO3() {
+      return gazetteer == Gazetteer.ISO && id.length() == 3;
+    }
+    public String toString() {
+      return gazetteer.name().toLowerCase() + ":" + id;
+    }
+  }
+
+  public static Optional<AreaID> parseAreaID(String areaID) {
+    var m = PREFIX.matcher(areaID);
+    if (m.find()) {
+      String scheme = m.group(1).toLowerCase().replaceAll("[_-]", "");
+      String value = m.group(2);
+      return Optional.of(new AreaID(Gazetteer.valueOf(scheme.toUpperCase()), value.trim()));
+    }
+    return Optional.empty();
+  }
+
   @Override
   public Optional<? extends Area> parse(String area) throws UnparsableException {
     if (area == null || CharMatcher.invisible().and(CharMatcher.whitespace()).matchesAllOf(area)) {

@@ -64,6 +64,7 @@ import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
+import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.parser.NameParser;
 import life.catalogue.printer.DatasetDiffService;
 import life.catalogue.printer.SectorDiffService;
@@ -364,6 +365,7 @@ public class WsServer extends Application<WsServerConfig> {
     NameUsageDao nudao = new NameUsageDao(getSqlSessionFactory(), indexService);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
+    tdao.setAreaLabelLookup(new AreaLabelLookup(cfg.gazetteerDir));
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());

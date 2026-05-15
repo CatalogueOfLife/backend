@@ -41,6 +41,7 @@ public class SuffixAcceptRequestFilter implements ContainerRequestFilter {
     entry("png", MoreMediaTypes.IMG_PNG),
     entry("bib", MoreMediaTypes.APP_BIBTEX),
     entry("csljs", MoreMediaTypes.APP_JSON_CSL),
+    entry("geojson", MoreMediaTypes.APP_GEOJSON),
     entry("coldp", MoreMediaTypes.APP_JSON_COLDP)
   );
 

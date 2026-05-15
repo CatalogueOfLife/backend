@@ -173,6 +173,18 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @NotNull
   public File metricsRepo = new File("/tmp/metrics");
 
+  /**
+   * Directory holding gazetteer assets used to resolve area labels and serve area GeoJSON geometries.
+   * Expected layout per gazetteer (FAO, IHO, MRGID):
+   * <pre>
+   *   gazetteerDir/&lt;prefix&gt;/labels.tsv               # id&lt;TAB&gt;english-name
+   *   gazetteerDir/&lt;prefix&gt;/features/&lt;id&gt;.geojson
+   * </pre>
+   * Produced and maintained out-of-band (see the {@code col-gazetteers} repo). May be null in which case
+   * FAO/IHO/MRGID labels fall back to the raw id and the GeoJSON endpoint returns 404.
+   */
+  public File gazetteerDir;
+
   @NotNull
   public URI clbURI = URI.create("https://www.checklistbank.org");
 

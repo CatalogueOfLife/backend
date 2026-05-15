@@ -8,10 +8,6 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
-import life.catalogue.api.vocab.area.Area;
-import life.catalogue.api.vocab.area.Country;
-import life.catalogue.api.vocab.area.LonghurstArea;
-import life.catalogue.api.vocab.area.TdwgArea;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
@@ -20,6 +16,7 @@ import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.es.search.NameUsageSearchService;
 import life.catalogue.img.ThumborService;
 import life.catalogue.matching.TaxGroupAnalyzer;
+import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.printer.AbstractPrinter;
 import life.catalogue.printer.JsonTreeCollector;
 import life.catalogue.printer.JsonTreePrinter;
@@ -58,6 +55,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   private final NameUsageSearchService searchService;
   private final ThumborService thumborService;
   private final MetricsDao metricsDao;
+  private AreaLabelLookup areaLabelLookup = new AreaLabelLookup();
   private final TaxonCounter esCounter = new TaxonCounter() {
     @Override
     public int count(DSID<String> key, Rank countRank) {
@@ -87,6 +85,14 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   // dependency loop :( so cant populate this in the constructor
   public void setSectorDao(SectorDao sectorDao) {
     this.sectorDao = sectorDao;
+  }
+
+  /**
+   * Optionally inject a gazetteer-backed AreaLabelLookup. If unset, only bundled vocabularies (TDWG, LONGHURST, ISO)
+   * are resolved and FAO/IHO/MRGID ids pass through unchanged.
+   */
+  public void setAreaLabelLookup(AreaLabelLookup areaLabelLookup) {
+    this.areaLabelLookup = areaLabelLookup;
   }
 
   public static void copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user) {
@@ -476,16 +482,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
           addSectorMode(d, sectorModes, sm);
           // we retrieve generic areas - for known IDs these lack the area titles
           if (d.getArea() != null && d.getArea().getGazetteer() != null && d.getArea().getId() != null && d.getArea().getName() == null) {
-            Area areaVoc;
-            switch (d.getArea().getGazetteer()) {
-              case TDWG -> areaVoc = TdwgArea.of(d.getArea().getId());
-              case LONGHURST -> areaVoc = LonghurstArea.of(d.getArea().getId());
-              case ISO -> areaVoc = Country.fromIsoCode(d.getArea().getId()).orElse(null);
-              default -> areaVoc = null;
-            }
-            if (areaVoc != null) {
-              d.getArea().setName(areaVoc.getName());
-            }
+            d.getArea().setName(areaLabelLookup.findLabel(d.getArea().getGazetteer(), d.getArea().getId()));
           }
         });
       }
