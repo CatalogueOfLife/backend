@@ -8,6 +8,10 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Area;
+import life.catalogue.api.vocab.area.Country;
+import life.catalogue.api.vocab.area.LonghurstArea;
+import life.catalogue.api.vocab.area.TdwgArea;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
@@ -470,6 +474,19 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
         info.getDistributions().forEach(d -> {
           refIds.add(d.getReferenceId());
           addSectorMode(d, sectorModes, sm);
+          // we retrieve generic areas - for known IDs these lack the area titles
+          if (d.getArea() != null && d.getArea().getGazetteer() != null && d.getArea().getId() != null && d.getArea().getName() == null) {
+            Area areaVoc;
+            switch (d.getArea().getGazetteer()) {
+              case TDWG -> areaVoc = TdwgArea.of(d.getArea().getId());
+              case LONGHURST -> areaVoc = LonghurstArea.of(d.getArea().getId());
+              case ISO -> areaVoc = Country.fromIsoCode(d.getArea().getId()).orElse(null);
+              default -> areaVoc = null;
+            }
+            if (areaVoc != null) {
+              d.getArea().setName(areaVoc.getName());
+            }
+          }
         });
       }
 
