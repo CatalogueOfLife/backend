@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class GazetteerTest {
 
@@ -14,6 +15,7 @@ public class GazetteerTest {
     for (Gazetteer g : Gazetteer.values()) {
       String prefix = g.prefix();
       assertEquals(g, Gazetteer.of(prefix));
+      assertNotNull(g.getPattern());
     }
   }
 

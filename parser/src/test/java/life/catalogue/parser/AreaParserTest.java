@@ -18,21 +18,24 @@ public class AreaParserTest extends ParserTestBase<Area> {
   
   @Test
   public void parse() throws Exception {
-    assertParse(TdwgArea.of("AGS"), "tdwg:AGS");
-    assertParse(TdwgArea.of("AGS"), "TDWG:ags ");
-    assertParse(TdwgArea.of("3"), "TDWG:3");
-    assertParse(TdwgArea.of("14"), "TDWG : 14");
-    assertParse(TdwgArea.of("RUN-OO"), "TDWG : RUN-OO");
-    assertParse(TdwgArea.of("CRL-PA"), "tdwg:crl-pa");
+    assertParse(new GenericArea(Gazetteer.TDWG, "AGS"), "tdwg:AGS");
+    assertParse(new GenericArea(Gazetteer.TDWG, "AGS"), "TDWG:ags ");
+    assertParse(new GenericArea(Gazetteer.TDWG, "3"), "TDWG:3");
+    assertParse(new GenericArea(Gazetteer.TDWG, "14"), "TDWG : 14");
+    assertParse(new GenericArea(Gazetteer.TDWG, "RUN-OO"), "TDWG : RUN-OO");
+    assertParse(new GenericArea(Gazetteer.TDWG, "CRL-PA"), "tdwg:crl-pa");
+    assertUnparsable("tdwg:milchbar");
     assertParse(Country.GERMANY, "iso:de");
-    assertParse(new GenericArea(Gazetteer.FAO, "ger"), "fao:ger");
+    assertParse(new GenericArea(Gazetteer.FAO, "27"), "fao:27"); // Atlantic, Northeast 27
+    assertUnparsable("fao:bar");
     assertParse(iso("IT-82"), "iso:it-82");
     assertParse(iso("FR-H"), "ISO:fr-h");
     assertParse(iso("FM-PNI"), "ISO:FM-PNI");
     assertParse(iso("CA-YT"), "ISO3166-2:CA-YT");
+    assertUnparsable("iso:milchbar");
     assertParse(new GenericArea(Gazetteer.FAO,"37.4.1"), "fao:37.4.1");
     assertParse(new GenericArea(Gazetteer.FAO,"27.12.a.4"), "fao:27.12.a.4");
-    assertParse(new GenericArea(Gazetteer.FAO,"27.12.C"), "fao:27.12.C");
+    assertParse(new GenericArea(Gazetteer.FAO,"27.12.c"), "fao:27.12.C");
     assertParse(new GenericArea(Gazetteer.FAO,"27.3.d.28.2"), "fao:27.3.d.28.2");
     assertParse(new GenericArea(Gazetteer.FAO,"37.4.1"), "FAO:37.4.1");
     assertParse(iso("AZ-TAR"), "iso:AZ-tar");

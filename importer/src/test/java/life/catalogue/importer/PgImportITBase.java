@@ -217,9 +217,9 @@ public class PgImportITBase {
     expD.add(dist(area("Nigeria,Kenia"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     expD.add(dist(Country.fromIsoCode("NG"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     expD.add(dist(Country.fromIsoCode("NG"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(TdwgArea.of("AGS"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(area("AGS"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     expD.add(dist(new GenericArea(Gazetteer.FAO, "37.4.1"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
-    expD.add(dist(TdwgArea.of("MOR-MO"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(area("MOR-MO"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     expD.add(dist(area("TDWG:MOR-MO,TDWG:MOR-CE,TDWG:MOR-ME"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     expD.add(dist(area("tdwg:cpp; tdwg:of; tdwg:nam"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     expD.add(dist(iso("IT-82"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));

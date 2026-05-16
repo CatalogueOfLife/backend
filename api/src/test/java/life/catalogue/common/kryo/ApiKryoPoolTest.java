@@ -6,7 +6,6 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.GenericArea;
 import life.catalogue.api.vocab.area.Country;
-import life.catalogue.api.vocab.area.TdwgArea;
 import life.catalogue.api.vocab.terms.*;
 
 import org.gbif.dwc.terms.*;
@@ -109,9 +108,6 @@ public class ApiKryoPoolTest {
     assertSerde(d);
 
     d.copyArea(Country.ALBANIA);
-    assertSerde(d);
-
-    d.copyArea(TdwgArea.of("BZN"));
     assertSerde(d);
   }
 

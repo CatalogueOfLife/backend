@@ -100,6 +100,16 @@ public class AreaParser extends ParserBase<Area> {
             }
 
           } else {
+            var gaz = SafeParser.parse(GazetteerParser.PARSER, scheme).orNull();
+            if (gaz != null) {
+              value = gaz.normalize(value.trim());
+              var m2 = gaz.getRegex().matcher(value);
+              if (m2.matches()) {
+                return Optional.of(new GenericArea(gaz, value));
+              } else {
+                throw new UnparsableException("Invalid area code " + value + " for gazetteer "+gaz);
+              }
+            }
             return Optional.ofNullable(AreaSerializer.parse(scheme + ":" + value.trim()));
           }
         }

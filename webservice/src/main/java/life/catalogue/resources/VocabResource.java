@@ -228,10 +228,6 @@ public class VocabResource {
     switch (gazetteer) {
       case ISO:
         return enumList(Country.class);
-      case TDWG:
-        return TdwgArea.AREAS;
-      case LONGHURST:
-        return LonghurstArea.AREAS;
       case REALM:
         return List.of(BioGeoRealm.values());
       default:

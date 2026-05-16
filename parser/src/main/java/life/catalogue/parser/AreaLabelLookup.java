@@ -3,8 +3,6 @@ package life.catalogue.parser;
 import life.catalogue.api.vocab.area.Area;
 import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.area.Gazetteer;
-import life.catalogue.api.vocab.area.LonghurstArea;
-import life.catalogue.api.vocab.area.TdwgArea;
 import life.catalogue.common.text.CSVUtils;
 
 import java.io.File;
@@ -85,8 +83,6 @@ public class AreaLabelLookup {
     if (id == null || gazetteer == null) return null;
     try {
       Area areaVoc = switch (gazetteer) {
-        case TDWG -> TdwgArea.of(id);
-        case LONGHURST -> LonghurstArea.of(id);
         case ISO -> Country.fromIsoCode(id).orElse(null);
         default -> null;
       };

@@ -50,12 +50,6 @@ public class AreaSerializerTest {
         case ISO:
           area = Country.ANGOLA;
           break;
-        case TDWG:
-          area = TdwgArea.AREAS.get(50);
-          break;
-        case LONGHURST:
-          area = LonghurstArea.AREAS.get(2);
-          break;
         case TEXT:
           area = new GenericArea(text);
           break;
