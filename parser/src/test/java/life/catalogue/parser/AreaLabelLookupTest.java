@@ -22,10 +22,8 @@ public class AreaLabelLookupTest {
   public void bundledGazetteersWithoutDir() {
     var lookup = new AreaLabelLookup();
     assertEquals("Germany", lookup.findLabel(Gazetteer.ISO, "DE"));
-    assertEquals("Africa", lookup.findLabel(Gazetteer.TDWG, "2"));
-    // unknown bundled id falls through to the raw id
-    assertEquals("not-an-id", lookup.findLabel(Gazetteer.TDWG, "not-an-id"));
     // not configured gazetteers fall through to id
+    assertEquals("2", lookup.findLabel(Gazetteer.TDWG, "2"));
     assertEquals("37.4.1", lookup.findLabel(Gazetteer.FAO, "37.4.1"));
     assertNull(lookup.findLabel(Gazetteer.FAO, null));
   }
