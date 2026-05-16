@@ -85,7 +85,7 @@ public enum Gazetteer {
     "S-23 integer numbers for sea areas published by the International Hydrographic Organization as boundaries of the major oceans and seas of the world. " +
       "See Limits of Oceans & Seas, Special Publication No. 23 published by the International Hydrographic Organization in 1953.",
       true,
-      "^[0-9]+(a-zA-Z)$",
+      "^[0-9]+[a-zA-Z]?$",
       null,
       GenericArea.class
   ),
