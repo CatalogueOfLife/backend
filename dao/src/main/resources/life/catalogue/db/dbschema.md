@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-05-16 add TEOW gazetteer
+```
+ALTER TYPE GAZETTEER ADD VALUE 'TEOW' AFTER 'MRGID';
+```
+
 #### 2026-05-04 redundant data issues
 ```
 ALTER TYPE ISSUE ADD VALUE 'DUPLICATE_DISTRIBUTIONS';

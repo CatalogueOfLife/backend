@@ -151,6 +151,7 @@ CREATE TYPE GAZETTEER AS ENUM (
   'REALM',
   'IHO',
   'MRGID',
+  'TEOW',
   'TEXT'
 );
 
