@@ -130,7 +130,7 @@ public class DuplicateDao {
                             @QueryParam("rankDifferent") Boolean rankDifferent,
                             @QueryParam("codeDifferent") Boolean codeDifferent,
                             @QueryParam("withDecision") Boolean withDecision,
-                            @QueryParam("catalogueKey") Integer projectKey) {
+                            @QueryParam("projectKey") Integer projectKey) {
       this.mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
       this.minSize = ObjectUtils.defaultIfNull(minSize, 2);
       this.query = query;
@@ -185,7 +185,7 @@ public class DuplicateDao {
       if (req.projectKey == null && info.origin.isProjectOrRelease()) {
         req.projectKey = info.keyOrProjectKey(); // default to the main project
       }
-      Preconditions.checkArgument(req.projectKey != null, "projectKey (=catalogueKey) is required if parameter withDecision is used");
+      Preconditions.checkArgument(req.projectKey != null, "projectKey is required if parameter withDecision is used");
     }
   }
 

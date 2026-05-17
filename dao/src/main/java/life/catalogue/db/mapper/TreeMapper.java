@@ -18,16 +18,16 @@ import org.apache.ibatis.annotations.Param;
 public interface TreeMapper {
   
   /**
-   * @param catalogueKey the assembled catalogue the tree is related to.
-   *                     The catalogueKey is always needed, even if the browsed tree is a different source dataset.
+   * @param projectKey the assembled project the tree is related to.
+   *                     The projectKey is always needed, even if the browsed tree is a different source dataset.
    *                     It filters which sectors & decisions should be included
-   * @param key          The tree node key pointing to either a catalogue or source taxon
+   * @param key          The tree node key pointing to either a project or source taxon
    */
-  TreeNode get(@Param("catalogueKey") int catalogueKey,
+  TreeNode get(@Param("projectKey") int projectKey,
                @Nullable @Param("type") TreeNode.Type type,
                @Param("key") DSID<String> key);
 
-  List<TreeNode> classification(@Param("catalogueKey") int catalogueKey,
+  List<TreeNode> classification(@Param("projectKey") int projectKey,
                                 @Param("type") TreeNode.Type type,
                                 @Param("key") DSID<String> key);
 
@@ -35,7 +35,7 @@ public interface TreeMapper {
    * Lists children or root taxa if the key id is just a datasetKey
    * @param key the ID of the parent to list children or a DSID without an id to list the root taxa of a given dataset
    */
-  List<TreeNode> children(@Param("catalogueKey") int catalogueKey,
+  List<TreeNode> children(@Param("projectKey") int projectKey,
                           @Nullable @Param("type") TreeNode.Type type,
                           @Param("key") DSID<String> key,
                           @Param("extinct") boolean inclExtinct,
@@ -46,7 +46,7 @@ public interface TreeMapper {
    * @param key the ID of the parent to list children or a DSID without an id to list the root taxa of a given dataset
    * @param rank the rank. Use NULL for root taxa
    */
-  List<TreeNode> childrenWithPlaceholder(@Param("catalogueKey") int catalogueKey,
+  List<TreeNode> childrenWithPlaceholder(@Param("projectKey") int projectKey,
                                          @Nullable @Param("type") TreeNode.Type type,
                                          @Param("key") DSID<String> key,
                                          @Nullable @Param("rank") Rank rank,
