@@ -229,7 +229,7 @@ public class VocabResource {
       case ISO:
         return enumList(Country.class);
       case REALM:
-        return List.of(BioGeoRealm.values());
+        return enumList(BioGeoRealm.class);
       default:
         throw new NotFoundException(gazetteer + " enumeration not available");
     }
@@ -238,8 +238,9 @@ public class VocabResource {
   @GET
   @VaryAccept
   @Path("area/{scheme}:{id}")
-  public Optional<? extends Area> area(@PathParam("scheme") String scheme, @PathParam("id") String id) throws UnparsableException {
-    return AreaParser.PARSER.parse(scheme, id);
+  public Optional<?> area(@PathParam("scheme") String scheme, @PathParam("id") String id) throws UnparsableException {
+    return AreaParser.PARSER.parse(scheme, id)
+      .map(a -> a instanceof Enum ? enumFields((Enum) a) : a);
   }
 
   /**
@@ -270,17 +271,26 @@ public class VocabResource {
   }
 
   /**
-   * Matches the col-gazetteers build-script filename normalization:
-   * lowercase, replace `/` and `:` with `-`, strip whitespace.
+   * Mirrors the col-gazetteers build-script id normalization (scripts/common/ids.py):
+   * collapse runs of whitespace, colons, slashes and backslashes into a single dash,
+   * collapse repeated dashes, and strip leading/trailing dashes. Case is preserved —
+   * some upstream gazetteers (e.g. IHO S-23 sub-basin codes like {@code 28A} vs
+   * {@code 28a}) treat case as a meaningful distinction.
    */
   @VisibleForTesting
   static String normalizeFilename(String s) {
-    return WHITESPACE.matcher(s.toLowerCase()).replaceAll("")
-        .replace('/', '-')
-        .replace(':', '-');
+    if (s == null) return null;
+    String norm = BAD_CHARS.matcher(s.strip()).replaceAll("-");
+    norm = REPEAT_DASH.matcher(norm).replaceAll("-");
+    int start = 0;
+    int end = norm.length();
+    while (start < end && norm.charAt(start) == '-') start++;
+    while (end > start && norm.charAt(end - 1) == '-') end--;
+    return norm.substring(start, end);
   }
 
-  private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+  private static final Pattern BAD_CHARS = Pattern.compile("[\\s:/\\\\]+");
+  private static final Pattern REPEAT_DASH = Pattern.compile("-{2,}");
 
 
   @GET

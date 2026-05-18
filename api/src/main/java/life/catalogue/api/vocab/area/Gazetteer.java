@@ -191,6 +191,10 @@ public enum Gazetteer {
     return caseSensitive;
   }
 
+  public Class<? extends Area> getAreaCLass() {
+    return areaCLass;
+  }
+
   @JsonIgnore
   public Function<String, String> getNormalizer() {
     return normalizer;

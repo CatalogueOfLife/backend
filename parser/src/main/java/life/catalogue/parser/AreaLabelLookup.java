@@ -3,6 +3,7 @@ package life.catalogue.parser;
 import life.catalogue.api.vocab.area.Area;
 import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.area.Gazetteer;
+import life.catalogue.api.vocab.area.GenericArea;
 import life.catalogue.common.text.CSVUtils;
 
 import java.io.File;
@@ -21,8 +22,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Resolves an English label for an area id according to a known gazetteer.
  *
- * TDWG, LONGHURST and ISO are served by static vocabularies bundled in the api module.
- * FAO, IHO and MRGID are loaded once at construction from a configurable on-disk gazetteer
+ * ISO is served by the {@link Country} vocabulary bundled in the api module.
+ * All other gazetteers are loaded once at construction from a configurable on-disk gazetteer
  * directory laid out as:
  * <pre>
  *   &lt;gazetteerDir&gt;/&lt;gazetteer-prefix&gt;/labels.tsv     # id&lt;TAB&gt;english-name
@@ -32,7 +33,6 @@ import org.slf4j.LoggerFactory;
  */
 public class AreaLabelLookup {
   private static final Logger LOG = LoggerFactory.getLogger(AreaLabelLookup.class);
-  private static final Gazetteer[] FILE_BACKED = {Gazetteer.FAO, Gazetteer.IHO, Gazetteer.MRGID};
 
   private final Map<Gazetteer, Map<String, String>> labels;
 
@@ -46,7 +46,8 @@ public class AreaLabelLookup {
       if (!gazetteerDir.isDirectory()) {
         LOG.warn("Configured gazetteer dir {} does not exist", gazetteerDir);
       } else {
-        for (Gazetteer g : FILE_BACKED) {
+        for (Gazetteer g : Gazetteer.values()) {
+          if (g == Gazetteer.ISO) continue;
           Map<String, String> m = loadLabels(gazetteerDir, g);
           if (m != null) {
             all.put(g, m);

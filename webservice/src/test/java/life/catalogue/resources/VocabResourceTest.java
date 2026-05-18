@@ -84,9 +84,19 @@ public class VocabResourceTest {
   @Test
   public void normalizeFilenameMatchesBuildScripts() {
     assertEquals("37-4-1", VocabResource.normalizeFilename("37/4/1"));
-    assertEquals("mrgid", VocabResource.normalizeFilename("MRGID"));
-    assertEquals("a-b", VocabResource.normalizeFilename("A:B"));
-    assertEquals("balticsea", VocabResource.normalizeFilename(" Baltic\tSea "));
+    // case is preserved
+    assertEquals("MRGID", VocabResource.normalizeFilename("MRGID"));
+    assertEquals("28A", VocabResource.normalizeFilename("28A"));
+    assertEquals("28a", VocabResource.normalizeFilename("28a"));
+    assertEquals("A-B", VocabResource.normalizeFilename("A:B"));
+    // whitespace runs collapse to a single dash, outer whitespace is stripped
+    assertEquals("Baltic-Sea", VocabResource.normalizeFilename(" Baltic\tSea "));
+    // backslash and runs of mixed separators collapse to a single dash
+    assertEquals("foo-bar", VocabResource.normalizeFilename("foo\\bar"));
+    assertEquals("foo-bar", VocabResource.normalizeFilename("foo//bar"));
+    assertEquals("foo-bar", VocabResource.normalizeFilename("foo / :bar"));
+    // leading/trailing dashes (from boundary separators) are trimmed
+    assertEquals("foo", VocabResource.normalizeFilename(" /foo/ "));
   }
 
   private static byte[] writeEntity(Response resp) throws Exception {
