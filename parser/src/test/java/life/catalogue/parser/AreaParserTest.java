@@ -42,7 +42,7 @@ public class AreaParserTest extends ParserTestBase<Area> {
     assertParse(new GenericArea(Gazetteer.MRGID,"3351"), "http://marineregions.org/mrgid/3351");
     assertParse(new GenericArea(Gazetteer.MRGID,"3351"), "https://marineregions.org/mrgid/3351");
     assertParse(new GenericArea(Gazetteer.MRGID,"3351"), "mrgid:3351");
-    assertParse(new GenericArea("shipwreck"), "mrgid:shipwreck");
+    assertUnparsable("mrgid:shipwreck");
     assertParse(BioGeoRealm.Neotropic, "realm:Neotropic");
     assertParse(BioGeoRealm.Neotropic, "bio:neotropic");
     assertUnparsable("realm:shipwreck");

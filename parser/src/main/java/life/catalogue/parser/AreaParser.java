@@ -23,102 +23,83 @@ public class AreaParser extends ParserBase<Area> {
   private static final Pattern MRGID_URL = Pattern.compile("^https?://marineregions.org/mrgid/(\\d+)$", Pattern.CASE_INSENSITIVE);
   private static final Pattern ISO_3166_2 = Pattern.compile("^([a-z]{2})-([a-z0-9]{1,3})$", Pattern.CASE_INSENSITIVE);
   private static final Set<String> ISO_PREFIXES = Set.of("iso", "3166", "iso3166", "iso31662", "country");
+
   public AreaParser() {
     super(Area.class);
   }
 
-  public static class AreaID {
-    public final Gazetteer gazetteer;
-    public final String id;
+  private static String normaliseGazetteer(String gaz) {
+    var scheme = gaz.replaceAll("[_-]", "").toLowerCase();
+    if (ISO_PREFIXES.contains(scheme)) {
+      return Gazetteer.ISO.name().toLowerCase();
 
-    public AreaID(Gazetteer gazetteer, String id) {
-      this.gazetteer = gazetteer;
-      this.id = id;
+    } else if (scheme.equalsIgnoreCase("realm") || scheme.equalsIgnoreCase("bio")) {
+      return Gazetteer.REALM.name().toLowerCase();
     }
-
-    public boolean isISO2() {
-      return gazetteer == Gazetteer.ISO && id.length() == 2;
-    }
-    public boolean isISO3() {
-      return gazetteer == Gazetteer.ISO && id.length() == 3;
-    }
-    public String toString() {
-      return gazetteer.name().toLowerCase() + ":" + id;
-    }
-  }
-
-  public static Optional<AreaID> parseAreaID(String areaID) {
-    var m = PREFIX.matcher(areaID);
-    if (m.find()) {
-      String scheme = m.group(1).toLowerCase().replaceAll("[_-]", "");
-      String value = m.group(2);
-      return Optional.of(new AreaID(Gazetteer.valueOf(scheme.toUpperCase()), value.trim()));
-    }
-    return Optional.empty();
+    return scheme;
   }
 
   @Override
   public Optional<? extends Area> parse(String area) throws UnparsableException {
     if (area == null || CharMatcher.invisible().and(CharMatcher.whitespace()).matchesAllOf(area)) {
       return Optional.empty();
+    }
+
+    // remove invisible
+    area = area.trim();
+    var m = PREFIX.matcher(area);
+    if (m.find()) {
+      String scheme = normaliseGazetteer(m.group(1));
+      String value = m.group(2);
+      return parse(scheme, value);
+    }
+    return Optional.of(new GenericArea(area));
+  }
+
+  public Optional<? extends Area> parse(String scheme ,String value) throws UnparsableException {
+    if (StringUtils.isBlank(value)) {
+      return Optional.empty();
+
+    } else if (StringUtils.isBlank(scheme)) {
+      // no gazetteer = TEXT
+      return Optional.of(new GenericArea(value));
+
+    } else if (ISO_PREFIXES.contains(scheme)) {
+      if (value.length() > 3 && value.contains("-")) {
+        return parseIsoSubRegions(value);
+      }
+      return CountryParser.PARSER.parse(value.trim());
+
+    } else if (scheme.equalsIgnoreCase(Gazetteer.REALM.name())) {
+      return RealmParser.PARSER.parse(value.trim());
+
+    } else if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https") || scheme.equalsIgnoreCase("urn")) {
+      // deal with known domains, others will become free text
+      var m = MRGID_URL.matcher(scheme + ":" + value);
+      if (m.find()) {
+        return Optional.of(new GenericArea(Gazetteer.MRGID, m.group(1)));
+      }
+
+    } else if (scheme.equalsIgnoreCase(Gazetteer.MRGID.name())) {
+      // must be integers
+      try {
+        Integer.parseInt(value);
+        return Optional.of(new GenericArea(Gazetteer.MRGID, value));
+      } catch (NumberFormatException e) {
+        throw new UnparsableException("Invalid area code " + value + " for MRGID gazetteer");
+      }
 
     } else {
-      try {
-        // remove invisible
-        area = area.trim();
-        var m = PREFIX.matcher(area);
-        if (m.find()) {
-          String scheme = m.group(1).toLowerCase().replaceAll("[_-]", "");
-          String value = m.group(2);
-          if (StringUtils.isBlank(value)) {
-            return Optional.empty();
-
-          } else if (ISO_PREFIXES.contains(scheme)) {
-            if (value.length() > 3 && value.contains("-")) {
-              return parseIsoSubRegions(value);
-            }
-            return CountryParser.PARSER.parse(value.trim());
-
-          } else if (scheme.equalsIgnoreCase("realm") || scheme.equalsIgnoreCase("bio")) {
-            return RealmParser.PARSER.parse(value.trim());
-
-          } else if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https") || scheme.equalsIgnoreCase("urn")) {
-            // deal with known domains, others will become free text
-            m = MRGID_URL.matcher(area);
-            if (m.find()) {
-              return Optional.of(new GenericArea(Gazetteer.MRGID, m.group(1)));
-            }
-
-          } else if (scheme.equalsIgnoreCase(Gazetteer.MRGID.name())) {
-            // must be integers
-            try {
-              Integer.parseInt(value);
-              return Optional.of(new GenericArea(Gazetteer.MRGID, value));
-            } catch (NumberFormatException e) {
-              // ignore and use TEXT default instead
-              area = value;
-            }
-
-          } else {
-            var gaz = SafeParser.parse(GazetteerParser.PARSER, scheme).orNull();
-            if (gaz != null) {
-              value = gaz.normalize(value.trim());
-              var m2 = gaz.getRegex().matcher(value);
-              if (m2.matches()) {
-                return Optional.of(new GenericArea(gaz, value));
-              } else {
-                throw new UnparsableException("Invalid area code " + value + " for gazetteer "+gaz);
-              }
-            }
-            return Optional.ofNullable(AreaSerializer.parse(scheme + ":" + value.trim()));
-          }
+      var gaz = SafeParser.parse(GazetteerParser.PARSER, scheme).orNull();
+      if (gaz != null) {
+        value = gaz.normalize(value.trim());
+        var m2 = gaz.getRegex().matcher(value);
+        if (m2.matches()) {
+          return Optional.of(new GenericArea(gaz, value));
         }
-        return Optional.of(new GenericArea(area));
-
-      } catch (IllegalArgumentException e) {
-        throw new UnparsableException("Unparsable area " + area, e);
       }
     }
+    throw new UnparsableException("Invalid area code " + value + " for gazetteer "+scheme);
   }
 
   /**

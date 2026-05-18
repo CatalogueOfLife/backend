@@ -237,38 +237,31 @@ public class VocabResource {
 
   @GET
   @VaryAccept
-  @Path("area/{id}")
-  public Optional<? extends Area> area(@PathParam("id") String id) throws UnparsableException {
-    return AreaParser.PARSER.parse(id);
+  @Path("area/{scheme}:{id}")
+  public Optional<? extends Area> area(@PathParam("scheme") String scheme, @PathParam("id") String id) throws UnparsableException {
+    return AreaParser.PARSER.parse(scheme, id);
   }
 
   /**
    * Returns the GeoJSON Feature for an area id within a gazetteer.
    * Backed by static files served from the configured gazetteer directory; 404 if the directory is
    * unconfigured or no file exists for that id.
+   * @param scheme the gazetteer scheme
+   * @param id the area id, case sensitive!
    */
   @GET
   @VaryAccept
-  @Path("area/{id}")
+  @Path("area/{scheme}:{id}")
   @Produces({MoreMediaTypes.APP_GEOJSON})
-  public Response areaGeojson(@PathParam("id") String id) {
-    if (gazetteerDir == null || id == null || !id.contains(":")) {
-      throw new NotFoundException();
-    }
-    String[] parts = id.trim().split(":", 2);
-    if (parts.length != 2 || parts[0].isEmpty() || parts[1].isEmpty()) {
-      throw new NotFoundException();
-    }
-    String prefix = normalizeFilename(parts[0]);
-    String feat = normalizeFilename(parts[1]);
-    if (prefix.isEmpty() || feat.isEmpty()) {
+  public Response areaGeojson(@PathParam("scheme") String scheme, @PathParam("id") String id) {
+    if (gazetteerDir == null || StringUtils.isBlank(scheme) || StringUtils.isBlank(id)) {
       throw new NotFoundException();
     }
     java.nio.file.Path base = gazetteerDir.toPath()
-        .resolve(prefix)
+        .resolve(scheme.toLowerCase())
         .resolve("features")
         .toAbsolutePath().normalize();
-    java.nio.file.Path feature = base.resolve(feat + ".geojson").toAbsolutePath().normalize();
+    java.nio.file.Path feature = base.resolve(normalizeFilename(id) + ".geojson").toAbsolutePath().normalize();
     if (!feature.startsWith(base) || !Files.isRegularFile(feature)) {
       throw new NotFoundException();
     }
