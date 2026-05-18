@@ -16,6 +16,7 @@ import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.UnparsableException;
 
+import life.catalogue.release.IdProvider;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
@@ -236,6 +237,7 @@ public class VocabResource {
     if (areaLabelLookup != null && areaLabelLookup.hasLabels(gazetteer)) {
       return areaLabelLookup.listLabels(gazetteer).entrySet().stream()
           .map(e -> new GenericArea(gazetteer, e.getKey(), e.getValue()))
+          .sorted(Comparator.comparing(GenericArea::getId))
           .collect(Collectors.toList());
     }
     throw new NotFoundException(gazetteer + " enumeration not available");
