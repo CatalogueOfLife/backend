@@ -12,6 +12,7 @@ import life.catalogue.api.vocab.area.*;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.img.ImgConfig;
+import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.UnparsableException;
 
@@ -57,16 +58,15 @@ public class VocabResource {
   private static final Map<Class<? extends Enum>, Set<String>> ignoreFields = Map.of(
     Rank.class, Set.of("speciesOrBelow", "genusOrSuprageneric", "infrageneric", "infragenericStrictly", "infrasubspecific", "cultivarRank")
   );
+  private static final String NAME_PROP = "name";
   private final Map<String, Class<Enum>> vocabs;
   private final List<String> vocabNames;
   private final File gazetteerDir;
+  private final AreaLabelLookup areaLabelLookup;
 
-  public VocabResource() {
-    this(null);
-  }
-
-  public VocabResource(@Nullable File gazetteerDir) {
+  public VocabResource(@Nullable File gazetteerDir, @Nullable AreaLabelLookup areaLabelLookup) {
     this.gazetteerDir = gazetteerDir;
+    this.areaLabelLookup = areaLabelLookup;
     LOG.info("Scan for available vocabularies");
     Map<String, Class<Enum>> enums = Maps.newHashMap();
     try {
@@ -225,14 +225,20 @@ public class VocabResource {
       throw new IllegalArgumentException("gazetteer parameter required");
     }
     // we only support a few gazetteers now
-    switch (gazetteer) {
-      case ISO:
-        return enumList(Country.class);
-      case REALM:
-        return enumList(BioGeoRealm.class);
-      default:
-        throw new NotFoundException(gazetteer + " enumeration not available");
+    return switch (gazetteer) {
+      case ISO -> enumList(Country.class);
+      case REALM -> enumList(BioGeoRealm.class);
+      default -> labels(gazetteer);
+    };
+  }
+
+  private Collection<?> labels(Gazetteer gazetteer) throws NotFoundException {
+    if (areaLabelLookup != null && areaLabelLookup.hasLabels(gazetteer)) {
+      return areaLabelLookup.listLabels(gazetteer).entrySet().stream()
+          .map(e -> new GenericArea(gazetteer, e.getKey(), e.getValue()))
+          .collect(Collectors.toList());
     }
+    throw new NotFoundException(gazetteer + " enumeration not available");
   }
 
   @GET
@@ -320,7 +326,7 @@ public class VocabResource {
       .map(VocabResource::enumFields);
   }
 
-  private static Map<String, Object> enumFields(Enum entry) {
+  private static Map<String, Object> enumFields(Enum<?> entry) {
     Map<String, Object> map = new TreeMap<>();
     try {
       for (var m : entry.getDeclaringClass().getDeclaredMethods()) {
@@ -357,8 +363,8 @@ public class VocabResource {
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
-    if (!map.containsKey("name")) {
-      map.put("name", PermissiveEnumSerde.enumValueName(entry));
+    if (!map.containsKey(NAME_PROP)) {
+      map.put(NAME_PROP, PermissiveEnumSerde.enumValueName(entry));
     }
     return map;
   }

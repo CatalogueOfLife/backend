@@ -28,7 +28,7 @@ public class VocabResourceTest {
     Files.createDirectories(feature.getParent());
     Files.writeString(feature, SAMPLE);
 
-    var r = new VocabResource(dir);
+    var r = new VocabResource(dir, null);
     try (Response resp = r.areaGeojson("mrgid", "8371")) {
       assertEquals(200, resp.getStatus());
       assertEquals("application/geo+json", resp.getMediaType().toString());
@@ -40,27 +40,27 @@ public class VocabResourceTest {
   @Test
   public void areaGeojsonMissingFileIs404() throws Exception {
     File dir = tmp.newFolder();
-    var r = new VocabResource(dir);
+    var r = new VocabResource(dir, null);
     assertThrows(NotFoundException.class, () -> r.areaGeojson("mrgid", "does-not-exist"));
   }
 
   @Test
   public void areaGeojsonUnconfiguredDirIs404() {
-    var r = new VocabResource((File) null);
+    var r = new VocabResource((File) null, null);
     assertThrows(NotFoundException.class, () -> r.areaGeojson("fao", "37.4.1"));
   }
 
   @Test
   public void areaGeojsonRejectsPathTraversal() throws Exception {
     File dir = tmp.newFolder();
-    var r = new VocabResource(dir);
+    var r = new VocabResource(dir, null);
     assertThrows(NotFoundException.class, () -> r.areaGeojson("fao", "../../etc/passwd"));
   }
 
   @Test
   public void areaGeojsonRejectsUnprefixedId() throws Exception {
     File dir = tmp.newFolder();
-    var r = new VocabResource(dir);
+    var r = new VocabResource(dir, null);
     assertThrows(NotFoundException.class, () -> r.areaGeojson(null, "8371"));
     assertThrows(NotFoundException.class, () -> r.areaGeojson("mrgid", ""));
     assertThrows(NotFoundException.class, () -> r.areaGeojson("", "8371"));
@@ -74,7 +74,7 @@ public class VocabResourceTest {
     Files.createDirectories(feature.getParent());
     Files.writeString(feature, SAMPLE);
 
-    var r = new VocabResource(dir);
+    var r = new VocabResource(dir, null);
     // uppercase prefix and `/` in the id portion must normalize to the on-disk filename
     try (Response resp = r.areaGeojson("FAO", "37/4/1")) {
       assertEquals(200, resp.getStatus());

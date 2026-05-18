@@ -3,7 +3,6 @@ package life.catalogue.parser;
 import life.catalogue.api.vocab.area.Area;
 import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.area.Gazetteer;
-import life.catalogue.api.vocab.area.GenericArea;
 import life.catalogue.common.text.CSVUtils;
 
 import java.io.File;
@@ -78,6 +77,14 @@ public class AreaLabelLookup {
     }
     LOG.info("Loaded {} {} labels from {}", map.size(), g, f);
     return Map.copyOf(map);
+  }
+
+  public boolean hasLabels(Gazetteer gazetteer) {
+    return labels.containsKey(gazetteer) && !labels.get(gazetteer).isEmpty();
+  }
+
+  public Map<String, String> listLabels(Gazetteer gazetteer) {
+    return labels.get(gazetteer);
   }
 
   public String findLabel(Gazetteer gazetteer, String id) {

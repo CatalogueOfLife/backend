@@ -23,6 +23,7 @@ public class AreaLabelLookupTest {
     var lookup = new AreaLabelLookup();
     assertEquals("Germany", lookup.findLabel(Gazetteer.ISO, "DE"));
     // not configured gazetteers fall through to id
+    assertEquals("DE-BE", lookup.findLabel(Gazetteer.ISO, "DE-BE"));
     assertEquals("2", lookup.findLabel(Gazetteer.TDWG, "2"));
     assertEquals("37.4.1", lookup.findLabel(Gazetteer.FAO, "37.4.1"));
     assertNull(lookup.findLabel(Gazetteer.FAO, null));

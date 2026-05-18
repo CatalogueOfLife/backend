@@ -65,6 +65,7 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.AreaLabelLookup;
+import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.NameParser;
 import life.catalogue.printer.DatasetDiffService;
 import life.catalogue.printer.SectorDiffService;
@@ -293,6 +294,9 @@ public class WsServer extends Application<WsServerConfig> {
       }
     });
 
+    var areaLookup = new AreaLabelLookup(cfg.gazetteerDir);
+    AreaParser.PARSER.setLabelLookup(areaLookup);
+
     // ES
     NameUsageIndexService indexService;
     NameUsageSearchService searchService;
@@ -478,7 +482,7 @@ public class WsServer extends Application<WsServerConfig> {
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
       ddao, dsdao, exportManager.blocked(), diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService,
-      imgService, feedback, doiResolver
+      imgService, feedback, doiResolver, areaLookup
     );
 
     // global

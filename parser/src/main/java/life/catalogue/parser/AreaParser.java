@@ -13,6 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.CharMatcher;
 
+import javax.annotation.Nullable;
+
 /**
  * A parser that tries to extract complex area information (actual area id with gazetteer its based on )
  * from a simple location string.
@@ -23,9 +25,14 @@ public class AreaParser extends ParserBase<Area> {
   private static final Pattern MRGID_URL = Pattern.compile("^https?://marineregions.org/mrgid/(\\d+)$", Pattern.CASE_INSENSITIVE);
   private static final Pattern ISO_3166_2 = Pattern.compile("^([a-z]{2})-([a-z0-9]{1,3})$", Pattern.CASE_INSENSITIVE);
   private static final Set<String> ISO_PREFIXES = Set.of("iso", "3166", "iso3166", "iso31662", "country");
+  private @Nullable AreaLabelLookup labelLookup;
 
   public AreaParser() {
     super(Area.class);
+  }
+
+  public void setLabelLookup(@Nullable AreaLabelLookup labelLookup) {
+    this.labelLookup = labelLookup;
   }
 
   private static String normaliseGazetteer(String gaz) {
@@ -77,14 +84,16 @@ public class AreaParser extends ParserBase<Area> {
       // deal with known domains, others will become free text
       var m = MRGID_URL.matcher(scheme + ":" + value);
       if (m.find()) {
-        return Optional.of(new GenericArea(Gazetteer.MRGID, m.group(1)));
+        var label = labelLookup == null ? null : labelLookup.findLabel(Gazetteer.MRGID, m.group(1));
+        return Optional.of(new GenericArea(Gazetteer.MRGID, m.group(1), label));
       }
 
     } else if (scheme.equalsIgnoreCase(Gazetteer.MRGID.name())) {
       // must be integers
       try {
         Integer.parseInt(value);
-        return Optional.of(new GenericArea(Gazetteer.MRGID, value));
+        var label = labelLookup == null ? null : labelLookup.findLabel(Gazetteer.MRGID, value);
+        return Optional.of(new GenericArea(Gazetteer.MRGID, value, label));
       } catch (NumberFormatException e) {
         throw new UnparsableException("Invalid area code " + value + " for MRGID gazetteer");
       }
@@ -95,7 +104,8 @@ public class AreaParser extends ParserBase<Area> {
         value = gaz.normalize(value.trim());
         var m2 = gaz.getRegex().matcher(value);
         if (m2.matches()) {
-          return Optional.of(new GenericArea(gaz, value));
+          var label = labelLookup == null ? null : labelLookup.findLabel(gaz, value);
+          return Optional.of(new GenericArea(gaz, value, label));
         }
       }
     }
@@ -109,7 +119,8 @@ public class AreaParser extends ParserBase<Area> {
     var areaID = StringUtils.deleteWhitespace(x).toUpperCase();
     var m = ISO_3166_2.matcher(areaID);
     if (m.find()) {
-      return Optional.of(new GenericArea(Gazetteer.ISO, areaID, null));
+      var label = labelLookup == null ? null : labelLookup.findLabel(Gazetteer.ISO, areaID);
+      return Optional.of(new GenericArea(Gazetteer.ISO, areaID, label));
     }
     return Optional.empty();
   }
