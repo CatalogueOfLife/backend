@@ -53,7 +53,7 @@ public enum Gazetteer {
     "https://www.fao.org/fishery/en/area/",
     "FAO Major Fishing Areas",
       true,
-      "^[0-9]{2}(?:\\.[0-9]+(?:\\.(?:[0-9]+|[a-z])){0,3})?$",
+      "^[0-9]{2}(?:\\.(?:[0-9]+|[A-Z])(?:\\.(?:[0-9]+|[A-Za-z])){0,3})?$",
       String::toLowerCase,
     GenericArea.class
   ),
