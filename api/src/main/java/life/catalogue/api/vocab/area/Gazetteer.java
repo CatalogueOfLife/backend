@@ -201,7 +201,7 @@ public enum Gazetteer {
   }
 
   public String normalize(String id) {
-    return id == null ? null : normalizer.apply(id.trim());
+    return id == null ? null : (normalizer == null ? id : normalizer.apply(id.trim()));
   }
 
   /**

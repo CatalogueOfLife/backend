@@ -277,7 +277,7 @@ public class InterpreterBase {
   }
 
   protected static List<Distribution> createDistribution(
-    @Nullable Gazetteer standard,
+    @Nullable Gazetteer gazetteer,
     final String locationID,
     final String location,
     VerbatimRecord rec,
@@ -292,7 +292,7 @@ public class InterpreterBase {
     Term tRemarks,
     BiConsumer<Distribution, VerbatimRecord> addReference) {
 
-    return interpretArea(standard, locationID, location, rec)
+    return interpretArea(gazetteer, locationID, location, rec)
       .stream()
       .map(area -> createDistribution(
         rec, area, tStatus, tEstablishmentMeans, tDegreeOfEstablishment,
@@ -350,8 +350,12 @@ public class InterpreterBase {
           }
         }
       } else {
-        // only the name known
-        area = new GenericArea(location);
+        // only the name known - but sometimes people wrongly use area, lets test if we can parse it
+        if (standard != null && standard.getRegex().matcher(location).matches()) {
+          area = new GenericArea(standard, standard.normalize(location));
+        } else {
+          area = new GenericArea(location);
+        }
       }
       return Optional.of(area);
     }
