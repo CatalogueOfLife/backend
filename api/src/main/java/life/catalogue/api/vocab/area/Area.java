@@ -1,5 +1,7 @@
 package life.catalogue.api.vocab.area;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.net.URI;
 
 /**
@@ -13,6 +15,7 @@ public interface Area {
 
   String getName();
 
+  @JsonIgnore
   default URI getLink() {
     var g = getGazetteer();
     if (g != null) {
