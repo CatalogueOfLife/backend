@@ -75,7 +75,7 @@ public class NameUsageSearchResource {
     if (uri != null) {
       query.addFilters(uri.getQueryParameters());
     }
-    if (query.hasFilter(NameUsageSearchParameter.CATALOGUE_KEY)) {
+    if (query.hasFilter(NameUsageSearchParameter.PROJECT_KEY)) {
       ResourceUtils.dontCache(ctx);
     }
     return searchService.search(query, page);

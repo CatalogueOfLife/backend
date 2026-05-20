@@ -29,7 +29,7 @@ public class FieldLookup extends EnumMap<NameUsageSearchParameter, String[]> {
     putSingle(ALPHAINDEX, "usage.name.alphaIndex");
     putSingle(AUTHORSHIP, "usage.name.author"); // this is the keyword/facet field for individual authors, not the entire authorship string which a content=authorship search works on!
     putSingle(AUTHORSHIP_YEAR, "usage.name.combinationAuthorship.year");
-    putSingle(CATALOGUE_KEY, "decisions.datasetKey");
+    putSingle(PROJECT_KEY, "decisions.datasetKey");
     putSingle(DATASET_KEY, "usage.name.datasetKey");
     putSingle(DECISION_MODE, "decisions.mode");
     putSingle(ENVIRONMENT, "usage.environments");

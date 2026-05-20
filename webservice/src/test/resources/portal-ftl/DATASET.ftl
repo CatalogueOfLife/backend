@@ -309,7 +309,7 @@ class PublicTaxon extends React.Component {
 
       return e(
         ColBrowser.Dataset,
-        { catalogueKey: '9830' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'}
+        { projectKey: '9830' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'}
       );
     }
   }

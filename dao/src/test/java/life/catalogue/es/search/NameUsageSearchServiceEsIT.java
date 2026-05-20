@@ -201,13 +201,13 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     // DECISION_MODE with IS_NOT_NULL: all usages have a decision with catalogue key 99
     NameUsageSearchRequest decisionNotNull = new NameUsageSearchRequest();
     decisionNotNull.addFilter(DECISION_MODE, NameUsageRequest.IS_NOT_NULL);
-    decisionNotNull.addFilter(CATALOGUE_KEY, String.valueOf(CAT99));
+    decisionNotNull.addFilter(PROJECT_KEY, String.valueOf(CAT99));
     assertEquals("IS_NOT_NULL decision for cat99 should match all", TOTAL, count(decisionNotNull));
 
     // DECISION_MODE with IS_NULL: no usage lacks a decision with catalogue key 99
     NameUsageSearchRequest decisionNull = new NameUsageSearchRequest();
     decisionNull.addFilter(DECISION_MODE, NameUsageRequest.IS_NULL);
-    decisionNull.addFilter(CATALOGUE_KEY, String.valueOf(CAT99));
+    decisionNull.addFilter(PROJECT_KEY, String.valueOf(CAT99));
     assertEquals("IS_NULL decision for cat99 should match none", 0, count(decisionNull));
 
     // minRank / maxRank range filters (rank stored as integer ordinal)
@@ -249,7 +249,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     // DECISION_MODE with specific enum value (also broken, but no exception expected)
     NameUsageSearchRequest blockReq = new NameUsageSearchRequest();
     blockReq.addFilter(DECISION_MODE, EditorialDecision.Mode.BLOCK.name());
-    blockReq.addFilter(CATALOGUE_KEY, String.valueOf(CAT99));
+    blockReq.addFilter(PROJECT_KEY, String.valueOf(CAT99));
     assertNotNull(search(blockReq));
 
     // --- String filters on keyword fields ---

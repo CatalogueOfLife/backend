@@ -373,7 +373,7 @@ class PublicTaxon extends React.Component {
 
       return e(
         ColBrowser.Taxon,
-        { catalogueKey: '9830' , pathToTree: '/data/browse', pathToSearch: '/data/search', pathToDataset: '/data/dataset/', pathToTaxon: '/data/taxon/', auth: '', pageTitleTemplate: 'COL | __taxon__'}
+        { projectKey: '9830' , pathToTree: '/data/browse', pathToSearch: '/data/search', pathToDataset: '/data/dataset/', pathToTaxon: '/data/taxon/', auth: '', pageTitleTemplate: 'COL | __taxon__'}
       );
     }
 

@@ -22,7 +22,7 @@ public class SuggestRequestValidator {
   public void validateRequest() {
     if (request.hasFilter(DECISION_MODE)) {
       // require a project key
-      if (!request.hasFilter(CATALOGUE_KEY) || request.getFilterValues(CATALOGUE_KEY).size() > 1) {
+      if (!request.hasFilter(PROJECT_KEY) || request.getFilterValues(PROJECT_KEY).size() > 1) {
         throw invalidRequest("When specifying a decision mode, a single catalogue key must also be specified");
       }
     }
