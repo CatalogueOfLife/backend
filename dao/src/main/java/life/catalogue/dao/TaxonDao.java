@@ -598,6 +598,13 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     }
   }
 
+  public List<Distribution> listDistributions(DSID<String> key) {
+    try (SqlSession session = factory.openSession(false)) {
+      var dm = session.getMapper(DistributionMapper.class);
+      return dm.listByTaxon(key);
+    }
+  }
+
   @VisibleForTesting
   protected static String removeBrokenTags(String x) {
     if (x != null) {

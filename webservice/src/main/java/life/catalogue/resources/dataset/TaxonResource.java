@@ -107,6 +107,12 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
 
   @GET
+  @Path("{id}/distribution")
+  public List<Distribution> distribution(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listDistributions(DSID.of(datasetKey, id));
+  }
+
+  @GET
   @Path("{id}/treatment")
   public Treatment treatment(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     return dao.getTreatment(DSID.of(datasetKey, id));
