@@ -1,6 +1,7 @@
 package life.catalogue.exporter;
 
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -64,6 +65,14 @@ public class ColReleaseExportJob extends DatasetBlockingJob {
     copyToCol();
 
     LOG.info("Finished COL {} export job for dataset {}", format, datasetKey);
+  }
+
+  public DataFormat getFormat() {
+    return format;
+  }
+
+  public DatasetExport getExport() {
+    return exportJob.getExport();
   }
 
   private void copyToCol() {
