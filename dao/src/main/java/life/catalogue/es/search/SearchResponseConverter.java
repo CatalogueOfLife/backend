@@ -171,7 +171,10 @@ class SearchResponseConverter {
     Class<U> enumClass = (Class<U>) param.type();
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
     for (BucketEntry b : entries) {
-      facet.add(FacetValue.forEnum(enumClass, b.key(), (int) b.docCount()));
+      FacetValue<U> v = FacetValue.forEnum(enumClass, b.key(), (int) b.docCount());
+      if (v != null) {
+        facet.add(v);
+      }
     }
     return facet;
   }

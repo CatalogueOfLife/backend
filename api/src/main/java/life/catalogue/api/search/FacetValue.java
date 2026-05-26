@@ -1,7 +1,5 @@
 package life.catalogue.api.search;
 
-import com.esotericsoftware.minlog.Log;
-
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.Issue;
 
@@ -48,20 +46,34 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
     return new FacetValue<>(UUID.fromString(val.toString()), count);
   }
 
+  /**
+   * Builds a FacetValue for an enum bucket. Returns {@code null} if the bucket value cannot be mapped to a
+   * current enum constant — callers must skip such entries.
+   */
   public static <U extends Enum<U>> FacetValue<U> forEnum(Class<U> enumClass, String val, int count) {
     // Enums are always stored using their name - apart from Rank which uses it's ordinal number for ranges & sorting !!!
     try {
       U enumVal;
       if (enumClass.equals(Rank.class)) {
         int ord = Integer.parseInt(val);
-        enumVal = enumClass.getEnumConstants()[ord];
+        U[] constants = enumClass.getEnumConstants();
+        if (ord < 0 || ord >= constants.length) {
+          LOG.warn("Invalid enum facet value: {} for enum {}", val, enumClass.getSimpleName());
+          return null;
+        }
+        enumVal = constants[ord];
       } else {
+        // EnumUtils.getEnum returns null (it does not throw) for unknown names
         enumVal = EnumUtils.getEnum(enumClass, val);
+      }
+      if (enumVal == null) {
+        LOG.warn("Invalid enum facet value: {} for enum {}", val, enumClass.getSimpleName());
+        return null;
       }
       return new FacetValue<>(enumVal, count);
     } catch (IllegalArgumentException e) {
-      LOG.warn("Invalid enum fact value: {} for enum {}", val, enumClass.getSimpleName());
-      return new FacetValue<>(null, count);
+      LOG.warn("Invalid enum facet value: {} for enum {}", val, enumClass.getSimpleName());
+      return null;
     }
   }
 
