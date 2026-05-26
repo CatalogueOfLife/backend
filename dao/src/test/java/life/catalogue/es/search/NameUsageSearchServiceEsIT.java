@@ -43,7 +43,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
   static final int DS1 = 100;
   static final int DS2 = 200;
-  static final int TOTAL = 23;
+  static final int TOTAL = 25;
   /** Catalogue key used in all SimpleDecision entries (set by newNameUsageWrapper helper). */
   static final int CAT99 = 99;
   /** sector dataset key set by the newNameUsageWrapper helper for all usages. */
