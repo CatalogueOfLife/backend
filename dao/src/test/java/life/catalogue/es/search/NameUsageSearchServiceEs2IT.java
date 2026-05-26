@@ -206,17 +206,17 @@ public class NameUsageSearchServiceEs2IT extends EsTestBase {
     switch (resource) {
       case 1:
         // https://github.com/CatalogueOfLife/backend/issues/1086
-        resp = search("Lutra lutra", NameUsageRequest.SearchType.WHOLE_WORDS, NameUsageRequest.SortBy.RELEVANCE);
+        resp = search("Lutra lutra", NameUsageRequest.SearchType.STANDARD, NameUsageRequest.SortBy.RELEVANCE);
         assertName(resp.getResult().getFirst(), Rank.SPECIES, "Lutra lutra", "(Linnaeus, 1758)");
         assertID(resp.getResult().getFirst(), "72PQL");
         break;
 
       case 2:
         // https://github.com/CatalogueOfLife/backend/issues/1466
-        resp = search("Crumenaria polygaloides lancifolia", NameUsageRequest.SearchType.WHOLE_WORDS, NameUsageRequest.SortBy.RELEVANCE);
+        resp = search("Crumenaria polygaloides lancifolia", NameUsageRequest.SearchType.STANDARD, NameUsageRequest.SortBy.RELEVANCE);
         assertID(resp.getResult().getFirst(), "V56F2"); // the only accepted
 
-        resp = search("Crumenaria polygaloides var. lancifolia", NameUsageRequest.SearchType.WHOLE_WORDS, NameUsageRequest.SortBy.RELEVANCE);
+        resp = search("Crumenaria polygaloides var. lancifolia", NameUsageRequest.SearchType.STANDARD, NameUsageRequest.SortBy.RELEVANCE);
         assertID(resp.getResult().getFirst(), "V56F2"); // the only accepted
         break;
 

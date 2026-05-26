@@ -16,6 +16,18 @@
           "replacement": " "
         }
       },
+      "filter": {
+        "sciname_hyphen_split": {
+          "type": "pattern_capture",
+          "preserve_original": true,
+          "patterns": ["([^-]+)"]
+        },
+        "sciname_decompound": {
+          "type": "pattern_capture",
+          "preserve_original": true,
+          "patterns": ["__SCINAME_DECOMPOUND_PATTERN__"]
+        }
+      },
       "analyzer": {
         "standard_ascii": {
           "tokenizer": "standard",
@@ -25,6 +37,11 @@
           "char_filter": ["sciname_brackets"],
           "tokenizer": "whitespace",
           "filter": ["lowercase", "asciifolding"]
+        },
+        "sciname_ascii_index": {
+          "char_filter": ["sciname_brackets"],
+          "tokenizer": "whitespace",
+          "filter": ["lowercase", "asciifolding", "sciname_hyphen_split", "sciname_decompound"]
         },
         "vernacular_name_analyzer": {
           "tokenizer": "standard",
@@ -143,9 +160,10 @@
               "scientificName": {
                 "type": "keyword",
                 "fields": {
-                  "word": {
+                  "search": {
                     "type": "search_as_you_type",
-                    "analyzer": "sciname_ascii",
+                    "analyzer": "sciname_ascii_index",
+                    "search_analyzer": "sciname_ascii",
                     "max_shingle_size": 2
                   }
                 }
@@ -157,7 +175,7 @@
               "authorship": {
                 "type": "keyword",
                 "fields": {
-                  "word": {
+                  "search": {
                     "type": "text",
                     "analyzer": "standard_ascii"
                   }
