@@ -87,9 +87,9 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
-  @Path("{key}/simple")
-  public DatasetSimple getSimple(@PathParam("key") Integer key) {
-    return dao.getSimple(key);
+  @Path("/simple")
+  public List<DatasetSimple> projectSourceSimple(@QueryParam("id") List<Integer> keys) {
+    return dao.listSimple(keys);
   }
 
   @GET

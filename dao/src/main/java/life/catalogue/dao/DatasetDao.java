@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -135,6 +136,16 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     try (SqlSession session = factory.openSession()) {
       return session.getMapper(mapperClass).getSimple(key);
     }
+  }
+
+  public List<DatasetSimple> listSimple(List<Integer> keys) {
+    List<DatasetSimple> datasets = new ArrayList<>();
+    try (SqlSession session = factory.openSession()) {
+      for (int key : keys) {
+        datasets.add(session.getMapper(mapperClass).getSimple(key));
+      }
+    }
+    return datasets;
   }
 
   public Dataset get(UUID gbifKey) {

@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.*;
 
 import java.util.*;
@@ -71,21 +72,38 @@ public class DatasetSourceDao {
     if (EXTERNAL == info.origin) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is external");
     }
-    DatasetSimple d;
     try (SqlSession session = factory.openSession()) {
       DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
-      if (PROJECT == info.origin) {
-        d = dsm.getProjectSourceSimple(sourceDatasetKey, datasetKey);
+      DatasetSimple d = getSimpleUnguarded(datasetKey, info.origin, sourceDatasetKey, dsm);
+      // if the release was deleted, the source should also be marked as deleted
+      if (info.deleted) {
+        d.setDeleted(true);
+      }
+      return d;
+    }
+  }
 
-      } else {
-        d = dsm.getReleaseSourceSimple(sourceDatasetKey, datasetKey);
-        // if the release was deleted, the source should also be marked as deleted
-        if (info.deleted) {
-          d.setDeleted(true);
-        }
+  private DatasetSimple getSimpleUnguarded(int datasetKey, DatasetOrigin origin, int sourceDatasetKey, DatasetSourceMapper dsm){
+    if (PROJECT == origin) {
+      return dsm.getProjectSourceSimple(sourceDatasetKey, datasetKey);
+    } else {
+      return dsm.getReleaseSourceSimple(sourceDatasetKey, datasetKey);
+    }
+  }
+
+  public List<DatasetSimple> listSimple(int datasetKey, List<Integer> sourceDatasetKeys) {
+    var info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (EXTERNAL == info.origin) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is external");
+    }
+    List<DatasetSimple> datasets = new ArrayList<>();
+    try (SqlSession session = factory.openSession()) {
+      DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
+      for (int key : sourceDatasetKeys) {
+        datasets.add(getSimpleUnguarded(datasetKey, info.origin, key, dsm));
       }
     }
-    return d;
+    return datasets;
   }
 
   public int update(int datasetKey, Dataset source, int user) {

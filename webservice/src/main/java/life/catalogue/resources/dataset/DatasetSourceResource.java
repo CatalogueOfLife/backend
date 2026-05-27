@@ -72,9 +72,9 @@ public class DatasetSourceResource {
   }
 
   @GET
-  @Path("/{id}/simple")
-  public DatasetSimple projectSourceSimple(@PathParam("key") int datasetKey, @PathParam("id") int id) {
-    return sourceDao.getSimple(datasetKey, id);
+  @Path("/simple")
+  public List<DatasetSimple> projectSourceSimple(@PathParam("key") Integer datasetKey, @QueryParam("id") List<Integer> ids) {
+    return sourceDao.listSimple(datasetKey, ids);
   }
 
   @GET
