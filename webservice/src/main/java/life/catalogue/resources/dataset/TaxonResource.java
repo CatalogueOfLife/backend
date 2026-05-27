@@ -202,14 +202,14 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Path("{id}/breakdown")
   public Response breakdown(@PathParam("key") int datasetKey,
                             @PathParam("id") String id,
-                            @QueryParam("levels") @DefaultValue("1")
-                            @Parameter(description = "Depth of the breakdown tree. Only 1 or 2 levels are supported.",
+                            @QueryParam("level") @DefaultValue("1")
+                            @Parameter(description = "Depth of the breakdown tree. Only level 1 or 2 are supported.",
                                        schema = @Schema(type = "integer", allowableValues = {"1", "2"}, defaultValue = "1"))
-                            int levels
+                            int level
   ) {
     StreamingOutput stream = os -> {
       try (Writer writer = UTF8IoUtils.writerFromStream(os);
-           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, levels, writer)
+           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, level, writer)
       ) {
         printer.print();
         writer.flush();

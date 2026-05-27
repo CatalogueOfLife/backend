@@ -833,8 +833,8 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
     return childrenBreakdownPrinter(datasetKey, id, 1, writer);
   }
-  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, int levels, Writer writer) {
-    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, levels, writer).printer;
+  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, int level, Writer writer) {
+    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, level, writer).printer;
   }
 
   private static class PrinterWrapper<T> {
@@ -848,12 +848,12 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   }
 
   /**
-   * @param levels number of nesting levels for major Linnean ranks to return.
+   * @param level number of nesting levels for major Linnean ranks to return.
    *               Currently only 1 or 2 is supported, e.g. orders and families.
    */
-  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, int levels, Writer writer) {
-    if (levels != 1 && levels != 2) {
-      throw new IllegalArgumentException("Breakdown level has to be 1 or 2, not " + levels);
+  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, int level, Writer writer) {
+    if (level != 1 && level != 2) {
+      throw new IllegalArgumentException("Breakdown level has to be 1 or 2, not " + level);
     }
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
@@ -873,7 +873,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     var nextRank = RankUtils.nextLowerLinneanRank(rank);
     ranks.add(nextRank);
     // for families and alike just show the genera and stop at the first level
-    if (levels>1 && nextRank != Rank.GENUS) {
+    if (level>1 && nextRank != Rank.GENUS) {
       ranks.add(RankUtils.nextLowerLinneanRank(nextRank));
     }
     var ttp = TreeTraversalParameter.dataset(datasetKey);
