@@ -599,9 +599,43 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   }
 
   public List<Distribution> listDistributions(DSID<String> key) {
+    return listByTaxon(key, DistributionMapper.class);
+  }
+  public List<Media> listMedia(DSID<String> key) {
+    return listByTaxon(key, MediaMapper.class);
+  }
+  public List<VernacularName> listVernacularNames(DSID<String> key) {
+    return listByTaxon(key, VernacularNameMapper.class);
+  }
+  public List<VernacularName> listVernacularNames(DSID<String> key, @Nullable Language lang) {
     try (SqlSession session = factory.openSession(false)) {
-      var dm = session.getMapper(DistributionMapper.class);
-      return dm.listByTaxon(key);
+      return session.getMapper(VernacularNameMapper.class).listByTaxonFiltered(key, lang == null ? null : lang.getCode());
+    }
+  }
+  public List<TaxonProperty> listProperties(DSID<String> key) {
+    return listByTaxon(key, TaxonPropertyMapper.class);
+  }
+  public List<SpeciesInteraction> listSpeciesInteractions(DSID<String> key) {
+    try (SqlSession session = factory.openSession(false)) {
+      var m = session.getMapper(SpeciesInteractionMapper.class);
+      var rels = m.listByTaxon(key);
+      rels.addAll(m.listByRelatedTaxon(key));
+      return rels;
+    }
+  }
+  public List<TaxonConceptRelation> listConceptRelations(DSID<String> key) {
+    try (SqlSession session = factory.openSession(false)) {
+      var m = session.getMapper(TaxonConceptRelationMapper.class);
+      var rels = m.listByTaxon(key);
+      rels.addAll(m.listByRelatedTaxon(key));
+      return rels;
+    }
+  }
+
+  private <T extends ExtensionEntity> List<T> listByTaxon(DSID<String> key, Class<? extends TaxonExtensionMapper<T>> mapperClass) {
+    try (SqlSession session = factory.openSession(false)) {
+      var m = session.getMapper(mapperClass);
+      return m.listByTaxon(key);
     }
   }
 

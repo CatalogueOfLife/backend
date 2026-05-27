@@ -109,12 +109,6 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
 
   @GET
-  @Path("{id}/distribution")
-  public List<Distribution> distribution(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    return dao.listDistributions(DSID.of(datasetKey, id));
-  }
-
-  @GET
   @Path("{id}/treatment")
   public Treatment treatment(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     return dao.getTreatment(DSID.of(datasetKey, id));
@@ -138,41 +132,39 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @GET
   @Path("{id}/vernacular")
   public List<VernacularName> vernacular(@PathParam("key") int datasetKey, @PathParam("id") String id,
-                                         @QueryParam("lang") String langCode,
-                                         @Context SqlSession session) {
-    // normalize lang codes
-    var lang = Language.byCode(langCode);
-    return session.getMapper(VernacularNameMapper.class).listByTaxonFiltered(DSID.of(datasetKey, id), lang == null ? null : lang.getCode());
+                                         @QueryParam("lang") String langCode) {
+    return dao.listVernacularNames(DSID.of(datasetKey, id), Language.byCode(langCode));
   }
+
 
   @GET
   @Path("{id}/distribution")
-  public List<Distribution> distribution(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(DistributionMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<Distribution> distribution(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listDistributions(DSID.of(datasetKey, id));
   }
 
   @GET
   @Path("{id}/media")
-  public List<Media> media(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(MediaMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<Media> media(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listMedia(DSID.of(datasetKey, id));
   }
 
   @GET
   @Path("{id}/property")
-  public List<TaxonProperty> property(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(TaxonPropertyMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<TaxonProperty> property(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listProperties(DSID.of(datasetKey, id));
   }
 
   @GET
   @Path("{id}/interaction")
-  public List<SpeciesInteraction> interaction(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(SpeciesInteractionMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<SpeciesInteraction> interaction(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listSpeciesInteractions(DSID.of(datasetKey, id));
   }
 
   @GET
   @Path("{id}/relation")
-  public List<TaxonConceptRelation> relations(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(TaxonConceptRelationMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<TaxonConceptRelation> relations(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listConceptRelations(DSID.of(datasetKey, id));
   }
 
   @GET
