@@ -131,6 +131,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     return key != null && key >= TEMP_KEY_START;
   }
 
+  public DatasetSimple getSimple(Integer key) {
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(mapperClass).getSimple(key);
+    }
+  }
+
   public Dataset get(UUID gbifKey) {
     try (SqlSession session = factory.openSession()) {
       var mapper = session.getMapper(mapperClass);
