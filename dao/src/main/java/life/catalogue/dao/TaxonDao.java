@@ -788,13 +788,19 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   }
 
   public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id) {
-    var wrapper = childrenBreakdown(JsonTreeCollector.class, datasetKey, id, new StringWriter());
+    return childrenBreakdownCollector(datasetKey, id, 1);
+  }
+  public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id, int levels) {
+    var wrapper = childrenBreakdown(JsonTreeCollector.class, datasetKey, id, levels, new StringWriter());
     wrapper.printer.setTaxon(wrapper.taxon);
     return wrapper.printer;
   }
 
   public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
-    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, writer).printer;
+    return childrenBreakdownPrinter(datasetKey, id, 1, writer);
+  }
+  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, int levels, Writer writer) {
+    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, levels, writer).printer;
   }
 
   private static class PrinterWrapper<T> {
@@ -807,7 +813,14 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     }
   }
 
-  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, Writer writer) {
+  /**
+   * @param levels number of nesting levels for major Linnean ranks to return.
+   *               Currently only 1 or 2 is supported, e.g. orders and families.
+   */
+  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, int levels, Writer writer) {
+    if (levels != 1 && levels != 2) {
+      throw new IllegalArgumentException("Breakdown level has to be 1 or 2, not " + levels);
+    }
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
     var rank = tax.getRank();
@@ -826,7 +839,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     var nextRank = RankUtils.nextLowerLinneanRank(rank);
     ranks.add(nextRank);
     // for families and alike just show the genera and stop at the first level
-    if (nextRank != Rank.GENUS) {
+    if (levels>1 && nextRank != Rank.GENUS) {
       ranks.add(RankUtils.nextLowerLinneanRank(nextRank));
     }
     var ttp = TreeTraversalParameter.dataset(datasetKey);

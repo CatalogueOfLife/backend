@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -206,10 +208,16 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
 
   @GET
   @Path("{id}/breakdown")
-  public Response breakdown(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+  public Response breakdown(@PathParam("key") int datasetKey,
+                            @PathParam("id") String id,
+                            @QueryParam("levels") @DefaultValue("1")
+                            @Parameter(description = "Depth of the breakdown tree. Only 1 or 2 levels are supported.",
+                                       schema = @Schema(type = "integer", allowableValues = {"1", "2"}, defaultValue = "1"))
+                            int levels
+  ) {
     StreamingOutput stream = os -> {
       try (Writer writer = UTF8IoUtils.writerFromStream(os);
-           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, writer)
+           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, levels, writer)
       ) {
         printer.print();
         writer.flush();
