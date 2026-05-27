@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.Sector;
 import life.catalogue.dao.DatasetSourceDao;
 
@@ -76,6 +77,8 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
    */
   SourceDataset getReleaseSource(@Param("key") int key, @Param("datasetKey") int datasetKey);
 
+  DatasetSimple getReleaseSourceSimple(@Param("key") int key, @Param("datasetKey") int datasetKey);
+
   /**
    * Retrieves a single source dataset for a project, reading either from the latest version
    * or the dataset archive if the last successful sync attempt was older.
@@ -83,6 +86,8 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
    * @param projectKey the project dataset key. No release keys allowed!
    */
   SourceDataset getProjectSource(@Param("key") int key, @Param("datasetKey") int projectKey);
+
+  DatasetSimple getProjectSourceSimple(@Param("key") int key, @Param("datasetKey") int projectKey);
 
   /**
    * Lists all sources of a release as full datasets.

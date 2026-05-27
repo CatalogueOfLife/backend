@@ -33,14 +33,15 @@ public class DatasetSourceDao {
    */
   public DatasetSourceMapper.SourceDataset get(int datasetKey, int sourceDatasetKey, boolean dontPatch){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (EXTERNAL == info.origin) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is external");
+    }
+
     DatasetSourceMapper.SourceDataset d;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
-      if (EXTERNAL == info.origin) {
-        throw new IllegalArgumentException("Dataset "+datasetKey+" is external");
-
-      } else if (PROJECT == info.origin) {
+      if (PROJECT == info.origin) {
         d = dsm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
           // get latest version with patch applied
@@ -53,6 +54,34 @@ public class DatasetSourceDao {
         if (info.deleted) {
           final Dataset release = dm.get(datasetKey);
           d.setDeleted(release.getDeleted());
+        }
+      }
+    }
+    return d;
+  }
+
+  /**
+   * Gets a simple dataset object for the source dataset in a release or project.
+   * For projects this will return the latest version of the source dataset and will NOT apply any patch.
+   * @param datasetKey       the dataset key of the release or project
+   * @param sourceDatasetKey the dataset key of the source within the release or project
+   */
+  public DatasetSimple getSimple(int datasetKey, int sourceDatasetKey){
+    var info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (EXTERNAL == info.origin) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is external");
+    }
+    DatasetSimple d;
+    try (SqlSession session = factory.openSession()) {
+      DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
+      if (PROJECT == info.origin) {
+        d = dsm.getProjectSourceSimple(sourceDatasetKey, datasetKey);
+
+      } else {
+        d = dsm.getReleaseSourceSimple(sourceDatasetKey, datasetKey);
+        // if the release was deleted, the source should also be marked as deleted
+        if (info.deleted) {
+          d.setDeleted(true);
         }
       }
     }

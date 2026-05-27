@@ -49,6 +49,16 @@
     d.source_key
   </sql>
 
+  <sql id="SELECT_SIMPLE_DATASET">
+    d.key,
+    d.source_key,
+    d.origin,
+    d.alias,
+    d.title,
+    d.version,
+    d.gbif_publisher_key
+  </sql>
+
   <sql id="SELECT_SECTOR_MODES">
     (SELECT array_agg(DISTINCT mode) FROM sector s WHERE s.dataset_key=d.dataset_key AND s.subject_dataset_key=d.key) as sector_modes
   </sql>
@@ -76,7 +86,12 @@
     dataset_source d
   </sql>
 
-  <resultMap id="datasetSimpleResultMap" type="SourceDataset" autoMapping="true">
+  <resultMap id="datasetSimpleResultMap" type="DatasetSimple" autoMapping="true">
+    <id property="key" column="key"/>
+    <result property="privat" column="private"/>
+  </resultMap>
+
+  <resultMap id="sourceDatasetSimpleResultMap" type="SourceDataset" autoMapping="true">
     <id property="key" column="key"/>
     <result property="privat" column="private"/>
     <result property="contact" column="contact" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
@@ -138,7 +153,7 @@
     ORDER BY 1
   </select>
 
-  <select id="listProjectSourcesSimple" parameterType="map" resultMap="datasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="listProjectSourcesSimple" parameterType="map" resultMap="sourceDatasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     <include refid="SECTOR_SUBJECT_DATASETS"/>
     <!-- archived dataset metadata -->
     SELECT <include refid="SELECT_SIMPLE"/>, src.sector_modes
@@ -164,7 +179,7 @@
     <include refid="PUBLISHER_CLAUSE"/>
   </select>
 
-  <select id="listReleaseSourcesSimple" parameterType="map" resultMap="datasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="listReleaseSourcesSimple" parameterType="map" resultMap="sourceDatasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT d.dataset_key, <include refid="SELECT_SIMPLE"/>, <include refid="SELECT_SECTOR_MODES"/>
     FROM <include refid="FROM_SIMPLE"/>
     WHERE d.dataset_key = #{datasetKey}
@@ -197,9 +212,37 @@
     WHERE src.attempt = d.attempt OR src.attempt IS NULL
   </select>
 
+  <select id="getProjectSourceSimple" resultMap="datasetSimpleResultMap">
+    WITH src AS (
+    SELECT max(s.dataset_attempt) AS attempt
+    FROM sector s
+    WHERE s.dataset_key=#{datasetKey} AND s.subject_dataset_key=#{key}
+    )
+    <!-- archived dataset metadata -->
+    SELECT <include refid="SELECT_SIMPLE_DATASET"/>
+    FROM src
+    JOIN dataset d2 ON d2.key = #{key}
+    LEFT JOIN dataset_archive d ON d.key = #{key} AND d.attempt = src.attempt
+    WHERE src.attempt != d2.attempt
+
+    UNION
+
+    <!-- latest dataset metadata -->
+    SELECT <include refid="SELECT_SIMPLE_DATASET"/>
+    FROM src
+    JOIN dataset d ON d.key = #{key}
+    WHERE src.attempt = d.attempt OR src.attempt IS NULL
+  </select>
+
   <select id="getReleaseSource" resultMap="datasetSourceReleaseResultMap">
     SELECT d.dataset_key, <include refid="SELECT"/>, <include refid="SELECT_SECTOR_MODES"/>
     FROM <include refid="FROM"/>
+    WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
+  </select>
+
+  <select id="getReleaseSourceSimple" resultMap="datasetSimpleResultMap">
+    SELECT <include refid="SELECT_SIMPLE_DATASET"/>
+    FROM <include refid="FROM_SIMPLE"/>
     WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
   </select>
 
