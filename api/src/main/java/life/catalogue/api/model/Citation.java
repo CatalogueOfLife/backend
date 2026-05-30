@@ -40,6 +40,8 @@ public class Citation {
   private List<CslName> editor;
   // The title of the work
   private String title;
+  // alias
+  private String shortTitle;
   // author(s) of the container holding the item (e.g. the book author for a book chapter)
   @JsonAlias("containerAuthor")
   @JsonProperty("container-author")
@@ -133,6 +135,7 @@ public class Citation {
     this.doi = other.doi;
     this.author = other.author;
     this.editor = other.editor;
+    this.shortTitle = other.shortTitle;
     this.title = other.title;
     this.containerAuthor = other.containerAuthor;
     this.containerTitle = other.containerTitle;
@@ -185,6 +188,7 @@ public class Citation {
     builder
       .type(type)
       .title(title)
+      .shortTitle(shortTitle)
       .volume(volume)
       .issue(issue)
       .edition(edition)
@@ -289,6 +293,14 @@ public class Citation {
 
   public void setTitle(String title) {
     this.title = title;
+  }
+
+  public String getShortTitle() {
+    return shortTitle;
+  }
+
+  public void setShortTitle(String shortTitle) {
+    this.shortTitle = shortTitle;
   }
 
   public List<CslName> getContainerAuthor() {
@@ -455,6 +467,7 @@ public class Citation {
            && Objects.equals(author, citation.author)
            && Objects.equals(editor, citation.editor)
            && Objects.equals(title, citation.title)
+           && Objects.equals(shortTitle, citation.shortTitle)
            && Objects.equals(containerAuthor, citation.containerAuthor)
            && Objects.equals(containerTitle, citation.containerTitle)
            && Objects.equals(issued, citation.issued)
@@ -476,6 +489,6 @@ public class Citation {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, type, doi, author, editor, title, containerAuthor, containerTitle, issued, accessed, collectionTitle, collectionEditor, volume, issue, edition, page, publisher, publisherPlace, version, isbn, issn, url, note);
+    return Objects.hash(id, type, doi, author, editor, title, shortTitle, containerAuthor, containerTitle, issued, accessed, collectionTitle, collectionEditor, volume, issue, edition, page, publisher, publisherPlace, version, isbn, issn, url, note);
   }
 }
