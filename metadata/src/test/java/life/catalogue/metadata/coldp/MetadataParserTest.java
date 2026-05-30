@@ -65,7 +65,7 @@ public class MetadataParserTest {
 
     assertEquals(2, d.getSource().size());
     var src = d.getSource().getFirst();
-    assertEquals("ECoF", src.getShortTitle());
+    assertEquals("ECoF", src.getAlias());
     assertEquals("Eschmeyer's Catalog of Fishes", src.getTitle());
   }
 
