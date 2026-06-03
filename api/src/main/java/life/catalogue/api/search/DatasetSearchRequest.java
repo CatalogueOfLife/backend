@@ -32,6 +32,7 @@ public class DatasetSearchRequest {
     CREATED,
     MODIFIED,
     IMPORTED,
+    ISSUED,
     LAST_IMPORT_ATTEMPT,
     SIZE
   }
@@ -63,7 +64,10 @@ public class DatasetSearchRequest {
 
   /**
    * Filters release datasets by their parent project.
-   * Automatically also restricts datasets to origin=released
+   * Automatically also restricts datasets to origin=released.
+   * As a special case releasedFrom=COL (key {@link life.catalogue.api.vocab.Datasets#COL}) additionally
+   * lists the older COL releases that predate ChecklistBank and were re-imported as EXTERNAL datasets,
+   * identified by the COL release alias convention (COLyy[.m][ XR], e.g. COL00, COL19, COL20 XR).
    */
   @QueryParam("releasedFrom")
   private Integer releasedFrom;
