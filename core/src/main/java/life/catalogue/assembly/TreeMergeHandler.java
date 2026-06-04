@@ -605,14 +605,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
               } else {
                 var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
-                var parent2 = matchedParents.size() < 2 ? null : matchedParents.get(matchedParents.size()-2).match;
                 batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
                 if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
                   updateParent(nu, existingUsageKey, existing, existingParent, parent, upd);
-                } else if (parent.getRank() == Rank.SERIES && parent2 != null && proposedParentDoesNotConflict(existing.usage, existingParent, parent2)) {
-                  // series in zoology are placed differently than in botany which we consider as series
-                  // See https://github.com/CatalogueOfLife/data/issues/1023
-                  updateParent(nu, existingUsageKey, existing, existingParent, parent2, upd);
                 }
               }
             }

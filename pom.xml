@@ -90,7 +90,7 @@
     <mapdb.version>3.1.0</mapdb.version>
     <mockito.version>3.3.3</mockito.version>
     <mybatis.version>3.5.19</mybatis.version>
-    <name-parser.version>3.14.0</name-parser.version>
+    <name-parser.version>3.16.0</name-parser.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.5.1</poi.version>
     <pollexor.version>3.0.0</pollexor.version>

@@ -11,6 +11,22 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-06-04 name-parser 3.16 code-specific series ranks
+name-parser 3.16 replaced the ambiguous generic series ranks (`SUPERSERIES`, `SERIES`, `SUBSERIES`)
+with code-specific ones. The generic ranks sat in the botanical block, so we rename them in place to
+their botanical equivalents — this keeps their ordinal position, migrates every existing row
+instantly and leaves no dead enum values. Only the new zoological series ranks need adding (no
+existing rows use them). The Rank ordinals shift, so the **ES name usage index must be rebuilt**
+after deploying.
+```
+ALTER TYPE RANK RENAME VALUE 'SUPERSERIES' TO 'SUPERSERIES_BOTANY';
+ALTER TYPE RANK RENAME VALUE 'SERIES' TO 'SERIES_BOTANY';
+ALTER TYPE RANK RENAME VALUE 'SUBSERIES' TO 'SUBSERIES_BOTANY';
+ALTER TYPE RANK ADD VALUE 'SUPERSERIES_ZOOLOGY' AFTER 'SUBSECTION_ZOOLOGY';
+ALTER TYPE RANK ADD VALUE 'SERIES_ZOOLOGY' AFTER 'SUPERSERIES_ZOOLOGY';
+ALTER TYPE RANK ADD VALUE 'SUBSERIES_ZOOLOGY' AFTER 'SERIES_ZOOLOGY';
+```
+
 #### 2026-05-04 redundant data issues
 ```
 ALTER TYPE ISSUE ADD VALUE 'DUPLICATE_DISTRIBUTIONS';

@@ -87,7 +87,7 @@ public class ParentStackTest {
     assertEquals("6", parents.last().usage.getId());
     assertFalse(parents.isDoubtful());
 
-    parents.push(src(Rank.SERIES, 7,6), null);
+    parents.push(src(Rank.SERIES_BOTANY, 7,6), null);
     assertEquals(5, parents.size());
     assertEquals("7", parents.last().usage.getId());
     assertFalse(parents.isDoubtful());
@@ -103,6 +103,28 @@ public class ParentStackTest {
     parents.push(src(Rank.SUPERFAMILY, 11,10), null);
     assertEquals(6, parents.size());
     assertEquals("11", parents.last().usage.getId());
+    assertTrue(parents.isDoubtful());
+  }
+
+  /**
+   * Series ranks are code-specific since name-parser 3.16, so they take part in the rank order check
+   * like any other rank (no special casing). A zoological series sits above family, so a series placed
+   * under a family is an inverted rank order and must be flagged as doubtful.
+   */
+  @Test
+  public void testSeriesRankOrder() throws Exception {
+    SimpleNameWithNidx biota = new SimpleNameWithNidx();
+    biota.setId("0");
+    biota.setName("Biota");
+    biota.setRank(Rank.UNRANKED);
+    MatchedParentStack parents = new MatchedParentStack(biota);
+
+    parents.push(src(Rank.ORDER, 1, 0), null);
+    parents.push(src(Rank.FAMILY, 2, 1), null);
+    assertFalse(parents.isDoubtful());
+
+    parents.push(src(Rank.SERIES_ZOOLOGY, 3, 2), null);
+    assertEquals("3", parents.last().usage.getId());
     assertTrue(parents.isDoubtful());
   }
 
