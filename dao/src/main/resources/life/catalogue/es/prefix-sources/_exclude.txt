@@ -1,0 +1,17 @@
+# Prefixes to drop from the merged decompound list (curation surface).
+# Sources in this folder stay pristine/re-importable; remove unwanted prefixes here.
+# One prefix per line, lower-case; blank lines and '#' comments ignored.
+# Files starting with '_' are NOT treated as prefix sources.
+#
+# Changing this list changes the ES decompound pattern and requires a name-usage reindex.
+# Regenerate the merged file with:
+#   mvn -pl dao test -Dtest=DecompoundPrefixesGenTest -Ddecompound.write=true
+#
+# Short prefixes that over-strip 4+ char stems and break name search
+# (e.g. eu+genia -> Eugenia, bi+color -> bicolor). Restore individually if wanted.
+a
+an
+bi
+di
+eo
+eu

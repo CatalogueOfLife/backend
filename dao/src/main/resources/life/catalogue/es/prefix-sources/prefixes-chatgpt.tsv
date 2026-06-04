@@ -1,0 +1,143 @@
+prefix	meaning	origin	example
+#
+# Primitive / Ancient / Basal / Derived
+#
+archaeo	ancient, primitive	Greek	Archaea
+archae	ancient, primitive	Greek	Archaea
+palaeo	ancient	Greek	paleodictyon
+paleo	ancient	Greek	paleodictyon
+proto	first, primitive	Greek	protozoa
+eo	dawn/early	Greek	Eocene
+neo	new, recent	Greek	neontology
+holo	whole, complete	Greek	holotype
+apo	away from, derived	Greek	apomorphy
+plesi	near ancestral	Greek	plesiomorphy
+syn	shared/together	Greek	synapomorphy
+#
+# False / Hidden / Similar / Related
+#
+pseudo	false, deceptive resemblance	Greek	Pseudomonas
+crypto	hidden	Greek	cryptic species
+homo	same	Greek	homologous
+hetero	different	Greek	heterosporous
+iso	equal/similar	Greek	isogamy
+allo	other	Greek	allopatric
+homeo	similar	Greek	homeotherm
+quasi	apparently/almost	Latin	quasispecies
+para	beside/near	Greek	parasite
+meta	changed/transformed	Greek	metamorphosis
+#
+# Size
+#
+micro	tiny	Greek	microorganism
+nano	dwarf	Greek	nanoplankton
+macro	large	Greek	macrofauna
+mega	huge	Greek	megafauna
+giga	gigantic	Greek	gigas
+brachy	short	Greek	brachycephalic
+dolicho	elongated	Greek	dolichocephalic
+longi	long	Latin	longirostris
+brevi	short	Latin	brevicauda
+#
+# Number
+#
+mono	one	Greek	monotreme
+uni	one	Latin	unicellular
+bi	two	Latin/Greek	bilateral
+di	two	Latin/Greek	bilateral
+tri	three	Greek	Triceratops
+tetra	four	Greek	tetrapod
+penta	five	Greek	pentadactyl
+hexa	six	Greek	hexapod
+octo	eight	Greek	octocoral
+deca	ten	Greek	decapod
+oligo	few	Greek	oligochaete
+poly	many	Greek	polychaete
+#
+# Habitat
+#
+hydro	water	Greek	hydrophyte
+halo	salt	Greek	halophile
+xero	dry	Greek	xerophyte
+meso	intermediate	Greek	mesophile
+thermo	heat	Greek	thermophile
+cryo	cold	Greek	cryophyte
+aero	air/oxygen	Greek	aerobic
+geo	earth	Greek	geobacillus
+litho	rock	Greek	lithotroph
+pelago	open sea	Greek	pelagic
+bentho	sea floor	Greek	benthic
+limno	freshwater	Greek	limnology
+#
+# Biogeographic
+#
+boreo	northern	Greek	boreotropical
+noto	southern	Greek	notosuchian
+euro	European	Greek	eurocentric taxa
+afro	African	Greek	Afrotheria
+indo	Indian	Greek	Indomalayan
+sino	Chinese	Greek	Sinornithosaurus
+neo	New World	Greek	Neotropical
+paleo	Old World/ancient	Greek	Paleotropical
+#
+# Anatomical Position
+#
+endo	internal	Greek	endoskeleton
+ecto	external	Greek	ectoparasite
+exo	outer	Greek	exoskeleton
+epi	upon	Greek	epidermis
+hypo	beneath	Greek	hypodermic
+hyper	above/excessive	Greek	hyperthermophile
+peri	around	Greek	pericarp
+circum	around	Latin	circumpolar
+inter	between	Latin	interspecific
+intra	within	Latin	intracellular
+retro	backward	Latin	retrovirus
+sub	under	Latin	subgenus
+supra	above	Latin	supralittoral
+#
+# Shape / Structure
+#
+morpho	form/shape	Greek	morphology
+platy	flat/broad	Greek	Platyhelminthes
+steno	narrow	Greek	stenohaline
+pachy	thick	Greek	pachycephalosaur
+lept	thin/slender	Greek	leptocephalus
+dendro	tree-like	Greek	dendrobatid
+sphaero	spherical	Greek	sphaerocarp
+rhombo	diamond-shaped	Greek	rhomboid
+gyro	spiral/turning	Greek	gyrodactylus
+#
+# Color
+#
+melan	black	Greek	melanistic
+leuco	white	Greek	leukocyte
+leuko	white	Greek	Callipielus leukogramma
+xanth	yellow	Greek	xanthophyll
+erythro	red	Greek	erythrocyte
+cyano	blue	Greek	cyanobacteria
+chloro	green	Greek	chlorophyte
+rhodo	rose/red	Greek	rhodophyte
+flav	yellow/golden	Latin	flavivirus
+nigri	black	Latin	nigricans
+albi	white	Latin	albicaulis
+#
+# Feeding / Metabolism
+#
+auto	self	Greek	autotroph
+photo	light	Greek	phototroph
+chemo	chemical	Greek	chemoautotroph
+sapro	decaying matter	Greek	saprophyte
+zoo	animal	Greek	zooplankton
+phyto	plant	Greek	phytoplankton
+myco	fungus	Greek	mycorrhiza
+bacterio	bacteria	Greek	bacteriophage
+#
+# Reproduction
+#
+gamo	marriage/union	Greek	gamophyte
+andro	male	Greek	androecium
+gyno	female	Greek	gynosperm
+ovo	egg	Latin	ovoviviparous
+vivi	live	Latin	viviparous
+paedo	child/juvenile	Greek	paedomorphosis
