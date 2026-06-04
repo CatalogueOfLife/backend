@@ -402,10 +402,20 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     assertTrue("kingdoms should appear before species in TAXONOMIC sort",
         firstKingdom >= 0 && firstSpecies > firstKingdom);
 
-    // RELEVANCE: score-based – without a q all scores are equal, just verify TOTAL results
+    // RELEVANCE: score-based – without a q all scores are equal.
+    // Issue #1513: accepted usages must still sort before all synonyms, regardless of rank.
     NameUsageSearchRequest relReq = new NameUsageSearchRequest();
     relReq.setSortBy(NameUsageRequest.SortBy.RELEVANCE);
-    assertEquals(TOTAL, count(relReq));
+    List<NameUsageWrapper> byRel = search(relReq).getResult();
+    assertEquals(TOTAL, byRel.size());
+    boolean seenSynonym = false;
+    for (NameUsageWrapper r : byRel) {
+      if (r.getUsage().getStatus().isSynonym()) {
+        seenSynonym = true;
+      } else if (seenSynonym) {
+        fail("accepted " + r.getUsage().getLabel() + " ranked below a synonym in RELEVANCE sort");
+      }
+    }
   }
 
   private static void assertNameOrder(List<NameUsageWrapper> results, boolean reversed) {

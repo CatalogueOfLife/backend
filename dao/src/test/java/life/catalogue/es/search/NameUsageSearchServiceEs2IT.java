@@ -2,6 +2,7 @@ package life.catalogue.es.search;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageRequest;
+import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
@@ -38,6 +39,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 /**
  * Parameterized integration test for {@link NameUsageSearchServiceEs} that creates a new index per test
@@ -53,7 +55,7 @@ public class NameUsageSearchServiceEs2IT extends EsTestBase {
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
-    return IntStream.rangeClosed(1, 2)
+    return IntStream.rangeClosed(1, 3)
       .mapToObj(i -> new Object[] {i})
       .collect(Collectors.toList());
   }
@@ -220,6 +222,38 @@ public class NameUsageSearchServiceEs2IT extends EsTestBase {
         assertID(resp.getResult().getFirst(), "V56F2"); // the only accepted
         break;
 
+      case 3:
+        // https://github.com/CatalogueOfLife/backend/issues/1513
+        // Browsing everything below Puma concolor (no q) must list the accepted subspecies first
+        // and all synonyms below, regardless of their rank.
+        var browseReq = new NameUsageSearchRequest();
+        browseReq.setDatasetFilter(datasetKey);
+        browseReq.addFilter(NameUsageSearchParameter.TAXON_ID, "PCON");
+        resp = search(browseReq);
+
+        assertAcceptedBeforeSynonyms(resp.getResult());
+        break;
+
+    }
+  }
+
+  /**
+   * Asserts the result is partitioned: every accepted usage comes before every synonym,
+   * i.e. once a synonym is seen no accepted usage may follow.
+   */
+  static void assertAcceptedBeforeSynonyms(List<NameUsageWrapper> results) {
+    long accepted = results.stream().filter(r -> r.getUsage().getStatus().isTaxon()).count();
+    long synonyms = results.stream().filter(r -> r.getUsage().getStatus().isSynonym()).count();
+    assertEquals("expected the 3 accepted usages (Puma concolor + 2 subspecies)", 3, accepted);
+    assertEquals("expected 6 synonyms", 6, synonyms);
+
+    boolean seenSynonym = false;
+    for (NameUsageWrapper r : results) {
+      if (r.getUsage().getStatus().isSynonym()) {
+        seenSynonym = true;
+      } else if (seenSynonym) {
+        fail("accepted " + r.getUsage().getLabel() + " ranked below a synonym");
+      }
     }
   }
 

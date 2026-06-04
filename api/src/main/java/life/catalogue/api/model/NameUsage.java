@@ -51,8 +51,26 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, VerbatimSourceE
   void setName(Name name);
 
   TaxonomicStatus getStatus();
-  
+
   void setStatus(TaxonomicStatus status);
+
+  /**
+   * Major-status sort order for search results: accepted taxa = 0, synonyms = 1, bare names = 2.
+   * Indexed into Elasticsearch (via the EsModule mix-in) as {@code usage.statusOrder} so accepted
+   * names can be sorted above synonyms regardless of their rank. An unset status defaults to accepted (0).
+   */
+  @JsonIgnore
+  default byte getStatusOrder() {
+    TaxonomicStatus st = getStatus();
+    if (st == null) {
+      return 0;
+    }
+    return switch (st.getMajorStatus()) {
+      case BARE_NAME -> (byte) 2;
+      case SYNONYM -> (byte) 1;
+      default -> (byte) 0; // ACCEPTED
+    };
+  }
 
   String getNamePhrase();
 

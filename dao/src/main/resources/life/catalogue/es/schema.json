@@ -120,6 +120,9 @@
           "status": {
             "type": "keyword"
           },
+          "statusOrder": {
+            "type": "byte"
+          },
           "origin": {
             "type": "keyword"
           },
