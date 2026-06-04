@@ -29,14 +29,28 @@ public class SortByTranslator {
       case NAME:
         return List.of(SortOptions.of(s -> s.field(f -> f.field("usage.name.scientificName").order(order))));
       case TAXONOMIC:
+        // accepted taxa first (regardless of rank), then by rank and name within each status group
         return List.of(
+          statusOrderSort(),
           SortOptions.of(s -> s.field(f -> f.field("usage.name.rank").order(order))),
           SortOptions.of(s -> s.field(f -> f.field("usage.name.scientificName").order(SortOrder.Asc)))
         );
       case RELEVANCE:
       default:
-        return List.of(SortOptions.of(s -> s.score(sc -> sc.order(SortOrder.Desc))));
+        // accepted taxa first (regardless of rank), then by relevance score within each status group
+        return List.of(
+          statusOrderSort(),
+          SortOptions.of(s -> s.score(sc -> sc.order(SortOrder.Desc)))
+        );
     }
+  }
+
+  /**
+   * Primary sort tier that groups accepted taxa (statusOrder 0) above synonyms (1) and bare names (2),
+   * regardless of their rank. See {@code NameUsageWrapper.getStatusOrder()}.
+   */
+  private static SortOptions statusOrderSort() {
+    return SortOptions.of(s -> s.field(f -> f.field("usage.statusOrder").order(SortOrder.Asc)));
   }
 
 }

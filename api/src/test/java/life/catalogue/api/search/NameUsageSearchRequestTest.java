@@ -115,6 +115,20 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
     assertEquals(NameUsageSearchRequest.DEFAULT_CONTENT, r1.getContent());
   }
 
+  /**
+   * Backwards compatibility: the legacy SearchType values WHOLE_WORDS and PREFIX must still
+   * deserialize to STANDARD (via @JsonAlias) so portal-components and other external clients
+   * that still send these values keep working.
+   */
+  @Test
+  public void searchTypeBackwardsCompat() throws Exception {
+    for (String legacy : new String[]{"WHOLE_WORDS", "PREFIX", "whole_words", "prefix"}) {
+      NameUsageRequest.SearchType st = ApiModule.MAPPER.readValue('"' + legacy + '"', NameUsageRequest.SearchType.class);
+      assertEquals("Legacy '" + legacy + "' should resolve to STANDARD",
+          NameUsageRequest.SearchType.STANDARD, st);
+    }
+  }
+
   @Test
   public void restrictFilterSize() {
     ValidatorFactory vf = Validation.buildDefaultValidatorFactory();

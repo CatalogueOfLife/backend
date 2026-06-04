@@ -7,12 +7,17 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.config.IndexConfig;
 import life.catalogue.es.query.FieldLookup;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,27 +47,56 @@ public class EsUtil {
   private static final String TAXON_ID_FIELD = FieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.TAXON_ID);
   private static final String USAGE_ID_FIELD = FieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.USAGE_ID);
 
+  static final String SCINAME_DECOMPOUND_PLACEHOLDER = "__SCINAME_DECOMPOUND_PATTERN__";
+  static final String SCINAME_DECOMPOUND_PREFIXES_FILE = "sciname-decompound-prefixes.txt";
+
   /**
    * Creates an index using the static schema JSON file (settings + mappings).
    */
   public static int createIndex(ElasticsearchClient client, IndexConfig config) throws IOException {
     LOG.warn("Creating Elasticsearch index {}", config.name);
+    String schemaJson = loadSchemaJson();
+    // Inject numShards/numReplicas into the schema JSON before passing to withJson.
+    // Calling .settings() before .withJson() doesn't work because withJson replaces
+    // the entire settings object when it deserializes the JSON.
+    ObjectMapper om = new ObjectMapper();
+    ObjectNode schema = (ObjectNode) om.readTree(schemaJson);
+    ObjectNode indexSettings = schema.with("settings").with("index");
+    indexSettings.put("number_of_shards", config.numShards);
+    indexSettings.put("number_of_replicas", config.numReplicas);
+    var schemaData = om.writeValueAsBytes(schema);
+    CreateIndexResponse response = client.indices().create(c -> c
+      .index(config.name)
+      .withJson(new ByteArrayInputStream(schemaData))
+    );
+    return response.acknowledged() ? 200 : 400;
+  }
+
+  /**
+   * Reads schema.json and substitutes the {@link #SCINAME_DECOMPOUND_PLACEHOLDER} with a regex
+   * built from the {@link #SCINAME_DECOMPOUND_PREFIXES_FILE} resource. Entries are sorted by
+   * length descending then alphabetically so the regex engine prefers longer prefixes when
+   * matching.
+   */
+  static String loadSchemaJson() throws IOException {
+    String schema;
     try (InputStream schemaStream = EsUtil.class.getResourceAsStream("schema.json")) {
-      // Inject numShards/numReplicas into the schema JSON before passing to withJson.
-      // Calling .settings() before .withJson() doesn't work because withJson replaces
-      // the entire settings object when it deserializes the JSON.
-      ObjectMapper om = new ObjectMapper();
-      ObjectNode schema = (ObjectNode) om.readTree(schemaStream);
-      ObjectNode indexSettings = schema.with("settings").with("index");
-      indexSettings.put("number_of_shards", config.numShards);
-      indexSettings.put("number_of_replicas", config.numReplicas);
-      var schemaData = om.writeValueAsBytes(schema);
-      CreateIndexResponse response = client.indices().create(c -> c
-        .index(config.name)
-        .withJson(new ByteArrayInputStream(schemaData))
-      );
-      return response.acknowledged() ? 200 : 400;
+      schema = new String(schemaStream.readAllBytes(), StandardCharsets.UTF_8);
     }
+    return schema.replace(SCINAME_DECOMPOUND_PLACEHOLDER, buildScinameDecompoundPattern());
+  }
+
+  static String buildScinameDecompoundPattern() throws IOException {
+    List<String> prefixes;
+    try (InputStream in = EsUtil.class.getResourceAsStream(SCINAME_DECOMPOUND_PREFIXES_FILE);
+         BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+      prefixes = r.lines()
+        .map(String::trim)
+        .filter(line -> !line.isEmpty() && !line.startsWith("#"))
+        .sorted(Comparator.comparingInt(String::length).reversed().thenComparing(Comparator.naturalOrder()))
+        .collect(Collectors.toList());
+    }
+    return "^(?:" + String.join("|", prefixes) + ")([a-z]{4,})$";
   }
 
   /**

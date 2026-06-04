@@ -13,7 +13,7 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
 import life.catalogue.parser.NomCodeParser;
 import life.catalogue.parser.RankParser;
-import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.UnparsableException;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 
@@ -214,26 +214,40 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     LOG.debug("Inserting {} usages for dataset {}", tree.size(), src.key);
     int ordinal = 1;
     for (SimpleTreeNode n : tree.getRoot()) {
-      insertSubtree(src, null, n, ordinal++);
+      insertSubtree(src, null, n, ordinal++, null);
     }
   }
 
-  private void insertSubtree(TreeDataset src, SimpleTreeNode parent, SimpleTreeNode t, int ordinal) throws InterruptedException {
-    insertNode(src, parent, t, false, ordinal);
+  private void insertSubtree(TreeDataset src, SimpleTreeNode parent, SimpleTreeNode t, int ordinal, NomCode parentCode) throws InterruptedException {
+    // CODE is inherited from ancestors and overridable per node, mirroring the production TxtTreeInterpreter
+    NomCode code = nodeCode(t, parentCode);
+    insertNode(src, parent, t, false, ordinal, code);
     for (SimpleTreeNode syn : t.synonyms) {
-      insertNode(src, t, syn, true, null);
+      insertNode(src, t, syn, true, null, nodeCode(syn, code));
     }
     int childOrdinal = 1;
     for (SimpleTreeNode c : t.children) {
-      insertSubtree(src, t, c, childOrdinal++);
+      insertSubtree(src, t, c, childOrdinal++, code);
     }
   }
 
-  private void insertNode(TreeDataset src, SimpleTreeNode parent, SimpleTreeNode tn, boolean synonym, Integer ordinal) throws InterruptedException {
-    Rank rank = SafeParser.parse(RankParser.PARSER, tn.rank).orElse(Rank.UNRANKED);
-    NomCode code = null;
+  private static NomCode nodeCode(SimpleTreeNode tn, NomCode parentCode) {
     if (tn.infos.containsKey(TxtTreeTerm.CODE.name())) {
-      code = NomCodeParser.PARSER.parseOrNull(tn.infos.get(TxtTreeTerm.CODE.name())[0]);
+      NomCode c = NomCodeParser.PARSER.parseOrNull(tn.infos.get(TxtTreeTerm.CODE.name())[0]);
+      if (c != null) {
+        return c;
+      }
+    }
+    return parentCode;
+  }
+
+  private void insertNode(TreeDataset src, SimpleTreeNode parent, SimpleTreeNode tn, boolean synonym, Integer ordinal, NomCode code) throws InterruptedException {
+    // parse the rank code-aware so ambiguous ranks (e.g. series, section) resolve to the right code variant
+    Rank rank;
+    try {
+      rank = RankParser.PARSER.parse(code, tn.rank).orElse(Rank.UNRANKED);
+    } catch (UnparsableException e) {
+      rank = Rank.UNRANKED;
     }
     ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, rank, code, VerbatimRecord.VOID).get();
     Name n = nat.getName();

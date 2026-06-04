@@ -20,7 +20,7 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   @Override
   @JsonIgnore
   public SearchType getSearchType() {
-    return SearchType.PREFIX;
+    return SearchType.STANDARD;
   }
 
   @Override

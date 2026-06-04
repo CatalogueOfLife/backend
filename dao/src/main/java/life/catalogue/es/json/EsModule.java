@@ -71,6 +71,9 @@ public class EsModule extends SimpleModule {
     @JsonIgnore(false) abstract String getLabel();
     @JsonIgnore abstract String getLabelHtml();
     @JsonIgnore(false) @JsonProperty("nameFields") abstract Set<NameField> nonNullNameFields();
+    // Major-status sort order (taxon=0, synonym=1, bare=2), serialized as usage.statusOrder so
+    // accepted names can be sorted above synonyms. Stays @JsonIgnore in the public API.
+    @JsonIgnore(false) @JsonProperty("statusOrder") abstract byte getStatusOrder();
   }
   abstract static class NameMixIn {
     @JsonIgnore abstract String getLabelHtml();
