@@ -18,7 +18,6 @@ import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.dw.tasks.ClearCachesTask;
 import life.catalogue.dw.tasks.EventQueueTask;
-import life.catalogue.dw.tasks.ReloadPortalTemplatesTask;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.EsUtil;
 import life.catalogue.es.indexing.NameUsageIndexService;
@@ -37,7 +36,6 @@ import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.NameParser;
-import life.catalogue.portal.PortalPageRenderer;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.parser.*;
@@ -267,10 +265,6 @@ public class WsROServer extends Application<WsServerConfig> {
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
 
-    // portal html page renderer - only in ROServer !!!
-    PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, cfg.portalTemplateDir.toPath(), true);
-    j.register(new PortalResource(renderer));
-
     // shared read only resources
     registerReadOnlyResources(j, cfg, getSqlSessionFactory(), null,
       ddao, dsdao, new AtomicBoolean(),
@@ -285,7 +279,6 @@ public class WsROServer extends Application<WsServerConfig> {
     // tasks
     env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
     env.admin().addTask(new EventQueueTask(broker));
-    env.admin().addTask(new ReloadPortalTemplatesTask(renderer));
 
     // attach listeners to event broker
     broker.register(auth);

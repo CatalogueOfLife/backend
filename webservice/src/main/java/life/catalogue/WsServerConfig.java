@@ -200,13 +200,6 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @NotNull
   public File statusFile = new File("/tmp/.status.json");
 
-  /**
-   * The directory where the templates for the dynamic data pages of the life.catalogue.portal are stored.
-   * See PortalPageRenderer.
-   */
-  @NotNull
-  public File portalTemplateDir = new File("/tmp/col/life.catalogue.portal-templates");
-
   @NotNull
   public String support = "support@catalogueoflife.org";
 
