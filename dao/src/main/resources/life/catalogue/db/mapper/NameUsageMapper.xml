@@ -807,7 +807,7 @@
     <if test="param.lowestRank">
       AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank IN ('UNRANKED'::rank, 'OTHER'::rank, 'SUPRAGENERIC_NAME'::rank, 'INFRAGENERIC_NAME'::rank)
       <if test="param.ignoreAmbiguousRanks">
-        OR n.rank IN ('SUPERSECTION_ZOOLOGY'::rank,'SECTION_ZOOLOGY'::rank,'SUBSECTION_ZOOLOGY'::rank,'SUPERSECTION_BOTANY'::rank,'SECTION_BOTANY'::rank,'SUBSECTION_BOTANY'::rank,'SUPERSERIES'::rank,'SERIES'::rank,'SUBSERIES'::rank)
+        OR n.rank IN ('SUPERSECTION_ZOOLOGY'::rank,'SECTION_ZOOLOGY'::rank,'SUBSECTION_ZOOLOGY'::rank,'SUPERSECTION_BOTANY'::rank,'SECTION_BOTANY'::rank,'SUBSECTION_BOTANY'::rank,'SUPERSERIES_ZOOLOGY'::rank,'SERIES_ZOOLOGY'::rank,'SUBSERIES_ZOOLOGY'::rank,'SUPERSERIES_BOTANY'::rank,'SERIES_BOTANY'::rank,'SUBSERIES_BOTANY'::rank)
       </if>)
     </if>
   </sql>
