@@ -2,7 +2,7 @@ id,sector_key,scientific_name,authorship,rank,code,nom_status,type,candidatus,no
 1011,,Gundelia tournefortii,L.,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Gundelia,,tournefortii,,,{},{},,{L.},{},,,,,,,,,
 1001,,Crepis bakeri,Greene,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,bakeri,,,{},{},,{Greene},{},,,greene1895,73,,,,,https://beta.ipni.org/n/69325-2
 100,,Platycarpha,,GENUS,BOTANICAL,,SCIENTIFIC,f,,Platycarpha,,,,,,{},{},,{},{},,,,,,,,,
-hybrid,,Quercus robur x Q. macrocarpa,,SPECIES,BOTANICAL,ACCEPTABLE,HYBRID_FORMULA,f,,,,,,,,{},{},,{},{},,,,,,,,commercial seeds; LEGITIMATE,http://www.heritageseedlings.com/page_608_40/quercus-heritage-q.-robur-x-q.-macrocarpa-clemons
+hybrid,,Quercus robur x Q. macrocarpa,,SPECIES,BOTANICAL,ACCEPTABLE,FORMULA,f,,,,,,,,{},{},,{},{},,,,,,,,commercial seeds; LEGITIMATE,http://www.heritageseedlings.com/page_608_40/quercus-heritage-q.-robur-x-q.-macrocarpa-clemons
 20,,Cichorioideae,,SUBFAMILY,BOTANICAL,,SCIENTIFIC,f,,Cichorioideae,,,,,,{},{},,{},{},,,,,,,,,
 1006,,Leontodon taraxacoides,(Vill.) Mérat,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,taraxacoides,,,{Vill.},{},,{Mérat},{},,,,,,,,,
 1006-s2,,Leontodon saxatilis,,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,saxatilis,,,{},{},,{},{},,,,,,,,,
@@ -24,6 +24,6 @@ virus,,Acanthocystis turfacea chlorella virus 1,,UNRANKED,VIRUS,,VIRUS,f,,,,,,,,
 1001a,,Crepis bakeri subsp. bakeri,,SUBSPECIES,BOTANICAL,,SCIENTIFIC,f,,,Crepis,,bakeri,bakeri,,{},{},,{},{},,,,,,,,,
 1000,,Platycarpha glomerata,(Thunberg) A. P. de Candolle,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Platycarpha,,glomerata,,,{Thunberg},{},,"{""A.P.de Candolle""}",{},,,,,,,,,
 101,,Crepis,L.,GENUS,BOTANICAL,,SCIENTIFIC,f,,Crepis,,,,,,{},{},,{L.},{},,,,,,,,,
-fake,,Paulownia × tomentosa f. pasta,(Carl & Ruth) Frankenstein ex Semmelrogge,FORM,BOTANICAL,CONSERVED,SCIENTIFIC,f,SPECIFIC,,Paulownia,,tomentosa,pasta,,"{Carl,Ruth}",{},,{Semmelrogge},{Frankenstein},,,frank,87,,,,Unclear name origin,https://herbaria.plants.ox.ac.uk/bol/plants400/profiles/OP/Paulownia
+fake,,Paulownia × tomentosa f. pasta,(Carl & Ruth) Frankenstein ex Semmelrogge,FORM,BOTANICAL,CONSERVED,SCIENTIFIC,f,{SPECIFIC},,Paulownia,,tomentosa,pasta,,"{Carl,Ruth}",{},,{Semmelrogge},{Frankenstein},,,frank,87,,,,Unclear name origin,https://herbaria.plants.ox.ac.uk/bol/plants400/profiles/OP/Paulownia
 11,,Compositae,,FAMILY,BOTANICAL,,SCIENTIFIC,f,,Compositae,,,,,,{},{},,{},{},,,,,,,,,
 1006-s1,,Leontodon leysseri,,SPECIES,BOTANICAL,,SCIENTIFIC,f,,,Leontodon,,leysseri,,,{},{},,{},{},,,,,,,,,

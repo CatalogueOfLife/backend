@@ -11,6 +11,24 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-06-04 name-parser v4 NameType values
+name-parser v4 dropped the `HYBRID_FORMULA`, `OTU` and `NO_NAME` name types: `HYBRID_FORMULA`
+became `FORMULA`, while both `OTU` and `NO_NAME` collapsed into a single `OTHER`. `RENAME VALUE`
+rewrites all existing rows (scalar columns *and* `sector.name_types` arrays) instantly via the enum
+OID, so only the `NO_NAME` -> `OTHER` merge needs row updates. Postgres cannot drop enum labels, so
+`NO_NAME` lingers as an unused label (fresh installs omit it). The ES name usage index is rebuilt for
+this deploy anyway (series-rank change), which also picks up the renamed types.
+```
+ALTER TYPE NAMETYPE RENAME VALUE 'HYBRID_FORMULA' TO 'FORMULA';
+ALTER TYPE NAMETYPE RENAME VALUE 'OTU' TO 'OTHER';
+-- merge NO_NAME into the now-existing OTHER (rename cannot target an existing label)
+UPDATE name SET type = 'OTHER' WHERE type = 'NO_NAME';
+UPDATE name_usage_archive SET n_type = 'OTHER' WHERE n_type = 'NO_NAME';
+UPDATE parser_config SET type = 'OTHER' WHERE type = 'NO_NAME';
+UPDATE sector SET name_types = array_replace(name_types, 'NO_NAME'::nametype, 'OTHER'::nametype)
+  WHERE name_types @> ARRAY['NO_NAME'::nametype];
+```
+
 #### 2026-06-04 name-parser v4 notho is now a set
 name-parser v4 changed a name's `notho` from a single `NamePart` to a `Set<NamePart>`, so the three
 `NAMEPART` columns become `NAMEPART[]`. Existing single values are wrapped into a one-element array;
