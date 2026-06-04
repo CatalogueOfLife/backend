@@ -1295,7 +1295,7 @@ CREATE TABLE name_usage_archive (
   -- shared with name table, keep manually in sync!
   n_rank RANK NOT NULL,
   n_candidatus BOOLEAN DEFAULT FALSE,
-  n_notho NAMEPART,
+  n_notho NAMEPART[],
   n_code NOMCODE,
   n_nom_status NOMSTATUS,
   n_original_spelling BOOLEAN,
@@ -1356,7 +1356,7 @@ CREATE TABLE parser_config (
   candidatus BOOLEAN DEFAULT FALSE,
   extinct BOOLEAN DEFAULT FALSE,
   rank RANK NOT NULL,
-  notho NAMEPART,
+  notho NAMEPART[],
   code NOMCODE,
   type NAMETYPE NOT NULL,
   created_by INTEGER NOT NULL,
@@ -1496,7 +1496,7 @@ CREATE TABLE name (
   -- shared with name_usage_archive, keep in sync!
   rank RANK NOT NULL,
   candidatus BOOLEAN DEFAULT FALSE,
-  notho NAMEPART,
+  notho NAMEPART[],
   code NOMCODE,
   nom_status NOMSTATUS,
   original_spelling BOOLEAN,

@@ -48,7 +48,7 @@ import javax.annotation.Nullable;
 public class NameIndexImpl implements NameIndex {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexImpl.class);
   public static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
-      NameType.SCIENTIFIC, NameType.HYBRID_FORMULA, NameType.VIRUS, NameType.OTU, NameType.INFORMAL
+      NameType.SCIENTIFIC, NameType.FORMULA, NameType.VIRUS, NameType.INFORMAL
   );
 
   private final boolean verifyIndex; // if true compares counts from index with postgres counts and reloads if wrong

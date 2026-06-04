@@ -418,7 +418,6 @@ public class DwcaInserter extends DataCsvInserter {
     if (v.hasTerm(nameTerm)) {
       NomCode code = settings.getEnum(Setting.NOMENCLATURAL_CODE);
 
-      try {
         final Name name = NameParser.PARSER.parse(v.get(nameTerm), Rank.UNRANKED, code, IssueContainer.VOID).get().getName();
         // force unranked name for non binomials or unparsed names, avoiding wrong parser decisions
         if (!name.isParsed() || !name.isBinomial()) {
@@ -457,10 +456,6 @@ public class DwcaInserter extends DataCsvInserter {
             return matches.getFirst();
           }
         }
-      } catch (InterruptedException e) {
-        LOG.warn("NameParser got interrupted");
-        Thread.currentThread().interrupt();
-      }
     }
     return null;
   }

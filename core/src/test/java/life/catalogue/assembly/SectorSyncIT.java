@@ -723,7 +723,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     print(Datasets.COL);
 
     createSector(Sector.Mode.MERGE, srcDatasetKey, null, plants, s -> {
-      s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.INFORMAL, NameType.OTU));
+      s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.INFORMAL, NameType.OTHER));
       s.setRanks(null);
       s.setCode(NomCode.BOTANICAL);
       disableAutoBlocking(s);

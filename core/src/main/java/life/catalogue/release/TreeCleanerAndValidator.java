@@ -214,7 +214,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
       // validate next higher concrete parent rank
       if (!sn.getRank().isUncomparable()) {
         parents.getLowestConcreteRank(true).ifPresent(r -> {
-          if (r.lowerOrEqualsTo(sn.getRank()) && sn.getType() != NameType.OTU) {
+          if (r.lowerOrEqualsTo(sn.getRank()) && sn.getType() != NameType.OTHER) {
             issues.add(Issue.CLASSIFICATION_RANK_ORDER_INVALID);
           }
         });

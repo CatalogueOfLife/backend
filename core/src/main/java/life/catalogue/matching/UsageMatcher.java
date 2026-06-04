@@ -433,15 +433,11 @@ public class UsageMatcher implements AutoCloseable {
 
   private ScientificName parseSciName(SimpleName sn) {
     Name n = new Name();
-    try {
-      var optAuthor = NameParser.PARSER.parseAuthorship(sn.getAuthorship());
-      if (optAuthor.isPresent()) {
-        var a = optAuthor.get();
-        n.setCombinationAuthorship(a.getCombinationAuthorship());
-        n.setBasionymAuthorship(a.getBasionymAuthorship());
-      }
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
+    var optAuthor = NameParser.PARSER.parseAuthorship(sn.getAuthorship());
+    if (optAuthor.isPresent()) {
+      var a = optAuthor.get();
+      n.setCombinationAuthorship(a.getCombinationAuthorship());
+      n.setBasionymAuthorship(a.getBasionymAuthorship());
     }
     return n;
   }

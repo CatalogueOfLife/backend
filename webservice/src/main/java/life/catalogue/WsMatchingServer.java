@@ -106,15 +106,7 @@ public class WsMatchingServer extends Application<WsMatchingServerConfig> {
     j.packages(TsvBodyWriter.class.getPackage().getName());
 
     // name parser
-    NameParser.PARSER.setTimeout(cfg.parserTimeout);
     env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));
-    env.lifecycle().addServerLifecycleListener(server -> {
-      try {
-        NameParser.PARSER.configs().loadFromCLB();
-      } catch (Exception e) {
-        LOG.error("Failed to load name parser configs", e);
-      }
-    });
 
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
 

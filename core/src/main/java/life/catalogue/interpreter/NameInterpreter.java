@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.parser.*;
 import life.catalogue.parser.NameParser;
 
@@ -128,7 +127,6 @@ public class NameInterpreter {
                                               final String combAuthors, final String combExAuthors, final String combAuthorsYear, final String basAuthors, final String basExAuthors, final String basAuthorsYear, 
                                               NamePart notho, Boolean originalSpelling, String nomStatus,
                                               String link, String remarks, String identifiers, IssueContainer issues) {
-    try {
       // default code & rank
       code = ObjectUtils.coalesce(code, settings.getEnum(Setting.NOMENCLATURAL_CODE));
       rank = ObjectUtils.coalesce(rank, Rank.UNRANKED);
@@ -344,11 +342,6 @@ public class NameInterpreter {
       }
 
       return Optional.of(pnu);
-
-    } catch (InterruptedException e) {
-      // interpreters are free to throw the runtime equivalent
-      throw new InterruptedRuntimeException(e.getMessage());
-    }
   }
 
   private static Authorship buildAuthorship(String author, String ex, String year) {

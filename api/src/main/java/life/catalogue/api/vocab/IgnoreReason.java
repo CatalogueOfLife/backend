@@ -29,11 +29,10 @@ public enum IgnoreReason {
   private static final Map<NameType, IgnoreReason> nameTypes = Map.of(
     SCIENTIFIC, NAME_SCIENTIFIC,
     VIRUS, NAME_VIRUS,
-    HYBRID_FORMULA, NAME_HYBRID_FORMULA,
+    FORMULA, NAME_HYBRID_FORMULA,
     INFORMAL, NAME_INFORMAL,
-    OTU, NAME_OTU,
     PLACEHOLDER, NAME_PLACEHOLDER,
-    NO_NAME, NAME_NO_NAME
+    OTHER, NAME_NO_NAME
   );
 
   private final Function<NameUsageBase, Object> valueExtractor;

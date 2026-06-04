@@ -147,7 +147,7 @@
     #{infraspecificEpithet},
     #{cultivarEpithet},
     #{candidatus},
-    #{notho}::NAMEPART,
+    #{notho, typeHandler=life.catalogue.db.type2.NamePartSetTypeHandler},
     #{basionymAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.year},
@@ -182,6 +182,7 @@
   <resultMap id="nameResultMap" type="Name" autoMapping="true">
     <id property="id" column="id"/>
     <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.IdentifierArrayTypeHandler"/>
+    <result property="notho" column="notho" typeHandler="life.catalogue.db.type2.NamePartSetTypeHandler"/>
     <association property="combinationAuthorship" javaType="Authorship">
       <result property="authors" column="combination_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="exAuthors" column="combination_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>

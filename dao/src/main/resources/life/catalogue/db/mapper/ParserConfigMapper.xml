@@ -42,7 +42,7 @@
     #{infraspecificEpithet},
     #{cultivarEpithet},
     #{candidatus},
-    #{notho}::NAMEPART,
+    #{notho, typeHandler=life.catalogue.db.type2.NamePartSetTypeHandler},
     #{basionymAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.year},

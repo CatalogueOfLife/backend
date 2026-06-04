@@ -7,9 +7,7 @@ import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 
-import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.api.*;
-import org.gbif.nameparser.utils.NamedThreadFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import static org.gbif.nameparser.api.NameType.OTU;
 import static org.gbif.nameparser.api.Rank.UNRANKED;
 import static org.junit.Assert.*;
 
@@ -107,35 +104,6 @@ public class NameParserTest {
     assertFalse(issues.hasIssues());
   }
 
-  @Test
-  public void parseVirusConfig() throws Exception {
-    // no configs yet
-    assertName("Aspilota vector Belokobylskij, 2007", "Aspilota vector Belokobylskij, 2007", NameType.VIRUS)
-        .nothingElse();
-
-    // add parser config
-    ParserConfig cfg = new ParserConfig();
-    cfg.updateID("Aspilota vector",  "Belokobylskij, 2007");
-    cfg.setGenus("Aspilota");
-    cfg.setSpecificEpithet("vector");
-    cfg.setCombinationAuthorship(Authorship.yearAuthors("2007", "Belokobylskij"));
-    cfg.setType(NameType.SCIENTIFIC);
-    cfg.setRank(Rank.SPECIES);
-    addToParser(cfg);
-
-    assertName("Aspilota vector Belokobylskij, 2007", "Aspilota vector")
-        .species("Aspilota", "vector")
-        .combAuthors("2007", "Belokobylskij")
-        .type(NameType.SCIENTIFIC)
-        .nothingElse();
-  }
-
-  private static void addToParser(ParserConfig obj){
-    ParsedName pn = Name.toParsedName(obj);
-    pn.setTaxonomicNote(obj.getTaxonomicNote());
-    NameParser.PARSER.configs().setName(obj.getScientificName() + " " + obj.getAuthorship(), pn);
-  }
-
   static String normalizeAuthorship(String authorship, String taxnote) {
     ParsedNameUsage pnu = new ParsedNameUsage();
     pnu.setName(new Name());
@@ -201,16 +169,17 @@ public class NameParserTest {
   public void parseBracketYear() throws Exception {
     assertName("Toleria aegerides (Strand, [1916])", "Toleria aegerides")
       .species("Toleria", "aegerides")
-      .basAuthors("1916", "Strand")
+      .basAuthors(null, "Strand")
+      .imprintYear("1916")
       .nothingElse();
   }
 
   @Test
   public void parsePhrases() throws Exception {
-    assertName("Lepidoptera sp. JGP0404", "Lepidoptera sp.JGP0404", NameType.INFORMAL)
-      .species("Lepidoptera", "sp.JGP0404")
+    assertName("Lepidoptera sp. JGP0404", "Lepidoptera sp. JGP0404", NameType.INFORMAL)
+      .species("Lepidoptera", null)
+      .unparsed("JGP0404")
       .type(NameType.INFORMAL)
-      .status(NomStatus.MANUSCRIPT)
       .nothingElse();
   }
   
@@ -278,7 +247,7 @@ public class NameParserTest {
         .infraSpecies("Baccharis", "microphylla", Rank.VARIETY, "rhomboidea")
         .combAuthors(null, "Sch.Bip.")
         .combExAuthors("Wedd.")
-        .nomNote("nom.nud.")
+        .nomNote("nom. nud.")
         .nothingElse();
     
     assertName("Achillea millefolium subsp. pallidotegula B. Boivin var. pallidotegula", "Achillea millefolium var. pallidotegula")
@@ -357,21 +326,19 @@ public class NameParserTest {
 
   @Test
   public void unparserOTUs() throws Exception {
-    assertName("BOLD:AAA3374", "BOLD:AAA3374", NameType.OTU)
+    assertName("BOLD:AAA3374", "BOLD:AAA3374", NameType.OTHER)
       .nothingElse();
 
-    assertName("SH19186714.17FU", "SH19186714.17FU", NameType.OTU)
+    assertName("SH19186714.17FU", "SH19186714.17FU", NameType.OTHER)
       .nothingElse();
 
-    assertName("sh19186714.17fu", "SH19186714.17FU", NameType.OTU)
+    assertName("sh19186714.17fu", "SH19186714.17FU", NameType.OTHER)
       .nothingElse();
 
-    assertName("0-14-0-10-38-17 sp002774085", "0-14-0-10-38-17 sp002774085", OTU)
-      .species("0-14-0-10-38-17", "sp002774085")
+    assertName("0-14-0-10-38-17 sp002774085", "0-14-0-10-38-17 sp002774085", NameType.OTHER)
       .nothingElse();
 
-    assertName("18JY21-1 sp004344915", "18JY21-1 sp004344915", OTU)
-      .species("18JY21-1", "sp004344915")
+    assertName("18JY21-1 sp004344915", "18JY21-1 sp004344915", NameType.OTHER)
       .nothingElse();
 
     // no OTU names
@@ -407,7 +374,7 @@ public class NameParserTest {
   }
   
   private void assertNoName(String name) throws UnparsableException, InterruptedException {
-    assertName(name, name, NameType.NO_NAME)
+    assertName(name, name, NameType.OTHER)
         .nothingElse();
   }
   
@@ -446,7 +413,7 @@ public class NameParserTest {
   @Test
   public void parseHybridFormulas() throws Exception {
     // fix hybrids formulas
-    assertName("Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", "Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", NameType.HYBRID_FORMULA)
+    assertName("Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", "Asplenium rhizophyllum DC. x ruta-muraria E.L. Braun 1939", NameType.FORMULA)
         .nothingElse();
   }
 
@@ -459,90 +426,6 @@ public class NameParserTest {
   }
 
 
-  <T> void assertThreadPoolEmpty(List<? extends Callable<T>> jobs) throws Exception {
-    ExecutorService exec = Executors.newFixedThreadPool(10, new NamedThreadFactory("test-executor"));
-
-    // this blocks until all jobs are done
-    System.out.println("Wait for job completion");
-    var res = exec.invokeAll(jobs);
-    res.forEach(r -> System.out.println(r.toString()));
-
-    // now sleep >3s (the default idleTime) to let idle threads be cleaned up
-    TimeUnit.SECONDS.sleep(4);
-
-    int counter = 0;
-    long wsize = 1;
-    while (wsize > 0) {
-      wsize = Thread.getAllStackTraces().keySet().stream()
-                          .filter(t -> t.getName().startsWith(NameParserGBIF.THREAD_NAME))
-                          .count();
-      System.out.println(wsize + " worker threads still existing");
-      if (counter++ == 30) {
-        break;
-      }
-      TimeUnit.SECONDS.sleep(1);
-    }
-
-    parser.close();
-    assertEquals(0, wsize);
-  }
-
-  @Test
-  public void threadPoolNameParsing() throws Exception {
-    parser = new NameParser(new NameParserGBIF(50, 0, 4));
-    List<ParseNameJob> jobs = Lists.newArrayList();
-    IntStream.range(1, 10).forEach(i -> {
-      jobs.add(new ParseNameJob("Desmarestia ligulata subsp. muelleri (M.E.Ramirez, A.F.Peters, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang & F.C.Küpper & van Reine, 2014) S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, F.C.Küpper, van Reine, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, A.F.Peters, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang & F.C.Küpper & van Reine, 2014) S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, F.C.Küpper, van Reine, S.S.Y. Wong, A.H.Y. Ngan, Riggs, J.L.L. Teng, A.F.Peters, E.C.Yang, A.F.Peters, E.C.Yang, F.C.Küpper & van Reine, 2014"));
-    });
-    assertThreadPoolEmpty(jobs);
-  }
-
-  @Test
-  public void threadPoolAuthorParsingTimeout() throws Exception {
-    parser = new NameParser(new NameParserGBIF(50, 0, 4));
-    List<ParseAuthorshipJob> jobs = Lists.newArrayList();
-    IntStream.range(1, 10).forEach(i -> {
-      jobs.add(new ParseAuthorshipJob("Coloma, Carvajal-Endara, Dueñas, Paredes-Recalde, Morales-Mite, Almeida-Reinoso et al., 2012)"));
-    });
-    assertThreadPoolEmpty(jobs);
-  }
-
-  class ParseNameJob implements Callable<ParsedNameUsage> {
-    public final int key = COUNTER.incrementAndGet();
-    private final String name;
-
-    ParseNameJob(int year) {
-      this.name = "Abies alba Miller, " + year;
-    }
-
-    ParseNameJob(String name) {
-      this.name = name;
-    }
-
-    @Override
-    public ParsedNameUsage call() throws Exception {
-      try {
-        LOG.info("Start {}", key);
-        return parser.parse(name).orElse(null);
-      } catch (Exception e) {
-        LOG.info("Failed {}", key, e);
-        throw e;
-      }
-    }
-  }
-
-  class ParseAuthorshipJob implements Callable<ParsedAuthorship> {
-    private final String authorship;
-
-    ParseAuthorshipJob(String name) {
-      this.authorship = name;
-    }
-
-    @Override
-    public ParsedAuthorship call() throws Exception {
-      return parser.parseAuthorship(authorship).orElse(null);
-    }
-  }
 
   static void assertAuthorship(String authorship, String year, String... authors) throws InterruptedException, UnparsableException {
     ParsedAuthorship pa = NameParser.PARSER.parseAuthorship(authorship).get();
@@ -591,7 +474,8 @@ public class NameParserTest {
       STATUS,
       NOMNOTE,
       UNPARSED,
-      REMARKS
+      REMARKS,
+      IMPRINT
     }
     
     public NameAssertion(Name n, IssueContainer issues) {
@@ -611,7 +495,7 @@ public class NameParserTest {
               assertNull(n.getInfraspecificEpithet());
               break;
             case NOTHO:
-              assertNull(n.getNotho());
+              assertTrue(n.getNotho().isEmpty());
               break;
             case AUTH:
               assertNull(n.getCombinationAuthorship().getYear());
@@ -647,6 +531,9 @@ public class NameParserTest {
               break;
             case REMARKS:
               assertNull(n.getRemarks());
+              break;
+            case IMPRINT:
+              assertNull(n.getImprintYear());
           }
         }
       }
@@ -716,7 +603,7 @@ public class NameParserTest {
     }
     
     NameAssertion notho(NamePart notho) {
-      assertEquals(notho, n.getNotho());
+      assertEquals(Set.of(notho), n.getNotho());
       return add(NP.NOTHO);
     }
     
@@ -764,6 +651,11 @@ public class NameParserTest {
     NameAssertion unparsed(String unparsed) {
       assertEquals(unparsed, n.getUnparsed());
       return add(NP.UNPARSED);
+    }
+
+    NameAssertion imprintYear(String imprintYear) {
+      assertEquals(imprintYear, n.getImprintYear());
+      return add(NP.IMPRINT);
     }
   }
 }

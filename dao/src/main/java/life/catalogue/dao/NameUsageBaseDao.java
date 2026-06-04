@@ -153,12 +153,7 @@ abstract class NameUsageBaseDao<T extends NameUsageBase, M extends CRUD<DSID<Str
   
   static void parseName(Name n) {
     if (!n.isParsed()) {
-      try {
-        NameParser.PARSER.parse(n, VerbatimRecord.VOID);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt(); // reset flag
-      }
-
+      NameParser.PARSER.parse(n, VerbatimRecord.VOID);
     } else {
       if (n.getType() == null) {
         n.setType(NameType.SCIENTIFIC);

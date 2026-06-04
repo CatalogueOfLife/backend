@@ -6,10 +6,8 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.mapper.ParserConfigMapper;
-import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.ParsedName;
 
 import java.util.List;
 
@@ -21,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 
 public class ParserConfigDao {
 
@@ -32,17 +29,6 @@ public class ParserConfigDao {
 
   public ParserConfigDao(SqlSessionFactory factory) {
     this.factory = factory;
-  }
-
-  private static String concat(String name, String authorship) {
-    return concat(name, ' ', authorship);
-  }
-
-  private static String concat(String name, char delimiter, String authorship) {
-    if (!Strings.isNullOrEmpty(authorship)) {
-      return name.trim() + delimiter +authorship.trim();
-    }
-    return name.trim();
   }
 
   public ParserConfig get(String id) {
@@ -90,9 +76,8 @@ public class ParserConfigDao {
       pcm.delete(obj.getId());
       pcm.create(obj);
     }
-    // update parser
-    ParsedName pn = obj.toParsedName();
-    NameParser.PARSER.configs().add(obj.getScientificName(), obj.getAuthorship(), pn);
+    // NOTE: name-parser v4 removed runtime parser configs. Configs are still persisted in CLB,
+    // but no longer pushed to the parser. Re-apply here once the parser supports configs again.
   }
 
   public void deleteName(String id, int user) {
@@ -104,15 +89,7 @@ public class ParserConfigDao {
       ParserConfigMapper pcm = session.getMapper(ParserConfigMapper.class);
       pcm.delete(id);
     }
-    // update parser
-    ParserConfig cfg = new ParserConfig();
-    cfg.setId(id);
-    NameParser.PARSER.configs().deleteName(concat(cfg.getScientificName(), cfg.getAuthorship()));
-    // also remove the authorship and canonical name if it exists!
-    if (cfg.getAuthorship() != null) {
-      NameParser.PARSER.configs().deleteName(cfg.getScientificName());
-      NameParser.PARSER.configs().deleteAuthorship(cfg.getAuthorship());
-    }
+    // NOTE: name-parser v4 removed runtime parser configs, so there is nothing to remove from the parser.
   }
 
   public List<ParserConfig> list() {

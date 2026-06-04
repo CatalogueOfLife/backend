@@ -238,9 +238,6 @@ public class WsServer extends Application<WsServerConfig> {
     // create a managed service that controls our startable/stoppable components in sync with the DW lifecycle
     final ManagedService managedService = new ManagedService(env.lifecycle());
 
-    // update name parser timeout settings
-    NameParser.PARSER.setTimeout(cfg.parserTimeout);
-
     // use a custom metrics naming strategy that does not involve the user agent name with a version
     httpClient = new HttpClientBuilder(env)
       .using(cfg.client)
@@ -286,13 +283,6 @@ public class WsServer extends Application<WsServerConfig> {
     // name parser
     NameParser.PARSER.register(env.metrics());
     env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));
-    env.lifecycle().addServerLifecycleListener(server -> {
-      try {
-        NameParser.PARSER.configs().loadFromCLB();
-      } catch (Exception e) {
-        LOG.error("Failed to load name parser configs", e);
-      }
-    });
 
     var areaLookup = new AreaLabelLookup(cfg.gazetteerDir);
     AreaParser.PARSER.setLabelLookup(areaLookup);

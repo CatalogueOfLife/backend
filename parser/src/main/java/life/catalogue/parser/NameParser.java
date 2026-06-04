@@ -10,8 +10,7 @@ import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 
-import org.gbif.nameparser.NameParserGBIF;
-import org.gbif.nameparser.ParserConfigs;
+import org.gbif.nameparser.NameParserImpl;
 import org.gbif.nameparser.api.*;
 
 import java.util.Map;
@@ -36,7 +35,7 @@ import com.google.common.collect.ImmutableMap;
  */
 public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
-  public static final NameParser PARSER = new NameParser(2000);
+  public static final NameParser PARSER = new NameParser();
   private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:]+)\\s*");
   private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[]+)\\s*");
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
@@ -71,19 +70,15 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       .build();
 
   private Timer timer;
-  private final NameParserGBIF parserInternal;
+  private final NameParserImpl parserInternal;
 
-  NameParser(int timeout) {
-    this(new NameParserGBIF(timeout, 0, 100));
+  NameParser() {
+    this(new NameParserImpl());
   }
 
   @VisibleForTesting
-  NameParser(NameParserGBIF parser) {
+  NameParser(NameParserImpl parser) {
     parserInternal = parser;
-  }
-
-  public ParserConfigs configs() {
-    return parserInternal.configs();
   }
 
   /**
@@ -96,45 +91,27 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   }
 
   /**
-   * Sets the timeout for the internal name parser
-   * @param timeout
-   */
-  public void setTimeout(long timeout) {
-    parserInternal.setTimeout(timeout);
-  }
-
-  /**
    * @deprecated use parse(name, rank, code, issues) instead!
    */
   @Deprecated
   public Optional<ParsedNameUsage> parse(String name) {
-    try {
-      return parse(name, Rank.UNRANKED, null, IssueContainer.VOID);
-    } catch (InterruptedException e) {
-      LOG.warn("NameParser got interrupted");
-      Thread.currentThread().interrupt();
-    }
-    return Optional.empty();
+    return parse(name, Rank.UNRANKED, null, IssueContainer.VOID);
   }
 
   public Optional<ParsedNameUsage> parse(SimpleName sn) {
-    try {
-      return parse(sn.getName(), sn.getAuthorship(), sn.getRank(), sn.getCode(), IssueContainer.VOID);
-    } catch (InterruptedException e) {
-      LOG.warn("NameParser got interrupted");
-      Thread.currentThread().interrupt();
-    }
-    return Optional.empty();
+    return parse(sn.getName(), sn.getAuthorship(), sn.getRank(), sn.getCode(), IssueContainer.VOID);
   }
 
   /**
    * @return a parsed authorship instance only, i.e. combination & original year & author list
    */
-  public Optional<ParsedAuthorship> parseAuthorship(String authorship) throws InterruptedException {
+  public Optional<ParsedAuthorship> parseAuthorship(String authorship) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedAuthorship());
     try {
-      ParsedAuthorship pa = parserInternal.parseAuthorship(authorship);
-      if (pa.getState() == ParsedName.State.COMPLETE) {
+      // v4 dropped the standalone authorship parser and rejects an empty name, so parse a placeholder
+      // monomial together with the authorship and keep only the parsed authorship.
+      ParsedName pa = parserInternal.parse("Dummia", authorship, null, null);
+      if (pa.hasAuthorship()) {
         return Optional.of(pa);
       }
     } catch (UnparsableNameException e) {
@@ -146,7 +123,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Populates the parsed authorship of a given name instance by parsing a single authorship string.
    * Only parses the authorship if the name itself is already parsed.
    */
-  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String authorship, IssueContainer v) throws InterruptedException {
+  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String authorship, IssueContainer v) {
     // try to add an authorship if not yet there
     if (!Strings.isNullOrEmpty(authorship)) {
       if (pnu.getName().isParsed()) {
@@ -294,6 +271,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     pnu.getName().setBasionymAuthorship(pn.getBasionymAuthorship());
     // propagate notes and unparsed bits found in authorship if not already existing
     setIfNull(pn.getNomenclaturalNote(), pnu.getName()::getNomenclaturalNote, pnu.getName()::setNomenclaturalNote);
+    setIfNull(pn.getImprintYear(), pnu.getName()::getImprintYear, pnu.getName()::setImprintYear);
     setIfNull(pn.getPublishedIn(), pnu::getPublishedIn, pnu::setPublishedIn);
     setIfNull(pn.getTaxonomicNote(), pnu::getTaxonomicNote, pnu::setTaxonomicNote);
     var pnn = (ParsedName) pn; // actually the name parser always returns a full parsed name object and only that contains the original flag up to now !
@@ -338,7 +316,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
-  public Optional<ParsedNameUsage> parse(String name, Rank rank, NomCode code, IssueContainer issues) throws InterruptedException {
+  public Optional<ParsedNameUsage> parse(String name, Rank rank, NomCode code, IssueContainer issues) {
     return parse(name, null, rank, code, issues);
   }
 
@@ -346,7 +324,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
-  public Optional<ParsedNameUsage> parse(String name, String authorship, Rank rank, NomCode code, IssueContainer issues) throws InterruptedException {
+  public Optional<ParsedNameUsage> parse(String name, String authorship, Rank rank, NomCode code, IssueContainer issues) {
     Name n = new Name();
     n.setScientificName(name);
     n.setAuthorship(authorship);
@@ -361,7 +339,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    *
    * Populates a given name instance with the parsing results.
    */
-  public Optional<ParsedNameUsage> parse(Name n, IssueContainer issues) throws InterruptedException {
+  public Optional<ParsedNameUsage> parse(Name n, IssueContainer issues) {
     if (StringUtils.isBlank(n.getScientificName())) {
       return Optional.empty();
     }
@@ -369,7 +347,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
       final String authorship = n.getAuthorship();
-      pnu = fromParsedName(n, parserInternal.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
+      pnu = fromParsedName(n, parserInternal.parse(n.getScientificName(), null, n.getRank(), n.getCode()), issues);
       // try to add an authorship if not yet there
       parseAuthorshipIntoName(pnu, authorship, issues);
 
@@ -391,13 +369,13 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     return Optional.of(pnu);
   }
   
-  public Optional<NameType> determineType(Name name) throws InterruptedException {
+  public Optional<NameType> determineType(Name name) {
     String sciname = name.getScientificName();
     if (StringUtils.isBlank(sciname)) {
-      return Optional.of(NameType.NO_NAME);
+      return Optional.of(NameType.OTHER);
     }
     try {
-      ParsedName pn = parserInternal.parse(sciname, name.getRank(), name.getCode());
+      ParsedName pn = parserInternal.parse(sciname, null, name.getRank(), name.getCode());
       return Optional.of(ObjectUtils.coalesce(pn.getType(), NameType.SCIENTIFIC));
     
     } catch (UnparsableNameException e) {
@@ -417,14 +395,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       pn.setState(ParsedName.State.PARTIAL);
       StringBuilder sb = new StringBuilder();
       sb.append(pn.getPhrase());
-      if (pn.getVoucher() != null) {
-        sb.append(" (")
-          .append(pn.getVoucher())
-          .append(")");
-      }
-      if (pn.getNominatingParty() != null) {
-        sb.append(" ").append(pn.getNominatingParty());
-      }
       n.setUnparsed(sb.toString());
     }
 
@@ -441,7 +411,9 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     n.setRank(pn.getRank());
     n.setCode(pn.getCode());
     n.setCandidatus(pn.isCandidatus());
-    n.setNotho(pn.getNotho());
+    if (pn.getNotho() != null) {
+      pn.getNotho().forEach(n::addNotho);
+    }
     n.setOriginalSpelling(pn.isOriginalSpelling());
     n.setType(pn.getType());
 
@@ -457,7 +429,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    parserInternal.close();
+    // nothing to close in the v4 parser
   }
 
 }

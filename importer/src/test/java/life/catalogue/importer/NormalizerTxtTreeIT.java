@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -76,13 +77,9 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     assertNull(u.usage.getName().getNamesIndexId());
   }
 
+  @Ignore("name-parser v4 removed runtime parser configs; re-enable when configs are reapplied to the parser")
   @Test
   public void aspilota() throws Exception {
-    // before we run this we configure the name parser to do better
-    // then we check that it really worked and no issues get attached
-    var pcfg = NormalizerTxtTreeIT.aspilotaCfg();
-    NameParser.PARSER.configs().add(pcfg.getScientificName(), pcfg.getAuthorship(), pcfg.toParsedName());
-
     normalize(3);
     store.debug();
     UsageData u = usageByID("8");

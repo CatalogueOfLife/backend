@@ -561,8 +561,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected ModifiedUsage applyDecision(NameUsageBase u, EditorialDecision ed) {
     boolean linkUp = false;
     Name originalName = null;
-    try {
-      switch (ed.getMode()) {
+    switch (ed.getMode()) {
         case BLOCK:
           throw new IllegalStateException("Blocked usage " +u.getLabel() + " [" + u.getId() + "] should not have been traversed");
         case UPDATE:
@@ -665,10 +664,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
       if (ed.getNote() != null) {
         u.addRemarks(ed.getNote());
       }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();  // set interrupt flag back
-      throw new InterruptedRuntimeException(e);
-    }
     return new ModifiedUsage(u, linkUp,
       // https://github.com/CatalogueOfLife/backend/issues/1292
       ed.getMode()== EditorialDecision.Mode.UPDATE && Boolean.TRUE.equals(ed.isKeepOriginalName()),

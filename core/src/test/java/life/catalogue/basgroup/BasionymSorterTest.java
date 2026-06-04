@@ -35,12 +35,7 @@ public class BasionymSorterTest {
   );
 
   private static Name parse(String x) {
-    try {
-      return NameParser.PARSER.parse(x, null, null, VerbatimRecord.VOID).get().getName();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new IllegalStateException("parser got interrupted");
-    }
+    return NameParser.PARSER.parse(x, null, null, VerbatimRecord.VOID).get().getName();
   }
 
   private static Name parse(String x, Rank rank) throws InterruptedException {

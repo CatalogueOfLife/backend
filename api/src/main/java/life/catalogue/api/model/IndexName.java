@@ -10,6 +10,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -265,12 +266,17 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   }
 
   @Override
-  public NamePart getNotho() {
-    return null;
+  public Set<NamePart> getNotho() {
+    return Set.of();
   }
 
   @Override
   public void setNotho(NamePart namePart) {
+    // ignore
+  }
+
+  @Override
+  public void addNotho(NamePart namePart) {
     // ignore
   }
 

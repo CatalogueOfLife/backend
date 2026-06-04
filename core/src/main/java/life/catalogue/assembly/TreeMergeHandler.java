@@ -489,8 +489,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
     var ignore =  super.ignoreUsage(u, decision, issues, true);
     if (!ignore) {
-      // additional checks - we dont want any unranked unless they are OTU names
-      ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTU
+      // additional checks - we dont want any unranked unless they are OTU names (NameType.OTU merged into OTHER in name-parser v4)
+      ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTHER
         || (cfg != null && cfg.isBlocked(u.getName()));
       // check the dynamically generated name validation issues without loading
       if (issues.contains(Issue.INCONSISTENT_NAME)) {

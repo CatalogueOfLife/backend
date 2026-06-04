@@ -11,6 +11,18 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-06-04 name-parser v4 notho is now a set
+name-parser v4 changed a name's `notho` from a single `NamePart` to a `Set<NamePart>`, so the three
+`NAMEPART` columns become `NAMEPART[]`. Existing single values are wrapped into a one-element array;
+NULL stays NULL (read back as an empty set). `name` is hash-partitioned by `dataset_key`, so altering
+the parent cascades to all partitions. No ES reindex needed on this account (`notho` is not indexed).
+**Breaking API change:** the `notho` JSON field is now an array (e.g. `["SPECIFIC"]`).
+```
+ALTER TABLE name ALTER COLUMN notho TYPE NAMEPART[] USING (CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END);
+ALTER TABLE name_usage_archive ALTER COLUMN n_notho TYPE NAMEPART[] USING (CASE WHEN n_notho IS NULL THEN NULL ELSE ARRAY[n_notho] END);
+ALTER TABLE parser_config ALTER COLUMN notho TYPE NAMEPART[] USING (CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END);
+```
+
 #### 2026-06-04 name-parser 3.16 code-specific series ranks
 name-parser 3.16 replaced the ambiguous generic series ranks (`SUPERSERIES`, `SERIES`, `SUBSERIES`)
 with code-specific ones. The generic ranks sat in the botanical block, so we rename them in place to

@@ -131,14 +131,14 @@ public class NameIndexImplTest {
       iname("Carex cayouettei", Rank.SPECIES),
       // 23+24
       iname("Carex comosa × Carex lupulina", Rank.SPECIES),
-      // 25+26
-      iname("Natting tosee2", Rank.SPECIES),
+      // 25+26 (distinct epithets, not digit suffixes which name-parser v4 strips)
+      iname("Natting borealis", Rank.SPECIES),
       // 27+28
-      iname("Natting tosee3", Rank.SPECIES),
+      iname("Natting montana", Rank.SPECIES),
       // 29+30
-      iname("Natting tosee4", Rank.SPECIES),
+      iname("Natting silvestris", Rank.SPECIES),
       // 31+32
-      iname("Natting tosee5", Rank.SPECIES),
+      iname("Natting palustris", Rank.SPECIES),
       // 33+34
       iname("Rodentia", Rank.GENUS),
       // 35+36
@@ -194,7 +194,7 @@ public class NameIndexImplTest {
     n.setRank(Rank.UNRANKED);
     n.setUninomial("..");
     n.setOrigin(Origin.VERBATIM_ACCEPTED);
-    n.setType(NameType.NO_NAME);
+    n.setType(NameType.OTHER);
     assertNoInsert(n);
 
     n = new Name();
@@ -508,15 +508,15 @@ public class NameIndexImplTest {
           .rank(Rank.SPECIES)
           .type(NameType.VIRUS)
           .code(NomCode.VIRUS),
-      // GTDB OTU - 4 idxn
+      // GTDB OTU (NameType.OTU merged into OTHER in name-parser v4, not indexed) - 0 idxn
       Name.newBuilder()
           .scientificName("AABM5-125-24")
           .rank(Rank.PHYLUM)
-          .type(NameType.OTU),
+          .type(NameType.OTHER),
       Name.newBuilder()
           .scientificName("Aureabacteria_A")
           .rank(Rank.PHYLUM)
-          .type(NameType.OTU)
+          .type(NameType.OTHER)
           .code(NomCode.BACTERIAL),
       // GTDB informal - 0 idxn
       Name.newBuilder()
@@ -531,16 +531,16 @@ public class NameIndexImplTest {
           .rank(Rank.SPECIES)
           .type(NameType.INFORMAL)
           .code(NomCode.BACTERIAL),
-      // GTDB no name - 0 idxn
+      // GTDB no name (NameType.NO_NAME merged into OTHER in name-parser v4) - 0 idxn
       Name.newBuilder()
           .scientificName("B3-LCP")
           .rank(Rank.CLASS)
-          .type(NameType.NO_NAME),
+          .type(NameType.OTHER),
       // VASCAN hybrid - 2 idxn
       Name.newBuilder()
           .scientificName("Agropyron cristatum × Agropyron fragile")
           .rank(Rank.SPECIES)
-          .type(NameType.HYBRID_FORMULA)
+          .type(NameType.FORMULA)
           .code(NomCode.BOTANICAL)
     ).map(Name.Builder::build).collect(Collectors.toList());
 
@@ -567,7 +567,7 @@ public class NameIndexImplTest {
     }
 
     dumpIndex();
-    assertEquals(14, ni.size());
+    assertEquals(10, ni.size());
   }
 
   private static IndexName create(String genus, String species){

@@ -36,7 +36,7 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.release.AbstractProjectCopy;
 
-import org.gbif.nameparser.utils.NamedThreadFactory;
+import life.catalogue.concurrent.NamedThreadFactory;
 
 import java.io.File;
 import java.io.IOException;

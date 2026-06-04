@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static life.catalogue.api.vocab.NameField.*;
 import static life.catalogue.api.vocab.NameField.ACCORDING_TO;
@@ -123,9 +124,9 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private boolean candidatus;
   
   /**
-   * The part of the named hybrid which is considered a hybrid
+   * The part(s) of the named hybrid which are considered hybrids.
    */
-  private NamePart notho;
+  private Set<NamePart> notho = EnumSet.noneOf(NamePart.class);
   
   /**
    * Authorship with years of the name, but excluding any basionym authorship. For binomials the
@@ -195,6 +196,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    */
   private Integer publishedInYear;
 
+  /**
+   * The imprint year of the authorship publication, e.g. a bracketed year [1916], as parsed by the name parser.
+   */
+  private String imprintYear;
+
   @Nonnull
   private Origin origin;
   
@@ -261,7 +267,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.infraspecificEpithet = n.infraspecificEpithet;
     this.cultivarEpithet = n.cultivarEpithet;
     this.candidatus = n.candidatus;
-    this.notho = n.notho;
+    this.notho = n.notho.isEmpty() ? EnumSet.noneOf(NamePart.class) : EnumSet.copyOf(n.notho);
     this.combinationAuthorship = n.combinationAuthorship;
     this.basionymAuthorship = n.basionymAuthorship;
     this.sanctioningAuthor = n.sanctioningAuthor;
@@ -273,6 +279,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.publishedInId = n.publishedInId;
     this.publishedInPage = n.publishedInPage;
     this.publishedInYear = n.publishedInYear;
+    this.imprintYear = n.imprintYear;
     this.publishedInPageLink = n.publishedInPageLink;
     this.origin = n.origin;
     this.type = n.type;
@@ -310,7 +317,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setInfraspecificEpithet(builder.infraspecificEpithet);
     setCultivarEpithet(builder.cultivarEpithet);
     setCandidatus(builder.candidatus);
-    setNotho(builder.notho);
+    this.notho = builder.notho == null || builder.notho.isEmpty() ? EnumSet.noneOf(NamePart.class) : EnumSet.copyOf(builder.notho);
     setCombinationAuthorship(builder.combinationAuthorship);
     setBasionymAuthorship(builder.basionymAuthorship);
     setSanctioningAuthor(builder.sanctioningAuthor);
@@ -323,6 +330,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setPublishedInPage(builder.publishedInPage);
     publishedInPageLink = builder.publishedInPageLink;
     setPublishedInYear(builder.publishedInYear);
+    setImprintYear(builder.imprintYear);
     setOrigin(builder.origin);
     setType(builder.type);
     setIdentifier(builder.identifier);
@@ -360,7 +368,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     pn.setRank(n.getRank());
     pn.setCode(n.getCode());
     pn.setCandidatus(pn.isCandidatus());
-    pn.setNotho(n.getNotho());
+    n.getNotho().forEach(pn::addNotho);
     pn.setOriginalSpelling(n.isOriginalSpelling());
     pn.setNomenclaturalNote(n.getRemarks());
     pn.setType(n.getType());
@@ -408,6 +416,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.publishedInPage = copy.getPublishedInPage();
     builder.publishedInPageLink = copy.getPublishedInPageLink();
     builder.publishedInYear = copy.getPublishedInYear();
+    builder.imprintYear = copy.getImprintYear();
     builder.origin = copy.getOrigin();
     builder.type = copy.getType();
     builder.identifier = copy.getIdentifier();
@@ -587,6 +596,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setPublishedInYear(Integer publishedInYear) {
     this.publishedInYear = publishedInYear;
   }
+
+  public String getImprintYear() {
+    return imprintYear;
+  }
+
+  public void setImprintYear(String imprintYear) {
+    this.imprintYear = imprintYear;
+  }
   
   public Origin getOrigin() {
     return origin;
@@ -691,7 +708,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private boolean setNothoIfHybrid(String x, NamePart part) {
     boolean isHybrid = x != null && !x.isEmpty() && x.charAt(0) == HYBRID_MARKER;
     if (isHybrid) {
-      notho = part;
+      notho.add(part);
     }
     return isHybrid;
   }
@@ -771,12 +788,29 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.candidatus = candidatus;
   }
   
-  public NamePart getNotho() {
+  @JsonProperty("notho")
+  @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
+  @Override
+  public Set<NamePart> getNotho() {
     return notho;
   }
-  
+
+  @JsonProperty("notho")
+  public void setNotho(Set<NamePart> notho) {
+    this.notho = notho == null || notho.isEmpty() ? EnumSet.noneOf(NamePart.class) : EnumSet.copyOf(notho);
+  }
+
+  @JsonIgnore
+  @Override
   public void setNotho(NamePart notho) {
-    this.notho = notho;
+    this.notho = notho == null ? EnumSet.noneOf(NamePart.class) : EnumSet.of(notho);
+  }
+
+  @Override
+  public void addNotho(NamePart part) {
+    if (part != null) {
+      notho.add(part);
+    }
   }
 
   public String getEtymology() {
@@ -911,7 +945,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       Objects.equals(specificEpithet, name.specificEpithet) &&
       Objects.equals(infraspecificEpithet, name.infraspecificEpithet) &&
       Objects.equals(cultivarEpithet, name.cultivarEpithet) &&
-      notho == name.notho &&
+      Objects.equals(notho, name.notho) &&
       Objects.equals(combinationAuthorship, name.combinationAuthorship) &&
       Objects.equals(basionymAuthorship, name.basionymAuthorship) &&
       Objects.equals(sanctioningAuthor, name.sanctioningAuthor) &&
@@ -924,6 +958,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       Objects.equals(publishedInPage, name.publishedInPage) &&
       Objects.equals(publishedInPageLink, name.publishedInPageLink) &&
       Objects.equals(publishedInYear, name.publishedInYear) &&
+      Objects.equals(imprintYear, name.imprintYear) &&
       origin == name.origin &&
       type == name.type &&
       Objects.equals(link, name.link) &&
@@ -935,7 +970,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, imprintYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
   }
 
   @Override
@@ -1008,7 +1043,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private String infraspecificEpithet;
     private String cultivarEpithet;
     private boolean candidatus;
-    private NamePart notho;
+    private Set<NamePart> notho = EnumSet.noneOf(NamePart.class);
     private Authorship combinationAuthorship;
     private Authorship basionymAuthorship;
     private String sanctioningAuthor;
@@ -1021,6 +1056,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private String publishedInPage;
     private String publishedInPageLink;
     private Integer publishedInYear;
+    private String imprintYear;
     private Origin origin;
     private NameType type;
     private List<Identifier> identifier;
@@ -1144,7 +1180,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     }
 
     public Builder notho(NamePart val) {
-      notho = val;
+      notho = val == null ? EnumSet.noneOf(NamePart.class) : EnumSet.of(val);
       return this;
     }
 
@@ -1205,6 +1241,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder publishedInYear(Integer val) {
       publishedInYear = val;
+      return this;
+    }
+
+    public Builder imprintYear(String val) {
+      imprintYear = val;
       return this;
     }
 

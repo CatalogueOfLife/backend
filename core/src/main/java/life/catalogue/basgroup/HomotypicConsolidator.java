@@ -211,8 +211,8 @@ public class HomotypicConsolidator {
       TreeTraversalParameter traversal = TreeTraversalParameter.dataset(datasetKey, tax.getId());
       traversal.setSynonyms(true);
       PgUtils.consume(() -> num.processTreeLinneanUsage(traversal, false, false), nu -> {
-        if (nu.getType() == NameType.OTU || nu.getRank().isSupraspecific() || nu.isAutonym()) {
-          // ignore all supra specific names, autonyms and unparsed OTUs
+        if (nu.getType() == NameType.OTHER || nu.getRank().isSupraspecific() || nu.isAutonym()) {
+          // ignore all supra specific names, autonyms and unparsed OTUs (NameType.OTU merged into OTHER in name-parser v4)
         } else if (ignore != null && ignore.contains(nu.getTerminalEpithet())) {
           LOG.info("Ignore epithet {} in {} because of configs", nu.getTerminalEpithet(), tax);
         } else {

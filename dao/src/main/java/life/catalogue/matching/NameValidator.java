@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Issue;
 
 import life.catalogue.parser.NomCodeParser;
 
+import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
@@ -278,10 +279,10 @@ public class NameValidator {
       }
 
       // notho
-      if (n.getNotho() != null) {
-        String namePart = n.getNamePart(n.getNotho());
-        if (namePart == null) {
+      for (NamePart notho : n.getNotho()) {
+        if (n.getNamePart(notho) == null) {
           issues.add(Issue.NOTHO_NOT_APPLICABLE);
+          break;
         }
       }
 
