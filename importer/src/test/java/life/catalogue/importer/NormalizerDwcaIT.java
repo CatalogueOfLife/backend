@@ -504,7 +504,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertNull(n.getUninomial());
     assertEquals("Cambarus", n.getGenus());
     assertEquals("uhleri", n.getSpecificEpithet());
-    assertNull(n.getNotho());
+    assertTrue(n.getNotho().isEmpty());
 
     assertEquals("Faxon, 1884", n.getAuthorship());
     assertEquals(Authorship.yearAuthors("1884", "Faxon"), n.getCombinationAuthorship());

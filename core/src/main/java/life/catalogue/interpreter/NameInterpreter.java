@@ -382,7 +382,7 @@ public class NameInterpreter {
     if (epi.extinct) {
       pnu.setExtinct(true);
     }
-    if (epi.hybrid && pnu.getName().getNotho() == null) {
+    if (epi.hybrid && pnu.getName().getNotho().isEmpty()) {
       pnu.getName().setNotho(part);
     }
   }
