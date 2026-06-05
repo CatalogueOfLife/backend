@@ -12,7 +12,6 @@ import life.catalogue.matching.NameValidator;
 
 import life.catalogue.parser.NomCodeParser;
 
-import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -211,10 +210,12 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
       }
       // flag code problems for accepted
       flagCodeProblems(sn, parents.getParents(), issues);
-      // validate next higher concrete parent rank
+      // validate next higher concrete parent rank.
+      // Unranked names (incl. former OTU-style code names) are already excluded by the uncomparable check above,
+      // so no name-type exemption is needed here - name-parser v4 dropped the OTU type anyway.
       if (!sn.getRank().isUncomparable()) {
         parents.getLowestConcreteRank(true).ifPresent(r -> {
-          if (r.lowerOrEqualsTo(sn.getRank()) && sn.getType() != NameType.OTHER) {
+          if (r.lowerOrEqualsTo(sn.getRank())) {
             issues.add(Issue.CLASSIFICATION_RANK_ORDER_INVALID);
           }
         });
