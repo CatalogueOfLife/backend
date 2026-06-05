@@ -20,7 +20,13 @@ public class SortByTranslator {
 
   public List<SortOptions> translate() {
     if (request.getSortBy() == null) {
-      request.setSortBy(RELEVANCE);
+      if (request.hasQ()) {
+        // default to relevance sorting for non-empty queries
+        request.setSortBy(RELEVANCE);
+      } else {
+        // use taxonomic order otherwise, which is more intuitive for users
+        request.setSortBy(TAXONOMIC);
+      }
     }
 
     SortOrder order = request.isReverse() ? SortOrder.Desc : SortOrder.Asc;
