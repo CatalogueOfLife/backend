@@ -4,5 +4,5 @@ ranks:
 
 nameTypes:
  - SCIENTIFIC
- - HYBRID_FORMULA
- - OTU
+ - FORMULA
+ - OTHER

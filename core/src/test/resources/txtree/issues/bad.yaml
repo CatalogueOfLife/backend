@@ -1,7 +1,7 @@
 nameTypes:
  - SCIENTIFIC
  - VIRUS
- - HYBRID_FORMULA
- - OTU
+ - FORMULA
+ - OTHER
 
 
