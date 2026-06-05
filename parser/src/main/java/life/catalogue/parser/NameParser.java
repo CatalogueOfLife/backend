@@ -13,6 +13,8 @@ import life.catalogue.common.tax.NameFormatter;
 import org.gbif.nameparser.NameParserImpl;
 import org.gbif.nameparser.api.*;
 
+import javax.annotation.Nullable;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -106,19 +108,16 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * @return a parsed authorship instance only, i.e. combination & original year & author list
    */
   public Optional<ParsedAuthorship> parseAuthorship(String authorship) {
+    return parseAuthorship(authorship, null);
+  }
+
+  public Optional<ParsedAuthorship> parseAuthorship(String authorship, @Nullable NomCode code) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedAuthorship());
     try {
-      // v4 dropped the standalone authorship parser and rejects an empty name, so parse a placeholder
-      // monomial together with the authorship and keep only the parsed authorship.
-      ParsedName pa = parserInternal.parse("Dummia", authorship, null, null);
-      // keep the result if anything authorship-related was parsed out - not just authors, but also a
-      // taxonomic note (sensu/auct misapplication) or nomenclatural note which must not be lost
-      if (pa.hasAuthorship() || pa.getTaxonomicNote() != null || pa.getNomenclaturalNote() != null) {
-        return Optional.of(pa);
-      }
+      return Optional.of(parserInternal.parseAuthorship(authorship, code));
     } catch (UnparsableNameException e) {
+      return Optional.empty();
     }
-    return Optional.empty();
   }
 
   /**
@@ -129,7 +128,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     // try to add an authorship if not yet there
     if (!Strings.isNullOrEmpty(authorship)) {
       if (pnu.getName().isParsed()) {
-        ParsedAuthorship pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
+        ParsedAuthorship pnAuthorship = parseAuthorship(authorship, pnu.getName().getCode()).orElseGet(() -> {
           LOG.info("Unparsable authorship {}", authorship);
           v.add(Issue.UNPARSABLE_AUTHORSHIP);
           // add the full, unparsed authorship in this case to not lose it
@@ -276,8 +275,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     setIfNull(pn.getImprintYear(), pnu.getName()::getImprintYear, pnu.getName()::setImprintYear);
     setIfNull(pn.getPublishedIn(), pnu::getPublishedIn, pnu::setPublishedIn);
     setIfNull(pn.getTaxonomicNote(), pnu::getTaxonomicNote, pnu::setTaxonomicNote);
-    var pnn = (ParsedName) pn; // actually the name parser always returns a full parsed name object and only that contains the original flag up to now !
-    if (pnn.isOriginalSpelling() != null) {
+    // authorship-only parses return a plain ParsedAuthorship; originalSpelling only exists on a full ParsedName
+    if (pn instanceof ParsedName pnn && pnn.isOriginalSpelling() != null) {
       pnu.getName().setOriginalSpelling(pnn.isOriginalSpelling());
     }
     if (pn.getUnparsed() != null) {

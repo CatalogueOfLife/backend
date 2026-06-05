@@ -66,7 +66,7 @@ public class AcefInterpreterTest extends InterpreterTestAbstractBase<AcefInterpr
     assertEquals("new combination, valid: No", n.getRemarks());
   }
 
-  @Ignore("parser does not yet extract a leading-parenthetical sensu citation '(sensu X) Y' to taxonomicNote in the separate-authorship parse path (line 89 case); pending parser fix. The auct./sensu cases the parser does extract are handled by the wrapper.")
+  @Ignore("name-parser 4.1.0 still mishandles two authorship cases: a leading '(sensu X) Y' is read as basionym authorship (line 89), and a bare 'sensu Turcz., p.p.' becomes authors; pending parser fix")
   @Test
   public void sensuAuthorship() {
     // https://github.com/CatalogueOfLife/data/issues/902
