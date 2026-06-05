@@ -99,7 +99,7 @@
     <simple-mail.version>8.12.6</simple-mail.version>
     <stax2.version>4.2.2</stax2.version>
     <testcontainers.version>2.0.2</testcontainers.version><!--keep in sync with docker client-->
-    <text-tree.version>1.6.5</text-tree.version>
+    <text-tree.version>1.7.0</text-tree.version>
     <tika.version>3.2.3</tika.version>
     <twelvemonkeys.version>3.12.0</twelvemonkeys.version>
     <woodstox.version>7.1.1</woodstox.version>
