@@ -111,7 +111,9 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       // v4 dropped the standalone authorship parser and rejects an empty name, so parse a placeholder
       // monomial together with the authorship and keep only the parsed authorship.
       ParsedName pa = parserInternal.parse("Dummia", authorship, null, null);
-      if (pa.hasAuthorship()) {
+      // keep the result if anything authorship-related was parsed out - not just authors, but also a
+      // taxonomic note (sensu/auct misapplication) or nomenclatural note which must not be lost
+      if (pa.hasAuthorship() || pa.getTaxonomicNote() != null || pa.getNomenclaturalNote() != null) {
         return Optional.of(pa);
       }
     } catch (UnparsableNameException e) {
