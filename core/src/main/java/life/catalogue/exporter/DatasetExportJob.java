@@ -183,7 +183,8 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
     updateExport(getStatus());
   }
 
-  protected void bundle() throws IOException {
+  protected void bundle() throws IOException, InterruptedException {
+    checkIfCancelled();
     LOG.info("Bundling archive at {}", archive.getAbsolutePath());
     FileUtils.forceMkdir(archive.getParentFile());
     CompressionUtil.zipDir(tmpDir, archive, true);

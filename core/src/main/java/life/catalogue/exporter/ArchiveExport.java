@@ -145,7 +145,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
   abstract void writeSourceMetadata(Dataset source) throws IOException;
 
   @Override
-  protected void bundle() throws IOException {
+  protected void bundle() throws IOException, InterruptedException {
+    checkIfCancelled();
     // write workbook to single file and cleanup temp POI files
     if (wb != null) {
       LOG.info("Writing final Excel file");
@@ -163,10 +164,11 @@ public abstract class ArchiveExport extends DatasetExportJob {
     nameRelMapper = session.getMapper(NameRelationMapper.class);
   }
 
-  private void exportCore() throws IOException {
+  private void exportCore() throws IOException, InterruptedException {
     if (!newDataFile(define(EntityType.NAME_USAGE))) {
       throw new IllegalStateException("Core name usage data must be exported");
     }
+    checkIfCancelled();
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final Cursor<NameUsageBase> cursor;
@@ -176,14 +178,23 @@ public abstract class ArchiveExport extends DatasetExportJob {
         var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms());
         cursor = num.processTree(ttp);
       }
-      PgUtils.consume(() -> cursor, this::consumeUsage);
+      checkIfCancelled();
+      // iterate manually (not PgUtils.consume) so the per-record consumeUsage
+      // can propagate its checked InterruptedException for responsive cancellation
+      try (cursor) {
+        for (NameUsageBase u : cursor) {
+          consumeUsage(u);
+        }
+      }
 
       // add bare names?
+      checkIfCancelled();
       if (req.isBareNames()) {
-        PgUtils.consume(
-          () -> num.processDatasetBareNames(datasetKey, null, null),
-          this::consumeUsage
-        );
+        try (var bareNames = num.processDatasetBareNames(datasetKey, null, null)) {
+          for (BareName u : bareNames) {
+            consumeUsage(u);
+          }
+        }
       }
 
     } catch (RuntimeException e) {
@@ -205,7 +216,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private void consumeUsage(NameUsageBase u){
+  private void consumeUsage(NameUsageBase u) throws InterruptedException {
+    checkIfCancelled();
     if (!fullDataset) {
       if (req.getExtinct() != null) {
         // filter out usages as the tree traversal cannot do that
@@ -237,7 +249,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private void consumeUsage(BareName u){
+  private void consumeUsage(BareName u) throws InterruptedException {
+    checkIfCancelled();
     if (!fullDataset) {
       nameIDs.add(u.getName().getId());
       refIDs.add(u.getName().getPublishedInId());
@@ -254,12 +267,12 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private void exportNameRels() throws IOException {
+  private void exportNameRels() throws IOException, InterruptedException {
     exportNameRelation(EntityType.NAME_RELATION, NameRelationMapper.class, this::write);
     exportNameRelation(EntityType.TYPE_MATERIAL, TypeMaterialMapper.class, this::write);
   }
 
-  private void exportTaxonRels() throws IOException {
+  private void exportTaxonRels() throws IOException, InterruptedException {
     exportTaxonExtension(EntityType.VERNACULAR, VernacularNameMapper.class, this::write);
     exportTaxonExtension(EntityType.DISTRIBUTION, DistributionMapper.class, this::write);
     exportTaxonExtension(EntityType.MEDIA, MediaMapper.class, this::write);
@@ -270,7 +283,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
     exportTaxonRelation(EntityType.TAXON_CONCEPT_RELATION, TaxonConceptRelationMapper.class, this::write);
   }
 
-  protected void exportReferences() throws IOException {
+  protected void exportReferences() throws IOException, InterruptedException {
+    checkIfCancelled();
     if (newDataFile(define(EntityType.REFERENCE))) {
       try (SqlSession session = factory.openSession()) {
         ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
@@ -301,7 +315,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private <T extends ExtensionEntity> void exportTaxonExtension(EntityType entity, Class < ? extends TaxonExtensionMapper<T>> mapperClass, ThrowingBiConsumer < String, T, IOException > consumer) throws IOException {
+  private <T extends ExtensionEntity> void exportTaxonExtension(EntityType entity, Class < ? extends TaxonExtensionMapper<T>> mapperClass, ThrowingBiConsumer < String, T, IOException > consumer) throws IOException, InterruptedException {
+    checkIfCancelled();
     if (newDataFile(define(entity))) {
       try (SqlSession session = factory.openSession()) {
         TaxonExtensionMapper<T> exm = session.getMapper(mapperClass);
@@ -333,12 +348,13 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private <T extends SectorScopedEntity<?> & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> void exportNameRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
+  private <T extends SectorScopedEntity<?> & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> void exportNameRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException, InterruptedException {
+    checkIfCancelled();
     new NameRelExporter<T, M>().export(type, mapperClass, consumer);
   }
 
   private class NameRelExporter<T extends SectorScopedEntity<?> & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> {
-    void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
+    void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException, InterruptedException {
       if (newDataFile(define(entity))) {
         try (SqlSession session = factory.openSession()) {
           M mapper = session.getMapper(mapperClass);
@@ -370,7 +386,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private <T extends SectorScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> void exportTaxonRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
+  private <T extends SectorScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> void exportTaxonRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException, InterruptedException {
+    checkIfCancelled();
     new TaxonRelExporter<T, M>().export(type, mapperClass, consumer);
   }
 
@@ -411,7 +428,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
     // nothing by default - only ColDP supports this
   }
 
-  private void exportTreatments() throws IOException {
+  private void exportTreatments() throws IOException, InterruptedException {
+    checkIfCancelled();
     if (inclTreatments) {
       try (SqlSession session = factory.openSession()) {
         var mapper = session.getMapper(TreatmentMapper.class);
@@ -436,7 +454,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private void exportEstimates() throws IOException {
+  private void exportEstimates() throws IOException, InterruptedException {
+    checkIfCancelled();
     if (newDataFile(define(EntityType.ESTIMATE))) {
       try (SqlSession session = factory.openSession()) {
         EstimateMapper mapper = session.getMapper(EstimateMapper.class);

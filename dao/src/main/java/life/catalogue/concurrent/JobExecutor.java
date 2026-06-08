@@ -165,12 +165,14 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     if (f != null) {
       BackgroundJob job = f.task;
       LOG.info("Canceled job {} by user {}", job.getKey(), user);
-      // a running job is interrupted and finishes via run(), marking itself CANCELED.
-      // a job that never started won't reach run(), so clean it up explicitly here.
-      boolean started = job.getStarted() != null;
+      // a job that is actually executing is interrupted and finishes via run(),
+      // marking itself CANCELED. A job that never produced output - still queued
+      // (WAITING) or blocked on a dataset lock (BLOCKED) - won't reach run() cleanly,
+      // so mark and clean it up explicitly here.
+      final JobStatus st = job.getStatus();
       f.cancel(true);
       exec.purge();
-      if (!started) {
+      if (st == JobStatus.WAITING || st == JobStatus.BLOCKED) {
         job.setStatus(JobStatus.CANCELED);
         job.onCancelBeforeStart();
       }

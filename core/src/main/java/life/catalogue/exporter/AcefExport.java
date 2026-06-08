@@ -136,11 +136,12 @@ public class AcefExport extends DatasetExportJob {
   /**
    * @return directory with all CSV dump files
    */
-  private void executeAcExportSql(int datasetKey, PgConnection con, BufferedReader sql) throws IOException, SQLException {
+  private void executeAcExportSql(int datasetKey, PgConnection con, BufferedReader sql) throws IOException, SQLException, InterruptedException {
     StringBuilder sb = new StringBuilder();
     String line;
     while ((line = sql.readLine()) != null) {
       Matcher m = COPY_END.matcher(line);
+      checkIfCancelled();
       if (COPY_START.matcher(line).find()) {
         executeSql(con, sb.toString());
         sb = new StringBuilder();
