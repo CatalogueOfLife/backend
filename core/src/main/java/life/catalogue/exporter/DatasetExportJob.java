@@ -111,6 +111,18 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
     }
   }
 
+  /**
+   * Cancelled before the export ever started: drop the waiting db record entirely
+   * rather than leaving it stuck in WAITING. No archive file exists yet at this point.
+   */
+  @Override
+  protected void onCancelBeforeStart() {
+    LOG.info("Delete waiting export {} that was cancelled before it started", getKey());
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetExportMapper.class).delete(getKey());
+    }
+  }
+
   @Override
   public String getEmailTemplatePrefix() {
     return "export";
@@ -150,7 +162,7 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
   }
 
   /**
-   * Tracks the successfully executed request in the database.
+   * Tracks the successfully executed, canceled or failed request in the database.
    */
   @Override
   protected void onFinishLocked() throws Exception {

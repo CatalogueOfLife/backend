@@ -106,6 +106,15 @@ public abstract class BackgroundJob implements Runnable {
   }
 
   /**
+   * Called by the executor when the job was cancelled before it ever started running.
+   * In this case run() is never executed, so any state created upfront (e.g. a "waiting"
+   * db record) must be cleaned up here. Defaults to no-op - override if needed.
+   */
+  protected void onCancelBeforeStart() {
+    // dont do nothing - override if needed
+  }
+
+  /**
    * Method to override if you want the job executor to reject duplicate jobs on submit that are already present in the queue
    * or are running already. By default jobs are compared by their key which is unique to every job instance.
    * @return true if its a duplicate that should be rejected
