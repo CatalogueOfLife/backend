@@ -1,0 +1,9 @@
+ID,parentID,nameID,scrutinizer,scrutinizerDate,provisional,referenceID,extinct,temporalRangeEnd,lifezone,kingdom,phylum,class,order,superfamily,family,subfamily,tribe,genus,uninomial,species,remarks
+1,,1,,,false,,false,Holocene,terrestrial,Animalia,Arthropoda,Insecta,Lepidoptera,,,,,,Lepidoptera,,
+2,1,2,,,false,,false,Holocene,terrestrial,Animalia,Arthropoda,Insecta,Lepidoptera,Gelechioidea,,,,,Gelechioidea,,
+3,2,3,,,false,,false,Holocene,terrestrial,Animalia,Arthropoda,Insecta,Lepidoptera,Gelechioidea,Gelechiidae,,,,Gelechiidae,,
+1903,3,1903,,,false,1485,false,Holocene,terrestrial,Animalia,Arthropoda,Insecta,Lepidoptera,Gelechioidea,Gelechiidae,Anacampsinae,,Battaristis,,Battaristis ichnota,
+1904,3,1904,,,false,1486,false,Holocene,terrestrial,Animalia,Arthropoda,Insecta,Lepidoptera,Gelechioidea,Gelechiidae,Anacampsinae,,Battaristis,,Battaristis majuscula,
+1905,3,1905,,,false,1487,false,Holocene,terrestrial,Animalia,Arthropoda,Insecta,Lepidoptera,Gelechioidea,Gelechiidae,Anacampsinae,,Battaristis,,Battaristis melanamba,
+1906,3,1906,,,false,1488,false,Holocene,terrestrial,Animalia,Arthropoda,Insecta,Lepidoptera,Gelechioidea,Gelechiidae,Anacampsinae,,Battaristis,,Battaristis minuscula,
+1907,3,1907,,,false,,false,Holocene,terrestrial,Animalia,Arthropoda,Insecta,Lepidoptera,Gelechioidea,Gelechiidae,Anacampsinae,,Battaristis,,Battaristis nigratomella,

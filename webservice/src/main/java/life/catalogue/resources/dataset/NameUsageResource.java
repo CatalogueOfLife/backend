@@ -23,7 +23,6 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.es.query.InvalidQueryException;
 import life.catalogue.es.search.NameUsageSearchService;
 import life.catalogue.es.suggest.NameUsageSuggestionService;
@@ -174,7 +173,7 @@ public class NameUsageResource {
                                                     @Context ContainerRequestContext ctx,
                                                     @Context UriInfo uri) throws InvalidQueryException {
     checkIllegalDatasetKeyParam(datasetKey, query, uri);
-    if (query.hasFilter(NameUsageSearchParameter.CATALOGUE_KEY)) {
+    if (query.hasFilter(NameUsageSearchParameter.PROJECT_KEY)) {
       ResourceUtils.dontCache(ctx);
     }
     return searchService.search(query, page);

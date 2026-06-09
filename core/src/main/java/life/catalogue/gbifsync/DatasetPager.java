@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.annotations.VisibleForTesting;
 
 import de.undercouch.citeproc.csl.CSLType;
 import jakarta.ws.rs.client.Client;
@@ -52,6 +53,7 @@ public class DatasetPager {
   private final LoadingCache<UUID, Agent> hostCache;
   private final Set<UUID> articlePublishers;
   private final Set<UUID> articleHostInstallations;
+  private final Set<UUID> blockedDatasets;
   private final LocalDate since;
 
   public DatasetPager(Client client, GbifConfig gbif, @Nullable LocalDate since) {
@@ -59,6 +61,7 @@ public class DatasetPager {
     this.since = since;
     articlePublishers = Set.copyOf(gbif.articlePublishers);
     articleHostInstallations = Set.copyOf(gbif.articleHostInstallations);
+    blockedDatasets = Set.copyOf(gbif.blockedDatasets);
     dataset = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"));
     datasets = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
@@ -96,6 +99,13 @@ public class DatasetPager {
     return null;
   }
 
+  /**
+   * @return true if there are potentially more pages to retrieve from GBIF, based purely on GBIF's endOfRecords flag.
+   *   This is independent of how many usable datasets {@link #next()} actually returns: a page can be filtered away
+   *   entirely (all blocked, constituents, non-checklists, or without a DWCA/COLDP endpoint), so {@link #next()} may
+   *   return an empty list while this still returns true. Consumers must loop on {@code hasNext()} and must not treat
+   *   an empty page from {@link #next()} as the end of the data.
+   */
   public boolean hasNext() {
     return hasNext;
   }
@@ -114,7 +124,11 @@ public class DatasetPager {
     return 1 + page.getOffset() / page.getLimit();
   }
   
-  public GbifDataset get(UUID gbifKey) {
+  protected GbifDataset get(UUID gbifKey) {
+    if (blockedDatasets.contains(gbifKey)) {
+      LOG.warn("Skip blocked dataset {}", gbifKey);
+      return null;
+    }
     LOG.debug("retrieve {}", gbifKey);
     return dataset.path(gbifKey.toString())
         .request()
@@ -141,21 +155,21 @@ public class DatasetPager {
       .count;
   }
 
+  /**
+   * Retrieves and converts the next page of datasets from GBIF, advancing the internal page offset.
+   * The returned list contains only usable datasets, so it can be empty (e.g. an entire page of blocked datasets)
+   * even when {@link #hasNext()} still returns true - see {@link #hasNext()} for the paging contract.
+   */
   protected List<GbifDataset> next() throws InterruptedException {
     LOG.debug("retrieve {}", page);
-    GResp resp;
     int tries = 0;
     while (tries < 12) {
       try {
-        resp = datasetPage()
+        GResp resp = datasetPage()
           .request()
           .accept(MediaType.APPLICATION_JSON_TYPE)
           .get(GResp.class);
-        hasNext = !resp.endOfRecords;
-        var list = resp.results.stream()
-          .map(this::convert)
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
+        var list = processPage(resp);
         nextPage();
         return list;
 
@@ -168,6 +182,22 @@ public class DatasetPager {
     LOG.error("Reached maximum retries for page {}", page);
     nextPage();
     return Collections.emptyList();
+  }
+
+  /**
+   * Converts a single raw GBIF response page into the list of usable datasets and updates {@link #hasNext()}
+   * from the page's endOfRecords flag. Blocked datasets are removed before {@link #convert(GDataset)}, so a page
+   * consisting entirely of blocked (or otherwise unusable) datasets returns an empty list while {@code hasNext()}
+   * keeps reflecting whether GBIF has further pages.
+   */
+  @VisibleForTesting
+  List<GbifDataset> processPage(GResp resp) {
+    hasNext = !resp.endOfRecords;
+    return resp.results.stream()
+      .filter(gd -> gd.key == null || !blockedDatasets.contains(gd.key))
+      .map(this::convert)
+      .filter(Objects::nonNull)
+      .collect(Collectors.toList());
   }
 
   private void nextPage() {

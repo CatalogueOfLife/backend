@@ -133,22 +133,21 @@ public class QTranslator {
   }
 
   public Query buildSciNameQuery() {
-    // default to WHOLE_WORDS
-    Query query = switch (ObjectUtils.coalesce(request.getSearchType(), NameUsageRequest.SearchType.WHOLE_WORDS)) {
+    Query query = switch (ObjectUtils.coalesce(request.getSearchType(), NameUsageRequest.SearchType.STANDARD)) {
       case EXACT
         -> buildSciNameExactQuery();
-      case PREFIX
+      case STANDARD
         -> boostAcceptedQuery(q -> q
-          .prefix(p -> p
-            .field(FLD_SCINAME)
-            .caseInsensitive(true)
-            .value(request.getQ())
-          )
-        );
-      case WHOLE_WORDS
-        -> boostAcceptedQuery(q -> q
-          .match(t -> t.field("usage.name.scientificName.word")
-            .query(request.getQ())
+          .bool(b -> b
+            .should(s -> s.match(m -> m
+              .field(FLD_SCINAME + ".search")
+              .query(request.getQ())
+            ))
+            .should(s -> s.matchPhrasePrefix(m -> m
+              .field(FLD_SCINAME + ".search")
+              .query(request.getQ())
+            ))
+            .minimumShouldMatch("1")
           )
         );
       case FUZZY
@@ -175,17 +174,19 @@ public class QTranslator {
   }
 
   public Query buildAuthorshipQuery() {
-    return switch (ObjectUtils.coalesce(request.getSearchType(), NameUsageRequest.SearchType.WHOLE_WORDS)) {
+    return switch (ObjectUtils.coalesce(request.getSearchType(), NameUsageRequest.SearchType.STANDARD)) {
       case EXACT -> buildAuthorshipExactQuery();
-      case PREFIX -> boostAcceptedQuery(q -> q
-        .prefix(p -> p
-          .field(FLD_AUTHORSHIP)
-          .value(request.getQ())
-        )
-      );
-      case WHOLE_WORDS, FUZZY -> boostAcceptedQuery(q -> q
-        .match(t -> t.field(FLD_AUTHORSHIP + ".word")
-          .query(request.getQ())
+      case STANDARD, FUZZY -> boostAcceptedQuery(q -> q
+        .bool(b -> b
+          .should(s -> s.match(m -> m
+            .field(FLD_AUTHORSHIP + ".search")
+            .query(request.getQ())
+          ))
+          .should(s -> s.matchPhrasePrefix(m -> m
+            .field(FLD_AUTHORSHIP + ".search")
+            .query(request.getQ())
+          ))
+          .minimumShouldMatch("1")
         )
       );
     };

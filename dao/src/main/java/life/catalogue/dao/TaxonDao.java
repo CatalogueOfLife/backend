@@ -16,6 +16,7 @@ import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.es.search.NameUsageSearchService;
 import life.catalogue.img.ThumborService;
 import life.catalogue.matching.TaxGroupAnalyzer;
+import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.printer.AbstractPrinter;
 import life.catalogue.printer.JsonTreeCollector;
 import life.catalogue.printer.JsonTreePrinter;
@@ -54,6 +55,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   private final NameUsageSearchService searchService;
   private final ThumborService thumborService;
   private final MetricsDao metricsDao;
+  private AreaLabelLookup areaLabelLookup = new AreaLabelLookup();
   private final TaxonCounter esCounter = new TaxonCounter() {
     @Override
     public int count(DSID<String> key, Rank countRank) {
@@ -83,6 +85,14 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   // dependency loop :( so cant populate this in the constructor
   public void setSectorDao(SectorDao sectorDao) {
     this.sectorDao = sectorDao;
+  }
+
+  /**
+   * Optionally inject a gazetteer-backed AreaLabelLookup. If unset, only bundled vocabularies (TDWG, LONGHURST, ISO)
+   * are resolved and FAO/IHO/MRGID ids pass through unchanged.
+   */
+  public void setAreaLabelLookup(AreaLabelLookup areaLabelLookup) {
+    this.areaLabelLookup = areaLabelLookup;
   }
 
   public static void copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user) {
@@ -470,6 +480,10 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
         info.getDistributions().forEach(d -> {
           refIds.add(d.getReferenceId());
           addSectorMode(d, sectorModes, sm);
+          // we retrieve generic areas - for known IDs these lack the area titles
+          if (d.getArea() != null && d.getArea().getGazetteer() != null && d.getArea().getId() != null && d.getArea().getName() == null) {
+            d.getArea().setName(areaLabelLookup.findLabel(d.getArea().getGazetteer(), d.getArea().getId()));
+          }
         });
       }
 
@@ -581,6 +595,47 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     if (r.getCsl() != null) {
       var csl = r.getCsl();
       csl.setContainerTitle(removeBrokenTags(csl.getContainerTitle()));
+    }
+  }
+
+  public List<Distribution> listDistributions(DSID<String> key) {
+    return listByTaxon(key, DistributionMapper.class);
+  }
+  public List<Media> listMedia(DSID<String> key) {
+    return listByTaxon(key, MediaMapper.class);
+  }
+  public List<VernacularName> listVernacularNames(DSID<String> key) {
+    return listByTaxon(key, VernacularNameMapper.class);
+  }
+  public List<VernacularName> listVernacularNames(DSID<String> key, @Nullable Language lang) {
+    try (SqlSession session = factory.openSession(false)) {
+      return session.getMapper(VernacularNameMapper.class).listByTaxonFiltered(key, lang == null ? null : lang.getCode());
+    }
+  }
+  public List<TaxonProperty> listProperties(DSID<String> key) {
+    return listByTaxon(key, TaxonPropertyMapper.class);
+  }
+  public List<SpeciesInteraction> listSpeciesInteractions(DSID<String> key) {
+    try (SqlSession session = factory.openSession(false)) {
+      var m = session.getMapper(SpeciesInteractionMapper.class);
+      var rels = m.listByTaxon(key);
+      rels.addAll(m.listByRelatedTaxon(key));
+      return rels;
+    }
+  }
+  public List<TaxonConceptRelation> listConceptRelations(DSID<String> key) {
+    try (SqlSession session = factory.openSession(false)) {
+      var m = session.getMapper(TaxonConceptRelationMapper.class);
+      var rels = m.listByTaxon(key);
+      rels.addAll(m.listByRelatedTaxon(key));
+      return rels;
+    }
+  }
+
+  private <T extends ExtensionEntity> List<T> listByTaxon(DSID<String> key, Class<? extends TaxonExtensionMapper<T>> mapperClass) {
+    try (SqlSession session = factory.openSession(false)) {
+      var m = session.getMapper(mapperClass);
+      return m.listByTaxon(key);
     }
   }
 
@@ -767,13 +822,19 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   }
 
   public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id) {
-    var wrapper = childrenBreakdown(JsonTreeCollector.class, datasetKey, id, new StringWriter());
+    return childrenBreakdownCollector(datasetKey, id, 1);
+  }
+  public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id, int levels) {
+    var wrapper = childrenBreakdown(JsonTreeCollector.class, datasetKey, id, levels, new StringWriter());
     wrapper.printer.setTaxon(wrapper.taxon);
     return wrapper.printer;
   }
 
   public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
-    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, writer).printer;
+    return childrenBreakdownPrinter(datasetKey, id, 1, writer);
+  }
+  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, int level, Writer writer) {
+    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, level, writer).printer;
   }
 
   private static class PrinterWrapper<T> {
@@ -786,7 +847,14 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     }
   }
 
-  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, Writer writer) {
+  /**
+   * @param level number of nesting levels for major Linnean ranks to return.
+   *               Currently only 1 or 2 is supported, e.g. orders and families.
+   */
+  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, int level, Writer writer) {
+    if (level != 1 && level != 2) {
+      throw new IllegalArgumentException("Breakdown level has to be 1 or 2, not " + level);
+    }
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
     var rank = tax.getRank();
@@ -805,7 +873,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     var nextRank = RankUtils.nextLowerLinneanRank(rank);
     ranks.add(nextRank);
     // for families and alike just show the genera and stop at the first level
-    if (nextRank != Rank.GENUS) {
+    if (level>1 && nextRank != Rank.GENUS) {
       ranks.add(RankUtils.nextLowerLinneanRank(nextRank));
     }
     var ttp = TreeTraversalParameter.dataset(datasetKey);

@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -130,41 +132,39 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @GET
   @Path("{id}/vernacular")
   public List<VernacularName> vernacular(@PathParam("key") int datasetKey, @PathParam("id") String id,
-                                         @QueryParam("lang") String langCode,
-                                         @Context SqlSession session) {
-    // normalize lang codes
-    var lang = Language.byCode(langCode);
-    return session.getMapper(VernacularNameMapper.class).listByTaxonFiltered(DSID.of(datasetKey, id), lang == null ? null : lang.getCode());
+                                         @QueryParam("lang") String langCode) {
+    return dao.listVernacularNames(DSID.of(datasetKey, id), Language.byCode(langCode));
   }
+
 
   @GET
   @Path("{id}/distribution")
-  public List<Distribution> distribution(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(DistributionMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<Distribution> distribution(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listDistributions(DSID.of(datasetKey, id));
   }
 
   @GET
   @Path("{id}/media")
-  public List<Media> media(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(MediaMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<Media> media(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listMedia(DSID.of(datasetKey, id));
   }
 
   @GET
   @Path("{id}/property")
-  public List<TaxonProperty> property(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(TaxonPropertyMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<TaxonProperty> property(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listProperties(DSID.of(datasetKey, id));
   }
 
   @GET
   @Path("{id}/interaction")
-  public List<SpeciesInteraction> interaction(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(SpeciesInteractionMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<SpeciesInteraction> interaction(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listSpeciesInteractions(DSID.of(datasetKey, id));
   }
 
   @GET
   @Path("{id}/relation")
-  public List<TaxonConceptRelation> relations(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(TaxonConceptRelationMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<TaxonConceptRelation> relations(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.listConceptRelations(DSID.of(datasetKey, id));
   }
 
   @GET
@@ -200,10 +200,16 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
 
   @GET
   @Path("{id}/breakdown")
-  public Response breakdown(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+  public Response breakdown(@PathParam("key") int datasetKey,
+                            @PathParam("id") String id,
+                            @QueryParam("level") @DefaultValue("1")
+                            @Parameter(description = "Depth of the breakdown tree. Only level 1 or 2 are supported.",
+                                       schema = @Schema(type = "integer", allowableValues = {"1", "2"}, defaultValue = "1"))
+                            int level
+  ) {
     StreamingOutput stream = os -> {
       try (Writer writer = UTF8IoUtils.writerFromStream(os);
-           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, writer)
+           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, level, writer)
       ) {
         printer.print();
         writer.flush();

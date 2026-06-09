@@ -221,6 +221,7 @@ source:
   # example record
   - id: ecf
     type: book
+    alias: ECoF
     title: Eschmeyer's Catalog of Fishes
     editor:
       - Ronald Fricke     # simple format: GivenName FamilyName
@@ -237,6 +238,7 @@ source:
     doi: # a DOI
     author: # author list. type=NAME[]
     editor: # editor list. type=NAME[]
+    alias: # abbreviated short title
     title: # primary title of the item
     containerAuthor: # author(s) of the container holding the item (e.g. the book author for a book chapter). type=NAME[]
     containerTitle: # title of the container holding the item (e.g. the book title for a book chapter, the journal title for a journal article)

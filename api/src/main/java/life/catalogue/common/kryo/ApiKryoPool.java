@@ -118,8 +118,6 @@ public class ApiKryoPool extends Pool<Kryo> {
     // areas
     var areaSerde = new AreaSerializer();
     kryo.register(Area.class, areaSerde);
-    kryo.register(LonghurstArea.class, areaSerde);
-    kryo.register(TdwgArea.class, areaSerde);
 
     // enums
     kryo.register(Country.class);

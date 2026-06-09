@@ -63,6 +63,13 @@ public class GbifConfig {
   @NotNull
   public Set<UUID> articleHostInstallations = Set.of(UUID.fromString("7ce8aef1-9e92-11dc-8740-b8a03c50a999"));
 
+  /**
+   * GBIF dataset keys that must never exist in ChecklistBank.
+   * These datasets are skipped during sync (never created or updated) and any existing copy in ChecklistBank is deleted.
+   */
+  @NotNull
+  public Set<UUID> blockedDatasets = Set.of();
+
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)

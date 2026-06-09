@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import de.undercouch.citeproc.bibtex.PageParser;
-import de.undercouch.citeproc.bibtex.PageRange;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLName;
@@ -40,6 +39,8 @@ public class Citation {
   private List<CslName> editor;
   // The title of the work
   private String title;
+  // alias maps to shortTitle in CSL
+  private String alias;
   // author(s) of the container holding the item (e.g. the book author for a book chapter)
   @JsonAlias("containerAuthor")
   @JsonProperty("container-author")
@@ -133,6 +134,7 @@ public class Citation {
     this.doi = other.doi;
     this.author = other.author;
     this.editor = other.editor;
+    this.alias = other.alias;
     this.title = other.title;
     this.containerAuthor = other.containerAuthor;
     this.containerTitle = other.containerTitle;
@@ -185,6 +187,7 @@ public class Citation {
     builder
       .type(type)
       .title(title)
+      .shortTitle(alias)
       .volume(volume)
       .issue(issue)
       .edition(edition)
@@ -289,6 +292,14 @@ public class Citation {
 
   public void setTitle(String title) {
     this.title = title;
+  }
+
+  public String getAlias() {
+    return alias;
+  }
+
+  public void setAlias(String alias) {
+    this.alias = alias;
   }
 
   public List<CslName> getContainerAuthor() {
@@ -455,6 +466,7 @@ public class Citation {
            && Objects.equals(author, citation.author)
            && Objects.equals(editor, citation.editor)
            && Objects.equals(title, citation.title)
+           && Objects.equals(alias, citation.alias)
            && Objects.equals(containerAuthor, citation.containerAuthor)
            && Objects.equals(containerTitle, citation.containerTitle)
            && Objects.equals(issued, citation.issued)
@@ -476,6 +488,6 @@ public class Citation {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, type, doi, author, editor, title, containerAuthor, containerTitle, issued, accessed, collectionTitle, collectionEditor, volume, issue, edition, page, publisher, publisherPlace, version, isbn, issn, url, note);
+    return Objects.hash(id, type, doi, author, editor, title, alias, containerAuthor, containerTitle, issued, accessed, collectionTitle, collectionEditor, volume, issue, edition, page, publisher, publisherPlace, version, isbn, issn, url, note);
   }
 }

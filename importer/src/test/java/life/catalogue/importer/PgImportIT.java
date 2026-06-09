@@ -195,6 +195,12 @@ public class PgImportIT extends PgImportITBase {
         d.setKey(null);
         d.setVerbatimKey(null);
         setUserDate(d, null, null);
+        // AreaLabelLookup falls back to id-as-name when no label is registered;
+        // strip that so we only assert on meaningful, resolved names
+        var a = d.getArea();
+        if (a != null && a.getName() != null && a.getName().equals(a.getId())) {
+          a.setName(null);
+        }
       });
       Set<Distribution> imported = Sets.newHashSet(info.getDistributions());
       Set<Distribution> expected = Sets.newHashSet(expD);

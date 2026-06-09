@@ -29,7 +29,7 @@ public class FiltersTranslator {
       subqueries.addAll(processDecisionFilters());
       FilterTranslator ft = new FilterTranslator(request);
       request.getFilters().keySet().stream()
-          .filter(p -> p != DECISION_MODE && p != CATALOGUE_KEY)
+          .filter(p -> p != DECISION_MODE && p != PROJECT_KEY)
           .map(ft::translate)
           .forEach(subqueries::add);
     }
@@ -49,18 +49,18 @@ public class FiltersTranslator {
     if (request.hasFilter(DECISION_MODE)) {
       FilterTranslator ft = new FilterTranslator(request);
       if (request.getFilterValue(DECISION_MODE).equals(IS_NULL)) {
-        Query catQuery = ft.translate(CATALOGUE_KEY);
+        Query catQuery = ft.translate(PROJECT_KEY);
         return List.of(Query.of(q -> q.bool(b -> b
           .mustNot(mn -> mn.nested(n -> n.path(path).query(catQuery)))
         )));
       } else if (request.getFilterValue(DECISION_MODE).equals(IS_NOT_NULL)) {
-        Query catQuery = ft.translate(CATALOGUE_KEY);
+        Query catQuery = ft.translate(PROJECT_KEY);
         return List.of(Query.of(q -> q.bool(b -> b
           .must(m -> m.nested(n -> n.path(path).query(catQuery)))
         )));
       } else {
         Query modeQuery = ft.translate(DECISION_MODE);
-        Query catQuery = ft.translate(CATALOGUE_KEY);
+        Query catQuery = ft.translate(PROJECT_KEY);
         return List.of(Query.of(q -> q.nested(n -> n.path(path).query(
           Query.of(inner -> inner.bool(b -> b.filter(modeQuery).filter(catQuery)))
         ))));
@@ -95,7 +95,7 @@ public class FiltersTranslator {
 
   public static boolean mustGenerateFilters(NameUsageRequest request) {
     return request.getFilters().size() > 1 ||
-      request.getFilters().size() == 1 && !request.hasFilter(CATALOGUE_KEY) ||
+      request.getFilters().size() == 1 && !request.hasFilter(PROJECT_KEY) ||
       request.getMinRank() != null ||
       request.getMaxRank() != null;
   }

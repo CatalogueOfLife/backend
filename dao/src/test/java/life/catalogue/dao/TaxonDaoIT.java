@@ -350,7 +350,7 @@ public class TaxonDaoIT extends DaoTestBase {
   public void childrenBreakdownCollector() throws IOException {
     final int datasetKey = setupTestTreeDataset();
 
-    var breakdown = tDao.childrenBreakdownCollector(datasetKey, "t2");
+    var breakdown = tDao.childrenBreakdownCollector(datasetKey, "t2", 2);
     int cnt = breakdown.print();
     assertEquals(1, breakdown.getRoot().size());
     assertEquals(3, cnt);
@@ -358,7 +358,7 @@ public class TaxonDaoIT extends DaoTestBase {
     assertEquals(0, breakdown.getRoot().getFirst().synonyms.size());
     assertEquals(7, breakdown.getRoot().getFirst().count);
 
-    breakdown = tDao.childrenBreakdownCollector(datasetKey, "t3");
+    breakdown = tDao.childrenBreakdownCollector(datasetKey, "t3", 2);
     cnt = breakdown.print();
     assertEquals(2, breakdown.getRoot().size());
     assertEquals(2, cnt);
@@ -371,7 +371,7 @@ public class TaxonDaoIT extends DaoTestBase {
   public void childrenBreakdownPrinter() throws IOException {
     final int datasetKey = setupTestTreeDataset();
     var writer = new StringWriter();
-    var breakdown = tDao.childrenBreakdownPrinter(datasetKey, "t2", writer);
+    var breakdown = tDao.childrenBreakdownPrinter(datasetKey, "t2", 2, writer);
     int cnt = breakdown.print();
     System.out.println(writer);
     assertEquals(3, cnt);

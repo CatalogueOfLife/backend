@@ -16,13 +16,14 @@ public class RankTest {
    */
   @Test
   public void warnOnOrdinalChange() {
+    // name-parser 3.16: +3 to all ranks at/after FAMILY from the inserted zoological series ranks
     assertEquals(0, Rank.SUPERDOMAIN.ordinal());
     assertEquals(8, Rank.KINGDOM.ordinal());
-    assertEquals(61, Rank.FAMILY.ordinal());
-    assertEquals(70, Rank.GENUS.ordinal());
-    assertEquals(81, Rank.SPECIES.ordinal());
-    assertEquals(85, Rank.SUBSPECIES.ordinal());
-    assertEquals(112, Rank.UNRANKED.ordinal());
+    assertEquals(64, Rank.FAMILY.ordinal());
+    assertEquals(73, Rank.GENUS.ordinal());
+    assertEquals(84, Rank.SPECIES.ordinal());
+    assertEquals(88, Rank.SUBSPECIES.ordinal());
+    assertEquals(115, Rank.UNRANKED.ordinal());
     assertEquals(Rank.UNRANKED.ordinal()+1, Rank.values().length);
   }
 }

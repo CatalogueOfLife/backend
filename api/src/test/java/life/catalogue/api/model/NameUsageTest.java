@@ -29,4 +29,20 @@ public class NameUsageTest {
     assertTrue(u instanceof Taxon);
     assertEquals(TaxonomicStatus.ACCEPTED, u.getStatus());
   }
+
+  @Test
+  public void statusOrder() {
+    Name n = TestEntityGenerator.newName(23, "1234", "Abies");
+    // accepted taxa -> 0
+    assertEquals(0, NameUsage.create(TaxonomicStatus.ACCEPTED, n).getStatusOrder());
+    assertEquals(0, NameUsage.create(TaxonomicStatus.PROVISIONALLY_ACCEPTED, n).getStatusOrder());
+    // any synonym -> 1, regardless of the specific synonym status
+    assertEquals(1, NameUsage.create(TaxonomicStatus.SYNONYM, n).getStatusOrder());
+    assertEquals(1, NameUsage.create(TaxonomicStatus.AMBIGUOUS_SYNONYM, n).getStatusOrder());
+    assertEquals(1, NameUsage.create(TaxonomicStatus.MISAPPLIED, n).getStatusOrder());
+    // bare name -> 2
+    assertEquals(2, NameUsage.create(TaxonomicStatus.BARE_NAME, n).getStatusOrder());
+    // an unset status defaults to accepted (0)
+    assertEquals(0, new Taxon().getStatusOrder());
+  }
 }

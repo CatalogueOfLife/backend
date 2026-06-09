@@ -25,10 +25,10 @@ public enum NameUsageSearchParameter {
 
   /**
    * This takes the datasetKey of the managed project to filter decisions by, not usages. It will prune the list of decisions to just the
-   * ones matching the datasetKey. I.e. the list only contains a single decision at max if one catalogue is given so the UI can quickly
-   * determine if a decision exists at all for a given usage and does not have to ignore decisions from other catalogues.
+   * ones matching the datasetKey. I.e. the list only contains a single decision at max if one project is given so the UI can quickly
+   * determine if a decision exists at all for a given usage and does not have to ignore decisions from other project.
    */
-  CATALOGUE_KEY(Integer.class),
+  PROJECT_KEY(Integer.class),
 
   /**
    * Allows to filter usages based on the existence of a decision with the matching MODE.

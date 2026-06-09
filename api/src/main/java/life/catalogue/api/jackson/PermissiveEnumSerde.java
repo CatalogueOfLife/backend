@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.*;
@@ -25,6 +26,8 @@ import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.google.common.collect.ImmutableSet;
+
+import java.lang.reflect.Field;
 
 import de.undercouch.citeproc.csl.CSLType;
 
@@ -164,9 +167,37 @@ public class PermissiveEnumSerde {
       try {
         return VocabularyUtils.lookupEnum(jp.getText(), enumClass);
       } catch (IllegalArgumentException e) {
+        Enum<?> alias = lookupByJsonAlias(jp.getText(), enumClass);
+        if (alias != null) return alias;
         throw ctxt.weirdStringException(jp.getText(), handledType(), jp.getText() + " was not a value from " + enumClass.getSimpleName());
       }
     }
+  }
+
+  /**
+   * Falls back to matching {@link JsonAlias} values declared on enum constants when the primary
+   * name-based lookup fails. Normalisation matches {@link VocabularyUtils#lookupEnum}: uppercase
+   * and strip {@code . _-} so {@code "WHOLE_WORDS"} and {@code "whole-words"} both match an
+   * alias of {@code "WHOLE_WORDS"}.
+   */
+  private static Enum<?> lookupByJsonAlias(String input, Class<? extends Enum<?>> enumClass) {
+    String norm = input.toUpperCase().replaceAll("[. _-]", "");
+    for (Enum<?> val : enumClass.getEnumConstants()) {
+      try {
+        Field f = enumClass.getField(val.name());
+        JsonAlias aliasAnn = f.getAnnotation(JsonAlias.class);
+        if (aliasAnn != null) {
+          for (String a : aliasAnn.value()) {
+            if (norm.equals(a.toUpperCase().replaceAll("[. _-]", ""))) {
+              return val;
+            }
+          }
+        }
+      } catch (NoSuchFieldException ignore) {
+        // unreachable for enum constants
+      }
+    }
+    return null;
   }
 
   private static class PermissiveEnumFieldDeserializer extends KeyDeserializer {

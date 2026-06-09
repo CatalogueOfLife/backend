@@ -21,11 +21,18 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -70,6 +77,71 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
     var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.matching);
     job.run();
     assertTrue(job.isFinished());
+  }
+
+  @Test
+  public void testMatchUploadCsv() throws Exception {
+    runUploadMatching(",", StandardCharsets.UTF_8, null, "csv");
+  }
+
+  @Test
+  public void testMatchUploadCsvWithUtf8Bom() throws Exception {
+    runUploadMatching(",", StandardCharsets.UTF_8, new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF}, "csv");
+  }
+
+  @Test
+  public void testMatchUploadTsvWithUtf16leBom() throws Exception {
+    // Excel "Unicode Text" export on Windows: UTF-16 LE + BOM, tab-delimited
+    runUploadMatching("\t", StandardCharsets.UTF_16LE, new byte[]{(byte) 0xFF, (byte) 0xFE}, "txt");
+  }
+
+  private void runUploadMatching(String sep, java.nio.charset.Charset charset, byte[] bom, String suffix) throws Exception {
+    // put scientificName first so a leaked BOM (﻿) lands on the term that
+    // RowMapper's constructor explicitly requires.
+    String text = String.join(sep, "scientificName", "authorship", "rank", "id") + "\n"
+                + String.join(sep, "Aus bus", "L.", "species", "1") + "\n"
+                + String.join(sep, "Aus bus alpha", "Mill.", "subspecies", "2") + "\n"
+                + String.join(sep, "Cus dus", "Smith", "species", "3") + "\n";
+    File upload = File.createTempFile("col-bom-test-", "." + suffix);
+    upload.deleteOnExit();
+    try (FileOutputStream fos = new FileOutputStream(upload)) {
+      if (bom != null) {
+        fos.write(bom);
+      }
+      fos.write(text.getBytes(charset));
+    }
+
+    String variant = " [" + charset + (bom == null ? " no-BOM" : " +BOM") + "]";
+
+    MatchingRequest req = new MatchingRequest();
+    req.setDatasetKey(dataRule.testData.key);
+    req.setUpload(upload);
+    var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.matching);
+    job.run();
+
+    assertNull("Job should not error" + variant, job.getError());
+    assertTrue("Job should be finished" + variant, job.isFinished());
+
+    File resultFile = job.getResult().getFile();
+    assertTrue("Result file should exist", resultFile.exists());
+
+    int dataRows = 0;
+    try (ZipFile zipFile = new ZipFile(resultFile)) {
+      ZipEntry entry = zipFile.entries().nextElement();
+      try (BufferedReader br = new BufferedReader(new InputStreamReader(zipFile.getInputStream(entry), StandardCharsets.UTF_8))) {
+        String header = br.readLine();
+        assertNotNull("Result must have a header", header);
+        // if a BOM leaked into header[0] the first column would be "original_﻿scientificName"
+        String[] headerCols = header.split("[\t,]");
+        assertEquals("First result column should be original_scientificName" + variant
+                     + ", full header: " + header,
+          "original_scientificName", headerCols[0]);
+        while (br.readLine() != null) {
+          dataRows++;
+        }
+      }
+    }
+    assertEquals("Expected 3 data rows in result" + variant, 3, dataRows);
   }
 
   @Test

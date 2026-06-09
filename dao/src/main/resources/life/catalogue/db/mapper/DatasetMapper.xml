@@ -155,8 +155,20 @@
         )
       </if>
       <if test="req.releasedFrom != null">
-        AND d.source_key=#{req.releasedFrom}
-        AND <include refid="IS_RELEASE"/>
+        <choose>
+          <!-- COL additionally lists its older releases that were re-imported as EXTERNAL datasets and
+               only carry the COL release alias convention (COLyy[.m][ XR], e.g. COL00, COL19, COL20 XR) -->
+          <when test="req.releasedFrom == @life.catalogue.api.vocab.Datasets@COL">
+            AND (
+              (d.source_key=#{req.releasedFrom} AND <include refid="IS_RELEASE"/>)
+              OR (d.origin='EXTERNAL'::DATASETORIGIN AND d.alias ~ '^COL[0-9][0-9](\.[0-9]+)?( XR)?$')
+            )
+          </when>
+          <otherwise>
+            AND d.source_key=#{req.releasedFrom}
+            AND <include refid="IS_RELEASE"/>
+          </otherwise>
+        </choose>
       </if>
       <if test="req.hasGbifKey != null">
         AND d.gbif_key
@@ -330,7 +342,7 @@
           <when test="sortBy == 'RELEVANCE'">
             ts_rank_cd('{0.001, 0.01, 0.1, 1.0}'::float4[], d.doc, plainto_tsquery('dataset', f_unaccent(#{req.q}))) DESC, size DESC, created DESC
           </when>
-          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED'">
+          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED' || sortBy == 'ISSUED'">
             ${req.sortBy.name().toLowerCase()}
             <bind name="rev" value="!req.reverse"/>
           </when>

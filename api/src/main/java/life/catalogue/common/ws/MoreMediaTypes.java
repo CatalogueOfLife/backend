@@ -33,6 +33,8 @@ public class MoreMediaTypes {
   public final static MediaType APP_JSON_COLDP_TYPE = new MediaType("application", "vnd.coldp+json");
   public final static String APP_JSON_CSL   = "application/vnd.citationstyles.csl+json";
   public final static MediaType APP_JSON_CSL_TYPE = new MediaType("application", "vnd.citationstyles.csl+json");
+  public final static String APP_GEOJSON   = "application/geo+json";
+  public final static MediaType APP_GEOJSON_TYPE = new MediaType("application", "geo+json");
   public final static String APP_BIBTEX = "application/x-bibtex";
   public final static MediaType APP_BIBTEX_TYPE = new MediaType("application", "x-bibtex");
 

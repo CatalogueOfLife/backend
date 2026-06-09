@@ -10,22 +10,29 @@ import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.*;
 import life.catalogue.common.ws.MoreMediaTypes;
+import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.img.ImgConfig;
+import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.UnparsableException;
 
+import life.catalogue.release.IdProvider;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -40,6 +47,8 @@ import com.google.common.reflect.ClassPath;
 import de.undercouch.citeproc.csl.CSLType;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 @Path("/vocab")
 @Produces(MediaType.APPLICATION_JSON)
@@ -50,10 +59,15 @@ public class VocabResource {
   private static final Map<Class<? extends Enum>, Set<String>> ignoreFields = Map.of(
     Rank.class, Set.of("speciesOrBelow", "genusOrSuprageneric", "infrageneric", "infragenericStrictly", "infrasubspecific", "cultivarRank")
   );
+  private static final String NAME_PROP = "name";
   private final Map<String, Class<Enum>> vocabs;
   private final List<String> vocabNames;
+  private final File gazetteerDir;
+  private final AreaLabelLookup areaLabelLookup;
 
-  public VocabResource() {
+  public VocabResource(@Nullable File gazetteerDir, @Nullable AreaLabelLookup areaLabelLookup) {
+    this.gazetteerDir = gazetteerDir;
+    this.areaLabelLookup = areaLabelLookup;
     LOG.info("Scan for available vocabularies");
     Map<String, Class<Enum>> enums = Maps.newHashMap();
     try {
@@ -212,25 +226,79 @@ public class VocabResource {
       throw new IllegalArgumentException("gazetteer parameter required");
     }
     // we only support a few gazetteers now
-    switch (gazetteer) {
-      case ISO:
-        return enumList(Country.class);
-      case TDWG:
-        return TdwgArea.AREAS;
-      case LONGHURST:
-        return LonghurstArea.AREAS;
-      case REALM:
-        return List.of(BioGeoRealm.values());
-      default:
-        throw new NotFoundException(gazetteer + " enumeration not available");
+    return switch (gazetteer) {
+      case ISO -> enumList(Country.class);
+      case REALM -> enumList(BioGeoRealm.class);
+      default -> labels(gazetteer);
+    };
+  }
+
+  private Collection<?> labels(Gazetteer gazetteer) throws NotFoundException {
+    if (areaLabelLookup != null && areaLabelLookup.hasLabels(gazetteer)) {
+      return areaLabelLookup.listLabels(gazetteer).entrySet().stream()
+          .map(e -> new GenericArea(gazetteer, e.getKey(), e.getValue()))
+          .sorted(Comparator.comparing(GenericArea::getId))
+          .collect(Collectors.toList());
     }
+    throw new NotFoundException(gazetteer + " enumeration not available");
   }
 
   @GET
-  @Path("area/{id}")
-  public Optional<? extends Area> area(@PathParam("id") String id) throws UnparsableException {
-    return AreaParser.PARSER.parse(id);
+  @VaryAccept
+  @Path("area/{scheme}:{id}")
+  public Optional<?> area(@PathParam("scheme") String scheme, @PathParam("id") String id) throws UnparsableException {
+    return AreaParser.PARSER.parse(scheme, id)
+      .map(a -> a instanceof Enum ? enumFields((Enum) a) : a);
   }
+
+  /**
+   * Returns the GeoJSON Feature for an area id within a gazetteer.
+   * Backed by static files served from the configured gazetteer directory; 404 if the directory is
+   * unconfigured or no file exists for that id.
+   * @param scheme the gazetteer scheme
+   * @param id the area id, case sensitive!
+   */
+  @GET
+  @VaryAccept
+  @Path("area/{scheme}:{id}")
+  @Produces({MoreMediaTypes.APP_GEOJSON})
+  public Response areaGeojson(@PathParam("scheme") String scheme, @PathParam("id") String id) {
+    if (gazetteerDir == null || StringUtils.isBlank(scheme) || StringUtils.isBlank(id)) {
+      throw new NotFoundException();
+    }
+    java.nio.file.Path base = gazetteerDir.toPath()
+        .resolve(scheme.toLowerCase())
+        .resolve("features")
+        .toAbsolutePath().normalize();
+    java.nio.file.Path feature = base.resolve(normalizeFilename(id) + ".geojson").toAbsolutePath().normalize();
+    if (!feature.startsWith(base) || !Files.isRegularFile(feature)) {
+      throw new NotFoundException();
+    }
+    StreamingOutput out = output -> Files.copy(feature, output);
+    return Response.ok(out, MoreMediaTypes.APP_GEOJSON).build();
+  }
+
+  /**
+   * Mirrors the col-gazetteers build-script id normalization (scripts/common/ids.py):
+   * collapse runs of whitespace, colons, slashes and backslashes into a single dash,
+   * collapse repeated dashes, and strip leading/trailing dashes. Case is preserved —
+   * some upstream gazetteers (e.g. IHO S-23 sub-basin codes like {@code 28A} vs
+   * {@code 28a}) treat case as a meaningful distinction.
+   */
+  @VisibleForTesting
+  static String normalizeFilename(String s) {
+    if (s == null) return null;
+    String norm = BAD_CHARS.matcher(s.strip()).replaceAll("-");
+    norm = REPEAT_DASH.matcher(norm).replaceAll("-");
+    int start = 0;
+    int end = norm.length();
+    while (start < end && norm.charAt(start) == '-') start++;
+    while (end > start && norm.charAt(end - 1) == '-') end--;
+    return norm.substring(start, end);
+  }
+
+  private static final Pattern BAD_CHARS = Pattern.compile("[\\s:/\\\\]+");
+  private static final Pattern REPEAT_DASH = Pattern.compile("-{2,}");
 
 
   @GET
@@ -260,7 +328,7 @@ public class VocabResource {
       .map(VocabResource::enumFields);
   }
 
-  private static Map<String, Object> enumFields(Enum entry) {
+  private static Map<String, Object> enumFields(Enum<?> entry) {
     Map<String, Object> map = new TreeMap<>();
     try {
       for (var m : entry.getDeclaringClass().getDeclaredMethods()) {
@@ -297,8 +365,8 @@ public class VocabResource {
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
-    if (!map.containsKey("name")) {
-      map.put("name", PermissiveEnumSerde.enumValueName(entry));
+    if (!map.containsKey(NAME_PROP)) {
+      map.put(NAME_PROP, PermissiveEnumSerde.enumValueName(entry));
     }
     return map;
   }

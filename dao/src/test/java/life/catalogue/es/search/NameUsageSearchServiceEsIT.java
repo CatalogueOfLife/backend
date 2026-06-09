@@ -43,7 +43,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
   static final int DS1 = 100;
   static final int DS2 = 200;
-  static final int TOTAL = 14;
+  static final int TOTAL = 25;
   /** Catalogue key used in all SimpleDecision entries (set by newNameUsageWrapper helper). */
   static final int CAT99 = 99;
   /** sector dataset key set by the newNameUsageWrapper helper for all usages. */
@@ -106,6 +106,45 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     insert(c, cfg, taxon("t11", "Centaurea rothmalerana", null, Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null));
     insert(c, cfg, taxon("t12", "Dryopteris fragrans",    null, Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null));
 
+    // WHOLE_WORDS analyzer fixtures: punctuation cases that the standard tokenizer would mishandle.
+    // The scientificName is overridden after parsing so the indexed value matches the literal we
+    // want to test (parser may otherwise normalise these).
+
+    // t13: leading '?' as a standalone token (genus uncertain) — taken from real moth records in dataset 55434
+    NameUsageWrapper w13 = taxon("t13", "Albisignata albisignata", null, Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, null, null);
+    w13.getUsage().getName().setScientificName("? albisignata");
+    insert(c, cfg, w13);
+
+    // t14: zoological convention with subgenus in parentheses (real mosquito)
+    NameUsageWrapper w14 = taxon("t14", "Aedes aegypti", null, Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, null, null);
+    w14.getUsage().getName().setScientificName("Aedes (Stegomyia) aegypti");
+    insert(c, cfg, w14);
+
+    // t15: botanical with hyphenated specific epithet (real ornamental shrub)
+    NameUsageWrapper w15 = taxon("t15", "Hibiscus rosa", null, Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null);
+    w15.getUsage().getName().setScientificName("Hibiscus rosa-sinensis");
+    insert(c, cfg, w15);
+
+    // Issue #1508: prefix of internal epithet must match.
+    insert(c, cfg, taxon("t16", "Achilia ovallensis", null, Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, null, null));
+
+    // Headline STANDARD fixtures: token-prefix match against the leading token (Vulgaricon)
+    // and against an internal token (Phaseolus vulgaris).
+    insert(c, cfg, taxon("t17", "Phaseolus vulgaris", "L.", Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null));
+    insert(c, cfg, taxon("t18", "Vulgaricon mirabilis", null, Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null));
+
+    // Issue #1509: decompound common Latin/Greek prefixes at index time.
+    // A query "mucid" must find all three of these.
+    insert(c, cfg, taxon("t19", "Foo mucidus",       null, Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, null, null));
+    insert(c, cfg, taxon("t20", "Foo pseudomucidus", null, Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, null, null));
+    insert(c, cfg, taxon("t21", "Foo submucidus",    null, Rank.SPECIES, NomCode.ZOOLOGICAL, DS1, null, null));
+
+    // Issue #1509: prefix of an internal epithet (no decompound needed) — "vallivanc" matches.
+    insert(c, cfg, taxon("t22", "Allium vallivanchense", "R.M.Fritsch & N.Friesen", Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null));
+
+    // Issue #1179: fuzzy search must accept a one-character typo in the epithet.
+    insert(c, cfg, taxon("t23", "Quercus robur", "L.", Rank.SPECIES, NomCode.BOTANICAL, DS2, null, null));
+
     EsUtil.refreshIndex(c, cfg.name);
     service = new NameUsageSearchServiceEs(cfg.name, c);
   }
@@ -163,8 +202,8 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     // --- Integer/string parameters that work correctly ---
 
     // DATASET_KEY (keyword field storing integer "100"/"200")
-    assertFilterCount(8, DATASET_KEY, DS1);
-    assertFilterCount(6, DATASET_KEY, DS2);
+    assertFilterCount(14, DATASET_KEY, DS1);
+    assertFilterCount(11, DATASET_KEY, DS2);
 
     // USAGE_ID (keyword field, exact string match on the usage's id)
     assertFilterCount(1, USAGE_ID, "t6");
@@ -188,11 +227,11 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
 
     // EXTINCT (boolean field; only t6=Felis catus has extinct=true)
     assertFilterCount(1, EXTINCT, true);
-    assertFilterCount(11, EXTINCT, false); // 11 taxa with explicit false; synonyms have no extinct field
+    assertFilterCount(22, EXTINCT, false); // 22 taxa with explicit false; synonyms have no extinct field
 
     // RANK (integer field; stored as Rank ordinal via RankOrdinalSerde)
     assertFilterCount(2, RANK, Rank.KINGDOM); // Animalia (t1) + Plantae (t8)
-    assertFilterCount(7, RANK, Rank.SPECIES);  // t6, t7, t10, s1, s2, t11, t12
+    assertFilterCount(18, RANK, Rank.SPECIES);  // 10 originals + t16..t23
 
     // TAXON_ID (keyword field on classification[].id)
     // t6 (Felis catus) was given a classification containing t5 (Felis) with id="t5"
@@ -201,13 +240,13 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     // DECISION_MODE with IS_NOT_NULL: all usages have a decision with catalogue key 99
     NameUsageSearchRequest decisionNotNull = new NameUsageSearchRequest();
     decisionNotNull.addFilter(DECISION_MODE, NameUsageRequest.IS_NOT_NULL);
-    decisionNotNull.addFilter(CATALOGUE_KEY, String.valueOf(CAT99));
+    decisionNotNull.addFilter(PROJECT_KEY, String.valueOf(CAT99));
     assertEquals("IS_NOT_NULL decision for cat99 should match all", TOTAL, count(decisionNotNull));
 
     // DECISION_MODE with IS_NULL: no usage lacks a decision with catalogue key 99
     NameUsageSearchRequest decisionNull = new NameUsageSearchRequest();
     decisionNull.addFilter(DECISION_MODE, NameUsageRequest.IS_NULL);
-    decisionNull.addFilter(CATALOGUE_KEY, String.valueOf(CAT99));
+    decisionNull.addFilter(PROJECT_KEY, String.valueOf(CAT99));
     assertEquals("IS_NULL decision for cat99 should match none", 0, count(decisionNull));
 
     // minRank / maxRank range filters (rank stored as integer ordinal)
@@ -249,7 +288,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     // DECISION_MODE with specific enum value (also broken, but no exception expected)
     NameUsageSearchRequest blockReq = new NameUsageSearchRequest();
     blockReq.addFilter(DECISION_MODE, EditorialDecision.Mode.BLOCK.name());
-    blockReq.addFilter(CATALOGUE_KEY, String.valueOf(CAT99));
+    blockReq.addFilter(PROJECT_KEY, String.valueOf(CAT99));
     assertNotNull(search(blockReq));
 
     // --- String filters on keyword fields ---
@@ -288,7 +327,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = resp.getFacets();
     assertNotNull(facets);
 
-    // DATASET_KEY facet: 2 buckets (DS1=8, DS2=6)
+    // DATASET_KEY facet: 2 buckets (DS1=10, DS2=7)
     Set<FacetValue<?>> dsFacet = facets.get(DATASET_KEY);
     assertNotNull("DATASET_KEY facet should be present", dsFacet);
     assertEquals("DATASET_KEY facet should have 2 buckets", 2, dsFacet.size());
@@ -306,7 +345,7 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     filtered.setFacetLimit(20);
 
     NameUsageSearchResponse filteredResp = search(filtered);
-    assertEquals("filter on DS1 should return 8 results", 8, filteredResp.getTotal());
+    assertEquals("filter on DS1 should return 14 results", 14, filteredResp.getTotal());
 
     Set<FacetValue<?>> filteredDsFacet = filteredResp.getFacets().get(DATASET_KEY);
     assertNotNull(filteredDsFacet);
@@ -363,10 +402,20 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     assertTrue("kingdoms should appear before species in TAXONOMIC sort",
         firstKingdom >= 0 && firstSpecies > firstKingdom);
 
-    // RELEVANCE: score-based – without a q all scores are equal, just verify TOTAL results
+    // RELEVANCE: score-based – without a q all scores are equal.
+    // Issue #1513: accepted usages must still sort before all synonyms, regardless of rank.
     NameUsageSearchRequest relReq = new NameUsageSearchRequest();
     relReq.setSortBy(NameUsageRequest.SortBy.RELEVANCE);
-    assertEquals(TOTAL, count(relReq));
+    List<NameUsageWrapper> byRel = search(relReq).getResult();
+    assertEquals(TOTAL, byRel.size());
+    boolean seenSynonym = false;
+    for (NameUsageWrapper r : byRel) {
+      if (r.getUsage().getStatus().isSynonym()) {
+        seenSynonym = true;
+      } else if (seenSynonym) {
+        fail("accepted " + r.getUsage().getLabel() + " ranked below a synonym in RELEVANCE sort");
+      }
+    }
   }
 
   private static void assertNameOrder(List<NameUsageWrapper> results, boolean reversed) {
@@ -417,28 +466,28 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
   }
 
   /**
-   * PrefixMatcherSimple (PREFIX, non-fuzzy): currently a stub delegating to the base term query.
-   * Using an exact scientific name ensures at least one match.
+   * STANDARD type: full-string prefix and Genus + epithet-prefix cases that used to be served by
+   * the legacy PREFIX type. STANDARD must cover everything PREFIX used to cover.
    */
   @Test
-  public void testQPrefix() {
+  public void testQStandardPrefix() {
     NameUsageSearchRequest req = new NameUsageSearchRequest();
     req.setQ("Felis cat");
-    req.setSearchType(PREFIX);
+    req.setSearchType(STANDARD);
     req.setSingleContent(SCIENTIFIC_NAME);
-    assertFalse("PREFIX simple: 'Felis catus' should return results", search(req).getResult().isEmpty());
+    assertFalse("STANDARD 'Felis cat' should return results", search(req).getResult().isEmpty());
     req.addFilter(DATASET_KEY, NameUsageRequest.IS_NULL);
     assertTrue(search(req).getResult().isEmpty());
 
     req = new NameUsageSearchRequest();
     req.setQ("Felis s");
-    req.setSearchType(PREFIX);
+    req.setSearchType(STANDARD);
     req.setSingleContent(SCIENTIFIC_NAME);
-    assertEquals("PREFIX simple: 'Felis s' should return t7", "t7", search(req).getResult().getFirst().getId());
+    assertEquals("STANDARD 'Felis s' should return t7", "t7", search(req).getResult().getFirst().getId());
 
     // https://github.com/CatalogueOfLife/backend/issues/1331
     req.setQ("felis s");
-    assertEquals("PREFIX simple: 'felis s' should return t7", "t7", search(req).getResult().getFirst().getId());
+    assertEquals("STANDARD 'felis s' should return t7", "t7", search(req).getResult().getFirst().getId());
   }
 
   @Test
@@ -462,16 +511,149 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
   }
 
   /**
-   * WholeWordMatcherSimple (WHOLE_WORDS, non-fuzzy): currently a stub delegating to the base term query.
+   * STANDARD scientific name search — whole-word matching half.
+   * <p>
+   * Backed by a match query on the {@code usage.name.scientificName.search} subfield, which is
+   * searched with the {@code sciname_ascii} analyzer (whitespace tokenizer + bracket char filter
+   * + lowercase + asciifolding). The cases below pin down the analyzer's behaviour on
+   * punctuation: leading {@code ?}, parenthesised subgenus, and hyphenated epithet.
    */
   @Test
-  public void testQWholeWords() {
+  public void testQStandardWholeWords() {
+    // baseline: a plain epithet still works
     NameUsageSearchRequest req = new NameUsageSearchRequest();
     req.setQ("canina");
-    req.setSearchType(WHOLE_WORDS);
+    req.setSearchType(STANDARD);
     req.setSingleContent(SCIENTIFIC_NAME);
-    assertFalse("WHOLE_WORDS simple: 'Rosa canina' should return results",
+    assertFalse("STANDARD 'canina' should return Rosa canina",
         search(req).getResult().isEmpty());
+
+    // '?' as a standalone token (genus uncertain) — t13 = "? albisignata"
+    req.setQ("?");
+    var hits = search(req).getResult();
+    assertFalse("STANDARD '?' should match '? albisignata'", hits.isEmpty());
+    assertTrue("STANDARD '?' should include t13", hits.stream().anyMatch(h -> "t13".equals(h.getId())));
+
+    req.setQ("albisignata");
+    assertEquals("STANDARD 'albisignata' should match t13",
+        "t13", search(req).getResult().getFirst().getId());
+
+    // zoological subgenus in parentheses — t14 = "Aedes (Stegomyia) aegypti"
+    // bracket char filter strips '(' and ')' before tokenization, so 'Stegomyia' is a whole word
+    req.setQ("Stegomyia");
+    assertEquals("STANDARD 'Stegomyia' should match t14 despite parens",
+        "t14", search(req).getResult().getFirst().getId());
+
+    req.setQ("Aedes");
+    assertTrue("STANDARD 'Aedes' should include t14",
+        search(req).getResult().stream().anyMatch(h -> "t14".equals(h.getId())));
+
+    req.setQ("aegypti");
+    assertEquals("STANDARD 'aegypti' should match t14",
+        "t14", search(req).getResult().getFirst().getId());
+
+    // hyphenated specific epithet — t15 = "Hibiscus rosa-sinensis"
+    // The hyphen-split filter emits both the original compound token and each non-hyphen part.
+    req.setQ("rosa-sinensis");
+    assertEquals("STANDARD 'rosa-sinensis' (compound) should match t15",
+        "t15", search(req).getResult().getFirst().getId());
+
+    // Either half of the hyphenated epithet is now searchable on its own.
+    req.setQ("sinensis");
+    assertTrue("STANDARD 'sinensis' should match the hyphenated 'rosa-sinensis' epithet of t15",
+        search(req).getResult().stream().anyMatch(h -> "t15".equals(h.getId())));
+    req.setQ("rosa");
+    assertTrue("STANDARD 'rosa' should match the hyphenated 'rosa-sinensis' epithet of t15",
+        search(req).getResult().stream().anyMatch(h -> "t15".equals(h.getId())));
+  }
+
+  /**
+   * STANDARD scientific name search — token-prefix half.
+   * <p>
+   * A query is allowed to match any token by prefix (not only the leading token of the full
+   * scientific name), and a multi-token query may have its last token interpreted as a prefix.
+   * See issues #1508 and #1509 for source feedback.
+   */
+  @Test
+  public void testQStandardTokenPrefix() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.setSearchType(STANDARD);
+    req.setSingleContent(SCIENTIFIC_NAME);
+
+    // prefix matches the LEADING token of the name — t18 = "Vulgaricon mirabilis"
+    req.setQ("vulg");
+    var hits = search(req).getResult();
+    assertTrue("STANDARD 'vulg' should match leading-token 'Vulgaricon mirabilis' (t18)",
+        hits.stream().anyMatch(h -> "t18".equals(h.getId())));
+    // prefix matches an INTERNAL token — t17 = "Phaseolus vulgaris L."
+    assertTrue("STANDARD 'vulg' should match internal-token 'Phaseolus vulgaris' (t17)",
+        hits.stream().anyMatch(h -> "t17".equals(h.getId())));
+
+    // multi-token query: leading exact + trailing prefix
+    req.setQ("Phaseolus vulg");
+    assertTrue("STANDARD 'Phaseolus vulg' should match t17",
+        search(req).getResult().stream().anyMatch(h -> "t17".equals(h.getId())));
+
+    // reverse-order query still matches via the unordered match clause
+    req.setQ("vulgaris Phaseolus");
+    assertTrue("STANDARD 'vulgaris Phaseolus' (reversed) should still match t17",
+        search(req).getResult().stream().anyMatch(h -> "t17".equals(h.getId())));
+
+    // legacy full-keyword-prefix case
+    req.setQ("Phaseolus vu");
+    assertTrue("STANDARD 'Phaseolus vu' should match t17",
+        search(req).getResult().stream().anyMatch(h -> "t17".equals(h.getId())));
+
+    // issue #1508: prefix of an internal epithet must match
+    req.setQ("ovalle");
+    assertTrue("STANDARD 'ovalle' should match 'Achilia ovallensis' (t16) — issue #1508",
+        search(req).getResult().stream().anyMatch(h -> "t16".equals(h.getId())));
+
+    // issue #1509: simple internal-token prefix (no decompound needed)
+    req.setQ("vallivanc");
+    assertTrue("STANDARD 'vallivanc' should match 'Allium vallivanchense' (t22) — issue #1509",
+        search(req).getResult().stream().anyMatch(h -> "t22".equals(h.getId())));
+  }
+
+  /**
+   * Issue #1509: index-time decompounding of common Latin/Greek prefixes.
+   * {@code mucid} must reach all of {@code Foo mucidus}, {@code Foo pseudomucidus},
+   * and {@code Foo submucidus} — the latter two because {@code pseudo-} and {@code sub-}
+   * are stripped at index time so the stem {@code mucidus} is independently searchable.
+   */
+  @Test
+  public void testQStandardDecompound() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.setSearchType(STANDARD);
+    req.setSingleContent(SCIENTIFIC_NAME);
+
+    // stem prefix matches all three through the decompound filter
+    req.setQ("mucid");
+    var ids = search(req).getResult().stream().map(NameUsageWrapper::getId).collect(java.util.stream.Collectors.toSet());
+    assertTrue("STANDARD 'mucid' should match t19 (mucidus)",       ids.contains("t19"));
+    assertTrue("STANDARD 'mucid' should match t20 (pseudomucidus)", ids.contains("t20"));
+    assertTrue("STANDARD 'mucid' should match t21 (submucidus)",    ids.contains("t21"));
+
+    // full stem also matches all three
+    req.setQ("mucidus");
+    ids = search(req).getResult().stream().map(NameUsageWrapper::getId).collect(java.util.stream.Collectors.toSet());
+    assertTrue("STANDARD 'mucidus' should match t19", ids.contains("t19"));
+    assertTrue("STANDARD 'mucidus' should match t20", ids.contains("t20"));
+    assertTrue("STANDARD 'mucidus' should match t21", ids.contains("t21"));
+
+    // prefix of the original compound token still works (preserve_original)
+    req.setQ("submuci");
+    ids = search(req).getResult().stream().map(NameUsageWrapper::getId).collect(java.util.stream.Collectors.toSet());
+    assertTrue("STANDARD 'submuci' should match t21 (submucidus) via the preserved compound token",
+        ids.contains("t21"));
+    assertFalse("STANDARD 'submuci' should NOT match t19 (plain mucidus)", ids.contains("t19"));
+
+    // search analyzer does NOT decompound — so 'submucidus' targets only the compound itself
+    req.setQ("submucidus");
+    ids = search(req).getResult().stream().map(NameUsageWrapper::getId).collect(java.util.stream.Collectors.toSet());
+    assertTrue("STANDARD 'submucidus' should match t21", ids.contains("t21"));
+    assertFalse("STANDARD 'submucidus' should NOT match t19 (mucidus)", ids.contains("t19"));
+    assertFalse("STANDARD 'submucidus' should NOT match t20 (pseudomucidus)", ids.contains("t20"));
   }
 
   /**
@@ -513,6 +695,20 @@ public class NameUsageSearchServiceEsIT extends EsTestBase {
     req.setSingleContent(SCIENTIFIC_NAME);
     assertFalse("FUZZY: 'Dryopteris fragans' should match 'Dryopteris fragrans' (1 char off)",
         search(req).getResult().isEmpty());
+  }
+
+  /**
+   * Issue #1179: fuzzy search with a single-character substitution in the epithet.
+   * The user searched "Quercus rober" expecting "Quercus robur" (one vowel off).
+   */
+  @Test
+  public void testQFuzzyIssue1179Substitution() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.setQ("Quercus rober"); // 'rober' vs indexed 'robur' (one substitution)
+    req.setSearchType(FUZZY);
+    req.setSingleContent(SCIENTIFIC_NAME);
+    assertTrue("FUZZY: 'Quercus rober' should match 'Quercus robur' (1 char off)",
+        search(req).getResult().stream().anyMatch(h -> "t23".equals(h.getId())));
   }
 
   /**

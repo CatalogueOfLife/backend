@@ -1,0 +1,65 @@
+# Latin/Greek formation prefixes stripped from scientific-name tokens
+# at index time. Editing this file requires a reindex of the name-usage
+# index for changes to take effect.
+#
+# - One prefix per line; blank lines and lines starting with '#' are ignored.
+# - Lower-case only, ASCII-folded (matches the analyzer chain).
+# - Stems shorter than 4 characters are not emitted (see schema.json).
+# - Order does not matter; the schema loader sorts entries length-desc
+#   then alphabetically before joining into the regex.
+ante
+anti
+chloro
+chryso
+circum
+crypto
+cyano
+deca
+diplo
+dys
+epi
+erythro
+eu
+haplo
+hemi
+hepta
+hexa
+holo
+hyper
+hypo
+infra
+inter
+intra
+iso
+leuco
+macro
+mega
+melaen
+melan
+melano
+meta
+micro
+mini
+mono
+neo
+octa
+oligo
+paleo
+para
+penta
+peri
+poly
+post
+pre
+proto
+pseudo
+rhodo
+sub
+super
+supra
+syn
+tetra
+trans
+tri
+ultra
+xeno

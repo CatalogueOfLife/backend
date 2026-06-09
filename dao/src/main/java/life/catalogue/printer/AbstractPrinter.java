@@ -3,6 +3,7 @@ package life.catalogue.printer;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgUtils;
@@ -106,6 +107,11 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
 
   @Override
   public void accept(SimpleName u) {
+    if (Thread.currentThread().isInterrupted()) {
+      // unchecked so it can be thrown from this Consumer; the export job boundary
+      // (PrinterExport) converts it back to a checked InterruptedException
+      throw new InterruptedRuntimeException("Printing was cancelled");
+    }
     if (!filter(u)) {
       counter.inc(u);
       if (countRank != null && taxonCounter != null) {

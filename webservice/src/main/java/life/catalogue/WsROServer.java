@@ -18,7 +18,6 @@ import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.dw.tasks.ClearCachesTask;
 import life.catalogue.dw.tasks.EventQueueTask;
-import life.catalogue.dw.tasks.ReloadPortalTemplatesTask;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.EsUtil;
 import life.catalogue.es.indexing.NameUsageIndexService;
@@ -34,8 +33,9 @@ import life.catalogue.img.ThumborService;
 import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
+import life.catalogue.parser.AreaLabelLookup;
+import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.NameParser;
-import life.catalogue.portal.PortalPageRenderer;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.parser.*;
@@ -215,6 +215,10 @@ public class WsROServer extends Application<WsServerConfig> {
       }
     });
 
+    // area lookup
+    var areaLookup = new AreaLabelLookup(cfg.gazetteerDir);
+    AreaParser.PARSER.setLabelLookup(areaLookup);
+
     // ES
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
     NameUsageSearchService searchService;
@@ -257,19 +261,16 @@ public class WsROServer extends Application<WsServerConfig> {
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
+    tdao.setAreaLabelLookup(areaLookup);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
-
-    // portal html page renderer - only in ROServer !!!
-    PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, cfg.portalTemplateDir.toPath(), true);
-    j.register(new PortalResource(renderer));
 
     // shared read only resources
     registerReadOnlyResources(j, cfg, getSqlSessionFactory(), null,
       ddao, dsdao, new AtomicBoolean(),
       diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, imgService,
-      FeedbackService.passThru(), doiResolver
+      FeedbackService.passThru(), doiResolver, areaLookup
     );
 
     // healthchecks
@@ -278,7 +279,6 @@ public class WsROServer extends Application<WsServerConfig> {
     // tasks
     env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
     env.admin().addTask(new EventQueueTask(broker));
-    env.admin().addTask(new ReloadPortalTemplatesTask(renderer));
 
     // attach listeners to event broker
     broker.register(auth);
@@ -300,7 +300,7 @@ public class WsROServer extends Application<WsServerConfig> {
                                         NameDao ndao, PublisherDao pdao, SectorPublisherDao spdao, ReferenceDao rdao,
                                         NameUsageDao nudao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService,
-                                        ImageService imgService, FeedbackService feedbackService, DoiResolver doiResolver) {
+                                        ImageService imgService, FeedbackService feedbackService, DoiResolver doiResolver, AreaLabelLookup areaLookup) {
     // dataset scoped resources
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetImportResource(diDao));
@@ -330,7 +330,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new RobotsResource());
     j.register(new VernacularGlobalResource());
     j.register(new VersionResource(cfg.versionString(), LocalDateTime.now()));
-    j.register(new VocabResource());
+    j.register(new VocabResource(cfg.gazetteerDir, areaLookup));
     j.register(new IdentifierScopeResource());
 
     // global parsers

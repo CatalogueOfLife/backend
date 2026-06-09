@@ -27,6 +27,7 @@ public class SciNameNormalizer {
   private static final Pattern suffix_ra = Pattern.compile("(?<=[a-z][^aeiou])r(?:a|um)$");
   // tor/trix, e.g. viator / viatrix
   private static final Pattern suffix_tor = Pattern.compile("trix$");
+  private static final Pattern suffix_gou = Pattern.compile("gou[sm]$");
   private static final Pattern i = Pattern.compile("(?<!\\b)[jyi]+");
   private static final Pattern trh = Pattern.compile("([gtr])h", Pattern.CASE_INSENSITIVE);
   private static final Pattern removeRepeatedLetter = Pattern.compile("(\\p{L})\\1+");
@@ -114,14 +115,15 @@ public class SciNameNormalizer {
     // Remove a hybrid cross, or a likely hybrid cross.
     s = removeHybridMarker(s);
     
-    // Only for bi/trinomials, otherwise we mix up ranks.
-    if (normMonomials) {
-      s = normStrongly(s, stemming);
-      
-    } else if (s.indexOf(' ') > 2) {
+    // by default only for bi/trinomials, otherwise we mix up ranks.
+    if (s.indexOf(' ') > 2) {
       String[] parts = s.split(" +");
       StringBuilder sb = new StringBuilder();
-      sb.append(parts[0]);
+      if (normMonomials) {
+        sb.append(normStrongly(parts[0], stemming));
+      } else {
+        sb.append(parts[0]);
+      }
       for (int i = 1; i < parts.length; i++) {
         sb.append(" ");
         if (Character.isLowerCase(parts[i].charAt(0))) {
@@ -131,6 +133,8 @@ public class SciNameNormalizer {
         }
       }
       s = sb.toString();
+    } else if (normMonomials) {
+      s = normStrongly(s, stemming);
     }
     
     return s.trim();
@@ -169,6 +173,7 @@ public class SciNameNormalizer {
    */
   public static String stemEpithet(String epithet) {
     if (!hasContent(epithet)) return "";
+    epithet = suffix_gou.matcher(epithet).replaceFirst("g");
     epithet = suffix_tor.matcher(epithet).replaceFirst("tor");
     epithet = suffix_ra.matcher(epithet).replaceFirst("er"); // there are some cases (e.g. liber) that do not lose the "e" - but we rather catch the majority of cases
     return suffix_a.matcher(epithet).replaceFirst("");

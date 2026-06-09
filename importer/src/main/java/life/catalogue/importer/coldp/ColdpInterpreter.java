@@ -244,7 +244,7 @@ public class ColdpInterpreter extends InterpreterBase {
 
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     List<Distribution> dists;
-    if (rec.hasTerm(ColdpTerm.areaID)) {
+    if (rec.hasTerm(ColdpTerm.areaID) || rec.hasTerm(ColdpTerm.area)) {
       dists = super.interpretDistributionByGazetteer(rec, this::setReference,
         ColdpTerm.gazetteer,
         ColdpTerm.areaID,
@@ -258,20 +258,6 @@ public class ColdpInterpreter extends InterpreterBase {
         ColdpTerm.season,
         ColdpTerm.lifeStage,
         ColdpTerm.remarks
-      );
-
-    } else if (rec.hasTerm(ColdpTerm.area)) {
-      dists = createDistribution(Gazetteer.TEXT, null, rec.get(ColdpTerm.area), rec,
-        ColdpTerm.status, // legacy
-        ColdpTerm.establishmentMeans,
-        ColdpTerm.degreeOfEstablishment,
-        ColdpTerm.pathway,
-        ColdpTerm.threatStatus,
-        ColdpTerm.year,
-        ColdpTerm.season,
-        ColdpTerm.lifeStage,
-        ColdpTerm.remarks,
-        this::setReference
       );
     } else {
       dists = Collections.emptyList();

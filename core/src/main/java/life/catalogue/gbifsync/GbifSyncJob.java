@@ -89,12 +89,30 @@ public class GbifSyncJob extends GlobalBlockingJob {
       }
     }
     pager = new DatasetPager(client, cfg, since);
+    // remove any existing datasets that are blocked - the pager skips them, so they won't be recreated below
+    deleteBlocked();
     if (!keys.isEmpty()) {
       syncSelected();
     } else {
       syncAll();
     }
     LOG.info("{} datasets added, {} updated, {} deleted", created, updated, deleted);
+  }
+
+  /**
+   * Deletes any existing ChecklistBank datasets whose GBIF key is configured as blocked.
+   * Runs on every sync (incremental and full). Blocked datasets are also filtered out by the pager,
+   * so they are never (re)created or updated during the same run.
+   */
+  private void deleteBlocked() {
+    for (UUID gbifKey : cfg.blockedDatasets) {
+      DatasetWithSettings curr = dao.getWithSettings(gbifKey);
+      if (curr != null) {
+        LOG.warn("Delete blocked dataset {} {} with GBIF key {}", curr.getKey(), curr.getTitle(), gbifKey);
+        dao.delete(curr.getKey(), Users.GBIF_SYNC);
+        deleted++;
+      }
+    }
   }
 
   private void syncSelected() throws Exception {

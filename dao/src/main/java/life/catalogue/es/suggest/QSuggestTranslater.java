@@ -9,7 +9,7 @@ import org.gbif.nameparser.api.Rank;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 
 public class QSuggestTranslater extends QTranslator {
-  private static final String FLD_WORD = "usage.name.scientificName.word";
+  private static final String FLD_SEARCH = "usage.name.scientificName.search";
   /** Factor for reciprocal rank boost: score contribution ≈ RANK_FACTOR / rank.ordinal().
    *  At SPECIES (81) this yields ~1.23; at SUBSPECIES (85) ~1.18; at GENUS (70) ~1.43. */
   private static final double RANK_FACTOR = 100.0;
@@ -19,7 +19,7 @@ public class QSuggestTranslater extends QTranslator {
   }
 
   /**
-   * Phrase-prefix match on the search_as_you_type word field.
+   * Phrase-prefix match on the search_as_you_type {@code .search} sub-field.
    * ES automatically routes match_phrase_prefix through the _index_prefix sub-field for
    * O(1) performance regardless of prefix length — no max_expansions needed.
    * Phrase semantics ensure all tokens are required in order, so "Phoca vit" cannot
@@ -32,7 +32,7 @@ public class QSuggestTranslater extends QTranslator {
   public Query buildSciNameQuery() {
     return Query.of(q -> q.functionScore(fs -> fs
         .query(inner -> inner.matchPhrasePrefix(m -> m
-        .field(FLD_WORD)
+        .field(FLD_SEARCH)
         .query(request.getQ())
       ))
       .functions(f -> f

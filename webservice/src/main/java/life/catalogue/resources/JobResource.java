@@ -6,7 +6,6 @@ import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
@@ -18,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -77,8 +75,14 @@ public class JobResource {
 
   @DELETE
   @Path("{key}")
-  @RolesAllowed({Roles.ADMIN})
   public BackgroundJob cancel(@PathParam("key") UUID key, @Auth User user) {
+    BackgroundJob job = exec.getJob(key);
+    if (job == null) {
+      throw new NotFoundException("No running or queued job " + key);
+    }
+    if (job.getUserKey() != user.getKey() && !user.isAdmin()) {
+      throw new ForbiddenException("Only the owner or an admin may cancel job " + key);
+    }
     return exec.cancel(key, user.getKey());
   }
 }

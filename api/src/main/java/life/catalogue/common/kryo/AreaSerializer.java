@@ -58,10 +58,6 @@ public class AreaSerializer extends Serializer<Area> {
       switch (standard) {
         case ISO:
           return Country.fromIsoCode(value).orElseThrow(() -> new IllegalArgumentException(value + " is no supported ISO country code"));
-        case TDWG:
-          return TdwgArea.of(value);
-        case LONGHURST:
-          return LonghurstArea.of(value);
         default:
           // we have not implemented other area enumerations yet!
           return new GenericArea(standard, value, null);

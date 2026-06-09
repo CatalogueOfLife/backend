@@ -1,0 +1,11 @@
+Felidae [family] {ID=FELID CODE=ZOOLOGICAL}
+  Puma Jardine, 1834 [genus] {ID=PUMA CODE=ZOOLOGICAL}
+    Puma concolor (Linnaeus, 1771) [species] {ID=PCON CODE=ZOOLOGICAL}
+      =Felis concolor Linnaeus, 1771 [species] {ID=SYNA CODE=ZOOLOGICAL}
+      =Felis bangsi Merriam, 1901 [species] {ID=SYNB CODE=ZOOLOGICAL}
+      =Felis concolor coryi Bangs, 1899 [subspecies] {ID=SYNC CODE=ZOOLOGICAL}
+      =Puma concolor borbensis (Nehring, 1898) [subspecies] {ID=SYND CODE=ZOOLOGICAL}
+      Puma concolor concolor (Linnaeus, 1771) [subspecies] {ID=SSP1 CODE=ZOOLOGICAL}
+        =Felis concolor concolor Linnaeus, 1771 [subspecies] {ID=SYNE CODE=ZOOLOGICAL}
+      Puma concolor couguar (Kerr, 1792) [subspecies] {ID=SSP2 CODE=ZOOLOGICAL}
+        =Felis couguar Kerr, 1792 [species] {ID=SYNF CODE=ZOOLOGICAL}

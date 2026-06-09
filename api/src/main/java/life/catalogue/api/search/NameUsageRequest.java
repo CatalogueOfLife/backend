@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 
@@ -61,16 +62,12 @@ public abstract class NameUsageRequest {
    */
   public enum SearchType {
     /**
-     * Matches a search term to the beginning of the words of a scientific name. This is the only
-     * available search type for the suggest service. Whole-word and exact matching defies the purpose
-     * of auto-completion.
+     * Default. Matches a search term against entire tokens of the scientific name and also as a
+     * token-level prefix (any token, not only the leading one). Returns the union of the legacy
+     * WHOLE_WORDS and PREFIX behaviours plus prefix-of-any-token matching.
      */
-    PREFIX,
-
-    /**
-     * Matches a search term to entire epithets within a scientific name.
-     */
-    WHOLE_WORDS,
+    @JsonAlias({"WHOLE_WORDS", "PREFIX", "whole_words", "prefix"})
+    STANDARD,
 
     /**
      * Matches the entire search phrase to the entire scientific name.

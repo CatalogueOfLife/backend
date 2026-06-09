@@ -211,7 +211,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   }
 
   @Override
-  public void exportReferences() throws IOException {
+  public void exportReferences() throws IOException, InterruptedException {
     super.exportReferences();
     if (cslWriter != null) {
       cslWriter.write("\n]\n");

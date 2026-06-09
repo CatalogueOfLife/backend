@@ -203,6 +203,119 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
 
   }
 
+  /**
+   * releasedFrom=COL is special: besides the proper releases of the COL project (matched by source_key)
+   * it also lists the older COL releases that were re-imported as EXTERNAL datasets and only carry the
+   * COL release alias convention (COLyy[.m][ XR], e.g. COL00, COL19, COL20 XR, COL00.5).
+   */
+  @Test
+  public void releasedFromCol() throws Exception {
+    // proper COL releases (origin RELEASE/XRELEASE, source_key=COL) - matched authoritatively by source_key
+    Dataset relCol = create();
+    relCol.setOrigin(DatasetOrigin.RELEASE);
+    relCol.setSourceKey(Datasets.COL);
+    relCol.setAlias("COL25");
+    mapper().create(relCol);
+
+    Dataset xrCol = create();
+    xrCol.setOrigin(DatasetOrigin.XRELEASE);
+    xrCol.setSourceKey(Datasets.COL);
+    xrCol.setAlias("COL25 XR");
+    mapper().create(xrCol);
+
+    // legacy COL releases re-imported as EXTERNAL datasets (no source_key) - matched by alias convention
+    Dataset extAnnual = create();
+    extAnnual.setOrigin(DatasetOrigin.EXTERNAL);
+    extAnnual.setAlias("COL19");
+    mapper().create(extAnnual);
+
+    Dataset extAnnualXr = create();
+    extAnnualXr.setOrigin(DatasetOrigin.EXTERNAL);
+    extAnnualXr.setAlias("COL20 XR");
+    mapper().create(extAnnualXr);
+
+    Dataset extMonthly = create();
+    extMonthly.setOrigin(DatasetOrigin.EXTERNAL);
+    extMonthly.setAlias("COL00.5"); // earliest possible year, monthly
+    mapper().create(extMonthly);
+
+    // externals that must NOT be treated as COL releases
+    Dataset extOther = create();
+    extOther.setOrigin(DatasetOrigin.EXTERNAL);
+    extOther.setAlias("WORMS");
+    mapper().create(extOther);
+
+    Dataset extTrap = create(); // 4-digit year must not match the anchored pattern
+    extTrap.setOrigin(DatasetOrigin.EXTERNAL);
+    extTrap.setAlias("COL2019");
+    mapper().create(extTrap);
+
+    // a non-COL project with its own release - COL-aliased datasets must not leak here
+    Dataset proj2 = create();
+    proj2.setOrigin(DatasetOrigin.PROJECT);
+    mapper().create(proj2);
+    Dataset rel2 = create();
+    rel2.setOrigin(DatasetOrigin.RELEASE);
+    rel2.setSourceKey(proj2.getKey());
+    rel2.setAlias("COL19"); // a release of proj2 even though its alias looks COL-like
+    mapper().create(rel2);
+    commit();
+
+    final DatasetSearchRequest req = new DatasetSearchRequest();
+    req.setReleasedFrom(Datasets.COL);
+    Set<Integer> keys = mapper().search(req, null, new Page(0, 100)).stream()
+        .map(Dataset::getKey).collect(Collectors.toSet());
+
+    // proper releases + legacy externals matching the alias convention
+    assertTrue(keys.contains(relCol.getKey()));
+    assertTrue(keys.contains(xrCol.getKey()));
+    assertTrue(keys.contains(extAnnual.getKey()));
+    assertTrue(keys.contains(extAnnualXr.getKey()));
+    assertTrue(keys.contains(extMonthly.getKey()));
+    // non-COL externals excluded
+    assertFalse(keys.contains(extOther.getKey()));
+    assertFalse(keys.contains(extTrap.getKey()));
+    // releases of other projects excluded
+    assertFalse(keys.contains(rel2.getKey()));
+
+    // releasedFrom for a non-COL project is unchanged: only its own releases, no alias matching
+    req.setReleasedFrom(proj2.getKey());
+    Set<Integer> keys2 = mapper().search(req, null, new Page(0, 100)).stream()
+        .map(Dataset::getKey).collect(Collectors.toSet());
+    assertTrue(keys2.contains(rel2.getKey()));
+    assertFalse(keys2.contains(extAnnual.getKey()));
+    assertFalse(keys2.contains(relCol.getKey()));
+  }
+
+  @Test
+  public void sortByIssued() throws Exception {
+    Dataset d2005 = create();
+    d2005.setIssued(FuzzyDate.of("2005"));
+    mapper().create(d2005);
+    Dataset d2010 = create();
+    d2010.setIssued(FuzzyDate.of("2010-06"));
+    mapper().create(d2010);
+    Dataset d2018 = create();
+    d2018.setIssued(FuzzyDate.of("2018-03-15"));
+    mapper().create(d2018);
+    commit();
+
+    final List<Integer> mine = List.of(d2005.getKey(), d2010.getKey(), d2018.getKey());
+    final DatasetSearchRequest req = new DatasetSearchRequest();
+    req.setSortBy(DatasetSearchRequest.SortBy.ISSUED);
+
+    // default order is newest issued first, consistent with sortBy=CREATED
+    List<Integer> order = mapper().search(req, null, new Page(0, 1000)).stream()
+        .map(Dataset::getKey).filter(mine::contains).collect(Collectors.toList());
+    assertEquals(List.of(d2018.getKey(), d2010.getKey(), d2005.getKey()), order);
+
+    // reversed gives oldest issued first
+    req.setReverse(true);
+    List<Integer> reversed = mapper().search(req, null, new Page(0, 1000)).stream()
+        .map(Dataset::getKey).filter(mine::contains).collect(Collectors.toList());
+    assertEquals(List.of(d2005.getKey(), d2010.getKey(), d2018.getKey()), reversed);
+  }
+
   @Test
   public void isPrivateAndExists() throws Exception {
     Dataset d1 = create();

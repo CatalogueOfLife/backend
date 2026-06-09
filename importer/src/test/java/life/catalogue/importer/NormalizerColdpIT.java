@@ -2,6 +2,7 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.img.ImageService;
@@ -10,6 +11,7 @@ import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.parser.NameParser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -678,6 +680,29 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertEquals(1, un.getSpiRelations().size());
     var v = store.getVerbatim(un.getSpiRelations().getFirst().getVerbatimKey());
     assertTrue(v.getIssues().isEmpty());
+  }
+
+  /**
+   * Structured ISO distributions not interpreted properly ending up as TEXT before.
+   */
+  @Test
+  public void donaldDistributions() throws Exception {
+    normalize(43);
+
+    store.usages().all().forEach(u -> {
+      if (u.isSynonym()) {
+        assertTrue(u.distributions.isEmpty());
+      } else {
+        for (var d : u.distributions) {
+          assertNotNull(d.getArea());
+          assertEquals(Gazetteer.ISO, d.getArea().getGazetteer());
+          assertNotNull(d.getArea().getId());
+          assertTrue(StringUtils.isAllUpperCase(d.getArea().getId()));
+          assertEquals(EstablishmentMeans.NATIVE, d.getEstablishmentMeans());
+          assertEquals(DegreeOfEstablishment.NATIVE, d.getDegreeOfEstablishment());
+        }
+      }
+    });
   }
 
 }

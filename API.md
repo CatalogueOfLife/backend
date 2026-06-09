@@ -146,11 +146,11 @@ You can filter the search by various options:
 
  - rank: https://api.checklistbank.org/dataset/COL2022/nameusage/search?q=Abies&rank=species
  - content: what to search on, SCIENTIFIC_NAME, AUTHORSHIP or VERNACULAR_NAME. Can be multiple: https://api.checklistbank.org/dataset/COL2022/nameusage/search?q=Hobern&content=AUTHORSHIP
- - type: the kind of search to use. One of prefix, whole_words or exact: https://api.checklistbank.org/dataset/COL2022/nameusage/search?q=Hobern&content=AUTHORSHIP
+ - type: the kind of search to use. One of standard, exact or fuzzy: https://api.checklistbank.org/dataset/COL2022/nameusage/search?q=Hobern&content=AUTHORSHIP
+   + *standard*: Combines whole-word matching with token-level prefix matching against any token in the scientific name. Also matches stems of common Latin/Greek compound prefixes (e.g. `mucid` finds `submucidus` and `pseudomucidus`). This is the default.
    + *exact*: Matches the entire search phrase to the entire scientific name.
-   + *whole_words*: Matches a search term to entire words within a scientific name. This is the default.
-   + *prefix*: Matches a search term to the beginning of the epithets within a scientific name.
-   + *fuzzy*: A whole_words search against words of the scientific name, but accepts fuzzy matches with a small edit distance.
+   + *fuzzy*: A whole-words search against words of the scientific name, but accepts fuzzy matches with a small edit distance.
+   + *Deprecated*: `whole_words` and `prefix` are still accepted as `type` values and are treated as `standard`. They will be removed in a future major release.
 
 
 ## Taxon info and vernacular names

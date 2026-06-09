@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.*;
 
 import java.util.*;
@@ -33,14 +34,15 @@ public class DatasetSourceDao {
    */
   public DatasetSourceMapper.SourceDataset get(int datasetKey, int sourceDatasetKey, boolean dontPatch){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (EXTERNAL == info.origin) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is external");
+    }
+
     DatasetSourceMapper.SourceDataset d;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
-      if (EXTERNAL == info.origin) {
-        throw new IllegalArgumentException("Dataset "+datasetKey+" is external");
-
-      } else if (PROJECT == info.origin) {
+      if (PROJECT == info.origin) {
         d = dsm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
           // get latest version with patch applied
@@ -57,6 +59,51 @@ public class DatasetSourceDao {
       }
     }
     return d;
+  }
+
+  /**
+   * Gets a simple dataset object for the source dataset in a release or project.
+   * For projects this will return the latest version of the source dataset and will NOT apply any patch.
+   * @param datasetKey       the dataset key of the release or project
+   * @param sourceDatasetKey the dataset key of the source within the release or project
+   */
+  public DatasetSimple getSimple(int datasetKey, int sourceDatasetKey){
+    var info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (EXTERNAL == info.origin) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is external");
+    }
+    try (SqlSession session = factory.openSession()) {
+      DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
+      DatasetSimple d = getSimpleUnguarded(datasetKey, info.origin, sourceDatasetKey, dsm);
+      // if the release was deleted, the source should also be marked as deleted
+      if (info.deleted) {
+        d.setDeleted(true);
+      }
+      return d;
+    }
+  }
+
+  private DatasetSimple getSimpleUnguarded(int datasetKey, DatasetOrigin origin, int sourceDatasetKey, DatasetSourceMapper dsm){
+    if (PROJECT == origin) {
+      return dsm.getProjectSourceSimple(sourceDatasetKey, datasetKey);
+    } else {
+      return dsm.getReleaseSourceSimple(sourceDatasetKey, datasetKey);
+    }
+  }
+
+  public List<DatasetSimple> listSimple(int datasetKey, List<Integer> sourceDatasetKeys) {
+    var info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (EXTERNAL == info.origin) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is external");
+    }
+    List<DatasetSimple> datasets = new ArrayList<>();
+    try (SqlSession session = factory.openSession()) {
+      DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
+      for (int key : sourceDatasetKeys) {
+        datasets.add(getSimpleUnguarded(datasetKey, info.origin, key, dsm));
+      }
+    }
+    return datasets;
   }
 
   public int update(int datasetKey, Dataset source, int user) {

@@ -64,6 +64,8 @@ import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
+import life.catalogue.parser.AreaLabelLookup;
+import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.NameParser;
 import life.catalogue.printer.DatasetDiffService;
 import life.catalogue.printer.SectorDiffService;
@@ -292,6 +294,9 @@ public class WsServer extends Application<WsServerConfig> {
       }
     });
 
+    var areaLookup = new AreaLabelLookup(cfg.gazetteerDir);
+    AreaParser.PARSER.setLabelLookup(areaLookup);
+
     // ES
     NameUsageIndexService indexService;
     NameUsageSearchService searchService;
@@ -364,6 +369,7 @@ public class WsServer extends Application<WsServerConfig> {
     NameUsageDao nudao = new NameUsageDao(getSqlSessionFactory(), indexService);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
+    tdao.setAreaLabelLookup(new AreaLabelLookup(cfg.gazetteerDir));
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
@@ -476,7 +482,7 @@ public class WsServer extends Application<WsServerConfig> {
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
       ddao, dsdao, exportManager.blocked(), diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService,
-      imgService, feedback, doiResolver
+      imgService, feedback, doiResolver, areaLookup
     );
 
     // global

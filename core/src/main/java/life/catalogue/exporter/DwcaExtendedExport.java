@@ -257,7 +257,7 @@ public class DwcaExtendedExport extends ArchiveExport {
 }
 
   @Override
-  protected void bundle() throws IOException {
+  protected void bundle() throws IOException, InterruptedException {
     if (writer2 != null) {
       writer2.close();
     }

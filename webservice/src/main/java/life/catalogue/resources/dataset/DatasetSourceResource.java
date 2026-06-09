@@ -72,6 +72,12 @@ public class DatasetSourceResource {
   }
 
   @GET
+  @Path("/simple")
+  public List<DatasetSimple> projectSourceSimple(@PathParam("key") Integer datasetKey, @QueryParam("id") List<Integer> ids) {
+    return sourceDao.listSimple(datasetKey, ids);
+  }
+
+  @GET
   @Path("/{id}")
   @VaryAccept
   @Produces({MediaType.APPLICATION_JSON,

@@ -126,4 +126,19 @@ public class DatasetSimple {
   public int hashCode() {
     return Objects.hash(key, sourceKey, origin, alias, title, version, privat, deleted, gbifPublisherKey);
   }
+
+  @Override
+  public String toString() {
+    return "DatasetSimple{" +
+        "key=" + key +
+        ", sourceKey=" + sourceKey +
+        ", origin=" + origin +
+        ", alias='" + alias + '\'' +
+        ", title='" + title + '\'' +
+        ", version='" + version + '\'' +
+        ", privat=" + privat +
+        ", deleted=" + deleted +
+        ", gbifPublisherKey=" + gbifPublisherKey +
+        '}';
+  }
 }

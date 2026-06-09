@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.annotations.VisibleForTesting;
 
 import jakarta.ws.rs.NotFoundException;
 
@@ -140,25 +141,29 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
     }
   }
 
-  private Integer lookupColRelease(int key, boolean extended) {
-    int year = key / 100;
-    int month = key % 100;
-
+  @VisibleForTesting
+  static String colReleaseAlias(int year, int month, boolean extended) {
     StringBuilder alias = new StringBuilder();
-    if (extended) {
-      alias.append("X");
-    }
     alias.append("COL");
     alias.append(String.format("%02d", year));
     if (month > 0) {
       alias.append(".");
       alias.append(month);
     }
+    if (extended) {
+      alias.append(" XR");
+    }
+    return alias.toString();
+  }
+
+  private Integer lookupColRelease(int key, boolean extended) {
+    int year = key / 100;
+    int month = key % 100;
 
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSearchRequest req = new DatasetSearchRequest();
-      req.setAlias(alias.toString());
+      req.setAlias(colReleaseAlias(year, month, extended));
       req.setPrivat(false);
       if (year >= 21 || extended) {
         // proper releases
