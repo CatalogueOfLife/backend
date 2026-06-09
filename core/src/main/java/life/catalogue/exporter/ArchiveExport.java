@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.common.func.ThrowingBiConsumer;
 import life.catalogue.common.func.ThrowingConsumer;
 import life.catalogue.common.io.TermWriter;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.db.*;
 import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
@@ -93,6 +94,20 @@ public abstract class ArchiveExport extends DatasetExportJob {
       exportTaxonRels();
       exportReferences();
       closeWriter();
+    } catch (InterruptedRuntimeException e) {
+      // per-record cancellation checks inside the Consumer lambdas below abort with the
+      // unchecked variant; surface it as a checked InterruptedException so we end CANCELED
+      throw e.asChecked();
+    }
+  }
+
+  /**
+   * Unchecked cancellation check for use inside the Consumer lambdas passed to PgUtils.consume,
+   * which cannot throw the checked InterruptedException. Converted back to checked at export().
+   */
+  private void checkIfCancelledRuntime() {
+    if (Thread.currentThread().isInterrupted()) {
+      throw new InterruptedRuntimeException(getClass().getSimpleName() + " export of dataset " + datasetKey + " was cancelled");
     }
   }
 
@@ -290,6 +305,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
         if (fullDataset) {
           PgUtils.consume(()->rm.processDataset(datasetKey), r -> {
+            checkIfCancelledRuntime();
             try {
               r.setSectorMode(sectorInfoCache.sector2mode(r.getSectorKey()));
               write(r);
@@ -301,6 +317,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         } else {
           refIDs.remove(null); // can happen
           for (String id : refIDs) {
+            checkIfCancelledRuntime();
             var ref = rm.get(entityKey.id(id));
             if (ref != null) {
               ref.setSectorMode(sectorInfoCache.sector2mode(ref.getSectorKey()));
@@ -322,6 +339,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         TaxonExtensionMapper<T> exm = session.getMapper(mapperClass);
         if (fullDataset) {
           PgUtils.consume(()->exm.processDataset(datasetKey), x -> {
+            checkIfCancelledRuntime();
             try {
               trackRefId(x.getObj());
               x.getObj().setSectorMode(sectorInfoCache.sector2mode(x.getObj().getSectorKey()));
@@ -335,6 +353,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         } else {
           for (String id : taxonIDs) {
             for (T x : exm.listByTaxon(entityKey.id(id))) {
+              checkIfCancelledRuntime();
               trackRefId(x);
               x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
               consumer.accept(id, x);
@@ -360,6 +379,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
           M mapper = session.getMapper(mapperClass);
           if (fullDataset) {
             PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
+              checkIfCancelledRuntime();
               try {
                 trackRefId(x);
                 x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
@@ -372,6 +392,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
           } else {
             for (String id : nameIDs) {
               for (T x : mapper.listByName(entityKey.id(id))) {
+                checkIfCancelledRuntime();
                 trackRefId(x);
                 x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
                 consumer.accept(x);
@@ -398,6 +419,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
           M mapper = session.getMapper(mapperClass);
           if (fullDataset) {
             PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
+              checkIfCancelledRuntime();
               try {
                 trackRefId(x);
                 x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
@@ -410,6 +432,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
           } else {
             for (String id : taxonIDs) {
               for (T x : mapper.listByTaxon(entityKey.id(id))) {
+                checkIfCancelledRuntime();
                 trackRefId(x);
                 x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
                 consumer.accept(x);
@@ -435,6 +458,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         var mapper = session.getMapper(TreatmentMapper.class);
         if (fullDataset) {
           PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
+            checkIfCancelledRuntime();
             try {
               writeTreatment(x);
             } catch (final IOException e) {
@@ -444,6 +468,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         } else {
           DSID<String> key = DSID.root(datasetKey);
           for (String id : taxonIDs) {
+            checkIfCancelledRuntime();
             var x = mapper.get(key.id(id));
             if (x != null) {
               writeTreatment(x);
@@ -461,6 +486,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         EstimateMapper mapper = session.getMapper(EstimateMapper.class);
         if (fullDataset) {
           PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
+            checkIfCancelledRuntime();
             try {
               trackRefId(x);
               write(x);
@@ -476,6 +502,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
           for (String id : taxonIDs) {
             req.setId(id);
             for (SpeciesEstimate x : mapper.search(req, page)) {
+              checkIfCancelledRuntime();
               trackRefId(x);
               write(x);
               writer.next();
