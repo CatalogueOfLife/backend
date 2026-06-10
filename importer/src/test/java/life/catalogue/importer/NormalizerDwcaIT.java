@@ -595,6 +595,41 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertNotNull(v);
   }
 
+  /**
+   * WoRMS uses its custom Invasiveness term instead of dwc:degreeOfEstablishment.
+   * https://github.com/CatalogueOfLife/backend/issues/1511
+   */
+  @Test
+  public void wormsInvasiveness() throws Exception {
+    normalize(57);
+
+    var data = store.nameUsage("1");
+    var u = data.ud;
+    assertEquals(3, u.distributions.size());
+    for (var d : u.distributions) {
+      assertEquals(Gazetteer.TEXT, d.getArea().getGazetteer());
+      switch (d.getArea().getName()) {
+        case "Mediterranean Sea":
+          // WoRMS Invasiveness "Invasive" interpreted as degree of establishment
+          assertEquals(DegreeOfEstablishment.INVASIVE, d.getDegreeOfEstablishment());
+          assertEquals(EstablishmentMeans.INTRODUCED, d.getEstablishmentMeans());
+          break;
+        case "North Sea":
+          // "Uncertain" is a WoRMS Invasiveness value without a TDWG degree of establishment, accepted as empty
+          assertNull(d.getDegreeOfEstablishment());
+          assertEquals(EstablishmentMeans.NATIVE, d.getEstablishmentMeans());
+          break;
+        case "Baltic Sea":
+          // no establishmentMeans given: the explicit Invasiveness degree must survive the occurrenceStatus guess
+          assertEquals(DegreeOfEstablishment.INVASIVE, d.getDegreeOfEstablishment());
+          assertEquals(EstablishmentMeans.NATIVE, d.getEstablishmentMeans());
+          break;
+        default:
+          fail("unexpected area " + d.getArea().getName());
+      }
+    }
+  }
+
   @Test
   @Disabled @Ignore
   public void testExternal() throws Exception {

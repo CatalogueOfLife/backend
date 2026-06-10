@@ -401,11 +401,16 @@ public class InterpreterBase {
         switch (status.get()) {
           case NATIVE:
             d.setEstablishmentMeans(EstablishmentMeans.NATIVE);
-            d.setDegreeOfEstablishment(DegreeOfEstablishment.NATIVE);
+            // an explicitly given degree of establishment, e.g. the WoRMS Invasiveness, takes precedence over the status guess
+            if (d.getDegreeOfEstablishment() == null) {
+              d.setDegreeOfEstablishment(DegreeOfEstablishment.NATIVE);
+            }
             break;
           case DOMESTICATED:
             d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
-            d.setDegreeOfEstablishment(DegreeOfEstablishment.CULTIVATED);
+            if (d.getDegreeOfEstablishment() == null) {
+              d.setDegreeOfEstablishment(DegreeOfEstablishment.CULTIVATED);
+            }
             break;
           case ALIEN:
             d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
