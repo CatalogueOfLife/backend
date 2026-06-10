@@ -11,6 +11,74 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-06-10 rank series metrics update
+```sql
+-- update dataset metrics
+UPDATE dataset_import SET names_by_rank_count = names_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', names_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', names_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', names_by_rank_count -> 'SUBSERIES') 
+  WHERE names_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE dataset_import SET synonyms_by_rank_count = synonyms_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', synonyms_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', synonyms_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', synonyms_by_rank_count -> 'SUBSERIES') 
+  WHERE synonyms_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE dataset_import SET taxa_by_rank_count = taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', taxa_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', taxa_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', taxa_by_rank_count -> 'SUBSERIES') 
+  WHERE taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE dataset_import SET extinct_taxa_by_rank_count = extinct_taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', extinct_taxa_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', extinct_taxa_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', extinct_taxa_by_rank_count -> 'SUBSERIES') 
+  WHERE extinct_taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+
+-- update sector metrics
+UPDATE sector_import SET names_by_rank_count = names_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', names_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', names_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', names_by_rank_count -> 'SUBSERIES') 
+  WHERE names_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE sector_import SET synonyms_by_rank_count = synonyms_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', synonyms_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', synonyms_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', synonyms_by_rank_count -> 'SUBSERIES') 
+  WHERE synonyms_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE sector_import SET taxa_by_rank_count = taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', taxa_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', taxa_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', taxa_by_rank_count -> 'SUBSERIES') 
+  WHERE taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE sector_import SET extinct_taxa_by_rank_count = extinct_taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', extinct_taxa_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', extinct_taxa_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', extinct_taxa_by_rank_count -> 'SUBSERIES') 
+  WHERE extinct_taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+CREATE INDEX name_series_zoo_rank_idx ON name(rank) WHERE rank IN ( 'SUPERSERIES_BOTANY', 'SERIES_BOTANY', 'SUBSERIES_BOTANY', 'SUPERSERIES_ZOOLOGY', 'SERIES_ZOOLOGY', 'SUBSERIES_ZOOLOGY' ); 
+CREATE INDEX name_usage_archive_series_zoo_rank_idx ON name_usage_archive(n_rank) WHERE n_rank IN ( 'SUPERSERIES_BOTANY', 'SERIES_BOTANY', 'SUBSERIES_BOTANY', 'SUPERSERIES_ZOOLOGY', 'SERIES_ZOOLOGY', 'SUBSERIES_ZOOLOGY' ); 
+  
+UPDATE name SET rank = 'SUPERSERIES_ZOOLOGY' WHERE rank = 'SUPERSERIES_BOTANY' AND code = 'ZOOLOGICAL';  
+UPDATE name SET rank = 'SERIES_ZOOLOGY' WHERE rank = 'SERIES_BOTANY' AND code = 'ZOOLOGICAL';  
+UPDATE name SET rank = 'SUBSERIES_ZOOLOGY' WHERE rank = 'SUBSERIES_BOTANY' AND code = 'ZOOLOGICAL';  
+
+UPDATE name_usage_archive SET n_rank = 'SUPERSERIES_ZOOLOGY' WHERE n_rank = 'SUPERSERIES_BOTANY' AND n_code = 'ZOOLOGICAL';  
+UPDATE name_usage_archive SET n_rank = 'SERIES_ZOOLOGY' WHERE n_rank = 'SERIES_BOTANY' AND n_code = 'ZOOLOGICAL';  
+UPDATE name_usage_archive SET n_rank = 'SUBSERIES_ZOOLOGY' WHERE n_rank = 'SUBSERIES_BOTANY' AND n_code = 'ZOOLOGICAL';  
+
+DROP INDEX name_series_zoo_rank_idx; 
+DROP INDEX name_usage_archive_series_zoo_rank_idx; 
+```
+
 #### 2026-06-10 GBIF sync delta tracking
 Track the GBIF registry `modified` timestamp we last synced per dataset, so the incremental sync can
 skip datasets that have not changed since the previous run and we can poll the registry far more often.
