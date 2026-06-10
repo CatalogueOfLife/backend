@@ -34,8 +34,8 @@ public class PublisherSyncJobTest {
     cfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
 
     var cl = ClientBuilder.newClient(cfg);
-    var job = new PublisherSyncJob(gcfg, cl, null, 1);
-    var plazi = job.getFromGBIF(Publishers.PLAZI);
+    var registry = new GbifRegistryCache(cl, gcfg);
+    var plazi = registry.publisherEntity(Publishers.PLAZI);
     assertNotNull(plazi);
     assertEquals(Publishers.PLAZI, plazi.getKey());
     assertEquals("Plazi.org taxonomic treatments database", plazi.getTitle());

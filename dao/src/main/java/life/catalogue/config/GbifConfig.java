@@ -52,6 +52,13 @@ public class GbifConfig {
   public int publisherSyncFrequency = 24;
 
   /**
+   * Hours to cache GBIF registry publisher &amp; host organisations in memory, shared across sync runs.
+   * Avoids re-fetching the same slow organisation endpoints on every dataset and publisher sync.
+   * If zero or negative a default of 12h is used.
+   */
+  public int registryCacheHours = 12;
+
+  /**
    * GBIF publisher keys for journals and other publishers who exclusively publish article based datasets, e.g. Plazi & Pensoft.
    */
   @NotNull

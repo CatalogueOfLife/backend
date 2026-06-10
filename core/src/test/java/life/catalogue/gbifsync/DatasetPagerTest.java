@@ -6,6 +6,7 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.config.GbifConfig;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,7 @@ import jakarta.ws.rs.client.ClientBuilder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -93,6 +95,33 @@ public class DatasetPagerTest {
     DatasetPager.GDataset d = new DatasetPager.GDataset();
     d.key = key;
     return d;
+  }
+
+  /**
+   * The retry backoff must stay in the seconds range (and never grow into minutes like the old tries*tries minutes),
+   * so a single slow GBIF page can never stall the whole sync.
+   */
+  @Test
+  public void backoffSeconds() {
+    for (int tries = 1; tries <= 6; tries++) {
+      long secs = DatasetPager.backoffSeconds(tries);
+      assertTrue("backoff must be positive", secs >= 2);
+      // capped at 60s plus up to 50% jitter - never minutes-long like the old tries*tries minutes
+      assertTrue("backoff " + secs + "s for try " + tries + " must stay within seconds", secs <= 90);
+    }
+  }
+
+  @Test
+  public void parseGbifDateTime() {
+    // GBIF returns ISO-8601 with offset; we store as UTC LocalDateTime
+    assertEquals(LocalDateTime.of(2026, 6, 9, 20, 4, 21, 795_000_000),
+      DatasetPager.parseGbifDateTime("2026-06-09T20:04:21.795+00:00"));
+    // a +02:00 offset is normalised to UTC
+    assertEquals(LocalDateTime.of(2026, 6, 9, 18, 4, 21),
+      DatasetPager.parseGbifDateTime("2026-06-09T20:04:21+02:00"));
+    assertNull(DatasetPager.parseGbifDateTime(null));
+    assertNull(DatasetPager.parseGbifDateTime("  "));
+    assertNull(DatasetPager.parseGbifDateTime("not a date"));
   }
 
 }

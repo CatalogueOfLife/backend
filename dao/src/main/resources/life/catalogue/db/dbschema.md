@@ -11,6 +11,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-06-10 GBIF sync delta tracking
+Track the GBIF registry `modified` timestamp we last synced per dataset, so the incremental sync can
+skip datasets that have not changed since the previous run and we can poll the registry far more often.
+```
+ALTER TABLE dataset ADD COLUMN gbif_modified TIMESTAMP WITHOUT TIME ZONE;
+```
+
 #### 2026-06-04 name-parser 3.16 code-specific series ranks
 name-parser 3.16 replaced the ambiguous generic series ranks (`SUPERSERIES`, `SERIES`, `SUBSERIES`)
 with code-specific ones. The generic ranks sat in the botanical block, so we rename them in place to
