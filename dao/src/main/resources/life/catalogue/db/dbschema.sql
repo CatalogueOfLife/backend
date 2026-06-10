@@ -864,6 +864,7 @@ CREATE TABLE dataset (
   origin DATASETORIGIN NOT NULL,
   gbif_key UUID UNIQUE,
   gbif_publisher_key UUID,
+  gbif_modified TIMESTAMP WITHOUT TIME ZONE,
 
   identifier TEXT[],
   title TEXT NOT NULL,
@@ -973,6 +974,7 @@ CREATE INDEX ON dataset_citation (dataset_key);
 
 CREATE TABLE dataset_archive (LIKE dataset);
 ALTER TABLE dataset_archive
+  DROP COLUMN gbif_modified,
   DROP COLUMN deleted,
   DROP COLUMN doc,
   DROP COLUMN acl_editor,

@@ -429,6 +429,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<DatasetGBIF> listGBIF();
 
   /**
+   * Updates only the GBIF registry modified timestamp we last synced for a dataset.
+   * Used by the GBIF sync to track per-dataset deltas without touching any other dataset metadata.
+   */
+  int updateGbifModified(@Param("key") int key, @Param("modified") LocalDateTime modified);
+
+  /**
    * @return the last import attempt or null if never attempted
    */
   Integer lastImportAttempt(@Param("key") int datasetKey);

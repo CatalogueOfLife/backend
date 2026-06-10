@@ -200,7 +200,7 @@ public class AdminResource {
   @Path("/gbif-sync")
   @Consumes(MediaType.APPLICATION_JSON)
   public BackgroundJob syncGBIF(List<UUID> keys, @Auth User user) {
-    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), Set.copyOf(keys), false);
+    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, gbifSync.getRegistryCache(), user.getKey(), Set.copyOf(keys), false);
     return runJob(job);
   }
 
@@ -210,7 +210,7 @@ public class AdminResource {
   public BackgroundJob syncGBIFText(InputStream keysAsText, @Auth User user) {
     try (var lr = new LineReader(keysAsText)) {
       var keys = IterUtils.setOf(lr, UUID::fromString);
-      GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), keys, false);
+      GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, gbifSync.getRegistryCache(), user.getKey(), keys, false);
       return runJob(job);
     }
   }
@@ -218,7 +218,7 @@ public class AdminResource {
   @POST
   @Path("/publisher-sync")
   public BackgroundJob publisherSync(@Auth User user) {
-    PublisherSyncJob job = new PublisherSyncJob(cfg.gbif, gbifSync.getClient(), factory, user.getKey());
+    PublisherSyncJob job = new PublisherSyncJob(gbifSync.getRegistryCache(), factory, user.getKey());
     return runJob(job);
   }
 

@@ -660,10 +660,14 @@
   </select>
 
   <select id="listGBIF" resultMap="datasetGBIFResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>, d.gbif_key
+    SELECT <include refid="SELECT_SIMPLE"/>, d.gbif_key, d.gbif_modified
     FROM dataset d
     WHERE d.deleted IS NULL AND d.gbif_key IS NOT NULL
   </select>
+
+  <update id="updateGbifModified">
+    UPDATE dataset SET gbif_modified = #{modified} WHERE key = #{key}
+  </update>
 
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
