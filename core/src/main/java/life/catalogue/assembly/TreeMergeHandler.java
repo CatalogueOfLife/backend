@@ -446,10 +446,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // add well known identifiers
     if (usageIdScope != null) {
-      nu.addIdentifier(new Identifier(usageIdScope, nu.getId()));
+      nu.addIdentifier(wellKnownId(usageIdScope, nu.getId()));
     }
     if (nameIdScope != null) {
-      nu.getName().addIdentifier(new Identifier(nameIdScope, nu.getName().getId()));
+      nu.getName().addIdentifier(wellKnownId(nameIdScope, nu.getName().getId()));
     }
 
     // only add a new name if we do not have already multiple names that we cannot clearly match
@@ -684,8 +684,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // add well know name and usage ids
     if (usageIdScope != null) {
-      num.addIdentifier(existing, List.of(new Identifier(usageIdScope, nu.getId())));
+      num.addIdentifier(existing, List.of(wellKnownId(usageIdScope, nu.getId())));
     }
+  }
+
+  /**
+   * Builds a well-known identifier for the given scope, extracting the plain local id from the raw
+   * source id in case the source publishes full resolver URLs instead of plain ids (see {@link IdentifierScope#extractId}).
+   */
+  private Identifier wellKnownId(String scope, String rawId) {
+    var def = IdentifierScopes.byScope(scope);
+    return new Identifier(scope, def != null ? def.extractId(rawId) : rawId);
   }
 
   /**
