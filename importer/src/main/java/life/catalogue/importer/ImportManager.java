@@ -17,9 +17,9 @@ import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.common.lang.Exceptions;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.PBQThreadPoolExecutor;
+import life.catalogue.concurrent.JobLane;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.csv.ExcelCsvExtractor;
@@ -36,18 +36,13 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.release.AbstractProjectCopy;
 
-import org.gbif.nameparser.utils.NamedThreadFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -68,16 +63,15 @@ import com.google.common.base.Preconditions;
 import jakarta.validation.Validator;
 
 /**
- * Manages import task scheduling, removing and listing
+ * Manages dataset import scheduling, cancellation and listing.
+ * The actual queue and execution lives in the shared JobExecutors IMPORT lane.
  */
 public class ImportManager implements Managed, Idle, DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
-  public static final String THREAD_NAME = "dataset-importer";
   static final Comparator<DatasetImport> DI_STARTED_COMPARATOR = Comparator.comparing(DatasetImport::getStarted, Comparator.nullsFirst(Comparator.naturalOrder()));
 
-  private PBQThreadPoolExecutor<ImportJob> exec;
+  private boolean started;
   private SyncManager assemblyCoordinator;
-  private final Map<Integer, PBQThreadPoolExecutor.ComparableFutureTask> futures = new ConcurrentHashMap<>();
   private final ImporterConfig iCfg;
   private final NormalizerConfig nCfg;
   private final DoiConfig dCfg;
@@ -134,14 +128,27 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   }
 
   /**
+   * @return all import jobs of the executor, both queued and running
+   */
+  private List<ImportJob> importJobs() {
+    return jobExecutor.getQueueByJobClass(ImportJob.class);
+  }
+
+  private Optional<ImportJob> importJob(int datasetKey) {
+    return importJobs().stream()
+        .filter(job -> job.getDatasetKey() == datasetKey)
+        .findFirst();
+  }
+
+  /**
    * Lists the ImportRequests of the current queue
    */
   public List<ImportRequest> queue() {
     if (!hasStarted()) {
       return Collections.emptyList();
     }
-    return exec.getQueue()
-        .stream()
+    return importJobs().stream()
+        .filter(BackgroundJob::isQueued)
         .map(ImportJob::getRequest)
         .collect(Collectors.toList());
   }
@@ -150,7 +157,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     if (!hasStarted()) {
       return 0;
     }
-    return exec.queueSize();
+    return jobExecutor.queueSize(JobLane.IMPORT);
   }
 
   /**
@@ -206,15 +213,12 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     }
   }
 
-  private static DatasetImport fromFuture(PBQThreadPoolExecutor.ComparableFutureTask f) {
-    return fromImportJob((ImportJob) f.getTask());
-  }
-
   private static DatasetImport fromImportJob(ImportJob job) {
     DatasetImport di = job.getDatasetImport();
     if (di == null) {
       di = new DatasetImport();
       di.setDatasetKey(job.getDatasetKey());
+      di.setJobKey(job.getKey());
       di.setAttempt(ObjectUtils.coalesce(job.getAttempt(), -1));
       di.setState(ImportState.WAITING);
     }
@@ -222,10 +226,11 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   }
 
   private List<DatasetImport> running(final Integer datasetKey, final Set<ImportState> states) {
+    final List<ImportJob> jobs = importJobs();
     // make sure we have all running ones in and on top!
-    List<DatasetImport> running = futures.values()
-        .stream()
-        .map(ImportManager::fromFuture)
+    List<DatasetImport> running = jobs.stream()
+        .filter(BackgroundJob::isRunning)
+        .map(ImportManager::fromImportJob)
         .filter(di -> di.getState().isRunning())
         .collect(Collectors.toList());
 
@@ -241,15 +246,13 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     }
     running.sort(DI_STARTED_COMPARATOR);
 
-    // then add the priority queue from the executor, filtered for queued imports only keeping the queues priority order
-    if (hasStarted()) {
-      running.addAll(
-          exec.getQueue()
-              .stream()
-              .map(ImportManager::fromImportJob)
-              .filter(di -> di.getState().isQueued())
-              .collect(Collectors.toList()));
-    }
+    // then add the queued imports, keeping the queues priority order
+    running.addAll(
+        jobs.stream()
+            .filter(BackgroundJob::isQueued)
+            .map(ImportManager::fromImportJob)
+            .filter(di -> di.getState().isQueued())
+            .collect(Collectors.toList()));
 
     // finally filter by dataset & state
     return running.stream()
@@ -266,34 +269,33 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   }
 
   /**
-   * @return true if queue is empty
+   * @return true if the import queue is empty
    */
   public boolean hasEmptyQueue() {
-    return exec.hasEmptyQueue();
+    return queueSize() == 0;
   }
 
   /**
    * @return true if imports are running or queued
    */
   public boolean hasRunning() {
-    return !futures.isEmpty();
+    return !importJobs().isEmpty();
   }
 
   /**
    * @return true if import for given dataset is running or queued
    */
   public boolean isRunning(int datasetKey) {
-    return futures.containsKey(datasetKey);
+    return importJob(datasetKey).isPresent();
   }
 
   /**
    * Cancels a running import job by its dataset key
    */
   public void cancel(int datasetKey, int user) {
-    Future f = futures.remove(datasetKey);
-    if (f != null) {
-      f.cancel(true);
-      exec.purge();
+    var job = importJob(datasetKey);
+    if (job.isPresent()) {
+      jobExecutor.cancel(job.get().getKey(), user);
       LOG.info("Canceled import for dataset {} by user {}", datasetKey, user);
 
     } else {
@@ -325,7 +327,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    * @param zip if true zips up the data
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full or is currently being
    *         synced in the assembly
-   * 
+   *
    *         dataset does not exist or is not of matching origin
    */
   public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String filename, @Nullable String suffix, User user) throws IOException {
@@ -372,15 +374,17 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    *         synced in the assembly or dataset does not exist or is of origin managed
    */
   private synchronized ImportRequest submitValidDataset(final ImportRequest req) throws IllegalArgumentException {
-    if (exec.queueSize() >= iCfg.maxQueue) {
-      LOG.info("Import queued at max {} already. Skip dataset {}", exec.queueSize(), req.datasetKey);
+    if (queueSize() >= iCfg.maxQueue) {
+      LOG.info("Import queued at max {} already. Skip dataset {}", queueSize(), req.datasetKey);
       throw new IllegalArgumentException("Import queue full, skip dataset " + req.datasetKey);
+    }
 
-    } else if (futures.containsKey(req.datasetKey)) {
+    var existing = importJob(req.datasetKey);
+    if (existing.isPresent()) {
       // this dataset is already scheduled. Force a prio import?
       LOG.info("Dataset {} already queued for import", req.datasetKey);
-      PBQThreadPoolExecutor.ComparableFutureTask f = futures.get(req.datasetKey);
-      if (req.priority && exec.isQueued(f)) {
+      ImportJob job = existing.get();
+      if (req.priority && job.isQueued()) {
         cancel(req.datasetKey, req.createdBy);
         LOG.info("Resubmit dataset {} for import with priority", req.datasetKey);
       } else {
@@ -398,7 +402,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     }
 
     // this is a good guy, let it run!
-    futures.put(req.datasetKey, exec.submit(createImport(req), req.priority));
+    jobExecutor.submit(createImport(req));
     LOG.info("Queued import for dataset {}", req.datasetKey);
     return req;
   }
@@ -411,26 +415,6 @@ public class ImportManager implements Managed, Idle, DatasetListener {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is the CoL working draft and cannot be imported");
     }
     DaoUtils.requireOrigin(datasetKey, DatasetOrigin.EXTERNAL, "imported");
-  }
-
-  /**
-   * We use old school callbacks here as you cannot easily cancel CopletableFutures.
-   */
-  private void successCallBack(ImportRequest req) {
-    Duration durQueued = Duration.between(req.created, req.started);
-    Duration durRun = Duration.between(req.started, LocalDateTime.now());
-    LOG.info("Dataset import {} finished. {} min queued, {} min to execute", req.datasetKey, durQueued.toMinutes(), durRun.toMinutes());
-    importTimer.update(durRun.getSeconds(), TimeUnit.SECONDS);
-    futures.remove(req.datasetKey);
-  }
-
-  /**
-   * We use old school callbacks here as you cannot easily cancel CompletableFutures.
-   */
-  private void errorCallBack(ImportRequest req, Exception err) {
-    futures.remove(req.datasetKey);
-    failed.inc();
-    LOG.error("Dataset import {} failed: {}", req.datasetKey, Exceptions.getFirstMessage(err), err.getCause());
   }
 
   /**
@@ -456,8 +440,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
       return new ImportJob(req, new DatasetWithSettings(d, ds), iCfg, nCfg, dCfg, downloader, factory, importStoreFactory, index, validator, resolver, indexService, imgService, dao, dDao, sDao, decisionDao, bus,
-        matcherFactory, scopeResolver,
-        req::start, this::successCallBack, this::errorCallBack
+        matcherFactory, scopeResolver, importTimer, failed
       );
     }
   }
@@ -495,13 +478,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",
         iCfg.threads,
         iCfg.maxQueue);
-
-    exec = new PBQThreadPoolExecutor<>(iCfg.threads,
-        60L,
-        TimeUnit.SECONDS,
-        new PriorityBlockingQueue<>(iCfg.maxQueue),
-        new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
-        new ThreadPoolExecutor.AbortPolicy());
+    started = true;
     try {
       cancelAndReschedule();
     } catch (RuntimeException e) {
@@ -512,25 +489,18 @@ public class ImportManager implements Managed, Idle, DatasetListener {
 
   @Override
   public void stop() throws Exception {
-    // orderly shutdown running imports
-    for (Future f : futures.values()) {
-      f.cancel(true);
-    }
-    // fully shutdown threadpool within given time
-    if (exec != null) {
-      exec.stop();
-      exec = null;
-    }
+    // running and queued imports live in the shared job executor which interrupts them on its own shutdown
+    started = false;
   }
 
   @Override
   public boolean hasStarted() {
-    return exec != null;
+    return started;
   }
 
   @Override
   public boolean isIdle() {
-    return !hasStarted() || hasEmptyQueue() && !hasRunning();
+    return !hasStarted() || !hasRunning();
   }
 
   @Override

@@ -7,6 +7,7 @@ import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -84,7 +85,7 @@ public class DatasetImportDao {
   /**
    * Create a new waiting dataset import with the next attempt
    */
-  public DatasetImport createWaiting(int datasetKey, Runnable job, int user) {
+  public DatasetImport createWaiting(int datasetKey, BackgroundJob job, int user) {
     // build new import
     DatasetImport di = new DatasetImport();
     di.setDatasetKey(datasetKey);
@@ -92,7 +93,8 @@ public class DatasetImportDao {
     di.setStarted(LocalDateTime.now());
     di.setDownloadUri(null);
     di.setOrigin(DatasetInfoCache.CACHE.info(datasetKey).origin);
-    di.setJob(job.getClass().getSimpleName());
+    di.setJobKey(job.getKey());
+    di.setJob(job.getJobName());
     di.setState(ImportState.WAITING);
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetImportMapper.class).create(di);

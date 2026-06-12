@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadException;
@@ -15,7 +16,9 @@ import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.concurrent.StartNotifier;
+import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.concurrent.DatasetJob;
+import life.catalogue.concurrent.JobLane;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
@@ -53,8 +56,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.file.PathUtils;
@@ -64,6 +67,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Timer;
 import com.google.common.base.Preconditions;
 
 import jakarta.validation.Validator;
@@ -72,14 +77,13 @@ import jakarta.validation.Validator;
  * Asynchronous import job that orchestrates the entire import process including download,
  * normalization and insertion into Postgres.
  * <p>
- * It can be cancelled by an according method at any time. Equality of instances is just based on
- * the datasetKey which allows multiple imports for the same dataset to be easily detected.
+ * It can be cancelled by an according method at any time. Duplicate detection in the job executor
+ * is just based on the datasetKey which allows multiple imports for the same dataset to be easily detected.
  */
-public class ImportJob implements Runnable {
+public class ImportJob extends DatasetJob {
   private static final Logger LOG = LoggerFactory.getLogger(ImportJob.class);
-  private final int datasetKey;
   private final ImportRequest req;
-  private final DatasetWithSettings dataset;
+  private final DatasetWithSettings dws;
   private DatasetImport di;
   private final ImporterConfig iCfg;
   private final NormalizerConfig nCfg;
@@ -100,23 +104,21 @@ public class ImportJob implements Runnable {
   private final EventBroker bus;
   private final UsageMatcherFactory matcherFactory;
   private final IdentifierScopeResolver scopeResolver;
-  private final StartNotifier notifier;
-  private final Consumer<ImportRequest> successCallback;
-  private final BiConsumer<ImportRequest, Exception> errorCallback;
-  
+  private final @Nullable Timer importTimer;
+  private final @Nullable Counter failedCounter;
+
   ImportJob(ImportRequest req, DatasetWithSettings d,
             ImporterConfig iCfg, NormalizerConfig nCfg, DoiConfig dCfg,
             DownloadUtil downloader, SqlSessionFactory factory, ImportStoreFactory importStoreFactory, NameIndex index, Validator validator, DoiResolver resolver,
             NameUsageIndexService indexService, ImageService imgService,
             DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBroker bus,
             UsageMatcherFactory matcherFactory, IdentifierScopeResolver scopeResolver,
-            StartNotifier notifier,
-            Consumer<ImportRequest> successCallback,
-            BiConsumer<ImportRequest, Exception> errorCallback
+            @Nullable Timer importTimer, @Nullable Counter failedCounter
     ) {
+    super(d.getKey(), req.createdBy, req.priority ? JobPriority.HIGH : JobPriority.MEDIUM);
     this.validator = validator;
-    this.dataset = Preconditions.checkNotNull(d);
-    this.datasetKey = d.getKey();
+    this.dws = Preconditions.checkNotNull(d);
+    this.dataset = d.getDataset();
     this.req = req;
     this.iCfg = iCfg;
     this.nCfg = nCfg;
@@ -136,16 +138,32 @@ public class ImportJob implements Runnable {
     this.bus = bus;
     this.matcherFactory = matcherFactory;
     this.scopeResolver = scopeResolver;
-
-    this.notifier = notifier;
-    this.successCallback = successCallback;
-    this.errorCallback = errorCallback;
+    this.importTimer = importTimer;
+    this.failedCounter = failedCounter;
 
     validate();
   }
+
+  @Override
+  public JobLane getLane() {
+    return JobLane.IMPORT;
+  }
+
+  @Override
+  public Object getParams() {
+    return req;
+  }
+
+  /**
+   * There can only ever be a single import per dataset in the executor.
+   */
+  @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    return other instanceof ImportJob && ((ImportJob) other).getDatasetKey() == getDatasetKey();
+  }
   
   private void validate() {
-    if (dataset.getOrigin().isRelease()) {
+    if (dws.getOrigin().isRelease()) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be imported");
 
     } else if (req.reimportAttempt != null && req.hasUpload()) {
@@ -161,13 +179,13 @@ public class ImportJob implements Runnable {
         throw new IllegalArgumentException("Dataset " + datasetKey + " lacks upload file at " + req.upload);
       }
 
-    } else if (!dataset.has(Setting.DATA_ACCESS)) {
+    } else if (!dws.has(Setting.DATA_ACCESS)) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " lacks a data access URL");
     }
 
     // fail early if ADD_IDENTIFIERS_FROM is configured but no matcher exists for it - we never trigger a build here
-    if (dataset.has(Setting.ADD_IDENTIFIERS_FROM)) {
-      String rawValue = (String) dataset.getSettings().get(Setting.ADD_IDENTIFIERS_FROM);
+    if (dws.has(Setting.ADD_IDENTIFIERS_FROM)) {
+      String rawValue = (String) dws.getSettings().get(Setting.ADD_IDENTIFIERS_FROM);
       if (rawValue != null) {
         AddIdentifiersSpec spec = AddIdentifiersSpec.parse(rawValue);
         if (matcherFactory == null) {
@@ -199,45 +217,52 @@ public class ImportJob implements Runnable {
   }
   
   @Override
-  public void run() {
-    LoggingUtils.setDatasetMDC(datasetKey, getClass());
-    try {
-      notifier.started();
-      importDataset();
-      successCallback.accept(req);
-      
-    } catch (Exception e) {
-      errorCallback.accept(req, e);
+  public void execute() throws Exception {
+    super.execute(); // sets the dataset MDC
+    req.start();
+    importDataset();
+  }
 
-    } finally {
-      LoggingUtils.removeDatasetMDC();
+  @Override
+  protected void onFinish() throws Exception {
+    if (isFinished() && importTimer != null && req.started != null) {
+      Duration durQueued = Duration.between(req.created, req.started);
+      Duration durRun = Duration.between(req.started, LocalDateTime.now());
+      LOG.info("Dataset import {} finished. {} min queued, {} min to execute", datasetKey, durQueued.toMinutes(), durRun.toMinutes());
+      importTimer.update(durRun.getSeconds(), TimeUnit.SECONDS);
     }
   }
-  
-  public int getDatasetKey() {
-    return datasetKey;
+
+  @Override
+  protected void onError(Exception e) {
+    if (failedCounter != null) {
+      failedCounter.inc();
+    }
+    LOG.error("Dataset import {} failed: {}", datasetKey, Exceptions.getFirstMessage(e), e.getCause());
   }
-  
+
   public Integer getAttempt() {
     return di == null ? null : di.getAttempt();
   }
-  
+
   public DatasetImport getDatasetImport() {
     return di;
   }
-  
+
   private void updateState(ImportState state) throws InterruptedException {
     di.setState(state);
+    setStep(state);
     dao.update(di);
     checkIfCancelled();
   }
 
   private void setFormat(DataFormat format) {
     di.setFormat(format);
-    dataset.setDataFormat(format);
+    dws.setDataFormat(format);
   }
 
-  private void checkIfCancelled() throws InterruptedException {
+  @Override
+  protected void checkIfCancelled() throws InterruptedException {
     Exceptions.interruptIfCancelled("Import " + di.attempt() + " was cancelled");
   }
 
@@ -249,7 +274,7 @@ public class ImportJob implements Runnable {
   private boolean prepareSourceData(Path sourceDir) throws IOException, IllegalArgumentException, InterruptedException {
     final File archive = nCfg.archive(datasetKey, getAttempt());
     final Path archivePath = archive.toPath();
-    final File lastArchive = dataset.getImportAttempt() == null ? null : nCfg.archive(datasetKey, dataset.getImportAttempt());
+    final File lastArchive = dws.getImportAttempt() == null ? null : nCfg.archive(datasetKey, dws.getImportAttempt());
     archive.getParentFile().mkdirs();
 
     if (req.reimportAttempt != null) {
@@ -271,15 +296,15 @@ public class ImportJob implements Runnable {
         Files.move(req.upload, archivePath, StandardCopyOption.REPLACE_EXISTING);
       }
 
-    } else if (DatasetOrigin.EXTERNAL == dataset.getOrigin()){
-      di.setDownloadUri(dataset.getDataAccess());
+    } else if (DatasetOrigin.EXTERNAL == dws.getOrigin()){
+      di.setDownloadUri(dws.getDataAccess());
       updateState(ImportState.DOWNLOADING);
-      if (dataset.getDataFormat() == DataFormat.PROXY) {
-        ArchiveDescriptor proxy = distributedArchiveService.download(dataset.getDataAccess(), archive);
+      if (dws.getDataFormat() == DataFormat.PROXY) {
+        ArchiveDescriptor proxy = distributedArchiveService.download(dws.getDataAccess(), archive);
         setFormat(proxy.format);
       } else {
         // download archive directly
-        LOG.info("Download of source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), archive);
+        LOG.info("Download of source for dataset {} from {} to {}", datasetKey, dws.getDataAccess(), archive);
         downloader.download(di.getDownloadUri(), archive);
         // make sure we received a real archive and not just a plain text error response
         verifyDownload(archivePath);
@@ -302,9 +327,9 @@ public class ImportJob implements Runnable {
       CompressionUtil.decompressFile(sourceDir.toFile(), archive);
 
       // detect data format if not set from proxy yet
-      if (dataset.getDataFormat() == null) {
+      if (dws.getDataFormat() == null) {
         setFormat(DataFormatDetector.detectFormat(sourceDir));
-        LOG.info("Detected data format {} for dataset {}", dataset.getDataFormat(), dataset.getKey());
+        LOG.info("Detected data format {} for dataset {}", dws.getDataFormat(), dws.getKey());
       }
       // update latest symlink
       updateLatestSymlink(archivePath);
@@ -338,9 +363,9 @@ public class ImportJob implements Runnable {
       var md5 = ChecksumUtils.getMD5Checksum(archive);
       di.setMd5(md5);
       di.setDownload(DownloadUtil.lastModified(archive));
-      if (dataset.getImportAttempt() != null) {
+      if (dws.getImportAttempt() != null) {
         try (SqlSession session = factory.openSession()) {
-          final String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dataset.getImportAttempt());
+          final String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dws.getImportAttempt());
           if (Objects.equals(lastMD5, md5)) {
             LOG.info("MD5 unchanged: {}{}", md5, req.force ? " (force import)" : "");
             // for forced imports, replace the new archive with a symlink to the last one to save space,
@@ -364,7 +389,7 @@ public class ImportJob implements Runnable {
             }
             return req.force;
           } else {
-            LOG.info("MD5 changed from attempt {}: {} to {}", dataset.getImportAttempt(), lastMD5, md5);
+            LOG.info("MD5 changed from attempt {}: {} to {}", dws.getImportAttempt(), lastMD5, md5);
           }
         }
       }
@@ -407,7 +432,7 @@ public class ImportJob implements Runnable {
   private void importDataset() throws Exception {
     di = dao.createWaiting(datasetKey, this, req.createdBy);
     LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
-    LOG.info("Start new {}import attempt {} for {} dataset {}: {}", req.force ? "forced " : "" ,di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
+    LOG.info("Start new {}import attempt {} for {} dataset {}: {}", req.force ? "forced " : "" ,di.getAttempt(), dws.getOrigin(), datasetKey, dws.getTitle());
 
     final Path sourceDir = nCfg.sourceDir(datasetKey).toPath();
     try {
@@ -418,17 +443,17 @@ public class ImportJob implements Runnable {
           LOG.info("Normalizing {}", datasetKey);
           updateState(ImportState.PROCESSING);
 
-          new Normalizer(dataset, store, sourceDir, index, imgService, validator, resolver).call();
+          new Normalizer(dws, store, sourceDir, index, imgService, validator, resolver).call();
 
           LOG.info("Fetching logo for {}", datasetKey);
-          LogoUpdateJob.updateDatasetAsync(dataset.getDataset(), factory, downloader, nCfg::scratchFile, imgService, req.createdBy);
+          LogoUpdateJob.updateDatasetAsync(dws.getDataset(), factory, downloader, nCfg::scratchFile, imgService, req.createdBy);
 
           LOG.info("Writing {} to Postgres & Elastic!", datasetKey);
           updateState(ImportState.INSERTING);
           var vDOI = dCfg.datasetVersionDOI(datasetKey, getAttempt());
           // this does write to both pg and elastic!
           // pgimport also updates the datasets import attempt & version DOI at the very end - only if successful!
-          var pgImport = new PgImport(di.getAttempt(), vDOI, dataset, req.createdBy, store, factory, iCfg, dDao, indexService, matcherFactory, scopeResolver);
+          var pgImport = new PgImport(di.getAttempt(), vDOI, dws, req.createdBy, store, factory, iCfg, dDao, indexService, matcherFactory, scopeResolver);
           pgImport.call();
 
           LOG.info("Build import metrics for dataset {}", datasetKey);
@@ -472,16 +497,23 @@ public class ImportJob implements Runnable {
       }
   
     } catch (InterruptedException | InterruptedRuntimeException e) {
-      // cancelled import
+      // cancelled import - rethrow as checked interruption so the job gets marked as canceled
       LOG.warn("Dataset {} import cancelled", datasetKey);
       dao.updateImportCancelled(di);
-      
-    } catch (Throwable e) {
+      throw e instanceof InterruptedException ? (InterruptedException) e : ((InterruptedRuntimeException) e).asChecked();
+
+    } catch (Exception e) {
       // failed import
       LOG.error("Dataset {} import failed. {}", datasetKey, e.getMessage(), e);
       dao.updateImportFailure(di, e);
       throw e;
-      
+
+    } catch (Throwable e) {
+      // failed import due to a serious java error - update the metrics but let it surface unwrapped
+      LOG.error("Dataset {} import failed. {}", datasetKey, e.getMessage(), e);
+      dao.updateImportFailure(di, e);
+      throw e;
+
     } finally {
       // remove source scratch folder with import store and decompressed dwca folders
       final File scratchDir = nCfg.scratchDir(datasetKey);
@@ -502,24 +534,9 @@ public class ImportJob implements Runnable {
   }
 
   private boolean rematchDecisions() {
-    return dataset.isEnabled(Setting.REMATCH_DECISIONS);
+    return dws.isEnabled(Setting.REMATCH_DECISIONS);
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    ImportJob importJob = (ImportJob) o;
-    return datasetKey == importJob.datasetKey;
-  }
-  
-  @Override
-  public int hashCode() {
-    return Objects.hash(datasetKey);
-  }
-  
   @Override
   public String toString() {
     return "ImportJob{" + "datasetKey=" + datasetKey + ", force=" + req.force + '}';

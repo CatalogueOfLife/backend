@@ -1029,6 +1029,7 @@ ALTER TABLE dataset_patch ADD FOREIGN KEY (dataset_key) REFERENCES dataset;
 CREATE TABLE dataset_import (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   attempt INTEGER NOT NULL,
+  job_key UUID,
   state IMPORTSTATE NOT NULL,
   origin DATASETORIGIN NOT NULL,
   format DATAFORMAT,
@@ -1085,6 +1086,7 @@ CREATE TABLE dataset_import (
 );
 
 CREATE INDEX ON dataset_import (dataset_key);
+CREATE INDEX ON dataset_import (job_key);
 CREATE INDEX ON dataset_import (started);
 -- used by import scheduler:
 CREATE INDEX ON dataset_import (dataset_key, attempt) WHERE finished IS NOT NULL;
@@ -1201,6 +1203,7 @@ CREATE TABLE sector_import (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER NOT NULL, -- no foreign key as we keep sector imports for deleted sectors!
   attempt INTEGER NOT NULL,
+  job_key UUID,
   dataset_attempt INTEGER,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
@@ -1246,6 +1249,7 @@ CREATE TABLE sector_import (
   PRIMARY KEY (dataset_key, sector_key, attempt)
 );
 CREATE INDEX ON sector_import (dataset_key, sector_key);
+CREATE INDEX ON sector_import (job_key);
 
 CREATE TABLE sector_publisher (
   id UUID NOT NULL,

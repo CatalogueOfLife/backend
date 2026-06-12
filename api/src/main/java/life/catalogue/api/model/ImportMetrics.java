@@ -12,6 +12,7 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,6 +27,11 @@ public class ImportMetrics implements ImportAttempt {
    * Sequential attempt number starting with 1 for each dataset/sector
    */
   private int attempt;
+
+  /**
+   * Key of the background job that created this import, linking to the generic job table.
+   */
+  private UUID jobKey;
 
   /**
    * Specific job that created the import, i.e. job class that generated this import
@@ -92,9 +98,17 @@ public class ImportMetrics implements ImportAttempt {
   public Integer getDatasetKey() {
     return datasetKey;
   }
-  
+
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
+  }
+
+  public UUID getJobKey() {
+    return jobKey;
+  }
+
+  public void setJobKey(UUID jobKey) {
+    this.jobKey = jobKey;
   }
   
   @Override
@@ -579,6 +593,7 @@ public class ImportMetrics implements ImportAttempt {
     ImportMetrics that = (ImportMetrics) o;
     return attempt == that.attempt &&
       Objects.equals(datasetKey, that.datasetKey) &&
+      Objects.equals(jobKey, that.jobKey) &&
       Objects.equals(job, that.job) &&
       state == that.state &&
       Objects.equals(started, that.started) &&
@@ -627,7 +642,7 @@ public class ImportMetrics implements ImportAttempt {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
+    return Objects.hash(datasetKey, attempt, jobKey, job, state, started, finished, createdBy, error,
       nameCount, taxonCount, synonymCount, bareNameCount, referenceCount,
       typeMaterialCount, distributionCount, estimateCount, mediaCount, treatmentCount, vernacularCount,
       sectorCount, ignoredByReasonCount, appliedDecisionCount,

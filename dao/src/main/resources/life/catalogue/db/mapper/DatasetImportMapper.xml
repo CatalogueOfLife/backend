@@ -26,6 +26,7 @@
 
   <!-- shared with sector import metrics -->
   <sql id="metricsCols">
+    ${alias}job_key,
     ${alias}job,
     ${alias}error,
     ${alias}started,
@@ -86,6 +87,7 @@
   </sql>
 
   <sql id="metricsProps">
+    #{imp.jobKey},
     #{imp.job},
     #{imp.error},
     #{imp.started},
