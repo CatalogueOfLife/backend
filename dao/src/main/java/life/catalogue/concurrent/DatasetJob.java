@@ -32,6 +32,11 @@ public abstract class DatasetJob extends BackgroundJob {
     return datasetKey;
   }
 
+  @Override
+  public Integer datasetKey() {
+    return datasetKey;
+  }
+
   public Dataset getDataset() {
     return dataset;
   }

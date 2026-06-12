@@ -92,11 +92,17 @@ public abstract class AbstractMatchingJob extends DatasetJob {
    */
   public abstract SqlSession openSession();
 
+  @Override
   public JobResult getResult() {
     return result;
   }
 
   public MatchingRequest getRequest() {
+    return req;
+  }
+
+  @Override
+  public Object getParams() {
     return req;
   }
 

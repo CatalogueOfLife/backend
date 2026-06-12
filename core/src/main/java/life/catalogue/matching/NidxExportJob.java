@@ -70,6 +70,7 @@ public class NidxExportJob extends BackgroundJob {
     return datasets;
   }
 
+  @Override
   public JobResult getResult() {
     return result;
   }

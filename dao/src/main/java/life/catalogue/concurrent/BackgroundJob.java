@@ -117,7 +117,6 @@ public abstract class BackgroundJob implements Runnable {
    * @return the file result of this job if it produces a downloadable archive, otherwise null.
    * Used by the executor to persist the result metadata (md5, size) when the job has finished.
    */
-  @JsonIgnore
   public JobResult getResult() {
     return null;
   }

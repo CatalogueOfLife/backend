@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.JobResult;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
@@ -30,6 +31,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
@@ -135,6 +137,20 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
 
   public DatasetExport getExport() {
     return export;
+  }
+
+  /**
+   * The export acts as the jobs file result - ignored in json as it is exposed as the export property already.
+   */
+  @Override
+  @JsonIgnore
+  public JobResult getResult() {
+    return export;
+  }
+
+  @Override
+  public Object getParams() {
+    return req;
   }
 
   public File getArchive() {
