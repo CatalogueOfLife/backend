@@ -6,7 +6,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.UserDao;
@@ -53,7 +53,7 @@ public class ExportManagerIT {
     UserDao uDao = mock(UserDao.class);
     doReturn(user).when(uDao).get(any());
     exDao = mock(DatasetExportDao.class);
-    executor = new JobExecutor(cfg.job, new MetricRegistry(), null, uDao);
+    executor = new JobExecutor(cfg.job, new MetricRegistry(), null, uDao, null);
   }
 
   @After

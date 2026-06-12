@@ -2,13 +2,12 @@ package life.catalogue.api.search;
 
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.print.attribute.standard.JobPriority;
 
 import jakarta.ws.rs.QueryParam;
 
@@ -36,10 +35,10 @@ public class JobSearchRequest {
   private Integer createdBy;
 
   /**
-   * Filter by status.
+   * Filter by one or more job statuses.
    */
   @QueryParam("status")
-  private JobStatus status; // unsupported so far
+  private Set<JobStatus> status;
 
   /**
    * import state.
@@ -99,11 +98,11 @@ public class JobSearchRequest {
     this.createdBy = createdBy;
   }
 
-  public JobStatus getStatus() {
+  public Set<JobStatus> getStatus() {
     return status;
   }
 
-  public void setStatus(JobStatus status) {
+  public void setStatus(Set<JobStatus> status) {
     this.status = status;
   }
 
@@ -148,7 +147,7 @@ public class JobSearchRequest {
            && Objects.equals(datasetKey, that.datasetKey)
            && Objects.equals(contributesTo, that.contributesTo)
            && Objects.equals(createdBy, that.createdBy)
-           && status == that.status
+           && Objects.equals(status, that.status)
            && Objects.equals(states, that.states)
            && Objects.equals(priority, that.priority)
            && Objects.equals(job, that.job)

@@ -1,7 +1,9 @@
 package life.catalogue.concurrent;
 
 import life.catalogue.api.exception.UnavailableException;
+import life.catalogue.api.model.JobResult;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.config.MailConfig;
@@ -11,6 +13,7 @@ import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -31,11 +34,13 @@ public abstract class BackgroundJob implements Runnable {
   private final int userKey;
   private final LocalDateTime created;
   private JobStatus status;
+  private String step;
   private LocalDateTime started;
   private LocalDateTime finished;
   private Exception error;
   // the following are added by the JobExecutor before a job is submitted
   private @Nullable EmailNotification emailer;
+  private @Nullable Consumer<BackgroundJob> persister;
   // you can expect the following to exist and never be null!
   protected JobConfig cfg;
   private User user;
@@ -58,6 +63,79 @@ public abstract class BackgroundJob implements Runnable {
 
   void setEmailer(EmailNotification emailer) {
     this.emailer = emailer;
+  }
+
+  void setPersister(Consumer<BackgroundJob> persister) {
+    this.persister = persister;
+  }
+
+  /**
+   * Persists the current state of the job if the executor configured a persister.
+   * Called by the executor and the run lifecycle on status changes - but can also be invoked manually,
+   * e.g. when a job wants to flush an updated step.
+   */
+  void persist() {
+    if (persister != null) {
+      try {
+        persister.accept(this);
+      } catch (RuntimeException e) {
+        LOG.error("Failed to persist {} job {}", getJobName(), key, e);
+      }
+    }
+  }
+
+  public String getStep() {
+    return step;
+  }
+
+  /**
+   * Updates the free text step of a running job, indicating the current stage of execution,
+   * e.g. downloading or inserting. The change is persisted to the job table straight away.
+   */
+  protected void setStep(@Nullable String step) {
+    this.step = step;
+    persist();
+  }
+
+  /**
+   * Convenience method that uses the lower cased name of an enum value as the step.
+   */
+  protected void setStep(@Nullable Enum<?> step) {
+    setStep(step == null ? null : step.name().toLowerCase());
+  }
+
+  /**
+   * @return the request parameters that define this job, serialized to the job table for display and search.
+   * Null if a job has no parameters.
+   */
+  @JsonIgnore
+  public Object getParams() {
+    return null;
+  }
+
+  /**
+   * @return the file result of this job if it produces a downloadable archive, otherwise null.
+   * Used by the executor to persist the result metadata (md5, size) when the job has finished.
+   */
+  @JsonIgnore
+  public JobResult getResult() {
+    return null;
+  }
+
+  /**
+   * @return the key of the single dataset this job is about, recorded in the job table. Null for global jobs.
+   */
+  @JsonIgnore
+  public Integer datasetKey() {
+    return null;
+  }
+
+  /**
+   * @return the key of the single sector this job is about, recorded in the job table. Null for all other jobs.
+   */
+  @JsonIgnore
+  public Integer sectorKey() {
+    return null;
   }
 
   void setTimer(Timer timer) {
@@ -145,6 +223,8 @@ public abstract class BackgroundJob implements Runnable {
       LoggingUtils.setJobMDC(key, getClass());
       status = JobStatus.RUNNING;
       started = LocalDateTime.now();
+      finished = null; // blocked jobs run several times
+      persist();
       var marker = logToFile ? LoggingUtils.START_JOB_LOG_MARKER : null;
       LOG.info(marker, "Started {} job {}", getClass().getSimpleName(), key);
       execute();
@@ -176,6 +256,8 @@ public abstract class BackgroundJob implements Runnable {
         } catch (Exception e) {
           LOG.error("Failed to finish {} job {}", getClass().getSimpleName(), key, e);
         }
+        // persist the final state after onFinish so late results (md5, size) are included
+        persist();
 
         // email notification
         if (emailer != null) {
@@ -186,6 +268,10 @@ public abstract class BackgroundJob implements Runnable {
         if (ctxt != null) {
           ctxt.stop(); // we dont want to measure blocked runs
         }
+      } else {
+        // a blocked job is resubmitted by the executor and will run again
+        finished = null;
+        persist();
       }
       // will cause the dataset sifting appender reach end-of-life. It will linger for a few seconds.
       var marker = logToFile ? LoggingUtils.END_JOB_LOG_MARKER : null;

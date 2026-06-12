@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.concurrent.*;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.db.mapper.DatasetExportMapper;

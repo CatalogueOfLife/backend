@@ -5,7 +5,7 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.concurrent.GlobalBlockingJob;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.importer.ImportManager;

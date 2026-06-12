@@ -8,7 +8,7 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.concurrent.BackgroundJob;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;

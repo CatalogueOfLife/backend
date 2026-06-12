@@ -6,11 +6,13 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.common.collection.CountMap;
+import life.catalogue.dao.JobDao;
 import life.catalogue.dao.UserCrudDao;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,6 +38,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   private final ConcurrentMap<UUID, ComparableFutureTask> futures = new ConcurrentHashMap<>();
   private final UserCrudDao udao;
   private final @Nullable EmailNotification emailer;
+  private final @Nullable JobDao jobDao; // optional - without it jobs are not persisted, e.g. in CLI tools
   private ColExecutor exec;
   private final Timer timer;
 
@@ -61,8 +64,11 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   }
 
   static class ComparableFutureTask extends FutureTask<Void> implements Runnable, Comparable<ComparableFutureTask> {
+    private static final AtomicLong SEQ = new AtomicLong();
 
     private final BackgroundJob task;
+    // monotonic submission sequence as a FIFO tie breaker for jobs of equal priority
+    private final long seq = SEQ.incrementAndGet();
 
     public BackgroundJob getTask() {
       return task;
@@ -75,17 +81,22 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
 
     @Override
     public int compareTo(ComparableFutureTask o) {
-      return this.task.getPriority().compareTo(o.task.getPriority());
+      int prio = this.task.getPriority().compareTo(o.task.getPriority());
+      return prio != 0 ? prio : Long.compare(this.seq, o.seq);
     }
   }
 
-  public JobExecutor(JobConfig cfg, MetricRegistry registry, @Nullable EmailNotification emailer, UserCrudDao udao) throws Exception {
+  public JobExecutor(JobConfig cfg, MetricRegistry registry, @Nullable EmailNotification emailer, UserCrudDao udao, @Nullable JobDao jobDao) throws Exception {
     LOG.info("Created new job executor with {} workers and a queue size of {}", cfg.threads, cfg.queue);
     this.cfg = cfg;
     this.udao = udao;
+    this.jobDao = jobDao;
     queue = new PriorityBlockingQueue<>(cfg.queue);
     if (emailer == null) {
       LOG.warn("No emailer configured!");
+    }
+    if (jobDao == null) {
+      LOG.warn("No job dao configured, jobs will not be persisted!");
     }
     this.emailer = emailer;
     // track metrics e.g. queue size
@@ -175,6 +186,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       if (st == JobStatus.WAITING || st == JobStatus.BLOCKED) {
         job.setStatus(JobStatus.CANCELED);
         job.onCancelBeforeStart();
+        job.persist();
       }
       return job;
     }
@@ -262,9 +274,36 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     job.setEmailer(emailer);
     job.setTimer(timer);
     job.setCfg(cfg);
+    final boolean newJob = persistSubmission(job);
     var ftask = new ComparableFutureTask(job);
     futures.put(job.getKey(), ftask);
-    exec.execute(ftask);
+    try {
+      exec.execute(ftask);
+    } catch (RuntimeException e) {
+      futures.remove(job.getKey());
+      if (newJob && jobDao != null) {
+        jobDao.delete(job.getKey());
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Writes the job to the job table when it is first submitted.
+   * Blocked jobs being resubmitted already have their record and only get updated.
+   * @return true if a new job record was created
+   */
+  private boolean persistSubmission(BackgroundJob job) {
+    if (jobDao != null) {
+      job.setPersister(jobDao::update);
+      if (job.getStatus() == JobStatus.WAITING) {
+        jobDao.create(job);
+        return true;
+      } else {
+        job.persist();
+      }
+    }
+    return false;
   }
 
   private int jobUserLimit(BackgroundJob job) {

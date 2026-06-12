@@ -49,7 +49,7 @@ public class MatcherCmd extends AbstractMybatisCmd {
     JobExecutor executor = null;
     try (var ni = NameIndexFactory.build(cfg.namesIndex, factory, AuthorshipNormalizer.INSTANCE)) {
       UserDao udao = new UserDao(factory, cfg.mail, null, null, null);
-      executor = new JobExecutor(cfg.job, new MetricRegistry(), null, udao);
+      executor = new JobExecutor(cfg.job, new MetricRegistry(), null, udao, null);
       executor.start();
       matcherFactory = new UsageMatcherFactory(cfg.matching, ni, factory, executor);
 

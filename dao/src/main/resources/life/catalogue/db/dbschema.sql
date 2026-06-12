@@ -342,6 +342,12 @@ CREATE TYPE ISSUE AS ENUM (
   'DUPLICATE_TAXON_PROPERTIES'
 );
 
+CREATE TYPE JOBPRIORITY AS ENUM (
+  'HIGH',
+  'MEDIUM',
+  'LOW'
+);
+
 CREATE TYPE JOBSTATUS AS ENUM (
   'WAITING',
   'BLOCKED',
@@ -1120,6 +1126,33 @@ CREATE TABLE dataset_export (
 CREATE INDEX ON dataset_export (created);
 CREATE INDEX ON dataset_export (created_by, created);
 CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank, status);
+
+-- generic background job, one row per job of any kind ever submitted to the JobExecutor
+CREATE TABLE job (
+  key UUID PRIMARY KEY,
+  job_class TEXT NOT NULL,             -- simple java class name of the job
+  status JOBSTATUS NOT NULL,
+  step TEXT,                           -- free text running substate updated by the job, e.g. downloading, inserting
+  priority JOBPRIORITY NOT NULL,
+  dataset_key INTEGER,                 -- no FK, job history survives dataset deletion
+  sector_key INTEGER,
+  created_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  started TIMESTAMP WITHOUT TIME ZONE,
+  finished TIMESTAMP WITHOUT TIME ZONE,
+  error TEXT,
+  params JSONB,                        -- the serialized job request for display, search and resubmission
+  result_md5 TEXT,                     -- for jobs producing a download file, the path derives from the key
+  result_size BIGINT,
+  result_deleted TIMESTAMP WITHOUT TIME ZONE
+);
+
+CREATE INDEX ON job (dataset_key);
+CREATE INDEX ON job (created_by);
+CREATE INDEX ON job (job_class);
+CREATE INDEX ON job (created DESC);
+CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
+CREATE INDEX ON job USING GIN (params);
 
 CREATE TABLE sector (
   id INTEGER NOT NULL,

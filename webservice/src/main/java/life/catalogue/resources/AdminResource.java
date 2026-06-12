@@ -23,7 +23,7 @@ import life.catalogue.common.io.LineReader;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.doi.DoiChangeListener;
 import life.catalogue.dw.auth.Roles;

@@ -3,7 +3,7 @@ package life.catalogue.jobs;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.concurrent.BackgroundJob;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.JobMapper">
+
+  <sql id="SELECT">
+    j.key,
+    j.job_class,
+    j.status,
+    j.step,
+    j.priority,
+    j.dataset_key,
+    j.sector_key,
+    j.created_by,
+    j.created,
+    j.started,
+    j.finished,
+    j.error,
+    j.params,
+    j.result_md5,
+    j.result_size,
+    j.result_deleted
+  </sql>
+
+  <sql id="COLS">
+    key,
+    job_class,
+    status,
+    step,
+    priority,
+    dataset_key,
+    sector_key,
+    created_by,
+    created,
+    started,
+    finished,
+    error,
+    params,
+    result_md5,
+    result_size,
+    result_deleted
+  </sql>
+
+  <sql id="PROPS">
+    #{key},
+    #{job},
+    #{status}::JOBSTATUS,
+    #{step},
+    #{priority}::JOBPRIORITY,
+    #{datasetKey},
+    #{sectorKey},
+    #{createdBy},
+    #{created},
+    #{started},
+    #{finished},
+    #{error},
+    #{params, typeHandler=life.catalogue.db.type2.JsonNodeHandler}::jsonb,
+    #{resultMd5},
+    #{resultSize},
+    #{resultDeleted}
+  </sql>
+
+  <sql id="FROM">
+    job j
+  </sql>
+
+  <sql id="WHERE">
+    <where>
+      <if test="req.key != null">AND j.key = #{req.key}</if>
+      <if test="req.datasetKey != null">AND j.dataset_key = #{req.datasetKey}</if>
+      <if test="req.createdBy != null">AND j.created_by = #{req.createdBy}</if>
+      <if test="req.job != null">AND j.job_class = #{req.job}</if>
+      <if test="req.priority != null">AND j.priority = #{req.priority}::JOBPRIORITY</if>
+      <if test="req.status != null and !req.status.isEmpty()">
+        AND j.status IN <foreach item="st" collection="req.status" open="(" separator="," close=")">#{st}::JOBSTATUS</foreach>
+      </if>
+    </where>
+  </sql>
+
+  <resultMap id="jobResultMap" type="JobInfo" autoMapping="true">
+    <id property="key" column="key"/>
+    <result property="job" column="job_class"/>
+    <result property="params" column="params" typeHandler="life.catalogue.db.type2.JsonNodeHandler"/>
+  </resultMap>
+
+
+  <select id="get" resultMap="jobResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE key = #{key}
+  </select>
+
+  <select id="exists" resultType="boolean">
+    SELECT exists(
+      SELECT TRUE FROM job WHERE key = #{key}
+    )
+  </select>
+
+  <insert id="create" parameterType="JobInfo">
+    INSERT INTO job (<include refid="COLS"/>)
+    VALUES (<include refid="PROPS"/>)
+  </insert>
+
+  <update id="update" parameterType="JobInfo">
+    UPDATE job
+    SET (status, step, started, finished, error, result_md5, result_size, result_deleted)
+      = (#{status}::JOBSTATUS, #{step}, #{started}, #{finished}, #{error}, #{resultMd5}, #{resultSize}, #{resultDeleted})
+    WHERE key = #{key}
+  </update>
+
+  <delete id="delete">
+    DELETE FROM job WHERE key = #{key}
+  </delete>
+
+  <select id="search" resultMap="jobResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    <include refid="WHERE"/>
+    ORDER BY j.created DESC
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="count" resultType="integer">
+    SELECT count(*)
+    FROM <include refid="FROM"/>
+    <include refid="WHERE"/>
+  </select>
+
+  <update id="cancelStale">
+    UPDATE job
+    SET status = 'CANCELED'::JOBSTATUS, finished = now()
+    WHERE status IN ('WAITING','BLOCKED','RUNNING')
+  </update>
+
+</mapper>

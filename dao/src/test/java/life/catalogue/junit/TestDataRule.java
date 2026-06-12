@@ -426,6 +426,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       st.execute("TRUNCATE sector, estimate, decision CASCADE");
       st.execute("TRUNCATE name_match");
       st.execute("TRUNCATE names_index RESTART IDENTITY CASCADE");
+      st.execute("TRUNCATE job"); // no FK to dataset, needs explicit truncation
       session.getConnection().commit();
     }
   }
