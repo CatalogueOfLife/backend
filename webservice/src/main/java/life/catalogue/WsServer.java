@@ -282,7 +282,8 @@ public class WsServer extends Application<WsServerConfig> {
     // job executor - the import lane is sized by the importer config
     cfg.job.importThreads = cfg.importer.threads;
     cfg.job.importQueue = cfg.importer.maxQueue;
-    JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao, new JobDao(getSqlSessionFactory()));
+    JobDao jobDao = new JobDao(getSqlSessionFactory());
+    JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao, jobDao);
     managedService.manage(Component.JobExecutor, executor);
 
     // name parser
@@ -491,7 +492,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DataPackageResource(http));
     j.register(new OpenApiResource(OpenApiFactory.build(cfg, env)));
     j.register(new ImporterResource(cfg, importManager, diDao, ddao));
-    j.register(new JobResource(cfg.job, executor));
+    j.register(new JobResource(cfg.job, executor, jobDao));
     j.register(new NameParserAdminResource(getSqlSessionFactory()));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg, executor));
     j.register(new ResolverResource(doiResolver));
