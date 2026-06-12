@@ -105,6 +105,23 @@ public abstract class BackgroundJob implements Runnable {
   }
 
   /**
+   * @return the executor lane this job runs in. Each lane has its own worker pool and queue.
+   */
+  public JobLane getLane() {
+    return JobLane.DEFAULT;
+  }
+
+  /**
+   * @return a key to serialize jobs by within their lane, e.g. the project datasetKey for sector syncs.
+   * Jobs sharing the same serial key never run concurrently and are executed in submission order.
+   * Null (the default) does not restrict concurrency.
+   */
+  @JsonIgnore
+  public Object getSerialBy() {
+    return null;
+  }
+
+  /**
    * @return the request parameters that define this job, serialized to the job table for display and search.
    * Null if a job has no parameters.
    */

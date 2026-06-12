@@ -9,7 +9,13 @@ import life.catalogue.common.collection.CountMap;
 import life.catalogue.dao.JobDao;
 import life.catalogue.dao.UserCrudDao;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -26,41 +32,60 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
 /**
- * The background job executor using a priority ordered queue.
- * It supports notification of errors via email and blocking jobs that depend on a locked access to a single dataset.
+ * The background job executor with several priority ordered queues, one per JobLane.
+ * Each lane has its own worker pool so e.g. long running imports cannot starve regular background jobs.
+ * Within a lane jobs of equal priority are executed in submission order.
+ *
+ * Jobs returning a serial key via getSerialBy() are additionally serialized within their lane:
+ * only one job per serial key runs at any time, in submission order. This is used by sector syncs
+ * which may run in parallel across projects but never within the same project.
+ *
+ * The executor supports notification of errors via email and blocking jobs that depend on a locked access to a single dataset.
+ * If a JobDao is given, every job is persisted to the job table with all its status changes.
  */
 public class JobExecutor implements Managed, Idle, SomeExecutor {
   private static final Logger LOG = LoggerFactory.getLogger(JobExecutor.class);
   private static final String METRIC_GROUP_NAME = "jobs";
 
   private final JobConfig cfg;
-  private final PriorityBlockingQueue<Runnable> queue;
+  private final Map<JobLane, PriorityBlockingQueue<Runnable>> queues = new EnumMap<>(JobLane.class);
   private final ConcurrentMap<UUID, ComparableFutureTask> futures = new ConcurrentHashMap<>();
+  private final SerialGate gate = new SerialGate();
   private final UserCrudDao udao;
   private final @Nullable EmailNotification emailer;
   private final @Nullable JobDao jobDao; // optional - without it jobs are not persisted, e.g. in CLI tools
-  private ColExecutor exec;
+  private Map<JobLane, ColExecutor> execs;
   private final Timer timer;
 
   @Override
   public void start() throws Exception {
-    if (exec == null) {
-      exec = new ColExecutor(cfg, queue);
-      exec.allowCoreThreadTimeOut(true);
+    if (execs == null) {
+      if (jobDao != null) {
+        // jobs that were waiting or running when the last server stopped can never finish
+        jobDao.cancelStale();
+      }
+      execs = new EnumMap<>(JobLane.class);
+      for (JobLane lane : JobLane.values()) {
+        var exec = new ColExecutor(lane, cfg.threads(lane), queues.get(lane));
+        exec.allowCoreThreadTimeOut(true);
+        execs.put(lane, exec);
+      }
     }
   }
 
   @Override
   public void stop() throws Exception {
-    if (exec != null) {
-      ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
-      exec = null;
+    if (execs != null) {
+      for (var exec : execs.values()) {
+        ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+      }
+      execs = null;
     }
   }
 
   @Override
   public boolean hasStarted() {
-    return exec != null;
+    return execs != null;
   }
 
   static class ComparableFutureTask extends FutureTask<Void> implements Runnable, Comparable<ComparableFutureTask> {
@@ -86,12 +111,81 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     }
   }
 
+  /**
+   * Serializes jobs sharing the same serial key.
+   * Only one job per key is ever handed to the worker pools, all others are parked here in submission order
+   * and released one by one as the active job of their key finishes.
+   */
+  private static class SerialGate {
+    private static class Group {
+      ComparableFutureTask active;
+      final Deque<ComparableFutureTask> parked = new ArrayDeque<>();
+    }
+
+    private final Map<Object, Group> groups = new HashMap<>();
+
+    /**
+     * @return true if the task may be executed right away, false if it was parked behind the keys active job
+     */
+    synchronized boolean tryAcquire(Object key, ComparableFutureTask task) {
+      Group g = groups.get(key);
+      if (g == null) {
+        g = new Group();
+        g.active = task;
+        groups.put(key, g);
+        return true;
+      }
+      g.parked.add(task);
+      return false;
+    }
+
+    /**
+     * Releases the key if the given task is its active job.
+     * @return the next parked task to execute, which becomes the keys new active job. Null if nothing is parked.
+     */
+    synchronized ComparableFutureTask release(Object key, ComparableFutureTask task) {
+      Group g = groups.get(key);
+      if (g == null || g.active != task) {
+        return null; // released before, e.g. via cancel
+      }
+      var next = g.parked.poll();
+      if (next == null) {
+        groups.remove(key);
+      } else {
+        g.active = next;
+      }
+      return next;
+    }
+
+    /**
+     * Removes a parked task, e.g. when it gets cancelled.
+     * @return true if the task was parked and has been removed
+     */
+    synchronized boolean removeParked(ComparableFutureTask task) {
+      Group g = groups.get(task.getTask().getSerialBy());
+      return g != null && g.parked.remove(task);
+    }
+
+    synchronized List<ComparableFutureTask> parked() {
+      return groups.values().stream()
+        .flatMap(g -> g.parked.stream())
+        .collect(Collectors.toList());
+    }
+
+    synchronized boolean isEmpty() {
+      return groups.isEmpty();
+    }
+  }
+
   public JobExecutor(JobConfig cfg, MetricRegistry registry, @Nullable EmailNotification emailer, UserCrudDao udao, @Nullable JobDao jobDao) throws Exception {
-    LOG.info("Created new job executor with {} workers and a queue size of {}", cfg.threads, cfg.queue);
+    LOG.info("Created new job executor with lanes default={}/{}, import={}/{}, sync={}/{} (threads/queue)",
+      cfg.threads, cfg.queue, cfg.importThreads, cfg.importQueue, cfg.syncThreads, cfg.syncQueue);
     this.cfg = cfg;
     this.udao = udao;
     this.jobDao = jobDao;
-    queue = new PriorityBlockingQueue<>(cfg.queue);
+    for (JobLane lane : JobLane.values()) {
+      queues.put(lane, new PriorityBlockingQueue<>(cfg.queueSize(lane)));
+    }
     if (emailer == null) {
       LOG.warn("No emailer configured!");
     }
@@ -99,29 +193,36 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       LOG.warn("No job dao configured, jobs will not be persisted!");
     }
     this.emailer = emailer;
-    // track metrics e.g. queue size
-    registry.register(MetricRegistry.name(JobExecutor.class, METRIC_GROUP_NAME, "queue"), (Gauge<Integer>) queue::size);
+    // track metrics e.g. queue sizes
+    for (JobLane lane : JobLane.values()) {
+      final var q = queues.get(lane);
+      registry.register(MetricRegistry.name(JobExecutor.class, METRIC_GROUP_NAME, "queue", lane.name().toLowerCase()), (Gauge<Integer>) q::size);
+    }
     timer = registry.register(MetricRegistry.name(JobExecutor.class, METRIC_GROUP_NAME, "duration"), new Timer());
     // start up
     start();
   }
 
   class ColExecutor extends ThreadPoolExecutor {
-    public ColExecutor(JobConfig cfg, PriorityBlockingQueue<Runnable> queue) {
-      super(cfg.threads, cfg.threads, 60L, TimeUnit.SECONDS, queue,
-        new NamedThreadFactory("background-worker"),
+
+    public ColExecutor(JobLane lane, int threads, PriorityBlockingQueue<Runnable> queue) {
+      super(threads, threads, 60L, TimeUnit.SECONDS, queue,
+        new NamedThreadFactory("background-worker-" + lane.name().toLowerCase()),
         new ThreadPoolExecutor.AbortPolicy());
     }
 
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
       // no check as we cannot submit any other jobs
-      BackgroundJob job = ((ComparableFutureTask) r).task;
+      ComparableFutureTask ftask = (ComparableFutureTask) r;
+      BackgroundJob job = ftask.task;
       if (t != null) {
         // what shall we do with this? Do throwables ever reach here?
         // or are they the same as wrapped with ExecutionException below???
         LOG.error("Job {} failed with {}", job.getKey(), t.getMessage(), t);
       }
+
+      releaseSerialAndPromote(job, ftask);
 
       try {
         var f = futures.remove(job.getKey());
@@ -132,6 +233,8 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
         }
       } catch (InterruptedException e) {
         // ignore
+      } catch (CancellationException e) {
+        // the task was cancelled while queued but slipped past purge - nothing to do
       } catch (ExecutionException e) {
         // resubmit blocked jobs. DatasetBlockingJob implements some waiting rules based on number of attempts
         if (e.getCause() instanceof DatasetBlockedException && job instanceof DatasetBlockingJob) {
@@ -152,23 +255,52 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     }
   }
 
-  public int queueSize() {
-    return queue.size();
-  }
-  
   /**
-   * @return true if queue is empty
+   * Releases the serial key of an ended job and executes the next job parked behind it, if any.
    */
-  public boolean hasEmptyQueue() {
-    return queue.isEmpty();
+  private void releaseSerialAndPromote(BackgroundJob job, ComparableFutureTask ftask) {
+    Object serial = job.getSerialBy();
+    if (serial != null) {
+      var next = gate.release(serial, ftask);
+      if (next != null) {
+        LOG.info("Unpark job {} serialized by {}", next.task.getKey(), serial);
+        execs.get(next.task.getLane()).execute(next);
+      }
+    }
+  }
+
+  public int queueSize() {
+    return queues.values().stream().mapToInt(PriorityBlockingQueue::size).sum() + gate.parked().size();
+  }
+
+  public int queueSize(JobLane lane) {
+    return queues.get(lane).size() + (int) gate.parked().stream().filter(t -> t.task.getLane() == lane).count();
   }
 
   /**
-   * @return true if the executor has no actively running threads and the queue is empty
+   * @return number of queued jobs by lane, including parked serialized jobs
+   */
+  public Map<JobLane, Integer> queueSizes() {
+    Map<JobLane, Integer> sizes = new EnumMap<>(JobLane.class);
+    for (JobLane lane : JobLane.values()) {
+      sizes.put(lane, queueSize(lane));
+    }
+    return sizes;
+  }
+
+  /**
+   * @return true if all queues are empty
+   */
+  public boolean hasEmptyQueue() {
+    return queues.values().stream().allMatch(PriorityBlockingQueue::isEmpty) && gate.isEmpty();
+  }
+
+  /**
+   * @return true if the executor has no actively running threads and all queues are empty
    */
   @Override
   public boolean isIdle() {
-    return !hasStarted() || hasEmptyQueue() && exec.getActiveCount() == 0;
+    return !hasStarted() || hasEmptyQueue() && execs.values().stream().allMatch(ex -> ex.getActiveCount() == 0);
   }
 
   public BackgroundJob cancel (UUID key, int user) {
@@ -182,8 +314,12 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       // so mark and clean it up explicitly here.
       final JobStatus st = job.getStatus();
       f.cancel(true);
-      exec.purge();
       if (st == JobStatus.WAITING || st == JobStatus.BLOCKED) {
+        if (job.getSerialBy() == null || !gate.removeParked(f)) {
+          // the job sat in an executor queue: remove it and release its serial key if it held one
+          execs.get(job.getLane()).purge();
+          releaseSerialAndPromote(job, f);
+        }
         job.setStatus(JobStatus.CANCELED);
         job.onCancelBeforeStart();
         job.persist();
@@ -232,12 +368,16 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   }
 
   private Stream<BackgroundJob> getQueueStream() {
+    List<BackgroundJob> queued = new ArrayList<>();
+    for (var q : queues.values()) {
+      q.forEach(x -> queued.add(((ComparableFutureTask) x).task));
+    }
+    gate.parked().forEach(t -> queued.add(t.task));
     return Stream.concat(
       futures.values().stream()
              .map(f -> f.task)
              .filter(BackgroundJob::isRunning),
-      queue.stream()
-           .map(x -> ((ComparableFutureTask)x).task)
+      queued.stream()
     );
   }
 
@@ -247,6 +387,10 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       throw new NullPointerException();
     }
     assertOnline();
+    final JobLane lane = job.getLane();
+    if (queueSize(lane) >= cfg.queueSize(lane)) {
+      throw new TooManyRequestsException("The " + lane + " job queue is full, please try again later");
+    }
     // look for duplicates in the queue and count by user
     var jobCnt = new CountMap<Class<?>>();
     for (BackgroundJob qj : getQueue()) {
@@ -278,7 +422,12 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     var ftask = new ComparableFutureTask(job);
     futures.put(job.getKey(), ftask);
     try {
-      exec.execute(ftask);
+      Object serial = job.getSerialBy();
+      if (serial != null && !gate.tryAcquire(serial, ftask)) {
+        LOG.info("Park {} job {} behind the running job serialized by {}", job.getJobName(), job.getKey(), serial);
+      } else {
+        execs.get(lane).execute(ftask);
+      }
     } catch (RuntimeException e) {
       futures.remove(job.getKey());
       if (newJob && jobDao != null) {
@@ -309,6 +458,5 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   private int jobUserLimit(BackgroundJob job) {
     return cfg.userLimit.getOrDefault(job.getClass().getSimpleName(), Integer.MAX_VALUE);
   }
-  
-}
 
+}

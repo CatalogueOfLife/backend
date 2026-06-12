@@ -47,16 +47,57 @@ public class JobConfig {
 
   /**
    * Maximum number of background job to run simultaneously.
-   * Defines the pool size of the executor.
+   * Defines the pool size of the executors default lane.
    */
   @Min(1)
   public int threads = 1;
 
   /**
-   * Maximum amount of jobs that can be queued before they are rejected.
+   * Maximum amount of jobs that can be queued in the default lane before they are rejected.
    */
   @Min(1)
   public int queue = 1000;
+
+  /**
+   * Maximum number of dataset imports to run simultaneously.
+   */
+  @Min(1)
+  public int importThreads = 1;
+
+  /**
+   * Maximum amount of dataset imports that can be queued before they are rejected.
+   */
+  @Min(1)
+  public int importQueue = 1000;
+
+  /**
+   * Maximum number of sector syncs to run simultaneously.
+   * Syncs of the same project are always serialized, parallelism only happens across projects.
+   */
+  @Min(1)
+  public int syncThreads = 1;
+
+  /**
+   * Maximum amount of sector syncs that can be queued before they are rejected.
+   */
+  @Min(1)
+  public int syncQueue = 1000;
+
+  public int threads(JobLane lane) {
+    switch (lane) {
+      case IMPORT: return importThreads;
+      case SYNC: return syncThreads;
+      default: return threads;
+    }
+  }
+
+  public int queueSize(JobLane lane) {
+    switch (lane) {
+      case IMPORT: return importQueue;
+      case SYNC: return syncQueue;
+      default: return queue;
+    }
+  }
 
   /**
    * Maximum amount of jobs that a user can run or queue for a specific job class

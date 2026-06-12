@@ -279,7 +279,9 @@ public class WsServer extends Application<WsServerConfig> {
 
     UserDao udao = new UserDao(getSqlSessionFactory(), cfg.mail, mail.getMailer(), broker, validator);
 
-    // job executor
+    // job executor - the import lane is sized by the importer config
+    cfg.job.importThreads = cfg.importer.threads;
+    cfg.job.importQueue = cfg.importer.maxQueue;
     JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao, new JobDao(getSqlSessionFactory()));
     managedService.manage(Component.JobExecutor, executor);
 
