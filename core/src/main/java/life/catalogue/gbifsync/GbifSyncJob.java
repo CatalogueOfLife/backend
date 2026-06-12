@@ -153,12 +153,19 @@ public class GbifSyncJob extends GlobalBlockingJob {
 
   private void syncAll() throws Exception {
     final IntSet seenKeys = new IntOpenHashSet();
+    // GBIF keys already processed in this run, so a dataset that reappears on a later page while the
+    // live registry changes during paging is skipped instead of being synced (and possibly created) twice
+    final Set<UUID> seenGbifKeys = new HashSet<>();
     int count = pager.count();
     LOG.info("Start {} sync of {} datasets from GBIF registry {}", incremental ? "incremental" : "full", count, cfg.api);
     while (pager.hasNext()) {
       List<DatasetPager.GbifDataset> page = pager.next();
       LOG.debug("Received page {} with {} datasets from GBIF", pager.currPageNumber(), page.size());
       for (DatasetPager.GbifDataset gbif : page) {
+        if (!seenGbifKeys.add(gbif.getGbifKey())) {
+          LOG.debug("Skip GBIF dataset {} already seen earlier during paging", gbif.getGbifKey());
+          continue;
+        }
         Integer datasetKey = sync(gbif, existingByGbif.get(gbif.getGbifKey()));
         if (datasetKey != null) {
           seenKeys.add(datasetKey.intValue());
@@ -220,6 +227,14 @@ public class GbifSyncJob extends GlobalBlockingJob {
           LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
           created++;
           key = gbif.getKey();
+          // keep the preloaded map in sync so the same GBIF key surfacing again later in this run
+          // (e.g. a record shifting across a page boundary while the live registry changes during paging)
+          // is recognised as existing and not created a second time, which would violate the unique gbif_key constraint
+          DatasetGBIF justCreated = new DatasetGBIF();
+          justCreated.setKey(key);
+          justCreated.setGbifKey(gbif.getGbifKey());
+          justCreated.setGbifModified(gbif.getModified());
+          existingByGbif.put(gbif.getGbifKey(), justCreated);
 
         } else if (curr.isEnabled(Setting.GBIF_SYNC_LOCK)) {
           LOG.info("Dataset {} is locked for GBIF updates: {}", gbif.getKey(), gbif.getTitle());
