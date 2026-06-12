@@ -301,6 +301,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     checkIfCancelled();
     LOG.info("Change state for dataset {} to {}", newDatasetKey, state);
     metrics.setState(state);
+    setStep(state);
     diDao.update(metrics);
   }
 

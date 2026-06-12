@@ -67,11 +67,11 @@ public class SectorSync extends SectorRunnable {
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean projectTarget, @Nullable TreeMergeHandlerConfig mergeCfg,
              SqlSessionFactory factory, NameIndex nameIndex, Function<SqlSession, UsageMatcher> matcherSupplier, EventBroker bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
-             Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
+             @Nullable SyncCounter counter,
              Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
              @Nullable IdentifierScopeResolver scopeResolver,
              int user) throws IllegalArgumentException {
-    super(sectorKey, true, factory, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
+    super(sectorKey, true, factory, indexService, sdao, sid, bus, counter, true, user);
     this.projectTarget = projectTarget;
     this.sid = sid;
     this.estimateDao = estimateDao;

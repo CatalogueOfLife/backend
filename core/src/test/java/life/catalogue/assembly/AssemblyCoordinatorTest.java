@@ -7,7 +7,10 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.concurrent.JobConfig;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.SyncManagerConfig;
+import life.catalogue.dao.UserCrudDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.db.mapper.MapperTestBase;
@@ -26,6 +29,10 @@ import org.junit.rules.TestRule;
 
 import com.codahale.metrics.MetricRegistry;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+
 public class AssemblyCoordinatorTest {
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -42,13 +49,23 @@ public class AssemblyCoordinatorTest {
     .around(syncFactoryRule);
 
   SyncManager coord;
+  JobExecutor executor;
 
   @Before
   public void init() throws Exception {
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, syncFactoryRule.getDiDao());
 
-    coord = new SyncManager(new SyncManagerConfig(), SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
+    UserCrudDao udao = mock(UserCrudDao.class);
+    doReturn(TestEntityGenerator.USER_EDITOR).when(udao).get(any());
+    executor = new JobExecutor(JobConfig.withThreads(2), new MetricRegistry(), null, udao, null);
+    coord = new SyncManager(new SyncManagerConfig(), SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), executor, new MetricRegistry());
     coord.start();
+  }
+
+  @org.junit.After
+  public void shutdown() throws Exception {
+    coord.stop();
+    executor.stop();
   }
   
   @Test(expected = IllegalArgumentException.class)

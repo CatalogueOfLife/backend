@@ -7,6 +7,8 @@ import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.concurrent.JobLane;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
@@ -19,9 +21,10 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -30,14 +33,13 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract class SectorRunnable implements Runnable {
+abstract class SectorRunnable extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
   private final static Set<Rank> MERGE_RANKS_DEFAULT = Set.of(
     Rank.FAMILY, Rank.GENUS, Rank.SPECIES,
     Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM
   );
 
-  protected final UUID key = UUID.randomUUID();
   protected final DSID<Integer> sectorKey;
   protected final int subjectDatasetKey;
   protected Sector sector;
@@ -49,10 +51,8 @@ abstract class SectorRunnable implements Runnable {
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
   List<Sector> childSectors;
-  private final Consumer<SectorRunnable> successCallback;
-  private final BiConsumer<SectorRunnable, Exception> errorCallback;
-  private final LocalDateTime created = LocalDateTime.now();
   private final EventBroker bus;
+  private final @Nullable SyncCounter counter;
   final int user;
   final SectorImport state;
   final boolean updateSectorAttemptOnSuccess;
@@ -62,7 +62,8 @@ abstract class SectorRunnable implements Runnable {
    */
   SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, SqlSessionFactory factory,
                  NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBroker bus,
-                 Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, int user) throws IllegalArgumentException {
+                 @Nullable SyncCounter counter, boolean updateSectorAttemptOnSuccess, int user) throws IllegalArgumentException {
+    super(user);
     // make sure the sector is a project sector, not from a release
     if (sectorKey.getDatasetKey() == null || !DatasetInfoCache.CACHE.info(sectorKey.getDatasetKey()).isProject()) {
       throw new IllegalArgumentException("Sector required to be a project dataset key");
@@ -70,20 +71,20 @@ abstract class SectorRunnable implements Runnable {
     this.updateSectorAttemptOnSuccess = updateSectorAttemptOnSuccess;
     this.user = user;
     this.bus = bus;
+    this.counter = counter;
     this.validateSector = validateSector;
     this.factory = factory;
     this.indexService = indexService;
     this.dao = dao;
     this.sid = sid;
-    this.successCallback = successCallback;
-    this.errorCallback = errorCallback;
     this.sectorKey = sectorKey;
 
     // create new sync metrics instance
     state = new SectorImport();
     state.setSectorKey(sectorKey.getId());
     state.setDatasetKey(sectorKey.getDatasetKey());
-    state.setJob(getClass().getSimpleName());
+    state.setJobKey(getKey());
+    state.setJob(getJobName());
     state.setState(ImportState.WAITING);
     state.setCreatedBy(user);
 
@@ -108,6 +109,46 @@ abstract class SectorRunnable implements Runnable {
     }
   }
 
+  @Override
+  public JobLane getLane() {
+    return JobLane.SYNC;
+  }
+
+  /**
+   * Serialize all sector jobs by their project, so only one sector of the same project is ever synced at a time
+   * while sectors of different projects may run in parallel.
+   */
+  @Override
+  public Object getSerialBy() {
+    return sectorKey.getDatasetKey();
+  }
+
+  @Override
+  public Integer datasetKey() {
+    return sectorKey.getDatasetKey();
+  }
+
+  @Override
+  public Integer sectorKey() {
+    return sectorKey.getId();
+  }
+
+  @Override
+  public Object getParams() {
+    return new SyncParams(sectorKey.getDatasetKey(), sectorKey.getId(), subjectDatasetKey);
+  }
+
+  public record SyncParams(int datasetKey, int sectorKey, int subjectDatasetKey) {
+  }
+
+  /**
+   * There can only be a single job for the same sector queued or running.
+   */
+  @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    return other instanceof SectorRunnable && ((SectorRunnable) other).sectorKey.equals(this.sectorKey);
+  }
+
   /**
    * Make sure this sector is ok to be executed on the given dataset
    * @throws IllegalArgumentException if this is not the case
@@ -123,30 +164,44 @@ abstract class SectorRunnable implements Runnable {
     return decisions;
   }
 
+  /**
+   * Runs the job directly on the callers thread, outside of the job executor and the background job lifecycle.
+   * No generic job record is persisted and no notifications are sent, but the sector_import metrics are tracked as usual.
+   * Exceptions are not propagated - inspect getState() for the outcome.
+   * Used by the XRelease to merge sectors inside the running release job itself.
+   */
+  public void runEmbedded() {
+    try {
+      execute();
+    } catch (Exception e) {
+      // the sector import state was updated and the cause recorded by execute() already
+      LOG.error("Embedded {} of sector {} failed", getClass().getSimpleName(), sectorKey, e);
+    }
+  }
+
   @Override
-  public void run() {
+  public void execute() throws Exception {
     try {
       LoggingUtils.setSourceMDC(subjectDatasetKey);
       LoggingUtils.setSectorMDC(sectorKey, state.getAttempt());
       state.setStarted(LocalDateTime.now());
-      state.setState( ImportState.PREPARING);
+      updateState(ImportState.PREPARING);
       LOG.info("Start {} for sector {}", this.getClass().getSimpleName(), sectorKey);
       init();
 
       doWork();
 
-      state.setState( ImportState.ANALYZING);
+      updateState(ImportState.ANALYZING);
       LOG.info("Build metrics for sector {}", sectorKey);
       doMetrics();
 
-      state.setState( ImportState.INDEXING);
+      updateState(ImportState.INDEXING);
       LOG.info("Update search index for sector {}", sectorKey);
       updateSearchIndex();
 
-      state.setState( ImportState.FINISHED);
+      state.setState(ImportState.FINISHED);
       LOG.info("Completed {} for sector {} with {} names and {} usages", this.getClass().getSimpleName(), sectorKey, state.getNameCount(), state.getUsagesCount());
       bus.publish(new DatasetDataChanged(sectorKey.getDatasetKey(), user));
-      successCallback.accept(this);
       if (updateSectorAttemptOnSuccess) {
         // update sector with latest attempt on success if subclass requested it
         try (SqlSession session = factory.openSession(true)) {
@@ -157,13 +212,13 @@ abstract class SectorRunnable implements Runnable {
     } catch (InterruptedException e) {
       LOG.warn("Interrupted {}", this, e);
       state.setState(ImportState.CANCELED);
-      errorCallback.accept(this, e);
+      throw e;
 
     } catch (Exception e) {
       LOG.error("Failed {}", this, e);
       state.setError(ExceptionUtils.getRootCauseMessage(e));
       state.setState(ImportState.FAILED);
-      errorCallback.accept(this, e);
+      throw e;
 
     } finally {
       state.setFinished(LocalDateTime.now());
@@ -174,6 +229,23 @@ abstract class SectorRunnable implements Runnable {
       LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDuration(state.getDuration(), "HH:mm:ss"));
       LoggingUtils.removeSourceMDC();
       LoggingUtils.removeSectorMDC();
+    }
+  }
+
+  private void updateState(ImportState state) throws InterruptedException {
+    this.state.setState(state);
+    setStep(state);
+    checkIfCancelled();
+  }
+
+  @Override
+  protected void onFinish() throws Exception {
+    if (counter != null) {
+      if (isFinished()) {
+        counter.completed(sectorKey.getDatasetKey(), state.getDuration() == null ? 0 : state.getDuration() / 1000);
+      } else {
+        counter.failed(sectorKey.getDatasetKey());
+      }
     }
   }
 
@@ -194,7 +266,7 @@ abstract class SectorRunnable implements Runnable {
     }
     checkIfCancelled();
   }
-  
+
   protected Sector loadSectorAndUpdateDatasetImport(boolean validate) {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -279,7 +351,7 @@ abstract class SectorRunnable implements Runnable {
     }
     LOG.info("Loaded {} editorial decisions for sector {}", decisions.size(), sectorKey);
   }
-  
+
   private void loadAttachedSectors() {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -288,42 +360,28 @@ abstract class SectorRunnable implements Runnable {
     long mergeCnt = childSectors.stream().filter(s -> s.getMode() == Sector.Mode.MERGE).count();
     LOG.info("Loaded {} sectors incl {} merge sectors targeting taxa from sector {}", childSectors.size(), mergeCnt, sectorKey);
   }
-  
+
   abstract void doWork() throws Exception;
 
   abstract void doMetrics() throws Exception;
 
   abstract void updateSearchIndex() throws Exception;
-  
+
   public SectorImport getState() {
     return state;
   }
-  
+
   public DSID<Integer> getSectorKey() {
     return sectorKey;
   }
-  
-  public LocalDateTime getCreated() {
-    return created;
-  }
-  
-  public LocalDateTime getStarted() {
-    return state.getStarted();
-  }
-  
-  void checkIfCancelled() throws InterruptedException {
-    if (Thread.currentThread().isInterrupted()) {
-      throw new InterruptedException("Sync of sector " + sectorKey + " was cancelled");
-    }
-  }
-  
+
   @Override
   public String toString() {
     return this.getClass().getSimpleName() + "{" +
         "sectorKey=" + sectorKey +
         ", subjectDatasetKey=" + subjectDatasetKey +
         ", sector=" + sector +
-        ", created=" + created +
+        ", created=" + getCreated() +
         " by " + user +
         '}';
   }

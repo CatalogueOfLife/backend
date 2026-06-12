@@ -1,44 +1,38 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.SectorImport;
-import life.catalogue.api.vocab.ImportState;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+/**
+ * State of the sector syncs of one or all projects:
+ * the currently running and queued syncs plus counts of completed and failed syncs since the server started.
+ * With the sync lane of the job executor potentially running several syncs of different projects in parallel,
+ * there can be more than one running sync.
+ */
 public class SyncState {
-  private static final Logger LOG = LoggerFactory.getLogger(SyncState.class);
-  
-  public final SectorImport running;
+
+  public final List<SectorImport> running = new ArrayList<>();
   public final List<SectorImport> queued = new ArrayList<>();
   public final int failed;
   public final int completed;
-  
-  SyncState(Collection<SyncManager.SectorFuture> syncs, int syncsFailed, int syncsCompleted) {
-    SectorImport run = null;
-    for (SyncManager.SectorFuture sync : syncs) {
-      if (sync.state.getState() == ImportState.WAITING) {
-        queued.add(sync.state);
-      } else if(sync.state.getState().isRunning()) {
-        if (run != null) {
-          LOG.error("Multiple running sector tasks. Ignore {} over {}", run, sync.state);
-        }
-        run = sync.state;
-      } else {
-        // should not be the case
-        throw new IllegalStateException("Non running or waiting sync with state "+sync.state.getState()+" found in queue for sector " + sync.sectorKey);
+
+  SyncState(Collection<SectorRunnable> jobs, int syncsFailed, int syncsCompleted) {
+    for (SectorRunnable job : jobs) {
+      if (job.isRunning()) {
+        running.add(job.getState());
+      } else if (job.isQueued()) {
+        queued.add(job.getState());
       }
+      // jobs that just ended can linger in queue snapshots - ignore them
     }
-    this.running = run;
     this.failed  = syncsFailed;
-    this.completed= syncsCompleted;
+    this.completed = syncsCompleted;
   }
-  
+
   public boolean isIdle() {
-    return running == null && queued.isEmpty();
+    return running.isEmpty() && queued.isEmpty();
   }
 }

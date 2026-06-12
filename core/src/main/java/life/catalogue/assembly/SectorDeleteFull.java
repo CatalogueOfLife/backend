@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +31,8 @@ public class SectorDeleteFull extends SectorRunnable {
   private final Set<Integer> visitedSectors = new HashSet<>();
   
   SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, EventBroker bus,
-                   SectorDao dao, SectorImportDao sid, Consumer<SectorRunnable> successCallback,
-                   BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    super(sectorKey, false, factory, indexService, dao, sid, bus, successCallback, errorCallback, false, user);
+                   SectorDao dao, SectorImportDao sid, @Nullable SyncCounter counter, int user) throws IllegalArgumentException {
+    super(sectorKey, false, factory, indexService, dao, sid, bus, counter, false, user);
   }
 
   @Override

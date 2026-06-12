@@ -556,7 +556,7 @@ public class XRelease extends ProjectRelease {
         // sector syncs require the project key where we store all sync attempts
         var skey = DSID.of(projectKey, s.getId());
         ss = syncFactory.release(skey, tmpProjectKey, mergeCfg, matcher, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
-        ss.run();
+        ss.runEmbedded();
         if (ss.getState().getState() != ImportState.FINISHED){
           failedSyncs++;
           if (mergeCfg.xCfg.failOnSyncErrors) {

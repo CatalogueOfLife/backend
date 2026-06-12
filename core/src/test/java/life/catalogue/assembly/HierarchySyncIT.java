@@ -340,8 +340,7 @@ public class HierarchySyncIT {
         NameUsageIndexService.passThru(),
         sdao,
         siDao,
-        r -> {},
-        (r, e) -> { throw new AssertionError("HierarchySync failed", e); },
+        null,
         scopeResolver,
         USER
       );

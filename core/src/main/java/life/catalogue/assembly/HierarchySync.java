@@ -168,11 +168,10 @@ public class HierarchySync extends SectorRunnable {
                 NameUsageIndexService indexService,
                 SectorDao sdao,
                 SectorImportDao sid,
-                Consumer<SectorRunnable> successCallback,
-                BiConsumer<SectorRunnable, Exception> errorCallback,
+                @Nullable SyncCounter counter,
                 @Nullable IdentifierScopeResolver scopeResolver,
                 int user) throws IllegalArgumentException {
-    super(sectorKey, true, factory, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
+    super(sectorKey, true, factory, indexService, sdao, sid, bus, counter, true, user);
     if (sector.getMode() != Sector.Mode.HIERARCHY) {
       throw new IllegalArgumentException("HierarchySync requires a sector with mode HIERARCHY, got " + sector.getMode());
     }
