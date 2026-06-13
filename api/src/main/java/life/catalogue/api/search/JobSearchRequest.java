@@ -1,7 +1,6 @@
 package life.catalogue.api.search;
 
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 
@@ -39,13 +38,6 @@ public class JobSearchRequest {
    */
   @QueryParam("status")
   private Set<JobStatus> status;
-
-  /**
-   * import state.
-   * Similar to job status, but until dataset imports are not migrated to the background job infrastructure this has to remain.
-   */
-  @QueryParam("state")
-  private Set<ImportState> states;
 
   /**
    * Filter by priority.
@@ -122,14 +114,6 @@ public class JobSearchRequest {
     this.job = job;
   }
 
-  public Set<ImportState> getStates() {
-    return states;
-  }
-
-  public void setStates(Set<ImportState> states) {
-    this.states = states;
-  }
-
   public DataFormat getFormat() {
     return format;
   }
@@ -148,7 +132,6 @@ public class JobSearchRequest {
            && Objects.equals(contributesTo, that.contributesTo)
            && Objects.equals(createdBy, that.createdBy)
            && Objects.equals(status, that.status)
-           && Objects.equals(states, that.states)
            && Objects.equals(priority, that.priority)
            && Objects.equals(job, that.job)
            && format == that.format;
@@ -156,6 +139,6 @@ public class JobSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, datasetKey, contributesTo, createdBy, status, states, priority, job, format);
+    return Objects.hash(key, datasetKey, contributesTo, createdBy, status, priority, job, format);
   }
 }

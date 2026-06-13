@@ -65,7 +65,7 @@ public abstract class BackgroundJob implements Runnable {
     this.emailer = emailer;
   }
 
-  void setPersister(Consumer<BackgroundJob> persister) {
+  protected void setPersister(Consumer<BackgroundJob> persister) {
     this.persister = persister;
   }
 
@@ -74,7 +74,7 @@ public abstract class BackgroundJob implements Runnable {
    * Called by the executor and the run lifecycle on status changes - but can also be invoked manually,
    * e.g. when a job wants to flush an updated step.
    */
-  void persist() {
+  protected void persist() {
     if (persister != null) {
       try {
         persister.accept(this);

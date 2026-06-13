@@ -237,7 +237,7 @@ public class TestDataGenerator {
       );
       var rel = projectCopyFactory.buildRelease(Datasets.COL, Users.RELEASER);
       rel.run();
-      if (rel.getMetrics().getState() != ImportState.FINISHED){
+      if (rel.getStatus() != JobStatus.FINISHED){
         throw new IllegalStateException("COL release failed with error: " + rel.getError());
       }
       final int releaseKey = rel.getNewDatasetKey();

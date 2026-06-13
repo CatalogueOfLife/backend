@@ -8,7 +8,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.config.NormalizerConfig;
@@ -70,7 +70,9 @@ public class ImporterResource {
                                         @Valid @BeanParam JobSearchRequest req,
                                         @Valid @BeanParam Page page) {
     if (running != null) {
-      req.setStates(running ? Set.copyOf(ImportState.runningStates()) : Set.copyOf(ImportState.finishedStates()));
+      req.setStatus(running
+        ? Set.of(JobStatus.WAITING, JobStatus.BLOCKED, JobStatus.RUNNING)
+        : Set.of(JobStatus.FINISHED, JobStatus.CANCELED, JobStatus.FAILED));
     }
     return importManager.listImports(req, page);
   }

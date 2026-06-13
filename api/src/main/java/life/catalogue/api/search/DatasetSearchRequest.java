@@ -119,7 +119,7 @@ public class DatasetSearchRequest {
    * Filters datasets by their last import state
    */
   @QueryParam("lastImportState")
-  private ImportState lastImportState;
+  private JobStatus lastImportState;
 
   /**
    * Filters datasets by having the given editor key authorized.
@@ -306,11 +306,11 @@ public class DatasetSearchRequest {
     this.withoutSectorInProject = withoutSectorInProject;
   }
 
-  public ImportState getLastImportState() {
+  public JobStatus getLastImportState() {
     return lastImportState;
   }
 
-  public void setLastImportState(ImportState lastImportState) {
+  public void setLastImportState(JobStatus lastImportState) {
     this.lastImportState = lastImportState;
   }
 

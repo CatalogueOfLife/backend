@@ -3,7 +3,7 @@ package life.catalogue.resources.dataset;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.SectorImportMapper;
@@ -92,15 +92,17 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   public ResultPage<SectorImport> list(@PathParam("key") int datasetKey,
                                        @QueryParam("sectorKey") Integer sectorKey,
                                        @QueryParam("datasetKey") Integer subjectDatasetKey,
-                                       @QueryParam("state") List<ImportState> states,
+                                       @QueryParam("status") List<JobStatus> states,
                                        @QueryParam("mode") List<Sector.Mode> modes,
                                        @QueryParam("running") Boolean running,
                                        @Valid @BeanParam Page page,
                                        @Context SqlSession session) {
     if (running != null) {
-      states = running ? ImportState.runningStates() : ImportState.finishedStates();
+      states = running
+        ? List.of(JobStatus.WAITING, JobStatus.BLOCKED, JobStatus.RUNNING)
+        : List.of(JobStatus.FINISHED, JobStatus.CANCELED, JobStatus.FAILED);
     }
-    final List<ImportState> immutableStates = ImmutableList.copyOf(states);
+    final List<JobStatus> immutableStates = ImmutableList.copyOf(states);
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
     List<SectorImport> imports = sim.list(sectorKey, datasetKey, subjectDatasetKey, states, modes, null, page);
     return new ResultPage<>(page, imports, () -> sim.count(sectorKey, datasetKey, subjectDatasetKey, immutableStates, modes));

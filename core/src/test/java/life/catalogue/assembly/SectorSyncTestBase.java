@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.*;
@@ -198,7 +199,7 @@ public abstract class SectorSyncTestBase {
   private static SectorImport runSync(SectorSync ss) {
     System.out.println("\n*** SECTOR " + ss.sector.getMode() + " SYNC " + ss.sectorKey + " ***");
     ss.run();
-    if (ss.getState().getState() != ImportState.FINISHED){
+    if (ss.getStatus() != JobStatus.FINISHED){
       throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
     }
     return ss.getState();

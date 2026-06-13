@@ -10,6 +10,7 @@ import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobLane;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.dao.JobDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
@@ -85,7 +86,6 @@ abstract class SectorRunnable extends BackgroundJob {
     state.setDatasetKey(sectorKey.getDatasetKey());
     state.setJobKey(getKey());
     state.setJob(getJobName());
-    state.setState(ImportState.WAITING);
     state.setCreatedBy(user);
 
     // check for existence and datasetKey - we will load the real thing for processing only when we get executed!
@@ -165,18 +165,18 @@ abstract class SectorRunnable extends BackgroundJob {
   }
 
   /**
-   * Runs the job directly on the callers thread, outside of the job executor and the background job lifecycle.
-   * No generic job record is persisted and no notifications are sent, but the sector_import metrics are tracked as usual.
-   * Exceptions are not propagated - inspect getState() for the outcome.
+   * Runs the job directly on the callers thread through the full background job lifecycle,
+   * but outside of the job executor and without notifications.
+   * If a job dao is given a job record is persisted as usual, so the sector_import metrics can join their status.
+   * Exceptions are not propagated - inspect getStatus() or getState() for the outcome.
    * Used by the XRelease to merge sectors inside the running release job itself.
    */
-  public void runEmbedded() {
-    try {
-      execute();
-    } catch (Exception e) {
-      // the sector import state was updated and the cause recorded by execute() already
-      LOG.error("Embedded {} of sector {} failed", getClass().getSimpleName(), sectorKey, e);
+  public void runEmbedded(@Nullable JobDao jobDao) {
+    if (jobDao != null) {
+      jobDao.create(this);
+      setPersister(jobDao::update);
     }
+    run();
   }
 
   @Override
@@ -199,7 +199,6 @@ abstract class SectorRunnable extends BackgroundJob {
       LOG.info("Update search index for sector {}", sectorKey);
       updateSearchIndex();
 
-      state.setState(ImportState.FINISHED);
       LOG.info("Completed {} for sector {} with {} names and {} usages", this.getClass().getSimpleName(), sectorKey, state.getNameCount(), state.getUsagesCount());
       bus.publish(new DatasetDataChanged(sectorKey.getDatasetKey(), user));
       if (updateSectorAttemptOnSuccess) {
@@ -211,13 +210,11 @@ abstract class SectorRunnable extends BackgroundJob {
 
     } catch (InterruptedException e) {
       LOG.warn("Interrupted {}", this, e);
-      state.setState(ImportState.CANCELED);
       throw e;
 
     } catch (Exception e) {
       LOG.error("Failed {}", this, e);
       state.setError(ExceptionUtils.getRootCauseMessage(e));
-      state.setState(ImportState.FAILED);
       throw e;
 
     } finally {
@@ -233,7 +230,6 @@ abstract class SectorRunnable extends BackgroundJob {
   }
 
   private void updateState(ImportState state) throws InterruptedException {
-    this.state.setState(state);
     setStep(state);
     checkIfCancelled();
   }

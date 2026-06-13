@@ -92,6 +92,8 @@ public class EventKryoPool extends Pool<Kryo> {
     kryo.register(Environment.class);
     kryo.register(User.Role.class);
     kryo.register(TaxGroup.class);
+    // registered last to keep the ids of all prior classes stable
+    kryo.register(JobStatus.class);
 
     return kryo;
   }

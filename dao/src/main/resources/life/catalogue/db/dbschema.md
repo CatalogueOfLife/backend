@@ -11,6 +11,96 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-06-12 unified background jobs (feature/unified-jobs branch)
+Generic `job` table holding one record per background job of any kind.
+`dataset_import` and `sector_import` become pure metrics tables linking to `job` via a new `job_key` column;
+their `state`, `job` and `error` columns move to the job table, with the fine grained running states
+replaced by the generic JOBSTATUS plus a free text `step`.
+One job record is backfilled for every existing import and sync attempt.
+
+```sql
+-- new enum and the generic job table
+CREATE TYPE JOBPRIORITY AS ENUM ('HIGH', 'MEDIUM', 'LOW');
+
+CREATE TABLE job (
+  key UUID PRIMARY KEY,
+  job_class TEXT NOT NULL,
+  status JOBSTATUS NOT NULL,
+  step TEXT,
+  priority JOBPRIORITY NOT NULL,
+  dataset_key INTEGER,
+  sector_key INTEGER,
+  created_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  started TIMESTAMP WITHOUT TIME ZONE,
+  finished TIMESTAMP WITHOUT TIME ZONE,
+  error TEXT,
+  params JSONB,
+  result_md5 TEXT,
+  result_size BIGINT,
+  result_deleted TIMESTAMP WITHOUT TIME ZONE
+);
+
+CREATE INDEX ON job (dataset_key);
+CREATE INDEX ON job (created_by);
+CREATE INDEX ON job (job_class);
+CREATE INDEX ON job (created DESC);
+CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
+CREATE INDEX ON job USING GIN (params);
+
+-- link metrics tables to the job table
+ALTER TABLE dataset_import ADD COLUMN job_key UUID;
+ALTER TABLE sector_import  ADD COLUMN job_key UUID;
+
+-- backfill one job record per dataset import.
+-- final states are kept, running and waiting states become CANCELED with the substate preserved as the step
+CREATE TEMP TABLE di_jobmap AS
+  SELECT dataset_key, attempt, gen_random_uuid() AS key FROM dataset_import;
+
+INSERT INTO job (key, job_class, status, step, priority, dataset_key, created_by, created, started, finished, error)
+SELECT m.key, di.job,
+  CASE WHEN di.state IN ('FINISHED','FAILED','CANCELED') THEN di.state::text ELSE 'CANCELED' END::JOBSTATUS,
+  CASE WHEN di.state IN ('WAITING','FINISHED','FAILED','CANCELED') THEN NULL ELSE lower(di.state::text) END,
+  'MEDIUM', di.dataset_key, di.created_by,
+  coalesce(di.started, di.finished, now()), di.started, di.finished, di.error
+FROM dataset_import di JOIN di_jobmap m USING (dataset_key, attempt);
+
+UPDATE dataset_import di SET job_key = m.key
+FROM di_jobmap m WHERE di.dataset_key=m.dataset_key AND di.attempt=m.attempt;
+
+-- backfill one job record per sector import
+CREATE TEMP TABLE si_jobmap AS
+  SELECT dataset_key, sector_key, attempt, gen_random_uuid() AS key FROM sector_import;
+
+INSERT INTO job (key, job_class, status, step, priority, dataset_key, sector_key, created_by, created, started, finished, error)
+SELECT m.key, si.job,
+  CASE WHEN si.state IN ('FINISHED','FAILED','CANCELED') THEN si.state::text ELSE 'CANCELED' END::JOBSTATUS,
+  CASE WHEN si.state IN ('WAITING','FINISHED','FAILED','CANCELED') THEN NULL ELSE lower(si.state::text) END,
+  'MEDIUM', si.dataset_key, si.sector_key, si.created_by,
+  coalesce(si.started, si.finished, now()), si.started, si.finished, si.error
+FROM sector_import si JOIN si_jobmap m USING (dataset_key, sector_key, attempt);
+
+UPDATE sector_import si SET job_key = m.key
+FROM si_jobmap m WHERE si.dataset_key=m.dataset_key AND si.sector_key=m.sector_key AND si.attempt=m.attempt;
+
+-- backfill job records for historical exports so they show up in the unified job history.
+-- exports created after the new release are persisted by the executor already, hence the conflict clause
+INSERT INTO job (key, job_class, status, priority, dataset_key, created_by, created, started, finished, error, result_md5, result_size, result_deleted)
+SELECT e.key, 'DatasetExportJob', e.status, 'LOW', e.dataset_key, e.created_by, e.created, e.started, e.finished, e.error, e.md5, e.size, e.deleted
+FROM dataset_export e
+ON CONFLICT (key) DO NOTHING;
+
+-- drop the moved columns and the old enum
+-- job_key stays nullable: admin tools may rebuild historical metrics without a job record
+ALTER TABLE dataset_import DROP COLUMN state, DROP COLUMN job, DROP COLUMN error;
+CREATE INDEX ON dataset_import (job_key);
+
+ALTER TABLE sector_import DROP COLUMN state, DROP COLUMN job, DROP COLUMN error;
+CREATE INDEX ON sector_import (job_key);
+
+DROP TYPE IMPORTSTATE;
+```
+
 #### 2026-06-10 rank series metrics update
 ```sql
 -- update dataset metrics

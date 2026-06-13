@@ -1,6 +1,7 @@
 package life.catalogue.concurrent;
 
 import life.catalogue.api.exception.TooManyRequestsException;
+import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.Idle;
@@ -55,6 +56,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   private final @Nullable EmailNotification emailer;
   private final @Nullable JobDao jobDao; // optional - without it jobs are not persisted, e.g. in CLI tools
   private Map<JobLane, ColExecutor> execs;
+  private List<JobInfo> staleJobs = List.of(); // jobs cancelled at startup as they never survived the last server run
   private final Timer timer;
 
   @Override
@@ -62,7 +64,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     if (execs == null) {
       if (jobDao != null) {
         // jobs that were waiting or running when the last server stopped can never finish
-        jobDao.cancelStale();
+        staleJobs = jobDao.cancelStale();
       }
       execs = new EnumMap<>(JobLane.class);
       for (JobLane lane : JobLane.values()) {
@@ -86,6 +88,14 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   @Override
   public boolean hasStarted() {
     return execs != null;
+  }
+
+  /**
+   * @return the persisted jobs that were cancelled when this executor started,
+   * as they were still waiting or running when the last server stopped.
+   */
+  public List<JobInfo> getStaleJobs() {
+    return staleJobs;
   }
 
   static class ComparableFutureTask extends FutureTask<Void> implements Runnable, Comparable<ComparableFutureTask> {

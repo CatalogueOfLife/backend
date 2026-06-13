@@ -42,7 +42,7 @@ public class SectorDeleteFull extends SectorRunnable {
 
   @Override
   void doWork() throws Exception {
-    state.setState( ImportState.DELETING);
+    setStep(ImportState.DELETING);
     // do a recursive delete to make sure we have no more children
     for (Sector cs : childSectors) {
       deleteSectorRecursively(cs);

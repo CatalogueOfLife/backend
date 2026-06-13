@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.EmailNotificationTemplateTest;
@@ -93,7 +94,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
   public void release() throws Exception {
     ProjectRelease release = buildRelease();
     release.run();
-    assertEquals(ImportState.FINISHED, release.getMetrics().getState());
+    assertEquals(JobStatus.FINISHED, release.getStatus());
     assertSameTree(release.newDatasetKey, "release-expected.tree");
 
     DSID<String> key = DSID.root(release.newDatasetKey);

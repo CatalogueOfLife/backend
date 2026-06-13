@@ -3,7 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.JobSearchRequest;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
 
@@ -22,19 +22,21 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   
   DatasetImport get(@Param("key") int datasetKey, @Param("attempt") int attempt);
 
+  DatasetImport getByJobKey(@Param("jobKey") java.util.UUID jobKey);
+
   /**
-   * Looks up the next dataset import with the given state, i.e. the import with a higher attempt
+   * Looks up the next dataset import with the given job status, i.e. the import with a higher attempt
    */
   DatasetImport getNext(@Param("key") int datasetKey,
                         @Param("attempt") int attempt,
-                        @Param("state") ImportState state);
+                        @Param("status") JobStatus status);
 
   /**
-   * Looks up the last dataset import with the given state, i.e. the import with a higher attempt
+   * Looks up the last dataset import with the given job status, i.e. the import with a higher attempt
    */
   DatasetImport getLast(@Param("key") int datasetKey,
                         @Param("attempt") int attempt,
-                        @Param("state") ImportState state);
+                        @Param("status") JobStatus status);
 
   /**
    * Returns just the MD5 hash of the dataset archive used for the given import attempt.

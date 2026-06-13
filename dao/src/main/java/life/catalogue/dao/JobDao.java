@@ -68,14 +68,17 @@ public class JobDao {
    * Marks all waiting, blocked or running jobs as canceled.
    * To be called on startup before any new job is submitted,
    * cleaning up jobs that did not survive the last shutdown.
+   * @return the jobs that have been cancelled
    */
-  public int cancelStale() {
+  public List<JobInfo> cancelStale() {
     try (SqlSession session = factory.openSession(true)) {
-      int cnt = session.getMapper(JobMapper.class).cancelStale();
-      if (cnt > 0) {
-        LOG.warn("Canceled {} stale jobs from a previous server run", cnt);
+      JobMapper jm = session.getMapper(JobMapper.class);
+      List<JobInfo> stale = jm.listStale();
+      if (!stale.isEmpty()) {
+        jm.cancelStale();
+        LOG.warn("Canceled {} stale jobs from a previous server run", stale.size());
       }
-      return cnt;
+      return stale;
     }
   }
 

@@ -41,12 +41,13 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     super(DatasetImportMapper.class);
   }
 
-  static void fill(ImportMetrics m, ImportState state) {
+  static void fill(ImportMetrics m, JobStatus status) {
     m.setDatasetKey(DATASET11.getKey());
     m.setCreatedBy(Users.TESTER);
+    m.setJobKey(UUID.randomUUID());
     m.setJob(DatasetImportMapperTest.class.getSimpleName());
     m.setError("no error");
-    m.setState(state);
+    m.setStatus(status);
     m.setStarted(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
     m.setFinished(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
     m.setAppliedDecisionCount(83);
@@ -84,9 +85,9 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     m.setVernacularsByLanguageCount(mockCount());
   }
 
-  private static DatasetImport create(ImportState state) throws Exception {
+  private DatasetImport create(JobStatus status) throws Exception {
     DatasetImport d = new DatasetImport();
-    fill(d, state);
+    fill(d, status);
     d.setFormat(DataFormat.COLDP);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setDownloadUri(URI.create("http://rs.gbif.org/datasets/nub.zip"));
@@ -107,8 +108,18 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     return d;
   }
   
-  private static DatasetImport create() throws Exception {
-    return create(ImportState.DOWNLOADING);
+  private DatasetImport create() throws Exception {
+    return create(JobStatus.RUNNING);
+  }
+
+  /**
+   * Persists the import and a matching job record so status, step, job and error can be joined.
+   */
+  private DatasetImport createBoth(JobStatus status) throws Exception {
+    DatasetImport d = create(status);
+    createJob(session(), d);
+    mapper().create(d);
+    return d;
   }
   
   private static Map<String, Integer> mockCount() {
@@ -129,11 +140,10 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   
   @Test
   public void roundtrip() throws Exception {
-    DatasetImport d1 = create();
-    mapper().create(d1);
+    DatasetImport d1 = createBoth(JobStatus.RUNNING);
     commit();
     assertEquals(1, d1.getAttempt());
-    
+
     DatasetImport d2 = mapper().get(d1.getDatasetKey(), d1.getAttempt());
 
     if (!d1.equals(d2)) {
@@ -142,9 +152,11 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     }
     //printDiff(d1, d2);
     assertEquals(d1, d2);
-    
-    d1.setState(ImportState.FINISHED);
+
+    // status, step and error now live on the job record
+    d1.setStatus(JobStatus.FINISHED);
     d1.setError("no error at all");
+    updateJob(d1);
     mapper().update(d1);
     assertNotEquals(d1, d2);
 
@@ -152,36 +164,43 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals(d1, d2);
     commit();
   }
+
+  /**
+   * Mirrors the generic job fields of the metrics into its existing job record.
+   */
+  private void updateJob(ImportMetrics m) {
+    var jm = mapper(JobMapper.class);
+    var j = jm.get(m.getJobKey());
+    j.setStatus(m.getStatus());
+    j.setStep(m.getStep());
+    j.setError(m.getError());
+    jm.update(j);
+  }
   
   @Test
   public void lastSuccessful() throws Exception {
     JobSearchRequest req = new JobSearchRequest();
-    req.setStates(ImmutableSet.of(ImportState.FINISHED));
+    req.setStatus(ImmutableSet.of(JobStatus.FINISHED));
     Page page = new Page();
-    
-    DatasetImport d = create();
-    mapper().create(d);
+
+    DatasetImport d = createBoth(JobStatus.RUNNING);
     req.setDatasetKey(d.getDatasetKey());
     assertTrue(mapper().list(req, page).isEmpty());
-    
-    d.setState(ImportState.FAILED);
+
+    d.setStatus(JobStatus.FAILED);
     d.setError("damn error");
-    mapper().update(d);
+    updateJob(d);
     assertTrue(mapper().list(req, page).isEmpty());
-    
-    d = create();
-    d.setState(ImportState.DOWNLOADING);
-    mapper().create(d);
+
+    d = createBoth(JobStatus.RUNNING);
     req.setDatasetKey(d.getDatasetKey());
     assertTrue(mapper().list(req, page).isEmpty());
-    
-    d.setState(ImportState.FINISHED);
-    mapper().update(d);
+
+    d.setStatus(JobStatus.FINISHED);
+    updateJob(d);
     assertFalse(mapper().list(req, page).isEmpty());
-    
-    d = create();
-    d.setState(ImportState.CANCELED);
-    mapper().create(d);
+
+    d = createBoth(JobStatus.CANCELED);
     req.setDatasetKey(d.getDatasetKey());
     assertFalse(mapper().list(req, page).isEmpty());
     commit();
@@ -190,16 +209,15 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
 
   @Test
   public void current() throws Exception {
-    DatasetImport d1 = create();
-    mapper().create(d1);
+    DatasetImport d1 = createBoth(JobStatus.RUNNING);
     final int datasetKey = d1.getDatasetKey();
 
     // nothing on dataset yet
     assertNull(mapper().current(datasetKey));
 
-    DatasetImport d2 = create();
-    d2.setState(ImportState.FAILED);
+    DatasetImport d2 = create(JobStatus.FAILED);
     d2.setError("damn error");
+    createJob(session(), d2);
     mapper().create(d2);
     assertNull(mapper().current(datasetKey));
 
@@ -211,25 +229,25 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
 
   @Test
   public void listCount() throws Exception {
-    mapper().create(create(ImportState.FAILED));
-    mapper().create(create(ImportState.FINISHED));
-    mapper().create(create(ImportState.PROCESSING));
-    mapper().create(create(ImportState.FINISHED));
-    mapper().create(create(ImportState.CANCELED));
-    mapper().create(create(ImportState.INSERTING));
-    mapper().create(create(ImportState.FINISHED));
+    createBoth(JobStatus.FAILED);
+    createBoth(JobStatus.FINISHED);
+    createBoth(JobStatus.RUNNING);
+    createBoth(JobStatus.FINISHED);
+    createBoth(JobStatus.CANCELED);
+    createBoth(JobStatus.WAITING);
+    createBoth(JobStatus.FINISHED);
 
     JobSearchRequest req = new JobSearchRequest();
     assertEquals(7, mapper().count(null));
     assertEquals(7, mapper().count(req));
-    req.setStates(Set.of(ImportState.FAILED));
+    req.setStatus(Set.of(JobStatus.FAILED));
     assertEquals(1, mapper().count(req));
-    req.setStates(Set.of(ImportState.FINISHED));
+    req.setStatus(Set.of(JobStatus.FINISHED));
     assertEquals(3, mapper().count(req));
-    req.setStates(Set.of(ImportState.PROCESSING, ImportState.INSERTING));
+    req.setStatus(Set.of(JobStatus.RUNNING, JobStatus.WAITING));
     assertEquals(2, mapper().count(req));
     req.setDatasetKey(null);
-    req.setStates(Set.of(ImportState.PROCESSING, ImportState.INSERTING));
+    req.setStatus(Set.of(JobStatus.RUNNING, JobStatus.WAITING));
     assertEquals(2, mapper().list(req, new Page()).size());
   }
   

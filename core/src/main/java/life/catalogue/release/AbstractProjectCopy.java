@@ -188,7 +188,6 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       LOG.error("Error indexing new dataset {} into ES. Source dataset={}", newDatasetKey, projectKey, e);
     }
 
-    metrics.setState(ImportState.FINISHED);
     LOG.info("Successfully finished {} project {} into dataset {}", actionName, projectKey, newDatasetKey);
   }
 
@@ -211,8 +210,6 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     String attempt = null;
     LOG.error("Error {} project {} into dataset {}", actionName, projectKey, newDatasetKey, e);
     if (metrics != null) {
-      metrics.setState(ImportState.FAILED);
-      metrics.setError(Exceptions.getFirstMessage(e));
       attempt = metrics.attempt();
     }
     // cleanup failed remains?
@@ -224,7 +221,6 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
 
   @Override
   protected void onCancel() {
-    metrics.setState(ImportState.CANCELED);
     LOG.warn("Cancelled {} project {} into dataset {}", actionName, projectKey, newDatasetKey);
     // cleanup failed remains
     LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, projectKey, metrics.attempt());
@@ -299,10 +295,8 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
 
   void updateState(ImportState state) throws InterruptedException {
     checkIfCancelled();
-    LOG.info("Change state for dataset {} to {}", newDatasetKey, state);
-    metrics.setState(state);
+    LOG.info("Change step for dataset {} to {}", newDatasetKey, state);
     setStep(state);
-    diDao.update(metrics);
   }
 
   void updateDataset(Dataset d) {

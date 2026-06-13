@@ -224,7 +224,7 @@ public class HierarchySync extends SectorRunnable {
       this.sourceCache = cache;
       this.sourceLoader = new CacheLoader.MybatisSession(loaderSession, sourceDatasetKey);
 
-      state.setState(ImportState.DELETING);
+      setStep(ImportState.DELETING);
       deleteOld();
       checkIfCancelled();
 
@@ -234,15 +234,15 @@ public class HierarchySync extends SectorRunnable {
       }
       LOG.info("Hierarchy sector {}: starting new verbatim source ids from {}", sectorKey, vsIdGen);
 
-      state.setState(ImportState.INSERTING);
+      setStep(ImportState.INSERTING);
       syncHigherClassification();
       checkIfCancelled();
 
-      state.setState(ImportState.MATCHING);
+      setStep(ImportState.MATCHING);
       realignStatus();
       checkIfCancelled();
 
-      state.setState(ImportState.INSERTING);
+      setStep(ImportState.INSERTING);
       copySynonymies();
       checkIfCancelled();
     } finally {

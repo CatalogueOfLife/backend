@@ -10,7 +10,7 @@
     d.private,
     d.taxonomic_group_scope,
     d.last_import_attempt,
-    dli.state AS last_import_state,
+    jli.status AS last_import_state,
     <include refid="size"/> AS size
   </sql>
 
@@ -36,7 +36,7 @@
     d.modified,
     d.private,
     di.finished AS imported,
-    dli.state AS last_import_state,
+    jli.status AS last_import_state,
     <include refid="size"/> AS size
   </sql>
 
@@ -73,6 +73,7 @@
       LEFT JOIN usage_count uc ON uc.dataset_key=d.key
       LEFT JOIN v_last_dataset_import li ON li.dataset_key=d.key AND d.origin='EXTERNAL'::DATASETORIGIN
       LEFT JOIN dataset_import dli ON dli.attempt=li.attempt AND dli.dataset_key=d.key
+      LEFT JOIN job jli ON jli.key=dli.job_key
   </sql>
 
   <sql id="FROM_PROJ">
@@ -228,7 +229,7 @@
         AND <include refid="size"/> >= #{req.minSize}
       </if>
       <if test="req.lastImportState != null">
-        AND dli.state = #{req.lastImportState}::IMPORTSTATE
+        AND jli.status = #{req.lastImportState}::JOBSTATUS
       </if>
     </if>
   </sql>
@@ -401,7 +402,7 @@
       </if>
 
       <if test="key != null">
-        AND key = #{key}
+        AND d.key = #{key}
       </if>
       <if test="q != null">
         <!-- we use dollar quoted strings with a token ($gbif$) to avoid escaping quotes -->
@@ -500,10 +501,10 @@
   </sql>
 
   <sql id="SELECT_ATT">
-    key,
-    alias,
-    title,
-    last_import_attempt
+    d.key,
+    d.alias,
+    d.title,
+    d.last_import_attempt
   </sql>
 
   <select id="listNeverImported" resultMap="datasetAttResultMap">
@@ -519,13 +520,14 @@
     WITH last_imports AS (
       SELECT dataset_key, MAX(attempt) AS attempt FROM dataset_import GROUP BY dataset_key
     )
-    SELECT <include refid="SELECT_ATT"/>, di.state = 'FAILED' as failed
+    SELECT <include refid="SELECT_ATT"/>, j.status = 'FAILED' as failed
     FROM dataset d
       LEFT JOIN last_imports li ON li.dataset_key=d.key
       LEFT JOIN dataset_import di ON di.dataset_key=d.key AND di.attempt = li.attempt
+      LEFT JOIN job j ON j.key=di.job_key
     WHERE <include refid="importable"/>
       AND coalesce((d.settings ->> 'import frequency')::int, #{defaultFrequency}) > 0
-      AND di.state != 'WAITING'::importstate
+      AND j.status != 'WAITING'::JOBSTATUS
       AND (d.last_import_attempt + coalesce((d.settings ->> 'import frequency')::int, #{defaultFrequency}) * interval '1 day') &lt; now()
       AND d.last_import_attempt IS NOT NULL
     ORDER BY d.last_import_attempt ASC, d.key
@@ -593,7 +595,7 @@
   <select id="get" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE key = #{key}
+    WHERE d.key = #{key}
   </select>
 
   <select id="getSimple" resultMap="datasetSimpleResultMap">

@@ -161,23 +161,6 @@ CREATE TYPE GENDER AS ENUM (
   'NEUTER'
 );
 
-CREATE TYPE IMPORTSTATE AS ENUM (
-  'WAITING',
-  'PREPARING',
-  'DOWNLOADING',
-  'PROCESSING',
-  'DELETING',
-  'INSERTING',
-  'MATCHING',
-  'INDEXING',
-  'ANALYZING',
-  'ARCHIVING',
-  'EXPORTING',
-  'FINISHED',
-  'CANCELED',
-  'FAILED'
-);
-
 CREATE TYPE INFOGROUP AS ENUM (
   'AUTHORSHIP',
   'PUBLISHED_IN',
@@ -1030,7 +1013,6 @@ CREATE TABLE dataset_import (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   attempt INTEGER NOT NULL,
   job_key UUID,
-  state IMPORTSTATE NOT NULL,
   origin DATASETORIGIN NOT NULL,
   format DATAFORMAT,
   started TIMESTAMP WITHOUT TIME ZONE,
@@ -1078,8 +1060,6 @@ CREATE TABLE dataset_import (
   merged_synonyms_by_rank_count HSTORE,
   verbatim_by_row_type_count JSONB,
   verbatim_by_term_count HSTORE,
-  job TEXT NOT NULL,
-  error TEXT,
   md5 TEXT,
   download_uri TEXT,
   PRIMARY KEY (dataset_key, attempt)
@@ -1208,7 +1188,6 @@ CREATE TABLE sector_import (
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
   created_by INTEGER NOT NULL,
-  state IMPORTSTATE NOT NULL,
   -- shared
   applied_decision_count INTEGER,
   bare_name_count INTEGER,
@@ -1243,9 +1222,7 @@ CREATE TABLE sector_import (
   usages_by_status_count HSTORE,
   vernaculars_by_language_count HSTORE,
   secondary_source_by_info_count HSTORE,
-  job TEXT NOT NULL,
   warnings TEXT[],
-  error TEXT,
   PRIMARY KEY (dataset_key, sector_key, attempt)
 );
 CREATE INDEX ON sector_import (dataset_key, sector_key);

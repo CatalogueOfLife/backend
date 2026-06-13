@@ -7,12 +7,13 @@ import life.catalogue.api.event.SectorListener;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.dao.JobDao;
 import life.catalogue.config.SyncManagerConfig;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
@@ -26,6 +27,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -52,15 +55,17 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
   private final SqlSessionFactory factory;
   private final SyncFactory syncFactory;
   private final JobExecutor executor;
+  private final @Nullable JobDao jobDao;
   private final SyncCounter counter;
 
   public SyncManager(SyncManagerConfig cfg, SqlSessionFactory factory, NameIndex nameIndex, SyncFactory syncFactory,
-                     JobExecutor executor, MetricRegistry registry) {
+                     JobExecutor executor, @Nullable JobDao jobDao, MetricRegistry registry) {
     this.cfg = cfg;
     this.factory = factory;
     this.syncFactory = syncFactory;
     this.nameIndex = nameIndex;
     this.executor = executor;
+    this.jobDao = jobDao;
     this.counter = new SyncCounter(registry.timer("life.catalogue.assembly.timer"));
   }
 
@@ -68,23 +73,8 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
   public void start() throws Exception {
     LOG.info("Starting assembly coordinator");
     started = true;
-
-    // cancel all sector imports that were left in running states by a previous server
-    try (SqlSession session = factory.openSession(true)) {
-      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-      // list all imports with running states & waiting
-      Page page = new Page(0, Page.MAX_LIMIT);
-      List<SectorImport> sims = null;
-      while (page.getOffset() == 0 || (sims != null && sims.size() == page.getLimit())) {
-        sims = sim.list(null, null, null, ImportState.runningAndWaitingStates(), null, null, page);
-        for (SectorImport si : sims) {
-          si.setState(ImportState.CANCELED);
-          si.setFinished(LocalDateTime.now());
-          sim.update(si);
-        }
-        page.next();
-      }
-    }
+    // sector imports left in running states by a previous server are covered by
+    // the job executor cancelling all stale job records on startup
 
     // scheduler
     if (cfg.polling > 0) {
@@ -283,10 +273,15 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
 
   private boolean rejectJob(SectorRunnable job, String reason) {
     LOG.warn(reason);
+    // record a failed job so the already created sector import attempt links to a final status
+    job.setStatus(JobStatus.FAILED);
+    job.setError(new IllegalArgumentException(reason));
+    if (jobDao != null) {
+      jobDao.create(job);
+    }
+    job.state.setFinished(LocalDateTime.now());
+    job.state.setError(reason);
     try (SqlSession session = factory.openSession(true)) {
-      job.state.setState(ImportState.FAILED);
-      job.state.setFinished(LocalDateTime.now());
-      job.state.setError(reason);
       session.getMapper(SectorImportMapper.class).update(job.state);
     }
     return false;

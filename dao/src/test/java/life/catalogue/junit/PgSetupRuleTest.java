@@ -110,6 +110,8 @@ public class PgSetupRuleTest {
     enums.remove(NameField.class);
     enums.remove(DoiResolution.class);
     enums.remove(TabularFormat.class);
+    // ImportState is only used in java code now, feeding the free text job step. The db tracks JobStatus instead.
+    enums.remove(ImportState.class);
     // remove enums not used in coldp
     if (coldpOnly) {
       enums.remove(DataFormat.class);

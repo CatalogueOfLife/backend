@@ -127,6 +127,12 @@
     <include refid="WHERE"/>
   </select>
 
+  <select id="listStale" resultMap="jobResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE j.status IN ('WAITING','BLOCKED','RUNNING')
+  </select>
+
   <update id="cancelStale">
     UPDATE job
     SET status = 'CANCELED'::JOBSTATUS, finished = now()

@@ -5,7 +5,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorImportDao;
@@ -255,7 +255,6 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
               si.setDatasetKey(projectKey); // datasetKey must be the project, that's where we store all metrics !!!
               si.setAttempt(sa.attempt);
               si.setJob(getClass().getSimpleName());
-              si.setState(ImportState.ANALYZING);
               si.setCreatedBy(user.getKey());
               // we approximate the time of the sync:
               // it has to be after the sector was created and the source dataset imported
@@ -268,7 +267,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
                   if (di.getFinished().isAfter(min)) {
                     min = di.getFinished();
                   }
-                  var di2 = dim.getNext(s.getSubjectDatasetKey(), s.getDatasetAttempt(), ImportState.FINISHED);
+                  var di2 = dim.getNext(s.getSubjectDatasetKey(), s.getDatasetAttempt(), JobStatus.FINISHED);
                   if (di2 != null) {
                     if (di2.getFinished().isBefore(max)) {
                       max = di2.getFinished();
@@ -288,16 +287,13 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
             } else if (update) {
               updated.incrementAndGet();
               calcMetrics = true;
-              if (si.getState() != ImportState.FINISHED) {
-                LOG.warn("Sector import {} from {} {} has state {}. {} metrics.", si.attempt(), kind, d.getKey(), si.getState(), update ? "Update":"Keep");
+              if (si.getStatus() != JobStatus.FINISHED) {
+                LOG.warn("Sector import {} from {} {} has status {}. {} metrics.", si.attempt(), kind, d.getKey(), si.getStatus(), update ? "Update":"Keep");
               }
             }
 
             if (calcMetrics) {
               sid.updateMetrics(si, d.getKey());
-              if (si.getState()==ImportState.ANALYZING) {
-                si.setState(ImportState.FINISHED);
-              }
               if (si.getFinished()==null) {
                 si.setFinished(si.getStarted().plus(1, ChronoUnit.MINUTES));
               }

@@ -10,7 +10,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.PagingUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.common.Idle;
@@ -24,6 +24,7 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.*;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.es.indexing.NameUsageIndexService;
@@ -164,22 +165,22 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    * Pages through all queued, running and historical imports. See https://github.com/Sp2000/colplus-backend/issues/404
    */
   public ResultPage<DatasetImport> listImports(JobSearchRequest req, Page page) {
-    List<DatasetImport> running = running(req.getDatasetKey(), req.getStates());
+    List<DatasetImport> running = running(req.getDatasetKey(), req.getStatus());
     ResultPage<DatasetImport> historical;
 
     // ignore running states in imports stored in the db - otherwise we get duplicates
-    Set<ImportState> historicalStates = req.getStates() == null ? Collections.EMPTY_SET
-        : req.getStates().stream()
-            .filter(ImportState::isFinished)
+    Set<JobStatus> historicalStatus = req.getStatus() == null ? Collections.EMPTY_SET
+        : req.getStatus().stream()
+            .filter(JobStatus::isDone)
             .collect(Collectors.toSet());
 
-    if (req.getStates() != null && !req.getStates().isEmpty() && historicalStates.isEmpty()) {
+    if (req.getStatus() != null && !req.getStatus().isEmpty() && historicalStatus.isEmpty()) {
       // we originally had a request for only running states. We dont get any of these from the db
       historical = new ResultPage<>(new Page(0, 0), 0, Collections.EMPTY_LIST);
 
     } else {
       // query historical ones at least to get the total
-      req.setStates(historicalStates);
+      req.setStatus(historicalStatus);
       if (running.size() >= page.getLimitWithOffset()) {
         // we can answer the request from the queue alone, so limit=0 to get the total count!
         historical = dao.list(req, new Page(0, 0));
@@ -220,23 +221,27 @@ public class ImportManager implements Managed, Idle, DatasetListener {
       di.setDatasetKey(job.getDatasetKey());
       di.setJobKey(job.getKey());
       di.setAttempt(ObjectUtils.coalesce(job.getAttempt(), -1));
-      di.setState(ImportState.WAITING);
     }
+    // reflect the live job status in the metrics for display
+    di.setStatus(job.getStatus());
+    di.setStep(job.getStep());
     return di;
   }
 
-  private List<DatasetImport> running(final Integer datasetKey, final Set<ImportState> states) {
+  private List<DatasetImport> running(final Integer datasetKey, final Set<JobStatus> status) {
     final List<ImportJob> jobs = importJobs();
     // make sure we have all running ones in and on top!
     List<DatasetImport> running = jobs.stream()
         .filter(BackgroundJob::isRunning)
         .map(ImportManager::fromImportJob)
-        .filter(di -> di.getState().isRunning())
         .collect(Collectors.toList());
 
     // include releasing jobs if existing and sort by creation date
     for (AbstractProjectCopy projJob : jobExecutor.getQueueByJobClass(AbstractProjectCopy.class)) {
-      running.add(projJob.getMetrics());
+      var di = projJob.getMetrics();
+      di.setStatus(projJob.getStatus());
+      di.setStep(projJob.getStep());
+      running.add(di);
     }
     //TODO: remove debug logs once solved why we null dates
     for (var di : running) {
@@ -251,16 +256,15 @@ public class ImportManager implements Managed, Idle, DatasetListener {
         jobs.stream()
             .filter(BackgroundJob::isQueued)
             .map(ImportManager::fromImportJob)
-            .filter(di -> di.getState().isQueued())
             .collect(Collectors.toList()));
 
-    // finally filter by dataset & state
+    // finally filter by dataset & status
     return running.stream()
         .filter(di -> {
           if (datasetKey != null && !Objects.equals(datasetKey, di.getDatasetKey())) {
             return false;
           }
-          if (states != null && di.getState() != null && !states.contains(di.getState())) {
+          if (status != null && di.getStatus() != null && !status.contains(di.getStatus())) {
             return false;
           }
           return true;
@@ -446,31 +450,30 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   }
 
   /**
-   * Read hanging imports in db, truncate if half inserted and add as new requests to the queue
+   * Reschedules imports that were interrupted by the last server shutdown.
+   * The job executor cancelled their stale job records on startup and keeps them for us.
    */
-  private void cancelAndReschedule() {
+  private void rescheduleInterrupted() {
     List<ImportRequest> requests = new ArrayList<>();
-    var req = new JobSearchRequest();
-    req.setStates(Set.copyOf(ImportState.runningAndWaitingStates()));
-    Iterator<DatasetImport> iter = PagingUtils.pageAll(p -> dao.list(req, p), 100);
-    while (iter.hasNext()) {
-      DatasetImport di = iter.next();
-      // only reschedule import jobs, no releases
-      if (!di.getJob().equalsIgnoreCase(ImportJob.class.getSimpleName())) {
-        continue;
-      }
-      // mark as cancelled
-      dao.updateImportCancelled(di);
-      // add back to queue
-      try {
-        requests.add(ImportRequest.reimport(di.getDatasetKey(), di.getAttempt(), di.getCreatedBy()));
-      } catch (IllegalArgumentException e) {
-        // swallow
+    try (SqlSession session = factory.openSession(true)) {
+      var dim = session.getMapper(DatasetImportMapper.class);
+      for (JobInfo stale : jobExecutor.getStaleJobs()) {
+        // only reschedule import jobs, no releases or syncs
+        if (!ImportJob.class.getSimpleName().equals(stale.getJob())) {
+          continue;
+        }
+        DatasetImport di = dim.getByJobKey(stale.getKey());
+        if (di != null) {
+          try {
+            requests.add(ImportRequest.reimport(di.getDatasetKey(), di.getAttempt(), di.getCreatedBy()));
+          } catch (IllegalArgumentException e) {
+            // swallow
+          }
+        }
       }
     }
-    // finally submit all request. We don't do this earlier to not disturb the paging which would yield the newly scheduled imports again and cancel them
     requests.forEach(this::submit);
-    LOG.info("Cancelled and resubmitted {} imports.", requests.size());
+    LOG.info("Resubmitted {} interrupted imports.", requests.size());
   }
 
   @Override
@@ -480,7 +483,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
         iCfg.maxQueue);
     started = true;
     try {
-      cancelAndReschedule();
+      rescheduleInterrupted();
     } catch (RuntimeException e) {
       // log n swallow
       LOG.error("Error trying to reschedule older imports", e);

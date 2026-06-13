@@ -4,7 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
 
@@ -31,7 +31,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   int count(@Param("sectorKey") @Nullable Integer sectorKey,
             @Param("datasetKey") @Nullable Integer datasetKey,
             @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
-            @Param("states") Collection<ImportState> states,
+            @Param("states") Collection<JobStatus> states,
             @Param("modes") @Nullable Collection<Sector.Mode> modes);
   
   /**
@@ -43,7 +43,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   List<SectorImport> list(@Param("sectorKey") @Nullable Integer sectorKey,
                           @Param("datasetKey") @Nullable Integer datasetKey,
                           @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
-                          @Param("states") @Nullable Collection<ImportState> states,
+                          @Param("states") @Nullable Collection<JobStatus> states,
                           @Param("modes") @Nullable Collection<Sector.Mode> modes,
                           @Param("current") @Nullable Boolean current,
                           @Param("page") @Nullable Page page);

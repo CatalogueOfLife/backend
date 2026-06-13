@@ -12,9 +12,9 @@
 
     <!-- selects the last successful import, i.e. the one that imported data -->
     <sql id="fromFinishedDatasetImport">
-        FROM dataset_import
-        WHERE dataset_key = #{datasetKey} AND state = '${@life.catalogue.api.vocab.ImportState@FINISHED.name()}'::IMPORTSTATE
-        ORDER BY attempt DESC
+        FROM dataset_import di JOIN job j ON j.key = di.job_key
+        WHERE di.dataset_key = #{datasetKey} AND j.status = '${@life.catalogue.api.vocab.JobStatus@FINISHED.name()}'::JOBSTATUS
+        ORDER BY di.attempt DESC
         LIMIT 1
     </sql>
 

@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Warning! If ordinals are changed please change also DatasetImportMapper.xml
- * which has a hardcoded number!
+ * The fine grained stages an import, sync or release job goes through.
+ * Only used within java code where the running states feed the free text step of the persisted background job.
+ * The generic job lifecycle in the database and API is tracked as JobStatus instead.
  */
 public enum ImportState {
   

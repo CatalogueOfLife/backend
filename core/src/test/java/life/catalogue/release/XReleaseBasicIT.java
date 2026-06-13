@@ -114,7 +114,7 @@ public class XReleaseBasicIT {
     xrel.run();
     assertEquals(xrel.getFailedSyncs()+" failed syncs",0, xrel.getFailedSyncs());
 
-    assertEquals(ImportState.FINISHED, xrel.getMetrics().getState());
+    assertEquals(JobStatus.FINISHED, xrel.getStatus());
 
     // assert tree
     InputStream tree = getClass().getResourceAsStream("/assembly-trees/xrelease-expected.tree");

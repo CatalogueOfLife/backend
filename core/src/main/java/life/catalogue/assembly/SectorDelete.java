@@ -49,7 +49,7 @@ public class SectorDelete extends SectorRunnable {
 
   @Override
   void doWork() {
-    state.setState( ImportState.DELETING);
+    setStep(ImportState.DELETING);
     deleteSector(sectorKey);
   }
 

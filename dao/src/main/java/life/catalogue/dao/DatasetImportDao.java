@@ -95,7 +95,7 @@ public class DatasetImportDao {
     di.setOrigin(DatasetInfoCache.CACHE.info(datasetKey).origin);
     di.setJobKey(job.getKey());
     di.setJob(job.getJobName());
-    di.setState(ImportState.WAITING);
+    di.setStatus(JobStatus.WAITING);
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetImportMapper.class).create(di);
     }
@@ -276,22 +276,18 @@ public class DatasetImportDao {
   }
 
   /**
-   * Creates a new dataset import instance without metrics for a failed import.
+   * Finalizes the metrics of a cancelled import. The job status itself is tracked on the job record.
    */
   public void updateImportCancelled(DatasetImport di) {
     di.setFinished(LocalDateTime.now());
-    di.setState(ImportState.CANCELED);
-    di.setError(null);
     update(di);
   }
-  
+
   /**
-   * Creates a new dataset import instance without metrics for a failed import.
+   * Finalizes the metrics of a failed import. The job status and error are tracked on the job record.
    */
   public void updateImportFailure(DatasetImport di, Throwable e) {
     di.setFinished(LocalDateTime.now());
-    di.setState(ImportState.FAILED);
-    di.setError(Exceptions.simpleLogWithCauses(e));
     update(di);
   }
   

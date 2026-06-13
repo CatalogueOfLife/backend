@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.dao.EstimateDao;
+import life.catalogue.dao.JobDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.indexing.NameUsageIndexService;
@@ -41,6 +42,7 @@ public class SyncFactory {
   private final EventBroker bus;
   private final IdentifierScopeResolver scopeResolver;
   private final LatestDatasetKeyCache latestKeyCache;
+  private @Nullable JobDao jobDao;
 
   public SyncFactory(SqlSessionFactory factory, UsageMatcherFactory matcherFactory, NameIndex nameIndex,
                      SectorDao sd, SectorImportDao sid, EstimateDao estimateDao,
@@ -97,6 +99,18 @@ public class SyncFactory {
 
   public SectorDeleteFull deleteFull(DSID<Integer> sectorKey, @Nullable SyncCounter counter, int user) throws IllegalArgumentException {
     return new SectorDeleteFull(sectorKey, factory, indexService, bus, sd, sid, counter, user);
+  }
+
+  public void setJobDao(@Nullable JobDao jobDao) {
+    this.jobDao = jobDao;
+  }
+
+  /**
+   * @return the job dao to persist job records for embedded syncs run outside of the executor. Can be null.
+   */
+  @Nullable
+  public JobDao getJobDao() {
+    return jobDao;
   }
 
   public void assertComponentsOnline() {

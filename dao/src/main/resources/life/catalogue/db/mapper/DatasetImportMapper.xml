@@ -7,7 +7,10 @@
   <sql id="SELECT">
     di.dataset_key,
     di.attempt,
-    di.state,
+    j.status,
+    j.step,
+    j.job_class AS job,
+    j.error,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value="di."/>
     </include>,
@@ -27,8 +30,6 @@
   <!-- shared with sector import metrics -->
   <sql id="metricsCols">
     ${alias}job_key,
-    ${alias}job,
-    ${alias}error,
     ${alias}started,
     ${alias}finished,
     ${alias}created_by,
@@ -69,7 +70,6 @@
 
   <sql id="COLS">
     dataset_key,
-    state,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value=""/>
     </include>,
@@ -88,8 +88,6 @@
 
   <sql id="metricsProps">
     #{imp.jobKey},
-    #{imp.job},
-    #{imp.error},
     #{imp.started},
     #{imp.finished},
     #{imp.createdBy},
@@ -130,7 +128,6 @@
 
   <sql id="PROPS">
     #{imp.datasetKey},
-    #{imp.state}::IMPORTSTATE,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsProps"/>,
     #{imp.md5},
     #{imp.downloadUri},
@@ -146,7 +143,7 @@
   </sql>
 
   <sql id="FROM">
-    dataset_import di
+    dataset_import di LEFT JOIN job j ON j.key = di.job_key
   </sql>
 
   <sql id="WHERE">
@@ -155,17 +152,17 @@
         <if test="req.datasetKey != null">
           di.dataset_key = #{req.datasetKey}
         </if>
-        <if test="req.states != null &amp;&amp; !req.states.isEmpty()">
-          AND di.state IN
-          <foreach item="state" index="idx" collection="req.states" open="(" separator="," close=")">
-            #{state}::IMPORTSTATE
+        <if test="req.status != null &amp;&amp; !req.status.isEmpty()">
+          AND j.status IN
+          <foreach item="st" index="idx" collection="req.status" open="(" separator="," close=")">
+            #{st}::JOBSTATUS
           </foreach>
         </if>
         <if test="req.createdBy != null">
           AND di.created_by = #{req.createdBy}
         </if>
         <if test="req.job != null">
-          AND lower(di.job) = lower(#{req.job})
+          AND lower(j.job_class) = lower(#{req.job})
         </if>
         <if test="req.format != null">
           AND di.format = #{req.format}::DATAFORMAT
@@ -212,10 +209,16 @@
     WHERE di.dataset_key=#{key} AND di.attempt=#{attempt}
   </select>
 
+  <select id="getByJobKey" resultMap="datasetImportResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE di.job_key=#{jobKey}
+  </select>
+
   <select id="getNext" resultMap="datasetImportResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE di.dataset_key=#{key} AND di.attempt > #{attempt} AND di.state=#{state}::IMPORTSTATE
+    WHERE di.dataset_key=#{key} AND di.attempt > #{attempt} AND j.status=#{status}::JOBSTATUS
     ORDER BY di.attempt
     LIMIT 1
   </select>
@@ -223,7 +226,7 @@
   <select id="getLast" resultMap="datasetImportResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE di.dataset_key=#{key} AND di.attempt &lt; #{attempt} AND di.state=#{state}::IMPORTSTATE
+    WHERE di.dataset_key=#{key} AND di.attempt &lt; #{attempt} AND j.status=#{status}::JOBSTATUS
     ORDER BY di.attempt DESC
     LIMIT 1
   </select>

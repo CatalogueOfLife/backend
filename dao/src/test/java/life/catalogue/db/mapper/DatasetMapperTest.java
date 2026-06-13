@@ -938,7 +938,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     // lastImportState
     query = new DatasetSearchRequest();
     assertEquals(8, mapper().search(query, null, new Page()).size());
-    query.setLastImportState(ImportState.FAILED);
+    query.setLastImportState(JobStatus.FAILED);
     assertEquals(0, mapper().search(query, null, new Page()).size());
 
     // tax group
@@ -1158,7 +1158,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     // lastImportState
     query = new DatasetSearchRequest();
     assertEquals(8, mapper().searchSimple(query, null, new Page()).size());
-    query.setLastImportState(ImportState.FAILED);
+    query.setLastImportState(JobStatus.FAILED);
     assertEquals(0, mapper().searchSimple(query, null, new Page()).size());
 
     // tax group

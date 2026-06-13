@@ -345,8 +345,8 @@ public class HierarchySyncIT {
         USER
       );
       sync.run();
-      if (sync.getState().getState() != ImportState.FINISHED) {
-        throw new AssertionError("HierarchySync did not finish cleanly: state=" + sync.getState().getState() + " error=" + sync.getState().getError());
+      if (sync.getStatus() != JobStatus.FINISHED) {
+        throw new AssertionError("HierarchySync did not finish cleanly: status=" + sync.getStatus() + " error=" + sync.getState().getError());
       }
     }
   }

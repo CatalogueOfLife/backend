@@ -324,7 +324,7 @@ public class TestEntityGenerator {
       Identifier.parse("foo:bar")
     ));
     d.setImported(LocalDateTime.now());
-    d.setLastImportState(ImportState.FINISHED);
+    d.setLastImportState(JobStatus.FINISHED);
     d.addSource(newCitation());
     d.addSource(newCitation());
     d.applyUser(Users.TESTER);

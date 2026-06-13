@@ -159,7 +159,7 @@ public class ImportJobIT {
     assertEquals(attempt, (int) dataset.getAttempt());
     var imp = diDao.getLast(d.getKey());
     assertEquals((int) dataset.getAttempt(), imp.getAttempt());
-    assertEquals(ImportState.FINISHED, imp.getState());
+    // no joined job status as the job runs standalone here without persistence - the live status is checked in run()
 
     var archive = cfg.normalizer.archive(d.getKey(), attempt);
     assertTrue(archive.exists());

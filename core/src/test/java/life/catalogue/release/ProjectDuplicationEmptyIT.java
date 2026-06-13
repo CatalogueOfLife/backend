@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.junit.TestDataRule;
 
@@ -19,7 +20,7 @@ public class ProjectDuplicationEmptyIT extends ProjectBaseIT {
   public void empty() throws Exception {
     ProjectDuplication dupl = projectCopyFactory.buildDuplication(Datasets.COL, Users.TESTER);
     dupl.run();
-    assertEquals(ImportState.FINISHED, dupl.getMetrics().getState());
+    assertEquals(JobStatus.FINISHED, dupl.getStatus());
   }
 
 }

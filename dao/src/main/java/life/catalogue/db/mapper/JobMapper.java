@@ -20,6 +20,11 @@ public interface JobMapper extends CRUD<UUID, JobInfo> {
   int count(@Param("req") JobSearchRequest req);
 
   /**
+   * Lists all jobs that are still waiting, blocked or running.
+   */
+  List<JobInfo> listStale();
+
+  /**
    * Marks all jobs that are still waiting, blocked or running as canceled.
    * To be used on startup to clean up jobs that were lost in a shutdown or crash.
    * @return number of jobs updated

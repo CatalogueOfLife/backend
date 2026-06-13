@@ -140,7 +140,7 @@ public class Dataset extends DataEntity<Integer> {
   private LocalDateTime lastImportAttempt; // last try to import the dataset, will be set even for unchanged attempts
   // state of the last import that was not unchanged.
   // Does not have to correlate with the lastImportAttempt timestamp
-  private ImportState lastImportState;
+  private JobStatus lastImportState;
   private LocalDateTime deleted;
   private UUID gbifKey;
   private UUID gbifPublisherKey;
@@ -528,11 +528,11 @@ public class Dataset extends DataEntity<Integer> {
     this.lastImportAttempt = lastImportAttempt;
   }
 
-  public ImportState getLastImportState() {
+  public JobStatus getLastImportState() {
     return lastImportState;
   }
 
-  public void setLastImportState(ImportState lastImportState) {
+  public void setLastImportState(JobStatus lastImportState) {
     this.lastImportState = lastImportState;
   }
 

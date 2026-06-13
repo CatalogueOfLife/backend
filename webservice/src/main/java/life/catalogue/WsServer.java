@@ -409,6 +409,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // syncs and releases
     final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker, identifierScopeResolver, coljersey.getCache());
+    syncFactory.setJobDao(jobDao);
     final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, matcherFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       indexService, imgService, getSqlSessionFactory(), validator,
       cfg.release, cfg.apiURI, cfg.clbURI
@@ -454,7 +455,7 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.Feedback, feedback);
 
     // assembly
-    SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, executor, env.metrics());
+    SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, executor, jobDao, env.metrics());
     managedService.manage(Component.SectorSynchronizer, syncManager);
 
     // link assembly and import manager so they are aware of each other

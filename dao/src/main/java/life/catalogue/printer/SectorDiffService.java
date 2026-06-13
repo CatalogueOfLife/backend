@@ -3,7 +3,7 @@ package life.catalogue.printer;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.ImportAttempt;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.db.mapper.SectorImportMapper;
 
@@ -28,7 +28,7 @@ public class SectorDiffService extends BaseDiffService<DSID<Integer>> {
       public List<? extends ImportAttempt> get() {
         try (SqlSession session = factory.openSession(true)) {
           return session.getMapper(SectorImportMapper.class)
-              .list(sectorKey.getId(), sectorKey.getDatasetKey(), null, Lists.newArrayList(ImportState.FINISHED), null, null, new Page(0, 2));
+              .list(sectorKey.getId(), sectorKey.getDatasetKey(), null, Lists.newArrayList(JobStatus.FINISHED), null, null, new Page(0, 2));
         }
       }
     });

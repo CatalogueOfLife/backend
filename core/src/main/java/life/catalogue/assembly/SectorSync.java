@@ -132,7 +132,7 @@ public class SectorSync extends SectorRunnable {
   @Override
   void doWork() throws Exception {
     if (projectTarget) {
-      state.setState( ImportState.DELETING);
+      setStep(ImportState.DELETING);
       relinkForeignChildren();
     }
     try {
@@ -141,7 +141,7 @@ public class SectorSync extends SectorRunnable {
         checkIfCancelled();
       }
 
-      state.setState(ImportState.INSERTING);
+      setStep(ImportState.INSERTING);
       processTree();
       checkIfCancelled();
 
@@ -151,7 +151,7 @@ public class SectorSync extends SectorRunnable {
     } finally {
       if (projectTarget) {
         // run these even if we get errors in the main tree copying
-        state.setState( ImportState.MATCHING);
+        setStep(ImportState.MATCHING);
         rematchForeignChildren();
         relinkAttachedSectors();
         rematchEstimates();

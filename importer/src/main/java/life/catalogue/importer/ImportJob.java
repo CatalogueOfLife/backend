@@ -250,7 +250,6 @@ public class ImportJob extends DatasetJob {
   }
 
   private void updateState(ImportState state) throws InterruptedException {
-    di.setState(state);
     setStep(state);
     dao.update(di);
     checkIfCancelled();
