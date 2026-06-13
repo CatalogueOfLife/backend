@@ -248,8 +248,10 @@ public class NormalizerACEFIT extends NormalizerITBase {
     assertEquals("Pace, 2014", u.usage.getName().getAuthorship());
     VerbatimRecord v = verbatim(u.usage.getName());
     assertTrue(v.contains(Issue.UNUSUAL_NAME_CHARACTERS));
-    assertTrue(v.contains(Issue.PARTIALLY_PARSABLE_NAME));
-    assertTrue(v.contains(Issue.PARSED_NAME_DIFFERS));
+    // v4 parses "Lamprostiba pu!chra" fully (state COMPLETE) and keeps the epithet verbatim, so the name is
+    // neither only partially parsable nor differs from the reconstructed scientific name
+    assertFalse(v.contains(Issue.PARTIALLY_PARSABLE_NAME));
+    assertFalse(v.contains(Issue.PARSED_NAME_DIFFERS));
 
     u = usageByID("Eusphalerum_caucasicum_feldmanni");
     assertNull(u);
