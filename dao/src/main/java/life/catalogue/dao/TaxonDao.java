@@ -825,16 +825,19 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     return childrenBreakdownCollector(datasetKey, id, 1);
   }
   public JsonTreeCollector childrenBreakdownCollector(int datasetKey, String id, int levels) {
-    var wrapper = childrenBreakdown(JsonTreeCollector.class, datasetKey, id, levels, new StringWriter());
+    var wrapper = childrenBreakdown(JsonTreeCollector.class, datasetKey, id, levels, Rank.SPECIES, new StringWriter());
     wrapper.printer.setTaxon(wrapper.taxon);
     return wrapper.printer;
   }
 
   public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
-    return childrenBreakdownPrinter(datasetKey, id, 1, writer);
+    return childrenBreakdownPrinter(datasetKey, id, 1, Rank.SPECIES, writer);
   }
   public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, int level, Writer writer) {
-    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, level, writer).printer;
+    return childrenBreakdownPrinter(datasetKey, id, level, Rank.SPECIES, writer);
+  }
+  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, int level, @Nullable Rank countRank, Writer writer) {
+    return childrenBreakdown(JsonTreePrinter.class, datasetKey, id, level, countRank, writer).printer;
   }
 
   private static class PrinterWrapper<T> {
@@ -851,9 +854,12 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
    * @param level number of nesting levels for major Linnean ranks to return.
    *               Currently only 1 or 2 is supported, e.g. orders and families.
    */
-  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, int level, Writer writer) {
+  private <T extends AbstractPrinter> PrinterWrapper<T> childrenBreakdown(Class<T> clazz, int datasetKey, String id, int level, @Nullable Rank countRank, Writer writer) {
     if (level != 1 && level != 2) {
       throw new IllegalArgumentException("Breakdown level has to be 1 or 2, not " + level);
+    }
+    if (countRank == null) {
+      countRank = Rank.SPECIES;
     }
     var key = DSID.of(datasetKey, id);
     var tax = getSimpleOr404(key);
@@ -890,7 +896,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
       taxonCounter = metricsDao;
     }
 
-    return new PrinterWrapper<>(PrinterFactory.dataset(clazz, ttp, ranks, null, Rank.SPECIES, taxonCounter, factory, writer), tax);
+    return new PrinterWrapper<>(PrinterFactory.dataset(clazz, ttp, ranks, null, countRank, taxonCounter, factory, writer), tax);
   }
 
   /**

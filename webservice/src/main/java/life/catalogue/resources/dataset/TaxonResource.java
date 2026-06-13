@@ -205,11 +205,15 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
                             @QueryParam("level") @DefaultValue("1")
                             @Parameter(description = "Depth of the breakdown tree. Only level 1 or 2 are supported.",
                                        schema = @Schema(type = "integer", allowableValues = {"1", "2"}, defaultValue = "1"))
-                            int level
+                            int level,
+                            @QueryParam("countRank") @DefaultValue("species")
+                            @Parameter(description = "Rank to count for each node, emitted as a property of that name. "
+                                                   + "Defaults to species; use e.g. genus for groups without species.")
+                            Rank countRank
   ) {
     StreamingOutput stream = os -> {
       try (Writer writer = UTF8IoUtils.writerFromStream(os);
-           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, level, writer)
+           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, level, countRank, writer)
       ) {
         printer.print();
         writer.flush();
