@@ -377,6 +377,23 @@ public class TaxonDaoIT extends DaoTestBase {
     assertEquals(3, cnt);
   }
 
+  @Test
+  public void childrenBreakdownPrinterCountRank() throws IOException {
+    final int datasetKey = setupTestTreeDataset();
+    var writer = new StringWriter();
+    // count a non-default rank: each node reports how many orders it contains,
+    // emitted under a property named after that rank (groups without species
+    // can use this to fall back to e.g. genus counts).
+    var breakdown = tDao.childrenBreakdownPrinter(datasetKey, "t2", 2, Rank.ORDER, writer);
+    breakdown.print();
+    String json = writer.toString();
+    System.out.println(json);
+    // Insecta (t3) holds two orders: Coleoptera (t4) and Lepidoptera (t5)
+    assertTrue(json.contains("\"order\":2"));
+    // the count is emitted under the rank name, not the default "species"
+    assertFalse(json.contains("\"species\":"));
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void updateIllegalParentChange(){
     MybatisTestUtils.populateDraftTree(session());
