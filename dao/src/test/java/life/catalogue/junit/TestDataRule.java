@@ -490,6 +490,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       runner.runScript(Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
 
       copyGlobalTable(pgc, "dataset");
+      copyGlobalTable(pgc, "job");
       copyGlobalTable(pgc, "dataset_import");
       copyGlobalTable(pgc, "dataset_patch");
       copyGlobalTable(pgc, "dataset_archive");
