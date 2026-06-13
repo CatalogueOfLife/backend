@@ -35,7 +35,6 @@ import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
-import life.catalogue.release.AbstractProjectCopy;
 
 import java.io.File;
 import java.io.IOException;
@@ -236,13 +235,10 @@ public class ImportManager implements Managed, Idle, DatasetListener {
         .map(ImportManager::fromImportJob)
         .collect(Collectors.toList());
 
-    // include releasing jobs if existing and sort by creation date
-    for (AbstractProjectCopy projJob : jobExecutor.getQueueByJobClass(AbstractProjectCopy.class)) {
-      var di = projJob.getMetrics();
-      di.setStatus(projJob.getStatus());
-      di.setStep(projJob.getStep());
-      running.add(di);
-    }
+    // Releases/duplications also write a dataset_import metrics record, but they run as regular
+    // background jobs and are surfaced through the job queue, not here - so a running release is
+    // not listed twice (once as import, once as job). Its finished attempt still shows up in the
+    // dataset import history via the db query in listImports.
     //TODO: remove debug logs once solved why we null dates
     for (var di : running) {
       if (di.getStarted()==null) {
