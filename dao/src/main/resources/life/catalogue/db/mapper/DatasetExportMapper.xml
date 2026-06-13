@@ -4,6 +4,10 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.DatasetExportMapper">
 
+  <!--
+   The generic job lifecycle (status, error, timestamps, user, result md5/size and the result_deleted cleanup flag)
+   lives in the job table and is joined in via the shared key. Only the export request and result metrics are stored here.
+  -->
   <sql id="SELECT">
     de.key,
     de.dataset_key,
@@ -18,21 +22,21 @@
     de.synonyms,
     de.bare_names,
     de.min_rank,
-    de.created_by,
     de.attempt,
-    de.started,
-    de.finished,
-    de.deleted,
     de.classification,
-    de.status,
-    de.error,
     de.truncated,
-    de.md5,
-    de.size,
     de.synonym_count,
     de.taxon_count,
     de.taxa_by_rank_count,
-    de.created
+    j.status,
+    j.error,
+    j.started,
+    j.finished,
+    j.created,
+    j.created_by,
+    j.result_md5 AS md5,
+    j.result_size AS size,
+    j.result_deleted AS deleted
   </sql>
 
   <sql id="COLS">
@@ -49,17 +53,9 @@
     synonyms,
     bare_names,
     min_rank,
-    created_by,
     attempt,
-    started,
-    finished,
-    deleted,
     classification,
-    status,
-    error,
     truncated,
-    md5,
-    size,
     synonym_count,
     taxon_count,
     taxa_by_rank_count
@@ -79,24 +75,16 @@
     #{request.synonyms},
     #{request.bareNames},
     #{request.minRank}::RANK,
-    #{createdBy},
     #{attempt},
-    #{started},
-    #{finished},
-    #{deleted},
     #{classification, typeHandler=life.catalogue.db.type2.SimpleNameArrayTypeHandler}::SIMPLE_NAME[],
-    #{status}::JOBSTATUS,
-    #{error},
     #{truncated, typeHandler=life.catalogue.db.type2.TermSetTypeHandler}::TEXT[],
-    #{md5},
-    #{size},
     #{synonymCount},
     #{taxonCount},
     #{taxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore
   </sql>
 
   <sql id="FROM">
-    dataset_export de
+    dataset_export de JOIN job j ON j.key = de.key
   </sql>
 
   <resultMap id="datasetExportResultMap" type="DatasetExport" autoMapping="true">
@@ -104,7 +92,7 @@
     <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
     <result property="truncated" column="truncated" typeHandler="life.catalogue.db.type2.TermSetTypeHandler"/>
-    <!-- keep modified & created the same -->
+    <!-- generic lifecycle joined from the job record -->
     <result property="created" column="created"/>
     <result property="createdBy" column="created_by"/>
     <result property="modified" column="created"/>
@@ -122,12 +110,12 @@
   <select id="get" resultMap="datasetExportResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE key=#{key}
+    WHERE de.key=#{key}
   </select>
 
   <insert id="create" parameterType="DatasetExport">
-    INSERT INTO dataset_export (<include refid="COLS"/>, created)
-    VALUES (<include refid="PROPS"/>, #{created})
+    INSERT INTO dataset_export (<include refid="COLS"/>)
+    VALUES (<include refid="PROPS"/>)
   </insert>
 
   <update id="update" parameterType="DatasetExport">
@@ -137,29 +125,29 @@
   </update>
 
   <delete id="delete" parameterType="map">
-    UPDATE dataset_export SET deleted = now()
-    WHERE deleted IS NULL AND key=#{key}
+    UPDATE job SET result_deleted = now()
+    WHERE result_deleted IS NULL AND key=#{key}
   </delete>
 
   <select id="processDataset" parameterType="map" resultMap="datasetExportResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE de.deleted IS NULL AND de.dataset_key = #{datasetKey}
+    WHERE j.result_deleted IS NULL AND de.dataset_key = #{datasetKey}
   </select>
 
   <delete id="deleteByDataset" parameterType="map">
-    UPDATE dataset_export SET deleted = now()
-    WHERE deleted IS NULL AND dataset_key = #{datasetKey}
+    UPDATE job SET result_deleted = now()
+    WHERE result_deleted IS NULL AND key IN (SELECT key FROM dataset_export WHERE dataset_key = #{datasetKey})
   </delete>
 
 
   <sql id="WHERE">
     <where>
-      de.deleted IS NULL
+      j.result_deleted IS NULL
       <if test="req.datasetKey != null">AND de.dataset_key = #{req.datasetKey}</if>
-      <if test="req.createdBy != null">AND de.created_by = #{req.createdBy}</if>
+      <if test="req.createdBy != null">AND j.created_by = #{req.createdBy}</if>
       <if test="req.status != null and !req.status.isEmpty()">
-        AND de.status IN <foreach item="st" collection="req.status" open="(" separator="," close=")">#{st}::JOBSTATUS</foreach>
+        AND j.status IN <foreach item="st" collection="req.status" open="(" separator="," close=")">#{st}::JOBSTATUS</foreach>
       </if>
       <if test="req.format != null">AND de.format = #{req.format}::DATAFORMAT</if>
       AND <if test="req.taxonID == null">de.root IS NULL</if><if test="req.taxonID != null">(de.root).id = #{req.taxonID}</if>
@@ -185,7 +173,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="WHERE"/>
-    ORDER BY de.created DESC
+    ORDER BY j.created DESC
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 

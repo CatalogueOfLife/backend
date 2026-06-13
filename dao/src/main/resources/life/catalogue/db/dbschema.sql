@@ -1071,11 +1071,12 @@ CREATE INDEX ON dataset_import (started);
 -- used by import scheduler:
 CREATE INDEX ON dataset_import (dataset_key, attempt) WHERE finished IS NOT NULL;
 
+-- export specific request and result metrics. The generic job lifecycle (status, timestamps, user,
+-- error, result md5/size and the result_deleted cleanup flag) lives in the job table, joined via key.
 CREATE TABLE dataset_export (
-  key UUID PRIMARY KEY,
+  key UUID PRIMARY KEY,  -- same key as the job record
   -- request
   dataset_key INTEGER NOT NULL REFERENCES dataset,
-  created_by INTEGER NOT NULL REFERENCES "user",
   format DATAFORMAT NOT NULL,
   tab_format TABFORMAT,
   root SIMPLE_NAME,
@@ -1087,27 +1088,17 @@ CREATE TABLE dataset_export (
   add_classification BOOLEAN NOT NULL,
   add_tax_group BOOLEAN NOT NULL,
   extinct BOOLEAN,
-  created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
 
   -- results
   attempt INTEGER,
-  started TIMESTAMP WITHOUT TIME ZONE,
-  finished TIMESTAMP WITHOUT TIME ZONE,
-  deleted TIMESTAMP WITHOUT TIME ZONE,
   classification SIMPLE_NAME[],
-  status JOBSTATUS NOT NULL,
-  error TEXT,
   truncated TEXT[],
-  md5 TEXT,
-  size INTEGER,
   synonym_count INTEGER,
   taxon_count INTEGER,
   taxa_by_rank_count HSTORE
 );
 
-CREATE INDEX ON dataset_export (created);
-CREATE INDEX ON dataset_export (created_by, created);
-CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank, status);
+CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank);
 
 -- generic background job, one row per job of any kind ever submitted to the JobExecutor
 CREATE TABLE job (

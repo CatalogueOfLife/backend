@@ -98,6 +98,17 @@ CREATE INDEX ON dataset_import (job_key);
 ALTER TABLE sector_import DROP COLUMN state, DROP COLUMN job, DROP COLUMN error;
 CREATE INDEX ON sector_import (job_key);
 
+-- now that the generic export lifecycle lives in job (backfilled above), drop it from dataset_export.
+-- the request columns (format, synonyms, min_rank, ...) stay as the indexed search and dedup surface.
+ALTER TABLE dataset_export
+  DROP COLUMN created_by, DROP COLUMN created, DROP COLUMN started, DROP COLUMN finished,
+  DROP COLUMN deleted, DROP COLUMN status, DROP COLUMN error, DROP COLUMN md5, DROP COLUMN size;
+-- replace the indexes that referenced the dropped columns (names are pg defaults, adjust if needed)
+DROP INDEX IF EXISTS dataset_export_created_idx;
+DROP INDEX IF EXISTS dataset_export_created_by_created_idx;
+DROP INDEX IF EXISTS dataset_export_dataset_key_attempt_format_excel_synonyms_min_r_idx;
+CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank);
+
 DROP TYPE IMPORTSTATE;
 ```
 
