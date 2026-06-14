@@ -89,6 +89,11 @@ public class SearchExport extends DatasetJob {
   }
 
   @Override
+  public String getEmailTemplatePrefix() {
+    return "searchexport";
+  }
+
+  @Override
   public Object getParams() {
     return searchRequest;
   }
