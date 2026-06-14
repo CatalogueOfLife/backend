@@ -117,7 +117,7 @@ public class ExportCmd extends AbstractMybatisCmd {
     exec = new JobExecutor(cfg.job, metrics, mail.getEmailNotification(), udao, null);
     final ImageService imageService = new ImageServiceFS(cfg.img, bus);
     final DatasetExportDao exportDao = new DatasetExportDao(cfg.job, factory, validator);
-    manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
+    manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo), life.catalogue.es.search.NameUsageSearchService.passThru(), cfg.clbURI);
   }
 
   @Override

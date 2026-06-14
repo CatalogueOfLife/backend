@@ -5,12 +5,14 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
+import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.TaxonCounter;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collections;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,16 @@ public interface NameUsageSearchService extends TaxonCounter {
    * @return
    */
   NameUsageSearchResponse search(NameUsageSearchRequest nameSearchRequest, Page page);
+
+  /**
+   * Streams all hits matching the request in a single, scrolled Elasticsearch pass, invoking the handler for each.
+   * Unlike {@link #search(NameUsageSearchRequest, Page)} this is not limited by the max result window and does not
+   * use inefficient deep offset paging, so it can be used to retrieve very large, unbounded result sets in one go.
+   *
+   * @param batchSize number of documents to retrieve per scroll batch
+   * @param handler consumer invoked for every matching name usage in result order
+   */
+  void scroll(NameUsageSearchRequest request, int batchSize, Consumer<NameUsageWrapper> handler);
 
 
   @Override
@@ -59,6 +71,11 @@ public interface NameUsageSearchService extends TaxonCounter {
       public NameUsageSearchResponse search(NameUsageSearchRequest request, Page page) {
         LOG.info("No Elastic Search configured. Passing through search request {}", request);
         return new NameUsageSearchResponse(page, 0, Collections.EMPTY_LIST);
+      }
+
+      @Override
+      public void scroll(NameUsageSearchRequest request, int batchSize, Consumer<NameUsageWrapper> handler) {
+        LOG.info("No Elastic Search configured. Passing through scroll request {}", request);
       }
     };
   }

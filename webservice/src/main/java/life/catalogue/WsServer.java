@@ -405,7 +405,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(ManagedUtils.from(doiChangeListener));
 
     // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao, searchService, cfg.clbURI);
 
     // syncs and releases
     final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker, identifierScopeResolver, coljersey.getCache());
