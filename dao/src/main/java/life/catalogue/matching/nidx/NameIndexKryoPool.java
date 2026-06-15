@@ -32,6 +32,8 @@ public class NameIndexKryoPool extends Pool<Kryo> {
     kryo.setRegistrationRequired(true);
     kryo.register(IndexName.class);
     kryo.register(Authorship.class);
+    // Rank is stored by its ordinal (Kryo default enum serializer).
+    // Reordering/inserting/removing ranks in name-parser requires a names index file rebuild.
     kryo.register(Rank.class);
     kryo.register(LocalDateTime.class);
     kryo.register(ArrayList.class);
