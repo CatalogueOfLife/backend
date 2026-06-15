@@ -1,6 +1,8 @@
 package life.catalogue.matching;
 
 import com.google.common.base.Preconditions;
+
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import jakarta.validation.constraints.NotNull;
 import life.catalogue.api.event.DatasetChanged;
@@ -11,10 +13,8 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleNameCached;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxGroup;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.*;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.JobExecutor;
@@ -26,6 +26,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.coldp.DatasetJsonWriter;
+import org.apache.commons.compress.harmony.unpack200.IMatcher;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
@@ -441,6 +442,21 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
   }
 
+  public void removeAll() {
+    for (var m : matchers.keySet()) {
+      remove(m);
+    }
+  }
+
+  public void remove(DatasetSearchRequest req) {
+    try (SqlSession session = factory.openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var datasets = dm.searchKeys(req, Users.SUPERUSER);
+      for (var dk : datasets) {
+        remove(dk);
+      }
+    }
+  }
   public void remove(int datasetKey) {
     buildLocks.remove(datasetKey);
     if (matchers.containsKey(datasetKey)) {

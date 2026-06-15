@@ -6,6 +6,7 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import life.catalogue.api.model.User;
+import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.UsageMatcherFactory;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Hidden
 @Path("/matcher")
@@ -33,6 +35,16 @@ public class MatcherManagementResource {
   @GET
   public UsageMatcherFactory.FactoryMetadata listMatcher(@QueryParam("decorate") boolean decorate) {
     return matcherFactory.metadata(decorate);
+  }
+
+  @DELETE
+  @RolesAllowed({Roles.ADMIN})
+  public void removeMatcherSearch(@BeanParam DatasetSearchRequest req, @QueryParam("all") boolean all) {
+    if (all) {
+      matcherFactory.removeAll();
+    } else {
+      matcherFactory.remove(req);
+    }
   }
 
   @GET
