@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
@@ -24,8 +27,44 @@ public class PgUtils {
   public static final String CODE_UNIQUE = "23505";
   public static final String CODE_EXCLUSION = "23P01";
 
+  private static final Pattern UNIQUE = Pattern.compile("unique constraint \"([a-z]+)_");
+  private static final Pattern UNIQUE_DETAILS = Pattern.compile("Detail: Key \\(([a-z_-]+)\\)=\\((.*)\\) already exists");
+  private static final Pattern EXCLUSION = Pattern.compile("exclusion constraint \"([a-z]+)_");
+  private static final Pattern EXCLUSION_DETAILS = Pattern.compile("Detail: Key \\(([a-z_-]+)\\)=\\((.*)\\) conflicts with existing key");
+
   private PgUtils () {
 
+  }
+
+  /**
+   * Builds a short, human readable message for a unique or exclusion constraint violation,
+   * e.g. {@code Decision with dataset_key, subject_dataset_key, subject_id='3, 11, foo' already exists}.
+   * Falls back to the underlying postgres message if the exception is not a known constraint violation
+   * or cannot be parsed.
+   */
+  public static String constraintMessage(PersistenceException e) {
+    if (e.getCause() instanceof PSQLException pe) {
+      String state = pe.getSQLState();
+      if (CODE_UNIQUE.equals(state)) {
+        return constraintMessage(pe, UNIQUE, UNIQUE_DETAILS);
+      } else if (CODE_EXCLUSION.equals(state)) {
+        return constraintMessage(pe, EXCLUSION, EXCLUSION_DETAILS);
+      }
+    }
+    return toMessage(e);
+  }
+
+  private static String constraintMessage(PSQLException e, Pattern constraint, Pattern details) {
+    Matcher m = constraint.matcher(e.getMessage());
+    String entity = "Entity";
+    if (m.find()) {
+      entity = StringUtils.capitalize(m.group(1));
+      Matcher dm = details.matcher(e.getMessage());
+      if (dm.find()) {
+        return entity + " with " + dm.group(1) + "='" + dm.group(2) + "' already exists";
+      }
+    }
+    return entity + " already exists";
   }
 
   /**
