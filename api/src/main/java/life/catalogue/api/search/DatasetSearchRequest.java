@@ -458,6 +458,37 @@ public class DatasetSearchRequest {
     this.reverse = reverse;
   }
 
+  public boolean hasFilter() {
+    return q != null ||
+      alias != null ||
+      code != null ||
+      codeIsNull ||
+      privat != null ||
+      releasedFrom != null ||
+      contributesTo != null ||
+      hasSourceDataset != null ||
+      hasGbifKey != null ||
+      gbifKey != null ||
+      gbifPublisherKey != null ||
+      (gbifPublisherKeyExclusion != null && !gbifPublisherKeyExclusion.isEmpty()) ||
+      lastImportState != null ||
+      editor != null ||
+      reviewer != null ||
+      (origin != null && !origin.isEmpty()) ||
+      (type != null && !type.isEmpty()) ||
+      (license != null && !license.isEmpty()) ||
+      (group != null && !group.isEmpty()) ||
+      (rowType != null && !rowType.isEmpty()) ||
+      modified != null ||
+      modifiedBefore != null ||
+      modifiedBy != null ||
+      created != null ||
+      createdBefore != null ||
+      createdBy != null ||
+      issued != null ||
+      issuedBefore != null ||
+      minSize != null;
+  }
   /**
    * Chronological order, first created comes first
    */

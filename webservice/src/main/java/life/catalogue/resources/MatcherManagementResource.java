@@ -42,8 +42,10 @@ public class MatcherManagementResource {
   public void removeMatcherSearch(@BeanParam DatasetSearchRequest req, @QueryParam("all") boolean all) {
     if (all) {
       matcherFactory.removeAll();
-    } else {
+    } else if (req.hasFilter()) {
       matcherFactory.remove(req);
+    } else {
+      throw new BadRequestException("No filter given");
     }
   }
 
