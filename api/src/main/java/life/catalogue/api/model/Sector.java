@@ -180,7 +180,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.mode = mode;
   }
 
-  public boolean useXRelease() {
+  public boolean isUseXRelease() {
     return useXRelease;
   }
 
