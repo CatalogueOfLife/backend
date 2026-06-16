@@ -5,6 +5,8 @@ import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.collection.CountEnumMap;
+import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.collection.Int2IntBiMap;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.common.id.ShortUUID;
@@ -18,7 +20,6 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.matching.UsageMatcherChronicleStore;
-import life.catalogue.matching.UsageMatcherMemStore;
 import life.catalogue.matching.UsageMatcherStore;
 import life.catalogue.release.ReleasedIds.ReleasedId;
 
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -70,6 +72,10 @@ import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
  */
 public class IdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(IdProvider.class);
+  // UNITE species-hypothesis codes, e.g. SH19186714.17FU - used verbatim as the usage id
+  protected static final Pattern UNITE_ID = Pattern.compile("^SH(\\d+)\\.(\\d+)FU$", Pattern.CASE_INSENSITIVE);
+  // BOLD codes, e.g. BOLD:AAA3374 - the colon is replaced by a dot to form the usage id
+  protected static final Pattern BOLD_ID = Pattern.compile("^BOLD:[A-Z0-9]+$", Pattern.CASE_INSENSITIVE);
   private final int projectKey;
   private final int attempt;
   private final DatasetOrigin origin;
@@ -91,6 +97,7 @@ public class IdProvider {
   private Int2IntMap deleted = new Int2IntOpenHashMap(); // maps to release attempt for reporting!
   private final Int2IntMap resurrected = new Int2IntOpenHashMap(); // maps to release attempt for reporting!
   private final SortedMap<String, List<InstableName>> unstable = new TreeMap<>();
+  private final CountMap<String> uniteVersions = new CountMap<>();
   protected IdMapMapper idm;
   protected NameUsageMapper num;
   protected NameMatchMapper nmm;
@@ -534,7 +541,23 @@ public class IdProvider {
    * Populates sn.canonicalId with either an existing or new int based ID
    * @param canonId the canonical names index id that all names are mapped to
    */
-  void issueIDs(final Integer canonId, List<? extends SimpleNameWithNidx> names, Writer nomatchWriter, boolean persistIdMapping) throws IOException {
+  void issueIDs(final Integer canonId, List<? extends SimpleNameWithNidx> allNames, Writer nomatchWriter, boolean persistIdMapping) throws IOException {
+    // OTU names (UNITE/BOLD) use their code verbatim as the stable id, regardless of names-index matching.
+    // Handle them up front and exclude them from the id minting/matching below.
+    final List<SimpleNameWithNidx> names = new ArrayList<>(allNames.size());
+    for (var n : allNames) {
+      final String otu = otuId(n);
+      if (otu != null) {
+        if (persistIdMapping) {
+          idm.mapUsage(mappedDatasetKey, n.getId(), otu);
+        }
+      } else {
+        names.add(n);
+      }
+    }
+    if (names.isEmpty()) {
+      return;
+    }
     if (canonId == null) {
       LOG.warn("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
       for (var n : names) {
@@ -708,6 +731,32 @@ public class IdProvider {
 
   static String encode(int id) {
     return IdConverter.LATIN29.encode(id);
+  }
+
+  String otuId(SimpleName u) {
+    return otuId(u, uniteVersions);
+  }
+
+  /**
+   * UNITE and BOLD OTU codes are already globally stable identifiers, so we use them directly as the usage id
+   * instead of minting a synthetic integer id.
+   * @return the code to use as the usage id, or null if the name is not an in-scope OTU
+   */
+  static String otuId(SimpleName u, CountMap<String> counter) {
+    if (u.getName() != null) {
+      var name = u.getName();
+      var m = UNITE_ID.matcher(name);
+      if (m.find()) {
+        if (counter != null) {
+          counter.inc(m.group(2));
+        }
+        return name; // verbatim, e.g. SH19186714.17FU
+      }
+      if (BOLD_ID.matcher(name).matches()) {
+        return name.replace(':', '.').toUpperCase(); // BOLD:AAA3374 -> BOLD.AAA3374
+      }
+    }
+    return null;
   }
 
 }

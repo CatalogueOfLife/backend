@@ -30,6 +30,11 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
 
   @Override
   public String issue(SimpleNameWithNidx usage) {
+    // OTU names (UNITE/BOLD) use their code verbatim as the stable id (see IdProvider.otuId)
+    final String otu = otuId(usage);
+    if (otu != null) {
+      return otu;
+    }
     try {
       if (usage.hasAuthorship()) {
         // remember real canonical ID as we use the property to encode the new id internally
