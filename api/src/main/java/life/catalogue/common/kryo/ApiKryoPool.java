@@ -183,7 +183,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(DegreeOfEstablishment.class);
     kryo.register(Season.class);
     kryo.register(ThreatStatus.class);
-
+    kryo.register(Sector.AuthorshipUpdate.class);
     return kryo;
   }
 
