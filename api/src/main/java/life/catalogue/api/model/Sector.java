@@ -50,6 +50,8 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private boolean copyAccordingTo = false;
   private boolean removeOrdinals = false;
   private boolean createImplicitNames = true;
+  // for HIERARCHY mode only: whether to copy the source (subject) authorship onto matched existing names
+  private AuthorshipUpdate authorshipUpdate = AuthorshipUpdate.NONE;
   // other
   private String note;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -83,6 +85,22 @@ public class Sector extends DatasetScopedEntity<Integer> {
     HIERARCHY
   }
 
+  /**
+   * Controls how the authorship of an existing, matched name is updated from the hierarchy source
+   * (subject) during a {@link Mode#HIERARCHY} sync. The (secondary) source of the authorship is
+   * tracked as an {@link life.catalogue.api.vocab.InfoGroup#AUTHORSHIP} entry on the name's verbatim source.
+   */
+  public static enum AuthorshipUpdate {
+    /** Never change the existing name's authorship. */
+    NONE,
+
+    /** Only set the authorship from the source when the existing name has none yet. */
+    MISSING,
+
+    /** Always overwrite the existing name's authorship with the source's whenever the source has one. */
+    ALWAYS
+  }
+
   public Sector() {
   }
 
@@ -108,6 +126,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.nameStatusExclusion = other.nameStatusExclusion == null ? null : EnumSet.copyOf(other.nameStatusExclusion);
     this.extinctFilter = other.extinctFilter;
     this.createImplicitNames = other.createImplicitNames;
+    this.authorshipUpdate = other.authorshipUpdate;
     this.note = other.note;
     this.size = other.size;
   }
@@ -298,6 +317,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.createImplicitNames = createImplicitNames;
   }
 
+  public AuthorshipUpdate getAuthorshipUpdate() {
+    return authorshipUpdate;
+  }
+
+  public void setAuthorshipUpdate(AuthorshipUpdate authorshipUpdate) {
+    this.authorshipUpdate = authorshipUpdate;
+  }
+
   public boolean isCopyAccordingTo() {
     return copyAccordingTo;
   }
@@ -336,6 +363,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
            && Objects.equals(datasetAttempt, sector.datasetAttempt)
            && code == sector.code
            && createImplicitNames == sector.createImplicitNames
+           && authorshipUpdate == sector.authorshipUpdate
            && Objects.equals(ranks, sector.ranks)
            && Objects.equals(entities, sector.entities)
            && Objects.equals(nameTypes, sector.nameTypes)
@@ -346,7 +374,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, useXRelease, priority, syncAttempt, datasetAttempt, code, createImplicitNames, ranks, entities, nameTypes, nameStatusExclusion, extinctFilter, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, useXRelease, priority, syncAttempt, datasetAttempt, code, createImplicitNames, authorshipUpdate, ranks, entities, nameTypes, nameStatusExclusion, extinctFilter, note);
   }
 
   @Override
@@ -388,6 +416,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     private boolean copyAccordingTo;
     private boolean removeOrdinals;
     private boolean createImplicitNames;
+    private AuthorshipUpdate authorshipUpdate = AuthorshipUpdate.NONE;
     private String note;
     private Integer size;
 
@@ -514,6 +543,11 @@ public class Sector extends DatasetScopedEntity<Integer> {
       return this;
     }
 
+    public Builder authorshipUpdate(AuthorshipUpdate authorshipUpdate) {
+      this.authorshipUpdate = authorshipUpdate;
+      return this;
+    }
+
     public Builder note(String note) {
       this.note = note;
       return this;
@@ -550,6 +584,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
       sector.setCopyAccordingTo(copyAccordingTo);
       sector.setRemoveOrdinals(removeOrdinals);
       sector.setCreateImplicitNames(createImplicitNames);
+      sector.setAuthorshipUpdate(authorshipUpdate);
       sector.setNote(note);
       sector.size = this.size;
       return sector;
