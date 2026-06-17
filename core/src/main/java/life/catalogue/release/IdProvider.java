@@ -239,6 +239,18 @@ public class IdProvider {
           entry.getValue().forEach(n -> writeInstableName(writer, n));
         }
       }
+      // unite versions
+      if (!uniteVersions.isEmpty()) {
+        var sb = new StringBuilder();
+        for (var entry : uniteVersions.entrySet()) {
+          sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("; ");
+        }
+        if (uniteVersions.size() > 1) {
+          LOG.warn("Found {} UNITE versions: {}", uniteVersions.size(), sb);
+        } else {
+          LOG.info("Found UNITE version: {}", sb);
+        }
+      }
       final var idZip = new File(cfg.reportDir(projectKey, attempt), "id-reports.gz");
       LOG.info("Zipping up id reports for project release {}-{} to {}", projectKey, attempt, idZip);
       CompressionUtil.zipDir(tmp.file, idZip);
