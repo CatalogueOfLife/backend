@@ -3,6 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Identifier;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameCached;
@@ -12,6 +13,7 @@ import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.LatestDatasetKeyCache;
@@ -21,6 +23,7 @@ import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.db.mapper.TaxonMapper;
@@ -61,7 +64,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Unlike {@link SectorSync} which pulls a sub-tree from a source dataset down into a project, a
  * HierarchySync walks <em>upwards</em> from project name usages that already carry source-dataset
- * identifiers and copies the missing higher classification into the project. It runs in three
+ * identifiers and copies the missing higher classification into the project. It runs in four
  * sequential phases inside the standard {@link SectorRunnable} lifecycle:
  *
  * <ol>
@@ -92,6 +95,15 @@ import org.slf4j.LoggerFactory;
  *       and identified back to the source. Synonyms whose source id is already represented in the
  *       project (an existing matched project usage or an imported ancestor) are skipped to avoid
  *       duplicates. Pre-existing project synonyms aren't touched and survive re-runs.</li>
+ *   <li><b>Phase 4 — authorship enrichment.</b>
+ *       For every matched project usage the source name's authorship is copied onto the existing
+ *       project name according to the sector's {@link Sector#getAuthorshipUpdate()} setting
+ *       ({@link Sector.AuthorshipUpdate#NONE} skips, {@link Sector.AuthorshipUpdate#MISSING} only
+ *       fills names lacking an authorship, {@link Sector.AuthorshipUpdate#ALWAYS} overwrites). The
+ *       authorship's provenance is recorded as an {@link InfoGroup#AUTHORSHIP} secondary source on
+ *       the project name's verbatim source. These names are pre-existing project data (not tagged
+ *       with this sector) so they survive {@code deleteBySector}; the secondary source is simply
+ *       re-pointed on every run.</li>
  * </ol>
  *
  * <p>Records produced by the sync are tagged with the sector's {@code sectorKey} and
@@ -245,6 +257,10 @@ public class HierarchySync extends SectorRunnable {
 
       state.setState(ImportState.INSERTING);
       copySynonymies();
+      checkIfCancelled();
+
+      state.setState(ImportState.INSERTING);
+      enrichAuthorship();
       checkIfCancelled();
     } finally {
       this.sourceCache = null;
@@ -866,6 +882,115 @@ public class HierarchySync extends SectorRunnable {
     }
     LOG.info("Hierarchy sector {}: phase 3 done — copied {} synonyms across {} accepted taxa (skipped {} already represented in the project)",
       sectorKey, copied, acceptedPairs.size(), skipped);
+  }
+
+  /**
+   * Phase 4: enrich the authorship of matched existing project names from the hierarchy source.
+   *
+   * <p>For every matched project usage (regardless of taxonomic status) the source's name is loaded
+   * and, if it carries an authorship, copied onto the existing project name according to the sector's
+   * {@link Sector#getAuthorshipUpdate()} setting: {@code MISSING} only fills names that lack an
+   * authorship, {@code ALWAYS} overwrites whenever the source has one, {@code NONE} skips the whole
+   * phase. The source of the authorship is recorded as a secondary source of
+   * {@link InfoGroup#AUTHORSHIP} on the project name's verbatim source so the provenance is tracked
+   * and the update stays idempotent across re-runs.
+   *
+   * <p>The matched names are pre-existing project data not tagged with this sector, so they survive
+   * {@code deleteBySector}. Any verbatim source we create here for them is therefore left untagged
+   * (no sector link) and the {@code AUTHORSHIP} secondary source is simply re-pointed on every run.
+   */
+  private void enrichAuthorship() {
+    final Sector.AuthorshipUpdate mode = sector.getAuthorshipUpdate();
+    LOG.info("HierarchySync phase 4 (authorship enrichment, mode={}) for sector {}", mode, sectorKey);
+    if (mode == null || mode == Sector.AuthorshipUpdate.NONE) {
+      LOG.info("Hierarchy sector {}: phase 4 skipped — authorshipUpdate={}", sectorKey, mode);
+      return;
+    }
+    if (projectMatches.isEmpty()) {
+      LOG.info("Hierarchy sector {}: phase 4 skipped — no matches", sectorKey);
+      return;
+    }
+    final int projectKey = sectorKey.getDatasetKey();
+    int updated = 0, skipped = 0, missingSource = 0;
+    try (SqlSession read = factory.openSession(true);
+         SqlSession batch = factory.openSession(ExecutorType.BATCH, false)) {
+      NameMapper readNm = read.getMapper(NameMapper.class);
+      NameMapper writeNm = batch.getMapper(NameMapper.class);
+      VerbatimSourceMapper readVsm = read.getMapper(VerbatimSourceMapper.class);
+      VerbatimSourceMapper writeVsm = batch.getMapper(VerbatimSourceMapper.class);
+      int written = 0;
+      for (Map.Entry<String, String> e : projectMatches.entrySet()) {
+        final String projectId = e.getKey();
+        final String sourceId = e.getValue();
+        Name src = readNm.getByUsage(sourceDatasetKey, sourceId);
+        if (src == null || !src.hasAuthorship()) {
+          missingSource++;
+          continue;
+        }
+        Name pn = readNm.getByUsage(projectKey, projectId);
+        if (pn == null) {
+          skipped++;
+          continue;
+        }
+        if (mode == Sector.AuthorshipUpdate.MISSING && pn.hasAuthorship()) {
+          skipped++;
+          continue;
+        }
+        // nothing to do if the authorship is already identical
+        if (Objects.equals(pn.getAuthorship(), src.getAuthorship())
+            && Objects.equals(pn.getCombinationAuthorship(), src.getCombinationAuthorship())
+            && Objects.equals(pn.getBasionymAuthorship(), src.getBasionymAuthorship())
+            && Objects.equals(pn.getSanctioningAuthor(), src.getSanctioningAuthor())) {
+          skipped++;
+          continue;
+        }
+        // copy the authorship from the source name
+        if (src.hasParsedAuthorship()) {
+          pn.setCombinationAuthorship(src.getCombinationAuthorship());
+          pn.setBasionymAuthorship(src.getBasionymAuthorship());
+          pn.setSanctioningAuthor(src.getSanctioningAuthor());
+          pn.rebuildAuthorship(); // rebuilds the cached authorship string from the parsed parts (parsed names only)
+        } else {
+          // source only carries an unparsed authorship string - copy it verbatim
+          pn.setAuthorship(src.getAuthorship());
+        }
+        pn.applyUser(user);
+
+        // make sure the project name has a verbatim source to attach the secondary source to
+        DSID<Integer> vsKey = nameVerbatimSourceKey(projectKey, projectId, pn, readVsm, writeVsm);
+        writeVsm.insertSources(vsKey, DSID.of(sourceDatasetKey, sourceId), Set.of(InfoGroup.AUTHORSHIP));
+        writeNm.update(pn);
+        updated++;
+        if (++written % 1000 == 0) batch.commit();
+      }
+      batch.commit();
+    }
+    LOG.info("Hierarchy sector {}: phase 4 done — updated authorship of {} names (skipped {}, source w/o authorship {})",
+      sectorKey, updated, skipped, missingSource);
+  }
+
+  /**
+   * Returns the verbatim source key to attach secondary sources to for the given project name,
+   * reusing the name's existing verbatim source, otherwise the usage's, otherwise creating a fresh
+   * sector-less verbatim source record. A sector-less record is used on purpose: the matched name is
+   * pre-existing project data and must not be wiped by {@code deleteBySector} on a re-run. When a key
+   * is resolved or created it is set on the name instance so the subsequent {@link NameMapper#update}
+   * persists the link.
+   */
+  private DSID<Integer> nameVerbatimSourceKey(int projectKey, String projectUsageId, Name pn,
+                                              VerbatimSourceMapper readVsm, VerbatimSourceMapper writeVsm) {
+    if (pn.getVerbatimSourceKey() != null) {
+      return DSID.of(projectKey, pn.getVerbatimSourceKey());
+    }
+    Integer uvsKey = readVsm.getVSKeyByUsage(DSID.of(projectKey, projectUsageId));
+    if (uvsKey != null) {
+      pn.setVerbatimSourceKey(uvsKey);
+      return DSID.of(projectKey, uvsKey);
+    }
+    VerbatimSource v = new VerbatimSource(projectKey, vsIdGen++, null, null, null, null);
+    writeVsm.create(v);
+    pn.setVerbatimSourceKey(v.getId());
+    return DSID.of(projectKey, v.getId());
   }
 
   /**

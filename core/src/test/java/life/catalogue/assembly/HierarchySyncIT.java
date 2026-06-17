@@ -21,6 +21,7 @@ import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -322,6 +323,87 @@ public class HierarchySyncIT {
     assertTrue(pLynx.getStatus().isSynonym());
   }
 
+  /**
+   * Phase 4 with {@link Sector.AuthorshipUpdate#MISSING}: a matched project name that lacks an
+   * authorship gets it copied from the source, and the source is tracked as an
+   * {@link InfoGroup#AUTHORSHIP} secondary source on the project name's verbatim source.
+   */
+  @Test
+  public void enrichesMissingAuthorshipFromSource() throws Exception {
+    final String T_Auth = "T_Authoria";
+    final String P_Auth = "p_Authoria";
+    insertTaxonWithAuthorship(targetKey, T_Auth, T_Animalia, Rank.GENUS, "Authoria", auth("Smith", "1850"), null);
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Auth, null, Rank.GENUS, "Authoria", T_Auth);
+
+    setAuthorshipUpdate(Sector.AuthorshipUpdate.MISSING);
+    runHierarchySync();
+
+    Name pn = getName(PROJECT_KEY, P_Auth);
+    assertNotNull(pn);
+    assertTrue("project Authoria should have gained an authorship", pn.hasAuthorship());
+    assertTrue("authorship should come from the source", pn.getAuthorship().contains("Smith") && pn.getAuthorship().contains("1850"));
+    assertAuthorshipSecondarySource(PROJECT_KEY, P_Auth, targetKey, T_Auth);
+  }
+
+  /**
+   * Phase 4 with {@link Sector.AuthorshipUpdate#MISSING}: a matched project name that already has
+   * an authorship is left untouched even though the source has a different one.
+   */
+  @Test
+  public void missingModeKeepsExistingAuthorship() throws Exception {
+    final String T_Auth = "T_Authoria";
+    final String P_Auth = "p_Authoria";
+    insertTaxonWithAuthorship(targetKey, T_Auth, T_Animalia, Rank.GENUS, "Authoria", auth("Smith", "1850"), null);
+    insertTaxonWithAuthorship(PROJECT_KEY, P_Auth, null, Rank.GENUS, "Authoria", auth("Jones", "1999"), T_Auth);
+
+    setAuthorshipUpdate(Sector.AuthorshipUpdate.MISSING);
+    runHierarchySync();
+
+    Name pn = getName(PROJECT_KEY, P_Auth);
+    assertNotNull(pn);
+    assertTrue("existing authorship must be kept", pn.getAuthorship().contains("Jones"));
+    assertFalse("source authorship must not be applied in MISSING mode when one exists", pn.getAuthorship().contains("Smith"));
+  }
+
+  /**
+   * Phase 4 with {@link Sector.AuthorshipUpdate#ALWAYS}: an existing project authorship is
+   * overwritten with the source's whenever the source has one.
+   */
+  @Test
+  public void alwaysModeOverwritesExistingAuthorship() throws Exception {
+    final String T_Auth = "T_Authoria";
+    final String P_Auth = "p_Authoria";
+    insertTaxonWithAuthorship(targetKey, T_Auth, T_Animalia, Rank.GENUS, "Authoria", auth("Smith", "1850"), null);
+    insertTaxonWithAuthorship(PROJECT_KEY, P_Auth, null, Rank.GENUS, "Authoria", auth("Jones", "1999"), T_Auth);
+
+    setAuthorshipUpdate(Sector.AuthorshipUpdate.ALWAYS);
+    runHierarchySync();
+
+    Name pn = getName(PROJECT_KEY, P_Auth);
+    assertNotNull(pn);
+    assertTrue("ALWAYS should apply the source authorship", pn.getAuthorship().contains("Smith"));
+    assertFalse("ALWAYS should drop the previous authorship", pn.getAuthorship().contains("Jones"));
+    assertAuthorshipSecondarySource(PROJECT_KEY, P_Auth, targetKey, T_Auth);
+  }
+
+  /**
+   * Phase 4 with the default {@link Sector.AuthorshipUpdate#NONE}: authorship is never touched.
+   */
+  @Test
+  public void noneModeLeavesAuthorshipUntouched() throws Exception {
+    final String T_Auth = "T_Authoria";
+    final String P_Auth = "p_Authoria";
+    insertTaxonWithAuthorship(targetKey, T_Auth, T_Animalia, Rank.GENUS, "Authoria", auth("Smith", "1850"), null);
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Auth, null, Rank.GENUS, "Authoria", T_Auth);
+
+    // sector defaults to AuthorshipUpdate.NONE
+    runHierarchySync();
+
+    Name pn = getName(PROJECT_KEY, P_Auth);
+    assertNotNull(pn);
+    assertFalse("NONE mode must not add an authorship", pn.hasAuthorship());
+  }
+
   // ---------- helpers ----------
 
   private void runHierarchySync() throws Exception {
@@ -439,6 +521,32 @@ public class HierarchySyncIT {
     }
   }
 
+  /**
+   * Inserts an accepted taxon whose name carries a parsed combination authorship. A target
+   * identifier can optionally be attached (pass null to skip).
+   */
+  private static void insertTaxonWithAuthorship(int datasetKey, String id, String parentId, Rank rank, String scientificName,
+                                                Authorship combinationAuthorship, String targetId) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      Name n = buildName(datasetKey, id, scientificName, rank);
+      n.setCombinationAuthorship(combinationAuthorship);
+      n.rebuildAuthorship();
+      s.getMapper(NameMapper.class).create(n);
+      Taxon t = buildTaxon(datasetKey, id, parentId, n, TaxonomicStatus.ACCEPTED);
+      if (targetId != null) {
+        t.setIdentifier(new java.util.ArrayList<>(List.of(new Identifier(SCOPE, targetId))));
+      }
+      s.getMapper(TaxonMapper.class).create(t);
+    }
+  }
+
+  private static Authorship auth(String author, String year) {
+    Authorship a = new Authorship();
+    a.setAuthors(new java.util.ArrayList<>(List.of(author)));
+    a.setYear(year);
+    return a;
+  }
+
   private static Name buildName(int datasetKey, String id, String scientificName, Rank rank) {
     Name n = new Name();
     n.setDatasetKey(datasetKey);
@@ -471,6 +579,17 @@ public class HierarchySyncIT {
     t.setOrigin(life.catalogue.api.vocab.Origin.SOURCE);
     t.applyUser(USER);
     return t;
+  }
+
+  /** Persists the authorship-update mode on the hierarchy sector (and mirrors it on the in-memory instance). */
+  private void setAuthorshipUpdate(Sector.AuthorshipUpdate mode) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      SectorMapper sm = s.getMapper(SectorMapper.class);
+      Sector sec = sm.get(hierarchySector);
+      sec.setAuthorshipUpdate(mode);
+      sm.update(sec);
+    }
+    hierarchySector.setAuthorshipUpdate(mode);
   }
 
   private static Sector createHierarchySector(int targetDatasetKey) {
@@ -525,6 +644,25 @@ public class HierarchySyncIT {
       assertNotNull("expected verbatim_source row for " + u.getId(), v);
       assertEquals("verbatim_source should record the source dataset", Integer.valueOf(expectedSourceDatasetKey), v.getSourceDatasetKey());
       assertEquals("verbatim_source.source_id should point at the original source record", expectedSourceId, v.getSourceId());
+    }
+  }
+
+  private static Name getName(int datasetKey, String usageId) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      return s.getMapper(NameMapper.class).getByUsage(datasetKey, usageId);
+    }
+  }
+
+  private static void assertAuthorshipSecondarySource(int datasetKey, String usageId, int expectedSourceDatasetKey, String expectedSourceId) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      Name n = s.getMapper(NameMapper.class).getByUsage(datasetKey, usageId);
+      assertNotNull("name should not be null", n);
+      assertNotNull("name " + usageId + " should carry a verbatim_source_key", n.getVerbatimSourceKey());
+      var sources = s.getMapper(VerbatimSourceMapper.class).getSources(DSID.of(datasetKey, n.getVerbatimSourceKey()));
+      SecondarySource ss = sources.get(InfoGroup.AUTHORSHIP);
+      assertNotNull("expected an AUTHORSHIP secondary source on " + usageId, ss);
+      assertEquals("secondary source dataset", Integer.valueOf(expectedSourceDatasetKey), ss.getDatasetKey());
+      assertEquals("secondary source id", expectedSourceId, ss.getId());
     }
   }
 

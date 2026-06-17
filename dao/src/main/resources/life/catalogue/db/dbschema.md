@@ -11,6 +11,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-06-17 hierarchy sync authorship update setting
+```sql
+CREATE TYPE SECTOR_AUTHORSHIP_UPDATE AS ENUM ('NONE', 'MISSING', 'ALWAYS');
+ALTER TABLE sector ADD COLUMN authorship_update SECTOR_AUTHORSHIP_UPDATE NOT NULL DEFAULT 'NONE';
+```
+
 #### 2026-06-10 rank series metrics update
 ```sql
 -- update dataset metrics

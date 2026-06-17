@@ -11,6 +11,7 @@ As the target taxonomy might be much larger than needed to organise small datase
  - the entire parent classification of the corresponding project name usage for each name usage in the project (upwards sync)
  - change the status of a name usage in the project according to the target taxonomy, i.e. an accepted name in the project might become a synonym or vice versa
  - copy the entire synonymy of all accepted taxa in the project as a last step once we have established the final taxonomic status for each
+ - optionally enrich the authorship of matched project names from the target (controlled by the sector's `authorshipUpdate` setting), tracking the target as an `AUTHORSHIP` secondary source
 
 The hierarchy sync process must be repeatable, i.e. data from previous syncs must be removed (identified via sectorKey) first.
 
@@ -164,6 +165,27 @@ and identified back to the source.
 
 Pre-existing project synonyms are intentionally not touched — they don't carry this sector's key,
 so `deleteBySector` won't wipe them on the next run, and any local edits stick.
+
+### 4b. Phase 4 — Authorship enrichment
+
+`enrichAuthorship()` copies the authorship of the matched source name onto the existing project
+name for every entry of `projectMatches` (regardless of taxonomic status). It is gated by the
+sector's `authorshipUpdate` setting (`Sector.AuthorshipUpdate`):
+
+| `authorshipUpdate` | behaviour |
+| --- | --- |
+| `NONE` (default) | phase skipped entirely — authorship never changes |
+| `MISSING` | the source authorship is applied only when the project name has none yet |
+| `ALWAYS` | the source authorship overwrites the project name's whenever the source has one |
+
+Parsed authorship is copied as the structured combination/basionym/sanctioning parts and the cached
+string rebuilt via `Name.rebuildAuthorship()`; an unparsed source only contributes its raw
+authorship string. The provenance is recorded as an `InfoGroup.AUTHORSHIP` **secondary source** on
+the project name's verbatim source (`VerbatimSourceMapper.insertSources(...)`), pointing back to the
+source usage. Because the matched names are pre-existing project data **not** tagged with this
+sector, they survive `deleteBySector`; any verbatim source created here for a name that lacked one
+is left sector-less and the `AUTHORSHIP` secondary source is simply re-pointed on every run
+(idempotent).
 
 ### 5. `doMetrics()` + `updateSearchIndex()`
 
