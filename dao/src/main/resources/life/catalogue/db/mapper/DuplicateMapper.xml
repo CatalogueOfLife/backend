@@ -39,22 +39,10 @@
     ,
     coalesce(parseInt(n.combination_year), r.year) AS n_publishedInYear
     FROM name n
-      JOIN duplicate_ids i ON i.id=n.id
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS i(id) ON i.id=n.id
       LEFT JOIN reference r ON n.published_in_id=r.id AND n.dataset_key=r.dataset_key
     WHERE n.dataset_key=#{datasetKey}
   </select>
-
-  <update id="createIdTable">
-    CREATE TEMPORARY TABLE duplicate_ids (id TEXT)
-  </update>
-
-  <update id="dropIdTable">
-    DROP TABLE duplicate_ids
-  </update>
-
-  <insert id="insertTableIdBatch" parameterType="map">
-    INSERT INTO duplicate_ids (id) VALUES <foreach collection="ids" item="id" separator=",">(#{id})</foreach>
-  </insert>
 
   <select id="usagesByTableIds" resultMap="usageDecisionResultMap">
     SELECT
@@ -91,7 +79,7 @@
       </otherwise>
     </choose>
     FROM name_usage u
-      JOIN duplicate_ids i ON i.id=u.id
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS i(id) ON i.id=u.id
       JOIN name n ON n.dataset_key=#{datasetKey} AND u.name_id=n.id
       LEFT JOIN name_usage a ON a.dataset_key=#{datasetKey} AND u.parent_id=a.id AND is_synonym(u.status)
       LEFT JOIN name an ON an.dataset_key=#{datasetKey} AND a.name_id=an.id
