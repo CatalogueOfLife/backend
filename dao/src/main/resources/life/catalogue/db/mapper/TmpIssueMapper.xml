@@ -127,4 +127,37 @@
     SELECT id, issues
     FROM tmp_usage_issues
   </select>
+
+  <!--
+    Read-only safe streaming variants of createTmpIssuesTableFrom* + processIssues combined into a single statement.
+    The nu set is inlined as a CTE (referenced many times by usageIssues, hence materialized by Postgres) so this
+    works within a read-only transaction on the replica db, unlike the temp table based methods above.
+  -->
+  <select id="streamIssuesFromVerbatim" parameterType="map" resultMap="issueResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    WITH nu AS (
+      SELECT u.id, u.name_id, u.verbatim_key AS uvkey, n.verbatim_key AS nvkey
+      FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
+      WHERE u.dataset_key=#{datasetKey}
+      <if test="sectorKey != null">
+        AND u.sector_key = #{sectorKey}
+      </if>
+    )
+    SELECT iss.id, array_cat_agg(iss.issues) AS issues
+    FROM (<include refid="usageIssuesVerbatim"/>) iss
+    GROUP BY iss.id
+  </select>
+
+  <select id="streamIssuesFromVerbatimSource" parameterType="map" resultMap="issueResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    WITH nu AS (
+      SELECT u.id, u.name_id, u.verbatim_source_key AS uvkey, n.verbatim_source_key AS nvkey
+      FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
+      WHERE u.dataset_key=#{datasetKey}
+      <if test="sectorKey != null">
+        AND u.sector_key = #{sectorKey}
+      </if>
+    )
+    SELECT iss.id, array_cat_agg(iss.issues) AS issues
+    FROM (<include refid="usageIssuesVerbatimSource"/>) iss
+    GROUP BY iss.id
+  </select>
 </mapper>
