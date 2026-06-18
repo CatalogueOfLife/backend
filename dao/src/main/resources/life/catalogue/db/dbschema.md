@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-01 WDPA gazetteer
+```
+ALTER TYPE GAZETTEER ADD VALUE 'WDPA' AFTER 'TEOW';
+```
+
 #### 2026-06-17 hierarchy sync authorship update setting
 ```sql
 CREATE TYPE SECTOR_AUTHORSHIP_UPDATE AS ENUM ('NONE', 'MISSING', 'ALWAYS');
