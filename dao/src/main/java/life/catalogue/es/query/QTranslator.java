@@ -119,12 +119,14 @@ public class QTranslator {
           term(t -> t
             .field(FLD_SCINAME)
             .value(request.getQ())
+            .caseInsensitive(true)
           )
         )
         .should(b -> b.
           term(t -> t
             .field(FLD_LABEL)
             .value(request.getQ())
+            .caseInsensitive(true)
           )
         )
         .minimumShouldMatch("1")
@@ -169,6 +171,7 @@ public class QTranslator {
       .term(t -> t
         .field(FLD_AUTHORSHIP)
         .value(request.getQ())
+        .caseInsensitive(true)
       )
     );
   }
