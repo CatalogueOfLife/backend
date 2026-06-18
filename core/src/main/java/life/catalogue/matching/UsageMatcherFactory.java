@@ -2,7 +2,6 @@ package life.catalogue.matching;
 
 import com.google.common.base.Preconditions;
 
-import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import jakarta.validation.constraints.NotNull;
 import life.catalogue.api.event.DatasetChanged;
@@ -26,7 +25,6 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.coldp.DatasetJsonWriter;
-import org.apache.commons.compress.harmony.unpack200.IMatcher;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
@@ -237,6 +235,48 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     var job = new AsyncMatchLoader(newMatcher, userKey);
     executor.submit(job);
     return job;
+  }
+
+  public void build(DatasetSearchRequest req) {
+    req.setInclDeleted(false);
+    try (SqlSession session = factory.openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var datasets = dm.searchKeys(req, Users.SUPERUSER);
+      for (var dk : datasets) {
+        if (!matcherExists(dk)) {
+          prepare(dk, Users.SUPERUSER);
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to build matchers for request {}", req, e);
+    }
+  }
+
+  public void rebuild(DatasetSearchRequest req) {
+    req.setInclDeleted(false);
+    try (SqlSession session = factory.openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var datasets = dm.searchKeys(req, Users.SUPERUSER);
+      for (var dk : datasets) {
+        remove(dk);
+        if (!isSmallDataset(dk)) {
+          prepare(dk, Users.SUPERUSER);
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to rebuild matchers for request {}", req, e);
+    }
+  }
+
+  public void rebuildExisting() {
+    for (var m : matchers.keySet()) {
+      try {
+        remove(m);
+        prepare(m, Users.SUPERUSER);
+      } catch (IOException e) {
+        LOG.error("Failed to rebuild matcher {}", m, e);
+      }
+    }
   }
 
   private class AsyncMatchLoader extends BackgroundJob {

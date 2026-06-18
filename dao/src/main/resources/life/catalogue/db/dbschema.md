@@ -75,6 +75,13 @@ UPDATE sector_import SET extinct_taxa_by_rank_count = extinct_taxa_by_rank_count
   || hstore('SUBSERIES_BOTANY', extinct_taxa_by_rank_count -> 'SUBSERIES') 
   WHERE extinct_taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
 
+-- update taxon metrics
+UPDATE taxon_metrics SET taxa_by_rank_count = taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES']
+ || hstore('SUPERSERIES_BOTANY', taxa_by_rank_count -> 'SUPERSERIES')
+ || hstore('SERIES_BOTANY', taxa_by_rank_count -> 'SERIES')
+ || hstore('SUBSERIES_BOTANY', taxa_by_rank_count -> 'SUBSERIES')
+WHERE taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
 CREATE INDEX name_series_zoo_rank_idx ON name(rank) WHERE rank IN ( 'SUPERSERIES_BOTANY', 'SERIES_BOTANY', 'SUBSERIES_BOTANY', 'SUPERSERIES_ZOOLOGY', 'SERIES_ZOOLOGY', 'SUBSERIES_ZOOLOGY' ); 
 CREATE INDEX name_usage_archive_series_zoo_rank_idx ON name_usage_archive(n_rank) WHERE n_rank IN ( 'SUPERSERIES_BOTANY', 'SERIES_BOTANY', 'SUBSERIES_BOTANY', 'SUPERSERIES_ZOOLOGY', 'SERIES_ZOOLOGY', 'SUBSERIES_ZOOLOGY' ); 
   

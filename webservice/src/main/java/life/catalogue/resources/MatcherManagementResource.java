@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.UUID;
 
 @Hidden
 @Path("/matcher")
@@ -49,6 +48,16 @@ public class MatcherManagementResource {
     }
   }
 
+  @POST
+  @RolesAllowed({Roles.ADMIN})
+  public void buildMatcher(@BeanParam DatasetSearchRequest req) {
+    if (req.hasFilter()) {
+      matcherFactory.build(req);
+    } else {
+      throw new BadRequestException("No filter given");
+    }
+  }
+
   @GET
   @Path("{key}")
   public UsageMatcherFactory.MatcherMetadata matcherMetadata(@PathParam("key") int key) {
@@ -74,6 +83,19 @@ public class MatcherManagementResource {
   @RolesAllowed({Roles.ADMIN})
   public int reloadMatcher() {
     return matcherFactory.reload();
+  }
+
+  @PUT
+  @Path("rebuild")
+  @RolesAllowed({Roles.ADMIN})
+  public void rebuildMatcher(@BeanParam DatasetSearchRequest req, @QueryParam("all") boolean all) {
+    if (all) {
+      matcherFactory.rebuildExisting();
+    } else if (req.hasFilter()) {
+      matcherFactory.rebuild(req);
+    } else {
+      throw new BadRequestException("No filter given");
+    }
   }
 
 }

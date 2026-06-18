@@ -115,30 +115,6 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   }
 
   /**
-   * Updates the primary key of a usage and all foreign keys pointing to the (accepted) taxon.
-   * Make sure the session is not in auto commit mode as we need to run it all in a transaction with deferred constraints
-   *
-   * @param key usage key to change
-   * @param newID the new identifier for the usage
-   * @param isSynonym flag to indicate the usage is a synonym and thus has no foreign keys that need to be updated.
-   * @param user making the change
-   * @param session to do the change under. Make sure it is not in auto commit mode
-   */
-  public static void changeUsageID(DSID<String> key, String newID, boolean isSynonym, int user, SqlSession session) {
-    LOG.debug("Change {} ID from {} to {}", isSynonym ? "synonym" : "taxon", key, newID);
-    if (!isSynonym) {
-      for (var tp : TaxonProcessable.MAPPERS) {
-        if (!tp.equals(VerbatimSourceMapper.class)) { // we do this one below also for synonyms
-          session.getMapper(tp).updateTaxonID(key, newID, user);
-        }
-      }
-      session.getMapper(NameUsageMapper.class).updateParentIds(key.getDatasetKey(), key.getId(), newID, null, user);
-    }
-    // the actual PK change
-    session.getMapper(NameUsageMapper.class).updateId(key, newID, user);
-  }
-
-  /**
    * Returns a taxon with the specified key or throws:
    *  - a SynonymException in case the id belongs to a synonym
    *  - a NotFoundException if the id is no name usage at all
@@ -259,9 +235,7 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
   private List<SimpleName> classificationSimple(DSID<String> key, SqlSession session) {
     if (!DatasetInfoCache.CACHE.info(key.getDatasetKey()).isProject()) {
       var m = session.getMapper(TaxonMetricsMapper.class).get(key);
-      if (m == null) {
-        LOG.warn("Missing taxon metrics for {}", key);
-      } else {
+      if (m != null) {
         // metrics start with highest to lowest rank already
         return m.getClassification();
       }
