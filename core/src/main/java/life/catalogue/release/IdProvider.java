@@ -499,7 +499,8 @@ public class IdProvider {
       samples = num.listSN(mappedDatasetKey, new Page(0, 10));
     }
     try (var tf = TempFile.directory();
-         var store = UsageMatcherChronicleStore.build(mappedDatasetKey, tf.file, count+1000, samples)
+         // temporary, write-heavy id-mapping store - keep generous headroom for both maps
+         var store = UsageMatcherChronicleStore.build(mappedDatasetKey, tf.file, count+1000, count+1000, samples)
     ) {
       int cntLoaded = store.load(factory);
       int cntStore = store.size();

@@ -57,7 +57,13 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
     return new UsageMatcherChronicleStore(datasetKey, usages, byCanonNidx);
   }
 
-  public static UsageMatcherChronicleStore build(int datasetKey, File dir, long count, List<SimpleNameCached> samples) throws IOException {
+  /**
+   * @param count      number of entries to size the usages map for (usage count incl. write headroom)
+   * @param canonCount number of entries to size the canonical inverted index for. This is the number of
+   *                   distinct canonical name index ids (incl. any write headroom), which is typically
+   *                   well below the usage count - sizing it with {@code count} grossly over-allocates the file.
+   */
+  public static UsageMatcherChronicleStore build(int datasetKey, File dir, long count, long canonCount, List<SimpleNameCached> samples) throws IOException {
     if (!dir.exists()) {
       FileUtils.forceMkdir(dir);
     }
@@ -81,10 +87,14 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
 
     ChronicleMap<Integer, String[]> byCanonNidx;
     try {
+      // realistic average fan-out: most canonical ids map to a single usage id, occasionally a few.
+      // Sizing the value chunk for the real average (instead of all 5 sample ids) keeps the file small.
+      int avgIds = (int) Math.max(1, Math.min(5, Math.round((double) count / Math.max(1, canonCount))));
+      String[] avgValue = samples.stream().map(SimpleNameCached::getId).limit(avgIds).toArray(String[]::new);
       byCanonNidx = ChronicleMapBuilder.of(Integer.class, String[].class)
         .name("canonical")
-        .entries(count)
-        .averageValue(samples.stream().map(SimpleNameCached::getId).toArray(String[]::new))
+        .entries(canonCount)
+        .averageValue(avgValue)
         .createPersistedTo(canonicalF);
     } catch (IOException e) {
       usages.close();

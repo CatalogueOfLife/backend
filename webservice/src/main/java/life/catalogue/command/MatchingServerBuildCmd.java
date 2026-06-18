@@ -133,8 +133,10 @@ public class MatchingServerBuildCmd extends ConfiguredCommand<WsMatchingServerCo
       try (SqlSession s = factory.openSession()) {
         var um = s.getMapper(NameUsageMapper.class);
         int count = 1000 + um.count(key);
+        // load(factory, ni) re-matches with inserts allowed, so mirror the usages write headroom on the canonical index
+        long canonCount = 1000 + um.countDistinctCanonical(key);
         var samples = um.listSN(key, new Page(0,10));
-        m = UsageMatcherFactory.buildPersistentMatcher(key, samples, count, cfg.matching, ni);
+        m = UsageMatcherFactory.buildPersistentMatcher(key, samples, count, canonCount, cfg.matching, ni);
         m.load(factory, ni);
       }
       // orderly shutdown

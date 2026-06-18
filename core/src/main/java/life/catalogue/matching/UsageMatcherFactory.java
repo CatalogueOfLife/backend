@@ -406,8 +406,13 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     runningBuilds.put(datasetKey, LocalDateTime.now());
     try {
       try (SqlSession s = factory.openSession()) {
-        var samples = s.getMapper(NameUsageMapper.class).listSN(datasetKey, new Page(0, 5));
-        return buildPersistentMatcher(datasetKey, samples, count + 1, cfg, nameIndex);
+        var num = s.getMapper(NameUsageMapper.class);
+        var samples = num.listSN(datasetKey, new Page(0, 5));
+        // size the canonical index from the real distinct canonical count plus a tiny proportional cushion.
+        // These persistent match-target stores are read-only after load() (no inserts), so no large headroom is needed.
+        int canon = num.countDistinctCanonical(datasetKey);
+        long canonCount = canon + Math.max(1, canon / 100);
+        return buildPersistentMatcher(datasetKey, samples, count + 1, canonCount, cfg, nameIndex);
       }
     } finally {
       var start = runningBuilds.remove(datasetKey);
@@ -415,13 +420,13 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
   }
 
-  public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
+  public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, long canonCount, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
     var f = cfg.dir(datasetKey);
 
     UsageMatcherAbstractStore store;
     if (cfg.chronicle) {
       LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
-      store = UsageMatcherChronicleStore.build(datasetKey, f, maxUsages, samples);
+      store = UsageMatcherChronicleStore.build(datasetKey, f, maxUsages, canonCount, samples);
 
     } else {
       LOG.info("Create new persistent mapdb matcher for dataset {} at {}", datasetKey, f);
