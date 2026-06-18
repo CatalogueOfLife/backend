@@ -1,6 +1,7 @@
 package life.catalogue.event;
 
 import life.catalogue.api.event.Event;
+import life.catalogue.common.kryo.Pools;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,35 +35,23 @@ public class KryoHelper {
 
 
   <T extends Event> void write(T event, OutputStream os) throws IOException {
-    Kryo kryo = null;
-    Output output = null;
-    try {
-      kryo = kryoPool.obtain();
-      output = outputPool.obtain();
-      output.setOutputStream(os);
-      kryo.writeClassAndObject(output, event);
-      output.flush();
-      output.close();
-
-    } finally {
-      if (output != null) outputPool.free(output);
-      if (kryo != null) kryoPool.free(kryo);
-    }
+    Pools.run(kryoPool, kryo ->
+      Pools.run(outputPool, output -> {
+        output.setOutputStream(os);
+        kryo.writeClassAndObject(output, event);
+        output.flush();
+        output.close();
+      })
+    );
   }
 
   Object read(InputStream is) {
-    Kryo kryo = null;
-    Input input = null;
-    try {
-      kryo = kryoPool.obtain();
-      input = inputPool.obtain();
-      input.setInputStream(is);
-      return kryo.readClassAndObject(input);
-
-    } finally {
-      if (input != null) inputPool.free(input);
-      if (kryo != null) kryoPool.free(kryo);
-    }
+    return Pools.with(kryoPool, kryo ->
+      Pools.with(inputPool, input -> {
+        input.setInputStream(is);
+        return kryo.readClassAndObject(input);
+      })
+    );
   }
 
 }

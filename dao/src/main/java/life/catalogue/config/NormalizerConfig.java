@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -38,9 +37,6 @@ public class NormalizerConfig {
    */
   @NotNull
   public File scratchDir = new File("/tmp/col");
-
-  @Min(2)
-  public int kryoPoolSize = 12;
 
   /**
    * The dataset source files as a single archive in original format (zip, gzip, etc).

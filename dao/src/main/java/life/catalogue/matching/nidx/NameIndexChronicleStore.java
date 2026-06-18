@@ -1,6 +1,7 @@
 package life.catalogue.matching.nidx;
 
 import life.catalogue.api.model.IndexName;
+import life.catalogue.common.kryo.Pools;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
@@ -43,7 +44,10 @@ import net.openhft.chronicle.map.ChronicleMapBuilder;
  */
 public class NameIndexChronicleStore implements NameIndexStore {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexChronicleStore.class);
-  private static final NameIndexKryoPool POOL = new NameIndexKryoPool(512);
+  // the marshaller below is static and field-free (required so Chronicle can persist it), so the kryo
+  // pool it uses must be reachable statically. Initialised to the default size and reconfigured from
+  // config in the constructor - names index stores are managed singletons, so sharing one pool is fine.
+  private static volatile NameIndexKryoPool POOL = new NameIndexKryoPool(NamesIndexConfig.DEFAULT_KRYO_POOL_SIZE);
   private static final IndexNameBytesMarshaller MARSHALLER = new IndexNameBytesMarshaller();
 
   private File dir;
@@ -60,6 +64,7 @@ public class NameIndexChronicleStore implements NameIndexStore {
 
   public NameIndexChronicleStore(NamesIndexConfig cfg) throws IOException {
     this.cfg = cfg;
+    POOL = new NameIndexKryoPool(cfg.kryoPoolSize);
     this.dir = cfg.file;
     this.created = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
     if (dir == null) {
@@ -132,6 +137,10 @@ public class NameIndexChronicleStore implements NameIndexStore {
       }
     }
     started = true;
+    // log fill vs capacity of all three maps - the half-sized names/canonical maps are the first to
+    // overflow as the index grows, so their fill is worth watching against maxEntries.
+    LOG.info("Names index chronicle store started: keys={}/{}, names={}/{}, canonical={}/{} (entries/capacity)",
+      keys.size(), cfg.maxEntries, names.size(), cfg.maxEntries / 2, canonical.size(), cfg.maxEntries / 2);
   }
 
   @Override
@@ -315,28 +324,20 @@ public class NameIndexChronicleStore implements NameIndexStore {
     @NotNull
     @Override
     public IndexName read(Bytes in, @Nullable IndexName using) {
-      Kryo kryo = null;
-      try {
-        kryo = POOL.obtain();
+      if (using != null) {
+        System.out.println("WARN: IndexName instance existing: " + using);
+      }
+      return Pools.with(POOL, kryo -> {
         int size = in.readInt();
         byte[] bytes = new byte[size];
         in.read(bytes);
-        if (using != null) {
-          System.out.println("WARN: IndexName instance existing: " + using);
-        }
         return kryo.readObject(new Input(bytes), IndexName.class);
-      } finally {
-        if (kryo != null) {
-          POOL.free(kryo);
-        }
-      }
+      });
     }
 
     @Override
     public void write(Bytes out, @NotNull IndexName value) {
-      Kryo kryo = null;
-      try {
-        kryo = POOL.obtain();
+      Pools.run(POOL, kryo -> {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(128);
         Output output = new Output(buffer, 128);
         kryo.writeObject(output, value);
@@ -344,11 +345,7 @@ public class NameIndexChronicleStore implements NameIndexStore {
         byte[] bytes = buffer.toByteArray();
         out.writeInt(bytes.length);
         out.write(bytes);
-      } finally {
-        if (kryo != null) {
-          POOL.free(kryo);
-        }
-      }
+      });
     }
   }
 

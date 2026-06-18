@@ -23,7 +23,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 public class NameIndexKryoPool extends Pool<Kryo> {
 
   public NameIndexKryoPool(int size) {
-    super(true, true, size);
+    // hard references (softReferences=false): the names index is a hot, steady-throughput path and
+    // recreating a Kryo is not free, so we keep up to `size` instances pinned rather than let the GC
+    // reclaim them under pressure. `size` therefore bounds the retained idle instances - obtain() still
+    // creates extra instances transiently beyond it without blocking or throwing.
+    super(true, false, size);
   }
 
   @Override
