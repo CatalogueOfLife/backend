@@ -19,9 +19,13 @@ import co.elastic.logging.JsonUtils;
 import co.elastic.logging.logback.EcsEncoder;
 
 public class ClbEcsEncoder extends EcsEncoder {
+  // MDC keys whose plain name collides with a reserved ECS field, or which we want to surface as a proper ECS field.
+  // Without remapping, a scalar value written under a reserved ECS object field (e.g. "source") makes Elasticsearch
+  // reject the whole document with a document_parsing_exception, so the log line silently never reaches Kibana.
   private static final Map<String, String> ECS_MAP = Map.of(
     LoggingUtils.MDC_KEY_JOB, "event.id",
-    LoggingUtils.MDC_KEY_TASK, "event.action"
+    LoggingUtils.MDC_KEY_TASK, "event.action",
+    LoggingUtils.MDC_KEY_SOURCE, "labels.source"
   );
 
   @Override
