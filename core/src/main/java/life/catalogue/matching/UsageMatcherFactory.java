@@ -134,7 +134,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
             FileUtils.deleteQuietly(cfg.dir(k));
           } else {
             loaded.put(k, m);
-            LOG.info("Loaded matcher with {} usages for dataset {}", store.size(), k);
+            LOG.info("Loaded matcher with {} usages and {} canonical ids for dataset {}", store.size(), store.canonicalSize(), k);
           }
         } catch (IOException e) {
           File f = cfg.dir(k);

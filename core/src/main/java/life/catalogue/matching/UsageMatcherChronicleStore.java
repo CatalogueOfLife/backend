@@ -174,6 +174,11 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
   }
 
   @Override
+  public int canonicalSize() {
+    return byCanonNidx.size();
+  }
+
+  @Override
   public void add(SimpleNameCached sn) {
     var old = usages.put(sn.getId(), sn);
     if (sn.getCanonicalId() != null) {
