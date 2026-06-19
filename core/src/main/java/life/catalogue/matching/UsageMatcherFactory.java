@@ -252,15 +252,15 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
   }
 
-  public void rebuild(DatasetSearchRequest req) {
+  public void rebuild(DatasetSearchRequest req, int userKey) {
     req.setInclDeleted(false);
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
-      var datasets = dm.searchKeys(req, Users.SUPERUSER);
+      var datasets = dm.searchKeys(req, userKey);
       for (var dk : datasets) {
         remove(dk);
         if (!isSmallDataset(dk)) {
-          prepare(dk, Users.SUPERUSER);
+          prepare(dk, userKey);
         }
       }
     } catch (Exception e) {
@@ -268,11 +268,11 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
   }
 
-  public void rebuildExisting() {
+  public void rebuildExisting(int userKey) {
     for (var m : matchers.keySet()) {
       try {
         remove(m);
-        prepare(m, Users.SUPERUSER);
+        prepare(m, userKey);
       } catch (IOException e) {
         LOG.error("Failed to rebuild matcher {}", m, e);
       }

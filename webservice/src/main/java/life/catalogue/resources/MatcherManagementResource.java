@@ -88,11 +88,11 @@ public class MatcherManagementResource {
   @PUT
   @Path("rebuild")
   @RolesAllowed({Roles.ADMIN})
-  public void rebuildMatcher(@BeanParam DatasetSearchRequest req, @QueryParam("all") boolean all) {
+  public void rebuildMatcher(@BeanParam DatasetSearchRequest req, @QueryParam("all") boolean all, @Auth User user) {
     if (all) {
-      matcherFactory.rebuildExisting();
+      matcherFactory.rebuildExisting(user.getKey());
     } else if (req.hasFilter()) {
-      matcherFactory.rebuild(req);
+      matcherFactory.rebuild(req, user.getKey());
     } else {
       throw new BadRequestException("No filter given");
     }
