@@ -27,8 +27,15 @@ public class SortByTranslator {
       if (request.hasQ()) {
         // default to relevance sorting for non-empty queries
         request.setSortBy(RELEVANCE);
+      } else if (!FiltersTranslator.mustGenerateFilters(request)) {
+        // No query and no filters => match_all. A field sort would force Elasticsearch to scan the entire index to
+        // fill the result page (~1.3s over 150M+ usages on dev) just to order a result whose first-page order is
+        // meaningless. Fall back to _doc (index order) so the first page returns almost instantly without a full scan.
+        // Callers that genuinely want a specific order over the whole corpus can still request it explicitly via
+        // sortBy, paying the scan cost (e.g. an alphabetical browse, or Issue #1513 accepted-before-synonym).
+        return List.of(SortOptions.of(s -> s.field(f -> f.field("_doc"))));
       } else {
-        // use taxonomic order otherwise, which is more intuitive for users
+        // filtered but query-less: taxonomic order is intuitive and cheap, since the filters prune the set
         request.setSortBy(TAXONOMIC);
       }
     }
