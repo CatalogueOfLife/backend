@@ -42,6 +42,10 @@ public class OpenRefineModel {
 
   /** The result wrapper for a single query: {@code { "result": [ ... ] }}. */
   public static class Result {
+    // the reconciliation spec requires "result" to always be present, even as an empty array,
+    // otherwise OpenRefine reports "JSON response without result field". The global mapper uses
+    // NON_EMPTY inclusion, so force ALWAYS here.
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     public List<Candidate> result = new ArrayList<>();
   }
 
@@ -158,14 +162,17 @@ public class OpenRefineModel {
 
   /** Data extension response: column metadata plus per-id, per-property value cells. */
   public static class ExtendResponse {
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     public List<ExtendProperty> meta = new ArrayList<>();
     // id -> (propertyId -> cells)
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     public Map<String, Map<String, List<Cell>>> rows = new LinkedHashMap<>();
   }
 
   // ---- Suggest ----
 
   public static class SuggestResponse {
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     public List<SuggestItem> result = new ArrayList<>();
   }
 

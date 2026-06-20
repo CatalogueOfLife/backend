@@ -144,6 +144,30 @@ public class OpenRefineMapperTest {
   }
 
   @Test
+  public void emptyResultStillSerializesResultField() throws Exception {
+    // the global mapper uses NON_EMPTY inclusion; the reconciliation spec still requires the
+    // "result" field to be present (as an empty array) or OpenRefine errors with
+    // "JSON response without result field". Verify it survives serialization.
+    var out = Map.of("q0", OpenRefineMapper.toResult(UsageMatch.empty(3)));
+    String json = ApiModule.MAPPER.writeValueAsString(out);
+    var node = ApiModule.MAPPER.readTree(json);
+    assertTrue("q0 must carry a result field", node.path("q0").has("result"));
+    assertTrue(node.path("q0").path("result").isArray());
+    assertEquals(0, node.path("q0").path("result").size());
+  }
+
+  @Test
+  public void emptySuggestAndExtendKeepRequiredFields() throws Exception {
+    var suggest = ApiModule.MAPPER.readTree(ApiModule.MAPPER.writeValueAsString(new OpenRefineModel.SuggestResponse()));
+    assertTrue("suggest must carry a result field", suggest.has("result"));
+
+    var extend = ApiModule.MAPPER.readTree(
+      ApiModule.MAPPER.writeValueAsString(OpenRefineMapper.buildExtendResponse(List.of(), List.of(), Map.of())));
+    assertTrue("extend must carry meta", extend.has("meta"));
+    assertTrue("extend must carry rows", extend.has("rows"));
+  }
+
+  @Test
   public void parseQueriesParsesBatch() throws Exception {
     String json = "{\"q0\":{\"query\":\"Puma concolor\"},\"q1\":{\"query\":\"Aus bus\",\"limit\":3}}";
     Map<String, OpenRefineModel.Query> queries = OpenRefineMapper.parseQueries(json, ApiModule.MAPPER);
