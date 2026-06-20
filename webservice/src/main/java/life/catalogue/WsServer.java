@@ -75,6 +75,8 @@ import life.catalogue.release.PublisherChangeListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.legacy.LegacyWebserviceResource;
+import life.catalogue.resources.matching.openrefine.DefaultReconciliationResource;
+import life.catalogue.resources.matching.openrefine.ReconciliationResource;
 import life.catalogue.resources.parser.NameParserAdminResource;
 import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
@@ -474,6 +476,9 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetBreakdownResource(tdao));
     j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
     j.register(new NameUsageMatchingResource(cfg.matching, executor, getSqlSessionFactory(), matcherFactory));
+    // OpenRefine reconciliation service over the name matcher (dataset-scoped + default COL backbone)
+    j.register(new ReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, cfg.getApiUri(), cfg.clbURI));
+    j.register(new DefaultReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, coljersey.getCache(), cfg.getApiUri(), cfg.clbURI));
     j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, fmsDao, siDao, syncManager));
