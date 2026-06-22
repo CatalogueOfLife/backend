@@ -208,7 +208,7 @@ public class NameTest extends SerdeTestBase<Name> {
     n.rebuildAuthorship();
 
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel());
-    assertEquals("<i>Abies × alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabelHtml());
+    assertEquals("<i>Abies</i> × <i>alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabelHtml());
 
     // https://github.com/CatalogueOfLife/backend/issues/1090
     n = new Name();
@@ -254,6 +254,24 @@ public class NameTest extends SerdeTestBase<Name> {
     assertEquals("<i>Hieracium brevifolium</i> subsp. <i>malyi-caroli</i> corrig. (Gus. Schneid.) Zahn", n.getLabelHtml());
   }
 
+  /**
+   * Nothospecies: genus and epithet in italics, but the hybrid marker and authorship must not be.
+   */
+  @Test
+  public void labelHtmlNothospecies() throws Exception {
+    Name n = new Name();
+    n.setGenus("Ophrys");
+    n.setSpecificEpithet("varvarae");
+    n.setNotho(NamePart.SPECIFIC);
+    n.setRank(Rank.SPECIES);
+    n.setCombinationAuthorship(Authorship.yearAuthors(null, "Faller", "Kreutz"));
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
+
+    assertEquals("Ophrys × varvarae Faller & Kreutz", n.getLabel());
+    assertEquals("<i>Ophrys</i> × <i>varvarae</i> Faller & Kreutz", n.getLabelHtml());
+  }
+
   @Test
   public void scientificNameHtml() throws Exception {
     Name n = new Name();
@@ -271,7 +289,7 @@ public class NameTest extends SerdeTestBase<Name> {
     assertEquals("<i>Abies alba</i> nothosubsp. <i>montana</i>", n.getLabelHtml());
 
     n.setScientificName("Abies × alba subsp. montana");
-    assertEquals("<i>Abies × alba</i> subsp. <i>montana</i>", n.getLabelHtml());
+    assertEquals("<i>Abies</i> × <i>alba</i> subsp. <i>montana</i>", n.getLabelHtml());
 
     n.setRank(Rank.GENUS);
     n.setScientificName(n.getGenus());

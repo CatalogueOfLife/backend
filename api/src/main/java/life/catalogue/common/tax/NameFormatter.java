@@ -31,10 +31,10 @@ public class NameFormatter {
   // matches only uninomials or binomials without any authorship
   private static String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
   @VisibleForTesting
-  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^[A-ZÆŒ]"+EPITHET                  // genus
+  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^(?:× )?[A-ZÆŒ]"+EPITHET           // (notho)genus
                                                           + "(?: \\([A-ZÆŒ]"+EPITHET+"\\))?"  // infrageneric
-                                                          + "(?: "+EPITHET                    // species
-                                                              +"(?: "+EPITHET+")?"            // subspecies
+                                                          + "(?: (?:× )?"+EPITHET             // (notho)species
+                                                              +"(?: (?:× )?"+EPITHET+")?"     // (notho)subspecies
                                                           + ")?$");
 
   private NameFormatter() {
@@ -136,6 +136,31 @@ public class NameFormatter {
 
   public static String inItalics(String x) {
     return "<i>" + x + "</i>";
+  }
+
+  /**
+   * Wraps a name in italics, but keeps any hybrid marker (×) and its surrounding spaces outside the italic tags.
+   * E.g. "Ophrys × varvarae" becomes "&lt;i&gt;Ophrys&lt;/i&gt; × &lt;i&gt;varvarae&lt;/i&gt;".
+   */
+  private static String inItalicsKeepHybrid(String x) {
+    if (x.indexOf(HYBRID_MARKER) < 0) {
+      return inItalics(x);
+    }
+    // split around the hybrid marker (ignoring surrounding whitespace) and italicize the name parts only
+    String[] parts = x.split("\\s*" + HYBRID_MARKER + "\\s*", -1);
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < parts.length; i++) {
+      if (i > 0) {
+        if (sb.length() > 0) {
+          sb.append(" ");
+        }
+        sb.append(HYBRID_MARKER).append(" ");
+      }
+      if (!parts[i].isEmpty()) {
+        sb.append(inItalics(parts[i]));
+      }
+    }
+    return sb.toString();
   }
 
   /**
@@ -384,12 +409,12 @@ public class NameFormatter {
       Matcher m = RANK_MATCHER.matcher(scientificName);
       if (m.find()) {
         StringBuilder sb = new StringBuilder();
-        sb.append(NameFormatter.inItalics(m.group(1)));
+        sb.append(inItalicsKeepHybrid(m.group(1)));
         sb.append(" ");
         sb.append(m.group(2));
         if (m.group(3) != null) {
           sb.append(" ");
-          sb.append(NameFormatter.inItalics(m.group(3).trim()));
+          sb.append(inItalicsKeepHybrid(m.group(3).trim()));
         }
         if (m.group(4) != null) {
           sb.append(" ");
@@ -400,7 +425,7 @@ public class NameFormatter {
       } else {
         m = LINNEAN_NAME_NO_AUTHOR.matcher(scientificName);
         if (m.find()) {
-          return NameFormatter.inItalics(scientificName);
+          return inItalicsKeepHybrid(scientificName);
         }
       }
     }
