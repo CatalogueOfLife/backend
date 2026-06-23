@@ -95,6 +95,8 @@ public class NamesIndexResource {
   }
 
   @GET
+  @Hidden
+  @Deprecated
   @Path("match")
   public NameMatch match(@QueryParam("q") String q,
                          @QueryParam("name") String name,
@@ -122,6 +124,8 @@ public class NamesIndexResource {
   }
 
   @POST
+  @Hidden
+  @Deprecated
   @Path("export")
   public NidxExportJob export(@QueryParam("datasetKey") List<Integer> keys, @QueryParam("min") int minDatasets, @Auth User user) {
     NidxExportJob job = new NidxExportJob(keys, minDatasets, user.getKey(), factory, cfg.normalizer);
@@ -131,6 +135,7 @@ public class NamesIndexResource {
 
   @POST
   @Hidden
+  @Deprecated
   @Path("compact")
   @RolesAllowed({Roles.ADMIN})
   public void compact() {

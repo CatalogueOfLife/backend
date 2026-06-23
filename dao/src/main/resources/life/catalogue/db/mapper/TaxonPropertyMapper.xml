@@ -139,4 +139,15 @@
     WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
   </update>
 
+  <select id="listByNamesIndexIDGlobal" resultMap="taxPropResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM names_index ni
+      JOIN name_match nm ON nm.index_id=ni.id
+      JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=nm.name_id
+      JOIN taxon_property p ON p.dataset_key=nm.dataset_key AND p.taxon_id=u.id
+    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    ORDER BY p.dataset_key, p.id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
 </mapper>

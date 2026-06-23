@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.ExtensionEntity;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.model.TaxonExtension;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
@@ -9,6 +10,8 @@ import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TaxonProcessable;
 
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface TaxonExtensionMapper<T extends ExtensionEntity>
   extends DatasetProcessable<TaxonExtension<T>>, SectorProcessable<T>, TaxonProcessable<T>, CopyDataset {
@@ -23,4 +26,5 @@ public interface TaxonExtensionMapper<T extends ExtensionEntity>
    */
   boolean entityExists(@Param("datasetKey") int datasetKey);
 
+  List<T> listByNamesIndexIDGlobal(@Param("nidx") int nidx, @Param("page") Page page);
 }
