@@ -10,6 +10,7 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.es.query.InvalidQueryException;
 import life.catalogue.es.search.NameUsageSearchService;
 
+import life.catalogue.img.ThumborService;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.Rank;
 
@@ -42,10 +43,12 @@ public class NameUsageSearchResource {
 
   private final NameUsageSearchService searchService;
   private final SqlSessionFactory factory;
+  private final ThumborService thumborService;
 
-  public NameUsageSearchResource(SqlSessionFactory factory, NameUsageSearchService search) {
+  public NameUsageSearchResource(SqlSessionFactory factory, NameUsageSearchService search, ThumborService thumborService) {
     this.factory = factory;
     this.searchService = search;
+    this.thumborService = thumborService;
   }
 
 
@@ -97,7 +100,9 @@ public class NameUsageSearchResource {
   @Hidden
   @Path("media")
   public List<Media> listMedia(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
-    return listByNidx(MediaMapper.class, namesIndexID, page);
+    var media = listByNidx(MediaMapper.class, namesIndexID, page);
+    media.forEach(thumborService::addThumbnail);
+    return media;
   }
 
   @GET

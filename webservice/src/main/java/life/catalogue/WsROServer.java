@@ -269,7 +269,7 @@ public class WsROServer extends Application<WsServerConfig> {
     registerReadOnlyResources(j, cfg, getSqlSessionFactory(), null,
       ddao, dsdao, new AtomicBoolean(),
       diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
-      searchService, suggestService, imgService,
+      searchService, suggestService, imgService, thumborService,
       FeedbackService.passThru(), doiResolver, areaLookup
     );
 
@@ -300,7 +300,7 @@ public class WsROServer extends Application<WsServerConfig> {
                                         NameDao ndao, PublisherDao pdao, SectorPublisherDao spdao, ReferenceDao rdao,
                                         NameUsageDao nudao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService,
-                                        ImageService imgService, FeedbackService feedbackService, DoiResolver doiResolver, AreaLabelLookup areaLookup) {
+                                        ImageService imgService, ThumborService thumborService, FeedbackService feedbackService, DoiResolver doiResolver, AreaLabelLookup areaLookup) {
     // dataset scoped resources
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetImportResource(diDao));
@@ -325,7 +325,7 @@ public class WsROServer extends Application<WsServerConfig> {
 
     // global resources
     j.register(new ExportResource(exdao, exportBlocker, cfg));
-    j.register(new NameUsageSearchResource(factory, searchService));
+    j.register(new NameUsageSearchResource(factory, searchService, thumborService));
     j.register(new PublisherResource(pdao));
     j.register(new RobotsResource());
     j.register(new VernacularGlobalResource());
