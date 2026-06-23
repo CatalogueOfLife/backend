@@ -72,7 +72,7 @@ public class NameUsageSearchResource {
     }
   }
 
-  private <T extends ExtensionEntity> List<T> listByNidx(Class<? extends TaxonExtensionMapper<T>> mapperCls, Integer nidx, Page page) {
+  private <T extends ExtensionEntity> List<TaxonExtension<T>> listByNidx(Class<? extends TaxonExtensionMapper<T>> mapperCls, Integer nidx, Page page) {
     if (nidx == null) {
       throw new IllegalArgumentException("nidx parameter required");
     }
@@ -85,30 +85,30 @@ public class NameUsageSearchResource {
   @GET
   @Hidden
   @Path("property")
-  public List<TaxonProperty> listProperties(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
+  public List<TaxonExtension<TaxonProperty>> listProperties(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
     return listByNidx(TaxonPropertyMapper.class, namesIndexID, page);
   }
 
   @GET
   @Hidden
   @Path("distribution")
-  public List<Distribution> listDistribution(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
+  public List<TaxonExtension<Distribution>> listDistribution(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
     return listByNidx(DistributionMapper.class, namesIndexID, page);
   }
 
   @GET
   @Hidden
   @Path("media")
-  public List<Media> listMedia(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
+  public List<TaxonExtension<Media>> listMedia(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
     var media = listByNidx(MediaMapper.class, namesIndexID, page);
-    media.forEach(thumborService::addThumbnail);
+    media.forEach(m -> thumborService.addThumbnail(m.getObj()));
     return media;
   }
 
   @GET
   @Hidden
   @Path("vernacular")
-  public List<VernacularName> listVernacular(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
+  public List<TaxonExtension<VernacularName>> listVernacular(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
     return listByNidx(VernacularNameMapper.class, namesIndexID, page);
   }
 

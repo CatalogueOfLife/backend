@@ -26,5 +26,5 @@ public interface TaxonExtensionMapper<T extends ExtensionEntity>
    */
   boolean entityExists(@Param("datasetKey") int datasetKey);
 
-  List<T> listByNamesIndexIDGlobal(@Param("nidx") int nidx, @Param("page") Page page);
+  List<TaxonExtension<T>> listByNamesIndexIDGlobal(@Param("nidx") int nidx, @Param("page") Page page);
 }

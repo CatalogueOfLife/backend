@@ -167,7 +167,7 @@
     WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
   </update>
 
-  <select id="listByNamesIndexIDGlobal" resultMap="distributionResultMap">
+  <select id="listByNamesIndexIDGlobal" resultMap="distributionExtResultMap">
     SELECT <include refid="SELECT"/>
     FROM names_index ni
     JOIN name_match nm ON nm.index_id=ni.id
