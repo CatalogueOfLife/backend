@@ -75,6 +75,7 @@ public class ColdpExtendedExport extends ArchiveExport {
 
     write(u.getName());
     writer.set(ColdpTerm.ID, u.getId());
+    writer.set(ColdpTerm.alternativeID, u.getIdentifier());
     writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(u.getSectorKey()));
     writer.set(ColdpTerm.parentID, u.getParentId());
     writer.set(ColdpTerm.status, u.getStatus());
@@ -130,6 +131,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   }
 
   void write(Name n) {
+    writer.set(ColdpTerm.nameAlternativeID, n.getIdentifier());
     writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(n.getSectorKey()));
     for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
       writer.set(ColdpTerm.basionymID, nameUsageKeyMap.getFirst(rel.getRelatedNameId()));
