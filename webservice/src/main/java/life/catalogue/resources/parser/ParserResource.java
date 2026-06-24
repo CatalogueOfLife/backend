@@ -8,9 +8,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,34 +28,9 @@ public class ParserResource<T> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ParserResource.class);
   private final List<String> parserNames = new ArrayList<>();
-  private final Map<String, Parser<?>> parsers = new HashMap<>();
 
   public ParserResource() {
-    parsers.put("boolean", BooleanParser.PARSER);
-    parsers.put("country", CountryParser.PARSER);
-    parsers.put("datasettype", DatasetTypeParser.PARSER);
-    parsers.put("date", DateParser.PARSER);
-    parsers.put("distributionstatus", DistributionStatusParser.PARSER);
-    parsers.put("gazetteer", GazetteerParser.PARSER);
-    parsers.put("geotime", GeoTimeParser.PARSER);
-    parsers.put("integer", IntegerParser.PARSER);
-    parsers.put("language", LanguageParser.PARSER);
-    parsers.put("license", LicenseParser.PARSER);
-    parsers.put("lifezone", EnvironmentParser.PARSER);
-    parsers.put("mediatype", MediaTypeParser.PARSER);
-    parsers.put("nomcode", NomCodeParser.PARSER);
-    parsers.put("nomreltype", NomRelTypeParser.PARSER);
-    parsers.put("nomstatus", NomStatusParser.PARSER);
-    parsers.put("rank", RankParser.PARSER);
-    parsers.put("referencetype", ReferenceTypeParser.PARSER);
-    parsers.put("sex", SexParser.PARSER);
-//    parsers.put("taxgroup", TaxGroupParser.PARSER);
-    parsers.put("taxonomicstatus", TaxonomicStatusParser.PARSER);
-    parsers.put("treatmentformat", TreatmentFormatParser.PARSER);
-    parsers.put("typestatus", TypeStatusParser.PARSER);
-    parsers.put("uri", UriParser.PARSER);
-
-    parserNames.addAll(parsers.keySet());
+    parserNames.addAll(Parsers.names());
     parserNames.add("name"); // lives in its own resource
   }
 
@@ -136,11 +109,10 @@ public class ParserResource<T> {
   }
 
   private List<ParseResult<?>> parse(String type, Stream<String> rows) {
-    if (!parsers.containsKey(type.toLowerCase())) {
+    final Parser<?> parser = Parsers.get(type);
+    if (parser == null) {
       throw new NotFoundException("No parser for "+type+" exists");
     }
-
-    final Parser<?> parser = parsers.get(type);
     return rows
         .map(n -> new ParseResult<>(n, SafeParser.parse(parser, n)))
         .collect(Collectors.toList());
