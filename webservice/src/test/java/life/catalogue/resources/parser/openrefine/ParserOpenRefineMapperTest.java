@@ -67,4 +67,19 @@ public class ParserOpenRefineMapperTest {
     assertTrue(m.extend.property_settings.stream().anyMatch(s -> s.name.equals("code")));
     assertTrue(m.extend.property_settings.stream().anyMatch(s -> s.name.equals("rank")));
   }
+
+  @Test
+  public void geoTimeExtendValues() {
+    var gt = life.catalogue.api.vocab.GeoTime.byName("Holocene");
+    assertNotNull(gt);
+    assertEquals(gt.getName(), ParserOpenRefineMapper.geoTimeValue(gt, "name"));
+    assertNotNull(ParserOpenRefineMapper.geoTimeValue(gt, "type"));
+    assertNotNull(ParserOpenRefineMapper.geoTimeValue(gt, "end"));
+  }
+
+  @Test
+  public void geoTimeSuggestByPrefix() {
+    var resp = ParserOpenRefineMapper.geoTimeSuggest("holo", 25);
+    assertTrue(resp.result.stream().anyMatch(i -> i.name.toLowerCase().startsWith("holo")));
+  }
 }

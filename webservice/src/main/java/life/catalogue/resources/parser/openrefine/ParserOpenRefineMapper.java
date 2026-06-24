@@ -158,4 +158,51 @@ public class ParserOpenRefineMapper {
   private static String year(org.gbif.nameparser.api.Authorship a) {
     return a == null ? null : a.getYear();
   }
+
+  public static final OpenRefineModel.Type GEOTIME_TYPE = new OpenRefineModel.Type("GeoTime", "GeoTime");
+
+  public static final java.util.List<OpenRefineModel.ExtendProperty> GEOTIME_PROPERTIES = java.util.List.of(
+    new OpenRefineModel.ExtendProperty("name", "name"),
+    new OpenRefineModel.ExtendProperty("type", "type"),
+    new OpenRefineModel.ExtendProperty("start", "start (Ma)"),
+    new OpenRefineModel.ExtendProperty("end", "end (Ma)")
+  );
+
+  public static OpenRefineModel.Manifest geoTimeManifest(String apiReconcileUrl, String clbBaseUrl) {
+    var m = new OpenRefineModel.Manifest();
+    m.name = "Catalogue of Life — geochronology (GeoTime)";
+    String space = org.apache.commons.lang3.StringUtils.removeEnd(clbBaseUrl, "/") + "/vocabulary/geotime";
+    m.identifierSpace = space; m.schemaSpace = space;
+    m.defaultTypes.add(GEOTIME_TYPE);
+    m.suggest = new OpenRefineModel.SuggestServices();
+    m.suggest.entity = new OpenRefineModel.SuggestService(apiReconcileUrl, "/suggest/entity");
+    m.extend = new OpenRefineModel.ExtendService(new OpenRefineModel.PropertySettings(apiReconcileUrl, "/extend/propose"));
+    return m;
+  }
+
+  public static OpenRefineModel.SuggestResponse geoTimeSuggest(String prefix, int limit) {
+    var resp = new OpenRefineModel.SuggestResponse();
+    String p = prefix == null ? "" : prefix.toLowerCase();
+    for (var gt : life.catalogue.api.vocab.GeoTime.TIMES.values()) {
+      if (resp.result.size() >= limit) break;
+      if (p.isEmpty() || gt.getName().toLowerCase().startsWith(p)) {
+        var item = new OpenRefineModel.SuggestItem();
+        item.id = gt.getName(); item.name = gt.getName();
+        item.description = gt.getType() == null ? null : gt.getType().name();
+        resp.result.add(item);
+      }
+    }
+    return resp;
+  }
+
+  public static String geoTimeValue(life.catalogue.api.vocab.GeoTime gt, String pid) {
+    if (gt == null || pid == null) return null;
+    switch (pid) {
+      case "name": return gt.getName();
+      case "type": return gt.getType() == null ? null : gt.getType().name();
+      case "start": return gt.getStart() == null ? null : String.valueOf(gt.getStart());
+      case "end": return gt.getEnd() == null ? null : String.valueOf(gt.getEnd());
+      default: return null;
+    }
+  }
 }
