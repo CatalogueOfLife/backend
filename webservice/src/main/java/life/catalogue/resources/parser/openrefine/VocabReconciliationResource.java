@@ -95,7 +95,7 @@ public class VocabReconciliationResource {
       var q = e.getValue();
       out.put(e.getKey(), q == null || StringUtils.isBlank(q.query)
         ? new OpenRefineModel.Result()
-        : ParserOpenRefineMapper.vocabResult(parser, q.query));
+        : ParserOpenRefineMapper.vocabResult(parser, type.toLowerCase(), q.query));
     }
     return out;
   }
@@ -107,6 +107,6 @@ public class VocabReconciliationResource {
     if (parser instanceof EnumParser) {
       return ParserOpenRefineMapper.enumSuggest(((EnumParser<?>) parser).getEnumClass(), prefix, SUGGEST_LIMIT);
     }
-    return new OpenRefineModel.SuggestResponse();
+    throw new NotFoundException("No suggest for " + type);
   }
 }

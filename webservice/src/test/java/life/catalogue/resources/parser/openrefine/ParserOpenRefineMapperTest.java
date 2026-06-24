@@ -13,7 +13,7 @@ public class ParserOpenRefineMapperTest {
 
   @Test
   public void vocabResultAutoMatchesEnum() {
-    OpenRefineModel.Result r = ParserOpenRefineMapper.vocabResult(RankParser.PARSER, "sp.");
+    OpenRefineModel.Result r = ParserOpenRefineMapper.vocabResult(RankParser.PARSER, "rank", "sp.");
     assertEquals(1, r.result.size());
     var c = r.result.get(0);
     assertEquals(Rank.SPECIES.name(), c.id); // "SPECIES"
@@ -23,7 +23,7 @@ public class ParserOpenRefineMapperTest {
 
   @Test
   public void vocabResultEmptyWhenUnparsable() {
-    OpenRefineModel.Result r = ParserOpenRefineMapper.vocabResult(RankParser.PARSER, "@@@nonsense@@@");
+    OpenRefineModel.Result r = ParserOpenRefineMapper.vocabResult(RankParser.PARSER, "rank", "@@@nonsense@@@");
     assertTrue(r.result.isEmpty());
   }
 
