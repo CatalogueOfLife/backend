@@ -1,5 +1,6 @@
 package life.catalogue.resources.parser.openrefine;
 
+import life.catalogue.api.vocab.GeoTime;
 import life.catalogue.parser.Parser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.resources.matching.openrefine.OpenRefineModel;
@@ -183,7 +184,7 @@ public class ParserOpenRefineMapper {
   public static OpenRefineModel.SuggestResponse geoTimeSuggest(String prefix, int limit) {
     var resp = new OpenRefineModel.SuggestResponse();
     String p = prefix == null ? "" : prefix.toLowerCase();
-    for (var gt : life.catalogue.api.vocab.GeoTime.TIMES.values()) {
+    for (GeoTime gt : GeoTime.TIMES.values()) {
       if (resp.result.size() >= limit) break;
       if (p.isEmpty() || gt.getName().toLowerCase().startsWith(p)) {
         var item = new OpenRefineModel.SuggestItem();
@@ -195,7 +196,7 @@ public class ParserOpenRefineMapper {
     return resp;
   }
 
-  public static String geoTimeValue(life.catalogue.api.vocab.GeoTime gt, String pid) {
+  public static String geoTimeValue(GeoTime gt, String pid) {
     if (gt == null || pid == null) return null;
     switch (pid) {
       case "name": return gt.getName();

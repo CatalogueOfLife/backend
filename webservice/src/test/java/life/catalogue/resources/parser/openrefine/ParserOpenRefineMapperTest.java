@@ -75,6 +75,7 @@ public class ParserOpenRefineMapperTest {
     assertEquals(gt.getName(), ParserOpenRefineMapper.geoTimeValue(gt, "name"));
     assertNotNull(ParserOpenRefineMapper.geoTimeValue(gt, "type"));
     assertNotNull(ParserOpenRefineMapper.geoTimeValue(gt, "end"));
+    assertNotNull(ParserOpenRefineMapper.geoTimeValue(gt, "start"));
   }
 
   @Test
