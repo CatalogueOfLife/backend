@@ -11,6 +11,7 @@ public class Parsers {
   public static final Map<String, Parser<?>> VOCAB;
   static {
     Map<String, Parser<?>> m = new HashMap<>();
+    m.put("area", AreaParser.PARSER);
     m.put("boolean", BooleanParser.PARSER);
     m.put("country", CountryParser.PARSER);
     m.put("datasettype", DatasetTypeParser.PARSER);

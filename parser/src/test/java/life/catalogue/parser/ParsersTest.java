@@ -9,6 +9,7 @@ public class ParsersTest {
   public void registryHasEnumVocabs() {
     assertNotNull(Parsers.get("rank"));
     assertNotNull(Parsers.get("country"));
+    assertNotNull(Parsers.get("area"));
     assertSame(Parsers.get("rank"), RankParser.PARSER);
     assertTrue(Parsers.names().contains("rank"));
     // scalars and dedicated parsers are NOT part of the shared vocab registry
