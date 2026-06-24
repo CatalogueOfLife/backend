@@ -95,4 +95,26 @@ public class ParserOpenRefineMapperTest {
     var resp = ParserOpenRefineMapper.taxGroupSuggest("vir", 25);
     assertTrue(resp.result.stream().anyMatch(i -> i.id.equals(life.catalogue.api.vocab.TaxGroup.Viruses.name())));
   }
+
+  @Test
+  public void areaResultUsesGlobalId() {
+    var r = ParserOpenRefineMapper.areaResult("tdwg:14");
+    assertEquals(1, r.result.size());
+    assertEquals("tdwg:14", r.result.get(0).id);
+    assertTrue(r.result.get(0).match);
+  }
+
+  @Test
+  public void areaFreeTextHasNoCandidate() {
+    var r = ParserOpenRefineMapper.areaResult("Germany"); // TEXT area, no globalId
+    assertTrue(r.result.isEmpty());
+  }
+
+  @Test
+  public void areaExtendValues() throws Exception {
+    var a = life.catalogue.parser.AreaParser.PARSER.parse("tdwg:14").orElse(null);
+    assertNotNull(a);
+    assertEquals("tdwg:14", ParserOpenRefineMapper.areaValue(a, "globalId"));
+    assertNotNull(ParserOpenRefineMapper.areaValue(a, "gazetteer"));
+  }
 }

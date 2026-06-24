@@ -2,6 +2,8 @@ package life.catalogue.resources.parser.openrefine;
 
 import life.catalogue.api.vocab.GeoTime;
 import life.catalogue.api.vocab.TaxGroup;
+import life.catalogue.api.vocab.area.Area;
+import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.Parser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.resources.matching.openrefine.OpenRefineModel;
@@ -241,6 +243,52 @@ public class ParserOpenRefineMapper {
         g.getCodes().stream().map(Enum::name).collect(java.util.stream.Collectors.joining(";"));
       case "description": return g.getDescription();
       case "icon": return g.getIconSVG() == null ? null : g.getIconSVG().toString();
+      default: return null;
+    }
+  }
+
+  public static final OpenRefineModel.Type AREA_TYPE = new OpenRefineModel.Type("Area", "Area");
+
+  public static final java.util.List<OpenRefineModel.ExtendProperty> AREA_PROPERTIES = java.util.List.of(
+    new OpenRefineModel.ExtendProperty("gazetteer", "gazetteer"),
+    new OpenRefineModel.ExtendProperty("id", "id"),
+    new OpenRefineModel.ExtendProperty("name", "name"),
+    new OpenRefineModel.ExtendProperty("globalId", "global id"),
+    new OpenRefineModel.ExtendProperty("link", "link")
+  );
+
+  public static OpenRefineModel.Manifest areaManifest(String apiReconcileUrl, String clbBaseUrl) {
+    var m = new OpenRefineModel.Manifest();
+    m.name = "Catalogue of Life — area";
+    String space = StringUtils.removeEnd(clbBaseUrl, "/") + "/vocabulary/gazetteer";
+    m.identifierSpace = space; m.schemaSpace = space;
+    m.defaultTypes.add(AREA_TYPE);
+    m.extend = new OpenRefineModel.ExtendService(new OpenRefineModel.PropertySettings(apiReconcileUrl, "/extend/propose"));
+    return m;
+  }
+
+  public static OpenRefineModel.Result areaResult(String value) {
+    var result = new OpenRefineModel.Result();
+    Area a = SafeParser.parse(AreaParser.PARSER, value).orNull();
+    if (a != null && a.getGlobalId() != null) {
+      var c = new OpenRefineModel.Candidate();
+      c.id = a.getGlobalId();
+      c.name = a.getName() != null ? a.getName() : a.getGlobalId();
+      c.score = 100; c.match = true;
+      c.type.add(AREA_TYPE);
+      result.result.add(c);
+    }
+    return result;
+  }
+
+  public static String areaValue(Area a, String pid) {
+    if (a == null || pid == null) return null;
+    switch (pid) {
+      case "gazetteer": return a.getGazetteer() == null ? null : a.getGazetteer().name();
+      case "id": return a.getId();
+      case "name": return a.getName();
+      case "globalId": return a.getGlobalId();
+      case "link": return a.getLink() == null ? null : a.getLink().toString();
       default: return null;
     }
   }
