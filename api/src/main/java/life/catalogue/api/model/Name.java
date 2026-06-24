@@ -354,27 +354,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       .namesIndexType(null)
       .build();
   }
-  public static ParsedName toParsedName(Name n) {
-    ParsedName pn = new ParsedName();
-    pn.setUninomial(n.getUninomial());
-    pn.setGenus(n.getGenus());
-    pn.setInfragenericEpithet(n.getInfragenericEpithet());
-    pn.setSpecificEpithet(n.getSpecificEpithet());
-    pn.setInfraspecificEpithet(n.getInfraspecificEpithet());
-    pn.setCultivarEpithet(n.getCultivarEpithet());
-    pn.setCombinationAuthorship(n.getCombinationAuthorship());
-    pn.setBasionymAuthorship(n.getBasionymAuthorship());
-    pn.setSanctioningAuthor(n.getSanctioningAuthor());
-    pn.setRank(n.getRank());
-    pn.setCode(n.getCode());
-    pn.setCandidatus(pn.isCandidatus());
-    n.getNotho().forEach(pn::addNotho);
-    pn.setOriginalSpelling(n.isOriginalSpelling());
-    pn.setNomenclaturalNote(n.getRemarks());
-    pn.setType(n.getType());
-    return pn;
-  }
-
   public static Builder newBuilder() {
     return new Builder();
   }

@@ -1350,36 +1350,6 @@ CREATE TABLE name_usage_archive (
 
 CREATE INDEX ON name_usage_archive using GIN (dataset_key, release_keys);
 
-CREATE TABLE parser_config (
-  id TEXT PRIMARY KEY,
-  candidatus BOOLEAN DEFAULT FALSE,
-  extinct BOOLEAN DEFAULT FALSE,
-  rank RANK NOT NULL,
-  notho NAMEPART[],
-  code NOMCODE,
-  type NAMETYPE NOT NULL,
-  created_by INTEGER NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  uninomial TEXT,
-  genus TEXT,
-  infrageneric_epithet TEXT,
-  specific_epithet TEXT,
-  infraspecific_epithet TEXT,
-  cultivar_epithet TEXT,
-  basionym_authors TEXT[] DEFAULT '{}',
-  basionym_ex_authors TEXT[] DEFAULT '{}',
-  basionym_year TEXT,
-  combination_authors TEXT[] DEFAULT '{}',
-  combination_ex_authors TEXT[] DEFAULT '{}',
-  combination_year TEXT,
-  sanctioning_author TEXT,
-  published_in TEXT,
-  nomenclatural_note TEXT,
-  taxonomic_note TEXT,
-  unparsed TEXT,
-  remarks TEXT
-);
-
 CREATE TABLE api_logs(
   date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
   duration INT,

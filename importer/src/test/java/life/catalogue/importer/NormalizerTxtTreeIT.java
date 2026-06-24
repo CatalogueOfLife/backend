@@ -1,21 +1,12 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.importer.store.model.UsageData;
-import life.catalogue.importer.store.model.RankedUsage;
 import life.catalogue.junit.PgSetupRule;
-import life.catalogue.parser.NameParser;
 
-import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -54,18 +45,6 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     assertEquals(t.usage.getLabel(), accs.getFirst().nd.getName().getLabel());
   }
 
-  public static ParserConfig aspilotaCfg(){
-    ParserConfig cfg = new ParserConfig();
-    cfg.updateID("Aspilota vector", "Belokobylskij, 2007");
-    cfg.setGenus("Aspilota");
-    cfg.setSpecificEpithet("vector");
-    cfg.setCombinationAuthorship(Authorship.yearAuthors("2007", "Belokobylskij"));
-    cfg.setRank(Rank.SPECIES);
-    cfg.setType(NameType.SCIENTIFIC);
-    cfg.setCode(NomCode.ZOOLOGICAL);
-    return cfg;
-  }
-
   @Test
   public void californicum() throws Exception {
     normalize(2);
@@ -77,7 +56,7 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     assertNull(u.usage.getName().getNamesIndexId());
   }
 
-  @Ignore("name-parser v4 removed runtime parser configs; re-enable when configs are reapplied to the parser")
+  @Ignore("re-enable once name-parser fixes the VIRUS false-positive on zoological 'vector'/'virus' binomials; see name-parser PREFLIGHT_VIRUS_FALSE_POSITIVES.md")
   @Test
   public void aspilota() throws Exception {
     normalize(3);

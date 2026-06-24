@@ -75,7 +75,6 @@ import life.catalogue.release.PublisherChangeListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.legacy.LegacyWebserviceResource;
-import life.catalogue.resources.parser.NameParserAdminResource;
 import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
 
@@ -480,7 +479,6 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new OpenApiResource(OpenApiFactory.build(cfg, env)));
     j.register(new ImporterResource(cfg, importManager, diDao, ddao));
     j.register(new JobResource(cfg.job, executor));
-    j.register(new NameParserAdminResource(getSqlSessionFactory()));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg, executor));
     j.register(new ResolverResource(doiResolver));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));

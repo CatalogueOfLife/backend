@@ -11,6 +11,15 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-06-24 drop parser_config
+name-parser v4 is stateless and no longer supports runtime parser config overrides. The legacy
+curated overrides (the `parser_config` table, its mapper/DAO and the `/parser/name/config` endpoint)
+have been removed: the handful of names they corrected are zoological binomials the v4 parser now
+handles directly (see the VIRUS false-positive fix in name-parser). Drop the now-unused table.
+```
+DROP TABLE IF EXISTS parser_config;
+```
+
 #### 2026-06-04 name-parser v4 NameType values
 name-parser v4 dropped the `HYBRID_FORMULA`, `OTU` and `NO_NAME` name types: `HYBRID_FORMULA`
 became `FORMULA`, while both `OTU` and `NO_NAME` collapsed into a single `OTHER`. `RENAME VALUE`
