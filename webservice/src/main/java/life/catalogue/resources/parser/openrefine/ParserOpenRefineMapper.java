@@ -146,7 +146,7 @@ public class ParserOpenRefineMapper {
       case "nomenclaturalNote": return n.getNomenclaturalNote();
       case "taxonomicNote": return pnu == null ? null : pnu.getTaxonomicNote();
       case "extinct": return pnu == null ? null : String.valueOf(pnu.isExtinct());
-      case "parsed": return String.valueOf(n.getType() == null || n.getType().isParsable());
+      case "parsed": return String.valueOf(n.getType() != null && n.getType().isParsable());
       default: return null;
     }
   }

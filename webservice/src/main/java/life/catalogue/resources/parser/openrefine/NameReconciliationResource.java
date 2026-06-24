@@ -40,7 +40,7 @@ public class NameReconciliationResource extends AbstractParserReconciliationReso
   protected OpenRefineModel.Result reconcileSingle(OpenRefineModel.Query q, MultivaluedMap<String, String> params) {
     var result = new OpenRefineModel.Result();
     var pnu = parse(q.query, paramCode(params), paramRank(params));
-    if (pnu != null) {
+    if (pnu != null && pnu.getName().getType() != null && pnu.getName().getType().isParsable()) {
       var c = new OpenRefineModel.Candidate();
       c.id = q.query; // raw input -> re-parseable at extend
       c.name = pnu.getName().getLabel();
