@@ -97,6 +97,13 @@ public class ParserOpenRefineMapperTest {
   }
 
   @Test
+  public void areaManifestHasExtendNoSuggest() {
+    var m = ParserOpenRefineMapper.areaManifest("http://x/parser/area/reconcile", "http://clb");
+    assertNull(m.suggest);
+    assertNotNull(m.extend);
+  }
+
+  @Test
   public void areaResultUsesGlobalId() {
     var r = ParserOpenRefineMapper.areaResult("tdwg:14");
     assertEquals(1, r.result.size());

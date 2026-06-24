@@ -8,6 +8,9 @@ import life.catalogue.parser.Parser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.resources.matching.openrefine.OpenRefineModel;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 
 /** Pure mapping between the CoL parsers and the OpenRefine reconciliation protocol. */
@@ -67,7 +70,7 @@ public class ParserOpenRefineMapper {
 
   public static final OpenRefineModel.Type NAME_TYPE = new OpenRefineModel.Type("Name", "Name");
 
-  public static final java.util.List<OpenRefineModel.ExtendProperty> NAME_PROPERTIES = java.util.List.of(
+  public static final List<OpenRefineModel.ExtendProperty> NAME_PROPERTIES = List.of(
     new OpenRefineModel.ExtendProperty("label", "label"),
     new OpenRefineModel.ExtendProperty("labelHtml", "label (HTML)"),
     new OpenRefineModel.ExtendProperty("scientificName", "scientific name"),
@@ -94,13 +97,13 @@ public class ParserOpenRefineMapper {
   public static OpenRefineModel.Manifest nameManifest(String apiReconcileUrl, String clbBaseUrl) {
     var m = new OpenRefineModel.Manifest();
     m.name = "Catalogue of Life — name parser";
-    String space = org.apache.commons.lang3.StringUtils.removeEnd(clbBaseUrl, "/") + "/tools/name-parser";
+    String space = StringUtils.removeEnd(clbBaseUrl, "/") + "/tools/name-parser";
     m.identifierSpace = space;
     m.schemaSpace = space;
     m.defaultTypes.add(NAME_TYPE);
     var extend = new OpenRefineModel.ExtendService(
       new OpenRefineModel.PropertySettings(apiReconcileUrl, "/extend/propose"));
-    extend.property_settings = java.util.List.of(codeSetting(), rankSetting());
+    extend.property_settings = List.of(codeSetting(), rankSetting());
     m.extend = extend;
     return m;
   }
@@ -165,7 +168,7 @@ public class ParserOpenRefineMapper {
 
   public static final OpenRefineModel.Type GEOTIME_TYPE = new OpenRefineModel.Type("GeoTime", "GeoTime");
 
-  public static final java.util.List<OpenRefineModel.ExtendProperty> GEOTIME_PROPERTIES = java.util.List.of(
+  public static final List<OpenRefineModel.ExtendProperty> GEOTIME_PROPERTIES = List.of(
     new OpenRefineModel.ExtendProperty("name", "name"),
     new OpenRefineModel.ExtendProperty("type", "type"),
     new OpenRefineModel.ExtendProperty("start", "start (Ma)"),
@@ -175,7 +178,7 @@ public class ParserOpenRefineMapper {
   public static OpenRefineModel.Manifest geoTimeManifest(String apiReconcileUrl, String clbBaseUrl) {
     var m = new OpenRefineModel.Manifest();
     m.name = "Catalogue of Life — geochronology (GeoTime)";
-    String space = org.apache.commons.lang3.StringUtils.removeEnd(clbBaseUrl, "/") + "/vocabulary/geotime";
+    String space = StringUtils.removeEnd(clbBaseUrl, "/") + "/vocabulary/geotime";
     m.identifierSpace = space; m.schemaSpace = space;
     m.defaultTypes.add(GEOTIME_TYPE);
     m.suggest = new OpenRefineModel.SuggestServices();
@@ -212,7 +215,7 @@ public class ParserOpenRefineMapper {
 
   public static final OpenRefineModel.Type TAXGROUP_TYPE = new OpenRefineModel.Type("TaxGroup", "TaxGroup");
 
-  public static final java.util.List<OpenRefineModel.ExtendProperty> TAXGROUP_PROPERTIES = java.util.List.of(
+  public static final List<OpenRefineModel.ExtendProperty> TAXGROUP_PROPERTIES = List.of(
     new OpenRefineModel.ExtendProperty("parent", "parent group"),
     new OpenRefineModel.ExtendProperty("codes", "nomenclatural codes"),
     new OpenRefineModel.ExtendProperty("description", "description"),
@@ -222,7 +225,7 @@ public class ParserOpenRefineMapper {
   public static OpenRefineModel.Manifest taxGroupManifest(String apiReconcileUrl, String clbBaseUrl) {
     var m = new OpenRefineModel.Manifest();
     m.name = "Catalogue of Life — taxonomic group";
-    String space = org.apache.commons.lang3.StringUtils.removeEnd(clbBaseUrl, "/") + "/vocabulary/taxgroup";
+    String space = StringUtils.removeEnd(clbBaseUrl, "/") + "/vocabulary/taxgroup";
     m.identifierSpace = space; m.schemaSpace = space;
     m.defaultTypes.add(TAXGROUP_TYPE);
     m.suggest = new OpenRefineModel.SuggestServices();
@@ -240,7 +243,7 @@ public class ParserOpenRefineMapper {
     switch (pid) {
       case "parent": return g.getPrimaryParent() == null ? null : g.getPrimaryParent().name();
       case "codes": return g.getCodes() == null || g.getCodes().isEmpty() ? null :
-        g.getCodes().stream().map(Enum::name).collect(java.util.stream.Collectors.joining(";"));
+        g.getCodes().stream().map(Enum::name).collect(Collectors.joining(";"));
       case "description": return g.getDescription();
       case "icon": return g.getIconSVG() == null ? null : g.getIconSVG().toString();
       default: return null;
@@ -249,7 +252,7 @@ public class ParserOpenRefineMapper {
 
   public static final OpenRefineModel.Type AREA_TYPE = new OpenRefineModel.Type("Area", "Area");
 
-  public static final java.util.List<OpenRefineModel.ExtendProperty> AREA_PROPERTIES = java.util.List.of(
+  public static final List<OpenRefineModel.ExtendProperty> AREA_PROPERTIES = List.of(
     new OpenRefineModel.ExtendProperty("gazetteer", "gazetteer"),
     new OpenRefineModel.ExtendProperty("id", "id"),
     new OpenRefineModel.ExtendProperty("name", "name"),
