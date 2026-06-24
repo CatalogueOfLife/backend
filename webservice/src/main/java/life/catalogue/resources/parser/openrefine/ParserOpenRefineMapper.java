@@ -60,4 +60,102 @@ public class ParserOpenRefineMapper {
     }
     return m;
   }
+
+  public static final OpenRefineModel.Type NAME_TYPE = new OpenRefineModel.Type("Name", "Name");
+
+  public static final java.util.List<OpenRefineModel.ExtendProperty> NAME_PROPERTIES = java.util.List.of(
+    new OpenRefineModel.ExtendProperty("label", "label"),
+    new OpenRefineModel.ExtendProperty("labelHtml", "label (HTML)"),
+    new OpenRefineModel.ExtendProperty("scientificName", "scientific name"),
+    new OpenRefineModel.ExtendProperty("authorship", "authorship"),
+    new OpenRefineModel.ExtendProperty("rank", "rank"),
+    new OpenRefineModel.ExtendProperty("code", "nomenclatural code"),
+    new OpenRefineModel.ExtendProperty("type", "name type"),
+    new OpenRefineModel.ExtendProperty("uninomial", "uninomial"),
+    new OpenRefineModel.ExtendProperty("genus", "genus"),
+    new OpenRefineModel.ExtendProperty("infragenericEpithet", "infrageneric epithet"),
+    new OpenRefineModel.ExtendProperty("specificEpithet", "specific epithet"),
+    new OpenRefineModel.ExtendProperty("infraspecificEpithet", "infraspecific epithet"),
+    new OpenRefineModel.ExtendProperty("cultivarEpithet", "cultivar epithet"),
+    new OpenRefineModel.ExtendProperty("combinationAuthorship", "combination authorship"),
+    new OpenRefineModel.ExtendProperty("combinationYear", "combination year"),
+    new OpenRefineModel.ExtendProperty("basionymAuthorship", "basionym authorship"),
+    new OpenRefineModel.ExtendProperty("basionymYear", "basionym year"),
+    new OpenRefineModel.ExtendProperty("nomenclaturalNote", "nomenclatural note"),
+    new OpenRefineModel.ExtendProperty("taxonomicNote", "taxonomic note"),
+    new OpenRefineModel.ExtendProperty("extinct", "extinct"),
+    new OpenRefineModel.ExtendProperty("parsed", "parsed")
+  );
+
+  public static OpenRefineModel.Manifest nameManifest(String apiReconcileUrl, String clbBaseUrl) {
+    var m = new OpenRefineModel.Manifest();
+    m.name = "Catalogue of Life — name parser";
+    String space = org.apache.commons.lang3.StringUtils.removeEnd(clbBaseUrl, "/") + "/tools/name-parser";
+    m.identifierSpace = space;
+    m.schemaSpace = space;
+    m.defaultTypes.add(NAME_TYPE);
+    var extend = new OpenRefineModel.ExtendService(
+      new OpenRefineModel.PropertySettings(apiReconcileUrl, "/extend/propose"));
+    extend.property_settings = java.util.List.of(codeSetting(), rankSetting());
+    m.extend = extend;
+    return m;
+  }
+
+  private static OpenRefineModel.PropertySetting codeSetting() {
+    var s = new OpenRefineModel.PropertySetting();
+    s.name = "code"; s.label = "Nomenclatural code"; s.type = "select"; s.default_ = "";
+    s.choices = new java.util.ArrayList<>();
+    s.choices.add(new OpenRefineModel.SettingChoice("", "auto-detect"));
+    for (org.gbif.nameparser.api.NomCode c : org.gbif.nameparser.api.NomCode.values()) {
+      s.choices.add(new OpenRefineModel.SettingChoice(c.name(), c.getAcronym() == null ? c.name() : c.getAcronym()));
+    }
+    return s;
+  }
+
+  private static OpenRefineModel.PropertySetting rankSetting() {
+    var s = new OpenRefineModel.PropertySetting();
+    s.name = "rank"; s.label = "Rank"; s.type = "select"; s.default_ = "";
+    s.choices = new java.util.ArrayList<>();
+    s.choices.add(new OpenRefineModel.SettingChoice("", "auto-detect"));
+    for (org.gbif.nameparser.api.Rank r : org.gbif.nameparser.api.Rank.values()) {
+      s.choices.add(new OpenRefineModel.SettingChoice(r.name(), r.name().toLowerCase()));
+    }
+    return s;
+  }
+
+  public static String nameValue(life.catalogue.api.model.Name n, life.catalogue.api.model.ParsedNameUsage pnu, String pid) {
+    if (n == null || pid == null) return null;
+    switch (pid) {
+      case "label": return n.getLabel();
+      case "labelHtml": return n.getLabelHtml();
+      case "scientificName": return n.getScientificName();
+      case "authorship": return n.getAuthorship();
+      case "rank": return n.getRank() == null ? null : n.getRank().name().toLowerCase();
+      case "code": return n.getCode() == null ? null : n.getCode().name();
+      case "type": return n.getType() == null ? null : n.getType().name();
+      case "uninomial": return n.getUninomial();
+      case "genus": return n.getGenus();
+      case "infragenericEpithet": return n.getInfragenericEpithet();
+      case "specificEpithet": return n.getSpecificEpithet();
+      case "infraspecificEpithet": return n.getInfraspecificEpithet();
+      case "cultivarEpithet": return n.getCultivarEpithet();
+      case "combinationAuthorship": return authorship(n.getCombinationAuthorship());
+      case "combinationYear": return year(n.getCombinationAuthorship());
+      case "basionymAuthorship": return authorship(n.getBasionymAuthorship());
+      case "basionymYear": return year(n.getBasionymAuthorship());
+      case "nomenclaturalNote": return n.getNomenclaturalNote();
+      case "taxonomicNote": return pnu == null ? null : pnu.getTaxonomicNote();
+      case "extinct": return pnu == null ? null : String.valueOf(pnu.isExtinct());
+      case "parsed": return String.valueOf(n.getType() == null || n.getType().isParsable());
+      default: return null;
+    }
+  }
+
+  private static String authorship(org.gbif.nameparser.api.Authorship a) {
+    return a == null || a.isEmpty() ? null : a.toString();
+  }
+
+  private static String year(org.gbif.nameparser.api.Authorship a) {
+    return a == null ? null : a.getYear();
+  }
 }

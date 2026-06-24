@@ -42,4 +42,29 @@ public class ParserOpenRefineMapperTest {
     assertNotNull(m2.suggest);
     assertNotNull(m2.suggest.entity);
   }
+
+  @Test
+  public void nameExtendValuesWithCode() throws Exception {
+    var pnu = life.catalogue.parser.NameParser.PARSER
+      .parse("Abies alba", "Mill.", org.gbif.nameparser.api.Rank.SPECIES,
+             org.gbif.nameparser.api.NomCode.BOTANICAL, life.catalogue.api.model.IssueContainer.VOID)
+      .get();
+    var n = pnu.getName();
+    assertEquals("alba", ParserOpenRefineMapper.nameValue(n, pnu, "specificEpithet"));
+    assertEquals("Abies", ParserOpenRefineMapper.nameValue(n, pnu, "genus"));
+    assertEquals("species", ParserOpenRefineMapper.nameValue(n, pnu, "rank"));
+    assertNotNull(ParserOpenRefineMapper.nameValue(n, pnu, "label"));
+    assertNotNull(ParserOpenRefineMapper.nameValue(n, pnu, "labelHtml"));
+    assertEquals("true", ParserOpenRefineMapper.nameValue(n, pnu, "parsed"));
+  }
+
+  @Test
+  public void nameManifestHasCodeAndRankSettings() {
+    var m = ParserOpenRefineMapper.nameManifest("http://x/parser/name/reconcile", "http://clb");
+    assertNull(m.suggest);
+    assertNotNull(m.extend);
+    assertNotNull(m.extend.property_settings);
+    assertTrue(m.extend.property_settings.stream().anyMatch(s -> s.name.equals("code")));
+    assertTrue(m.extend.property_settings.stream().anyMatch(s -> s.name.equals("rank")));
+  }
 }
