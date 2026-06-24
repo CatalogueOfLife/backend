@@ -107,6 +107,7 @@ public class OpenRefineModel {
 
   public static class ExtendService {
     public PropertySettings propose_properties;
+    public List<PropertySetting> property_settings;
 
     public ExtendService() {}
 
@@ -127,6 +128,28 @@ public class OpenRefineModel {
     }
   }
 
+  /** A configurable setting OpenRefine renders in the data-extension dialog. */
+  public static class PropertySetting {
+    public String name;
+    public String label;
+    public String type;
+    @com.fasterxml.jackson.annotation.JsonProperty("default")
+    public Object default_;
+    public List<SettingChoice> choices;
+  }
+
+  public static class SettingChoice {
+    public String value;
+    public String name;
+
+    public SettingChoice() {}
+
+    public SettingChoice(String value, String name) {
+      this.value = value;
+      this.name = name;
+    }
+  }
+
   // ---- Data extension ----
 
   /** Incoming data extension request: {@code { "ids": [...], "properties": [ {"id": ...} ] }}. */
@@ -139,6 +162,7 @@ public class OpenRefineModel {
   public static class ExtendProperty {
     public String id;
     public String name;
+    public Map<String, JsonNode> settings;
 
     public ExtendProperty() {}
 
