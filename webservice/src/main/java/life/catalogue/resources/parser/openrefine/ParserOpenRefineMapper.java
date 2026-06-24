@@ -1,6 +1,7 @@
 package life.catalogue.resources.parser.openrefine;
 
 import life.catalogue.api.vocab.GeoTime;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.parser.Parser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.resources.matching.openrefine.OpenRefineModel;
@@ -203,6 +204,43 @@ public class ParserOpenRefineMapper {
       case "type": return gt.getType() == null ? null : gt.getType().name();
       case "start": return gt.getStart() == null ? null : String.valueOf(gt.getStart());
       case "end": return gt.getEnd() == null ? null : String.valueOf(gt.getEnd());
+      default: return null;
+    }
+  }
+
+  public static final OpenRefineModel.Type TAXGROUP_TYPE = new OpenRefineModel.Type("TaxGroup", "TaxGroup");
+
+  public static final java.util.List<OpenRefineModel.ExtendProperty> TAXGROUP_PROPERTIES = java.util.List.of(
+    new OpenRefineModel.ExtendProperty("parent", "parent group"),
+    new OpenRefineModel.ExtendProperty("codes", "nomenclatural codes"),
+    new OpenRefineModel.ExtendProperty("description", "description"),
+    new OpenRefineModel.ExtendProperty("icon", "icon URL")
+  );
+
+  public static OpenRefineModel.Manifest taxGroupManifest(String apiReconcileUrl, String clbBaseUrl) {
+    var m = new OpenRefineModel.Manifest();
+    m.name = "Catalogue of Life — taxonomic group";
+    String space = org.apache.commons.lang3.StringUtils.removeEnd(clbBaseUrl, "/") + "/vocabulary/taxgroup";
+    m.identifierSpace = space; m.schemaSpace = space;
+    m.defaultTypes.add(TAXGROUP_TYPE);
+    m.suggest = new OpenRefineModel.SuggestServices();
+    m.suggest.entity = new OpenRefineModel.SuggestService(apiReconcileUrl, "/suggest/entity");
+    m.extend = new OpenRefineModel.ExtendService(new OpenRefineModel.PropertySettings(apiReconcileUrl, "/extend/propose"));
+    return m;
+  }
+
+  public static OpenRefineModel.SuggestResponse taxGroupSuggest(String prefix, int limit) {
+    return enumSuggest(TaxGroup.class, prefix, limit);
+  }
+
+  public static String taxGroupValue(TaxGroup g, String pid) {
+    if (g == null || pid == null) return null;
+    switch (pid) {
+      case "parent": return g.getPrimaryParent() == null ? null : g.getPrimaryParent().name();
+      case "codes": return g.getCodes() == null || g.getCodes().isEmpty() ? null :
+        g.getCodes().stream().map(Enum::name).collect(java.util.stream.Collectors.joining(";"));
+      case "description": return g.getDescription();
+      case "icon": return g.getIconSVG() == null ? null : g.getIconSVG().toString();
       default: return null;
     }
   }

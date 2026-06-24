@@ -83,4 +83,16 @@ public class ParserOpenRefineMapperTest {
     var resp = ParserOpenRefineMapper.geoTimeSuggest("holo", 25);
     assertTrue(resp.result.stream().anyMatch(i -> i.name.toLowerCase().startsWith("holo")));
   }
+
+  @Test
+  public void taxGroupExtendValues() {
+    var g = life.catalogue.api.vocab.TaxGroup.Viruses;
+    assertNotNull(ParserOpenRefineMapper.taxGroupValue(g, "codes")); // NomCode.VIRUS
+  }
+
+  @Test
+  public void taxGroupSuggestByPrefix() {
+    var resp = ParserOpenRefineMapper.taxGroupSuggest("vir", 25);
+    assertTrue(resp.result.stream().anyMatch(i -> i.id.equals(life.catalogue.api.vocab.TaxGroup.Viruses.name())));
+  }
 }
