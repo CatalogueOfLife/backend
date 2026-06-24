@@ -59,7 +59,7 @@ public class ParserResource<T> {
   public List<ParseResult<?>> parseGet(@PathParam("type") String type, @QueryParam("q") List<String> values) {
     return parse(type, values.stream());
   }
-  
+
   /**
    * Parsing values as a json array.
    */
@@ -117,5 +117,4 @@ public class ParserResource<T> {
         .map(n -> new ParseResult<>(n, SafeParser.parse(parser, n)))
         .collect(Collectors.toList());
   }
-  
 }

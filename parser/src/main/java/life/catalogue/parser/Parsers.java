@@ -9,6 +9,7 @@ import java.util.*;
  */
 public class Parsers {
   public static final Map<String, Parser<?>> VOCAB;
+  private static final java.util.List<String> NAMES;
   static {
     Map<String, Parser<?>> m = new HashMap<>();
     m.put("area", AreaParser.PARSER);
@@ -35,17 +36,18 @@ public class Parsers {
     m.put("typestatus", TypeStatusParser.PARSER);
     m.put("uri", UriParser.PARSER);
     VOCAB = Collections.unmodifiableMap(m);
+    List<String> n = new ArrayList<>(VOCAB.keySet());
+    Collections.sort(n);
+    NAMES = Collections.unmodifiableList(n);
   }
 
   private Parsers() {}
 
   public static Parser<?> get(String type) {
-    return type == null ? null : VOCAB.get(type.toLowerCase());
+    return type == null ? null : VOCAB.get(type.toLowerCase(java.util.Locale.ROOT));
   }
 
   public static List<String> names() {
-    List<String> names = new ArrayList<>(VOCAB.keySet());
-    Collections.sort(names);
-    return names;
+    return NAMES;
   }
 }
