@@ -7,6 +7,7 @@ import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
+import java.net.URI;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -54,6 +55,11 @@ public class WsMatchingServerConfig extends Configuration implements CorsBundleC
   @Valid
   @NotNull
   public MatchingConfig matching = new MatchingConfig();
+
+  @NotNull
+  public URI clbURI = URI.create("https://www.checklistbank.org");
+
+  public URI apiURI;
 
   @Override
   @JsonIgnore
