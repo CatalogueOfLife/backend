@@ -51,7 +51,7 @@ public class OpenRefineQueries {
     return sn;
   }
 
-  static String textValue(JsonNode v) {
+  private static String textValue(JsonNode v) {
     if (v == null || v.isNull()) return null;
     String s = v.isValueNode() ? v.asText() : v.toString();
     return StringUtils.trimToNull(s);
