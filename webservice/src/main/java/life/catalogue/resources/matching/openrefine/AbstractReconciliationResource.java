@@ -14,17 +14,9 @@ import life.catalogue.matching.MatchingUtils;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherFactory;
-import life.catalogue.parser.NomCodeParser;
-import life.catalogue.parser.RankParser;
-import life.catalogue.parser.SafeParser;
-
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,57 +148,13 @@ public abstract class AbstractReconciliationResource {
   }
 
   private OpenRefineModel.Result reconcileSingle(OpenRefineModel.Query q, UsageMatcher matcher, MatchingUtils utils) {
-    var sn = toSimpleName(q);
+    var sn = OpenRefineQueries.toSimpleName(q);
     if (sn == null || StringUtils.isBlank(sn.getName())) {
       return new OpenRefineModel.Result();
     }
     IssueContainer issues = new IssueContainer.Simple();
     UsageMatch match = AbstractMatchingJob.interpretAndMatch(sn, sn.getClassification(), issues, true, interpreter, utils, matcher);
     return OpenRefineMapper.toResult(match);
-  }
-
-  /** Builds a query name from the OpenRefine query string and its property hints. */
-  private SimpleNameClassified<SimpleNameCached> toSimpleName(OpenRefineModel.Query q) {
-    if (q == null || StringUtils.isBlank(q.query)) {
-      return null;
-    }
-    String authorship = null;
-    Rank rank = null;
-    NomCode code = null;
-    List<SimpleNameCached> classification = new ArrayList<>();
-    if (q.properties != null) {
-      for (var p : q.properties) {
-        String val = textValue(p.v);
-        if (p.pid == null || val == null) continue;
-        switch (p.pid) {
-          case "authorship":
-            authorship = val;
-            break;
-          case "code":
-            code = SafeParser.parse(NomCodeParser.PARSER, val).orNull();
-            break;
-          case "rank":
-            rank = SafeParser.parse(RankParser.PARSER, val).orNull();
-            break;
-          default:
-            Rank r = SafeParser.parse(RankParser.PARSER, p.pid).orNull();
-            if (r != null) {
-              classification.add(SimpleNameClassified.snc(null, r, null, null, val, null));
-            }
-        }
-      }
-    }
-    var sn = SimpleNameClassified.snc(null, rank, code, null, q.query, authorship);
-    if (!classification.isEmpty()) {
-      sn.setClassification(classification);
-    }
-    return sn;
-  }
-
-  private static String textValue(JsonNode v) {
-    if (v == null || v.isNull()) return null;
-    String s = v.isValueNode() ? v.asText() : v.toString();
-    return StringUtils.trimToNull(s);
   }
 
   // ---- Data extension ----

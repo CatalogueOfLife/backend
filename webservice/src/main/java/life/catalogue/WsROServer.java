@@ -339,6 +339,11 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new NameParserResource());
     j.register(new MetadataParserResource());
     j.register(new ParserResource<>());
+    j.register(new life.catalogue.resources.parser.openrefine.VocabReconciliationResource(cfg.getApiUri(), cfg.clbURI));
+    j.register(new life.catalogue.resources.parser.openrefine.NameReconciliationResource(cfg.getApiUri(), cfg.clbURI));
+    j.register(new life.catalogue.resources.parser.openrefine.GeoTimeReconciliationResource(cfg.getApiUri(), cfg.clbURI));
+    j.register(new life.catalogue.resources.parser.openrefine.TaxGroupReconciliationResource(cfg.getApiUri(), cfg.clbURI));
+    j.register(new life.catalogue.resources.parser.openrefine.AreaReconciliationResource(cfg.getApiUri(), cfg.clbURI));
     j.register(new ReferenceParserResource(doiResolver));
     j.register(new TaxGroupResource());
     j.register(new IdEncoderResource());
