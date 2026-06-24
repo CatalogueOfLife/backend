@@ -1,5 +1,7 @@
 package life.catalogue.resources.parser.openrefine;
 
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.vocab.GeoTime;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.area.Area;
@@ -8,6 +10,11 @@ import life.catalogue.parser.Parser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.resources.matching.openrefine.OpenRefineModel;
 
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -111,9 +118,9 @@ public class ParserOpenRefineMapper {
   private static OpenRefineModel.PropertySetting codeSetting() {
     var s = new OpenRefineModel.PropertySetting();
     s.name = "code"; s.label = "Nomenclatural code"; s.type = "select"; s.default_ = "";
-    s.choices = new java.util.ArrayList<>();
+    s.choices = new ArrayList<>();
     s.choices.add(new OpenRefineModel.SettingChoice("", "auto-detect"));
-    for (org.gbif.nameparser.api.NomCode c : org.gbif.nameparser.api.NomCode.values()) {
+    for (NomCode c : NomCode.values()) {
       s.choices.add(new OpenRefineModel.SettingChoice(c.name(), c.getAcronym() == null ? c.name() : c.getAcronym()));
     }
     return s;
@@ -122,15 +129,15 @@ public class ParserOpenRefineMapper {
   private static OpenRefineModel.PropertySetting rankSetting() {
     var s = new OpenRefineModel.PropertySetting();
     s.name = "rank"; s.label = "Rank"; s.type = "select"; s.default_ = "";
-    s.choices = new java.util.ArrayList<>();
+    s.choices = new ArrayList<>();
     s.choices.add(new OpenRefineModel.SettingChoice("", "auto-detect"));
-    for (org.gbif.nameparser.api.Rank r : org.gbif.nameparser.api.Rank.values()) {
+    for (Rank r : Rank.values()) {
       s.choices.add(new OpenRefineModel.SettingChoice(r.name(), r.name().toLowerCase()));
     }
     return s;
   }
 
-  public static String nameValue(life.catalogue.api.model.Name n, life.catalogue.api.model.ParsedNameUsage pnu, String pid) {
+  public static String nameValue(Name n, ParsedNameUsage pnu, String pid) {
     if (n == null || pid == null) return null;
     switch (pid) {
       case "label": return n.getLabel();
@@ -158,11 +165,11 @@ public class ParserOpenRefineMapper {
     }
   }
 
-  private static String authorship(org.gbif.nameparser.api.Authorship a) {
+  private static String authorship(Authorship a) {
     return a == null || a.isEmpty() ? null : a.toString();
   }
 
-  private static String year(org.gbif.nameparser.api.Authorship a) {
+  private static String year(Authorship a) {
     return a == null ? null : a.getYear();
   }
 

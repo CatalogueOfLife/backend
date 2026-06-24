@@ -4,6 +4,7 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.parser.NameParser;
 import life.catalogue.parser.NomCodeParser;
+import life.catalogue.parser.Parser;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.resources.matching.openrefine.OpenRefineModel;
@@ -66,6 +67,7 @@ public class NameReconciliationResource extends AbstractParserReconciliationReso
   protected String extendValue(String id, OpenRefineModel.ExtendProperty p, MultivaluedMap<String, String> params) {
     NomCode code = settingOr(p, "code", NomCodeParser.PARSER, paramCode(params));
     Rank rank = settingOr(p, "rank", RankParser.PARSER, paramRank(params));
+    // re-parse per property: each property may carry its own code/rank in settings, so a single parse-per-id would not honour per-property context
     var pnu = parse(id, code, rank);
     return pnu == null ? null : ParserOpenRefineMapper.nameValue(pnu.getName(), pnu, p.id);
   }
@@ -87,7 +89,7 @@ public class NameReconciliationResource extends AbstractParserReconciliationReso
     return params == null ? null : SafeParser.parse(RankParser.PARSER, params.getFirst("rank")).orNull();
   }
 
-  private <T> T settingOr(OpenRefineModel.ExtendProperty p, String key, life.catalogue.parser.Parser<T> parser, T fallback) {
+  private <T> T settingOr(OpenRefineModel.ExtendProperty p, String key, Parser<T> parser, T fallback) {
     if (p.settings != null && p.settings.get(key) != null) {
       String raw = StringUtils.trimToNull(p.settings.get(key).asText());
       if (raw != null) {
