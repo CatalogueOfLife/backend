@@ -104,6 +104,10 @@ public class UsageStore extends CRUDStore<UsageData> {
     return pIDs.stream()
       .filter(Objects::nonNull)
       .map(this::objByID)
+      // only ever return real accepted taxa - a synonym's parentId is sanitized to point at a taxon,
+      // but proParteAcceptedIDs are never cleaned and may point at another synonym. Moving supplementary
+      // data onto such a synonym leaves it with distributions etc. that the normalizer later rejects.
+      .filter(u -> u != null && u.isTaxon())
       .collect(Collectors.toList());
   }
 
