@@ -1,7 +1,6 @@
-package life.catalogue.resources.parser.openrefine;
+package life.catalogue.resources.matching.openrefine;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.resources.matching.openrefine.OpenRefineModel;
 
 import java.util.List;
 
@@ -19,12 +18,14 @@ public class ParserOpenRefineModelTest {
     code.name = "code";
     code.label = "Nomenclatural code";
     code.type = "select";
+    code.default_ = "ICZN";
     code.choices = List.of(new OpenRefineModel.SettingChoice("ICZN", "Zoological (ICZN)"));
     svc.property_settings = List.of(code);
 
     String json = ApiModule.MAPPER.writeValueAsString(svc);
     assertTrue(json.contains("\"property_settings\""));
     assertTrue(json.contains("\"ICZN\""));
+    assertTrue(json.contains("\"default\""));
   }
 
   @Test

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -133,7 +134,7 @@ public class OpenRefineModel {
     public String name;
     public String label;
     public String type;
-    @com.fasterxml.jackson.annotation.JsonProperty("default")
+    @JsonProperty("default")
     public Object default_;
     public List<SettingChoice> choices;
   }
