@@ -22,6 +22,8 @@ public class IdentifierScope {
   private String example;
   private String regex;
   private Integer datasetKey;
+  /** the source Wikidata property id (e.g. "P846") this scope was harvested from, if any. */
+  private String wikidataProperty;
 
   /** lazily compiled reverse of the resolver template, used to extract a local id from a full URL.
    * volatile because registry scopes are shared singletons read concurrently by sync threads. */
@@ -38,7 +40,8 @@ public class IdentifierScope {
                          @JsonProperty("resolver") String resolver,
                          @JsonProperty("example") String example,
                          @JsonProperty("regex") String regex,
-                         @JsonProperty("datasetKey") Integer datasetKey) {
+                         @JsonProperty("datasetKey") Integer datasetKey,
+                         @JsonProperty("wikidataProperty") String wikidataProperty) {
     this.scope = scope == null ? null : scope.toLowerCase().trim();
     this.title = title;
     this.description = description;
@@ -47,6 +50,7 @@ public class IdentifierScope {
     this.example = example;
     this.regex = regex;
     this.datasetKey = datasetKey;
+    this.wikidataProperty = wikidataProperty;
   }
 
   public String getScope() { return scope; }
@@ -72,6 +76,9 @@ public class IdentifierScope {
 
   public Integer getDatasetKey() { return datasetKey; }
   public void setDatasetKey(Integer datasetKey) { this.datasetKey = datasetKey; }
+
+  public String getWikidataProperty() { return wikidataProperty; }
+  public void setWikidataProperty(String wikidataProperty) { this.wikidataProperty = wikidataProperty; }
 
   /**
    * Extracts the local identifier from a raw value that may be a full resolver URL.
@@ -143,12 +150,13 @@ public class IdentifierScope {
       && Objects.equals(resolver, that.resolver)
       && Objects.equals(example, that.example)
       && Objects.equals(regex, that.regex)
-      && Objects.equals(datasetKey, that.datasetKey);
+      && Objects.equals(datasetKey, that.datasetKey)
+      && Objects.equals(wikidataProperty, that.wikidataProperty);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(scope, title, description, link, resolver, example, regex, datasetKey);
+    return Objects.hash(scope, title, description, link, resolver, example, regex, datasetKey, wikidataProperty);
   }
 
   @Override
