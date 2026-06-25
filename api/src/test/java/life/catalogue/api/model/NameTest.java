@@ -294,7 +294,7 @@ public class NameTest extends SerdeTestBase<Name> {
     n = new Name();
     n.setRank(Rank.SPECIES);
     n.setScientificName("Abutilon yellows virus ICTV");
-    n.setType(NameType.VIRUS);
+    n.setType(NameType.OTHER);
     assertEquals("Abutilon yellows virus ICTV", n.getLabelHtml());
   }
 

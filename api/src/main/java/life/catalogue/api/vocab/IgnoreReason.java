@@ -26,9 +26,10 @@ public enum IgnoreReason {
   NAME_PLACEHOLDER(),
   NAME_NO_NAME();
 
+  // name-parser v4.2 dropped NameType.VIRUS; viruses are now OTHER (carrying NomCode.VIRUS).
+  // NAME_VIRUS is kept as a historical reason value but no NameType maps to it anymore.
   private static final Map<NameType, IgnoreReason> nameTypes = Map.of(
     SCIENTIFIC, NAME_SCIENTIFIC,
-    VIRUS, NAME_VIRUS,
     FORMULA, NAME_HYBRID_FORMULA,
     INFORMAL, NAME_INFORMAL,
     PLACEHOLDER, NAME_PLACEHOLDER,

@@ -412,7 +412,8 @@ public class NameInterpreter {
 
   private static void setDefaultNameType(Name n) {
     if (n.getCode() == NomCode.VIRUS) {
-      n.setType(NameType.VIRUS);
+      // name-parser v4.2 dropped NameType.VIRUS; viruses are OTHER, the virus signal lives on NomCode.VIRUS
+      n.setType(NameType.OTHER);
     } else {
       n.setType(NameType.SCIENTIFIC);
     }

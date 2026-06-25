@@ -176,7 +176,7 @@ public class XReleaseIT extends SectorSyncTestBase {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       var settings = dm.getSettings(Datasets.COL);
-      settings.put(Setting.SECTOR_NAME_TYPES, List.of(NameType.SCIENTIFIC, NameType.VIRUS, NameType.FORMULA));
+      settings.put(Setting.SECTOR_NAME_TYPES, List.of(NameType.SCIENTIFIC, NameType.OTHER, NameType.FORMULA));
       settings.put(Setting.SECTOR_ENTITIES, List.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.REFERENCE));
       dm.updateSettings(Datasets.COL, settings, Users.TESTER);
     }

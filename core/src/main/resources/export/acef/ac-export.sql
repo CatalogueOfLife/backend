@@ -268,9 +268,9 @@ SELECT
   tk.key AS record_id,
   t.id AS name_code,
   t.link AS web_site,
-  -- use the genus classification for virus type names
+  -- use the genus classification for virus names (name-parser v4.2: virus signal moved from type to code)
   CASE
-    WHEN n.type='VIRUS' THEN coalesce(c.genus, 'Not assigned')
+    WHEN n.code='VIRUS' THEN coalesce(c.genus, 'Not assigned')
     ELSE (CASE WHEN n.notho='GENERIC' THEN '×' ELSE '' END) ||  n.genus
   END AS genus,
   n.infrageneric_epithet AS subgenus,

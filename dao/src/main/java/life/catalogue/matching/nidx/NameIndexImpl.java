@@ -47,8 +47,11 @@ import javax.annotation.Nullable;
  */
 public class NameIndexImpl implements NameIndex {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexImpl.class);
+  // Index every name type except PLACEHOLDER. OTHER covers unparsable-but-real names such as
+  // viruses (name-parser v4.2 folded the former VIRUS type into OTHER + NomCode.VIRUS) and OTU codes,
+  // which we still want matchable; only structureless placeholders are skipped.
   public static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
-      NameType.SCIENTIFIC, NameType.FORMULA, NameType.VIRUS, NameType.INFORMAL
+      NameType.SCIENTIFIC, NameType.FORMULA, NameType.INFORMAL, NameType.OTHER
   );
 
   private final boolean verifyIndex; // if true compares counts from index with postgres counts and reloads if wrong

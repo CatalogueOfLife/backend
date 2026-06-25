@@ -10,7 +10,8 @@ public class NomCodeParser extends EnumParser<NomCode> {
   public static final NomCodeParser PARSER = new NomCodeParser();
 
   public static boolean isCodeCompliant(NameType type) {
-    return type==NameType.SCIENTIFIC || type==NameType.FORMULA || type==NameType.VIRUS;
+    // name-parser v4.2 dropped NameType.VIRUS; viruses are now the unparsable OTHER type and not code-compliant by type
+    return type==NameType.SCIENTIFIC || type==NameType.FORMULA;
   }
 
   public NomCodeParser() {

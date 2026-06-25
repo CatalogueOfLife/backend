@@ -497,18 +497,18 @@ public class NameIndexImplTest {
           .rank(Rank.SUBSPECIES)
           .type(NameType.PLACEHOLDER)
           .code(NomCode.ZOOLOGICAL),
-      // ICTV virus - 4 idxn
+      // ICTV virus (NameType.VIRUS dropped in name-parser v4.2; now OTHER + NomCode.VIRUS, indexed) - 4 idxn
       Name.newBuilder()
           .scientificName("Abutilon mosaic Bolivia virus")
           .rank(Rank.SPECIES)
-          .type(NameType.VIRUS)
+          .type(NameType.OTHER)
           .code(NomCode.VIRUS),
       Name.newBuilder()
           .scientificName("Abutilon mosaic Brazil virus")
           .rank(Rank.SPECIES)
-          .type(NameType.VIRUS)
+          .type(NameType.OTHER)
           .code(NomCode.VIRUS),
-      // GTDB OTU (NameType.OTU merged into OTHER in name-parser v4, not indexed) - 0 idxn
+      // GTDB OTU (NameType.OTU merged into OTHER in name-parser v4; OTHER is indexed) - 2 idxn each
       Name.newBuilder()
           .scientificName("AABM5-125-24")
           .rank(Rank.PHYLUM)
@@ -518,7 +518,7 @@ public class NameIndexImplTest {
           .rank(Rank.PHYLUM)
           .type(NameType.OTHER)
           .code(NomCode.BACTERIAL),
-      // GTDB informal - 0 idxn
+      // GTDB informal - 2 idxn each
       Name.newBuilder()
           .scientificName("Aalborg-Aaw sp.")
           .genus("Aalborg-Aaw")
@@ -531,7 +531,7 @@ public class NameIndexImplTest {
           .rank(Rank.SPECIES)
           .type(NameType.INFORMAL)
           .code(NomCode.BACTERIAL),
-      // GTDB no name (NameType.NO_NAME merged into OTHER in name-parser v4) - 0 idxn
+      // GTDB no name (NameType.NO_NAME merged into OTHER in name-parser v4; OTHER is indexed) - 2 idxn
       Name.newBuilder()
           .scientificName("B3-LCP")
           .rank(Rank.CLASS)
@@ -567,7 +567,8 @@ public class NameIndexImplTest {
     }
 
     dumpIndex();
-    assertEquals(10, ni.size());
+    // every type but PLACEHOLDER is indexed: 5 OTHER + 2 INFORMAL + 1 FORMULA names, 2 idxn each
+    assertEquals(16, ni.size());
   }
 
   private static IndexName create(String genus, String species){

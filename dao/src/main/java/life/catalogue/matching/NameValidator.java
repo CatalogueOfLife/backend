@@ -129,7 +129,7 @@ public class NameValidator {
     if (!StringUtils.isBlank(n.getScientificName()) && Objects.equals(n.getScientificName(), n.getAuthorship())) {
       v.add(Issue.AUTHORSHIP_UNLIKELY);
     }
-    if (NomCodeParser.isCodeCompliant(type) && type != NameType.VIRUS && StringUtils.isBlank(n.getAuthorship())) {
+    if (NomCodeParser.isCodeCompliant(type) && StringUtils.isBlank(n.getAuthorship())) {
       v.add(Issue.MISSING_AUTHORSHIP);
     }
     return v.hasChanged() ? v.container : null;

@@ -11,6 +11,21 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-06-24 name-parser v4.2 dropped NameType.VIRUS
+name-parser v4.2 removed the `VIRUS` name type: viruses are now `OTHER` and carry `NomCode.VIRUS`
+instead (the parse exception exposes the code). Preserve the virus signal in the `code` column, then
+merge the type into `OTHER`. Postgres cannot drop an enum label, so `VIRUS` lingers as an unused
+`NAMETYPE` value (fresh installs omit it); the `NOMCODE` `VIRUS` value is unchanged. `OTHER` names
+stay indexed in the names index, so virus matching is unaffected.
+```
+UPDATE name SET code = 'VIRUS' WHERE type = 'VIRUS' AND code IS DISTINCT FROM 'VIRUS';
+UPDATE name SET type = 'OTHER' WHERE type = 'VIRUS';
+UPDATE name_usage_archive SET n_code = 'VIRUS' WHERE n_type = 'VIRUS' AND n_code IS DISTINCT FROM 'VIRUS';
+UPDATE name_usage_archive SET n_type = 'OTHER' WHERE n_type = 'VIRUS';
+UPDATE sector SET name_types = array_replace(name_types, 'VIRUS'::nametype, 'OTHER'::nametype)
+  WHERE name_types @> ARRAY['VIRUS'::nametype];
+```
+
 #### 2026-06-24 drop parser_config
 name-parser v4 is stateless and no longer supports runtime parser config overrides. The legacy
 curated overrides (the `parser_config` table, its mapper/DAO and the `/parser/name/config` endpoint)

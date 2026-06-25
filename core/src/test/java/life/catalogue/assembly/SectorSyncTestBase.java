@@ -119,7 +119,7 @@ public abstract class SectorSyncTestBase {
       sector.setSubject(src);
       sector.setTarget(target);
       sector.setEntities(Set.of(EntityType.values()));
-      sector.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.VIRUS, NameType.FORMULA));
+      sector.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.OTHER, NameType.FORMULA));
       sector.applyUser(TestDataRule.TEST_USER);
       if (modifier != null) {
         modifier.accept(sector);

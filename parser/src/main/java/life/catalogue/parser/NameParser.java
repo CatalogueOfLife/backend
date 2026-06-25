@@ -358,6 +358,11 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       pnu.getName().setRank(n.getRank());
       pnu.getName().setScientificName(e.getName());
       pnu.getName().setType(e.getType());
+      // name-parser v4.2 carries a NomCode on the exception for code-known unparsables (e.g. NomCode.VIRUS).
+      // Record it so true virus names keep their virus signal now that NameType.VIRUS is gone.
+      if (e.getCode() != null) {
+        pnu.getName().setCode(e.getCode());
+      }
       // adds an issue in case the type indicates a parsable name
       if (pnu.getName().getType().isParsable()) {
         issues.add(Issue.UNPARSABLE_NAME);

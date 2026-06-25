@@ -330,12 +330,16 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acef14virus() throws Exception {
     normalize(14, NomCode.VIRUS);
     UsageData t = usageByID("Vir-96");
-    assertEquals(NameType.VIRUS, t.usage.getName().getType());
+    // name-parser v4.2 dropped NameType.VIRUS. Legacy vernacular virus names (with phage/strain/ICTV
+    // bits) stay unparsable OTHER but carry NomCode.VIRUS; ICTV genus monomials now parse as SCIENTIFIC.
+    assertEquals(NameType.OTHER, t.usage.getName().getType());
+    assertEquals(NomCode.VIRUS, t.usage.getName().getCode());
     assertEquals("Pseudomonas phage LKA1 ICTV", t.usage.getName().getScientificName());
 
     var gen = store.nameUsage(store.usages().parents(t).getFirst());
     assertEquals(Rank.GENUS, gen.nd.getName().getRank());
-    assertEquals(NameType.VIRUS, gen.nd.getName().getType());
+    assertEquals(NameType.SCIENTIFIC, gen.nd.getName().getType());
+    assertEquals(NomCode.VIRUS, gen.nd.getName().getCode());
     assertEquals("Phikmvlikevirus", gen.nd.getName().getScientificName());
   }
   
