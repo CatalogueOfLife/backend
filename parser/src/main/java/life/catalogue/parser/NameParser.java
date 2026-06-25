@@ -155,6 +155,16 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
         removeEpithetIssues(ic);
         ic.getIssues().forEach(v::add);
 
+        // a standalone authorship is parsed via parseAuthorship which returns a plain ParsedAuthorship
+        // and cannot carry originalSpelling, so recover a sic/corrig marker from the raw authorship here
+        // (sic = original spelling kept, corrig. = corrected spelling). setNormalizeAuthorship then strips it.
+        if (pnu.getName().isOriginalSpelling() == null) {
+          Matcher sc = SIC_CORRIG.matcher(authorship);
+          if (sc.find()) {
+            pnu.getName().setOriginalSpelling("sic".equalsIgnoreCase(sc.group(1)));
+          }
+        }
+
         // use original authorship string but normalize whitespace and remove taxonomic notes, e.g. misapplication
         setNormalizeAuthorship(pnu, authorship, pnAuthorship.getTaxonomicNote());
 
