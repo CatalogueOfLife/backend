@@ -312,8 +312,10 @@ public class NameFormatter {
     return sb;
   }
 
+  // The subsp./var./f. rank marker is the botanical convention; only an explicitly zoological
+  // name drops it (zoological trinomials use bare epithets). A null/unknown code keeps the marker.
   private static boolean isNotZoo(NomCode code) {
-    return code != null && code != NomCode.ZOOLOGICAL;
+    return code != NomCode.ZOOLOGICAL;
   }
 
   private static boolean isUnknown(Rank r) {
