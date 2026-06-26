@@ -427,6 +427,7 @@ public class HierarchySyncIT {
     insertTaxonWithIdentifier(PROJECT_KEY, P_Alch_vulgaris, P_Alchemilla, Rank.SPECIES, "Alchemilla vulgaris", T_Alch_vulgaris);
 
     // names must be matched to the names index for the postgres matcher to find candidates
+    NameMatchingRule.getIndex().reset();
     matchingRule.rematch(targetKey);
     matchingRule.rematch(PROJECT_KEY);
 
@@ -584,6 +585,63 @@ public class HierarchySyncIT {
     NameUsageBase syn = getByID(PROJECT_KEY, P_syn);
     assertTrue("synonym should stay a synonym", syn.getStatus().isSynonym());
     assertEquals("synonym parent must be unchanged", P_acc, syn.getParentId());
+  }
+
+  /**
+   * Idempotency of name-match placement under a STABLE (deduped) project genus. The project provides
+   * an existing accepted genus "Alchemilla" with NO identifier (dedup reuses it by name) and a
+   * floating accepted species "Alchemilla mollis" at root with NO identifier. The genus is NOT
+   * tagged by the sector and therefore survives {@code deleteBySector}. A second sync run must:
+   * (a) still find exactly one "Alchemilla" genus with the original id and no sector tag, (b) leave
+   * the floating species' parentId unchanged, and (c) produce exactly one MATCHING_HIGHERRANK issue
+   * (no duplication from re-flagging the already-correctly-placed usage).
+   */
+  @Test
+  public void nameMatchHigherRankIdempotentUnderDedupedGenus() throws Exception {
+    final String T_Rosaceae = "T_Rosaceae";
+    final String T_Alchemilla = "T_Alchemilla";
+    final String P_Alchemilla = "p_Alchemilla";
+    final String P_floating = "p_alch_mollis";
+
+    // Source: Animalia > Rosaceae > Alchemilla (no species in source, so floating species gets a
+    // HIGHERRANK match to the genus Alchemilla).
+    insertTaxon(targetKey, T_Rosaceae, T_Animalia, Rank.FAMILY, "Rosaceae");
+    insertTaxon(targetKey, T_Alchemilla, T_Rosaceae, Rank.GENUS, "Alchemilla");
+
+    // Project: an existing accepted genus "Alchemilla" WITHOUT identifier (dedup will reuse it by
+    // name, and deleteBySector will NOT wipe it since it has no sector tag), plus a floating
+    // accepted species at root WITHOUT identifier.
+    insertTaxon(PROJECT_KEY, P_Alchemilla, null, Rank.GENUS, "Alchemilla");
+    insertTaxon(PROJECT_KEY, P_floating, null, Rank.SPECIES, "Alchemilla mollis");
+
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    // Run 1 — initial placement
+    runHierarchySync();
+
+    List<NameUsageBase> alch = listByName(PROJECT_KEY, Rank.GENUS, "Alchemilla");
+    assertEquals("expected exactly one Alchemilla genus after run 1", 1, alch.size());
+    assertEquals("genus should be the original project entry (deduped, not imported)", P_Alchemilla, alch.get(0).getId());
+    assertNull("reused project genus must not be tagged with the sector", alch.get(0).getSectorKey());
+
+    NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
+    assertEquals("floating species should nest under the existing project genus after run 1", P_Alchemilla, floating.getParentId());
+
+    // Run 2 — exercises the "unchanged → still flag" idempotency branch in placeNameMatches
+    runHierarchySync();
+
+    alch = listByName(PROJECT_KEY, Rank.GENUS, "Alchemilla");
+    assertEquals("second run must not duplicate the Alchemilla genus", 1, alch.size());
+    assertEquals("genus id must remain the original project entry after second run", P_Alchemilla, alch.get(0).getId());
+    assertNull("reused genus must still not be tagged with the sector after second run", alch.get(0).getSectorKey());
+
+    floating = getByID(PROJECT_KEY, P_floating);
+    assertEquals("floating species parent must be unchanged after second run", P_Alchemilla, floating.getParentId());
+    assertEquals("MATCHING_HIGHERRANK should appear exactly once after the second run (no duplication)",
+      1, verbatimIssueCount(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK));
   }
 
   // ---------- helpers ----------

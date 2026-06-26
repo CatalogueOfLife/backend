@@ -136,6 +136,10 @@ import org.slf4j.LoggerFactory;
  *   <li><b>Performance batching</b> — phase 2 / 3 do per-match {@code NameUsageMapper#get} and
  *       {@code SynonymMapper#listByTaxon} queries. For very large projects these can be batched
  *       via {@code listByIds} or a streaming join.</li>
+ *   <li><b>Phase-1 name-match cost</b> — the name-match sub-pass ({@link #discoverNameMatches})
+ *       streams the whole project a second time and runs a per-usage source matcher lookup; for very
+ *       large projects this could be folded into the identifier-discovery stream (which already
+ *       detects the no-identifier case) to avoid the second full scan.</li>
  * </ul>
  */
 public class HierarchySync extends SectorRunnable {
