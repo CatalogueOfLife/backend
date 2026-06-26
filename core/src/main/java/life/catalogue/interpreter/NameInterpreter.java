@@ -131,6 +131,9 @@ public class NameInterpreter {
       code = ObjectUtils.coalesce(code, settings.getEnum(Setting.NOMENCLATURAL_CODE));
       rank = ObjectUtils.coalesce(rank, Rank.UNRANKED);
 
+      // author atoms (separate comb/bas columns) take precedence over any authorship string
+      final boolean useAuthorAtoms = ObjectUtils.anyNonBlank(combAuthors, combExAuthors, combAuthorsYear, basAuthors, basExAuthors, basAuthorsYear);
+
       // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
       final boolean useAtoms;
       if (preferAtoms || StringUtils.isBlank(sciname)) {
@@ -156,6 +159,7 @@ public class NameInterpreter {
       // we can get the scientific name in various ways.
       // we prefer already atomized names as we want to trust humans more than machines
       ParsedNameUsage pnu;
+      boolean scinameAuthorshipParsed = false; // true once the sciname path has folded the authorship in
       if (useAtoms) {
         pnu = new ParsedNameUsage();
         Name atom = new Name();
@@ -231,7 +235,16 @@ public class NameInterpreter {
 
       } else if (StringUtils.isNotBlank(sciname)) {
         // be careful, this infers ranks from the name!
-        pnu = NameParser.PARSER.parse(sciname, rank, code, issues).get();
+        // one-go parse: hand the parser the name AND authorship together (unless author atoms win)
+        Name n = new Name();
+        n.setScientificName(sciname);
+        n.setRank(rank);
+        n.setCode(code);
+        if (!useAuthorAtoms) {
+          n.setAuthorship(authorship);
+          scinameAuthorshipParsed = true;
+        }
+        pnu = NameParser.PARSER.parse(n, issues).get();
 
       } else {
         LOG.info("No name given for {}", id);
@@ -271,13 +284,13 @@ public class NameInterpreter {
 
       // +++ AUTHORSHIP +++
       // do we have a parsed authorship given? That always takes precedence
-      boolean useAuthorAtoms = ObjectUtils.anyNonBlank(combAuthors, combExAuthors, combAuthorsYear, basAuthors, basExAuthors, basAuthorsYear);
       if (useAuthorAtoms) {
         pnu.getName().setCombinationAuthorship(buildAuthorship(combAuthors, combExAuthors, combAuthorsYear));
         pnu.getName().setBasionymAuthorship(buildAuthorship(basAuthors, basExAuthors, basAuthorsYear));
         pnu.getName().rebuildAuthorship();
-      } else {
-        // try to add an authorship if not yet there
+      } else if (!scinameAuthorshipParsed) {
+        // atomized-name path: fold the authorship string onto the human-supplied atoms
+        // (the sciname path already parsed it together with the name above)
         NameParser.PARSER.parseAuthorshipIntoName(pnu, authorship, issues);
       }
 
