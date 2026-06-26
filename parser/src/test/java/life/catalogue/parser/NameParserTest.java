@@ -83,6 +83,19 @@ public class NameParserTest {
   }
 
   @Test
+  public void parseNameWithAuthorshipInfersBotanicalCode() throws InterruptedException {
+    Name n = new Name();
+    n.setScientificName("Cerastium ligusticum subsp. granulatum");
+    n.setAuthorship("(Huter et al.) P. D. Sell & Whitehead");
+    n.setRank(Rank.SUBSPECIES);
+    ParsedNameUsage pnu = NameParser.PARSER.parse(n, IssueContainer.VOID).get();
+    // the recombination authorship implies the botanical code...
+    assertEquals(NomCode.BOTANICAL, pnu.getName().getCode());
+    // ...so the rebuilt scientific name keeps the botanical subsp. rank marker
+    assertEquals("Cerastium ligusticum subsp. granulatum", pnu.getName().getScientificName());
+  }
+
+  @Test
   public void authorships() throws Exception {
     Name n = new Name();
     n.setScientificName("Acrolophus rhenanus");

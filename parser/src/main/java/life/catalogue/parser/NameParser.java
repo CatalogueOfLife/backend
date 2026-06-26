@@ -358,8 +358,9 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
       final String authorship = n.getAuthorship();
-      pnu = fromParsedName(n, parserInternal.parse(n.getScientificName(), null, n.getRank(), n.getCode()), issues);
-      // try to add an authorship if not yet there
+      // parse name and authorship together so the parser can infer the code/originalSpelling from both
+      pnu = fromParsedName(n, parserInternal.parse(n.getScientificName(), authorship, n.getRank(), n.getCode()), issues);
+      // CoL post-processing: normalized authorship string + UNPARSABLE/INCONSISTENT flags
       parseAuthorshipIntoName(pnu, authorship, issues);
 
     } catch (UnparsableNameException e) {
