@@ -544,6 +544,8 @@ public class HierarchySyncIT {
 
     insertTaxon(PROJECT_KEY, P_floating, null, Rank.SPECIES, "Dupgenus specia");
 
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
     matchingRule.rematch(targetKey);
     matchingRule.rematch(PROJECT_KEY);
 
@@ -572,6 +574,8 @@ public class HierarchySyncIT {
     insertTaxon(PROJECT_KEY, P_acc, null, Rank.GENUS, "Somegenus");
     insertSynonym(PROJECT_KEY, P_syn, P_acc, Rank.SPECIES, "Agrostemma githago");
 
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
     matchingRule.rematch(targetKey);
     matchingRule.rematch(PROJECT_KEY);
 

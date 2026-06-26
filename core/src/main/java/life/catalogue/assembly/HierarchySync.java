@@ -83,7 +83,11 @@ import org.slf4j.LoggerFactory;
  *       runs can match by id. Finally each accepted matched project usage is rewired to its
  *       newly-imported immediate above-genus ancestor; synonyms are intentionally not rewired
  *       (their {@code parent_id} must keep pointing at an accepted taxon, not a higher-rank
- *       ancestor).</li>
+ *       ancestor). Project usages lacking a source identifier are then re-matched against the
+ *       source by name; full and higher-rank (HIGHERRANK) matches nest the usage under the
+ *       resolved genus-or-higher anchor (importing it, or reusing an equivalent project node)
+ *       and are flagged with {@code Issue.MATCHING_HIGHERRANK}; status, synonymy and authorship
+ *       are left untouched for these.</li>
  *   <li><b>Phase 2 — taxonomic-status realignment.</b>
  *       For every match the source's status is loaded and compared to the project usage. Cases:
  *       both accepted is a no-op (handled by phase 1); accepted→synonym demotes via
@@ -123,17 +127,12 @@ import org.slf4j.LoggerFactory;
  *
  * <h2>Limitations / Future work</h2>
  *
- * <p>The current implementation is identifier-only and intentionally conservative. Search the
- * source for {@code TODO(hierarchy-sync)} for the exact code sites where each item slots in:
- *
  * <ul>
- *   <li><b>Name-match fallback</b> — project usages without a source identifier are skipped today.
- *       The infrastructure ({@code projectMatcherSupplier}, {@code sourceMatcherProvider}) is
- *       already injected, ready to run unmatched usages through {@link UsageMatcher}.</li>
- *   <li><b>Project-side dedup of imported ancestors</b> — if the project already has an
- *       equivalent family/order, phase 1 currently inserts a new copy. A canonical-name + rank
- *       lookup against the project before copying would let us reuse existing nodes (without
- *       tagging them with this sector, so user data isn't wiped on re-run).</li>
+ *   <li><b>Convergence for full matches</b> — name-matched usages are placement-only and never gain
+ *       the source identifier, so a full EXACT match is re-matched by name on every run rather than
+ *       converging into the identifier path.</li>
+ *   <li><b>Classification-context matching</b> — floating usages are matched on their name's implied
+ *       genus only; a reconstructed project classification could disambiguate homonyms further.</li>
  *   <li><b>Performance batching</b> — phase 2 / 3 do per-match {@code NameUsageMapper#get} and
  *       {@code SynonymMapper#listByTaxon} queries. For very large projects these can be batched
  *       via {@code listByIds} or a streaming join.</li>
@@ -292,8 +291,8 @@ public class HierarchySync extends SectorRunnable {
    * ancestors are tagged with this sector's key. Project usages are then rewired to point at
    * their imported immediate ancestor.
    *
-   * <p>Name-match fallback for usages without a source identifier is not yet implemented (see
-   * {@link UsageMatcher}).
+   * <p>Project usages without a source identifier are additionally re-matched against the source by
+   * name (see {@link #discoverNameMatches}) and placed under their resolved anchor.
    */
   private void syncHigherClassification() throws Exception {
     LOG.info("HierarchySync phase 1 (upward classification copy) for sector {} from source dataset {}", sectorKey, sourceDatasetKey);
@@ -368,10 +367,6 @@ public class HierarchySync extends SectorRunnable {
           continue; // defensive: should already be wiped by deleteOld()
         }
         String tid = findSourceIdByIdentifier(u, sourceScope);
-        // TODO(hierarchy-sync): name-match fallback. If tid is null, run the project usage through
-        //   UsageMatcher (against sourceDatasetKey) using the usage's canonical name + classification
-        //   context, and use the match's id when one is found. Fields projectMatcherSupplier +
-        //   sourceMatcherProvider are already injected for this. See plan: phase 1, "name-match fallback".
         if (tid != null) {
           projectMatches.put(u.getId(), tid);
           if (u.getStatus() != null) {
