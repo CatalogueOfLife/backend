@@ -88,8 +88,10 @@ public class SyncFactory {
    * The sector must be in {@link life.catalogue.api.model.Sector.Mode#HIERARCHY} mode.
    */
   public HierarchySync hierarchy(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    return new HierarchySync(sectorKey, factory, nameIndex, supplyPgMatcher(sectorKey.getDatasetKey()), latestKeyCache,
-      bus, indexService, sd, sid, successCallback, errorCallback, scopeResolver, user);
+    return new HierarchySync(sectorKey, factory,
+      supplyPgMatcher(sectorKey.getDatasetKey()),
+      (dk, sess) -> matcherFactory.postgres(dk, sess),
+      latestKeyCache, bus, indexService, sd, sid, successCallback, errorCallback, scopeResolver, user);
   }
 
   public SectorDelete delete(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {

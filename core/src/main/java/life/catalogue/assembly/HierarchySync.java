@@ -32,7 +32,6 @@ import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatcher;
-import life.catalogue.matching.nidx.NameIndex;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -47,6 +46,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -124,8 +124,8 @@ import org.slf4j.LoggerFactory;
  *
  * <ul>
  *   <li><b>Name-match fallback</b> — project usages without a source identifier are skipped today.
- *       The infrastructure ({@code nameIndex}, {@code matcherSupplier}) is already injected, ready
- *       to run unmatched usages through {@link UsageMatcher}.</li>
+ *       The infrastructure ({@code projectMatcherSupplier}, {@code sourceMatcherProvider}) is
+ *       already injected, ready to run unmatched usages through {@link UsageMatcher}.</li>
  *   <li><b>Project-side dedup of imported ancestors</b> — if the project already has an
  *       equivalent family/order, phase 1 currently inserts a new copy. A canonical-name + rank
  *       lookup against the project before copying would let us reuse existing nodes (without
@@ -139,9 +139,10 @@ public class HierarchySync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(HierarchySync.class);
 
   private final SectorImportDao sid;
-  // Reserved for the upcoming name-match fallback (see syncHigherClassification).
-  @SuppressWarnings("unused") private final NameIndex nameIndex;
-  @SuppressWarnings("unused") private final Function<SqlSession, UsageMatcher> matcherSupplier;
+  /** Builds a matcher against the project dataset; used to dedup ancestors before importing them. */
+  private final Function<SqlSession, UsageMatcher> projectMatcherSupplier;
+  /** Builds a matcher against an arbitrary dataset; used to match floating project usages against the source. */
+  private final BiFunction<Integer, SqlSession, UsageMatcher> sourceMatcherProvider;
   private final LatestDatasetKeyCache latestKeyCache;
   private final @Nullable IdentifierScopeResolver scopeResolver;
 
@@ -173,8 +174,8 @@ public class HierarchySync extends SectorRunnable {
 
   HierarchySync(DSID<Integer> sectorKey,
                 SqlSessionFactory factory,
-                NameIndex nameIndex,
-                Function<SqlSession, UsageMatcher> matcherSupplier,
+                Function<SqlSession, UsageMatcher> projectMatcherSupplier,
+                BiFunction<Integer, SqlSession, UsageMatcher> sourceMatcherProvider,
                 LatestDatasetKeyCache latestKeyCache,
                 EventBroker bus,
                 NameUsageIndexService indexService,
@@ -189,8 +190,8 @@ public class HierarchySync extends SectorRunnable {
       throw new IllegalArgumentException("HierarchySync requires a sector with mode HIERARCHY, got " + sector.getMode());
     }
     this.sid = sid;
-    this.nameIndex = nameIndex;
-    this.matcherSupplier = matcherSupplier;
+    this.projectMatcherSupplier = projectMatcherSupplier;
+    this.sourceMatcherProvider = sourceMatcherProvider;
     this.latestKeyCache = latestKeyCache;
     this.scopeResolver = scopeResolver;
   }
@@ -367,8 +368,8 @@ public class HierarchySync extends SectorRunnable {
         String tid = findSourceIdByIdentifier(u, sourceScope);
         // TODO(hierarchy-sync): name-match fallback. If tid is null, run the project usage through
         //   UsageMatcher (against sourceDatasetKey) using the usage's canonical name + classification
-        //   context, and use the match's id when one is found. Fields nameIndex + matcherSupplier
-        //   are already injected for this. See plan: phase 1, "name-match fallback".
+        //   context, and use the match's id when one is found. Fields projectMatcherSupplier +
+        //   sourceMatcherProvider are already injected for this. See plan: phase 1, "name-match fallback".
         if (tid != null) {
           projectMatches.put(u.getId(), tid);
           if (u.getStatus() != null) {

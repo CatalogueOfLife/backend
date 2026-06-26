@@ -415,8 +415,8 @@ public class HierarchySyncIT {
       HierarchySync sync = new HierarchySync(
         hierarchySector,
         SqlSessionFactoryRule.getSqlSessionFactory(),
-        ni,
         session -> matcherFactory.postgres(PROJECT_KEY, session),
+        (dk, session) -> matcherFactory.postgres(dk, session),
         LatestDatasetKeyCache.passThru(),
         bus,
         NameUsageIndexService.passThru(),
