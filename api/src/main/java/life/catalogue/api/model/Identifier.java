@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize(using = IdentifierSerde.Serializer.class)
 @JsonDeserialize(using = IdentifierSerde.Deserializer.class)
 public class Identifier {
-  private static final Pattern SCOPE_PARSER = Pattern.compile("^([a-zA-Z]+):(.+)$");
+  private static final Pattern SCOPE_PARSER = Pattern.compile("^([a-zA-Z0-9-]+):(.+)$");
 
   public enum Scope {
     LOCAL,
