@@ -13,6 +13,7 @@ import org.gbif.nameparser.api.Rank;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -459,7 +460,7 @@ public class NameInterpreterTest {
     assertNull(n.getUninomial());
     assertEquals("Asplenium", n.getGenus());
     assertEquals("mitsutae", n.getSpecificEpithet());
-    assertEquals(NamePart.SPECIFIC, n.getNotho());
+    assertEquals(Set.of(NamePart.SPECIFIC), n.getNotho());
 
     pnu = interpret("Species", "Cambarus Uhleri", "Faxon, 1884", "1884",
       null, "Cambarus", null, "Uhleri", null, null,
