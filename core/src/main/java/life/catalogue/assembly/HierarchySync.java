@@ -6,6 +6,7 @@ import life.catalogue.api.model.Identifier;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
@@ -14,6 +15,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.InfoGroup;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.LatestDatasetKeyCache;
@@ -31,6 +33,7 @@ import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.matching.IdentifierScopeResolver;
+import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
 
 import org.gbif.nameparser.api.Rank;
@@ -421,7 +424,7 @@ public class HierarchySync extends SectorRunnable {
         SimpleNameCached t = chain.get(i);
         chainIds.add(t.getId());
         Rank r = t.getRank();
-        if (r != null && r.higherThan(Rank.GENUS)) {
+        if (r != null && r.higherOrEqualsTo(Rank.GENUS)) {
           ancestors.putIfAbsent(t.getId(), t);
         }
       }
@@ -431,6 +434,43 @@ public class HierarchySync extends SectorRunnable {
       }
     }
     return ancestors;
+  }
+
+  /**
+   * Resolves a source ancestor to an existing accepted project usage, so we can reuse it instead of
+   * importing a duplicate. Resolution order:
+   *   1. by identifier — the ancestor's source id is already a matched project usage ({@link #matchReverse});
+   *      its accepted equivalent is reused.
+   *   2. by name — a single, non-ambiguous, accepted project usage of the same rank matched via the
+   *      project matcher. Multiple same-name candidates yield {@link MatchType#AMBIGUOUS} and are not reused.
+   * Returns {@code null} when nothing safe to reuse exists (caller imports a fresh copy).
+   */
+  private @Nullable String findExistingProjectAncestor(SimpleNameCached sourceAncestor, UsageMatcher projectMatcher) {
+    // 1. by identifier
+    if (matchReverse == null) {
+      buildMatchReverse();
+    }
+    String byId = matchReverse.get(sourceAncestor.getId());
+    if (byId != null) {
+      String accepted = resolveToAccepted(byId);
+      if (accepted != null) {
+        return accepted;
+      }
+    }
+    // 2. by name
+    UsageMatch m;
+    try {
+      m = projectMatcher.parseAndMatch(new SimpleName(sourceAncestor), false);
+    } catch (NotFoundException e) {
+      return null;
+    }
+    if (m != null && m.isMatch()
+        && (m.type == MatchType.EXACT || m.type == MatchType.VARIANT || m.type == MatchType.CANONICAL)
+        && m.usage.getRank() == sourceAncestor.getRank()
+        && (m.usage.getStatus() == null || m.usage.getStatus().isTaxon())) {
+      return m.usage.getId();
+    }
+    return null;
   }
 
   /**
@@ -451,7 +491,8 @@ public class HierarchySync extends SectorRunnable {
     int inserted = 0;
 
     try (SqlSession batch = factory.openSession(ExecutorType.BATCH, false);
-         SqlSession read = factory.openSession(true)) {
+         SqlSession read = factory.openSession(true);
+         UsageMatcher projectMatcher = projectMatcherSupplier.apply(read)) {
       NameUsageMapper num = batch.getMapper(NameUsageMapper.class);
       VerbatimSourceMapper vsm = batch.getMapper(VerbatimSourceMapper.class);
       TaxonMapper readTm = read.getMapper(TaxonMapper.class);
@@ -477,11 +518,13 @@ public class HierarchySync extends SectorRunnable {
           // resolve project parent: if our parent is in the inserted set, use the new project id; otherwise null (root)
           String projectParentId = origSourceParentId == null ? null : sourceToProject.get(origSourceParentId);
 
-          // TODO(hierarchy-sync): project-side dedup. Before inserting, match the ancestor
-          //   (canonical name + rank) against existing project usages. If an equivalent already
-          //   exists (e.g. a manually-curated family), reuse it: record sourceToProject.put(origSourceId, existingProjectId)
-          //   and skip the copy + addIdentifier — but DO NOT tag the existing record with this sector
-          //   (we don't want deleteBySector to wipe user data on re-runs).
+          // project-side dedup: reuse an existing equivalent project node instead of importing a copy
+          String existing = findExistingProjectAncestor(cached, projectMatcher);
+          if (existing != null) {
+            sourceToProject.put(origSourceId, existing);
+            remaining.remove(origSourceId);
+            continue;
+          }
 
           // SimpleNameCached doesn't carry the full Name; fetch the source Taxon (with Name) once
           // per ancestor we actually import. Cheap at this volume (hundreds at most).

@@ -404,6 +404,50 @@ public class HierarchySyncIT {
     assertFalse("NONE mode must not add an authorship", pn.hasAuthorship());
   }
 
+  /**
+   * Project-side dedup: when the project already provides an (accepted) genus that is reached as an
+   * ancestor of an id-matched species, the sync reuses it instead of importing a duplicate, and the
+   * reused genus stays untagged by the sector. The species nests under the existing project genus.
+   */
+  @Test
+  public void dedupReusesExistingProjectGenus() throws Exception {
+    final String T_Rosaceae = "T_Rosaceae";
+    final String T_Alchemilla = "T_Alchemilla";
+    final String T_Alch_vulgaris = "T_Alch_vulgaris";
+    final String P_Alchemilla = "p_Alchemilla";
+    final String P_Alch_vulgaris = "p_Alch_vulgaris";
+
+    // Source: Animalia > Rosaceae > Alchemilla > Alchemilla vulgaris
+    insertTaxon(targetKey, T_Rosaceae, T_Animalia, Rank.FAMILY, "Rosaceae");
+    insertTaxon(targetKey, T_Alchemilla, T_Rosaceae, Rank.GENUS, "Alchemilla");
+    insertTaxon(targetKey, T_Alch_vulgaris, T_Alchemilla, Rank.SPECIES, "Alchemilla vulgaris");
+
+    // Project: genus Alchemilla WITHOUT identifier (must be reused by name), species id-matched to source.
+    insertTaxon(PROJECT_KEY, P_Alchemilla, null, Rank.GENUS, "Alchemilla");
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Alch_vulgaris, P_Alchemilla, Rank.SPECIES, "Alchemilla vulgaris", T_Alch_vulgaris);
+
+    // names must be matched to the names index for the postgres matcher to find candidates
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    // exactly one Alchemilla genus in the project — the original, reused (no duplicate import)
+    List<NameUsageBase> alch = listByName(PROJECT_KEY, Rank.GENUS, "Alchemilla");
+    assertEquals("expected exactly one Alchemilla genus", 1, alch.size());
+    assertEquals(P_Alchemilla, alch.get(0).getId());
+    assertNull("reused project genus must not be tagged with the sector", alch.get(0).getSectorKey());
+
+    // Rosaceae + Animalia were imported (sector-tagged)
+    NameUsageBase rosaceae = getByName(PROJECT_KEY, Rank.FAMILY, "Rosaceae");
+    assertNotNull(rosaceae);
+    assertEquals(hierarchySector.getId(), rosaceae.getSectorKey());
+
+    // the id-matched species nests under the existing project genus (not under the family)
+    NameUsageBase pAV = getByID(PROJECT_KEY, P_Alch_vulgaris);
+    assertEquals("species should nest under the existing project genus", P_Alchemilla, pAV.getParentId());
+  }
+
   // ---------- helpers ----------
 
   private void runHierarchySync() throws Exception {
