@@ -136,10 +136,10 @@ import org.slf4j.LoggerFactory;
  *   <li><b>Performance batching</b> — phase 2 / 3 do per-match {@code NameUsageMapper#get} and
  *       {@code SynonymMapper#listByTaxon} queries. For very large projects these can be batched
  *       via {@code listByIds} or a streaming join.</li>
- *   <li><b>Phase-1 name-match cost</b> — the name-match sub-pass ({@link #discoverNameMatches})
- *       streams the whole project a second time and runs a per-usage source matcher lookup; for very
- *       large projects this could be folded into the identifier-discovery stream (which already
- *       detects the no-identifier case) to avoid the second full scan.</li>
+ *   <li><b>Phase-1 name-match cost</b> — the name-match fallback runs a per-usage source matcher
+ *       lookup for every accepted usage lacking a source identifier. It shares the single
+ *       identifier-discovery stream ({@link #discoverMatches}), so there is no second full scan; if
+ *       the per-usage match ever dominates it could be gated by a cheap names-index pre-filter.</li>
  * </ul>
  */
 public class HierarchySync extends SectorRunnable {
@@ -296,7 +296,7 @@ public class HierarchySync extends SectorRunnable {
    * their imported immediate ancestor.
    *
    * <p>Project usages without a source identifier are additionally re-matched against the source by
-   * name (see {@link #discoverNameMatches}) and placed under their resolved anchor.
+   * name (in the same stream, see {@link #discoverMatches}) and placed under their resolved anchor.
    */
   private void syncHigherClassification() throws Exception {
     LOG.info("HierarchySync phase 1 (upward classification copy) for sector {} from source dataset {}", sectorKey, sourceDatasetKey);
@@ -309,10 +309,9 @@ public class HierarchySync extends SectorRunnable {
       LOG.info("Hierarchy sector {}: matching identifiers in scope '{}' against source dataset {}", sectorKey, sourceScope, sourceDatasetKey);
     }
 
-    // Pass 1a: identifier matches (status + parent captured for phases 2 + 3).
-    discoverIdentifierMatches(projectKey, sourceScope);
-    // Pass 1b: name-match fallback for accepted usages without a source identifier (placement only).
-    discoverNameMatches(projectKey);
+    // Pass 1: single stream over the project — identifier matches (feed phases 2–4) plus a
+    // name-match fallback (placement only) for accepted usages without a source identifier.
+    discoverMatches(projectKey, sourceScope);
 
     if (projectMatches.isEmpty() && namePlacements.isEmpty()) {
       LOG.info("Hierarchy sector {}: no project usages matched to source dataset {} - phase 1 has nothing to do", sectorKey, sourceDatasetKey);
@@ -352,32 +351,58 @@ public class HierarchySync extends SectorRunnable {
   }
 
   /**
-   * Streams every project name usage and populates {@link #projectMatches} +
-   * {@link #projectStatuses} for every usage that carries an identifier whose scope maps to the
-   * source dataset.
+   * Streams every project name usage exactly once and classifies it into one of two buckets:
+   *
+   * <ul>
+   *   <li><b>identifier match</b> — the usage carries an identifier whose scope maps to the source
+   *       dataset. Populates {@link #projectMatches} + {@link #projectStatuses} + {@link #projectParents};
+   *       these feed phases 2–4. Only attempted when a {@code sourceScope} is configured.</li>
+   *   <li><b>name-match fallback</b> — an accepted taxon <em>without</em> a source identifier whose name
+   *       matches the source dataset (with higher-rank fallback). EXACT/VARIANT/CANONICAL and HIGHERRANK
+   *       matches yield a genus-or-higher source anchor recorded in {@link #namePlacements} (placement
+   *       only); ambiguous / no matches and synonyms are skipped.</li>
+   * </ul>
+   *
+   * Folding both into a single stream avoids scanning the (potentially very large) project twice. The
+   * source matcher is opened once for the whole stream and used only for the name-match fallback.
    */
-  private void discoverIdentifierMatches(int projectKey, @Nullable String sourceScope) {
-    if (sourceScope == null) {
-      return;
-    }
-    // autoCommit=false: the Postgres JDBC driver needs an explicit transaction to keep a
-    // server-side cursor (portal) alive across FETCH calls with fetchSize > 0. With autoCommit=true
-    // the implicit transaction is committed mid-iteration and the next FETCH would fail with
-    // "portal C_NNN does not exist". Mirrors UsageCache.load(SqlSessionFactory).
-    try (SqlSession session = factory.openSession(false);
+  private void discoverMatches(int projectKey, @Nullable String sourceScope) {
+    // autoCommit=false on the streaming session: the Postgres JDBC driver needs an explicit transaction
+    // to keep a server-side cursor (portal) alive across FETCH calls with fetchSize > 0. With
+    // autoCommit=true the implicit transaction is committed mid-iteration and the next FETCH would fail
+    // with "portal C_NNN does not exist". Mirrors UsageCache.load(SqlSessionFactory).
+    try (SqlSession matchSession = factory.openSession(true);
+         UsageMatcher sourceMatcher = sourceMatcherProvider.apply(sourceDatasetKey, matchSession);
+         SqlSession session = factory.openSession(false);
          Cursor<NameUsageBase> cursor = session.getMapper(NameUsageMapper.class).processDataset(projectKey, null, null)) {
       for (NameUsageBase u : cursor) {
         if (Objects.equals(sectorKey.getId(), u.getSectorKey())) {
-          continue; // defensive: should already be wiped by deleteOld()
+          continue; // produced by this sector (defensive: should already be wiped by deleteOld())
         }
-        String tid = findSourceIdByIdentifier(u, sourceScope);
+        // 1) identifier match (only when a scope is configured); takes precedence over name matching
+        String tid = sourceScope == null ? null : findSourceIdByIdentifier(u, sourceScope);
         if (tid != null) {
           projectMatches.put(u.getId(), tid);
           if (u.getStatus() != null) {
             projectStatuses.put(u.getId(), u.getStatus());
           }
           projectParents.put(u.getId(), u.getParentId());
+          continue;
         }
+        // 2) name-match fallback for accepted taxa without a source identifier (placement only)
+        if (u.getStatus() == null || !u.getStatus().isTaxon()) continue; // accepted taxa only
+        if (u.getName() == null) continue;
+        UsageMatch m;
+        try {
+          m = sourceMatcher.parseAndMatch(new SimpleName(u), true);
+        } catch (NotFoundException nfe) {
+          continue;
+        }
+        if (m == null || !m.isMatch()) continue;                          // NONE / AMBIGUOUS / UNSUPPORTED
+        String anchor = anchorFor(m);
+        if (anchor == null) continue;
+        namePlacements.put(u.getId(), anchor);
+        projectParents.put(u.getId(), u.getParentId());                   // for cycle guard + skip-if-unchanged
       }
     } catch (java.io.IOException e) {
       throw new RuntimeException("Failed to stream project usages of dataset " + projectKey, e);
@@ -393,39 +418,6 @@ public class HierarchySync extends SectorRunnable {
       }
     }
     return null;
-  }
-
-  /**
-   * Streams project usages and, for every accepted taxon that is not already an identifier match and
-   * not produced by this sector, matches its name against the source dataset (with higher-rank
-   * fallback). EXACT/VARIANT/CANONICAL and HIGHERRANK matches yield a genus-or-higher source anchor
-   * recorded in {@link #namePlacements}; ambiguous / no matches are skipped. Synonyms are skipped.
-   */
-  private void discoverNameMatches(int projectKey) {
-    try (SqlSession matchSession = factory.openSession(true);
-         UsageMatcher sourceMatcher = sourceMatcherProvider.apply(sourceDatasetKey, matchSession);
-         SqlSession streamSession = factory.openSession(false);
-         Cursor<NameUsageBase> cursor = streamSession.getMapper(NameUsageMapper.class).processDataset(projectKey, null, null)) {
-      for (NameUsageBase u : cursor) {
-        if (Objects.equals(sectorKey.getId(), u.getSectorKey())) continue;       // produced by this sector
-        if (projectMatches.containsKey(u.getId())) continue;                     // already an identifier match
-        if (u.getStatus() == null || !u.getStatus().isTaxon()) continue;        // accepted taxa only
-        if (u.getName() == null) continue;
-        UsageMatch m;
-        try {
-          m = sourceMatcher.parseAndMatch(new SimpleName(u), true);
-        } catch (NotFoundException nfe) {
-          continue;
-        }
-        if (m == null || !m.isMatch()) continue;                                 // NONE / AMBIGUOUS / UNSUPPORTED
-        String anchor = anchorFor(m);
-        if (anchor == null) continue;
-        namePlacements.put(u.getId(), anchor);
-        projectParents.put(u.getId(), u.getParentId());                          // for cycle guard + skip-if-unchanged
-      }
-    } catch (java.io.IOException e) {
-      throw new RuntimeException("Failed to stream project usages for name matching of dataset " + projectKey, e);
-    }
   }
 
   /**
