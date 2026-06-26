@@ -451,6 +451,137 @@ public class HierarchySyncIT {
     assertEquals("species should nest under the existing project genus", P_Alchemilla, pAV.getParentId());
   }
 
+  /**
+   * Name-match fallback, HIGHERRANK: a floating species with no source identifier whose species is
+   * absent from the source is placed under the genus the matcher resolves, with the genus imported.
+   * The placed usage is flagged MATCHING_HIGHERRANK and re-runs stay idempotent.
+   */
+  @Test
+  public void nameMatchHigherRankPlacesUnderGenus() throws Exception {
+    final String T_Rosaceae = "T_Rosaceae";
+    final String T_Alchemilla = "T_Alchemilla";
+    final String P_floating = "p_alch_acutiloba";
+
+    // Source: Animalia > Rosaceae > Alchemilla (no species in source)
+    insertTaxon(targetKey, T_Rosaceae, T_Animalia, Rank.FAMILY, "Rosaceae");
+    insertTaxon(targetKey, T_Alchemilla, T_Rosaceae, Rank.GENUS, "Alchemilla");
+
+    // Project: floating species at root, no identifier
+    insertTaxon(PROJECT_KEY, P_floating, null, Rank.SPECIES, "Alchemilla acutiloba");
+
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase genus = getByName(PROJECT_KEY, Rank.GENUS, "Alchemilla");
+    assertNotNull("genus Alchemilla should have been imported", genus);
+    assertEquals(hierarchySector.getId(), genus.getSectorKey());
+
+    NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
+    assertEquals("floating species should nest under the imported genus", genus.getId(), floating.getParentId());
+    assertTrue("placed species should stay accepted", floating.getStatus().isTaxon());
+    assertNull("placed species must not gain an identifier", floating.getIdentifier());
+    assertHasVerbatimIssue(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK);
+
+    // idempotency: a second run keeps a single genus and a single issue
+    runHierarchySync();
+    assertEquals(1, listByName(PROJECT_KEY, Rank.GENUS, "Alchemilla").size());
+    assertEquals(1, verbatimIssueCount(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK));
+  }
+
+  /**
+   * Name-match fallback, full match: a species that exists in the source but was never id-matched is
+   * placed under its genus (imported) without becoming an identifier match (no status/synonym change).
+   */
+  @Test
+  public void nameMatchFullMatchPlacesUnderGenus() throws Exception {
+    final String T_Caryo = "T_Caryophyllaceae";
+    final String T_Agrostemma = "T_Agrostemma";
+    final String T_Ag_githago = "T_Ag_githago";
+    final String P_floating = "p_ag_githago";
+
+    insertTaxon(targetKey, T_Caryo, T_Animalia, Rank.FAMILY, "Caryophyllaceae");
+    insertTaxon(targetKey, T_Agrostemma, T_Caryo, Rank.GENUS, "Agrostemma");
+    insertTaxon(targetKey, T_Ag_githago, T_Agrostemma, Rank.SPECIES, "Agrostemma githago");
+
+    insertTaxon(PROJECT_KEY, P_floating, null, Rank.SPECIES, "Agrostemma githago");
+
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase genus = getByName(PROJECT_KEY, Rank.GENUS, "Agrostemma");
+    assertNotNull("genus Agrostemma should have been imported", genus);
+    NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
+    assertEquals("floating species should nest under its genus", genus.getId(), floating.getParentId());
+    assertNull("placed species must not gain an identifier", floating.getIdentifier());
+    assertHasVerbatimIssue(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK);
+  }
+
+  /**
+   * Name-match fallback, ambiguous: when the source has two genera sharing the same canonical name,
+   * the higher-rank match is AMBIGUOUS and the floating species is left at the root, unflagged.
+   */
+  @Test
+  public void nameMatchAmbiguousLeavesUsageUntouched() throws Exception {
+    final String T_FamA = "T_FamA";
+    final String T_FamB = "T_FamB";
+    final String T_GenusA = "T_GenusA";
+    final String T_GenusB = "T_GenusB";
+    final String P_floating = "p_dupgenus_spec";
+
+    // two genera "Dupgenus" under different families => higher match is ambiguous
+    insertTaxon(targetKey, T_FamA, T_Animalia, Rank.FAMILY, "Aaaaceae");
+    insertTaxon(targetKey, T_FamB, T_Animalia, Rank.FAMILY, "Bbbbceae");
+    insertTaxon(targetKey, T_GenusA, T_FamA, Rank.GENUS, "Dupgenus");
+    insertTaxon(targetKey, T_GenusB, T_FamB, Rank.GENUS, "Dupgenus");
+
+    insertTaxon(PROJECT_KEY, P_floating, null, Rank.SPECIES, "Dupgenus specia");
+
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
+    assertNull("ambiguous floating species should stay at the root", floating.getParentId());
+    assertEquals("ambiguous floating species must not be flagged", 0,
+      verbatimIssueCount(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK));
+  }
+
+  /**
+   * Name-match fallback ignores synonyms: a floating synonym whose name matches a source genus is
+   * not re-parented (its parent stays its accepted taxon).
+   */
+  @Test
+  public void nameMatchSkipsSynonyms() throws Exception {
+    final String T_Caryo = "T_Caryophyllaceae";
+    final String T_Agrostemma = "T_Agrostemma";
+    final String P_acc = "p_acc_genus";
+    final String P_syn = "p_syn_under_acc";
+
+    insertTaxon(targetKey, T_Caryo, T_Animalia, Rank.FAMILY, "Caryophyllaceae");
+    insertTaxon(targetKey, T_Agrostemma, T_Caryo, Rank.GENUS, "Agrostemma");
+
+    insertTaxon(PROJECT_KEY, P_acc, null, Rank.GENUS, "Somegenus");
+    insertSynonym(PROJECT_KEY, P_syn, P_acc, Rank.SPECIES, "Agrostemma githago");
+
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase syn = getByID(PROJECT_KEY, P_syn);
+    assertTrue("synonym should stay a synonym", syn.getStatus().isSynonym());
+    assertEquals("synonym parent must be unchanged", P_acc, syn.getParentId());
+  }
+
   // ---------- helpers ----------
 
   private void runHierarchySync() throws Exception {
@@ -710,6 +841,22 @@ public class HierarchySyncIT {
       assertNotNull("expected an AUTHORSHIP secondary source on " + usageId, ss);
       assertEquals("secondary source dataset", Integer.valueOf(expectedSourceDatasetKey), ss.getDatasetKey());
       assertEquals("secondary source id", expectedSourceId, ss.getId());
+    }
+  }
+
+  private static void assertHasVerbatimIssue(int datasetKey, String usageId, Issue issue) {
+    assertEquals("usage " + usageId + " should carry verbatim issue " + issue, 1,
+      verbatimIssueCount(datasetKey, usageId, issue));
+  }
+
+  private static int verbatimIssueCount(int datasetKey, String usageId, Issue issue) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      VerbatimSourceMapper vsm = s.getMapper(VerbatimSourceMapper.class);
+      Integer vsKey = vsm.getVSKeyByUsage(DSID.of(datasetKey, usageId));
+      if (vsKey == null) return 0;
+      VerbatimSource v = vsm.getIssues(DSID.of(datasetKey, vsKey));
+      if (v == null || v.getIssues() == null) return 0;
+      return v.getIssues().contains(issue) ? 1 : 0;
     }
   }
 
