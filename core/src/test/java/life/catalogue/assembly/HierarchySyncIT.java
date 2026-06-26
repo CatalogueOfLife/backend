@@ -442,6 +442,9 @@ public class HierarchySyncIT {
     NameUsageBase rosaceae = getByName(PROJECT_KEY, Rank.FAMILY, "Rosaceae");
     assertNotNull(rosaceae);
     assertEquals(hierarchySector.getId(), rosaceae.getSectorKey());
+    NameUsageBase animalia = getByName(PROJECT_KEY, Rank.KINGDOM, "Animalia");
+    assertNotNull(animalia);
+    assertEquals(hierarchySector.getId(), animalia.getSectorKey());
 
     // the id-matched species nests under the existing project genus (not under the family)
     NameUsageBase pAV = getByID(PROJECT_KEY, P_Alch_vulgaris);

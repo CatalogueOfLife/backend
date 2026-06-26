@@ -467,7 +467,7 @@ public class HierarchySync extends SectorRunnable {
     if (m != null && m.isMatch()
         && (m.type == MatchType.EXACT || m.type == MatchType.VARIANT || m.type == MatchType.CANONICAL)
         && m.usage.getRank() == sourceAncestor.getRank()
-        && (m.usage.getStatus() == null || m.usage.getStatus().isTaxon())) {
+        && m.usage.getStatus() != null && m.usage.getStatus().isTaxon()) {
       return m.usage.getId();
     }
     return null;
