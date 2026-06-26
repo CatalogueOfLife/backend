@@ -640,7 +640,7 @@ public class PgImport implements Callable<Boolean> {
   private void matchUsage(UsageData u, DSID<Integer> vKey, UsageMatcher matcher, String scope, VerbatimRecordMapper verbatimRecordMapper) {
     UsageMatch m;
     try {
-      m = matcher.parseAndMatch(u.usage.toSimpleNameLink());
+      m = matcher.parseAndMatch(u.usage.toSimpleNameLink(), true);
     } catch (RuntimeException e) {
       LOG.warn("Match failed for usage {} {}", u.getId(), u.usage.getName().getLabel(), e);
       return;
@@ -655,13 +655,13 @@ public class PgImport implements Callable<Boolean> {
         }
         break;
       case HIGHERRANK:
-        if (m.usage != null) {
-          u.usage.asUsageBase().addIdentifier(new Identifier(scope, m.usage.getId()));
-        }
         addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_HIGHERRANK);
         break;
       case AMBIGUOUS:
         addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_AMBIGUOUS);
+        if (m.usage != null) {
+          u.usage.asUsageBase().addIdentifier(new Identifier(scope, m.usage.getId()));
+        }
         break;
       case NONE:
         addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_NONE);

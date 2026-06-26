@@ -291,7 +291,8 @@ public abstract class AbstractMatchingJob extends DatasetJob {
         nu.getName().setRank(null);
       }
       var snc = utils.toSimpleNameClassified(nu, classification);
-      match = matcher.match(snc, false, verbose);
+      // external match requests fall back to a higher rank match when the name itself cannot be matched
+      match = matcher.match(snc, false, verbose, true);
     } else {
       match = UsageMatch.empty(0);
       issues.add(Issue.UNPARSABLE_NAME);

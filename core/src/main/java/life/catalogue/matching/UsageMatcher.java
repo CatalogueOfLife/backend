@@ -15,9 +15,11 @@ import life.catalogue.parser.NameParser;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,12 +86,18 @@ public class UsageMatcher implements AutoCloseable {
    * @throws NotFoundException
    */
   public UsageMatch parseAndMatch(SimpleName sn) throws NotFoundException {
-    return parseAndMatch(new SimpleNameClassified<>(sn));
+    return parseAndMatch(new SimpleNameClassified<>(sn), false);
+  }
+  public UsageMatch parseAndMatch(SimpleName sn, boolean higherRank) throws NotFoundException {
+    return parseAndMatch(new SimpleNameClassified<>(sn), higherRank);
   }
   public UsageMatch parseAndMatch(SimpleNameClassified<SimpleNameCached> snc) throws NotFoundException {
+    return parseAndMatch(snc, false);
+  }
+  public UsageMatch parseAndMatch(SimpleNameClassified<SimpleNameCached> snc, boolean higherRank) throws NotFoundException {
     var m = nameIndex.match(snc, true, false);
     snc.applyMatch(m);
-    return match(snc, true, false);
+    return match(snc, true, false, higherRank);
   }
 
   /**
@@ -100,6 +108,24 @@ public class UsageMatcher implements AutoCloseable {
    */
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc) throws NotFoundException {
     return match(snc, true, false);
+  }
+
+  /**
+   * Like {@link #match(SimpleNameClassified, boolean, boolean)} but with an optional higher rank fallback.
+   * If {@code higherRank} is true and the name itself does not match any usage, the matcher walks up the
+   * ranks and tries to match a higher rank usage instead, see {@link #matchHigherRank(SimpleNameClassified, boolean)}.
+   * The fallback is opt-in because callers like the assembly merge rely on an empty match to create new usages
+   * and must not be redirected to a higher rank taxon.
+   */
+  public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, boolean higherRank) throws NotFoundException {
+    var m = match(snc, allowInserts, verbose);
+    if (higherRank && !m.isMatch()) {
+      var hr = matchHigherRank(snc, verbose);
+      if (hr.isMatch()) {
+        return hr;
+      }
+    }
+    return m;
   }
 
   /**
@@ -136,6 +162,111 @@ public class UsageMatcher implements AutoCloseable {
       return match;
     }
     return UsageMatch.empty(datasetKey);
+  }
+
+  /**
+   * Fallback that tries to match a higher rank usage when the name itself did not match any usage.
+   * It collects candidate higher names from both the explicit classification of the source and the
+   * genus (and species for infraspecific names) derived from a bi- or trinomial name, then walks up
+   * the ranks from lowest to highest and returns the first confident single usage found, flagged as
+   * a {@link MatchType#HIGHERRANK} match. Higher ranks that stay ambiguous are skipped and the walk
+   * continues upwards. Never inserts names into the names index.
+   *
+   * @return a HIGHERRANK match or an empty NONE match if no higher rank usage could be matched
+   */
+  private UsageMatch matchHigherRank(SimpleNameClassified<SimpleNameCached> snc, boolean verbose) throws NotFoundException {
+    for (var q : higherRankCandidates(snc)) {
+      // make sure the higher name is matched to the names index, but never insert
+      if (q.getCanonicalId() == null) {
+        q.applyMatch(nameIndex.match(q, false, false));
+      }
+      if (q.getCanonicalId() == null) {
+        continue; // not in the names index, try the next higher rank
+      }
+      var match = match(q, false, verbose);
+      // keep walking upwards if the higher rank itself is unmatched or ambiguous
+      if (match.isMatch() && match.type != MatchType.AMBIGUOUS) {
+        LOG.debug("Matched {} {} to higher rank {} {}", snc.getRank(), snc.getLabel(), match.usage.getRank(), match.usage.getLabel());
+        return UsageMatch.match(MatchType.HIGHERRANK, match.usage, datasetKey, match.alternatives);
+      }
+    }
+    return UsageMatch.empty(datasetKey, MatchType.NONE);
+  }
+
+  /**
+   * Builds the higher rank query names to try, ordered from the lowest to the highest rank.
+   * The explicit classification takes precedence over names derived from the source name as it may carry
+   * an authorship. Each query carries the remaining higher classification so homonyms can be resolved.
+   */
+  private List<SimpleNameClassified<SimpleNameCached>> higherRankCandidates(SimpleNameClassified<SimpleNameCached> snc) {
+    final Rank origRank = snc.getRank();
+    final List<SimpleNameCached> classification = snc.getClassification() == null ? Collections.emptyList() : snc.getClassification();
+    // dedupe by rank, explicit classification wins over derived names
+    Map<Rank, SimpleNameCached> byRank = new HashMap<>();
+    for (var p : classification) {
+      if (isHigher(p.getRank(), origRank)) {
+        byRank.putIfAbsent(p.getRank(), p);
+      }
+    }
+    for (var e : derivedHigherNames(snc).entrySet()) {
+      if (isHigher(e.getKey(), origRank)) {
+        byRank.putIfAbsent(e.getKey(), e.getValue());
+      }
+    }
+    // order lowest rank first
+    List<SimpleNameCached> ordered = new ArrayList<>(byRank.values());
+    ordered.sort((a, b) -> a.getRank().higherThan(b.getRank()) ? 1 : (b.getRank().higherThan(a.getRank()) ? -1 : 0));
+
+    List<SimpleNameClassified<SimpleNameCached>> queries = new ArrayList<>();
+    for (var head : ordered) {
+      var q = new SimpleNameClassified<SimpleNameCached>(head);
+      q.setClassification(classification.stream().filter(p -> isHigher(p.getRank(), head.getRank())).collect(Collectors.toList()));
+      queries.add(q);
+    }
+    return queries;
+  }
+
+  /**
+   * Derives the genus and, for infraspecific names, the species from a bi- or trinomial name.
+   * @return a map of rank to the derived uninomial/binomial name, empty if the name is not a bi/trinomial
+   */
+  private Map<Rank, SimpleNameCached> derivedHigherNames(SimpleNameClassified<SimpleNameCached> snc) {
+    var opt = NameParser.PARSER.parse(snc);
+    if (opt.isPresent()) {
+      var n = opt.get().getName();
+      if (n.getGenus() != null && n.getSpecificEpithet() != null) {
+        Map<Rank, SimpleNameCached> map = new HashMap<>();
+        if (n.getInfraspecificEpithet() != null) {
+          map.put(Rank.SPECIES, derivedName(n.getGenus() + " " + n.getSpecificEpithet(), Rank.SPECIES, snc.getCode()));
+        }
+        map.put(Rank.GENUS, derivedName(n.getGenus(), Rank.GENUS, snc.getCode()));
+        return map;
+      }
+    }
+    return Collections.emptyMap();
+  }
+
+  private static SimpleNameCached derivedName(String name, Rank rank, NomCode code) {
+    var sn = new SimpleNameCached();
+    sn.setName(name);
+    sn.setRank(rank);
+    sn.setCode(code);
+    sn.setStatus(TaxonomicStatus.ACCEPTED);
+    return sn;
+  }
+
+  /**
+   * @return true if rank r is a concrete (comparable) rank that is higher than the concrete reference rank.
+   *         If the reference rank is unknown or uncomparable any concrete rank is considered higher.
+   */
+  private static boolean isHigher(Rank r, Rank ref) {
+    if (r == null || !r.notOtherOrUnranked()) {
+      return false;
+    }
+    if (ref == null || !ref.notOtherOrUnranked()) {
+      return true;
+    }
+    return r.higherThan(ref);
   }
 
   private static boolean ranksDiffer(Rank r1, Supplier<Optional<Rank>> r1pSupplier, Rank r2, List<SimpleNameCached> r2parents) {

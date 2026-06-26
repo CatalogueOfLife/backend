@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.MatchingConfig;
@@ -155,6 +156,39 @@ public class UsageMatcherIT {
     assertMatch(m, "Ichneumon_fuscatus");
   }
 
+  /**
+   * Higher rank fallback: when the name itself cannot be matched to a usage,
+   * the matcher walks up the explicit classification and the genus/species derived
+   * from a bi/trinomial name and returns the closest higher rank usage.
+   */
+  @Test
+  public void higherRank() throws InterruptedException {
+    loadDataset(4);
+
+    // genus derived from an unmatched binomial
+    var m = matchHigher(Rank.SPECIES, "Bembidion fakeum", null, cl());
+    assertMatch(m, "Bembidion");
+    assertEquals(MatchType.HIGHERRANK, m.type);
+
+    // species derived from an unmatched infraspecific name is preferred over the genus
+    m = matchHigher(Rank.SUBSPECIES, "Bembidion lampros fakevar", null, cl());
+    assertMatch(m, "Bembidion_lampros");
+    assertEquals(MatchType.HIGHERRANK, m.type);
+
+    // uninomial that does not match walks up the explicit classification
+    m = matchHigher(Rank.GENUS, "Faketus", null, cl().family("Carabidae").order("Coleoptera"));
+    assertMatch(m, "Carabidae");
+    assertEquals(MatchType.HIGHERRANK, m.type);
+
+    // an ambiguous derived genus (cross family homonym) without disambiguating classification is no match
+    m = matchHigher(Rank.SPECIES, "Agabus fakeus", null, cl());
+    assertNoMatch(m);
+
+    // without the higher rank flag the very same query does not match at all
+    m = match(Rank.SPECIES, "Bembidion fakeum", null, cl());
+    assertNoMatch(m);
+  }
+
   void assertMatch(UsageMatch m, String id) {
     assertTrue(m.isMatch());
     assertEquals(id, m.usage.getId());
@@ -165,6 +199,24 @@ public class UsageMatcherIT {
 
   UsageMatch match(Rank rank, String name, String authors, Classification.ClassificationBuilder parents) throws InterruptedException {
     return match(rank, name, authors, null, null, parents.build().asSimpleNames().toArray(new SimpleName[0]));
+  }
+
+  UsageMatch matchHigher(Rank rank, String name, String authors, Classification.ClassificationBuilder parents) throws InterruptedException {
+    var opt = NameParser.PARSER.parse(name, authors, rank, null, VerbatimRecord.VOID);
+    Name n = opt.get().getName();
+    n.setDatasetKey(Datasets.COL);
+    n.setRankAllowNull(rank);
+    n.setScientificName(name);
+    n.setAuthorship(authors);
+
+    NameUsageBase u = new Taxon();
+    u.setName(n);
+    u.setDatasetKey(Datasets.COL);
+    u.setStatus(TaxonomicStatus.ACCEPTED);
+
+    var classification = MatchingUtils.toSimpleNameCached(parents.build().asSimpleNames().toArray(new SimpleName[0]));
+    var snc = utils.toSimpleNameClassified(u, classification);
+    return matcher.match(snc, false, true, true);
   }
 
   UsageMatch match(Rank rank, String name, String authors, TaxonomicStatus status, NomCode code, SimpleName... parents) throws InterruptedException {

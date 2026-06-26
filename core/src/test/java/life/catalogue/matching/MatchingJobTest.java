@@ -53,7 +53,7 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   public void setUp() throws Exception {
     this.cfg = TestConfigs.build();
     var matcher = mock(UsageMatcher.class);
-    when(matcher.match(any(), anyBoolean(), anyBoolean())).thenReturn(UsageMatch.empty(0));
+    when(matcher.match(any(), anyBoolean(), anyBoolean(), anyBoolean())).thenReturn(UsageMatch.empty(0));
     matcherFactory = mock(UsageMatcherFactory.class);
     when(matcherFactory.persistent(anyInt())).thenReturn(matcher);
     when(matcherFactory.getNameIndex()).thenReturn(NameIndexFactory.passThru());

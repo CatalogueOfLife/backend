@@ -1,0 +1,12 @@
+Animalia [kingdom] {ID=Animalia}
+  Arthropoda [phylum] {ID=Arthropoda}
+    Insecta [class] {ID=Insecta}
+      Coleoptera [order] {ID=Coleoptera}
+        Carabidae [family] {ID=Carabidae}
+          Bembidion Latreille, 1802 [genus] {ID=Bembidion}
+            Bembidion lampros (Herbst, 1784) [species] {ID=Bembidion_lampros}
+        Dytiscidae [family] {ID=Dytiscidae}
+          Agabus Leach, 1817 [genus] {ID=Agabus1}
+      Hemiptera [order] {ID=Hemiptera}
+        Miridae [family] {ID=Miridae}
+          Agabus Reuter, 1888 [genus] {ID=Agabus2}
