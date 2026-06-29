@@ -246,4 +246,64 @@ public class UsageMatcherFactoryTest {
     assertSame(a, b);                  // shared cached instance
     assertSame(a, f.get(100));
   }
+
+  /**
+   * Wires the shared sqlSessionFactory so that DatasetMapper.searchKeys returns the given keys and
+   * NameUsageMapper / DatasetMapper are available for isSmallDataset(count) and needsRebuild(get).
+   * Returns the two mappers so tests can stub per-key counts and attempts.
+   */
+  private record ReconcileMocks(DatasetMapper dm, NameUsageMapper num) {}
+
+  private ReconcileMocks stubReconcile(List<Integer> keys) {
+    SqlSession session = mock(SqlSession.class);
+    DatasetMapper dm = mock(DatasetMapper.class);
+    NameUsageMapper num = mock(NameUsageMapper.class);
+    when(sqlSessionFactory.openSession()).thenReturn(session);
+    when(session.getMapper(DatasetMapper.class)).thenReturn(dm);
+    when(session.getMapper(NameUsageMapper.class)).thenReturn(num);
+    when(dm.searchKeys(any(), anyInt())).thenReturn(keys);
+    return new ReconcileMocks(dm, num);
+  }
+
+  @Test
+  public void reconcileSchedulesBuildForAboveThresholdMissingStore() {
+    var f = factory();
+    var m = stubReconcile(List.of(200));
+    when(m.num().count(200)).thenReturn(5000);   // above default threshold of 100
+    // no store dir on disk and no sidecar → needsRebuild is true
+
+    f.reconcile(false, 1);
+
+    verify(executor).submit(argThat(j -> j instanceof BackgroundJob)); // build scheduled
+  }
+
+  @Test
+  public void reconcileSkipsBelowThresholdDataset() {
+    var f = factory();
+    var m = stubReconcile(List.of(201));
+    when(m.num().count(201)).thenReturn(5);      // below threshold → small → removed, not built
+
+    f.reconcile(false, 1);
+
+    verify(executor, never()).submit(any());
+  }
+
+  @Test
+  public void reconcileForceSchedulesBuildEvenWhenSidecarMatches() throws Exception {
+    var f = factory();
+    int key = 202;
+    var m = stubReconcile(List.of(key));
+    when(m.num().count(key)).thenReturn(5000);   // above threshold
+
+    // store dir + sidecar present and in sync → needsRebuild would be false, but force overrides it
+    new File(tmp.getRoot(), String.valueOf(key)).mkdirs();
+    Dataset stored = new Dataset();
+    stored.setKey(key);
+    stored.setAttempt(5);
+    DatasetJsonWriter.write(stored, new File(tmp.getRoot(), key + ".json"));
+
+    f.reconcile(true, 1);                          // force overrides the in-sync sidecar
+
+    verify(executor).submit(argThat(j -> j instanceof BackgroundJob));
+  }
 }

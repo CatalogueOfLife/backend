@@ -378,7 +378,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // matcher factory
     final var matcherFactory = new UsageMatcherFactory(cfg.matching, ni, getSqlSessionFactory(), executor);
-    env.lifecycle().manage(ManagedUtils.from(matcherFactory));
+    managedService.manage(Component.UsageMatcher, matcherFactory);
 
     // identifier scope resolver: map dataset keys to scopes from the central registry
     cfg.identifierScopes.validate();
