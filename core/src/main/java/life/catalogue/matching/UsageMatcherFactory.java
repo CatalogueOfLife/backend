@@ -154,6 +154,14 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   }
 
   /**
+   * Datasets with fewer usages than this threshold use a Postgres-backed matcher and have no
+   * persistent file store. 0 disables the threshold (all datasets get a persistent matcher).
+   */
+  public int getPgMatcherThreshold() {
+    return cfg.pgMatcherThreshold;
+  }
+
+  /**
    * Reopens the persisted chronicle store for a dataset from disk and caches it, or returns null
    * if there is no (or an empty/corrupt) store on disk. Concurrent callers share one instance.
    */

@@ -12,6 +12,8 @@ import life.catalogue.matching.UsageMatcherFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 @Hidden
 @Path("/matcher")
 @Produces(MediaType.APPLICATION_JSON)
@@ -25,6 +27,11 @@ public class MatcherManagementResource {
   }
 
   @GET
+  public Map<String, Object> config() {
+    return Map.of("pgMatcherThreshold", matcherFactory.getPgMatcherThreshold());
+  }
+
+  @GET
   @Path("{key}")
   public UsageMatcherFactory.MatcherMetadata matcherMetadata(@PathParam("key") int key) {
     return matcherFactory.metadata(key);
@@ -33,9 +40,9 @@ public class MatcherManagementResource {
   @POST
   @Path("rebuild")
   @RolesAllowed({Roles.ADMIN})
-  public void rebuildAll(@Auth User user) {
-    LOG.info("User {} requested rebuild of all matchers", user);
-    matcherFactory.reconcile(true, user.getKey());
+  public void rebuildAll(@QueryParam("force") boolean force, @Auth User user) {
+    LOG.info("User {} requested rebuild of {} matchers", user, force ? "all" : "stale");
+    matcherFactory.reconcile(force, user.getKey());
   }
 
   @POST
