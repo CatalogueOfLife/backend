@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
  *       {@code PUT /matcher/rebuild} admin endpoint.</li>
  *   <li>{@code --rebuild-stale} — rebuild only matchers that are missing or whose stored attempt is
  *       out of date (the same reconcile that runs at server startup).</li>
- *   <li>{@code --delete-small N} — remove matchers whose name count is below {@code N}.</li>
  * </ul>
  *
  * The rebuilds run asynchronously on a job executor; the command waits for them to finish before exiting.
@@ -35,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 public class MatcherCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(MatcherCmd.class);
   private static final String ARG_KEY = "key";
-  private static final String ARG_MINIMUM = "delete-small";
   private static final String ARG_REBUILD_ALL = "rebuild-all";
   private static final String ARG_REBUILD_STALE = "rebuild-stale";
   private UsageMatcherFactory matcherFactory;
@@ -61,11 +59,6 @@ public class MatcherCmd extends AbstractMybatisCmd {
       .dest(ARG_REBUILD_STALE)
       .action(Arguments.storeTrue())
       .help("Rebuild only missing or stale matchers");
-    subparser.addArgument("--"+ ARG_MINIMUM)
-       .dest(ARG_MINIMUM)
-       .type(Integer.class)
-       .help("Remove matchers with fewer names than this minimum")
-       .required(false);
   }
 
   @Override
@@ -81,7 +74,6 @@ public class MatcherCmd extends AbstractMybatisCmd {
       Integer key = ns.getInt(ARG_KEY);
       boolean rebuildAll = ns.getBoolean(ARG_REBUILD_ALL);
       boolean rebuildStale = ns.getBoolean(ARG_REBUILD_STALE);
-      Integer min = ns.getInt(ARG_MINIMUM);
 
       if (key != null) {
         LOG.info("Rebuild matcher for dataset {}", key);
@@ -95,10 +87,8 @@ public class MatcherCmd extends AbstractMybatisCmd {
         LOG.info("Rebuild missing or stale matchers");
         matcherFactory.reconcile(false, Users.MATCHER);
         awaitIdle(executor);
-      } else if (min != null) {
-        deleteSmallMatcher(min);
       } else {
-        System.out.println("No action given. Use one of: --key <datasetKey>, --rebuild-all, --rebuild-stale, --delete-small <min>");
+        System.out.println("No action given. Use one of: --key <datasetKey>, --rebuild-all, --rebuild-stale");
       }
 
     } finally {
@@ -121,20 +111,5 @@ public class MatcherCmd extends AbstractMybatisCmd {
       TimeUnit.SECONDS.sleep(5);
     }
     LOG.info("All matcher builds finished");
-  }
-
-  private void deleteSmallMatcher(Integer min) {
-    matcherFactory.loadAllFromDisk();
-    var matcher = matcherFactory.metadata(false);
-    for (var m : matcher.matchers) {
-      removeIfSmall(m.datasetKey, m.size, min);
-    }
-  }
-
-  private void removeIfSmall(int datasetKey, int size, int min) {
-    if (size < min) {
-      LOG.info("Remove matcher for dataset {} with {} names only", datasetKey, size);
-      matcherFactory.remove(datasetKey);
-    }
   }
 }

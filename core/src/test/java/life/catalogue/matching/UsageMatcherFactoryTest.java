@@ -3,7 +3,6 @@ package life.catalogue.matching;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Users;
@@ -55,18 +54,6 @@ public class UsageMatcherFactoryTest {
     return new UsageMatcherFactory(cfg, nameIndex, sqlSessionFactory, executor);
   }
 
-  private UsageMatcherFactory factoryWithDatasets(DatasetSimple... datasets) {
-    DatasetInfoCache.CACHE.setFactory(sqlSessionFactory);
-    SqlSession session = mock(SqlSession.class);
-    DatasetMapper dm = mock(DatasetMapper.class);
-    when(sqlSessionFactory.openSession()).thenReturn(session);
-    when(session.getMapper(DatasetMapper.class)).thenReturn(dm);
-
-    MatchingConfig cfg = new MatchingConfig();
-    cfg.storageDir = tmp.getRoot();
-    return new UsageMatcherFactory(cfg, nameIndex, sqlSessionFactory, executor);
-  }
-
   /** Wires the shared sqlSessionFactory mock to return the given NameUsageMapper counts for a dataset key. */
   @SuppressWarnings("unchecked")
   private void stubUsageMapper(int key, int count, int canon) {
@@ -82,14 +69,6 @@ public class UsageMatcherFactoryTest {
     when(num.listSN(eq(key), any())).thenReturn(List.of());
     when(num.countDistinctCanonical(key)).thenReturn(canon);
     when(num.processDatasetSimpleNidx(key)).thenReturn(cursor);
-  }
-
-  private static DatasetSimple simpleDataset(int key, DatasetOrigin origin, boolean deleted) {
-    var d = new DatasetSimple();
-    d.setKey(key);
-    d.setOrigin(origin);
-    d.setDeleted(deleted);
-    return d;
   }
 
   private static Dataset dataset(int key, DatasetOrigin origin, boolean privat) {
@@ -228,17 +207,19 @@ public class UsageMatcherFactoryTest {
   }
 
   @Test
-  public void loadFromFSDeletesStaleMatcherDirs() {
+  public void reconcileRemovesObsoleteMatcherDir() {
     int staleKey = 1001;
     File staleDir = new File(tmp.getRoot(), String.valueOf(staleKey));
     staleDir.mkdirs();
 
-    // dataset 1001 is deleted in the DB — warm cache marks it deleted, info() throws NotFoundException
-    // The constructor no longer preloads; call loadAllFromDisk() explicitly to validate on-disk state.
-    factoryWithDatasets(simpleDataset(staleKey, DatasetOrigin.EXTERNAL, true))
-      .loadAllFromDisk();
+    // 1001 is no longer a published in-scope dataset (e.g. deleted/unpublished), so searchKeys does not
+    // return it → reconcile must delete its obsolete on-disk matcher.
+    var f = factory();
+    stubReconcile(List.of());
 
-    assertFalse("stale matcher dir should be deleted on startup", staleDir.exists());
+    f.reconcile(false, Users.MATCHER);
+
+    assertFalse("obsolete matcher dir should be removed by reconcile", staleDir.exists());
   }
 
   @Test

@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.Page;
@@ -15,11 +14,8 @@ import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.concurrent.BackgroundJob;
-import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.config.MatchingConfig;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
@@ -43,10 +39,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 
 /**
  * Factory to create and reuse persistent usage matchers,
@@ -90,59 +85,6 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     this.factory = Preconditions.checkNotNull(factory);
     this.dir = cfg.storageDir;
     this.cfg = cfg;
-  }
-
-  /**
-   * Eagerly opens and validates every persisted matcher under the storage dir, populating the cache.
-   * Not called at startup (matchers are opened lazily); kept for the MatcherCmd CLI and admin use.
-   */
-  public int loadAllFromDisk() {
-    LOG.info("Load existing file based matchers from {}", dir);
-    var fsKeys = listFS();
-    if (fsKeys.isEmpty()) return matchers.size();
-
-    var validKeys = new ArrayList<Integer>();
-    for (int key : fsKeys) {
-      try {
-        DatasetInfoCache.CACHE.info(key);
-        validKeys.add(key);
-      } catch (NotFoundException e) {
-        File f = cfg.dir(key);
-        LOG.warn("Dataset {} not existing, delete matching storage folder {}", key, f);
-        FileUtils.deleteQuietly(f);
-      }
-    }
-    if (validKeys.isEmpty()) return matchers.size();
-
-    int threads = Math.min(8, validKeys.size());
-    var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("matcher-loader"));
-    var loaded = new ConcurrentHashMap<Integer, UsageMatcher>();
-    for (int key : validKeys) {
-      final int k = key;
-      exec.submit(() -> {
-        try {
-          var store = reopenStore(k);
-          var m = new UsageMatcher(k, nameIndex, store, true);
-          if (m.store().isEmpty()) {
-            LOG.warn("Matcher for dataset {} is empty, delete storage files {}", k, cfg.dir(k));
-            store.close(); // m.close() is a no-op while keepStoreOpen=true, so close the store directly
-            FileUtils.deleteQuietly(cfg.dir(k));
-          } else {
-            loaded.put(k, m);
-            LOG.info("Loaded matcher with {} usages and {} canonical ids for dataset {}", store.size(), store.canonicalSize(), k);
-          }
-        } catch (IOException e) {
-          File f = cfg.dir(k);
-          LOG.warn("Matcher for dataset {} cannot be loaded. Delete storage files {}", k, f, e);
-          FileUtils.deleteQuietly(f);
-        }
-      });
-    }
-    ExecutorUtils.shutdown(exec);
-
-    matchers.putAll(loaded);
-    LOG.info("Loaded {} matchers from {}", matchers.size(), dir);
-    return matchers.size();
   }
 
   private UsageMatcherChronicleStore reopenStore(int datasetKey) throws IOException {
@@ -418,25 +360,44 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
 
   /**
    * Enforces the matcher invariant for all published, non-deleted EXTERNAL/RELEASE/XRELEASE datasets.
+   * Removes any on-disk persistent matcher that should no longer exist — below the pgMatcherThreshold,
+   * unpublished, deleted, or no longer in scope — and (re)builds the ones that are missing or stale.
    * force=false: build only missing/stale matchers (startup). force=true: rebuild all (the "rebuild all" lever).
    */
   public void reconcile(boolean force, int userKey) {
     if (dir == null) return;
-    List<Integer> keys;
+    // datasets that SHOULD have a persistent matcher: published, not deleted, in-scope, above threshold
+    List<Integer> published;
     try (SqlSession s = factory.openSession()) {
       var req = new DatasetSearchRequest();
       req.setPrivat(false);
       req.setInclDeleted(false);
       req.setOrigin(List.of(DatasetOrigin.EXTERNAL, DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE));
-      keys = s.getMapper(DatasetMapper.class).searchKeys(req, Users.SUPERUSER);
+      published = s.getMapper(DatasetMapper.class).searchKeys(req, Users.SUPERUSER);
     }
-    int scheduled = 0;
-    for (int key : keys) {
+    var shouldHave = new HashSet<Integer>();
+    for (int key : published) {
       try {
-        if (isSmallDataset(key)) {
-          remove(key); // below threshold → no persistent file
-          continue;
+        if (!isSmallDataset(key)) {
+          shouldHave.add(key);
         }
+      } catch (Exception e) {
+        LOG.error("Failed to size dataset {} during reconcile", key, e);
+      }
+    }
+    // remove any on-disk matcher that should no longer exist: below threshold, unpublished, deleted, or out of scope
+    int removed = 0;
+    for (int key : listFS()) {
+      if (!shouldHave.contains(key)) {
+        LOG.info("Reconcile: removing obsolete persistent matcher for dataset {}", key);
+        remove(key);
+        removed++;
+      }
+    }
+    // (re)build the matchers that are missing or stale
+    int scheduled = 0;
+    for (int key : shouldHave) {
+      try {
         if (force || needsRebuild(key)) {
           rebuild(key, userKey);
           scheduled++;
@@ -445,7 +406,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
         LOG.error("Failed to reconcile matcher for dataset {}", key, e);
       }
     }
-    LOG.info("Reconcile scheduled {} matcher builds (force={}) of {} published datasets", scheduled, force, keys.size());
+    LOG.info("Reconcile removed {} obsolete and scheduled {} (re)builds (force={}); {} of {} published datasets in scope",
+      removed, scheduled, force, shouldHave.size(), published.size());
   }
 
   /** True when no store exists on disk or the stored sidecar attempt differs from the current DB attempt. */
@@ -494,16 +456,6 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     }
   }
 
-  public static class FactoryMetadata {
-    public final int count;
-    public final List<MatcherMetadata> matchers;
-
-    public FactoryMetadata(List<MatcherMetadata> matchers) {
-      this.matchers = matchers;
-      this.count = matchers.size();
-    }
-  }
-
   public static class MatcherMetadata implements Comparable<MatcherMetadata> {
     @Override
     public int compareTo(@NotNull MatcherMetadata o) {
@@ -528,25 +480,6 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       return new MatcherMetadata(datasetKey, m.store().size(), readStoredAttempt(datasetKey));
     }
     return null;
-  }
-
-  public FactoryMetadata metadata(boolean decorate) {
-    List<MatcherMetadata> matchers = new ArrayList<>();
-    for (var e : this.matchers.entrySet()) {
-      matchers.add(new MatcherMetadata(e.getKey(), e.getValue().store().size(), readStoredAttempt(e.getKey())));
-    }
-    // decorate with dataset metadata
-    if (decorate) {
-      try (SqlSession session = factory.openSession()) {
-        var dm = session.getMapper(DatasetMapper.class);
-        for (MatcherMetadata m : matchers) {
-          m.dataset = dm.getSimple(m.datasetKey);
-        }
-      }
-    }
-    // sort by datasetKey
-    Collections.sort(matchers);
-    return new FactoryMetadata(matchers);
   }
 
   private List<Integer> listFS() {
