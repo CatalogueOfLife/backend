@@ -1,10 +1,12 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.config.MatchingConfig;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -85,6 +87,61 @@ public class UsageMatcherFactoryTest {
     d.setOrigin(origin);
     d.setDeleted(deleted);
     return d;
+  }
+
+  private static Dataset dataset(int key, DatasetOrigin origin, boolean privat) {
+    var d = new Dataset();
+    d.setKey(key);
+    d.setOrigin(origin);
+    d.setPrivat(privat);
+    return d;
+  }
+
+  @Test
+  public void publishSchedulesBuildForExternalAboveThreshold() {
+    var f = factory();
+    stubUsageMapper(100, 5000, 4000);          // above default threshold of 100
+    Dataset old = dataset(100, DatasetOrigin.EXTERNAL, true);   // was private
+    Dataset now = dataset(100, DatasetOrigin.EXTERNAL, false);  // now public
+    f.datasetChanged(DatasetChanged.changed(now, old, 1));
+    verify(executor).submit(argThat(j -> j instanceof BackgroundJob)); // a build was scheduled
+  }
+
+  @Test
+  public void publishSkipsSmallDataset() {
+    var f = factory();
+    stubUsageMapper(101, 5, 5);                 // below threshold
+    f.datasetChanged(DatasetChanged.changed(
+      dataset(101, DatasetOrigin.EXTERNAL, false), dataset(101, DatasetOrigin.EXTERNAL, true), 1));
+    verify(executor, never()).submit(any());
+  }
+
+  @Test
+  public void publishSkipsProjects() {
+    var f = factory();
+    f.datasetChanged(DatasetChanged.changed(
+      dataset(102, DatasetOrigin.PROJECT, false), dataset(102, DatasetOrigin.PROJECT, true), 1));
+    verify(executor, never()).submit(any());
+  }
+
+  @Test
+  public void unpublishRemovesMatcher() throws Exception {
+    var f = factory();
+    stubUsageMapper(103, 5000, 4000);
+    f.persistent(103);                          // create a matcher on disk + cache
+    assertNotNull(f.get(103));
+    f.datasetChanged(DatasetChanged.changed(
+      dataset(103, DatasetOrigin.EXTERNAL, true), dataset(103, DatasetOrigin.EXTERNAL, false), 1));
+    assertNull(f.get(103));                      // removed
+  }
+
+  @Test
+  public void deleteRemovesMatcher() throws Exception {
+    var f = factory();
+    stubUsageMapper(104, 5000, 4000);
+    f.persistent(104);
+    f.datasetChanged(DatasetChanged.deleted(dataset(104, DatasetOrigin.EXTERNAL, false), 1));
+    assertNull(f.get(104));
   }
 
   @Test

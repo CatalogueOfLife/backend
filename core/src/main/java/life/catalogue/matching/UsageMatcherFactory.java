@@ -52,8 +52,9 @@ import java.util.concurrent.Executors;
  * Factory to create and reuse persistent usage matchers,
  * which are specific for an entire dataset.
  */
-public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
+public class UsageMatcherFactory implements DatasetListener, life.catalogue.common.Managed {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherFactory.class);
+  private volatile boolean started = false;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   private final MatchingConfig cfg;
@@ -339,6 +340,33 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
   }
 
+  /** Asynchronously removes and rebuilds a single matcher. The "rebuild one" lever. */
+  public BackgroundJob rebuild(int datasetKey, int userKey) {
+    var job = new MatcherBuildJob(datasetKey, userKey);
+    executor.submit(job);
+    return job;
+  }
+
+  private class MatcherBuildJob extends BackgroundJob {
+    private final int datasetKey;
+
+    MatcherBuildJob(int datasetKey, int userKey) {
+      super(userKey);
+      this.datasetKey = datasetKey;
+    }
+
+    @Override
+    public void execute() throws Exception {
+      remove(datasetKey);     // drop stale in-memory + on-disk matcher
+      buildAndLoad(datasetKey); // rebuild fresh + load + sidecar, cached
+    }
+
+    @Override
+    public boolean isDuplicate(BackgroundJob other) {
+      return other instanceof MatcherBuildJob && ((MatcherBuildJob) other).datasetKey == datasetKey;
+    }
+  }
+
   /**
    * Returns the persistent matcher (reopened from disk if needed), or a postgres matcher reading
    * live data when no persistent store exists. All matchers must be closed after use.
@@ -461,26 +489,94 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   public void datasetChanged(DatasetChanged d) {
     if (d.isDeletion()) {
       remove(d.key);
+    } else if (d.isUpdated() && d.obj != null && d.old != null) {
+      boolean wasPublished = !d.old.isPrivat();
+      boolean isPublished = !d.obj.isPrivat();
+      if (!wasPublished && isPublished) {
+        ensurePublishedMatcher(d.obj, d.user);
+      } else if (wasPublished && !isPublished) {
+        remove(d.key); // unpublished → drop matcher + sidecar
+      }
+    }
+  }
+
+  /** Schedules a build for a newly published dataset if it is in scope and above threshold. */
+  private void ensurePublishedMatcher(Dataset d, int userKey) {
+    if (dir == null) return;
+    var origin = d.getOrigin();
+    if (origin != DatasetOrigin.EXTERNAL && !origin.isRelease()) return; // projects served live
+    try {
+      if (!isSmallDataset(d.getKey())) {
+        rebuild(d.getKey(), userKey);
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to create matcher for newly published dataset {}", d.getKey(), e);
     }
   }
 
   @Override
   public void datasetDataChanged(DatasetDataChanged event) {
-    var info = DatasetInfoCache.CACHE.info(event.datasetKey);
-    if (info.origin == DatasetOrigin.PROJECT || info.origin.isRelease()) {
-      return;
+    if (dir == null) return;
+    Dataset d;
+    try (SqlSession s = factory.openSession()) {
+      d = s.getMapper(DatasetMapper.class).get(event.datasetKey);
     }
-    if (!matcherExists(event.datasetKey)) {
-      return;
-    }
+    if (d == null || d.getDeleted() != null || d.isPrivat()) return; // only published, non-deleted
+    var origin = d.getOrigin();
+    if (origin != DatasetOrigin.EXTERNAL && !origin.isRelease()) return;
     try {
-      remove(event.datasetKey);
-      if (!isSmallDataset(event.datasetKey)) {
-        prepare(event.datasetKey, event.user);
+      if (isSmallDataset(event.datasetKey)) {
+        remove(event.datasetKey); // drop any stale persistent file; served live from postgres now
+      } else {
+        rebuild(event.datasetKey, event.user); // refresh to new attempt; creates if missing
       }
     } catch (Exception e) {
-      LOG.error("Failed to recreate persistent matcher for dataset {}", event.datasetKey, e);
+      LOG.error("Failed to refresh matcher for dataset {}", event.datasetKey, e);
     }
+  }
+
+  /**
+   * Enforces the matcher invariant for all published, non-deleted EXTERNAL/RELEASE/XRELEASE datasets.
+   * force=false: build only missing/stale matchers (startup). force=true: rebuild all (the "rebuild all" lever).
+   */
+  public void reconcile(boolean force, int userKey) {
+    if (dir == null) return;
+    List<Integer> keys;
+    try (SqlSession s = factory.openSession()) {
+      var req = new DatasetSearchRequest();
+      req.setPrivat(false);
+      req.setInclDeleted(false);
+      req.setOrigin(List.of(DatasetOrigin.EXTERNAL, DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE));
+      keys = s.getMapper(DatasetMapper.class).searchKeys(req, Users.SUPERUSER);
+    }
+    int scheduled = 0;
+    for (int key : keys) {
+      try {
+        if (isSmallDataset(key)) {
+          remove(key); // below threshold → no persistent file
+          continue;
+        }
+        if (force || needsRebuild(key)) {
+          rebuild(key, userKey);
+          scheduled++;
+        }
+      } catch (Exception e) {
+        LOG.error("Failed to reconcile matcher for dataset {}", key, e);
+      }
+    }
+    LOG.info("Reconcile scheduled {} matcher builds (force={}) of {} published datasets", scheduled, force, keys.size());
+  }
+
+  /** True when no store exists on disk or the stored sidecar attempt differs from the current DB attempt. */
+  private boolean needsRebuild(int datasetKey) {
+    if (!cfg.dir(datasetKey).isDirectory()) return true;
+    Integer stored = readStoredAttempt(datasetKey);
+    Integer current;
+    try (SqlSession s = factory.openSession()) {
+      Dataset d = s.getMapper(DatasetMapper.class).get(datasetKey);
+      current = d == null ? null : d.getAttempt();
+    }
+    return stored == null || !stored.equals(current);
   }
 
   public void removeAll() {
@@ -628,6 +724,30 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   @Override
+  public void start() {
+    started = true;
+    if (dir != null) {
+      executor.submit(new ReconcileJob(Users.SUPERUSER));
+    }
+  }
+
+  @Override
+  public void stop() {
+    close();
+    started = false;
+  }
+
+  @Override
+  public boolean hasStarted() {
+    return started;
+  }
+
+  private class ReconcileJob extends BackgroundJob {
+    ReconcileJob(int userKey) { super(userKey); }
+    @Override public void execute() { reconcile(false, getUserKey()); }
+    @Override public boolean isDuplicate(BackgroundJob other) { return other instanceof ReconcileJob; }
+  }
+
   public void close() {
     for (UsageMatcher m : matchers.values()) {
       try {

@@ -651,7 +651,8 @@ public class HierarchySyncIT {
     SectorImportDao siDao = new SectorImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), TreeRepoRule.getRepo());
     EventBroker bus = TestUtils.mockedBroker();
     NameIndex ni = NameMatchingRule.getIndex();
-    try (UsageMatcherFactory matcherFactory = new UsageMatcherFactory(new MatchingConfig(), ni, SqlSessionFactoryRule.getSqlSessionFactory(), null)) {
+    UsageMatcherFactory matcherFactory = new UsageMatcherFactory(new MatchingConfig(), ni, SqlSessionFactoryRule.getSqlSessionFactory(), null);
+    try {
       HierarchySync sync = new HierarchySync(
         hierarchySector,
         SqlSessionFactoryRule.getSqlSessionFactory(),
@@ -671,6 +672,8 @@ public class HierarchySyncIT {
       if (sync.getState().getState() != ImportState.FINISHED) {
         throw new AssertionError("HierarchySync did not finish cleanly: state=" + sync.getState().getState() + " error=" + sync.getState().getError());
       }
+    } finally {
+      matcherFactory.close();
     }
   }
 

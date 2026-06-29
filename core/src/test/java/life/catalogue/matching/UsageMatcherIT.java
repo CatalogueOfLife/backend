@@ -1,13 +1,17 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.Users;
+import life.catalogue.concurrent.JobConfig;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.MatchingConfig;
+import life.catalogue.dao.UserDao;
 import life.catalogue.junit.*;
 import life.catalogue.parser.NameParser;
 
@@ -15,15 +19,23 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.mockito.Mock;
 
+import com.codahale.metrics.MetricRegistry;
+
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 public class UsageMatcherIT {
 
@@ -38,6 +50,9 @@ public class UsageMatcherIT {
     .around(treeRepoRule)
     .around(dataRule)
     .around(matchingRule);
+
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
 
   int datasetKey;
   DSID<String> dsid;
@@ -187,6 +202,67 @@ public class UsageMatcherIT {
     // without the higher rank flag the very same query does not match at all
     m = match(Rank.SPECIES, "Bembidion fakeum", null, cl());
     assertNoMatch(m);
+  }
+
+  /**
+   * Full self-maintaining cycle on a real DB: publishing an in-scope EXTERNAL dataset above threshold
+   * schedules an async build that lands a persistent matcher on disk; deleting it removes the matcher again.
+   */
+  @Test
+  public void publishBuildRemoveCycle() throws Exception {
+    // load a fresh EXTERNAL dataset (key 5) from the dataset-1 tree so we don't collide with other tests
+    int key = 5;
+    TxtTreeDataRule.TreeDataset rule = new TxtTreeDataRule.TreeDataset(key, "matching/1.txtree", "Dataset " + key, DatasetOrigin.EXTERNAL);
+    try (TxtTreeDataRule treeRule = new TxtTreeDataRule(List.of(rule))) {
+      treeRule.before();
+    } catch (Throwable e) {
+      throw new RuntimeException(e);
+    }
+    matchingRule.rematch(key);
+    datasetKey = key;
+
+    MatchingConfig cfg = new MatchingConfig();
+    cfg.storageDir = tmp.getRoot();
+    cfg.pgMatcherThreshold = 1; // dataset 1 has more than 1 usage → persistent, not "small"
+
+    UserDao uDao = mock(UserDao.class);
+    User user = new User();
+    user.setKey(Users.TESTER);
+    user.setUsername("tester");
+    doReturn(user).when(uDao).get(any());
+    JobExecutor exec = new JobExecutor(new JobConfig(), new MetricRegistry(), null, uDao);
+    try {
+      var f = new UsageMatcherFactory(cfg, NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), exec);
+
+      // fire a publish event: was private, now public
+      Dataset old = new Dataset();
+      old.setKey(datasetKey);
+      old.setOrigin(DatasetOrigin.EXTERNAL);
+      old.setPrivat(true);
+      Dataset now = new Dataset();
+      now.setKey(datasetKey);
+      now.setOrigin(DatasetOrigin.EXTERNAL);
+      now.setPrivat(false);
+      f.datasetChanged(DatasetChanged.changed(now, old, Users.TESTER));
+
+      // wait for the async build job to drain
+      drain(exec);
+      assertNotNull("matcher should exist after publish build", f.get(datasetKey));
+      assertTrue("persistent store dir should exist", cfg.dir(datasetKey).isDirectory());
+
+      // now delete the dataset → matcher must be dropped
+      f.datasetChanged(DatasetChanged.deleted(now, Users.TESTER));
+      assertNull("matcher should be removed after delete", f.get(datasetKey));
+      assertFalse("persistent store dir should be gone", cfg.dir(datasetKey).isDirectory());
+    } finally {
+      exec.stop();
+    }
+  }
+
+  private static void drain(JobExecutor exec) throws InterruptedException {
+    for (int i = 0; i < 600 && !exec.isIdle(); i++) {
+      TimeUnit.MILLISECONDS.sleep(100);
+    }
   }
 
   void assertMatch(UsageMatch m, String id) {
