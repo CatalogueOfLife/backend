@@ -2,14 +2,17 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
+import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.coldp.DatasetJsonWriter;
 
+import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Before;
@@ -59,6 +62,23 @@ public class UsageMatcherFactoryTest {
     return new UsageMatcherFactory(cfg, nameIndex, sqlSessionFactory, executor);
   }
 
+  /** Wires the shared sqlSessionFactory mock to return the given NameUsageMapper counts for a dataset key. */
+  @SuppressWarnings("unchecked")
+  private void stubUsageMapper(int key, int count, int canon) {
+    SqlSession session = mock(SqlSession.class);
+    NameUsageMapper num = mock(NameUsageMapper.class);
+    DatasetMapper dm = mock(DatasetMapper.class);
+    Cursor<SimpleNameCached> cursor = mock(Cursor.class);
+
+    when(sqlSessionFactory.openSession()).thenReturn(session);
+    when(session.getMapper(NameUsageMapper.class)).thenReturn(num);
+    when(session.getMapper(DatasetMapper.class)).thenReturn(dm);
+    when(num.count(key)).thenReturn(count);
+    when(num.listSN(eq(key), any())).thenReturn(List.of());
+    when(num.countDistinctCanonical(key)).thenReturn(canon);
+    when(num.processDatasetSimpleNidx(key)).thenReturn(cursor);
+  }
+
   private static DatasetSimple simpleDataset(int key, DatasetOrigin origin, boolean deleted) {
     var d = new DatasetSimple();
     d.setKey(key);
@@ -74,7 +94,9 @@ public class UsageMatcherFactoryTest {
     staleDir.mkdirs();
 
     // dataset 1001 is deleted in the DB — warm cache marks it deleted, info() throws NotFoundException
-    factoryWithDatasets(simpleDataset(staleKey, DatasetOrigin.EXTERNAL, true));
+    // The constructor no longer preloads; call loadAllFromDisk() explicitly to validate on-disk state.
+    factoryWithDatasets(simpleDataset(staleKey, DatasetOrigin.EXTERNAL, true))
+      .loadAllFromDisk();
 
     assertFalse("stale matcher dir should be deleted on startup", staleDir.exists());
   }
@@ -147,5 +169,24 @@ public class UsageMatcherFactoryTest {
 
     assertEquals(0, removed);
     assertTrue("matcher dir should remain", matcherDir.exists());
+  }
+
+  @Test
+  public void getReturnsNullWhenNoFileOnDisk() throws Exception {
+    var f = factory();
+    assertNull(f.get(987654)); // nothing on disk, nothing cached
+  }
+
+  @Test
+  public void openPersistentReturnsSameCachedInstance() throws Exception {
+    var f = factory();
+    // build a store on disk for key 100 via the synchronous path
+    stubUsageMapper(100, /*count*/ 3, /*canon*/ 2);
+    f.persistent(100);                 // builds + loads + caches
+    UsageMatcher a = f.openPersistent(100);
+    UsageMatcher b = f.openPersistent(100);
+    assertNotNull(a);
+    assertSame(a, b);                  // shared cached instance
+    assertSame(a, f.get(100));
   }
 }

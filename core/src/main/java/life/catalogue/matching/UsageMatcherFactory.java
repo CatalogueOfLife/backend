@@ -89,19 +89,16 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     this.factory = Preconditions.checkNotNull(factory);
     this.dir = cfg.storageDir;
     this.cfg = cfg;
-    // validate files on disk
-    loadFromFS();
   }
 
   /**
-   * Loads all persisted matchers from the storage directory.
-   * Warms the DatasetInfoCache with all datasets in one batch query, then validates and
-   * reopens chronicle files in parallel without any further DB queries.
+   * Eagerly opens and validates every persisted matcher under the storage dir, populating the cache.
+   * Not called at startup (matchers are opened lazily); kept for the MatcherCmd CLI and admin use.
    */
-  private void loadFromFS() {
+  public int loadAllFromDisk() {
     LOG.info("Load existing file based matchers from {}", dir);
     var fsKeys = listFS();
-    if (fsKeys.isEmpty()) return;
+    if (fsKeys.isEmpty()) return matchers.size();
 
     var validKeys = new ArrayList<Integer>();
     for (int key : fsKeys) {
@@ -114,7 +111,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
         FileUtils.deleteQuietly(f);
       }
     }
-    if (validKeys.isEmpty()) return;
+    if (validKeys.isEmpty()) return matchers.size();
 
     int threads = Math.min(8, validKeys.size());
     var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("matcher-loader"));
@@ -127,7 +124,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
           var m = new UsageMatcher(k, nameIndex, store, true);
           if (m.store().isEmpty()) {
             LOG.warn("Matcher for dataset {} is empty, delete storage files {}", k, cfg.dir(k));
-            m.close();
+            store.close(); // m.close() is a no-op while keepStoreOpen=true, so close the store directly
             FileUtils.deleteQuietly(cfg.dir(k));
           } else {
             loaded.put(k, m);
@@ -144,6 +141,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
     matchers.putAll(loaded);
     LOG.info("Loaded {} matchers from {}", matchers.size(), dir);
+    return matchers.size();
   }
 
   private UsageMatcherChronicleStore reopenStore(int datasetKey) throws IOException {
@@ -155,10 +153,40 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   /**
-   * Get an existing matcher or null if none exists.
+   * Reopens the persisted chronicle store for a dataset from disk and caches it, or returns null
+   * if there is no (or an empty/corrupt) store on disk. Concurrent callers share one instance.
+   */
+  public UsageMatcher openPersistent(int datasetKey) throws IOException {
+    UsageMatcher existing = matchers.get(datasetKey);
+    if (existing != null) return existing;
+    if (dir == null || !cfg.dir(datasetKey).isDirectory()) return null;
+    ReentrantLock lock = lockFor(datasetKey);
+    lock.lock();
+    try {
+      existing = matchers.get(datasetKey); // double-check under lock
+      if (existing != null) return existing;
+      var store = reopenStore(datasetKey);
+      var m = new UsageMatcher(datasetKey, nameIndex, store, true);
+      if (m.store().isEmpty()) {
+        LOG.warn("Matcher for dataset {} is empty, delete storage files {}", datasetKey, cfg.dir(datasetKey));
+        store.close(); // m.close() is a no-op while keepStoreOpen=true, so close the store directly
+        FileUtils.deleteQuietly(cfg.dir(datasetKey));
+        return null;
+      }
+      matchers.put(datasetKey, m);
+      LOG.info("Reopened matcher with {} usages for dataset {}", store.size(), datasetKey);
+      return m;
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  /**
+   * Returns the matcher for a dataset, opening its persisted store from disk on first use.
+   * Returns null when no persistent matcher exists on disk.
    */
   public UsageMatcher get(int datasetKey) throws IOException {
-    return matchers.get(datasetKey);
+    return openPersistent(datasetKey);
   }
 
   /**
@@ -186,7 +214,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       if (cfg.pgMatcherThreshold > 0 && count < cfg.pgMatcherThreshold) {
         return postgres(datasetKey);
       }
-      return persistent(datasetKey, count);
+      return persistent(datasetKey);
     } else {
       return memory(datasetKey);
     }
@@ -312,22 +340,12 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   /**
-   * If there is an existing persistent matcher for the given datasetKey it is returned,
-   * otherwise a postgres matcher is created that reads directly from the db.
-   *
-   * All matchers must be closed after use to free up resources !
-   * @param datasetKey
-   * @return
+   * Returns the persistent matcher (reopened from disk if needed), or a postgres matcher reading
+   * live data when no persistent store exists. All matchers must be closed after use.
    */
   public UsageMatcher existingOrPostgres(int datasetKey) throws IOException {
-    if (matchers.containsKey(datasetKey)) {
-      return matchers.get(datasetKey);
-    }
-    var f = cfg.dir(datasetKey);
-    if (f.isDirectory()) {
-      return persistent(datasetKey);
-    }
-    return postgres(datasetKey);
+    UsageMatcher m = openPersistent(datasetKey);
+    return m != null ? m : postgres(datasetKey);
   }
 
   /**
@@ -352,63 +370,61 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return buildLocks.computeIfAbsent(datasetKey, k -> new ReentrantLock());
   }
 
-  public UsageMatcher persistent(int datasetKey) throws IOException {
-    UsageMatcher existing = matchers.get(datasetKey);
-    if (existing != null) return existing;
-    ReentrantLock lock = lockFor(datasetKey);
-    lock.lock();
-    try {
-      existing = matchers.get(datasetKey); // double-check
-      if (existing != null) return existing;
-      UsageMatcher m = buildPersistentMatcher(datasetKey);
-      matchers.put(datasetKey, m);
-      return m;
-    } finally {
-      lock.unlock();
-    }
-  }
-
-  public UsageMatcher persistent(int datasetKey, int count) throws IOException {
-    UsageMatcher existing = matchers.get(datasetKey);
-    if (existing != null) return existing;
-    ReentrantLock lock = lockFor(datasetKey);
-    lock.lock();
-    try {
-      existing = matchers.get(datasetKey); // double-check
-      if (existing != null) return existing;
-      UsageMatcher m = buildPersistentMatcher(datasetKey, count);
-      matchers.put(datasetKey, m);
-      return m;
-    } finally {
-      lock.unlock();
-    }
-  }
-
-  private UsageMatcher buildPersistentMatcher(int datasetKey) throws IOException {
+  /** Creates a fresh, EMPTY, correctly-sized persistent chronicle store, replacing any existing files. */
+  private UsageMatcher createEmptyPersistent(int datasetKey) throws IOException {
+    FileUtils.deleteQuietly(cfg.dir(datasetKey)); // clear stale files first
     try (SqlSession s = factory.openSession()) {
-      return buildPersistentMatcher(datasetKey, s.getMapper(NameUsageMapper.class).count(datasetKey));
+      var num = s.getMapper(NameUsageMapper.class);
+      int count = num.count(datasetKey);
+      var samples = num.listSN(datasetKey, new Page(0, 5));
+      int canon = num.countDistinctCanonical(datasetKey);
+      long canonCount = canon + Math.max(1, canon / 100);
+      return buildPersistentMatcher(datasetKey, samples, count + 1, canonCount, cfg, nameIndex);
     }
   }
 
-  private UsageMatcher buildPersistentMatcher(int datasetKey, int count) throws IOException {
-    if (runningBuilds.containsKey(datasetKey)) {
-      throw new IllegalStateException("Matcher for dataset " + datasetKey + " is already being built. Please try again in a few minutes");
+  /** Writes the dataset sidecar JSON (attempt marker) next to the matcher store. */
+  private void writeSidecar(int datasetKey) {
+    try (var s = factory.openSession()) {
+      Dataset d = s.getMapper(DatasetMapper.class).get(datasetKey);
+      if (d != null) {
+        DatasetJsonWriter.write(d, cfg.datasetJson(datasetKey));
+        LOG.info("Wrote dataset sidecar for matcher {} with attempt {}", datasetKey, d.getAttempt());
+      }
+    } catch (Exception e) {
+      LOG.warn("Failed to write sidecar for matcher {}", datasetKey, e);
     }
-    runningBuilds.put(datasetKey, LocalDateTime.now());
+  }
+
+  /** Builds a fresh persistent matcher and loads it from the DB synchronously, caching it. */
+  private UsageMatcher buildAndLoad(int datasetKey) throws IOException {
+    ReentrantLock lock = lockFor(datasetKey);
+    lock.lock();
     try {
-      try (SqlSession s = factory.openSession()) {
-        var num = s.getMapper(NameUsageMapper.class);
-        var samples = num.listSN(datasetKey, new Page(0, 5));
-        // size the canonical index from the real distinct canonical count plus a tiny proportional cushion.
-        // These persistent match-target stores are read-only after load() (no inserts), so no large headroom is needed.
-        int canon = num.countDistinctCanonical(datasetKey);
-        long canonCount = canon + Math.max(1, canon / 100);
-        return buildPersistentMatcher(datasetKey, samples, count + 1, canonCount, cfg, nameIndex);
+      UsageMatcher existing = matchers.get(datasetKey);
+      if (existing != null) return existing;
+      if (runningBuilds.containsKey(datasetKey)) {
+        throw new IllegalStateException("Matcher for dataset " + datasetKey + " is already being built. Please try again in a few minutes");
+      }
+      runningBuilds.put(datasetKey, LocalDateTime.now());
+      try {
+        UsageMatcher m = createEmptyPersistent(datasetKey);
+        m.store().load(factory);
+        writeSidecar(datasetKey);
+        matchers.put(datasetKey, m);
+        return m;
+      } finally {
+        runningBuilds.remove(datasetKey);
       }
     } finally {
-      var start = runningBuilds.remove(datasetKey);
-      LOG.info("Matcher for dataset {} built in {} seconds", datasetKey, LocalDateTime.now().minusSeconds(start.getSecond()).getSecond());
+      lock.unlock();
     }
+  }
+
+  /** Reopens the persistent matcher from disk, or builds+loads it synchronously if absent. */
+  public UsageMatcher persistent(int datasetKey) throws IOException {
+    UsageMatcher m = openPersistent(datasetKey);
+    return m != null ? m : buildAndLoad(datasetKey);
   }
 
   public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, long canonCount, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
@@ -558,8 +574,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
   public int reload() {
     close();
-    loadFromFS();
-    return matchers.size();
+    return loadAllFromDisk();
   }
 
   /**
