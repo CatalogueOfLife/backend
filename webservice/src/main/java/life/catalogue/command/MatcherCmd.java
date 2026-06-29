@@ -85,15 +85,15 @@ public class MatcherCmd extends AbstractMybatisCmd {
 
       if (key != null) {
         LOG.info("Rebuild matcher for dataset {}", key);
-        matcherFactory.rebuild(key, Users.SUPERUSER);
+        matcherFactory.rebuild(key, Users.MATCHER);
         awaitIdle(executor);
       } else if (rebuildAll) {
         LOG.info("Rebuild ALL published matchers");
-        matcherFactory.reconcile(true, Users.SUPERUSER);
+        matcherFactory.reconcile(true, Users.MATCHER);
         awaitIdle(executor);
       } else if (rebuildStale) {
         LOG.info("Rebuild missing or stale matchers");
-        matcherFactory.reconcile(false, Users.SUPERUSER);
+        matcherFactory.reconcile(false, Users.MATCHER);
         awaitIdle(executor);
       } else if (min != null) {
         deleteSmallMatcher(min);

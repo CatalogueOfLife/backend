@@ -570,7 +570,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   public void start() {
     started = true;
     if (dir != null) {
-      executor.submit(new ReconcileJob(Users.SUPERUSER));
+      executor.submit(new ReconcileJob(Users.MATCHER));
     }
   }
 

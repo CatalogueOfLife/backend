@@ -6,6 +6,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
@@ -150,6 +151,16 @@ public class UsageMatcherFactoryTest {
     f.datasetChanged(DatasetChanged.changed(
       dataset(102, DatasetOrigin.PROJECT, false), dataset(102, DatasetOrigin.PROJECT, true), 1));
     verify(executor, never()).submit(any());
+  }
+
+  @Test
+  public void startReconcileRunsAsMatcherBotUser() {
+    var f = factory();
+    f.start();
+    // the startup reconcile must run as the real seeded system user Users.MATCHER (11), NOT the SUPERUSER
+    // sentinel (-42), otherwise JobExecutor.submit throws "No user -42 existing" and no reconcile happens.
+    verify(executor).submit(argThat(j -> j.getUserKey() == Users.MATCHER));
+    assertTrue(f.hasStarted());
   }
 
   @Test
