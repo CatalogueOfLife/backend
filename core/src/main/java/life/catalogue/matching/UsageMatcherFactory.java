@@ -190,153 +190,10 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     return openPersistent(datasetKey);
   }
 
-  /**
-   * @return true if a matcher for the given datasetKey already exists, false otherwise.
-   */
-  public boolean exists(int datasetKey) throws IOException {
-    return matchers.containsKey(datasetKey);
-  }
-
-  /**
-   * Depending on the dataset origin either a persistent or postgres matcher is created.
-   * Persistent matchers are reused and should be closed after use.
-   * @param datasetKey
-   * @return
-   */
-  public UsageMatcher build(int datasetKey) throws IOException {
-    var info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (info.origin == DatasetOrigin.PROJECT) {
-      return postgres(datasetKey);
-    } else if (dir != null) {
-      int count;
-      try (SqlSession s = factory.openSession()) {
-        count = s.getMapper(NameUsageMapper.class).count(datasetKey);
-      }
-      if (cfg.pgMatcherThreshold > 0 && count < cfg.pgMatcherThreshold) {
-        return postgres(datasetKey);
-      }
-      return persistent(datasetKey);
-    } else {
-      return memory(datasetKey);
-    }
-  }
-
   private boolean isSmallDataset(int datasetKey) {
     if (cfg.pgMatcherThreshold <= 0) return false;
     try (SqlSession s = factory.openSession()) {
       return s.getMapper(NameUsageMapper.class).count(datasetKey) < cfg.pgMatcherThreshold;
-    }
-  }
-
-  /**
-   * Prepares a persistent matcher for the given datasetKey if it does not yet exist.
-   *
-   * Loading matchers can take a while so this method prepares them async
-   * @param datasetKey
-   * @return true if a matcher is being prepared, false if it already existed.
-   * @throws IllegalArgumentException if the datasetKey is a project
-   */
-  public BackgroundJob prepare(int datasetKey, int userKey) throws IOException {
-    var m = matchers.get(datasetKey);
-    if (m != null && !m.store().isEmpty()) {
-      return null;
-    } else if (m != null && m.store().isEmpty()) {
-      LOG.warn("Rebuild empty existing matcher for dataset {}", datasetKey);
-      remove(datasetKey);
-    }
-    if (dir == null) {
-      throw new IllegalStateException("Cannot prepare persistent matcher for dataset " + datasetKey + " because no storage dir is configured");
-    }
-    var info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (info.origin == DatasetOrigin.PROJECT) {
-      throw new IllegalArgumentException("Cannot prepare persistent matcher for projects");
-    }
-    var newMatcher = persistent(datasetKey);
-    var job = new AsyncMatchLoader(newMatcher, userKey);
-    executor.submit(job);
-    return job;
-  }
-
-  public void build(DatasetSearchRequest req) {
-    req.setInclDeleted(false);
-    try (SqlSession session = factory.openSession()) {
-      var dm = session.getMapper(DatasetMapper.class);
-      var datasets = dm.searchKeys(req, Users.SUPERUSER);
-      for (var dk : datasets) {
-        if (!matcherExists(dk)) {
-          prepare(dk, Users.SUPERUSER);
-        }
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to build matchers for request {}", req, e);
-    }
-  }
-
-  public void rebuild(DatasetSearchRequest req, int userKey) {
-    req.setInclDeleted(false);
-    try (SqlSession session = factory.openSession()) {
-      var dm = session.getMapper(DatasetMapper.class);
-      var datasets = dm.searchKeys(req, userKey);
-      for (var dk : datasets) {
-        remove(dk);
-        if (!isSmallDataset(dk)) {
-          prepare(dk, userKey);
-        }
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to rebuild matchers for request {}", req, e);
-    }
-  }
-
-  public void rebuildExisting(int userKey) {
-    for (var m : matchers.keySet()) {
-      try {
-        remove(m);
-        prepare(m, userKey);
-      } catch (IOException e) {
-        LOG.error("Failed to rebuild matcher {}", m, e);
-      }
-    }
-  }
-
-  private class AsyncMatchLoader extends BackgroundJob {
-    private final UsageMatcher matcher;
-
-    public AsyncMatchLoader(UsageMatcher matcher, int userKey) {
-      super(userKey);
-      this.matcher = matcher;
-    }
-
-    @Override
-    public void execute() throws Exception {
-      if (runningBuilds.contains(matcher.datasetKey)) {
-        throw new IllegalStateException("Matcher for dataset " + matcher.datasetKey + " is already being built.");
-      }
-      try {
-        runningBuilds.put(matcher.datasetKey, LocalDateTime.now());
-        matcher.store().load(factory);
-        try (var s = factory.openSession()) {
-          Dataset d = s.getMapper(DatasetMapper.class).get(matcher.datasetKey);
-          if (d != null) {
-            DatasetJsonWriter.write(d, UsageMatcherFactory.this.cfg.datasetJson(matcher.datasetKey));
-            LOG.info("Wrote dataset sidecar for matcher {} with attempt {}", matcher.datasetKey, d.getAttempt());
-          }
-        } catch (Exception e) {
-          LOG.warn("Failed to write sidecar for matcher {}", matcher.datasetKey, e);
-        }
-      } finally {
-        matcher.close();
-        var start = runningBuilds.remove(matcher.datasetKey);
-        LOG.info("Matcher for dataset {} loaded in {} seconds", matcher.datasetKey, LocalDateTime.now().minusSeconds(start.getSecond()).getSecond());
-      }
-    }
-
-    @Override
-    public boolean isDuplicate(BackgroundJob other) {
-      if (other instanceof AsyncMatchLoader) {
-        return matcher.datasetKey == ((AsyncMatchLoader) other).matcher.datasetKey;
-      }
-      return super.isDuplicate(other);
     }
   }
 
@@ -579,21 +436,6 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     return stored == null || !stored.equals(current);
   }
 
-  public void removeAll() {
-    for (var m : matchers.keySet()) {
-      remove(m);
-    }
-  }
-
-  public void remove(DatasetSearchRequest req) {
-    try (SqlSession session = factory.openSession()) {
-      var dm = session.getMapper(DatasetMapper.class);
-      var datasets = dm.searchKeys(req, Users.SUPERUSER);
-      for (var dk : datasets) {
-        remove(dk);
-      }
-    }
-  }
   public void remove(int datasetKey) {
     buildLocks.remove(datasetKey);
     if (matchers.containsKey(datasetKey)) {
@@ -666,44 +508,6 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     // sort by datasetKey
     Collections.sort(matchers);
     return new FactoryMetadata(matchers);
-  }
-
-  public int reload() {
-    close();
-    return loadAllFromDisk();
-  }
-
-  /**
-   * Removes matchers whose stored Dataset attempt (from the sidecar JSON) no longer matches
-   * the current attempt in the database. Does not trigger rebuilds — callers get a fresh
-   * matcher lazily on next use.
-   *
-   * @return number of stale matchers removed
-   */
-  public int cleanup() {
-    int removed = 0;
-    try (SqlSession session = factory.openSession()) {
-      var dm = session.getMapper(DatasetMapper.class);
-      for (int key : listFS()) {
-        var sidecar = cfg.datasetJson(key);
-        if (!sidecar.exists()) continue;
-        try {
-          var opt = ColdpMetadataParser.readJSON(new FileInputStream(sidecar));
-          if (opt.isEmpty()) continue;
-          Integer stored = opt.get().getDataset().getAttempt();
-          Dataset current = dm.get(key);
-          if (stored != null && current != null && !stored.equals(current.getAttempt())) {
-            LOG.info("Removing stale matcher for dataset {}: stored attempt {} != current {}",
-              key, stored, current.getAttempt());
-            remove(key);
-            removed++;
-          }
-        } catch (Exception e) {
-          LOG.warn("Could not validate sidecar for dataset {}, skipping", key, e);
-        }
-      }
-    }
-    return removed;
   }
 
   private List<Integer> listFS() {

@@ -9,7 +9,6 @@ import life.catalogue.api.model.User;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.UsageMatcherFactory;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,13 +17,10 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 public class MatcherManagementResource {
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(MatcherManagementResource.class);
-  private final SqlSessionFactory factory;
   private final UsageMatcherFactory matcherFactory;
 
-  public MatcherManagementResource(SqlSessionFactory factory, UsageMatcherFactory matcherFactory) {
-    this.factory = factory;
+  public MatcherManagementResource(UsageMatcherFactory matcherFactory) {
     this.matcherFactory = matcherFactory;
   }
 

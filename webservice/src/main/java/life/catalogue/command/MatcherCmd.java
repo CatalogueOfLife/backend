@@ -71,6 +71,7 @@ public class MatcherCmd extends AbstractMybatisCmd {
   }
 
   private void deleteSmallMatcher(Integer min) {
+    matcherFactory.loadAllFromDisk();
     var matcher = matcherFactory.metadata(false);
     for (var m : matcher.matchers) {
       removeIfSmall(m.datasetKey, m.size, min);

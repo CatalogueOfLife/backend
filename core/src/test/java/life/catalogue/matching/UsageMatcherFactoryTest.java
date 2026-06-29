@@ -172,63 +172,6 @@ public class UsageMatcherFactoryTest {
   }
 
   @Test
-  public void cleanupRemovesStaleMatcher() throws Exception {
-    var f = factory();
-    int key = 42;
-
-    // create a fake matcher dir and sidecar with attempt=5
-    File matcherDir = new File(tmp.getRoot(), String.valueOf(key));
-    matcherDir.mkdirs();
-    Dataset stored = new Dataset();
-    stored.setKey(key);
-    stored.setAttempt(5);
-    DatasetJsonWriter.write(stored, new File(tmp.getRoot(), key + ".json"));
-
-    // mock DB returning attempt=7
-    Dataset current = new Dataset();
-    current.setKey(key);
-    current.setAttempt(7);
-    SqlSession session = mock(SqlSession.class);
-    DatasetMapper dm = mock(DatasetMapper.class);
-    when(sqlSessionFactory.openSession()).thenReturn(session);
-    when(session.getMapper(DatasetMapper.class)).thenReturn(dm);
-    when(dm.get(key)).thenReturn(current);
-
-    int removed = f.cleanup();
-
-    assertEquals(1, removed);
-    assertFalse("matcher dir should be deleted", matcherDir.exists());
-    assertFalse("sidecar should be deleted", new File(tmp.getRoot(), key + ".json").exists());
-  }
-
-  @Test
-  public void cleanupKeepsFreshMatcher() throws Exception {
-    var f = factory();
-    int key = 43;
-
-    File matcherDir = new File(tmp.getRoot(), String.valueOf(key));
-    matcherDir.mkdirs();
-    Dataset stored = new Dataset();
-    stored.setKey(key);
-    stored.setAttempt(9);
-    DatasetJsonWriter.write(stored, new File(tmp.getRoot(), key + ".json"));
-
-    Dataset current = new Dataset();
-    current.setKey(key);
-    current.setAttempt(9);
-    SqlSession session = mock(SqlSession.class);
-    DatasetMapper dm = mock(DatasetMapper.class);
-    when(sqlSessionFactory.openSession()).thenReturn(session);
-    when(session.getMapper(DatasetMapper.class)).thenReturn(dm);
-    when(dm.get(key)).thenReturn(current);
-
-    int removed = f.cleanup();
-
-    assertEquals(0, removed);
-    assertTrue("matcher dir should remain", matcherDir.exists());
-  }
-
-  @Test
   public void getReturnsNullWhenNoFileOnDisk() throws Exception {
     var f = factory();
     assertNull(f.get(987654)); // nothing on disk, nothing cached
