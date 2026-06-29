@@ -457,8 +457,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     File out = part(archived ? FILENAME_ARCHIVED_MATCHES : FILENAME_MATCHES, part);
     FileMatcher matcher = new FileMatcher(archived, ni, in, out);
     matcher.matchAll();
-
     LoggingUtils.removeDatasetMDC();
+    LOG.info("Done matching names to {}. Delete input file {}", out, in);
+    FileUtils.deleteQuietly(in);
     return matcher;
   }
 
