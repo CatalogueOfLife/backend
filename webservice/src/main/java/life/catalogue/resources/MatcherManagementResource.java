@@ -30,7 +30,7 @@ public class MatcherManagementResource {
     return matcherFactory.metadata(key);
   }
 
-  @PUT
+  @POST
   @Path("rebuild")
   @RolesAllowed({Roles.ADMIN})
   public void rebuildAll(@Auth User user) {
