@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import java.util.concurrent.locks.ReentrantLock;
 import jakarta.validation.constraints.NotNull;
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.model.Dataset;
@@ -54,7 +55,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   private final SqlSessionFactory factory;
   private final MatchingConfig cfg;
   private final File dir;
-  private final ConcurrentHashMap<Integer, LocalDateTime> runningBuilds = new ConcurrentHashMap<>();
+  // package-private so tests can simulate a build in progress
+  final ConcurrentHashMap<Integer, LocalDateTime> runningBuilds = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<Integer, UsageMatcher> matchers = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<Integer, ReentrantLock> buildLocks = new ConcurrentHashMap<>();
   private final JobExecutor executor;
@@ -110,6 +112,10 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   public UsageMatcher openPersistent(int datasetKey) throws IOException {
     UsageMatcher existing = matchers.get(datasetKey);
     if (existing != null) return existing;
+    // No final store on disk → nothing to reopen. A (re)build writes into a separate temp dir, so during a
+    // rebuild the previous (stale) files still live in the final dir and are reopened & served below — only
+    // during a true first build is there no final dir, and we return null (existingOrPostgres then 503s).
+    // The per-dataset lock is held only for the brief swap, never the long load, so this never blocks long.
     if (dir == null || !cfg.dir(datasetKey).isDirectory()) return null;
     ReentrantLock lock = lockFor(datasetKey);
     lock.lock();
@@ -164,16 +170,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
 
     @Override
     public void execute() throws Exception {
-      // remove + rebuild atomically under ONE acquisition of the never-evicted per-dataset lock,
-      // so a concurrent openPersistent/get of the SAME dataset cannot race the file deletion+rebuild.
-      ReentrantLock lock = lockFor(datasetKey);
-      lock.lock();
-      try {
-        evictLocked(datasetKey);     // close old in-memory matcher + delete stale files, under the lock
-        loadFreshLocked(datasetKey); // build fresh + load + sidecar + cache, same lock
-      } finally {
-        lock.unlock();
-      }
+      // build into a temp dir off-lock so the previous matcher keeps serving, then swap atomically.
+      buildAndSwap(datasetKey);
     }
 
     @Override
@@ -188,7 +186,13 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
    */
   public UsageMatcher existingOrPostgres(int datasetKey) throws IOException {
     UsageMatcher m = openPersistent(datasetKey);
-    return m != null ? m : postgres(datasetKey);
+    if (m != null) return m;
+    // a persistent matcher is being built for the first time and is not ready yet. Fail fast with a 503
+    // instead of blocking a request thread or scanning the (large) dataset live from postgres.
+    if (runningBuilds.containsKey(datasetKey)) {
+      throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
+    }
+    return postgres(datasetKey);
   }
 
   /**
@@ -213,17 +217,25 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     return buildLocks.computeIfAbsent(datasetKey, k -> new ReentrantLock());
   }
 
-  /** Creates a fresh, EMPTY, correctly-sized persistent chronicle store, replacing any existing files. */
-  private UsageMatcher createEmptyPersistent(int datasetKey) throws IOException {
-    FileUtils.deleteQuietly(cfg.dir(datasetKey)); // clear stale files first
+  /**
+   * Builds a fresh persistent matcher in a temporary dir and loads it from the DB, WITHOUT holding the
+   * per-dataset lock. The existing matcher (if any) keeps serving while this runs.
+   */
+  private UsageMatcher buildIntoTemp(int datasetKey) throws IOException {
+    File tmpDir = cfg.buildDir(datasetKey);
+    FileUtils.deleteQuietly(tmpDir); // clear any leftovers from a crashed build
+    UsageMatcher m;
     try (SqlSession s = factory.openSession()) {
       var num = s.getMapper(NameUsageMapper.class);
       int count = num.count(datasetKey);
       var samples = num.listSN(datasetKey, new Page(0, 5));
       int canon = num.countDistinctCanonical(datasetKey);
       long canonCount = canon + Math.max(1, canon / 100);
-      return buildPersistentMatcher(datasetKey, samples, count + 1, canonCount, cfg, nameIndex);
+      var store = UsageMatcherChronicleStore.build(datasetKey, tmpDir, count + 1, canonCount, samples);
+      m = new UsageMatcher(datasetKey, nameIndex, store, true);
     }
+    m.store().load(factory); // the long full-scan load; no lock held
+    return m;
   }
 
   /** Writes the dataset sidecar JSON (attempt marker) next to the matcher store. */
@@ -240,42 +252,62 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   }
 
   /**
-   * Builds a fresh persistent matcher and loads it from the DB synchronously, caching it.
-   * Caller MUST already hold lockFor(datasetKey).
+   * Atomically swaps a freshly built matcher into place under the per-dataset lock: moves the temp files to
+   * the final dir, replaces the cached instance and closes the old store. The lock is held only for this
+   * quick swap, never for the long build/load. Returns the installed matcher, or null if a concurrent
+   * remove() cancelled the build (e.g. the dataset was deleted while building).
    */
-  private UsageMatcher loadFreshLocked(int datasetKey) throws IOException {
-    if (runningBuilds.containsKey(datasetKey)) {
-      throw new IllegalStateException("Matcher for dataset " + datasetKey + " is already being built. Please try again in a few minutes");
-    }
-    runningBuilds.put(datasetKey, LocalDateTime.now());
-    try {
-      UsageMatcher m = createEmptyPersistent(datasetKey);
-      m.store().load(factory);
-      writeSidecar(datasetKey);
-      matchers.put(datasetKey, m);
-      return m;
-    } finally {
-      runningBuilds.remove(datasetKey);
-    }
-  }
-
-  /** Get-or-build entry: returns the cached matcher or builds+loads it synchronously under the per-dataset lock. */
-  private UsageMatcher buildAndLoad(int datasetKey) throws IOException {
+  private UsageMatcher swapIn(int datasetKey, UsageMatcher fresh) throws IOException {
     ReentrantLock lock = lockFor(datasetKey);
     lock.lock();
     try {
-      UsageMatcher existing = matchers.get(datasetKey); // double-check under lock
-      if (existing != null) return existing;
-      return loadFreshLocked(datasetKey);
+      if (!runningBuilds.containsKey(datasetKey)) {
+        // a concurrent remove()/delete cleared our marker — the dataset is gone, discard the build
+        LOG.info("Matcher build for dataset {} was cancelled, discarding", datasetKey);
+        fresh.store().close();
+        FileUtils.deleteQuietly(cfg.buildDir(datasetKey));
+        return null;
+      }
+      File finalDir = cfg.dir(datasetKey);
+      FileUtils.deleteQuietly(finalDir);                 // old files stay valid via the old store's mmap on linux
+      FileUtils.moveDirectory(cfg.buildDir(datasetKey), finalDir);
+      writeSidecar(datasetKey);
+      UsageMatcher old = matchers.put(datasetKey, fresh);
+      if (old != null) {
+        try {
+          old.store().close();
+        } catch (Exception e) {
+          LOG.error("Failed to close old matcher for dataset {}", datasetKey, e);
+        }
+      }
+      LOG.info("Swapped in (re)built matcher with {} usages for dataset {}", fresh.store().size(), datasetKey);
+      return fresh;
     } finally {
       lock.unlock();
     }
   }
 
-  /** Reopens the persistent matcher from disk, or builds+loads it synchronously if absent. */
+  /**
+   * Builds + loads a matcher off-lock, then atomically swaps it in. Claims the build via runningBuilds so a
+   * concurrent build of the same dataset is skipped. Returns the installed (or already-cached) matcher.
+   */
+  private UsageMatcher buildAndSwap(int datasetKey) throws IOException {
+    if (runningBuilds.putIfAbsent(datasetKey, LocalDateTime.now()) != null) {
+      LOG.info("Matcher for dataset {} is already being built, not starting another", datasetKey);
+      return matchers.get(datasetKey); // the old matcher during a rebuild, or null during a first build
+    }
+    try {
+      UsageMatcher fresh = buildIntoTemp(datasetKey);
+      return swapIn(datasetKey, fresh);
+    } finally {
+      runningBuilds.remove(datasetKey);
+    }
+  }
+
+  /** Reopens the persistent matcher from disk, or builds it off-lock and swaps it in if absent. */
   public UsageMatcher persistent(int datasetKey) throws IOException {
     UsageMatcher m = openPersistent(datasetKey);
-    return m != null ? m : buildAndLoad(datasetKey);
+    return m != null ? m : buildAndSwap(datasetKey);
   }
 
   public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, long canonCount, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
@@ -439,6 +471,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
    * mutually exclusive.
    */
   private void evictLocked(int datasetKey) {
+    runningBuilds.remove(datasetKey); // cancel any in-flight build so its swap is discarded
     if (matchers.containsKey(datasetKey)) {
       LOG.info("Delete matcher for dataset {}", datasetKey);
       var m = matchers.remove(datasetKey);

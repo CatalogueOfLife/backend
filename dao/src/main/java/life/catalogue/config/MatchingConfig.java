@@ -39,6 +39,14 @@ public class MatchingConfig {
   }
 
   /**
+   * Temporary directory a matcher is (re)built into before it is atomically moved to {@link #dir(int)}.
+   * Kept in the same storageDir so the final move is a cheap same-filesystem rename.
+   */
+  public File buildDir(int datasetKey) {
+    return new File(storageDir, datasetKey + ".building");
+  }
+
+  /**
    * Makes sure all configured directories do actually exist and create them if missing
    * @return true if at least one dir was newly created
    */
