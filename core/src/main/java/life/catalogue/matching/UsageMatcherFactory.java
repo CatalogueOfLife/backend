@@ -214,8 +214,16 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
 
     @Override
     public void execute() throws Exception {
-      remove(datasetKey);     // drop stale in-memory + on-disk matcher
-      buildAndLoad(datasetKey); // rebuild fresh + load + sidecar, cached
+      // remove + rebuild atomically under ONE acquisition of the never-evicted per-dataset lock,
+      // so a concurrent openPersistent/get of the SAME dataset cannot race the file deletion+rebuild.
+      ReentrantLock lock = lockFor(datasetKey);
+      lock.lock();
+      try {
+        evictLocked(datasetKey);     // close old in-memory matcher + delete stale files, under the lock
+        loadFreshLocked(datasetKey); // build fresh + load + sidecar + cache, same lock
+      } finally {
+        lock.unlock();
+      }
     }
 
     @Override
@@ -281,26 +289,34 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     }
   }
 
-  /** Builds a fresh persistent matcher and loads it from the DB synchronously, caching it. */
+  /**
+   * Builds a fresh persistent matcher and loads it from the DB synchronously, caching it.
+   * Caller MUST already hold lockFor(datasetKey).
+   */
+  private UsageMatcher loadFreshLocked(int datasetKey) throws IOException {
+    if (runningBuilds.containsKey(datasetKey)) {
+      throw new IllegalStateException("Matcher for dataset " + datasetKey + " is already being built. Please try again in a few minutes");
+    }
+    runningBuilds.put(datasetKey, LocalDateTime.now());
+    try {
+      UsageMatcher m = createEmptyPersistent(datasetKey);
+      m.store().load(factory);
+      writeSidecar(datasetKey);
+      matchers.put(datasetKey, m);
+      return m;
+    } finally {
+      runningBuilds.remove(datasetKey);
+    }
+  }
+
+  /** Get-or-build entry: returns the cached matcher or builds+loads it synchronously under the per-dataset lock. */
   private UsageMatcher buildAndLoad(int datasetKey) throws IOException {
     ReentrantLock lock = lockFor(datasetKey);
     lock.lock();
     try {
-      UsageMatcher existing = matchers.get(datasetKey);
+      UsageMatcher existing = matchers.get(datasetKey); // double-check under lock
       if (existing != null) return existing;
-      if (runningBuilds.containsKey(datasetKey)) {
-        throw new IllegalStateException("Matcher for dataset " + datasetKey + " is already being built. Please try again in a few minutes");
-      }
-      runningBuilds.put(datasetKey, LocalDateTime.now());
-      try {
-        UsageMatcher m = createEmptyPersistent(datasetKey);
-        m.store().load(factory);
-        writeSidecar(datasetKey);
-        matchers.put(datasetKey, m);
-        return m;
-      } finally {
-        runningBuilds.remove(datasetKey);
-      }
+      return loadFreshLocked(datasetKey);
     } finally {
       lock.unlock();
     }
@@ -437,7 +453,22 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   }
 
   public void remove(int datasetKey) {
-    buildLocks.remove(datasetKey);
+    ReentrantLock lock = lockFor(datasetKey);
+    lock.lock();
+    try {
+      evictLocked(datasetKey);
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  /**
+   * Closes & removes the cached matcher and deletes its on-disk store + sidecar.
+   * Caller MUST already hold lockFor(datasetKey). The per-dataset lock is intentionally never evicted
+   * (a bounded ReentrantLock per dataset is a negligible leak) so lazy-open, removal and rebuild stay
+   * mutually exclusive.
+   */
+  private void evictLocked(int datasetKey) {
     if (matchers.containsKey(datasetKey)) {
       LOG.info("Delete matcher for dataset {}", datasetKey);
       var m = matchers.remove(datasetKey);

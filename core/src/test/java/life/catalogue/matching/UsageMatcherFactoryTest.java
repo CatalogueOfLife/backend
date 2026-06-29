@@ -1,6 +1,7 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.SimpleNameCached;
@@ -26,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -90,11 +92,37 @@ public class UsageMatcherFactoryTest {
   }
 
   private static Dataset dataset(int key, DatasetOrigin origin, boolean privat) {
+    return dataset(key, origin, privat, null);
+  }
+
+  private static Dataset dataset(int key, DatasetOrigin origin, boolean privat, LocalDateTime deleted) {
     var d = new Dataset();
     d.setKey(key);
     d.setOrigin(origin);
     d.setPrivat(privat);
+    d.setDeleted(deleted);
     return d;
+  }
+
+  /**
+   * Wires the shared sqlSessionFactory so that DatasetMapper.get(key) returns the given dataset (the one
+   * datasetDataChanged loads) and the NameUsageMapper counts needed by isSmallDataset / a synchronous build.
+   */
+  @SuppressWarnings("unchecked")
+  private void stubDataChanged(int key, int count, Dataset loaded) {
+    SqlSession session = mock(SqlSession.class);
+    NameUsageMapper num = mock(NameUsageMapper.class);
+    DatasetMapper dm = mock(DatasetMapper.class);
+    Cursor<SimpleNameCached> cursor = mock(Cursor.class);
+
+    when(sqlSessionFactory.openSession()).thenReturn(session);
+    when(session.getMapper(NameUsageMapper.class)).thenReturn(num);
+    when(session.getMapper(DatasetMapper.class)).thenReturn(dm);
+    when(num.count(key)).thenReturn(count);
+    when(num.listSN(eq(key), any())).thenReturn(List.of());
+    when(num.countDistinctCanonical(key)).thenReturn(Math.max(1, count));
+    when(num.processDatasetSimpleNidx(key)).thenReturn(cursor);
+    when(dm.get(key)).thenReturn(loaded);
   }
 
   @Test
@@ -142,6 +170,50 @@ public class UsageMatcherFactoryTest {
     f.persistent(104);
     f.datasetChanged(DatasetChanged.deleted(dataset(104, DatasetOrigin.EXTERNAL, false), 1));
     assertNull(f.get(104));
+  }
+
+  @Test
+  public void dataChangedSchedulesRebuildForExternalPublishedAboveThreshold() {
+    var f = factory();
+    stubDataChanged(300, 5000, dataset(300, DatasetOrigin.EXTERNAL, false)); // published, above threshold
+    f.datasetDataChanged(new DatasetDataChanged(300, 1));
+    verify(executor).submit(argThat(j -> j instanceof BackgroundJob)); // rebuild scheduled
+  }
+
+  @Test
+  public void dataChangedSkipsProjects() {
+    var f = factory();
+    stubDataChanged(301, 5000, dataset(301, DatasetOrigin.PROJECT, false)); // projects served live
+    f.datasetDataChanged(new DatasetDataChanged(301, 1));
+    verify(executor, never()).submit(any());
+  }
+
+  @Test
+  public void dataChangedSkipsPrivate() {
+    var f = factory();
+    stubDataChanged(302, 5000, dataset(302, DatasetOrigin.EXTERNAL, true)); // private → not served
+    f.datasetDataChanged(new DatasetDataChanged(302, 1));
+    verify(executor, never()).submit(any());
+  }
+
+  @Test
+  public void dataChangedSkipsDeleted() {
+    var f = factory();
+    stubDataChanged(303, 5000, dataset(303, DatasetOrigin.EXTERNAL, false, LocalDateTime.now())); // deleted
+    f.datasetDataChanged(new DatasetDataChanged(303, 1));
+    verify(executor, never()).submit(any());
+  }
+
+  @Test
+  public void dataChangedBelowThresholdRemovesExistingMatcher() throws Exception {
+    var f = factory();
+    int key = 304;
+    stubDataChanged(key, 5, dataset(key, DatasetOrigin.EXTERNAL, false)); // published but below threshold
+    f.persistent(key);            // build a matcher on disk + cache
+    assertNotNull(f.get(key));
+    f.datasetDataChanged(new DatasetDataChanged(key, 1));
+    verify(executor, never()).submit(any()); // small → never rebuilt
+    assertNull(f.get(key));                   // stale persistent matcher removed
   }
 
   @Test
@@ -232,21 +304,30 @@ public class UsageMatcherFactoryTest {
   }
 
   @Test
-  public void reconcileForceSchedulesBuildEvenWhenSidecarMatches() throws Exception {
+  public void reconcileForceOverridesInSyncSidecar() throws Exception {
     var f = factory();
     int key = 202;
     var m = stubReconcile(List.of(key));
     when(m.num().count(key)).thenReturn(5000);   // above threshold
 
-    // store dir + sidecar present and in sync → needsRebuild would be false, but force overrides it
+    // store dir + sidecar present AND the DB attempt equals the sidecar attempt → needsRebuild is FALSE
     new File(tmp.getRoot(), String.valueOf(key)).mkdirs();
     Dataset stored = new Dataset();
     stored.setKey(key);
     stored.setAttempt(5);
     DatasetJsonWriter.write(stored, new File(tmp.getRoot(), key + ".json"));
+    Dataset current = new Dataset();
+    current.setKey(key);
+    current.setAttempt(5);                        // same attempt as sidecar → in sync
+    when(m.dm().get(key)).thenReturn(current);
 
-    f.reconcile(true, 1);                          // force overrides the in-sync sidecar
+    // without force the in-sync sidecar means no build is scheduled
+    f.reconcile(false, 1);
+    verify(executor, never()).submit(any());
 
+    // force overrides the in-sync sidecar and schedules a build for the very same key
+    clearInvocations(executor);
+    f.reconcile(true, 1);
     verify(executor).submit(argThat(j -> j instanceof BackgroundJob));
   }
 }

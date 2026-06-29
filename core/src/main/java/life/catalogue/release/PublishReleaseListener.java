@@ -96,7 +96,6 @@ public class PublishReleaseListener implements DatasetListener {
         }
       }
     }
-
   }
 
   @Override
