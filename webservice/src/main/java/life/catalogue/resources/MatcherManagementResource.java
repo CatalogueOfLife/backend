@@ -6,15 +6,12 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import life.catalogue.api.model.User;
-import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.UsageMatcherFactory;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 @Hidden
 @Path("/matcher")
@@ -32,70 +29,25 @@ public class MatcherManagementResource {
   }
 
   @GET
-  public UsageMatcherFactory.FactoryMetadata listMatcher(@QueryParam("decorate") boolean decorate) {
-    return matcherFactory.metadata(decorate);
-  }
-
-  @DELETE
-  @RolesAllowed({Roles.ADMIN})
-  public void removeMatcherSearch(@BeanParam DatasetSearchRequest req, @QueryParam("all") boolean all) {
-    if (all) {
-      matcherFactory.removeAll();
-    } else if (req.hasFilter()) {
-      matcherFactory.remove(req);
-    } else {
-      throw new BadRequestException("No filter given");
-    }
-  }
-
-  @POST
-  @RolesAllowed({Roles.ADMIN})
-  public void buildMatcher(@BeanParam DatasetSearchRequest req) {
-    if (req.hasFilter()) {
-      matcherFactory.build(req);
-    } else {
-      throw new BadRequestException("No filter given");
-    }
-  }
-
-  @GET
   @Path("{key}")
   public UsageMatcherFactory.MatcherMetadata matcherMetadata(@PathParam("key") int key) {
     return matcherFactory.metadata(key);
   }
 
-  @DELETE
-  @Path("{key}")
-  @RolesAllowed({Roles.ADMIN})
-  public void removeMatcher(@PathParam("key") int key) {
-    matcherFactory.remove(key);
-  }
-
-  @POST
-  @Path("{key}")
-  public BackgroundJob buildMatcher(@PathParam("key") int key, @Auth User user) throws IOException {
-    LOG.info("User {} request new matcher for dataset {}", user, key);
-    return matcherFactory.prepare(key, user.getKey());
-  }
-
-  @POST
-  @Path("reload")
-  @RolesAllowed({Roles.ADMIN})
-  public int reloadMatcher() {
-    return matcherFactory.reload();
-  }
-
   @PUT
   @Path("rebuild")
   @RolesAllowed({Roles.ADMIN})
-  public void rebuildMatcher(@BeanParam DatasetSearchRequest req, @QueryParam("all") boolean all, @Auth User user) {
-    if (all) {
-      matcherFactory.rebuildExisting(user.getKey());
-    } else if (req.hasFilter()) {
-      matcherFactory.rebuild(req, user.getKey());
-    } else {
-      throw new BadRequestException("No filter given");
-    }
+  public void rebuildAll(@Auth User user) {
+    LOG.info("User {} requested rebuild of all matchers", user);
+    matcherFactory.reconcile(true, user.getKey());
+  }
+
+  @POST
+  @Path("{key}")
+  @RolesAllowed({Roles.ADMIN})
+  public BackgroundJob rebuildMatcher(@PathParam("key") int key, @Auth User user) {
+    LOG.info("User {} requested rebuild of matcher for dataset {}", user, key);
+    return matcherFactory.rebuild(key, user.getKey());
   }
 
 }
