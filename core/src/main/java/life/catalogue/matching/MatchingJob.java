@@ -32,7 +32,7 @@ public class MatchingJob extends AbstractMatchingJob {
   public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, UsageMatcherFactory matcherFactory, MatchingConfig cfg) throws IOException {
     super(req, userKey, loadDataset(factory, req.getDatasetKey()),
       loadRootClassification(req.getTaxonDSID(), factory),
-      matcherFactory.persistent(req.getDatasetKey()),
+      matcherFactory.persistent(req.getDatasetKey()), true, // owns the matcher → release it when done
       cfg, matcherFactory.getNameIndex()
     );
     this.factory = factory;

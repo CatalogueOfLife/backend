@@ -629,6 +629,15 @@ public class PgImport implements Callable<Boolean> {
           dm.updateTaxonomicGroupScope(dataset.getKey(), ibc.indexer.getTaxGroups());
         }
       }
+    } finally {
+      // release our cross-dataset match-target lease so the factory can close its store once no one holds it
+      if (matchTarget != null) {
+        try {
+          matchTarget.close();
+        } catch (Exception e) {
+          LOG.warn("Failed to release match target matcher for dataset {}", matchTarget.getDatasetKey(), e);
+        }
+      }
     }
   }
 

@@ -16,7 +16,6 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -43,9 +42,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -59,8 +55,6 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   private final SqlSessionFactory factory;
   private final MatchingConfig cfg;
   private final File dir;
-  // seconds to wait before closing a swapped-out/removed store, so in-flight matches on its mmap can finish
-  private static final long CLOSE_GRACE_SECONDS = 60;
   private final AtomicLong buildCounter = new AtomicLong();
   // datasetKey -> unique token of the build currently owning it (package-private so tests can simulate a build)
   final ConcurrentHashMap<Integer, Long> runningBuilds = new ConcurrentHashMap<>();
@@ -68,10 +62,6 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   final ConcurrentHashMap<Integer, UsageMatcher> matchers = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<Integer, ReentrantLock> buildLocks = new ConcurrentHashMap<>();
   private final JobExecutor executor;
-  // closes swapped-out/removed mmap stores after a grace delay to avoid unmapping under in-flight readers.
-  // daemon so a pending grace-close never holds up JVM/process shutdown.
-  private final ScheduledExecutorService deferredCloser =
-    Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("matcher-store-closer", Thread.NORM_PRIORITY, true));
 
   static final ThreadSafeFory FURY = new ThreadLocalFory(classLoader -> {
     Fory fury = Fory.builder()
@@ -123,7 +113,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
    */
   public UsageMatcher openPersistent(int datasetKey) throws IOException {
     UsageMatcher existing = matchers.get(datasetKey);
-    if (existing != null) return existing;
+    // tryAcquire fails only if it was retired+closed between the lookup and the acquire → fall through to re-resolve
+    if (existing != null && existing.tryAcquire()) return existing;
     // No final store on disk → nothing to reopen. A (re)build writes into a separate temp dir, so during a
     // rebuild the previous (stale) files still live in the final dir and are reopened & served below — only
     // during a true first build is there no final dir, and we return null (existingOrPostgres then 503s).
@@ -133,16 +124,17 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     lock.lock();
     try {
       existing = matchers.get(datasetKey); // double-check under lock
-      if (existing != null) return existing;
+      if (existing != null && existing.tryAcquire()) return existing;
       var store = reopenStore(datasetKey);
       var m = new UsageMatcher(datasetKey, nameIndex, store, true);
       if (m.store().isEmpty()) {
         LOG.warn("Matcher for dataset {} is empty, delete storage files {}", datasetKey, cfg.dir(datasetKey));
-        store.close(); // m.close() is a no-op while keepStoreOpen=true, so close the store directly
+        store.close(); // brand-new instance, never handed out → close the store directly
         FileUtils.deleteQuietly(cfg.dir(datasetKey));
         return null;
       }
       matchers.put(datasetKey, m);
+      m.tryAcquire(); // lease for the returning caller (brand-new, never retired → always succeeds)
       LOG.info("Reopened matcher with {} usages for dataset {}", store.size(), datasetKey);
       return m;
     } finally {
@@ -265,9 +257,9 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
 
   /**
    * Atomically swaps a freshly built matcher into place under the per-dataset lock: moves the temp files to
-   * the final dir, replaces the cached instance and closes the old store. The lock is held only for this
-   * quick swap, never for the long build/load. Returns the installed matcher, or null if a concurrent
-   * remove() cancelled the build (e.g. the dataset was deleted while building).
+   * the final dir and replaces the cached instance. The lock is held only for this quick swap, never for the
+   * long build/load. The previous instance is retired (its store closes once its last consumer releases it).
+   * Returns the installed matcher, or null if a concurrent remove() cancelled the build.
    */
   private UsageMatcher swapIn(int datasetKey, long token, UsageMatcher fresh) throws IOException {
     ReentrantLock lock = lockFor(datasetKey);
@@ -278,7 +270,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       Long owner = runningBuilds.get(datasetKey);
       if (owner == null || owner.longValue() != token) {
         LOG.info("Matcher build {} for dataset {} was cancelled/superseded, discarding", token, datasetKey);
-        closeDeferred(fresh);
+        fresh.store().close(); // never handed out, close its store directly
         FileUtils.deleteQuietly(cfg.buildDir(datasetKey, token));
         return null;
       }
@@ -293,20 +285,23 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
         FileUtils.moveDirectory(cfg.buildDir(datasetKey, token), finalDir);
       } catch (IOException e) {
         if (hadFinal) { // restore the previous store so we never destroy the only good copy on a failed move
+          FileUtils.deleteQuietly(finalDir);
           try {
             FileUtils.moveDirectory(backup, finalDir);
           } catch (IOException re) {
             LOG.error("Failed to restore previous matcher for dataset {} after a failed swap", datasetKey, re);
           }
         }
-        closeDeferred(fresh);
+        fresh.store().close();
         FileUtils.deleteQuietly(cfg.buildDir(datasetKey, token));
         throw e;
       }
       writeSidecar(datasetKey);
       UsageMatcher old = matchers.put(datasetKey, fresh);
-      closeDeferred(old);              // old instance may still be serving in-flight requests
-      FileUtils.deleteQuietly(backup); // its files survive in the old store's mmap until the deferred close
+      if (old != null) {
+        old.retire(); // closes its store once the last in-flight consumer (e.g. a long MatchingJob) releases it
+      }
+      FileUtils.deleteQuietly(backup); // old files survive in the old store's mmap until it is actually closed
       LOG.info("Swapped in (re)built matcher with {} usages for dataset {}", fresh.store().size(), datasetKey);
       return fresh;
     } finally {
@@ -333,28 +328,22 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     }
   }
 
-  /** Schedules closing a store after a grace delay so concurrent readers on its mmap can finish first. */
-  private void closeDeferred(UsageMatcher m) {
-    if (m == null) return;
-    deferredCloser.schedule(() -> {
-      try {
-        m.store().close();
-      } catch (Exception e) {
-        LOG.error("Failed to close matcher store for dataset {}", m.datasetKey, e);
-      }
-    }, CLOSE_GRACE_SECONDS, TimeUnit.SECONDS);
-  }
-
   /**
    * Reopens the persistent matcher from disk, or builds it off-lock and swaps it in if absent.
    * Throws {@link UnavailableException} rather than returning null when a build is in progress.
    */
   public UsageMatcher persistent(int datasetKey) throws IOException {
-    UsageMatcher m = openPersistent(datasetKey);
+    UsageMatcher m = openPersistent(datasetKey); // acquired for the caller
     if (m != null) return m;
-    m = buildAndSwap(datasetKey);
-    if (m != null) return m;
-    throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
+    if (buildAndSwap(datasetKey) == null) {
+      throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
+    }
+    // the build installed (or found) a matcher in the cache; acquire it via the normal path
+    m = openPersistent(datasetKey);
+    if (m == null) {
+      throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
+    }
+    return m;
   }
 
   public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, long canonCount, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
@@ -522,7 +511,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     UsageMatcher m = matchers.remove(datasetKey);
     if (m != null) {
       LOG.info("Delete matcher for dataset {}", datasetKey);
-      closeDeferred(m); // may still be serving in-flight requests, close after the grace delay
+      m.retire(); // closes its store once the last in-flight consumer releases it
     }
     if (dir != null) {
       FileUtils.deleteQuietly(cfg.dir(datasetKey));
@@ -549,9 +538,13 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   }
 
   public MatcherMetadata metadata(int datasetKey) {
-    if (matchers.containsKey(datasetKey)) {
-      var m = matchers.get(datasetKey);
-      return new MatcherMetadata(datasetKey, m.store().size(), readStoredAttempt(datasetKey));
+    var m = matchers.get(datasetKey);
+    if (m != null && m.tryAcquire()) { // hold a lease so the store can't be closed while we read its size
+      try {
+        return new MatcherMetadata(datasetKey, m.store().size(), readStoredAttempt(datasetKey));
+      } finally {
+        m.close();
+      }
     }
     return null;
   }
@@ -613,7 +606,6 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   }
 
   public void close() {
-    deferredCloser.shutdownNow(); // process is shutting down; pending grace-closes are moot
     for (UsageMatcher m : matchers.values()) {
       try {
         m.store().close();

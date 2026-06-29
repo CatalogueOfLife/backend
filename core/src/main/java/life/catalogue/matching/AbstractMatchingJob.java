@@ -65,6 +65,9 @@ public abstract class AbstractMatchingJob extends DatasetJob {
 
   protected final MatchingConfig cfg;
   private final UsageMatcher matcher;
+  // whether this job acquired the matcher from the factory and must release it when done (vs. a shared,
+  // externally-owned matcher like the standalone matching server's fixed instance)
+  private final boolean ownsMatcher;
   private final MatchingUtils utils;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   // job specifics
@@ -74,7 +77,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   private List<? extends SimpleName> rootClassification;
 
   public AbstractMatchingJob(MatchingRequest req, int userKey, Dataset dataset, List<? extends SimpleName> rootClassification,
-                             UsageMatcher matcher, MatchingConfig cfg, NameIndex nidx) {
+                             UsageMatcher matcher, boolean ownsMatcher, MatchingConfig cfg, NameIndex nidx) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
     this.logToFile = true;
     this.cfg = cfg;
@@ -83,6 +86,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
     this.result = new JobResult(getKey());
     this.dataset = dataset;
     this.matcher = matcher;
+    this.ownsMatcher = ownsMatcher;
     this.rootClassification = rootClassification;
   }
 
@@ -270,6 +274,14 @@ public abstract class AbstractMatchingJob extends DatasetJob {
 
     } finally {
       writer.flush();
+      if (ownsMatcher) {
+        // release our lease so the factory can close the store once no other consumer holds it (e.g. after a rebuild)
+        try {
+          matcher.close();
+        } catch (Exception ex) {
+          LOG.warn("Failed to release matcher for dataset {}", matcher.datasetKey, ex);
+        }
+      }
       LOG.info("Matched {} out of {} names against dataset {}", counter.get()-none.get(), counter, matcher.datasetKey);
     }
   }
