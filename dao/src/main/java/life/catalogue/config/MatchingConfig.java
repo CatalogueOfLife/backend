@@ -39,11 +39,22 @@ public class MatchingConfig {
   }
 
   /**
-   * Temporary directory a matcher is (re)built into before it is atomically moved to {@link #dir(int)}.
+   * Per-build temporary directory a matcher is (re)built into before it is atomically moved to {@link #dir(int)}.
+   * Includes a unique build token so two concurrent builds of the same dataset never share a temp dir.
    * Kept in the same storageDir so the final move is a cheap same-filesystem rename.
    */
-  public File buildDir(int datasetKey) {
-    return new File(storageDir, datasetKey + ".building");
+  public File buildDir(int datasetKey, long buildToken) {
+    return new File(storageDir, datasetKey + "." + buildToken + ".building");
+  }
+
+  /** Backup dir the previous store is renamed to during a swap, so a failed move can be rolled back. */
+  public File backupDir(int datasetKey, long buildToken) {
+    return new File(storageDir, datasetKey + "." + buildToken + ".old");
+  }
+
+  /** True for the transient {@code .building}/{@code .old} dirs created during a swap (not a real matcher store). */
+  public static boolean isTransientDir(String name) {
+    return name.endsWith(".building") || name.endsWith(".old");
   }
 
   /**

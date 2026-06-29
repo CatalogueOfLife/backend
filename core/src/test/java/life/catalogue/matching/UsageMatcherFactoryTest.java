@@ -258,7 +258,7 @@ public class UsageMatcherFactoryTest {
   @Test
   public void existingOrPostgresThrowsWhileFirstBuildInProgress() {
     var f = factory();
-    f.runningBuilds.put(777, LocalDateTime.now()); // simulate a first build in progress, nothing cached
+    f.runningBuilds.put(777, 1L); // simulate a first build in progress, nothing cached
     // must fail fast with 503 rather than block on the lock or scan postgres live
     assertThrows(UnavailableException.class, () -> f.existingOrPostgres(777));
   }
@@ -266,8 +266,15 @@ public class UsageMatcherFactoryTest {
   @Test
   public void getReturnsNullWhileBuildInProgressNoCache() throws Exception {
     var f = factory();
-    f.runningBuilds.put(778, LocalDateTime.now());
+    f.runningBuilds.put(778, 1L);
     assertNull("get must not block during a build; null when nothing is cached yet", f.get(778));
+  }
+
+  @Test
+  public void persistentThrowsWhileBuildInProgress() {
+    var f = factory();
+    f.runningBuilds.put(776, 1L); // a build owns the key; a second caller must not get null (-> NPE in MatchingJob)
+    assertThrows(UnavailableException.class, () -> f.persistent(776));
   }
 
   @Test
@@ -276,7 +283,7 @@ public class UsageMatcherFactoryTest {
     stubUsageMapper(779, 5000, 4000);
     UsageMatcher cached = f.persistent(779);       // build + cache an initial matcher
     assertNotNull(cached);
-    f.runningBuilds.put(779, LocalDateTime.now());  // simulate a rebuild now in progress
+    f.runningBuilds.put(779, 1L);                   // simulate a rebuild now in progress
     // the old cached matcher is still served (no throw, no block) while the rebuild runs
     assertSame(cached, f.existingOrPostgres(779));
   }
