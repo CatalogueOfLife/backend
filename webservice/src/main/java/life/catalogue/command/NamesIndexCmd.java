@@ -131,7 +131,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     subparser.addArgument("--"+ ARG_REUSE_DUMPS)
       .dest(ARG_REUSE_DUMPS)
       .action(Arguments.storeTrue())
-      .help("Flag to reuse existing pg dump files instead of creating new ones.");
+      .help("Flag to reuse the existing 2 unsplit pg dump files instead of creating new ones.");
     subparser.addArgument("--"+ ARG_INSERT_MATCHES)
       .dest(ARG_INSERT_MATCHES)
       .type(Integer.class)
@@ -301,9 +301,11 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       if (reuse && out.exists()) {
         LOG.info("Reuse pg dump {}. Counting all {}names in database", archived ? "archived ":"", out);
         try (var stmnt  = c.createStatement()) {
-          stmnt.execute("SELECT count(*) FROM " + (archived ? "name_usage_archive" : "name"));
-          var rs = stmnt.getResultSet();
-          total = rs.getLong(1);
+          try (var rs = stmnt.executeQuery(
+              "SELECT count(*) FROM " + (archived ? "name_usage_archive" : "name"))) {
+            rs.next();
+            total = rs.getLong(1);
+          }
         }
 
       } else {
