@@ -44,7 +44,6 @@ public class UsageMatcherFactoryTest {
   private UsageMatcherFactory factory() {
     MatchingConfig cfg = new MatchingConfig();
     cfg.storageDir = tmp.getRoot();
-    cfg.chronicle = true;
     return new UsageMatcherFactory(cfg, nameIndex, sqlSessionFactory, executor);
   }
 
@@ -57,7 +56,6 @@ public class UsageMatcherFactoryTest {
 
     MatchingConfig cfg = new MatchingConfig();
     cfg.storageDir = tmp.getRoot();
-    cfg.chronicle = true;
     return new UsageMatcherFactory(cfg, nameIndex, sqlSessionFactory, executor);
   }
 

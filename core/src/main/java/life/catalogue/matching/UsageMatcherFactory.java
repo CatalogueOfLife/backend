@@ -27,7 +27,6 @@ import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.coldp.DatasetJsonWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.fory.Fory;
 import org.apache.fory.ThreadLocalFory;
 import org.apache.fory.ThreadSafeFory;
@@ -36,13 +35,11 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -99,7 +96,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   /**
    * Loads all persisted matchers from the storage directory.
    * Warms the DatasetInfoCache with all datasets in one batch query, then validates and
-   * reopens chronicle/mapdb files in parallel without any further DB queries.
+   * reopens chronicle files in parallel without any further DB queries.
    */
   private void loadFromFS() {
     LOG.info("Load existing file based matchers from {}", dir);
@@ -149,14 +146,8 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     LOG.info("Loaded {} matchers from {}", matchers.size(), dir);
   }
 
-  private UsageMatcherAbstractStore reopenStore(int datasetKey) throws IOException {
-    var f = cfg.dir(datasetKey);
-    if (cfg.chronicle) {
-      return UsageMatcherChronicleStore.reopen(datasetKey, f);
-    } else {
-      return UsageMatcherMapDBStore.build(datasetKey,
-        DBMaker.fileDB(f).fileMmapEnableIfSupported().make());
-    }
+  private UsageMatcherChronicleStore reopenStore(int datasetKey) throws IOException {
+    return UsageMatcherChronicleStore.reopen(datasetKey, cfg.dir(datasetKey));
   }
 
   public NameIndex getNameIndex() {
@@ -422,19 +413,8 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
   public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, long canonCount, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
     var f = cfg.dir(datasetKey);
-
-    UsageMatcherAbstractStore store;
-    if (cfg.chronicle) {
-      LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
-      store = UsageMatcherChronicleStore.build(datasetKey, f, maxUsages, canonCount, samples);
-
-    } else {
-      LOG.info("Create new persistent mapdb matcher for dataset {} at {}", datasetKey, f);
-      DBMaker.Maker maker = DBMaker
-        .fileDB(f)
-        .fileMmapEnableIfSupported();
-      store = UsageMatcherMapDBStore.build(datasetKey, maker.make());
-    }
+    LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
+    var store = UsageMatcherChronicleStore.build(datasetKey, f, maxUsages, canonCount, samples);
     return new UsageMatcher(datasetKey, nameIndex, store, true);
   }
 
@@ -618,14 +598,14 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   private List<Integer> listFS() {
     List<Integer> keys = new ArrayList<>();
     if (dir != null && dir.isDirectory()) {
-      FilenameFilter ff = cfg.chronicle ? DirectoryFileFilter.INSTANCE : FileFileFilter.INSTANCE;
-      String[] files = dir.list(ff);
-      for (var fn : files) {
-        try {
-          int key = Integer.parseInt(fn);
-          keys.add(key);
-        } catch (NumberFormatException e) {
-          // ignore
+      String[] files = dir.list(DirectoryFileFilter.INSTANCE);
+      if (files != null) {
+        for (var fn : files) {
+          try {
+            keys.add(Integer.parseInt(fn));
+          } catch (NumberFormatException e) {
+            // ignore non-dataset entries
+          }
         }
       }
     }
