@@ -243,10 +243,11 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   }
 
   /** Writes the dataset sidecar JSON (attempt marker) next to the matcher store. */
-  private void writeSidecar(int datasetKey) {
+  private void writeSidecar(int datasetKey, UsageMatcherStore store) {
     try (var s = factory.openSession()) {
       Dataset d = s.getMapper(DatasetMapper.class).get(datasetKey);
       if (d != null) {
+        d.setSize(store.size()); // persist the matcher size so we can compare it to the DB size later if needed
         DatasetJsonWriter.write(d, cfg.datasetJson(datasetKey));
         LOG.info("Wrote dataset sidecar for matcher {} with attempt {}", datasetKey, d.getAttempt());
       }
@@ -296,7 +297,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
         FileUtils.deleteQuietly(cfg.buildDir(datasetKey, token));
         throw e;
       }
-      writeSidecar(datasetKey);
+      writeSidecar(datasetKey, fresh.store());
       UsageMatcher old = matchers.put(datasetKey, fresh);
       if (old != null) {
         old.retire(); // closes its store once the last in-flight consumer (e.g. a long MatchingJob) releases it
