@@ -68,6 +68,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   // whether this job acquired the matcher from the factory and must release it when done (vs. a shared,
   // externally-owned matcher like the standalone matching server's fixed instance)
   private final boolean ownsMatcher;
+  private final java.util.concurrent.atomic.AtomicBoolean matcherReleased = new java.util.concurrent.atomic.AtomicBoolean(false);
   private final MatchingUtils utils;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   // job specifics
@@ -274,15 +275,22 @@ public abstract class AbstractMatchingJob extends DatasetJob {
 
     } finally {
       writer.flush();
-      if (ownsMatcher) {
-        // release our lease so the factory can close the store once no other consumer holds it (e.g. after a rebuild)
-        try {
-          matcher.close();
-        } catch (Exception ex) {
-          LOG.warn("Failed to release matcher for dataset {}", matcher.datasetKey, ex);
-        }
-      }
       LOG.info("Matched {} out of {} names against dataset {}", counter.get()-none.get(), counter, matcher.datasetKey);
+    }
+  }
+
+  /**
+   * Releases the matcher lease we acquired for this job (no-op for a caller-owned matcher). Idempotent and
+   * safe to call from the job's lifecycle finally and from the creator on a failed submit, so the shared
+   * store's lease is balanced on every exit path.
+   */
+  public void releaseMatcher() {
+    if (ownsMatcher && matcherReleased.compareAndSet(false, true)) {
+      try {
+        matcher.close();
+      } catch (Exception ex) {
+        LOG.warn("Failed to release matcher for dataset {}", matcher.datasetKey, ex);
+      }
     }
   }
 

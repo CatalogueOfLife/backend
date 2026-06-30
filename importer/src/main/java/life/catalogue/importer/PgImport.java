@@ -419,7 +419,12 @@ public class PgImport implements Callable<Boolean> {
         matchTarget = null;
         matchScope = null;
       } else {
-        matchScope = spec.resolveScope(scopeResolver, resolvedKey);
+        try {
+          matchScope = spec.resolveScope(scopeResolver, resolvedKey);
+        } catch (RuntimeException e) {
+          matcher.close(); // release the lease we just acquired before propagating, the indexer finally isn't reached yet
+          throw e;
+        }
         matchTarget = matcher;
         LOG.info("Matching dataset {} usages against {} resolved={} (scope '{}')", dataset.getKey(), spec, resolvedKey, matchScope);
       }

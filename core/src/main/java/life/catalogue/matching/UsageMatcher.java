@@ -45,9 +45,11 @@ public class UsageMatcher implements AutoCloseable {
   private final UsageMatcherStore storage;
   // reference counting for shared (keepStoreOpen) stores: the factory retires an instance when it is swapped
   // out / removed, but the underlying mmap store is only closed once no consumer still holds it (leases==0).
-  private final java.util.concurrent.atomic.AtomicInteger leases = new java.util.concurrent.atomic.AtomicInteger(0);
-  private final java.util.concurrent.atomic.AtomicBoolean closed = new java.util.concurrent.atomic.AtomicBoolean(false);
-  private volatile boolean retired = false;
+  // All three fields are guarded by this instance's monitor so acquire vs. retire/close can't race (which
+  // would otherwise let an acquirer hold a just-closed store -> SIGSEGV).
+  private int leases = 0;
+  private boolean retired = false;
+  private boolean closed = false;
 
   public UsageMatcher(int datasetKey, NameIndex nameIndex, UsageMatcherStore storage, boolean keepStoreOpen) {
     this.keepStoreOpen = keepStoreOpen;
@@ -650,13 +652,10 @@ public class UsageMatcher implements AutoCloseable {
    * No-op for caller-owned (non keepStoreOpen) matchers. Returns false if the store was already retired and
    * closed (the caller raced a swap/eviction and must re-resolve the matcher); true otherwise.
    */
-  boolean tryAcquire() {
+  synchronized boolean tryAcquire() {
     if (!keepStoreOpen) return true;
-    leases.incrementAndGet();
-    if (closed.get()) {        // retired + closed between the caller's cache lookup and this acquire
-      leases.decrementAndGet();
-      return false;
-    }
+    if (closed) return false;  // already retired + closed → caller must re-resolve the matcher
+    leases++;
     return true;
   }
 
@@ -664,14 +663,16 @@ public class UsageMatcher implements AutoCloseable {
    * Marks this shared matcher as no longer cached. The store is closed now if no consumer holds it,
    * otherwise the last {@link #close()} closes it. No-op for caller-owned matchers.
    */
-  void retire() {
+  synchronized void retire() {
     if (!keepStoreOpen) return;
     retired = true;
     closeIfUnused();
   }
 
+  // caller must hold this instance's monitor
   private void closeIfUnused() {
-    if (retired && leases.get() <= 0 && closed.compareAndSet(false, true)) {
+    if (retired && leases <= 0 && !closed) {
+      closed = true;
       store().close();
     }
   }
@@ -681,8 +682,12 @@ public class UsageMatcher implements AutoCloseable {
     if (!keepStoreOpen) {
       store().close();         // caller-owned store (postgres / in-memory / standalone)
     } else {
-      leases.decrementAndGet(); // a consumer of a shared store is done
-      closeIfUnused();
+      releaseShared();         // a consumer of a shared store is done
     }
+  }
+
+  private synchronized void releaseShared() {
+    leases--;
+    closeIfUnused();
   }
 }
