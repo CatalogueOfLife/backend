@@ -307,7 +307,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new DatasetIssuesResource(factory));
     j.register(new DatasetPatchResource());
     j.register(new DatasetResource(factory, exec, ddao));
-    j.register(new DatasetSourceResource(factory, dsdao));
+    j.register(new DatasetSourceResource(factory, dsdao, feedbackService));
     j.register(new DecisionResource(decdao));
     j.register(new DuplicateResource(dupeDao));
     j.register(new EstimateResource(edao));

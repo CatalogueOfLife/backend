@@ -9,16 +9,23 @@ import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.filter.VaryAccept;
+import life.catalogue.feedback.Feedback;
+import life.catalogue.feedback.FeedbackService;
 
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
@@ -27,10 +34,12 @@ import jakarta.ws.rs.core.MediaType;
 public class DatasetSourceResource {
   private final DatasetSourceDao sourceDao;
   private final SqlSessionFactory factory;
+  private final FeedbackService feedbackService;
 
-  public DatasetSourceResource(SqlSessionFactory factory, DatasetSourceDao sourceDao) {
+  public DatasetSourceResource(SqlSessionFactory factory, DatasetSourceDao sourceDao, FeedbackService feedbackService) {
     this.factory = factory;
     this.sourceDao = sourceDao;
+    this.feedbackService = feedbackService;
   }
 
   /**
@@ -90,6 +99,13 @@ public class DatasetSourceResource {
                                                         @PathParam("id") int id,
                                                         @QueryParam("original") boolean original) {
     return sourceDao.get(datasetKey, id, original);
+  }
+
+  @POST
+  @Hidden
+  @Path("/{id}/feedback")
+  public URI feedback(@PathParam("key") int datasetKey, @PathParam("id") int id, @Valid Feedback msg, @Auth Optional<User> user) throws IOException {
+    return feedbackService.createForSource(user, datasetKey, id, msg);
   }
 
   @PUT
