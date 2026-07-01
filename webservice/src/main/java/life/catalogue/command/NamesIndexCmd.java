@@ -6,6 +6,7 @@ import life.catalogue.api.model.NameMatch;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.dao.Partitioner;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
@@ -217,6 +218,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     try (Connection c = dataSource.getConnection()) {
       ScriptRunner runner = PgConfig.scriptRunner(c);
       runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
+      // SCHEMA_SETUP creates name_match as an empty hash partitioned parent - add its partitions,
+      // mirroring the current partition count of the live name table
+      createMatchPartitions(c, Partitioner.detectPartitionNumber(c));
     }
 
     // setup new nidx using the session factory with the nidx schema - which has no names yet
@@ -255,6 +259,19 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       runner.runScript(Resources.getResourceAsReader(SCHEMA_POST_CONSTRAINTS));
     }
     LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");
+  }
+
+  /**
+   * Creates the hash partitions for the staged name_match parent table which was created empty by SCHEMA_SETUP.
+   */
+  private void createMatchPartitions(Connection c, int partitions) throws SQLException {
+    LOG.info("Creating {} hash partitions for {}", partitions, MATCH_TABLE);
+    try (var st = c.createStatement()) {
+      for (int i = 0; i < partitions; i++) {
+        st.execute(String.format("CREATE TABLE %s_mod%d PARTITION OF %s FOR VALUES WITH (modulus %d, remainder %d)",
+          MATCH_TABLE, i, MATCH_TABLE, partitions, i));
+      }
+    }
   }
 
   private void insertMatchesIntoPg(Integer parts) throws SQLException, IOException {
