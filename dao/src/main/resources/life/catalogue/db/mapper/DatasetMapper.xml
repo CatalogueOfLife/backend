@@ -414,6 +414,24 @@
     LIMIT #{limit}
   </select>
 
+  <select id="suggestPublishers" resultType="life.catalogue.db.type2.StringCount">
+    SELECT coalesce((d.publisher).organisation,(d.publisher).family) AS key,
+           count(*) AS count
+    FROM dataset d <include refid="FROM_PROJ"/>
+    WHERE d.deleted IS NULL AND <include refid="NOT_TEMP"/>
+      AND coalesce((d.publisher).organisation,(d.publisher).family) IS NOT NULL
+      <if test="q != null">
+        AND f_unaccent(coalesce((d.publisher).organisation,(d.publisher).family)) ILIKE f_unaccent('%' || #{q} || '%')
+      </if>
+      <include refid="PRIVATE">
+        <property name="alias" value="d"/>
+        <property name="projAlias" value="proj"/>
+      </include>
+    GROUP BY coalesce((d.publisher).organisation,(d.publisher).family)
+    ORDER BY count(*) DESC, coalesce((d.publisher).organisation,(d.publisher).family)
+    LIMIT #{limit}
+  </select>
+
   <select id="listKeys" resultType="integer">
     SELECT key
     FROM dataset
