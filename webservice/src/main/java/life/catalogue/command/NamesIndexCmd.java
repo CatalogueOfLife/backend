@@ -218,6 +218,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     try (Connection c = dataSource.getConnection()) {
       ScriptRunner runner = PgConfig.scriptRunner(c);
       runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
+      // the ScriptRunner leaves the connection with autoCommit disabled; re-enable it so the
+      // partition DDL below is committed and not rolled back when the connection is returned to the pool
+      c.setAutoCommit(true);
       // SCHEMA_SETUP creates name_match as an empty hash partitioned parent - add its partitions,
       // mirroring the current partition count of the live name table
       createMatchPartitions(c, Partitioner.detectPartitionNumber(c));
@@ -432,7 +435,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
             LOG.info("Matched {} names from {}. {}% cached, {} errors, {} have no match", counter, in, 100*cached/counter, error, nomatch);
           }
         }
-        LOG.info("Matched all {} names from {}. {}% cached, {} errors, {} have no match", counter, in, 100*cached/counter, error, nomatch);
+        LOG.info("Matched all {} names from {}. {}% cached, {} errors, {} have no match", counter, in, counter == 0 ? 0 : 100*cached/counter, error, nomatch);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
