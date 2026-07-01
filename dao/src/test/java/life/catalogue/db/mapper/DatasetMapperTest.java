@@ -1262,6 +1262,37 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     mapper().updateLastImport(d.getKey(), 13, DOI.test("test13"));
   }
 
+  @Test
+  public void publisherNameFilter() throws Exception {
+    Dataset d1 = create();
+    d1.setPublisher(Agent.organisation("Royal Botanic Gardens, Kew"));
+    mapper().create(d1);
+    Dataset d2 = create();
+    d2.setPublisher(Agent.organisation("Royal Botanic Gardens, Kew"));
+    mapper().create(d2);
+    Dataset d3 = create();
+    d3.setPublisher(Agent.organisation("Missouri Botanical Garden"));
+    mapper().create(d3);
+    commit();
+
+    // exact match, case-insensitive
+    DatasetSearchRequest req = new DatasetSearchRequest();
+    req.setPublisher("royal botanic gardens, kew");
+    Set<Integer> keys = mapper().search(req, null, new Page(0, 100)).stream()
+      .map(Dataset::getKey).collect(Collectors.toSet());
+    assertEquals(Set.of(d1.getKey(), d2.getKey()), keys);
+
+    // a substring of the name must NOT match (exact-only)
+    req.setPublisher("Kew");
+    assertTrue(mapper().search(req, null, new Page(0, 100)).isEmpty());
+
+    // hasFilter reflects the new field
+    DatasetSearchRequest hf = new DatasetSearchRequest();
+    assertFalse(hf.hasFilter());
+    hf.setPublisher("x");
+    assertTrue(hf.hasFilter());
+  }
+
 
   @Override
   Dataset createTestEntity(int dkey) {

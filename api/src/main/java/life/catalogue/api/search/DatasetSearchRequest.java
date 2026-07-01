@@ -110,6 +110,12 @@ public class DatasetSearchRequest {
   private List<UUID> gbifPublisherKeyExclusion;
 
   /**
+   * Filters datasets by their publisher name, matched exactly but case-insensitively.
+   */
+  @QueryParam("publisher")
+  private String publisher;
+
+  /**
    * Filters datasets that have no sector in the given projects dataset key
    */
   @QueryParam("withoutSectorInProject")
@@ -298,6 +304,14 @@ public class DatasetSearchRequest {
     this.gbifPublisherKeyExclusion = gbifPublisherKeyExclusion;
   }
 
+  public String getPublisher() {
+    return publisher;
+  }
+
+  public void setPublisher(String publisher) {
+    this.publisher = publisher;
+  }
+
   public Integer getWithoutSectorInProject() {
     return withoutSectorInProject;
   }
@@ -471,6 +485,7 @@ public class DatasetSearchRequest {
       gbifKey != null ||
       gbifPublisherKey != null ||
       (gbifPublisherKeyExclusion != null && !gbifPublisherKeyExclusion.isEmpty()) ||
+      publisher != null ||
       lastImportState != null ||
       editor != null ||
       reviewer != null ||
@@ -516,6 +531,7 @@ public class DatasetSearchRequest {
       Objects.equals(gbifKey, that.gbifKey) &&
       Objects.equals(gbifPublisherKey, that.gbifPublisherKey) &&
       Objects.equals(gbifPublisherKeyExclusion, that.gbifPublisherKeyExclusion) &&
+      Objects.equals(publisher, that.publisher) &&
       Objects.equals(withoutSectorInProject, that.withoutSectorInProject) &&
       lastImportState == that.lastImportState &&
       Objects.equals(editor, that.editor) &&
@@ -539,6 +555,6 @@ public class DatasetSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, alias, code, codeIsNull, privat, inclDeleted, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, gbifPublisherKeyExclusion, withoutSectorInProject, lastImportState, editor, reviewer, origin, type, license, group, rowType, modified, modifiedBefore, modifiedBy, created, createdBefore, createdBy, issued, issuedBefore, minSize, sortBy, reverse);
+    return Objects.hash(q, alias, code, codeIsNull, privat, inclDeleted, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, gbifPublisherKeyExclusion, publisher, withoutSectorInProject, lastImportState, editor, reviewer, origin, type, license, group, rowType, modified, modifiedBefore, modifiedBy, created, createdBefore, createdBy, issued, issuedBefore, minSize, sortBy, reverse);
   }
 }
