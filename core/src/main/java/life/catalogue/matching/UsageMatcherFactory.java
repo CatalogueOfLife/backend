@@ -20,8 +20,10 @@ import life.catalogue.config.MatchingConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
-import life.catalogue.metadata.coldp.DatasetJsonWriter;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.fory.Fory;
@@ -38,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +53,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class UsageMatcherFactory implements DatasetListener, life.catalogue.common.Managed {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherFactory.class);
+  /** Extra sidecar JSON property recording the names index {@link NameIndex#created()} the store was built against. */
+  static final String NIDX_CREATED_FIELD = "nidxCreated";
   private volatile boolean started = false;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
@@ -242,14 +247,23 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     return m;
   }
 
-  /** Writes the dataset sidecar JSON (attempt marker) next to the matcher store. */
+  /**
+   * Writes the dataset sidecar JSON next to the matcher store. Besides the dataset itself (attempt marker),
+   * it records under the extra {@value #NIDX_CREATED_FIELD} property the {@link NameIndex#created()} timestamp
+   * the store was built against, so a later names-index rebuild/swap can be detected as making this store
+   * stale. The extra property is ignored when the file is read back as a plain {@link Dataset}.
+   */
   private void writeSidecar(int datasetKey, UsageMatcherStore store) {
     try (var s = factory.openSession()) {
       Dataset d = s.getMapper(DatasetMapper.class).get(datasetKey);
       if (d != null) {
         d.setSize(store.size()); // persist the matcher size so we can compare it to the DB size later if needed
-        DatasetJsonWriter.write(d, cfg.datasetJson(datasetKey));
-        LOG.info("Wrote dataset sidecar for matcher {} with attempt {}", datasetKey, d.getAttempt());
+        LocalDateTime nidxCreated = nameIndex.created();
+        ObjectNode node = ApiModule.MAPPER.valueToTree(d);
+        node.put(NIDX_CREATED_FIELD, nidxCreated.toString());
+        ApiModule.MAPPER.writeValue(cfg.datasetJson(datasetKey), node);
+        LOG.info("Wrote dataset sidecar for matcher {} with attempt {} and nidx created {}",
+          datasetKey, d.getAttempt(), nidxCreated);
       }
     } catch (Exception e) {
       LOG.warn("Failed to write sidecar for matcher {}", datasetKey, e);
@@ -377,6 +391,23 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     }
   }
 
+  /**
+   * Reads the names-index {@code created} timestamp the matcher store was built against from the
+   * {@value #NIDX_CREATED_FIELD} property of the dataset sidecar, or null if the sidecar is absent, the
+   * property is missing (a store built before this marker was introduced) or unparseable.
+   */
+  private LocalDateTime readStoredNidxCreated(int datasetKey) {
+    var sidecar = cfg.datasetJson(datasetKey);
+    if (!sidecar.exists()) return null;
+    try {
+      var node = ApiModule.MAPPER.readTree(sidecar).get(NIDX_CREATED_FIELD);
+      return node == null || node.isNull() ? null : LocalDateTime.parse(node.asText());
+    } catch (Exception e) {
+      LOG.warn("Could not read nidx created from sidecar for dataset {}", datasetKey, e);
+      return null;
+    }
+  }
+
   @Override
   public void datasetChanged(DatasetChanged d) {
     if (d.isDeletion()) {
@@ -479,7 +510,18 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       removed, scheduled, force, shouldHave.size(), published.size());
   }
 
-  /** True when no store exists on disk or the stored sidecar attempt differs from the current DB attempt. */
+  /**
+   * True when the matcher store is missing or out of date and must be rebuilt, because either
+   * <ul>
+   *   <li>no store exists on disk, or</li>
+   *   <li>the stored sidecar attempt differs from the current DB attempt (the dataset changed), or</li>
+   *   <li>the stored names-index {@code created} timestamp differs from the live index — i.e. the names
+   *       index was rebuilt/swapped, so every nidx id materialized in the store is now stale.</li>
+   * </ul>
+   * A store built before the nidx marker was introduced has no recorded timestamp; that alone does NOT
+   * mark it stale (we fall back to the attempt check), so introducing this marker does not trigger a
+   * mass rebuild. Once rebuilt, the marker is written and future nidx swaps are detected.
+   */
   private boolean needsRebuild(int datasetKey) {
     if (!cfg.dir(datasetKey).isDirectory()) return true;
     Integer stored = readStoredAttempt(datasetKey);
@@ -488,7 +530,9 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       Dataset d = s.getMapper(DatasetMapper.class).get(datasetKey);
       current = d == null ? null : d.getAttempt();
     }
-    return stored == null || !stored.equals(current);
+    if (stored == null || !stored.equals(current)) return true;
+    LocalDateTime storedNidx = readStoredNidxCreated(datasetKey);
+    return storedNidx != null && !storedNidx.equals(nameIndex.created());
   }
 
   public void remove(int datasetKey) {
@@ -529,12 +573,14 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     public final int datasetKey;
     public final Integer size;
     public final Integer attempt; // from sidecar JSON, null if absent
+    public final LocalDateTime nidxCreated; // names index created timestamp the store was built against, null if absent
     public DatasetSimple dataset;
 
-    public MatcherMetadata(int datasetKey, Integer size, Integer attempt) {
+    public MatcherMetadata(int datasetKey, Integer size, Integer attempt, LocalDateTime nidxCreated) {
       this.datasetKey = datasetKey;
       this.size = size;
       this.attempt = attempt;
+      this.nidxCreated = nidxCreated;
     }
   }
 
@@ -542,7 +588,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     var m = matchers.get(datasetKey);
     if (m != null && m.tryAcquire()) { // hold a lease so the store can't be closed while we read its size
       try {
-        return new MatcherMetadata(datasetKey, m.store().size(), readStoredAttempt(datasetKey));
+        return new MatcherMetadata(datasetKey, m.store().size(), readStoredAttempt(datasetKey), readStoredNidxCreated(datasetKey));
       } finally {
         m.close();
       }

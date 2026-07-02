@@ -62,6 +62,21 @@ import net.sourceforge.argparse4j.inf.Subparser;
  *       command completes.</li>
  * </ol>
  *
+ * <p><b>After promoting the new index you MUST rebuild the persistent usage matcher stores.</b> A
+ * rebuild reassigns every {@code names_index.id}, so the nidx ids materialized inside each matcher
+ * store (see {@code UsageMatcherFactory}) reference the old index and are now stale — matching against
+ * them would silently return wrong or empty results. The required order is:
+ * <ol>
+ *   <li>promote the new index (postgres schema + file) to live;</li>
+ *   <li>refresh the {@code name_match} table by rematching every dataset
+ *       ({@code DatasetMatcher} / {@code RematchJob}), since matcher builds trust the persisted matches;</li>
+ *   <li>rebuild the matcher stores. This happens automatically on the next
+ *       {@code UsageMatcherFactory.reconcile} — e.g. the server startup after the swap, which now detects
+ *       the changed {@link NameIndex#created()} recorded in each matcher's dataset sidecar — or
+ *       immediately, without a restart, via {@code MatcherCmd --rebuild-all} /
+ *       {@code POST /matcher/rebuild?force=true}.</li>
+ * </ol>
+ *
  * <p>Flag combinations:
  * <ul>
  *   <li>{@code --file-only}: Rebuilds only the on-disk names-index file; skips DB rematching.</li>
@@ -261,7 +276,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       LOG.info("Building postgres constraints for new names index");
       runner.runScript(Resources.getResourceAsReader(SCHEMA_POST_CONSTRAINTS));
     }
-    LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");
+    LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually, "
+      + "then rematch all datasets (name_match) and rebuild the usage matcher stores "
+      + "(server restart triggers this automatically, or MatcherCmd --rebuild-all / POST /matcher/rebuild?force=true). "
+      + "The matcher stores hold stale nidx ids until rebuilt.");
   }
 
   /**

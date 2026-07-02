@@ -13,9 +13,11 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.coldp.DatasetJsonWriter;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -355,5 +357,58 @@ public class UsageMatcherFactoryTest {
     clearInvocations(executor);
     f.reconcile(true, 1);
     verify(executor).submit(argThat(j -> j instanceof BackgroundJob));
+  }
+
+  /**
+   * A matcher whose attempt sidecar is in sync but whose recorded names-index created timestamp differs
+   * from the live index (i.e. the nidx was rebuilt/swapped) is stale and must be rebuilt by reconcile.
+   */
+  @Test
+  public void reconcileSchedulesBuildWhenNidxChanged() throws Exception {
+    var f = factory();
+    int key = 203;
+    var m = stubReconcile(List.of(key));
+    when(m.num().count(key)).thenReturn(5000);   // above threshold
+
+    // attempt matches the DB (not stale on attempt), but the sidecar recorded an older nidx than the live one
+    inSyncSidecar(key, m, 7, LocalDateTime.of(2026, 1, 1, 0, 0));
+    when(nameIndex.created()).thenReturn(LocalDateTime.of(2026, 7, 1, 0, 0)); // live nidx is newer → stale
+
+    f.reconcile(false, 1);
+    verify(executor).submit(argThat(j -> j instanceof BackgroundJob)); // rebuild scheduled for the stale nidx
+  }
+
+  /** A matcher in sync on both attempt and names-index created timestamp is not rebuilt. */
+  @Test
+  public void reconcileSkipsWhenNidxUnchanged() throws Exception {
+    var f = factory();
+    int key = 204;
+    var m = stubReconcile(List.of(key));
+    when(m.num().count(key)).thenReturn(5000);
+
+    var nidxCreated = LocalDateTime.of(2026, 7, 1, 0, 0);
+    inSyncSidecar(key, m, 7, nidxCreated);
+    when(nameIndex.created()).thenReturn(nidxCreated); // same as recorded → not stale
+
+    f.reconcile(false, 1);
+    verify(executor, never()).submit(any());
+  }
+
+  /**
+   * Writes a store dir + dataset sidecar for key (attempt + embedded nidxCreated) and wires the DB to report
+   * the same attempt (in sync), mirroring what {@code writeSidecar} produces after a build.
+   */
+  private void inSyncSidecar(int key, ReconcileMocks m, int attempt, LocalDateTime nidxCreated) throws Exception {
+    new File(tmp.getRoot(), String.valueOf(key)).mkdirs();
+    Dataset stored = new Dataset();
+    stored.setKey(key);
+    stored.setAttempt(attempt);
+    ObjectNode node = ApiModule.MAPPER.valueToTree(stored);
+    node.put("nidxCreated", nidxCreated.toString());
+    ApiModule.MAPPER.writeValue(new File(tmp.getRoot(), key + ".json"), node);
+    Dataset current = new Dataset();
+    current.setKey(key);
+    current.setAttempt(attempt);
+    when(m.dm().get(key)).thenReturn(current);
   }
 }
