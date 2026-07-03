@@ -515,7 +515,11 @@ public enum Issue {
   DUPLICATE_ESTIMATES(NAME_USAGE, Level.WARNING,
       "Same species estimate record appears several times for the same taxon."),
   DUPLICATE_TAXON_PROPERTIES(NAME_USAGE, Level.WARNING,
-      "Same taxon property record appears several times for the same taxon.")
+      "Same taxon property record appears several times for the same taxon."),
+
+  RELATION_SYNONYM(NAME_USAGE, Level.WARNING,
+      "A taxon concept relation or species interaction referenced a synonym instead of an accepted taxon. "
+      + "The reference has been relinked to the synonyms accepted taxon, or the relation dropped if no accepted taxon could be found.")
   ;
 
   /**

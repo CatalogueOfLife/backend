@@ -740,6 +740,11 @@ public class PgImport implements Callable<Boolean> {
       LOG.debug("Inserting all taxon relations");
       store.usages().all().forEach(u -> {
         for (var r : u.tcRelations) {
+          // defense in depth: taxon concept relations must only ever reference accepted taxa (see Normalizer.resolveRelationPartners)
+          if (!isAcceptedUsage(r.getFromID()) || !isAcceptedUsage(r.getToID())) {
+            LOG.warn("Skip taxon concept relation {} {}->{} referencing a non accepted taxon", r.getType(), r.getFromID(), r.getToID());
+            continue;
+          }
           var rel = r.toConceptRelation();
           updateVerbatimUserEntity(rel);
           updateReferenceKey(rel);
@@ -751,6 +756,11 @@ public class PgImport implements Callable<Boolean> {
           }
         }
         for (var r : u.spiRelations) {
+          // the related id is optional for species interactions, but if given both ends must be accepted taxa
+          if (!isAcceptedUsage(r.getFromID()) || (r.getToID() != null && !isAcceptedUsage(r.getToID()))) {
+            LOG.warn("Skip species interaction {} {}->{} referencing a non accepted taxon", r.getType(), r.getFromID(), r.getToID());
+            continue;
+          }
           var rel = r.toSpeciesInteraction();
           updateVerbatimUserEntity(rel);
           updateReferenceKey(rel);
@@ -766,6 +776,14 @@ public class PgImport implements Callable<Boolean> {
       LOG.info("Inserted {} taxon concept relations in total", sRelCounter);
       LOG.info("Inserted {} species interaction relations in total", sRelCounter);
     }
+  }
+
+  private boolean isAcceptedUsage(String id) {
+    if (id == null) {
+      return false;
+    }
+    var u = store.usages().objByID(id);
+    return u != null && u.isTaxon();
   }
 
   /**

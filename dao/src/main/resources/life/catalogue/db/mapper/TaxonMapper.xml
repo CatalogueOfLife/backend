@@ -139,7 +139,7 @@
   <select id="listByIds" resultMap="taxonResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.dataset_key=#{datasetKey} AND u.id IN
+    WHERE u.dataset_key=#{datasetKey} AND NOT is_synonym(u.status) AND u.id IN
     <foreach item="k" index="idx" collection="ids" open="(" separator="," close=")">#{k}</foreach>
   </select>
 

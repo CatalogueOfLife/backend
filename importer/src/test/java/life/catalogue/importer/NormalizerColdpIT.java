@@ -683,6 +683,32 @@ public class NormalizerColdpIT extends NormalizerITBase {
   }
 
   /**
+   * Taxon concept relations and species interactions must only ever reference accepted taxa.
+   * A relation pointing at a synonym gets relinked to the synonyms accepted taxon and flagged.
+   */
+  @Test
+  public void relationSynonymPartner() throws Exception {
+    normalize(44);
+    store.debug();
+
+    var u = usageByID("1");
+    assertFalse(u.isSynonym());
+
+    // the related synonym s3 must have been relinked to its accepted taxon 2
+    assertEquals(1, u.getTcRelations().size());
+    var tc = u.getTcRelations().getFirst();
+    assertEquals("1", tc.getFromID());
+    assertEquals("2", tc.getToID());
+    assertTrue(store.getVerbatim(tc.getVerbatimKey()).getIssues().contains(Issue.RELATION_SYNONYM));
+
+    assertEquals(1, u.getSpiRelations().size());
+    var spi = u.getSpiRelations().getFirst();
+    assertEquals("1", spi.getFromID());
+    assertEquals("2", spi.getToID());
+    assertTrue(store.getVerbatim(spi.getVerbatimKey()).getIssues().contains(Issue.RELATION_SYNONYM));
+  }
+
+  /**
    * Structured ISO distributions not interpreted properly ending up as TEXT before.
    */
   @Test
