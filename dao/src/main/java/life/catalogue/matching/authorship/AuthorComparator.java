@@ -194,19 +194,24 @@ public class AuthorComparator {
    *
    * @param code the code determines which ex author to use. If null both authorteams are used for matching
    */
+  @VisibleForTesting
+  Equality compareAuthorteam(Authorship a1, Authorship a2, NomCode code) {
+    return compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, code);
+  }
+
   private Equality compareAuthorteam(@Nullable Authorship a1, @Nullable Authorship a2,
                                      final int minCommonSubstring, final int maxAuthorLengthWithoutLookup, final int jaroDistance,
                                      NomCode code
   ) {
     // convert to all lower case, ascii only, no punctuation but commas seperating authors and normed whitespace
-    List<String> authorTeam1 = normalizer.lookup(AuthorshipNormalizer.normalize(a1, code), maxAuthorLengthWithoutLookup);
-    List<String> authorTeam2 = normalizer.lookup(AuthorshipNormalizer.normalize(a2, code), maxAuthorLengthWithoutLookup);
+    List<String> authorTeam1 = normalizer.lookup(AuthorshipNormalizer.normalize(a1, code), maxAuthorLengthWithoutLookup, code);
+    List<String> authorTeam2 = normalizer.lookup(AuthorshipNormalizer.normalize(a2, code), maxAuthorLengthWithoutLookup, code);
     if (!authorTeam1.isEmpty() && !authorTeam2.isEmpty()) {
       Equality equality = compareNormalizedAuthorteam(authorTeam1, authorTeam2, minCommonSubstring, jaroDistance);
       if (equality != Equality.EQUAL) {
         // try again by looking up entire author strings
-        List<String> authorTeam1l = normalizer.lookup(authorTeam1);
-        List<String> authorTeam2l = normalizer.lookup(authorTeam2);
+        List<String> authorTeam1l = normalizer.lookup(authorTeam1, code);
+        List<String> authorTeam2l = normalizer.lookup(authorTeam2, code);
         // only compare again if the queue is actually different then before
         if (!authorTeam1.equals(authorTeam1l) || !authorTeam2.equals(authorTeam2l)) {
           equality = compareNormalizedAuthorteam(authorTeam1l, authorTeam2l, minCommonSubstring, jaroDistance);
