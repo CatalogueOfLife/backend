@@ -45,4 +45,29 @@ public class WikidataSourceTest {
     AuthorEntry smith = entries.stream().filter(e -> e.canonical().equals("Alan Smith")).findFirst().orElseThrow();
     assertFalse(smith.aliases().contains("A.M.Sm.bis"));                // dot-attached suffix dropped too
   }
+
+  @Test
+  public void accumulatesAcrossPagesAndProperties() throws Exception {
+    ObjectMapper om = new ObjectMapper();
+    // page from the P428 (botanist) query
+    JsonNode botPage = om.readTree("""
+      { "results": { "bindings": [
+        { "person": {"value":"http://www.wikidata.org/entity/Q1"}, "name": {"value":"Carl Linnaeus"}, "botAbbr": {"value":"L."} }
+      ] } }""");
+    // page from the P835 (zoologist) query for the SAME person -> must promote to ANY and union aliases
+    JsonNode zooPage = om.readTree("""
+      { "results": { "bindings": [
+        { "person": {"value":"http://www.wikidata.org/entity/Q1"}, "name": {"value":"Carl Linnaeus"}, "zooAuthor": {"value":"Linnaeus"} }
+      ] } }""");
+
+    WikidataSource.Ctx ctx = new WikidataSource.Ctx();
+    assertEquals(1, ctx.accumulate(botPage));   // returns the page row count for pagination termination
+    assertEquals(1, ctx.accumulate(zooPage));
+    List<AuthorEntry> entries = ctx.build();
+
+    assertEquals(1, entries.size());             // one person across both pages
+    AuthorEntry e = entries.get(0);
+    assertEquals(AuthorCode.ANY, e.code());      // P428 + P835 -> ANY
+    assertTrue(e.aliases().containsAll(List.of("Carl Linnaeus", "L.", "Linnaeus")));
+  }
 }
