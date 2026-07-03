@@ -7,27 +7,36 @@ import java.util.*;
 public class AuthorMapMerger {
 
   private static class Group {
-    final int order;                                   // creation order = precedence (lower = higher precedence)
+    final int order;
     String canonical;
     AuthorCode code;
+    boolean curated;
     final LinkedHashSet<String> aliases = new LinkedHashSet<>();
     final Set<String> keys = new HashSet<>();
     Group(int order) { this.order = order; }
   }
 
-  /** @param sources highest precedence first (index 0 = manual). */
-  public static List<AuthorEntry> merge(List<List<AuthorEntry>> sources) {
-    Map<String, Group> keyIndex = new HashMap<>();
+  /**
+   * @param sources      highest precedence first (index 0 = manual). Canonical form comes from the
+   *                     earliest (highest-precedence) contributor.
+   * @param curatedCount the first curatedCount sources are authoritative (manual + existing IPNI);
+   *                     their alias keys are protected when disambiguating ambiguous keys.
+   */
+  public static List<AuthorEntry> merge(List<List<AuthorEntry>> sources, int curatedCount) {
+    Map<String, Group> bridgeIndex = new HashMap<>();   // multi-token identity key -> group
     List<Group> groups = new ArrayList<>();
     int counter = 0;
 
-    for (List<AuthorEntry> source : sources) {
-      for (AuthorEntry e : source) {
-        List<String> keys = normalizedKeys(e);
-        // collect every distinct existing group these keys already resolve to
+    for (int s = 0; s < sources.size(); s++) {
+      boolean curated = s < curatedCount;
+      for (AuthorEntry e : sources.get(s)) {
+        List<String> allKeys = normalizedKeys(e);
+        List<String> bridge = new ArrayList<>();
+        for (String k : allKeys) if (k.indexOf(' ') >= 0) bridge.add(k);   // multi-token = discriminating identity
+
         LinkedHashSet<Group> matched = new LinkedHashSet<>();
-        for (String k : keys) {
-          Group hit = keyIndex.get(k);
+        for (String k : bridge) {
+          Group hit = bridgeIndex.get(k);
           if (hit != null) matched.add(hit);
         }
 
@@ -38,46 +47,71 @@ public class AuthorMapMerger {
           g.code = e.code();
           groups.add(g);
         } else {
-          // primary = highest-precedence (earliest created) matched group; its canonical wins
           g = matched.iterator().next();
-          for (Group cand : matched) {
-            if (cand.order < g.order) g = cand;
-          }
-          // fold every other matched group into the primary and retire it
+          for (Group cand : matched) if (cand.order < g.order) g = cand;
           for (Group other : matched) {
             if (other == g) continue;
             g.aliases.addAll(other.aliases);
+            g.keys.addAll(other.keys);
             foldCode(g, other.code);
-            for (String k : other.keys) {
-              g.keys.add(k);
-              keyIndex.put(k, g);
-            }
+            g.curated = g.curated || other.curated;
+            for (String k : other.keys) if (k.indexOf(' ') >= 0) bridgeIndex.put(k, g);
             groups.remove(other);
           }
-          // fold the incoming entry's code
           foldCode(g, e.code());
         }
-
+        g.curated = g.curated || curated;
         g.aliases.addAll(e.aliases());
-        for (String k : keys) {
-          g.keys.add(k);
-          keyIndex.put(k, g);
-        }
+        g.keys.addAll(allKeys);
+        for (String k : bridge) bridgeIndex.put(k, g);
       }
     }
 
-    List<AuthorEntry> out = new ArrayList<>(groups.size());
+    disambiguate(groups);
+
+    List<AuthorEntry> out = new ArrayList<>();
     for (Group g : groups) {
+      if (g.aliases.isEmpty()) continue;
       out.add(new AuthorEntry(g.canonical, g.code, new ArrayList<>(g.aliases)));
     }
     return out;
   }
 
-  /** Widen toward ANY when two single-code contributions conflict; ANY absorbs everything. */
-  private static void foldCode(Group g, AuthorCode other) {
-    if (g.code != other && g.code != AuthorCode.ANY && other != AuthorCode.ANY) {
-      g.code = AuthorCode.ANY;
+  /** Backwards-compatible: treat all sources as curated. */
+  public static List<AuthorEntry> merge(List<List<AuthorEntry>> sources) {
+    return merge(sources, sources.size());
+  }
+
+  /**
+   * Ensure every remaining normalized alias key resolves to a single canonical. For a key held by
+   * multiple groups: if exactly one curated group holds it, keep it only there and strip the colliding
+   * aliases from the others; otherwise drop the key from all groups.
+   */
+  private static void disambiguate(List<Group> groups) {
+    Map<String, List<Group>> holders = new HashMap<>();
+    for (Group g : groups) {
+      Set<String> seen = new HashSet<>();
+      for (String a : g.aliases) {
+        String k = AuthorshipNormalizer.normalize(a);
+        if (k != null && seen.add(k)) holders.computeIfAbsent(k, x -> new ArrayList<>()).add(g);
+      }
     }
+    for (var entry : holders.entrySet()) {
+      String key = entry.getKey();
+      List<Group> hs = entry.getValue();
+      if (hs.size() < 2) continue;
+      List<Group> curated = new ArrayList<>();
+      for (Group g : hs) if (g.curated) curated.add(g);
+      Group keep = curated.size() == 1 ? curated.get(0) : null;
+      for (Group g : hs) {
+        if (g == keep) continue;
+        g.aliases.removeIf(a -> key.equals(AuthorshipNormalizer.normalize(a)));
+      }
+    }
+  }
+
+  private static void foldCode(Group g, AuthorCode other) {
+    if (g.code != other && g.code != AuthorCode.ANY && other != AuthorCode.ANY) g.code = AuthorCode.ANY;
   }
 
   private static List<String> normalizedKeys(AuthorEntry e) {

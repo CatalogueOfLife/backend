@@ -12,7 +12,7 @@ import java.util.*;
  *       -Dexec.mainClass=life.catalogue.common.tax.authormap.AuthorMapGenerator \
  *       -Dexec.args="api/src/main/resources/authorship"
  *
- * Precedence (highest first): manual > wikidata > existing(IPNI base) > ipni/huh dumps.
+ * Precedence (highest first): manual > existing(IPNI) > wikidata > dumps.
  */
 public class AuthorMapGenerator {
 
@@ -23,8 +23,8 @@ public class AuthorMapGenerator {
 
     List<AuthorSource> sources = new ArrayList<>();
     sources.add(TsvDumpSource.manual(manual));      // precedence 0 (highest, locked)
-    sources.add(new WikidataSource());              // precedence 1
-    sources.add(TsvDumpSource.existingMap(existing)); // precedence 2 (IPNI base + continuity)
+    sources.add(TsvDumpSource.existingMap(existing)); // precedence 1 (IPNI base + continuity)
+    sources.add(new WikidataSource());              // precedence 2
     // Optional downloaded dumps: pass as extra args "ipni=/path" / "huh=/path"
     for (int i = 1; i < args.length; i++) {
       String[] kv = args[i].split("=", 2);
@@ -44,7 +44,7 @@ public class AuthorMapGenerator {
       read.add(e);
     }
 
-    List<AuthorEntry> merged = AuthorMapMerger.merge(read);
+    List<AuthorEntry> merged = AuthorMapMerger.merge(read, 2);
     System.out.printf("merged            : %d entries%n", merged.size());
 
     AuthorMapDiff.Result diff = AuthorMapDiff.diff(before, merged);
