@@ -5,7 +5,7 @@
 
   <groupId>org.catalogueoflife</groupId>
   <artifactId>motherpom</artifactId>
-  <version>1.2.1-SNAPSHOT</version>
+  <version>1.2.1</version>
   <packaging>pom</packaging>
 
   <name>CLB motherpom</name>
@@ -15,7 +15,7 @@
     <connection>scm:git:git@github.com:CatalogueOfLife/backend.git</connection>
     <url>https://github.com/CatalogueOfLife/backend</url>
     <developerConnection>scm:git:git@github.com:CatalogueOfLife/backend.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v</tag>
   </scm>
 
   <properties>
