@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-03 relation synonym issue
+```
+ALTER TYPE ISSUE ADD VALUE 'RELATION_SYNONYM';
+```
+
 #### 2026-07-01 WDPA gazetteer
 ```
 ALTER TYPE GAZETTEER ADD VALUE 'WDPA' AFTER 'TEOW';
