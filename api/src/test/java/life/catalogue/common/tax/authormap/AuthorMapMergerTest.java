@@ -61,4 +61,16 @@ public class AuthorMapMergerTest {
     assertFalse(hobart.aliases().stream().anyMatch(a -> a.equalsIgnoreCase("Smith"))); // stripped from non-curated
     assertTrue(hobart.aliases().contains("Hobart Muir Smith")); // unique full name kept
   }
+
+  @Test
+  public void ambiguousKeyKeptAtHighestPrecedenceCuratedHolder() {
+    // two curated authors share a bare surname; manual (source 0) outranks existing (source 1)
+    List<AuthorEntry> manual = List.of(new AuthorEntry("J F Gmelin", AuthorCode.ANY, List.of("Gmelin", "Johann Friedrich Gmelin")));
+    List<AuthorEntry> existing = List.of(new AuthorEntry("S G Gmelin", AuthorCode.BOT, List.of("Gmelin", "Samuel Gottlieb Gmelin")));
+    List<AuthorEntry> merged = AuthorMapMerger.merge(List.of(manual, existing), 2); // both curated
+    AuthorEntry jf = merged.stream().filter(e -> e.canonical().equals("J F Gmelin")).findFirst().orElseThrow();
+    AuthorEntry sg = merged.stream().filter(e -> e.canonical().equals("S G Gmelin")).findFirst().orElseThrow();
+    assertTrue(jf.aliases().contains("Gmelin"));            // highest-precedence curated (manual) keeps it
+    assertFalse(sg.aliases().stream().anyMatch(a -> a.equalsIgnoreCase("Gmelin"))); // stripped from lower-precedence curated
+  }
 }

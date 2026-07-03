@@ -84,8 +84,9 @@ public class AuthorMapMerger {
 
   /**
    * Ensure every remaining normalized alias key resolves to a single canonical. For a key held by
-   * multiple groups: if exactly one curated group holds it, keep it only there and strip the colliding
-   * aliases from the others; otherwise drop the key from all groups.
+   * multiple groups: keep it at its highest-precedence curated holder (so authoritative abbreviations
+   * always resolve) and strip the colliding aliases from the others; if no holder is curated, the key
+   * is genuinely ambiguous and is dropped from all groups.
    */
   private static void disambiguate(List<Group> groups) {
     Map<String, List<Group>> holders = new HashMap<>();
@@ -100,9 +101,11 @@ public class AuthorMapMerger {
       String key = entry.getKey();
       List<Group> hs = entry.getValue();
       if (hs.size() < 2) continue;
-      List<Group> curated = new ArrayList<>();
-      for (Group g : hs) if (g.curated) curated.add(g);
-      Group keep = curated.size() == 1 ? curated.get(0) : null;
+      // keep an ambiguous key at its highest-precedence curated holder; drop it if none is curated
+      Group keep = null;
+      for (Group g : hs) {
+        if (g.curated && (keep == null || g.order < keep.order)) keep = g;
+      }
       for (Group g : hs) {
         if (g == keep) continue;
         g.aliases.removeIf(a -> key.equals(AuthorshipNormalizer.normalize(a)));
