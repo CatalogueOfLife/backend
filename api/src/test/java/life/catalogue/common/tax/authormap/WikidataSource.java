@@ -1,6 +1,8 @@
 package life.catalogue.common.tax.authormap;
 
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import java.net.*;
 import java.net.http.*;
@@ -9,6 +11,9 @@ import java.time.Duration;
 import java.util.*;
 
 public class WikidataSource implements AuthorSource {
+  // Wikidata labels occasionally contain raw control characters (unescaped newlines) that strict JSON rejects.
+  private static final ObjectMapper MAPPER =
+    JsonMapper.builder().enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS).build();
   private static final String ENDPOINT = "https://query.wikidata.org/sparql";
   // authors with a botanist abbreviation (P428) and/or a zoologist author citation (P835)
   private static final String QUERY = """
@@ -30,7 +35,7 @@ public class WikidataSource implements AuthorSource {
       .timeout(Duration.ofMinutes(3)).GET().build();
     HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
     if (resp.statusCode() != 200) throw new IllegalStateException("Wikidata SPARQL HTTP " + resp.statusCode());
-    return parse(new ObjectMapper().readTree(resp.body()));
+    return parse(MAPPER.readTree(resp.body()));
   }
 
   /** Pure, unit-testable parse of the SPARQL JSON result. One AuthorEntry per person IRI. */
@@ -47,9 +52,9 @@ public class WikidataSource implements AuthorSource {
       String name = text(b, "name");
       if (name != null) { nameByPerson.put(person, name); addUnique(aliases, name); }
       String bot = text(b, "botAbbr");
-      if (bot != null) { addUnique(aliases, bot); hasBot.put(person, true); }
+      if (bot != null) { if (!isSuffixed(bot)) addUnique(aliases, bot); hasBot.put(person, true); }
       String zoo = text(b, "zooAuthor");
-      if (zoo != null) { addUnique(aliases, zoo); hasZoo.put(person, true); }
+      if (zoo != null) { if (!isSuffixed(zoo)) addUnique(aliases, zoo); hasZoo.put(person, true); }
     }
 
     List<AuthorEntry> out = new ArrayList<>();
@@ -71,4 +76,11 @@ public class WikidataSource implements AuthorSource {
     return n.isMissingNode() ? null : n.asText();
   }
   private static void addUnique(List<String> list, String v) { if (!list.contains(v)) list.add(v); }
+
+  // Wikidata sometimes stores a disambiguated abbreviation that embeds a nomenclatural suffix such as
+  // "F.R.Jones bis" or "A.M.Sm.bis". Importing these as plain keys would erase the bis/ter distinction
+  // (making "Jones bis" collapse onto "Jones"), so we skip the abbreviation while still recording the author.
+  private static final java.util.regex.Pattern SUFFIXED =
+    java.util.regex.Pattern.compile("(^|[\\s.])(bis|ter)\\.?$", java.util.regex.Pattern.CASE_INSENSITIVE);
+  private static boolean isSuffixed(String v) { return SUFFIXED.matcher(v).find(); }
 }

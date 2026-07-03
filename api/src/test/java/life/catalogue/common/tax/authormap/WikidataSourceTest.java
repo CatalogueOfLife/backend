@@ -23,4 +23,26 @@ public class WikidataSourceTest {
     AuthorEntry cuv = entries.stream().filter(e -> e.aliases().contains("Georges Cuvier")).findFirst().orElseThrow();
     assertEquals(AuthorCode.ZOO, cuv.code());                // has zoologist citation (P835)
   }
+
+  @Test
+  public void dropsSuffixedAbbreviations() throws Exception {
+    // Wikidata bundles a nomenclatural suffix into some abbreviations ("F.R.Jones bis", "A.M.Sm.bis").
+    // These must not become lookup keys or they'd erase the bis/ter distinction. The author + label survive.
+    String body = """
+      { "results": { "bindings": [
+        { "person": {"value":"http://www.wikidata.org/entity/Q1"},
+          "name": {"value":"Fred Reuel Jones"}, "botAbbr": {"value":"F.R.Jones bis"} },
+        { "person": {"value":"http://www.wikidata.org/entity/Q2"},
+          "name": {"value":"Alan Smith"}, "botAbbr": {"value":"A.M.Sm.bis"} }
+      ] } }""";
+    JsonNode json = new ObjectMapper().readTree(body);
+    List<AuthorEntry> entries = new WikidataSource().parse(json);
+
+    AuthorEntry jones = entries.stream().filter(e -> e.canonical().equals("Fred Reuel Jones")).findFirst().orElseThrow();
+    assertTrue(jones.aliases().contains("Fred Reuel Jones"));            // label kept
+    assertFalse(jones.aliases().contains("F.R.Jones bis"));              // suffixed abbrev dropped
+    assertEquals(AuthorCode.BOT, jones.code());                         // still recorded as a botanist
+    AuthorEntry smith = entries.stream().filter(e -> e.canonical().equals("Alan Smith")).findFirst().orElseThrow();
+    assertFalse(smith.aliases().contains("A.M.Sm.bis"));                // dot-attached suffix dropped too
+  }
 }
