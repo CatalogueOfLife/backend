@@ -44,7 +44,7 @@ public class WikidataSource implements AuthorSource {
       String q = "SELECT ?person ?name ?" + var + " WHERE {"
         + " ?person wdt:" + prop + " ?" + var + "."
         + " ?person rdfs:label ?name. FILTER(LANG(?name) = \"en\")"
-        + " } ORDER BY ?person LIMIT " + BATCH + " OFFSET " + offset;
+        + " } ORDER BY ?person ?" + var + " ?name LIMIT " + BATCH + " OFFSET " + offset; // full sort key -> stable page boundaries
       int rows;
       try {
         rows = ctx.accumulate(fetch(q));
@@ -62,6 +62,9 @@ public class WikidataSource implements AuthorSource {
       }
       if (rows < BATCH) break;
       offset += BATCH;
+      if (offset >= MAX_OFFSET) {
+        System.err.printf("  wikidata %s: hit MAX_OFFSET %d before a short page -> results may be truncated%n", prop, MAX_OFFSET);
+      }
     }
     if (skipped > 0) {
       System.err.printf("  wikidata %s: %d page(s) skipped -> up to %d authors omitted%n", prop, skipped, skipped * BATCH);
