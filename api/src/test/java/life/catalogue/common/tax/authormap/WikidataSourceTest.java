@@ -16,34 +16,42 @@ public class WikidataSourceTest {
       json = om.readTree(in);
     }
     List<AuthorEntry> entries = new WikidataSource().parse(json);
-    // one row per author, abbreviation + label aliases, code from which property matched
+    // botanist: recorded as BOT via P428, but the abbreviation itself is NOT imported (only the full name)
     AuthorEntry linn = entries.stream().filter(e -> e.aliases().contains("Carl Linnaeus")).findFirst().orElseThrow();
     assertEquals(AuthorCode.BOT, linn.code());               // has botanist abbrev (P428)
-    assertTrue(linn.aliases().contains("L."));
+    assertFalse(linn.aliases().contains("L."));              // botanical abbreviation deliberately dropped
+    // zoologist: the P835 citation IS imported (that is the form used in zoological names)
     AuthorEntry cuv = entries.stream().filter(e -> e.aliases().contains("Georges Cuvier")).findFirst().orElseThrow();
     assertEquals(AuthorCode.ZOO, cuv.code());                // has zoologist citation (P835)
+    assertTrue(cuv.aliases().contains("Cuvier"));            // zoological citation kept
   }
 
   @Test
-  public void dropsSuffixedAbbreviations() throws Exception {
-    // Wikidata bundles a nomenclatural suffix into some abbreviations ("F.R.Jones bis", "A.M.Sm.bis").
-    // These must not become lookup keys or they'd erase the bis/ter distinction. The author + label survive.
+  public void dropsBotanicalAbbrevAndSuffixedZooCitations() throws Exception {
     String body = """
       { "results": { "bindings": [
         { "person": {"value":"http://www.wikidata.org/entity/Q1"},
-          "name": {"value":"Fred Reuel Jones"}, "botAbbr": {"value":"F.R.Jones bis"} },
+          "name": {"value":"Fred Reuel Jones"}, "botAbbr": {"value":"F.R.Jones"} },
         { "person": {"value":"http://www.wikidata.org/entity/Q2"},
-          "name": {"value":"Alan Smith"}, "botAbbr": {"value":"A.M.Sm.bis"} }
+          "name": {"value":"Andrew Smith"}, "zooAuthor": {"value":"A. Smith bis"} },
+        { "person": {"value":"http://www.wikidata.org/entity/Q3"},
+          "name": {"value":"Georges Cuvier"}, "zooAuthor": {"value":"Cuvier"} }
       ] } }""";
     JsonNode json = new ObjectMapper().readTree(body);
     List<AuthorEntry> entries = new WikidataSource().parse(json);
 
+    // botanist: abbreviation not imported at all, only the full name; still coded BOT
     AuthorEntry jones = entries.stream().filter(e -> e.canonical().equals("Fred Reuel Jones")).findFirst().orElseThrow();
-    assertTrue(jones.aliases().contains("Fred Reuel Jones"));            // label kept
-    assertFalse(jones.aliases().contains("F.R.Jones bis"));              // suffixed abbrev dropped
-    assertEquals(AuthorCode.BOT, jones.code());                         // still recorded as a botanist
-    AuthorEntry smith = entries.stream().filter(e -> e.canonical().equals("Alan Smith")).findFirst().orElseThrow();
-    assertFalse(smith.aliases().contains("A.M.Sm.bis"));                // dot-attached suffix dropped too
+    assertTrue(jones.aliases().contains("Fred Reuel Jones"));
+    assertFalse(jones.aliases().contains("F.R.Jones"));                  // botanical abbreviation dropped
+    assertEquals(AuthorCode.BOT, jones.code());
+    // zoologist with a suffixed citation: the suffixed form is skipped, label kept
+    AuthorEntry smith = entries.stream().filter(e -> e.canonical().equals("Andrew Smith")).findFirst().orElseThrow();
+    assertFalse(smith.aliases().stream().anyMatch(a -> a.equalsIgnoreCase("A. Smith bis")));
+    assertEquals(AuthorCode.ZOO, smith.code());
+    // zoologist with a normal citation: kept
+    AuthorEntry cuv = entries.stream().filter(e -> e.canonical().equals("Georges Cuvier")).findFirst().orElseThrow();
+    assertTrue(cuv.aliases().contains("Cuvier"));
   }
 
   @Test
@@ -68,6 +76,7 @@ public class WikidataSourceTest {
     assertEquals(1, entries.size());             // one person across both pages
     AuthorEntry e = entries.get(0);
     assertEquals(AuthorCode.ANY, e.code());      // P428 + P835 -> ANY
-    assertTrue(e.aliases().containsAll(List.of("Carl Linnaeus", "L.", "Linnaeus")));
+    assertTrue(e.aliases().containsAll(List.of("Carl Linnaeus", "Linnaeus"))); // label + zoo citation
+    assertFalse(e.aliases().contains("L."));     // botanical abbreviation not imported
   }
 }

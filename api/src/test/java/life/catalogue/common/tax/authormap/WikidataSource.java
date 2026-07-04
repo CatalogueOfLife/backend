@@ -113,8 +113,13 @@ public class WikidataSource implements AuthorSource {
         List<String> aliases = aliasesByPerson.computeIfAbsent(person, k -> new ArrayList<>());
         String name = text(b, "name");
         if (name != null) { nameByPerson.put(person, name); addUnique(aliases, name); }
+        // Botanical abbreviations (P428) are deliberately NOT imported as keys: IPNI already covers them and
+        // Wikidata's variants collide with the curated botanical matching logic. We only record the botanist
+        // status (for the code) and keep the full-name label as an alias.
         String bot = text(b, "botAbbr");
-        if (bot != null) { if (!isSuffixed(bot)) addUnique(aliases, bot); hasBot.put(person, true); }
+        if (bot != null) { hasBot.put(person, true); }
+        // Zoological citations (P835) ARE the form used in zoological names, so they are imported (ambiguous
+        // ones are dropped later by the merger's disambiguation). Suffix forms are still skipped.
         String zoo = text(b, "zooAuthor");
         if (zoo != null) { if (!isSuffixed(zoo)) addUnique(aliases, zoo); hasZoo.put(person, true); }
       }
