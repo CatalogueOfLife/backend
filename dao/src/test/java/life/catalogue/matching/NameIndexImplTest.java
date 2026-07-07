@@ -172,6 +172,35 @@ public class NameIndexImplTest {
     assertEquals(8, ni.size());
   }
 
+  /**
+   * The names index is meant to be single-tier: adding a ranked, authored name must only ever
+   * create the one canonical entry - no separate rank/author specific child row.
+   */
+  @Test
+  public void addIsSingleTier() throws Exception {
+    // an authored, ranked name must still land as one canonical entry only
+    Name n = new Name();
+    n.setType(NameType.SCIENTIFIC);
+    n.setGenus("Abies");
+    n.setSpecificEpithet("alba");
+    n.setRank(Rank.SPECIES);
+    n.setCombinationAuthorship(Authorship.authors("Mill."));
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
+
+    var m = ni.match(n, true, false);
+    assertTrue(m.hasMatch());
+    IndexName idx = m.getName();
+    assertTrue("must be canonical", idx.isCanonical());
+    assertEquals(idx.getKey(), idx.getCanonicalId());
+    assertEquals(Rank.UNRANKED, idx.getRank());
+    assertNull(idx.getAuthorship());
+    // exactly one entry in the bucket, no separate child row.
+    // the store key is the stemmed, normalized canonical: "alba" stems to "alb" (SciNameNormalizer)
+    assertEquals(1, ni.store().get("abies alb").size());
+    assertEquals(1, ni.size());
+  }
+
   @Test
   public void basionymPlaceholders() throws Exception {
     Name n = new Name();

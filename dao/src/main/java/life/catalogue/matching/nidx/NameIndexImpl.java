@@ -18,6 +18,7 @@ import life.catalogue.matching.authorship.AuthorComparator;
 
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.UnicodeUtils;
@@ -469,17 +470,34 @@ public class NameIndexImpl implements NameIndex {
 
   /**
    * Adds a new IndexName to the index, even if it exists already.
+   * The names index is single-tier: every entry is a canonical name (standard UNRANKED rank, no authorship).
+   * If the given name does not already qualify as canonical it is reduced to its canonical form in place
+   * before being inserted (or matched against an existing canonical entry) - no separate rank/author
+   * specific child row is ever created.
    * This method is not thread safe!
    */
   @Override
   public void add(IndexName n) {
-    //// make sure this is the same as what the key method is based on !!!
-    //n.setScientificName(NameFormatter.canonicalName(n));
-    //// rebuild authorship if only existing as parsed version
-    //if (n.getAuthorship() == null && n.hasAuthorship()) {
-    //  n.setAuthorship(NameFormatter.authorship(n, false));
-    //}
-
+    if (!n.qualifiesAsCanonical()) {
+      // reduce n in place to its canonical form: standard rank, no authorship.
+      // we reuse IndexName.newCanonical() to compute the canonical properties, then copy them onto n
+      // so that callers holding a reference to n (e.g. NameIndexImpl.tryToAdd) see the persisted canonical entry.
+      IndexName cn = IndexName.newCanonical(n);
+      n.setRank(cn.getRank());
+      n.setUninomial(cn.getUninomial());
+      n.setGenus(cn.getGenus());
+      n.setInfragenericEpithet(cn.getInfragenericEpithet());
+      n.setSpecificEpithet(cn.getSpecificEpithet());
+      n.setInfraspecificEpithet(cn.getInfraspecificEpithet());
+      n.setCultivarEpithet(cn.getCultivarEpithet());
+      n.setScientificName(cn.getScientificName());
+      n.setAuthorship(null);
+      n.setCombinationAuthorship(new Authorship());
+      n.setBasionymAuthorship(new Authorship());
+      n.setSanctioningAuthor(null);
+    }
+    // compute the lookup key from the (now) canonical form. key() ignores rank & authorship, so the
+    // value is identical before/after the reduction above, but computing it here keeps intent explicit.
     final String key = key(n);
 
     n.setCreatedBy(Users.MATCHER);
@@ -489,25 +507,14 @@ public class NameIndexImpl implements NameIndex {
 
     try (SqlSession s = sqlFactory.openSession()) {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
-
-      if (n.qualifiesAsCanonical()) {
+      // getCanonical returns the existing canonical entry for this key, if any
+      IndexName existing = getCanonical(key);
+      if (existing == null) {
         createCanonical(nim, key, n);
-
       } else {
-        // make sure there exists a canonical name without authorship and strongly normalised rank already
-        IndexName cn = getCanonical(key);
-        if (cn == null) {
-          // insert new canonical
-          cn = IndexName.newCanonical(n);
-          createCanonical(nim, key, cn);
-        }
-        n.setCanonicalId(cn.getKey());
-        if (hasPg) {
-          nim.create(n);
-        } else {
-          n.setKey(keyGen.incrementAndGet());
-        }
-        store.add(key, n);
+        // reuse the existing canonical entry - never insert a duplicate row
+        n.setKey(existing.getKey());
+        n.setCanonicalId(existing.getKey());
       }
       s.commit();
     }
