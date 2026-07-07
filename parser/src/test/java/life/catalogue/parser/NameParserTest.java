@@ -240,7 +240,7 @@ public class NameParserTest {
   @Test
   public void parseInfraSpecies() throws Exception {
     
-    assertName("Abies alba ssp. alpina Mill.", "Abies alba alpina")
+    assertName("Abies alba ssp. alpina Mill.", "Abies alba subsp. alpina")
         .infraSpecies("Abies", "alba", Rank.SUBSPECIES, "alpina")
         .combAuthors(null, "Mill.")
         .nothingElse();
@@ -333,6 +333,48 @@ public class NameParserTest {
     assertName("Asellus major Not given", "Asellus major", NameType.SCIENTIFIC)
       .species("Asellus", "major")
       .issue(Issue.AUTHORSHIP_REMOVED)
+      .nothingElse();
+  }
+
+  @Test
+  public void newAuthorshipSignals() throws Exception {
+    // v4.2 warnings translated into issues
+    assertIssue("Abies alba Mill., 3050", Rank.SPECIES, null, Issue.UNLIKELY_YEAR);
+    assertIssue("Abies alba Jarocki or Schinz", Rank.SPECIES, null, Issue.AUTHORSHIP_UNCERTAIN);
+    assertIssue("Abies alba Smith/Jones", Rank.SPECIES, null, Issue.AUTHORSHIP_UNCERTAIN);
+    // superfluous authorship on the genus / species part of a more specific name
+    assertIssue("Cordia (Adans.) Kuntze sect. Salimori", Rank.SECTION_BOTANY, NomCode.BOTANICAL, Issue.SUPERFLUOUS_AUTHORSHIP);
+    assertIssue("Acer campestre L. cv. 'Elsrijk' Broerse", Rank.CULTIVAR, NomCode.CULTIVARS, Issue.SUPERFLUOUS_AUTHORSHIP);
+  }
+
+  @Test
+  public void publishedInYear() throws Exception {
+    var issues = new IssueContainer.Simple();
+    var n = NameParser.PARSER.parse("Samyda arborea Rich., Actes Soc. Hist. Nat. Paris 1: 109 (1792).", null, null, issues).get().getName();
+    assertEquals(Integer.valueOf(1792), n.getPublishedInYear());
+  }
+
+  static void assertIssue(String name, Rank rank, NomCode code, Issue expected) {
+    var issues = new IssueContainer.Simple();
+    NameParser.PARSER.parse(name, rank, code, issues);
+    assertTrue("expected " + expected + " for " + name + " but got " + issues.getIssues(), issues.contains(expected));
+  }
+
+  @Test
+  public void retainSuppliedRank() throws Exception {
+    // a markerless trinomial parses to the generic INFRASPECIFIC_NAME, but a concrete infraspecific
+    // rank supplied by the caller must be retained rather than downgraded
+    assertName("Nervus venustus venustus", Rank.SUBSPECIES, null, "Nervus venustus subsp. venustus")
+      .infraSpecies("Nervus", "venustus", Rank.SUBSPECIES, "venustus")
+      .nothingElse();
+    // with no supplied rank the parser's generic rank stands
+    assertName("Nervus venustus venustus", "Nervus venustus venustus")
+      .infraSpecies("Nervus", "venustus", Rank.INFRASPECIFIC_NAME, "venustus")
+      .nothingElse();
+    // a supplied rank that contradicts the parsed name shape (trinomial mislabeled as species) is
+    // not retained - the parser's infraspecific rank wins
+    assertName("Nervus venustus venustus", Rank.SPECIES, null, "Nervus venustus venustus")
+      .infraSpecies("Nervus", "venustus", Rank.INFRASPECIFIC_NAME, "venustus")
       .nothingElse();
   }
 

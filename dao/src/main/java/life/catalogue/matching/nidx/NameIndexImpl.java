@@ -207,9 +207,10 @@ public class NameIndexImpl implements NameIndex {
       // 0 to 6
       int score = 0;
 
-      // for non canonical matches ranks need to match up exactly
+      // for non canonical matches ranks need to be compatible - not necessarily identical, so the
+      // generic INFRASPECIFIC_NAME matches any concrete infraspecific rank (subspecies, variety, ...)
       boolean isCanon = n.isCanonical();
-      if (!isCanon && hasRank && rank != n.getRank()) {
+      if (!isCanon && hasRank && !match(rank, n.getRank())) {
         continue;
       }
       if (rank == n.getRank()) {

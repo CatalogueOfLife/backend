@@ -438,6 +438,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
       ignored++;
       return null;
 
+    } else if (nu.isSynonym() && parent != null && parent.rank.isGenusOrSuprageneric() && nu.getRank().isSpeciesOrBelow()) {
+      // a species-or-below name that is a synonym directly under a genus (or higher) is malformed -
+      // there is no accepted species to attach it to, so do not place it under the genus
+      LOG.info("Ignore {} synonym {} whose accepted parent is a {} - no valid species to attach to", nu.getRank(), nu.getLabel(), parent.rank);
+      ignored++;
+      return null;
+
     } else if (nu.isTaxon() && parent != null && parent.rank.notOtherOrUnranked() && nu.getRank().higherOrEqualsTo(parent.rank)) {
       LOG.info("Avoid bad rank ordering. Do not create {} {} with parent: {}", nu.getRank(), nu.getLabel(), parent.rank);
       ignored++;
@@ -528,6 +535,24 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected void cacheImplicit(Taxon t) {
     var snc = utils.toSimpleNameCached(t);
     matcher.store().add(snc);
+  }
+
+  @Override
+  protected boolean acceptedNameExists(Name name) {
+    // resolve the exact names index entry which encodes rank + authorship
+    var m = nameIndex.match(name, false, false);
+    if (!m.hasMatch() || m.getName().getCanonicalId() == null) {
+      return false;
+    }
+    var existing = matcher.store().usagesByCanonicalId(m.getName().getCanonicalId());
+    if (existing == null) {
+      return false;
+    }
+    final Integer nidxId = m.getName().getKey();
+    // only suppress the original-as-synonym if the exact same name incl. authorship (same names
+    // index id, not just the canonical) already exists as an accepted usage
+    return existing.stream().anyMatch(u -> u.getStatus() != null && u.getStatus().isTaxon()
+      && nidxId.equals(u.getNamesIndexId()));
   }
 
   private Name loadFromDB(String usageID) {

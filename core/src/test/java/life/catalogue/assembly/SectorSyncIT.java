@@ -555,7 +555,9 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
     NameUsageBase diptera = getByName(d1key, Rank.ORDER, "Diptera");
     NameUsageBase insecta = getByName(Datasets.COL, Rank.CLASS, "Insecta");
-    createSector(Sector.Mode.ATTACH, diptera, insecta);
+    // exclude OTHER names (former NO_NAME/OTU placeholders like the bracketed uncertain genera) so they stay out
+    createSector(Sector.Mode.ATTACH, diptera, insecta, s -> s.setNameTypes(
+      Set.of(NameType.SCIENTIFIC, NameType.FORMULA, NameType.INFORMAL, NameType.PLACEHOLDER)));
 
     syncAll();
 
@@ -650,7 +652,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     // by default we include all names
     assertEquals(2, stats.getIgnoredByReasonCount().keySet().size());
     assertEquals(7, (int)stats.getIgnoredByReasonCount().get(IgnoreReason.RANK));
-    assertEquals(7, (int)stats.getIgnoredByReasonCount().get(IgnoreReason.IGNORED_PARENT));
+    assertEquals(8, (int)stats.getIgnoredByReasonCount().get(IgnoreReason.IGNORED_PARENT));
     var parent = getByName(Datasets.COL, Rank.UNRANKED, "3372");
     assertNull(parent); // we dont sync unranked
     var reticulatus = getByName(Datasets.COL, Rank.SPECIES, "Tenebrio reticulatus");
@@ -723,7 +725,8 @@ public class SectorSyncIT extends SectorSyncTestBase {
     print(Datasets.COL);
 
     createSector(Sector.Mode.MERGE, srcDatasetKey, null, plants, s -> {
-      s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.INFORMAL, NameType.OTHER));
+      // keep OTHER out: former NO_NAME/OTU placeholders (e.g. "I want a hamburger!") should not sync
+      s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.INFORMAL));
       s.setRanks(null);
       s.setCode(NomCode.BOTANICAL);
       disableAutoBlocking(s);

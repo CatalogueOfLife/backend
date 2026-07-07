@@ -90,7 +90,7 @@ Bdelloidea [superfamily]
       Odontoscirus malayensis Shiba, 1978 [species]
       Odontoscirus manipurensis (Gupta, 1991) Gupta, 1991 [species]
       Odontoscirus meridionalis (Thor, 1931) Thor, 1931 [species]
-Cyclopidae [family]
+Cyclopidae [family] {CODE=zoological}
   Acanthocyclops Kiefer, 1927 [genus] {PRIO=1}
     Acanthocyclops venustus (Norman & Scott T., 1906) [species] {PRIO=1}
       Acanthocyclops venustus italicus Pesce & Maggi, 1979 [subspecies] {PRIO=2}
@@ -133,7 +133,7 @@ Enilidae [family]
     =$Bulimus bidens Krynicki, 1833 [species] {PRIO=1}
   Brephulopsis pides (Kr., 1833) [species] {PRIO=1}
     =Brephulopsis bidens (Krynicki, 1833) [species] {PRIO=1}
-Karaceae [family]
+Karaceae [family] {CODE=zoological}
   Karus simplex L. [species] {PRIO=1}
     Karus simplex simplex [subspecies]
     Karus simplex atlantica Varo [subspecies]
@@ -208,7 +208,6 @@ Aphanizomenonaceae Elenkin, 1938 [family]
       Aphanizomenon flos-aquae strain klebahnii 218 [strain]
       Aphanizomenon flos-aquae strain str .'Aph K2' [strain]
     Aphanizomenon gracile strain str .'Aph NH-5' [strain]
-      =Aphanizomenon gracile 'Aph NH-5' (Lemmerm.) Lemmerm. [species]
     Aphanizomenon gracile strain str .'Heaney 1986/Camb140 1/1' [strain]
     Aphanizomenon holsaticum Richter [species] {PRIO=2}
     Aphanizomenon hungaricum Komáreková-Legnerová & Mátyás [species]

@@ -70,24 +70,9 @@ public class NameFormatter {
    */
   public static String authorship(FormattableName n, boolean includeNotes) {
     StringBuilder sb = new StringBuilder();
-    if (n.hasBasionymAuthorship()) {
-      sb.append("(");
-      appendAuthorship(sb, n.getBasionymAuthorship(), true, n.getCode());
-      sb.append(")");
-    }
-    if (n.hasCombinationAuthorship()) {
-      if (sb.length() > 1) {
-        sb.append(' ');
-      }
-      appendAuthorship(sb, n.getCombinationAuthorship(), true, n.getCode());
-      // Render sanctioning author via colon:
-      // http://www.iapt-taxon.org/nomen/main.php?page=r50E
-      //TODO: remove rendering of sanctioning author according to Paul Kirk!
-      if (n.getSanctioningAuthor() != null) {
-        sb.append(" : ");
-        sb.append(n.getSanctioningAuthor());
-      }
-    }
+    // delegate the basionym/combination/sanctioning (incl. imprint year) rendering to the shared
+    // parser formatter so it stays in sync - FormattableName is a CombinedAuthorshipIF
+    appendAuthorship(sb, n, true, n.getCode());
     if (includeNotes && n.getNomenclaturalNote() != null) {
       if (n.hasAuthorship()) {
         sb.append(" ");

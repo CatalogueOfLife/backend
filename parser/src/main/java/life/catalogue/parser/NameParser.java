@@ -69,6 +69,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       .put(Warnings.BLACKLISTED_EPITHET, Issue.BLACKLISTED_EPITHET)
       .put(Warnings.NOMENCLATURAL_REFERENCE, Issue.CONTAINS_REFERENCE)
       .put(Warnings.AUTHORSHIP_REMOVED, Issue.AUTHORSHIP_REMOVED)
+      .put(Warnings.UNLIKELY_YEAR, Issue.UNLIKELY_YEAR)
+      .put(Warnings.UNCERTAIN_AUTHORSHIP, Issue.AUTHORSHIP_UNCERTAIN)
       .build();
 
   private Timer timer;
@@ -282,8 +284,15 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     pnu.getName().setBasionymAuthorship(pn.getBasionymAuthorship());
     // propagate notes and unparsed bits found in authorship if not already existing
     setIfNull(pn.getNomenclaturalNote(), pnu.getName()::getNomenclaturalNote, pnu.getName()::setNomenclaturalNote);
-    setIfNull(pn.getImprintYear(), pnu.getName()::getImprintYear, pnu.getName()::setImprintYear);
+    // imprint year now lives on each Authorship (next to its year); surface it on the Name,
+    // preferring the basionym (original publication) over the combination authorship
+    Authorship basAuth = pn.getBasionymAuthorship();
+    Authorship combAuth = pn.getCombinationAuthorship();
+    String imprintYear = basAuth != null && basAuth.hasImprintYear() ? basAuth.getImprintYear()
+                       : (combAuth != null ? combAuth.getImprintYear() : null);
+    setIfNull(imprintYear, pnu.getName()::getImprintYear, pnu.getName()::setImprintYear);
     setIfNull(pn.getPublishedIn(), pnu::getPublishedIn, pnu::setPublishedIn);
+    setIfNull(pn.getPublishedInYear(), pnu.getName()::getPublishedInYear, pnu.getName()::setPublishedInYear);
     setIfNull(pn.getTaxonomicNote(), pnu::getTaxonomicNote, pnu::setTaxonomicNote);
     // authorship-only parses return a plain ParsedAuthorship; originalSpelling only exists on a full ParsedName
     if (pn instanceof ParsedName pnn && pnn.isOriginalSpelling() != null) {
@@ -425,8 +434,16 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     n.setSpecificEpithet(pn.getSpecificEpithet());
     n.setInfraspecificEpithet(pn.getInfraspecificEpithet());
     n.setCultivarEpithet(pn.getCultivarEpithet());
-    n.setRank(pn.getRank());
-    n.setCode(pn.getCode());
+    // keep a concrete caller-supplied rank over the parser's generic guess, but only when it agrees
+    // with the parsed name shape; a source may mislabel a trinomial as [species] - don't retain that
+    // contradiction, fall back to the parser's (infraspecific) rank instead
+    if (pn.getRank() != null &&
+        (n.getRank() == null || n.getRank().isUncomparable() || pn.getRank().isInfraspecific() != n.getRank().isInfraspecific())) {
+      n.setRank(pn.getRank());
+    }
+    if (n.getCode() == null) {
+      n.setCode(pn.getCode());
+    }
     n.setCandidatus(pn.isCandidatus());
     if (pn.getNotho() != null) {
       pn.getNotho().forEach(n::addNotho);
@@ -436,6 +453,13 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
 
     if (pn.isIncomplete()) {
       issues.add(Issue.INCONSISTENT_NAME);
+    }
+
+    // the parser can capture authorship on the genus or species part of a more specific name
+    // (e.g. the genus author in "Cordia (Adans.) Kuntze sect. Salimori"). The Name model only keeps
+    // the terminal authorship, so flag these superfluous authorships as they are not retained.
+    if (pn.hasGenericAuthorship() || pn.hasSpecificAuthorship()) {
+      issues.add(Issue.SUPERFLUOUS_AUTHORSHIP);
     }
 
     // we rebuilt the caches as we dont have any original authorship yet - it all came in through the single scientificName

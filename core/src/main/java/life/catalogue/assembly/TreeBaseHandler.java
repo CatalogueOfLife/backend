@@ -158,8 +158,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // make rank non null
     if (nu.getName().getRank() == null) nu.getName().setRank(Rank.UNRANKED);
     // sector defaults before we apply a specific decision
-    if (sector.getCode() != null) {
+    if (sector.getCode() != null && sector.getCode() != nu.getName().getCode()) {
       nu.getName().setCode(sector.getCode());
+      // the code drives rank-marker rendering (e.g. the subsp. marker is dropped for zoological
+      // names), so rebuild the cached scientificName to reflect the sector's code
+      nu.getName().rebuildScientificName();
     }
     // remove accordingTo?
     if (!sector.isCopyAccordingTo()) {
@@ -227,8 +230,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
                          .put(nid, mod.usage.getName().getId());
     }
 
-    // in case of updates from decisions, track also the original name as a synonym?
-    if (sn != null && !sn.isSynonym() && mod.keepOriginal && mod.originalName != null) {
+    // in case of updates from decisions, track also the original name as a synonym -
+    // unless that exact name incl. authorship already exists as an accepted usage. Creating it anyway
+    // would produce a duplicate accepted+synonym pair of the same name whose survivor is then resolved
+    // non-deterministically further down the merge.
+    if (sn != null && !sn.isSynonym() && mod.keepOriginal && mod.originalName != null
+        && !acceptedNameExists(mod.originalName)) {
       var origAsSyn = new Synonym(mod.originalName);
       origAsSyn.setId(mod.usage.getId());
       origAsSyn.setRemarks("Original spelling before change by an editorial decision");
@@ -240,6 +247,15 @@ public abstract class TreeBaseHandler implements TreeHandler {
       session.commit();
       batchSession.commit();
     }
+  }
+
+  /**
+   * Whether an accepted usage with the exact same name, including authorship, already exists in the
+   * target. The base/copy handler cannot look up existing usages, so it never suppresses the
+   * original-as-synonym; the merge handler overrides this.
+   */
+  protected boolean acceptedNameExists(Name name) {
+    return false;
   }
 
   protected Usage usage(NameUsageBase u, String origParentId, EditorialDecision decision) {

@@ -515,7 +515,13 @@ public enum Issue {
   DUPLICATE_ESTIMATES(NAME_USAGE, Level.WARNING,
       "Same species estimate record appears several times for the same taxon."),
   DUPLICATE_TAXON_PROPERTIES(NAME_USAGE, Level.WARNING,
-      "Same taxon property record appears several times for the same taxon.")
+      "Same taxon property record appears several times for the same taxon."),
+
+  AUTHORSHIP_UNCERTAIN(NAME, Level.WARNING,
+      "The authorship is explicitly marked as uncertain in the name, e.g. a trailing question mark or alternative authors separated by 'or' or a slash."),
+
+  SUPERFLUOUS_AUTHORSHIP(NAME, Level.WARNING,
+      "The name carried an additional authorship on its genus or species part that is superfluous to the terminal authorship and was not kept, e.g. the genus author in \"Cordia (Adans.) Kuntze sect. Salimori\".")
   ;
 
   /**

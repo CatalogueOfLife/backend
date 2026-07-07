@@ -51,7 +51,7 @@ public class AcefInterpreterTest extends InterpreterTestAbstractBase<AcefInterpr
     v.put(AcefTerm.InfraSpeciesEpithet, "triscipta");
     nu = interpreter.interpretSynonym(v).get();
     n = nu.nd.getName();
-    assertEquals("Cerynia albata triscipta", n.getScientificName());
+    assertEquals("Cerynia albata subsp. triscipta", n.getScientificName());
     assertEquals("(Walker, 1858)", n.getAuthorship());
     assertEquals(Rank.SUBSPECIES, n.getRank());
     assertNull(n.getUninomial());

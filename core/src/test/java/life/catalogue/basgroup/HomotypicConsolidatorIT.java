@@ -1,20 +1,16 @@
 package life.catalogue.basgroup;
 
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.junit.*;
-
-import java.io.IOException;
-import java.util.List;
-
 import org.apache.ibatis.session.SqlSession;
-import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+
+import java.io.IOException;
 
 /**
  * Many consolidation tests in one text tree file.
