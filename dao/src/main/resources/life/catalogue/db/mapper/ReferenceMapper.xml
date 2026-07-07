@@ -215,8 +215,9 @@
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
-  <sql id="tmpRefIdTable">
-    CREATE TEMP TABLE IF NOT EXISTS ref_fks_${datasetKey} AS
+  <!-- All reference ids that are referenced from anywhere in the dataset.
+       Used as a CTE so orphan detection works within read-only transactions (e.g. on the replica db). -->
+  <sql id="refIdUnion">
     SELECT published_in_id AS id FROM name WHERE dataset_key=#{datasetKey} AND published_in_id IS NOT NULL
       UNION
     SELECT reference_id FROM name_rel WHERE dataset_key=#{datasetKey} AND reference_id IS NOT NULL
@@ -239,17 +240,15 @@
       UNION
     SELECT reference_id FROM distribution WHERE dataset_key=#{datasetKey} AND reference_id IS NOT NULL
       UNION
-    SELECT reference_id FROM estimate WHERE dataset_key = #{datasetKey} AND reference_id IS NOT NULL;
-
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_ref_fks_${datasetKey} ON ref_fks_${datasetKey} (id);
+    SELECT reference_id FROM estimate WHERE dataset_key = #{datasetKey} AND reference_id IS NOT NULL
   </sql>
 
   <!-- WARNING!
-    Relies on temp table ref_fks_${datasetKey} to exist
+    Relies on a ref_fks CTE listing all referenced ids to exist
   -->
   <sql id="orphanWhere">
     WHERE r.dataset_key=#{datasetKey} AND NOT EXISTS (
-      SELECT TRUE FROM ref_fks_${datasetKey} rfk WHERE r.id=rfk.id
+      SELECT TRUE FROM ref_fks rfk WHERE r.id=rfk.id
     )
     <if test="before!=null">
       AND r.modified &lt; #{before}
@@ -257,13 +256,17 @@
   </sql>
 
   <delete id="deleteOrphans" parameterType="map">
-    <include refid="tmpRefIdTable"/>
+    WITH ref_fks AS (
+      <include refid="refIdUnion"/>
+    )
     DELETE FROM reference r
     <include refid="orphanWhere"/>
   </delete>
 
   <select id="listOrphans" parameterType="map" resultMap="referenceResultMap">
-    <include refid="tmpRefIdTable"/>
+    WITH ref_fks AS (
+      <include refid="refIdUnion"/>
+    )
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="orphanWhere"/>

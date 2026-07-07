@@ -180,5 +180,21 @@ import static org.junit.Assert.*;
     private boolean firstInitialsDiffer(String a1, String a2) {
       return new Author(a1).initialsOrSuffixDiffer(new Author(a2));
     }
-    
+
+    @Test
+    public void testCodeAwareLookup() {
+      // botanical abbreviation expands under botany / unknown code ...
+      assertEquals("c linnaus", comp.lookup("l", org.gbif.nameparser.api.NomCode.BOTANICAL));
+      assertEquals("c linnaus", comp.lookup("l", (org.gbif.nameparser.api.NomCode) null));
+      // ... but NOT under zoology (no botanical abbreviation registry there)
+      assertEquals("l", comp.lookup("l", org.gbif.nameparser.api.NomCode.ZOOLOGICAL));
+
+      // zoological seed entry resolves only under zoology (and ANY-less BOT map ignores it)
+      assertEquals("g cuvier", comp.lookup("georges cuvier", org.gbif.nameparser.api.NomCode.ZOOLOGICAL));
+
+      // ANY entry resolves under both codes
+      assertEquals("j f gmelin", comp.lookup("gmelin", org.gbif.nameparser.api.NomCode.ZOOLOGICAL));
+      assertEquals("j f gmelin", comp.lookup("gmelin", org.gbif.nameparser.api.NomCode.BOTANICAL));
+    }
+
   }

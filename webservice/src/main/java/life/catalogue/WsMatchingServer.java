@@ -114,10 +114,13 @@ public class WsMatchingServer extends Application<WsMatchingServerConfig> {
     env.lifecycle().manage(ManagedUtils.from((Managed) nidx));
 
     Dataset dataset = readDataset(cfg.matching.datasetJson(cfg.matchingDatasetKey));
+    // the chronicle files already exist here (pre-built by MatchingServerBuildCmd), so the sizing
+    // args are read from the file header and these estimates are effectively ignored
     UsageMatcher matcher = UsageMatcherFactory.buildPersistentMatcher(
-      cfg.matchingDatasetKey, List.of(), dataset.getSize()+1, cfg.matching, nidx
+      cfg.matchingDatasetKey, List.of(), dataset.getSize()+1, dataset.getSize()+1, cfg.matching, nidx
     );
     j.register(new NameParserResource());
+    j.register(new life.catalogue.resources.parser.openrefine.NameReconciliationResource(cfg.apiURI, cfg.clbURI));
     j.register(new FixedNameUsageMatchingResource(cfg.matching, dataset, matcher));
     j.register(new VersionResource(cfg.versionString(), LocalDateTime.now()));
 

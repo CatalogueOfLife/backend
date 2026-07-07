@@ -7,6 +7,7 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.db.type2.StringCount;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -1262,6 +1263,92 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     mapper().updateLastImport(d.getKey(), 13, DOI.test("test13"));
   }
 
+  @Test
+  public void publisherNameFilter() throws Exception {
+    Dataset d1 = create();
+    d1.setPublisher(Agent.organisation("Royal Botanic Gardens, Kew"));
+    mapper().create(d1);
+    Dataset d2 = create();
+    d2.setPublisher(Agent.organisation("Royal Botanic Gardens, Kew"));
+    mapper().create(d2);
+    Dataset d3 = create();
+    d3.setPublisher(Agent.organisation("Missouri Botanical Garden"));
+    mapper().create(d3);
+    commit();
+
+    // exact match, case-insensitive
+    DatasetSearchRequest req = new DatasetSearchRequest();
+    req.setPublisher("royal botanic gardens, kew");
+    Set<Integer> keys = mapper().search(req, null, new Page(0, 100)).stream()
+      .map(Dataset::getKey).collect(Collectors.toSet());
+    assertEquals(Set.of(d1.getKey(), d2.getKey()), keys);
+
+    // a substring of the name must NOT match (exact-only)
+    req.setPublisher("Kew");
+    assertTrue(mapper().search(req, null, new Page(0, 100)).isEmpty());
+
+    // hasFilter reflects the new field
+    DatasetSearchRequest hf = new DatasetSearchRequest();
+    assertFalse(hf.hasFilter());
+    hf.setPublisher("x");
+    assertTrue(hf.hasFilter());
+  }
+
+
+  private static Map<String, Integer> toCountMap(List<StringCount> list) {
+    Map<String, Integer> m = new HashMap<>();
+    for (StringCount sc : list) {
+      m.put(sc.getKey(), sc.getCount());
+    }
+    return m;
+  }
+
+  @Test
+  public void suggestPublishers() throws Exception {
+    Dataset d1 = create();
+    d1.setPublisher(Agent.organisation("Royal Botanic Gardens, Kew"));
+    mapper().create(d1);
+    Dataset d2 = create();
+    d2.setPublisher(Agent.organisation("Royal Botanic Gardens, Kew"));
+    mapper().create(d2);
+    Dataset d3 = create();
+    d3.setPublisher(Agent.organisation("Missouri Botanical Garden"));
+    mapper().create(d3);
+    Dataset d4 = create();
+    d4.setPublisher(Agent.organisation("Naturalis Biodiversity Center"));
+    mapper().create(d4);
+    commit();
+
+    // case-insensitive substring match; counts; Naturalis excluded
+    List<StringCount> res = mapper().suggestPublishers("BOTAN", 25, null);
+    Map<String, Integer> m = toCountMap(res);
+    assertEquals(Integer.valueOf(2), m.get("Royal Botanic Gardens, Kew"));
+    assertEquals(Integer.valueOf(1), m.get("Missouri Botanical Garden"));
+    assertFalse(m.containsKey("Naturalis Biodiversity Center"));
+    // ordered by count desc: Kew (2) before Missouri (1)
+    List<String> ordered = res.stream().map(StringCount::getKey)
+      .filter(k -> k.contains("Botanic") || k.contains("Botanical"))
+      .collect(Collectors.toList());
+    assertEquals(List.of("Royal Botanic Gardens, Kew", "Missouri Botanical Garden"), ordered);
+
+    // private dataset publisher hidden from anonymous, visible to its editor
+    User u = new User();
+    u.setUsername("keweditor");
+    session().getMapper(UserMapper.class).create(u);
+    final int ukey = u.getKey();
+    Dataset dp = create();
+    dp.setPublisher(Agent.organisation("Secret Botanic Society"));
+    dp.setPrivat(true);
+    mapper().create(dp);
+    mapper().addEditor(dp.getKey(), ukey, Users.DB_INIT);
+    commit();
+
+    assertFalse(toCountMap(mapper().suggestPublishers("Botanic", 25, null))
+      .containsKey("Secret Botanic Society"));
+    assertEquals(Integer.valueOf(1),
+      toCountMap(mapper().suggestPublishers("Botanic", 25, ukey))
+        .get("Secret Botanic Society"));
+  }
 
   @Override
   Dataset createTestEntity(int dkey) {

@@ -168,10 +168,16 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       // ensure sector without subject is the only one
       if (subject == null) {
         if (s.getMode() == Sector.Mode.MERGE) {
-          // ensure there is only 1 merge sector without a subject
+          // ensure there is only 1 merge sector without a subject per source dataset
           var other = mapper.listByDataset(s.getDatasetKey(), s.getSubjectDatasetKey(), Sector.Mode.MERGE);
           if (other != null && !other.isEmpty()) {
             throw new IllegalArgumentException("A merge sector in project " + s.getDatasetKey() + " without subject exists already");
+          }
+        } else if (s.getMode() == Sector.Mode.HIERARCHY) {
+          // a project's higher classification can only be delegated to one target — enforce one HIERARCHY sector per project
+          var other = mapper.listByDataset(s.getDatasetKey(), null, Sector.Mode.HIERARCHY);
+          if (other != null && !other.isEmpty()) {
+            throw new IllegalArgumentException("A hierarchy sector in project " + s.getDatasetKey() + " exists already");
           }
         } else {
           throw new IllegalArgumentException(s.getMode() + " sector in project " + s.getDatasetKey() + " does not have a subject");
@@ -238,7 +244,8 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (tax == null) {
         throw new IllegalArgumentException(kind + " ID " + did.getId() + " not existing in dataset " + did.getDatasetKey());
       }
-    } else if (s.getMode() != Sector.Mode.MERGE){
+    } else if (s.getMode() != Sector.Mode.MERGE && s.getMode() != Sector.Mode.HIERARCHY){
+      // MERGE and HIERARCHY sectors don't have a subject/target taxon
       throw new IllegalArgumentException(kind + " required for " + s.getMode() + " sector");
     }
     return tax;
@@ -257,7 +264,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @Override
   protected void updateBefore(Sector s, Sector old, int user, SectorMapper mapper, SqlSession session) {
     parsePlaceholderRank(s);
-    if (s.getMode() != Sector.Mode.MERGE && s.getTarget() == null) {
+    if (s.getMode() != Sector.Mode.MERGE && s.getMode() != Sector.Mode.HIERARCHY && s.getTarget() == null) {
       throw new IllegalArgumentException(String.format("%s sector %s must have a target", s.getMode(), s.getKey()));
     }
     if (s.getMode() != old.getMode()) {

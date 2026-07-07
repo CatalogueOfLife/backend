@@ -1,54 +1,36 @@
 package life.catalogue.gbifsync;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import jakarta.ws.rs.WebApplicationException;
-
 import life.catalogue.api.model.Publisher;
-import life.catalogue.api.vocab.area.Country;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
-import life.catalogue.config.GbifConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.PublisherMapper;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.WebApplicationException;
 
 public class PublisherSyncJob extends GlobalBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(PublisherSyncJob.class);
 
-  private final WebTarget orgTarget;
   private final SqlSessionFactory sessionFactory;
-  private Set<UUID> keys;
+  private final GbifRegistryCache registry;
   private int created;
   private int updated;
-  private int deleted;
 
   /**
-   *  Syncs all publishers found in all datasets
+   *  Syncs all publishers found in all datasets, reusing the shared registry cache so organisations already
+   *  fetched by the dataset sync are not requested from the slow GBIF registry again.
    **/
-  public PublisherSyncJob(GbifConfig cfg, Client client, SqlSessionFactory sessionFactory, int userKey) {
+  public PublisherSyncJob(GbifRegistryCache registry, SqlSessionFactory sessionFactory, int userKey) {
     super(userKey, JobPriority.HIGH);
     this.sessionFactory = sessionFactory;
-    this.keys = keys == null ? new HashSet<>() : keys;
-    this.orgTarget = client.target(UriBuilder
-      .fromUri(cfg.api)
-      .path("/organization")
-    );
+    this.registry = registry;
   }
 
   @Override
@@ -75,38 +57,12 @@ public class PublisherSyncJob extends GlobalBlockingJob {
     LOG.info("{} publisher added, {} updated", created, updated);
   }
 
-  @VisibleForTesting
-  Publisher getFromGBIF(UUID key) throws Exception {
+  private Publisher getFromGBIF(UUID key) {
     try {
-      return orgTarget.path(key.toString())
-        .request(MediaType.APPLICATION_JSON_TYPE)
-        .get(GPublisher.class);
+      return registry.publisherEntity(key);
     } catch (WebApplicationException e) {
       LOG.warn("Publisher {} not found in GBIF", key, e);
       return null;
-    }
-  }
-
-  public static class GPublisher extends Publisher {
-    public void setHomepage(List<String> homepages) {
-      if (homepages != null && !homepages.isEmpty()) {
-        super.setHomepage(StringUtils.trimToNull(homepages.get(0)));
-      } else {
-        super.setHomepage(null);
-      }
-    }
-
-    public void setCountry(String country) {
-      if (StringUtils.isBlank(country)) {
-        super.setCountry(null);
-      } else {
-        var opt = Country.fromIsoCode(country);
-        if (opt.isPresent()) {
-          super.setCountry(opt.get().getName());
-        } else {
-          super.setCountry(country);
-        }
-      }
     }
   }
 }

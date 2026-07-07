@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
@@ -39,11 +40,13 @@ public class SyncFactory {
   private final NameUsageIndexService indexService;
   private final EventBroker bus;
   private final IdentifierScopeResolver scopeResolver;
+  private final LatestDatasetKeyCache latestKeyCache;
 
   public SyncFactory(SqlSessionFactory factory, UsageMatcherFactory matcherFactory, NameIndex nameIndex,
                      SectorDao sd, SectorImportDao sid, EstimateDao estimateDao,
                      NameUsageIndexService indexService, EventBroker bus,
-                     @Nullable IdentifierScopeResolver scopeResolver) {
+                     @Nullable IdentifierScopeResolver scopeResolver,
+                     LatestDatasetKeyCache latestKeyCache) {
     this.bus = bus;
     this.sd = sd;
     this.sid = sid;
@@ -53,6 +56,7 @@ public class SyncFactory {
     this.indexService = indexService;
     this.matcherFactory = matcherFactory;
     this.scopeResolver = scopeResolver;
+    this.latestKeyCache = latestKeyCache == null ? LatestDatasetKeyCache.passThru() : latestKeyCache;
   }
 
   /**
@@ -77,6 +81,17 @@ public class SyncFactory {
     return new SectorSync(sectorKey, releaseDatasetKey, false, cfg, factory, nameIndex, session -> matcher, bus, indexService, sd, sid, estimateDao,
       x -> {}, (s,e) -> LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e),
       nameIdGen, typeMaterialIdGen, usageIdGen, scopeResolver, user);
+  }
+
+  /**
+   * Creates a new hierarchy sync that delegates the higher classification of a project to a target taxonomy.
+   * The sector must be in {@link life.catalogue.api.model.Sector.Mode#HIERARCHY} mode.
+   */
+  public HierarchySync hierarchy(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
+    return new HierarchySync(sectorKey, factory,
+      supplyPgMatcher(sectorKey.getDatasetKey()),
+      (dk, sess) -> matcherFactory.postgres(dk, sess),
+      latestKeyCache, bus, indexService, sd, sid, successCallback, errorCallback, scopeResolver, user);
   }
 
   public SectorDelete delete(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {

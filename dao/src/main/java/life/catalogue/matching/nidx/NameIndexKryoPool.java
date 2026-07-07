@@ -23,7 +23,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 public class NameIndexKryoPool extends Pool<Kryo> {
 
   public NameIndexKryoPool(int size) {
-    super(true, true, size);
+    // hard references (softReferences=false): the names index is a hot, steady-throughput path and
+    // recreating a Kryo is not free, so we keep up to `size` instances pinned rather than let the GC
+    // reclaim them under pressure. `size` therefore bounds the retained idle instances - obtain() still
+    // creates extra instances transiently beyond it without blocking or throwing.
+    super(true, false, size);
   }
 
   @Override
@@ -32,6 +36,8 @@ public class NameIndexKryoPool extends Pool<Kryo> {
     kryo.setRegistrationRequired(true);
     kryo.register(IndexName.class);
     kryo.register(Authorship.class);
+    // Rank is stored by its ordinal (Kryo default enum serializer).
+    // Reordering/inserting/removing ranks in name-parser requires a names index file rebuild.
     kryo.register(Rank.class);
     kryo.register(LocalDateTime.class);
     kryo.register(ArrayList.class);

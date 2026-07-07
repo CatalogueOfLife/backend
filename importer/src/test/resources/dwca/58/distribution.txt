@@ -1,0 +1,3 @@
+taxonID	locality	occurrenceStatus
+200	Brazil	present
+300	Argentina	present

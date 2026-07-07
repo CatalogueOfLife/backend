@@ -259,7 +259,7 @@ public class WsROServer extends Application<WsServerConfig> {
     registerReadOnlyResources(j, cfg, getSqlSessionFactory(), null,
       ddao, dsdao, new AtomicBoolean(),
       diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
-      searchService, suggestService, imgService,
+      searchService, suggestService, imgService, thumborService,
       FeedbackService.passThru(), doiResolver, areaLookup
     );
 
@@ -290,14 +290,14 @@ public class WsROServer extends Application<WsServerConfig> {
                                         NameDao ndao, PublisherDao pdao, SectorPublisherDao spdao, ReferenceDao rdao,
                                         NameUsageDao nudao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService,
-                                        ImageService imgService, FeedbackService feedbackService, DoiResolver doiResolver, AreaLabelLookup areaLookup) {
+                                        ImageService imgService, ThumborService thumborService, FeedbackService feedbackService, DoiResolver doiResolver, AreaLabelLookup areaLookup) {
     // dataset scoped resources
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetIssuesResource(factory));
     j.register(new DatasetPatchResource());
     j.register(new DatasetResource(factory, exec, ddao));
-    j.register(new DatasetSourceResource(factory, dsdao));
+    j.register(new DatasetSourceResource(factory, dsdao, feedbackService));
     j.register(new DecisionResource(decdao));
     j.register(new DuplicateResource(dupeDao));
     j.register(new EstimateResource(edao));
@@ -315,7 +315,7 @@ public class WsROServer extends Application<WsServerConfig> {
 
     // global resources
     j.register(new ExportResource(exdao, exportBlocker, cfg));
-    j.register(new NameUsageSearchResource(searchService));
+    j.register(new NameUsageSearchResource(factory, searchService, thumborService));
     j.register(new PublisherResource(pdao));
     j.register(new RobotsResource());
     j.register(new VernacularGlobalResource());
@@ -329,6 +329,11 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new NameParserResource());
     j.register(new MetadataParserResource());
     j.register(new ParserResource<>());
+    j.register(new life.catalogue.resources.parser.openrefine.VocabReconciliationResource(cfg.getApiUri(), cfg.clbURI));
+    j.register(new life.catalogue.resources.parser.openrefine.NameReconciliationResource(cfg.getApiUri(), cfg.clbURI));
+    j.register(new life.catalogue.resources.parser.openrefine.GeoTimeReconciliationResource(cfg.getApiUri(), cfg.clbURI));
+    j.register(new life.catalogue.resources.parser.openrefine.TaxGroupReconciliationResource(cfg.getApiUri(), cfg.clbURI));
+    j.register(new life.catalogue.resources.parser.openrefine.AreaReconciliationResource(cfg.getApiUri(), cfg.clbURI));
     j.register(new ReferenceParserResource(doiResolver));
     j.register(new TaxGroupResource());
     j.register(new IdEncoderResource());

@@ -1,0 +1,6 @@
+Lepismatidae Latreille, 1802 [family] {ID=FAM CODE=ZOOLOGICAL}
+  Lepisma Linnaeus, 1758 [genus] {ID=GACC CODE=ZOOLOGICAL}
+    Lepisma saccharina Linnaeus, 1758 [species] {ID=SACC CODE=ZOOLOGICAL}
+  Thermobia Bergroth, 1890 [genus] {ID=GTHE CODE=ZOOLOGICAL}
+    =Lepisma Fabricius, 1775 [genus] {ID=GSYN CODE=ZOOLOGICAL}
+    Thermobia domestica (Packard, 1873) [species] {ID=TDOM CODE=ZOOLOGICAL}

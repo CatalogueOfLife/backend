@@ -83,7 +83,8 @@ public class VocabResource {
           Sector.Mode.class,
           NameUsageSearchParameter.class,
           CSLType.class,
-          TreeNode.Type.class)) {
+          TreeNode.Type.class,
+          Sector.AuthorshipUpdate.class)) {
         add(enums, clazz);
       }
       

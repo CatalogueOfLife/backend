@@ -34,14 +34,11 @@ public class KryoCollectionStore<T> implements AutoCloseable, Iterable<T> {
   }
 
   public void add(T obj) {
-    Kryo kryo = pool.obtain();
-    try {
+    Pools.run(pool, kryo -> {
       dirty = true;
       kryo.writeObject(output, obj);
       output.endChunk();
-    } finally {
-      pool.free(kryo);
-    }
+    });
   }
 
   @NotNull
@@ -77,16 +74,12 @@ public class KryoCollectionStore<T> implements AutoCloseable, Iterable<T> {
 
     @Override
     public T next() {
-      Kryo kryo = pool.obtain();
-      try {
+      return Pools.with(pool, kryo -> {
         // Read data from first set of chunks...
         T obj = kryo.readObject(input, clazz);
         input.nextChunk();
         return obj;
-
-      } finally {
-        pool.free(kryo);
-      }
+      });
     }
 
     @Override

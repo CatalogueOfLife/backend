@@ -11,7 +11,11 @@ import life.catalogue.parser.*;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -22,8 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.undercouch.citeproc.csl.CSLType;
@@ -41,62 +43,41 @@ public class DatasetPager {
   private static final Pattern SUFFIX_KEY = Pattern.compile("^(.+)-(\\d+)$");
   private static final Pattern domain = Pattern.compile("([^.]+)\\.[a-z]+$", Pattern.CASE_INSENSITIVE);
   private static final int MAX_OFFSET = 100_000;
+  // bounded retry backoff for slow/timing-out GBIF pages - seconds, not minutes, so one bad page cannot stall the whole sync
+  private static final int MAX_PAGE_TRIES = 6;
+  private static final long BACKOFF_BASE_SECONDS = 2;
+  private static final long BACKOFF_MAX_SECONDS = 60;
 
   private final Page page = new Page(100);
   private boolean hasNext = true;
   final WebTarget dataset;
   final WebTarget datasets;
-  final WebTarget organization;
-  final WebTarget installation;
   final Client client;
-  private final LoadingCache<UUID, Agent> publisherCache;
-  private final LoadingCache<UUID, Agent> hostCache;
+  private final GbifRegistryCache registry;
   private final Set<UUID> articlePublishers;
   private final Set<UUID> articleHostInstallations;
   private final Set<UUID> blockedDatasets;
   private final LocalDate since;
 
+  /**
+   * Convenience constructor that builds its own (un-shared) registry cache.
+   * Mostly for tests and standalone use - the sync jobs pass a shared {@link GbifRegistryCache}.
+   */
   public DatasetPager(Client client, GbifConfig gbif, @Nullable LocalDate since) {
+    this(client, gbif, since, new GbifRegistryCache(client, gbif));
+  }
+
+  public DatasetPager(Client client, GbifConfig gbif, @Nullable LocalDate since, GbifRegistryCache registry) {
     this.client = client;
     this.since = since;
+    this.registry = registry;
     articlePublishers = Set.copyOf(gbif.articlePublishers);
     articleHostInstallations = Set.copyOf(gbif.articleHostInstallations);
     blockedDatasets = Set.copyOf(gbif.blockedDatasets);
     dataset = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"));
     datasets = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
-    organization = client.target(UriBuilder.fromUri(gbif.api).path("/organization/"));
-    installation = client.target(UriBuilder.fromUri(gbif.api).path("/installation/"));
-    publisherCache = Caffeine.newBuilder()
-                             .maximumSize(2000)
-                             .build(this::loadPublisher);
-    hostCache = Caffeine.newBuilder()
-                        .maximumSize(2000)
-                        .build(this::loadHost);
     LOG.info("Created dataset pager for {}", datasets.getUri());
-  }
-
-  private Agent loadPublisher(UUID key) {
-    WebTarget pubDetail = organization.path(key.toString());
-    LOG.debug("Retrieve organization {}", pubDetail.getUri());
-    GAgent p = pubDetail.request()
-                        .accept(MediaType.APPLICATION_JSON_TYPE)
-                        .get(GAgent.class);
-    return p.toAgent();
-  }
-
-  private Agent loadHost(UUID key) {
-    WebTarget insDetail = installation.path(key.toString());
-    LOG.debug("Retrieve installation {}", insDetail.getUri());
-    GInstallation ins = insDetail.request()
-                                 .accept(MediaType.APPLICATION_JSON_TYPE)
-                                 .get(GInstallation.class);
-    if (ins != null && ins.organizationKey != null) {
-      var host = publisherCache.get(ins.organizationKey);
-      host.setNote("Host");
-      return host;
-    }
-    return null;
   }
 
   /**
@@ -163,7 +144,7 @@ public class DatasetPager {
   protected List<GbifDataset> next() throws InterruptedException {
     LOG.debug("retrieve {}", page);
     int tries = 0;
-    while (tries < 12) {
+    while (tries < MAX_PAGE_TRIES) {
       try {
         GResp resp = datasetPage()
           .request()
@@ -176,12 +157,21 @@ public class DatasetPager {
       } catch (Exception e) {
         tries++;
         LOG.warn("Paging error {}: {}", page, e.getMessage(), e);
-        TimeUnit.MINUTES.sleep(tries * tries);
+        if (tries < MAX_PAGE_TRIES) {
+          TimeUnit.SECONDS.sleep(backoffSeconds(tries));
+        }
       }
     }
     LOG.error("Reached maximum retries for page {}", page);
     nextPage();
     return Collections.emptyList();
+  }
+
+  /** Bounded exponential backoff in seconds with jitter (2,4,8,16,32, capped at 60), so a slow GBIF page can never stall the sync for minutes. */
+  @VisibleForTesting
+  static long backoffSeconds(int tries) {
+    long secs = Math.min(BACKOFF_MAX_SECONDS, BACKOFF_BASE_SECONDS * (1L << (tries - 1)));
+    return secs + ThreadLocalRandom.current().nextLong(secs / 2 + 1);
   }
 
   /**
@@ -214,9 +204,17 @@ public class DatasetPager {
     Integer clbDatasetKey;
     // identifier keys for just the CLB_DATASET_KEY entries
     final List<Integer> identifierKeys = new ArrayList<>();
+    // raw GBIF dataset kept for lazy agent resolution, see DatasetPager#resolveAgents
+    GDataset src;
+    // GBIF registry modified timestamp (UTC), used to skip datasets that have not changed since the last sync
+    LocalDateTime modified;
 
     public Integer getKey() {
       return dataset.getKey();
+    }
+
+    public LocalDateTime getModified() {
+      return modified;
     }
 
     public UUID getGbifKey() {
@@ -241,6 +239,9 @@ public class DatasetPager {
   }
 
   /**
+   * Maps all dataset metadata that is already contained in the paged GBIF response, without hitting the
+   * registry organisation/installation endpoints. The publisher, host and contact agents are resolved
+   * lazily in {@link #resolveAgents(GbifDataset)} only for datasets that are new or have changed.
    * @return converted dataset or NULL if illegitimate
    */
   private GbifDataset convert(GDataset g) {
@@ -253,11 +254,11 @@ public class DatasetPager {
     }
 
     GbifDataset d = new GbifDataset();
+    d.src = g;
+    d.modified = g.modified;
     d.dataset.setPrivat(false);
     d.dataset.setGbifKey(g.key);
     d.dataset.setGbifPublisherKey(g.publishingOrganizationKey);
-    d.dataset.setPublisher(publisherCache.get(g.publishingOrganizationKey));
-    d.dataset.addContributor(hostCache.get(g.installationKey));
     d.dataset.setTitle(g.title);
     d.dataset.setDescription(g.description);
     DOI.parse(g.doi).ifPresent(doi -> d.dataset.addIdentifier(new Identifier(doi)));
@@ -292,6 +293,24 @@ public class DatasetPager {
     d.dataset.setGeographicScope(coverage(g.geographicCoverages));
     d.dataset.setTaxonomicScope(coverage(g.taxonomicCoverages));
     d.dataset.setTemporalScope(coverage(g.temporalCoverages));
+    addIdentifiers(d, g.key, g.identifiers);
+    d.dataset.setSource(toSource(g.bibliographicCitations));
+    //d.setNotes(toNotes(g.comments));
+    d.dataset.setIssued(g.pubDate);
+    d.dataset.setCreated(LocalDateTime.now());
+    LOG.debug("Dataset {} converted: {}", g.key, g.title);
+    return d;
+  }
+
+  /**
+   * Resolves the publisher and host organisations and the dataset contacts from the GBIF registry.
+   * This is the only part of the conversion that hits the slow registry organisation/installation
+   * endpoints, so it is called lazily - only for datasets that are new or have actually changed.
+   */
+  public void resolveAgents(GbifDataset d) {
+    GDataset g = d.src;
+    d.dataset.setPublisher(registry.publisher(g.publishingOrganizationKey));
+    d.dataset.addContributor(registry.host(g.installationKey));
     // convert contact and authors based on contact type: https://github.com/gbif/gbif-api/blob/master/src/main/java/org/gbif/api/vocabulary/ContactType.java
     // Not mapped: PUBLISHER,DISTRIBUTOR,METADATA_AUTHOR,TECHNICAL_POINT_OF_CONTACT,OWNER,PROCESSOR,USER,PROGRAMMER,DATA_ADMINISTRATOR,SYSTEM_ADMINISTRATOR,HEAD_OF_DELEGATION,TEMPORARY_HEAD_OF_DELEGATION,ADDITIONAL_DELEGATE,TEMPORARY_DELEGATE,REGIONAL_NODE_REPRESENTATIVE,NODE_MANAGER,NODE_STAFF
     var contacts = byType(g.contacts, "POINT_OF_CONTACT", "ADMINISTRATIVE_POINT_OF_CONTACT");
@@ -309,13 +328,6 @@ public class DatasetPager {
                                                       && !Objects.equals(d.dataset.getPublisher(), a))
                                          .collect(Collectors.toList());
     d.dataset.setContributor(contributors);
-    addIdentifiers(d, g.key, g.identifiers);
-    d.dataset.setSource(toSource(g.bibliographicCitations));
-    //d.setNotes(toNotes(g.comments));
-    d.dataset.setIssued(g.pubDate);
-    d.dataset.setCreated(LocalDateTime.now());
-    LOG.debug("Dataset {} converted: {}", g.key, g.title);
-    return d;
   }
 
   private List<Citation> toSource(List<GCitation> bibliographicCitations) {
@@ -469,6 +481,8 @@ public class DatasetPager {
     public List<GCoverage> temporalCoverages;
     public String license;
     public FuzzyDate pubDate;
+    // the GBIF registry modified timestamp (UTC), used to detect datasets that changed since the last sync
+    public LocalDateTime modified;
     public List<GEndpoint> endpoints;
     public List<GAgent> contacts;
     public List<GComment> comments;
@@ -481,6 +495,26 @@ public class DatasetPager {
       } catch (UnparsableException e) {
         LOG.warn("Failed to parse pubDate {}", pubDate, e);
       }
+    }
+
+    public void setModified(String modified) {
+      this.modified = parseGbifDateTime(modified);
+    }
+  }
+
+  /**
+   * Parses a GBIF ISO-8601 timestamp with offset (e.g. 2026-06-09T20:04:21.795+00:00) into a UTC LocalDateTime.
+   * @return the UTC LocalDateTime or null if blank/unparsable
+   */
+  static LocalDateTime parseGbifDateTime(String s) {
+    if (StringUtils.isBlank(s)) {
+      return null;
+    }
+    try {
+      return OffsetDateTime.parse(s).withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
+    } catch (DateTimeParseException e) {
+      LOG.warn("Failed to parse GBIF datetime {}", s);
+      return null;
     }
   }
 
@@ -529,6 +563,8 @@ public class DatasetPager {
     public String key;
     public String type;
     public String title;
+    // organisation description, only populated for publisher/host organisations (see GbifRegistryCache)
+    public String description;
     public String firstName;
     public String lastName;
     public List<String> position;

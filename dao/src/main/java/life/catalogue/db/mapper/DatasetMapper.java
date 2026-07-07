@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
+import life.catalogue.db.type2.StringCount;
 
 import java.time.LocalDateTime;
 import java.util.EnumSet;
@@ -200,6 +201,15 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
                               @Param("inclMerge") boolean inclMergeSources,
                               @Param("limit") int limit
   );
+
+  /**
+   * Suggests existing publisher names of datasets, matched case- and accent-insensitively as a substring.
+   * Returns each distinct publisher name with the count of datasets visible to the given user.
+   * @param userKey optional user key so that private datasets for that user are included. Use -42 for admins.
+   */
+  List<StringCount> suggestPublishers(@Param("q") String q,
+                                      @Param("limit") int limit,
+                                      @Param("userKey") Integer userKey);
 
   /**
    * List all dataset keys including private datasets.
@@ -427,6 +437,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Integer> listKeysGBIF();
 
   List<DatasetGBIF> listGBIF();
+
+  /**
+   * Updates only the GBIF registry modified timestamp we last synced for a dataset.
+   * Used by the GBIF sync to track per-dataset deltas without touching any other dataset metadata.
+   */
+  int updateGbifModified(@Param("key") int key, @Param("modified") LocalDateTime modified);
 
   /**
    * @return the last import attempt or null if never attempted

@@ -20,7 +20,6 @@ import life.catalogue.assembly.SyncState;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
@@ -29,6 +28,7 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.doi.DoiChangeListener;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.managed.Component;
+import life.catalogue.dw.managed.Maintenance;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.es.search.NameUsageSearchService;
@@ -74,7 +74,7 @@ public class AdminResource {
   private final ImageService imgService;
   private final NameUsageIndexService indexService;
   private final NameUsageSearchService searchService;
-  private boolean maintenance = false;
+  private final Maintenance maintenance;
   private final DatasetDao ddao;
   private final SyncManager assembly;
   private final ImportManager importManager;
@@ -107,6 +107,7 @@ public class AdminResource {
     this.gbifSync = gbifSync;
     this.importManager = importManager;
     this.exec = executor;
+    this.maintenance = new Maintenance(cfg.statusFile);
   }
 
   @GET
@@ -115,15 +116,18 @@ public class AdminResource {
     return assembly.getState();
   }
 
+  /**
+   * Sets (or toggles) maintenance mode and an optional custom banner message,
+   * written to the public status file the UI polls.
+   *
+   * @param on      explicit on/off; if null the current state is toggled (back-compat)
+   * @param message optional custom banner message; blank/absent clears it (UI shows a default)
+   */
   @POST
   @Path("/maintenance")
-  public boolean toggleMaintenance() throws IOException {
-    maintenance = !maintenance;
-    try (Writer w = UTF8IoUtils.writerFromFile(cfg.statusFile)) {
-      w.write(String.format("{\"maintenance\": %s}\n", maintenance));
-    }
-    LOG.info("Set maintenance mode={}", maintenance);
-    return maintenance;
+  public Map<String, Object> setMaintenance(@QueryParam("on") Boolean on,
+                                            @QueryParam("message") String message) throws IOException {
+    return maintenance.set(on, message);
   }
 
   @GET
@@ -200,7 +204,7 @@ public class AdminResource {
   @Path("/gbif-sync")
   @Consumes(MediaType.APPLICATION_JSON)
   public BackgroundJob syncGBIF(List<UUID> keys, @Auth User user) {
-    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), Set.copyOf(keys), false);
+    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, gbifSync.getRegistryCache(), user.getKey(), Set.copyOf(keys), false);
     return runJob(job);
   }
 
@@ -210,7 +214,7 @@ public class AdminResource {
   public BackgroundJob syncGBIFText(InputStream keysAsText, @Auth User user) {
     try (var lr = new LineReader(keysAsText)) {
       var keys = IterUtils.setOf(lr, UUID::fromString);
-      GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, user.getKey(), keys, false);
+      GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, gbifSync.getRegistryCache(), user.getKey(), keys, false);
       return runJob(job);
     }
   }
@@ -218,7 +222,7 @@ public class AdminResource {
   @POST
   @Path("/publisher-sync")
   public BackgroundJob publisherSync(@Auth User user) {
-    PublisherSyncJob job = new PublisherSyncJob(cfg.gbif, gbifSync.getClient(), factory, user.getKey());
+    PublisherSyncJob job = new PublisherSyncJob(gbifSync.getRegistryCache(), factory, user.getKey());
     return runJob(job);
   }
 

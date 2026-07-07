@@ -309,6 +309,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
+    // shield protected groups: neither update existing taxa nor insert new data anywhere within a protected subtree.
+    // the anchor is the matched target usage (update) or the parent we would attach a new usage to (create).
+    if (cfg != null && cfg.hasProtectedGroups()) {
+      final String anchorId = match.isMatch() ? match.usage.getId() : (parent != null ? parent.id : null);
+      if (isWithinProtectedGroup(anchorId)) {
+        LOG.debug("Ignore {} {} [{}] as its placement at {} is within a protected group", nu.getRank(), nu.getLabel(), nu.getId(), anchorId);
+        ignored++;
+        return;
+      }
+    }
+
     // finally create or update records
     SimpleNameWithNidx sn = null;
     if (match.isMatch()) {
@@ -453,10 +464,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // add well known identifiers
     if (usageIdScope != null) {
-      nu.addIdentifier(new Identifier(usageIdScope, nu.getId()));
+      nu.addIdentifier(wellKnownId(usageIdScope, nu.getId()));
     }
     if (nameIdScope != null) {
-      nu.getName().addIdentifier(new Identifier(nameIdScope, nu.getName().getId()));
+      nu.getName().addIdentifier(wellKnownId(nameIdScope, nu.getName().getId()));
     }
 
     // only add a new name if we do not have already multiple names that we cannot clearly match
@@ -490,6 +501,28 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   private static boolean containsID(List<SimpleNameCached> usages,  String id){
     return usages != null && usages.stream().anyMatch(u -> u.getId().equals(id));
+  }
+
+  /**
+   * @return true if the given target usage belongs to a protected group, i.e. it is a protected root itself
+   * or any of its ancestors is a protected root. Usages within a protected group must not receive any
+   * merge updates and no new data may be inserted below them.
+   */
+  private boolean isWithinProtectedGroup(String usageId) {
+    if (usageId == null || cfg == null || !cfg.hasProtectedGroups()) {
+      return false;
+    }
+    try {
+      // classification includes the usage itself and all its ancestors
+      for (var u : matcher.store().getClassification(usageId)) {
+        if (cfg.isProtectedRoot(u.getId())) {
+          return true;
+        }
+      }
+    } catch (RuntimeException e) {
+      LOG.warn("Unable to resolve classification for {} while checking protected groups", usageId, e);
+    }
+    return false;
   }
 
   @Override
@@ -709,8 +742,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // add well know name and usage ids
     if (usageIdScope != null) {
-      num.addIdentifier(existing, List.of(new Identifier(usageIdScope, nu.getId())));
+      num.addIdentifier(existing, List.of(wellKnownId(usageIdScope, nu.getId())));
     }
+  }
+
+  /**
+   * Builds a well-known identifier for the given scope, extracting the plain local id from the raw
+   * source id in case the source publishes full resolver URLs instead of plain ids (see {@link IdentifierScope#extractId}).
+   */
+  private Identifier wellKnownId(String scope, String rawId) {
+    var def = IdentifierScopes.byScope(scope);
+    return new Identifier(scope, def != null ? def.extractId(rawId) : rawId);
   }
 
   /**

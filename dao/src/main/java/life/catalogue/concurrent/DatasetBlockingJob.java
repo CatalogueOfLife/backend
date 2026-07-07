@@ -39,6 +39,7 @@ public abstract class DatasetBlockingJob extends DatasetJob {
 
   @Override
   public final void execute() throws Exception {
+    checkIfCancelled();
     // we track attempts to run this job - it can be blocked
     retry++;
     // did we try several times already so it seems there is a longer running job blocking and the executor is rather idle
@@ -53,6 +54,7 @@ public abstract class DatasetBlockingJob extends DatasetJob {
     } else if (!skipLock){
       TimeUnit.MILLISECONDS.sleep(100);
     }
+    checkIfCancelled();
 
     UUID proc;
     if (skipLock) {

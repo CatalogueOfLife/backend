@@ -1,34 +1,31 @@
 package life.catalogue.matching;
 
 import com.google.common.base.Preconditions;
+
 import java.util.concurrent.locks.ReentrantLock;
 import jakarta.validation.constraints.NotNull;
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleNameCached;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxGroup;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.*;
 import life.catalogue.concurrent.BackgroundJob;
-import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.config.MatchingConfig;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
-import life.catalogue.metadata.coldp.DatasetJsonWriter;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.fory.Fory;
 import org.apache.fory.ThreadLocalFory;
 import org.apache.fory.ThreadSafeFory;
@@ -37,33 +34,37 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Factory to create and reuse persistent usage matchers,
  * which are specific for an entire dataset.
  */
-public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
+public class UsageMatcherFactory implements DatasetListener, life.catalogue.common.Managed {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherFactory.class);
+  /** Extra sidecar JSON property recording the names index {@link NameIndex#created()} the store was built against. */
+  static final String NIDX_CREATED_FIELD = "nidxCreated";
+  private volatile boolean started = false;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   private final MatchingConfig cfg;
   private final File dir;
-  private final ConcurrentHashMap<Integer, LocalDateTime> runningBuilds = new ConcurrentHashMap<>();
-  private final ConcurrentHashMap<Integer, UsageMatcher> matchers = new ConcurrentHashMap<>();
+  private final AtomicLong buildCounter = new AtomicLong();
+  // datasetKey -> unique token of the build currently owning it (package-private so tests can simulate a build)
+  final ConcurrentHashMap<Integer, Long> runningBuilds = new ConcurrentHashMap<>();
+  // package-private so tests can inspect/evict cached instances
+  final ConcurrentHashMap<Integer, UsageMatcher> matchers = new ConcurrentHashMap<>();
   private final ConcurrentHashMap<Integer, ReentrantLock> buildLocks = new ConcurrentHashMap<>();
   private final JobExecutor executor;
 
@@ -93,71 +94,10 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     this.factory = Preconditions.checkNotNull(factory);
     this.dir = cfg.storageDir;
     this.cfg = cfg;
-    // validate files on disk
-    loadFromFS();
   }
 
-  /**
-   * Loads all persisted matchers from the storage directory.
-   * Warms the DatasetInfoCache with all datasets in one batch query, then validates and
-   * reopens chronicle/mapdb files in parallel without any further DB queries.
-   */
-  private void loadFromFS() {
-    LOG.info("Load existing file based matchers from {}", dir);
-    var fsKeys = listFS();
-    if (fsKeys.isEmpty()) return;
-
-    var validKeys = new ArrayList<Integer>();
-    for (int key : fsKeys) {
-      try {
-        DatasetInfoCache.CACHE.info(key);
-        validKeys.add(key);
-      } catch (NotFoundException e) {
-        File f = cfg.dir(key);
-        LOG.warn("Dataset {} not existing, delete matching storage folder {}", key, f);
-        FileUtils.deleteQuietly(f);
-      }
-    }
-    if (validKeys.isEmpty()) return;
-
-    int threads = Math.min(8, validKeys.size());
-    var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("matcher-loader"));
-    var loaded = new ConcurrentHashMap<Integer, UsageMatcher>();
-    for (int key : validKeys) {
-      final int k = key;
-      exec.submit(() -> {
-        try {
-          var store = reopenStore(k);
-          var m = new UsageMatcher(k, nameIndex, store, true);
-          if (m.store().isEmpty()) {
-            LOG.warn("Matcher for dataset {} is empty, delete storage files {}", k, cfg.dir(k));
-            m.close();
-            FileUtils.deleteQuietly(cfg.dir(k));
-          } else {
-            loaded.put(k, m);
-            LOG.info("Loaded matcher with {} usages for dataset {}", store.size(), k);
-          }
-        } catch (IOException e) {
-          File f = cfg.dir(k);
-          LOG.warn("Matcher for dataset {} cannot be loaded. Delete storage files {}", k, f, e);
-          FileUtils.deleteQuietly(f);
-        }
-      });
-    }
-    ExecutorUtils.shutdown(exec);
-
-    matchers.putAll(loaded);
-    LOG.info("Loaded {} matchers from {}", matchers.size(), dir);
-  }
-
-  private UsageMatcherAbstractStore reopenStore(int datasetKey) throws IOException {
-    var f = cfg.dir(datasetKey);
-    if (cfg.chronicle) {
-      return UsageMatcherChronicleStore.reopen(datasetKey, f);
-    } else {
-      return UsageMatcherMapDBStore.build(datasetKey,
-        DBMaker.fileDB(f).fileMmapEnableIfSupported().make());
-    }
+  private UsageMatcherChronicleStore reopenStore(int datasetKey) throws IOException {
+    return UsageMatcherChronicleStore.reopen(datasetKey, cfg.dir(datasetKey));
   }
 
   public NameIndex getNameIndex() {
@@ -165,41 +105,54 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   /**
-   * Get an existing matcher or null if none exists.
+   * Datasets with fewer usages than this threshold use a Postgres-backed matcher and have no
+   * persistent file store. 0 disables the threshold (all datasets get a persistent matcher).
+   */
+  public int getPgMatcherThreshold() {
+    return cfg.pgMatcherThreshold;
+  }
+
+  /**
+   * Reopens the persisted chronicle store for a dataset from disk and caches it, or returns null
+   * if there is no (or an empty/corrupt) store on disk. Concurrent callers share one instance.
+   */
+  public UsageMatcher openPersistent(int datasetKey) throws IOException {
+    UsageMatcher existing = matchers.get(datasetKey);
+    // tryAcquire fails only if it was retired+closed between the lookup and the acquire → fall through to re-resolve
+    if (existing != null && existing.tryAcquire()) return existing;
+    // No final store on disk → nothing to reopen. A (re)build writes into a separate temp dir, so during a
+    // rebuild the previous (stale) files still live in the final dir and are reopened & served below — only
+    // during a true first build is there no final dir, and we return null (existingOrPostgres then 503s).
+    // The per-dataset lock is held only for the brief swap, never the long load, so this never blocks long.
+    if (dir == null || !cfg.dir(datasetKey).isDirectory()) return null;
+    ReentrantLock lock = lockFor(datasetKey);
+    lock.lock();
+    try {
+      existing = matchers.get(datasetKey); // double-check under lock
+      if (existing != null && existing.tryAcquire()) return existing;
+      var store = reopenStore(datasetKey);
+      var m = new UsageMatcher(datasetKey, nameIndex, store, true);
+      if (m.store().isEmpty()) {
+        LOG.warn("Matcher for dataset {} is empty, delete storage files {}", datasetKey, cfg.dir(datasetKey));
+        store.close(); // brand-new instance, never handed out → close the store directly
+        FileUtils.deleteQuietly(cfg.dir(datasetKey));
+        return null;
+      }
+      matchers.put(datasetKey, m);
+      m.tryAcquire(); // lease for the returning caller (brand-new, never retired → always succeeds)
+      LOG.info("Reopened matcher with {} usages for dataset {}", store.size(), datasetKey);
+      return m;
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  /**
+   * Returns the matcher for a dataset, opening its persisted store from disk on first use.
+   * Returns null when no persistent matcher exists on disk.
    */
   public UsageMatcher get(int datasetKey) throws IOException {
-    return matchers.get(datasetKey);
-  }
-
-  /**
-   * @return true if a matcher for the given datasetKey already exists, false otherwise.
-   */
-  public boolean exists(int datasetKey) throws IOException {
-    return matchers.containsKey(datasetKey);
-  }
-
-  /**
-   * Depending on the dataset origin either a persistent or postgres matcher is created.
-   * Persistent matchers are reused and should be closed after use.
-   * @param datasetKey
-   * @return
-   */
-  public UsageMatcher build(int datasetKey) throws IOException {
-    var info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (info.origin == DatasetOrigin.PROJECT) {
-      return postgres(datasetKey);
-    } else if (dir != null) {
-      int count;
-      try (SqlSession s = factory.openSession()) {
-        count = s.getMapper(NameUsageMapper.class).count(datasetKey);
-      }
-      if (cfg.pgMatcherThreshold > 0 && count < cfg.pgMatcherThreshold) {
-        return postgres(datasetKey);
-      }
-      return persistent(datasetKey, count);
-    } else {
-      return memory(datasetKey);
-    }
+    return openPersistent(datasetKey);
   }
 
   private boolean isSmallDataset(int datasetKey) {
@@ -209,91 +162,44 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
   }
 
-  /**
-   * Prepares a persistent matcher for the given datasetKey if it does not yet exist.
-   *
-   * Loading matchers can take a while so this method prepares them async
-   * @param datasetKey
-   * @return true if a matcher is being prepared, false if it already existed.
-   * @throws IllegalArgumentException if the datasetKey is a project
-   */
-  public BackgroundJob prepare(int datasetKey, int userKey) throws IOException {
-    var m = matchers.get(datasetKey);
-    if (m != null && !m.store().isEmpty()) {
-      return null;
-    } else if (m != null && m.store().isEmpty()) {
-      LOG.warn("Rebuild empty existing matcher for dataset {}", datasetKey);
-      remove(datasetKey);
-    }
-    if (dir == null) {
-      throw new IllegalStateException("Cannot prepare persistent matcher for dataset " + datasetKey + " because no storage dir is configured");
-    }
-    var info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (info.origin == DatasetOrigin.PROJECT) {
-      throw new IllegalArgumentException("Cannot prepare persistent matcher for projects");
-    }
-    var newMatcher = persistent(datasetKey);
-    var job = new AsyncMatchLoader(newMatcher, userKey);
+  /** Asynchronously removes and rebuilds a single matcher. The "rebuild one" lever. */
+  public BackgroundJob rebuild(int datasetKey, int userKey) {
+    var job = new MatcherBuildJob(datasetKey, userKey);
     executor.submit(job);
     return job;
   }
 
-  private class AsyncMatchLoader extends BackgroundJob {
-    private final UsageMatcher matcher;
+  private class MatcherBuildJob extends BackgroundJob {
+    private final int datasetKey;
 
-    public AsyncMatchLoader(UsageMatcher matcher, int userKey) {
+    MatcherBuildJob(int datasetKey, int userKey) {
       super(userKey);
-      this.matcher = matcher;
+      this.datasetKey = datasetKey;
     }
 
     @Override
     public void execute() throws Exception {
-      if (runningBuilds.contains(matcher.datasetKey)) {
-        throw new IllegalStateException("Matcher for dataset " + matcher.datasetKey + " is already being built.");
-      }
-      try {
-        runningBuilds.put(matcher.datasetKey, LocalDateTime.now());
-        matcher.store().load(factory);
-        try (var s = factory.openSession()) {
-          Dataset d = s.getMapper(DatasetMapper.class).get(matcher.datasetKey);
-          if (d != null) {
-            DatasetJsonWriter.write(d, UsageMatcherFactory.this.cfg.datasetJson(matcher.datasetKey));
-            LOG.info("Wrote dataset sidecar for matcher {} with attempt {}", matcher.datasetKey, d.getAttempt());
-          }
-        } catch (Exception e) {
-          LOG.warn("Failed to write sidecar for matcher {}", matcher.datasetKey, e);
-        }
-      } finally {
-        matcher.close();
-        var start = runningBuilds.remove(matcher.datasetKey);
-        LOG.info("Matcher for dataset {} loaded in {} seconds", matcher.datasetKey, LocalDateTime.now().minusSeconds(start.getSecond()).getSecond());
-      }
+      // build into a temp dir off-lock so the previous matcher keeps serving, then swap atomically.
+      buildAndSwap(datasetKey);
     }
 
     @Override
     public boolean isDuplicate(BackgroundJob other) {
-      if (other instanceof AsyncMatchLoader) {
-        return matcher.datasetKey == ((AsyncMatchLoader) other).matcher.datasetKey;
-      }
-      return super.isDuplicate(other);
+      return other instanceof MatcherBuildJob && ((MatcherBuildJob) other).datasetKey == datasetKey;
     }
   }
 
   /**
-   * If there is an existing persistent matcher for the given datasetKey it is returned,
-   * otherwise a postgres matcher is created that reads directly from the db.
-   *
-   * All matchers must be closed after use to free up resources !
-   * @param datasetKey
-   * @return
+   * Returns the persistent matcher (reopened from disk if needed), or a postgres matcher reading
+   * live data when no persistent store exists. All matchers must be closed after use.
    */
   public UsageMatcher existingOrPostgres(int datasetKey) throws IOException {
-    if (matchers.containsKey(datasetKey)) {
-      return matchers.get(datasetKey);
-    }
-    var f = cfg.dir(datasetKey);
-    if (f.isDirectory()) {
-      return persistent(datasetKey);
+    UsageMatcher m = openPersistent(datasetKey);
+    if (m != null) return m;
+    // a persistent matcher is being built for the first time and is not ready yet. Fail fast with a 503
+    // instead of blocking a request thread or scanning the (large) dataset live from postgres.
+    if (runningBuilds.containsKey(datasetKey)) {
+      throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
     }
     return postgres(datasetKey);
   }
@@ -320,75 +226,145 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return buildLocks.computeIfAbsent(datasetKey, k -> new ReentrantLock());
   }
 
-  public UsageMatcher persistent(int datasetKey) throws IOException {
-    UsageMatcher existing = matchers.get(datasetKey);
-    if (existing != null) return existing;
-    ReentrantLock lock = lockFor(datasetKey);
-    lock.lock();
-    try {
-      existing = matchers.get(datasetKey); // double-check
-      if (existing != null) return existing;
-      UsageMatcher m = buildPersistentMatcher(datasetKey);
-      matchers.put(datasetKey, m);
-      return m;
-    } finally {
-      lock.unlock();
-    }
-  }
-
-  public UsageMatcher persistent(int datasetKey, int count) throws IOException {
-    UsageMatcher existing = matchers.get(datasetKey);
-    if (existing != null) return existing;
-    ReentrantLock lock = lockFor(datasetKey);
-    lock.lock();
-    try {
-      existing = matchers.get(datasetKey); // double-check
-      if (existing != null) return existing;
-      UsageMatcher m = buildPersistentMatcher(datasetKey, count);
-      matchers.put(datasetKey, m);
-      return m;
-    } finally {
-      lock.unlock();
-    }
-  }
-
-  private UsageMatcher buildPersistentMatcher(int datasetKey) throws IOException {
+  /**
+   * Builds a fresh persistent matcher in a temporary dir and loads it from the DB, WITHOUT holding the
+   * per-dataset lock. The existing matcher (if any) keeps serving while this runs.
+   */
+  private UsageMatcher buildIntoTemp(int datasetKey, long token) throws IOException {
+    File tmpDir = cfg.buildDir(datasetKey, token); // unique per build, so two builds never share a temp dir
+    FileUtils.deleteQuietly(tmpDir);
+    UsageMatcher m;
     try (SqlSession s = factory.openSession()) {
-      return buildPersistentMatcher(datasetKey, s.getMapper(NameUsageMapper.class).count(datasetKey));
+      var num = s.getMapper(NameUsageMapper.class);
+      int count = num.count(datasetKey);
+      var samples = num.listSN(datasetKey, new Page(0, 5));
+      int canon = num.countDistinctCanonical(datasetKey);
+      long canonCount = canon + Math.max(1, canon / 100);
+      var store = UsageMatcherChronicleStore.build(datasetKey, tmpDir, count + 1, canonCount, samples);
+      m = new UsageMatcher(datasetKey, nameIndex, store, true);
     }
+    m.store().load(factory); // the long full-scan load; no lock held
+    return m;
   }
 
-  private UsageMatcher buildPersistentMatcher(int datasetKey, int count) throws IOException {
-    if (runningBuilds.containsKey(datasetKey)) {
-      throw new IllegalStateException("Matcher for dataset " + datasetKey + " is already being built. Please try again in a few minutes");
-    }
-    runningBuilds.put(datasetKey, LocalDateTime.now());
-    try {
-      try (SqlSession s = factory.openSession()) {
-        var samples = s.getMapper(NameUsageMapper.class).listSN(datasetKey, new Page(0, 5));
-        return buildPersistentMatcher(datasetKey, samples, count + 1, cfg, nameIndex);
+  /**
+   * Writes the dataset sidecar JSON next to the matcher store. Besides the dataset itself (attempt marker),
+   * it records under the extra {@value #NIDX_CREATED_FIELD} property the {@link NameIndex#created()} timestamp
+   * the store was built against, so a later names-index rebuild/swap can be detected as making this store
+   * stale. The extra property is ignored when the file is read back as a plain {@link Dataset}.
+   */
+  private void writeSidecar(int datasetKey, UsageMatcherStore store) {
+    try (var s = factory.openSession()) {
+      Dataset d = s.getMapper(DatasetMapper.class).get(datasetKey);
+      if (d != null) {
+        d.setSize(store.size()); // persist the matcher size so we can compare it to the DB size later if needed
+        LocalDateTime nidxCreated = nameIndex.created();
+        ObjectNode node = ApiModule.MAPPER.valueToTree(d);
+        node.put(NIDX_CREATED_FIELD, nidxCreated.toString());
+        ApiModule.MAPPER.writeValue(cfg.datasetJson(datasetKey), node);
+        LOG.info("Wrote dataset sidecar for matcher {} with attempt {} and nidx created {}",
+          datasetKey, d.getAttempt(), nidxCreated);
       }
-    } finally {
-      var start = runningBuilds.remove(datasetKey);
-      LOG.info("Matcher for dataset {} built in {} seconds", datasetKey, LocalDateTime.now().minusSeconds(start.getSecond()).getSecond());
+    } catch (Exception e) {
+      LOG.warn("Failed to write sidecar for matcher {}", datasetKey, e);
     }
   }
 
-  public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
-    var f = cfg.dir(datasetKey);
-
-    UsageMatcherAbstractStore store;
-    if (cfg.chronicle) {
-      LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
-      store = UsageMatcherChronicleStore.build(datasetKey, f, maxUsages, samples);
-
-    } else {
-      LOG.info("Create new persistent mapdb matcher for dataset {} at {}", datasetKey, f);
-      DBMaker.Maker maker = DBMaker
-        .fileDB(f)
-        .fileMmapEnableIfSupported();
-      store = UsageMatcherMapDBStore.build(datasetKey, maker.make());
+  /**
+   * Atomically swaps a freshly built matcher into place under the per-dataset lock: moves the temp files to
+   * the final dir and replaces the cached instance. The lock is held only for this quick swap, never for the
+   * long build/load. The previous instance is retired (its store closes once its last consumer releases it).
+   * Returns the installed matcher, or null if a concurrent remove() cancelled the build.
+   */
+  private UsageMatcher swapIn(int datasetKey, long token, UsageMatcher fresh) throws IOException {
+    ReentrantLock lock = lockFor(datasetKey);
+    lock.lock();
+    try {
+      // only the build that still owns the runningBuilds marker may install its result. A concurrent
+      // remove()/delete (which clears the marker) or a superseding build (different token) cancels us.
+      Long owner = runningBuilds.get(datasetKey);
+      if (owner == null || owner.longValue() != token) {
+        LOG.info("Matcher build {} for dataset {} was cancelled/superseded, discarding", token, datasetKey);
+        fresh.store().close(); // never handed out, close its store directly
+        FileUtils.deleteQuietly(cfg.buildDir(datasetKey, token));
+        return null;
+      }
+      File finalDir = cfg.dir(datasetKey);
+      File backup = cfg.backupDir(datasetKey, token);
+      FileUtils.deleteQuietly(backup);
+      boolean hadFinal = finalDir.isDirectory();
+      if (hadFinal) {
+        FileUtils.moveDirectory(finalDir, backup); // park the old files; the old store keeps them via its mmap
+      }
+      try {
+        FileUtils.moveDirectory(cfg.buildDir(datasetKey, token), finalDir);
+      } catch (IOException e) {
+        if (hadFinal) { // restore the previous store so we never destroy the only good copy on a failed move
+          FileUtils.deleteQuietly(finalDir);
+          try {
+            FileUtils.moveDirectory(backup, finalDir);
+          } catch (IOException re) {
+            LOG.error("Failed to restore previous matcher for dataset {} after a failed swap", datasetKey, re);
+          }
+        }
+        fresh.store().close();
+        FileUtils.deleteQuietly(cfg.buildDir(datasetKey, token));
+        throw e;
+      }
+      writeSidecar(datasetKey, fresh.store());
+      UsageMatcher old = matchers.put(datasetKey, fresh);
+      if (old != null) {
+        old.retire(); // closes its store once the last in-flight consumer (e.g. a long MatchingJob) releases it
+      }
+      FileUtils.deleteQuietly(backup); // old files survive in the old store's mmap until it is actually closed
+      LOG.info("Swapped in (re)built matcher with {} usages for dataset {}", fresh.store().size(), datasetKey);
+      return fresh;
+    } finally {
+      lock.unlock();
     }
+  }
+
+  /**
+   * Builds + loads a matcher off-lock, then atomically swaps it in. Claims the build with a unique token so a
+   * concurrent build of the same dataset is skipped. Returns the installed (or already-cached) matcher, or
+   * null if the build was cancelled/superseded.
+   */
+  private UsageMatcher buildAndSwap(int datasetKey) throws IOException {
+    long token = buildCounter.incrementAndGet();
+    if (runningBuilds.putIfAbsent(datasetKey, token) != null) {
+      LOG.info("Matcher for dataset {} is already being built, not starting another", datasetKey);
+      return matchers.get(datasetKey); // the old matcher during a rebuild, or null during a first build
+    }
+    try {
+      UsageMatcher fresh = buildIntoTemp(datasetKey, token);
+      return swapIn(datasetKey, token, fresh);
+    } finally {
+      runningBuilds.remove(datasetKey, token); // only clear our own marker, never a superseding build's
+    }
+  }
+
+  /**
+   * Reopens the persistent matcher from disk, or builds it off-lock and swaps it in if absent.
+   * Throws {@link UnavailableException} rather than returning null when a build is in progress.
+   */
+  public UsageMatcher persistent(int datasetKey) throws IOException {
+    UsageMatcher m = openPersistent(datasetKey); // acquired for the caller
+    if (m != null) return m;
+    if (buildAndSwap(datasetKey) == null) {
+      throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
+    }
+    // the build installed (or found) a matcher in the cache; acquire it via the normal path
+    m = openPersistent(datasetKey);
+    if (m == null) {
+      throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
+    }
+    return m;
+  }
+
+  public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, long canonCount, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
+    var f = cfg.dir(datasetKey);
+    LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
+    var store = UsageMatcherChronicleStore.build(datasetKey, f, maxUsages, canonCount, samples);
     return new UsageMatcher(datasetKey, nameIndex, store, true);
   }
 
@@ -415,58 +391,176 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
   }
 
+  /**
+   * Reads the names-index {@code created} timestamp the matcher store was built against from the
+   * {@value #NIDX_CREATED_FIELD} property of the dataset sidecar, or null if the sidecar is absent, the
+   * property is missing (a store built before this marker was introduced) or unparseable.
+   */
+  private LocalDateTime readStoredNidxCreated(int datasetKey) {
+    var sidecar = cfg.datasetJson(datasetKey);
+    if (!sidecar.exists()) return null;
+    try {
+      var node = ApiModule.MAPPER.readTree(sidecar).get(NIDX_CREATED_FIELD);
+      return node == null || node.isNull() ? null : LocalDateTime.parse(node.asText());
+    } catch (Exception e) {
+      LOG.warn("Could not read nidx created from sidecar for dataset {}", datasetKey, e);
+      return null;
+    }
+  }
+
   @Override
   public void datasetChanged(DatasetChanged d) {
     if (d.isDeletion()) {
       remove(d.key);
+    } else if (d.isUpdated() && d.obj != null && d.old != null) {
+      boolean wasPublished = !d.old.isPrivat();
+      boolean isPublished = !d.obj.isPrivat();
+      if (!wasPublished && isPublished) {
+        ensurePublishedMatcher(d.obj, d.user);
+      } else if (wasPublished && !isPublished) {
+        remove(d.key); // unpublished → drop matcher + sidecar
+      }
+    }
+  }
+
+  /** Schedules a build for a newly published dataset if it is in scope and above threshold. */
+  private void ensurePublishedMatcher(Dataset d, int userKey) {
+    if (dir == null) return;
+    var origin = d.getOrigin();
+    if (origin != DatasetOrigin.EXTERNAL && !origin.isRelease()) return; // projects served live
+    try {
+      if (!isSmallDataset(d.getKey())) {
+        rebuild(d.getKey(), userKey);
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to create matcher for newly published dataset {}", d.getKey(), e);
     }
   }
 
   @Override
   public void datasetDataChanged(DatasetDataChanged event) {
-    var info = DatasetInfoCache.CACHE.info(event.datasetKey);
-    if (info.origin == DatasetOrigin.PROJECT || info.origin.isRelease()) {
-      return;
+    if (dir == null) return;
+    Dataset d;
+    try (SqlSession s = factory.openSession()) {
+      d = s.getMapper(DatasetMapper.class).get(event.datasetKey);
     }
-    if (!matcherExists(event.datasetKey)) {
-      return;
-    }
+    if (d == null || d.getDeleted() != null || d.isPrivat()) return; // only published, non-deleted
+    var origin = d.getOrigin();
+    if (origin != DatasetOrigin.EXTERNAL && !origin.isRelease()) return;
     try {
-      remove(event.datasetKey);
-      if (!isSmallDataset(event.datasetKey)) {
-        prepare(event.datasetKey, event.user);
+      if (isSmallDataset(event.datasetKey)) {
+        remove(event.datasetKey); // drop any stale persistent file; served live from postgres now
+      } else {
+        rebuild(event.datasetKey, event.user); // refresh to new attempt; creates if missing
       }
     } catch (Exception e) {
-      LOG.error("Failed to recreate persistent matcher for dataset {}", event.datasetKey, e);
+      LOG.error("Failed to refresh matcher for dataset {}", event.datasetKey, e);
     }
   }
 
-  public void remove(int datasetKey) {
-    buildLocks.remove(datasetKey);
-    if (matchers.containsKey(datasetKey)) {
-      LOG.info("Delete matcher for dataset {}", datasetKey);
-      var m = matchers.remove(datasetKey);
-      if (m != null) {
-        try {
-          m.store().close();
-        } catch (Exception e) {
-          LOG.error("Failed to close matcher for dataset {}", datasetKey, e);
+  /**
+   * Enforces the matcher invariant for all published, non-deleted EXTERNAL/RELEASE/XRELEASE datasets.
+   * Removes any on-disk persistent matcher that should no longer exist — below the pgMatcherThreshold,
+   * unpublished, deleted, or no longer in scope — and (re)builds the ones that are missing or stale.
+   * force=false: build only missing/stale matchers (startup). force=true: rebuild all (the "rebuild all" lever).
+   */
+  public void reconcile(boolean force, int userKey) {
+    if (dir == null) return;
+    // datasets that SHOULD have a persistent matcher: published, not deleted, in-scope, above threshold
+    List<Integer> published;
+    try (SqlSession s = factory.openSession()) {
+      var req = new DatasetSearchRequest();
+      req.setPrivat(false);
+      req.setInclDeleted(false);
+      req.setOrigin(List.of(DatasetOrigin.EXTERNAL, DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE));
+      published = s.getMapper(DatasetMapper.class).searchKeys(req, Users.SUPERUSER);
+    }
+    var shouldHave = new HashSet<Integer>();
+    for (int key : published) {
+      try {
+        if (!isSmallDataset(key)) {
+          shouldHave.add(key);
         }
+      } catch (Exception e) {
+        LOG.error("Failed to size dataset {} during reconcile", key, e);
       }
+    }
+    // remove any on-disk matcher that should no longer exist: below threshold, unpublished, deleted, or out of scope
+    int removed = 0;
+    for (int key : listFS()) {
+      if (!shouldHave.contains(key)) {
+        LOG.info("Reconcile: removing obsolete persistent matcher for dataset {}", key);
+        remove(key);
+        removed++;
+      }
+    }
+    // (re)build the matchers that are missing or stale
+    int scheduled = 0;
+    for (int key : shouldHave) {
+      try {
+        if (force || needsRebuild(key)) {
+          rebuild(key, userKey);
+          scheduled++;
+        }
+      } catch (Exception e) {
+        LOG.error("Failed to reconcile matcher for dataset {}", key, e);
+      }
+    }
+    LOG.info("Reconcile removed {} obsolete and scheduled {} (re)builds (force={}); {} of {} published datasets in scope",
+      removed, scheduled, force, shouldHave.size(), published.size());
+  }
+
+  /**
+   * True when the matcher store is missing or out of date and must be rebuilt, because either
+   * <ul>
+   *   <li>no store exists on disk, or</li>
+   *   <li>the stored sidecar attempt differs from the current DB attempt (the dataset changed), or</li>
+   *   <li>the stored names-index {@code created} timestamp differs from the live index — i.e. the names
+   *       index was rebuilt/swapped, so every nidx id materialized in the store is now stale.</li>
+   * </ul>
+   * A store built before the nidx marker was introduced has no recorded timestamp; that alone does NOT
+   * mark it stale (we fall back to the attempt check), so introducing this marker does not trigger a
+   * mass rebuild. Once rebuilt, the marker is written and future nidx swaps are detected.
+   */
+  private boolean needsRebuild(int datasetKey) {
+    if (!cfg.dir(datasetKey).isDirectory()) return true;
+    Integer stored = readStoredAttempt(datasetKey);
+    Integer current;
+    try (SqlSession s = factory.openSession()) {
+      Dataset d = s.getMapper(DatasetMapper.class).get(datasetKey);
+      current = d == null ? null : d.getAttempt();
+    }
+    if (stored == null || !stored.equals(current)) return true;
+    LocalDateTime storedNidx = readStoredNidxCreated(datasetKey);
+    return storedNidx != null && !storedNidx.equals(nameIndex.created());
+  }
+
+  public void remove(int datasetKey) {
+    ReentrantLock lock = lockFor(datasetKey);
+    lock.lock();
+    try {
+      evictLocked(datasetKey);
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  /**
+   * Closes & removes the cached matcher and deletes its on-disk store + sidecar.
+   * Caller MUST already hold lockFor(datasetKey). The per-dataset lock is intentionally never evicted
+   * (a bounded ReentrantLock per dataset is a negligible leak) so lazy-open, removal and rebuild stay
+   * mutually exclusive.
+   */
+  private void evictLocked(int datasetKey) {
+    runningBuilds.remove(datasetKey); // cancel any in-flight build so its swap is discarded
+    UsageMatcher m = matchers.remove(datasetKey);
+    if (m != null) {
+      LOG.info("Delete matcher for dataset {}", datasetKey);
+      m.retire(); // closes its store once the last in-flight consumer releases it
     }
     if (dir != null) {
       FileUtils.deleteQuietly(cfg.dir(datasetKey));
       FileUtils.deleteQuietly(cfg.datasetJson(datasetKey));
-    }
-  }
-
-  public static class FactoryMetadata {
-    public final int count;
-    public final List<MatcherMetadata> matchers;
-
-    public FactoryMetadata(List<MatcherMetadata> matchers) {
-      this.matchers = matchers;
-      this.count = matchers.size();
     }
   }
 
@@ -479,92 +573,53 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     public final int datasetKey;
     public final Integer size;
     public final Integer attempt; // from sidecar JSON, null if absent
+    public final LocalDateTime nidxCreated; // names index created timestamp the store was built against, null if absent
     public DatasetSimple dataset;
 
-    public MatcherMetadata(int datasetKey, Integer size, Integer attempt) {
+    public MatcherMetadata(int datasetKey, Integer size, Integer attempt, LocalDateTime nidxCreated) {
       this.datasetKey = datasetKey;
       this.size = size;
       this.attempt = attempt;
+      this.nidxCreated = nidxCreated;
     }
   }
 
   public MatcherMetadata metadata(int datasetKey) {
-    if (matchers.containsKey(datasetKey)) {
-      var m = matchers.get(datasetKey);
-      return new MatcherMetadata(datasetKey, m.store().size(), readStoredAttempt(datasetKey));
+    var m = matchers.get(datasetKey);
+    if (m != null && m.tryAcquire()) { // hold a lease so the store can't be closed while we read its size
+      try {
+        return new MatcherMetadata(datasetKey, m.store().size(), readStoredAttempt(datasetKey), readStoredNidxCreated(datasetKey));
+      } finally {
+        m.close();
+      }
     }
     return null;
   }
 
-  public FactoryMetadata metadata(boolean decorate) {
-    List<MatcherMetadata> matchers = new ArrayList<>();
-    for (var e : this.matchers.entrySet()) {
-      matchers.add(new MatcherMetadata(e.getKey(), e.getValue().store().size(), readStoredAttempt(e.getKey())));
-    }
-    // decorate with dataset metadata
-    if (decorate) {
-      try (SqlSession session = factory.openSession()) {
-        var dm = session.getMapper(DatasetMapper.class);
-        for (MatcherMetadata m : matchers) {
-          m.dataset = dm.getSimple(m.datasetKey);
-        }
+  /** Removes stray {@code .building}/{@code .old} dirs left behind by a crashed or interrupted swap. */
+  private void cleanupTempDirs() {
+    if (dir == null || !dir.isDirectory()) return;
+    String[] names = dir.list();
+    if (names == null) return;
+    for (String n : names) {
+      if (MatchingConfig.isTransientDir(n)) {
+        LOG.info("Removing stray matcher temp dir {}", n);
+        FileUtils.deleteQuietly(new File(dir, n));
       }
     }
-    // sort by datasetKey
-    Collections.sort(matchers);
-    return new FactoryMetadata(matchers);
-  }
-
-  public int reload() {
-    close();
-    loadFromFS();
-    return matchers.size();
-  }
-
-  /**
-   * Removes matchers whose stored Dataset attempt (from the sidecar JSON) no longer matches
-   * the current attempt in the database. Does not trigger rebuilds — callers get a fresh
-   * matcher lazily on next use.
-   *
-   * @return number of stale matchers removed
-   */
-  public int cleanup() {
-    int removed = 0;
-    try (SqlSession session = factory.openSession()) {
-      var dm = session.getMapper(DatasetMapper.class);
-      for (int key : listFS()) {
-        var sidecar = cfg.datasetJson(key);
-        if (!sidecar.exists()) continue;
-        try {
-          var opt = ColdpMetadataParser.readJSON(new FileInputStream(sidecar));
-          if (opt.isEmpty()) continue;
-          Integer stored = opt.get().getDataset().getAttempt();
-          Dataset current = dm.get(key);
-          if (stored != null && current != null && !stored.equals(current.getAttempt())) {
-            LOG.info("Removing stale matcher for dataset {}: stored attempt {} != current {}",
-              key, stored, current.getAttempt());
-            remove(key);
-            removed++;
-          }
-        } catch (Exception e) {
-          LOG.warn("Could not validate sidecar for dataset {}, skipping", key, e);
-        }
-      }
-    }
-    return removed;
   }
 
   private List<Integer> listFS() {
     List<Integer> keys = new ArrayList<>();
     if (dir != null && dir.isDirectory()) {
-      FilenameFilter ff = cfg.chronicle ? DirectoryFileFilter.INSTANCE : FileFileFilter.INSTANCE;
-      String[] files = dir.list(ff);
-      for (var fn : files) {
-        try {
-          int key = Integer.parseInt(fn);
-          keys.add(key);
-        } catch (NumberFormatException e) {
-          // ignore
+      String[] files = dir.list(DirectoryFileFilter.INSTANCE);
+      if (files != null) {
+        for (var fn : files) {
+          try {
+            keys.add(Integer.parseInt(fn));
+          } catch (NumberFormatException e) {
+            // ignore non-dataset entries
+          }
         }
       }
     }
@@ -572,6 +627,31 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   @Override
+  public void start() {
+    started = true;
+    if (dir != null) {
+      cleanupTempDirs(); // remove crash-leftover .building/.old dirs at startup, before any builds run
+      executor.submit(new ReconcileJob(Users.MATCHER));
+    }
+  }
+
+  @Override
+  public void stop() {
+    close();
+    started = false;
+  }
+
+  @Override
+  public boolean hasStarted() {
+    return started;
+  }
+
+  private class ReconcileJob extends BackgroundJob {
+    ReconcileJob(int userKey) { super(userKey); }
+    @Override public void execute() { reconcile(false, getUserKey()); }
+    @Override public boolean isDuplicate(BackgroundJob other) { return other instanceof ReconcileJob; }
+  }
+
   public void close() {
     for (UsageMatcher m : matchers.values()) {
       try {

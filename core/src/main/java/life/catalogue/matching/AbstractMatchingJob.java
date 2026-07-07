@@ -65,6 +65,10 @@ public abstract class AbstractMatchingJob extends DatasetJob {
 
   protected final MatchingConfig cfg;
   private final UsageMatcher matcher;
+  // whether this job acquired the matcher from the factory and must release it when done (vs. a shared,
+  // externally-owned matcher like the standalone matching server's fixed instance)
+  private final boolean ownsMatcher;
+  private final java.util.concurrent.atomic.AtomicBoolean matcherReleased = new java.util.concurrent.atomic.AtomicBoolean(false);
   private final MatchingUtils utils;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   // job specifics
@@ -74,7 +78,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   private List<? extends SimpleName> rootClassification;
 
   public AbstractMatchingJob(MatchingRequest req, int userKey, Dataset dataset, List<? extends SimpleName> rootClassification,
-                             UsageMatcher matcher, MatchingConfig cfg, NameIndex nidx) {
+                             UsageMatcher matcher, boolean ownsMatcher, MatchingConfig cfg, NameIndex nidx) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
     this.logToFile = true;
     this.cfg = cfg;
@@ -83,6 +87,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
     this.result = new JobResult(getKey());
     this.dataset = dataset;
     this.matcher = matcher;
+    this.ownsMatcher = ownsMatcher;
     this.rootClassification = rootClassification;
   }
 
@@ -274,6 +279,21 @@ public abstract class AbstractMatchingJob extends DatasetJob {
     }
   }
 
+  /**
+   * Releases the matcher lease we acquired for this job (no-op for a caller-owned matcher). Idempotent and
+   * safe to call from the job's lifecycle finally and from the creator on a failed submit, so the shared
+   * store's lease is balanced on every exit path.
+   */
+  public void releaseMatcher() {
+    if (ownsMatcher && matcherReleased.compareAndSet(false, true)) {
+      try {
+        matcher.close();
+      } catch (Exception ex) {
+        LOG.warn("Failed to release matcher for dataset {}", matcher.datasetKey, ex);
+      }
+    }
+  }
+
   private UsageMatchWithOriginal match(IssueName n) {
     UsageMatch match = interpretAndMatch(n.name, MatchingUtils.toSimpleNameCached(n.name.getClassification()), n.issues, false, interpreter, utils, matcher);
     return new UsageMatchWithOriginal(match, n.issues, n.name, n.line);
@@ -291,7 +311,8 @@ public abstract class AbstractMatchingJob extends DatasetJob {
         nu.getName().setRank(null);
       }
       var snc = utils.toSimpleNameClassified(nu, classification);
-      match = matcher.match(snc, false, verbose);
+      // external match requests fall back to a higher rank match when the name itself cannot be matched
+      match = matcher.match(snc, false, verbose, true);
     } else {
       match = UsageMatch.empty(0);
       issues.add(Issue.UNPARSABLE_NAME);

@@ -188,6 +188,9 @@
       <if test="req.gbifPublisherKeyExclusion != null and !req.gbifPublisherKeyExclusion.isEmpty()">
         AND (d.gbif_publisher_key IS NULL OR d.gbif_publisher_key NOT IN <foreach item="pk" collection="req.gbifPublisherKeyExclusion" open="(" separator="," close=")">#{pk}</foreach>)
       </if>
+      <if test="req.publisher != null">
+        AND lower(coalesce((d.publisher).organisation,(d.publisher).family)) = lower(#{req.publisher})
+      </if>
       <if test="req.license != null and !req.license.isEmpty()">
         AND d.license IN <foreach item="o" collection="req.license" open="(" separator="," close=")">#{o}::LICENSE</foreach>
       </if>
@@ -408,6 +411,24 @@
         AND (f_unaccent(alias) ILIKE f_unaccent($gbif$%${q}%$gbif$) OR f_unaccent(title) ILIKE f_unaccent($gbif$%${q}%$gbif$))
       </if>
     ORDER BY (f_unaccent(alias) ILIKE f_unaccent($gbif$%${q}%$gbif$)) DESC, alias NULLS LAST, title
+    LIMIT #{limit}
+  </select>
+
+  <select id="suggestPublishers" resultType="life.catalogue.db.type2.StringCount">
+    SELECT coalesce((d.publisher).organisation,(d.publisher).family) AS key,
+           count(*) AS count
+    FROM dataset d <include refid="FROM_PROJ"/>
+    WHERE d.deleted IS NULL AND <include refid="NOT_TEMP"/>
+      AND coalesce((d.publisher).organisation,(d.publisher).family) IS NOT NULL
+      <if test="q != null">
+        AND f_unaccent(coalesce((d.publisher).organisation,(d.publisher).family)) ILIKE f_unaccent('%' || #{q} || '%')
+      </if>
+      <include refid="PRIVATE">
+        <property name="alias" value="d"/>
+        <property name="projAlias" value="proj"/>
+      </include>
+    GROUP BY coalesce((d.publisher).organisation,(d.publisher).family)
+    ORDER BY count(*) DESC, coalesce((d.publisher).organisation,(d.publisher).family)
     LIMIT #{limit}
   </select>
 
@@ -660,10 +681,14 @@
   </select>
 
   <select id="listGBIF" resultMap="datasetGBIFResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>, d.gbif_key
+    SELECT <include refid="SELECT_SIMPLE"/>, d.gbif_key, d.gbif_modified
     FROM dataset d
     WHERE d.deleted IS NULL AND d.gbif_key IS NOT NULL
   </select>
+
+  <update id="updateGbifModified">
+    UPDATE dataset SET gbif_modified = #{modified} WHERE key = #{key}
+  </update>
 
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">

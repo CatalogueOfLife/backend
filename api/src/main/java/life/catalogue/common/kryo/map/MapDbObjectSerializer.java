@@ -9,6 +9,8 @@ import org.mapdb.DataInput2;
 import org.mapdb.DataOutput2;
 import org.mapdb.serializer.GroupSerializerObjectArray;
 
+import life.catalogue.common.kryo.Pools;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -32,9 +34,7 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
   
   @Override
   public void serialize(DataOutput2 out, T value) throws IOException {
-    Kryo kryo = null;
-    try {
-      kryo = pool.obtain();
+    Pools.run(pool, kryo -> {
       ByteArrayOutputStream buffer = new ByteArrayOutputStream(bufferSize);
       Output output = new Output(buffer, bufferSize);
       kryo.writeObject(output, value);
@@ -42,28 +42,18 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
       byte[] bytes = buffer.toByteArray();
       DataIO.packInt(out, bytes.length);
       out.write(bytes);
-    } finally {
-      if (kryo != null) {
-        pool.free(kryo);
-      }
-    }
+    });
   }
-  
+
   @Override
   public T deserialize(DataInput2 in, int available) throws IOException {
     if (available == 0) return null;
-    Kryo kryo = null;
-    try {
-      kryo = pool.obtain();
+    return Pools.with(pool, kryo -> {
       int size = DataIO.unpackInt(in);
       byte[] ret = new byte[size];
       in.readFully(ret);
       return kryo.readObject(new Input(ret), clazz);
-    } finally {
-      if (kryo != null) {
-        pool.free(kryo);
-      }
-    }
+    });
   }
   
   @Override

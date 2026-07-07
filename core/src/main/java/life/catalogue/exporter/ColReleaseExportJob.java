@@ -60,6 +60,9 @@ public class ColReleaseExportJob extends DatasetBlockingJob {
     LOG.info("Starting COL export job for dataset {} in format {}", datasetKey, format);
     exportJob.skipLock();
     exportJob.run();
+    // the inner export swallows its own InterruptedException, but the thread interrupt
+    // flag stays set - re-check so we don't copy an incomplete archive after a cancel
+    checkIfCancelled();
 
     LOG.info("Copy {} export file from {} to COL download server", format, exportJob.archive);
     copyToCol();

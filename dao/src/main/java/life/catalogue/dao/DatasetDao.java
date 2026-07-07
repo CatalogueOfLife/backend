@@ -14,6 +14,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.mapper.*;
+import life.catalogue.db.type2.StringCount;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
@@ -361,6 +362,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       List<Dataset> result = simple ? dm.searchSimple(req, userKey, page) : dm.search(req, userKey, page);
       return new ResultPage<>(page, result, () -> dm.count(req, userKey));
+    }
+  }
+
+  public List<StringCount> suggestPublishers(String q, int limit, @Nullable Integer userKey) {
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(DatasetMapper.class).suggestPublishers(q, limit, userKey);
     }
   }
 

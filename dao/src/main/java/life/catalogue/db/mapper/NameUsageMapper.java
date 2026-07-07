@@ -148,6 +148,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   int count(@Param("datasetKey") int datasetKey);
 
+  /**
+   * @return the number of distinct canonical name index ids the matched usages of a dataset resolve to.
+   * Used to size the canonical inverted index of a persistent usage matcher.
+   */
+  int countDistinctCanonical(@Param("datasetKey") int datasetKey);
+
   List<SimpleNameWithDecision> listByRegex(@Param("datasetKey") int datasetKey,
                                            @Param("projectKey") Integer projectKey,
                                            @Param("regex") String regex,

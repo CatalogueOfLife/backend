@@ -30,6 +30,12 @@ public class GithubConfig {
 
   public Tagging xr = new Tagging();
 
+  /**
+   * Tagging applied to dataset level feedback issues.
+   * Defaults to the base tagging when its labels are not configured.
+   */
+  public Tagging dataset = new Tagging();
+
   public URI issueURI() {
     return api.resolve("/repos/"+organisation+"/"+repository+"/issues");
   }
@@ -54,6 +60,7 @@ public class GithubConfig {
       ", organisation='" + organisation + '\'' +
       ", repository='" + repository + '\'' +
       ", base=" + base +
-      ", xr=" + xr;
+      ", xr=" + xr +
+      ", dataset=" + dataset;
   }
 }

@@ -333,6 +333,12 @@
     WHERE dataset_key = #{datasetKey}
   </select>
 
+  <select id="countDistinctCanonical" resultType="integer">
+    SELECT count(DISTINCT ni.canonical_id)
+    FROM <include refid="FROM_NIDX_BASE"/>
+    WHERE nm.dataset_key = #{datasetKey}
+  </select>
+
   <select id="get" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

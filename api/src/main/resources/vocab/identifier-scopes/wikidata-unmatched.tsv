@@ -1,0 +1,455 @@
+wikidataProperty	label	formatterUrl	formatRegex
+P4896	3D model	https://commons.wikimedia.org/wiki/File:$1	
+P12774	A Dictionary of Biology ID	https://www.oxfordreference.com/display/10.1093/acref/9780198821489.001.0001/acref-9780198821489-e-$1	[1-9][0-9]*
+P13757	A Dictionary of Dentistry entry ID	https://www.oxfordreference.com/display/10.1093/acref/9780191828621.001.0001/acref-9780191828621-e-$1	
+P13846	A Dictionary of Food and Nutrition entry ID	https://www.oxfordreference.com/display/10.1093/acref/9780191752391.001.0001/acref-9780191752391-e-$1	
+P13735	A Dictionary of Genetics entry ID	https://www.oxfordreference.com/display/10.1093/acref/9780199766444.001.0001/acref-9780199766444-e-$1	
+P13266	A Dictionary of Geology and Earth Sciences entry ID	https://www.oxfordreference.com/display/10.1093/acref/9780198839033.001.0001/acref-9780198839033-e-$1	
+P12788	A Dictionary of Plant Sciences ID	https://www.oxfordreference.com/display/10.1093/acref/9780198833338.001.0001/acref-9780198833338-e-$1	[1-9][0-9]*
+P13719	A Dictionary of Public Health entry ID	https://www.oxfordreference.com/display/10.1093/acref/9780191844386.001.0001/acref-9780191844386-e-$1	
+P12789	A Dictionary of Zoology ID	https://www.oxfordreference.com/display/10.1093/acref/9780198845089.001.0001/acref-9780198845089-e-$1	[1-9][0-9]*
+P9084	ABC News topic ID	https://www.abc.net.au/news/topic/$1	
+P10707	AccessScience ID	https://www.accessscience.com/content/$1	(biography|video|video-biography)?[\/]?(an|BR|m|VB|YB)*\d{4,7}
+P10920	AEDA subject keyword ID	http://www.environmentdata.org/archive/vocabpref:$1	
+P6334	Agence photo RMN package ID	https://www.photo.rmn.fr/Package/$1	
+P9294	AIATSIS Subject Thesaurus ID	https://www1.aiatsis.gov.au/subject/mtw.exe?k=default&l=60&linkType=term&w=$1&n=1&s=5&t=2	
+P426	aircraft registration	https://www.airport-data.com/aircraft/$1.html	[A-Z0-9- ]+
+P6821	Alvin ID	https://www.alvin-portal.org/alvin/view.jsf?pid=$1	^alvin-(record|person|place|organisation|work):[1-9]\d{0,6}$
+P11293	Amazon.com browse node	https://www.amazon.com/b?node=$1	
+P8540	American Folklore Society Ethnographic Thesaurus ID	http://id.loc.gov/vocabulary/ethnographicTerms/$1	
+P11483	Anadolu Agency infographic ID	https://www.aa.com.tr/tr/info/infografik/$1	[1-9]\d*
+P7870	Analysis & Policy Observatory term ID	https://apo.org.au/taxonomy/term/$1	^[1-9]\d*$
+P14269	Anarâš aavis topic ID	https://www.anarasaavis.fi/coovdasaanih/$1	[a-z0-9]*
+P8785	AniDB tag ID	https://anidb.net/tag/$1	
+P13909	Antique Chinese and Japanese Porcelain Dictionary and Glossary of Terms entry	https://gotheborg.com/glossary/$1.shtml	[a-zA-Z0-9\-\_\s]+
+P5922	ANZSRC 2008 FoR ID	https://purl.org/au-research/vocabulary/anzsrc-for/2008/$1	\d{2,6}
+P8529	ANZSRC 2020 FoR ID	https://linked.data.gov.au/def/anzsrc-for/2020/$1	
+P13750	Arab Encyclopedia concept ID	https://arab-ency.com.sy/details/$1	[1-9]\d*
+P6771	Arabic Ontology concept ID	https://ontology.birzeit.edu/concept/$1	^[1-9]\d{0,7}$
+P12451	Arabic Ontology lexical concept ID	https://ontology.birzeit.edu/lexicalconcept/$1	[0-9]+
+P5604	archINFORM keyword ID	https://www.archinform.net/stich/$1.htm	[1-9]\d{0,3}
+P3059	Architectuurgids building ID	https://www.architectuurgids.nl/project/item/prj_id/$1	[1-9]\d*
+P8419	Archive of Our Own tag	https://wikidata-externalid-url.toolforge.org/?p=8419&url_prefix=https://archiveofourown.org/tags/&id=$1	
+P1870	ARK Name Assigning Authority Number	https://n2t.net/ark:/$1	\d{5}
+P9629	Armeniapedia ID	https://www.armeniapedia.org/index.php?curid=$1	
+P1014	Art & Architecture Thesaurus ID	https://www.getty.edu/vow/AATFullDisplay?find=&logic=AND&note=&subjectid=$1	300\d{6}
+P10187	Artstor artwork ID	https://www.jstor.org/stable/community.$1	
+P5198	ASC Leiden Thesaurus ID	http://thesaurus.ascleiden.nl/thes.php?rid=$1	
+P7772	Atlas Obscura place ID	https://atlasobscura.com/places/$1	^[a-z\-\d]+$
+P7033	Australian Educational Vocabulary ID	https://vocabulary.curriculum.edu.au/$1.html	(scot|technicalRequirement|languageModes|schoolLevel|framework|studentActivity|crossCurriculum)/[\w0-9-]*
+P3550	Australian Register of Therapeutic Goods ID	https://tga-search.clients.funnelback.com/s/search.html?collection=tga-artg&profile=record&meta_i=$1	
+P9497	Australian Thesaurus of Education Descriptors ID	https://cunningham.acer.edu.au/multites2007/mtwdk.exe?k=default&l=60&w=$1&n=1&s=5&t=2	
+P13059	Babelio subject ID	https://www.babelio.com/livres-/-/$1	[1-9]\d*
+P2581	BabelNet ID	https://babelnet.org/synset?id=bn%$1&lang=EN	\d{8}[anv]
+P9558	Badok ID	https://www.badok.eus/euskal-musika/$1	
+P11196	Baidu Tieba name	https://tieba.baidu.com/f?kw=$1	[^\s#&\?]+
+P4254	Banglapedia ID (Bengali)	http://bn.banglapedia.org/index.php/$1	
+P4255	Banglapedia ID (English)	http://en.banglapedia.org/index.php?title=$1	
+P9222	bashenc.online ID	http://bashenc.online/ba/articles/$1/	
+P5748	Basisklassifikation	http://uri.gbv.de/terminology/bk/$1	0|1-2|3-4|5|7-8|[01234578]\d(\.\d{2})?
+P6200	BBC News topic ID	https://www.bbc.co.uk/news/topics/$1	[a-z0-9]{12}
+P1617	BBC Things ID	https://www.bbc.co.uk/things/$1	[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}
+P2843	Benezit ID	https://doi.org/10.1093/benz/9780199773787.article.$1	
+P6296	bgm.tv character ID	https://bgm.tv/character/$1	[1-9]\d*
+P4081	BHL creator ID	https://www.biodiversitylibrary.org/creator/$1	[1-9]\d*
+P4440	Biblioteca Nacional de México ID	https://catalogo.iib.unam.mx/F/?func=direct&local_base=BNM10&doc_number=$1	\d{9}
+P268	Bibliothèque nationale de France ID	https://catalogue.bnf.fr/ark:/12148/cb$1	\d{8,9}[0-9bcdfghjkmnpqrstvwxz]
+P9885	Bing entity ID	https://www.bing.com/search?FORM=SNAPST&q=*&filters=sid%3a%22$1%22	[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}
+P9521	Biology Online Biology Dictionary entry	https://www.biologyonline.com/dictionary/$1	
+P11029	BioNames author ID	https://bionames.org/authors/$1	[\p{Latin}0-9, -]+
+P6944	Bionomia ID	https://bionomia.net/$1	(Q\d+)|(\d{4}-\d{4}-\d{4}-\d{3}[0-9X])
+P508	BNCF Thesaurus ID	https://thes.bncf.firenze.sbn.it/termine.php?id=$1	\d{1,5}
+P10771	Bookbinding and the Conservation of Books term ID	https://cool.culturalheritage.org/don/dt/$1.html	dt[0-9]{4}
+P13390	booru tag	https://lhulbert.github.io/booruhub/?tag=$1	
+P5501	Brenda Tissue Ontology ID	https://www.brenda-enzymes.org/ontology.php?ontology_id=3&id_go=$1	BTO:\d+
+P6564	Brilliant Wiki ID	https://brilliant.org/wiki/$1/	[a-z0-9-]+(?:-[1-9])?
+P11762	Britannica Kids kids level article ID	https://kids.britannica.com/kids/article/$1	\d{6}
+P11765	Britannica Kids scholars level article ID	https://kids.britannica.com/scholars/article/$1	\d{4,6}
+P11764	Britannica Kids students level article ID	https://kids.britannica.com/students/article/$1	\d{6}
+P1711	British Museum person or institution ID	https://www.britishmuseum.org/collection/term/BIOG$1	[1-9][0-9]{0,5}
+P5019	Brockhaus Enzyklopädie online ID	https://brockhaus.de/ecs/enzy/article/$1	[^\s]+
+P4740	Brooklyn Museum artwork ID	https://www.brooklynmuseum.org/opencollection/objects/$1	[1-9]\d*
+P13329	Brussels Inventory of Natural Heritage tree ID	https://sites.heritage.brussels/fr/trees/$1	[1-9]\d*
+P7524	CA PROP 65 ID	https://oehha.ca.gov/proposition-65/chemicals/$1	^[^\s]+$
+P7685	CALS Encyclopedia of Arkansas ID	https://encyclopediaofarkansas.net/entries/$1/	
+P7889	Cambridge Encyclopedia of Anthropology ID	https://www.anthroencyclopedia.com/entry/$1	
+P5395	Canadian Encyclopedia article ID	https://www.thecanadianencyclopedia.ca/en/article/$1/	[\w\d]+(-[\w\d]+)*
+P231	CAS Registry Number	https://chem.nlm.nih.gov/chemidplus/rn/$1	[1-9]\d{1,6}-\d{2}-\d
+P3241	Catholic Encyclopedia ID	https://www.newadvent.org/cathen/$1.htm	[0-9]+[a-z]
+P14483	Catholic Encyclopedia Wikitólica ID	https://www.wikitolica.com/$1/	^[a-z0-9]/[a-z0-9-]+$
+P1890	CCAB ID	http://www.bncatalogo.cl/F/?func=direct&local_base=red10&doc_number=$1	\d{9}
+P3289	Cellosaurus ID	https://www.cellosaurus.org/$1	CVCL_[A-Z\d][A-Z\d][A-Z\d][A-Z\d]
+P13078	Cihai encyclopedia entry ID	https://www.cihai.com.cn/detail?docId=$1&docLibId=72	
+P94	coat of arms image	https://commons.wikimedia.org/wiki/File:$1	(?i).+\.(svg|png|jpg|jpeg|gif|tif|tiff)|
+P5905	Comic Vine ID	https://comicvine.gamespot.com/wd/$1/	40(00|05|10|15|20|25|40|45|50|55|60|70|75)-\d+
+P5417	Common Procurement Vocabulary code	https://op.europa.eu/en/web/eu-vocabularies/concept/-/resource?uri=http://data.europa.eu/cpv/cpv/$1	[0-9]{8}
+P373	Commons category	https://commons.wikimedia.org/wiki/Category:$1	[^{}\[\]<>]+
+P935	Commons gallery	https://commons.wikimedia.org/wiki/$1	
+P8014	Compendium heroicum ID	https://www.compendium-heroicum.de/lemma/$1	[a-z](-[a-z])*
+P11473	Concepticon concept set ID	https://concepticon.clld.org/parameters/$1	
+P3073	CosIng number	https://ec.europa.eu/growth/tools-databases/cosing/index.cfm?fuseaction=search.details_v2&id=$1	\d*
+P5551	Courrier international topic ID	https://www.courrierinternational.com/sujet/$1	[a-z0-9]+(-[a-z0-9]+)*
+P11217	Culinary Heritage of Switzerland ID	https://www.patrimoineculinaire.ch/Produits#$1	[1-9]\d*
+P12144	Cultural Heritage Online (Japan) heritage ID	https://bunka.nii.ac.jp/heritages/detail/$1	
+P3569	Cultureel Woordenboek ID	https://www.cultureelwoordenboek.nl/$1	[^\s]+
+P9287	Cyprus Bibliography ID	https://biblio.cypruslibrary.gov.cy/cgi-bin/koha/opac-authoritiesdetail.pl?marc=1&authid=$1	[1-9]\d*
+P3509	Dagens Nyheter topic ID	https://www.dn.se/om/$1/	[a-z0-9\-]
+P13236	Danbooru tag	https://safebooru.donmai.us/wiki_pages/$1	
+P9336	Das wissenschaftliche Bibellexikon im Internet ID	https://www.bibelwissenschaft.de/stichwort/$1	
+P5184	Daum Encyclopedia ID	https://100.daum.net/encyclopedia/view/$1	[a-zA-Z0-9]+
+P6706	De Agostini ID	https://www.sapere.it/enciclopedia/$1.html	
+P10234	Der Spiegel topic ID	https://www.spiegel.de/thema/$1	
+P1036	Dewey Decimal Classification	http://dewey.info/class/$1/	\d{3}|\d{3}\.\d+|[12456]--\d+|3[ABC]?--\d+
+P13279	Dictionary of Late Antiquity ID	https://www.oxfordreference.com/display/10.1093/acref/9780198662778.001.0001/acref-9780198662778-e-$1	[1-9]\d*
+P12633	Dictionary of Qur'anic Usage ID	https://referenceworks.brill.com/display/entries/DQUO/$1.xml	
+P3794	Dictionary of Sydney ID	https://dictionaryofsydney.org/$1	(artefact|building|event|natural_feature|organisation|person|place|structure|entry)\/[a-z-_0-9().é]{3,200}
+P13797	Dimensions.com element ID	https://www.dimensions.com/element/$1	
+P6557	Dimensions.guide ID	https://www.dimensions.guide/element/$1	
+P1662	DOI prefix	https://doi.org/$1	10(\.[1-9]\d*)+
+P4272	DPLA subject term	"https://dp.la/search?subject=""$1"""	
+P6849	DR topic ID	https://web.archive.org/web/*/https://www.dr.dk/tag/$1	[^\s\/]+
+P3117	DSSTox substance ID	https://comptox.epa.gov/dashboard/chemical/details/$1	DTXSID\d{7,9}
+P7695	e-WV: The West Virginia Encyclopedia ID	https://www.wvencyclopedia.org/articles/$1	^\d+$
+P1900	EAGLE id	https://www.eagle-network.eu/voc/$1.html	(dates|decor|material|objtyp|typeins|writing)\/lod\/[1-9]\d*
+P232	EC number	https://www.echa.europa.eu/information-on-chemicals/ec-inventory/-/dislist/details/$1	(\d{3}-){2}\d
+P2566	ECHA Substance Infocard ID	https://www.echa.europa.eu/substance-information/-/substanceinfo/$1	\d{3}\.\d{3}\.\d{3}
+P8092	EcuRed article	http://www.ecured.cu/$1	\S{1,400}
+P14357	EDAM Ontology ID	http://edamontology.org/$1	(data|format|operation|topic)_[0-9]{4}
+P8826	edition humboldt digital ID	https://edition-humboldt.de/$1	H\d{7}
+P13297	El Watan topic ID	https://elwatan-dz.com/tag/$1	
+P4746	Elhuyar ZTH ID	https://zthiztegia.elhuyar.eus/kontzeptua/$1	
+P12107	ELSST Thesaurus ID (Version 4 - 2023)	https://elsst.cessda.eu/id/4/$1	^[\da-f]{8}\-(?:[\da-f]{4}\-){3}[\da-f]{12}$
+P9983	Enciclopedia dei ragazzi ID	https://www.treccani.it/enciclopedia/$1_(Enciclopedia-dei-ragazzi)	[a-z]+(-[a-z]+)*
+P13613	Enciclopedia Galega Universal ID	https://egu.xunta.gal/gl/termo/$1	[1-9][0-9]*
+P1385	Enciclopédia Açoriana ID	https://www.culturacores.azores.gov.pt/ea/pesquisa/Default.aspx?id=$1	[1-9][0-9]{0,4}
+P8669	Encyclopaedia Beliana ID	https://beliana.sav.sk/heslo/$1	
+P9862	Encyclopaedia of Islam (second edition) ID	https://referenceworks.brill.com/display/entries/EIEO/$1.xml	
+P9879	Encyclopaedia of Islam (third edition) ID	https://referenceworks.brill.com/display/entries/EI3O/$1.xml	
+P12575	Encyclopaedia of the Qur'ān ID	https://referenceworks.brill.com/display/entries/EQO/$1.xml	
+P6010	Encyclopedia of Alabama ID	https://www.encyclopediaofalabama.org/article/$1	[a-z]-[1-9]\d*
+P9545	Encyclopedia of China (Second Edition) ID	https://h.bkzx.cn/item/$1	
+P10565	Encyclopedia of China (Third Edition) ID	https://www.zgbk.com/ecph/words?SiteID=1&ID=$1	
+P9281	Encyclopedia of Greater Philadelphia ID	https://philadelphiaencyclopedia.org/archive/$1	[a-z]+(-[a-z]+)*
+P9475	Encyclopedia of Korean Culture ID	http://encykorea.aks.ac.kr/Article/$1	
+P9304	Encyclopedia of Melbourne ID	https://www.emelbourne.net.au/biogs/$1.htm	
+P4613	Encyclopedia of Modern Ukraine ID	https://esu.com.ua/search_articles.php?id=$1	\d{1,6}
+P9013	Encyclopedia of Saami Culture ID	https://saamelaisensyklopedia.fi/wiki/$1	[^\s#]*
+P5357	Encyclopedia of Science Fiction ID	https://www.sf-encyclopedia.com/entry/$1	[a-z0-9_-]+
+P7686	Encyclopedia of the Great Plains ID	http://plainshumanities.unl.edu/encyclopedia/doc/egp.$1	
+P10530	Encyclopedia of Transbaikalia ID	http://ez.chita.ru/encycl/concepts/?id=$1	^[1-9]\d*$
+P8135	Encyclopedia of České Budějovice ID	https://encyklopedie.c-budejovice.cz/clanek/$1	
+P8377	Encyclopedia Tatarica (ru) Online ID	https://tatarica.org/ru/$1	
+P8373	Encyclopedia Tatarica (tt) Online ID	https://tatarica.org/tat/$1	
+P11850	Encyclopedia.com ID	https://www.encyclopedia.com/$1	
+P9288	EncyclopediaPR ID	https://enciclopediapr.org/content/$1	[a-z]+(-[a-z]+)+
+P8472	Encyclopedie berbere keyword ID	https://journals.openedition.org/encyclopedieberbere/$1	
+P1417	Encyclopædia Britannica Online ID	https://www.britannica.com/$1	(topic|facts|place|event|science|technology|plant|animal|biography|sports|art|money)(\/[^\s\/]+)+
+P3219	Encyclopædia Universalis ID	https://www.universalis.fr/encyclopedie/$1/	"[^\/+?.()_;""]{1,100}"
+P9198	Encyclopédie berbère article ID	https://journals.openedition.org/encyclopedieberbere/$1	^(9\d|[1-9]\d{2}|[1-3]\d{3})$
+P9292	Encyclopédie du patrimoine culturel de l'Amérique française ID (French)	http://www.ameriquefrancaise.org/fr/article-$1/	
+P351	Entrez Gene ID	https://www.ncbi.nlm.nih.gov/gene/$1	[1-9]\d{0,8}
+P9498	Enzyklopädie des europäischen Ostens ID	https://eeo.aau.at/eeo.aau.at/index$1.html	
+P13295	ERR keyword ID	https://www.err.ee/keyword/$1	
+P9162	Estonian Subject Thesaurus ID	https://ems.elnet.ee/tais.php?sona_id=$1	[1-9]\d{0,5}
+P11012	EU Knowledge Graph item ID	https://linkedopendata.eu/wiki/Item:$1	Q\d+
+P13526	Euronews topic ID	https://www.euronews.com/tag/$1	
+P12839	European Education Thesaurus ID	https://vocabularyserver.com/tee/en/index.php?tema=$1	[1-9][0-9]*
+P7704	Europeana entity	https://data.europeana.eu/$1	(place|agent|concept|organisation)/base/[1-9]\d+
+P5437	EuroVoc ID	https://op.europa.eu/en/web/eu-vocabularies/concept/-/resource?uri=http://eurovoc.europa.eu/$1	([1-9]\d*|[0-9a-z_]+)
+P8168	FactGrid item ID	https://database.factgrid.de/wiki/Item:$1	Q[1-9][0-9]*
+P6262	Fandom article ID	https://community.fandom.com/index.php?title=w:c:$1	
+P4073	Fandom wiki ID	https://$1.fandom.com/	
+P2163	FAST ID	https://id.worldcat.org/fast/$1	[1-9]\d{0,7}
+P9346	France 24 topic ID (French)	https://www.france24.com/fr/tag/$1/	
+P646	Freebase ID	https://g.co/kg$1	/m/0(?:[0-9b-df-hj-np-tv-z_]{2,7}|1[0123][0-9b-df-hj-np-tv-z_]{5,6})
+P12653	FürthWiki article ID	https://www.fuerthwiki.de/wiki/index.php?curid=$1	[\d]{1,6}
+P12143	Gaming Wiki Network article ID	https://wiki.gamingwikinetwork.org/wiki/$1	^[a-z\d]+\:(?!/|\:|\%[\dA-F]{2})(?![^\s]+\%[\dA-F]{2})[^\s]+$
+P13426	GCMD keyword ID	https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/$1	[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}
+P10690	GEMET ID	https://www.eionet.europa.eu/gemet/en/concept/$1	\d{1,5}
+P1566	GeoNames ID	https://www.geonames.org/$1	[1-9][0-9]{0,8}|
+P13691	Georgian Encyclopedia ID	https://www.georgianencyclopedia.ge/ka/form/$1	
+P5247	Giant Bomb ID (former scheme)	https://www.giantbomb.com/wd/$1/	30(00|05|10|15|25|30|35|40|45|55)-\d+
+P9100	GitHub topic	https://github.com/topics/$1	[a-z0-9\-]+
+P13397	GitLab topic ID	https://gitlab.com/explore/projects/topics/$1	^[\w\-\+\.\%\*=]{1,180}$
+P1394	Glottolog code	https://glottolog.org/resource/languoid/id/$1	
+P227	GND ID	https://d-nb.info/gnd/$1	1[01234]?\d{7}[0-9X]|[47]\d{6}-\d|[1-9]\d{0,7}-[0-9X]|3\d{7}[0-9X]
+P2326	GNS Unique Feature ID	https://geonames.nga.mil/gn-ags/rest/services/RESEARCH/GIS_OUTPUT/MapServer/0/query?outFields=*&where=ufi+%3D+$1	
+P7502	Golden ID	https://golden.com/wiki/$1	
+P10297	Google Arts & Culture entity ID	https://artsandculture.google.com/entity/$1	
+P4431	Google Doodle	https://www.google.com/doodles/$1	[a-z0-9]+(\-[a-z0-9]+)*
+P2671	Google Knowledge Graph ID	https://www.google.com/search?kgmid=$1	/g/1(?:[1258dhjnpqrstvwxyz][0-9b-df-hj-np-tv-z_]{6,8}|3b[013-9b-df-hj-np-tv-z_]{4}|3z[2356gmpqwz_]{6})
+P5337	Google News topics ID	https://news.google.com/topics/$1	[a-zA-Z0-9]+
+P11302	Google Product Taxonomy ID	https://lubianat.github.io/google_product_taxonomy_reference/$1	
+P9400	Government of Canada Core Subject Thesaurus ID	https://canada.multites.net/cst/default.asp?op=DISPTERM&searchString=$1&lang=ENG	[A-Z][a-z]+((-|\+|\s)[a-z]+)*
+P12385	Gran Enciclopèdia Catalana ID	https://www.enciclopedia.cat/gran-enciclopedia-catalana/$1	^[a-z]+(\-[a-z0-9\.]+)*$
+P1296	Gran Enciclopèdia Catalana ID (former scheme)	https://www.enciclopedia.cat/ec-gec-$1.xml	2?\d{7}
+P6412	Gran Enciclopèdia de la Música ID	https://www.enciclopedia.cat/EC-GEM-$1.xml	[1-9]\d{0,4}
+P9900	Grand dictionnaire terminologique ID	http://gdt.oqlf.gouv.qc.ca/ficheOqlf.aspx?Id_Fiche=$1	[1-9]\d{0,7}
+P1807	Great Aragonese Encyclopedia ID	https://web.archive.org/web/http://www.enciclopedia-aragonesa.com/voz.asp?voz_id=$1	0|[4-9]\d|[1-9]\d{2,3}|1\d{4}|20\d{3}
+P9826	Great Encyclopedia of Cyril and Methodius entry ID	https://megabook.ru/article/$1	
+P7388	Great Encyclopedia of Navarre ID	http://www.enciclopedianavarra.com/?page_id=$1	[1-9]\d*
+P4342	Great Norwegian Encyclopedia ID	https://wikidata-externalid-url.toolforge.org/?p=4342&url_prefix=https://snl.no/&id=$1	[^\s]+
+P2924	Great Russian Encyclopedia Online ID (2017)	https://web.archive.org/web/0/old.bigenc.ru/text/$1	[1-9]\d{5,6}
+P11514	Great Russian Encyclopedia portal ID	https://bigenc.ru/c/$1	[a-z0-9-]+
+P9765	Great Ukrainian Encyclopedia Online ID	https://vue.gov.ua/$1	
+P8406	Grove Art Online ID	https://doi.org/10.1093/gao/9781884446054.article.$1	
+P8957	GS1 GPC code	https://mh1.eu/gpctest/$1	
+P9827	GSSO ID	http://purl.obolibrary.org/obo/GSSO_$1	\d{6}
+P9863	Gujarati Vishwakosh entry	https://gujarativishwakosh.org/$1	
+P6015	Handbook of Texas ID	https://tshaonline.org/handbook/online/articles/$1	[a-z]{3}\d{2}
+P13772	Harper's tag	https://harpers.org/tag/$1/	
+P2572	hashtag	https://hashtags-hub.toolforge.org/$1	[A-Za-z0-9_]+
+P902	HDS ID	https://hls-dhs-dss.ch/fr/articles/$1	^\d{6}$
+P2272	Hederich encyclopedia article	http://www.zeno.org/Hederich-1770/A/$1	
+P7982	Hrvatska enciklopedija ID	https://www.enciklopedija.hr/Natuknica.aspx?ID=$1	
+P2062	HSDB ID	https://pubchem.ncbi.nlm.nih.gov/source/hsdb/$1	\d+
+P6467	Hulu series ID	https://www.hulu.com/series/$1	[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+P11662	IATE entry ID	https://iate.europa.eu/entry/result/$1	[1-9]\d*
+P2910	icon	https://commons.wikimedia.org/wiki/File:$1	(?i).+\.(jpg|jpeg|png|svg|tif|tiff|gif|webp)
+P1256	Iconclass notation	https://wikidata-externalid-url.toolforge.org/?url_prefix=http://iconclass.org/&id=$1	\d{1,2}(([A-IK-Z])\2?\d{0,5})?(\([\p{Lu}0-9 -]+[\p{L}0-9&., ':-]*\))?\d{0,4}(\(\+\d{1,5}\))?
+P269	IdRef ID	https://www.idref.fr/$1	(\d{8}[\dX]|)
+P345	IMDb ID	https://wikidata-externalid-url.toolforge.org/?p=345&url_prefix=https://www.imdb.com/&id=$1	ev\d{7}\/(19|20)\d{2}(\/[12])?|tt\d{7,8}\/characters\/nm\d{7,8}|(tt|ni|nm)\d{8}|(ch|co|ev|tt|nm)\d{7}|
+P11924	IMDb keyword	https://www.imdb.com/search/title/?keywords=$1	[a-z0-9\-\.]+
+P3895	INAO product ID	https://www.inao.gouv.fr/produit/$1	[1-9]\d*
+P5683	iNaturalist observation ID	https://www.inaturalist.org/observations/$1	[1-9]\d*
+P7471	iNaturalist place ID	https://www.inaturalist.org/places/$1	[1-9]\d*
+P2003	Instagram username	https://www.instagram.com/$1/	([0-9a-z_](?:(?:[0-9a-z_]|(?:\.(?!\.))){0,28}(?:[0-9a-z_]))?)
+P5063	Interlingual Index ID	http://globalwordnet.org/ili/$1	i[1-9]\d*
+P9069	International Standard Bible Encyclopedia ID	https://www.internationalstandardbible.com/$1.html	
+P724	Internet Archive ID	https://archive.org/details/$1	[0-9A-Za-z@][0-9A-Za-z\._-]{0,99}
+P2926	InterPro ID	http://www.ebi.ac.uk/interpro/entry/$1	IPR\d{6}
+P13388	Iowa State University Library Vocabularies ID	https://digital.lib.iastate.edu/isulv/items/$1.html	
+P5429	IPTC NewsCode	https://cv.iptc.org/newscodes/$1	[a-z]+/[A-Za-z0-9_-]+
+P3021	Iranica ID	https://www.iranicaonline.org/articles/$1	[a-z0-9-]+
+P8603	Istrapedia ID	https://www.istrapedia.hr/hr/natuknice/$1/wd	([1-2]\d{4}|[1-9]\d{0,3})
+P4399	Itaú Cultural ID	https://enciclopedia.itaucultural.org.br/$1	(pessoa|grupo|obra|evento|instituicao|termo)\d+/[a-z][\-a-z]*|(pessoas|grupos|obras|eventos|instituicoes|termos)/\d+-[a-z][\-a-z]*
+P13535	Itch.io tag ID	https://itch.io/games/$1	
+P13135	ITV News topic ID	https://www.itv.com/news/topic/$1	[a-z0-9-]+
+P7783	J-GLOBAL ID	https://jglobal.jst.go.jp/en/detail?JGLOBAL_ID=$1	
+P8189	J9U entity ID	https://www.nli.org.il/en/authorities/$1	98[0-9]{12}5171
+P4275	Japanese Database of National Cultural Properties ID	https://kunishitei.bunka.go.jp/heritage/detail/$1	(101|102|103|201|211|202|301|311|302|322|312|303|323|313|304|401|411|412|901|911)/\d{1,8}
+P8590	Jewish Encyclopedia ID	https://www.jewishencyclopedia.com/articles/$1	[1-9]\d*[#anchor\d]?
+P1438	Jewish Encyclopedia ID (Russian)	https://eleven.co.il/article/$1	\d{1,5}(#0\d{1,6})?
+P7712	Joconde domain ID	http://data.culture.fr/thesaurus/page/ark:/67717/$1/	T51-[1-9]\d{1,3}|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}
+P7786	Joconde epoch ID	http://data.culture.fr/thesaurus/page/ark:/67717/$1	T93-[1-9]\d{0,5}|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}
+P7844	Joconde object type ID	http://data.culture.fr/thesaurus/page/ark:/67717/$1	T505-[1-9]\d{1,5}|[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}
+P3827	JSTOR topic ID (archived)	https://www.jstor.org/topic/$1	[^\s\/]+
+P12907	JTA Sightseeing Database ID	https://www.mlit.go.jp/tagengo-db/en/$1.html	
+P7687	Kansapedia ID	https://www.kshs.org/kansapedia/wd/$1	^\d+$
+P8408	KBpedia ID	https://kbpedia.org/knowledge-graph/reference-concept/?uri=$1	
+P665	KEGG ID	https://www.kegg.jp/entry/$1	[A-Z]\d+
+P6573	Klexikon article ID	https://klexikon.zum.de/wiki/$1	[\D\S]+
+P13484	Know Your Meme slug	https://knowyourmeme.com/memes/$1	
+P6385	Krugosvet article (archived)	https://web.archive.org/web/2025/https://www.krugosvet.ru/enc/$1	(?:[A-Za-z_-]+\/){1,}[^.]+(?:\.html)?
+P11729	Kulturenvanteri monument ID	https://kulturenvanteri.com/yer/?p=$1	^\d+$
+P1248	KulturNav-ID	https://kulturnav.org/$1	[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}
+P13255	L'Humanité topic ID	https://www.humanite.fr/mot-cle/$1	
+P6058	Larousse ID	https://www.larousse.fr/encyclopedie/$1	[-\w]*\/[-\w_ÀàâãäÉéÈèêëçïîñńüłœöôøα]+\/[1-9]\d*
+P6870	Latvian National Encyclopedia Online ID	https://enciklopedija.lv/skirklis/$1	[1-9]\d*
+P6621	Le Figaro tag ID	https://www.lefigaro.fr/tag/$1	
+P3612	Le Monde diplomatique subject ID	https://www.monde-diplomatique.fr/index/$1	(sujet|pays)\/[\da-z\+]+
+P920	LEM ID	http://id.sgcb.mcu.es/Autoridades/$1/concept.html	LEM\d{9}
+P13346	LEMAC ID	http://lemac.sgcb.mcu.es/Autoridades/$1/concept	
+P13485	LEMAV ID	http://lemav.sgcb.mcu.es/Autoridades/$1/concept	LEMAV\d{10}
+P11947	Lemmy community ID	https://lemmy.world/c/$1	^([a-z0-9_]+(?:@[a-z0-9\.\-]+[a-z0-9]+)?)$
+P8313	Lex ID	https://wikidata-externalid-url.toolforge.org/?p=8313&url_prefix=https://lex.dk/&id=$1	
+P244	Library of Congress authority ID	https://id.loc.gov/authorities/$1	(cf|ct|gf|n|nb|nr|no|ns|sh|sj)([4-9][0-9]|00|01|20[0-2][0-9])[0-9]{6}
+P8647	Library of Congress Children's Subject Headings ID	https://id.loc.gov/authorities/childrensSubjects/$1	
+P1149	Library of Congress Classification	https://id.loc.gov/authorities/classification/$1	[A-Z]{1,3}(\d+(\.\d+)?( *\.[A-Z]{0,3}\d+([ -]\.?[A-Z]{0,3}\d+)?)?( *\d+[a-z]*)?)?-?([A-Z]{1,3}(\d+(\.\d+)?( *\.[A-Z]{0,3}\d+([ -]\.?[A-Z]{0,3}\d+)?)?( *\d+[a-z]*)?)?)?
+P5587	Libris-URI	https://libris.kb.se/katalogisering/$1	[a-z\d]{12,}$
+P12721	Lille norske leksikon ID	https://lille.snl.no/$1	[^\s]+
+P8605	Linked Open Data Cloud ID	https://lod-cloud.net/dataset/$1	^[a-zA-Z]{0,128}[\s\w\-]{0,128}$
+P12137	Linked Open Data Comune Firenze ID	https://linkedopendata.comune.fi.it/data/$1	
+P10789	Lithuania Minor Encyclopedia ID	https://www.mle.lt/straipsniai/$1	[a-z0-9-]+
+P6520	Lokalhistoriewiki.no article ID	https://lokalhistoriewiki.no/wiki/$1	
+P10242	Lur Encyclopedic Dictionary ID	https://www.euskadi.eus/web01-a2lurhiz/eu/contenidos/termino/_c$1.html	
+P7697	Maine: An Encyclopedia ID	https://maineanencyclopedia.com/$1/	
+P12860	Mapes de Patrimoni Cultural ID	https://patrimonicultural.diba.cat/element/$1	
+P9769	Marmiton ID	https://www.marmiton.org/recettes/index/categorie/$1?rcp=0	
+P8636	McClintock and Strong Biblical Cyclopedia ID	https://www.biblicalcyclopedia.com/$1.html	
+P11130	Merriam-Webster online dictionary entry	https://www.merriam-webster.com/dictionary/$1	[A-Za-zÀ-žḥǒ0-9-\/\,\.\' \-\#]+
+P6366	Microsoft Academic ID (discontinued)	https://academic.microsoft.com/v2/detail/$1	[1-9]\d{3,9}
+P11051	Mindat.org Glossary of Mineralogical Terms ID	https://www.mindat.org/glossary/$1	[A-Za-z0-9\-_.]+
+P11250	Miraheze article ID	https://meta.miraheze.org/wiki/mh:$1	
+P13332	Miraheze wiki ID	https://$1.miraheze.org/	
+P7688	Mississippi Encyclopedia ID	https://mississippiencyclopedia.org/entries/$1/	
+P6283	MNopedia ID	https://www.mnopedia.org/$1	
+P2716	montage image	https://commons.wikimedia.org/wiki/File:$1	(?i).+\.(jpg|jpeg|png|svg|tif|tiff|gif)
+P12597	museum-digital person/organization ID	https://term.museum-digital.de/md-de/persinst/$1	\d+
+P9957	museum-digital place ID	https://term.museum-digital.de/md-de/place/$1	
+P12596	museum-digital tag ID	https://term.museum-digital.de/md-de/tag/$1	\d+
+P434	MusicBrainz artist ID	https://musicbrainz.org/artist/$1	[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}
+P436	MusicBrainz release group ID	https://musicbrainz.org/release-group/$1	[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+P9422	Musikasten ID	https://www.musikasten.eus/taldea/$1	[a-z]+(-[a-z\d]+)*
+P13661	myCast talent ID	https://www.mycast.io/talent/$1	
+P7140	München Wiki article ID	https://www.muenchenwiki.de/wiki/$1	
+P8885	Namuwiki ID	https://namu.wiki/w/$1	
+P4684	National Gallery of Victoria artwork ID	https://www.ngv.vic.gov.au/explore/collection/work/$1/	[1-9]\d*
+P9495	National Historical Museums of Sweden ID	https://samlingar.shm.se/$1	[a-z]+\/[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}
+P949	National Library of Israel ID (old)	http://olduli.nli.org.il/F/?func=direct&local_base=nlx10&doc_number=$1	\d{9}
+P1368	National Library of Latvia ID	https://kopkatalogs.lv/F/?func=direct&local_base=lnc10&doc_number=$1	\d{9}
+P7293	National Library of Poland MMS ID	https://dbn.bn.org.pl/descriptor-details/$1	98[0-9]{10}5606
+P950	National Library of Spain SpMaBN ID (BNE v1.0)	https://datos.bne.es/resource/$1	XX\d{4,7}|a\d{4,7}|bima\d{10}|bimo\d{10}|bise\d{10}|bivi\d{10}|Mise\d{10}|Mimo\d{10}|Mima\d{10}
+P7472	National Marine Biological Library  ID	http://www.nmbl.org/cgi-bin/koha/opac-authoritiesdetail.pl?marc=1&authid=$1	[1-9]\d{0,6}
+P7506	Naver Encyclopedia ID	https://terms.naver.com/entry.nhn?docId=$1	\d+
+P2393	NCBI locus tag	https://www.ncbi.nlm.nih.gov/gene/?term=$1	[0-9A-Za-z_.\-()]{2,18}
+P11901	NCI Dictionary of Cancer Terms entry	https://www.cancer.gov/publications/dictionaries/cancer-terms/def/$1	[a-z0-9\-]+
+P11623	NCI Drug Dictionary ID	https://www.cancer.gov/publications/dictionaries/cancer-drug/def/$1	
+P349	NDL Authority ID	https://id.ndl.go.jp/auth/ndlna/$1	(a1|s)?[0-9]?\d{8}
+P3222	NE.se ID	https://www.ne.se/uppslagsverk/encyklopedi/lång/$1	[0-9a-zäöå-][0-9a-zäöå()-]*
+P1874	Netflix ID	https://www.netflix.com/title/$1	\d{6,8}
+P4903	New Georgia Encyclopedia ID	https://www.georgiaencyclopedia.org/articles/$1	
+P13300	New York Post topic ID	https://nypost.com/tag/$1	[a-z0-9]+(-[a-z0-9]+)*
+P3221	New York Times topic ID	https://www.nytimes.com/topic/$1	(|company/|destination/|organization/|person/|subject/)[a-z][a-z0-9-]{1,100}
+P12036	NHK ONE  News topic ID	https://news.web.nhk/newsweb/pl/news-nwa-topic-nationwide-$1	^000\d{4}$
+P6900	NicoNicoPedia ID	https://dic.nicovideo.jp/a/$1	
+P3451	nighttime view	https://commons.wikimedia.org/wiki/File:$1	
+P12253	NIWA article ID	https://niwanetwork.org/wiki/$1	^[a-z\d]+\:(?!/|\:|\%[\dA-F]{2})(?![^\s]+\%[\dA-F]{2})[^\s]+$
+P691	NL CR AUT ID	https://aleph.nkp.cz/F/?func=find-c&local_base=aut&ccl_term=ica=$1	[a-z]{2,4}[0-9]{2,14}
+P13906	NLAI ID	https://opac.nlai.ir/opac-prod/search/briefListSearch.do?command=FULL_VIEW&classType=2&id=$1	
+P2950	Nomisma ID	https://nomisma.org/id/$1	['().ABCEIMST\[\]_a-z0-9-]{2,58}
+P1245	OmegaWiki Defined Meaning	http://www.omegawiki.org/DefinedMeaning:($1)	[1-9][0-9]{0,6}
+P3479	Omni topic ID	https://www.aftonbladet.se/tagg/$1	([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}|[0-9a-f]{40})
+P7689	Online Nevada Encyclopedia ID	https://www.onlinenevada.org/articles/$1	
+P7305	Online PWN Encyclopedia ID	https://encyklopedia.pwn.pl/haslo/;$1.html	[1-9]\d+
+P1821	Open Food Facts food category ID	https://world.openfoodfacts.org/facets/categories/$1	
+P3847	Open Library subject ID	https://openlibrary.org/subjects/$1	((demographic|form|franchise|genre|mood|person|place|series|theme|time|universe):)?[^:\n]+
+P1430	Open Plaques subject ID	https://openplaques.org/people/$1	[1-9][0-9]{0,4}
+P3762	openMLOL author ID	https://www.medialibrary.it/media/ricercaopen.aspx?selcrea=$1	\d{1,6}
+P13786	OpenStreetMap key	https://taginfo.openstreetmap.org/keys/$1	[-\.:_0-9A-Za-z]{0,60}
+P11693	OpenStreetMap node ID	https://www.openstreetmap.org/node/$1	
+P402	OpenStreetMap relation ID	https://www.openstreetmap.org/relation/$1	[1-9][0-9]{0,9}
+P1282	OpenStreetMap tag	https://taginfo.openstreetmap.org/tags/$1	.{1,255}=.{1,255}|!Relation:.{1,255}|!Role:.{1,255}
+P9106	Oxford Classical Dictionary ID	https://doi.org/10.1093/acrefore/9780199381135.013.$1	
+P12582	Oxford Reference overview ID	https://www.oxfordreference.com/display/10.1093/oi/authority.$1	
+P4212	PACTOLS thesaurus ID	https://ark.frantiq.fr/ark:/26678/$1/	[0-9A-Za-z]?crt[0-9A-Za-z]{10}
+P1246	patent number	https://patents.google.com/patent/$1	[A-Z]{2}\d{1,12}
+P10757	Personality Database profile ID	https://personality-database.com/profile/$1	[1-9][0-9]*
+P11949	PesticideInfo chemical ID	https://www.pesticideinfo.org/chemical/$1	^PRI\d*$
+P11408	Pixiv Encyclopedia ID	https://dic.pixiv.net/a/$1	
+P10609	PLOS Thesaurus ID	https://bioportal.bioontology.org/ontologies/PLOSTHES/?p=classes&conceptid=http%3A%2F%2Flocalhost%2Fplosthes.$1	[0-9\-#%]+
+P10890	PM20 ware ID	https://pm20.zbw.eu/category/ware/i/$1	\d{6}
+P9407	Polignosi ID	https://www.polignosi.com/cgibin/hweb?-A=$1&-V=limmata	[1-9]\d*
+P9937	Postimees topic ID	https://www.postimees.ee/term/$1	
+P8349	Proleksis enciklopedija ID	https://proleksis.lzmk.hr/$1	
+P443	pronunciation audio	https://commons.wikimedia.org/wiki/File:$1	.+\.(ogg|oga|flac|wav|mp3)
+P9223	Provenio UUID	https://provenio.net/records/$1	[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}
+P1051	PSH ID	https://psh.techlib.cz/skos/PSH$1	[1-9]\d*
+P2153	PubChem Substance ID (SID)	https://pubchem.ncbi.nlm.nih.gov/substance/$1	[1-9]\d*
+P13166	PUG authority ID	https://oseegenius.unigre.it/pug/authResource?v=m21&uri=$1	
+P7820	Punjabipedia ID	https://wikidata-externalid-url.toolforge.org/?url=https%3A%2F%2Fpunjabipedia.org%2Ftopic.aspx%3Ftxt%3D%251&exp=%28.%2A%29&id=$1	
+P3417	Quora topic ID	https://www.quora.com/topic/$1	[^\s\/.?#&:;^$£€%§()]+
+P13161	Radio Algeria topic ID (French)	https://radioalgerie.dz/news/fr/tags/$1	
+P7775	RationalWiki ID	https://rationalwiki.org/wiki/$1	
+P12043	RAWG tag ID	https://rawg.io/tags/$1	^[a-z\d]+(\-[a-z\d]+)*$
+P11137	Reddit topic ID	https://www.reddit.com/t/$1	
+P6802	related image	https://commons.wikimedia.org/wiki/File:$1	(?i).+\.(jpg|jpeg|png|svg|tif|tiff|gif|webp|djvu|xcf)
+P3523	Rfam ID	https://rfam.xfam.org/family/$1	RF\d{5}
+P8519	RKD thesaurus ID	https://rkd.triply.cc/rkd/RKD-Knowledge-Graph/browser?resource=https://data.rkd.nl/thesaurus/$1	
+P5076	Römpp online ID	https://roempp.thieme.de/lexicon/$1	RD-\d\d-\d{5}
+P13140	Sage Social Science Thesaurus ID	https://concepts.sagepub.com/social-science/concept/$1	
+P8854	Salzburgwiki ID	https://www.sn.at/wiki/index.php?curid=$1	[1-9]\d{3,5}
+P1422	Sandrart.net person ID	http://ta.sandrart.net/en/person/view/$1	([1-9]\d{0,2}|[1-5]\d{3})
+P5555	schematic	https://commons.wikimedia.org/wiki/File:$1	
+P13781	ScholarGPS specialty ID	https://scholargps.com/specialties/$1/	
+P9526	Scholarpedia article ID	http://www.scholarpedia.org/article/$1	[A-Za-zÀ-ž0-9\_\-]+
+P10376	ScienceDirect topic ID	https://www.sciencedirect.com/topics/$1	(agricultural-and-biological-sciences|biochemistry-genetics-and-molecular-biology|chemistry|computer-science|earth-and-planetary-sciences|economics-econometrics-and-finance|engineering|food-science|immunology-and-microbiology|materials-science|mathematics|medicine-and-dentistry|neuroscience|nursing-and-health-professions|pharmacology-toxicology-and-pharmaceutical-science|physics-and-astronomy|psychology|social-sciences|veterinary-science-and-veterinary-medicine)/[a-z0-9]+(-[a-z\d]+)*
+P13162	scientific illustration	https://commons.wikimedia.org/wiki/File:$1	
+P158	seal image	https://commons.wikimedia.org/wiki/File:$1	(?i).+\.(svg|png|jpg|jpeg|gif|webp)|
+P2713	sectional view	https://commons.wikimedia.org/wiki/File:$1	(?i).+\.(jpg|jpeg|png|svg|tif|tiff|gif)
+P906	SELIBR ID	https://libris.kb.se/auth/$1	[1-9]\d{4,5}
+P6611	Semantic Scholar topic ID	https://www.semanticscholar.org/topic/$1	[1-9]\d*
+P3987	SHARE Catalogue author ID	https://catalogo.share-cat.unina.it/sharecat/searchNames?n_cluster_id=$1	\d{1,7}
+P12534	Singapore Infopedia ID	https://www.nlb.gov.sg/main/article-detail?cmsuuid=$1	^[\da-f]{8}\-(?:[\da-f]{4}\-){3}[\da-f]{12}$
+P8350	Singapore Infopedia ID (archived)	https://web.archive.org/web/http://eresources.nlb.gov.sg/infopedia/articles/$1.html	
+P7690	South Carolina Encyclopedia ID	http://www.scencyclopedia.org/sce/entries/$1/	
+P10077	Spanish Cultural Heritage thesauri ID	https://tesauros.cultura.gob.es/tesauros/$1	
+P10380	Springer Nature Subjects Taxonomy ID	https://scigraph.springernature.com/ontologies/subjects/$1	[a-z0-9]+(-[a-z0-9]+)*
+P7575	Sri Granth word ID	https://wikidata-externalid-url.toolforge.org/?url=https%3A%2F%2Fwww.srigranth.org%2Fservlet%2Fgurbani.dictionary%3FParam%3D%251&exp=%28.%2A%29&id=$1	^[\u0A00-\u0A7F]+$
+P7512	startrek.com Database ID	https://intl.startrek.com/$1	(database_article\/[\d\w\-_]+|node\/\d+)
+P5082	Store medisinske leksikon ID	https://wikidata-externalid-url.toolforge.org/?p=5082&url_prefix=https://sml.snl.no/&id=$1	[^\s]+
+P3911	STW Thesaurus for Economics ID	https://zbw.eu/stw/version/latest/descriptor/$1/about	\d+\-\d
+P3984	subreddit	https://www.reddit.com/r/$1/	(t:)?[\w\.]{1,20}
+P9322	SVKKL authority ID	https://ipac.svkkl.cz/arl-kl/cs/detail-kl_us_auth-$1	[pkbmghnruw]?[0-9]{6,7}\-[\p{L}\p{N}\-]*
+P10916	Süddeutsche Zeitung topic ID	https://www.sueddeutsche.de/thema/$1	[^ ]+
+P9406	Tacoma Local History & Biography Index ID	https://cdm17061.contentdm.oclc.org/digital/collection/p17061coll12/id/$1	[1-9]\d*
+P6219	TASS reference ID	https://tass.ru/info/$1	[1-9]\d*
+P5456	TasteAtlas ID	https://tasteatlas.com/$1	[a-zA-Z\-]+
+P13696	taxon aspect image	https://commons.wikimedia.org/wiki/File:$1	
+P7314	TDV Encyclopedia of Islam ID	https://islamansiklopedisi.org.tr/$1	[0-9a-z/-]+
+P2612	TED topic ID	https://www.ted.com/topics/$1	
+P6016	Tennessee Encyclopedia ID	https://tennesseeencyclopedia.net/entries/$1/	
+P13372	TERMDAT concept ID	https://www.termdat.bk.admin.ch/entry/$1	^\d+$
+P13546	The Concise Oxford Dictionary of Archaeology entry ID	https://www.oxfordreference.com/display/10.1093/acref/9780191842788.001.0001/acref-9780191842788-e-$1	
+P10883	The Encyclopedia of Fantasy ID	https://sf-encyclopedia.com/fe/$1	[a-z0-9_-]+
+P7723	The Encyclopedia of Oklahoma History and Culture ID	https://www.okhistory.org/publications/enc/entry.php?entry=$1	
+P3106	The Guardian topic ID	https://www.theguardian.com/$1	[a-z0-9\-]+(/[a-z0-9\-]+)*
+P7284	The Independent topic ID	https://www.independent.co.uk/topic/$1	
+P12373	The Models Resource entity ID	https://models-resource.com/$1	^([a-z\d]+(?:\_[a-z\d]+)*)/([a-z\d]+)/model/(\d+)$
+P13317	The New Yorker topic ID	https://www.newyorker.com/tag/$1	
+P7691	The Oregon Encyclopedia ID	https://oregonencyclopedia.org/articles/$1/	
+P12628	The Oxford Dictionary of Islam ID	https://www.oxfordreference.com/display/10.1093/acref/9780195125580.001.0001/acref-9780195125580-e-$1	
+P7157	The Top Tens ID	https://web.archive.org/web/*/https://www.thetoptens.com/h/#i/$1	[1-9][0-9]*
+P1242	Theatricalia play ID	https://theatricalia.com/play/$1	[0-9a-z]{1,3}
+P9057	TheCocktailDB ingredient ID	https://www.thecocktaildb.com/ingredient/$1	
+P5160	Thesaurus for Graphic Materials ID	https://id.loc.gov/vocabulary/graphicMaterials/$1.html	
+P12187	Thesaurus Linguae Aegyptiae thesaurus ID	https://thesaurus-linguae-aegyptiae.de/thesaurus/$1	[a-zA-Z0-9\-_]+
+P8630	Thomas Jefferson Encyclopedia ID	https://www.monticello.org/site/research-and-collections/$1	
+P11806	TMDB company ID	https://www.themoviedb.org/company/$1	[1-9]\d{0,6}
+P8514	TOPCMB ID	http://www.tesauromuseus.com.br/detalhe-tesauro-ordem-alfabetica/$1	
+P8069	ToposText person ID	https://topostext.org/people/$1	
+P8068	ToposText place ID	https://topostext.org/place/$1	
+P12585	Touhou Wiki ID	https://en.touhouwiki.net/wiki/$1	
+P5421	Trading Card Database name ID	https://www.tradingcarddb.com/Person.cfm/pid/$1/	^[1-9]\d{0,5}$
+P3365	Treccani ID	https://www.treccani.it/enciclopedia/$1	[a-z0-9][a-z0-9'\-°º]*(_res-[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})?(_\([A-Za-z0-9'\-:]+\))?
+P5844	Treccani Vocabulary ID	https://www.treccani.it/vocabolario/$1	[a-z][a-z\d]*(-[a-z\d]+)*(_res-[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})?(_\((Neologismi|Sinonimi-e-Contrari)\))?
+P10022	Treccani's Dizionario di Medicina ID	https://www.treccani.it/enciclopedia/$1_(Dizionario-di-Medicina)	
+P6404	Treccani's Dizionario di Storia ID	https://www.treccani.it/enciclopedia/$1_(Dizionario-di-Storia)	[a-z]+[a-z0-9]*(\-[a-z0-9]+)*(_res\-[0-9a-f]{8}(\-[0-9a-f]{4}){3}\-[0-9a-f]{12})?
+P9734	Treccani's Enciclopedia Dantesca ID	https://www.treccani.it/enciclopedia/$1_(Enciclopedia-Dantesca)	[a-z]+(-[a-z]+)*(_res-[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})?
+P4223	Treccani's Enciclopedia Italiana ID	https://www.treccani.it/enciclopedia/$1_(Enciclopedia-Italiana)	[a-z0-9]+(-[a-z0-9]+)*(_res-[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12})?
+P6839	TV Tropes ID	https://tvtropes.org/pmwiki/pmwiki.php/$1	
+P4467	Twitch category ID	https://www.twitch.tv/directory/category/$1	^(?!\/)(?:\!|\!\ )?[A-Za-z\d\é]+((\ |\-|\!|\:|\'|\.|\/|\,|\*|\+|\@|\:\ |\,\ |\ \-\ |\ \&\ |\!\ |\ \–\ |\.\ |\.\:\ |\ \−\ |\ \:\ |\ \.|\ \[|\]\ \-|\ \+\ |\ \(|\!\ \-|\%\ )[A-Za-z\d\é]+){0,15}(?:\!\!|\.\.\.|\!\-|\?\!|\?|\!|\-|\+|\.|\)|\'|\ \!)?$
+P8799	Twitch tag ID	https://www.twitch.tv/directory/all/tags/$1	[\w-]+
+P1225	U.S. National Archives Identifier	https://catalog.archives.gov/id/$1	^([1-9]\d{0,8})$
+P1554	UBERON ID	http://purl.obolibrary.org/obo/UBERON_$1	\d{7}
+P8335	Uffizi artwork ID	https://www.uffizi.it/en/artworks/$1	
+P10913	UK Archival Thesaurus ID	https://ukat.aim25.com/thesaurus/$1	f[1-8](\/mt[1-8]\d+(\/[0-9a-z\(\)\-]+)*)?
+P4527	UK Parliament thesaurus ID	https://lda.data.parliament.uk/terms/$1.html	[1-9]\d{0,5}
+P8370	UNBIS Thesaurus ID	https://metadata.un.org/thesaurus/$1	
+P10221	UNESCO ICH ID	https://ich.unesco.org/en/$1	
+P3916	UNESCO Thesaurus ID	https://vocabularies.unesco.org/thesaurus/$1	concept\d+
+P487	Unicode character	https://unicode.org/cldr/utility/character.jsp?a=$1	
+P352	UniProt protein ID	https://www.uniprot.org/uniprot/$1	([OPQ][0-9][A-Z0-9]|[A-NR-Z][0-9][A-Z])[A-Z0-9][A-Z0-9][0-9]([A-Z][A-Z0-9][A-Z0-9][0-9])?
+P13472	United Nations Terminology Database ID	https://unterm.un.org/unterm2/en/view/$1	
+P2167	UNSPSC code	https://www.unspsc.org/search-code/?CSS=$1	\d{8}(\d{2})?
+P4854	Uppslagsverket Finland ID	https://uppslagsverket.fi/sv/sok/view-170045-$1	\w+
+P11095	USGS Thesaurus ID	https://apps.usgs.gov/thesaurus/term-simple.php?thcode=2&code=$1	[1-9]\d{0,3}
+P8034	Vatican Library VcBA ID	https://wikidata-externalid-url.toolforge.org/?p=8034&url_prefix=https://opac.vatlib.it/auth/detail/&id=$1	^49\d\/[1-9]\d{0,5}$
+P3511	VGMdb organization ID	https://vgmdb.net/org/$1	[1-9]\d*
+P1481	vici.org ID	https://vici.org/vici/$1	[1-9]\d{0,5}
+P3443	Victorian Heritage Database ID	https://vhd.heritagecouncil.vic.gov.au/places/$1	[1-9]\d{0,5}
+P10	video	https://commons.wikimedia.org/wiki/File:$1	
+P12800	Vikidia article ID	https://en.vikidia.org/wiki/$1	[a-z0-9\.-]+:[^\s#_]+(_[^\s#_]+)*
+P3180	Visual Novel Database ID	https://vndb.org/$1	[cgiprstuv][1-9]\d*(\.[1-9]\d*)?
+P7666	Visuotinė lietuvių enciklopedija ID	https://www.vle.lt/straipsnis/$1/	
+P3183	Wall Street Journal topic ID	https://web.archive.org/web/*/http://topics.wsj.com/$1	
+P13204	Wellcome Collection concept ID	https://wellcomecollection.org/concepts/$1	
+P6766	Who's on First ID	https://spelunker.whosonfirst.org/id/$1/	[1-9]\d*
+P12086	WikiKids ID	https://wikikids.nl/$1	^(?!/|\%[\dA-F]{2})(?![^\s]+\%[\dA-F]{2})[^\s]+$
+P10231	WikiStrinda article ID	https://www.strindahistorielag.no/wiki/index.php?curid=$1	
+P5252	winter view	https://commons.wikimedia.org/wiki/File:$1	
+P10543	WIPO Pearl term ID	https://wipopearl.wipo.int/_/fullrecord/$1	
+P7497	Wolfram Language entity type	https://reference.wolfram.com/language/ref/entity/$1	
+P10697	Woolworths product ID	https://www.woolworths.com.au/shop/productdetails/$1/	\d{6}
+P8814	WordNet 3.1 Synset ID	http://wordnet-rdf.princeton.edu/id/$1	
+P9000	World History Encyclopedia ID	https://www.ancient.eu/$1/	
+P8672	X (Twitter) topic ID	https://x.com/i/topics/$1	
+P10767	X moment ID	https://twitter.com/i/events/$1	\d{11,19}
+P13591	Yale LUX ID	https://lux.collections.yale.edu/view/$1	(object|digital|visual|text|person|group|set|place|concept|event|activity)/([0-9a-f]{4})(?2)(\-(?2))(?3){3}(?2){2}
+P8309	Yle topic ID	https://yle.fi/t/$1/fi	
+P4300	YouTube playlist ID	https://www.youtube.com/playlist?list=$1	EL[0-9A-Za-z_-]{10}[048AEIMQUYcgkosw]||PL[0-9A-Za-z_-]{16}|(?:UU|UC|PL|LL|EL)[0-9A-Za-z_-]{21}[AQgw]|PL[0-9A-Za-z_-]{32}|(?:OLAK5uy_|RDCLAK5uy_)[0-9A-Za-z_-]{32}[048AEIMQUYcgkosw]
+P1651	YouTube video ID	https://www.youtube.com/watch?v=$1	[-_0-9A-Za-z]{11}
+P6293	YSA ID	https://www.yso.fi/onto/ysa/$1	Y[1-9][0-9]{0,5}
+P2347	YSO ID	https://www.yso.fi/onto/yso/p$1	[1-9][0-9]{0,5}
+P3553	Zhihu topic ID	https://www.zhihu.com/topic/$1	\d{8,}
+P9318	Ávvir topic ID	https://www.avvir.no/tag/$1/	

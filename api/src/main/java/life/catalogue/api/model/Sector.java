@@ -35,6 +35,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private String originalSubjectId;
   private Rank placeholderRank; // optional placeholder rank for the subject, i.e. children of higher ranks than this will be ignored
   private Mode mode = Sector.Mode.ATTACH;
+  private boolean useXRelease = true; // only relevant for HIERARCHY mode when subjectDatasetKey is a project
   private Integer priority; // the lower the higher prio. NULL sorts last
   private Integer syncAttempt;
   private Integer datasetAttempt;
@@ -50,6 +51,8 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private boolean copyAccordingTo = false;
   private boolean removeOrdinals = false;
   private boolean createImplicitNames = true;
+  // for HIERARCHY mode only: whether to copy the source (subject) authorship onto matched existing names
+  private AuthorshipUpdate authorshipUpdate = AuthorshipUpdate.NONE;
   // other
   private String note;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -71,7 +74,32 @@ public class Sector extends DatasetScopedEntity<Integer> {
      * Merge all descendants of subject under the target taxon, but exclude the subject taxon itself.
      * This operation will only create new names and try to avoid the creation of duplicates automatically.
      */
-    MERGE
+    MERGE,
+
+    /**
+     * Delegate the higher classification of the project to a target dataset.
+     * subjectDatasetKey holds the target (a project, release or external dataset).
+     * If it is a project, the latest public (X)Release at sync time is used; the {@link #useXRelease}
+     * flag selects between X-Release and plain Release.
+     * No subject taxon is needed; the sector's records are tagged with sectorKey for repeatable wipes.
+     */
+    HIERARCHY
+  }
+
+  /**
+   * Controls how the authorship of an existing, matched name is updated from the hierarchy source
+   * (subject) during a {@link Mode#HIERARCHY} sync. The (secondary) source of the authorship is
+   * tracked as an {@link life.catalogue.api.vocab.InfoGroup#AUTHORSHIP} entry on the name's verbatim source.
+   */
+  public static enum AuthorshipUpdate {
+    /** Never change the existing name's authorship. */
+    NONE,
+
+    /** Only set the authorship from the source when the existing name has none yet. */
+    MISSING,
+
+    /** Always overwrite the existing name's authorship with the source's whenever the source has one. */
+    ALWAYS
   }
 
   public Sector() {
@@ -87,6 +115,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.subject = other.subject == null ? null : SimpleNameLink.of(other.subject);
     this.originalSubjectId = other.originalSubjectId;
     this.mode = other.mode;
+    this.useXRelease = other.useXRelease;
     this.priority = other.priority;
     this.syncAttempt = other.syncAttempt;
     this.datasetAttempt = other.datasetAttempt;
@@ -99,6 +128,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.nameFilter = other.nameFilter;
     this.extinctFilter = other.extinctFilter;
     this.createImplicitNames = other.createImplicitNames;
+    this.authorshipUpdate = other.authorshipUpdate;
     this.note = other.note;
     this.size = other.size;
   }
@@ -169,6 +199,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
   
   public void setMode(Mode mode) {
     this.mode = mode;
+  }
+
+  public boolean isUseXRelease() {
+    return useXRelease;
+  }
+
+  public void setUseXRelease(boolean useXRelease) {
+    this.useXRelease = useXRelease;
   }
 
   public Integer getPriority() {
@@ -294,6 +332,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.createImplicitNames = createImplicitNames;
   }
 
+  public AuthorshipUpdate getAuthorshipUpdate() {
+    return authorshipUpdate;
+  }
+
+  public void setAuthorshipUpdate(AuthorshipUpdate authorshipUpdate) {
+    this.authorshipUpdate = authorshipUpdate;
+  }
+
   public boolean isCopyAccordingTo() {
     return copyAccordingTo;
   }
@@ -326,11 +372,13 @@ public class Sector extends DatasetScopedEntity<Integer> {
            && Objects.equals(originalSubjectId, sector.originalSubjectId)
            && placeholderRank == sector.placeholderRank
            && mode == sector.mode
+           && useXRelease == sector.useXRelease
            && Objects.equals(priority, sector.priority)
            && Objects.equals(syncAttempt, sector.syncAttempt)
            && Objects.equals(datasetAttempt, sector.datasetAttempt)
            && code == sector.code
            && createImplicitNames == sector.createImplicitNames
+           && authorshipUpdate == sector.authorshipUpdate
            && Objects.equals(ranks, sector.ranks)
            && Objects.equals(entities, sector.entities)
            && Objects.equals(nameTypes, sector.nameTypes)
@@ -342,7 +390,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, priority, syncAttempt, datasetAttempt, code, createImplicitNames, ranks, entities, nameTypes, nameStatusExclusion, nameFilter, extinctFilter, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, useXRelease, priority, syncAttempt, datasetAttempt, code, createImplicitNames, authorshipUpdate, ranks, entities, nameTypes, nameStatusExclusion, nameFilter, extinctFilter, note);
   }
 
   @Override
@@ -372,6 +420,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     private String originalSubjectId;
     private Rank placeholderRank;
     private Mode mode;
+    private boolean useXRelease = true;
     private Integer priority;
     private Integer syncAttempt;
     private Integer datasetAttempt;
@@ -384,6 +433,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     private boolean copyAccordingTo;
     private boolean removeOrdinals;
     private boolean createImplicitNames;
+    private AuthorshipUpdate authorshipUpdate = AuthorshipUpdate.NONE;
     private String note;
     private Integer size;
 
@@ -450,6 +500,11 @@ public class Sector extends DatasetScopedEntity<Integer> {
       return this;
     }
 
+    public Builder useXRelease(boolean useXRelease) {
+      this.useXRelease = useXRelease;
+      return this;
+    }
+
     public Builder priority(Integer priority) {
       this.priority = priority;
       return this;
@@ -510,6 +565,11 @@ public class Sector extends DatasetScopedEntity<Integer> {
       return this;
     }
 
+    public Builder authorshipUpdate(AuthorshipUpdate authorshipUpdate) {
+      this.authorshipUpdate = authorshipUpdate;
+      return this;
+    }
+
     public Builder note(String note) {
       this.note = note;
       return this;
@@ -534,6 +594,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
       sector.setOriginalSubjectId(originalSubjectId);
       sector.setPlaceholderRank(placeholderRank);
       sector.setMode(mode);
+      sector.setUseXRelease(useXRelease);
       sector.setPriority(priority);
       sector.setSyncAttempt(syncAttempt);
       sector.setDatasetAttempt(datasetAttempt);
@@ -546,6 +607,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
       sector.setCopyAccordingTo(copyAccordingTo);
       sector.setRemoveOrdinals(removeOrdinals);
       sector.setCreateImplicitNames(createImplicitNames);
+      sector.setAuthorshipUpdate(authorshipUpdate);
       sector.setNote(note);
       sector.size = this.size;
       return sector;

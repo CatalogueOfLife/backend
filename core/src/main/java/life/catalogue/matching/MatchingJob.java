@@ -32,7 +32,7 @@ public class MatchingJob extends AbstractMatchingJob {
   public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, UsageMatcherFactory matcherFactory, MatchingConfig cfg) throws IOException {
     super(req, userKey, loadDataset(factory, req.getDatasetKey()),
       loadRootClassification(req.getTaxonDSID(), factory),
-      matcherFactory.persistent(req.getDatasetKey()),
+      matcherFactory.persistent(req.getDatasetKey()), true, // owns the matcher → release it when done
       cfg, matcherFactory.getNameIndex()
     );
     this.factory = factory;
@@ -57,17 +57,21 @@ public class MatchingJob extends AbstractMatchingJob {
 
   @Override
   public final void execute() throws Exception {
-    super.execute();
-    File resultFile = cfg.randomUploadFile(".zip");
-    try (TempFile tmp = TempFile.created(resultFile)) {
-      LOG.info("Write matches for job {} to temp file {}", getKey(), tmp.file.getAbsolutePath());
-      try (var fos = new FileOutputStream(tmp.file)) {
-        matchToOut(fos);
+    try {
+      super.execute();
+      File resultFile = cfg.randomUploadFile(".zip");
+      try (TempFile tmp = TempFile.created(resultFile)) {
+        LOG.info("Write matches for job {} to temp file {}", getKey(), tmp.file.getAbsolutePath());
+        try (var fos = new FileOutputStream(tmp.file)) {
+          matchToOut(fos);
+        }
+        // move to final result file
+        FileUtils.copyFile(tmp.file, result.getFile());
+        result.calculateSizeAndMd5();
+        LOG.info("Matching {} with {} usages to dataset {} completed: {} [{}]", getKey(), counter.size(), datasetKey, result.getFile(), result.getSizeWithUnit());
       }
-      // move to final result file
-      FileUtils.copyFile(tmp.file, result.getFile());
-      result.calculateSizeAndMd5();
-      LOG.info("Matching {} with {} usages to dataset {} completed: {} [{}]", getKey(), counter.size(), datasetKey, result.getFile(), result.getSizeWithUnit());
+    } finally {
+      releaseMatcher(); // balance the lease acquired in the constructor on every exit path
     }
   }
 

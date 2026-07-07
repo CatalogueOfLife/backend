@@ -41,47 +41,52 @@ public class AuthorshipNormalizer {
   private static final Pattern AUTHOR = Pattern.compile("^((?:[a-z]\\s)*).*?([a-z]+)( (?:filius|fil|fl|f|bis|ter)\\.?)?$");
   private static final String AUTHOR_MAP_FILENAME = "authorship/authormap.txt";
   private static final Pattern PUNCTUATION = Pattern.compile("[\\p{Punct}&&[^,]]+");
-  private final Map<String, String> authorMap;
+  private final Map<String, String> botMap;   // BOT + ANY entries
+  private final Map<String, String> zooMap;   // ZOO + ANY entries
 
   public static final AuthorshipNormalizer INSTANCE = createWithAuthormap();
 
   public static AuthorshipNormalizer createWithoutAuthormap() {
-    return new AuthorshipNormalizer(Maps.<String, String>newHashMap());
+    return new AuthorshipNormalizer(Maps.newHashMap(), Maps.newHashMap());
   }
-  
+
   private static AuthorshipNormalizer createWithAuthormap() {
-    Map<String, String> map = new HashMap<>();
+    Map<String, String> bot = new HashMap<>();
+    Map<String, String> zoo = new HashMap<>();
     try {
       Resources.tabRows(AUTHOR_MAP_FILENAME).forEach(row -> {
-        var value = row[0];
-        for (int i = 1; i < row.length; i++) {
-          map.put(row[i], value);
+        if (row.length < 3) return; // canonical + code + at least one alias
+        String value = row[0];
+        String code = row[1].trim().toUpperCase();
+        for (int i = 2; i < row.length; i++) {
+          if ("BOT".equals(code) || "ANY".equals(code)) putNormalized(bot, row[i], value);
+          if ("ZOO".equals(code) || "ANY".equals(code)) putNormalized(zoo, row[i], value);
         }
       });
     } catch (Exception e) {
       LOG.warn("Failed to load author abbreviation map from {}", AUTHOR_MAP_FILENAME);
-      if (LOG.isDebugEnabled()){
+      if (LOG.isDebugEnabled()) {
         LOG.debug("Failed to load author abbreviation map from {}", AUTHOR_MAP_FILENAME, e);
       }
     }
-    return new AuthorshipNormalizer(map);
+    return new AuthorshipNormalizer(bot, zoo);
   }
-  
-  
-  private AuthorshipNormalizer(Map<String, String> authors) {
-    Map<String, String> map = Maps.newHashMap();
-    for (Map.Entry<String, String> entry : authors.entrySet()) {
-      String key = normalize(entry.getKey());
-      String val = normalize(entry.getValue());
-      if (key != null && val != null) {
-        if (map.containsKey(key) && !map.get(key).equals(val)) {
-          LOG.warn("Authormap contains duplicate key {} for {} - verbatim={} - previous standard value={}", key, val, entry.getKey(), map.get(key));
-        }
-        map.put(key, val);
+
+  private static void putNormalized(Map<String, String> map, String rawKey, String rawValue) {
+    String key = normalize(rawKey);
+    String val = normalize(rawValue);
+    if (key != null && val != null) {
+      if (map.containsKey(key) && !map.get(key).equals(val)) {
+        LOG.warn("Authormap contains duplicate key {} for {} - previous standard value={}", key, val, map.get(key));
       }
+      map.put(key, val);
     }
-    authorMap = ImmutableMap.copyOf(map);
-    LOG.info("Created author normalizer with {} abbreviation entries", map.size());
+  }
+
+  private AuthorshipNormalizer(Map<String, String> botMap, Map<String, String> zooMap) {
+    this.botMap = ImmutableMap.copyOf(botMap);
+    this.zooMap = ImmutableMap.copyOf(zooMap);
+    LOG.info("Created author normalizer with {} botanical and {} zoological abbreviation entries", botMap.size(), zooMap.size());
   }
   
   /**
@@ -182,32 +187,49 @@ public class AuthorshipNormalizer {
     return x.toLowerCase();
   }
   
+  private Map<String, String> mapFor(NomCode code) {
+    return code == NomCode.ZOOLOGICAL ? zooMap : botMap;
+  }
+
   /**
-   * Looks up individual authors from an authorship string
+   * Looks up individual authors from an authorship string.
+   * Botanical / unknown-code lookup.
    *
    * @return entire authorship string with expanded authors if found
    */
   public String lookup(String normalizedAuthor) {
-    if (normalizedAuthor != null && authorMap.containsKey(normalizedAuthor)) {
-      return authorMap.get(normalizedAuthor);
-    } else {
-      return normalizedAuthor;
-    }
+    return lookup(normalizedAuthor, null);
   }
-  
+
+  public String lookup(String normalizedAuthor, NomCode code) {
+    Map<String, String> map = mapFor(code);
+    if (normalizedAuthor != null && map.containsKey(normalizedAuthor)) {
+      return map.get(normalizedAuthor);
+    }
+    return normalizedAuthor;
+  }
+
   public List<String> lookup(List<String> authorTeam) {
+    return lookup(authorTeam, (NomCode) null);
+  }
+
+  public List<String> lookup(List<String> authorTeam, NomCode code) {
     List<String> authors = Lists.newArrayList();
     for (String author : authorTeam) {
-      authors.add(lookup(author));
+      authors.add(lookup(author, code));
     }
     return authors;
   }
-  
+
   public List<String> lookup(List<String> normalizedAuthorTeam, int minAuthorLengthWithoutLookup) {
+    return lookup(normalizedAuthorTeam, minAuthorLengthWithoutLookup, null);
+  }
+
+  public List<String> lookup(List<String> normalizedAuthorTeam, int minAuthorLengthWithoutLookup, NomCode code) {
     List<String> authors = Lists.newArrayList();
     for (String author : normalizedAuthorTeam) {
       if (minAuthorLengthWithoutLookup > 0 && author.length() < minAuthorLengthWithoutLookup) {
-        authors.add(lookup(author));
+        authors.add(lookup(author, code));
       } else {
         authors.add(author);
       }

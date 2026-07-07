@@ -1,9 +1,12 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
 import java.util.Objects;
 
 public class TaxonExtension<T extends ExtensionEntity> {
   private String taxonID;
+  @JsonUnwrapped
   private T obj;
   
   public String getTaxonID() {

@@ -75,6 +75,8 @@ import life.catalogue.release.PublisherChangeListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.legacy.LegacyWebserviceResource;
+import life.catalogue.resources.matching.openrefine.DefaultReconciliationResource;
+import life.catalogue.resources.matching.openrefine.ReconciliationResource;
 import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
 
@@ -365,7 +367,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // matcher factory
     final var matcherFactory = new UsageMatcherFactory(cfg.matching, ni, getSqlSessionFactory(), executor);
-    env.lifecycle().manage(ManagedUtils.from(matcherFactory));
+    managedService.manage(Component.UsageMatcher, matcherFactory);
 
     // identifier scope resolver: map dataset keys to scopes from the central registry
     cfg.identifierScopes.validate();
@@ -394,7 +396,7 @@ public class WsServer extends Application<WsServerConfig> {
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
 
     // syncs and releases
-    final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker, identifierScopeResolver);
+    final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker, identifierScopeResolver, coljersey.getCache());
     final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, matcherFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       indexService, imgService, getSqlSessionFactory(), validator,
       cfg.release, cfg.apiURI, cfg.clbURI
@@ -447,7 +449,7 @@ public class WsServer extends Application<WsServerConfig> {
     importManager.setAssemblyCoordinator(syncManager);
 
     // admin resources
-    j.register(new MatcherManagementResource(getSqlSessionFactory(), matcherFactory));
+    j.register(new MatcherManagementResource(matcherFactory));
     j.register(new AdminResource(
       getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg,
       imgService, ni, indexService, searchService,
@@ -463,6 +465,9 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetBreakdownResource(tdao));
     j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
     j.register(new NameUsageMatchingResource(cfg.matching, executor, getSqlSessionFactory(), matcherFactory));
+    // OpenRefine reconciliation service over the name matcher (dataset-scoped + default COL backbone)
+    j.register(new ReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, cfg.getApiUri(), cfg.clbURI));
+    j.register(new DefaultReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, coljersey.getCache(), cfg.getApiUri(), cfg.clbURI));
     j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, fmsDao, siDao, syncManager));
@@ -471,7 +476,7 @@ public class WsServer extends Application<WsServerConfig> {
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
       ddao, dsdao, exportManager.blocked(), diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService,
-      imgService, feedback, doiResolver, areaLookup
+      imgService, thumborService, feedback, doiResolver, areaLookup
     );
 
     // global
@@ -505,7 +510,7 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.apiURI != null) {
       broker.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    broker.register(new PublishReleaseListener(cfg.release, cfg, getSqlSessionFactory(), httpClient, executor, broker, matcherFactory));
+    broker.register(new PublishReleaseListener(cfg.release, cfg, getSqlSessionFactory(), httpClient, executor, broker));
     broker.register(new PublisherChangeListener(getSqlSessionFactory()));
     broker.register(doiChangeListener);
     broker.register(exportManager);

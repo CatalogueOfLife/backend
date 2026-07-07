@@ -241,8 +241,17 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
    * @throws IllegalArgumentException
    */
   private synchronized boolean syncSector(DSID<Integer> sectorKey, int user, boolean blockMergeSyncs) throws IllegalArgumentException {
-    SectorSync ss = syncFactory.project(sectorKey, this::successCallBack, this::errorCallBack, user);
-    return queueJob(ss, blockMergeSyncs);
+    Sector.Mode mode;
+    try (SqlSession session = factory.openSession(true)) {
+      mode = session.getMapper(SectorMapper.class).getMode(sectorKey.getDatasetKey(), sectorKey.getId());
+    }
+    if (mode == null) {
+      throw new IllegalArgumentException("Sector " + sectorKey + " does not exist");
+    }
+    SectorRunnable sr = mode == Sector.Mode.HIERARCHY
+      ? syncFactory.hierarchy(sectorKey, this::successCallBack, this::errorCallBack, user)
+      : syncFactory.project(sectorKey, this::successCallBack, this::errorCallBack, user);
+    return queueJob(sr, blockMergeSyncs);
   }
 
   /**

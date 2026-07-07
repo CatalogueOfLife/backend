@@ -39,6 +39,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -55,7 +56,7 @@ public class NameUsageSearchServiceEs2IT extends EsTestBase {
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
-    return IntStream.rangeClosed(1, 3)
+    return IntStream.rangeClosed(1, 4)
       .mapToObj(i -> new Object[] {i})
       .collect(Collectors.toList());
   }
@@ -232,6 +233,29 @@ public class NameUsageSearchServiceEs2IT extends EsTestBase {
         resp = search(browseReq);
 
         assertAcceptedBeforeSynonyms(resp.getResult());
+        break;
+
+      case 4:
+        // https://github.com/CatalogueOfLife/checklistbank/issues/1688
+        // An exact name match must rank at the very top regardless of taxonomic status and rank.
+        // "Lepisma" is both an accepted genus (GACC) and a synonym homonym (GSYN); both must
+        // outrank the non-exact accepted matches (Lepisma saccharina, Lepismatidae).
+        // Within the exact matches the accepted one still comes before the synonym.
+        resp = search("Lepisma", NameUsageRequest.SearchType.STANDARD, NameUsageRequest.SortBy.RELEVANCE);
+        List<String> ids = resp.getResult().stream().map(NameUsageWrapper::getId).collect(Collectors.toList());
+
+        assertEquals("exact accepted match must rank first", "GACC", ids.get(0));
+        assertEquals("exact synonym match must rank second, above non-exact accepted names", "GSYN", ids.get(1));
+        assertTrue("exact synonym must rank above the non-exact accepted species",
+          ids.indexOf("GSYN") < ids.indexOf("SACC"));
+        assertTrue("exact synonym must rank above the non-exact accepted family",
+          ids.indexOf("GSYN") < ids.indexOf("FAM"));
+
+        // exact matching must be case insensitive: a lowercase query ranks the same exact matches on top
+        resp = search("lepisma", NameUsageRequest.SearchType.STANDARD, NameUsageRequest.SortBy.RELEVANCE);
+        List<String> lcIds = resp.getResult().stream().map(NameUsageWrapper::getId).collect(Collectors.toList());
+        assertEquals("case-insensitive exact accepted match must rank first", "GACC", lcIds.get(0));
+        assertEquals("case-insensitive exact synonym match must rank second", "GSYN", lcIds.get(1));
         break;
 
     }

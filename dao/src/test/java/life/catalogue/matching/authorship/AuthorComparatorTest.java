@@ -288,7 +288,8 @@ public class AuthorComparatorTest {
       }
     }
     System.out.println("\nTOTAL EQUAL authors: " + equal);
-    assertTrue(equal < 1200);
+    // headroom for the Wikidata-enriched author map (~60k entries); enriched value is ~1200 vs ~1188 on the base map
+    assertTrue(equal < 1300);
   }
 
   @Test
@@ -412,7 +413,10 @@ public class AuthorComparatorTest {
     // no ex author swapping in scrict mode !!!
     assertAuthStrict("Reichenbach", "1837", false, "Rchb. ex Andrz.", "1837");
     assertAuthStrict("Reichenbach", "1837", false, "Rchb. ex Andrz.", "1837", NomCode.BOTANICAL);
-    assertAuthStrict("Reichenbach", "1837", true, "Rchb. ex Andrz.", "1837", NomCode.ZOOLOGICAL);
+    // "Rchb." is only a known abbreviation in the botanical author map (Reichenbach was a botanist), not the zoological one,
+    // so a zoologically coded comparison must no longer expand it to "Reichenbach" - it now correctly returns false since
+    // AuthorComparator.compareAuthorteam forwards NomCode into the lookup instead of always resolving via the botanical map.
+    assertAuthStrict("Reichenbach", "1837", false, "Rchb. ex Andrz.", "1837", NomCode.ZOOLOGICAL);
 
     assertAuthStrict("Torr et Gray", null, true, "Torr. & A.Gray", null);
     
@@ -647,6 +651,24 @@ public class AuthorComparatorTest {
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
     assertEquals(Equality.EQUAL, comp.compare(p1, p3));
     assertEquals(Equality.EQUAL, comp.compare(p2, p3));
+  }
+
+  @Test
+  public void testZoologicalDoesNotExpandBotanicalAbbrev() {
+    // "DC." would expand to "Augustin Pyramus de Candolle" under botany; under zoology it must be treated as a plain, unexpanded token.
+    // Note: the brief's original example ("L." vs "Linnaeus") does not discriminate here because a lone initial surname ("l")
+    // always fuzzy-matches any surname sharing its first letter via the generic short-common-substring heuristic in
+    // AuthorComparator.compare(Author, Author, ...), regardless of NomCode or the author map. "DC." vs "de Candolle" has no
+    // such common-prefix relationship (surnames "dc" vs "candolle"), so it correctly isolates the author-map lookup behavior.
+    var dc = new org.gbif.nameparser.api.Authorship();
+    dc.getAuthors().add("DC.");
+    var candolle = new org.gbif.nameparser.api.Authorship();
+    candolle.getAuthors().add("Augustin Pyramus de Candolle");
+
+    // botany: abbreviation expands, so they match
+    assertEquals(Equality.EQUAL, comp.compareAuthorteam(dc, candolle, org.gbif.nameparser.api.NomCode.BOTANICAL));
+    // zoology: "DC." is not expanded -> surnames "dc" vs "candolle" do not match
+    assertEquals(Equality.DIFFERENT, comp.compareAuthorteam(dc, candolle, org.gbif.nameparser.api.NomCode.ZOOLOGICAL));
   }
 
   private void assertAuth(AuthorshipNormalizer.Author a1, Equality eq, AuthorshipNormalizer.Author a2) {

@@ -3,6 +3,7 @@ package life.catalogue.exporter;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.img.ImageService;
 import life.catalogue.printer.AbstractPrinter;
 import life.catalogue.printer.PrinterFactory;
@@ -30,6 +31,7 @@ public abstract class PrinterExport<T extends AbstractPrinter> extends DatasetEx
 
   @Override
   protected void export() throws Exception {
+    checkIfCancelled();
     File f = new File(tmpDir, filename());
     try (Writer writer = UTF8IoUtils.writerFromFile(f);
          T printer = PrinterFactory.dataset(printerClass, req.toTreeTraversalParameter(), null, req.getExtinct(), null, null, factory, writer)
@@ -38,6 +40,10 @@ public abstract class PrinterExport<T extends AbstractPrinter> extends DatasetEx
       int cnt = printer.print();
       LOG.info("Written {} taxa to {} for dataset {}", cnt, printerName, req.getDatasetKey());
       counter.set(printer.getCounter());
+    } catch (InterruptedRuntimeException e) {
+      // the printer runs inside a Consumer and aborts via an unchecked exception;
+      // surface it as a checked InterruptedException so the job ends as CANCELED
+      throw e.asChecked();
     }
   }
 

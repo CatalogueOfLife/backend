@@ -47,11 +47,11 @@ public class DatasetIssuesResource {
   public Stream<Object[]> exportCsv(@PathParam("key") int datasetKey,
                                     @Context SqlSession session) {
     // export entire dataset with issues
+    // use the read-only safe streaming query so this also works on the replica db
     var ism = session.getMapper(TmpIssueMapper.class);
-    ism.createTmpIssuesTable(datasetKey, null);
     return Stream.concat(
       Stream.of(EXPORT_HEADERS),
-      Streams.stream(ism.processIssues())
+      Streams.stream(ism.streamIssues(datasetKey, null))
              .map(this::map)
     );
   }

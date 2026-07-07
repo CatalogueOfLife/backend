@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 
@@ -41,6 +42,7 @@ public class GithubFeedback implements FeedbackService {
   private final SqlSessionFactory factory;
   private final SpamDetector spamDetector;
   private final UriBuilder clbTaxonURI;
+  private final UriBuilder clbDatasetURI;
   private final UriBuilder emailUriBuilder;
   private final EmailEncryption encryption;
   private boolean active;
@@ -51,6 +53,8 @@ public class GithubFeedback implements FeedbackService {
     this.issue = client == null ? null : client.target(cfg.issueURI()); // null for tests only!
     this.clbTaxonURI = UriBuilder.fromUri(clbURI)
       .path("dataset/{arg1}/nameusage/{arg2}");
+    this.clbDatasetURI = UriBuilder.fromUri(clbURI)
+      .path("dataset/{arg1}");
     this.emailUriBuilder = UriBuilder.fromUri(apiURI)
       .path("admin/email")
       .queryParam("address", "{arg1}");
@@ -68,6 +72,22 @@ public class GithubFeedback implements FeedbackService {
       msg.append("\nName: " + name);
     }
     msg.append("\nTaxon: " + clbTaxonURI.build(usageKey.getDatasetKey(), usageKey.getId()));
+    appendSubmitter(msg, user, feedback);
+    return msg.toString();
+  }
+
+  @VisibleForTesting
+  protected String buildSourceMessage(Optional<User> user, int sourceDatasetKey, Feedback feedback, Dataset source) {
+    StringBuilder msg = new StringBuilder();
+    msg.append(feedback.message);
+    msg.append("\n\n---");
+    msg.append("\nSource: " + source.getAliasOrTitle());
+    msg.append("\nDataset: " + clbDatasetURI.build(sourceDatasetKey));
+    appendSubmitter(msg, user, feedback);
+    return msg.toString();
+  }
+
+  private void appendSubmitter(StringBuilder msg, Optional<User> user, Feedback feedback) {
     if (user.isPresent()) {
       msg.append("\nSubmitted by: "+user.get().getKey());
     }
@@ -80,11 +100,12 @@ public class GithubFeedback implements FeedbackService {
       }
       msg.append("\nEmail: ").append(mailText);
     }
-    return msg.toString();
   }
 
-  @Override
-  public URI create(Optional<User> user, DSID<String> usageKey, Feedback feedback) throws NotFoundException, IOException {
+  /**
+   * Common precondition checks for any feedback submission.
+   */
+  private void validate(Feedback feedback) {
     if (feedback == null) {
       throw new IllegalArgumentException("No feedback provided");
     }
@@ -94,6 +115,11 @@ public class GithubFeedback implements FeedbackService {
     if (spamDetector.isSpam(feedback.message)) {
       throw new IllegalArgumentException("Invalid message");
     }
+  }
+
+  @Override
+  public URI create(Optional<User> user, DSID<String> usageKey, Feedback feedback) throws NotFoundException, IOException {
+    validate(feedback);
 
     // only allow COL and COL sources to be commented on
     final var forbiddenExcpt = new ForbiddenException("Feedback is only allowed on the Catalogue of Life and it's sources");
@@ -137,6 +163,41 @@ public class GithubFeedback implements FeedbackService {
       }
     }
     var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, feedback, name, dataset), tagging);
+    return postIssue(iss, "taxon "+usageKey);
+  }
+
+  @Override
+  public URI createForSource(Optional<User> user, int projectKey, int sourceDatasetKey, Feedback feedback) throws NotFoundException, IOException {
+    validate(feedback);
+
+    // only allow COL and COL sources to be commented on
+    final var forbiddenExcpt = new ForbiddenException("Feedback is only allowed on the Catalogue of Life and it's sources");
+    final var info = DatasetInfoCache.CACHE.info(projectKey); // this already throws 404 if not existing
+
+    if (!info.origin.isProjectOrRelease() || info.keyOrProjectKey() != Datasets.COL) {
+      throw forbiddenExcpt;
+    }
+
+    DatasetSourceMapper.SourceDataset dataset;
+    try (SqlSession session = factory.openSession()) {
+      // is the source existing in the release/project?
+      var dsm = session.getMapper(DatasetSourceMapper.class);
+      if (info.origin.isRelease()) {
+        dataset = dsm.getReleaseSource(sourceDatasetKey, projectKey);
+      } else {
+        dataset = dsm.getProjectSource(sourceDatasetKey, projectKey);
+      }
+    }
+    if (dataset == null) {
+      throw NotFoundException.notFound(DatasetSourceMapper.SourceDataset.class, sourceDatasetKey);
+    }
+
+    var iss = new GHIssue("Feedback on " + dataset.getAliasOrTitle(),
+      buildSourceMessage(user, sourceDatasetKey, feedback, dataset), cfg.dataset);
+    return postIssue(iss, "dataset "+sourceDatasetKey);
+  }
+
+  private URI postIssue(GHIssue iss, String logRef) throws IOException {
     var req = issue.request(MediaType.APPLICATION_JSON_TYPE)
       .header(HttpHeaders.AUTHORIZATION, "Bearer "+cfg.token)
       .header("User-Agent", "CatalogueOfLife")
@@ -153,7 +214,7 @@ public class GithubFeedback implements FeedbackService {
         throw new IOException("GitHub error "+resp.getStatus()+": "+respMsg);
       }
       GHIssueResp ghResp = resp.readEntity(GHIssueResp.class);
-      LOG.info("GitHub issue created for taxon {}: {}", usageKey, ghResp.html_url);
+      LOG.info("GitHub issue created for {}: {}", logRef, ghResp.html_url);
       return URI.create(ghResp.html_url);
     }
   }

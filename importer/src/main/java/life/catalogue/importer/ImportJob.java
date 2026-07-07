@@ -35,6 +35,7 @@ import life.catalogue.importer.proxy.ArchiveDescriptor;
 import life.catalogue.importer.proxy.DistributedArchiveService;
 import life.catalogue.matching.AddIdentifiersSpec;
 import life.catalogue.matching.IdentifierScopeResolver;
+import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
@@ -182,11 +183,14 @@ public class ImportJob implements Runnable {
           throw new IllegalArgumentException("Dataset " + datasetKey + " cannot match against itself");
         }
         try {
-          if (matcherFactory.get(resolvedKey) == null) {
+          // presence check only — release the lease immediately, the real import re-acquires it
+          UsageMatcher m = matcherFactory.get(resolvedKey);
+          if (m == null) {
             throw new IllegalArgumentException("Dataset " + datasetKey
               + " is configured to add identifiers from " + spec + " (resolved key=" + resolvedKey
               + ") but no matcher exists for it");
           }
+          m.close();
         } catch (IOException e) {
           throw new IllegalStateException("Failed to access matcher for dataset " + resolvedKey, e);
         }
@@ -343,18 +347,23 @@ public class ImportJob implements Runnable {
           final String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dataset.getImportAttempt());
           if (Objects.equals(lastMD5, md5)) {
             LOG.info("MD5 unchanged: {}{}", md5, req.force ? " (force import)" : "");
-            try {
-              Files.delete(archivePath);
-            } catch (NoSuchFileException e) {
-              // ignore, we want it gone anyways
-            }
-            // replace archive with symlink to last archive to save space in case we need it for a forced import
+            // for forced imports, replace the new archive with a symlink to the last one to save space,
+            // but only if the last archive really exists on disk - otherwise keep the fresh download
+            // so the subsequent extraction step still has a file to read.
             if (req.force && lastArchive != null && lastArchive.exists()) {
               try {
                 Path lastReal = lastArchive.toPath().toRealPath();
+                Files.delete(archivePath);
                 Files.createSymbolicLink(archivePath, lastReal);
               } catch (IOException e) {
                 LOG.error("Failed to replace unchanged archive {} with symlink. Keep it. {}", archivePath, e.getMessage(), e);
+              }
+            } else if (!req.force) {
+              // not a forced import - we won't extract, so drop the redundant file
+              try {
+                Files.delete(archivePath);
+              } catch (NoSuchFileException e) {
+                // ignore, we want it gone anyways
               }
             }
             return req.force;

@@ -99,6 +99,7 @@ public class NidxExportJob extends BackgroundJob {
         var nim = session.getMapper(NamesIndexMapper.class);
         try (var cursor = nim.processDatasets(datasetKeys, minDatasets)) {
           for (var sn : cursor) {
+            checkIfCancelled();
             counter++;
             var row = new String[datasetKeys.size()+3];
             row[0] = str(sn.getRank());

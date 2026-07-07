@@ -1,16 +1,17 @@
 package life.catalogue.resources;
 
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import io.swagger.v3.oas.annotations.Hidden;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.query.InvalidQueryException;
 import life.catalogue.es.search.NameUsageSearchService;
 
+import life.catalogue.img.ThumborService;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
@@ -41,29 +42,74 @@ public class NameUsageSearchResource {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchResource.class);
 
   private final NameUsageSearchService searchService;
+  private final SqlSessionFactory factory;
+  private final ThumborService thumborService;
 
-  public NameUsageSearchResource(NameUsageSearchService search) {
+  public NameUsageSearchResource(SqlSessionFactory factory, NameUsageSearchService search, ThumborService thumborService) {
+    this.factory = factory;
     this.searchService = search;
+    this.thumborService = thumborService;
   }
 
 
   @GET
   public ResultPage<NameUsageBase> list(@QueryParam("nidx") Integer namesIndexID,
                                         @QueryParam("id") String id,
-                                        @Valid @BeanParam Page page,
-                                        @Context SqlSession session) {
-    Page p = page == null ? new Page() : page;
-    if (namesIndexID == null && id == null) {
-      throw new IllegalArgumentException("nidx or id parameter required");
+                                        @Valid @BeanParam Page page) {
+    try (SqlSession session = factory.openSession(true)) {
+      Page p = page == null ? new Page() : page;
+      if (namesIndexID == null && id == null) {
+        throw new IllegalArgumentException("nidx or id parameter required");
+      }
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      List<NameUsageBase> result = id != null ?
+        num.listByUsageID(id, p) :
+        num.listByNamesIndexIDGlobal(namesIndexID, p);
+      return new ResultPage<>(p, result, () -> id != null ?
+        num.countByUsageID(id) :
+        num.countByNamesIndexID(namesIndexID, null)
+      );
     }
-    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    List<NameUsageBase> result = id != null ?
-      num.listByUsageID(id, page) :
-      num.listByNamesIndexIDGlobal(namesIndexID, page);
-    return new ResultPage<>(p, result, () -> id != null ?
-      num.countByUsageID(id) :
-      num.countByNamesIndexID(namesIndexID, null)
-    );
+  }
+
+  private <T extends ExtensionEntity> List<TaxonExtension<T>> listByNidx(Class<? extends TaxonExtensionMapper<T>> mapperCls, Integer nidx, Page page) {
+    if (nidx == null) {
+      throw new IllegalArgumentException("nidx parameter required");
+    }
+    try (SqlSession session = factory.openSession(true)) {
+      var mapper = session.getMapper(mapperCls);
+      return mapper.listByNamesIndexIDGlobal(nidx, page == null ? new Page() : page);
+    }
+  }
+
+  @GET
+  @Hidden
+  @Path("property")
+  public List<TaxonExtension<TaxonProperty>> listProperties(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
+    return listByNidx(TaxonPropertyMapper.class, namesIndexID, page);
+  }
+
+  @GET
+  @Hidden
+  @Path("distribution")
+  public List<TaxonExtension<Distribution>> listDistribution(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
+    return listByNidx(DistributionMapper.class, namesIndexID, page);
+  }
+
+  @GET
+  @Hidden
+  @Path("media")
+  public List<TaxonExtension<Media>> listMedia(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
+    var media = listByNidx(MediaMapper.class, namesIndexID, page);
+    media.forEach(m -> thumborService.addThumbnail(m.getObj()));
+    return media;
+  }
+
+  @GET
+  @Hidden
+  @Path("vernacular")
+  public List<TaxonExtension<VernacularName>> listVernacular(@QueryParam("nidx") Integer namesIndexID, @Valid @BeanParam Page page) {
+    return listByNidx(VernacularNameMapper.class, namesIndexID, page);
   }
 
   @GET

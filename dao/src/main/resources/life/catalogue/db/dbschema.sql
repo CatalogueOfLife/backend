@@ -152,6 +152,7 @@ CREATE TYPE GAZETTEER AS ENUM (
   'IHO',
   'MRGID',
   'TEOW',
+  'WDPA',
   'TEXT'
 );
 
@@ -341,7 +342,8 @@ CREATE TYPE ISSUE AS ENUM (
   'DUPLICATE_ESTIMATES',
   'DUPLICATE_TAXON_PROPERTIES',
   'AUTHORSHIP_UNCERTAIN',
-  'SUPERFLUOUS_AUTHORSHIP'
+  'SUPERFLUOUS_AUTHORSHIP',
+  'RELATION_SYNONYM'
 );
 
 CREATE TYPE JOBSTATUS AS ENUM (
@@ -573,7 +575,14 @@ CREATE TYPE SEASON AS ENUM (
 CREATE TYPE SECTOR_MODE AS ENUM (
   'ATTACH',
   'UNION',
-  'MERGE'
+  'MERGE',
+  'HIERARCHY'
+);
+
+CREATE TYPE SECTOR_AUTHORSHIP_UPDATE AS ENUM (
+  'NONE',
+  'MISSING',
+  'ALWAYS'
 );
 
 CREATE TYPE SEX AS ENUM (
@@ -864,6 +873,7 @@ CREATE TABLE dataset (
   origin DATASETORIGIN NOT NULL,
   gbif_key UUID UNIQUE,
   gbif_publisher_key UUID,
+  gbif_modified TIMESTAMP WITHOUT TIME ZONE,
 
   identifier TEXT[],
   title TEXT NOT NULL,
@@ -973,6 +983,7 @@ CREATE INDEX ON dataset_citation (dataset_key);
 
 CREATE TABLE dataset_archive (LIKE dataset);
 ALTER TABLE dataset_archive
+  DROP COLUMN gbif_modified,
   DROP COLUMN deleted,
   DROP COLUMN doc,
   DROP COLUMN acl_editor,
@@ -1129,6 +1140,8 @@ CREATE TABLE sector (
   target_rank RANK,
   target_code NOMCODE,
   mode SECTOR_MODE NOT NULL,
+  use_x_release BOOLEAN NOT NULL DEFAULT TRUE,
+  authorship_update SECTOR_AUTHORSHIP_UPDATE NOT NULL DEFAULT 'NONE',
   code NOMCODE,
   sync_attempt INTEGER,
   dataset_attempt INTEGER,

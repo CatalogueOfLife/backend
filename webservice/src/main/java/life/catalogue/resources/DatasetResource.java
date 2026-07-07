@@ -11,6 +11,7 @@ import life.catalogue.dao.job.DeleteDatasetJob;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
+import life.catalogue.db.type2.StringCount;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
@@ -87,7 +88,15 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
-  @Path("/simple")
+  @Path("publishers")
+  public List<StringCount> suggestPublishers(@QueryParam("q") String q,
+                                             @QueryParam("limit") @DefaultValue("25") int limit,
+                                             @Auth Optional<User> user) {
+    return dao.suggestPublishers(q, limit, userkey(user));
+  }
+
+  @GET
+  @Path("simple")
   public List<DatasetSimple> projectSourceSimple(@QueryParam("id") List<Integer> keys) {
     return dao.listSimple(keys);
   }

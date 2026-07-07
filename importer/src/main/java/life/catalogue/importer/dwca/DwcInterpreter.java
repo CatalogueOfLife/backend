@@ -40,6 +40,8 @@ public class DwcInterpreter extends InterpreterBase {
     ALT_ID_TERMS.put(WfoTerm.ipniID, Identifier.Scope.IPNI);
   }
   private static final Set<String> IS_TRUE = Set.of("isinvasive", "invasive", "ishybrid", "hybrid");
+  // WoRMS uses its custom Invasiveness term instead of dwc:degreeOfEstablishment, https://github.com/CatalogueOfLife/backend/issues/1511
+  private static final Term WORMS_INVASIVENESS = UnknownTerm.build("http://www.marinespecies.org/traits/Invasiveness", "Invasiveness", false);
 
   private final Term idTerm;
   private final Map<String, String> dwcaID2taxonID = new HashMap<>();
@@ -216,12 +218,14 @@ public class DwcInterpreter extends InterpreterBase {
   }
   
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
+    // WoRMS uses its custom Invasiveness term instead of dwc:degreeOfEstablishment, https://github.com/CatalogueOfLife/backend/issues/1511
+    final Term tDegree = rec.hasTerm(DwcTerm.degreeOfEstablishment) ? DwcTerm.degreeOfEstablishment : WORMS_INVASIVENESS;
     // try to figure out an area
     if (rec.hasTerm(DwcTerm.locationID)) {
       return createDistribution(null, rec.getRaw(DwcTerm.locationID), rec.get(DwcTerm.locality), rec,
           DwcTerm.occurrenceStatus,
           DwcTerm.establishmentMeans,
-          DwcTerm.degreeOfEstablishment,
+          tDegree,
           DwcTerm.pathway,
           IucnTerm.threatStatus,
           DwcTerm.eventDate,
@@ -229,12 +233,12 @@ public class DwcInterpreter extends InterpreterBase {
           DwcTerm.lifeStage,
           DwcTerm.occurrenceRemarks,
           this::setReference);
-      
+
     } else if (rec.hasTerm(DwcTerm.countryCode) && !rec.hasTerm(DwcTerm.locality)) {
       return createDistribution(Gazetteer.ISO, rec.get(DwcTerm.countryCode), rec.get(DwcTerm.country), rec,
           DwcTerm.occurrenceStatus,
           DwcTerm.establishmentMeans,
-          DwcTerm.degreeOfEstablishment,
+          tDegree,
           DwcTerm.pathway,
           IucnTerm.threatStatus,
           DwcTerm.eventDate,
@@ -247,7 +251,7 @@ public class DwcInterpreter extends InterpreterBase {
       return createDistribution(Gazetteer.TEXT, null, rec.getFirst(DwcTerm.locality, DwcTerm.country), rec,
           DwcTerm.occurrenceStatus,
           DwcTerm.establishmentMeans,
-          DwcTerm.degreeOfEstablishment,
+          tDegree,
           DwcTerm.pathway,
           IucnTerm.threatStatus,
           DwcTerm.eventDate,

@@ -1,0 +1,6 @@
+{ "results": { "bindings": [
+  { "person": {"value":"http://www.wikidata.org/entity/Q1043"},
+    "name": {"value":"Carl Linnaeus"}, "botAbbr": {"value":"L."} },
+  { "person": {"value":"http://www.wikidata.org/entity/Q35167"},
+    "name": {"value":"Georges Cuvier"}, "zooAuthor": {"value":"Cuvier"} }
+] } }

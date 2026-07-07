@@ -166,4 +166,15 @@
     UPDATE distribution SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
     WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
   </update>
+
+  <select id="listByNamesIndexIDGlobal" resultMap="distributionExtResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM names_index ni
+    JOIN name_match nm ON nm.index_id=ni.id
+    JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=nm.name_id
+    JOIN distribution d ON d.dataset_key=nm.dataset_key AND d.taxon_id=u.id
+    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    ORDER BY d.dataset_key, d.id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
 </mapper>

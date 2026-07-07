@@ -1,0 +1,4 @@
+taxonID	locality	occurrenceStatus	establishmentMeans	Invasiveness
+1	Mediterranean Sea	present	Alien	Invasive
+1	North Sea	present	Native	Uncertain
+1	Baltic Sea	present		Invasive

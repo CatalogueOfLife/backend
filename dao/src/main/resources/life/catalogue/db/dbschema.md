@@ -74,6 +74,104 @@ ALTER TABLE name_usage_archive ALTER COLUMN n_notho TYPE NAMEPART[] USING (CASE 
 ALTER TABLE parser_config ALTER COLUMN notho TYPE NAMEPART[] USING (CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END);
 ```
 
+#### 2026-07-03 relation synonym issue
+```
+ALTER TYPE ISSUE ADD VALUE 'RELATION_SYNONYM';
+```
+
+#### 2026-07-01 WDPA gazetteer
+```
+ALTER TYPE GAZETTEER ADD VALUE 'WDPA' AFTER 'TEOW';
+```
+
+#### 2026-06-17 hierarchy sync authorship update setting
+```sql
+CREATE TYPE SECTOR_AUTHORSHIP_UPDATE AS ENUM ('NONE', 'MISSING', 'ALWAYS');
+ALTER TABLE sector ADD COLUMN authorship_update SECTOR_AUTHORSHIP_UPDATE NOT NULL DEFAULT 'NONE';
+```
+
+#### 2026-06-10 rank series metrics update
+```sql
+-- update dataset metrics
+UPDATE dataset_import SET names_by_rank_count = names_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', names_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', names_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', names_by_rank_count -> 'SUBSERIES') 
+  WHERE names_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE dataset_import SET synonyms_by_rank_count = synonyms_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', synonyms_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', synonyms_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', synonyms_by_rank_count -> 'SUBSERIES') 
+  WHERE synonyms_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE dataset_import SET taxa_by_rank_count = taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', taxa_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', taxa_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', taxa_by_rank_count -> 'SUBSERIES') 
+  WHERE taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE dataset_import SET extinct_taxa_by_rank_count = extinct_taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', extinct_taxa_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', extinct_taxa_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', extinct_taxa_by_rank_count -> 'SUBSERIES') 
+  WHERE extinct_taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+
+-- update sector metrics
+UPDATE sector_import SET names_by_rank_count = names_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', names_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', names_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', names_by_rank_count -> 'SUBSERIES') 
+  WHERE names_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE sector_import SET synonyms_by_rank_count = synonyms_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', synonyms_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', synonyms_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', synonyms_by_rank_count -> 'SUBSERIES') 
+  WHERE synonyms_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE sector_import SET taxa_by_rank_count = taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', taxa_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', taxa_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', taxa_by_rank_count -> 'SUBSERIES') 
+  WHERE taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+UPDATE sector_import SET extinct_taxa_by_rank_count = extinct_taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES'] 
+  || hstore('SUPERSERIES_BOTANY', extinct_taxa_by_rank_count -> 'SUPERSERIES') 
+  || hstore('SERIES_BOTANY', extinct_taxa_by_rank_count -> 'SERIES') 
+  || hstore('SUBSERIES_BOTANY', extinct_taxa_by_rank_count -> 'SUBSERIES') 
+  WHERE extinct_taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+-- update taxon metrics
+UPDATE taxon_metrics SET taxa_by_rank_count = taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES']
+ || hstore('SUPERSERIES_BOTANY', taxa_by_rank_count -> 'SUPERSERIES')
+ || hstore('SERIES_BOTANY', taxa_by_rank_count -> 'SERIES')
+ || hstore('SUBSERIES_BOTANY', taxa_by_rank_count -> 'SUBSERIES')
+WHERE taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+CREATE INDEX name_series_zoo_rank_idx ON name(rank) WHERE rank IN ( 'SUPERSERIES_BOTANY', 'SERIES_BOTANY', 'SUBSERIES_BOTANY', 'SUPERSERIES_ZOOLOGY', 'SERIES_ZOOLOGY', 'SUBSERIES_ZOOLOGY' ); 
+CREATE INDEX name_usage_archive_series_zoo_rank_idx ON name_usage_archive(n_rank) WHERE n_rank IN ( 'SUPERSERIES_BOTANY', 'SERIES_BOTANY', 'SUBSERIES_BOTANY', 'SUPERSERIES_ZOOLOGY', 'SERIES_ZOOLOGY', 'SUBSERIES_ZOOLOGY' ); 
+  
+UPDATE name SET rank = 'SUPERSERIES_ZOOLOGY' WHERE rank = 'SUPERSERIES_BOTANY' AND code = 'ZOOLOGICAL';  
+UPDATE name SET rank = 'SERIES_ZOOLOGY' WHERE rank = 'SERIES_BOTANY' AND code = 'ZOOLOGICAL';  
+UPDATE name SET rank = 'SUBSERIES_ZOOLOGY' WHERE rank = 'SUBSERIES_BOTANY' AND code = 'ZOOLOGICAL';  
+
+UPDATE name_usage_archive SET n_rank = 'SUPERSERIES_ZOOLOGY' WHERE n_rank = 'SUPERSERIES_BOTANY' AND n_code = 'ZOOLOGICAL';  
+UPDATE name_usage_archive SET n_rank = 'SERIES_ZOOLOGY' WHERE n_rank = 'SERIES_BOTANY' AND n_code = 'ZOOLOGICAL';  
+UPDATE name_usage_archive SET n_rank = 'SUBSERIES_ZOOLOGY' WHERE n_rank = 'SUBSERIES_BOTANY' AND n_code = 'ZOOLOGICAL';  
+
+DROP INDEX name_series_zoo_rank_idx; 
+DROP INDEX name_usage_archive_series_zoo_rank_idx; 
+```
+
+#### 2026-06-10 GBIF sync delta tracking
+Track the GBIF registry `modified` timestamp we last synced per dataset, so the incremental sync can
+skip datasets that have not changed since the previous run and we can poll the registry far more often.
+```
+ALTER TABLE dataset ADD COLUMN gbif_modified TIMESTAMP WITHOUT TIME ZONE;
+```
+
 #### 2026-06-04 name-parser 3.16 code-specific series ranks
 name-parser 3.16 replaced the ambiguous generic series ranks (`SUPERSERIES`, `SERIES`, `SUBSERIES`)
 with code-specific ones. The generic ranks sat in the botanical block, so we rename them in place to
@@ -93,6 +191,12 @@ ALTER TYPE RANK ADD VALUE 'SUBSERIES_ZOOLOGY' AFTER 'SERIES_ZOOLOGY';
 #### 2026-05-16 add TEOW gazetteer
 ```
 ALTER TYPE GAZETTEER ADD VALUE 'TEOW' AFTER 'MRGID';
+```
+
+#### 2026-05-07 hierarchy sync sector mode
+```
+ALTER TYPE SECTOR_MODE ADD VALUE 'HIERARCHY';
+ALTER TABLE sector ADD COLUMN use_x_release BOOLEAN NOT NULL DEFAULT TRUE;
 ```
 
 #### 2026-05-04 redundant data issues

@@ -64,6 +64,44 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertEquals("10.1016/0303-2647(81)90050-2", n.getName().getPublishedInId()); // normalised DOI
   }
 
+  /**
+   * No synonym - pro parte or not - may point at another synonym once the normalizer has run.
+   * The proParteAcceptedIDs are taken verbatim from the source and can point at other synonyms.
+   * They must be relinked to those synonyms accepted taxa, otherwise supplementary data (distributions etc.)
+   * gets moved onto a synonym which validateAndDefaults then rejects, aborting the entire import.
+   * See the "no distributions check failed for Synonym" failure on the Brazilian fauna catalogue.
+   *
+   * Dataset 58: synonyms 200 and 300 reference each other as a pro parte accepted, while their
+   * own accepted taxa are 100 and 110 respectively.
+   */
+  @Test
+  public void testProParteSynonymTarget() throws Exception {
+    normalize(58);
+
+    // INVARIANT: after normalization no synonym may point at another synonym, neither via its accepted
+    // parent nor via a pro parte accepted id.
+    store.usages().allSynonyms().forEach(syn -> {
+      var p = store.usages().parent(syn);
+      if (p != null) {
+        assertTrue("synonym " + syn.getId() + " has a synonym as accepted parent " + p.getId(), p.isTaxon());
+      }
+      for (String accID : syn.proParteAcceptedIDs) {
+        var acc = store.usages().objByID(accID);
+        assertNotNull("pro parte accepted " + accID + " of synonym " + syn.getId() + " is missing", acc);
+        assertTrue("synonym " + syn.getId() + " has a synonym as pro parte accepted " + accID, acc.isTaxon());
+      }
+      assertTrue("synonym " + syn.getId() + " retained/received distributions", syn.distributions.isEmpty());
+    });
+
+    // the pro parte links pointing at the other synonym got relinked to that synonyms accepted taxon
+    assertEquals(Set.of("110"), usageByID("200").proParteAcceptedIDs);
+    assertEquals(Set.of("100"), usageByID("300").proParteAcceptedIDs);
+
+    // each synonyms distribution moved to all of its accepted taxa (own parent + pro parte)
+    assertEquals(2, usageByID("100").distributions.size());
+    assertEquals(2, usageByID("110").distributions.size());
+  }
+
   @Test
   public void testFks() throws Exception {
     normalize(43);
@@ -593,6 +631,41 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     }
     v = store.getVerbatim(p.getFirst().getVerbatimKey());
     assertNotNull(v);
+  }
+
+  /**
+   * WoRMS uses its custom Invasiveness term instead of dwc:degreeOfEstablishment.
+   * https://github.com/CatalogueOfLife/backend/issues/1511
+   */
+  @Test
+  public void wormsInvasiveness() throws Exception {
+    normalize(57);
+
+    var data = store.nameUsage("1");
+    var u = data.ud;
+    assertEquals(3, u.distributions.size());
+    for (var d : u.distributions) {
+      assertEquals(Gazetteer.TEXT, d.getArea().getGazetteer());
+      switch (d.getArea().getName()) {
+        case "Mediterranean Sea":
+          // WoRMS Invasiveness "Invasive" interpreted as degree of establishment
+          assertEquals(DegreeOfEstablishment.INVASIVE, d.getDegreeOfEstablishment());
+          assertEquals(EstablishmentMeans.INTRODUCED, d.getEstablishmentMeans());
+          break;
+        case "North Sea":
+          // "Uncertain" is a WoRMS Invasiveness value without a TDWG degree of establishment, accepted as empty
+          assertNull(d.getDegreeOfEstablishment());
+          assertEquals(EstablishmentMeans.NATIVE, d.getEstablishmentMeans());
+          break;
+        case "Baltic Sea":
+          // no establishmentMeans given: the explicit Invasiveness degree must survive the occurrenceStatus guess
+          assertEquals(DegreeOfEstablishment.INVASIVE, d.getDegreeOfEstablishment());
+          assertEquals(EstablishmentMeans.NATIVE, d.getEstablishmentMeans());
+          break;
+        default:
+          fail("unexpected area " + d.getArea().getName());
+      }
+    }
   }
 
   @Test

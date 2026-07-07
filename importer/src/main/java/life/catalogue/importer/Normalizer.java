@@ -370,8 +370,12 @@ public class Normalizer implements Callable<Boolean> {
 
     // cleanup synonym & parent relations
     resolveSynonymChains();
+    resolveProParteSynonyms();
     resolveSynonymParents();
     cutParentCycles();
+
+    // make sure taxon concept relations & species interactions only ever reference accepted taxa
+    resolveRelationPartners();
 
     // cleanup basionym rels
     cutBasionymChains();
@@ -873,14 +877,16 @@ public class Normalizer implements Callable<Boolean> {
           synChains.incrementAndGet();
           var chain = new ArrayList<UsageData>();
           chain.add(syn);
-          while (p != null && p.isSynonym() && listContainsID(chain, p.getId())) {
+          // walk up the synonym chain until we reach an accepted taxon, stopping on a cycle
+          while (p != null && p.isSynonym() && !containsID(chain, p.getId())) {
             chain.add(p);
             p = store.usages().parent(p);
           }
           var accID = p == null || p.isSynonym() ? null : p.getId();
+          // relink every synonym in the chain directly to the accepted taxon (or orphan it if none was found)
           for (var s : chain) {
             addUsageIssue(s, Issue.CHAINED_SYNONYM);
-            store.usages().assignParent(syn, accID);
+            store.usages().assignParent(s, accID);
           }
         } else if (Objects.equals(p.nameID, syn.nameID)){
           // the accepted name of the synonym is identical
@@ -893,8 +899,160 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("Resolved {} chained synonyms", synChains.get());
   }
 
-  private boolean listContainsID(List<UsageData> list, final String id) {
-    return list.stream().noneMatch(u -> Objects.equals(u.getId(), id));
+  private boolean containsID(List<UsageData> list, final String id) {
+    return list.stream().anyMatch(u -> Objects.equals(u.getId(), id));
+  }
+
+  /**
+   * Makes sure pro parte synonyms only ever point at accepted taxa.
+   * Unlike a synonyms parentId the proParteAcceptedIDs are taken verbatim from the source and are never
+   * sanitized otherwise. They can point at other synonyms, at the synonym itself or be invalid.
+   * As synonym parentIds have been resolved to a direct accepted taxon by resolveSynonymChains by now,
+   * we relink each pro parte accepted id that points at a synonym to that synonyms accepted taxon
+   * and drop ids that cannot be resolved to an accepted taxon, point at the synonym itself
+   * or merely duplicate the main accepted parent.
+   */
+  private void resolveProParteSynonyms() {
+    LOG.info("Resolve pro parte synonyms");
+    AtomicInteger relinked = new AtomicInteger();
+    AtomicInteger dropped = new AtomicInteger();
+    store.usages().allSynonyms().forEach(syn -> {
+      if (syn.proParteAcceptedIDs.isEmpty()) {
+        return;
+      }
+      final Set<String> resolved = new HashSet<>();
+      boolean changed = false;
+      for (String id : syn.proParteAcceptedIDs) {
+        String accID = acceptedTaxonID(id);
+        if (accID == null || accID.equals(syn.getId()) || accID.equals(syn.usage.getParentId())) {
+          // unresolvable, self reference or just a duplicate of the main accepted parent
+          if (accID == null) {
+            addUsageIssue(syn, Issue.ACCEPTED_ID_INVALID);
+          }
+          dropped.incrementAndGet();
+          changed = true;
+        } else {
+          if (!accID.equals(id)) {
+            addUsageIssue(syn, Issue.CHAINED_SYNONYM);
+            relinked.incrementAndGet();
+            changed = true;
+          }
+          resolved.add(accID);
+        }
+      }
+      if (changed) {
+        syn.proParteAcceptedIDs.clear();
+        syn.proParteAcceptedIDs.addAll(resolved);
+        store.usages().update(syn);
+      }
+    });
+    LOG.info("Relinked {} and dropped {} pro parte synonym relations", relinked, dropped);
+  }
+
+  /**
+   * Resolves a usage id to its accepted taxon id.
+   * Synonyms are followed to their accepted parent which has been resolved to a direct accepted taxon
+   * by resolveSynonymChains already.
+   * @return the accepted taxon id or null if the id is unknown or does not resolve to an accepted taxon
+   */
+  private String acceptedTaxonID(String id) {
+    var u = store.usages().objByID(id);
+    if (u == null) {
+      return null;
+    } else if (u.isTaxon()) {
+      return u.getId();
+    } else if (u.isSynonym()) {
+      var p = store.usages().parent(u);
+      return p != null && p.isTaxon() ? p.getId() : null;
+    }
+    return null; // bare name
+  }
+
+  /**
+   * Makes sure taxon concept relations and species interactions only ever reference accepted taxa.
+   * Biologically a relation between synonyms makes no sense, but source data can point either the subject
+   * or the related usage at a synonym. As synonym parentIds have been resolved to a direct accepted taxon
+   * by resolveSynonymChains by now, we relink each end that points at a synonym to that synonyms accepted taxon.
+   * Relations that cannot be resolved to an accepted taxon, or which collapse into a self reference after
+   * relinking, are dropped. All affected relations are flagged with {@link Issue#RELATION_SYNONYM}.
+   */
+  private void resolveRelationPartners() {
+    LOG.info("Resolve synonym references in taxon relations");
+    AtomicInteger relinked = new AtomicInteger();
+    AtomicInteger dropped = new AtomicInteger();
+    store.usages().all().forEach(u -> {
+      boolean changed = resolveRelations(u, u.tcRelations, true, relinked, dropped);
+      // species interactions may have no related id at all (related scientific name only)
+      changed |= resolveRelations(u, u.spiRelations, false, relinked, dropped);
+      if (changed) {
+        store.usages().update(u);
+      }
+    });
+    LOG.info("Relinked {} and dropped {} taxon relations referencing synonyms", relinked, dropped);
+  }
+
+  /**
+   * @param requireRelatedID true if a related taxon id is mandatory (taxon concept relations), false for species interactions
+   * @return true if the relation list was modified
+   */
+  private <T extends Enum<?>> boolean resolveRelations(UsageData u, List<RelationData<T>> rels, boolean requireRelatedID,
+                                                       AtomicInteger relinked, AtomicInteger dropped) {
+    if (rels.isEmpty()) {
+      return false;
+    }
+    boolean changed = false;
+    var iter = rels.iterator();
+    while (iter.hasNext()) {
+      var rel = iter.next();
+      final String from = acceptedTaxonID(rel.getFromID());
+      final String to = rel.getToID();
+      final String resolvedTo = to == null ? null : acceptedTaxonID(to);
+      final boolean relatedBroken = to != null && resolvedTo == null;
+
+      // subject unresolvable, or a mandatory related taxon unresolvable -> drop
+      if (from == null || (relatedBroken && requireRelatedID)) {
+        flagRelationSynonym(u, rel);
+        iter.remove();
+        dropped.incrementAndGet();
+        changed = true;
+        continue;
+      }
+      // optional related taxon does not resolve to an accepted taxon -> keep relation but drop the broken id
+      if (relatedBroken) {
+        flagRelationSynonym(u, rel);
+        rel.setToID(null);
+        relinked.incrementAndGet();
+        changed = true;
+        continue;
+      }
+
+      final boolean fromChanged = !from.equals(rel.getFromID());
+      final boolean toChanged = resolvedTo != null && !resolvedTo.equals(to);
+      if (fromChanged || toChanged) {
+        flagRelationSynonym(u, rel);
+        if (from.equals(resolvedTo)) {
+          // relinking collapsed the relation into a self reference
+          iter.remove();
+          dropped.incrementAndGet();
+        } else {
+          rel.setFromID(from);
+          if (toChanged) {
+            rel.setToID(resolvedTo);
+          }
+          relinked.incrementAndGet();
+        }
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+  private void flagRelationSynonym(UsageData u, RelationData<?> rel) {
+    if (rel.getVerbatimKey() != null) {
+      store.addIssues(rel.getVerbatimKey(), Issue.RELATION_SYNONYM);
+    } else {
+      addUsageIssue(u, Issue.RELATION_SYNONYM);
+    }
   }
 
   /**

@@ -1,0 +1,89 @@
+name: Identifier scope request
+description: Request a new identifier scope or a change to an existing one for the ChecklistBank scope registry.
+title: "[identifier-scope]: "
+labels: ["identifier-scope"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form to **add a new scope** or **change an existing scope** in the ChecklistBank
+        identifier scope registry (served at `/vocab/identifier-scope`).
+
+        A scope is the short, lowercase prefix of a CURIE-style identifier written as `scope:id`
+        (e.g. `gbif:2704179`). See the [About → Identifiers](https://www.checklistbank.org/about/identifiers)
+        page for background.
+
+        Only the **Scope** and **Title** are required. Fill in as many of the other fields as apply.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Request type
+      options:
+        - Add a new scope
+        - Change an existing scope
+        - Remove a scope
+    validations:
+      required: true
+  - type: input
+    id: scope
+    attributes:
+      label: Scope
+      description: The lowercase prefix, unique across the registry. Letters, digits and hyphens only.
+      placeholder: e.g. worms
+    validations:
+      required: true
+  - type: input
+    id: title
+    attributes:
+      label: Title
+      description: Human-readable name of the issuing authority or identifier system.
+      placeholder: e.g. World Register of Marine Species
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A short sentence describing what the identifier denotes.
+      placeholder: e.g. WoRMS AphiaID for a marine taxon.
+  - type: input
+    id: link
+    attributes:
+      label: Homepage
+      description: URL of the issuing authority's website.
+      placeholder: https://www.marinespecies.org
+  - type: input
+    id: resolver
+    attributes:
+      label: Resolver template
+      description: URL template that resolves a single id. Use `{id}` as the placeholder.
+      placeholder: https://www.marinespecies.org/aphia.php?p=taxdetails&id={id}
+  - type: input
+    id: example
+    attributes:
+      label: Example id
+      description: A real local id (without the scope prefix) that resolves via the template above.
+      placeholder: e.g. 212808
+  - type: input
+    id: regex
+    attributes:
+      label: ID pattern (regex)
+      description: Optional anchored regular expression every id of this scope must match.
+      placeholder: ^[0-9]+$
+  - type: input
+    id: datasetKey
+    attributes:
+      label: ChecklistBank dataset key
+      description: Integer dataset key, if this scope is backed by a dataset in ChecklistBank.
+      placeholder: e.g. 2011
+  - type: input
+    id: wikidataProperty
+    attributes:
+      label: Wikidata property
+      description: The Wikidata property id for this identifier, if one exists (links to wikidata.org/wiki/Property:<id>).
+      placeholder: e.g. P850
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional notes
+      description: Justification, source of the information, or anything else relevant to the request.
