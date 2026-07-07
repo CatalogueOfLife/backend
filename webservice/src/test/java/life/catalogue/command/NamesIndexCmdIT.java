@@ -83,7 +83,9 @@ public class NamesIndexCmdIT extends CmdTestBase {
           throw new IllegalStateException("Non unique name "+sn+" in names index");
         }
       });
-      assertEquals(284, cnt);
+      // total distinct names index entries these fixtures produce under the current name parser;
+      // expect this to shift when the parser canonicalization changes (name-parser v4.2: 284 -> 281)
+      assertEquals(281, cnt);
     }
   }
 }
