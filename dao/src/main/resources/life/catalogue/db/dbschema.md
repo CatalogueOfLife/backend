@@ -11,6 +11,15 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-07 sector name_filter regex
+name-parser v4 folded `NameType.OTU` into `OTHER`, so a sector's `name_types` filter can no longer
+isolate OTU names (e.g. BOLD or UNITE SH names) from other `OTHER` type names. The new optional
+`name_filter` column holds a regular expression; when set, only usages whose scientific name fully
+matches the pattern are synced.
+```
+ALTER TABLE sector ADD COLUMN name_filter TEXT;
+```
+
 #### 2026-06-24 name-parser v4.2 dropped NameType.VIRUS
 name-parser v4.2 removed the `VIRUS` name type: viruses are now `OTHER` and carry `NomCode.VIRUS`
 instead (the parse exception exposes the code). Preserve the virus signal in the `code` column, then

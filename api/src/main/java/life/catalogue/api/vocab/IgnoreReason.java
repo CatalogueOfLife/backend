@@ -16,6 +16,7 @@ public enum IgnoreReason {
   RANK(u -> u.getName().getRank()),
   EXTINCT(u -> u.isTaxon() ? u.asTaxon().isExtinct() : null),
   INCONSISTENT_NAME(),
+  NAME_FILTER(u -> u.getName().getScientificName()),
   IGNORED_PARENT(NameUsageBase::getParentId),
   // ignored name types
   NAME_SCIENTIFIC(),

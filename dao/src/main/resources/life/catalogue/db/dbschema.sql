@@ -1151,6 +1151,7 @@ CREATE TABLE sector (
   name_types NAMETYPE[] DEFAULT NULL,
   name_status_exclusion NOMSTATUS[] DEFAULT NULL,
   extinct_filter BOOLEAN,
+  name_filter TEXT,
   note TEXT,
   UNIQUE (dataset_key, subject_dataset_key, subject_id),
   PRIMARY KEY (dataset_key, id)

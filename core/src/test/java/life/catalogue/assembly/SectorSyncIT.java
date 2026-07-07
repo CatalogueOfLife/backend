@@ -735,6 +735,42 @@ public class SectorSyncIT extends SectorSyncTestBase {
     assertTree("cat38.txt");
   }
 
+  /**
+   * name-parser v4 folded NameType.OTU into OTHER, so a sector can no longer isolate OTU names such as
+   * BOLD or UNITE SH names from other OTHER type names by name type alone. A sector nameFilter regex
+   * lets us sync only the names whose scientific name fully matches the pattern.
+   * Dataset 38 has exactly two OTHER type names: "BOLD:AAC0545" (matches BOLD:.*) and
+   * "I want a hamburger!" (does not).
+   */
+  @Test
+  public void mergeWithNameFilter() throws Exception {
+    final int srcDatasetKey = dataRule.mapKey(DataFormat.COLDP, 38);
+    print(srcDatasetKey);
+
+    final NameUsageBase plants = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
+    // merge the whole odd-name-types source but keep only names matching the BOLD OTU pattern
+    createSector(Sector.Mode.MERGE, srcDatasetKey, null, plants, s -> {
+      s.setNameFilter("BOLD:.*");
+      s.setRanks(null);
+      s.setCode(NomCode.BOTANICAL);
+      disableAutoBlocking(s);
+    });
+    var imports = syncAll(s -> s.getMode() == Sector.Mode.MERGE, null);
+    print(Datasets.COL);
+
+    // the BOLD OTU name matches the filter and was synced
+    var bold = getByName(Datasets.COL, Rank.SPECIES, "BOLD:AAC0545");
+    assertNotNull("BOLD OTU name should have been synced", bold);
+    assertNotNull(bold.getSectorKey());
+    // the other OTHER type name does not match and stays out
+    assertNull("non-matching OTHER name must not sync", getByName(Datasets.COL, Rank.SPECIES, "I want a hamburger!"));
+    // a scientific name that does not match the regex is excluded as well
+    assertNull("scientific name not matching the filter must not sync", getByName(Datasets.COL, Rank.SPECIES, "Crepis acuminata nom.nud."));
+    // the filter is recorded as the ignore reason
+    assertTrue("expected NAME_FILTER ignores to be counted", imports.stream()
+      .anyMatch(si -> si.getIgnoredByReasonCount().getOrDefault(IgnoreReason.NAME_FILTER, 0) > 0));
+  }
+
   void mergeAndTest(NameUsageBase plant) throws IOException {
     syncMergesOnly();
 

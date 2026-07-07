@@ -15,6 +15,8 @@ import org.gbif.nameparser.api.*;
 
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.annotation.Nullable;
 
@@ -39,6 +41,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final boolean syncSynonyms;
   protected final boolean syncReferences;
   protected final Set<Rank> ranks;
+  protected final Pattern nameFilter; // compiled sector.nameFilter regex, or null
   protected static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS, Rank.SUBGENUS, Rank.SPECIES);
   protected final List<Rank> implicitRanks = new ArrayList<>();
 
@@ -107,6 +110,17 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (sector.getNameStatusExclusion() != null && !sector.getNameStatusExclusion().isEmpty())  {
       LOG.info("Include only name status: {}", Joiner.on(", ").join(sector.getNameStatusExclusion()));
     }
+
+    Pattern filter = null;
+    if (sector.getNameFilter() != null && !sector.getNameFilter().isBlank()) {
+      try {
+        filter = Pattern.compile(sector.getNameFilter());
+      } catch (PatternSyntaxException e) {
+        throw new IllegalArgumentException("Invalid sector name filter regex '" + sector.getNameFilter() + "': " + e.getMessage(), e);
+      }
+      LOG.info("Include only names matching regex: {}", sector.getNameFilter());
+    }
+    this.nameFilter = filter;
 
     this.ranks = Preconditions.checkNotNull(sector.getRanks(), "Sector ranks required");
     if (ranks.size() < Rank.values().length) {
@@ -540,6 +554,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // apply name type filter if exists
     if (sector.getNameTypes() != null && !sector.getNameTypes().isEmpty() && !sector.getNameTypes().contains(n.getType())) {
       return incIgnored(IgnoreReason.reasonByNameType(n.getType()), u);
+    }
+    // apply name regex filter if exists - only include usages whose scientific name fully matches
+    if (nameFilter != null && (n.getScientificName() == null || !nameFilter.matcher(n.getScientificName()).matches())) {
+      return incIgnored(IgnoreReason.NAME_FILTER, u);
     }
     // apply name status filter if exists
     if (n.getNomStatus() != null && sector.getNameStatusExclusion() != null && sector.getNameStatusExclusion().contains(n.getNomStatus())) {

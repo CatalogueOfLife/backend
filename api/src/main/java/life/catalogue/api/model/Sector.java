@@ -45,6 +45,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private Set<EntityType> entities;
   private Set<NameType> nameTypes;
   private Set<NomStatus> nameStatusExclusion;
+  private String nameFilter; // optional regex; if set only usages whose scientificName fully matches are synced
   private Boolean extinctFilter = null; // true only syncs extinct, false only extant, null all
   private boolean copyAccordingTo = false;
   private boolean removeOrdinals = false;
@@ -95,6 +96,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.entities = other.entities == null ? null : EnumSet.copyOf(other.entities);
     this.nameTypes = other.nameTypes == null ? null : EnumSet.copyOf(other.nameTypes);
     this.nameStatusExclusion = other.nameStatusExclusion == null ? null : EnumSet.copyOf(other.nameStatusExclusion);
+    this.nameFilter = other.nameFilter;
     this.extinctFilter = other.extinctFilter;
     this.createImplicitNames = other.createImplicitNames;
     this.note = other.note;
@@ -263,6 +265,19 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.nameStatusExclusion = nameStatusExclusion;
   }
 
+  /**
+   * @return an optional regular expression. If given, only usages whose scientific name fully matches
+   * the pattern are included in a sync. Useful to sync only a subset of OTU/OTHER type names such as
+   * BOLD or UNITE SH names that can no longer be isolated by name type alone.
+   */
+  public String getNameFilter() {
+    return nameFilter;
+  }
+
+  public void setNameFilter(String nameFilter) {
+    this.nameFilter = nameFilter;
+  }
+
   public Boolean getExtinctFilter() {
     return extinctFilter;
   }
@@ -320,13 +335,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
            && Objects.equals(entities, sector.entities)
            && Objects.equals(nameTypes, sector.nameTypes)
            && Objects.equals(nameStatusExclusion, sector.nameStatusExclusion)
+           && Objects.equals(nameFilter, sector.nameFilter)
            && Objects.equals(extinctFilter, sector.extinctFilter)
            && Objects.equals(note, sector.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, priority, syncAttempt, datasetAttempt, code, createImplicitNames, ranks, entities, nameTypes, nameStatusExclusion, extinctFilter, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, priority, syncAttempt, datasetAttempt, code, createImplicitNames, ranks, entities, nameTypes, nameStatusExclusion, nameFilter, extinctFilter, note);
   }
 
   @Override
@@ -364,6 +380,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     private Set<EntityType> entities;
     private Set<NameType> nameTypes;
     private Set<NomStatus> nameStatusExclusion;
+    private String nameFilter;
     private boolean copyAccordingTo;
     private boolean removeOrdinals;
     private boolean createImplicitNames;
@@ -473,6 +490,11 @@ public class Sector extends DatasetScopedEntity<Integer> {
       return this;
     }
 
+    public Builder nameFilter(String nameFilter) {
+      this.nameFilter = nameFilter;
+      return this;
+    }
+
     public Builder copyAccordingTo(boolean copyAccordingTo) {
       this.copyAccordingTo = copyAccordingTo;
       return this;
@@ -520,6 +542,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
       sector.setEntities(entities);
       sector.setNameTypes(nameTypes);
       sector.setNameStatusExclusion(nameStatusExclusion);
+      sector.setNameFilter(nameFilter);
       sector.setCopyAccordingTo(copyAccordingTo);
       sector.setRemoveOrdinals(removeOrdinals);
       sector.setCreateImplicitNames(createImplicitNames);
