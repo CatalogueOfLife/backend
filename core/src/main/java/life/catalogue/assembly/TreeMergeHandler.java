@@ -309,6 +309,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
+    // shield protected groups: neither update existing taxa nor insert new data anywhere within a protected subtree.
+    // the anchor is the matched target usage (update) or the parent we would attach a new usage to (create).
+    if (cfg != null && cfg.hasProtectedGroups()) {
+      final String anchorId = match.isMatch() ? match.usage.getId() : (parent != null ? parent.id : null);
+      if (isWithinProtectedGroup(anchorId)) {
+        LOG.debug("Ignore {} {} [{}] as its placement at {} is within a protected group", nu.getRank(), nu.getLabel(), nu.getId(), anchorId);
+        ignored++;
+        return;
+      }
+    }
+
     // finally create or update records
     SimpleNameWithNidx sn = null;
     if (match.isMatch()) {
@@ -483,6 +494,28 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   private static boolean containsID(List<SimpleNameCached> usages,  String id){
     return usages != null && usages.stream().anyMatch(u -> u.getId().equals(id));
+  }
+
+  /**
+   * @return true if the given target usage belongs to a protected group, i.e. it is a protected root itself
+   * or any of its ancestors is a protected root. Usages within a protected group must not receive any
+   * merge updates and no new data may be inserted below them.
+   */
+  private boolean isWithinProtectedGroup(String usageId) {
+    if (usageId == null || cfg == null || !cfg.hasProtectedGroups()) {
+      return false;
+    }
+    try {
+      // classification includes the usage itself and all its ancestors
+      for (var u : matcher.store().getClassification(usageId)) {
+        if (cfg.isProtectedRoot(u.getId())) {
+          return true;
+        }
+      }
+    } catch (RuntimeException e) {
+      LOG.warn("Unable to resolve classification for {} while checking protected groups", usageId, e);
+    }
+    return false;
   }
 
   @Override
