@@ -73,12 +73,7 @@ public class NameReconciliationResource extends AbstractParserReconciliationReso
   }
 
   private ParsedNameUsage parse(String name, NomCode code, Rank rank) {
-    try {
-      return NameParser.PARSER.parse(name, null, rank, code, IssueContainer.VOID).orElse(null);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      return null;
-    }
+    return NameParser.PARSER.parse(name, null, rank, code, IssueContainer.VOID).orElse(null);
   }
 
   private NomCode paramCode(MultivaluedMap<String, String> params) {
