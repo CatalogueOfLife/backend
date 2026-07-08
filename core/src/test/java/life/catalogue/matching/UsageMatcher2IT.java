@@ -180,6 +180,43 @@ public class UsageMatcher2IT {
     assertEquals("sg3", match.usage.getId());
   }
 
+  /**
+   * Same-canonical homonyms with different authorship must stay separate even though, in the single-tier
+   * names index, all usages of one canonical name share a single namesIndexId. Separation must therefore
+   * come from comparing the live authorship, not from the (now constant) nidx id.
+   * Fixtures: oen1 = Oenanthe L. (plant), oen2 = Oenanthe Vieillot, 1816 (bird), oen3 = Oenanthe Pallas, 1771 (synonym).
+   */
+  @Test
+  public void differentAuthorHomonymsStaySeparate() throws Exception {
+    // Vieillot authorship must resolve to the bird genus, not the Linnaean plant nor the Pallas synonym.
+    // (label "Oenanthe Vieillot" != any candidate label, so this only works via live authorship comparison)
+    var match = match(Rank.GENUS, "Oenanthe", "Vieillot", null, null);
+    assertEquals("oen2", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
+
+    // Linnaean authorship must resolve to the plant genus, not the bird
+    match = match(Rank.GENUS, "Oenanthe", "L.", null, null);
+    assertEquals("oen1", match.usage.getId());
+
+    // an author matching none of the three same-canonical homonyms must not match at all
+    match = match(Rank.GENUS, "Oenanthe", "Döring", null, null);
+    assertFalse(match.isMatch());
+    assertEquals(MatchType.NONE, match.type);
+  }
+
+  /**
+   * Two same-canonical names that only differ by an uncomparable rank (here SUBGENUS vs INFRAGENERIC_NAME)
+   * must not be split by authorship when they share the same author. This guards the removal of the old
+   * sameNidxWithoutRank rank re-match logic: rank separation is left to ranksDiffer (which keeps uncomparable
+   * ranks together), while authorship decides between the two subgenus homonyms.
+   * Fixtures: sg2 = Chaetocnema (Chaetocnema) Stephens, 1831; sg3 = Chaetocnema (Chaetocnema) Ruan et al., 2019.
+   */
+  @Test
+  public void sameAuthorAcrossRankMatches() throws Exception {
+    var match = match(Rank.INFRAGENERIC_NAME, "Chaetocnema (Chaetocnema)", "Stephens, 1831", null, null);
+    assertEquals("sg2", match.usage.getId());
+  }
+
   UsageMatch match(Rank rank, String name, String authors, TaxonomicStatus status, NomCode code, SimpleName... parents) throws InterruptedException {
     return UsageMatcherIT.match(matcher, utils, rank, name, authors, status, code, parents);
   }

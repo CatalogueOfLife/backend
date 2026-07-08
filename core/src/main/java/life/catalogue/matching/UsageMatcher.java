@@ -344,15 +344,15 @@ public class UsageMatcher implements AutoCloseable {
     // remove canonical matches between 2 qualified, non suprageneric names
     // for genus matches we keep the canonical matches and compare their family further down
     if (qualifiedName && !nu.getRank().isGenusOrSuprageneric()) {
-      existing.removeIf(u -> u.hasAuthorship() && differentNidxConsidersRank(u, nu) );
+      existing.removeIf(u -> u.hasAuthorship() && differentAuthorship(u, nu) );
     }
 
     // remove canonical matches between 2 qualified genus names, UNLESS they are in the exact same family!
     if (qualifiedName && nu.getRank() == Rank.GENUS) {
-      existing.removeIf(u -> u.hasAuthorship() && differentNidxConsidersRank(u, nu) && !sameFamily(u, nu.getClassification()));
+      existing.removeIf(u -> u.hasAuthorship() && differentAuthorship(u, nu) && !sameFamily(u, nu.getClassification()));
       // snap if there is just one genus left?
       snap = !existing.isEmpty() && existing.stream()
-        .allMatch(u -> u.hasAuthorship() && !u.getNamesIndexId().equals(nu.getNamesIndexId()));
+        .allMatch(u -> u.hasAuthorship() && differentAuthorship(u, nu));
     }
 
     // shortcut if no candidates are left
@@ -409,7 +409,7 @@ public class UsageMatcher implements AutoCloseable {
       boolean onlyUseIfExact = false;
       SimpleNameClassified<SimpleNameCached> match = null;
       for (var u : existing) {
-        if (u.getNamesIndexId().equals(nu.getNamesIndexId())) {
+        if (!differentAuthorship(u, nu)) {
           boolean exact = u.getLabel().equalsIgnoreCase(nu.getLabel());
           if (match == null) {
             match = u;
@@ -561,12 +561,15 @@ public class UsageMatcher implements AutoCloseable {
     }
   }
 
-  private boolean differentNidxConsidersRank(SimpleNameCached u, SimpleNameCached nu) {
-    return !u.getNamesIndexId().equals(nu.getNamesIndexId()) && // nidx encodes the exact rank,
-      // ... but we want uncomparable ranks to potentially match, e.g. infraspecific_name & subspecies
-      (u.getRank() == nu.getRank() ||
-        ((u.getRank().isUncomparable() || nu.getRank().isUncomparable()) && !sameNidxWithoutRank(u))
-      );
+  /**
+   * @return true if the two same-canonical names have clearly different authorship, so they should be
+   *         treated as different names. Names without comparable authorship are not considered different.
+   */
+  private boolean differentAuthorship(SimpleNameCached u, SimpleNameCached nu) {
+    if (!u.hasAuthorship() || !nu.hasAuthorship()) {
+      return false; // cannot tell -> not different, let other filters decide
+    }
+    return authComp.compare(parseSciName(u), parseSciName(nu)) == Equality.DIFFERENT;
   }
 
   private ScientificName parseSciName(SimpleName sn) {
@@ -585,15 +588,6 @@ public class UsageMatcher implements AutoCloseable {
       .map(SimpleName::getRank)
       .filter(r -> !r.isUncomparable())
       .findFirst();
-  }
-
-  /**
-   * Rematches with the same rank to see if nidx still differ
-   * @return true if the names, applied with the same rank, match to the same nidx
-   */
-  private boolean sameNidxWithoutRank(SimpleNameCached u) {
-    var match = nameIndex.match(u, false, false);
-    return match.hasMatch() && Objects.equals(u.getNamesIndexId(), match.getNameKey());
   }
 
   private boolean sameFamily(SimpleNameClassified<SimpleNameCached> u, List<SimpleNameCached> parents) {
