@@ -76,7 +76,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
     utils = new MatchingUtils(nameIndex);
     // same construction as UsageMatcher: reuse the names index own comparator when available so
     // author matching (used to disambiguate bare-name merge candidates) behaves identically
-    this.authComp = nameIndex instanceof NameIndexImpl ? ((NameIndexImpl) nameIndex).getAuthComp() : new AuthorComparator(AuthorshipNormalizer.INSTANCE);
+    this.authComp = nameIndex instanceof NameIndexImpl
+      ? ((NameIndexImpl) nameIndex).getAuthComp()
+      : new AuthorComparator(AuthorshipNormalizer.INSTANCE);
 
     // figure out the lowest insertion point in the project/release
     // a) a target is given
