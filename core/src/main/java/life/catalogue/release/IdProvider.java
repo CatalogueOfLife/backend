@@ -698,22 +698,6 @@ public class IdProvider {
         return 0;
       }
     }
-    // exact names index
-    if (Objects.equals(n.getNamesIndexId(), r.nxId)) {
-      if (n.isCanonical()) {
-        // both canonical
-        score += 5;
-      } else {
-        // both qualified names
-        score += 10;
-      }
-    } else if (n.isCanonical() || r.isCanonical()) {
-      // one is canonical, the other not
-      score += 2;
-    } else {
-      // both are qualified names but with different names index ids
-      score -= 10;
-    }
     // match type
     score += matchTypeScore(n.getNamesIndexMatchType());
     score += matchTypeScore(r.matchType);
