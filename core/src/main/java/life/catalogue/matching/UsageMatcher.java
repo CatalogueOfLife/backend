@@ -9,6 +9,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.matching.authorship.AuthorComparator;
+import life.catalogue.matching.authorship.YearComparator;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.parser.NameParser;
@@ -37,6 +38,9 @@ import com.google.common.base.Supplier;
  */
 public class UsageMatcher implements AutoCloseable {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcher.class);
+  // lenient publication-year tolerance when disambiguating homonyms by a year-only authorship:
+  // years within this many years of each other are treated as the same (dates are often cited off by one)
+  private final static int YEAR_DIFF_ALLOWED = 1;
   protected final boolean keepStoreOpen;
   protected final int datasetKey;
   private final NameIndex nameIndex;
@@ -355,6 +359,21 @@ public class UsageMatcher implements AutoCloseable {
         .allMatch(u -> u.hasAuthorship() && differentAuthorship(u, nu));
     }
 
+    // year-only authorship: the query carries a publication year but no author name.
+    // The AuthorComparator cannot line a bare year up against an author surname (it yields UNKNOWN), so the
+    // author-difference filters above leave same-canonical homonyms unseparated. Disambiguate on the year
+    // directly: a candidate only fits a year-only query if it carries a year within tolerance. Candidates
+    // without any year, or with a clearly different year, are not this name.
+    if (isYearOnlyAuthorship(nu)) {
+      final String nuYear = authorshipYear(nu);
+      if (nuYear != null) {
+        existing.removeIf(u -> {
+          String uy = u.hasAuthorship() ? authorshipYear(u) : null;
+          return uy == null || new YearComparator(YEAR_DIFF_ALLOWED, uy, nuYear).compare() == Equality.DIFFERENT;
+        });
+      }
+    }
+
     // shortcut if no candidates are left
     if (existing.isEmpty()) {
       return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
@@ -570,6 +589,47 @@ public class UsageMatcher implements AutoCloseable {
       return false; // cannot tell -> not different, let other filters decide
     }
     return authComp.compare(parseSciName(u), parseSciName(nu)) == Equality.DIFFERENT;
+  }
+
+  /**
+   * @return true if the name has a publication year in its authorship but no author name at all,
+   *         e.g. a bare "1816". Such authorship cannot be compared to author surnames and is handled
+   *         by a dedicated year comparison instead.
+   */
+  private boolean isYearOnlyAuthorship(SimpleNameCached sn) {
+    if (!sn.hasAuthorship()) {
+      return false;
+    }
+    var opt = NameParser.PARSER.parseAuthorship(sn.getAuthorship());
+    if (opt.isEmpty()) {
+      return false;
+    }
+    var a = opt.get();
+    var ca = a.getCombinationAuthorship();
+    var ba = a.getBasionymAuthorship();
+    boolean hasYear = (ca != null && ca.getYear() != null) || (ba != null && ba.getYear() != null);
+    boolean hasAuthors = (ca != null && !ca.getAuthors().isEmpty()) || (ba != null && !ba.getAuthors().isEmpty());
+    return hasYear && !hasAuthors;
+  }
+
+  /**
+   * @return the publication year string of the name's authorship (combination preferred over basionym), or null if none
+   */
+  private String authorshipYear(SimpleNameCached sn) {
+    if (!sn.hasAuthorship()) {
+      return null;
+    }
+    var opt = NameParser.PARSER.parseAuthorship(sn.getAuthorship());
+    if (opt.isEmpty()) {
+      return null;
+    }
+    var a = opt.get();
+    var ca = a.getCombinationAuthorship();
+    if (ca != null && ca.getYear() != null) {
+      return ca.getYear();
+    }
+    var ba = a.getBasionymAuthorship();
+    return ba != null ? ba.getYear() : null;
   }
 
   private ScientificName parseSciName(SimpleName sn) {
