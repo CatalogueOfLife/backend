@@ -154,6 +154,7 @@ All DAOs extend `DataEntityDao<Key, Entity, Mapper>`:
 
 **Name Index:**
 FastUtil-based in-memory index for rapid taxonomic name matching. Rebuilt from database on startup. Used during imports and sector synchronization.
+Single-tier & canonical-only: every entry is a canonical name (rank `UNRANKED`, no authorship), so `names_index.canonical_id` always equals `id` and every `name_match.index_id` points straight at a canonical entry. `IndexName.getCanonicalId()` returns the key. Matching compares normalized canonical name strings only, yielding `MatchType` `EXACT` (identical canonical), `VARIANT` (differs only by unicode/punctuation), or `NONE` — authorship and rank are never stored in the index. Homonym separation therefore lives in `UsageMatcher`, which compares the live usage authorship via `AuthorComparator` (with a lenient year comparison for year-only authorship) and the live ranks. `byCanonical()` returns empty (there are no child entries to group).
 
 **Extended Release (XRelease):**
 The most complex pipeline in the codebase. Builds an extended release by merging external datasets (via sectors) into a base public release. 
