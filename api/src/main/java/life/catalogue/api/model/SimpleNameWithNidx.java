@@ -79,7 +79,8 @@ public class SimpleNameWithNidx extends SimpleName {
     if (m.hasMatch()) {
       setNamesIndexMatchType(m.getType());
       setNamesIndexId(m.getName().getKey());
-      setCanonicalId(m.getName().getCanonicalId());
+      // single-tier index: the matched IndexName is its own canonical, so its key is the canonical id
+      setCanonicalId(m.getName().getKey());
 
     } else {
       setNamesIndexMatchType(MatchType.NONE);

@@ -64,7 +64,7 @@ public interface NameIndex extends Managed, AutoCloseable {
   default Integer getCanonical(Integer key) {
     var ni = get(key);
     if (ni != null) {
-      return ni.getCanonicalId();
+      return ni.getKey();
     }
     return null;
   }

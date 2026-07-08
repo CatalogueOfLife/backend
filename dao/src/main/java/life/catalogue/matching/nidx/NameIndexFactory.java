@@ -122,7 +122,8 @@ public class NameIndexFactory {
 
       @Override
       public Collection<IndexName> byCanonical(Integer key) {
-        return Objects.equals(n.getCanonicalId(), key) ? List.of(n) : Collections.emptyList();
+        // single-tier index: every entry is its own canonical, there are no qualified child entries
+        return Collections.emptyList();
       }
 
       @Override

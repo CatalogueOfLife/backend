@@ -3,7 +3,6 @@ package life.catalogue.matching.nidx;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.FastUtilsSerializers;
 
-import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
@@ -35,9 +34,9 @@ public class NameIndexKryoPool extends Pool<Kryo> {
     Kryo kryo = new Kryo();
     kryo.setRegistrationRequired(true);
     kryo.register(IndexName.class);
-    kryo.register(Authorship.class);
     // Rank is stored by its ordinal (Kryo default enum serializer).
-    // Reordering/inserting/removing ranks in name-parser requires a names index file rebuild.
+    // IndexName no longer carries a rank field, but Rank stays registered as it is cheap and keeps
+    // the registration list stable; reordering ranks in name-parser still needs a nidx file rebuild.
     kryo.register(Rank.class);
     kryo.register(LocalDateTime.class);
     kryo.register(ArrayList.class);

@@ -593,10 +593,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected boolean acceptedNameExists(Name name) {
     // resolve the exact names index entry which encodes rank + authorship
     var m = nameIndex.match(name, false, false);
-    if (!m.hasMatch() || m.getName().getCanonicalId() == null) {
+    // single-tier index: the matched IndexName is its own canonical, so its key is the canonical id
+    if (!m.hasMatch() || m.getName().getKey() == null) {
       return false;
     }
-    var existing = matcher.store().usagesByCanonicalId(m.getName().getCanonicalId());
+    var existing = matcher.store().usagesByCanonicalId(m.getName().getKey());
     if (existing == null) {
       return false;
     }

@@ -4,8 +4,6 @@ import life.catalogue.api.model.IndexName;
 import life.catalogue.matching.nidx.NameIndexMapDBStore;
 import life.catalogue.matching.nidx.NameIndexStore;
 
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.Test;
 import org.mapdb.DBMaker;
 
@@ -20,8 +18,6 @@ public class NamesIndexCmdTest {
     store.start();
     var idx = new IndexName();
     idx.setKey(778899);
-    idx.setCanonicalId(778899);
-    idx.setRank(Rank.SPECIES);
     idx.setScientificName("Abies alba");
     store.add("asdfgh", idx);
   }

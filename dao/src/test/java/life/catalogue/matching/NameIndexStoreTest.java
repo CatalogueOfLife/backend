@@ -156,7 +156,6 @@ abstract class NameIndexStoreTest {
   private void addName(String key, int id, Integer canonicalID) {
     IndexName n = new IndexName(TestEntityGenerator.newName());
     n.setKey(id);
-    n.setCanonicalId(canonicalID);
     db.add(key, n);
   }
 
@@ -164,7 +163,6 @@ abstract class NameIndexStoreTest {
     for (int idx = 0; idx<size; idx++) {
       IndexName n = new IndexName(TestEntityGenerator.newName());
       n.setKey(keyGen.incrementAndGet());
-      n.setCanonicalId(n.getKey());
       db.add(key, n);
     }
   }
@@ -177,8 +175,8 @@ abstract class NameIndexStoreTest {
 
   private void assertNotNullProps(IndexName n){
     assertNotNull(n.getKey());
-    assertNotNull(n.getCanonicalId());
     assertNotNull(n.getScientificName());
+    // single-tier: rank is always the canonical UNRANKED constant
     assertNotNull(n.getRank());
   }
 

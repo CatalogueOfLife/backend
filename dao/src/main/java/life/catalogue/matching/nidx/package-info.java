@@ -2,11 +2,11 @@
  * The names index: a single-tier, canonical-only lookup for taxonomic name matching.
  *
  * <p>Every entry is a <em>canonical</em> name — standard rank {@code UNRANKED} and no authorship — so
- * {@code names_index.canonical_id} always equals {@code id} and each entry is its own canonical.
- * Consequently every {@code name_match.index_id} points straight at a canonical entry and
- * {@link life.catalogue.api.model.IndexName#getCanonicalId()} returns the key itself. There are no
- * rank/author-specific child rows and no canonical&rarr;children grouping; {@code byCanonical()} returns
- * an empty collection.</p>
+ * each entry is its own canonical. There is no {@code canonical_id} column and no
+ * {@code IndexName.canonicalId} field anymore: an entry's canonical key is simply its own
+ * {@link life.catalogue.api.model.IndexName#getKey() key}. Consequently every {@code name_match.index_id}
+ * points straight at a canonical entry. There are no rank/author-specific child rows and no
+ * canonical&rarr;children grouping; {@code byCanonical()} returns an empty collection.</p>
  *
  * <p>{@link life.catalogue.matching.nidx.NameIndex#match match} compares only the normalized canonical
  * name string of a query against the stored entry, producing {@link life.catalogue.api.vocab.MatchType}

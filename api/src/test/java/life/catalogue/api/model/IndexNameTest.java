@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import org.junit.Test;
@@ -10,23 +11,32 @@ public class IndexNameTest {
 
   @Test
   public void newCanonical() {
-    IndexName n = new IndexName();
-    n.setScientificName("Abies alba Querlewutz, with some unparsable remarks");
-    n.setAuthorship("Querlewutz");
+    // an authored, ranked source name reduces to a rankless, authorless canonical
+    Name n = new Name();
+    n.setScientificName("Abies alba");
+    n.setGenus("Abies");
+    n.setSpecificEpithet("alba");
     n.setRank(Rank.SPECIES);
-    assertFalse(n.isCanonical()); // purely id based
-    assertFalse(n.qualifiesAsCanonical());
+    n.setCombinationAuthorship(Authorship.authors("Querlewutz"));
+    n.rebuildAuthorship();
 
-    assertEquals(n, new IndexName(n));
     var cn = IndexName.newCanonical(n);
-    assertNotEquals(n, IndexName.newCanonical(n));
     assertFalse(cn.hasAuthorship());
     assertTrue(cn.qualifiesAsCanonical());
+    assertNull(cn.getAuthorship());
+    assertEquals(Rank.UNRANKED, cn.getRank());
+    assertEquals("Abies alba", cn.getScientificName());
+    assertEquals("Abies", cn.getGenus());
+    assertEquals("alba", cn.getSpecificEpithet());
 
-    n.setAuthorship(null); // canonicals have no authorship and no rank
-    n.setRank(Rank.UNRANKED);
-    assertEquals(n, new IndexName(n));
-    assertEquals(n, IndexName.newCanonical(n));
+    // an IndexName is single-tier & canonical-only: rankless, authorless by construction
+    IndexName idx = new IndexName();
+    idx.setScientificName("Abies alba");
+    assertNull(idx.getAuthorship());
+    assertEquals(Rank.UNRANKED, idx.getRank());
+    assertTrue(idx.qualifiesAsCanonical());
+    // copying keeps it equal
+    assertEquals(idx, new IndexName(idx));
   }
 
   @Test

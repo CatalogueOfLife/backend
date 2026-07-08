@@ -112,8 +112,9 @@ public class CanonicalOnlyRebuildIT {
         PgUtils.consume(() -> session.getMapper(NamesIndexMapper.class).processAll(), n -> {
           byId.put(n.getKey(), n);
 
-          // invariant 1: every row is its own canonical - single-tier, canonical-only
-          assertEquals("names_index #" + n.getKey() + " is not its own canonical", n.getKey(), n.getCanonicalId());
+          // invariant 1: every row is its own canonical - single-tier, canonical-only. Being its own
+          // canonical is now structural (no canonical_id column exists to violate it); we still assert
+          // the canonical shape - UNRANKED, no authorship - that every row must carry.
           assertTrue("names_index #" + n.getKey() + " is not flagged canonical", n.isCanonical());
           assertEquals("names_index #" + n.getKey() + " must be UNRANKED", Rank.UNRANKED, n.getRank());
           assertNull("names_index #" + n.getKey() + " must carry no authorship", n.getAuthorship());
@@ -139,8 +140,8 @@ public class CanonicalOnlyRebuildIT {
           for (List<Integer> idxIds : List.of(PgUtils.toList(nmm.processIndexIds(key, null)), PgUtils.toList(anmm.processIndexIds(key)))) {
             for (Integer idxId : idxIds) {
               IndexName n = byId.get(idxId);
+              // every match references a names_index row that exists - being canonical is now structural
               assertNotNull("a match in dataset " + key + " references missing names_index #" + idxId, n);
-              assertEquals("a match in dataset " + key + " references non-canonical names_index #" + idxId, n.getKey(), n.getCanonicalId());
               matchesChecked++;
             }
           }

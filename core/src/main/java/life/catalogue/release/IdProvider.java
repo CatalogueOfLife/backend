@@ -280,7 +280,7 @@ public class IdProvider {
       if (match != null) {
         writer.write(match.getName().getKey());
         writer.write('/');
-        writer.write(match.getName().getCanonicalId());
+        writer.write(match.getName().getKey());
         writer.write(' ');
         writer.write(String.valueOf(match.getType()));
       } else {

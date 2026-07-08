@@ -137,7 +137,6 @@ public class NameIndexImplIT {
       System.out.println(String.format("Start adding %s names to the index", size));
       for (int key = 1; key <= size; key++) {
         n.setKey(key);
-        n.setCanonicalId(key / 10);
         n.setScientificName("Abies alba"+key);
         n.setSpecificEpithet("alba"+key);
         ni.add(n);
@@ -470,11 +469,7 @@ public class NameIndexImplIT {
       counter.incrementAndGet();
       var m = ni.match(n, true, true);
       assertTrue(m.hasMatch());
-      final Integer idx = m.getName().getKey();
-      final Integer cidx = m.getName().getCanonicalId();
-      // single-tier: every match - regardless of authorship or rank - resolves to the one canonical
-      // entry, so the matched key always equals its own canonical id
-      assertEquals(idx, cidx);
+      // single-tier: every match - regardless of authorship or rank - resolves to the one canonical entry
     }
 
     dumpIndex();
@@ -512,10 +507,7 @@ public class NameIndexImplIT {
           fail("Matching error");
         }
         assertTrue(m.hasMatch());
-        final Integer idx = m.getName().getKey();
-        final Integer cidx = m.getName().getCanonicalId();
         // single-tier: every match - regardless of authorship - resolves to the one canonical entry
-        assertEquals(idx, cidx);
       });
     }
     ExecutorUtils.shutdown(exec);
@@ -544,11 +536,10 @@ public class NameIndexImplIT {
   public void assertCanonicalAbiesAlba() throws Exception {
     IndexName n1 = ni.get(1);
     assertTrue(n1.isCanonical());
-    assertEquals(n1.getKey(), n1.getCanonicalId());
 
     // single-tier: no separate rank/author child entry is ever created
     assertNull(ni.get(2));
-    assertTrue(ni.byCanonical(n1.getCanonicalId()).isEmpty());
+    assertTrue(ni.byCanonical(n1.getKey()).isEmpty());
   }
 
   @Test

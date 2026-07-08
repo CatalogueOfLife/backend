@@ -38,10 +38,12 @@ public class NameMatch {
   }
 
   /**
+   * The names index is single-tier & canonical-only: every entry is its own canonical, so the
+   * canonical key is simply the matched entry's own key.
    * @return the matched names canonical key or null if no match exists
    */
   public Integer getCanonicalNameKey() {
-    return name == null ? null : name.getCanonicalId();
+    return name == null ? null : name.getKey();
   }
 
   public void setName(IndexName n) {

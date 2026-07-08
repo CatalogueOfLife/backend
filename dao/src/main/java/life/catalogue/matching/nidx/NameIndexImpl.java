@@ -15,7 +15,6 @@ import life.catalogue.matching.MatchingException;
 import life.catalogue.matching.authorship.AuthorComparator;
 
 
-import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.util.UnicodeUtils;
 
@@ -281,8 +280,9 @@ public class NameIndexImpl implements NameIndex {
       var match2 = match(orig, false, verbose);
       if (needsInsert(match2, orig)) {
         LOG.debug("{} match, adding {}", match.getType(), orig.getLabel());
-        // verified we still do not have that name - insert the original match for real!
-        IndexName n = new IndexName(orig);
+        // verified we still do not have that name - build the canonical form from the query Name
+        // (which natively carries a real rank) and insert THAT.
+        IndexName n = IndexName.newCanonical(orig);
         add(n);
         match.setName(n);
         // classify with the same canonical-name comparison matchCandidates uses (not orig's raw
@@ -354,33 +354,14 @@ public class NameIndexImpl implements NameIndex {
    * Adds an IndexName to the index, reusing an existing canonical entry for the same name if one exists
    * (never inserting a duplicate row).
    * The names index is single-tier: every entry is a canonical name (standard UNRANKED rank, no authorship).
-   * If the given name does not already qualify as canonical it is reduced to its canonical form in place
-   * before being inserted (or matched against an existing canonical entry) - no separate rank/author
-   * specific child row is ever created.
+   * The given IndexName is already canonical by construction (see {@link IndexName#newCanonical}), so this
+   * only computes its bucket key and either reuses the existing canonical entry or inserts it - no separate
+   * rank/author specific child row is ever created.
    * This method is not thread safe!
    */
   @Override
   public void add(IndexName n) {
-    if (!n.qualifiesAsCanonical()) {
-      // reduce n in place to its canonical form: standard rank, no authorship.
-      // we reuse IndexName.newCanonical() to compute the canonical properties, then copy them onto n
-      // so that callers holding a reference to n (e.g. NameIndexImpl.tryToAdd) see the persisted canonical entry.
-      IndexName cn = IndexName.newCanonical(n);
-      n.setRank(cn.getRank());
-      n.setUninomial(cn.getUninomial());
-      n.setGenus(cn.getGenus());
-      n.setInfragenericEpithet(cn.getInfragenericEpithet());
-      n.setSpecificEpithet(cn.getSpecificEpithet());
-      n.setInfraspecificEpithet(cn.getInfraspecificEpithet());
-      n.setCultivarEpithet(cn.getCultivarEpithet());
-      n.setScientificName(cn.getScientificName());
-      n.setAuthorship(null);
-      n.setCombinationAuthorship(new Authorship());
-      n.setBasionymAuthorship(new Authorship());
-      n.setSanctioningAuthor(null);
-    }
-    // compute the lookup key from the (now) canonical form. key() ignores rank & authorship, so the
-    // value is identical before/after the reduction above, but computing it here keeps intent explicit.
+    // n is already canonical (rankless, authorless). key() derives the bucket from its canonical name.
     final String key = key(n);
 
     n.setCreatedBy(Users.MATCHER);

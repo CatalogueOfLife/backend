@@ -42,8 +42,8 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
 
   private void assertNotNullProps(IndexName n){
     assertNotNull(n.getKey());
-    assertNotNull(n.getCanonicalId());
     assertNotNull(n.getScientificName());
+    // single-tier: rank is always the canonical UNRANKED constant
     assertNotNull(n.getRank());
   }
 
@@ -111,26 +111,23 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
   }
 
   /**
-   * The names index is single-tier: canonical_id is no longer a column, so every created row is
-   * its own canonical - regardless of any canonicalId set on the in-memory instance before
-   * persisting (setCanonicalId is a no-op; getCanonicalId always mirrors the row's own key).
+   * The names index is single-tier: canonical_id is no longer a column and every created row is its
+   * own canonical. Just verify that canonical entries round-trip through the trimmed column set.
    */
   @Test
   public void create() {
     IndexName n1 = createTestEntity(1);
-    n1.setAuthorship(null);
     mapper().create(n1);
 
     IndexName n = mapper().get(n1.getKey());
-    assertEquals(n.getKey(), n.getCanonicalId());
+    assertEquals(n1.getKey(), n.getKey());
     assertNotNullProps(n);
 
     IndexName n2 = createTestEntity(1);
-    n2.setCanonicalId(n1.getKey());
     mapper().create(n2);
 
     n = mapper().get(n2.getKey());
-    assertEquals(n2.getKey(), n.getCanonicalId());
+    assertEquals(n2.getKey(), n.getKey());
     assertNotNullProps(n);
   }
 
@@ -143,14 +140,7 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
   }
 
   @Override
-  IndexName removeDbCreatedProps(IndexName obj) {
-    obj.setCanonicalId(null);
-    return obj;
-  }
-
-  @Override
   void updateTestObj(IndexName obj) {
-    obj.setAuthorship("Döring, 2022");
-    obj.setCanonicalId(obj.getKey());
+    obj.setScientificName("Abies updata");
   }
 }

@@ -61,7 +61,7 @@ public class MatchingUtils {
         nu.getName().setNamesIndexId(match.getName().getKey());
         nu.getName().setNamesIndexType(match.getType());
       }
-      return match.hasMatch() ? new NidxMatch( match.getName().getKey(), match.getName().getCanonicalId(), match.getType()) : MatchingUtils.noMatch();
+      return match.hasMatch() ? new NidxMatch( match.getName().getKey(), match.getName().getKey(), match.getType()) : MatchingUtils.noMatch();
 
     } else if (nu.getName().getNamesIndexType() == MatchType.NONE) {
       return MatchingUtils.noMatch();
@@ -75,7 +75,7 @@ public class MatchingUtils {
       if (xn == null) { // this is impossible unless data is out of sync
         throw new IllegalStateException("Missing names index entry " + nu.getName().getNamesIndexId());
       }
-      return new NidxMatch(xn.getKey(), xn.getCanonicalId(), nu.getName().getNamesIndexType());
+      return new NidxMatch(xn.getKey(), xn.getKey(), nu.getName().getNamesIndexType());
     }
   }
 

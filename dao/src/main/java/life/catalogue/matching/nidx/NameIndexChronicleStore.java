@@ -3,8 +3,6 @@ package life.catalogue.matching.nidx;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.Pools;
 
-import org.gbif.nameparser.api.Authorship;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -87,7 +85,6 @@ public class NameIndexChronicleStore implements NameIndexStore {
     idn.setModifiedBy(3);
     idn.setCreated(LocalDateTime.now());
     idn.setModified(LocalDateTime.now());
-    idn.setCombinationAuthorship(Authorship.yearAuthors("1988", "Miller"));
 
     var b1 = ChronicleMapBuilder.of(Integer.class, IndexName.class)
       .name("keys")
@@ -246,8 +243,6 @@ public class NameIndexChronicleStore implements NameIndexStore {
 
   void check(IndexName n){
     Preconditions.checkNotNull(n.getKey(), "key required");
-    Preconditions.checkNotNull(n.getCanonicalId(), "canonicalID required");
-    Preconditions.checkNotNull(n.getRank(), "rank required");
     Preconditions.checkNotNull(n.getScientificName(), "scientificName required");
   }
 

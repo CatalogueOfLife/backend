@@ -188,7 +188,6 @@ public class NameIndexImplTest {
     assertTrue(m.hasMatch());
     IndexName idx = m.getName();
     assertTrue("must be canonical", idx.isCanonical());
-    assertEquals(idx.getKey(), idx.getCanonicalId());
     assertEquals(Rank.UNRANKED, idx.getRank());
     assertNull(idx.getAuthorship());
     // exactly one entry in the bucket, no separate child row.
@@ -314,8 +313,6 @@ public class NameIndexImplTest {
     NameMatch m = ni.match(n, true, true);
     assertEquals(MatchType.EXACT, m.getType());
     final Integer idx = m.getName().getKey();
-    final Integer cidx = m.getName().getCanonicalId();
-    assertEquals(idx, cidx);
     assertEquals(1, ni.size());
 
     m = ni.match(n, true, true);
@@ -342,7 +339,6 @@ public class NameIndexImplTest {
     m = ni.match(n, true, true);
     assertEquals(MatchType.EXACT, m.getType());
     assertEquals(idx, m.getName().getKey());
-    assertEquals(cidx, m.getName().getCanonicalId());
     assertEquals(1, ni.size());
   }
 
@@ -361,10 +357,9 @@ public class NameIndexImplTest {
     NameMatch m = ni.match(n1, true, true);
     assertEquals(MatchType.EXACT, m.getType());
     assertEquals(n1.getScientificName(), m.getName().getScientificName());
-    final int canonID = m.getName().getCanonicalId();
-    final int key = m.getNameKey();
     // single-tier: the match is the canonical entry itself
-    assertEquals(key, canonID);
+    final int canonID = m.getName().getKey();
+    final int key = m.getNameKey();
     assertEquals(1, ni.size());
 
     // single-tier & canonical-only: the canonical name is built from the epithets (genus + specific +
@@ -463,10 +458,9 @@ public class NameIndexImplTest {
     NameMatch m = ni.match(n1, true, true);
     assertEquals(MatchType.EXACT, m.getType());
     assertEquals(n1.getScientificName(), m.getName().getScientificName());
-    final int canonID = m.getName().getCanonicalId();
-    final int key = m.getNameKey();
     // single-tier: the match is the canonical entry itself
-    assertEquals(key, canonID);
+    final int canonID = m.getName().getKey();
+    final int key = m.getNameKey();
     assertEquals(1, ni.size());
 
     // single-tier & canonical-only: the canonical of the uninomial "Puma" is the same whether the
@@ -517,7 +511,8 @@ public class NameIndexImplTest {
 
   void assertNidx(NameMatch m, int nidx, int canonicalID){
     assertEquals(nidx, (int)m.getNameKey());
-    assertEquals(canonicalID, (int)m.getName().getCanonicalId());
+    // single-tier: the matched entry is its own canonical, so its key is the canonical key
+    assertEquals(canonicalID, (int)m.getName().getKey());
   }
 
   void dumpIndex() {
@@ -532,11 +527,10 @@ public class NameIndexImplTest {
 
     IndexName n1 = ni.get(keyGen.get()-1);
     assertTrue(n1.isCanonical());
-    assertEquals(n1.getKey(), n1.getCanonicalId());
     assertNull(n1.getAuthorship());
     assertEquals(Rank.UNRANKED, n1.getRank());
     // single-tier: there are no non-canonical children, so the canonical group is always empty
-    assertTrue(ni.byCanonical(n1.getCanonicalId()).isEmpty());
+    assertTrue(ni.byCanonical(n1.getKey()).isEmpty());
   }
 
   /**
@@ -620,7 +614,6 @@ public class NameIndexImplTest {
           assertNotNull(m.getName().getScientificName());
           // single-tier: every indexed name resolves to its one canonical entry (key==canonicalId)
           assertTrue(m.getName().isCanonical());
-          assertEquals(m.getName().getKey(), m.getName().getCanonicalId());
         } else {
           assertFalse(m.hasMatch());
         }

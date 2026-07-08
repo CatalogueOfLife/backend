@@ -11,6 +11,30 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-08 drop names_index rank & authorship columns
+The names index is single-tier & canonical-only: every `names_index` row is a canonical name with the
+standard `UNRANKED` rank and no authorship. `IndexName` was slimmed to the canonical name parts, so the
+rank and all authorship columns became constant/empty and are dropped. `IndexName.getRank()` now always
+returns `UNRANKED` and the authorship accessors return null/empty in Java; nothing reads these columns
+anymore.
+
+**Deploy ordering:** this is a non-backward-compatible drop — the new code no longer supplies `rank`
+(which was `NOT NULL`) or any authorship on insert, so run this on `public.names_index` BEFORE deploying
+the new code and BEFORE the `nidx` rebuild. The rebuild's `rebuild-schema.sql` stages a table via
+`CREATE TABLE nidx.names_index (LIKE public.names_index ...)`, so a staging table cloned from a `public`
+table that still has `rank NOT NULL` would reject every insert.
+```
+ALTER TABLE names_index DROP COLUMN rank;
+ALTER TABLE names_index DROP COLUMN authorship;
+ALTER TABLE names_index DROP COLUMN basionym_authors;
+ALTER TABLE names_index DROP COLUMN basionym_ex_authors;
+ALTER TABLE names_index DROP COLUMN basionym_year;
+ALTER TABLE names_index DROP COLUMN combination_authors;
+ALTER TABLE names_index DROP COLUMN combination_ex_authors;
+ALTER TABLE names_index DROP COLUMN combination_year;
+ALTER TABLE names_index DROP COLUMN sanctioning_author;
+```
+
 #### 2026-07-08 drop names_index.canonical_id
 The names index is now single-tier: every `names_index` row is its own canonical name, so
 `canonical_id` always equalled `id` and was pure redundancy. `IndexName.getCanonicalId()` now

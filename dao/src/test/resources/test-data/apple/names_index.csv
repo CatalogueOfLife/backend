@@ -1,5 +1,5 @@
-id,rank,scientific_name,authorship
-1,SPECIES,Apia apis,
-2,SPECIES,Malus sylvestris,
-3,SPECIES,Larus fuscus,
-4,SPECIES,Larus erfundus,
+id,scientific_name
+1,Apia apis
+2,Malus sylvestris
+3,Larus fuscus
+4,Larus erfundus

@@ -1,6 +1,5 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.text.StringUtils;
 
@@ -15,47 +14,33 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
 /**
- * A parsed or unparsed name that belongs to the names index.
- * Contains all main Name properties but removes all dataset, verbatim, sector extras.
- * It is also code agnostic.
+ * A canonical name that belongs to the single-tier names index.
+ * Contains just the canonical Name properties - the atomized name parts and the cached canonical
+ * scientific name - but removes all dataset, verbatim, sector extras. It is also code agnostic.
  *
- * An index name is considered a canonical name when it does not have any authorship
- * and the UNRANKED rank.
- * All other, parsed names point also to their canonical authorless version.
+ * The names index is single-tier: every entry is a canonical name. It therefore carries no
+ * authorship and its rank is always the standard {@link #CANONICAL_RANK} (UNRANKED); the
+ * {@link FormattableName} rank/authorship accessors below are implemented as constants
+ * accordingly. Because every entry is its own canonical, its canonical id always equals its own
+ * key - there is no separate canonicalId field or column anymore.
  */
 public class IndexName extends DataEntity<Integer> implements FormattableName {
   public static final Rank CANONICAL_RANK = Rank.UNRANKED;
 
   @JsonProperty("id")
   private Integer key;
-  /**
-   * The names index is single-tier: every row is its own canonical name, so canonicalId always
-   * equals key and the database no longer stores it as a separate column (see getCanonicalId()).
-   * The field itself is kept - unused by any application logic - purely so that instances already
-   * serialized (e.g. Kryo field-serialized names-index store files) keep their binary layout.
-   */
-  private Integer canonicalId;
   @Nonnull
   private String scientificName;
-  private String authorship;
-  @Nonnull
-  private Rank rank;
   private String uninomial;
   private String genus;
   private String infragenericEpithet; // we only use this for true infrageneric names, not bi-/trinomials!
   private String specificEpithet;
   private String infraspecificEpithet;
   private String cultivarEpithet;
-  @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
-  private Authorship combinationAuthorship = new Authorship();
-  @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
-  private Authorship basionymAuthorship = new Authorship();
-  private String sanctioningAuthor;
 
   public IndexName() {
   }
@@ -64,17 +49,12 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     super(other);
     this.key = other.key;
     this.scientificName = other.scientificName;
-    this.authorship = other.authorship;
-    this.rank = other.rank;
     this.uninomial = other.uninomial;
     this.genus = other.genus;
     this.infragenericEpithet = other.infragenericEpithet;
     this.specificEpithet = other.specificEpithet;
     this.infraspecificEpithet = other.infraspecificEpithet;
     this.cultivarEpithet = other.cultivarEpithet;
-    this.combinationAuthorship = other.combinationAuthorship;
-    this.basionymAuthorship = other.basionymAuthorship;
-    this.sanctioningAuthor = other.sanctioningAuthor;
   }
 
   public IndexName(Name n) {
@@ -87,17 +67,12 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
       n.rebuildScientificName();
     }
     this.scientificName = n.getScientificName();
-    this.authorship = n.getAuthorship();
-    setRank(n.getRank());
     this.uninomial = n.getUninomial();
     this.genus = n.getGenus();
     this.infragenericEpithet = n.getInfragenericEpithet();
     this.specificEpithet = n.getSpecificEpithet();
     this.infraspecificEpithet = n.getInfraspecificEpithet();
     this.cultivarEpithet = n.getCultivarEpithet();
-    this.combinationAuthorship = n.getCombinationAuthorship();
-    this.basionymAuthorship = n.getBasionymAuthorship();
-    this.sanctioningAuthor = n.getSanctioningAuthor();
     this.setCreated(n.getCreated());
     this.setModified(n.getModified());
     // revert name instance
@@ -113,11 +88,13 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   }
 
   /**
-   * Creates a new canonical index name from an existing name with a standard rank and no authorship.
+   * Creates a new canonical index name from an existing name, keeping only the canonical name parts
+   * and the canonical scientific name string. Rank and authorship are read from the given source
+   * (which for a parsed {@link Name} natively carries a real rank) purely to decide the canonical
+   * shape - they are never stored on the result, which is always a rankless, authorless canonical.
    */
-  public static IndexName newCanonical(IndexName n) {
+  public static IndexName newCanonical(FormattableName n) {
     IndexName cn = new IndexName();
-    cn.setRank(CANONICAL_RANK);
     // we keep a canonical infrageneric name in uninomial and ignore its genus placement!
     if (n.getInfragenericEpithet() != null && n.isInfrageneric()) {
       cn.setUninomial(n.getInfragenericEpithet());
@@ -133,10 +110,6 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     } else {
       cn.setScientificName(n.getScientificName());
     }
-    cn.setCreated(n.getCreated());
-    cn.setCreatedBy(n.getCreatedBy());
-    cn.setModified(n.getModified());
-    cn.setModifiedBy(n.getModifiedBy());
     return cn;
   }
 
@@ -150,28 +123,11 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     this.key = key;
   }
 
-  /**
-   * The names index is single-tier: every entry is its own canonical name, so this is always the
-   * same as {@link #getKey()}. Kept as its own accessor (rather than removed) for API/JSON
-   * compatibility with existing clients that read a "canonicalId" property.
-   */
-  public Integer getCanonicalId() {
-    return key;
-  }
-
-  /**
-   * No-op: canonicalId is derived from key and can no longer be set independently.
-   * Kept so that MyBatis/Jackson deserialisation of a legacy "canonicalId" property does not fail.
-   */
-  public void setCanonicalId(Integer canonicalId) {
-    // no-op - canonicalId is always derived from key now
-  }
-
   @Override
   public String getScientificName() {
     return scientificName;
   }
-  
+
   /**
    * WARN: avoid setting the cached scientificName for parsed names directly.
    * Use updateNameCache() instead!
@@ -179,55 +135,77 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   public void setScientificName(String scientificName) {
     this.scientificName = Preconditions.checkNotNull(scientificName);
   }
-  
+
   /**
-   * Cached complete authorship
+   * The names index is single-tier & canonical-only, so entries never carry authorship.
+   * @return always null
    */
   @Override
   public String getAuthorship() {
-    return authorship;
+    return null;
   }
 
   /**
-   * WARN: avoid setting the cached complete authorship for parsed names directly.
-   * Use updateNameCache() instead!
+   * No-op: canonical names index entries never carry authorship.
    */
   public void setAuthorship(String authorship) {
-    this.authorship = authorship;
+    // no-op - canonical entries have no authorship
   }
-  
+
+  /**
+   * The names index is single-tier & canonical-only, so entries never carry authorship.
+   * @return always null
+   */
+  @Override
   public Authorship getCombinationAuthorship() {
-    return combinationAuthorship;
+    return null;
   }
-  
+
   public void setCombinationAuthorship(Authorship combinationAuthorship) {
-    this.combinationAuthorship = combinationAuthorship;
+    // no-op - canonical entries have no authorship
   }
 
+  /**
+   * The names index is single-tier & canonical-only, so entries never carry authorship.
+   * @return always null
+   */
+  @Override
   public Authorship getBasionymAuthorship() {
-    return basionymAuthorship;
-  }
-  
-  public void setBasionymAuthorship(Authorship basionymAuthorship) {
-    this.basionymAuthorship = basionymAuthorship;
-  }
-  
-  public String getSanctioningAuthor() {
-    return sanctioningAuthor;
-  }
-  
-  public void setSanctioningAuthor(String sanctioningAuthor) {
-    this.sanctioningAuthor = sanctioningAuthor;
+    return null;
   }
 
+  public void setBasionymAuthorship(Authorship basionymAuthorship) {
+    // no-op - canonical entries have no authorship
+  }
+
+  /**
+   * The names index is single-tier & canonical-only, so entries never carry authorship.
+   * @return always null
+   */
+  @Override
+  public String getSanctioningAuthor() {
+    return null;
+  }
+
+  public void setSanctioningAuthor(String sanctioningAuthor) {
+    // no-op - canonical entries have no authorship
+  }
+
+  /**
+   * The names index is single-tier & canonical-only, so every entry has the standard canonical rank.
+   * @return always {@link #CANONICAL_RANK}
+   */
   @Override
   public Rank getRank() {
-    return rank;
+    return CANONICAL_RANK;
   }
 
+  /**
+   * No-op: canonical names index entries always have the standard {@link #CANONICAL_RANK}.
+   */
   @Override
   public void setRank(Rank rank) {
-    this.rank = Preconditions.checkNotNull(rank);
+    // no-op - canonical entries are always CANONICAL_RANK
   }
 
   @Override
@@ -238,23 +216,23 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   @Override
   public void setCode(NomCode code) {
   }
-  
+
   public String getUninomial() {
     return uninomial;
   }
-  
+
   public void setUninomial(String uni) {
     this.uninomial = StringUtils.removeHybrid(uni);
   }
-  
+
   public String getGenus() {
     return genus;
   }
-  
+
   public void setGenus(String genus) {
     this.genus = StringUtils.removeHybrid(genus);
   }
-  
+
   public String getInfragenericEpithet() {
     return infragenericEpithet;
   }
@@ -262,19 +240,19 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   public void setInfragenericEpithet(String infraGeneric) {
     this.infragenericEpithet = StringUtils.removeHybrid(infraGeneric);
   }
-  
+
   public String getSpecificEpithet() {
     return specificEpithet;
   }
-  
+
   public void setSpecificEpithet(String species) {
     this.specificEpithet = StringUtils.removeHybrid(species);
   }
-  
+
   public String getInfraspecificEpithet() {
     return infraspecificEpithet;
   }
-  
+
   public void setInfraspecificEpithet(String infraSpecies) {
     this.infraspecificEpithet = StringUtils.removeHybrid(infraSpecies);
   }
@@ -333,18 +311,17 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
    */
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public boolean isCanonical() {
-    return key != null && key.equals(getCanonicalId());
+    return key != null;
   }
 
   /**
-   * Checks the names properties to see if it qualifies for a canonical name,
-   * i.e. a name that has one of the few standard ranks and is
-   *  a) unparsed or b) parsed, but without any authorship.
+   * The names index is single-tier & canonical-only, so every entry qualifies as canonical:
+   * it has the standard {@link #CANONICAL_RANK} and no authorship by construction.
    * @return true if this represents a canonical name in the index
    */
   @JsonIgnore
   public boolean qualifiesAsCanonical() {
-    return rank == CANONICAL_RANK && !hasAuthorship();
+    return getRank() == CANONICAL_RANK && !hasAuthorship();
   }
 
   /**
@@ -368,13 +345,10 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   StringBuilder getLabelBuilder(boolean html) {
     StringBuilder sb = new StringBuilder();
+    // canonical entries have no authorship, so the label is just the scientific name
     String name = html ? scientificNameHtml() : scientificName;
     if (name != null) {
       sb.append(name);
-    }
-    if (authorship != null) {
-      sb.append(" ");
-      sb.append(authorship);
     }
     return sb;
   }
@@ -393,7 +367,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
    * Adds italics around the epithets but not rank markers or higher ranked names.
    */
   String scientificNameHtml(){
-    return NameFormatter.scientificNameHtml(scientificName, rank);
+    return NameFormatter.scientificNameHtml(scientificName, getRank());
   }
 
   @Override
@@ -404,22 +378,17 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     IndexName indexName = (IndexName) o;
     return Objects.equals(key, indexName.key) &&
       scientificName.equals(indexName.scientificName) &&
-      Objects.equals(authorship, indexName.authorship) &&
-      rank == indexName.rank &&
       Objects.equals(uninomial, indexName.uninomial) &&
       Objects.equals(genus, indexName.genus) &&
       Objects.equals(infragenericEpithet, indexName.infragenericEpithet) &&
       Objects.equals(specificEpithet, indexName.specificEpithet) &&
       Objects.equals(infraspecificEpithet, indexName.infraspecificEpithet) &&
-      Objects.equals(cultivarEpithet, indexName.cultivarEpithet) &&
-      Objects.equals(combinationAuthorship, indexName.combinationAuthorship) &&
-      Objects.equals(basionymAuthorship, indexName.basionymAuthorship) &&
-      Objects.equals(sanctioningAuthor, indexName.sanctioningAuthor);
+      Objects.equals(cultivarEpithet, indexName.cultivarEpithet);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
+    return Objects.hash(super.hashCode(), key, scientificName, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet);
   }
 
   @Override
@@ -436,5 +405,5 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     }
     return sb.toString();
   }
-  
+
 }

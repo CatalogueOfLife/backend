@@ -1277,24 +1277,15 @@ CREATE INDEX ON decision (subject_dataset_key, subject_id);
 
 CREATE TABLE names_index (
   id SERIAL PRIMARY KEY,
-  rank RANK NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   scientific_name TEXT NOT NULL,
-  authorship TEXT,
   uninomial TEXT,
   genus TEXT,
   infrageneric_epithet TEXT,
   specific_epithet TEXT,
   infraspecific_epithet TEXT,
   cultivar_epithet TEXT,
-  basionym_authors TEXT[] DEFAULT '{}',
-  basionym_ex_authors TEXT[] DEFAULT '{}',
-  basionym_year TEXT,
-  combination_authors TEXT[] DEFAULT '{}',
-  combination_ex_authors TEXT[] DEFAULT '{}',
-  combination_year TEXT,
-  sanctioning_author TEXT,
   remarks TEXT
 );
 CREATE INDEX ON names_index (scientific_name);
