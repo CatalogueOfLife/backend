@@ -8,7 +8,6 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -21,9 +20,6 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * NameIndexStore implementation that is backed by a mapdb using kryo serialization.
@@ -39,7 +35,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
   // main nidx instances by their key
   private Map<Integer, IndexName> keys; // main nidx instances by their key
   private Map<String, int[]> names; // group of same names by their canonical name key
-  private Map<Integer, int[]> canonical; // canonical group of names by canonicalID
 
   public NameIndexMapDBStore(DBMaker.Maker dbMaker, int poolSize) throws DBException.DataCorruption {
     this(dbMaker, null, poolSize);
@@ -90,12 +85,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
       //.valueInline()
       //.valuesOutsideNodesEnable()
       .createOrOpen();
-    canonical = db.hashMap("canonical")
-      .keySerializer(Serializer.INTEGER)
-      .valueSerializer(Serializer.INT_ARRAY)
-      //.valueInline()
-      //.valuesOutsideNodesEnable()
-      .createOrOpen();
   }
 
 
@@ -120,18 +109,8 @@ public class NameIndexMapDBStore implements NameIndexStore {
 
   @Override
   public Collection<IndexName> byCanonical(Integer key) {
-    if (canonical.containsKey(key)) {
-      return Arrays.stream(canonical.get(key))
-        .distinct()
-        .boxed()
-        .map(this::get)
-        .collect(Collectors.toSet());
-    }
-    return null;
-  }
-
-  public int[] debugCanonical(Integer key) {
-    return canonical.get(key);
+    // single-tier index: every entry is its own canonical, there are no qualified child entries
+    return Collections.emptyList();
   }
 
   @Override
@@ -148,7 +127,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
   public void clear() {
     keys.clear();
     names.clear();
-    canonical.clear();
   }
 
   private void setCreatedToNow() {
@@ -185,20 +163,8 @@ public class NameIndexMapDBStore implements NameIndexStore {
     removed.add(n);
     if (n != null) {
       final String key = keyFunc.apply(n);
-      // remove all index names for a canonical?
-      if (n.isCanonical()) {
-        var cids = canonical.remove(id);
-        if (cids != null) {
-          for (var id2 : cids) {
-            removed.addAll(delete(id2, keyFunc));
-          }
-        }
-      } else {
-        var cids = canonical.remove(n.getCanonicalId());
-        if (cids != null) {
-          canonical.put(n.getCanonicalId(), remove(cids, id));
-        }
-      }
+      // single-tier index: every entry is its own canonical, so there are no qualified child
+      // entries to cascade-remove here anymore.
       // update names group
       int[] group = remove(names.get(key), id);
       names.put(key, group);
@@ -239,27 +205,14 @@ public class NameIndexMapDBStore implements NameIndexStore {
       group = new int[]{name.getKey()};
     }
     names.put(key, group);
-
-    // update canonical
-    if (name.getCanonicalId() != null && !name.getCanonicalId().equals(name.getKey())) {
-      if (canonical.containsKey(name.getCanonicalId())) {
-        group = canonical.get(name.getCanonicalId());
-        if (!ArrayUtils.contains(group, name.getKey())) {
-          group = ArrayUtils.add(group, name.getKey());
-          canonical.put(name.getCanonicalId(), group);
-        }
-      } else {
-        canonical.put(name.getCanonicalId(), new int[]{name.getKey()});
-      }
-    }
+    // single-tier index: every entry is its own canonical (canonicalId == key), so there is no
+    // separate canonical->children multimap left to maintain here anymore.
   }
 
   @Override
   public void compact() {
-    for (var entry : canonical.entrySet()) {
-      IntSet set = new IntOpenHashSet(entry.getValue());
-      canonical.put(entry.getKey(), set.toIntArray());
-    }
+    // single-tier index: the canonical->children multimap that used to need compacting is gone;
+    // nothing left to compact.
   }
 
   @Override

@@ -12,10 +12,9 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -31,8 +30,6 @@ import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import net.openhft.chronicle.bytes.Bytes;
 import net.openhft.chronicle.hash.serialization.BytesReader;
 import net.openhft.chronicle.hash.serialization.BytesWriter;
@@ -56,10 +53,8 @@ public class NameIndexChronicleStore implements NameIndexStore {
   // main nidx instances by their key
   private final File keysF;
   private final File namesF;
-  private final File canonicalF;
   private ChronicleMap<Integer, IndexName> keys; // main nidx instances by their key
   private ChronicleMap<String, int[]> names; // group of same names by their canonical name key
-  private ChronicleMap<Integer, int[]> canonical; // canonical group of names by canonicalID
   private boolean started = false;
 
   public NameIndexChronicleStore(NamesIndexConfig cfg) throws IOException {
@@ -70,14 +65,12 @@ public class NameIndexChronicleStore implements NameIndexStore {
     if (dir == null) {
       keysF = null;
       namesF = null;
-      canonicalF = null;
     } else {
       if (!dir.exists()) {
         FileUtils.forceMkdir(dir);
       }
       keysF = new File(dir, "keys");
       namesF = new File(dir, "names");
-      canonicalF = new File(dir, "canonical");
     }
   }
 
@@ -111,15 +104,10 @@ public class NameIndexChronicleStore implements NameIndexStore {
       .entries(cfg.maxEntries/2)
       .averageKey("Abies alba")
       .averageValue(new int[]{3456,2345,657});
-    var b3 = ChronicleMapBuilder.of(Integer.class, int[].class)
-      .name("canonical")
-      .entries(cfg.maxEntries/2)
-      .averageValue(new int[]{3456,2345,65117});
 
     try {
       keys = inMem() ? b1.create() : b1.createPersistedTo(keysF);
       names = inMem() ? b2.create() : b2.createPersistedTo(namesF);
-      canonical = inMem() ? b3.create() : b3.createPersistedTo(canonicalF);
 
     } catch (IOException e) {
       if (dir != null) {
@@ -128,7 +116,6 @@ public class NameIndexChronicleStore implements NameIndexStore {
           FileUtils.cleanDirectory(dir);
           keys = inMem() ? b1.create() : b1.createPersistedTo(keysF);
           names = inMem() ? b2.create() : b2.createPersistedTo(namesF);
-          canonical = inMem() ? b3.create() : b3.createPersistedTo(canonicalF);
         } catch (IOException ex) {
           throw new RuntimeException(ex);
         }
@@ -137,10 +124,10 @@ public class NameIndexChronicleStore implements NameIndexStore {
       }
     }
     started = true;
-    // log fill vs capacity of all three maps - the half-sized names/canonical maps are the first to
-    // overflow as the index grows, so their fill is worth watching against maxEntries.
-    LOG.info("Names index chronicle store started: keys={}/{}, names={}/{}, canonical={}/{} (entries/capacity)",
-      keys.size(), cfg.maxEntries, names.size(), cfg.maxEntries / 2, canonical.size(), cfg.maxEntries / 2);
+    // log fill vs capacity of both maps - the half-sized names map is the first to overflow as the
+    // index grows, so its fill is worth watching against maxEntries.
+    LOG.info("Names index chronicle store started: keys={}/{}, names={}/{} (entries/capacity)",
+      keys.size(), cfg.maxEntries, names.size(), cfg.maxEntries / 2);
   }
 
   @Override
@@ -148,7 +135,6 @@ public class NameIndexChronicleStore implements NameIndexStore {
     started = false;
     keys.close();
     names.close();
-    canonical.close();
   }
 
   @Override
@@ -164,14 +150,8 @@ public class NameIndexChronicleStore implements NameIndexStore {
 
   @Override
   public Collection<IndexName> byCanonical(Integer key) {
-    if (canonical.containsKey(key)) {
-      return Arrays.stream(canonical.get(key))
-        .distinct()
-        .boxed()
-        .map(this::get)
-        .collect(Collectors.toSet());
-    }
-    return null;
+    // single-tier index: every entry is its own canonical, there are no qualified child entries
+    return Collections.emptyList();
   }
 
   @Override
@@ -196,7 +176,6 @@ public class NameIndexChronicleStore implements NameIndexStore {
     assertOnline();
     keys.clear();
     names.clear();
-    canonical.clear();
   }
 
   @Override
@@ -225,20 +204,8 @@ public class NameIndexChronicleStore implements NameIndexStore {
     removed.add(n);
     if (n != null) {
       final String key = keyFunc.apply(n);
-      // remove all index names for a canonical?
-      if (n.isCanonical()) {
-        var cids = canonical.remove(id);
-        if (cids != null) {
-          for (var id2 : cids) {
-            removed.addAll(delete(id2, keyFunc));
-          }
-        }
-      } else {
-        var cids = canonical.remove(n.getCanonicalId());
-        if (cids != null) {
-          canonical.put(n.getCanonicalId(), remove(cids, id));
-        }
-      }
+      // single-tier index: every entry is its own canonical, so there are no qualified child
+      // entries to cascade-remove here anymore.
       // update names group
       int[] group = remove(names.get(key), id);
       names.put(key, group);
@@ -279,27 +246,14 @@ public class NameIndexChronicleStore implements NameIndexStore {
       group = new int[]{name.getKey()};
     }
     names.put(key, group);
-
-    // update canonical
-    if (name.getCanonicalId() != null && !name.getCanonicalId().equals(name.getKey())) {
-      if (canonical.containsKey(name.getCanonicalId())) {
-        group = canonical.get(name.getCanonicalId());
-        if (!ArrayUtils.contains(group, name.getKey())) {
-          group = ArrayUtils.add(group, name.getKey());
-          canonical.put(name.getCanonicalId(), group);
-        }
-      } else {
-        canonical.put(name.getCanonicalId(), new int[]{name.getKey()});
-      }
-    }
+    // single-tier index: every entry is its own canonical (canonicalId == key), so there is no
+    // separate canonical->children multimap left to maintain here anymore.
   }
 
   @Override
   public void compact() {
-    for (var entry : canonical.entrySet()) {
-      IntSet set = new IntOpenHashSet(entry.getValue());
-      canonical.put(entry.getKey(), set.toIntArray());
-    }
+    // single-tier index: the canonical->children multimap that used to need compacting is gone;
+    // nothing left to compact.
   }
 
   @Override

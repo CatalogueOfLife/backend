@@ -19,8 +19,10 @@ public interface NameIndexStore extends Managed {
   IndexName get(Integer key);
 
   /**
+   * The names index is single-tier & canonical-only: every entry is its own canonical name, so
+   * there are no separate rank/author specific child entries grouped underneath it anymore.
+   * This therefore always returns an empty collection - it is kept for API compatibility only.
    * @param key the canonical name index key
-   * @return all names which have the given canonical key, but not the canonical name itself!
    */
   Collection<IndexName> byCanonical(Integer key);
 

@@ -100,10 +100,10 @@ abstract class NameIndexStoreTest {
     addName("b", 13, 10);
     assertEquals(7, db.count());
 
-    assertNull(db.byCanonical(1));
-    var res = db.byCanonical(10);
-    assertEquals(2, res.size());
-    assertNotNullProps(res);
+    // single-tier: the store no longer groups qualified names under a canonical key -
+    // byCanonical always returns an empty collection now, regardless of the key given
+    assertTrue(db.byCanonical(1).isEmpty());
+    assertTrue(db.byCanonical(10).isEmpty());
   }
 
   @Test
@@ -115,20 +115,21 @@ abstract class NameIndexStoreTest {
     addName("b", 13, 10);
     assertEquals(7, db.count());
 
-    var res = db.byCanonical(10);
-    assertEquals(2, res.size());
+    // single-tier: no canonical->children grouping is maintained anymore
+    assertTrue(db.byCanonical(10).isEmpty());
 
     db.delete(12, u -> "b");
-    res = db.byCanonical(10);
-    assertEquals(1, res.size());
-
-    db.delete(10, u -> "b"); // the canonical removes all its qualified names too
-    res = db.byCanonical(10);
-    assertNull(res);
-
-    assertNull(db.get(10));
+    assertEquals(6, db.count());
     assertNull(db.get(12));
-    assertNull(db.get(13));
+    assertNotNullProps(db.get(10));
+    assertNotNullProps(db.get(13));
+
+    // single-tier: deleting the canonical no longer cascades to remove other entries -
+    // there are no qualified children left to cascade to
+    db.delete(10, u -> "b");
+    assertEquals(5, db.count());
+    assertNull(db.get(10));
+    assertNotNullProps(db.get(13));
   }
 
   @Test
@@ -140,14 +141,12 @@ abstract class NameIndexStoreTest {
     addName("b", 13, 10);
     addName("b", 12, 10);
     assertEquals(7, db.count());
-    //assertArrayEquals(new int[]{12,13}, db.debugCanonical(10));
 
+    // single-tier: compact() is now a no-op since the canonical->children multimap it used to
+    // dedupe is gone - just verify it runs without error and leaves the store unchanged
     db.compact();
     assertEquals(7, db.count());
-    //assertArrayEquals(new int[]{12,13}, db.debugCanonical(10));
-
-    var res = db.byCanonical(10);
-    assertEquals(2, res.size());
+    assertTrue(db.byCanonical(10).isEmpty());
   }
 
   private void addName(String key, int id) {

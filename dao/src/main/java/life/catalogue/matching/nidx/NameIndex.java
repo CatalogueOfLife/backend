@@ -56,6 +56,11 @@ public interface NameIndex extends Managed, AutoCloseable {
    */
   IndexName get(Integer key);
 
+  /**
+   * The names index is single-tier & canonical-only: every entry is its own canonical name, so
+   * this simply returns the key of the entry itself (via its canonicalId, which by construction
+   * always equals the entry's own key) - or null if no entry exists for the given key.
+   */
   default Integer getCanonical(Integer key) {
     var ni = get(key);
     if (ni != null) {
@@ -65,7 +70,9 @@ public interface NameIndex extends Managed, AutoCloseable {
   }
 
   /**
-   * List all index names for a given canonical name key, but not the canonical name itself!
+   * The names index is single-tier & canonical-only: every entry is its own canonical name, so
+   * there are no separate rank/author specific child entries grouped underneath it anymore.
+   * This therefore always returns an empty collection - it is kept for API compatibility only.
    */
   Collection<IndexName> byCanonical(Integer key);
 

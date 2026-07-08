@@ -535,8 +535,22 @@ public class NameIndexImplTest {
     assertEquals(n1.getKey(), n1.getCanonicalId());
     assertNull(n1.getAuthorship());
     assertEquals(Rank.UNRANKED, n1.getRank());
-    // there are no non-canonical children, so the canonical has no group
-    assertNull(ni.byCanonical(n1.getCanonicalId()));
+    // single-tier: there are no non-canonical children, so the canonical group is always empty
+    assertTrue(ni.byCanonical(n1.getCanonicalId()).isEmpty());
+  }
+
+  /**
+   * The names index is single-tier & canonical-only: every existing entry is its own canonical,
+   * so getCanonical(key) must resolve back to the very same key, and byCanonical(key) - which used
+   * to list the rank/author specific children grouped under a canonical - must always be empty
+   * since no such children exist anymore.
+   */
+  @Test
+  public void canonicalIsSelf() throws Exception {
+    var m = ni.match(name("Abies alba", "Mill.", Rank.SPECIES), true, false);
+    int key = m.getName().getKey();
+    assertEquals(Integer.valueOf(key), ni.getCanonical(key));
+    assertTrue(ni.byCanonical(key).isEmpty());
   }
 
   @Test
