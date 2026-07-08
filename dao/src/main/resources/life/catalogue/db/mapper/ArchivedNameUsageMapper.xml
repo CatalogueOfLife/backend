@@ -114,14 +114,13 @@
       u.status,
       CASE WHEN is_synonym(u.status) THEN (u.accepted).name ELSE u.classification[array_upper(u.classification, 1)].name END AS parent,
       u.classification,
-      ni.canonical_id,
-      ni.id AS namesIndexId,
+      m.index_id AS canonical_id,
+      m.index_id AS namesIndexId,
       m.type AS namesIndexMatchType
     FROM name_usage_archive u
       LEFT JOIN name_usage_archive_match m ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
-      LEFT JOIN names_index ni ON m.index_id=ni.id
     WHERE u.dataset_key=#{datasetKey}
-    ORDER BY ni.canonical_id, ni.id
+    ORDER BY m.index_id
   </select>
 
   <select id="processArchivedNames" parameterType="map" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">

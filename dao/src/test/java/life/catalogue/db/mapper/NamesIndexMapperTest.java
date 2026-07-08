@@ -111,13 +111,13 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
   }
 
   /**
-   * we can create index names with or without an explicit canonical id value.
-   * In both cases the create must populate the column.
+   * The names index is single-tier: canonical_id is no longer a column, so every created row is
+   * its own canonical - regardless of any canonicalId set on the in-memory instance before
+   * persisting (setCanonicalId is a no-op; getCanonicalId always mirrors the row's own key).
    */
   @Test
   public void create() {
     IndexName n1 = createTestEntity(1);
-    n1.setCanonicalId(null);
     n1.setAuthorship(null);
     mapper().create(n1);
 
@@ -130,7 +130,7 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
     mapper().create(n2);
 
     n = mapper().get(n2.getKey());
-    assertEquals(n1.getKey(), n.getCanonicalId());
+    assertEquals(n2.getKey(), n.getCanonicalId());
     assertNotNullProps(n);
   }
 

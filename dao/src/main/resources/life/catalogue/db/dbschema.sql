@@ -1277,7 +1277,6 @@ CREATE INDEX ON decision (subject_dataset_key, subject_id);
 
 CREATE TABLE names_index (
   id SERIAL PRIMARY KEY,
-  canonical_id INTEGER NOT NULL REFERENCES names_index,
   rank RANK NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -1298,9 +1297,7 @@ CREATE TABLE names_index (
   sanctioning_author TEXT,
   remarks TEXT
 );
-CREATE INDEX ON names_index (canonical_id);
 CREATE INDEX ON names_index (scientific_name);
-CREATE INDEX ON names_index (scientific_name) WHERE id = canonical_id;
 
 
 CREATE TABLE name_usage_archive (

@@ -11,6 +11,19 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-08 drop names_index.canonical_id
+The names index is now single-tier: every `names_index` row is its own canonical name, so
+`canonical_id` always equalled `id` and was pure redundancy. `IndexName.getCanonicalId()` now
+simply returns the key, and the mappers that used to read `names_index.canonical_id` derive the
+same value from `name_match.index_id` (or the row's own `id`) instead. Drop the column together
+with its own index and the partial `scientific_name` index that referenced it in its predicate;
+the plain `scientific_name` index (`names_index_scientific_name_idx`) is untouched.
+```
+DROP INDEX IF EXISTS names_index_scientific_name_idx1;
+DROP INDEX IF EXISTS names_index_canonical_id_idx;
+ALTER TABLE names_index DROP COLUMN canonical_id;
+```
+
 #### 2026-07-07 sector name_filter regex
 name-parser v4 folded `NameType.OTU` into `OTHER`, so a sector's `name_types` filter can no longer
 isolate OTU names (e.g. BOLD or UNITE SH names) from other `OTHER` type names. The new optional

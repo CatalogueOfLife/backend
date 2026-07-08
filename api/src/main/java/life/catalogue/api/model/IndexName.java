@@ -33,6 +33,12 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   @JsonProperty("id")
   private Integer key;
+  /**
+   * The names index is single-tier: every row is its own canonical name, so canonicalId always
+   * equals key and the database no longer stores it as a separate column (see getCanonicalId()).
+   * The field itself is kept - unused by any application logic - purely so that instances already
+   * serialized (e.g. Kryo field-serialized names-index store files) keep their binary layout.
+   */
   private Integer canonicalId;
   @Nonnull
   private String scientificName;
@@ -57,7 +63,6 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   public IndexName(IndexName other) {
     super(other);
     this.key = other.key;
-    this.canonicalId = other.canonicalId;
     this.scientificName = other.scientificName;
     this.authorship = other.authorship;
     this.rank = other.rank;
@@ -145,12 +150,21 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     this.key = key;
   }
 
+  /**
+   * The names index is single-tier: every entry is its own canonical name, so this is always the
+   * same as {@link #getKey()}. Kept as its own accessor (rather than removed) for API/JSON
+   * compatibility with existing clients that read a "canonicalId" property.
+   */
   public Integer getCanonicalId() {
-    return canonicalId;
+    return key;
   }
 
+  /**
+   * No-op: canonicalId is derived from key and can no longer be set independently.
+   * Kept so that MyBatis/Jackson deserialisation of a legacy "canonicalId" property does not fail.
+   */
   public void setCanonicalId(Integer canonicalId) {
-    this.canonicalId = canonicalId;
+    // no-op - canonicalId is always derived from key now
   }
 
   @Override
@@ -313,12 +327,13 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   }
 
   /**
-   * Override the default method to rely on the actual ids in the index to be precise.
+   * The names index is single-tier: every persisted entry is its own canonical name, so this is
+   * always true once a key has been assigned.
    * @return true if this represents a canonical name in the index
    */
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public boolean isCanonical() {
-    return key != null && key.equals(canonicalId);
+    return key != null && key.equals(getCanonicalId());
   }
 
   /**
@@ -388,7 +403,6 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     if (!super.equals(o)) return false;
     IndexName indexName = (IndexName) o;
     return Objects.equals(key, indexName.key) &&
-      Objects.equals(canonicalId, indexName.canonicalId) &&
       scientificName.equals(indexName.scientificName) &&
       Objects.equals(authorship, indexName.authorship) &&
       rank == indexName.rank &&
@@ -405,7 +419,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, canonicalId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
+    return Objects.hash(super.hashCode(), key, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
   }
 
   @Override
