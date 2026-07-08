@@ -291,8 +291,8 @@ public class NameIndexImplTest {
     var idx = ni.match(n, true, true);
 
     assertEquals(MatchType.EXACT, idx.getType());
-    // new index can have 1 or 2 (canonical) records inserted
-    assertTrue(ni.size() > origSize && ni.size() <= origSize+2);
+    // single-tier: inserting a genuinely new canonical name adds exactly one record
+    assertEquals(origSize+1, ni.size());
     return idx;
   }
 
@@ -423,6 +423,30 @@ public class NameIndexImplTest {
     assertNidx(m, key, canonID);
 
     // nothing new was ever inserted
+    assertEquals(1, ni.size());
+  }
+
+  /**
+   * Regression test for a tryToAdd() bug: it classified a first-time insert by comparing orig's
+   * raw scientificName (which can still carry a rank marker, e.g. "var.") against the
+   * already-canonicalized IndexName's scientificName. Since add(n) strips the rank marker while
+   * reducing n to its canonical form, a first insert of an infraspecific name whose scientificName
+   * carries a rank marker was wrongly classified as VARIANT - even though matchCandidates() would
+   * classify an identical, later query as EXACT. The fix compares canonical forms on both sides so
+   * the classification no longer depends on insertion order.
+   */
+  @Test
+  public void tryToAddFirstInsertIsExactNotVariant() throws Exception {
+    Name n = new Name();
+    n.setScientificName("Abies alba var. alba");
+    n.setGenus("Abies");
+    n.setSpecificEpithet("alba");
+    n.setInfraspecificEpithet("alba");
+    n.setRank(Rank.VARIETY);
+    n.setType(NameType.SCIENTIFIC);
+
+    NameMatch m = ni.match(n, true, false);
+    assertEquals(MatchType.EXACT, m.getType());
     assertEquals(1, ni.size());
   }
 
@@ -684,7 +708,7 @@ public class NameIndexImplTest {
 
     // authorship no longer differentiates - all resolve to the single canonical Abies alba
     assertMatch(5, "Abies alba", Rank.SPECIES);
-    assertMatch(5, "Abies alba Döring, 1778", Rank.SPECIES);
+    assertMatch(5, MatchType.EXACT, "Abies alba Döring, 1778", Rank.SPECIES);
     assertMatch(5, "Abies alba Mumpf.", Rank.SPECIES);
     assertCanonMatch(5,"Abies alba Mill.", Rank.SPECIES);
     assertCanonMatch(5, "Abies alba 1789", Rank.SPECIES);
@@ -902,7 +926,8 @@ public class NameIndexImplTest {
     assertNotEquals(MatchType.VARIANT, m.getType());
     int cnt = ni.size();
     m = ni.match(name(name, rank), true, false);
-    assertTrue(ni.size() > cnt);
+    // single-tier: inserting a genuinely new canonical name adds exactly one record
+    assertEquals(cnt+1, ni.size());
     assertEquals(MatchType.EXACT, m.getType());
     return m;
   }

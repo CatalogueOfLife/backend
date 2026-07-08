@@ -196,7 +196,6 @@ public class NameIndexImpl implements NameIndex {
    * folding both sides would erase exactly the diacritic differences a VARIANT is meant to flag.
    */
   private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
-    final String queryCanonical = SciNameNormalizer.normalizeWhitespaceAndPunctuation(NameFormatter.canonicalName(query));
     IndexName hit = null;
     for (IndexName n : candidates) {
       if (n.isCanonical()) { hit = n; break; } // one canonical per bucket
@@ -207,10 +206,22 @@ public class NameIndexImpl implements NameIndex {
       return m;
     }
     m.setName(hit);
-    String hitCanonical = SciNameNormalizer.normalizeWhitespaceAndPunctuation(NameFormatter.canonicalName(hit));
-    m.setType(queryCanonical.equalsIgnoreCase(hitCanonical) ? MatchType.EXACT : MatchType.VARIANT);
+    m.setType(classifyCanonicalMatch(query, hit));
     m.setAlternatives(candidates);
     return m;
+  }
+
+  /**
+   * Classifies how closely two names' canonical forms agree: EXACT if their normalized canonical
+   * name strings are identical (case insensitively), VARIANT if they only differ by
+   * unicode/punctuation/spelling. Used both when matching against an existing candidate and when
+   * classifying a freshly inserted entry, so the very same pair of names always yields the same
+   * MatchType regardless of insertion order.
+   */
+  private static MatchType classifyCanonicalMatch(FormattableName a, FormattableName b) {
+    String ac = SciNameNormalizer.normalizeWhitespaceAndPunctuation(NameFormatter.canonicalName(a));
+    String bc = SciNameNormalizer.normalizeWhitespaceAndPunctuation(NameFormatter.canonicalName(b));
+    return ac.equalsIgnoreCase(bc) ? MatchType.EXACT : MatchType.VARIANT;
   }
 
   private IndexName getCanonical(String key) {
@@ -276,11 +287,10 @@ public class NameIndexImpl implements NameIndex {
         IndexName n = new IndexName(orig);
         add(n);
         match.setName(n);
-        if (n.getScientificName().equalsIgnoreCase(orig.getScientificName())) {
-          match.setType(MatchType.EXACT);
-        } else {
-          match.setType(MatchType.VARIANT);
-        }
+        // classify with the same canonical-name comparison matchCandidates uses (not orig's raw
+        // scientificName, which may still carry a rank marker n's canonical form has dropped), so
+        // the very same name is classified identically whether it is the first insert or a later match
+        match.setType(classifyCanonicalMatch(orig, n));
         return match;
       }
       return match2;
