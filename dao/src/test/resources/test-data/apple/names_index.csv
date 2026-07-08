@@ -1,5 +1,5 @@
-id,scientific_name
-1,Apia apis
-2,Malus sylvestris
-3,Larus fuscus
-4,Larus erfundus
+id,scientific_name,normalized
+1,Apia apis,apia ap
+2,Malus sylvestris,malus silvestr
+3,Larus fuscus,larus fusc
+4,Larus erfundus,larus erfund

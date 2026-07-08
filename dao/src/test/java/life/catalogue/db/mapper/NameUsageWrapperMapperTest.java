@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.tax.SciNameNormalizer;
 
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import life.catalogue.db.PgUtils;
 import org.apache.ibatis.cursor.Cursor;
 
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.UnicodeUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -64,6 +66,10 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     IndexName inc = new IndexName();
     inc.setScientificName(n.getScientificName());
     inc.setRank(n.getRank());
+    // the normalized column is NOT NULL & unique - mirror NameIndexImpl.key() so the random name round-trips
+    inc.setNormalized(UnicodeUtils.replaceNonAscii(
+      SciNameNormalizer.normalize(UnicodeUtils.decompose(n.getScientificName())).toLowerCase(), '*'
+    ));
     nim.create(inc);
 
     nm.create(n);

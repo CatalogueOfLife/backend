@@ -385,6 +385,7 @@ public class NameIndexImpl implements NameIndex {
 
   private void createCanonical(NamesIndexMapper nim, String key, IndexName cn){
     if (hasPg) {
+      cn.setNormalized(key);
       nim.create(cn); // sets the generated key on cn
     } else {
       cn.setKey(keyGen.incrementAndGet());

@@ -11,6 +11,20 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-09 add names_index.normalized
+Adds the normalized bucket key (`NameIndexImpl.key(...)`: decomposed + gender-stemmed + lower-cased +
+non-ASCII-folded canonical name) as its own column, with a unique index, in preparation for turning the
+names index into a `normalized -> id` registry. Only the insert path (`NameIndexImpl.createCanonical`)
+writes it for now; matching itself is unchanged in this step.
+
+**Deploy ordering / population:** this column is populated by the `nidx` rebuild, not an in-place
+backfill of the existing table — run the rebuild before or together with this DDL so every row has a
+`normalized` value before the `NOT NULL` and unique constraints are enforced.
+```
+ALTER TABLE names_index ADD COLUMN normalized TEXT NOT NULL;
+CREATE UNIQUE INDEX names_index_normalized_idx ON names_index (normalized);
+```
+
 #### 2026-07-08 drop names_index rank & authorship columns
 The names index is single-tier & canonical-only: every `names_index` row is a canonical name with the
 standard `UNRANKED` rank and no authorship. `IndexName` was slimmed to the canonical name parts, so the

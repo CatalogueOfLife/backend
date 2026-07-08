@@ -1280,6 +1280,7 @@ CREATE TABLE names_index (
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   scientific_name TEXT NOT NULL,
+  normalized TEXT NOT NULL,
   uninomial TEXT,
   genus TEXT,
   infrageneric_epithet TEXT,
@@ -1289,6 +1290,7 @@ CREATE TABLE names_index (
   remarks TEXT
 );
 CREATE INDEX ON names_index (scientific_name);
+CREATE UNIQUE INDEX names_index_normalized_idx ON names_index (normalized);
 
 
 CREATE TABLE name_usage_archive (

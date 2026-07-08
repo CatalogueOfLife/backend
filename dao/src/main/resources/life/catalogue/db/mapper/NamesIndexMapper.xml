@@ -10,6 +10,7 @@
 
   <sql id="COLS">
     scientific_name,
+    normalized,
     uninomial,
     genus,
     infrageneric_epithet,
@@ -20,6 +21,7 @@
 
   <sql id="PROPS">
     #{scientificName},
+    #{normalized},
     #{uninomial},
     #{genus},
     #{infragenericEpithet},

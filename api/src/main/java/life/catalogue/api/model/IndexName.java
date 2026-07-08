@@ -35,6 +35,14 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   private Integer key;
   @Nonnull
   private String scientificName;
+  /**
+   * The normalized bucket key for this canonical name (folded, gender-stemmed, lower-cased, ASCII-only).
+   * Transient: it only exists to carry the already-computed key from the matcher to the mapper insert;
+   * it is not part of equality and will disappear entirely once {@link IndexName} itself is removed in
+   * favour of a plain normalized-string registry.
+   */
+  @JsonIgnore
+  private String normalized;
   private String uninomial;
   private String genus;
   private String infragenericEpithet; // we only use this for true infrageneric names, not bi-/trinomials!
@@ -134,6 +142,14 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
    */
   public void setScientificName(String scientificName) {
     this.scientificName = Preconditions.checkNotNull(scientificName);
+  }
+
+  public String getNormalized() {
+    return normalized;
+  }
+
+  public void setNormalized(String normalized) {
+    this.normalized = normalized;
   }
 
   /**
