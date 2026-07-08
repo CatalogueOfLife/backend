@@ -14,7 +14,6 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.matching.MatchingException;
 import life.catalogue.matching.authorship.AuthorComparator;
 
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
@@ -30,7 +29,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import javax.annotation.Nullable;
@@ -353,7 +351,8 @@ public class NameIndexImpl implements NameIndex {
   }
 
   /**
-   * Adds a new IndexName to the index, even if it exists already.
+   * Adds an IndexName to the index, reusing an existing canonical entry for the same name if one exists
+   * (never inserting a duplicate row).
    * The names index is single-tier: every entry is a canonical name (standard UNRANKED rank, no authorship).
    * If the given name does not already qualify as canonical it is reduced to its canonical form in place
    * before being inserted (or matched against an existing canonical entry) - no separate rank/author
@@ -398,21 +397,17 @@ public class NameIndexImpl implements NameIndex {
       } else {
         // reuse the existing canonical entry - never insert a duplicate row
         n.setKey(existing.getKey());
-        n.setCanonicalId(existing.getKey());
       }
       s.commit();
     }
   }
 
   private void createCanonical(NamesIndexMapper nim, String key, IndexName cn){
-    // mybatis defaults canonicalID to the newly created key in the database...
     if (hasPg) {
-      nim.create(cn);
+      nim.create(cn); // sets the generated key on cn
     } else {
       cn.setKey(keyGen.incrementAndGet());
     }
-    // ... but the instance is not updated automatically
-    cn.setCanonicalId(cn.getKey());
     store.add(key, cn);
   }
 

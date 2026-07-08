@@ -18,6 +18,12 @@ simply returns the key, and the mappers that used to read `names_index.canonical
 same value from `name_match.index_id` (or the row's own `id`) instead. Drop the column together
 with its own index and the partial `scientific_name` index that referenced it in its predicate;
 the plain `scientific_name` index (`names_index_scientific_name_idx`) is untouched.
+
+**Deploy ordering:** this is a non-backward-compatible drop — the new code no longer supplies
+`canonical_id` on insert, so run this on `public.names_index` BEFORE deploying the new code and
+BEFORE the `nidx` rebuild. The rebuild's `rebuild-schema.sql` stages a table via
+`CREATE TABLE nidx.names_index (LIKE public.names_index ...)`, so a staging table cloned from a
+`public` table that still has `canonical_id NOT NULL` would reject every insert.
 ```
 DROP INDEX IF EXISTS names_index_scientific_name_idx1;
 DROP INDEX IF EXISTS names_index_canonical_id_idx;
