@@ -3,6 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
+import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -10,7 +11,9 @@ import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.matching.*;
+import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.printer.PrinterUtils;
 import life.catalogue.release.UsageIdGen;
 
@@ -43,6 +46,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final MatchedParentStack parents;
   private final UsageMatcher matcher;
   private final MatchingUtils utils;
+  private final AuthorComparator authComp;
   private final TaxGroupAnalyzer groupAnalyzer;
   private int counter = 0;  // all source usages
   private int ignored = 0;
@@ -70,6 +74,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
     this.matcher = matcherSupplier.apply(batchSession);
     groupAnalyzer = new TaxGroupAnalyzer();
     utils = new MatchingUtils(nameIndex);
+    // same construction as UsageMatcher: reuse the names index own comparator when available so
+    // author matching (used to disambiguate bare-name merge candidates) behaves identically
+    this.authComp = nameIndex instanceof NameIndexImpl ? ((NameIndexImpl) nameIndex).getAuthComp() : new AuthorComparator(AuthorshipNormalizer.INSTANCE);
 
     // figure out the lowest insertion point in the project/release
     // a) a target is given
@@ -396,6 +403,16 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
     if (n.getNamesIndexType() == MatchType.EXACT) {
       var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
+      // listByNidx groups by the (now canonical-only) names index id, so it returns every
+      // authorship variant sharing the canonical - not just the one matching this name's own
+      // authorship. Narrow down to candidates whose authorship is not clearly different before
+      // applying the single-candidate gate below. An unauthored incoming name cannot disambiguate,
+      // so it must leave all candidates in place (an ambiguous match keeps candidates.size() > 1).
+      if (n.hasAuthorship()) {
+        candidates = candidates.stream()
+          .filter(c -> authComp.compare(n, c) != Equality.DIFFERENT)
+          .collect(Collectors.toList());
+      }
       if (candidates.size() == 1) {
         Name existing = candidates.getFirst();
         VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), n.getId(), EntityType.NAME);
