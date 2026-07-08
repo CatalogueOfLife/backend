@@ -11,7 +11,6 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.mapdb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
   private Atomic.Long created; //datetime
   // main nidx instances by their key
   private Map<Integer, IndexName> keys; // main nidx instances by their key
-  private Map<String, int[]> names; // group of same names by their canonical name key
+  private Map<String, Integer> names; // single-tier: the one names index key for a canonical name bucket
 
   public NameIndexMapDBStore(DBMaker.Maker dbMaker, int poolSize) throws DBException.DataCorruption {
     this(dbMaker, null, poolSize);
@@ -81,7 +80,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
       .createOrOpen();
     names = db.hashMap("names")
       .keySerializer(Serializer.STRING_ASCII)
-      .valueSerializer(Serializer.INT_ARRAY)
+      .valueSerializer(Serializer.INTEGER)
       //.valueInline()
       //.valuesOutsideNodesEnable()
       .createOrOpen();
@@ -136,11 +135,11 @@ public class NameIndexMapDBStore implements NameIndexStore {
   @Override
   public List<IndexName> get(String key) {
     avail();
+    // mutable list: callers (e.g. NameIndexImpl.match/getCanonical) remove() / removeIf() on it
     List<IndexName> matches = new ArrayList<>();
-    if (names.containsKey(key)) {
-      for (int k : names.get(key)) {
-        matches.add(keys.get(k));
-      }
+    Integer k = names.get(key);
+    if (k != null) {
+      matches.add(keys.get(k));
     }
     return matches;
   }
@@ -165,19 +164,13 @@ public class NameIndexMapDBStore implements NameIndexStore {
       final String key = keyFunc.apply(n);
       // single-tier index: every entry is its own canonical, so there are no qualified child
       // entries to cascade-remove here anymore.
-      // update names group
-      int[] group = remove(names.get(key), id);
-      names.put(key, group);
+      // only clear the bucket if it still points at the entry being deleted
+      Integer cur = names.get(key);
+      if (cur != null && cur == id) {
+        names.remove(key);
+      }
     }
     return removed;
-  }
-
-  private static int[] remove(int[] ids, int id) {
-    final int pos = ArrayUtils.indexOf(ids, id);
-    if (pos != ArrayUtils.INDEX_NOT_FOUND) {
-      return ArrayUtils.remove(ids, pos);
-    }
-    return ids;
   }
 
   /**
@@ -191,22 +184,12 @@ public class NameIndexMapDBStore implements NameIndexStore {
     LOG.debug("Insert {}{} #{} keyed on >{}<", name.isCanonical() ? "canonical ":"", name.getLabelWithRank(), name.getKey(), key);
     keys.put(name.getKey(), name);
 
-    // update names group
-    int[] group;
+    // single-tier index: add() is only ever called after getCanonical(key) found nothing, so the
+    // bucket should be empty here. Warn (don't fail) if that invariant is ever violated.
     if (names.containsKey(key)) {
-      group = names.get(key);
-      // remove previous version if it already existed.
-      final int pos = ArrayUtils.indexOf(group, name.getKey());
-      if (pos != ArrayUtils.INDEX_NOT_FOUND) {
-        group = ArrayUtils.remove(group, pos);
-      }
-      group = ArrayUtils.add(group, name.getKey());
-    } else {
-      group = new int[]{name.getKey()};
+      LOG.warn("Names index bucket >{}< already had key {} - overwriting with new key {}", key, names.get(key), name.getKey());
     }
-    names.put(key, group);
-    // single-tier index: every entry is its own canonical (canonicalId == key), so there is no
-    // separate canonical->children multimap left to maintain here anymore.
+    names.put(key, name.getKey());
   }
 
   @Override

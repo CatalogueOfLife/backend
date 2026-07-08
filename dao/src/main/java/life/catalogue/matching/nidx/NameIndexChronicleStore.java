@@ -4,7 +4,6 @@ import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.Pools;
 
 import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.Rank;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -17,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import jakarta.validation.constraints.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -54,7 +52,7 @@ public class NameIndexChronicleStore implements NameIndexStore {
   private final File keysF;
   private final File namesF;
   private ChronicleMap<Integer, IndexName> keys; // main nidx instances by their key
-  private ChronicleMap<String, int[]> names; // group of same names by their canonical name key
+  private ChronicleMap<String, Integer> names; // single-tier: the one names index key for a canonical name bucket
   private boolean started = false;
 
   public NameIndexChronicleStore(NamesIndexConfig cfg) throws IOException {
@@ -83,9 +81,6 @@ public class NameIndexChronicleStore implements NameIndexStore {
     var idn = new IndexName();
     idn.setKey(345632);
     idn.setScientificName("Abies alba");
-    idn.setAuthorship("Miller, 1988");
-    idn.setCanonicalId(1345);
-    idn.setRank(Rank.SPECIES);
     idn.setGenus("Abies");
     idn.setSpecificEpithet("alba");
     idn.setCreatedBy(2);
@@ -99,11 +94,10 @@ public class NameIndexChronicleStore implements NameIndexStore {
       .valueMarshaller(MARSHALLER)
       .averageValue(idn)
       .entries(cfg.maxEntries);
-    var b2 = ChronicleMapBuilder.of(String.class, int[].class)
+    var b2 = ChronicleMapBuilder.of(String.class, Integer.class)
       .name("names")
-      .entries(cfg.maxEntries/2)
-      .averageKey("Abies alba")
-      .averageValue(new int[]{3456,2345,657});
+      .entries(cfg.maxEntries)
+      .averageKey("Abies alba");
 
     try {
       keys = inMem() ? b1.create() : b1.createPersistedTo(keysF);
@@ -124,10 +118,10 @@ public class NameIndexChronicleStore implements NameIndexStore {
       }
     }
     started = true;
-    // log fill vs capacity of both maps - the half-sized names map is the first to overflow as the
-    // index grows, so its fill is worth watching against maxEntries.
+    // log fill vs capacity of both maps - single-tier means every add() creates exactly one keys
+    // entry and one names bucket, so the two maps grow 1:1 and share the same capacity.
     LOG.info("Names index chronicle store started: keys={}/{}, names={}/{} (entries/capacity)",
-      keys.size(), cfg.maxEntries, names.size(), cfg.maxEntries / 2);
+      keys.size(), cfg.maxEntries, names.size(), cfg.maxEntries);
   }
 
   @Override
@@ -181,11 +175,11 @@ public class NameIndexChronicleStore implements NameIndexStore {
   @Override
   public List<IndexName> get(String key) {
     assertOnline();
+    // mutable list: callers (e.g. NameIndexImpl.match/getCanonical) remove() / removeIf() on it
     List<IndexName> matches = new ArrayList<>();
-    if (names.containsKey(key)) {
-      for (int k : names.get(key)) {
-        matches.add(keys.get(k));
-      }
+    Integer k = names.get(key);
+    if (k != null) {
+      matches.add(keys.get(k));
     }
     return matches;
   }
@@ -206,19 +200,13 @@ public class NameIndexChronicleStore implements NameIndexStore {
       final String key = keyFunc.apply(n);
       // single-tier index: every entry is its own canonical, so there are no qualified child
       // entries to cascade-remove here anymore.
-      // update names group
-      int[] group = remove(names.get(key), id);
-      names.put(key, group);
+      // only clear the bucket if it still points at the entry being deleted
+      Integer cur = names.get(key);
+      if (cur != null && cur == id) {
+        names.remove(key);
+      }
     }
     return removed;
-  }
-
-  private static int[] remove(int[] ids, int id) {
-    final int pos = ArrayUtils.indexOf(ids, id);
-    if (pos != ArrayUtils.INDEX_NOT_FOUND) {
-      return ArrayUtils.remove(ids, pos);
-    }
-    return ids;
   }
 
   /**
@@ -232,22 +220,12 @@ public class NameIndexChronicleStore implements NameIndexStore {
     LOG.debug("Insert {}{} #{} keyed on >{}<", name.isCanonical() ? "canonical ":"", name.getLabelWithRank(), name.getKey(), key);
     keys.put(name.getKey(), name);
 
-    // update names group
-    int[] group;
+    // single-tier index: add() is only ever called after getCanonical(key) found nothing, so the
+    // bucket should be empty here. Warn (don't fail) if that invariant is ever violated.
     if (names.containsKey(key)) {
-      group = names.get(key);
-      // remove previous version if it already existed.
-      final int pos = ArrayUtils.indexOf(group, name.getKey());
-      if (pos != ArrayUtils.INDEX_NOT_FOUND) {
-        group = ArrayUtils.remove(group, pos);
-      }
-      group = ArrayUtils.add(group, name.getKey());
-    } else {
-      group = new int[]{name.getKey()};
+      LOG.warn("Names index bucket >{}< already had key {} - overwriting with new key {}", key, names.get(key), name.getKey());
     }
-    names.put(key, group);
-    // single-tier index: every entry is its own canonical (canonicalId == key), so there is no
-    // separate canonical->children multimap left to maintain here anymore.
+    names.put(key, name.getKey());
   }
 
   @Override
