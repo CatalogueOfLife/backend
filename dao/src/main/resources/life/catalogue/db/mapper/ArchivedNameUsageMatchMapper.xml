@@ -58,8 +58,8 @@
 
   <select id="countNidx" resultType="integer">
     SELECT count(*)
-    FROM name_usage_archive_match nm JOIN names_index ni ON ni.id=nm.index_id
-    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    FROM name_usage_archive_match nm
+    WHERE nm.index_id=#{nidx}
     <if test="datasetKey != null">
       AND nm.dataset_key = #{datasetKey}
     </if>

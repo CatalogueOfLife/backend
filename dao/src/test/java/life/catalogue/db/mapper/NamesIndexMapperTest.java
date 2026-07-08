@@ -30,7 +30,8 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
       counter.incrementAndGet();
       assertNotNullProps(n);
     });
-    assertEquals(4, counter.get());
+    // single-tier fixture: 2 canonical rows (Abies, Abies alba)
+    assertEquals(2, counter.get());
   }
 
   private void assertNotNullProps(Iterable<IndexName> ns){
@@ -56,7 +57,8 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
       var map = ApiModule.MAPPER.readValue(n.getId(), ref);
       System.out.println(map);
     }
-    assertEquals(2, counter.get());
+    // single-tier fixture: all usages match the one canonical "Abies alba" -> a single group
+    assertEquals(1, counter.get());
 
     counter.set(0);
     for (SimpleName n : mapper().processDatasets(List.copyOf(testDataRule.testData.datasetKeys), 2)) {
@@ -70,30 +72,32 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
 
   @Test
   public void regex() {
+    // single-tier fixture: 2 canonical rows (Abies, Abies alba), only the species contains "alb"
     var res = mapper().listByRegex(".", false,null, null);
-    assertEquals(4, res.size());
+    assertEquals(2, res.size());
     assertNotNullProps(res);
 
     res = mapper().listByRegex("Abi", false,null, null);
-    assertEquals(4, res.size());
+    assertEquals(2, res.size());
     assertNotNullProps(res);
 
     res = mapper().listByRegex(".*alb", false,null, null);
-    assertEquals(2, res.size());
+    assertEquals(1, res.size());
     assertNotNullProps(res);
 
     res = mapper().listByRegex(".*ba[[:>:]]", false,null, null);
-    assertEquals(2, res.size());
+    assertEquals(1, res.size());
     assertNotNullProps(res);
 
     res = mapper().listByRegex(".*a\\M", false,null, null);
-    assertEquals(2, res.size());
+    assertEquals(1, res.size());
     assertNotNullProps(res);
   }
 
   @Test
   public void count() {
-    assertEquals(4, mapper().count());
+    // single-tier fixture: 2 canonical rows
+    assertEquals(2, mapper().count());
   }
 
   @Test

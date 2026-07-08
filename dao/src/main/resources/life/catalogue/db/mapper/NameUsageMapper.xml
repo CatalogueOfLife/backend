@@ -334,7 +334,7 @@
   </select>
 
   <select id="countDistinctCanonical" resultType="integer">
-    SELECT count(DISTINCT ni.canonical_id)
+    SELECT count(DISTINCT nm.index_id)
     FROM <include refid="FROM_NIDX_BASE"/>
     WHERE nm.dataset_key = #{datasetKey}
   </select>
@@ -493,13 +493,13 @@
   <select id="listByCanonNIDX" resultMap="simpleCachedResultMap">
     SELECT <include refid="SELECT_SIMPLE_CACHED"/>
     FROM <include refid="FROM_NIDX_BASE"/>
-    WHERE nm.dataset_key = #{datasetKey} AND ni.canonical_id=#{nidx}
+    WHERE nm.dataset_key = #{datasetKey} AND nm.index_id=#{nidx}
   </select>
 
   <select id="listByNamesIndexOrCanonicalID" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM_NIDX"/>
-    WHERE nm.dataset_key = #{datasetKey} AND (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
+    WHERE nm.dataset_key = #{datasetKey} AND nm.index_id=#{nidx}
     ORDER BY ni.id, u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -508,7 +508,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM_NIDX"/>
       LEFT JOIN dataset d ON d.key=nm.dataset_key
-    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    WHERE nm.index_id=#{nidx}
     ORDER BY ni.id, d.title, u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -523,11 +523,10 @@
 
   <select id="countByNamesIndexID" resultType="integer">
     SELECT count(*)
-    FROM names_index ni
-      JOIN name_match nm ON nm.index_id=ni.id
+    FROM name_match nm
       JOIN name n ON n.dataset_key=nm.dataset_key AND n.id=nm.name_id
       JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=n.id
-    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    WHERE nm.index_id=#{nidx}
     <if test="datasetKey != null">
       AND nm.dataset_key = #{datasetKey}
     </if>
@@ -552,10 +551,9 @@
     SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
-      JOIN names_index ni ON ni.id=nmo.index_id
-      LEFT JOIN names_index nic ON nic.id=ni.canonical_id AND ni.id != ni.canonical_id
-      LEFT JOIN names_index nia ON nia.canonical_id=ni.canonical_id AND nia.id != ni.id AND ni.id = ni.canonical_id
-      JOIN name_match nm ON (nm.index_id=ni.id OR nm.index_id=nic.id OR nm.index_id=nia.id)
+      <!-- single-tier index: every usage matching the same canonical index_id is related, including
+           all authorship variants of that canonical name (intentional broadening, see task-8-report.md) -->
+      JOIN name_match nm ON nm.index_id=nmo.index_id
     <!-- now join the related usages -->
     JOIN name n ON nm.name_id=n.id AND nm.dataset_key=n.dataset_key
     JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
@@ -959,7 +957,7 @@
       LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
       LEFT JOIN names_index ni ON ni.id=nm.index_id
     WHERE u.dataset_key=#{datasetKey} AND length(u.id) >= #{minLength}
-    ORDER BY ni.canonical_id, ni.id
+    ORDER BY nm.index_id
   </select>
 
   <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
