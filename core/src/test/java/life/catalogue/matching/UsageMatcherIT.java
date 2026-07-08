@@ -259,6 +259,26 @@ public class UsageMatcherIT {
     }
   }
 
+  /**
+   * Monomial homonyms & suprageneric_rank filter
+   */
+  @Test
+  public void bacteria() throws InterruptedException {
+    loadDataset(5);
+
+    // no match for a homonym
+    var m = match(null, "Bacteria", null, cl());
+    assertMatch(m, "BacG");
+
+    // match with domain rank
+    m = match(Rank.DOMAIN, "Bacteria", null, cl());
+    assertMatch(m, "Bac");
+
+    // match with any higher rank
+    m = match(Rank.SUPRAGENERIC_NAME, "Bacteria", null, cl());
+    assertMatch(m, "Bac");
+  }
+
   private static void drain(JobExecutor exec) throws InterruptedException {
     for (int i = 0; i < 600 && !exec.isIdle(); i++) {
       TimeUnit.MILLISECONDS.sleep(100);

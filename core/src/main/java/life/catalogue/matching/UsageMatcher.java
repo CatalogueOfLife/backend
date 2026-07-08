@@ -499,7 +499,7 @@ public class UsageMatcher implements AutoCloseable {
     // remove provisional usages
     existing.removeIf(u -> u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     if (existing.size() == 1) {
-      return UsageMatch.snap(existing.get(0), datasetKey, alt);
+      return UsageMatch.snap(existing.getFirst(), datasetKey, alt);
     }
 
     if (existing.isEmpty()) {
@@ -528,10 +528,12 @@ public class UsageMatcher implements AutoCloseable {
 
       // prefer accepted over synonyms
       long accMatches = existing.stream().filter(u -> u.getStatus().isTaxon()).count();
-      if (accMatches == 1) {
+      if (accMatches > 0) {
         existing.removeIf(u -> !u.getStatus().isTaxon());
-        LOG.debug("{} ambiguous homonyms encountered for {} in source {}, picking single accepted name", existing.size(), nu.getLabel(), datasetKey);
-        return UsageMatch.snap(existing.get(0), datasetKey, alt);
+        if (existing.size() == 1) {
+          LOG.debug("{} ambiguous homonyms encountered for {} in source {}, picking single accepted name", existing.size(), nu.getLabel(), datasetKey);
+          return UsageMatch.snap(existing.getFirst(), datasetKey, alt);
+        }
       }
 
       // now look for the candidate with the lowest classification - no matter if it matches
