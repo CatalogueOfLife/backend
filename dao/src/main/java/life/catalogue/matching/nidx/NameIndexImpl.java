@@ -4,7 +4,6 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.func.Predicates;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
@@ -12,7 +11,6 @@ import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.EmptySqlSessionFactory;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
-import life.catalogue.matching.Equality;
 import life.catalogue.matching.MatchingException;
 import life.catalogue.matching.authorship.AuthorComparator;
 
@@ -20,14 +18,12 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Pattern;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -35,7 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
 import javax.annotation.Nullable;
@@ -159,14 +154,12 @@ public class NameIndexImpl implements NameIndex {
   }
 
   /**
-   * Check if a new names index entry is needed which is true when
-   *  a) there was no match
-   *  b) it was a canonical match
+   * Check if a new names index entry is needed which is only true when there was no match at all -
+   * the index is single-tier & canonical-only, so any match (EXACT or VARIANT) always resolves to
+   * the existing canonical entry and never requires a new rank/author specific row.
    */
   private static boolean needsInsert(NameMatch m, Name name){
-    return (!m.hasMatch()
-            || (m.getType() == MatchType.CANONICAL && (!name.isCanonical()))
-    );
+    return !m.hasMatch();
   }
 
   /**
@@ -190,153 +183,34 @@ public class NameIndexImpl implements NameIndex {
   }
 
   /**
-   * Does comparison by rank, name & author to pick real match from candidates
+   * The names index is single-tier & canonical-only: every candidate bucket holds at most one
+   * canonical entry, so matching purely compares the query's canonical name string against that
+   * entry's - no rank or authorship scoring is involved anymore.
+   *
+   * The bucket lookup (store.get(key(name))) already applies the aggressive, ASCII-folded &
+   * stemmed normalization (see #key), so any candidate found here is guaranteed to be the same
+   * name modulo spelling/diacritics/stemming. What's left to decide is only whether the query is
+   * a byte-for-byte (case/whitespace/punctuation insensitive) reproduction of the stored canonical
+   * name (EXACT) or a spelling variant of it, e.g. differing in diacritics, hyphenation or gender
+   * ending (VARIANT). We therefore compare the two canonical strings without ASCII-folding them -
+   * folding both sides would erase exactly the diacritic differences a VARIANT is meant to flag.
    */
   private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
-    final Rank rank = query.getRank();
-    final boolean hasRank = rank != IndexName.CANONICAL_RANK;
-    final boolean hasAuthorship = query.hasAuthorship();
-    final String canonicalname = NameFormatter.canonicalName(query);
-    final String querycanonical = SciNameNormalizer.normalizedAscii(canonicalname);
-    final String queryfullname = SciNameNormalizer.normalizedAscii(query.getLabel());
-    final String queryauthorship = Strings.nullToEmpty(SciNameNormalizer.normalizedAscii(query.getAuthorship()));
-    // calculate score by rank, nomCode & authorship
-    // immediately filtering no matches with a negative score
-    int bestScore = 0;
-    final List<IndexName> matches = new ArrayList<>();
+    final String queryCanonical = SciNameNormalizer.normalizeWhitespaceAndPunctuation(NameFormatter.canonicalName(query));
+    IndexName hit = null;
     for (IndexName n : candidates) {
-      // 0 to 6
-      int score = 0;
-
-      // for non canonical matches ranks need to be compatible - not necessarily identical, so the
-      // generic INFRASPECIFIC_NAME matches any concrete infraspecific rank (subspecies, variety, ...)
-      boolean isCanon = n.isCanonical();
-      if (!isCanon && hasRank && !match(rank, n.getRank())) {
-        continue;
-      }
-      if (rank == n.getRank()) {
-        score += 2;
-      }
-
-      // we only want matches without an authorship if none was given
-      if (!hasAuthorship && n.hasAuthorship()) {
-        continue;
-      }
-
-      // we only want matches with an authorship if it was given - or a canonical result
-      if (hasAuthorship && !n.isCanonical() && !n.hasAuthorship()) {
-        continue;
-      }
-
-      // exact full name match incl author = 4
-      if (n.hasAuthorship() && queryfullname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.getLabel()))) {
-        score += 4;
-        
-      } else {
-
-        // authorship comparison only for non canonical queries/matches
-        if (hasAuthorship) {
-          // remove different authorships or
-          // +2 for equal authorships
-          // +3 for exact equal authorship strings
-          Equality aeq = authComp.compare(query, n);
-          if (aeq == Equality.DIFFERENT) {
-            continue;
-          }
-
-          if (queryauthorship.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.getAuthorship()))) {
-            score += 3;
-          } else if (aeq == Equality.EQUAL) {
-            score += 2;
-          } else if (aeq == Equality.UNKNOWN && n.hasAuthorship()) {
-            // both have authorships, but its unclear if they match - better snap to the canonical in this case
-            score -= 2;
-          }
-        }
-
-        // avoid exact matches to different infragenerics - unless the match is a canonical one that does not have infrageneric epithets
-        if (!n.isCanonical() && n.getRank().isInfragenericStrictly() && !Objects.equals(n.getInfragenericEpithet(), query.getInfragenericEpithet())) {
-          continue;
-        }
-
-        // exact canonical name match: +1
-        if (querycanonical.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(NameFormatter.canonicalName(n)))) {
-          score += 1;
-        }
-      }
-      bestScore = addOrRemove(score, n, bestScore, matches);
+      if (n.isCanonical()) { hit = n; break; } // one canonical per bucket
     }
-
     NameMatch m = new NameMatch();
-    if (matches.isEmpty()) {
+    if (hit == null) {
       m.setType(MatchType.NONE);
-
-    } else if (matches.size() == 1) {
-      IndexName m0 = matches.get(0);
-      m.setName(m0);
-      if (normExact(query.getLabel()).equalsIgnoreCase(normExact(m0.getLabel())) && query.getRank() == m0.getRank()) {
-        m.setType(MatchType.EXACT);
-      } else if (m0.isCanonical() && (hasAuthorship || !querycanonical.equals(queryfullname) || query.getRank() != m0.getRank())) {
-        m.setType(MatchType.CANONICAL);
-      } else {
-        m.setType(MatchType.VARIANT);
-      }
-
-    } else {
-      m.setType(MatchType.AMBIGUOUS);
-      // multiple, ambiguous matches. Pick the canonical one out of them
-      // This can happen when:
-      //  a) no rank was given
-      //  b) the authorship matches various authorships, e.g. if only the basionym or year is given
-
-      // pick canonical if part of matches
-      if (matches.stream().anyMatch(IndexName::isCanonical)) {
-        matches.removeIf(Predicates.not(IndexName::isCanonical));
-        if (matches.size()==1) {
-          m.setType(MatchType.CANONICAL);
-        }
-      }
-
-      // log a warning if we still have more than one match so we can maybe refine the algorithm in the future
-      if (matches.size() > 1) {
-        LOG.debug("Ambiguous match ({} hits) for {} {}", matches.size(), query.getRank(), query.getLabel());
-      }
-      // we pick the lowest key to guarantee a stable outcome in all cases - even if we dont have a canonical (should not really happen)
-      IndexName earliest = matches.get(0);
-      for (IndexName n : matches) {
-        if (n.getKey() < earliest.getKey()) {
-          earliest = n;
-        }
-      }
-      m.setName(earliest);
       return m;
     }
+    m.setName(hit);
+    String hitCanonical = SciNameNormalizer.normalizeWhitespaceAndPunctuation(NameFormatter.canonicalName(hit));
+    m.setType(queryCanonical.equalsIgnoreCase(hitCanonical) ? MatchType.EXACT : MatchType.VARIANT);
     m.setAlternatives(candidates);
     return m;
-  }
-
-  private static String normExact(String name) {
-    Pattern EXACT = Pattern.compile("[. -]+");
-    return EXACT.matcher(name).replaceAll(" ").trim();
-  }
-
-  /**
-   * @return new best score
-   */
-  private int addOrRemove(int score, IndexName n, int bestScore, List<IndexName> matches) {
-    if (score < bestScore) {
-      LOG.trace("Worse match {}<{}: {}", score, bestScore, n.getLabel());
-      return bestScore;
-    }
-    
-    if (score > bestScore) {
-      LOG.trace("Better match {}>{}: {}", score, bestScore, n.getLabel());
-      matches.clear();
-    } else {
-      LOG.trace("Same match {}={}: {}", score, bestScore, n.getLabel());
-    }
-    matches.add(n);
-    return score;
   }
 
   private IndexName getCanonical(String key) {
@@ -538,48 +412,6 @@ public class NameIndexImpl implements NameIndex {
   private static String key(FormattableName n) {
     String origName = NameFormatter.canonicalName(n);
     return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)).toLowerCase(), '*');
-  }
-  
-  /**
-   * @return true if the ranks given are indicating matching names and do not contradict each other
-   */
-  private static boolean match(Rank r1, Rank r2) {
-    if (r1 == null || r1 == Rank.UNRANKED ||
-        r2 == null || r2 == Rank.UNRANKED) return true;
-    
-    // for suprageneric names compare their base rank only
-    if (r1.isSuprageneric() && r1.getMajorRank() == r2.getMajorRank()) {
-      return true;
-    }
-    Boolean infraTest = matchInfraName1(r1, r2);
-    if (infraTest == null) {
-      infraTest = matchInfraName1(r2, r1);
-    }
-    if (infraTest != null) {
-      return infraTest;
-    } else {
-      return r1 == r2;
-    }
-  }
-  
-  /**
-   * @return true or false if clearly matches or doesnt. Null if we dont know yet
-   */
-  private static Boolean matchInfraName1(Rank r1, Rank r2) {
-    if (r1 == Rank.SPECIES_AGGREGATE) {
-      return r2 == Rank.SPECIES || r2 == Rank.SPECIES_AGGREGATE;
-      
-    } else if (r1 == Rank.INFRASPECIFIC_NAME) {
-      return r2.isInfraspecific();
-      
-    } else if (r1 == Rank.INFRASUBSPECIFIC_NAME) {
-      return r2.isInfraspecific() && r2 != Rank.SUBSPECIES;
-      
-    } else if (r1 == Rank.INFRAGENERIC_NAME) {
-      return r2.isInfragenericStrictly();
-    }
-    
-    return null;
   }
   
   @Override
