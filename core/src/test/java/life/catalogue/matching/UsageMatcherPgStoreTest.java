@@ -1,6 +1,10 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.junit.*;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -33,9 +37,14 @@ public class UsageMatcherPgStoreTest {
       var cl = store.getClassification("u2x");
       assertEquals(1, cl.size());
 
+      // single-tier canonical grouping: u1x ("Abies alba Miller", EXACT) and u2x ("Abies alba Mill.",
+      // VARIANT) both resolve to the very same names index entry (id 4, canonical id 3 = "Abies alba"),
+      // so the canonical group for dataset 102 contains both usages - not just the one that happened
+      // to be looked up first.
       var usages = store.usagesByCanonicalId(u1.getCanonicalId());
-      assertEquals(1, usages.size());
-      assertEquals(u1.getId(), usages.get(0).getId());
+      assertEquals(2, usages.size());
+      var ids = usages.stream().map(SimpleNameClassified::getId).collect(Collectors.toSet());
+      assertEquals(Set.of(u1.getId(), u2.getId()), ids);
     }
   }
 }

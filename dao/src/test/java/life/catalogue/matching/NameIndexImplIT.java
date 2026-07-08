@@ -193,7 +193,9 @@ public class NameIndexImplIT {
     setupMemory(true);
     assertEquals(0, ni.size());
     prepareTestNames().forEach(nn -> ni.match(nn, true, true));
-    assertEquals(3, ni.size());
+    // single-tier: all 5 variants of "Abies alba"/"Abies albus" (with/without authorship) stem to the
+    // same canonical bucket - see NameIndexImplTest.stemming() for the identical assertion.
+    assertEquals(1, ni.size());
 
     Name n = new Name();
     n.setScientificName("Abies (Abies) alba");
@@ -206,10 +208,12 @@ public class NameIndexImplIT {
     n.setType(NameType.SCIENTIFIC);
 
     var m = ni.match(n, true, true);
-    assertEquals(MatchType.VARIANT, m.getType());
+    // single-tier: the canonical of a binomial ignores its (redundant) subgenus placement, so this
+    // resolves EXACT to the very same "Abies alba" canonical entry - key == canonicalId.
+    assertEquals(MatchType.EXACT, m.getType());
     final int spNidx = m.getNameKey();
     final int canonNidx = m.getCanonicalNameKey();
-    assertNotEquals(canonNidx, spNidx);
+    assertEquals(canonNidx, spNidx);
 
     n = new Name();
     n.setScientificName("Abies (Pinus) alba");
@@ -222,7 +226,7 @@ public class NameIndexImplIT {
     n.setType(NameType.SCIENTIFIC);
 
     m = ni.match(n, true, true);
-    assertEquals(MatchType.VARIANT, m.getType());
+    assertEquals(MatchType.EXACT, m.getType());
     assertEquals(canonNidx, (int) m.getCanonicalNameKey());
     assertEquals(spNidx, (int) m.getNameKey());
 
@@ -244,8 +248,9 @@ public class NameIndexImplIT {
     n.setType(NameType.SCIENTIFIC);
 
     m = ni.match(n, true, true);
-    assertEquals(MatchType.VARIANT, m.getType());
-    assertNotEquals(m.getCanonicalNameKey(), m.getNameKey());
+    // single-tier: a genuinely new canonical name inserts a single fresh entry that is its own canonical
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals(m.getCanonicalNameKey(), m.getNameKey());
   }
 
   void setupNames(List<SimpleName> names) {
@@ -277,7 +282,10 @@ public class NameIndexImplIT {
     ));
 
     dumpIndex();
-    assertEquals(11, ni.size());
+    // single-tier: authorship/rank spellings collapse, and "montanus"/"montana" stem to the same
+    // bucket, leaving 5 distinct canonical buckets (affinis, borealis, kleinschmidti, songarus, and
+    // the bare "montana"/"montanus") - every entry is canonical, so size == canonical count.
+    assertEquals(5, ni.size());
     assertCanonicalSize(5);
   }
 
@@ -295,7 +303,10 @@ public class NameIndexImplIT {
     ));
 
     dumpIndex();
-    assertEquals(7, ni.size());
+    // single-tier: authorship/year is ignored, and "montanus"/"montana" stem to the same bucket,
+    // leaving 3 distinct canonical buckets ("Poa montan affinis", "Poa montana", "Biota orientalis
+    // elegantissima") - every entry is canonical, so size == canonical count.
+    assertEquals(3, ni.size());
     assertCanonicalSize(3);
   }
 
@@ -345,7 +356,10 @@ public class NameIndexImplIT {
     ni.delete(2, true);
     assertNull(ni.get(1));
     assertNull(ni.get(2));
-    assertEquals(4, ni.size());
+    // single-tier: deleting the sole canonical entry for "Malus sylvestris" and rematching creates
+    // exactly one fresh canonical entry to replace it - no separate child rows to also recreate.
+    // ids 3 and 4 survive untouched, plus the one freshly rematched entry: 3 total, not the original 4.
+    assertEquals(3, ni.size());
 
     List<TxtTreeDataRule.TreeDataset> data = new ArrayList<>();
     data.add(new TxtTreeDataRule.TreeDataset(101, "trees/nidx1.tree"));
@@ -357,9 +371,12 @@ public class NameIndexImplIT {
     rematchAll();
     //dumpIndex();
 
-    int nidxSize = 25;
+    int nidxSize = 13;
     assertEquals(nidxSize, ni.size());
     var m = ni.match(Name.build("Abbella zabinskii", "Novicki, 1936", Rank.SPECIES), false, false);
+    // single-tier: byCanonical always returns empty - there are no separate rank/author child entries
+    // to cascade-delete alongside the canonical anymore, so this group is always empty and the
+    // -group.size() term below is a no-op left in place to preserve the original test structure.
     var group = ni.byCanonical(m.getCanonicalNameKey());
     ni.delete(m.getCanonicalNameKey(), false);
     assertNull(ni.get(m.getNameKey()));
@@ -455,16 +472,15 @@ public class NameIndexImplIT {
       assertTrue(m.hasMatch());
       final Integer idx = m.getName().getKey();
       final Integer cidx = m.getName().getCanonicalId();
-      if (n.hasAuthorship() || n.getRank() != Rank.UNRANKED) {
-        assertNotEquals(idx, cidx);
-      } else {
-        assertEquals(idx, cidx);
-      }
+      // single-tier: every match - regardless of authorship or rank - resolves to the one canonical
+      // entry, so the matched key always equals its own canonical id
+      assertEquals(idx, cidx);
     }
 
     dumpIndex();
     assertEquals(repeat, counter.get());
-    assertEquals(3, ni.size());
+    // single-tier: all 5 variants of "Abies alba"/"Abies albus" collapse onto the single canonical entry
+    assertEquals(1, ni.size());
     assertCanonicalAbiesAlba();
     ni.close();
   }
@@ -498,11 +514,8 @@ public class NameIndexImplIT {
         assertTrue(m.hasMatch());
         final Integer idx = m.getName().getKey();
         final Integer cidx = m.getName().getCanonicalId();
-        if (n.hasAuthorship()) {
-          assertNotEquals(idx, cidx);
-        } else {
-          assertEquals(idx, cidx);
-        }
+        // single-tier: every match - regardless of authorship - resolves to the one canonical entry
+        assertEquals(idx, cidx);
       });
     }
     ExecutorUtils.shutdown(exec);
@@ -511,7 +524,8 @@ public class NameIndexImplIT {
 
     dumpIndex();
     assertEquals(repeat, counter.get());
-    assertEquals(3, ni.size());
+    // single-tier: all 5 variants of "Abies alba"/"Abies albus" collapse onto the single canonical entry
+    assertEquals(1, ni.size());
     assertCanonicalAbiesAlba();
   }
 
@@ -522,32 +536,36 @@ public class NameIndexImplIT {
     }
   }
 
+  /**
+   * The names index is single-tier & canonical-only: matching every authorship/rank variant of
+   * "Abies alba"/"Abies albus" (see {@link #prepareTestNames()}) must resolve to the very same
+   * single canonical entry - key 1 - and never create a second, rank/author specific entry.
+   */
   public void assertCanonicalAbiesAlba() throws Exception {
     IndexName n1 = ni.get(1);
     assertTrue(n1.isCanonical());
+    assertEquals(n1.getKey(), n1.getCanonicalId());
 
-    IndexName n2 = ni.get(2);
-    assertNotEquals(n1, n2);
-
-    assertEquals(n1.getCanonicalId(), n2.getCanonicalId());
-    assertEquals(n1.getKey(), n2.getCanonicalId());
-    var group = ni.byCanonical(n1.getCanonicalId());
-    assertEquals(2, group.size());
-    for (var n : group) {
-      assertFalse(n.isCanonical());
-      assertEquals(n1.getKey(), n.getCanonicalId());
-    }
+    // single-tier: no separate rank/author child entry is ever created
+    assertNull(ni.get(2));
+    assertTrue(ni.byCanonical(n1.getCanonicalId()).isEmpty());
   }
 
   @Test
   public void truncate() throws Exception {
     setupPersistent();
-    ni.add(create("Abies", "alba", null, "Miller"));
+    IndexName miller = create("Abies", "alba", null, "Miller");
+    ni.add(miller);
+    // single-tier: "Duller" is just a different authorship of the very same canonical "Abies alba" -
+    // it reuses the existing canonical entry rather than creating a separate child row
     ni.add(create("Abies", "alba", null, "Duller"));
-    assertEquals(7, ni.size());
-    IndexName n = ni.get(7);
+    // setupPersistent() verifies the fresh file store against postgres and reloads the apple fixture's
+    // 4 pre-existing canonical entries into it, plus the single new "Abies alba" canonical added above
+    assertEquals(5, ni.size());
+    IndexName n = ni.get(miller.getKey());
     assertEquals("Abies alba", n.getScientificName());
-    assertEquals("Duller", n.getAuthorship());
+    // single-tier: no authorship is ever kept on a names index entry
+    assertNull(n.getAuthorship());
 
     String epi = "alba";
     for (int i = 0; i<100; i++) {
@@ -558,10 +576,14 @@ public class NameIndexImplIT {
     ni.reset();
     assertEquals(0, ni.size());
 
-    ni.add(create("Abies", "alba", null, "Miller"));
+    IndexName miller2 = create("Abies", "alba", null, "Miller");
+    ni.add(miller2);
+    // single-tier: reuses the same canonical entry created above - no separate child row
     ni.add(create("Abies", "alba", null, "Duller"));
-    n = ni.get(2);
-    assertEquals(3, ni.size());
+    n = ni.get(miller2.getKey());
+    assertEquals("Abies alba", n.getScientificName());
+    assertNull(n.getAuthorship());
+    assertEquals(1, ni.size());
   }
 
   private static IndexName create(String genus, String species, String year, String... authors){
