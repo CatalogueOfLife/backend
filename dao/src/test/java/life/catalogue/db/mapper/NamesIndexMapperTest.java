@@ -48,6 +48,7 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
     assertNotNull(n.getScientificName());
     // single-tier: rank is always the canonical UNRANKED constant
     assertNotNull(n.getRank());
+    assertNotNull(n.getNormalized());
   }
 
   @Test
@@ -154,7 +155,11 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
     IndexName n = new IndexName(TestEntityGenerator.newName());
     n.setCreatedBy(null);
     n.setModifiedBy(null);
-    // the normalized column is NOT NULL & unique - mirror NameIndexImpl.key() so fixtures round-trip
+    // the normalized column is NOT NULL & unique - derive a value from the scientific name via
+    // SciNameNormalizer so fixtures satisfy the constraint. This is NOT guaranteed to equal
+    // NameIndexImpl.key(), which normalizes NameFormatter.canonicalName(n) rather than
+    // n.getScientificName() directly; since `normalized` is excluded from IndexName.equals() and no
+    // test here asserts key() derivation, only round-trip persistence of the column is being tested.
     n.setNormalized(UnicodeUtils.replaceNonAscii(
       SciNameNormalizer.normalize(UnicodeUtils.decompose(n.getScientificName())).toLowerCase(), '*'
     ));

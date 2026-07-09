@@ -7,3 +7,6 @@ CREATE TABLE nidx.name_match (LIKE public.name_match INCLUDING DEFAULTS) PARTITI
 CREATE TABLE nidx.names_index (LIKE public.names_index INCLUDING DEFAULTS);
 CREATE SEQUENCE nidx.names_index_id_seq START 1;
 ALTER TABLE nidx.names_index ALTER COLUMN id SET DEFAULT nextval('nidx.names_index_id_seq');
+-- unique on normalized must exist BEFORE population: assign-on-miss uses INSERT ... ON CONFLICT (normalized),
+-- which requires the matching unique index on the target table during the rebuild sweep.
+CREATE UNIQUE INDEX ON nidx.names_index (normalized);

@@ -75,9 +75,10 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
     assertEquals(0, cnt);
 
     IndexName in = new IndexName(TestEntityGenerator.NAME4);
-    // NAME4 ("Larus fusca") normalizes to the same bucket as the apple fixture's "Larus fuscus" (id=3) -
-    // this raw insert bypasses the single-tier reuse logic in NameIndexImpl, so give it its own distinct
-    // normalized literal to satisfy the unique index rather than colliding with that fixture row.
+    // NAME4 ("Larus erfundus") normalizes to "larus erfund", the same bucket as the apple fixture's
+    // id=4 row ("Larus erfundus" -> "larus erfund") - this raw insert bypasses the single-tier reuse
+    // logic in NameIndexImpl, so give it its own distinct normalized literal to satisfy the unique
+    // index rather than colliding with that fixture row.
     in.setNormalized("larus fusca-test");
     mapper(NamesIndexMapper.class).create(in);
     nidx = in.getKey();
