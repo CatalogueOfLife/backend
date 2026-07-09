@@ -296,6 +296,12 @@
     <result property="phrase" column="name_phrase" />
   </resultMap>
 
+  <resultMap id="simpleClassificationResultMap" type="SimpleNameInDatasetClassified" autoMapping="true" extends="simpleInDatasetResultMap">
+    <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+    <result property="datasetAlias" column="alias" />
+    <result property="datasetTitle" column="title" />
+  </resultMap>
+
   <resultMap id="simpleVerbatimResultMap" type="SimpleNameVerbatim" autoMapping="true" extends="simpleResultMap">
     <id property="id" column="id"/>
     <result property="verbatimSourceKey" column="verbatim_source_key" />
@@ -509,7 +515,17 @@
     FROM <include refid="FROM_NIDX"/>
       LEFT JOIN dataset d ON d.key=nm.dataset_key
     WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
-    ORDER BY ni.id, d.title, u.id
+    ORDER BY ni.id, d.title, d.key, u.id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="listByNamesIndexIDGlobalClassified" resultMap="simpleClassificationResultMap">
+    SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>, tm.classification, d.alias, d.title
+    FROM <include refid="FROM_NIDX_BASE"/>
+        LEFT JOIN dataset d ON d.key=nm.dataset_key
+        LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
+    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    ORDER BY d.title, d.key, u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 

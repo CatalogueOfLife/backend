@@ -37,6 +37,19 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void listByNamesIndexIDGlobalClassified() throws Exception {
+    // with author
+    var res = mapper().listByNamesIndexIDGlobalClassified( 4, new Page());
+    assertEquals(3, res.size());
+
+    // canonical +1
+    assertEquals(4, mapper().listByNamesIndexIDGlobalClassified( 3, new Page()).size());
+
+    // none
+    assertEquals(0, mapper().listByNamesIndexIDGlobalClassified( 1, new Page()).size());
+  }
+
+  @Test
   public void listByCanonNIDX() throws Exception {
     assertCanonNIDX(1, 100, 3);
     assertCanonNIDX(1, 101, 3);

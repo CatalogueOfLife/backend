@@ -10,9 +10,10 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
-import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.interpreter.NameInterpreter;
+import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexStore;
 import org.apache.ibatis.session.SqlSession;
@@ -36,13 +37,13 @@ public class NamesIndexResource {
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   private final SqlSessionFactory factory;
   private final WsServerConfig cfg;
-  private final JobExecutor exec;
+  private final TaxGroupAnalyzer analyzer;
 
-  public NamesIndexResource(NameIndex ni, SqlSessionFactory factory, WsServerConfig cfg,JobExecutor exec) {
+  public NamesIndexResource(NameIndex ni, SqlSessionFactory factory, WsServerConfig cfg) {
     this.ni = ni;
     this.factory = factory;
     this.cfg = cfg;
-    this.exec = exec;
+    this.analyzer = new TaxGroupAnalyzer();
   }
 
   @GET
@@ -85,6 +86,20 @@ public class NamesIndexResource {
   @Path("{key}/group")
   public Collection<IndexName> byCanonical(@PathParam("key") int key) {
     return ni.byCanonical(key);
+  }
+
+  @GET
+  @Path("{key}/usages")
+  public Collection<SimpleNameInDatasetClassified> relatedUsages(@PathParam("key") int key, @Valid @BeanParam Page page) {
+    Page p = page == null ? new Page() : page;
+    try (SqlSession session = factory.openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var res = num.listByNamesIndexIDGlobalClassified(key, p);
+      res.forEach(sn -> {
+        sn.setGroup(analyzer.analyze(sn, sn.getClassification()));
+      });
+      return res;
+    }
   }
 
   @GET
