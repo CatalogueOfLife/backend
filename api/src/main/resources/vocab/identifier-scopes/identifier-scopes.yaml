@@ -711,21 +711,21 @@
   regex: '^[1-9]\d*$'
 
 - scope: cockroach-sf
-  title: 'Cockroach Species File taxon ID (new)'
+  title: 'Cockroach Species File'
   wikidataProperty: P12817
   link: 'https://cockroach.speciesfile.org'
   resolver: 'https://cockroach.speciesfile.org/otus/{id}/overview'
   regex: '^[1-9]\d*$'
 
 - scope: cockroach-sf-old
-  title: 'Cockroach Species File ID (old version)'
+  title: 'Cockroach Species File (old)'
   wikidataProperty: P6052
   link: 'http://cockroach.speciesfile.org'
   resolver: 'http://cockroach.speciesfile.org/Common/basic/Taxa.aspx?TaxonNameID={id}'
   regex: '^[1-9]\d*$'
 
 - scope: coleorrhyncha-sf
-  title: 'Coleorrhyncha Species File    
+  title: 'Coleorrhyncha Species File'
   wikidataProperty: P12771
   link: 'https://coleorrhyncha.speciesfile.org'
   resolver: 'https://coleorrhyncha.speciesfile.org/otus/{id}/overview'
@@ -966,7 +966,7 @@
   regex: '^[1-9]\d{0,4}$'
 
 - scope: flora-australia
-  title: 'Flora of Australia ID (new)'
+  title: 'Flora of Australia'
   wikidataProperty: P6756
   link: 'https://profiles.ala.org.au'
   resolver: 'https://profiles.ala.org.au/opus/foa/profile/{id}'
