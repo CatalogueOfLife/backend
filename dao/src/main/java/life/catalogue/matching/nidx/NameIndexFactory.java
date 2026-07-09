@@ -171,7 +171,7 @@ public class NameIndexFactory {
    */
   public static NameIndexImpl build(NamesIndexConfig cfg, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) {
     NameIndexStore store = buildStore(cfg);
-    return new NameIndexImpl(store, aNormalizer, sqlFactory, cfg.verification);
+    return new NameIndexImpl(store, aNormalizer, sqlFactory);
   }
 
   private static NameIndexStore buildStore(NamesIndexConfig cfg) {

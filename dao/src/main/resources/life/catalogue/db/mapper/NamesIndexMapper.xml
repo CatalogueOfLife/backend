@@ -87,8 +87,18 @@
     FROM <include refid="FROM"/>
   </select>
 
+  <select id="processSince" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE id > #{min}
+  </select>
+
   <select id="count" parameterType="map" resultType="integer">
     SELECT count(*) FROM names_index
+  </select>
+
+  <select id="maxKey" resultType="integer">
+    SELECT coalesce(max(id),0) FROM names_index
   </select>
 
   <update id="truncate">

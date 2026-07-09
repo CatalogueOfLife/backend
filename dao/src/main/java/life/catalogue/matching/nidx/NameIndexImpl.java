@@ -47,7 +47,6 @@ public class NameIndexImpl implements NameIndex {
       NameType.SCIENTIFIC, NameType.FORMULA, NameType.INFORMAL, NameType.OTHER
   );
 
-  private final boolean verifyIndex; // if true compares counts from index with postgres counts and reloads if wrong
   private final NameIndexStore store;
   private final AuthorComparator authComp;
   private final SqlSessionFactory sqlFactory;
@@ -58,10 +57,9 @@ public class NameIndexImpl implements NameIndex {
    * @param sqlFactory sql session factory to talk to the data store backend if needed for inserts or initial loading
    * @throws IllegalStateException when db is in a bad state
    */
-  public NameIndexImpl(NameIndexStore store, AuthorshipNormalizer normalizer, @Nullable SqlSessionFactory sqlFactory, boolean verifyIndex) {
+  public NameIndexImpl(NameIndexStore store, AuthorshipNormalizer normalizer, @Nullable SqlSessionFactory sqlFactory) {
     this.store = store;
     this.authComp = new AuthorComparator(normalizer);
-    this.verifyIndex = verifyIndex;
     hasPg = sqlFactory != null;
     if (sqlFactory == null) {
       LOG.warn("No postgres connection given. Names index will only be kept in files.");
@@ -70,30 +68,11 @@ public class NameIndexImpl implements NameIndex {
       this.sqlFactory = sqlFactory;
     }
   }
-  
-  private int countPg() {
-    try (SqlSession s = sqlFactory.openSession()) {
-      return s.getMapper(NamesIndexMapper.class).count();
-    }
-  }
 
   public void printPgIndex() {
     System.out.println("\nNames Index from postgres:");
     try (SqlSession session = sqlFactory.openSession(true)) {
       session.getMapper(NamesIndexMapper.class).processAll().forEach(System.out::println);
-    }
-  }
-
-  private void loadFromPg() {
-    store.clear();
-    LOG.info("Loading names from postgres into names index");
-    try (SqlSession s = sqlFactory.openSession()) {
-      NamesIndexMapper mapper = s.getMapper(NamesIndexMapper.class);
-      PgUtils.consume(
-        () -> mapper.processAll(),
-        this::addFromPg
-      );
-      LOG.info("Loaded {} names from postgres into names index", store.count());
     }
   }
 
@@ -413,14 +392,21 @@ public class NameIndexImpl implements NameIndex {
   public void start() throws Exception {
     LOG.info("Start names index ...");
     store.start();
-    int storeSize = store.count();
     if (hasPg) {
-      // verify postgres and store match up - otherwise trust postgres
-      int pgCount = countPg();
-      if (pgCount != storeSize) {
-        LOG.warn("Existing name index contains {} names, but postgres has {}.", storeSize, pgCount);
-        if (verifyIndex) {
-          loadFromPg();
+      // the names index is append-only in postgres, so on (re)start we only ever need to catch up
+      // with rows added since the store was last stopped - never a full reload, which would be far
+      // too slow once the index holds tens of millions of names.
+      try (SqlSession s = sqlFactory.openSession()) {
+        NamesIndexMapper mapper = s.getMapper(NamesIndexMapper.class);
+        int localMax = store.maxKey();
+        int pgMax = mapper.maxKey();
+        if (pgMax > localMax) {
+          final int before = store.count();
+          PgUtils.consume(
+            () -> mapper.processSince(localMax),
+            this::addFromPg
+          );
+          LOG.info("Loaded {} new names (catch-up from {} to {})", store.count() - before, localMax, pgMax);
         }
       }
     } else {

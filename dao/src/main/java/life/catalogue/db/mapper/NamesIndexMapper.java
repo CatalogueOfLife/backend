@@ -38,9 +38,24 @@ public interface NamesIndexMapper extends CRUD<Integer, IndexName> {
   Cursor<IndexName> processAll();
 
   /**
+   * Iterate through all name index entries with an id strictly greater than the given minimum,
+   * i.e. the delta appended since a previous load up to and including {@code min}.
+   * Used by {@link life.catalogue.matching.nidx.NameIndexImpl#start()} to catch up an existing,
+   * persistent names index store with rows that were added to postgres since it was last stopped,
+   * without having to reload the entire (potentially huge) table.
+   * @param min the highest id already held, exclusive
+   */
+  Cursor<IndexName> processSince(@Param("min") int min);
+
+  /**
    * @return number of all names index entries.
    */
   int count();
+
+  /**
+   * @return the highest id of all names index entries, or zero if the table is empty.
+   */
+  int maxKey();
 
   /**
    * Clears the entire names index table

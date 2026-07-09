@@ -674,6 +674,64 @@ public class NameIndexImplIT {
     }
   }
 
+  /**
+   * Postgres is append-only and can grow between two starts of the very same persistent index - e.g.
+   * another process inserted a new canonical name while this index instance was stopped. start() must
+   * catch up just that delta (ids beyond the store's current max key) rather than clearing and
+   * reloading everything, which would be far too slow once the names index holds tens of millions of
+   * entries.
+   * <p>
+   * The restart below deliberately opens a fresh instance with verification disabled - exactly how the
+   * real full-rebuild commands ({@code NamesIndexCmd}, {@code MatchingServerBuildCmd}) configure it -
+   * so a legacy "reload everything on count mismatch" safety net cannot mask whether the new
+   * incremental catch-up path actually ran.
+   */
+  @Test
+  public void catchUpOnRestart() throws Exception {
+    setupPersistent();
+    assertMatch(4, "Larus erfundus", Rank.SPECIES);
+    assertEquals(4, ni.size());
+    assertEquals(4, ni.store().maxKey());
+
+    // simulate another process appending a brand new canonical name directly to postgres while this
+    // index is stopped - bypasses NameIndexImpl.add() entirely, so the persistent store has no way of
+    // knowing about it other than catching up from postgres on the next start()
+    IndexName newName = new IndexName();
+    newName.setScientificName("Catchupia testensis");
+    newName.setGenus("Catchupia");
+    newName.setSpecificEpithet("testensis");
+    newName.setNormalized("catchupia testensis-catchup-test");
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(NamesIndexMapper.class).create(newName);
+    }
+    assertTrue("new postgres row should get an id beyond the store's current max",
+        newName.getKey() > ni.store().maxKey());
+
+    int pgCount;
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      pgCount = session.getMapper(NamesIndexMapper.class).count();
+    }
+    assertEquals(5, pgCount);
+
+    // restart against the SAME persistent store file, but through a fresh instance configured with
+    // verification disabled (see class javadoc above for why)
+    ni.stop();
+    NamesIndexConfig cfg2 = NamesIndexConfig.file(cfg.file, 512);
+    cfg2.type = this.type;
+    cfg2.verification = false;
+    cfg = cfg2;
+    ni = NameIndexFactory.build(cfg2, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
+
+    assertEquals(5, ni.size());
+    assertEquals(5, ni.store().maxKey());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      assertEquals(session.getMapper(NamesIndexMapper.class).count(), ni.store().count());
+    }
+    // the delta row is now matchable ...
+    assertMatch(newName.getKey(), "Catchupia testensis", Rank.SPECIES);
+    // ... and the pre-existing entries survived the restart untouched
+    assertMatch(4, "Larus erfundus", Rank.SPECIES);
+  }
 
   static Name name(String name, Rank rank) throws InterruptedException {
     Name n = TestEntityGenerator.setUserDate(NameParser.PARSER.parse(name, rank, null, VerbatimRecord.VOID).get().getName());
