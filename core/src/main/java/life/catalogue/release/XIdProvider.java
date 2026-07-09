@@ -57,7 +57,8 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
 
   @Override
   public Integer nidx2canonical(Integer nidx) {
-    return this.nidx.getCanonical(nidx);
+    // single-tier canonical-only index: a nidx is its own canonical, so no lookup is needed
+    return nidx;
   }
 
   @Override
