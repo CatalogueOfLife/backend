@@ -156,20 +156,16 @@ public class UsageMatcher implements AutoCloseable {
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
       var match = filterCandidates(snc, new ArrayList<>(existing), verbose);
-      if (match.isMatch()) {
-        // decide about usage match type - the match type we have so far is from names index matching only!
-        if (match.type == MatchType.VARIANT || match.type == MatchType.EXACT) {
-          String label = SciNameNormalizer.normalizeWhitespaceAndPunctuation(snc.getLabel());
-          String matchLabel = SciNameNormalizer.normalizeWhitespaceAndPunctuation(match.usage.getLabel());
-          if (match.type == MatchType.VARIANT && matchLabel.equals(label)) {
-            match = new UsageMatch(match, MatchType.EXACT);
-          } else if (match.type == MatchType.EXACT && !matchLabel.equals(label)) {
-            match = new UsageMatch(match, MatchType.VARIANT);
-          }
+      if (match.isMatch() && match.type != MatchType.AMBIGUOUS && match.type != MatchType.CANONICAL) {
+        // classify the usage match purely from the live labels - independent of any names index match type!
+        String label = SciNameNormalizer.normalizeWhitespaceAndPunctuation(snc.getLabel());
+        String matchLabel = SciNameNormalizer.normalizeWhitespaceAndPunctuation(match.usage.getLabel());
+        MatchType computed = label.equals(matchLabel) ? MatchType.EXACT : MatchType.VARIANT;
+        if (computed != match.type) {
+          match = new UsageMatch(match, computed);
         }
-        // CANONICAL match type remains
-        // no matches also: AMBIGUOUS, NONE, UNSUPPORTED
       }
+      // AMBIGUOUS and CANONICAL match types remain unchanged
       return match;
     }
     return UsageMatch.empty(datasetKey);
