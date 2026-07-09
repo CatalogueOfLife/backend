@@ -290,7 +290,7 @@
 
   <resultMap id="simpleInDatasetResultMap" type="SimpleNameInDataset" autoMapping="true">
     <id property="id" column="id"/>
-    <result property="datasetKey" column="dataset_key"/>
+    <id property="datasetKey" column="dataset_key"/>
     <result property="name" column="scientific_name"/>
     <result property="parent" column="parent_id"/>
     <result property="phrase" column="name_phrase" />
