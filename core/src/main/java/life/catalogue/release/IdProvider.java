@@ -3,7 +3,6 @@ package life.catalogue.release;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.CountEnumMap;
 import life.catalogue.common.collection.CountMap;
@@ -278,11 +277,10 @@ public class IdProvider {
       NameMatch match = nmm.get(n);
       writer.write(" nidx=");
       if (match != null) {
-        writer.write(match.getName().getKey());
+        // single-tier index: the names index id is its own canonical, so both are the same value
+        writer.write(String.valueOf(match.getNidx()));
         writer.write('/');
-        writer.write(match.getName().getKey());
-        writer.write(' ');
-        writer.write(String.valueOf(match.getType()));
+        writer.write(String.valueOf(match.getNidx()));
       } else {
         writer.write("null");
       }
@@ -698,10 +696,6 @@ public class IdProvider {
         return 0;
       }
     }
-    // match type
-    score += matchTypeScore(n.getNamesIndexMatchType());
-    score += matchTypeScore(r.matchType);
-
     // exact same authorship
     if (StringUtils.equalsDigitOrAsciiLettersIgnoreCase(n.getAuthorship(), r.authorship)) {
       score += 6;
@@ -715,15 +709,6 @@ public class IdProvider {
 
     // no less than zero
     return Math.max(0, score);
-  }
-
-  private static int matchTypeScore(MatchType mt) {
-    switch (mt) {
-      case EXACT: return 3;
-      case VARIANT: return 2;
-      case CANONICAL: return 1;
-      default: return 0;
-    }
   }
 
   static String encode(int id) {

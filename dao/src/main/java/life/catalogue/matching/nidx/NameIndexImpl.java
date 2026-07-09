@@ -2,8 +2,6 @@ package life.catalogue.matching.nidx;
 
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
@@ -19,7 +17,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -33,10 +31,12 @@ import com.google.common.collect.ImmutableSet;
 import javax.annotation.Nullable;
 
 /**
- * NameMatching implementation that is backed by a generic store with a list of names keyed to their normalised
- * canonical name using the SciNameNormalizer.normalize() method.
+ * NameMatching implementation backed by a slim {@code normalized-String -> nidx-int} store.
  *
- * Ranks are important and kept, apart from uncomparable ranks which are converted to UNRANKED.
+ * The index is single-tier & canonical-only: a name is bucketed purely by its normalised canonical
+ * name (see {@link #key}). A match therefore resolves to the bucket's nidx if present, or - when
+ * inserts are allowed - assigns a fresh canonical entry on a miss. Authorship and rank are never
+ * stored; homonym separation and EXACT/VARIANT classification live in the usage-match layer.
  */
 public class NameIndexImpl implements NameIndex {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexImpl.class);
@@ -77,8 +77,7 @@ public class NameIndexImpl implements NameIndex {
   }
 
   private void addFromPg(IndexName name) {
-    final String key = key(name);
-    store.add(key, name);
+    store.add(name.getNormalized(), name.getKey());
   }
 
   public AuthorComparator getAuthComp() {
@@ -92,30 +91,16 @@ public class NameIndexImpl implements NameIndex {
 
   @Override
   public NameMatch match(Name name, boolean allowInserts, boolean verbose) throws MatchingException {
-    NameMatch m = null;
     try {
-      // make sure we have a name
+      // make sure we have a rank so the canonical name is built consistently
       if (name.getRank() == null) {
-        name.setRank(IndexName.CANONICAL_RANK);
+        name.setRank(ScientificName.CANONICAL_RANK);
       }
-      List<IndexName> candidates = store.get(key(name));
-      if (candidates != null && !candidates.isEmpty()) {
-        m = matchCandidates(name, candidates);
-        if (verbose) {
-          if (m.hasMatch()) {
-            candidates.remove(m.getName());
-          }
-          m.setAlternatives(candidates);
-        } else {
-          m.setAlternatives(null);
-        }
-
-      } else {
-        m = NameMatch.noMatch();
-      }
-
-      if (allowInserts && needsInsert(m, name) && eligable(name)) {
-        m = tryToAdd(name, m, verbose);
+      final String key = key(name);
+      int nidx = store.get(key);
+      NameMatch m = nidx > 0 ? NameMatch.match(nidx) : NameMatch.noMatch();
+      if (allowInserts && !m.isMatched() && eligable(name)) {
+        m = tryToAdd(name, key);
       }
       LOG.debug("Matched {} => {}", name.getLabel(), m);
       return m;
@@ -124,18 +109,9 @@ public class NameIndexImpl implements NameIndex {
       throw e; // we want this to be passed through
 
     } catch (Exception e) {
-      LOG.error("Error matching >>{}<< match={}", name, m, e);
+      LOG.error("Error matching >>{}<<", name, e);
       throw new MatchingException(name, e);
     }
-  }
-
-  /**
-   * Check if a new names index entry is needed which is only true when there was no match at all -
-   * the index is single-tier & canonical-only, so any match (EXACT or VARIANT) always resolves to
-   * the existing canonical entry and never requires a new rank/author specific row.
-   */
-  private static boolean needsInsert(NameMatch m, Name name){
-    return !m.hasMatch();
   }
 
   /**
@@ -150,68 +126,9 @@ public class NameIndexImpl implements NameIndex {
 
   @Override
   public IndexName get(Integer key) {
-    return store.get(key);
-  }
-
-  @Override
-  public Collection<IndexName> byCanonical(Integer key) {
-    return store.byCanonical(key);
-  }
-
-  /**
-   * The names index is single-tier & canonical-only: every candidate bucket holds at most one
-   * canonical entry, so matching purely compares the query's canonical name string against that
-   * entry's - no rank or authorship scoring is involved anymore.
-   *
-   * The bucket lookup (store.get(key(name))) already applies the aggressive, ASCII-folded &
-   * stemmed normalization (see #key), so any candidate found here is guaranteed to be the same
-   * name modulo spelling/diacritics/stemming. What's left to decide is only whether the query is
-   * a byte-for-byte (case/whitespace/punctuation insensitive) reproduction of the stored canonical
-   * name (EXACT) or a spelling variant of it, e.g. differing in diacritics, hyphenation or gender
-   * ending (VARIANT). We therefore compare the two canonical strings without ASCII-folding them -
-   * folding both sides would erase exactly the diacritic differences a VARIANT is meant to flag.
-   */
-  private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
-    IndexName hit = null;
-    for (IndexName n : candidates) {
-      if (n.isCanonical()) { hit = n; break; } // one canonical per bucket
+    try (SqlSession s = sqlFactory.openSession()) {
+      return s.getMapper(NamesIndexMapper.class).get(key);
     }
-    NameMatch m = new NameMatch();
-    if (hit == null) {
-      m.setType(MatchType.NONE);
-      return m;
-    }
-    m.setName(hit);
-    m.setType(classifyCanonicalMatch(query, hit));
-    m.setAlternatives(candidates);
-    return m;
-  }
-
-  /**
-   * Classifies how closely two names' canonical forms agree: EXACT if their normalized canonical
-   * name strings are identical (case insensitively), VARIANT if they only differ by
-   * unicode/punctuation/spelling. Used both when matching against an existing candidate and when
-   * classifying a freshly inserted entry, so the very same pair of names always yields the same
-   * MatchType regardless of insertion order.
-   */
-  private static MatchType classifyCanonicalMatch(FormattableName a, FormattableName b) {
-    String ac = SciNameNormalizer.normalizeWhitespaceAndPunctuation(NameFormatter.canonicalName(a));
-    String bc = SciNameNormalizer.normalizeWhitespaceAndPunctuation(NameFormatter.canonicalName(b));
-    return ac.equalsIgnoreCase(bc) ? MatchType.EXACT : MatchType.VARIANT;
-  }
-
-  private IndexName getCanonical(String key) {
-    List<IndexName> matches = store.get(key);
-    // make sure the name is a canonical one
-    matches.removeIf(n -> !n.isCanonical() || !n.qualifiesAsCanonical());
-    // just in case we have multiple results make sure to have a stable return by selecting the lowest, i.e. oldest key
-    IndexName lowest = null;
-    for (IndexName n : matches) {
-      if (lowest == null || lowest.getKey() > n.getKey()) {
-        lowest = n;
-      }
-    }
-    return lowest;
   }
 
   @Override
@@ -238,11 +155,6 @@ public class NameIndexImpl implements NameIndex {
     return store;
   }
 
-  @Override
-  public Iterable<IndexName> all() {
-    return store.all();
-  }
-
   /**
    * We synchronize this method to only ever allow one write at a time to avoid duplicates.
    * As we do allow concurrent reads through the main match method
@@ -252,132 +164,51 @@ public class NameIndexImpl implements NameIndex {
    *
    * This method assumes the name is well formatted and tested to be eligable to be inserted
    */
-  private NameMatch tryToAdd(Name orig, NameMatch match, boolean verbose) {
+  private NameMatch tryToAdd(Name orig, String key) {
     insertLock.lock();
     try {
-      LOG.trace("{} match, try to add {}", match.getType(), orig.getLabel());
-      var match2 = match(orig, false, verbose);
-      if (needsInsert(match2, orig)) {
-        LOG.debug("{} match, adding {}", match.getType(), orig.getLabel());
-        // verified we still do not have that name - build the canonical form from the query Name
-        // (which natively carries a real rank) and insert THAT.
-        IndexName n = IndexName.newCanonical(orig);
-        add(n);
-        match.setName(n);
-        // classify with the same canonical-name comparison matchCandidates uses (not orig's raw
-        // scientificName, which may still carry a rank marker n's canonical form has dropped), so
-        // the very same name is classified identically whether it is the first insert or a later match
-        match.setType(classifyCanonicalMatch(orig, n));
-        return match;
+      // re-check under the lock: another thread on this same JVM may have inserted it in the meantime
+      int nidx = store.get(key);
+      if (nidx > 0) {
+        return NameMatch.match(nidx);
       }
-      return match2;
+      LOG.debug("Adding new canonical name {}", orig.getLabel());
+      int id = createCanonical(orig, key);
+      return NameMatch.match(id);
     } finally {
       insertLock.unlock();
     }
   }
 
-  @Override
-  public List<IndexName> delete(int key, boolean rematch){
-    var removed = store.delete(key, NameIndexImpl::key);
-    // order the canonical last to not break foreign key constraints
-    removed.sort(Comparator.comparing(IndexName::isCanonical));
-    // remove from db?
+  /**
+   * Inserts a fresh canonical entry for the given name and returns its assigned nidx.
+   * With postgres this is an atomic assign-on-miss: {@link NamesIndexMapper#createOnConflict} inserts a
+   * new row and sets its generated key, or - if a concurrent rebuild already inserted the same normalized
+   * bucket - inserts nothing (leaving key null) so we fall back to the existing winner via
+   * {@link NamesIndexMapper#getKeyByNormalized}. This is the only safeguard against duplicate rows across
+   * independent index instances sharing one postgres; the JVM-local insertLock only guards a single one.
+   */
+  private int createCanonical(Name orig, String key) {
+    // build the canonical (rankless, authorless) carrier to hand to the mapper insert
+    IndexName cn = IndexName.newCanonical(orig);
+    cn.setNormalized(key);
+    final int id;
     if (hasPg) {
-      var names = new ArrayList<DSID<String>>();
-      var archivedNames = new ArrayList<DSID<String>>();
-      try (SqlSession s = sqlFactory.openSession(false)) {
-        var nim = s.getMapper(NamesIndexMapper.class);
-        var nm = s.getMapper(NameMapper.class);
-        var nmm = s.getMapper(NameMatchMapper.class);
-  
-        var anum = s.getMapper(ArchivedNameUsageMapper.class);
-        var anm = s.getMapper(ArchivedNameUsageMatchMapper.class);
-  
-        for (var n : removed) {
-          // remove matches
-          var matches = nm.indexGroupIds(n.getKey());
-          names.addAll(matches);
-          for (var m : matches) {
-            nmm.delete(m);
-          }
-          // archived matches
-          matches = anum.indexGroupIds(n.getKey());
-          archivedNames.addAll(matches);
-          for (var m : matches) {
-            anm.delete(m);
-          }
-          // remove index name
-          nim.delete(n.getKey());
+      try (SqlSession s = sqlFactory.openSession()) {
+        NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
+        cn.setKey(null);
+        nim.createOnConflict(cn);
+        if (cn.getKey() == null) {
+          cn.setKey(nim.getKeyByNormalized(key));
         }
         s.commit();
-        LOG.info("Removed index {} and {} more names from names index", key, removed.size()-1);
-  
-        // rematch
-        if (rematch) {
-          LOG.debug("Rematch {} names", names.size());
-          for (var n : names) {
-            match(nm.get(n), true, false);
-          }
-          LOG.debug("Rematch {} archived name usages", archivedNames.size());
-          for (var n : archivedNames) {
-            match(anum.get(n).getName(), true, false);
-          }
-          LOG.info("Rematched {} names and {} archived usages that had been linked to the removed index name {}", names.size(), archivedNames.size(), key);
-        }
       }
-    }
-    return removed;
-  }
-
-  /**
-   * Adds an IndexName to the index, reusing an existing canonical entry for the same name if one exists
-   * (never inserting a duplicate row).
-   * The names index is single-tier: every entry is a canonical name (standard UNRANKED rank, no authorship).
-   * The given IndexName is already canonical by construction (see {@link IndexName#newCanonical}), so this
-   * only computes its bucket key and either reuses the existing canonical entry or inserts it - no separate
-   * rank/author specific child row is ever created.
-   * This method is not thread safe!
-   */
-  @Override
-  public void add(IndexName n) {
-    // n is already canonical (rankless, authorless). key() derives the bucket from its canonical name.
-    final String key = key(n);
-
-    n.setCreatedBy(Users.MATCHER);
-    n.setCreated(LocalDateTime.now());
-    n.setModifiedBy(Users.MATCHER);
-    n.setModified(LocalDateTime.now());
-
-    try (SqlSession s = sqlFactory.openSession()) {
-      NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
-      // getCanonical returns the existing canonical entry for this key, if any
-      IndexName existing = getCanonical(key);
-      if (existing == null) {
-        createCanonical(nim, key, n);
-      } else {
-        // reuse the existing canonical entry - never insert a duplicate row
-        n.setKey(existing.getKey());
-      }
-      s.commit();
-    }
-  }
-
-  private void createCanonical(NamesIndexMapper nim, String key, IndexName cn){
-    if (hasPg) {
-      cn.setNormalized(key);
-      // atomic assign-on-miss: inserts a fresh row and sets its generated key, or - if a concurrent
-      // rebuild already inserted the same normalized bucket - inserts nothing (leaving key null) so we
-      // fall back to the existing winner. This is the only safeguard against duplicate rows across
-      // independent index instances sharing one postgres; the JVM-local insertLock only guards a single one.
-      cn.setKey(null);
-      nim.createOnConflict(cn);
-      if (cn.getKey() == null) {
-        cn.setKey(nim.getKeyByNormalized(key));
-      }
+      id = cn.getKey();
     } else {
-      cn.setKey(keyGen.incrementAndGet());
+      id = keyGen.incrementAndGet();
     }
-    store.add(key, cn);
+    store.add(key, id);
+    return id;
   }
 
   /**
@@ -387,7 +218,7 @@ public class NameIndexImpl implements NameIndex {
     String origName = NameFormatter.canonicalName(n);
     return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)).toLowerCase(), '*');
   }
-  
+
   @Override
   public void start() throws Exception {
     LOG.info("Start names index ...");

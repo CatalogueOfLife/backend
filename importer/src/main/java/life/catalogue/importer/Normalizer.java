@@ -341,7 +341,7 @@ public class Normalizer implements Callable<Boolean> {
     store.names().all().forEach(nn -> {
       NameMatch m = index.match(nn.getName(), true, false);
       if (m.hasMatch()) {
-        int nKey = m.getName().getKey();
+        int nKey = m.getNidx();
         nn.getName().setNamesIndexId(nKey);
         // track duplicates regardless of status - but only for verbatim records!
         if (nn.getName().getVerbatimKey() != null) {

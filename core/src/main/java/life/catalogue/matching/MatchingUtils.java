@@ -2,7 +2,6 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.nidx.NameIndex;
 
@@ -26,18 +25,16 @@ public class MatchingUtils {
   }
 
   public static NidxMatch noMatch() {
-    return new NidxMatch(null, null, MatchType.NONE);
+    return new NidxMatch(null, null);
   }
 
   public static class NidxMatch {
     public final Integer id;
     public final Integer canonicalId;
-    public final MatchType matchType;
 
-    public NidxMatch(Integer id, Integer canonicalId, MatchType matchType) {
+    public NidxMatch(Integer id, Integer canonicalId) {
       this.id = id;
       this.canonicalId = canonicalId;
-      this.matchType = matchType;
     }
 
     public boolean hasNidx() {
@@ -58,18 +55,16 @@ public class MatchingUtils {
     if (nu.getName().getNamesIndexId() == null) {
       // try to match
       var match = nameIndex.match(nu.getName(), allowInserts, false);
-      if (match.hasMatch()) {
-        nu.getName().setNamesIndexId(match.getName().getKey());
+      if (match.isMatched()) {
+        nu.getName().setNamesIndexId(match.getNidx());
       }
-      return match.hasMatch() ? new NidxMatch( match.getName().getKey(), match.getName().getKey(), match.getType()) : MatchingUtils.noMatch();
+      return match.isMatched() ? new NidxMatch(match.getNidx(), match.getNidx()) : MatchingUtils.noMatch();
 
     } else {
-      // lookup canonical nidx
-      var xn = nameIndex.get(nu.getName().getNamesIndexId());
-      if (xn == null) { // this is impossible unless data is out of sync
-        throw new IllegalStateException("Missing names index entry " + nu.getName().getNamesIndexId());
-      }
-      return new NidxMatch(xn.getKey(), xn.getKey(), MatchType.EXACT);
+      // already matched: single-tier index means the canonical id equals the names index id itself,
+      // so we avoid the (now db-backed) nameIndex.get() lookup in this hot path
+      Integer nidxId = nu.getName().getNamesIndexId();
+      return new NidxMatch(nidxId, nidxId);
     }
   }
 

@@ -1,100 +1,76 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.MatchType;
-
-import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Preconditions;
 
-
+/**
+ * The result of matching a name against the single-tier, canonical-only names index.
+ * Collapsed to a bare names-index id (nidx) plus a matched flag: the index no longer distinguishes
+ * EXACT/VARIANT match types (that classification now lives in the usage-match layer) and never
+ * carries alternative candidates.
+ */
 public class NameMatch {
-  private IndexName name;
-  private MatchType type;
-  private List<IndexName> alternatives;
-  
+  private Integer nidx;   // the matched names-index id, null if no match
+  private boolean matched;
+
   public static NameMatch noMatch() {
-    NameMatch m = new NameMatch();
-    m.setType(MatchType.NONE);
-    return m;
+    return new NameMatch();
   }
 
   public static NameMatch unsupported() {
+    return new NameMatch();
+  }
+
+  public static NameMatch match(int nidx) {
     NameMatch m = new NameMatch();
-    m.setType(MatchType.UNSUPPORTED);
+    m.nidx = nidx;
+    m.matched = true;
     return m;
   }
 
-  public IndexName getName() {
-    return name;
+  /**
+   * @return the matched names index id or null if no match exists
+   */
+  public Integer getNidx() {
+    return nidx;
+  }
+
+  public void setNidx(Integer nidx) {
+    this.nidx = nidx;
+  }
+
+  public boolean isMatched() {
+    return matched;
+  }
+
+  public void setMatched(boolean matched) {
+    this.matched = matched;
   }
 
   /**
-   * @return the matched names key or null if no match exists
+   * Alias for {@link #isMatched()} kept for existing consumers.
    */
-  public Integer getNameKey() {
-    return name == null ? null : name.getKey();
-  }
-
-  /**
-   * The names index is single-tier & canonical-only: every entry is its own canonical, so the
-   * canonical key is simply the matched entry's own key.
-   * @return the matched names canonical key or null if no match exists
-   */
-  public Integer getCanonicalNameKey() {
-    return name == null ? null : name.getKey();
-  }
-
-  public void setName(IndexName n) {
-    Preconditions.checkNotNull(n.getKey());
-    name=n;
-  }
-
   @JsonIgnore
   public boolean hasMatch() {
-    return name != null;
+    return matched;
   }
 
-  public MatchType getType() {
-    return type;
-  }
-  
-  public void setType(MatchType type) {
-    this.type = type;
-  }
-  
-  public List<IndexName> getAlternatives() {
-    return alternatives;
-  }
-  
-  public void setAlternatives(List<IndexName> alternatives) {
-    this.alternatives = alternatives;
-  }
-  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     NameMatch nameMatch = (NameMatch) o;
-    return Objects.equals(name, nameMatch.name) &&
-        type == nameMatch.type &&
-        Objects.equals(alternatives, nameMatch.alternatives);
+    return matched == nameMatch.matched && Objects.equals(nidx, nameMatch.nidx);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(name, type, alternatives);
+    return Objects.hash(nidx, matched);
   }
-  
+
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(type.name());
-    if (type != MatchType.NONE) {
-      sb.append(": ");
-      sb.append(name.getLabelWithRank());
-    }
-    return sb.toString();
+    return matched ? "match " + nidx : "no match";
   }
 }

@@ -5,7 +5,6 @@ import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NamesIndexMapper;
@@ -17,29 +16,29 @@ import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.*;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit test of the slim, single-tier, canonical-only names index against a mocked postgres.
+ * A match now resolves to a bare nidx int; authorship and rank are ignored, so every spelling of a
+ * name collapses onto the one canonical entry for its normalized bucket.
+ */
 @RunWith(MockitoJUnitRunner.class)
 public class NameIndexImplTest {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
@@ -55,46 +54,20 @@ public class NameIndexImplTest {
 
     when(factory.openSession()).thenReturn(session);
     when(session.getMapper(any())).thenReturn(mapper);
-    //when(mapper.processAll()).thenReturn(new EmptyListCursor<>());
-    doAnswer(new Answer<IndexName>() {
-      public IndexName answer(InvocationOnMock invocation) {
-        IndexName param = invocation.getArgument(0, IndexName.class);
-        param.setKey(keyGen.getAndIncrement());
-        return param;
-      }}
-    ).when(mapper).create(any());
+    // assign-on-miss insert: mimic postgres by handing out sequential ids
+    doAnswer(invocation -> {
+      IndexName param = invocation.getArgument(0, IndexName.class);
+      param.setKey(keyGen.getAndIncrement());
+      return null;
+    }).when(mapper).createOnConflict(any());
 
     ni = NameIndexFactory.build(NamesIndexConfig.memory(512), factory, aNormalizer).started();
     assertEquals(0, ni.size());
   }
 
-  public static class EmptyListCursor<T> extends ArrayList<T> implements Cursor<T> {
-
-    @Override
-    public void close() throws IOException {
-
-    }
-
-    @Override
-    public boolean isOpen() {
-      return true;
-    }
-
-    @Override
-    public boolean isConsumed() {
-      return false;
-    }
-
-    @Override
-    public int getCurrentIndex() {
-      return 0;
-    }
-  }
-
   @After
   public void stop() throws Exception {
     if (ni != null) {
-      dumpIndex();
       ni.close();
     }
   }
@@ -104,46 +77,50 @@ public class NameIndexImplTest {
     // ends up on is noted below. Names that share a canonical (or stemmed canonical) reuse its key.
     List.of(
       // canonical 1: Animalia
-      iname("Animalia", Rank.KINGDOM),
+      "Animalia|KINGDOM",
       // canonical 2: Oenanthe
-      iname("Oenanthe Vieillot, 1816", Rank.GENUS),
-      iname("Oenanthe Pallas, 1771", Rank.GENUS),
-      iname("Oenanthe L.", Rank.GENUS),
+      "Oenanthe Vieillot, 1816|GENUS",
+      "Oenanthe Pallas, 1771|GENUS",
+      "Oenanthe L.|GENUS",
       // canonical 3: Oenanthe aquatica
-      iname("Oenanthe aquatica", Rank.SPECIES),
-      iname("Oenanthe aquatica Poir.", Rank.SPECIES),
-      iname("Oenanthe aquatica Senser, 1957", Rank.SPECIES),
+      "Oenanthe aquatica|SPECIES",
+      "Oenanthe aquatica Poir.|SPECIES",
+      "Oenanthe aquatica Senser, 1957|SPECIES",
       // canonical 4: Natting tosee
-      iname("Natting tosee", Rank.SPECIES),
+      "Natting tosee|SPECIES",
       // canonical 5: Abies alba
-      iname("Abies alba", Rank.SPECIES),
-      iname("Abies alba Mumpf.", Rank.SPECIES),
-      iname("Abies alba 1778", Rank.SPECIES),
+      "Abies alba|SPECIES",
+      "Abies alba Mumpf.|SPECIES",
+      "Abies alba 1778|SPECIES",
       // canonical 6: Picea alba
-      iname("Picea alba 1778", Rank.SPECIES),
+      "Picea alba 1778|SPECIES",
       // canonical 7: Picea
-      iname("Picea", Rank.GENUS),
+      "Picea|GENUS",
       // canonical 8: Carex cayouettei
-      iname("Carex cayouettei", Rank.SPECIES),
+      "Carex cayouettei|SPECIES",
       // canonical 9: Carex comosa × Carex lupulina
-      iname("Carex comosa × Carex lupulina", Rank.SPECIES),
-      // canonical 10: Natting borealis (distinct epithets, not digit suffixes which name-parser v4 strips)
-      iname("Natting borealis", Rank.SPECIES),
+      "Carex comosa × Carex lupulina|SPECIES",
+      // canonical 10: Natting borealis
+      "Natting borealis|SPECIES",
       // canonical 11: Natting montana
-      iname("Natting montana", Rank.SPECIES),
+      "Natting montana|SPECIES",
       // canonical 12: Natting silvestris
-      iname("Natting silvestris", Rank.SPECIES),
+      "Natting silvestris|SPECIES",
       // canonical 13: Natting palustris
-      iname("Natting palustris", Rank.SPECIES),
+      "Natting palustris|SPECIES",
       // canonical 14: Rodentia
-      iname("Rodentia", Rank.GENUS),
-      iname("Rodentia Bowdich, 1821", Rank.ORDER),
+      "Rodentia|GENUS",
+      "Rodentia Bowdich, 1821|ORDER",
       // canonical 15: Aeropyrum coil-shaped virus
-      iname("Aeropyrum coil-shaped virus", Rank.UNRANKED)
-    ).forEach(n -> {
-      ni.add(n);
+      "Aeropyrum coil-shaped virus|UNRANKED"
+    ).forEach(s -> {
+      String[] parts = s.split("\\|");
+      try {
+        ni.match(name(parts[0], Rank.valueOf(parts[1])), true, false);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
     });
-    dumpIndex();
     assertEquals(15, ni.size());
   }
 
@@ -152,29 +129,28 @@ public class NameIndexImplTest {
    */
   @Test
   public void add() throws Exception {
-    ni.add(create("Abies", "krösus-4-par∂atœs"));
-    ni.add(create("Abies", "alba"));
-    ni.add(create("Abies", "alba", "1873"));
+    ni.match(create("Abies", "krösus-4-paratos"), true, false);
+    ni.match(create("Abies", "alba"), true, false);
+    ni.match(create("Abies", "alba", "1873"), true, false);
     // single-tier: only the 2 distinct canonical names get an entry; the differently-dated
     // "Abies alba" collapses into the already existing canonical entry
     assertEquals(2, ni.size());
 
     // same canonical again, just with an author added - no new entry
-    ni.add(create("Abies", "alba", "1873", "Miller"));
+    ni.match(create("Abies", "alba", "1873", "Miller"), true, false);
     assertEquals(2, ni.size());
 
     // a genuinely new canonical name
-    ni.add(create("Abies", "perma", "1901", "Jones"));
+    ni.match(create("Abies", "perma", "1901", "Jones"), true, false);
     assertEquals(3, ni.size());
   }
 
   /**
-   * The names index is meant to be single-tier: adding a ranked, authored name must only ever
-   * create the one canonical entry - no separate rank/author specific child row.
+   * The names index is single-tier: matching a ranked, authored name must only ever create the one
+   * canonical entry keyed by its normalized canonical bucket.
    */
   @Test
   public void addIsSingleTier() throws Exception {
-    // an authored, ranked name must still land as one canonical entry only
     Name n = new Name();
     n.setType(NameType.SCIENTIFIC);
     n.setGenus("Abies");
@@ -185,14 +161,10 @@ public class NameIndexImplTest {
     n.rebuildAuthorship();
 
     var m = ni.match(n, true, false);
-    assertTrue(m.hasMatch());
-    IndexName idx = m.getName();
-    assertTrue("must be canonical", idx.isCanonical());
-    assertEquals(Rank.UNRANKED, idx.getRank());
-    assertNull(idx.getAuthorship());
-    // exactly one entry in the bucket, no separate child row.
+    assertTrue(m.isMatched());
     // the store key is the stemmed, normalized canonical: "alba" stems to "alb" (SciNameNormalizer)
-    assertEquals(1, ni.store().get("abies alb").size());
+    assertEquals((int) m.getNidx(), ni.store().get("abies alb"));
+    assertTrue(ni.store().contains("abies alb"));
     assertEquals(1, ni.size());
   }
 
@@ -234,17 +206,15 @@ public class NameIndexImplTest {
     n.setRank(Rank.FAMILY);
     n.setCode(NomCode.ZOOLOGICAL);
     n.setType(NameType.SCIENTIFIC);
-    assertMatch(quest.getCanonicalNameKey(), n); // matches the weird canonical "?"
+    assertMatch(quest.getNidx(), n); // matches the weird canonical "?"
 
-    // good infragenerics: single-tier collapses every "Tragulla" spelling (with/without authorship,
-    // with/without a genus placement, at subgenus or section rank) onto one canonical uninomial
-    // "Tragulla" - the canonical of an infrageneric name ignores its genus placement.
+    // good infragenerics: single-tier collapses every "Tragulla" spelling onto one canonical uninomial
     n = new Name();
     n.setInfragenericEpithet("Tragulla");
     n.setRank(Rank.SUBGENUS);
     n.setType(NameType.SCIENTIFIC);
     var tragulla = assertInsert(n);
-    final int tragullaKey = tragulla.getNameKey();
+    final int tragullaKey = tragulla.getNidx();
 
     // same canonical with an authorship - matches, no new entry
     n = new Name();
@@ -269,30 +239,32 @@ public class NameIndexImplTest {
   private void assertNoInsert(Name n) {
     final int origSize = ni.size();
     n.rebuildScientificName();
-    var idx = ni.match(n, true, true);
+    var m = ni.match(n, true, false);
 
-    assertEquals(MatchType.NONE, idx.getType());
+    assertFalse(m.isMatched());
+    assertNull(m.getNidx());
     assertEquals(origSize, ni.size());
   }
 
   private void assertMatch(int key, Name n) {
     final int origSize = ni.size();
     n.rebuildScientificName();
-    var idx = ni.match(n, true, true);
+    var m = ni.match(n, true, false);
 
-    assertEquals(key, (int)idx.getNameKey());
+    assertTrue(m.isMatched());
+    assertEquals(key, (int) m.getNidx());
     assertEquals(origSize, ni.size());
   }
 
   private NameMatch assertInsert(Name n) {
     final int origSize = ni.size();
     n.rebuildScientificName();
-    var idx = ni.match(n, true, true);
+    var m = ni.match(n, true, false);
 
-    assertEquals(MatchType.EXACT, idx.getType());
+    assertTrue(m.isMatched());
     // single-tier: inserting a genuinely new canonical name adds exactly one record
-    assertEquals(origSize+1, ni.size());
-    return idx;
+    assertEquals(origSize + 1, ni.size());
+    return m;
   }
 
   /**
@@ -309,36 +281,30 @@ public class NameIndexImplTest {
     n.setRank(Rank.SPECIES);
     n.setType(NameType.SCIENTIFIC);
 
-    // single-tier: a ranked, authored name lands as its one canonical entry (key==canonicalId)
-    NameMatch m = ni.match(n, true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    final Integer idx = m.getName().getKey();
-    assertEquals(1, ni.size());
-
-    m = ni.match(n, true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(idx, m.getName().getKey());
+    NameMatch m = ni.match(n, true, false);
+    assertTrue(m.isMatched());
+    final Integer idx = m.getNidx();
     assertEquals(1, ni.size());
 
     m = ni.match(n, true, false);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(idx, m.getName().getKey());
+    assertEquals(idx, m.getNidx());
     assertEquals(1, ni.size());
 
-    // a different authorship no longer creates a separate entry - the canonical string is unchanged,
-    // so it resolves EXACT to the same single entry and never inserts a duplicate
+    m = ni.match(n, true, false);
+    assertEquals(idx, m.getNidx());
+    assertEquals(1, ni.size());
+
+    // a different authorship no longer creates a separate entry
     n.setAuthorship("Miller");
     n.setCombinationAuthorship(Authorship.authors("Miller"));
-    m = ni.match(n, true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(idx, m.getName().getKey());
+    m = ni.match(n, true, false);
+    assertEquals(idx, m.getNidx());
     assertEquals(1, ni.size());
 
     n.setAuthorship("Tesla");
     n.setCombinationAuthorship(Authorship.authors("Tesla"));
-    m = ni.match(n, true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(idx, m.getName().getKey());
+    m = ni.match(n, true, false);
+    assertEquals(idx, m.getNidx());
     assertEquals(1, ni.size());
   }
 
@@ -354,94 +320,65 @@ public class NameIndexImplTest {
     n1.setRank(Rank.SUBSPECIES);
     n1.setType(NameType.SCIENTIFIC);
 
-    NameMatch m = ni.match(n1, true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(n1.getScientificName(), m.getName().getScientificName());
-    // single-tier: the match is the canonical entry itself
-    final int canonID = m.getName().getKey();
-    final int key = m.getNameKey();
+    NameMatch m = ni.match(n1, true, false);
+    assertTrue(m.isMatched());
+    final int key = m.getNidx();
     assertEquals(1, ni.size());
 
-    // single-tier & canonical-only: the canonical name is built from the epithets (genus + specific +
-    // infraspecific), so every rank / authorship / notho-marker / rank-marker spelling of the same
-    // trinomial collapses onto the very same single canonical entry. No separate rank/author child
-    // rows exist anymore, so each of these resolves EXACT to the same key and inserts nothing.
+    // single-tier & canonical-only: every rank / authorship / notho / rank-marker spelling of the
+    // same trinomial collapses onto the very same single canonical entry.
 
     // just a different rank
-    m = matchNameCopy(n1, MatchType.EXACT, n -> n.setRank(Rank.VARIETY));
-    assertNidx(m, key, canonID);
+    m = matchNameCopy(n1, n -> n.setRank(Rank.VARIETY));
+    assertEquals(key, (int) m.getNidx());
 
     // rank marker in the scientificName is irrelevant - canonical is built from the epithets
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, n -> {
       n.setRank(Rank.VARIETY);
       n.setScientificName("Abies alba var. alba");
     });
-    assertNidx(m, key, canonID);
+    assertEquals(key, (int) m.getNidx());
 
     // notho / hybrid marker is likewise stripped from the canonical
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, n -> {
       n.setRank(Rank.VARIETY);
       n.setScientificName("Abies alba × alba");
       n.setNotho(NamePart.INFRASPECIFIC);
     });
-    assertNidx(m, key, canonID);
+    assertEquals(key, (int) m.getNidx());
 
     // a yet different rank
-    m = matchNameCopy(n1, MatchType.EXACT, n -> n.setRank(Rank.FORM));
-    assertNidx(m, key, canonID);
+    m = matchNameCopy(n1, n -> n.setRank(Rank.FORM));
+    assertEquals(key, (int) m.getNidx());
 
     // a different authorship no longer matters
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, n -> {
       n.setRank(Rank.FORM);
       n.setCombinationAuthorship(Authorship.authors("Miller"));
       n.setScientificName("Abies alba f. alba");
       n.setAuthorship("Miller");
     });
-    assertNidx(m, key, canonID);
+    assertEquals(key, (int) m.getNidx());
 
     // no authorship
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, n -> {
       n.setRank(Rank.FORM);
       n.setAuthorship(null);
       n.setCombinationAuthorship(null);
       n.setScientificName("Abies alba f. alba");
     });
-    assertNidx(m, key, canonID);
+    assertEquals(key, (int) m.getNidx());
 
     // no authorship, no rank -> the plain canonical query
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, n -> {
       n.setRank(Rank.UNRANKED);
       n.setAuthorship(null);
       n.setCombinationAuthorship(null);
       n.setScientificName("Abies alba f. alba");
     });
-    assertNidx(m, key, canonID);
+    assertEquals(key, (int) m.getNidx());
 
     // nothing new was ever inserted
-    assertEquals(1, ni.size());
-  }
-
-  /**
-   * Regression test for a tryToAdd() bug: it classified a first-time insert by comparing orig's
-   * raw scientificName (which can still carry a rank marker, e.g. "var.") against the
-   * already-canonicalized IndexName's scientificName. Since add(n) strips the rank marker while
-   * reducing n to its canonical form, a first insert of an infraspecific name whose scientificName
-   * carries a rank marker was wrongly classified as VARIANT - even though matchCandidates() would
-   * classify an identical, later query as EXACT. The fix compares canonical forms on both sides so
-   * the classification no longer depends on insertion order.
-   */
-  @Test
-  public void tryToAddFirstInsertIsExactNotVariant() throws Exception {
-    Name n = new Name();
-    n.setScientificName("Abies alba var. alba");
-    n.setGenus("Abies");
-    n.setSpecificEpithet("alba");
-    n.setInfraspecificEpithet("alba");
-    n.setRank(Rank.VARIETY);
-    n.setType(NameType.SCIENTIFIC);
-
-    NameMatch m = ni.match(n, true, false);
-    assertEquals(MatchType.EXACT, m.getType());
     assertEquals(1, ni.size());
   }
 
@@ -455,96 +392,51 @@ public class NameIndexImplTest {
     n1.setRank(Rank.GENUS);
     n1.setType(NameType.SCIENTIFIC);
 
-    NameMatch m = ni.match(n1, true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(n1.getScientificName(), m.getName().getScientificName());
-    // single-tier: the match is the canonical entry itself
-    final int canonID = m.getName().getKey();
-    final int key = m.getNameKey();
+    NameMatch m = ni.match(n1, true, false);
+    assertTrue(m.isMatched());
+    final int key = m.getNidx();
     assertEquals(1, ni.size());
 
-    // single-tier & canonical-only: the canonical of the uninomial "Puma" is the same whether the
-    // name is given as a genus, a subgenus (infrageneric uninomial) or with any authorship, so all of
-    // these collapse onto the same single canonical entry - no separate rank/author child rows.
-
     // given as a subgenus - same canonical uninomial "Puma"
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, n -> {
       n.setInfragenericEpithet(n.getUninomial());
       n.setUninomial(null);
       n.setRank(Rank.SUBGENUS);
     });
-    assertNidx(m, key, canonID);
+    assertEquals(key, (int) m.getNidx());
 
     // a different authorship no longer matters
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, n -> {
       n.setAuthorship("Linné");
       n.setCombinationAuthorship(Authorship.authors("Linné"));
     });
-    assertNidx(m, key, canonID);
+    assertEquals(key, (int) m.getNidx());
 
     // ranked, but no authorship
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, n -> {
       n.setRank(Rank.GENUS);
       n.setAuthorship(null);
       n.setCombinationAuthorship(null);
     });
-    assertNidx(m, key, canonID);
+    assertEquals(key, (int) m.getNidx());
 
     // the plain canonical query
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, n -> {
       n.setRank(Rank.UNRANKED);
       n.setAuthorship(null);
       n.setCombinationAuthorship(null);
     });
-    assertNidx(m, key, canonID);
+    assertEquals(key, (int) m.getNidx());
 
     assertEquals(1, ni.size());
   }
 
-  private NameMatch matchNameCopy(Name original, MatchType matchTypeAssertion, Consumer<Name> modifier) {
+  private NameMatch matchNameCopy(Name original, Consumer<Name> modifier) {
     Name n = new Name(original);
     modifier.accept(n);
-    NameMatch nm = ni.match(n, true, true);
-    assertEquals("", matchTypeAssertion, nm.getType());
+    NameMatch nm = ni.match(n, true, false);
+    assertTrue(nm.isMatched());
     return nm;
-  }
-
-  void assertNidx(NameMatch m, int nidx, int canonicalID){
-    assertEquals(nidx, (int)m.getNameKey());
-    // single-tier: the matched entry is its own canonical, so its key is the canonical key
-    assertEquals(canonicalID, (int)m.getName().getKey());
-  }
-
-  void dumpIndex() {
-    ni.printIndex();
-  }
-
-  @Test
-  public void getCanonical() throws Exception {
-    ni.add(create("Abies", "alba", null, "Miller"));
-    // single-tier: an authored species is reduced to its single canonical entry - no child row
-    assertEquals(1, ni.size());
-
-    IndexName n1 = ni.get(keyGen.get()-1);
-    assertTrue(n1.isCanonical());
-    assertNull(n1.getAuthorship());
-    assertEquals(Rank.UNRANKED, n1.getRank());
-    // single-tier: there are no non-canonical children, so the canonical group is always empty
-    assertTrue(ni.byCanonical(n1.getKey()).isEmpty());
-  }
-
-  /**
-   * The names index is single-tier & canonical-only: every existing entry is its own canonical,
-   * so getCanonical(key) must resolve back to the very same key, and byCanonical(key) - which used
-   * to list the rank/author specific children grouped under a canonical - must always be empty
-   * since no such children exist anymore.
-   */
-  @Test
-  public void canonicalIsSelf() throws Exception {
-    var m = ni.match(name("Abies alba", "Mill.", Rank.SPECIES), true, false);
-    int key = m.getName().getKey();
-    assertEquals(Integer.valueOf(key), ni.getCanonical(key));
-    assertTrue(ni.byCanonical(key).isEmpty());
   }
 
   @Test
@@ -552,14 +444,14 @@ public class NameIndexImplTest {
     assertEquals(0, ni.size());
 
     var names = Stream.of(
-      // FLOW placeholder - 0 idxn
+      // FLOW placeholder - not indexed
       Name.newBuilder()
           .scientificName("Aphaena dives var. [unnamed]")
           .authorship("Walker, 1851")
           .rank(Rank.SUBSPECIES)
           .type(NameType.PLACEHOLDER)
           .code(NomCode.ZOOLOGICAL),
-      // ICTV virus (NameType.VIRUS dropped in name-parser v4.2; now OTHER + NomCode.VIRUS, indexed) - 4 idxn
+      // ICTV virus (now OTHER + NomCode.VIRUS, indexed)
       Name.newBuilder()
           .scientificName("Abutilon mosaic Bolivia virus")
           .rank(Rank.SPECIES)
@@ -570,7 +462,7 @@ public class NameIndexImplTest {
           .rank(Rank.SPECIES)
           .type(NameType.OTHER)
           .code(NomCode.VIRUS),
-      // GTDB OTU (NameType.OTU merged into OTHER in name-parser v4; OTHER is indexed) - 2 idxn each
+      // GTDB OTU (OTHER, indexed)
       Name.newBuilder()
           .scientificName("AABM5-125-24")
           .rank(Rank.PHYLUM)
@@ -580,7 +472,7 @@ public class NameIndexImplTest {
           .rank(Rank.PHYLUM)
           .type(NameType.OTHER)
           .code(NomCode.BACTERIAL),
-      // GTDB informal - 2 idxn each
+      // GTDB informal
       Name.newBuilder()
           .scientificName("Aalborg-Aaw sp.")
           .genus("Aalborg-Aaw")
@@ -593,12 +485,12 @@ public class NameIndexImplTest {
           .rank(Rank.SPECIES)
           .type(NameType.INFORMAL)
           .code(NomCode.BACTERIAL),
-      // GTDB no name (NameType.NO_NAME merged into OTHER in name-parser v4; OTHER is indexed) - 2 idxn
+      // GTDB no name (OTHER, indexed)
       Name.newBuilder()
           .scientificName("B3-LCP")
           .rank(Rank.CLASS)
           .type(NameType.OTHER),
-      // VASCAN hybrid - 2 idxn
+      // VASCAN hybrid
       Name.newBuilder()
           .scientificName("Agropyron cristatum × Agropyron fragile")
           .rank(Rank.SPECIES)
@@ -606,29 +498,27 @@ public class NameIndexImplTest {
           .code(NomCode.BOTANICAL)
     ).map(Name.Builder::build).collect(Collectors.toList());
 
-    for (int repeat=1; repeat<3; repeat++) {
+    for (int repeat = 1; repeat < 3; repeat++) {
       for (Name n : names) {
-        var m = ni.match(n, true, true);
+        var m = ni.match(n, true, false);
         if (NameIndexImpl.INDEX_NAME_TYPES.contains(n.getType())) {
-          assertTrue(m.hasMatch());
-          assertNotNull(m.getName().getScientificName());
-          // single-tier: every indexed name resolves to its one canonical entry (key==canonicalId)
-          assertTrue(m.getName().isCanonical());
+          assertTrue(m.isMatched());
+          assertNotNull(m.getNidx());
         } else {
-          assertFalse(m.hasMatch());
+          assertFalse(m.isMatched());
         }
       }
     }
 
-    dumpIndex();
     // every type but PLACEHOLDER is indexed: 5 OTHER + 2 INFORMAL + 1 FORMULA names, 1 canonical idxn each
     assertEquals(8, ni.size());
   }
 
-  private static IndexName create(String genus, String species){
+  private static Name create(String genus, String species) {
     return create(genus, species, null);
   }
-  private static IndexName create(String genus, String species, String year, String... authors){
+
+  private static Name create(String genus, String species, String year, String... authors) {
     Name n = new Name();
     if (authors != null || year != null) {
       n.setCombinationAuthorship(Authorship.yearAuthors(year, authors));
@@ -636,10 +526,11 @@ public class NameIndexImplTest {
     n.setGenus(genus);
     n.setSpecificEpithet(species);
     n.setRank(Rank.SPECIES);
+    n.setType(NameType.SCIENTIFIC);
     n.rebuildScientificName();
     n.rebuildAuthorship();
 
-    return new IndexName(n);
+    return n;
   }
 
   @Test
@@ -649,33 +540,27 @@ public class NameIndexImplTest {
   }
 
   @Test
-  public void UnrankedNames() throws Exception {
+  public void unrankedNames() throws Exception {
     // single-tier: "Biota" (with or without authorship, at any rank) is a single canonical entry.
-    // The first spelling inserts it; every later spelling resolves EXACT to it without inserting.
     var m = assertInsert("Biota", Rank.DOMAIN);
-    int key = m.getNameKey();
+    int key = m.getNidx();
     assertEquals(1, ni.size());
     // "Biota End." has canonical "Biota" (End. is just authorship), so it matches the same entry
-    m = assertCanonMatch(MatchType.EXACT, "Biota End.", Rank.GENUS);
-    assertEquals(key, (int) m.getNameKey());
-    m = assertCanonMatch(MatchType.EXACT, "Biota", Rank.UNRANKED);
-    assertEquals(key, (int) m.getNameKey());
+    m = assertMatch(key, "Biota End.", Rank.GENUS);
+    m = assertMatch(key, "Biota", Rank.UNRANKED);
     assertEquals(1, ni.size());
 
     stop();
-
     setup();
     // order independence: starting from the unranked spelling yields the same single canonical entry
     m = assertInsert("Biota", Rank.UNRANKED);
-    key = m.getNameKey();
+    key = m.getNidx();
     assertEquals(1, ni.size());
-    m = assertCanonMatch(MatchType.EXACT, "Biota End.", Rank.GENUS);
-    assertEquals(key, (int) m.getNameKey());
-    m = assertCanonMatch(MatchType.EXACT, "Biota", Rank.DOMAIN);
-    assertEquals(key, (int) m.getNameKey());
+    m = assertMatch(key, "Biota End.", Rank.GENUS);
+    m = assertMatch(key, "Biota", Rank.DOMAIN);
     assertEquals(1, ni.size());
   }
-  
+
   @Test
   public void testLookup() throws Exception {
     addTestNames();
@@ -685,7 +570,7 @@ public class NameIndexImplTest {
     assertMatch(1, "Animalia", Rank.KINGDOM);
 
     assertMatch(14, "Rodentia", Rank.GENUS);
-    assertCanonMatch(14, "Rodentia", Rank.ORDER);
+    assertMatch(14, "Rodentia", Rank.ORDER);
     assertNoMatch("Rodenti", Rank.ORDER);
 
     // all authorship/year spellings of Rodentia collapse onto its canonical
@@ -696,8 +581,8 @@ public class NameIndexImplTest {
     assertMatch(14, "Rodentia Bow.", Rank.ORDER);
     assertMatch(14, "Rodentia Bow, 1821", Rank.ORDER);
     assertMatch(14, "Rodentia B 1821", Rank.ORDER);
-    assertCanonMatch(14, "Rodentia", Rank.FAMILY);
-    assertCanonMatch(14, "Rodentia Mill., 1823", Rank.SUBORDER);
+    assertMatch(14, "Rodentia", Rank.FAMILY);
+    assertMatch(14, "Rodentia Mill., 1823", Rank.SUBORDER);
 
     assertMatch(2, "Oenanthe", Rank.GENUS);
     assertMatch(2, "Oenanthe Vieillot", Rank.GENUS);
@@ -707,7 +592,7 @@ public class NameIndexImplTest {
     assertMatch(2, "Oenanthe Pal", Rank.GENUS);
     assertMatch(2, "Œnanthe 1771", Rank.GENUS);
     assertMatch(2, "Œnanthe", Rank.GENUS);
-    assertCanonMatch(2, "Oenanthe Camelot", Rank.GENUS);
+    assertMatch(2, "Oenanthe Camelot", Rank.GENUS);
 
     assertMatch(3, "Oenanthe aquatica", Rank.SPECIES);
     assertMatch(3, "Oenanthe aquatica Poir", Rank.SPECIES);
@@ -715,10 +600,10 @@ public class NameIndexImplTest {
 
     // authorship no longer differentiates - all resolve to the single canonical Abies alba
     assertMatch(5, "Abies alba", Rank.SPECIES);
-    assertMatch(5, MatchType.EXACT, "Abies alba Döring, 1778", Rank.SPECIES);
+    assertMatch(5, "Abies alba Döring, 1778", Rank.SPECIES);
     assertMatch(5, "Abies alba Mumpf.", Rank.SPECIES);
-    assertCanonMatch(5,"Abies alba Mill.", Rank.SPECIES);
-    assertCanonMatch(5, "Abies alba 1789", Rank.SPECIES);
+    assertMatch(5, "Abies alba Mill.", Rank.SPECIES);
+    assertMatch(5, "Abies alba 1789", Rank.SPECIES);
 
     // try unparsable names
     assertMatch(8, "Carex cayouettei", Rank.SPECIES);
@@ -726,50 +611,43 @@ public class NameIndexImplTest {
     assertMatch(15, "Aeropyrum coil-shaped virus", Rank.UNRANKED);
     assertMatch(15, "Aeropyrum coil-shaped virus", Rank.SPECIES); // given in index as UNRANKED
   }
-  
+
   /**
    * https://github.com/Sp2000/colplus-backend/issues/451
    */
   @Test
   public void testSubgenusLookup() throws Exception {
     // single-tier: each name reduces to one canonical entry. Shared canonicals reuse the key.
-    List<IndexName> names = List.of(
-      // canonical 1: Animalia
-      iname("Animalia", Rank.KINGDOM),
-      // canonical 2: Zyras (genus)
-      iname("Zyras", Rank.GENUS),
-      // canonical 2: Zyras (subgenus) - same canonical uninomial
-      iname("Zyras", Rank.SUBGENUS),
-      // canonical 3: Drusilla
-      iname("Drusilla", Rank.GENUS),
-      // canonical 4: Drusilla zyrasoides
-      iname("Drusilla zyrasoides M.Dvořák, 1988", Rank.SPECIES),
-      // canonical 5: Myrmedonia alternans (infrageneric dropped from the binomial canonical)
-      iname("Myrmedonia (Zyras) alternans Cameron, 1925", Rank.SPECIES),
-      // canonical 6: Myrmedonia bangae
-      iname("Myrmedonia (Zyras) bangae Cameron, 1926", Rank.SPECIES),
-      // canonical 7: Myrmedonia hirsutiventris
-      iname("Myrmedonia (Zyras) hirsutiventris Champion, 1927", Rank.SPECIES),
-      // canonical 8: Zyras alternans
-      iname("Zyras (Zyras) alternans (Cameron, 1925)", Rank.SPECIES),
-      // canonical 9: Zyras bangae
-      iname("Zyras bangae (Cameron, 1926)", Rank.SPECIES)
-    );
-    ni.addAll(names);
+    List.of(
+      "Animalia|KINGDOM",                                        // canonical 1
+      "Zyras|GENUS",                                             // canonical 2
+      "Zyras|SUBGENUS",                                          // canonical 2 (same canonical uninomial)
+      "Drusilla|GENUS",                                          // canonical 3
+      "Drusilla zyrasoides M.Dvořák, 1988|SPECIES",             // canonical 4
+      "Myrmedonia (Zyras) alternans Cameron, 1925|SPECIES",     // canonical 5
+      "Myrmedonia (Zyras) bangae Cameron, 1926|SPECIES",        // canonical 6
+      "Myrmedonia (Zyras) hirsutiventris Champion, 1927|SPECIES", // canonical 7
+      "Zyras (Zyras) alternans (Cameron, 1925)|SPECIES",        // canonical 8
+      "Zyras bangae (Cameron, 1926)|SPECIES"                    // canonical 9
+    ).forEach(s -> {
+      String[] parts = s.split("\\|");
+      try {
+        ni.match(name(parts[0], Rank.valueOf(parts[1])), true, false);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    });
 
     assertEquals(9, ni.size());
-    assertEquals(1, (int) names.get(0).getKey());
-    assertEquals("Zyras", names.get(2).getScientificName());
 
     assertMatch(4, "Drusilla zyrasoides", Rank.SPECIES);
-
     assertMatch(4, "Drusilla zyrasoides", Rank.SPECIES);
-    assertCanonMatch(5, "Myrmedonia (Zyras) alternans", Rank.SPECIES);
+    assertMatch(5, "Myrmedonia (Zyras) alternans", Rank.SPECIES);
     assertMatch(5, "Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
     assertMatch(5, "Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
     assertMatch(5, "Myrmedonia (Larus) alternans Cameron, 1925", Rank.SPECIES);
     // single-tier: a new authorship no longer creates a new entry - it matches the same canonical
-    assertCanonMatch(5, "Myrmedonia alternans Krill, 1925", Rank.SPECIES);
+    assertMatch(5, "Myrmedonia alternans Krill, 1925", Rank.SPECIES);
 
     assertEquals(9, ni.size());
   }
@@ -777,62 +655,46 @@ public class NameIndexImplTest {
   @Test
   public void stemming() throws Exception {
     for (Name n : NameIndexImplIT.prepareTestNames()) {
-      var m = ni.match(n, true, true);
+      var m = ni.match(n, true, false);
       System.out.println(m);
     }
     // single-tier: the test names are "Abies alba"/"Abies albus" with & without authorship. Stemming
     // folds the gender variants (alba/albus) into the same canonical bucket, so all of them collapse
-    // onto a single canonical entry - which is the only entry, hence the only canonical.
+    // onto a single canonical entry.
     assertEquals(1, ni.size());
-    int canonCnt = 0;
-    for (var n : ni.all()){
-      if (n.isCanonical()) canonCnt++;
-    }
-    assertEquals(1, canonCnt);
   }
 
   @Test
   public void testMissingAuthorBrackets() throws Exception {
     // single-tier: authorship (incl. bracket differences and different authors) is ignored -
-    // every "Caretta caretta ..." resolves to the same single canonical entry with no authorship
-    var m = ni.match(name("Caretta caretta Linnaeus", Rank.SPECIES), true, true);
-    assertTrue(m.getName().isCanonical());
-    assertNull(m.getName().getAuthorship());
-    assertEquals(MatchType.EXACT, m.getType());
-    final int key = m.getNameKey();
+    // every "Caretta caretta ..." resolves to the same single canonical entry
+    var m = ni.match(name("Caretta caretta Linnaeus", Rank.SPECIES), true, false);
+    assertTrue(m.isMatched());
+    final int key = m.getNidx();
     assertEquals(1, ni.size());
 
-    m = ni.match(name("Caretta caretta (Linnaeus)", Rank.SPECIES), true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(key, (int) m.getNameKey());
-    assertNull(m.getName().getAuthorship());
+    m = ni.match(name("Caretta caretta (Linnaeus)", Rank.SPECIES), true, false);
+    assertEquals(key, (int) m.getNidx());
     assertEquals(1, ni.size());
 
-    m = ni.match(name("Caretta caretta (Peter)", Rank.SPECIES), true, true);
-    assertEquals(MatchType.EXACT, m.getType());
-    assertEquals(key, (int) m.getNameKey());
-    assertNull(m.getName().getAuthorship());
+    m = ni.match(name("Caretta caretta (Peter)", Rank.SPECIES), true, false);
+    assertEquals(key, (int) m.getNidx());
     assertEquals(1, ni.size());
   }
-
 
   @Test
   public void testZooAuthors() throws Exception {
     assertEquals(0, ni.size());
 
-    var m = ni.match(name("Chaetocnema belli Jacoby, 1904", Rank.SPECIES), true, true);
-    assertTrue(m.getName().isCanonical());
-    assertNull(m.getName().getAuthorship());
-    assertEquals(MatchType.EXACT, m.getType());
+    var m = ni.match(name("Chaetocnema belli Jacoby, 1904", Rank.SPECIES), true, false);
+    assertTrue(m.isMatched());
     assertEquals(1, ni.size());
 
     // single-tier: "belli" and "bella" share the same stemmed canonical bucket ("bell") and
-    // authorship is ignored, so this collapses onto the very same single canonical entry. The
-    // canonical strings still differ ("belli" vs "bella"), so it is flagged as a VARIANT.
-    var m2 = ni.match(name("Chaetocnema bella (Baly, 1876)", Rank.SPECIES), true, true);
-    assertEquals(MatchType.VARIANT, m2.getType());
-    assertEquals(m.getNameKey(), m2.getNameKey());
-    assertNull(m2.getName().getAuthorship());
+    // authorship is ignored, so this collapses onto the very same single canonical entry.
+    var m2 = ni.match(name("Chaetocnema bella (Baly, 1876)", Rank.SPECIES), true, false);
+    assertTrue(m2.isMatched());
+    assertEquals(m.getNidx(), m2.getNidx());
     assertEquals(1, ni.size());
   }
 
@@ -855,93 +717,55 @@ public class NameIndexImplTest {
   @Test
   public void authorshipIgnoredOnMatch() throws Exception {
     ni.match(name("Abies alba", "Mill.", Rank.SPECIES), true, false);
-    // a differently-authored, differently-ranked spelling of the same canonical must match the same entry
     var m = ni.match(name("Abies alba", "L.", Rank.SUBSPECIES), false, false);
-    assertTrue(m.hasMatch());
-    assertEquals(MatchType.EXACT, m.getType());
+    assertTrue(m.isMatched());
     assertEquals(1, ni.size());
   }
 
   /**
-   * A unicode spelling variant of an already indexed canonical name must still match it, as a VARIANT.
+   * A unicode spelling variant of an already indexed canonical name must still match it.
    */
   @Test
   public void unicodeVariantMatches() throws Exception {
     ni.match(name("Muller", null, Rank.GENUS), true, false);
     var m = ni.match(name("Müller", null, Rank.GENUS), false, false);
-    assertTrue(m.hasMatch());
-    assertEquals(MatchType.VARIANT, m.getType());
+    assertTrue(m.isMatched());
   }
 
   static IndexName iname(String name, Rank rank) throws InterruptedException {
     return new IndexName(name(name, rank));
   }
 
-  private NameMatch assertCanonMatch(Integer key, String name, Rank rank) throws InterruptedException {
-    // single-tier: a query that only differs from the stored canonical by rank/authorship is an EXACT
-    // match to that single canonical entry (there is no separate CANONICAL match type anymore)
-    NameMatch m = assertMatch(MatchType.EXACT, name, rank);
-    assertTrue(m.hasMatch());
-    assertTrue(m.getName().isCanonical());
-    assertEquals(key, m.getName().getKey());
-    return m;
-  }
-  
   private NameMatch assertNoMatch(String name, Rank rank) throws InterruptedException {
-    NameMatch m = assertMatch(MatchType.NONE, name, rank);
-    assertFalse(m.hasMatch());
-    return m;
-  }
-
-  private NameMatch assertCanonMatch(MatchType expected, String name, Rank rank) throws InterruptedException {
-    var m = assertMatch(expected, name, rank);
-    assertTrue(m.getName().isCanonical());
-    return m;
-  }
-
-  private NameMatch assertMatch(MatchType expected, String name, Rank rank) throws InterruptedException {
     NameMatch m = match(name, rank);
-    if (expected != m.getType()) {
-      System.out.println(m);
-    }
-    assertEquals("No match expected but got " + m.getType(),
-        expected, m.getType()
-    );
+    assertFalse(m.isMatched());
+    assertNull(m.getNidx());
     return m;
   }
 
   private NameMatch assertMatch(int key, String name, Rank rank) throws InterruptedException {
-    return assertMatch(key, null, name, rank);
-  }
-
-  private NameMatch assertMatch(int key, MatchType type, String name, Rank rank) throws InterruptedException {
     NameMatch m = match(name, rank);
-    if (!m.hasMatch() || key != m.getName().getKey()) {
+    if (!m.isMatched() || key != m.getNidx()) {
       System.err.println(m);
     }
-    assertTrue("Expected single match but got none", m.hasMatch());
-    assertEquals("Expected " + key + " but got " + m.getType(), key, (int) m.getName().getKey());
-    if (type != null) {
-      assertEquals("Expected " + type + " but got " + m.getType(), type, m.getType());
-    }
+    assertTrue("Expected single match but got none for " + name, m.isMatched());
+    assertEquals("Expected " + key + " for " + name, key, (int) m.getNidx());
     return m;
   }
 
   private NameMatch assertInsert(String name, Rank rank) throws InterruptedException {
     NameMatch m = ni.match(name(name, rank), false, false);
-    assertNotEquals(MatchType.EXACT, m.getType());
-    assertNotEquals(MatchType.VARIANT, m.getType());
+    assertFalse(m.isMatched());
     int cnt = ni.size();
     m = ni.match(name(name, rank), true, false);
     // single-tier: inserting a genuinely new canonical name adds exactly one record
-    assertEquals(cnt+1, ni.size());
-    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals(cnt + 1, ni.size());
+    assertTrue(m.isMatched());
     return m;
   }
-  
+
   private NameMatch match(String name, Rank rank) throws InterruptedException {
-    NameMatch m = ni.match(name(name, rank), false, true);
-    return m;
+    return ni.match(name(name, rank), false, false);
   }
-  
+
 }

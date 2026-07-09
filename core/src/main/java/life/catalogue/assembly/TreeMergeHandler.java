@@ -595,15 +595,15 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected boolean acceptedNameExists(Name name) {
     // resolve the exact names index entry which encodes rank + authorship
     var m = nameIndex.match(name, false, false);
-    // single-tier index: the matched IndexName is its own canonical, so its key is the canonical id
-    if (!m.hasMatch() || m.getName().getKey() == null) {
+    // single-tier index: the matched entry is its own canonical, so its nidx is the canonical id
+    if (!m.isMatched() || m.getNidx() == null) {
       return false;
     }
-    var existing = matcher.store().usagesByCanonicalId(m.getName().getKey());
+    var existing = matcher.store().usagesByCanonicalId(m.getNidx());
     if (existing == null) {
       return false;
     }
-    final Integer nidxId = m.getName().getKey();
+    final Integer nidxId = m.getNidx();
     // only suppress the original-as-synonym if the exact same name incl. authorship (same names
     // index id, not just the canonical) already exists as an accepted usage
     return existing.stream().anyMatch(u -> u.getStatus() != null && u.getStatus().isTaxon()

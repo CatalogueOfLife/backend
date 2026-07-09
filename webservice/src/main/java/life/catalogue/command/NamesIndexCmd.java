@@ -109,7 +109,6 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final List<String> MATCH_TABLE_COLUMNS = List.of(
 
     "dataset_key",
-    "type",
     "index_id",
     "name_id",
     "sector_key"
@@ -117,7 +116,6 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final String ARCHIVED_MATCH_TABLE = BUILD_SCHEMA + "." + "name_usage_archive_match";
   private static final List<String> ARCHIVED_MATCH_TABLE_COLUMNS = List.of(
     "dataset_key",
-    "type",
     "index_id",
     "usage_id"
   );
@@ -412,8 +410,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     private void writeMatch(PgBinaryWriter writer, int cols, Name n, NameMatch m) throws IOException {
       writer.startRow(cols);
       writer.writeInteger(n.getDatasetKey());
-      writer.writeEnum(m.getType());
-      writer.writeInteger(m.getNameKey());
+      writer.writeInteger(m.getNidx());
       writer.writeString(n.getId());
       if (!archived) {
         writer.writeInteger(n.getSectorKey());

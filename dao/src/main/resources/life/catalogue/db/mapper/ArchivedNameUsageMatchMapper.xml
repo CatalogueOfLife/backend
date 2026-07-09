@@ -4,14 +4,13 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.ArchivedNameUsageMatchMapper">
 
-  <resultMap id="nameMatchResultMap" type="NameMatch" autoMapping="true">
-    <association property="name" javaType="IndexName" resultMap="life.catalogue.db.mapper.NamesIndexMapper.nameResultMap"/>
-  </resultMap>
+  <!-- NameMatch is collapsed to a bare nidx + matched flag; no IndexName association anymore -->
+  <resultMap id="nameMatchResultMap" type="NameMatch" autoMapping="true"/>
 
 
   <select id="get" resultMap="nameMatchResultMap">
-    SELECT <include refid="life.catalogue.db.mapper.NamesIndexMapper.SELECT"/>
-    FROM name_usage_archive_match nm LEFT JOIN names_index n ON n.id=nm.index_id
+    SELECT nm.index_id AS nidx, nm.index_id IS NOT NULL AS matched
+    FROM name_usage_archive_match nm
     WHERE nm.dataset_key = #{key.datasetKey} AND nm.usage_id = #{key.id}
   </select>
 

@@ -46,14 +46,10 @@ public class NamesIndexResource {
     public final String type;
     public final LocalDateTime created;
     public final int size;
-    public final int kryoFree;
-    public final int kryoPeak;
 
     public NidxMetadata(NameIndexStore store) {
       this.created = store.created();
       this.size = store.count();
-      this.kryoFree = store.kryo().getPeak();
-      this.kryoPeak = store.kryo().getFree();
       this.type = store.getClass().getSimpleName();
     }
   }
@@ -69,7 +65,9 @@ public class NamesIndexResource {
   public List<IndexName> delete(@PathParam("key") int key, @QueryParam("rematch") boolean rematch) {
     var n = ni.get(key);
     if (n == null) throw NotFoundException.notFound(IndexName.class, key);
-    return ni.delete(key, rematch);
+    // names index entry deletion was removed with the slim registry refactor; the reshaped delete
+    // returns in a later task (9). Until then deletion is unavailable.
+    throw new UnsupportedOperationException("Names index entry deletion is temporarily unavailable (nidx registry refactor)");
   }
 
   @GET

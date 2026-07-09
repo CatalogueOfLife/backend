@@ -76,11 +76,12 @@ public class SimpleNameWithNidx extends SimpleName {
   }
 
   public void applyMatch(NameMatch m) {
-    if (m.hasMatch()) {
-      setNamesIndexMatchType(m.getType());
-      setNamesIndexId(m.getName().getKey());
-      // single-tier index: the matched IndexName is its own canonical, so its key is the canonical id
-      setCanonicalId(m.getName().getKey());
+    if (m.isMatched()) {
+      // the nidx match no longer carries a MatchType; the usage-match layer recomputes EXACT/VARIANT
+      // from the live labels, so we only apply the id here (see UsageMatcher)
+      setNamesIndexId(m.getNidx());
+      // single-tier index: the matched entry is its own canonical, so its nidx is the canonical id
+      setCanonicalId(m.getNidx());
 
     } else {
       setNamesIndexMatchType(MatchType.NONE);

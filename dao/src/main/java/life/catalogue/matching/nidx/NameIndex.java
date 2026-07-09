@@ -8,8 +8,6 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.Managed;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
 
 import life.catalogue.parser.NameParser;
 
@@ -20,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * NameIndex definition for different implementations.
  */
 public interface NameIndex extends Managed, AutoCloseable {
-  
+
   Logger LOG = LoggerFactory.getLogger(NameIndex.class);
 
   LocalDateTime created();
@@ -30,17 +28,13 @@ public interface NameIndex extends Managed, AutoCloseable {
    *
    * @param name         the parsed name to match against, ignoring any ids if present
    * @param allowInserts if true inserts the name to be matched into the index if not yet existing, avoiding NoMatch responses
-   * @param verbose      if true adds verbose matching information, i.e. queue of alternative matches
-   * @return a match which is never null, but might have a usageKey=null if nothing could be matched
+   * @param verbose      if true adds verbose matching information (currently unused - the index no longer keeps alternatives)
+   * @return a match which is never null, but might have nidx=null / matched=false if nothing could be matched
    */
   NameMatch match(Name name, boolean allowInserts, boolean verbose);
 
   /**
-   *
-   * @param sn
-   * @param allowInserts
-   * @param verbose
-   * @return
+   * Parses and matches a simple name against the names index.
    */
   default NameMatch match(SimpleName sn, boolean allowInserts, boolean verbose) {
     var opt = NameParser.PARSER.parse(sn);
@@ -52,14 +46,14 @@ public interface NameIndex extends Managed, AutoCloseable {
   }
 
   /**
-   * Lookup IndexName by its key
+   * Lookup the canonical IndexName carrier by its key.
+   * Backed by the postgres names_index table (the slim store no longer holds IndexName instances).
    */
   IndexName get(Integer key);
 
   /**
-   * The names index is single-tier & canonical-only: every entry is its own canonical name, so
-   * this simply returns the key of the entry itself (via its canonicalId, which by construction
-   * always equals the entry's own key) - or null if no entry exists for the given key.
+   * The names index is single-tier & canonical-only: every entry is its own canonical name, so this
+   * simply returns the given key if an entry exists for it, or null otherwise.
    */
   default Integer getCanonical(Integer key) {
     var ni = get(key);
@@ -70,54 +64,16 @@ public interface NameIndex extends Managed, AutoCloseable {
   }
 
   /**
-   * The names index is single-tier & canonical-only: every entry is its own canonical name, so
-   * there are no separate rank/author specific child entries grouped underneath it anymore.
-   * This therefore always returns an empty collection - it is kept for API compatibility only.
-   */
-  Collection<IndexName> byCanonical(Integer key);
-
-  Iterable<IndexName> all();
-
-  /**
-   * Prints all names in the index to stdout for debugging purposes
+   * Prints basic index info to stdout for debugging purposes.
    */
   default void printIndex() {
-    System.out.println("Names Index:");
-    all().forEach(System.out::println);
+    System.out.println("Names Index with " + size() + " names");
   }
 
   /**
    * @return the number of names in the index
    */
   int size();
-
-  /**
-   * Deletes a name from the index and all name and archived usage matches that link to that index name.
-   * If the index name key points to a canonical name, the entire name group will be removed with the canonical.
-   * @param key names index key
-   * @param rematch if true the names and archived name usages that were linked to the index name will be rematched again
-   * @return list of all index names that were removed
-   */
-  List<IndexName> delete(int key, boolean rematch);
-
-  /**
-   * Adds a new name to the index, generating a new key and potentially inserting a canonical name record too.
-   * It will add a new IndexName even if it exists already.
-   * In most cases the {@link #match(Name, boolean, boolean)}match method should be the preferred way to include only new names
-   *
-   * @param name
-   */
-  void add(IndexName name);
-  
-  /**
-   * Adds a batch of names to the index, see {@link #add(IndexName)} for details.
-   */
-  default void addAll(Collection<IndexName> names) {
-    LOG.info("Adding {} names", names.size());
-    for (IndexName n : names) {
-      add(n);
-    }
-  }
 
   /**
    * Resets the names index, removing all entries and setting back the id sequence to 1.

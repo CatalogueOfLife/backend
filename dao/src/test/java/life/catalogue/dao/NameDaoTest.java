@@ -2,7 +2,6 @@ package life.catalogue.dao;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.mapper.NameMapper;
@@ -21,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 public class NameDaoTest extends DaoTestBase {
 
   static final IndexName match = new IndexName(TestEntityGenerator.NAME4, 1);
-  NameDao dao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.fixed(match), validator);
+  NameDao dao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.fixed(match.getKey()), validator);
   
   @Test
   public void authorshipNormalization() throws Exception {
@@ -112,9 +111,7 @@ public class NameDaoTest extends DaoTestBase {
   }
 
   static List<Name> upMatch(List<Name> names) {
-    var nm = new NameMatch();
-    nm.setName(match);
-    nm.setType(MatchType.VARIANT);
+    var nm = NameMatch.match(match.getKey());
     names.forEach(n -> n.applyMatch(nm));
     return names;
   }

@@ -1,71 +1,45 @@
 package life.catalogue.matching.nidx;
 
-import life.catalogue.api.model.IndexName;
-import life.catalogue.common.kryo.Pools;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
-import jakarta.validation.constraints.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.util.Pool;
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-
-import net.openhft.chronicle.bytes.Bytes;
-import net.openhft.chronicle.hash.serialization.BytesReader;
-import net.openhft.chronicle.hash.serialization.BytesWriter;
 import net.openhft.chronicle.map.ChronicleMap;
 import net.openhft.chronicle.map.ChronicleMapBuilder;
 
 /**
- * NameIndexStore implementation that is backed by a persistent Chronicle map.
+ * NameIndexStore implementation that is backed by a single persistent Chronicle map keyed by the
+ * normalized canonical bucket key, with the names index id (nidx) as its value.
  */
 public class NameIndexChronicleStore implements NameIndexStore {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexChronicleStore.class);
-  // the marshaller below is static and field-free (required so Chronicle can persist it), so the kryo
-  // pool it uses must be reachable statically. Initialised to the default size and reconfigured from
-  // config in the constructor - names index stores are managed singletons, so sharing one pool is fine.
-  private static volatile NameIndexKryoPool POOL = new NameIndexKryoPool(NamesIndexConfig.DEFAULT_KRYO_POOL_SIZE);
-  private static final IndexNameBytesMarshaller MARSHALLER = new IndexNameBytesMarshaller();
 
-  private File dir;
+  private final File dir;
   private final NamesIndexConfig cfg;
   private long created; //datetime
-  // main nidx instances by their key
-  private final File keysF;
   private final File namesF;
-  private ChronicleMap<Integer, IndexName> keys; // main nidx instances by their key
-  private ChronicleMap<String, Integer> names; // single-tier: the one names index key for a canonical name bucket
+  private ChronicleMap<String, Integer> names; // normalized canonical bucket key -> nidx
+  // the max nidx held, maintained on add(). add is the only writer.
+  private final AtomicInteger maxKey = new AtomicInteger(0);
   private boolean started = false;
 
   public NameIndexChronicleStore(NamesIndexConfig cfg) throws IOException {
     this.cfg = cfg;
-    POOL = new NameIndexKryoPool(cfg.kryoPoolSize);
     this.dir = cfg.file;
     this.created = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
     if (dir == null) {
-      keysF = null;
       namesF = null;
     } else {
       if (!dir.exists()) {
         FileUtils.forceMkdir(dir);
       }
-      keysF = new File(dir, "keys");
       namesF = new File(dir, "names");
     }
   }
@@ -76,37 +50,19 @@ public class NameIndexChronicleStore implements NameIndexStore {
 
   @Override
   public void start() {
-    var idn = new IndexName();
-    idn.setKey(345632);
-    idn.setScientificName("Abies alba");
-    idn.setGenus("Abies");
-    idn.setSpecificEpithet("alba");
-    idn.setCreatedBy(2);
-    idn.setModifiedBy(3);
-    idn.setCreated(LocalDateTime.now());
-    idn.setModified(LocalDateTime.now());
-
-    var b1 = ChronicleMapBuilder.of(Integer.class, IndexName.class)
-      .name("keys")
-      .valueMarshaller(MARSHALLER)
-      .averageValue(idn)
-      .entries(cfg.maxEntries);
-    var b2 = ChronicleMapBuilder.of(String.class, Integer.class)
+    var b = ChronicleMapBuilder.of(String.class, Integer.class)
       .name("names")
       .entries(cfg.maxEntries)
       .averageKey("Abies alba");
 
     try {
-      keys = inMem() ? b1.create() : b1.createPersistedTo(keysF);
-      names = inMem() ? b2.create() : b2.createPersistedTo(namesF);
-
+      names = inMem() ? b.create() : b.createPersistedTo(namesF);
     } catch (IOException e) {
       if (dir != null) {
         LOG.warn("NamesIndex store was corrupt. Remove and rebuild index from scratch. {}", e.getMessage());
         try {
           FileUtils.cleanDirectory(dir);
-          keys = inMem() ? b1.create() : b1.createPersistedTo(keysF);
-          names = inMem() ? b2.create() : b2.createPersistedTo(namesF);
+          names = inMem() ? b.create() : b.createPersistedTo(namesF);
         } catch (IOException ex) {
           throw new RuntimeException(ex);
         }
@@ -114,166 +70,87 @@ public class NameIndexChronicleStore implements NameIndexStore {
         throw new RuntimeException("Fatal exception when creating a new in memory nidx storage", e);
       }
     }
+    // recompute max nidx from a persisted map
+    int max = 0;
+    for (Integer v : names.values()) {
+      if (v != null && v > max) max = v;
+    }
+    maxKey.set(max);
     started = true;
-    // log fill vs capacity of both maps - single-tier means every add() creates exactly one keys
-    // entry and one names bucket, so the two maps grow 1:1 and share the same capacity.
-    LOG.info("Names index chronicle store started: keys={}/{}, names={}/{} (entries/capacity)",
-      keys.size(), cfg.maxEntries, names.size(), cfg.maxEntries);
+    LOG.info("Names index chronicle store started: names={}/{} (entries/capacity)", names.size(), cfg.maxEntries);
   }
 
   @Override
   public void stop() {
     started = false;
-    keys.close();
     names.close();
   }
 
   @Override
   public boolean hasStarted() {
-    return keys != null && started;
+    return names != null && started;
   }
 
   @Override
-  public IndexName get(Integer key) {
+  public int get(String normalized) {
     assertOnline();
-    return keys.get(key);
+    Integer k = names.get(normalized);
+    return k == null ? 0 : k;
   }
 
   @Override
-  public Collection<IndexName> byCanonical(Integer key) {
-    // single-tier index: every entry is its own canonical, there are no qualified child entries
-    return Collections.emptyList();
-  }
-
-  @Override
-  public Iterable<IndexName> all() {
+  public boolean contains(String normalized) {
     assertOnline();
-    return keys.values();
+    return names.containsKey(normalized);
   }
 
   @Override
   public int maxKey() {
-    return keys.keySet().stream().mapToInt(v -> v).max().orElse(0);
+    return maxKey.get();
   }
 
   @Override
   public int count() {
     assertOnline();
-    return keys.size();
+    return names.size();
   }
 
   @Override
   public void clear() {
     assertOnline();
-    keys.clear();
     names.clear();
-  }
-
-  @Override
-  public List<IndexName> get(String key) {
-    assertOnline();
-    // mutable list: callers (e.g. NameIndexImpl.match/getCanonical) remove() / removeIf() on it
-    List<IndexName> matches = new ArrayList<>();
-    Integer k = names.get(key);
-    if (k != null) {
-      matches.add(keys.get(k));
-    }
-    return matches;
-  }
-
-  @Override
-  public boolean containsKey(String key) {
-    assertOnline();
-    return names.containsKey(key);
-  }
-
-  @Override
-  public List<IndexName> delete(int id, Function<IndexName, String> keyFunc) {
-    assertOnline();
-    List<IndexName> removed = new ArrayList<>();
-    var n = keys.remove(id);
-    removed.add(n);
-    if (n != null) {
-      final String key = keyFunc.apply(n);
-      // single-tier index: every entry is its own canonical, so there are no qualified child
-      // entries to cascade-remove here anymore.
-      // only clear the bucket if it still points at the entry being deleted
-      Integer cur = names.get(key);
-      if (cur != null && cur == id) {
-        names.remove(key);
-      }
-    }
-    return removed;
+    maxKey.set(0);
+    this.created = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
   }
 
   /**
-   * @param key make sure this is a pure ASCII key, no chars above 7 bits allowed !!!
+   * @param normalized make sure this is a pure ASCII key, no chars above 7 bits allowed !!!
    */
   @Override
-  public void add(String key, IndexName name) {
+  public void add(String normalized, int nidx) {
     assertOnline();
-    check(name);
-
-    LOG.debug("Insert {}{} #{} keyed on >{}<", name.isCanonical() ? "canonical ":"", name.getLabelWithRank(), name.getKey(), key);
-    keys.put(name.getKey(), name);
-
-    // single-tier index: add() is only ever called after getCanonical(key) found nothing, so the
-    // bucket should be empty here. Warn (don't fail) if that invariant is ever violated.
-    if (names.containsKey(key)) {
-      LOG.warn("Names index bucket >{}< already had key {} - overwriting with new key {}", key, names.get(key), name.getKey());
+    Integer prev = names.put(normalized, nidx);
+    if (prev != null && prev != nidx) {
+      LOG.warn("Names index bucket >{}< already had key {} - overwriting with new key {}", normalized, prev, nidx);
     }
-    names.put(key, name.getKey());
+    if (nidx > maxKey.get()) {
+      maxKey.set(nidx);
+    }
+  }
+
+  @Override
+  public Iterable<Map.Entry<String, Integer>> entries() {
+    assertOnline();
+    return names.entrySet();
   }
 
   @Override
   public void compact() {
-    // single-tier index: the canonical->children multimap that used to need compacting is gone;
-    // nothing left to compact.
+    // single normalized->nidx map: nothing to compact.
   }
 
   @Override
   public LocalDateTime created() {
     return LocalDateTime.ofEpochSecond(created, 0, ZoneOffset.UTC);
   }
-
-  @Override
-  public Pool<Kryo> kryo() {
-    return POOL;
-  }
-
-  void check(IndexName n){
-    Preconditions.checkNotNull(n.getKey(), "key required");
-    Preconditions.checkNotNull(n.getScientificName(), "scientificName required");
-  }
-
-  final static class IndexNameBytesMarshaller implements BytesWriter<IndexName>, BytesReader<IndexName> {
-
-    @NotNull
-    @Override
-    public IndexName read(Bytes in, @Nullable IndexName using) {
-      if (using != null) {
-        System.out.println("WARN: IndexName instance existing: " + using);
-      }
-      return Pools.with(POOL, kryo -> {
-        int size = in.readInt();
-        byte[] bytes = new byte[size];
-        in.read(bytes);
-        return kryo.readObject(new Input(bytes), IndexName.class);
-      });
-    }
-
-    @Override
-    public void write(Bytes out, @NotNull IndexName value) {
-      Pools.run(POOL, kryo -> {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream(128);
-        Output output = new Output(buffer, 128);
-        kryo.writeObject(output, value);
-        output.close();
-        byte[] bytes = buffer.toByteArray();
-        out.writeInt(bytes.length);
-        out.write(bytes);
-      });
-    }
-  }
-
 }

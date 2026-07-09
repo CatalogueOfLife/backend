@@ -75,7 +75,7 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
     updateUsageIndex(n, session);
     // create name match
     NameMatch m = nameIndex.match(n, true, false);
-    session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNameKey());
+    session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNidx());
     n.applyMatch(m);
     return true;
   }
@@ -85,7 +85,7 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
     updateUsageIndex(n, session);
     // update name match
     NameMatch m = nameIndex.match(n, true, false);
-    session.getMapper(NameMatchMapper.class).update(n,m.getNameKey());
+    session.getMapper(NameMatchMapper.class).update(n,m.getNidx());
     n.applyMatch(m);
     return true;
   }

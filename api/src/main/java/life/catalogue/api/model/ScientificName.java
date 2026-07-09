@@ -9,6 +9,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface ScientificName {
 
+  /**
+   * The single rank every canonical names index entry carries. Kept here (not only on IndexName) so
+   * canonical-shape checks below do not depend on the IndexName model.
+   */
+  Rank CANONICAL_RANK = Rank.UNRANKED;
+
   String getScientificName();
 
   String getAuthorship();
@@ -52,7 +58,7 @@ public interface ScientificName {
 
   @JsonIgnore
   default boolean isCanonical() {
-    return getRank() == IndexName.CANONICAL_RANK && !hasAuthorship();
+    return getRank() == CANONICAL_RANK && !hasAuthorship();
   }
 
   @JsonIgnore

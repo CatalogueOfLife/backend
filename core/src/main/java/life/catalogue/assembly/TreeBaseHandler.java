@@ -342,7 +342,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       state.setSynonymCount(++sCounter);
     }
 
-    return new SimpleNameCached(u, nm.getCanonicalNameKey());
+    return new SimpleNameCached(u, nm.getNidx());
   }
 
   protected boolean allowImplicitName(Usage parent, Taxon u) {
@@ -511,7 +511,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
    */
   protected NameMatch matchName(Name n) {
     NameMatch m = nameIndex.match(n, true, false);
-    n.setNamesIndexId(m.getNameKey());
+    n.setNamesIndexId(m.getNidx());
     return m;
   }
 
