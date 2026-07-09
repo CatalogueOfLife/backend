@@ -76,7 +76,7 @@ public class NameIndexImpl implements NameIndex {
     }
   }
 
-  private void addFromPg(IndexName name) {
+  private void addFromPg(NameIndexEntry name) {
     store.add(name.getNormalized(), name.getKey());
   }
 
@@ -125,7 +125,7 @@ public class NameIndexImpl implements NameIndex {
   }
 
   @Override
-  public IndexName get(Integer key) {
+  public NameIndexEntry get(Integer key) {
     try (SqlSession s = sqlFactory.openSession()) {
       return s.getMapper(NamesIndexMapper.class).get(key);
     }
@@ -190,8 +190,7 @@ public class NameIndexImpl implements NameIndex {
    */
   private int createCanonical(Name orig, String key) {
     // build the canonical (rankless, authorless) carrier to hand to the mapper insert
-    IndexName cn = IndexName.newCanonical(orig);
-    cn.setNormalized(key);
+    NameIndexEntry cn = NameIndexEntry.canonical(orig, key);
     final int id;
     if (hasPg) {
       try (SqlSession s = sqlFactory.openSession()) {

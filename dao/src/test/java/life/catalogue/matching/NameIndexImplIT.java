@@ -5,7 +5,6 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -480,9 +479,9 @@ public class NameIndexImplIT {
    * single canonical entry - key 1 - and never create a second, rank/author specific entry.
    */
   public void assertCanonicalAbiesAlba() throws Exception {
-    IndexName n1 = ni.get(1);
+    NameIndexEntry n1 = ni.get(1);
     assertNotNull(n1);
-    assertTrue(n1.isCanonical());
+    assertNotNull(n1.getKey());
     // single-tier: no separate rank/author child entry is ever created
     assertNull(ni.get(2));
   }
@@ -498,10 +497,9 @@ public class NameIndexImplIT {
     // setupPersistent() reloads the apple fixture's 4 pre-existing canonical entries, plus the single
     // new "Abies alba" canonical added above
     assertEquals(5, ni.size());
-    IndexName n = ni.get(millerKey);
+    NameIndexEntry n = ni.get(millerKey);
+    // single-tier: no authorship is ever kept on a names index entry - the carrier has no such field
     assertEquals("Abies alba", n.getScientificName());
-    // single-tier: no authorship is ever kept on a names index entry
-    assertNull(n.getAuthorship());
 
     String epi = "alba";
     for (int i = 0; i < 100; i++) {
@@ -518,7 +516,6 @@ public class NameIndexImplIT {
     ni.match(create("Abies", "alba", null, "Duller"), true, false);
     n = ni.get(miller2Key);
     assertEquals("Abies alba", n.getScientificName());
-    assertNull(n.getAuthorship());
     assertEquals(1, ni.size());
   }
 
@@ -577,11 +574,9 @@ public class NameIndexImplIT {
     // index is stopped - bypasses NameIndexImpl entirely, so the persistent store has no way of
     // knowing about it other than catching up from postgres on the next start(). Persist the very same
     // normalized bucket key the matcher computes, so catch-up loads it under a matchable key.
-    IndexName newName = new IndexName();
+    NameIndexEntry newName = new NameIndexEntry();
     newName.setScientificName("Catchupia testensis");
-    newName.setGenus("Catchupia");
-    newName.setSpecificEpithet("testensis");
-    newName.setNormalized(bucketKey(newName));
+    newName.setNormalized(bucketKey(newName.getScientificName()));
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(NamesIndexMapper.class).create(newName);
     }
@@ -617,9 +612,8 @@ public class NameIndexImplIT {
   /**
    * Recomputes the exact normalized bucket key {@code NameIndexImpl.key} uses to bucket a canonical name.
    */
-  private static String bucketKey(IndexName n) {
-    String origName = NameFormatter.canonicalName(n);
-    return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)).toLowerCase(), '*');
+  private static String bucketKey(String scientificName) {
+    return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(scientificName)).toLowerCase(), '*');
   }
 
   static Name name(String name, Rank rank) throws InterruptedException {

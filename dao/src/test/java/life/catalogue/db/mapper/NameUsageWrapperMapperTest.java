@@ -63,9 +63,8 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     NameMatchMapper nmm = mapper(NameMatchMapper.class);
     TaxonMapper tm = mapper(TaxonMapper.class);
 
-    IndexName inc = new IndexName();
+    NameIndexEntry inc = new NameIndexEntry();
     inc.setScientificName(n.getScientificName());
-    inc.setRank(n.getRank());
     // the normalized column is NOT NULL & unique - mirror NameIndexImpl.key() so the random name round-trips
     inc.setNormalized(UnicodeUtils.replaceNonAscii(
       SciNameNormalizer.normalize(UnicodeUtils.decompose(n.getScientificName())).toLowerCase(), '*'

@@ -2,7 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.IndexName;
+import life.catalogue.api.model.NameIndexEntry;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.junit.TestDataRule;
@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName, NamesIndexMapper> {
+public class NamesIndexMapperTest extends CRUDTestBase<Integer, NameIndexEntry, NamesIndexMapper> {
 
   public NamesIndexMapperTest() {
     super(NamesIndexMapper.class, TestDataRule.NIDX);
@@ -37,17 +37,15 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
     assertEquals(2, counter.get());
   }
 
-  private void assertNotNullProps(Iterable<IndexName> ns){
+  private void assertNotNullProps(Iterable<NameIndexEntry> ns){
     for (var n : ns) {
       assertNotNullProps(n);
     }
   }
 
-  private void assertNotNullProps(IndexName n){
+  private void assertNotNullProps(NameIndexEntry n){
     assertNotNull(n.getKey());
     assertNotNull(n.getScientificName());
-    // single-tier: rank is always the canonical UNRANKED constant
-    assertNotNull(n.getRank());
     assertNotNull(n.getNormalized());
   }
 
@@ -106,7 +104,7 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
 
   @Test
   public void normalizedPersisted() {
-    IndexName n = new IndexName();
+    NameIndexEntry n = new NameIndexEntry();
     n.setScientificName("Abies alba");
     // NOTE: the real key() of "Abies alba" is "abies alb", but that value is already taken by the
     // NIDX fixture's own canonical "Abies alba" row (id=2) - the unique index would reject a second
@@ -115,7 +113,7 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
     n.setNormalized("abies alba-roundtrip");
     mapper().create(n);
     commit();
-    IndexName got = mapper().get(n.getKey());
+    NameIndexEntry got = mapper().get(n.getKey());
     assertEquals("abies alba-roundtrip", got.getNormalized());
   }
 
@@ -124,7 +122,7 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
     mapper().truncate();
     assertEquals(0, mapper().count());
 
-    IndexName n = createTestEntity(-1);
+    NameIndexEntry n = createTestEntity();
     mapper().create(n);
     assertEquals(1, (int) n.getKey());
   }
@@ -135,14 +133,14 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
    */
   @Test
   public void create() {
-    IndexName n1 = createTestEntity(1);
+    NameIndexEntry n1 = createTestEntity();
     mapper().create(n1);
 
-    IndexName n = mapper().get(n1.getKey());
+    NameIndexEntry n = mapper().get(n1.getKey());
     assertEquals(n1.getKey(), n.getKey());
     assertNotNullProps(n);
 
-    IndexName n2 = createTestEntity(1);
+    NameIndexEntry n2 = createTestEntity();
     mapper().create(n2);
 
     n = mapper().get(n2.getKey());
@@ -151,23 +149,23 @@ public class NamesIndexMapperTest extends CRUDEntityTestBase<Integer, IndexName,
   }
 
   @Override
-  IndexName createTestEntity(int datasetKey) {
-    IndexName n = new IndexName(TestEntityGenerator.newName());
-    n.setCreatedBy(null);
-    n.setModifiedBy(null);
+  NameIndexEntry createTestEntity() {
+    var n = TestEntityGenerator.newName();
+    NameIndexEntry ni = new NameIndexEntry();
+    ni.setScientificName(n.getScientificName());
     // the normalized column is NOT NULL & unique - derive a value from the scientific name via
     // SciNameNormalizer so fixtures satisfy the constraint. This is NOT guaranteed to equal
     // NameIndexImpl.key(), which normalizes NameFormatter.canonicalName(n) rather than
-    // n.getScientificName() directly; since `normalized` is excluded from IndexName.equals() and no
-    // test here asserts key() derivation, only round-trip persistence of the column is being tested.
-    n.setNormalized(UnicodeUtils.replaceNonAscii(
+    // n.getScientificName() directly; no test here asserts key() derivation, only round-trip
+    // persistence of the column is being tested.
+    ni.setNormalized(UnicodeUtils.replaceNonAscii(
       SciNameNormalizer.normalize(UnicodeUtils.decompose(n.getScientificName())).toLowerCase(), '*'
     ));
-    return n;
+    return ni;
   }
 
   @Override
-  void updateTestObj(IndexName obj) {
+  void updateTestObj(NameIndexEntry obj) {
     obj.setScientificName("Abies updata");
   }
 }

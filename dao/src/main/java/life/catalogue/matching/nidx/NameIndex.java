@@ -1,8 +1,8 @@
 package life.catalogue.matching.nidx;
 
 import life.catalogue.api.exception.UnavailableException;
-import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameIndexEntry;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.Managed;
@@ -46,10 +46,10 @@ public interface NameIndex extends Managed, AutoCloseable {
   }
 
   /**
-   * Lookup the canonical IndexName carrier by its key.
-   * Backed by the postgres names_index table (the slim store no longer holds IndexName instances).
+   * Lookup the canonical NameIndexEntry carrier by its key.
+   * Backed by the postgres names_index table (the slim store no longer holds full row instances).
    */
-  IndexName get(Integer key);
+  NameIndexEntry get(Integer key);
 
   /**
    * The names index is single-tier & canonical-only: every entry is its own canonical name, so this

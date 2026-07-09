@@ -5,35 +5,23 @@
 <mapper namespace="life.catalogue.db.mapper.NamesIndexMapper">
 
   <sql id="SELECT">
-    id, <include refid="life.catalogue.db.mapper.NamesIndexMapper.COLS"/>, created, modified
+    id, <include refid="life.catalogue.db.mapper.NamesIndexMapper.COLS"/>
   </sql>
 
   <sql id="COLS">
     scientific_name,
-    normalized,
-    uninomial,
-    genus,
-    infrageneric_epithet,
-    specific_epithet,
-    infraspecific_epithet,
-    cultivar_epithet
+    normalized
   </sql>
 
   <sql id="PROPS">
     #{scientificName},
-    #{normalized},
-    #{uninomial},
-    #{genus},
-    #{infragenericEpithet},
-    #{specificEpithet},
-    #{infraspecificEpithet},
-    #{cultivarEpithet}
+    #{normalized}
   </sql>
 
   <sql id="FROM">names_index n</sql>
 
-  <!-- A mapping to the single-tier, canonical-only IndexName, mostly auto mapped -->
-  <resultMap id="nameResultMap" type="IndexName" autoMapping="true">
+  <!-- A mapping to the minimal, single-tier, canonical-only NameIndexEntry carrier, mostly auto mapped -->
+  <resultMap id="nameResultMap" type="NameIndexEntry" autoMapping="true">
     <id property="key" column="id"/>
   </resultMap>
 
@@ -48,7 +36,7 @@
     WHERE id = #{key}
   </select>
 
-  <insert id="create" parameterType="IndexName" useGeneratedKeys="true" keyProperty="key">
+  <insert id="create" parameterType="NameIndexEntry" useGeneratedKeys="true" keyProperty="key">
     INSERT INTO names_index (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
@@ -56,10 +44,10 @@
   <!--
     Atomic assign-on-miss: only one row per normalized bucket key can ever exist (enforced by the unique
     names_index_normalized_idx). On a fresh insert pgjdbc returns the generated id and MyBatis sets it on
-    the IndexName.key; on a conflict DO NOTHING inserts nothing, RETURNING yields no row, and key stays null
-    so the caller falls back to getKeyByNormalized to fetch the existing winner.
+    the NameIndexEntry.key; on a conflict DO NOTHING inserts nothing, RETURNING yields no row, and key stays
+    null so the caller falls back to getKeyByNormalized to fetch the existing winner.
   -->
-  <insert id="createOnConflict" parameterType="IndexName" useGeneratedKeys="true" keyProperty="key" keyColumn="id">
+  <insert id="createOnConflict" parameterType="NameIndexEntry" useGeneratedKeys="true" keyProperty="key" keyColumn="id">
     INSERT INTO names_index (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
     ON CONFLICT (normalized) DO NOTHING
@@ -70,7 +58,7 @@
     SELECT id FROM names_index WHERE normalized = #{normalized}
   </select>
 
-  <update id="update" parameterType="IndexName" keyProperty="key">
+  <update id="update" parameterType="NameIndexEntry" keyProperty="key">
     UPDATE names_index
     SET (<include refid="COLS"/>, created, modified) =
         (<include refid="PROPS"/>, now(), now())

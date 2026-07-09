@@ -5,7 +5,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
-import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.csv.MappingInfos;
@@ -52,9 +51,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -332,10 +329,10 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void matchAndCount() {
-    final Map<MatchType, AtomicInteger> counts = Maps.newHashMap();
-    for (MatchType mt : MatchType.values()) {
-      counts.put(mt, new AtomicInteger(0));
-    }
+    // NameMatch is a bare nidx+matched flag now (the names index no longer classifies matches into
+    // EXACT/VARIANT/... - see NameMatch), so we only track a simple matched/unmatched breakdown here.
+    final AtomicInteger matchedCount = new AtomicInteger(0);
+    final AtomicInteger unmatchedCount = new AtomicInteger(0);
     // track duplicates, map index name ids to first verbatim key
     final Int2IntMap nameIds = new Int2IntOpenHashMap();
     store.names().all().forEach(nn -> {
@@ -352,12 +349,14 @@ public class Normalizer implements Callable<Boolean> {
             nameIds.put(nKey, (int) nn.getName().getVerbatimKey());
           }
         }
+        matchedCount.incrementAndGet();
+      } else {
+        unmatchedCount.incrementAndGet();
       }
       store.names().update(nn);
-      counts.get(m.getType()).incrementAndGet();
       Exceptions.runtimeInterruptIfCancelled();
     });
-    LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));
+    LOG.info("Matched {} of {} names, {} unmatched", matchedCount.get(), matchedCount.get() + unmatchedCount.get(), unmatchedCount.get());
   }
 
   private void normalize() throws InterruptedException {

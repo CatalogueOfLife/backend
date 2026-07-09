@@ -1,8 +1,8 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameIndexEntry;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Origin;
@@ -56,7 +56,7 @@ public class NameIndexImplTest {
     when(session.getMapper(any())).thenReturn(mapper);
     // assign-on-miss insert: mimic postgres by handing out sequential ids
     doAnswer(invocation -> {
-      IndexName param = invocation.getArgument(0, IndexName.class);
+      NameIndexEntry param = invocation.getArgument(0, NameIndexEntry.class);
       param.setKey(keyGen.getAndIncrement());
       return null;
     }).when(mapper).createOnConflict(any());
@@ -730,10 +730,6 @@ public class NameIndexImplTest {
     ni.match(name("Muller", null, Rank.GENUS), true, false);
     var m = ni.match(name("Müller", null, Rank.GENUS), false, false);
     assertTrue(m.isMatched());
-  }
-
-  static IndexName iname(String name, Rank rank) throws InterruptedException {
-    return new IndexName(name(name, rank));
   }
 
   private NameMatch assertNoMatch(String name, Rank rank) throws InterruptedException {

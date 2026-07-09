@@ -10,8 +10,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public interface ScientificName {
 
   /**
-   * The single rank every canonical names index entry carries. Kept here (not only on IndexName) so
-   * canonical-shape checks below do not depend on the IndexName model.
+   * The single rank every canonical names index entry carries. Kept here so canonical-shape checks
+   * below do not depend on any particular names-index carrier model.
    */
   Rank CANONICAL_RANK = Rank.UNRANKED;
 

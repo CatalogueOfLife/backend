@@ -2,8 +2,8 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameIndexEntry;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -72,7 +72,8 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
     cnt = mapper().update(DSID.of(NAME1.getDatasetKey(), "2345678sedrftzh"), nidx);
     assertEquals(0, cnt);
 
-    IndexName in = new IndexName(TestEntityGenerator.NAME4);
+    NameIndexEntry in = new NameIndexEntry();
+    in.setScientificName(TestEntityGenerator.NAME4.getScientificName());
     // NAME4 ("Larus erfundus") normalizes to "larus erfund", the same bucket as the apple fixture's
     // id=4 row ("Larus erfundus" -> "larus erfund") - this raw insert bypasses the single-tier reuse
     // logic in NameIndexImpl, so give it its own distinct normalized literal to satisfy the unique

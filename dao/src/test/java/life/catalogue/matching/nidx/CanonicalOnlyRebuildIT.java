@@ -1,9 +1,8 @@
 package life.catalogue.matching.nidx;
 
-import life.catalogue.api.model.IndexName;
+import life.catalogue.api.model.NameIndexEntry;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.db.PgUtils;
@@ -16,7 +15,6 @@ import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TxtTreeDataRule;
 import life.catalogue.matching.RematchJob;
 
-import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.util.ArrayList;
@@ -79,9 +77,8 @@ public class CanonicalOnlyRebuildIT {
    * verify - from outside the production class - that the rebuilt index never stores two rows for
    * the same canonical bucket.
    */
-  private static String canonicalBucketKey(IndexName n) {
-    String origName = NameFormatter.canonicalName(n);
-    return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)).toLowerCase(), '*');
+  private static String canonicalBucketKey(NameIndexEntry n) {
+    return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(n.getScientificName())).toLowerCase(), '*');
   }
 
   @Test
@@ -106,21 +103,18 @@ public class CanonicalOnlyRebuildIT {
       System.out.println("Rebuilt names index now holds " + ni.size() + " canonical entries");
 
       // load every names_index row exactly as it now stands in postgres after the rebuild
-      Map<Integer, IndexName> byId = new HashMap<>();
+      Map<Integer, NameIndexEntry> byId = new HashMap<>();
       Set<String> canonicalBucketKeys = new HashSet<>();
       try (SqlSession session = factory.openSession(true)) {
         PgUtils.consume(() -> session.getMapper(NamesIndexMapper.class).processAll(), n -> {
           byId.put(n.getKey(), n);
 
           // invariant 1: every row is its own canonical - single-tier, canonical-only. Being its own
-          // canonical is now structural (no canonical_id column exists to violate it); we still assert
-          // the canonical shape - UNRANKED, no authorship - that every row must carry.
-          assertTrue("names_index #" + n.getKey() + " is not flagged canonical", n.isCanonical());
-          assertEquals("names_index #" + n.getKey() + " must be UNRANKED", Rank.UNRANKED, n.getRank());
-          assertNull("names_index #" + n.getKey() + " must carry no authorship", n.getAuthorship());
+          // canonical is now structural (no canonical_id column exists to violate it, and the carrier
+          // itself no longer even exposes rank/authorship - there is nothing left to violate).
 
           // collected for invariant 2 below: no two rows may share the same canonical bucket key
-          assertTrue("duplicate canonical names_index entry for " + n.getLabel(), canonicalBucketKeys.add(canonicalBucketKey(n)));
+          assertTrue("duplicate canonical names_index entry for " + n.getScientificName(), canonicalBucketKeys.add(canonicalBucketKey(n)));
         });
       }
       assertFalse("expected the rebuild to have created names_index entries", byId.isEmpty());
@@ -139,7 +133,7 @@ public class CanonicalOnlyRebuildIT {
         for (int key : keys.toIntArray()) {
           for (List<Integer> idxIds : List.of(PgUtils.toList(nmm.processIndexIds(key, null)), PgUtils.toList(anmm.processIndexIds(key)))) {
             for (Integer idxId : idxIds) {
-              IndexName n = byId.get(idxId);
+              NameIndexEntry n = byId.get(idxId);
               // every match references a names_index row that exists - being canonical is now structural
               assertNotNull("a match in dataset " + key + " references missing names_index #" + idxId, n);
               matchesChecked++;

@@ -1,8 +1,8 @@
 
 package life.catalogue.matching.nidx;
 
-import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameIndexEntry;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 
@@ -41,7 +41,7 @@ public class NameIndexFactory {
       }
 
       @Override
-      public IndexName get(Integer key) {
+      public NameIndexEntry get(Integer key) {
         return null;
       }
 
@@ -89,7 +89,7 @@ public class NameIndexFactory {
       }
 
       @Override
-      public IndexName get(Integer key) {
+      public NameIndexEntry get(Integer key) {
         return null;
       }
 

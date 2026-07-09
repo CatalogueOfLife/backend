@@ -19,7 +19,10 @@ import static org.junit.Assert.assertEquals;
 
 public class NameDaoTest extends DaoTestBase {
 
-  static final IndexName match = new IndexName(TestEntityGenerator.NAME4, 1);
+  static final NameIndexEntry match = new NameIndexEntry();
+  static {
+    match.setKey(1);
+  }
   NameDao dao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.fixed(match.getKey()), validator);
   
   @Test

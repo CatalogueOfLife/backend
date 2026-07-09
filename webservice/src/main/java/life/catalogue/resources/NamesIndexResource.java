@@ -56,15 +56,15 @@ public class NamesIndexResource {
 
   @GET
   @Path("{key}")
-  public IndexName get(@PathParam("key") int key) {
+  public NameIndexEntry get(@PathParam("key") int key) {
     return ni.get(key);
   }
 
   @DELETE
   @Path("{key}")
-  public List<IndexName> delete(@PathParam("key") int key, @QueryParam("rematch") boolean rematch) {
+  public List<NameIndexEntry> delete(@PathParam("key") int key, @QueryParam("rematch") boolean rematch) {
     var n = ni.get(key);
-    if (n == null) throw NotFoundException.notFound(IndexName.class, key);
+    if (n == null) throw NotFoundException.notFound(NameIndexEntry.class, key);
     // names index entry deletion was removed with the slim registry refactor; the reshaped delete
     // returns in a later task (9). Until then deletion is unavailable.
     throw new UnsupportedOperationException("Names index entry deletion is temporarily unavailable (nidx registry refactor)");
@@ -72,7 +72,7 @@ public class NamesIndexResource {
 
   @GET
   @Path("pattern")
-  public List<IndexName> searchByRegex(@QueryParam("q") String regex,
+  public List<NameIndexEntry> searchByRegex(@QueryParam("q") String regex,
                                        @QueryParam("canonical") @DefaultValue("true") boolean canonical,
                                        @QueryParam("rank") Rank rank,
                                        @Valid @BeanParam Page page,

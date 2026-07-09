@@ -7,8 +7,9 @@ import java.util.Map;
 
 /**
  * A pure {@code normalized-String -> nidx-int} registry backing the names index.
- * The single-tier, canonical-only index no longer holds {@link life.catalogue.api.model.IndexName}
- * instances - it only maps a normalized canonical bucket key to the names index id.
+ * The single-tier, canonical-only index holds no full row instances - it only maps a normalized
+ * canonical bucket key to the names index id. Full rows (see
+ * {@link life.catalogue.api.model.NameIndexEntry}) are looked up on demand from postgres.
  */
 public interface NameIndexStore extends Managed {
 
