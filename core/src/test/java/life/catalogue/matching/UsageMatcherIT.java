@@ -210,8 +210,9 @@ public class UsageMatcherIT {
    */
   @Test
   public void publishBuildRemoveCycle() throws Exception {
-    // load a fresh EXTERNAL dataset (key 5) from the dataset-1 tree so we don't collide with other tests
-    int key = 5;
+    // load a fresh EXTERNAL dataset (key 6) from the dataset-1 tree so we don't collide with other tests
+    // (key 5 is used by the bacteria test via matching/5.txtree)
+    int key = 6;
     TxtTreeDataRule.TreeDataset rule = new TxtTreeDataRule.TreeDataset(key, "matching/1.txtree", "Dataset " + key, DatasetOrigin.EXTERNAL);
     try (TxtTreeDataRule treeRule = new TxtTreeDataRule(List.of(rule))) {
       treeRule.before();
