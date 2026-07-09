@@ -103,7 +103,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, Set.of(3));
   public final static TestData DRAFT_NAME_UPD = new TestData("draft_name_upd", 3, Set.of(3, 100, 101));
   public final static TestData DUPLICATES = new TestData("duplicates", 1000, Set.of(3, 1000));
-  public final static TestData NIDX = new TestData("nidx", null, Set.of(100, 101, 102));
+  public final static TestData NIDX = new TestData("nidx", null, Set.of(100, 101, 102, 103));
   public final static TestData COL_SYNCED = new TestData("colsynced", 3, null);
 
   public static class TestData {

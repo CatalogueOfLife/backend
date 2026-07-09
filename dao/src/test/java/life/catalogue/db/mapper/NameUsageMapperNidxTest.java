@@ -9,8 +9,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
@@ -41,10 +40,8 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
     // with author
     var res = mapper().listByNamesIndexIDGlobalClassified( 4, new Page());
     assertEquals(3, res.size());
-
     // canonical +1
     assertEquals(4, mapper().listByNamesIndexIDGlobalClassified( 3, new Page()).size());
-
     // none
     assertEquals(0, mapper().listByNamesIndexIDGlobalClassified( 1, new Page()).size());
   }

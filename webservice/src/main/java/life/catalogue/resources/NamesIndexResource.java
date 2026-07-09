@@ -90,7 +90,7 @@ public class NamesIndexResource {
 
   @GET
   @Path("{key}/usages")
-  public Collection<SimpleNameInDatasetClassified> relatedUsages(@PathParam("key") int key, @Valid @BeanParam Page page) {
+  public ResultPage<SimpleNameInDatasetClassified> relatedUsages(@PathParam("key") int key, @Valid @BeanParam Page page) {
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
@@ -98,7 +98,7 @@ public class NamesIndexResource {
       res.forEach(sn -> {
         sn.setGroup(analyzer.analyze(sn, sn.getClassification()));
       });
-      return res;
+      return new ResultPage<>(p, res, () -> num.countByNamesIndexID(key, null));
     }
   }
 

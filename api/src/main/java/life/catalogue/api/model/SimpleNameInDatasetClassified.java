@@ -7,6 +7,7 @@ import java.util.Objects;
 
 public class SimpleNameInDatasetClassified extends SimpleNameInDataset {
   private List<SimpleName> classification;
+  private SimpleName accepted;
   private TaxGroup group;
   private String datasetTitle;
   private String datasetAlias;
@@ -17,6 +18,14 @@ public class SimpleNameInDatasetClassified extends SimpleNameInDataset {
 
   public void setClassification(List<SimpleName> classification) {
     this.classification = classification;
+  }
+
+  public SimpleName getAccepted() {
+    return accepted;
+  }
+
+  public void setAccepted(SimpleName accepted) {
+    this.accepted = accepted;
   }
 
   @Override
