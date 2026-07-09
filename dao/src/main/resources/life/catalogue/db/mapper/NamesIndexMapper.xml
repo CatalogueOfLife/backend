@@ -37,8 +37,8 @@
   </select>
 
   <insert id="create" parameterType="NameIndexEntry" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO names_index (<include refid="COLS"/>, created, modified)
-    VALUES (<include refid="PROPS"/>, now(), now())
+    INSERT INTO names_index (<include refid="COLS"/>, created)
+    VALUES (<include refid="PROPS"/>, now())
   </insert>
 
   <!--
@@ -48,8 +48,8 @@
     null so the caller falls back to getKeyByNormalized to fetch the existing winner.
   -->
   <insert id="createOnConflict" parameterType="NameIndexEntry" useGeneratedKeys="true" keyProperty="key" keyColumn="id">
-    INSERT INTO names_index (<include refid="COLS"/>, created, modified)
-    VALUES (<include refid="PROPS"/>, now(), now())
+    INSERT INTO names_index (<include refid="COLS"/>, created)
+    VALUES (<include refid="PROPS"/>, now())
     ON CONFLICT (normalized) DO NOTHING
     RETURNING id
   </insert>
@@ -60,8 +60,8 @@
 
   <update id="update" parameterType="NameIndexEntry" keyProperty="key">
     UPDATE names_index
-    SET (<include refid="COLS"/>, created, modified) =
-        (<include refid="PROPS"/>, now(), now())
+    SET (<include refid="COLS"/>) =
+        (<include refid="PROPS"/>)
     WHERE id = #{key}
   </update>
 

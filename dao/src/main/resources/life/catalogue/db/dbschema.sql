@@ -1277,17 +1277,9 @@ CREATE INDEX ON decision (subject_dataset_key, subject_id);
 
 CREATE TABLE names_index (
   id SERIAL PRIMARY KEY,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   scientific_name TEXT NOT NULL,
   normalized TEXT NOT NULL,
-  uninomial TEXT,
-  genus TEXT,
-  infrageneric_epithet TEXT,
-  specific_epithet TEXT,
-  infraspecific_epithet TEXT,
-  cultivar_epithet TEXT,
-  remarks TEXT
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 CREATE INDEX ON names_index (scientific_name);
 CREATE UNIQUE INDEX names_index_normalized_idx ON names_index (normalized);

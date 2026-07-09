@@ -11,6 +11,28 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-09 drop remaining unused names_index columns
+`names_index` is now the minimal canonical-name registry: `(id, scientific_name, normalized, created)`.
+`modified` was never updated after insert (the row is immutable — a new canonical name always gets a new
+`id`), and `uninomial`/`genus`/`infrageneric_epithet`/`specific_epithet`/`infraspecific_epithet`/
+`cultivar_epithet`/`remarks` were the parsed-name-part columns left over from the pre-canonical-only index;
+nothing in `NamesIndexMapper.xml` has read or written them since the earlier rank/authorship trim.
+
+**Deploy ordering:** same as the rank/authorship drop above — this rides the mandatory `nidx` rebuild on
+this branch, not an in-place migration. Run this DDL on `public.names_index` before deploying the new code
+and before the rebuild, since `rebuild-schema.sql` stages `nidx.names_index` via
+`CREATE TABLE ... (LIKE public.names_index ...)` and inherits whatever columns `public.names_index` has.
+```
+ALTER TABLE names_index DROP COLUMN modified;
+ALTER TABLE names_index DROP COLUMN uninomial;
+ALTER TABLE names_index DROP COLUMN genus;
+ALTER TABLE names_index DROP COLUMN infrageneric_epithet;
+ALTER TABLE names_index DROP COLUMN specific_epithet;
+ALTER TABLE names_index DROP COLUMN infraspecific_epithet;
+ALTER TABLE names_index DROP COLUMN cultivar_epithet;
+ALTER TABLE names_index DROP COLUMN remarks;
+```
+
 #### 2026-07-09 restore name-match coverage metric as a plain count
 Owner-approved follow-up to the change below: the "N of M names matched the names index" coverage
 figure shown in the import report (`ImportMetrics.getNameMatchesCount()`/`getNameMatchesMissingCount()`)

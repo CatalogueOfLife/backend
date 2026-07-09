@@ -17,6 +17,8 @@ import life.catalogue.matching.RematchJob;
 
 import org.gbif.nameparser.util.UnicodeUtils;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +53,10 @@ import static org.junit.Assert.*;
  * deduplication across datasets - three datasets all containing spelling/rank/authorship variants of
  * "Abbella/Paracentrobia zabinskii", which is exactly the kind of duplication a canonical-only rebuild
  * must collapse onto single entries.
+ *
+ * Also verifies the {@code names_index} table itself is the minimal registry the schema was trimmed
+ * to (Task 10 of the names-index refactor): exactly the columns {@code (id, scientific_name,
+ * normalized, created)}, with {@code normalized} unique at the database level.
  */
 public class CanonicalOnlyRebuildIT {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
@@ -98,6 +104,21 @@ public class CanonicalOnlyRebuildIT {
       assertFalse("expected the txt tree fixture datasets to have names", keys.isEmpty());
       System.out.println("Full rematch of datasets " + keys + " against a fresh names index");
 
+      // invariant 0: the table itself is the minimal registry the schema was trimmed to in Task 10 -
+      // no rank/authorship/epithet/remarks/modified columns survive
+      try (SqlSession session = factory.openSession(true);
+           Statement st = session.getConnection().createStatement();
+           ResultSet rs = st.executeQuery(
+             "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='names_index'")) {
+        Set<String> cols = new HashSet<>();
+        while (rs.next()) {
+          cols.add(rs.getString(1));
+        }
+        assertEquals("names_index must be exactly the minimal (id, scientific_name, normalized, created) registry",
+          Set.of("id", "scientific_name", "normalized", "created"), cols
+        );
+      }
+
       RematchJob.some(Users.MATCHER, factory, ni, null, false, keys.toIntArray()).run();
       assertTrue("rematch should have populated the names index", ni.size() > 0);
       System.out.println("Rebuilt names index now holds " + ni.size() + " canonical entries");
@@ -123,6 +144,16 @@ public class CanonicalOnlyRebuildIT {
       assertEquals("names_index size must equal the number of distinct canonical names",
         canonicalBucketKeys.size(), byId.size()
       );
+
+      // invariant 2b: normalized is unique at the database level - checked directly in postgres,
+      // independent of the canonicalBucketKey recomputation above, so it also proves the
+      // names_index_normalized_idx unique index is doing its job
+      try (SqlSession session = factory.openSession(true);
+           Statement st = session.getConnection().createStatement();
+           ResultSet rs = st.executeQuery("SELECT count(*), count(DISTINCT normalized) FROM names_index")) {
+        assertTrue(rs.next());
+        assertEquals("normalized must be unique across all names_index rows", rs.getInt(1), rs.getInt(2));
+      }
 
       // invariant 3: every name_match / archived name usage match actually produced by the rebuild
       // references one of those canonical names_index rows
