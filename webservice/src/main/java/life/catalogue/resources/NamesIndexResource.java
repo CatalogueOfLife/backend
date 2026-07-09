@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.common.util.RegexUtils;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.nidx.NameIndex;
@@ -56,18 +57,23 @@ public class NamesIndexResource {
 
   @GET
   @Path("{key}")
-  public NameIndexEntry get(@PathParam("key") int key) {
-    return ni.get(key);
-  }
-
-  @DELETE
-  @Path("{key}")
-  public List<NameIndexEntry> delete(@PathParam("key") int key, @QueryParam("rematch") boolean rematch) {
+  public NidxWithLabels get(@PathParam("key") int key, @Context SqlSession session) {
     var n = ni.get(key);
     if (n == null) throw NotFoundException.notFound(NameIndexEntry.class, key);
-    // names index entry deletion was removed with the slim registry refactor; the reshaped delete
-    // returns in a later task (9). Until then deletion is unavailable.
-    throw new UnsupportedOperationException("Names index entry deletion is temporarily unavailable (nidx registry refactor)");
+    var labels = session.getMapper(NameMatchMapper.class).labelCounts(key);
+    return new NidxWithLabels(key, n.getScientificName(), labels);
+  }
+
+  public static class NidxWithLabels {
+    public final int nidx;
+    public final String scientificName;
+    public final List<LabelCount> labels;
+
+    public NidxWithLabels(int nidx, String scientificName, List<LabelCount> labels) {
+      this.nidx = nidx;
+      this.scientificName = scientificName;
+      this.labels = labels;
+    }
   }
 
   @GET

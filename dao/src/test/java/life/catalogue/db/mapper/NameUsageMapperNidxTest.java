@@ -1,9 +1,15 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameIndexEntry;
 import life.catalogue.api.model.Page;
 import life.catalogue.junit.TestDataRule;
 
+import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,6 +94,47 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
       Set.of(DSID.of(101, "u1"), DSID.of(102, "u1x"), DSID.of(102, "u2x")),
       related
     );
+  }
+
+  /**
+   * labelCounts groups name_match rows sharing one nidx by their rendered "scientificName [authorship]"
+   * label and counts occurrences, across dataset boundaries, ordered by count desc.
+   */
+  @Test
+  public void labelCounts() throws Exception {
+    // a fresh canonical index entry, isolated from the shared "Abies alba" (nidx 2) fixture data
+    NameIndexEntry entry = new NameIndexEntry();
+    entry.setScientificName("Foo bar");
+    entry.setNormalized("foo bar-labelcounts-test");
+    mapper(NamesIndexMapper.class).create(entry);
+    int nidx = entry.getKey();
+
+    // two names in different datasets sharing the authored label "Foo bar Miller"
+    Name n1 = TestEntityGenerator.newMinimalName(100, "lc1", "Foo bar", Rank.SPECIES);
+    n1.setAuthorship("Miller");
+    insertName(n1);
+
+    Name n2 = TestEntityGenerator.newMinimalName(101, "lc1", "Foo bar", Rank.SPECIES);
+    n2.setAuthorship("Miller");
+    insertName(n2);
+
+    // a third, unauthored name giving the distinct label "Foo bar"
+    Name n3 = TestEntityGenerator.newMinimalName(102, "lc1", "Foo bar", Rank.SPECIES);
+    n3.setAuthorship(null);
+    insertName(n3);
+
+    NameMatchMapper nmm = mapper(NameMatchMapper.class);
+    nmm.create(DSID.of(100, "lc1"), null, nidx);
+    nmm.create(DSID.of(101, "lc1"), null, nidx);
+    nmm.create(DSID.of(102, "lc1"), null, nidx);
+    commit();
+
+    List<life.catalogue.api.model.LabelCount> counts = nmm.labelCounts(nidx);
+    assertEquals(2, counts.size());
+    assertEquals("Foo bar Miller", counts.get(0).getLabel());
+    assertEquals(2, counts.get(0).getCount());
+    assertEquals("Foo bar", counts.get(1).getLabel());
+    assertEquals(1, counts.get(1).getCount());
   }
 
 }

@@ -110,6 +110,14 @@
     </if>
   </select>
 
+  <select id="labelCounts" resultType="life.catalogue.api.model.LabelCount">
+    SELECT n.scientific_name || coalesce(' ' || n.authorship, '') AS label, count(*) AS count
+    FROM name_match nm
+    JOIN name n ON n.dataset_key = nm.dataset_key AND n.id = nm.name_id
+    WHERE nm.index_id = #{indexId}
+    GROUP BY label ORDER BY count DESC
+  </select>
+
   <update id="removeSectorKey" parameterType="map">
     UPDATE name_match SET sector_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}

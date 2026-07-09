@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.LabelCount;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
@@ -52,5 +53,13 @@ public interface NameMatchMapper extends MatchMapper, CopyDataset, NameProcessab
   default int deleteByName(@Param("key") DSID<String> key) {
     return delete(key);
   }
+
+  /**
+   * Groups all name_match rows pointing at the given names index entry by their rendered
+   * "scientificName [authorship]" label, counting occurrences across all datasets.
+   * @param indexId the names index (nidx) key to aggregate labels for
+   * @return distinct labels with their occurrence count, ordered by count descending
+   */
+  List<LabelCount> labelCounts(@Param("indexId") int indexId);
 
 }
