@@ -183,6 +183,7 @@ public class DatasetImportDao {
     di.setEstimateCount(mapper.countEstimate(key));
     di.setMediaCount(mapper.countMedia(key));
     di.setNameCount(mapper.countName(key));
+    di.setNameMatchesCount(mapper.countNameMatches(key));
     di.setReferenceCount(mapper.countReference(key));
     di.setSynonymCount(mapper.countSynonym(key));
     di.setTaxonCount(mapper.countTaxon(key));

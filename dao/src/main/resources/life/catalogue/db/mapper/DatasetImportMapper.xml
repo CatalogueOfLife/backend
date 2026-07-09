@@ -37,6 +37,7 @@
     ${alias}estimate_count,
     ${alias}media_count,
     ${alias}name_count,
+    ${alias}name_matches_count,
     ${alias}reference_count,
     ${alias}synonym_count,
     ${alias}taxon_count,
@@ -96,6 +97,7 @@
     #{imp.estimateCount},
     #{imp.mediaCount},
     #{imp.nameCount},
+    #{imp.nameMatchesCount},
     #{imp.referenceCount},
     #{imp.synonymCount},
     #{imp.taxonCount},
@@ -274,6 +276,9 @@
   </select>
   <select id="countName" resultType="integer">
     SELECT count(*) FROM name WHERE dataset_key = #{key}
+  </select>
+  <select id="countNameMatches" resultType="integer">
+    SELECT count(*) FROM name_match WHERE dataset_key = #{key} AND index_id IS NOT NULL
   </select>
   <select id="countTypeMaterial" resultType="integer">
     SELECT count(*) FROM type_material WHERE dataset_key = #{key}

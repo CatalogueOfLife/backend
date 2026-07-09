@@ -164,6 +164,9 @@
   <select id="countName" resultType="integer">
     SELECT count(*) FROM name WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
   </select>
+  <select id="countNameMatches" resultType="integer">
+    SELECT count(*) FROM name_match WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey} AND index_id IS NOT NULL
+  </select>
   <select id="countReference" resultType="integer">
     SELECT count(*) FROM reference WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
   </select>

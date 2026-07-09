@@ -54,6 +54,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     m.setDistributionCount(12345);
     m.setMediaCount(936);
     m.setNameCount(65432);
+    m.setNameMatchesCount(54321);
     m.setReferenceCount(9781);
     m.setSynonymCount(137);
     m.setTaxonCount(5748329);
@@ -238,6 +239,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals((Integer) 5, mapper().countDistribution(DATASET11.getKey()));
     assertEquals((Integer) 0, mapper().countMedia(DATASET11.getKey()));
     assertEquals((Integer) 5, mapper().countName(DATASET11.getKey()));
+    assertEquals((Integer) 5, mapper().countNameMatches(DATASET11.getKey()));
     assertEquals((Integer) 3, mapper().countReference(DATASET11.getKey()));
     assertEquals((Integer) 2, mapper().countSynonym(DATASET11.getKey()));
     assertEquals((Integer) 2, mapper().countTaxon(DATASET11.getKey()));

@@ -56,6 +56,7 @@ public class ImportMetrics implements ImportAttempt {
   private Integer estimateCount;
   private Integer mediaCount;
   private Integer nameCount;
+  private Integer nameMatchesCount;
   private Integer referenceCount;
   private Integer sectorCount;
   private Integer synonymCount;
@@ -166,11 +167,35 @@ public class ImportMetrics implements ImportAttempt {
   public Integer getNameCount() {
     return nameCount;
   }
-  
+
   public void setNameCount(Integer nameCount) {
     this.nameCount = nameCount;
   }
-  
+
+  /**
+   * Number of names that matched the names index, i.e. have a non null name_match.index_id.
+   */
+  public Integer getNameMatchesCount() {
+    return nameMatchesCount;
+  }
+
+  public void setNameMatchesCount(Integer nameMatchesCount) {
+    this.nameMatchesCount = nameMatchesCount;
+  }
+
+  /**
+   * @return number of names that did not match the names index, i.e. nameCount - nameMatchesCount.
+   */
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public Integer getNameMatchesMissingCount() {
+    var nc = getNameCount();
+    var nmc = getNameMatchesCount();
+    if (nc != null && nmc != null) {
+      return nc - nmc;
+    }
+    return null;
+  }
+
   public Integer getTaxonCount() {
     return taxonCount;
   }
@@ -491,6 +516,7 @@ public class ImportMetrics implements ImportAttempt {
       estimateCount = sum(estimateCount, m.estimateCount);
       mediaCount = sum(mediaCount, m.mediaCount);
       nameCount = sum(nameCount, m.nameCount);
+      nameMatchesCount = sum(nameMatchesCount, m.nameMatchesCount);
       referenceCount = sum(referenceCount, m.referenceCount);
       sectorCount = sum(sectorCount, m.sectorCount);
       synonymCount = sum(synonymCount, m.synonymCount);
@@ -567,6 +593,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(estimateCount, that.estimateCount) &&
       Objects.equals(mediaCount, that.mediaCount) &&
       Objects.equals(nameCount, that.nameCount) &&
+      Objects.equals(nameMatchesCount, that.nameMatchesCount) &&
       Objects.equals(referenceCount, that.referenceCount) &&
       Objects.equals(sectorCount, that.sectorCount) &&
       Objects.equals(synonymCount, that.synonymCount) &&
@@ -602,7 +629,7 @@ public class ImportMetrics implements ImportAttempt {
   @Override
   public int hashCode() {
     return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
-      nameCount, taxonCount, synonymCount, bareNameCount, referenceCount,
+      nameCount, nameMatchesCount, taxonCount, synonymCount, bareNameCount, referenceCount,
       typeMaterialCount, distributionCount, estimateCount, mediaCount, treatmentCount, vernacularCount,
       sectorCount, ignoredByReasonCount, appliedDecisionCount,
       namesByTypeCount, namesByStatusCount, namesByCodeCount, namesByRankCount,

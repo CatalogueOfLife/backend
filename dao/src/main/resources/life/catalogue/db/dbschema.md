@@ -11,6 +11,18 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-09 restore name-match coverage metric as a plain count
+Owner-approved follow-up to the change below: the "N of M names matched the names index" coverage
+figure shown in the import report (`ImportMetrics.getNameMatchesCount()`/`getNameMatchesMissingCount()`)
+was dropped along with the per-type breakdown, but the owner wants the coverage figure kept — just
+re-derived from `name_match.index_id IS NOT NULL` instead of the removed `type` column. Since historical
+(DB-loaded) imports must show it too, it's persisted as a single integer rather than recomputed only
+in-memory.
+```
+ALTER TABLE dataset_import ADD COLUMN name_matches_count INTEGER;
+ALTER TABLE sector_import ADD COLUMN name_matches_count INTEGER;
+```
+
 #### 2026-07-09 drop name_match.type and names-index match-type metric
 The persisted match type (`EXACT`/`VARIANT`/`NONE`/...) on `name_match` and `name_usage_archive_match`
 is dropped. Homonym/authorship discrimination never lived in this column — it's done live by

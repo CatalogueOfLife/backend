@@ -81,6 +81,7 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   Integer countEstimate(@Param("key") int datasetKey);
   Integer countMedia(@Param("key") int datasetKey);
   Integer countName(@Param("key") int datasetKey);
+  Integer countNameMatches(@Param("key") int datasetKey);
   Integer countReference(@Param("key") int datasetKey);
   Integer countSynonym(@Param("key") int datasetKey);
   Integer countTaxon(@Param("key") int datasetKey);

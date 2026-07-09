@@ -69,6 +69,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   Integer countEstimate(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countMedia(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countName(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  Integer countNameMatches(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countReference(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countSynonym(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countTaxon(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
