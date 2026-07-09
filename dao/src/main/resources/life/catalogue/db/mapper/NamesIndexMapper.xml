@@ -60,8 +60,8 @@
     so the caller falls back to getKeyByNormalized to fetch the existing winner.
   -->
   <insert id="createOnConflict" parameterType="IndexName" useGeneratedKeys="true" keyProperty="key" keyColumn="id">
-    INSERT INTO names_index (scientific_name, normalized, created)
-    VALUES (#{scientificName}, #{normalized}, now())
+    INSERT INTO names_index (<include refid="COLS"/>, created, modified)
+    VALUES (<include refid="PROPS"/>, now(), now())
     ON CONFLICT (normalized) DO NOTHING
     RETURNING id
   </insert>
