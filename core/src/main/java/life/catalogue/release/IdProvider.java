@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.collection.CountEnumMap;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.collection.Int2IntBiMap;
 import life.catalogue.common.id.IdConverter;

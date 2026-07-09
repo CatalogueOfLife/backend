@@ -86,9 +86,18 @@ public class NamesIndexCmdIT extends CmdTestBase {
           throw new IllegalStateException("Non unique name "+sn+" in names index");
         }
       });
-      // total distinct names index entries these fixtures produce under the current name parser;
-      // expect this to shift when the parser canonicalization changes (name-parser v4.2: 284 -> 281)
-      assertEquals(281, cnt);
+      // total distinct names_index rows these fixtures produce under the current name parser.
+      // Historically (two-tier index: 1 canonical row + 1 row per distinct authorship/rank
+      // combination sharing that canonical) this fixture produced 281 rows (284 under an older
+      // parser version). names_index is now a single-tier, canonical-only registry -- one row
+      // per distinct normalized canonical name; authorship and rank are never stored there at
+      // all -- so every one of those old authorship/rank "child" rows disappeared and only the
+      // canonical buckets remain. dupe.txtree alone (loaded into 6 datasets here to stress the
+      // dedup path) packs e.g. 8 "Acacia" genus entries under different authors and ~10
+      // "Poecile montan-" spelling/authorship/rank variants, each formerly its own two-tier row,
+      // now collapsing to exactly one canonical row apiece. 132 is the resulting distinct-
+      // canonical count; expect this to shift again if the parser's canonicalization changes.
+      assertEquals(132, cnt);
     }
   }
 }

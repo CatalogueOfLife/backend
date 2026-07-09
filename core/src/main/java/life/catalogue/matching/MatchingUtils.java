@@ -1,23 +1,15 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.nidx.NameIndex;
 
 import life.catalogue.parser.NameParser;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MatchingUtils {
-  private static final Logger LOG = LoggerFactory.getLogger(MatchingUtils.class);
   private final NameIndex nameIndex;
 
   public MatchingUtils(NameIndex nameIndex) {

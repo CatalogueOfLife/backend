@@ -5,7 +5,6 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.CopyUtil;
-import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
@@ -14,7 +13,6 @@ import life.catalogue.matching.*;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexImpl;
-import life.catalogue.printer.PrinterUtils;
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.NameType;

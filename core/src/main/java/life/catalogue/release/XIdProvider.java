@@ -4,7 +4,6 @@ import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.matching.nidx.NameIndex;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -17,14 +16,12 @@ import org.apache.ibatis.session.SqlSessionFactory;
  * previous releases and the deleted usage archive to know about historical identifiers that can be reused.
  */
 public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable {
-  private final NameIndex nidx;
   private final Writer nomatchWriter;
 
   public XIdProvider(int projectKey, int mappedDatasetKey, int attempt, int releaseDatasetKey, ReleaseConfig cfg, ProjectReleaseConfig prCfg,
-                     NameIndex nidx, SqlSessionFactory factory
+                     SqlSessionFactory factory
   ) throws IOException {
     super(projectKey, mappedDatasetKey, DatasetOrigin.XRELEASE, attempt, releaseDatasetKey, cfg, prCfg, factory);
-    this.nidx = nidx;
     nomatchWriter = buildNomatchWriter();
   }
 

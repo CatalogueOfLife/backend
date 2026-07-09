@@ -187,7 +187,7 @@ public class XRelease extends ProjectRelease {
     this.matcher.store().load(factory);
 
     // setup id generator
-    usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, ni, factory);
+    usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, factory);
     usageIdGen.removeIdsFromDataset(tmpProjectKey);
 
     mergeSectors();
