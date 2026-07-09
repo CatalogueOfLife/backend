@@ -29,9 +29,13 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -519,6 +523,63 @@ public class NameIndexImplIT {
     // single-tier: all 5 variants of "Abies alba"/"Abies albus" collapse onto the single canonical entry
     assertEquals(1, ni.size());
     assertCanonicalAbiesAlba();
+  }
+
+  /**
+   * Concurrent rebuilds run as separate processes/instances sharing one postgres, each with its own
+   * heap store and JVM-local insertLock. Neither of those single-JVM safeguards can prevent two
+   * independent instances from both observing a miss and racing to insert the same brand new
+   * canonical name at the same time. The assign-on-miss insert therefore has to be atomic at the
+   * database level: only one names_index row must ever exist for a given normalized key, and both
+   * instances must end up pointing at that very same row.
+   */
+  @Test
+  public void concurrentAssignAcrossInstances() throws Exception {
+    setupMemory(true);
+    final NameIndex ni1 = ni;
+
+    NamesIndexConfig cfg2 = NamesIndexConfig.memory(512);
+    cfg2.type = this.type;
+    NameIndex ni2 = NameIndexFactory.build(cfg2, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
+    try {
+      assertEquals(0, ni2.size());
+
+      Name n1 = new Name();
+      n1.setScientificName("Concurrentia testensis");
+      n1.setGenus("Concurrentia");
+      n1.setSpecificEpithet("testensis");
+      n1.setRank(Rank.SPECIES);
+      n1.setType(NameType.SCIENTIFIC);
+      Name n2 = new Name(n1);
+
+      final CyclicBarrier barrier = new CyclicBarrier(2);
+      ExecutorService exec = Executors.newFixedThreadPool(2, new NamedThreadFactory("test-concurrent-instances"));
+      Callable<NameMatch> task1 = () -> {
+        barrier.await();
+        return ni1.match(n1, true, true);
+      };
+      Callable<NameMatch> task2 = () -> {
+        barrier.await();
+        return ni2.match(n2, true, true);
+      };
+      Future<NameMatch> f1 = exec.submit(task1);
+      Future<NameMatch> f2 = exec.submit(task2);
+      NameMatch m1 = f1.get(30, TimeUnit.SECONDS);
+      NameMatch m2 = f2.get(30, TimeUnit.SECONDS);
+      ExecutorUtils.shutdown(exec);
+
+      assertTrue("Expected instance 1 to match/insert the new name", m1.hasMatch());
+      assertTrue("Expected instance 2 to match/insert the new name", m2.hasMatch());
+      assertEquals("Both independent instances must resolve to the very same names_index key",
+          m1.getName().getKey(), m2.getName().getKey());
+
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+        assertEquals("Concurrent assign-on-miss from two instances must create exactly one names_index row",
+            1, session.getMapper(NamesIndexMapper.class).count());
+      }
+    } finally {
+      ni2.close();
+    }
   }
 
   void dumpIndex() {

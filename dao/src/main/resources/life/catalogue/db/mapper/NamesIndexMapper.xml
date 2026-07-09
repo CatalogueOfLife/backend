@@ -53,6 +53,23 @@
     VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
 
+  <!--
+    Atomic assign-on-miss: only one row per normalized bucket key can ever exist (enforced by the unique
+    names_index_normalized_idx). On a fresh insert pgjdbc returns the generated id and MyBatis sets it on
+    the IndexName.key; on a conflict DO NOTHING inserts nothing, RETURNING yields no row, and key stays null
+    so the caller falls back to getKeyByNormalized to fetch the existing winner.
+  -->
+  <insert id="createOnConflict" parameterType="IndexName" useGeneratedKeys="true" keyProperty="key" keyColumn="id">
+    INSERT INTO names_index (scientific_name, normalized, created)
+    VALUES (#{scientificName}, #{normalized}, now())
+    ON CONFLICT (normalized) DO NOTHING
+    RETURNING id
+  </insert>
+
+  <select id="getKeyByNormalized" resultType="integer">
+    SELECT id FROM names_index WHERE normalized = #{normalized}
+  </select>
+
   <update id="update" parameterType="IndexName" keyProperty="key">
     UPDATE names_index
     SET (<include refid="COLS"/>, created, modified) =

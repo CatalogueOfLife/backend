@@ -386,7 +386,15 @@ public class NameIndexImpl implements NameIndex {
   private void createCanonical(NamesIndexMapper nim, String key, IndexName cn){
     if (hasPg) {
       cn.setNormalized(key);
-      nim.create(cn); // sets the generated key on cn
+      // atomic assign-on-miss: inserts a fresh row and sets its generated key, or - if a concurrent
+      // rebuild already inserted the same normalized bucket - inserts nothing (leaving key null) so we
+      // fall back to the existing winner. This is the only safeguard against duplicate rows across
+      // independent index instances sharing one postgres; the JVM-local insertLock only guards a single one.
+      cn.setKey(null);
+      nim.createOnConflict(cn);
+      if (cn.getKey() == null) {
+        cn.setKey(nim.getKeyByNormalized(key));
+      }
     } else {
       cn.setKey(keyGen.incrementAndGet());
     }
