@@ -400,10 +400,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
     LOG.debug("process bare {} {}", n.getRank(), n.getLabel());
     Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
 
-    if (n.getNamesIndexType() == null) {
-      matchName(n);
-    }
-    if (n.getNamesIndexType() == MatchType.EXACT) {
+    // TODO(task 6): this bare-name gate should compare live authorship/rank via UsageMatcher instead of
+    //  a stored match type - for now it just always (re)matches and reads the type off the fresh NameMatch,
+    //  as name_match.type / Name.namesIndexType are no longer persisted.
+    NameMatch bareNameMatch = matchName(n);
+    if (bareNameMatch.getType() == MatchType.EXACT) {
       var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
       // listByNidx groups by the (now canonical-only) names index id, so it returns every
       // authorship variant sharing the canonical - not just the one matching this name's own
@@ -864,10 +865,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
         if (!Objects.equals(src.getNamesIndexId(), n.getNamesIndexId())) {
           // update name match in db
           n.setNamesIndexId(src.getNamesIndexId());
-          nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());
+          nmm.update(n, src.getNamesIndexId());
           if (existingUsage != null) {
             existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
-            existingUsage.usage.setNamesIndexMatchType(src.getNamesIndexType());
+            // the match type is no longer persisted on Name/name_match; MatchType.NONE is the neutral
+            // "no information" default (see SimpleNameWithNidx re-sourcing), scoring 0 in IdProvider
+            existingUsage.usage.setNamesIndexMatchType(MatchType.NONE);
             // warn if can on canonical nidx changed - this should not be the case
             final var canonicalNidx = nameIndex.getCanonical(src.getNamesIndexId());
             if (!Objects.equals(existingUsage.usage.getCanonicalId(), canonicalNidx)) {

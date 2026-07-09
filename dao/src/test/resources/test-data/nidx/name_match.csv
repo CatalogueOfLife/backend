@@ -1,5 +1,5 @@
-dataset_key,name_id,index_id,type
-100,n1,2,EXACT
-101,n1,2,EXACT
-102,n1,2,EXACT
-102,n2,2,VARIANT
+dataset_key,name_id,index_id
+100,n1,2
+101,n1,2
+102,n1,2
+102,n2,2

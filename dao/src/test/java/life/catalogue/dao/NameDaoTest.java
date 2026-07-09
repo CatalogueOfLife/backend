@@ -37,7 +37,6 @@ public class NameDaoTest extends DaoTestBase {
     dao.create(n, Users.IMPORTER);
 
     Name nidx = mapper(NameMapper.class).get(n);
-    assertEquals(MatchType.VARIANT, nidx.getNamesIndexType());
     assertEquals(match.getKey(), nidx.getNamesIndexId());
   }
 

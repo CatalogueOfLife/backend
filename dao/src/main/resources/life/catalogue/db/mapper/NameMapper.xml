@@ -56,8 +56,7 @@
 
   <sql id="nameColsNidx">
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols"/>,
-    ${aliasNI}.index_id AS ${prefix}namesIndexId,
-    ${aliasNI}.type AS ${prefix}namesIndexType
+    ${aliasNI}.index_id AS ${prefix}namesIndexId
   </sql>
 
   <sql id="SELECT">
@@ -380,11 +379,8 @@
       <if test="req.type != null">
         AND n.type = #{req.type}::NAMETYPE
       </if>
-      <if test="req.matchType != null">
-        AND nm.type = #{req.matchType}::MATCHTYPE
-      </if>
       <if test="req.hasMatch != null">
-        AND nm.type IS <if test="req.hasMatch">NOT</if> NULL
+        AND nm.index_id IS <if test="req.hasMatch">NOT</if> NULL
       </if>
       <if test="req.namePrefix != null">
         AND n.scientific_name ~ '^${req.namePrefix}'

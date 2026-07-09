@@ -2,7 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameMatch;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.DatasetProcessable;
 
 import org.apache.ibatis.annotations.Param;
@@ -35,7 +34,7 @@ public interface ArchivedNameUsageMatchMapper extends MatchMapper, DatasetProces
   /**
    * @param key the name key
    */
-  default void create(DSID<String> key, Integer nidx, MatchType type) {
-    create(key, null, nidx, type);
+  default void create(DSID<String> key, Integer nidx) {
+    create(key, null, nidx);
   }
 }

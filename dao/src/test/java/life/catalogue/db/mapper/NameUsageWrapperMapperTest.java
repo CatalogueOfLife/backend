@@ -75,7 +75,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     nm.create(n);
 
     // single-tier: the name matches its one canonical names index entry
-    nmm.create(n, tax.getSectorKey(), inc.getKey(), MatchType.EXACT);
+    nmm.create(n, tax.getSectorKey(), inc.getKey());
 
     tm.create(tax);
 

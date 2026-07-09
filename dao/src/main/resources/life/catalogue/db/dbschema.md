@@ -11,6 +11,23 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-09 drop name_match.type and names-index match-type metric
+The persisted match type (`EXACT`/`VARIANT`/`NONE`/...) on `name_match` and `name_usage_archive_match`
+is dropped. Homonym/authorship discrimination never lived in this column — it's done live by
+`UsageMatcher`/`AuthorComparator` — and the single-tier canonical-only index made the stored type
+redundant with `index_id` (present vs. absent already tells upsert/delete apart). The
+`names_by_match_type_count` import metric (and its Hstore type handler) is dropped for the same
+reason: it summarized this now-removed column. `Name.namesIndexType` and the derived
+`ImportMetrics.getNameMatchesCount()`/`getNameMatchesMissingCount()` are removed from the Java model;
+`NameMatch.getType()` and `SimpleNameWithNidx.namesIndexMatchType` are unaffected (the latter still
+feeds `IdProvider` release-ID scoring — deferred to a later task).
+```
+ALTER TABLE name_match DROP COLUMN type;
+ALTER TABLE name_usage_archive_match DROP COLUMN type;
+ALTER TABLE dataset_import DROP COLUMN names_by_match_type_count;
+ALTER TABLE sector_import DROP COLUMN names_by_match_type_count;
+```
+
 #### 2026-07-09 add names_index.normalized
 Adds the normalized bucket key (`NameIndexImpl.key(...)`: decomposed + gender-stemmed + lower-cased +
 non-ASCII-folded canonical name) as its own column, with a unique index, in preparation for turning the

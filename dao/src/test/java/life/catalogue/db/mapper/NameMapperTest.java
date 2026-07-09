@@ -242,7 +242,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   @Override
   Name removeDbCreatedProps(Name obj) {
     obj.setNamesIndexId(null);
-    obj.setNamesIndexType(null);
     return super.removeDbCreatedProps(obj);
   }
 }

@@ -218,15 +218,15 @@ public class UsageMatcher2IT {
 
   /**
    * The usage EXACT/VARIANT classification must be computed from the live labels only, not seeded from the
-   * candidate's stored names index match type. Simulate a candidate ("oen1" = Oenanthe L.) whose stored
-   * namesIndexMatchType is null - e.g. legacy data or a nidx that no longer carries a type - and verify the
-   * usage match type is still derived correctly purely from comparing the normalized labels.
+   * candidate's stored names index match type. name_match.type / Name.namesIndexType are no longer persisted
+   * at all (see dbschema.md), so matcher.store() candidates never carry a meaningful namesIndexMatchType any
+   * more - explicitly wipe it to null too (simulating legacy data) and verify the usage match type is still
+   * derived correctly purely from comparing the normalized labels.
    */
   @Test
   public void exactAndVariantIndependentOfNidxType() throws Exception {
     // wipe the stored candidate's names index match type so the old seed-then-flip logic has nothing to seed from
     var oen1 = new SimpleNameCached(matcher.store().get("oen1"));
-    assertEquals(MatchType.EXACT, oen1.getNamesIndexMatchType()); // sanity: real nidx type before we null it out
     oen1.setNamesIndexMatchType(null);
     matcher.store().add(oen1);
 

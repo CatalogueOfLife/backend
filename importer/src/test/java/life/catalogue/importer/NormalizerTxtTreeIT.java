@@ -2,7 +2,6 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.junit.PgSetupRule;
 
@@ -52,7 +51,6 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     UsageData u = usageByID("14");
     assertTrue(u.isSynonym());
     assertEquals("? californicum Torr. & A.Gray", u.usage.getName().getLabel());
-    assertEquals(MatchType.NONE, u.usage.getName().getNamesIndexType());
     assertNull(u.usage.getName().getNamesIndexId());
   }
 

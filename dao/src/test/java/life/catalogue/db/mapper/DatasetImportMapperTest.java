@@ -69,7 +69,6 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     m.setMergedTaxaByRankCount(mockCount(Rank.class));
     m.setNameRelationsByTypeCount(mockCount(NomRelType.class));
     m.setNamesByCodeCount(mockCount(NomCode.class));
-    m.setNamesByMatchTypeCount(mockCount(MatchType.class));
     m.setNamesByRankCount(mockCount(Rank.class));
     m.setNamesByStatusCount(mockCount(NomStatus.class));
     m.setNamesByTypeCount(mockCount(NameType.class));

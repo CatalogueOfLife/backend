@@ -5,7 +5,6 @@
 <mapper namespace="life.catalogue.db.mapper.NameMatchMapper">
 
   <resultMap id="nameMatchResultMap" type="NameMatch" autoMapping="true">
-    <result property="type" column="type"/>
     <association property="name" javaType="IndexName" resultMap="life.catalogue.db.mapper.NamesIndexMapper.nameResultMap"/>
   </resultMap>
 
@@ -22,7 +21,7 @@
   </select>
 
   <select id="get" resultMap="nameMatchResultMap">
-    SELECT nm.type, <include refid="life.catalogue.db.mapper.NamesIndexMapper.SELECT"/>
+    SELECT <include refid="life.catalogue.db.mapper.NamesIndexMapper.SELECT"/>
     FROM name_match nm LEFT JOIN names_index n ON n.id=nm.index_id
     WHERE nm.dataset_key = #{key.datasetKey} AND nm.name_id = #{key.id}
   </select>
@@ -34,7 +33,7 @@
   </select>
 
   <select id="processSector" parameterType="map" resultMap="nameMatchResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT nm.type, <include refid="life.catalogue.db.mapper.NamesIndexMapper.SELECT"/>
+    SELECT <include refid="life.catalogue.db.mapper.NamesIndexMapper.SELECT"/>
     FROM name_match nm LEFT JOIN names_index n ON n.id=nm.index_id
     WHERE nm.dataset_key = #{key.datasetKey} AND nm.sector_key = #{key.id}
   </select>
@@ -49,8 +48,8 @@
   </select>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO name_match (dataset_key,sector_key,type,index_id,name_id)
-    SELECT #{newDatasetKey},nm.sector_key,nm.type,nm.index_id,coalesce(<if test="mapIds">m.id2,</if>nm.name_id)
+    INSERT INTO name_match (dataset_key,sector_key,index_id,name_id)
+    SELECT #{newDatasetKey},nm.sector_key,nm.index_id,coalesce(<if test="mapIds">m.id2,</if>nm.name_id)
     FROM name_match nm
     <if test="mapIds">
       LEFT JOIN idmap_name_${datasetKey} m ON m.id=nm.name_id
@@ -83,12 +82,12 @@
   </delete>
 
   <insert id="create" parameterType="map" useGeneratedKeys="false">
-    INSERT INTO name_match (dataset_key,sector_key,type,index_id,name_id)
-    VALUES (#{key.datasetKey}, #{sectorKey}, #{type}::MATCHTYPE, #{nidx}, #{key.id})
+    INSERT INTO name_match (dataset_key,sector_key,index_id,name_id)
+    VALUES (#{key.datasetKey}, #{sectorKey}, #{nidx}, #{key.id})
   </insert>
 
   <update id="update" parameterType="map">
-    UPDATE name_match SET (type,index_id) = (#{type}::MATCHTYPE, #{nidx})
+    UPDATE name_match SET index_id = #{nidx}
     WHERE dataset_key=#{key.datasetKey} AND name_id = #{key.id}
   </update>
 

@@ -34,7 +34,7 @@ public class SimpleNameWithNidx extends SimpleName {
     super(n);
     this.canonicalId = canonicalId;
     namesIndexId = n.getNamesIndexId();
-    namesIndexMatchType = n.getNamesIndexType();
+    namesIndexMatchType = MatchType.NONE;
   }
 
   /**
@@ -44,7 +44,7 @@ public class SimpleNameWithNidx extends SimpleName {
     super(u);
     this.canonicalId = canonicalId;
     namesIndexId = u.getName().getNamesIndexId();
-    namesIndexMatchType = u.getName().getNamesIndexType();
+    namesIndexMatchType = MatchType.NONE;
   }
 
   public MatchType getNamesIndexMatchType() {

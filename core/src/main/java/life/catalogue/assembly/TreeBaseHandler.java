@@ -200,8 +200,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
       SyncNameUsageRules.applyAlways(nu);
       mod = new ModifiedUsage(nu, false, false, null);
     }
-    // match to nidx if no match result exists (NONE matches are fine, but not null)
-    if (nu.getName().getNamesIndexType() == null) {
+    // match to nidx if not matched yet
+    if (nu.getName().getNamesIndexId() == null) {
       var match = nameIndex.match(nu.getName(), true, false);
       nu.getName().applyMatch(match);
     }
@@ -511,13 +511,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
    */
   protected NameMatch matchName(Name n) {
     NameMatch m = nameIndex.match(n, true, false);
-    n.setNamesIndexType(m.getType());
     n.setNamesIndexId(m.getNameKey());
     return m;
   }
 
   protected void persistMatch(Name n) {
-    batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId(), n.getNamesIndexType());
+    batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId());
   }
 
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {

@@ -73,7 +73,8 @@
   </sql>
 
   <sql id="SELECT_SIMPLE_CACHED">
-    <include refid="SELECT_SIMPLE"/>, u.sector_key, nm.index_id, nm.index_id AS canonical_id, nm.type
+    <!-- the match type is no longer persisted; NONE is the neutral "no information" default, see dbschema.md -->
+    <include refid="SELECT_SIMPLE"/>, u.sector_key, nm.index_id, nm.index_id AS canonical_id, 'NONE'::MATCHTYPE AS type
   </sql>
 
   <sql id="SELECT_LINNEAN_USAGE">
@@ -949,7 +950,8 @@
   </select>
 
   <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMapParentName" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, nm.index_id AS canonical_id, nm.type, np.scientific_name AS parent
+    <!-- the match type is no longer persisted; NONE is the neutral "no information" default, see dbschema.md -->
+    SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, nm.index_id AS canonical_id, 'NONE'::MATCHTYPE AS type, np.scientific_name AS parent
     FROM name_usage u
       JOIN name n ON n.dataset_key=#{datasetKey} AND n.id=u.name_id
       LEFT JOIN name_usage up ON up.dataset_key=#{datasetKey} AND up.id=u.parent_id

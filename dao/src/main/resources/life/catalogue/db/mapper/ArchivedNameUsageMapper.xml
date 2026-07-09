@@ -116,7 +116,8 @@
       u.classification,
       m.index_id AS canonical_id,
       m.index_id AS namesIndexId,
-      m.type AS namesIndexMatchType
+      <!-- the match type is no longer persisted; NONE is the neutral "no information" default, see dbschema.md -->
+      'NONE'::MATCHTYPE AS namesIndexMatchType
     FROM name_usage_archive u
       LEFT JOIN name_usage_archive_match m ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
     WHERE u.dataset_key=#{datasetKey}
@@ -161,14 +162,13 @@
       u.n_link AS link,
       u.n_remarks AS remarks,
       <!-- name match -->
-      m.index_id AS namesIndexId,
-      m.type AS namesIndexType
+      m.index_id AS namesIndexId
 
     FROM name_usage_archive u
       LEFT JOIN name_usage_archive_match m ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
     <where>
       <if test="datasetKey != null">u.dataset_key=#{datasetKey}</if>
-      <if test="onlyMissing">AND m.type IS NULL</if>
+      <if test="onlyMissing">AND m.usage_id IS NULL</if>
     </where>
   </select>
 

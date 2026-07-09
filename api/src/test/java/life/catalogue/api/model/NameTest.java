@@ -29,7 +29,6 @@ public class NameTest extends SerdeTestBase<Name> {
   }
 
   static void clearNidx(Name n) {
-    n.setNamesIndexType(null);
     n.setNamesIndexId(null);
   }
 

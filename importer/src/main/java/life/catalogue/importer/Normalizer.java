@@ -340,7 +340,6 @@ public class Normalizer implements Callable<Boolean> {
     final Int2IntMap nameIds = new Int2IntOpenHashMap();
     store.names().all().forEach(nn -> {
       NameMatch m = index.match(nn.getName(), true, false);
-      nn.getName().setNamesIndexType(m.getType());
       if (m.hasMatch()) {
         int nKey = m.getName().getKey();
         nn.getName().setNamesIndexId(nKey);

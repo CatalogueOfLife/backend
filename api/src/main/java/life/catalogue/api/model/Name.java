@@ -65,7 +65,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private Integer verbatimSourceKey;
 
   private Integer namesIndexId;
-  private MatchType namesIndexType;
 
   private List<Identifier> identifier;
 
@@ -255,7 +254,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.verbatimKey = n.verbatimKey;
     this.verbatimSourceKey = n.verbatimSourceKey;
     this.namesIndexId = n.namesIndexId;
-    this.namesIndexType = n.namesIndexType;
     this.identifier = n.identifier;
     this.scientificName = n.scientificName;
     this.authorship = n.authorship;
@@ -306,7 +304,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setVerbatimKey(builder.verbatimKey);
     setVerbatimSourceKey(builder.verbatimSourceKey);
     setNamesIndexId(builder.namesIndexId);
-    setNamesIndexType(builder.namesIndexType);
     setScientificName(builder.scientificName);
     setAuthorship(builder.authorship);
     setRank(builder.rank);
@@ -351,7 +348,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       .basionymAuthorship(null)
       .sanctioningAuthor(null)
       .namesIndexId(null)
-      .namesIndexType(null)
       .build();
   }
   public static Builder newBuilder() {
@@ -371,7 +367,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.verbatimKey = copy.getVerbatimKey();
     builder.verbatimSourceKey = copy.getVerbatimSourceKey();
     builder.namesIndexId = copy.getNamesIndexId();
-    builder.namesIndexType = copy.getNamesIndexType();
     builder.scientificName = copy.getScientificName();
     builder.authorship = copy.getAuthorship();
     builder.rank = copy.getRank();
@@ -451,17 +446,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.namesIndexId = namesIndexId;
   }
 
-  public MatchType getNamesIndexType() {
-    return namesIndexType;
-  }
-
-  public void setNamesIndexType(MatchType namesIndexType) {
-    this.namesIndexType = namesIndexType;
-  }
-
   public void applyMatch(NameMatch match) {
     if (match != null){
-      setNamesIndexType(match.getType());
       setNamesIndexId(match.getNameKey());
     }
   }
@@ -913,7 +899,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       Objects.equals(verbatimKey, name.verbatimKey) &&
       Objects.equals(verbatimSourceKey, name.verbatimSourceKey) &&
       Objects.equals(namesIndexId, name.namesIndexId) &&
-      namesIndexType == name.namesIndexType &&
       Objects.equals(identifier, name.identifier) &&
       Objects.equals(scientificName, name.scientificName) &&
       Objects.equals(authorship, name.authorship) &&
@@ -949,7 +934,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, imprintYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, namesIndexId, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, imprintYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
   }
 
   @Override
@@ -1011,7 +996,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private Integer verbatimKey;
     private Integer verbatimSourceKey;
     private Integer namesIndexId;
-    private MatchType namesIndexType;
     private String scientificName;
     private String authorship;
     private Rank rank;
@@ -1100,11 +1084,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder namesIndexId(Integer val) {
       namesIndexId = val;
-      return this;
-    }
-
-    public Builder namesIndexType(MatchType val) {
-      namesIndexType = val;
       return this;
     }
 

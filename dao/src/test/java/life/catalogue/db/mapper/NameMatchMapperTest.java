@@ -4,7 +4,6 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
-import life.catalogue.api.vocab.MatchType;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -64,14 +63,13 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
   public void updateMatches() throws Exception {
     NameMapper nm = mapper(NameMapper.class);
     Integer nidx = 1;
-    var cnt = mapper().update(NAME1, nidx, MatchType.EXACT);
+    var cnt = mapper().update(NAME1, nidx);
     Name n = nm.get(NAME1);
     assertEquals(1, cnt);
-    assertEquals(MatchType.EXACT, n.getNamesIndexType());
     assertEquals(nidx, n.getNamesIndexId());
 
     // try to update a non existing name
-    cnt = mapper().update(DSID.of(NAME1.getDatasetKey(), "2345678sedrftzh"), nidx, MatchType.EXACT);
+    cnt = mapper().update(DSID.of(NAME1.getDatasetKey(), "2345678sedrftzh"), nidx);
     assertEquals(0, cnt);
 
     IndexName in = new IndexName(TestEntityGenerator.NAME4);
@@ -83,14 +81,12 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
     mapper(NamesIndexMapper.class).create(in);
     nidx = in.getKey();
 
-    mapper().update(NAME1, nidx, MatchType.CANONICAL);
+    mapper().update(NAME1, nidx);
     n = nm.get(NAME1);
-    assertEquals(MatchType.CANONICAL, n.getNamesIndexType());
     assertEquals(nidx, n.getNamesIndexId());
 
     mapper().delete(NAME1);
     n = nm.get(NAME1);
-    assertNull(n.getNamesIndexType());
     assertNull(n.getNamesIndexId());
   }
   

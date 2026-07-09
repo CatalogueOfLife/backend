@@ -1064,7 +1064,6 @@ CREATE TABLE dataset_import (
   names_by_rank_count HSTORE,
   names_by_status_count HSTORE,
   names_by_type_count HSTORE,
-  names_by_match_type_count HSTORE,
   species_interactions_by_type_count HSTORE,
   synonyms_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
@@ -1207,7 +1206,6 @@ CREATE TABLE sector_import (
   names_by_rank_count HSTORE,
   names_by_status_count HSTORE,
   names_by_type_count HSTORE,
-  names_by_match_type_count HSTORE,
   species_interactions_by_type_count HSTORE,
   synonyms_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
@@ -1608,7 +1606,6 @@ CREATE TABLE name_match (
   sector_key INTEGER,
   index_id INTEGER REFERENCES names_index,
   name_id TEXT NOT NULL,
-  type MATCHTYPE NOT NULL,
   PRIMARY KEY (dataset_key, name_id),
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
@@ -1956,7 +1953,6 @@ CREATE TABLE name_usage_archive_match (
   dataset_key INTEGER NOT NULL,
   index_id INTEGER REFERENCES names_index,
   usage_id TEXT NOT NULL,
-  type MATCHTYPE NOT NULL,
   PRIMARY KEY (dataset_key, usage_id)
 );
 CREATE INDEX ON name_usage_archive_match (dataset_key, index_id);
