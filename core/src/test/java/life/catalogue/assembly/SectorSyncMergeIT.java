@@ -479,11 +479,29 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
     // canonical "Aus eus" has a single candidate "Aus eus Linn.". The incoming bare, authored
     // "Aus eus Mill." has identical rank but DIFFERENT authorship (case c), so the one candidate is
-    // filtered out, zero remain, and the merge is skipped - authorship must stay "Linn.".
+    // filtered out, zero remain, and the merge is skipped - authorship must stay "Linn.". The incoming
+    // name also carries a PUB reference (eusRef) that the target lacks; if the authorship-EQUAL clause
+    // were ever loosened (e.g. to != DIFFERENT, letting UNKNOWN through) this candidate would still be
+    // filtered out here since compare(Mill., Linn.) is strictly DIFFERENT - the PUB is there so that a
+    // *different* regression, an accidental widening of the whole gate, would show up as an unwanted
+    // publishedInId on the target.
     var eus = getByName(Datasets.COL, Rank.SPECIES, "Aus eus");
     assertNotNull(eus);
     assertEquals("Linn.", eus.getName().getAuthorship());
-    assertNull(eus.getName().getPublishedInId());
+    assertNull("Authorship mismatch must not enrich the target with the incoming PUB reference",
+      eus.getName().getPublishedInId());
+
+    // canonical "Aus fus" has a single candidate "Aus fus Mill." at rank SPECIES. The incoming bare
+    // name is also "Aus fus Mill." (identical genus/specificEpithet -> same canonical nidx bucket,
+    // rank is not part of the canonical form) but tagged rank SPECIES_AGGREGATE ("Aus fus agg."),
+    // and EQUAL authorship. Since the ranks differ, the `c.getRank() == n.getRank()` clause excludes
+    // the candidate, zero remain, and the merge is skipped - the incoming PUB reference (fusRef) must
+    // not be copied onto the target, proving the rank clause is load-bearing.
+    var fus = getByName(Datasets.COL, Rank.SPECIES, "Aus fus");
+    assertNotNull(fus);
+    assertEquals("Mill.", fus.getName().getAuthorship());
+    assertNull("Rank mismatch must not enrich the target with the incoming PUB reference",
+      fus.getName().getPublishedInId());
   }
 
   private void validateVernacular() {

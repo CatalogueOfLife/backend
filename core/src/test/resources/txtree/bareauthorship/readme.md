@@ -17,7 +17,7 @@ Per the merge spec, a bare name is only merged onto a target candidate when ALL 
 This is strict: `compare(authored, unauthored)` is `Equality.UNKNOWN`, not `EQUAL`, so an authored
 bare name does **not** enrich an unauthored candidate either - that combination is a skip too.
 
-Four scenarios, sharing one target/source pair (genus `Aus`):
+Six scenarios, sharing one target/source pair (genus `Aus`):
 
 - **Unauthored incoming, ambiguous target (`Aus bus`)**: the target carries two authorship variants,
   `Aus bus Mill.` and `Aus bus Linn.`. The incoming bare name `Aus bus` has no authorship, so it is
@@ -44,7 +44,24 @@ Four scenarios, sharing one target/source pair (genus `Aus`):
 - **Authorship mismatch, single candidate (`Aus eus`)**: the target carries a single candidate
   `Aus eus Linn.`. The incoming bare name `Aus eus Mill.` has the same rank but
   `compare(Mill., Linn.) == DIFFERENT`, so the one candidate is filtered out, zero remain, and the
-  merge is skipped. `Aus eus Linn.` is left unchanged.
+  merge is skipped. `Aus eus Linn.` is left unchanged. Unlike the first cut of this fixture, the
+  incoming `Aus eus Mill.` also carries a `PUB` reference (`eusRef`, defined in `src.bib`) that the
+  target lacks, so this case is no longer vacuous: if the `EQUAL`-authorship clause were ever loosened
+  (e.g. relaxed to `!= Equality.DIFFERENT`), the candidate would wrongly survive the filter and the
+  merge would enrich `Aus eus Linn.` with `eusRef`'s `publishedInId` - `bareauthorshipValidate()`
+  asserts that reference is never picked up.
+
+- **Rank mismatch, single candidate (`Aus fus`)**: the target carries a single candidate
+  `Aus fus Mill.` at rank `SPECIES`. The incoming bare name is also `Aus fus Mill.` - identical
+  genus/specificEpithet, so it shares the same canonical nidx bucket (the canonical form ignores rank,
+  see `NameFormatter.canonicalName`) - but is tagged rank `SPECIES_AGGREGATE` (`[aggregate]`, i.e.
+  "Aus fus agg."). Authorship is `Equality.EQUAL`, but `c.getRank() == n.getRank()` is
+  `SPECIES != SPECIES_AGGREGATE`, so the one candidate is filtered out, zero remain, and the merge is
+  skipped. The incoming name carries a `PUB` reference (`fusRef`) that the target lacks; if the
+  `c.getRank() == n.getRank()` clause were ever dropped, the merge would wrongly fire and enrich
+  `Aus fus Mill.` with `fusRef`'s `publishedInId` - `bareauthorshipValidate()` asserts that never
+  happens. This is the only scenario in this fixture that exercises the rank clause: the earlier
+  scenarios all pair same-rank candidates, so before this addition the rank check had zero coverage.
 
 See `bareauthorshipValidate()` in `SectorSyncMergeIT` for explicit assertions independent of tree
 print ordering.
