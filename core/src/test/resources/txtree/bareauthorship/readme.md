@@ -1,26 +1,50 @@
 # bareauthorship
 
-Regression test for the bare-name merge candidate filter in `TreeMergeHandler.acceptNameThrowsNoCatch`.
+Regression test for the bare-name merge candidate gate in `TreeMergeHandler.acceptNameThrowsNoCatch`.
 
 Since the names index refactor, `NameMapper.listByNidx` returns every authorship variant sharing a
 canonical, not just one. The `src` merge sector's usages are converted into bare names (no usage,
 name only) via the "bare name" sector-note hack, so they are only processed through
 `SectorSync.processBareNames()` -> `TreeMergeHandler.acceptName()`.
 
-Two scenarios, sharing one target/source pair:
+Per the merge spec, a bare name is only merged onto a target candidate when ALL of the following hold:
 
-- **Ambiguous** (canonical `Aus bus`): the target already carries two authorship variants,
-  `Aus bus Mill.` and `Aus bus Linn.`. The incoming bare name `Aus bus` (no authorship) cannot be
-  used to disambiguate, so both variants must be left untouched (skipped, not merged).
-- **Resolvable** (canonical `Aus cus`): the target carries an unauthored `Aus cus` and an unrelated
-  authored decoy `Aus cus Linn.` - both share the same canonical id post-refactor. The incoming bare
-  name `Aus cus Mill.` carries authorship that matches the first candidate and clearly differs from
-  the decoy, so after filtering candidates by authorship exactly one remains and the merge proceeds,
-  adding `Mill.` authorship to the previously unauthored usage.
+1. the incoming bare name has authorship (an unauthored bare name is skipped outright - it can
+   never disambiguate between authorship variants), and
+2. exactly one candidate remains after filtering `listByNidx` candidates to those with **identical
+   rank** and `AuthorComparator.compare(incoming, candidate) == Equality.EQUAL`.
 
-Before the authorship filter was added, `listByNidx` returned both `Aus cus` and `Aus cus Linn.` as
-candidates for the `Aus cus Mill.` bare name, so the `candidates.size() == 1` gate incorrectly
-treated this as ambiguous too and skipped the merge.
+This is strict: `compare(authored, unauthored)` is `Equality.UNKNOWN`, not `EQUAL`, so an authored
+bare name does **not** enrich an unauthored candidate either - that combination is a skip too.
 
-See `bareauthorshipValidate()` in `SectorSyncMergeIT` for explicit authorship assertions independent
-of tree print ordering.
+Four scenarios, sharing one target/source pair (genus `Aus`):
+
+- **Unauthored incoming, ambiguous target (`Aus bus`)**: the target carries two authorship variants,
+  `Aus bus Mill.` and `Aus bus Linn.`. The incoming bare name `Aus bus` has no authorship, so it is
+  skipped before candidates are even filtered (rule 1). Both target variants are left untouched.
+
+- **Authored incoming, no candidate survives (`Aus cus`)**: the target carries an unauthored
+  `Aus cus` and an unrelated authored decoy `Aus cus Linn.` - both share the same canonical id
+  post-refactor. The incoming bare name `Aus cus Mill.` has authorship, but neither candidate
+  survives the filter: `compare(Mill., <unauthored>)` is `UNKNOWN` (not `EQUAL`), and
+  `compare(Mill., Linn.)` is `DIFFERENT`. Zero candidates remain, so the merge is skipped and
+  `Aus cus` stays unauthored. (Before this gate existed, `listByNidx`'s ambiguity alone made this a
+  skip for the wrong reason; under the current owner-decided strict-EQUAL gate it is *still* a skip,
+  now precisely because an authored name cannot resolve against an unauthored candidate.)
+
+- **Resolvable merge (`Aus dus`)**: the target carries a single candidate `Aus dus Mill.` with no
+  `publishedInId`. The incoming bare name `Aus dus Mill.` has identical rank (species) and authorship
+  `Equality.EQUAL`, so exactly one candidate remains and the merge proceeds. The incoming name carries
+  a `PUB` reference (`dusRef`, defined in `src.bib`) that the existing candidate lacks, so
+  `TreeMergeHandler.updateName` copies the reference into the target dataset and sets
+  `Name.publishedInId` - the enrichment is not tree-visible (references aren't printed in the text
+  tree), so it is asserted directly against `NameMapper`/`ReferenceMapper` in
+  `bareauthorshipValidate()`.
+
+- **Authorship mismatch, single candidate (`Aus eus`)**: the target carries a single candidate
+  `Aus eus Linn.`. The incoming bare name `Aus eus Mill.` has the same rank but
+  `compare(Mill., Linn.) == DIFFERENT`, so the one candidate is filtered out, zero remain, and the
+  merge is skipped. `Aus eus Linn.` is left unchanged.
+
+See `bareauthorshipValidate()` in `SectorSyncMergeIT` for explicit assertions independent of tree
+print ordering.

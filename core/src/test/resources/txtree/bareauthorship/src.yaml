@@ -1,1 +1,6 @@
+entities:
+  - name_usage
+  - vernacular
+  - type_material
+  - reference
 note: bare name

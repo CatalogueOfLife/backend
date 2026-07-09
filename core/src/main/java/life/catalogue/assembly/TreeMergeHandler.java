@@ -400,44 +400,45 @@ public class TreeMergeHandler extends TreeBaseHandler {
     LOG.debug("process bare {} {}", n.getRank(), n.getLabel());
     Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
 
-    // TODO(task 6): this bare-name gate should compare live authorship/rank via UsageMatcher instead of
-    //  a stored match type - for now it just always (re)matches and reads the type off the fresh NameMatch,
-    //  as name_match.type / Name.namesIndexType are no longer persisted.
-    NameMatch bareNameMatch = matchName(n);
-    if (bareNameMatch.getType() == MatchType.EXACT) {
-      var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
-      // listByNidx groups by the (now canonical-only) names index id, so it returns every
-      // authorship variant sharing the canonical - not just the one matching this name's own
-      // authorship. Narrow down to candidates whose authorship is not clearly different before
-      // applying the single-candidate gate below. An unauthored incoming name cannot disambiguate,
-      // so it must leave all candidates in place (an ambiguous match keeps candidates.size() > 1).
-      if (n.hasAuthorship()) {
-        candidates = candidates.stream()
-          .filter(c -> authComp.compare(n, c) != Equality.DIFFERENT)
-          .collect(Collectors.toList());
-      }
-      if (candidates.size() == 1) {
-        Name existing = candidates.getFirst();
-        VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), n.getId(), EntityType.NAME);
-        var pn = updateName(existing, n, vs, upd, null);
+    // Spec: a bare name is merged onto a target candidate only if it carries authorship AND exactly
+    // one candidate sharing the matched canonical has identical rank and EQUAL authorship (via
+    // AuthorComparator). An unauthored bare name can never disambiguate between authorship variants,
+    // so it is skipped outright - it must never be used to enrich an existing candidate.
+    if (!n.hasAuthorship()) {
+      return;
+    }
+    matchName(n);
+    if (n.getNamesIndexId() == null) {
+      return;
+    }
+    var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
+    // listByNidx groups by the (now canonical-only) names index id, so it returns every
+    // authorship variant sharing the canonical - not just the one matching this name's own
+    // authorship & rank. Narrow down to the single, unambiguous candidate before merging.
+    candidates = candidates.stream()
+      .filter(c -> c.getRank() == n.getRank() && authComp.compare(n, c) == Equality.EQUAL)
+      .collect(Collectors.toList());
+    if (candidates.size() == 1) {
+      Name existing = candidates.getFirst();
+      VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), n.getId(), EntityType.NAME);
+      var pn = updateName(existing, n, vs, upd, null);
 
-        if (!upd.isEmpty()) {
-          updated++;
-          // make sure name has a vs key
-          var vskey = vsKey(pn);
-          vsm.insertSources(vskey, n, upd);
-          // update name
-          nm.update(pn);
-          // commit in batches
-          if (updated % 1000 == 0) {
-            interruptIfCancelled();
-            session.commit();
-            batchSession.commit();
-          }
+      if (!upd.isEmpty()) {
+        updated++;
+        // make sure name has a vs key
+        var vskey = vsKey(pn);
+        vsm.insertSources(vskey, n, upd);
+        // update name
+        nm.update(pn);
+        // commit in batches
+        if (updated % 1000 == 0) {
+          interruptIfCancelled();
+          session.commit();
+          batchSession.commit();
         }
-      } else {
-        LOG.debug("Cannot merge bare name {}. {} match candidates", n, candidates.size());
       }
+    } else {
+      LOG.debug("Cannot merge bare name {}. {} match candidates", n, candidates.size());
     }
   }
 
