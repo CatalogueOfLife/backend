@@ -183,13 +183,20 @@ Only the pass‑1 candidate sets (`removed` × `added`) are considered — small
 
 - DB is C collation → Postgres `ORDER BY` == byte order == code‑point order. The Java
   code‑point comparator matches exactly. No locale guessing.
-- **Attempts‑path caveat:** stored files are `ORDER BY scientific_name, authorship` (two
-  columns) whereas the engine compares the space‑joined line. These disagree only when a
-  scientific name's trailing token collides across the space boundary
-  (e.g. `"Aa b"+"a"` vs `"Aa"+"zz"`). Rare, local, and healed by the pass‑2 distance‑0
-  reclassification. Optionally, `processNameStrings` could later be changed to
-  `ORDER BY concat_ws(' ', scientific_name, authorship)` to make new files exact, but that is
-  out of scope (old files would keep the column ordering); we rely on healing instead.
+- **Attempts‑path — made byte‑exact (Decision 2026-07-10).** Historically stored files used
+  `ORDER BY scientific_name, authorship` (two columns), which disagrees with the byte order of
+  the space‑joined line the engine compares whenever one scientific name is a byte‑prefix of
+  another (~1% of lines; e.g. `"Abaris Dejean, 1831"` vs `"Abaris (Abaridius) splendidula …"`).
+  Pass‑2 healing absorbs the resulting local inversions, but to remove the risk entirely rather
+  than rely on healing:
+  - `processNameStrings` now does `ORDER BY concat_ws(' ', scientific_name, authorship) COLLATE "C"`
+    → all newly written files are byte‑exact.
+  - `dao/src/main/scripts/migrate-names-byte-order.sh` re‑sorts every existing `*-names.txt.gz`
+    to byte order (`LC_ALL=C sort`; idempotent; only line order changes, the line set is
+    preserved). Run once per app host holding the file‑metrics repo.
+  After the migration every diff (old/new in any combination) has both sides byte‑ordered, so no
+  inversions occur. Healing/fuzzy pairing stay in place as a safety net (for the migration window
+  and any un‑migrated host) and because they are needed for "changed" detection regardless.
 - **Dataset‑path has no caveat:** it sorts the exact line it compares (`ORDER BY label`).
 
 ## 8. Dataset path — pure‑SQL name generator
@@ -277,7 +284,6 @@ temp table only if profiling shows the recursive CTE benefits from being materia
 
 - Panama/`libxdiff` engine (needs JDK 22+/25 and native packaging).
 - Paging of very large `added`/`removed` lists beyond the simple `maxItems` cap.
-- Changing `processNameStrings` ordering to make the attempts path byte‑exact.
 - UI changes in the checklistbank repo (tracked separately; must land with the API switch).
 
 ## 12. Risks
