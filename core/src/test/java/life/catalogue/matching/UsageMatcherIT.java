@@ -210,8 +210,9 @@ public class UsageMatcherIT {
    */
   @Test
   public void publishBuildRemoveCycle() throws Exception {
-    // load a fresh EXTERNAL dataset (key 5) from the dataset-1 tree so we don't collide with other tests
-    int key = 5;
+    // load a fresh EXTERNAL dataset (key 6) from the dataset-1 tree so we don't collide with other tests
+    // (key 5 is used by the bacteria test via matching/5.txtree)
+    int key = 6;
     TxtTreeDataRule.TreeDataset rule = new TxtTreeDataRule.TreeDataset(key, "matching/1.txtree", "Dataset " + key, DatasetOrigin.EXTERNAL);
     try (TxtTreeDataRule treeRule = new TxtTreeDataRule(List.of(rule))) {
       treeRule.before();
@@ -257,6 +258,26 @@ public class UsageMatcherIT {
     } finally {
       exec.stop();
     }
+  }
+
+  /**
+   * Monomial homonyms & suprageneric_rank filter
+   */
+  @Test
+  public void bacteria() throws InterruptedException {
+    loadDataset(5);
+
+    // no match for a homonym
+    var m = match(null, "Bacteria", null, cl());
+    assertMatch(m, "BacG");
+
+    // match with domain rank
+    m = match(Rank.DOMAIN, "Bacteria", null, cl());
+    assertMatch(m, "Bac");
+
+    // match with any higher rank
+    m = match(Rank.SUPRAGENERIC_NAME, "Bacteria", null, cl());
+    assertMatch(m, "Bac");
   }
 
   private static void drain(JobExecutor exec) throws InterruptedException {

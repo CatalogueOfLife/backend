@@ -15,8 +15,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Exercises the nidx-grouping queries against a single-tier names index fixture (test-data/nidx).
@@ -50,6 +49,22 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
     // unknown nidx -> none
     assertEquals(0, mapper().listByNamesIndexIDGlobal( 99, new Page()).size());
+  }
+
+  @Test
+  public void listByNamesIndexIDGlobalClassified() throws Exception {
+    // single-tier registry: canonical "Abies alba" (index id 2) is matched by all four usages across
+    // datasets 100 (origin=PROJECT, excluded), 101, 102 and 102. The classified query drops project
+    // datasets, leaving the 3 external usages (101/u1, 102/u1x, 102/u2x).
+    var res = mapper().listByNamesIndexIDGlobalClassified( 2, new Page());
+    assertEquals(3, res.size());
+    assertTrue(res.stream().noneMatch(u -> u.getDatasetKey() == 100));
+    // canonical "Abies" (index id 1) is unreferenced -> none
+    assertEquals(0, mapper().listByNamesIndexIDGlobalClassified( 1, new Page()).size());
+
+    // the paging count must stay consistent with the filtered list, also excluding project usages
+    assertEquals(3, (int) mapper().countByNamesIndexIDGlobalClassified(2));
+    assertEquals(0, (int) mapper().countByNamesIndexIDGlobalClassified(1));
   }
 
   @Test

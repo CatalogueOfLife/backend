@@ -23,7 +23,6 @@ import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.cors.CorsFilter;
 import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.CslUtilsHealthCheck;
-import life.catalogue.dw.health.DiffHealthCheck;
 import life.catalogue.dw.health.DockerHealthCheck;
 import life.catalogue.dw.health.NamesIndexHealthCheck;
 import life.catalogue.dw.jersey.ColJerseyBundle;
@@ -330,8 +329,8 @@ public class WsServer extends Application<WsServerConfig> {
     final SectorImportDao siDao = new SectorImportDao(getSqlSessionFactory(), fmsDao);
 
     // diff
-    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao, cfg.diffTimeout);
-    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao, cfg.diffTimeout);
+    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao, cfg.diffMaxItems);
+    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao, cfg.diffMaxItems);
 
     // update db lookups
     try (Connection c = mybatis.getConnection()) {
@@ -484,7 +483,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new OpenApiResource(OpenApiFactory.build(cfg, env)));
     j.register(new ImporterResource(cfg, importManager, diDao, ddao));
     j.register(new JobResource(cfg.job, executor));
-    j.register(new NamesIndexResource(ni));
+    j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg));
     j.register(new ResolverResource(doiResolver));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));
     j.register(new ValidatorResource(importManager, ddao, http));
@@ -492,8 +491,6 @@ public class WsServer extends Application<WsServerConfig> {
     // healthchecks
     registerReadOnlyHealthChecks(env, broker, esClient, cfg);
     env.healthChecks().register("csl-utils", new CslUtilsHealthCheck());
-    env.healthChecks().register("dataset-diff", new DiffHealthCheck(dDiff));
-    env.healthChecks().register("sector-diff", new DiffHealthCheck(sDiff));
     env.healthChecks().register("docker", new DockerHealthCheck(docker, cfg.docker));
 
     // tasks

@@ -279,7 +279,7 @@
     <if test="sectorKey != null">
       AND n.sector_key = #{sectorKey}
     </if>
-    ORDER BY n.scientific_name, n.authorship
+    ORDER BY concat_ws(' ', n.scientific_name, n.authorship) COLLATE "C"
   </select>
 
   <select id="indexGroup" resultMap="nameResultMap">

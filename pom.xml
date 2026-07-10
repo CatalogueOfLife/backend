@@ -21,8 +21,8 @@
   <properties>
     <!-- build settings -->
     <minimumMavenVersion>3.9.5</minimumMavenVersion>
-    <java.version>21</java.version>
-    <java.maxVersion>21</java.maxVersion>
+    <java.version>25</java.version>
+    <java.maxVersion>25</java.maxVersion>
     <!-- .mvn/jvm.config is not being used by surefire - we need to replicate the settings here! -->
     <java.argLine>
       -Djdk.net.URLClassPath.disableClassPathURLCheck=true
@@ -86,9 +86,9 @@
     <junit.version>5.13.4</junit.version>
     <kryo.version>5.6.2</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
-    <lombok.version>1.18.30</lombok.version>
+    <lombok.version>1.18.46</lombok.version>
     <mapdb.version>3.1.0</mapdb.version>
-    <mockito.version>3.3.3</mockito.version>
+    <mockito.version>5.23.0</mockito.version>
     <mybatis.version>3.5.19</mybatis.version>
     <name-parser.version>4.2.0</name-parser.version>
     <newick-io.version>1.0.6</newick-io.version>
@@ -115,7 +115,7 @@
     <maven-dependency-plugin.version>3.8.0</maven-dependency-plugin.version>
     <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
-    <maven-git-commit-id-plugin.version>4.9.10</maven-git-commit-id-plugin.version>
+    <maven-git-commit-id-plugin.version>10.0.0</maven-git-commit-id-plugin.version>
     <maven-graalvm-plugin.version>0.10.3</maven-graalvm-plugin.version>
     <maven-install-plugin.version>3.1.2</maven-install-plugin.version>
     <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
@@ -774,8 +774,8 @@
           <version>${maven-clean-plugin.version}</version>
         </plugin>
         <plugin>
-          <groupId>pl.project13.maven</groupId>
-          <artifactId>git-commit-id-plugin</artifactId>
+          <groupId>io.github.git-commit-id</groupId>
+          <artifactId>git-commit-id-maven-plugin</artifactId>
           <version>${maven-git-commit-id-plugin.version}</version>
         </plugin>
         <plugin>

@@ -2,9 +2,7 @@ package life.catalogue.resources.dataset;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.printer.BaseDiffService;
-
-import java.io.IOException;
-import java.io.Reader;
+import life.catalogue.printer.NamesDiff;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +28,9 @@ public abstract class AbstractDiffResource<K> {
   abstract K keyFromPath(DSID<Integer> dsid);
 
   @GET
-  @Produces(MediaType.TEXT_PLAIN)
-  public Reader diffNames(@PathParam("key") int key,
-                          @PathParam("id") int id,
-                          @QueryParam("attempts") String attempts) throws IOException {
+  public NamesDiff diffNames(@PathParam("key") int key,
+                             @PathParam("id") int id,
+                             @QueryParam("attempts") String attempts) {
     var dsid = DSID.of(key, id);
     return diff.diff(keyFromPath(dsid), attempts);
   }
