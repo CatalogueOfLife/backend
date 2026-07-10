@@ -1,5 +1,7 @@
 package life.catalogue.junit;
 
+import life.catalogue.api.model.CitationFormatter;
+import life.catalogue.common.csl.CslCitationFormatter;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
@@ -44,6 +46,9 @@ public abstract class SqlSessionFactoryRule extends ExternalResource {
   }
 
   protected static void setupMybatis(PgConfig cfg) throws Exception {
+    // register the citeproc-backed citation formatter, mirroring WsServer startup, so DB-backed
+    // tests render Dataset/Citation citation strings just like production
+    CitationFormatter.register(new CslCitationFormatter());
     LOG.info("Creating hikari pool for Postgres server {}/{}", cfg.host, cfg.database);
     HikariConfig hikari = cfg.hikariConfig();
     hikari.setAutoCommit(false);

@@ -593,7 +593,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     // R2,Barneby & J.W.Grimes,N. Amer. Fl.,1928,23,,27
     Reference r2 = refByID("R2");
     assertEquals("Barneby, & Grimes, J. W. (1928). N. Amer. Fl., 23, 27.", r2.getCitation());
-    assertEquals("Barneby; Grimes,J.W.", CslUtil.toColdpString(r2.getCsl().getAuthor()));
+    assertEquals("Barneby; Grimes,J.W.", CslName.toColdpString(r2.getCsl().getAuthor()));
     assertEquals("N. Amer. Fl.", r2.getCsl().getContainerTitle());
     assertEquals("23", r2.getCsl().getVolume());
     assertNull(r2.getCsl().getIssue());

@@ -213,6 +213,8 @@ public class WsServer extends Application<WsServerConfig> {
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
     LOG.info("Starting COL server");
+    // register the citeproc-backed citation formatter so the slim api model can render citations
+    life.catalogue.api.model.CitationFormatter.register(new life.catalogue.common.csl.CslCitationFormatter());
     final JerseyEnvironment j = env.jersey();
 
     // configure jetty to allow encoded path values, e.g. URLs as taxon IDs

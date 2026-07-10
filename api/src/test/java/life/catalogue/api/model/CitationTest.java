@@ -36,13 +36,6 @@ public class CitationTest {
     return c;
   }
 
-  @Test
-  public void toCSL() {
-    Citation c = create();
-    var csl = c.toCSL();
-    assertNotNull(csl);
-  }
-
   /**
    * EML parser and other tools only have a single citation string to put into the title.
    * Make sure this renders via CSL.

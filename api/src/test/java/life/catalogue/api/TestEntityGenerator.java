@@ -5,7 +5,6 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.Country;
-import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.ApiKryoPool;
 
@@ -16,6 +15,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -28,6 +28,13 @@ import com.google.common.collect.Lists;
  * utility class to metrics new test instances to be used in tests.
  */
 public class TestEntityGenerator {
+  /**
+   * Builds a plain citation string from CslData. Defaults to null (the api test module has no
+   * citeproc); the reference module and downstream test bases wire this to CslUtil::buildCitation
+   * so generated references carry a real APA citation string.
+   */
+  public static Function<CslData, String> CSL_CITATION_BUILDER = csl -> null;
+
   private final static Random RND = new Random();
   private final static Kryo kryo = new ApiKryoPool(1).create();
   private final static RandomInstance random = new RandomInstance();
@@ -669,7 +676,7 @@ public class TestEntityGenerator {
     date.setLiteral("2014-8-12");
     csl.setAccessed(date);
     csl.setCategories(new String[] {"A", "B", "C"});
-    r.setCitation(CslUtil.buildCitation(csl));
+    r.setCitation(CSL_CITATION_BUILDER.apply(csl));
     return r;
   }
 

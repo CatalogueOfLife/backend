@@ -51,15 +51,15 @@ public class CslUtilTest {
   @Test
   public void bibtex() throws Exception {
     var d = CslUtil.readDataset(Resources.stream("metadata/col.yaml"));
-    System.out.println( CslUtil.toBibTexString(d.toCSL()) );
+    System.out.println( CslUtil.toBibTexString(DatasetCitationConverter.toCSL(d)) );
 
     d.setKey(999);
-    assertTrue(CslUtil.toBibTexString(d.toCSL()).startsWith("@misc{999,"));
+    assertTrue(CslUtil.toBibTexString(DatasetCitationConverter.toCSL(d)).startsWith("@misc{999,"));
 
-    System.out.println("\n" + CslUtil.buildCitation(d.toCSL()) );
+    System.out.println("\n" + CslUtil.buildCitation(DatasetCitationConverter.toCSL(d)) );
 
     d.setCreator(List.of(d.getCreator().get(0), Agent.parse("et al.")));
-    var csl = d.toCSL();
+    var csl = DatasetCitationConverter.toCSL(d);
     System.out.println("\n" + CslUtil.buildCitationHtml(csl) );
   }
 

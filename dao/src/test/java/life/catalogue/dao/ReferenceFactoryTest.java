@@ -38,6 +38,7 @@ public class ReferenceFactoryTest {
 
   @Before
   public void init(){
+    CitationFormatter.register(new life.catalogue.common.csl.CslCitationFormatter());
     MockitoAnnotations.initMocks(this);
     issues = new VerbatimRecord();
     resolver = Mockito.mock(DoiResolver.class);
@@ -286,7 +287,7 @@ public class ReferenceFactoryTest {
       new CslName("Maria Josef", "Belgrano", "de la")
     };
 
-    String x = CslUtil.toColdpString(names);
+    String x = CslName.toColdpString(names);
     System.out.println(x);
 
     IssueContainer issues = IssueContainer.simple();

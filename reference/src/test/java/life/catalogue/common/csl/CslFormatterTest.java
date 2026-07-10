@@ -31,7 +31,7 @@ public class CslFormatterTest {
   @Test
   public void colApa() throws Exception {
     var d = CslUtil.readDataset(Resources.stream("metadata/col.yaml"));
-    CSLItemData csl = d.toCSL();
+    CSLItemData csl = DatasetCitationConverter.toCSL(d);
     PrintWriter writer = new PrintWriter(System.out);
 
     CslFormatter apa = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT);
@@ -42,10 +42,10 @@ public class CslFormatterTest {
   @Test
   public void colStyles() throws Exception {
     var d = CslUtil.readDataset(Resources.stream("metadata/col.yaml"));
-    CSLItemData csl = d.toCSL();
+    CSLItemData csl = DatasetCitationConverter.toCSL(d);
 
     PrintWriter writer = new PrintWriter(System.out);
-    List<CSLItemData> sources = d.getSource().stream().map(Citation::toCSL).collect(Collectors.toList());
+    List<CSLItemData> sources = d.getSource().stream().map(CitationConverter::toCSL).collect(Collectors.toList());
     List<CslFormatter> styles = Arrays.stream(CslFormatter.STYLE.values()).map(s -> new CslFormatter(s, CslFormatter.FORMAT.TEXT)).collect(Collectors.toList());
     for (var style : styles) {
       writer.println(style.style);

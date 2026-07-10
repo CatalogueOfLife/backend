@@ -142,7 +142,7 @@ public class CslDataConverter {
     }
     CSLName[] target = new CSLName[src.length];
     for (int i = 0; i < src.length; i++) {
-      target[i] = src[i].toCSL();
+      target[i] = CitationConverter.toName(src[i]);
     }
     return target;
   }

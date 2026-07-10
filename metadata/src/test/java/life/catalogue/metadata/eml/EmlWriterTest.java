@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
@@ -27,6 +28,12 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import static org.junit.Assert.*;
 
 public class EmlWriterTest {
+
+  @BeforeClass
+  public static void registerFormatter() {
+    // production registers this at WsServer startup; EML citation output relies on it
+    CitationFormatter.register(new life.catalogue.common.csl.CslCitationFormatter());
+  }
 
   @Test
   public void eml() throws Exception {

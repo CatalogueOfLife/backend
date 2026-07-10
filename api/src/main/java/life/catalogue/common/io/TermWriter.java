@@ -4,7 +4,6 @@ import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.CslDate;
 import life.catalogue.api.model.CslName;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.dwc.terms.Term;
@@ -158,7 +157,7 @@ public class TermWriter implements AutoCloseable {
 
   public void set(Term term, CslName[] value) {
     if (value != null) {
-      set(term, CslUtil.toColdpString(value));
+      set(term, CslName.toColdpString(value));
     }
   }
 
