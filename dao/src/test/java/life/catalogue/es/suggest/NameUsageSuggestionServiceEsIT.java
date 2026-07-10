@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.*;
 
 import static life.catalogue.api.TestEntityGenerator.*;
+import static life.catalogue.common.kryo.NameUsageWrapperGen.newNameUsageWrapper;
 import static life.catalogue.es.TestIndexUtils.*;
 import static org.junit.Assert.*;
 

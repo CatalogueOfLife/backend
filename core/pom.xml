@@ -31,6 +31,10 @@
     </dependency>
     <dependency>
       <groupId>org.catalogueoflife</groupId>
+      <artifactId>kryo</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
       <artifactId>reference</artifactId>
     </dependency>
     <dependency>

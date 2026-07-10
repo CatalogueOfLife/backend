@@ -128,13 +128,13 @@ public class ApiKryoPoolTest {
 
   @Test
   public void testUsageWrappers() throws Exception {
-    NameUsageWrapper nuw = TestEntityGenerator.newNameUsageSynonymWrapper();
+    NameUsageWrapper nuw = NameUsageWrapperGen.newNameUsageSynonymWrapper();
     assertSerde(nuw);
 
-    nuw = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw = NameUsageWrapperGen.newNameUsageTaxonWrapper();
     assertSerde(nuw);
 
-    nuw = TestEntityGenerator.newNameUsageBareNameWrapper();
+    nuw = NameUsageWrapperGen.newNameUsageBareNameWrapper();
     assertSerde(nuw);
   }
 

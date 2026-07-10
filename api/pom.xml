@@ -42,14 +42,10 @@
       <artifactId>newick-io</artifactId>
     </dependency>
 
-    <!-- mapdb & kryo -->
+    <!-- used directly in common/io; previously transitive via mapdb's kotlin-stdlib -->
     <dependency>
-      <groupId>org.mapdb</groupId>
-      <artifactId>mapdb</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.esotericsoftware</groupId>
-      <artifactId>kryo</artifactId>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
     </dependency>
 
     <dependency>

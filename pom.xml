@@ -80,6 +80,7 @@
     <java-diff-utils.version>4.12</java-diff-utils.version>
     <javers.version>7.9.0</javers.version>
     <jbibtex.version>1.0.20</jbibtex.version>
+    <jetbrains-annotations.version>13.0</jetbrains-annotations.version>
     <jjwt.version>0.12.6</jjwt.version>
     <jsoup.version>1.21.2</jsoup.version>
     <jspecify.version>1.0.0</jspecify.version>
@@ -197,6 +198,7 @@
     <module>dao</module>
     <module>doi</module>
     <module>importer</module>
+    <module>kryo</module>
     <module>metadata</module>
     <module>parser</module>
     <module>pgcopy</module>
@@ -254,6 +256,18 @@
       <dependency>
         <groupId>org.catalogueoflife</groupId>
         <artifactId>api</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>kryo</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>kryo</artifactId>
         <version>${project.version}</version>
         <classifier>tests</classifier>
         <scope>test</scope>
@@ -545,6 +559,12 @@
         <artifactId>reflectasm</artifactId>
         <version>${kryo-reflectasm.version}</version>
         <type>bundle</type>
+      </dependency>
+      <!-- used directly by api/common/io; previously pulled in transitively via mapdb's kotlin-stdlib dependency -->
+      <dependency>
+        <groupId>org.jetbrains</groupId>
+        <artifactId>annotations</artifactId>
+        <version>${jetbrains-annotations.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.fory</groupId>

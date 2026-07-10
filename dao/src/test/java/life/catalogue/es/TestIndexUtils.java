@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.kryo.NameUsageWrapperGen;
 import life.catalogue.config.IndexConfig;
 import life.catalogue.parser.NameParser;
 
@@ -36,7 +37,7 @@ public class TestIndexUtils {
     if (publishedInId != null) n.setPublishedInId(publishedInId);
     Taxon t = TestEntityGenerator.newTaxon(n, id, null);
     if (sectorKey != null) t.setSectorKey(sectorKey);
-    return TestEntityGenerator.newNameUsageWrapper(t);
+    return NameUsageWrapperGen.newNameUsageWrapper(t);
   }
 
   public static NameUsageWrapper synonym(String id, String sciName, String authorship, Rank rank, NomCode code,
@@ -46,7 +47,7 @@ public class TestIndexUtils {
     n.setId(id + "_n");
     Synonym s = TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, n, acceptedId);
     s.setId(id);
-    return TestEntityGenerator.newNameUsageWrapper(s);
+    return NameUsageWrapperGen.newNameUsageWrapper(s);
   }
 
   public static NameUsageWrapper withClassification(List<SimpleName> classification, NameUsageWrapper nuw) {
