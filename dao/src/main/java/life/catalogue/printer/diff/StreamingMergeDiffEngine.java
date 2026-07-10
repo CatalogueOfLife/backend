@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * common set (only differences are buffered). Pass 2 (NamesDiffEngine.assemble) pairs similar
  * candidates into changed names. Local sort-order glitches surface as identical remove+add pairs and
  * are healed in pass 2; a runaway candidate count (comparator not matching the input order) trips
- * maxChangedCandidates and fails fast.
+ * maxChangedCandidates and the result is truncated gracefully rather than failing.
  */
 public class StreamingMergeDiffEngine implements NamesDiffEngine {
   private static final Logger LOG = LoggerFactory.getLogger(StreamingMergeDiffEngine.class);
@@ -24,9 +24,11 @@ public class StreamingMergeDiffEngine implements NamesDiffEngine {
   @Override
   public NamesDiff diff(DiffInput a, DiffInput b, DiffOptions opts) {
     final Comparator<String> order = opts.getOrder();
+    final long cap = opts.getMaxChangedCandidates();
     final List<String> removed = new ArrayList<>();
     final List<String> added = new ArrayList<>();
     boolean inversionSeen = false;
+    boolean capped = false;
 
     try (Stream<String> sa = a.lines().get(); Stream<String> sb = b.lines().get()) {
       Iterator<String> ia = sa.iterator();
@@ -44,29 +46,25 @@ public class StreamingMergeDiffEngine implements NamesDiffEngine {
           x = ia.hasNext() ? ia.next() : null;
           y = ib.hasNext() ? ib.next() : null;
         } else if (c < 0) {
-          removed.add(x);
-          prevX = x;
+          removed.add(x); prevX = x;
           x = ia.hasNext() ? ia.next() : null;
         } else {
-          added.add(y);
-          prevY = y;
+          added.add(y); prevY = y;
           y = ib.hasNext() ? ib.next() : null;
         }
-        guard(removed.size() + added.size(), opts);
+        if (removed.size() + added.size() >= cap) { capped = true; break; }
       }
-      while (x != null) {
+      while (!capped && x != null) {
         if (prevX != null && order.compare(prevX, x) > 0) inversionSeen = true;
-        removed.add(x);
-        prevX = x;
+        removed.add(x); prevX = x;
         x = ia.hasNext() ? ia.next() : null;
-        guard(removed.size() + added.size(), opts);
+        if (removed.size() + added.size() >= cap) capped = true;
       }
-      while (y != null) {
+      while (!capped && y != null) {
         if (prevY != null && order.compare(prevY, y) > 0) inversionSeen = true;
-        added.add(y);
-        prevY = y;
+        added.add(y); prevY = y;
         y = ib.hasNext() ? ib.next() : null;
-        guard(removed.size() + added.size(), opts);
+        if (removed.size() + added.size() >= cap) capped = true;
       }
     }
 
@@ -74,13 +72,13 @@ public class StreamingMergeDiffEngine implements NamesDiffEngine {
       LOG.warn("Diff inputs {} / {} were not strictly sorted under the configured order; relying on pass-2 healing",
         a.label(), b.label());
     }
-    return NamesDiffEngine.assemble(a.label(), b.label(), removed, added, opts);
-  }
-
-  private static void guard(long candidateCount, DiffOptions opts) {
-    if (candidateCount > opts.getMaxChangedCandidates()) {
-      throw new IllegalStateException("Diff candidate buffer exceeded " + opts.getMaxChangedCandidates()
-        + " entries; check that both inputs are sorted under the configured order");
+    if (capped) {
+      LOG.warn("Diff {} / {} exceeded {} candidate differences; result truncated", a.label(), b.label(), cap);
     }
+    NamesDiff diff = NamesDiffEngine.assemble(a.label(), b.label(), removed, added, opts);
+    if (capped) {
+      diff.setTruncated(true);
+    }
+    return diff;
   }
 }

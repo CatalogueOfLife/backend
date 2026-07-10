@@ -29,15 +29,17 @@ public abstract class BaseDiffService<K> {
   protected final SqlSessionFactory factory;
   protected final FileMetricsDao<K> dao;
   protected final NamesDiffEngine engine = new StreamingMergeDiffEngine();
+  protected final int maxItems;
 
-  public BaseDiffService(FileMetricsDao<K> dao, SqlSessionFactory factory) {
+  public BaseDiffService(FileMetricsDao<K> dao, SqlSessionFactory factory, int maxItems) {
     this.factory = factory;
     this.dao = dao;
+    this.maxItems = maxItems;
   }
 
   /** Override to tune diff behaviour (thresholds, limits). */
   protected DiffOptions diffOptions() {
-    return DiffOptions.defaults();
+    return DiffOptions.defaults().setMaxItems(maxItems);
   }
 
   /**

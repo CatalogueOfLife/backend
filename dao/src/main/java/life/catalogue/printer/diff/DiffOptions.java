@@ -27,7 +27,7 @@ public class DiffOptions {
   private Comparator<String> order = CODEPOINT;
   private double changedThreshold = 50.0;   // 0..100
   private int maxItems = 0;                  // 0 = unlimited output per list
-  private long maxChangedCandidates = 20_000_000L; // OOM backstop for pass-1 buffers
+  private long maxChangedCandidates = 1_000_000L; // OOM backstop for pass-1 buffers (~150MB peak)
 
   public static DiffOptions defaults() {
     return new DiffOptions();

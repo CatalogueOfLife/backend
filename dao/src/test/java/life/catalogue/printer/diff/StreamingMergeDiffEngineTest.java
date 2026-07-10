@@ -56,15 +56,11 @@ public class StreamingMergeDiffEngineTest {
   }
 
   @Test
-  public void candidateCapTrips() {
+  public void candidateCapTruncates() {
     DiffInput a = input("a", "A", "B", "C", "D");
     DiffInput b = input("b", "E", "F", "G", "H");
     DiffOptions opts = DiffOptions.defaults().setMaxChangedCandidates(3);
-    try {
-      engine.diff(a, b, opts);
-      fail("expected candidate cap to trip");
-    } catch (IllegalStateException e) {
-      assertTrue(e.getMessage().toLowerCase().contains("sorted"));
-    }
+    NamesDiff d = engine.diff(a, b, opts);
+    assertTrue(d.isTruncated());
   }
 }

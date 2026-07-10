@@ -15,7 +15,7 @@ public class DatasetDiffServiceIT extends BaseDiffServiceIT<Integer> {
   final DatasetDiffService diffService;
 
   public DatasetDiffServiceIT() {
-    diffService = new DatasetDiffService(factory(), new FileMetricsDatasetDao(factory(), treeRepoRule.getRepo()));
+    diffService = new DatasetDiffService(factory(), new FileMetricsDatasetDao(factory(), treeRepoRule.getRepo()), 0);
     diff = diffService;
   }
 

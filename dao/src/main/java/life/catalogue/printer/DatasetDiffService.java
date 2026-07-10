@@ -36,8 +36,8 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
   private final EntityDao<Integer, Dataset, DatasetMapper> ddao;
   private final Set<Integer> userDiffs = ConcurrentHashMap.newKeySet();
 
-  public DatasetDiffService(SqlSessionFactory factory, FileMetricsDatasetDao dao) {
-    super(dao, factory);
+  public DatasetDiffService(SqlSessionFactory factory, FileMetricsDatasetDao dao, int maxItems) {
+    super(dao, factory, maxItems);
     ddao = new EntityDao<>(false, factory, Dataset.class, DatasetMapper.class, null);
   }
 

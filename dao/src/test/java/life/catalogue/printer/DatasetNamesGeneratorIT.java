@@ -10,6 +10,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.junit.Test;
@@ -128,5 +129,50 @@ public class DatasetNamesGeneratorIT extends DaoTestBase {
     // the root taxon has no parent -> bare name, no suffix
     assertTrue(names.toString(), names.contains("Animalia"));
     assertFalse(names.toString(), names.stream().anyMatch(l -> l.startsWith("Animalia >>")));
+  }
+
+  /**
+   * lowestRank keeps everything from the root down to (and including) the given rank, and excludes
+   * anything narrower. With lowestRank=GENUS the genus Lynx is kept but its species and subspecies
+   * (both narrower than GENUS) are excluded.
+   */
+  @Test
+  public void lowestRankExcludesLowerRanks() {
+    DiffNamesParam p = new DiffNamesParam();
+    p.setDatasetKey(datasetKey());
+    p.setSynonyms(false);
+    p.setAuthorship(false);
+    p.setLowestRank(Rank.GENUS);
+    List<String> names = run(p);
+
+    assertTrue(names.toString(), names.contains("Lynx"));
+    assertFalse(names.toString(), names.contains("Lynx lynx"));
+    assertFalse(names.toString(), names.contains("Lynx rufus"));
+    assertFalse(names.toString(), names.contains("Lynx rufus baileyi"));
+    assertFalse(names.toString(), names.contains("Lynx rufus gigas"));
+    // ranks above GENUS are unaffected
+    assertTrue(names.toString(), names.contains("Felidae"));
+    assertTrue(names.toString(), names.contains("Animalia"));
+  }
+
+  /**
+   * rankFilter is a row-level exclusion: it drops rows of the given rank(s) but keeps their
+   * descendants (unlike lowestRank, which prunes everything narrower). With
+   * rankFilter={SUBSPECIES}, the subspecies rows are gone but the species and genus remain.
+   */
+  @Test
+  public void rankFilterExcludesRank() {
+    DiffNamesParam p = new DiffNamesParam();
+    p.setDatasetKey(datasetKey());
+    p.setSynonyms(false);
+    p.setAuthorship(false);
+    p.setRankFilter(Set.of(Rank.SUBSPECIES));
+    List<String> names = run(p);
+
+    assertFalse(names.toString(), names.contains("Lynx rufus baileyi"));
+    assertFalse(names.toString(), names.contains("Lynx rufus gigas"));
+    // the species and genus (ancestors of the excluded subspecies) are kept
+    assertTrue(names.toString(), names.contains("Lynx rufus"));
+    assertTrue(names.toString(), names.contains("Lynx"));
   }
 }

@@ -13,10 +13,6 @@ import org.slf4j.LoggerFactory;
 public class UnixCmdUtils {
   private static final Logger LOG = LoggerFactory.getLogger(UnixCmdUtils.class);
 
-  public static void sortUTF8(File f, int timeout) {
-    sort(f, "en_US.UTF-8", timeout);
-  }
-
   public static void sortC(File f, int timeout) {
     sort(f, "C", timeout);
   }
