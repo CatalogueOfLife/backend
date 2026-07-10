@@ -80,8 +80,9 @@ Decisive facts verified against the code:
   `api/constraints`, `common/{collection,func,lang,text,util,tax,date,id}`,
   `common/io` **minus** `DownloadUtil`.
 - Dependencies: coldp, vocab, name-parser-api, dwc-api, **jackson-annotations**,
-  jakarta.validation-api, slf4j. Retain commons-lang3, guava, fastutil, commons-io
-  only where the model truly needs them (audit during implementation to minimise).
+  jakarta.validation-api, slf4j, plus commons-lang3, guava, fastutil, commons-io
+  kept as-is this pass. **Trimming guava/fastutil/commons from the model is a
+  follow-up**, not part of this change.
 - Removes: jackson-databind/yaml/jsr310/blackbird, kryo, mapdb, httpclient5,
   httpcore5, citeproc-java, jbibtex, locales, antlr4-runtime, metrics-core,
   jsoup, univocity, commons-compress, jena (test).
@@ -143,14 +144,19 @@ Feasible, in rising difficulty:
    only structural citeproc coupling from the model. `ApiKryoPool`,
    `CSLTypeSerde`, `PermissiveEnumSerde`, and `DataPackageBuilder` update to the
    COL enum. `reference`'s converters map COL enum ↔ citeproc enum at the boundary.
-3. **`Dataset` self-citation** — `Dataset.getCitation()`/`getCitationText()`
-   currently call `CslUtil.buildCitation(toCSL())` internally (`Dataset.java`
-   ~lines 1011/1019). A slim model cannot reach the formatter. Relocate this to a
-   `reference`-side formatter that produces the citation string; `Dataset` keeps
-   the field as plain data set by callers. **This is the only behavior relocation
-   with call-site impact and is the primary risk of the change.** Audit all callers
-   of `Dataset.getCitation()`/`getCitationText()` and route them through the
-   `reference` formatter (or pre-populate the field during load/serialisation).
+3. **`Dataset` self-citation (thin hook)** — `Dataset.getCitation()`/
+   `getCitationText()` currently call `CslUtil.buildCitation(toCSL())` internally
+   (`Dataset.java` ~lines 1011/1019). A slim model cannot reach the formatter, but
+   we keep the call sites stable via a **hook**: define a minimal
+   `CitationFormatter` interface in slim `api` (e.g. `String citation(Dataset)` /
+   `String citationHtml(Dataset)`) with a static holder on `Dataset` that defaults
+   to a no-op (returns null / a plain fallback). The `reference` module provides the
+   citeproc-backed implementation and registers it once at application startup
+   (in `WsServer` init, alongside the existing `ApiModule`/pool setup). `Dataset`'s
+   lazy getters delegate to the registered hook, so **no `Dataset` caller changes**.
+   Trade-off: introduces a static service-locator style hook on `Dataset`; acceptable
+   to keep the model surface unchanged. Tests must set the hook (or assert the
+   no-op fallback) explicitly.
 
 The `toCSL*()` converters on `Citation`, `Dataset`, `Agent`, `CslName`, and
 `FuzzyDate.toCSLDate()` move to `reference` as static/utility converters taking the
@@ -169,7 +175,8 @@ build green at each step:
    `reference`; repoint callers.
 5. Extract `api/jackson/**` + the 4 model files' serde → `api-jackson`; strip
    databind from `api`; repoint every serde consumer.
-6. Slim `api`'s pom to annotations-only; audit remaining commons/guava/fastutil.
+6. Slim `api`'s pom to annotations-only (drop databind/kryo/mapdb/httpclient/
+   citeproc/jbibtex); leave commons/guava/fastutil in place (follow-up).
 7. Repoint `reader` at slim `api`; verify it no longer resolves jackson/httpclient/
    kryo/mapdb/citeproc (`mvn dependency:tree`).
 8. Repoint `metadata` at slim `api` + `api-jackson` + `reference`; verify kryo/mapdb
@@ -182,9 +189,11 @@ order from the dependency graph).
 
 ## Risks & mitigations
 
-- **`Dataset` self-citation relocation** (highest): behavior moves out of the model.
-  Mitigation: enumerate all callers first; add tests pinning citation output before
-  and after; consider a thin `reference` facade so call sites change minimally.
+- **`Dataset` self-citation hook** (highest): a static `CitationFormatter` hook
+  replaces the inline formatter call. Mitigation: default to a safe no-op; register
+  the citeproc implementation once at startup; add tests pinning citation output
+  (with the hook set) and asserting the fallback (hook unset), so a forgotten
+  registration fails loudly rather than silently returning null.
 - **COL `CSLType` drift from citeproc**: the enum must map 1:1 to
   `de.undercouch.citeproc.csl.CSLType`. Mitigation: a boundary mapping in
   `reference` with a test asserting every value round-trips.
@@ -214,5 +223,6 @@ order from the dependency graph).
 ## Out of scope
 
 - Publishing configuration / Maven Central release mechanics (separate task).
+- Trimming guava / fastutil / commons from the slim `api` model (follow-up pass).
 - Reducing GBIF `dwc-api` / `name-parser-api` footprint.
 - Any `checklistbank` UI or `portal` changes.
