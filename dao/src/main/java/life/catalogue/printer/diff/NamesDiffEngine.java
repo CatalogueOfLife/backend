@@ -1,6 +1,6 @@
 package life.catalogue.printer.diff;
 
-import life.catalogue.matching.similarity.ScientificNameSimilarity;
+import life.catalogue.matching.similarity.NormalizedLevenshtein;
 import life.catalogue.printer.NamesDiff;
 
 import java.util.List;
@@ -14,7 +14,7 @@ public interface NamesDiffEngine {
    * candidate lists, then caps each output list at opts.maxItems (0 = unlimited), flagging truncation.
    */
   static NamesDiff assemble(String label1, String label2, List<String> removed, List<String> added, DiffOptions opts) {
-    ChangedMatcher.Result m = ChangedMatcher.match(removed, added, opts.getChangedThreshold(), new ScientificNameSimilarity());
+    ChangedMatcher.Result m = ChangedMatcher.match(removed, added, opts.getChangedThreshold(), new NormalizedLevenshtein());
     NamesDiff diff = new NamesDiff(label1, label2);
     boolean truncated = false;
     truncated |= addCapped(diff.getRemoved(), m.removed(), opts.getMaxItems());
