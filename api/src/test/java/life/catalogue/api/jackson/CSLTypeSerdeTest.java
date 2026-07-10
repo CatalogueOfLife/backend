@@ -17,7 +17,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

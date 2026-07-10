@@ -156,8 +156,8 @@ public class CslDataConverter {
   }
   
   @VisibleForTesting
-  static CSLType toCSLType(CSLType src) {
-    if (src == null || src == CSLType.ARTICLE) {
+  static CSLType toCSLType(life.catalogue.api.model.CSLType src) {
+    if (src == null || src == life.catalogue.api.model.CSLType.ARTICLE) {
       // We must return something, otherwise citation generation by citeproc-java will fail.
       // we remap ARTICLE to be a journal article. It is really used for legal works, but users often get this wrong!
       return CSLType.ARTICLE_JOURNAL;

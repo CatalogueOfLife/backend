@@ -23,7 +23,6 @@ import de.undercouch.citeproc.bibtex.PageParser;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLName;
-import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * Class with core CSL fields to represent common citations.
@@ -185,7 +184,7 @@ public class Citation {
   public CSLItemData toCSL() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
     builder
-      .type(type)
+      .type(type == null ? null : de.undercouch.citeproc.csl.CSLType.valueOf(type.name()))
       .title(title)
       .shortTitle(alias)
       .volume(volume)

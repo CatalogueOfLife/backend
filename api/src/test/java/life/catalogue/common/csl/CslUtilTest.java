@@ -102,7 +102,7 @@ public class CslUtilTest {
   @Test
   public void performance() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder()
-        .type(CSLType.WEBPAGE)
+        .type(de.undercouch.citeproc.csl.CSLType.WEBPAGE)
         .abstrct("bcgenwgz ew hcehnuew")
         .title("my Title")
         .accessed(1999)
@@ -167,7 +167,7 @@ public class CslUtilTest {
   @Test
   public void colSource() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder()
-      .type(CSLType.DATASET)
+      .type(de.undercouch.citeproc.csl.CSLType.DATASET)
       .title("Catalogue of Life Checklist")
       .publisher("Catalogue of Life")
       .publisherPlace("Leiden, NL")
@@ -189,7 +189,7 @@ public class CslUtilTest {
     // SOURCE
     System.out.println("\nSource as chapter");
     builder
-      .type(CSLType.CHAPTER)
+      .type(de.undercouch.citeproc.csl.CSLType.CHAPTER)
       .title("3i World Auchenorrhyncha Database")
       .containerTitle("Catalogue of Life Checklist")
       .containerAuthor(colAll())

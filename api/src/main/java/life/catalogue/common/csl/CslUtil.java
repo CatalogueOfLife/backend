@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.undercouch.citeproc.csl.CSLItemData;
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 public class CslUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CslUtil.class);

@@ -9,8 +9,6 @@ import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 import static org.junit.Assert.*;
 
 public class CitationTest {

@@ -410,7 +410,7 @@ public class Dataset extends DataEntity<Integer> {
     if (key != null) {
       c.setId(key.toString());
     }
-    c.setType(CSLType.DATASET);
+    c.setType(life.catalogue.api.model.CSLType.DATASET);
     c.setTitle(title);
     c.setIssued(issued);
     c.setVersion(version);
@@ -424,7 +424,7 @@ public class Dataset extends DataEntity<Integer> {
       c.setPublisherPlace(publisher.getAddress());
     }
     if (containerTitle != null) {
-      c.setType(CSLType.CHAPTER);
+      c.setType(life.catalogue.api.model.CSLType.CHAPTER);
       c.setAuthor(toNames(unique(merge(creator, editor))));
       c.setContainerTitle(containerTitle);
       c.setContainerAuthor(toNames(containerCreator));

@@ -24,8 +24,6 @@ import com.esotericsoftware.kryo.Kryo;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 /**
  * utility class to metrics new test instances to be used in tests.
  */
