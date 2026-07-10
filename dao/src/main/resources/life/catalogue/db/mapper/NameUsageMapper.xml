@@ -966,6 +966,9 @@
         parent's rank/anc, not its own rank).
     lowestRank/rankFilter are applied on the final projection only (row-level, does not prune
     descendants), matching the printer's setFilter/counter behaviour.
+    Uses UNION (not UNION ALL) like every other recursive tree CTE here: cyclic parent_id chains
+    occur in real data (see detectLoop), and UNION bounds the recursion to finitely many distinct
+    rows so a cyclic dataset can never make this query recurse without end.
   -->
   <select id="processDiffNames" parameterType="map" resultType="String"
           resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
@@ -987,12 +990,14 @@
       <if test="param.exclusion != null and !param.exclusion.isEmpty()">
         AND u.id NOT IN <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
       </if>
-    UNION ALL
+    UNION
       SELECT u.id, u.parent_id, u.status, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct,
              n.scientific_name, n.authorship, n.rank,
              x.scientific_name AS pname,
-             COALESCE(CASE WHEN <if test="param.parentRank != null">x.rank = #{param.parentRank}::rank</if><if test="param.parentRank == null">FALSE</if>
-                           THEN x.scientific_name END, x.anc) AS anc
+             COALESCE(CASE WHEN
+               <if test="param.parentRank != null">x.rank = #{param.parentRank}::rank</if>
+               <if test="param.parentRank == null">FALSE</if>
+               THEN x.scientific_name END, x.anc) AS anc
       FROM <include refid="FROM_SIMPLE"/>
         JOIN x ON x.id = u.parent_id
       WHERE u.dataset_key=#{param.datasetKey}
