@@ -533,11 +533,19 @@ git commit -m "feat(diff): NameChunker character-level marking via java-diff-uti
 - Create: `dao/src/main/java/life/catalogue/printer/diff/NamesDiffEngine.java`
 - Test: `dao/src/test/java/life/catalogue/printer/diff/ChangedMatcherTest.java`
 
+> **DECISION (2026-07-10):** the "changed" similarity metric is **normalized whole-string
+> Levenshtein**, NOT `ScientificNameSimilarity`. A new `NormalizedLevenshtein implements
+> StringSimilarity` (in `life.catalogue.matching.similarity`) returns
+> `100 * (1 - LevenshteinDistance.getDistance(a,b) / max(len))`. Reason: `ScientificNameSimilarity`
+> and the tuned `DistanceUtils` score authorship/year *additions* at 0 (they penalise multi-char
+> additions), which are the most common real change; normalized Levenshtein scores them 60–95.
+
 **Interfaces:**
-- Consumes: `NameChunker` (Task 3), `ChangedName` (Task 1), `StringSimilarity`/`ScientificNameSimilarity` (`life.catalogue.matching.similarity`).
+- Consumes: `NameChunker` (Task 3), `ChangedName` (Task 1), `StringSimilarity` + new `NormalizedLevenshtein` (`life.catalogue.matching.similarity`), `LevenshteinDistance.getDistance`.
 - Produces:
+  - `class NormalizedLevenshtein implements StringSimilarity` in `life.catalogue.matching.similarity` with `getSimilarity(x1,x2) = 100*(1 - getDistance/max(len))` (equal strings → 100; both empty → 100).
   - `class ChangedMatcher` with `record Result(List<ChangedName> changed, List<String> removed, List<String> added)` and `static Result match(List<String> removed, List<String> added, double threshold, StringSimilarity similarity)`.
-  - `interface NamesDiffEngine { NamesDiff diff(DiffInput a, DiffInput b, DiffOptions opts); }` plus `static NamesDiff assemble(String label1, String label2, List<String> removed, List<String> added, DiffOptions opts)`.
+  - `interface NamesDiffEngine { NamesDiff diff(DiffInput a, DiffInput b, DiffOptions opts); }` plus `static NamesDiff assemble(String label1, String label2, List<String> removed, List<String> added, DiffOptions opts)` (uses `new NormalizedLevenshtein()`).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -545,7 +553,7 @@ git commit -m "feat(diff): NameChunker character-level marking via java-diff-uti
 ```java
 package life.catalogue.printer.diff;
 
-import life.catalogue.matching.similarity.ScientificNameSimilarity;
+import life.catalogue.matching.similarity.NormalizedLevenshtein;
 
 import java.util.List;
 
@@ -555,7 +563,7 @@ import static org.junit.Assert.*;
 
 public class ChangedMatcherTest {
 
-  private static final ScientificNameSimilarity SIM = new ScientificNameSimilarity();
+  private static final NormalizedLevenshtein SIM = new NormalizedLevenshtein();
 
   @Test
   public void pairsSimilarNames() {
@@ -680,7 +688,7 @@ public class ChangedMatcher {
 ```java
 package life.catalogue.printer.diff;
 
-import life.catalogue.matching.similarity.ScientificNameSimilarity;
+import life.catalogue.matching.similarity.NormalizedLevenshtein;
 import life.catalogue.printer.NamesDiff;
 
 import java.util.List;
@@ -694,7 +702,7 @@ public interface NamesDiffEngine {
    * candidate lists, then caps each output list at opts.maxItems (0 = unlimited), flagging truncation.
    */
   static NamesDiff assemble(String label1, String label2, List<String> removed, List<String> added, DiffOptions opts) {
-    ChangedMatcher.Result m = ChangedMatcher.match(removed, added, opts.getChangedThreshold(), new ScientificNameSimilarity());
+    ChangedMatcher.Result m = ChangedMatcher.match(removed, added, opts.getChangedThreshold(), new NormalizedLevenshtein());
     NamesDiff diff = new NamesDiff(label1, label2);
     boolean truncated = false;
     truncated |= addCapped(diff.getRemoved(), m.removed(), opts.getMaxItems());

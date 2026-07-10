@@ -145,9 +145,15 @@ Only the pass‑1 candidate sets (`removed` × `added`) are considered — small
 
 1. **Block** candidates by a cheap key (first token / genus of the name) so matching is not
    full quadratic. Candidate lists are already sorted, so blocks are contiguous.
-2. Within a block, score `removed_i` vs `added_j` with the existing similarity utilities
-   (`life.catalogue.matching.similarity.ScientificNameSimilarity` /
-   `LevenshteinDistance`), greedily pairing best matches with `similarity >= changedThreshold`.
+2. Within a block, score `removed_i` vs `added_j` with a **whole-string normalized
+   Levenshtein** similarity — `100 * (1 - editDistance / maxLen)` via
+   `life.catalogue.matching.similarity.LevenshteinDistance.getDistance` (new class
+   `NormalizedLevenshtein implements StringSimilarity`) — greedily pairing best matches with
+   `similarity >= changedThreshold` (default 50). **Decision (2026-07-10):** the plan first
+   chose `ScientificNameSimilarity`, but an empirical probe showed it (and the tuned
+   `DistanceUtils.convertEditDistanceToSimilarity`) scores an authorship or year *addition*
+   at 0 — the most common real change — because it penalises multi-char additions. Normalized
+   Levenshtein scores those 60–95 and pairs them correctly.
 3. **Distance‑0 (identical) pairs are reclassified as *unchanged* and dropped from both
    lists** — this self‑heals any rare local ordering glitch from the attempts‑path
    column‑vs‑concatenated ordering (see §7).
