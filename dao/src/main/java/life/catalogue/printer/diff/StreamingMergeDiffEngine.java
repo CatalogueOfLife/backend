@@ -54,8 +54,20 @@ public class StreamingMergeDiffEngine implements NamesDiffEngine {
         }
         guard(removed.size() + added.size(), opts);
       }
-      while (x != null) { removed.add(x); x = ia.hasNext() ? ia.next() : null; guard(removed.size() + added.size(), opts); }
-      while (y != null) { added.add(y); y = ib.hasNext() ? ib.next() : null; guard(removed.size() + added.size(), opts); }
+      while (x != null) {
+        if (prevX != null && order.compare(prevX, x) > 0) inversionSeen = true;
+        removed.add(x);
+        prevX = x;
+        x = ia.hasNext() ? ia.next() : null;
+        guard(removed.size() + added.size(), opts);
+      }
+      while (y != null) {
+        if (prevY != null && order.compare(prevY, y) > 0) inversionSeen = true;
+        added.add(y);
+        prevY = y;
+        y = ib.hasNext() ? ib.next() : null;
+        guard(removed.size() + added.size(), opts);
+      }
     }
 
     if (inversionSeen) {
