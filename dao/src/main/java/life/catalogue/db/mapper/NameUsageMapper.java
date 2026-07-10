@@ -9,6 +9,7 @@ import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TempNameUsageRelated;
+import life.catalogue.printer.diff.DiffNamesParam;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -471,6 +472,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   default Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params) {
     return processTreeSimple(params, false, false);
   }
+
+  /**
+   * Streams a byte-ordered (C collation) list of name labels for a dataset, applying the diff
+   * filters. Forward-only cursor: consume within an open session and close it.
+   */
+  Cursor<String> processDiffNames(@Param("param") DiffNamesParam param);
 
   /**
    * Iterates over all accepted descendants in a tree for a given start taxon.

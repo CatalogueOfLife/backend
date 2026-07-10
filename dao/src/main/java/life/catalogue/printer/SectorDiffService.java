@@ -17,8 +17,8 @@ import com.google.common.collect.Lists;
 
 public class SectorDiffService extends BaseDiffService<DSID<Integer>> {
 
-  public SectorDiffService(SqlSessionFactory factory, FileMetricsSectorDao dao, int timeoutInSeconds) {
-    super(dao, factory, timeoutInSeconds);
+  public SectorDiffService(SqlSessionFactory factory, FileMetricsSectorDao dao, int maxItems) {
+    super(dao, factory, maxItems);
   }
 
   @Override

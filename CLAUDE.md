@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Catalogue of Life (CoL) Backend - A Dropwizard-based Java 21 application providing RESTful JSON webservices for ChecklistBank API (https://api.checklistbank.org/). 
+Catalogue of Life (CoL) Backend - A Dropwizard-based Java 25 application providing RESTful JSON webservices for ChecklistBank API (https://api.checklistbank.org/). 
 Manages taxonomic datasets with import, normalization, assembly, search indexing, and release management capabilities.
 
 ## Build & Test Commands
@@ -167,7 +167,7 @@ Follows Twitter Commons style guide with CoL customizations:
 - **Indent**: 2 spaces (1TBS brace style)
 - **Line limit**: 140 columns
 - **Naming**: CamelCase types, camelCase variables, UPPER_SNAKE constants
-- **Java version**: Java 21 (required)
+- **Java version**: Java 25 (required)
 - **Annotations**: Use `@Nullable` for nullable parameters/fields, `@VisibleForTesting` for test-only visibility
 - See `DEVELOPER-GUIDE.md` for comprehensive style guide
 
@@ -273,7 +273,7 @@ GET /dataset/{key}/export.zip?format=COLDP
 
 ## Prerequisites
 
-- Java 21 JDK
+- Java 25 JDK
 - Maven 3.9.5+
 - PostgreSQL 17
 - Elasticsearch 8.1.3 (optional, for name usage search)
