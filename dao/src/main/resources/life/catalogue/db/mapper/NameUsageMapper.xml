@@ -950,6 +950,83 @@
     <if test="depthFirst">ORDER BY x.path</if>
   </select>
 
+  <sql id="DIFF_LABEL">
+    <choose>
+      <when test="param.authorship">
+        (CASE WHEN x.extinct THEN '†' ELSE '' END) || x.scientific_name
+          || COALESCE(' ' || x.authorship, '') || COALESCE(' ' || x.name_phrase, '')
+      </when>
+      <otherwise>x.scientific_name</otherwise>
+    </choose>
+    <if test="param.parentName">
+      <choose>
+        <when test="param.parentRank != null">|| COALESCE(' &gt;&gt; ' || x.anc, '')</when>
+        <otherwise>|| COALESCE(' &gt;&gt; ' || x.pname, '')</otherwise>
+      </choose>
+    </if>
+  </sql>
+
+  <!--
+    Pure-SQL byte-ordered name label generator for the in-JVM diff engine (life.catalogue.printer.diff).
+    Mirrors NameParentPrinter's label + optional " >> parent" suffix:
+      - pname is always the direct parent's name.
+      - anc is the nearest proper ancestor whose rank equals param.parentRank (never the row's own
+        name - the root has no ancestor, so its anc is NULL; a child's anc is derived from its
+        parent's rank/anc, not its own rank).
+    lowestRank/rankFilter are applied on the final projection only (row-level, does not prune
+    descendants), matching the printer's setFilter/counter behaviour.
+    Uses UNION (not UNION ALL) like every other recursive tree CTE here: cyclic parent_id chains
+    occur in real data (see detectLoop), and UNION bounds the recursion to finitely many distinct
+    rows so a cyclic dataset can never make this query recurse without end.
+  -->
+  <select id="processDiffNames" parameterType="map" resultType="String"
+          resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    WITH RECURSIVE x AS(
+      SELECT u.id, u.parent_id, u.status, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct,
+             n.scientific_name, n.authorship, n.rank,
+             NULL::text AS pname,
+             NULL::text AS anc
+      FROM <include refid="FROM_SIMPLE"/>
+      WHERE u.dataset_key=#{param.datasetKey}
+      AND
+      <choose>
+        <when test="param.roots != null and !param.roots.isEmpty()">
+          u.id IN <foreach item="id" collection="param.roots" open="(" separator="," close=")">#{id}</foreach>
+        </when>
+        <otherwise>u.parent_id IS NULL</otherwise>
+      </choose>
+      AND NOT is_synonym(u.status)
+      <if test="param.exclusion != null and !param.exclusion.isEmpty()">
+        AND u.id NOT IN <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
+      </if>
+    UNION
+      SELECT u.id, u.parent_id, u.status, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct,
+             n.scientific_name, n.authorship, n.rank,
+             x.scientific_name AS pname,
+             COALESCE(CASE WHEN
+               <if test="param.parentRank != null">x.rank = #{param.parentRank}::rank</if>
+               <if test="param.parentRank == null">FALSE</if>
+               THEN x.scientific_name END, x.anc) AS anc
+      FROM <include refid="FROM_SIMPLE"/>
+        JOIN x ON x.id = u.parent_id
+      WHERE u.dataset_key=#{param.datasetKey}
+      <if test="!param.synonyms">AND NOT is_synonym(u.status)</if>
+      <if test="param.exclusion != null and !param.exclusion.isEmpty()">
+        AND u.id NOT IN <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
+      </if>
+    )
+    SELECT <include refid="DIFF_LABEL"/> AS label
+    FROM x
+    WHERE TRUE
+    <if test="param.lowestRank">
+      AND (x.rank &lt;= #{param.lowestRank}::rank OR x.rank = 'UNRANKED'::rank)
+    </if>
+    <if test="param.rankFilter != null and !param.rankFilter.isEmpty()">
+      AND x.rank NOT IN <foreach item="r" collection="param.rankFilter" open="(" separator="," close=")">#{r}::rank</foreach>
+    </if>
+    ORDER BY label
+  </select>
+
   <select id="processTreeLinneanUsage" parameterType="map" resultMap="linneanUsageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     WITH RECURSIVE x AS(
       SELECT <include refid="SELECT_LINNEAN_USAGE"/> <include refid="DEPTH_FIRST_ROOT"/>
