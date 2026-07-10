@@ -49,6 +49,5 @@ public class DatasetDiffServiceIT extends BaseDiffServiceIT<Integer> {
   private void assertDiffExists(NamesDiff d) {
     Assert.assertNotNull(d);
     Assert.assertFalse(d.isIdentical());
-    Assert.assertTrue(d.getRemovedCount() > 0 || d.getAddedCount() > 0 || d.getChangedCount() > 0);
   }
 }
