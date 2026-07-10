@@ -43,6 +43,21 @@ public class ChangedMatcherTest {
   }
 
   @Test
+  public void identicalHealedRegardlessOfFuzzyRace() {
+    // A fuzzy match must not consume an added string that a later removed item is identical to.
+    var r = ChangedMatcher.match(
+      List.of("Abies alphaY", "Abies alpha"),
+      List.of("Abies alpha", "Abies alphaX"),
+      50.0, new NormalizedLevenshtein());
+    assertFalse(r.removed().contains("Abies alpha"));
+    assertFalse(r.added().contains("Abies alpha"));
+    assertTrue(r.changed().stream().noneMatch(c -> c.before().equals("Abies alpha") || c.after().equals("Abies alpha")));
+    assertEquals(1, r.changed().size());
+    assertEquals("Abies alphaY", r.changed().get(0).before());
+    assertEquals("Abies alphaX", r.changed().get(0).after());
+  }
+
+  @Test
   public void assembleTruncates() {
     NamesDiff d = NamesDiffEngine.assemble("a", "b",
       new java.util.ArrayList<>(List.of("A a", "B b", "C c")),
