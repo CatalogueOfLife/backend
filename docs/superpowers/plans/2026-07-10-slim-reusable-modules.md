@@ -1,5 +1,20 @@
 # Slim Reusable Modules Implementation Plan
 
+> **OUTCOME ADDENDUM (2026-07-10, after implementation):** Tasks 1–4 shipped —
+> `api` and `reader` are now free of **citeproc, jbibtex, kryo, mapdb, and httpclient**
+> (COL-owned `CSLType`; new `reference` and `kryo` modules; `DownloadUtil`+httpclient
+> moved to `dao`). **Task 5 (`api-jackson` extraction) was intentionally NOT done.**
+> Implementation revealed that `api`-main's `YamlUtils` (jackson-YAML, used by
+> `IdentifierScopes` and by `reader`'s `ColdpReader`) and `NameUsageWrapper` anchor
+> `ApiModule` inside `api`, so jackson-databind is load-bearing there; moving the serde
+> layer out would require rewriting YAML handling off jackson (losing `ApiModule` serde
+> fidelity), a regression risk the maintainer declined. Decision: **jackson-databind
+> stays in `api`**; the `api-jackson` module and the model mix-ins (Task 5) are dropped.
+> jackson-databind's own transitive tree is tiny (jackson-core + annotations), so this is
+> an acceptable endpoint. Tasks 6–7 (repointing reader/metadata) are already satisfied by
+> Tasks 1–4. Sections below describing Task 5 and the slim-`api`/`api-jackson` split are
+> retained for history but were not executed.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Slim the reusable modules (`api`, `reader`, `metadata`, `coldp`) so external
