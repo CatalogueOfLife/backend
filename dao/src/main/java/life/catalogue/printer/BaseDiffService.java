@@ -111,15 +111,17 @@ public abstract class BaseDiffService<K> {
   protected NamesDiff diff(K key, int[] atts, Function<Integer, File> getFile) {
     File[] files = attemptToFiles(key, atts, getFile);
     try {
-      final NamesDiff diff = new NamesDiff(key, atts[0], atts[1]);
+      final NamesDiff diff = new NamesDiff(label(key, atts[0]), label(key, atts[1]));
       Set<String> n1 = FileMetricsDao.readLines(files[0]);
       Set<String> n2 = FileMetricsDao.readLines(files[1]);
 
-      diff.setDeleted(new HashSet<>(n1));
-      diff.getDeleted().removeAll(n2);
+      Set<String> removed = new HashSet<>(n1);
+      removed.removeAll(n2);
+      diff.getRemoved().addAll(removed);
 
-      diff.setInserted(new HashSet<>(n2));
-      diff.getInserted().removeAll(n1);
+      Set<String> added = new HashSet<>(n2);
+      added.removeAll(n1);
+      diff.getAdded().addAll(added);
       return diff;
 
     } catch (IOException e) {

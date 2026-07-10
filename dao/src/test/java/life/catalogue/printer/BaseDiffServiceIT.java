@@ -103,10 +103,9 @@ public abstract class BaseDiffServiceIT<K> extends DaoTestBase {
       return null;
     });
 
-    assertEquals(2, d.getDeleted().size());
-    assertEquals(2, d.getInserted().size());
-    assertEquals(key, d.getKey());
-    assertEquals(1, d.getAttempt1());
-    assertEquals(2, d.getAttempt2());
+    assertEquals(2, d.getRemovedCount());
+    assertEquals(2, d.getAddedCount());
+    assertEquals("dataset_" + key + "#1", d.getLabel1());
+    assertEquals("dataset_" + key + "#2", d.getLabel2());
   }
 }
