@@ -42,12 +42,6 @@
       <artifactId>newick-io</artifactId>
     </dependency>
 
-    <!-- used directly in common/io; previously transitive via mapdb's kotlin-stdlib -->
-    <dependency>
-      <groupId>org.jetbrains</groupId>
-      <artifactId>annotations</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-core</artifactId>
