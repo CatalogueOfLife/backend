@@ -44,7 +44,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;

@@ -19,7 +19,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;

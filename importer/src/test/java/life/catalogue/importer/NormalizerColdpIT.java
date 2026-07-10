@@ -30,7 +30,7 @@ import org.junit.Test;
 
 
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 

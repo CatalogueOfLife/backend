@@ -21,7 +21,7 @@ import org.jbibtex.BibTeXDatabase;
 import org.junit.Test;
 
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 import static org.junit.Assert.*;
 

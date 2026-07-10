@@ -31,7 +31,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 import static life.catalogue.parser.SafeParser.parse;
 
