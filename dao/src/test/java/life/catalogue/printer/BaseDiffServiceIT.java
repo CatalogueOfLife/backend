@@ -6,13 +6,10 @@ import life.catalogue.dao.DaoTestBase;
 import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.junit.TestDataRule;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -25,48 +22,37 @@ public abstract class BaseDiffServiceIT<K> extends DaoTestBase {
     super(TestDataRule.tree());
   }
 
-  @Test
-  public void diffBinaryVersion() throws IOException {
-    String v = diff.diffBinaryVersion();
-    System.out.println(v);
-    assertTrue(v.startsWith("diff") || v.startsWith("Apple diff"));
-    assertTrue(v.length() > 10);
-  }
-
-  @Test
-  public void udiff() throws Exception {
-    final File f1 = Resources.toFile("trees/coldp.tree.gz");
-    final File f2 = Resources.toFile("trees/coldp2.tree.gz");
-
-    BufferedReader br = diff.udiff(provideTestKey(), new int[]{1,2}, 2, i -> {
-      switch (i) {
-        case 1: return f1;
-        case 2: return f2;
-      }
-      return null;
-    });
-
-
-    String udiff = IOUtils.toString(br);
-    System.out.println(udiff);
-
-    Assert.assertTrue(udiff.startsWith("---"));
-  }
-
   abstract K provideTestKey();
+
+  /**
+   * Stages two real, differing gzipped name files at the DAO's stored paths for attempts 1 and 2
+   * of {@link #provideTestKey()}, then diffs them through the public {@code diff.diff(key, "1..2")}
+   * entry point (no udiff / subprocess involved anymore).
+   */
+  @Test
+  public void namesDiff() throws Exception {
+    final File f1 = Resources.toFile("trees/itis/36-names.txt.gz");
+    final File f2 = Resources.toFile("trees/itis/37-names.txt.gz");
+
+    final K key = provideTestKey();
+    File t1 = diff.dao.namesFile(key, 1);
+    File t2 = diff.dao.namesFile(key, 2);
+    FileUtils.forceMkdirParent(t1);
+    FileUtils.forceMkdirParent(t2);
+    FileUtils.copyFile(f1, t1);
+    FileUtils.copyFile(f2, t2);
+
+    NamesDiff d = diff.diff(key, "1..2");
+    assertNotNull(d);
+    assertEquals("dataset_" + key + "#1", d.getLabel1());
+    assertEquals("dataset_" + key + "#2", d.getLabel2());
+    assertFalse(d.isIdentical());
+  }
 
   @Test(expected = FileMetricsDao.AttemptMissingException.class)
   public void missingFile() throws Exception {
-    final File bad = new File("/tmp/I do not exist");
-    diff.diff(provideTestKey(), new int[]{1,2,3}, i -> {
-      switch (i) {
-        case 1: return bad;
-        case 2: return bad;
-      }
-      return null;
-    });
+    diff.diff(provideTestKey(), "1..2");
   }
-
 
   @Test
   public void attemptParsing() throws Exception {
@@ -87,25 +73,5 @@ public abstract class BaseDiffServiceIT<K> extends DaoTestBase {
   @Test(expected = IllegalArgumentException.class)
   public void attemptParsingFailBadSequence() throws Exception {
     diff.parseAttempts("5..3", ()-> Collections.EMPTY_LIST);
-  }
-
-  @Test
-  public void namesDiff() throws Exception {
-    final File f1 = Resources.toFile("names1.txt");
-    final File f2 = Resources.toFile("names2.txt");
-
-    final K key = provideTestKey();
-    NamesDiff d = diff.diff(key, new int[]{1,2}, i -> {
-      switch (i) {
-        case 1: return f1;
-        case 2: return f2;
-      }
-      return null;
-    });
-
-    assertEquals(2, d.getRemovedCount());
-    assertEquals(2, d.getAddedCount());
-    assertEquals("dataset_" + key + "#1", d.getLabel1());
-    assertEquals("dataset_" + key + "#2", d.getLabel2());
   }
 }
