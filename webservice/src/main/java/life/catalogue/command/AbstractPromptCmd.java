@@ -59,6 +59,9 @@ public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig
   @Override
   protected void run(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
     System.out.format("This is COL Server version %s%n", cfg.versionString());
+    // register the citeproc-backed citation formatter so the slim api model can render citations,
+    // mirroring the registration done in WsServer.run() for the server entry point
+    life.catalogue.api.model.CitationFormatter.register(new life.catalogue.common.csl.CslCitationFormatter());
     prePromt(bootstrap, namespace, cfg);
     final int prompt = namespace.getInt(ARG_PROMPT);
     if (prompt > 0) {

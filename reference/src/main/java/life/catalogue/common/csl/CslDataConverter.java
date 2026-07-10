@@ -155,6 +155,14 @@ public class CslDataConverter {
     return new CSLDate(src.getDateParts(), src.getSeason(), src.getCirca(), src.getLiteral(), src.getRaw());
   }
   
+  /**
+   * NOTE: there is a second, intentionally different COL->citeproc CSLType mapping in
+   * {@link CslTypeConverter#toCiteproc(life.catalogue.api.model.CSLType)}. That one preserves
+   * {@code null} as {@code null} and does not remap {@code ARTICLE}. This method instead remaps
+   * {@code null}/{@code ARTICLE} to {@code ARTICLE_JOURNAL} because citeproc-java's rendering
+   * requires a non-null, journal-like type at this call site. Do NOT "unify" these two methods -
+   * doing so would silently change citation-type output at one of the two call sites.
+   */
   @VisibleForTesting
   static CSLType toCSLType(life.catalogue.api.model.CSLType src) {
     if (src == null || src == life.catalogue.api.model.CSLType.ARTICLE) {
