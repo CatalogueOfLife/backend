@@ -126,6 +126,26 @@ public class NameInterpreterTest {
     return map;
   }
 
+  /**
+   * https://www.checklistbank.org/dataset/281817/verbatim/29763
+   * A uninomial genus whose author carries a particle: "Protosialis van der Weele, 1909".
+   * It must interpret as the genus "Protosialis" with authorship "van der Weele, 1909" - the
+   * "van der Weele" particle author must not be swallowed into the name as a multi-word epithet.
+   */
+  @Test
+  public void protosialisVanDerWeele() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var pnu = interpret("genus", "Protosialis van der Weele, 1909", "van der Weele, 1909", v);
+    var n = pnu.getName();
+    assertEquals(Rank.GENUS, n.getRank());
+    assertEquals("Protosialis", n.getUninomial());
+    assertEquals("Protosialis", n.getScientificName());
+    assertEquals("van der Weele, 1909", n.getAuthorship());
+    assertNull(n.getGenus());
+    assertNull(n.getSpecificEpithet());
+    assertNull(n.getInfraspecificEpithet());
+  }
+
   @Test
   public void interpretName() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
