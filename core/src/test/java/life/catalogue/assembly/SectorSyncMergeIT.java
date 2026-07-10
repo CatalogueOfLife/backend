@@ -75,7 +75,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   ProjectTestInfo info;
 
 
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "{0}")
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
       {"exact-dupes", List.of("plazi")},

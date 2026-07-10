@@ -342,9 +342,11 @@ public class UsageMatcher implements AutoCloseable {
     }
 
     // remove canonical matches between 2 qualified, non suprageneric names
-    // for genus matches we keep the canonical matches and compare their family further down
-    if (qualifiedName && !nu.getRank().isGenusOrSuprageneric()) {
-      existing.removeIf(u -> u.hasAuthorship() && differentAuthorship(u, nu) );
+    // for genus matches we keep the canonical matches and compare their family further down.
+    // Two qualified names are only merged when their authorship compares EQUAL - a DIFFERENT or merely
+    // UNKNOWN comparison keeps them as separate entries. Year-only authorship is handled below.
+    if (qualifiedName && !nu.getRank().isGenusOrSuprageneric() && !isYearOnlyAuthorship(nu)) {
+      existing.removeIf(u -> u.hasAuthorship() && notEqualAuthorship(u, nu) );
     }
 
     // remove canonical matches between 2 qualified genus names, UNLESS they are in the exact same family!
@@ -587,6 +589,18 @@ public class UsageMatcher implements AutoCloseable {
       return false; // cannot tell -> not different, let other filters decide
     }
     return authComp.compare(parseSciName(u), parseSciName(nu)) == Equality.DIFFERENT;
+  }
+
+  /**
+   * Merge policy for two qualified (authored) names: they may only be treated as the same name when
+   * their authorship compares {@link Equality#EQUAL}. A merely uncertain (UNKNOWN) comparison is not
+   * enough - e.g. a combination author ("Sadowsky & Amorim, 1977") lined up against a basionym author
+   * ("(Bigelow & Schroeder, 1944)") yields UNKNOWN on purpose (a basionym author can be shared by many
+   * combinations) - so such names must stay separate rather than be merged. Callers guard this with
+   * {@code u.hasAuthorship()} and an incoming qualified name, so both sides are always authored here.
+   */
+  private boolean notEqualAuthorship(SimpleNameCached u, SimpleNameCached nu) {
+    return authComp.compare(parseSciName(u), parseSciName(nu)) != Equality.EQUAL;
   }
 
   /**
