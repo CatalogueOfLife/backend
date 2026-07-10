@@ -116,6 +116,20 @@ public class NameParserTest {
     assertFalse(issues.hasIssues());
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1523
+   * "Rchb.f." (Reichenbach filius) must be kept as the parenthesised basionym author, not reduced to
+   * a bare "f." with the basionym brackets lost, when the authorship is parsed inline from the name string.
+   */
+  @Test
+  public void reichenbachFilius() throws Exception {
+    assertName("Paphiopedilum villosum var. boxallii (Rchb.f.) Pfitzer, 1903", "Paphiopedilum villosum var. boxallii")
+        .infraSpecies("Paphiopedilum", "villosum", Rank.VARIETY, "boxallii")
+        .basAuthors(null, "Rchb.f.")
+        .combAuthors("1903", "Pfitzer")
+        .nothingElse();
+  }
+
   static String normalizeAuthorship(String authorship, String taxnote) {
     ParsedNameUsage pnu = new ParsedNameUsage();
     pnu.setName(new Name());
