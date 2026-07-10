@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.catalogueoflife</groupId>
     <artifactId>motherpom</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.4.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>reader</artifactId>
