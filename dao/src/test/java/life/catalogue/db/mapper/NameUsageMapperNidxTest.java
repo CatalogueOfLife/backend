@@ -37,13 +37,20 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void listByNamesIndexIDGlobalClassified() throws Exception {
-    // with author
+    // dataset 100 has origin=PROJECT and is excluded, only external datasets 101 & 102 remain
+    // with author: index 4 matches usages in datasets 100 (excluded), 102, 102
     var res = mapper().listByNamesIndexIDGlobalClassified( 4, new Page());
-    assertEquals(3, res.size());
-    // canonical +1
-    assertEquals(4, mapper().listByNamesIndexIDGlobalClassified( 3, new Page()).size());
+    assertEquals(2, res.size());
+    assertTrue(res.stream().noneMatch(u -> u.getDatasetKey() == 100));
+    // canonical +1: indexes 3 & 4 match usages in datasets 100 (excluded), 101, 102, 102
+    assertEquals(3, mapper().listByNamesIndexIDGlobalClassified( 3, new Page()).size());
     // none
     assertEquals(0, mapper().listByNamesIndexIDGlobalClassified( 1, new Page()).size());
+
+    // the paging count must stay consistent with the filtered list, also excluding project usages
+    assertEquals(2, (int) mapper().countByNamesIndexIDGlobalClassified(4));
+    assertEquals(3, (int) mapper().countByNamesIndexIDGlobalClassified(3));
+    assertEquals(0, (int) mapper().countByNamesIndexIDGlobalClassified(1));
   }
 
   @Test

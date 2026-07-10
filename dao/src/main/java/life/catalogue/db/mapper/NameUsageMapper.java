@@ -221,10 +221,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<SimpleNameCached> listByCanonNIDX(@Param("datasetKey") int datasetKey, @Param("nidx") int canonicalNidx);
 
   /**
-   * List all usages across all datasets with the given names index id.
+   * List all usages across all datasets with the given names index id, excluding usages from project datasets (origin=PROJECT).
    * Same as listByNamesIndexIDGlobal, but returns a classified version of the simple name with the classification list filled.
    */
   List<SimpleNameInDatasetClassified> listByNamesIndexIDGlobalClassified(@Param("nidx") int nidx, @Param("page") Page page);
+
+  /**
+   * Counts the usages returned by listByNamesIndexIDGlobalClassified, i.e. across all datasets with the given names index id,
+   * but excluding usages from project datasets (origin=PROJECT). Use this as the paging total for that list.
+   * Warning, this does not count bare names, only true usages!
+   */
+  Integer countByNamesIndexIDGlobalClassified(@Param("nidx") int nidx);
 
   /**
    * Warning, this does not count bare names, only true usages!

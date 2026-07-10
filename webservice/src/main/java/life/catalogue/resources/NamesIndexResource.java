@@ -98,7 +98,7 @@ public class NamesIndexResource {
       res.forEach(sn -> {
         sn.setGroup(analyzer.analyze(sn, sn.getClassification()));
       });
-      return new ResultPage<>(p, res, () -> num.countByNamesIndexID(key, null));
+      return new ResultPage<>(p, res, () -> num.countByNamesIndexIDGlobalClassified(key));
     }
   }
 

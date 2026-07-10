@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.junit.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
@@ -9,7 +10,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import java.util.Map;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -17,8 +18,10 @@ public class NameUsageMapperNidxTreeTest {
   static final int datasetKey = 100;
 
   public static SqlSessionFactoryRule pgRule = new PgSetupRule();
-  public static TxtTreeDataRule dataRule = TxtTreeDataRule.create(Map.of(
-      datasetKey, TxtTreeDataRule.TreeData.MAMMALIA
+  // load as EXTERNAL: listByNamesIndexIDGlobalClassified excludes usages from project datasets
+  public static TxtTreeDataRule dataRule = new TxtTreeDataRule(List.of(
+      new TxtTreeDataRule.TreeDataset(datasetKey, TxtTreeDataRule.TreeData.MAMMALIA.resource(),
+          TxtTreeDataRule.TreeData.MAMMALIA.name(), DatasetOrigin.EXTERNAL)
   ), false, true);
   final static NameMatchingRule matchingRule = new NameMatchingRule();
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();

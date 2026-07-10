@@ -529,9 +529,18 @@
         LEFT JOIN dataset d ON d.key=nm.dataset_key
         LEFT JOIN taxon_metrics tm ON tm.dataset_key=nm.dataset_key
             AND tm.taxon_id = CASE WHEN is_synonym(u.status) THEN u.parent_id ELSE u.id END
-    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    WHERE (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
+      AND d.origin != 'PROJECT'::DATASETORIGIN
     ORDER BY d.title, d.key, u.id
     <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="countByNamesIndexIDGlobalClassified" resultType="integer">
+    SELECT count(*)
+    FROM <include refid="FROM_NIDX_BASE"/>
+      JOIN dataset d ON d.key=nm.dataset_key
+    WHERE (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
+      AND d.origin != 'PROJECT'::DATASETORIGIN
   </select>
 
   <select id="listByUsageID" resultMap="usageResultMap">
