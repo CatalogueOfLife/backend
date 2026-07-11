@@ -25,7 +25,7 @@ public class DiffOptions {
   };
 
   private Comparator<String> order = CODEPOINT;
-  private double changedThreshold = 50.0;   // 0..100
+  private int canonicalMaxDistance = 1;      // max Levenshtein distance between normalised canonicals to pair as "changed"
   private int maxItems = 0;                  // 0 = unlimited output per list
   private long maxChangedCandidates = 1_000_000L; // OOM backstop for pass-1 buffers (~150MB peak)
 
@@ -36,8 +36,8 @@ public class DiffOptions {
   public Comparator<String> getOrder() { return order; }
   public DiffOptions setOrder(Comparator<String> order) { this.order = order; return this; }
 
-  public double getChangedThreshold() { return changedThreshold; }
-  public DiffOptions setChangedThreshold(double t) { this.changedThreshold = t; return this; }
+  public int getCanonicalMaxDistance() { return canonicalMaxDistance; }
+  public DiffOptions setCanonicalMaxDistance(int d) { this.canonicalMaxDistance = d; return this; }
 
   public int getMaxItems() { return maxItems; }
   public DiffOptions setMaxItems(int maxItems) { this.maxItems = maxItems; return this; }
