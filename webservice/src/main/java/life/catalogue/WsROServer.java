@@ -313,7 +313,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new EstimateResource(edao));
     j.register(new ImageResource(imgService, factory));
     j.register(new NameResource(ndao));
-    j.register(new NameUsageResource(searchService, suggestService, nudao, tdao, feedbackService));
+    j.register(new NameUsageResource(searchService, suggestService, nudao, feedbackService));
     j.register(new SectorPublisherResource(spdao));
     j.register(new ReferenceResource(rdao));
     j.register(new SynonymResource(sdao));
