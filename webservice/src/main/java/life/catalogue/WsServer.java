@@ -342,8 +342,8 @@ public class WsServer extends Application<WsServerConfig> {
     final SectorImportDao siDao = new SectorImportDao(getSqlSessionFactory(), fmsDao);
 
     // diff
-    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao, cfg.diffMaxItems);
-    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao, cfg.diffMaxItems);
+    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao, cfg.diff);
+    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao, cfg.diff);
 
     // update db lookups
     try (Connection c = mybatis.getConnection()) {

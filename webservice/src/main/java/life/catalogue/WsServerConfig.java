@@ -144,11 +144,11 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public long parserTimeout = 5000;
 
   /**
-   * The maximum number of items (removed/added/changed) returned per names diff, bounding response
-   * size for pathologically large diffs. 0 = unlimited.
+   * Names diff engine settings: output limits and the canonical-distance pairing tolerance.
    */
-  @Min(0)
-  public int diffMaxItems = 10_000;
+  @Valid
+  @NotNull
+  public DiffConfig diff = new DiffConfig();
 
   @Valid
   @NotNull
