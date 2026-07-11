@@ -2,6 +2,7 @@ package life.catalogue.printer;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ImportAttempt;
+import life.catalogue.config.DiffConfig;
 import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.printer.diff.DiffInput;
 import life.catalogue.printer.diff.DiffOptions;
@@ -29,17 +30,20 @@ public abstract class BaseDiffService<K> {
   protected final SqlSessionFactory factory;
   protected final FileMetricsDao<K> dao;
   protected final NamesDiffEngine engine = new StreamingMergeDiffEngine();
-  protected final int maxItems;
+  protected final DiffConfig diffCfg;
 
-  public BaseDiffService(FileMetricsDao<K> dao, SqlSessionFactory factory, int maxItems) {
+  public BaseDiffService(FileMetricsDao<K> dao, SqlSessionFactory factory, DiffConfig diffCfg) {
     this.factory = factory;
     this.dao = dao;
-    this.maxItems = maxItems;
+    this.diffCfg = diffCfg;
   }
 
   /** Override to tune diff behaviour (thresholds, limits). */
   protected DiffOptions diffOptions() {
-    return DiffOptions.defaults().setMaxItems(maxItems);
+    return DiffOptions.defaults()
+      .setMaxItems(diffCfg.maxItems)
+      .setCanonicalMaxDistance(diffCfg.canonicalMaxDistance)
+      .setMaxChangedCandidates(diffCfg.maxChangedCandidates);
   }
 
   /**

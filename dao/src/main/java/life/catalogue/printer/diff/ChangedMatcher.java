@@ -1,6 +1,6 @@
 package life.catalogue.printer.diff;
 
-import life.catalogue.api.model.Name;
+import life.catalogue.api.model.ScientificName;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.matching.Equality;
@@ -9,7 +9,10 @@ import life.catalogue.matching.similarity.LevenshteinDistance;
 import life.catalogue.matching.similarity.NormalizedLevenshtein;
 import life.catalogue.parser.NameParser;
 
+import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.UnparsableNameException;
+import org.gbif.nameparser.util.NameFormatter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,22 +38,21 @@ public class ChangedMatcher {
 
   private static final AuthorComparator AUTHOR_CMP = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
   private static final NormalizedLevenshtein DISPLAY_SIM = new NormalizedLevenshtein();
-
+  // reuse the shared GBIF parser instance (the one slated for a Rust implementation), avoiding the
+  // overhead of building a full CoL Name and a second parser + executor.
+  private static final NameParserGBIF PARSER = NameParser.PARSER.gbif();
   public record Result(List<ChangedName> changed, List<String> removed, List<String> added) {}
 
   /** A parsed candidate: raw label, its normalised canonical (authorship stripped) and parsed authorship. */
   private static final class Candidate {
     final String label;
     final String normCanonical;
-    // Effective authorship used for the tie-break: the combination authorship, or the basionym authorship for
-    // parenthetical/original-author names (which carry their authors+year in the basionym slot). null only when
-    // the label produced no parse result at all; otherwise non-null but may be an empty Authorship.
-    final Authorship authorship;
+    final ScientificName sciname;
 
-    Candidate(String label, String normCanonical, Authorship authorship) {
+    Candidate(String label, String normCanonical, ScientificName sciname) {
       this.label = label;
       this.normCanonical = normCanonical;
-      this.authorship = authorship;
+      this.sciname = sciname;
     }
   }
 
@@ -138,7 +140,7 @@ public class ChangedMatcher {
     int bestScore = Integer.MIN_VALUE;
     for (int idx : eligible) {
       Candidate a = add.get(idx);
-      Equality eq = authorEquality(r.authorship, a.authorship);
+      Equality eq = authorEquality(r.sciname, a.sciname);
       if (eq == Equality.DIFFERENT) continue;
       int d = LevenshteinDistance.getDistance(r.normCanonical, a.normCanonical);
       int score = (canonicalMaxDistance - d) * 10 + (eq == Equality.EQUAL ? 2 : 1);
@@ -150,31 +152,46 @@ public class ChangedMatcher {
     return best;
   }
 
-  /** Author/year comparison, treating a missing authorship on either side as UNKNOWN (poolable, not DIFFERENT). */
-  private static Equality authorEquality(Authorship a1, Authorship a2) {
-    if (a1 == null || a2 == null || a1.isEmpty() || a2.isEmpty()) {
+  /**
+   * Author/year comparison of the effective authorship, treating a missing authorship on either side as
+   * UNKNOWN (poolable, not DIFFERENT). We compare the effective {@link Authorship} rather than the whole
+   * {@link ScientificName}, because AuthorComparator's ScientificName overload can only promote a
+   * cross basionym/combination match to EQUAL or UNKNOWN, never DIFFERENT — so year-differing parenthetical
+   * synonyms (author in the basionym slot on one side, combination slot on the other) would wrongly pool.
+   */
+  private static Equality authorEquality(ScientificName a1, ScientificName a2) {
+    Authorship e1 = effectiveAuthorship(a1);
+    Authorship e2 = effectiveAuthorship(a2);
+    if (e1 == null || e2 == null || e1.isEmpty() || e2.isEmpty()) {
       return Equality.UNKNOWN;
     }
-    return AUTHOR_CMP.compare(a1, a2);
+    return AUTHOR_CMP.compare(e1, e2);
+  }
+
+  /** The authorship carrying the author+year: the combination authorship, or the basionym for parenthetical names. */
+  private static Authorship effectiveAuthorship(ScientificName n) {
+    if (n == null) return null;
+    Authorship comb = n.getCombinationAuthorship();
+    return (comb != null && !comb.isEmpty()) ? comb : n.getBasionymAuthorship();
   }
 
   /** Parses a label into its normalised canonical and authorship; falls back to the raw label if unparsable. */
   private static Candidate parse(String label) {
-    var opt = NameParser.PARSER.parse(label);
-    if (opt.isPresent()) {
-      Name n = opt.get().getName();
-      String canonical = n.getScientificName();
+    try {
+      var pn = PARSER.parse(label);
+      String canonical = NameFormatter.canonicalWithoutAuthorship(pn);
+      ScientificName sciname = ScientificName.wrap(pn);
       if (canonical == null || canonical.isBlank()) {
         canonical = label;
       }
-      // Parenthetical/original-author names carry their authors+year in the basionym slot, so fall back to it
-      // when the combination authorship is missing/empty; otherwise year-differing zoological synonyms would
-      // read as authorless and be wrongly pooled by the tie-break.
-      Authorship comb = n.getCombinationAuthorship();
-      Authorship effective = (comb != null && !comb.isEmpty()) ? comb : n.getBasionymAuthorship();
-      return new Candidate(label, SciNameNormalizer.normalize(canonical), effective);
+      return new Candidate(label, SciNameNormalizer.normalize(canonical), sciname);
+
+    } catch (UnparsableNameException e) {
+      return new Candidate(label, SciNameNormalizer.normalize(label), null);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt(); // restore the interrupt flag before aborting the diff
+      throw new RuntimeException("Interrupted while parsing name for diff: " + label, e);
     }
-    return new Candidate(label, SciNameNormalizer.normalize(label), null);
   }
 
   /** Blocking key: the first whitespace-delimited token (genus), or the whole string if no space. */
