@@ -102,6 +102,12 @@ public class NameUsageResource {
   }
 
   @GET
+  @Path("{id}/match")
+  public NameMatch getMatch(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.nameMatch(datasetKey, id);
+  }
+
+  @GET
   @Path("{id}/related")
   public List<SimpleNameInDataset> related(@PathParam("key") int datasetKey,
                                          @PathParam("id") String id,
