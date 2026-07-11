@@ -163,3 +163,6 @@ Extend `dao/.../printer/diff/ChangedMatcherTest.java` and add cases:
   only if needed.
 - Greedy pairing within a block is order-sensitive when 1-in-1-out candidates are contested; rare,
   accepted for now.
+- Blocking is by genus (first token), so a typo in the *genus* itself puts the partners in different
+  blocks and they never pair, even at canonical distance 1. Deliberate: the coarse genus block keeps
+  epithet typos together, and a changed genus is far rarer than a changed epithet.
