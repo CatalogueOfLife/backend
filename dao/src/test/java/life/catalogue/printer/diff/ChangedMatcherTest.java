@@ -100,15 +100,49 @@ public class ChangedMatcherTest {
 
   @Test
   public void unparsableLabelsDoNotThrow() {
-    // Fallback path: parse returns empty -> normalise whole label. Must not throw.
+    // These labels are not actually unparsable: NameParser.PARSER.parse succeeds for both, returning a
+    // PLACEHOLDER name whose scientificName is "? incertae" in each case (the trailing "sp" is dropped).
+    // With identical normalised canonicals (distance 0 <= 1) and a single eligible candidate on each side,
+    // they are paired unconditionally as one change rather than landing in removed/added. The real point of
+    // this test is that odd, non-Linnean labels flow through the parser/normalizer without throwing.
     var r = ChangedMatcher.match(
       List.of("?incertae?"),
       List.of("?incertae? sp"),
       1);
     assertNotNull(r);
-    // Both labels survive the fallback path (parse empty -> normalise whole label); exact bucketing is
-    // not asserted, only that the call completes and accounts for both inputs.
-    assertEquals(2, r.changed().size() * 2 + r.removed().size() + r.added().size());
+    assertEquals(1, r.changed().size());
+    assertEquals("?incertae?", r.changed().get(0).before());
+    assertEquals("?incertae? sp", r.changed().get(0).after());
+    assertTrue(r.removed().isEmpty());
+    assertTrue(r.added().isEmpty());
+  }
+
+  @Test
+  public void multipleSynonymsWithDistinctYearsStayApart() {
+    // Same canonical, distinct years -> AuthorComparator DIFFERENT -> none paired. The parenthetical forms
+    // exercise the effective-authorship fallback: NameParser stores a parenthesised author/year in the
+    // basionym slot, so parse() must read it there (not just combinationAuthorship) for the years to differ.
+    var r = ChangedMatcher.match(
+      List.of("Abax ellipticus (Cuvier, 1833)", "Abax ellipticus Schauberger, 1927"),
+      List.of("Abax ellipticus Porta, 1901", "Abax ellipticus (Latreille, 1806)"),
+      1);
+    assertTrue(r.changed().isEmpty());
+    assertEquals(2, r.removed().size());
+    assertEquals(2, r.added().size());
+  }
+
+  @Test
+  public void multipleSynonymsPairTheMatchingAuthorOnly() {
+    // Two eligible added; only one has a compatible author -> that one pairs, the other stays added.
+    var r = ChangedMatcher.match(
+      List.of("Statice scoparia Pall. ex Willd."),
+      List.of("Statice scoparia Pallas ex Willdenow", "Statice scoparia C.A.Mey. ex Boiss."),
+      1);
+    assertEquals(1, r.changed().size());
+    assertEquals("Statice scoparia Pall. ex Willd.", r.changed().get(0).before());
+    assertEquals("Statice scoparia Pallas ex Willdenow", r.changed().get(0).after());
+    assertEquals(List.of("Statice scoparia C.A.Mey. ex Boiss."), r.added());
+    assertTrue(r.removed().isEmpty());
   }
 
   @Test

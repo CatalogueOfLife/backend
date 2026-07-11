@@ -42,7 +42,10 @@ public class ChangedMatcher {
   private static final class Candidate {
     final String label;
     final String normCanonical;
-    final Authorship authorship; // null when the label could not be parsed
+    // Effective authorship used for the tie-break: the combination authorship, or the basionym authorship for
+    // parenthetical/original-author names (which carry their authors+year in the basionym slot). null only when
+    // the label produced no parse result at all; otherwise non-null but may be an empty Authorship.
+    final Authorship authorship;
 
     Candidate(String label, String normCanonical, Authorship authorship) {
       this.label = label;
@@ -122,10 +125,37 @@ public class ChangedMatcher {
 
   /**
    * Picks the added candidate index to pair with the removed one, or -1 for none.
-   * Task 2: pair only when exactly one candidate is eligible. Extended in Task 3.
+   * When exactly one candidate is eligible it is paired unconditionally (1-in-1-out). When several
+   * same-canonical variants compete, only a non-{@link Equality#DIFFERENT} author/year match is paired,
+   * preferring the closest canonical and, among ties, an {@link Equality#EQUAL} author over an
+   * {@link Equality#UNKNOWN} one.
    */
   private static int choose(Candidate r, List<Candidate> add, List<Integer> eligible, int canonicalMaxDistance) {
-    return eligible.size() == 1 ? eligible.get(0) : -1;
+    if (eligible.isEmpty()) return -1;
+    if (eligible.size() == 1) return eligible.get(0); // 1-in-1-out: pair regardless of author (e.g. Mill.->L.)
+    // Several same-canonical variants compete: pair only a non-DIFFERENT author/year, best first.
+    int best = -1;
+    int bestScore = Integer.MIN_VALUE;
+    for (int idx : eligible) {
+      Candidate a = add.get(idx);
+      Equality eq = authorEquality(r.authorship, a.authorship);
+      if (eq == Equality.DIFFERENT) continue;
+      int d = LevenshteinDistance.getDistance(r.normCanonical, a.normCanonical);
+      int score = (canonicalMaxDistance - d) * 10 + (eq == Equality.EQUAL ? 2 : 1);
+      if (score > bestScore) {
+        bestScore = score;
+        best = idx;
+      }
+    }
+    return best;
+  }
+
+  /** Author/year comparison, treating a missing authorship on either side as UNKNOWN (poolable, not DIFFERENT). */
+  private static Equality authorEquality(Authorship a1, Authorship a2) {
+    if (a1 == null || a2 == null || a1.isEmpty() || a2.isEmpty()) {
+      return Equality.UNKNOWN;
+    }
+    return AUTHOR_CMP.compare(a1, a2);
   }
 
   /** Parses a label into its normalised canonical and authorship; falls back to the raw label if unparsable. */
@@ -137,7 +167,12 @@ public class ChangedMatcher {
       if (canonical == null || canonical.isBlank()) {
         canonical = label;
       }
-      return new Candidate(label, SciNameNormalizer.normalize(canonical), n.getCombinationAuthorship());
+      // Parenthetical/original-author names carry their authors+year in the basionym slot, so fall back to it
+      // when the combination authorship is missing/empty; otherwise year-differing zoological synonyms would
+      // read as authorless and be wrongly pooled by the tie-break.
+      Authorship comb = n.getCombinationAuthorship();
+      Authorship effective = (comb != null && !comb.isEmpty()) ? comb : n.getBasionymAuthorship();
+      return new Candidate(label, SciNameNormalizer.normalize(canonical), effective);
     }
     return new Candidate(label, SciNameNormalizer.normalize(label), null);
   }
