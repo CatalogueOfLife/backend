@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,7 +33,7 @@ public class JobMapperTest extends CRUDTestBase<UUID, JobInfo, JobMapper> {
     j.setPriority(JobPriority.MEDIUM);
     j.setDatasetKey(appleKey);
     j.setCreatedBy(Users.DB_INIT);
-    j.setCreated(LocalDateTime.now());
+    j.setCreated(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
     ObjectNode params = ApiModule.MAPPER.createObjectNode();
     params.put("datasetKey", appleKey);
     params.put("force", true);
@@ -49,8 +50,8 @@ public class JobMapperTest extends CRUDTestBase<UUID, JobInfo, JobMapper> {
   void updateTestObj(JobInfo j) {
     j.setStatus(JobStatus.FINISHED);
     j.setStep("indexing");
-    j.setStarted(LocalDateTime.now());
-    j.setFinished(LocalDateTime.now());
+    j.setStarted(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+    j.setFinished(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
     j.setError("things went wrong");
     j.setResultMd5("2c1b86f0c5d894a5b5e2b25e7f8c937b");
     j.setResultSize(123456789L);
