@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 public class CSLTypeParserTest extends ParserTestBase<CSLType> {
 

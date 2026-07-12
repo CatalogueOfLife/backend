@@ -144,10 +144,11 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public long parserTimeout = 5000;
 
   /**
-   * The maximum allowed time in seconds for a unix diff to take before throwing a time out.
+   * Names diff engine settings: output limits and the canonical-distance pairing tolerance.
    */
-  @Min(1)
-  public int diffTimeout = 30;
+  @Valid
+  @NotNull
+  public DiffConfig diff = new DiffConfig();
 
   @Valid
   @NotNull

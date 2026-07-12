@@ -103,6 +103,18 @@ public class XReleaseConfig extends ProjectReleaseConfig {
   }
 
   /**
+   * Accepted taxa of the project (the merge sync target) that must be shielded from all merge syncs.
+   * Canonical scientificNames (without authorship) are listed by their rank.
+   * A protected taxon and its entire subtree of descendants will not receive any updates and no new
+   * names or other data will be inserted anywhere within the group.
+   * On release startup each protected taxon is verified to exist, be accepted and unique - the release
+   * fails otherwise. A warning is logged for every protected group.
+   */
+  @NotNull
+  @Valid
+  public Map<Rank, Set<String>> protectedGroups = new HashMap<>();
+
+  /**
    * List of epithets, organised by families, which should be ignored during the automated basionym grouping/detection.
    */
   @NotNull

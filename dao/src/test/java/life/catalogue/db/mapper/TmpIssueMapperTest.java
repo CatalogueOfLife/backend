@@ -23,4 +23,18 @@ public class TmpIssueMapperTest extends MapperTestBase<TmpIssueMapper> {
     mapper().createTmpIssuesTable(Datasets.COL, null);
     mapper().processIssues();
   }
+
+  @Test
+  public void streamExternal() throws Exception {
+    try (var c = mapper().streamIssues(12, null)) {
+      c.forEach(i -> {});
+    }
+  }
+
+  @Test
+  public void streamProject() throws Exception {
+    try (var c = mapper().streamIssues(Datasets.COL, null)) {
+      c.forEach(i -> {});
+    }
+  }
 }

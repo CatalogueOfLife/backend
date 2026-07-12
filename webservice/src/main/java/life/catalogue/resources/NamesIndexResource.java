@@ -1,37 +1,31 @@
 package life.catalogue.resources;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
-import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
-import life.catalogue.dw.auth.Roles;
 import life.catalogue.interpreter.NameInterpreter;
-import life.catalogue.matching.NidxExportJob;
+import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexStore;
-
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.annotations.Hidden;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
 
 @Path("/nidx")
 @Produces(MediaType.APPLICATION_JSON)
@@ -43,13 +37,13 @@ public class NamesIndexResource {
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   private final SqlSessionFactory factory;
   private final WsServerConfig cfg;
-  private final JobExecutor exec;
+  private final TaxGroupAnalyzer analyzer;
 
-  public NamesIndexResource(NameIndex ni, SqlSessionFactory factory, WsServerConfig cfg,JobExecutor exec) {
+  public NamesIndexResource(NameIndex ni, SqlSessionFactory factory, WsServerConfig cfg) {
     this.ni = ni;
     this.factory = factory;
     this.cfg = cfg;
-    this.exec = exec;
+    this.analyzer = new TaxGroupAnalyzer();
   }
 
   @GET
@@ -95,6 +89,22 @@ public class NamesIndexResource {
   }
 
   @GET
+  @Path("{key}/usages")
+  public ResultPage<SimpleNameInDatasetClassified> relatedUsages(@PathParam("key") int key, @Valid @BeanParam Page page) {
+    Page p = page == null ? new Page() : page;
+    try (SqlSession session = factory.openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var res = num.listByNamesIndexIDGlobalClassified(key, p);
+      res.forEach(sn -> {
+        sn.setGroup(analyzer.analyze(sn, sn.getClassification()));
+      });
+      return new ResultPage<>(p, res, () -> num.countByNamesIndexIDGlobalClassified(key));
+    }
+  }
+
+  @GET
+  @Hidden
+  @Deprecated
   @Path("match")
   public NameMatch match(@QueryParam("q") String q,
                          @QueryParam("name") String name,
@@ -119,22 +129,6 @@ public class NamesIndexResource {
     RegexUtils.validatePattern(regex);
     Page p = page == null ? new Page() : page;
     return session.getMapper(NamesIndexMapper.class).listByRegex(regex, canonical, rank, p);
-  }
-
-  @POST
-  @Path("export")
-  public NidxExportJob export(@QueryParam("datasetKey") List<Integer> keys, @QueryParam("min") int minDatasets, @Auth User user) {
-    NidxExportJob job = new NidxExportJob(keys, minDatasets, user.getKey(), factory, cfg.normalizer);
-    exec.submit(job);
-    return job;
-  }
-
-  @POST
-  @Hidden
-  @Path("compact")
-  @RolesAllowed({Roles.ADMIN})
-  public void compact() {
-    ni.store().compact();
   }
 
 }

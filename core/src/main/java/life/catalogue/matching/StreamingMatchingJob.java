@@ -26,7 +26,8 @@ public class StreamingMatchingJob extends AbstractMatchingJob {
   private final OutputStream out;
 
   public StreamingMatchingJob(MatchingRequest req, int userKey, Dataset dataset, UsageMatcher matcher, MatchingConfig cfg, OutputStream out) {
-    super(req, userKey, dataset, loadRootClassification(req.getTaxonDSID(), matcher), matcher, cfg, matcher.getNameIndex());
+    // the matcher is owned by the caller (the standalone matching server's fixed instance), do not release it here
+    super(req, userKey, dataset, loadRootClassification(req.getTaxonDSID(), matcher), matcher, false, cfg, matcher.getNameIndex());
     this.out = out;
   }
 

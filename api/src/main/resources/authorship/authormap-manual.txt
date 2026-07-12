@@ -1,0 +1,3 @@
+G Cuvier	ZOO	Georges Cuvier
+F Cuvier	ZOO	Frédéric Cuvier
+J F Gmelin	ANY	Gmelin	Johann Friedrich Gmelin

@@ -9,8 +9,6 @@ import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 import static org.junit.Assert.*;
 
 public class CitationTest {
@@ -36,13 +34,6 @@ public class CitationTest {
     c.setIssn("3456-45x6");
     c.setIssued(FuzzyDate.of(2024, 11));
     return c;
-  }
-
-  @Test
-  public void toCSL() {
-    Citation c = create();
-    var csl = c.toCSL();
-    assertNotNull(csl);
   }
 
   /**

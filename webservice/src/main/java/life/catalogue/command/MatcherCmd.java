@@ -1,28 +1,41 @@
 package life.catalogue.command;
 
 import com.codahale.metrics.MetricRegistry;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.UserDao;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndexFactory;
+import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.Subparser;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Manages on-disk usage-matcher indices stored in {@code cfg.matching.storageDir}.
- * Currently supports removing matchers whose name count falls below a minimum threshold
- * via {@code --delete-small N}, which frees disk space for small or stale datasets.
- * Single-dataset management via {@code --key} is not yet implemented.
+ * Supported actions (pick one):
+ * <ul>
+ *   <li>{@code --key N} — rebuild the matcher for a single dataset (force).</li>
+ *   <li>{@code --rebuild-all} — rebuild every published, in-scope matcher (force), equivalent to the
+ *       {@code PUT /matcher/rebuild} admin endpoint.</li>
+ *   <li>{@code --rebuild-stale} — rebuild only matchers that are missing or whose stored attempt is
+ *       out of date (the same reconcile that runs at server startup).</li>
+ * </ul>
+ *
+ * The rebuilds run asynchronously on a job executor; the command waits for them to finish before exiting.
+ *
+ * <p><b>Run offline only.</b> The persistent stores are not meant to be opened by two processes at once
+ * (matcher start/stop is otherwise admin-API driven during blue-green deploys). Use this command with the
+ * read-write server stopped, or against an instance not serving the same storage dir.
  */
 public class MatcherCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(MatcherCmd.class);
   private static final String ARG_KEY = "key";
-  private static final String ARG_MINIMUM = "delete-small";
+  private static final String ARG_REBUILD_ALL = "rebuild-all";
+  private static final String ARG_REBUILD_STALE = "rebuild-stale";
   private UsageMatcherFactory matcherFactory;
 
   public MatcherCmd() {
@@ -36,11 +49,16 @@ public class MatcherCmd extends AbstractMybatisCmd {
     subparser.addArgument("--"+ ARG_KEY, "-k")
       .dest(ARG_KEY)
       .type(Integer.class)
+      .help("Rebuild the matcher for a single dataset key")
       .required(false);
-    subparser.addArgument("--"+ ARG_MINIMUM)
-       .dest(ARG_MINIMUM)
-       .type(Integer.class)
-       .required(false);
+    subparser.addArgument("--"+ ARG_REBUILD_ALL)
+      .dest(ARG_REBUILD_ALL)
+      .action(Arguments.storeTrue())
+      .help("Rebuild all published, in-scope matchers (force)");
+    subparser.addArgument("--"+ ARG_REBUILD_STALE)
+      .dest(ARG_REBUILD_STALE)
+      .action(Arguments.storeTrue())
+      .help("Rebuild only missing or stale matchers");
   }
 
   @Override
@@ -53,34 +71,45 @@ public class MatcherCmd extends AbstractMybatisCmd {
       executor.start();
       matcherFactory = new UsageMatcherFactory(cfg.matching, ni, factory, executor);
 
-      // key
       Integer key = ns.getInt(ARG_KEY);
-      if (key != null) {
-        throw new NotImplementedException();
-      }
+      boolean rebuildAll = ns.getBoolean(ARG_REBUILD_ALL);
+      boolean rebuildStale = ns.getBoolean(ARG_REBUILD_STALE);
 
-      Integer min = ns.getInt(ARG_MINIMUM);
-      if (min != null) {
-        deleteSmallMatcher(min);
+      if (key != null) {
+        LOG.info("Rebuild matcher for dataset {}", key);
+        matcherFactory.rebuild(key, Users.MATCHER);
+        awaitIdle(executor);
+      } else if (rebuildAll) {
+        LOG.info("Rebuild ALL published matchers");
+        matcherFactory.reconcile(true, Users.MATCHER);
+        awaitIdle(executor);
+      } else if (rebuildStale) {
+        LOG.info("Rebuild missing or stale matchers");
+        matcherFactory.reconcile(false, Users.MATCHER);
+        awaitIdle(executor);
+      } else {
+        System.out.println("No action given. Use one of: --key <datasetKey>, --rebuild-all, --rebuild-stale");
       }
 
     } finally {
-      executor.stop();
-      matcherFactory.close();
+      if (executor != null) {
+        executor.stop();
+      }
+      if (matcherFactory != null) {
+        matcherFactory.close();
+      }
     }
   }
 
-  private void deleteSmallMatcher(Integer min) {
-    var matcher = matcherFactory.metadata(false);
-    for (var m : matcher.matchers) {
-      removeIfSmall(m.datasetKey, m.size, min);
+  /**
+   * Blocks until all queued/running matcher builds have completed.
+   * Builds are submitted asynchronously to the executor, so we poll its idle state.
+   */
+  private void awaitIdle(JobExecutor executor) throws InterruptedException {
+    while (!executor.isIdle()) {
+      LOG.info("Waiting for matcher builds to finish...");
+      TimeUnit.SECONDS.sleep(5);
     }
-  }
-
-  private void removeIfSmall(int datasetKey, int size, int min) {
-    if (size < min) {
-      LOG.info("Remove matcher for dataset {} with {} names only", datasetKey, size);
-      matcherFactory.remove(datasetKey);
-    }
+    LOG.info("All matcher builds finished");
   }
 }

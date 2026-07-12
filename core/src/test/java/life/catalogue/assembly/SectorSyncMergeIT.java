@@ -110,7 +110,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       {"circular", List.of("src1", "src2", "src3")},
       {"biota2", List.of("ipni")},
       {"biota", List.of("wcvp", "lcvp", "ipni")}, // TODO: should be merged: Biota macrocarpa hort. ex Gordon AND Biota macrocarpa Godr.
-      {"saccolomataceae", List.of("orthiopteris")}
+      {"saccolomataceae", List.of("orthiopteris")},
+      {"protected", List.of("src")} // XReleaseConfig.protectedGroups shields the Carabus subtree from merges
     });
   }
 
@@ -398,6 +399,26 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       case "vernacular":
         validateVernacular(); break;
     }
+  }
+
+  /**
+   * Invoked by reflection from {@link #syncAndCompare()} for the "protected" project.
+   * Asserts that the protected Carabus genus and its subtree received no merge changes,
+   * while a sibling genus outside the protected group was merged normally.
+   */
+  public void protectedValidate() {
+    // a new source species inside the protected genus must not be inserted
+    assertNull("New source species must not be inserted into the protected Carabus subtree",
+      getByName(Datasets.COL, Rank.SPECIES, "Carabus nemoralis"));
+
+    // an existing member of the protected subtree must not receive updates (no authorship added)
+    var auratus = getByName(Datasets.COL, Rank.SPECIES, "Carabus auratus");
+    assertNotNull(auratus);
+    assertNull("Authorship must not be merged into a taxon within a protected group", auratus.getName().getAuthorship());
+
+    // a new species under a sibling genus outside the protected group must be merged normally
+    assertNotNull("New species outside the protected group must be merged",
+      getByName(Datasets.COL, Rank.SPECIES, "Bembidion properans"));
   }
 
   private void validateVernacular() {

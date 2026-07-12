@@ -24,6 +24,7 @@ public abstract class UsageMatcherStoreTestBase {
   public void basics() throws IOException {
     try (UsageMatcherStore store = createStore(1)) {
       assertEquals(0, store.size());
+      assertEquals(0, store.canonicalSize());
 
       var sn0 = add(snc("0", null, "Ausaceae", null, Rank.FAMILY, 0, 10), store);
       var sn1 = add(snc("1", "4", "Aus bus", "Smith", Rank.SPECIES, 1, 11), store);
@@ -33,6 +34,8 @@ public abstract class UsageMatcherStoreTestBase {
       var sn5 = add(sncSyn("5", "2", "Aus cus", "Jackson", Rank.SPECIES, 2, 15), store);
 
       assertEquals(6, store.size());
+      // 6 usages but only 5 distinct canonical ids (sn2 and sn5 share canonical id 2)
+      assertEquals(5, store.canonicalSize());
 
       assertEquals(sn2, store.get(sn2.getId()));
       var cl = store.getClassification(sn5.getParentId());

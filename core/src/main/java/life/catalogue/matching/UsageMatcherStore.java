@@ -77,6 +77,17 @@ public interface UsageMatcherStore extends AutoCloseable {
 
   int size();
 
+  /**
+   * @return number of distinct canonical name index ids held in the inverted canonical index
+   */
+  default int canonicalSize() {
+    int cnt = 0;
+    for (var id : allCanonicalIds()) {
+      cnt++;
+    }
+    return cnt;
+  }
+
   default boolean isEmpty() {
     return size() < 1;
   }

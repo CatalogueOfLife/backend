@@ -290,10 +290,17 @@
 
   <resultMap id="simpleInDatasetResultMap" type="SimpleNameInDataset" autoMapping="true">
     <id property="id" column="id"/>
-    <result property="datasetKey" column="dataset_key"/>
+    <id property="datasetKey" column="dataset_key"/>
     <result property="name" column="scientific_name"/>
     <result property="parent" column="parent_id"/>
     <result property="phrase" column="name_phrase" />
+  </resultMap>
+
+  <resultMap id="simpleClassificationResultMap" type="SimpleNameInDatasetClassified" autoMapping="true" extends="simpleInDatasetResultMap">
+    <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+    <result property="datasetAlias" column="alias" />
+    <result property="datasetTitle" column="title" />
+    <association property="accepted" javaType="SimpleName" autoMapping="true" columnPrefix="a_"/>
   </resultMap>
 
   <resultMap id="simpleVerbatimResultMap" type="SimpleNameVerbatim" autoMapping="true" extends="simpleResultMap">
@@ -331,6 +338,12 @@
   <select id="count" resultType="integer">
     SELECT count(*) FROM name_usage
     WHERE dataset_key = #{datasetKey}
+  </select>
+
+  <select id="countDistinctCanonical" resultType="integer">
+    SELECT count(DISTINCT ni.canonical_id)
+    FROM <include refid="FROM_NIDX_BASE"/>
+    WHERE nm.dataset_key = #{datasetKey}
   </select>
 
   <select id="get" resultMap="usageResultMap">
@@ -501,10 +514,37 @@
   <select id="listByNamesIndexIDGlobal" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM_NIDX"/>
-      LEFT JOIN dataset d ON d.key=nm.dataset_key
-    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
-    ORDER BY ni.id, d.title, u.id
+      JOIN dataset d ON d.key=nm.dataset_key
+    WHERE (ni.id=#{nidx} OR ni.canonical_id=#{nidx}) AND <include refid="DATASET_PUBLIC"/>
+    ORDER BY ni.id, d.title, d.key, u.id
     <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="listByNamesIndexIDGlobalClassified" resultMap="simpleClassificationResultMap">
+    SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>, tm.classification, d.alias, d.title,
+        au.id AS a_id, an.scientific_name AS a_name, an.authorship AS a_authorship, an.rank AS a_rank, an.code AS a_code, au.status AS a_status
+    FROM <include refid="FROM_NIDX_BASE"/>
+        JOIN dataset d ON d.key=nm.dataset_key
+        LEFT JOIN name_usage au ON au.dataset_key=nm.dataset_key AND au.id=u.parent_id AND is_synonym(u.status)
+        LEFT JOIN name an ON an.dataset_key=nm.dataset_key AND an.id=au.name_id
+        LEFT JOIN taxon_metrics tm ON tm.dataset_key=nm.dataset_key
+            AND tm.taxon_id = CASE WHEN is_synonym(u.status) THEN u.parent_id ELSE u.id END
+    WHERE (ni.id=#{nidx} OR ni.canonical_id=#{nidx}) AND <include refid="DATASET_PUBLIC"/>
+    ORDER BY d.title, d.key, u.id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <sql id="DATASET_PUBLIC">
+    d.deleted IS NULL
+    AND d.origin != 'PROJECT'::DATASETORIGIN
+    AND <include refid="life.catalogue.db.mapper.DatasetMapper.NOT_TEMP"/>
+  </sql>
+
+  <select id="countByNamesIndexIDGlobalClassified" resultType="integer">
+    SELECT count(*)
+    FROM <include refid="FROM_NIDX_BASE"/>
+      JOIN dataset d ON d.key=nm.dataset_key
+    WHERE (ni.id=#{nidx} OR ni.canonical_id=#{nidx}) AND <include refid="DATASET_PUBLIC"/>
   </select>
 
   <select id="listByUsageID" resultMap="usageResultMap">
@@ -521,9 +561,13 @@
       JOIN name_match nm ON nm.index_id=ni.id
       JOIN name n ON n.dataset_key=nm.dataset_key AND n.id=nm.name_id
       JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=n.id
-    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+      JOIN dataset d ON d.key=nm.dataset_key
+    WHERE (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
     <if test="datasetKey != null">
       AND nm.dataset_key = #{datasetKey}
+    </if>
+    <if test="datasetKey == null">
+      AND <include refid="DATASET_PUBLIC"/>
     </if>
   </select>
 
@@ -912,6 +956,83 @@
     SELECT id, scientific_name, authorship, name_phrase, extinct, rank, code, status, parent_id
     FROM x
     <if test="depthFirst">ORDER BY x.path</if>
+  </select>
+
+  <sql id="DIFF_LABEL">
+    <choose>
+      <when test="param.authorship">
+        (CASE WHEN x.extinct THEN '†' ELSE '' END) || x.scientific_name
+          || COALESCE(' ' || x.authorship, '') || COALESCE(' ' || x.name_phrase, '')
+      </when>
+      <otherwise>x.scientific_name</otherwise>
+    </choose>
+    <if test="param.parentName">
+      <choose>
+        <when test="param.parentRank != null">|| COALESCE(' &gt;&gt; ' || x.anc, '')</when>
+        <otherwise>|| COALESCE(' &gt;&gt; ' || x.pname, '')</otherwise>
+      </choose>
+    </if>
+  </sql>
+
+  <!--
+    Pure-SQL byte-ordered name label generator for the in-JVM diff engine (life.catalogue.printer.diff).
+    Mirrors NameParentPrinter's label + optional " >> parent" suffix:
+      - pname is always the direct parent's name.
+      - anc is the nearest proper ancestor whose rank equals param.parentRank (never the row's own
+        name - the root has no ancestor, so its anc is NULL; a child's anc is derived from its
+        parent's rank/anc, not its own rank).
+    lowestRank/rankFilter are applied on the final projection only (row-level, does not prune
+    descendants), matching the printer's setFilter/counter behaviour.
+    Uses UNION (not UNION ALL) like every other recursive tree CTE here: cyclic parent_id chains
+    occur in real data (see detectLoop), and UNION bounds the recursion to finitely many distinct
+    rows so a cyclic dataset can never make this query recurse without end.
+  -->
+  <select id="processDiffNames" parameterType="map" resultType="String"
+          resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    WITH RECURSIVE x AS(
+      SELECT u.id, u.parent_id, u.status, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct,
+             n.scientific_name, n.authorship, n.rank,
+             NULL::text AS pname,
+             NULL::text AS anc
+      FROM <include refid="FROM_SIMPLE"/>
+      WHERE u.dataset_key=#{param.datasetKey}
+      AND
+      <choose>
+        <when test="param.roots != null and !param.roots.isEmpty()">
+          u.id IN <foreach item="id" collection="param.roots" open="(" separator="," close=")">#{id}</foreach>
+        </when>
+        <otherwise>u.parent_id IS NULL</otherwise>
+      </choose>
+      AND NOT is_synonym(u.status)
+      <if test="param.exclusion != null and !param.exclusion.isEmpty()">
+        AND u.id NOT IN <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
+      </if>
+    UNION
+      SELECT u.id, u.parent_id, u.status, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct,
+             n.scientific_name, n.authorship, n.rank,
+             x.scientific_name AS pname,
+             COALESCE(CASE WHEN
+               <if test="param.parentRank != null">x.rank = #{param.parentRank}::rank</if>
+               <if test="param.parentRank == null">FALSE</if>
+               THEN x.scientific_name END, x.anc) AS anc
+      FROM <include refid="FROM_SIMPLE"/>
+        JOIN x ON x.id = u.parent_id
+      WHERE u.dataset_key=#{param.datasetKey}
+      <if test="!param.synonyms">AND NOT is_synonym(u.status)</if>
+      <if test="param.exclusion != null and !param.exclusion.isEmpty()">
+        AND u.id NOT IN <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
+      </if>
+    )
+    SELECT <include refid="DIFF_LABEL"/> AS label
+    FROM x
+    WHERE TRUE
+    <if test="param.lowestRank">
+      AND (x.rank &lt;= #{param.lowestRank}::rank OR x.rank = 'UNRANKED'::rank)
+    </if>
+    <if test="param.rankFilter != null and !param.rankFilter.isEmpty()">
+      AND x.rank NOT IN <foreach item="r" collection="param.rankFilter" open="(" separator="," close=")">#{r}::rank</foreach>
+    </if>
+    ORDER BY label
   </select>
 
   <select id="processTreeLinneanUsage" parameterType="map" resultMap="linneanUsageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

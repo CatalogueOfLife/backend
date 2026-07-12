@@ -44,7 +44,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -83,7 +83,8 @@ public class VocabResource {
           Sector.Mode.class,
           NameUsageSearchParameter.class,
           CSLType.class,
-          TreeNode.Type.class)) {
+          TreeNode.Type.class,
+          Sector.AuthorshipUpdate.class)) {
         add(enums, clazz);
       }
       

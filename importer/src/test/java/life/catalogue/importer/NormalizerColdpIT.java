@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.common.csl.CslUtil;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.UsageData;
@@ -30,7 +29,7 @@ import org.junit.Test;
 
 
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
@@ -593,7 +592,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     // R2,Barneby & J.W.Grimes,N. Amer. Fl.,1928,23,,27
     Reference r2 = refByID("R2");
     assertEquals("Barneby, & Grimes, J. W. (1928). N. Amer. Fl., 23, 27.", r2.getCitation());
-    assertEquals("Barneby; Grimes,J.W.", CslUtil.toColdpString(r2.getCsl().getAuthor()));
+    assertEquals("Barneby; Grimes,J.W.", CslName.toColdpString(r2.getCsl().getAuthor()));
     assertEquals("N. Amer. Fl.", r2.getCsl().getContainerTitle());
     assertEquals("23", r2.getCsl().getVolume());
     assertNull(r2.getCsl().getIssue());
@@ -680,6 +679,32 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertEquals(1, un.getSpiRelations().size());
     var v = store.getVerbatim(un.getSpiRelations().getFirst().getVerbatimKey());
     assertTrue(v.getIssues().isEmpty());
+  }
+
+  /**
+   * Taxon concept relations and species interactions must only ever reference accepted taxa.
+   * A relation pointing at a synonym gets relinked to the synonyms accepted taxon and flagged.
+   */
+  @Test
+  public void relationSynonymPartner() throws Exception {
+    normalize(44);
+    store.debug();
+
+    var u = usageByID("1");
+    assertFalse(u.isSynonym());
+
+    // the related synonym s3 must have been relinked to its accepted taxon 2
+    assertEquals(1, u.getTcRelations().size());
+    var tc = u.getTcRelations().getFirst();
+    assertEquals("1", tc.getFromID());
+    assertEquals("2", tc.getToID());
+    assertTrue(store.getVerbatim(tc.getVerbatimKey()).getIssues().contains(Issue.RELATION_SYNONYM));
+
+    assertEquals(1, u.getSpiRelations().size());
+    var spi = u.getSpiRelations().getFirst();
+    assertEquals("1", spi.getFromID());
+    assertEquals("2", spi.getToID());
+    assertTrue(store.getVerbatim(spi.getVerbatimKey()).getIssues().contains(Issue.RELATION_SYNONYM));
   }
 
   /**

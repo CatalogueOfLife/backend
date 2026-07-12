@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.ImportAttempt;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.config.DiffConfig;
 import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.db.mapper.SectorImportMapper;
 
@@ -17,8 +18,8 @@ import com.google.common.collect.Lists;
 
 public class SectorDiffService extends BaseDiffService<DSID<Integer>> {
 
-  public SectorDiffService(SqlSessionFactory factory, FileMetricsSectorDao dao, int timeoutInSeconds) {
-    super(dao, factory, timeoutInSeconds);
+  public SectorDiffService(SqlSessionFactory factory, FileMetricsSectorDao dao, DiffConfig diffCfg) {
+    super(dao, factory, diffCfg);
   }
 
   @Override

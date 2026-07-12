@@ -38,6 +38,7 @@ import life.catalogue.importer.proxy.ArchiveDescriptor;
 import life.catalogue.importer.proxy.DistributedArchiveService;
 import life.catalogue.matching.AddIdentifiersSpec;
 import life.catalogue.matching.IdentifierScopeResolver;
+import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
@@ -200,11 +201,14 @@ public class ImportJob extends DatasetJob {
           throw new IllegalArgumentException("Dataset " + datasetKey + " cannot match against itself");
         }
         try {
-          if (matcherFactory.get(resolvedKey) == null) {
+          // presence check only — release the lease immediately, the real import re-acquires it
+          UsageMatcher m = matcherFactory.get(resolvedKey);
+          if (m == null) {
             throw new IllegalArgumentException("Dataset " + datasetKey
               + " is configured to add identifiers from " + spec + " (resolved key=" + resolvedKey
               + ") but no matcher exists for it");
           }
+          m.close();
         } catch (IOException e) {
           throw new IllegalStateException("Failed to access matcher for dataset " + resolvedKey, e);
         }

@@ -11,6 +11,7 @@ import life.catalogue.matching.UsageMatcher;
 import life.catalogue.release.XReleaseConfig;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -32,6 +33,8 @@ public class TreeMergeHandlerConfig {
   public final int user;
   private final Set<String> blockedNames = new HashSet<>();
   private final List<Pattern> blockedNamePatterns = new ArrayList<>();
+  // resolved usage ids of the protected group root taxa in the sync target dataset
+  private final Set<String> protectedUsageIds = new HashSet<>();
 
   public TreeMergeHandlerConfig(SqlSessionFactory factory, XReleaseConfig rcfg, int datasetKey, int user) {
     this.factory = factory;
@@ -57,6 +60,61 @@ public class TreeMergeHandlerConfig {
         }
       }
     }
+    resolveProtectedGroups();
+  }
+
+  /**
+   * Resolves the configured protected groups to their accepted usage in the sync target dataset.
+   * Each protected taxon must exist, be accepted and unique - the release fails otherwise.
+   * The resolved root ids are used to shield the entire subtree of each group from any merge changes.
+   * A warning is logged for every protected group.
+   */
+  private void resolveProtectedGroups() {
+    if (xCfg.protectedGroups == null || xCfg.protectedGroups.isEmpty()) {
+      return;
+    }
+    try (SqlSession session = factory.openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      for (var entry : xCfg.protectedGroups.entrySet()) {
+        final Rank rank = entry.getKey();
+        if (rank == null || entry.getValue() == null) {
+          throw new IllegalArgumentException("Protected group requires a rank and at least one scientific name, but got: " + rank + " / " + entry.getValue());
+        }
+        for (String name : entry.getValue()) {
+          if (StringUtils.isBlank(name)) {
+            throw new IllegalArgumentException("Protected group of rank " + rank + " contains a blank scientific name");
+          }
+          // find all usages by canonical name & rank, regardless of status, then keep only accepted taxa
+          SimpleName taxon = null;
+          int taxonCount = 0;
+          for (var sn : num.findSimple(datasetKey, null, null, rank, name.trim())) {
+            if (sn.getStatus() != null && sn.getStatus().isTaxon()) {
+              taxon = sn;
+              taxonCount++;
+            }
+          }
+          if (taxonCount == 0) {
+            throw new IllegalArgumentException("Protected group " + rank + " " + name + " does not exist as an accepted taxon in dataset " + datasetKey);
+          }
+          if (taxonCount > 1) {
+            throw new IllegalArgumentException("Protected group " + rank + " " + name + " is not unique. Found " + taxonCount + " accepted taxa in dataset " + datasetKey);
+          }
+          protectedUsageIds.add(taxon.getId());
+          LOG.warn("Protect {} {} [{}] and its entire subtree from any merge sync updates or inserts", rank, name, taxon.getId());
+        }
+      }
+    }
+  }
+
+  public boolean hasProtectedGroups() {
+    return !protectedUsageIds.isEmpty();
+  }
+
+  /**
+   * @return true if the given usage id is the root of a protected group
+   */
+  public boolean isProtectedRoot(String usageId) {
+    return protectedUsageIds.contains(usageId);
   }
 
   private static String norm(String x) {

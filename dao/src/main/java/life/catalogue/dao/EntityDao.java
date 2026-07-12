@@ -121,7 +121,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     } catch (PersistenceException e) {
       if (PgUtils.isUniqueConstraint(e)) {
         LOG.warn("Violated unique constraint: {}", PgUtils.toMessage(e));
-        throw new NotUniqueException(e);
+        throw new NotUniqueException(PgUtils.constraintMessage(e), e);
       }
       throw e;
     }
@@ -180,7 +180,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     } catch (PersistenceException e) {
       if (PgUtils.isUniqueConstraint(e)) {
         LOG.warn("Violated unique constraint: {}", PgUtils.toMessage(e));
-        throw new NotUniqueException(e);
+        throw new NotUniqueException(PgUtils.constraintMessage(e), e);
       }
       throw e;
     }

@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 import static org.junit.Assert.*;
 

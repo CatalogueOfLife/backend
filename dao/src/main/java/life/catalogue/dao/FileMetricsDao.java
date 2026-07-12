@@ -150,7 +150,13 @@ public abstract class FileMetricsDao<K> {
   protected Stream<String> streamFile(File f, K key, int attempt) {
     try {
       BufferedReader br = UTF8IoUtils.readerFromGzipFile(f);
-      return br.lines();
+      return br.lines().onClose(() -> {
+        try {
+          br.close();
+        } catch (IOException e) {
+          LOG.warn("Failed to close names file {}", f.getAbsolutePath(), e);
+        }
+      });
 
     } catch (FileNotFoundException e) {
       throw new AttemptMissingException(type, key, attempt, e);

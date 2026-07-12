@@ -108,7 +108,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     this.validator = validator;
     this.resolver = resolver;
     this.jobExecutor = jobExecutor;
-    this.importStoreFactory = new ImportStoreFactory(nCfg);
+    this.importStoreFactory = new ImportStoreFactory(nCfg, iCfg.threads);
     this.downloader = new DownloadUtil(client, iCfg.githubToken, iCfg.githubTokenGeoff);
     this.index = index;
     this.imgService = imgService;

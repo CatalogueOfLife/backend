@@ -1,5 +1,6 @@
 package life.catalogue.api.jackson;
 
+import life.catalogue.api.model.CSLType;
 import life.catalogue.api.model.CslData;
 
 import java.io.IOException;
@@ -9,8 +10,6 @@ import java.util.List;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-
-import de.undercouch.citeproc.csl.CSLType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

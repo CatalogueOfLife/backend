@@ -42,7 +42,12 @@ public class NameUsageMatchingResource extends AbstractNameUsageMatchingResource
 
   private MatchingJob submit(MatchingRequest req, User user) throws IOException {
     MatchingJob job = new MatchingJob(req, user.getKey(), factory, matcherFactory, cfg);
-    exec.submit(job);
+    try {
+      exec.submit(job);
+    } catch (RuntimeException e) {
+      job.releaseMatcher(); // submit rejected (duplicate / too many) → release the matcher lease, don't leak it
+      throw e;
+    }
     return job;
   }
 

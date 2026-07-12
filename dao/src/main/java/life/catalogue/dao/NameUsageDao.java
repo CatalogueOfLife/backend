@@ -4,6 +4,7 @@ import jakarta.ws.rs.PathParam;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
@@ -103,5 +104,17 @@ public class NameUsageDao {
     }
     indexService.update(datasetKey, id);
     return sn;
+  }
+
+  public NameMatch nameMatch(int datasetKey, String id) {
+    try (SqlSession session = factory.openSession()) {
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      NameMatchMapper nm = session.getMapper(NameMatchMapper.class);
+      var u = num.get(DSID.of(datasetKey, id));
+      if (u != null && u.getName() != null) {
+        return nm.get(DSID.of(datasetKey, u.getName().getId()));
+      }
+      return null;
+    }
   }
 }

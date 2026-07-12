@@ -53,4 +53,31 @@ class GithubFeedbackTest {
       "Submitted by: 100\n" +
       "Email: https://api.checklistbank.org/admin/email?address="));
   }
+
+  @Test
+  void buildSourceMessage() {
+    var encryption = new EmailEncryption("tVmJMgv8ZiCNrHDGCYdg9gt6K8MFNYB4", "ff0cdb935375091f");
+    final var feedback = new GithubFeedback(new GithubConfig(), URI.create("https://www.checklistbank.org"), URI.create("https://api.checklistbank.org"), null, encryption, null);
+
+    Dataset d = new Dataset();
+    d.setAlias("COL22");
+
+    var msg = feedback.buildSourceMessage(Optional.empty(), 1146, fb("This dataset is out of date."), d);
+    assertEquals("This dataset is out of date.\n" +
+      "\n" +
+      "---\n" +
+      "Source: COL22\n" +
+      "Dataset: https://www.checklistbank.org/dataset/1146", msg);
+
+    var user = new User();
+    user.setKey(100);
+    msg = feedback.buildSourceMessage(Optional.of(user), 1146, fb("This dataset is out of date.", "peter@nope.com"), d);
+    assertTrue(msg.startsWith("This dataset is out of date.\n" +
+      "\n" +
+      "---\n" +
+      "Source: COL22\n" +
+      "Dataset: https://www.checklistbank.org/dataset/1146\n" +
+      "Submitted by: 100\n" +
+      "Email: https://api.checklistbank.org/admin/email?address="));
+  }
 }

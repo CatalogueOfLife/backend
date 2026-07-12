@@ -23,6 +23,8 @@ public class GazetteerParserTest extends ParserTestBase<Gazetteer> {
     assertParse(Gazetteer.TDWG, "tdwg1");
     assertParse(Gazetteer.TDWG, "tdwg");
     assertParse(Gazetteer.ISO, "Iso");
+    assertParse(Gazetteer.WDPA, "wdpa");
+    assertParse(Gazetteer.WDPA, "pa");
   }
 
   @Override

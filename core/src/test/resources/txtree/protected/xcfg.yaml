@@ -1,0 +1,5 @@
+# Carabus and its entire subtree must be shielded from all merge syncs.
+# The genus exists, is accepted and unique in the project, so the release startup check passes.
+protectedGroups:
+  GENUS:
+    - Carabus

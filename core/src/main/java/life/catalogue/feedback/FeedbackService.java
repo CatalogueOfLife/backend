@@ -20,6 +20,13 @@ public interface FeedbackService extends Managed {
   URI create(Optional<User> user, DSID<String> usageKey, Feedback message) throws NotFoundException, IOException;
 
   /**
+   * Creates feedback for an entire source dataset (no specific taxon).
+   * @param projectKey the project or release the source belongs to (used to authorise the feedback)
+   * @param sourceDatasetKey the source dataset the feedback is about
+   */
+  URI createForSource(Optional<User> user, int projectKey, int sourceDatasetKey, Feedback message) throws NotFoundException, IOException;
+
+  /**
    * @return a pass through feedback service that does nothing. Good for tests
    */
   static FeedbackService passThru() {
@@ -42,6 +49,12 @@ public interface FeedbackService extends Managed {
 
       @Override
       public URI create(Optional<User> user, DSID<String> usageKey, Feedback message) throws NotFoundException {
+        log.warn("No feedback configured, cannot log message {}", message);
+        return null;
+      }
+
+      @Override
+      public URI createForSource(Optional<User> user, int projectKey, int sourceDatasetKey, Feedback message) throws NotFoundException {
         log.warn("No feedback configured, cannot log message {}", message);
         return null;
       }

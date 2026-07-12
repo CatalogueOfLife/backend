@@ -2,6 +2,7 @@ package life.catalogue.dw.jersey.writers;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
+import life.catalogue.common.csl.CitationConverter;
 import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.io.IOException;
@@ -34,7 +35,7 @@ public class CitationCslBodyWriter implements MessageBodyWriter<Citation> {
 
   @Override
   public void writeTo(Citation cit, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
-    JSON_WRITER.writeValue(out, cit.toCSL());
+    JSON_WRITER.writeValue(out, CitationConverter.toCSL(cit));
   }
 
 }

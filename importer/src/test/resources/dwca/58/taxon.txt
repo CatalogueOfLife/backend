@@ -1,0 +1,6 @@
+taxonID	acceptedNameUsageID	parentNameUsageID	scientificName	taxonRank	taxonomicStatus
+1			Animalia	kingdom	accepted
+100		1	Hassalstrongylus beta (Travassos, 1918)	species	accepted
+110		1	Hassalstrongylus gamma (Travassos, 1918)	species	accepted
+200	100;300		Heligmosomum beta Travassos, 1918	species	synonym
+300	110;200		Longistriata beta (Travassos, 1918)	species	synonym

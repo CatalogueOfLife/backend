@@ -1,5 +1,6 @@
 package life.catalogue.api.jackson;
 
+import life.catalogue.api.model.CSLType;
 import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.coldp.ColdpTerm;
@@ -33,8 +34,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.ClassPath;
-
-import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * Jackson module that defines all serde rules for all CoL API model classes.

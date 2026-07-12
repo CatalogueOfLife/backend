@@ -9,30 +9,26 @@ import life.catalogue.api.model.User;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.UsageMatcherFactory;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.util.Map;
 
 @Hidden
 @Path("/matcher")
 @Produces(MediaType.APPLICATION_JSON)
 public class MatcherManagementResource {
 
-  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(MatcherManagementResource.class);
-  private final SqlSessionFactory factory;
   private final UsageMatcherFactory matcherFactory;
 
-  public MatcherManagementResource(SqlSessionFactory factory, UsageMatcherFactory matcherFactory) {
-    this.factory = factory;
+  public MatcherManagementResource(UsageMatcherFactory matcherFactory) {
     this.matcherFactory = matcherFactory;
   }
 
   @GET
-  public UsageMatcherFactory.FactoryMetadata listMatcher(@QueryParam("decorate") boolean decorate) {
-    return matcherFactory.metadata(decorate);
+  public Map<String, Object> config() {
+    return Map.of("pgMatcherThreshold", matcherFactory.getPgMatcherThreshold());
   }
 
   @GET
@@ -41,25 +37,20 @@ public class MatcherManagementResource {
     return matcherFactory.metadata(key);
   }
 
-  @DELETE
-  @Path("{key}")
+  @POST
+  @Path("rebuild")
   @RolesAllowed({Roles.ADMIN})
-  public void removeMatcher(@PathParam("key") int key) {
-    matcherFactory.remove(key);
+  public void rebuildAll(@QueryParam("force") boolean force, @Auth User user) {
+    LOG.info("User {} requested rebuild of {} matchers", user, force ? "all" : "stale");
+    matcherFactory.reconcile(force, user.getKey());
   }
 
   @POST
   @Path("{key}")
-  public BackgroundJob buildMatcher(@PathParam("key") int key, @Auth User user) throws IOException {
-    LOG.info("User {} request new matcher for dataset {}", user, key);
-    return matcherFactory.prepare(key, user.getKey());
-  }
-
-  @POST
-  @Path("reload")
   @RolesAllowed({Roles.ADMIN})
-  public int reloadMatcher() {
-    return matcherFactory.reload();
+  public BackgroundJob rebuildMatcher(@PathParam("key") int key, @Auth User user) {
+    LOG.info("User {} requested rebuild of matcher for dataset {}", user, key);
+    return matcherFactory.rebuild(key, user.getKey());
   }
 
 }

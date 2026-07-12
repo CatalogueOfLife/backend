@@ -19,7 +19,7 @@ import java.util.UUID;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 import static life.catalogue.common.kryo.ApiKryoPool.registerCollectionClasses;
 

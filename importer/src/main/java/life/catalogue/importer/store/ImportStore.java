@@ -62,6 +62,13 @@ public class ImportStore implements AutoCloseable {
 
   private final IdGenerator idGen = new IdGenerator("~");
 
+  /**
+   * Number of kryo-pool backed serializers a single ImportStore can use in parallel. Used to size the
+   * shared kryo pool against the worst case of {@code importerThreads} imports running at once.
+   * One per pool-backed map: verbatim, references (MapStore base), typeMaterial, usages, names (CRUDStore
+   * base) and the names string-set index map - i.e. 6. Update this if the number of pool-backed maps changes.
+   */
+  public static final int KRYO_SERIALIZERS = 6;
 
   ImportStore(int datasetKey, int attempt, DB mapDb, File storeDir, Pool<Kryo> pool) {
     this.datasetKey = datasetKey;

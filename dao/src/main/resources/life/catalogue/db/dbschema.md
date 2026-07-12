@@ -11,6 +11,22 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-03 relation synonym issue
+```
+ALTER TYPE ISSUE ADD VALUE 'RELATION_SYNONYM';
+```
+
+#### 2026-07-01 WDPA gazetteer
+```
+ALTER TYPE GAZETTEER ADD VALUE 'WDPA' AFTER 'TEOW';
+```
+
+#### 2026-06-17 hierarchy sync authorship update setting
+```sql
+CREATE TYPE SECTOR_AUTHORSHIP_UPDATE AS ENUM ('NONE', 'MISSING', 'ALWAYS');
+ALTER TABLE sector ADD COLUMN authorship_update SECTOR_AUTHORSHIP_UPDATE NOT NULL DEFAULT 'NONE';
+```
+
 #### 2026-06-12 unified background jobs (feature/unified-jobs branch)
 Generic `job` table holding one record per background job of any kind.
 `dataset_import` and `sector_import` become pure metrics tables linking to `job` via a new `job_key` column;
@@ -164,6 +180,13 @@ UPDATE sector_import SET extinct_taxa_by_rank_count = extinct_taxa_by_rank_count
   || hstore('SERIES_BOTANY', extinct_taxa_by_rank_count -> 'SERIES') 
   || hstore('SUBSERIES_BOTANY', extinct_taxa_by_rank_count -> 'SUBSERIES') 
   WHERE extinct_taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
+
+-- update taxon metrics
+UPDATE taxon_metrics SET taxa_by_rank_count = taxa_by_rank_count - ARRAY['SUPERSERIES','SERIES','SUBSERIES']
+ || hstore('SUPERSERIES_BOTANY', taxa_by_rank_count -> 'SUPERSERIES')
+ || hstore('SERIES_BOTANY', taxa_by_rank_count -> 'SERIES')
+ || hstore('SUBSERIES_BOTANY', taxa_by_rank_count -> 'SUBSERIES')
+WHERE taxa_by_rank_count ?| ARRAY['SUPERSERIES','SERIES','SUBSERIES'];
 
 CREATE INDEX name_series_zoo_rank_idx ON name(rank) WHERE rank IN ( 'SUPERSERIES_BOTANY', 'SERIES_BOTANY', 'SUBSERIES_BOTANY', 'SUPERSERIES_ZOOLOGY', 'SERIES_ZOOLOGY', 'SUBSERIES_ZOOLOGY' ); 
 CREATE INDEX name_usage_archive_series_zoo_rank_idx ON name_usage_archive(n_rank) WHERE n_rank IN ( 'SUPERSERIES_BOTANY', 'SERIES_BOTANY', 'SUBSERIES_BOTANY', 'SUPERSERIES_ZOOLOGY', 'SERIES_ZOOLOGY', 'SUBSERIES_ZOOLOGY' ); 

@@ -6,6 +6,7 @@ import life.catalogue.api.model.NameMatch;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.dao.Partitioner;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
@@ -61,6 +62,21 @@ import net.sourceforge.argparse4j.inf.Subparser;
  *       command completes.</li>
  * </ol>
  *
+ * <p><b>After promoting the new index you MUST rebuild the persistent usage matcher stores.</b> A
+ * rebuild reassigns every {@code names_index.id}, so the nidx ids materialized inside each matcher
+ * store (see {@code UsageMatcherFactory}) reference the old index and are now stale — matching against
+ * them would silently return wrong or empty results. The required order is:
+ * <ol>
+ *   <li>promote the new index (postgres schema + file) to live;</li>
+ *   <li>refresh the {@code name_match} table by rematching every dataset
+ *       ({@code DatasetMatcher} / {@code RematchJob}), since matcher builds trust the persisted matches;</li>
+ *   <li>rebuild the matcher stores. This happens automatically on the next
+ *       {@code UsageMatcherFactory.reconcile} — e.g. the server startup after the swap, which now detects
+ *       the changed {@link NameIndex#created()} recorded in each matcher's dataset sidecar — or
+ *       immediately, without a restart, via {@code MatcherCmd --rebuild-all} /
+ *       {@code POST /matcher/rebuild?force=true}.</li>
+ * </ol>
+ *
  * <p>Flag combinations:
  * <ul>
  *   <li>{@code --file-only}: Rebuilds only the on-disk names-index file; skips DB rematching.</li>
@@ -73,6 +89,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
 public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";
+  private static final String ARG_REUSE_DUMPS = "reuse-dumps";
   private static final String ARG_FILE_ONLY = "file-only";
   private static final String ARG_INSERT_MATCHES = "pg-insert-matches";
   private static final String ARG_INSERT_ARCHIVED_MATCHES = "pg-insert-archived-matches";
@@ -127,6 +144,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
        .dest(ARG_FILE_ONLY)
        .action(Arguments.storeTrue())
        .help("Flag to only rebuild the namesindex file, but do not rematch the database.");
+    subparser.addArgument("--"+ ARG_REUSE_DUMPS)
+      .dest(ARG_REUSE_DUMPS)
+      .action(Arguments.storeTrue())
+      .help("Flag to reuse the existing 2 unsplit pg dump files instead of creating new ones.");
     subparser.addArgument("--"+ ARG_INSERT_MATCHES)
       .dest(ARG_INSERT_MATCHES)
       .type(Integer.class)
@@ -171,11 +192,14 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       insertMatchesIntoPg(ns.getInt(ARG_INSERT_MATCHES));
       insertArchivedMatchesIntoPg(ns.getInt(ARG_INSERT_ARCHIVED_MATCHES));
     } else {
-      clearBuildDir();
+      var reuse = ns.getBoolean(ARG_REUSE_DUMPS);
+      if (!reuse) {
+        clearBuildDir();
+      }
       if (ns.getBoolean(ARG_FILE_ONLY)) {
         rebuildFileOnly();
       } else {
-        rematchAll();
+        rematchAll(reuse);
       }
     }
   }
@@ -194,7 +218,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     LOG.info("Done rebuilding {} index file at {}", cfg.namesIndex.type, cfg.namesIndex.file);
   }
 
-  private void rematchAll() throws Exception {
+  private void rematchAll(Boolean reuse) throws Exception {
     if (ns.getInt(ARG_THREADS) != null) {
       threads = ns.getInt(ARG_THREADS);
       Preconditions.checkArgument(threads > 0, "Needs at least one matcher thread");
@@ -209,6 +233,12 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     try (Connection c = dataSource.getConnection()) {
       ScriptRunner runner = PgConfig.scriptRunner(c);
       runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
+      // the ScriptRunner leaves the connection with autoCommit disabled; re-enable it so the
+      // partition DDL below is committed and not rolled back when the connection is returned to the pool
+      c.setAutoCommit(true);
+      // SCHEMA_SETUP creates name_match as an empty hash partitioned parent - add its partitions,
+      // mirroring the current partition count of the live name table
+      createMatchPartitions(c, Partitioner.detectPartitionNumber(c));
     }
 
     // setup new nidx using the session factory with the nidx schema - which has no names yet
@@ -225,8 +255,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
     ExecutorService exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("matcher"));
 
-    int parts = dumpAndMatch(false, limit, exec);
-    int archivedParts = dumpAndMatch(true, limit, exec);
+    int parts = dumpAndMatch(false, limit, reuse, exec);
+    int archivedParts = dumpAndMatch(true, limit, reuse, exec);
 
     ExecutorUtils.shutdown(exec);
     LOG.info("Successfully rebuild names index with final size {}, rematching all names", ni.size());
@@ -246,7 +276,23 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       LOG.info("Building postgres constraints for new names index");
       runner.runScript(Resources.getResourceAsReader(SCHEMA_POST_CONSTRAINTS));
     }
-    LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");
+    LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually, "
+      + "then rematch all datasets (name_match) and rebuild the usage matcher stores "
+      + "(server restart triggers this automatically, or MatcherCmd --rebuild-all / POST /matcher/rebuild?force=true). "
+      + "The matcher stores hold stale nidx ids until rebuilt.");
+  }
+
+  /**
+   * Creates the hash partitions for the staged name_match parent table which was created empty by SCHEMA_SETUP.
+   */
+  private void createMatchPartitions(Connection c, int partitions) throws SQLException {
+    LOG.info("Creating {} hash partitions for {}", partitions, MATCH_TABLE);
+    try (var st = c.createStatement()) {
+      for (int i = 0; i < partitions; i++) {
+        st.execute(String.format("CREATE TABLE %s_mod%d PARTITION OF %s FOR VALUES WITH (modulus %d, remainder %d)",
+          MATCH_TABLE, i, MATCH_TABLE, partitions, i));
+      }
+    }
   }
 
   private void insertMatchesIntoPg(Integer parts) throws SQLException, IOException {
@@ -282,20 +328,33 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   /**
    * @return number of match files created
    */
-  private int dumpAndMatch(final boolean archived, final String limit, ExecutorService exec) throws IOException, SQLException {
+  private int dumpAndMatch(final boolean archived, final String limit, final boolean reuse, ExecutorService exec) throws IOException, SQLException {
     // assert build dir exists
     File out = new File(buildDir, archived ? FILENAME_ARCHIVED_NAMES : FILENAME_NAMES);
     FileUtils.createParentDirectories(out);
 
     long total;
-    LOG.info("Dumping all {}names into file {}", archived ? "archived ":"", out);
+
     try (Connection c = dataSource.getConnection()) {
-      var pgc = c.unwrap(PgConnection.class);
-      total = PgCopyUtils.dumpBinary(pgc, "SELECT " + (archived ? ARCHIVED_NAME_COLS : NAME_COLS) +
-        " FROM " + (archived ? "name_usage_archive" : "name") +
-        " ORDER BY " + (archived ? "n_scientific_name, n_rank, n_authorship" : "scientific_name, rank, authorship") +
-        limit, out
-      );
+      if (reuse && out.exists()) {
+        LOG.info("Reuse pg dump {}. Counting all {}names in database", archived ? "archived ":"", out);
+        try (var stmnt  = c.createStatement()) {
+          try (var rs = stmnt.executeQuery(
+              "SELECT count(*) FROM " + (archived ? "name_usage_archive" : "name"))) {
+            rs.next();
+            total = rs.getLong(1);
+          }
+        }
+
+      } else {
+        LOG.info("Dumping all {}names into file {}", archived ? "archived ":"", out);
+        var pgc = c.unwrap(PgConnection.class);
+        total = PgCopyUtils.dumpBinary(pgc, "SELECT " + (archived ? ARCHIVED_NAME_COLS : NAME_COLS) +
+          " FROM " + (archived ? "name_usage_archive" : "name") +
+          " ORDER BY " + (archived ? "n_scientific_name, n_rank, n_authorship" : "scientific_name, rank, authorship") +
+          limit, out
+        );
+      }
     }
 
     if (total == 0) {
@@ -321,6 +380,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       parts = splitter.split();
       LOG.info("Done splitting {} with {} records into {} files with {} each", out, total, parts, size);
     }
+    LOG.info("Delete main dump file {}", out);
+    FileUtils.deleteQuietly(out);
     return parts;
   }
 
@@ -392,7 +453,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
             LOG.info("Matched {} names from {}. {}% cached, {} errors, {} have no match", counter, in, 100*cached/counter, error, nomatch);
           }
         }
-        LOG.info("Matched all {} names from {}. {}% cached, {} errors, {} have no match", counter, in, 100*cached/counter, error, nomatch);
+        LOG.info("Matched all {} names from {}. {}% cached, {} errors, {} have no match", counter, in, counter == 0 ? 0 : 100*cached/counter, error, nomatch);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
@@ -434,8 +495,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     File out = part(archived ? FILENAME_ARCHIVED_MATCHES : FILENAME_MATCHES, part);
     FileMatcher matcher = new FileMatcher(archived, ni, in, out);
     matcher.matchAll();
-
     LoggingUtils.removeDatasetMDC();
+    LOG.info("Done matching names to {}. Delete input file {}", out, in);
+    FileUtils.deleteQuietly(in);
     return matcher;
   }
 

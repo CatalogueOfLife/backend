@@ -72,5 +72,24 @@ public interface TmpIssueMapper extends DatasetProcessable<VerbatimSource>, Sect
    */
   Cursor<IssueContainer.SimpleWithID> processIssues();
 
+  /**
+   * Read-only safe alternative to createTmpIssuesTable + processIssues that streams all usage issues
+   * in a single statement and therefore also works on the read-only replica db.
+   * Issues are stored differently in external and project / release datasets, so we pick the matching query.
+   * @param sectorKey optional sector to restrict the issues to
+   */
+  default Cursor<IssueContainer.SimpleWithID> streamIssues(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey) {
+    final var info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (info.origin.isProjectOrRelease()) {
+      return streamIssuesFromVerbatimSource(datasetKey, sectorKey);
+    } else {
+      return streamIssuesFromVerbatim(datasetKey, sectorKey);
+    }
+  }
+
+  Cursor<IssueContainer.SimpleWithID> streamIssuesFromVerbatim(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
+
+  Cursor<IssueContainer.SimpleWithID> streamIssuesFromVerbatimSource(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
+
 }
 

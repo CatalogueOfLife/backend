@@ -1,0 +1,18 @@
+Bacteria Woese et al., 2024 [domain] {ID=Bac}
+  Bacillati (Gibbons & Murray, 1978) Oren & Göker 2024 [kingdom]
+    Cyanobacteriota Oren, Mares & Rippka 2024 [phylum]
+Eukaryota [domain]
+  Animalia [kingdom]
+    Arthropoda [phylum]
+      Hexapoda [subphylum]
+        Insecta [class]
+          Phasmida Leach, 1815 [order]
+            Euphasmatodea Bradler, 1999 [suborder]
+              Diapheromeridae Kirby, 1904 [family]
+                Diapheromerinae Kirby, 1904 [subfamily]
+                  Diapheromerini Kirby, 1904 [tribe]
+                    Andeocalynda Hennemann & Conle, 2020 [genus] {ID=Andeo}
+                      =Bacteria Bates, 1865 [genus] {ID=BacB}
+                    Bacteria Berthold, 1827 [genus] {ID=BacG}
+                    Jeremiodes Hennemann & Conle, 2007 [genus] {ID=Jerem}
+                      =Bacteria Redtenbacher, 1908 [genus] {ID=BacR}

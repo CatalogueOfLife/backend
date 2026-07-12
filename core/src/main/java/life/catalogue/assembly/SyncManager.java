@@ -168,14 +168,17 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
     DatasetInfoCache.CACHE.info(sector.getDatasetKey()).requireOrigin(DatasetOrigin.PROJECT);
     RequestScope req = new RequestScope();
     req.setSectorKey(sector.getId());
-    sync(sector.getDatasetKey(), req, user);
+    sync(sector.getDatasetKey(), req, user, false);
   }
   public void sync(int projectKey, RequestScope request, int user) throws IllegalArgumentException {
+    sync(projectKey, request, user, true);
+  }
+  private void sync(int projectKey, RequestScope request, int user, boolean failOnBlocked) throws IllegalArgumentException {
     nameIndex.assertOnline();
     var settings = projectSettings(projectKey);
     final boolean blockMergeSyncs = settings.getBoolDefault(Setting.BLOCK_MERGE_SYNCS, false);
     if (request.getSectorKey() != null) {
-      syncSector(DSID.of(projectKey, request.getSectorKey()), user, blockMergeSyncs);
+      syncSector(DSID.of(projectKey, request.getSectorKey()), user, blockMergeSyncs, failOnBlocked);
     } else if (request.getDatasetKey() != null) {
       LOG.info("Sync all sectors in source dataset {}", request.getDatasetKey());
       final AtomicInteger cnt = new AtomicInteger();
@@ -184,7 +187,7 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
         PgUtils.consume(
           () -> sm.processSectors(projectKey, request.getDatasetKey()),
           s -> {
-            if (syncSector(s, user, blockMergeSyncs)) {
+            if (syncSector(s, user, blockMergeSyncs, false)) {
               cnt.getAndIncrement();
             }
           }
@@ -201,21 +204,29 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
 
 
   /**
+   * @param failOnBlocked if true throws when the sector is a merge sector blocked by project settings, otherwise it is skipped with a warning only
    * @return true if it was actually queued
    * @throws IllegalArgumentException
    */
-  private synchronized boolean syncSector(DSID<Integer> sectorKey, int user, boolean blockMergeSyncs) throws IllegalArgumentException {
+  private synchronized boolean syncSector(DSID<Integer> sectorKey, int user, boolean blockMergeSyncs, boolean failOnBlocked) throws IllegalArgumentException {
     Sector.Mode mode;
     try (SqlSession session = factory.openSession(true)) {
       mode = session.getMapper(SectorMapper.class).getMode(sectorKey.getDatasetKey(), sectorKey.getId());
     }
     if (mode == null) {
       throw new IllegalArgumentException("Sector " + sectorKey + " does not exist");
+    } else if (blockMergeSyncs && mode == Sector.Mode.MERGE) {
+      // merge syncs are blocked by project settings - fail explicit sector requests, skip with a warning otherwise
+      if (failOnBlocked) {
+        throw new IllegalArgumentException("Merge sectors blocked in project " + sectorKey.getDatasetKey() + ", cannot sync sector " + sectorKey.getId());
+      }
+      LOG.warn("Merge sectors blocked in project, skip sync of sector {}", sectorKey);
+      return false;
     }
     SectorRunnable sr = mode == Sector.Mode.HIERARCHY
       ? syncFactory.hierarchy(sectorKey, counter, user)
       : syncFactory.project(sectorKey, counter, user);
-    return queueJob(sr, blockMergeSyncs);
+    return queueJob(sr);
   }
 
   /**
@@ -230,7 +241,7 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
     } else {
       sd = syncFactory.delete(sectorKey, counter, user);
     }
-    return queueJob(sd, false);
+    return queueJob(sd);
   }
 
   /**
@@ -241,7 +252,7 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
    * @throws IllegalArgumentException
    * @throws UnavailableException if sync manager or names index are not started
    */
-  private synchronized boolean queueJob(SectorRunnable job, boolean blockMergeSyncs) throws IllegalArgumentException {
+  private synchronized boolean queueJob(SectorRunnable job) throws IllegalArgumentException {
     try {
       nameIndex.assertOnline();
       this.assertOnline();
@@ -249,10 +260,6 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
       if (isQueuedOrRunning(job.getSectorKey())) {
         // ignore
         return rejectJob(job, String.format("%s already queued or running", job.sector));
-
-      } else if (blockMergeSyncs && Sector.Mode.MERGE == job.sector.getMode()){
-        // block merge sector syncs
-        return rejectJob(job, String.format("Merge sectors blocked in project, skip sync of sector %s", job.sector));
 
       } else {
         assertDataExists(job);
@@ -307,7 +314,7 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
     int failed = 0;
     for (Sector s : sectors) {
       try {
-        syncSector(s, user, blockMergeSyncs);
+        syncSector(s, user, blockMergeSyncs, false);
       } catch (RuntimeException e) {
         LOG.error("Fail to sync {}: {}", s, e.getMessage());
         failed++;

@@ -111,6 +111,16 @@ public enum Gazetteer {
       GenericArea.class
   ),
 
+  WDPA("World Database on Protected Areas",
+      "https://www.protectedplanet.net/en/thematic-areas/wdpa",
+      "https://www.protectedplanet.net/",
+      "The World Database on Protected Areas (WDPA) is the most comprehensive global database on terrestrial and marine protected areas.",
+      false,
+      "^[0-9]+$",
+      null,
+      GenericArea.class
+  ),
+
   TEXT("Free Text",
     null,
     null,

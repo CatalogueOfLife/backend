@@ -93,6 +93,25 @@ public class IdentifierTest {
   }
 
   @Test
+  public void hyphenatedScope() {
+    // scopes with hyphens are valid CURIEs, not local identifiers
+    Identifier id = Identifier.parse("african-plant:5192");
+    assertEquals("african-plant", id.getScope());
+    assertEquals("5192", id.getId());
+    assertEquals(id, Identifier.parse(id.toString()));
+
+    id = Identifier.parse("tela-botanica:50284");
+    assertEquals("tela-botanica", id.getScope());
+    assertEquals("50284", id.getId());
+    assertEquals(id, Identifier.parse(id.toString()));
+
+    // digits in scope are allowed too
+    id = Identifier.parse("clb2019:Q157");
+    assertEquals("clb2019", id.getScope());
+    assertEquals("Q157", id.getId());
+  }
+
+  @Test
   public void local() {
     String id = "234567890";
     var id1 = Identifier.parse(id);

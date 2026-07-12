@@ -2,10 +2,14 @@ package life.catalogue.es.query;
 
 import life.catalogue.api.search.NameUsageRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import co.elastic.clients.elasticsearch._types.Script;
+import co.elastic.clients.elasticsearch._types.ScriptSortType;
 import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.json.JsonData;
 
 import static life.catalogue.api.search.NameUsageRequest.SortBy.RELEVANCE;
 import static life.catalogue.api.search.NameUsageRequest.SortBy.TAXONOMIC;
@@ -23,8 +27,15 @@ public class SortByTranslator {
       if (request.hasQ()) {
         // default to relevance sorting for non-empty queries
         request.setSortBy(RELEVANCE);
+      } else if (!FiltersTranslator.mustGenerateFilters(request)) {
+        // No query and no filters => match_all. A field sort would force Elasticsearch to scan the entire index to
+        // fill the result page (~1.3s over 150M+ usages on dev) just to order a result whose first-page order is
+        // meaningless. Fall back to _doc (index order) so the first page returns almost instantly without a full scan.
+        // Callers that genuinely want a specific order over the whole corpus can still request it explicitly via
+        // sortBy, paying the scan cost (e.g. an alphabetical browse, or Issue #1513 accepted-before-synonym).
+        return List.of(SortOptions.of(s -> s.field(f -> f.field("_doc"))));
       } else {
-        // use taxonomic order otherwise, which is more intuitive for users
+        // filtered but query-less: taxonomic order is intuitive and cheap, since the filters prune the set
         request.setSortBy(TAXONOMIC);
       }
     }
@@ -43,12 +54,39 @@ public class SortByTranslator {
         );
       case RELEVANCE:
       default:
-        // accepted taxa first (regardless of rank), then by relevance score within each status group
-        return List.of(
-          statusOrderSort(),
-          SortOptions.of(s -> s.score(sc -> sc.order(SortOrder.Desc)))
-        );
+        // 1. exact name matches first, regardless of taxonomic status and rank
+        // 2. accepted taxa before synonyms (also orders accepted vs synonym within the exact group)
+        // 3. relevance score within each group
+        List<SortOptions> sorts = new ArrayList<>(3);
+        if (request.hasQ()) {
+          sorts.add(exactMatchSort(request.getQ()));
+        }
+        sorts.add(statusOrderSort());
+        sorts.add(SortOptions.of(s -> s.score(sc -> sc.order(SortOrder.Desc))));
+        return sorts;
     }
+  }
+
+  /**
+   * Primary sort tier for relevance searches that lifts documents whose scientific name or label
+   * equals the query string to the very top, regardless of their taxonomic status and rank.
+   * Returns 0 for an exact match and 1 otherwise, sorted ascending. Relies on the {@code keyword}
+   * doc values of {@code usage.name.scientificName} and {@code usage.label}, so no schema change
+   * or extra indexed field is needed.
+   */
+  private static SortOptions exactMatchSort(String q) {
+    // compare case insensitively: params.q is lower cased here, the doc values are lower cased in the script
+    Script script = Script.of(s -> s
+      .source(src -> src.scriptString(
+        "(doc['usage.name.scientificName'].size() > 0 && doc['usage.name.scientificName'].value.toLowerCase() == params.q) || "
+          + "(doc['usage.label'].size() > 0 && doc['usage.label'].value.toLowerCase() == params.q) ? 0 : 1"))
+      .params("q", JsonData.of(q.toLowerCase(java.util.Locale.ROOT)))
+    );
+    return SortOptions.of(s -> s.script(ss -> ss
+      .type(ScriptSortType.Number)
+      .script(script)
+      .order(SortOrder.Asc)
+    ));
   }
 
   /**

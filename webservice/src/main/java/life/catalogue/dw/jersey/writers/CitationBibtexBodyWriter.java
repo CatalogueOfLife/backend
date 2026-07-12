@@ -1,6 +1,7 @@
 package life.catalogue.dw.jersey.writers;
 
 import life.catalogue.api.model.Citation;
+import life.catalogue.common.csl.CitationConverter;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
@@ -34,7 +35,7 @@ public class CitationBibtexBodyWriter implements MessageBodyWriter<Citation> {
   public void writeTo(Citation cit, Class<?> aClass, Type type, Annotation[] annotations, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
     MoreMediaTypes.setUTF8ContentType(mt, headers);
     try (Writer w = UTF8IoUtils.writerFromStream(out)) {
-      w.write( CslUtil.toBibTexString(cit.toCSL()) );
+      w.write( CslUtil.toBibTexString(CitationConverter.toCSL(cit)) );
     }
   }
 

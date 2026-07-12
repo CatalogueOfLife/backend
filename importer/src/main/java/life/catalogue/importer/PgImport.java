@@ -419,7 +419,12 @@ public class PgImport implements Callable<Boolean> {
         matchTarget = null;
         matchScope = null;
       } else {
-        matchScope = spec.resolveScope(scopeResolver, resolvedKey);
+        try {
+          matchScope = spec.resolveScope(scopeResolver, resolvedKey);
+        } catch (RuntimeException e) {
+          matcher.close(); // release the lease we just acquired before propagating, the indexer finally isn't reached yet
+          throw e;
+        }
         matchTarget = matcher;
         LOG.info("Matching dataset {} usages against {} resolved={} (scope '{}')", dataset.getKey(), spec, resolvedKey, matchScope);
       }
@@ -629,6 +634,15 @@ public class PgImport implements Callable<Boolean> {
           dm.updateTaxonomicGroupScope(dataset.getKey(), ibc.indexer.getTaxGroups());
         }
       }
+    } finally {
+      // release our cross-dataset match-target lease so the factory can close its store once no one holds it
+      if (matchTarget != null) {
+        try {
+          matchTarget.close();
+        } catch (Exception e) {
+          LOG.warn("Failed to release match target matcher for dataset {}", matchTarget.getDatasetKey(), e);
+        }
+      }
     }
   }
 
@@ -640,7 +654,7 @@ public class PgImport implements Callable<Boolean> {
   private void matchUsage(UsageData u, DSID<Integer> vKey, UsageMatcher matcher, String scope, VerbatimRecordMapper verbatimRecordMapper) {
     UsageMatch m;
     try {
-      m = matcher.parseAndMatch(u.usage.toSimpleNameLink());
+      m = matcher.parseAndMatch(u.usage.toSimpleNameLink(), true);
     } catch (RuntimeException e) {
       LOG.warn("Match failed for usage {} {}", u.getId(), u.usage.getName().getLabel(), e);
       return;
@@ -655,13 +669,13 @@ public class PgImport implements Callable<Boolean> {
         }
         break;
       case HIGHERRANK:
-        if (m.usage != null) {
-          u.usage.asUsageBase().addIdentifier(new Identifier(scope, m.usage.getId()));
-        }
         addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_HIGHERRANK);
         break;
       case AMBIGUOUS:
         addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_AMBIGUOUS);
+        if (m.usage != null) {
+          u.usage.asUsageBase().addIdentifier(new Identifier(scope, m.usage.getId()));
+        }
         break;
       case NONE:
         addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_NONE);
@@ -726,6 +740,11 @@ public class PgImport implements Callable<Boolean> {
       LOG.debug("Inserting all taxon relations");
       store.usages().all().forEach(u -> {
         for (var r : u.tcRelations) {
+          // defense in depth: taxon concept relations must only ever reference accepted taxa (see Normalizer.resolveRelationPartners)
+          if (!isAcceptedUsage(r.getFromID()) || !isAcceptedUsage(r.getToID())) {
+            LOG.warn("Skip taxon concept relation {} {}->{} referencing a non accepted taxon", r.getType(), r.getFromID(), r.getToID());
+            continue;
+          }
           var rel = r.toConceptRelation();
           updateVerbatimUserEntity(rel);
           updateReferenceKey(rel);
@@ -737,6 +756,11 @@ public class PgImport implements Callable<Boolean> {
           }
         }
         for (var r : u.spiRelations) {
+          // the related id is optional for species interactions, but if given both ends must be accepted taxa
+          if (!isAcceptedUsage(r.getFromID()) || (r.getToID() != null && !isAcceptedUsage(r.getToID()))) {
+            LOG.warn("Skip species interaction {} {}->{} referencing a non accepted taxon", r.getType(), r.getFromID(), r.getToID());
+            continue;
+          }
           var rel = r.toSpeciesInteraction();
           updateVerbatimUserEntity(rel);
           updateReferenceKey(rel);
@@ -752,6 +776,14 @@ public class PgImport implements Callable<Boolean> {
       LOG.info("Inserted {} taxon concept relations in total", sRelCounter);
       LOG.info("Inserted {} species interaction relations in total", sRelCounter);
     }
+  }
+
+  private boolean isAcceptedUsage(String id) {
+    if (id == null) {
+      return false;
+    }
+    var u = store.usages().objByID(id);
+    return u != null && u.isTaxon();
   }
 
   /**

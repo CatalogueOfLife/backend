@@ -3,6 +3,7 @@ package life.catalogue.csv;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.common.io.*;
 
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 
 import org.gbif.dwc.terms.*;
@@ -310,8 +311,12 @@ public class DwcaReaderTest {
     ) {
       String url = "http://opendata.globalnames.org/dwca/170-arctos-2024-09-10.tar.gz";
       try (var hc = HttpClientBuilder.create().build()) {
-        var down = new DownloadUtil(hc);
-        down.download(URI.create(url), zip.file);
+        hc.execute(new HttpGet(url), resp -> {
+          try (var in = resp.getEntity().getContent()) {
+            java.nio.file.Files.copy(in, zip.file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+          }
+          return null;
+        });
       }
       CompressionUtil.decompressFile(dir.file, zip.file);
 

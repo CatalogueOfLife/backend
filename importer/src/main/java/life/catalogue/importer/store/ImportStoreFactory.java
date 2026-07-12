@@ -30,9 +30,18 @@ public class ImportStoreFactory {
   private final Pool<Kryo> pool;
 
   public ImportStoreFactory(NormalizerConfig cfg) {
+    this(cfg, 1);
+  }
+
+  /**
+   * @param importerThreads number of imports that may run in parallel. The shared kryo pool is sized to the
+   *   worst case of every import running at once, each using one kryo per serializer in its ImportStore,
+   *   i.e. {@code importerThreads * ImportStore.KRYO_SERIALIZERS}. Not separately configurable on purpose.
+   */
+  public ImportStoreFactory(NormalizerConfig cfg, int importerThreads) {
     this.cfg = cfg;
     this.dir = cfg.importStorageDir().toPath();
-    pool = new ImportKryoPool(cfg.kryoPoolSize);
+    pool = new ImportKryoPool(importerThreads * ImportStore.KRYO_SERIALIZERS);
   }
 
   private File dbDir(int datasetKey) {

@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 /**
  * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for
@@ -41,12 +41,11 @@ public class CSLTypeSerde {
   }
 
   public static CSLType parse(String value) {
-    try {
-      return CSLType.valueOf(value.trim().toUpperCase().replaceAll("[_ -]+", "_"));
-    } catch (IllegalArgumentException e) {
+    CSLType t = CSLType.fromString(value);
+    if (t == null) {
       LOG.info("Invalid CSLType: {}", value);
-      return null;
     }
+    return t;
   }
 
   public static class Deserializer extends JsonDeserializer<CSLType> {

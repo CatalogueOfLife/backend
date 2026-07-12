@@ -9,6 +9,7 @@ import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TempNameUsageRelated;
+import life.catalogue.printer.diff.DiffNamesParam;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -148,6 +149,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   int count(@Param("datasetKey") int datasetKey);
 
+  /**
+   * @return the number of distinct canonical name index ids the matched usages of a dataset resolve to.
+   * Used to size the canonical inverted index of a persistent usage matcher.
+   */
+  int countDistinctCanonical(@Param("datasetKey") int datasetKey);
+
   List<SimpleNameWithDecision> listByRegex(@Param("datasetKey") int datasetKey,
                                            @Param("projectKey") Integer projectKey,
                                            @Param("regex") String regex,
@@ -213,6 +220,19 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * The parent property is filled with the parent ID, not the name!
    */
   List<SimpleNameCached> listByCanonNIDX(@Param("datasetKey") int datasetKey, @Param("nidx") int canonicalNidx);
+
+  /**
+   * List all usages across all datasets with the given names index id, excluding usages from project datasets (origin=PROJECT).
+   * Same as listByNamesIndexIDGlobal, but returns a classified version of the simple name with the classification list filled.
+   */
+  List<SimpleNameInDatasetClassified> listByNamesIndexIDGlobalClassified(@Param("nidx") int nidx, @Param("page") Page page);
+
+  /**
+   * Counts the usages returned by listByNamesIndexIDGlobalClassified, i.e. across all datasets with the given names index id,
+   * but excluding usages from project datasets (origin=PROJECT). Use this as the paging total for that list.
+   * Warning, this does not count bare names, only true usages!
+   */
+  Integer countByNamesIndexIDGlobalClassified(@Param("nidx") int nidx);
 
   /**
    * Warning, this does not count bare names, only true usages!
@@ -452,6 +472,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   default Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params) {
     return processTreeSimple(params, false, false);
   }
+
+  /**
+   * Streams a byte-ordered (C collation) list of name labels for a dataset, applying the diff
+   * filters. Forward-only cursor: consume within an open session and close it.
+   */
+  Cursor<String> processDiffNames(@Param("param") DiffNamesParam param);
 
   /**
    * Iterates over all accepted descendants in a tree for a given start taxon.

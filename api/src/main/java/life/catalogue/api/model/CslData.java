@@ -5,8 +5,6 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 /**
  * Official CSL variables as defined in
  * Appendix IV - Variables

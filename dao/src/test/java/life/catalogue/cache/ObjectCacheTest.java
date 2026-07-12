@@ -1,9 +1,9 @@
 package life.catalogue.cache;
 
-import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.kryo.ApiKryoPool;
+import life.catalogue.common.kryo.NameUsageWrapperGen;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Test;
@@ -11,8 +11,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ObjectCacheTest {
-  final NameUsageWrapper t = TestEntityGenerator.newNameUsageTaxonWrapper();
-  final NameUsageWrapper s = TestEntityGenerator.newNameUsageSynonymWrapper();
+  final NameUsageWrapper t = NameUsageWrapperGen.newNameUsageTaxonWrapper();
+  final NameUsageWrapper s = NameUsageWrapperGen.newNameUsageSynonymWrapper();
 
   @Test
   public void crud() throws Exception {

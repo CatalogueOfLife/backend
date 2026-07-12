@@ -1,0 +1,101 @@
+package life.catalogue.common.kryo;
+
+import java.io.*;
+import java.util.Iterator;
+
+import jakarta.validation.constraints.NotNull;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.InputChunked;
+import com.esotericsoftware.kryo.io.OutputChunked;
+import com.esotericsoftware.kryo.unsafe.UnsafeInput;
+import com.esotericsoftware.kryo.unsafe.UnsafeOutput;
+import com.esotericsoftware.kryo.util.Pool;
+
+/**
+ * Store that writes objects of the same type to a file and offers an iterator to read them all in the
+ * same order as initially written.
+ */
+public class KryoCollectionStore<T> implements AutoCloseable, Iterable<T> {
+
+  private final File store;
+  private OutputStream outputStream;
+  private OutputChunked output;
+  private boolean dirty = false;
+  private final Pool<Kryo> pool;
+  private final Class<T> clazz;
+
+  public KryoCollectionStore(Class<T> clazz, File store, Pool<Kryo> pool) throws FileNotFoundException {
+    this.clazz = clazz;
+    this.store = store;
+    outputStream = new UnsafeOutput(new FileOutputStream(store));
+    this.pool = pool;
+    output = new OutputChunked(outputStream, 1024);
+  }
+
+  public void add(T obj) {
+    Pools.run(pool, kryo -> {
+      dirty = true;
+      kryo.writeObject(output, obj);
+      output.endChunk();
+    });
+  }
+
+  @NotNull
+  @Override
+  public Iterator<T> iterator() {
+    if (dirty) {
+      flush();
+    }
+    return new StoreIterator();
+  }
+
+  class StoreIterator implements Iterator<T>, AutoCloseable {
+    private final InputChunked input;
+    private final UnsafeInput inputStream;
+
+    public StoreIterator() {
+      try {
+        inputStream = new UnsafeInput(new FileInputStream(store));
+        input = new InputChunked(inputStream, 1024);
+      } catch (FileNotFoundException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
+    @Override
+    public boolean hasNext() {
+      try {
+        return input.available() > 0;
+      } catch (IOException e) {
+        return false;
+      }
+    }
+
+    @Override
+    public T next() {
+      return Pools.with(pool, kryo -> {
+        // Read data from first set of chunks...
+        T obj = kryo.readObject(input, clazz);
+        input.nextChunk();
+        return obj;
+      });
+    }
+
+    @Override
+    public void close() throws IOException {
+      input.close();
+      inputStream.close();
+    }
+  }
+
+  public void flush() {
+    output.flush();
+    dirty = false;
+  }
+
+  public void close() throws Exception {
+    output.close();
+    outputStream.close();
+  }
+}

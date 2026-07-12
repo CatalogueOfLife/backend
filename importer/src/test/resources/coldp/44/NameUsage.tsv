@@ -1,0 +1,4 @@
+col:ID	col:parentID	col:status	col:rank	col:scientificName	col:authorship
+1		accepted	species	Aus aus	L.
+2		accepted	species	Bus bus	L.
+s3	2	synonym	species	Bus veta	Miller

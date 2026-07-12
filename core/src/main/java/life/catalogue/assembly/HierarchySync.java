@@ -3,8 +3,10 @@ package life.catalogue.assembly;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Identifier;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
@@ -12,6 +14,9 @@ import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.InfoGroup;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.LatestDatasetKeyCache;
@@ -21,6 +26,7 @@ import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.db.mapper.TaxonMapper;
@@ -28,8 +34,8 @@ import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.matching.IdentifierScopeResolver;
+import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
-import life.catalogue.matching.nidx.NameIndex;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -44,6 +50,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -61,7 +68,7 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Unlike {@link SectorSync} which pulls a sub-tree from a source dataset down into a project, a
  * HierarchySync walks <em>upwards</em> from project name usages that already carry source-dataset
- * identifiers and copies the missing higher classification into the project. It runs in three
+ * identifiers and copies the missing higher classification into the project. It runs in four
  * sequential phases inside the standard {@link SectorRunnable} lifecycle:
  *
  * <ol>
@@ -76,7 +83,11 @@ import org.slf4j.LoggerFactory;
  *       runs can match by id. Finally each accepted matched project usage is rewired to its
  *       newly-imported immediate above-genus ancestor; synonyms are intentionally not rewired
  *       (their {@code parent_id} must keep pointing at an accepted taxon, not a higher-rank
- *       ancestor).</li>
+ *       ancestor). Project usages lacking a source identifier are then re-matched against the
+ *       source by name; full and higher-rank (HIGHERRANK) matches nest the usage under the
+ *       resolved genus-or-higher anchor (importing it, or reusing an equivalent project node)
+ *       and are flagged with {@code Issue.MATCHING_HIGHERRANK}; status, synonymy and authorship
+ *       are left untouched for these.</li>
  *   <li><b>Phase 2 — taxonomic-status realignment.</b>
  *       For every match the source's status is loaded and compared to the project usage. Cases:
  *       both accepted is a no-op (handled by phase 1); accepted→synonym demotes via
@@ -92,6 +103,15 @@ import org.slf4j.LoggerFactory;
  *       and identified back to the source. Synonyms whose source id is already represented in the
  *       project (an existing matched project usage or an imported ancestor) are skipped to avoid
  *       duplicates. Pre-existing project synonyms aren't touched and survive re-runs.</li>
+ *   <li><b>Phase 4 — authorship enrichment.</b>
+ *       For every matched project usage the source name's authorship is copied onto the existing
+ *       project name according to the sector's {@link Sector#getAuthorshipUpdate()} setting
+ *       ({@link Sector.AuthorshipUpdate#NONE} skips, {@link Sector.AuthorshipUpdate#MISSING} only
+ *       fills names lacking an authorship, {@link Sector.AuthorshipUpdate#ALWAYS} overwrites). The
+ *       authorship's provenance is recorded as an {@link InfoGroup#AUTHORSHIP} secondary source on
+ *       the project name's verbatim source. These names are pre-existing project data (not tagged
+ *       with this sector) so they survive {@code deleteBySector}; the secondary source is simply
+ *       re-pointed on every run.</li>
  * </ol>
  *
  * <p>Records produced by the sync are tagged with the sector's {@code sectorKey} and
@@ -101,35 +121,35 @@ import org.slf4j.LoggerFactory;
  *
  * <p>The source dataset is held in {@link Sector#getSubjectDatasetKey()}: if that dataset is a
  * {@link DatasetOrigin#PROJECT}, the latest public release is resolved at run time
- * (X-Release vs plain Release controlled by {@link Sector#useXRelease()}). Concrete RELEASE,
+ * (X-Release vs plain Release controlled by {@link Sector#isUseXRelease()}). Concrete RELEASE,
  * XRELEASE or EXTERNAL dataset keys are used as-is. See {@code HIERARCHY-SYNC.md} at the project
  * root for the full pipeline reference.
  *
  * <h2>Limitations / Future work</h2>
  *
- * <p>The current implementation is identifier-only and intentionally conservative. Search the
- * source for {@code TODO(hierarchy-sync)} for the exact code sites where each item slots in:
- *
  * <ul>
- *   <li><b>Name-match fallback</b> — project usages without a source identifier are skipped today.
- *       The infrastructure ({@code nameIndex}, {@code matcherSupplier}) is already injected, ready
- *       to run unmatched usages through {@link UsageMatcher}.</li>
- *   <li><b>Project-side dedup of imported ancestors</b> — if the project already has an
- *       equivalent family/order, phase 1 currently inserts a new copy. A canonical-name + rank
- *       lookup against the project before copying would let us reuse existing nodes (without
- *       tagging them with this sector, so user data isn't wiped on re-run).</li>
+ *   <li><b>Convergence for full matches</b> — name-matched usages are placement-only and never gain
+ *       the source identifier, so a full EXACT match is re-matched by name on every run rather than
+ *       converging into the identifier path.</li>
+ *   <li><b>Classification-context matching</b> — floating usages are matched on their name's implied
+ *       genus only; a reconstructed project classification could disambiguate homonyms further.</li>
  *   <li><b>Performance batching</b> — phase 2 / 3 do per-match {@code NameUsageMapper#get} and
  *       {@code SynonymMapper#listByTaxon} queries. For very large projects these can be batched
  *       via {@code listByIds} or a streaming join.</li>
+ *   <li><b>Phase-1 name-match cost</b> — the name-match fallback runs a per-usage source matcher
+ *       lookup for every accepted usage lacking a source identifier. It shares the single
+ *       identifier-discovery stream ({@link #discoverMatches}), so there is no second full scan; if
+ *       the per-usage match ever dominates it could be gated by a cheap names-index pre-filter.</li>
  * </ul>
  */
 public class HierarchySync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(HierarchySync.class);
 
   private final SectorImportDao sid;
-  // Reserved for the upcoming name-match fallback (see syncHigherClassification).
-  @SuppressWarnings("unused") private final NameIndex nameIndex;
-  @SuppressWarnings("unused") private final Function<SqlSession, UsageMatcher> matcherSupplier;
+  /** Builds a matcher against the project dataset; used to dedup ancestors before importing them. */
+  private final Function<SqlSession, UsageMatcher> projectMatcherSupplier;
+  /** Builds a matcher against an arbitrary dataset; used to match floating project usages against the source. */
+  private final BiFunction<Integer, SqlSession, UsageMatcher> sourceMatcherProvider;
   private final LatestDatasetKeyCache latestKeyCache;
   private final @Nullable IdentifierScopeResolver scopeResolver;
 
@@ -148,6 +168,8 @@ public class HierarchySync extends SectorRunnable {
   private final Map<String, String> sourceToProject = new HashMap<>();
   /** source usage id -> matched project usage id (reverse of projectMatches; built eagerly at start of phase 1). */
   private Map<String, String> matchReverse = null;
+  /** project usage id -> source anchor id (genus-or-higher) to nest a name-matched usage under. Placement-only. */
+  private final Map<String, String> namePlacements = new LinkedHashMap<>();
 
   /** Lazily-filled cache for source dataset usages; constructed/closed around the four phases in {@link #doWork()}. */
   private UsageCache sourceCache;
@@ -161,8 +183,8 @@ public class HierarchySync extends SectorRunnable {
 
   HierarchySync(DSID<Integer> sectorKey,
                 SqlSessionFactory factory,
-                NameIndex nameIndex,
-                Function<SqlSession, UsageMatcher> matcherSupplier,
+                Function<SqlSession, UsageMatcher> projectMatcherSupplier,
+                BiFunction<Integer, SqlSession, UsageMatcher> sourceMatcherProvider,
                 LatestDatasetKeyCache latestKeyCache,
                 EventBroker bus,
                 NameUsageIndexService indexService,
@@ -176,8 +198,8 @@ public class HierarchySync extends SectorRunnable {
       throw new IllegalArgumentException("HierarchySync requires a sector with mode HIERARCHY, got " + sector.getMode());
     }
     this.sid = sid;
-    this.nameIndex = nameIndex;
-    this.matcherSupplier = matcherSupplier;
+    this.projectMatcherSupplier = projectMatcherSupplier;
+    this.sourceMatcherProvider = sourceMatcherProvider;
     this.latestKeyCache = latestKeyCache;
     this.scopeResolver = scopeResolver;
   }
@@ -187,23 +209,23 @@ public class HierarchySync extends SectorRunnable {
     super.init(false);
     sourceDatasetKey = resolveSourceDatasetKey();
     LOG.info("HierarchySync sector {}: resolved source dataset {} (configured subject dataset {}, useXRelease={})",
-      sectorKey, sourceDatasetKey, subjectDatasetKey, sector.useXRelease());
+      sectorKey, sourceDatasetKey, subjectDatasetKey, sector.isUseXRelease());
   }
 
   /**
    * Resolves the effective source dataset to read the higher classification from.
    * If the configured subject dataset is a PROJECT, the latest public (X)Release is picked
-   * according to {@link Sector#useXRelease()}. Other origins are used as-is.
+   * according to {@link Sector#isUseXRelease()}. Other origins are used as-is.
    */
   private int resolveSourceDatasetKey() {
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(subjectDatasetKey);
     DatasetOrigin origin = info.origin;
     if (origin == DatasetOrigin.PROJECT) {
-      Integer key = latestKeyCache.getLatestRelease(subjectDatasetKey, sector.useXRelease());
+      Integer key = latestKeyCache.getLatestRelease(subjectDatasetKey, sector.isUseXRelease());
       if (key == null) {
         throw new NotFoundException(String.format(
           "No public %s found for project %d configured as hierarchy source of sector %s",
-          sector.useXRelease() ? "XRelease" : "Release", subjectDatasetKey, sectorKey));
+          sector.isUseXRelease() ? "XRelease" : "Release", subjectDatasetKey, sectorKey));
       }
       return key;
     }
@@ -245,6 +267,10 @@ public class HierarchySync extends SectorRunnable {
       setStep(ImportState.INSERTING);
       copySynonymies();
       checkIfCancelled();
+
+      setStep(ImportState.INSERTING);
+      enrichAuthorship();
+      checkIfCancelled();
     } finally {
       this.sourceCache = null;
       this.sourceLoader = null;
@@ -268,8 +294,8 @@ public class HierarchySync extends SectorRunnable {
    * ancestors are tagged with this sector's key. Project usages are then rewired to point at
    * their imported immediate ancestor.
    *
-   * <p>Name-match fallback for usages without a source identifier is not yet implemented (see
-   * {@link UsageMatcher}).
+   * <p>Project usages without a source identifier are additionally re-matched against the source by
+   * name (in the same stream, see {@link #discoverMatches}) and placed under their resolved anchor.
    */
   private void syncHigherClassification() throws Exception {
     LOG.info("HierarchySync phase 1 (upward classification copy) for sector {} from source dataset {}", sectorKey, sourceDatasetKey);
@@ -282,37 +308,32 @@ public class HierarchySync extends SectorRunnable {
       LOG.info("Hierarchy sector {}: matching identifiers in scope '{}' against source dataset {}", sectorKey, sourceScope, sourceDatasetKey);
     }
 
-    // Pass 1: discover project usages that match a source id (also captures their current status
-    // and parent_id for use in phases 2 + 3 and the synonym walk-up).
-    discoverIdentifierMatches(projectKey, sourceScope);
-    if (projectMatches.isEmpty()) {
+    // Pass 1: single stream over the project — identifier matches (feed phases 2–4) plus a
+    // name-match fallback (placement only) for accepted usages without a source identifier.
+    discoverMatches(projectKey, sourceScope);
+
+    if (projectMatches.isEmpty() && namePlacements.isEmpty()) {
       LOG.info("Hierarchy sector {}: no project usages matched to source dataset {} - phase 1 has nothing to do", sectorKey, sourceDatasetKey);
       return;
     }
-    LOG.info("Hierarchy sector {}: matched {} project usages to source dataset {}", sectorKey, projectMatches.size(), sourceDatasetKey);
-    // Build matchReverse eagerly so phase 1 rewiring (and phase 2) can resolve source ids through it.
+    LOG.info("Hierarchy sector {}: matched {} usages by id, {} by name to source dataset {}",
+      sectorKey, projectMatches.size(), namePlacements.size(), sourceDatasetKey);
+    // Build matchReverse eagerly so phase 1 rewiring, dedup and phase 2 can resolve source ids through it.
     buildMatchReverse();
 
-    // Pass 2: walk parent chains. For each matched project usage, collect every source
-    // ancestor for import. For each matched ACCEPTED project usage, also record the full source
-    // classification chain (immediate parent first) — phase 1's rewire walks that chain looking for
-    // the closest ancestor that already has a project equivalent (an imported ancestor
-    // or another matched accepted project usage), so an existing matched genus is preferred over
-    // jumping all the way to family. Synonyms are intentionally skipped for the rewire mapping —
-    // their parent_id must keep pointing at an accepted taxon and is handled by phase 2.
+    // Pass 2: collect ancestors for id matches (now down to genus) and name-match anchors.
     Map<String, List<String>> sourceChainForAccepted = new LinkedHashMap<>();
     Map<String, SimpleNameCached> ancestorsToInsert = collectAncestors(sourceChainForAccepted);
-    if (ancestorsToInsert.isEmpty() && sourceChainForAccepted.isEmpty()) {
-      LOG.info("Hierarchy sector {}: no ancestors required and no accepted matches - phase 1 done", sectorKey);
-      return;
-    }
-    LOG.info("Hierarchy sector {}: {} unique ancestors will be imported", sectorKey, ancestorsToInsert.size());
+    LOG.info("Hierarchy sector {}: {} unique ancestors will be imported (before dedup)", sectorKey, ancestorsToInsert.size());
 
-    // Pass 3: insert ancestors top-down (parent_id topological order); populates sourceToProject
+    // Pass 3: insert ancestors top-down with project-side dedup; populates sourceToProject.
     insertAncestorsTopDown(projectKey, ancestorsToInsert, sourceScope);
 
-    // Pass 4: rewire ACCEPTED project usages to point at their closest project ancestor.
+    // Pass 4: rewire id-matched accepted usages to their closest project ancestor.
     rewireProjectParents(projectKey, sourceChainForAccepted);
+
+    // Pass 5: place name-matched usages under their anchor and flag them.
+    placeNameMatches(projectKey);
   }
 
   /**
@@ -329,36 +350,58 @@ public class HierarchySync extends SectorRunnable {
   }
 
   /**
-   * Streams every project name usage and populates {@link #projectMatches} +
-   * {@link #projectStatuses} for every usage that carries an identifier whose scope maps to the
-   * source dataset.
+   * Streams every project name usage exactly once and classifies it into one of two buckets:
+   *
+   * <ul>
+   *   <li><b>identifier match</b> — the usage carries an identifier whose scope maps to the source
+   *       dataset. Populates {@link #projectMatches} + {@link #projectStatuses} + {@link #projectParents};
+   *       these feed phases 2–4. Only attempted when a {@code sourceScope} is configured.</li>
+   *   <li><b>name-match fallback</b> — an accepted taxon <em>without</em> a source identifier whose name
+   *       matches the source dataset (with higher-rank fallback). EXACT/VARIANT/CANONICAL and HIGHERRANK
+   *       matches yield a genus-or-higher source anchor recorded in {@link #namePlacements} (placement
+   *       only); ambiguous / no matches and synonyms are skipped.</li>
+   * </ul>
+   *
+   * Folding both into a single stream avoids scanning the (potentially very large) project twice. The
+   * source matcher is opened once for the whole stream and used only for the name-match fallback.
    */
-  private void discoverIdentifierMatches(int projectKey, @Nullable String sourceScope) {
-    if (sourceScope == null) {
-      return;
-    }
-    // autoCommit=false: the Postgres JDBC driver needs an explicit transaction to keep a
-    // server-side cursor (portal) alive across FETCH calls with fetchSize > 0. With autoCommit=true
-    // the implicit transaction is committed mid-iteration and the next FETCH would fail with
-    // "portal C_NNN does not exist". Mirrors UsageCache.load(SqlSessionFactory).
-    try (SqlSession session = factory.openSession(false);
+  private void discoverMatches(int projectKey, @Nullable String sourceScope) {
+    // autoCommit=false on the streaming session: the Postgres JDBC driver needs an explicit transaction
+    // to keep a server-side cursor (portal) alive across FETCH calls with fetchSize > 0. With
+    // autoCommit=true the implicit transaction is committed mid-iteration and the next FETCH would fail
+    // with "portal C_NNN does not exist". Mirrors UsageCache.load(SqlSessionFactory).
+    try (SqlSession matchSession = factory.openSession(true);
+         UsageMatcher sourceMatcher = sourceMatcherProvider.apply(sourceDatasetKey, matchSession);
+         SqlSession session = factory.openSession(false);
          Cursor<NameUsageBase> cursor = session.getMapper(NameUsageMapper.class).processDataset(projectKey, null, null)) {
       for (NameUsageBase u : cursor) {
         if (Objects.equals(sectorKey.getId(), u.getSectorKey())) {
-          continue; // defensive: should already be wiped by deleteOld()
+          continue; // produced by this sector (defensive: should already be wiped by deleteOld())
         }
-        String tid = findSourceIdByIdentifier(u, sourceScope);
-        // TODO(hierarchy-sync): name-match fallback. If tid is null, run the project usage through
-        //   UsageMatcher (against sourceDatasetKey) using the usage's canonical name + classification
-        //   context, and use the match's id when one is found. Fields nameIndex + matcherSupplier
-        //   are already injected for this. See plan: phase 1, "name-match fallback".
+        // 1) identifier match (only when a scope is configured); takes precedence over name matching
+        String tid = sourceScope == null ? null : findSourceIdByIdentifier(u, sourceScope);
         if (tid != null) {
           projectMatches.put(u.getId(), tid);
           if (u.getStatus() != null) {
             projectStatuses.put(u.getId(), u.getStatus());
           }
           projectParents.put(u.getId(), u.getParentId());
+          continue;
         }
+        // 2) name-match fallback for accepted taxa without a source identifier (placement only)
+        if (u.getStatus() == null || !u.getStatus().isTaxon()) continue; // accepted taxa only
+        if (u.getName() == null) continue;
+        UsageMatch m;
+        try {
+          m = sourceMatcher.parseAndMatch(new SimpleName(u), true);
+        } catch (NotFoundException nfe) {
+          continue;
+        }
+        if (m == null || !m.isMatch()) continue;                          // NONE / AMBIGUOUS / UNSUPPORTED
+        String anchor = anchorFor(m);
+        if (anchor == null) continue;
+        namePlacements.put(u.getId(), anchor);
+        projectParents.put(u.getId(), u.getParentId());                   // for cycle guard + skip-if-unchanged
       }
     } catch (java.io.IOException e) {
       throw new RuntimeException("Failed to stream project usages of dataset " + projectKey, e);
@@ -371,6 +414,27 @@ public class HierarchySync extends SectorRunnable {
     for (Identifier id : ids) {
       if (sourceScope.equalsIgnoreCase(id.getScope())) {
         return id.getId();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Picks the genus-or-higher source anchor for a match. For a HIGHERRANK match the matched usage is
+   * already the higher taxon, so it is the anchor. For a full match (the same taxon) the anchor is the
+   * nearest classification ancestor at or above genus (the genus, for a species). Returns null when no
+   * suitable anchor exists (e.g. a full match with no genus-or-higher ancestor).
+   */
+  private @Nullable String anchorFor(UsageMatch m) {
+    if (m.type == MatchType.HIGHERRANK) {
+      return m.usage.getId();
+    }
+    // EXACT / VARIANT / CANONICAL: walk the matched usage's classification (parent-first) to its genus-or-higher
+    if (m.usage.getClassification() != null) {
+      for (SimpleNameCached a : m.usage.getClassification()) {
+        if (a.getRank() != null && a.getRank().higherOrEqualsTo(Rank.GENUS)) {
+          return a.getId();
+        }
       }
     }
     return null;
@@ -403,7 +467,7 @@ public class HierarchySync extends SectorRunnable {
         SimpleNameCached t = chain.get(i);
         chainIds.add(t.getId());
         Rank r = t.getRank();
-        if (r != null && r.higherThan(Rank.GENUS)) {
+        if (r != null && r.higherOrEqualsTo(Rank.GENUS)) {
           ancestors.putIfAbsent(t.getId(), t);
         }
       }
@@ -412,7 +476,66 @@ public class HierarchySync extends SectorRunnable {
         sourceChainForAccepted.put(e.getKey(), chainIds);
       }
     }
+
+    // name-match anchors: import the anchor (genus-or-higher) and its genus-or-higher ancestors so we
+    // have a node to nest the placed usage under. Unlike id matches, the anchor (chain element 0) is
+    // itself a placement target and must be imported (subject to dedup in insertAncestorsTopDown).
+    for (String anchor : namePlacements.values()) {
+      if (ancestors.containsKey(anchor)) continue; // already required by an id match or another placement
+      List<SimpleNameCached> chain;
+      try {
+        chain = sourceCache.getClassification(anchor, sourceLoader);
+      } catch (NotFoundException nfe) {
+        LOG.info("Hierarchy sector {}: classification for name-match anchor {} is incomplete - skipping: {}",
+          sectorKey, anchor, nfe.getMessage());
+        continue;
+      }
+      for (SimpleNameCached t : chain) { // includes the anchor itself at element 0
+        Rank r = t.getRank();
+        if (r != null && r.higherOrEqualsTo(Rank.GENUS)) {
+          ancestors.putIfAbsent(t.getId(), t);
+        }
+      }
+    }
+
     return ancestors;
+  }
+
+  /**
+   * Resolves a source ancestor to an existing accepted project usage, so we can reuse it instead of
+   * importing a duplicate. Resolution order:
+   *   1. by identifier — the ancestor's source id is already a matched project usage ({@link #matchReverse});
+   *      its accepted equivalent is reused.
+   *   2. by name — a single, non-ambiguous, accepted project usage of the same rank matched via the
+   *      project matcher. Multiple same-name candidates yield {@link MatchType#AMBIGUOUS} and are not reused.
+   * Returns {@code null} when nothing safe to reuse exists (caller imports a fresh copy).
+   */
+  private @Nullable String findExistingProjectAncestor(SimpleNameCached sourceAncestor, UsageMatcher projectMatcher) {
+    // 1. by identifier
+    if (matchReverse == null) {
+      buildMatchReverse();
+    }
+    String byId = matchReverse.get(sourceAncestor.getId());
+    if (byId != null) {
+      String accepted = resolveToAccepted(byId);
+      if (accepted != null) {
+        return accepted;
+      }
+    }
+    // 2. by name
+    UsageMatch m;
+    try {
+      m = projectMatcher.parseAndMatch(new SimpleName(sourceAncestor), false);
+    } catch (NotFoundException e) {
+      return null;
+    }
+    if (m != null && m.isMatch()
+        && (m.type == MatchType.EXACT || m.type == MatchType.VARIANT || m.type == MatchType.CANONICAL)
+        && m.usage.getRank() == sourceAncestor.getRank()
+        && m.usage.getStatus() != null && m.usage.getStatus().isTaxon()) {
+      return m.usage.getId();
+    }
+    return null;
   }
 
   /**
@@ -433,7 +556,8 @@ public class HierarchySync extends SectorRunnable {
     int inserted = 0;
 
     try (SqlSession batch = factory.openSession(ExecutorType.BATCH, false);
-         SqlSession read = factory.openSession(true)) {
+         SqlSession read = factory.openSession(true);
+         UsageMatcher projectMatcher = projectMatcherSupplier.apply(read)) {
       NameUsageMapper num = batch.getMapper(NameUsageMapper.class);
       VerbatimSourceMapper vsm = batch.getMapper(VerbatimSourceMapper.class);
       TaxonMapper readTm = read.getMapper(TaxonMapper.class);
@@ -459,11 +583,13 @@ public class HierarchySync extends SectorRunnable {
           // resolve project parent: if our parent is in the inserted set, use the new project id; otherwise null (root)
           String projectParentId = origSourceParentId == null ? null : sourceToProject.get(origSourceParentId);
 
-          // TODO(hierarchy-sync): project-side dedup. Before inserting, match the ancestor
-          //   (canonical name + rank) against existing project usages. If an equivalent already
-          //   exists (e.g. a manually-curated family), reuse it: record sourceToProject.put(origSourceId, existingProjectId)
-          //   and skip the copy + addIdentifier — but DO NOT tag the existing record with this sector
-          //   (we don't want deleteBySector to wipe user data on re-runs).
+          // project-side dedup: reuse an existing equivalent project node instead of importing a copy
+          String existing = findExistingProjectAncestor(cached, projectMatcher);
+          if (existing != null) {
+            sourceToProject.put(origSourceId, existing);
+            remaining.remove(origSourceId);
+            continue;
+          }
 
           // SimpleNameCached doesn't carry the full Name; fetch the source Taxon (with Name) once
           // per ancestor we actually import. Cheap at this volume (hundreds at most).
@@ -562,6 +688,76 @@ public class HierarchySync extends SectorRunnable {
       sectorKey, rewired, unchanged, unresolved);
   }
 
+  /**
+   * Rewires each name-matched project usage under the project equivalent of its source anchor (imported
+   * or deduped in phase 1) and flags it with {@link Issue#MATCHING_HIGHERRANK}. Placement only — status,
+   * synonymy, authorship and identifiers are untouched. Skips updates that would be a no-op or create a
+   * cycle; only usages that end up correctly placed are flagged.
+   */
+  private void placeNameMatches(int projectKey) {
+    if (namePlacements.isEmpty()) return;
+    int placed = 0, unchanged = 0, unresolved = 0, cycleBlocked = 0;
+    List<String> toFlag = new ArrayList<>();
+    try (SqlSession batch = factory.openSession(ExecutorType.BATCH, false);
+         SqlSession read = factory.openSession(true)) {
+      NameUsageMapper writeNum = batch.getMapper(NameUsageMapper.class);
+      NameUsageMapper readNum = read.getMapper(NameUsageMapper.class);
+      int written = 0;
+      for (Map.Entry<String, String> e : namePlacements.entrySet()) {
+        final String projectId = e.getKey();
+        final String anchor = e.getValue();
+        String target = resolveProjectIdForSource(anchor);
+        if (target == null) { unresolved++; continue; }
+        if (target.equals(projectId)) { unresolved++; continue; } // anchor resolved to the usage itself - cannot self-nest
+        String current = projectParents.get(projectId);
+        if (target.equals(current)) {
+          unchanged++;
+          toFlag.add(projectId); // already correctly placed (idempotent re-run) - still flag
+          continue;
+        }
+        if (wouldCreateCycle(projectKey, projectId, target, readNum)) {
+          LOG.warn("Hierarchy sector {}: skipping name placement of {} - new parent {} would create a cycle", sectorKey, projectId, target);
+          cycleBlocked++;
+          continue;
+        }
+        writeNum.updateParentId(DSID.of(projectKey, projectId), target, user);
+        projectParents.put(projectId, target);
+        toFlag.add(projectId);
+        placed++;
+        if (++written % 1000 == 0) batch.commit();
+      }
+      batch.commit();
+    }
+    // flag in a separate autocommit session (read-then-write per usage); idempotent
+    try (SqlSession s = factory.openSession(true)) {
+      NameUsageMapper num = s.getMapper(NameUsageMapper.class);
+      VerbatimSourceMapper vsm = s.getMapper(VerbatimSourceMapper.class);
+      for (String projectId : toFlag) {
+        flagNamePlacement(projectKey, projectId, num, vsm);
+      }
+    }
+    LOG.info("Hierarchy sector {}: name-match placement done - placed={}, unchanged={}, unresolved={}, cycle-blocked={}",
+      sectorKey, placed, unchanged, unresolved, cycleBlocked);
+  }
+
+  /**
+   * Adds {@link Issue#MATCHING_HIGHERRANK} to the usage's verbatim source, creating a sector-less
+   * verbatim source if the usage has none (so {@code deleteBySector} never wipes this pre-existing
+   * project data). Idempotent: the issue is only added when not already present.
+   */
+  private void flagNamePlacement(int projectKey, String usageId, NameUsageMapper num, VerbatimSourceMapper vsm) {
+    Integer vsKey = vsm.getVSKeyByUsage(DSID.of(projectKey, usageId));
+    if (vsKey == null) {
+      VerbatimSource v = new VerbatimSource(projectKey, vsIdGen++, null, null, null, null);
+      vsm.create(v);
+      num.updateVerbatimSourceKey(DSID.of(projectKey, usageId), v.getId());
+      vsKey = v.getId();
+    }
+    VerbatimSource issuesV = vsm.getIssues(DSID.of(projectKey, vsKey));
+    if (issuesV == null || issuesV.getIssues() == null || !issuesV.getIssues().contains(Issue.MATCHING_HIGHERRANK)) {
+      vsm.addIssue(DSID.of(projectKey, vsKey), Issue.MATCHING_HIGHERRANK);
+    }
+  }
 
   /**
    * Phase 2: align the {@link TaxonomicStatus} of each matched project usage with the source.
@@ -865,6 +1061,115 @@ public class HierarchySync extends SectorRunnable {
     }
     LOG.info("Hierarchy sector {}: phase 3 done — copied {} synonyms across {} accepted taxa (skipped {} already represented in the project)",
       sectorKey, copied, acceptedPairs.size(), skipped);
+  }
+
+  /**
+   * Phase 4: enrich the authorship of matched existing project names from the hierarchy source.
+   *
+   * <p>For every matched project usage (regardless of taxonomic status) the source's name is loaded
+   * and, if it carries an authorship, copied onto the existing project name according to the sector's
+   * {@link Sector#getAuthorshipUpdate()} setting: {@code MISSING} only fills names that lack an
+   * authorship, {@code ALWAYS} overwrites whenever the source has one, {@code NONE} skips the whole
+   * phase. The source of the authorship is recorded as a secondary source of
+   * {@link InfoGroup#AUTHORSHIP} on the project name's verbatim source so the provenance is tracked
+   * and the update stays idempotent across re-runs.
+   *
+   * <p>The matched names are pre-existing project data not tagged with this sector, so they survive
+   * {@code deleteBySector}. Any verbatim source we create here for them is therefore left untagged
+   * (no sector link) and the {@code AUTHORSHIP} secondary source is simply re-pointed on every run.
+   */
+  private void enrichAuthorship() {
+    final Sector.AuthorshipUpdate mode = sector.getAuthorshipUpdate();
+    LOG.info("HierarchySync phase 4 (authorship enrichment, mode={}) for sector {}", mode, sectorKey);
+    if (mode == null || mode == Sector.AuthorshipUpdate.NONE) {
+      LOG.info("Hierarchy sector {}: phase 4 skipped — authorshipUpdate={}", sectorKey, mode);
+      return;
+    }
+    if (projectMatches.isEmpty()) {
+      LOG.info("Hierarchy sector {}: phase 4 skipped — no matches", sectorKey);
+      return;
+    }
+    final int projectKey = sectorKey.getDatasetKey();
+    int updated = 0, skipped = 0, missingSource = 0;
+    try (SqlSession read = factory.openSession(true);
+         SqlSession batch = factory.openSession(ExecutorType.BATCH, false)) {
+      NameMapper readNm = read.getMapper(NameMapper.class);
+      NameMapper writeNm = batch.getMapper(NameMapper.class);
+      VerbatimSourceMapper readVsm = read.getMapper(VerbatimSourceMapper.class);
+      VerbatimSourceMapper writeVsm = batch.getMapper(VerbatimSourceMapper.class);
+      int written = 0;
+      for (Map.Entry<String, String> e : projectMatches.entrySet()) {
+        final String projectId = e.getKey();
+        final String sourceId = e.getValue();
+        Name src = readNm.getByUsage(sourceDatasetKey, sourceId);
+        if (src == null || !src.hasAuthorship()) {
+          missingSource++;
+          continue;
+        }
+        Name pn = readNm.getByUsage(projectKey, projectId);
+        if (pn == null) {
+          skipped++;
+          continue;
+        }
+        if (mode == Sector.AuthorshipUpdate.MISSING && pn.hasAuthorship()) {
+          skipped++;
+          continue;
+        }
+        // nothing to do if the authorship is already identical
+        if (Objects.equals(pn.getAuthorship(), src.getAuthorship())
+            && Objects.equals(pn.getCombinationAuthorship(), src.getCombinationAuthorship())
+            && Objects.equals(pn.getBasionymAuthorship(), src.getBasionymAuthorship())
+            && Objects.equals(pn.getSanctioningAuthor(), src.getSanctioningAuthor())) {
+          skipped++;
+          continue;
+        }
+        // copy the authorship from the source name
+        if (src.hasParsedAuthorship()) {
+          pn.setCombinationAuthorship(src.getCombinationAuthorship());
+          pn.setBasionymAuthorship(src.getBasionymAuthorship());
+          pn.setSanctioningAuthor(src.getSanctioningAuthor());
+          pn.rebuildAuthorship(); // rebuilds the cached authorship string from the parsed parts (parsed names only)
+        } else {
+          // source only carries an unparsed authorship string - copy it verbatim
+          pn.setAuthorship(src.getAuthorship());
+        }
+        pn.applyUser(user);
+
+        // make sure the project name has a verbatim source to attach the secondary source to
+        DSID<Integer> vsKey = nameVerbatimSourceKey(projectKey, projectId, pn, readVsm, writeVsm);
+        writeVsm.insertSources(vsKey, DSID.of(sourceDatasetKey, sourceId), Set.of(InfoGroup.AUTHORSHIP));
+        writeNm.update(pn);
+        updated++;
+        if (++written % 1000 == 0) batch.commit();
+      }
+      batch.commit();
+    }
+    LOG.info("Hierarchy sector {}: phase 4 done — updated authorship of {} names (skipped {}, source w/o authorship {})",
+      sectorKey, updated, skipped, missingSource);
+  }
+
+  /**
+   * Returns the verbatim source key to attach secondary sources to for the given project name,
+   * reusing the name's existing verbatim source, otherwise the usage's, otherwise creating a fresh
+   * sector-less verbatim source record. A sector-less record is used on purpose: the matched name is
+   * pre-existing project data and must not be wiped by {@code deleteBySector} on a re-run. When a key
+   * is resolved or created it is set on the name instance so the subsequent {@link NameMapper#update}
+   * persists the link.
+   */
+  private DSID<Integer> nameVerbatimSourceKey(int projectKey, String projectUsageId, Name pn,
+                                              VerbatimSourceMapper readVsm, VerbatimSourceMapper writeVsm) {
+    if (pn.getVerbatimSourceKey() != null) {
+      return DSID.of(projectKey, pn.getVerbatimSourceKey());
+    }
+    Integer uvsKey = readVsm.getVSKeyByUsage(DSID.of(projectKey, projectUsageId));
+    if (uvsKey != null) {
+      pn.setVerbatimSourceKey(uvsKey);
+      return DSID.of(projectKey, uvsKey);
+    }
+    VerbatimSource v = new VerbatimSource(projectKey, vsIdGen++, null, null, null, null);
+    writeVsm.create(v);
+    pn.setVerbatimSourceKey(v.getId());
+    return DSID.of(projectKey, v.getId());
   }
 
   /**

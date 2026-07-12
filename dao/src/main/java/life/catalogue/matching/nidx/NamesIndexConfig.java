@@ -9,6 +9,12 @@ import jakarta.validation.constraints.NotNull;
 
 public class NamesIndexConfig {
 
+  /**
+   * Default size of the kryo pool used for names index (de)serialization. With hard references in
+   * {@link NameIndexKryoPool} this bounds the number of retained idle kryo instances.
+   */
+  public static final int DEFAULT_KRYO_POOL_SIZE = 32;
+
   public enum Store {MAPDB, CHRONICLE}
 
   public static NamesIndexConfig memory(int poolsize){
@@ -39,7 +45,7 @@ public class NamesIndexConfig {
    */
   public boolean verification = true;
 
-  public int kryoPoolSize = 1024;
+  public int kryoPoolSize = DEFAULT_KRYO_POOL_SIZE;
 
   @NotNull
   public Store type = Store.MAPDB;

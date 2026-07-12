@@ -21,6 +21,7 @@ import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -322,6 +323,327 @@ public class HierarchySyncIT {
     assertTrue(pLynx.getStatus().isSynonym());
   }
 
+  /**
+   * Phase 4 with {@link Sector.AuthorshipUpdate#MISSING}: a matched project name that lacks an
+   * authorship gets it copied from the source, and the source is tracked as an
+   * {@link InfoGroup#AUTHORSHIP} secondary source on the project name's verbatim source.
+   */
+  @Test
+  public void enrichesMissingAuthorshipFromSource() throws Exception {
+    final String T_Auth = "T_Authoria";
+    final String P_Auth = "p_Authoria";
+    insertTaxonWithAuthorship(targetKey, T_Auth, T_Animalia, Rank.GENUS, "Authoria", auth("Smith", "1850"), null);
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Auth, null, Rank.GENUS, "Authoria", T_Auth);
+
+    setAuthorshipUpdate(Sector.AuthorshipUpdate.MISSING);
+    runHierarchySync();
+
+    Name pn = getName(PROJECT_KEY, P_Auth);
+    assertNotNull(pn);
+    assertTrue("project Authoria should have gained an authorship", pn.hasAuthorship());
+    assertTrue("authorship should come from the source", pn.getAuthorship().contains("Smith") && pn.getAuthorship().contains("1850"));
+    assertAuthorshipSecondarySource(PROJECT_KEY, P_Auth, targetKey, T_Auth);
+  }
+
+  /**
+   * Phase 4 with {@link Sector.AuthorshipUpdate#MISSING}: a matched project name that already has
+   * an authorship is left untouched even though the source has a different one.
+   */
+  @Test
+  public void missingModeKeepsExistingAuthorship() throws Exception {
+    final String T_Auth = "T_Authoria";
+    final String P_Auth = "p_Authoria";
+    insertTaxonWithAuthorship(targetKey, T_Auth, T_Animalia, Rank.GENUS, "Authoria", auth("Smith", "1850"), null);
+    insertTaxonWithAuthorship(PROJECT_KEY, P_Auth, null, Rank.GENUS, "Authoria", auth("Jones", "1999"), T_Auth);
+
+    setAuthorshipUpdate(Sector.AuthorshipUpdate.MISSING);
+    runHierarchySync();
+
+    Name pn = getName(PROJECT_KEY, P_Auth);
+    assertNotNull(pn);
+    assertTrue("existing authorship must be kept", pn.getAuthorship().contains("Jones"));
+    assertFalse("source authorship must not be applied in MISSING mode when one exists", pn.getAuthorship().contains("Smith"));
+  }
+
+  /**
+   * Phase 4 with {@link Sector.AuthorshipUpdate#ALWAYS}: an existing project authorship is
+   * overwritten with the source's whenever the source has one.
+   */
+  @Test
+  public void alwaysModeOverwritesExistingAuthorship() throws Exception {
+    final String T_Auth = "T_Authoria";
+    final String P_Auth = "p_Authoria";
+    insertTaxonWithAuthorship(targetKey, T_Auth, T_Animalia, Rank.GENUS, "Authoria", auth("Smith", "1850"), null);
+    insertTaxonWithAuthorship(PROJECT_KEY, P_Auth, null, Rank.GENUS, "Authoria", auth("Jones", "1999"), T_Auth);
+
+    setAuthorshipUpdate(Sector.AuthorshipUpdate.ALWAYS);
+    runHierarchySync();
+
+    Name pn = getName(PROJECT_KEY, P_Auth);
+    assertNotNull(pn);
+    assertTrue("ALWAYS should apply the source authorship", pn.getAuthorship().contains("Smith"));
+    assertFalse("ALWAYS should drop the previous authorship", pn.getAuthorship().contains("Jones"));
+    assertAuthorshipSecondarySource(PROJECT_KEY, P_Auth, targetKey, T_Auth);
+  }
+
+  /**
+   * Phase 4 with the default {@link Sector.AuthorshipUpdate#NONE}: authorship is never touched.
+   */
+  @Test
+  public void noneModeLeavesAuthorshipUntouched() throws Exception {
+    final String T_Auth = "T_Authoria";
+    final String P_Auth = "p_Authoria";
+    insertTaxonWithAuthorship(targetKey, T_Auth, T_Animalia, Rank.GENUS, "Authoria", auth("Smith", "1850"), null);
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Auth, null, Rank.GENUS, "Authoria", T_Auth);
+
+    // sector defaults to AuthorshipUpdate.NONE
+    runHierarchySync();
+
+    Name pn = getName(PROJECT_KEY, P_Auth);
+    assertNotNull(pn);
+    assertFalse("NONE mode must not add an authorship", pn.hasAuthorship());
+  }
+
+  /**
+   * Project-side dedup: when the project already provides an (accepted) genus that is reached as an
+   * ancestor of an id-matched species, the sync reuses it instead of importing a duplicate, and the
+   * reused genus stays untagged by the sector. The species nests under the existing project genus.
+   */
+  @Test
+  public void dedupReusesExistingProjectGenus() throws Exception {
+    final String T_Rosaceae = "T_Rosaceae";
+    final String T_Alchemilla = "T_Alchemilla";
+    final String T_Alch_vulgaris = "T_Alch_vulgaris";
+    final String P_Alchemilla = "p_Alchemilla";
+    final String P_Alch_vulgaris = "p_Alch_vulgaris";
+
+    // Source: Animalia > Rosaceae > Alchemilla > Alchemilla vulgaris
+    insertTaxon(targetKey, T_Rosaceae, T_Animalia, Rank.FAMILY, "Rosaceae");
+    insertTaxon(targetKey, T_Alchemilla, T_Rosaceae, Rank.GENUS, "Alchemilla");
+    insertTaxon(targetKey, T_Alch_vulgaris, T_Alchemilla, Rank.SPECIES, "Alchemilla vulgaris");
+
+    // Project: genus Alchemilla WITHOUT identifier (must be reused by name), species id-matched to source.
+    insertTaxon(PROJECT_KEY, P_Alchemilla, null, Rank.GENUS, "Alchemilla");
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Alch_vulgaris, P_Alchemilla, Rank.SPECIES, "Alchemilla vulgaris", T_Alch_vulgaris);
+
+    // names must be matched to the names index for the postgres matcher to find candidates
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    // exactly one Alchemilla genus in the project — the original, reused (no duplicate import)
+    List<NameUsageBase> alch = listByName(PROJECT_KEY, Rank.GENUS, "Alchemilla");
+    assertEquals("expected exactly one Alchemilla genus", 1, alch.size());
+    assertEquals(P_Alchemilla, alch.get(0).getId());
+    assertNull("reused project genus must not be tagged with the sector", alch.get(0).getSectorKey());
+
+    // Rosaceae + Animalia were imported (sector-tagged)
+    NameUsageBase rosaceae = getByName(PROJECT_KEY, Rank.FAMILY, "Rosaceae");
+    assertNotNull(rosaceae);
+    assertEquals(hierarchySector.getId(), rosaceae.getSectorKey());
+    NameUsageBase animalia = getByName(PROJECT_KEY, Rank.KINGDOM, "Animalia");
+    assertNotNull(animalia);
+    assertEquals(hierarchySector.getId(), animalia.getSectorKey());
+
+    // the id-matched species nests under the existing project genus (not under the family)
+    NameUsageBase pAV = getByID(PROJECT_KEY, P_Alch_vulgaris);
+    assertEquals("species should nest under the existing project genus", P_Alchemilla, pAV.getParentId());
+  }
+
+  /**
+   * Name-match fallback, HIGHERRANK: a floating species with no source identifier whose species is
+   * absent from the source is placed under the genus the matcher resolves, with the genus imported.
+   * The placed usage is flagged MATCHING_HIGHERRANK and re-runs stay idempotent.
+   */
+  @Test
+  public void nameMatchHigherRankPlacesUnderGenus() throws Exception {
+    final String T_Rosaceae = "T_Rosaceae";
+    final String T_Alchemilla = "T_Alchemilla";
+    final String P_floating = "p_alch_acutiloba";
+
+    // Source: Animalia > Rosaceae > Alchemilla (no species in source)
+    insertTaxon(targetKey, T_Rosaceae, T_Animalia, Rank.FAMILY, "Rosaceae");
+    insertTaxon(targetKey, T_Alchemilla, T_Rosaceae, Rank.GENUS, "Alchemilla");
+
+    // Project: floating species at root, no identifier
+    insertTaxon(PROJECT_KEY, P_floating, null, Rank.SPECIES, "Alchemilla acutiloba");
+
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase genus = getByName(PROJECT_KEY, Rank.GENUS, "Alchemilla");
+    assertNotNull("genus Alchemilla should have been imported", genus);
+    assertEquals(hierarchySector.getId(), genus.getSectorKey());
+
+    NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
+    assertEquals("floating species should nest under the imported genus", genus.getId(), floating.getParentId());
+    assertTrue("placed species should stay accepted", floating.getStatus().isTaxon());
+    assertNull("placed species must not gain an identifier", floating.getIdentifier());
+    assertHasVerbatimIssue(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK);
+
+    // idempotency: a second run keeps a single genus and a single issue
+    runHierarchySync();
+    assertEquals(1, listByName(PROJECT_KEY, Rank.GENUS, "Alchemilla").size());
+    assertEquals(1, verbatimIssueCount(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK));
+  }
+
+  /**
+   * Name-match fallback, full match: a species that exists in the source but was never id-matched is
+   * placed under its genus (imported) without becoming an identifier match (no status/synonym change).
+   */
+  @Test
+  public void nameMatchFullMatchPlacesUnderGenus() throws Exception {
+    final String T_Caryo = "T_Caryophyllaceae";
+    final String T_Agrostemma = "T_Agrostemma";
+    final String T_Ag_githago = "T_Ag_githago";
+    final String P_floating = "p_ag_githago";
+
+    insertTaxon(targetKey, T_Caryo, T_Animalia, Rank.FAMILY, "Caryophyllaceae");
+    insertTaxon(targetKey, T_Agrostemma, T_Caryo, Rank.GENUS, "Agrostemma");
+    insertTaxon(targetKey, T_Ag_githago, T_Agrostemma, Rank.SPECIES, "Agrostemma githago");
+
+    insertTaxon(PROJECT_KEY, P_floating, null, Rank.SPECIES, "Agrostemma githago");
+
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase genus = getByName(PROJECT_KEY, Rank.GENUS, "Agrostemma");
+    assertNotNull("genus Agrostemma should have been imported", genus);
+    NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
+    assertEquals("floating species should nest under its genus", genus.getId(), floating.getParentId());
+    assertNull("placed species must not gain an identifier", floating.getIdentifier());
+    assertHasVerbatimIssue(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK);
+  }
+
+  /**
+   * Name-match fallback, ambiguous: when the source has two genera sharing the same canonical name,
+   * the higher-rank match is AMBIGUOUS and the floating species is left at the root, unflagged.
+   */
+  @Test
+  public void nameMatchAmbiguousLeavesUsageUntouched() throws Exception {
+    final String T_FamA = "T_FamA";
+    final String T_FamB = "T_FamB";
+    final String T_GenusA = "T_GenusA";
+    final String T_GenusB = "T_GenusB";
+    final String P_floating = "p_dupgenus_spec";
+
+    // two genera "Dupgenus" under different families => higher match is ambiguous
+    insertTaxon(targetKey, T_FamA, T_Animalia, Rank.FAMILY, "Aaaaceae");
+    insertTaxon(targetKey, T_FamB, T_Animalia, Rank.FAMILY, "Bbbbceae");
+    insertTaxon(targetKey, T_GenusA, T_FamA, Rank.GENUS, "Dupgenus");
+    insertTaxon(targetKey, T_GenusB, T_FamB, Rank.GENUS, "Dupgenus");
+
+    insertTaxon(PROJECT_KEY, P_floating, null, Rank.SPECIES, "Dupgenus specia");
+
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
+    assertNull("ambiguous floating species should stay at the root", floating.getParentId());
+    assertEquals("ambiguous floating species must not be flagged", 0,
+      verbatimIssueCount(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK));
+  }
+
+  /**
+   * Name-match fallback ignores synonyms: a floating synonym whose name matches a source genus is
+   * not re-parented (its parent stays its accepted taxon).
+   */
+  @Test
+  public void nameMatchSkipsSynonyms() throws Exception {
+    final String T_Caryo = "T_Caryophyllaceae";
+    final String T_Agrostemma = "T_Agrostemma";
+    final String P_acc = "p_acc_genus";
+    final String P_syn = "p_syn_under_acc";
+
+    insertTaxon(targetKey, T_Caryo, T_Animalia, Rank.FAMILY, "Caryophyllaceae");
+    insertTaxon(targetKey, T_Agrostemma, T_Caryo, Rank.GENUS, "Agrostemma");
+
+    insertTaxon(PROJECT_KEY, P_acc, null, Rank.GENUS, "Somegenus");
+    insertSynonym(PROJECT_KEY, P_syn, P_acc, Rank.SPECIES, "Agrostemma githago");
+
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase syn = getByID(PROJECT_KEY, P_syn);
+    assertTrue("synonym should stay a synonym", syn.getStatus().isSynonym());
+    assertEquals("synonym parent must be unchanged", P_acc, syn.getParentId());
+  }
+
+  /**
+   * Idempotency of name-match placement under a STABLE (deduped) project genus. The project provides
+   * an existing accepted genus "Alchemilla" with NO identifier (dedup reuses it by name) and a
+   * floating accepted species "Alchemilla mollis" at root with NO identifier. The genus is NOT
+   * tagged by the sector and therefore survives {@code deleteBySector}. A second sync run must:
+   * (a) still find exactly one "Alchemilla" genus with the original id and no sector tag, (b) leave
+   * the floating species' parentId unchanged, and (c) produce exactly one MATCHING_HIGHERRANK issue
+   * (no duplication from re-flagging the already-correctly-placed usage).
+   */
+  @Test
+  public void nameMatchHigherRankIdempotentUnderDedupedGenus() throws Exception {
+    final String T_Rosaceae = "T_Rosaceae";
+    final String T_Alchemilla = "T_Alchemilla";
+    final String P_Alchemilla = "p_Alchemilla";
+    final String P_floating = "p_alch_mollis";
+
+    // Source: Animalia > Rosaceae > Alchemilla (no species in source, so floating species gets a
+    // HIGHERRANK match to the genus Alchemilla).
+    insertTaxon(targetKey, T_Rosaceae, T_Animalia, Rank.FAMILY, "Rosaceae");
+    insertTaxon(targetKey, T_Alchemilla, T_Rosaceae, Rank.GENUS, "Alchemilla");
+
+    // Project: an existing accepted genus "Alchemilla" WITHOUT identifier (dedup will reuse it by
+    // name, and deleteBySector will NOT wipe it since it has no sector tag), plus a floating
+    // accepted species at root WITHOUT identifier.
+    insertTaxon(PROJECT_KEY, P_Alchemilla, null, Rank.GENUS, "Alchemilla");
+    insertTaxon(PROJECT_KEY, P_floating, null, Rank.SPECIES, "Alchemilla mollis");
+
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    // Run 1 — initial placement
+    runHierarchySync();
+
+    List<NameUsageBase> alch = listByName(PROJECT_KEY, Rank.GENUS, "Alchemilla");
+    assertEquals("expected exactly one Alchemilla genus after run 1", 1, alch.size());
+    assertEquals("genus should be the original project entry (deduped, not imported)", P_Alchemilla, alch.get(0).getId());
+    assertNull("reused project genus must not be tagged with the sector", alch.get(0).getSectorKey());
+
+    NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
+    assertEquals("floating species should nest under the existing project genus after run 1", P_Alchemilla, floating.getParentId());
+
+    // Run 2 — exercises the "unchanged → still flag" idempotency branch in placeNameMatches
+    runHierarchySync();
+
+    alch = listByName(PROJECT_KEY, Rank.GENUS, "Alchemilla");
+    assertEquals("second run must not duplicate the Alchemilla genus", 1, alch.size());
+    assertEquals("genus id must remain the original project entry after second run", P_Alchemilla, alch.get(0).getId());
+    assertNull("reused genus must still not be tagged with the sector after second run", alch.get(0).getSectorKey());
+
+    floating = getByID(PROJECT_KEY, P_floating);
+    assertEquals("floating species parent must be unchanged after second run", P_Alchemilla, floating.getParentId());
+    assertEquals("MATCHING_HIGHERRANK should appear exactly once after the second run (no duplication)",
+      1, verbatimIssueCount(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK));
+  }
+
   // ---------- helpers ----------
 
   private void runHierarchySync() throws Exception {
@@ -329,12 +651,13 @@ public class HierarchySyncIT {
     SectorImportDao siDao = new SectorImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), TreeRepoRule.getRepo());
     EventBroker bus = TestUtils.mockedBroker();
     NameIndex ni = NameMatchingRule.getIndex();
-    try (UsageMatcherFactory matcherFactory = new UsageMatcherFactory(new MatchingConfig(), ni, SqlSessionFactoryRule.getSqlSessionFactory(), null)) {
+    UsageMatcherFactory matcherFactory = new UsageMatcherFactory(new MatchingConfig(), ni, SqlSessionFactoryRule.getSqlSessionFactory(), null);
+    try {
       HierarchySync sync = new HierarchySync(
         hierarchySector,
         SqlSessionFactoryRule.getSqlSessionFactory(),
-        ni,
         session -> matcherFactory.postgres(PROJECT_KEY, session),
+        (dk, session) -> matcherFactory.postgres(dk, session),
         LatestDatasetKeyCache.passThru(),
         bus,
         NameUsageIndexService.passThru(),
@@ -348,6 +671,8 @@ public class HierarchySyncIT {
       if (sync.getStatus() != JobStatus.FINISHED) {
         throw new AssertionError("HierarchySync did not finish cleanly: status=" + sync.getStatus() + " error=" + sync.getState().getError());
       }
+    } finally {
+      matcherFactory.close();
     }
   }
 
@@ -438,6 +763,32 @@ public class HierarchySyncIT {
     }
   }
 
+  /**
+   * Inserts an accepted taxon whose name carries a parsed combination authorship. A target
+   * identifier can optionally be attached (pass null to skip).
+   */
+  private static void insertTaxonWithAuthorship(int datasetKey, String id, String parentId, Rank rank, String scientificName,
+                                                Authorship combinationAuthorship, String targetId) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      Name n = buildName(datasetKey, id, scientificName, rank);
+      n.setCombinationAuthorship(combinationAuthorship);
+      n.rebuildAuthorship();
+      s.getMapper(NameMapper.class).create(n);
+      Taxon t = buildTaxon(datasetKey, id, parentId, n, TaxonomicStatus.ACCEPTED);
+      if (targetId != null) {
+        t.setIdentifier(new java.util.ArrayList<>(List.of(new Identifier(SCOPE, targetId))));
+      }
+      s.getMapper(TaxonMapper.class).create(t);
+    }
+  }
+
+  private static Authorship auth(String author, String year) {
+    Authorship a = new Authorship();
+    a.setAuthors(new java.util.ArrayList<>(List.of(author)));
+    a.setYear(year);
+    return a;
+  }
+
   private static Name buildName(int datasetKey, String id, String scientificName, Rank rank) {
     Name n = new Name();
     n.setDatasetKey(datasetKey);
@@ -470,6 +821,17 @@ public class HierarchySyncIT {
     t.setOrigin(life.catalogue.api.vocab.Origin.SOURCE);
     t.applyUser(USER);
     return t;
+  }
+
+  /** Persists the authorship-update mode on the hierarchy sector (and mirrors it on the in-memory instance). */
+  private void setAuthorshipUpdate(Sector.AuthorshipUpdate mode) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      SectorMapper sm = s.getMapper(SectorMapper.class);
+      Sector sec = sm.get(hierarchySector);
+      sec.setAuthorshipUpdate(mode);
+      sm.update(sec);
+    }
+    hierarchySector.setAuthorshipUpdate(mode);
   }
 
   private static Sector createHierarchySector(int targetDatasetKey) {
@@ -524,6 +886,41 @@ public class HierarchySyncIT {
       assertNotNull("expected verbatim_source row for " + u.getId(), v);
       assertEquals("verbatim_source should record the source dataset", Integer.valueOf(expectedSourceDatasetKey), v.getSourceDatasetKey());
       assertEquals("verbatim_source.source_id should point at the original source record", expectedSourceId, v.getSourceId());
+    }
+  }
+
+  private static Name getName(int datasetKey, String usageId) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      return s.getMapper(NameMapper.class).getByUsage(datasetKey, usageId);
+    }
+  }
+
+  private static void assertAuthorshipSecondarySource(int datasetKey, String usageId, int expectedSourceDatasetKey, String expectedSourceId) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      Name n = s.getMapper(NameMapper.class).getByUsage(datasetKey, usageId);
+      assertNotNull("name should not be null", n);
+      assertNotNull("name " + usageId + " should carry a verbatim_source_key", n.getVerbatimSourceKey());
+      var sources = s.getMapper(VerbatimSourceMapper.class).getSources(DSID.of(datasetKey, n.getVerbatimSourceKey()));
+      SecondarySource ss = sources.get(InfoGroup.AUTHORSHIP);
+      assertNotNull("expected an AUTHORSHIP secondary source on " + usageId, ss);
+      assertEquals("secondary source dataset", Integer.valueOf(expectedSourceDatasetKey), ss.getDatasetKey());
+      assertEquals("secondary source id", expectedSourceId, ss.getId());
+    }
+  }
+
+  private static void assertHasVerbatimIssue(int datasetKey, String usageId, Issue issue) {
+    assertEquals("usage " + usageId + " should carry verbatim issue " + issue, 1,
+      verbatimIssueCount(datasetKey, usageId, issue));
+  }
+
+  private static int verbatimIssueCount(int datasetKey, String usageId, Issue issue) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      VerbatimSourceMapper vsm = s.getMapper(VerbatimSourceMapper.class);
+      Integer vsKey = vsm.getVSKeyByUsage(DSID.of(datasetKey, usageId));
+      if (vsKey == null) return 0;
+      VerbatimSource v = vsm.getIssues(DSID.of(datasetKey, vsKey));
+      if (v == null || v.getIssues() == null) return 0;
+      return v.getIssues().contains(issue) ? 1 : 0;
     }
   }
 
