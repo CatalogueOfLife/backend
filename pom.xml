@@ -90,7 +90,8 @@
     <mapdb.version>3.1.0</mapdb.version>
     <mockito.version>5.23.0</mockito.version>
     <mybatis.version>3.5.19</mybatis.version>
-    <name-parser.version>4.2.0</name-parser.version>
+    <name-parser.version>5.0.0-SNAPSHOT</name-parser.version>
+    <name-parser-rust.version>0.1.0-SNAPSHOT</name-parser-rust.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.5.1</poi.version>
     <pollexor.version>3.0.0</pollexor.version>
@@ -482,10 +483,19 @@
         <artifactId>name-parser-api</artifactId>
         <version>${name-parser.version}</version>
       </dependency>
+      <!-- 5.0.0 removed the pure-Java impl; the Rust FFM binding is the NameParser now. It ships a
+           thin main JAR plus one native classifier JAR per platform (the bundled cdylib), pulled
+           via os-maven-plugin's ${os.detected.classifier} (see the build/extensions below). -->
       <dependency>
-        <groupId>org.gbif</groupId>
-        <artifactId>name-parser</artifactId>
-        <version>${name-parser.version}</version>
+        <groupId>org.gbif.nameparser</groupId>
+        <artifactId>name-parser-rust</artifactId>
+        <version>${name-parser-rust.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.gbif.nameparser</groupId>
+        <artifactId>name-parser-rust</artifactId>
+        <version>${name-parser-rust.version}</version>
+        <classifier>${os.detected.classifier}</classifier>
       </dependency>
       <dependency>
         <groupId>org.gbif</groupId>
@@ -748,6 +758,15 @@
   </dependencyManagement>
 
   <build>
+    <extensions>
+      <!-- sets ${os.detected.classifier} (osx-aarch_64, linux-x86_64, windows-x86_64, …) so the
+           name-parser-rust native classifier JAR resolves to this platform's bundled Rust cdylib -->
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.7.1</version>
+      </extension>
+    </extensions>
     <resources>
       <resource>
         <directory>src/main/resources</directory>

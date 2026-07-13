@@ -10,8 +10,8 @@ import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 
-import org.gbif.nameparser.NameParserImpl;
 import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.rust.NameParserRust;
 
 import javax.annotation.Nullable;
 
@@ -74,14 +74,14 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       .build();
 
   private Timer timer;
-  private final NameParserImpl parserInternal;
+  private final NameParserRust parserInternal;
 
   NameParser() {
-    this(new NameParserImpl());
+    this(new NameParserRust());
   }
 
   @VisibleForTesting
-  NameParser(NameParserImpl parser) {
+  NameParser(NameParserRust parser) {
     parserInternal = parser;
   }
 
@@ -115,11 +115,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
 
   public Optional<ParsedAuthorship> parseAuthorship(String authorship, @Nullable NomCode code) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedAuthorship());
-    try {
-      return Optional.of(parserInternal.parseAuthorship(authorship, code));
-    } catch (UnparsableNameException e) {
-      return Optional.empty();
-    }
+    // 5.0.0: parseAuthorship no longer throws — it returns Optional.empty() for an unparsable authorship.
+    return parserInternal.parseAuthorship(authorship, code);
   }
 
   /**
@@ -367,25 +364,37 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
       final String authorship = n.getAuthorship();
-      // parse name and authorship together so the parser can infer the code/originalSpelling from both
-      pnu = fromParsedName(n, parserInternal.parse(n.getScientificName(), authorship, n.getRank(), n.getCode()), issues);
-      // CoL post-processing: normalized authorship string + UNPARSABLE/INCONSISTENT flags
-      parseAuthorshipIntoName(pnu, authorship, issues);
-
-    } catch (UnparsableNameException e) {
-      pnu = new ParsedNameUsage();
-      pnu.setName(n);
-      pnu.getName().setRank(n.getRank());
-      pnu.getName().setScientificName(e.getName());
-      pnu.getName().setType(e.getType());
-      // name-parser v4.2 carries a NomCode on the exception for code-known unparsables (e.g. NomCode.VIRUS).
-      // Record it so true virus names keep their virus signal now that NameType.VIRUS is gone.
-      if (e.getCode() != null) {
-        pnu.getName().setCode(e.getCode());
-      }
-      // adds an issue in case the type indicates a parsable name
-      if (pnu.getName().getType().isParsable()) {
-        issues.add(Issue.UNPARSABLE_NAME);
+      // parse name and authorship together so the parser can infer the code/originalSpelling from both.
+      // 5.0.0: parse() never throws — it returns a sealed three-way ParseResult.
+      switch (parserInternal.parse(n.getScientificName(), authorship, n.getRank(), n.getCode())) {
+        case ParseResult.Parsed p -> {
+          pnu = fromParsedName(n, p.name(), issues);
+          // CoL post-processing: normalized authorship string + UNPARSABLE/INCONSISTENT flags
+          parseAuthorshipIntoName(pnu, authorship, issues);
+        }
+        case ParseResult.Informal inf -> {
+          // 5.0.0 semistructured band: a supraspecific anchor carrying a provisional designation
+          // (e.g. "Rhizobium sp. RMCC TR1811", "Bartonella group"). Rebuild the type=INFORMAL
+          // ParsedName the 4.x parser used to return so all downstream handling stays unchanged.
+          pnu = fromParsedName(n, inf.toParsedName(), issues);
+          parseAuthorshipIntoName(pnu, authorship, issues);
+        }
+        case ParseResult.Unparsable e -> {
+          pnu = new ParsedNameUsage();
+          pnu.setName(n);
+          pnu.getName().setRank(n.getRank());
+          pnu.getName().setScientificName(e.name());
+          pnu.getName().setType(e.type());
+          // name-parser 5.0 carries a NomCode on the unparsable for code-known names (e.g. NomCode.VIRUS).
+          // Record it so true virus names keep their virus signal now that NameType.VIRUS is gone.
+          if (e.code() != null) {
+            pnu.getName().setCode(e.code());
+          }
+          // adds an issue in case the type indicates a parsable name
+          if (pnu.getName().getType().isParsable()) {
+            issues.add(Issue.UNPARSABLE_NAME);
+          }
+        }
       }
     } finally {
       if (ctx != null) {
@@ -400,13 +409,9 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     if (StringUtils.isBlank(sciname)) {
       return Optional.of(NameType.OTHER);
     }
-    try {
-      ParsedName pn = parserInternal.parse(sciname, null, name.getRank(), name.getCode());
-      return Optional.of(ObjectUtils.coalesce(pn.getType(), NameType.SCIENTIFIC));
-    
-    } catch (UnparsableNameException e) {
-      return Optional.of(ObjectUtils.coalesce(e.getType(), NameType.SCIENTIFIC));
-    }
+    // 5.0.0: type() is available on every ParseResult variant (Parsed/Informal/Unparsable), no throw.
+    ParseResult result = parserInternal.parse(sciname, null, name.getRank(), name.getCode());
+    return Optional.of(ObjectUtils.coalesce(result.type(), NameType.SCIENTIFIC));
   }
 
   /**

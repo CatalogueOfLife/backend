@@ -31,9 +31,16 @@
             <groupId>org.gbif</groupId>
             <artifactId>name-parser-api</artifactId>
         </dependency>
+        <!-- the Rust FFM binding (replaces the removed pure-Java name-parser impl) + its native
+             classifier JAR for this platform (via os-maven-plugin, configured in the parent pom) -->
         <dependency>
-            <groupId>org.gbif</groupId>
-            <artifactId>name-parser</artifactId>
+            <groupId>org.gbif.nameparser</groupId>
+            <artifactId>name-parser-rust</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.gbif.nameparser</groupId>
+            <artifactId>name-parser-rust</artifactId>
+            <classifier>${os.detected.classifier}</classifier>
         </dependency>
 
         <!-- other -->
