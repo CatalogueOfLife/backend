@@ -377,6 +377,13 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
           // (e.g. "Rhizobium sp. RMCC TR1811", "Bartonella group"). Rebuild the type=INFORMAL
           // ParsedName the 4.x parser used to return so all downstream handling stays unchanged.
           pnu = fromParsedName(n, inf.toParsedName(), issues);
+          // 5.0's Informal result is lean (no warnings). A species-level informal ("Genus sp./
+          // species N") is indeterminate, so re-flag it: NameInterpreter keys its rank inference on
+          // INFORMAL + INDETERMINED and would otherwise drop the parser's rank (e.g. SPECIES) to
+          // UNRANKED, exactly as the 4.x INFORMAL + INDETERMINED signal drove it.
+          if (inf.rank() != null && inf.rank().isSpeciesOrBelow()) {
+            issues.add(Issue.INDETERMINED);
+          }
           parseAuthorshipIntoName(pnu, authorship, issues);
         }
         case ParseResult.Unparsable e -> {

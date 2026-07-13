@@ -26,6 +26,10 @@ public class NameFormatter {
   private static final String NOTHO_PREFIX = "notho";
   private static final Joiner AUTHORSHIP_JOINER = Joiner.on(", ").skipNulls();
   private static final Pattern AL = Pattern.compile("^al\\.?$");
+  // an unparsed/phrase portion that itself starts with a species marker ("species 1", "sp. 3"), so
+  // the synthetic "sp." rank marker must not be prepended a second time ("Xyris sp. species 1")
+  private static final Pattern UNPARSED_SPECIES_MARKER =
+      Pattern.compile("^(?:sp|spec|species)\\b", Pattern.CASE_INSENSITIVE);
   private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho)?(?:infra|super|sub)?(?:gx|natio|morph|klepton|lusus|strain|chemoform|(?:subsp|f\\. ?sp|[a-z]{1,4})\\.|[a-z]{3,6}var\\.?))( [a-z][^ ]*?)?( .+)?$");
   //private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?( .+)?$");
   // matches only uninomials or binomials without any authorship
@@ -220,7 +224,9 @@ public class NameFormatter {
             if (n.getRank().isInfraspecific()) {
               // maybe we have an infraspecific epithet? force to show the rank marker
               appendInfraspecific(sb, n, true);
-            } else {
+            } else if (!unparsedLeadsWithSpeciesMarker(n)) {
+              // skip the synthetic "sp." when the unparsed portion already spells out a species
+              // marker ("Xyris species 1"), so it isn't doubled into "Xyris sp. species 1"
               sb.append(" ");
               sb.append(n.getRank().getMarker());
             }
@@ -297,6 +303,12 @@ public class NameFormatter {
     //    .append(n.getNomenclaturalNote());
     //}
     return sb;
+  }
+
+  /** True when the unparsed portion already begins with a species marker (species/sp/spec), so the
+   *  synthetic indet "sp." rank marker would only duplicate it. */
+  private static boolean unparsedLeadsWithSpeciesMarker(FormattableName n) {
+    return n.getUnparsed() != null && UNPARSED_SPECIES_MARKER.matcher(n.getUnparsed().trim()).find();
   }
 
   private static StringBuilder appendInfraspecific(StringBuilder sb, FormattableName n, boolean forceRankMarker) {
