@@ -145,6 +145,45 @@ UPDATE sector SET name_types = array_replace(name_types, 'OTU'::nametype, 'IDENT
   WHERE name_types @> ARRAY['OTU'::nametype];
 ```
 
+Stored import metrics keep a per-`NameType` count in the `names_by_type_count` HSTORE of both
+`dataset_import` and `sector_import`, keyed by the `NameType` name. Rename the `OTU` key to
+`IDENTIFIER` so historical metrics stay readable (the mybatis handler silently drops keys that no
+longer resolve to a `NameType`). `IDENTIFIER` is a brand-new label so it cannot already be present,
+hence no count-collision handling is needed. (Note: the `HYBRID_FORMULA`/`NO_NAME`/`VIRUS` keys left
+behind by the earlier 2026-06 NameType migrations were never renamed in these metrics either; apply
+the same pattern -- summing into the pre-existing target key -- if you want fully clean metrics.)
+```
+UPDATE dataset_import SET names_by_type_count =
+    (names_by_type_count - 'OTU'::text) || hstore('IDENTIFIER', names_by_type_count -> 'OTU')
+  WHERE names_by_type_count ? 'OTU';
+UPDATE sector_import SET names_by_type_count =
+    (names_by_type_count - 'OTU'::text) || hstore('IDENTIFIER', names_by_type_count -> 'OTU')
+  WHERE names_by_type_count ? 'OTU';
+```
+
+#### 2026-07-14 IgnoreReason name-type reasons renamed to match NameType
+`IgnoreReason` renamed its ignored-name-type values to match the current `NameType` names:
+`NAME_HYBRID_FORMULA` -> `NAME_FORMULA`, `NAME_OTU` -> `NAME_IDENTIFIER`, `NAME_NO_NAME` ->
+`NAME_OTHER` (`NAME_VIRUS` is kept as a historical orphan). `IgnoreReason` is not a pg enum -- it is
+only stored as HSTORE keys in the `ignored_by_reason_count` metric of `dataset_import` and
+`sector_import`. Rename those keys so historical metrics stay readable. The three target names are
+new, so no count-collision handling is needed; a row may carry several of the old keys at once, which
+the single statement below handles.
+```
+UPDATE dataset_import SET ignored_by_reason_count =
+    (ignored_by_reason_count - ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME']::text[])
+    || CASE WHEN ignored_by_reason_count ? 'NAME_HYBRID_FORMULA' THEN hstore('NAME_FORMULA',    ignored_by_reason_count -> 'NAME_HYBRID_FORMULA') ELSE ''::hstore END
+    || CASE WHEN ignored_by_reason_count ? 'NAME_OTU'            THEN hstore('NAME_IDENTIFIER', ignored_by_reason_count -> 'NAME_OTU')            ELSE ''::hstore END
+    || CASE WHEN ignored_by_reason_count ? 'NAME_NO_NAME'        THEN hstore('NAME_OTHER',      ignored_by_reason_count -> 'NAME_NO_NAME')        ELSE ''::hstore END
+  WHERE ignored_by_reason_count ?| ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME'];
+UPDATE sector_import SET ignored_by_reason_count =
+    (ignored_by_reason_count - ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME']::text[])
+    || CASE WHEN ignored_by_reason_count ? 'NAME_HYBRID_FORMULA' THEN hstore('NAME_FORMULA',    ignored_by_reason_count -> 'NAME_HYBRID_FORMULA') ELSE ''::hstore END
+    || CASE WHEN ignored_by_reason_count ? 'NAME_OTU'            THEN hstore('NAME_IDENTIFIER', ignored_by_reason_count -> 'NAME_OTU')            ELSE ''::hstore END
+    || CASE WHEN ignored_by_reason_count ? 'NAME_NO_NAME'        THEN hstore('NAME_OTHER',      ignored_by_reason_count -> 'NAME_NO_NAME')        ELSE ''::hstore END
+  WHERE ignored_by_reason_count ?| ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME'];
+```
+
 #### 2026-07-07 sector name_filter regex
 name-parser v4 folded `NameType.OTU` into `OTHER`, so a sector's `name_types` filter can no longer
 isolate OTU names (e.g. BOLD or UNITE SH names) from other `OTHER` type names. The new optional
