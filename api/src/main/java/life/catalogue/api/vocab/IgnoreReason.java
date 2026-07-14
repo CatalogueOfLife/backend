@@ -29,11 +29,14 @@ public enum IgnoreReason {
 
   // name-parser v4.2 dropped NameType.VIRUS; viruses are now OTHER (carrying NomCode.VIRUS).
   // NAME_VIRUS is kept as a historical reason value but no NameType maps to it anymore.
+  // name-parser 5.0 reintroduced NameType.IDENTIFIER for identifier pseudo-names (BOLD:, UNITE
+  // SH...FU codes) - the old OTU concept - so it maps to the historical NAME_OTU reason.
   private static final Map<NameType, IgnoreReason> nameTypes = Map.of(
     SCIENTIFIC, NAME_SCIENTIFIC,
     FORMULA, NAME_HYBRID_FORMULA,
     INFORMAL, NAME_INFORMAL,
     PLACEHOLDER, NAME_PLACEHOLDER,
+    IDENTIFIER, NAME_OTU,
     OTHER, NAME_NO_NAME
   );
 
