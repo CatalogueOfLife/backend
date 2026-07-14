@@ -208,6 +208,19 @@ UPDATE sector SET name_types = array_replace(name_types, 'VIRUS'::nametype, 'OTH
   WHERE name_types @> ARRAY['VIRUS'::nametype];
 ```
 
+The `names_by_type_count` metric keeps text keys untouched by the type merge above; fold its `VIRUS`
+key into `OTHER`, summing on collision.
+```
+UPDATE dataset_import SET names_by_type_count =
+    (names_by_type_count - 'VIRUS'::text)
+    || hstore('OTHER', (COALESCE((names_by_type_count->'OTHER')::int,0) + (names_by_type_count->'VIRUS')::int)::text)
+  WHERE names_by_type_count ? 'VIRUS';
+UPDATE sector_import SET names_by_type_count =
+    (names_by_type_count - 'VIRUS'::text)
+    || hstore('OTHER', (COALESCE((names_by_type_count->'OTHER')::int,0) + (names_by_type_count->'VIRUS')::int)::text)
+  WHERE names_by_type_count ? 'VIRUS';
+```
+
 #### 2026-06-24 drop parser_config
 name-parser v4 is stateless and no longer supports runtime parser config overrides. The legacy
 curated overrides (the `parser_config` table, its mapper/DAO and the `/parser/name/config` endpoint)
@@ -233,6 +246,30 @@ UPDATE name_usage_archive SET n_type = 'OTHER' WHERE n_type = 'NO_NAME';
 UPDATE parser_config SET type = 'OTHER' WHERE type = 'NO_NAME';
 UPDATE sector SET name_types = array_replace(name_types, 'NO_NAME'::nametype, 'OTHER'::nametype)
   WHERE name_types @> ARRAY['NO_NAME'::nametype];
+```
+
+Stored import metrics (`names_by_type_count` HSTORE on `dataset_import`/`sector_import`) use plain
+text keys, so `RENAME VALUE` above does not touch them. Rename `HYBRID_FORMULA` -> `FORMULA` and merge
+`NO_NAME` into `OTHER`. `OTHER` may already be present, so these **sum** counts on collision (per-key
+statements rather than a single overwriting merge). `OTU` is handled separately in the 2026-07-14
+section (`OTU` -> `IDENTIFIER`).
+```
+UPDATE dataset_import SET names_by_type_count =
+    (names_by_type_count - 'HYBRID_FORMULA'::text)
+    || hstore('FORMULA', (COALESCE((names_by_type_count->'FORMULA')::int,0) + (names_by_type_count->'HYBRID_FORMULA')::int)::text)
+  WHERE names_by_type_count ? 'HYBRID_FORMULA';
+UPDATE sector_import SET names_by_type_count =
+    (names_by_type_count - 'HYBRID_FORMULA'::text)
+    || hstore('FORMULA', (COALESCE((names_by_type_count->'FORMULA')::int,0) + (names_by_type_count->'HYBRID_FORMULA')::int)::text)
+  WHERE names_by_type_count ? 'HYBRID_FORMULA';
+UPDATE dataset_import SET names_by_type_count =
+    (names_by_type_count - 'NO_NAME'::text)
+    || hstore('OTHER', (COALESCE((names_by_type_count->'OTHER')::int,0) + (names_by_type_count->'NO_NAME')::int)::text)
+  WHERE names_by_type_count ? 'NO_NAME';
+UPDATE sector_import SET names_by_type_count =
+    (names_by_type_count - 'NO_NAME'::text)
+    || hstore('OTHER', (COALESCE((names_by_type_count->'OTHER')::int,0) + (names_by_type_count->'NO_NAME')::int)::text)
+  WHERE names_by_type_count ? 'NO_NAME';
 ```
 
 #### 2026-06-04 name-parser v4 notho is now a set
