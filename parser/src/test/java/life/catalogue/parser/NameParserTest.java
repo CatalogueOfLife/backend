@@ -204,7 +204,9 @@ public class NameParserTest {
   public void parsePhrases() throws Exception {
     assertName("Lepidoptera sp. JGP0404", "Lepidoptera sp. JGP0404", NameType.INFORMAL)
       .species("Lepidoptera", null)
-      .unparsed("JGP0404")
+      // 5.0 keeps the rank marker in the informal phrase; NameFormatter skips the synthetic "sp."
+      // so the scientific name is not doubled, and the parsed rank stays SPECIES
+      .unparsed("sp. JGP0404")
       .type(NameType.INFORMAL)
       .nothingElse();
   }
@@ -394,15 +396,17 @@ public class NameParserTest {
 
   @Test
   public void unparserOTUs() throws Exception {
-    assertName("BOLD:AAA3374", "BOLD:AAA3374", NameType.OTHER)
+    // 5.0 classifies structured OTU/BIN identifiers (BOLD BINs, UNITE SH codes) as NameType.IDENTIFIER
+    assertName("BOLD:AAA3374", "BOLD:AAA3374", NameType.IDENTIFIER)
       .nothingElse();
 
-    assertName("SH19186714.17FU", "SH19186714.17FU", NameType.OTHER)
+    assertName("SH19186714.17FU", "SH19186714.17FU", NameType.IDENTIFIER)
       .nothingElse();
 
-    assertName("sh19186714.17fu", "SH19186714.17FU", NameType.OTHER)
+    assertName("sh19186714.17fu", "SH19186714.17FU", NameType.IDENTIFIER)
       .nothingElse();
 
+    // free-form placeholders are not recognised as identifiers, they stay OTHER
     assertName("0-14-0-10-38-17 sp002774085", "0-14-0-10-38-17 sp002774085", NameType.OTHER)
       .nothingElse();
 
@@ -489,7 +493,8 @@ public class NameParserTest {
   public void phraseNames() throws Exception {
     assertName("Acacia sp. Bigge Island (A.A. Mitchell 3436) WA Herbarium", "Acacia sp. Bigge Island (A.A. Mitchell 3436) WA Herbarium", NameType.INFORMAL)
       .species("Acacia", null)
-      .unparsed("Bigge Island (A.A. Mitchell 3436) WA Herbarium")
+      // 5.0 keeps the "sp." rank marker as part of the informal phrase (rank stays SPECIES)
+      .unparsed("sp. Bigge Island (A.A. Mitchell 3436) WA Herbarium")
       .nothingElse();
   }
 
