@@ -86,6 +86,15 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   }
 
   /**
+   * @return the shared underlying name parser (the GBIF {@link org.gbif.nameparser.api.NameParser} API, backed by the
+   *         rust implementation), for callers that need the raw {@link org.gbif.nameparser.api.ParsedName} without the
+   *         overhead of building a full CoL {@link life.catalogue.api.model.Name}.
+   */
+  public org.gbif.nameparser.api.NameParser gbif() {
+    return parserInternal;
+  }
+
+  /**
    * Optionally register timer metrics for name parsing events
    *
    * @param registry

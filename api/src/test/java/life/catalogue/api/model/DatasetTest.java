@@ -5,7 +5,6 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.Country;
-import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
 import java.beans.PropertyDescriptor;
@@ -230,45 +229,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
   @Test
   public void testColCitation() throws Exception {
 
-  }
-
-  @Test
-  public void testSourceCitation() throws Exception {
-    Dataset d = new Dataset();
-    d.setKey(1000);
-    d.setOrigin(DatasetOrigin.EXTERNAL);
-    d.setTitle("Catalogue of the Alucitoidea of the World");
-    d.setCreator(Agent.parse(List.of("Hobern, Donald", "Gielis, C.")));
-    d.setEditor(Agent.parse(List.of("Hobern, Donald")));
-    d.setUrl(URI.create("https://alucitoidea.hobern.net"));
-    // these are taken from the container (=COL) for sources by the mapper
-    d.setVersion("Annual Edition 2024");
-    d.setIssued(FuzzyDate.of(2024,6,18));
-    d.setPublisher(Agent.organisation("Catalogue of Life", null, "Amsterdam", null, Country.NETHERLANDS));
-    d.setContainerTitle("Catalogue of Life");
-    d.setContainerCreator(Agent.parse(List.of("Banki, Olaf", "Roskov, Yuri")));
-
-    System.out.println(CslUtil.buildCitation(d.toCSL()));
-  }
-
-  @Test
-  public void toCSL() throws Exception {
-    Dataset d = new Dataset();
-    d.setKey(1000);
-    d.setOrigin(DatasetOrigin.EXTERNAL);
-    d.setTitle("Catalogue of the Alucitoidea of the World");
-    d.setCreator(Agent.parse(List.of("Hobern, Donald", "Gielis, C.")));
-    d.setEditor(Agent.parse(List.of("Hobern, Donald", "Hobern, Markus")));
-    d.setVersion("1.0.21.199 (18 Jul 2021)");
-    d.setIssued(FuzzyDate.of(2021,7,18));
-    d.setUrl(URI.create("https://alucitoidea.hobern.net"));
-    d.setContainerTitle("Catalogue of Life Checklist");
-    d.setContainerCreator(Agent.parse(List.of("Banki, Olaf", "Roskov, Yuri")));
-
-    var csl = d.toCSL();
-    assertEquals(3, csl.getAuthor().length);
-    assertNull(csl.getEditor());
-    assertEquals("Catalogue of Life Checklist", csl.getContainerTitle());
   }
 
   @Test

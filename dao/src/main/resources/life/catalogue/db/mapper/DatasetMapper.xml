@@ -702,6 +702,7 @@
     VALUES (#{key}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, #{createdBy}, now(), now(), <include refid="aclEditor"/>)
   </insert>
 
+  <!-- only grant editor access to real human creators; the 100 cutoff mirrors Users.MIN_HUMAN_KEY / Users.isBot -->
   <sql id="aclEditor">
     <if test="sourceKey != null">NULL</if>
     <if test="sourceKey == null">

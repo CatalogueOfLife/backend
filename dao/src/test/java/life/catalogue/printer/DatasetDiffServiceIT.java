@@ -1,5 +1,6 @@
 package life.catalogue.printer;
 
+import life.catalogue.config.DiffConfig;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.junit.TestDataRule;
 
@@ -15,7 +16,9 @@ public class DatasetDiffServiceIT extends BaseDiffServiceIT<Integer> {
   final DatasetDiffService diffService;
 
   public DatasetDiffServiceIT() {
-    diffService = new DatasetDiffService(factory(), new FileMetricsDatasetDao(factory(), treeRepoRule.getRepo()), 0);
+    DiffConfig diffCfg = new DiffConfig();
+    diffCfg.maxItems = 0; // unlimited so assertions see the full diff
+    diffService = new DatasetDiffService(factory(), new FileMetricsDatasetDao(factory(), treeRepoRule.getRepo()), diffCfg);
     diff = diffService;
   }
 

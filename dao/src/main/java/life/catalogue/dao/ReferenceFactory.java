@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.terms.BiboOntTerm;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.common.csl.CitationConverter;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
@@ -31,7 +32,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 import static life.catalogue.parser.SafeParser.parse;
 
@@ -204,7 +205,7 @@ public class ReferenceFactory {
       DOI.parse(ref.getCsl().getDOI()).ifPresent(doi -> {
         Citation c = resolver.resolve(doi, issues);
         if (c != null) {
-          var csl = CslDataConverter.toCslData(c.toCSL());
+          var csl = CslDataConverter.toCslData(CitationConverter.toCSL(c));
           csl.setDOI(ref.getCsl().getDOI());
           ref.setCsl(csl);
         }

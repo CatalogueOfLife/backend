@@ -12,7 +12,7 @@ public class DiffOptionsTest {
   @Test
   public void defaults() {
     DiffOptions o = DiffOptions.defaults();
-    assertEquals(50.0, o.getChangedThreshold(), 0.0001);
+    assertEquals(1, o.getCanonicalMaxDistance());
     assertEquals(0, o.getMaxItems());
     assertSame(DiffOptions.CODEPOINT, o.getOrder());
   }

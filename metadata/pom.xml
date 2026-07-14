@@ -23,6 +23,10 @@
     </dependency>
     <dependency>
       <groupId>org.catalogueoflife</groupId>
+      <artifactId>reference</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
       <artifactId>parser</artifactId>
     </dependency>
     <dependency>

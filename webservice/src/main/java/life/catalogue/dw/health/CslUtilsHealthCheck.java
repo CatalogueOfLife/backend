@@ -7,7 +7,7 @@ import life.catalogue.common.csl.CslUtil;
 
 import com.codahale.metrics.health.HealthCheck;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 /**
  * Calls the name parser with a known binomial to check its health.

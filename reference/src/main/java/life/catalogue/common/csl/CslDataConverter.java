@@ -142,7 +142,7 @@ public class CslDataConverter {
     }
     CSLName[] target = new CSLName[src.length];
     for (int i = 0; i < src.length; i++) {
-      target[i] = src[i].toCSL();
+      target[i] = CitationConverter.toName(src[i]);
     }
     return target;
   }
@@ -155,9 +155,17 @@ public class CslDataConverter {
     return new CSLDate(src.getDateParts(), src.getSeason(), src.getCirca(), src.getLiteral(), src.getRaw());
   }
   
+  /**
+   * NOTE: there is a second, intentionally different COL->citeproc CSLType mapping in
+   * {@link CslTypeConverter#toCiteproc(life.catalogue.api.model.CSLType)}. That one preserves
+   * {@code null} as {@code null} and does not remap {@code ARTICLE}. This method instead remaps
+   * {@code null}/{@code ARTICLE} to {@code ARTICLE_JOURNAL} because citeproc-java's rendering
+   * requires a non-null, journal-like type at this call site. Do NOT "unify" these two methods -
+   * doing so would silently change citation-type output at one of the two call sites.
+   */
   @VisibleForTesting
-  static CSLType toCSLType(CSLType src) {
-    if (src == null || src == CSLType.ARTICLE) {
+  static CSLType toCSLType(life.catalogue.api.model.CSLType src) {
+    if (src == null || src == life.catalogue.api.model.CSLType.ARTICLE) {
       // We must return something, otherwise citation generation by citeproc-java will fail.
       // we remap ARTICLE to be a journal article. It is really used for legal works, but users often get this wrong!
       return CSLType.ARTICLE_JOURNAL;

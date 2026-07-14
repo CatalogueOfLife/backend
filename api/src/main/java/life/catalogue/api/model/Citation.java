@@ -1,15 +1,11 @@
 package life.catalogue.api.model;
 
-import de.undercouch.citeproc.bibtex.PageRanges;
-
 import life.catalogue.api.jackson.FuzzyDateCSLSerde;
-import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -18,12 +14,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import de.undercouch.citeproc.bibtex.PageParser;
-import de.undercouch.citeproc.csl.CSLItemData;
-import de.undercouch.citeproc.csl.CSLItemDataBuilder;
-import de.undercouch.citeproc.csl.CSLName;
-import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * Class with core CSL fields to represent common citations.
@@ -180,70 +170,6 @@ public class Citation {
                 && issn == null
                 && url == null
                 && note == null;
-  }
-
-  public CSLItemData toCSL() {
-    CSLItemDataBuilder builder = new CSLItemDataBuilder();
-    builder
-      .type(type)
-      .title(title)
-      .shortTitle(alias)
-      .volume(volume)
-      .issue(issue)
-      .edition(edition)
-      .publisher(publisher)
-      .publisherPlace(publisherPlace)
-      .containerTitle(containerTitle)
-      .collectionTitle(collectionTitle)
-      .version(version)
-      .ISBN(isbn)
-      .ISSN(issn)
-      .URL(url);
-
-    // DOI
-    if (doi != null) {
-      builder.DOI(doi.toString());
-    }
-    // names
-    if (author != null) {
-      builder.author(toNames(author));
-    }
-    if (editor != null) {
-      builder.editor(toNames(editor));
-    }
-    if (containerAuthor != null) {
-      builder.containerAuthor(toNames(containerAuthor));
-    }
-    if (collectionEditor != null) {
-      builder.collectionEditor(toNames(collectionEditor));
-    }
-
-    // dates
-    if (issued != null) {
-      builder.issued(issued.toCSLDate());
-    }
-    if (accessed != null) {
-      builder.accessed(accessed.toCSLDate());
-    }
-
-    // pages
-    if (page != null) {
-      PageRanges pr = PageParser.parse(page);
-      builder.page(pr.getLiteral());
-      if (pr.getNumberOfPages() != null) {
-        builder.numberOfPages(String.valueOf(pr.getNumberOfPages()));
-      }
-    }
-
-    return builder.build();
-  }
-
-  static CSLName[] toNames(List<CslName> names) {
-    if (names == null || names.isEmpty()) return null;
-    return names.stream()
-          .map(CslName::toCSL)
-          .collect(Collectors.toList())
-          .toArray(CSLName[]::new);
   }
 
   public String getId() {
@@ -442,7 +368,8 @@ public class Citation {
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getCitation() {
     if (_citation == null) {
-      _citation = CslUtil.buildCitationHtml(toCSL());
+      CitationFormatter f = CitationFormatter.get();
+      if (f != null) _citation = f.citationHtml(this);
     }
     return _citation;
   }
@@ -450,7 +377,8 @@ public class Citation {
   @JsonIgnore
   public String getCitationText() {
     if (_citationText == null) {
-      _citationText = CslUtil.buildCitation(toCSL());
+      CitationFormatter f = CitationFormatter.get();
+      if (f != null) _citationText = f.citationText(this);
     }
     return _citationText;
   }

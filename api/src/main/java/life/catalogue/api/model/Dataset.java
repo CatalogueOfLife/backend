@@ -3,7 +3,6 @@ package life.catalogue.api.model;
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
 import java.beans.IntrospectionException;
@@ -21,10 +20,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.undercouch.citeproc.csl.CSLItemData;
-import de.undercouch.citeproc.csl.CSLItemDataBuilder;
-import de.undercouch.citeproc.csl.CSLName;
-import de.undercouch.citeproc.csl.CSLType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -339,78 +334,12 @@ public class Dataset extends DataEntity<Integer> {
     }
   }
 
-  public CSLItemData toCSL() {
-    return toCSLBuilder().build();
-  }
-
-  public CSLItemDataBuilder toCSLBuilder() {
-    CSLItemDataBuilder builder = new CSLItemDataBuilder();
-    builder
-      .type(CSLType.DATASET)
-      .shortTitle(alias)
-      .version(version)
-      .ISSN(issn);
-    if (key != null) {
-      builder.id(key.toString());
-    }
-    if (keyword != null && !keyword.isEmpty()) {
-      builder.keyword(String.join(", ", keyword));
-    }
-    if (publisher != null && publisher.getOrganisation() != null) {
-      builder
-        .publisher(publisher.getOrganisation())
-        .publisherPlace(publisher.getAddress());
-    }
-    if (doi != null) {
-      builder.DOI(doi.toString());
-    }
-    if (url != null) {
-      builder.URL(url.toString());
-    }
-    if (issued != null) {
-      builder.issued(issued.toCSLDate());
-    }
-    if (containerTitle != null) {
-      // we change the title of a source to append the source version which otherwise would be lost
-      StringBuilder chapter = new StringBuilder();
-      chapter.append(title);
-      if (version != null) {
-        chapter
-          .append(" (version ")
-          .append(version)
-          .append(")");
-      }
-      builder
-        .type(CSLType.CHAPTER)
-        .title(chapter.toString())
-        .author(toNamesArray(unique(merge(creator, editor))))
-        .containerTitle(containerTitle)
-        .containerAuthor(toNamesArray(containerCreator))
-        .version(containerVersion);
-      if (containerIssued != null) {
-        builder.issued(containerIssued.toCSLDate());
-      }
-      if (containerPublisher != null && containerPublisher.getOrganisation() != null) {
-        builder
-          .publisher(containerPublisher.getOrganisation())
-          .publisherPlace(containerPublisher.getAddress());
-      }
-    } else {
-      builder
-        .title(title)
-        .author(toNamesArray(creator))
-        .editor(toNamesArray(editor));
-    }
-    // no license, distributor, contributor
-    return builder;
-  }
-
   public Citation toCitation() {
     Citation c = new Citation();
     if (key != null) {
       c.setId(key.toString());
     }
-    c.setType(CSLType.DATASET);
+    c.setType(life.catalogue.api.model.CSLType.DATASET);
     c.setTitle(title);
     c.setIssued(issued);
     c.setVersion(version);
@@ -424,7 +353,7 @@ public class Dataset extends DataEntity<Integer> {
       c.setPublisherPlace(publisher.getAddress());
     }
     if (containerTitle != null) {
-      c.setType(CSLType.CHAPTER);
+      c.setType(life.catalogue.api.model.CSLType.CHAPTER);
       c.setAuthor(toNames(unique(merge(creator, editor))));
       c.setContainerTitle(containerTitle);
       c.setContainerAuthor(toNames(containerCreator));
@@ -464,15 +393,6 @@ public class Dataset extends DataEntity<Integer> {
       return true;
     });
     return names;
-  }
-
-  private static CSLName[] toNamesArray(List<Agent> names) {
-    if (names == null || names.isEmpty()) return null;
-    return names.stream()
-                .map(Agent::toCSL)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList())
-                .toArray(CSLName[]::new);
   }
 
   private static List<CslName> toNames(List<Agent> names) {
@@ -1008,7 +928,8 @@ public class Dataset extends DataEntity<Integer> {
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getCitation() {
     if (_citation == null) {
-      _citation = CslUtil.buildCitationHtml(toCSL());
+      CitationFormatter f = CitationFormatter.get();
+      if (f != null) _citation = f.citationHtml(this);
     }
     return _citation;
   }
@@ -1016,7 +937,8 @@ public class Dataset extends DataEntity<Integer> {
   @JsonIgnore
   public String getCitationText() {
     if (_citationText == null) {
-      _citationText = CslUtil.buildCitation(toCSL());
+      CitationFormatter f = CitationFormatter.get();
+      if (f != null) _citationText = f.citationText(this);
     }
     return _citationText;
   }

@@ -17,8 +17,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 
-import de.undercouch.citeproc.csl.CSLName;
-import de.undercouch.citeproc.csl.CSLNameBuilder;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.Email;
 
@@ -284,22 +282,6 @@ public class Agent implements Comparable<Agent> {
   public String getAddress(){
     if (city == null && state == null && country == null) return null;
     return life.catalogue.common.text.StringUtils.concat(", ", city, state, getCountryTitle());
-  }
-
-  public CSLName toCSL() {
-    if (isPerson()) {
-      return new CSLNameBuilder()
-        .given(StringUtils.trimToNull(given))
-        .family(StringUtils.trimToNull(family))
-        .isInstitution(false)
-        .build();
-    } else if (isOrganisation()) {
-      return new CSLNameBuilder()
-        .family(StringUtils.trimToNull(organisation))
-        .isInstitution(true)
-        .build();
-    }
-    return null;
   }
 
   public CslName toCsl() {

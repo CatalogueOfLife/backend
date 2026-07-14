@@ -160,7 +160,7 @@ public enum SpeciesInteractionType {
   KLEPTOPARASITE_OF("http://purl.obolibrary.org/obo/RO_0008503",
     "A sub-relation of parasite of in which a parasite steals resources from another organism, usually food or nest material",
     PARASITE_OF),
-  HAS_KLEPTOPARASITE("http://purl.obolibrary.org/obo/RO_0008503",
+  HAS_KLEPTOPARASITE("http://purl.obolibrary.org/obo/RO_0008504",
     "Inverse of kleptoparasite of",
     HAS_PARASITE),
 

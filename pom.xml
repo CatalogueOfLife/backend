@@ -198,11 +198,13 @@
     <module>dao</module>
     <module>doi</module>
     <module>importer</module>
+    <module>kryo</module>
     <module>metadata</module>
     <module>parser</module>
     <module>pgcopy</module>
     <module>reader</module>
     <module>reader-xls</module>
+    <module>reference</module>
     <module>vocab</module>
     <module>webservice</module>
   </modules>
@@ -257,6 +259,23 @@
         <version>${project.version}</version>
         <classifier>tests</classifier>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>kryo</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>kryo</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>reference</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>

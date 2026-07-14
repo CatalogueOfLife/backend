@@ -32,7 +32,7 @@ public class CharsetDetectingStream extends InputStream {
 
   public static class CharsetBufferedReader extends BufferedReader {
     public final Charset charset;
-    public CharsetBufferedReader(@org.jetbrains.annotations.NotNull Reader in, Charset charset) {
+    public CharsetBufferedReader(@NotNull Reader in, Charset charset) {
       super(in);
       this.charset = charset;
     }

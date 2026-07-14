@@ -1,5 +1,6 @@
 package life.catalogue.api.jackson;
 
+import life.catalogue.api.model.CSLType;
 import life.catalogue.api.model.EnumValue;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.area.Country;
@@ -28,8 +29,6 @@ import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import com.google.common.collect.ImmutableSet;
 
 import java.lang.reflect.Field;
-
-import de.undercouch.citeproc.csl.CSLType;
 
 /**
  * A module for deserializing enums that is more permissive than the default.

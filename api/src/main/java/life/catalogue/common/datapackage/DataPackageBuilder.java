@@ -2,6 +2,7 @@ package life.catalogue.common.datapackage;
 
 import life.catalogue.api.datapackage.PackageDescriptor;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
+import life.catalogue.api.model.CSLType;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.area.Gazetteer;
@@ -33,8 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
-import de.undercouch.citeproc.csl.CSLType;
 
 import javax.annotation.Nullable;
 

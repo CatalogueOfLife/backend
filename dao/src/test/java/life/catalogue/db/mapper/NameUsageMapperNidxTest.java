@@ -35,12 +35,14 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void listByNamesIndexIDGlobal() throws Exception {
-    // canonical "Abies alba" (index id 2) is shared by every usage across all three datasets
+    // canonical "Abies alba" (index id 2) is shared by every usage across all three datasets, but the
+    // global query is public-filtered: dataset 100 (origin=PROJECT) is excluded, leaving the 3 external
+    // usages (101/u1, 102/u1x, 102/u2x).
     var res = mapper().listByNamesIndexIDGlobal( 2, new Page());
-    assertEquals(4, res.size());
+    assertEquals(3, res.size());
     Set<DSID<String>> usageIDs = res.stream().map(DSID::copy).collect(Collectors.toSet());
     assertEquals(
-      Set.of(DSID.of(100, "u1"), DSID.of(101, "u1"), DSID.of(102, "u1x"), DSID.of(102, "u2x")),
+      Set.of(DSID.of(101, "u1"), DSID.of(102, "u1x"), DSID.of(102, "u2x")),
       usageIDs
     );
 
@@ -49,6 +51,13 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
     // unknown nidx -> none
     assertEquals(0, mapper().listByNamesIndexIDGlobal( 99, new Page()).size());
+
+    // global count (datasetKey=null) is public-filtered too: it excludes the PROJECT dataset 100
+    assertEquals(3, (int) mapper().countByNamesIndexID(2, null));
+    assertEquals(0, (int) mapper().countByNamesIndexID(1, null));
+    // per-dataset count is NOT public-filtered: the PROJECT dataset 100 still counts its own usage
+    assertEquals(1, (int) mapper().countByNamesIndexID(2, 100));
+    assertEquals(2, (int) mapper().countByNamesIndexID(2, 102));
   }
 
   @Test

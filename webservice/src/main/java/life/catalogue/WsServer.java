@@ -211,6 +211,8 @@ public class WsServer extends Application<WsServerConfig> {
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
     LOG.info("Starting COL server");
+    // register the citeproc-backed citation formatter so the slim api model can render citations
+    life.catalogue.api.model.CitationFormatter.register(new life.catalogue.common.csl.CslCitationFormatter());
     final JerseyEnvironment j = env.jersey();
 
     // configure jetty to allow encoded path values, e.g. URLs as taxon IDs
@@ -329,8 +331,8 @@ public class WsServer extends Application<WsServerConfig> {
     final SectorImportDao siDao = new SectorImportDao(getSqlSessionFactory(), fmsDao);
 
     // diff
-    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao, cfg.diffMaxItems);
-    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao, cfg.diffMaxItems);
+    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao, cfg.diff);
+    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao, cfg.diff);
 
     // update db lookups
     try (Connection c = mybatis.getConnection()) {

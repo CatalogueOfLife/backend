@@ -6,6 +6,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.common.kryo.NameUsageWrapperGen;
 
 import java.io.IOException;
 import java.util.List;
@@ -63,7 +64,7 @@ public class NameUsageRoundTripIT extends EsTestBase {
   private NameUsageWrapper buildTaxonWrapper() {
     Name n = TestEntityGenerator.newName("n1");
     Taxon t = TestEntityGenerator.newTaxon(n);
-    return TestEntityGenerator.newNameUsageWrapper(t);
+    return NameUsageWrapperGen.newNameUsageWrapper(t);
   }
 
   private NameUsageWrapper buildSynonymWrapper() {
@@ -71,7 +72,7 @@ public class NameUsageRoundTripIT extends EsTestBase {
     Taxon t = TestEntityGenerator.newTaxon(tn);
     Name sn = TestEntityGenerator.newName("n3");
     var s = TestEntityGenerator.newSynonym(sn, t);
-    return TestEntityGenerator.newNameUsageWrapper(s);
+    return NameUsageWrapperGen.newNameUsageWrapper(s);
   }
 
   private NameUsageWrapper buildBareNameWrapper() {

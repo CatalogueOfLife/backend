@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import de.undercouch.citeproc.csl.CSLType;
+import life.catalogue.api.model.CSLType;
 
 /**
  *

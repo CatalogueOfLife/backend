@@ -25,8 +25,6 @@ import java.util.*;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 
 /**
  * Creates a kryo factory usable for thread safe kryo pools that can deal with clb api classes.

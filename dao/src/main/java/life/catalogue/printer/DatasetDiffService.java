@@ -5,6 +5,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.config.DiffConfig;
 import life.catalogue.dao.EntityDao;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
@@ -36,8 +37,8 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
   private final EntityDao<Integer, Dataset, DatasetMapper> ddao;
   private final Set<Integer> userDiffs = ConcurrentHashMap.newKeySet();
 
-  public DatasetDiffService(SqlSessionFactory factory, FileMetricsDatasetDao dao, int maxItems) {
-    super(dao, factory, maxItems);
+  public DatasetDiffService(SqlSessionFactory factory, FileMetricsDatasetDao dao, DiffConfig diffCfg) {
+    super(dao, factory, diffCfg);
     ddao = new EntityDao<>(false, factory, Dataset.class, DatasetMapper.class, null);
   }
 
