@@ -74,17 +74,19 @@ public class NamesIndexResource {
     var n = ni.get(key);
     if (n == null) throw NotFoundException.notFound(NameIndexEntry.class, key);
     var labels = session.getMapper(NameMatchMapper.class).labelCounts(key);
-    return new NidxWithLabels(key, n.getScientificName(), labels);
+    return new NidxWithLabels(key, n, labels);
   }
 
   public static class NidxWithLabels {
     public final int nidx;
+    private final String normalizedName;
     public final String scientificName;
     public final List<LabelCount> labels;
 
-    public NidxWithLabels(int nidx, String scientificName, List<LabelCount> labels) {
+    public NidxWithLabels(int nidx, NameIndexEntry nie, List<LabelCount> labels) {
       this.nidx = nidx;
-      this.scientificName = scientificName;
+      this.normalizedName = nie.getNormalized();
+      this.scientificName = nie.getScientificName();
       this.labels = labels;
     }
   }
