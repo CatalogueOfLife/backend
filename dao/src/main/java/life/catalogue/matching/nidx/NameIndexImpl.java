@@ -41,10 +41,12 @@ import javax.annotation.Nullable;
 public class NameIndexImpl implements NameIndex {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexImpl.class);
   // Index every name type except PLACEHOLDER. OTHER covers unparsable-but-real names such as
-  // viruses (name-parser v4.2 folded the former VIRUS type into OTHER + NomCode.VIRUS) and OTU codes,
-  // which we still want matchable; only structureless placeholders are skipped.
+  // viruses (name-parser v4.2 folded the former VIRUS type into OTHER + NomCode.VIRUS). IDENTIFIER
+  // covers identifier pseudo-names (BOLD:, UNITE SH...FU codes; name-parser 5.0 gave these their own
+  // type again, having folded them into OTHER in v4) which we still want matchable. Only structureless
+  // placeholders are skipped.
   public static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
-      NameType.SCIENTIFIC, NameType.FORMULA, NameType.INFORMAL, NameType.OTHER
+      NameType.SCIENTIFIC, NameType.FORMULA, NameType.INFORMAL, NameType.OTHER, NameType.IDENTIFIER
   );
 
   private final NameIndexStore store;

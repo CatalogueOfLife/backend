@@ -119,6 +119,32 @@ DROP INDEX IF EXISTS names_index_canonical_id_idx;
 ALTER TABLE names_index DROP COLUMN canonical_id;
 ```
 
+#### 2026-07-14 name-parser 5.0 added NameType.IDENTIFIER
+name-parser 5.0 (api 5.0.0-rc.1) reintroduces a dedicated `IDENTIFIER` name type for identifier
+pseudo-names (e.g. `BOLD:` codes and UNITE `SH...FU` codes) — the very same names that were the
+pre-v4 `OTU` type before v4 folded them into `OTHER`. First add the new enum label in the same
+position it occupies in the Java `NameType` enum (between `PLACEHOLDER` and `OTHER`) so the
+`PgSetupRuleTest.pgEnums` order-parity check passes. `IDENTIFIER` is included in
+`NameIndexImpl.INDEX_NAME_TYPES`, so these names keep getting names-index entries just as they did as
+`OTU`/`OTHER`.
+```
+ALTER TYPE NAMETYPE ADD VALUE 'IDENTIFIER' BEFORE 'OTHER';
+```
+
+Production has **not** run any of the v4 NameType migrations above, so its `NAMETYPE` enum still
+carries the pre-v4 `OTU` label and those rows are still typed `OTU`. Do **not** apply the 2026-06-04
+`RENAME VALUE 'OTU' TO 'OTHER'` step and then re-derive `IDENTIFIER` — that pointlessly routes the
+identifier pseudo-names through `OTHER` and loses the information. Instead, in place of that one line
+of the 2026-06-04 migration, map the still-present `OTU` rows straight to `IDENTIFIER` (the other
+2026-06-04 statements — `HYBRID_FORMULA` and `NO_NAME` — are unaffected and still apply). `OTU` then
+lingers as an unused label, exactly like `NO_NAME`/`VIRUS`.
+```
+UPDATE name SET type = 'IDENTIFIER' WHERE type = 'OTU';
+UPDATE name_usage_archive SET n_type = 'IDENTIFIER' WHERE n_type = 'OTU';
+UPDATE sector SET name_types = array_replace(name_types, 'OTU'::nametype, 'IDENTIFIER'::nametype)
+  WHERE name_types @> ARRAY['OTU'::nametype];
+```
+
 #### 2026-07-07 sector name_filter regex
 name-parser v4 folded `NameType.OTU` into `OTHER`, so a sector's `name_types` filter can no longer
 isolate OTU names (e.g. BOLD or UNITE SH names) from other `OTHER` type names. The new optional
