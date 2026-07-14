@@ -56,7 +56,7 @@ UPDATE name_usage_archive SET n_code = 'VIRUS' WHERE n_type = 'VIRUS' AND n_code
 UPDATE name SET type = 'OTHER' WHERE type = 'VIRUS';
 UPDATE name_usage_archive SET n_type = 'OTHER' WHERE n_type = 'VIRUS';
 UPDATE sector SET name_types = array_replace(name_types, 'VIRUS'::nametype, 'OTHER'::nametype)
-  WHERE name_types @> ARRAY['VIRUS'::nametype];
+  WHERE name_types @> ARRAY['VIRUS'::nametype];  
 ```
 
 **3. Drop the VIRUS label & convert notho — online swap onto a fresh enum.** Postgres has no
@@ -161,40 +161,30 @@ from the Java model; `NameMatch.getType()` and `SimpleNameWithNidx.namesIndexMat
 (the latter still feeds `IdProvider` release-ID scoring).
 
 **Deploy ordering:** all of this rides the single mandatory `nidx` rebuild on this branch, not an
-in-place migration. Run this DDL on `public.names_index` before deploying the new code and before the
-rebuild, since `rebuild-schema.sql` stages `nidx.names_index` via `CREATE TABLE ... (LIKE
-public.names_index ...)` and inherits whatever columns `public.names_index` has; the rebuild repopulates
-every row (computing `normalized`) so the `NOT NULL` and unique constraints hold.
+in-place migration. The rebuild clones each table via `CREATE TABLE nidx.… (LIKE public.… )`, rebuilds
+`names_index` and both match tables from scratch and promotes them, so the existing rows are disposable —
+only the `public` column shape has to be right beforehand. That makes an in-place reshape both pointless
+and impossible (`ADD COLUMN normalized TEXT NOT NULL` fails on the populated table), so instead just drop
+and recreate `names_index` at its final shape and truncate the matches that reference it. Run this before
+deploying the new code and before the rebuild.
 ```
--- names_index collapses to (id, scientific_name, normalized, created)
-DROP INDEX IF EXISTS names_index_scientific_name_idx1;
-DROP INDEX IF EXISTS names_index_canonical_id_idx;
-ALTER TABLE names_index
-  DROP COLUMN canonical_id,
-  DROP COLUMN rank,
-  DROP COLUMN authorship,
-  DROP COLUMN basionym_authors,
-  DROP COLUMN basionym_ex_authors,
-  DROP COLUMN basionym_year,
-  DROP COLUMN combination_authors,
-  DROP COLUMN combination_ex_authors,
-  DROP COLUMN combination_year,
-  DROP COLUMN sanctioning_author,
-  DROP COLUMN modified,
-  DROP COLUMN uninomial,
-  DROP COLUMN genus,
-  DROP COLUMN infrageneric_epithet,
-  DROP COLUMN specific_epithet,
-  DROP COLUMN infraspecific_epithet,
-  DROP COLUMN cultivar_epithet,
-  DROP COLUMN remarks;
--- normalized (the new bucket key) is populated by the nidx rebuild before these constraints are enforced
-ALTER TABLE names_index ADD COLUMN normalized TEXT NOT NULL;
+-- names_index and both match tables are rebuilt from scratch by the nidx rebuild, so their data is
+-- disposable; recreate names_index at its final shape instead of reshaping the populated table in place.
+TRUNCATE name_match, name_usage_archive_match;
+DROP TABLE names_index CASCADE;          -- CASCADE also drops the two match -> names_index FKs
+CREATE TABLE names_index (
+  id SERIAL PRIMARY KEY,
+  scientific_name TEXT NOT NULL,
+  normalized TEXT NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX ON names_index (scientific_name);
 CREATE UNIQUE INDEX names_index_normalized_idx ON names_index (normalized);
 
--- name_match: drop the stored match type, swap the per-type metric for a plain match-coverage count
-ALTER TABLE name_match DROP COLUMN type;
-ALTER TABLE name_usage_archive_match DROP COLUMN type;
+-- match tables: drop the stored match type and re-add the FK the CASCADE removed (instant on the now-empty
+-- tables); swap the per-type import metric for a plain match-coverage count
+ALTER TABLE name_match DROP COLUMN type, ADD FOREIGN KEY (index_id) REFERENCES names_index;
+ALTER TABLE name_usage_archive_match DROP COLUMN type, ADD FOREIGN KEY (index_id) REFERENCES names_index;
 ALTER TABLE dataset_import DROP COLUMN names_by_match_type_count, ADD COLUMN name_matches_count INTEGER;
 ALTER TABLE sector_import DROP COLUMN names_by_match_type_count, ADD COLUMN name_matches_count INTEGER;
 ```
