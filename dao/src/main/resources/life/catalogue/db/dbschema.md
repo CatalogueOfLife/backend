@@ -19,87 +19,90 @@ skipped or simplified:
 - `parser_config` is **dropped** outright (v4's parser is stateless), so the `notho`/`type` column
   migrations that table would otherwise need are omitted entirely.
 - the `NameType` enum ends up **exactly matching `dbschema.sql`** (`SCIENTIFIC, FORMULA, INFORMAL,
-  PLACEHOLDER, IDENTIFIER, OTHER`): `HYBRID_FORMULA` → `FORMULA`, `NO_NAME` → `OTHER` and `OTU` →
-  `IDENTIFIER` are cheap in-place `RENAME VALUE`s (each remaps scalar columns *and* `sector.name_types`
-  arrays via the enum OID), while `VIRUS` — which has no rename target and can't be dropped in place — is
-  merged into `OTHER` and then removed by recreating the type.
-- `VIRUS` can only be dropped by moving `name.type`/`name_usage_archive.n_type` onto a fresh enum; that
-  is done as an **online add-column swap** (create `NAMETYPE2`, populate a new column, drop/rename)
-  rather than an in-place `ALTER COLUMN … TYPE`, so the bulk copy runs under `ROW EXCLUSIVE` and never
-  holds these tables under `ACCESS EXCLUSIVE` for a rewrite. The `notho` scalar → `NAMEPART[]` conversion
-  rides along in the same copy.
+  PLACEHOLDER, IDENTIFIER, OTHER`): `HYBRID_FORMULA` → `FORMULA`, `OTU` → `IDENTIFIER`, and both `NO_NAME`
+  and `VIRUS` → `OTHER` (the virus signal preserved in `code` first). None of these use an in-place
+  `RENAME VALUE` — that would relabel the very column the still-running old app reads and break it.
+- instead `name.type`/`name_usage_archive.n_type` are moved onto a fresh `NAMETYPE2` via an **add-column
+  swap** whose long row copy writes only *new* columns and remaps the labels inline, so it takes only
+  `ROW EXCLUSIVE` and runs **online** while the old app keeps serving reads; the breaking catalog swaps
+  are deferred to a brief cutover with the deploy. `notho` → `NAMEPART[]` rides along in the same copy.
 
-Deploy notes: the `name`/`name_usage_archive` swaps copy every row once — the bulk `UPDATE` runs under
-`ROW EXCLUSIVE` so reads stay online; only the catalog-level ADD/DROP/RENAME (instant) and the
-`SET NOT NULL` validation scan take `ACCESS EXCLUSIVE`. The copy leaves the old row versions as dead
-tuples, so `VACUUM` the two tables afterwards. The name-usage ES index and the `nidx` are rebuilt on this
-branch anyway, so the enum changes are picked up automatically; `notho` is not indexed. Afterwards prod's
-`NAMETYPE` carries no leftover `HYBRID_FORMULA`/`OTU`/`NO_NAME`/`VIRUS` labels — it matches a fresh
-install exactly. **Breaking API change:** the `notho` JSON field is now an array (e.g. `["SPECIFIC"]`).
+Deploy notes: the work is split into an **online phase** (step 1) and a brief **cutover** (step 2).
+Everything in the online phase leaves the columns and enum the running (pre-v4) app uses untouched, so it
+can run well ahead of the deploy under `ROW EXCLUSIVE`; only the cutover — drop/rename of the swapped
+columns, the `sector` retype and the enum replacement — breaks the old app, and it is all fast catalog
+work. Speed/robustness: split the huge `name` copy per hash partition and run the parts in parallel, then
+`VACUUM` (the copy bloats the table); if the old app can still write these tables during the window,
+quiesce those writers or re-copy `WHERE type2 IS NULL` just before cutover. The name-usage ES index and
+the `nidx` are rebuilt on this branch anyway, so the enum changes are picked up automatically; `notho` is
+not indexed. Afterwards prod's `NAMETYPE` matches a fresh install exactly. **Breaking API change:** the
+`notho` JSON field is now an array (e.g. `["SPECIFIC"]`).
 
-**1. NameType — relabel in place.** `HYBRID_FORMULA` → `FORMULA`, `NO_NAME` → `OTHER`, `OTU` →
-`IDENTIFIER`. Each `RENAME VALUE` is instant and remaps every scalar column and `sector.name_types` array
-via the enum OID. (`OTU` are the BOLD/UNITE identifier pseudo-names, reunited with the reintroduced
-`IDENTIFIER` type.)
-```
-ALTER TYPE NAMETYPE RENAME VALUE 'HYBRID_FORMULA' TO 'FORMULA';
-ALTER TYPE NAMETYPE RENAME VALUE 'NO_NAME' TO 'OTHER';
-ALTER TYPE NAMETYPE RENAME VALUE 'OTU' TO 'IDENTIFIER';
-```
-
-**2. Merge VIRUS into OTHER.** `VIRUS` collapses into `OTHER` (no distinct target label), so it can't be
-handled by a rename; preserve its signal in `code` first, then move the rows. This clears every `VIRUS`
-value before the type is swapped out in step 3.
-```
-UPDATE name SET code = 'VIRUS' WHERE type = 'VIRUS' AND code IS DISTINCT FROM 'VIRUS';
-UPDATE name_usage_archive SET n_code = 'VIRUS' WHERE n_type = 'VIRUS' AND n_code IS DISTINCT FROM 'VIRUS';
-UPDATE name SET type = 'OTHER' WHERE type = 'VIRUS';
-UPDATE name_usage_archive SET n_type = 'OTHER' WHERE n_type = 'VIRUS';
-UPDATE sector SET name_types = array_replace(name_types, 'VIRUS'::nametype, 'OTHER'::nametype)
-  WHERE name_types @> ARRAY['VIRUS'::nametype];  
-```
-
-**3. Drop the VIRUS label & convert notho — online swap onto a fresh enum.** Postgres has no
-`ALTER TYPE … DROP VALUE`, and an in-place `ALTER COLUMN … TYPE` would hold the huge `name` table under
-`ACCESS EXCLUSIVE` for a full rewrite. So create the final enum as `NAMETYPE2` and move each column onto
-it: `name`/`name_usage_archive` via an add-column swap — bulk copy under `ROW EXCLUSIVE`, reads stay
-online — that also converts `notho` in the same pass; `sector` is tiny, so an in-place cast is fine. Steps
-1–2 left no value outside the final label set, so every copy is a straight text cast. Finally drop the old
-type and give `NAMETYPE2` the canonical name. (The `name` copy can be split per hash partition and run in
-parallel if a single `UPDATE` is too large.)
+**1. Online copy — safe to run ahead of the deploy while the old (pre-v4) app keeps serving reads.**
+Nothing here touches the columns or enum the running app uses (`name.type`/`notho`, `sector.name_types`,
+the old `NAMETYPE`), so no read breaks and the long copies take only `ROW EXCLUSIVE`. Create the final
+enum as `NAMETYPE2`, preserve the virus signal in `code`, add the new columns, then copy every row into
+them — remapping the labels inline (`HYBRID_FORMULA`→`FORMULA`, `OTU`→`IDENTIFIER`, `NO_NAME`/`VIRUS`→
+`OTHER`) so the live `type`/`notho` columns are never rewritten. **Split the `name` copy per hash
+partition and run the parts in parallel** to cut wall-clock, then `VACUUM` (the copy bloats the table with
+dead tuples). If the old app may still write these tables during the window, quiesce those writers or
+re-copy `WHERE type2 IS NULL` just before cutover.
 ```
 CREATE TYPE NAMETYPE2 AS ENUM ('SCIENTIFIC', 'FORMULA', 'INFORMAL', 'PLACEHOLDER', 'IDENTIFIER', 'OTHER');
 
+UPDATE name SET code = 'VIRUS' WHERE type = 'VIRUS' AND code IS DISTINCT FROM 'VIRUS';
+UPDATE name_usage_archive SET n_code = 'VIRUS' WHERE n_type = 'VIRUS' AND n_code IS DISTINCT FROM 'VIRUS';
+
 ALTER TABLE name ADD COLUMN type2 NAMETYPE2, ADD COLUMN notho2 NAMEPART[];
-UPDATE name SET type2 = type::text::NAMETYPE2,
-               notho2 = CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END;
+ALTER TABLE name_usage_archive ADD COLUMN n_type2 NAMETYPE2, ADD COLUMN n_notho2 NAMEPART[];
+
+-- the long copies — reads stay online; run the `name` copy once per hash partition in parallel
+UPDATE name SET
+  type2  = (CASE type::text WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
+                            WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE type::text END)::NAMETYPE2,
+  notho2 = CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END;
+UPDATE name_usage_archive SET
+  n_type2  = (CASE n_type::text WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
+                                WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE n_type::text END)::NAMETYPE2,
+  n_notho2 = CASE WHEN n_notho IS NULL THEN NULL ELSE ARRAY[n_notho] END;
+```
+
+**2. Cutover — runs with the new-app deploy; briefly breaks the old app.** All catalog-only and fast
+except the tiny `sector` retype. Swap the copied columns into place, drop the originals, retype `sector`
+(remapping its array the same way), and replace the enum. `SET NOT NULL` scans `name`/`name_usage_archive`
+under `ACCESS EXCLUSIVE`; if that scan is too long for the cutover window, pre-seed it during step 1 with
+`ADD CONSTRAINT … CHECK (type2 IS NOT NULL) NOT VALID` + `VALIDATE CONSTRAINT` (online), which lets
+`SET NOT NULL` skip the scan here.
+```
 ALTER TABLE name DROP COLUMN type, DROP COLUMN notho;
 ALTER TABLE name RENAME COLUMN type2 TO type;
 ALTER TABLE name RENAME COLUMN notho2 TO notho;
 ALTER TABLE name ALTER COLUMN type SET NOT NULL;
 
-ALTER TABLE name_usage_archive ADD COLUMN n_type2 NAMETYPE2, ADD COLUMN n_notho2 NAMEPART[];
-UPDATE name_usage_archive SET n_type2 = n_type::text::NAMETYPE2,
-                              n_notho2 = CASE WHEN n_notho IS NULL THEN NULL ELSE ARRAY[n_notho] END;
 ALTER TABLE name_usage_archive DROP COLUMN n_type, DROP COLUMN n_notho;
 ALTER TABLE name_usage_archive RENAME COLUMN n_type2 TO n_type;
 ALTER TABLE name_usage_archive RENAME COLUMN n_notho2 TO n_notho;
 ALTER TABLE name_usage_archive ALTER COLUMN n_type SET NOT NULL;
 
-ALTER TABLE sector ALTER COLUMN name_types TYPE NAMETYPE2 USING (name_types::text[])::NAMETYPE2[];
+-- sector is tiny: remap its array elements and retype in one in-place cast
+ALTER TABLE sector ALTER COLUMN name_types TYPE NAMETYPE2 USING (
+  SELECT array_agg((CASE e WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
+                           WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE e END)::NAMETYPE2)
+  FROM unnest(name_types::text[]) AS e);
 
 DROP TYPE NAMETYPE;
 ALTER TYPE NAMETYPE2 RENAME TO NAMETYPE;
 ```
 
-**4. Drop parser_config.** v4's parser is stateless and no longer supports runtime overrides; the few
-names the curated overrides corrected are zoological binomials v4 now parses directly. Dropping the
-table also makes its `notho`/`type` migrations moot.
+**3. Drop parser_config (cutover — the pre-v4 app still reads this table).** v4's parser is stateless and
+no longer supports runtime overrides; the few names the curated overrides corrected are zoological
+binomials v4 now parses directly. Dropping the table also makes its `notho`/`type` migrations moot.
 ```
 DROP TABLE IF EXISTS parser_config;
 ```
 
-**5. Stored import metrics.** `names_by_type_count` (NameType keys) and `ignored_by_reason_count`
+**4. Stored import metrics (online — the old app silently drops keys it no longer knows).**
+`names_by_type_count` (NameType keys) and `ignored_by_reason_count`
 (IgnoreReason keys) are plain-text HSTORE maps untouched by the enum changes above; rewrite their keys
 so historical import reports stay readable. New target keys (`IDENTIFIER`, `NAME_*`) cannot collide;
 merges into `FORMULA`/`OTHER` sum on collision. The mybatis handler silently drops keys that no longer
@@ -136,6 +139,8 @@ UPDATE sector_import SET ignored_by_reason_count =
     || CASE WHEN ignored_by_reason_count ? 'NAME_OTU'            THEN hstore('NAME_IDENTIFIER', ignored_by_reason_count -> 'NAME_OTU')            ELSE ''::hstore END
     || CASE WHEN ignored_by_reason_count ? 'NAME_NO_NAME'        THEN hstore('NAME_OTHER',      ignored_by_reason_count -> 'NAME_NO_NAME')        ELSE ''::hstore END
   WHERE ignored_by_reason_count ?| ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME'];
+  
+  VACUUM
 ```
 
 #### 2026-07-09 canonical-only names index
