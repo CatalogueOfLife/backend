@@ -71,12 +71,11 @@ in-SQL "parallel update". To parallelize you dispatch one `UPDATE` per partition
 connections — the partitions are disjoint tables `name_mod0` … `name_mod23`, so concurrent
 `UPDATE name_mod<i> SET type2 = …, notho2 = …` sessions never contend:
 ``` 
-# discover partitions rather than hardcoding 24:
-  #   psql -Atc "SELECT inhrelid::regclass FROM pg_inherits WHERE inhparent='name'::regclass"
-  seq 0 23 | xargs -P6 -I{} psql "$CONN" -c \
-    "UPDATE name_mod{} SET type2 = (CASE type::text WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
-                                                    WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE type::text END)::NAMETYPE2,
-                                    notho2 = CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END;"
+export CONN='host=… dbname=… user=…'
+seq 0 23 | xargs -P6 -I{} psql "$CONN" -c \
+"UPDATE name_mod{} SET type2 = (CASE type::text WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
+                                                WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE type::text END)::NAMETYPE2,
+                                notho2 = CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END;"
 ```
 `name_usage_archive` is unpartitioned, so it stays a single `UPDATE` (batch by `id` range if it is too large).
 
