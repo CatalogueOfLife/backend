@@ -211,12 +211,14 @@ public class HomotypicConsolidator {
       TreeTraversalParameter traversal = TreeTraversalParameter.dataset(datasetKey, tax.getId());
       traversal.setSynonyms(true);
       PgUtils.consume(() -> num.processTreeLinneanUsage(traversal, false, false), nu -> {
-        if (nu.getType() == NameType.OTHER || nu.getRank().isSupraspecific() || nu.isAutonym()) {
-          // ignore all supra specific names, autonyms and unparsed OTUs (NameType.OTU merged into OTHER in name-parser v4)
+        final String epithet = SciNameNormalizer.normalizeEpithet(nu.getTerminalEpithet());
+        if (nu.getType() == NameType.OTHER || nu.getType() == NameType.IDENTIFIER || nu.getRank().isSupraspecific() || nu.isAutonym() || epithet == null || epithet.isEmpty()) {
+          // ignore supraspecific names, autonyms, unparsed OTUs and identifiers (e.g. BOLD BINs are NameType.IDENTIFIER in
+          // name-parser v5, OTU merged into OTHER in v4) and anything else without a usable terminal epithet.
+          // The grouping below is keyed by the terminal epithet, so an empty key would otherwise crash EpithetIndex.
         } else if (ignore != null && ignore.contains(nu.getTerminalEpithet())) {
           LOG.info("Ignore epithet {} in {} because of configs", nu.getTerminalEpithet(), tax);
         } else {
-          String epithet = SciNameNormalizer.normalizeEpithet(nu.getTerminalEpithet());
           if (!epithets.containsKey(epithet)) {
             epithets.put(epithet, Lists.newArrayList(nu));
           } else {
@@ -462,7 +464,6 @@ public class HomotypicConsolidator {
 
       if (max >= THRESHOLD) {
         // we can have several variants for a name, not just a pair
-        System.out.println(matrix);
         Set<String> visited = new HashSet<>();
         for (int x = 0; x<size; x++) {
           for (int y = x+1; y<size; y++) {
