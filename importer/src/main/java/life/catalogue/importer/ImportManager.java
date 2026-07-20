@@ -41,6 +41,7 @@ import life.catalogue.concurrent.NamedThreadFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -76,6 +77,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   static final Comparator<DatasetImport> DI_STARTED_COMPARATOR = Comparator.comparing(DatasetImport::getStarted, Comparator.nullsFirst(Comparator.naturalOrder()));
 
   private PBQThreadPoolExecutor<ImportJob> exec;
+  private ImportCallbackNotifier callbackNotifier;
   private SyncManager assemblyCoordinator;
   private final Map<Integer, PBQThreadPoolExecutor.ComparableFutureTask> futures = new ConcurrentHashMap<>();
   private final ImporterConfig iCfg;
@@ -328,7 +330,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    * 
    *         dataset does not exist or is not of matching origin
    */
-  public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String filename, @Nullable String suffix, User user) throws IOException {
+  public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String filename, @Nullable String suffix, User user, @Nullable URI callback) throws IOException {
     validDataset(datasetKey);
     Path upload;
     if (filename == null) {
@@ -345,10 +347,10 @@ public class ImportManager implements Managed, Idle, DatasetListener {
       CompressionUtil.zipFile(upload.toFile(), uploadZip.toFile());
       upload = uploadZip; // use zip for the final request object
     }
-    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey(), upload));
+    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey(), upload, callback));
   }
 
-  public ImportRequest uploadXls(final int datasetKey, final InputStream content, User user) throws IOException {
+  public ImportRequest uploadXls(final int datasetKey, final InputStream content, User user, @Nullable URI callback) throws IOException {
     Preconditions.checkNotNull(content, "No content given");
     validDataset(datasetKey);
     // extract CSV files
@@ -364,7 +366,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     // zip up as single source file for importer
     Path uploadZip = createScratchUploadFile(datasetKey);
     CompressionUtil.zipDir(csvDir, uploadZip.toFile());
-    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey(), uploadZip));
+    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey(), uploadZip, callback));
   }
 
   /**
@@ -421,6 +423,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     Duration durRun = Duration.between(req.started, LocalDateTime.now());
     LOG.info("Dataset import {} finished. {} min queued, {} min to execute", req.datasetKey, durQueued.toMinutes(), durRun.toMinutes());
     importTimer.update(durRun.getSeconds(), TimeUnit.SECONDS);
+    fireCallback(req);
     futures.remove(req.datasetKey);
   }
 
@@ -428,9 +431,24 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    * We use old school callbacks here as you cannot easily cancel CompletableFutures.
    */
   private void errorCallBack(ImportRequest req, Exception err) {
+    // fetch the terminal DatasetImport before we drop the job from the futures map
+    fireCallback(req);
     futures.remove(req.datasetKey);
     failed.inc();
     LOG.error("Dataset import {} failed: {}", req.datasetKey, Exceptions.getFirstMessage(err), err.getCause());
+  }
+
+  /**
+   * Notifies the optional completion callback URL of the request with the final DatasetImport, if configured.
+   * Reads the DatasetImport from the still queued job, so must be called before the job is removed from the futures map.
+   */
+  private void fireCallback(ImportRequest req) {
+    if (req.callback != null && callbackNotifier != null) {
+      PBQThreadPoolExecutor.ComparableFutureTask f = futures.get(req.datasetKey);
+      if (f != null) {
+        callbackNotifier.notifyCallback(req.callback, fromFuture(f));
+      }
+    }
   }
 
   /**
@@ -502,6 +520,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
         new PriorityBlockingQueue<>(iCfg.maxQueue),
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
         new ThreadPoolExecutor.AbortPolicy());
+    callbackNotifier = new ImportCallbackNotifier(downloader.getClient(), iCfg);
     try {
       cancelAndReschedule();
     } catch (RuntimeException e) {
@@ -520,6 +539,10 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     if (exec != null) {
       exec.stop();
       exec = null;
+    }
+    if (callbackNotifier != null) {
+      callbackNotifier.close();
+      callbackNotifier = null;
     }
   }
 
