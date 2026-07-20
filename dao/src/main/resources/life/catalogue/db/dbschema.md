@@ -96,11 +96,14 @@ ALTER TABLE name_usage_archive RENAME COLUMN n_type2 TO n_type;
 ALTER TABLE name_usage_archive RENAME COLUMN n_notho2 TO n_notho;
 ALTER TABLE name_usage_archive ALTER COLUMN n_type SET NOT NULL;
 
--- sector is tiny: remap its array elements and retype in one in-place cast
-ALTER TABLE sector ALTER COLUMN name_types TYPE NAMETYPE2 USING (
-  SELECT array_agg((CASE e WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
-                           WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE e END)::NAMETYPE2)
-  FROM unnest(name_types::text[]) AS e);
+-- sector is tiny: remap its array elements and retype in one in-place cast.
+-- ALTER ... USING forbids subqueries, so remap element-wise with chained array_replace on the text[]
+-- form, then cast the whole array to the new enum ARRAY type (NAMETYPE2[], not scalar NAMETYPE2).
+ALTER TABLE sector ALTER COLUMN name_types TYPE NAMETYPE2[] USING
+  array_replace(array_replace(array_replace(array_replace(
+    name_types::text[],
+    'HYBRID_FORMULA','FORMULA'), 'OTU','IDENTIFIER'),
+    'NO_NAME','OTHER'), 'VIRUS','OTHER')::NAMETYPE2[];
 
 DROP TYPE NAMETYPE;
 ALTER TYPE NAMETYPE2 RENAME TO NAMETYPE;
@@ -153,6 +156,28 @@ UPDATE sector_import SET ignored_by_reason_count =
   WHERE ignored_by_reason_count ?| ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME'];
   
   VACUUM
+```
+
+**5. Rank & issue enums (name-parser v4 additions, folded in from the v4→v5 upgrade).** v4 split the
+ambiguous generic `DIVISION` rank into code-specific ranks and added two authorship issues. The generic
+`DIVISION` sat in the **zoological** block (between `SUPERDIVISION` and `SUBDIVISION`) — so, mirroring the
+2026-06-04 series migration, we rename it in place to `DIVISION_ZOOLOGY` (keeps its ordinal, migrates every
+existing division row instantly, leaves no dead enum value) and add the botanical `DIVISION_BOTANY` after
+`INFRAGENUS`. The three `ADD VALUE`s are non-breaking and **online-safe** — no existing row uses them and
+the old app maps ranks/issues by name, not ordinal — so they run ahead with step 1; the `RENAME VALUE`
+relabels a value the running old app reads, so it goes in the **cutover** with step 2. Rank ordinals shift,
+but the ES name-usage index and nidx are rebuilt on this branch anyway (see above), so no extra reindex is
+needed.
+
+Online-safe (run ahead, with step 1):
+```
+ALTER TYPE RANK  ADD VALUE 'DIVISION_BOTANY'        AFTER 'INFRAGENUS';
+ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_UNCERTAIN'   AFTER 'DUPLICATE_TAXON_PROPERTIES';
+ALTER TYPE ISSUE ADD VALUE 'SUPERFLUOUS_AUTHORSHIP' AFTER 'AUTHORSHIP_UNCERTAIN';
+```
+Cutover (run with step 2):
+```
+ALTER TYPE RANK RENAME VALUE 'DIVISION' TO 'DIVISION_ZOOLOGY';
 ```
 
 #### 2026-07-09 canonical-only names index
