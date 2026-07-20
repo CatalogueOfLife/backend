@@ -15,12 +15,14 @@ import org.gbif.nameparser.api.Rank;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -59,7 +61,7 @@ import static life.catalogue.common.io.TabReader.newParser;
  * <p>
  * It forms the basis for reading ColDP, DWC and ACEF files.
  */
-public class CsvReader {
+public class CsvReader implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(CsvReader.class);
   private static final TsvParserSettings TSV = new TsvParserSettings();
   private static final CsvParserSettings CSV = new CsvParserSettings();
@@ -89,6 +91,8 @@ public class CsvReader {
   
   protected final Path folder;
   private final String subfolder;
+  // live iterators with an open data file stream, to be released by close()
+  private final Set<TermRecIterator> openIterators = Collections.newSetFromMap(new ConcurrentHashMap<>());
   protected final Map<Term, Schema> schemas = Maps.newHashMap();
   protected final MappingInfos mappingFlags = new MappingInfos();
   // if we encounter tab delimted files we ignore any quotes!
@@ -565,6 +569,20 @@ public class CsvReader {
     return schemas.containsKey(rowType);
   }
 
+  /**
+   * Releases all data file streams that are still open because their schema was only read partially.
+   * Streams consumed to the end release themselves, so closing is only strictly required
+   * for partial reads, but it is always safe to call.
+   */
+  @Override
+  public void close() {
+    // iterate over a copy, close() removes from the set
+    for (TermRecIterator it : List.copyOf(openIterators)) {
+      it.close();
+    }
+    openIterators.clear();
+  }
+
   public Stream<VerbatimRecord> stream(Term rowType) {
     Preconditions.checkArgument(rowType.isClass(), "RowType " + rowType + " is not a class term");
     if (schemas.containsKey(rowType)) {
@@ -579,16 +597,23 @@ public class CsvReader {
    */
   public Optional<VerbatimRecord> readFirstRow(Term rowType) {
     if (schemas.containsKey(rowType)) {
-      return stream(schemas.get(rowType)).findFirst();
+      // a partial read never reaches EOF, so close the stream to release the data file
+      try (Stream<VerbatimRecord> stream = stream(schemas.get(rowType))) {
+        return stream.findFirst();
+      }
     }
     return Optional.empty();
   }
   
-  private static class TermRecIterator implements Iterator<VerbatimRecord> {
+  private static class TermRecIterator implements Iterator<VerbatimRecord>, AutoCloseable {
     private final Schema s;
+    private final CsvReader owner;
     private final int maxIdx;
     private final Iterator<Path> fileIter;
     private ResultIterator<String[], ParsingContext> iter;
+    private AbstractParser<?> parser;
+    private Reader dataReader;
+    private boolean closed;
     private String filename;
     private long records;
     private long skipped;
@@ -599,8 +624,9 @@ public class CsvReader {
     private String[] queuedRow;
     private long lineNumber;
 
-    TermRecIterator(Schema schema) throws IOException {
+    TermRecIterator(Schema schema, CsvReader owner) throws IOException {
       s = schema;
+      this.owner = owner;
       maxIdx = schema.columns.stream()
                              .filter(f -> f.value == null) // only consider fields that do not have a default value
                              .map(f -> f.index)
@@ -608,23 +634,31 @@ public class CsvReader {
                              .reduce(Integer::max)
                              .orElse(0);
       fileIter = schema.files.iterator();
-      if (nextFile()) {
-        nextRow();
-      } else {
-        row = null;
+      owner.openIterators.add(this);
+      try {
+        if (nextFile()) {
+          nextRow();
+        } else {
+          row = null;
+          close();
+        }
+      } catch (RuntimeException e) {
+        close();
+        throw e;
       }
     }
 
     private boolean nextFile() {
       if (fileIter.hasNext()) {
+        // the previous file was read to EOF and closed by univocity, but be defensive about any leftover
+        closeCurrentFile();
         var p = fileIter.next();
         filename = PathUtils.getFilename(p);
-        AbstractParser<?> parser = newParser(s.settings);
+        parser = newParser(s.settings);
 
         try {
-          IterableResult<String[], ParsingContext> it = parser.iterate(
-            CharsetDetectingStream.createReader(Files.newInputStream(p), s.encoding)
-          );
+          dataReader = CharsetDetectingStream.createReader(Files.newInputStream(p), s.encoding);
+          IterableResult<String[], ParsingContext> it = parser.iterate(dataReader);
           this.iter = it.iterator();
           recordsStartFile = records;
           skippedStartFile = skipped;
@@ -635,6 +669,38 @@ public class CsvReader {
         }
       }
       return false;
+    }
+
+    /**
+     * Releases the stream of the file currently being parsed.
+     * univocity closes it itself once the parser is driven to EOF, but a partial read leaves it open.
+     */
+    private void closeCurrentFile() {
+      if (parser != null) {
+        try {
+          parser.stopParsing(); // closes the reader univocity was given
+        } catch (RuntimeException e) {
+          LOG.debug("Failed to stop parser for {}", filename, e);
+        }
+        parser = null;
+      }
+      if (dataReader != null) {
+        try {
+          dataReader.close(); // idempotent, in case stopParsing did not get that far
+        } catch (IOException | RuntimeException e) {
+          LOG.debug("Failed to close data file {}", filename, e);
+        }
+        dataReader = null;
+      }
+    }
+
+    @Override
+    public void close() {
+      if (!closed) {
+        closed = true;
+        closeCurrentFile();
+        owner.openIterators.remove(this);
+      }
     }
 
     @Override
@@ -683,7 +749,7 @@ public class CsvReader {
     }
 
     private boolean iterHasMore() {
-      return iter.hasNext() || queuedRow != null;
+      return (iter != null && iter.hasNext()) || queuedRow != null;
     }
 
     private void nextRow() {
@@ -706,6 +772,8 @@ public class CsvReader {
       // log stats at the end
       if (row == null) {
         LOG.info("Read {} records from all files incl. {}, skipping {} bad lines in total", records, filename, skipped);
+        // fully consumed, release right away so long lived readers do not accumulate iterators
+        close();
       }
     }
     
@@ -762,9 +830,10 @@ public class CsvReader {
   
   private Stream<VerbatimRecord> stream(final Schema s) {
     try {
-      return StreamSupport.stream(
-          Spliterators.spliteratorUnknownSize(new TermRecIterator(s), STREAM_CHARACTERISTICS), false);
-      
+      TermRecIterator it = new TermRecIterator(s, this);
+      return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, STREAM_CHARACTERISTICS), false)
+                          .onClose(it::close);
+
     } catch (IOException | RuntimeException e) {
       LOG.error("Failed to read {}", s.getFilesLabel(), e);
       return Stream.empty();

@@ -10,17 +10,24 @@ import org.gbif.dwc.terms.DcTerm;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
+import com.sun.management.UnixOperatingSystemMXBean;
 import com.univocity.parsers.common.CommonParserSettings;
 import com.univocity.parsers.csv.CsvParserSettings;
 
@@ -189,6 +196,69 @@ public class CsvReaderTest {
     assertTrue(ids.contains("303988"));
     assertTrue(ids.contains("303984"));
     assertTrue(ids.contains("23341")); // padded with empty columns
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1547
+   * A partial read such as readFirstRow does not drive the parser to EOF,
+   * so the data file stream must be released by closing the reader.
+   */
+  @Test
+  public void partialReadDoesNotLeakFileHandles() throws Exception {
+    var os = (UnixOperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+    // the data file must exceed the parsers 1MB input buffer, otherwise univocity slurps it in one go,
+    // reaches EOF by itself and closes the stream even though we only read a single row.
+    // The small test archives therefore never show the leak.
+    Path dir = largeAcefFolder();
+    // a single reader, so that only the partial reads are measured and not the reader construction
+    CsvReader reader = CsvReader.from(dir);
+    final int runs = 50;
+
+    long before = os.getOpenFileDescriptorCount();
+    // note: holding the Stream does not pin anything, a terminal op clears the pipeline source.
+    // The reader itself keeps the unfinished iterators alive, which is what close() then releases.
+    List<Stream<VerbatimRecord>> streams = new ArrayList<>();
+    for (int i = 0; i < runs; i++) {
+      Stream<VerbatimRecord> s = reader.stream(AcefTerm.AcceptedSpecies);
+      streams.add(s);
+      assertTrue(s.findFirst().isPresent()); // partial read, stops well before EOF
+    }
+    // sanity check that the measurement is sensitive at all: partial reads must hold handles open
+    long open = os.getOpenFileDescriptorCount() - before;
+    assertTrue("expected " + runs + " open handles, measured only " + open, open >= runs);
+
+    // closing the reader must release every partially read data file
+    reader.close();
+    long leaked = os.getOpenFileDescriptorCount() - before;
+    assertTrue("leaked " + leaked + " file descriptors after close of " + runs + " partial reads", leaked < 10);
+  }
+
+  /**
+   * Copies the small ACEF test folder into a temp dir, inflating AcceptedSpecies well beyond
+   * the parsers 1MB input buffer by repeating its data rows.
+   */
+  private Path largeAcefFolder() throws IOException {
+    Path src = Resources.toFile("acef/0").toPath();
+    Path dir = Files.createTempDirectory("csvreader-fd");
+    dir.toFile().deleteOnExit();
+    try (var files = Files.list(src)) {
+      for (Path f : files.collect(Collectors.toList())) {
+        Files.copy(f, dir.resolve(f.getFileName()));
+      }
+    }
+    Path species = dir.resolve("AcceptedSpecies.txt");
+    List<String> lines = Files.readAllLines(species);
+    String header = lines.get(0);
+    List<String> data = lines.subList(1, lines.size());
+    StringBuilder sb = new StringBuilder(header).append('\n');
+    // ~4MB, comfortably above the 1MB default input buffer
+    while (sb.length() < 4_000_000) {
+      for (String l : data) {
+        sb.append(l).append('\n');
+      }
+    }
+    Files.writeString(species, sb.toString());
+    return dir;
   }
 
   @Test

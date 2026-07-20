@@ -2,6 +2,7 @@ package life.catalogue.common.io;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -10,10 +11,17 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
+
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -33,14 +41,40 @@ public class PathUtils {
     return FilenameUtils.getName(p.toString());
   }
 
-  public static Iterable<Path> listFiles(Path folder, final Set<String> allowedSuffices) throws IOException {
+  /**
+   * Lists all regular files of a folder, optionally filtered by their suffix.
+   * The directory handle is released before returning, so the result can be iterated freely.
+   * For very large directories prefer {@link #streamFiles(Path, Set)} which stays lazy.
+   *
+   * @return the matching files, empty if the folder is null or does not exist
+   */
+  public static List<Path> listFiles(Path folder, @Nullable final Set<String> allowedSuffices) throws IOException {
     if (folder == null || !Files.isDirectory(folder)) return Collections.emptyList();
-    return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
-      @Override
-      public boolean accept(Path p) throws IOException {
-        return Files.isRegularFile(p) && (allowedSuffices == null || allowedSuffices.contains(getFileExtension(p)));
+    try (DirectoryStream<Path> dir = Files.newDirectoryStream(folder, filter(allowedSuffices))) {
+      return Lists.newArrayList(dir);
+    }
+  }
+
+  /**
+   * Lazily streams all regular files of a folder, optionally filtered by their suffix.
+   * The stream holds an open directory handle, so callers MUST close it, ideally with try-with-resources.
+   *
+   * @return the matching files, empty if the folder is null or does not exist
+   */
+  public static Stream<Path> streamFiles(Path folder, @Nullable final Set<String> allowedSuffices) throws IOException {
+    if (folder == null || !Files.isDirectory(folder)) return Stream.empty();
+    DirectoryStream<Path> dir = Files.newDirectoryStream(folder, filter(allowedSuffices));
+    return StreamSupport.stream(dir.spliterator(), false).onClose(() -> {
+      try {
+        dir.close();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
       }
     });
+  }
+
+  private static DirectoryStream.Filter<Path> filter(@Nullable final Set<String> allowedSuffices) {
+    return p -> Files.isRegularFile(p) && (allowedSuffices == null || allowedSuffices.contains(getFileExtension(p)));
   }
 
   public static void removeFileAndParentsIfEmpty(Path p) throws IOException {
