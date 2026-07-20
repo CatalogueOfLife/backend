@@ -453,7 +453,13 @@ public class InterpreterBase {
       m.setCapturedBy(rec.get(creator));
       m.setCaptured( date(rec, Issue.MEDIA_CREATED_DATE_INVALID, created) );
       m.setTitle(rec.get(title));
-      m.setFormat(MediaInterpreter.parseMimeType(rec.get(format)));
+      // ColDP has no format term for Media, its type column carries the full MIME type instead.
+      // Fall back to it so we keep the subtype and can derive the media type below.
+      String mime = MediaInterpreter.parseMimeType(rec.get(format));
+      if (mime == null) {
+        mime = MediaInterpreter.parseMimeType(rec.get(type));
+      }
+      m.setFormat(mime);
       m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
       m.setRemarks(getFormattedText(rec, remarks));
       MediaInterpreter.detectType(m);

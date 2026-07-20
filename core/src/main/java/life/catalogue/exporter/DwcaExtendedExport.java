@@ -126,6 +126,20 @@ public class DwcaExtendedExport extends ArchiveExport {
           DwcTerm.countryCode,
           DcTerm.source,
           ClbTerm.merged};
+      case MEDIA:
+        // the GBIF Simple Multimedia extension, the inverse of DwcInterpreter.interpretGbifMedia
+        return new Term[]{GbifTerm.Multimedia, DwcTerm.taxonID,
+          DcTerm.identifier,
+          DcTerm.references,
+          DcTerm.type,
+          DcTerm.format,
+          DcTerm.title,
+          DcTerm.created,
+          DcTerm.creator,
+          DcTerm.license,
+          DcTerm.description,
+          DcTerm.source,
+          ClbTerm.merged};
       case TAXON_PROPERTY:
         return new Term[]{DwcTerm.MeasurementOrFact, DwcTerm.taxonID,
           DwcTerm.measurementID,
@@ -247,8 +261,31 @@ public class DwcaExtendedExport extends ArchiveExport {
   }
 
   @Override
+  void write(String taxonID, Media m) {
+    writer.set(DwcTerm.taxonID, taxonID);
+    writer.set(DcTerm.identifier, m.getUrl());
+    writer.set(DcTerm.references, m.getLink());
+    writer.set(DcTerm.type, m.getType());
+    writer.set(DcTerm.format, m.getFormat());
+    writer.set(DcTerm.title, m.getTitle());
+    writer.set(DcTerm.created, m.getCaptured());
+    writer.set(DcTerm.creator, m.getCapturedBy());
+    // dc:license is expected to be a URI here. LicenseParser reads both URIs and enum names back.
+    if (m.getLicense() != null && m.getLicense().getUrl() != null) {
+      writer.set(DcTerm.license, m.getLicense().getUrl());
+    } else {
+      writer.set(DcTerm.license, m.getLicense());
+    }
+    writer.set(DcTerm.description, m.getRemarks());
+    if (m.getReferenceId() != null) {
+      writer.set(DcTerm.source, refCache.get(m.getReferenceId()));
+    }
+    writer.set(ClbTerm.merged, m.isMerged());
+  }
+
+  @Override
   void write(String taxonID, TaxonProperty tp) {
-    writer.set(ColdpTerm.taxonID, taxonID);
+    writer.set(DwcTerm.taxonID, taxonID);
     writer.set(DwcTerm.measurementID, tp.getId());
     writer.set(DwcTerm.measurementType, tp.getProperty());
     writer.set(DwcTerm.measurementValue, tp.getValue());
@@ -268,7 +305,7 @@ public class DwcaExtendedExport extends ArchiveExport {
   private void addMeta() throws IOException {
     arch.setMetadataLocation(EML_FILENAME);
     arch.setCore(buildArchiveFile(EntityType.NAME_USAGE));
-    for (EntityType type : List.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION)) {
+    for (EntityType type : List.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION, EntityType.MEDIA, EntityType.TAXON_PROPERTY)) {
       arch.addExtension(buildArchiveFile(type));
     }
     arch.addExtension(buildArchiveFile(defineSpeciesProfile()));
