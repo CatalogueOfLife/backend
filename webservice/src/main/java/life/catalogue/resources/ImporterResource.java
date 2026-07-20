@@ -21,6 +21,7 @@ import life.catalogue.importer.ImportRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
@@ -121,13 +122,15 @@ public class ImporterResource {
   @POST
   @Path("{key}/reimport")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest reimport(@PathParam("key") int datasetKey, @Auth User user) throws IOException {
+  public ImportRequest reimport(@PathParam("key") int datasetKey, @QueryParam("callback") URI callback, @Auth User user) throws IOException {
     File latest = cfg.normalizer.lastestArchive(datasetKey);
     if (latest == null) {
       throw new IllegalArgumentException("No previous archive existing for dataset "+datasetKey+" to reimport");
     }
     int attempt = NormalizerConfig.attemptFromArchive(latest);
-    return importManager.submit(ImportRequest.reimport(datasetKey, attempt, user.getKey()));
+    ImportRequest req = ImportRequest.reimport(datasetKey, attempt, user.getKey());
+    req.callback = callback;
+    return importManager.submit(req);
   }
 
   @POST
@@ -135,8 +138,9 @@ public class ImporterResource {
   // trigger an import with the existing access url
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest triggerImport(@PathParam("key") int datasetKey, @QueryParam("force") boolean force, @Auth User user) throws IOException {
+  public ImportRequest triggerImport(@PathParam("key") int datasetKey, @QueryParam("force") boolean force, @QueryParam("callback") URI callback, @Auth User user) throws IOException {
     var req = ImportRequest.external(datasetKey, user.getKey(), force);
+    req.callback = callback;
     return importManager.submit(req);
   }
 
@@ -150,8 +154,8 @@ public class ImporterResource {
     MoreMediaTypes.APP_ZIP, MoreMediaTypes.APP_ZIP_ALT1, MoreMediaTypes.APP_ZIP_ALT2, MoreMediaTypes.APP_ZIP_ALT3
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
-    return importManager.upload(datasetKey, archive, false, ResourceUtils.filenameFromHeaders(headers), null, user);
+  public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @QueryParam("callback") URI callback, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
+    return importManager.upload(datasetKey, archive, false, ResourceUtils.filenameFromHeaders(headers), null, user, callback);
   }
 
   @POST
@@ -160,16 +164,16 @@ public class ImporterResource {
       MoreMediaTypes.TEXT_YAML, MoreMediaTypes.APP_YAML,
       MoreMediaTypes.TEXT_WILDCARD})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
-    return importManager.upload(datasetKey, archive, true, ResourceUtils.filenameFromHeaders(headers), contentType2Suffix(headers), user);
+  public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @QueryParam("callback") URI callback, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
+    return importManager.upload(datasetKey, archive, true, ResourceUtils.filenameFromHeaders(headers), contentType2Suffix(headers), user, callback);
   }
 
   @POST
   @Path("{key}")
   @Consumes({MoreMediaTypes.APP_XLS, MoreMediaTypes.APP_XLSX})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest uploadXls(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream spreadsheet) throws IOException {
-    return importManager.uploadXls(datasetKey, spreadsheet ,user);
+  public ImportRequest uploadXls(@PathParam("key") int datasetKey, @QueryParam("callback") URI callback, @Auth User user, @Context HttpHeaders headers, InputStream spreadsheet) throws IOException {
+    return importManager.uploadXls(datasetKey, spreadsheet, user, callback);
   }
   
   @DELETE

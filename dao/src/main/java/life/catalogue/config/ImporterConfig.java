@@ -47,6 +47,13 @@ public class ImporterConfig {
    */
   public int wait = 0;
 
+  /**
+   * Timeout in seconds for the optional import/validation completion callback POST.
+   * See https://github.com/CatalogueOfLife/backend/issues/1552
+   */
+  @Min(1)
+  public int callbackTimeout = 10;
+
   @Valid
   @NotNull
   public ContinuousImportConfig continuous = new ContinuousImportConfig();

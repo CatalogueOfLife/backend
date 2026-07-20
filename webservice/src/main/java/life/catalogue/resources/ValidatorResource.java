@@ -49,7 +49,7 @@ public class ValidatorResource {
     MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_GZIP_ALT1, MoreMediaTypes.APP_GZIP_ALT2, MoreMediaTypes.APP_GZIP_ALT3,
     MoreMediaTypes.APP_ZIP, MoreMediaTypes.APP_ZIP_ALT1, MoreMediaTypes.APP_ZIP_ALT2, MoreMediaTypes.APP_ZIP_ALT3
   })
-  public Dataset uploadArchive(@Auth User user, InputStream archive) throws IOException {
+  public Dataset uploadArchive(@Auth User user, @QueryParam("callback") URI callback, InputStream archive) throws IOException {
     if (archive == null) throw new IllegalArgumentException("archive required");
 
     // create new temp dataset
@@ -61,7 +61,14 @@ public class ValidatorResource {
     d.setLicense(License.CC0);
     int key = ddao.createTemp(d, user.getKey());
     // validate uploaded archive
-    importManager.upload(key, archive, false, null, null, user);
+    try {
+      importManager.upload(key, archive, false, null, null, user, callback);
+    } catch (RuntimeException | IOException e) {
+      // if the importer is offline (503) or the upload otherwise fails, remove the just created temp dataset
+      // so it does not stay orphaned. https://github.com/CatalogueOfLife/backend/issues/1552
+      ddao.delete(key, user.getKey());
+      throw e;
+    }
     return d;
   }
 

@@ -112,12 +112,12 @@ public class ImportManagerTest {
     final String resName = "dwca/1/taxa.txt";
     assertFalse(manager.hasRunning());
     try {
-      manager.upload(Datasets.COL, Resources.stream(resName), true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN);
+      manager.upload(Datasets.COL, Resources.stream(resName), true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN, null);
       fail("Cannot upload to col draft");
     } catch (IllegalArgumentException e) {
       // expected, its the draft
     }
-    manager.upload(datasetKey, Resources.stream(resName), true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN);
+    manager.upload(datasetKey, Resources.stream(resName), true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN, null);
     TimeUnit.MILLISECONDS.sleep(100);
     assertTrue(manager.hasRunning());
   }
@@ -127,12 +127,12 @@ public class ImportManagerTest {
     InputStream data = Resources.stream("xls/Pterophoroidea.xlsx");
     assertFalse(manager.hasRunning());
     try {
-      manager.uploadXls(Datasets.COL, data, TestEntityGenerator.USER_ADMIN);
+      manager.uploadXls(Datasets.COL, data, TestEntityGenerator.USER_ADMIN, null);
       fail("Cannot upload to col draft");
     } catch (IllegalArgumentException e) {
       // expected, its the draft
     }
-    manager.uploadXls(datasetKey, data, TestEntityGenerator.USER_ADMIN);
+    manager.uploadXls(datasetKey, data, TestEntityGenerator.USER_ADMIN, null);
     TimeUnit.MILLISECONDS.sleep(100);
     assertTrue(manager.hasRunning());
   }
