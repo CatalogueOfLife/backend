@@ -180,6 +180,39 @@ Cutover (run with step 2):
 ALTER TYPE RANK RENAME VALUE 'DIVISION' TO 'DIVISION_ZOOLOGY';
 ```
 
+**6. Dataset settings (cutover — `SECTOR_NAME_TYPES` stores NameType labels inside JSONB).** The enum work
+above only reaches typed columns, never inside `dataset.settings`. That JSONB map holds the
+`SECTOR_NAME_TYPES` project default under the key `sector name types`, as a list of NameType values
+serialized by `PermissiveEnumSerde` — lower case, underscores as spaces (`VIRUS` → `"virus"`,
+`HYBRID_FORMULA` → `"hybrid formula"`). A project left holding a legacy label makes
+`DatasetMapper.getSettings` throw `Unable to convert value virus for setting SECTOR_NAME_TYPES` and takes
+down every caller that reads settings, e.g. `SyncSchedulerJob`. Remap the elements with the same mapping
+used for `sector.name_types` in step 2. `dataset` is the only table to fix: `dataset_archive` drops the
+`settings` column, and `dataset_source`/`dataset_patch` are cloned from it. `SECTOR_NAME_TYPES` is also the
+only setting typed as a NameType, so no other key needs touching.
+
+This belongs in the **cutover**, not the online phase: `virus`/`no name` → `other` would still be readable by
+the old app, but `formula` and `identifier` do not exist in its NameType (name-parser 3.16), so writing those
+ahead of the deploy would break its settings read with the very same error. The `DISTINCT` dedupes merges —
+`virus` → `other` beside an already present `other` collapses to one element.
+```
+UPDATE dataset SET settings = jsonb_set(settings, '{sector name types}', (
+    SELECT jsonb_agg(DISTINCT CASE elem
+             WHEN 'virus'          THEN 'other'
+             WHEN 'no name'        THEN 'other'
+             WHEN 'otu'            THEN 'identifier'
+             WHEN 'hybrid formula' THEN 'formula'
+             ELSE elem END)
+    FROM jsonb_array_elements_text(settings -> 'sector name types') AS elem
+  ))
+  WHERE settings -> 'sector name types' ?| ARRAY['virus','no name','otu','hybrid formula'];
+```
+Verify nothing is left behind — this must return 0:
+```
+SELECT count(*) FROM dataset
+  WHERE settings -> 'sector name types' ?| ARRAY['virus','no name','otu','hybrid formula'];
+```
+
 #### 2026-07-09 canonical-only names index
 The names index collapses to a single-tier, canonical-only `normalized -> id` registry — every row is a
 canonical name (rank `UNRANKED`, no authorship) and the table keeps only `(id, scientific_name,
