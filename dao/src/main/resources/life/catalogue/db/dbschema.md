@@ -47,24 +47,45 @@ them — remapping the labels inline (`HYBRID_FORMULA`→`FORMULA`, `OTU`→`IDE
 partition and run the parts in parallel** to cut wall-clock, then `VACUUM` (the copy bloats the table with
 dead tuples). If the old app may still write these tables during the window, quiesce those writers or
 re-copy `WHERE type2 IS NULL` just before cutover.
+
+**Run the copy at most once against the scalar `notho`.** `ARRAY[notho]` is only correct while `notho`
+is still the scalar `NAMEPART`. Applied a second time — after the cutover rename, or on a database that
+already got the earlier separately-logged 2026-06-04…07-14 entries — it wraps an array in another array
+and yields a *two-dimensional* `NAMEPART[]`. Postgres does not enforce dimensionality on array columns,
+so this is accepted silently and only surfaces much later on read, as
+`No enum constant org.gbif.nameparser.api.NamePart.[Ljava.lang.String;@…`. The guard below aborts
+instead; the `WHERE type2 IS NULL` predicates make the copy resumable and double as the concurrent-write
+catch-up.
 ```
+-- abort unless the schema is in the expected pre-migration state
+DO $$
+BEGIN
+  IF (SELECT format_type(atttypid, atttypmod) FROM pg_attribute
+       WHERE attrelid = 'name'::regclass AND attname = 'notho' AND NOT attisdropped)
+     IS DISTINCT FROM 'namepart' THEN
+    RAISE EXCEPTION 'name.notho is not the scalar NAMEPART - this migration already ran, do not re-run it';
+  END IF;
+END $$;
+
 CREATE TYPE NAMETYPE2 AS ENUM ('SCIENTIFIC', 'FORMULA', 'INFORMAL', 'PLACEHOLDER', 'IDENTIFIER', 'OTHER');
 
 UPDATE name SET code = 'VIRUS' WHERE type = 'VIRUS' AND code IS DISTINCT FROM 'VIRUS';
 UPDATE name_usage_archive SET n_code = 'VIRUS' WHERE n_type = 'VIRUS' AND n_code IS DISTINCT FROM 'VIRUS';
 
-ALTER TABLE name ADD COLUMN type2 NAMETYPE2, ADD COLUMN notho2 NAMEPART[];
-ALTER TABLE name_usage_archive ADD COLUMN n_type2 NAMETYPE2, ADD COLUMN n_notho2 NAMEPART[];
+ALTER TABLE name ADD COLUMN IF NOT EXISTS type2 NAMETYPE2, ADD COLUMN IF NOT EXISTS notho2 NAMEPART[];
+ALTER TABLE name_usage_archive ADD COLUMN IF NOT EXISTS n_type2 NAMETYPE2, ADD COLUMN IF NOT EXISTS n_notho2 NAMEPART[];
 
 -- the long copies — reads stay online; run the `name` copy once per hash partition in parallel
 UPDATE name SET
   type2  = (CASE type::text WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
                             WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE type::text END)::NAMETYPE2,
-  notho2 = CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END;
+  notho2 = CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END
+  WHERE type2 IS NULL;
 UPDATE name_usage_archive SET
   n_type2  = (CASE n_type::text WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
                                 WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE n_type::text END)::NAMETYPE2,
-  n_notho2 = CASE WHEN n_notho IS NULL THEN NULL ELSE ARRAY[n_notho] END;
+  n_notho2 = CASE WHEN n_notho IS NULL THEN NULL ELSE ARRAY[n_notho] END
+  WHERE n_type2 IS NULL;
 ```
 That single `UPDATE name` runs serially across all 24 hash partitions in one transaction; Postgres has no
 in-SQL "parallel update". To parallelize you dispatch one `UPDATE` per partition over separate
@@ -75,9 +96,28 @@ export CONN='host=… dbname=… user=…'
 seq 0 23 | xargs -P6 -I{} psql "$CONN" -c \
 "UPDATE name_mod{} SET type2 = (CASE type::text WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
                                                 WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE type::text END)::NAMETYPE2,
-                                notho2 = CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END;"
+                                notho2 = CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END
+ WHERE type2 IS NULL;"
 ```
+Keep the `WHERE type2 IS NULL` here too — this is the form most likely to be re-run by hand.
+`name_mod0` … `name_mod23` are only the hash partitions of the shared default partition; project and
+release datasets live in their own `name_<datasetKey>` partitions, so follow the parallel run with the
+plain `UPDATE name … WHERE type2 IS NULL` above to pick up whatever the loop missed.
+
 `name_usage_archive` is unpartitioned, so it stays a single `UPDATE` (batch by `id` range if it is too large).
+
+*Repair, if a database already has two-dimensional `notho`* — dev hit this in July 2026, having received the
+earlier separately-logged entries before the consolidated one. `unnest` flattens row-major and is a no-op on
+rows that are already flat, so the update is safe to run repeatedly. Check first, since `array_ndims` returns
+NULL for the empty arrays the app writes and those are fine:
+```
+SELECT array_ndims(notho) AS dims, count(*) FROM name WHERE notho IS NOT NULL GROUP BY 1;
+UPDATE name               SET notho   = ARRAY(SELECT unnest(notho))   WHERE array_ndims(notho)   > 1;
+UPDATE name_usage_archive SET n_notho = ARRAY(SELECT unnest(n_notho)) WHERE array_ndims(n_notho) > 1;
+VACUUM ANALYZE name;
+```
+Element order is irrelevant — the field maps to an `EnumSet`. `sector.name_types` is unaffected: its retype
+uses `array_replace(…)::NAMETYPE2[]`, which never wraps. Rebuild the ES index afterwards.
 
 **2. Cutover — runs with the new-app deploy; briefly breaks the old app.** All catalog-only and fast
 except the tiny `sector` retype. Swap the copied columns into place, drop the originals, retype `sector`
