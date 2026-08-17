@@ -334,6 +334,11 @@
     <result property="nameId" column="nid"/>
   </resultMap>
 
+  <resultMap id="relatedNameResultMap" type="DSIDValue" autoMapping="false">
+    <id property="datasetKey" column="dataset_key"/>
+    <id property="id" column="name_id"/>
+  </resultMap>
+
 
   <select id="count" resultType="integer">
     SELECT count(*) FROM name_usage
@@ -586,20 +591,27 @@
     WHERE id=#{id}
   </select>
 
-  <select id="listRelated" resultMap="simpleInDatasetResultMap">
-    SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>
+  <!--
+    Phase 1 of the related usage lookup. Resolves the origin usage's names index entry, expands it to the
+    canonical and to the other authorship variants of that canonical, and returns the names matched to any of them.
+
+    Only name_match is read on the related side. name and name_usage are joined by the second phase per dataset,
+    because there is no dataset_key to prune them by here and postgres locks every partition plus every index of
+    every partition it cannot prune away. See DatasetPartitionMapper for the arithmetic.
+
+    orig.dataset_key is rendered as a literal so the origin side prunes at plan time. As a bind parameter it does
+    not: postgres only prunes a generic plan at execution time and still locks all partitions of the plan.
+  -->
+  <select id="listRelatedNames" resultMap="relatedNameResultMap">
+    SELECT DISTINCT nm.dataset_key, nm.name_id
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
       JOIN names_index ni ON ni.id=nmo.index_id
       LEFT JOIN names_index nic ON nic.id=ni.canonical_id AND ni.id != ni.canonical_id
       LEFT JOIN names_index nia ON nia.canonical_id=ni.canonical_id AND nia.id != ni.id AND ni.id = ni.canonical_id
       JOIN name_match nm ON (nm.index_id=ni.id OR nm.index_id=nic.id OR nm.index_id=nia.id)
-    <!-- now join the related usages -->
-    JOIN name n ON nm.name_id=n.id AND nm.dataset_key=n.dataset_key
-    JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
-    JOIN dataset d ON d.key=u.dataset_key
-    WHERE orig.dataset_key=#{key.datasetKey} AND orig.id=#{key.id}
-      AND (u.dataset_key!=#{key.datasetKey} OR u.id!=#{key.id})
+      JOIN dataset d ON d.key=nm.dataset_key
+    WHERE orig.dataset_key=${key.datasetKey} AND orig.id=#{key.id}
       AND NOT d.private
     <if test="gbifOnly">
       AND (d.gbif_key IS NOT NULL <if test="nonGbifDatasetKeys != null and !nonGbifDatasetKeys.isEmpty()"> OR d.key IN <foreach item="key" collection="nonGbifDatasetKeys" open="(" separator="," close=")">#{key}</foreach></if>)
@@ -611,12 +623,35 @@
       AND d.type IN <foreach item="t" collection="datasetTypes" open="(" separator="," close=")">#{t}::DATASETTYPE</foreach>
     </if>
     <if test="datasetKeys != null and !datasetKeys.isEmpty()">
-      AND n.dataset_key IN <foreach item="id" collection="datasetKeys" open="(" separator="," close=")">#{id}</foreach>
+      AND nm.dataset_key IN <foreach item="id" collection="datasetKeys" open="(" separator="," close=")">${id}</foreach>
     </if>
     <if test="publisherKeys != null and !publisherKeys.isEmpty()">
       AND d.gbif_publisher_key IN <foreach item="uuid" collection="publisherKeys" open="(" separator="," close=")">#{uuid}</foreach>
     </if>
-    LIMIT 100; -- safeguard for extreme cases like Animalia
+    LIMIT #{limit}
+  </select>
+
+  <!--
+    Phase 2 of the related usage lookup: the usages of the names found by listRelatedNames.
+
+    The dataset keys are repeated as a literal IN list on BOTH partitioned tables. Both parts matter:
+      - literals, because a bind parameter leaves postgres with a generic plan it cannot prune at plan time
+      - repeated on n as well as u, because postgres propagates a constant "=" across the join equality
+        n.dataset_key=u.dataset_key but NOT an IN list, so filtering u alone still locks every name partition
+    Dropping either one silently reverts this to locking all partitions, which is what
+    NameUsageDaoTest.listRelatedUsagesPrunesPartitions guards.
+
+    The row-wise IN on (dataset_key, name_id) is what actually selects the names. It is needed in addition to the
+    dataset filter because name ids are only unique within a dataset, so matching on name_id alone would return
+    unrelated usages from the other datasets of the same batch.
+  -->
+  <select id="listRelatedUsages" resultMap="simpleInDatasetResultMap">
+    SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>
+    FROM name_usage u
+      JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+    WHERE u.dataset_key IN <foreach item="dk" collection="datasetKeys" open="(" separator="," close=")">${dk}</foreach>
+      AND n.dataset_key IN <foreach item="dk" collection="datasetKeys" open="(" separator="," close=")">${dk}</foreach>
+      AND (u.dataset_key, u.name_id) IN <foreach item="nk" collection="names" open="(" separator="," close=")">(${nk.datasetKey}, #{nk.id})</foreach>
   </select>
 
   <select id="listByName" resultMap="usageResultMap">

@@ -168,29 +168,8 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertEquals("root-1", res.get(0).getId());
   }
 
-  @Test
-  public void listRelated() throws Exception {
-    var results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null, null, null,null, null);
-    assertEquals(1, results.size());
-    assertEquals("s1", results.getFirst().getId());
-
-    results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null, null, null,null, null);
-    assertEquals(0, results.size());
-
-    results = mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null, null, null,List.of(testDataRule.testData.key), null);
-    assertEquals(1, results.size());
-    assertEquals("s1", results.getFirst().getId());
-
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null, null,null,null, List.of(UUID.randomUUID())).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null, null,null,List.of(1,2,3), List.of(UUID.randomUUID())).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null, null,null,List.of(1,2,3), null).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), true, null, null,List.of(DatasetType.ARTICLE, DatasetType.NOMENCLATURAL),null, List.of(UUID.randomUUID())).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null, null,null,List.of(1,2,3), List.of(UUID.randomUUID())).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null, null,null,List.of(1,2,3), null).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, Set.of(2345), null,null,List.of(1,2,3), null).isEmpty());
-    assertTrue(mapper().listRelated(DSID.of(testDataRule.testData.key, "root-2"), false, null, Set.of(DatasetOrigin.PROJECT),null,List.of(1,2,3), null).isEmpty());
-
-  }
+  // the related usage lookup moved to NameUsageDao.related, which orchestrates the two mapper phases.
+  // covered by NameUsageDaoTest
 
   @Test
   public void listByRegex() throws Exception {
