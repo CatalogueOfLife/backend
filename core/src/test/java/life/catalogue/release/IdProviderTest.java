@@ -206,6 +206,34 @@ public class IdProviderTest {
   }
 
   @Test
+  public void sameCanonicalIdDifferentAuthorsKeepDistinctIds() throws Exception {
+    // Under the canonical-only names index, every usage in a canonical group shares one
+    // namesIndexId (canonId == nxId for all of them), so the old "exact names index" scoring
+    // term in matchScore() contributes the *same* amount to every candidate pairing below and
+    // can never discriminate between them. Only authorship (+ rank) can - this pins that.
+    prevIdsByAttempt.put(1, List.of(
+      sn(30, 5, 5, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(31, 5, 5, SPECIES, "Abies alba", "L.", ACCEPTED)
+    ));
+
+    // test names: same canonical id/nidx (5/5) for both, only authorship differs
+    testNames = new ArrayList<>(List.of(
+      sn(5, 5, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(5, 5, SPECIES, "Abies alba", "L.", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(0, report.deleted.size());
+    assertEquals(0, report.resurrected.size());
+
+    assertID(30, testNames.get(0)); // matches by authorship "Mill."
+    assertID(31, testNames.get(1)); // matches by authorship "L."
+  }
+
+  @Test
   public void unmatched() throws Exception {
     // 1st attempt
     prevIdsByAttempt.put(1, List.of(

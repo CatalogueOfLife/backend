@@ -10,8 +10,8 @@ import jakarta.validation.constraints.NotNull;
 public class NamesIndexConfig {
 
   /**
-   * Default size of the kryo pool used for names index (de)serialization. With hard references in
-   * {@link NameIndexKryoPool} this bounds the number of retained idle kryo instances.
+   * Legacy config field kept for backwards compatibility of existing YAML configs. The slim
+   * normalized-String to nidx-int store no longer uses kryo serialization, so this is now inert.
    */
   public static final int DEFAULT_KRYO_POOL_SIZE = 32;
 

@@ -1,9 +1,15 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameIndexEntry;
 import life.catalogue.api.model.Page;
 import life.catalogue.junit.TestDataRule;
 
+import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -11,6 +17,16 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+/**
+ * Exercises the nidx-grouping queries against a single-tier names index fixture (test-data/nidx).
+ * <p>
+ * Post-Phase-1 the index is canonical-only: every names_index row is canonical (rank UNRANKED-style,
+ * no authorship) with canonical_id == id, and every name_match.index_id points straight at such a
+ * canonical row. The fixture reflects that: the single canonical "Abies alba" (index id 2) is the
+ * match target of all four usages (dataset 100 u1, 101 u1, 102 u1x, 102 u2x), whose source names are
+ * the authorship variants "Abies alba", "Abies alba Miller" and "Abies alba Mill.". A second
+ * canonical "Abies" (index id 1) exists but is unreferenced, giving a nidx with no usages to assert.
+ */
 public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
   public NameUsageMapperNidxTest() {
@@ -19,56 +35,57 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void listByNamesIndexIDGlobal() throws Exception {
-    // with author: index 4 matches usages in datasets 100 (PROJECT, excluded), 102, 102
-    var res = mapper().listByNamesIndexIDGlobal( 4, new Page());
-    assertEquals(2, res.size());
+    // canonical "Abies alba" (index id 2) is shared by every usage across all three datasets, but the
+    // global query is public-filtered: dataset 100 (origin=PROJECT) is excluded, leaving the 3 external
+    // usages (101/u1, 102/u1x, 102/u2x).
+    var res = mapper().listByNamesIndexIDGlobal( 2, new Page());
+    assertEquals(3, res.size());
     Set<DSID<String>> usageIDs = res.stream().map(DSID::copy).collect(Collectors.toSet());
     assertEquals(
-      Set.of(DSID.of(102, "u1x"), DSID.of(102, "u2x")),
+      Set.of(DSID.of(101, "u1"), DSID.of(102, "u1x"), DSID.of(102, "u2x")),
       usageIDs
     );
 
-    // canonical +1: indexes 3 & 4 match usages in datasets 100 (excluded), 101, 102, 102
-    assertEquals(3, mapper().listByNamesIndexIDGlobal( 3, new Page()).size());
-
-    // none
+    // canonical "Abies" (index id 1) is not matched by any name -> no usages
     assertEquals(0, mapper().listByNamesIndexIDGlobal( 1, new Page()).size());
 
-    // global count (datasetKey=null) excludes the PROJECT dataset, matching the filtered list
-    assertEquals(2, (int) mapper().countByNamesIndexID(4, null));
+    // unknown nidx -> none
+    assertEquals(0, mapper().listByNamesIndexIDGlobal( 99, new Page()).size());
+
+    // global count (datasetKey=null) is public-filtered too: it excludes the PROJECT dataset 100
+    assertEquals(3, (int) mapper().countByNamesIndexID(2, null));
     assertEquals(0, (int) mapper().countByNamesIndexID(1, null));
-    // per-dataset count is NOT public-filtered: the PROJECT dataset 100 still counts its own usages
-    assertEquals(1, (int) mapper().countByNamesIndexID(4, 100));
-    assertEquals(2, (int) mapper().countByNamesIndexID(4, 102));
+    // per-dataset count is NOT public-filtered: the PROJECT dataset 100 still counts its own usage
+    assertEquals(1, (int) mapper().countByNamesIndexID(2, 100));
+    assertEquals(2, (int) mapper().countByNamesIndexID(2, 102));
   }
 
   @Test
   public void listByNamesIndexIDGlobalClassified() throws Exception {
-    // dataset 100 has origin=PROJECT and is excluded, only external datasets 101 & 102 remain
-    // with author: index 4 matches usages in datasets 100 (excluded), 102, 102
-    var res = mapper().listByNamesIndexIDGlobalClassified( 4, new Page());
-    assertEquals(2, res.size());
+    // single-tier registry: canonical "Abies alba" (index id 2) is matched by all four usages across
+    // datasets 100 (origin=PROJECT, excluded), 101, 102 and 102. The classified query drops project
+    // datasets, leaving the 3 external usages (101/u1, 102/u1x, 102/u2x).
+    var res = mapper().listByNamesIndexIDGlobalClassified( 2, new Page());
+    assertEquals(3, res.size());
     assertTrue(res.stream().noneMatch(u -> u.getDatasetKey() == 100));
-    // canonical +1: indexes 3 & 4 match usages in datasets 100 (excluded), 101, 102, 102
-    assertEquals(3, mapper().listByNamesIndexIDGlobalClassified( 3, new Page()).size());
-    // none
+    // canonical "Abies" (index id 1) is unreferenced -> none
     assertEquals(0, mapper().listByNamesIndexIDGlobalClassified( 1, new Page()).size());
 
     // the paging count must stay consistent with the filtered list, also excluding project usages
-    assertEquals(2, (int) mapper().countByNamesIndexIDGlobalClassified(4));
-    assertEquals(3, (int) mapper().countByNamesIndexIDGlobalClassified(3));
+    assertEquals(3, (int) mapper().countByNamesIndexIDGlobalClassified(2));
     assertEquals(0, (int) mapper().countByNamesIndexIDGlobalClassified(1));
   }
 
   @Test
   public void listByCanonNIDX() throws Exception {
-    assertCanonNIDX(1, 100, 3);
-    assertCanonNIDX(1, 101, 3);
-    assertCanonNIDX(2, 102, 3);
+    // canonical "Abies alba" (index id 2) per dataset
+    assertCanonNIDX(1, 100, 2);
+    assertCanonNIDX(1, 101, 2);
+    assertCanonNIDX(2, 102, 2);
     // not existing dataset
-    assertCanonNIDX(0, 103, 3);
-    // not a canonical nidx
-    assertCanonNIDX(0, 100, 4);
+    assertCanonNIDX(0, 103, 2);
+    // canonical "Abies" (index id 1) is unreferenced
+    assertCanonNIDX(0, 100, 1);
   }
 
   void assertCanonNIDX(int expectedNum, int datasetKey, int canonNidx) {
@@ -81,6 +98,70 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
       assertNotNull(sn.getRank());
       assertNotNull(sn.getName());
     }
+  }
+
+  /**
+   * Verifies the intentional broadening of the related lookup for the single-tier index: orig is
+   * (100, u1) = "Abies alba Miller", matched to the shared canonical index id 2. Related usages are
+   * now every usage matching that same canonical index_id (excluding orig itself), which pulls in the
+   * authorship variants u1x ("Abies alba Miller") and u2x ("Abies alba Mill.") in dataset 102 as well
+   * as the unauthored "Abies alba" u1 in dataset 101 - not just usages with orig's exact spelling.
+   */
+  @Test
+  public void listRelated() throws Exception {
+    // phase 1 resolves the nidx and returns the matched names, orig's own name included
+    var names = mapper().listRelatedNames(DSID.of(100, "u1"), false, null, null, null, null, null, 1000);
+    var datasetKeys = names.stream().map(DSID::getDatasetKey).collect(Collectors.toSet());
+    // phase 2 loads the usages of those names; orig comes back with them and is dropped, as NameUsageDao does
+    Set<DSID<String>> related = mapper().listRelatedUsages(datasetKeys, names).stream()
+      .map(sn -> DSID.<String>of(sn.getDatasetKey(), sn.getId()))
+      .filter(d -> !d.equals(DSID.of(100, "u1")))
+      .collect(Collectors.toSet());
+    assertEquals(
+      Set.of(DSID.of(101, "u1"), DSID.of(102, "u1x"), DSID.of(102, "u2x")),
+      related
+    );
+  }
+
+  /**
+   * labelCounts groups name_match rows sharing one nidx by their rendered "scientificName [authorship]"
+   * label and counts occurrences, across dataset boundaries, ordered by count desc.
+   */
+  @Test
+  public void labelCounts() throws Exception {
+    // a fresh canonical index entry, isolated from the shared "Abies alba" (nidx 2) fixture data
+    NameIndexEntry entry = new NameIndexEntry();
+    entry.setScientificName("Foo bar");
+    entry.setNormalized("foo bar-labelcounts-test");
+    mapper(NamesIndexMapper.class).create(entry);
+    int nidx = entry.getKey();
+
+    // two names in different datasets sharing the authored label "Foo bar Miller"
+    Name n1 = TestEntityGenerator.newMinimalName(100, "lc1", "Foo bar", Rank.SPECIES);
+    n1.setAuthorship("Miller");
+    insertName(n1);
+
+    Name n2 = TestEntityGenerator.newMinimalName(101, "lc1", "Foo bar", Rank.SPECIES);
+    n2.setAuthorship("Miller");
+    insertName(n2);
+
+    // a third, unauthored name giving the distinct label "Foo bar"
+    Name n3 = TestEntityGenerator.newMinimalName(102, "lc1", "Foo bar", Rank.SPECIES);
+    n3.setAuthorship(null);
+    insertName(n3);
+
+    NameMatchMapper nmm = mapper(NameMatchMapper.class);
+    nmm.create(DSID.of(100, "lc1"), null, nidx);
+    nmm.create(DSID.of(101, "lc1"), null, nidx);
+    nmm.create(DSID.of(102, "lc1"), null, nidx);
+    commit();
+
+    List<life.catalogue.api.model.LabelCount> counts = nmm.labelCounts(nidx);
+    assertEquals(2, counts.size());
+    assertEquals("Foo bar Miller", counts.get(0).getLabel());
+    assertEquals(2, counts.get(0).getCount());
+    assertEquals("Foo bar", counts.get(1).getLabel());
+    assertEquals(1, counts.get(1).getCount());
   }
 
 }

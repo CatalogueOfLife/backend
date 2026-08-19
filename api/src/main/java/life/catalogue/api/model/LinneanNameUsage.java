@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.*;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Stripped down NameUsageBase version with just the name properties and the usage id and parentID
@@ -236,12 +237,17 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
   }
 
   @Override
-  public NamePart getNotho() {
-    return null;
+  public Set<NamePart> getNotho() {
+    return Set.of();
   }
 
   @Override
   public void setNotho(NamePart namePart) {
+
+  }
+
+  @Override
+  public void addNotho(NamePart namePart) {
 
   }
 

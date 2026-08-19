@@ -15,6 +15,8 @@ import org.gbif.nameparser.api.*;
 
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.annotation.Nullable;
 
@@ -39,6 +41,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final boolean syncSynonyms;
   protected final boolean syncReferences;
   protected final Set<Rank> ranks;
+  protected final Pattern nameFilter; // compiled sector.nameFilter regex, or null
   protected static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS, Rank.SUBGENUS, Rank.SPECIES);
   protected final List<Rank> implicitRanks = new ArrayList<>();
 
@@ -108,6 +111,17 @@ public abstract class TreeBaseHandler implements TreeHandler {
       LOG.info("Include only name status: {}", Joiner.on(", ").join(sector.getNameStatusExclusion()));
     }
 
+    Pattern filter = null;
+    if (sector.getNameFilter() != null && !sector.getNameFilter().isBlank()) {
+      try {
+        filter = Pattern.compile(sector.getNameFilter());
+      } catch (PatternSyntaxException e) {
+        throw new IllegalArgumentException("Invalid sector name filter regex '" + sector.getNameFilter() + "': " + e.getMessage(), e);
+      }
+      LOG.info("Include only names matching regex: {}", sector.getNameFilter());
+    }
+    this.nameFilter = filter;
+
     this.ranks = Preconditions.checkNotNull(sector.getRanks(), "Sector ranks required");
     if (ranks.size() < Rank.values().length) {
       LOG.info("Consider only ranks: {}", Joiner.on(", ").join(ranks));
@@ -158,8 +172,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // make rank non null
     if (nu.getName().getRank() == null) nu.getName().setRank(Rank.UNRANKED);
     // sector defaults before we apply a specific decision
-    if (sector.getCode() != null) {
+    if (sector.getCode() != null && sector.getCode() != nu.getName().getCode()) {
       nu.getName().setCode(sector.getCode());
+      // the code drives rank-marker rendering (e.g. the subsp. marker is dropped for zoological
+      // names), so rebuild the cached scientificName to reflect the sector's code
+      nu.getName().rebuildScientificName();
     }
     // remove accordingTo?
     if (!sector.isCopyAccordingTo()) {
@@ -183,8 +200,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
       SyncNameUsageRules.applyAlways(nu);
       mod = new ModifiedUsage(nu, false, false, null);
     }
-    // match to nidx if no match result exists (NONE matches are fine, but not null)
-    if (nu.getName().getNamesIndexType() == null) {
+    // match to nidx if not matched yet
+    if (nu.getName().getNamesIndexId() == null) {
       var match = nameIndex.match(nu.getName(), true, false);
       nu.getName().applyMatch(match);
     }
@@ -227,8 +244,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
                          .put(nid, mod.usage.getName().getId());
     }
 
-    // in case of updates from decisions, track also the original name as a synonym?
-    if (sn != null && !sn.isSynonym() && mod.keepOriginal && mod.originalName != null) {
+    // in case of updates from decisions, track also the original name as a synonym -
+    // unless that exact name incl. authorship already exists as an accepted usage. Creating it anyway
+    // would produce a duplicate accepted+synonym pair of the same name whose survivor is then resolved
+    // non-deterministically further down the merge.
+    if (sn != null && !sn.isSynonym() && mod.keepOriginal && mod.originalName != null
+        && !acceptedNameExists(mod.originalName)) {
       var origAsSyn = new Synonym(mod.originalName);
       origAsSyn.setId(mod.usage.getId());
       origAsSyn.setRemarks("Original spelling before change by an editorial decision");
@@ -240,6 +261,15 @@ public abstract class TreeBaseHandler implements TreeHandler {
       session.commit();
       batchSession.commit();
     }
+  }
+
+  /**
+   * Whether an accepted usage with the exact same name, including authorship, already exists in the
+   * target. The base/copy handler cannot look up existing usages, so it never suppresses the
+   * original-as-synonym; the merge handler overrides this.
+   */
+  protected boolean acceptedNameExists(Name name) {
+    return false;
   }
 
   protected Usage usage(NameUsageBase u, String origParentId, EditorialDecision decision) {
@@ -312,7 +342,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       state.setSynonymCount(++sCounter);
     }
 
-    return new SimpleNameCached(u, nm.getCanonicalNameKey());
+    return new SimpleNameCached(u, nm.getNidx());
   }
 
   protected boolean allowImplicitName(Usage parent, Taxon u) {
@@ -481,13 +511,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
    */
   protected NameMatch matchName(Name n) {
     NameMatch m = nameIndex.match(n, true, false);
-    n.setNamesIndexType(m.getType());
-    n.setNamesIndexId(m.getNameKey());
+    n.setNamesIndexId(m.getNidx());
     return m;
   }
 
   protected void persistMatch(Name n) {
-    batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId(), n.getNamesIndexType());
+    batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId());
   }
 
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
@@ -525,6 +554,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (sector.getNameTypes() != null && !sector.getNameTypes().isEmpty() && !sector.getNameTypes().contains(n.getType())) {
       return incIgnored(IgnoreReason.reasonByNameType(n.getType()), u);
     }
+    // apply name regex filter if exists - only include usages whose scientific name fully matches
+    if (nameFilter != null && (n.getScientificName() == null || !nameFilter.matcher(n.getScientificName()).matches())) {
+      return incIgnored(IgnoreReason.NAME_FILTER, u);
+    }
     // apply name status filter if exists
     if (n.getNomStatus() != null && sector.getNameStatusExclusion() != null && sector.getNameStatusExclusion().contains(n.getNomStatus())) {
       return incIgnored(IgnoreReason.NOMENCLATURAL_STATUS, u);
@@ -561,8 +594,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected ModifiedUsage applyDecision(NameUsageBase u, EditorialDecision ed) {
     boolean linkUp = false;
     Name originalName = null;
-    try {
-      switch (ed.getMode()) {
+    switch (ed.getMode()) {
         case BLOCK:
           throw new IllegalStateException("Blocked usage " +u.getLabel() + " [" + u.getId() + "] should not have been traversed");
         case UPDATE:
@@ -665,10 +697,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
       if (ed.getNote() != null) {
         u.addRemarks(ed.getNote());
       }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();  // set interrupt flag back
-      throw new InterruptedRuntimeException(e);
-    }
     return new ModifiedUsage(u, linkUp,
       // https://github.com/CatalogueOfLife/backend/issues/1292
       ed.getMode()== EditorialDecision.Mode.UPDATE && Boolean.TRUE.equals(ed.isKeepOriginalName()),

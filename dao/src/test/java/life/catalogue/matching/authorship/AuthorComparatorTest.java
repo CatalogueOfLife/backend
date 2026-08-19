@@ -24,11 +24,7 @@ public class AuthorComparatorTest {
   AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
   
   public static Authorship parse(String x) {
-    try {
-      return NameParser.PARSER.parseAuthorship(x).orElse(new ParsedAuthorship()).getCombinationAuthorship();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    return NameParser.PARSER.parseAuthorship(x).orElse(new ParsedAuthorship()).getCombinationAuthorship();
   }
   
   public static Authorship parse(String x, String year) throws InterruptedException {

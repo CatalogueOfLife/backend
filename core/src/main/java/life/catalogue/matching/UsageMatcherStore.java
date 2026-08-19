@@ -57,7 +57,7 @@ public interface UsageMatcherStore extends AutoCloseable {
   private void matchAndAdd(NameUsageBase u, NameIndex ni) {
     var m = ni.match(u.getName(), true, false);
     u.getName().applyMatch(m);
-    var sn = new SimpleNameCached(u, m.getCanonicalNameKey());
+    var sn = new SimpleNameCached(u, m.getNidx());
     add(sn);
   }
 

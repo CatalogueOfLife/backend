@@ -26,6 +26,10 @@ public class NameFormatter {
   private static final String NOTHO_PREFIX = "notho";
   private static final Joiner AUTHORSHIP_JOINER = Joiner.on(", ").skipNulls();
   private static final Pattern AL = Pattern.compile("^al\\.?$");
+  // an unparsed/phrase portion that itself starts with a species marker ("species 1", "sp. 3"), so
+  // the synthetic "sp." rank marker must not be prepended a second time ("Xyris sp. species 1")
+  private static final Pattern UNPARSED_SPECIES_MARKER =
+      Pattern.compile("^(?:sp|spec|species)\\b", Pattern.CASE_INSENSITIVE);
   private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho)?(?:infra|super|sub)?(?:gx|natio|morph|klepton|lusus|strain|chemoform|(?:subsp|f\\. ?sp|[a-z]{1,4})\\.|[a-z]{3,6}var\\.?))( [a-z][^ ]*?)?( .+)?$");
   //private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?( .+)?$");
   // matches only uninomials or binomials without any authorship
@@ -70,24 +74,9 @@ public class NameFormatter {
    */
   public static String authorship(FormattableName n, boolean includeNotes) {
     StringBuilder sb = new StringBuilder();
-    if (n.hasBasionymAuthorship()) {
-      sb.append("(");
-      appendAuthorship(sb, n.getBasionymAuthorship(), true, n.getCode());
-      sb.append(")");
-    }
-    if (n.hasCombinationAuthorship()) {
-      if (sb.length() > 1) {
-        sb.append(' ');
-      }
-      appendAuthorship(sb, n.getCombinationAuthorship(), true, n.getCode());
-      // Render sanctioning author via colon:
-      // http://www.iapt-taxon.org/nomen/main.php?page=r50E
-      //TODO: remove rendering of sanctioning author according to Paul Kirk!
-      if (n.getSanctioningAuthor() != null) {
-        sb.append(" : ");
-        sb.append(n.getSanctioningAuthor());
-      }
-    }
+    // delegate the basionym/combination/sanctioning (incl. imprint year) rendering to the shared
+    // parser formatter so it stays in sync - FormattableName is a CombinedAuthorshipIF
+    appendAuthorship(sb, n, true, n.getCode());
     if (includeNotes && n.getNomenclaturalNote() != null) {
       if (n.hasAuthorship()) {
         sb.append(" ");
@@ -176,7 +165,7 @@ public class NameFormatter {
 
     if (n.getUninomial() != null) {
       // higher rank names being just a uninomial!
-      if (NamePart.GENERIC == n.getNotho()) {
+      if (n.getNotho().contains(NamePart.GENERIC)) {
         sb.append(HYBRID_MARKER)
           .append(" ");
       }
@@ -195,7 +184,7 @@ public class NameFormatter {
             // but use rank markers for botanical names (unless its no defined rank)
             if (NomCode.BOTANICAL != n.getCode()) {
               sb.append("(");
-              if (NamePart.INFRAGENERIC == n.getNotho()) {
+              if (n.getNotho().contains(NamePart.INFRAGENERIC)) {
                 sb.append(HYBRID_MARKER)
                   .append(' ');
               }
@@ -207,7 +196,7 @@ public class NameFormatter {
           if (showInfraGen) {
             // For botanical names we use explicit rank markers, see http://www.iapt-taxon.org/nomen/main.php?page=art21
             if (NomCode.BOTANICAL == n.getCode()) {
-              if (appendRankMarker(sb, n.getRank(), NamePart.INFRAGENERIC == n.getNotho())) {
+              if (appendRankMarker(sb, n.getRank(), n.getNotho().contains(NamePart.INFRAGENERIC))) {
                 sb.append(' ');
               }
             }
@@ -235,7 +224,9 @@ public class NameFormatter {
             if (n.getRank().isInfraspecific()) {
               // maybe we have an infraspecific epithet? force to show the rank marker
               appendInfraspecific(sb, n, true);
-            } else {
+            } else if (!unparsedLeadsWithSpeciesMarker(n)) {
+              // skip the synthetic "sp." when the unparsed portion already spells out a species
+              // marker ("Xyris species 1"), so it isn't doubled into "Xyris sp. species 1"
               sb.append(" ");
               sb.append(n.getRank().getMarker());
             }
@@ -247,7 +238,7 @@ public class NameFormatter {
       } else {
         // species part
         sb.append(' ');
-        if (NamePart.SPECIFIC == n.getNotho()) {
+        if (n.getNotho().contains(NamePart.SPECIFIC)) {
           sb.append(HYBRID_MARKER)
             .append(" ");
         }
@@ -314,10 +305,16 @@ public class NameFormatter {
     return sb;
   }
 
+  /** True when the unparsed portion already begins with a species marker (species/sp/spec), so the
+   *  synthetic indet "sp." rank marker would only duplicate it. */
+  private static boolean unparsedLeadsWithSpeciesMarker(FormattableName n) {
+    return n.getUnparsed() != null && UNPARSED_SPECIES_MARKER.matcher(n.getUnparsed().trim()).find();
+  }
+
   private static StringBuilder appendInfraspecific(StringBuilder sb, FormattableName n, boolean forceRankMarker) {
     // infraspecific part
     sb.append(' ');
-    if (NamePart.INFRASPECIFIC == n.getNotho()) {
+    if (n.getNotho().contains(NamePart.INFRASPECIFIC)) {
       if (n.getRank() != null && isInfraspecificMarker(n.getRank())) {
         sb.append("notho");
       } else {
@@ -326,7 +323,7 @@ public class NameFormatter {
       }
     }
     // hide subsp. from zoological names
-    if (forceRankMarker || isNotZoo(n.getCode()) || Rank.SUBSPECIES != n.getRank() || n.getNotho() != null) {
+    if (forceRankMarker || isNotZoo(n.getCode()) || Rank.SUBSPECIES != n.getRank() || !n.getNotho().isEmpty()) {
       if (appendRankMarker(sb, n.getRank(), NameFormatter::isInfraspecificMarker, false) && n.getInfraspecificEpithet() != null) {
         sb.append(' ');
       }
@@ -337,8 +334,10 @@ public class NameFormatter {
     return sb;
   }
 
+  // The subsp./var./f. rank marker is the botanical convention; only an explicitly zoological
+  // name drops it (zoological trinomials use bare epithets). A null/unknown code keeps the marker.
   private static boolean isNotZoo(NomCode code) {
-    return code != null && code != NomCode.ZOOLOGICAL;
+    return code != NomCode.ZOOLOGICAL;
   }
 
   private static boolean isUnknown(Rank r) {
@@ -374,7 +373,7 @@ public class NameFormatter {
   }
 
   private static StringBuilder appendGenus(StringBuilder sb, FormattableName n) {
-    if (NamePart.GENERIC == n.getNotho()) {
+    if (n.getNotho().contains(NamePart.GENERIC)) {
       sb.append(HYBRID_MARKER)
         .append(" ");
     }

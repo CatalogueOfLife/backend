@@ -517,6 +517,12 @@ public enum Issue {
   DUPLICATE_TAXON_PROPERTIES(NAME_USAGE, Level.WARNING,
       "Same taxon property record appears several times for the same taxon."),
 
+  AUTHORSHIP_UNCERTAIN(NAME, Level.WARNING,
+      "The authorship is explicitly marked as uncertain in the name, e.g. a trailing question mark or alternative authors separated by 'or' or a slash."),
+
+  SUPERFLUOUS_AUTHORSHIP(NAME, Level.WARNING,
+      "The name carried an additional authorship on its genus or species part that is superfluous to the terminal authorship and was not kept, e.g. the genus author in \"Cordia (Adans.) Kuntze sect. Salimori\"."),
+
   RELATION_SYNONYM(NAME_USAGE, Level.WARNING,
       "A taxon concept relation or species interaction referenced a synonym instead of an accepted taxon. "
       + "The reference has been relinked to the synonyms accepted taxon, or the relation dropped if no accepted taxon could be found.")

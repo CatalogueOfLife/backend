@@ -32,10 +32,11 @@ public class SyncNameUsageRules {
       }
     // zoological rules only
     } else if (NomCode.ZOOLOGICAL == n.getCode()) {
-      // accepted trinomials become subspecies
-      if (u.getStatus().isTaxon() && n.isTrinomial() && n.getRank() == Rank.INFRASPECIFIC_NAME) {
+      // zoological trinomials of indeterminate infraspecific rank become subspecies - for both accepted
+      // taxa and synonyms so a synonym still matches its subspecies accepted name
+      if (n.isTrinomial() && n.getRank() == Rank.INFRASPECIFIC_NAME) {
         n.setRank(Rank.SUBSPECIES);
-        LOG.debug("Change accepted, zoological, infraspecific name to subspecies rank: {}", u.getLabel());
+        LOG.debug("Change zoological, infraspecific name to subspecies rank: {}", u.getLabel());
       }
     }
     // change tax status of manuscript names

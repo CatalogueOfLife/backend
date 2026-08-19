@@ -10,9 +10,10 @@ import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 
-import org.gbif.nameparser.NameParserGBIF;
-import org.gbif.nameparser.ParserConfigs;
 import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.rust.NameParserRust;
+
+import javax.annotation.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
@@ -36,7 +37,7 @@ import com.google.common.collect.ImmutableMap;
  */
 public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
-  public static final NameParser PARSER = new NameParser(2000);
+  public static final NameParser PARSER = new NameParser();
   private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:]+)\\s*");
   private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[]+)\\s*");
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
@@ -68,29 +69,28 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       .put(Warnings.BLACKLISTED_EPITHET, Issue.BLACKLISTED_EPITHET)
       .put(Warnings.NOMENCLATURAL_REFERENCE, Issue.CONTAINS_REFERENCE)
       .put(Warnings.AUTHORSHIP_REMOVED, Issue.AUTHORSHIP_REMOVED)
+      .put(Warnings.UNLIKELY_YEAR, Issue.UNLIKELY_YEAR)
+      .put(Warnings.UNCERTAIN_AUTHORSHIP, Issue.AUTHORSHIP_UNCERTAIN)
       .build();
 
   private Timer timer;
-  private final NameParserGBIF parserInternal;
+  private final NameParserRust parserInternal;
 
-  NameParser(int timeout) {
-    this(new NameParserGBIF(timeout, 0, 100));
+  NameParser() {
+    this(new NameParserRust());
   }
 
   @VisibleForTesting
-  NameParser(NameParserGBIF parser) {
+  NameParser(NameParserRust parser) {
     parserInternal = parser;
   }
 
-  public ParserConfigs configs() {
-    return parserInternal.configs();
-  }
-
   /**
-   * @return the shared underlying GBIF name parser, for callers that need the raw {@link org.gbif.nameparser.api.ParsedName}
-   *         without the overhead of building a full CoL {@link life.catalogue.api.model.Name}.
+   * @return the shared underlying name parser (the GBIF {@link org.gbif.nameparser.api.NameParser} API, backed by the
+   *         rust implementation), for callers that need the raw {@link org.gbif.nameparser.api.ParsedName} without the
+   *         overhead of building a full CoL {@link life.catalogue.api.model.Name}.
    */
-  public NameParserGBIF gbif() {
+  public org.gbif.nameparser.api.NameParser gbif() {
     return parserInternal;
   }
 
@@ -104,61 +104,39 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   }
 
   /**
-   * Sets the timeout for the internal name parser
-   * @param timeout
-   */
-  public void setTimeout(long timeout) {
-    parserInternal.setTimeout(timeout);
-  }
-
-  /**
    * @deprecated use parse(name, rank, code, issues) instead!
    */
   @Deprecated
   public Optional<ParsedNameUsage> parse(String name) {
-    try {
-      return parse(name, Rank.UNRANKED, null, IssueContainer.VOID);
-    } catch (InterruptedException e) {
-      LOG.warn("NameParser got interrupted");
-      Thread.currentThread().interrupt();
-    }
-    return Optional.empty();
+    return parse(name, Rank.UNRANKED, null, IssueContainer.VOID);
   }
 
   public Optional<ParsedNameUsage> parse(SimpleName sn) {
-    try {
-      return parse(sn.getName(), sn.getAuthorship(), sn.getRank(), sn.getCode(), IssueContainer.VOID);
-    } catch (InterruptedException e) {
-      LOG.warn("NameParser got interrupted");
-      Thread.currentThread().interrupt();
-    }
-    return Optional.empty();
+    return parse(sn.getName(), sn.getAuthorship(), sn.getRank(), sn.getCode(), IssueContainer.VOID);
   }
 
   /**
    * @return a parsed authorship instance only, i.e. combination & original year & author list
    */
-  public Optional<ParsedAuthorship> parseAuthorship(String authorship) throws InterruptedException {
+  public Optional<ParsedAuthorship> parseAuthorship(String authorship) {
+    return parseAuthorship(authorship, null);
+  }
+
+  public Optional<ParsedAuthorship> parseAuthorship(String authorship, @Nullable NomCode code) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedAuthorship());
-    try {
-      ParsedAuthorship pa = parserInternal.parseAuthorship(authorship);
-      if (pa.getState() == ParsedName.State.COMPLETE) {
-        return Optional.of(pa);
-      }
-    } catch (UnparsableNameException e) {
-    }
-    return Optional.empty();
+    // 5.0.0: parseAuthorship no longer throws — it returns Optional.empty() for an unparsable authorship.
+    return parserInternal.parseAuthorship(authorship, code);
   }
 
   /**
    * Populates the parsed authorship of a given name instance by parsing a single authorship string.
    * Only parses the authorship if the name itself is already parsed.
    */
-  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String authorship, IssueContainer v) throws InterruptedException {
+  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String authorship, IssueContainer v) {
     // try to add an authorship if not yet there
     if (!Strings.isNullOrEmpty(authorship)) {
       if (pnu.getName().isParsed()) {
-        ParsedAuthorship pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
+        ParsedAuthorship pnAuthorship = parseAuthorship(authorship, pnu.getName().getCode()).orElseGet(() -> {
           LOG.info("Unparsable authorship {}", authorship);
           v.add(Issue.UNPARSABLE_AUTHORSHIP);
           // add the full, unparsed authorship in this case to not lose it
@@ -184,6 +162,16 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
         // ignore issues related to the epithet - we only parse authorships here
         removeEpithetIssues(ic);
         ic.getIssues().forEach(v::add);
+
+        // a standalone authorship is parsed via parseAuthorship which returns a plain ParsedAuthorship
+        // and cannot carry originalSpelling, so recover a sic/corrig marker from the raw authorship here
+        // (sic = original spelling kept, corrig. = corrected spelling). setNormalizeAuthorship then strips it.
+        if (pnu.getName().isOriginalSpelling() == null) {
+          Matcher sc = SIC_CORRIG.matcher(authorship);
+          if (sc.find()) {
+            pnu.getName().setOriginalSpelling("sic".equalsIgnoreCase(sc.group(1)));
+          }
+        }
 
         // use original authorship string but normalize whitespace and remove taxonomic notes, e.g. misapplication
         setNormalizeAuthorship(pnu, authorship, pnAuthorship.getTaxonomicNote());
@@ -302,10 +290,18 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     pnu.getName().setBasionymAuthorship(pn.getBasionymAuthorship());
     // propagate notes and unparsed bits found in authorship if not already existing
     setIfNull(pn.getNomenclaturalNote(), pnu.getName()::getNomenclaturalNote, pnu.getName()::setNomenclaturalNote);
+    // imprint year now lives on each Authorship (next to its year); surface it on the Name,
+    // preferring the basionym (original publication) over the combination authorship
+    Authorship basAuth = pn.getBasionymAuthorship();
+    Authorship combAuth = pn.getCombinationAuthorship();
+    String imprintYear = basAuth != null && basAuth.hasImprintYear() ? basAuth.getImprintYear()
+                       : (combAuth != null ? combAuth.getImprintYear() : null);
+    setIfNull(imprintYear, pnu.getName()::getImprintYear, pnu.getName()::setImprintYear);
     setIfNull(pn.getPublishedIn(), pnu::getPublishedIn, pnu::setPublishedIn);
+    setIfNull(pn.getPublishedInYear(), pnu.getName()::getPublishedInYear, pnu.getName()::setPublishedInYear);
     setIfNull(pn.getTaxonomicNote(), pnu::getTaxonomicNote, pnu::setTaxonomicNote);
-    var pnn = (ParsedName) pn; // actually the name parser always returns a full parsed name object and only that contains the original flag up to now !
-    if (pnn.isOriginalSpelling() != null) {
+    // authorship-only parses return a plain ParsedAuthorship; originalSpelling only exists on a full ParsedName
+    if (pn instanceof ParsedName pnn && pnn.isOriginalSpelling() != null) {
       pnu.getName().setOriginalSpelling(pnn.isOriginalSpelling());
     }
     if (pn.getUnparsed() != null) {
@@ -346,7 +342,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
-  public Optional<ParsedNameUsage> parse(String name, Rank rank, NomCode code, IssueContainer issues) throws InterruptedException {
+  public Optional<ParsedNameUsage> parse(String name, Rank rank, NomCode code, IssueContainer issues) {
     return parse(name, null, rank, code, issues);
   }
 
@@ -354,7 +350,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
-  public Optional<ParsedNameUsage> parse(String name, String authorship, Rank rank, NomCode code, IssueContainer issues) throws InterruptedException {
+  public Optional<ParsedNameUsage> parse(String name, String authorship, Rank rank, NomCode code, IssueContainer issues) {
     Name n = new Name();
     n.setScientificName(name);
     n.setAuthorship(authorship);
@@ -369,7 +365,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    *
    * Populates a given name instance with the parsing results.
    */
-  public Optional<ParsedNameUsage> parse(Name n, IssueContainer issues) throws InterruptedException {
+  public Optional<ParsedNameUsage> parse(Name n, IssueContainer issues) {
     if (StringUtils.isBlank(n.getScientificName())) {
       return Optional.empty();
     }
@@ -377,19 +373,44 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
       final String authorship = n.getAuthorship();
-      pnu = fromParsedName(n, parserInternal.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
-      // try to add an authorship if not yet there
-      parseAuthorshipIntoName(pnu, authorship, issues);
-
-    } catch (UnparsableNameException e) {
-      pnu = new ParsedNameUsage();
-      pnu.setName(n);
-      pnu.getName().setRank(n.getRank());
-      pnu.getName().setScientificName(e.getName());
-      pnu.getName().setType(e.getType());
-      // adds an issue in case the type indicates a parsable name
-      if (pnu.getName().getType().isParsable()) {
-        issues.add(Issue.UNPARSABLE_NAME);
+      // parse name and authorship together so the parser can infer the code/originalSpelling from both.
+      // 5.0.0: parse() never throws — it returns a sealed three-way ParseResult.
+      switch (parserInternal.parse(n.getScientificName(), authorship, n.getRank(), n.getCode())) {
+        case ParseResult.Parsed p -> {
+          pnu = fromParsedName(n, p.name(), issues);
+          // CoL post-processing: normalized authorship string + UNPARSABLE/INCONSISTENT flags
+          parseAuthorshipIntoName(pnu, authorship, issues);
+        }
+        case ParseResult.Informal inf -> {
+          // 5.0.0 semistructured band: a supraspecific anchor carrying a provisional designation
+          // (e.g. "Rhizobium sp. RMCC TR1811", "Bartonella group"). Rebuild the type=INFORMAL
+          // ParsedName the 4.x parser used to return so all downstream handling stays unchanged.
+          pnu = fromParsedName(n, inf.toParsedName(), issues);
+          // 5.0's Informal result is lean (no warnings). A species-level informal ("Genus sp./
+          // species N") is indeterminate, so re-flag it: NameInterpreter keys its rank inference on
+          // INFORMAL + INDETERMINED and would otherwise drop the parser's rank (e.g. SPECIES) to
+          // UNRANKED, exactly as the 4.x INFORMAL + INDETERMINED signal drove it.
+          if (inf.rank() != null && inf.rank().isSpeciesOrBelow()) {
+            issues.add(Issue.INDETERMINED);
+          }
+          parseAuthorshipIntoName(pnu, authorship, issues);
+        }
+        case ParseResult.Unparsable e -> {
+          pnu = new ParsedNameUsage();
+          pnu.setName(n);
+          pnu.getName().setRank(n.getRank());
+          pnu.getName().setScientificName(e.name());
+          pnu.getName().setType(e.type());
+          // name-parser 5.0 carries a NomCode on the unparsable for code-known names (e.g. NomCode.VIRUS).
+          // Record it so true virus names keep their virus signal now that NameType.VIRUS is gone.
+          if (e.code() != null) {
+            pnu.getName().setCode(e.code());
+          }
+          // adds an issue in case the type indicates a parsable name
+          if (pnu.getName().getType().isParsable()) {
+            issues.add(Issue.UNPARSABLE_NAME);
+          }
+        }
       }
     } finally {
       if (ctx != null) {
@@ -399,18 +420,14 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     return Optional.of(pnu);
   }
   
-  public Optional<NameType> determineType(Name name) throws InterruptedException {
+  public Optional<NameType> determineType(Name name) {
     String sciname = name.getScientificName();
     if (StringUtils.isBlank(sciname)) {
-      return Optional.of(NameType.NO_NAME);
+      return Optional.of(NameType.OTHER);
     }
-    try {
-      ParsedName pn = parserInternal.parse(sciname, name.getRank(), name.getCode());
-      return Optional.of(ObjectUtils.coalesce(pn.getType(), NameType.SCIENTIFIC));
-    
-    } catch (UnparsableNameException e) {
-      return Optional.of(ObjectUtils.coalesce(e.getType(), NameType.SCIENTIFIC));
-    }
+    // 5.0.0: type() is available on every ParseResult variant (Parsed/Informal/Unparsable), no throw.
+    ParseResult result = parserInternal.parse(sciname, null, name.getRank(), name.getCode());
+    return Optional.of(ObjectUtils.coalesce(result.type(), NameType.SCIENTIFIC));
   }
 
   /**
@@ -425,14 +442,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       pn.setState(ParsedName.State.PARTIAL);
       StringBuilder sb = new StringBuilder();
       sb.append(pn.getPhrase());
-      if (pn.getVoucher() != null) {
-        sb.append(" (")
-          .append(pn.getVoucher())
-          .append(")");
-      }
-      if (pn.getNominatingParty() != null) {
-        sb.append(" ").append(pn.getNominatingParty());
-      }
       n.setUnparsed(sb.toString());
     }
 
@@ -446,15 +455,32 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     n.setSpecificEpithet(pn.getSpecificEpithet());
     n.setInfraspecificEpithet(pn.getInfraspecificEpithet());
     n.setCultivarEpithet(pn.getCultivarEpithet());
-    n.setRank(pn.getRank());
-    n.setCode(pn.getCode());
+    // keep a concrete caller-supplied rank over the parser's generic guess, but only when it agrees
+    // with the parsed name shape; a source may mislabel a trinomial as [species] - don't retain that
+    // contradiction, fall back to the parser's (infraspecific) rank instead
+    if (pn.getRank() != null &&
+        (n.getRank() == null || n.getRank().isUncomparable() || pn.getRank().isInfraspecific() != n.getRank().isInfraspecific())) {
+      n.setRank(pn.getRank());
+    }
+    if (n.getCode() == null) {
+      n.setCode(pn.getCode());
+    }
     n.setCandidatus(pn.isCandidatus());
-    n.setNotho(pn.getNotho());
+    if (pn.getNotho() != null) {
+      pn.getNotho().forEach(n::addNotho);
+    }
     n.setOriginalSpelling(pn.isOriginalSpelling());
     n.setType(pn.getType());
 
     if (pn.isIncomplete()) {
       issues.add(Issue.INCONSISTENT_NAME);
+    }
+
+    // the parser can capture authorship on the genus or species part of a more specific name
+    // (e.g. the genus author in "Cordia (Adans.) Kuntze sect. Salimori"). The Name model only keeps
+    // the terminal authorship, so flag these superfluous authorships as they are not retained.
+    if (pn.hasGenericAuthorship() || pn.hasSpecificAuthorship()) {
+      issues.add(Issue.SUPERFLUOUS_AUTHORSHIP);
     }
 
     // we rebuilt the caches as we dont have any original authorship yet - it all came in through the single scientificName
@@ -465,7 +491,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    parserInternal.close();
+    // nothing to close in the v4 parser
   }
 
 }

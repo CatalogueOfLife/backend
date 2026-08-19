@@ -1,4 +1,4 @@
-Animalia [kingdom] {ID=B3}
+Animalia [kingdom] {ID=B4}
   Chordata [phylum] {ID=3}
     Mammalia [class] {ID=4}
       Carnivora [order] {ID=5}
@@ -10,7 +10,7 @@ Animalia [kingdom] {ID=B3}
             Canis argentinus [species] {ID=Q}
             Canis aureus [species] {ID=R}
         Felidae [family] {ID=7}
-          Lynx [genus] {ID=B4}
+          Lynx [genus] {ID=B3}
             =Pardina [genus] {ID=B}
             Lynx lynx (Linnaeus, 1758) [species] {ID=C}
               =Felis lynx Linnaeus, 1758 [species] {ID=B5}

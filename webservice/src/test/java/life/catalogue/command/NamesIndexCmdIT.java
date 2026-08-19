@@ -9,6 +9,8 @@ import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.junit.TxtTreeDataRule;
 
+import org.gbif.nameparser.api.Rank;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -78,12 +80,29 @@ public class NamesIndexCmdIT extends CmdTestBase {
 
       var names = new HashSet<>();
       PgUtils.consume(nim::processAll, n -> {
-        var sn = new SimpleName(null, n.getScientificName(), n.getAuthorship(), n.getRank());
+        // the names index is single-tier & canonical-only: every entry is UNRANKED with no authorship
+        var sn = new SimpleName(null, n.getScientificName(), null, Rank.UNRANKED);
         if (!names.add(sn)) {
           throw new IllegalStateException("Non unique name "+sn+" in names index");
         }
       });
-      assertEquals(284, cnt);
+      // total distinct names_index rows these fixtures produce under the current name parser.
+      // Historically (two-tier index: 1 canonical row + 1 row per distinct authorship/rank
+      // combination sharing that canonical) this fixture produced 281 rows (284 under an older
+      // parser version). names_index is now a single-tier, canonical-only registry -- one row
+      // per distinct normalized canonical name; authorship and rank are never stored there at
+      // all -- so every one of those old authorship/rank "child" rows disappeared and only the
+      // canonical buckets remain. dupe.txtree alone (loaded into 6 datasets here to stress the
+      // dedup path) packs e.g. 8 "Acacia" genus entries under different authors and ~10
+      // "Poecile montan-" spelling/authorship/rank variants, each formerly its own two-tier row,
+      // now collapsing to exactly one canonical row apiece.
+      //
+      // 133 is the resulting distinct-canonical count under name-parser 5.0 (api 5.0.0-rc.1). It
+      // includes the identifier pseudo-names (BOLD:, UNITE SH...FU) which the parser now types as
+      // NameType.IDENTIFIER -- these are indexed because IDENTIFIER is in
+      // NameIndexImpl.INDEX_NAME_TYPES. PLACEHOLDER names (e.g. "Bryozoan indet. 1") stay excluded.
+      // Expect this to shift again if the parser's canonicalization or type classification changes.
+      assertEquals(133, cnt);
     }
   }
 }

@@ -13,6 +13,7 @@ import org.gbif.nameparser.api.Rank;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -123,6 +124,26 @@ public class NameInterpreterTest {
       }
     }
     return map;
+  }
+
+  /**
+   * https://www.checklistbank.org/dataset/281817/verbatim/29763
+   * A uninomial genus whose author carries a particle: "Protosialis van der Weele, 1909".
+   * It must interpret as the genus "Protosialis" with authorship "van der Weele, 1909" - the
+   * "van der Weele" particle author must not be swallowed into the name as a multi-word epithet.
+   */
+  @Test
+  public void protosialisVanDerWeele() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var pnu = interpret("genus", "Protosialis van der Weele, 1909", "van der Weele, 1909", v);
+    var n = pnu.getName();
+    assertEquals(Rank.GENUS, n.getRank());
+    assertEquals("Protosialis", n.getUninomial());
+    assertEquals("Protosialis", n.getScientificName());
+    assertEquals("van der Weele, 1909", n.getAuthorship());
+    assertNull(n.getGenus());
+    assertNull(n.getSpecificEpithet());
+    assertNull(n.getInfraspecificEpithet());
   }
 
   @Test
@@ -459,7 +480,7 @@ public class NameInterpreterTest {
     assertNull(n.getUninomial());
     assertEquals("Asplenium", n.getGenus());
     assertEquals("mitsutae", n.getSpecificEpithet());
-    assertEquals(NamePart.SPECIFIC, n.getNotho());
+    assertEquals(Set.of(NamePart.SPECIFIC), n.getNotho());
 
     pnu = interpret("Species", "Cambarus Uhleri", "Faxon, 1884", "1884",
       null, "Cambarus", null, "Uhleri", null, null,
@@ -473,7 +494,7 @@ public class NameInterpreterTest {
     assertEquals("uhleri", n.getSpecificEpithet());
     assertEquals(Rank.SPECIES, n.getRank());
     assertNull(n.isOriginalSpelling());
-    assertNull(n.getNotho());
+    assertTrue(n.getNotho().isEmpty());
 
     // doubtful genus
     pnu = interpret(null, "[Cambarus] uhleri", "Faxon, 1884", null,
@@ -487,7 +508,7 @@ public class NameInterpreterTest {
     assertEquals("uhleri", n.getSpecificEpithet());
     assertEquals(Rank.SPECIES, n.getRank());
     assertTrue(v.contains(Issue.DOUBTFUL_NAME));
-    assertNull(n.getNotho());
+    assertTrue(n.getNotho().isEmpty());
 
     // atomised
     pnu = interpret(null, "[Cambarus] uhleri", "Faxon, 1884", null,
@@ -502,7 +523,7 @@ public class NameInterpreterTest {
     assertEquals("uhleri", n.getSpecificEpithet());
     assertEquals(Rank.SPECIES, n.getRank());
     assertTrue(v.contains(Issue.DOUBTFUL_NAME));
-    assertNull(n.getNotho());
+    assertTrue(n.getNotho().isEmpty());
 
     // [sic] and corrig.
     // fully parsed
@@ -515,7 +536,7 @@ public class NameInterpreterTest {
     assertEquals("uhleri", n.getSpecificEpithet());
     assertEquals(Rank.SPECIES, n.getRank());
     assertTrue(n.isOriginalSpelling());
-    assertNull(n.getNotho());
+    assertTrue(n.getNotho().isEmpty());
 
     // atoms
     pnu = interpret(null, "Cambarus uhleri [sic]", "Faxon, 1884", null,
@@ -529,7 +550,7 @@ public class NameInterpreterTest {
     assertEquals("uhleri", n.getSpecificEpithet());
     assertEquals(Rank.SPECIES, n.getRank());
     assertNull(n.isOriginalSpelling()); // not present in atoms
-    assertNull(n.getNotho());
+    assertTrue(n.getNotho().isEmpty());
 
     pnu = interpret(null, "Cambarus uhleri [sic]", "Faxon, 1884", null,
       null, "Cambarus", null, "uhleri", null,
@@ -543,7 +564,7 @@ public class NameInterpreterTest {
     assertEquals("uhleri", n.getSpecificEpithet());
     assertEquals(Rank.SPECIES, n.getRank());
     assertTrue(n.isOriginalSpelling());
-    assertNull(n.getNotho());
+    assertTrue(n.getNotho().isEmpty());
 
     pnu = interpret(null, "Cambarus uhleri", "Faxon, 1884", null,
       null, null, null, null, null,
@@ -557,7 +578,7 @@ public class NameInterpreterTest {
     assertEquals("uhleri", n.getSpecificEpithet());
     assertEquals(Rank.SPECIES, n.getRank());
     assertTrue(n.isOriginalSpelling());
-    assertNull(n.getNotho());
+    assertTrue(n.getNotho().isEmpty());
 
     // various degree of author atomisations for: Abies alba (Bring. ex DC) Miller & TC Jordan, 1849
     pnu = interpret("species", "Picea", "(Bring. ex DC) Miller & TC Jordan, 1849", null,

@@ -53,7 +53,7 @@ public class ApiKryoPoolTest {
     s.setRanks(Set.of(Rank.SPECIES, Rank.GENUS));
     s.setEntities(Set.of(EntityType.NAME, EntityType.TAXON));
     s.setExtinctFilter(true);
-    s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.VIRUS));
+    s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.OTHER));
     s.setPriority(12);
     s.applyUser(TestEntityGenerator.USER_EDITOR);
     s.applyCreatedNow();

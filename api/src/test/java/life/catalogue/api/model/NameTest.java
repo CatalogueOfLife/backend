@@ -29,7 +29,6 @@ public class NameTest extends SerdeTestBase<Name> {
   }
 
   static void clearNidx(Name n) {
-    n.setNamesIndexType(null);
     n.setNamesIndexId(null);
   }
 
@@ -224,8 +223,9 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setInfraspecificEpithet("malyi-caroli");
     n.rebuildScientificName();
     n.rebuildAuthorship();
-    assertEquals("Hieracium brevifolium malyi-caroli", n.getLabel());
-    assertEquals("<i>Hieracium brevifolium malyi-caroli</i>", n.getLabelHtml());
+    // null/unknown code keeps the botanical subsp. marker (only explicitly zoological names drop it)
+    assertEquals("Hieracium brevifolium subsp. malyi-caroli", n.getLabel());
+    assertEquals("<i>Hieracium brevifolium</i> subsp. <i>malyi-caroli</i>", n.getLabelHtml());
 
     n.setCombinationAuthorship(Authorship.yearAuthors(null, "Zahn"));
     n.setBasionymAuthorship(Authorship.yearAuthors(null,"Gus. Schneid."));
@@ -312,8 +312,24 @@ public class NameTest extends SerdeTestBase<Name> {
     n = new Name();
     n.setRank(Rank.SPECIES);
     n.setScientificName("Abutilon yellows virus ICTV");
-    n.setType(NameType.VIRUS);
+    n.setType(NameType.OTHER);
     assertEquals("Abutilon yellows virus ICTV", n.getLabelHtml());
+  }
+
+  @Test
+  public void subspeciesRankMarkerWithoutCode() {
+    Name n = new Name();
+    n.setGenus("Abronia");
+    n.setSpecificEpithet("maritima");
+    n.setInfraspecificEpithet("capensis");
+    n.setRank(Rank.SUBSPECIES);
+    // null/unknown code: keep the botanical subsp. marker (only an explicitly zoological name drops it)
+    n.rebuildScientificName();
+    assertEquals("Abronia maritima subsp. capensis", n.getScientificName());
+    // explicitly zoological: bare trinomial, no marker
+    n.setCode(NomCode.ZOOLOGICAL);
+    n.rebuildScientificName();
+    assertEquals("Abronia maritima capensis", n.getScientificName());
   }
 
 }

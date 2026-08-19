@@ -56,7 +56,6 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
 
   public static ArchivedNameUsage create() {
     Name n = TestEntityGenerator.newName(appleKey);
-    n.setNamesIndexType(null);
     n.addIdentifier("tsn:1234");
     n.setOriginalSpelling(true);
     n.setGenderAgreement(false);

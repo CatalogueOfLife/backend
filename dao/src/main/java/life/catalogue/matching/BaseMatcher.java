@@ -1,15 +1,12 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.mapper.MatchMapper;
 import life.catalogue.matching.nidx.NameIndex;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -69,18 +66,14 @@ public class BaseMatcher {
     public void accept(Name n) {
       _total++;
       final Integer oldId = n.getNamesIndexId();
-      final MatchType oldType = n.getNamesIndexType();
       NameMatch m = ni.match(n, allowInserts, false);
-      if (!m.hasMatch()) {
+      if (!m.isMatched()) {
         _nomatch++;
         // we only log here, but persist below
-        LOG.debug("No match for {} from dataset {} with {} alternatives: {}", n.toStringComplete(), n.getDatasetKey(),
-          m.getAlternatives() == null ? 0 : m.getAlternatives().size(),
-          m.getAlternatives() == null ? "" : m.getAlternatives().stream().map(IndexName::getLabelWithRank).collect(Collectors.joining("; "))
-        );
+        LOG.debug("No match for {} from dataset {}", n.toStringComplete(), n.getDatasetKey());
       }
-      if (!Objects.equals(oldType, m.getType()) || !Objects.equals(oldId, m.getNameKey())) {
-        persist(n, m, oldType);
+      if (!Objects.equals(oldId, m.getNidx())) {
+        persist(n, m);
         if (_updated++ % 10000 == 0) {
           if (!update) {
             batchSession.commit();
@@ -90,16 +83,16 @@ public class BaseMatcher {
       }
     }
 
-    void persist(Name n, NameMatch m, MatchType oldType) {
+    void persist(Name n, NameMatch m) {
       datasets.add(n.getDatasetKey());
-      if (update && oldType != null) {
-        // the update might not have found a record (e.g. because we did not store NONE matches before)
-        // create a record if it wasnt updated
-        if (nmm.update(n, m.getNameKey(), m.getType()) < 1) {
-          nmm.create(n, n.getSectorKey(), m.getNameKey(), m.getType());
+      if (update) {
+        // we don't know upfront whether a match record already exists for this name (e.g. because it was
+        // never matched before) - try to update it and fall back to inserting a new record if none was updated
+        if (nmm.update(n, m.getNidx()) < 1) {
+          nmm.create(n, n.getSectorKey(), m.getNidx());
         }
       } else {
-        nmm.create(n, n.getSectorKey(), m.getNameKey(), m.getType());
+        nmm.create(n, n.getSectorKey(), m.getNidx());
       }
     }
 

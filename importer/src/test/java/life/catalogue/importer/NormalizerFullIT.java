@@ -50,7 +50,7 @@ public class NormalizerFullIT extends NormalizerITBase {
     store.close();
     normalize(0);
     store.names().all().forEach(n -> {
-      assertNotNull(n.getName().getNamesIndexType());
+      assertNotNull(n.getName().getNamesIndexId());
       VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
       assertNotNull(v);
     });

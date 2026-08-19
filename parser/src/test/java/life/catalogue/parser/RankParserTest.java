@@ -53,6 +53,30 @@ public class RankParserTest extends ParserTestBase<Rank> {
     assertEquals(Optional.of(Rank.SERIES_ZOOLOGY), RankParser.PARSER.parse(NomCode.ZOOLOGICAL,"Series"));
     assertEquals(Optional.of(Rank.SUPERSERIES_ZOOLOGY), RankParser.PARSER.parse(NomCode.ZOOLOGICAL,"SUPERSeries"));
     assertEquals(Optional.of(Rank.SUBSERIES_ZOOLOGY), RankParser.PARSER.parse(NomCode.ZOOLOGICAL,"SUBSeries"));
+
+    // ambiguous division ranks default to the botanical division (= PHYLUM) when the code is
+    // unknown or botanical, and only resolve to the zoological DIVISION_ZOOLOGY for zoological
+    // names (mirrors how "subdivision" defaults to subphylum). The infrageneric botanical
+    // DIVISION_BOTANY is never reached from a standalone marker (the name-parser handles it
+    // positionally).
+    for (String div : new String[]{"div.", "div", "divisions", "division", "divisio"}) {
+      assertEquals("unknown code: " + div, Optional.of(Rank.PHYLUM), RankParser.PARSER.parse((NomCode) null, div));
+      assertEquals("botanical: " + div, Optional.of(Rank.PHYLUM), RankParser.PARSER.parse(NomCode.BOTANICAL, div));
+      assertEquals("zoological: " + div, Optional.of(Rank.DIVISION_ZOOLOGY), RankParser.PARSER.parse(NomCode.ZOOLOGICAL, div));
+    }
+
+    // explicitly code-qualified ranks are authoritative and ignore the dataset code (incl. unknown)
+    assertParse(Rank.DIVISION_ZOOLOGY, "zoodivisio");
+    assertParse(Rank.SECTION_ZOOLOGY, "zoosectio");
+    assertParse(Rank.SECTION_ZOOLOGY, "zoosection");
+    assertParse(Rank.SECTION_ZOOLOGY, "section (zoology)");
+    assertParse(Rank.SECTION_BOTANY, "section (botany)");
+    assertEquals(Optional.of(Rank.DIVISION_ZOOLOGY), RankParser.PARSER.parse((NomCode) null, "zoodivisio"));
+    assertEquals(Optional.of(Rank.DIVISION_ZOOLOGY), RankParser.PARSER.parse(NomCode.BOTANICAL, "zoodivisio"));
+    assertEquals(Optional.of(Rank.DIVISION_ZOOLOGY), RankParser.PARSER.parse(NomCode.ZOOLOGICAL, "zoodivisio"));
+    assertEquals(Optional.of(Rank.SECTION_ZOOLOGY), RankParser.PARSER.parse((NomCode) null, "zoosection"));
+    assertEquals(Optional.of(Rank.SECTION_ZOOLOGY), RankParser.PARSER.parse(NomCode.BOTANICAL, "zoosection"));
+    assertEquals(Optional.of(Rank.SECTION_BOTANY), RankParser.PARSER.parse(NomCode.ZOOLOGICAL, "section (botany)"));
   }
 
   @Override

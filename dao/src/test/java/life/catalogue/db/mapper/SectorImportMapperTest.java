@@ -126,6 +126,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     assertEquals((Integer) 0, mapper().countDistribution(DATASET11.getKey(), 1));
     assertEquals((Integer) 0, mapper().countMedia(DATASET11.getKey(), 1));
     assertEquals((Integer) 0, mapper().countName(DATASET11.getKey(), 1));
+    assertEquals((Integer) 0, mapper().countNameMatches(DATASET11.getKey(), 1));
     assertEquals((Integer) 0, mapper().countReference(DATASET11.getKey(), 1));
     assertEquals((Integer) 0, mapper().countSynonym(DATASET11.getKey(), 1));
     assertEquals((Integer) 0, mapper().countTaxon(DATASET11.getKey(), 1));

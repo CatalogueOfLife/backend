@@ -56,6 +56,7 @@ public class ImportMetrics implements ImportAttempt {
   private Integer estimateCount;
   private Integer mediaCount;
   private Integer nameCount;
+  private Integer nameMatchesCount;
   private Integer referenceCount;
   private Integer sectorCount;
   private Integer synonymCount;
@@ -73,7 +74,6 @@ public class ImportMetrics implements ImportAttempt {
   private Map<Rank, Integer> namesByRankCount = new HashMap<>();
   private Map<NomStatus, Integer> namesByStatusCount = new HashMap<>();
   private Map<NameType, Integer> namesByTypeCount = new HashMap<>();
-  private Map<MatchType, Integer> namesByMatchTypeCount = new HashMap<>();
   private Map<NomRelType, Integer> nameRelationsByTypeCount = new HashMap<>();
   private Map<SpeciesInteractionType, Integer> speciesInteractionsByTypeCount = new HashMap<>();
   private Map<Rank, Integer> synonymsByRankCount = new HashMap<>();
@@ -167,11 +167,35 @@ public class ImportMetrics implements ImportAttempt {
   public Integer getNameCount() {
     return nameCount;
   }
-  
+
   public void setNameCount(Integer nameCount) {
     this.nameCount = nameCount;
   }
-  
+
+  /**
+   * Number of names that matched the names index, i.e. have a non null name_match.index_id.
+   */
+  public Integer getNameMatchesCount() {
+    return nameMatchesCount;
+  }
+
+  public void setNameMatchesCount(Integer nameMatchesCount) {
+    this.nameMatchesCount = nameMatchesCount;
+  }
+
+  /**
+   * @return number of names that did not match the names index, i.e. nameCount - nameMatchesCount.
+   */
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public Integer getNameMatchesMissingCount() {
+    var nc = getNameCount();
+    var nmc = getNameMatchesCount();
+    if (nc != null && nmc != null) {
+      return nc - nmc;
+    }
+    return null;
+  }
+
   public Integer getTaxonCount() {
     return taxonCount;
   }
@@ -266,29 +290,6 @@ public class ImportMetrics implements ImportAttempt {
 
   public void setAppliedDecisionCount(Integer appliedDecisionCount) {
     this.appliedDecisionCount = appliedDecisionCount;
-  }
-
-  public Map<MatchType, Integer> getNamesByMatchTypeCount() {
-    return namesByMatchTypeCount;
-  }
-
-  public void setNamesByMatchTypeCount(Map<MatchType, Integer> namesByMatchTypeCount) {
-    this.namesByMatchTypeCount = namesByMatchTypeCount;
-  }
-
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  public Integer getNameMatchesCount() {
-    return sum(namesByMatchTypeCount);
-  }
-
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  public Integer getNameMatchesMissingCount() {
-    var nc = getNameCount();
-    var nmc = getNameMatchesCount();
-    if (nc != null && nmc != null) {
-      return nc - nmc;
-    }
-    return null;
   }
 
   public Map<NameType, Integer> getNamesByTypeCount() {
@@ -515,6 +516,7 @@ public class ImportMetrics implements ImportAttempt {
       estimateCount = sum(estimateCount, m.estimateCount);
       mediaCount = sum(mediaCount, m.mediaCount);
       nameCount = sum(nameCount, m.nameCount);
+      nameMatchesCount = sum(nameMatchesCount, m.nameMatchesCount);
       referenceCount = sum(referenceCount, m.referenceCount);
       sectorCount = sum(sectorCount, m.sectorCount);
       synonymCount = sum(synonymCount, m.synonymCount);
@@ -533,7 +535,6 @@ public class ImportMetrics implements ImportAttempt {
       namesByRankCount = sum(namesByRankCount, m.namesByRankCount);
       namesByStatusCount = sum(namesByStatusCount, m.namesByStatusCount);
       namesByTypeCount = sum(namesByTypeCount, m.namesByTypeCount);
-      namesByMatchTypeCount = sum(namesByMatchTypeCount, m.namesByMatchTypeCount);
       synonymsByRankCount = sum(synonymsByRankCount, m.synonymsByRankCount);
       taxaByRankCount = sum(taxaByRankCount, m.taxaByRankCount);
       taxaByScrutinizerCount = sum(taxaByScrutinizerCount, m.taxaByScrutinizerCount);
@@ -592,6 +593,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(estimateCount, that.estimateCount) &&
       Objects.equals(mediaCount, that.mediaCount) &&
       Objects.equals(nameCount, that.nameCount) &&
+      Objects.equals(nameMatchesCount, that.nameMatchesCount) &&
       Objects.equals(referenceCount, that.referenceCount) &&
       Objects.equals(sectorCount, that.sectorCount) &&
       Objects.equals(synonymCount, that.synonymCount) &&
@@ -609,7 +611,6 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(namesByRankCount, that.namesByRankCount) &&
       Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
       Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
-      Objects.equals(namesByMatchTypeCount, that.namesByMatchTypeCount) &&
       Objects.equals(synonymsByRankCount, that.synonymsByRankCount) &&
       Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
       Objects.equals(taxaByScrutinizerCount, that.taxaByScrutinizerCount) &&
@@ -628,10 +629,10 @@ public class ImportMetrics implements ImportAttempt {
   @Override
   public int hashCode() {
     return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
-      nameCount, taxonCount, synonymCount, bareNameCount, referenceCount,
+      nameCount, nameMatchesCount, taxonCount, synonymCount, bareNameCount, referenceCount,
       typeMaterialCount, distributionCount, estimateCount, mediaCount, treatmentCount, vernacularCount,
       sectorCount, ignoredByReasonCount, appliedDecisionCount,
-      namesByMatchTypeCount, namesByTypeCount, namesByStatusCount, namesByCodeCount, namesByRankCount,
+      namesByTypeCount, namesByStatusCount, namesByCodeCount, namesByRankCount,
       nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
       vernacularsByLanguageCount, mediaByTypeCount, usagesByOriginCount, usagesByStatusCount,
       taxaByRankCount, taxaByScrutinizerCount, extinctTaxaByRankCount, synonymsByRankCount,

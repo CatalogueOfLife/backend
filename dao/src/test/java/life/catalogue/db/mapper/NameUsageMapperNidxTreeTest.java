@@ -35,7 +35,7 @@ public class NameUsageMapperNidxTreeTest {
 
   int findNidx(Rank rank, String name) {
     var m = NameMatchingRule.getIndex().match(new SimpleName(name, name, rank), false, false);
-    return m.getNameKey();
+    return m.getNidx();
   }
 
   @Test

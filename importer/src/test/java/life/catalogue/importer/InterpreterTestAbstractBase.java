@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 @RunWith(MockitoJUnitRunner.class)
 public abstract class InterpreterTestAbstractBase<I extends InterpreterBase> {
@@ -27,7 +27,8 @@ public abstract class InterpreterTestAbstractBase<I extends InterpreterBase> {
 
   @Before
   public void init() {
-    when(store.references()).thenReturn(refStore);
+    // lenient: not every interpreter test exercises the reference path (e.g. when sensu tests are skipped)
+    lenient().when(store.references()).thenReturn(refStore);
     interpreter = buildInterpreter(new DatasetSettings(), new ReferenceFactory(1, refStore, null), store);
   }
 

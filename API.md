@@ -65,6 +65,9 @@ The majority of the API is open and can be accessed anonymously.
 Writing data often requires authentication and datasets can be `private`, i.e. are only visible to authorised users.
 
 ChecklistBank shares user accounts with GBIF, so you need to have a [GBIF account](https://www.gbif.org/user/profile) to authenticate to the CLB API.
+
+The **development environment is separate**: `api.dev.checklistbank.org` is linked to the GBIF development registry at [gbif-test.org](https://www.gbif-test.org), not to production GBIF. A production GBIF account will not work against dev — you need to register a separate account at [www.gbif-test.org/user/profile](https://www.gbif-test.org/user/profile) and then log in once at [dev.checklistbank.org](https://dev.checklistbank.org) with those credentials.
+
 Authentication in the API uses simple [BasicAuth](https://en.wikipedia.org/wiki/Basic_access_authentication), but mostly for user interfaces we also provide [JWT](https://jwt.io/introduction).
 Note that BasicAuth in itself is not very secure, so please use it always with the *https* protocol. 
 CLB will actually decline the use of plain *http*.

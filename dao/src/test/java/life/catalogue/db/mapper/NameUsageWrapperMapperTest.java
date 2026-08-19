@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.tax.SciNameNormalizer;
 
 import java.util.Set;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import life.catalogue.db.PgUtils;
 import org.apache.ibatis.cursor.Cursor;
 
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.UnicodeUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,19 +63,18 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     NameMatchMapper nmm = mapper(NameMatchMapper.class);
     TaxonMapper tm = mapper(TaxonMapper.class);
 
-    IndexName inc = new IndexName();
+    NameIndexEntry inc = new NameIndexEntry();
     inc.setScientificName(n.getScientificName());
-    inc.setRank(n.getRank());
+    // the normalized column is NOT NULL & unique - mirror NameIndexImpl.key() so the random name round-trips
+    inc.setNormalized(UnicodeUtils.replaceNonAscii(
+      SciNameNormalizer.normalize(UnicodeUtils.decompose(n.getScientificName())).toLowerCase(), '*'
+    ));
     nim.create(inc);
-
-    IndexName in = new IndexName(inc);
-    in.setAuthorship(n.getAuthorship());
-    in.setCanonicalId(inc.getKey());
-    nim.create(in);
 
     nm.create(n);
 
-    nmm.create(n, tax.getSectorKey(), in.getKey(), MatchType.EXACT);
+    // single-tier: the name matches its one canonical names index entry
+    nmm.create(n, tax.getSectorKey(), inc.getKey());
 
     tm.create(tax);
 

@@ -188,7 +188,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     UsageData u = usageByID("8");
     assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
     assertEquals("Engl., nom. illeg.", u.usage.getName().getAuthorship());
-    assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
+    assertEquals("nom. illeg.", u.usage.getName().getNomenclaturalNote());
     assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
     assertNull(u.usage.getAccordingToId());
     assertEquals("superfluous at its time of publication", u.usage.getName().getRemarks());
@@ -248,8 +248,10 @@ public class NormalizerACEFIT extends NormalizerITBase {
     assertEquals("Pace, 2014", u.usage.getName().getAuthorship());
     VerbatimRecord v = verbatim(u.usage.getName());
     assertTrue(v.contains(Issue.UNUSUAL_NAME_CHARACTERS));
-    assertTrue(v.contains(Issue.PARTIALLY_PARSABLE_NAME));
-    assertTrue(v.contains(Issue.PARSED_NAME_DIFFERS));
+    // v4 parses "Lamprostiba pu!chra" fully (state COMPLETE) and keeps the epithet verbatim, so the name is
+    // neither only partially parsable nor differs from the reconstructed scientific name
+    assertFalse(v.contains(Issue.PARTIALLY_PARSABLE_NAME));
+    assertFalse(v.contains(Issue.PARSED_NAME_DIFFERS));
 
     u = usageByID("Eusphalerum_caucasicum_feldmanni");
     assertNull(u);
@@ -259,7 +261,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
 
 
     u = usageByID("1-1");
-    assertEquals("Anterhynchium alecto lalepi", u.usage.getName().getScientificName());
+    assertEquals("Anterhynchium alecto subsp. lalepi", u.usage.getName().getScientificName());
     assertEquals("(Cheesm.i.l.)", u.usage.getName().getAuthorship());
     v = verbatim(u.usage.getName());
     assertFalse(v.contains(Issue.UNPARSABLE_AUTHORSHIP));
@@ -278,7 +280,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acefInfraspecies() throws Exception {
     normalize(10);
     UsageData u = usageByID("Scr-13-.01-.01-.00-.001-.001-.014-.b");
-    assertEquals("Odontotrypes (Thorectomimus) farkaci habaensis", u.usage.getName().getScientificName());
+    assertEquals("Odontotrypes (Thorectomimus) farkaci subsp. habaensis", u.usage.getName().getScientificName());
     assertEquals("Ochi, Kon & Bai, 2018", u.usage.getName().getAuthorship());
     assertEquals(Rank.SUBSPECIES, u.usage.getName().getRank());
 
@@ -328,12 +330,16 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acef14virus() throws Exception {
     normalize(14, NomCode.VIRUS);
     UsageData t = usageByID("Vir-96");
-    assertEquals(NameType.VIRUS, t.usage.getName().getType());
+    // name-parser v4.2 dropped NameType.VIRUS. Legacy vernacular virus names (with phage/strain/ICTV
+    // bits) stay unparsable OTHER but carry NomCode.VIRUS; ICTV genus monomials now parse as SCIENTIFIC.
+    assertEquals(NameType.OTHER, t.usage.getName().getType());
+    assertEquals(NomCode.VIRUS, t.usage.getName().getCode());
     assertEquals("Pseudomonas phage LKA1 ICTV", t.usage.getName().getScientificName());
 
     var gen = store.nameUsage(store.usages().parents(t).getFirst());
     assertEquals(Rank.GENUS, gen.nd.getName().getRank());
-    assertEquals(NameType.VIRUS, gen.nd.getName().getType());
+    assertEquals(NameType.SCIENTIFIC, gen.nd.getName().getType());
+    assertEquals(NomCode.VIRUS, gen.nd.getName().getCode());
     assertEquals("Phikmvlikevirus", gen.nd.getName().getScientificName());
   }
   
@@ -349,7 +355,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     assertNull(t);
 
     t = usageByID("ib");
-    assertEquals("Scyloxes asiatica carambula", t.usage.getName().getScientificName());
+    assertEquals("Scyloxes asiatica subsp. carambula", t.usage.getName().getScientificName());
     assertEquals("Dunin, 2001", t.usage.getName().getAuthorship());
     assertEquals(Rank.SUBSPECIES, t.usage.getName().getRank());
 
@@ -419,13 +425,9 @@ public class NormalizerACEFIT extends NormalizerITBase {
     assertProParte(syn, "Hedysarum truncatum", "Hedysarum turczaninovii");
   }
 
+  @Ignore("name-parser v4 removed runtime parser configs; re-enable when configs are reapplied to the parser")
   @Test
   public void aspilota() throws Exception {
-    // before we run this we configure the name parser to do better
-    // then we check that it really worked and no issues get attached
-    var pcfg = NormalizerTxtTreeIT.aspilotaCfg();
-    NameParser.PARSER.configs().add(pcfg.getScientificName(), pcfg.getAuthorship(), pcfg.toParsedName());
-
     normalize(22);
     store.debug();
     UsageData u = usageByID("1");

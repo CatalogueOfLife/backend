@@ -3,9 +3,7 @@ package life.catalogue.release;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.collection.CountEnumMap;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.collection.Int2IntBiMap;
 import life.catalogue.common.id.IdConverter;
@@ -278,11 +276,10 @@ public class IdProvider {
       NameMatch match = nmm.get(n);
       writer.write(" nidx=");
       if (match != null) {
-        writer.write(match.getName().getKey());
+        // single-tier index: the names index id is its own canonical, so both are the same value
+        writer.write(String.valueOf(match.getNidx()));
         writer.write('/');
-        writer.write(match.getName().getCanonicalId());
-        writer.write(' ');
-        writer.write(String.valueOf(match.getType()));
+        writer.write(String.valueOf(match.getNidx()));
       } else {
         writer.write("null");
       }
@@ -698,26 +695,6 @@ public class IdProvider {
         return 0;
       }
     }
-    // exact names index
-    if (Objects.equals(n.getNamesIndexId(), r.nxId)) {
-      if (n.isCanonical()) {
-        // both canonical
-        score += 5;
-      } else {
-        // both qualified names
-        score += 10;
-      }
-    } else if (n.isCanonical() || r.isCanonical()) {
-      // one is canonical, the other not
-      score += 2;
-    } else {
-      // both are qualified names but with different names index ids
-      score -= 10;
-    }
-    // match type
-    score += matchTypeScore(n.getNamesIndexMatchType());
-    score += matchTypeScore(r.matchType);
-
     // exact same authorship
     if (StringUtils.equalsDigitOrAsciiLettersIgnoreCase(n.getAuthorship(), r.authorship)) {
       score += 6;
@@ -731,15 +708,6 @@ public class IdProvider {
 
     // no less than zero
     return Math.max(0, score);
-  }
-
-  private static int matchTypeScore(MatchType mt) {
-    switch (mt) {
-      case EXACT: return 3;
-      case VARIANT: return 2;
-      case CANONICAL: return 1;
-      default: return 0;
-    }
   }
 
   static String encode(int id) {

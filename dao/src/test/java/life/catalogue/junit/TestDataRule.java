@@ -552,22 +552,17 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
     @Override
     public LinkedHashMap<String, String> apply(String[] row) {
-      try {
-        String name = row[testData.sciNameColumn];
-        var auth = testData.authorNameColumn == null ? null : row[testData.authorNameColumn];
-        var rank = testData.rankColumn == null ? null : row[testData.rankColumn];
-        var code = testData.codeColumn == null ? null : row[testData.codeColumn];
-        Name pn = NameParser.PARSER.parse(name, auth,
-          rank == null ? null : Rank.valueOf(rank),
-          code == null ? null : NomCode.valueOf(code),
-          IssueContainer.VOID
-        ).get().getName();
+      String name = row[testData.sciNameColumn];
+      var auth = testData.authorNameColumn == null ? null : row[testData.authorNameColumn];
+      var rank = testData.rankColumn == null ? null : row[testData.rankColumn];
+      var code = testData.codeColumn == null ? null : row[testData.codeColumn];
+      Name pn = NameParser.PARSER.parse(name, auth,
+        rank == null ? null : Rank.valueOf(rank),
+        code == null ? null : NomCode.valueOf(code),
+        IssueContainer.VOID
+      ).get().getName();
 
-        return name2columns(name, pn);
-
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+      return name2columns(name, pn);
     }
 
     LinkedHashMap<String, String> name2columns(String name, Name pn) {
@@ -619,6 +614,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
   private static String str(List<String> arr) {
     return PgCopyUtils.buildPgArray(arr.toArray(new String[0]));
+  }
+  private static String str(Set<? extends Enum<?>> set) {
+    return set == null || set.isEmpty() ? null
+        : PgCopyUtils.buildPgArray(set.stream().map(Enum::name).toArray(String[]::new));
   }
 
   private Map<String, Object> datasetDefaults(int datasetKey) {
