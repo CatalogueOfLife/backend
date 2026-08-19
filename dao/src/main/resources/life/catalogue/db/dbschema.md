@@ -106,6 +106,16 @@ plain `UPDATE name … WHERE type2 IS NULL` above to pick up whatever the loop m
 
 `name_usage_archive` is unpartitioned, so it stays a single `UPDATE` (batch by `id` range if it is too large).
 
+Once the copy is done — whichever form was used — vacuum the two tables it rewrote. Every row was updated,
+so both are heavily bloated and their planner stats are stale. Name the tables rather than issuing a bare
+`VACUUM`: an unqualified one walks the whole database, which here means every partition of every partitioned
+table for no benefit. `VACUUM` **cannot run inside a transaction block**, so this will not go into a
+`BEGIN`/`COMMIT` wrapper around the rest of the phase. Naming the partitioned parent `name` is enough —
+postgres vacuums and analyzes all of its partitions, and collects the parent-level stats too.
+```
+VACUUM (ANALYZE) name, name_usage_archive;
+```
+
 *Repair, if a database already has two-dimensional `notho`* — dev hit this in July 2026, having received the
 earlier separately-logged entries before the consolidated one. `unnest` flattens row-major and is a no-op on
 rows that are already flat, so the update is safe to run repeatedly. Check first, since `array_ndims` returns
@@ -221,9 +231,9 @@ UPDATE sector_import SET ignored_by_reason_count =
     || CASE WHEN ignored_by_reason_count ? 'NAME_OTU'            THEN hstore('NAME_IDENTIFIER', ignored_by_reason_count -> 'NAME_OTU')            ELSE ''::hstore END
     || CASE WHEN ignored_by_reason_count ? 'NAME_NO_NAME'        THEN hstore('NAME_OTHER',      ignored_by_reason_count -> 'NAME_NO_NAME')        ELSE ''::hstore END
   WHERE ignored_by_reason_count ?| ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME'];
-  
-  VACUUM
 ```
+These four tables are small; the bloat that needs a `VACUUM` comes from the step 1 row copy, which is
+where the scoped `VACUUM (ANALYZE)` now sits.
 
 **5. Rank & issue enums (name-parser v4 additions, folded in from the v4→v5 upgrade).** v4 split the
 ambiguous generic `DIVISION` rank into code-specific ranks and added two authorship issues. The generic
