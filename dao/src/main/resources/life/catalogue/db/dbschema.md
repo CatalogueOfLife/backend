@@ -145,6 +145,15 @@ ALTER TABLE sector ALTER COLUMN name_types TYPE NAMETYPE2[] USING
     'HYBRID_FORMULA','FORMULA'), 'OTU','IDENTIFIER'),
     'NO_NAME','OTHER'), 'VIRUS','OTHER')::NAMETYPE2[];
 
+-- array_replace maps element-wise, so a sector listing two values that collapse onto the same target
+-- (VIRUS and NO_NAME both -> OTHER) ends up with a duplicate. Dedupe in a second pass - the subquery
+-- the DISTINCT needs is exactly what ALTER ... USING above could not take. Element order is irrelevant:
+-- the column is read into an EnumSet. The guard makes this a no-op on already-clean rows, so it is safe
+-- to re-run.
+UPDATE sector SET name_types = ARRAY(SELECT DISTINCT unnest(name_types))::NAMETYPE2[]
+  WHERE name_types IS NOT NULL
+    AND cardinality(name_types) > (SELECT count(DISTINCT e) FROM unnest(name_types) e);
+
 -- parser_config.type is the LAST remaining dependency on the old enum, so the table has to go before
 -- DROP TYPE or that statement aborts (see 3. below). It is dropped for good, not migrated.
 DROP TABLE IF EXISTS parser_config;
@@ -265,10 +274,13 @@ UPDATE dataset SET settings = jsonb_set(settings, '{sector name types}', (
   ))
   WHERE settings -> 'sector name types' ?| ARRAY['virus','no name','otu','hybrid formula'];
 ```
-Verify nothing is left behind — this must return 0:
+Verify nothing is left behind — both of these must return 0:
 ```
 SELECT count(*) FROM dataset
   WHERE settings -> 'sector name types' ?| ARRAY['virus','no name','otu','hybrid formula'];
+SELECT count(*) FROM sector
+  WHERE name_types IS NOT NULL
+    AND cardinality(name_types) > (SELECT count(DISTINCT e) FROM unnest(name_types) e);
 ```
 
 #### 2026-07-09 canonical-only names index
