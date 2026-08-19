@@ -145,16 +145,34 @@ ALTER TABLE sector ALTER COLUMN name_types TYPE NAMETYPE2[] USING
     'HYBRID_FORMULA','FORMULA'), 'OTU','IDENTIFIER'),
     'NO_NAME','OTHER'), 'VIRUS','OTHER')::NAMETYPE2[];
 
+-- parser_config.type is the LAST remaining dependency on the old enum, so the table has to go before
+-- DROP TYPE or that statement aborts (see 3. below). It is dropped for good, not migrated.
+DROP TABLE IF EXISTS parser_config;
+
 DROP TYPE NAMETYPE;
 ALTER TYPE NAMETYPE2 RENAME TO NAMETYPE;
 ```
 
-**3. Drop parser_config (cutover — the pre-v4 app still reads this table).** v4's parser is stateless and
-no longer supports runtime overrides; the few names the curated overrides corrected are zoological
+**3. Dropping parser_config (cutover — the pre-v4 app still reads this table).** v4's parser is stateless
+and no longer supports runtime overrides; the few names the curated overrides corrected are zoological
 binomials v4 now parses directly. Dropping the table also makes its `notho`/`type` migrations moot.
+
+**The `DROP TABLE` is deliberately placed inside step 2 above, immediately before `DROP TYPE NAMETYPE`** —
+it is not a separate step you can run afterwards. `parser_config.type` is one of the four columns typed
+`NAMETYPE` (with `name.type`, `name_usage_archive.n_type` and `sector.name_types`), and it is the only one
+the swap above does not retype, so while the table exists postgres refuses the drop:
+
+```text
+ERROR:  cannot drop type nametype because other objects depend on it
+DETAIL:  column type of table parser_config depends on type nametype
 ```
-DROP TABLE IF EXISTS parser_config;
-```
+
+That abort lands on the *last* statement of the cutover, after the destructive column swaps have already
+committed, leaving `name.type` on `NAMETYPE2` with the old `NAMETYPE` still present — a half-migrated
+schema the new app cannot read, in the middle of the deploy window. Verified by replaying this migration
+against a PG 17 copy of the current prod schema (2026-08-19). Note a database that received the earlier
+separately-logged 2026-06-04…07-14 entries has already lost `parser_config` and so never hits this — dev
+passed for exactly that reason. Prod still has the table.
 
 **4. Stored import metrics (online — the old app silently drops keys it no longer knows).**
 `names_by_type_count` (NameType keys) and `ignored_by_reason_count`
