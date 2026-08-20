@@ -77,6 +77,35 @@ public class UsageMatcherChronicleStoreTest extends UsageMatcherStoreTestBase {
     }
   }
 
+  /**
+   * The store must survive a load whose usages are bigger than the samples it was sized from.
+   * listSN() orders by id, so the samples handed to build() are the textually first usages of the
+   * dataset - in a dataset mixing short numeric ids with long LSIDs those are the shortest ones.
+   * Regression for prod matcher builds dying mid-load with
+   * "Attempt to allocate #n extra segment tier, m is maximum".
+   */
+  @Test
+  public void loadWithUnrepresentativeSamples() throws IOException {
+    var dir = TempFile.directory();
+    try {
+      final int count = 20_000;
+      final int canon = 16_000;
+      // the one sample the sizing sees has a 1 char id, the real usages carry 40+ char LSIDs
+      try (var store = UsageMatcherChronicleStore.build(79, dir.file, count + 1, canon + canon / 100,
+             List.of(UsageMatcherChronicleStore.sample("1")))) {
+        for (int i = 0; i < count; i++) {
+          var sn = snc("urn:lsid:marinespecies.org:taxname:" + (100000 + i), "urn:lsid:marinespecies.org:taxname:1",
+            "Abies alba", "Miller, 1988", Rank.SPECIES, 1 + (i % canon), 1 + (i % canon));
+          sn.setStatus(TaxonomicStatus.ACCEPTED);
+          store.add(sn);
+        }
+        assertEquals(count, store.size());
+      }
+    } finally {
+      dir.close();
+    }
+  }
+
   @After
   public void destroy() {
     if (dbFile != null) dbFile.close();

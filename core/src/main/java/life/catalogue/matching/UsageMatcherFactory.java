@@ -243,7 +243,15 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       var store = UsageMatcherChronicleStore.build(datasetKey, tmpDir, count + 1, canonCount, samples);
       m = new UsageMatcher(datasetKey, nameIndex, store, true);
     }
-    m.store().load(factory); // the long full-scan load; no lock held
+    try {
+      m.store().load(factory); // the long full-scan load; no lock held
+    } catch (RuntimeException | Error e) {
+      // the store was never handed out, so close it here - otherwise its mmap survives until the Cleaner
+      // reaps it and the half written build dir stays on disk for every failed build
+      m.store().close();
+      FileUtils.deleteQuietly(tmpDir);
+      throw e;
+    }
     return m;
   }
 

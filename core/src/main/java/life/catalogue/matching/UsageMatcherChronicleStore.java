@@ -9,6 +9,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,14 @@ import net.openhft.chronicle.map.ChronicleMapBuilder;
 
 public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
   private static final UsageMatcherChronicleStore.BytesMarshaller MARSHALLER = new UsageMatcherChronicleStore.BytesMarshaller();
+  /**
+   * How far beyond the configured entries() ChronicleMap may grow before it refuses to allocate another
+   * segment tier. The average key/value sizes are estimated from a handful of sample usages, so they can
+   * be off for a dataset with unevenly sized ids or names; without headroom such a map dies mid-load with
+   * "Attempt to allocate #n extra segment tier". Extra tiers are allocated lazily, so a generous factor
+   * costs no disk or memory while the estimate holds - it only degrades lookup speed once it is used.
+   */
+  private static final double MAX_BLOAT_FACTOR = 10;
   private final ChronicleMap<Integer, String[]> byCanonNidx;
   private final ChronicleMap<String, SimpleNameCached> usageCMap;
 
@@ -77,11 +86,18 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
       samples = samples.subList(0, 5);
     }
 
+    // average across ALL samples, never just the first one: listSN orders by id, so sample 0 is the
+    // textually first usage of the dataset, not a representative one. In a dataset that mixes short
+    // numeric ids with long LSIDs/URLs the short ones sort first and sizing off them undersizes the map.
+    double avgKeySize = samples.stream().mapToInt(sn -> utf8Length(sn.getId())).average().orElse(16);
+    double avgValueSize = samples.stream().mapToInt(UsageMatcherChronicleStore::marshalledSize).average().orElse(64);
+
     var usages = ChronicleMapBuilder.of(String.class, SimpleNameCached.class)
       .name("usages")
       .entries(count)
-      .averageKey(samples.get(0).getId())
-      .averageValue(samples.get(0))
+      .averageKeySize(avgKeySize)
+      .averageValueSize(avgValueSize)
+      .maxBloatFactor(MAX_BLOAT_FACTOR)
       .valueMarshaller(MARSHALLER)
       .createPersistedTo(keysF);
 
@@ -90,11 +106,13 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
       // realistic average fan-out: most canonical ids map to a single usage id, occasionally a few.
       // Sizing the value chunk for the real average (instead of all 5 sample ids) keeps the file small.
       int avgIds = (int) Math.max(1, Math.min(5, Math.round((double) count / Math.max(1, canonCount))));
-      String[] avgValue = samples.stream().map(SimpleNameCached::getId).limit(avgIds).toArray(String[]::new);
+      String[] avgValue = new String[avgIds];
+      Arrays.fill(avgValue, "x".repeat((int) Math.max(1, Math.round(avgKeySize))));
       byCanonNidx = ChronicleMapBuilder.of(Integer.class, String[].class)
         .name("canonical")
         .entries(canonCount)
         .averageValue(avgValue)
+        .maxBloatFactor(MAX_BLOAT_FACTOR)
         .createPersistedTo(canonicalF);
     } catch (IOException e) {
       usages.close();
@@ -102,6 +120,15 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
     }
 
     return new UsageMatcherChronicleStore(datasetKey, usages, byCanonNidx);
+  }
+
+  private static int utf8Length(String x) {
+    return x == null ? 0 : x.getBytes(StandardCharsets.UTF_8).length;
+  }
+
+  /** serialized size of one usage as {@link BytesMarshaller} writes it: a 4 byte length prefix plus the fory bytes */
+  private static int marshalledSize(SimpleNameCached sn) {
+    return 4 + UsageMatcherFactory.FURY.serializeJavaObject(sn).length;
   }
 
   static SimpleNameCached sample(String id) {
