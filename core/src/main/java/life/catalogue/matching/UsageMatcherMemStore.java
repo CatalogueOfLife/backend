@@ -56,11 +56,23 @@ public class UsageMatcherMemStore extends UsageMatcherAbstractStore {
         }
       } else {
         byCanonNidx.get(old.getCanonicalId()).remove(old.getId());
-        byCanonNidx.computeIfAbsent(sn.getCanonicalId(), k -> new HashSet<>()).add(sn.getId());
+        add2Canon(sn.getCanonicalId(), sn.getId());
       }
     } else {
       if (sn.getCanonicalId() != null) {
-        byCanonNidx.computeIfAbsent(sn.getCanonicalId(), k -> new HashSet<>()).add(sn.getId());
+        add2Canon(sn.getCanonicalId(), sn.getId());
+      }
+    }
+  }
+
+  /** Adds an id to a canonical bucket, honouring {@link #MAX_USAGES_PER_CANONICAL} like the chronicle store does. */
+  private void add2Canon(Integer canonicalId, String usageID) {
+    var ids = byCanonNidx.computeIfAbsent(canonicalId, k -> new HashSet<>());
+    if (ids.size() < MAX_USAGES_PER_CANONICAL) {
+      ids.add(usageID);
+      if (ids.size() == MAX_USAGES_PER_CANONICAL) {
+        LOG.warn("Canonical nidx {} of dataset {} hit the cap of {} usages. Further usages are not indexed as match candidates for it",
+          canonicalId, datasetKey(), MAX_USAGES_PER_CANONICAL);
       }
     }
   }

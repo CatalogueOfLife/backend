@@ -20,6 +20,22 @@ public interface UsageMatcherStore extends AutoCloseable {
   Logger LOG = LoggerFactory.getLogger(UsageMatcherStore.class);
 
   /**
+   * Maximum number of usages indexed per canonical names index id.
+   *
+   * <p>A canonical name shared by more usages than this cannot discriminate anything. Environmental
+   * bacterial datasets are the extreme case - canonicalisation strips strain and clone identifiers, so
+   * "? bacterium" collects tens of thousands of usages. Every one of them would be returned by
+   * {@link #usagesByCanonicalId(int)} as a match candidate, each needing its own classification walk,
+   * only for the authorship and rank comparison to fail to pick a winner among them.
+   *
+   * <p>Capping bounds that work and keeps the chronicle store below its hard per-entry ceiling: a
+   * ChronicleMap entry may not exceed one segment tier, so an uncapped list eventually fails the whole
+   * build with "Value too large: entry takes n chunks". Usages beyond the cap are not offered as match
+   * candidates for that canonical.
+   */
+  int MAX_USAGES_PER_CANONICAL = 5000;
+
+  /**
    * Loads the dataset into the matcher store, using the previously persisted name matches.
    * @param factory
    */

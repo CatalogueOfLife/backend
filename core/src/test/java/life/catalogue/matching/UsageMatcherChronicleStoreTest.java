@@ -20,7 +20,7 @@ public class UsageMatcherChronicleStoreTest extends UsageMatcherStoreTestBase {
   @Override
   UsageMatcherStore createStore(int datasetKey) throws IOException {
     dbFile = TempFile.directory();
-    return UsageMatcherChronicleStore.build(datasetKey, dbFile.file, 1000, 1000, List.of(
+    return UsageMatcherChronicleStore.build(datasetKey, dbFile.file, 10_000, 10_000, List.of(
       UsageMatcherChronicleStore.sample("DRFTGZH"),
       UsageMatcherChronicleStore.sample("3456G"),
       UsageMatcherChronicleStore.sample("$E$%FGZHZGU"),

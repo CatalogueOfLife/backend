@@ -228,12 +228,18 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
   }
 
   private void add2Canon(Integer canonicalId, SimpleNameCached sn) {
-    if (byCanonNidx.containsKey(canonicalId)) {
-      var ids = byCanonNidx.get(canonicalId);
-      byCanonNidx.put(canonicalId, ArrayUtils.add(ids, sn.getId()));
-    } else {
+    var ids = byCanonNidx.get(canonicalId);
+    if (ids == null) {
       byCanonNidx.put(canonicalId, new String[]{sn.getId()});
+    } else if (ids.length < MAX_USAGES_PER_CANONICAL) {
+      var updated = ArrayUtils.add(ids, sn.getId());
+      byCanonNidx.put(canonicalId, updated);
+      if (updated.length == MAX_USAGES_PER_CANONICAL) {
+        LOG.warn("Canonical nidx {} of dataset {} hit the cap of {} usages. Further usages are not indexed as match candidates for it",
+          canonicalId, datasetKey(), MAX_USAGES_PER_CANONICAL);
+      }
     }
+    // beyond the cap the usage is deliberately not indexed, see MAX_USAGES_PER_CANONICAL
   }
 
   @Override

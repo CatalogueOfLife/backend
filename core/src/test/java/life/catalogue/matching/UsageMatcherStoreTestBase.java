@@ -61,6 +61,30 @@ public abstract class UsageMatcherStoreTestBase {
     }
   }
 
+  /**
+   * A canonical id shared by a pathological number of usages - "? bacterium" collects ~26k in a large
+   * bacterial dataset - must not break the store. Every usage stays retrievable; only the canonical
+   * match-candidate list is capped. Regression for the chronicle store failing a whole matcher build
+   * with "Value too large: entry takes n chunks, m is maximum".
+   */
+  @Test
+  public void canonicalFanOutIsCapped() throws IOException {
+    try (UsageMatcherStore store = createStore(2)) {
+      final int hotCanonical = 7;
+      final int n = UsageMatcherStore.MAX_USAGES_PER_CANONICAL + 500;
+      for (int i = 0; i < n; i++) {
+        store.add(snc("u" + i, null, "Aus bus", "Smith", Rank.SPECIES, hotCanonical, hotCanonical));
+      }
+      assertEquals("all usages remain stored", n, store.size());
+      assertEquals("they share one canonical bucket", 1, store.canonicalSize());
+      assertEquals("the candidate list is capped", UsageMatcherStore.MAX_USAGES_PER_CANONICAL,
+        store.simpleNamesByCanonicalId(hotCanonical).size());
+      // a usage below the cap is still a candidate, and every usage is still individually retrievable
+      assertEquals("u0", store.get("u0").getId());
+      assertEquals("u" + (n - 1), store.get("u" + (n - 1)).getId());
+    }
+  }
+
   public SimpleNameCached sncSyn(String id, String parentId, String name, String authorship, Rank rank, int canonicalId, int nidxId) {
     var snc = snc(id, parentId, name, authorship, rank, canonicalId, nidxId);
     snc.setStatus(TaxonomicStatus.SYNONYM);
