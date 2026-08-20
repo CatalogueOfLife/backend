@@ -91,6 +91,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final String ARG_THREADS = "t";
   private static final String ARG_REUSE_DUMPS = "reuse-dumps";
   private static final String ARG_FILE_ONLY = "file-only";
+  private static final String ARG_SKIP_SCHEMA = "skip-schema";
   private static final String ARG_INSERT_MATCHES = "pg-insert-matches";
   private static final String ARG_INSERT_ARCHIVED_MATCHES = "pg-insert-archived-matches";
   private static final String ARG_LIMIT = "limit";
@@ -142,6 +143,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
        .dest(ARG_FILE_ONLY)
        .action(Arguments.storeTrue())
        .help("Flag to only rebuild the namesindex file, but do not rematch the database.");
+    subparser.addArgument("--"+ ARG_SKIP_SCHEMA)
+        .dest(ARG_SKIP_SCHEMA)
+        .action(Arguments.storeTrue())
+        .help("Flag to not rebuild the tmp nidx schema but reuse whatever exists.");
     subparser.addArgument("--"+ ARG_REUSE_DUMPS)
       .dest(ARG_REUSE_DUMPS)
       .action(Arguments.storeTrue())
@@ -221,22 +226,27 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       threads = ns.getInt(ARG_THREADS);
       Preconditions.checkArgument(threads > 0, "Needs at least one matcher thread");
     }
-    LOG.warn("Rebuilt {} names index at {} and rematch all names with {} threads using build folder {} and pg schema {} in db {} on {}.",
-      cfg.namesIndex.type, cfg.namesIndex.file, threads, buildDir, BUILD_SCHEMA, cfg.db.database, cfg.db.host
+    final boolean skipSchema = Boolean.TRUE.equals(ns.getBoolean(ARG_SKIP_SCHEMA));
+    LOG.warn("Rebuilt {} names index at {} and rematch all names with {} threads using build folder {} and pg {}schema {} in db {} on {}.",
+      cfg.namesIndex.type, cfg.namesIndex.file, threads, buildDir, skipSchema?"existing ":"", BUILD_SCHEMA, cfg.db.database, cfg.db.host
     );
     // use a factory that changes the default pg search_path to "nidx" so we don't interfere with the index currently live
     factory = new SqlSessionFactoryWithPath(factory, BUILD_SCHEMA);
 
-    LOG.info("Prepare pg schema {}", BUILD_SCHEMA);
-    try (Connection c = dataSource.getConnection()) {
-      ScriptRunner runner = PgConfig.scriptRunner(c);
-      runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
-      // the ScriptRunner leaves the connection with autoCommit disabled; re-enable it so the
-      // partition DDL below is committed and not rolled back when the connection is returned to the pool
-      c.setAutoCommit(true);
-      // SCHEMA_SETUP creates name_match as an empty hash partitioned parent - add its partitions,
-      // mirroring the current partition count of the live name table
-      createMatchPartitions(c, Partitioner.detectPartitionNumber(c));
+    if (skipSchema) {
+      LOG.info("Use existing pg schema {}", BUILD_SCHEMA);
+    } else {
+      LOG.info("Prepare pg schema {}", BUILD_SCHEMA);
+      try (Connection c = dataSource.getConnection()) {
+        ScriptRunner runner = PgConfig.scriptRunner(c);
+        runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
+        // the ScriptRunner leaves the connection with autoCommit disabled; re-enable it so the
+        // partition DDL below is committed and not rolled back when the connection is returned to the pool
+        c.setAutoCommit(true);
+        // SCHEMA_SETUP creates name_match as an empty hash partitioned parent - add its partitions,
+        // mirroring the current partition count of the live name table
+        createMatchPartitions(c, Partitioner.detectPartitionNumber(c));
+      }
     }
 
     // setup new nidx using the session factory with the nidx schema - which has no names yet

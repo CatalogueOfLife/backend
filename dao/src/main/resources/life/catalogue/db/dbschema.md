@@ -87,30 +87,11 @@ UPDATE name_usage_archive SET
   n_notho2 = CASE WHEN n_notho IS NULL THEN NULL ELSE ARRAY[n_notho] END
   WHERE n_type2 IS NULL;
 ```
-That single `UPDATE name` runs serially across all 24 hash partitions in one transaction; Postgres has no
-in-SQL "parallel update". To parallelize you dispatch one `UPDATE` per partition over separate
-connections — the partitions are disjoint tables `name_mod0` … `name_mod23`, so concurrent
-`UPDATE name_mod<i> SET type2 = …, notho2 = …` sessions never contend:
-``` 
-export CONN='host=… dbname=… user=…'
-seq 0 23 | xargs -P6 -I{} psql "$CONN" -c \
-"UPDATE name_mod{} SET type2 = (CASE type::text WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
-                                                WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE type::text END)::NAMETYPE2,
-                                notho2 = CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END
- WHERE type2 IS NULL;"
-```
-Keep the `WHERE type2 IS NULL` here too — this is the form most likely to be re-run by hand.
-`name_mod0` … `name_mod23` are only the hash partitions of the shared default partition; project and
-release datasets live in their own `name_<datasetKey>` partitions, so follow the parallel run with the
-plain `UPDATE name … WHERE type2 IS NULL` above to pick up whatever the loop missed.
-
-`name_usage_archive` is unpartitioned, so it stays a single `UPDATE` (batch by `id` range if it is too large).
 
 Once the copy is done — whichever form was used — vacuum the two tables it rewrote. Every row was updated,
 so both are heavily bloated and their planner stats are stale. Name the tables rather than issuing a bare
 `VACUUM`: an unqualified one walks the whole database, which here means every partition of every partitioned
-table for no benefit. `VACUUM` **cannot run inside a transaction block**, so this will not go into a
-`BEGIN`/`COMMIT` wrapper around the rest of the phase. Naming the partitioned parent `name` is enough —
+table for no benefit. Naming the partitioned parent `name` is enough —
 postgres vacuums and analyzes all of its partitions, and collects the parent-level stats too.
 ```
 VACUUM (ANALYZE) name, name_usage_archive;
