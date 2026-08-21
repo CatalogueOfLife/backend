@@ -32,6 +32,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -146,14 +147,16 @@ public class UsageMatcherFactoryTest {
   }
 
   @Test
-  public void unpublishRemovesMatcher() throws Exception {
+  public void unpublishKeepsMatcherForOnDemandUse() throws Exception {
     var f = factory();
     stubUsageMapper(103, 5000, 4000);
     f.persistent(103);                          // create a matcher on disk + cache
     assertNotNull(f.get(103));
     f.datasetChanged(DatasetChanged.changed(
       dataset(103, DatasetOrigin.EXTERNAL, true), dataset(103, DatasetOrigin.EXTERNAL, false), 1));
-    assertNull(f.get(103));                      // removed
+    // going private no longer destroys the matcher - its editors & reviewers can still match against it
+    // and the reconcile TTL reaps it once nobody uses it any more
+    assertNotNull(f.get(103));
   }
 
   @Test
@@ -182,11 +185,23 @@ public class UsageMatcherFactoryTest {
   }
 
   @Test
-  public void dataChangedSkipsPrivate() {
+  public void dataChangedSkipsPrivateWithoutStore() {
     var f = factory();
-    stubDataChanged(302, 5000, dataset(302, DatasetOrigin.EXTERNAL, true)); // private → not served
+    // private and nobody ever matched against it → no matcher to keep up to date
+    stubDataChanged(302, 5000, dataset(302, DatasetOrigin.EXTERNAL, true));
     f.datasetDataChanged(new DatasetDataChanged(302, 1));
     verify(executor, never()).submit(any());
+  }
+
+  @Test
+  public void dataChangedRebuildsPrivateWithExistingStore() throws Exception {
+    var f = factory();
+    int key = 305;
+    stubDataChanged(key, 5000, dataset(key, DatasetOrigin.EXTERNAL, true));
+    f.persistent(key);   // an on demand matcher exists because someone matched against it
+    f.datasetDataChanged(new DatasetDataChanged(key, 1));
+    // a re-import must refresh it, otherwise it silently serves the previous attempt's data
+    verify(executor).submit(argThat(j -> j instanceof BackgroundJob));
   }
 
   @Test
@@ -277,6 +292,59 @@ public class UsageMatcherFactoryTest {
     var f = factory();
     f.runningBuilds.put(776, 1L); // a build owns the key; a second caller must not get null (-> NPE in MatchingJob)
     assertThrows(UnavailableException.class, () -> f.persistent(776));
+  }
+
+  @Test
+  public void existingOrPostgresSchedulesBuildAndThrowsForLargeDatasetWithoutStore() {
+    var f = factory();
+    stubUsageMapper(780, 5000, 4000);   // above threshold, nothing on disk yet
+    // scanning a large dataset live from postgres for every name is what the persistent store exists to
+    // avoid, so the first request schedules the build and 503s instead
+    assertThrows(UnavailableException.class, () -> f.existingOrPostgres(780));
+    verify(executor).submit(argThat(j -> j instanceof BackgroundJob));
+  }
+
+  @Test
+  public void existingOrPostgresStill503sWhenTheBuildCannotBeScheduled() {
+    var f = factory();
+    stubUsageMapper(783, 5000, 4000);
+    // JobExecutor rejects a build that is queued already, which is exactly what a user retrying the same
+    // match triggers. That must still read as "not ready yet", not as a server error.
+    doThrow(new IllegalArgumentException("An identical job is queued already")).when(executor).submit(any());
+    assertThrows(UnavailableException.class, () -> f.existingOrPostgres(783));
+  }
+
+  @Test
+  public void existingOrPostgresReturnsPostgresMatcherForSmallDataset() throws Exception {
+    var f = factory();
+    stubUsageMapper(781, 5, 5);         // below threshold → live postgres matching is cheap enough
+    UsageMatcher m = f.existingOrPostgres(781);
+    try {
+      assertNotNull(m);
+    } finally {
+      m.close();
+    }
+    verify(executor, never()).submit(any());
+  }
+
+  @Test
+  public void openPersistentTouchesSidecarAsLastUsedMarker() throws Exception {
+    var f = factory();
+    int key = 782;
+    stubUsageMapper(key, 3, 2);
+    f.persistent(key);                                  // builds + caches the store
+    File sidecar = new File(tmp.getRoot(), key + ".json");
+    Dataset stored = new Dataset();
+    stored.setKey(key);
+    stored.setAttempt(1);
+    DatasetJsonWriter.write(stored, sidecar);
+    long old = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(10);
+    assertTrue(sidecar.setLastModified(old));
+
+    f.openPersistent(key);                              // a match request against the cached matcher
+
+    // reconcile reads the sidecar mtime as the last-used marker, so serving a match must refresh it
+    assertTrue("openPersistent must refresh the sidecar mtime", sidecar.lastModified() > old);
   }
 
   @Test
@@ -392,6 +460,87 @@ public class UsageMatcherFactoryTest {
 
     f.reconcile(false, 1);
     verify(executor, never()).submit(any());
+  }
+
+  /**
+   * Creates an on-disk store dir + sidecar for a dataset that is NOT part of the published set, i.e. a matcher
+   * that only exists because someone matched against it. {@code lastUsedMillisAgo} backdates the sidecar mtime,
+   * which is the last-used marker reconcile ages on demand matchers out by.
+   */
+  private File onDemandStore(int key, ReconcileMocks m, Dataset current, int storedAttempt,
+                             LocalDateTime nidxCreated, long lastUsedMillisAgo) throws Exception {
+    File dir = new File(tmp.getRoot(), String.valueOf(key));
+    dir.mkdirs();
+    Dataset stored = new Dataset();
+    stored.setKey(key);
+    stored.setAttempt(storedAttempt);
+    ObjectNode node = ApiModule.MAPPER.valueToTree(stored);
+    node.put("nidxCreated", nidxCreated.toString());
+    File sidecar = new File(tmp.getRoot(), key + ".json");
+    ApiModule.MAPPER.writeValue(sidecar, node);
+    assertTrue(sidecar.setLastModified(System.currentTimeMillis() - lastUsedMillisAgo));
+    when(m.dm().get(key)).thenReturn(current);
+    return dir;
+  }
+
+  @Test
+  public void reconcileKeepsRecentlyUsedOnDemandMatcher() throws Exception {
+    var f = factory();
+    int key = 205;
+    var m = stubReconcile(List.of());   // private → never part of the published set
+    var nidx = LocalDateTime.of(2026, 7, 1, 0, 0);
+    var current = dataset(key, DatasetOrigin.EXTERNAL, true);
+    current.setAttempt(3);
+    File dir = onDemandStore(key, m, current, 3, nidx, TimeUnit.DAYS.toMillis(1));
+    when(m.num().count(key)).thenReturn(5000);   // above threshold
+    when(nameIndex.created()).thenReturn(nidx);
+
+    f.reconcile(false, 1);
+
+    assertTrue("a recently used on demand matcher must survive reconcile", dir.exists());
+    verify(executor, never()).submit(any());     // in sync → nothing to rebuild either
+  }
+
+  @Test
+  public void reconcileRemovesExpiredOnDemandMatcher() throws Exception {
+    var f = factory();
+    int key = 206;
+    var m = stubReconcile(List.of());
+    var current = dataset(key, DatasetOrigin.EXTERNAL, true);
+    current.setAttempt(3);
+    File dir = onDemandStore(key, m, current, 3, LocalDateTime.of(2026, 7, 1, 0, 0), TimeUnit.DAYS.toMillis(31));
+
+    f.reconcile(false, 1);
+
+    assertFalse("an on demand matcher unused past the TTL must be removed", dir.exists());
+  }
+
+  @Test
+  public void reconcileRemovesOnDemandMatcherOfDeletedDataset() throws Exception {
+    var f = factory();
+    int key = 207;
+    var m = stubReconcile(List.of());
+    var current = dataset(key, DatasetOrigin.EXTERNAL, true, LocalDateTime.now());
+    File dir = onDemandStore(key, m, current, 3, LocalDateTime.of(2026, 7, 1, 0, 0), TimeUnit.DAYS.toMillis(1));
+
+    f.reconcile(false, 1);
+
+    assertFalse("a deleted dataset keeps no matcher, however recently it was used", dir.exists());
+  }
+
+  @Test
+  public void reconcileRefreshesStaleOnDemandMatcher() throws Exception {
+    var f = factory();
+    int key = 208;
+    var m = stubReconcile(List.of());
+    var current = dataset(key, DatasetOrigin.EXTERNAL, true);
+    current.setAttempt(9);                       // the dataset was re-imported since the store was built
+    onDemandStore(key, m, current, 3, LocalDateTime.of(2026, 7, 1, 0, 0), TimeUnit.DAYS.toMillis(1));
+    when(m.num().count(key)).thenReturn(5000);
+
+    f.reconcile(false, 1);
+
+    verify(executor).submit(argThat(j -> j instanceof BackgroundJob));
   }
 
   /**

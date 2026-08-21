@@ -20,6 +20,13 @@ public class MatchingConfig {
   public int pgMatcherThreshold = 100;
 
   /**
+   * Days an on demand matcher — one that exists only because a user matched against a dataset the
+   * published invariant does not cover, e.g. a private dataset — is kept after it was last used.
+   * 0 or less disables the expiry and keeps such matchers indefinitely.
+   */
+  public int onDemandTtlDays = 30;
+
+  /**
    * Temporary folder for file uploads.
    */
   @NotNull

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -55,6 +56,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherFactory.class);
   /** Extra sidecar JSON property recording the names index {@link NameIndex#created()} the store was built against. */
   static final String NIDX_CREATED_FIELD = "nidxCreated";
+  /** Interval below which a repeated {@link #openPersistent(int)} does not rewrite the sidecar mtime again. */
+  private static final long TOUCH_INTERVAL_MS = TimeUnit.HOURS.toMillis(1);
   private volatile boolean started = false;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
@@ -115,8 +118,31 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   /**
    * Reopens the persisted chronicle store for a dataset from disk and caches it, or returns null
    * if there is no (or an empty/corrupt) store on disk. Concurrent callers share one instance.
+   * Serving a matcher marks it as used, see {@link #touchSidecar(int)}.
    */
   public UsageMatcher openPersistent(int datasetKey) throws IOException {
+    UsageMatcher m = openPersistentUntouched(datasetKey);
+    if (m != null) {
+      touchSidecar(datasetKey); // outside the per-dataset lock; a no-op stat on all but the first call per hour
+    }
+    return m;
+  }
+
+  /**
+   * Marks a store as used by refreshing its sidecar mtime, the last-used marker
+   * {@link #keepOnDemand(int)} ages on demand matchers out by. Rate limited to
+   * {@link #TOUCH_INTERVAL_MS} so a busy matcher does not rewrite it on every request.
+   */
+  private void touchSidecar(int datasetKey) {
+    if (dir == null) return;
+    File sidecar = cfg.datasetJson(datasetKey);
+    long now = System.currentTimeMillis();
+    if (sidecar.exists() && now - sidecar.lastModified() > TOUCH_INTERVAL_MS && !sidecar.setLastModified(now)) {
+      LOG.warn("Failed to refresh the last used marker on matcher sidecar {}", sidecar);
+    }
+  }
+
+  private UsageMatcher openPersistentUntouched(int datasetKey) throws IOException {
     UsageMatcher existing = matchers.get(datasetKey);
     // tryAcquire fails only if it was retired+closed between the lookup and the acquire → fall through to re-resolve
     if (existing != null && existing.tryAcquire()) return existing;
@@ -191,7 +217,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
 
   /**
    * Returns the persistent matcher (reopened from disk if needed), or a postgres matcher reading
-   * live data when no persistent store exists. All matchers must be closed after use.
+   * live data when no persistent store exists and the dataset is small enough to serve that way.
+   * All matchers must be closed after use.
    */
   public UsageMatcher existingOrPostgres(int datasetKey) throws IOException {
     UsageMatcher m = openPersistent(datasetKey);
@@ -199,6 +226,19 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     // a persistent matcher is being built for the first time and is not ready yet. Fail fast with a 503
     // instead of blocking a request thread or scanning the (large) dataset live from postgres.
     if (runningBuilds.containsKey(datasetKey)) {
+      throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
+    }
+    // a large dataset is exactly what the persistent store exists for, so schedule the build and make the
+    // caller retry rather than scanning it live per name. This is also how a dataset the published invariant
+    // does not cover - a private one - first gets a matcher: someone matches against it.
+    if (dir != null && !isSmallDataset(datasetKey)) {
+      try {
+        rebuild(datasetKey, Users.MATCHER);
+      } catch (RuntimeException e) {
+        // the executor rejects a build that is queued already - which is what a retry of this very request
+        // looks like - or the queue is full. Either way the caller simply has to come back later.
+        LOG.debug("Matcher build for dataset {} not scheduled: {}", datasetKey, e.getMessage());
+      }
       throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
     }
     return postgres(datasetKey);
@@ -421,13 +461,11 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     if (d.isDeletion()) {
       remove(d.key);
     } else if (d.isUpdated() && d.obj != null && d.old != null) {
-      boolean wasPublished = !d.old.isPrivat();
-      boolean isPublished = !d.obj.isPrivat();
-      if (!wasPublished && isPublished) {
+      if (d.old.isPrivat() && !d.obj.isPrivat()) {
         ensurePublishedMatcher(d.obj, d.user);
-      } else if (wasPublished && !isPublished) {
-        remove(d.key); // unpublished → drop matcher + sidecar
       }
+      // going private deliberately keeps the matcher: its editors & reviewers can still match against it
+      // and reconcile ages it out once nobody has used it for MatchingConfig.onDemandTtlDays
     }
   }
 
@@ -452,9 +490,12 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     try (SqlSession s = factory.openSession()) {
       d = s.getMapper(DatasetMapper.class).get(event.datasetKey);
     }
-    if (d == null || d.getDeleted() != null || d.isPrivat()) return; // only published, non-deleted
+    if (d == null || d.getDeleted() != null) return; // never for deleted datasets
     var origin = d.getOrigin();
     if (origin != DatasetOrigin.EXTERNAL && !origin.isRelease()) return;
+    // a private dataset gets a matcher on demand only, so refresh one that already exists - leaving it on the
+    // previous attempt would silently serve stale data - but never create one for every private import
+    if (d.isPrivat() && !matcherExists(event.datasetKey)) return;
     try {
       if (isSmallDataset(event.datasetKey)) {
         remove(event.datasetKey); // drop any stale persistent file; served live from postgres now
@@ -493,18 +534,25 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
         LOG.error("Failed to size dataset {} during reconcile", key, e);
       }
     }
-    // remove any on-disk matcher that should no longer exist: below threshold, unpublished, deleted, or out of scope
+    // an on-disk matcher the published invariant does not require exists because someone matched against it.
+    // Keep the ones still worth keeping and remove the rest: below threshold, deleted, out of scope or expired
+    var onDemand = new HashSet<Integer>();
     int removed = 0;
     for (int key : listFS()) {
-      if (!shouldHave.contains(key)) {
+      if (shouldHave.contains(key)) continue;
+      if (keepOnDemand(key)) {
+        onDemand.add(key);
+      } else {
         LOG.info("Reconcile: removing obsolete persistent matcher for dataset {}", key);
         remove(key);
         removed++;
       }
     }
-    // (re)build the matchers that are missing or stale
+    // (re)build the matchers that are missing or stale, on demand ones included so they never serve stale data
+    var refresh = new HashSet<>(shouldHave);
+    refresh.addAll(onDemand);
     int scheduled = 0;
-    for (int key : shouldHave) {
+    for (int key : refresh) {
       try {
         if (force || needsRebuild(key)) {
           rebuild(key, userKey);
@@ -514,8 +562,31 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
         LOG.error("Failed to reconcile matcher for dataset {}", key, e);
       }
     }
-    LOG.info("Reconcile removed {} obsolete and scheduled {} (re)builds (force={}); {} of {} published datasets in scope",
-      removed, scheduled, force, shouldHave.size(), published.size());
+    LOG.info("Reconcile removed {} obsolete and scheduled {} (re)builds (force={}); {} of {} published datasets in scope, plus {} on demand",
+      removed, scheduled, force, shouldHave.size(), published.size(), onDemand.size());
+  }
+
+  /**
+   * True for an on-disk matcher that the published invariant does not require but that is still worth keeping:
+   * it belongs to an existing, non deleted, in-scope dataset large enough to warrant a persistent store, and it
+   * was used within {@link MatchingConfig#onDemandTtlDays}. The sidecar mtime is the last-used marker, refreshed
+   * by {@link #touchSidecar(int)} whenever the matcher is served.
+   */
+  private boolean keepOnDemand(int datasetKey) {
+    Dataset d;
+    try (SqlSession s = factory.openSession()) {
+      d = s.getMapper(DatasetMapper.class).get(datasetKey);
+    }
+    if (d == null || d.getDeleted() != null) return false;
+    var origin = d.getOrigin();
+    if (origin == null || (origin != DatasetOrigin.EXTERNAL && !origin.isRelease())) return false;
+    if (cfg.onDemandTtlDays > 0) {
+      File sidecar = cfg.datasetJson(datasetKey);
+      long ttl = TimeUnit.DAYS.toMillis(cfg.onDemandTtlDays);
+      // no sidecar means we cannot tell when it was last used, so treat it as expired rather than keep it forever
+      if (!sidecar.exists() || System.currentTimeMillis() - sidecar.lastModified() > ttl) return false;
+    }
+    return !isSmallDataset(datasetKey);
   }
 
   /**

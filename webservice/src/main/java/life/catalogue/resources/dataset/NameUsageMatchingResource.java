@@ -45,7 +45,9 @@ public class NameUsageMatchingResource extends AbstractNameUsageMatchingResource
     try {
       exec.submit(job);
     } catch (RuntimeException e) {
-      job.releaseMatcher(); // submit rejected (duplicate / too many) → release the matcher lease, don't leak it
+      // submit rejected (duplicate / too many). The matcher is only acquired once the job runs, so this is
+      // normally a no-op - kept so the lease stays balanced whatever the job did before the throw.
+      job.releaseMatcher();
       throw e;
     }
     return job;
