@@ -97,12 +97,15 @@ public class NamesIndexCmdIT extends CmdTestBase {
       // "Poecile montan-" spelling/authorship/rank variants, each formerly its own two-tier row,
       // now collapsing to exactly one canonical row apiece.
       //
-      // 133 is the resulting distinct-canonical count under name-parser 5.0 (api 5.0.0-rc.1). It
+      // 134 is the resulting distinct-canonical count under name-parser 5.0.1 (rust engine 0.1.1). It
       // includes the identifier pseudo-names (BOLD:, UNITE SH...FU) which the parser now types as
       // NameType.IDENTIFIER -- these are indexed because IDENTIFIER is in
       // NameIndexImpl.INDEX_NAME_TYPES. PLACEHOLDER names (e.g. "Bryozoan indet. 1") stay excluded.
+      // It was 133 under 5.0.0 (rust 0.1.0): an informal phrase now swallows its whole verbatim
+      // tail including a trailing author citation, so "Balanus sp. Hoek, 1913" and "Balanus sp.
+      // Kolosvary, 1947" canonicalise to themselves instead of both collapsing onto "Balanus sp.".
       // Expect this to shift again if the parser's canonicalization or type classification changes.
-      assertEquals(133, cnt);
+      assertEquals(134, cnt);
     }
   }
 }
