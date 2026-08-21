@@ -168,10 +168,11 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       // ensure sector without subject is the only one
       if (subject == null) {
         if (s.getMode() == Sector.Mode.MERGE) {
-          // ensure there is only 1 merge sector without a subject per source dataset
+          // ensure there is only 1 merge sector without a subject per source dataset.
+          // Merge sectors with a subject from the same source are fine and must not block this!
           var other = mapper.listByDataset(s.getDatasetKey(), s.getSubjectDatasetKey(), Sector.Mode.MERGE);
-          if (other != null && !other.isEmpty()) {
-            throw new IllegalArgumentException("A merge sector in project " + s.getDatasetKey() + " without subject exists already");
+          if (other != null && other.stream().anyMatch(o -> o.getSubjectID() == null)) {
+            throw new IllegalArgumentException("A merge sector from source " + s.getSubjectDatasetKey() + " without subject exists already in project " + s.getDatasetKey());
           }
         } else if (s.getMode() == Sector.Mode.HIERARCHY) {
           // a project's higher classification can only be delegated to one target — enforce one HIERARCHY sector per project
