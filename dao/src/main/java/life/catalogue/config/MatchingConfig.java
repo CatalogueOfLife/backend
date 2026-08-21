@@ -41,7 +41,28 @@ public class MatchingConfig {
     return new File(storageDir, datasetKey + "");
   }
 
+  /**
+   * Name of the metadata sidecar inside a matcher store directory. It holds the dataset the store was
+   * built from - the attempt marker staleness is detected by - and its file modification time doubles as
+   * the last used marker for on demand matchers.
+   */
+  public static final String DATASET_JSON = "dataset.json";
+
+  /**
+   * The metadata sidecar of a dataset's matcher store. It lives inside the store directory so a build can
+   * write it before the directory is moved into place, making the swap a single atomic rename, and so the
+   * store directory is a self contained artifact that can be shipped to a matching server as is.
+   */
   public File datasetJson(int datasetKey) {
+    return datasetJson(dir(datasetKey));
+  }
+
+  public static File datasetJson(File storeDir) {
+    return new File(storeDir, DATASET_JSON);
+  }
+
+  /** Location the sidecar used to live at, next to the store directory. Only used to migrate it once. */
+  public File legacyDatasetJson(int datasetKey) {
     return new File(storageDir, datasetKey + ".json");
   }
 

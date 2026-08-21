@@ -155,6 +155,19 @@ All DAOs extend `DataEntityDao<Key, Entity, Mapper>`:
 **Name Index:**
 A pure `normalized-String → nidx-int` registry, not a cached copy of the names. Postgres `names_index(id, scientific_name, normalized UNIQUE)` is the single append-only source of truth — every row is a canonical name (rank `UNRANKED`, no authorship), and it is never updated in place: a new/changed canonical name always gets a new `id`. The in-memory `NameIndexStore` only holds the reverse lookup (`normalized` key → `nidx` id): a persistent Chronicle map in production, a heap `HashMap`/`ConcurrentHashMap` in tests. It is loaded incrementally at startup by catching up from `store.maxKey()` to Postgres's current max id (`NamesIndexMapper.processSince`), not a full reload. `NameIndex.match()` returns a bare `NameMatch{Integer nidx, boolean matched}` — there is no `IndexName` model, no MapDB store, no KryoPool registration, and no names-index-level `MatchType` anymore (all removed). EXACT/VARIANT are no longer computed by the nidx layer at all; they are computed at the USAGE layer by `UsageMatcher` from the live usage labels once a nidx match has narrowed candidates. Homonym separation (telling apart usages that share one canonical nidx but differ by author) also lives in `UsageMatcher`, unchanged: it compares the live usage authorship via `AuthorComparator` (with a lenient year comparison for year-only authorship) and the live ranks.
 
+**Usage Matcher Store:**
+Per-dataset store the `UsageMatcher` gets match candidates from, in three flavours behind `UsageMatcherStore`:
+`UsageMatcherFileStore` (persistent, the default for published datasets above `pgMatcherThreshold`),
+`UsageMatcherMemStore` (heap, used by the XRelease merge) and `UsageMatcherPgStore` (reads live Postgres, used by
+sector sync and small datasets). The file store is **sealed**: `UsageMatcherFileStoreBuilder` streams a load into
+temp files and `seal()` assembles three little-endian, memory mapped files (Java FFM, no Chronicle) in
+`MatchingConfig.dir(datasetKey)` - `usages.bin` (record blob + static id hash), `canonical.bin` (canonical nidx ->
+runs of usage slots) and the one mutable part, `groups.bin` (a `TaxGroup` byte per usage, written by `analyze()`).
+Afterwards `add()` throws; changed data means a rebuild into a temp dir that is swapped in atomically, sidecar
+(`dataset.json`, inside the store dir) included. There is no per-canonical fan-out cap: candidates are collected
+without walking their parents and only the survivors of the cheap filters resolve a classification
+(`LazyClassifiedUsage`).
+
 **Extended Release (XRelease):**
 The most complex pipeline in the codebase. Builds an extended release by merging external datasets (via sectors) into a base public release. 
 Uses a two-phase copy: base release → temporary project (for merging) → final release (with stable ID mapping). Key classes in `core/release/` and `core/assembly/`. 

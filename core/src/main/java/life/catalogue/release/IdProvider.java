@@ -17,7 +17,7 @@ import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.TaxGroupAnalyzer;
-import life.catalogue.matching.UsageMatcherChronicleStore;
+import life.catalogue.matching.UsageMatcherFileStoreBuilder;
 import life.catalogue.matching.UsageMatcherStore;
 import life.catalogue.release.ReleasedIds.ReleasedId;
 
@@ -489,23 +489,22 @@ public class IdProvider {
 
   private void mapIds(int minIdLength){
     int count;
-    List<SimpleNameCached> samples;
     try (SqlSession session = factory.openSession(true)) {
-      var num = session.getMapper(NameUsageMapper.class);
-      count = num.count(mappedDatasetKey);
-      samples = num.listSN(mappedDatasetKey, new Page(0, 10));
+      count = session.getMapper(NameUsageMapper.class).count(mappedDatasetKey);
     }
-    try (var tf = TempFile.directory();
-         // temporary, write-heavy id-mapping store - keep generous headroom for both maps
-         var store = UsageMatcherChronicleStore.build(mappedDatasetKey, tf.file, count+1000, count+1000, samples)
-    ) {
-      int cntLoaded = store.load(factory);
-      int cntStore = store.size();
-      if (cntStore != cntLoaded || cntStore != count) {
-        LOG.warn("Mismatch between counted, loaded and stored usage counts: {}/{}/{}", count, cntLoaded, cntStore);
+    try (var tf = TempFile.directory()) {
+      int cntLoaded;
+      try (var builder = new UsageMatcherFileStoreBuilder(mappedDatasetKey, tf.file)) {
+        cntLoaded = builder.load(factory);
+        try (var store = builder.seal()) {
+          int cntStore = store.size();
+          if (cntStore != cntLoaded || cntStore != count) {
+            LOG.warn("Mismatch between counted, loaded and stored usage counts: {}/{}/{}", count, cntLoaded, cntStore);
+          }
+          store.analyze(groupAnalyzer);
+          mapIds(store, minIdLength);
+        }
       }
-      store.analyze(groupAnalyzer);
-      mapIds(store, minIdLength);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

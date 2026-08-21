@@ -10,7 +10,6 @@ import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
@@ -99,8 +98,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     this.cfg = cfg;
   }
 
-  private UsageMatcherChronicleStore reopenStore(int datasetKey) throws IOException {
-    return UsageMatcherChronicleStore.reopen(datasetKey, cfg.dir(datasetKey));
+  private UsageMatcherFileStore reopenStore(int datasetKey) throws IOException {
+    return UsageMatcherFileStore.open(datasetKey, cfg.dir(datasetKey));
   }
 
   public NameIndex getNameIndex() {
@@ -156,7 +155,16 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     try {
       existing = matchers.get(datasetKey); // double-check under lock
       if (existing != null && existing.tryAcquire()) return existing;
-      var store = reopenStore(datasetKey);
+      UsageMatcherFileStore store;
+      try {
+        store = reopenStore(datasetKey);
+      } catch (IOException e) {
+        // files of an older format - every store on disk is one right after an upgrade - or a broken store.
+        // Report it as absent so the caller falls back or 503s and reconcile rebuilds it, rather than
+        // failing every match request until then.
+        LOG.warn("Cannot open the matcher store of dataset {}, it needs a rebuild: {}", datasetKey, e.getMessage());
+        return null;
+      }
       var m = new UsageMatcher(datasetKey, nameIndex, store, true);
       if (m.store().isEmpty()) {
         LOG.warn("Matcher for dataset {} is empty, delete storage files {}", datasetKey, cfg.dir(datasetKey));
@@ -273,26 +281,16 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   private UsageMatcher buildIntoTemp(int datasetKey, long token) throws IOException {
     File tmpDir = cfg.buildDir(datasetKey, token); // unique per build, so two builds never share a temp dir
     FileUtils.deleteQuietly(tmpDir);
-    UsageMatcher m;
-    try (SqlSession s = factory.openSession()) {
-      var num = s.getMapper(NameUsageMapper.class);
-      int count = num.count(datasetKey);
-      var samples = num.listSN(datasetKey, new Page(0, 5));
-      int canon = num.countDistinctCanonical(datasetKey);
-      long canonCount = canon + Math.max(1, canon / 100);
-      var store = UsageMatcherChronicleStore.build(datasetKey, tmpDir, count + 1, canonCount, samples);
-      m = new UsageMatcher(datasetKey, nameIndex, store, true);
-    }
-    try {
-      m.store().load(factory); // the long full-scan load; no lock held
-    } catch (RuntimeException | Error e) {
-      // the store was never handed out, so close it here - otherwise its mmap survives until the Cleaner
-      // reaps it and the half written build dir stays on disk for every failed build
-      m.store().close();
+    UsageMatcherFileStore store;
+    try (var builder = new UsageMatcherFileStoreBuilder(datasetKey, tmpDir)) {
+      builder.load(factory); // the long full-scan load; no lock held
+      store = builder.seal();
+    } catch (RuntimeException | Error | IOException e) {
+      // the half written build dir would otherwise stay on disk for every failed build
       FileUtils.deleteQuietly(tmpDir);
       throw e;
     }
-    return m;
+    return new UsageMatcher(datasetKey, nameIndex, store, true);
   }
 
   /**
@@ -301,15 +299,23 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
    * the store was built against, so a later names-index rebuild/swap can be detected as making this store
    * stale. The extra property is ignored when the file is read back as a plain {@link Dataset}.
    */
-  private void writeSidecar(int datasetKey, UsageMatcherStore store) {
+  private void writeSidecar(int datasetKey, UsageMatcherStore store, File storeDir) {
+    writeSidecar(factory, nameIndex, datasetKey, store.size(), storeDir);
+  }
+
+  /**
+   * Writes the sidecar into the given store directory. Called before the directory is moved into place, so
+   * data and metadata land together in a single rename.
+   */
+  public static void writeSidecar(SqlSessionFactory factory, NameIndex nameIndex, int datasetKey, int size, File storeDir) {
     try (var s = factory.openSession()) {
       Dataset d = s.getMapper(DatasetMapper.class).get(datasetKey);
       if (d != null) {
-        d.setSize(store.size()); // persist the matcher size so we can compare it to the DB size later if needed
+        d.setSize(size); // persist the matcher size so we can compare it to the DB size later if needed
         LocalDateTime nidxCreated = nameIndex.created();
         ObjectNode node = ApiModule.MAPPER.valueToTree(d);
         node.put(NIDX_CREATED_FIELD, nidxCreated.toString());
-        ApiModule.MAPPER.writeValue(cfg.datasetJson(datasetKey), node);
+        ApiModule.MAPPER.writeValue(MatchingConfig.datasetJson(storeDir), node);
         LOG.info("Wrote dataset sidecar for matcher {} with attempt {} and nidx created {}",
           datasetKey, d.getAttempt(), nidxCreated);
       }
@@ -341,6 +347,11 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       File backup = cfg.backupDir(datasetKey, token);
       FileUtils.deleteQuietly(backup);
       boolean hadFinal = finalDir.isDirectory();
+      // the sidecar goes into the build dir BEFORE the move, so data and metadata land in one rename and a
+      // crash can never leave new files described by an old sidecar
+      writeSidecar(datasetKey, fresh.store(), cfg.buildDir(datasetKey, token));
+      // an on demand matcher is aged out by the sidecar mtime, so a rebuild must not look like a use
+      long lastUsed = hadFinal ? cfg.datasetJson(datasetKey).lastModified() : 0;
       if (hadFinal) {
         FileUtils.moveDirectory(finalDir, backup); // park the old files; the old store keeps them via its mmap
       }
@@ -359,7 +370,22 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
         FileUtils.deleteQuietly(cfg.buildDir(datasetKey, token));
         throw e;
       }
-      writeSidecar(datasetKey, fresh.store());
+      File sidecar = cfg.datasetJson(datasetKey);
+      if (!sidecar.exists() && hadFinal) {
+        // the sidecar write above found no dataset or failed - keep the previous metadata rather than none,
+        // otherwise the store looks stale forever and an on demand matcher loses its last used marker
+        File previous = MatchingConfig.datasetJson(backup);
+        if (previous.isFile()) {
+          try {
+            FileUtils.moveFile(previous, sidecar);
+          } catch (IOException e) {
+            LOG.warn("Failed to keep the previous sidecar of dataset {}", datasetKey, e);
+          }
+        }
+      }
+      if (lastUsed > 0 && sidecar.isFile() && !sidecar.setLastModified(lastUsed)) {
+        LOG.warn("Failed to carry the last used marker over to the rebuilt matcher of dataset {}", datasetKey);
+      }
       UsageMatcher old = matchers.put(datasetKey, fresh);
       if (old != null) {
         old.retire(); // closes its store once the last in-flight consumer (e.g. a long MatchingJob) releases it
@@ -409,11 +435,29 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     return m;
   }
 
-  public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, long canonCount, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
+  /**
+   * Builds a persistent matcher straight into its final directory, rematching every usage against the given
+   * names index, and writes the metadata sidecar next to the store files. Used to prepare the index a
+   * matching server serves from; the running service uses the build-into-temp-and-swap path instead.
+   */
+  public static UsageMatcher buildPersistentMatcher(int datasetKey, MatchingConfig cfg, NameIndex nameIndex,
+                                                    SqlSessionFactory factory) throws IOException {
     var f = cfg.dir(datasetKey);
-    LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
-    var store = UsageMatcherChronicleStore.build(datasetKey, f, maxUsages, canonCount, samples);
+    LOG.info("Build new persistent matcher for dataset {} at {}", datasetKey, f);
+    UsageMatcherFileStore store;
+    try (var builder = new UsageMatcherFileStoreBuilder(datasetKey, f)) {
+      builder.load(factory, nameIndex);
+      store = builder.seal();
+    }
+    writeSidecar(factory, nameIndex, datasetKey, store.size(), f);
     return new UsageMatcher(datasetKey, nameIndex, store, true);
+  }
+
+  /** Opens a prebuilt persistent matcher from disk without any database access. */
+  public static UsageMatcher openPersistentMatcher(int datasetKey, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
+    var f = cfg.dir(datasetKey);
+    LOG.info("Open persistent matcher for dataset {} at {}", datasetKey, f);
+    return new UsageMatcher(datasetKey, nameIndex, UsageMatcherFileStore.open(datasetKey, f), true);
   }
 
   public UsageMatcher memory(int datasetKey) {
@@ -603,6 +647,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
    */
   private boolean needsRebuild(int datasetKey) {
     if (!cfg.dir(datasetKey).isDirectory()) return true;
+    // files written by an older version of the store, e.g. the previous chronicle based one
+    if (!UsageMatcherFileStore.isStore(cfg.dir(datasetKey))) return true;
     Integer stored = readStoredAttempt(datasetKey);
     Integer current;
     try (SqlSession s = factory.openSession()) {
@@ -638,8 +684,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       m.retire(); // closes its store once the last in-flight consumer releases it
     }
     if (dir != null) {
-      FileUtils.deleteQuietly(cfg.dir(datasetKey));
-      FileUtils.deleteQuietly(cfg.datasetJson(datasetKey));
+      FileUtils.deleteQuietly(cfg.dir(datasetKey)); // the sidecar lives inside and goes with it
     }
   }
 
@@ -673,6 +718,42 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       }
     }
     return null;
+  }
+
+  /**
+   * Moves sidecars written next to a store directory by an earlier version into the store directory itself.
+   * The mtime must survive the move: it is the last used marker {@link #keepOnDemand(int)} ages on demand
+   * matchers out by, so dropping it would have reconcile reap every one of them.
+   */
+  private void migrateLegacySidecars() {
+    int moved = 0;
+    for (int key : listFS()) {
+      File legacy = cfg.legacyDatasetJson(key);
+      File target = cfg.datasetJson(key);
+      if (legacy.isFile() && !target.exists()) {
+        long lastUsed = legacy.lastModified();
+        try {
+          FileUtils.moveFile(legacy, target);
+          if (!target.setLastModified(lastUsed)) {
+            LOG.warn("Failed to preserve the last used marker of migrated sidecar {}", target);
+          }
+          moved++;
+        } catch (IOException e) {
+          LOG.warn("Failed to migrate sidecar {} into the store dir", legacy, e);
+        }
+      }
+    }
+    // whatever is left has no store dir any more and was leaked by an interrupted removal
+    String[] names = dir.list((d, name) -> name.endsWith(".json"));
+    if (names != null) {
+      for (String n : names) {
+        LOG.info("Removing orphaned matcher sidecar {}", n);
+        FileUtils.deleteQuietly(new File(dir, n));
+      }
+    }
+    if (moved > 0) {
+      LOG.info("Migrated {} matcher sidecars into their store directory", moved);
+    }
   }
 
   /** Removes stray {@code .building}/{@code .old} dirs left behind by a crashed or interrupted swap. */
@@ -710,6 +791,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     started = true;
     if (dir != null) {
       cleanupTempDirs(); // remove crash-leftover .building/.old dirs at startup, before any builds run
+      migrateLegacySidecars(); // must run before reconcile, or on demand matchers lose their last used marker
       executor.submit(new ReconcileJob(Users.MATCHER));
     }
   }
