@@ -53,26 +53,35 @@ public class WsServerConfigTest {
     System.out.println(version);
   }
 
+  /**
+   * @return the local environment config of that name, or null if it is not present
+   */
   private static File envConfig(String name) {
     File f = new File(name);
     if (!f.exists()) {
       f = new File("webservice", name); // when run from the reactor root
     }
-    assertTrue("missing " + name, f.exists());
-    return f;
+    return f.exists() ? f : null;
   }
 
   /**
-   * The shipped environment configs must stay in sync with the config classes.
+   * Checks the local environment configs against the config classes.
    * The yaml factory silently ignores unknown properties, so a setting that moved in java but was left behind
    * in one of these files would be dropped without a word - which is how an import lane silently falls back to
    * a single thread. Assert on the parsed yaml tree instead of trusting the binding.
+   * <p>
+   * These files are gitignored (see .gitignore "webservice/config-*.yaml"), so they exist only on a developer
+   * machine and this check is skipped entirely on CI and on a fresh clone. It is a local convenience, NOT
+   * coverage - the authoritative deploy configs live in the deploy repo and are not verified by anything here.
    */
   @Test
   public void environmentConfigsMatchConfigClasses() throws Exception {
     final ObjectMapper yaml = new ObjectMapper(new YAMLFactory());
     for (String name : new String[]{"config-prod.yaml", "config-dev.yaml", "config-local.yaml"}) {
       File f = envConfig(name);
+      if (f == null) {
+        continue; // not a tracked file - absent on CI and fresh clones
+      }
       // it must bind cleanly...
       WsServerConfig cfg = factory.build(path -> new FileInputStream(f), name);
       assertNotNull(name, cfg.job);
