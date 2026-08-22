@@ -2,7 +2,9 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ExportSearchRequest;
+import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.api.vocab.Users;
@@ -108,7 +110,22 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
 
   @Override
   DatasetExport createTestEntity(int datasetKey) {
-    return create(JobStatus.FINISHED);
+    DatasetExport d = create(JobStatus.FINISHED);
+    // the generic export lifecycle lives in a joined job record - create it so get/search find the export
+    createJob(d);
+    return d;
+  }
+
+  private void createJob(DatasetExport d) {
+    JobInfo j = new JobInfo();
+    j.setKey(d.getKey());
+    j.setJob("DatasetExportJob");
+    j.setStatus(d.getStatus());
+    j.setPriority(JobPriority.LOW);
+    j.setDatasetKey(d.getRequest().getDatasetKey());
+    j.setCreatedBy(d.getCreatedBy());
+    j.setCreated(d.getCreated());
+    session().getMapper(JobMapper.class).create(j);
   }
 
   @Override

@@ -6,7 +6,7 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.concurrent.DatasetBlockingJob;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 

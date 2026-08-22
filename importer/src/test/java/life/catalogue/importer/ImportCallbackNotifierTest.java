@@ -2,7 +2,7 @@ package life.catalogue.importer;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DatasetImport;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.config.ImporterConfig;
 
 import java.io.InputStream;
@@ -28,7 +28,7 @@ public class ImportCallbackNotifierTest {
     DatasetImport di = new DatasetImport();
     di.setDatasetKey(1000);
     di.setAttempt(3);
-    di.setState(ImportState.FINISHED);
+    di.setStatus(JobStatus.FINISHED);
     return di;
   }
 

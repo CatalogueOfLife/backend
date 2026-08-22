@@ -1,5 +1,7 @@
 package life.catalogue.concurrent;
 
+import life.catalogue.api.vocab.JobPriority;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.util.LoggingUtils;

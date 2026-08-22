@@ -2,7 +2,7 @@ package life.catalogue.gbifsync;
 
 import life.catalogue.api.model.Publisher;
 import life.catalogue.concurrent.GlobalBlockingJob;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.PublisherMapper;
 

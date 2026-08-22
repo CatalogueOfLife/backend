@@ -2,16 +2,20 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.ExportSearchRequest;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetExportMapper;
+import life.catalogue.db.mapper.JobMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -61,6 +65,33 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
       }
       return null;
     }
+  }
+
+  /**
+   * Exports created directly via this dao instead of through the job executor still need a job record,
+   * so their generic lifecycle (status, timestamps, user, result file) is queryable via the key join.
+   * The executor driven export flow inserts the export via the mapper and creates the job itself, so it never gets here.
+   */
+  @Override
+  protected boolean createAfter(DatasetExport obj, int user, DatasetExportMapper mapper, SqlSession session) {
+    JobMapper jm = session.getMapper(JobMapper.class);
+    if (jm.get(obj.getKey()) == null) {
+      JobInfo j = new JobInfo();
+      j.setKey(obj.getKey());
+      j.setJob("DatasetExportJob");
+      j.setStatus(obj.getStatus() == null ? JobStatus.FINISHED : obj.getStatus());
+      j.setPriority(JobPriority.LOW);
+      j.setDatasetKey(obj.getRequest() == null ? null : obj.getRequest().getDatasetKey());
+      j.setCreatedBy(obj.getCreatedBy() == null ? user : obj.getCreatedBy());
+      j.setCreated(obj.getCreated() == null ? LocalDateTime.now() : obj.getCreated());
+      j.setStarted(obj.getStarted());
+      j.setFinished(obj.getFinished());
+      j.setError(obj.getError());
+      j.setResultMd5(obj.getMd5());
+      j.setResultSize(obj.getSize());
+      jm.create(j);
+    }
+    return true;
   }
 
   @Override

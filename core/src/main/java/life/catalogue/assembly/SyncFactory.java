@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.dao.EstimateDao;
+import life.catalogue.dao.JobDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.indexing.NameUsageIndexService;
@@ -41,6 +42,7 @@ public class SyncFactory {
   private final EventBroker bus;
   private final IdentifierScopeResolver scopeResolver;
   private final LatestDatasetKeyCache latestKeyCache;
+  private @Nullable JobDao jobDao;
 
   public SyncFactory(SqlSessionFactory factory, UsageMatcherFactory matcherFactory, NameIndex nameIndex,
                      SectorDao sd, SectorImportDao sid, EstimateDao estimateDao,
@@ -62,10 +64,10 @@ public class SyncFactory {
   /**
    * Creates a new sync into a project dataset using a direct postgres matcher with the tree merge handlers write batch session.
    */
-  public SectorSync project(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
+  public SectorSync project(DSID<Integer> sectorKey, @Nullable SyncCounter counter, int user) throws IllegalArgumentException {
     return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex,
       supplyPgMatcher(sectorKey.getDatasetKey()), bus, indexService, sd, sid, estimateDao,
-      successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, scopeResolver, user);
+      counter, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, scopeResolver, user);
   }
 
   private Function<SqlSession, UsageMatcher> supplyPgMatcher(int datasetKey) {
@@ -79,27 +81,38 @@ public class SyncFactory {
                             Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen, int user) throws IllegalArgumentException {
     Preconditions.checkArgument(releaseDatasetKey == matcher.getDatasetKey(), "Matcher and release dataset key must be the same");
     return new SectorSync(sectorKey, releaseDatasetKey, false, cfg, factory, nameIndex, session -> matcher, bus, indexService, sd, sid, estimateDao,
-      x -> {}, (s,e) -> LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e),
-      nameIdGen, typeMaterialIdGen, usageIdGen, scopeResolver, user);
+      null, nameIdGen, typeMaterialIdGen, usageIdGen, scopeResolver, user);
   }
 
   /**
    * Creates a new hierarchy sync that delegates the higher classification of a project to a target taxonomy.
    * The sector must be in {@link life.catalogue.api.model.Sector.Mode#HIERARCHY} mode.
    */
-  public HierarchySync hierarchy(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
+  public HierarchySync hierarchy(DSID<Integer> sectorKey, @Nullable SyncCounter counter, int user) throws IllegalArgumentException {
     return new HierarchySync(sectorKey, factory,
       supplyPgMatcher(sectorKey.getDatasetKey()),
       (dk, sess) -> matcherFactory.postgres(dk, sess),
-      latestKeyCache, bus, indexService, sd, sid, successCallback, errorCallback, scopeResolver, user);
+      latestKeyCache, bus, indexService, sd, sid, counter, scopeResolver, user);
   }
 
-  public SectorDelete delete(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    return new SectorDelete(sectorKey, factory, indexService, sd, sid, bus, successCallback, errorCallback, user);
+  public SectorDelete delete(DSID<Integer> sectorKey, @Nullable SyncCounter counter, int user) throws IllegalArgumentException {
+    return new SectorDelete(sectorKey, factory, indexService, sd, sid, bus, counter, user);
   }
 
-  public SectorDeleteFull deleteFull(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    return new SectorDeleteFull(sectorKey, factory, indexService, bus, sd, sid, successCallback, errorCallback, user);
+  public SectorDeleteFull deleteFull(DSID<Integer> sectorKey, @Nullable SyncCounter counter, int user) throws IllegalArgumentException {
+    return new SectorDeleteFull(sectorKey, factory, indexService, bus, sd, sid, counter, user);
+  }
+
+  public void setJobDao(@Nullable JobDao jobDao) {
+    this.jobDao = jobDao;
+  }
+
+  /**
+   * @return the job dao to persist job records for embedded syncs run outside of the executor. Can be null.
+   */
+  @Nullable
+  public JobDao getJobDao() {
+    return jobDao;
   }
 
   public void assertComponentsOnline() {

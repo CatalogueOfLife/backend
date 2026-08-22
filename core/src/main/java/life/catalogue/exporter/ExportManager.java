@@ -6,6 +6,7 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
@@ -13,10 +14,14 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.es.search.NameUsageSearchService;
 import life.catalogue.img.ImageService;
 
+import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -34,16 +39,21 @@ public class ExportManager implements DatasetListener {
   private final JobExecutor executor;
   private final DatasetExportDao dao;
   private final DatasetImportDao diDao;
+  private final NameUsageSearchService searchService;
+  private final @Nullable URI clbURI;
   private final AtomicBoolean blocked = new AtomicBoolean(false);
 
   public ExportManager(ExporterConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService,
-                       DatasetExportDao exportDao, DatasetImportDao diDao) {
+                       DatasetExportDao exportDao, DatasetImportDao diDao,
+                       NameUsageSearchService searchService, @Nullable URI clbURI) {
     this.cfg = cfg;
     this.factory = factory;
     this.executor = executor;
     this.imageService = imageService;
     dao = exportDao;
     this.diDao = diDao;
+    this.searchService = searchService;
+    this.clbURI = clbURI;
   }
 
   /**
@@ -87,6 +97,20 @@ public class ExportManager implements DatasetListener {
     }
     DatasetExportJob job = buildExportJob(req, userKey);
     return submit(job);
+  }
+
+  /**
+   * Submits a new job that exports the result of a name usage search as a ColDP archive, reading from Elasticsearch only.
+   * @return the key of the submitted job, used to track and download the result
+   */
+  public UUID submitSearch(int datasetKey, NameUsageSearchRequest searchRequest, int userKey) throws IllegalArgumentException {
+    if (blocked.get()) {
+      throw new UnavailableException("New export requests are currently not accepted.");
+    }
+    var job = new SearchExport(datasetKey, searchRequest, userKey, searchService, factory, cfg.getNormalizerConfig(), clbURI);
+    executor.submit(job);
+    LOG.info("Submitted search export {} for dataset {} by user {}", job.getKey(), datasetKey, userKey);
+    return job.getKey();
   }
 
   private DatasetExportJob buildExportJob(ExportRequest req, int userKey) {

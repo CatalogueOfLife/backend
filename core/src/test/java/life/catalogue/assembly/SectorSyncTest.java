@@ -101,7 +101,7 @@ public class SectorSyncTest {
     }
 
     //PrinterUtils.print(Datasets.COL, true, SqlSessionFactoryRule.getSqlSessionFactory());
-    SectorSync ss = SyncFactoryRule.getFactory().project(sector, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR.getKey());
+    SectorSync ss = SyncFactoryRule.getFactory().project(sector, null, TestEntityGenerator.USER_EDITOR.getKey());
     ss.run();
     //PrinterUtils.print(Datasets.COL, true, SqlSessionFactoryRule.getSqlSessionFactory());
 
@@ -144,24 +144,8 @@ public class SectorSyncTest {
       sm.update(sector);
     }
 
-    ss = SyncFactoryRule.getFactory().project(sector, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR.getKey());
+    ss = SyncFactoryRule.getFactory().project(sector, null, TestEntityGenerator.USER_EDITOR.getKey());
     ss.run();
   }
   
-  /**
-   * We use old school callbacks here as you cannot easily cancel CopletableFutures.
-   */
-  static void successCallBack(SectorRunnable sync) {
-    System.out.println("Sector Sync success");
-  }
-  
-  /**
-   * We use old school callbacks here as you cannot easily cancel CopletableFutures.
-   */
-  static void errorCallBack(SectorRunnable sync, Exception err) {
-    System.out.println("Sector Sync failed:");
-    err.printStackTrace();
-    fail("Sector sync failed");
-  }
-
 }

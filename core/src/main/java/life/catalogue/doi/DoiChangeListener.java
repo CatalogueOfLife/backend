@@ -9,7 +9,7 @@ import life.catalogue.api.event.DoiListener;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.HasID;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.cache.ObjectCache;
 import life.catalogue.cache.ObjectCacheMapDB;
@@ -152,8 +152,8 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
           throw new DoiException(doi, "Can't find the metadata for dataset import " + key);
         }
         d.setVersionDoi(doi);
-        var prevImp = dim.getLast(key.getDatasetKey(), key.getId(), ImportState.FINISHED);
-        var nextImp = dim.getNext(key.getDatasetKey(), key.getId(), ImportState.FINISHED);
+        var prevImp = dim.getLast(key.getDatasetKey(), key.getId(), JobStatus.FINISHED);
+        var nextImp = dim.getNext(key.getDatasetKey(), key.getId(), JobStatus.FINISHED);
         DOI prev = prevImp == null ? null : cfg.datasetVersionDOI(d.getKey(), prevImp.getAttempt());
         DOI next = nextImp == null ? null : cfg.datasetVersionDOI(d.getKey(), nextImp.getAttempt());
         return converter.datasetVersion(d, prev, next);

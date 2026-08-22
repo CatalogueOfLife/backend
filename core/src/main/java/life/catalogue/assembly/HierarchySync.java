@@ -190,11 +190,10 @@ public class HierarchySync extends SectorRunnable {
                 NameUsageIndexService indexService,
                 SectorDao sdao,
                 SectorImportDao sid,
-                Consumer<SectorRunnable> successCallback,
-                BiConsumer<SectorRunnable, Exception> errorCallback,
+                @Nullable SyncCounter counter,
                 @Nullable IdentifierScopeResolver scopeResolver,
                 int user) throws IllegalArgumentException {
-    super(sectorKey, true, factory, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
+    super(sectorKey, true, factory, indexService, sdao, sid, bus, counter, true, user);
     if (sector.getMode() != Sector.Mode.HIERARCHY) {
       throw new IllegalArgumentException("HierarchySync requires a sector with mode HIERARCHY, got " + sector.getMode());
     }
@@ -247,7 +246,7 @@ public class HierarchySync extends SectorRunnable {
       this.sourceCache = cache;
       this.sourceLoader = new CacheLoader.MybatisSession(loaderSession, sourceDatasetKey);
 
-      state.setState(ImportState.DELETING);
+      setStep(ImportState.DELETING);
       deleteOld();
       checkIfCancelled();
 
@@ -257,19 +256,19 @@ public class HierarchySync extends SectorRunnable {
       }
       LOG.info("Hierarchy sector {}: starting new verbatim source ids from {}", sectorKey, vsIdGen);
 
-      state.setState(ImportState.INSERTING);
+      setStep(ImportState.INSERTING);
       syncHigherClassification();
       checkIfCancelled();
 
-      state.setState(ImportState.MATCHING);
+      setStep(ImportState.MATCHING);
       realignStatus();
       checkIfCancelled();
 
-      state.setState(ImportState.INSERTING);
+      setStep(ImportState.INSERTING);
       copySynonymies();
       checkIfCancelled();
 
-      state.setState(ImportState.INSERTING);
+      setStep(ImportState.INSERTING);
       enrichAuthorship();
       checkIfCancelled();
     } finally {

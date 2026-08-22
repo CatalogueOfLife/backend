@@ -2,7 +2,7 @@ package life.catalogue.jobs;
 
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.TaxonMetricsBuilder;
 

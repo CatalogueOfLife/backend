@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.Resources;
+import life.catalogue.concurrent.JobConfig;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -34,6 +35,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +54,9 @@ import static org.junit.Assert.*;
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerTest.class);
+  // distinctive values so we can tell them apart from any config default
+  private static final int IMPORT_THREADS = 3;
+  private static final int IMPORT_QUEUE = 137;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -59,11 +65,12 @@ public class ImportManagerTest {
   public TestDataRule testDataRule = TestDataRule.empty();
 
   ImportManager manager;
+  JobExecutor jobExecutor;
   int datasetKey;
 
   CloseableHttpClient hc;
   @Mock
-  JobExecutor jobExecutor;
+  UserCrudDao udao;
   @Mock
   ImageServiceFS imgService;
   @Mock
@@ -95,6 +102,11 @@ public class ImportManagerTest {
     MetricRegistry metrics = new MetricRegistry();
     final TestConfigs cfg = TestConfigs.build();
     hc = HttpClients.createDefault();
+    doReturn(TestEntityGenerator.USER_ADMIN).when(udao).get(any());
+    JobConfig jobCfg = JobConfig.withThreads(2);
+    jobCfg.importThreads = IMPORT_THREADS;
+    jobCfg.importQueue = IMPORT_QUEUE;
+    jobExecutor = new JobExecutor(jobCfg, metrics, null, udao, null);
     manager = new ImportManager(cfg.importer, cfg.normalizer, cfg.doi, metrics, hc, broker, SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
       diDao, datasetDao, sDao, dDao, indexService, imgService, jobExecutor, validator, null, null, null);
     manager.start();
@@ -104,7 +116,17 @@ public class ImportManagerTest {
   public void shutdown() throws Exception {
     LOG.warn("Shutting down test");
     manager.stop();
+    jobExecutor.stop();
     hc.close();
+  }
+
+  /**
+   * The import lane is sized by the job config alone - the importer config must not carry a second,
+   * competing thread/queue setting that silently wins or loses.
+   */
+  @Test
+  public void laneSizingComesFromJobConfig() {
+    assertEquals(IMPORT_QUEUE, manager.maxQueue());
   }
 
   @Test

@@ -229,6 +229,7 @@ public class TaxonomicAlignJob extends BackgroundJob {
     return "taxalign";
   }
 
+  @Override
   public JobResult getResult() {
     return result;
   }

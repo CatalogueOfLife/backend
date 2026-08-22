@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.*;
@@ -181,7 +182,7 @@ public abstract class SectorSyncTestBase {
    * which normally is restricted to release based merges, but allows us to test incertae sedis placements.
    */
   public static SectorImport sync(Sector s, @Nullable TreeMergeHandlerConfig mergeCfg) {
-    SectorSync ss = SyncFactoryRule.getFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER.getKey());
+    SectorSync ss = SyncFactoryRule.getFactory().project(s, null, TestDataRule.TEST_USER.getKey());
     if (s.getNote() != null && s.getNote().contains("disableAutoBlocking")) {
       ss.setDisableAutoBlocking(true);
     }
@@ -198,19 +199,19 @@ public abstract class SectorSyncTestBase {
   private static SectorImport runSync(SectorSync ss) {
     System.out.println("\n*** SECTOR " + ss.sector.getMode() + " SYNC " + ss.sectorKey + " ***");
     ss.run();
-    if (ss.getState().getState() != ImportState.FINISHED){
+    if (ss.getStatus() != JobStatus.FINISHED){
       throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
     }
     return ss.getState();
   }
   void deleteFull(Sector s) {
-    SectorDeleteFull sd = SyncFactoryRule.getFactory().deleteFull(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER.getKey());
+    SectorDeleteFull sd = SyncFactoryRule.getFactory().deleteFull(s, null, TestDataRule.TEST_USER.getKey());
     System.out.println("\n*** SECTOR FULL DELETION " + s.getKey() + " ***");
     sd.run();
   }
 
   void delete(Sector s) {
-    SectorDelete sd = SyncFactoryRule.getFactory().delete(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER.getKey());
+    SectorDelete sd = SyncFactoryRule.getFactory().delete(s, null, TestDataRule.TEST_USER.getKey());
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();
   }

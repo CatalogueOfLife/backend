@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.JobStatus;
 
 import life.catalogue.api.vocab.area.Gazetteer;
 import org.gbif.nameparser.api.NameType;
@@ -12,6 +13,7 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,14 +30,24 @@ public class ImportMetrics implements ImportAttempt {
   private int attempt;
 
   /**
+   * Key of the background job that created this import, linking to the generic job table.
+   */
+  private UUID jobKey;
+
+  /**
    * Specific job that created the import, i.e. job class that generated this import
    */
   private String job;
 
   /**
-   * State of the import, e.g. indicating if still running, success or failure.
+   * Status of the job that runs or ran this import, read from the linked job record.
    */
-  private ImportState state;
+  private JobStatus status;
+
+  /**
+   * Free text step of a running import job, read from the linked job record.
+   */
+  private String step;
 
   /**
    * Time the import command started
@@ -92,9 +104,17 @@ public class ImportMetrics implements ImportAttempt {
   public Integer getDatasetKey() {
     return datasetKey;
   }
-  
+
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
+  }
+
+  public UUID getJobKey() {
+    return jobKey;
+  }
+
+  public void setJobKey(UUID jobKey) {
+    this.jobKey = jobKey;
   }
   
   @Override
@@ -107,12 +127,20 @@ public class ImportMetrics implements ImportAttempt {
     this.attempt = attempt;
   }
   
-  public ImportState getState() {
-    return state;
+  public JobStatus getStatus() {
+    return status;
   }
-  
-  public void setState(ImportState state) {
-    this.state = state;
+
+  public void setStatus(JobStatus status) {
+    this.status = status;
+  }
+
+  public String getStep() {
+    return step;
+  }
+
+  public void setStep(String step) {
+    this.step = step;
   }
   
   @Override
@@ -580,8 +608,10 @@ public class ImportMetrics implements ImportAttempt {
     ImportMetrics that = (ImportMetrics) o;
     return attempt == that.attempt &&
       Objects.equals(datasetKey, that.datasetKey) &&
+      Objects.equals(jobKey, that.jobKey) &&
       Objects.equals(job, that.job) &&
-      state == that.state &&
+      status == that.status &&
+      Objects.equals(step, that.step) &&
       Objects.equals(started, that.started) &&
       Objects.equals(finished, that.finished) &&
       Objects.equals(createdBy, that.createdBy) &&
@@ -628,7 +658,7 @@ public class ImportMetrics implements ImportAttempt {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
+    return Objects.hash(datasetKey, attempt, jobKey, job, status, step, started, finished, createdBy, error,
       nameCount, nameMatchesCount, taxonCount, synonymCount, bareNameCount, referenceCount,
       typeMaterialCount, distributionCount, estimateCount, mediaCount, treatmentCount, vernacularCount,
       sectorCount, ignoredByReasonCount, appliedDecisionCount,
@@ -643,7 +673,7 @@ public class ImportMetrics implements ImportAttempt {
   @Override
   public String toString() {
     return getClass().getSimpleName() + "{" + job + " " + attempt() +
-      ": " + state +
+      ": " + status +
       ", started=" + started +
       ", finished=" + finished +
       ", names=" + nameCount +

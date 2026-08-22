@@ -23,7 +23,7 @@ import life.catalogue.common.io.LineReader;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.doi.DoiChangeListener;
 import life.catalogue.dw.auth.Roles;
@@ -325,13 +325,13 @@ public class AdminResource {
   @POST
   @Path("/reimport")
   public BackgroundJob reimport(@Auth User user) {
-    return runJob(new ReimportJob(user, factory, importManager, cfg.importer, cfg.normalizer));
+    return runJob(new ReimportJob(user, factory, importManager, cfg.normalizer));
   }
 
   @POST
   @Path("/importArticles")
   public BackgroundJob scheduleArticleImports(@Auth User user) {
-    return runJob(new ImportArticleJob(user, factory, importManager, cfg.importer));
+    return runJob(new ImportArticleJob(user, factory, importManager));
   }
 
   @POST

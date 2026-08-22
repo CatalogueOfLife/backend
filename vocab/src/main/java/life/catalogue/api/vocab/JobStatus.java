@@ -38,4 +38,18 @@ public enum JobStatus {
   public boolean isDone() {
     return this != WAITING && this != BLOCKED && this != RUNNING;
   }
+
+  /**
+   * @return true if the job is currently being executed
+   */
+  public boolean isRunning() {
+    return this == RUNNING;
+  }
+
+  /**
+   * @return true if the job still waits for execution
+   */
+  public boolean isQueued() {
+    return this == WAITING || this == BLOCKED;
+  }
 }

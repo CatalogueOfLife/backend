@@ -5,7 +5,10 @@
 <mapper namespace="life.catalogue.db.mapper.SectorImportMapper">
 
   <sql id="SELECT">
-    si.state,
+    j.status,
+    j.step,
+    j.job_class AS job,
+    j.error,
     si.dataset_key,
     si.sector_key,
     si.attempt,
@@ -17,7 +20,6 @@
   </sql>
 
   <sql id="COLS">
-    state,
     dataset_key,
     sector_key,
     dataset_attempt,
@@ -28,7 +30,6 @@
   </sql>
 
   <sql id="PROPS">
-    #{imp.state}::IMPORTSTATE,
     #{imp.datasetKey},
     #{imp.sectorKey},
     #{imp.datasetAttempt},
@@ -37,7 +38,7 @@
   </sql>
 
   <sql id="FROM">
-    sector_import si
+    sector_import si LEFT JOIN job j ON j.key = si.job_key
     <if test="subjectDatasetKey != null or datasetKey != null or _parameter.containsKey('current')">
       JOIN sector s ON s.id=si.sector_key AND s.dataset_key=si.dataset_key
     </if>
@@ -55,9 +56,9 @@
         AND s.subject_dataset_key = #{subjectDatasetKey}
       </if>
       <if test="states != null and !states.isEmpty()">
-        AND si.state IN
+        AND j.status IN
         <foreach item="state" collection="states" open="(" separator="," close=")">
-          #{state}::IMPORTSTATE
+          #{state}::JOBSTATUS
         </foreach>
       </if>
       <if test="modes != null and !modes.isEmpty()">
@@ -78,8 +79,8 @@
 
   <select id="get" resultMap="sectorImportResultMap">
     SELECT <include refid="SELECT"/>
-    FROM sector_import si
-    WHERE dataset_key=#{key.datasetKey} AND sector_key=#{key.id} AND attempt=#{attempt}
+    FROM sector_import si LEFT JOIN job j ON j.key = si.job_key
+    WHERE si.dataset_key=#{key.datasetKey} AND si.sector_key=#{key.id} AND si.attempt=#{attempt}
   </select>
 
   <select id="count" resultType="integer">
@@ -92,7 +93,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="WHERE"/>
-    ORDER BY coalesce(started, finished) DESC NULLS LAST, sector_key ASC, attempt DESC
+    ORDER BY coalesce(si.started, si.finished) DESC NULLS LAST, si.sector_key ASC, si.attempt DESC
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 

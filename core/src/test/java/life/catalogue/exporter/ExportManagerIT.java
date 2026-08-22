@@ -1,12 +1,14 @@
 package life.catalogue.exporter;
 
+import life.catalogue.es.search.NameUsageSearchService;
+
 import life.catalogue.TestConfigs;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.UserDao;
@@ -53,7 +55,7 @@ public class ExportManagerIT {
     UserDao uDao = mock(UserDao.class);
     doReturn(user).when(uDao).get(any());
     exDao = mock(DatasetExportDao.class);
-    executor = new JobExecutor(cfg.job, new MetricRegistry(), null, uDao);
+    executor = new JobExecutor(cfg.job, new MetricRegistry(), null, uDao, null);
   }
 
   @After
@@ -66,7 +68,7 @@ public class ExportManagerIT {
     cfg.job.downloadURI = URI.create("http://gbif.org/");
     cfg.job.downloadDir = new File("/tmp/col");
     cfg.job.threads = 3;
-    ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class));
+    ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class), NameUsageSearchService.passThru(), java.net.URI.create("https://www.checklistbank.org"));
 
     PrintBlockJob job = new PrintBlockJob(TestDataRule.APPLE.key);
     PrintBlockJob job2 = new PrintBlockJob(TestDataRule.APPLE.key);
@@ -105,7 +107,7 @@ public class ExportManagerIT {
     cfg.job.downloadDir = new File("/tmp/col");
     cfg.job.threads = 3;
 
-    ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class));
+    ExportManager manager = new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao, mock(DatasetImportDao.class), NameUsageSearchService.passThru(), java.net.URI.create("https://www.checklistbank.org"));
 
     // first schedule a block job that runs forever
     for (DataFormat df : PublishReleaseListener.EXPORT_FORMATS) {

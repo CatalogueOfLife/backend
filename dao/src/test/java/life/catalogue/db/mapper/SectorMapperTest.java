@@ -52,13 +52,14 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     commit();
   }
 
-  private void addImport(Sector s, ImportState state, LocalDateTime finished) {
-    SectorImport si = SectorImportMapperTest.create(state, s);
+  private void addImport(Sector s, JobStatus status, LocalDateTime finished) {
+    SectorImport si = SectorImportMapperTest.create(status, s);
     si.setFinished(finished);
     si.setCreatedBy(Users.TESTER);
+    MapperTestBase.createJob(session(), si);
     mapper(SectorImportMapper.class).create(si);
 
-    if (state == ImportState.FINISHED) {
+    if (status == JobStatus.FINISHED) {
       mapper().updateLastSync(s, si.getAttempt());
     }
   }
@@ -155,12 +156,12 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   public void search() {
     add2Sectors();
 
-    addImport(s1, ImportState.FINISHED, LocalDateTime.of(2019, 12, 24, 12, 0, 0));
-    addImport(s1, ImportState.FINISHED, LocalDateTime.of(2020, 1, 10, 12, 0, 0));
-    addImport(s1, ImportState.FAILED, LocalDateTime.of(2020, 2, 11, 12, 0, 0));
+    addImport(s1, JobStatus.FINISHED, LocalDateTime.of(2019, 12, 24, 12, 0, 0));
+    addImport(s1, JobStatus.FINISHED, LocalDateTime.of(2020, 1, 10, 12, 0, 0));
+    addImport(s1, JobStatus.FAILED, LocalDateTime.of(2020, 2, 11, 12, 0, 0));
 
-    addImport(s2, ImportState.FAILED, LocalDateTime.of(2018, 1, 10, 12, 0, 0));
-    addImport(s2, ImportState.FINISHED, LocalDateTime.of(2020, 1, 21, 12, 0, 0));
+    addImport(s2, JobStatus.FAILED, LocalDateTime.of(2018, 1, 10, 12, 0, 0));
+    addImport(s2, JobStatus.FINISHED, LocalDateTime.of(2020, 1, 21, 12, 0, 0));
     commit();
 
     SectorSearchRequest req = SectorSearchRequest.byProject(targetDatasetKey);

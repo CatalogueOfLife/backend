@@ -1,5 +1,7 @@
 package life.catalogue.concurrent;
 
+import life.catalogue.api.vocab.JobPriority;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.util.LoggingUtils;
@@ -27,6 +29,11 @@ public abstract class DatasetJob extends BackgroundJob {
   }
 
   public int getDatasetKey() {
+    return datasetKey;
+  }
+
+  @Override
+  public Integer datasetKey() {
     return datasetKey;
   }
 

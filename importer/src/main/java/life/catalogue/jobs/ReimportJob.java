@@ -3,8 +3,7 @@ package life.catalogue.jobs;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.concurrent.GlobalBlockingJob;
-import life.catalogue.concurrent.JobPriority;
-import life.catalogue.config.ImporterConfig;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.importer.ImportManager;
@@ -33,17 +32,15 @@ public class ReimportJob extends GlobalBlockingJob {
 
   private final SqlSessionFactory factory;
   private final ImportManager importManager;
-  private final ImporterConfig iCfg;
   private final NormalizerConfig nCfg;
 
   @JsonProperty
   private int counter;
 
-  public ReimportJob(User user, SqlSessionFactory factory, ImportManager importManager, ImporterConfig iCfg, NormalizerConfig nCfg) {
+  public ReimportJob(User user, SqlSessionFactory factory, ImportManager importManager, NormalizerConfig nCfg) {
     super(user.getKey(), JobPriority.HIGH);
     this.factory = factory;
     this.importManager = importManager;
-    this.iCfg = iCfg;
     this.nCfg = nCfg;
   }
 
@@ -60,7 +57,7 @@ public class ReimportJob extends GlobalBlockingJob {
     counter = 0;
     for (int key : keys) {
       try {
-        while (importManager.queueSize() + 5 > iCfg.maxQueue) {
+        while (importManager.queueSize() + 5 > importManager.maxQueue()) {
           TimeUnit.MINUTES.sleep(1);
         }
         // does a local archive exist?

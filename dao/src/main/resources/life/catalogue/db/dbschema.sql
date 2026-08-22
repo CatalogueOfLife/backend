@@ -162,23 +162,6 @@ CREATE TYPE GENDER AS ENUM (
   'NEUTER'
 );
 
-CREATE TYPE IMPORTSTATE AS ENUM (
-  'WAITING',
-  'PREPARING',
-  'DOWNLOADING',
-  'PROCESSING',
-  'DELETING',
-  'INSERTING',
-  'MATCHING',
-  'INDEXING',
-  'ANALYZING',
-  'ARCHIVING',
-  'EXPORTING',
-  'FINISHED',
-  'CANCELED',
-  'FAILED'
-);
-
 CREATE TYPE INFOGROUP AS ENUM (
   'AUTHORSHIP',
   'PUBLISHED_IN',
@@ -344,6 +327,12 @@ CREATE TYPE ISSUE AS ENUM (
   'AUTHORSHIP_UNCERTAIN',
   'SUPERFLUOUS_AUTHORSHIP',
   'RELATION_SYNONYM'
+);
+
+CREATE TYPE JOBPRIORITY AS ENUM (
+  'HIGH',
+  'MEDIUM',
+  'LOW'
 );
 
 CREATE TYPE JOBSTATUS AS ENUM (
@@ -1033,7 +1022,7 @@ ALTER TABLE dataset_patch ADD FOREIGN KEY (dataset_key) REFERENCES dataset;
 CREATE TABLE dataset_import (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   attempt INTEGER NOT NULL,
-  state IMPORTSTATE NOT NULL,
+  job_key UUID,
   origin DATASETORIGIN NOT NULL,
   format DATAFORMAT,
   started TIMESTAMP WITHOUT TIME ZONE,
@@ -1081,23 +1070,23 @@ CREATE TABLE dataset_import (
   merged_synonyms_by_rank_count HSTORE,
   verbatim_by_row_type_count JSONB,
   verbatim_by_term_count HSTORE,
-  job TEXT NOT NULL,
-  error TEXT,
   md5 TEXT,
   download_uri TEXT,
   PRIMARY KEY (dataset_key, attempt)
 );
 
 CREATE INDEX ON dataset_import (dataset_key);
+CREATE INDEX ON dataset_import (job_key);
 CREATE INDEX ON dataset_import (started);
 -- used by import scheduler:
 CREATE INDEX ON dataset_import (dataset_key, attempt) WHERE finished IS NOT NULL;
 
+-- export specific request and result metrics. The generic job lifecycle (status, timestamps, user,
+-- error, result md5/size and the result_deleted cleanup flag) lives in the job table, joined via key.
 CREATE TABLE dataset_export (
-  key UUID PRIMARY KEY,
+  key UUID PRIMARY KEY,  -- same key as the job record
   -- request
   dataset_key INTEGER NOT NULL REFERENCES dataset,
-  created_by INTEGER NOT NULL REFERENCES "user",
   format DATAFORMAT NOT NULL,
   tab_format TABFORMAT,
   root SIMPLE_NAME,
@@ -1109,27 +1098,47 @@ CREATE TABLE dataset_export (
   add_classification BOOLEAN NOT NULL,
   add_tax_group BOOLEAN NOT NULL,
   extinct BOOLEAN,
-  created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
 
   -- results
   attempt INTEGER,
-  started TIMESTAMP WITHOUT TIME ZONE,
-  finished TIMESTAMP WITHOUT TIME ZONE,
-  deleted TIMESTAMP WITHOUT TIME ZONE,
   classification SIMPLE_NAME[],
-  status JOBSTATUS NOT NULL,
-  error TEXT,
   truncated TEXT[],
-  md5 TEXT,
-  size INTEGER,
   synonym_count INTEGER,
   taxon_count INTEGER,
   taxa_by_rank_count HSTORE
 );
 
-CREATE INDEX ON dataset_export (created);
-CREATE INDEX ON dataset_export (created_by, created);
-CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank, status);
+CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank);
+
+-- generic background job, one row per job of any kind ever submitted to the JobExecutor
+CREATE TABLE job (
+  key UUID PRIMARY KEY,
+  job_class TEXT NOT NULL,             -- simple java class name of the job
+  status JOBSTATUS NOT NULL,
+  step TEXT,                           -- free text running substate updated by the job, e.g. downloading, inserting
+  priority JOBPRIORITY NOT NULL,
+  dataset_key INTEGER,                 -- no FK, job history survives dataset deletion
+  sector_key INTEGER,
+  created_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  started TIMESTAMP WITHOUT TIME ZONE,
+  finished TIMESTAMP WITHOUT TIME ZONE,
+  error TEXT,
+  params JSONB,                        -- the serialized job request for display, search and resubmission
+  result_md5 TEXT,                     -- for jobs producing a download file, the path derives from the key
+  result_size BIGINT,
+  result_deleted TIMESTAMP WITHOUT TIME ZONE
+);
+
+-- job search always orders by created DESC, so the dataset filter is a composite;
+-- its leftmost prefix still serves plain dataset_key lookups
+CREATE INDEX ON job (dataset_key, created DESC);
+CREATE INDEX ON job (created_by);
+CREATE INDEX ON job (job_class);
+CREATE INDEX ON job (created DESC);
+CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
+-- no index on params: nothing filters on it, it is only ever selected and inserted.
+-- a GIN index here would be pure write overhead on the weekly sector sync burst.
 
 CREATE TABLE sector (
   id INTEGER NOT NULL,
@@ -1180,11 +1189,11 @@ CREATE TABLE sector_import (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER NOT NULL, -- no foreign key as we keep sector imports for deleted sectors!
   attempt INTEGER NOT NULL,
+  job_key UUID,
   dataset_attempt INTEGER,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
   created_by INTEGER NOT NULL,
-  state IMPORTSTATE NOT NULL,
   -- shared
   applied_decision_count INTEGER,
   bare_name_count INTEGER,
@@ -1219,12 +1228,11 @@ CREATE TABLE sector_import (
   usages_by_status_count HSTORE,
   vernaculars_by_language_count HSTORE,
   secondary_source_by_info_count HSTORE,
-  job TEXT NOT NULL,
   warnings TEXT[],
-  error TEXT,
   PRIMARY KEY (dataset_key, sector_key, attempt)
 );
 CREATE INDEX ON sector_import (dataset_key, sector_key);
+CREATE INDEX ON sector_import (job_key);
 
 CREATE TABLE sector_publisher (
   id UUID NOT NULL,

@@ -5,6 +5,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.model.User;
+import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -14,6 +15,7 @@ import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.printer.*;
+import life.catalogue.resources.NameUsageSearchResource;
 
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
@@ -36,6 +38,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.UriInfo;
 
 /**
  * Streams dataset or parts of it to the user.
@@ -70,6 +73,24 @@ public class DatasetExportResource {
       req.setForce(false); // we don't allow to force exports from the public API for non admin users
     }
     return exportManager.submit(req, user.getKey());
+  }
+
+  /**
+   * Exports the result of a name usage search as a ColDP archive, reading from Elasticsearch only.
+   * Accepts the same search request as the name usage search endpoint, either as a JSON body or as query parameters.
+   * @return the key of the submitted export job, used to track and download the result via /job/{key}
+   */
+  @POST
+  @Path("search")
+  public UUID exportSearch(@PathParam("key") int key,
+                           @Valid NameUsageSearchResource.SearchRequestBody body,
+                           @Auth User user,
+                           @Context UriInfo uri) {
+    NameUsageSearchRequest req = body == null ? new NameUsageSearchRequest() : body.request;
+    if (uri != null) {
+      req.addFilters(uri.getQueryParameters());
+    }
+    return exportManager.submitSearch(key, req, user.getKey());
   }
 
   /**

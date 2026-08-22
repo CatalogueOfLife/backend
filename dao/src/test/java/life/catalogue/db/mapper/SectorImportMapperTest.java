@@ -6,7 +6,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,9 +52,9 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     mapper(SectorMapper.class).create(s2);
   }
   
-  public static SectorImport create(ImportState state, Sector s) {
+  public static SectorImport create(JobStatus status, Sector s) {
     SectorImport d = new SectorImport();
-    DatasetImportMapperTest.fill(d, state);
+    DatasetImportMapperTest.fill(d, status);
     d.setJob("SectorImportTest");
     d.setDatasetKey(s.getDatasetKey());
     d.setSectorKey(s.getId());
@@ -68,12 +68,21 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   public SectorImportMapperTest() {
     super(SectorImportMapper.class);
   }
+
+  /**
+   * Persists the sector import and a matching job record so status, step, job and error can be joined.
+   */
+  private SectorImport createBoth(JobStatus status, Sector sec) {
+    SectorImport d = create(status, sec);
+    createJob(session(), d);
+    mapper().create(d);
+    return d;
+  }
   
   
   @Test
   public void roundtrip() throws Exception {
-    SectorImport d1 = create(ImportState.FINISHED, s);
-    mapper().create(d1);
+    SectorImport d1 = createBoth(JobStatus.FINISHED, s);
     commit();
     assertEquals(1, d1.getAttempt());
   
@@ -83,23 +92,23 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   
   @Test
   public void listCount() throws Exception {
-    mapper().create(create(ImportState.FAILED, s));
-    mapper().create(create(ImportState.FINISHED, s));
-    mapper().create(create(ImportState.PREPARING, s));
-    mapper().create(create(ImportState.FINISHED, s));
-    mapper().create(create(ImportState.CANCELED, s));
-    mapper().create(create(ImportState.INSERTING, s2));
-    mapper().create(create(ImportState.FINISHED, s2));
+    createBoth(JobStatus.FAILED, s);
+    createBoth(JobStatus.FINISHED, s);
+    createBoth(JobStatus.WAITING, s);
+    createBoth(JobStatus.FINISHED, s);
+    createBoth(JobStatus.CANCELED, s);
+    createBoth(JobStatus.RUNNING, s2);
+    createBoth(JobStatus.FINISHED, s2);
     
     assertEquals(7, mapper().count(null, null, null, null, null));
     assertEquals(7, mapper().count(null, null,null, new ArrayList<>(), null));
-    assertEquals(1, mapper().count(null, null,null, List.of(ImportState.FAILED), null));
-    assertEquals(3, mapper().count(null, null,null, List.of(ImportState.FINISHED), null));
-    assertEquals(2, mapper().count(null, null,null, List.of(ImportState.INSERTING, ImportState.PREPARING), null));
-    
-    assertEquals(2, mapper().list(null, null,null, List.of(ImportState.INSERTING, ImportState.PREPARING), null,null, new Page()).size());
-    assertEquals(0, mapper().list(null, 100,null, List.of(ImportState.INSERTING, ImportState.PREPARING), null, false, new Page()).size());
-    assertEquals(0, mapper().list(null, null,null, List.of(ImportState.INSERTING, ImportState.PREPARING), null, true, new Page()).size());
+    assertEquals(1, mapper().count(null, null,null, List.of(JobStatus.FAILED), null));
+    assertEquals(3, mapper().count(null, null,null, List.of(JobStatus.FINISHED), null));
+    assertEquals(2, mapper().count(null, null,null, List.of(JobStatus.RUNNING, JobStatus.WAITING), null));
+
+    assertEquals(2, mapper().list(null, null,null, List.of(JobStatus.RUNNING, JobStatus.WAITING), null,null, new Page()).size());
+    assertEquals(0, mapper().list(null, 100,null, List.of(JobStatus.RUNNING, JobStatus.WAITING), null, false, new Page()).size());
+    assertEquals(0, mapper().list(null, null,null, List.of(JobStatus.RUNNING, JobStatus.WAITING), null, true, new Page()).size());
 
     assertEquals(5, mapper().count(s.getId(), null, null, null, null));
     assertEquals(5, mapper().count(s.getId(), null, s.getSubjectDatasetKey(), null, null));

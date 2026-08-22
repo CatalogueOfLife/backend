@@ -278,8 +278,9 @@ public class WsServer extends Application<WsServerConfig> {
 
     UserDao udao = new UserDao(getSqlSessionFactory(), cfg.mail, mail.getMailer(), broker, validator);
 
-    // job executor
-    JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao);
+    // job executor - all lane sizing lives in cfg.job
+    JobDao jobDao = new JobDao(getSqlSessionFactory());
+    JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao, jobDao);
     managedService.manage(Component.JobExecutor, executor);
 
     // name parser
@@ -394,10 +395,11 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(ManagedUtils.from(doiChangeListener));
 
     // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao, searchService, cfg.clbURI);
 
     // syncs and releases
     final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker, identifierScopeResolver, coljersey.getCache());
+    syncFactory.setJobDao(jobDao);
     final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, matcherFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       indexService, imgService, getSqlSessionFactory(), validator,
       cfg.release, cfg.apiURI, cfg.clbURI
@@ -443,7 +445,7 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.Feedback, feedback);
 
     // assembly
-    SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, env.metrics());
+    SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, executor, jobDao, env.metrics());
     managedService.manage(Component.SectorSynchronizer, syncManager);
 
     // link assembly and import manager so they are aware of each other
@@ -484,7 +486,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DataPackageResource(http));
     j.register(new OpenApiResource(OpenApiFactory.build(cfg, env)));
     j.register(new ImporterResource(cfg, importManager, diDao, ddao));
-    j.register(new JobResource(cfg.job, executor));
+    j.register(new JobResource(cfg.job, executor, jobDao));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg));
     j.register(new ResolverResource(doiResolver));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));

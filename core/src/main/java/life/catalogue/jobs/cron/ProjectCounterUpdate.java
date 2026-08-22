@@ -1,7 +1,7 @@
 package life.catalogue.jobs.cron;
 
 import life.catalogue.api.vocab.Users;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.jobs.UsageCountJob;
 
 import java.util.concurrent.TimeUnit;

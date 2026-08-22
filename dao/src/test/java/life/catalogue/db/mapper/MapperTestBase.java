@@ -2,7 +2,8 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityUnmodifiedRule;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.JobPriority;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
@@ -102,6 +103,27 @@ public abstract class MapperTestBase<M> {
     mapper(SynonymMapper.class).create(s);
   }
 
+
+  /**
+   * Persists a job record matching the generic job fields of the given import metrics,
+   * so the metrics tables can join their status, step, job class and error.
+   */
+  public static void createJob(SqlSession session, ImportMetrics m) {
+    JobInfo j = new JobInfo();
+    j.setKey(m.getJobKey());
+    j.setJob(m.getJob());
+    j.setStatus(m.getStatus());
+    j.setStep(m.getStep());
+    j.setError(m.getError());
+    j.setPriority(JobPriority.MEDIUM);
+    j.setDatasetKey(m.getDatasetKey());
+    j.setCreatedBy(m.getCreatedBy());
+    j.setCreated(LocalDateTime.now());
+    j.setStarted(m.getStarted());
+    j.setFinished(m.getFinished());
+    session.getMapper(JobMapper.class).create(j);
+  }
+
   public DatasetImport createSuccess(int datasetKey, int user) {
     DatasetImportDao did = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     return createSuccess(datasetKey, user, did);
@@ -114,7 +136,8 @@ public abstract class MapperTestBase<M> {
     DatasetImport di = did.generateMetrics(datasetKey, user);
     di.setDatasetKey(datasetKey);
     di.setCreatedBy(user);
-    di.setState(ImportState.FINISHED);
+    di.setJobKey(java.util.UUID.randomUUID());
+    di.setStatus(JobStatus.FINISHED);
     di.setJob(MapperTestBase.class.getSimpleName());
     di.setStarted(LocalDateTime.now());
     di.setDownload(LocalDateTime.now());
@@ -128,6 +151,7 @@ public abstract class MapperTestBase<M> {
       di.setDownloadUri(ds.getURI(Setting.DATA_ACCESS));
       di.setOrigin(d.getOrigin());
       di.setFormat(ds.getEnum(Setting.DATA_FORMAT));
+      createJob(session, di);
       dim.create(di);
       // also update dataset with attempt
       dm.updateLastImport(di.getDatasetKey(), di.getAttempt(), null);

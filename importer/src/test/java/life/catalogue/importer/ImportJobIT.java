@@ -91,19 +91,6 @@ public class ImportJobIT {
     hc.close();
   }
 
-  void start(){
-    LOG.info("Start");
-  }
-
-  void success(ImportRequest req){
-    LOG.info("Success");
-  }
-
-  void error(ImportRequest req, Exception e){
-    LOG.error("Failed", e);
-    fail("Import Error");
-  }
-
   private void setupAndRun(DataFormat format, URI archive){
     d = new DatasetWithSettings();
     d.setType(DatasetType.OTHER);
@@ -125,9 +112,12 @@ public class ImportJobIT {
     job = new ImportJob(req, d, cfg.importer, cfg.normalizer, cfg.doi, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), importStoreFactory,
       NameIndexFactory.passThru(), validator, null,
       indexService, new ImageServiceFS(cfg.img, null), diDao, datasetDao, sDao, dDao, TestUtils.mockedBroker(),
-      null, null,
-      this::start, this::success, this::error);
+      null, null, null, null, null);
     job.run();
+    if (job.getStatus() != JobStatus.FINISHED) {
+      LOG.error("Failed", job.getError());
+      fail("Import Error");
+    }
   }
 
   @Test
@@ -169,7 +159,7 @@ public class ImportJobIT {
     assertEquals(attempt, (int) dataset.getAttempt());
     var imp = diDao.getLast(d.getKey());
     assertEquals((int) dataset.getAttempt(), imp.getAttempt());
-    assertEquals(ImportState.FINISHED, imp.getState());
+    // no joined job status as the job runs standalone here without persistence - the live status is checked in run()
 
     var archive = cfg.normalizer.archive(d.getKey(), attempt);
     assertTrue(archive.exists());

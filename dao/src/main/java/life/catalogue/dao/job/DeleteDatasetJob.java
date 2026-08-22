@@ -3,7 +3,7 @@ package life.catalogue.dao.job;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DatasetDao;
 
 public class DeleteDatasetJob extends DatasetBlockingJob {

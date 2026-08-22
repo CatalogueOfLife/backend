@@ -7,11 +7,13 @@ import life.catalogue.api.event.SectorListener;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
+import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.dao.JobDao;
 import life.catalogue.config.SyncManagerConfig;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
@@ -21,17 +23,12 @@ import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.matching.nidx.NameIndex;
 
-import life.catalogue.concurrent.NamedThreadFactory;
-
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -39,69 +36,45 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 
+/**
+ * Coordinates sector syncs and deletions, which are executed as background jobs
+ * on the SYNC lane of the shared JobExecutor.
+ * Jobs of the same project are serialized by the executor, syncs of different projects run in parallel.
+ */
 public class SyncManager implements Managed, Idle, SectorListener, DatasetListener {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
   private static final Logger LOG = LoggerFactory.getLogger(SyncManager.class);
-  private static final String THREAD_NAME = "assembly-sync";
   private static final String SCHEDULER_THREAD_NAME = "sync-scheduler";
 
-  private ExecutorService exec;
+  private boolean started;
   private final SyncManagerConfig cfg;
   private Thread schedulerThread;
   private SyncSchedulerJob schedulerJob;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   private final SyncFactory syncFactory;
-  private final Map<DSID<Integer>, SectorFuture> syncs = Collections.synchronizedMap(new LinkedHashMap<>());
-  private final Timer timer;
-  private final Map<Integer, AtomicInteger> counter = new HashMap<>(); // by dataset (project) key
-  private final Map<Integer, AtomicInteger> failed = new HashMap<>();  // by dataset (project) key
+  private final JobExecutor executor;
+  private final @Nullable JobDao jobDao;
+  private final SyncCounter counter;
 
-  static class SectorFuture {
-    public final DSID<Integer> sectorKey;
-    public final Future<?> future;
-    public final SectorImport state;
-    public final boolean delete;
-    
-    private SectorFuture(SectorRunnable job, Future<?> future) {
-      this.sectorKey = DSID.copy(job.sectorKey);
-      this.state = job.getState();
-      this.future = future;
-      this.delete = job instanceof SectorDelete || job instanceof SectorDeleteFull;
-    }
-  }
-  
-  public SyncManager(SyncManagerConfig cfg, SqlSessionFactory factory, NameIndex nameIndex, SyncFactory syncFactory, MetricRegistry registry) {
+  public SyncManager(SyncManagerConfig cfg, SqlSessionFactory factory, NameIndex nameIndex, SyncFactory syncFactory,
+                     JobExecutor executor, @Nullable JobDao jobDao, MetricRegistry registry) {
     this.cfg = cfg;
     this.factory = factory;
     this.syncFactory = syncFactory;
     this.nameIndex = nameIndex;
-    timer = registry.timer("life.catalogue.assembly.timer");
+    this.executor = executor;
+    this.jobDao = jobDao;
+    this.counter = new SyncCounter(registry.timer("life.catalogue.assembly.timer"));
   }
-  
+
   @Override
   public void start() throws Exception {
     LOG.info("Starting assembly coordinator");
-    exec = Executors.newSingleThreadExecutor(new NamedThreadFactory(THREAD_NAME, Thread.MAX_PRIORITY, true));
-
-    // cancel all existing syncs/deletions
-    try (SqlSession session = factory.openSession(true)) {
-      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-      // list all imports with running states & waiting
-      Page page = new Page(0, Page.MAX_LIMIT);
-      List<SectorImport> sims = null;
-      while (page.getOffset() == 0 || (sims != null && sims.size() == page.getLimit())) {
-        sims = sim.list(null, null, null, ImportState.runningAndWaitingStates(), null, null, page);
-        for (SectorImport si : sims) {
-          si.setState(ImportState.CANCELED);
-          si.setFinished(LocalDateTime.now());
-          sim.update(si);
-        }
-        page.next();
-      }
-    }
+    started = true;
+    // sector imports left in running states by a previous server are covered by
+    // the job executor cancelling all stale job records on startup
 
     // scheduler
     if (cfg.polling > 0) {
@@ -126,22 +99,13 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
       LOG.info("Stop sync scheduler");
       schedulerThread.join(ExecutorUtils.MILLIS_TO_DIE);
     }
-    // manager
-    if (exec != null) {
-      LOG.info("Stop assembly coordinator");
-      // orderly shutdown running syncs
-      for (SectorFuture df : syncs.values()) {
-        df.future.cancel(true);
-      }
-      // fully shutdown threadpool within given time
-      ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
-      exec = null;
-    }
+    // running and queued syncs live in the shared job executor which interrupts them on its own shutdown
+    started = false;
   }
 
   @Override
   public boolean hasStarted() {
-    return exec != null;
+    return started;
   }
 
   @Override
@@ -149,32 +113,32 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
     return !hasStarted() || getState().isIdle();
   }
 
-  public SyncState getState() {
-    return new SyncState(syncs.values(), total(failed), total(counter));
+  /**
+   * @return all sector jobs of the executor, both queued and running
+   */
+  private List<SectorRunnable> syncJobs() {
+    return executor.getQueueByJobClass(SectorRunnable.class);
   }
 
-  private static int total(Map<Integer, AtomicInteger> cnt) {
-    return cnt.values().stream().mapToInt(AtomicInteger::get).sum();
+  public SyncState getState() {
+    return new SyncState(syncJobs(), counter.failedTotal(), counter.completedTotal());
   }
 
   public SyncState getState(int datasetKey) {
-    List<SectorFuture> vals = syncs.values().stream()
-        .filter(sf -> sf.sectorKey.getDatasetKey() == datasetKey)
+    var jobs = syncJobs().stream()
+        .filter(job -> job.getSectorKey().getDatasetKey() == datasetKey)
         .collect(Collectors.toList());
-    return new SyncState(vals, valOrZero(failed, datasetKey), valOrZero(counter, datasetKey));
-  }
-
-  private static int valOrZero(Map<Integer, AtomicInteger> map, Integer key){
-    return map.containsKey(key) ? map.get(key).get() : 0;
+    return new SyncState(jobs, counter.getFailed(datasetKey), counter.getCompleted(datasetKey));
   }
 
   /**
-   * Check if any sector from a given dataset is currently syncing and return the sector key. Otherwise null
+   * Check if any sector job currently running or queued involves the given dataset,
+   * either as the project being synced into or as the subject source dataset, and return its sector key. Otherwise null
    */
   public DSID<Integer> hasSyncingSector(int datasetKey){
-    for (SectorFuture df : syncs.values()) {
-      if (df.sectorKey.getDatasetKey() == datasetKey) {
-        return df.sectorKey;
+    for (SectorRunnable job : syncJobs()) {
+      if (job.getSectorKey().getDatasetKey() == datasetKey || job.subjectDatasetKey == datasetKey) {
+        return job.getSectorKey();
       }
     }
     return null;
@@ -260,8 +224,8 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
       return false;
     }
     SectorRunnable sr = mode == Sector.Mode.HIERARCHY
-      ? syncFactory.hierarchy(sectorKey, this::successCallBack, this::errorCallBack, user)
-      : syncFactory.project(sectorKey, this::successCallBack, this::errorCallBack, user);
+      ? syncFactory.hierarchy(sectorKey, counter, user)
+      : syncFactory.project(sectorKey, counter, user);
     return queueJob(sr);
   }
 
@@ -273,9 +237,9 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
     nameIndex.assertOnline();
     SectorRunnable sd;
     if (full) {
-      sd = syncFactory.deleteFull(sectorKey, this::successCallBack, this::errorCallBack, user);
+      sd = syncFactory.deleteFull(sectorKey, counter, user);
     } else {
-      sd = syncFactory.delete(sectorKey, this::successCallBack, this::errorCallBack, user);
+      sd = syncFactory.delete(sectorKey, counter, user);
     }
     return queueJob(sd);
   }
@@ -293,13 +257,13 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
       nameIndex.assertOnline();
       this.assertOnline();
       // is this sector already syncing?
-      if (syncs.containsKey(job.sectorKey)) {
+      if (isQueuedOrRunning(job.getSectorKey())) {
         // ignore
         return rejectJob(job, String.format("%s already queued or running", job.sector));
 
       } else {
         assertDataExists(job);
-        syncs.put(job.sectorKey, new SectorFuture(job, exec.submit(job)));
+        executor.submit(job);
         LOG.info("Queued {} for {} targeting {}", job.getClass().getSimpleName(), job.sector, job.sector.getTarget());
         return true;
       }
@@ -310,45 +274,32 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
     }
   }
 
+  private boolean isQueuedOrRunning(DSID<Integer> sectorKey) {
+    return syncJobs().stream().anyMatch(job -> job.getSectorKey().equals(sectorKey));
+  }
+
   private boolean rejectJob(SectorRunnable job, String reason) {
     LOG.warn(reason);
+    // record a failed job so the already created sector import attempt links to a final status
+    job.setStatus(JobStatus.FAILED);
+    job.setError(new IllegalArgumentException(reason));
+    if (jobDao != null) {
+      jobDao.create(job);
+    }
+    job.state.setFinished(LocalDateTime.now());
+    job.state.setError(reason);
     try (SqlSession session = factory.openSession(true)) {
-      job.state.setState(ImportState.FAILED);
-      job.state.setFinished(LocalDateTime.now());
-      job.state.setError(reason);
       session.getMapper(SectorImportMapper.class).update(job.state);
     }
     return false;
   }
-  
-  /**
-   * We use old school callbacks here as you cannot easily cancel CompletableFutures.
-   */
-  private void successCallBack(SectorRunnable sync) {
-    syncs.remove(sync.getSectorKey());
-    Duration durQueued = Duration.between(sync.getCreated(), sync.getStarted());
-    Duration durRun = Duration.between(sync.getStarted(), LocalDateTime.now());
-    LOG.info("Sector Sync {} finished. {} min queued, {} min to execute", sync.getSectorKey(), durQueued.toMinutes(), durRun.toMinutes());
-    counter.putIfAbsent(sync.sectorKey.getDatasetKey(), new AtomicInteger(0));
-    counter.get(sync.sectorKey.getDatasetKey()).incrementAndGet();
-    timer.update(durRun.getSeconds(), TimeUnit.SECONDS);
-  }
-  
-  /**
-   * We use old school callbacks here as you cannot easily cancel CompletableFutures.
-   */
-  private void errorCallBack(SectorRunnable sync, Exception err) {
-    syncs.remove(sync.getSectorKey());
-    LOG.error("Sector Sync {} failed: {}", sync.getSectorKey(), err.getCause().getMessage(), err.getCause());
-    failed.putIfAbsent(sync.sectorKey.getDatasetKey(), new AtomicInteger(0));
-    failed.get(sync.sectorKey.getDatasetKey()).incrementAndGet();
-  }
 
   public synchronized void cancel(DSID<Integer> sectorKey, int user) {
-    if (syncs.containsKey(sectorKey)) {
-      LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);
-      var sync = syncs.remove(sectorKey);
-      sync.future.cancel(true);
+    for (SectorRunnable job : syncJobs()) {
+      if (job.getSectorKey().equals(sectorKey)) {
+        LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);
+        executor.cancel(job.getKey(), user);
+      }
     }
   }
 
@@ -386,7 +337,8 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
   @Override
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
-      var keys = syncs.keySet().stream()
+      var keys = syncJobs().stream()
+                      .map(SectorRunnable::getSectorKey)
                       .filter(k -> k.getDatasetKey().equals(event.key))
                       .collect(Collectors.toSet());
       if (!keys.isEmpty()) {

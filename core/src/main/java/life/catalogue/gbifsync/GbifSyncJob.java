@@ -9,7 +9,7 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.concurrent.GlobalBlockingJob;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.DatasetMapper;

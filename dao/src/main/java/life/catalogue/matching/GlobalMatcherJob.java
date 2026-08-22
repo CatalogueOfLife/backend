@@ -2,7 +2,7 @@ package life.catalogue.matching;
 
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.concurrent.GlobalBlockingJob;
-import life.catalogue.concurrent.JobPriority;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;

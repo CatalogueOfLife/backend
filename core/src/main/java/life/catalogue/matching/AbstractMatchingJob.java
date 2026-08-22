@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.*;
+import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.concurrent.*;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.csv.CsvReader;
@@ -121,11 +122,17 @@ public abstract class AbstractMatchingJob extends DatasetJob {
    */
   public abstract SqlSession openSession();
 
+  @Override
   public JobResult getResult() {
     return result;
   }
 
   public MatchingRequest getRequest() {
+    return req;
+  }
+
+  @Override
+  public Object getParams() {
     return req;
   }
 

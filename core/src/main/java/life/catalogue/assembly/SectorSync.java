@@ -67,11 +67,11 @@ public class SectorSync extends SectorRunnable {
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean projectTarget, @Nullable TreeMergeHandlerConfig mergeCfg,
              SqlSessionFactory factory, NameIndex nameIndex, Function<SqlSession, UsageMatcher> matcherSupplier, EventBroker bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
-             Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
+             @Nullable SyncCounter counter,
              Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
              @Nullable IdentifierScopeResolver scopeResolver,
              int user) throws IllegalArgumentException {
-    super(sectorKey, true, factory, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
+    super(sectorKey, true, factory, indexService, sdao, sid, bus, counter, true, user);
     this.projectTarget = projectTarget;
     this.sid = sid;
     this.estimateDao = estimateDao;
@@ -132,7 +132,7 @@ public class SectorSync extends SectorRunnable {
   @Override
   void doWork() throws Exception {
     if (projectTarget) {
-      state.setState( ImportState.DELETING);
+      setStep(ImportState.DELETING);
       relinkForeignChildren();
     }
     try {
@@ -141,7 +141,7 @@ public class SectorSync extends SectorRunnable {
         checkIfCancelled();
       }
 
-      state.setState(ImportState.INSERTING);
+      setStep(ImportState.INSERTING);
       processTree();
       checkIfCancelled();
 
@@ -151,7 +151,7 @@ public class SectorSync extends SectorRunnable {
     } finally {
       if (projectTarget) {
         // run these even if we get errors in the main tree copying
-        state.setState( ImportState.MATCHING);
+        setStep(ImportState.MATCHING);
         rematchForeignChildren();
         relinkAttachedSectors();
         rematchEstimates();
