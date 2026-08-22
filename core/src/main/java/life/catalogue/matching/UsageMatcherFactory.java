@@ -61,11 +61,12 @@ import java.util.concurrent.atomic.AtomicLong;
  * still race to move their result into {@link MatchingConfig#dir(int)}, and a reader opening during that
  * two-rename window sees the store as missing.
  *
- * <p>So a {@code storageDir} must have <b>exactly one writing process</b>. That is how it is deployed today:
- * the rw server builds, and a matching server is handed a self-contained directory produced by
- * {@code MatchingServerBuildCmd}. Splitting matching into its own process is fine as long as that process
- * only ever reads; letting a second process build into a shared directory needs cross-process locking that
- * does not exist yet.
+ * <p>So a {@code storageDir} has <b>exactly one writing process</b>. That is a deliberate constraint, not a
+ * gap to be closed: it costs nothing in the topology we run - the rw server builds, and a matching server is
+ * handed a self-contained directory produced by {@code MatchingServerBuildCmd} - and it keeps the read path
+ * free of any locking at all. Splitting matching into its own process stays fine under it, as long as that
+ * process only ever reads. Should a second <em>writing</em> process ever be wanted, this is the invariant
+ * that has to be replaced first, with a cross-process lock around build and swap.
  */
 public class UsageMatcherFactory implements DatasetListener, life.catalogue.common.Managed {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherFactory.class);
