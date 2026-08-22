@@ -36,7 +36,9 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
       if (usage.hasAuthorship()) {
         // remember real canonical ID as we use the property to encode the new id internally
         final var canonID = usage.getCanonicalId();
-        issueIDs(usage.getCanonicalId(), List.of(usage), nomatchWriter, false);
+        // the usage still carries the parent id of its source dataset at this point, not the accepted name,
+        // so merged synonyms are scored without the accepted name - see IdProvider#acceptedNames
+        issueIDs(usage.getCanonicalId(), List.of(usage), NO_ACCEPTED_NAMES, nomatchWriter, false);
         var id = encode(usage.getCanonicalId());
         usage.setCanonicalId(canonID);
         return id;

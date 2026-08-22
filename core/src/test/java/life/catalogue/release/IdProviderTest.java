@@ -234,6 +234,28 @@ public class IdProviderTest {
   }
 
   @Test
+  public void synonymsScoredByTheirAcceptedName() throws Exception {
+    // two archived synonyms of the very same canonical name that differ only in their accepted name.
+    // The archive keeps the accepted names scientific name, the matcher store keys the parent by usage id,
+    // so the id can only be picked correctly if we resolve that id into a name first.
+    prevIdsByAttempt.put(1, List.of(
+      sn(50, 7, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "Abies alba"),
+      sn(51, 7, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "Larix alba")
+    ));
+
+    // just like the real store, the synonym points at its accepted name by usage id
+    testNames = new ArrayList<>(List.of(
+      sn("acc", 8, 8, SPECIES, "Larix alba", "Mill.", ACCEPTED, null),
+      sn("syn", 7, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "acc")
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+
+    assertID(51, testNames.get(1)); // the synonym of Larix alba, not the one of Abies alba
+  }
+
+  @Test
   public void unmatched() throws Exception {
     // 1st attempt
     prevIdsByAttempt.put(1, List.of(

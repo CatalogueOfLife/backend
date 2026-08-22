@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -74,6 +76,7 @@ public class IdProvider {
   protected static final Pattern UNITE_ID = Pattern.compile("^SH(\\d+)\\.(\\d+)FU$", Pattern.CASE_INSENSITIVE);
   // BOLD codes, e.g. BOLD:AAA3374 - the colon is replaced by a dot to form the usage id
   protected static final Pattern BOLD_ID = Pattern.compile("^BOLD:[A-Z0-9]+$", Pattern.CASE_INSENSITIVE);
+  static final Function<SimpleNameWithNidx, String> NO_ACCEPTED_NAMES = n -> null;
   private final int projectKey;
   private final int attempt;
   private final DatasetOrigin origin;
@@ -528,7 +531,7 @@ public class IdProvider {
             .filter(n -> n.getId().length() >= minIdLength)
             .collect(Collectors.toList());
         }
-        issueIDs(canonId, names, nomatchWriter, true);
+        issueIDs(canonId, names, acceptedNames(names, uStore), nomatchWriter, true);
         int before = counter.get() / batchSize;
         int after = counter.addAndGet(names.size()) / batchSize;
         if (before != after) {
@@ -547,10 +550,44 @@ public class IdProvider {
   }
 
   /**
+   * Released ids only remember the scientific name of their accepted name, never its id - see ReleasedId.parent.
+   * The usage store on the other hand points to the accepted name by usage id, so we resolve those ids into
+   * names once per canonical group to be able to compare them at all.
+   *
+   * @return the accepted names scientific name for a synonym, null for anything else or if it cannot be resolved
+   */
+  private Function<SimpleNameWithNidx, String> acceptedNames(List<? extends SimpleNameWithNidx> names, UsageMatcherStore store) {
+    Map<String, String> byUsageID = null; // most canonical groups have no synonyms at all
+    for (var n : names) {
+      if (n.getStatus() != null && n.getStatus().isSynonym() && n.getParent() != null) {
+        try {
+          var accepted = store.get(n.getParent());
+          if (accepted != null) {
+            if (byUsageID == null) {
+              byUsageID = new HashMap<>();
+            }
+            byUsageID.put(n.getId(), accepted.getName());
+          }
+        } catch (NotFoundException e) {
+          // a broken tree is already reported loudly by the classification walk in UsageMatcherStore.analyze
+          LOG.debug("Missing accepted name {} for synonym {}:{}", n.getParent(), mappedDatasetKey, n.getId());
+        }
+      }
+    }
+    if (byUsageID == null) {
+      return NO_ACCEPTED_NAMES;
+    }
+    final var parents = byUsageID;
+    return n -> parents.get(n.getId());
+  }
+
+  /**
    * Populates sn.canonicalId with either an existing or new int based ID
    * @param canonId the canonical names index id that all names are mapped to
+   * @param acceptedNames resolves the scientific name of a synonyms accepted name, see #acceptedNames
    */
-  void issueIDs(final Integer canonId, List<? extends SimpleNameWithNidx> allNames, Writer nomatchWriter, boolean persistIdMapping) throws IOException {
+  void issueIDs(final Integer canonId, List<? extends SimpleNameWithNidx> allNames, Function<SimpleNameWithNidx, String> acceptedNames,
+                Writer nomatchWriter, boolean persistIdMapping) throws IOException {
     // OTU names (UNITE/BOLD) use their code verbatim as the stable id, regardless of names-index matching.
     // Handle them up front and exclude them from the id minting/matching below.
     final List<SimpleNameWithNidx> names = new ArrayList<>(allNames.size());
@@ -581,7 +618,7 @@ public class IdProvider {
       ReleasedId[] rids = ids.byCanonId(canonId);
       if (rids != null) {
         IntSet ids = new IntOpenHashSet();
-        ScoreMatrix scores = new ScoreMatrix(names, rids, IdProvider::matchScore);
+        ScoreMatrix scores = new ScoreMatrix(names, rids, (n, r) -> matchScore(n, acceptedNames.apply(n), r));
         List<ScoreMatrix.ReleaseMatch> best = scores.highest();
         while (!best.isEmpty()) {
           // best is sorted, issue as they come but avoid already released ids
@@ -662,9 +699,11 @@ public class IdProvider {
    * For synonyms we evaluate the accepted name.
    * This helps with sticky ids for pro parte synonyms.
    *
+   * @param acceptedName scientific name of the accepted name for synonyms, null if unknown - which simply
+   *                     removes the accepted name from the comparison, it never blocks a match
    * @return zero for no match, positive for a match. The higher the better!
    */
-  private static int matchScore(SimpleNameWithNidx n, ReleasedId r) {
+  private static int matchScore(SimpleNameWithNidx n, @Nullable String acceptedName, ReleasedId r) {
     // only one is a misapplied name - never match to anything else
     if (!Objects.equals(n.getStatus(), r.status) && (n.getStatus()==MISAPPLIED || r.status==MISAPPLIED) ) {
       return 0;
@@ -679,10 +718,10 @@ public class IdProvider {
     if (Objects.equals(n.getRank(), r.rank)) {
       score += 10;
     }
-    // parent for synonyms
-    if (n.getStatus() != null && n.getStatus().isSynonym()) {
+    // accepted name for synonyms
+    if (acceptedName != null && n.getStatus() != null && n.getStatus().isSynonym()) {
       // block synonyms with different accepted names aka parent
-      if (StringUtils.equalsIgnoreCase(n.getParent(), r.parent)) {
+      if (StringUtils.equalsIgnoreCase(acceptedName, r.parent)) {
         score += 6;
       }
     }
