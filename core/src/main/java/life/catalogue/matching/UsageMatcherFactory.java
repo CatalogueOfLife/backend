@@ -50,6 +50,22 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Factory to create and reuse persistent usage matchers,
  * which are specific for an entire dataset.
+ *
+ * <h2>One writer per storage directory</h2>
+ * Reading a sealed {@link UsageMatcherFileStore} is safe from any number of threads and processes: the two
+ * large files never change and are mapped read-only, and a reopened store cannot write its group column
+ * either. <b>Building</b> is a different story and is coordinated <em>within this JVM only</em> - by
+ * {@link #buildLocks} for the swap and {@link #runningBuilds} for build ownership. Nothing stops a second
+ * process from rebuilding the same dataset at the same time, and while the per-build temp directories carry
+ * a pid so they can never collide (see {@link MatchingConfig#buildDir(int, long)}), the two builds would
+ * still race to move their result into {@link MatchingConfig#dir(int)}, and a reader opening during that
+ * two-rename window sees the store as missing.
+ *
+ * <p>So a {@code storageDir} must have <b>exactly one writing process</b>. That is how it is deployed today:
+ * the rw server builds, and a matching server is handed a self-contained directory produced by
+ * {@code MatchingServerBuildCmd}. Splitting matching into its own process is fine as long as that process
+ * only ever reads; letting a second process build into a shared directory needs cross-process locking that
+ * does not exist yet.
  */
 public class UsageMatcherFactory implements DatasetListener, life.catalogue.common.Managed {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherFactory.class);

@@ -14,6 +14,8 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Test;
 
+import static org.junit.Assume.assumeTrue;
+
 import static org.junit.Assert.*;
 
 public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
@@ -81,7 +83,9 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
     try (var store = UsageMatcherFileStore.open(78, dir)) {
       assertEquals(TaxGroup.Plants, store.get("a").getGroup());
       assertNull(store.get("b").getGroup());
-      // and it can be cleared again
+    }
+    // and it can be cleared again - by an owner that opened the store for writing
+    try (var store = UsageMatcherFileStore.openWritable(78, dir)) {
       store.update("a", null);
       assertNull(store.get("a").getGroup());
     }
@@ -228,5 +232,142 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
     }
     assertFalse(UsageMatcherFileStore.isStore(dir));
     assertThrows(IOException.class, () -> UsageMatcherFileStore.open(83, dir));
+  }
+
+  /** Builds a small but complete store of 20 usages across 7 canonicals. */
+  private File buildSmallStore() throws IOException {
+    var dir = newDir();
+    try (var builder = new UsageMatcherFileStoreBuilder(91, dir)) {
+      for (int i = 0; i < 20; i++) {
+        builder.add(snc("u" + i, i == 0 ? null : "u0", "Aus bus" + i, "Smith", Rank.SPECIES, 100 + i % 7, 500 + i));
+      }
+      builder.seal().close();
+    }
+    return dir;
+  }
+
+  /**
+   * A truncated file must be recognised as corrupt while opening rather than blowing up with an
+   * IndexOutOfBoundsException on some later match request.
+   */
+  @Test
+  public void truncatedFilesAreRejected() throws IOException {
+    for (var fn : new String[]{UsageMatcherFileStore.USAGES_FILE, UsageMatcherFileStore.CANONICAL_FILE, UsageMatcherFileStore.GROUPS_FILE}) {
+      var dir = buildSmallStore();
+      var f = new File(dir, fn);
+      long full = f.length();
+      assertTrue(fn + " is only " + full + " bytes", full > 32); // groups.bin is the smallest at 16 + n
+      // chop off the last 8 bytes - header, magic and version all still intact
+      try (var ch = java.nio.channels.FileChannel.open(f.toPath(), java.nio.file.StandardOpenOption.WRITE)) {
+        ch.truncate(full - 8);
+      }
+      // isStore must agree, or reconcile would skip the broken store and it would stay unavailable forever
+      assertFalse("truncated " + fn + " must not pass isStore", UsageMatcherFileStore.isStore(dir));
+      assertThrows("truncated " + fn + " must not open", IOException.class, () -> UsageMatcherFileStore.open(91, dir));
+    }
+  }
+
+  /** Extra trailing bytes mean the file is not the one the header describes either. */
+  @Test
+  public void trailingGarbageIsRejected() throws IOException {
+    for (var fn : new String[]{UsageMatcherFileStore.USAGES_FILE, UsageMatcherFileStore.CANONICAL_FILE, UsageMatcherFileStore.GROUPS_FILE}) {
+      var dir = buildSmallStore();
+      try (var out = new FileOutputStream(new File(dir, fn), true)) {
+        out.write(new byte[16]);
+      }
+      assertFalse("padded " + fn + " must not pass isStore", UsageMatcherFileStore.isStore(dir));
+      assertThrows("padded " + fn + " must not open", IOException.class, () -> UsageMatcherFileStore.open(91, dir));
+    }
+  }
+
+  /**
+   * A bogus header count must be caught up front. A hash table smaller than the key count would make the
+   * linear probe of a missing key loop forever, which no amount of bounds checking would catch.
+   */
+  @Test
+  public void corruptHeaderCountsAreRejected() throws IOException {
+    // usage count, usage table size, live count, canonical count, canonical table size, canonical ref count
+    int[][] cases = {
+      {0, 8, 21}, {0, 12, 8}, {0, 12, 15}, {0, 16, 21}, {0, 8, -1},
+      {1, 8, 99}, {1, 12, 4}, {1, 16, 3}
+    };
+    for (int[] c : cases) {
+      var dir = buildSmallStore();
+      var f = new File(dir, c[0] == 0 ? UsageMatcherFileStore.USAGES_FILE : UsageMatcherFileStore.CANONICAL_FILE);
+      writeLeInt(f, c[1], c[2]);
+      String msg = "header " + c[0] + "@" + c[1] + "=" + c[2];
+      assertFalse(msg + " must not pass isStore", UsageMatcherFileStore.isStore(dir));
+      assertThrows(msg + " must not open", IOException.class, () -> UsageMatcherFileStore.open(91, dir));
+    }
+  }
+
+  /** The group column must describe the same number of usages as the record file. */
+  @Test
+  public void mismatchedGroupColumnIsRejected() throws IOException {
+    var dir = buildSmallStore();
+    writeLeInt(new File(dir, UsageMatcherFileStore.GROUPS_FILE), 8, 19);
+    assertFalse(UsageMatcherFileStore.isStore(dir));
+    assertThrows(IOException.class, () -> UsageMatcherFileStore.open(91, dir));
+  }
+
+  /**
+   * A store reopened from disk is entirely read only, so a stray group write fails loudly rather than
+   * racing another process through the shared mapping. Only the builder hands out a writable store.
+   */
+  @Test
+  public void reopenedStoreIsReadOnly() throws IOException {
+    var dir = buildSmallStore();
+    try (var store = UsageMatcherFileStore.open(91, dir)) {
+      assertThrows(IllegalStateException.class, () -> store.update("u3", TaxGroup.Plants));
+      assertThrows(IllegalStateException.class, () -> store.analyze(new TaxGroupAnalyzer()));
+      assertEquals("groups must be unchanged", null, store.get("u3").getGroup());
+    }
+    // ... while the store the builder hands back may still be analyzed
+    try (var store = UsageMatcherFileStore.openWritable(91, dir)) {
+      store.update("u3", TaxGroup.Plants);
+      assertEquals(TaxGroup.Plants, store.get("u3").getGroup());
+    }
+    try (var store = UsageMatcherFileStore.open(91, dir)) {
+      assertEquals("the write must have reached disk", TaxGroup.Plants, store.get("u3").getGroup());
+    }
+  }
+
+  /** A read only store must open even when the directory itself cannot be written to. */
+  @Test
+  public void opensOnAReadOnlyDirectory() throws IOException {
+    var dir = buildSmallStore();
+    var files = new File[]{new File(dir, UsageMatcherFileStore.USAGES_FILE),
+      new File(dir, UsageMatcherFileStore.CANONICAL_FILE), new File(dir, UsageMatcherFileStore.GROUPS_FILE)};
+    try {
+      for (var f : files) {
+        assumeTrue("cannot drop write permission", f.setWritable(false, false));
+      }
+      try (var store = UsageMatcherFileStore.open(91, dir)) {
+        assertEquals(20, store.size());
+        assertEquals("Aus bus7", store.get("u7").getName());
+      }
+    } finally {
+      // restore no matter how we leave, or the temp dir cannot be cleaned up
+      for (var f : files) f.setWritable(true, false);
+    }
+  }
+
+  /** An intact store still opens - the validation must not be over eager. */
+  @Test
+  public void validStoreStillOpens() throws IOException {
+    var dir = buildSmallStore();
+    assertTrue(UsageMatcherFileStore.isStore(dir));
+    try (var store = UsageMatcherFileStore.open(91, dir)) {
+      assertEquals(20, store.size());
+      assertEquals(7, store.canonicalSize());
+      assertEquals("Aus bus13", store.get("u13").getName());
+    }
+  }
+
+  private static void writeLeInt(File f, long pos, int value) throws IOException {
+    try (var ch = java.nio.channels.FileChannel.open(f.toPath(), java.nio.file.StandardOpenOption.WRITE)) {
+      var bb = java.nio.ByteBuffer.allocate(4).order(java.nio.ByteOrder.LITTLE_ENDIAN).putInt(value).flip();
+      ch.write(bb, pos);
+    }
   }
 }

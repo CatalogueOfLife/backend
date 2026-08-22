@@ -67,17 +67,25 @@ public class MatchingConfig {
   }
 
   /**
+   * Identifies this JVM in the transient build directory names. A build token alone is only unique within a
+   * process - two JVMs sharing a storageDir both start their counter at zero - so the pid goes into the path
+   * as well and two processes can never write into the same temp dir. Coordinating the builds themselves is
+   * a different matter, see {@code UsageMatcherFactory}.
+   */
+  private static final long JVM_ID = ProcessHandle.current().pid();
+
+  /**
    * Per-build temporary directory a matcher is (re)built into before it is atomically moved to {@link #dir(int)}.
-   * Includes a unique build token so two concurrent builds of the same dataset never share a temp dir.
+   * Includes a build token unique to this JVM and the pid, so two concurrent builds never share a temp dir.
    * Kept in the same storageDir so the final move is a cheap same-filesystem rename.
    */
   public File buildDir(int datasetKey, long buildToken) {
-    return new File(storageDir, datasetKey + "." + buildToken + ".building");
+    return new File(storageDir, datasetKey + "." + JVM_ID + "-" + buildToken + ".building");
   }
 
   /** Backup dir the previous store is renamed to during a swap, so a failed move can be rolled back. */
   public File backupDir(int datasetKey, long buildToken) {
-    return new File(storageDir, datasetKey + "." + buildToken + ".old");
+    return new File(storageDir, datasetKey + "." + JVM_ID + "-" + buildToken + ".old");
   }
 
   /** True for the transient {@code .building}/{@code .old} dirs created during a swap (not a real matcher store). */

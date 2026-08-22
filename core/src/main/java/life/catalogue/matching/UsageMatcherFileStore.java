@@ -42,8 +42,24 @@ import org.slf4j.LoggerFactory;
  *
  * <p>Everything except the group column is immutable. {@link #add(SimpleNameCached)} and
  * {@link #updateParentId(String, String)} therefore throw; a change to the data means a rebuild.
- * {@code groups.bin} is mapped read-write because {@link #analyze(TaxGroupAnalyzer)} assigns a
- * {@link TaxGroup} to every usage after the store was sealed.
+ *
+ * <h2>Who may write</h2>
+ * {@code groups.bin} is the one mutable part, because {@link #analyze(TaxGroupAnalyzer)} assigns a
+ * {@link TaxGroup} to every usage after the store was sealed. It is mapped read-write <em>only</em> for a
+ * store opened through {@link #openWritable(int, File)}, which in practice means the one
+ * {@link UsageMatcherFileStoreBuilder#seal()} hands back to whoever just built it into a directory nobody
+ * else knows about yet. Every other opener - a server reopening a store, the matching server - goes through
+ * {@link #open(int, File)} and gets a wholly read-only store, so:
+ * <ul>
+ *   <li>a store directory can live on a read-only mount,</li>
+ *   <li>a stray {@link #update(String, TaxGroup)} fails loudly instead of racing.</li>
+ * </ul>
+ *
+ * <p>This matters because the mapping is {@code MAP_SHARED}: two writers - threads, or processes sharing a
+ * {@code storageDir} - would overwrite each other's bytes with no ordering or visibility guarantee. Reading
+ * is unrestricted; any number of processes may map the same sealed store, and the two immutable files never
+ * change under them. Building, on the other hand, is single-writer by design and is <em>not</em> coordinated
+ * across processes - see {@link UsageMatcherFactory} for what that means for a shared storage directory.
  */
 public class UsageMatcherFileStore implements UsageMatcherStore {
   private static final Logger LOG = LoggerFactory.getLogger(UsageMatcherFileStore.class);
@@ -70,6 +86,7 @@ public class UsageMatcherFileStore implements UsageMatcherStore {
   private final MemorySegment usages;
   private final MemorySegment canonical;
   private final MemorySegment groups;
+  private final boolean writableGroups;
 
   private final int n;
   private final int live;
@@ -87,39 +104,139 @@ public class UsageMatcherFileStore implements UsageMatcherStore {
   private final long cRefs;
 
   /**
-   * Cheap check whether dir holds a store written by the current code, without mapping anything.
-   * False for a missing directory, a directory holding an older format or the files of the previous
-   * chronicle based store.
+   * The regions of the three files, derived from their headers and validated against the actual file sizes.
+   * Every offset a lookup uses comes from here, so a truncated or otherwise corrupt store is rejected while
+   * opening rather than blowing up with an {@link IndexOutOfBoundsException} on some later match request.
+   */
+  private record Layout(int n, int live, int uMask, long uOffsets, long uHash, long uRecords, long blobLen,
+                        int nCanon, int nRefs, int cMask, long cIds, long cOffsets, long cHash, long cRefs) {
+
+    /**
+     * @param uHdr {n, tableSize, live} and the record blob length
+     * @param cHdr {nCanon, tableSize, nRefs}
+     * @param gn   the usage count recorded in the group column
+     */
+    static Layout of(int[] uHdr, long blobLen, long uLen, int[] cHdr, long cLen, int gn, long gLen) throws IOException {
+      int n = uHdr[0], uTable = uHdr[1], live = uHdr[2];
+      checkCount(n, "usage count", USAGES_FILE);
+      checkTable(uTable, n, USAGES_FILE);
+      if (live < 0 || live > n) {
+        throw corrupt(USAGES_FILE, "live count " + live + " outside 0.." + n);
+      }
+      long uOffsets = USAGES_HEADER;
+      long uHash = uOffsets + 8L * (n + 1);
+      long uRecords = uHash + 4L * uTable;
+      checkSize(uLen, uRecords, blobLen, "record blob", USAGES_FILE);
+
+      int nCanon = cHdr[0], cTable = cHdr[1], nRefs = cHdr[2];
+      checkCount(nCanon, "canonical count", CANONICAL_FILE);
+      checkCount(nRefs, "canonical ref count", CANONICAL_FILE);
+      checkTable(cTable, nCanon, CANONICAL_FILE);
+      if (nRefs < nCanon) {
+        throw corrupt(CANONICAL_FILE, nRefs + " refs cannot cover " + nCanon + " canonical ids");
+      }
+      long cIds = CANONICAL_HEADER;
+      long cOffsets = cIds + 4L * nCanon;
+      long cHash = cOffsets + 4L * (nCanon + 1);
+      long cRefs = cHash + 4L * cTable;
+      checkSize(cLen, cRefs, 4L * nRefs, "canonical refs", CANONICAL_FILE);
+
+      if (gn != n) {
+        throw corrupt(GROUPS_FILE, "holds " + gn + " groups but " + USAGES_FILE + " holds " + n + " usages");
+      }
+      checkSize(gLen, GROUPS_HEADER, n, "group column", GROUPS_FILE);
+
+      return new Layout(n, live, uTable - 1, uOffsets, uHash, uRecords, blobLen,
+        nCanon, nRefs, cTable - 1, cIds, cOffsets, cHash, cRefs);
+    }
+  }
+
+  /**
+   * Checks whether dir holds a complete and structurally sound store written by the current code, reading
+   * only the three file headers - nothing is mapped and no record is touched. False for a missing directory,
+   * an older format, the files of the previous chronicle based store, and for a store whose headers do not
+   * describe the bytes actually on disk.
+   *
+   * <p>{@code UsageMatcherFactory.needsRebuild} leans on this: a store that cannot be opened has to be
+   * reported as needing a rebuild here, or it would be skipped by reconcile and stay unavailable forever.
    */
   public static boolean isStore(File dir) {
-    File f = new File(dir, USAGES_FILE);
-    if (!f.isFile() || f.length() < USAGES_HEADER) return false;
-    try (var in = new DataInputStream(new FileInputStream(f))) {
-      byte[] b = new byte[8];
-      in.readFully(b);
-      int magic = le(b, 0);
-      int version = le(b, 4);
-      return magic == MAGIC_USAGES && version == FORMAT_VERSION;
+    try {
+      int[] uHdr = new int[4]; // n, tableSize, live, reserved
+      long[] blobLen = new long[1];
+      long uLen = readHeader(dir, USAGES_FILE, MAGIC_USAGES, USAGES_HEADER, uHdr, blobLen);
+      int[] cHdr = new int[3]; // nCanon, tableSize, nRefs
+      long cLen = readHeader(dir, CANONICAL_FILE, MAGIC_CANONICAL, CANONICAL_HEADER, cHdr, null);
+      int[] gHdr = new int[1]; // n
+      long gLen = readHeader(dir, GROUPS_FILE, MAGIC_GROUPS, GROUPS_HEADER, gHdr, null);
+      Layout.of(uHdr, blobLen[0], uLen, cHdr, cLen, gHdr[0], gLen);
+      return true;
     } catch (IOException e) {
       return false;
     }
   }
 
-  private static int le(byte[] b, int off) {
-    return (b[off] & 0xff) | (b[off + 1] & 0xff) << 8 | (b[off + 2] & 0xff) << 16 | (b[off + 3] & 0xff) << 24;
+  /**
+   * Reads magic, version, the following {@code out.length} ints and, when {@code trailing} is given, one
+   * more long, all in a single pass over the file header.
+   * @return the file length
+   */
+  private static long readHeader(File dir, String name, int magic, int headerSize, int[] out, long[] trailing)
+    throws IOException {
+    File f = new File(dir, name);
+    if (!f.isFile() || f.length() < headerSize) {
+      throw new IOException("Missing or truncated matcher store file " + name + " in " + dir);
+    }
+    try (var in = new DataInputStream(new FileInputStream(f))) {
+      if ((int) readLe(in, 4) != magic || (int) readLe(in, 4) != FORMAT_VERSION) {
+        throw new IOException(name + " in " + dir + " was written by a different version");
+      }
+      for (int i = 0; i < out.length; i++) {
+        out[i] = (int) readLe(in, 4);
+      }
+      if (trailing != null) {
+        trailing[0] = readLe(in, 8);
+      }
+    }
+    return f.length();
+  }
+
+  /** Reads a little endian value of {@code len} bytes, sign extended when it is an int. */
+  private static long readLe(DataInputStream in, int len) throws IOException {
+    byte[] b = new byte[len];
+    in.readFully(b);
+    long v = 0;
+    for (int i = len - 1; i >= 0; i--) {
+      v = (v << 8) | (b[i] & 0xffL);
+    }
+    return len == 4 ? (int) v : v;
   }
 
   /**
-   * Opens a sealed store from disk.
+   * Opens a sealed store from disk, entirely read only - {@link #update(String, TaxGroup)} throws.
+   * This is what a server reopening a store does, so the store directory may sit on a read only mount.
    * @throws IOException if the directory does not hold a complete store of the current format version
    */
   public static UsageMatcherFileStore open(int datasetKey, File dir) throws IOException {
-    return new UsageMatcherFileStore(datasetKey, dir);
+    return new UsageMatcherFileStore(datasetKey, dir, false);
   }
 
-  private UsageMatcherFileStore(int datasetKey, File dir) throws IOException {
+  /**
+   * Opens a sealed store whose group column may be written by {@link #analyze(TaxGroupAnalyzer)}.
+   *
+   * <p>The caller must be the store's exclusive owner: {@code groups.bin} is mapped {@code MAP_SHARED},
+   * so concurrent writers - threads or processes - would silently overwrite each other's bytes with no
+   * ordering guarantee. In practice only {@link UsageMatcherFileStoreBuilder#seal()} hands out a writable
+   * store, to whoever just built it into a private directory. See the class javadoc.
+   */
+  public static UsageMatcherFileStore openWritable(int datasetKey, File dir) throws IOException {
+    return new UsageMatcherFileStore(datasetKey, dir, true);
+  }
+
+  private UsageMatcherFileStore(int datasetKey, File dir, boolean writableGroups) throws IOException {
     this.datasetKey = datasetKey;
     this.dir = dir;
+    this.writableGroups = writableGroups;
     for (var fn : new String[]{USAGES_FILE, CANONICAL_FILE, GROUPS_FILE}) {
       if (!new File(dir, fn).isFile()) {
         throw new IOException("Missing matcher store file " + fn + " in " + dir);
@@ -129,31 +246,42 @@ public class UsageMatcherFileStore implements UsageMatcherStore {
     try {
       this.usages = MmapIO.map(new File(dir, USAGES_FILE), a, false);
       this.canonical = MmapIO.map(new File(dir, CANONICAL_FILE), a, false);
-      this.groups = MmapIO.map(new File(dir, GROUPS_FILE), a, true);
+      this.groups = MmapIO.map(new File(dir, GROUPS_FILE), a, writableGroups);
 
       checkHeader(usages, MAGIC_USAGES, USAGES_HEADER, USAGES_FILE);
       checkHeader(canonical, MAGIC_CANONICAL, CANONICAL_HEADER, CANONICAL_FILE);
       checkHeader(groups, MAGIC_GROUPS, GROUPS_HEADER, GROUPS_FILE);
 
-      this.n = usages.get(MmapIO.INT, 8);
-      int tableSize = usages.get(MmapIO.INT, 12);
-      this.live = usages.get(MmapIO.INT, 16);
-      this.uMask = tableSize - 1;
-      this.uOffsets = USAGES_HEADER;
-      this.uHash = uOffsets + 8L * (n + 1);
-      this.uRecords = uHash + 4L * tableSize;
+      var l = Layout.of(
+        new int[]{usages.get(MmapIO.INT, 8), usages.get(MmapIO.INT, 12), usages.get(MmapIO.INT, 16)},
+        usages.get(MmapIO.LONG, 24), usages.byteSize(),
+        new int[]{canonical.get(MmapIO.INT, 8), canonical.get(MmapIO.INT, 12), canonical.get(MmapIO.INT, 16)},
+        canonical.byteSize(), groups.get(MmapIO.INT, 8), groups.byteSize());
+      this.n = l.n();
+      this.live = l.live();
+      this.uMask = l.uMask();
+      this.uOffsets = l.uOffsets();
+      this.uHash = l.uHash();
+      this.uRecords = l.uRecords();
+      this.nCanon = l.nCanon();
+      this.nRefs = l.nRefs();
+      this.cMask = l.cMask();
+      this.cIds = l.cIds();
+      this.cOffsets = l.cOffsets();
+      this.cHash = l.cHash();
+      this.cRefs = l.cRefs();
 
-      this.nCanon = canonical.get(MmapIO.INT, 8);
-      int cTableSize = canonical.get(MmapIO.INT, 12);
-      this.nRefs = canonical.get(MmapIO.INT, 16);
-      this.cMask = cTableSize - 1;
-      this.cIds = CANONICAL_HEADER;
-      this.cOffsets = cIds + 4L * nCanon;
-      this.cHash = cOffsets + 4L * (nCanon + 1);
-      this.cRefs = cHash + 4L * cTableSize;
-
-      if (groups.byteSize() < GROUPS_HEADER + (long) n) {
-        throw new IOException("Truncated " + GROUPS_FILE + " in " + dir);
+      // the record blob is only reachable through the offsets, so pin down their two boundary values here.
+      // Everything in between is bounds checked by the MemorySegment on access.
+      if (n > 0) {
+        long first = usages.get(MmapIO.LONG, uOffsets);
+        long last = usages.get(MmapIO.LONG, uOffsets + 8L * n);
+        if (first != 0 && first != -1) { // -1 is slot 0 negated, ie shadowed by a duplicate id
+          throw corrupt(USAGES_FILE, "first record offset is " + first + ", expected 0");
+        }
+        if (last != l.blobLen()) {
+          throw corrupt(USAGES_FILE, "last record offset is " + last + ", expected the blob length " + l.blobLen());
+        }
       }
     } catch (RuntimeException | IOException e) {
       a.close();
@@ -171,6 +299,37 @@ public class UsageMatcherFileStore implements UsageMatcherStore {
     if (m != magic || v != FORMAT_VERSION) {
       throw new IOException(String.format(
         "%s was written by a different version (magic=%08x, version=%d). Rebuild the matcher store.", name, m, v));
+    }
+  }
+
+  private static IOException corrupt(String name, String detail) {
+    return new IOException(String.format("Corrupt matcher store file %s: %s. Rebuild the matcher store.", name, detail));
+  }
+
+  private static void checkCount(int count, String what, String name) throws IOException {
+    if (count < 0) {
+      throw corrupt(name, "negative " + what + " " + count);
+    }
+  }
+
+  /**
+   * An open addressed table is only usable if it is a power of two (the mask assumes it) and has at least one
+   * free slot for every possible key - otherwise the linear probe in {@link #slot(String)} / {@link #canonIndex(int)}
+   * never terminates on a miss, which is a far nastier failure than an out of bounds read.
+   */
+  private static void checkTable(int tableSize, int keys, String name) throws IOException {
+    if (tableSize < 16 || Integer.bitCount(tableSize) != 1) {
+      throw corrupt(name, "hash table size " + tableSize + " is not a power of two >= 16");
+    }
+    if (tableSize <= keys) {
+      throw corrupt(name, "hash table of " + tableSize + " cannot hold " + keys + " keys");
+    }
+  }
+
+  /** Verifies that a region starting at {@code from} with {@code len} bytes is exactly what the file holds. */
+  private static void checkSize(long fileLen, long from, long len, String what, String name) throws IOException {
+    if (len < 0 || from < 0 || from + len != fileLen) {
+      throw corrupt(name, String.format("%s ends at %d but the file is %d bytes", what, from + len, fileLen));
     }
   }
 
@@ -254,6 +413,10 @@ public class UsageMatcherFileStore implements UsageMatcherStore {
 
   @Override
   public void update(String usageID, TaxGroup group) {
+    if (!writableGroups) {
+      throw new IllegalStateException("The matcher store at " + dir + " is open read only. "
+        + "Tax groups can only be assigned by whoever built the store, see UsageMatcherFileStore.openWritable");
+    }
     int slot = slot(usageID);
     if (slot < 0) {
       throw NotFoundException.notFound(NameUsage.class, DSID.of(datasetKey, usageID));
@@ -342,10 +505,12 @@ public class UsageMatcherFileStore implements UsageMatcherStore {
 
   @Override
   public void close() {
-    try {
-      groups.force();
-    } catch (RuntimeException e) {
-      LOG.warn("Failed to flush the tax group column of matcher store {}", dir, e);
+    if (writableGroups) { // a read only mapping has nothing to flush and force() would throw on it
+      try {
+        groups.force();
+      } catch (RuntimeException e) {
+        LOG.warn("Failed to flush the tax group column of matcher store {}", dir, e);
+      }
     }
     arena.close();
   }

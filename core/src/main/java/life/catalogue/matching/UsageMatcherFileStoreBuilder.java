@@ -105,6 +105,10 @@ public class UsageMatcherFileStoreBuilder implements UsageSink, AutoCloseable {
   /**
    * Assembles the final files and opens the sealed store. The builder is unusable afterwards; closing it
    * only removes the temporary files.
+   *
+   * <p>The returned store is the only kind whose group column can still be written - the caller built these
+   * files and is their exclusive owner, so it may run {@link UsageMatcherStore#analyze(TaxGroupAnalyzer)}
+   * over them. Anything reopening the directory later gets a fully read-only store.
    */
   public UsageMatcherFileStore seal() throws IOException {
     if (sealed) throw new IllegalStateException("Store already sealed");
@@ -126,7 +130,9 @@ public class UsageMatcherFileStoreBuilder implements UsageSink, AutoCloseable {
     FileUtils.deleteQuietly(groupsTmp);
 
     LOG.info("Sealed matcher store for dataset {} with {} usages in {}", datasetKey, n, dir);
-    return UsageMatcherFileStore.open(datasetKey, dir);
+    // writable: the caller built these files into a directory nobody else has seen yet, so it is the
+    // exclusive owner and the only one entitled to run analyze() over the group column
+    return UsageMatcherFileStore.openWritable(datasetKey, dir);
   }
 
   private long[] readOffsets() throws IOException {
