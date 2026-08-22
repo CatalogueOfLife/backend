@@ -23,6 +23,9 @@ and it grows by one row per sector per weekly fleet sync (~63k/week, ~3.3M/year)
 created *after* the backfill - building them up front would make every one of those 7.9M inserts maintain
 five indexes. Expect the backfill to take a while and to need the disk headroom for the sort; it is all
 pre-deploy work against tables the running app only appends to.
+Retention for this table, and moving release source metrics off the live `sector_import` history so that
+retention becomes possible at all, are tracked in
+[#1562](https://github.com/CatalogueOfLife/backend/issues/1562).
 
 ```sql
 -- new enum and the generic job table
