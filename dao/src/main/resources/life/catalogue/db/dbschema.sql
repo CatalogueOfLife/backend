@@ -1130,12 +1130,15 @@ CREATE TABLE job (
   result_deleted TIMESTAMP WITHOUT TIME ZONE
 );
 
-CREATE INDEX ON job (dataset_key);
+-- job search always orders by created DESC, so the dataset filter is a composite;
+-- its leftmost prefix still serves plain dataset_key lookups
+CREATE INDEX ON job (dataset_key, created DESC);
 CREATE INDEX ON job (created_by);
 CREATE INDEX ON job (job_class);
 CREATE INDEX ON job (created DESC);
 CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
-CREATE INDEX ON job USING GIN (params);
+-- no index on params: nothing filters on it, it is only ever selected and inserted.
+-- a GIN index here would be pure write overhead on the weekly sector sync burst.
 
 CREATE TABLE sector (
   id INTEGER NOT NULL,

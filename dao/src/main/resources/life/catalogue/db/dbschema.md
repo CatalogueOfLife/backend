@@ -18,6 +18,12 @@ their `state`, `job` and `error` columns move to the job table, with the fine gr
 replaced by the generic JOBSTATUS plus a free text `step`.
 One job record is backfilled for every existing import and sync attempt.
 
+**Scale (prod, Aug 2026):** ~6.93M sector syncs + ~0.93M dataset imports + ~3k exports = **~7.9M job rows**,
+and it grows by one row per sector per weekly fleet sync (~63k/week, ~3.3M/year). The indexes are therefore
+created *after* the backfill - building them up front would make every one of those 7.9M inserts maintain
+five indexes. Expect the backfill to take a while and to need the disk headroom for the sort; it is all
+pre-deploy work against tables the running app only appends to.
+
 ```sql
 -- new enum and the generic job table
 CREATE TYPE JOBPRIORITY AS ENUM ('HIGH', 'MEDIUM', 'LOW');
@@ -40,13 +46,6 @@ CREATE TABLE job (
   result_size BIGINT,
   result_deleted TIMESTAMP WITHOUT TIME ZONE
 );
-
-CREATE INDEX ON job (dataset_key);
-CREATE INDEX ON job (created_by);
-CREATE INDEX ON job (job_class);
-CREATE INDEX ON job (created DESC);
-CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
-CREATE INDEX ON job USING GIN (params);
 
 -- link metrics tables to the job table
 ALTER TABLE dataset_import ADD COLUMN job_key UUID;
@@ -89,6 +88,17 @@ INSERT INTO job (key, job_class, status, priority, dataset_key, created_by, crea
 SELECT e.key, 'DatasetExportJob', e.status, 'LOW', e.dataset_key, e.created_by, e.created, e.started, e.finished, e.error, e.md5, e.size, e.deleted
 FROM dataset_export e
 ON CONFLICT (key) DO NOTHING;
+
+-- now that the ~7.9M rows are in, build the indexes in one pass each.
+-- job search always orders by created DESC, so the dataset filter is a composite whose leftmost
+-- prefix still serves plain dataset_key lookups - no separate (dataset_key) index needed.
+-- params deliberately gets no GIN index: nothing filters on it, it is only selected and inserted,
+-- so the index would be pure write overhead on the weekly sector sync burst.
+CREATE INDEX ON job (dataset_key, created DESC);
+CREATE INDEX ON job (created_by);
+CREATE INDEX ON job (job_class);
+CREATE INDEX ON job (created DESC);
+CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
 
 -- drop the moved columns and the old enum
 -- job_key stays nullable: admin tools may rebuild historical metrics without a job record
