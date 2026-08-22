@@ -252,9 +252,15 @@ public class ImportJob extends DatasetJob {
    * Notifies the optional completion callback URL of the request with the final DatasetImport, if one was given.
    */
   private void fireCallback() {
-    if (req.callback != null && callbackNotifier != null) {
-      callbackNotifier.notifyCallback(req.callback, di);
+    if (req.callback == null || callbackNotifier == null) {
+      return;
     }
+    if (di == null) {
+      // the job died before it even got an attempt, so there is no DatasetImport to report
+      LOG.warn("No import metrics to notify callback {} with for dataset {}", req.callback, datasetKey);
+      return;
+    }
+    callbackNotifier.notifyCallback(req.callback, di);
   }
 
   public Integer getAttempt() {
