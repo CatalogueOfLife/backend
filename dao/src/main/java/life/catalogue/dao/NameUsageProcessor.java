@@ -102,40 +102,46 @@ public class NameUsageProcessor {
     }
   }
   private void processTree(int datasetKey, @Nullable Integer sectorKey, Consumer<NameUsageWrapper> consumer) {
-    // The cursor below uses a server-side portal that survives statement execution on the same
-    // connection but NOT a commit. We therefore run the CacheLoader and the in-loop num.get on a
-    // SECOND, isolated session: that way nothing executed inside the cursor's consumer can
-    // commit, rollback or otherwise invalidate the cursor's portal (seen as
-    // "ERROR: portal C_NNN does not exist" once a fallback parent-lookup tripped the loader's
-    // commit-on-miss path).
-    try (SqlSession session = factory.openSession();
-         SqlSession loaderSession = factory.openSession(true)) {
-      final NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
+    // The CacheLoader and the in-loop num.get run on their own autoCommit session that stays open for
+    // both phases below. Two reasons:
+    //  1. the phase 1 cursor uses a server-side portal that survives statement execution on the same
+    //     connection but NOT a commit. Keeping the loader off the cursor's session means nothing the
+    //     cursor's consumer does can commit, rollback or otherwise invalidate the portal (seen as
+    //     "ERROR: portal C_NNN does not exist" once a fallback parent-lookup tripped the loader's
+    //     commit-on-miss path).
+    //  2. autoCommit=true never leaves an open transaction between statements, so this session can sit
+    //     unused for the entire phase 2 loop without tripping idle_in_transaction_session_timeout.
+    try (SqlSession loaderSession = factory.openSession(true);
+         ObjectCache<NameUsageWrapper> taxa = buildObjCache(datasetKey);
+         UsageCache usageCache = buildUsageCache(datasetKey)
+    ) {
       final NameUsageMapper num = loaderSession.getMapper(NameUsageMapper.class);
-      final var sm = session.getMapper(SectorMapper.class);
-      final var dm = session.getMapper(DatasetMapper.class);
       final CacheLoader loader = new CacheLoader.MybatisSession(loaderSession, datasetKey);
-
-      // reusable dsids for this dataset
+      // reusable dsid for this dataset
       final DSID<String> uKey = DSID.root(datasetKey);
-      final DSID<Integer> sKey = DSID.root(datasetKey);
-      // we prefetch sectorKey to the sectors subject dataset key depending whether we process a sector or entire dataset
-      final Map<Integer, SectorProps> sectors = new HashMap<>();
-      if (sectorKey != null) {
-        sectors.put(sectorKey, new SectorProps(sm.get(sKey.id(sectorKey)), dm));
-      } else {
-        sm.listByDataset(datasetKey, null, null).forEach(s -> sectors.put(s.getId(), new SectorProps(s, dm)));
-      }
+      final AtomicInteger counter = new AtomicInteger(0);
 
-      // build temporary table within the session, collecting issues from all usage related tables
-      // we do this in a separate step to not overload postgres with gigantic joins later on
-      var ism = session.getMapper(TmpIssueMapper.class);
-      ism.createTmpIssuesTable(datasetKey, null);
+      // PHASE 1: stream all usages. The cursor session holds an open transaction, so it is scoped as
+      // tightly as possible and closed the moment the cursor is drained - see phase 2 below.
+      try (SqlSession session = factory.openSession()) {
+        final NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
+        final var sm = session.getMapper(SectorMapper.class);
+        final var dm = session.getMapper(DatasetMapper.class);
+        final DSID<Integer> sKey = DSID.root(datasetKey);
 
-      try (ObjectCache<NameUsageWrapper> taxa = buildObjCache(datasetKey);
-           UsageCache usageCache = buildUsageCache(datasetKey)
-      ) {
-        final AtomicInteger counter = new AtomicInteger(0);
+        // we prefetch sectorKey to the sectors subject dataset key depending whether we process a sector or entire dataset
+        final Map<Integer, SectorProps> sectors = new HashMap<>();
+        if (sectorKey != null) {
+          sectors.put(sectorKey, new SectorProps(sm.get(sKey.id(sectorKey)), dm));
+        } else {
+          sm.listByDataset(datasetKey, null, null).forEach(s -> sectors.put(s.getId(), new SectorProps(s, dm)));
+        }
+
+        // build temporary table within the session, collecting issues from all usage related tables
+        // we do this in a separate step to not overload postgres with gigantic joins later on
+        var ism = session.getMapper(TmpIssueMapper.class);
+        ism.createTmpIssuesTable(datasetKey, null);
+
         // processing first returns all taxa before any synonym is returned - cache these and process them at the end
         PgUtils.consume(() -> nuwm.processWithoutClassification(datasetKey, sectorKey), nuw -> {
           // set preloaded infos excluded in sql results as they are very repetitive
@@ -187,20 +193,25 @@ public class NameUsageProcessor {
             }
           }
         });
-
-        // now lets do the cached taxa
-        LOG.info("Process {} taxa of dataset {}; loaded taxa={}", taxa.size(), datasetKey, loadCounter);
-        for (var nuw : taxa) {
-          addClassification(nuw, taxa, usageCache, loader);
-          nuw.setGroup(groupAnalyzer.analyze(nuw.getUsage().toSimpleNameLink(), nuw.getClassification()));
-          consumer.accept(nuw);
-          if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
-            LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);
-          }
-        }
-      } catch (Exception e) {
-        throw new RuntimeException(e);
       }
+
+      // PHASE 2: now lets do the cached taxa.
+      // This reads from the mapdb caches only and can run for well over an hour on the largest releases.
+      // The cursor session above is already closed, so no transaction is held idle while we do - postgres
+      // kills those with idle_in_transaction_session_timeout (15min in production) and an open transaction
+      // pins the xmin horizon and blocks vacuum for as long as it lives.
+      LOG.info("Process {} taxa of dataset {}; loaded taxa={}", taxa.size(), datasetKey, loadCounter);
+      for (var nuw : taxa) {
+        addClassification(nuw, taxa, usageCache, loader);
+        nuw.setGroup(groupAnalyzer.analyze(nuw.getUsage().toSimpleNameLink(), nuw.getClassification()));
+        consumer.accept(nuw);
+        if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
+          LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);
+        }
+      }
+
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 

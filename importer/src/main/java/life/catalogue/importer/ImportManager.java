@@ -39,6 +39,7 @@ import life.catalogue.metadata.DoiResolver;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -71,6 +72,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   static final Comparator<DatasetImport> DI_STARTED_COMPARATOR = Comparator.comparing(DatasetImport::getStarted, Comparator.nullsFirst(Comparator.naturalOrder()));
 
   private boolean started;
+  private ImportCallbackNotifier callbackNotifier;
   private SyncManager assemblyCoordinator;
   private final ImporterConfig iCfg;
   private final NormalizerConfig nCfg;
@@ -330,7 +332,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    *
    *         dataset does not exist or is not of matching origin
    */
-  public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String filename, @Nullable String suffix, User user) throws IOException {
+  public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String filename, @Nullable String suffix, User user, @Nullable URI callback) throws IOException {
     validDataset(datasetKey);
     Path upload;
     if (filename == null) {
@@ -347,10 +349,10 @@ public class ImportManager implements Managed, Idle, DatasetListener {
       CompressionUtil.zipFile(upload.toFile(), uploadZip.toFile());
       upload = uploadZip; // use zip for the final request object
     }
-    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey(), upload));
+    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey(), upload, callback));
   }
 
-  public ImportRequest uploadXls(final int datasetKey, final InputStream content, User user) throws IOException {
+  public ImportRequest uploadXls(final int datasetKey, final InputStream content, User user, @Nullable URI callback) throws IOException {
     Preconditions.checkNotNull(content, "No content given");
     validDataset(datasetKey);
     // extract CSV files
@@ -366,7 +368,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     // zip up as single source file for importer
     Path uploadZip = createScratchUploadFile(datasetKey);
     CompressionUtil.zipDir(csvDir, uploadZip.toFile());
-    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey(), uploadZip));
+    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey(), uploadZip, callback));
   }
 
   /**
@@ -440,7 +442,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
       return new ImportJob(req, new DatasetWithSettings(d, ds), iCfg, nCfg, dCfg, downloader, factory, importStoreFactory, index, validator, resolver, indexService, imgService, dao, dDao, sDao, decisionDao, bus,
-        matcherFactory, scopeResolver, importTimer, failed
+        matcherFactory, scopeResolver, importTimer, failed, callbackNotifier
       );
     }
   }
@@ -477,6 +479,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",
         iCfg.threads,
         iCfg.maxQueue);
+    callbackNotifier = new ImportCallbackNotifier(downloader.getClient(), iCfg);
     started = true;
     try {
       rescheduleInterrupted();
@@ -490,6 +493,10 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   public void stop() throws Exception {
     // running and queued imports live in the shared job executor which interrupts them on its own shutdown
     started = false;
+    if (callbackNotifier != null) {
+      callbackNotifier.close();
+      callbackNotifier = null;
+    }
   }
 
   @Override

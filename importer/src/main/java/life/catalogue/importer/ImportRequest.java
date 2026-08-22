@@ -1,9 +1,12 @@
 package life.catalogue.importer;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Objects;
+
+import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,6 +21,13 @@ public class ImportRequest implements Comparable<ImportRequest> {
   public final boolean force;
   public final Integer reimportAttempt;
   public Integer createdBy;
+  /**
+   * Optional callback URL that will receive a POST with the final DatasetImport JSON
+   * once the job reaches a terminal state (success or failure).
+   * See https://github.com/CatalogueOfLife/backend/issues/1552
+   */
+  @Nullable
+  public URI callback;
   public final LocalDateTime created = LocalDateTime.now();
   public LocalDateTime started;
 
@@ -26,7 +36,13 @@ public class ImportRequest implements Comparable<ImportRequest> {
   }
 
   public static ImportRequest upload(int datasetKey, int createdBy, Path upload){
-    return new ImportRequest(datasetKey, createdBy, true, true, null, upload);
+    return upload(datasetKey, createdBy, upload, null);
+  }
+
+  public static ImportRequest upload(int datasetKey, int createdBy, Path upload, @Nullable URI callback){
+    ImportRequest req = new ImportRequest(datasetKey, createdBy, true, true, null, upload);
+    req.callback = callback;
+    return req;
   }
 
   public static ImportRequest external(int datasetKey, int createdBy){
@@ -47,9 +63,11 @@ public class ImportRequest implements Comparable<ImportRequest> {
   @JsonCreator
   public ImportRequest(@JsonProperty("datasetKey") int datasetKey,
                        @JsonProperty("force") boolean force,
-                       @JsonProperty("priority") boolean priority
+                       @JsonProperty("priority") boolean priority,
+                       @JsonProperty("callback") @Nullable URI callback
   ) {
    this(datasetKey, null, force, priority, null, null);
+   this.callback = callback;
   }
 
   private ImportRequest(int datasetKey, Integer createdBy, boolean force, boolean priority, Integer reimportAttempt, Path upload) {

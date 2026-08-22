@@ -1,13 +1,12 @@
 package life.catalogue.command;
 
-import life.catalogue.api.model.IndexName;
-import life.catalogue.matching.nidx.NameIndexMapDBStore;
+import life.catalogue.matching.nidx.NameIndexMapStore;
 import life.catalogue.matching.nidx.NameIndexStore;
 
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.Test;
-import org.mapdb.DBMaker;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -15,15 +14,13 @@ import org.mapdb.DBMaker;
 public class NamesIndexCmdTest {
 
   @Test
-  public void kryo() throws Exception {
-    NameIndexStore store = new NameIndexMapDBStore(DBMaker.memoryDB(),512);
+  public void store() throws Exception {
+    NameIndexStore store = new NameIndexMapStore();
     store.start();
-    var idx = new IndexName();
-    idx.setKey(778899);
-    idx.setCanonicalId(778899);
-    idx.setRank(Rank.SPECIES);
-    idx.setScientificName("Abies alba");
-    store.add("asdfgh", idx);
+    store.add("asdfgh", 778899);
+    assertEquals(778899, store.get("asdfgh"));
+    assertTrue(store.contains("asdfgh"));
+    store.stop();
   }
 
 }

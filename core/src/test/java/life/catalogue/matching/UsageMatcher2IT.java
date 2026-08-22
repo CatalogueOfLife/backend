@@ -145,10 +145,9 @@ public class UsageMatcher2IT {
     assertFalse(match.isMatch());
     assertEquals(MatchType.NONE, match.type);
 
-    //TODO: this doesn't work - it matches to the plant as thats the only name without a year and could potentially match
     match = match(null, "Oenanthe", "1918", null, null);
-    //assertFalse(match.isMatch());
-    //assertEquals(MatchType.NONE, match.type);
+    assertFalse(match.isMatch());
+    assertEquals(MatchType.NONE, match.type);
 
     // without author and classification we should get non
     match = match(Rank.GENUS, "Oenanthe", null, null, null);
@@ -178,6 +177,68 @@ public class UsageMatcher2IT {
 
     match = match(Rank.SUBGENUS, "Chaetocnema (Chaetocnema)", "Ruan & Yang & Konstantinov & Prathapan & Zhang, 2019", null, null);
     assertEquals("sg3", match.usage.getId());
+  }
+
+  /**
+   * Same-canonical homonyms with different authorship must stay separate even though, in the single-tier
+   * names index, all usages of one canonical name share a single namesIndexId. Separation must therefore
+   * come from comparing the live authorship, not from the (now constant) nidx id.
+   * Fixtures: oen1 = Oenanthe L. (plant), oen2 = Oenanthe Vieillot, 1816 (bird), oen3 = Oenanthe Pallas, 1771 (synonym).
+   */
+  @Test
+  public void differentAuthorHomonymsStaySeparate() throws Exception {
+    // Vieillot authorship must resolve to the bird genus, not the Linnaean plant nor the Pallas synonym.
+    // (label "Oenanthe Vieillot" != any candidate label, so this only works via live authorship comparison)
+    var match = match(Rank.GENUS, "Oenanthe", "Vieillot", null, null);
+    assertEquals("oen2", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
+
+    // Linnaean authorship must resolve to the plant genus, not the bird
+    match = match(Rank.GENUS, "Oenanthe", "L.", null, null);
+    assertEquals("oen1", match.usage.getId());
+
+    // an author matching none of the three same-canonical homonyms must not match at all
+    match = match(Rank.GENUS, "Oenanthe", "Döring", null, null);
+    assertFalse(match.isMatch());
+    assertEquals(MatchType.NONE, match.type);
+  }
+
+  /**
+   * Two same-canonical names that only differ by an uncomparable rank (here SUBGENUS vs INFRAGENERIC_NAME)
+   * must not be split by authorship when they share the same author. This guards the removal of the old
+   * sameNidxWithoutRank rank re-match logic: rank separation is left to ranksDiffer (which keeps uncomparable
+   * ranks together), while authorship decides between the two subgenus homonyms.
+   * Fixtures: sg2 = Chaetocnema (Chaetocnema) Stephens, 1831; sg3 = Chaetocnema (Chaetocnema) Ruan et al., 2019.
+   */
+  @Test
+  public void sameAuthorAcrossRankMatches() throws Exception {
+    var match = match(Rank.INFRAGENERIC_NAME, "Chaetocnema (Chaetocnema)", "Stephens, 1831", null, null);
+    assertEquals("sg2", match.usage.getId());
+  }
+
+  /**
+   * The usage EXACT/VARIANT classification must be computed from the live labels only, not seeded from the
+   * candidate's stored names index match type. name_match.type / Name.namesIndexType are no longer persisted
+   * at all (see dbschema.md), so matcher.store() candidates never carry a meaningful namesIndexMatchType any
+   * more - explicitly wipe it to null too (simulating legacy data) and verify the usage match type is still
+   * derived correctly purely from comparing the normalized labels.
+   */
+  @Test
+  public void exactAndVariantIndependentOfNidxType() throws Exception {
+    // wipe the stored candidate's names index match type so the old seed-then-flip logic has nothing to seed from
+    var oen1 = new SimpleNameCached(matcher.store().get("oen1"));
+    oen1.setNamesIndexMatchType(null);
+    matcher.store().add(oen1);
+
+    // byte-identical label -> EXACT, even though the seed nidx type on the matched candidate is null
+    var match = match(Rank.GENUS, "Oenanthe", "L.", null, null);
+    assertEquals("oen1", match.usage.getId());
+    assertEquals(MatchType.EXACT, match.type);
+
+    // spelling-different authorship -> VARIANT, even though the seed nidx type on the matched candidate is null
+    match = match(Rank.GENUS, "Oenanthe", "Lin.", null, null);
+    assertEquals("oen1", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
   }
 
   UsageMatch match(Rank rank, String name, String authors, TaxonomicStatus status, NomCode code, SimpleName... parents) throws InterruptedException {

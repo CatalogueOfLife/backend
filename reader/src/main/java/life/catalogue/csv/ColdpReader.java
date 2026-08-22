@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -259,7 +260,11 @@ public class ColdpReader extends CsvReader {
     return cslJsonL;
   }
 
-  public Iterable<Path> getTreatments() throws IOException {
-    return PathUtils.listFiles(treatments, Set.of("txt", "html", "xml"));
+  /**
+   * There is one treatment file per taxon, so this stays lazy instead of materialising the entire folder.
+   * The caller MUST close the returned stream, it holds an open directory handle.
+   */
+  public Stream<Path> getTreatments() throws IOException {
+    return PathUtils.streamFiles(treatments, Set.of("txt", "html", "xml"));
   }
 }

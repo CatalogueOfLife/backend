@@ -206,6 +206,56 @@ public class IdProviderTest {
   }
 
   @Test
+  public void sameCanonicalIdDifferentAuthorsKeepDistinctIds() throws Exception {
+    // Under the canonical-only names index, every usage in a canonical group shares one
+    // namesIndexId (canonId == nxId for all of them), so the old "exact names index" scoring
+    // term in matchScore() contributes the *same* amount to every candidate pairing below and
+    // can never discriminate between them. Only authorship (+ rank) can - this pins that.
+    prevIdsByAttempt.put(1, List.of(
+      sn(30, 5, 5, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(31, 5, 5, SPECIES, "Abies alba", "L.", ACCEPTED)
+    ));
+
+    // test names: same canonical id/nidx (5/5) for both, only authorship differs
+    testNames = new ArrayList<>(List.of(
+      sn(5, 5, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(5, 5, SPECIES, "Abies alba", "L.", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(0, report.deleted.size());
+    assertEquals(0, report.resurrected.size());
+
+    assertID(30, testNames.get(0)); // matches by authorship "Mill."
+    assertID(31, testNames.get(1)); // matches by authorship "L."
+  }
+
+  @Test
+  public void synonymsScoredByTheirAcceptedName() throws Exception {
+    // two archived synonyms of the very same canonical name that differ only in their accepted name.
+    // The archive keeps the accepted names scientific name, the matcher store keys the parent by usage id,
+    // so the id can only be picked correctly if we resolve that id into a name first.
+    prevIdsByAttempt.put(1, List.of(
+      sn(50, 7, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "Abies alba"),
+      sn(51, 7, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "Larix alba")
+    ));
+
+    // just like the real store, the synonym points at its accepted name by usage id
+    testNames = new ArrayList<>(List.of(
+      sn("acc", 8, 8, SPECIES, "Larix alba", "Mill.", ACCEPTED, null),
+      sn("syn", 7, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "acc")
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+
+    assertID(51, testNames.get(1)); // the synonym of Larix alba, not the one of Abies alba
+  }
+
+  @Test
   public void unmatched() throws Exception {
     // 1st attempt
     prevIdsByAttempt.put(1, List.of(

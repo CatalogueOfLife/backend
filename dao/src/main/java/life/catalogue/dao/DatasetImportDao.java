@@ -185,6 +185,7 @@ public class DatasetImportDao {
     di.setEstimateCount(mapper.countEstimate(key));
     di.setMediaCount(mapper.countMedia(key));
     di.setNameCount(mapper.countName(key));
+    di.setNameMatchesCount(mapper.countNameMatches(key));
     di.setReferenceCount(mapper.countReference(key));
     di.setSynonymCount(mapper.countSynonym(key));
     di.setTaxonCount(mapper.countTaxon(key));
@@ -207,7 +208,6 @@ public class DatasetImportDao {
     di.setMergedTaxaByRankCount(countMap(Rank.class, mapper.countMergedTaxaByRank(key)));
     di.setNameRelationsByTypeCount(countMap(NomRelType.class, mapper.countNameRelationsByType(key)));
     di.setNamesByCodeCount(countMap(NomCode.class, mapper.countNamesByCode(key)));
-    di.setNamesByMatchTypeCount(countMap(MatchType.class, mapper.countNamesByMatchType(key)));
     di.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(key)));
     di.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(key)));
     di.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(key)));

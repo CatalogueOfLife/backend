@@ -92,7 +92,7 @@ public class IdProviderIT {
       AtomicInteger maxID = new AtomicInteger();
       num.processDataset(projectKey, null, null).forEach(nu -> {
         System.out.print(nu);
-        var ni = nmm.get(nu).getName();
+        var ni = nmm.get(nu).getNidx();
         var id = idm.getUsage(projectKey, nu.getId());
         System.out.println("  -> " + id + " nidx:" + ni);
         int val = IdConverter.LATIN29.decode(id);
@@ -129,7 +129,7 @@ public class IdProviderIT {
       AtomicInteger maxID = new AtomicInteger();
       num.processDataset(projectKey, null, null).forEach(nu -> {
         System.out.print(nu);
-        var ni = nmm.get(nu).getName();
+        var ni = nmm.get(nu).getNidx();
         var id = idm.getUsage(projectKey, nu.getId());
         System.out.println("  -> " + id + " nidx:" + ni);
         int val = IdConverter.LATIN29.decode(id);

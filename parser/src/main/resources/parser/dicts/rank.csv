@@ -58,10 +58,10 @@ convar,CONVARIETY
 convarietas,CONVARIETY
 ct,CHEMOFORM
 cv,CULTIVAR
-div,PHYLUM
-divisao,PHYLUM
-divisio,PHYLUM
-division,PHYLUM
+div,DIVISION_ZOOLOGY
+divisao,DIVISION_ZOOLOGY
+divisio,DIVISION_ZOOLOGY
+division,DIVISION_ZOOLOGY
 domain,DOMAIN
 domaine,DOMAIN
 dominion,DOMAIN
@@ -306,7 +306,7 @@ variedade,VARIETY
 varietas,VARIETY
 variete,VARIETY
 variety,VARIETY
-zoodivisio,DIVISION
+zoodivisio,DIVISION_ZOOLOGY
 zoosectio,SECTION_ZOOLOGY
 zoosection,SECTION_ZOOLOGY
 µ,INFRASPECIFIC_NAME

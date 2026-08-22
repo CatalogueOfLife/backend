@@ -165,6 +165,9 @@
   <select id="countName" resultType="integer">
     SELECT count(*) FROM name WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
   </select>
+  <select id="countNameMatches" resultType="integer">
+    SELECT count(*) FROM name_match WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey} AND index_id IS NOT NULL
+  </select>
   <select id="countReference" resultType="integer">
     SELECT count(*) FROM reference WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
   </select>
@@ -222,12 +225,6 @@
   <select id="countNamesByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
     FROM name
-    WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
-    GROUP BY type
-  </select>
-  <select id="countNamesByMatchType" resultType="StringCount">
-    SELECT type AS key, count(*) AS count
-    FROM name_match
     WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
     GROUP BY type
   </select>

@@ -53,4 +53,40 @@ public class ScientificNameSimilarityTest {
     assertEquals(5d, sns.getSimilarity("Lucina scotti", "Lucina wattsi"), 0.01d);
     assertEquals(0d, sns.getSimilarity("scotti", "wattsi"), 0.01d);
   }
+
+  /**
+   * A single character typo has a whole word edit distance of 1 wherever it falls, but it shifts
+   * every following character along. The first MUST_MATCH characters of the epithet can therefore
+   * end up differing by 1 or by 2 edits purely depending on the position of the typo, which used to
+   * decide whether the epithet was scored at all.
+   *
+   * See https://github.com/gbif/matching-ws/issues/13
+   */
+  @Test
+  public void testSingleCharacterEpithetTypos() throws Exception {
+    ScientificNameSimilarity sns = new ScientificNameSimilarity();
+
+    // "disc" vs "dico" and "conf" vs "cofu" both differ by 2 edits, the whole epithets by 1
+    assertEquals(95d, sns.getSimilarity("Cissus discolor", "Cissus dicolor"), 0.01d);
+    assertEquals(95d, sns.getSimilarity("Saintpaulia confusa", "Saintpaulia cofusa"), 0.01d);
+    // a typo in both genus and epithet, the genus one still within the genus tolerance
+    assertEquals(85d, sns.getSimilarity("Cissus discolor", "Cisus dicolor"), 0.01d);
+
+    // the genus keeps the strict prefix rule: "Sain" vs "Sant" differs by 2 edits and is rejected,
+    // as a genus differing in its first characters is usually a genuinely different genus
+    assertEquals(5d, sns.getSimilarity("Saintpaulia confusa", "Santpaulia confusa"), 0.01d);
+    assertEquals(5d, sns.getSimilarity("Saintpaulia confusa", "Santpaulia cofusa"), 0.01d);
+
+    // epithets differing by more than a single character stay apart even though their first
+    // characters are close: these are all distinct, accepted species in COL
+    assertEquals(5d, sns.getSimilarity("Abacetus major", "Abacetus macer"), 0.01d);
+    assertEquals(5d, sns.getSimilarity("Abacetus ornatus", "Abacetus optatus"), 0.01d);
+    assertEquals(5d, sns.getSimilarity("Quercus robur", "Quercus rubor"), 0.01d);
+    // and a differing first character still rejects outright
+    assertEquals(5d, sns.getSimilarity("Cissus discolor", "Cissus bicolor"), 0.01d);
+
+    // accepted cost: distinct species one edit apart do become similar. Homotypic consolidation
+    // additionally requires identical authorship, which keeps these two apart there.
+    assertEquals(95d, sns.getSimilarity("Agave aurea", "Agave azurea"), 0.01d);
+  }
 }

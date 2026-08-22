@@ -75,7 +75,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   ProjectTestInfo info;
 
 
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "{0}")
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
       {"exact-dupes", List.of("plazi")},
@@ -111,7 +111,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       {"biota2", List.of("ipni")},
       {"biota", List.of("wcvp", "lcvp", "ipni")}, // TODO: should be merged: Biota macrocarpa hort. ex Gordon AND Biota macrocarpa Godr.
       {"saccolomataceae", List.of("orthiopteris")},
-      {"protected", List.of("src")} // XReleaseConfig.protectedGroups shields the Carabus subtree from merges
+      {"protected", List.of("src")}, // XReleaseConfig.protectedGroups shields the Carabus subtree from merges
+      {"bareauthorship", List.of("src")} // bare-name merge candidates must be filtered by authorship, see readme.md
     });
   }
 
@@ -419,6 +420,88 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     // a new species under a sibling genus outside the protected group must be merged normally
     assertNotNull("New species outside the protected group must be merged",
       getByName(Datasets.COL, Rank.SPECIES, "Bembidion properans"));
+  }
+
+  /**
+   * Invoked by reflection from {@link #syncAndCompare()} for the "bareauthorship" project.
+   * Note: the reflection lookup in syncAndCompare is {@code project + "Validate"} where
+   * {@code project} has been lower-cased in the constructor, so this method name must stay an
+   * all-lowercase prefix ("bareauthorship") plus "Validate" - no camelCase, no hyphen (project
+   * names with a hyphen, like "author-dupes", cannot use this mechanism at all since it would
+   * not be a legal Java identifier).
+   * <p>
+   * Asserts the strict bare-name merge gate: a bare name is only merged onto a target candidate
+   * when it has authorship AND exactly one candidate sharing the matched canonical has identical
+   * rank and {@code AuthorComparator.compare(incoming, candidate) == Equality.EQUAL}. See
+   * txtree/bareauthorship/readme.md for the full scenario writeup.
+   */
+  public void bareauthorshipValidate() {
+    // canonical "Aus bus" is ambiguous in the target (two authorship variants). The incoming bare,
+    // unauthored "Aus bus" from the source has no authorship at all, so it is skipped outright and
+    // both variants must remain untouched.
+    var busVariants = listByName(Datasets.COL, Rank.SPECIES, "Aus bus");
+    assertEquals(2, busVariants.size());
+    var busAuthors = new HashSet<String>();
+    for (var u : busVariants) {
+      busAuthors.add(u.getName().getAuthorship());
+    }
+    assertEquals(Set.of("Mill.", "Linn."), busAuthors);
+
+    // canonical "Aus cus" has an unauthored candidate plus an unrelated authored decoy "Aus cus Linn."
+    // sharing the same canonical id. The incoming bare, authored "Aus cus Mill." cannot resolve against
+    // either: compare(Mill., <unauthored>) is UNKNOWN (not EQUAL), compare(Mill., Linn.) is DIFFERENT.
+    // Zero candidates survive the filter, so the merge is skipped and "Aus cus" stays unauthored.
+    var cusVariants = listByName(Datasets.COL, Rank.SPECIES, "Aus cus");
+    assertEquals(2, cusVariants.size());
+    var cusAuthors = new HashSet<String>();
+    for (var u : cusVariants) {
+      cusAuthors.add(u.getName().getAuthorship());
+    }
+    var expectedCusAuthors = new HashSet<String>();
+    expectedCusAuthors.add(null);
+    expectedCusAuthors.add("Linn.");
+    assertEquals(expectedCusAuthors, cusAuthors);
+
+    // canonical "Aus dus" has a single candidate "Aus dus Mill." with no publishedInId. The incoming
+    // bare, authored "Aus dus Mill." has identical rank and EQUAL authorship, so it is the one genuine
+    // merge case (a): the merge fires and copies the incoming PUB reference onto the target name. The
+    // enrichment isn't tree-visible (references aren't printed in the text tree), so assert it directly.
+    var dus = getByName(Datasets.COL, Rank.SPECIES, "Aus dus");
+    assertNotNull(dus);
+    assertEquals("Mill.", dus.getName().getAuthorship());
+    assertNotNull("Merge must have copied the incoming PUB reference", dus.getName().getPublishedInId());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var rm = session.getMapper(ReferenceMapper.class);
+      var ref = rm.get(DSID.of(Datasets.COL, dus.getName().getPublishedInId()));
+      assertNotNull(ref);
+      assertEquals("A revision of the genus Aus", ref.getCsl().getTitle());
+    }
+
+    // canonical "Aus eus" has a single candidate "Aus eus Linn.". The incoming bare, authored
+    // "Aus eus Mill." has identical rank but DIFFERENT authorship (case c), so the one candidate is
+    // filtered out, zero remain, and the merge is skipped - authorship must stay "Linn.". The incoming
+    // name also carries a PUB reference (eusRef) that the target lacks; if the authorship-EQUAL clause
+    // were ever loosened (e.g. to != DIFFERENT, letting UNKNOWN through) this candidate would still be
+    // filtered out here since compare(Mill., Linn.) is strictly DIFFERENT - the PUB is there so that a
+    // *different* regression, an accidental widening of the whole gate, would show up as an unwanted
+    // publishedInId on the target.
+    var eus = getByName(Datasets.COL, Rank.SPECIES, "Aus eus");
+    assertNotNull(eus);
+    assertEquals("Linn.", eus.getName().getAuthorship());
+    assertNull("Authorship mismatch must not enrich the target with the incoming PUB reference",
+      eus.getName().getPublishedInId());
+
+    // canonical "Aus fus" has a single candidate "Aus fus Mill." at rank SPECIES. The incoming bare
+    // name is also "Aus fus Mill." (identical genus/specificEpithet -> same canonical nidx bucket,
+    // rank is not part of the canonical form) but tagged rank SPECIES_AGGREGATE ("Aus fus agg."),
+    // and EQUAL authorship. Since the ranks differ, the `c.getRank() == n.getRank()` clause excludes
+    // the candidate, zero remain, and the merge is skipped - the incoming PUB reference (fusRef) must
+    // not be copied onto the target, proving the rank clause is load-bearing.
+    var fus = getByName(Datasets.COL, Rank.SPECIES, "Aus fus");
+    assertNotNull(fus);
+    assertEquals("Mill.", fus.getName().getAuthorship());
+    assertNull("Rank mismatch must not enrich the target with the incoming PUB reference",
+      fus.getName().getPublishedInId());
   }
 
   private void validateVernacular() {

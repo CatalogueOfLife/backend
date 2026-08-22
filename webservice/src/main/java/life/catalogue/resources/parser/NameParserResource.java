@@ -199,13 +199,7 @@ public class NameParserResource {
 
   private Optional<PNIssue> parse(CRName n) {
     LOG.debug("Parse: {}", n);
-    try {
-      Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.authorship, n.rank, n.code, n);
-      return parsed.map(nat -> new PNIssue(nat, n.issues));
-
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      return Optional.empty();
-    }
+    Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.authorship, n.rank, n.code, n);
+    return parsed.map(nat -> new PNIssue(nat, n.issues));
   }
 }

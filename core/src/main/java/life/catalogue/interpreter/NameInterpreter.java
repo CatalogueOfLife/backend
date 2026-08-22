@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.parser.*;
 import life.catalogue.parser.NameParser;
 
@@ -128,10 +127,12 @@ public class NameInterpreter {
                                               final String combAuthors, final String combExAuthors, final String combAuthorsYear, final String basAuthors, final String basExAuthors, final String basAuthorsYear, 
                                               NamePart notho, Boolean originalSpelling, String nomStatus,
                                               String link, String remarks, String identifiers, IssueContainer issues) {
-    try {
       // default code & rank
       code = ObjectUtils.coalesce(code, settings.getEnum(Setting.NOMENCLATURAL_CODE));
       rank = ObjectUtils.coalesce(rank, Rank.UNRANKED);
+
+      // author atoms (separate comb/bas columns) take precedence over any authorship string
+      final boolean useAuthorAtoms = ObjectUtils.anyNonBlank(combAuthors, combExAuthors, combAuthorsYear, basAuthors, basExAuthors, basAuthorsYear);
 
       // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
       final boolean useAtoms;
@@ -158,6 +159,7 @@ public class NameInterpreter {
       // we can get the scientific name in various ways.
       // we prefer already atomized names as we want to trust humans more than machines
       ParsedNameUsage pnu;
+      boolean scinameAuthorshipParsed = false; // true once the sciname path has folded the authorship in
       if (useAtoms) {
         pnu = new ParsedNameUsage();
         Name atom = new Name();
@@ -233,7 +235,16 @@ public class NameInterpreter {
 
       } else if (StringUtils.isNotBlank(sciname)) {
         // be careful, this infers ranks from the name!
-        pnu = NameParser.PARSER.parse(sciname, rank, code, issues).get();
+        // one-go parse: hand the parser the name AND authorship together (unless author atoms win)
+        Name n = new Name();
+        n.setScientificName(sciname);
+        n.setRank(rank);
+        n.setCode(code);
+        if (!useAuthorAtoms) {
+          n.setAuthorship(authorship);
+          scinameAuthorshipParsed = true;
+        }
+        pnu = NameParser.PARSER.parse(n, issues).get();
 
       } else {
         LOG.info("No name given for {}", id);
@@ -273,13 +284,13 @@ public class NameInterpreter {
 
       // +++ AUTHORSHIP +++
       // do we have a parsed authorship given? That always takes precedence
-      boolean useAuthorAtoms = ObjectUtils.anyNonBlank(combAuthors, combExAuthors, combAuthorsYear, basAuthors, basExAuthors, basAuthorsYear);
       if (useAuthorAtoms) {
         pnu.getName().setCombinationAuthorship(buildAuthorship(combAuthors, combExAuthors, combAuthorsYear));
         pnu.getName().setBasionymAuthorship(buildAuthorship(basAuthors, basExAuthors, basAuthorsYear));
         pnu.getName().rebuildAuthorship();
-      } else {
-        // try to add an authorship if not yet there
+      } else if (!scinameAuthorshipParsed) {
+        // atomized-name path: fold the authorship string onto the human-supplied atoms
+        // (the sciname path already parsed it together with the name above)
         NameParser.PARSER.parseAuthorshipIntoName(pnu, authorship, issues);
       }
 
@@ -344,11 +355,6 @@ public class NameInterpreter {
       }
 
       return Optional.of(pnu);
-
-    } catch (InterruptedException e) {
-      // interpreters are free to throw the runtime equivalent
-      throw new InterruptedRuntimeException(e.getMessage());
-    }
   }
 
   private static Authorship buildAuthorship(String author, String ex, String year) {
@@ -389,7 +395,7 @@ public class NameInterpreter {
     if (epi.extinct) {
       pnu.setExtinct(true);
     }
-    if (epi.hybrid && pnu.getName().getNotho() == null) {
+    if (epi.hybrid && pnu.getName().getNotho().isEmpty()) {
       pnu.getName().setNotho(part);
     }
   }
@@ -419,7 +425,8 @@ public class NameInterpreter {
 
   private static void setDefaultNameType(Name n) {
     if (n.getCode() == NomCode.VIRUS) {
-      n.setType(NameType.VIRUS);
+      // name-parser v4.2 dropped NameType.VIRUS; viruses are OTHER, the virus signal lives on NomCode.VIRUS
+      n.setType(NameType.OTHER);
     } else {
       n.setType(NameType.SCIENTIFIC);
     }

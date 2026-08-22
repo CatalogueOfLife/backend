@@ -35,7 +35,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,15 +105,7 @@ public class WsMatchingServer extends Application<WsMatchingServerConfig> {
     j.packages(TsvBodyWriter.class.getPackage().getName());
 
     // name parser
-    NameParser.PARSER.setTimeout(cfg.parserTimeout);
     env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));
-    env.lifecycle().addServerLifecycleListener(server -> {
-      try {
-        NameParser.PARSER.configs().loadFromCLB();
-      } catch (Exception e) {
-        LOG.error("Failed to load name parser configs", e);
-      }
-    });
 
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
 
@@ -122,11 +113,8 @@ public class WsMatchingServer extends Application<WsMatchingServerConfig> {
     env.lifecycle().manage(ManagedUtils.from((Managed) nidx));
 
     Dataset dataset = readDataset(cfg.matching.datasetJson(cfg.matchingDatasetKey));
-    // the chronicle files already exist here (pre-built by MatchingServerBuildCmd), so the sizing
-    // args are read from the file header and these estimates are effectively ignored
-    UsageMatcher matcher = UsageMatcherFactory.buildPersistentMatcher(
-      cfg.matchingDatasetKey, List.of(), dataset.getSize()+1, dataset.getSize()+1, cfg.matching, nidx
-    );
+    // the store files are prebuilt by MatchingServerBuildCmd and only opened here - there is no database
+    UsageMatcher matcher = UsageMatcherFactory.openPersistentMatcher(cfg.matchingDatasetKey, cfg.matching, nidx);
     j.register(new NameParserResource());
     j.register(new life.catalogue.resources.parser.openrefine.NameReconciliationResource(cfg.apiURI, cfg.clbURI));
     j.register(new FixedNameUsageMatchingResource(cfg.matching, dataset, matcher));

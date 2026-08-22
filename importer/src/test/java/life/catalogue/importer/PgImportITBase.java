@@ -178,7 +178,6 @@ public class PgImportITBase {
       NameMapper nm = session.getMapper(NameMapper.class);
       for (Name n : nm.processDataset(datasetKey)) {
         assertNotNull(n.getNamesIndexId());
-        assertNotNull(n.getNamesIndexType());
       }
     }
   }

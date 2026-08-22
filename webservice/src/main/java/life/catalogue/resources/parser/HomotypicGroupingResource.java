@@ -85,8 +85,7 @@ public class HomotypicGroupingResource {
     final AtomicInteger prio = new AtomicInteger(1);
     Map<String, List<VerbatimName>> epithets = new HashMap<>();
     GroupingResult gr = new GroupingResult();
-    try {
-      for (String n : names) {
+    for (String n : names) {
         if (StringUtils.isBlank(n)) continue;
         var vn = new VerbatimName(prio.getAndIncrement(), n);
         Optional<ParsedNameUsage> pnOpt = NameParser.PARSER.parse(n, null, code, vn);
@@ -104,9 +103,6 @@ public class HomotypicGroupingResource {
           gr.ignored.add(n);
         }
       }
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
     // finally compare authorships for each epithet group
     for (Map.Entry<String, List<VerbatimName>> epithetGroup : epithets.entrySet()) {
       gr.groups.addAll(basSorter.groupBasionyms(code, epithetGroup.getKey(), epithetGroup.getValue(),

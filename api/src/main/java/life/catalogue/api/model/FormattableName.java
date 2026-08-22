@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.SciNameNormalizer;
 
+import org.gbif.nameparser.api.CombinedAuthorshipIF;
 import org.gbif.nameparser.api.LinneanName;
 import org.gbif.nameparser.api.NamePart;
 
@@ -17,9 +18,21 @@ import com.google.common.collect.Lists;
 /**
  * Most of the Name class with all getters needed to format a Name using the NameFormatter.
  */
-public interface FormattableName extends LinneanName, ScientificName {
+public interface FormattableName extends LinneanName, ScientificName, CombinedAuthorshipIF {
 
   String getSanctioningAuthor();
+
+  // resolve the default methods shared by ScientificName and CombinedAuthorshipIF towards
+  // ScientificName - its hasAuthorship() also considers the cached authorship string
+  @Override default boolean hasAuthorship() {
+    return ScientificName.super.hasAuthorship();
+  }
+  @Override default boolean hasCombinationAuthorship() {
+    return ScientificName.super.hasCombinationAuthorship();
+  }
+  @Override default boolean hasBasionymAuthorship() {
+    return ScientificName.super.hasBasionymAuthorship();
+  }
 
   String getCultivarEpithet();
 

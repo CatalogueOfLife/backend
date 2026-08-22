@@ -10,7 +10,6 @@ import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSimple;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
@@ -45,16 +44,36 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Factory to create and reuse persistent usage matchers,
  * which are specific for an entire dataset.
+ *
+ * <h2>One writer per storage directory</h2>
+ * Reading a sealed {@link UsageMatcherFileStore} is safe from any number of threads and processes: the two
+ * large files never change and are mapped read-only, and a reopened store cannot write its group column
+ * either. <b>Building</b> is a different story and is coordinated <em>within this JVM only</em> - by
+ * {@link #buildLocks} for the swap and {@link #runningBuilds} for build ownership. Nothing stops a second
+ * process from rebuilding the same dataset at the same time, and while the per-build temp directories carry
+ * a pid so they can never collide (see {@link MatchingConfig#buildDir(int, long)}), the two builds would
+ * still race to move their result into {@link MatchingConfig#dir(int)}, and a reader opening during that
+ * two-rename window sees the store as missing.
+ *
+ * <p>So a {@code storageDir} has <b>exactly one writing process</b>. That is a deliberate constraint, not a
+ * gap to be closed: it costs nothing in the topology we run - the rw server builds, and a matching server is
+ * handed a self-contained directory produced by {@code MatchingServerBuildCmd} - and it keeps the read path
+ * free of any locking at all. Splitting matching into its own process stays fine under it, as long as that
+ * process only ever reads. Should a second <em>writing</em> process ever be wanted, this is the invariant
+ * that has to be replaced first, with a cross-process lock around build and swap.
  */
 public class UsageMatcherFactory implements DatasetListener, life.catalogue.common.Managed {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherFactory.class);
   /** Extra sidecar JSON property recording the names index {@link NameIndex#created()} the store was built against. */
   static final String NIDX_CREATED_FIELD = "nidxCreated";
+  /** Interval below which a repeated {@link #openPersistent(int)} does not rewrite the sidecar mtime again. */
+  private static final long TOUCH_INTERVAL_MS = TimeUnit.HOURS.toMillis(1);
   private volatile boolean started = false;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
@@ -96,8 +115,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     this.cfg = cfg;
   }
 
-  private UsageMatcherChronicleStore reopenStore(int datasetKey) throws IOException {
-    return UsageMatcherChronicleStore.reopen(datasetKey, cfg.dir(datasetKey));
+  private UsageMatcherFileStore reopenStore(int datasetKey) throws IOException {
+    return UsageMatcherFileStore.open(datasetKey, cfg.dir(datasetKey));
   }
 
   public NameIndex getNameIndex() {
@@ -115,8 +134,31 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   /**
    * Reopens the persisted chronicle store for a dataset from disk and caches it, or returns null
    * if there is no (or an empty/corrupt) store on disk. Concurrent callers share one instance.
+   * Serving a matcher marks it as used, see {@link #touchSidecar(int)}.
    */
   public UsageMatcher openPersistent(int datasetKey) throws IOException {
+    UsageMatcher m = openPersistentUntouched(datasetKey);
+    if (m != null) {
+      touchSidecar(datasetKey); // outside the per-dataset lock; a no-op stat on all but the first call per hour
+    }
+    return m;
+  }
+
+  /**
+   * Marks a store as used by refreshing its sidecar mtime, the last-used marker
+   * {@link #keepOnDemand(int)} ages on demand matchers out by. Rate limited to
+   * {@link #TOUCH_INTERVAL_MS} so a busy matcher does not rewrite it on every request.
+   */
+  private void touchSidecar(int datasetKey) {
+    if (dir == null) return;
+    File sidecar = cfg.datasetJson(datasetKey);
+    long now = System.currentTimeMillis();
+    if (sidecar.exists() && now - sidecar.lastModified() > TOUCH_INTERVAL_MS && !sidecar.setLastModified(now)) {
+      LOG.warn("Failed to refresh the last used marker on matcher sidecar {}", sidecar);
+    }
+  }
+
+  private UsageMatcher openPersistentUntouched(int datasetKey) throws IOException {
     UsageMatcher existing = matchers.get(datasetKey);
     // tryAcquire fails only if it was retired+closed between the lookup and the acquire → fall through to re-resolve
     if (existing != null && existing.tryAcquire()) return existing;
@@ -130,7 +172,16 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     try {
       existing = matchers.get(datasetKey); // double-check under lock
       if (existing != null && existing.tryAcquire()) return existing;
-      var store = reopenStore(datasetKey);
+      UsageMatcherFileStore store;
+      try {
+        store = reopenStore(datasetKey);
+      } catch (IOException e) {
+        // files of an older format - every store on disk is one right after an upgrade - or a broken store.
+        // Report it as absent so the caller falls back or 503s and reconcile rebuilds it, rather than
+        // failing every match request until then.
+        LOG.warn("Cannot open the matcher store of dataset {}, it needs a rebuild: {}", datasetKey, e.getMessage());
+        return null;
+      }
       var m = new UsageMatcher(datasetKey, nameIndex, store, true);
       if (m.store().isEmpty()) {
         LOG.warn("Matcher for dataset {} is empty, delete storage files {}", datasetKey, cfg.dir(datasetKey));
@@ -191,7 +242,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
 
   /**
    * Returns the persistent matcher (reopened from disk if needed), or a postgres matcher reading
-   * live data when no persistent store exists. All matchers must be closed after use.
+   * live data when no persistent store exists and the dataset is small enough to serve that way.
+   * All matchers must be closed after use.
    */
   public UsageMatcher existingOrPostgres(int datasetKey) throws IOException {
     UsageMatcher m = openPersistent(datasetKey);
@@ -199,6 +251,19 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     // a persistent matcher is being built for the first time and is not ready yet. Fail fast with a 503
     // instead of blocking a request thread or scanning the (large) dataset live from postgres.
     if (runningBuilds.containsKey(datasetKey)) {
+      throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
+    }
+    // a large dataset is exactly what the persistent store exists for, so schedule the build and make the
+    // caller retry rather than scanning it live per name. This is also how a dataset the published invariant
+    // does not cover - a private one - first gets a matcher: someone matches against it.
+    if (dir != null && !isSmallDataset(datasetKey)) {
+      try {
+        rebuild(datasetKey, Users.MATCHER);
+      } catch (RuntimeException e) {
+        // the executor rejects a build that is queued already - which is what a retry of this very request
+        // looks like - or the queue is full. Either way the caller simply has to come back later.
+        LOG.debug("Matcher build for dataset {} not scheduled: {}", datasetKey, e.getMessage());
+      }
       throw new UnavailableException("matcher for dataset " + datasetKey + " is being built, please retry shortly");
     }
     return postgres(datasetKey);
@@ -233,18 +298,16 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   private UsageMatcher buildIntoTemp(int datasetKey, long token) throws IOException {
     File tmpDir = cfg.buildDir(datasetKey, token); // unique per build, so two builds never share a temp dir
     FileUtils.deleteQuietly(tmpDir);
-    UsageMatcher m;
-    try (SqlSession s = factory.openSession()) {
-      var num = s.getMapper(NameUsageMapper.class);
-      int count = num.count(datasetKey);
-      var samples = num.listSN(datasetKey, new Page(0, 5));
-      int canon = num.countDistinctCanonical(datasetKey);
-      long canonCount = canon + Math.max(1, canon / 100);
-      var store = UsageMatcherChronicleStore.build(datasetKey, tmpDir, count + 1, canonCount, samples);
-      m = new UsageMatcher(datasetKey, nameIndex, store, true);
+    UsageMatcherFileStore store;
+    try (var builder = new UsageMatcherFileStoreBuilder(datasetKey, tmpDir)) {
+      builder.load(factory); // the long full-scan load; no lock held
+      store = builder.seal();
+    } catch (RuntimeException | Error | IOException e) {
+      // the half written build dir would otherwise stay on disk for every failed build
+      FileUtils.deleteQuietly(tmpDir);
+      throw e;
     }
-    m.store().load(factory); // the long full-scan load; no lock held
-    return m;
+    return new UsageMatcher(datasetKey, nameIndex, store, true);
   }
 
   /**
@@ -253,15 +316,23 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
    * the store was built against, so a later names-index rebuild/swap can be detected as making this store
    * stale. The extra property is ignored when the file is read back as a plain {@link Dataset}.
    */
-  private void writeSidecar(int datasetKey, UsageMatcherStore store) {
+  private void writeSidecar(int datasetKey, UsageMatcherStore store, File storeDir) {
+    writeSidecar(factory, nameIndex, datasetKey, store.size(), storeDir);
+  }
+
+  /**
+   * Writes the sidecar into the given store directory. Called before the directory is moved into place, so
+   * data and metadata land together in a single rename.
+   */
+  public static void writeSidecar(SqlSessionFactory factory, NameIndex nameIndex, int datasetKey, int size, File storeDir) {
     try (var s = factory.openSession()) {
       Dataset d = s.getMapper(DatasetMapper.class).get(datasetKey);
       if (d != null) {
-        d.setSize(store.size()); // persist the matcher size so we can compare it to the DB size later if needed
+        d.setSize(size); // persist the matcher size so we can compare it to the DB size later if needed
         LocalDateTime nidxCreated = nameIndex.created();
         ObjectNode node = ApiModule.MAPPER.valueToTree(d);
         node.put(NIDX_CREATED_FIELD, nidxCreated.toString());
-        ApiModule.MAPPER.writeValue(cfg.datasetJson(datasetKey), node);
+        ApiModule.MAPPER.writeValue(MatchingConfig.datasetJson(storeDir), node);
         LOG.info("Wrote dataset sidecar for matcher {} with attempt {} and nidx created {}",
           datasetKey, d.getAttempt(), nidxCreated);
       }
@@ -293,6 +364,11 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       File backup = cfg.backupDir(datasetKey, token);
       FileUtils.deleteQuietly(backup);
       boolean hadFinal = finalDir.isDirectory();
+      // the sidecar goes into the build dir BEFORE the move, so data and metadata land in one rename and a
+      // crash can never leave new files described by an old sidecar
+      writeSidecar(datasetKey, fresh.store(), cfg.buildDir(datasetKey, token));
+      // an on demand matcher is aged out by the sidecar mtime, so a rebuild must not look like a use
+      long lastUsed = hadFinal ? cfg.datasetJson(datasetKey).lastModified() : 0;
       if (hadFinal) {
         FileUtils.moveDirectory(finalDir, backup); // park the old files; the old store keeps them via its mmap
       }
@@ -311,7 +387,22 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
         FileUtils.deleteQuietly(cfg.buildDir(datasetKey, token));
         throw e;
       }
-      writeSidecar(datasetKey, fresh.store());
+      File sidecar = cfg.datasetJson(datasetKey);
+      if (!sidecar.exists() && hadFinal) {
+        // the sidecar write above found no dataset or failed - keep the previous metadata rather than none,
+        // otherwise the store looks stale forever and an on demand matcher loses its last used marker
+        File previous = MatchingConfig.datasetJson(backup);
+        if (previous.isFile()) {
+          try {
+            FileUtils.moveFile(previous, sidecar);
+          } catch (IOException e) {
+            LOG.warn("Failed to keep the previous sidecar of dataset {}", datasetKey, e);
+          }
+        }
+      }
+      if (lastUsed > 0 && sidecar.isFile() && !sidecar.setLastModified(lastUsed)) {
+        LOG.warn("Failed to carry the last used marker over to the rebuilt matcher of dataset {}", datasetKey);
+      }
       UsageMatcher old = matchers.put(datasetKey, fresh);
       if (old != null) {
         old.retire(); // closes its store once the last in-flight consumer (e.g. a long MatchingJob) releases it
@@ -361,11 +452,29 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     return m;
   }
 
-  public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, long canonCount, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
+  /**
+   * Builds a persistent matcher straight into its final directory, rematching every usage against the given
+   * names index, and writes the metadata sidecar next to the store files. Used to prepare the index a
+   * matching server serves from; the running service uses the build-into-temp-and-swap path instead.
+   */
+  public static UsageMatcher buildPersistentMatcher(int datasetKey, MatchingConfig cfg, NameIndex nameIndex,
+                                                    SqlSessionFactory factory) throws IOException {
     var f = cfg.dir(datasetKey);
-    LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
-    var store = UsageMatcherChronicleStore.build(datasetKey, f, maxUsages, canonCount, samples);
+    LOG.info("Build new persistent matcher for dataset {} at {}", datasetKey, f);
+    UsageMatcherFileStore store;
+    try (var builder = new UsageMatcherFileStoreBuilder(datasetKey, f)) {
+      builder.load(factory, nameIndex);
+      store = builder.seal();
+    }
+    writeSidecar(factory, nameIndex, datasetKey, store.size(), f);
     return new UsageMatcher(datasetKey, nameIndex, store, true);
+  }
+
+  /** Opens a prebuilt persistent matcher from disk without any database access. */
+  public static UsageMatcher openPersistentMatcher(int datasetKey, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
+    var f = cfg.dir(datasetKey);
+    LOG.info("Open persistent matcher for dataset {} at {}", datasetKey, f);
+    return new UsageMatcher(datasetKey, nameIndex, UsageMatcherFileStore.open(datasetKey, f), true);
   }
 
   public UsageMatcher memory(int datasetKey) {
@@ -413,13 +522,11 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     if (d.isDeletion()) {
       remove(d.key);
     } else if (d.isUpdated() && d.obj != null && d.old != null) {
-      boolean wasPublished = !d.old.isPrivat();
-      boolean isPublished = !d.obj.isPrivat();
-      if (!wasPublished && isPublished) {
+      if (d.old.isPrivat() && !d.obj.isPrivat()) {
         ensurePublishedMatcher(d.obj, d.user);
-      } else if (wasPublished && !isPublished) {
-        remove(d.key); // unpublished → drop matcher + sidecar
       }
+      // going private deliberately keeps the matcher: its editors & reviewers can still match against it
+      // and reconcile ages it out once nobody has used it for MatchingConfig.onDemandTtlDays
     }
   }
 
@@ -444,9 +551,12 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     try (SqlSession s = factory.openSession()) {
       d = s.getMapper(DatasetMapper.class).get(event.datasetKey);
     }
-    if (d == null || d.getDeleted() != null || d.isPrivat()) return; // only published, non-deleted
+    if (d == null || d.getDeleted() != null) return; // never for deleted datasets
     var origin = d.getOrigin();
     if (origin != DatasetOrigin.EXTERNAL && !origin.isRelease()) return;
+    // a private dataset gets a matcher on demand only, so refresh one that already exists - leaving it on the
+    // previous attempt would silently serve stale data - but never create one for every private import
+    if (d.isPrivat() && !matcherExists(event.datasetKey)) return;
     try {
       if (isSmallDataset(event.datasetKey)) {
         remove(event.datasetKey); // drop any stale persistent file; served live from postgres now
@@ -485,18 +595,25 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
         LOG.error("Failed to size dataset {} during reconcile", key, e);
       }
     }
-    // remove any on-disk matcher that should no longer exist: below threshold, unpublished, deleted, or out of scope
+    // an on-disk matcher the published invariant does not require exists because someone matched against it.
+    // Keep the ones still worth keeping and remove the rest: below threshold, deleted, out of scope or expired
+    var onDemand = new HashSet<Integer>();
     int removed = 0;
     for (int key : listFS()) {
-      if (!shouldHave.contains(key)) {
+      if (shouldHave.contains(key)) continue;
+      if (keepOnDemand(key)) {
+        onDemand.add(key);
+      } else {
         LOG.info("Reconcile: removing obsolete persistent matcher for dataset {}", key);
         remove(key);
         removed++;
       }
     }
-    // (re)build the matchers that are missing or stale
+    // (re)build the matchers that are missing or stale, on demand ones included so they never serve stale data
+    var refresh = new HashSet<>(shouldHave);
+    refresh.addAll(onDemand);
     int scheduled = 0;
-    for (int key : shouldHave) {
+    for (int key : refresh) {
       try {
         if (force || needsRebuild(key)) {
           rebuild(key, userKey);
@@ -506,8 +623,31 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
         LOG.error("Failed to reconcile matcher for dataset {}", key, e);
       }
     }
-    LOG.info("Reconcile removed {} obsolete and scheduled {} (re)builds (force={}); {} of {} published datasets in scope",
-      removed, scheduled, force, shouldHave.size(), published.size());
+    LOG.info("Reconcile removed {} obsolete and scheduled {} (re)builds (force={}); {} of {} published datasets in scope, plus {} on demand",
+      removed, scheduled, force, shouldHave.size(), published.size(), onDemand.size());
+  }
+
+  /**
+   * True for an on-disk matcher that the published invariant does not require but that is still worth keeping:
+   * it belongs to an existing, non deleted, in-scope dataset large enough to warrant a persistent store, and it
+   * was used within {@link MatchingConfig#onDemandTtlDays}. The sidecar mtime is the last-used marker, refreshed
+   * by {@link #touchSidecar(int)} whenever the matcher is served.
+   */
+  private boolean keepOnDemand(int datasetKey) {
+    Dataset d;
+    try (SqlSession s = factory.openSession()) {
+      d = s.getMapper(DatasetMapper.class).get(datasetKey);
+    }
+    if (d == null || d.getDeleted() != null) return false;
+    var origin = d.getOrigin();
+    if (origin == null || (origin != DatasetOrigin.EXTERNAL && !origin.isRelease())) return false;
+    if (cfg.onDemandTtlDays > 0) {
+      File sidecar = cfg.datasetJson(datasetKey);
+      long ttl = TimeUnit.DAYS.toMillis(cfg.onDemandTtlDays);
+      // no sidecar means we cannot tell when it was last used, so treat it as expired rather than keep it forever
+      if (!sidecar.exists() || System.currentTimeMillis() - sidecar.lastModified() > ttl) return false;
+    }
+    return !isSmallDataset(datasetKey);
   }
 
   /**
@@ -524,6 +664,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
    */
   private boolean needsRebuild(int datasetKey) {
     if (!cfg.dir(datasetKey).isDirectory()) return true;
+    // files written by an older version of the store, e.g. the previous chronicle based one
+    if (!UsageMatcherFileStore.isStore(cfg.dir(datasetKey))) return true;
     Integer stored = readStoredAttempt(datasetKey);
     Integer current;
     try (SqlSession s = factory.openSession()) {
@@ -559,8 +701,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       m.retire(); // closes its store once the last in-flight consumer releases it
     }
     if (dir != null) {
-      FileUtils.deleteQuietly(cfg.dir(datasetKey));
-      FileUtils.deleteQuietly(cfg.datasetJson(datasetKey));
+      FileUtils.deleteQuietly(cfg.dir(datasetKey)); // the sidecar lives inside and goes with it
     }
   }
 
@@ -594,6 +735,42 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       }
     }
     return null;
+  }
+
+  /**
+   * Moves sidecars written next to a store directory by an earlier version into the store directory itself.
+   * The mtime must survive the move: it is the last used marker {@link #keepOnDemand(int)} ages on demand
+   * matchers out by, so dropping it would have reconcile reap every one of them.
+   */
+  private void migrateLegacySidecars() {
+    int moved = 0;
+    for (int key : listFS()) {
+      File legacy = cfg.legacyDatasetJson(key);
+      File target = cfg.datasetJson(key);
+      if (legacy.isFile() && !target.exists()) {
+        long lastUsed = legacy.lastModified();
+        try {
+          FileUtils.moveFile(legacy, target);
+          if (!target.setLastModified(lastUsed)) {
+            LOG.warn("Failed to preserve the last used marker of migrated sidecar {}", target);
+          }
+          moved++;
+        } catch (IOException e) {
+          LOG.warn("Failed to migrate sidecar {} into the store dir", legacy, e);
+        }
+      }
+    }
+    // whatever is left has no store dir any more and was leaked by an interrupted removal
+    String[] names = dir.list((d, name) -> name.endsWith(".json"));
+    if (names != null) {
+      for (String n : names) {
+        LOG.info("Removing orphaned matcher sidecar {}", n);
+        FileUtils.deleteQuietly(new File(dir, n));
+      }
+    }
+    if (moved > 0) {
+      LOG.info("Migrated {} matcher sidecars into their store directory", moved);
+    }
   }
 
   /** Removes stray {@code .building}/{@code .old} dirs left behind by a crashed or interrupted swap. */
@@ -631,6 +808,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     started = true;
     if (dir != null) {
       cleanupTempDirs(); // remove crash-leftover .building/.old dirs at startup, before any builds run
+      migrateLegacySidecars(); // must run before reconcile, or on demand matchers lose their last used marker
       executor.submit(new ReconcileJob(Users.MATCHER));
     }
   }

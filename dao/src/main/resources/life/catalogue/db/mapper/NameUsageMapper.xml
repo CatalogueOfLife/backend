@@ -73,7 +73,8 @@
   </sql>
 
   <sql id="SELECT_SIMPLE_CACHED">
-    <include refid="SELECT_SIMPLE"/>, u.sector_key, nm.index_id, ni.canonical_id, nm.type
+    <!-- the match type is no longer persisted; NONE is the neutral "no information" default, see dbschema.md -->
+    <include refid="SELECT_SIMPLE"/>, u.sector_key, nm.index_id, nm.index_id AS canonical_id, 'NONE'::MATCHTYPE AS type
   </sql>
 
   <sql id="SELECT_LINNEAN_USAGE">
@@ -334,6 +335,11 @@
     <result property="nameId" column="nid"/>
   </resultMap>
 
+  <resultMap id="relatedNameResultMap" type="DSIDValue" autoMapping="false">
+    <id property="datasetKey" column="dataset_key"/>
+    <id property="id" column="name_id"/>
+  </resultMap>
+
 
   <select id="count" resultType="integer">
     SELECT count(*) FROM name_usage
@@ -341,7 +347,7 @@
   </select>
 
   <select id="countDistinctCanonical" resultType="integer">
-    SELECT count(DISTINCT ni.canonical_id)
+    SELECT count(DISTINCT nm.index_id)
     FROM <include refid="FROM_NIDX_BASE"/>
     WHERE nm.dataset_key = #{datasetKey}
   </select>
@@ -500,13 +506,13 @@
   <select id="listByCanonNIDX" resultMap="simpleCachedResultMap">
     SELECT <include refid="SELECT_SIMPLE_CACHED"/>
     FROM <include refid="FROM_NIDX_BASE"/>
-    WHERE nm.dataset_key = #{datasetKey} AND ni.canonical_id=#{nidx}
+    WHERE nm.dataset_key = #{datasetKey} AND nm.index_id=#{nidx}
   </select>
 
   <select id="listByNamesIndexOrCanonicalID" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM_NIDX"/>
-    WHERE nm.dataset_key = #{datasetKey} AND (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
+    WHERE nm.dataset_key = #{datasetKey} AND nm.index_id=#{nidx}
     ORDER BY ni.id, u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -515,7 +521,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM_NIDX"/>
       JOIN dataset d ON d.key=nm.dataset_key
-    WHERE (ni.id=#{nidx} OR ni.canonical_id=#{nidx}) AND <include refid="DATASET_PUBLIC"/>
+    WHERE nm.index_id=#{nidx} AND <include refid="DATASET_PUBLIC"/>
     ORDER BY ni.id, d.title, d.key, u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -529,7 +535,7 @@
         LEFT JOIN name an ON an.dataset_key=nm.dataset_key AND an.id=au.name_id
         LEFT JOIN taxon_metrics tm ON tm.dataset_key=nm.dataset_key
             AND tm.taxon_id = CASE WHEN is_synonym(u.status) THEN u.parent_id ELSE u.id END
-    WHERE (ni.id=#{nidx} OR ni.canonical_id=#{nidx}) AND <include refid="DATASET_PUBLIC"/>
+    WHERE nm.index_id=#{nidx} AND <include refid="DATASET_PUBLIC"/>
     ORDER BY d.title, d.key, u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -544,7 +550,7 @@
     SELECT count(*)
     FROM <include refid="FROM_NIDX_BASE"/>
       JOIN dataset d ON d.key=nm.dataset_key
-    WHERE (ni.id=#{nidx} OR ni.canonical_id=#{nidx}) AND <include refid="DATASET_PUBLIC"/>
+    WHERE nm.index_id=#{nidx} AND <include refid="DATASET_PUBLIC"/>
   </select>
 
   <select id="listByUsageID" resultMap="usageResultMap">
@@ -557,12 +563,11 @@
 
   <select id="countByNamesIndexID" resultType="integer">
     SELECT count(*)
-    FROM names_index ni
-      JOIN name_match nm ON nm.index_id=ni.id
+    FROM name_match nm
       JOIN name n ON n.dataset_key=nm.dataset_key AND n.id=nm.name_id
       JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=n.id
       JOIN dataset d ON d.key=nm.dataset_key
-    WHERE (ni.id=#{nidx} OR ni.canonical_id=#{nidx})
+    WHERE nm.index_id=#{nidx}
     <if test="datasetKey != null">
       AND nm.dataset_key = #{datasetKey}
     </if>
@@ -586,20 +591,28 @@
     WHERE id=#{id}
   </select>
 
-  <select id="listRelated" resultMap="simpleInDatasetResultMap">
-    SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>
+  <!--
+    Phase 1 of the related usage lookup. Resolves the origin usage's names index entry and returns every
+    name matched to that same entry. The index is single-tier (canonicalId == index_id), so one equality
+    covers the canonical and all of its authorship variants.
+
+    Only name_match is read on the related side. name and name_usage are joined by the second phase per dataset,
+    because there is no dataset_key to prune them by here and postgres locks every partition plus every index of
+    every partition it cannot prune away. See DatasetPartitionMapper for the arithmetic.
+
+    orig.dataset_key is rendered as a literal so the origin side prunes at plan time. As a bind parameter it does
+    not: postgres only prunes a generic plan at execution time and still locks all partitions of the plan.
+  -->
+  <select id="listRelatedNames" resultMap="relatedNameResultMap">
+    SELECT DISTINCT nm.dataset_key, nm.name_id
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
-      JOIN names_index ni ON ni.id=nmo.index_id
-      LEFT JOIN names_index nic ON nic.id=ni.canonical_id AND ni.id != ni.canonical_id
-      LEFT JOIN names_index nia ON nia.canonical_id=ni.canonical_id AND nia.id != ni.id AND ni.id = ni.canonical_id
-      JOIN name_match nm ON (nm.index_id=ni.id OR nm.index_id=nic.id OR nm.index_id=nia.id)
-    <!-- now join the related usages -->
-    JOIN name n ON nm.name_id=n.id AND nm.dataset_key=n.dataset_key
-    JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
-    JOIN dataset d ON d.key=u.dataset_key
-    WHERE orig.dataset_key=#{key.datasetKey} AND orig.id=#{key.id}
-      AND (u.dataset_key!=#{key.datasetKey} OR u.id!=#{key.id})
+      <!-- single-tier index: canonicalId == index_id, so every usage matching the same index_id is
+           related. This also links the authorship variants that the former canonical_id expansion
+           reached explicitly (intentional broadening, see task-8-report.md). -->
+      JOIN name_match nm ON nm.index_id=nmo.index_id
+      JOIN dataset d ON d.key=nm.dataset_key
+    WHERE orig.dataset_key=${key.datasetKey} AND orig.id=#{key.id}
       AND NOT d.private
     <if test="gbifOnly">
       AND (d.gbif_key IS NOT NULL <if test="nonGbifDatasetKeys != null and !nonGbifDatasetKeys.isEmpty()"> OR d.key IN <foreach item="key" collection="nonGbifDatasetKeys" open="(" separator="," close=")">#{key}</foreach></if>)
@@ -611,12 +624,35 @@
       AND d.type IN <foreach item="t" collection="datasetTypes" open="(" separator="," close=")">#{t}::DATASETTYPE</foreach>
     </if>
     <if test="datasetKeys != null and !datasetKeys.isEmpty()">
-      AND n.dataset_key IN <foreach item="id" collection="datasetKeys" open="(" separator="," close=")">#{id}</foreach>
+      AND nm.dataset_key IN <foreach item="id" collection="datasetKeys" open="(" separator="," close=")">${id}</foreach>
     </if>
     <if test="publisherKeys != null and !publisherKeys.isEmpty()">
       AND d.gbif_publisher_key IN <foreach item="uuid" collection="publisherKeys" open="(" separator="," close=")">#{uuid}</foreach>
     </if>
-    LIMIT 100; -- safeguard for extreme cases like Animalia
+    LIMIT #{limit}
+  </select>
+
+  <!--
+    Phase 2 of the related usage lookup: the usages of the names found by listRelatedNames.
+
+    The dataset keys are repeated as a literal IN list on BOTH partitioned tables. Both parts matter:
+      - literals, because a bind parameter leaves postgres with a generic plan it cannot prune at plan time
+      - repeated on n as well as u, because postgres propagates a constant "=" across the join equality
+        n.dataset_key=u.dataset_key but NOT an IN list, so filtering u alone still locks every name partition
+    Dropping either one silently reverts this to locking all partitions, which is what
+    NameUsageDaoTest.listRelatedUsagesPrunesPartitions guards.
+
+    The row-wise IN on (dataset_key, name_id) is what actually selects the names. It is needed in addition to the
+    dataset filter because name ids are only unique within a dataset, so matching on name_id alone would return
+    unrelated usages from the other datasets of the same batch.
+  -->
+  <select id="listRelatedUsages" resultMap="simpleInDatasetResultMap">
+    SELECT <include refid="SELECT_SIMPLE_IN_DATASET"/>
+    FROM name_usage u
+      JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+    WHERE u.dataset_key IN <foreach item="dk" collection="datasetKeys" open="(" separator="," close=")">${dk}</foreach>
+      AND n.dataset_key IN <foreach item="dk" collection="datasetKeys" open="(" separator="," close=")">${dk}</foreach>
+      AND (u.dataset_key, u.name_id) IN <foreach item="nk" collection="names" open="(" separator="," close=")">(${nk.datasetKey}, #{nk.id})</foreach>
   </select>
 
   <select id="listByName" resultMap="usageResultMap">
@@ -1066,7 +1102,8 @@
   </select>
 
   <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMapParentName" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, ni.canonical_id, nm.type, np.scientific_name AS parent
+    <!-- the match type is no longer persisted; NONE is the neutral "no information" default, see dbschema.md -->
+    SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, nm.index_id AS canonical_id, 'NONE'::MATCHTYPE AS type, np.scientific_name AS parent
     FROM name_usage u
       JOIN name n ON n.dataset_key=#{datasetKey} AND n.id=u.name_id
       LEFT JOIN name_usage up ON up.dataset_key=#{datasetKey} AND up.id=u.parent_id
@@ -1074,7 +1111,7 @@
       LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
       LEFT JOIN names_index ni ON ni.id=nm.index_id
     WHERE u.dataset_key=#{datasetKey} AND length(u.id) >= #{minLength}
-    ORDER BY ni.canonical_id, ni.id
+    ORDER BY nm.index_id
   </select>
 
   <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">

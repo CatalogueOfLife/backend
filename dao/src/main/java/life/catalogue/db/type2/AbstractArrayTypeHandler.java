@@ -50,7 +50,6 @@ public abstract class AbstractArrayTypeHandler<T> extends BaseTypeHandler<T> {
   
   @Override
   public T getNullableResult(ResultSet rs, String columnName) throws SQLException {
-    var x = rs.getObject(columnName);
     return toObj(rs.getArray(columnName));
   }
   

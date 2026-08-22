@@ -17,12 +17,15 @@ import life.catalogue.junit.MybatisTestUtils;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class SectorDaoTest extends DaoTestBase {
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
@@ -83,6 +86,51 @@ public class SectorDaoTest extends DaoTestBase {
     s3 = dao.get(s);
     assertEquals(101, (int) s3.getPriority());
 
+  }
+
+  /**
+   * Only one subject less merge sector is allowed per source dataset,
+   * but merge sectors with a subject must not block that. See https://github.com/CatalogueOfLife/backend/issues/1560
+   */
+  @Test
+  public void createMergeSectorsWithoutSubject() {
+
+    try (SqlSession session = factory().openSession(true)) {
+      MybatisTestUtils.populateDraftTree(session);
+      MybatisTestUtils.populateTestTree(12, session);
+    }
+
+    // merge sectors with a subject from the same source are fine and unlimited
+    dao.create(mergeSector(12, "t2"), user);
+    dao.create(mergeSector(12, "t3"), user);
+
+    // the first subject less merge sector is allowed
+    dao.create(mergeSector(12, null), user);
+
+    // ... but only one per source dataset
+    try {
+      dao.create(mergeSector(12, null), user);
+      fail("A second subject less merge sector for source 12 must not be allowed");
+    } catch (IllegalArgumentException e) {
+      // expected
+    }
+
+    // another source dataset can have its own subject less merge sector
+    dao.create(mergeSector(11, null), user);
+  }
+
+  static Sector mergeSector(int subjectDatasetKey, @Nullable String subjectID) {
+    Sector s = SectorMapperTest.create();
+    s.setMode(Sector.Mode.MERGE);
+    s.setPriority(null);
+    s.setTarget(null);
+    s.setSubjectDatasetKey(subjectDatasetKey);
+    if (subjectID == null) {
+      s.setSubject(null);
+    } else {
+      s.getSubject().setId(subjectID);
+    }
+    return s;
   }
 
   /**

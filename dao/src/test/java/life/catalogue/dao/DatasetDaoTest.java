@@ -1,11 +1,14 @@
 package life.catalogue.dao;
 
 import life.catalogue.TestUtils;
+import life.catalogue.api.event.Event;
+import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.event.EventBroker;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.GbifConfig;
@@ -25,21 +28,26 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class DatasetDaoTest extends DaoTestBase {
 
   final ImporterConfig iCfg = new ImporterConfig();
   DatasetDao dao;
+  EventBroker broker;
 
   @Before
   public void init() {
     DatasetImportDao diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     JobConfig cfg = new JobConfig();
     DatasetExportDao exDao = new DatasetExportDao(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), validator);
+    broker = TestUtils.mockedBroker();
     dao = new DatasetDao(factory(),
       new NormalizerConfig(), new ReleaseConfig(), new GbifConfig(), new DoiConfig(),
       null,
@@ -47,7 +55,7 @@ public class DatasetDaoTest extends DaoTestBase {
       diDao, exDao,
       NameUsageIndexService.passThru(),
       null,
-      TestUtils.mockedBroker(),
+      broker,
       validator
     );
   }
@@ -83,6 +91,50 @@ public class DatasetDaoTest extends DaoTestBase {
   @Test
   public void deleteTempDatasets() throws Exception {
     assertEquals(0, dao.deleteTempDatasets(null));
+  }
+
+  /**
+   * A temp dataset publishes no DatasetChanged event, so AuthBundle never patches the creator's cached User.editor set.
+   * createTemp must therefore publish a UserPermissionChanged for the human creator so their auth cache is invalidated
+   * and the acl_editor grant (added by createWithID) is picked up on the next request rather than after the password
+   * cache expiry. See https://github.com/CatalogueOfLife/backend private-temp-dataset 403 bug.
+   */
+  @Test
+  public void createTempInvalidatesCreatorAuthCache() throws Exception {
+    final int userKey = 123; // a real human user (>= Users.MIN_HUMAN_KEY, so !isBot) - only they get an acl_editor grant
+    final String username = "tempcreator";
+    try (SqlSession s = factory().openSession(true)) {
+      s.getConnection().createStatement().execute(
+        "INSERT INTO \"user\" (key, username) VALUES (" + userKey + ", '" + username + "')");
+    }
+
+    Dataset d = new Dataset();
+    d.setTitle("temp validation");
+    d.setOrigin(DatasetOrigin.EXTERNAL);
+    d.setType(DatasetType.OTHER);
+    d.setPrivat(true);
+    dao.createTemp(d, userKey);
+
+    ArgumentCaptor<Event> captor = ArgumentCaptor.forClass(Event.class);
+    verify(broker, atLeastOnce()).publish(captor.capture());
+    assertTrue("expected a UserPermissionChanged for the creator",
+      captor.getAllValues().stream()
+        .anyMatch(e -> e instanceof UserPermissionChanged && username.equals(((UserPermissionChanged) e).username)));
+  }
+
+  /**
+   * System/bot users (key < 100) never receive an acl_editor grant, so no auth cache invalidation is needed.
+   */
+  @Test
+  public void createTempSkipsAuthInvalidationForBots() throws Exception {
+    Dataset d = new Dataset();
+    d.setTitle("temp validation by bot");
+    d.setOrigin(DatasetOrigin.EXTERNAL);
+    d.setType(DatasetType.OTHER);
+    d.setPrivat(true);
+    dao.createTemp(d, Users.IMPORTER); // key 10 < 100
+
+    verify(broker, never()).publish(any(UserPermissionChanged.class));
   }
 
   @Test

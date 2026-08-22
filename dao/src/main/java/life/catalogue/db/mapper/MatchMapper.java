@@ -2,7 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameMatch;
-import life.catalogue.api.vocab.MatchType;
 
 import javax.annotation.Nullable;
 
@@ -39,8 +38,7 @@ public interface MatchMapper {
    * @return the number of records updated
    */
   int update(@Param("key") DSID<String> key,
-             @Param("nidx") Integer nidx,
-             @Param("type") MatchType type
+             @Param("nidx") Integer nidx
   );
 
   /**
@@ -48,8 +46,7 @@ public interface MatchMapper {
    */
   void create(@Param("key") DSID<String> key,
               @Param("sectorKey") Integer sectorKey,
-              @Param("nidx") Integer nidx,
-              @Param("type") MatchType type
+              @Param("nidx") Integer nidx
   );
 
   /**

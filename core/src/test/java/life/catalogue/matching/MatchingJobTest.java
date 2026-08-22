@@ -70,6 +70,21 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   }
 
   @Test
+  public void constructorDoesNotAcquireTheMatcher() throws Exception {
+    MatchingRequest req = new MatchingRequest();
+    req.setDatasetKey(dataRule.testData.key);
+    req.setSourceDatasetKey(dataRule.testData.key);
+    var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.matching);
+
+    // the constructor runs on the HTTP request thread of POST /dataset/{key}/match/nameusage/job, where
+    // building a persistent store - minutes for a large dataset - would hold the thread and time out
+    verify(matcherFactory, never()).persistent(anyInt());
+
+    job.run();
+    verify(matcherFactory).persistent(dataRule.testData.key);
+  }
+
+  @Test
   public void testMatching() throws Exception {
     MatchingRequest req = new MatchingRequest();
     req.setDatasetKey(dataRule.testData.key);

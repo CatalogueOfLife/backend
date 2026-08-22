@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Issue;
 
 import life.catalogue.parser.NomCodeParser;
 
+import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
@@ -128,7 +129,7 @@ public class NameValidator {
     if (!StringUtils.isBlank(n.getScientificName()) && Objects.equals(n.getScientificName(), n.getAuthorship())) {
       v.add(Issue.AUTHORSHIP_UNLIKELY);
     }
-    if (NomCodeParser.isCodeCompliant(type) && type != NameType.VIRUS && StringUtils.isBlank(n.getAuthorship())) {
+    if (NomCodeParser.isCodeCompliant(type) && StringUtils.isBlank(n.getAuthorship())) {
       v.add(Issue.MISSING_AUTHORSHIP);
     }
     return v.hasChanged() ? v.container : null;
@@ -278,10 +279,10 @@ public class NameValidator {
       }
 
       // notho
-      if (n.getNotho() != null) {
-        String namePart = n.getNamePart(n.getNotho());
-        if (namePart == null) {
+      for (NamePart notho : n.getNotho()) {
+        if (n.getNamePart(notho) == null) {
           issues.add(Issue.NOTHO_NOT_APPLICABLE);
+          break;
         }
       }
 

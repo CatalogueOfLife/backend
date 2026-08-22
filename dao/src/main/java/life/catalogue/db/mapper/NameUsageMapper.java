@@ -169,8 +169,13 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   List<SimpleNameCached> listSN(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
   /**
-   * Returns related name usages based on the same name as matched against the names index.
-   * Only public datasets are included.
+   * First phase of the related usage lookup, see NameUsageDao.related.
+   * Resolves the names index entry of the given usage, expands it to its canonical and authorship variants
+   * and returns the dataset and name ids of all names matched to any of them. Only public datasets are included.
+   *
+   * This deliberately stops at the name id and does not join name or name_usage. Those are partitioned by
+   * dataset_key and there is nothing to prune them by here, so joining them would force postgres to open and
+   * lock every partition of both. The second phase does that per dataset instead.
    *
    * @param key the key of any name usage
    * @param gbifOnly if true only datasets with a GBIF key are considered
@@ -179,15 +184,30 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param datasetTypes optional set of dataset types to consider, ignoring all others
    * @param datasetKeys optional set of dataset keys to consider, ignoring all others
    * @param publisherKeys optional set of dataset GBIF publisher keys to consider, ignoring all others
-   * @return
+   * @param limit maximum number of matched names to return
+   * @return dataset key and name id of each matched name, including the given usage's own name
    */
-  List<SimpleNameInDataset> listRelated(@Param("key") DSID<String> key,
-                                        @Param("gbifOnly") boolean gbifOnly,
-                                        @Param("nonGbifDatasetKeys") @Nullable Collection<Integer> nonGbifDatasetKeys,
-                                        @Param("datasetOrigins") @Nullable Collection<DatasetOrigin> datasetOrigins,
-                                        @Param("datasetTypes") @Nullable Collection<DatasetType> datasetTypes,
-                                        @Param("datasetKeys") @Nullable Collection<Integer> datasetKeys,
-                                        @Param("publisherKeys") @Nullable Collection<UUID> publisherKeys);
+  List<DSIDValue<String>> listRelatedNames(@Param("key") DSID<String> key,
+                                           @Param("gbifOnly") boolean gbifOnly,
+                                           @Param("nonGbifDatasetKeys") @Nullable Collection<Integer> nonGbifDatasetKeys,
+                                           @Param("datasetOrigins") @Nullable Collection<DatasetOrigin> datasetOrigins,
+                                           @Param("datasetTypes") @Nullable Collection<DatasetType> datasetTypes,
+                                           @Param("datasetKeys") @Nullable Collection<Integer> datasetKeys,
+                                           @Param("publisherKeys") @Nullable Collection<UUID> publisherKeys,
+                                           @Param("limit") int limit);
+
+  /**
+   * Second phase of the related usage lookup: loads the usages for names found by listRelatedNames.
+   *
+   * All names must belong to the given datasets. Keep that set small - it decides how many partitions
+   * this statement has to open. The dataset keys are rendered as literals and repeated on both partitioned
+   * tables on purpose, see the mapper xml.
+   *
+   * @param datasetKeys the datasets the given names belong to
+   * @param names dataset key and name id pairs to load usages for
+   */
+  List<SimpleNameInDataset> listRelatedUsages(@Param("datasetKeys") Collection<Integer> datasetKeys,
+                                              @Param("names") Collection<DSIDValue<String>> names);
 
   /**
    * Warning, this does not return bare names, only true usages!

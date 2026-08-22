@@ -90,7 +90,7 @@ public class IdProviderArchiveIT {
       num.processDataset(projectKey, null, null).forEach(nu -> {
         System.out.print(nu);
         var nm = nmm.get(nu.getName());
-        var ni = nm.getName();
+        var ni = nm.getNidx();
         var id = idm.getUsage(projectKey, nu.getId());
         System.out.println("  -> " + id + " nidx:" + ni);
         int val = IdConverter.LATIN29.decode(id);

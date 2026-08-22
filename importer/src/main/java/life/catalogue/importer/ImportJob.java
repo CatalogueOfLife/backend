@@ -107,6 +107,7 @@ public class ImportJob extends DatasetJob {
   private final IdentifierScopeResolver scopeResolver;
   private final @Nullable Timer importTimer;
   private final @Nullable Counter failedCounter;
+  private final @Nullable ImportCallbackNotifier callbackNotifier;
 
   ImportJob(ImportRequest req, DatasetWithSettings d,
             ImporterConfig iCfg, NormalizerConfig nCfg, DoiConfig dCfg,
@@ -114,7 +115,7 @@ public class ImportJob extends DatasetJob {
             NameUsageIndexService indexService, ImageService imgService,
             DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBroker bus,
             UsageMatcherFactory matcherFactory, IdentifierScopeResolver scopeResolver,
-            @Nullable Timer importTimer, @Nullable Counter failedCounter
+            @Nullable Timer importTimer, @Nullable Counter failedCounter, @Nullable ImportCallbackNotifier callbackNotifier
     ) {
     super(d.getKey(), req.createdBy, req.priority ? JobPriority.HIGH : JobPriority.MEDIUM);
     this.validator = validator;
@@ -141,6 +142,7 @@ public class ImportJob extends DatasetJob {
     this.scopeResolver = scopeResolver;
     this.importTimer = importTimer;
     this.failedCounter = failedCounter;
+    this.callbackNotifier = callbackNotifier;
 
     validate();
   }
@@ -235,6 +237,7 @@ public class ImportJob extends DatasetJob {
       LOG.info("Dataset import {} finished. {} min queued, {} min to execute", datasetKey, durQueued.toMinutes(), durRun.toMinutes());
       importTimer.update(durRun.getSeconds(), TimeUnit.SECONDS);
     }
+    fireCallback();
   }
 
   @Override
@@ -243,6 +246,15 @@ public class ImportJob extends DatasetJob {
       failedCounter.inc();
     }
     LOG.error("Dataset import {} failed: {}", datasetKey, Exceptions.getFirstMessage(e), e.getCause());
+  }
+
+  /**
+   * Notifies the optional completion callback URL of the request with the final DatasetImport, if one was given.
+   */
+  private void fireCallback() {
+    if (req.callback != null && callbackNotifier != null) {
+      callbackNotifier.notifyCallback(req.callback, di);
+    }
   }
 
   public Integer getAttempt() {

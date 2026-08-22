@@ -1,7 +1,6 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.*;
 
 import org.gbif.api.vocabulary.NomenclaturalStatus;
@@ -125,7 +124,6 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
     @QueryParam("rank") Rank rank;
     @QueryParam("type") NameType type;
     @QueryParam("name") String namePrefix;
-    @QueryParam("matchType") MatchType matchType;
     @QueryParam("hasMatch") Boolean hasMatch;
   }
   List<Name> search(@Param("datasetKey") int datasetKey,

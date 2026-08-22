@@ -64,8 +64,20 @@ public abstract class AbstractMatchingJob extends DatasetJob {
     CSV.setQuotationTriggers('"', ',');
   }
 
+  /**
+   * Supplies the matcher to run against. Resolved on the job thread rather than at construction time, because
+   * building a persistent store for a large dataset takes minutes and jobs are constructed on an HTTP request
+   * thread.
+   */
+  @FunctionalInterface
+  public interface MatcherSupplier {
+    UsageMatcher get() throws IOException;
+  }
+
   protected final MatchingConfig cfg;
-  private final UsageMatcher matcher;
+  private final MatcherSupplier matcherSupplier;
+  // resolved lazily by matcher(), so a job that is never executed never acquires (or builds) one
+  private volatile UsageMatcher matcher;
   // whether this job acquired the matcher from the factory and must release it when done (vs. a shared,
   // externally-owned matcher like the standalone matching server's fixed instance)
   private final boolean ownsMatcher;
@@ -79,7 +91,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   private List<? extends SimpleName> rootClassification;
 
   public AbstractMatchingJob(MatchingRequest req, int userKey, Dataset dataset, List<? extends SimpleName> rootClassification,
-                             UsageMatcher matcher, boolean ownsMatcher, MatchingConfig cfg, NameIndex nidx) {
+                             MatcherSupplier matcherSupplier, boolean ownsMatcher, MatchingConfig cfg, NameIndex nidx) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
     this.logToFile = true;
     this.cfg = cfg;
@@ -87,9 +99,22 @@ public abstract class AbstractMatchingJob extends DatasetJob {
     this.req = Preconditions.checkNotNull(req);
     this.result = new JobResult(getKey());
     this.dataset = dataset;
-    this.matcher = matcher;
+    this.matcherSupplier = Preconditions.checkNotNull(matcherSupplier);
     this.ownsMatcher = ownsMatcher;
     this.rootClassification = rootClassification;
+  }
+
+  /**
+   * Resolves the matcher on first use — i.e. on the job thread — and caches it for the rest of the job.
+   * Jobs execute single threaded, so no locking is needed here.
+   */
+  private UsageMatcher matcher() throws IOException {
+    UsageMatcher m = matcher;
+    if (m == null) {
+      m = matcherSupplier.get();
+      matcher = m;
+    }
+    return m;
   }
 
   /**
@@ -130,6 +155,8 @@ public abstract class AbstractMatchingJob extends DatasetJob {
    * @throws Exception
    */
   protected void matchToOut(OutputStream os) throws Exception {
+    // the single entry point for every matching job, so this is where the matcher gets resolved
+    final UsageMatcher matcher = matcher();
     LOG.info("Matching names against dataset {}", matcher.datasetKey);
     try (BufferedOutputStream bos = new BufferedOutputStream(os);
          ZipOutputStream zos = new ZipOutputStream(bos)
@@ -143,7 +170,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
       if (req.getUpload() != null) {
         LOG.info("Match uploaded names from {}", req.getUpload());
         var mstream = streamUpload();
-        writeMatches(writer, mstream.mapper.rawHeader, mstream.stream);
+        writeMatches(writer, mstream.mapper.rawHeader, mstream.stream, matcher);
         // delete file upload
         FileUtils.deleteQuietly(req.getUpload());
 
@@ -162,7 +189,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
                                               sn.setClassification(cl);
                                             }
                                             return new IssueName(sn, new IssueContainer.Simple(), null, count.incrementAndGet());
-                                          })
+                                          }), matcher
           );
         }
 
@@ -188,7 +215,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
     }
   }
 
-  private void writeMatches(AbstractWriter<?> writer, String[] srcHeader, Stream<IssueName> names) {
+  private void writeMatches(AbstractWriter<?> writer, String[] srcHeader, Stream<IssueName> names, UsageMatcher matcher) {
     AtomicLong none = new AtomicLong(0);
     try (names) {
       // write header
@@ -224,7 +251,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
 
       // match & write to file
       names.forEach(n -> {
-        var m = match(n);
+        var m = match(n, matcher);
         var row = new String[size];
         // first add all original input columns if provided (only works with file uploads)
         if (srcHeader != null && n.row != null) {
@@ -292,16 +319,17 @@ public abstract class AbstractMatchingJob extends DatasetJob {
    * store's lease is balanced on every exit path.
    */
   public void releaseMatcher() {
-    if (ownsMatcher && matcherReleased.compareAndSet(false, true)) {
+    UsageMatcher m = matcher; // null when the job never ran, so nothing was ever acquired
+    if (m != null && ownsMatcher && matcherReleased.compareAndSet(false, true)) {
       try {
-        matcher.close();
+        m.close();
       } catch (Exception ex) {
-        LOG.warn("Failed to release matcher for dataset {}", matcher.datasetKey, ex);
+        LOG.warn("Failed to release matcher for dataset {}", m.datasetKey, ex);
       }
     }
   }
 
-  private UsageMatchWithOriginal match(IssueName n) {
+  private UsageMatchWithOriginal match(IssueName n, UsageMatcher matcher) {
     UsageMatch match = interpretAndMatch(n.name, MatchingUtils.toSimpleNameCached(n.name.getClassification()), n.issues, false, interpreter, utils, matcher);
     return new UsageMatchWithOriginal(match, n.issues, n.name, n.line);
   }

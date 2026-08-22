@@ -1,7 +1,6 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
@@ -36,7 +35,6 @@ public class ReleasedIds {
     public final int canonId;
     public final int attempt;
     public final boolean isCurrent;
-    public final MatchType matchType;
     public final Rank rank;
     public final String authorship;
     public final String phrase;
@@ -61,7 +59,6 @@ public class ReleasedIds {
       this.canonId = sn.getCanonicalId();
       this.attempt = attempt;
       this.isCurrent = isCurrent;
-      this.matchType = sn.getNamesIndexMatchType();
       this.rank = sn.getRank();
       this.authorship = sn.getAuthorship();
       this.phrase = sn.getPhrase();

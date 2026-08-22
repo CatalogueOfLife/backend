@@ -69,6 +69,7 @@ public class SectorImportDao {
     si.setEstimateCount(mapper.countEstimate(datasetKey, key));
     si.setMediaCount(mapper.countMedia(datasetKey, key));
     si.setNameCount(mapper.countName(datasetKey, key));
+    si.setNameMatchesCount(mapper.countNameMatches(datasetKey, key));
     si.setReferenceCount(mapper.countReference(datasetKey, key));
     si.setSynonymCount(mapper.countSynonym(datasetKey, key));
     si.setTaxonCount(mapper.countTaxon(datasetKey, key));
@@ -85,7 +86,6 @@ public class SectorImportDao {
     si.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(datasetKey, key)));
     si.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(datasetKey, key)));
     si.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(datasetKey, key)));
-    si.setNamesByMatchTypeCount(countMap(MatchType.class, mapper.countNamesByMatchType(datasetKey, key)));
     si.setSpeciesInteractionsByTypeCount(countMap(SpeciesInteractionType.class, mapper.countSpeciesInteractionsByType(datasetKey, key)));
     si.setSynonymsByRankCount(countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(datasetKey, key)));
     si.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(datasetKey, key)));

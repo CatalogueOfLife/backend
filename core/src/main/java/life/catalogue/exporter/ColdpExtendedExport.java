@@ -351,8 +351,13 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.taxonID, taxonID);
     writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(m.getSectorKey()));
     writer.set(ColdpTerm.url, m.getUrl());
-    writer.set(ColdpTerm.type, m.getType());
-    writer.set(ColdpTerm.format, m.getFormat());
+    // ColDP has no format term for Media. Its type column takes the full MIME type,
+    // falling back to the primary type alone which the spec also allows.
+    if (m.getFormat() != null) {
+      writer.set(ColdpTerm.type, m.getFormat());
+    } else {
+      writer.set(ColdpTerm.type, m.getType());
+    }
     writer.set(ColdpTerm.title, m.getTitle());
     writer.set(ColdpTerm.created, m.getCaptured());
     writer.set(ColdpTerm.creator, m.getCapturedBy());

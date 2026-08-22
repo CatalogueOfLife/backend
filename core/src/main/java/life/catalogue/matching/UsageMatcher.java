@@ -9,6 +9,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.matching.authorship.AuthorComparator;
+import life.catalogue.matching.authorship.YearComparator;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.parser.NameParser;
@@ -37,6 +38,9 @@ import com.google.common.base.Supplier;
  */
 public class UsageMatcher implements AutoCloseable {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcher.class);
+  // lenient publication-year tolerance when disambiguating homonyms by a year-only authorship:
+  // years within this many years of each other are treated as the same (dates are often cited off by one)
+  private final static int YEAR_DIFF_ALLOWED = 1;
   protected final boolean keepStoreOpen;
   protected final int datasetKey;
   private final NameIndex nameIndex;
@@ -152,20 +156,16 @@ public class UsageMatcher implements AutoCloseable {
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
       var match = filterCandidates(snc, new ArrayList<>(existing), verbose);
-      if (match.isMatch()) {
-        // decide about usage match type - the match type we have so far is from names index matching only!
-        if (match.type == MatchType.VARIANT || match.type == MatchType.EXACT) {
-          String label = SciNameNormalizer.normalizeWhitespaceAndPunctuation(snc.getLabel());
-          String matchLabel = SciNameNormalizer.normalizeWhitespaceAndPunctuation(match.usage.getLabel());
-          if (match.type == MatchType.VARIANT && matchLabel.equals(label)) {
-            match = new UsageMatch(match, MatchType.EXACT);
-          } else if (match.type == MatchType.EXACT && !matchLabel.equals(label)) {
-            match = new UsageMatch(match, MatchType.VARIANT);
-          }
+      if (match.isMatch() && match.type != MatchType.AMBIGUOUS && match.type != MatchType.CANONICAL) {
+        // classify the usage match purely from the live labels - independent of any names index match type!
+        String label = SciNameNormalizer.normalizeWhitespaceAndPunctuation(snc.getLabel());
+        String matchLabel = SciNameNormalizer.normalizeWhitespaceAndPunctuation(match.usage.getLabel());
+        MatchType computed = label.equals(matchLabel) ? MatchType.EXACT : MatchType.VARIANT;
+        if (computed != match.type) {
+          match = new UsageMatch(match, computed);
         }
-        // CANONICAL match type remains
-        // no matches also: AMBIGUOUS, NONE, UNSUPPORTED
       }
+      // AMBIGUOUS and CANONICAL match types remain unchanged
       return match;
     }
     return UsageMatch.empty(datasetKey);
@@ -342,17 +342,34 @@ public class UsageMatcher implements AutoCloseable {
     }
 
     // remove canonical matches between 2 qualified, non suprageneric names
-    // for genus matches we keep the canonical matches and compare their family further down
-    if (qualifiedName && !nu.getRank().isGenusOrSuprageneric()) {
-      existing.removeIf(u -> u.hasAuthorship() && differentNidxConsidersRank(u, nu) );
+    // for genus matches we keep the canonical matches and compare their family further down.
+    // Two qualified names are only merged when their authorship compares EQUAL - a DIFFERENT or merely
+    // UNKNOWN comparison keeps them as separate entries. Year-only authorship is handled below.
+    if (qualifiedName && !nu.getRank().isGenusOrSuprageneric() && !isYearOnlyAuthorship(nu)) {
+      existing.removeIf(u -> u.hasAuthorship() && notEqualAuthorship(u, nu) );
     }
 
     // remove canonical matches between 2 qualified genus names, UNLESS they are in the exact same family!
     if (qualifiedName && nu.getRank() == Rank.GENUS) {
-      existing.removeIf(u -> u.hasAuthorship() && differentNidxConsidersRank(u, nu) && !sameFamily(u, nu.getClassification()));
+      existing.removeIf(u -> u.hasAuthorship() && differentAuthorship(u, nu) && !sameFamily(u, nu.getClassification()));
       // snap if there is just one genus left?
       snap = !existing.isEmpty() && existing.stream()
-        .allMatch(u -> u.hasAuthorship() && !u.getNamesIndexId().equals(nu.getNamesIndexId()));
+        .allMatch(u -> u.hasAuthorship() && differentAuthorship(u, nu));
+    }
+
+    // year-only authorship: the query carries a publication year but no author name.
+    // The AuthorComparator cannot line a bare year up against an author surname (it yields UNKNOWN), so the
+    // author-difference filters above leave same-canonical homonyms unseparated. Disambiguate on the year
+    // directly: a candidate only fits a year-only query if it carries a year within tolerance. Candidates
+    // without any year, or with a clearly different year, are not this name.
+    if (isYearOnlyAuthorship(nu)) {
+      final String nuYear = authorshipYear(nu);
+      if (nuYear != null) {
+        existing.removeIf(u -> {
+          String uy = u.hasAuthorship() ? authorshipYear(u) : null;
+          return uy == null || new YearComparator(YEAR_DIFF_ALLOWED, uy, nuYear).compare() == Equality.DIFFERENT;
+        });
+      }
     }
 
     // shortcut if no candidates are left
@@ -409,7 +426,7 @@ public class UsageMatcher implements AutoCloseable {
       boolean onlyUseIfExact = false;
       SimpleNameClassified<SimpleNameCached> match = null;
       for (var u : existing) {
-        if (u.getNamesIndexId().equals(nu.getNamesIndexId())) {
+        if (!differentAuthorship(u, nu)) {
           boolean exact = u.getLabel().equalsIgnoreCase(nu.getLabel());
           if (match == null) {
             match = u;
@@ -563,25 +580,77 @@ public class UsageMatcher implements AutoCloseable {
     }
   }
 
-  private boolean differentNidxConsidersRank(SimpleNameCached u, SimpleNameCached nu) {
-    return !u.getNamesIndexId().equals(nu.getNamesIndexId()) && // nidx encodes the exact rank,
-      // ... but we want uncomparable ranks to potentially match, e.g. infraspecific_name & subspecies
-      (u.getRank() == nu.getRank() ||
-        ((u.getRank().isUncomparable() || nu.getRank().isUncomparable()) && !sameNidxWithoutRank(u))
-      );
+  /**
+   * @return true if the two same-canonical names have clearly different authorship, so they should be
+   *         treated as different names. Names without comparable authorship are not considered different.
+   */
+  private boolean differentAuthorship(SimpleNameCached u, SimpleNameCached nu) {
+    if (!u.hasAuthorship() || !nu.hasAuthorship()) {
+      return false; // cannot tell -> not different, let other filters decide
+    }
+    return authComp.compare(parseSciName(u), parseSciName(nu)) == Equality.DIFFERENT;
+  }
+
+  /**
+   * Merge policy for two qualified (authored) names: they may only be treated as the same name when
+   * their authorship compares {@link Equality#EQUAL}. A merely uncertain (UNKNOWN) comparison is not
+   * enough - e.g. a combination author ("Sadowsky & Amorim, 1977") lined up against a basionym author
+   * ("(Bigelow & Schroeder, 1944)") yields UNKNOWN on purpose (a basionym author can be shared by many
+   * combinations) - so such names must stay separate rather than be merged. Callers guard this with
+   * {@code u.hasAuthorship()} and an incoming qualified name, so both sides are always authored here.
+   */
+  private boolean notEqualAuthorship(SimpleNameCached u, SimpleNameCached nu) {
+    return authComp.compare(parseSciName(u), parseSciName(nu)) != Equality.EQUAL;
+  }
+
+  /**
+   * @return true if the name has a publication year in its authorship but no author name at all,
+   *         e.g. a bare "1816". Such authorship cannot be compared to author surnames and is handled
+   *         by a dedicated year comparison instead.
+   */
+  private boolean isYearOnlyAuthorship(SimpleNameCached sn) {
+    if (!sn.hasAuthorship()) {
+      return false;
+    }
+    var opt = NameParser.PARSER.parseAuthorship(sn.getAuthorship());
+    if (opt.isEmpty()) {
+      return false;
+    }
+    var a = opt.get();
+    var ca = a.getCombinationAuthorship();
+    var ba = a.getBasionymAuthorship();
+    boolean hasYear = (ca != null && ca.getYear() != null) || (ba != null && ba.getYear() != null);
+    boolean hasAuthors = (ca != null && !ca.getAuthors().isEmpty()) || (ba != null && !ba.getAuthors().isEmpty());
+    return hasYear && !hasAuthors;
+  }
+
+  /**
+   * @return the publication year string of the name's authorship (combination preferred over basionym), or null if none
+   */
+  private String authorshipYear(SimpleNameCached sn) {
+    if (!sn.hasAuthorship()) {
+      return null;
+    }
+    var opt = NameParser.PARSER.parseAuthorship(sn.getAuthorship());
+    if (opt.isEmpty()) {
+      return null;
+    }
+    var a = opt.get();
+    var ca = a.getCombinationAuthorship();
+    if (ca != null && ca.getYear() != null) {
+      return ca.getYear();
+    }
+    var ba = a.getBasionymAuthorship();
+    return ba != null ? ba.getYear() : null;
   }
 
   private ScientificName parseSciName(SimpleName sn) {
     Name n = new Name();
-    try {
-      var optAuthor = NameParser.PARSER.parseAuthorship(sn.getAuthorship());
-      if (optAuthor.isPresent()) {
-        var a = optAuthor.get();
-        n.setCombinationAuthorship(a.getCombinationAuthorship());
-        n.setBasionymAuthorship(a.getBasionymAuthorship());
-      }
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
+    var optAuthor = NameParser.PARSER.parseAuthorship(sn.getAuthorship());
+    if (optAuthor.isPresent()) {
+      var a = optAuthor.get();
+      n.setCombinationAuthorship(a.getCombinationAuthorship());
+      n.setBasionymAuthorship(a.getBasionymAuthorship());
     }
     return n;
   }
@@ -591,15 +660,6 @@ public class UsageMatcher implements AutoCloseable {
       .map(SimpleName::getRank)
       .filter(r -> !r.isUncomparable())
       .findFirst();
-  }
-
-  /**
-   * Rematches with the same rank to see if nidx still differ
-   * @return true if the names, applied with the same rank, match to the same nidx
-   */
-  private boolean sameNidxWithoutRank(SimpleNameCached u) {
-    var match = nameIndex.match(u, false, false);
-    return match.hasMatch() && Objects.equals(u.getNamesIndexId(), match.getNameKey());
   }
 
   private boolean sameFamily(SimpleNameClassified<SimpleNameCached> u, List<SimpleNameCached> parents) {

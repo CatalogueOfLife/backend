@@ -3,63 +3,10 @@ package life.catalogue.matching;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.TaxGroup;
-import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.NameUsageMapper;
-
-import life.catalogue.matching.nidx.NameIndex;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public interface UsageMatcherStore extends AutoCloseable {
-  Logger LOG = LoggerFactory.getLogger(UsageMatcherStore.class);
-
-  /**
-   * Loads the dataset into the matcher store, using the previously persisted name matches.
-   * @param factory
-   */
-  default int load(SqlSessionFactory factory){
-    LOG.info("Start loading all usages from dataset {}", datasetKey());
-    var cnt = new AtomicInteger();
-    try (SqlSession session = factory.openSession()) {
-      var num = session.getMapper(NameUsageMapper.class);
-      PgUtils.consume(() -> num.processDatasetSimpleNidx(datasetKey()), sn -> {
-        add(sn);
-        cnt.incrementAndGet();
-      });
-    }
-    LOG.info("Loaded {} usages for dataset {}", cnt, datasetKey());
-    return cnt.intValue();
-  }
-
-  /**
-   * Loads the dataset into the matcher store, using an explicit names index to (re)match all usages against
-   * before they are added. Writes to the names index are allowed.
-   * @param factory
-   * @param ni
-   */
-  default int load(SqlSessionFactory factory, NameIndex ni){
-    LOG.info("Start loading all usages from dataset {}", datasetKey());
-    var cnt = new AtomicInteger();
-    try (SqlSession session = factory.openSession()) {
-      var num = session.getMapper(NameUsageMapper.class);
-      PgUtils.consume(() -> num.processDataset(datasetKey()), u -> matchAndAdd(u, ni));
-    }
-    LOG.info("Loaded {} usages for dataset {}", cnt, datasetKey());
-    return cnt.intValue();
-  }
-
-  private void matchAndAdd(NameUsageBase u, NameIndex ni) {
-    var m = ni.match(u.getName(), true, false);
-    u.getName().applyMatch(m);
-    var sn = new SimpleNameCached(u, m.getCanonicalNameKey());
-    add(sn);
-  }
+public interface UsageMatcherStore extends UsageSink, AutoCloseable {
 
   default int analyze(TaxGroupAnalyzer analyzer){
     int noCounter = 0;
@@ -72,8 +19,6 @@ public interface UsageMatcherStore extends AutoCloseable {
     LOG.info("Tax groups analyzed for dataset {} with {} usages having no group", datasetKey(), noCounter);
     return noCounter;
   }
-
-  int datasetKey();
 
   int size();
 
@@ -93,10 +38,25 @@ public interface UsageMatcherStore extends AutoCloseable {
   }
 
   /**
+   * Candidates for a match, in the shape the matcher wants them: with a classification.
+   *
+   * <p>The classification of each candidate is resolved lazily, on first access. Most candidates are
+   * dropped by the cheap filters in {@link UsageMatcher} - bare name, rank, authorship, year, code - which
+   * only look at the candidate's own fields, so their parents are never walked. That matters for canonical
+   * names shared by a pathological number of usages: canonicalisation strips strain and clone identifiers,
+   * so a name like "? bacterium" collects tens of thousands of usages in an environmental dataset.
+   *
    * @param canonId a canonical names index id
    * @return list of matching usages that act as candidates for the match
    */
-  List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalId(int canonId);
+  default List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalId(int canonId) {
+    var names = simpleNamesByCanonicalId(canonId);
+    var list = new ArrayList<SimpleNameClassified<SimpleNameCached>>(names.size());
+    for (var sn : names) {
+      list.add(new LazyClassifiedUsage(sn, this));
+    }
+    return list;
+  }
 
   List<SimpleNameCached> simpleNamesByCanonicalId(int canonId);
 
@@ -143,13 +103,6 @@ public interface UsageMatcherStore extends AutoCloseable {
     snc.setClassification(getClassification(snc.getParentId()));
     return snc;
   }
-
-  /**
-   * Adds a new name to the cache.
-   * If the same id already exists it should behave like an update
-   * @param sn
-   */
-  void add(SimpleNameCached sn);
 
   /**
    * Moves the taxon given to a new parent by updating the parent_id

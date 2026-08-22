@@ -3,15 +3,16 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
+import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.CopyUtil;
-import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.matching.*;
+import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.printer.PrinterUtils;
+import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.NameType;
@@ -43,6 +44,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final MatchedParentStack parents;
   private final UsageMatcher matcher;
   private final MatchingUtils utils;
+  private final AuthorComparator authComp;
   private final TaxGroupAnalyzer groupAnalyzer;
   private int counter = 0;  // all source usages
   private int ignored = 0;
@@ -70,6 +72,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
     this.matcher = matcherSupplier.apply(batchSession);
     groupAnalyzer = new TaxGroupAnalyzer();
     utils = new MatchingUtils(nameIndex);
+    // same construction as UsageMatcher: reuse the names index own comparator when available so
+    // author matching (used to disambiguate bare-name merge candidates) behaves identically
+    this.authComp = nameIndex instanceof NameIndexImpl
+      ? ((NameIndexImpl) nameIndex).getAuthComp()
+      : new AuthorComparator(AuthorshipNormalizer.INSTANCE);
 
     // figure out the lowest insertion point in the project/release
     // a) a target is given
@@ -391,33 +398,45 @@ public class TreeMergeHandler extends TreeBaseHandler {
     LOG.debug("process bare {} {}", n.getRank(), n.getLabel());
     Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
 
-    if (n.getNamesIndexType() == null) {
-      matchName(n);
+    // Spec: a bare name is merged onto a target candidate only if it carries authorship AND exactly
+    // one candidate sharing the matched canonical has identical rank and EQUAL authorship (via
+    // AuthorComparator). An unauthored bare name can never disambiguate between authorship variants,
+    // so it is skipped outright - it must never be used to enrich an existing candidate.
+    if (!n.hasAuthorship()) {
+      return;
     }
-    if (n.getNamesIndexType() == MatchType.EXACT) {
-      var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
-      if (candidates.size() == 1) {
-        Name existing = candidates.getFirst();
-        VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), n.getId(), EntityType.NAME);
-        var pn = updateName(existing, n, vs, upd, null);
+    matchName(n);
+    if (n.getNamesIndexId() == null) {
+      return;
+    }
+    var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
+    // listByNidx groups by the (now canonical-only) names index id, so it returns every
+    // authorship variant sharing the canonical - not just the one matching this name's own
+    // authorship & rank. Narrow down to the single, unambiguous candidate before merging.
+    candidates = candidates.stream()
+      .filter(c -> c.getRank() == n.getRank() && authComp.compare(n, c) == Equality.EQUAL)
+      .collect(Collectors.toList());
+    if (candidates.size() == 1) {
+      Name existing = candidates.getFirst();
+      VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), n.getId(), EntityType.NAME);
+      var pn = updateName(existing, n, vs, upd, null);
 
-        if (!upd.isEmpty()) {
-          updated++;
-          // make sure name has a vs key
-          var vskey = vsKey(pn);
-          vsm.insertSources(vskey, n, upd);
-          // update name
-          nm.update(pn);
-          // commit in batches
-          if (updated % 1000 == 0) {
-            interruptIfCancelled();
-            session.commit();
-            batchSession.commit();
-          }
+      if (!upd.isEmpty()) {
+        updated++;
+        // make sure name has a vs key
+        var vskey = vsKey(pn);
+        vsm.insertSources(vskey, n, upd);
+        // update name
+        nm.update(pn);
+        // commit in batches
+        if (updated % 1000 == 0) {
+          interruptIfCancelled();
+          session.commit();
+          batchSession.commit();
         }
-      } else {
-        LOG.debug("Cannot merge bare name {}. {} match candidates", n, candidates.size());
       }
+    } else {
+      LOG.debug("Cannot merge bare name {}. {} match candidates", n, candidates.size());
     }
   }
 
@@ -446,6 +465,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     } else if (nu.isSynonym() && parent == null) {
       LOG.warn("Ignore synonym without a parent: {}", nu.getLabel());
+      ignored++;
+      return null;
+
+    } else if (nu.isSynonym() && parent != null && parent.rank.isGenusOrSuprageneric() && nu.getRank().isSpeciesOrBelow()) {
+      // a species-or-below name that is a synonym directly under a genus (or higher) is malformed -
+      // there is no accepted species to attach it to, so do not place it under the genus
+      LOG.info("Ignore {} synonym {} whose accepted parent is a {} - no valid species to attach to", nu.getRank(), nu.getLabel(), parent.rank);
       ignored++;
       return null;
 
@@ -522,8 +548,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
     var ignore =  super.ignoreUsage(u, decision, issues, true);
     if (!ignore) {
-      // additional checks - we dont want any unranked unless they are OTU names
-      ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTU
+      // additional checks - we dont want any unranked unless they are OTU names (NameType.OTU merged into OTHER in name-parser v4)
+      ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTHER
         || (cfg != null && cfg.isBlocked(u.getName()));
       // check the dynamically generated name validation issues without loading
       if (issues.contains(Issue.INCONSISTENT_NAME)) {
@@ -561,6 +587,25 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected void cacheImplicit(Taxon t) {
     var snc = utils.toSimpleNameCached(t);
     matcher.store().add(snc);
+  }
+
+  @Override
+  protected boolean acceptedNameExists(Name name) {
+    // resolve the exact names index entry which encodes rank + authorship
+    var m = nameIndex.match(name, false, false);
+    // single-tier index: the matched entry is its own canonical, so its nidx is the canonical id
+    if (!m.isMatched() || m.getNidx() == null) {
+      return false;
+    }
+    var existing = matcher.store().usagesByCanonicalId(m.getNidx());
+    if (existing == null) {
+      return false;
+    }
+    final Integer nidxId = m.getNidx();
+    // only suppress the original-as-synonym if the exact same name incl. authorship (same names
+    // index id, not just the canonical) already exists as an accepted usage
+    return existing.stream().anyMatch(u -> u.getStatus() != null && u.getStatus().isTaxon()
+      && nidxId.equals(u.getNamesIndexId()));
   }
 
   private Name loadFromDB(String usageID) {
@@ -819,10 +864,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
         if (!Objects.equals(src.getNamesIndexId(), n.getNamesIndexId())) {
           // update name match in db
           n.setNamesIndexId(src.getNamesIndexId());
-          nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());
+          nmm.update(n, src.getNamesIndexId());
           if (existingUsage != null) {
             existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
-            existingUsage.usage.setNamesIndexMatchType(src.getNamesIndexType());
+            // the match type is no longer persisted on Name/name_match; MatchType.NONE is the neutral
+            // "no information" default (see SimpleNameWithNidx re-sourcing), scoring 0 in IdProvider
+            existingUsage.usage.setNamesIndexMatchType(MatchType.NONE);
             // warn if can on canonical nidx changed - this should not be the case
             final var canonicalNidx = nameIndex.getCanonical(src.getNamesIndexId());
             if (!Objects.equals(existingUsage.usage.getCanonicalId(), canonicalNidx)) {

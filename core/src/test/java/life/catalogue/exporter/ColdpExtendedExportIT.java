@@ -10,6 +10,7 @@ import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.api.vocab.MediaType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.db.mapper.NameMapper;
@@ -19,14 +20,11 @@ import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
@@ -98,35 +96,61 @@ public class ColdpExtendedExportIT extends ExportTest {
   /**
    * Reads a tabular file from the zipped export archive into a list of column maps keyed by ColdpTerm.
    */
-  private List<java.util.Map<ColdpTerm, String>> readArchiveTsv(java.io.File archive, String entryName) throws IOException {
-    List<java.util.Map<ColdpTerm, String>> rows = new ArrayList<>();
-    try (ZipFile zip = new ZipFile(archive)) {
-      ZipEntry entry = zip.getEntry(entryName);
-      assertNotNull("Missing archive entry " + entryName, entry);
-      try (BufferedReader br = new BufferedReader(new InputStreamReader(zip.getInputStream(entry), StandardCharsets.UTF_8))) {
-        String headerLine = br.readLine();
-        assertNotNull("Empty archive entry " + entryName, headerLine);
-        String[] header = headerLine.split("\t", -1);
-        ColdpTerm[] terms = new ColdpTerm[header.length];
-        for (int i = 0; i < header.length; i++) {
-          // header cells are prefixed names like "col:alternativeID" - strip the prefix
-          String local = header[i].contains(":") ? header[i].substring(header[i].indexOf(':') + 1) : header[i];
-          terms[i] = ColdpTerm.find(local, false);
+  private List<Map<ColdpTerm, String>> readArchiveTsv(java.io.File archive, String entryName) throws IOException {
+    List<Map<ColdpTerm, String>> rows = new ArrayList<>();
+    for (Map<String, String> raw : readArchiveRows(archive, entryName)) {
+      Map<ColdpTerm, String> row = new HashMap<>();
+      raw.forEach((col, value) -> {
+        // header cells are prefixed names like "col:alternativeID" - strip the prefix
+        String local = col.contains(":") ? col.substring(col.indexOf(':') + 1) : col;
+        ColdpTerm t = ColdpTerm.find(local, false);
+        if (t != null) {
+          row.put(t, value);
         }
-        String line;
-        while ((line = br.readLine()) != null) {
-          String[] cells = line.split("\t", -1);
-          java.util.Map<ColdpTerm, String> row = new java.util.HashMap<>();
-          for (int i = 0; i < cells.length && i < terms.length; i++) {
-            if (terms[i] != null) {
-              row.put(terms[i], cells[i]);
-            }
-          }
-          rows.add(row);
-        }
-      }
+      });
+      rows.add(row);
     }
     return rows;
+  }
+
+  /**
+   * Media must export with the MIME type in col:type, the only type column ColDP defines for Media.
+   * There is no col:format term for Media, so writing one aborted the whole export,
+   * see https://github.com/CatalogueOfLife/checklistbank/issues/1711
+   */
+  @Test
+  public void media() throws Exception {
+    insertMedia(TestDataRule.APPLE.key, "root-1", MediaType.IMAGE, "image/jpeg");
+
+    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    final String file = ColdpTerm.Media.simpleName() + ".tsv";
+    var header = readArchiveHeader(exp.getArchive(), file);
+    assertFalse("ColDP defines no format term for Media", header.contains(ColdpTerm.format.prefixedName()));
+
+    var rows = readArchiveRows(exp.getArchive(), file);
+    assertEquals(1, rows.size());
+    var row = rows.get(0);
+    assertEquals("image/jpeg", row.get(ColdpTerm.type.prefixedName()));
+    assertEquals("https://example.org/media/root-1.jpg", row.get(ColdpTerm.url.prefixedName()));
+  }
+
+  /**
+   * Without a MIME type col:type falls back to the primary type, which the ColDP spec also allows.
+   */
+  @Test
+  public void mediaWithoutFormat() throws Exception {
+    insertMedia(TestDataRule.APPLE.key, "root-1", MediaType.VIDEO, null);
+
+    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    var rows = readArchiveRows(exp.getArchive(), ColdpTerm.Media.simpleName() + ".tsv");
+    assertEquals(1, rows.size());
+    assertEquals("video", rows.get(0).get(ColdpTerm.type.prefixedName()));
   }
 
   @Test

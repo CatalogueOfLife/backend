@@ -14,9 +14,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class SynonymTest {
-
-  @Test
+public class SynonymTest {  @Test
   public void label() throws Exception {
     Name tn = new Name();
     tn.setGenus("Abies");

@@ -60,11 +60,17 @@ public class PgConfig extends PgDbConfig {
   
   /**
    * Postgres property lock_timeout:
-   * Abort any statement that takes more than the specified number of milliseconds,
-   * starting from the time the command arrives at the server from the client.
-   * A value of zero (the default) turns this off.
+   * Abort any statement that waits longer than the specified number of milliseconds while trying to acquire
+   * a lock on a table, index, row or other database object.
+   * <p>
+   * Values:
+   * <ul>
+   *   <li>0 (the default) leaves the setting untouched, i.e. inherits whatever the server is configured with</li>
+   *   <li>a positive value sets that timeout in milliseconds for all pooled connections</li>
+   *   <li>-1 disables the timeout for all pooled connections, overriding the server setting</li>
+   * </ul>
    */
-  @Min(0)
+  @Min(-1)
   public int lockTimeout = 0;
   
   /**
@@ -74,11 +80,17 @@ public class PgConfig extends PgDbConfig {
    * it also allows tuples visible only to this transaction to be vacuumed.
    * <p>
    * We do need long running transactions in the backend though, e.g. when indexing a dataset into the search index.
-   * Recommended to keep this feature disabled for CoL in production.
+   * Note that this timeout is often configured on the postgres server itself (15min in CoL production),
+   * in which case every connection inherits it unless we explicitly say otherwise here.
    * <p>
-   * The default value of 0 disables this feature.
+   * Values:
+   * <ul>
+   *   <li>0 (the default) leaves the setting untouched, i.e. inherits whatever the server is configured with</li>
+   *   <li>a positive value sets that timeout in milliseconds for all pooled connections</li>
+   *   <li>-1 disables the timeout for all pooled connections, overriding the server setting</li>
+   * </ul>
    */
-  @Min(0)
+  @Min(-1)
   public int idleInTransactionSessionTimeout = 0;
   
   /**
@@ -169,11 +181,17 @@ public class PgConfig extends PgDbConfig {
     if (workMem > 0) {
       sb.append("SET work_mem='" + workMem + "MB';");
     }
+    // postgres uses 0 to mean "no timeout" for both settings below, so a negative config value
+    // has to be translated into an explicit SET ... TO 0 that overrides the server setting
     if (lockTimeout > 0) {
       sb.append("SET lock_timeout TO " + lockTimeout + ";");
+    } else if (lockTimeout < 0) {
+      sb.append("SET lock_timeout TO 0;");
     }
     if (idleInTransactionSessionTimeout > 0) {
       sb.append("SET idle_in_transaction_session_timeout TO " + idleInTransactionSessionTimeout + ";");
+    } else if (idleInTransactionSessionTimeout < 0) {
+      sb.append("SET idle_in_transaction_session_timeout TO 0;");
     }
     if (sb.length() > 0) {
       hikari.setConnectionInitSql(sb.toString());

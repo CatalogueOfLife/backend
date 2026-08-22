@@ -20,6 +20,8 @@ import life.catalogue.parser.TreatmentFormatParser;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -138,11 +140,12 @@ public class ColdpInserter extends DataCsvInserter {
   private void insertTreatments() throws InterruptedException {
     ColdpReader coldp = (ColdpReader) reader;
     if (coldp.hasTreatments()) {
-      try {
+      try (Stream<Path> treatments = coldp.getTreatments()) {
         final int datasetKey = store.getDatasetKey();
-        for (Path tp : coldp.getTreatments()) {
+        Iterator<Path> iter = treatments.iterator();
+        while (iter.hasNext()) {
           interruptIfCancelled("DAta inserter interrupted, exit early");
-          insertTreatment(datasetKey, tp);
+          insertTreatment(datasetKey, iter.next());
         }
       } catch (IOException e) {
         LOG.error("Failed to read treatments", e);

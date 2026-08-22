@@ -9,7 +9,6 @@ import life.catalogue.matching.similarity.LevenshteinDistance;
 import life.catalogue.matching.similarity.NormalizedLevenshtein;
 import life.catalogue.parser.NameParser;
 
-import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.UnparsableNameException;
 import org.gbif.nameparser.util.NameFormatter;
@@ -38,9 +37,9 @@ public class ChangedMatcher {
 
   private static final AuthorComparator AUTHOR_CMP = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
   private static final NormalizedLevenshtein DISPLAY_SIM = new NormalizedLevenshtein();
-  // reuse the shared GBIF parser instance (the one slated for a Rust implementation), avoiding the
-  // overhead of building a full CoL Name and a second parser + executor.
-  private static final NameParserGBIF PARSER = NameParser.PARSER.gbif();
+  // reuse the shared parser instance (the GBIF NameParser API, now backed by the Rust implementation),
+  // avoiding the overhead of building a full CoL Name and a second parser + executor.
+  private static final org.gbif.nameparser.api.NameParser PARSER = NameParser.PARSER.gbif();
   public record Result(List<ChangedName> changed, List<String> removed, List<String> added) {}
 
   /** A parsed candidate: raw label, its normalised canonical (authorship stripped) and parsed authorship. */
@@ -178,7 +177,9 @@ public class ChangedMatcher {
   /** Parses a label into its normalised canonical and authorship; falls back to the raw label if unparsable. */
   private static Candidate parse(String label) {
     try {
-      var pn = PARSER.parse(label);
+      // name-parser 5.0: parse() never throws — it returns a sealed ParseResult; orElseThrow() yields the
+      // ParsedName or throws UnparsableNameException for the unparsable fallback below.
+      var pn = PARSER.parse(label).orElseThrow();
       String canonical = NameFormatter.canonicalWithoutAuthorship(pn);
       ScientificName sciname = ScientificName.wrap(pn);
       if (canonical == null || canonical.isBlank()) {
@@ -188,9 +189,6 @@ public class ChangedMatcher {
 
     } catch (UnparsableNameException e) {
       return new Candidate(label, SciNameNormalizer.normalize(label), null);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt(); // restore the interrupt flag before aborting the diff
-      throw new RuntimeException("Interrupted while parsing name for diff: " + label, e);
     }
   }
 

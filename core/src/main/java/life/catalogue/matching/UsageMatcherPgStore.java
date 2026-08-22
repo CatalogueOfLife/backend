@@ -3,7 +3,6 @@ package life.catalogue.matching;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameCached;
-import life.catalogue.api.model.SimpleNameClassified;
 
 import java.util.*;
 import java.util.function.Function;
@@ -67,17 +66,13 @@ public class UsageMatcherPgStore implements UsageMatcherStore {
     return -1;
   }
 
+  /**
+   * Tolerates a dangling parent id by stopping the walk instead of throwing, which the shared default
+   * does not: a session mode store reads a project that is still being assembled.
+   */
   @Override
-  public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalId(int canonId) {
-    return withMapper(m -> {
-      var sns = m.listByCanonNIDX(datasetKey, canonId);
-      if (sns == null) return null;
-      var list = new ArrayList<SimpleNameClassified<SimpleNameCached>>(sns.size());
-      for (SimpleNameCached sn : sns) {
-        list.add(new SimpleNameClassified<>(sn, buildClassification(m, sn.getParentId())));
-      }
-      return list;
-    });
+  public List<SimpleNameCached> getClassification(String usageID) {
+    return withMapper(m -> buildClassification(m, usageID));
   }
 
   private List<SimpleNameCached> buildClassification(NameUsageMapper m, String parentId) {

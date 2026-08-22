@@ -2,12 +2,17 @@ package life.catalogue.api.vocab;
 
 import life.catalogue.api.model.User;
 
-import java.util.Set;
-
 /**
  * Constants for user keys mostly.
  */
 public class Users {
+  /**
+   * The lowest key a real, human user managed through the GBIF registry can have.
+   * All keys below this are reserved for internal, non human "bot" users - see {@link #isBot(int)}.
+   * This threshold is mirrored in SQL when granting the creator editor access (see the aclEditor fragment in DatasetMapper.xml).
+   */
+  public final static int MIN_HUMAN_KEY = 100;
+
   /**
    * Not a real user, but a fake user key that has permissions to view all
    */
@@ -20,10 +25,6 @@ public class Users {
   public final static int RELEASER = 13;
   public final static int HOMOTYPIC_GROUPER = 14;
 
-  private final static Set<Integer> BOTS = Set.of(
-    DB_INIT, IMPORTER, MATCHER, GBIF_SYNC, RELEASER, HOMOTYPIC_GROUPER
-  );
-
   private Users() {
   }
 
@@ -33,7 +34,10 @@ public class Users {
     return u;
   }
 
+  /**
+   * @return true for any internal, non human user. Real human users always have keys >= {@link #MIN_HUMAN_KEY}.
+   */
   public static boolean isBot(int key) {
-    return BOTS.contains(key);
+    return key < MIN_HUMAN_KEY;
   }
 }

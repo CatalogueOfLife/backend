@@ -324,6 +324,8 @@ CREATE TYPE ISSUE AS ENUM (
   'DUPLICATE_VERNACULAR_NAMES',
   'DUPLICATE_ESTIMATES',
   'DUPLICATE_TAXON_PROPERTIES',
+  'AUTHORSHIP_UNCERTAIN',
+  'SUPERFLUOUS_AUTHORSHIP',
   'RELATION_SYNONYM'
 );
 
@@ -375,12 +377,11 @@ CREATE TYPE NAMEPART AS ENUM (
 
 CREATE TYPE NAMETYPE AS ENUM (
   'SCIENTIFIC',
-  'VIRUS',
-  'HYBRID_FORMULA',
+  'FORMULA',
   'INFORMAL',
-  'OTU',
   'PLACEHOLDER',
-  'NO_NAME'
+  'IDENTIFIER',
+  'OTHER'
 );
 
 CREATE TYPE NOMCODE AS ENUM (
@@ -461,7 +462,7 @@ CREATE TYPE RANK AS ENUM (
   'SUBTERCLASS',
   'PARVCLASS',
   'SUPERDIVISION',
-  'DIVISION',
+  'DIVISION_ZOOLOGY',
   'SUBDIVISION',
   'INFRADIVISION',
   'SUPERLEGION',
@@ -509,6 +510,7 @@ CREATE TYPE RANK AS ENUM (
   'GENUS',
   'SUBGENUS',
   'INFRAGENUS',
+  'DIVISION_BOTANY',
   'SUPERSECTION_BOTANY',
   'SECTION_BOTANY',
   'SUBSECTION_BOTANY',
@@ -1036,6 +1038,7 @@ CREATE TABLE dataset_import (
   estimate_count INTEGER,
   media_count INTEGER,
   name_count INTEGER,
+  name_matches_count INTEGER,
   reference_count INTEGER,
   synonym_count INTEGER,
   taxon_count INTEGER,
@@ -1052,7 +1055,6 @@ CREATE TABLE dataset_import (
   names_by_rank_count HSTORE,
   names_by_status_count HSTORE,
   names_by_type_count HSTORE,
-  names_by_match_type_count HSTORE,
   species_interactions_by_type_count HSTORE,
   synonyms_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
@@ -1169,6 +1171,7 @@ CREATE TABLE sector (
   name_types NAMETYPE[] DEFAULT NULL,
   name_status_exclusion NOMSTATUS[] DEFAULT NULL,
   extinct_filter BOOLEAN,
+  name_filter TEXT,
   note TEXT,
   UNIQUE (dataset_key, subject_dataset_key, subject_id),
   PRIMARY KEY (dataset_key, id)
@@ -1195,6 +1198,7 @@ CREATE TABLE sector_import (
   estimate_count INTEGER,
   media_count INTEGER,
   name_count INTEGER,
+  name_matches_count INTEGER,
   reference_count INTEGER,
   synonym_count INTEGER,
   taxon_count INTEGER,
@@ -1211,7 +1215,6 @@ CREATE TABLE sector_import (
   names_by_rank_count HSTORE,
   names_by_status_count HSTORE,
   names_by_type_count HSTORE,
-  names_by_match_type_count HSTORE,
   species_interactions_by_type_count HSTORE,
   synonyms_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
@@ -1280,30 +1283,12 @@ CREATE INDEX ON decision (subject_dataset_key, subject_id);
 
 CREATE TABLE names_index (
   id SERIAL PRIMARY KEY,
-  canonical_id INTEGER NOT NULL REFERENCES names_index,
-  rank RANK NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   scientific_name TEXT NOT NULL,
-  authorship TEXT,
-  uninomial TEXT,
-  genus TEXT,
-  infrageneric_epithet TEXT,
-  specific_epithet TEXT,
-  infraspecific_epithet TEXT,
-  cultivar_epithet TEXT,
-  basionym_authors TEXT[] DEFAULT '{}',
-  basionym_ex_authors TEXT[] DEFAULT '{}',
-  basionym_year TEXT,
-  combination_authors TEXT[] DEFAULT '{}',
-  combination_ex_authors TEXT[] DEFAULT '{}',
-  combination_year TEXT,
-  sanctioning_author TEXT,
-  remarks TEXT
+  normalized TEXT NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
-CREATE INDEX ON names_index (canonical_id);
 CREATE INDEX ON names_index (scientific_name);
-CREATE INDEX ON names_index (scientific_name) WHERE id = canonical_id;
+CREATE UNIQUE INDEX names_index_normalized_idx ON names_index (normalized);
 
 
 CREATE TABLE name_usage_archive (
@@ -1313,7 +1298,7 @@ CREATE TABLE name_usage_archive (
   -- shared with name table, keep manually in sync!
   n_rank RANK NOT NULL,
   n_candidatus BOOLEAN DEFAULT FALSE,
-  n_notho NAMEPART,
+  n_notho NAMEPART[],
   n_code NOMCODE,
   n_nom_status NOMSTATUS,
   n_original_spelling BOOLEAN,
@@ -1368,36 +1353,6 @@ CREATE TABLE name_usage_archive (
 );
 
 CREATE INDEX ON name_usage_archive using GIN (dataset_key, release_keys);
-
-CREATE TABLE parser_config (
-  id TEXT PRIMARY KEY,
-  candidatus BOOLEAN DEFAULT FALSE,
-  extinct BOOLEAN DEFAULT FALSE,
-  rank RANK NOT NULL,
-  notho NAMEPART,
-  code NOMCODE,
-  type NAMETYPE NOT NULL,
-  created_by INTEGER NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  uninomial TEXT,
-  genus TEXT,
-  infrageneric_epithet TEXT,
-  specific_epithet TEXT,
-  infraspecific_epithet TEXT,
-  cultivar_epithet TEXT,
-  basionym_authors TEXT[] DEFAULT '{}',
-  basionym_ex_authors TEXT[] DEFAULT '{}',
-  basionym_year TEXT,
-  combination_authors TEXT[] DEFAULT '{}',
-  combination_ex_authors TEXT[] DEFAULT '{}',
-  combination_year TEXT,
-  sanctioning_author TEXT,
-  published_in TEXT,
-  nomenclatural_note TEXT,
-  taxonomic_note TEXT,
-  unparsed TEXT,
-  remarks TEXT
-);
 
 CREATE TABLE api_logs(
   date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
@@ -1514,7 +1469,7 @@ CREATE TABLE name (
   -- shared with name_usage_archive, keep in sync!
   rank RANK NOT NULL,
   candidatus BOOLEAN DEFAULT FALSE,
-  notho NAMEPART,
+  notho NAMEPART[],
   code NOMCODE,
   nom_status NOMSTATUS,
   original_spelling BOOLEAN,
@@ -1651,7 +1606,6 @@ CREATE TABLE name_match (
   sector_key INTEGER,
   index_id INTEGER REFERENCES names_index,
   name_id TEXT NOT NULL,
-  type MATCHTYPE NOT NULL,
   PRIMARY KEY (dataset_key, name_id),
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
@@ -1999,7 +1953,6 @@ CREATE TABLE name_usage_archive_match (
   dataset_key INTEGER NOT NULL,
   index_id INTEGER REFERENCES names_index,
   usage_id TEXT NOT NULL,
-  type MATCHTYPE NOT NULL,
   PRIMARY KEY (dataset_key, usage_id)
 );
 CREATE INDEX ON name_usage_archive_match (dataset_key, index_id);

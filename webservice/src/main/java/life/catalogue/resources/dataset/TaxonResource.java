@@ -1,6 +1,5 @@
 package life.catalogue.resources.dataset;
 
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Language;
@@ -101,11 +100,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Deprecated // use NameUsageResource instead
   @Path("{id}/info")
   public UsageInfo info(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    UsageInfo info = dao.getUsageInfo(DSID.of(datasetKey, id));
-    if (info == null) {
-      throw NotFoundException.notFound(Taxon.class, datasetKey, id);
-    }
-    return info;
+    return dao.getUsageInfoOr404(DSID.of(datasetKey, id));
   }
 
   @GET

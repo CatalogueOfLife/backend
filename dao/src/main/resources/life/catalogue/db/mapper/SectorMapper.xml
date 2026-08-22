@@ -41,6 +41,7 @@
     s.name_types,
     s.name_status_exclusion,
     s.extinct_filter,
+    s.name_filter,
     s.note,
     s.modified,
     s.modified_by,
@@ -80,6 +81,7 @@
     name_types,
     name_status_exclusion,
     extinct_filter,
+    name_filter,
     note,
     modified,
     modified_by
@@ -111,6 +113,7 @@
     #{nameTypes, typeHandler=life.catalogue.db.type2.NameTypeSetTypeHandler},
     #{nameStatusExclusion, typeHandler=life.catalogue.db.type2.NomStatusSetTypeHandler},
     #{extinctFilter},
+    #{nameFilter},
     #{note},
     now(),
     #{modifiedBy}

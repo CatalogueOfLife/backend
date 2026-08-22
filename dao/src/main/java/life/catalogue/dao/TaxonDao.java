@@ -124,24 +124,48 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
     try {
       return super.getOr404(key);
     } catch (NotFoundException e) {
+      throw enrich404(key, e);
+    }
+  }
+
+  /**
+   * Returns the full usage info for a taxon or synonym with the specified key or throws
+   * the same enriched exceptions as {@link #getOr404(DSID)}, so clients can redirect to
+   * the accepted usage or render a tombstone page for archived ids.
+   */
+  public UsageInfo getUsageInfoOr404(DSID<String> key) {
+    UsageInfo info = getUsageInfo(key);
+    if (info == null) {
+      throw enrich404(key, NotFoundException.notFound(Taxon.class, key));
+    }
+    return info;
+  }
+
+  /**
+   * Replaces a plain 404 with a more specific exception if we can explain where the id went:
+   *  - a SynonymException in case the id belongs to a synonym
+   *  - an ArchivedException in case the id existed in an earlier release and was archived
+   *
+   * @return the more specific exception to throw, or the given 404 if the id is unknown to us
+   */
+  private RuntimeException enrich404(DSID<String> key, NotFoundException notFound) {
+    try (SqlSession session = factory.openSession()) {
       // is it a synonym?
-      try (SqlSession session = factory.openSession()) {
-        SimpleName syn = session.getMapper(NameUsageMapper.class).getSimple(key);
-        if (syn != null) {
-          throw new SynonymException(key, syn.getParent());
-        }
-        // if it is a release, try if we have an archived version in the project
-        var info = DatasetInfoCache.CACHE.info(key.getDatasetKey());
-        if (info.origin.isRelease()) {
-          var projectKey = DSID.of(info.sourceKey, key.getId());
-          var anu= session.getMapper(ArchivedNameUsageMapper.class).get(projectKey);
-          if (anu != null) {
-            throw new ArchivedException(projectKey, anu);
-          }
-        }
-        // rethrow the original 404
-        throw e;
+      SimpleName syn = session.getMapper(NameUsageMapper.class).getSimple(key);
+      if (syn != null) {
+        return new SynonymException(key, syn.getParent());
       }
+      // if it is a release, try if we have an archived version in the project
+      var info = DatasetInfoCache.CACHE.info(key.getDatasetKey());
+      if (info.origin.isRelease()) {
+        var projectKey = DSID.of(info.sourceKey, key.getId());
+        var anu = session.getMapper(ArchivedNameUsageMapper.class).get(projectKey);
+        if (anu != null) {
+          return new ArchivedException(projectKey, anu);
+        }
+      }
+      // nothing better to say, keep the original 404
+      return notFound;
     }
   }
 

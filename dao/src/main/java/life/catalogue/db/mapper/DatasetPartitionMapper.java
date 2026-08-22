@@ -9,27 +9,40 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 
 /**
- * Mapper with default methods to manage the lifetime of dataset based partitions
- * and all their need sequences & indices.
+ * Mapper with default methods to manage the lifetime of dataset partitions
+ * and all the per dataset sequences and tables that go with them.
  *
- * We deal with dataset partitioning depending on the immutable origin property of the dataset:
+ * All tables listed in {@link #PARTITIONED_TABLES} use plain HASH partitioning on dataset_key,
+ * with partitions named {table}_mod{remainder}, e.g. name_usage_mod3.
+ * The origin of a dataset does not matter: EXTERNAL, PROJECT and RELEASE datasets all share the same hashed partitions.
+ * There are no dedicated per dataset partitions and no default partition.
  *
- * EXTERNAL: HASH based partitioning on the datasetKey
- * PROJECT: a dedicated partition which provides fast read/write speeds
- * RELEASE: a dedicated partition which provides fast read/write speeds and allows for quick deletions of entire releases when they get old
+ * The number of partitions is fixed when the database is initialised, see the init command and its --num argument.
+ * It can only be changed afterwards by the repartition command, which rebalances all data into a new number of partitions.
+ * Beware that repartitioning is currently broken on PG 17.1 and above,
+ * see https://github.com/CatalogueOfLife/backend/issues/1424
  *
- * This assumes that the total number of managed and released datasets is well below 1000.
- * If we ever exceed these numbers we should relocate partitions.
+ * Because partitions are hashed, deleting a dataset cannot drop a partition.
+ * It is a regular DELETE by dataset_key across all partitioned tables, see DatasetDao.deleteData
+ * which iterates PARTITIONED_TABLES in reverse order to satisfy foreign keys.
  *
- * For COL itself it is important to have speedy releases and quick responses when managing the project,
- * so these should always live on their own partition.
+ * What does still exist per dataset are standalone, non partitioned objects:
+ * the id sequences for all {@link #SERIAL_TABLES} and the temporary id mapping tables for {@link #IDMAP_TABLES},
+ * both named after the table and the dataset key, e.g. distribution_3_id_seq or idmap_name_usage_3.
+ * {@link #dropTable(String, int)} drops such a per dataset table, never a partition.
+ *
+ * Keep the number of partitions moderate. Queries restricted to a single dataset get pruned down to one partition,
+ * but cross dataset queries without a dataset_key filter must open every partition and Postgres locks
+ * each partition together with all of its indexes. For name_usage, name and name_match that is roughly
+ * 23 locked relations per partition, so at 24 partitions a single such query holds close to 600 relation locks
+ * and puts real pressure on max_locks_per_transaction.
  */
 public interface DatasetPartitionMapper {
   Logger LOG = LoggerFactory.getLogger(DatasetPartitionMapper.class);
 
   List<String> IDMAP_TABLES = Lists.newArrayList(IdMapMapper.NAME_TBL, IdMapMapper.USAGE_TBL);
 
-  // order is important !!!
+  // order is important !!! foreign keys require this creation order, deletions must iterate it reversed
   List<String> PARTITIONED_TABLES = Lists.newArrayList(
       "verbatim",
       "verbatim_source",
@@ -80,8 +93,8 @@ public interface DatasetPartitionMapper {
   }
 
   /**
-   * Creates the given number of partitions for all partitioned tables.
-   * @param number of partitions per table
+   * Creates the given number of hashed partitions for a single partitioned table.
+   * @param number of partitions to create for the table
    * @param table name
    */
   default void createPartitions(String table, int number) {

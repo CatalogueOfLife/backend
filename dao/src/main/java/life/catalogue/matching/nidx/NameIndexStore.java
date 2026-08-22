@@ -1,58 +1,48 @@
 package life.catalogue.matching.nidx;
 
-import life.catalogue.api.model.IndexName;
 import life.catalogue.common.Managed;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
+import java.util.Map;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
-import com.google.common.base.Function;
-
+/**
+ * A pure {@code normalized-String -> nidx-int} registry backing the names index.
+ * The single-tier, canonical-only index holds no full row instances - it only maps a normalized
+ * canonical bucket key to the names index id. Full rows (see
+ * {@link life.catalogue.api.model.NameIndexEntry}) are looked up on demand from postgres.
+ */
 public interface NameIndexStore extends Managed {
 
   /**
-   * Lookup IndexName by its key
+   * @param normalized the normalized canonical bucket key
+   * @return the nidx for the key, or 0 if absent
    */
-  IndexName get(Integer key);
+  int get(String normalized);
+
+  void add(String normalized, int nidx);
+
+  boolean contains(String normalized);
 
   /**
-   * @param key the canonical name index key
-   * @return all names which have the given canonical key, but not the canonical name itself!
-   */
-  Collection<IndexName> byCanonical(Integer key);
-
-  Iterable<IndexName> all();
-
-  /**
-   * The maximum key of all stored names index entries.
-   * @return max key or zero if store is empty
-   */
-  int maxKey();
-
-  /**
-   * Counts all name usages. Potentially an expensive operation.
+   * @return the number of entries held. Potentially an expensive operation.
    */
   int count();
 
   /**
-   * Remove all entries of the names index store
+   * The maximum nidx of all stored entries.
+   * @return max nidx or zero if store is empty
+   */
+  int maxKey();
+
+  /**
+   * Remove all entries of the names index store.
    */
   void clear();
 
   /**
-   * Deletes the names index entry.
-   * If it is a canonical one, it will also remove all qualified entries based on it.
+   * @return an iterable over all held entries (normalized key -> nidx).
    */
-  List<IndexName> delete(int id, Function<IndexName, String> keyFunc);
-
-  List<IndexName> get(String key);
-  
-  boolean containsKey(String key);
-  
-  void add(String key, IndexName name);
+  Iterable<Map.Entry<String, Integer>> entries();
 
   /**
    * Tries to compact the store, but retaining all identifiers.
@@ -63,6 +53,4 @@ public interface NameIndexStore extends Managed {
    * DateTime the store was first created or entirely cleared.
    */
   LocalDateTime created();
-
-  Pool<Kryo> kryo();
 }

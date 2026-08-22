@@ -16,24 +16,26 @@ public enum IgnoreReason {
   RANK(u -> u.getName().getRank()),
   EXTINCT(u -> u.isTaxon() ? u.asTaxon().isExtinct() : null),
   INCONSISTENT_NAME(),
+  NAME_FILTER(u -> u.getName().getScientificName()),
   IGNORED_PARENT(NameUsageBase::getParentId),
-  // ignored name types
+  // ignored name types - one reason per NameType, named to match the NameType value
   NAME_SCIENTIFIC(),
-  NAME_VIRUS(),
-  NAME_HYBRID_FORMULA(),
+  NAME_FORMULA(),
   NAME_INFORMAL(),
-  NAME_OTU(),
   NAME_PLACEHOLDER(),
-  NAME_NO_NAME();
+  NAME_IDENTIFIER(),
+  NAME_OTHER(),
+  // historical: name-parser v4.2 dropped NameType.VIRUS (viruses are now OTHER carrying
+  // NomCode.VIRUS). Kept so old import metrics still resolve, but no NameType maps to it.
+  NAME_VIRUS();
 
   private static final Map<NameType, IgnoreReason> nameTypes = Map.of(
     SCIENTIFIC, NAME_SCIENTIFIC,
-    VIRUS, NAME_VIRUS,
-    HYBRID_FORMULA, NAME_HYBRID_FORMULA,
+    FORMULA, NAME_FORMULA,
     INFORMAL, NAME_INFORMAL,
-    OTU, NAME_OTU,
     PLACEHOLDER, NAME_PLACEHOLDER,
-    NO_NAME, NAME_NO_NAME
+    IDENTIFIER, NAME_IDENTIFIER,
+    OTHER, NAME_OTHER
   );
 
   private final Function<NameUsageBase, Object> valueExtractor;

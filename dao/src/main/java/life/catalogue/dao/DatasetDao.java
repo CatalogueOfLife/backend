@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -602,9 +603,25 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     d.applyUser(user);
     d.setKey(tempIds.newKey());
 
+    String creatorName = null;
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(mapperClass);
       dm.createWithID(d);
+      // createWithID grants the human creator editor access through the acl_editor column (see the aclEditor SQL fragment).
+      // Resolve their username while the session is open so we can invalidate their cached auth User below.
+      if (d.getSourceKey() == null && !Users.isBot(user)) {
+        User u = session.getMapper(UserMapper.class).get(user);
+        if (u != null) {
+          creatorName = u.getUsername();
+        }
+      }
+    }
+    // Unlike the regular create() path, temp datasets publish no DatasetChanged event, so AuthBundle never patches the
+    // creator's cached User.editor set to include this dataset. Without this the creator gets a 403 on their own private
+    // temp dataset until the 60min password cache expires and forces a fresh DB reload. Invalidate their auth cache
+    // explicitly so the acl_editor grant is picked up on the very next request.
+    if (creatorName != null) {
+      bus.publish(new UserPermissionChanged(creatorName));
     }
     return d.getKey();
   }

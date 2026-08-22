@@ -4,7 +4,6 @@ import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.matching.nidx.NameIndex;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -17,14 +16,12 @@ import org.apache.ibatis.session.SqlSessionFactory;
  * previous releases and the deleted usage archive to know about historical identifiers that can be reused.
  */
 public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable {
-  private final NameIndex nidx;
   private final Writer nomatchWriter;
 
   public XIdProvider(int projectKey, int mappedDatasetKey, int attempt, int releaseDatasetKey, ReleaseConfig cfg, ProjectReleaseConfig prCfg,
-                     NameIndex nidx, SqlSessionFactory factory
+                     SqlSessionFactory factory
   ) throws IOException {
     super(projectKey, mappedDatasetKey, DatasetOrigin.XRELEASE, attempt, releaseDatasetKey, cfg, prCfg, factory);
-    this.nidx = nidx;
     nomatchWriter = buildNomatchWriter();
   }
 
@@ -39,7 +36,9 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
       if (usage.hasAuthorship()) {
         // remember real canonical ID as we use the property to encode the new id internally
         final var canonID = usage.getCanonicalId();
-        issueIDs(usage.getCanonicalId(), List.of(usage), nomatchWriter, false);
+        // the usage still carries the parent id of its source dataset at this point, not the accepted name,
+        // so merged synonyms are scored without the accepted name - see IdProvider#acceptedNames
+        issueIDs(usage.getCanonicalId(), List.of(usage), NO_ACCEPTED_NAMES, nomatchWriter, false);
         var id = encode(usage.getCanonicalId());
         usage.setCanonicalId(canonID);
         return id;
@@ -57,7 +56,8 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
 
   @Override
   public Integer nidx2canonical(Integer nidx) {
-    return this.nidx.getCanonical(nidx);
+    // single-tier canonical-only index: a nidx is its own canonical, so no lookup is needed
+    return nidx;
   }
 
   @Override

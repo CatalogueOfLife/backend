@@ -2,18 +2,15 @@ package life.catalogue.command;
 
 import life.catalogue.WsMatchingServerConfig;
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
-import life.catalogue.metadata.coldp.DatasetJsonWriter;
 
 import java.io.File;
 
@@ -114,31 +111,16 @@ public class MatchingServerBuildCmd extends ConfiguredCommand<WsMatchingServerCo
       DatasetInfoCache.CACHE.setFactory(factory);
 
       // DO WORK NOW !!!
-      // dataset json
       try (SqlSession session = factory.openSession()) {
         var d = session.getMapper(DatasetMapper.class).get(key);
-        if (d.getSize() == null || d.getSize() < 1) {
-          int cnt = session.getMapper(NameUsageMapper.class).count(key);
-          d.setSize(cnt);
-        }
         System.out.println("Index dataset " + key + " " + d.getTitle());
-        File df = cfg.matching.datasetJson(key);
-        DatasetJsonWriter.write(d, df);
       }
       // names index
       final NameIndex ni = NameIndexFactory.build(cfg.namesIndex, null, AuthorshipNormalizer.INSTANCE);
       ni.start();
-      // matching index
-      UsageMatcher m;
-      try (SqlSession s = factory.openSession()) {
-        var um = s.getMapper(NameUsageMapper.class);
-        int count = 1000 + um.count(key);
-        // load(factory, ni) re-matches with inserts allowed, so mirror the usages write headroom on the canonical index
-        long canonCount = 1000 + um.countDistinctCanonical(key);
-        var samples = um.listSN(key, new Page(0,10));
-        m = UsageMatcherFactory.buildPersistentMatcher(key, samples, count, canonCount, cfg.matching, ni);
-        m.load(factory, ni);
-      }
+      // matching index. Writes the metadata sidecar into the store dir once the store exists, so the
+      // directory can be shipped to a matching server as a single self contained artifact
+      UsageMatcher m = UsageMatcherFactory.buildPersistentMatcher(key, cfg.matching, ni, factory);
       // orderly shutdown
       m.close();
       ni.stop();

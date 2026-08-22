@@ -51,20 +51,23 @@ public abstract class BaseEnumSetTypeHandler<T extends Enum<T>> extends Abstract
 
   @Override
   public Set<T> toObj(Array pgArray) throws SQLException {
-    if (pgArray == null || pgArray.getArray() == null) {
+    // getArray() reparses the pg array on every call, so read it once
+    Object array = pgArray == null ? null : pgArray.getArray();
+    if (array == null) {
       return nullValue != null ? EnumSet.noneOf(type) : null;
     }
-
-    if (((Object[]) pgArray.getArray()).length > 0) {
-      Set<T> set = Arrays.stream(((Object[]) pgArray.getArray()))
-          .map(this::fromKey)
-          .filter(Objects::nonNull)
-          .collect(Collectors.toSet());
-      if (!set.isEmpty()) {
-        return EnumSet.copyOf(set);
-      }
+    // postgres does not enforce dimensionality on array columns, so a botched migration can leave
+    // multidimensional values behind. Without this check each element is a nested array whose
+    // toString() ends up in Enum.valueOf, yielding a baffling "No enum constant Foo.[Ljava.lang.String;@1b6d"
+    if (array.getClass().getComponentType().isArray()) {
+      throw new SQLException(String.format(
+        "multidimensional %s array found where a flat one is required. The %s column needs to be flattened, "
+        + "e.g. UPDATE tbl SET col = ARRAY(SELECT unnest(col)) WHERE array_ndims(col) > 1", arrayType, arrayType));
     }
-    return EnumSet.noneOf(type);
+    return Arrays.stream((Object[]) array)
+        .map(this::fromKey)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toCollection(() -> EnumSet.noneOf(type)));
   }
   
   public static String pgEnumName(Class clazz) {

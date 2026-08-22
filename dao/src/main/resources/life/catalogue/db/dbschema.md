@@ -11,6 +11,327 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-07-14 name-parser v4 → v5 schema changes
+Consolidates every schema change from the name-parser v4 → v5 upgrade (originally logged separately
+2026-06-04 … 2026-07-14) into one migration — prod applies them together in a single deploy off this
+branch, so the intermediate states never need to materialise. Doing it all at once lets several steps be
+skipped or simplified:
+- `parser_config` is **dropped** outright (v4's parser is stateless), so the `notho`/`type` column
+  migrations that table would otherwise need are omitted entirely.
+- the `NameType` enum ends up **exactly matching `dbschema.sql`** (`SCIENTIFIC, FORMULA, INFORMAL,
+  PLACEHOLDER, IDENTIFIER, OTHER`): `HYBRID_FORMULA` → `FORMULA`, `OTU` → `IDENTIFIER`, and both `NO_NAME`
+  and `VIRUS` → `OTHER` (the virus signal preserved in `code` first). None of these use an in-place
+  `RENAME VALUE` — that would relabel the very column the still-running old app reads and break it.
+- instead `name.type`/`name_usage_archive.n_type` are moved onto a fresh `NAMETYPE2` via an **add-column
+  swap** whose long row copy writes only *new* columns and remaps the labels inline, so it takes only
+  `ROW EXCLUSIVE` and runs **online** while the old app keeps serving reads; the breaking catalog swaps
+  are deferred to a brief cutover with the deploy. `notho` → `NAMEPART[]` rides along in the same copy.
+
+Deploy notes: the work is split into an **online phase** (step 1) and a brief **cutover** (step 2).
+Everything in the online phase leaves the columns and enum the running (pre-v4) app uses untouched, so it
+can run well ahead of the deploy under `ROW EXCLUSIVE`; only the cutover — drop/rename of the swapped
+columns, the `sector` retype and the enum replacement — breaks the old app, and it is all fast catalog
+work. Speed/robustness: split the huge `name` copy per hash partition and run the parts in parallel, then
+`VACUUM` (the copy bloats the table); if the old app can still write these tables during the window,
+quiesce those writers or re-copy `WHERE type2 IS NULL` just before cutover. The name-usage ES index and
+the `nidx` are rebuilt on this branch anyway, so the enum changes are picked up automatically; `notho` is
+not indexed. Afterwards prod's `NAMETYPE` matches a fresh install exactly. **Breaking API change:** the
+`notho` JSON field is now an array (e.g. `["SPECIFIC"]`).
+
+**1. Online copy — safe to run ahead of the deploy while the old (pre-v4) app keeps serving reads.**
+Nothing here touches the columns or enum the running app uses (`name.type`/`notho`, `sector.name_types`,
+the old `NAMETYPE`), so no read breaks and the long copies take only `ROW EXCLUSIVE`. Create the final
+enum as `NAMETYPE2`, preserve the virus signal in `code`, add the new columns, then copy every row into
+them — remapping the labels inline (`HYBRID_FORMULA`→`FORMULA`, `OTU`→`IDENTIFIER`, `NO_NAME`/`VIRUS`→
+`OTHER`) so the live `type`/`notho` columns are never rewritten. **Split the `name` copy per hash
+partition and run the parts in parallel** to cut wall-clock, then `VACUUM` (the copy bloats the table with
+dead tuples). If the old app may still write these tables during the window, quiesce those writers or
+re-copy `WHERE type2 IS NULL` just before cutover.
+
+**Run the copy at most once against the scalar `notho`.** `ARRAY[notho]` is only correct while `notho`
+is still the scalar `NAMEPART`. Applied a second time — after the cutover rename, or on a database that
+already got the earlier separately-logged 2026-06-04…07-14 entries — it wraps an array in another array
+and yields a *two-dimensional* `NAMEPART[]`. Postgres does not enforce dimensionality on array columns,
+so this is accepted silently and only surfaces much later on read, as
+`No enum constant org.gbif.nameparser.api.NamePart.[Ljava.lang.String;@…`. The guard below aborts
+instead; the `WHERE type2 IS NULL` predicates make the copy resumable and double as the concurrent-write
+catch-up.
+```
+-- abort unless the schema is in the expected pre-migration state
+DO $$
+BEGIN
+  IF (SELECT format_type(atttypid, atttypmod) FROM pg_attribute
+       WHERE attrelid = 'name'::regclass AND attname = 'notho' AND NOT attisdropped)
+     IS DISTINCT FROM 'namepart' THEN
+    RAISE EXCEPTION 'name.notho is not the scalar NAMEPART - this migration already ran, do not re-run it';
+  END IF;
+END $$;
+
+CREATE TYPE NAMETYPE2 AS ENUM ('SCIENTIFIC', 'FORMULA', 'INFORMAL', 'PLACEHOLDER', 'IDENTIFIER', 'OTHER');
+
+UPDATE name SET code = 'VIRUS' WHERE type = 'VIRUS' AND code IS DISTINCT FROM 'VIRUS';
+UPDATE name_usage_archive SET n_code = 'VIRUS' WHERE n_type = 'VIRUS' AND n_code IS DISTINCT FROM 'VIRUS';
+
+ALTER TABLE name ADD COLUMN IF NOT EXISTS type2 NAMETYPE2, ADD COLUMN IF NOT EXISTS notho2 NAMEPART[];
+ALTER TABLE name_usage_archive ADD COLUMN IF NOT EXISTS n_type2 NAMETYPE2, ADD COLUMN IF NOT EXISTS n_notho2 NAMEPART[];
+
+-- the long copies — reads stay online; run the `name` copy once per hash partition in parallel
+UPDATE name SET
+  type2  = (CASE type::text WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
+                            WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE type::text END)::NAMETYPE2,
+  notho2 = CASE WHEN notho IS NULL THEN NULL ELSE ARRAY[notho] END
+  WHERE type2 IS NULL;
+UPDATE name_usage_archive SET
+  n_type2  = (CASE n_type::text WHEN 'HYBRID_FORMULA' THEN 'FORMULA' WHEN 'OTU' THEN 'IDENTIFIER'
+                                WHEN 'NO_NAME' THEN 'OTHER' WHEN 'VIRUS' THEN 'OTHER' ELSE n_type::text END)::NAMETYPE2,
+  n_notho2 = CASE WHEN n_notho IS NULL THEN NULL ELSE ARRAY[n_notho] END
+  WHERE n_type2 IS NULL;
+```
+
+Once the copy is done — whichever form was used — vacuum the two tables it rewrote. Every row was updated,
+so both are heavily bloated and their planner stats are stale. Name the tables rather than issuing a bare
+`VACUUM`: an unqualified one walks the whole database, which here means every partition of every partitioned
+table for no benefit. Naming the partitioned parent `name` is enough —
+postgres vacuums and analyzes all of its partitions, and collects the parent-level stats too.
+```
+VACUUM (ANALYZE) name, name_usage_archive;
+```
+
+*Repair, if a database already has two-dimensional `notho`* — dev hit this in July 2026, having received the
+earlier separately-logged entries before the consolidated one. `unnest` flattens row-major and is a no-op on
+rows that are already flat, so the update is safe to run repeatedly. Check first, since `array_ndims` returns
+NULL for the empty arrays the app writes and those are fine:
+```
+SELECT array_ndims(notho) AS dims, count(*) FROM name WHERE notho IS NOT NULL GROUP BY 1;
+UPDATE name               SET notho   = ARRAY(SELECT unnest(notho))   WHERE array_ndims(notho)   > 1;
+UPDATE name_usage_archive SET n_notho = ARRAY(SELECT unnest(n_notho)) WHERE array_ndims(n_notho) > 1;
+VACUUM ANALYZE name;
+```
+Element order is irrelevant — the field maps to an `EnumSet`. `sector.name_types` is unaffected: its retype
+uses `array_replace(…)::NAMETYPE2[]`, which never wraps. Rebuild the ES index afterwards.
+
+**2. Cutover — runs with the new-app deploy; briefly breaks the old app.** All catalog-only and fast
+except the tiny `sector` retype. Swap the copied columns into place, drop the originals, retype `sector`
+(remapping its array the same way), and replace the enum. `SET NOT NULL` scans `name`/`name_usage_archive`
+under `ACCESS EXCLUSIVE`; if that scan is too long for the cutover window, pre-seed it during step 1 with
+`ADD CONSTRAINT … CHECK (type2 IS NOT NULL) NOT VALID` + `VALIDATE CONSTRAINT` (online), which lets
+`SET NOT NULL` skip the scan here.
+```
+ALTER TABLE name DROP COLUMN type, DROP COLUMN notho;
+ALTER TABLE name RENAME COLUMN type2 TO type;
+ALTER TABLE name RENAME COLUMN notho2 TO notho;
+ALTER TABLE name ALTER COLUMN type SET NOT NULL;
+
+ALTER TABLE name_usage_archive DROP COLUMN n_type, DROP COLUMN n_notho;
+ALTER TABLE name_usage_archive RENAME COLUMN n_type2 TO n_type;
+ALTER TABLE name_usage_archive RENAME COLUMN n_notho2 TO n_notho;
+ALTER TABLE name_usage_archive ALTER COLUMN n_type SET NOT NULL;
+
+-- sector is tiny: remap its array elements and retype in one in-place cast.
+-- ALTER ... USING forbids subqueries, so remap element-wise with chained array_replace on the text[]
+-- form, then cast the whole array to the new enum ARRAY type (NAMETYPE2[], not scalar NAMETYPE2).
+ALTER TABLE sector ALTER COLUMN name_types TYPE NAMETYPE2[] USING
+  array_replace(array_replace(array_replace(array_replace(
+    name_types::text[],
+    'HYBRID_FORMULA','FORMULA'), 'OTU','IDENTIFIER'),
+    'NO_NAME','OTHER'), 'VIRUS','OTHER')::NAMETYPE2[];
+
+-- array_replace maps element-wise, so a sector listing two values that collapse onto the same target
+-- (VIRUS and NO_NAME both -> OTHER) ends up with a duplicate. Dedupe in a second pass - the subquery
+-- the DISTINCT needs is exactly what ALTER ... USING above could not take. Element order is irrelevant:
+-- the column is read into an EnumSet. The guard makes this a no-op on already-clean rows, so it is safe
+-- to re-run.
+UPDATE sector SET name_types = ARRAY(SELECT DISTINCT unnest(name_types))::NAMETYPE2[]
+  WHERE name_types IS NOT NULL
+    AND cardinality(name_types) > (SELECT count(DISTINCT e) FROM unnest(name_types) e);
+
+-- parser_config.type is the LAST remaining dependency on the old enum, so the table has to go before
+-- DROP TYPE or that statement aborts (see 3. below). It is dropped for good, not migrated.
+DROP TABLE IF EXISTS parser_config;
+
+DROP TYPE NAMETYPE;
+ALTER TYPE NAMETYPE2 RENAME TO NAMETYPE;
+```
+
+**3. Dropping parser_config (cutover — the pre-v4 app still reads this table).** v4's parser is stateless
+and no longer supports runtime overrides; the few names the curated overrides corrected are zoological
+binomials v4 now parses directly. Dropping the table also makes its `notho`/`type` migrations moot.
+
+**The `DROP TABLE` is deliberately placed inside step 2 above, immediately before `DROP TYPE NAMETYPE`** —
+it is not a separate step you can run afterwards. `parser_config.type` is one of the four columns typed
+`NAMETYPE` (with `name.type`, `name_usage_archive.n_type` and `sector.name_types`), and it is the only one
+the swap above does not retype, so while the table exists postgres refuses the drop:
+
+```text
+ERROR:  cannot drop type nametype because other objects depend on it
+DETAIL:  column type of table parser_config depends on type nametype
+```
+
+That abort lands on the *last* statement of the cutover, after the destructive column swaps have already
+committed, leaving `name.type` on `NAMETYPE2` with the old `NAMETYPE` still present — a half-migrated
+schema the new app cannot read, in the middle of the deploy window. Verified by replaying this migration
+against a PG 17 copy of the current prod schema (2026-08-19). Note a database that received the earlier
+separately-logged 2026-06-04…07-14 entries has already lost `parser_config` and so never hits this — dev
+passed for exactly that reason. Prod still has the table.
+
+**4. Stored import metrics (online — the old app silently drops keys it no longer knows).**
+`names_by_type_count` (NameType keys) and `ignored_by_reason_count`
+(IgnoreReason keys) are plain-text HSTORE maps untouched by the enum changes above; rewrite their keys
+so historical import reports stay readable. New target keys (`IDENTIFIER`, `NAME_*`) cannot collide;
+merges into `FORMULA`/`OTHER` sum on collision. The mybatis handler silently drops keys that no longer
+resolve, so the leftover `NAME_VIRUS` reason is simply kept as a historical orphan.
+```
+-- names_by_type_count: HYBRID_FORMULA->FORMULA, OTU->IDENTIFIER, NO_NAME/VIRUS->OTHER
+UPDATE dataset_import SET names_by_type_count =
+    (names_by_type_count - ARRAY['HYBRID_FORMULA','OTU','NO_NAME','VIRUS']::text[])
+    || CASE WHEN names_by_type_count ? 'HYBRID_FORMULA' THEN hstore('FORMULA',
+         (COALESCE((names_by_type_count->'FORMULA')::int,0) + (names_by_type_count->'HYBRID_FORMULA')::int)::text) ELSE ''::hstore END
+    || CASE WHEN names_by_type_count ? 'OTU' THEN hstore('IDENTIFIER', names_by_type_count -> 'OTU') ELSE ''::hstore END
+    || CASE WHEN (names_by_type_count ? 'NO_NAME' OR names_by_type_count ? 'VIRUS') THEN hstore('OTHER',
+         (COALESCE((names_by_type_count->'OTHER')::int,0) + COALESCE((names_by_type_count->'NO_NAME')::int,0) + COALESCE((names_by_type_count->'VIRUS')::int,0))::text) ELSE ''::hstore END
+  WHERE names_by_type_count ?| ARRAY['HYBRID_FORMULA','OTU','NO_NAME','VIRUS'];
+UPDATE sector_import SET names_by_type_count =
+    (names_by_type_count - ARRAY['HYBRID_FORMULA','OTU','NO_NAME','VIRUS']::text[])
+    || CASE WHEN names_by_type_count ? 'HYBRID_FORMULA' THEN hstore('FORMULA',
+         (COALESCE((names_by_type_count->'FORMULA')::int,0) + (names_by_type_count->'HYBRID_FORMULA')::int)::text) ELSE ''::hstore END
+    || CASE WHEN names_by_type_count ? 'OTU' THEN hstore('IDENTIFIER', names_by_type_count -> 'OTU') ELSE ''::hstore END
+    || CASE WHEN (names_by_type_count ? 'NO_NAME' OR names_by_type_count ? 'VIRUS') THEN hstore('OTHER',
+         (COALESCE((names_by_type_count->'OTHER')::int,0) + COALESCE((names_by_type_count->'NO_NAME')::int,0) + COALESCE((names_by_type_count->'VIRUS')::int,0))::text) ELSE ''::hstore END
+  WHERE names_by_type_count ?| ARRAY['HYBRID_FORMULA','OTU','NO_NAME','VIRUS'];
+
+-- ignored_by_reason_count: NAME_HYBRID_FORMULA->NAME_FORMULA, NAME_OTU->NAME_IDENTIFIER, NAME_NO_NAME->NAME_OTHER
+UPDATE dataset_import SET ignored_by_reason_count =
+    (ignored_by_reason_count - ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME']::text[])
+    || CASE WHEN ignored_by_reason_count ? 'NAME_HYBRID_FORMULA' THEN hstore('NAME_FORMULA',    ignored_by_reason_count -> 'NAME_HYBRID_FORMULA') ELSE ''::hstore END
+    || CASE WHEN ignored_by_reason_count ? 'NAME_OTU'            THEN hstore('NAME_IDENTIFIER', ignored_by_reason_count -> 'NAME_OTU')            ELSE ''::hstore END
+    || CASE WHEN ignored_by_reason_count ? 'NAME_NO_NAME'        THEN hstore('NAME_OTHER',      ignored_by_reason_count -> 'NAME_NO_NAME')        ELSE ''::hstore END
+  WHERE ignored_by_reason_count ?| ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME'];
+UPDATE sector_import SET ignored_by_reason_count =
+    (ignored_by_reason_count - ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME']::text[])
+    || CASE WHEN ignored_by_reason_count ? 'NAME_HYBRID_FORMULA' THEN hstore('NAME_FORMULA',    ignored_by_reason_count -> 'NAME_HYBRID_FORMULA') ELSE ''::hstore END
+    || CASE WHEN ignored_by_reason_count ? 'NAME_OTU'            THEN hstore('NAME_IDENTIFIER', ignored_by_reason_count -> 'NAME_OTU')            ELSE ''::hstore END
+    || CASE WHEN ignored_by_reason_count ? 'NAME_NO_NAME'        THEN hstore('NAME_OTHER',      ignored_by_reason_count -> 'NAME_NO_NAME')        ELSE ''::hstore END
+  WHERE ignored_by_reason_count ?| ARRAY['NAME_HYBRID_FORMULA','NAME_OTU','NAME_NO_NAME'];
+```
+These four tables are small; the bloat that needs a `VACUUM` comes from the step 1 row copy, which is
+where the scoped `VACUUM (ANALYZE)` now sits.
+
+**5. Rank & issue enums (name-parser v4 additions, folded in from the v4→v5 upgrade).** v4 split the
+ambiguous generic `DIVISION` rank into code-specific ranks and added two authorship issues. The generic
+`DIVISION` sat in the **zoological** block (between `SUPERDIVISION` and `SUBDIVISION`) — so, mirroring the
+2026-06-04 series migration, we rename it in place to `DIVISION_ZOOLOGY` (keeps its ordinal, migrates every
+existing division row instantly, leaves no dead enum value) and add the botanical `DIVISION_BOTANY` after
+`INFRAGENUS`. The three `ADD VALUE`s are non-breaking and **online-safe** — no existing row uses them and
+the old app maps ranks/issues by name, not ordinal — so they run ahead with step 1; the `RENAME VALUE`
+relabels a value the running old app reads, so it goes in the **cutover** with step 2. Rank ordinals shift,
+but the ES name-usage index and nidx are rebuilt on this branch anyway (see above), so no extra reindex is
+needed.
+
+Online-safe (run ahead, with step 1):
+```
+ALTER TYPE RANK  ADD VALUE 'DIVISION_BOTANY'        AFTER 'INFRAGENUS';
+ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_UNCERTAIN'   AFTER 'DUPLICATE_TAXON_PROPERTIES';
+ALTER TYPE ISSUE ADD VALUE 'SUPERFLUOUS_AUTHORSHIP' AFTER 'AUTHORSHIP_UNCERTAIN';
+```
+Cutover (run with step 2):
+```
+ALTER TYPE RANK RENAME VALUE 'DIVISION' TO 'DIVISION_ZOOLOGY';
+```
+
+**6. Dataset settings (cutover — `SECTOR_NAME_TYPES` stores NameType labels inside JSONB).** The enum work
+above only reaches typed columns, never inside `dataset.settings`. That JSONB map holds the
+`SECTOR_NAME_TYPES` project default under the key `sector name types`, as a list of NameType values
+serialized by `PermissiveEnumSerde` — lower case, underscores as spaces (`VIRUS` → `"virus"`,
+`HYBRID_FORMULA` → `"hybrid formula"`). A project left holding a legacy label makes
+`DatasetMapper.getSettings` throw `Unable to convert value virus for setting SECTOR_NAME_TYPES` and takes
+down every caller that reads settings, e.g. `SyncSchedulerJob`. Remap the elements with the same mapping
+used for `sector.name_types` in step 2. `dataset` is the only table to fix: `dataset_archive` drops the
+`settings` column, and `dataset_source`/`dataset_patch` are cloned from it. `SECTOR_NAME_TYPES` is also the
+only setting typed as a NameType, so no other key needs touching.
+
+This belongs in the **cutover**, not the online phase: `virus`/`no name` → `other` would still be readable by
+the old app, but `formula` and `identifier` do not exist in its NameType (name-parser 3.16), so writing those
+ahead of the deploy would break its settings read with the very same error. The `DISTINCT` dedupes merges —
+`virus` → `other` beside an already present `other` collapses to one element.
+```
+UPDATE dataset SET settings = jsonb_set(settings, '{sector name types}', (
+    SELECT jsonb_agg(DISTINCT CASE elem
+             WHEN 'virus'          THEN 'other'
+             WHEN 'no name'        THEN 'other'
+             WHEN 'otu'            THEN 'identifier'
+             WHEN 'hybrid formula' THEN 'formula'
+             ELSE elem END)
+    FROM jsonb_array_elements_text(settings -> 'sector name types') AS elem
+  ))
+  WHERE settings -> 'sector name types' ?| ARRAY['virus','no name','otu','hybrid formula'];
+```
+Verify nothing is left behind — both of these must return 0:
+```
+SELECT count(*) FROM dataset
+  WHERE settings -> 'sector name types' ?| ARRAY['virus','no name','otu','hybrid formula'];
+SELECT count(*) FROM sector
+  WHERE name_types IS NOT NULL
+    AND cardinality(name_types) > (SELECT count(DISTINCT e) FROM unnest(name_types) e);
+```
+
+#### 2026-07-09 canonical-only names index
+The names index collapses to a single-tier, canonical-only `normalized -> id` registry — every row is a
+canonical name (rank `UNRANKED`, no authorship) and the table keeps only `(id, scientific_name,
+normalized, created)`. Dropped: `canonical_id` (always equalled `id`); `rank` and every authorship column
+(constant/empty once `IndexName` was slimmed to the canonical parts); the leftover parsed-name-part
+columns `uninomial`/`genus`/`infrageneric_epithet`/`specific_epithet`/`infraspecific_epithet`/
+`cultivar_epithet`/`remarks`; and `modified` (never updated — a changed canonical name always gets a new
+`id`). Added: `normalized`, the bucket key (`NameIndexImpl.key(...)`: decomposed + gender-stemmed +
+lower-cased + non-ASCII-folded canonical name) with a unique index. In Java, `IndexName.getRank()` now
+returns `UNRANKED`, `getCanonicalId()` returns the key, and the authorship accessors return null/empty;
+mappers derive the former `canonical_id` from `name_match.index_id` (or the row's own `id`).
+
+`name_match` also loses its stored match type (`EXACT`/`VARIANT`/`NONE`/...) on both `name_match` and
+`name_usage_archive_match`: homonym/authorship discrimination is done live by `UsageMatcher`/
+`AuthorComparator`, and with the single-tier index the type was redundant with `index_id` (present vs.
+absent already tells upsert from delete). Its `names_by_match_type_count` import metric (and Hstore type
+handler) is dropped and replaced by a plain `name_matches_count` integer — the "N of M names matched"
+coverage figure, re-derived from `name_match.index_id IS NOT NULL` and persisted so historical
+(DB-loaded) imports still show it. `Name.namesIndexType` and the derived match-count accessors are removed
+from the Java model; `NameMatch.getType()` and `SimpleNameWithNidx.namesIndexMatchType` are unaffected
+(the latter still feeds `IdProvider` release-ID scoring).
+
+**Deploy ordering:** all of this rides the single mandatory `nidx` rebuild on this branch, not an
+in-place migration. The rebuild clones each table via `CREATE TABLE nidx.… (LIKE public.… )`, rebuilds
+`names_index` and both match tables from scratch and promotes them, so the existing rows are disposable —
+only the `public` column shape has to be right beforehand. That makes an in-place reshape both pointless
+and impossible (`ADD COLUMN normalized TEXT NOT NULL` fails on the populated table), so instead just drop
+and recreate `names_index` at its final shape and truncate the matches that reference it. Run this before
+deploying the new code and before the rebuild.
+```
+-- names_index and both match tables are rebuilt from scratch by the nidx rebuild, so their data is
+-- disposable; recreate names_index at its final shape instead of reshaping the populated table in place.
+TRUNCATE name_match, name_usage_archive_match;
+DROP TABLE names_index CASCADE;          -- CASCADE also drops the two match -> names_index FKs
+CREATE TABLE names_index (
+  id SERIAL PRIMARY KEY,
+  scientific_name TEXT NOT NULL,
+  normalized TEXT NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX ON names_index (scientific_name);
+CREATE UNIQUE INDEX names_index_normalized_idx ON names_index (normalized);
+
+-- match tables: drop the stored match type and re-add the FK the CASCADE removed (instant on the now-empty
+-- tables); swap the per-type import metric for a plain match-coverage count
+ALTER TABLE name_match DROP COLUMN type, ADD FOREIGN KEY (index_id) REFERENCES names_index;
+ALTER TABLE name_usage_archive_match DROP COLUMN type, ADD FOREIGN KEY (index_id) REFERENCES names_index;
+ALTER TABLE dataset_import DROP COLUMN names_by_match_type_count, ADD COLUMN name_matches_count INTEGER;
+ALTER TABLE sector_import DROP COLUMN names_by_match_type_count, ADD COLUMN name_matches_count INTEGER;
+```
+
+#### 2026-07-07 sector name_filter regex
+Adds an optional regular-expression filter to sectors: when set, only source usages whose scientific name
+fully matches the pattern are synced. Complements the coarser `name_types` enum filter.
+```
+ALTER TABLE sector ADD COLUMN name_filter TEXT;
+```
+
 #### 2026-07-03 relation synonym issue
 ```
 ALTER TYPE ISSUE ADD VALUE 'RELATION_SYNONYM';

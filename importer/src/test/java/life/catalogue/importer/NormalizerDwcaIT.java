@@ -358,8 +358,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     // 8	Phylata	Anthurium lanceum Engl., nom. illeg., non. A. lancea.	Markus
     UsageData u = usageByID("8");
     assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
-    assertEquals("Engl. nom.illeg.", u.usage.getName().getAuthorship());
-    assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
+    assertEquals("Engl. nom. illeg.", u.usage.getName().getAuthorship());
+    assertEquals("nom. illeg.", u.usage.getName().getNomenclaturalNote());
     assertNull(u.usage.getName().getRemarks());
 
     assertEquals("non. A.lancea.", u.usage.getNamePhrase());
@@ -542,7 +542,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertNull(n.getUninomial());
     assertEquals("Cambarus", n.getGenus());
     assertEquals("uhleri", n.getSpecificEpithet());
-    assertNull(n.getNotho());
+    assertTrue(n.getNotho().isEmpty());
 
     assertEquals("Faxon, 1884", n.getAuthorship());
     assertEquals(Authorship.yearAuthors("1884", "Faxon"), n.getCombinationAuthorship());

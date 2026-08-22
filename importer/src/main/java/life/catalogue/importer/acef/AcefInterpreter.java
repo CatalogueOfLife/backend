@@ -207,7 +207,7 @@ public class AcefInterpreter extends InterpreterBase {
         ParsedNameUsage nat = new ParsedNameUsage();
         nat.setName(new Name());
         nat.getName().setId(v.get(idTerm));
-        nat.getName().setType(NameType.VIRUS);
+        nat.getName().setType(NameType.OTHER);
         nat.getName().setCode(NomCode.VIRUS);
         String fullname = v.get(AcefTerm.SpeciesEpithet).trim() + " " + v.get(AcefTerm.AuthorString).trim();
         nat.getName().setScientificName(fullname.trim());
