@@ -69,6 +69,7 @@
     <where>
       <if test="req.key != null">AND j.key = #{req.key}</if>
       <if test="req.datasetKey != null">AND j.dataset_key = #{req.datasetKey}</if>
+      <if test="req.sectorKey != null">AND j.sector_key = #{req.sectorKey}</if>
       <if test="req.createdBy != null">AND j.created_by = #{req.createdBy}</if>
       <if test="req.job != null">AND j.job_class = #{req.job}</if>
       <if test="req.priority != null">AND j.priority = #{req.priority}::JOBPRIORITY</if>

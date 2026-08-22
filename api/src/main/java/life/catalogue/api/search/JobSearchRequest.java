@@ -22,6 +22,12 @@ public class JobSearchRequest {
   private Integer datasetKey;
 
   /**
+   * Filter by sector. Only sector scoped jobs (syncs, deletions) ever carry one.
+   */
+  @QueryParam("sectorKey")
+  private Integer sectorKey;
+
+  /**
    * Filters jobs by datasets that contribute to a given project.
    */
   @QueryParam("contributesTo")
@@ -72,6 +78,14 @@ public class JobSearchRequest {
 
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
+  }
+
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
+
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
   }
 
   public Integer getContributesTo() {
@@ -129,6 +143,7 @@ public class JobSearchRequest {
     JobSearchRequest that = (JobSearchRequest) o;
     return Objects.equals(key, that.key)
            && Objects.equals(datasetKey, that.datasetKey)
+           && Objects.equals(sectorKey, that.sectorKey)
            && Objects.equals(contributesTo, that.contributesTo)
            && Objects.equals(createdBy, that.createdBy)
            && Objects.equals(status, that.status)
@@ -139,6 +154,6 @@ public class JobSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, datasetKey, contributesTo, createdBy, status, priority, job, format);
+    return Objects.hash(key, datasetKey, sectorKey, contributesTo, createdBy, status, priority, job, format);
   }
 }

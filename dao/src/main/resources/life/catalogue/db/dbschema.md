@@ -98,6 +98,7 @@ ON CONFLICT (key) DO NOTHING;
 -- params deliberately gets no GIN index: nothing filters on it, it is only selected and inserted,
 -- so the index would be pure write overhead on the weekly sector sync burst.
 CREATE INDEX ON job (dataset_key, created DESC);
+CREATE INDEX ON job (sector_key, created DESC) WHERE sector_key IS NOT NULL;
 CREATE INDEX ON job (created_by);
 CREATE INDEX ON job (job_class);
 CREATE INDEX ON job (created DESC);
