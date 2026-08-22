@@ -32,7 +32,9 @@ public class MatchingJob extends AbstractMatchingJob {
   public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, UsageMatcherFactory matcherFactory, MatchingConfig cfg) throws IOException {
     super(req, userKey, loadDataset(factory, req.getDatasetKey()),
       loadRootClassification(req.getTaxonDSID(), factory),
-      matcherFactory.persistent(req.getDatasetKey()), true, // owns the matcher → release it when done
+      // resolved on the job thread, not here: a first build takes minutes and this constructor runs on the
+      // request thread of POST /dataset/{key}/match/nameusage/job. true → owns it, release it when done
+      () -> matcherFactory.persistent(req.getDatasetKey()), true,
       cfg, matcherFactory.getNameIndex()
     );
     this.factory = factory;
@@ -71,7 +73,7 @@ public class MatchingJob extends AbstractMatchingJob {
         LOG.info("Matching {} with {} usages to dataset {} completed: {} [{}]", getKey(), counter.size(), datasetKey, result.getFile(), result.getSizeWithUnit());
       }
     } finally {
-      releaseMatcher(); // balance the lease acquired in the constructor on every exit path
+      releaseMatcher(); // balance the lease acquired on first use on every exit path
     }
   }
 

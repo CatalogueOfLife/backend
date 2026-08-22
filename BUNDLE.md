@@ -16,7 +16,7 @@ relocatable matching tier.
 ## Background
 
 `WsMatchingServer` already ships matching in Docker today, but it is hardwired to a *single*
-dataset, runs **DB-free** from prebuilt Chronicle stores (built by `MatchingServerBuildCmd`), and
+dataset, runs **DB-free** from a prebuilt matcher store + names index (built by `MatchingServerBuildCmd`), and
 exposes only matching. This design generalises that idea into a full read bundle.
 
 ### Why bundle Postgres (vs. store-only)
@@ -111,7 +111,7 @@ A `ConfiguredCommand` that, for a given release key, produces the **data artifac
 
 - Trimmed **`pg_dump`** of just that dataset's partitions: name usages, names, references,
   `taxon_metrics`, plus the shared `names_index`/`nidx` tables and supporting lookup tables.
-- The prebuilt **Chronicle matcher store** + **names-index store** (today's
+- The prebuilt **memory mapped matcher store** + **Chronicle names-index store** (today's
   `UsageMatcherFactory.buildPersistentMatcher(...)` path, already exercised by
   `MatchingServerBuildCmd`).
 - The **metrics** payloads (see below).

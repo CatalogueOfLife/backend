@@ -1,19 +1,41 @@
 package life.catalogue.matching;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleNameCached;
-import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.api.vocab.TaxGroup;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class UsageMatcherMemStore extends UsageMatcherAbstractStore {
-  private final Map<Integer, Set<String>> byCanonNidx;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+
+/**
+ * A heap based, fully mutable store used while data is still changing - the extended release merges into
+ * one of these. There is no fan out limit: a canonical bucket is a plain set.
+ */
+public class UsageMatcherMemStore implements UsageMatcherStore {
+  private final int datasetKey;
+  private final Map<String, SimpleNameCached> usages = new HashMap<>();
+  private final Map<Integer, Set<String>> byCanonNidx = new Int2ObjectOpenHashMap<>();
 
   public UsageMatcherMemStore(int datasetKey) {
-    super(datasetKey, new HashMap<>(), false);
-    this.byCanonNidx = new Int2ObjectOpenHashMap<>();
+    this.datasetKey = datasetKey;
+  }
+
+  @Override
+  public int datasetKey() {
+    return datasetKey;
+  }
+
+  @Override
+  public int size() {
+    return usages.size();
+  }
+
+  @Override
+  public int canonicalSize() {
+    return byCanonNidx.size();
   }
 
   @Override
@@ -22,66 +44,56 @@ public class UsageMatcherMemStore extends UsageMatcherAbstractStore {
   }
 
   @Override
-  public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalId(int canonId) {
+  public List<SimpleNameCached> simpleNamesByCanonicalId(int canonId) {
     var canonIDs = byCanonNidx.get(canonId);
-    if (canonIDs != null) {
-      return canonIDs.stream()
-        .map(this::getSNClassified)
-        .collect(Collectors.toList());
+    if (canonIDs == null) return List.of();
+    var list = new ArrayList<SimpleNameCached>(canonIDs.size());
+    for (var id : canonIDs) {
+      list.add(get(id));
     }
-    return Collections.emptyList();
+    return list;
   }
 
   @Override
-  public List<SimpleNameCached> simpleNamesByCanonicalId(int canonId) {
-    var canonIDs = byCanonNidx.get(canonId);
-    if (canonIDs != null) {
-      return canonIDs.stream()
-        .map(this::get)
-        .collect(Collectors.toList());
+  public SimpleNameCached get(String usageID) throws NotFoundException {
+    var sn = usages.get(usageID);
+    if (sn == null) {
+      throw NotFoundException.notFound(NameUsage.class, DSID.of(datasetKey, usageID));
     }
-    return Collections.emptyList();
+    return sn;
+  }
+
+  @Override
+  public Iterable<SimpleNameCached> all() {
+    return usages.values();
+  }
+
+  @Override
+  public void update(String usageID, TaxGroup group) {
+    get(usageID).setGroup(group);
   }
 
   @Override
   public void add(SimpleNameCached sn) {
     var old = usages.put(sn.getId(), sn);
-    if (old != null) {
-      // UPDATE
-      if (Objects.equals(old.getCanonicalId(), sn.getCanonicalId())) {
-        if (!old.getId().equals(sn.getId())) {
-          var ids = byCanonNidx.get(old.getCanonicalId());
+    if (old != null && !Objects.equals(old.getCanonicalId(), sn.getCanonicalId())) {
+      // the usage moved to a different canonical name, drop it from the old bucket
+      if (old.getCanonicalId() != null) {
+        var ids = byCanonNidx.get(old.getCanonicalId());
+        if (ids != null) {
           ids.remove(old.getId());
-          ids.add(sn.getId());
         }
-      } else {
-        byCanonNidx.get(old.getCanonicalId()).remove(old.getId());
-        add2Canon(sn.getCanonicalId(), sn.getId());
       }
-    } else {
-      if (sn.getCanonicalId() != null) {
-        add2Canon(sn.getCanonicalId(), sn.getId());
-      }
+      old = null; // fall through to the insert below
     }
-  }
-
-  /** Adds an id to a canonical bucket, honouring {@link #MAX_USAGES_PER_CANONICAL} like the chronicle store does. */
-  private void add2Canon(Integer canonicalId, String usageID) {
-    var ids = byCanonNidx.computeIfAbsent(canonicalId, k -> new HashSet<>());
-    if (ids.size() < MAX_USAGES_PER_CANONICAL) {
-      ids.add(usageID);
-      if (ids.size() == MAX_USAGES_PER_CANONICAL) {
-        LOG.warn("Canonical nidx {} of dataset {} hit the cap of {} usages. Further usages are not indexed as match candidates for it",
-          canonicalId, datasetKey(), MAX_USAGES_PER_CANONICAL);
-      }
+    if (old == null && sn.getCanonicalId() != null) {
+      byCanonNidx.computeIfAbsent(sn.getCanonicalId(), k -> new HashSet<>()).add(sn.getId());
     }
   }
 
   @Override
-  protected void replaceByCanonUsageID(Integer canonicalId, String oldID, String newID) {
-    var ids = byCanonNidx.get(canonicalId);
-    ids.remove(oldID);
-    ids.add(newID);
+  public void updateParentId(String usageID, String parentId) {
+    get(usageID).setParent(parentId);
   }
 
   @Override
