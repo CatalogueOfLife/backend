@@ -62,9 +62,12 @@ public class ContinuousImporter implements Managed {
       this.manager = manager;
       this.factory = factory;
       this.cfg = cfg.continuous;
-      if (cfg.maxQueue < cfg.batchSize) {
-        LOG.warn("Importer queue is shorter ({}) than the batch size ({}) to submit. Reduce batches to half the queue size!", cfg.maxQueue, cfg.batchSize);
-        cfg.batchSize = (cfg.maxQueue / 2);
+      // the batch size to compare against is the number of datasets queued per poll, not ImporterConfig.batchSize
+      // which is the unrelated PgImport db flush size
+      final int maxQueue = manager.maxQueue();
+      if (maxQueue < this.cfg.batchSize) {
+        LOG.warn("Importer queue is shorter ({}) than the batch size ({}) to submit. Reduce batches to half the queue size!", maxQueue, this.cfg.batchSize);
+        this.cfg.batchSize = (maxQueue / 2);
       }
     }
     

@@ -98,6 +98,13 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     return staleJobs;
   }
 
+  /**
+   * @return the configuration this executor runs with, the single source of truth for all lane sizing.
+   */
+  public JobConfig getConfig() {
+    return cfg;
+  }
+
   static class ComparableFutureTask extends FutureTask<Void> implements Runnable, Comparable<ComparableFutureTask> {
     private static final AtomicLong SEQ = new AtomicLong();
 

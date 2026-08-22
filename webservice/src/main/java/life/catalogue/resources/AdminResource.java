@@ -325,13 +325,13 @@ public class AdminResource {
   @POST
   @Path("/reimport")
   public BackgroundJob reimport(@Auth User user) {
-    return runJob(new ReimportJob(user, factory, importManager, cfg.importer, cfg.normalizer));
+    return runJob(new ReimportJob(user, factory, importManager, cfg.normalizer));
   }
 
   @POST
   @Path("/importArticles")
   public BackgroundJob scheduleArticleImports(@Auth User user) {
-    return runJob(new ImportArticleJob(user, factory, importManager, cfg.importer));
+    return runJob(new ImportArticleJob(user, factory, importManager));
   }
 
   @POST

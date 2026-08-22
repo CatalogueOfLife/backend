@@ -110,7 +110,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     this.validator = validator;
     this.resolver = resolver;
     this.jobExecutor = jobExecutor;
-    this.importStoreFactory = new ImportStoreFactory(nCfg, iCfg.threads);
+    this.importStoreFactory = new ImportStoreFactory(nCfg, jobExecutor.getConfig().importThreads);
     this.downloader = new DownloadUtil(client, iCfg.githubToken, iCfg.githubTokenGeoff);
     this.index = index;
     this.imgService = imgService;
@@ -160,6 +160,13 @@ public class ImportManager implements Managed, Idle, DatasetListener {
       return 0;
     }
     return jobExecutor.queueSize(JobLane.IMPORT);
+  }
+
+  /**
+   * @return the max number of queued imports before new ones are rejected, i.e. the size of the executors import lane.
+   */
+  public int maxQueue() {
+    return jobExecutor.getConfig().importQueue;
   }
 
   /**
@@ -376,7 +383,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    *         synced in the assembly or dataset does not exist or is of origin managed
    */
   private synchronized ImportRequest submitValidDataset(final ImportRequest req) throws IllegalArgumentException {
-    if (queueSize() >= iCfg.maxQueue) {
+    if (queueSize() >= maxQueue()) {
       LOG.info("Import queued at max {} already. Skip dataset {}", queueSize(), req.datasetKey);
       throw new IllegalArgumentException("Import queue full, skip dataset " + req.datasetKey);
     }
@@ -477,8 +484,8 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   @Override
   public void start() throws Exception {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",
-        iCfg.threads,
-        iCfg.maxQueue);
+        jobExecutor.getConfig().importThreads,
+        maxQueue());
     callbackNotifier = new ImportCallbackNotifier(downloader.getClient(), iCfg);
     started = true;
     try {

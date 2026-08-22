@@ -15,19 +15,6 @@ public class ImporterConfig {
   @Min(1)
   public int batchSize = 10000;
   
-  /**
-   * Number of parallel imports to allow simultanously
-   */
-  @Min(1)
-  public int threads = 1;
-  
-  /**
-   * Max size of queued import jobs before rejecting
-   */
-  @Min(100)
-  public int maxQueue = 1000;
-  
-
 
   /**
    * Github API access token to use when downloading data from github.com URLs.

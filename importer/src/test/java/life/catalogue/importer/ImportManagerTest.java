@@ -54,6 +54,9 @@ import static org.junit.Assert.*;
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerTest.class);
+  // distinctive values so we can tell them apart from any config default
+  private static final int IMPORT_THREADS = 3;
+  private static final int IMPORT_QUEUE = 137;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -100,7 +103,10 @@ public class ImportManagerTest {
     final TestConfigs cfg = TestConfigs.build();
     hc = HttpClients.createDefault();
     doReturn(TestEntityGenerator.USER_ADMIN).when(udao).get(any());
-    jobExecutor = new JobExecutor(JobConfig.withThreads(2), metrics, null, udao, null);
+    JobConfig jobCfg = JobConfig.withThreads(2);
+    jobCfg.importThreads = IMPORT_THREADS;
+    jobCfg.importQueue = IMPORT_QUEUE;
+    jobExecutor = new JobExecutor(jobCfg, metrics, null, udao, null);
     manager = new ImportManager(cfg.importer, cfg.normalizer, cfg.doi, metrics, hc, broker, SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
       diDao, datasetDao, sDao, dDao, indexService, imgService, jobExecutor, validator, null, null, null);
     manager.start();
@@ -112,6 +118,15 @@ public class ImportManagerTest {
     manager.stop();
     jobExecutor.stop();
     hc.close();
+  }
+
+  /**
+   * The import lane is sized by the job config alone - the importer config must not carry a second,
+   * competing thread/queue setting that silently wins or loses.
+   */
+  @Test
+  public void laneSizingComesFromJobConfig() {
+    assertEquals(IMPORT_QUEUE, manager.maxQueue());
   }
 
   @Test

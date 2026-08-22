@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.api.vocab.JobPriority;
-import life.catalogue.config.ImporterConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
@@ -30,16 +29,14 @@ public class ImportArticleJob extends GlobalBlockingJob {
 
   private final SqlSessionFactory factory;
   private final ImportManager importManager;
-  private final ImporterConfig cfg;
 
   @JsonProperty
   private int counter;
 
-  public ImportArticleJob(User user, SqlSessionFactory factory, ImportManager importManager, ImporterConfig cfg) {
+  public ImportArticleJob(User user, SqlSessionFactory factory, ImportManager importManager) {
     super(user.getKey(), JobPriority.HIGH);
     this.factory = factory;
     this.importManager = importManager;
-    this.cfg = cfg;
   }
 
   @Override
@@ -58,7 +55,7 @@ public class ImportArticleJob extends GlobalBlockingJob {
     counter = 0;
     for (int key : keys) {
       try {
-        while (importManager.queueSize() + 5 > cfg.maxQueue) {
+        while (importManager.queueSize() + 5 > importManager.maxQueue()) {
           TimeUnit.MINUTES.sleep(1);
         }
         // does a local archive exist?

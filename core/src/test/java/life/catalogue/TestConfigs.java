@@ -37,7 +37,7 @@ public class TestConfigs implements ExporterConfig {
     cfg.gbif.fullSyncFrequency = 0;
 
     cfg.importer.continuous.polling = 0;
-    cfg.importer.threads = 2;
+    cfg.job.importThreads = 2;
     cfg.importer.wait = 0;
 
     cfg.normalizer.archiveDir = Files.createTempDir();
