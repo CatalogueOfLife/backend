@@ -212,7 +212,12 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
             || (a.getSectorKey() == s2.getId() && a.getAttempt() == attemptB))
         .toList();
     assertEquals(2, doomed.size());
-    assertEquals(2, mapper().deleteAttempts(COL, doomed));
+    // deleteAttempts now takes two parallel int[] arrays instead of the AttemptInfo list - built here in
+    // the same order as `doomed`, so index i of each array still reconstructs exactly the same crossed
+    // pair as doomed.get(i); the fixture and its assertions below are otherwise unchanged.
+    int[] doomedSectorKeys = doomed.stream().mapToInt(SectorImportMapper.AttemptInfo::getSectorKey).toArray();
+    int[] doomedAttempts = doomed.stream().mapToInt(SectorImportMapper.AttemptInfo::getAttempt).toArray();
+    assertEquals(2, mapper().deleteAttempts(COL, doomedSectorKeys, doomedAttempts));
     commit();
 
     List<SectorImportMapper.AttemptInfo> left = mapper().listAttempts(COL, null, null, 1000);
@@ -237,7 +242,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     commit();
 
     // must delete nothing and must not throw - an empty IN() list is a Postgres syntax error
-    assertEquals(0, mapper().deleteAttempts(COL, List.of()));
+    assertEquals(0, mapper().deleteAttempts(COL, new int[0], new int[0]));
     commit();
 
     List<SectorImportMapper.AttemptInfo> left = mapper().listAttempts(COL, null, null, 1000);

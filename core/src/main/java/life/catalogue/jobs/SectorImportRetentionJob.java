@@ -7,6 +7,7 @@ import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.db.mapper.SectorImportMapper;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 
 /**
  * Removes sector import metrics and their names files that neither a release nor the project pins,
@@ -42,12 +44,27 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
   private int examined;
   @JsonProperty
   private int deletableRows;
+  /**
+   * Populated in a dry run only - the number of names files a real run would delete. Always 0 in a real
+   * run; do not read this to check whether a real run had files to delete, see {@link #dryRun}.
+   */
   @JsonProperty
   private int deletableFiles;
   @JsonProperty
   private int deletedRows;
+  /**
+   * Populated in a real run only - the number of names files actually deleted. Always 0 in a dry run;
+   * do not read this to check whether a dry run found files to delete, see {@link #dryRun}.
+   */
   @JsonProperty
   private int deletedFiles;
+  /**
+   * Real run only: names files whose deletion was attempted but failed (e.g. NFS EACCES/ESTALE/EIO, a
+   * read-only export). Counted separately from deletedFiles so one bad file does not abort or misreport
+   * a multi-hour run - see the per-file try/catch in {@link #deleteFile}.
+   */
+  @JsonProperty
+  private int failedFiles;
 
   public SectorImportRetentionJob(int userKey, SqlSessionFactory factory, FileMetricsSectorDao fmDao,
                                   int projectKey, boolean dryRun) {
@@ -75,6 +92,15 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
 
   public int getDeletedFiles() {
     return deletedFiles;
+  }
+
+  public int getFailedFiles() {
+    return failedFiles;
+  }
+
+  @JsonProperty
+  public boolean isDryRun() {
+    return dryRun;
   }
 
   @Override
@@ -110,6 +136,19 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
     Integer lastSectorKey = null;
     Integer lastAttempt = null;
     while (true) {
+      // Checked once per page, here at the very top of the loop: no transaction is open and no partial
+      // batch is pending at this point (the previous page's flush(), including its file deletes, has
+      // already completed) - so a cancellation lands cleanly between pages instead of orphaning a batch
+      // or a half-open transaction. This is the only place in the loop where the destructive work can be
+      // interrupted, since DatasetBlockingJob.execute() only checks before runWithLock() starts.
+      checkIfCancelled();
+
+      // listAttempts' keyset params must be both null or both non-null - see its javadoc. A half-null pair
+      // would make the keyset predicate evaluate to NULL for every row, so the next page would silently
+      // come back empty and the loop would break as if the scan had reached the end - having actually
+      // examined nothing beyond this point.
+      Preconditions.checkArgument((lastSectorKey == null) == (lastAttempt == null),
+        "afterSectorKey and afterAttempt must both be null or both non-null");
       final List<SectorImportMapper.AttemptInfo> page;
       try (SqlSession session = factory.openSession(true)) {
         page = session.getMapper(SectorImportMapper.class).listAttempts(datasetKey, lastSectorKey, lastAttempt, PAGE);
@@ -157,10 +196,10 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
       }
     }
 
-    LOG.info("Retention for project {} {}: examined {}, rows {} {}, files {} {}",
+    LOG.info("Retention for project {} {}: examined {}, rows {} {}, files {} {}, failedFiles {}",
       datasetKey, dryRun ? "DRY RUN" : "done", examined,
       dryRun ? deletableRows : deletedRows, dryRun ? "deletable" : "deleted",
-      dryRun ? deletableFiles : deletedFiles, dryRun ? "deletable" : "deleted");
+      dryRun ? deletableFiles : deletedFiles, dryRun ? "deletable" : "deleted", failedFiles);
   }
 
   private static long pinKey(int sectorKey, int attempt) {
@@ -174,8 +213,14 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
     if (!dryRun) {
       // Short, self-contained read-write transaction: opened, committed and closed here, with no
       // filesystem work inside it - the doomed files below are only touched after this session is closed.
+      int[] sectorKeys = new int[batch.size()];
+      int[] attempts = new int[batch.size()];
+      for (int i = 0; i < batch.size(); i++) {
+        sectorKeys[i] = batch.get(i).getSectorKey();
+        attempts[i] = batch.get(i).getAttempt();
+      }
       try (SqlSession session = factory.openSession(false)) {
-        deletedRows += session.getMapper(SectorImportMapper.class).deleteAttempts(datasetKey, batch);
+        deletedRows += session.getMapper(SectorImportMapper.class).deleteAttempts(datasetKey, sectorKeys, attempts);
         session.commit();
       }
       for (var a : batch) {
@@ -186,13 +231,20 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
 
   /**
    * Real run only: deletes the names file for a candidate, using the delete call itself as the existence
-   * check (one NFS round trip) rather than stat'ing first.
+   * check (one NFS round trip) rather than stat'ing first. A single file that cannot be removed (e.g. an
+   * NFS EACCES/ESTALE/EIO, a read-only export) is logged and counted in failedFiles rather than aborting
+   * the run - a multi-hour deletion must not die on one bad file.
    */
   private void deleteFile(SectorImportMapper.AttemptInfo a) {
     if (!dryRun) {
       var key = DSID.of(datasetKey, a.getSectorKey());
-      if (fmDao.deleteAttemptIfExists(key, a.getAttempt())) {
-        deletedFiles++;
+      try {
+        if (fmDao.deleteNamesFileIfExists(key, a.getAttempt())) {
+          deletedFiles++;
+        }
+      } catch (IOException e) {
+        failedFiles++;
+        LOG.warn("Failed to delete names file {}", fmDao.namesFile(key, a.getAttempt()), e);
       }
     }
   }

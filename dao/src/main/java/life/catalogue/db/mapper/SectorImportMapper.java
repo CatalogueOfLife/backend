@@ -110,6 +110,14 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
    * One page of attempts ordered by (sector_key, attempt), starting strictly after the given position.
    * Pass nulls for the first page. Keyset pagination over the primary key, so each call is a short,
    * self-contained read - no long lived cursor and no transaction held across the pages.
+   *
+   * afterSectorKey and afterAttempt must both be null or both non-null. A half-null pair makes the
+   * {@code > (afterSectorKey, afterAttempt)} row-value comparison evaluate to NULL for every row, so the
+   * page silently comes back empty - ending the scan as if it had reached the end, having actually
+   * examined nothing from that point on. The mapper XML deliberately does not guard against this by
+   * widening its {@code <if>} to require both non-null: doing so would silently drop the predicate
+   * instead and restart the scan from the very beginning, i.e. loop forever. Callers must check this
+   * themselves before calling.
    */
   List<AttemptInfo> listAttempts(@Param("datasetKey") int datasetKey,
                                  @Param("afterSectorKey") @Nullable Integer afterSectorKey,
@@ -117,10 +125,13 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
                                  @Param("limit") int limit);
 
   /**
-   * Deletes the given attempts of one dataset.
+   * Deletes the given (sectorKey, attempt) pairs of one dataset. The two arrays are parallel: index i of
+   * sectorKeys pairs with index i of attempts, matched as true row-value tuples via a joint unnest() in
+   * the mapper SQL - not independent per-column filters, which would wrongly match every cross
+   * combination of the given sector keys and attempts.
    * @return number of rows deleted
    */
-  int deleteAttempts(@Param("datasetKey") int datasetKey, @Param("attempts") List<AttemptInfo> attempts);
+  int deleteAttempts(@Param("datasetKey") int datasetKey, @Param("sectorKeys") int[] sectorKeys, @Param("attempts") int[] attempts);
 
   /**
    * @return the created timestamp of the projects most recent release, or null if it has none

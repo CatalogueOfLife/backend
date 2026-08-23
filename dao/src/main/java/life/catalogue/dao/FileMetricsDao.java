@@ -7,6 +7,7 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -92,20 +93,28 @@ public abstract class FileMetricsDao<K> {
   }
 
   /**
-   * Deletes both the names and tree file for a given import/release attempt
+   * Deletes the names file for a given import/release attempt.
+   * Subclasses that also store other per-attempt files (e.g. {@link FileMetricsDatasetDao}'s tree file)
+   * override this to delete those too - see its javadoc for what it deletes.
    */
   public void deleteAttempt(K key, int attempt) {
     deleteOrWarn(namesFile(key, attempt));
   }
 
   /**
-   * Deletes the names file of that attempt if it exists.
-   * Uses the delete call itself as the existence check - one filesystem round trip instead of a
-   * stat followed by an unlink, which matters when the metrics repo is on network storage.
-   * @return true if a file was actually removed
+   * Deletes the names file of that attempt if it exists - and only the names file, never any sibling
+   * file a subclass may also store (e.g. {@link FileMetricsDatasetDao}'s tree file is not touched).
+   * Named deliberately differently from {@link #deleteAttempt} so a caller working at a level where a
+   * sibling file also needs deleting cannot reach for this one by mistake and get a silent partial delete.
+   * Uses {@link Files#deleteIfExists} as the existence check - one filesystem round trip instead of a
+   * stat followed by an unlink, which matters when the metrics repo is on network storage. Unlike
+   * {@link File#delete()}, a genuine failure (NFS EACCES/ESTALE/EIO, a read-only export) is not silently
+   * folded into a false return - it is surfaced as an IOException instead.
+   * @return true if a file was actually removed, false if it did not exist
+   * @throws IOException if the file exists but could not be deleted
    */
-  public boolean deleteAttemptIfExists(K key, int attempt) {
-    return namesFile(key, attempt).delete();
+  public boolean deleteNamesFileIfExists(K key, int attempt) throws IOException {
+    return Files.deleteIfExists(namesFile(key, attempt).toPath());
   }
 
   protected void deleteOrWarn(File file) {
