@@ -98,6 +98,16 @@ public abstract class FileMetricsDao<K> {
     deleteOrWarn(namesFile(key, attempt));
   }
 
+  /**
+   * Deletes the names file of that attempt if it exists.
+   * Uses the delete call itself as the existence check - one filesystem round trip instead of a
+   * stat followed by an unlink, which matters when the metrics repo is on network storage.
+   * @return true if a file was actually removed
+   */
+  public boolean deleteAttemptIfExists(K key, int attempt) {
+    return namesFile(key, attempt).delete();
+  }
+
   protected void deleteOrWarn(File file) {
     if (file.exists()) {
       if (!FileUtils.deleteQuietly(file)) {

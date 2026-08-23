@@ -198,10 +198,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     mapper().create(si2B);
     commit();
 
-    List<SectorImportMapper.AttemptInfo> all = new ArrayList<>();
-    try (var c = mapper().processAttempts(COL)) {
-      c.forEach(all::add);
-    }
+    List<SectorImportMapper.AttemptInfo> all = mapper().listAttempts(COL, null, null, 1000);
     assertEquals(4, all.size());
     // the projection must carry what the retention rule needs
     for (var a : all) {
@@ -218,10 +215,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     assertEquals(2, mapper().deleteAttempts(COL, doomed));
     commit();
 
-    List<SectorImportMapper.AttemptInfo> left = new ArrayList<>();
-    try (var c = mapper().processAttempts(COL)) {
-      c.forEach(left::add);
-    }
+    List<SectorImportMapper.AttemptInfo> left = mapper().listAttempts(COL, null, null, 1000);
     assertEquals(2, left.size());
     assertTrue(left.stream().anyMatch(a -> a.getSectorKey() == s.getId() && a.getAttempt() == attemptB));
     assertTrue(left.stream().anyMatch(a -> a.getSectorKey() == s2.getId() && a.getAttempt() == attemptA));
@@ -246,10 +240,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     assertEquals(0, mapper().deleteAttempts(COL, List.of()));
     commit();
 
-    List<SectorImportMapper.AttemptInfo> left = new ArrayList<>();
-    try (var c = mapper().processAttempts(COL)) {
-      c.forEach(left::add);
-    }
+    List<SectorImportMapper.AttemptInfo> left = mapper().listAttempts(COL, null, null, 1000);
     assertEquals(1, left.size());
   }
 }

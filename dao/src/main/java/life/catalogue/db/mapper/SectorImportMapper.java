@@ -15,7 +15,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.cursor.Cursor;
 
 /**
  * The MyBatis mapper interface for SectorImport.
@@ -108,9 +107,14 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   }
 
   /**
-   * Streams every sector import attempt of a dataset, metric columns excluded.
+   * One page of attempts ordered by (sector_key, attempt), starting strictly after the given position.
+   * Pass nulls for the first page. Keyset pagination over the primary key, so each call is a short,
+   * self-contained read - no long lived cursor and no transaction held across the pages.
    */
-  Cursor<AttemptInfo> processAttempts(@Param("datasetKey") int datasetKey);
+  List<AttemptInfo> listAttempts(@Param("datasetKey") int datasetKey,
+                                 @Param("afterSectorKey") @Nullable Integer afterSectorKey,
+                                 @Param("afterAttempt") @Nullable Integer afterAttempt,
+                                 @Param("limit") int limit);
 
   /**
    * Deletes the given attempts of one dataset.

@@ -29,7 +29,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class SectorImportRetentionJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(SectorImportRetentionJob.class);
-  private static final int BATCH = 5000;
+  // Page size for the keyset-paginated listAttempts() reads, and - since the two happen to coincide - also the
+  // batch size of one delete transaction: a page is classified with no session open, then its doomed rows
+  // (at most PAGE of them) are deleted together in flush(). One constant serves both purposes.
+  private static final int PAGE = 5000;
 
   private final SqlSessionFactory factory;
   private final FileMetricsSectorDao fmDao;
@@ -98,15 +101,27 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
       LOG.info("Retention for project {}: cutoff {}, {} pinned attempts", datasetKey, cutoff, pinned.size());
     }
 
-    final List<SectorImportMapper.AttemptInfo> doomed = new ArrayList<>();
+    // Keyset pagination over the sector_import primary key (sector_key, attempt): each page is fetched in
+    // its own short, autocommit session that is closed (see the try-with-resources below) before any
+    // filesystem work happens for that page's rows. So the only transactions this job ever holds open are
+    // (a) the short autocommit read above for cutoff/pinned, (b) one short autocommit read per page here,
+    // and (c) the short read-write transaction flush() opens per page to delete that page's doomed rows -
+    // none of them spans a stat or a file delete, which matters once the names files live on slow NFS.
+    Integer lastSectorKey = null;
+    Integer lastAttempt = null;
+    while (true) {
+      final List<SectorImportMapper.AttemptInfo> page;
+      try (SqlSession session = factory.openSession(true)) {
+        page = session.getMapper(SectorImportMapper.class).listAttempts(datasetKey, lastSectorKey, lastAttempt, PAGE);
+      }
+      if (page.isEmpty()) {
+        break;
+      }
 
-    // autoCommit must stay false here: pgjdbc only honours Statement.setFetchSize (the "fetchSize" on
-    // processAttempts) when autoCommit is off, so this is what makes Postgres stream the ~6.9M rows
-    // instead of buffering the entire result set in the webservice JVM's heap. This session only reads
-    // and never commits, so the rollback on close is harmless.
-    try (SqlSession session = factory.openSession(false);
-         var cursor = session.getMapper(SectorImportMapper.class).processAttempts(datasetKey)) {
-      for (var a : cursor) {
+      // No session is open from here until flush() below: classification and all filesystem work for this
+      // page happen with no transaction held.
+      final List<SectorImportMapper.AttemptInfo> doomed = new ArrayList<>();
+      for (var a : page) {
         examined++;
         // SectorSync extends BackgroundJob, not DatasetBlockingJob, so this job's dataset lock does not
         // exclude a running sector sync. SectorRunnable inserts its sector_import row up front but only
@@ -118,26 +133,29 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
         if (keep) {
           // zero-name attempts write no names file at all, so only count/delete a file that actually exists
           boolean empty = a.getNameCount() != null && a.getNameCount() == 0;
-          if (empty && fmDao.namesFile(DSID.of(datasetKey, a.getSectorKey()), a.getAttempt()).exists()) {
-            deletableFiles++;
+          if (empty) {
+            countDeletableFile(a);
             deleteFile(a);
           }
         } else {
           doomed.add(a);
           deletableRows++;
-          if (fmDao.namesFile(DSID.of(datasetKey, a.getSectorKey()), a.getAttempt()).exists()) {
-            deletableFiles++;
-          }
-          if (doomed.size() >= BATCH) {
-            flush(doomed);
-          }
+          countDeletableFile(a);
         }
         if (examined % 500_000 == 0) {
           LOG.info("Retention for project {}: examined {}, deletable {}", datasetKey, examined, deletableRows);
         }
       }
+      // Deletes this page's doomed rows in their own short transaction (a no-op in dry run).
+      flush(doomed);
+
+      var lastOfPage = page.get(page.size() - 1);
+      lastSectorKey = lastOfPage.getSectorKey();
+      lastAttempt = lastOfPage.getAttempt();
+      if (page.size() < PAGE) {
+        break;
+      }
     }
-    flush(doomed);
 
     LOG.info("Retention for project {} {}: examined {}, rows {} {}, files {} {}",
       datasetKey, dryRun ? "DRY RUN" : "done", examined,
@@ -154,6 +172,8 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
       return;
     }
     if (!dryRun) {
+      // Short, self-contained read-write transaction: opened, committed and closed here, with no
+      // filesystem work inside it - the doomed files below are only touched after this session is closed.
       try (SqlSession session = factory.openSession(false)) {
         deletedRows += session.getMapper(SectorImportMapper.class).deleteAttempts(datasetKey, batch);
         session.commit();
@@ -162,15 +182,31 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
         deleteFile(a);
       }
     }
-    batch.clear();
   }
 
+  /**
+   * Real run only: deletes the names file for a candidate, using the delete call itself as the existence
+   * check (one NFS round trip) rather than stat'ing first.
+   */
   private void deleteFile(SectorImportMapper.AttemptInfo a) {
     if (!dryRun) {
       var key = DSID.of(datasetKey, a.getSectorKey());
-      if (fmDao.namesFile(key, a.getAttempt()).exists()) {
-        fmDao.deleteAttempt(key, a.getAttempt());
+      if (fmDao.deleteAttemptIfExists(key, a.getAttempt())) {
         deletedFiles++;
+      }
+    }
+  }
+
+  /**
+   * Dry run only: a stat per candidate is unavoidable here since nothing may actually be deleted.
+   * Mirrors what deleteFile() would do in a real run, so deletableFiles stays a faithful prediction
+   * of deletedFiles.
+   */
+  private void countDeletableFile(SectorImportMapper.AttemptInfo a) {
+    if (dryRun) {
+      var key = DSID.of(datasetKey, a.getSectorKey());
+      if (fmDao.namesFile(key, a.getAttempt()).exists()) {
+        deletableFiles++;
       }
     }
   }
