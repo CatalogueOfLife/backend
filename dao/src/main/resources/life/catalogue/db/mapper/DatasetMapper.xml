@@ -692,6 +692,10 @@
     UPDATE dataset SET gbif_modified = #{modified} WHERE key = #{key}
   </update>
 
+  <update id="updateCreated">
+    UPDATE dataset SET created = #{created} WHERE key = #{key}
+  </update>
+
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
     INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, created_by, created, modified, acl_editor)

@@ -445,6 +445,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   int updateGbifModified(@Param("key") int key, @Param("modified") LocalDateTime modified);
 
   /**
+   * Updates only the created timestamp of a dataset.
+   * @VisibleForTesting - lets tests backdate a release so retention cutoffs can be exercised deterministically.
+   */
+  int updateCreated(@Param("key") int key, @Param("created") LocalDateTime created);
+
+  /**
    * @return the last import attempt or null if never attempted
    */
   Integer lastImportAttempt(@Param("key") int datasetKey);

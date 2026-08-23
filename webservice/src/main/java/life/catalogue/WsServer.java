@@ -402,7 +402,7 @@ public class WsServer extends Application<WsServerConfig> {
     syncFactory.setJobDao(jobDao);
     final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, matcherFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       indexService, imgService, getSqlSessionFactory(), validator,
-      cfg.release, cfg.apiURI, cfg.clbURI
+      cfg.release, cfg.apiURI, cfg.clbURI, executor
     );
 
     // importer

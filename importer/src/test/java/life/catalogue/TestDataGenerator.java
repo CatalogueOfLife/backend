@@ -233,7 +233,7 @@ public class TestDataGenerator {
       var projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
         syncFactoryRule.getDiDao(), ddao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
         NameUsageIndexService.passThru(), ImageService.passThru(), SqlSessionFactoryRule.getSqlSessionFactory(),
-        validator, cfg.release, cfg.apiURI, cfg.clbURI
+        validator, cfg.release, cfg.apiURI, cfg.clbURI, null
       );
       var rel = projectCopyFactory.buildRelease(Datasets.COL, Users.RELEASER);
       rel.run();

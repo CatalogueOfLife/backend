@@ -1,11 +1,13 @@
 package life.catalogue.release;
 
 import life.catalogue.assembly.SyncFactory;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
+import life.catalogue.jobs.SectorImportRetentionJob;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 
@@ -35,12 +37,13 @@ public class ProjectCopyFactory {
   private final ReleaseConfig cfg;
   private final URI apiURI;
   private final URI clbURI;
+  private final JobExecutor jobExecutor;
 
   public ProjectCopyFactory(CloseableHttpClient client, NameIndex nameIndex, SyncFactory syncFactory, UsageMatcherFactory matcherFactory,
                             DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
                             NameUsageIndexService indexService, ImageService imageService,
                             SqlSessionFactory factory, Validator validator,
-                            ReleaseConfig cfg, URI apiURI, URI clbURI
+                            ReleaseConfig cfg, URI apiURI, URI clbURI, JobExecutor jobExecutor
   ) {
     this.client = client;
     this.nameIndex = nameIndex;
@@ -59,6 +62,21 @@ public class ProjectCopyFactory {
     this.cfg = cfg;
     this.apiURI = apiURI;
     this.clbURI = clbURI;
+    this.jobExecutor = jobExecutor;
+  }
+
+  /**
+   * Wires up the follow up job pruning sector sync history a release no longer pins, submitted to the
+   * job executor only after the release itself has finished successfully - see
+   * {@link AbstractProjectCopy#setRetentionJobFactory}.
+   * Uses release.getDatasetKey() - the project key AbstractProjectCopy already resolved from whatever
+   * project or release key the caller built it with - rather than a separately passed in key.
+   */
+  private void wireRetention(AbstractProjectCopy release, int userKey) {
+    final int projectKey = release.getDatasetKey();
+    release.setJobExecutor(jobExecutor);
+    release.setRetentionJobFactory(() ->
+      new SectorImportRetentionJob(userKey, factory, siDao.getFileMetricsDao(), projectKey, false));
   }
 
   /**
@@ -68,13 +86,17 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not a release
    */
   public XRelease buildExtendedRelease(final int releaseKey, final int userKey) {
-    return new XRelease(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
+    XRelease release = new XRelease(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
       cfg, apiURI, clbURI, client, validator);
+    wireRetention(release, userKey);
+    return release;
   }
 
   public XRelease buildDebugXRelease(final int releaseKey, final int userKey) {
-    return new XReleaseDebug(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
+    XRelease release = new XReleaseDebug(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
       cfg, apiURI, clbURI, client, validator);
+    wireRetention(release, userKey);
+    return release;
   }
 
   /**
@@ -84,8 +106,10 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
-    return new ProjectRelease(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, projectKey, userKey,
+    ProjectRelease release = new ProjectRelease(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, projectKey, userKey,
       cfg, apiURI, clbURI, client, validator);
+    wireRetention(release, userKey);
+    return release;
   }
 
   /**

@@ -71,7 +71,7 @@ public abstract class ProjectBaseIT {
     projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       NameUsageIndexService.passThru(), ImageService.passThru(), SqlSessionFactoryRule.getSqlSessionFactory(), validator,
-      cfg.release, cfg.apiURI, cfg.clbURI
+      cfg.release, cfg.apiURI, cfg.clbURI, null
     );
   }
   
