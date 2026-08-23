@@ -57,6 +57,16 @@ public class SectorImportRetentionJobIT {
     repo = Files.createTempDirectory("clb-retention").toFile();
     repo.deleteOnExit();
     fmDao = new FileMetricsSectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), repo);
+
+    // sector_import.dataset_key has no FK to dataset (sector imports are kept for deleted sectors), so
+    // TestDataRule's "TRUNCATE dataset CASCADE" never reaches it and its own truncate list skips it too.
+    // Sector ids for COL are recycled by every test (their per-dataset sequence is reset on each @Rule
+    // teardown/setup), so leftover sector_import rows from a previous test collide with this test's
+    // attempt=1..5 inserts on the (dataset_key, sector_key, attempt) primary key. Clear them here, after
+    // the @Rule has done its own setup (JUnit runs @Rule before @Before), so every test starts clean.
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(SectorImportMapper.class).deleteByDataset(Datasets.COL);
+    }
   }
 
   /**
