@@ -321,4 +321,22 @@
     WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
     GROUP BY language
   </select>
+
+  <resultMap id="attemptInfoResultMap" type="life.catalogue.db.mapper.SectorImportMapper$AttemptInfo" autoMapping="true"/>
+
+  <select id="processAttempts" resultMap="attemptInfoResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT sector_key, attempt, started, name_count
+    FROM sector_import
+    WHERE dataset_key = #{datasetKey}
+    ORDER BY sector_key, attempt
+  </select>
+
+  <delete id="deleteAttempts">
+    DELETE FROM sector_import
+    WHERE dataset_key = #{datasetKey}
+      AND (sector_key, attempt) IN
+      <foreach item="a" collection="attempts" open="(" separator="," close=")">
+        (#{a.sectorKey}, #{a.attempt})
+      </foreach>
+  </delete>
 </mapper>

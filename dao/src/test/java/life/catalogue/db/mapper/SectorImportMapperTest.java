@@ -17,6 +17,8 @@ import org.junit.Test;
 import static life.catalogue.api.TestEntityGenerator.*;
 import static life.catalogue.api.vocab.Datasets.COL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   static int attempts = 1;
@@ -162,5 +164,45 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     assertEquals(0, mapper().countTypeMaterialByStatus(DATASET11.getKey(), 1).size());
     assertEquals(0, mapper().countUsagesByStatus(DATASET11.getKey(), 1).size());
     assertEquals(0, mapper().countVernacularsByLanguage(DATASET11.getKey(), 1).size());
+  }
+
+  @Test
+  public void attemptsAndBatchDelete() throws Exception {
+    // sector ids for COL are recycled to the same small numbers by every test in this class (their per-dataset
+    // sequence gets dropped and reset on each @Rule teardown/setup), while sector_import itself is never truncated
+    // between tests. roundtrip() commits one row at (COL, s.id, attempt=1), which otherwise collides with the
+    // first insert below whenever JUnit happens to run this test after it.
+    mapper().deleteByDataset(COL);
+
+    SectorImport si1 = create(JobStatus.FINISHED, s);
+    mapper().create(si1);
+    SectorImport si2 = create(JobStatus.FINISHED, s);
+    mapper().create(si2);
+    SectorImport si3 = create(JobStatus.FINISHED, s2);
+    mapper().create(si3);
+    commit();
+
+    List<SectorImportMapper.AttemptInfo> all = new ArrayList<>();
+    try (var c = mapper().processAttempts(COL)) {
+      c.forEach(all::add);
+    }
+    assertEquals(3, all.size());
+    // the projection must carry what the retention rule needs
+    for (var a : all) {
+      assertNotNull(a.getStarted());
+      assertTrue(a.getSectorKey() == s.getId() || a.getSectorKey() == s2.getId());
+    }
+
+    // delete just the two of sector s
+    var doomed = all.stream().filter(a -> a.getSectorKey() == s.getId()).toList();
+    assertEquals(2, mapper().deleteAttempts(COL, doomed));
+    commit();
+
+    List<SectorImportMapper.AttemptInfo> left = new ArrayList<>();
+    try (var c = mapper().processAttempts(COL)) {
+      c.forEach(left::add);
+    }
+    assertEquals(1, left.size());
+    assertEquals((int) s2.getId(), left.get(0).getSectorKey());
   }
 }

@@ -8,12 +8,14 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
 
 /**
  * The MyBatis mapper interface for SectorImport.
@@ -62,6 +64,59 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
    * Deletes all imports for the given sector
    */
   int delete(@Param("key") DSID<Integer> sectorKey);
+
+  /**
+   * Slim projection of a sector import used by retention, so we never select the ~60 metric columns.
+   */
+  class AttemptInfo {
+    private int sectorKey;
+    private int attempt;
+    private LocalDateTime started;
+    private Integer nameCount;
+
+    public int getSectorKey() {
+      return sectorKey;
+    }
+
+    public void setSectorKey(int sectorKey) {
+      this.sectorKey = sectorKey;
+    }
+
+    public int getAttempt() {
+      return attempt;
+    }
+
+    public void setAttempt(int attempt) {
+      this.attempt = attempt;
+    }
+
+    public LocalDateTime getStarted() {
+      return started;
+    }
+
+    public void setStarted(LocalDateTime started) {
+      this.started = started;
+    }
+
+    public Integer getNameCount() {
+      return nameCount;
+    }
+
+    public void setNameCount(Integer nameCount) {
+      this.nameCount = nameCount;
+    }
+  }
+
+  /**
+   * Streams every sector import attempt of a dataset, metric columns excluded.
+   */
+  Cursor<AttemptInfo> processAttempts(@Param("datasetKey") int datasetKey);
+
+  /**
+   * Deletes the given attempts of one dataset.
+   * @return number of rows deleted
+   */
+  int deleteAttempts(@Param("datasetKey") int datasetKey, @Param("attempts") List<AttemptInfo> attempts);
 
 
   Integer countBareName(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
