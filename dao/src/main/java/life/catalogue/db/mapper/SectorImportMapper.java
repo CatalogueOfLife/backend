@@ -118,6 +118,16 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
    */
   int deleteAttempts(@Param("datasetKey") int datasetKey, @Param("attempts") List<AttemptInfo> attempts);
 
+  /**
+   * @return the created timestamp of the projects most recent release, or null if it has none
+   */
+  LocalDateTime lastReleaseCreated(@Param("projectKey") int projectKey);
+
+  /**
+   * @return every (sectorKey, attempt) pinned by the project itself or by one of its releases
+   */
+  List<AttemptInfo> listPinnedAttempts(@Param("projectKey") int projectKey);
+
 
   Integer countBareName(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countDistribution(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);

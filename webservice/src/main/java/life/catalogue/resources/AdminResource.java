@@ -25,6 +25,7 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.SectorImportDao;
 import life.catalogue.doi.DoiChangeListener;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.managed.Component;
@@ -76,6 +77,7 @@ public class AdminResource {
   private final NameUsageSearchService searchService;
   private final Maintenance maintenance;
   private final DatasetDao ddao;
+  private final SectorImportDao siDao;
   private final SyncManager assembly;
   private final ImportManager importManager;
   private final GbifSyncManager gbifSync;
@@ -89,7 +91,7 @@ public class AdminResource {
   public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader,
                        WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
-                       ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
+                       ImportManager importManager, DatasetDao ddao, SectorImportDao siDao, GbifSyncManager gbifSync,
                        JobExecutor executor, EventBroker bus, EmailEncryption encryption, DoiChangeListener doiListener) {
     this.factory = factory;
     this.doiListener = doiListener;
@@ -97,6 +99,7 @@ public class AdminResource {
     this.bus = bus;
     this.componedService = managedService;
     this.ddao = ddao;
+    this.siDao = siDao;
     this.assembly = assembly;
     this.imgService = imgService;
     this.namesIndex = ni;
@@ -360,6 +363,15 @@ public class AdminResource {
   @Path("/rebuild-taxon-metrics/scheduler")
   public BackgroundJob rebuildMetricsMissing(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
     return runJob(new MetricsSchedulerJob(user.getKey(), factory, threshold, exec));
+  }
+
+  @POST
+  @Path("/sector-retention")
+  public BackgroundJob sectorRetention(@QueryParam("datasetKey") Integer datasetKey,
+                                       @QueryParam("dryRun") @DefaultValue("true") boolean dryRun,
+                                       @Auth User user) {
+    Preconditions.checkArgument(datasetKey != null, "A datasetKey parameter must be given");
+    return runJob(new SectorImportRetentionJob(user.getKey(), factory, siDao.getFileMetricsDao(), datasetKey, dryRun));
   }
 
   @GET

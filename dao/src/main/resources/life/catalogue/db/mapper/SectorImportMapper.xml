@@ -346,4 +346,20 @@
         </otherwise>
       </choose>
   </delete>
+
+  <select id="lastReleaseCreated" resultType="java.time.LocalDateTime">
+    SELECT max(created)
+    FROM dataset
+    WHERE source_key = #{projectKey} AND origin IN ('RELEASE','XRELEASE')
+  </select>
+
+  <select id="listPinnedAttempts" resultMap="attemptInfoResultMap">
+    SELECT DISTINCT s.id AS sector_key, s.sync_attempt AS attempt
+    FROM sector s
+    WHERE s.sync_attempt IS NOT NULL
+      AND (s.dataset_key = #{projectKey}
+           OR s.dataset_key IN (SELECT key FROM dataset
+                                WHERE source_key = #{projectKey}
+                                  AND origin IN ('RELEASE','XRELEASE')))
+  </select>
 </mapper>
