@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 
@@ -11,6 +12,7 @@ import java.io.Writer;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,14 @@ public class FileMetricsDatasetDao extends FileMetricsDao<Integer> {
   @Override
   DSID<Integer> sectorKey(Integer key) {
     return DSID.of(key, null);
+  }
+
+  @Override
+  protected Integer persistedNameCount(Integer key, int attempt) {
+    try (SqlSession session = factory.openSession(true)) {
+      var di = session.getMapper(DatasetImportMapper.class).get(key, attempt);
+      return di == null ? null : di.getNameCount();
+    }
   }
 
   public int updateTree(Integer datasetKey, Integer storeKey, int attempt) throws IOException {

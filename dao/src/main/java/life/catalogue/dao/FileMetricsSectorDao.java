@@ -4,7 +4,6 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.db.mapper.SectorImportMapper;
 
 import java.io.File;
-import java.util.stream.Stream;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -30,22 +29,12 @@ public class FileMetricsSectorDao extends FileMetricsDao<DSID<Integer>> {
     return key;
   }
 
-  /**
-   * A sync that produced no names writes no file, so a missing file is not an error as long as the
-   * sector import records a zero name count. Only a genuinely unknown attempt is a NotFound.
-   */
   @Override
-  public Stream<String> getNames(DSID<Integer> key, int attempt) {
-    File f = namesFile(key, attempt);
-    if (!f.exists()) {
-      try (SqlSession session = factory.openSession(true)) {
-        var si = session.getMapper(SectorImportMapper.class).get(key, attempt);
-        if (si != null && (si.getNameCount() == null || si.getNameCount() == 0)) {
-          return Stream.empty();
-        }
-      }
+  protected Integer persistedNameCount(DSID<Integer> key, int attempt) {
+    try (SqlSession session = factory.openSession(true)) {
+      var si = session.getMapper(SectorImportMapper.class).get(key, attempt);
+      return si == null ? null : si.getNameCount();
     }
-    return super.getNames(key, attempt);
   }
 
 }

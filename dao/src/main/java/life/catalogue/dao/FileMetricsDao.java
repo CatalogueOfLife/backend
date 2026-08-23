@@ -150,9 +150,25 @@ public abstract class FileMetricsDao<K> {
     }
   }
 
+  /**
+   * A sync/import that produced no names writes no file, so a missing file is not an error as long as the
+   * persisted metrics record a zero name count. Only a genuinely unknown attempt is a NotFound.
+   */
   public Stream<String> getNames(K key, int attempt) {
-    return streamFile(namesFile(key, attempt), key, attempt);
+    File f = namesFile(key, attempt);
+    if (!f.exists()) {
+      Integer nameCount = persistedNameCount(key, attempt);
+      if (nameCount != null && nameCount == 0) {
+        return Stream.empty();
+      }
+    }
+    return streamFile(f, key, attempt);
   }
+
+  /**
+   * @return the persisted name count for that attempt, or null if no metrics record exists for it
+   */
+  protected abstract Integer persistedNameCount(K key, int attempt);
 
   protected Stream<String> streamFile(File f, K key, int attempt) {
     try {
