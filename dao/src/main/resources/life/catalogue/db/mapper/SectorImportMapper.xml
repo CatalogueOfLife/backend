@@ -334,9 +334,16 @@
   <delete id="deleteAttempts">
     DELETE FROM sector_import
     WHERE dataset_key = #{datasetKey}
-      AND (sector_key, attempt) IN
-      <foreach item="a" collection="attempts" open="(" separator="," close=")">
-        (#{a.sectorKey}, #{a.attempt})
-      </foreach>
+      <choose>
+        <when test="attempts != null and !attempts.isEmpty()">
+          AND (sector_key, attempt) IN
+          <foreach item="a" collection="attempts" open="(" separator="," close=")">
+            (#{a.sectorKey}, #{a.attempt})
+          </foreach>
+        </when>
+        <otherwise>
+          AND false
+        </otherwise>
+      </choose>
   </delete>
 </mapper>

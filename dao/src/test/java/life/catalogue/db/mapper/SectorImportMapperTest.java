@@ -179,6 +179,11 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     SectorImport si2 = create(JobStatus.FINISHED, s);
     mapper().create(si2);
     SectorImport si3 = create(JobStatus.FINISHED, s2);
+    // give s2 the same attempt number as one of s's rows: a buggy implementation that matches
+    // "sector_key IN (...) AND attempt IN (...)" independently, instead of true row-value
+    // (sector_key, attempt) IN (...) tuple matching, would delete this row too even though it
+    // belongs to a sector that is not part of the delete batch at all.
+    si3.setAttempt(si1.getAttempt());
     mapper().create(si3);
     commit();
 
@@ -193,7 +198,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
       assertTrue(a.getSectorKey() == s.getId() || a.getSectorKey() == s2.getId());
     }
 
-    // delete just the two of sector s
+    // delete just the two of sector s - s2's row shares an attempt number with one of them and must survive
     var doomed = all.stream().filter(a -> a.getSectorKey() == s.getId()).toList();
     assertEquals(2, mapper().deleteAttempts(COL, doomed));
     commit();
@@ -204,5 +209,25 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     }
     assertEquals(1, left.size());
     assertEquals((int) s2.getId(), left.get(0).getSectorKey());
+    assertEquals(si3.getAttempt(), left.get(0).getAttempt());
+  }
+
+  @Test
+  public void deleteAttemptsEmptyList() throws Exception {
+    mapper().deleteByDataset(COL);
+
+    SectorImport si1 = create(JobStatus.FINISHED, s);
+    mapper().create(si1);
+    commit();
+
+    // must delete nothing and must not throw - an empty IN() list is a Postgres syntax error
+    assertEquals(0, mapper().deleteAttempts(COL, List.of()));
+    commit();
+
+    List<SectorImportMapper.AttemptInfo> left = new ArrayList<>();
+    try (var c = mapper().processAttempts(COL)) {
+      c.forEach(left::add);
+    }
+    assertEquals(1, left.size());
   }
 }
