@@ -33,7 +33,7 @@ public class SectorImportRetentionJobIT {
   public static PgSetupRule pgSetupRule = new PgSetupRule();
 
   @Rule
-  public TestDataRule testDataRule = TestDataRule.draftWithSectors();
+  public TestDataRule testDataRule = TestDataRule.apple();
 
   File repo;
   FileMetricsSectorDao fmDao;
