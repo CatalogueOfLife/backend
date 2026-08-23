@@ -99,8 +99,10 @@ public class ProjectCopyFactory {
     XRelease release = new XReleaseDebug(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService,
       dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
       cfg, apiURI, clbURI, client, validator);
-    // deliberately NOT wired for retention: a debug XRelease is a throwaway that must not consume
-    // the retention window a real release defines
+    // deliberately NOT wired for retention: not wiring it only stops retention from being *triggered* by
+    // this debug release. A live XReleaseDebug still creates an origin=XRELEASE, source_key=projectKey
+    // dataset row, which DOES advance lastReleaseCreated (and so the retention cutoff) for the next real
+    // run. Debug XReleases must therefore be deleted once they are no longer needed.
     return release;
   }
 

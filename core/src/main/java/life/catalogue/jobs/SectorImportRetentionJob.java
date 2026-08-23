@@ -106,7 +106,8 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
   @Override
   public boolean isDuplicate(BackgroundJob other) {
     return other instanceof SectorImportRetentionJob
-           && ((SectorImportRetentionJob) other).datasetKey == datasetKey;
+           && ((SectorImportRetentionJob) other).datasetKey == datasetKey
+           && ((SectorImportRetentionJob) other).dryRun == dryRun;
   }
 
   @Override

@@ -50,10 +50,10 @@ public class FileMetricsDatasetDaoTest extends FileMetricsDaoTestBase<Integer> {
   }
 
   /**
-   * A dataset import that produced no names writes no file, so a missing file is not an error as long as the
-   * dataset_import row records a zero name count. This is the regression from 51065a38a: updateNames lives on
-   * the shared FileMetricsDao base and started skipping the file for zero-name dataset imports too, but
-   * FileMetricsDatasetDao had no equivalent read tolerance.
+   * This test never calls updateNames, so it only exercises the read-tolerance path: a missing names file
+   * is not an error as long as the dataset_import row records a zero name count. This is the regression
+   * from 51065a38a: updateNames lives on the shared FileMetricsDao base and started skipping the file for
+   * zero-name dataset imports too, but FileMetricsDatasetDao had no equivalent read tolerance.
    */
   @Test
   public void noFileWrittenWhenNoNames() throws Exception {

@@ -49,12 +49,6 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
                           @Param("current") @Nullable Boolean current,
                           @Param("page") @Nullable Page page);
 
-  /**
-   * List all unique sector keys from all imports for a given projects dataset key.
-   * @param datasetKey the projects dataset key
-   */
-  List<Integer> listSectors(@Param("datasetKey") @Nullable Integer datasetKey);
-  
   void create(@Param("imp") SectorImport sectorImport);
 
   void update(@Param("imp") SectorImport sectorImport);
@@ -142,7 +136,6 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
    * @return every (sectorKey, attempt) pinned by the project itself or by one of its releases
    */
   List<AttemptInfo> listPinnedAttempts(@Param("projectKey") int projectKey);
-
 
   Integer countBareName(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countDistribution(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);

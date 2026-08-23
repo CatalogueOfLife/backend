@@ -361,6 +361,18 @@
               #{attempts, typeHandler=life.catalogue.db.type2.PgIntArrayTypeHandler}::int[]
             )
           )
+          <!--
+            The in-memory pinned set the job checks before adding a row to this batch is a snapshot taken
+            once at job start, but sector syncs are not locked out by this job's dataset lock (SectorRunnable
+            extends BackgroundJob, not DatasetBlockingJob) and can commit a new sector.sync_attempt at any
+            point during the up-to-9h scan. Re-check the pin here, against the live table, so a row that is
+            pinned by the PROJECT right now can never be deleted no matter what the stale snapshot said.
+            sector's primary key is (dataset_key, id), so this is one index lookup per candidate row.
+          -->
+          AND NOT EXISTS (SELECT 1 FROM sector s
+                          WHERE s.dataset_key = #{datasetKey}
+                            AND s.id = sector_import.sector_key
+                            AND s.sync_attempt = sector_import.attempt)
         </when>
         <otherwise>
           AND false

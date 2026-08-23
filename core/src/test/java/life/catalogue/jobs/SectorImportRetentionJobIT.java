@@ -23,8 +23,10 @@ import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
@@ -83,14 +85,18 @@ public class SectorImportRetentionJobIT {
   }
 
   /**
-   * The bar for the whole feature: pruning must not move a single metric.
+   * The bar for the whole feature: pruning must not move a single metric. Covers both goal-6 metrics -
+   * releaseMetrics, and sourceMetrics in both its release-path and project-path (current=true) variants,
+   * which run genuinely different queries.
    */
   @Test
   public void releaseMetricsUnchanged() throws Exception {
     seedWithRelease();
     var sourceDao = new DatasetSourceDao(SqlSessionFactoryRule.getSqlSessionFactory());
 
-    var before = ApiModule.MAPPER.writeValueAsString(sourceDao.releaseMetrics(releaseKey, null, null));
+    var beforeRelease = ApiModule.MAPPER.writeValueAsString(sourceDao.releaseMetrics(releaseKey, null, null));
+    var beforeReleaseSource = ApiModule.MAPPER.writeValueAsString(sourceDao.sourceMetrics(releaseKey, TestDataRule.APPLE.key, null));
+    var beforeProjectSource = ApiModule.MAPPER.writeValueAsString(sourceDao.sourceMetrics(Datasets.COL, TestDataRule.APPLE.key, null));
 
     var job = new SectorImportRetentionJob(Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(),
       fmDao, Datasets.COL, false);
@@ -98,8 +104,14 @@ public class SectorImportRetentionJobIT {
     assertEquals(JobStatus.FINISHED, job.getStatus());
     assertTrue("something should have been pruned", job.getDeletedRows() > 0);
 
-    var after = ApiModule.MAPPER.writeValueAsString(sourceDao.releaseMetrics(releaseKey, null, null));
-    assertEquals("release metrics must be byte identical after pruning", before, after);
+    var afterRelease = ApiModule.MAPPER.writeValueAsString(sourceDao.releaseMetrics(releaseKey, null, null));
+    assertEquals("release metrics must be byte identical after pruning", beforeRelease, afterRelease);
+
+    var afterReleaseSource = ApiModule.MAPPER.writeValueAsString(sourceDao.sourceMetrics(releaseKey, TestDataRule.APPLE.key, null));
+    assertEquals("release-path source metrics must be byte identical after pruning", beforeReleaseSource, afterReleaseSource);
+
+    var afterProjectSource = ApiModule.MAPPER.writeValueAsString(sourceDao.sourceMetrics(Datasets.COL, TestDataRule.APPLE.key, null));
+    assertEquals("project-path source metrics must be byte identical after pruning", beforeProjectSource, afterProjectSource);
   }
 
   /**
@@ -117,6 +129,19 @@ public class SectorImportRetentionJobIT {
       var si = session.getMapper(SectorImportMapper.class).get(DSID.of(Datasets.COL, sectorId), s.getSyncAttempt());
       assertNotNull("the projects pinned attempt must survive", si);
     }
+  }
+
+  /**
+   * Restores the round-trip coverage FileMetricsSectorDaoTest lost when it was rewritten off
+   * {@link life.catalogue.dao.FileMetricsDaoTestBase} (see its {@code roundtripNames}): updateNames must
+   * write the real name strings for a sector attempt, and getNames must read exactly those back - no
+   * retention run involved here, this only exercises the DAO the job's empty-file handling builds on.
+   */
+  @Test
+  public void namesRoundtrip() {
+    seedWithRelease();
+    var names = fmDao.getNames(DSID.of(Datasets.COL, sectorId), 1).toList();
+    assertEquals(List.of("Abies alba", "Abies balsamea", "Abies concolor"), names);
   }
 
   /**
@@ -143,7 +168,10 @@ public class SectorImportRetentionJobIT {
   }
 
   /**
-   * Every surviving row with names keeps its file; every deleted row loses it.
+   * Every surviving row with names keeps its file; every deleted row loses it. Attempt 6 additionally
+   * covers the KEPT-but-empty case: its row survives (postdates the release) yet its stray names file
+   * must still be removed, since a zero name_count means the file carries nothing the metrics row does
+   * not (see SectorImportRetentionJob's empty-file deletion for kept rows).
    */
   @Test
   public void filesMatchRows() {
@@ -165,6 +193,12 @@ public class SectorImportRetentionJobIT {
           assertTrue("kept attempt " + i + " with names must keep its file", fileExists);
         }
       }
+
+      var si6 = sim.get(key, 6);
+      assertNotNull("attempt 6 postdates the release and must be kept", si6);
+      assertEquals("attempt 6's persisted name_count must be untouched", (Integer) 0, si6.getNameCount());
+      assertFalse("a kept but zero-name attempt must have its stray file removed",
+        fmDao.namesFile(key, 6).exists());
     }
   }
 
@@ -245,8 +279,12 @@ public class SectorImportRetentionJobIT {
    * A release is created whose `created` sits between attempt 3 and 4, and which pins attempt 2. The
    * project pins attempt 1 - the OLDEST - so the "current sync survives however old" case is genuinely
    * exercised.
+   * A 6th attempt is added well after the release, with a persisted name_count of 0 and a stray names
+   * file manufactured directly on disk (a real zero-name attempt never gets one via updateNames) -
+   * exercising the empty-file deletion the job also applies to rows it KEEPS.
    * Expected outcome: attempts 1 (project pin) and 2 (release pin) survive as pinned, 4 and 5 survive as
-   * newer than the cutoff, and only attempt 3 is deletable.
+   * newer than the cutoff, only attempt 3 is deletable, and attempt 6 survives as KEPT but loses its
+   * stray file.
    */
   private void seedWithRelease() {
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
@@ -286,6 +324,27 @@ public class SectorImportRetentionJobIT {
         fmDao.updateNames(DSID.of(Datasets.COL, sectorId), DSID.of(Datasets.COL, sectorId), i);
       }
 
+      // attempt 6: postdates the release by a wide margin, so it is KEPT regardless of any pin, but its
+      // persisted metrics record zero names. A genuine zero-name attempt never gets a names file written
+      // via updateNames, so this one is manufactured directly to simulate a stray leftover file - the
+      // retention job must remove it even though the row itself survives (job.java:169-175).
+      SectorImport si6 = new SectorImport();
+      si6.setDatasetKey(Datasets.COL);
+      si6.setSectorKey(sectorId);
+      si6.setAttempt(6);
+      si6.setStarted(t0.plusDays(30L));
+      si6.setCreatedBy(Users.TESTER);
+      si6.setNameCount(0);
+      sim.create(si6);
+      File strayFile = fmDao.namesFile(DSID.of(Datasets.COL, sectorId), 6);
+      try {
+        Files.createDirectories(strayFile.getParentFile().toPath());
+        Files.write(strayFile.toPath(), new byte[0]);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      assertTrue("fixture setup: the stray file for attempt 6 must exist before the job runs", strayFile.exists());
+
       // release created between attempt 3 (t0+15d) and attempt 4 (t0+20d)
       Dataset rel = new Dataset();
       rel.setTitle("Test XRelease");
@@ -307,8 +366,9 @@ public class SectorImportRetentionJobIT {
       rs.setMode(Sector.Mode.MERGE);
       rs.applyUser(Users.TESTER);
       sm.createWithID(rs);
-      // createWithID inserts COLS, which does not include sync_attempt - the column set above is
-      // silently discarded on insert, so the pin has to be persisted explicitly via updateLastSync
+      // createWithID inserts via COLS, which does not include sync_attempt, so it cannot be set on the
+      // Sector object above and persisted by this insert - the pin has to be written explicitly afterwards
+      // via updateLastSync
       sm.updateLastSync(DSID.of(releaseKey, sectorId), 2);
 
       // the project pins the OLDEST attempt

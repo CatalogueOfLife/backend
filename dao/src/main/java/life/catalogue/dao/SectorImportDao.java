@@ -5,15 +5,12 @@ import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.db.mapper.SectorImportMapper;
-import life.catalogue.db.mapper.SectorMapper;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
