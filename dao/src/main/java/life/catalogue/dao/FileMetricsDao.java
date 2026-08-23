@@ -61,8 +61,10 @@ public abstract class FileMetricsDao<K> {
    * @param attempt attempt where the metrics are stored
    */
   public void updateNames(K dataKey, K storeKey, int attempt) {
+    final File f = namesFile(storeKey, attempt);
+    int written;
     try (SqlSession session = factory.openSession(true);
-         NamesWriter nHandler = new NamesWriter(namesFile(storeKey, attempt), true)
+         NamesWriter nHandler = new NamesWriter(f, true)
     ){
       NameMapper nm = session.getMapper(NameMapper.class);
 
@@ -71,7 +73,12 @@ public abstract class FileMetricsDao<K> {
         () -> nm.processNameStrings(skey.getDatasetKey(), skey.getId()),
         nHandler
       );
-      LOG.info("Written {} name strings for {} {}-{}", nHandler.counter, type, dataKey, attempt);
+      written = nHandler.counter;
+      LOG.info("Written {} name strings for {} {}-{}", written, type, dataKey, attempt);
+    }
+    // an empty names file carries nothing the metrics row does not already record - do not keep it
+    if (written == 0) {
+      deleteOrWarn(f);
     }
   }
 
