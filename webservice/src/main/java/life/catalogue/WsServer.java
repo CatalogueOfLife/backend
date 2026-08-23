@@ -473,7 +473,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DefaultReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, coljersey.getCache(), cfg.getApiUri(), cfg.clbURI));
     j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
-    j.register(new SectorResource(secdao, fmsDao, siDao, syncManager));
+    j.register(new SectorResource(secdao, fmsDao, syncManager));
 
     // shared read only resources
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
