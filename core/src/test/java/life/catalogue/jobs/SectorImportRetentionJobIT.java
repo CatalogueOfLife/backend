@@ -303,9 +303,17 @@ public class SectorImportRetentionJobIT {
       rs.setSyncAttempt(2);
       rs.applyUser(Users.TESTER);
       sm.createWithID(rs);
+      // createWithID inserts COLS, which does not include sync_attempt - the column set above is
+      // silently discarded on insert, so the pin has to be persisted explicitly via updateLastSync
+      sm.updateLastSync(DSID.of(releaseKey, sectorId), 2);
 
       // the project pins the OLDEST attempt
       sm.updateLastSync(DSID.of(Datasets.COL, sectorId), 1);
+
+      // the fixture is only meaningful if both pins actually persisted - createWithID silently drops
+      // sync_attempt, so assert rather than assume
+      assertEquals("project must pin attempt 1", (Integer) 1, sm.get(DSID.of(Datasets.COL, sectorId)).getSyncAttempt());
+      assertEquals("release must pin attempt 2", (Integer) 2, sm.get(DSID.of(releaseKey, sectorId)).getSyncAttempt());
     }
   }
 }
