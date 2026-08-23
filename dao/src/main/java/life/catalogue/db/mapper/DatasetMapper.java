@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
+import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
 import org.apache.ibatis.session.SqlSession;
@@ -446,8 +447,9 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * Updates only the created timestamp of a dataset.
-   * @VisibleForTesting - lets tests backdate a release so retention cutoffs can be exercised deterministically.
+   * Lets tests backdate a release so retention cutoffs can be exercised deterministically.
    */
+  @VisibleForTesting
   int updateCreated(@Param("key") int key, @Param("created") LocalDateTime created);
 
   /**

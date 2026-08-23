@@ -13,6 +13,8 @@ import life.catalogue.matching.nidx.NameIndex;
 
 import java.net.URI;
 
+import javax.annotation.Nullable;
+
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -43,7 +45,7 @@ public class ProjectCopyFactory {
                             DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
                             NameUsageIndexService indexService, ImageService imageService,
                             SqlSessionFactory factory, Validator validator,
-                            ReleaseConfig cfg, URI apiURI, URI clbURI, JobExecutor jobExecutor
+                            ReleaseConfig cfg, URI apiURI, URI clbURI, @Nullable JobExecutor jobExecutor
   ) {
     this.client = client;
     this.nameIndex = nameIndex;
@@ -86,16 +88,19 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not a release
    */
   public XRelease buildExtendedRelease(final int releaseKey, final int userKey) {
-    XRelease release = new XRelease(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
+    XRelease release = new XRelease(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService,
+      dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
       cfg, apiURI, clbURI, client, validator);
     wireRetention(release, userKey);
     return release;
   }
 
   public XRelease buildDebugXRelease(final int releaseKey, final int userKey) {
-    XRelease release = new XReleaseDebug(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
+    XRelease release = new XReleaseDebug(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService,
+      dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
       cfg, apiURI, clbURI, client, validator);
-    wireRetention(release, userKey);
+    // deliberately NOT wired for retention: a debug XRelease is a throwaway that must not consume
+    // the retention window a real release defines
     return release;
   }
 
@@ -119,6 +124,7 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectDuplication buildDuplication(int projectKey, int userKey) {
+    // no retention wiring: a duplication is not a release and pins nothing
     return new ProjectDuplication(factory, indexService, diDao, dDao, validator, projectKey, userKey, cfg);
   }
 

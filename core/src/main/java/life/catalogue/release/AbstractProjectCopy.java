@@ -17,6 +17,8 @@ import life.catalogue.es.indexing.NameUsageIndexService;
 import java.time.LocalDateTime;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -104,7 +106,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
    * Optional executor to submit the retentionJobFactory job to once the copy has finished successfully.
    * Null in tests and for copies that are not releases.
    */
-  public void setJobExecutor(JobExecutor jobExecutor) {
+  public void setJobExecutor(@Nullable JobExecutor jobExecutor) {
     this.jobExecutor = jobExecutor;
   }
 
@@ -112,7 +114,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
    * Optional factory for a follow up job pruning sector sync history this release no longer pins.
    * Null in tests and for copies that are not releases.
    */
-  public void setRetentionJobFactory(Supplier<BackgroundJob> retentionJobFactory) {
+  public void setRetentionJobFactory(@Nullable Supplier<BackgroundJob> retentionJobFactory) {
     this.retentionJobFactory = retentionJobFactory;
   }
 
@@ -216,6 +218,13 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     if (retentionJobFactory != null && jobExecutor != null) {
       try {
         jobExecutor.submit(retentionJobFactory.get());
+      } catch (IllegalArgumentException e) {
+        if (e.getMessage() != null && e.getMessage().contains("is queued already")) {
+          // a retention job for this project is already queued from a prior release - nothing to do
+          LOG.info("Sector import retention for project {} is already queued: {}", projectKey, e.getMessage());
+        } else {
+          LOG.error("Failed to submit sector import retention for project {}", projectKey, e);
+        }
       } catch (RuntimeException e) {
         LOG.error("Failed to submit sector import retention for project {}", projectKey, e);
       }

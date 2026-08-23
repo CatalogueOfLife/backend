@@ -160,7 +160,8 @@ public class SectorImportRetentionJobIT {
         boolean fileExists = fmDao.namesFile(key, i).exists();
         if (si == null) {
           assertFalse("deleted attempt " + i + " must have no file", fileExists);
-        } else if (si.getNameCount() != null && si.getNameCount() > 0) {
+        } else {
+          assertEquals("kept attempt " + i + " must still have its name_count", (Integer) 3, si.getNameCount());
           assertTrue("kept attempt " + i + " with names must keep its file", fileExists);
         }
       }
@@ -189,6 +190,7 @@ public class SectorImportRetentionJobIT {
       }
     }
 
+    assertEquals(1, dry.getDeletableRows());
     var real = new SectorImportRetentionJob(Users.TESTER, f, fmDao, Datasets.COL, false);
     real.run();
     assertEquals("dry run must predict exactly what a real run deletes",
@@ -204,6 +206,7 @@ public class SectorImportRetentionJobIT {
     var f = SqlSessionFactoryRule.getSqlSessionFactory();
     var first = new SectorImportRetentionJob(Users.TESTER, f, fmDao, Datasets.COL, false);
     first.run();
+    assertEquals(1, first.getDeletedRows());
     var second = new SectorImportRetentionJob(Users.TESTER, f, fmDao, Datasets.COL, false);
     second.run();
     assertEquals(0, second.getDeletedRows());
@@ -293,6 +296,8 @@ public class SectorImportRetentionJobIT {
       dm.create(rel);
       releaseKey = rel.getKey();
       dm.updateCreated(releaseKey, t0.plusDays(17));
+      // the fixture is only meaningful if the backdate actually persisted - self-verify like the pins below
+      assertEquals(t0.plusDays(17), dm.get(releaseKey).getCreated());
 
       // the release pins attempt 2
       Sector rs = new Sector();
@@ -300,7 +305,6 @@ public class SectorImportRetentionJobIT {
       rs.setDatasetKey(releaseKey);
       rs.setSubjectDatasetKey(TestDataRule.APPLE.key);
       rs.setMode(Sector.Mode.MERGE);
-      rs.setSyncAttempt(2);
       rs.applyUser(Users.TESTER);
       sm.createWithID(rs);
       // createWithID inserts COLS, which does not include sync_attempt - the column set above is
