@@ -347,12 +347,24 @@
       </choose>
   </delete>
 
+  <!--
+    Must exclude deleted releases: DatasetDao.deleteBefore() removes the sector rows of a deleted
+    PRIVATE release (so it stops pinning anything) but keeps them for a deleted PUBLIC one. A deleted
+    private release therefore still has a dataset row here that would push the cutoff later without
+    contributing any pins in listPinnedAttempts below - shrinking, not growing, the protected window is
+    always the safe direction, so this query stays restricted to live releases.
+  -->
   <select id="lastReleaseCreated" resultType="java.time.LocalDateTime">
     SELECT max(created)
     FROM dataset
-    WHERE source_key = #{projectKey} AND origin IN ('RELEASE','XRELEASE')
+    WHERE source_key = #{projectKey} AND origin IN ('RELEASE','XRELEASE') AND deleted IS NULL
   </select>
 
+  <!--
+    Deliberately NOT filtered by deleted IS NULL: DatasetDao.deleteBefore() keeps the sector rows of a
+    deleted PUBLIC release (only a deleted private release loses them), so those rows still pin real
+    attempts and must keep doing so here even after the release dataset itself is soft-deleted.
+  -->
   <select id="listPinnedAttempts" resultMap="attemptInfoResultMap">
     SELECT DISTINCT s.id AS sector_key, s.sync_attempt AS attempt
     FROM sector s

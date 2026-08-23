@@ -99,24 +99,35 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
     }
 
     final List<SectorImportMapper.AttemptInfo> doomed = new ArrayList<>();
-    final List<SectorImportMapper.AttemptInfo> emptyKept = new ArrayList<>();
 
-    try (SqlSession session = factory.openSession(true);
+    // autoCommit must stay false here: pgjdbc only honours Statement.setFetchSize (the "fetchSize" on
+    // processAttempts) when autoCommit is off, so this is what makes Postgres stream the ~6.9M rows
+    // instead of buffering the entire result set in the webservice JVM's heap. This session only reads
+    // and never commits, so the rollback on close is harmless.
+    try (SqlSession session = factory.openSession(false);
          var cursor = session.getMapper(SectorImportMapper.class).processAttempts(datasetKey)) {
       for (var a : cursor) {
         examined++;
+        // SectorSync extends BackgroundJob, not DatasetBlockingJob, so this job's dataset lock does not
+        // exclude a running sector sync. SectorRunnable inserts its sector_import row up front but only
+        // persists `started` in its finally block, so a queued or running sync has started = NULL in the
+        // database for its whole lifetime and must be kept here, or its row could be deleted mid-flight.
         boolean keep = pinned.contains(pinKey(a.getSectorKey(), a.getAttempt()))
                        || a.getStarted() == null
                        || !a.getStarted().isBefore(cutoff);
         if (keep) {
-          if (a.getNameCount() != null && a.getNameCount() == 0) {
-            emptyKept.add(a);
+          // zero-name attempts write no names file at all, so only count/delete a file that actually exists
+          boolean empty = a.getNameCount() != null && a.getNameCount() == 0;
+          if (empty && fmDao.namesFile(DSID.of(datasetKey, a.getSectorKey()), a.getAttempt()).exists()) {
             deletableFiles++;
+            deleteFile(a);
           }
         } else {
           doomed.add(a);
           deletableRows++;
-          deletableFiles++;
+          if (fmDao.namesFile(DSID.of(datasetKey, a.getSectorKey()), a.getAttempt()).exists()) {
+            deletableFiles++;
+          }
           if (doomed.size() >= BATCH) {
             flush(doomed);
           }
@@ -127,10 +138,6 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
       }
     }
     flush(doomed);
-    // kept rows whose names file is empty still lose the file
-    for (var a : emptyKept) {
-      deleteFile(a);
-    }
 
     LOG.info("Retention for project {} {}: examined {}, rows {} {}, files {} {}",
       datasetKey, dryRun ? "DRY RUN" : "done", examined,
@@ -160,8 +167,11 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
 
   private void deleteFile(SectorImportMapper.AttemptInfo a) {
     if (!dryRun) {
-      fmDao.deleteAttempt(DSID.of(datasetKey, a.getSectorKey()), a.getAttempt());
-      deletedFiles++;
+      var key = DSID.of(datasetKey, a.getSectorKey());
+      if (fmDao.namesFile(key, a.getAttempt()).exists()) {
+        fmDao.deleteAttempt(key, a.getAttempt());
+        deletedFiles++;
+      }
     }
   }
 }
