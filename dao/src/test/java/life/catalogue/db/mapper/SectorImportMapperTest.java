@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
@@ -231,6 +232,40 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     // (s, A) and (s2, B) are gone
     assertNull(mapper().get(siSA.getSectorDSID(), attemptA));
     assertNull(mapper().get(si2B.getSectorDSID(), attemptB));
+  }
+
+  /**
+   * deleteAttempts must never remove a row the project's sector currently pins, even when the caller
+   * explicitly asks for it - the retention job's in-memory pinned set is a snapshot and a sector sync
+   * can commit a new pin mid-scan.
+   */
+  @Test
+  public void deleteAttemptsRefusesPinnedRow() throws Exception {
+    mapper().deleteByDataset(COL);
+
+    // one sector import, then pin exactly that attempt on the project's sector row
+    SectorImport pinned = create(JobStatus.FINISHED, s);
+    mapper().create(pinned);
+    commit();
+
+    mapper(SectorMapper.class).updateLastSync(DSID.of(COL, s.getId()), pinned.getAttempt());
+    // the fixture is only meaningful if the pin actually persisted
+    assertEquals((Integer) pinned.getAttempt(), mapper(SectorMapper.class).get(DSID.of(COL, s.getId())).getSyncAttempt());
+
+    // deleteAttempts is asked to delete the pinned attempt anyway - the guard must refuse
+    assertEquals(0, mapper().deleteAttempts(COL, new int[]{s.getId()}, new int[]{pinned.getAttempt()}));
+    commit();
+    assertNotNull(mapper().get(DSID.of(COL, s.getId()), pinned.getAttempt()));
+
+    // contrast: a second, unpinned attempt on the same sector is deleted normally, so a guard that
+    // always returns 0 (e.g. from a malformed array) cannot pass this test
+    SectorImport unpinned = create(JobStatus.FINISHED, s);
+    mapper().create(unpinned);
+    commit();
+
+    assertEquals(1, mapper().deleteAttempts(COL, new int[]{s.getId()}, new int[]{unpinned.getAttempt()}));
+    commit();
+    assertNull(mapper().get(DSID.of(COL, s.getId()), unpinned.getAttempt()));
   }
 
   @Test
