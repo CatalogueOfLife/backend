@@ -18,6 +18,7 @@ import static life.catalogue.api.TestEntityGenerator.*;
 import static life.catalogue.api.vocab.Datasets.COL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
@@ -174,32 +175,46 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     // first insert below whenever JUnit happens to run this test after it.
     mapper().deleteByDataset(COL);
 
-    SectorImport si1 = create(JobStatus.FINISHED, s);
-    mapper().create(si1);
-    SectorImport si2 = create(JobStatus.FINISHED, s);
-    mapper().create(si2);
-    SectorImport si3 = create(JobStatus.FINISHED, s2);
-    // give s2 the same attempt number as one of s's rows: a buggy implementation that matches
-    // "sector_key IN (...) AND attempt IN (...)" independently, instead of true row-value
-    // (sector_key, attempt) IN (...) tuple matching, would delete this row too even though it
-    // belongs to a sector that is not part of the delete batch at all.
-    si3.setAttempt(si1.getAttempt());
-    mapper().create(si3);
+    final int attemptA = 10;
+    final int attemptB = 20;
+
+    // Both sectors get a row at attempt A and a row at attempt B. The delete batch is the crossed
+    // pair (s, A) and (s2, B), so (s, B) and (s2, A) must survive. This is the only shape that can
+    // tell a true row-value tuple match "(sector_key, attempt) IN ((?,?),(?,?))" apart from a buggy
+    // independent-filter "sector_key IN (...) AND attempt IN (...)": the buggy form collapses to
+    // sector_key IN (s, s2) AND attempt IN (A, B), a cross product that also matches (s, B) and
+    // (s2, A) even though neither pair is in the batch.
+    SectorImport siSA = create(JobStatus.FINISHED, s);
+    siSA.setAttempt(attemptA);
+    mapper().create(siSA);
+    SectorImport siSB = create(JobStatus.FINISHED, s);
+    siSB.setAttempt(attemptB);
+    mapper().create(siSB);
+    SectorImport si2A = create(JobStatus.FINISHED, s2);
+    si2A.setAttempt(attemptA);
+    mapper().create(si2A);
+    SectorImport si2B = create(JobStatus.FINISHED, s2);
+    si2B.setAttempt(attemptB);
+    mapper().create(si2B);
     commit();
 
     List<SectorImportMapper.AttemptInfo> all = new ArrayList<>();
     try (var c = mapper().processAttempts(COL)) {
       c.forEach(all::add);
     }
-    assertEquals(3, all.size());
+    assertEquals(4, all.size());
     // the projection must carry what the retention rule needs
     for (var a : all) {
       assertNotNull(a.getStarted());
       assertTrue(a.getSectorKey() == s.getId() || a.getSectorKey() == s2.getId());
     }
 
-    // delete just the two of sector s - s2's row shares an attempt number with one of them and must survive
-    var doomed = all.stream().filter(a -> a.getSectorKey() == s.getId()).toList();
+    // delete batch = [(s, A), (s2, B)] - deliberately crossed with (s, B) and (s2, A)
+    var doomed = all.stream()
+        .filter(a -> (a.getSectorKey() == s.getId() && a.getAttempt() == attemptA)
+            || (a.getSectorKey() == s2.getId() && a.getAttempt() == attemptB))
+        .toList();
+    assertEquals(2, doomed.size());
     assertEquals(2, mapper().deleteAttempts(COL, doomed));
     commit();
 
@@ -207,9 +222,16 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     try (var c = mapper().processAttempts(COL)) {
       c.forEach(left::add);
     }
-    assertEquals(1, left.size());
-    assertEquals((int) s2.getId(), left.get(0).getSectorKey());
-    assertEquals(si3.getAttempt(), left.get(0).getAttempt());
+    assertEquals(2, left.size());
+    assertTrue(left.stream().anyMatch(a -> a.getSectorKey() == s.getId() && a.getAttempt() == attemptB));
+    assertTrue(left.stream().anyMatch(a -> a.getSectorKey() == s2.getId() && a.getAttempt() == attemptA));
+
+    // (s, B) and (s2, A) survive
+    assertNotNull(mapper().get(siSB.getSectorDSID(), attemptB));
+    assertNotNull(mapper().get(si2A.getSectorDSID(), attemptA));
+    // (s, A) and (s2, B) are gone
+    assertNull(mapper().get(siSA.getSectorDSID(), attemptA));
+    assertNull(mapper().get(si2B.getSectorDSID(), attemptB));
   }
 
   @Test
