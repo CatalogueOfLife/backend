@@ -102,9 +102,9 @@ public class ImportJob implements Runnable {
   private final UsageMatcherFactory matcherFactory;
   private final IdentifierScopeResolver scopeResolver;
   private final StartNotifier notifier;
-  private final Consumer<ImportRequest> successCallback;
-  private final BiConsumer<ImportRequest, Exception> errorCallback;
-  
+  private final Consumer<ImportJob> successCallback;
+  private final BiConsumer<ImportJob, Exception> errorCallback;
+
   ImportJob(ImportRequest req, DatasetWithSettings d,
             ImporterConfig iCfg, NormalizerConfig nCfg, DoiConfig dCfg,
             DownloadUtil downloader, SqlSessionFactory factory, ImportStoreFactory importStoreFactory, NameIndex index, Validator validator, DoiResolver resolver,
@@ -112,8 +112,8 @@ public class ImportJob implements Runnable {
             DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBroker bus,
             UsageMatcherFactory matcherFactory, IdentifierScopeResolver scopeResolver,
             StartNotifier notifier,
-            Consumer<ImportRequest> successCallback,
-            BiConsumer<ImportRequest, Exception> errorCallback
+            Consumer<ImportJob> successCallback,
+            BiConsumer<ImportJob, Exception> errorCallback
     ) {
     this.validator = validator;
     this.dataset = Preconditions.checkNotNull(d);
@@ -208,10 +208,10 @@ public class ImportJob implements Runnable {
     try {
       notifier.started();
       importDataset();
-      successCallback.accept(req);
-      
+      successCallback.accept(this);
+
     } catch (Exception e) {
-      errorCallback.accept(req, e);
+      errorCallback.accept(this, e);
 
     } finally {
       LoggingUtils.removeDatasetMDC();

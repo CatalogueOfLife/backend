@@ -292,11 +292,19 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    * Cancels a running import job by its dataset key
    */
   public void cancel(int datasetKey, int user) {
-    Future f = futures.remove(datasetKey);
+    PBQThreadPoolExecutor.ComparableFutureTask f = futures.remove(datasetKey);
     if (f != null) {
+      // a job that never left the queue will never reach its own error handler, so we have to notify from here
+      final boolean queued = exec != null && exec.isQueued(f);
       f.cancel(true);
       exec.purge();
       LOG.info("Canceled import for dataset {} by user {}", datasetKey, user);
+      if (queued) {
+        ImportJob job = (ImportJob) f.getTask();
+        DatasetImport di = fromImportJob(job);
+        di.setState(ImportState.CANCELED);
+        fireCallback(job.getRequest(), di);
+      }
 
     } else {
       LOG.info("No import existing for dataset {}. Ignore", datasetKey);
@@ -401,7 +409,11 @@ public class ImportManager implements Managed, Idle, DatasetListener {
 
     // this is a good guy, let it run!
     futures.put(req.datasetKey, exec.submit(createImport(req), req.priority));
-    LOG.info("Queued import for dataset {}", req.datasetKey);
+    if (req.callback == null) {
+      LOG.info("Queued import for dataset {}", req.datasetKey);
+    } else {
+      LOG.info("Queued import for dataset {} with completion callback {}", req.datasetKey, req.callback);
+    }
     return req;
   }
 
@@ -418,36 +430,40 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   /**
    * We use old school callbacks here as you cannot easily cancel CopletableFutures.
    */
-  private void successCallBack(ImportRequest req) {
+  private void successCallBack(ImportJob job) {
+    final ImportRequest req = job.getRequest();
     Duration durQueued = Duration.between(req.created, req.started);
     Duration durRun = Duration.between(req.started, LocalDateTime.now());
     LOG.info("Dataset import {} finished. {} min queued, {} min to execute", req.datasetKey, durQueued.toMinutes(), durRun.toMinutes());
     importTimer.update(durRun.getSeconds(), TimeUnit.SECONDS);
-    fireCallback(req);
     futures.remove(req.datasetKey);
+    fireCallback(req, fromImportJob(job));
   }
 
   /**
    * We use old school callbacks here as you cannot easily cancel CompletableFutures.
    */
-  private void errorCallBack(ImportRequest req, Exception err) {
-    // fetch the terminal DatasetImport before we drop the job from the futures map
-    fireCallback(req);
+  private void errorCallBack(ImportJob job, Exception err) {
+    final ImportRequest req = job.getRequest();
     futures.remove(req.datasetKey);
     failed.inc();
     LOG.error("Dataset import {} failed: {}", req.datasetKey, Exceptions.getFirstMessage(err), err.getCause());
+    fireCallback(req, fromImportJob(job));
   }
 
   /**
    * Notifies the optional completion callback URL of the request with the final DatasetImport, if configured.
-   * Reads the DatasetImport from the still queued job, so must be called before the job is removed from the futures map.
+   * The DatasetImport is taken straight from the job that just completed - notably not from the futures map,
+   * which a concurrent cancel() may already have cleared. See https://github.com/CatalogueOfLife/backend/issues/1552
    */
-  private void fireCallback(ImportRequest req) {
-    if (req.callback != null && callbackNotifier != null) {
-      PBQThreadPoolExecutor.ComparableFutureTask f = futures.get(req.datasetKey);
-      if (f != null) {
-        callbackNotifier.notifyCallback(req.callback, fromFuture(f));
-      }
+  private void fireCallback(ImportRequest req, DatasetImport di) {
+    if (req.callback == null) {
+      LOG.debug("No completion callback requested for dataset {}", req.datasetKey);
+    } else if (callbackNotifier == null) {
+      LOG.warn("Import manager is shut down, cannot notify completion callback {} for dataset {}", req.callback, req.datasetKey);
+    } else {
+      LOG.info("Firing completion callback {} for dataset {} import in state {}", req.callback, req.datasetKey, di == null ? null : di.getState());
+      callbackNotifier.notifyCallback(req.callback, di);
     }
   }
 

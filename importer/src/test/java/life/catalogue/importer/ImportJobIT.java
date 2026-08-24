@@ -95,11 +95,11 @@ public class ImportJobIT {
     LOG.info("Start");
   }
 
-  void success(ImportRequest req){
+  void success(ImportJob job){
     LOG.info("Success");
   }
 
-  void error(ImportRequest req, Exception e){
+  void error(ImportJob job, Exception e){
     LOG.error("Failed", e);
     fail("Import Error");
   }
