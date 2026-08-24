@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
@@ -288,7 +289,9 @@ public class SectorImportRetentionJobIT {
    */
   private void seedWithRelease() {
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    final LocalDateTime t0 = LocalDateTime.now().minusDays(50);
+    // truncated to millis: postgres timestamps are microsecond precision, and on JDK 25 / Linux now()
+    // carries sub-micro digits that the store silently drops, breaking the created round-trip asserted below
+    final LocalDateTime t0 = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).minusDays(50);
     try (SqlSession session = factory.openSession(true)) {
       var sm = session.getMapper(SectorMapper.class);
       var sim = session.getMapper(SectorImportMapper.class);
