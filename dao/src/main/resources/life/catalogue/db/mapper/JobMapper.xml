@@ -7,6 +7,7 @@
   <sql id="SELECT">
     j.key,
     j.job_class,
+    j.lane,
     j.status,
     j.step,
     j.priority,
@@ -26,6 +27,7 @@
   <sql id="COLS">
     key,
     job_class,
+    lane,
     status,
     step,
     priority,
@@ -45,6 +47,7 @@
   <sql id="PROPS">
     #{key},
     #{job},
+    #{lane}::JOBLANE,
     #{status}::JOBSTATUS,
     #{step},
     #{priority}::JOBPRIORITY,
@@ -69,9 +72,18 @@
     <where>
       <if test="req.key != null">AND j.key = #{req.key}</if>
       <if test="req.datasetKey != null">AND j.dataset_key = #{req.datasetKey}</if>
+      <if test="req.sectorKey != null">AND j.sector_key = #{req.sectorKey}</if>
       <if test="req.createdBy != null">AND j.created_by = #{req.createdBy}</if>
-      <if test="req.job != null">AND j.job_class = #{req.job}</if>
       <if test="req.priority != null">AND j.priority = #{req.priority}::JOBPRIORITY</if>
+      <if test="req.createdAfter != null">AND j.created &gt;= #{req.createdAfter}</if>
+      <if test="req.createdBefore != null">AND j.created &lt;= #{req.createdBefore}</if>
+      <!-- matches the lower(job_class) index -->
+      <if test="req.job != null and !req.job.isEmpty()">
+        AND lower(j.job_class) IN <foreach item="jc" collection="req.job" open="(" separator="," close=")">lower(#{jc})</foreach>
+      </if>
+      <if test="req.lane != null and !req.lane.isEmpty()">
+        AND j.lane IN <foreach item="ln" collection="req.lane" open="(" separator="," close=")">#{ln}::JOBLANE</foreach>
+      </if>
       <if test="req.status != null and !req.status.isEmpty()">
         AND j.status IN <foreach item="st" collection="req.status" open="(" separator="," close=")">#{st}::JOBSTATUS</foreach>
       </if>

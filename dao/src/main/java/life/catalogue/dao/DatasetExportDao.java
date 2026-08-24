@@ -6,6 +6,7 @@ import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.ExportSearchRequest;
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.concurrent.JobConfig;
@@ -79,6 +80,7 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
       JobInfo j = new JobInfo();
       j.setKey(obj.getKey());
       j.setJob("DatasetExportJob");
+      j.setLane(JobLane.DEFAULT);
       j.setStatus(obj.getStatus() == null ? JobStatus.FINISHED : obj.getStatus());
       j.setPriority(JobPriority.LOW);
       j.setDatasetKey(obj.getRequest() == null ? null : obj.getRequest().getDatasetKey());

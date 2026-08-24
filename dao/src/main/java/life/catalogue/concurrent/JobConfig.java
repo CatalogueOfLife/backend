@@ -1,6 +1,7 @@
 package life.catalogue.concurrent;
 
 import life.catalogue.api.model.JobResult;
+import life.catalogue.api.vocab.JobLane;
 
 import java.io.File;
 import java.net.URI;

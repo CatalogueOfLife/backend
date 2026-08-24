@@ -1,4 +1,4 @@
-package life.catalogue.concurrent;
+package life.catalogue.api.vocab;
 
 /**
  * The named queues of the JobExecutor.

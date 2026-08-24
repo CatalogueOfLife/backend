@@ -89,6 +89,7 @@ public class JobDao {
     JobInfo info = new JobInfo();
     info.setKey(job.getKey());
     info.setJob(job.getJobName());
+    info.setLane(job.getLane());
     info.setStatus(job.getStatus());
     info.setStep(job.getStep());
     info.setPriority(job.getPriority());

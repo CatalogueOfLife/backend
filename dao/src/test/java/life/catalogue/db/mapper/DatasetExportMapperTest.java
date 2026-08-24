@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.TabularFormat;
@@ -120,6 +121,7 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
     JobInfo j = new JobInfo();
     j.setKey(d.getKey());
     j.setJob("DatasetExportJob");
+    j.setLane(JobLane.DEFAULT);
     j.setStatus(d.getStatus());
     j.setPriority(JobPriority.LOW);
     j.setDatasetKey(d.getRequest().getDatasetKey());

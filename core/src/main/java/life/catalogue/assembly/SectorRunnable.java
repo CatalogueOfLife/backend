@@ -8,7 +8,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.BackgroundJob;
-import life.catalogue.concurrent.JobLane;
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.JobDao;
 import life.catalogue.dao.SectorDao;
@@ -363,7 +363,14 @@ abstract class SectorRunnable extends BackgroundJob {
 
   abstract void updateSearchIndex() throws Exception;
 
+  /**
+   * @return the live sync metrics of this job. The metrics record is created upfront and does not track
+   * the generic job lifecycle itself, so status and step are mirrored from the job on every read -
+   * without it the running syncs reported by the SyncState would never show any progress.
+   */
   public SectorImport getState() {
+    state.setStatus(getStatus());
+    state.setStep(getStep());
     return state;
   }
 

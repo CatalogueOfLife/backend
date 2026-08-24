@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 
@@ -19,6 +20,7 @@ public class JobInfo implements Entity<UUID> {
 
   private UUID key;
   private String job; // simple java class name of the job
+  private JobLane lane;
   private JobStatus status;
   private String step;
   private JobPriority priority;
@@ -50,6 +52,14 @@ public class JobInfo implements Entity<UUID> {
 
   public void setJob(String job) {
     this.job = job;
+  }
+
+  public JobLane getLane() {
+    return lane;
+  }
+
+  public void setLane(JobLane lane) {
+    this.lane = lane;
   }
 
   public JobStatus getStatus() {
@@ -171,6 +181,7 @@ public class JobInfo implements Entity<UUID> {
     JobInfo jobInfo = (JobInfo) o;
     return Objects.equals(key, jobInfo.key)
            && Objects.equals(job, jobInfo.job)
+           && lane == jobInfo.lane
            && status == jobInfo.status
            && Objects.equals(step, jobInfo.step)
            && priority == jobInfo.priority
@@ -189,7 +200,7 @@ public class JobInfo implements Entity<UUID> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, job, status, step, priority, datasetKey, sectorKey, createdBy,
+    return Objects.hash(key, job, lane, status, step, priority, datasetKey, sectorKey, createdBy,
       created, started, finished, error, params, resultMd5, resultSize, resultDeleted);
   }
 

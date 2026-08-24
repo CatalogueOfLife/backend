@@ -21,19 +21,21 @@ One job record is backfilled for every existing import and sync attempt.
 **Scale (prod, Aug 2026):** ~6.93M sector syncs + ~0.93M dataset imports + ~3k exports = **~7.9M job rows**,
 and it grows by one row per sector per weekly fleet sync (~63k/week, ~3.3M/year). The indexes are therefore
 created *after* the backfill - building them up front would make every one of those 7.9M inserts maintain
-five indexes. Expect the backfill to take a while and to need the disk headroom for the sort; it is all
+seven indexes. Expect the backfill to take a while and to need the disk headroom for the sort; it is all
 pre-deploy work against tables the running app only appends to.
 Retention for this table, and moving release source metrics off the live `sector_import` history so that
 retention becomes possible at all, are tracked in
 [#1562](https://github.com/CatalogueOfLife/backend/issues/1562).
 
 ```sql
--- new enum and the generic job table
+-- new enums and the generic job table
 CREATE TYPE JOBPRIORITY AS ENUM ('HIGH', 'MEDIUM', 'LOW');
+CREATE TYPE JOBLANE AS ENUM ('DEFAULT', 'IMPORT', 'SYNC');
 
 CREATE TABLE job (
   key UUID PRIMARY KEY,
   job_class TEXT NOT NULL,
+  lane JOBLANE NOT NULL,
   status JOBSTATUS NOT NULL,
   step TEXT,
   priority JOBPRIORITY NOT NULL,
@@ -59,8 +61,11 @@ ALTER TABLE sector_import  ADD COLUMN job_key UUID;
 CREATE TEMP TABLE di_jobmap AS
   SELECT dataset_key, attempt, gen_random_uuid() AS key FROM dataset_import;
 
-INSERT INTO job (key, job_class, status, step, priority, dataset_key, created_by, created, started, finished, error)
+-- dataset_import also holds the metrics of releases (ProjectRelease, XRelease, ProjectDuplication),
+-- which run on the default lane - only a real ImportJob belongs on the import lane
+INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, created_by, created, started, finished, error)
 SELECT m.key, di.job,
+  CASE WHEN di.job = 'ImportJob' THEN 'IMPORT' ELSE 'DEFAULT' END::JOBLANE,
   CASE WHEN di.state IN ('FINISHED','FAILED','CANCELED') THEN di.state::text ELSE 'CANCELED' END::JOBSTATUS,
   CASE WHEN di.state IN ('WAITING','FINISHED','FAILED','CANCELED') THEN NULL ELSE lower(di.state::text) END,
   'MEDIUM', di.dataset_key, di.created_by,
@@ -74,8 +79,8 @@ FROM di_jobmap m WHERE di.dataset_key=m.dataset_key AND di.attempt=m.attempt;
 CREATE TEMP TABLE si_jobmap AS
   SELECT dataset_key, sector_key, attempt, gen_random_uuid() AS key FROM sector_import;
 
-INSERT INTO job (key, job_class, status, step, priority, dataset_key, sector_key, created_by, created, started, finished, error)
-SELECT m.key, si.job,
+INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, sector_key, created_by, created, started, finished, error)
+SELECT m.key, si.job, 'SYNC'::JOBLANE,
   CASE WHEN si.state IN ('FINISHED','FAILED','CANCELED') THEN si.state::text ELSE 'CANCELED' END::JOBSTATUS,
   CASE WHEN si.state IN ('WAITING','FINISHED','FAILED','CANCELED') THEN NULL ELSE lower(si.state::text) END,
   'MEDIUM', si.dataset_key, si.sector_key, si.created_by,
@@ -87,8 +92,8 @@ FROM si_jobmap m WHERE si.dataset_key=m.dataset_key AND si.sector_key=m.sector_k
 
 -- backfill job records for historical exports so they show up in the unified job history.
 -- exports created after the new release are persisted by the executor already, hence the conflict clause
-INSERT INTO job (key, job_class, status, priority, dataset_key, created_by, created, started, finished, error, result_md5, result_size, result_deleted)
-SELECT e.key, 'DatasetExportJob', e.status, 'LOW', e.dataset_key, e.created_by, e.created, e.started, e.finished, e.error, e.md5, e.size, e.deleted
+INSERT INTO job (key, job_class, lane, status, priority, dataset_key, created_by, created, started, finished, error, result_md5, result_size, result_deleted)
+SELECT e.key, 'DatasetExportJob', 'DEFAULT', e.status, 'LOW', e.dataset_key, e.created_by, e.created, e.started, e.finished, e.error, e.md5, e.size, e.deleted
 FROM dataset_export e
 ON CONFLICT (key) DO NOTHING;
 
@@ -98,8 +103,13 @@ ON CONFLICT (key) DO NOTHING;
 -- params deliberately gets no GIN index: nothing filters on it, it is only selected and inserted,
 -- so the index would be pure write overhead on the weekly sector sync burst.
 CREATE INDEX ON job (dataset_key, created DESC);
+CREATE INDEX ON job (sector_key, created DESC);
 CREATE INDEX ON job (created_by);
-CREATE INDEX ON job (job_class);
+-- job_class is only ever filtered case insensitively, so index the expression, not the raw column
+CREATE INDEX ON job (lower(job_class));
+-- ~88% of the rows are sector syncs, so an unfiltered history is essentially all syncs and the lane
+-- filter is the UIs default. It always orders by created DESC, hence the composite.
+CREATE INDEX ON job (lane, created DESC);
 CREATE INDEX ON job (created DESC);
 CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
 

@@ -152,13 +152,19 @@ Every asynchronous unit of work - imports, sector syncs, releases, exports, matc
 (WAITING/BLOCKED/RUNNING/FINISHED/CANCELED/FAILED), calls `onCancel`/`onError` and then always `onFinish`,
 persists the final state and sends the completion email. Fine grained progress is a free text `step`, not a
 status - the old `ImportState` enum column is gone from the db (`IMPORTSTATE` dropped).
-The executor has three lanes (`JobLane`: DEFAULT, IMPORT, SYNC), each with its own worker pool and priority
+The executor has three lanes (`JobLane`: DEFAULT, IMPORT, SYNC - a vocab enum, so it is served at
+`/vocab/joblane` and persisted as the `job.lane` column), each with its own worker pool and priority
 queue so a long import cannot starve an export; `getSerialBy()` serializes jobs sharing a key within a lane
 (sector syncs of one project). `ImportManager`/`SyncManager` no longer own thread pools - they only validate,
 submit and cancel, and reschedule jobs left stale by a shutdown via `JobExecutor.getStaleJobs()`.
 `dataset_import` and `sector_import` are now pure metrics tables joined to `job` by `job_key`, and
-`dataset_export` keeps only the request columns. `JobResource` serves the live queue from memory and the
-history from the db.
+`dataset_export` keeps only the request columns.
+`JobResource` serves the live queue from memory and the history from the db, both as the same generic
+`JobInfo` shape (`JobDao.buildInfo`) - the live `BackgroundJob` instances are only rendered on `?full=true`,
+since their subclasses expose big payloads (decision maps, whole datasets, import metrics, stack traces).
+`/job/types` lists the known job class names from a startup classpath scan; `JobSearchRequest` filters the
+history by lane, multiple case insensitive job names, status, priority, dataset, sector, user and a
+`createdAfter`/`createdBefore` range.
 
 **Sector Synchronization (Assembly):**
 `SectorSync` in core module merges portions of source datasets into managed projects. A "sector" defines which subtree from a source dataset contributes to a project. The sync process:

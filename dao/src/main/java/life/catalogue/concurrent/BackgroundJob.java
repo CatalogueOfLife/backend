@@ -3,6 +3,7 @@ package life.catalogue.concurrent;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;

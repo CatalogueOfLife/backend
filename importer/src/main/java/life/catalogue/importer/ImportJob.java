@@ -18,7 +18,7 @@ import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetJob;
-import life.catalogue.concurrent.JobLane;
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;

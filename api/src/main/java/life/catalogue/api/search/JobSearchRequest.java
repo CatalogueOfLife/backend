@@ -1,19 +1,29 @@
 package life.catalogue.api.search;
 
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
 import jakarta.ws.rs.QueryParam;
 
+/**
+ * Search request for the generic job history.
+ * Also used to search the dataset import history, which supports the same filters
+ * plus the import specific source archive format.
+ */
 public class JobSearchRequest {
 
+  /**
+   * Filter by a single job key.
+   */
   @QueryParam("key")
-  private UUID key; // unsupported so far
+  private UUID key;
 
   /**
    * Filter by dataset.
@@ -22,10 +32,10 @@ public class JobSearchRequest {
   private Integer datasetKey;
 
   /**
-   * Filters jobs by datasets that contribute to a given project.
+   * Filter by the sector a job was run for. Only sync jobs carry one.
    */
-  @QueryParam("contributesTo")
-  private Integer contributesTo; // unsupported so far
+  @QueryParam("sectorKey")
+  private Integer sectorKey;
 
   /**
    * Filter jobs by the user that has created it.
@@ -40,22 +50,44 @@ public class JobSearchRequest {
   private Set<JobStatus> status;
 
   /**
+   * Filter by one or more executor lanes.
+   * Sector syncs make up the vast majority of all job records, so filtering them out
+   * via lane is the cheapest way to get a useful history.
+   */
+  @QueryParam("lane")
+  private Set<JobLane> lane;
+
+  /**
    * Filter by priority.
    */
   @QueryParam("priority")
-  private JobPriority priority; // unsupported so far
+  private JobPriority priority;
 
   /**
-   * Filter by job (class) name.
+   * Filter by one or more job (class) names, compared case insensitively.
+   * Repeat the parameter to combine several, e.g. job=ProjectRelease&amp;job=XRelease.
    */
   @QueryParam("job")
-  private String job;
+  private Set<String> job;
 
   /**
-   * Filter by source archive format.
+   * Filter by source archive format. Only supported by the dataset import search.
    */
   @QueryParam("format")
   private DataFormat format;
+
+  /**
+   * Only include jobs created at or after this time. A bare date is read as the start of that day.
+   */
+  @QueryParam("createdAfter")
+  private LocalDateTime createdAfter;
+
+  /**
+   * Only include jobs created at or before this time. A bare date is read as the start of that day,
+   * so pass the following day to include a full day.
+   */
+  @QueryParam("createdBefore")
+  private LocalDateTime createdBefore;
 
 
   public UUID getKey() {
@@ -74,12 +106,12 @@ public class JobSearchRequest {
     this.datasetKey = datasetKey;
   }
 
-  public Integer getContributesTo() {
-    return contributesTo;
+  public Integer getSectorKey() {
+    return sectorKey;
   }
 
-  public void setContributesTo(Integer contributesTo) {
-    this.contributesTo = contributesTo;
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
   }
 
   public Integer getCreatedBy() {
@@ -98,6 +130,14 @@ public class JobSearchRequest {
     this.status = status;
   }
 
+  public Set<JobLane> getLane() {
+    return lane;
+  }
+
+  public void setLane(Set<JobLane> lane) {
+    this.lane = lane;
+  }
+
   public JobPriority getPriority() {
     return priority;
   }
@@ -106,11 +146,11 @@ public class JobSearchRequest {
     this.priority = priority;
   }
 
-  public String getJob() {
+  public Set<String> getJob() {
     return job;
   }
 
-  public void setJob(String job) {
+  public void setJob(Set<String> job) {
     this.job = job;
   }
 
@@ -122,6 +162,22 @@ public class JobSearchRequest {
     this.format = format;
   }
 
+  public LocalDateTime getCreatedAfter() {
+    return createdAfter;
+  }
+
+  public void setCreatedAfter(LocalDateTime createdAfter) {
+    this.createdAfter = createdAfter;
+  }
+
+  public LocalDateTime getCreatedBefore() {
+    return createdBefore;
+  }
+
+  public void setCreatedBefore(LocalDateTime createdBefore) {
+    this.createdBefore = createdBefore;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -129,16 +185,20 @@ public class JobSearchRequest {
     JobSearchRequest that = (JobSearchRequest) o;
     return Objects.equals(key, that.key)
            && Objects.equals(datasetKey, that.datasetKey)
-           && Objects.equals(contributesTo, that.contributesTo)
+           && Objects.equals(sectorKey, that.sectorKey)
            && Objects.equals(createdBy, that.createdBy)
            && Objects.equals(status, that.status)
-           && Objects.equals(priority, that.priority)
+           && Objects.equals(lane, that.lane)
+           && priority == that.priority
            && Objects.equals(job, that.job)
-           && format == that.format;
+           && format == that.format
+           && Objects.equals(createdAfter, that.createdAfter)
+           && Objects.equals(createdBefore, that.createdBefore);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, datasetKey, contributesTo, createdBy, status, priority, job, format);
+    return Objects.hash(key, datasetKey, sectorKey, createdBy, status, lane, priority, job, format,
+      createdAfter, createdBefore);
   }
 }

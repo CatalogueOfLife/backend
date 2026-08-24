@@ -161,8 +161,24 @@
         <if test="req.createdBy != null">
           AND di.created_by = #{req.createdBy}
         </if>
-        <if test="req.job != null">
-          AND lower(j.job_class) = lower(#{req.job})
+        <if test="req.job != null &amp;&amp; !req.job.isEmpty()">
+          AND lower(j.job_class) IN
+          <foreach item="jc" collection="req.job" open="(" separator="," close=")">
+            lower(#{jc})
+          </foreach>
+        </if>
+        <!-- releases write dataset_import metrics too, they just run on the default lane -->
+        <if test="req.lane != null &amp;&amp; !req.lane.isEmpty()">
+          AND j.lane IN
+          <foreach item="ln" collection="req.lane" open="(" separator="," close=")">
+            #{ln}::JOBLANE
+          </foreach>
+        </if>
+        <if test="req.createdAfter != null">
+          AND j.created &gt;= #{req.createdAfter}
+        </if>
+        <if test="req.createdBefore != null">
+          AND j.created &lt;= #{req.createdBefore}
         </if>
         <if test="req.format != null">
           AND di.format = #{req.format}::DATAFORMAT

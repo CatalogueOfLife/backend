@@ -329,6 +329,12 @@ CREATE TYPE ISSUE AS ENUM (
   'RELATION_SYNONYM'
 );
 
+CREATE TYPE JOBLANE AS ENUM (
+  'DEFAULT',
+  'IMPORT',
+  'SYNC'
+);
+
 CREATE TYPE JOBPRIORITY AS ENUM (
   'HIGH',
   'MEDIUM',
@@ -1114,6 +1120,7 @@ CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, m
 CREATE TABLE job (
   key UUID PRIMARY KEY,
   job_class TEXT NOT NULL,             -- simple java class name of the job
+  lane JOBLANE NOT NULL,               -- executor queue the job runs in, see JobLane
   status JOBSTATUS NOT NULL,
   step TEXT,                           -- free text running substate updated by the job, e.g. downloading, inserting
   priority JOBPRIORITY NOT NULL,
@@ -1133,8 +1140,13 @@ CREATE TABLE job (
 -- job search always orders by created DESC, so the dataset filter is a composite;
 -- its leftmost prefix still serves plain dataset_key lookups
 CREATE INDEX ON job (dataset_key, created DESC);
+CREATE INDEX ON job (sector_key, created DESC);
 CREATE INDEX ON job (created_by);
-CREATE INDEX ON job (job_class);
+-- job_class is only ever filtered case insensitively, so index the expression, not the raw column
+CREATE INDEX ON job (lower(job_class));
+-- sector syncs alone are ~88% of the rows, so an unfiltered history is essentially all syncs.
+-- the lane filter is the UIs default and always orders by created DESC
+CREATE INDEX ON job (lane, created DESC);
 CREATE INDEX ON job (created DESC);
 CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
 -- no index on params: nothing filters on it, it is only ever selected and inserted.

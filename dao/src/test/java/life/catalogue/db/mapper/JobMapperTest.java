@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.JobSearchRequest;
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
@@ -29,6 +30,7 @@ public class JobMapperTest extends CRUDTestBase<UUID, JobInfo, JobMapper> {
     JobInfo j = new JobInfo();
     j.setKey(UUID.randomUUID());
     j.setJob("TestJob");
+    j.setLane(JobLane.DEFAULT);
     j.setStatus(status);
     j.setPriority(JobPriority.MEDIUM);
     j.setDatasetKey(appleKey);
@@ -64,6 +66,8 @@ public class JobMapperTest extends CRUDTestBase<UUID, JobInfo, JobMapper> {
     mapper().create(create(JobStatus.FINISHED));
     var failed = create(JobStatus.FAILED);
     failed.setJob("OtherJob");
+    failed.setLane(JobLane.SYNC);
+    failed.setSectorKey(13);
     failed.setCreatedBy(Users.TESTER);
     mapper().create(failed);
     commit();
@@ -76,8 +80,41 @@ public class JobMapperTest extends CRUDTestBase<UUID, JobInfo, JobMapper> {
     assertEquals(2, mapper().count(req));
 
     req = new JobSearchRequest();
-    req.setJob("OtherJob");
+    req.setJob(Set.of("OtherJob"));
     assertEquals(1, mapper().count(req));
+    // job names are matched case insensitively and several can be combined
+    req.setJob(Set.of("otherjob"));
+    assertEquals(1, mapper().count(req));
+    req.setJob(Set.of("otherjob", "testjob"));
+    assertEquals(4, mapper().count(req));
+    req.setJob(Set.of("NoSuchJob"));
+    assertEquals(0, mapper().count(req));
+
+    req = new JobSearchRequest();
+    req.setLane(Set.of(JobLane.SYNC));
+    assertEquals(1, mapper().count(req));
+    req.setLane(Set.of(JobLane.DEFAULT, JobLane.SYNC));
+    assertEquals(4, mapper().count(req));
+    req.setLane(Set.of(JobLane.IMPORT));
+    assertEquals(0, mapper().count(req));
+
+    req = new JobSearchRequest();
+    req.setSectorKey(13);
+    assertEquals(1, mapper().count(req));
+    req.setSectorKey(14);
+    assertEquals(0, mapper().count(req));
+
+    req = new JobSearchRequest();
+    req.setCreatedAfter(LocalDateTime.now().minusDays(1));
+    assertEquals(4, mapper().count(req));
+    req.setCreatedAfter(LocalDateTime.now().plusDays(1));
+    assertEquals(0, mapper().count(req));
+
+    req = new JobSearchRequest();
+    req.setCreatedBefore(LocalDateTime.now().plusDays(1));
+    assertEquals(4, mapper().count(req));
+    req.setCreatedBefore(LocalDateTime.now().minusDays(1));
+    assertEquals(0, mapper().count(req));
 
     req = new JobSearchRequest();
     req.setCreatedBy(Users.TESTER);

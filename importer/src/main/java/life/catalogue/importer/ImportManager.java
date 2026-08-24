@@ -19,7 +19,7 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.JobLane;
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.csv.ExcelCsvExtractor;

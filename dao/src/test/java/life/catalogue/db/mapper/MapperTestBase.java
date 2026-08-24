@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityUnmodifiedRule;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Setting;
@@ -112,6 +113,7 @@ public abstract class MapperTestBase<M> {
     JobInfo j = new JobInfo();
     j.setKey(m.getJobKey());
     j.setJob(m.getJob());
+    j.setLane(m instanceof SectorImport ? JobLane.SYNC : JobLane.DEFAULT);
     j.setStatus(m.getStatus());
     j.setStep(m.getStep());
     j.setError(m.getError());

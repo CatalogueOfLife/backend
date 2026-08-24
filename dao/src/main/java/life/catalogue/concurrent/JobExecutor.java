@@ -3,6 +3,7 @@ package life.catalogue.concurrent;
 import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.JobLane;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
