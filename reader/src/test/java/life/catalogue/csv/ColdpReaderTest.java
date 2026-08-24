@@ -15,6 +15,37 @@ import static org.junit.Assert.*;
 public class ColdpReaderTest {
 
   /**
+   * A COLDP archive may consist of nothing but the combined NameUsage file.
+   * This one has a row that omits its trailing empty column, which used to disqualify the TSV format
+   * during delimiter detection. The reader then fell back to a single column CSV and rejected the whole
+   * archive with "One of col:Name, col:NameUsage, col:Reference files required but all are missing".
+   */
+  @Test
+  public void singleNameUsageFile() throws Exception {
+    ColdpReader reader = ColdpReader.from(Resources.toFile("coldp/nameusage").toPath());
+
+    assertEquals(1, reader.schemas().size());
+    assertTrue(reader.hasSchema(ColdpTerm.NameUsage));
+    Schema s = reader.schema(ColdpTerm.NameUsage).get();
+    assertTrue("the tab delimiter must be detected", s.isTsv());
+    assertEquals(6, s.columns.size());
+
+    assertEquals(13, reader.stream(ColdpTerm.NameUsage).count());
+
+    // sg1 is the row that omits its trailing authorship column - it must read fine, with a null authorship
+    final AtomicBoolean found = new AtomicBoolean(false);
+    reader.stream(ColdpTerm.NameUsage).forEach(rec -> {
+      if ("sg1".equals(rec.get(ColdpTerm.ID))) {
+        found.set(true);
+        assertEquals("subgenus", rec.get(ColdpTerm.rank));
+        assertEquals("Chaetocnema (Chaetocnema)", rec.get(ColdpTerm.scientificName));
+        assertNull(rec.get(ColdpTerm.authorship));
+      }
+    });
+    assertTrue("the row with a missing trailing column must be read", found.get());
+  }
+
+  /**
    * https://github.com/CatalogueOfLife/testing/issues/39#issuecomment-1267383797
    */
   @Test
