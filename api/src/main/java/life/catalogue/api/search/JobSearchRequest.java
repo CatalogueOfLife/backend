@@ -14,8 +14,7 @@ import jakarta.ws.rs.QueryParam;
 
 /**
  * Search request for the generic job history.
- * Also used to search the dataset import history, which supports the same filters
- * plus the import specific source archive format.
+ * Also used to search the dataset import history, which supports the same filters.
  */
 public class JobSearchRequest {
 
@@ -71,7 +70,8 @@ public class JobSearchRequest {
   private Set<String> job;
 
   /**
-   * Filter by source archive format. Only supported by the dataset import search.
+   * Filter by data format: the source archive format of an import, or the target format of an export.
+   * Only those two kinds of job have one, so this also narrows the result to imports and exports.
    */
   @QueryParam("format")
   private DataFormat format;

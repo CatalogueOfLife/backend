@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ExportSearchRequest;
+import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobLane;
@@ -94,6 +95,36 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
     assertEquals(4, res.size());
     var resp = new ResultPage<>(p, res, () -> mapper().count(filter));
     assertEquals(4, resp.getResult().size());
+  }
+
+  /**
+   * The format filter of the generic job search reaches an exports target format
+   * through the dataset_export satellite table, so /job/search finds export jobs by format too.
+   */
+  @Test
+  public void searchJobsByFormat() throws Exception {
+    final int datasetKey = TestDataRule.APPLE.key;
+    for (DataFormat df : List.of(DataFormat.ACEF, DataFormat.DWCA, DataFormat.COLDP)) {
+      var exp = createTestEntity(datasetKey);
+      ExportRequest req = new ExportRequest();
+      req.setDatasetKey(datasetKey);
+      req.setFormat(df);
+      exp.setRequest(req);
+      mapper().create(exp);
+    }
+    commit();
+
+    JobMapper jm = session().getMapper(JobMapper.class);
+    var req = new JobSearchRequest();
+    assertEquals(3, jm.count(req));
+
+    req.setFormat(DataFormat.COLDP);
+    var res = jm.search(req, new Page());
+    assertEquals(1, res.size());
+    assertEquals("DatasetExportJob", res.get(0).getJob());
+
+    req.setFormat(DataFormat.TEXT_TREE);
+    assertEquals(0, jm.count(req));
   }
 
   @Test

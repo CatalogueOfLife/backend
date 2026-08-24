@@ -163,8 +163,9 @@ submit and cancel, and reschedule jobs left stale by a shutdown via `JobExecutor
 `JobInfo` shape (`JobDao.buildInfo`) - the live `BackgroundJob` instances are only rendered on `?full=true`,
 since their subclasses expose big payloads (decision maps, whole datasets, import metrics, stack traces).
 `/job/types` lists the known job class names from a startup classpath scan; `JobSearchRequest` filters the
-history by lane, multiple case insensitive job names, status, priority, dataset, sector, user and a
-`createdAfter`/`createdBefore` range.
+history by lane, multiple case insensitive job names, status, priority, dataset, sector, user, a
+`createdAfter`/`createdBefore` range and `format`, which semi joins `dataset_import` and `dataset_export`
+and therefore also narrows to those two kinds of job.
 
 **Sector Synchronization (Assembly):**
 `SectorSync` in core module merges portions of source datasets into managed projects. A "sector" defines which subtree from a source dataset contributes to a project. The sync process:

@@ -177,6 +177,35 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     jm.update(j);
   }
   
+  /**
+   * The format filter of the generic job search reaches an imports source archive format
+   * through the dataset_import satellite table.
+   */
+  @Test
+  public void searchJobsByFormat() throws Exception {
+    createBoth(JobStatus.FINISHED); // COLDP
+    var dwca = create(JobStatus.FINISHED);
+    dwca.setFormat(DataFormat.DWCA);
+    createJob(session(), dwca);
+    mapper().create(dwca);
+    commit();
+
+    JobMapper jm = session().getMapper(JobMapper.class);
+    var req = new JobSearchRequest();
+    assertEquals(2, jm.count(req));
+
+    req.setFormat(DataFormat.COLDP);
+    assertEquals(1, jm.count(req));
+
+    req.setFormat(DataFormat.DWCA);
+    var res = jm.search(req, new Page());
+    assertEquals(1, res.size());
+    assertEquals(dwca.getJobKey(), res.get(0).getKey());
+
+    req.setFormat(DataFormat.ACEF);
+    assertEquals(0, jm.count(req));
+  }
+
   @Test
   public void lastSuccessful() throws Exception {
     JobSearchRequest req = new JobSearchRequest();

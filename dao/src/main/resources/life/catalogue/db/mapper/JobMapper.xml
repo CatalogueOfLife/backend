@@ -87,6 +87,21 @@
       <if test="req.status != null and !req.status.isEmpty()">
         AND j.status IN <foreach item="st" collection="req.status" open="(" separator="," close=")">#{st}::JOBSTATUS</foreach>
       </if>
+      <!--
+        Only imports and exports carry a data format and they keep it in their own satellite table -
+        the source archive format for an import, the target format for an export. Filtering on it
+        therefore also narrows the result to those two kinds of job. Both branches are keyed back to
+        the job, so this stays a semi join and never duplicates rows.
+        Neither format column is indexed - DATAFORMAT has too few values to be worth it - so the
+        import branch costs one scan of dataset_import, hashed once per query.
+      -->
+      <if test="req.format != null">
+        AND j.key IN (
+          SELECT di.job_key FROM dataset_import di WHERE di.job_key IS NOT NULL AND di.format = #{req.format}::DATAFORMAT
+          UNION ALL
+          SELECT de.key FROM dataset_export de WHERE de.format = #{req.format}::DATAFORMAT
+        )
+      </if>
     </where>
   </sql>
 
