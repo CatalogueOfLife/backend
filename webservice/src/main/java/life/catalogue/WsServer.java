@@ -485,7 +485,7 @@ public class WsServer extends Application<WsServerConfig> {
     // global
     j.register(new DataPackageResource(http));
     j.register(new OpenApiResource(OpenApiFactory.build(cfg, env)));
-    j.register(new ImporterResource(cfg, importManager, diDao, ddao));
+    j.register(new ImporterResource(cfg, importManager, ddao));
     j.register(new JobResource(cfg.job, executor, jobDao));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg));
     j.register(new ResolverResource(doiResolver));

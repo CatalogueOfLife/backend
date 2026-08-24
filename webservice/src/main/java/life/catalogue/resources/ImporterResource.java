@@ -1,19 +1,14 @@
 package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
@@ -23,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
@@ -48,14 +42,12 @@ public class ImporterResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ImporterResource.class);
   private final ImportManager importManager;
-  private final DatasetImportDao dao;
   private final DatasetDao ddao;
   private final WsServerConfig cfg;
   private final HmacUtils ghSha256;
 
-  public ImporterResource(WsServerConfig cfg, ImportManager importManager, DatasetImportDao diDao, DatasetDao ddao) {
+  public ImporterResource(WsServerConfig cfg, ImportManager importManager, DatasetDao ddao) {
     this.importManager = importManager;
-    dao = diDao;
     this.ddao = ddao;
     this.cfg = cfg;
     if (StringUtils.isBlank(cfg.importer.githubHookSecret)) {
@@ -64,18 +56,6 @@ public class ImporterResource {
     } else {
       ghSha256 = new HmacUtils(HmacAlgorithms.HMAC_SHA_256, cfg.importer.githubHookSecret);
     }
-  }
-  
-  @GET
-  public ResultPage<DatasetImport> list(@QueryParam("running") Boolean running,
-                                        @Valid @BeanParam JobSearchRequest req,
-                                        @Valid @BeanParam Page page) {
-    if (running != null) {
-      req.setStatus(running
-        ? Set.of(JobStatus.WAITING, JobStatus.BLOCKED, JobStatus.RUNNING)
-        : Set.of(JobStatus.FINISHED, JobStatus.CANCELED, JobStatus.FAILED));
-    }
-    return importManager.listImports(req, page);
   }
   
   @POST
@@ -113,12 +93,6 @@ public class ImporterResource {
     }
     LOG.info("Scheduled {} datasets for importing", counter);
     return counter;
-  }
-
-  @GET
-  @Path("{key}")
-  public DatasetImport get(@PathParam("key") int datasetKey){
-    return dao.getLast(datasetKey);
   }
 
   @POST

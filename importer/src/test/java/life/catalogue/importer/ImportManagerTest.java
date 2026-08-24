@@ -24,8 +24,6 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
-import com.google.common.collect.Lists;
 
 import jakarta.validation.Validator;
 
@@ -159,29 +156,4 @@ public class ImportManagerTest {
     assertTrue(manager.hasRunning());
   }
 
-  @Test
-  public void limit() throws Exception {
-    List<Integer> list = new ArrayList<>(Arrays.asList(new Integer[]{1,2,3,45,5,6}));
-  
-    ImportManager.limit(list, 10);
-    assertEquals(Lists.newArrayList(1,2,3,45,5,6), list);
-
-    ImportManager.limit(list, 4);
-    assertEquals(Lists.newArrayList(1,2,3,45), list);
-  }
-  
-  @Test
-  public void offset() throws Exception {
-    List<Integer> list = new ArrayList<>(Arrays.asList(new Integer[]{1,2,3,45,5,6}));
-    
-    ImportManager.removeOffset(list, 1);
-    assertEquals(Lists.newArrayList(2,3,45,5,6), list);
-  
-    ImportManager.removeOffset(list, 4);
-    assertEquals(Lists.newArrayList(6), list);
-  
-    ImportManager.removeOffset(list, 4);
-    assertEquals(Lists.newArrayList(), list);
-  }
-  
 }

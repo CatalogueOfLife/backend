@@ -5,12 +5,9 @@ import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
-import life.catalogue.api.search.JobSearchRequest;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.PagingUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.common.Idle;
@@ -58,19 +55,17 @@ import org.slf4j.LoggerFactory;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import jakarta.validation.Validator;
 
 /**
- * Manages dataset import scheduling, cancellation and listing.
- * The actual queue and execution lives in the shared JobExecutors IMPORT lane.
+ * Manages dataset import scheduling and cancellation.
+ * The actual queue and execution lives in the shared JobExecutors IMPORT lane, which is also
+ * where imports are listed - live via /job, historically via /job/search and /dataset/{key}/import.
  */
 public class ImportManager implements Managed, Idle, DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
-  static final Comparator<DatasetImport> DI_STARTED_COMPARATOR = Comparator.comparing(DatasetImport::getStarted, Comparator.nullsFirst(Comparator.naturalOrder()));
-
   private boolean started;
   private ImportCallbackNotifier callbackNotifier;
   private SyncManager assemblyCoordinator;
@@ -167,114 +162,6 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    */
   public int maxQueue() {
     return jobExecutor.getConfig().importQueue;
-  }
-
-  /**
-   * Pages through all queued, running and historical imports. See https://github.com/Sp2000/colplus-backend/issues/404
-   */
-  public ResultPage<DatasetImport> listImports(JobSearchRequest req, Page page) {
-    List<DatasetImport> running = running(req.getDatasetKey(), req.getStatus());
-    ResultPage<DatasetImport> historical;
-
-    // ignore running states in imports stored in the db - otherwise we get duplicates
-    Set<JobStatus> historicalStatus = req.getStatus() == null ? Collections.EMPTY_SET
-        : req.getStatus().stream()
-            .filter(JobStatus::isDone)
-            .collect(Collectors.toSet());
-
-    if (req.getStatus() != null && !req.getStatus().isEmpty() && historicalStatus.isEmpty()) {
-      // we originally had a request for only running states. We dont get any of these from the db
-      historical = new ResultPage<>(new Page(0, 0), 0, Collections.EMPTY_LIST);
-
-    } else {
-      // query historical ones at least to get the total
-      req.setStatus(historicalStatus);
-      if (running.size() >= page.getLimitWithOffset()) {
-        // we can answer the request from the queue alone, so limit=0 to get the total count!
-        historical = dao.list(req, new Page(0, 0));
-
-      } else {
-        int offset = Math.max(0, page.getOffset() - running.size());
-        int limit = Math.min(page.getLimit(), page.getLimitWithOffset() - running.size());
-        historical = dao.list(req, new Page(offset, limit));
-      }
-    }
-    // merge both lists
-    int runCount = running.size();
-    removeOffset(running, page.getOffset());
-    running.addAll(historical.getResult());
-    limit(running, page.getLimit());
-    return new ResultPage<>(page, historical.getTotal() + runCount, running);
-  }
-
-  @VisibleForTesting
-  protected static void removeOffset(List<?> list, int offset) {
-    while (offset > 0 && !list.isEmpty()) {
-      list.remove(0);
-      offset--;
-    }
-  }
-
-  @VisibleForTesting
-  protected static void limit(List<?> list, int limit) {
-    if (list.size() > limit) {
-      list.subList(limit, list.size()).clear();
-    }
-  }
-
-  private static DatasetImport fromImportJob(ImportJob job) {
-    DatasetImport di = job.getDatasetImport();
-    if (di == null) {
-      di = new DatasetImport();
-      di.setDatasetKey(job.getDatasetKey());
-      di.setJobKey(job.getKey());
-      di.setAttempt(ObjectUtils.coalesce(job.getAttempt(), -1));
-    }
-    // reflect the live job status in the metrics for display
-    di.setStatus(job.getStatus());
-    di.setStep(job.getStep());
-    return di;
-  }
-
-  private List<DatasetImport> running(final Integer datasetKey, final Set<JobStatus> status) {
-    final List<ImportJob> jobs = importJobs();
-    // make sure we have all running ones in and on top!
-    List<DatasetImport> running = jobs.stream()
-        .filter(BackgroundJob::isRunning)
-        .map(ImportManager::fromImportJob)
-        .collect(Collectors.toList());
-
-    // Releases/duplications also write a dataset_import metrics record, but they run as regular
-    // background jobs and are surfaced through the job queue, not here - so a running release is
-    // not listed twice (once as import, once as job). Its finished attempt still shows up in the
-    // dataset import history via the db query in listImports.
-    //TODO: remove debug logs once solved why we null dates
-    for (var di : running) {
-      if (di.getStarted()==null) {
-        LOG.warn("Running job {} {}#{} without started timestamp: {}", di.getJob(), di.getDatasetKey(), di.attempt(), di);
-      }
-    }
-    running.sort(DI_STARTED_COMPARATOR);
-
-    // then add the queued imports, keeping the queues priority order
-    running.addAll(
-        jobs.stream()
-            .filter(BackgroundJob::isQueued)
-            .map(ImportManager::fromImportJob)
-            .collect(Collectors.toList()));
-
-    // finally filter by dataset & status
-    return running.stream()
-        .filter(di -> {
-          if (datasetKey != null && !Objects.equals(datasetKey, di.getDatasetKey())) {
-            return false;
-          }
-          if (status != null && di.getStatus() != null && !status.contains(di.getStatus())) {
-            return false;
-          }
-          return true;
-        })
-        .collect(Collectors.toList());
   }
 
   /**
