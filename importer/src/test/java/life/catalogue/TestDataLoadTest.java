@@ -19,8 +19,13 @@ import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * Loads every test data set through the TestDataRule to assert the CSV files still match the schema.
+ * The files are maintained by hand - see the README in the test-data resource folder - so this is the
+ * guard that catches a broken edit or a schema change that was not applied to them.
+ */
 @RunWith(Parameterized.class)
-public class TestDataGeneratorRuleTest {
+public class TestDataLoadTest {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -43,7 +48,7 @@ public class TestDataGeneratorRuleTest {
 
   TestDataRule.TestData data;
 
-  public TestDataGeneratorRuleTest(TestDataRule.TestData testData) {
+  public TestDataLoadTest(TestDataRule.TestData testData) {
     System.out.println("Testing " + testData);
     data = testData;
     dataRule = new TestDataRule(data);
