@@ -15,3 +15,5 @@ id,sector_key,scientific_name,authorship,rank,code,nom_status,type,candidatus,no
 10,,Crepis,,GENUS,ZOOLOGICAL,,SCIENTIFIC,f,,Crepis,,,,,,{},{},,{},{},,,,,,,,,
 18,,Crepis sp.3A,,SPECIES,ZOOLOGICAL,,INFORMAL,f,,,Crepis,,sp.3A,,,{},{},,{},{},,,,,,,,,
 14,,Crepis sp.,,SPECIES,ZOOLOGICAL,,INFORMAL,f,,,Crepis,,,,,{},{},,{},{},,,,,,,,,
+22,,BOLD:AAB1234,,UNRANKED,ZOOLOGICAL,,IDENTIFIER,f,,,,,,,,{},{},,{},{},,,,,,,,,
+23,,SH19186714.17FU,,UNRANKED,ZOOLOGICAL,,IDENTIFIER,f,,,,,,,,{},{},,{},{},,,,,,,,,

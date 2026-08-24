@@ -736,6 +736,32 @@ public class SectorSyncIT extends SectorSyncTestBase {
   }
 
   /**
+   * BOLD BINs and UNITE SH codes are unranked names, and since name-parser 5.0 they carry
+   * NameType.IDENTIFIER (they were OTU up to v3 and folded into OTHER in v4). A merge sector drops
+   * unranked names, but must keep exempting these - otherwise an XRelease silently loses every BOLD
+   * and UNITE name, which is what happened to sectors 2233/2234 in the 2026-08-22 XRelease.
+   */
+  @Test
+  public void mergeUnrankedIdentifierNames() throws Exception {
+    final int srcDatasetKey = dataRule.mapKey(DataFormat.COLDP, 38);
+    print(srcDatasetKey);
+
+    final NameUsageBase plants = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
+    createSector(Sector.Mode.MERGE, srcDatasetKey, null, plants, s -> {
+      s.setNameTypes(Set.of(NameType.IDENTIFIER));
+      // the BOLD & UNITE sectors explicitly allow UNRANKED - the merge default would drop them by rank already
+      s.setRanks(Set.of(Rank.FAMILY, Rank.GENUS, Rank.SPECIES, Rank.UNRANKED));
+      s.setCode(NomCode.BOTANICAL);
+      disableAutoBlocking(s);
+    });
+    syncAll(s -> s.getMode() == Sector.Mode.MERGE, null);
+    print(Datasets.COL);
+
+    assertNotNull("unranked BOLD BIN must sync", getByName(Datasets.COL, Rank.UNRANKED, "BOLD:AAB1234"));
+    assertNotNull("unranked UNITE SH code must sync", getByName(Datasets.COL, Rank.UNRANKED, "SH19186714.17FU"));
+  }
+
+  /**
    * name-parser v4 folded NameType.OTU into OTHER, so a sector can no longer isolate OTU names such as
    * BOLD or UNITE SH names from other OTHER type names by name type alone. A sector nameFilter regex
    * lets us sync only the names whose scientific name fully matches the pattern.

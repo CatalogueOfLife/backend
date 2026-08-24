@@ -15,3 +15,5 @@ ID	parentID	rank	scientificName	uninomial	nameStatus
 19	12	species	Aaptos sp.KY288		
 20	12	species	BOLD:AAC0545		
 21	12	subspecies	Crepis alpina subsp. alpina Döring 1980
+22	12	unranked	BOLD:AAB1234		
+23	12	unranked	SH19186714.17FU		
