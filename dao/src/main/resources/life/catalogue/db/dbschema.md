@@ -18,17 +18,78 @@ their `state`, `job` and `error` columns move to the job table, with the fine gr
 replaced by the generic JOBSTATUS plus a free text `step`.
 One job record is backfilled for every existing import and sync attempt.
 
-**Scale (prod, Aug 2026):** ~6.93M sector syncs + ~0.93M dataset imports + ~3k exports = **~7.9M job rows**,
-and it grows by one row per sector per weekly fleet sync (~63k/week, ~3.3M/year). The indexes are therefore
-created *after* the backfill - building them up front would make every one of those 7.9M inserts maintain
-seven indexes. Expect the backfill to take a while and to need the disk headroom for the sort; it is all
-pre-deploy work against tables the running app only appends to.
-Retention for this table, and moving release source metrics off the live `sector_import` history so that
-retention becomes possible at all, are tracked in
-[#1562](https://github.com/CatalogueOfLife/backend/issues/1562).
+**Scale (prod, Aug 2026):** before pruning this would be ~6.93M sector syncs + ~0.93M dataset imports +
+~3k exports = **~7.9M job rows**, growing by one row per sector per weekly fleet sync (~63k/week,
+~3.3M/year). Sector syncs are ~88% of that, so the migration applies the sector import retention rule
+*first* (step 0 below) and only backfills what survives it - the same rule
+`SectorImportRetentionJob` applies, deployed on this same release. The indexes are still created *after*
+the backfill; building them up front would make every insert maintain seven indexes. It is all pre-deploy
+work against tables the running app only appends to.
+Retention for the job table itself, and moving release source metrics off the live `sector_import` history,
+remain tracked in [#1562](https://github.com/CatalogueOfLife/backend/issues/1562).
 
 ```sql
--- new enums and the generic job table
+-- ============================================================================
+-- step 0: prune the sector sync history before converting it into job records
+-- ============================================================================
+-- Exactly the rule SectorImportRetentionJob applies, run set-wise over every project:
+-- drop the sector_import rows that predate the project's most recent live release and that
+-- nothing pins. Three conditions have to hold together, and each one matters:
+--
+--  a) started IS NOT NULL. SectorRunnable inserts its sector_import row up front but only writes
+--     `started` in its finally block, so a queued or currently running sync has started = NULL for
+--     its whole lifetime. The app keeps running during this pre-deploy work, so deleting those would
+--     pull a row out from under a live sync.
+--  b) started < the project's cutoff, which is the creation of its most recent *live* release.
+--     Deliberately restricted to `deleted IS NULL`: a deleted private release loses its sector rows
+--     and so pins nothing, and would otherwise push the cutoff later. Shrinking the protected window
+--     is always the safe direction.
+--  c) not pinned by any sector.sync_attempt, of the project itself or of any of its releases.
+--     Deliberately NOT filtered by `deleted IS NULL` here: DatasetDao.deleteBefore() keeps the sector
+--     rows of a deleted PUBLIC release, and those still pin real attempts.
+--
+-- The pruned keys are kept in sector_import_pruned so the names files behind them can be swept
+-- afterwards - this deletes rows only, and a row is what the file cleanup would otherwise be driven by.
+-- Drop that table once the sweep has run.
+CREATE TABLE sector_import_pruned (
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER NOT NULL,
+  attempt INTEGER NOT NULL,
+  PRIMARY KEY (dataset_key, sector_key, attempt)
+);
+
+INSERT INTO sector_import_pruned (dataset_key, sector_key, attempt)
+SELECT si.dataset_key, si.sector_key, si.attempt
+FROM sector_import si
+JOIN (
+  SELECT source_key AS project_key, max(created) AS cutoff
+  FROM dataset
+  WHERE origin IN ('RELEASE','XRELEASE') AND deleted IS NULL AND source_key IS NOT NULL
+  GROUP BY source_key
+) c ON c.project_key = si.dataset_key
+WHERE si.started IS NOT NULL
+  AND si.started < c.cutoff
+  AND NOT EXISTS (
+    SELECT 1 FROM sector s
+    WHERE s.id = si.sector_key
+      AND s.sync_attempt = si.attempt
+      AND (s.dataset_key = si.dataset_key
+           OR s.dataset_key IN (SELECT key FROM dataset
+                                WHERE source_key = si.dataset_key
+                                  AND origin IN ('RELEASE','XRELEASE')))
+  );
+
+DELETE FROM sector_import si
+USING sector_import_pruned p
+WHERE si.dataset_key = p.dataset_key AND si.sector_key = p.sector_key AND si.attempt = p.attempt;
+
+-- worth checking before continuing - this is what the sync backfill below now has to convert
+SELECT count(*) AS pruned FROM sector_import_pruned;
+SELECT count(*) AS remaining FROM sector_import;
+
+-- ============================================================================
+-- step 1: new enums and the generic job table
+-- ============================================================================
 CREATE TYPE JOBPRIORITY AS ENUM ('HIGH', 'MEDIUM', 'LOW');
 CREATE TYPE JOBLANE AS ENUM ('DEFAULT', 'IMPORT', 'SYNC');
 
