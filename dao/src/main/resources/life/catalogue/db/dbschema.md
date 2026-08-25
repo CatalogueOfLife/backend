@@ -95,27 +95,17 @@ ALTER TABLE sector_import  ADD COLUMN job_key UUID;
 -- step 2: backfill one job record per dataset import.
 -- Final states are kept, running ones become CANCELED with the substate as the step.
 -- dataset_import also holds release metrics, and releases run on the default lane.
--- Ordinary tables, not TEMP, so the migration can be run in more than one session. Dropped in step 5.
+-- Ordinary tables, not TEMP, so the migration can be run in more than one session. Dropped in step 6.
 CREATE TABLE di_jobmap AS
   SELECT dataset_key, attempt, gen_random_uuid() AS key FROM dataset_import;
 
-INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, created_by, created, started, finished, error, params)
+INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, created_by, created, started, finished, error)
 SELECT m.key, di.job,
   CASE WHEN di.job = 'ImportJob' THEN 'IMPORT' ELSE 'DEFAULT' END::JOBLANE,
   CASE WHEN di.state IN ('FINISHED','FAILED','CANCELED') THEN di.state::text ELSE 'CANCELED' END::JOBSTATUS,
   CASE WHEN di.state IN ('WAITING','FINISHED','FAILED','CANCELED') THEN NULL ELSE lower(di.state::text) END,
   'MEDIUM', di.dataset_key, di.created_by,
-  coalesce(di.started, di.finished, now()), di.started, di.finished, di.error,
-  -- only releases get params: AbstractProjectCopy.CopyParams, which is what identifies the dataset they
-  -- produced. baseReleaseKey is not recorded anywhere historically and stays absent.
-  -- ImportJob is skipped, everything its ImportRequest could say is already a column here.
-  CASE WHEN di.job = 'ImportJob' THEN NULL ELSE jsonb_strip_nulls(jsonb_build_object(
-    'projectKey', di.dataset_key,
-    'attempt', di.attempt,
-    'newDatasetKey', (SELECT d.key FROM dataset d
-                      WHERE d.source_key = di.dataset_key AND d.attempt = di.attempt
-                        AND d.origin IN ('RELEASE','XRELEASE') LIMIT 1)
-  )) END
+  coalesce(di.started, di.finished, now()), di.started, di.finished, di.error
 FROM dataset_import di JOIN di_jobmap m USING (dataset_key, attempt);
 
 UPDATE dataset_import di SET job_key = m.key
@@ -125,52 +115,76 @@ FROM di_jobmap m WHERE di.dataset_key=m.dataset_key AND di.attempt=m.attempt;
 CREATE TABLE si_jobmap AS
   SELECT dataset_key, sector_key, attempt, gen_random_uuid() AS key FROM sector_import;
 
-INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, sector_key, created_by, created, started, finished, error, params)
+INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, sector_key, created_by, created, started, finished, error)
 SELECT m.key, si.job, 'SYNC'::JOBLANE,
   CASE WHEN si.state IN ('FINISHED','FAILED','CANCELED') THEN si.state::text ELSE 'CANCELED' END::JOBSTATUS,
   CASE WHEN si.state IN ('WAITING','FINISHED','FAILED','CANCELED') THEN NULL ELSE lower(si.state::text) END,
   'MEDIUM', si.dataset_key, si.sector_key, si.created_by,
-  coalesce(si.started, si.finished, now()), si.started, si.finished, si.error,
-  -- SectorRunnable.SyncParams. subjectDatasetKey is absent for a sector deleted since.
-  jsonb_strip_nulls(jsonb_build_object(
-    'datasetKey', si.dataset_key,
-    'sectorKey', si.sector_key,
-    'subjectDatasetKey', (SELECT s.subject_dataset_key FROM sector s
-                          WHERE s.dataset_key = si.dataset_key AND s.id = si.sector_key)
-  ))
+  coalesce(si.started, si.finished, now()), si.started, si.finished, si.error
 FROM sector_import si JOIN si_jobmap m USING (dataset_key, sector_key, attempt);
 
 UPDATE sector_import si SET job_key = m.key
 FROM si_jobmap m WHERE si.dataset_key=m.dataset_key AND si.sector_key=m.sector_key AND si.attempt=m.attempt;
 
 -- exports keep their own key. Ones the new code already persisted are skipped.
--- params mirrors what DatasetExportJob.getParams() writes, i.e. the jackson form of ExportRequest:
--- enums lower cased with _ as a space, nulls dropped. root omits the computed labelHtml.
-INSERT INTO job (key, job_class, lane, status, priority, dataset_key, created_by, created, started, finished, error, params, result_md5, result_size, result_deleted)
-SELECT e.key, 'DatasetExportJob', 'DEFAULT', e.status, 'LOW', e.dataset_key, e.created_by, e.created, e.started, e.finished, e.error,
-  jsonb_strip_nulls(jsonb_build_object(
-    'datasetKey', e.dataset_key,
-    'root', CASE WHEN e.root IS NULL THEN NULL ELSE jsonb_strip_nulls(jsonb_build_object(
-              'id', (e.root).id,
-              'name', (e.root).name,
-              'authorship', (e.root).authorship,
-              'rank', lower(replace((e.root).rank::text,'_',' ')))) END,
-    'synonyms', e.synonyms,
-    'extinct', e.extinct,
-    'bareNames', e.bare_names,
-    'minRank', lower(replace(e.min_rank::text,'_',' ')),
-    'format', lower(replace(e.format::text,'_',' ')),
-    'tabFormat', lower(replace(e.tab_format::text,'_',' ')),
-    'excel', e.excel,
-    'extended', e.extended,
-    'classification', e.add_classification,
-    'taxGroups', e.add_tax_group
-  )),
-  e.md5, e.size, e.deleted
+INSERT INTO job (key, job_class, lane, status, priority, dataset_key, created_by, created, started, finished, error, result_md5, result_size, result_deleted)
+SELECT e.key, 'DatasetExportJob', 'DEFAULT', e.status, 'LOW', e.dataset_key, e.created_by, e.created, e.started, e.finished, e.error, e.md5, e.size, e.deleted
 FROM dataset_export e
 ON CONFLICT (key) DO NOTHING;
 
--- step 4: indexes, built after the backfill so the inserts above maintain none of them.
+-- step 4: params, i.e. what each job's getParams() would have written.
+-- Kept apart from the backfill above so it can be re-run on its own if a shape needs correcting.
+-- All three are idempotent. ImportJob gets none: force, priority and the request timestamp are
+-- unknowable for a past import and the rest is already a column on the job row.
+
+-- releases: AbstractProjectCopy.CopyParams. newDatasetKey identifies the dataset the job produced,
+-- which its dataset_key does not - that is the project. baseReleaseKey is only in the release's own
+-- notes, which XRelease appends "Base release <key>." to; absent for a plain release or edited notes.
+UPDATE job j SET params = jsonb_strip_nulls(jsonb_build_object(
+  'projectKey', di.dataset_key,
+  'attempt', di.attempt,
+  'newDatasetKey', d.key,
+  'baseReleaseKey', (regexp_match(d.notes, 'Base release (\d+)'))[1]::int
+))
+FROM dataset_import di
+LEFT JOIN dataset d ON d.source_key = di.dataset_key AND d.attempt = di.attempt
+                   AND d.origin IN ('RELEASE','XRELEASE')
+WHERE di.job_key = j.key AND j.job_class <> 'ImportJob';
+
+-- syncs: SectorRunnable.SyncParams. subjectDatasetKey is absent for a sector deleted since.
+UPDATE job j SET params = jsonb_strip_nulls(jsonb_build_object(
+  'datasetKey', si.dataset_key,
+  'sectorKey', si.sector_key,
+  'subjectDatasetKey', s.subject_dataset_key
+))
+FROM sector_import si
+LEFT JOIN sector s ON s.dataset_key = si.dataset_key AND s.id = si.sector_key
+WHERE si.job_key = j.key;
+
+-- exports: the jackson form of ExportRequest - enums lower cased with _ as a space, nulls dropped,
+-- root without its computed labelHtml.
+UPDATE job j SET params = jsonb_strip_nulls(jsonb_build_object(
+  'datasetKey', e.dataset_key,
+  'root', CASE WHEN e.root IS NULL THEN NULL ELSE jsonb_strip_nulls(jsonb_build_object(
+            'id', (e.root).id,
+            'name', (e.root).name,
+            'authorship', (e.root).authorship,
+            'rank', lower(replace((e.root).rank::text,'_',' ')))) END,
+  'synonyms', e.synonyms,
+  'extinct', e.extinct,
+  'bareNames', e.bare_names,
+  'minRank', lower(replace(e.min_rank::text,'_',' ')),
+  'format', lower(replace(e.format::text,'_',' ')),
+  'tabFormat', lower(replace(e.tab_format::text,'_',' ')),
+  'excel', e.excel,
+  'extended', e.extended,
+  'classification', e.add_classification,
+  'taxGroups', e.add_tax_group
+))
+FROM dataset_export e
+WHERE e.key = j.key;
+
+-- step 5: indexes, built after the backfill so the inserts above maintain none of them.
 -- The composites all order by created DESC, as the job search does.
 CREATE INDEX ON job (dataset_key, created DESC);
 CREATE INDEX ON job (sector_key, created DESC) WHERE sector_key IS NOT NULL;
@@ -181,7 +195,7 @@ CREATE INDEX ON job (created DESC);
 CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
 -- no GIN on params: nothing filters on it
 
--- step 5: drop the moved columns, the old enum and the backfill maps.
+-- step 6: drop the moved columns, the old enum and the backfill maps.
 -- job_key stays nullable, admin tools can rebuild metrics without a job record.
 ALTER TABLE dataset_import DROP COLUMN state, DROP COLUMN job, DROP COLUMN error;
 CREATE INDEX ON dataset_import (job_key);
