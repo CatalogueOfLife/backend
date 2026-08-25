@@ -18,6 +18,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -125,6 +126,27 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
 
     req.setFormat(DataFormat.TEXT_TREE);
     assertEquals(0, jm.count(req));
+  }
+
+  /**
+   * dataset_export inner joins job, so removing its job record would make the export vanish from the API.
+   */
+  @Test
+  public void jobCleanupKeepsExportJobs() throws Exception {
+    var e = createTestEntity(datasetKey);
+    mapper().create(e);
+    JobMapper jm = session().getMapper(JobMapper.class);
+    // created is deliberately not updatable, so re-insert the record under the same key to age it
+    var j = jm.get(e.getKey());
+    jm.delete(j.getKey());
+    j.setCreated(LocalDateTime.now().minusYears(5));
+    jm.create(j);
+    commit();
+
+    assertEquals(0, jm.deleteOld(1, Map.of(), 0, 100));
+    commit();
+    assertNotNull(jm.get(e.getKey()));
+    assertNotNull(mapper().get(e.getKey()));
   }
 
   @Test

@@ -206,6 +206,27 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals(0, jm.count(req));
   }
 
+  /**
+   * JobCleanup must never remove a job record some import metrics point at - the metrics read their
+   * status, step, job class and error from it.
+   */
+  @Test
+  public void jobCleanupKeepsImportJobs() throws Exception {
+    var di = createBoth(JobStatus.FINISHED);
+    JobMapper jm = session().getMapper(JobMapper.class);
+    // created is deliberately not updatable, so re-insert the record under the same key to age it
+    var j = jm.get(di.getJobKey());
+    jm.delete(j.getKey());
+    j.setCreated(LocalDateTime.now().minusYears(5).truncatedTo(ChronoUnit.MILLIS));
+    jm.create(j);
+    commit();
+
+    // ancient, finished and outside any per class floor - only the dataset_import row protects it
+    assertEquals(0, jm.deleteOld(1, Map.of(), 0, 100));
+    commit();
+    assertNotNull(jm.get(di.getJobKey()));
+  }
+
   @Test
   public void lastSuccessful() throws Exception {
     JobSearchRequest req = new JobSearchRequest();

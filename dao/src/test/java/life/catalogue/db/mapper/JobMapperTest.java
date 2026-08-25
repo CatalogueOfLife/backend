@@ -11,6 +11,7 @@ import life.catalogue.api.vocab.Users;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -143,6 +144,67 @@ public class JobMapperTest extends CRUDTestBase<UUID, JobInfo, JobMapper> {
     assertEquals(4, mapper().count(req));
     req.setPriority(JobPriority.HIGH);
     assertEquals(0, mapper().count(req));
+  }
+
+  private JobInfo aged(String jobClass, JobStatus status, int daysAgo) {
+    JobInfo j = create(status);
+    j.setJob(jobClass);
+    j.setCreated(LocalDateTime.now().minusDays(daysAgo).truncatedTo(ChronoUnit.MILLIS));
+    return j;
+  }
+
+  /**
+   * The retention policy of the periodic JobCleanup: age, the per class floor and the live job guard.
+   * That it never touches a job some metrics point at is covered where those fixtures live, see
+   * DatasetImportMapperTest, SectorImportMapperTest and DatasetExportMapperTest.
+   */
+  @Test
+  public void deleteOld() throws Exception {
+    // 5 old and one recent, plus an ancient one that is still running
+    for (int i = 0; i < 5; i++) {
+      mapper().create(aged("AlphaJob", JobStatus.FINISHED, 200 + i));
+    }
+    mapper().create(aged("AlphaJob", JobStatus.FINISHED, 5));
+    mapper().create(aged("AlphaJob", JobStatus.RUNNING, 300));
+    commit();
+    assertEquals(7, mapper().count(new JobSearchRequest()));
+
+    // newest 2 finished ones of the class are kept whatever their age, so 4 of the 5 old ones go
+    assertEquals(4, mapper().deleteOld(90, Map.of(), 2, 100));
+    commit();
+    assertEquals(3, mapper().count(new JobSearchRequest()));
+
+    // nothing left that is both beyond the default age and outside the per class floor
+    assertEquals(0, mapper().deleteOld(90, Map.of(), 2, 100));
+
+    // a per class override applies instead of the default, matched case insensitively
+    assertEquals(2, mapper().deleteOld(90, Map.of("alphajob", 1), 0, 100));
+    commit();
+
+    // the running job survived all of it - a live job is never a candidate, however old its record is
+    var left = mapper().search(new JobSearchRequest(), new Page());
+    assertEquals(1, left.size());
+    assertEquals(JobStatus.RUNNING, left.get(0).getStatus());
+  }
+
+  /**
+   * The batch limit is applied after every filter, so one call deletes exactly min(limit, remaining).
+   * JobCleanup loops while the result equals the limit, which stalls if that is not true.
+   */
+  @Test
+  public void deleteOldBatching() throws Exception {
+    for (int i = 0; i < 5; i++) {
+      mapper().create(aged("BetaJob", JobStatus.FINISHED, 200 + i));
+    }
+    commit();
+
+    assertEquals(2, mapper().deleteOld(90, Map.of(), 0, 2));
+    commit();
+    assertEquals(2, mapper().deleteOld(90, Map.of(), 0, 2));
+    commit();
+    assertEquals(1, mapper().deleteOld(90, Map.of(), 0, 2));
+    commit();
+    assertEquals(0, mapper().count(new JobSearchRequest()));
   }
 
   @Test

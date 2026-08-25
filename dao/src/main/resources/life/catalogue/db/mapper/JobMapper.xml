@@ -168,6 +168,58 @@
     WHERE j.status IN ('WAITING','BLOCKED','RUNNING')
   </select>
 
+  <!--
+    Periodic cleanup of the job history.
+
+    A job row is the identity of the metrics that point at it: dataset_export INNER joins job, and
+    dataset_import/sector_import read their status, step, job class and error from it. Deleting a job row
+    out from under any of them would make an export disappear from the API and leave an import or sync
+    attempt with a null status. The three NOT EXISTS below are the whole safety property, and they are
+    deliberately expressed against the tables rather than a list of job class names, which would drift as
+    soon as a new job type starts writing metrics.
+
+    Only finished jobs are candidates - a WAITING, BLOCKED or RUNNING row belongs to a live job whatever
+    its created date says. Within a class the newest keepPerClass rows are kept regardless of age, so a job
+    type that last ran a year ago is still inspectable. row_number() therefore ranks over all finished jobs
+    of the class, not just the deletable ones.
+
+    LIMIT is applied after every filter, so one call deletes exactly min(limit, remaining) rows and the
+    caller can loop until it returns less than limit. Filtering after the LIMIT would silently stall that
+    loop on the first batch that happened to be full of pinned rows.
+  -->
+  <delete id="deleteOld">
+    DELETE FROM job j
+    USING (
+      SELECT key FROM (
+        SELECT j2.key,
+               j2.created,
+               row_number() OVER (PARTITION BY j2.job_class ORDER BY j2.created DESC) AS rn,
+               <choose>
+                 <when test="overrides != null and !overrides.isEmpty()">
+                   CASE lower(j2.job_class)
+                     <foreach item="d" index="cl" collection="overrides">
+                       WHEN lower(#{cl}) THEN #{d}
+                     </foreach>
+                     ELSE #{defaultDays}
+                   END AS max_days
+                 </when>
+                 <otherwise>
+                   #{defaultDays} AS max_days
+                 </otherwise>
+               </choose>
+        FROM job j2
+        WHERE j2.status IN ('FINISHED','CANCELED','FAILED')
+      ) ranked
+      WHERE rn &gt; #{keepPerClass}
+        AND created &lt; now() - (max_days || ' days')::interval
+        AND NOT EXISTS (SELECT 1 FROM dataset_import di WHERE di.job_key = ranked.key)
+        AND NOT EXISTS (SELECT 1 FROM sector_import si WHERE si.job_key = ranked.key)
+        AND NOT EXISTS (SELECT 1 FROM dataset_export de WHERE de.key = ranked.key)
+      LIMIT #{limit}
+    ) doomed
+    WHERE j.key = doomed.key
+  </delete>
+
   <update id="cancelStale">
     UPDATE job
     SET status = 'CANCELED'::JOBSTATUS, finished = now()

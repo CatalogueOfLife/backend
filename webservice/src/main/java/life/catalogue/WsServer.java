@@ -56,6 +56,7 @@ import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.jobs.cron.CronExecutor;
+import life.catalogue.jobs.cron.JobCleanup;
 import life.catalogue.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.jobs.cron.TempDatasetCleanup;
 import life.catalogue.matching.IdentifierScopeResolver;
@@ -378,7 +379,8 @@ public class WsServer extends Application<WsServerConfig> {
     // cron jobs
     var cron = CronExecutor.startWith(
       new TempDatasetCleanup(ddao),
-      new ProjectCounterUpdate(getSqlSessionFactory())
+      new ProjectCounterUpdate(getSqlSessionFactory()),
+      new JobCleanup(getSqlSessionFactory(), cfg.job)
     );
     managedService.manage(Component.CronExecutor, cron);
 

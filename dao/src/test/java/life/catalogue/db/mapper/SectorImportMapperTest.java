@@ -84,6 +84,26 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   }
   
   
+  /**
+   * A sync's job record carries the status, step and error its metrics row reads, so JobCleanup must
+   * leave it alone however old it is.
+   */
+  @Test
+  public void jobCleanupKeepsSyncJobs() throws Exception {
+    SectorImport si = createBoth(JobStatus.FINISHED, s);
+    JobMapper jm = session().getMapper(JobMapper.class);
+    // created is deliberately not updatable, so re-insert the record under the same key to age it
+    var j = jm.get(si.getJobKey());
+    jm.delete(j.getKey());
+    j.setCreated(java.time.LocalDateTime.now().minusYears(5));
+    jm.create(j);
+    // deliberately not committed - these COL scoped sector_import rows are not part of the apple
+    // fixture the test data rule reloads, so a commit here would leak into the next test
+
+    assertEquals(0, jm.deleteOld(1, java.util.Map.of(), 0, 100));
+    assertNotNull(jm.get(si.getJobKey()));
+  }
+
   @Test
   public void roundtrip() throws Exception {
     SectorImport d1 = createBoth(JobStatus.FINISHED, s);

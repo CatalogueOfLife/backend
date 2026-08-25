@@ -168,6 +168,12 @@ Every endpoint that submits a job answers with `JobInfo` as well, so a job never
 `getParams()` feeds the `params` jsonb and is the only place a job can identify itself beyond its class and
 dataset key - a release records the dataset key and attempt it produces there, which it only learns once it
 runs, so `params` is updated and not merely inserted.
+`JobCleanup` is a monthly `CronJob` that trims the job history. It only ever removes records that no
+`dataset_import`, `sector_import` or `dataset_export` row refers to - a job row carries the status, step and
+error those read, and `dataset_export` inner joins it - so it reaps the ephemeral jobs while import, sync
+and export history is pruned by `SectorImportRetentionJob` instead, which drops metrics, files and job row
+together. Ages come from `cfg.job.retentionDays` with per class overrides, and the newest
+`retentionKeepPerClass` records of every class are always kept.
 `/job/types` lists the known job class names from a startup classpath scan; `JobSearchRequest` filters the
 history by lane, multiple case insensitive job names, status, priority, dataset, sector, user, a
 `createdAfter`/`createdBefore` range and `format`, which semi joins `dataset_import` and `dataset_export`

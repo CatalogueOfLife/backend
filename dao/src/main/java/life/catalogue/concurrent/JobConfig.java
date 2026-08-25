@@ -106,6 +106,33 @@ public class JobConfig {
    */
   public Map<String, Integer> userLimit = new HashMap<>();
 
+  /**
+   * Days after which a finished job record is removed from the job table by the periodic cleanup.
+   * Only ever applies to jobs no metrics table refers to - imports, sector syncs and exports keep their
+   * job row for as long as their own record lives, since that row carries their status, step and error.
+   */
+  @Min(1)
+  public int retentionDays = 90;
+
+  /**
+   * Per job class overrides of retentionDays, keyed by the simple java class name, matched case insensitively.
+   */
+  public Map<String, Integer> retentionDaysByClass = new HashMap<>();
+
+  /**
+   * Number of most recent jobs to keep per job class no matter how old they are, so a class that last ran
+   * long ago can still be inspected.
+   */
+  @Min(0)
+  public int retentionKeepPerClass = 10;
+
+  /**
+   * Maximum number of job records deleted in one statement. The cleanup loops until it is done, so this
+   * only bounds how long a single delete transaction runs.
+   */
+  @Min(1)
+  public int retentionBatchSize = 10_000;
+
   public String onErrorTo;
 
   public String onErrorFrom;
