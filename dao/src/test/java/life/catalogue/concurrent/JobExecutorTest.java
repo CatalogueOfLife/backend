@@ -23,6 +23,7 @@ import com.codahale.metrics.MetricRegistry;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -102,6 +103,63 @@ public class JobExecutorTest {
   public void exceptions() throws Exception {
     exec.submit(new FailJob());
     exec.submit(new FailJob());
+  }
+
+  /** Reports a stage like a real job does, so we can see what is left of it once it ends. */
+  static class SteppingJob extends BackgroundJob {
+    final boolean fail;
+    String terminalStep;
+
+    SteppingJob(boolean fail) {
+      super(1);
+      this.fail = fail;
+    }
+
+    @Override
+    public void execute() throws Exception {
+      setStep("downloading");
+      if (fail) {
+        throw new IllegalStateException("boom while downloading");
+      }
+    }
+
+    @Override
+    protected void onFinish() {
+      if (terminalStep != null) {
+        setStep(terminalStep);
+      }
+    }
+  }
+
+  /**
+   * A step describes a running job, so a successful one must not keep the stage it happened to stop at -
+   * that is how a finished import ended up reading "Finished - Downloading".
+   */
+  @Test
+  public void stepClearedOnSuccess() throws Exception {
+    var job = new SteppingJob(false);
+    job.run();
+    assertEquals(JobStatus.FINISHED, job.getStatus());
+    assertNull(job.getStep());
+  }
+
+  /** onFinish runs after the clear, so a job can still report how it ended. */
+  @Test
+  public void terminalStepSurvives() throws Exception {
+    var job = new SteppingJob(false);
+    job.terminalStep = "unchanged";
+    job.run();
+    assertEquals(JobStatus.FINISHED, job.getStatus());
+    assertEquals("unchanged", job.getStep());
+  }
+
+  /** Where a job stopped is the interesting part when it did not succeed, so that step is kept. */
+  @Test
+  public void stepKeptOnFailure() throws Exception {
+    var job = new SteppingJob(true);
+    job.run();
+    assertEquals(JobStatus.FAILED, job.getStatus());
+    assertEquals("downloading", job.getStep());
   }
 
   static class FailJob extends BackgroundJob {
@@ -223,7 +281,8 @@ public class JobExecutorTest {
 
     // the setStep call adds one more RUNNING persistence in between
     assertEquals(List.of(JobStatus.WAITING, JobStatus.RUNNING, JobStatus.RUNNING, JobStatus.FINISHED), persisted.get(job.getKey()));
-    assertEquals("sleeping", job.getStep());
+    // the step was persisted while running but cleared again on success, see stepClearedOnSuccess
+    assertNull(job.getStep());
   }
 
   @Test

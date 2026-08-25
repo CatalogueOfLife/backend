@@ -108,6 +108,7 @@ public class ImportJob extends DatasetJob {
   private final @Nullable Timer importTimer;
   private final @Nullable Counter failedCounter;
   private final @Nullable ImportCallbackNotifier callbackNotifier;
+  private boolean unchanged;
 
   ImportJob(ImportRequest req, DatasetWithSettings d,
             ImporterConfig iCfg, NormalizerConfig nCfg, DoiConfig dCfg,
@@ -231,6 +232,10 @@ public class ImportJob extends DatasetJob {
 
   @Override
   protected void onFinish() throws Exception {
+    if (unchanged) {
+      // the attempt and its metrics were deleted again, so without this nothing records that we looked
+      setStep("unchanged");
+    }
     if (isFinished() && importTimer != null && req.started != null) {
       Duration durQueued = Duration.between(req.created, req.started);
       Duration durRun = Duration.between(req.started, LocalDateTime.now());
@@ -377,6 +382,7 @@ public class ImportJob extends DatasetJob {
     } else {
       // we don't want any import and gonna delete the attempt completely.
       LOG.info("Dataset {} sources unchanged. Stop import", datasetKey);
+      unchanged = true;
       dao.delete(datasetKey, di.getAttempt());
       if (archive.exists()) {
         FileUtils.deleteQuietly(archive);
@@ -520,7 +526,6 @@ public class ImportJob extends DatasetJob {
               DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
           di.setFinished(LocalDateTime.now());
           di.setError(null);
-          updateState(ImportState.FINISHED);
         }
       }
   

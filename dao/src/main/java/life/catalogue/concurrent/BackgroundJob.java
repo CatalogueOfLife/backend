@@ -246,6 +246,10 @@ public abstract class BackgroundJob implements Runnable {
       LOG.info(marker, "Started {} job {}", getClass().getSimpleName(), key);
       execute();
       status = JobStatus.FINISHED;
+      // the step tracks a running job, so whatever stage it last reached is stale once it succeeded.
+      // onFinish runs after this and may set a terminal step, e.g. an import that found nothing to do.
+      // A failed or cancelled job keeps its step - where it stopped is the interesting part.
+      step = null;
       LOG.info("Finished {}", this);
 
     } catch (BlockedException e) {

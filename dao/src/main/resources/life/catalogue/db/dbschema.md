@@ -127,8 +127,29 @@ UPDATE sector_import si SET job_key = m.key
 FROM si_jobmap m WHERE si.dataset_key=m.dataset_key AND si.sector_key=m.sector_key AND si.attempt=m.attempt;
 
 -- exports keep their own key. Ones the new code already persisted are skipped.
-INSERT INTO job (key, job_class, lane, status, priority, dataset_key, created_by, created, started, finished, error, result_md5, result_size, result_deleted)
-SELECT e.key, 'DatasetExportJob', 'DEFAULT', e.status, 'LOW', e.dataset_key, e.created_by, e.created, e.started, e.finished, e.error, e.md5, e.size, e.deleted
+-- params mirrors what DatasetExportJob.getParams() writes, i.e. the jackson form of ExportRequest:
+-- enums lower cased with _ as a space, nulls dropped. root omits the computed labelHtml.
+INSERT INTO job (key, job_class, lane, status, priority, dataset_key, created_by, created, started, finished, error, params, result_md5, result_size, result_deleted)
+SELECT e.key, 'DatasetExportJob', 'DEFAULT', e.status, 'LOW', e.dataset_key, e.created_by, e.created, e.started, e.finished, e.error,
+  jsonb_strip_nulls(jsonb_build_object(
+    'datasetKey', e.dataset_key,
+    'root', CASE WHEN e.root IS NULL THEN NULL ELSE jsonb_strip_nulls(jsonb_build_object(
+              'id', (e.root).id,
+              'name', (e.root).name,
+              'authorship', (e.root).authorship,
+              'rank', lower(replace((e.root).rank::text,'_',' ')))) END,
+    'synonyms', e.synonyms,
+    'extinct', e.extinct,
+    'bareNames', e.bare_names,
+    'minRank', lower(replace(e.min_rank::text,'_',' ')),
+    'format', lower(replace(e.format::text,'_',' ')),
+    'tabFormat', lower(replace(e.tab_format::text,'_',' ')),
+    'excel', e.excel,
+    'extended', e.extended,
+    'classification', e.add_classification,
+    'taxGroups', e.add_tax_group
+  )),
+  e.md5, e.size, e.deleted
 FROM dataset_export e
 ON CONFLICT (key) DO NOTHING;
 
