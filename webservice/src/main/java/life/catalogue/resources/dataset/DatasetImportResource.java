@@ -39,7 +39,9 @@ public class DatasetImportResource {
     // a release? use mother project in that case
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(key);
     if (info.origin.isRelease()) {
-      return List.of(diDao.getReleaseAttempt(key));
+      // the release points at a project attempt whose metrics row may be gone - List.of would NPE
+      var attempt = diDao.getReleaseAttempt(key);
+      return attempt == null ? List.of() : List.of(attempt);
 
     } else {
       req.setDatasetKey(key);
