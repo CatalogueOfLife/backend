@@ -257,6 +257,36 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   }
 
 
+  /**
+   * GET /importer/{key} used last(), GET /dataset/{key}/import uses list() with limit 1, and the former
+   * was dropped as a duplicate of the latter. Neither filters by status, so a failed newest attempt is
+   * what both return. The "last successful" notion is current(), which no endpoint exposes.
+   */
+  @Test
+  public void lastMatchesListOfOne() throws Exception {
+    DatasetImport ok = createBoth(JobStatus.FINISHED);
+    final int datasetKey = ok.getDatasetKey();
+    mapper(DatasetMapper.class).updateLastImport(datasetKey, ok.getAttempt(), null);
+
+    DatasetImport failed = create(JobStatus.FAILED);
+    failed.setError("damn error");
+    createJob(session(), failed);
+    mapper().create(failed);
+    commit();
+
+    JobSearchRequest req = new JobSearchRequest();
+    req.setDatasetKey(datasetKey);
+    var listed = mapper().list(req, new Page(0, 1));
+
+    // both return the failed attempt, so the two endpoints agreed
+    assertEquals(failed.getAttempt(), mapper().last(datasetKey).getAttempt());
+    assertEquals(1, listed.size());
+    assertEquals(failed.getAttempt(), listed.get(0).getAttempt());
+
+    // while the dataset still points at the last one that worked
+    assertEquals(ok.getAttempt(), mapper().current(datasetKey).getAttempt());
+  }
+
   @Test
   public void current() throws Exception {
     DatasetImport d1 = createBoth(JobStatus.RUNNING);
