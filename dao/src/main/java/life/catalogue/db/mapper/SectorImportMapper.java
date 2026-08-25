@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -48,12 +49,6 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
                           @Param("current") @Nullable Boolean current,
                           @Param("page") @Nullable Page page);
 
-  /**
-   * List all unique sector keys from all imports for a given projects dataset key.
-   * @param datasetKey the projects dataset key
-   */
-  List<Integer> listSectors(@Param("datasetKey") @Nullable Integer datasetKey);
-  
   void create(@Param("imp") SectorImport sectorImport);
 
   void update(@Param("imp") SectorImport sectorImport);
@@ -63,6 +58,84 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
    */
   int delete(@Param("key") DSID<Integer> sectorKey);
 
+  /**
+   * Slim projection of a sector import used by retention, so we never select the ~60 metric columns.
+   */
+  class AttemptInfo {
+    private int sectorKey;
+    private int attempt;
+    private LocalDateTime started;
+    private Integer nameCount;
+
+    public int getSectorKey() {
+      return sectorKey;
+    }
+
+    public void setSectorKey(int sectorKey) {
+      this.sectorKey = sectorKey;
+    }
+
+    public int getAttempt() {
+      return attempt;
+    }
+
+    public void setAttempt(int attempt) {
+      this.attempt = attempt;
+    }
+
+    public LocalDateTime getStarted() {
+      return started;
+    }
+
+    public void setStarted(LocalDateTime started) {
+      this.started = started;
+    }
+
+    public Integer getNameCount() {
+      return nameCount;
+    }
+
+    public void setNameCount(Integer nameCount) {
+      this.nameCount = nameCount;
+    }
+  }
+
+  /**
+   * One page of attempts ordered by (sector_key, attempt), starting strictly after the given position.
+   * Pass nulls for the first page. Keyset pagination over the primary key, so each call is a short,
+   * self-contained read - no long lived cursor and no transaction held across the pages.
+   *
+   * afterSectorKey and afterAttempt must both be null or both non-null. A half-null pair makes the
+   * {@code > (afterSectorKey, afterAttempt)} row-value comparison evaluate to NULL for every row, so the
+   * page silently comes back empty - ending the scan as if it had reached the end, having actually
+   * examined nothing from that point on. The mapper XML deliberately does not guard against this by
+   * widening its {@code <if>} to require both non-null: doing so would silently drop the predicate
+   * instead and restart the scan from the very beginning, i.e. loop forever. Callers must check this
+   * themselves before calling.
+   */
+  List<AttemptInfo> listAttempts(@Param("datasetKey") int datasetKey,
+                                 @Param("afterSectorKey") @Nullable Integer afterSectorKey,
+                                 @Param("afterAttempt") @Nullable Integer afterAttempt,
+                                 @Param("limit") int limit);
+
+  /**
+   * Deletes the given (sectorKey, attempt) pairs of one dataset. The two arrays are parallel: index i of
+   * sectorKeys pairs with index i of attempts, matched as true row-value tuples via a joint unnest() in
+   * the mapper SQL - not independent per-column filters, which would wrongly match every cross
+   * combination of the given sector keys and attempts.
+   * @return number of rows deleted
+   */
+  int deleteAttempts(@Param("datasetKey") int datasetKey, @Param("sectorKeys") int[] sectorKeys, @Param("attempts") int[] attempts);
+
+  /**
+   * @return the created timestamp of the projects most recent release, or null if it has none
+   */
+  LocalDateTime lastReleaseCreated(@Param("projectKey") int projectKey);
+
+  /**
+   * @return every (sectorKey, attempt) pinned by the project itself or by one of its releases
+   */
+  List<AttemptInfo> listPinnedAttempts(@Param("projectKey") int projectKey);
 
   Integer countBareName(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countDistribution(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);

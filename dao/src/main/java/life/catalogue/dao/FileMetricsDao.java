@@ -7,6 +7,7 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -61,8 +62,10 @@ public abstract class FileMetricsDao<K> {
    * @param attempt attempt where the metrics are stored
    */
   public void updateNames(K dataKey, K storeKey, int attempt) {
+    final File f = namesFile(storeKey, attempt);
+    int written;
     try (SqlSession session = factory.openSession(true);
-         NamesWriter nHandler = new NamesWriter(namesFile(storeKey, attempt), true)
+         NamesWriter nHandler = new NamesWriter(f, true)
     ){
       NameMapper nm = session.getMapper(NameMapper.class);
 
@@ -71,7 +74,12 @@ public abstract class FileMetricsDao<K> {
         () -> nm.processNameStrings(skey.getDatasetKey(), skey.getId()),
         nHandler
       );
-      LOG.info("Written {} name strings for {} {}-{}", nHandler.counter, type, dataKey, attempt);
+      written = nHandler.counter;
+      LOG.info("Written {} name strings for {} {}-{}", written, type, dataKey, attempt);
+    }
+    // an empty names file carries nothing the metrics row does not already record - do not keep it
+    if (written == 0) {
+      deleteOrWarn(f);
     }
   }
 
@@ -85,10 +93,28 @@ public abstract class FileMetricsDao<K> {
   }
 
   /**
-   * Deletes both the names and tree file for a given import/release attempt
+   * Deletes the names file for a given import/release attempt.
+   * Subclasses that also store other per-attempt files (e.g. {@link FileMetricsDatasetDao}'s tree file)
+   * override this to delete those too - see its javadoc for what it deletes.
    */
   public void deleteAttempt(K key, int attempt) {
     deleteOrWarn(namesFile(key, attempt));
+  }
+
+  /**
+   * Deletes the names file of that attempt if it exists - and only the names file, never any sibling
+   * file a subclass may also store (e.g. {@link FileMetricsDatasetDao}'s tree file is not touched).
+   * Named deliberately differently from {@link #deleteAttempt} so a caller working at a level where a
+   * sibling file also needs deleting cannot reach for this one by mistake and get a silent partial delete.
+   * Uses {@link Files#deleteIfExists} as the existence check - one filesystem round trip instead of a
+   * stat followed by an unlink, which matters when the metrics repo is on network storage. Unlike
+   * {@link File#delete()}, a genuine failure (NFS EACCES/ESTALE/EIO, a read-only export) is not silently
+   * folded into a false return - it is surfaced as an IOException instead.
+   * @return true if a file was actually removed, false if it did not exist
+   * @throws IOException if the file exists but could not be deleted
+   */
+  public boolean deleteNamesFileIfExists(K key, int attempt) throws IOException {
+    return Files.deleteIfExists(namesFile(key, attempt).toPath());
   }
 
   protected void deleteOrWarn(File file) {
@@ -143,9 +169,25 @@ public abstract class FileMetricsDao<K> {
     }
   }
 
+  /**
+   * A sync/import that produced no names writes no file, so a missing file is not an error as long as the
+   * persisted metrics record a zero name count. Only a genuinely unknown attempt is a NotFound.
+   */
   public Stream<String> getNames(K key, int attempt) {
-    return streamFile(namesFile(key, attempt), key, attempt);
+    File f = namesFile(key, attempt);
+    if (!f.exists()) {
+      Integer nameCount = persistedNameCount(key, attempt);
+      if (nameCount != null && nameCount == 0) {
+        return Stream.empty();
+      }
+    }
+    return streamFile(f, key, attempt);
   }
+
+  /**
+   * @return the persisted name count for that attempt, or null if no metrics record exists for it
+   */
+  protected abstract Integer persistedNameCount(K key, int attempt);
 
   protected Stream<String> streamFile(File f, K key, int attempt) {
     try {

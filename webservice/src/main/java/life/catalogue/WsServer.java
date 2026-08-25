@@ -402,7 +402,7 @@ public class WsServer extends Application<WsServerConfig> {
     syncFactory.setJobDao(jobDao);
     final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, matcherFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       indexService, imgService, getSqlSessionFactory(), validator,
-      cfg.release, cfg.apiURI, cfg.clbURI
+      cfg.release, cfg.apiURI, cfg.clbURI, executor
     );
 
     // importer
@@ -456,7 +456,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new AdminResource(
       getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg,
       imgService, ni, indexService, searchService,
-      importManager, ddao, gbifSync, executor, broker, encryption, doiChangeListener)
+      importManager, ddao, siDao, gbifSync, executor, broker, encryption, doiChangeListener)
     );
 
     // dataset scoped
@@ -473,7 +473,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DefaultReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, coljersey.getCache(), cfg.getApiUri(), cfg.clbURI));
     j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
-    j.register(new SectorResource(secdao, fmsDao, siDao, syncManager));
+    j.register(new SectorResource(secdao, fmsDao, syncManager));
 
     // shared read only resources
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,

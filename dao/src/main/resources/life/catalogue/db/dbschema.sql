@@ -1140,7 +1140,7 @@ CREATE TABLE job (
 -- job search always orders by created DESC, so the dataset filter is a composite;
 -- its leftmost prefix still serves plain dataset_key lookups
 CREATE INDEX ON job (dataset_key, created DESC);
-CREATE INDEX ON job (sector_key, created DESC);
+CREATE INDEX ON job (sector_key, created DESC) WHERE sector_key IS NOT NULL;
 CREATE INDEX ON job (created_by);
 -- job_class is only ever filtered case insensitively, so index the expression, not the raw column
 CREATE INDEX ON job (lower(job_class));

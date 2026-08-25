@@ -166,4 +166,31 @@ public class JobMapperTest extends CRUDTestBase<UUID, JobInfo, JobMapper> {
     }
     assertEquals(JobStatus.FINISHED, mapper().get(done.getKey()).getStatus());
   }
+
+  @Test
+  public void searchBySectorKey() throws Exception {
+    JobInfo a = create(JobStatus.FINISHED);
+    a.setSectorKey(10);
+    mapper().create(a);
+
+    JobInfo b = create(JobStatus.FINISHED);
+    b.setSectorKey(20);
+    mapper().create(b);
+
+    JobInfo c = create(JobStatus.FINISHED);
+    c.setSectorKey(null);
+    mapper().create(c);
+    commit();
+
+    var req = new JobSearchRequest();
+    req.setSectorKey(10);
+    assertEquals(1, mapper().search(req, new Page()).size());
+    assertEquals(1, mapper().count(req));
+
+    req.setSectorKey(20);
+    assertEquals(1, mapper().search(req, new Page()).size());
+
+    req.setSectorKey(99);
+    assertEquals(0, mapper().search(req, new Page()).size());
+  }
 }

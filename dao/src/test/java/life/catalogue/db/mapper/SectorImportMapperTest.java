@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
@@ -17,6 +18,9 @@ import org.junit.Test;
 import static life.catalogue.api.TestEntityGenerator.*;
 import static life.catalogue.api.vocab.Datasets.COL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   static int attempts = 1;
@@ -162,5 +166,121 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     assertEquals(0, mapper().countTypeMaterialByStatus(DATASET11.getKey(), 1).size());
     assertEquals(0, mapper().countUsagesByStatus(DATASET11.getKey(), 1).size());
     assertEquals(0, mapper().countVernacularsByLanguage(DATASET11.getKey(), 1).size());
+  }
+
+  @Test
+  public void attemptsAndBatchDelete() throws Exception {
+    // sector ids for COL are recycled to the same small numbers by every test in this class (their per-dataset
+    // sequence gets dropped and reset on each @Rule teardown/setup), while sector_import itself is never truncated
+    // between tests. roundtrip() commits one row at (COL, s.id, attempt=1), which otherwise collides with the
+    // first insert below whenever JUnit happens to run this test after it.
+    mapper().deleteByDataset(COL);
+
+    final int attemptA = 10;
+    final int attemptB = 20;
+
+    // Both sectors get a row at attempt A and a row at attempt B. The delete batch is the crossed
+    // pair (s, A) and (s2, B), so (s, B) and (s2, A) must survive. This is the only shape that can
+    // tell a true row-value tuple match "(sector_key, attempt) IN ((?,?),(?,?))" apart from a buggy
+    // independent-filter "sector_key IN (...) AND attempt IN (...)": the buggy form collapses to
+    // sector_key IN (s, s2) AND attempt IN (A, B), a cross product that also matches (s, B) and
+    // (s2, A) even though neither pair is in the batch.
+    SectorImport siSA = create(JobStatus.FINISHED, s);
+    siSA.setAttempt(attemptA);
+    mapper().create(siSA);
+    SectorImport siSB = create(JobStatus.FINISHED, s);
+    siSB.setAttempt(attemptB);
+    mapper().create(siSB);
+    SectorImport si2A = create(JobStatus.FINISHED, s2);
+    si2A.setAttempt(attemptA);
+    mapper().create(si2A);
+    SectorImport si2B = create(JobStatus.FINISHED, s2);
+    si2B.setAttempt(attemptB);
+    mapper().create(si2B);
+    commit();
+
+    List<SectorImportMapper.AttemptInfo> all = mapper().listAttempts(COL, null, null, 1000);
+    assertEquals(4, all.size());
+    // the projection must carry what the retention rule needs
+    for (var a : all) {
+      assertNotNull(a.getStarted());
+      assertTrue(a.getSectorKey() == s.getId() || a.getSectorKey() == s2.getId());
+    }
+
+    // delete batch = [(s, A), (s2, B)] - deliberately crossed with (s, B) and (s2, A)
+    var doomed = all.stream()
+        .filter(a -> (a.getSectorKey() == s.getId() && a.getAttempt() == attemptA)
+            || (a.getSectorKey() == s2.getId() && a.getAttempt() == attemptB))
+        .toList();
+    assertEquals(2, doomed.size());
+    // deleteAttempts now takes two parallel int[] arrays instead of the AttemptInfo list - built here in
+    // the same order as `doomed`, so index i of each array still reconstructs exactly the same crossed
+    // pair as doomed.get(i); the fixture and its assertions below are otherwise unchanged.
+    int[] doomedSectorKeys = doomed.stream().mapToInt(SectorImportMapper.AttemptInfo::getSectorKey).toArray();
+    int[] doomedAttempts = doomed.stream().mapToInt(SectorImportMapper.AttemptInfo::getAttempt).toArray();
+    assertEquals(2, mapper().deleteAttempts(COL, doomedSectorKeys, doomedAttempts));
+    commit();
+
+    List<SectorImportMapper.AttemptInfo> left = mapper().listAttempts(COL, null, null, 1000);
+    assertEquals(2, left.size());
+    assertTrue(left.stream().anyMatch(a -> a.getSectorKey() == s.getId() && a.getAttempt() == attemptB));
+    assertTrue(left.stream().anyMatch(a -> a.getSectorKey() == s2.getId() && a.getAttempt() == attemptA));
+
+    // (s, B) and (s2, A) survive
+    assertNotNull(mapper().get(siSB.getSectorDSID(), attemptB));
+    assertNotNull(mapper().get(si2A.getSectorDSID(), attemptA));
+    // (s, A) and (s2, B) are gone
+    assertNull(mapper().get(siSA.getSectorDSID(), attemptA));
+    assertNull(mapper().get(si2B.getSectorDSID(), attemptB));
+  }
+
+  /**
+   * deleteAttempts must never remove a row the project's sector currently pins, even when the caller
+   * explicitly asks for it - the retention job's in-memory pinned set is a snapshot and a sector sync
+   * can commit a new pin mid-scan.
+   */
+  @Test
+  public void deleteAttemptsRefusesPinnedRow() throws Exception {
+    mapper().deleteByDataset(COL);
+
+    // one sector import, then pin exactly that attempt on the project's sector row
+    SectorImport pinned = create(JobStatus.FINISHED, s);
+    mapper().create(pinned);
+    commit();
+
+    mapper(SectorMapper.class).updateLastSync(DSID.of(COL, s.getId()), pinned.getAttempt());
+    // the fixture is only meaningful if the pin actually persisted
+    assertEquals((Integer) pinned.getAttempt(), mapper(SectorMapper.class).get(DSID.of(COL, s.getId())).getSyncAttempt());
+
+    // deleteAttempts is asked to delete the pinned attempt anyway - the guard must refuse
+    assertEquals(0, mapper().deleteAttempts(COL, new int[]{s.getId()}, new int[]{pinned.getAttempt()}));
+    commit();
+    assertNotNull(mapper().get(DSID.of(COL, s.getId()), pinned.getAttempt()));
+
+    // contrast: a second, unpinned attempt on the same sector is deleted normally, so a guard that
+    // always returns 0 (e.g. from a malformed array) cannot pass this test
+    SectorImport unpinned = create(JobStatus.FINISHED, s);
+    mapper().create(unpinned);
+    commit();
+
+    assertEquals(1, mapper().deleteAttempts(COL, new int[]{s.getId()}, new int[]{unpinned.getAttempt()}));
+    commit();
+    assertNull(mapper().get(DSID.of(COL, s.getId()), unpinned.getAttempt()));
+  }
+
+  @Test
+  public void deleteAttemptsEmptyList() throws Exception {
+    mapper().deleteByDataset(COL);
+
+    SectorImport si1 = create(JobStatus.FINISHED, s);
+    mapper().create(si1);
+    commit();
+
+    // must delete nothing and must not throw - an empty IN() list is a Postgres syntax error
+    assertEquals(0, mapper().deleteAttempts(COL, new int[0], new int[0]));
+    commit();
+
+    List<SectorImportMapper.AttemptInfo> left = mapper().listAttempts(COL, null, null, 1000);
+    assertEquals(1, left.size());
   }
 }

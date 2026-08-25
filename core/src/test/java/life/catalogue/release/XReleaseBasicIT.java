@@ -93,7 +93,7 @@ public class XReleaseBasicIT {
     projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       nuIdxService, imgService, factory, validator,
-      cfg.release, cfg.apiURI, cfg.clbURI
+      cfg.release, cfg.apiURI, cfg.clbURI, null
     );
   }
 

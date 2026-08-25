@@ -191,6 +191,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   public void cancel(int datasetKey, int user) {
     var job = importJob(datasetKey);
     if (job.isPresent()) {
+      // a job cancelled before it ever ran notifies its callback from ImportJob.onCancelBeforeStart
       jobExecutor.cancel(job.get().getKey(), user);
       LOG.info("Canceled import for dataset {} by user {}", datasetKey, user);
 
@@ -299,7 +300,11 @@ public class ImportManager implements Managed, Idle, DatasetListener {
 
     // this is a good guy, let it run!
     jobExecutor.submit(createImport(req));
-    LOG.info("Queued import for dataset {}", req.datasetKey);
+    if (req.callback == null) {
+      LOG.info("Queued import for dataset {}", req.datasetKey);
+    } else {
+      LOG.info("Queued import for dataset {} with completion callback {}", req.datasetKey, req.callback);
+    }
     return req;
   }
 

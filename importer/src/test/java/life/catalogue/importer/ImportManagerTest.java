@@ -24,8 +24,13 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -40,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
+import com.sun.net.httpserver.HttpServer;
 
 import jakarta.validation.Validator;
 
@@ -139,6 +145,64 @@ public class ImportManagerTest {
     manager.upload(datasetKey, Resources.stream(resName), true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN, null);
     TimeUnit.MILLISECONDS.sleep(100);
     assertTrue(manager.hasRunning());
+  }
+
+  /**
+   * Full wiring test for the optional completion callback of https://github.com/CatalogueOfLife/backend/issues/1552.
+   * Whether the import itself succeeds or fails does not matter - both are terminal and must notify the callback.
+   */
+  @Test
+  public void uploadCallback() throws Exception {
+    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    AtomicReference<String> received = new AtomicReference<>();
+    CountDownLatch latch = new CountDownLatch(1);
+    server.createContext("/hook", ex -> {
+      try (InputStream in = ex.getRequestBody()) {
+        received.set(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+      }
+      ex.sendResponseHeaders(200, -1);
+      ex.close();
+      latch.countDown();
+    });
+    server.start();
+    URI callback = URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/hook");
+    try {
+      manager.upload(datasetKey, Resources.stream("dwca/1/taxa.txt"), true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN, callback);
+      assertTrue("import completion callback was never fired", latch.await(120, TimeUnit.SECONDS));
+    } finally {
+      server.stop(0);
+    }
+    LOG.info("Callback received: {}", received.get());
+    assertNotNull(received.get());
+  }
+
+  /**
+   * Cancelling is terminal for the client that submitted the request, so it must notify the callback too.
+   * Regression test: cancel() dropped the job from the futures map before the job's error handler ran,
+   * which is where the callback used to look up its DatasetImport.
+   */
+  @Test
+  public void cancelledUploadCallback() throws Exception {
+    HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    CountDownLatch latch = new CountDownLatch(1);
+    server.createContext("/hook", ex -> {
+      ex.sendResponseHeaders(200, -1);
+      ex.close();
+      latch.countDown();
+    });
+    server.start();
+    URI callback = URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/hook");
+    try {
+      manager.upload(datasetKey, Resources.stream("dwca/1/taxa.txt"), true, "taxa.txt", "txt", TestEntityGenerator.USER_ADMIN, callback);
+      // wait until the job left the queue and is actually executing, then cancel it
+      while (manager.isRunning(datasetKey) && manager.queue().stream().anyMatch(r -> r.datasetKey == datasetKey)) {
+        TimeUnit.MILLISECONDS.sleep(10);
+      }
+      manager.cancel(datasetKey, Users.TESTER);
+      assertTrue("cancelled import must still notify the completion callback", latch.await(60, TimeUnit.SECONDS));
+    } finally {
+      server.stop(0);
+    }
   }
 
   @Test

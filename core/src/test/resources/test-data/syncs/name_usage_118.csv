@@ -15,3 +15,5 @@ id,sector_key,name_id,parent_id,status,name_phrase,according_to_id,reference_ids
 13,,13,12,ACCEPTED,,,{},f,{},
 14,,14,12,ACCEPTED,,,{},f,{},
 3,,3,1,ACCEPTED,,,{},f,{},
+22,,22,12,ACCEPTED,,,{},f,{},
+23,,23,12,ACCEPTED,,,{},f,{},

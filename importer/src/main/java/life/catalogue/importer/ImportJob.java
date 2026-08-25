@@ -249,6 +249,24 @@ public class ImportJob extends DatasetJob {
   }
 
   /**
+   * A job cancelled while it was still queued never runs, so onFinish never fires and the completion
+   * callback would be dropped for exactly the case a waiting client cares about - the GBIF validator
+   * treats canceled as terminal. See https://github.com/CatalogueOfLife/backend/issues/1552
+   */
+  @Override
+  protected void onCancelBeforeStart() {
+    if (di == null) {
+      // no attempt was ever created, so report the bare minimum the callback needs to identify the import
+      di = new DatasetImport();
+      di.setDatasetKey(datasetKey);
+      di.setJobKey(getKey());
+      di.setCreatedBy(getUserKey());
+    }
+    di.setStatus(getStatus());
+    fireCallback();
+  }
+
+  /**
    * Notifies the optional completion callback URL of the request with the final DatasetImport, if one was given.
    */
   private void fireCallback() {

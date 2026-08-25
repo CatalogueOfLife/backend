@@ -16,7 +16,6 @@ import life.catalogue.matching.decision.SectorRematcher;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,14 +47,12 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
   private final SectorDao dao;
-  private final SectorImportDao sid;
   private final FileMetricsSectorDao fmsDao;
   private final SyncManager assembly;
 
-  public SectorResource(SectorDao dao, FileMetricsSectorDao fmsDao, SectorImportDao sid, SyncManager assembly) {
+  public SectorResource(SectorDao dao, FileMetricsSectorDao fmsDao, SyncManager assembly) {
     super(Sector.class, dao);
     this.dao = dao;
-    this.sid = sid;
     this.fmsDao = fmsDao;
     this.assembly = assembly;
   }
@@ -115,15 +112,6 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user) {
     DaoUtils.requireProject(datasetKey);
     assembly.sync(datasetKey, request, user.getKey());
-  }
-
-  @DELETE
-  @Path("sync/orphans")
-  @ProjectOnly
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("key") int datasetKey, @Auth User user) throws IOException {
-    LOG.info("Remove orphaned sector imports and metrics from project {} by user {}", datasetKey, user.getName());
-    sid.removeOrphanedImports(datasetKey);
   }
 
   @GET

@@ -335,12 +335,16 @@ public class CsvReader implements AutoCloseable {
           if (isAllNull(row)) continue;
           
           if (cols == 0) {
+            // the first row is the header and defines how many columns this candidate yields
             cols = row.length;
-          } else if (cols != row.length) {
-            // inconsistent column number, stop this one
+          } else if (row.length > cols) {
+            // more columns than the header means this delimiter also occurs unquoted inside the data, so it is the wrong one
             cols = -1;
             break;
           }
+          // rows with fewer columns are fine - writers commonly omit trailing empty fields.
+          // Rejecting those made a single short row disqualify the correct delimiter, leaving a bogus
+          // single column fallback and a misleading "no data files found" error further down.
           totalLength += Arrays.stream(row).mapToInt(CsvReader::nullsafeLength).sum();
         }
         if (cols > maxCols || cols == maxCols && totalLength < minTotalLength) {

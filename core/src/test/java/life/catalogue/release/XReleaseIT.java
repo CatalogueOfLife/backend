@@ -169,7 +169,7 @@ public class XReleaseIT extends SectorSyncTestBase {
     projectCopyFactory = new ProjectCopyFactory(hc, NameMatchingRule.getIndex(), syncFactory, matcherFactory, diDao, dDao, siDao, rDao, nDao, sdao,
       NameUsageIndexService.passThru(), ImageService.passThru(),
       SqlSessionFactoryRule.getSqlSessionFactory(), validator,
-      cfg.release, cfg.apiURI, cfg.clbURI
+      cfg.release, cfg.apiURI, cfg.clbURI, null
     );
 
     // set project default settings

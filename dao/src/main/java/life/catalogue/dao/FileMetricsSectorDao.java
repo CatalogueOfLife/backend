@@ -1,9 +1,11 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.db.mapper.SectorImportMapper;
 
 import java.io.File;
 
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
@@ -25,6 +27,14 @@ public class FileMetricsSectorDao extends FileMetricsDao<DSID<Integer>> {
   @Override
   DSID<Integer> sectorKey(DSID<Integer> key) {
     return key;
+  }
+
+  @Override
+  protected Integer persistedNameCount(DSID<Integer> key, int attempt) {
+    try (SqlSession session = factory.openSession(true)) {
+      var si = session.getMapper(SectorImportMapper.class).get(key, attempt);
+      return si == null ? null : si.getNameCount();
+    }
   }
 
 }

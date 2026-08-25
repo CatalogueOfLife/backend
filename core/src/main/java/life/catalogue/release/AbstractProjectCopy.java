@@ -5,7 +5,9 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
@@ -13,6 +15,9 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.es.indexing.NameUsageIndexService;
 
 import java.time.LocalDateTime;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -48,6 +53,8 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   protected DatasetSettings settings;
   protected Dataset base;
   protected final boolean deleteOnError;
+  private JobExecutor jobExecutor;
+  private Supplier<BackgroundJob> retentionJobFactory;
 
   private static int projectKey(int baseReleaseOrProjectKey) {
     return DatasetInfoCache.CACHE.info(baseReleaseOrProjectKey).keyOrProjectKey();
@@ -115,6 +122,22 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
 
   public DatasetImport getMetrics() {
     return metrics;
+  }
+
+  /**
+   * Optional executor to submit the retentionJobFactory job to once the copy has finished successfully.
+   * Null in tests and for copies that are not releases.
+   */
+  public void setJobExecutor(@Nullable JobExecutor jobExecutor) {
+    this.jobExecutor = jobExecutor;
+  }
+
+  /**
+   * Optional factory for a follow up job pruning sector sync history this release no longer pins.
+   * Null in tests and for copies that are not releases.
+   */
+  public void setRetentionJobFactory(@Nullable Supplier<BackgroundJob> retentionJobFactory) {
+    this.retentionJobFactory = retentionJobFactory;
   }
 
   protected void loadConfigs() throws IllegalArgumentException{
@@ -212,6 +235,23 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     }
 
     LOG.info("Successfully finished {} project {} into dataset {}", actionName, projectKey, newDatasetKey);
+
+    // prune sector sync history the new release no longer pins.
+    // submitted rather than run inline so a failed or slow prune can never fail or stretch the release
+    if (retentionJobFactory != null && jobExecutor != null) {
+      try {
+        jobExecutor.submit(retentionJobFactory.get());
+      } catch (IllegalArgumentException e) {
+        if (e.getMessage() != null && e.getMessage().contains("is queued already")) {
+          // a retention job for this project is already queued from a prior release - nothing to do
+          LOG.info("Sector import retention for project {} is already queued: {}", projectKey, e.getMessage());
+        } else {
+          LOG.error("Failed to submit sector import retention for project {}", projectKey, e);
+        }
+      } catch (RuntimeException e) {
+        LOG.error("Failed to submit sector import retention for project {}", projectKey, e);
+      }
+    }
   }
 
   protected void createIdMapTables() throws InterruptedException {

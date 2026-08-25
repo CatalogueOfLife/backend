@@ -321,4 +321,90 @@
     WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
     GROUP BY language
   </select>
+
+  <resultMap id="attemptInfoResultMap" type="life.catalogue.db.mapper.SectorImportMapper$AttemptInfo" autoMapping="true"/>
+
+  <!--
+    Deliberately keyed off afterSectorKey alone: callers must pass both keyset params null or both
+    non-null (see the Java interface javadoc). Widening this to "afterSectorKey != null and afterAttempt
+    != null" would silently drop the predicate on a half-null pair and restart the scan from the
+    beginning instead of failing loudly - i.e. an infinite loop. Do not change this without also removing
+    the reason callers cannot pass a half-null pair in the first place.
+  -->
+  <select id="listAttempts" resultMap="attemptInfoResultMap">
+    SELECT sector_key, attempt, started, name_count
+    FROM sector_import
+    WHERE dataset_key = #{datasetKey}
+    <if test="afterSectorKey != null">
+      AND (sector_key, attempt) > (#{afterSectorKey}, #{afterAttempt})
+    </if>
+    ORDER BY sector_key, attempt
+    LIMIT #{limit}
+  </select>
+
+  <!--
+    sectorKeys and attempts are parallel arrays matched as true row-value tuples via a joint unnest() -
+    NOT independent "sector_key IN (...) AND attempt IN (...)" filters, which would collapse to a cross
+    product and wrongly match every combination of the given sector keys and attempts. Passed as pg
+    int4[] arrays (PgIntArrayTypeHandler) rather than a 5000-branch "(sector_key, attempt) IN ((?,?),...)"
+    list: the latter expands to a BitmapOr of single-row index scans and measured ~2.7s per 5000-row
+    batch on a 6M-row replica, against ~9.5ms for the array form.
+  -->
+  <delete id="deleteAttempts">
+    DELETE FROM sector_import
+    WHERE dataset_key = #{datasetKey}
+      <choose>
+        <when test="sectorKeys != null and sectorKeys.length > 0">
+          AND (sector_key, attempt) IN (
+            SELECT * FROM unnest(
+              #{sectorKeys, typeHandler=life.catalogue.db.type2.PgIntArrayTypeHandler}::int[],
+              #{attempts, typeHandler=life.catalogue.db.type2.PgIntArrayTypeHandler}::int[]
+            )
+          )
+          <!--
+            The in-memory pinned set the job checks before adding a row to this batch is a snapshot taken
+            once at job start, but sector syncs are not locked out by this job's dataset lock (SectorRunnable
+            extends BackgroundJob, not DatasetBlockingJob) and can commit a new sector.sync_attempt at any
+            point during the up-to-9h scan. Re-check the pin here, against the live table, so a row that is
+            pinned by the PROJECT right now can never be deleted no matter what the stale snapshot said.
+            sector's primary key is (dataset_key, id), so this is one index lookup per candidate row.
+          -->
+          AND NOT EXISTS (SELECT 1 FROM sector s
+                          WHERE s.dataset_key = #{datasetKey}
+                            AND s.id = sector_import.sector_key
+                            AND s.sync_attempt = sector_import.attempt)
+        </when>
+        <otherwise>
+          AND false
+        </otherwise>
+      </choose>
+  </delete>
+
+  <!--
+    Must exclude deleted releases: DatasetDao.deleteBefore() removes the sector rows of a deleted
+    PRIVATE release (so it stops pinning anything) but keeps them for a deleted PUBLIC one. A deleted
+    private release therefore still has a dataset row here that would push the cutoff later without
+    contributing any pins in listPinnedAttempts below - shrinking, not growing, the protected window is
+    always the safe direction, so this query stays restricted to live releases.
+  -->
+  <select id="lastReleaseCreated" resultType="java.time.LocalDateTime">
+    SELECT max(created)
+    FROM dataset
+    WHERE source_key = #{projectKey} AND origin IN ('RELEASE','XRELEASE') AND deleted IS NULL
+  </select>
+
+  <!--
+    Deliberately NOT filtered by deleted IS NULL: DatasetDao.deleteBefore() keeps the sector rows of a
+    deleted PUBLIC release (only a deleted private release loses them), so those rows still pin real
+    attempts and must keep doing so here even after the release dataset itself is soft-deleted.
+  -->
+  <select id="listPinnedAttempts" resultMap="attemptInfoResultMap">
+    SELECT DISTINCT s.id AS sector_key, s.sync_attempt AS attempt
+    FROM sector s
+    WHERE s.sync_attempt IS NOT NULL
+      AND (s.dataset_key = #{projectKey}
+           OR s.dataset_key IN (SELECT key FROM dataset
+                                WHERE source_key = #{projectKey}
+                                  AND origin IN ('RELEASE','XRELEASE')))
+  </select>
 </mapper>

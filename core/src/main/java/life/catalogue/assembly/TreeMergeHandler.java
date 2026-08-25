@@ -41,6 +41,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
   public static final char ID_PREFIX = '~';
   private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
+  /**
+   * Name types that carry an OTU style code (BOLD BINs, UNITE SH codes) and are therefore allowed to be unranked.
+   * IDENTIFIER exists since name-parser v5; OTHER is kept for names stored by older versions.
+   */
+  private static final Set<NameType> OTU_TYPES = Set.of(NameType.OTHER, NameType.IDENTIFIER);
   private final MatchedParentStack parents;
   private final UsageMatcher matcher;
   private final MatchingUtils utils;
@@ -548,9 +553,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
     var ignore =  super.ignoreUsage(u, decision, issues, true);
     if (!ignore) {
-      // additional checks - we dont want any unranked unless they are OTU names (NameType.OTU merged into OTHER in name-parser v4)
-      ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTHER
-        || (cfg != null && cfg.isBlocked(u.getName()));
+      // additional checks - we dont want any unranked unless they are OTU style codes, i.e. BOLD BINs and UNITE SH codes.
+      // the name parser typed those OTU up to v3, folded them into OTHER in v4 and split them back out as IDENTIFIER in v5,
+      // so accept both - dropping them silently loses every BOLD and UNITE name of a merge sector.
+      if (u.getRank() == Rank.UNRANKED && !OTU_TYPES.contains(u.getName().getType())) {
+        // count it, otherwise the loss is invisible in the sector import metrics
+        return incIgnored(IgnoreReason.RANK, u);
+      }
+      ignore = cfg != null && cfg.isBlocked(u.getName());
       // check the dynamically generated name validation issues without loading
       if (issues.contains(Issue.INCONSISTENT_NAME)) {
         LOG.debug("Ignore {} because it is an inconsistent name", u.getLabel());

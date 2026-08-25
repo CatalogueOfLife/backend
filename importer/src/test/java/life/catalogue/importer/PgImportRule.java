@@ -50,6 +50,10 @@ import jakarta.validation.Validator;
  * into postgres.
  *
  * Requires a running postgres instance which is normally provided via the PgSetupRule ClassRule.
+ *
+ * Currently unused. Its only caller was the TestDataGenerator, which was removed once the test data CSV
+ * files it built had drifted too far from it to be regenerated. Kept because importing real archives into
+ * a test database is useful on its own for a standalone test.
  */
 public class PgImportRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(PgImportRule.class);
