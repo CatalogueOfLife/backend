@@ -187,10 +187,9 @@ CREATE INDEX ON sector_import (job_key);
 ALTER TABLE dataset_export
   DROP COLUMN created_by, DROP COLUMN created, DROP COLUMN started, DROP COLUMN finished,
   DROP COLUMN deleted, DROP COLUMN status, DROP COLUMN error, DROP COLUMN md5, DROP COLUMN size;
--- replace the indexes that referenced the dropped columns (names are pg defaults, adjust if needed)
-DROP INDEX IF EXISTS dataset_export_created_idx;
-DROP INDEX IF EXISTS dataset_export_created_by_created_idx;
-DROP INDEX IF EXISTS dataset_export_dataset_key_attempt_format_excel_synonyms_min_r_idx;
+-- The three old indexes all referenced a dropped column - (created), (created_by, created) and
+-- (dataset_key, attempt, format, excel, synonyms, min_rank, status) - so ALTER TABLE above already
+-- removed them with the columns. Only the search index has to come back, now without status.
 CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank);
 
 DROP TYPE IMPORTSTATE;
