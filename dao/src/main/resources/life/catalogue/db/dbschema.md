@@ -95,7 +95,7 @@ ALTER TABLE sector_import  ADD COLUMN job_key UUID;
 -- step 2: backfill one job record per dataset import.
 -- Final states are kept, running ones become CANCELED with the substate as the step.
 -- dataset_import also holds release metrics, and releases run on the default lane.
--- Ordinary tables, not TEMP, so the migration can be run in more than one session. Dropped in step 6.
+-- Ordinary tables, not TEMP, so the migration can be run in more than one session. Dropped in step 7.
 CREATE TABLE di_jobmap AS
   SELECT dataset_key, attempt, gen_random_uuid() AS key FROM dataset_import;
 
@@ -132,7 +132,33 @@ SELECT e.key, 'DatasetExportJob', 'DEFAULT', e.status, 'LOW', e.dataset_key, e.c
 FROM dataset_export e
 ON CONFLICT (key) DO NOTHING;
 
--- step 4: params, i.e. what each job's getParams() would have written.
+-- step 4: restore the original job keys of release jobs.
+-- AbstractProjectCopy.modifyDataset writes "Created by <Job>#<attempt> <jobKey>." into the notes of the
+-- dataset it creates, so the key the job actually ran under survives there. Releases log to file under
+-- that key, so restoring it makes the log and result of a past release reachable via /job/{key} again.
+-- Only a few hundred rows, hence a plain update rather than a change to the backfill above.
+CREATE TABLE release_keymap AS
+SELECT j.key AS old_key,
+       ((regexp_match(d.notes, 'Created by [A-Za-z]+#[0-9]+ ([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.'))[1])::uuid AS orig_key
+FROM job j
+JOIN dataset_import di ON di.job_key = j.key
+JOIN dataset d ON d.source_key = di.dataset_key AND d.attempt = di.attempt
+              AND d.origin IN ('RELEASE','XRELEASE')
+WHERE j.job_class <> 'ImportJob'
+  AND d.notes ~ 'Created by [A-Za-z]+#[0-9]+ [0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.';
+
+-- key is the primary key, so drop anything that would collide before touching a row
+DELETE FROM release_keymap m
+WHERE EXISTS (SELECT 1 FROM job j WHERE j.key = m.orig_key AND j.key <> m.old_key)
+   OR m.orig_key IN (SELECT orig_key FROM release_keymap GROUP BY orig_key HAVING count(*) > 1);
+
+SELECT count(*) AS release_keys_restored FROM release_keymap;
+
+UPDATE job j SET key = m.orig_key FROM release_keymap m WHERE j.key = m.old_key;
+UPDATE dataset_import di SET job_key = m.orig_key FROM release_keymap m WHERE di.job_key = m.old_key;
+DROP TABLE release_keymap;
+
+-- step 5: params, i.e. what each job's getParams() would have written.
 -- Kept apart from the backfill above so it can be re-run on its own if a shape needs correcting.
 -- All three are idempotent. ImportJob gets none: force, priority and the request timestamp are
 -- unknowable for a past import and the rest is already a column on the job row.
@@ -184,7 +210,7 @@ UPDATE job j SET params = jsonb_strip_nulls(jsonb_build_object(
 FROM dataset_export e
 WHERE e.key = j.key;
 
--- step 5: indexes, built after the backfill so the inserts above maintain none of them.
+-- step 6: indexes, built after the backfill so the inserts above maintain none of them.
 -- The composites all order by created DESC, as the job search does.
 CREATE INDEX ON job (dataset_key, created DESC);
 CREATE INDEX ON job (sector_key, created DESC) WHERE sector_key IS NOT NULL;
@@ -195,7 +221,7 @@ CREATE INDEX ON job (created DESC);
 CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
 -- no GIN on params: nothing filters on it
 
--- step 6: drop the moved columns, the old enum and the backfill maps.
+-- step 7: drop the moved columns, the old enum and the backfill maps.
 -- job_key stays nullable, admin tools can rebuild metrics without a job record.
 ALTER TABLE dataset_import DROP COLUMN state, DROP COLUMN job, DROP COLUMN error;
 CREATE INDEX ON dataset_import (job_key);
