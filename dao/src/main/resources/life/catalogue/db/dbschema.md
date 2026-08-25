@@ -99,13 +99,23 @@ ALTER TABLE sector_import  ADD COLUMN job_key UUID;
 CREATE TABLE di_jobmap AS
   SELECT dataset_key, attempt, gen_random_uuid() AS key FROM dataset_import;
 
-INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, created_by, created, started, finished, error)
+INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, created_by, created, started, finished, error, params)
 SELECT m.key, di.job,
   CASE WHEN di.job = 'ImportJob' THEN 'IMPORT' ELSE 'DEFAULT' END::JOBLANE,
   CASE WHEN di.state IN ('FINISHED','FAILED','CANCELED') THEN di.state::text ELSE 'CANCELED' END::JOBSTATUS,
   CASE WHEN di.state IN ('WAITING','FINISHED','FAILED','CANCELED') THEN NULL ELSE lower(di.state::text) END,
   'MEDIUM', di.dataset_key, di.created_by,
-  coalesce(di.started, di.finished, now()), di.started, di.finished, di.error
+  coalesce(di.started, di.finished, now()), di.started, di.finished, di.error,
+  -- only releases get params: AbstractProjectCopy.CopyParams, which is what identifies the dataset they
+  -- produced. baseReleaseKey is not recorded anywhere historically and stays absent.
+  -- ImportJob is skipped, everything its ImportRequest could say is already a column here.
+  CASE WHEN di.job = 'ImportJob' THEN NULL ELSE jsonb_strip_nulls(jsonb_build_object(
+    'projectKey', di.dataset_key,
+    'attempt', di.attempt,
+    'newDatasetKey', (SELECT d.key FROM dataset d
+                      WHERE d.source_key = di.dataset_key AND d.attempt = di.attempt
+                        AND d.origin IN ('RELEASE','XRELEASE') LIMIT 1)
+  )) END
 FROM dataset_import di JOIN di_jobmap m USING (dataset_key, attempt);
 
 UPDATE dataset_import di SET job_key = m.key
@@ -115,12 +125,19 @@ FROM di_jobmap m WHERE di.dataset_key=m.dataset_key AND di.attempt=m.attempt;
 CREATE TABLE si_jobmap AS
   SELECT dataset_key, sector_key, attempt, gen_random_uuid() AS key FROM sector_import;
 
-INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, sector_key, created_by, created, started, finished, error)
+INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, sector_key, created_by, created, started, finished, error, params)
 SELECT m.key, si.job, 'SYNC'::JOBLANE,
   CASE WHEN si.state IN ('FINISHED','FAILED','CANCELED') THEN si.state::text ELSE 'CANCELED' END::JOBSTATUS,
   CASE WHEN si.state IN ('WAITING','FINISHED','FAILED','CANCELED') THEN NULL ELSE lower(si.state::text) END,
   'MEDIUM', si.dataset_key, si.sector_key, si.created_by,
-  coalesce(si.started, si.finished, now()), si.started, si.finished, si.error
+  coalesce(si.started, si.finished, now()), si.started, si.finished, si.error,
+  -- SectorRunnable.SyncParams. subjectDatasetKey is absent for a sector deleted since.
+  jsonb_strip_nulls(jsonb_build_object(
+    'datasetKey', si.dataset_key,
+    'sectorKey', si.sector_key,
+    'subjectDatasetKey', (SELECT s.subject_dataset_key FROM sector s
+                          WHERE s.dataset_key = si.dataset_key AND s.id = si.sector_key)
+  ))
 FROM sector_import si JOIN si_jobmap m USING (dataset_key, sector_key, attempt);
 
 UPDATE sector_import si SET job_key = m.key
