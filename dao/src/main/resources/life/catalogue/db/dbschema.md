@@ -18,39 +18,18 @@ their `state`, `job` and `error` columns move to the job table, with the fine gr
 replaced by the generic JOBSTATUS plus a free text `step`.
 One job record is backfilled for every existing import and sync attempt.
 
-**Scale (prod, Aug 2026):** before pruning this would be ~6.93M sector syncs + ~0.93M dataset imports +
-~3k exports = **~7.9M job rows**, growing by one row per sector per weekly fleet sync (~63k/week,
-~3.3M/year). Sector syncs are ~88% of that, so the migration applies the sector import retention rule
-*first* (step 0 below) and only backfills what survives it - the same rule
-`SectorImportRetentionJob` applies, deployed on this same release. The indexes are still created *after*
-the backfill; building them up front would make every insert maintain seven indexes. It is all pre-deploy
-work against tables the running app only appends to.
-Retention for the job table itself, and moving release source metrics off the live `sector_import` history,
-remain tracked in [#1562](https://github.com/CatalogueOfLife/backend/issues/1562).
+**Scale (prod, Aug 2026):** unpruned this would be ~6.93M sector syncs + ~0.93M dataset imports + ~3k
+exports = **~7.9M job rows**, growing ~63k/week with the fleet sync. Syncs are ~88% of that, so step 0
+prunes them first and only what survives is backfilled. All of it is pre-deploy work against tables the
+running app only appends to. Job table retention itself is tracked in
+[#1562](https://github.com/CatalogueOfLife/backend/issues/1562).
 
 ```sql
--- ============================================================================
--- step 0: prune the sector sync history before converting it into job records
--- ============================================================================
--- Exactly the rule SectorImportRetentionJob applies, run set-wise over every project:
--- drop the sector_import rows that predate the project's most recent live release and that
--- nothing pins. Three conditions have to hold together, and each one matters:
---
---  a) started IS NOT NULL. SectorRunnable inserts its sector_import row up front but only writes
---     `started` in its finally block, so a queued or currently running sync has started = NULL for
---     its whole lifetime. The app keeps running during this pre-deploy work, so deleting those would
---     pull a row out from under a live sync.
---  b) started < the project's cutoff, which is the creation of its most recent *live* release.
---     Deliberately restricted to `deleted IS NULL`: a deleted private release loses its sector rows
---     and so pins nothing, and would otherwise push the cutoff later. Shrinking the protected window
---     is always the safe direction.
---  c) not pinned by any sector.sync_attempt, of the project itself or of any of its releases.
---     Deliberately NOT filtered by `deleted IS NULL` here: DatasetDao.deleteBefore() keeps the sector
---     rows of a deleted PUBLIC release, and those still pin real attempts.
---
--- The pruned keys are kept in sector_import_pruned so the names files behind them can be swept
--- afterwards - this deletes rows only, and a row is what the file cleanup would otherwise be driven by.
--- Drop that table once the sweep has run.
+-- step 0: prune the sector sync history before converting it to job records.
+-- Same rule as SectorImportRetentionJob: drop attempts older than the project's last live release
+-- that no sector.sync_attempt pins. started IS NULL means the sync is queued or running right now.
+-- Cutoff counts live releases only; the pin check does not, a deleted public release keeps its sectors.
+-- sector_import_pruned records what went, so the names files can be swept later. Drop it after the sweep.
 CREATE TABLE sector_import_pruned (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER NOT NULL,
@@ -83,13 +62,10 @@ DELETE FROM sector_import si
 USING sector_import_pruned p
 WHERE si.dataset_key = p.dataset_key AND si.sector_key = p.sector_key AND si.attempt = p.attempt;
 
--- worth checking before continuing - this is what the sync backfill below now has to convert
 SELECT count(*) AS pruned FROM sector_import_pruned;
 SELECT count(*) AS remaining FROM sector_import;
 
--- ============================================================================
 -- step 1: new enums and the generic job table
--- ============================================================================
 CREATE TYPE JOBPRIORITY AS ENUM ('HIGH', 'MEDIUM', 'LOW');
 CREATE TYPE JOBLANE AS ENUM ('DEFAULT', 'IMPORT', 'SYNC');
 
@@ -113,17 +89,16 @@ CREATE TABLE job (
   result_deleted TIMESTAMP WITHOUT TIME ZONE
 );
 
--- link metrics tables to the job table
 ALTER TABLE dataset_import ADD COLUMN job_key UUID;
 ALTER TABLE sector_import  ADD COLUMN job_key UUID;
 
--- backfill one job record per dataset import.
--- final states are kept, running and waiting states become CANCELED with the substate preserved as the step
-CREATE TEMP TABLE di_jobmap AS
+-- step 2: backfill one job record per dataset import.
+-- Final states are kept, running ones become CANCELED with the substate as the step.
+-- dataset_import also holds release metrics, and releases run on the default lane.
+-- Ordinary tables, not TEMP, so the migration can be run in more than one session. Dropped in step 5.
+CREATE TABLE di_jobmap AS
   SELECT dataset_key, attempt, gen_random_uuid() AS key FROM dataset_import;
 
--- dataset_import also holds the metrics of releases (ProjectRelease, XRelease, ProjectDuplication),
--- which run on the default lane - only a real ImportJob belongs on the import lane
 INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, created_by, created, started, finished, error)
 SELECT m.key, di.job,
   CASE WHEN di.job = 'ImportJob' THEN 'IMPORT' ELSE 'DEFAULT' END::JOBLANE,
@@ -136,8 +111,8 @@ FROM dataset_import di JOIN di_jobmap m USING (dataset_key, attempt);
 UPDATE dataset_import di SET job_key = m.key
 FROM di_jobmap m WHERE di.dataset_key=m.dataset_key AND di.attempt=m.attempt;
 
--- backfill one job record per sector import
-CREATE TEMP TABLE si_jobmap AS
+-- step 3: the same per sector import, all on the sync lane
+CREATE TABLE si_jobmap AS
   SELECT dataset_key, sector_key, attempt, gen_random_uuid() AS key FROM sector_import;
 
 INSERT INTO job (key, job_class, lane, status, step, priority, dataset_key, sector_key, created_by, created, started, finished, error)
@@ -151,47 +126,40 @@ FROM sector_import si JOIN si_jobmap m USING (dataset_key, sector_key, attempt);
 UPDATE sector_import si SET job_key = m.key
 FROM si_jobmap m WHERE si.dataset_key=m.dataset_key AND si.sector_key=m.sector_key AND si.attempt=m.attempt;
 
--- backfill job records for historical exports so they show up in the unified job history.
--- exports created after the new release are persisted by the executor already, hence the conflict clause
+-- exports keep their own key. Ones the new code already persisted are skipped.
 INSERT INTO job (key, job_class, lane, status, priority, dataset_key, created_by, created, started, finished, error, result_md5, result_size, result_deleted)
 SELECT e.key, 'DatasetExportJob', 'DEFAULT', e.status, 'LOW', e.dataset_key, e.created_by, e.created, e.started, e.finished, e.error, e.md5, e.size, e.deleted
 FROM dataset_export e
 ON CONFLICT (key) DO NOTHING;
 
--- now that the ~7.9M rows are in, build the indexes in one pass each.
--- job search always orders by created DESC, so the dataset filter is a composite whose leftmost
--- prefix still serves plain dataset_key lookups - no separate (dataset_key) index needed.
--- params deliberately gets no GIN index: nothing filters on it, it is only selected and inserted,
--- so the index would be pure write overhead on the weekly sector sync burst.
+-- step 4: indexes, built after the backfill so the inserts above maintain none of them.
+-- The composites all order by created DESC, as the job search does.
 CREATE INDEX ON job (dataset_key, created DESC);
 CREATE INDEX ON job (sector_key, created DESC) WHERE sector_key IS NOT NULL;
 CREATE INDEX ON job (created_by);
--- job_class is only ever filtered case insensitively, so index the expression, not the raw column
-CREATE INDEX ON job (lower(job_class));
--- ~88% of the rows are sector syncs, so an unfiltered history is essentially all syncs and the lane
--- filter is the UIs default. It always orders by created DESC, hence the composite.
+CREATE INDEX ON job (lower(job_class));  -- job_class is only ever filtered case insensitively
 CREATE INDEX ON job (lane, created DESC);
 CREATE INDEX ON job (created DESC);
 CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
+-- no GIN on params: nothing filters on it
 
--- drop the moved columns and the old enum
--- job_key stays nullable: admin tools may rebuild historical metrics without a job record
+-- step 5: drop the moved columns, the old enum and the backfill maps.
+-- job_key stays nullable, admin tools can rebuild metrics without a job record.
 ALTER TABLE dataset_import DROP COLUMN state, DROP COLUMN job, DROP COLUMN error;
 CREATE INDEX ON dataset_import (job_key);
 
 ALTER TABLE sector_import DROP COLUMN state, DROP COLUMN job, DROP COLUMN error;
 CREATE INDEX ON sector_import (job_key);
 
--- now that the generic export lifecycle lives in job (backfilled above), drop it from dataset_export.
--- the request columns (format, synonyms, min_rank, ...) stay as the indexed search and dedup surface.
+-- the request columns stay as the search and dedup surface
 ALTER TABLE dataset_export
   DROP COLUMN created_by, DROP COLUMN created, DROP COLUMN started, DROP COLUMN finished,
   DROP COLUMN deleted, DROP COLUMN status, DROP COLUMN error, DROP COLUMN md5, DROP COLUMN size;
--- The three old indexes all referenced a dropped column - (created), (created_by, created) and
--- (dataset_key, attempt, format, excel, synonyms, min_rank, status) - so ALTER TABLE above already
--- removed them with the columns. Only the search index has to come back, now without status.
+-- the old indexes went with the dropped columns, only the search one comes back without status
 CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank);
 
+DROP TABLE di_jobmap;
+DROP TABLE si_jobmap;
 DROP TYPE IMPORTSTATE;
 ```
 
