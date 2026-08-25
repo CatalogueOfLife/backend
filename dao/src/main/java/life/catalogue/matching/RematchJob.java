@@ -13,7 +13,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 
 public class RematchJob extends BackgroundJob {
@@ -21,12 +20,8 @@ public class RematchJob extends BackgroundJob {
   private final SqlSessionFactory factory;
   private final NameIndex ni;
   private final EventBroker bus;
-  @JsonProperty
   private final boolean missingOnly;
-
-  @JsonProperty
   private final int[] datasetKeys;
-  @JsonProperty
   private final List<? extends DSID<Integer>> sectorKeys;
 
   public static RematchJob one(int userKey, SqlSessionFactory factory, NameIndex ni, EventBroker bus, boolean missingOnly, int datasetKey){
@@ -60,6 +55,17 @@ public class RematchJob extends BackgroundJob {
     this.factory = factory;
     this.ni = ni.assertOnline();
     this.missingOnly = missingOnly;
+  }
+
+  /**
+   * A rematch of a few datasets and one of everything look identical without these.
+   */
+  public record RematchParams(int[] datasetKeys, List<? extends DSID<Integer>> sectorKeys, boolean missingOnly) {
+  }
+
+  @Override
+  public Object getParams() {
+    return new RematchParams(datasetKeys, sectorKeys, missingOnly);
   }
 
   @Override

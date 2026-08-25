@@ -2,7 +2,8 @@ package life.catalogue.resources.dataset;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.User;
-import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.api.model.JobInfo;
+import life.catalogue.dao.JobDao;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.matching.TaxonomicAlignJob;
 
@@ -34,14 +35,14 @@ public class DatasetTaxDiffResource {
 
   @POST
   @Path("{key2}")
-  public BackgroundJob taxdiff(@PathParam("key") Integer key,
-                               @PathParam("key2") Integer key2,
-                               @QueryParam("root") String root,
-                               @QueryParam("root2") String root2,
-                               @Auth User user) throws IOException {
+  public JobInfo taxdiff(@PathParam("key") Integer key,
+                         @PathParam("key2") Integer key2,
+                         @QueryParam("root") String root,
+                         @QueryParam("root2") String root2,
+                         @Auth User user) throws IOException {
     var job = new TaxonomicAlignJob(user.getKey(), key, root, key2, root2, factory, docker, cfg.normalizer);
     exec.submit(job);
-    return job;
+    return JobDao.buildInfo(job);
   }
 
 }

@@ -129,10 +129,18 @@
     VALUES (<include refid="PROPS"/>)
   </insert>
 
+  <!--
+    params is updatable, not just inserted: a release only learns its new dataset key and attempt once it
+    has started, so its params are completed while it runs. The other jobs keep their submitted request
+    unchanged, rewriting a small jsonb on each step change.
+    job_class, lane, priority, dataset_key, sector_key, created_by and created never change after insert.
+  -->
   <update id="update" parameterType="JobInfo">
     UPDATE job
-    SET (status, step, started, finished, error, result_md5, result_size, result_deleted)
-      = (#{status}::JOBSTATUS, #{step}, #{started}, #{finished}, #{error}, #{resultMd5}, #{resultSize}, #{resultDeleted})
+    SET (status, step, started, finished, error, params, result_md5, result_size, result_deleted)
+      = (#{status}::JOBSTATUS, #{step}, #{started}, #{finished}, #{error},
+         #{params, typeHandler=life.catalogue.db.type2.JsonNodeHandler}::jsonb,
+         #{resultMd5}, #{resultSize}, #{resultDeleted})
     WHERE key = #{key}
   </update>
 

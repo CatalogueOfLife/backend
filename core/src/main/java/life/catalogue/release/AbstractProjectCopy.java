@@ -91,6 +91,28 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     return newDatasetKey;
   }
 
+  /**
+   * The job record only carries the project as its dataset key, so without these the release or
+   * duplicate a job produced cannot be identified from the job history at all.
+   * newDatasetKey and attempt are only known once initJob has run, which is why the job table
+   * updates params rather than only inserting them.
+   *
+   * @param projectKey the project that is being copied
+   * @param baseReleaseKey the release an extended release builds on, null for a plain release or duplication
+   * @param newDatasetKey the dataset being created, null until the job has started
+   * @param attempt the release attempt, null until the job has started
+   */
+  public record CopyParams(int projectKey, Integer baseReleaseKey, Integer newDatasetKey, Integer attempt) {
+  }
+
+  @Override
+  public Object getParams() {
+    return new CopyParams(projectKey,
+      base == null ? null : base.getKey(),
+      newDatasetKey == 0 ? null : newDatasetKey,
+      attempt == 0 ? null : attempt);
+  }
+
   public DatasetImport getMetrics() {
     return metrics;
   }
@@ -124,6 +146,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     // create new dataset, e.g. release
     newDataset = dDao.copy(projectKey, user, this::modifyDataset);
     newDatasetKey = newDataset.getKey();
+    persist(); // the params are only complete now - make the new dataset key findable straight away
   }
 
   void prepWork() throws Exception {

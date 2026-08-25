@@ -13,14 +13,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class IndexJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(IndexJob.class);
 
   private final NameUsageIndexService indexService;
 
-  @JsonProperty
   private final RequestScope req;
   private final EventBroker bus;
 
@@ -32,6 +30,11 @@ public class IndexJob extends BackgroundJob {
     this.req = req;
     this.indexService = indexService;
     this.bus = bus;
+  }
+
+  @Override
+  public Object getParams() {
+    return req;
   }
 
   @Override

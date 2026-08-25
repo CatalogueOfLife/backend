@@ -6,7 +6,8 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import life.catalogue.api.model.User;
-import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.api.model.JobInfo;
+import life.catalogue.dao.JobDao;
 import life.catalogue.dw.auth.AuthFilter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.matching.UsageMatcherFactory;
@@ -49,9 +50,9 @@ public class MatcherManagementResource {
   @POST
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN})
-  public BackgroundJob rebuildMatcher(@PathParam("key") int key, @Auth User user) {
+  public JobInfo rebuildMatcher(@PathParam("key") int key, @Auth User user) {
     LOG.info("User {} requested rebuild of matcher for dataset {}", user, key);
-    return matcherFactory.rebuild(key, user.getKey());
+    return JobDao.buildInfo(matcherFactory.rebuild(key, user.getKey()));
   }
 
   /**

@@ -52,6 +52,12 @@ public class JobMapperTest extends CRUDTestBase<UUID, JobInfo, JobMapper> {
   void updateTestObj(JobInfo j) {
     j.setStatus(JobStatus.FINISHED);
     j.setStep("indexing");
+    // params are updatable, not just inserted: a release completes them once it knows its new dataset key
+    ObjectNode params = ApiModule.MAPPER.createObjectNode();
+    params.put("datasetKey", appleKey);
+    params.put("newDatasetKey", 999);
+    params.put("attempt", 7);
+    j.setParams(params);
     j.setStarted(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
     j.setFinished(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
     j.setError("things went wrong");

@@ -59,6 +59,17 @@ public class GbifSyncJob extends GlobalBlockingJob {
   /**
    *  Syncs updates of today
    **/
+  /**
+   * @param keys the explicitly requested GBIF datasets, empty when everything is synced
+   */
+  public record GbifSyncParams(Set<UUID> keys, boolean incremental) {
+  }
+
+  @Override
+  public Object getParams() {
+    return new GbifSyncParams(keys, incremental);
+  }
+
   public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, GbifRegistryCache registry, int userKey, boolean incremental) {
     this(cfg, client, ddao, sessionFactory, registry, userKey, Collections.emptySet(), incremental);
   }

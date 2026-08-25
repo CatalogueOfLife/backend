@@ -21,10 +21,12 @@ import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
 import life.catalogue.common.text.StringUtils;
+import life.catalogue.api.model.JobInfo;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.JobDao;
 import life.catalogue.doi.DoiChangeListener;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.managed.Component;
@@ -190,20 +192,20 @@ public class AdminResource {
 
   @POST
   @Path("/logo-update")
-  public BackgroundJob updateAllLogos(@Auth User user) {
+  public JobInfo updateAllLogos(@Auth User user) {
     return runJob(LogoUpdateJob.updateAllAsync(factory, downloader, cfg.normalizer::scratchFile, imgService, user.getKey()));
   }
 
   @POST
   @Path("/counter-update")
-  public BackgroundJob updateCounter(@Auth User user) {
+  public JobInfo updateCounter(@Auth User user) {
     return runJob(new UsageCountJob(user.getKey(), JobPriority.HIGH, factory));
   }
 
   @POST
   @Path("/gbif-sync")
   @Consumes(MediaType.APPLICATION_JSON)
-  public BackgroundJob syncGBIF(List<UUID> keys, @Auth User user) {
+  public JobInfo syncGBIF(List<UUID> keys, @Auth User user) {
     GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, gbifSync.getRegistryCache(), user.getKey(), Set.copyOf(keys), false);
     return runJob(job);
   }
@@ -211,7 +213,7 @@ public class AdminResource {
   @POST
   @Path("/gbif-sync")
   @Consumes(MediaType.TEXT_PLAIN)
-  public BackgroundJob syncGBIFText(InputStream keysAsText, @Auth User user) {
+  public JobInfo syncGBIFText(InputStream keysAsText, @Auth User user) {
     try (var lr = new LineReader(keysAsText)) {
       var keys = IterUtils.setOf(lr, UUID::fromString);
       GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, gbifSync.getRegistryCache(), user.getKey(), keys, false);
@@ -221,7 +223,7 @@ public class AdminResource {
 
   @POST
   @Path("/publisher-sync")
-  public BackgroundJob publisherSync(@Auth User user) {
+  public JobInfo publisherSync(@Auth User user) {
     PublisherSyncJob job = new PublisherSyncJob(gbifSync.getRegistryCache(), factory, user.getKey());
     return runJob(job);
   }
@@ -235,7 +237,7 @@ public class AdminResource {
 
   @POST
   @Path("/reindex")
-  public BackgroundJob reindex(@QueryParam("datasetKey") Integer datasetKey, @QueryParam("prio") JobPriority priority, @Auth User user) {
+  public JobInfo reindex(@QueryParam("datasetKey") Integer datasetKey, @QueryParam("prio") JobPriority priority, @Auth User user) {
     if (datasetKey == null) {
       throw new IllegalArgumentException("Request parameter datasetKey must be provided");
     }
@@ -261,14 +263,14 @@ public class AdminResource {
   /**
    * Reindex all datasets which have not been fully indexed before.
    */
-  public BackgroundJob reindexBroken(@Auth User user, @QueryParam("threshold") @DefaultValue("0.98") double threshold) {
+  public JobInfo reindexBroken(@Auth User user, @QueryParam("threshold") @DefaultValue("0.98") double threshold) {
     return runJob(new ReindexSchedulerJob(user.getKey(), threshold, factory, exec, searchService, indexService, bus));
   }
 
 
   @POST
   @Path("/rematch")
-  public BackgroundJob rematch(@QueryParam("datasetKey") List<Integer> datasetKeys,
+  public JobInfo rematch(@QueryParam("datasetKey") List<Integer> datasetKeys,
                                @QueryParam("sectorKey") List<String> sectorKeys,
                                @QueryParam("missingOnly") boolean missingOnly,
                                @Auth User user
@@ -288,7 +290,7 @@ public class AdminResource {
 
   @POST
   @Path("/rematch/archive")
-  public BackgroundJob rematch(@Auth User user) {
+  public JobInfo rematch(@Auth User user) {
     return runJob(new RematchArchiveJob(user.getKey(),factory, namesIndex));
   }
 
@@ -309,7 +311,7 @@ public class AdminResource {
    */
   @POST
   @Path("/rematch/scheduler")
-  public BackgroundJob rematchIncomplete(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+  public JobInfo rematchIncomplete(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
     return runJob(new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec, bus));
   }
 
@@ -318,25 +320,25 @@ public class AdminResource {
   /**
    * Matches all datasets which have not been fully matched before.
    */
-  public BackgroundJob rematchUnmatched(@Auth User user) {
+  public JobInfo rematchUnmatched(@Auth User user) {
     return runJob(new GlobalMatcherJob(user.getKey(), factory, namesIndex, bus));
   }
 
   @POST
   @Path("/reimport")
-  public BackgroundJob reimport(@Auth User user) {
+  public JobInfo reimport(@Auth User user) {
     return runJob(new ReimportJob(user, factory, importManager, cfg.normalizer));
   }
 
   @POST
   @Path("/importArticles")
-  public BackgroundJob scheduleArticleImports(@Auth User user) {
+  public JobInfo scheduleArticleImports(@Auth User user) {
     return runJob(new ImportArticleJob(user, factory, importManager));
   }
 
   @POST
   @Path("/rebuild-taxon-metrics")
-  public BackgroundJob rebuildTaxonMetrics(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
+  public JobInfo rebuildTaxonMetrics(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
     Preconditions.checkArgument(datasetKey != null, "A datasetKey parameter must be given");
     return runJob(new RebuildMetricsJob(user.getKey(), factory, datasetKey));
   }
@@ -358,7 +360,7 @@ public class AdminResource {
    */
   @POST
   @Path("/rebuild-taxon-metrics/scheduler")
-  public BackgroundJob rebuildMetricsMissing(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+  public JobInfo rebuildMetricsMissing(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
     return runJob(new MetricsSchedulerJob(user.getKey(), factory, threshold, exec));
   }
 
@@ -400,8 +402,8 @@ public class AdminResource {
     bus.publish(DoiChange.publish(doi(suffix)));
   }
 
-  private BackgroundJob runJob(BackgroundJob job){
+  private JobInfo runJob(BackgroundJob job){
     exec.submit(job);
-    return job;
+    return JobDao.buildInfo(job);
   }
 }

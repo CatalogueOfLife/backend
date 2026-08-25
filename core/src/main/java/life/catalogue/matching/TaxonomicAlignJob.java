@@ -62,6 +62,18 @@ public class TaxonomicAlignJob extends BackgroundJob {
   protected final File tmpDir; // work directory
 
 
+  /**
+   * An alignment runs across two datasets, so it has no single dataset key on the job record.
+   * Without these params it cannot be identified in the job history at all.
+   */
+  public record AlignParams(int datasetKey1, String root1, int datasetKey2, String root2) {
+  }
+
+  @Override
+  public Object getParams() {
+    return new AlignParams(datasetKey1, root1, datasetKey2, root2);
+  }
+
   public TaxonomicAlignJob(int userKey, int datasetKey1, String root1, int datasetKey2, String root2, SqlSessionFactory factory, DockerClient client, NormalizerConfig cfg) throws IOException {
     super(userKey);
     this.client = client;

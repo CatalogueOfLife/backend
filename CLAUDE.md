@@ -164,6 +164,10 @@ submit and cancel, and reschedule jobs left stale by a shutdown via `JobExecutor
 subclasses expose big payloads (decision maps, whole datasets, import metrics, stack traces) that have no
 business in a 5 second poll. `JobQueueState` derives `queuedCounts`/`queuedTotal` from the very jobs it
 lists, so they stay consistent when the queue is narrowed by `?datasetKey=`.
+Every endpoint that submits a job answers with `JobInfo` as well, so a job never has two shapes.
+`getParams()` feeds the `params` jsonb and is the only place a job can identify itself beyond its class and
+dataset key - a release records the dataset key and attempt it produces there, which it only learns once it
+runs, so `params` is updated and not merely inserted.
 `/job/types` lists the known job class names from a startup classpath scan; `JobSearchRequest` filters the
 history by lane, multiple case insensitive job names, status, priority, dataset, sector, user, a
 `createdAfter`/`createdBefore` range and `format`, which semi joins `dataset_import` and `dataset_export`
