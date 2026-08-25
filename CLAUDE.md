@@ -159,9 +159,11 @@ queue so a long import cannot starve an export; `getSerialBy()` serializes jobs 
 submit and cancel, and reschedule jobs left stale by a shutdown via `JobExecutor.getStaleJobs()`.
 `dataset_import` and `sector_import` are now pure metrics tables joined to `job` by `job_key`, and
 `dataset_export` keeps only the request columns.
-`JobResource` serves the live queue from memory and the history from the db, both as the same generic
-`JobInfo` shape (`JobDao.buildInfo`) - the live `BackgroundJob` instances are only rendered on `?full=true`,
-since their subclasses expose big payloads (decision maps, whole datasets, import metrics, stack traces).
+`JobResource` serves the live queue from memory and the history from the db, both only ever as the generic
+`JobInfo` shape (`JobDao.buildInfo`). The live `BackgroundJob` instances are never rendered by it - their
+subclasses expose big payloads (decision maps, whole datasets, import metrics, stack traces) that have no
+business in a 5 second poll. `JobQueueState` derives `queuedCounts`/`queuedTotal` from the very jobs it
+lists, so they stay consistent when the queue is narrowed by `?datasetKey=`.
 `/job/types` lists the known job class names from a startup classpath scan; `JobSearchRequest` filters the
 history by lane, multiple case insensitive job names, status, priority, dataset, sector, user, a
 `createdAfter`/`createdBefore` range and `format`, which semi joins `dataset_import` and `dataset_export`

@@ -296,17 +296,6 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   }
 
   /**
-   * @return number of queued jobs by lane, including parked serialized jobs
-   */
-  public Map<JobLane, Integer> queueSizes() {
-    Map<JobLane, Integer> sizes = new EnumMap<>(JobLane.class);
-    for (JobLane lane : JobLane.values()) {
-      sizes.put(lane, queueSize(lane));
-    }
-    return sizes;
-  }
-
-  /**
    * @return true if all queues are empty
    */
   public boolean hasEmptyQueue() {

@@ -17,10 +17,10 @@ import life.catalogue.dw.jersey.filter.VaryAccept;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -84,34 +84,41 @@ public class JobResource {
 
   /**
    * The live state of the job queues, served purely from executor memory so it can be polled frequently.
+   * All four members describe the very same set of jobs, so the counts always match the arrays -
+   * also when the queue was narrowed down by a dataset.
    */
-  public static class JobQueueState<T> {
-    public final List<T> running;
-    public final List<T> queued;
+  public static class JobQueueState {
+    public final List<JobInfo> running;
+    public final List<JobInfo> queued;
     public final Map<JobLane, Integer> queuedCounts;
     public final int queuedTotal;
 
-    JobQueueState(List<BackgroundJob> jobs, Map<JobLane, Integer> queuedCounts, Function<BackgroundJob, T> converter) {
-      this.running = jobs.stream().filter(BackgroundJob::isRunning).map(converter).collect(Collectors.toList());
-      this.queued = jobs.stream().filter(BackgroundJob::isQueued).map(converter).collect(Collectors.toList());
-      this.queuedCounts = queuedCounts;
-      this.queuedTotal = queuedCounts.values().stream().mapToInt(Integer::intValue).sum();
+    JobQueueState(List<BackgroundJob> jobs) {
+      this.running = jobs.stream().filter(BackgroundJob::isRunning).map(JobDao::buildInfo).collect(Collectors.toList());
+      // WAITING and BLOCKED alike - a job blocked on a dataset lock is queued from the outside and must
+      // not fall out of both lists. Jobs that just ended can linger in a queue snapshot, those are dropped.
+      var waiting = jobs.stream().filter(j -> j.getStatus().isQueued()).collect(Collectors.toList());
+      this.queued = waiting.stream().map(JobDao::buildInfo).collect(Collectors.toList());
+      // keep every lane in the map so the shape does not change with the load
+      var counts = new EnumMap<JobLane, Integer>(JobLane.class);
+      for (JobLane lane : JobLane.values()) {
+        counts.put(lane, 0);
+      }
+      waiting.forEach(j -> counts.merge(j.getLane(), 1, Integer::sum));
+      this.queuedCounts = counts;
+      this.queuedTotal = waiting.size();
     }
   }
 
   /**
-   * The live queue, by default rendered as the same generic JobInfo the history and single job lookups use.
-   *
-   * @param full if true render the live job instances instead, including their full request and metrics.
-   *             Only meant for admin debugging - the payload is large and its shape varies by job type.
+   * The live queue, rendered as the same generic JobInfo the history and single job lookups use.
    */
   @GET
-  public JobQueueState<?> jobQueue(@QueryParam("datasetKey") Integer datasetKey, @QueryParam("full") boolean full) {
+  public JobQueueState jobQueue(@QueryParam("datasetKey") Integer datasetKey) {
     var jobs = datasetKey == null ? exec.getQueue() : exec.getQueue().stream()
       .filter(j -> datasetKey.equals(j.datasetKey()))
       .collect(Collectors.toList());
-    return full ? new JobQueueState<>(jobs, exec.queueSizes(), Function.identity())
-                : new JobQueueState<>(jobs, exec.queueSizes(), JobDao::buildInfo);
+    return new JobQueueState(jobs);
   }
 
   /**
@@ -132,20 +139,13 @@ public class JobResource {
     return dao.search(req, page);
   }
 
-  /**
-   * @param full if true and the job is still live, render the job instance instead of the generic JobInfo.
-   *             Only meant for admin debugging, see {@link #jobQueue(Integer, boolean)}.
-   */
   @GET
   @VaryAccept
   @Path("{key}")
-  public Object job(@PathParam("key") UUID key, @QueryParam("full") boolean full) {
+  public JobInfo job(@PathParam("key") UUID key) {
     // live jobs first - the db record of a running job trails its in memory state
     BackgroundJob job = exec.getJob(key);
-    if (job != null) {
-      return full ? job : JobDao.buildInfo(job);
-    }
-    return dao.get(key);
+    return job != null ? JobDao.buildInfo(job) : dao.get(key);
   }
 
   @GET
