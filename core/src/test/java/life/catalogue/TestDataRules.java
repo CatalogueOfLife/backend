@@ -9,7 +9,8 @@ import java.util.Set;
 import it.unimi.dsi.fastutil.Pair;
 
 /**
- * More test data rules that have been generated via the TestDataGenerator class in the importer module.
+ * More test data rules, backed by the CSV files in the test-data resource folder of the core module.
+ * Those files are maintained by hand - see their README for the layout and its pitfalls.
  */
 public class TestDataRules {
   final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, Set.of(101, 102), false);

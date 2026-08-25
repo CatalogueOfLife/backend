@@ -8,13 +8,16 @@ import life.catalogue.config.ImporterConfig;
 import java.net.URI;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.util.Timeout;
 import org.slf4j.Logger;
@@ -65,10 +68,16 @@ public class ImportCallbackNotifier implements AutoCloseable {
       LOG.warn("Failed to serialize DatasetImport for callback {} of dataset {}", callback, datasetKey, e);
       return;
     }
-    exec.submit(() -> post(callback, json, datasetKey));
+    try {
+      exec.submit(() -> post(callback, json, datasetKey));
+    } catch (RejectedExecutionException e) {
+      // the notifier is shutting down - never let this bubble up into an importer thread
+      LOG.warn("Rejected callback {} of import completion for dataset {}, notifier is shut down", callback, datasetKey);
+    }
   }
 
   private void post(URI callback, String json, Integer datasetKey) {
+    LOG.info("POSTing import completion of dataset {} to callback {}", datasetKey, callback);
     HttpPost post = new HttpPost(callback);
     post.setConfig(requestConfig);
     post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
@@ -77,10 +86,20 @@ public class ImportCallbackNotifier implements AutoCloseable {
       if (code >= 200 && code < 300) {
         LOG.info("Notified callback {} of import completion for dataset {}, status {}", callback, datasetKey, code);
       } else {
-        LOG.warn("Callback {} for dataset {} import completion returned status {}", callback, datasetKey, code);
+        // the body usually carries the reason a receiver rejected us, e.g. an authentication failure
+        LOG.warn("Callback {} for dataset {} import completion returned status {}: {}", callback, datasetKey, code, readBody(resp));
       }
     } catch (Exception e) {
       LOG.warn("Failed to notify callback {} of import completion for dataset {}: {}", callback, datasetKey, e.getMessage());
+    }
+  }
+
+  private static String readBody(CloseableHttpResponse resp) {
+    try {
+      String body = resp.getEntity() == null ? null : EntityUtils.toString(resp.getEntity());
+      return StringUtils.abbreviate(StringUtils.normalizeSpace(body), 500);
+    } catch (Exception e) {
+      return "<unreadable: " + e.getMessage() + ">";
     }
   }
 
