@@ -20,7 +20,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 
 /**
@@ -30,12 +29,12 @@ import com.google.common.base.Joiner;
 public class ReimportJob extends GlobalBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(ReimportJob.class);
 
+  // flushing the progress on every single submit would persist a job update each time
+  private static final int STEP_BATCH = 50;
+
   private final SqlSessionFactory factory;
   private final ImportManager importManager;
   private final NormalizerConfig nCfg;
-
-  @JsonProperty
-  private int counter;
 
   public ReimportJob(User user, SqlSessionFactory factory, ImportManager importManager, NormalizerConfig nCfg) {
     super(user.getKey(), JobPriority.HIGH);
@@ -54,7 +53,8 @@ public class ReimportJob extends GlobalBlockingJob {
 
     LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());
     final List<Integer> missed = new ArrayList<>();
-    counter = 0;
+    int counter = 0;
+    setStep(progress(counter, keys.size()));
     for (int key : keys) {
       try {
         while (importManager.queueSize() + 5 > importManager.maxQueue()) {
@@ -68,6 +68,9 @@ public class ReimportJob extends GlobalBlockingJob {
           ImportRequest req = ImportRequest.reimport(key, attempt, getUserKey());
           importManager.submit(req);
           counter++;
+          if (counter % STEP_BATCH == 0) {
+            setStep(progress(counter, keys.size()));
+          }
         } else {
           missed.add(key);
           LOG.warn("No local archive exists for dataset {}. Do not reimport", key);
@@ -85,8 +88,13 @@ public class ReimportJob extends GlobalBlockingJob {
         LOG.warn("Error reimporting dataset {}", key, e);
       }
     }
+    setStep(progress(counter, keys.size()));
     LOG.info("Scheduled {} datasets out of {} for reimporting. Missed {} datasets without an archive or other reasons", counter, keys.size(), missed.size());
     LOG.info("Missed keys: {}", Joiner.on(", ").join(missed));
+  }
+
+  private static String progress(int scheduled, int total) {
+    return "scheduled " + scheduled + " of " + total;
   }
 }
 

@@ -18,8 +18,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * Submits import jobs for all plazi datasets and other datasets of type ARTICLE.
  * Throttles the submission so the import manager does not exceed its queue
@@ -27,11 +25,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ImportArticleJob extends GlobalBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(ImportArticleJob.class);
 
+  // flushing the progress on every single submit would persist a job update each time
+  private static final int STEP_BATCH = 50;
+
   private final SqlSessionFactory factory;
   private final ImportManager importManager;
-
-  @JsonProperty
-  private int counter;
 
   public ImportArticleJob(User user, SqlSessionFactory factory, ImportManager importManager) {
     super(user.getKey(), JobPriority.HIGH);
@@ -51,24 +49,32 @@ public class ImportArticleJob extends GlobalBlockingJob {
       keys = dm.searchKeys(dreq, DatasetMapper.MAGIC_ADMIN_USER_KEY);
     }
 
-    LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());
-    counter = 0;
+    LOG.warn("Importing all {} article datasets", keys.size());
+    int counter = 0;
+    setStep(progress(counter, keys.size()));
     for (int key : keys) {
       try {
         while (importManager.queueSize() + 5 > importManager.maxQueue()) {
           TimeUnit.MINUTES.sleep(1);
         }
-        // does a local archive exist?
         ImportRequest req = ImportRequest.external(key, getUserKey());
         importManager.submit(req);
         counter++;
+        if (counter % STEP_BATCH == 0) {
+          setStep(progress(counter, keys.size()));
+        }
 
       } catch (InterruptedException e) {
         LOG.warn("Scheduling article imports interrupted", e);
         break;
       }
     }
+    setStep(progress(counter, keys.size()));
     LOG.info("Scheduled {} datasets for importing", counter);
+  }
+
+  private static String progress(int scheduled, int total) {
+    return "scheduled " + scheduled + " of " + total;
   }
 }
 
