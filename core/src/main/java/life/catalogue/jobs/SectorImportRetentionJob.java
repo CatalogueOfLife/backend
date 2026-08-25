@@ -194,7 +194,15 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
       datasetKey, dryRun ? "DRY RUN" : "done", examined,
       dryRun ? deletableRows : deletedRows, dryRun ? "deletable" : "deleted",
       dryRun ? deletableFiles : deletedFiles, dryRun ? "deletable" : "deleted", failedFiles);
-    // the final tally is the point of a dry run, so keep it in the job record and not only in the log
+  }
+
+  /**
+   * The final tally is the point of a dry run, so it has to survive in the job record. It is set here
+   * rather than at the end of runWithLock because a job that succeeded has its step cleared.
+   * onFinish itself is final on DatasetBlockingJob, which unlocks the dataset.
+   */
+  @Override
+  protected void onFinishLocked() {
     setStep(summary());
   }
 

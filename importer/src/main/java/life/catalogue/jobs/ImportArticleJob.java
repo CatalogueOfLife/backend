@@ -28,6 +28,9 @@ public class ImportArticleJob extends GlobalBlockingJob {
   // flushing the progress on every single submit would persist a job update each time
   private static final int STEP_BATCH = 50;
 
+  private int counter;
+  private int total;
+
   private final SqlSessionFactory factory;
   private final ImportManager importManager;
 
@@ -50,8 +53,9 @@ public class ImportArticleJob extends GlobalBlockingJob {
     }
 
     LOG.warn("Importing all {} article datasets", keys.size());
-    int counter = 0;
-    setStep(progress(counter, keys.size()));
+    counter = 0;
+    total = keys.size();
+    setStep(progress(counter, total));
     for (int key : keys) {
       try {
         while (importManager.queueSize() + 5 > importManager.maxQueue()) {
@@ -61,7 +65,7 @@ public class ImportArticleJob extends GlobalBlockingJob {
         importManager.submit(req);
         counter++;
         if (counter % STEP_BATCH == 0) {
-          setStep(progress(counter, keys.size()));
+          setStep(progress(counter, total));
         }
 
       } catch (InterruptedException e) {
@@ -69,8 +73,15 @@ public class ImportArticleJob extends GlobalBlockingJob {
         break;
       }
     }
-    setStep(progress(counter, keys.size()));
     LOG.info("Scheduled {} datasets for importing", counter);
+  }
+
+  /**
+   * Set here rather than at the end of execute because a job that succeeded has its step cleared.
+   */
+  @Override
+  protected void onFinish() {
+    setStep(progress(counter, total));
   }
 
   private static String progress(int scheduled, int total) {

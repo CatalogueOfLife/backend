@@ -32,6 +32,9 @@ public class ReimportJob extends GlobalBlockingJob {
   // flushing the progress on every single submit would persist a job update each time
   private static final int STEP_BATCH = 50;
 
+  private int counter;
+  private int total;
+
   private final SqlSessionFactory factory;
   private final ImportManager importManager;
   private final NormalizerConfig nCfg;
@@ -53,8 +56,9 @@ public class ReimportJob extends GlobalBlockingJob {
 
     LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());
     final List<Integer> missed = new ArrayList<>();
-    int counter = 0;
-    setStep(progress(counter, keys.size()));
+    counter = 0;
+    total = keys.size();
+    setStep(progress(counter, total));
     for (int key : keys) {
       try {
         while (importManager.queueSize() + 5 > importManager.maxQueue()) {
@@ -69,7 +73,7 @@ public class ReimportJob extends GlobalBlockingJob {
           importManager.submit(req);
           counter++;
           if (counter % STEP_BATCH == 0) {
-            setStep(progress(counter, keys.size()));
+            setStep(progress(counter, total));
           }
         } else {
           missed.add(key);
@@ -88,9 +92,16 @@ public class ReimportJob extends GlobalBlockingJob {
         LOG.warn("Error reimporting dataset {}", key, e);
       }
     }
-    setStep(progress(counter, keys.size()));
     LOG.info("Scheduled {} datasets out of {} for reimporting. Missed {} datasets without an archive or other reasons", counter, keys.size(), missed.size());
     LOG.info("Missed keys: {}", Joiner.on(", ").join(missed));
+  }
+
+  /**
+   * Set here rather than at the end of execute because a job that succeeded has its step cleared.
+   */
+  @Override
+  protected void onFinish() {
+    setStep(progress(counter, total));
   }
 
   private static String progress(int scheduled, int total) {

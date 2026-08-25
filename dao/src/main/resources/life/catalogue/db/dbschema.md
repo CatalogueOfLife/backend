@@ -29,7 +29,8 @@ running app only appends to. Job table retention itself is tracked in
 -- Same rule as SectorImportRetentionJob: drop attempts older than the project's last live release
 -- that no sector.sync_attempt pins. started IS NULL means the sync is queued or running right now.
 -- Cutoff counts live releases only; the pin check does not, a deleted public release keeps its sectors.
--- sector_import_pruned records what went, so the names files can be swept later. Drop it after the sweep.
+-- sector_import_pruned records what went, so the names files can be swept later by
+-- POST /admin/sector-retention/sweep-files (SectorImportPrunedSweepJob). Drop the table after that ran.
 CREATE TABLE sector_import_pruned (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER NOT NULL,

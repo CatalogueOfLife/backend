@@ -168,6 +168,9 @@ Every endpoint that submits a job answers with `JobInfo` as well, so a job never
 `getParams()` feeds the `params` jsonb and is the only place a job can identify itself beyond its class and
 dataset key - a release records the dataset key and attempt it produces there, which it only learns once it
 runs, so `params` is updated and not merely inserted.
+A job's `step` is cleared once it succeeds - it describes a running job - so a terminal message has to be
+set from `onFinish` (or `onFinishLocked`, which `DatasetBlockingJob` makes the overridable half of its final
+`onFinish`). Failed and cancelled jobs keep the step they stopped at.
 `JobCleanup` is a monthly `CronJob` that trims the job history. It only ever removes records that no
 `dataset_import`, `sector_import` or `dataset_export` row refers to - a job row carries the status, step and
 error those read, and `dataset_export` inner joins it - so it reaps the ephemeral jobs while import, sync

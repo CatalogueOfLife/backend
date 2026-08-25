@@ -367,6 +367,17 @@ public class AdminResource {
     return runJob(new MetricsSchedulerJob(user.getKey(), factory, threshold, exec));
   }
 
+  /**
+   * Deletes the names files of the sector syncs the job migration pruned, working through the
+   * sector_import_pruned table it left behind. Drop that table once this has run for real.
+   */
+  @POST
+  @Path("/sector-retention/sweep-files")
+  public JobInfo sweepPrunedSectorFiles(@QueryParam("dryRun") @DefaultValue("true") boolean dryRun,
+                                        @Auth User user) {
+    return runJob(new SectorImportPrunedSweepJob(user.getKey(), factory, siDao.getFileMetricsDao(), dryRun));
+  }
+
   @POST
   @Path("/sector-retention")
   public JobInfo sectorRetention(@QueryParam("datasetKey") Integer datasetKey,
