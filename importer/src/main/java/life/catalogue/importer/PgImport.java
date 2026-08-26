@@ -479,7 +479,8 @@ public class PgImport implements Callable<Boolean> {
             fillUsageData(u, vKeys);
             // optional cross-dataset matching: add a scoped Identifier from the configured target dataset
             if (matchTarget != null && matchScope != null && (u.isTaxon() || u.isSynonym())) {
-              matchUsage(u, vKey, matchTarget, matchScope, verbatimRecordMapper);
+              // the walker stack holds the accepted ancestors of this usage, a synonym included
+              matchUsage(u, vKey, matchTarget, matchScope, verbatimRecordMapper, parents);
             }
             // update depth
             if (maxDepth.get() < parents.size()) {
@@ -650,11 +651,18 @@ public class PgImport implements Callable<Boolean> {
    * Matches the imported usage against the configured target dataset and either attaches an
    * {@link Identifier} (for clean and HIGHERRANK matches) or flags a MATCHING_* issue on the
    * verbatim record (for AMBIGUOUS, NONE, UNSUPPORTED, and additionally HIGHERRANK).
+   *
+   * The classification is what separates same-canonical homonyms across kingdoms - without it the matcher
+   * cannot compare taxonomic groups and every homonym stays AMBIGUOUS, see
+   * <a href="https://github.com/CatalogueOfLife/backend/issues/1565">#1565</a>.
+   *
+   * @param ancestors the accepted ancestors of the usage, highest rank first as the tree walker stacks them
    */
-  private void matchUsage(UsageData u, DSID<Integer> vKey, UsageMatcher matcher, String scope, VerbatimRecordMapper verbatimRecordMapper) {
+  private void matchUsage(UsageData u, DSID<Integer> vKey, UsageMatcher matcher, String scope, VerbatimRecordMapper verbatimRecordMapper,
+                          List<SimpleName> ancestors) {
     UsageMatch m;
     try {
-      m = matcher.parseAndMatch(u.usage.toSimpleNameLink(), true);
+      m = matcher.parseAndMatch(classifiedQuery(u, ancestors), true);
     } catch (RuntimeException e) {
       LOG.warn("Match failed for usage {} {}", u.getId(), u.usage.getName().getLabel(), e);
       return;
@@ -684,6 +692,18 @@ public class PgImport implements Callable<Boolean> {
         addVerbatimIssue(verbatimRecordMapper, vKey, u.getVerbatimKey(), Issue.MATCHING_UNSUPPORTED);
         break;
     }
+  }
+
+  /**
+   * Builds the match query for a usage, reversing the tree walker's root first ancestor stack into the
+   * direct parent first order {@link SimpleNameClassified} expects.
+   */
+  private static SimpleNameClassified<SimpleNameCached> classifiedQuery(UsageData u, List<SimpleName> ancestors) {
+    List<SimpleNameCached> classification = new ArrayList<>(ancestors.size());
+    for (int i = ancestors.size() - 1; i >= 0; i--) {
+      classification.add(new SimpleNameCached(ancestors.get(i)));
+    }
+    return new SimpleNameClassified<>(new SimpleNameCached(u.usage.toSimpleNameLink()), classification);
   }
 
   private void addVerbatimIssue(VerbatimRecordMapper mapper, DSID<Integer> vKey, Integer verbatimKey, Issue issue) {

@@ -1,0 +1,5 @@
+Plantae [kingdom] {ID=k}
+  Tracheophyta [phylum] {ID=ph}
+    Euphorbiaceae [family] {ID=fam}
+      Ricinus [genus] {ID=gen}
+        Ricinus communis [species] {ID=sp}

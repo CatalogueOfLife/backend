@@ -1,0 +1,10 @@
+Animalia [kingdom] {ID=a}
+  Arthropoda [phylum] {ID=a1}
+    Ricinidae [family] {ID=a2}
+      Ricinus De Geer, 1778 [genus] {ID=ricinus-louse}
+        Ricinus fringillae De Geer, 1778 [species] {ID=a4}
+Plantae [kingdom] {ID=p}
+  Tracheophyta [phylum] {ID=p1}
+    Euphorbiaceae [family] {ID=p2}
+      Ricinus L. [genus] {ID=ricinus-plant}
+        Ricinus communis L. [species] {ID=p4}

@@ -23,6 +23,8 @@ import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.junit.TreeRepoRule;
+import life.catalogue.matching.IdentifierScopeResolver;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
@@ -72,6 +74,9 @@ public class PgImportITBase {
   ReferenceDao rdao;
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   NameUsageIndexService indexService = NameUsageIndexService.passThru();
+  // optional cross dataset matching, see Setting.ADD_IDENTIFIERS_FROM. Both null unless a test sets them.
+  UsageMatcherFactory matcherFactory;
+  IdentifierScopeResolver scopeResolver;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -88,11 +93,7 @@ public class PgImportITBase {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     importStoreFactory = new ImportStoreFactory(cfg);
-    dataset = new DatasetWithSettings();
-    dataset.setType(DatasetType.OTHER);
-    dataset.setOrigin(DatasetOrigin.EXTERNAL);
-    dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
-    dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
+    dataset = newDataset();
 
     sdao = new SynonymDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, indexService, validator);
     ndao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
@@ -102,6 +103,16 @@ public class PgImportITBase {
     treeDao = new TreeDao(SqlSessionFactoryRule.getSqlSessionFactory());
   }
   
+  /** A fresh, unsaved external dataset. Tests importing a second dataset assign this to {@link #dataset}. */
+  DatasetWithSettings newDataset() {
+    var d = new DatasetWithSettings();
+    d.setType(DatasetType.OTHER);
+    d.setOrigin(DatasetOrigin.EXTERNAL);
+    d.setCreatedBy(TestDataRule.TEST_USER.getKey());
+    d.setModifiedBy(TestDataRule.TEST_USER.getKey());
+    return d;
+  }
+
   @After
   public void cleanup() throws Exception {
     if (store != null) {
@@ -121,7 +132,8 @@ public class PgImportITBase {
   }
 
   void normalizeAndImport(DataFormat format, int key) throws Exception {
-    resourceDir = "/" + format.name().toLowerCase() + "/" + key;
+    // same layout as NormalizerITBase.resourceDir, the filename differs from the enum name for TEXT_TREE
+    resourceDir = "/" + format.getFilename().toLowerCase().replaceAll("_", "-") + "/" + key;
     URL url = getClass().getResource(resourceDir);
     dataset.setDataFormat(format);
     normalizeAndImport(Paths.get(url.toURI()));
@@ -140,6 +152,9 @@ public class PgImportITBase {
       }
 
       // normalize
+      if (store != null) {
+        store.close(); // a previous import of this test, we only ever keep the last store around
+      }
       store = importStoreFactory.create(dataset.getKey(), 1);
       Normalizer norm = new Normalizer(dataset, store, source,
         NameIndexFactory.build(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
@@ -147,7 +162,7 @@ public class PgImportITBase {
       norm.call();
       
       // import into postgres
-      PgImport importer = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), dataset, Users.IMPORTER, store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, indexService, null, null);
+      PgImport importer = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), dataset, Users.IMPORTER, store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, indexService, matcherFactory, scopeResolver);
       importer.call();
       
     } catch (Exception e) {
