@@ -13,6 +13,7 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.cache.ObjectCache;
 import life.catalogue.cache.ObjectCacheMapDB;
+import life.catalogue.common.Managed;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
@@ -24,6 +25,7 @@ import life.catalogue.doi.datacite.model.DoiAttributes;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiException;
+import life.catalogue.doi.service.DoiExistsException;
 import life.catalogue.doi.service.DoiHttpException;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.doi.service.InvalidMetadataException;
@@ -49,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * Service that listens to DoiChange events, persists them and updates
  * DataCite accordingly. In case of errors or restarts retries to apply changes to DataCite.
  */
-public class DoiChangeListener implements DoiListener, AutoCloseable {
+public class DoiChangeListener implements DoiListener, Managed {
   private static final Logger LOG = LoggerFactory.getLogger(DoiChangeListener.class);
   private final SqlSessionFactory factory;
   private final DoiService doiService;
@@ -57,26 +59,63 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
   private final Set<DOI> deleted = ConcurrentHashMap.newKeySet();
   private final LatestDatasetKeyCache datasetKeyCache;
   private final DoiConfig cfg;
-  private final ObjectCache<XDoiChange> events; // tmp persisted cache
   private final long wait;
-  private final ScheduledExecutorService scheduler;
-  private final ExecutorService executor;
+  private ObjectCache<XDoiChange> events; // tmp persisted cache
+  private ScheduledExecutorService scheduler;
+  private ExecutorService executor;
 
-  public DoiChangeListener(SqlSessionFactory factory, DoiService doiService, LatestDatasetKeyCache datasetKeyCache, DatasetConverter converter, DoiConfig cfg) throws IOException {
+  public DoiChangeListener(SqlSessionFactory factory, DoiService doiService, LatestDatasetKeyCache datasetKeyCache, DatasetConverter converter, DoiConfig cfg) {
     this.factory = factory;
     this.doiService = doiService;
     this.converter = converter;
     this.datasetKeyCache = datasetKeyCache;
     this.cfg = cfg;
     this.wait = TimeUnit.SECONDS.toMillis(cfg.waitPeriod);
+  }
+
+  /**
+   * Only a started listener ever talks to DataCite. This is a stoppable component on purpose: during a
+   * blue-green deploy both the old and the new app read every event from the shared broker queue, so the
+   * old one has to be told to stop acting on DOI changes before the new one takes over - otherwise both
+   * create the same DOI and whoever loses the race gets a 422 "This DOI has already been taken".
+   */
+  @Override
+  public void start() throws Exception {
+    if (hasStarted()) {
+      return;
+    }
     // to avoid collision with running apps in parallel during deploys we create new event stores
     this.events = new ObjectCacheMapDB<>(XDoiChange.class, freeStoreFile(new File(cfg.store)), new DOIKryoPool(), true);
     LOG.info("Start DOI listener executing changes every {} minutes from {}", TimeUnit.SECONDS.toMinutes(cfg.waitPeriod), cfg.store);
+    this.executor = Executors.newVirtualThreadPerTaskExecutor();
     this.scheduler = Executors.newScheduledThreadPool(1,
       new NamedThreadFactory("doi-updater", Thread.NORM_PRIORITY, true)
     );
     scheduler.scheduleAtFixedRate(new UpdateJob(), 0, cfg.waitPeriod/2, TimeUnit.SECONDS);
-    executor = Executors.newVirtualThreadPerTaskExecutor();
+  }
+
+  @Override
+  public void stop() throws Exception {
+    if (!hasStarted()) {
+      return;
+    }
+    ExecutorUtils.shutdown(scheduler, 10, TimeUnit.SECONDS);
+    scheduler = null;
+    executor.close();
+    executor = null;
+    if (events.size()>0) {
+      LOG.warn("Stopping DOI change listener with {} DOI events waiting", events.size());
+      for (XDoiChange event : events) {
+        LOG.info("Discard queued DOI {} for dataset {}: {}", event.getType(), event.datasetKey, event.getDoi());
+      }
+    }
+    events.close();
+    events = null;
+  }
+
+  @Override
+  public boolean hasStarted() {
+    return events != null;
   }
 
   protected static File freeStoreFile(File dir) throws IOException {
@@ -97,6 +136,14 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
   @Override
   public void doiChanged(DoiChange event) {
     try {
+      // a stopped listener - an old app during a deploy - must not touch DataCite at all.
+      // Read both fields once: stop() nulls them and we must not blow up on an event that races a shutdown.
+      final ObjectCache<XDoiChange> store = this.events;
+      final ExecutorService exec = this.executor;
+      if (store == null || exec == null) {
+        LOG.info("DOI listener not running, ignore {} event for DOI {}", event.getType(), event.getDoi());
+        return;
+      }
       // make sure it is a DOI with our prefix
       if (!event.getDoi().getPrefix().equalsIgnoreCase(cfg.prefix)) {
         LOG.info("Ignore {} event for DOI {} with wrong DOI prefix for this config", event.getType(), event.getDoi());
@@ -118,10 +165,10 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
       if (event.isUpdate()) {
         // pool updates for some time
         // this overrides potentially already waiting events for the same DOI and type
-        events.put(xevent);
+        store.put(xevent);
       } else {
         // execute immediately
-        executor.submit(new DoiChangeJob(xevent));
+        exec.submit(new DoiChangeJob(xevent));
       }
 
     } catch (RuntimeException e) {
@@ -130,7 +177,7 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
   }
 
   public List<XDoiChange> list() {
-    return events.list();
+    return hasStarted() ? events.list() : Collections.emptyList();
   }
 
   private DoiAttributes metadata(DOI doi) throws DoiException {
@@ -312,7 +359,16 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
     }
 
     private void create(DOI doi) throws DoiException {
-      doiService.create(metadata(doi));
+      var attr = metadata(doi);
+      try {
+        doiService.create(attr);
+      } catch (DoiExistsException e) {
+        // another app instance, or an earlier run of this very event that failed after the DOI was
+        // already registered, got there first. Converge on the metadata we want instead of failing -
+        // a create we cannot repeat is otherwise stuck for good, as 422 is not retried.
+        LOG.info("DOI {} exists at DataCite already, update its metadata instead", doi);
+        doiService.update(attr);
+      }
       if (isPublic(event.datasetKey)) {
         publish(doi);
       }
@@ -337,18 +393,5 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
       }
       deleted.add(doi);
     }
-  }
-
-  @Override
-  public void close() throws Exception {
-    ExecutorUtils.shutdown(scheduler, 10, TimeUnit.SECONDS);
-    executor.close();
-    if (events.size()>0) {
-      LOG.warn("Closing DOI change listener with {} DOI events waiting", events.size());
-      for (XDoiChange event : events) {
-        LOG.info("Discard queued DOI {} for dataset {}: {}", event.getType(), event.datasetKey, event.getDoi());
-      }
-    }
-    events.close();
   }
 }

@@ -394,7 +394,7 @@ public class WsServer extends Application<WsServerConfig> {
     }
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
     DoiChangeListener doiChangeListener = new DoiChangeListener(getSqlSessionFactory(), doiService, coljersey.getCache(), converter, cfg.doi);
-    env.lifecycle().manage(ManagedUtils.from(doiChangeListener));
+    managedService.manage(Component.DoiUpdater, doiChangeListener);
 
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao, searchService, cfg.clbURI);

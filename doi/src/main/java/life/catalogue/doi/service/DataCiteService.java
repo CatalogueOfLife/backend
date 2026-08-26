@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import jakarta.ws.rs.NotFoundException;
@@ -39,6 +40,7 @@ import jakarta.ws.rs.core.UriBuilder;
 
 public class DataCiteService implements DoiService {
   private static final Logger LOG = LoggerFactory.getLogger(DataCiteService.class);
+  private static final String ALREADY_TAKEN = "already been taken";
   private static final String DATASET_PATH = "ds";
   private static final String DOWNLOAD_PATH = "dl";
 
@@ -122,6 +124,15 @@ public class DataCiteService implements DoiService {
       resp = request().post(Entity.json(data));
       throwIfNotSuccessful(attr.getDoi(), resp);
 
+    } catch (DoiHttpException e) {
+      // DataCite answers a POST for an existing DOI with 422, the very same status it uses for invalid
+      // metadata. That is not a metadata problem though but a duplicate create - another instance, or an
+      // earlier partially failed run of our own, got there first. Tell the two apart for the caller.
+      if (e.getStatus() == 422 && isAlreadyTaken(e.getBody())) {
+        throw new DoiExistsException(e, attr.getDoi());
+      }
+      throw e;
+
     } catch (RuntimeException | JsonProcessingException e) {
       throw new DoiException(attr.getDoi(), e);
 
@@ -135,11 +146,38 @@ public class DataCiteService implements DoiService {
   private void throwIfNotSuccessful(DOI doi, Response resp) throws DoiHttpException {
     if (resp.getStatus() / 100 != 2 ) {
       if (resp.getEntity() != null) {
-        String message = resp.readEntity(String.class);
-        throw new DoiHttpException(resp.getStatus(), doi, message);
+        String body = resp.readEntity(String.class);
+        throw new DoiHttpException(resp.getStatus(), doi, body);
       }
       throw new DoiHttpException(resp.getStatus(), doi);
     }
+  }
+
+  /**
+   * Detects the DataCite error response for a DOI that exists already, e.g.
+   * {"errors":[{"source":"doi","title":"This DOI has already been taken","uid":"10.48580/dgyxm.v1"}]}
+   * A response that carries a proper errors array is trusted as is - only a body we cannot read as such
+   * falls back to a plain substring check, so an unrelated 422 is never mistaken for a duplicate.
+   */
+  @VisibleForTesting
+  static boolean isAlreadyTaken(@Nullable String body) {
+    if (StringUtils.isBlank(body)) {
+      return false;
+    }
+    try {
+      var errors = ApiModule.MAPPER.readTree(body).get("errors");
+      if (errors != null && errors.isArray()) {
+        for (var err : errors) {
+          if (StringUtils.containsIgnoreCase(err.path("title").asText(""), ALREADY_TAKEN)) {
+            return true;
+          }
+        }
+        return false;
+      }
+    } catch (JsonProcessingException e) {
+      LOG.debug("DataCite error response is not JSON: {}", body);
+    }
+    return StringUtils.containsIgnoreCase(body, ALREADY_TAKEN);
   }
 
   @Override
@@ -215,44 +253,55 @@ public class DataCiteService implements DoiService {
     update(attr);
   }
 
-  LocalDateTime lastErrorMail;
-  int errorsSince;
+  private final Object mailLock = new Object();
+  private LocalDateTime lastErrorMail;
+  private int errorsSince;
 
   @Override
   public void notifyException(DOI doi, String action, Exception e) {
-    if (mailer != null) {
-      // avoid spamming thousands of mails and do only one mail per minute
+    if (mailer == null) {
+      return;
+    }
+    // Avoid spamming thousands of mails and do only one mail per minute.
+    // DOI jobs run concurrently on virtual threads, so the throttle state must be updated under a lock -
+    // an unguarded read-modify-write here lets an entire burst through, which is exactly when it matters.
+    final LocalDateTime previousMail;
+    final int suppressed;
+    synchronized (mailLock) {
       long secs = lastErrorMail == null ? Long.MAX_VALUE : ChronoUnit.SECONDS.between(lastErrorMail, LocalDateTime.now());
       if (secs <= 60) {
         errorsSince++;
-
-      } else {
-        StringWriter sw = new StringWriter();
-        sw.write(action);
-        sw.write(" for DOI " + doi + " has failed.");
-        if (errorsSince > 0) {
-          sw.write("\nWarning! There were "+errorsSince+" more DOI errors since " + lastErrorMail +
-            " that were not reported via email, please consult the logs."
-          );
-        }
-        if (e != null) {
-          sw.write(" " + e.getClass().getSimpleName()+":\n\n");
-          PrintWriter pw = new PrintWriter(sw);
-          e.printStackTrace(pw);
-        } else {
-          sw.write(".\n");
-        }
-
-        Email mail = EmailBuilder.startingBlank()
-          .to(onErrorTo)
-          .from(onErrorFrom)
-          .withSubject(String.format("DOI error %s", doi))
-          .withPlainText(sw.toString())
-          .buildEmail();
-        mailer.sendMail(mail, true);
-        lastErrorMail = LocalDateTime.now();
-        errorsSince = 0;
+        return;
       }
+      previousMail = lastErrorMail;
+      suppressed = errorsSince;
+      errorsSince = 0;
+      lastErrorMail = LocalDateTime.now();
     }
+
+    // building and sending happens outside the lock - only the throttle decision needs to be serial
+    StringWriter sw = new StringWriter();
+    sw.write(action);
+    sw.write(" for DOI " + doi + " has failed.");
+    if (suppressed > 0) {
+      sw.write("\nWarning! There were "+suppressed+" more DOI errors since " + previousMail +
+        " that were not reported via email, please consult the logs."
+      );
+    }
+    if (e != null) {
+      sw.write(" " + e.getClass().getSimpleName()+":\n\n");
+      PrintWriter pw = new PrintWriter(sw);
+      e.printStackTrace(pw);
+    } else {
+      sw.write(".\n");
+    }
+
+    Email mail = EmailBuilder.startingBlank()
+      .to(onErrorTo)
+      .from(onErrorFrom)
+      .withSubject(String.format("DOI error %s", doi))
+      .withPlainText(sw.toString())
+      .buildEmail();
+    mailer.sendMail(mail, true);
   }
 }

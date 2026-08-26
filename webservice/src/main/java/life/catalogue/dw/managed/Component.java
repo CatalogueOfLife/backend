@@ -8,6 +8,7 @@ public enum Component {
   JobExecutor,
   UsageMatcher,
   CronExecutor,
+  DoiUpdater,
   DatasetImporter,
   SectorSynchronizer,
   ImportScheduler,
