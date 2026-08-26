@@ -57,15 +57,24 @@ public class JobResource {
    * Scans the classpath once at startup for all concrete background job implementations,
    * the same values that end up in the job_class column. Cheaper and far more stable than
    * a SELECT DISTINCT job_class over millions of history rows.
+   *
+   * Nested classes are included, not just top level ones: job_class holds the bare
+   * getSimpleName() either way, so a job declared inside its factory - MatcherBuildJob in
+   * UsageMatcherFactory, say - is persisted and searchable exactly like any other and must
+   * be offered as a filter value too.
    */
   @VisibleForTesting
   static List<String> scanJobTypes() {
     List<String> types = new ArrayList<>();
     try {
-      for (ClassPath.ClassInfo info : ClassPath.from(BackgroundJob.class.getClassLoader()).getTopLevelClassesRecursive(JOB_PACKAGE)) {
+      for (ClassPath.ClassInfo info : ClassPath.from(BackgroundJob.class.getClassLoader()).getAllClasses()) {
+        if (!inJobPackage(info.getPackageName())) continue;
         try {
           Class<?> cl = info.load();
-          if (BackgroundJob.class.isAssignableFrom(cl) && !Modifier.isAbstract(cl.getModifiers())) {
+          if (BackgroundJob.class.isAssignableFrom(cl) && !Modifier.isAbstract(cl.getModifiers())
+              // an anonymous or local job has no stable simple name to filter by - it is "" or
+              // a digit prefixed one, and never a value anybody can pick from a list
+              && !cl.isAnonymousClass() && !cl.isLocalClass() && !cl.isSynthetic()) {
             types.add(cl.getSimpleName());
           }
         } catch (Throwable e) {
@@ -80,6 +89,10 @@ public class JobResource {
     var sorted = types.stream().distinct().sorted().toList();
     LOG.info("Found {} background job types", sorted.size());
     return sorted;
+  }
+
+  private static boolean inJobPackage(String packageName) {
+    return packageName.equals(JOB_PACKAGE) || packageName.startsWith(JOB_PACKAGE + ".");
   }
 
   /**

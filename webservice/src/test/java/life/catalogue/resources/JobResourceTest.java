@@ -46,6 +46,12 @@ public class JobResourceTest {
     assertTrue(types.contains("SectorDelete"));
     assertTrue(types.contains("DeleteDatasetJob"));
     assertTrue(types.contains("GbifSyncJob"));
+    // nested job classes count too - job_class holds the simple name either way,
+    // so a job declared inside a factory must be as filterable as a top level one
+    assertTrue(types.contains("MatcherBuildJob"));
+    assertTrue(types.contains("ReconcileJob"));
+    // anonymous and local classes have no usable simple name
+    assertFalse(types.contains(""));
     // abstract base classes are not job types - they never appear in job_class
     assertFalse(types.contains("BackgroundJob"));
     assertFalse(types.contains("DatasetJob"));
