@@ -17,6 +17,7 @@ import life.catalogue.db.mapper.SectorMapper;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +41,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(UpdMetricCmd.class);
   private static final String ARG_KEY = "key";
   private static final String ARG_ALL = "all";
+  private static final String ARG_DATASETS = "datasets";
   private static final String ARG_UPDATE = "update";
   private Integer key;
   private boolean update;
@@ -62,6 +64,11 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
       .dest(ARG_UPDATE)
       .action(Arguments.storeTrue())
       .help("Flag to update also existing metrics");
+    subparser.addArgument("--"+ ARG_DATASETS)
+      .dest(ARG_DATASETS)
+      .type(String.class)
+      .required(false)
+      .help("Comma separated list of dataset keys to rebuild the import metrics of their current attempt for");
     subparser.addArgument("--"+ ARG_KEY, "-k")
       .dest(ARG_KEY)
       .type(Integer.class)
@@ -128,6 +135,9 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
     if (ns.getBoolean(ARG_ALL)) {
       update = true;
       updateAll();
+    } else if (ns.getString(ARG_DATASETS) != null) {
+      update = true;
+      updateDatasets(ns.getString(ARG_DATASETS));
     } else {
       update = ns.getBoolean(ARG_UPDATE);
       key = ns.getInt(ARG_KEY);
@@ -148,6 +158,35 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
           updateDataset(d);
         }
       );
+    }
+    LOG.info("Finished metrics update, updating {} datasets", counter);
+  }
+
+  /**
+   * Rebuilds the dataset import metrics of the current attempt of each given dataset.
+   * Unlike --all this touches nothing else, so a handful of broken imports can be repaired
+   * without sweeping the entire instance.
+   */
+  private void updateDatasets(String keys) {
+    List<Integer> datasetKeys = Arrays.stream(keys.split(","))
+      .map(String::trim)
+      .filter(k -> !k.isEmpty())
+      .map(Integer::parseInt)
+      .distinct()
+      .toList();
+    LOG.info("Start metrics update for {} given datasets", datasetKeys.size());
+    final AtomicInteger counter = new AtomicInteger(0);
+    try (SqlSession session = factory.openSession()) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      for (Integer datasetKey : datasetKeys) {
+        Dataset d = dm.get(datasetKey);
+        if (d == null) {
+          LOG.warn("Dataset {} does not exist", datasetKey);
+        } else {
+          counter.incrementAndGet();
+          updateDataset(d);
+        }
+      }
     }
     LOG.info("Finished metrics update, updating {} datasets", counter);
   }

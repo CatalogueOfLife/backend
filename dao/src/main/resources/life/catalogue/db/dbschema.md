@@ -11,6 +11,57 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-08-26 backfill the import metrics lost by v1.5.0
+`ImportJob` computed its metrics but never wrote them: `updateMetrics` only fills the object, and the
+trailing `updateState(FINISHED)` that used to persist it was dropped as redundant in da0db59f9. Every
+import that *succeeded* while v1.5.0 ran therefore kept the empty row `updateState(ANALYZING)` wrote
+just before, with a NULL `finished` and NULL counts. Cancelled and failed imports were never affected -
+they finalize through `updateImportCancelled`/`updateImportFailure`. Fixed in e01b83bb4; this repairs
+the rows already written. **Deploy the fix first**, otherwise new imports keep breaking.
+
+On prod the damage runs from the v1.5.0 deploy on 2026-08-25 (last good import 13:44, first broken
+23:37) to the redeploy - 26 public imports, of which 24 were still the dataset's current attempt.
+
+```sql
+-- step 1: what is broken. NULL name_count is the signature - a real updateMetrics always writes a
+-- number, so it cannot be confused with a dataset that genuinely has no names.
+SELECT di.dataset_key, di.attempt, d.attempt AS current_attempt, di.started, j.finished AS job_finished
+FROM dataset_import di
+  JOIN job j ON j.key = di.job_key
+  JOIN dataset d ON d.key = di.dataset_key
+WHERE j.job_class = 'ImportJob' AND j.status = 'FINISHED' AND di.name_count IS NULL
+ORDER BY j.finished;
+
+-- step 2: restore the finish dates from the job record, which kept them all along.
+-- Covers every broken row, including the superseded attempts step 3 cannot reach.
+UPDATE dataset_import di
+SET finished = j.finished
+FROM job j
+WHERE j.key = di.job_key
+  AND j.job_class = 'ImportJob' AND j.status = 'FINISHED'
+  AND di.finished IS NULL AND j.finished IS NOT NULL;
+
+-- step 3: the counts have to be recomputed from the live data, so only an attempt that is still the
+-- dataset's current one can be repaired - an attempt that has since been superseded has had its data
+-- overwritten and keeps NULL counts. This emits the argument for the command below.
+SELECT string_agg(DISTINCT di.dataset_key::text, ',')
+FROM dataset_import di
+  JOIN job j ON j.key = di.job_key
+  JOIN dataset d ON d.key = di.dataset_key
+WHERE j.job_class = 'ImportJob' AND j.status = 'FINISHED' AND di.name_count IS NULL
+  AND di.attempt = d.attempt;
+```
+
+Then rebuild those counts with the CLI, which reruns the very code path the import should have
+persisted (`--datasets` was added for this - unlike `--all` it sweeps nothing else):
+
+```
+java -jar webservice.jar updMetrics --datasets <list from step 3> config.yml
+```
+
+Step 2 is idempotent and independent of step 3; running it first is deliberate, as `updMetrics` reads
+the row before rewriting it and would otherwise write the NULL `finished` straight back.
+
 #### 2026-08-22 unified background jobs (feature/unified-jobs branch)
 Generic `job` table holding one record per background job of any kind.
 `dataset_import` and `sector_import` become pure metrics tables linking to `job` via a new `job_key` column;
