@@ -16,6 +16,7 @@ import java.util.Optional;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,11 +68,71 @@ public class GBIFAuthentication implements AuthenticationProvider {
   }
   
 
+  /**
+   * Verifies the configured GBIF trusted application credentials by looking up a well known user.
+   * <p>
+   * Only a request GBIF actually refused is fatal - that means our appkey or secret is wrong and the
+   * deployment would otherwise go live with broken logins. If the registry never answered we cannot tell
+   * anything about our credentials, so we merely warn and let the server start up: everything but
+   * authentication keeps working and the next login attempt retries anyway.
+   */
   public void verifyGbifAuth() {
     // test gbif auth configs
-    if (verificationUser != null && getFullGbifUser(verificationUser) == null) {
-      LOG.error("Failed to retrieve user {} to verify GBIF authentication", verificationUser);
+    if (verificationUser != null) {
+      verify(lookupGbifUser(verificationUser));
+    }
+  }
+
+  @VisibleForTesting
+  void verify(UserLookup lookup) {
+    if (lookup.user() != null) {
+      LOG.info("Verified GBIF authentication with user {}", verificationUser);
+
+    } else if (lookup.refused()) {
+      LOG.error("GBIF refused our trusted application credentials with HTTP {} when retrieving user {}. Check the configured appkey & secret",
+        lookup.status(), verificationUser);
       throw new IllegalStateException("Failed to verify GBIF authentication");
+
+    } else {
+      LOG.warn("Cannot verify GBIF authentication with user {}: {}. The GBIF registry at {} appears to be unavailable - "
+        + "startup continues, but logins will fail until it recovers", verificationUser, lookup.describe(), userUri);
+    }
+  }
+
+  /**
+   * The outcome of a GBIF user lookup. It keeps why a lookup did not succeed so callers can tell a request
+   * GBIF refused apart from a registry that never answered - the two mean very different things.
+   *
+   * @param user   the user if the lookup succeeded, null otherwise
+   * @param status the http status GBIF responded with, null if there was no response at all
+   * @param error  the exception that prevented a response, null if GBIF did respond
+   */
+  @VisibleForTesting
+  record UserLookup(User user, Integer status, Exception error) {
+
+    static UserLookup found(User user) {
+      return new UserLookup(user, HttpStatus.SC_OK, null);
+    }
+
+    /** GBIF answered, but not with a user. */
+    static UserLookup answered(int status) {
+      return new UserLookup(null, status, null);
+    }
+
+    /** GBIF never answered - a timeout, a connection problem or a broken response. */
+    static UserLookup noResponse(Exception error) {
+      return new UserLookup(null, null, error);
+    }
+
+    /**
+     * True if GBIF answered, but refused the request - our trusted application credentials are wrong.
+     */
+    boolean refused() {
+      return status != null && (status == HttpStatus.SC_UNAUTHORIZED || status == HttpStatus.SC_FORBIDDEN);
+    }
+
+    String describe() {
+      return status != null ? "HTTP " + status : String.valueOf(error);
     }
   }
   
@@ -127,17 +188,26 @@ public class GBIFAuthentication implements AuthenticationProvider {
   
   @VisibleForTesting
   User getFullGbifUser(String username) {
+    return lookupGbifUser(username).user();
+  }
+
+  /**
+   * Retrieves the full GBIF user, keeping the reason a lookup did not succeed.
+   */
+  @VisibleForTesting
+  UserLookup lookupGbifUser(String username) {
     HttpGet get = new HttpGet(userUri.resolve(username));
     gbifAuth.signRequest(get);
     try (CloseableHttpResponse resp = http.execute(get)) {
-      if (resp.getCode() == 200) {
-        return fromJson(resp.getEntity().getContent());
+      if (resp.getCode() == HttpStatus.SC_OK) {
+        return UserLookup.found(fromJson(resp.getEntity().getContent()));
       }
       LOG.info("No success retrieving GBIF user {}: {}", username, resp.getCode());
+      return UserLookup.answered(resp.getCode());
     } catch (Exception e) {
       LOG.info("Failed to retrieve GBIF user {}", username, e);
+      return UserLookup.noResponse(e);
     }
-    return null;
   }
   
   @VisibleForTesting
