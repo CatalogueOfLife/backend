@@ -5,8 +5,6 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.db.CRUD;
 
-import org.gbif.nameparser.api.Rank;
-
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
@@ -68,14 +66,11 @@ public interface NamesIndexMapper extends CRUD<Integer, NameIndexEntry> {
   void updateSequence();
 
   /**
-   * Query the names index with a regular expression pattern
+   * Query the names index with a regular expression pattern, anchored at the start of the name.
    * @param regex
-   * @param rank
    * @param page
    */
   List<NameIndexEntry> listByRegex(@Param("regex") String regex,
-                              @Param("canonical") boolean canonical,
-                              @Param("rank") Rank rank,
                               @Param("page") Page page);
 
   /**

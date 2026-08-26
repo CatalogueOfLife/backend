@@ -125,13 +125,11 @@ public class NamesIndexResource {
   @GET
   @Path("pattern")
   public List<NameIndexEntry> searchByRegex(@QueryParam("q") String regex,
-                                       @QueryParam("canonical") @DefaultValue("true") boolean canonical,
-                                       @QueryParam("rank") Rank rank,
                                        @Valid @BeanParam Page page,
                                        @Context SqlSession session) {
     RegexUtils.validatePattern(regex);
     Page p = page == null ? new Page() : page;
-    return session.getMapper(NamesIndexMapper.class).listByRegex(regex, canonical, rank, p);
+    return session.getMapper(NamesIndexMapper.class).listByRegex(regex, p);
   }
 
   @POST

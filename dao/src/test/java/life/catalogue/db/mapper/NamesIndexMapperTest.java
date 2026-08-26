@@ -75,23 +75,23 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, NameIndexEntry, 
   @Test
   public void regex() {
     // single-tier fixture: 2 canonical rows (Abies, Abies alba), only the species contains "alb"
-    var res = mapper().listByRegex(".", false,null, null);
+    var res = mapper().listByRegex(".", null);
     assertEquals(2, res.size());
     assertNotNullProps(res);
 
-    res = mapper().listByRegex("Abi", false,null, null);
+    res = mapper().listByRegex("Abi", null);
     assertEquals(2, res.size());
     assertNotNullProps(res);
 
-    res = mapper().listByRegex(".*alb", false,null, null);
+    res = mapper().listByRegex(".*alb", null);
     assertEquals(1, res.size());
     assertNotNullProps(res);
 
-    res = mapper().listByRegex(".*ba[[:>:]]", false,null, null);
+    res = mapper().listByRegex(".*ba[[:>:]]", null);
     assertEquals(1, res.size());
     assertNotNullProps(res);
 
-    res = mapper().listByRegex(".*a\\M", false,null, null);
+    res = mapper().listByRegex(".*a\\M", null);
     assertEquals(1, res.size());
     assertNotNullProps(res);
   }
