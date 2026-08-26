@@ -59,6 +59,7 @@ public class EsModule extends SimpleModule {
     ctxt.setMixInAnnotations(NameUsage.class, NameUsageMixIn.class);
     ctxt.setMixInAnnotations(Name.class, NameMixIn.class);
     ctxt.setMixInAnnotations(SectorScoped.class, SectorScopedMixIn.class);
+    ctxt.setMixInAnnotations(SimpleName.class, SimpleNameMixIn.class);
   }
 
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "@")
@@ -80,6 +81,13 @@ public class EsModule extends SimpleModule {
     @JsonIgnore abstract String getBasionymOrCombinationAuthorship();
     @JsonIgnore(false) abstract String getScientificNameNormalized();
     @JsonIgnore(false) abstract String getAlphaIndex();
+  }
+
+  // The classification is a list of SimpleNames. Both their labels are derived from name, authorship
+  // and rank and have no setter, so nothing ever reads them back - they would only bloat the _source.
+  abstract static class SimpleNameMixIn {
+    @JsonIgnore abstract String getLabel();
+    @JsonIgnore abstract String getLabelHtml();
   }
 
   // Override @JsonIgnore from SectorScoped so sectorMode is serialized into ES documents.

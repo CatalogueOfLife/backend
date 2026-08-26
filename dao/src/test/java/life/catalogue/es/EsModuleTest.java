@@ -7,6 +7,8 @@ import life.catalogue.es.json.EsModule;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -69,6 +71,39 @@ public class EsModuleTest {
 
     NameUsageBase usage = (NameUsageBase) result.getUsage();
     assertEquals("sectorMode must survive round-trip", Sector.Mode.MERGE, usage.getSectorMode());
+  }
+
+  /**
+   * SimpleName labels are derived and have no setter, so they are never read back from the _source.
+   * Keep them out of the ES documents - the classification would otherwise carry two label strings
+   * per entry for every indexed usage.
+   */
+  @Test
+  public void classificationLabelsNotSerialized() throws JsonProcessingException {
+    ObjectMapper mapper = EsModule.contentMapper();
+    Name name = new Name();
+    name.setRank(Rank.SPECIES);
+    name.setScientificName("Abies alba");
+    name.setAuthorship("Mill.");
+    Taxon taxon = new Taxon(name);
+    taxon.setStatus(TaxonomicStatus.ACCEPTED);
+
+    NameUsageWrapper nuw = new NameUsageWrapper(taxon);
+    nuw.setClassification(List.of(
+      new SimpleName("g1", "Abies", "Mill.", Rank.GENUS),
+      new SimpleName("s1", "Abies alba", "Mill.", Rank.SPECIES)
+    ));
+
+    JsonNode root = mapper.readTree(mapper.writeValueAsString(nuw));
+    JsonNode classification = root.path("classification");
+    assertEquals(2, classification.size());
+    for (JsonNode sn : classification) {
+      assertTrue("no label on classification entries, got: " + sn, sn.path("label").isMissingNode());
+      assertTrue("no labelHtml on classification entries, got: " + sn, sn.path("labelHtml").isMissingNode());
+      assertFalse("the name itself must stay", sn.path("name").isMissingNode());
+    }
+    // the usage itself keeps its plain label, see NameUsageMixIn
+    assertFalse(root.path("usage").path("label").isMissingNode());
   }
 
   @Test
