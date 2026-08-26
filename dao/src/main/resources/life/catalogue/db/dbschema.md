@@ -43,20 +43,20 @@ WHERE j.key = di.job_key
 
 -- step 3: the counts have to be recomputed from the live data, so only an attempt that is still the
 -- dataset's current one can be repaired - an attempt that has since been superseded has had its data
--- overwritten and keeps NULL counts. This emits the argument for the command below.
+-- overwritten and keeps NULL counts. This emits the argument for the command below excluding temp (validation) datasets.
 SELECT string_agg(DISTINCT di.dataset_key::text, ',')
 FROM dataset_import di
   JOIN job j ON j.key = di.job_key
   JOIN dataset d ON d.key = di.dataset_key
 WHERE j.job_class = 'ImportJob' AND j.status = 'FINISHED' AND di.name_count IS NULL
-  AND di.attempt = d.attempt;
+  AND di.attempt = d.attempt AND di.dataset_key < 100000000;
 ```
 
 Then rebuild those counts with the CLI, which reruns the very code path the import should have
 persisted (`--datasets` was added for this - unlike `--all` it sweeps nothing else):
 
 ```
-java -jar webservice.jar updMetrics --datasets <list from step 3> config.yml
+java -jar colws.jar updMetrics --user xyz --datasets 2214,315949,316101,316104,316106,316107,316146,316148,316149,316150,316151,316152,316153,316154,316155,316156,316157,316158,316159,316160,316161,316162 config.yml
 ```
 
 Step 2 is idempotent and independent of step 3; running it first is deliberate, as `updMetrics` reads
