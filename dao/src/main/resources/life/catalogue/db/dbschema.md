@@ -657,6 +657,9 @@ DROP INDEX name_usage_archive_series_zoo_rank_idx;
 #### 2026-06-10 GBIF sync delta tracking
 Track the GBIF registry `modified` timestamp we last synced per dataset, so the incremental sync can
 skip datasets that have not changed since the previous run and we can poll the registry far more often.
+Note this timestamp is only a coarse gate: GBIF does not bump a datasets `modified` when only a sub
+entity such as an endpoint changes, so `GbifSyncJob` additionally compares the data access url and
+format by value and never skips a dataset whose access has drifted.
 ```
 ALTER TABLE dataset ADD COLUMN gbif_modified TIMESTAMP WITHOUT TIME ZONE;
 ```

@@ -683,7 +683,10 @@
   </select>
 
   <select id="listGBIF" resultMap="datasetGBIFResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>, d.gbif_key, d.gbif_modified
+    SELECT <include refid="SELECT_SIMPLE"/>, d.gbif_key, d.gbif_modified,
+      d.settings ->> 'data access' AS data_access,
+      d.settings ->> 'data format' AS data_format,
+      coalesce((d.settings ->> 'gbif sync lock')::boolean, false) AS gbif_sync_lock
     FROM dataset d
     WHERE d.deleted IS NULL AND d.gbif_key IS NOT NULL
   </select>

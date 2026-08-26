@@ -1,8 +1,10 @@
 package life.catalogue.gbifsync;
 
+import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetGBIF;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Setting;
@@ -15,6 +17,7 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.doi.service.BasicAuthenticator;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -52,6 +55,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
   private int deleted;
   private int skipped;
   private boolean incremental;
+  private final boolean force;
   private DatasetPager pager;
   // existing ChecklistBank datasets that carry a GBIF key, preloaded once per run to avoid per-dataset DB lookups
   private Map<UUID, DatasetGBIF> existingByGbif = Collections.emptyMap();
@@ -61,21 +65,27 @@ public class GbifSyncJob extends GlobalBlockingJob {
    **/
   /**
    * @param keys the explicitly requested GBIF datasets, empty when everything is synced
+   * @param force process every dataset even if the delta gate considers it unchanged
    */
-  public record GbifSyncParams(Set<UUID> keys, boolean incremental) {
+  public record GbifSyncParams(Set<UUID> keys, boolean incremental, boolean force) {
   }
 
   @Override
   public Object getParams() {
-    return new GbifSyncParams(keys, incremental);
+    return new GbifSyncParams(keys, incremental, force);
   }
 
   public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, GbifRegistryCache registry, int userKey, boolean incremental) {
-    this(cfg, client, ddao, sessionFactory, registry, userKey, Collections.emptySet(), incremental);
+    this(cfg, client, ddao, sessionFactory, registry, userKey, Collections.emptySet(), incremental, false);
   }
 
   public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, GbifRegistryCache registry, int userKey, Set<UUID> keys, boolean incremental) {
+    this(cfg, client, ddao, sessionFactory, registry, userKey, keys, incremental, false);
+  }
+
+  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, GbifRegistryCache registry, int userKey, Set<UUID> keys, boolean incremental, boolean force) {
     super(userKey, JobPriority.HIGH);
+    this.force = force;
     this.cfg = cfg;
     this.client = client;
     this.dao = ddao;
@@ -216,7 +226,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
     Integer key = existing == null ? null : existing.getKey();
     // skip datasets that have not changed in the GBIF registry since we last synced them.
     // this avoids the slow registry organisation/installation lookups and the DB read+write for unchanged datasets.
-    if (existing != null && isUnchanged(gbif, existing)) {
+    if (!force && existing != null && isUnchanged(gbif, existing)) {
       skipped++;
       return key;
     }
@@ -251,6 +261,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
           LOG.info("Dataset {} is locked for GBIF updates: {}", gbif.getKey(), gbif.getTitle());
 
         } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
+                   !Objects.equals(gbif.getDataFormat(), curr.getDataFormat()) ||
                    !Objects.equals(gbif.dataset.getLicense(), curr.getLicense()) ||
                    !Objects.equals(gbif.dataset.getPublisher(), curr.getPublisher()) ||
                    !Objects.equals(gbif.dataset.getGbifPublisherKey(), curr.getGbifPublisherKey()) ||
@@ -259,6 +270,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
           // we modify core metadata (title, description, contacts, version) via the dwc archive metadata
           // gbif syncs only change one of the following
           // - dwca/coldp access url
+          // - dwca/coldp data format
           // - license
           // - publisher (publishOrgKey)
           // - gbif publisher key
@@ -304,12 +316,44 @@ public class GbifSyncJob extends GlobalBlockingJob {
    * @return true if the GBIF dataset has not been modified in the registry since we last synced it.
    *   When either timestamp is unknown (e.g. datasets synced before delta tracking) we treat it as changed
    *   so it gets processed once and its watermark recorded.
+   *   The timestamp is only a coarse gate: it cannot see endpoint changes (see {@link #dataAccessDiffers}),
+   *   so a differing data access url or format always counts as changed regardless of the watermark.
    */
   @VisibleForTesting
   static boolean isUnchanged(DatasetPager.GbifDataset gbif, DatasetGBIF existing) {
+    if (dataAccessDiffers(gbif, existing)) {
+      return false;
+    }
     LocalDateTime gMod = gbif.getModified();
     LocalDateTime stored = existing.getGbifModified();
     return gMod != null && stored != null && !gMod.isAfter(stored);
+  }
+
+  /**
+   * Compares the data access url and format of the GBIF registry record with what we have stored in ChecklistBank.
+   * Endpoints are sub entities of a GBIF dataset and adding or replacing one does not bump the datasets own modified
+   * timestamp, so an endpoint swap is invisible to the {@link #isUnchanged} watermark and has to be spotted by value.
+   * Both sides are already in memory, so this costs nothing per dataset.
+   *
+   * @return true if the access url or format differ and the dataset must be processed
+   */
+  @VisibleForTesting
+  static boolean dataAccessDiffers(DatasetPager.GbifDataset gbif, DatasetGBIF existing) {
+    // a locked dataset is never updated, so a permanent difference must not flag it as changed on every single run
+    if (existing.isGbifSyncLock()) {
+      return false;
+    }
+    return !Objects.equals(asString(gbif.getDataAccess()), existing.getDataAccess())
+           || !Objects.equals(asString(gbif.getDataFormat()), existing.getDataFormat());
+  }
+
+  private static String asString(URI uri) {
+    return uri == null ? null : uri.toString();
+  }
+
+  /** @return the format as it is stored in the settings JSONB, i.e. serialised the same way Jackson does it */
+  private static String asString(DataFormat format) {
+    return format == null ? null : PermissiveEnumSerde.enumValueName(format);
   }
 
   /** Persists the GBIF registry modified timestamp we last synced for a dataset. */

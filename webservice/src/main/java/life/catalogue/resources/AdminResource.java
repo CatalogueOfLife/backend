@@ -209,7 +209,8 @@ public class AdminResource {
   @Path("/gbif-sync")
   @Consumes(MediaType.APPLICATION_JSON)
   public JobInfo syncGBIF(List<UUID> keys, @Auth User user) {
-    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, gbifSync.getRegistryCache(), user.getKey(), Set.copyOf(keys), false);
+    // explicitly requested datasets are always processed, never skipped by the delta gate
+    GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, gbifSync.getRegistryCache(), user.getKey(), Set.copyOf(keys), false, true);
     return runJob(job);
   }
 
@@ -219,7 +220,7 @@ public class AdminResource {
   public JobInfo syncGBIFText(InputStream keysAsText, @Auth User user) {
     try (var lr = new LineReader(keysAsText)) {
       var keys = IterUtils.setOf(lr, UUID::fromString);
-      GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, gbifSync.getRegistryCache(), user.getKey(), keys, false);
+      GbifSyncJob job = new GbifSyncJob(cfg.gbif, gbifSync.getClient(), ddao, factory, gbifSync.getRegistryCache(), user.getKey(), keys, false, true);
       return runJob(job);
     }
   }

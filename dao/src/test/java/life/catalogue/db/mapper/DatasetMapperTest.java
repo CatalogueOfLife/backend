@@ -16,6 +16,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -140,6 +141,41 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   public void gbif() throws Exception {
     assertEquals(0, mapper().listGBIF().size());
     assertEquals(0, mapper().listKeysGBIF().size());
+  }
+
+  /**
+   * listGBIF feeds the GBIF sync delta gate, which compares the stored data access url and format by value
+   * because GBIF does not bump a datasets modified timestamp when only an endpoint changes.
+   */
+  @Test
+  public void listGBIFSettings() throws Exception {
+    Dataset d1 = create();
+    mapper().create(d1);
+
+    DatasetSettings ds = new DatasetSettings();
+    ds.put(Setting.DATA_ACCESS, URI.create("https://hosted-datasets.gbif.org/gtdb/gtdb_r232_coldp.zip"));
+    ds.put(Setting.DATA_FORMAT, DataFormat.COLDP);
+    ds.put(Setting.GBIF_SYNC_LOCK, true);
+    mapper().updateSettings(d1.getKey(), ds, Users.TESTER);
+
+    Dataset d2 = create();
+    mapper().create(d2);
+    commit();
+
+    var byKey = mapper().listGBIF().stream().collect(Collectors.toMap(DatasetGBIF::getKey, Function.identity()));
+    assertEquals(2, byKey.size());
+
+    var g1 = byKey.get(d1.getKey());
+    assertEquals(d1.getGbifKey(), g1.getGbifKey());
+    assertEquals("https://hosted-datasets.gbif.org/gtdb/gtdb_r232_coldp.zip", g1.getDataAccess());
+    assertEquals("coldp", g1.getDataFormat());
+    assertTrue(g1.isGbifSyncLock());
+
+    // no settings at all
+    var g2 = byKey.get(d2.getKey());
+    assertNull(g2.getDataAccess());
+    assertNull(g2.getDataFormat());
+    assertFalse(g2.isGbifSyncLock());
   }
 
   @Test
