@@ -267,7 +267,6 @@ public class ImportJob extends DatasetJob {
       di.setJobKey(getKey());
       di.setCreatedBy(getUserKey());
     }
-    di.setStatus(getStatus());
     fireCallback();
   }
 
@@ -283,6 +282,12 @@ public class ImportJob extends DatasetJob {
       LOG.warn("No import metrics to notify callback {} with for dataset {}", req.callback, datasetKey);
       return;
     }
+    // status, step and error are columns of the job record, not of dataset_import - GET /dataset/{key}/import
+    // reads them by joining the two. Our in memory DatasetImport still carries the WAITING it was created with,
+    // so stamp the final job state onto it to give the callback the very same payload.
+    di.setStatus(getStatus());
+    di.setStep(getStep());
+    di.setError(getError() == null ? null : Exceptions.getFirstMessage(getError()));
     callbackNotifier.notifyCallback(req.callback, di);
   }
 
