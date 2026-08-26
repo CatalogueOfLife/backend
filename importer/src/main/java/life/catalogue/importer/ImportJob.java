@@ -529,8 +529,8 @@ public class ImportJob extends DatasetJob {
 
           LOG.info("Dataset import {} completed in {}", datasetKey,
               DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
-          di.setFinished(LocalDateTime.now());
-          di.setError(null);
+          // this persists the metrics generated above - nothing else writes them to the import record
+          dao.updateImportSuccess(di);
         }
       }
   

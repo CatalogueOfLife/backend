@@ -179,6 +179,26 @@ public class ImportJobIT {
     assertNotNull(di.getError());
   }
 
+  /**
+   * The metrics computed at the end of a successful import have to reach the dataset_import row.
+   * The only thing that persisted them was the final updateState(FINISHED); once that was dropped
+   * the row kept the empty metrics written by updateState(ANALYZING) and never got a finished date.
+   */
+  @Test
+  public void metricsArePersisted() {
+    setupAndRun(DataFormat.DWCA, nginxRule.getArchive(DataFormat.DWCA));
+
+    var imp = diDao.getLast(d.getKey());
+    assertNotNull("import has no finished date", imp.getFinished());
+    assertNotNull("no names counted", imp.getNameCount());
+    assertTrue("no names counted", imp.getNameCount() > 0);
+    assertTrue("no usages counted", imp.getUsagesCount() > 0);
+    assertFalse("no names by rank", imp.getNamesByRankCount().isEmpty());
+    assertNotNull("no verbatim records counted", imp.getVerbatimCount());
+    assertTrue("no verbatim records counted", imp.getVerbatimCount() > 0);
+    assertTrue("no classification depth", imp.getMaxClassificationDepth() > 0);
+  }
+
   @Test
   public void plaziUnchanged() {
     URI uri = nginxRule.getArchive(DataFormat.DWCA);
