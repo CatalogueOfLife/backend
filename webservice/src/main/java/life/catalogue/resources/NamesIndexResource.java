@@ -79,7 +79,7 @@ public class NamesIndexResource {
 
   public static class NidxWithLabels {
     public final int nidx;
-    private final String normalizedName;
+    public final String normalizedName;
     public final String scientificName;
     public final List<LabelCount> labels;
 
