@@ -1,9 +1,15 @@
 # CLB release-in-a-box — local/offline matching + browse bundle
 
-> **Status: design / not yet implemented.** Implementation is intentionally deferred until
-> [`feature/unified-jobs`](https://github.com/CatalogueOfLife/backend/tree/feature/unified-jobs)
-> merges, because it relies on that branch's optional-`JobDao` `JobExecutor` (see *Job persistence*
-> below). This document is the plan to pick up once that lands.
+Date: 2026-06-20
+
+> **Status: design / not yet implemented.** Nothing here exists in the code yet — there is no
+> `WsBundleServer` and no `BundleBuildCmd`.
+>
+> The dependency it was waiting on is resolved: implementation was deferred until the
+> `feature/unified-jobs` work merged, because it relies on its optional-`JobDao` `JobExecutor`
+> (see *Job persistence* below). That work is now on master (released in v1.5.0) and `JobExecutor`
+> takes a `@Nullable JobDao`, so this plan is unblocked and ready to pick up. The branch itself has
+> been deleted.
 
 ## Goal
 
@@ -27,9 +33,9 @@ one-release Postgres in the bundle we reuse *every* existing read resource uncha
 (taxon / tree / parser / match / reconcile / metrics) with **no store-only forks**, and async jobs
 can persist to the bundle's own DB.
 
-### Job persistence (dependency on `feature/unified-jobs`)
+### Job persistence (dependency on the unified-jobs work, now on master)
 
-That branch makes `JobExecutor` take an **optional `JobDao`**: with one, jobs persist to a DB
+That work makes `JobExecutor` take an **optional `JobDao`**: with one, jobs persist to a DB
 `job` table; the in-memory lane queues are unchanged.
 
 Key constraint learned from it: `JobMapper.cancelStale()` is **global**
@@ -131,7 +137,7 @@ Output is assembled into the per-release data volume / tarball consumed by compo
 
 ## Sequencing
 
-1. **Wait** for `feature/unified-jobs` to merge.
+1. ~~**Wait** for the unified-jobs work to merge.~~ Done — it is on master.
 2. Rebase on the merged `JobExecutor` / `JobDao` API.
 3. Build `WsBundleServer` + `WsBundleServerConfig` + `SingleDatasetRewriteFilter`.
 4. Build `BundleBuildCmd` (PG dump + stores + metrics [+ ES snapshot]).

@@ -122,8 +122,8 @@ import org.slf4j.LoggerFactory;
  * <p>The source dataset is held in {@link Sector#getSubjectDatasetKey()}: if that dataset is a
  * {@link DatasetOrigin#PROJECT}, the latest public release is resolved at run time
  * (X-Release vs plain Release controlled by {@link Sector#isUseXRelease()}). Concrete RELEASE,
- * XRELEASE or EXTERNAL dataset keys are used as-is. See {@code HIERARCHY-SYNC.md} at the project
- * root for the full pipeline reference.
+ * XRELEASE or EXTERNAL dataset keys are used as-is. See {@code docs/HIERARCHY-SYNC.md} for the
+ * full pipeline reference.
  *
  * <h2>Limitations / Future work</h2>
  *

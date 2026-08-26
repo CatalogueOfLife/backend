@@ -208,7 +208,7 @@ without walking their parents and only the survivors of the cheap filters resolv
 **Extended Release (XRelease):**
 The most complex pipeline in the codebase. Builds an extended release by merging external datasets (via sectors) into a base public release. 
 Uses a two-phase copy: base release → temporary project (for merging) → final release (with stable ID mapping). Key classes in `core/release/` and `core/assembly/`. 
-See [`XRELEASE.md`](XRELEASE.md) for detailed pipeline documentation. Important gotcha: `newDatasetKey` is temporarily reassigned to `tmpProjectKey` during `prepWork()` — methods called in that window operate on the temp dataset.
+See [`docs/XRELEASE.md`](docs/XRELEASE.md) for detailed pipeline documentation. Important gotcha: `newDatasetKey` is temporarily reassigned to `tmpProjectKey` during `prepWork()` — methods called in that window operate on the temp dataset.
 
 ## Development Guidelines
 
@@ -226,6 +226,33 @@ Follows Twitter Commons style guide with CoL customizations:
 - **Integration tests** (`*IT.java`): Use TestContainers (PostgreSQL/Elasticsearch), run sequentially in separate JVM forks
 - Test resources in `src/test/resources/`
 - `api` module publishes `tests` classifier JAR with test utilities
+
+### Documentation Conventions
+
+All project documentation lives in `docs/`. Two kinds, distinguished by filename — keep them apart:
+
+- **`ALL-CAPS.md` — human-facing reference for CURRENT behavior.** What the code does today
+  (`API.md`, `XRELEASE.md`, `HIERARCHY-SYNC.md`, `DOI.md`, `OPENREFINE.md`,
+  `DATASET-TEMPLATES.md`, `AUTHORMAP-GENERATOR.md`). These are living documents: when behavior
+  changes, update them. They must never describe a plan or a future state.
+- **`YYYY-MM-DD-lower-case-name.md` — dated design records from agent/superpower sessions.** The
+  intent, goals, explicit non-goals and rejected alternatives behind one change, as of that date.
+  These are historical and are **not** kept up to date with the code — the date in the filename is
+  the point of it. Don't read one as a description of current behavior.
+
+Rules:
+
+- **One doc per item.** A design record is the single surviving doc for its change. Implementation
+  plans (task lists, checkboxes, line numbers, code snippets) are deleted once the work lands —
+  they go stale immediately and the code is the truth. Salvage anything durable from a retired plan
+  into the design record's `## Outcome` section first (deviations from the spec, assumptions that
+  needed checking, what was deliberately left out).
+- Give every design record a `Date:` and a `Status:` line, and state plainly when it has shipped or
+  is not yet implemented.
+- A design doc for something **not yet built** is a dated record, not an ALL-CAPS doc, however
+  polished it looks.
+- Cross-link with plain relative links within `docs/` and match the case exactly — macOS is
+  case-insensitive, GitHub and the Linux build hosts are not.
 
 ### MyBatis Mappers
 - XML mappers in `dao/src/main/resources/mapper/*.xml`
@@ -343,4 +370,4 @@ GET /dataset/{key}/export.zip?format=COLDP
 - [MyBatis Documentation](http://www.mybatis.org/mybatis-3/)
 - [GBIF Name Parser](https://github.com/gbif/name-parser)
 - Developer guide: `DEVELOPER-GUIDE.md`
-- API documentation: `API.md`
+- API documentation: `docs/API.md`

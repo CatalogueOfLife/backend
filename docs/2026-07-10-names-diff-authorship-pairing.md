@@ -1,7 +1,7 @@
 # Names diff engine — authorship-aware change pairing
 
-Date: 2026-07-10
-Status: Design approved, pending spec review
+Date: 2026-07-10 (revised 2026-07-11)
+Status: Shipped — merged in `b2bcaa5bd`, released in v1.5.0
 Area: `dao` — `life.catalogue.printer.diff`
 
 ## Problem
@@ -166,3 +166,20 @@ Extend `dao/.../printer/diff/ChangedMatcherTest.java` and add cases:
 - Blocking is by genus (first token), so a typo in the *genus* itself puts the partners in different
   blocks and they never pair, even at canonical distance 1. Deliberate: the coarse genus block keeps
   epithet typos together, and a changed genus is far rarer than a changed epithet.
+
+## Outcome
+
+Salvaged from the implementation plan's self-review before it was retired.
+
+- **Decision coverage.** Every locked design decision landed: 1 (replace the fuzzy pass) and 4
+  (1-in-1-out) in the `ChangedMatcher` pairing core, 2 (`SciNameNormalizer.normalize`) in its
+  `parse` step, 3 (distance ≤ 1) as the new `canonicalMaxDistance` option on `DiffOptions`
+  replacing `changedThreshold`, 5 (author/year tie-break) as the multiplicity tie-break, and 6
+  (file format unchanged) by touching no file writer or reader. Each row of the worked-outcomes
+  table has a test: short add, replace, congener, *Abax* multi, *Statice* multi, typo.
+- **Deliberately left out of scope.** `yearDifferenceAllowed` relies on `AuthorComparator`'s
+  built-in 11-year window rather than a new setting, and the greedy within-block ordering is
+  accepted as-is. `canonicalMaxDistance` is the only new config surface.
+- **Integration tests.** `BaseDiffServiceIT` / `DatasetDiffServiceIT` / `SectorDiffServiceIT` are
+  DB-backed and unaffected by the signature changes (they go through `assemble`), so they run in CI
+  rather than alongside the unit-level work.
