@@ -1,7 +1,9 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -19,6 +21,7 @@ import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.SectorMetadataMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -315,9 +318,40 @@ public class ProjectRelease extends AbstractProjectCopy {
     }
     DateUtils.logDuration(LOG, "Archiving sources", start);
 
+    // Freeze the sector level metadata (#1273). Unlike every other sector scoped table this one is not
+    // copied but resolved: the publisher declared layer lives in the EXTERNAL source dataset and is
+    // rewritten on every import, so a release has to freeze the merge of it and the editor's override.
+    // Doing it here rather than in copyData also means deleteOrphans has already settled which sectors
+    // the release really has, and an XRelease's tmp project round trip is over.
+    checkIfCancelled();
+    try (SqlSession session = factory.openSession(true)) {
+      var smDao = new SectorMetadataDao(factory, srcDao);
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      SectorMetadataMapper smm = session.getMapper(SectorMetadataMapper.class);
+      var cm = session.getMapper(CitationMapper.class);
+      int counter = 0;
+      for (Integer sectorId : smm.listSectorIdsToFreeze(newDatasetKey, projectKey)) {
+        Sector s = sm.get(DSID.of(newDatasetKey, sectorId));
+        if (s == null) continue;
+        Dataset delta = smDao.mergedDelta(s, projectKey, session);
+        if (delta == null) continue; // linked to a source sector that declares nothing
+        delta.setCreatedBy(user);
+        delta.setModifiedBy(user);
+        smm.create(DSID.of(newDatasetKey, sectorId), delta);
+        if (delta.getSource() != null) {
+          for (var c : delta.getSource()) {
+            cm.createSector(newDatasetKey, sectorId, c);
+          }
+        }
+        counter++;
+        checkIfCancelled();
+      }
+      LOG.info("Froze metadata for {} sectors of release {}", counter, newDatasetKey);
+    }
+
     // aggregate authors for release from sources
     checkIfCancelled();
-    var authGen = new AuthorlistGenerator(validator, srcDao);
+    var authGen = new AuthorlistGenerator(validator, srcDao, new SectorMetadataDao(factory, srcDao));
     if (authGen.appendSourceAuthors(newDataset, prCfg.metadata)) {
       dDao.update(newDataset, user);
     }

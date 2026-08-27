@@ -352,6 +352,7 @@ public class WsServer extends Application<WsServerConfig> {
       new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, broker, validator
     );
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
+    SectorMetadataDao sectorMetadataDao = new SectorMetadataDao(getSqlSessionFactory(), dsdao);
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
     DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
@@ -475,7 +476,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DefaultReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, coljersey.getCache(), cfg.getApiUri(), cfg.clbURI));
     j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
-    j.register(new SectorResource(secdao, fmsDao, syncManager));
+    j.register(new SectorResource(secdao, fmsDao, syncManager, sectorMetadataDao));
 
     // shared read only resources
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,

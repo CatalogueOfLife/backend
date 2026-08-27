@@ -159,6 +159,14 @@
         <if test="req.datasetKey != null">
           AND s.dataset_key = #{req.datasetKey}
         </if>
+        <if test="req.hasMetadata != null">
+          AND <if test="!req.hasMetadata">NOT </if>EXISTS (
+            SELECT TRUE FROM sector_metadata sm WHERE sm.dataset_key = s.dataset_key AND sm.sector_id = s.id
+          )
+        </if>
+        <if test="req.subjectSectorId != null">
+          AND s.subject_sector_id = #{req.subjectSectorId}
+        </if>
         <if test="req.subjectDatasetKey != null">
           AND s.subject_dataset_key = #{req.subjectDatasetKey}
         </if>

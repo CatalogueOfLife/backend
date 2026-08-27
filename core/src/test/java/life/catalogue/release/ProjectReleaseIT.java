@@ -13,9 +13,12 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.dao.SectorMetadataDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.jobs.SectorImportRetentionJob;
@@ -139,6 +142,101 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
     // test email templates
     EmailNotificationTemplateTest.testTemplates(release);
+  }
+
+  private static Sector sourceSector(int datasetKey, int id) {
+    Sector s = new Sector();
+    s.setDatasetKey(datasetKey);
+    s.setId(id);
+    s.setMode(Sector.Mode.SOURCE);
+    s.setCreatedBy(Users.TESTER);
+    s.setModifiedBy(Users.TESTER);
+    return s;
+  }
+
+  private static Dataset metadata(String title) {
+    Dataset d = new Dataset();
+    d.setTitle(title);
+    d.setCreatedBy(Users.TESTER);
+    d.setModifiedBy(Users.TESTER);
+    return d;
+  }
+
+  /**
+   * Sector metadata is the one sector scoped table a release resolves rather than copies (#1273). The
+   * publisher declared layer lives in the EXTERNAL source and is rewritten on every import, so the
+   * release has to freeze the merge of it and the editor's override - otherwise re-importing the source
+   * would silently rewrite what an already published release renders.
+   */
+  @Test
+  public void releaseFreezesSectorMetadata() throws Exception {
+    final var factory = SqlSessionFactoryRule.getSqlSessionFactory();
+    final var smDao = new SectorMetadataDao(factory, new DatasetSourceDao(factory));
+    final int SRC = 100;
+    final int SRC_SECTOR = 1044;
+
+    try (SqlSession session = factory.openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      sm.createWithID(sourceSector(SRC, SRC_SECTOR));
+      // the project sector absorbs the source's declaration
+      Sector s = sm.get(DSID.of(projectKey, 1));
+      s.setSubjectSectorId(SRC_SECTOR);
+      sm.update(s);
+      // and a second sector that has metadata but never contributes any data, so it gets dropped by
+      // deleteOrphans. The release must still complete rather than trip the metadata foreign key.
+      Sector empty = sourceSector(projectKey, 99);
+      empty.setMode(Sector.Mode.ATTACH);
+      empty.setSubjectDatasetKey(SRC);
+      sm.createWithID(empty);
+    }
+
+    Dataset declared = metadata("World Porifera Database");
+    declared.setAlias("WPD");
+    declared.setEditor(List.of(new Agent("Nicole", "de Voogd")));
+    Citation c = new Citation();
+    c.setId("wpd");
+    c.setTitle("de Voogd, N.J. et al. (2026)");
+    declared.setSource(List.of(c));
+    smDao.putPatch(DSID.of(SRC, SRC_SECTOR), declared, Users.TESTER);
+
+    smDao.putPatch(DSID.of(projectKey, 1), metadata("Porifera, CoL edition"), Users.TESTER);
+    smDao.putPatch(DSID.of(projectKey, 99), metadata("Never released"), Users.TESTER);
+
+    ProjectRelease release = buildRelease();
+    release.run();
+    assertEquals(JobStatus.FINISHED, release.getStatus());
+    final int relKey = release.newDatasetKey;
+
+    // the frozen row is the merge: the editor's title over everything the publisher declared
+    Dataset frozen = smDao.getPatch(DSID.of(relKey, 1));
+    assertNotNull("sector metadata was not frozen into the release", frozen);
+    assertEquals("Porifera, CoL edition", frozen.getTitle());
+    assertEquals("WPD", frozen.getAlias());
+    assertEquals(List.of(new Agent("Nicole", "de Voogd")), frozen.getEditor());
+    assertEquals(1, frozen.getSource().size());
+    assertEquals("wpd", frozen.getSource().get(0).getId());
+
+    // a release resolves against its own frozen dataset_source, so the sector page still inherits
+    Dataset resolved = smDao.resolve(DSID.of(relKey, 1));
+    assertEquals("Porifera, CoL edition", resolved.getTitle());
+    assertEquals("WPD", resolved.getAlias());
+
+    // the sector that never produced data is gone, metadata and all
+    assertNull(smDao.getPatch(DSID.of(relKey, 99)));
+    // but the project keeps its own copy - the release froze, it did not move
+    assertNotNull(smDao.getPatch(DSID.of(projectKey, 99)));
+    assertEquals("Porifera, CoL edition", smDao.getPatch(DSID.of(projectKey, 1)).getTitle());
+
+    // now the source moves on, as it does on every import. The release must not budge.
+    Dataset changed = metadata("Renamed by the publisher");
+    changed.setAlias("XXX");
+    smDao.putPatch(DSID.of(SRC, SRC_SECTOR), changed, Users.TESTER);
+
+    assertEquals("WPD", smDao.getPatch(DSID.of(relKey, 1)).getAlias());
+    assertEquals("Porifera, CoL edition", smDao.resolve(DSID.of(relKey, 1)).getTitle());
+    assertEquals("WPD", smDao.resolve(DSID.of(relKey, 1)).getAlias());
+    // while the project, which resolves live, does follow it
+    assertEquals("XXX", smDao.resolve(DSID.of(projectKey, 1)).getAlias());
   }
 
   private ProjectRelease buildRelease() {

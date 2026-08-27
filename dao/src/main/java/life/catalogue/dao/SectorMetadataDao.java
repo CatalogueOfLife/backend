@@ -119,9 +119,9 @@ public class SectorMetadataDao {
    * What the sector inherits before it says anything itself.
    */
   private Dataset base(Sector s, DatasetOrigin origin, SqlSession session) {
-    if (s.getSubjectDatasetKey() == null) {
+    if (s.getSubjectDatasetKey() == null || origin == DatasetOrigin.EXTERNAL) {
       // a SOURCE sector: an external dataset talking about a part of its own data, so the umbrella
-      // dataset itself is what it refines
+      // dataset itself is what it refines. DatasetSourceDao would refuse an external key outright.
       return session.getMapper(DatasetMapper.class).get(s.getDatasetKey());
     }
     // for a project this applies the project's dataset_patch, for a release it reads the frozen
@@ -144,9 +144,18 @@ public class SectorMetadataDao {
    * @return null if the sector has nothing of its own to freeze
    */
   public @Nullable Dataset mergedDelta(Sector s, SqlSession session) {
+    return mergedDelta(s, s.getDatasetKey(), session);
+  }
+
+  /**
+   * @param ownDatasetKey where to read the sector's own layer from. A release freezes the deltas of the
+   *                      PROJECT's sectors, but reads them through the release's own sector rows, which
+   *                      are copies carrying the same ids and the same subject sector link.
+   */
+  public @Nullable Dataset mergedDelta(Sector s, int ownDatasetKey, SqlSession session) {
     SectorMetadataMapper smm = session.getMapper(SectorMetadataMapper.class);
     Dataset declared = s.getSubjectSectorKey() == null ? null : smm.get(s.getSubjectSectorKey());
-    Dataset own = smm.get(DSID.of(s.getDatasetKey(), s.getId()));
+    Dataset own = smm.get(DSID.of(ownDatasetKey, s.getId()));
     if (declared == null) return own;
     if (own == null) return declared;
 

@@ -41,6 +41,15 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
   @QueryParam("publisherKey")
   private UUID publisherKey;
 
+  // restrict to sectors that have metadata of their own, so a source page can list just the sectors
+  // that describe themselves. See issue #1273.
+  @QueryParam("hasMetadata")
+  private Boolean hasMetadata;
+
+  // the source's own sector whose metadata a sector absorbs
+  @QueryParam("subjectSectorId")
+  private Integer subjectSectorId;
+
   public static SectorSearchRequest byProject(int datasetKey){
     SectorSearchRequest req = new SectorSearchRequest();
     req.datasetKey = datasetKey;
@@ -125,16 +134,32 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     this.publisherKey = publisherKey;
   }
 
+  public Boolean getHasMetadata() {
+    return hasMetadata;
+  }
+
+  public void setHasMetadata(Boolean hasMetadata) {
+    this.hasMetadata = hasMetadata;
+  }
+
+  public Integer getSubjectSectorId() {
+    return subjectSectorId;
+  }
+
+  public void setSubjectSectorId(Integer subjectSectorId) {
+    this.subjectSectorId = subjectSectorId;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
-    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && wrongSubject == that.wrongSubject && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
+    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && wrongSubject == that.wrongSubject && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(hasMetadata, that.hasMetadata) && Objects.equals(subjectSectorId, that.subjectSectorId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, wrongSubject, publisherKey);
+    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, wrongSubject, publisherKey, hasMetadata, subjectSectorId);
   }
 }

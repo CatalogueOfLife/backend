@@ -73,6 +73,16 @@
     WHERE dataset_key = #{key.datasetKey} AND sector_id = #{key.id}
   </delete>
 
+  <select id="listSectorIdsToFreeze" resultType="integer">
+    SELECT s.id FROM sector s
+    WHERE s.dataset_key = #{datasetKey}
+      AND (
+        s.subject_sector_id IS NOT NULL
+        OR EXISTS (SELECT TRUE FROM sector_metadata m WHERE m.dataset_key = #{projectKey} AND m.sector_id = s.id)
+      )
+    ORDER BY s.id
+  </select>
+
   <delete id="deleteByDataset" parameterType="map">
     DELETE FROM sector_metadata WHERE dataset_key = #{datasetKey}
   </delete>

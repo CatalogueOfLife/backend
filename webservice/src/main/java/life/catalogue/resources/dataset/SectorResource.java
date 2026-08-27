@@ -3,6 +3,7 @@ package life.catalogue.resources.dataset;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.dao.*;
@@ -10,6 +11,8 @@ import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
+import life.catalogue.dw.jersey.provider.DatasetPatch;
+import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.matching.decision.RematcherBase;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
@@ -49,12 +52,67 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   private final SectorDao dao;
   private final FileMetricsSectorDao fmsDao;
   private final SyncManager assembly;
+  private final SectorMetadataDao smDao;
 
-  public SectorResource(SectorDao dao, FileMetricsSectorDao fmsDao, SyncManager assembly) {
+  public SectorResource(SectorDao dao, FileMetricsSectorDao fmsDao, SyncManager assembly, SectorMetadataDao smDao) {
     super(Sector.class, dao);
     this.dao = dao;
     this.fmsDao = fmsDao;
     this.assembly = assembly;
+    this.smDao = smDao;
+  }
+
+  /**
+   * The metadata a sector page renders: whatever the sector says about itself, with everything it does
+   * not say inherited from its source dataset. See issue #1273.
+   */
+  @GET
+  @VaryAccept
+  @Path("{id}/metadata")
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML,
+    MoreMediaTypes.APP_JSON_CSL, MoreMediaTypes.APP_BIBTEX})
+  public Dataset metadata(@PathParam("key") int datasetKey, @PathParam("id") int id) {
+    DSID<Integer> key = DSID.of(datasetKey, id);
+    Dataset d = smDao.resolve(key);
+    if (d == null) {
+      throw NotFoundException.notFound(Sector.class, key);
+    }
+    return d;
+  }
+
+  /**
+   * The sector's own sparse layer, without anything it inherits. Null valued properties are explicit
+   * nulls, encoded through the shared DatasetPatch reader/writer.
+   */
+  @GET
+  @DatasetPatch
+  @Path("{id}/patch")
+  public Dataset getPatch(@PathParam("key") int datasetKey, @PathParam("id") int id) {
+    return smDao.getPatch(DSID.of(datasetKey, id));
+  }
+
+  @PUT
+  @Path("{id}/patch")
+  @ProjectOnly
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML})
+  public void putPatch(@PathParam("key") int datasetKey, @PathParam("id") int id,
+                       @DatasetPatch Dataset obj, @Auth User user, @Context SqlSession session) {
+    DSID<Integer> key = DSID.of(datasetKey, id);
+    if (session.getMapper(SectorMapper.class).get(key) == null) {
+      throw NotFoundException.notFound(Sector.class, key);
+    }
+    smDao.putPatch(key, obj, user.getKey());
+  }
+
+  @DELETE
+  @Path("{id}/patch")
+  @ProjectOnly
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void deletePatch(@PathParam("key") int datasetKey, @PathParam("id") int id, @Auth User user) {
+    smDao.deletePatch(DSID.of(datasetKey, id));
   }
 
   @Override

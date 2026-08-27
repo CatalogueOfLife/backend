@@ -314,6 +314,37 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertEquals(Integer.valueOf(subjectDatasetKey), col3.getSubjectDatasetKey());
   }
 
+  /**
+   * The hasMetadata and subjectSectorId filters, so a source page can list just the sectors that
+   * describe themselves. New SQL only fails at runtime, so it needs exercising.
+   */
+  @Test
+  public void searchByMetadata() throws Exception {
+    add2Sectors();
+    var req = SectorSearchRequest.byProject(targetDatasetKey);
+
+    req.setHasMetadata(true);
+    assertTrue(mapper().search(req, new Page()).isEmpty());
+    req.setHasMetadata(false);
+    assertEquals(2, mapper().search(req, new Page()).size());
+
+    mapper(SectorMetadataMapper.class).create(DSID.of(targetDatasetKey, s1.getId()),
+      SectorMetadataMapperTest.metadata("World Porifera Database"));
+    commit();
+
+    req.setHasMetadata(true);
+    var found = mapper().search(req, new Page());
+    assertEquals(1, found.size());
+    assertEquals(s1.getId(), found.get(0).getId());
+
+    req.setHasMetadata(false);
+    assertEquals(1, mapper().search(req, new Page()).size());
+
+    req.setHasMetadata(null);
+    req.setSubjectSectorId(1044);
+    assertTrue(mapper().search(req, new Page()).isEmpty());
+  }
+
   @Test(expected = PersistenceException.class)
   public void unique() throws Exception {
     Sector d1 = create();

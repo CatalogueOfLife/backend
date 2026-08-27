@@ -49,4 +49,14 @@ public interface SectorMetadataMapper {
   List<Integer> listSectorIds(@Param("datasetKey") int datasetKey);
 
   int deleteByDataset(@Param("datasetKey") int datasetKey);
+
+  /**
+   * The ids of the sectors of a release that can possibly have a metadata delta to freeze, i.e. those
+   * that either carry the project's own layer or link to a publisher declared one. A project has tens of
+   * thousands of sectors and almost none of them have metadata, so the release must not visit them all.
+   *
+   * @param datasetKey the release
+   * @param projectKey where the sector's own layer lives
+   */
+  List<Integer> listSectorIdsToFreeze(@Param("datasetKey") int datasetKey, @Param("projectKey") int projectKey);
 }

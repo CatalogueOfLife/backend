@@ -1,8 +1,12 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.dao.SectorMetadataDao;
+
+import javax.annotation.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,13 +19,23 @@ import life.catalogue.db.mapper.DatasetSourceMapper;
 public class AuthorlistGenerator {
   private final Validator validator;
   private final DatasetSourceDao dao;
+  private final SectorMetadataDao smDao;
+
   public AuthorlistGenerator(DatasetSourceDao dao) {
-    this(Validation.buildDefaultValidatorFactory().getValidator(), dao);
+    this(Validation.buildDefaultValidatorFactory().getValidator(), dao, null);
   }
 
   public AuthorlistGenerator(Validator validator, DatasetSourceDao dao) {
+    this(validator, dao, null);
+  }
+
+  /**
+   * @param smDao optional. Without it the editorial boards a source declares per sector are not credited.
+   */
+  public AuthorlistGenerator(Validator validator, DatasetSourceDao dao, @Nullable SectorMetadataDao smDao) {
     this.validator = validator;
     this.dao = dao;
+    this.smDao = smDao;
   }
 
   /**
@@ -56,6 +70,21 @@ public class AuthorlistGenerator {
         agents.addAll(addSourceNote(src, src.getEditor()));
       }
     });
+    // Sectors can name their own editorial board (#1273). An aggregating source like WoRMS credits its
+    // umbrella board on the dataset, while the thematic databases behind each sector credit theirs here.
+    // Without this the release silently drops them the moment a stand-in dataset becomes a sector.
+    if (smDao != null) {
+      for (Integer sectorId : smDao.listSectorIdsWithMetadata(d.getKey())) {
+        Dataset sm = smDao.getPatch(DSID.of(d.getKey(), sectorId));
+        if (sm == null) continue;
+        if (sm.getCreator() != null) {
+          agents.addAll(addSourceNote(sm, sm.getCreator()));
+        }
+        if (sm.getEditor() != null) {
+          agents.addAll(addSourceNote(sm, sm.getEditor()));
+        }
+      }
+    }
     // remove same authors and merge information
     LinkedList<Agent> uniq = new LinkedList<>();
     for (Agent a : agents) {

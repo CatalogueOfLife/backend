@@ -1,18 +1,25 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.dao.SectorMetadataDao;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.junit.Test;
 
 import static life.catalogue.api.model.Agent.organisation;
 import static life.catalogue.api.model.Agent.person;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
@@ -104,5 +111,63 @@ public class AuthorlistGeneratorTest {
     assertEquals("Henry D.", d.getCreator().get(1).getGiven());
     assertEquals("Agudelo Zamora", d.getCreator().get(1).getFamily());
     assertEquals("ALIAS, DS1", d.getCreator().get(5).getNote());
+  }
+
+  /**
+   * An aggregating source credits its umbrella board on the dataset, while the thematic databases
+   * behind each of its sectors credit theirs on the sector (#1273). Both have to reach the release, or
+   * consolidating the 67 WoRMS stand-in datasets into sectors silently drops ~67 editorial boards.
+   */
+  @Test
+  public void appendSectorAuthors() throws Exception {
+    final int releaseKey = 20;
+    var dao = mock(DatasetSourceDao.class);
+    var src = new DatasetSourceMapper.SourceDataset();
+    src.setAlias("WoRMS");
+    src.setEditor(List.of(person("Leen", "Vandepitte")));
+    doReturn(List.of(src)).when(dao).listSimple(anyInt(), anyBoolean(), anyBoolean());
+
+    var smDao = mock(SectorMetadataDao.class);
+    doReturn(List.of(7, 8)).when(smDao).listSectorIdsWithMetadata(releaseKey);
+
+    var porifera = new Dataset();
+    porifera.setAlias("WPD");
+    porifera.setTitle("World Porifera Database");
+    porifera.setEditor(List.of(person("Nicole", "de Voogd")));
+    doReturn(porifera).when(smDao).getPatch(DSID.of(releaseKey, 7));
+
+    var mollusca = new Dataset();
+    mollusca.setAlias("MolluscaBase");
+    mollusca.setCreator(List.of(person("Bruce", "Marshall")));
+    doReturn(mollusca).when(smDao).getPatch(DSID.of(releaseKey, 8));
+
+    var gen = new AuthorlistGenerator(validator(), dao, smDao);
+    var cfg = new ProjectReleaseConfig.MetadataConfig();
+    cfg.addSourceAuthors = true;
+
+    Dataset rel = new Dataset();
+    rel.setKey(releaseKey);
+    assertTrue(gen.appendSourceAuthors(rel, cfg));
+
+    var families = rel.getCreator().stream().map(Agent::getFamily).collect(Collectors.toList());
+    assertTrue("umbrella editor missing: " + families, families.contains("Vandepitte"));
+    assertTrue("sector editor missing: " + families, families.contains("de Voogd"));
+    assertTrue("sector creator missing: " + families, families.contains("Marshall"));
+    assertEquals(3, rel.getCreator().size());
+
+    // each is credited to the sector it came from, not to the umbrella
+    var voogd = rel.getCreator().stream().filter(a -> "de Voogd".equals(a.getFamily())).findFirst().get();
+    assertEquals("WPD", voogd.getNote());
+
+    // and without the dao the release simply keeps today's behaviour
+    var plain = new AuthorlistGenerator(validator(), dao, null);
+    Dataset rel2 = new Dataset();
+    rel2.setKey(releaseKey);
+    plain.appendSourceAuthors(rel2, cfg);
+    assertEquals(1, rel2.getCreator().size());
+  }
+
+  private static Validator validator() {
+    return Validation.buildDefaultValidatorFactory().getValidator();
   }
 }

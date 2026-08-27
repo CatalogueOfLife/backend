@@ -34,6 +34,17 @@ public class SectorMetadataMapperTest extends MapperTestBase<SectorMetadataMappe
     return s;
   }
 
+  /**
+   * A minimal sector metadata document, reusable from other mapper tests.
+   */
+  public static Dataset metadata(String title) {
+    Dataset d = new Dataset();
+    d.setTitle(title);
+    d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
+    d.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
+    return d;
+  }
+
   private DSID<Integer> key(Sector s) {
     return DSID.of(s.getDatasetKey(), s.getId());
   }
