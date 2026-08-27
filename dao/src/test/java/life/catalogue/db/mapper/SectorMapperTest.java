@@ -260,6 +260,60 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     s.setNote("not my thing");
   }
   
+  /**
+   * A SOURCE sector is what an aggregating source - WoRMS, WFO, ITIS - declares about a part of its own
+   * data so that part can carry metadata. Its id IS the ColDP sourceID, it has no subject at all, and a
+   * project sector absorbs it by pointing at it. See issue #1273.
+   */
+  @Test
+  public void sourceSectorsAndSubjectSectorLink() throws Exception {
+    MybatisTestUtils.populateDraftTree(session());
+
+    // two source declared sectors inside the external dataset, ids taken straight from the sourceIDs.
+    // A fully NULL subject must not trip UNIQUE (dataset_key, subject_dataset_key, subject_id).
+    Sector src = new Sector();
+    src.setDatasetKey(subjectDatasetKey);
+    src.setId(1044);
+    src.setMode(Sector.Mode.SOURCE);
+    src.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
+    src.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
+    mapper().createWithID(src);
+
+    Sector src2 = new Sector();
+    src2.setDatasetKey(subjectDatasetKey);
+    src2.setId(1130);
+    src2.setMode(Sector.Mode.SOURCE);
+    src2.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
+    src2.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
+    mapper().createWithID(src2);
+    commit();
+
+    Sector read = mapper().get(DSID.of(subjectDatasetKey, 1044));
+    assertEquals(Sector.Mode.SOURCE, read.getMode());
+    assertNull(read.getSubjectDatasetKey());
+    assertNull(read.getSubjectSectorId());
+
+    // a project sector absorbing the source sector's metadata
+    Sector col = createTestEntity(targetDatasetKey);
+    col.setSubjectSectorId(1044);
+    col.getTarget().setId("t4");
+    mapper().create(col);
+    commit();
+
+    Sector col2 = mapper().get(col);
+    assertEquals(Integer.valueOf(1044), col2.getSubjectSectorId());
+    assertEquals(Integer.valueOf(subjectDatasetKey), col2.getSubjectDatasetKey());
+
+    // when the source drops that sub source the link clears, but the sector keeps its source dataset.
+    // The FK scopes SET NULL to subject_sector_id; a plain composite one would wipe both.
+    mapper().delete(DSID.of(subjectDatasetKey, 1044));
+    commit();
+
+    Sector col3 = mapper().get(col);
+    assertNull(col3.getSubjectSectorId());
+    assertEquals(Integer.valueOf(subjectDatasetKey), col3.getSubjectDatasetKey());
+  }
+
   @Test(expected = PersistenceException.class)
   public void unique() throws Exception {
     Sector d1 = create();

@@ -17,6 +17,7 @@
     s.sync_attempt,
     s.dataset_attempt,
     s.subject_dataset_key,
+    s.subject_sector_id,
     s.original_subject_id,
     s.subject_id,
     s.subject_name,
@@ -59,6 +60,7 @@
 
   <sql id="COLS_NO_DATASETKEY">
     subject_dataset_key,
+    subject_sector_id,
     subject_id,
     subject_name,
     subject_authorship,
@@ -91,6 +93,7 @@
     #{datasetKey},
     #{target.id},
     #{subjectDatasetKey},
+    #{subjectSectorId},
     #{subject.id},
     #{subject.name},
     #{subject.authorship},

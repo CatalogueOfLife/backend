@@ -6,6 +6,11 @@
 
   <sql id="SELECT">
     d.key,
+    <include refid="life.catalogue.db.mapper.DatasetPatchMapper.SELECT_NO_KEY"/>
+  </sql>
+
+  <!-- everything but the key, so tables keyed by something else - sector_metadata - can reuse it -->
+  <sql id="SELECT_NO_KEY">
     d.identifier,
     d.title,
     d.alias,

@@ -11,6 +11,62 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-08-27 sector metadata (#1273)
+
+Sectors can now carry dataset-like metadata so a sector renders as a sub-source page, the way a source
+dataset does today. Needed for sources that are themselves aggregations - WoRMS, WFO, ITIS - where the
+real authority for a subtree is a thematic database, not the umbrella. `sector_metadata` is one table
+for all three stages, told apart only by the origin of its `dataset_key`: EXTERNAL rows are declared by
+the publisher and refreshed on every import, PROJECT rows are the editor's override, RELEASE rows are
+the two merged and frozen at release time. `sector_citation` holds `Dataset.source` per sector.
+
+Three things to know before applying this:
+
+1. **This introduces the first `ON DELETE CASCADE` in the schema.** It is deliberate, not an oversight.
+   `sector_metadata` is a strict satellite of `sector` with no lifetime of its own, and sector rows are
+   deleted from seven unrelated call sites (`SectorDao.deleteSector`, `SectorMapper.delete` /
+   `deleteByDataset` / `deleteOrphans`, `XRelease.loadMergeSectors`, `XRelease.mergeSectors`,
+   `SectorDao.createMissingMergeSectorsFromPublisher`). Without the cascade every one of them raises a
+   FK violation, which fails the release job in `ProjectRelease.finalWork` and makes dataset deletion
+   impossible. Please do not "fix" it back to a plain FK.
+2. **`ON DELETE SET NULL (subject_sector_id)` needs PG 15+** and the column list is load-bearing. A
+   plain composite `SET NULL` would also wipe `subject_dataset_key` and cut the sector loose from its
+   source dataset entirely. Verified on 17.2.
+3. **`ALTER TYPE ... ADD VALUE` cannot be used in the same transaction that adds it.** Run the enum
+   statement on its own, before the rest.
+
+```sql
+-- run this one first, alone, and commit before using the new value
+ALTER TYPE SECTOR_MODE ADD VALUE 'SOURCE';
+```
+
+```sql
+-- a SOURCE sector is declared by an EXTERNAL dataset about part of its own data and has no subject
+ALTER TABLE sector ALTER COLUMN subject_dataset_key DROP NOT NULL;
+ALTER TABLE sector ADD COLUMN subject_sector_id INTEGER;
+ALTER TABLE sector ADD FOREIGN KEY (subject_dataset_key, subject_sector_id)
+  REFERENCES sector (dataset_key, id) ON DELETE SET NULL (subject_sector_id);
+
+CREATE TABLE sector_metadata (LIKE dataset_patch INCLUDING INDEXES);
+ALTER TABLE sector_metadata
+  DROP COLUMN key, -- also drops the (key, dataset_key) primary key inherited via INCLUDING INDEXES
+  ADD COLUMN sector_id INTEGER NOT NULL,
+  ADD COLUMN doi TEXT;
+ALTER TABLE sector_metadata ADD PRIMARY KEY (dataset_key, sector_id);
+ALTER TABLE sector_metadata ADD FOREIGN KEY (dataset_key, sector_id) REFERENCES sector ON DELETE CASCADE;
+
+CREATE TABLE sector_citation (LIKE dataset_citation INCLUDING INDEXES);
+ALTER TABLE sector_citation ADD COLUMN sector_id INTEGER NOT NULL;
+CREATE INDEX ON sector_citation (dataset_key, sector_id);
+ALTER TABLE sector_citation ADD FOREIGN KEY (dataset_key, sector_id) REFERENCES sector ON DELETE CASCADE;
+```
+
+Both new tables start empty and nothing existing is rewritten, so this takes no more than a brief
+`ACCESS SHARE` on `dataset_patch` / `dataset_citation` and a `SHARE ROW EXCLUSIVE` on `sector` for the
+foreign keys. The `sector` alters do rewrite nothing either - `DROP NOT NULL` and a nullable `ADD
+COLUMN` are both metadata-only in PG 17.
+
+
 #### 2026-08-26 backfill the import metrics lost by v1.5.0
 `ImportJob` computed its metrics but never wrote them: `updateMetrics` only fills the object, and the
 trailing `updateState(FINISHED)` that used to persist it was dropped as redundant in da0db59f9. Every

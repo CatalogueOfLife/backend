@@ -149,4 +149,27 @@
     WHERE release_key = #{releaseKey}
   </delete>
 
+
+  <!--
+  Sector citations. Unlike the dataset family there is no separate archive or release table:
+  sector_citation is keyed by (dataset_key, sector_id) and the origin of the dataset already says
+  whether a row is publisher declared, an editor override or a frozen release copy.
+  -->
+  <select id="listSector" resultMap="citationResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM sector_citation c
+    WHERE dataset_key = #{datasetKey} AND sector_id = #{sectorId}
+    ORDER BY issued, title
+  </select>
+
+  <insert id="createSector" parameterType="map">
+    INSERT INTO sector_citation (dataset_key, sector_id, <include refid="COLS"/>)
+    VALUES (#{datasetKey}, #{sectorId}, <include refid="PROPS"/>)
+  </insert>
+
+  <delete id="deleteSector" parameterType="map">
+    DELETE FROM sector_citation
+    WHERE dataset_key = #{datasetKey} AND sector_id = #{sectorId}
+  </delete>
+
 </mapper>

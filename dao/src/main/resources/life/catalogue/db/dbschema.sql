@@ -572,7 +572,10 @@ CREATE TYPE SECTOR_MODE AS ENUM (
   'ATTACH',
   'UNION',
   'MERGE',
-  'HIERARCHY'
+  'HIERARCHY',
+  -- a sector declared by an EXTERNAL dataset about a part of its own data, so it can carry metadata.
+  -- Pure provenance, never an assembly instruction - SectorSync must refuse it.
+  'SOURCE'
 );
 
 CREATE TYPE SECTOR_AUTHORSHIP_UPDATE AS ENUM (
@@ -1155,7 +1158,8 @@ CREATE INDEX ON job (status) WHERE status IN ('WAITING','BLOCKED','RUNNING');
 CREATE TABLE sector (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
-  subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
+  subject_dataset_key INTEGER REFERENCES dataset, -- NULL for SOURCE sectors, which have no subject at all
+  subject_sector_id INTEGER, -- the source's own sector this one absorbs the metadata of
   subject_rank RANK,
   subject_code NOMCODE,
   subject_status TAXONOMICSTATUS,
@@ -1196,6 +1200,37 @@ CREATE INDEX ON sector (dataset_key);
 CREATE INDEX ON sector (dataset_key, subject_dataset_key);
 CREATE INDEX ON sector (dataset_key, subject_dataset_key, subject_id);
 CREATE INDEX ON sector (dataset_key, target_id);
+
+-- links a project sector to the source's own SOURCE sector, so it inherits its metadata.
+-- SET NULL is scoped to the one column: a plain composite SET NULL would also wipe subject_dataset_key
+-- and cut the sector loose from its source dataset entirely.
+ALTER TABLE sector ADD FOREIGN KEY (subject_dataset_key, subject_sector_id)
+  REFERENCES sector (dataset_key, id) ON DELETE SET NULL (subject_sector_id);
+
+-- What a dataset says about one of its own sectors: sparse, applyPatch semantics, inherit what is absent.
+-- One table for all three stages, distinguished only by the origin of dataset_key:
+--   EXTERNAL - declared by the publisher, refreshed on every import
+--   PROJECT  - the editor's override
+--   RELEASE  - the two above merged and frozen at release time
+-- doi is added back on top of dataset_patch: a sub-source has its own DOI. CoL never mints one for a sector.
+CREATE TABLE sector_metadata (LIKE dataset_patch INCLUDING INDEXES);
+ALTER TABLE sector_metadata
+  DROP COLUMN key, -- also drops the (key, dataset_key) primary key inherited via INCLUDING INDEXES
+  ADD COLUMN sector_id INTEGER NOT NULL,
+  ADD COLUMN doi TEXT;
+ALTER TABLE sector_metadata ADD PRIMARY KEY (dataset_key, sector_id);
+-- The only ON DELETE CASCADE in this schema, deliberately: sector_metadata is a strict satellite of
+-- sector with no lifetime of its own, and sector rows are deleted from seven unrelated call sites.
+-- Without the cascade ProjectRelease.finalWork's deleteOrphans and DatasetDao.deleteKeptReleaseData
+-- both raise a FK violation, which fails the release job and makes dataset deletion impossible.
+ALTER TABLE sector_metadata ADD FOREIGN KEY (dataset_key, sector_id) REFERENCES sector ON DELETE CASCADE;
+
+-- Dataset.source (List<Citation>) for a sector. Like dataset_citation it has no primary key,
+-- a citation list may repeat ids, only an index.
+CREATE TABLE sector_citation (LIKE dataset_citation INCLUDING INDEXES);
+ALTER TABLE sector_citation ADD COLUMN sector_id INTEGER NOT NULL;
+CREATE INDEX ON sector_citation (dataset_key, sector_id);
+ALTER TABLE sector_citation ADD FOREIGN KEY (dataset_key, sector_id) REFERENCES sector ON DELETE CASCADE;
 
 CREATE TABLE sector_import (
   dataset_key INTEGER NOT NULL,

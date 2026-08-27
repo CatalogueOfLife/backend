@@ -31,6 +31,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Sector extends DatasetScopedEntity<Integer> {
   private SimpleNameLink target;
   private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
+  /**
+   * The id of the sector in the subject dataset whose metadata this sector absorbs, if any.
+   * Only ever points at a {@link Mode#SOURCE} sector, i.e. a part an aggregating source declares about
+   * its own data. Null for the vast majority of sectors, which inherit the source dataset's metadata.
+   */
+  private Integer subjectSectorId;
   private SimpleNameLink subject;
   private String originalSubjectId;
   private Rank placeholderRank; // optional placeholder rank for the subject, i.e. children of higher ranks than this will be ignored
@@ -83,7 +89,18 @@ public class Sector extends DatasetScopedEntity<Integer> {
      * flag selects between X-Release and plain Release.
      * No subject taxon is needed; the sector's records are tagged with sectorKey for repeatable wipes.
      */
-    HIERARCHY
+    HIERARCHY,
+
+    /**
+     * A sector an EXTERNAL dataset declares about a part of its own data, so that part can carry its own
+     * metadata - the way WoRMS, WFO or ITIS are aggregations whose real authority for a subtree is a
+     * thematic database rather than the umbrella. Created by the importer from the ColDP sourceID, with
+     * the sector id being that very sourceID, no subject and no filters.
+     *
+     * This is pure provenance, never an assembly instruction: a SOURCE sector is never synced, and a
+     * project sector absorbs its metadata by pointing at it via {@link #getSubjectSectorId()}.
+     */
+    SOURCE
   }
 
   /**
@@ -112,6 +129,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     super(other);
     this.target = other.target == null ? null : SimpleNameLink.of(other.target);
     this.subjectDatasetKey = other.subjectDatasetKey;
+    this.subjectSectorId = other.subjectSectorId;
     this.subject = other.subject == null ? null : SimpleNameLink.of(other.subject);
     this.originalSubjectId = other.originalSubjectId;
     this.mode = other.mode;
@@ -139,6 +157,22 @@ public class Sector extends DatasetScopedEntity<Integer> {
   
   public void setSubjectDatasetKey(Integer subjectDatasetKey) {
     this.subjectDatasetKey = subjectDatasetKey;
+  }
+
+  public Integer getSubjectSectorId() {
+    return subjectSectorId;
+  }
+
+  public void setSubjectSectorId(Integer subjectSectorId) {
+    this.subjectSectorId = subjectSectorId;
+  }
+
+  /**
+   * @return the key of the source sector this one absorbs the metadata of, or null if there is none.
+   */
+  @JsonIgnore
+  public DSID<Integer> getSubjectSectorKey() {
+    return subjectSectorId == null ? null : DSID.of(subjectDatasetKey, subjectSectorId);
   }
   
   public SimpleNameLink getSubject() {
@@ -368,6 +402,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     Sector sector = (Sector) o;
     return Objects.equals(target, sector.target)
            && Objects.equals(subjectDatasetKey, sector.subjectDatasetKey)
+           && Objects.equals(subjectSectorId, sector.subjectSectorId)
            && Objects.equals(subject, sector.subject)
            && Objects.equals(originalSubjectId, sector.originalSubjectId)
            && placeholderRank == sector.placeholderRank
@@ -390,7 +425,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, useXRelease, priority, syncAttempt, datasetAttempt, code, createImplicitNames, authorshipUpdate, ranks, entities, nameTypes, nameStatusExclusion, nameFilter, extinctFilter, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subjectSectorId, subject, originalSubjectId, placeholderRank, mode, useXRelease, priority, syncAttempt, datasetAttempt, code, createImplicitNames, authorshipUpdate, ranks, entities, nameTypes, nameStatusExclusion, nameFilter, extinctFilter, note);
   }
 
   @Override
@@ -416,6 +451,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     private Integer id;
     private SimpleNameLink target;
     private Integer subjectDatasetKey;
+    private Integer subjectSectorId;
     private SimpleNameLink subject;
     private String originalSubjectId;
     private Rank placeholderRank;
@@ -472,6 +508,11 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
     public Builder target(SimpleNameLink target) {
       this.target = target;
+      return this;
+    }
+
+    public Builder subjectSectorId(Integer subjectSectorId) {
+      this.subjectSectorId = subjectSectorId;
       return this;
     }
 
@@ -590,6 +631,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
       sector.setId(id);
       sector.setTarget(target);
       sector.setSubjectDatasetKey(subjectDatasetKey);
+      sector.setSubjectSectorId(subjectSectorId);
       sector.setSubject(subject);
       sector.setOriginalSubjectId(originalSubjectId);
       sector.setPlaceholderRank(placeholderRank);

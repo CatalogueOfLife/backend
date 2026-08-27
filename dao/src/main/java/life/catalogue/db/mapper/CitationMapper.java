@@ -53,4 +53,16 @@ public interface CitationMapper {
    */
   void deleteByRelease(@Param("releaseKey") int releaseKey);
 
+
+  /**
+   * Lists the citations of a single sector. Unlike the dataset family there is no separate archive or
+   * release table - the origin of datasetKey already says whether these are publisher declared, an
+   * editor override or the frozen copy inside a release.
+   */
+  List<Citation> listSector(@Param("datasetKey") int datasetKey, @Param("sectorId") int sectorId);
+
+  void createSector(@Param("datasetKey") int datasetKey, @Param("sectorId") int sectorId, @Param("obj") Citation citation);
+
+  void deleteSector(@Param("datasetKey") int datasetKey, @Param("sectorId") int sectorId);
+
 }
