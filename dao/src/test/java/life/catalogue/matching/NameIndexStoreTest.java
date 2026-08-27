@@ -45,6 +45,22 @@ abstract class NameIndexStoreTest {
   abstract NameIndexStore create() throws IOException;
 
   @Test
+  public void identity() throws Exception {
+    assertNotNull(db.id());
+    assertEquals("the id must be stable while the store is open", db.id(), db.id());
+  }
+
+  /** Clearing the index makes it a different index, so both markers move. */
+  @Test
+  public void identityChangesOnClear() throws Exception {
+    var before = db.id();
+    var createdBefore = db.created();
+    db.clear();
+    assertNotEquals(before, db.id());
+    assertFalse("created must not go backwards", db.created().isBefore(createdBefore));
+  }
+
+  @Test
   public void created() throws Exception {
     System.out.println(db.created());
     assertTrue(LocalDateTime.now().isAfter(db.created()));

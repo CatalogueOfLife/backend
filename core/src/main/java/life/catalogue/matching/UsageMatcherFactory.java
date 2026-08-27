@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -72,6 +73,7 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherFactory.class);
   /** Extra sidecar JSON property recording the names index {@link NameIndex#created()} the store was built against. */
   static final String NIDX_CREATED_FIELD = "nidxCreated";
+  static final String NIDX_ID_FIELD = "nidxId";
   /** Interval below which a repeated {@link #openPersistent(int)} does not rewrite the sidecar mtime again. */
   private static final long TOUCH_INTERVAL_MS = TimeUnit.HOURS.toMillis(1);
   private volatile boolean started = false;
@@ -229,6 +231,11 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     }
 
     @Override
+    public Integer datasetKey() {
+      return datasetKey;
+    }
+
+    @Override
     public void execute() throws Exception {
       // build into a temp dir off-lock so the previous matcher keeps serving, then swap atomically.
       buildAndSwap(datasetKey);
@@ -330,11 +337,13 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       if (d != null) {
         d.setSize(size); // persist the matcher size so we can compare it to the DB size later if needed
         LocalDateTime nidxCreated = nameIndex.created();
+        UUID nidxId = nameIndex.id();
         ObjectNode node = ApiModule.MAPPER.valueToTree(d);
         node.put(NIDX_CREATED_FIELD, nidxCreated.toString());
+        node.put(NIDX_ID_FIELD, nidxId.toString());
         ApiModule.MAPPER.writeValue(MatchingConfig.datasetJson(storeDir), node);
-        LOG.info("Wrote dataset sidecar for matcher {} with attempt {} and nidx created {}",
-          datasetKey, d.getAttempt(), nidxCreated);
+        LOG.info("Wrote dataset sidecar for matcher {} with attempt {} and nidx {} created {}",
+          datasetKey, d.getAttempt(), nidxId, nidxCreated);
       }
     } catch (Exception e) {
       LOG.warn("Failed to write sidecar for matcher {}", datasetKey, e);
@@ -505,6 +514,18 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
    * {@value #NIDX_CREATED_FIELD} property of the dataset sidecar, or null if the sidecar is absent, the
    * property is missing (a store built before this marker was introduced) or unparseable.
    */
+  private UUID readStoredNidxId(int datasetKey) {
+    var sidecar = cfg.datasetJson(datasetKey);
+    if (!sidecar.exists()) return null;
+    try {
+      var node = ApiModule.MAPPER.readTree(sidecar).get(NIDX_ID_FIELD);
+      return node == null || node.isNull() ? null : UUID.fromString(node.asText());
+    } catch (Exception e) {
+      LOG.warn("Could not read nidx id from sidecar for dataset {}", datasetKey, e);
+      return null;
+    }
+  }
+
   private LocalDateTime readStoredNidxCreated(int datasetKey) {
     var sidecar = cfg.datasetJson(datasetKey);
     if (!sidecar.exists()) return null;
@@ -673,8 +694,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
       current = d == null ? null : d.getAttempt();
     }
     if (stored == null || !stored.equals(current)) return true;
-    LocalDateTime storedNidx = readStoredNidxCreated(datasetKey);
-    return storedNidx != null && !storedNidx.equals(nameIndex.created());
+    UUID storedNidx = readStoredNidxId(datasetKey);
+    return storedNidx != null && !storedNidx.equals(nameIndex.id());
   }
 
   public void remove(int datasetKey) {
@@ -715,13 +736,15 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     public final Integer size;
     public final Integer attempt; // from sidecar JSON, null if absent
     public final LocalDateTime nidxCreated; // names index created timestamp the store was built against, null if absent
+    public final UUID nidxId; // names index the store was built against, null for a store predating the id
     public DatasetSimple dataset;
 
-    public MatcherMetadata(int datasetKey, Integer size, Integer attempt, LocalDateTime nidxCreated) {
+    public MatcherMetadata(int datasetKey, Integer size, Integer attempt, LocalDateTime nidxCreated, UUID nidxId) {
       this.datasetKey = datasetKey;
       this.size = size;
       this.attempt = attempt;
       this.nidxCreated = nidxCreated;
+      this.nidxId = nidxId;
     }
   }
 
@@ -729,7 +752,8 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     var m = matchers.get(datasetKey);
     if (m != null && m.tryAcquire()) { // hold a lease so the store can't be closed while we read its size
       try {
-        return new MatcherMetadata(datasetKey, m.store().size(), readStoredAttempt(datasetKey), readStoredNidxCreated(datasetKey));
+        return new MatcherMetadata(datasetKey, m.store().size(), readStoredAttempt(datasetKey),
+          readStoredNidxCreated(datasetKey), readStoredNidxId(datasetKey));
       } finally {
         m.close();
       }

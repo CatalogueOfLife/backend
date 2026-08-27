@@ -17,6 +17,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -89,6 +90,11 @@ public class NameIndexImpl implements NameIndex {
   @Override
   public LocalDateTime created() {
     return store.created();
+  }
+
+  @Override
+  public UUID id() {
+    return store.id();
   }
 
   @Override

@@ -8,6 +8,7 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.Managed;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import life.catalogue.parser.NameParser;
 
@@ -22,6 +23,12 @@ public interface NameIndex extends Managed, AutoCloseable {
   Logger LOG = LoggerFactory.getLogger(NameIndex.class);
 
   LocalDateTime created();
+
+  /**
+   * A unique id of the index instance, regenerated only when the index is rebuilt from scratch and stable
+   * across restarts. Compare this rather than {@link #created()} to tell one index from another.
+   */
+  UUID id();
 
   /**
    * Tries to match a parsed name against the names index.

@@ -8,6 +8,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -21,6 +22,7 @@ public class NameIndexFactory {
    * @return NameIndex that returns no match for any query
    */
   public static NameIndex passThru() {
+    final UUID id = UUID.randomUUID();
     return new NameIndex() {
       @Override
       public void start() throws Exception {
@@ -33,6 +35,11 @@ public class NameIndexFactory {
       @Override
       public LocalDateTime created() {
         return LocalDateTime.now();
+      }
+
+      @Override
+      public UUID id() {
+        return id;
       }
 
       @Override
@@ -71,6 +78,7 @@ public class NameIndexFactory {
    * @return NameIndex that returns the same fixed nidx match for any query
    */
   public static NameIndex fixed(final int nidx) {
+    final UUID id = UUID.randomUUID();
     return new NameIndex() {
       @Override
       public void start() throws Exception { }
@@ -81,6 +89,11 @@ public class NameIndexFactory {
       @Override
       public LocalDateTime created() {
         return LocalDateTime.now();
+      }
+
+      @Override
+      public UUID id() {
+        return id;
       }
 
       @Override

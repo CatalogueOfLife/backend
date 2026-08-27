@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
@@ -58,10 +59,13 @@ public class NamesIndexResource {
 
   public static class NidxMetadata {
     public final String type;
+    /** Identifies this index. Matcher stores record it to detect that they were built against an older one. */
+    public final UUID id;
     public final LocalDateTime created;
     public final int size;
 
     public NidxMetadata(NameIndexStore store) {
+      this.id = store.id();
       this.created = store.created();
       this.size = store.count();
       this.type = store.getClass().getSimpleName();

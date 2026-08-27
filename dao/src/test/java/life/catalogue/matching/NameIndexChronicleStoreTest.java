@@ -45,6 +45,42 @@ public class NameIndexChronicleStoreTest extends NameIndexStoreTest {
   }
 
   /**
+   * The identity must survive a restart just like the data does. It used to be stamped in the constructor
+   * and never persisted, so every JVM start looked like a brand new names index to anything that recorded
+   * which index it had been built against - which had every matcher rebuilt on every deploy.
+   */
+  @Test
+  public void identitySurvivesRestart() throws Exception {
+    db.add("abies alb", 1);
+    var id = db.id();
+    var created = db.created();
+
+    db.stop();
+    db = create();
+    db.start();
+
+    assertEquals("a restart must not look like a new index", id, db.id());
+    assertEquals(created, db.created());
+  }
+
+  /**
+   * A cleared index is a new index, and that must survive the next restart too.
+   */
+  @Test
+  public void clearedIdentityIsPersisted() throws Exception {
+    var before = db.id();
+    db.clear();
+    var after = db.id();
+    assertNotEquals(before, after);
+
+    db.stop();
+    db = create();
+    db.start();
+
+    assertEquals(after, db.id());
+  }
+
+  /**
    * Writes a pre-c75da33c5 names file, which mapped a bucket key to an int[] of nidx ids.
    */
   private static void writeLegacyFile(File namesF) {

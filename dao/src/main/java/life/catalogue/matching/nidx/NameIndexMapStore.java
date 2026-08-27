@@ -1,6 +1,7 @@
 package life.catalogue.matching.nidx;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,6 +19,7 @@ public class NameIndexMapStore implements NameIndexStore {
   private ConcurrentHashMap<String, Integer> names;
   private final AtomicInteger maxKey = new AtomicInteger(0);
   private LocalDateTime created;
+  private UUID id;
   private boolean started = false;
 
   @Override
@@ -25,6 +27,7 @@ public class NameIndexMapStore implements NameIndexStore {
     names = new ConcurrentHashMap<>();
     maxKey.set(0);
     created = LocalDateTime.now();
+    id = UUID.randomUUID();
     started = true;
     LOG.info("Names index memory store started");
   }
@@ -80,6 +83,7 @@ public class NameIndexMapStore implements NameIndexStore {
     names.clear();
     maxKey.set(0);
     created = LocalDateTime.now();
+    id = UUID.randomUUID();
   }
 
   @Override
@@ -96,5 +100,10 @@ public class NameIndexMapStore implements NameIndexStore {
   @Override
   public LocalDateTime created() {
     return created;
+  }
+
+  @Override
+  public UUID id() {
+    return id;
   }
 }

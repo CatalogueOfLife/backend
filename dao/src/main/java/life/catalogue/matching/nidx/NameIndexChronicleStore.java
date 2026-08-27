@@ -1,10 +1,14 @@
 package life.catalogue.matching.nidx;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
@@ -21,10 +25,21 @@ import net.openhft.chronicle.map.ChronicleMapBuilder;
 public class NameIndexChronicleStore implements NameIndexStore {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexChronicleStore.class);
 
+  /**
+   * Holds the identity of the persisted index - the id callers compare and the timestamp they read - so
+   * both survive a restart. Without it every JVM start looked like a brand new index to anything that
+   * remembered which index it had been built against.
+   */
+  static final String IDENTITY_FILE = "identity.properties";
+  private static final String PROP_ID = "id";
+  private static final String PROP_CREATED = "created";
+
   private final File dir;
   private final NamesIndexConfig cfg;
   private long created; //datetime
+  private UUID id;
   private final File namesF;
+  private final File identityF;
   private ChronicleMap<String, Integer> names; // normalized canonical bucket key -> nidx
   // the max nidx held, maintained on add(). add is the only writer.
   private final AtomicInteger maxKey = new AtomicInteger(0);
@@ -33,14 +48,17 @@ public class NameIndexChronicleStore implements NameIndexStore {
   public NameIndexChronicleStore(NamesIndexConfig cfg) throws IOException {
     this.cfg = cfg;
     this.dir = cfg.file;
-    this.created = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+    // provisional until start() reads or writes the identity file, so created()/id() never return null
+    stampIdentity();
     if (dir == null) {
       namesF = null;
+      identityF = null;
     } else {
       if (!dir.exists()) {
         FileUtils.forceMkdir(dir);
       }
       namesF = new File(dir, "names");
+      identityF = new File(dir, IDENTITY_FILE);
     }
   }
 
@@ -90,6 +108,7 @@ public class NameIndexChronicleStore implements NameIndexStore {
         if (v != null && v > max) max = v;
       }
       maxKey.set(max);
+      loadOrWriteIdentity();
       started = true;
     } catch (RuntimeException e) {
       closeQuietly();
@@ -153,7 +172,9 @@ public class NameIndexChronicleStore implements NameIndexStore {
     assertOnline();
     names.clear();
     maxKey.set(0);
-    this.created = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+    // a cleared index is a new index
+    stampIdentity();
+    writeIdentity();
   }
 
   /**
@@ -185,5 +206,58 @@ public class NameIndexChronicleStore implements NameIndexStore {
   @Override
   public LocalDateTime created() {
     return LocalDateTime.ofEpochSecond(created, 0, ZoneOffset.UTC);
+  }
+
+  @Override
+  public UUID id() {
+    return id;
+  }
+
+  private void stampIdentity() {
+    this.created = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
+    this.id = UUID.randomUUID();
+  }
+
+  /**
+   * Adopts the identity recorded next to the names file, or stamps and records a new one when there is
+   * none yet - a fresh index, or one written before this file existed. An unreadable or incomplete file
+   * is treated as absent: a new identity only ever costs one rebuild of whatever depends on it, whereas
+   * failing the start would take the whole server down over a metadata file.
+   */
+  private void loadOrWriteIdentity() {
+    if (identityF == null) return; // in memory: nothing to persist to
+    if (identityF.exists()) {
+      var props = new Properties();
+      try (var in = new FileInputStream(identityF)) {
+        props.load(in);
+        var storedId = props.getProperty(PROP_ID);
+        var storedCreated = props.getProperty(PROP_CREATED);
+        if (storedId != null && storedCreated != null) {
+          this.id = UUID.fromString(storedId);
+          this.created = LocalDateTime.parse(storedCreated).toEpochSecond(ZoneOffset.UTC);
+          LOG.info("Names index {} created {}", id, created());
+          return;
+        }
+        LOG.warn("Incomplete names index identity at {}, stamping a new one", identityF);
+      } catch (IOException | RuntimeException e) {
+        LOG.warn("Could not read the names index identity at {}, stamping a new one", identityF, e);
+      }
+      stampIdentity();
+    }
+    writeIdentity();
+    LOG.info("Stamped new names index {} created {}", id, created());
+  }
+
+  private void writeIdentity() {
+    if (identityF == null) return;
+    var props = new Properties();
+    props.setProperty(PROP_ID, id.toString());
+    props.setProperty(PROP_CREATED, created().toString());
+    try (var out = new FileOutputStream(identityF)) {
+      props.store(out, "Identity of this names index. Regenerated on a rebuild, stable across restarts.");
+    } catch (IOException e) {
+      // a lost identity means dependents rebuild once more than needed, not a broken index
+      LOG.warn("Failed to write the names index identity to {}", identityF, e);
+    }
   }
 }

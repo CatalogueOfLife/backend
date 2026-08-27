@@ -31,6 +31,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -450,12 +451,33 @@ public class UsageMatcherFactoryTest {
     var m = stubReconcile(List.of(key));
     when(m.num().count(key)).thenReturn(5000);   // above threshold
 
-    // attempt matches the DB (not stale on attempt), but the sidecar recorded an older nidx than the live one
-    inSyncSidecar(key, m, 7, LocalDateTime.of(2026, 1, 1, 0, 0));
-    when(nameIndex.created()).thenReturn(LocalDateTime.of(2026, 7, 1, 0, 0)); // live nidx is newer → stale
+    // attempt matches the DB (not stale on attempt), but the sidecar recorded a different nidx than the live one
+    inSyncSidecar(key, m, 7, UUID.randomUUID());
+    when(nameIndex.id()).thenReturn(UUID.randomUUID()); // a different index → stale
 
     f.reconcile(false, 1);
     verify(executor).submit(argThat(j -> j instanceof BackgroundJob)); // rebuild scheduled for the stale nidx
+  }
+
+  /**
+   * A sidecar written before the nidx id existed carries only the timestamp. It must NOT count as stale,
+   * exactly as the timestamp marker itself did not when it was introduced - otherwise shipping the id
+   * would queue a rebuild of every matcher in one go.
+   */
+  @Test
+  public void reconcileSkipsWhenSidecarHasNoNidxId() throws Exception {
+    var f = factory();
+    int key = 207;
+    var m = stubReconcile(List.of(key));
+    when(m.num().count(key)).thenReturn(5000);
+
+    inSyncSidecar(key, m, 7, null); // legacy: nidxCreated only, no nidxId
+
+    f.reconcile(false, 1);
+    verify(executor, never()).submit(any());
+    // nameIndex.id() is deliberately not stubbed: with nothing recorded there is nothing to compare it
+    // to, and mockito's strict stubbing would flag the stub as unused if we added one.
+    verify(nameIndex, never()).id();
   }
 
   /** A matcher in sync on both attempt and names-index created timestamp is not rebuilt. */
@@ -466,9 +488,9 @@ public class UsageMatcherFactoryTest {
     var m = stubReconcile(List.of(key));
     when(m.num().count(key)).thenReturn(5000);
 
-    var nidxCreated = LocalDateTime.of(2026, 7, 1, 0, 0);
-    inSyncSidecar(key, m, 7, nidxCreated);
-    when(nameIndex.created()).thenReturn(nidxCreated); // same as recorded → not stale
+    var nidxId = UUID.randomUUID();
+    inSyncSidecar(key, m, 7, nidxId);
+    when(nameIndex.id()).thenReturn(nidxId); // same index as recorded → not stale
 
     f.reconcile(false, 1);
     verify(executor, never()).submit(any());
@@ -480,13 +502,14 @@ public class UsageMatcherFactoryTest {
    * which is the last-used marker reconcile ages on demand matchers out by.
    */
   private File onDemandStore(int key, ReconcileMocks m, Dataset current, int storedAttempt,
-                             LocalDateTime nidxCreated, long lastUsedMillisAgo) throws Exception {
+                             UUID nidxId, long lastUsedMillisAgo) throws Exception {
     File dir = fakeStore(key);
     Dataset stored = new Dataset();
     stored.setKey(key);
     stored.setAttempt(storedAttempt);
     ObjectNode node = ApiModule.MAPPER.valueToTree(stored);
-    node.put("nidxCreated", nidxCreated.toString());
+    node.put("nidxCreated", LocalDateTime.of(2026, 1, 1, 0, 0).toString());
+    node.put("nidxId", nidxId.toString());
     File sidecar = MatchingConfig.datasetJson(dir);
     ApiModule.MAPPER.writeValue(sidecar, node);
     assertTrue(sidecar.setLastModified(System.currentTimeMillis() - lastUsedMillisAgo));
@@ -499,12 +522,12 @@ public class UsageMatcherFactoryTest {
     var f = factory();
     int key = 205;
     var m = stubReconcile(List.of());   // private → never part of the published set
-    var nidx = LocalDateTime.of(2026, 7, 1, 0, 0);
+    var nidx = UUID.randomUUID();
     var current = dataset(key, DatasetOrigin.EXTERNAL, true);
     current.setAttempt(3);
     File dir = onDemandStore(key, m, current, 3, nidx, TimeUnit.DAYS.toMillis(1));
     when(m.num().count(key)).thenReturn(5000);   // above threshold
-    when(nameIndex.created()).thenReturn(nidx);
+    when(nameIndex.id()).thenReturn(nidx);
 
     f.reconcile(false, 1);
 
@@ -519,7 +542,7 @@ public class UsageMatcherFactoryTest {
     var m = stubReconcile(List.of());
     var current = dataset(key, DatasetOrigin.EXTERNAL, true);
     current.setAttempt(3);
-    File dir = onDemandStore(key, m, current, 3, LocalDateTime.of(2026, 7, 1, 0, 0), TimeUnit.DAYS.toMillis(31));
+    File dir = onDemandStore(key, m, current, 3, UUID.randomUUID(), TimeUnit.DAYS.toMillis(31));
 
     f.reconcile(false, 1);
 
@@ -532,7 +555,7 @@ public class UsageMatcherFactoryTest {
     int key = 207;
     var m = stubReconcile(List.of());
     var current = dataset(key, DatasetOrigin.EXTERNAL, true, LocalDateTime.now());
-    File dir = onDemandStore(key, m, current, 3, LocalDateTime.of(2026, 7, 1, 0, 0), TimeUnit.DAYS.toMillis(1));
+    File dir = onDemandStore(key, m, current, 3, UUID.randomUUID(), TimeUnit.DAYS.toMillis(1));
 
     f.reconcile(false, 1);
 
@@ -546,7 +569,7 @@ public class UsageMatcherFactoryTest {
     var m = stubReconcile(List.of());
     var current = dataset(key, DatasetOrigin.EXTERNAL, true);
     current.setAttempt(9);                       // the dataset was re-imported since the store was built
-    onDemandStore(key, m, current, 3, LocalDateTime.of(2026, 7, 1, 0, 0), TimeUnit.DAYS.toMillis(1));
+    onDemandStore(key, m, current, 3, UUID.randomUUID(), TimeUnit.DAYS.toMillis(1));
     when(m.num().count(key)).thenReturn(5000);
 
     f.reconcile(false, 1);
@@ -631,13 +654,16 @@ public class UsageMatcherFactoryTest {
    * Writes a store dir + dataset sidecar for key (attempt + embedded nidxCreated) and wires the DB to report
    * the same attempt (in sync), mirroring what {@code writeSidecar} produces after a build.
    */
-  private void inSyncSidecar(int key, ReconcileMocks m, int attempt, LocalDateTime nidxCreated) throws Exception {
+  private void inSyncSidecar(int key, ReconcileMocks m, int attempt, UUID nidxId) throws Exception {
     File dir = fakeStore(key);
     Dataset stored = new Dataset();
     stored.setKey(key);
     stored.setAttempt(attempt);
     ObjectNode node = ApiModule.MAPPER.valueToTree(stored);
-    node.put("nidxCreated", nidxCreated.toString());
+    node.put("nidxCreated", LocalDateTime.of(2026, 1, 1, 0, 0).toString());
+    if (nidxId != null) {
+      node.put("nidxId", nidxId.toString());
+    }
     ApiModule.MAPPER.writeValue(MatchingConfig.datasetJson(dir), node);
     Dataset current = new Dataset();
     current.setKey(key);

@@ -4,6 +4,7 @@ import life.catalogue.common.Managed;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * A pure {@code normalized-String -> nidx-int} registry backing the names index.
@@ -50,7 +51,16 @@ public interface NameIndexStore extends Managed {
   void compact();
 
   /**
-   * DateTime the store was first created or entirely cleared.
+   * DateTime the store was first created or entirely cleared. Persisted with the store, so it survives
+   * a restart and only moves when the index itself is rebuilt.
    */
   LocalDateTime created();
+
+  /**
+   * A unique id regenerated whenever the store is created from scratch or entirely cleared, and otherwise
+   * stable across restarts. Prefer this over {@link #created()} to tell one index apart from another: it is
+   * an exact equality check with no precision, formatting or timezone hazard, while the timestamp remains
+   * the thing to look at when the question is which of two indexes is the newer one.
+   */
+  UUID id();
 }
