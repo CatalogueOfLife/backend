@@ -41,6 +41,23 @@ public class SectorDaoTest extends DaoTestBase {
     dao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao, validator);
   }
 
+  /**
+   * SOURCE sectors belong to an EXTERNAL dataset and are created by the importer from the ColDP
+   * sourceID. A curator must not be able to make one in a project. See issue #1273.
+   */
+  @Test
+  public void sourceSectorsCannotBeCreated() {
+    MybatisTestUtils.populateDraftTree(session());
+    Sector s = SectorMapperTest.create();
+    s.setMode(Sector.Mode.SOURCE);
+    try {
+      dao.create(s, user);
+      fail("SOURCE sectors must not be creatable through the dao");
+    } catch (IllegalArgumentException e) {
+      // expected
+    }
+  }
+
   @Test
   public void resetCreate() {
 

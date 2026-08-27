@@ -196,6 +196,26 @@ history by lane, multiple case insensitive job names, status, priority, dataset,
 3. Inserts/updates/deletes to synchronize
 4. Rebuilds name index
 
+**Sector Metadata:**
+A sector can optionally carry dataset-like metadata so it renders as a sub-source page, the way a source dataset does
+(issue #1273, see [`docs/2026-08-27-sector-metadata.md`](docs/2026-08-27-sector-metadata.md)). It matters where a source
+is itself an aggregation - WoRMS, WFO, ITIS - and the real authority for a subtree is a thematic database rather than the
+umbrella. `sector_metadata` is a `LIKE dataset_patch` clone keyed by `(dataset_key, sector_id)`, so the canonical metadata
+column list still lives once as the `SELECT_NO_KEY`/`COLS`/`PROPS` fragments in `DatasetPatchMapper.xml`. `sector_citation`
+mirrors `dataset_citation` for `Dataset.source`. The Java carrier is `Dataset` itself, exactly as it is for `dataset_patch`.
+**One table serves all three stages**, told apart only by the origin of its `dataset_key`: EXTERNAL rows are declared by the
+publisher, PROJECT rows are the editor's override, RELEASE rows are the two merged and frozen. Rows are sparse and inherit
+whatever they do not say, and only sectors that actually say something get one - COL has ~63k sectors and nearly all inherit.
+`Sector.Mode.SOURCE` marks a sector an EXTERNAL dataset declares about part of its own data (pure provenance, never synced);
+its id *is* the ColDP `sourceID`, which is why CLB requires integer sourceIDs there. `sector.subject_sector_id` links a
+project sector to the source sector it absorbs, with `ON DELETE SET NULL (subject_sector_id)` - scoped to that one column,
+because a plain composite SET NULL would also wipe `subject_dataset_key`. Resolution lives in `SectorMetadataDao`; `license`
+has to be applied by hand there since it is excluded from `Dataset.PATCH_PROPS`. This is the one sector-scoped table a release
+**resolves rather than copies** - `ProjectRelease.finalWork` freezes the merged delta, since the publisher's layer is rewritten
+on every import. `sector_metadata` carries the schema's only `ON DELETE CASCADE`, and it is load bearing: without it
+`deleteOrphans` and `DatasetDao.deleteKeptReleaseData` raise FK violations. `SectorMetadataMapper` is deliberately neither a
+`DatasetProcessable` nor in `SectorProcessable.MAPPERS` - either would have a bulk delete or a sector resync wipe the metadata.
+
 **Name Index:**
 A pure `normalized-String → nidx-int` registry, not a cached copy of the names. Postgres `names_index(id, scientific_name, normalized UNIQUE)` is the single append-only source of truth — every row is a canonical name (rank `UNRANKED`, no authorship), and it is never updated in place: a new/changed canonical name always gets a new `id`. The in-memory `NameIndexStore` only holds the reverse lookup (`normalized` key → `nidx` id): a persistent Chronicle map in production, a heap `HashMap`/`ConcurrentHashMap` in tests. The store also carries an identity - a `UUID id()` plus a `created()` timestamp - persisted next to the `names` file in `identity.properties` and regenerated only when the index is built from scratch or cleared. Compare `id()` to tell one index from another; `created()` is for ordering and display. It used to be stamped per JVM start and never persisted, which made every deploy look like a new index and had `UsageMatcherFactory.reconcile` rebuild every matcher. It is loaded incrementally at startup by catching up from `store.maxKey()` to Postgres's current max id (`NamesIndexMapper.processSince`), not a full reload. `NameIndex.match()` returns a bare `NameMatch{Integer nidx, boolean matched}` — there is no `IndexName` model, no MapDB store, no KryoPool registration, and no names-index-level `MatchType` anymore (all removed). EXACT/VARIANT are no longer computed by the nidx layer at all; they are computed at the USAGE layer by `UsageMatcher` from the live usage labels once a nidx match has narrowed candidates. Homonym separation (telling apart usages that share one canonical nidx but differ by author) also lives in `UsageMatcher`, unchanged: it compares the live usage authorship via `AuthorComparator` (with a lenient year comparison for year-only authorship) and the live ranks.
 

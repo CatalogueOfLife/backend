@@ -215,6 +215,10 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
     }
     if (mode == null) {
       throw new IllegalArgumentException("Sector " + sectorKey + " does not exist");
+    } else if (mode == Sector.Mode.SOURCE) {
+      // a SOURCE sector is what an EXTERNAL dataset declares about a part of its own data so that part
+      // can carry metadata (#1273). It is pure provenance and has no subject to assemble from.
+      throw new IllegalArgumentException("Sector " + sectorKey + " is a SOURCE sector and cannot be synced");
     } else if (blockMergeSyncs && mode == Sector.Mode.MERGE) {
       // merge syncs are blocked by project settings - fail explicit sector requests, skip with a warning otherwise
       if (failOnBlocked) {

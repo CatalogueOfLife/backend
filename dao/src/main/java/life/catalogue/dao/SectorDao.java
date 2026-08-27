@@ -157,6 +157,11 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       } else if (origin != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " is not a project but of origin " + origin);
       }
+      if (s.getMode() == Sector.Mode.SOURCE) {
+        // SOURCE sectors belong to an EXTERNAL dataset and are created by the importer from the ColDP
+        // sourceID, never by a curator. See issue #1273.
+        throw new IllegalArgumentException("SOURCE sectors are declared by their source dataset, they cannot be created in project " + s.getDatasetKey());
+      }
 
       // check if source is a placeholder node
       parsePlaceholderRank(s);
