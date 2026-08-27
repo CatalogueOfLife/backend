@@ -102,6 +102,19 @@
           SELECT de.key FROM dataset_export de WHERE de.format = #{req.format}::DATAFORMAT
         )
       </if>
+      <!--
+        An import whose source was unchanged deletes its own dataset_import row again, so the absence of
+        that row is what identifies it - not the step, which is free text and has read 'unchanged',
+        'downloading' and null for the very same outcome over time. Only ImportJob runs in the IMPORT
+        lane and dataset_import(job_key) is indexed, so this is a cheap anti join on top of the
+        (lane, created) index. All three columns are NOT NULL, so the negated form has no null trap.
+      -->
+      <if test="req.unchanged != null">
+        AND <if test="!req.unchanged">NOT</if> (
+          j.lane = 'IMPORT'::JOBLANE AND j.status = 'FINISHED'::JOBSTATUS
+          AND NOT EXISTS (SELECT 1 FROM dataset_import di WHERE di.job_key = j.key)
+        )
+      </if>
     </where>
   </sql>
 
@@ -187,7 +200,7 @@
     caller can loop until it returns less than limit. Filtering after the LIMIT would silently stall that
     loop on the first batch that happened to be full of pinned rows.
   -->
-  <delete id="deleteOld">
+  <select id="deleteOld" resultType="java.util.UUID">
     DELETE FROM job j
     USING (
       SELECT key FROM (
@@ -218,7 +231,10 @@
       LIMIT #{limit}
     ) doomed
     WHERE j.key = doomed.key
-  </delete>
+    -- returning the keys lets JobCleanup delete the job logs of exactly the rows it reaped.
+    -- one statement, so there is never a window where a row is gone but its key unknown.
+    RETURNING j.key
+  </select>
 
   <update id="cancelStale">
     UPDATE job

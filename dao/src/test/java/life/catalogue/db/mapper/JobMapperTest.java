@@ -169,16 +169,21 @@ public class JobMapperTest extends CRUDTestBase<UUID, JobInfo, JobMapper> {
     commit();
     assertEquals(7, mapper().count(new JobSearchRequest()));
 
-    // newest 2 finished ones of the class are kept whatever their age, so 4 of the 5 old ones go
-    assertEquals(4, mapper().deleteOld(90, Map.of(), 2, 100));
+    // newest 2 finished ones of the class are kept whatever their age, so 4 of the 5 old ones go.
+    // the keys of exactly those rows come back, so JobCleanup can delete their logs
+    var gone = mapper().deleteOld(90, Map.of(), 2, 100);
     commit();
+    assertEquals(4, gone.size());
+    for (UUID key : gone) {
+      assertNull("deleteOld returned a key that is still there", mapper().get(key));
+    }
     assertEquals(3, mapper().count(new JobSearchRequest()));
 
     // nothing left that is both beyond the default age and outside the per class floor
-    assertEquals(0, mapper().deleteOld(90, Map.of(), 2, 100));
+    assertTrue(mapper().deleteOld(90, Map.of(), 2, 100).isEmpty());
 
     // a per class override applies instead of the default, matched case insensitively
-    assertEquals(2, mapper().deleteOld(90, Map.of("alphajob", 1), 0, 100));
+    assertEquals(2, mapper().deleteOld(90, Map.of("alphajob", 1), 0, 100).size());
     commit();
 
     // the running job survived all of it - a live job is never a candidate, however old its record is
@@ -198,11 +203,11 @@ public class JobMapperTest extends CRUDTestBase<UUID, JobInfo, JobMapper> {
     }
     commit();
 
-    assertEquals(2, mapper().deleteOld(90, Map.of(), 0, 2));
+    assertEquals(2, mapper().deleteOld(90, Map.of(), 0, 2).size());
     commit();
-    assertEquals(2, mapper().deleteOld(90, Map.of(), 0, 2));
+    assertEquals(2, mapper().deleteOld(90, Map.of(), 0, 2).size());
     commit();
-    assertEquals(1, mapper().deleteOld(90, Map.of(), 0, 2));
+    assertEquals(1, mapper().deleteOld(90, Map.of(), 0, 2).size());
     commit();
     assertEquals(0, mapper().count(new JobSearchRequest()));
   }

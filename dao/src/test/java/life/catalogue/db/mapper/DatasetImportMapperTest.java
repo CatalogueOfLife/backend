@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.JobSearchRequest;
@@ -21,6 +22,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -207,6 +209,61 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   }
 
   /**
+   * An import that found its source unchanged deletes its own dataset_import row again, so an IMPORT
+   * lane job that finished without leaving one is exactly that. The step is deliberately not what
+   * identifies them: it has rendered the same outcome as 'unchanged', 'downloading' and null over time.
+   */
+  @Test
+  public void searchJobsByUnchanged() throws Exception {
+    // a real import keeps the metrics row it wrote
+    var real = create(JobStatus.FINISHED);
+    createImportJob(real.getJobKey(), null);
+    mapper().create(real);
+
+    // two no-ops, under both renderings the step ever had for them
+    var current = createImportJob(UUID.randomUUID(), "unchanged");
+    var legacy = createImportJob(UUID.randomUUID(), "downloading");
+    commit();
+
+    JobMapper jm = session().getMapper(JobMapper.class);
+    var req = new JobSearchRequest();
+    req.setLane(Set.of(JobLane.IMPORT));
+    // unset by default, so nothing is hidden
+    assertEquals(3, jm.count(req));
+
+    req.setUnchanged(true);
+    assertEquals(2, jm.count(req));
+    assertEquals(Set.of(current, legacy),
+      jm.search(req, new Page()).stream().map(JobInfo::getKey).collect(Collectors.toSet()));
+
+    req.setUnchanged(false);
+    var imports = jm.search(req, new Page());
+    assertEquals(1, imports.size());
+    assertEquals(real.getJobKey(), imports.get(0).getKey());
+  }
+
+  /**
+   * A job row as ImportJob writes it, i.e. in the IMPORT lane. MapperTestBase.createJob cannot serve
+   * here: it puts dataset imports in the DEFAULT lane and the lane is not updatable afterwards.
+   */
+  private UUID createImportJob(UUID key, String step) {
+    JobInfo j = new JobInfo();
+    j.setKey(key);
+    j.setJob("ImportJob");
+    j.setLane(JobLane.IMPORT);
+    j.setStatus(JobStatus.FINISHED);
+    j.setStep(step);
+    j.setPriority(JobPriority.MEDIUM);
+    j.setDatasetKey(DATASET11.getKey());
+    j.setCreatedBy(Users.TESTER);
+    j.setCreated(LocalDateTime.now());
+    j.setStarted(LocalDateTime.now());
+    j.setFinished(LocalDateTime.now());
+    session().getMapper(JobMapper.class).create(j);
+    return key;
+  }
+
+  /**
    * JobCleanup must never remove a job record some import metrics point at - the metrics read their
    * status, step, job class and error from it.
    */
@@ -222,7 +279,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     commit();
 
     // ancient, finished and outside any per class floor - only the dataset_import row protects it
-    assertEquals(0, jm.deleteOld(1, Map.of(), 0, 100));
+    assertTrue(jm.deleteOld(1, Map.of(), 0, 100).isEmpty());
     commit();
     assertNotNull(jm.get(di.getJobKey()));
   }

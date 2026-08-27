@@ -143,7 +143,7 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
     jm.create(j);
     commit();
 
-    assertEquals(0, jm.deleteOld(1, Map.of(), 0, 100));
+    assertTrue(jm.deleteOld(1, Map.of(), 0, 100).isEmpty());
     commit();
     assertNotNull(jm.get(e.getKey()));
     assertNotNull(mapper().get(e.getKey()));

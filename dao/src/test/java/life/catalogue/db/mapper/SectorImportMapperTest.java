@@ -100,7 +100,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     // deliberately not committed - these COL scoped sector_import rows are not part of the apple
     // fixture the test data rule reloads, so a commit here would leak into the next test
 
-    assertEquals(0, jm.deleteOld(1, java.util.Map.of(), 0, 100));
+    assertTrue(jm.deleteOld(1, java.util.Map.of(), 0, 100).isEmpty());
     assertNotNull(jm.get(si.getJobKey()));
   }
 

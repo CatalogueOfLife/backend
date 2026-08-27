@@ -28,13 +28,14 @@ public interface JobMapper extends CRUD<UUID, JobInfo> {
    * @param overrides per job class retention days, keyed by simple class name and matched case insensitively
    * @param keepPerClass newest records to keep per job class regardless of age
    * @param limit maximum records to delete in this call
-   * @return the number of job records deleted, which is exactly min(limit, remaining) - so a caller can
-   *         loop while this returns limit
+   * @return the keys of the deleted job records, exactly min(limit, remaining) of them - so a caller can
+   *         loop while the size equals limit. The keys are returned rather than a count so the caller can
+   *         also remove the job logs, which are only ever addressed by that key.
    */
-  int deleteOld(@Param("defaultDays") int defaultDays,
-                @Param("overrides") Map<String, Integer> overrides,
-                @Param("keepPerClass") int keepPerClass,
-                @Param("limit") int limit);
+  List<UUID> deleteOld(@Param("defaultDays") int defaultDays,
+                       @Param("overrides") Map<String, Integer> overrides,
+                       @Param("keepPerClass") int keepPerClass,
+                       @Param("limit") int limit);
 
   /**
    * Lists all jobs that are still waiting, blocked or running.

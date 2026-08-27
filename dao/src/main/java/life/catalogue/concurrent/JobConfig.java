@@ -142,6 +142,20 @@ public class JobConfig {
   }
 
   /**
+   * The job log the JobAppender writes while the job runs.
+   */
+  public File jobLog(UUID key) {
+    return jobLog(logDir, key.toString());
+  }
+
+  /**
+   * The copy of the job log kept with the downloads once the job ended, which is what logURI points at.
+   */
+  public File downloadLogFile(UUID key) {
+    return new File(downloadDir, JobResult.downloadLogFilePath(key));
+  }
+
+  /**
    * @return the final URI that holds the download archive file.
    */
   public URI downloadURI(UUID key) {

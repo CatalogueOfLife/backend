@@ -171,16 +171,23 @@ runs, so `params` is updated and not merely inserted.
 A job's `step` is cleared once it succeeds - it describes a running job - so a terminal message has to be
 set from `onFinish` (or `onFinishLocked`, which `DatasetBlockingJob` makes the overridable half of its final
 `onFinish`). Failed and cancelled jobs keep the step they stopped at.
-`JobCleanup` is a monthly `CronJob` that trims the job history. It only ever removes records that no
+`JobCleanup` is a daily `CronJob` that trims the job history. It only ever removes records that no
 `dataset_import`, `sector_import` or `dataset_export` row refers to - a job row carries the status, step and
 error those read, and `dataset_export` inner joins it - so it reaps the ephemeral jobs while import, sync
 and export history is pruned by `SectorImportRetentionJob` instead, which drops metrics, files and job row
 together. Ages come from `cfg.job.retentionDays` with per class overrides, and the newest
-`retentionKeepPerClass` records of every class are always kept.
+`retentionKeepPerClass` records of every class are always kept. `deleteOld` returns the keys it deleted
+rather than a count, so the cleanup also removes both job logs - the live one under `cfg.job.logDir` and the
+copy `JobAppender` puts with the downloads - which are addressed by that key alone.
+An import whose source MD5 was unchanged skips the whole import body and deletes its own `dataset_import`
+row again, so it is an IMPORT lane job that finished without leaving metrics. That absence, not the free
+text `step`, is what `JobSearchRequest.unchanged` filters on: the step has rendered the same outcome as
+`unchanged`, `downloading` and null over time. Those rows are therefore also the only kind of import
+`JobCleanup` can reap, which is what the `ImportJob` entry in `retentionDaysByClass` targets.
 `/job/types` lists the known job class names from a startup classpath scan; `JobSearchRequest` filters the
 history by lane, multiple case insensitive job names, status, priority, dataset, sector, user, a
-`createdAfter`/`createdBefore` range and `format`, which semi joins `dataset_import` and `dataset_export`
-and therefore also narrows to those two kinds of job.
+`createdAfter`/`createdBefore` range, `unchanged` and `format`, the last of which semi joins
+`dataset_import` and `dataset_export` and therefore also narrows to those two kinds of job.
 
 **Sector Synchronization (Assembly):**
 `SectorSync` in core module merges portions of source datasets into managed projects. A "sector" defines which subtree from a source dataset contributes to a project. The sync process:

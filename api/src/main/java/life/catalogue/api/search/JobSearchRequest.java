@@ -77,6 +77,15 @@ public class JobSearchRequest {
   private DataFormat format;
 
   /**
+   * Filter by whether an import found its source unchanged. Such a job deletes its own metrics row
+   * again, so it is exactly an IMPORT lane job that finished without leaving a dataset_import record -
+   * the free text step has read 'unchanged', 'downloading' and null for that same outcome over time.
+   * Only imports can be unchanged, so this also narrows the result to the import lane.
+   */
+  @QueryParam("unchanged")
+  private Boolean unchanged;
+
+  /**
    * Only include jobs created at or after this time. A bare date is read as the start of that day.
    */
   @QueryParam("createdAfter")
@@ -178,6 +187,14 @@ public class JobSearchRequest {
     this.createdBefore = createdBefore;
   }
 
+  public Boolean getUnchanged() {
+    return unchanged;
+  }
+
+  public void setUnchanged(Boolean unchanged) {
+    this.unchanged = unchanged;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -193,12 +210,13 @@ public class JobSearchRequest {
            && Objects.equals(job, that.job)
            && format == that.format
            && Objects.equals(createdAfter, that.createdAfter)
-           && Objects.equals(createdBefore, that.createdBefore);
+           && Objects.equals(createdBefore, that.createdBefore)
+           && Objects.equals(unchanged, that.unchanged);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(key, datasetKey, sectorKey, createdBy, status, lane, priority, job, format,
-      createdAfter, createdBefore);
+      createdAfter, createdBefore, unchanged);
   }
 }
