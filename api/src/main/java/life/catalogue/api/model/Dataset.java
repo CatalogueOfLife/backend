@@ -321,13 +321,24 @@ public class Dataset extends DataEntity<Integer> {
     try {
       for (PropertyDescriptor prop : PATCH_PROPS) {
         Object val = prop.getReadMethod().invoke(patch);
-        if (val != null) {
-          if (NULL_TYPES.containsKey(prop.getName())) {
-            Object nullType = NULL_TYPES.get(prop.getName());
-            val = val.equals(nullType) ? null : val;
+        if (val == null) continue;
+
+        if (NULL_TYPES.containsKey(prop.getName())) {
+          // an explicit null, encoded as a type specific sentinel because a JSON null is
+          // indistinguishable from an absent property
+          if (val.equals(NULL_TYPES.get(prop.getName()))) {
+            prop.getWriteMethod().invoke(this, (Object) null);
+            continue;
           }
-          prop.getWriteMethod().invoke(this, val);
         }
+        // An empty collection means "this patch says nothing", never "clear the inherited value":
+        // every patchable list and map has a NULL_TYPES sentinel for the latter. Collections default
+        // to empty rather than null on a freshly read sparse patch, so without this a patch that
+        // simply has no keywords or citations would wipe the ones it inherits.
+        if (val instanceof Collection && ((Collection<?>) val).isEmpty()) continue;
+        if (val instanceof Map && ((Map<?, ?>) val).isEmpty()) continue;
+
+        prop.getWriteMethod().invoke(this, val);
       }
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);

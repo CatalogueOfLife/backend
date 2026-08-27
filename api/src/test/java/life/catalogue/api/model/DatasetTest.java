@@ -214,6 +214,46 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.applyPatch(createNullPatchDataset(999));
   }
 
+  /**
+   * A sparse patch reads back with empty rather than null collections, and an empty one has to mean
+   * "this patch says nothing" - clearing a list is what the NULL_TYPES sentinels are for. Otherwise a
+   * patch that simply has no keywords wipes the ones it inherits.
+   */
+  @Test
+  public void applyPatchKeepsInheritedCollections() {
+    Dataset d = TestEntityGenerator.newDataset("Hallo Spencer");
+    d.setKeyword(List.of("moss", "liverwort"));
+    d.setSource(List.of(Citation.create("Some source")));
+    d.setUrlFormatter(Map.of("taxon", "https://x.org/{ID}"));
+    d.setIdentifier(List.of(new Identifier("gbif", "123")));
+
+    Dataset patch = new Dataset();
+    patch.setKeyword(List.of());
+    patch.setSource(List.of());
+    patch.setUrlFormatter(Map.of());
+    patch.setIdentifier(List.of());
+    patch.setTitle("World Porifera Database");
+
+    d.applyPatch(patch);
+
+    assertEquals("World Porifera Database", d.getTitle());
+    assertEquals(List.of("moss", "liverwort"), d.getKeyword());
+    assertEquals(1, d.getSource().size());
+    assertEquals(Map.of("taxon", "https://x.org/{ID}"), d.getUrlFormatter());
+    assertEquals(List.of(new Identifier("gbif", "123")), d.getIdentifier());
+
+    // a non empty patch collection still replaces wholesale
+    patch.setKeyword(List.of("sponge"));
+    d.applyPatch(patch);
+    assertEquals(List.of("sponge"), d.getKeyword());
+
+    // and the sentinel still clears
+    Dataset clear = new Dataset();
+    clear.setKeyword((List<String>) Dataset.NULL_TYPES.get("keyword"));
+    d.applyPatch(clear);
+    assertNull(d.getKeyword());
+  }
+
   @Test
   public void testEmptyString() throws Exception {
     String json = ApiModule.MAPPER.writeValueAsString(genTestValue());
