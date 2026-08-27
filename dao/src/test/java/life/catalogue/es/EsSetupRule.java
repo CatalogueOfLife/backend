@@ -3,11 +3,13 @@ package life.catalogue.es;
 import life.catalogue.config.EsConfig;
 import life.catalogue.config.IndexConfig;
 
+import java.time.Duration;
 import java.time.LocalDate;
 
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -23,6 +25,8 @@ public class EsSetupRule extends ExternalResource {
   private static ElasticsearchContainer CONTAINER;
   protected static String PASSWORD = "ase213HUithbnjk";
   protected static String USER = "elastic";
+  /** Generous: a cold image pull plus security bootstrap on a busy CI agent is slow. */
+  private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(3);
 
   private int shards;
   private EsConfig cfg;
@@ -52,7 +56,18 @@ public class EsSetupRule extends ExternalResource {
       // disable SSL
       .withEnv("xpack.security.transport.ssl.enabled", "false")
       .withEnv("xpack.security.http.ssl.enabled", "false")
-      .withPassword(PASSWORD);
+      .withPassword(PASSWORD)
+      // The container's own wait strategy is Wait.forLogMessage on the node's "started" line, which ES
+      // logs before the native realm has created the elastic user from ELASTIC_PASSWORD. Every request
+      // in that window fails with "unable to authenticate user [elastic]" - rare on a fast machine,
+      // regular on a loaded CI agent, and each IT class starts its own container because forks are not
+      // reused. Wait until the user actually authenticates instead of until the node says it is up.
+      .waitingFor(new HttpWaitStrategy()
+        .forPort(9200)
+        .forPath("/_cluster/health")
+        .withBasicCredentials(USER, PASSWORD)
+        .forStatusCode(200)
+        .withStartupTimeout(STARTUP_TIMEOUT));
   }
 
   public EsConfig buildContainerConfig(ElasticsearchContainer container) {
