@@ -65,7 +65,10 @@ public class LanguageParser extends ParserBase<Language> {
   private void addMappings(){
     Language.LANGUAGES.values().forEach(l -> {
       add(l.getCode(), l.getCode(), true);
-      add(l.getTitle(), l.getCode(), true);
+      //https://github.com/gbif/gbif-web/issues/1982#issuecomment-5454189173
+      if (l.getTitle() != null && l.getTitle().length() > 3) {
+        add(l.getTitle(), l.getCode(), true);
+      }
     });
     try {
       // we add the authority file again to also read 2 letter codes
