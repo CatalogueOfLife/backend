@@ -1,7 +1,8 @@
 {
   "settings": {
     "index": {
-      "max_result_window": 2000000
+      "max_result_window": 2000000,
+      "codec": "best_compression"
     },
     "analysis": {
       "char_filter": {
