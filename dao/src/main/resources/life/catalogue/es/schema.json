@@ -68,6 +68,15 @@
     }
   },
   "mappings": {
+    "_source": {
+      "excludes": [
+        "usage.label",
+        "usage.statusOrder",
+        "usage.nameFields",
+        "usage.name.alphaIndex",
+        "usage.name.scientificNameNormalized"
+      ]
+    },
     "dynamic": false,
     "properties": {
       "id": {
@@ -112,17 +121,22 @@
         "properties": {
           "sectorKey": {
             "type": "keyword",
+            "index": false,
+            "doc_values": false,
             "copy_to": "sectorKey"
           },
           "sectorMode": {
             "type": "keyword",
+            "index": false,
+            "doc_values": false,
             "copy_to": "sectorMode"
           },
           "status": {
             "type": "keyword"
           },
           "statusOrder": {
-            "type": "byte"
+            "type": "byte",
+            "index": false
           },
           "origin": {
             "type": "keyword"
@@ -152,10 +166,14 @@
               },
               "sectorKey": {
                 "type": "keyword",
+                "index": false,
+                "doc_values": false,
                 "copy_to": "sectorKey"
               },
               "sectorMode": {
                 "type": "keyword",
+                "index": false,
+                "doc_values": false,
                 "copy_to": "sectorMode"
               },
               "alphaIndex": {
@@ -178,6 +196,7 @@
               },
               "authorship": {
                 "type": "keyword",
+                "doc_values": false,
                 "fields": {
                   "search": {
                     "type": "text",
@@ -197,10 +216,14 @@
                   },
                   "authors": {
                     "type": "keyword",
+                    "index": false,
+                    "doc_values": false,
                     "copy_to": "usage.name.author"
                   },
                   "exAuthors": {
                     "type": "keyword",
+                    "index": false,
+                    "doc_values": false,
                     "copy_to": "usage.name.author"
                   }
                 }
@@ -211,10 +234,14 @@
                 "properties": {
                   "authors": {
                     "type": "keyword",
+                    "index": false,
+                    "doc_values": false,
                     "copy_to": "usage.name.author"
                   },
                   "exAuthors": {
                     "type": "keyword",
+                    "index": false,
+                    "doc_values": false,
                     "copy_to": "usage.name.author"
                   }
                 }
