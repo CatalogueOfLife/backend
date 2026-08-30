@@ -109,8 +109,13 @@ public interface NameUsageIndexService {
   /**
    * Updates the classification for all descendants in the subtree identified by the rootTaxonId. All other information is left as is and no
    * new docs are generated, i.e. all taxa must have been indexed before.
+   *
+   * <p>The work is handed to Elasticsearch and this returns as soon as it has been accepted - a subtree
+   * can hold a million usages. Poll the returned task to find out when it is done.
+   *
+   * @return the id of the Elasticsearch task doing the work, or null if there was nothing to do
    */
-  void updateClassification(int datasetKey, String rootTaxonId);
+  String updateClassification(int datasetKey, String rootTaxonId);
 
   /**
    * @return a pass through indexing service that does not do anything. Good for tests
@@ -193,8 +198,9 @@ public interface NameUsageIndexService {
       }
 
       @Override
-      public void updateClassification(int datasetKey, String rootTaxonId) {
+      public String updateClassification(int datasetKey, String rootTaxonId) {
         LOG.info("No Elastic Search configured. Passing through");
+        return null;
       }
 
     };

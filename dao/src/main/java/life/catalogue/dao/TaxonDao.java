@@ -709,7 +709,8 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
    * @param t the taxon that has been assigned a new parentID
    */
   private void updatedParentCacheUpdate(DSID<String> t){
-    // async update classification of all descendants.
+    // async update classification of all descendants. Elastic does the actual work as its own task,
+    // which the index service logs, so this returns as soon as the request has been accepted.
     CompletableFuture.runAsync(() -> indexService.updateClassification(t.getDatasetKey(), t.getId()))
       .exceptionally(ex -> {
         LOG.error("Failed to update classification for descendants of {}", t, ex);

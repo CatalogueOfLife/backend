@@ -68,4 +68,13 @@ public interface NameUsageWrapperMapper {
                       @Nullable @Param("sectorKey") Integer sectorKey,
                       @Param("usageId") String usageId);
 
+  /**
+   * The classification of a single usage, ordered from the highest root down to and including the
+   * usage itself - the very same shape processTree yields and that gets indexed into Elasticsearch.
+   *
+   * @return null if the usage does not exist
+   */
+  SimpleNameClassification classification(@Param("datasetKey") Integer datasetKey,
+                      @Param("usageId") String usageId);
+
 }

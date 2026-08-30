@@ -135,6 +135,11 @@
     </if>
   </select>
 
+  <select id="classification" parameterType="map" resultMap="classificationResultMap">
+    SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
+    FROM name_usage WHERE dataset_key=#{datasetKey} AND id=#{usageId}
+  </select>
+
   <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT
     <include refid="bareNameSelectFrom"/>

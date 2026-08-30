@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -27,12 +28,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import co.elastic.clients.elasticsearch._types.Script;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.core.UpdateByQueryResponse;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
+import co.elastic.clients.json.JsonData;
 import co.elastic.clients.transport.ElasticsearchTransport;
 
 /**
@@ -183,6 +187,62 @@ public class EsUtil {
         }
         return b;
       })));
+  }
+
+  /**
+   * Painless splice applied to every document in a moved subtree. Each classification is ordered from
+   * the highest root down to the usage itself, and only the part at or above the moved usage changes -
+   * everything below it keeps hanging off the moved usage exactly as before. So we locate the moved
+   * usage in the stored classification and replace the head with its new one, which spares us reading
+   * a potentially million row subtree back out of Postgres.
+   */
+  private static final String CLASSIFICATION_SPLICE =
+      "def cl = ctx._source.classification;"
+    + "if (cl == null) { ctx.op = 'noop'; return; }"
+    + "int i = -1;"
+    + "for (int j = 0; j < cl.size(); j++) { if (params.rootId.equals(cl.get(j).id)) { i = j; break; } }"
+    + "if (i < 0) { ctx.op = 'noop'; return; }"
+    + "def spliced = new ArrayList(params.classification);"
+    + "for (int j = i + 1; j < cl.size(); j++) { spliced.add(cl.get(j)); }"
+    + "ctx._source.classification = spliced;";
+
+  /**
+   * Rewrites the denormalised classification of a moved usage and of every descendant below it.
+   *
+   * <p>Runs as an Elasticsearch task and returns immediately - a subtree can reach a million documents,
+   * which is far too long to hold a request open for. The returned task id can be polled via the tasks
+   * API. Note that an update rebuilds each document from its {@code _source}, so any field the mapping
+   * indexes but {@code _source} does not carry would be lost here.
+   *
+   * @param root the usage that moved, identifying the subtree via its denormalised classification
+   * @param classification the new classification of root, highest root first and including root itself
+   * @return the id of the Elasticsearch task doing the work
+   */
+  public static String updateClassification(ElasticsearchClient client, String index, DSID<String> root,
+                                            List<Map<String, Object>> classification) {
+    Script script = Script.of(s -> s
+      .source(src -> src.scriptString(CLASSIFICATION_SPLICE))
+      .params("rootId", JsonData.of(root.getId()))
+      .params("classification", JsonData.of(classification))
+    );
+    try {
+      UpdateByQueryResponse response = client.updateByQuery(u -> u
+        .index(index)
+        .query(q -> q.bool(b -> b
+          .filter(f -> f.term(t -> t.field(DATASET_KEY_FIELD).value(root.getDatasetKey())))
+          .filter(f -> f.term(t -> t.field(TAXON_ID_FIELD).value(root.getId())))
+        ))
+        .script(script)
+        .conflicts(co.elastic.clients.elasticsearch._types.Conflicts.Proceed)
+        .waitForCompletion(false)
+        .slices(sl -> sl.computed(co.elastic.clients.elasticsearch._types.SlicesCalculation.Auto))
+      );
+      return response.task();
+    } catch (ElasticsearchException e) {
+      throw new EsRequestException(e.getMessage());
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
   }
 
   /**

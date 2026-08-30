@@ -18,6 +18,7 @@ import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsUtil;
+import life.catalogue.es.json.EsModule;
 import life.catalogue.matching.TaxGroupAnalyzer;
 
 import java.io.File;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -38,6 +40,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 
@@ -304,18 +307,22 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void updateClassification(int datasetKey, String rootTaxonId) {
-    NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.index.name);
+  public String updateClassification(int datasetKey, String rootTaxonId) {
+    final SimpleNameClassification root;
     try (SqlSession session = factory.openSession()) {
-      final ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey);
-      try (BatchConsumer<SimpleNameClassification> batchUpdater = new BatchConsumer<>(updater, BATCH_SIZE)) {
-        NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-        PgUtils.consume(() -> mapper.processTree(datasetKey, null, rootTaxonId), batchUpdater);
-      }
-
-      EsUtil.refreshIndex(client, esConfig.index.name);
+      root = session.getMapper(NameUsageWrapperMapper.class).classification(datasetKey, rootTaxonId);
     }
-    LOG.info("Successfully updated {} name usages", indexer.documentsIndexed());
+    if (root == null || root.getClassification() == null) {
+      LOG.warn("Cannot update classifications below unknown usage {} of dataset {}", rootTaxonId, datasetKey);
+      return null;
+    }
+    // send the new classification in exactly the shape the indexer would have written it,
+    // ranks as ordinals and labels dropped, so spliced entries match indexed ones
+    List<Map<String, Object>> classification = EsModule.contentMapper()
+      .convertValue(root.getClassification(), new TypeReference<List<Map<String, Object>>>() {});
+    String task = EsUtil.updateClassification(client, esConfig.index.name, DSID.of(datasetKey, rootTaxonId), classification);
+    LOG.info("Updating classifications below {} of dataset {} in ES task {}", rootTaxonId, datasetKey, task);
+    return task;
   }
 
   @Override
