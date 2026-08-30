@@ -68,15 +68,6 @@
     }
   },
   "mappings": {
-    "_source": {
-      "excludes": [
-        "usage.label",
-        "usage.statusOrder",
-        "usage.nameFields",
-        "usage.name.alphaIndex",
-        "usage.name.scientificNameNormalized"
-      ]
-    },
     "dynamic": false,
     "properties": {
       "id": {
