@@ -81,19 +81,19 @@ out of. It needs `pg_dump` on the `PATH` and the rights to create a database on 
 
 ```bash
 java -cp webservice/target/webservice-*.jar life.catalogue.WsServer \
-  bundleBuild --key 3287 --dir /srv/bundle-data --delete config-prod.yml
+  bundleBuild --key 3287 --dir /srv/col-3287-bundle --delete config-prod.yml
 ```
 
 ```bash
 java -cp webservice/target/webservice-*.jar life.catalogue.WsServer \
-  bundleBuild --key 3287 --dir /srv/bundle-data --delete \
+  bundleBuild --key 3287 --dir /srv/col-3287-bundle --delete \
   --image ghcr.io/catalogueoflife/clb-bundle:1.5.2 config-prod.yml
 ```
 
 What it produces — a directory that is runnable exactly as downloaded:
 
 ```
-bundle-data/
+col-3287-bundle/
   release.dump            pg_dump -Fc of a database holding just this release
   nidx/                   names index store
   matcher/{releaseKey}/   usages.bin, canonical.bin, groups.bin, dataset.json
@@ -229,7 +229,7 @@ publishing a release from a human decision into an automatic one.
 ## Running it
 
 ```bash
-tar xaf col-3287-bundle.tar.zst && cd bundle-data
+tar xaf col-3287-bundle.tar.zst && cd col-3287-bundle
 docker compose up --wait
 ```
 

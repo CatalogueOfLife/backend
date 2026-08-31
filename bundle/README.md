@@ -27,10 +27,10 @@ Runs against a full ChecklistBank database and needs `pg_dump` on the PATH.
 
 ```bash
 java -cp webservice/target/webservice-*.jar life.catalogue.WsServer \
-  bundleBuild --key 3287 --dir /srv/bundle-data --delete \
+  bundleBuild --key 3287 --dir /srv/col-3287-bundle --delete \
   --image ghcr.io/catalogueoflife/clb-bundle:1.5.2 config-prod.yml
 
-tar -C /srv -caf col-3287-bundle.tar.zst bundle-data
+tar -C /srv -caf col-3287-bundle.tar.zst col-3287-bundle
 sha256sum col-3287-bundle.tar.zst > col-3287-bundle.tar.zst.sha256
 ```
 
@@ -47,7 +47,7 @@ Publish both files next to the other downloads of that release.
 ## Run one
 
 ```bash
-cd /srv/bundle-data
+cd /srv/col-3287-bundle
 docker compose up --wait
 ```
 
@@ -55,7 +55,7 @@ To test an artifact against a locally built image before publishing, layer the b
 the artifact's compose file stays the single definition of the services:
 
 ```bash
-cd /srv/bundle-data
+cd /srv/col-3287-bundle
 export CLB_BACKEND_DIR=/path/to/backend
 docker compose -f docker-compose.yml -f $CLB_BACKEND_DIR/bundle/docker-compose.build.yml up --build --wait
 ```
