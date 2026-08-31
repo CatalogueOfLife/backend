@@ -3,14 +3,9 @@ package life.catalogue.command;
 import life.catalogue.WsMatchingServerConfig;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.matching.UsageMatcher;
-import life.catalogue.matching.UsageMatcherFactory;
-import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.matching.nidx.NameIndexFactory;
 
 import java.io.File;
 
@@ -115,15 +110,8 @@ public class MatchingServerBuildCmd extends ConfiguredCommand<WsMatchingServerCo
         var d = session.getMapper(DatasetMapper.class).get(key);
         System.out.println("Index dataset " + key + " " + d.getTitle());
       }
-      // names index
-      final NameIndex ni = NameIndexFactory.build(cfg.namesIndex, null, AuthorshipNormalizer.INSTANCE);
-      ni.start();
-      // matching index. Writes the metadata sidecar into the store dir once the store exists, so the
-      // directory can be shipped to a matching server as a single self contained artifact
-      UsageMatcher m = UsageMatcherFactory.buildPersistentMatcher(key, cfg.matching, ni, factory);
-      // orderly shutdown
-      m.close();
-      ni.stop();
+      // names index and matcher store. The matching server is DB free, so nidx ids are generated on the fly.
+      MatcherStoreBuilder.build(key, cfg.namesIndex, cfg.matching, factory, null);
       LOG.info("Done building matching index for dataset {} at {}", key, buildDir.getAbsolutePath());
       System.out.println("Done !!!");
     }

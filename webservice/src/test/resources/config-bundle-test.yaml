@@ -1,0 +1,12 @@
+# the minimal bundle config: everything else comes from the WsBundleServerConfig defaults
+releaseKey: 3287
+
+db:
+  host: localhost
+  database: clb_bundle
+  user: postgres
+
+es:
+  hosts: elastic:9200
+  index:
+    name: col

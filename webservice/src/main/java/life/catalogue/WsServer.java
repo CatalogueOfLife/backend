@@ -177,6 +177,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new TaxonMetricsCmd());
     bootstrap.addCommand(new MatcherCmd());
     bootstrap.addCommand(new MatchingServerBuildCmd());
+    bootstrap.addCommand(new BundleBuildCmd());
   }
 
   @Override

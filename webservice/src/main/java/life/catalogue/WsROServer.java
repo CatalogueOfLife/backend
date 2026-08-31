@@ -85,7 +85,7 @@ import jakarta.ws.rs.client.Client;
  * and we rely on the EventBus to message changes relevant to caching between the apps.
  * This is mostly dataset changes (private, new releases) and user changes (permissions).
  */
-public class WsROServer extends Application<WsServerConfig> {
+public class WsROServer<C extends WsServerConfig> extends Application<C> {
   private static final Logger LOG = LoggerFactory.getLogger(WsROServer.class);
 
   private final ColJerseyBundle coljersey = new ColJerseyBundle();
@@ -94,14 +94,24 @@ public class WsROServer extends Application<WsServerConfig> {
   protected Client jerseyClient;
   private final AuthBundle auth = new AuthBundle();
   private final PgLogBundle log = new PgLogBundle();
+  /**
+   * Pieces built in run() that subclasses need to wire up their own additional resources with,
+   * see {@link #registerAdditional}.
+   */
+  protected EventBroker broker;
+  protected ElasticsearchClient esClient;
+  protected NameUsageIndexService indexService;
+  protected NameUsageSearchService searchService;
+  protected NameUsageSuggestionService suggestService;
+  protected JobExecutor jobExecutor;
 
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
-    new WsROServer().run(args);
+    new WsROServer<WsServerConfig>().run(args);
   }
 
   @Override
-  public void initialize(Bootstrap<WsServerConfig> bootstrap) {
+  public void initialize(Bootstrap<C> bootstrap) {
     // our mybatis classes
     bootstrap.addBundle(mybatis);
     // various custom jersey providers
@@ -124,7 +134,7 @@ public class WsROServer extends Application<WsServerConfig> {
     return "ChecklistBankRO";
   }
 
-  public String getUserAgent(WsServerConfig cfg) {
+  public String getUserAgent(C cfg) {
     return getName() + "/" + ObjectUtils.coalesce(cfg.versionString(), "1.0");
   }
 
@@ -151,7 +161,7 @@ public class WsROServer extends Application<WsServerConfig> {
   }
 
   @Override
-  public void run(WsServerConfig cfg, Environment env) throws Exception {
+  public void run(C cfg, Environment env) throws Exception {
     final JerseyEnvironment j = env.jersey();
     LOG.warn("This service runs in read only mode and only responds to GET, HEAD & OPTIONS requests.");
 
@@ -192,7 +202,7 @@ public class WsROServer extends Application<WsServerConfig> {
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
     // event broker
-    var broker = new EventBroker(cfg.broker);
+    broker = new EventBroker(cfg.broker);
     env.lifecycle().manage(ManagedUtils.from(broker));
 
     // validation
@@ -210,11 +220,10 @@ public class WsROServer extends Application<WsServerConfig> {
     AreaParser.PARSER.setLabelLookup(areaLookup);
 
     // ES
-    NameUsageIndexService indexService = NameUsageIndexService.passThru();
-    NameUsageSearchService searchService;
-    NameUsageSuggestionService suggestService;
-    final ElasticsearchClient esClient;
     if (cfg.es == null || cfg.es.isEmpty()) {
+      if (esRequired()) {
+        throw new IllegalStateException(getName() + " requires Elasticsearch, but no es section was configured");
+      }
       esClient = null;
       LOG.warn("No Elastic Search configured, use pass through indexing & searching");
       searchService = NameUsageSearchService.passThru();
@@ -225,6 +234,8 @@ public class WsROServer extends Application<WsServerConfig> {
       searchService = new NameUsageSearchServiceEs(cfg.es.index.name, esClient);
       suggestService = new NameUsageSuggestionServiceEs(cfg.es.index.name, esClient);
     }
+    indexService = buildIndexService(cfg, env);
+    jobExecutor = buildJobExecutor(cfg, env);
 
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, broker);
@@ -256,12 +267,15 @@ public class WsROServer extends Application<WsServerConfig> {
     TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
 
     // shared read only resources
-    registerReadOnlyResources(j, cfg, getSqlSessionFactory(), null,
+    registerReadOnlyResources(j, cfg, getSqlSessionFactory(), jobExecutor,
       ddao, dsdao, new AtomicBoolean(),
       diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, imgService, thumborService,
       FeedbackService.passThru(), doiResolver, areaLookup
     );
+
+    // app specific additions on top of the shared read only stack
+    registerAdditional(cfg, env, j);
 
     // healthchecks
     registerReadOnlyHealthChecks(env, broker, esClient, cfg);
@@ -274,6 +288,37 @@ public class WsROServer extends Application<WsServerConfig> {
     broker.register(auth);
     broker.register(coljersey);
     broker.register(DatasetInfoCache.CACHE);
+  }
+
+  /**
+   * If true the app fails to start without a working elastic configuration instead of falling back to
+   * pass through search and suggest services.
+   */
+  protected boolean esRequired() {
+    return false;
+  }
+
+  /**
+   * The read only server never indexes, but subclasses backed by their own database do.
+   */
+  protected NameUsageIndexService buildIndexService(C cfg, Environment env) {
+    return NameUsageIndexService.passThru();
+  }
+
+  /**
+   * The read only server runs no background jobs. Subclasses with their own job table can return an executor here,
+   * which is then also handed to the shared read only resources.
+   */
+  protected @Nullable JobExecutor buildJobExecutor(C cfg, Environment env) throws Exception {
+    return null;
+  }
+
+  /**
+   * Hook for subclasses to register resources on top of the shared read only ones.
+   * Called after {@link #registerReadOnlyResources} and before the health checks.
+   */
+  protected void registerAdditional(C cfg, Environment env, JerseyEnvironment j) throws Exception {
+    // nothing by default
   }
 
   static void registerReadOnlyHealthChecks(Environment env, EventBroker broker, @Nullable ElasticsearchClient esClient, WsServerConfig cfg) {

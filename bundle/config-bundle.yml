@@ -1,0 +1,63 @@
+# Configuration of the CLB release-in-a-box bundle, as used inside the compose setup.
+# Everything not listed here comes from the WsBundleServerConfig defaults - a bundle needs no GBIF
+# registry, no mail server and no DataCite account.
+
+# The single release this bundle serves. Set it to the release you built the data volume for.
+releaseKey: 3287
+
+db:
+  host: postgres
+  port: 5432
+  database: clb
+  user: col
+  password: col
+  maximumPoolSize: 8
+
+# Elasticsearch is REQUIRED - the bundle refuses to start without it.
+# The index is filled from the bundled postgres on first boot, see indexOnStart.
+es:
+  hosts: elastic:9200
+  ssl: false
+  index:
+    name: col
+    numShards: 1
+    numReplicas: 0
+
+indexOnStart: true
+
+# the mounted bundle data volume
+matching:
+  storageDir: /data/matcher
+  uploadDir: /tmp/col/upload
+namesIndex:
+  # the shipped store; its capacity was fixed when BundleBuildCmd created it, see bundle.json
+  file: /data/nidx
+  verification: false
+metricsRepo: /data/metrics
+img:
+  repo: /data/img
+  archive: /data/img/archive
+
+job:
+  logDir: /tmp/col/log/jobs
+  downloadDir: /tmp/col/jobs
+  downloadURI: http://localhost:8080/job/
+
+clbURI: http://localhost:8080
+apiURI: http://localhost:8080
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 8080
+      # taxon ids can be URLs, so ambiguous encoded path segments must be allowed
+      uriCompliance: JETTY_11
+  adminConnectors:
+    - type: http
+      port: 8081
+
+logging:
+  level: INFO
+  loggers:
+    life.catalogue: INFO
+    org.apache.ibatis: WARN

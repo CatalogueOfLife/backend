@@ -2,14 +2,9 @@
 
 Date: 2026-06-20
 
-> **Status: design / not yet implemented.** Nothing here exists in the code yet — there is no
-> `WsBundleServer` and no `BundleBuildCmd`.
->
-> The dependency it was waiting on is resolved: implementation was deferred until the
-> `feature/unified-jobs` work merged, because it relies on its optional-`JobDao` `JobExecutor`
-> (see *Job persistence* below). That work is now on master (released in v1.5.0) and `JobExecutor`
-> takes a `@Nullable JobDao`, so this plan is unblocked and ready to pick up. The branch itself has
-> been deleted.
+> **Status: shipped.** Implemented on `feat/release-bundle`. See [`BUNDLE.md`](BUNDLE.md) for what
+> the code does today; this record is the intent as of 2026-06-20 and is not kept up to date.
+> The `## Outcome` section at the end lists where the implementation deviates from this plan.
 
 ## Goal
 
@@ -170,3 +165,64 @@ Output is assembled into the per-release data volume / tarball consumed by compo
   becomes the constraint; a shared-DB matching tier would need streaming-only jobs or per-app
   `cancelStale` scoping — a separate unified-jobs enhancement).
 - Write/import/sync/release/admin endpoints in the bundle.
+
+
+## Outcome
+
+Shipped on `feat/release-bundle`. `docs/BUNDLE.md` is the living reference; what follows is only where
+the implementation departed from the plan above and why.
+
+### Elasticsearch is mandatory — the `core`/`full` flavors are gone
+
+The plan offered a lean `core` flavor without Elasticsearch, with reconcile `suggest` degrading to
+pass-through. That was dropped: a bundle always ships elastic, `WsBundleServer.esRequired()` returns
+true and startup fails without an `es` section. A single flavor removes the "which endpoints work in
+this bundle?" question entirely, and search is a large part of what makes a browse bundle useful.
+
+### The ES index is built on first boot, not shipped
+
+The plan listed an "optional Elasticsearch snapshot" in the build artifact. There is no snapshot or
+restore support anywhere in the codebase, and adding it would have tied the artifact to an ES major
+version. Instead the bundle creates the index if it is missing and, when it holds no documents,
+indexes the release out of its own Postgres via the existing `NameUsageIndexService.indexDataset`.
+The cost is a slow first start, hidden behind the `bundle-index` health check that
+`docker compose up --wait` blocks on.
+
+### `WsROServer` was generified rather than copied
+
+The plan said `WsBundleServer` would be a sibling of `WsMatchingServer` calling
+`WsROServer.registerReadOnlyResources`. It turned out `WsROServer` is referenced from only two places,
+so it became `WsROServer<C extends WsServerConfig>` with four protected hooks (`esRequired`,
+`buildIndexService`, `buildJobExecutor`, `registerAdditional`) and `WsBundleServer extends
+WsROServer<WsBundleServerConfig>`. That reuses the http client, the bundles, the DAO wiring and the
+health checks too, not just the resource registration, and `WsServer` was left untouched.
+
+### Bulk matching stays streaming, and `/match/nameusage` is not rewritten
+
+The plan had the bundle register the dataset scoped `NameUsageMatchingResource` and persist bulk match
+jobs to the bundle's own `job` table. Its job endpoints require `@Auth User` and hand the caller a
+`job.downloadURI` pointing at a download server a bundle does not have. The bundle registers the global
+`FixedNameUsageMatchingResource` instead — already keyless, no credentials, results streamed straight
+back. The plan itself allowed for this ("bulk matching can also stay streaming (no executor) where
+preferred"). A `JobExecutor` with a `JobDao` still exists, because `UsageMatcherFactory` needs one and
+a matcher rebuild should be visible.
+
+### The names index is built from the bundle database, not DB-free
+
+`MatchingServerBuildCmd` builds its names index with a null `SqlSessionFactory` because the matching
+server has no database to disagree with. A bundle ships `names_index` rows, so its store must carry the
+same ids: `BundleBuildCmd` builds both stores from the temporary bundle database, after the slice has
+been copied into it. The shared part is `MatcherStoreBuilder`, whose one parameter is exactly this
+difference.
+
+### The Postgres slice goes through a temporary database
+
+The plan said "trimmed `pg_dump` of just that dataset's partitions". `pg_dump` cannot filter rows and
+the partitions are hashed, so there is nothing to trim. `BundleBuildCmd` creates a temporary database,
+binary-`COPY`s the release into it, dumps that with `pg_dump -Fc` and drops it. The artifact is then a
+plain dump the stock postgres image restores on first boot with none of our code involved.
+
+### Not done
+
+CI: nothing builds a bundle per monthly and annual release yet. That is the remaining piece of
+*Sequencing* step 6.

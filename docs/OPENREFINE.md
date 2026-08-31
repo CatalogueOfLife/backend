@@ -128,5 +128,12 @@ then extract with `value.parseJson()[0].parsed`.
   `ReconciliationResource`, `DefaultReconciliationResource`).
 - Reconciliation reuses the exact matcher path of `/dataset/{key}/match/nameusage`
   (`AbstractMatchingJob.interpretAndMatch`); only the request/response shape differs.
-- Registered next to `NameUsageMatchingResource` in `WsServer`. Exposing it on the dedicated
-  read-only / matching server is a possible follow-up.
+- Registered next to `NameUsageMatchingResource` in `WsServer`, and on the single release bundle,
+  where the keyless rewrite makes it reachable at `/reconcile` — see below.
+
+## Reconciling offline
+
+The [release-in-a-box bundle](BUNDLE.md) runs the same reconciliation service against a local copy of
+one release, with no network access at all. Add `http://localhost:8080/reconcile` as a standard
+service in OpenRefine and everything on this page works unchanged, including data extension and the
+`/parser/*` endpoints.

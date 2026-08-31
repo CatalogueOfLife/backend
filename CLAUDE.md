@@ -217,6 +217,16 @@ The most complex pipeline in the codebase. Builds an extended release by merging
 Uses a two-phase copy: base release → temporary project (for merging) → final release (with stable ID mapping). Key classes in `core/release/` and `core/assembly/`. 
 See [`docs/XRELEASE.md`](docs/XRELEASE.md) for detailed pipeline documentation. Important gotcha: `newDatasetKey` is temporarily reassigned to `tmpProjectKey` during `prepWork()` — methods called in that window operate on the temp dataset.
 
+**Release Bundle ("CLB in a box"):**
+`WsBundleServer` serves exactly one release from its own bundled Postgres and Elasticsearch - the read API
+plus matching and OpenRefine reconciliation. It `extends WsROServer<WsBundleServerConfig>`, which is generic
+over its config for this reason, and overrides four hooks: `esRequired()` (a bundle refuses to start without
+elastic - there is no pass through mode), `buildIndexService()`, `buildJobExecutor()` and
+`registerAdditional()`. Keyless URLs like `/taxon/{id}` are rewritten to `/dataset/{releaseKey}/taxon/{id}` by
+`SingleDatasetRewriteFilter` so no resource is forked. `BundleBuildCmd` (`bundleBuild`) produces the data
+artifact by copying the release into a temporary database with binary COPY and `pg_dump`ing that - the tables
+are hash partitioned, so there is no partition to detach. See [`docs/BUNDLE.md`](docs/BUNDLE.md).
+
 ## Development Guidelines
 
 ### Code Style
