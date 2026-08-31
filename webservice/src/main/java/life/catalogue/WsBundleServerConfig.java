@@ -67,6 +67,10 @@ public class WsBundleServerConfig extends WsServerConfig {
     img.apiUrl = URI.create("http://localhost:8080");
     matching.storageDir = new File("/data/matcher");
     matching.uploadDir = new File("/tmp/col/upload");
+    // A bundle ships a prebuilt matcher store and must never discard it. With the default threshold the
+    // startup reconcile treats a dataset below it as "small", decides it should not have a persistent
+    // matcher and deletes the shipped store - which for a small dataset breaks the next start entirely.
+    matching.pgMatcherThreshold = 0;
     namesIndex.file = new File("/data/nidx");
     namesIndex.verification = false;
     metricsRepo = new File("/data/metrics");

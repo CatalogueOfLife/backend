@@ -96,6 +96,16 @@ public class WsBundleServer extends WsROServer<WsBundleServerConfig> {
     nameIndex = NameIndexFactory.build(cfg.namesIndex, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
     env.lifecycle().manage(ManagedUtils.from((Managed) nameIndex));
 
+    // A bundle ships a prebuilt matcher store and must never discard it. Below the threshold the startup
+    // reconcile decides a dataset should not have a persistent matcher and deletes the shipped store, which
+    // breaks every later start. The config default cannot be relied on: jackson replaces the whole nested
+    // matching object, so any yaml with a matching block silently reverts it.
+    if (cfg.matching.pgMatcherThreshold != 0) {
+      LOG.info("Force matching.pgMatcherThreshold from {} to 0 - a bundle must keep its shipped matcher store",
+        cfg.matching.pgMatcherThreshold);
+      cfg.matching.pgMatcherThreshold = 0;
+    }
+
     matcherFactory = new UsageMatcherFactory(cfg.matching, nameIndex, getSqlSessionFactory(), jobExecutor);
     // managed so the stores are closed on shutdown and a missing or stale store is rebuilt from the
     // bundle's own database - the shipped one is normally neither

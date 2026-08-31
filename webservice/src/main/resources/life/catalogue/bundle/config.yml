@@ -31,6 +31,8 @@ indexOnStart: true
 matching:
   storageDir: /data/matcher
   uploadDir: /tmp/col/upload
+  # keep the shipped store whatever its size - the server enforces this too
+  pgMatcherThreshold: 0
 namesIndex:
   # the shipped store; its capacity was fixed when BundleBuildCmd created it, see bundle.json
   file: /data/nidx

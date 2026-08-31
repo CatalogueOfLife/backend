@@ -393,27 +393,39 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
 
   /**
    * The file based dataset metrics of a release live under the mother project's key and import attempt,
-   * see DatasetImportDao.getReleaseAttempt, so that is what gets copied into the bundle's metrics repo.
+   * see DatasetImportDao.getReleaseAttempt - that is the indirection the metrics endpoints follow for a
+   * release. Anything else, an EXTERNAL dataset in particular, keeps them under its own key and its own
+   * last import attempt, so a bundle of a non release dataset ships metrics just the same.
    */
   private void copyFileMetrics() throws IOException {
-    if (project == null || release.getAttempt() == null) {
-      LOG.info("No project attempt for dataset {}, skip file metrics", key);
+    final int metricsKey = project != null ? project.getKey() : key;
+    final Integer attempt = metricsAttempt(metricsKey);
+    if (attempt == null) {
+      LOG.warn("No import attempt for dataset {}, skip file metrics", metricsKey);
       return;
-    }
-    final int attempt = release.getAttempt();
-    try (SqlSession session = factory.openSession()) {
-      if (session.getMapper(DatasetImportMapper.class).get(project.getKey(), attempt) == null) {
-        LOG.warn("No import metrics for project {} attempt {}, skip file metrics", project.getKey(), attempt);
-        return;
-      }
     }
     File repo = new File(dir, "metrics");
     var srcDao = new FileMetricsDatasetDao(factory, cfg.metricsRepo);
     var tgtDao = new FileMetricsDatasetDao(factory, repo);
-    File tgtDir = tgtDao.subdir(project.getKey());
-    tgtDir.mkdirs();
-    copyIfExists(srcDao.namesFile(project.getKey(), attempt), tgtDao.namesFile(project.getKey(), attempt));
-    copyIfExists(srcDao.treeFile(project.getKey(), attempt), tgtDao.treeFile(project.getKey(), attempt));
+    tgtDao.subdir(metricsKey).mkdirs();
+    LOG.info("Copy file metrics of dataset {} attempt {}", metricsKey, attempt);
+    copyIfExists(srcDao.namesFile(metricsKey, attempt), tgtDao.namesFile(metricsKey, attempt));
+    copyIfExists(srcDao.treeFile(metricsKey, attempt), tgtDao.treeFile(metricsKey, attempt));
+  }
+
+  /**
+   * The attempt the metrics files are stored under: the release's attempt in the project, or for anything
+   * that is not a release the dataset's own last import.
+   */
+  private Integer metricsAttempt(int metricsKey) {
+    try (SqlSession session = factory.openSession()) {
+      var dim = session.getMapper(DatasetImportMapper.class);
+      if (project != null && release.getAttempt() != null) {
+        return dim.get(metricsKey, release.getAttempt()) == null ? null : release.getAttempt();
+      }
+      var last = dim.last(metricsKey);
+      return last == null ? null : last.getAttempt();
+    }
   }
 
   private void copyIfExists(File src, File tgt) throws IOException {

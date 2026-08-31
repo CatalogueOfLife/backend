@@ -58,6 +58,9 @@ public class WsBundleServerConfigTest {
       assertNotNull("elastic is mandatory for a bundle", cfg.es);
       assertFalse(cfg.es.isEmpty());
       assertEquals("/data/matcher", cfg.matching.storageDir.getPath());
+    // jackson replaces the whole nested matching object, so a yaml with a matching block loses the
+    // constructor default - the shipped template therefore has to say it, and WsBundleServer enforces it
+    assertEquals(0, cfg.matching.pgMatcherThreshold);
     } finally {
       f.delete();
     }
@@ -89,6 +92,9 @@ public class WsBundleServerConfigTest {
 
     // the shipped data volume
     assertEquals("/data/matcher", cfg.matching.storageDir.getPath());
+    // jackson replaces the whole nested matching object, so a yaml with a matching block loses the
+    // constructor default - the shipped template therefore has to say it, and WsBundleServer enforces it
+    assertEquals(0, cfg.matching.pgMatcherThreshold);
     assertEquals("/data/nidx", cfg.namesIndex.file.getPath());
     assertEquals("/data/metrics", cfg.metricsRepo.getPath());
     assertFalse(cfg.namesIndex.verification);

@@ -1,9 +1,19 @@
 package life.catalogue.command;
 
+import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.dao.FileMetricsDatasetDao;
+import life.catalogue.db.mapper.DatasetImportMapper;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
 import java.io.File;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.zip.GZIPOutputStream;
+
+import org.apache.ibatis.session.SqlSession;
 
 import org.junit.Assume;
 import org.junit.Test;
@@ -29,6 +39,9 @@ public class BundleBuildCmdIT extends CmdTestBase {
     dir.delete(); // the command creates it
     try {
       final int key = TestDataRule.APPLE.key;
+      // apple is EXTERNAL, so it has no mother project - its metrics live under its own key and attempt
+      final int attempt = createImportWithMetrics(key);
+
       assertTrue(run("bundleBuild", "--delete", "--key", Integer.toString(key), "--dir", dir.getAbsolutePath()).isEmpty());
 
       assertFileWithContent(new File(dir, "release.dump"));
@@ -39,6 +52,10 @@ public class BundleBuildCmdIT extends CmdTestBase {
       assertFileWithContent(new File(store, "dataset.json"));
       assertTrue("names index store missing", new File(dir, "nidx").exists());
       assertTrue("intermediate copy files must be cleaned up", !new File(dir, "pgdumps").exists());
+
+      // a dataset without a mother project must still ship its file metrics
+      var shipped = new FileMetricsDatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), new File(dir, "metrics"));
+      assertFileWithContent(shipped.namesFile(key, attempt));
 
       // the artifact must be runnable as downloaded: compose file, app config, restore hook and readme
       File compose = new File(dir, "docker-compose.yml");
@@ -62,6 +79,43 @@ public class BundleBuildCmdIT extends CmdTestBase {
     } finally {
       org.apache.commons.io.FileUtils.deleteQuietly(dir);
     }
+  }
+
+  /**
+   * Gives the test dataset an import and a names metrics file, the way a real dataset has after being
+   * imported. Without one there is nothing for the bundle to copy and the metrics assertion is vacuous.
+   */
+  private int createImportWithMetrics(int key) throws Exception {
+    final int attempt;
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      DatasetImport di = new DatasetImport();
+      di.setDatasetKey(key);
+      di.setOrigin(DatasetOrigin.EXTERNAL);
+      di.setCreatedBy(TestDataRule.TEST_USER.getKey());
+      di.setNameCount(2);
+      session.getMapper(DatasetImportMapper.class).create(di);
+      attempt = di.getAttempt();
+    }
+    var dao = new FileMetricsDatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), metricsRepo());
+    File f = dao.namesFile(key, attempt);
+    f.getParentFile().mkdirs();
+    try (OutputStream out = new GZIPOutputStream(new java.io.FileOutputStream(f))) {
+      out.write("Larus fuscus\nLarus argentatus\n".getBytes(StandardCharsets.UTF_8));
+    }
+    return attempt;
+  }
+
+  /**
+   * The very metricsRepo the command will read, taken from the config file CmdTestBase wrote, so the
+   * test cannot drift from the maven filtered path in config-test.yaml.
+   */
+  private File metricsRepo() throws Exception {
+    for (String line : Files.readAllLines(cfg.file.toPath())) {
+      if (line.startsWith("metricsRepo:")) {
+        return new File(line.substring("metricsRepo:".length()).trim());
+      }
+    }
+    throw new IllegalStateException("no metricsRepo in " + cfg.file);
   }
 
   private static void assertFileWithContent(File f) {
