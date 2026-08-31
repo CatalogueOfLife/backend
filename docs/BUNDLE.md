@@ -172,6 +172,24 @@ into the download tree with an atomic rename so a half written artifact is never
 `--verify-only` mode re-checks the published files and is what the pipeline's second stage calls, so
 a silent failure to publish cannot pass as success.
 
+### What publishing already does by itself
+
+Worth knowing before adding triggers, because most of it needs none. Flipping a release from private
+to public emits one `DatasetChanged` event, and the listeners on the broker do the rest **inside the
+rw server**:
+
+| | Who | Where |
+|---|---|---|
+| matcher build | `UsageMatcherFactory.datasetChanged` → `ensurePublishedMatcher` | rw server, for every published dataset above threshold — not release specific |
+| concept DOI published, previous release's DOI URL updated | `PublishReleaseListener` | rw server |
+| COLDP, DwC-A and TextTree exports + `latest_*` symlinks | `PublishReleaseListener.publishCOL` → `ColReleaseExportJob` | rw server, written into `colDownloadDir/monthly/`. **Only for releases of the COL project** (`sourceKey == Datasets.COL`) — another project's release gets none |
+| names archive updated | `PublishReleaseListener` → `NameUsageArchiver` | rw server |
+| `publishActions` fired | `PublishReleaseListener`, last | outbound HTTP from the rw server |
+
+So exports and matchers are already automatic. What genuinely needs an outbound trigger is the
+**bundle** and, for the extended release, the **portal sitemap** — both too heavy or too far outside
+the JVM to run in it.
+
 ### The trigger — a release publishAction
 
 The backend already has a post-release hook, so auto-triggering needs no code. `ReleaseAction`
@@ -198,9 +216,10 @@ publishActions:
 
 The URL is templated by `CitationUtils.fromTemplate` over the release `Dataset`, so any bean property
 works — `{key}`, `{alias}`, `{version}`, `{attempt}` — alongside the named `{DATASET_KEY}`,
-`{ATTEMPT}`, `{VERSION}`, `{TITLE}`, `{ALIAS}`, `{date}`. `ReleaseAction` swallows its own failures
-and only logs the status code, so a Jenkins outage can never fail a release — but it also means a
-broken action goes unnoticed until someone reads the log.
+`{ATTEMPT}`, `{VERSION}`, `{TITLE}`, `{ALIAS}`, `{date}`. A failing action never fails a release or a
+publication, but it is no longer silent: `ReleaseAction` logs a warning for anything that is not 2xx
+and `callAll` adds a summary line, so a hook whose endpoint moved shows up as a warning instead of
+quietly 404ing for months.
 
 Note that a `publishAction` cannot be used to trigger the deploy repo's `publish-col.sh`: that script
 is what *causes* publication (`PUT /dataset/{key}/publish`), so firing it from a post-publish hook

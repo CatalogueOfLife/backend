@@ -13,6 +13,7 @@ import life.catalogue.common.io.HttpUtils;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.util.YamlUtils;
+import life.catalogue.config.ReleaseAction;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.CitationMapper;
@@ -347,9 +348,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       try (SqlSession session = factory.openSession(true)) {
         d = session.getMapper(DatasetMapper.class).get(newDatasetKey);
       }
-      for (var action : prCfg.actions) {
-        action.call(client, d);
-      }
+      ReleaseAction.callAll(prCfg.actions, client, d, "post release actions");
     }
   }
 

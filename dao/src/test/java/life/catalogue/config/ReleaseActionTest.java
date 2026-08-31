@@ -8,8 +8,26 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class ReleaseActionTest {
+
+  /**
+   * A hook whose endpoint moved answers 404 rather than throwing, so the status is the only thing that
+   * tells a failed action from a working one. Callers go through callAll, which warns on anything but 2xx.
+   */
+  @Test
+  public void success() {
+    assertTrue(ReleaseAction.isSuccess(200));
+    assertTrue(ReleaseAction.isSuccess(201));
+    assertTrue(ReleaseAction.isSuccess(204));
+    assertFalse(ReleaseAction.isSuccess(301));
+    assertFalse(ReleaseAction.isSuccess(401));
+    assertFalse(ReleaseAction.isSuccess(404)); // the endpoint moved
+    assertFalse(ReleaseAction.isSuccess(500));
+    assertFalse(ReleaseAction.isSuccess(-1));  // the call itself blew up
+  }
 
   @Test
   public void call() {

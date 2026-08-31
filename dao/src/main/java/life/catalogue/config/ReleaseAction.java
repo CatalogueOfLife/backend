@@ -63,13 +63,52 @@ public class ReleaseAction {
     }
     var req = builder.build();
     // execute
-    LOG.info("{} {}", method, uri);
     try (CloseableHttpResponse response = client.execute(req)) {
-      return response.getCode();
+      final int status = response.getCode();
+      if (isSuccess(status)) {
+        LOG.info("{} {} -> {}", method, uri, status);
+      } else {
+        // a hook that quietly 404s because its endpoint moved is otherwise invisible, see
+        // the /admin/matcher/{key}/prepare action that kept firing long after that endpoint was gone
+        LOG.warn("Release action failed with HTTP {} {}: {} {}", status, response.getReasonPhrase(), method, uri);
+      }
+      return status;
     } catch (Exception e) {
       LOG.error("Failed to {} {}: {}", method, uri, e.getMessage());
       return -1;
     }
+  }
+
+  /**
+   * @param status an HTTP status code as returned by {@link #call}, or -1 if the call itself failed
+   * @return true if the action was carried out, i.e. answered 2xx
+   */
+  public static boolean isSuccess(int status) {
+    return status >= 200 && status < 300;
+  }
+
+  /**
+   * Calls all actions and logs a summary if any of them failed.
+   * Failures never propagate - a broken hook must not fail a release or a publication.
+   *
+   * @param what what the actions are for, used in the log message
+   * @return the number of actions that did not answer 2xx
+   */
+  public static int callAll(Iterable<ReleaseAction> actions, CloseableHttpClient client, Dataset release, String what) {
+    int failed = 0;
+    int total = 0;
+    for (var action : actions) {
+      total++;
+      if (!isSuccess(action.call(client, release))) {
+        failed++;
+      }
+    }
+    if (failed > 0) {
+      LOG.warn("{} of {} {} for release {} FAILED - see the warnings above", failed, total, what, release.getKey());
+    } else if (total > 0) {
+      LOG.info("All {} {} for release {} succeeded", total, what, release.getKey());
+    }
+    return failed;
   }
 
   /**

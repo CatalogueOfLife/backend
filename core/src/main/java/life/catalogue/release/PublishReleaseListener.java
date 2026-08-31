@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.config.ReleaseAction;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.NameUsageArchiver;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -137,10 +138,8 @@ public class PublishReleaseListener implements DatasetListener {
       } catch (Exception e) {
         LOG.error("Failed to look for custom publishing actions for release {}", event.obj.getKey(), e);
       }
-      if (rcfg != null &&   rcfg.publishActions != null) {
-        for (var action : rcfg.publishActions) {
-          action.call(httpClient, event.obj);
-        }
+      if (rcfg != null && rcfg.publishActions != null) {
+        ReleaseAction.callAll(rcfg.publishActions, httpClient, event.obj, "publish actions");
       }
     }
   }
