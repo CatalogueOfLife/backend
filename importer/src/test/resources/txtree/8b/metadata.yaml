@@ -1,0 +1,5 @@
+title: Stable ids
+alias: stableids
+description: TextTree without explicit IDs, used to test that line number based ids survive a re-import
+license: CC0
+code: botanical

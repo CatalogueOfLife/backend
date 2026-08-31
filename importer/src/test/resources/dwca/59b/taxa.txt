@@ -1,0 +1,10 @@
+taxonID	scientificName	scientificNameAuthorship	taxonRank	kingdom	phylum	class	order	family	genus
+t101	Aster alpinus	L.	species	Plantae	Tracheophyta	Magnoliopsida	Asterales	Asteraceae	Aster
+t102	Aster amellus	L.	species	Plantae	Tracheophyta	Magnoliopsida	Asterales	Asteraceae	Aster
+t103	Aster tenuis	Hook.	species	Plantae	Tracheophyta	Magnoliopsida	Poales	Poaceae	Aster
+t104	Bromus arvensis	L.	species	Plantae	Tracheophyta	Magnoliopsida	Poales	Poaceae	Bromus
+t105	Abies alba	Mill.	species	Plantae	Tracheophyta	Pinopsida	Pinales	Pinaceae	Abies
+t106	Picea abies	(L.) H.Karst.	species	Plantae	Tracheophyta	Pinopsida	Pinales	Pinaceae	Picea
+t107	Agaricus campestris	L.	species	Fungi	Basidiomycota	Agaricomycetes	Agaricales	Agaricaceae	Agaricus
+t108	Aster novi-belgii	L.	species	Plantae	Tracheophyta	Magnoliopsida	Asterales	Asteraceae	Aster
+t109	Xylaria hypoxylon	(L.) Grev.	species	Fungi	Ascomycota	Sordariomycetes	Xylariales	Xylariaceae	Xylaria

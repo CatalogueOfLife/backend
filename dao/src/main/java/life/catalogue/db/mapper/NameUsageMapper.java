@@ -313,6 +313,16 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<SimpleNameCached> processDatasetSimpleNidx(@Param("datasetKey") int datasetKey);
 
   /**
+   * Iterates over the usages of a dataset whose identifiers the importer generated itself, i.e. that do not exist
+   * in the source data. Used to reapply those identifiers on the next import so they stay stable, see #1189.
+   *
+   * @param includeSource if true also returns usages of origin SOURCE. Needed for formats like TextTree which
+   *                      carry no identifiers of their own, so every id is derived from the line number.
+   */
+  Cursor<GeneratedUsage> processDatasetGeneratedUsages(@Param("datasetKey") int datasetKey,
+                                       @Param("includeSource") boolean includeSource);
+
+  /**
    * Iterates over all bare names for a given dataset, optionally filtered by a minimum/maximum rank to include.
    */
   Cursor<BareName> processDatasetBareNames(@Param("datasetKey") int datasetKey,
@@ -618,4 +628,22 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   }
 
   void _addIdentifier(@Param("key") DSID<String> key, @Param("ids") List<Identifier> identifiers);
+
+  /**
+   * The name and usage identifiers of a single name usage together with the scientific name of its parent,
+   * which is all that is needed to reapply a generated identifier to the same record on the next import.
+   */
+  class GeneratedUsage {
+    public String usageId;
+    public String nameId;
+    public String parent; // the parents scientific name, null for roots
+    public Rank rank;
+    public String scientificName;
+    public String authorship;
+
+    @Override
+    public String toString() {
+      return usageId + "/" + nameId + " " + rank + " " + scientificName;
+    }
+  }
 }

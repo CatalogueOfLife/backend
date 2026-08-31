@@ -92,7 +92,7 @@ public class PgImportITBase {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-    importStoreFactory = new ImportStoreFactory(cfg);
+    importStoreFactory = new ImportStoreFactory(cfg, 1, SqlSessionFactoryRule.getSqlSessionFactory());
     dataset = newDataset();
 
     sdao = new SynonymDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, indexService, validator);
@@ -132,6 +132,10 @@ public class PgImportITBase {
   }
 
   void normalizeAndImport(DataFormat format, int key) throws Exception {
+    normalizeAndImport(format, String.valueOf(key));
+  }
+
+  void normalizeAndImport(DataFormat format, String key) throws Exception {
     // same layout as NormalizerITBase.resourceDir, the filename differs from the enum name for TEXT_TREE
     resourceDir = "/" + format.getFilename().toLowerCase().replaceAll("_", "-") + "/" + key;
     URL url = getClass().getResource(resourceDir);
@@ -155,7 +159,7 @@ public class PgImportITBase {
       if (store != null) {
         store.close(); // a previous import of this test, we only ever keep the last store around
       }
-      store = importStoreFactory.create(dataset.getKey(), 1);
+      store = importStoreFactory.create(dataset.getKey(), 1, dataset.getDataFormat());
       Normalizer norm = new Normalizer(dataset, store, source,
         NameIndexFactory.build(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
         ImageService.passThru(), validator, null);

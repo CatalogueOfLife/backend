@@ -112,6 +112,7 @@ public class Normalizer implements Callable<Boolean> {
     checkIfCancelled();
     // insert normalizer db relations, create implicit nodes if needed and parse names
     normalize();
+    store.reportIdReuse();
     checkIfCancelled();
     // apply missing dataset defaults, verify, derive issues and fail before we do expensive matching or even db imports
     validateAndDefaults();

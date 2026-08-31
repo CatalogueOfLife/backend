@@ -204,6 +204,8 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
     }
 
     u.usage.setOrigin(Origin.SOURCE);
+    // without an explicit ID we fall back to the line number, which is merely a placeholder - flag that, see #1189
+    u.generatedId = uid == null;
     u.usage.setId(ObjectUtils.coalesce(uid, String.valueOf(tn.id)));
     u.usage.setLink(link);
     u.usage.setAccordingToId(pnu.getTaxonomicNote());
