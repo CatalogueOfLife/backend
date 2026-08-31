@@ -1,9 +1,11 @@
-# Configuration of the CLB release-in-a-box bundle, as used inside the compose setup.
-# Everything not listed here comes from the WsBundleServerConfig defaults - a bundle needs no GBIF
-# registry, no mail server and no DataCite account.
+# Configuration of the CLB release-in-a-box bundle, written into the data artifact by BundleBuildCmd
+# with the release key already filled in. Everything not listed here comes from the
+# WsBundleServerConfig defaults - a bundle needs no GBIF registry, no mail server, no DataCite account.
+#
+# Paths are the in-container ones: the artifact directory is mounted at /data.
 
-# The single release this bundle serves. Set it to the release you built the data volume for.
-releaseKey: 3287
+# The single release this bundle serves.
+releaseKey: {{RELEASE_KEY}}
 
 db:
   host: postgres

@@ -2,6 +2,7 @@ package life.catalogue.command;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.dao.Partitioner;
@@ -20,12 +21,15 @@ import life.catalogue.pgcopy.PgCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -69,6 +73,14 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
   private static final String ARG_KEY = "key";
   private static final String ARG_DIR = "dir";
   private static final String ARG_DELETE = "delete";
+  private static final String ARG_IMAGE = "image";
+
+  /** Where the generated docker-compose.yml pulls the app image from unless --image says otherwise. */
+  static final String DEFAULT_IMAGE = "ghcr.io/catalogueoflife/clb-bundle:latest";
+
+  /** Runtime files copied into every artifact so a bundle is usable as downloaded. */
+  private static final String TEMPLATE_DIR = "life/catalogue/bundle/";
+  private static final List<String> TEMPLATES = List.of("config.yml", "docker-compose.yml", "restore.sh", "README.md");
 
   /**
    * Every dataset row the release slice needs a foreign key to satisfy: the release itself, the project it
@@ -113,6 +125,11 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
       .dest(ARG_DELETE)
       .action(Arguments.storeTrue())
       .help("Wipe an existing output directory first");
+    subparser.addArgument("--" + ARG_IMAGE)
+      .dest(ARG_IMAGE)
+      .type(String.class)
+      .required(false)
+      .help("App image the generated docker-compose.yml pulls, default " + DEFAULT_IMAGE);
   }
 
   @Override
@@ -146,6 +163,7 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
       copyFileMetrics();
       pgDump();
       writeManifest();
+      writeRuntimeFiles();
       LOG.info("Bundle for release {} built at {}", key, dir.getAbsolutePath());
       System.out.println("Done. Bundle at " + dir.getAbsolutePath());
 
@@ -457,6 +475,30 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
       cfg.db.host + "/" + cfg.db.database,
       quote(cfg.versionString()));
     Files.writeString(f.toPath(), json);
+  }
+
+  /**
+   * Copies the compose file, the app config, the postgres restore hook and a README into the artifact,
+   * with the release key and image already filled in. That is what makes a downloaded bundle runnable
+   * as is - dropwizard does not substitute environment variables into its yaml, so the release key has
+   * to be baked in here rather than passed at run time.
+   */
+  private void writeRuntimeFiles() throws IOException {
+    final String image = ObjectUtils.coalesce(ns.getString(ARG_IMAGE), DEFAULT_IMAGE);
+    final String title = ObjectUtils.coalesce(release.getAlias(), release.getTitle(), "COL release " + key);
+    for (String name : TEMPLATES) {
+      String content = new String(Resources.getResourceAsStream(TEMPLATE_DIR + name).readAllBytes(), StandardCharsets.UTF_8)
+        .replace("{{RELEASE_KEY}}", String.valueOf(key))
+        .replace("{{IMAGE}}", image)
+        .replace("{{TITLE}}", title)
+        .replace("{{BUILT}}", DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.now()));
+      File f = new File(dir, name);
+      Files.writeString(f.toPath(), content);
+      if (name.endsWith(".sh") && !f.setExecutable(true)) {
+        LOG.warn("Failed to make {} executable", f);
+      }
+    }
+    LOG.info("Wrote {} into the bundle, app image {}", TEMPLATES, image);
   }
 
   private static String quote(String s) {

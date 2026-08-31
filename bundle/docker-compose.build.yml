@@ -1,0 +1,18 @@
+# Compose override that builds the app image from a checkout instead of pulling the published one.
+# Use it to test a bundle artifact before publishing an image:
+#
+#   cd /srv/bundle-data
+#   CLB_BACKEND_DIR=/path/to/backend docker compose \
+#     -f docker-compose.yml -f $CLB_BACKEND_DIR/bundle/docker-compose.build.yml up --build --wait
+#
+# The artifact's own docker-compose.yml stays the single definition of the services; this only swaps
+# the image for a local build, so the two can never drift.
+#
+# CLB_BACKEND_DIR must be set: compose resolves relative paths in an override against the project
+# directory, which is the artifact, not this file's directory.
+services:
+  app:
+    build:
+      context: ${CLB_BACKEND_DIR:?set CLB_BACKEND_DIR to your backend checkout}
+      dockerfile: bundle/Dockerfile
+    image: clb-bundle:local

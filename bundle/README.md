@@ -4,24 +4,50 @@ A self contained Docker bundle serving **one** Catalogue of Life release: the re
 name matching and OpenRefine reconciliation, backed by its own Postgres and Elasticsearch.
 See [`../docs/BUNDLE.md`](../docs/BUNDLE.md) for the full reference.
 
+This directory holds only what is needed to **build and publish the image**. Everything a user runs —
+`docker-compose.yml`, `config.yml`, `restore.sh`, a README — is generated into the data artifact by
+`BundleBuildCmd` from the templates in
+`webservice/src/main/resources/life/catalogue/bundle/`, with the release key already filled in.
+
+## Publish the image
+
+One image serves any release, so tag it with the **backend version**, not the release.
+
 ```bash
-# 1. build the data artifact from a full ChecklistBank database (needs pg_dump on the PATH)
-java -cp webservice/target/webservice-*.jar life.catalogue.WsServer \
-  bundleBuild --key 3287 --dir /srv/bundle-data config-prod.yml
-
-# 2. set the release key the bundle serves
-$EDITOR bundle/config-bundle.yml     # releaseKey: 3287
-
-# 3. run it
-cd bundle
-BUNDLE_DATA=/srv/bundle-data docker compose up --wait
-
-# 4. use it - no dataset key needed
-curl localhost:8080/dataset
-curl localhost:8080/taxon/4QHKG/info
-curl 'localhost:8080/parser/name?q=Abies+alba'
-curl localhost:8080/reconcile
+mvn -DskipTests clean install
+docker build -f bundle/Dockerfile -t ghcr.io/catalogueoflife/clb-bundle:1.5.2 .
+docker tag ghcr.io/catalogueoflife/clb-bundle:1.5.2 ghcr.io/catalogueoflife/clb-bundle:latest
+docker push ghcr.io/catalogueoflife/clb-bundle:1.5.2
+docker push ghcr.io/catalogueoflife/clb-bundle:latest
 ```
 
-The first boot restores the Postgres dump and indexes the release into Elasticsearch, which takes a
-while for a full COL release. `docker compose up --wait` blocks until that is done.
+## Build a data artifact
+
+Runs against a full ChecklistBank database and needs `pg_dump` on the PATH.
+
+```bash
+java -cp webservice/target/webservice-*.jar life.catalogue.WsServer \
+  bundleBuild --key 3287 --dir /srv/bundle-data --delete \
+  --image ghcr.io/catalogueoflife/clb-bundle:1.5.2 config-prod.yml
+
+tar -C /srv -caf col-3287-bundle.tar.zst bundle-data
+sha256sum col-3287-bundle.tar.zst > col-3287-bundle.tar.zst.sha256
+```
+
+Publish both files next to the other downloads of that release.
+
+## Run one
+
+```bash
+cd /srv/bundle-data
+docker compose up --wait
+```
+
+To test an artifact against a locally built image before publishing, layer the build override on top —
+the artifact's compose file stays the single definition of the services:
+
+```bash
+cd /srv/bundle-data
+export CLB_BACKEND_DIR=/path/to/backend
+docker compose -f docker-compose.yml -f $CLB_BACKEND_DIR/bundle/docker-compose.build.yml up --build --wait
+```

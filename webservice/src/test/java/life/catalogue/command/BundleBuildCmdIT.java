@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import org.junit.Assume;
 import org.junit.Test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -38,6 +39,25 @@ public class BundleBuildCmdIT extends CmdTestBase {
       assertFileWithContent(new File(store, "dataset.json"));
       assertTrue("names index store missing", new File(dir, "nidx").exists());
       assertTrue("intermediate copy files must be cleaned up", !new File(dir, "pgdumps").exists());
+
+      // the artifact must be runnable as downloaded: compose file, app config, restore hook and readme
+      File compose = new File(dir, "docker-compose.yml");
+      File config = new File(dir, "config.yml");
+      File restore = new File(dir, "restore.sh");
+      assertFileWithContent(compose);
+      assertFileWithContent(config);
+      assertFileWithContent(restore);
+      assertFileWithContent(new File(dir, "README.md"));
+      assertTrue("restore hook must be executable", restore.canExecute());
+      // no placeholder may survive, and the release key must be baked in
+      for (File f : new File[]{compose, config, restore, new File(dir, "README.md")}) {
+        String content = Files.readString(f.toPath());
+        assertFalse(f + " still has placeholders", content.contains("{{"));
+      }
+      assertTrue("release key not baked into the config",
+        Files.readString(config.toPath()).contains("releaseKey: " + key));
+      assertTrue("image not baked into the compose file",
+        Files.readString(compose.toPath()).contains(BundleBuildCmd.DEFAULT_IMAGE));
 
     } finally {
       org.apache.commons.io.FileUtils.deleteQuietly(dir);

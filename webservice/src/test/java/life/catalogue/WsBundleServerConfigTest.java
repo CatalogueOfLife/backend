@@ -3,8 +3,11 @@ package life.catalogue;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dw.auth.map.MapAuthenticationFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import org.junit.Test;
 
@@ -35,6 +38,29 @@ public class WsBundleServerConfigTest {
         return Resources.stream(path);
       }
     }, "config-bundle-test.yaml");
+  }
+
+  /**
+   * The config template BundleBuildCmd bakes into every artifact must parse and validate as a real bundle
+   * config, or every bundle we ship is unstartable.
+   */
+  @Test
+  public void shippedTemplateIsValid() throws Exception {
+    String tmpl = new String(Resources.stream("life/catalogue/bundle/config.yml").readAllBytes(), StandardCharsets.UTF_8)
+      .replace("{{RELEASE_KEY}}", "3287");
+    assertFalse("unsubstituted placeholder in the config template", tmpl.contains("{{"));
+    File f = File.createTempFile("bundle-config", ".yaml");
+    try {
+      Files.writeString(f.toPath(), tmpl);
+      var cfg = new YamlConfigurationFactory<>(WsBundleServerConfig.class, validator, objectMapper, "dw")
+        .build(f);
+      assertEquals(3287, cfg.releaseKey);
+      assertNotNull("elastic is mandatory for a bundle", cfg.es);
+      assertFalse(cfg.es.isEmpty());
+      assertEquals("/data/matcher", cfg.matching.storageDir.getPath());
+    } finally {
+      f.delete();
+    }
   }
 
   /**

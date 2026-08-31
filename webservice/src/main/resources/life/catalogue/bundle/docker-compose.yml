@@ -1,11 +1,15 @@
-# CLB release-in-a-box. Three services, all mandatory:
+# CLB release-in-a-box for {{TITLE}} (release {{RELEASE_KEY}}).
+# Written by BundleBuildCmd into this artifact - everything it needs is in this directory.
+#
+#   docker compose up --wait
+#
+# Three services, all mandatory:
 #   postgres  restores the shipped release dump on first boot
 #   elastic   always present - the bundle has no pass through search mode
 #   app       the read API + name matching + OpenRefine reconciliation for that one release
 #
-#   BUNDLE_DATA=/path/to/bundle-data docker compose up --wait
-#
 # `--wait` blocks until the app is healthy, which includes the first boot elastic indexing.
+# Override the image with CLB_BUNDLE_IMAGE if you build your own.
 name: clb-bundle
 
 services:
@@ -19,7 +23,7 @@ services:
       # C collation, matching how ChecklistBank creates its database
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
     volumes:
-      - ${BUNDLE_DATA:-./data}:/bundle:ro
+      - .:/bundle:ro
       - ./restore.sh:/docker-entrypoint-initdb.d/10-restore.sh:ro
       - pgdata:/var/lib/postgresql/data
     command:
@@ -52,9 +56,7 @@ services:
       start_period: 60s
 
   app:
-    build:
-      context: ..
-      dockerfile: bundle/Dockerfile
+    image: ${CLB_BUNDLE_IMAGE:-{{IMAGE}}}
     depends_on:
       postgres:
         condition: service_healthy
@@ -63,10 +65,10 @@ services:
     environment:
       JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:-}
     volumes:
-      - ./config-bundle.yml:/conf/config.yml:ro
+      - ./config.yml:/conf/config.yml:ro
       # read-write: the names index grows as new names are matched and the matcher store keeps its
       # taxonomic group cache in groups.bin
-      - ${BUNDLE_DATA:-./data}:/data
+      - .:/data
     ports:
       - "8080:8080"
       - "8081:8081"

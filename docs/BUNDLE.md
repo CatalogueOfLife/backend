@@ -19,7 +19,8 @@ The design record behind it is [`2026-06-20-clb-release-in-a-box-bundle.md`](202
 | `WsBundleServerConfig` | `webservice/src/main/java/life/catalogue/WsBundleServerConfig.java` |
 | keyless routing | `webservice/src/main/java/life/catalogue/dw/jersey/filter/SingleDatasetRewriteFilter.java` |
 | data artifact builder | `webservice/src/main/java/life/catalogue/command/BundleBuildCmd.java` (`bundleBuild`) |
-| image + compose | [`../bundle/`](../bundle/) |
+| image | [`../bundle/Dockerfile`](../bundle/Dockerfile) |
+| runtime templates | `webservice/src/main/resources/life/catalogue/bundle/` |
 
 `WsBundleServer` extends `WsROServer`, so the entire read API — dataset, taxon, tree, name, synonym,
 reference, vernacular, verbatim, metrics, parsers — is the same code the public read-only server
@@ -83,7 +84,13 @@ java -cp webservice/target/webservice-*.jar life.catalogue.WsServer \
   bundleBuild --key 3287 --dir /srv/bundle-data --delete config-prod.yml
 ```
 
-What it produces:
+```bash
+java -cp webservice/target/webservice-*.jar life.catalogue.WsServer \
+  bundleBuild --key 3287 --dir /srv/bundle-data --delete \
+  --image ghcr.io/catalogueoflife/clb-bundle:1.5.2 config-prod.yml
+```
+
+What it produces — a directory that is runnable exactly as downloaded:
 
 ```
 bundle-data/
@@ -92,7 +99,18 @@ bundle-data/
   matcher/{releaseKey}/   usages.bin, canonical.bin, groups.bin, dataset.json
   metrics/                the file based dataset metrics of the release
   bundle.json             release key, title, attempt, source db, build time
+  docker-compose.yml      the three services, app image filled in from --image
+  config.yml              the app config, releaseKey filled in
+  restore.sh              postgres first boot restore hook
+  README.md               what it is and how to use it
 ```
+
+The last four are generated from the templates in
+`webservice/src/main/resources/life/catalogue/bundle/`. They are baked at build time rather than
+passed as environment variables because Dropwizard is not set up here to substitute env vars into its
+yaml (there is no `SubstitutingSourceProvider`), and because a downloaded artifact that needs editing
+before it runs is a bundle in name only. `WsBundleServerConfigTest.shippedTemplateIsValid` parses and
+validates the config template, so a broken one fails the build rather than every shipped bundle.
 
 How it gets there — all data tables are hash partitioned on `dataset_key`, so there is no partition
 to detach and the release has to be filtered out row by row:
@@ -117,14 +135,23 @@ the stock `postgres` image restores with none of our code involved.
 The `name_usage` statement triggers that maintain `usage_count` are disabled during the copy — they
 build a transition table of everything a `COPY` inserts — and the counter is recomputed afterwards.
 
+## Distributing it
+
+The two halves have opposite properties, so they travel separately:
+
+- **The image is release agnostic** and changes with the backend, so it is tagged with the backend
+  version and pushed once per release of the code, not once per COL release.
+- **The data artifact is immutable** and multi GB, so it is published as a `tar` next to the other
+  downloads of that release, with a `.sha256` beside it. `bundle.json` doubles as its manifest.
+
+Because the compose file and config are inside the artifact, a user needs exactly two things: the
+tarball and a working docker. Nothing has to be edited.
+
 ## Running it
 
-See [`../bundle/README.md`](../bundle/README.md). In short:
-
 ```bash
-$EDITOR bundle/config-bundle.yml           # releaseKey
-cd bundle
-BUNDLE_DATA=/srv/bundle-data docker compose up --wait
+tar xaf col-3287-bundle.tar.zst && cd bundle-data
+docker compose up --wait
 ```
 
 `postgres` restores `release.dump` through `/docker-entrypoint-initdb.d` on first boot, `elastic`
