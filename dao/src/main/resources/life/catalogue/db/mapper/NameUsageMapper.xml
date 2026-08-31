@@ -335,6 +335,15 @@
     <result property="nameId" column="nid"/>
   </resultMap>
 
+  <resultMap id="generatedUsageResultMap" type="life.catalogue.db.mapper.NameUsageMapper$GeneratedUsage" autoMapping="false">
+    <id property="usageId" column="id"/>
+    <result property="nameId" column="name_id"/>
+    <result property="parent" column="parent"/>
+    <result property="rank" column="rank"/>
+    <result property="scientificName" column="scientific_name"/>
+    <result property="authorship" column="authorship"/>
+  </resultMap>
+
   <resultMap id="relatedNameResultMap" type="DSIDValue" autoMapping="false">
     <id property="datasetKey" column="dataset_key"/>
     <id property="id" column="name_id"/>
@@ -760,6 +769,19 @@
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
     WHERE u.dataset_key=#{datasetKey}
+  </select>
+
+  <!-- the parent joins repeat the dataset key literally so every side prunes to its own partition, see processNxIds.
+       TODO: there is no index on name_usage.origin, so a large dataset without any generated records still scans its
+       entire partition slice on every import. Measure and consider a partial index if this shows up, see #1569. -->
+  <select id="processDatasetGeneratedUsages" parameterType="map" resultMap="generatedUsageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT u.id, u.name_id, n.rank, n.scientific_name, n.authorship, np.scientific_name AS parent
+    FROM name_usage u
+      JOIN name n ON n.dataset_key=#{datasetKey} AND n.id=u.name_id
+      LEFT JOIN name_usage up ON up.dataset_key=#{datasetKey} AND up.id=u.parent_id
+      LEFT JOIN name np ON np.dataset_key=#{datasetKey} AND np.id=up.name_id
+    WHERE u.dataset_key=#{datasetKey}
+    <if test="!includeSource">AND u.origin != 'SOURCE'::ORIGIN</if>
   </select>
 
   <select id="processDatasetSimpleNidx" parameterType="map" resultMap="simpleCachedResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

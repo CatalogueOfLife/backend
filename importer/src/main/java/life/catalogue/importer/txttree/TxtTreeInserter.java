@@ -138,12 +138,23 @@ public class TxtTreeInserter implements DataInserter {
     return MetadataFactory.readMetadata(folder);
   }
 
-  private void persist(NameUsageData u, SimpleTreeNode t) {
-    if (!store.createNameAndUsage(u)) {
+  /**
+   * A usage as interpreted from a single tree node, together with the information whether its identifier is a
+   * mere placeholder derived from the line number, see #1189.
+   */
+  private record Interpreted(NameUsageData nu, boolean generatedId) {}
+
+  private void persist(Interpreted i, SimpleTreeNode t) {
+    var u = i.nu();
+    if (!store.createNameAndUsage(u, i.generatedId())) {
       // try again with line number as ID in case of duplicates
-      u.ud.setId(String.valueOf(t.id));
+      String fallback = String.valueOf(t.id);
+      if (store.usages().exists(fallback) || store.isReservedId(fallback)) {
+        fallback = null; // another record reclaimed that id, generate a fresh one instead of dropping this record
+      }
+      u.ud.setId(fallback);
       if (u.ud.nameID == null) {
-        u.nd.setId(String.valueOf(t.id));
+        u.nd.setId(fallback);
         store.createNameAndUsage(u);
       } else {
         store.usages().create(u.ud);
@@ -152,12 +163,14 @@ public class TxtTreeInserter implements DataInserter {
   }
 
   private void recursiveNodeInsert(String parentID, SimpleTreeNode t, int ordinal, NomCode parentCode) throws InterruptedException {
-    var u = usage(t, parentID, false, ordinal, parentCode);
+    var i = usage(t, parentID, false, ordinal, parentCode);
+    var u = i.nu();
     final NomCode code = u.nd.getName().getCode();
-    persist(u, t);
+    persist(i, t);
     for (SimpleTreeNode syn : t.synonyms){
-      var s = usage(syn, u.ud.getId(), true, 0, code);
-      persist(s, t);
+      var si = usage(syn, u.ud.getId(), true, 0, code);
+      var s = si.nu();
+      persist(si, t);
       if (syn.basionym) {
         var rel = new RelationData<NomRelType>();
         rel.setType(NomRelType.BASIONYM);
@@ -174,7 +187,7 @@ public class TxtTreeInserter implements DataInserter {
   }
 
 
-  private NameUsageData usage(SimpleTreeNode tn, @Nullable String parentID, boolean synonym, int ordinal, NomCode parentCode) throws InterruptedException {
+  private Interpreted usage(SimpleTreeNode tn, @Nullable String parentID, boolean synonym, int ordinal, NomCode parentCode) throws InterruptedException {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
     final int existingIssues = v.getIssues().size();
     // convert
@@ -192,7 +205,19 @@ public class TxtTreeInserter implements DataInserter {
     if (existingIssues < v.getIssues().size()) {
       store.put(v);
     }
-    return new NameUsageData(tu);
+    var nu = new NameUsageData(tu);
+    if (!tu.generatedId) {
+      // the usage carries an explicit ID, but the name id is always derived from the line number.
+      // Restore the one the previous version used so it stops shifting too, see #1189
+      var nameID = store.previousNameId(tu.usage.getId());
+      if (nameID != null) {
+        nu.nd.setId(nameID);
+      } else if (store.names().exists(nu.nd.getId()) || store.isReservedId(nu.nd.getId())) {
+        // another name is about to reclaim that line number - fall back to the explicit usage id
+        nu.nd.setId(null);
+      }
+    }
+    return new Interpreted(nu, tu.generatedId);
   }
 
   private boolean referenceExists(String id) {

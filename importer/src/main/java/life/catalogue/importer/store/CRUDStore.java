@@ -82,8 +82,15 @@ public abstract class CRUDStore<T extends DSID<String> & VerbatimEntity> {
   public boolean create(T obj) {
     // create missing ids, sharing the same id between name & taxon
     if (obj.getId() == null) {
-      obj.setId(idGen.next());
-      LOG.debug("Generate new {} ID: {}", obj.getClass().getSimpleName(), obj.getId());
+      // skip ids that are in use and ids a previous import generated, which a record may still reclaim by name.
+      // Without the latter a brand new record would take the id of an existing one simply by being created first,
+      // and the ids would keep churning across imports, see #1189
+      String id;
+      do {
+        id = idGen.next();
+      } while (objects.containsKey(id) || db.isReservedId(id));
+      obj.setId(id);
+      LOG.debug("Generate new {} ID: {}", objName, id);
     }
   
     // assert ID is unique

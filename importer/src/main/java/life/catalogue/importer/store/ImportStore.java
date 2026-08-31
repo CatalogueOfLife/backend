@@ -61,6 +61,8 @@ public class ImportStore implements AutoCloseable {
   private final UsageStore usages;
 
   private final IdGenerator idGen = new IdGenerator("~");
+  // the identifiers a previous import generated for records the source does not identify itself, see #1189
+  private final PreviousIds prevIds;
 
   /**
    * Number of kryo-pool backed serializers a single ImportStore can use in parallel. Used to size the
@@ -70,12 +72,14 @@ public class ImportStore implements AutoCloseable {
    */
   public static final int KRYO_SERIALIZERS = 6;
 
-  ImportStore(int datasetKey, int attempt, DB mapDb, File storeDir, Pool<Kryo> pool) {
+  ImportStore(int datasetKey, int attempt, DB mapDb, File storeDir, Pool<Kryo> pool, PreviousIds prevIds) {
     this.datasetKey = datasetKey;
     this.attempt = attempt;
     this.storeDir = storeDir;
     this.mapDb = mapDb;
-    
+    // must be set before the stores below, they read it back through this instance when generating ids
+    this.prevIds = Preconditions.checkNotNull(prevIds, "PreviousIds required, use PreviousIds.NONE");
+
     try {
       verbatim = mapDb.hashMap("verbatim")
           .keySerializer(Serializer.INTEGER)
@@ -217,6 +221,14 @@ public class ImportStore implements AutoCloseable {
   }
 
   public boolean createNameAndUsage(NameUsageData nu) {
+    return createNameAndUsage(nu, false);
+  }
+
+  /**
+   * @param generatedId true if the ids the record currently carries are placeholders the importer derived itself,
+   *                    e.g. a TextTree line number, and may therefore be replaced by the ones a previous import used
+   */
+  public boolean createNameAndUsage(NameUsageData nu, boolean generatedId) {
     Preconditions.checkNotNull(nu.nd, "NameUsageData name required");
     Preconditions.checkNotNull(nu.ud, "NameUsageData usage required");
 
@@ -228,6 +240,7 @@ public class ImportStore implements AutoCloseable {
     }
     // first create the name, potentially assigning an id from the usage
     var nn = nu.nd;
+    reusePreviousIds(nu, nn, generatedId);
     if (nn.getId() == null) {
       nn.setId(nu.ud.getId());
     }
@@ -388,6 +401,76 @@ public class ImportStore implements AutoCloseable {
     return nu;
   }
   
+  /**
+   * Reapplies both the name and usage identifier this very record carried in the last version of the dataset in
+   * ChecklistBank, so records the source does not identify itself keep a stable id across imports, see #1189.
+   * <p>
+   * This relies on every source record already being in the store by the time a generated one is created, which is
+   * true for all inserters today: the denormalized classification is applied in Normalizer.normalize() and the DwC-A
+   * implicit usages in a second pass over the taxon core. If that ever changes a reused id can collide with a source
+   * id that is only read later, and it is then the source record that gets dropped as not unique.
+   *
+   * @param generatedId true if the ids the record carries are mere placeholders that may be replaced
+   */
+  private void reusePreviousIds(NameUsageData nu, NameData nn, boolean generatedId) {
+    if (nu.ud.usage.isBareName()) return; // no usage record to key the lookup on
+    if (!generatedId && (nu.ud.getId() != null || nn.getId() != null)) return; // an id came from the source
+
+    var n = nn.getName();
+    var prev = prevIds.take(n.getRank(), n.getScientificName(), n.getAuthorship(), parentName(nu.ud), this::idsFree);
+    if (prev != null) {
+      // both or neither, otherwise the name would end up sharing the usage id below
+      nu.ud.setId(prev.usageId());
+      nn.setId(prev.nameId());
+
+    } else if (generatedId && (usages.exists(nu.ud.getId()) || prevIds.isReserved(nu.ud.getId()))) {
+      // the placeholder belongs to a record that reclaimed it by name - generate a new id instead
+      nu.ud.setId(null);
+      nn.setId(null);
+    }
+  }
+
+  /**
+   * The name id a usage had in the previous version of the dataset, for a record that does carry a source id of
+   * its own but whose name id the importer derived - a TextTree with explicit ID info items is the only such case.
+   *
+   * @return null if there is none or the id is already in use in this import
+   */
+  public @Nullable String previousNameId(@Nullable String usageId) {
+    var nameID = prevIds.nameIdFor(usageId);
+    return nameID != null && !names.exists(nameID) ? nameID : null;
+  }
+
+  private boolean idsFree(PreviousIds.IdPair prev) {
+    return !usages.exists(prev.usageId()) && !names.exists(prev.nameId());
+  }
+
+  /**
+   * @return the scientific name of the already stored parent, used to tell homonyms apart when several previous
+   *         records share the same rank, name and authorship
+   */
+  private @Nullable String parentName(UsageData u) {
+    var pid = u.usage.getParentId();
+    if (pid != null) {
+      var nd = name(usages.objByID(pid));
+      if (nd != null) {
+        return nd.getName().getScientificName();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * @return true if a previous import generated that id and the record it belongs to may still reclaim it
+   */
+  public boolean isReservedId(String id) {
+    return prevIds.isReserved(id);
+  }
+
+  public void reportIdReuse() {
+    prevIds.report(datasetKey);
+  }
+
   public void updateIdGenerators() {
     // just update prefix so new ids for implicit usages are good
     idGen.setPrefix("x",

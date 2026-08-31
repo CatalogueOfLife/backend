@@ -3,6 +3,7 @@ package life.catalogue.importer.store;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.NormalizerConfig;
@@ -11,8 +12,13 @@ import java.io.File;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Path;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.mapdb.DBMaker;
+
+import com.google.common.annotations.VisibleForTesting;
 
 
 
@@ -28,19 +34,27 @@ public class ImportStoreFactory {
   private final NormalizerConfig cfg;
   private final Path dir; // parent dir for all storage instances
   private final Pool<Kryo> pool;
+  private final SqlSessionFactory factory; // nullable, without it no previously generated ids are reapplied
 
   public ImportStoreFactory(NormalizerConfig cfg) {
-    this(cfg, 1);
+    this(cfg, 1, null);
+  }
+
+  public ImportStoreFactory(NormalizerConfig cfg, int importerThreads) {
+    this(cfg, importerThreads, null);
   }
 
   /**
    * @param importerThreads number of imports that may run in parallel. The shared kryo pool is sized to the
    *   worst case of every import running at once, each using one kryo per serializer in its ImportStore,
    *   i.e. {@code importerThreads * ImportStore.KRYO_SERIALIZERS}. Not separately configurable on purpose.
+   * @param factory optional session factory used to read the identifiers the previous import generated for records
+   *   the source does not identify itself, so they can be reapplied. Without it new ids are generated, see #1189.
    */
-  public ImportStoreFactory(NormalizerConfig cfg, int importerThreads) {
+  public ImportStoreFactory(NormalizerConfig cfg, int importerThreads, @Nullable SqlSessionFactory factory) {
     this.cfg = cfg;
     this.dir = cfg.importStorageDir().toPath();
+    this.factory = factory;
     pool = new ImportKryoPool(importerThreads * ImportStore.KRYO_SERIALIZERS);
   }
 
@@ -54,6 +68,19 @@ public class ImportStoreFactory {
    * @return creates a new, empty, persistent dao wiping any data that might have existed for that dataset
    */
   public ImportStore create(int datasetKey, int attempt) {
+    return create(datasetKey, attempt, (DataFormat) null);
+  }
+
+  /**
+   * @param format the format about to be imported. A TextTree carries no identifiers of its own, so for it all
+   *               previous ids are read, not just those of records with a generated origin.
+   */
+  public ImportStore create(int datasetKey, int attempt, @Nullable DataFormat format) {
+    return create(datasetKey, attempt, PreviousIds.load(factory, datasetKey, format == DataFormat.TEXT_TREE));
+  }
+
+  @VisibleForTesting
+  public ImportStore create(int datasetKey, int attempt, PreviousIds prevIds) {
     final File storeDir = dbDir(datasetKey); // used for both neo & mapdb
     LOG.info("Create new import storage for dataset {} at {}", datasetKey, storeDir);
 
@@ -70,7 +97,7 @@ public class ImportStoreFactory {
       .fileDB(mapDbFile)
       .fileMmapEnableIfSupported();
 
-    return new ImportStore(datasetKey, attempt, dbMaker.make(), storeDir, pool);
+    return new ImportStore(datasetKey, attempt, dbMaker.make(), storeDir, pool, prevIds);
   }
 
   private static File mapDbFile(File neoDir) {

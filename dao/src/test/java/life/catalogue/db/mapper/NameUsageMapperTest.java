@@ -5,6 +5,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
@@ -118,6 +119,46 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, Rank.SPECIES, Rank.GENUS), 1);
     assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, Rank.SUBGENUS, Rank.GENUS), 0);
     assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, Rank.VARIETY, Rank.SPECIES), 1);
+  }
+
+  /**
+   * The usages the importer generated an id for itself, see #1189.
+   */
+  @Test
+  public void processDatasetGeneratedUsages() throws Exception {
+    // apple only holds records read straight from a source
+    assertSize(mapper().processDatasetGeneratedUsages(datasetKey, false), 0);
+    assertSize(mapper().processDatasetGeneratedUsages(datasetKey, true), 4);
+
+    // add a taxon as the normalizer would create it for a denormalised classification
+    Taxon parent = TestEntityGenerator.TAXON1;
+    Name n = TestEntityGenerator.newName(datasetKey, "implicit-name", "Aster", Rank.GENUS);
+    // the generator decorates the name, we want the plain canonical the normalizer would create
+    n.setScientificName("Aster");
+    n.setUninomial("Aster");
+    n.setAuthorship("L.");
+    n.setOrigin(Origin.DENORMED_CLASSIFICATION);
+    nm.create(n);
+
+    Taxon t = TestEntityGenerator.newTaxon(n, "implicit-usage", parent.getId());
+    t.setOrigin(Origin.DENORMED_CLASSIFICATION);
+    tm.create(t);
+    commit();
+
+    List<NameUsageMapper.GeneratedUsage> generated = new ArrayList<>();
+    mapper().processDatasetGeneratedUsages(datasetKey, false).forEach(generated::add);
+    assertEquals(1, generated.size());
+    var g = generated.get(0);
+    assertEquals("implicit-usage", g.usageId);
+    assertEquals("implicit-name", g.nameId);
+    assertEquals(Rank.GENUS, g.rank);
+    assertEquals("Aster", g.scientificName);
+    assertEquals("L.", g.authorship);
+    assertEquals(parent.getName().getScientificName(), g.parent);
+
+    assertSize(mapper().processDatasetGeneratedUsages(datasetKey, true), 5);
+    // and nothing leaks across datasets
+    assertSize(mapper().processDatasetGeneratedUsages(999, true), 0);
   }
 
   static void assertSize(Cursor<?> cursor, int size) {

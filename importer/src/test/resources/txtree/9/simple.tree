@@ -1,0 +1,8 @@
+Plantae [kingdom] {ID=p1}
+  Asteraceae [family] {ID=f1}
+    Aster [genus] {ID=g1}
+      Aster alpinus L. [species] {ID=s1}
+      Aster amellus L. [species] {ID=s2}
+  Poaceae [family] {ID=f2}
+    Bromus [genus] {ID=g2}
+      Bromus arvensis L. [species] {ID=s3}

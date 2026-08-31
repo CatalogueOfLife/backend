@@ -1,0 +1,5 @@
+title: Stable ids with explicit IDs
+alias: stableids2
+description: TextTree with explicit ID info items, whose name ids are still derived from the line number
+license: CC0
+code: botanical

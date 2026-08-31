@@ -489,7 +489,7 @@ public class ImportJob extends DatasetJob {
       final boolean doImport = prepareSourceData(sourceDir);
       checkIfCancelled();
       if (doImport) {
-        try (ImportStore store = importStoreFactory.create(datasetKey, getAttempt())) {
+        try (ImportStore store = importStoreFactory.create(datasetKey, getAttempt(), dws.getDataFormat())) {
           LOG.info("Normalizing {}", datasetKey);
           updateState(ImportState.PROCESSING);
 

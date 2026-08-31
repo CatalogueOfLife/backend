@@ -339,6 +339,12 @@ public class TxtTreeDao {
     public final List<SpeciesEstimate> estimates = Lists.newArrayList();
     public final List<TaxonProperty> properties = Lists.newArrayList();
     public String type; // the TYPE value in TextTree infos
+    /**
+     * True if the usage id was derived from the line number because the tree carries no explicit ID info item.
+     * Such an id is a placeholder that shifts whenever lines are added above it, so importers may replace it
+     * with the id the same name had in the previous version of the dataset, see #1189.
+     */
+    public boolean generatedId;
     public final List<TypeMaterial> typeMaterial = Lists.newArrayList();
     boolean hasTaxonRelatedEntities() {
       return !distributions.isEmpty() || !media.isEmpty() || !vernacularNames.isEmpty() || !estimates.isEmpty() || !properties.isEmpty();
