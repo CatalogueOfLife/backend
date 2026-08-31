@@ -1,0 +1,88 @@
+# Builds and pushes the CLB release-in-a-box app image.
+#
+# One image serves any release - the release key lives in the data artifact, not in the image - so it
+# is tagged with the backend version and published once per backend release, not per COL release.
+#
+# Pushes to ghcr.io with the built in GITHUB_TOKEN, so there are no credentials to manage. The image
+# has to be publicly pullable: offline R and OpenRefine users outside GBIF are the whole point.
+name: bundle image
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag to publish, e.g. 1.5.2'
+        required: true
+      latest:
+        description: 'Also move the latest tag'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/clb-bundle
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: liberica
+          java-version: '25'
+          cache: maven
+
+      # the Dockerfile copies webservice/target/webservice-*.jar, so the shaded jar has to exist
+      - name: Build the shaded jar
+        run: mvn -B -DskipTests -DskipITs -pl webservice -am install
+
+      - name: Resolve tags
+        id: tags
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ inputs.tag }}"
+            LATEST="${{ inputs.latest }}"
+          else
+            VERSION="${GITHUB_REF_NAME#v}"
+            LATEST=true
+          fi
+          TAGS="$IMAGE:$VERSION"
+          if [ "$LATEST" = "true" ]; then TAGS="$TAGS,$IMAGE:latest"; fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: bundle/Dockerfile
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.tags.outputs.version }}
+            org.opencontainers.image.description=Catalogue of Life release-in-a-box - one COL release, offline
+
+      - name: Summary
+        run: |
+          echo "Pushed ${{ steps.tags.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Build a matching data artifact with:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "bundleBuild --key <releaseKey> --dir <out> --image $IMAGE:${{ steps.tags.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

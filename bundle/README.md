@@ -36,6 +36,14 @@ sha256sum col-3287-bundle.tar.zst > col-3287-bundle.tar.zst.sha256
 
 Publish both files next to the other downloads of that release.
 
+## Automate it
+
+- `.github/workflows/bundle-image.yml` publishes the image on every `v*` tag.
+- `Jenkinsfile` builds a data artifact from a single `RELEASE_KEY` parameter by driving
+  `deploy/bundle.sh` on the apps VM.
+- A `publishActions` entry in the project release config triggers that job when a release is
+  published. See [`../docs/BUNDLE.md`](../docs/BUNDLE.md#automation).
+
 ## Run one
 
 ```bash

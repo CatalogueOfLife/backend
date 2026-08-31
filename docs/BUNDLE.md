@@ -147,6 +147,66 @@ The two halves have opposite properties, so they travel separately:
 Because the compose file and config are inside the artifact, a user needs exactly two things: the
 tarball and a working docker. Nothing has to be edited.
 
+## Automation
+
+Three pieces, one per artifact, each triggered by the thing that actually changed.
+
+### The image — GitHub Actions, on a backend release
+
+[`.github/workflows/bundle-image.yml`](../.github/workflows/bundle-image.yml) builds
+`bundle/Dockerfile` and pushes `ghcr.io/catalogueoflife/clb-bundle:<version>` plus `:latest` on every
+`v*` tag, using the built in `GITHUB_TOKEN`. `workflow_dispatch` rebuilds a tag by hand. The image
+carries no release key, so one build serves every COL release and the version tracks the backend.
+
+### The data artifact — a Jenkins job, one argument
+
+[`bundle/Jenkinsfile`](../bundle/Jenkinsfile) takes a single meaningful parameter, `RELEASE_KEY`, and
+drives `deploy/bundle.sh` over ssh. The build itself runs on the apps VM rather than on the agent,
+because that is where the live config, the database, `pg_dump`, the scratch space and the download
+directory already are — nothing multi-GB is ever copied between hosts and no database credentials
+have to live in Jenkins. The host, user, deploy path and ssh credential id are job parameters with no
+defaults in this repo; set them in the job configuration.
+
+`deploy/bundle.sh` runs `bundleBuild` into scratch space, tars and checksums it, and moves the result
+into the download tree with an atomic rename so a half written artifact is never downloadable. Its
+`--verify-only` mode re-checks the published files and is what the pipeline's second stage calls, so
+a silent failure to publish cannot pass as success.
+
+### The trigger — a release publishAction
+
+The backend already has a post-release hook, so auto-triggering needs no code. `ReleaseAction`
+entries in the project's release-config YAML (`Setting.RELEASE_CONFIG` / `XRELEASE_CONFIG`) are fired
+as HTTP calls with the release templated into the URL. There are two lists, and the difference
+matters:
+
+- `actions` — fired from `ProjectRelease.postMetrics()` when the **release job succeeds**, while the
+  release is still private.
+- `publishActions` — fired from `PublishReleaseListener` when a release is **published**.
+
+Use `publishActions`: a bundle should only exist for a release the public can actually get.
+
+The configs live in the public
+[`CatalogueOfLife/data`](https://github.com/CatalogueOfLife/data) repo — `release-config.yaml` for
+the base release and `xrelease/xrelease-config.yaml` for the extended one. Add to both:
+
+```yaml
+publishActions:
+  # build the release-in-a-box bundle
+  - method: POST
+    url: "https://builds.gbif.org/view/COL/job/col-bundle/buildWithParameters?token=<job token>&RELEASE_KEY={key}&cause=bundle+for+{key}"
+```
+
+The URL is templated by `CitationUtils.fromTemplate` over the release `Dataset`, so any bean property
+works — `{key}`, `{alias}`, `{version}`, `{attempt}` — alongside the named `{DATASET_KEY}`,
+`{ATTEMPT}`, `{VERSION}`, `{TITLE}`, `{ALIAS}`, `{date}`. `ReleaseAction` swallows its own failures
+and only logs the status code, so a Jenkins outage can never fail a release — but it also means a
+broken action goes unnoticed until someone reads the log.
+
+Note that a `publishAction` cannot be used to trigger the deploy repo's `publish-col.sh`: that script
+is what *causes* publication (`PUT /dataset/{key}/publish`), so firing it from a post-publish hook
+would be circular. Only the `actions` list runs early enough for that, and using it would turn
+publishing a release from a human decision into an automatic one.
+
 ## Running it
 
 ```bash

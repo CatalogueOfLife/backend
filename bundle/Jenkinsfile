@@ -1,0 +1,83 @@
+// Builds the data artifact of a CLB release-in-a-box bundle and publishes it to the download host.
+//
+// Run it with a single argument, the release key:
+//
+//   builds.gbif.org/.../job/col-bundle/buildWithParameters?token=<job token>&RELEASE_KEY=3287
+//
+// The heavy lifting happens on the apps VM, not on the agent: bundleBuild needs the live config,
+// network access to the production postgres, rights to create a temporary database there, pg_dump
+// and tens of GB of scratch, and it writes straight into the download directory. All of that already
+// exists on the apps VM, so this pipeline only drives deploy/bundle.sh over ssh and reports back.
+//
+// Job configuration (not in this file, so no infrastructure detail lives in the public repo):
+//   DEPLOY_HOST / DEPLOY_USER / DEPLOY_DIR   default values on the job's parameter definitions
+//   SSH_CREDENTIALS_ID                       a Jenkins ssh private key credential for DEPLOY_USER
+//   a build token, so publishActions or publish-col.sh can trigger it
+@Library('gbif-common-jenkins-pipelines') _
+
+pipeline {
+  agent any
+  options {
+    disableConcurrentBuilds()
+    buildDiscarder(logRotator(numToKeepStr: '20'))
+    skipDefaultCheckout(true)
+    timestamps()
+    timeout(time: 12, unit: 'HOURS')
+  }
+  parameters {
+    string(name: 'RELEASE_KEY', defaultValue: '', description: 'Key of the release to bundle. The only argument you need.')
+    string(name: 'IMAGE', defaultValue: 'ghcr.io/catalogueoflife/clb-bundle:latest',
+           description: 'App image the generated docker-compose.yml pulls')
+    booleanParam(name: 'KEEP_WORKDIR', defaultValue: false, description: 'Keep the uncompressed build directory on the VM')
+    separator(name: 'infra_separator', sectionHeader: 'Infrastructure (set the defaults in the job config)')
+    string(name: 'DEPLOY_HOST', defaultValue: '', description: 'Host the bundle is built on')
+    string(name: 'DEPLOY_USER', defaultValue: '', description: 'SSH user on DEPLOY_HOST')
+    string(name: 'DEPLOY_DIR', defaultValue: '', description: 'Path of the deploy repo checkout on DEPLOY_HOST')
+    string(name: 'SSH_CREDENTIALS_ID', defaultValue: '', description: 'Jenkins credentials id of the ssh key')
+  }
+
+  stages {
+    stage('Validate') {
+      steps {
+        script {
+          if (!params.RELEASE_KEY?.isInteger()) {
+            error("RELEASE_KEY must be an integer dataset key, got '${params.RELEASE_KEY}'")
+          }
+          ['DEPLOY_HOST', 'DEPLOY_USER', 'DEPLOY_DIR', 'SSH_CREDENTIALS_ID'].each { p ->
+            if (!params[p]) error("${p} is not set. Configure it as a default on the job's parameters.")
+          }
+          currentBuild.displayName = "#${BUILD_NUMBER} release ${params.RELEASE_KEY}"
+        }
+      }
+    }
+
+    stage('Build bundle') {
+      steps {
+        sshagent(credentials: [params.SSH_CREDENTIALS_ID]) {
+          sh """
+            ssh -o StrictHostKeyChecking=no ${params.DEPLOY_USER}@${params.DEPLOY_HOST} \\
+              'cd ${params.DEPLOY_DIR} && ./bundle.sh --key ${params.RELEASE_KEY} --image ${params.IMAGE} ${params.KEEP_WORKDIR ? '--keep' : ''}'
+          """
+        }
+      }
+    }
+
+    stage('Verify published') {
+      steps {
+        sshagent(credentials: [params.SSH_CREDENTIALS_ID]) {
+          // bundle.sh prints the published paths; re-check them from the VM so a silent failure
+          // to move the files into place cannot pass as success
+          sh """
+            ssh -o StrictHostKeyChecking=no ${params.DEPLOY_USER}@${params.DEPLOY_HOST} \\
+              'cd ${params.DEPLOY_DIR} && ./bundle.sh --key ${params.RELEASE_KEY} --verify-only'
+          """
+        }
+      }
+    }
+  }
+
+  post {
+    success { echo "Bundle for release ${params.RELEASE_KEY} published." }
+    failure { echo "Bundle build for release ${params.RELEASE_KEY} FAILED." }
+  }
+}

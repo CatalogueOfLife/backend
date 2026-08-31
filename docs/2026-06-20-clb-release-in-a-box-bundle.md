@@ -222,7 +222,11 @@ the partitions are hashed, so there is nothing to trim. `BundleBuildCmd` creates
 binary-`COPY`s the release into it, dumps that with `pg_dump -Fc` and drops it. The artifact is then a
 plain dump the stock postgres image restores on first boot with none of our code involved.
 
-### Not done
+### CI landed too, and needed no backend code
 
-CI: nothing builds a bundle per monthly and annual release yet. That is the remaining piece of
-*Sequencing* step 6.
+*Sequencing* step 6 is done. The image is built and pushed to ghcr.io by a GitHub Actions workflow on
+every `v*` tag; the data artifact is built by a Jenkins job that takes only a release key and drives a
+deploy script on the apps VM, because that is where the config, the database, `pg_dump`, the scratch
+space and the download directory already are. The auto-trigger turned out to need no new code at all:
+`ReleaseAction`/`publishActions` in the project release config is an existing post-publish HTTP hook,
+so a bundle build is one YAML entry. See [`BUNDLE.md`](BUNDLE.md).
