@@ -128,6 +128,29 @@ Key options loaded from the project's `XRELEASE_CONFIG` setting URI:
 | `basionymExclusions` | empty | Per-family epithet exclusions for basionym grouping |
 | `issueExclusion` | empty | Issues that trigger usage exclusion during merge |
 
+Note that `blockedNamePatterns` is matched with an unanchored `find()` against `Name.getLabel()`,
+which includes the authorship. A pattern therefore cannot be restricted to the name portion, and one
+broad enough to catch a rank marker will also hit real authors and book citations - `Willd., Sp. Pl.`
+or `Sp. Bate, 1856` for a `sp.` pattern. Prefer a typed check in code over a pattern for anything
+that has to distinguish an author from a marker.
+
+### Always-on filters
+
+Independent of the config, `TreeBaseHandler.ignoreUsage` drops these from every sector - merge,
+attach and union alike - counting them under an `IgnoreReason` in the sector import metrics:
+
+| Filter | IgnoreReason |
+|--------|--------------|
+| Cultivars (cultivar epithet, `CULTIVARS` code, or a cultivar rank) | `INCONSISTENT_NAME` |
+| Parsable but indetermined names, e.g. `Panthera sp.` | `INDETERMINED` |
+| Names whose *authorship* is only an indetermination marker, e.g. `Berkeleyia` + `sp.` | `INDETERMINED` |
+
+The last one exists because sources - Plazi treatment archives above all - supply the marker in their
+own authorship column while the scientific name stays a clean genus. Such a name parses without any
+issue and is not `isIndetermined()`, so it needs its own check (`NameValidator.isIndetAuthorship`),
+which also raises `Issue.AUTHORSHIP_INDET_MARKER` at import time. See
+[backend#1510](https://github.com/CatalogueOfLife/backend/issues/1510).
+
 ## Known Issues / Technical Debt
 
 1. **Dead code**: `synonymizeMisspelledBinomials()` (line ~700) is never called and is nearly identical to `flagDuplicatesAsProvisional()`. Should be removed.

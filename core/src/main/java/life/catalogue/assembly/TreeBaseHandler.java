@@ -569,6 +569,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (n.getType().isParsable() && n.isIndetermined()) {
       return incIgnored(IgnoreReason.INDETERMINED, u);
     }
+    // sources sometimes supply the indetermination marker in their authorship column while the name itself
+    // stays a clean genus, e.g. scientificName=Berkeleyia + authorship=sp. Such a name parses without any
+    // issue and is not isIndetermined(), so it needs its own check. See https://github.com/CatalogueOfLife/backend/issues/1510
+    // Test the name directly instead of the issue container: TreeCopyHandler passes IssueContainer.VOID,
+    // so an issue based check would silently do nothing for attach & union sectors.
+    if (NameValidator.isIndetAuthorship(n.getAuthorship())) {
+      return incIgnored(IgnoreReason.INDETERMINED, u);
+    }
 
     return false;
   }

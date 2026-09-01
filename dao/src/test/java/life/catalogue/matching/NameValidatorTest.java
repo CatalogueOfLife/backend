@@ -30,6 +30,60 @@ public class NameValidatorTest {
     }
   }
 
+  /**
+   * Authorship values that are really indetermination markers, not authors.
+   * All of these were taken from the merge sectors of the COL26.8 XR draft (dataset 316165).
+   * See https://github.com/CatalogueOfLife/backend/issues/1510
+   */
+  @Test
+  public void isIndetAuthorship() {
+    for (String a : new String[]{
+      "sp.", "sp", "Sp.", "SP.", "spp.", "cf.", "aff.", "indet.",
+      "sp. 1", "sp. 2", "sp. 3", "sp. 1.", "sp. nov.", "sp.nov.", "sp. nov. 1", "n. sp.", "gen. nov.",
+      "? sp.", "? sp. 1", "(?) (?) sp.", "?", "(?)", "  sp.  ",
+      "sp. A", "sp. A-D", "sp. AS 30", "sp. CCZ _ 165", "sp. (NHM _ 381",
+      "sp. A Soto-Adames, 2010", "sp. 1 Franz et al., 2018", "sp. 2 (undescribed",
+      "aff. Vitrinella sp. 1 (sensu Blatterer, 2019"
+    }) {
+      assertTrue("expected indet authorship: " + a, NameValidator.isIndetAuthorship(a));
+    }
+  }
+
+  /**
+   * Real authors that must never be mistaken for an indetermination marker.
+   * "Sp. Bate" is the carcinologist Charles Spence Bate and "Sp. Pl." / "Sp. Fil." / "Sp. Lup."
+   * are book citations - a naive substring or case insensitive prefix match kills all of them.
+   * A "sp. nov." tail behind a real author is a nomenclatural note on a validly described new species.
+   */
+  @Test
+  public void isIndetAuthorshipKeepsRealAuthors() {
+    for (String a : new String[]{
+      null, "", "   ",
+      "Spach", "(L.) Spach", "Haw. ex Spach", "Jaub. & Spach", "Span.", "Zipp. ex Span.",
+      "Spaeth", "Spaeth, 1913", "(Spaeth)", "Spaeth in Hincks, 1952", "Sp\u00e5ngberg, 1878",
+      "Sp. Bate, 1856", "(Sp. Bate, 1856)", "Sp. Bate, 1862", "Sp. Schn., 1906", "Sp. Schneider",
+      "Willd., Sp. Pl.", "Hook., Sp. Fil.", "C. P. Sm., Sp. Lup.", "L. Sp. Pl.",
+      "Nov\u00e1k, 1950", "Nov, 1997", "F. Muell.", "Mill.", "L.",
+      "L. Li & S. H. Li, sp. nov.", "Bing Liu & Rioual, sp. nov.", "Liu & Xu\uff0csp. nov."
+    }) {
+      assertFalse("must not be flagged as indet authorship: " + a, NameValidator.isIndetAuthorship(a));
+    }
+  }
+
+  @Test
+  public void flagIndetAuthorship() {
+    Name n = new Name();
+    n.setType(NameType.SCIENTIFIC);
+    n.setRank(Rank.GENUS);
+    n.setUninomial("Berkeleyia");
+    n.setScientificName("Berkeleyia");
+    n.setAuthorship("sp.");
+    verify(n, Issue.AUTHORSHIP_INDET_MARKER);
+
+    n.setAuthorship("Spach");
+    verify(n);
+  }
+
   @Test
   public void removeHybrid() {
     assertEquals("Abies", NameValidator.removeHybrid("Abies"));

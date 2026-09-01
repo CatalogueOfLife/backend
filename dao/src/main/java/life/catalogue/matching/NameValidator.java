@@ -43,6 +43,19 @@ public class NameValidator {
   static final Pattern NON_LETTER = Pattern.compile("[^a-z-ë]", Pattern.CASE_INSENSITIVE);
   static final Pattern ASCII_LETTER = Pattern.compile("[A-Za-z]");
   static final Pattern BOOLEAN = Pattern.compile("^(true|false|t|f)$", Pattern.CASE_INSENSITIVE);
+  // rank & indetermination markers that sources sometimes put in their authorship column instead of an author
+  private static final String INDET_MARKER = "(?:sp|spp|ssp|subsp|var|forma|cf|aff|indet|gen|nov|n)";
+  // the entire authorship is nothing but markers, brackets, question marks and numbers, e.g. "sp.", "sp. 1", "? sp.".
+  // case insensitive is safe here: a lone "Sp." has no author token behind it, so it cannot be an abbreviated surname
+  @VisibleForTesting
+  static final Pattern INDET_AUTHORSHIP_ONLY = Pattern.compile(
+    "^[\\s()\\[\\]?\uff1f.,]*(?:" + INDET_MARKER + "\\.?[\\s()\\[\\]?\uff1f.,]*){1,4}$", Pattern.CASE_INSENSITIVE);
+  // the authorship starts with a marker and trails junk, e.g. "sp. CCZ _ 165", "sp. A Soto-Adames, 2010".
+  // deliberately CASE SENSITIVE: title case "Sp. Bate, 1856" is the carcinologist Charles Spence Bate,
+  // and "Willd., Sp. Pl." / "Hook., Sp. Fil." are book citations - none of them may match
+  @VisibleForTesting
+  static final Pattern INDET_AUTHORSHIP_PREFIX = Pattern.compile(
+    "^[\\s(\\[?\uff1f]*(?:" + INDET_MARKER + "|SP|SPP|CF|AFF)\\.\\s");
   static final CharMatcher OPEN_BRACKETS = CharMatcher.anyOf("[({");
   static final CharMatcher CLOSE_BRACKETS = CharMatcher.anyOf("])}");
 
@@ -132,6 +145,9 @@ public class NameValidator {
     if (NomCodeParser.isCodeCompliant(type) && StringUtils.isBlank(n.getAuthorship())) {
       v.add(Issue.MISSING_AUTHORSHIP);
     }
+    if (isIndetAuthorship(n.getAuthorship())) {
+      v.add(Issue.AUTHORSHIP_INDET_MARKER);
+    }
     return v.hasChanged() ? v.container : null;
   }
   
@@ -146,6 +162,23 @@ public class NameValidator {
   public static boolean isBoolean(String x) {
     return !Strings.isNullOrEmpty(x) && BOOLEAN.matcher(x).find();
   }
+
+  /**
+   * Tests whether an authorship string is not an author at all, but an indetermination or rank marker.
+   * Sources - Plazi treatment archives above all - regularly supply "sp." in their authorship column
+   * while the scientific name holds just the clean genus, e.g. scientificName=Berkeleyia, authorship=sp.
+   * Such a record is an indetermined species, not a genus authored by "sp.", and must not be merged.
+   *
+   * @param authorship the authorship string to test, may be null
+   */
+  public static boolean isIndetAuthorship(String authorship) {
+    if (Strings.isNullOrEmpty(authorship)) return false;
+    var a = authorship.trim();
+    if (a.isEmpty()) return false;
+    // a bare "?" or "(?)" carries no author either
+    return hasNoLetter(a) || INDET_AUTHORSHIP_ONLY.matcher(a).matches() || INDET_AUTHORSHIP_PREFIX.matcher(a).find();
+  }
+
   public static Integer parseYear(FormattableName n) throws NumberFormatException {
     if (n.getCombinationAuthorship() != null && n.getCombinationAuthorship().getYear() != null) {
       return Integer.parseInt(n.getCombinationAuthorship().getYear().trim());

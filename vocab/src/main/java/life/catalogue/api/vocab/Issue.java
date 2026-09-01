@@ -525,7 +525,11 @@ public enum Issue {
 
   RELATION_SYNONYM(NAME_USAGE, Level.WARNING,
       "A taxon concept relation or species interaction referenced a synonym instead of an accepted taxon. "
-      + "The reference has been relinked to the synonyms accepted taxon, or the relation dropped if no accepted taxon could be found.")
+      + "The reference has been relinked to the synonyms accepted taxon, or the relation dropped if no accepted taxon could be found."),
+
+  AUTHORSHIP_INDET_MARKER(NAME, Level.ERROR,
+      "The authorship is an indetermination or rank marker such as \"sp.\", not a real author. "
+      + "Usually a source that supplies the marker in its own authorship column, e.g. scientificName=Berkeleyia with authorship=sp.")
   ;
 
   /**

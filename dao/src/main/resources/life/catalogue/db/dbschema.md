@@ -11,6 +11,15 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-01 flag authorship that is only an indetermination marker
+New `Issue.AUTHORSHIP_INDET_MARKER` for names whose authorship column holds `sp.`, `SP.`, `sp. A`,
+`? sp.` or similar instead of a real author - see backend#1510. Must be appended last to keep the
+existing ES issue ordinals stable.
+
+```sql
+ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_INDET_MARKER';
+```
+
 #### 2026-08-26 backfill the import metrics lost by v1.5.0
 `ImportJob` computed its metrics but never wrote them: `updateMetrics` only fills the object, and the
 trailing `updateState(FINISHED)` that used to persist it was dropped as redundant in da0db59f9. Every
