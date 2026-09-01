@@ -158,8 +158,20 @@ status - the old `ImportState` enum column is gone from the db (`IMPORTSTATE` dr
 The executor has three lanes (`JobLane`: DEFAULT, IMPORT, SYNC - a vocab enum, so it is served at
 `/vocab/joblane` and persisted as the `job.lane` column), each with its own worker pool and priority
 queue so a long import cannot starve an export; `getSerialBy()` serializes jobs sharing a key within a lane
-(sector syncs of one project). `ImportManager`/`SyncManager` no longer own thread pools - they only validate,
-submit and cancel, and reschedule jobs left stale by a shutdown via `JobExecutor.getStaleJobs()`.
+(sector syncs of one project). `ImportManager`/`SyncManager` own neither thread pools nor a lifecycle - they
+only validate, submit and cancel; imports left stale by a shutdown are resubmitted by a handler the executor
+invokes from `start()` (`JobExecutor.onStaleJobs`). Every path that hands a task to a worker goes through the
+single `dispatch()`.
+The executor has two ways down, and they are not the same. `stop()` (the `Managed` verb, what `stop-all` and
+a blue-green deploy use) rejects submissions, interrupts what runs and discards the queue, recording the
+discarded jobs as CANCELED. `pause()`/`resume()` is the maintenance verb: workers wait in `beforeExecute`, so
+running jobs finish, nothing new starts, the queue survives and submissions are still accepted.
+`POST /admin/jobs/pause?await=<seconds>` blocks until nothing runs and answers 409 if a job outlives the
+deadline - that is how a names index swap quiesces the server. `isQuiesced()` (no job executing) is therefore
+a different question from `isIdle()` (nothing executing *and* nothing queued), and it reads the job statuses
+rather than the pools' active count, because a worker parked on the pause gate counts as active while its job
+has not begun. For the same reason all queue accounting reads `futures` by job status: a task already taken
+from its `PriorityBlockingQueue` is in no queue yet has not started.
 `dataset_import` and `sector_import` are now pure metrics tables joined to `job` by `job_key`, and
 `dataset_export` keeps only the request columns.
 `JobResource` serves the live queue from memory and the history from the db, both only ever as the generic
@@ -197,6 +209,23 @@ text `step`, is what `JobSearchRequest.unchanged` filters on: the step has rende
 history by lane, multiple case insensitive job names, status, priority, dataset, sector, user, a
 `createdAfter`/`createdBefore` range, `unchanged` and `format`, the last of which semi joins
 `dataset_import` and `dataset_export` and therefore also narrows to those two kinds of job.
+
+**Startable components:**
+`Component`/`ManagedService` back `/admin/component/{start,stop,restart}[-all]`, which dropwizard never starts
+by itself - during a deploy two apps run at once and cannot both own the same files, so starting is driven
+over the API. A component earns its place by being exactly one of three things: an **exclusive resource**
+(`NamesIndex` alone - its chronicle map is opened read-write and has to be handed between JVMs), the **work
+engine** (`JobExecutor`), or an **autonomous writer** that acts with no HTTP request behind it and so must be
+silenced on the old app (`CronExecutor`, `DoiUpdater`, `ImportScheduler`, `SyncScheduler`, `GBIFRegistrySync`,
+`Feedback`). `stop-all` is therefore the read/write switch: with them stopped the app does nothing of its own
+accord. It does not stop HTTP-triggered writes - the CRUD API writes on the request thread and never goes near
+a job - and `/admin/maintenance` only writes a JSON status file for a UI banner, blocking nothing.
+A submit gate in front of the executor is explicitly *not* a component: `DatasetImporter` and
+`SectorSynchronizer` were exactly that and stopped no work, `UsageMatcher` was not even asked whether it had
+started. All three are gone, kept as deprecated no-op enum values until the deploy scripts stop naming them.
+The usage matchers are kept in step by the `MatcherReconcile` cron job instead, which is what notices that a
+names index swap left every matcher store stale.
+See [`docs/2026-09-01-job-component-consolidation.md`](docs/2026-09-01-job-component-consolidation.md).
 
 **Sector Synchronization (Assembly):**
 `SectorSync` in core module merges portions of source datasets into managed projects. A "sector" defines which subtree from a source dataset contributes to a project. The sync process:
