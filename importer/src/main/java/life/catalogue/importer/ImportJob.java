@@ -295,6 +295,17 @@ public class ImportJob extends DatasetJob {
     return di == null ? null : di.getAttempt();
   }
 
+  /**
+   * An unchanged import deletes its own dataset_import row again, so its attempt addresses nothing
+   * anymore and must not be recorded on the job - the absence of that row is exactly what identifies
+   * an unchanged import. getAttempt() above keeps the raw value, it still names the log MDC and the
+   * archive of the attempt we just threw away.
+   */
+  @Override
+  public Integer attempt() {
+    return di == null || unchanged ? null : di.getAttempt();
+  }
+
   public DatasetImport getDatasetImport() {
     return di;
   }
@@ -481,6 +492,7 @@ public class ImportJob extends DatasetJob {
 
   private void importDataset() throws Exception {
     di = dao.createWaiting(datasetKey, this, req.createdBy);
+    persist(); // the attempt only exists now - make it findable from the job straight away
     LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
     LOG.info("Start new {}import attempt {} for {} dataset {}: {}", req.force ? "forced " : "" ,di.getAttempt(), dws.getOrigin(), datasetKey, dws.getTitle());
 

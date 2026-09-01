@@ -39,6 +39,11 @@ public class JobDaoTest {
       return 3;
     }
 
+    @Override
+    public Integer attempt() {
+      return 7;
+    }
+
     record Params(int datasetKey, boolean force) {
     }
   }
@@ -54,6 +59,7 @@ public class JobDaoTest {
     assertEquals(JobPriority.HIGH, info.getPriority());
     assertEquals((Integer) 3, info.getDatasetKey());
     assertNull(info.getSectorKey());
+    assertEquals((Integer) 7, info.getAttempt());
     assertEquals((Integer) 13, info.getCreatedBy());
     assertEquals(job.getCreated(), info.getCreated());
     assertNull(info.getError());

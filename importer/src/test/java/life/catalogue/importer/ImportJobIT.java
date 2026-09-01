@@ -199,6 +199,24 @@ public class ImportJobIT {
     assertTrue("no classification depth", imp.getMaxClassificationDepth() > 0);
   }
 
+  /**
+   * The job carries the attempt it produced, so the jobs API can point a running or failed import at
+   * its metrics without joining anything - the live queue is rendered from memory. An unchanged import
+   * deletes the dataset_import row it just created, so it must report no attempt at all.
+   */
+  @Test
+  public void jobRecordsItsAttempt() {
+    setupAndRun(DataFormat.DWCA, nginxRule.getArchive(DataFormat.DWCA));
+    assertEquals((Integer) 1, job.attempt());
+
+    run(false); // unchanged source, the attempt it created was deleted again
+    assertNull(job.attempt());
+    assertEquals("unchanged", job.getStep());
+
+    run(true); // forced, so a real attempt #2
+    assertEquals((Integer) 2, job.attempt());
+  }
+
   @Test
   public void plaziUnchanged() {
     URI uri = nginxRule.getArchive(DataFormat.DWCA);

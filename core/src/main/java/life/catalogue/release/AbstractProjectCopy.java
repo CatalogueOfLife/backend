@@ -101,23 +101,30 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   /**
    * The job record only carries the project as its dataset key, so without these the release or
    * duplicate a job produced cannot be identified from the job history at all.
-   * newDatasetKey and attempt are only known once initJob has run, which is why the job table
-   * updates params rather than only inserting them.
+   * newDatasetKey is only known once initJob has run, which is why the job table updates params
+   * rather than only inserting them. The attempt is not in here - it is a column of the job.
    *
    * @param projectKey the project that is being copied
    * @param baseReleaseKey the release an extended release builds on, null for a plain release or duplication
    * @param newDatasetKey the dataset being created, null until the job has started
-   * @param attempt the release attempt, null until the job has started
    */
-  public record CopyParams(int projectKey, Integer baseReleaseKey, Integer newDatasetKey, Integer attempt) {
+  public record CopyParams(int projectKey, Integer baseReleaseKey, Integer newDatasetKey) {
   }
 
   @Override
   public Object getParams() {
     return new CopyParams(projectKey,
       base == null ? null : base.getKey(),
-      newDatasetKey == 0 ? null : newDatasetKey,
-      attempt == 0 ? null : attempt);
+      newDatasetKey == 0 ? null : newDatasetKey);
+  }
+
+  /**
+   * A release writes its import metrics against the project, which is also the job's dataset key,
+   * so the attempt addresses a dataset_import row of exactly that dataset. Only known once initJob ran.
+   */
+  @Override
+  public Integer attempt() {
+    return attempt == 0 ? null : attempt;
   }
 
   public DatasetImport getMetrics() {

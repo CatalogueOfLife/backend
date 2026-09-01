@@ -95,6 +95,7 @@ public class JobDao {
     info.setPriority(job.getPriority());
     info.setDatasetKey(job.datasetKey());
     info.setSectorKey(job.sectorKey());
+    info.setAttempt(job.attempt());
     info.setCreatedBy(job.getUserKey());
     info.setCreated(job.getCreated());
     info.setStarted(job.getStarted());

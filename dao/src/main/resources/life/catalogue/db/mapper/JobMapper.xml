@@ -13,6 +13,7 @@
     j.priority,
     j.dataset_key,
     j.sector_key,
+    j.attempt,
     j.created_by,
     j.created,
     j.started,
@@ -33,6 +34,7 @@
     priority,
     dataset_key,
     sector_key,
+    attempt,
     created_by,
     created,
     started,
@@ -53,6 +55,7 @@
     #{priority}::JOBPRIORITY,
     #{datasetKey},
     #{sectorKey},
+    #{attempt},
     #{createdBy},
     #{created},
     #{started},
@@ -143,15 +146,16 @@
   </insert>
 
   <!--
-    params is updatable, not just inserted: a release only learns its new dataset key and attempt once it
-    has started, so its params are completed while it runs. The other jobs keep their submitted request
-    unchanged, rewriting a small jsonb on each step change.
+    attempt and params are updatable, not just inserted. A sector sync knows its attempt from its constructor,
+    but an import or a release only creates its metrics record - and a release its new dataset - once it has
+    started, so both are completed while the job runs. The other jobs keep their submitted request unchanged,
+    rewriting a small jsonb on each step change.
     job_class, lane, priority, dataset_key, sector_key, created_by and created never change after insert.
   -->
   <update id="update" parameterType="JobInfo">
     UPDATE job
-    SET (status, step, started, finished, error, params, result_md5, result_size, result_deleted)
-      = (#{status}::JOBSTATUS, #{step}, #{started}, #{finished}, #{error},
+    SET (status, step, attempt, started, finished, error, params, result_md5, result_size, result_deleted)
+      = (#{status}::JOBSTATUS, #{step}, #{attempt}, #{started}, #{finished}, #{error},
          #{params, typeHandler=life.catalogue.db.type2.JsonNodeHandler}::jsonb,
          #{resultMd5}, #{resultSize}, #{resultDeleted})
     WHERE key = #{key}

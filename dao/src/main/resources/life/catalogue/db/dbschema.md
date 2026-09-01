@@ -11,6 +11,21 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-01 record the attempt a job produced
+`ImportJob`, `SectorRunnable` and `AbstractProjectCopy` all create an import or sync metrics record
+with a fresh attempt, but the generic job row never carried it - the only attempt reachable through
+`/job` was the one a release happened to put into its `params` jsonb. It is now a column of its own,
+so the live queue (served from executor memory, never from the db) shows it too.
+See https://github.com/CatalogueOfLife/checklistbank/issues/1723
+
+```sql
+ALTER TABLE job ADD COLUMN attempt INTEGER;
+-- backfill from the metrics tables, the source of truth for every historical job.
+-- both job_key columns are indexed, so these are two index driven passes.
+UPDATE job j SET attempt = di.attempt FROM dataset_import di WHERE di.job_key = j.key;
+UPDATE job j SET attempt = si.attempt FROM sector_import si WHERE si.job_key = j.key;
+```
+
 #### 2026-09-01 flag authorship that is only an indetermination marker
 ```sql
 ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_INDET_MARKER';

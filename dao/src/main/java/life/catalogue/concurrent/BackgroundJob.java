@@ -155,6 +155,17 @@ public abstract class BackgroundJob implements Runnable {
     return null;
   }
 
+  /**
+   * @return the import or sync attempt this job produces, recorded in the job table.
+   * It is always scoped by the datasetKey and sectorKey above, so the three together address exactly one
+   * dataset_import or sector_import record. Null for a job that leaves no metrics behind, and for one that
+   * has not created its metrics record yet - an import or release only learns its attempt once it runs.
+   */
+  @JsonIgnore
+  public Integer attempt() {
+    return null;
+  }
+
   void setTimer(Timer timer) {
     this.timer = timer;
   }

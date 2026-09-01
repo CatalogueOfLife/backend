@@ -26,6 +26,7 @@ public class JobInfo implements Entity<UUID> {
   private JobPriority priority;
   private Integer datasetKey;
   private Integer sectorKey;
+  private Integer attempt;
   private Integer createdBy;
   private LocalDateTime created;
   private LocalDateTime started;
@@ -100,6 +101,18 @@ public class JobInfo implements Entity<UUID> {
 
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
+  }
+
+  /**
+   * The import or sync attempt this job produced, scoped by the job's own dataset and sector.
+   * Null for jobs that leave no metrics record behind.
+   */
+  public Integer getAttempt() {
+    return attempt;
+  }
+
+  public void setAttempt(Integer attempt) {
+    this.attempt = attempt;
   }
 
   public Integer getCreatedBy() {
@@ -187,6 +200,7 @@ public class JobInfo implements Entity<UUID> {
            && priority == jobInfo.priority
            && Objects.equals(datasetKey, jobInfo.datasetKey)
            && Objects.equals(sectorKey, jobInfo.sectorKey)
+           && Objects.equals(attempt, jobInfo.attempt)
            && Objects.equals(createdBy, jobInfo.createdBy)
            && Objects.equals(created, jobInfo.created)
            && Objects.equals(started, jobInfo.started)
@@ -200,7 +214,7 @@ public class JobInfo implements Entity<UUID> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, job, lane, status, step, priority, datasetKey, sectorKey, createdBy,
+    return Objects.hash(key, job, lane, status, step, priority, datasetKey, sectorKey, attempt, createdBy,
       created, started, finished, error, params, resultMd5, resultSize, resultDeleted);
   }
 

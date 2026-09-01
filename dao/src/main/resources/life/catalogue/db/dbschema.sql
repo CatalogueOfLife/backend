@@ -1127,6 +1127,7 @@ CREATE TABLE job (
   priority JOBPRIORITY NOT NULL,
   dataset_key INTEGER,                 -- no FK, job history survives dataset deletion
   sector_key INTEGER,
+  attempt INTEGER,                     -- the dataset_import/sector_import attempt this job produced, scoped by dataset_key/sector_key
   created_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
   started TIMESTAMP WITHOUT TIME ZONE,

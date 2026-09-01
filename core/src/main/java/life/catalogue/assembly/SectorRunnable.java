@@ -133,6 +133,15 @@ abstract class SectorRunnable extends BackgroundJob {
     return sectorKey.getId();
   }
 
+  /**
+   * Unlike an import or a release a sync creates its metrics record in the constructor,
+   * so the attempt is already known when the job row is first inserted.
+   */
+  @Override
+  public Integer attempt() {
+    return state == null || state.getAttempt() <= 0 ? null : state.getAttempt();
+  }
+
   @Override
   public Object getParams() {
     return new SyncParams(sectorKey.getDatasetKey(), sectorKey.getId(), subjectDatasetKey);

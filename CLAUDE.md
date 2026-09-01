@@ -169,8 +169,14 @@ business in a 5 second poll. `JobQueueState` derives `queuedCounts`/`queuedTotal
 lists, so they stay consistent when the queue is narrowed by `?datasetKey=`.
 Every endpoint that submits a job answers with `JobInfo` as well, so a job never has two shapes.
 `getParams()` feeds the `params` jsonb and is the only place a job can identify itself beyond its class and
-dataset key - a release records the dataset key and attempt it produces there, which it only learns once it
-runs, so `params` is updated and not merely inserted.
+dataset key - a release records the new dataset key it produces there, which it only learns once it runs, so
+`params` is updated and not merely inserted.
+`attempt()` is the third identity hook next to `datasetKey()`/`sectorKey()` and its own `job.attempt` column:
+the `dataset_import` or `sector_import` attempt a job produced, always scoped by the job's own dataset and
+sector. A sync knows it from its constructor, an import and a release only once they run, so it is updatable
+like `params`. It is a column and not a params field because `JobDao.buildInfo` also renders the *live* queue
+straight from memory, where no join to the metrics tables is possible. An unchanged import reports none - it
+deleted the very row its attempt addressed.
 A job's `step` is cleared once it succeeds - it describes a running job - so a terminal message has to be
 set from `onFinish` (or `onFinishLocked`, which `DatasetBlockingJob` makes the overridable half of its final
 `onFinish`). Failed and cancelled jobs keep the step they stopped at.
