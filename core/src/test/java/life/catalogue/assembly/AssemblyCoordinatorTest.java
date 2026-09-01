@@ -58,6 +58,7 @@ public class AssemblyCoordinatorTest {
     UserCrudDao udao = mock(UserCrudDao.class);
     doReturn(TestEntityGenerator.USER_EDITOR).when(udao).get(any());
     executor = new JobExecutor(JobConfig.withThreads(2), new MetricRegistry(), null, udao, null);
+    executor.start();
     coord = new SyncManager(new SyncManagerConfig(), SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), executor, null, new MetricRegistry());
     coord.start();
   }

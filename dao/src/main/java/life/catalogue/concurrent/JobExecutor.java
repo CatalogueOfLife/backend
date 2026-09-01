@@ -1,6 +1,7 @@
 package life.catalogue.concurrent;
 
 import life.catalogue.api.exception.TooManyRequestsException;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobLane;
@@ -79,10 +80,52 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   @Override
   public void stop() throws Exception {
     if (execs != null) {
+      // take the queued jobs out before the pools go down so we can give them a final state.
+      // shutdownNow() would drain them into a list that is thrown away, leaving their rows running forever.
+      // Emptying the gate first also means a job finishing during the shutdown promotes nothing.
+      var discarded = drainQueued();
       for (var exec : execs.values()) {
-        ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+        ExecutorUtils.shutdownNow(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
       }
       execs = null;
+      // a queued job never reached run(), so nothing else will ever record an end for it
+      for (var ftask : discarded) {
+        cancelBeforeStart(ftask);
+      }
+      // running jobs ended themselves via afterExecute; anything left is from a job that never started
+      futures.clear();
+      LOG.info("Job executor stopped, discarding {} queued jobs", discarded.size());
+    }
+  }
+
+  /**
+   * Empties every lane queue and the serial gate.
+   * @return the tasks that were waiting and will now never run
+   */
+  private List<ComparableFutureTask> drainQueued() {
+    List<ComparableFutureTask> drained = new ArrayList<>();
+    for (var q : queues.values()) {
+      List<Runnable> tasks = new ArrayList<>();
+      q.drainTo(tasks);
+      tasks.forEach(t -> drained.add((ComparableFutureTask) t));
+    }
+    // a gate active task sits in a lane queue and is drained above; only the parked ones live in the gate alone
+    drained.addAll(gate.clear());
+    return drained;
+  }
+
+  /**
+   * Gives a job that never made it out of the queue its final state, as run() never got to do it.
+   */
+  private void cancelBeforeStart(ComparableFutureTask ftask) {
+    BackgroundJob job = ftask.task;
+    try {
+      ftask.cancel(false);
+      job.setStatus(JobStatus.CANCELED);
+      job.onCancelBeforeStart();
+      job.persist();
+    } catch (RuntimeException e) {
+      LOG.error("Failed to cancel queued job {}", job.getKey(), e);
     }
   }
 
@@ -193,6 +236,16 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     synchronized boolean isEmpty() {
       return groups.isEmpty();
     }
+
+    /**
+     * Drops every group and returns the parked tasks. Active tasks are not returned - they are either
+     * running or still sitting in a lane queue, where the caller drains them from.
+     */
+    synchronized List<ComparableFutureTask> clear() {
+      var parked = parked();
+      groups.clear();
+      return parked;
+    }
   }
 
   public JobExecutor(JobConfig cfg, MetricRegistry registry, @Nullable EmailNotification emailer, UserCrudDao udao, @Nullable JobDao jobDao) throws Exception {
@@ -217,8 +270,6 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       registry.register(MetricRegistry.name(JobExecutor.class, METRIC_GROUP_NAME, "queue", lane.name().toLowerCase()), (Gauge<Integer>) q::size);
     }
     timer = registry.register(MetricRegistry.name(JobExecutor.class, METRIC_GROUP_NAME, "duration"), new Timer());
-    // start up
-    start();
   }
 
   class ColExecutor extends ThreadPoolExecutor {
@@ -282,9 +333,27 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       var next = gate.release(serial, ftask);
       if (next != null) {
         LOG.info("Unpark job {} serialized by {}", next.task.getKey(), serial);
-        execs.get(next.task.getLane()).execute(next);
+        try {
+          dispatch(next);
+        } catch (RuntimeException e) {
+          // the executor was stopped between the release and the dispatch, so this job never runs
+          LOG.warn("Failed to unpark job {}, cancelling it", next.task.getKey(), e);
+          cancelBeforeStart(next);
+        }
       }
     }
+  }
+
+  /**
+   * The single place a task is handed to a worker pool. Every path that starts a job goes through here -
+   * the submit tail and the serial gate promotion - so a gate on running work only has to be applied once.
+   */
+  private void dispatch(ComparableFutureTask ftask) {
+    var pools = execs;
+    if (pools == null) {
+      throw new UnavailableException("The job executor is not running");
+    }
+    pools.get(ftask.task.getLane()).execute(ftask);
   }
 
   public int queueSize() {
@@ -433,7 +502,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       if (serial != null && !gate.tryAcquire(serial, ftask)) {
         LOG.info("Park {} job {} behind the running job serialized by {}", job.getJobName(), job.getKey(), serial);
       } else {
-        execs.get(lane).execute(ftask);
+        dispatch(ftask);
       }
     } catch (RuntimeException e) {
       futures.remove(job.getKey());

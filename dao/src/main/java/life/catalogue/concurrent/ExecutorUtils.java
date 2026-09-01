@@ -87,4 +87,29 @@ public class ExecutorUtils {
     int count = exec.shutdownNow().size();
     LOG.warn("forced shutdown, discarding {} queued tasks", count);
   }
+
+  /**
+   * Stops the executor from starting any further queued task, interrupts the running ones and then waits
+   * for them to end. Unlike {@link #shutdown(ExecutorService, int, TimeUnit)} the timeout is time granted to
+   * the <em>running</em> tasks to notice their interrupt, not a window in which the pool keeps starting
+   * queued ones - the orderly shutdown() drains its work queue and so ends up launching more work, not less.
+   *
+   * @return true if all running tasks ended within the timeout
+   */
+  public static boolean shutdownNow(ExecutorService exec, int timeout, TimeUnit unit) {
+    int discarded = exec.shutdownNow().size();
+    if (discarded > 0) {
+      LOG.warn("Discarded {} queued tasks on shutdown", discarded);
+    }
+    try {
+      if (exec.awaitTermination(timeout, unit)) {
+        return true;
+      }
+      LOG.warn("Executor still had running tasks after {} {}", timeout, unit);
+    } catch (InterruptedException e) {
+      LOG.info("Interrupted while waiting for the executor to shut down");
+      Thread.currentThread().interrupt();
+    }
+    return false;
+  }
 }

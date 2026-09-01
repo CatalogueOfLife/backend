@@ -110,6 +110,7 @@ public class ImportManagerTest {
     jobCfg.importThreads = IMPORT_THREADS;
     jobCfg.importQueue = IMPORT_QUEUE;
     jobExecutor = new JobExecutor(jobCfg, metrics, null, udao, null);
+    jobExecutor.start();
     manager = new ImportManager(cfg.importer, cfg.normalizer, cfg.doi, metrics, hc, broker, SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
       diDao, datasetDao, sDao, dDao, indexService, imgService, jobExecutor, validator, null, null, null);
     manager.start();

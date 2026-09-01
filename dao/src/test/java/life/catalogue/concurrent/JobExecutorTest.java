@@ -1,5 +1,6 @@
 package life.catalogue.concurrent;
 
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
@@ -62,6 +63,7 @@ public class JobExecutorTest {
     doReturn(user).when(dao).get(any());
 
     exec = new JobExecutor(JobConfig.withThreads(2), new MetricRegistry(), null, dao, null);
+    exec.start();
     finished = new ConcurrentLinkedQueue<>();
     status = new ConcurrentHashMap<>();
   }
@@ -277,7 +279,9 @@ public class JobExecutorTest {
       persisted.computeIfAbsent(job.getKey(), k -> new CopyOnWriteArrayList<>()).add(job.getStatus());
       return null;
     }).when(jdao).update(any(BackgroundJob.class));
-    return new JobExecutor(JobConfig.withThreads(threads), new MetricRegistry(), null, udao, jdao);
+    var ex = new JobExecutor(JobConfig.withThreads(threads), new MetricRegistry(), null, udao, jdao);
+    ex.start();
+    return ex;
   }
 
   private void awaitIdle(JobExecutor ex) throws InterruptedException {
@@ -383,6 +387,7 @@ public class JobExecutorTest {
     UserCrudDao dao = mock(UserCrudDao.class);
     doReturn(user).when(dao).get(any());
     var ex = new JobExecutor(JobConfig.withThreads(4), new MetricRegistry(), null, dao, null);
+    ex.start();
 
     List<String> done = new CopyOnWriteArrayList<>();
     for (int num = 1; num <= 4; num++) {
@@ -410,6 +415,7 @@ public class JobExecutorTest {
     UserCrudDao dao = mock(UserCrudDao.class);
     doReturn(user).when(dao).get(any());
     var ex = new JobExecutor(JobConfig.withThreads(2), new MetricRegistry(), null, dao, null);
+    ex.start();
 
     List<String> done = new CopyOnWriteArrayList<>();
     var j1 = new SerialJob("a", 1, 200, done);
@@ -447,5 +453,127 @@ public class JobExecutorTest {
     }
     exec.stop();
     assertEquals(6, finished.size());
+  }
+
+  /**
+   * Records that it ran, so a test can tell a discarded job from an executed one.
+   * Duplicates are keyed by num rather than the job key, so a resubmit of "the same" job is detectable.
+   */
+  static class MarkJob extends BackgroundJob {
+    static final List<Integer> RAN = new CopyOnWriteArrayList<>();
+    final int num;
+    final int ms;
+
+    MarkJob(int num, int ms) {
+      super(1);
+      this.num = num;
+      this.ms = ms;
+    }
+
+    @Override
+    public void execute() throws Exception {
+      RAN.add(num);
+      if (ms > 0) {
+        TimeUnit.MILLISECONDS.sleep(ms);
+      }
+    }
+
+    @Override
+    public boolean isDuplicate(BackgroundJob other) {
+      return other instanceof MarkJob && ((MarkJob) other).num == num;
+    }
+  }
+
+  private JobExecutor singleThreaded() throws Exception {
+    UserCrudDao dao = mock(UserCrudDao.class);
+    doReturn(user).when(dao).get(any());
+    return new JobExecutor(JobConfig.withThreads(1), new MetricRegistry(), null, dao, null);
+  }
+
+  /** Submits a long job and waits until the single worker really picked it up, so the next submit queues. */
+  private MarkJob occupyTheWorker(JobExecutor ex, int ms) throws Exception {
+    var running = new MarkJob(1, ms);
+    ex.submit(running);
+    while (!MarkJob.RAN.contains(1)) {
+      TimeUnit.MILLISECONDS.sleep(5);
+    }
+    return running;
+  }
+
+  @Test
+  public void submitBeforeStartIs503() throws Exception {
+    MarkJob.RAN.clear();
+    var ex = singleThreaded();
+    // the constructor no longer starts the pools: cancelStale() must not fire while another app still runs jobs
+    assertFalse(ex.hasStarted());
+    assertThrows(UnavailableException.class, () -> ex.submit(new MarkJob(1, 0)));
+
+    ex.start();
+    assertTrue(ex.hasStarted());
+    ex.submit(new MarkJob(1, 0));
+    awaitIdle(ex);
+    ex.stop();
+  }
+
+  @Test
+  public void stopDoesNotStartQueuedJobs() throws Exception {
+    MarkJob.RAN.clear();
+    var ex = singleThreaded();
+    ex.start();
+    occupyTheWorker(ex, 300);
+
+    var queued = new MarkJob(2, 0);
+    ex.submit(queued);
+    assertEquals(1, ex.queueSize());
+
+    ex.stop();
+
+    // the orderly ThreadPoolExecutor.shutdown() keeps draining its work queue, so it would have run job 2 too
+    assertEquals(List.of(1), MarkJob.RAN);
+    // and a job that never reached run() still gets a final state, or its row would stay waiting forever
+    assertEquals(JobStatus.CANCELED, queued.getStatus());
+    assertEquals(0, ex.queueSize());
+  }
+
+  @Test
+  public void stopInterruptsRunningJobs() throws Exception {
+    MarkJob.RAN.clear();
+    var ex = singleThreaded();
+    ex.start();
+    occupyTheWorker(ex, 30000);
+
+    long start = System.currentTimeMillis();
+    ex.stop();
+    long took = System.currentTimeMillis() - start;
+
+    // the orderly shutdown() waits MILLIS_TO_DIE for the sleeping job before it forces anything,
+    // so stopping an app with a long job used to take 12s per lane instead of interrupting it
+    assertTrue("stop took " + took + "ms, it should have interrupted the running job", took < 5000);
+  }
+
+  @Test
+  public void restartClearsQueueAndFutures() throws Exception {
+    MarkJob.RAN.clear();
+    var ex = singleThreaded();
+    ex.start();
+    occupyTheWorker(ex, 200);
+
+    var queued = new MarkJob(2, 0);
+    ex.submit(queued);
+
+    ex.stop();
+    ex.start();
+
+    // the queued job was discarded, not drained onto a worker on the way out
+    assertEquals(List.of(1), MarkJob.RAN);
+    // no phantoms of the discarded job survive the restart
+    assertTrue(ex.getQueue().isEmpty());
+    assertEquals(0, ex.queueSize());
+    assertFalse(ex.exists(queued.getKey()));
+    assertNull(ex.getJob(queued.getKey()));
+    // so an identical job is not rejected as a duplicate of one that will never run
+    ex.submit(new MarkJob(2, 0));
+    awaitIdle(ex);
+    ex.stop();
   }
 }

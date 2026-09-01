@@ -232,6 +232,7 @@ public class UsageMatcherIT {
     user.setUsername("tester");
     doReturn(user).when(uDao).get(any());
     JobExecutor exec = new JobExecutor(new JobConfig(), new MetricRegistry(), null, uDao, null);
+    exec.start();
     try {
       var f = new UsageMatcherFactory(cfg, NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), exec);
 
