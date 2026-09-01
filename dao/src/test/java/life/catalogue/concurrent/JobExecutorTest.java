@@ -576,4 +576,96 @@ public class JobExecutorTest {
     awaitIdle(ex);
     ex.stop();
   }
+
+  @Test
+  public void pausedJobsDoNotRunAndResumeLater() throws Exception {
+    MarkJob.RAN.clear();
+    var ex = singleThreaded();
+    ex.start();
+    var running = occupyTheWorker(ex, 100);
+
+    ex.pause();
+    assertTrue(ex.isPaused());
+    ex.submit(new MarkJob(2, 0));
+    ex.submit(new MarkJob(3, 0));
+
+    // the job that was already running is left to finish, so the executor quiesces
+    assertTrue(ex.awaitQuiesced(10, TimeUnit.SECONDS));
+    assertEquals(JobStatus.FINISHED, running.getStatus());
+    // but nothing new starts, however long we wait
+    TimeUnit.MILLISECONDS.sleep(200);
+    assertEquals(List.of(1), MarkJob.RAN);
+    // and the queue is kept rather than discarded - this is the difference to stop()
+    assertEquals(2, ex.getQueue().size());
+
+    ex.resume();
+    assertFalse(ex.isPaused());
+    awaitIdle(ex);
+    assertEquals(Set.of(1, 2, 3), new HashSet<>(MarkJob.RAN));
+    ex.stop();
+  }
+
+  @Test
+  public void pausedExecutorStillAcceptsSubmissions() throws Exception {
+    MarkJob.RAN.clear();
+    var ex = singleThreaded();
+    ex.start();
+    ex.pause();
+
+    // a maintenance window must not cost users their requests, so submits are queued rather than rejected
+    ex.submit(new MarkJob(7, 0));
+    assertEquals(1, ex.getQueue().size());
+    assertTrue(ex.awaitQuiesced(10, TimeUnit.SECONDS));
+    assertTrue(MarkJob.RAN.isEmpty());
+
+    ex.resume();
+    awaitIdle(ex);
+    assertEquals(List.of(7), MarkJob.RAN);
+    ex.stop();
+  }
+
+  @Test
+  public void quiescedWaitsForTheRunningJobOnly() throws Exception {
+    MarkJob.RAN.clear();
+    var ex = singleThreaded();
+    ex.start();
+    occupyTheWorker(ex, 400);
+    ex.submit(new MarkJob(2, 0));
+    ex.pause();
+
+    // still running, so not quiesced yet
+    assertFalse(ex.isQuiesced());
+    assertTrue(ex.awaitQuiesced(10, TimeUnit.SECONDS));
+    // queued work is deliberately not part of the question - it is held back, not lost
+    assertFalse(ex.getQueue().isEmpty());
+    ex.stop();
+  }
+
+  @Test
+  public void stopReleasesWorkersParkedOnThePauseGate() throws Exception {
+    MarkJob.RAN.clear();
+    var ex = singleThreaded();
+    ex.start();
+    ex.pause();
+    ex.submit(new MarkJob(1, 0));
+
+    // a worker takes the job and parks on the gate; stop() has to let it go or it would wait MILLIS_TO_DIE
+    long start = System.currentTimeMillis();
+    ex.stop();
+    long took = System.currentTimeMillis() - start;
+    assertTrue("stop took " + took + "ms with a worker parked on the pause gate", took < 5000);
+  }
+
+  @Test
+  public void pauseIsIdempotent() throws Exception {
+    var ex = singleThreaded();
+    ex.start();
+    ex.pause();
+    ex.pause();
+    assertTrue(ex.isPaused());
+    ex.resume();
+    ex.resume();
+    assertFalse(ex.isPaused());
+    ex.stop();
+  }
 }

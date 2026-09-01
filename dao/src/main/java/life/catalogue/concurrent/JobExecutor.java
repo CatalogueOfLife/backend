@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,6 +60,10 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   private final @Nullable EmailNotification emailer;
   private final @Nullable JobDao jobDao; // optional - without it jobs are not persisted, e.g. in CLI tools
   private Map<JobLane, ColExecutor> execs;
+  // pause gate: workers block before starting a job while paused, so running jobs finish and the queue survives
+  private final ReentrantLock pauseLock = new ReentrantLock();
+  private final Condition unpaused = pauseLock.newCondition();
+  private volatile boolean paused;
   private List<JobInfo> staleJobs = List.of(); // jobs cancelled at startup as they never survived the last server run
   private final Timer timer;
 
@@ -83,6 +89,8 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       // take the queued jobs out before the pools go down so we can give them a final state.
       // shutdownNow() would drain them into a list that is thrown away, leaving their rows running forever.
       // Emptying the gate first also means a job finishing during the shutdown promotes nothing.
+      // release anything blocked on the pause gate first, or shutdownNow cannot get those workers back
+      resume();
       var discarded = drainQueued();
       for (var exec : execs.values()) {
         ExecutorUtils.shutdownNow(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
@@ -132,6 +140,69 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   @Override
   public boolean hasStarted() {
     return execs != null;
+  }
+
+  /**
+   * Stops the executor from starting any further job while the running ones are left to finish.
+   *
+   * This is the maintenance verb, as distinct from stop(): the queue survives, submissions are still
+   * accepted so no user request is lost, and resume() picks up exactly where the pause left off.
+   * stop() is the blue-green verb - it rejects submissions, interrupts what runs and discards the queue.
+   */
+  public void pause() {
+    pauseLock.lock();
+    try {
+      if (!paused) {
+        paused = true;
+        LOG.warn("Job executor paused with {} jobs queued", queueSize());
+      }
+    } finally {
+      pauseLock.unlock();
+    }
+  }
+
+  public void resume() {
+    pauseLock.lock();
+    try {
+      if (paused) {
+        paused = false;
+        unpaused.signalAll();
+        LOG.warn("Job executor resumed with {} jobs queued", queueSize());
+      }
+    } finally {
+      pauseLock.unlock();
+    }
+  }
+
+  public boolean isPaused() {
+    return paused;
+  }
+
+  /**
+   * @return true if no job is currently executing.
+   *
+   * Unlike isIdle() this ignores queued work, which is exactly what a maintenance window needs to know: a
+   * paused executor deliberately keeps its queue but must be running nothing before the names index is
+   * swapped underneath it. It asks the jobs rather than the pools because a worker parked on the pause gate
+   * still counts towards ThreadPoolExecutor.getActiveCount() while its job has not begun.
+   */
+  public boolean isQuiesced() {
+    return !hasStarted() || futures.values().stream().noneMatch(f -> f.task.isRunning());
+  }
+
+  /**
+   * Waits for the running jobs to finish.
+   * @return true if the executor quiesced within the timeout
+   */
+  public boolean awaitQuiesced(int timeout, TimeUnit unit) throws InterruptedException {
+    final long deadline = System.nanoTime() + unit.toNanos(timeout);
+    while (!isQuiesced()) {
+      if (System.nanoTime() > deadline) {
+        return false;
+      }
+      TimeUnit.MILLISECONDS.sleep(100);
+    }
+    return true;
   }
 
   /**
@@ -280,6 +351,29 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
         new ThreadPoolExecutor.AbortPolicy());
     }
 
+    /**
+     * The pause gate. A worker that has taken a task waits here until the executor is resumed, so a paused
+     * executor starts nothing new while the jobs already running are left to finish.
+     *
+     * Up to one task per lane is dequeued and parked here for the duration of a pause. It has not begun -
+     * BackgroundJob.run() is never entered, no status is written and no database work happens - which is why
+     * isQuiesced() asks the jobs whether they are running rather than asking the pool for its active count.
+     */
+    @Override
+    protected void beforeExecute(Thread t, Runnable r) {
+      pauseLock.lock();
+      try {
+        while (paused) {
+          unpaused.await();
+        }
+      } catch (InterruptedException e) {
+        t.interrupt();
+      } finally {
+        pauseLock.unlock();
+      }
+      super.beforeExecute(t, r);
+    }
+
     @Override
     protected void afterExecute(Runnable r, Throwable t) {
       // no check as we cannot submit any other jobs
@@ -357,18 +451,30 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   }
 
   public int queueSize() {
-    return queues.values().stream().mapToInt(PriorityBlockingQueue::size).sum() + gate.parked().size();
+    return (int) queuedStream().count();
   }
 
   public int queueSize(JobLane lane) {
-    return queues.get(lane).size() + (int) gate.parked().stream().filter(t -> t.task.getLane() == lane).count();
+    return (int) queuedStream().filter(j -> j.getLane() == lane).count();
   }
 
   /**
    * @return true if all queues are empty
    */
   public boolean hasEmptyQueue() {
-    return queues.values().stream().allMatch(PriorityBlockingQueue::isEmpty) && gate.isEmpty();
+    return queuedStream().findAny().isEmpty();
+  }
+
+  /**
+   * Every job the executor still owns that has not started yet, wherever it currently sits: a lane queue,
+   * the serial gate, or a worker parked on the pause gate. Reading this off the jobs rather than off the
+   * queues is what keeps a paused executor honest - a task a worker has already taken is out of its
+   * PriorityBlockingQueue but has not begun, and used to be invisible to the whole queue API.
+   */
+  private Stream<BackgroundJob> queuedStream() {
+    return futures.values().stream()
+                  .map(f -> f.task)
+                  .filter(j -> j.getStatus().isQueued());
   }
 
   /**
@@ -444,17 +550,9 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   }
 
   private Stream<BackgroundJob> getQueueStream() {
-    List<BackgroundJob> queued = new ArrayList<>();
-    for (var q : queues.values()) {
-      q.forEach(x -> queued.add(((ComparableFutureTask) x).task));
-    }
-    gate.parked().forEach(t -> queued.add(t.task));
-    return Stream.concat(
-      futures.values().stream()
-             .map(f -> f.task)
-             .filter(BackgroundJob::isRunning),
-      queued.stream()
-    );
+    return futures.values().stream()
+                  .map(f -> f.task)
+                  .filter(j -> j.isRunning() || j.getStatus().isQueued());
   }
 
   @Override
