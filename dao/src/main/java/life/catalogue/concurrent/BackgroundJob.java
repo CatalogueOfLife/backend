@@ -38,7 +38,7 @@ public abstract class BackgroundJob implements Runnable {
   private String step;
   private LocalDateTime started;
   private LocalDateTime finished;
-  private Exception error;
+  private Throwable error;
   // the following are added by the JobExecutor before a job is submitted
   private @Nullable EmailNotification emailer;
   private @Nullable Consumer<BackgroundJob> persister;
@@ -185,10 +185,10 @@ public abstract class BackgroundJob implements Runnable {
   }
 
   /**
-   * Called in case the job fails.
+   * Called in case the job fails, with an Error just as much as with an Exception.
    * Implement this method e.g. to run specific cleanups in subclasses
    */
-  protected void onError(Exception e) {
+  protected void onError(Throwable e) {
     // dont do nothing - override if needed
   }
 
@@ -263,11 +263,19 @@ public abstract class BackgroundJob implements Runnable {
       LOG.warn("Interrupted {}", this);
       onCancel();
 
-    } catch (Exception e) {
+    } catch (Throwable e) {
+      // an Error is caught here only to record it - a job that ran out of heap or hit a broken class
+      // used to leave its record as it was, still running and without a message, and the JVM level
+      // failure was only ever visible in the server log
       status = JobStatus.FAILED;
       error = e;
       LOG.error("Error running {}", this, e);
       onError(e);
+      if (e instanceof Error err) {
+        // the finally below still persists the final state and notifies, then the Error keeps flying.
+        // Whether this JVM can carry on is not for a single job to decide
+        throw err;
+      }
 
     } finally {
       finished = LocalDateTime.now();
@@ -333,12 +341,12 @@ public abstract class BackgroundJob implements Runnable {
     this.status = status;
   }
 
-  public Exception getError() {
+  public Throwable getError() {
     return error;
   }
 
   @VisibleForTesting
-  public void setError(Exception error) {
+  public void setError(Throwable error) {
     this.error = error;
   }
 

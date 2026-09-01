@@ -23,7 +23,10 @@ import com.codahale.metrics.MetricRegistry;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -160,6 +163,36 @@ public class JobExecutorTest {
     job.run();
     assertEquals(JobStatus.FAILED, job.getStatus());
     assertEquals("downloading", job.getStep());
+  }
+
+  /** Dies from an Error rather than an Exception, like a job that exhausts the heap. */
+  static class ErrorJob extends BackgroundJob {
+
+    ErrorJob() {
+      super(1);
+    }
+
+    @Override
+    public void execute() throws Exception {
+      setStep("inserting");
+      throw new OutOfMemoryError("Java heap space");
+    }
+  }
+
+  /**
+   * An Error is no Exception, so a job killed by one used to leave its record as it was - still running,
+   * no error, no finish time - which is how the ITIS import of 2026-08-31 lost its heap exhaustion.
+   * Record it like any other failure, but let it keep flying: a broken JVM is not ours to swallow.
+   */
+  @Test
+  public void errorRecordedAndRethrown() {
+    var job = new ErrorJob();
+    var err = assertThrows(OutOfMemoryError.class, job::run);
+    assertEquals("Java heap space", err.getMessage());
+    assertEquals(JobStatus.FAILED, job.getStatus());
+    assertSame(err, job.getError());
+    assertEquals("inserting", job.getStep());
+    assertNotNull(job.getFinished());
   }
 
   static class FailJob extends BackgroundJob {

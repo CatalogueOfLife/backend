@@ -30,9 +30,18 @@ public class BatchConsumer<T> implements Consumer<T>, AutoCloseable {
       }
     }
     
+    /**
+     * Hands the current batch to the consumer and always clears it, also when the consumer failed.
+     * A batch kept after a failed submit would be retried by close() while the first exception is
+     * already unwinding a try-with-resources, masking it - or, with an identical exception instance,
+     * turning it into "IllegalArgumentException: Self-suppression not permitted".
+     */
     private void submit() {
-      batchConsumer.accept(batch);
-      batch.clear();
+      try {
+        batchConsumer.accept(batch);
+      } finally {
+        batch.clear();
+      }
     }
     
     @Override

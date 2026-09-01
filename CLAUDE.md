@@ -150,7 +150,10 @@ Every asynchronous unit of work - imports, sector syncs, releases, exports, matc
 `BackgroundJob` run by the single shared `JobExecutor` and persisted as one row in the generic `job` table
 (`JobDao`/`JobMapper`). `BackgroundJob.run()` owns the lifecycle: it sets `JobStatus`
 (WAITING/BLOCKED/RUNNING/FINISHED/CANCELED/FAILED), calls `onCancel`/`onError` and then always `onFinish`,
-persists the final state and sends the completion email. Fine grained progress is a free text `step`, not a
+persists the final state and sends the completion email. It catches `Throwable`, not `Exception`, so a job
+killed by an `Error` - heap exhaustion above all - is recorded as FAILED with that error instead of leaving
+its row still running and empty; the `Error` is then rethrown once the final state is persisted, because
+whether the JVM can carry on is not a single job's call. Fine grained progress is a free text `step`, not a
 status - the old `ImportState` enum column is gone from the db (`IMPORTSTATE` dropped).
 The executor has three lanes (`JobLane`: DEFAULT, IMPORT, SYNC - a vocab enum, so it is served at
 `/vocab/joblane` and persisted as the `job.lane` column), each with its own worker pool and priority

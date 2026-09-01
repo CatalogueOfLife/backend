@@ -269,7 +269,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   }
 
   @Override
-  protected void onError(Exception e) {
+  protected void onError(Throwable e) {
     String attempt = null;
     LOG.error("Error {} project {} into dataset {}", actionName, projectKey, newDatasetKey, e);
     if (metrics != null) {

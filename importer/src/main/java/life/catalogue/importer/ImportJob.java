@@ -246,7 +246,7 @@ public class ImportJob extends DatasetJob {
   }
 
   @Override
-  protected void onError(Exception e) {
+  protected void onError(Throwable e) {
     if (failedCounter != null) {
       failedCounter.inc();
     }
