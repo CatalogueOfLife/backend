@@ -301,11 +301,25 @@ Rules:
 - Issue flagging in `api/vocab/Issue.java` - add new issue types as needed
 
 ### Database Schema Changes
-1. Create Liquibase changeset in `dao/src/main/resources/liquibase/`
-2. Update MyBatis mappers
-3. Update entity models if columns changed
-4. Run `init` command to apply changes
-5. Add migration tests
+
+There is **no Liquibase**. The schema is one hand written file and migrations are a hand kept log -
+prod is migrated manually, dev is usually wiped and rebuilt from scratch.
+
+1. Edit `dao/src/main/resources/life/catalogue/db/dbschema.sql`, the canonical schema.
+   `InitDbUtils.SCHEMA_FILE` points at it and both the `init` command and `PgSetupRule` apply it
+   verbatim, so every integration test runs against exactly this file.
+2. Append the DDL you would run on prod to `dao/src/main/resources/life/catalogue/db/dbschema.md`,
+   as a new `#### YYYY-MM-DD <what changed>` section at the **top** of the PROD changes list, with a
+   fenced `sql` code block. Say why, and note any data backfill or the order it has to run in
+   relative to the deploy.
+3. Update the MyBatis mappers (column lists in the `SELECT`/`COLS`/`PROPS` fragments are paired by
+   position - keep them aligned) and the entity models.
+4. Adding a value to a java enum that is also a pg enum means a matching `ALTER TYPE ... ADD VALUE`
+   in *both* files, or `PgSetupRuleTest.pgEnums` fails - it compares each java enum to
+   `enum_range()` in postgres, in both directions.
+5. Seed data lives in `dao/src/main/resources/life/catalogue/db/data.sql` (`InitDbUtils.DATA_FILE`).
+6. Run `init` to rebuild a local db, and a mapper test of the touched table to prove the DDL and the
+   mapper still agree.
 
 ### Dropwizard Patterns
 - **Bundles** (registered in `WsServer.initialize()`): Configure cross-cutting concerns (auth, CORS, database, etc.)
@@ -372,7 +386,7 @@ GET /dataset/{key}/export.zip?format=COLDP
 | Import logic | `importer/src/main/java/life/catalogue/importer/` |
 | REST endpoints | `webservice/src/main/java/life/catalogue/resources/` |
 | Assembly/Sync | `core/src/main/java/life/catalogue/assembly/` |
-| Database schema | `dao/src/main/resources/liquibase/` |
+| Database schema | `dao/src/main/resources/life/catalogue/db/dbschema.sql` (migration log: `dbschema.md`) |
 
 ## Prerequisites
 
