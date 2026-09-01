@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -64,15 +65,17 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   private final ReentrantLock pauseLock = new ReentrantLock();
   private final Condition unpaused = pauseLock.newCondition();
   private volatile boolean paused;
-  private List<JobInfo> staleJobs = List.of(); // jobs cancelled at startup as they never survived the last server run
+  // handlers given the jobs cancelled at startup, so an owner can resubmit the ones it cares about
+  private final List<Consumer<List<JobInfo>>> staleHandlers = new CopyOnWriteArrayList<>();
   private final Timer timer;
 
   @Override
   public void start() throws Exception {
     if (execs == null) {
+      List<JobInfo> stale = List.of();
       if (jobDao != null) {
         // jobs that were waiting or running when the last server stopped can never finish
-        staleJobs = jobDao.cancelStale();
+        stale = jobDao.cancelStale();
       }
       execs = new EnumMap<>(JobLane.class);
       for (JobLane lane : JobLane.values()) {
@@ -80,7 +83,24 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
         exec.allowCoreThreadTimeOut(true);
         execs.put(lane, exec);
       }
+      // last, as the handlers resubmit and therefore need the pools
+      for (var handler : staleHandlers) {
+        try {
+          handler.accept(stale);
+        } catch (RuntimeException e) {
+          LOG.error("Failed to handle the {} stale jobs of the last server run", stale.size(), e);
+        }
+      }
     }
+  }
+
+  /**
+   * Registers a handler for the jobs that were cancelled on startup because they could never have survived
+   * the last server run, so their owner can resubmit the ones it is responsible for. Called from start()
+   * once the pools exist, since a handler is expected to submit.
+   */
+  public void onStaleJobs(Consumer<List<JobInfo>> handler) {
+    staleHandlers.add(handler);
   }
 
   @Override
@@ -203,14 +223,6 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       TimeUnit.MILLISECONDS.sleep(100);
     }
     return true;
-  }
-
-  /**
-   * @return the persisted jobs that were cancelled when this executor started,
-   * as they were still waiting or running when the last server stopped.
-   */
-  public List<JobInfo> getStaleJobs() {
-    return staleJobs;
   }
 
   /**

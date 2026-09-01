@@ -4,12 +4,11 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.event.DeleteSector;
 import life.catalogue.api.event.SectorListener;
+import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.common.Idle;
-import life.catalogue.common.Managed;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.JobDao;
@@ -41,11 +40,10 @@ import com.codahale.metrics.MetricRegistry;
  * on the SYNC lane of the shared JobExecutor.
  * Jobs of the same project are serialized by the executor, syncs of different projects run in parallel.
  */
-public class SyncManager implements Managed, Idle, SectorListener, DatasetListener {
+public class SyncManager implements SectorListener, DatasetListener {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
   private static final Logger LOG = LoggerFactory.getLogger(SyncManager.class);
 
-  private volatile boolean started;
   private final SyncManagerConfig cfg;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
@@ -65,29 +63,17 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
     this.counter = new SyncCounter(registry.timer("life.catalogue.assembly.timer"));
   }
 
-  @Override
-  public void start() throws Exception {
-    LOG.info("Starting assembly coordinator");
-    started = true;
-    // sector imports left in running states by a previous server are covered by
-    // the job executor cancelling all stale job records on startup
-    // the polling scheduler is its own component, see SyncScheduler
-  }
-
-  @Override
-  public void stop() throws Exception {
-    // running and queued syncs live in the shared job executor which interrupts them on its own shutdown
-    started = false;
-  }
-
-  @Override
-  public boolean hasStarted() {
-    return started;
-  }
-
-  @Override
+  /**
+   * @return true if no sector job is queued or running.
+   *
+   * Not a Managed component any more: this class owns no queue and no threads, only validation and
+   * submission against the shared job executor, so a lifecycle flag here could only ever duplicate or
+   * contradict the executor's. Sector imports left running by a previous server are covered by the
+   * executor cancelling the stale job records on startup, and the polling scheduler is its own
+   * component, see SyncScheduler.
+   */
   public boolean isIdle() {
-    return !hasStarted() || getState().isIdle();
+    return getState().isIdle();
   }
 
   /**
@@ -232,7 +218,6 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
   private synchronized boolean queueJob(SectorRunnable job) throws IllegalArgumentException {
     try {
       nameIndex.assertOnline();
-      this.assertOnline();
       // is this sector already syncing?
       if (isQueuedOrRunning(job.getSectorKey())) {
         // ignore
@@ -245,9 +230,33 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
         return true;
       }
 
+    } catch (UnavailableException | TooManyRequestsException e) {
+      // nothing is wrong with this sync, the server just cannot take it right now. Recording a FAILED
+      // attempt would spend one of the sector's numbered attempts on our own unavailability and leave a
+      // failure in its history that never says anything about the sector, so drop the attempt instead.
+      discardAttempt(job, e.getMessage());
+      throw e;
+
     } catch (RuntimeException e) {
       rejectJob(job, e.getMessage());
       throw e;
+    }
+  }
+
+  /**
+   * Removes the sector_import attempt SectorRunnable creates in its constructor, for a job that was never
+   * really rejected on its own merits and so should leave no trace in the sector's import history.
+   */
+  private void discardAttempt(SectorRunnable job, String reason) {
+    LOG.warn("Could not queue {} for {}: {}", job.getClass().getSimpleName(), job.sector, reason);
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(SectorImportMapper.class).deleteAttempts(
+        job.getSectorKey().getDatasetKey(),
+        new int[]{job.getSectorKey().getId()},
+        new int[]{job.state.getAttempt()}
+      );
+    } catch (RuntimeException e) {
+      LOG.error("Failed to discard the sector import attempt {} of {}", job.state.getAttempt(), job.sector, e);
     }
   }
 

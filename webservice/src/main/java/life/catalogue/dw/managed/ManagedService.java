@@ -95,7 +95,7 @@ public class ManagedService {
         c.start();
       }
     } else {
-      LOG.warn("Component {} cannot be started as it is not managed yet", component);
+      warnUnmanaged(component, "started");
     }
   }
 
@@ -108,7 +108,20 @@ public class ManagedService {
         LOG.info("Component {} not running", component);
       }
     } else {
-      LOG.warn("Component {} cannot be stopped as it is not managed yet", component);
+      warnUnmanaged(component, "stopped");
+    }
+  }
+
+  /**
+   * A deprecated component is answered as a success on purpose: nidx-swap.sh and nidx-clear.sh name them,
+   * check the http status and exit 1, so failing here would abort a swap after the names index is already
+   * stopped - the worst possible moment.
+   */
+  private void warnUnmanaged(Component component, String verb) {
+    if (component.isDeprecated()) {
+      LOG.warn("Component {} no longer exists and cannot be {}. Remove it from your deploy scripts", component, verb);
+    } else {
+      LOG.warn("Component {} cannot be {} as it is not managed yet", component, verb);
     }
   }
 

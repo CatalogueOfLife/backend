@@ -64,10 +64,9 @@ import jakarta.validation.Validator;
  * The actual queue and execution lives in the shared JobExecutors IMPORT lane, which is also
  * where imports are listed - live via /job, historically via /job/search and /dataset/{key}/import.
  */
-public class ImportManager implements Managed, Idle, DatasetListener {
+public class ImportManager implements DatasetListener, AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
-  private boolean started;
-  private ImportCallbackNotifier callbackNotifier;
+  private final ImportCallbackNotifier callbackNotifier;
   private SyncManager assemblyCoordinator;
   private final ImporterConfig iCfg;
   private final NormalizerConfig nCfg;
@@ -118,6 +117,16 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     this.scopeResolver = scopeResolver;
     importTimer = registry.timer("life.catalogue.import.timer");
     failed = registry.counter("life.catalogue.import.failed");
+    this.callbackNotifier = new ImportCallbackNotifier(downloader.getClient(), iCfg);
+    // imports interrupted by the last shutdown are resubmitted once the executor starts and knows them
+    jobExecutor.onStaleJobs(this::rescheduleInterrupted);
+    LOG.info("Import manager created with {} import threads and a queue of {} max.",
+      jobExecutor.getConfig().importThreads, maxQueue());
+  }
+
+  @Override
+  public void close() throws Exception {
+    callbackNotifier.close();
   }
 
   public void setAssemblyCoordinator(SyncManager assemblyCoordinator) {
@@ -141,9 +150,6 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    * Lists the ImportRequests of the current queue
    */
   public List<ImportRequest> queue() {
-    if (!hasStarted()) {
-      return Collections.emptyList();
-    }
     return importJobs().stream()
         .filter(BackgroundJob::isQueued)
         .map(ImportJob::getRequest)
@@ -151,9 +157,6 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   }
 
   public int queueSize() {
-    if (!hasStarted()) {
-      return 0;
-    }
     return jobExecutor.queueSize(JobLane.IMPORT);
   }
 
@@ -309,9 +312,8 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   }
 
   private void validDataset(int datasetKey) {
-    if (!hasStarted()) {
-      throw UnavailableException.unavailable("dataset importer");
-    }
+    // whether imports can run at all is the job executor's answer, not a second flag of our own:
+    // this class owns no queue and no threads, so a gate here could only ever contradict it
     if (datasetKey == Datasets.COL) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is the CoL working draft and cannot be imported");
     }
@@ -350,11 +352,11 @@ public class ImportManager implements Managed, Idle, DatasetListener {
    * Reschedules imports that were interrupted by the last server shutdown.
    * The job executor cancelled their stale job records on startup and keeps them for us.
    */
-  private void rescheduleInterrupted() {
+  private void rescheduleInterrupted(List<JobInfo> staleJobs) {
     List<ImportRequest> requests = new ArrayList<>();
     try (SqlSession session = factory.openSession(true)) {
       var dim = session.getMapper(DatasetImportMapper.class);
-      for (JobInfo stale : jobExecutor.getStaleJobs()) {
+      for (JobInfo stale : staleJobs) {
         // only reschedule import jobs, no releases or syncs
         if (!ImportJob.class.getSimpleName().equals(stale.getJob())) {
           continue;
@@ -371,41 +373,6 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     }
     requests.forEach(this::submit);
     LOG.info("Resubmitted {} interrupted imports.", requests.size());
-  }
-
-  @Override
-  public void start() throws Exception {
-    LOG.info("Starting import manager with {} import threads and a queue of {} max.",
-        jobExecutor.getConfig().importThreads,
-        maxQueue());
-    callbackNotifier = new ImportCallbackNotifier(downloader.getClient(), iCfg);
-    started = true;
-    try {
-      rescheduleInterrupted();
-    } catch (RuntimeException e) {
-      // log n swallow
-      LOG.error("Error trying to reschedule older imports", e);
-    }
-  }
-
-  @Override
-  public void stop() throws Exception {
-    // running and queued imports live in the shared job executor which interrupts them on its own shutdown
-    started = false;
-    if (callbackNotifier != null) {
-      callbackNotifier.close();
-      callbackNotifier = null;
-    }
-  }
-
-  @Override
-  public boolean hasStarted() {
-    return started;
-  }
-
-  @Override
-  public boolean isIdle() {
-    return !hasStarted() || !hasRunning();
   }
 
   @Override

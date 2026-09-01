@@ -149,13 +149,12 @@ public class UsageMatcherFactoryTest {
   }
 
   @Test
-  public void startReconcileRunsAsMatcherBotUser() {
+  public void maintenanceReconcileRunsAsMatcherBotUser() {
     var f = factory();
-    f.start();
+    f.maintenance();
     // the startup reconcile must run as the real seeded system user Users.MATCHER (11), NOT the SUPERUSER
     // sentinel (-42), otherwise JobExecutor.submit throws "No user -42 existing" and no reconcile happens.
     verify(executor).submit(argThat(j -> j.getUserKey() == Users.MATCHER));
-    assertTrue(f.hasStarted());
   }
 
   @Test
@@ -590,7 +589,7 @@ public class UsageMatcherFactoryTest {
     long lastUsed = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3);
     assertTrue(legacy.setLastModified(lastUsed));
 
-    f.start();
+    f.maintenance();
 
     File moved = MatchingConfig.datasetJson(dir);
     assertTrue("the sidecar must move into the store dir", moved.isFile());
@@ -600,13 +599,13 @@ public class UsageMatcherFactoryTest {
   }
 
   @Test
-  public void startRemovesOrphanedSidecar() throws Exception {
+  public void maintenanceRemovesOrphanedSidecar() throws Exception {
     var f = factory();
     // no store dir for 901, so this sidecar was leaked by an interrupted removal
     File orphan = new File(tmp.getRoot(), "901.json");
     DatasetJsonWriter.write(dataset(901, DatasetOrigin.EXTERNAL, false), orphan);
 
-    f.start();
+    f.maintenance();
 
     assertFalse(orphan.exists());
   }

@@ -57,10 +57,8 @@ public class ContinuousImporter extends AbstractPollingScheduler {
 
   @Override
   protected void pollOnce() throws InterruptedException {
-    while (isRunning() && !manager.hasStarted()) {
-      LOG.debug("Importer not started, sleep for {} minutes", cfg.polling);
-      TimeUnit.MINUTES.sleep(cfg.polling);
-    }
+    // whether imports can run at all is the job executor's answer; if it is stopped or paused the submits
+    // below simply fail and the base class backs off, which is why they must never be fatal here
     while (isRunning() && manager.queueSize() > cfg.threshold) {
       LOG.debug("Importer busy, sleep for {} minutes", cfg.polling);
       TimeUnit.MINUTES.sleep(cfg.polling);

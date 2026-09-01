@@ -58,6 +58,7 @@ import life.catalogue.importer.ImportManager;
 import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.jobs.cron.CronExecutor;
 import life.catalogue.jobs.cron.JobCleanup;
+import life.catalogue.jobs.cron.MatcherReconcile;
 import life.catalogue.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.jobs.cron.TempDatasetCleanup;
 import life.catalogue.matching.IdentifierScopeResolver;
@@ -372,7 +373,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // matcher factory
     final var matcherFactory = new UsageMatcherFactory(cfg.matching, ni, getSqlSessionFactory(), executor);
-    managedService.manage(Component.UsageMatcher, matcherFactory);
+    env.lifecycle().manage(ManagedUtils.from((AutoCloseable) matcherFactory));
 
     // identifier scope resolver: map dataset keys to scopes from the central registry
     cfg.identifierScopes.validate();
@@ -382,7 +383,8 @@ public class WsServer extends Application<WsServerConfig> {
     var cron = CronExecutor.startWith(
       new TempDatasetCleanup(ddao),
       new ProjectCounterUpdate(getSqlSessionFactory()),
-      new JobCleanup(getSqlSessionFactory(), cfg.job)
+      new JobCleanup(getSqlSessionFactory(), cfg.job),
+      new MatcherReconcile(matcherFactory)
     );
     managedService.manage(Component.CronExecutor, cron);
 
@@ -423,7 +425,7 @@ public class WsServer extends Application<WsServerConfig> {
       validator, doiResolver,
       matcherFactory, identifierScopeResolver
     );
-    managedService.manage(Component.DatasetImporter, importManager);
+    env.lifecycle().manage(ManagedUtils.from((AutoCloseable) importManager));
 
     // continuous importer
     ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
@@ -450,7 +452,6 @@ public class WsServer extends Application<WsServerConfig> {
 
     // assembly
     SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, executor, jobDao, env.metrics());
-    managedService.manage(Component.SectorSynchronizer, syncManager);
     SyncScheduler syncScheduler = new SyncScheduler(cfg.syncs, syncManager, getSqlSessionFactory());
     managedService.manage(Component.SyncScheduler, syncScheduler);
 
