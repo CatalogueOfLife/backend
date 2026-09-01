@@ -5,6 +5,7 @@ import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.SyncManager;
+import life.catalogue.assembly.SyncScheduler;
 import life.catalogue.cache.CacheFlush;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.command.*;
@@ -450,6 +451,8 @@ public class WsServer extends Application<WsServerConfig> {
     // assembly
     SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, executor, jobDao, env.metrics());
     managedService.manage(Component.SectorSynchronizer, syncManager);
+    SyncScheduler syncScheduler = new SyncScheduler(cfg.syncs, syncManager, getSqlSessionFactory());
+    managedService.manage(Component.SyncScheduler, syncScheduler);
 
     // link assembly and import manager so they are aware of each other
     importManager.setAssemblyCoordinator(syncManager);

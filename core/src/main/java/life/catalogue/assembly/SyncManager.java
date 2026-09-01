@@ -11,7 +11,6 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.api.vocab.JobStatus;
-import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.JobDao;
 import life.catalogue.config.SyncManagerConfig;
@@ -45,12 +44,9 @@ import com.codahale.metrics.MetricRegistry;
 public class SyncManager implements Managed, Idle, SectorListener, DatasetListener {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
   private static final Logger LOG = LoggerFactory.getLogger(SyncManager.class);
-  private static final String SCHEDULER_THREAD_NAME = "sync-scheduler";
 
-  private boolean started;
+  private volatile boolean started;
   private final SyncManagerConfig cfg;
-  private Thread schedulerThread;
-  private SyncSchedulerJob schedulerJob;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   private final SyncFactory syncFactory;
@@ -75,30 +71,11 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
     started = true;
     // sector imports left in running states by a previous server are covered by
     // the job executor cancelling all stale job records on startup
-
-    // scheduler
-    if (cfg.polling > 0) {
-      LOG.info("Enable sync scheduler");
-      schedulerJob = new SyncSchedulerJob(cfg, this, factory);
-      schedulerThread = new Thread(schedulerJob, SCHEDULER_THREAD_NAME);
-      LOG.info("Start sync scheduler with polling every {} minutes", cfg.polling);
-      schedulerThread.start();
-
-    } else {
-      LOG.warn("Sync scheduler disabled");
-    }
+    // the polling scheduler is its own component, see SyncScheduler
   }
 
   @Override
   public void stop() throws Exception {
-    // scheduler
-    if (schedulerJob != null) {
-      schedulerJob.terminate();
-    }
-    if (schedulerThread != null) {
-      LOG.info("Stop sync scheduler");
-      schedulerThread.join(ExecutorUtils.MILLIS_TO_DIE);
-    }
     // running and queued syncs live in the shared job executor which interrupts them on its own shutdown
     started = false;
   }

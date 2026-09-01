@@ -243,6 +243,22 @@ abstract class SectorRunnable extends BackgroundJob {
     checkIfCancelled();
   }
 
+  /**
+   * A sync cancelled while it was still queued never reaches execute(), so the finally block that closes the
+   * sector_import attempt created in this job's constructor never runs and the row is left running forever.
+   * ImportJob has had the same hook for the same reason.
+   */
+  @Override
+  protected void onCancelBeforeStart() {
+    state.setFinished(LocalDateTime.now());
+    state.setError("Canceled before it started");
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(SectorImportMapper.class).update(state);
+    } catch (RuntimeException e) {
+      LOG.error("Failed to close the sector import attempt {} of the cancelled {}", state.getAttempt(), this, e);
+    }
+  }
+
   @Override
   protected void onFinish() throws Exception {
     if (counter != null) {

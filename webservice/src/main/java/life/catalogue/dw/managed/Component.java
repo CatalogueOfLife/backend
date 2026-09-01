@@ -12,6 +12,7 @@ public enum Component {
   DatasetImporter,
   SectorSynchronizer,
   ImportScheduler,
+  SyncScheduler,
   GBIFRegistrySync,
   Feedback
 }
