@@ -387,6 +387,13 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), projectKey, newDatasetKey);
   }
 
+  /**
+   * The raw attempt, 0 until initJob has run. Its only callers are the release email templates, which
+   * must call it explicitly as getAttempt(): freemarker resolves a bare ${job.attempt} to the
+   * {@link #attempt()} identity hook, as a method shadows a same named bean property there.
+   * They cannot use that hook either - it is null before initJob, which would fail the very
+   * release-failed mail that reports a release dying that early.
+   */
   public int getAttempt() {
     return attempt;
   }

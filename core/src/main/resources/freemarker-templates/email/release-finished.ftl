@@ -1,6 +1,6 @@
 <#include "header.ftl">
 
-Your ${job.getClass().getSimpleName()} #${job.attempt} of project ${job.dataset.title!} has completed.
+Your ${job.getClass().getSimpleName()} #${job.getAttempt()} of project ${job.dataset.title!} has completed.
 
 ${job.newDataset.alias!}: ${job.newDataset.url}
 Start: ${job.started}
