@@ -601,6 +601,58 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertTree();
   }
 
+  /**
+   * WoRMS style status values that carry a nomenclatural rather than a taxonomic statement.
+   * See https://github.com/CatalogueOfLife/backend/issues/1571
+   */
+  @Test
+  public void wormsNomenclaturalStatusValues() throws Exception {
+    normalize(60);
+
+    // 4: a bare name state with a foreign acceptedNameUsageID becomes a synonym of 3
+    var u4 = store.nameUsage("4").ud;
+    assertTrue(u4.isSynonym());
+    assertEquals("3", accepted(u4).ud.getId());
+    assertEquals(NomStatus.NOT_ESTABLISHED, store.names().objByID("4").getName().getNomStatus());
+    assertTrue(vByNameID("4").contains(Issue.DERIVED_NOMENCLATURAL_STATUS));
+
+    // 5 self reference, 6 no link at all: both stay bare names without complaint
+    for (String id : new String[]{"5", "6"}) {
+      assertNull(id, store.usages().objByID(id));
+      assertFalse(id, vByNameID(id).contains(Issue.ACCEPTED_NAME_MISSING));
+    }
+
+    // 7 points at an id that does not exist. It is upgraded to a synonym first, then demoted
+    // back to a bare name by removeOrphanSynonyms - which is honest, the record does point nowhere.
+    assertNull(store.usages().objByID("7"));
+    assertTrue(vByNameID("7").contains(Issue.ACCEPTED_NAME_MISSING));
+
+    // bare names keep the derived nomenclatural status
+    assertEquals(NomStatus.NOT_ESTABLISHED, store.names().objByID("5").getName().getNomStatus());
+    assertEquals(NomStatus.MANUSCRIPT, store.names().objByID("6").getName().getNomStatus());
+
+    // 8: a plain synonym which also derives its nomenclatural status
+    assertTrue(store.nameUsage("8").ud.isSynonym());
+    assertEquals(NomStatus.NOT_ESTABLISHED, store.names().objByID("8").getName().getNomStatus());
+
+    // 9: "valid" is a taxonomic verdict, it must not derive NomStatus ACCEPTABLE
+    assertTrue(store.nameUsage("9").ud.usage.isTaxon());
+    assertNull(store.names().objByID("9").getName().getNomStatus());
+    assertFalse(vByNameID("9").contains(Issue.DERIVED_NOMENCLATURAL_STATUS));
+
+    // 10: an explicit dwc:nomenclaturalStatus wins over the derived one
+    assertEquals(NomStatus.UNACCEPTABLE, store.names().objByID("10").getName().getNomStatus());
+    assertFalse(vByNameID("10").contains(Issue.DERIVED_NOMENCLATURAL_STATUS));
+
+    // 11: a superseded combination is homotypic, so it gets a name relation
+    assertTrue(store.nameUsage("11").ud.isSynonym());
+    List<NameRelation> rels = store.names().relations("11");
+    assertEquals(1, rels.size());
+    assertEquals(NomRelType.HOMOTYPIC, rels.getFirst().getType());
+
+    assertTree();
+  }
+
   @Test
   public void griisDistributions() throws Exception {
     normalize(56);

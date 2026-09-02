@@ -54,7 +54,7 @@ public class DwcInterpreter extends InterpreterBase {
   public Optional<NameUsageData> interpretUsage(VerbatimRecord v) {
     // name
     return interpretName(v).map(pnu -> {
-      var nu = interpretUsage(idTerm, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.originalNameUsageID, ALT_ID_TERMS);
+      var nu = interpretUsage(idTerm, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.originalNameUsageID, DwcTerm.acceptedNameUsageID, ALT_ID_TERMS);
       if (idTerm == DwcTerm.taxonID) {
         // remember dwca ids for extension lookups
         var dwcaID = v.getRaw(DwcaTerm.ID);

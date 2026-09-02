@@ -38,6 +38,7 @@ public class NameInterpreter {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameInterpreter.class);
 
+
   protected final DatasetSettings settings;
   private final boolean preferAtoms;
   private final boolean dontInferRanks;
@@ -355,6 +356,25 @@ public class NameInterpreter {
       }
 
       return Optional.of(pnu);
+  }
+
+  /**
+   * Many sources squeeze a nomenclatural statement into their single taxonomic status column,
+   * e.g. dwc:taxonomicStatus=nomen nudum, junior homonym or nomen rejiciendum.
+   * The taxstatus.csv row for such a value declares the NomStatus it implies (see EnumNote), and
+   * this applies it if the name has none yet - neither from an explicit column nor from a
+   * nomenclatural note in the authorship.
+   * <p>
+   * It is the weakest of the 3 sources, so it only ever applies when the other two came up empty
+   * and therefore never conflicts with them.
+   *
+   * @param n the name, already through interpret() so any explicit nomStatus is resolved
+   * @param fromTaxonomicStatus the status the taxonomic status value implies, usually null
+   */
+  public static void deriveNomStatus(Name n, @Nullable NomStatus fromTaxonomicStatus, IssueContainer issues) {
+    if (n == null || fromTaxonomicStatus == null || n.getNomStatus() != null) return;
+    n.setNomStatus(fromTaxonomicStatus);
+    issues.add(Issue.DERIVED_NOMENCLATURAL_STATUS);
   }
 
   private static Authorship buildAuthorship(String author, String ex, String year) {

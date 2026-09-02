@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.area.Country;
 import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.dao.ReferenceFactory;
@@ -134,6 +135,105 @@ public class InterpreterBaseTest {
     assertFalse(InterpreterBase.SEC_REF.matcher(authorship).find());
   }
 
+  private ParsedNameUsage pnu(String id) {
+    Name n = new Name();
+    n.setId(id);
+    n.setGenus("Abies");
+    n.setSpecificEpithet("alba");
+    n.rebuildScientificName();
+    return new ParsedNameUsage(n);
+  }
+
+  /**
+   * A bare name state that still links to an accepted usage is a synonym, not a bare name.
+   * See https://github.com/CatalogueOfLife/backend/issues/1571
+   */
+  @Test
+  public void bareNameUpgradedByAcceptedId() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "x");
+    v.put(ColdpTerm.status, "unavailable name");
+    v.put(ColdpTerm.parentID, "acc");
+
+    var nu = ib.interpretUsage(ColdpTerm.ID, pnu("x"), ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, ColdpTerm.parentID, Collections.emptyMap());
+    assertTrue(nu.ud.isSynonym());
+    assertEquals(TaxonomicStatus.SYNONYM, nu.ud.usage.getStatus());
+  }
+
+  @Test
+  public void bareNameKeptOnSelfReference() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "x");
+    v.put(ColdpTerm.status, "unavailable name");
+    v.put(ColdpTerm.parentID, "x"); // points at itself, so no accepted usage
+
+    var nu = ib.interpretUsage(ColdpTerm.ID, pnu("x"), ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, ColdpTerm.parentID, Collections.emptyMap());
+    assertTrue(nu.ud.isBareName());
+    assertFalse(v.contains(Issue.ACCEPTED_NAME_MISSING));
+  }
+
+  @Test
+  public void bareNameKeptWithoutLink() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "x");
+    v.put(ColdpTerm.status, "unavailable name");
+
+    // no accepted term configured at all
+    var nu = ib.interpretUsage(ColdpTerm.ID, pnu("x"), ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, null, Collections.emptyMap());
+    assertTrue(nu.ud.isBareName());
+
+    // term configured, but no value
+    v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "x");
+    v.put(ColdpTerm.status, "unavailable name");
+    nu = ib.interpretUsage(ColdpTerm.ID, pnu("x"), ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, ColdpTerm.parentID, Collections.emptyMap());
+    assertTrue(nu.ud.isBareName());
+    assertFalse(v.contains(Issue.ACCEPTED_NAME_MISSING));
+  }
+
+  /**
+   * Sources squeeze nomenclatural statements into their taxonomic status column.
+   */
+  @Test
+  public void deriveNomStatus() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "x");
+    v.put(ColdpTerm.status, "nomen nudum");
+    var nu = ib.interpretUsage(ColdpTerm.ID, pnu("x"), ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, null, Collections.emptyMap());
+    assertEquals(NomStatus.NOT_ESTABLISHED, nu.nd.getName().getNomStatus());
+    assertTrue(v.contains(Issue.DERIVED_NOMENCLATURAL_STATUS));
+
+    // a purely taxonomic status derives nothing and must not be flagged as an invalid nom status
+    v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "x");
+    v.put(ColdpTerm.status, "unaccepted");
+    nu = ib.interpretUsage(ColdpTerm.ID, pnu("x"), ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, null, Collections.emptyMap());
+    assertNull(nu.nd.getName().getNomStatus());
+    assertFalse(v.contains(Issue.NOMENCLATURAL_STATUS_INVALID));
+    assertFalse(v.contains(Issue.DERIVED_NOMENCLATURAL_STATUS));
+
+    // taxonomic verdicts that read like a nomenclatural status: taxstatus.csv deliberately leaves
+    // their 4th column empty, so nothing is derived. See TaxonomicStatusParserTest.
+    for (String falseFriend : new String[]{"valid", "invalid", "doubtful", "uncertain"}) {
+      v = new VerbatimRecord();
+      v.put(ColdpTerm.ID, "x");
+      v.put(ColdpTerm.status, falseFriend);
+      nu = ib.interpretUsage(ColdpTerm.ID, pnu("x"), ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, null, Collections.emptyMap());
+      assertNull(falseFriend, nu.nd.getName().getNomStatus());
+      assertFalse(falseFriend, v.contains(Issue.DERIVED_NOMENCLATURAL_STATUS));
+    }
+
+    // an explicit nom status always wins, the taxonomic status is the weakest of the 3 sources
+    v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "x");
+    v.put(ColdpTerm.status, "nomen nudum");
+    var p = pnu("x");
+    p.getName().setNomStatus(NomStatus.ACCEPTABLE);
+    nu = ib.interpretUsage(ColdpTerm.ID, p, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, null, Collections.emptyMap());
+    assertEquals(NomStatus.ACCEPTABLE, nu.nd.getName().getNomStatus());
+    assertFalse(v.contains(Issue.DERIVED_NOMENCLATURAL_STATUS));
+  }
+
   @Test
   public void interpretUsage() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
@@ -147,7 +247,7 @@ public class InterpreterBaseTest {
 
     ParsedNameUsage pnu = new ParsedNameUsage(n, true, "sensu Döring 1999", "Döring 1999. Travels through the Middle East");
 
-    var nu = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, Collections.emptyMap());
+    var nu = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, null, Collections.emptyMap());
 
     assertTrue(nu.ud.usage.isTaxon());
     Taxon t = nu.ud.asTaxon();
@@ -179,7 +279,7 @@ public class InterpreterBaseTest {
 
     ParsedNameUsage pnu = new ParsedNameUsage(n);
     pnu.setDoubtful(true); // gets converted to provisional
-    var nu = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, Collections.emptyMap());
+    var nu = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, null, Collections.emptyMap());
     var u = nu.ud;
 
     assertTrue(u.usage.isTaxon());

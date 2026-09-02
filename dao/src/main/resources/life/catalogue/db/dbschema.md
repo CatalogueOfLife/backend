@@ -11,6 +11,20 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-02 derived nomenclatural status issue
+Sources frequently squeeze a nomenclatural statement into their single taxonomic status column -
+WoRMS publishes `dwc:taxonomicStatus=nomen nudum`, `junior homonym` or `nomen rejiciendum` while
+leaving `dwc:nomenclaturalStatus` empty. The interpreter now derives a `NomStatus` from that raw
+value when neither the explicit column nor the authorship note supplied one, and flags it.
+See https://github.com/CatalogueOfLife/backend/issues/1571
+
+No backfill and no ordering constraint: the value is only ever written by a new import, so the
+`ALTER TYPE` merely has to run before the deploy that starts using it.
+
+```sql
+ALTER TYPE ISSUE ADD VALUE 'DERIVED_NOMENCLATURAL_STATUS';
+```
+
 #### 2026-09-01 record the attempt a job produced
 `ImportJob`, `SectorRunnable` and `AbstractProjectCopy` all create an import or sync metrics record
 with a fresh attempt, but the generic job row never carried it - the only attempt reachable through
