@@ -242,6 +242,41 @@ public class HierarchySyncIT {
   }
 
   /**
+   * Regression for the 2026-09-02 OOM. The source has a parent cycle between two accepted species,
+   * so phase 4 walks a chain for each that resolves to the other. Rewiring both would close the very
+   * A ↔ B loop that made the following ES reindex build a 95 million entry classification and take the
+   * rw server down. The second rewire must be blocked.
+   */
+  @Test
+  public void mutualRewireDoesNotCreateCycle() throws Exception {
+    final String P_A = "p_mutualA";
+    final String P_B = "p_mutualB";
+    final String T_A = "T_mutualA";
+    final String T_B = "T_mutualB";
+
+    // Target: A and B are each others parent - a cycle in the source data. The (dataset_key, parent_id)
+    // FK means a cycle can only ever be closed by an update, never by an insert - which is exactly how
+    // rewireProjectParents produced one in production.
+    insertTaxon(targetKey, T_A, null, Rank.SPECIES, "Prunus domestica insititia");
+    insertTaxon(targetKey, T_B, null, Rank.SUBSPECIES, "Prunus domestica subsp. insititia");
+    setParent(targetKey, T_A, T_B);
+    setParent(targetKey, T_B, T_A);
+
+    // Project: both matched by identifier, both roots
+    insertTaxonWithIdentifier(PROJECT_KEY, P_A, null, Rank.SPECIES, "Prunus domestica insititia", T_A);
+    insertTaxonWithIdentifier(PROJECT_KEY, P_B, null, Rank.SUBSPECIES, "Prunus domestica subsp. insititia", T_B);
+
+    runHierarchySync();
+
+    NameUsageBase a = getByID(PROJECT_KEY, P_A);
+    NameUsageBase b = getByID(PROJECT_KEY, P_B);
+    assertNotNull(a);
+    assertNotNull(b);
+    assertFalse("P_A and P_B must not end up as each others parent",
+      P_B.equals(a.getParentId()) && P_A.equals(b.getParentId()));
+  }
+
+  /**
    * Regression for the Vicia/Lentilla reassignment scenario. Target reassigns Vicia and its
    * species under a different accepted genus (Lentilla) by treating the project's accepted names
    * as synonyms of accepted Lentilla counterparts. The hierarchy sync must demote both accepted
@@ -717,6 +752,13 @@ public class HierarchySyncIT {
       s.getMapper(NameMapper.class).create(n);
       Taxon t = buildTaxon(datasetKey, id, parentId, n, TaxonomicStatus.ACCEPTED);
       s.getMapper(TaxonMapper.class).create(t);
+    }
+  }
+
+  /** Repoints an existing usage - the only way to close a parent cycle past the (dataset_key, parent_id) FK. */
+  private static void setParent(int datasetKey, String id, String parentId) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      s.getMapper(NameUsageMapper.class).updateParentId(DSID.of(datasetKey, id), parentId, USER);
     }
   }
 

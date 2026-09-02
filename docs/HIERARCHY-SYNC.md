@@ -127,6 +127,11 @@ Calls `NameUsageMapper.updateParentId(...)` for every **accepted** matched proje
 re-anchoring it under its newly-imported immediate above-genus ancestor. Synonyms are not rewired
 in this pass; phase 2 handles them.
 
+Each move is checked with `wouldCreateCycle(...)` first, the same guard phases 2 and 5 use. Two
+usages of this pass can otherwise be rewired onto each other — each move legal on its own, together
+closing a 2-cycle — and the reindex at the end of the sync would then walk that cycle. Blocked moves
+are logged and counted as `cycle-blocked`.
+
 ### 3. Phase 2 — Status realignment
 
 `realignStatus()` iterates `projectMatches` and, for each pair, loads the target usage to compare

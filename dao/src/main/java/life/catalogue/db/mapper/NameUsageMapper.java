@@ -14,6 +14,7 @@ import life.catalogue.printer.diff.DiffNamesParam;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +23,8 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mapper dealing with methods returning the NameUsage interface, i.e. a name in the context of either a Taxon, Synonym or BareName.
@@ -29,6 +32,7 @@ import org.apache.ibatis.cursor.Cursor;
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
 public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyDataset, DatasetProcessable<NameUsageBase>, TempNameUsageRelated {
+  Logger LOG = LoggerFactory.getLogger(NameUsageMapper.class);
 
   NameUsageBase get(@Param("key") DSID<String> key);
 
@@ -45,7 +49,13 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
     classification.addLast(u);
 
     var pid = DSID.<String>root(key.getDatasetKey());
+    var visited = new HashSet<String>();
+    visited.add(u.getId());
     while (u.getParentId() != null) {
+      if (!visited.add(u.getParentId())) {
+        warnCycle(key, u.getParentId());
+        break;
+      }
       u = get(pid.id(u.getParentId()));
       classification.addFirst(u);
     }
@@ -65,11 +75,27 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
     classification.addLast(u);
 
     var pid = DSID.<String>root(key.getDatasetKey());
+    var visited = new HashSet<String>();
+    visited.add(u.getId());
     while (u.getParentId() != null) {
+      if (!visited.add(u.getParentId())) {
+        warnCycle(key, u.getParentId());
+        break;
+      }
       u = getSimpleCached(pid.id(u.getParentId()));
       classification.addFirst(u);
     }
     return classification;
+  }
+
+  /**
+   * Both classification walks above stop as soon as they would revisit an id. Bad data really does contain
+   * parent cycles - one took the rw server down with an OOM in Sept 2026 - and an unguarded walk here never
+   * returns. Say so rather than silently handing back a truncated classification.
+   */
+  private static void warnCycle(DSID<String> key, String repeated) {
+    LOG.warn("Bad classification tree with parent circles in dataset {}: {} reaches {} a second time. Truncating its classification",
+      key.getDatasetKey(), key.getId(), repeated);
   }
 
   /**

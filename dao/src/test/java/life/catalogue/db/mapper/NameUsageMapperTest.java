@@ -113,6 +113,32 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     mapper().getSimpleInDataset(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
   }
 
+  /**
+   * A parent cycle must not make the classification walks loop forever - the same bad data that took
+   * the rw server down with an OOM in Sept 2026 also reaches these two mapper defaults.
+   */
+  @Test
+  public void classificationStopsAtParentCycle() throws Exception {
+    Name n1 = TestEntityGenerator.newName(datasetKey, "cyc-n1", "Prunus domestica insititia", Rank.SPECIES);
+    nm.create(n1);
+    Name n2 = TestEntityGenerator.newName(datasetKey, "cyc-n2", "Prunus domestica subsp. insititia", Rank.SUBSPECIES);
+    nm.create(n2);
+    Taxon t1 = TestEntityGenerator.newTaxon(n1, "cyc-t1", null);
+    tm.create(t1);
+    Taxon t2 = TestEntityGenerator.newTaxon(n2, "cyc-t2", t1.getId());
+    tm.create(t2);
+    // close the loop. The (dataset_key, parent_id) FK only ever allows this as an update, which is
+    // exactly how HierarchySync produced one in production.
+    mapper().updateParentId(DSID.of(datasetKey, t1.getId()), t2.getId(), Users.TESTER);
+    commit();
+
+    var cl = mapper().getClassification(DSID.of(datasetKey, t1.getId()));
+    assertEquals(List.of("cyc-t2", "cyc-t1"), cl.stream().map(NameUsageBase::getId).toList());
+
+    var sn = mapper().getClassificationSN(DSID.of(datasetKey, t1.getId()));
+    assertEquals(List.of("cyc-t2", "cyc-t1"), sn.stream().map(SimpleNameCached::getId).toList());
+  }
+
   @Test
   public void processDatasetBareNames() throws Exception {
     assertSize(mapper().processDatasetBareNames(testDataRule.testData.key, null, null), 1);

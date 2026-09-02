@@ -19,6 +19,8 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -35,6 +37,12 @@ import org.slf4j.LoggerFactory;
 public class NameUsageProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageProcessor.class);
   private static final int LOG_INTERVAL = 5000;
+  /**
+   * Hard ceiling on the number of entries in a classification. Real classifications are far below
+   * this - the cap only exists so a broken, absurdly deep chain cannot eat the heap either.
+   */
+  @VisibleForTesting
+  static final int MAX_CLASSIFICATION_DEPTH = 100;
 
   private final SqlSessionFactory factory;
   private final TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
@@ -215,17 +223,35 @@ public class NameUsageProcessor {
     }
   }
 
-  private void addClassification(NameUsageWrapper nuw, ObjectCache<NameUsageWrapper> taxa, UsageCache usageCache, CacheLoader loader) {
+  @VisibleForTesting
+  void addClassification(NameUsageWrapper nuw, ObjectCache<NameUsageWrapper> taxa, UsageCache usageCache, CacheLoader loader) {
     List<SimpleName> classification = new ArrayList<>();
     if (!nuw.getUsage().isBareName()) {
-      SimpleName curr = new SimpleName((NameUsageBase) nuw.getUsage());
+      final var usage = nuw.getUsage();
+      SimpleName curr = new SimpleName((NameUsageBase) usage);
       classification.add(curr);
+      // Bad data can have parent cycles. Without these two guards the walk never ends and every turn appends
+      // two freshly deserialised usages, which is how a single Prunus cycle grew one list to 95 million entries
+      // and took the rw server down with an OOM. UsageCache.addParents guards the same way.
+      final Set<String> visited = new HashSet<>();
+      visited.add(usage.getId());
       while (curr != null && curr.getParent() != null) {
-        if (taxa.contains(curr.getParent())) {
-          curr = new SimpleName((NameUsageBase) taxa.get(curr.getParent()).getUsage());
+        final String parentID = curr.getParent();
+        if (!visited.add(parentID)) {
+          LOG.warn("Bad classification tree with parent circles in dataset {}: usage {} reaches {} a second time. Truncating its classification at {} entries",
+            usage.getDatasetKey(), usage.getId(), parentID, classification.size());
+          break;
+        }
+        if (classification.size() >= MAX_CLASSIFICATION_DEPTH) {
+          LOG.warn("Classification of usage {} in dataset {} exceeds {} entries at parent {}. Truncating",
+            usage.getId(), usage.getDatasetKey(), MAX_CLASSIFICATION_DEPTH, parentID);
+          break;
+        }
+        if (taxa.contains(parentID)) {
+          curr = new SimpleName((NameUsageBase) taxa.get(parentID).getUsage());
         } else {
           // need to fetch usage which lies outside the scope of this processor, e.g. a merge sector with parents outside of the sector
-          curr = usageCache.getOrLoad(curr.getParent(), loader);
+          curr = usageCache.getOrLoad(parentID, loader);
           loadCounter++;
         }
         if (curr != null) {

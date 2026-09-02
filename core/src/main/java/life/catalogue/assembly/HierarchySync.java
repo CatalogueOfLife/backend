@@ -642,16 +642,19 @@ public class HierarchySync extends SectorRunnable {
    * (immediate parent first) and rewires its {@code parent_id} to the closest ancestor that has a
    * project equivalent — either an above-genus ancestor that we just imported, or another matched
    * accepted project usage (so the existing matched genus is preferred over the imported family).
-   * Updates are skipped when the new parent matches the current one. Usages whose entire chain has
-   * no project equivalent are left untouched.
+   * Updates are skipped when the new parent matches the current one or when the move would close a
+   * cycle. Usages whose entire chain has no project equivalent are left untouched.
    */
   private void rewireProjectParents(int projectKey, Map<String, List<String>> sourceChainForAccepted) {
     if (sourceChainForAccepted.isEmpty()) return;
     int rewired = 0;
     int unchanged = 0;
     int unresolved = 0;
-    try (SqlSession batch = factory.openSession(ExecutorType.BATCH, false)) {
+    int cycleBlocked = 0;
+    try (SqlSession batch = factory.openSession(ExecutorType.BATCH, false);
+         SqlSession read = factory.openSession(true)) {
       NameUsageMapper num = batch.getMapper(NameUsageMapper.class);
+      NameUsageMapper readNum = read.getMapper(NameUsageMapper.class);
       for (Map.Entry<String, List<String>> e : sourceChainForAccepted.entrySet()) {
         final String projectId = e.getKey();
         String newParent = null;
@@ -666,14 +669,17 @@ public class HierarchySync extends SectorRunnable {
           unresolved++;
           continue;
         }
-        if (newParent.equals(projectId)) {
-          // would create a self-loop (e.g. cached projectParents already had us here); skip
-          unchanged++;
-          continue;
-        }
         String currentParent = projectParents.get(projectId);
         if (newParent.equals(currentParent)) {
           unchanged++;
+          continue;
+        }
+        // Two usages of this very pass can be rewired onto each other - each move looks legal on its own but
+        // together they close a cycle, which then makes the ES reindex below walk it forever. Same guard the
+        // other four parent writing passes use; it reads through projectParents, so it sees our own rewires.
+        if (wouldCreateCycle(projectKey, projectId, newParent, readNum)) {
+          LOG.warn("Hierarchy sector {}: skipping rewire of {} - new parent {} would create a cycle", sectorKey, projectId, newParent);
+          cycleBlocked++;
           continue;
         }
         num.updateParentId(DSID.of(projectKey, projectId), newParent, user);
@@ -684,8 +690,8 @@ public class HierarchySync extends SectorRunnable {
       }
       batch.commit();
     }
-    LOG.info("Hierarchy sector {}: rewired {} accepted project usages to closest project ancestor (unchanged {}, unresolvable {})",
-      sectorKey, rewired, unchanged, unresolved);
+    LOG.info("Hierarchy sector {}: rewired {} accepted project usages to closest project ancestor (unchanged {}, unresolvable {}, cycle-blocked {})",
+      sectorKey, rewired, unchanged, unresolved, cycleBlocked);
   }
 
   /**
