@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static life.catalogue.common.text.StringUtils.digitOrAsciiLetters;
 import static life.catalogue.parser.SafeParser.parse;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
@@ -37,6 +39,15 @@ import static org.apache.commons.lang3.StringUtils.trimToNull;
 public class NameInterpreter {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameInterpreter.class);
+
+  /**
+   * Taxonomic verdicts that read like a nomenclatural status but are not one.
+   * In zoology a "valid" or "invalid" name is a statement about the taxon, not about the name,
+   * and a "doubtful" or "uncertain" placement is not a nomen dubium.
+   * Deriving a NomStatus from these would stamp a nomenclatural claim on most names of many datasets.
+   */
+  private static final Set<String> NOM_STATUS_FALSE_FRIENDS = Set.of("VALID", "INVALID", "DOUBTFUL", "UNCERTAIN");
+
 
   protected final DatasetSettings settings;
   private final boolean preferAtoms;
@@ -355,6 +366,32 @@ public class NameInterpreter {
       }
 
       return Optional.of(pnu);
+  }
+
+  /**
+   * Many sources squeeze a nomenclatural statement into their single taxonomic status column,
+   * e.g. dwc:taxonomicStatus=nomen nudum, junior homonym or nomen rejiciendum.
+   * If the name has no nomenclatural status yet - neither from an explicit column nor from a
+   * nomenclatural note in the authorship - we derive one from that raw taxonomic status.
+   * <p>
+   * It is the weakest of the 3 sources, so it only ever applies when the other two came up empty
+   * and therefore never conflicts with them.
+   * Values the NomStatusParser does not know are silently ignored: a taxonomic status column is not a
+   * nomenclatural status column, so an unmapped value must not raise NOMENCLATURAL_STATUS_INVALID.
+   *
+   * @param n the name, already through interpret() so any explicit nomStatus is resolved
+   * @param rawTaxonomicStatus the verbatim taxonomic status value
+   */
+  public static void deriveNomStatus(Name n, @Nullable String rawTaxonomicStatus, IssueContainer issues) {
+    if (n == null || n.getNomStatus() != null || rawTaxonomicStatus == null) return;
+    var norm = digitOrAsciiLetters(rawTaxonomicStatus);
+    if (norm == null || NOM_STATUS_FALSE_FRIENDS.contains(norm.replace(" ", ""))) return;
+    // parseOrNull never throws and never flags an issue
+    NomStatus derived = NomStatusParser.PARSER.parseOrNull(rawTaxonomicStatus);
+    if (derived != null) {
+      n.setNomStatus(derived);
+      issues.add(Issue.DERIVED_NOMENCLATURAL_STATUS);
+    }
   }
 
   private static Authorship buildAuthorship(String author, String ex, String year) {

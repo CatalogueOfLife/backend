@@ -529,7 +529,12 @@ public enum Issue {
 
   AUTHORSHIP_INDET_MARKER(NAME, Level.ERROR,
       "The authorship is an indetermination or rank marker such as \"sp.\", not a real author. "
-      + "Usually a source that supplies the marker in its own authorship column, e.g. scientificName=Berkeleyia with authorship=sp.")
+      + "Usually a source that supplies the marker in its own authorship column, e.g. scientificName=Berkeleyia with authorship=sp."),
+
+  DERIVED_NOMENCLATURAL_STATUS(NAME, Level.INFO,
+      "The nomenclatural status was not given explicitly, but derived from the taxonomic status. "
+      + "Sources often squeeze a nomenclatural statement into their single status column, "
+      + "e.g. dwc:taxonomicStatus=\"nomen nudum\" or \"junior homonym\".")
   ;
 
   /**

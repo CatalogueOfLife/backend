@@ -1,0 +1,12 @@
+taxonID	acceptedNameUsageID	parentNameUsageID	scientificName	scientificNameAuthorship	taxonRank	nomenclaturalCode	taxonomicStatus	nomenclaturalStatus
+1	1		Animalia		kingdom	ICZN	accepted
+2	2	1	Cercaria	Müller, 1773	genus	ICZN	accepted
+3	3	2	Cercaria vera	Cable, 1963	species	ICZN	accepted
+4	3	2	Cercaria caribbea	Cable, 1963	species	ICZN	unavailable name
+5	5	2	Cercaria nuda	Cable, 1963	species	ICZN	unavailable name
+6		2	Cercaria vana	Cable, 1963	species	ICZN	interim unpublished
+7	999	2	Cercaria ignota	Cable, 1963	species	ICZN	unavailable name
+8	3	2	Cercaria dubia	Cable, 1963	species	ICZN	nomen nudum
+9	9	2	Cercaria valida	Cable, 1963	species	ICZN	valid
+10	3	2	Cercaria illegitima	Cable, 1963	species	ICZN	unaccepted	nom. illeg.
+11	3	2	Cercaria combinata	(Cable, 1963) Smith, 1970	species	ICZN	superseded combination

@@ -6,50 +6,58 @@ acceptedgenusname,ACCEPTED
 acceptedname,ACCEPTED
 aceptado,ACCEPTED
 authority,ACCEPTED
+nomeaceito,ACCEPTED
+nomen novum,ACCEPTED
+nomen protectum,ACCEPTED
 preferredname,ACCEPTED
 valid,ACCEPTED
-nomeaceito,ACCEPTED
 
 4,PROVISIONALLY_ACCEPTED
 aceptadoprovisionalmente,PROVISIONALLY_ACCEPTED
 d,PROVISIONALLY_ACCEPTED
 doubtful,PROVISIONALLY_ACCEPTED
 dubioustaxonconcept,PROVISIONALLY_ACCEPTED
-nomendubium,PROVISIONALLY_ACCEPTED
+not determined,PROVISIONALLY_ACCEPTED
 provisional,PROVISIONALLY_ACCEPTED
 provisionallyacceptedname,PROVISIONALLY_ACCEPTED
+species_inquirenda,PROVISIONALLY_ACCEPTED
+tbd,PROVISIONALLY_ACCEPTED
 temporary,PROVISIONALLY_ACCEPTED
 temporaryname,PROVISIONALLY_ACCEPTED
-provisional,PROVISIONALLY_ACCEPTED
-to determine,PROVISIONALLY_ACCEPTED
 to be determined,PROVISIONALLY_ACCEPTED
-not determined,PROVISIONALLY_ACCEPTED
-undetermined,PROVISIONALLY_ACCEPTED
 to be done,PROVISIONALLY_ACCEPTED
-tbd,PROVISIONALLY_ACCEPTED
-species_inquirenda,PROVISIONALLY_ACCEPTED
+to determine,PROVISIONALLY_ACCEPTED
+undetermined,PROVISIONALLY_ACCEPTED
+unreplaced junior homonym,PROVISIONALLY_ACCEPTED
 
 5,SYNONYM
 alternaterepresentation,SYNONYM
+alternative representation,SYNONYM
 equivalenname,SYNONYM
 equivalentname,SYNONYM
 genbankacronym,SYNONYM
 genbanksynonym,SYNONYM
 genussynonym,SYNONYM
 heterotypicsynonym,SYNONYM
-heterotypicsynonym,SYNONYM
 homotypicsynonym,SYNONYM,homotypic
-homotypicsynonym,SYNONYM,homotypic
+incorrect grammatical agreement of specific epithet,SYNONYM,homotypic
 incorrectspelling,SYNONYM
 invalid,SYNONYM
 isheterotypicsynonymof,SYNONYM
 ishomotypicsynonymof,SYNONYM,homotypic
 issynonymof,SYNONYM
+junior homonym,SYNONYM
+junior objective synonym,SYNONYM,homotypic
+junior subjective synonym,SYNONYM
 juniorsynonym,SYNONYM
 lexicalvariant,SYNONYM
 misnomer,SYNONYM
 misspelling,SYNONYM
+misspelling - incorrect original spelling,SYNONYM,homotypic
+misspelling - incorrect subsequent spelling,SYNONYM,homotypic
 noacceped,SYNONYM
+nomen oblitum,SYNONYM
+nomen rejiciendum,SYNONYM
 nomennudum,SYNONYM
 notaccepted,SYNONYM
 notdescribed,SYNONYM
@@ -59,6 +67,8 @@ sinonimo,SYNONYM
 sinônimo heterotipico,SYNONYM
 sinônimo homotipico,SYNONYM,homotypic
 spellingalternative,SYNONYM
+superseded combination,SYNONYM,homotypic
+superseded rank,SYNONYM,homotypic
 synonym,SYNONYM
 synonymobjectivehomotypic,SYNONYM,homotypic
 synonymoriginalcombination,SYNONYM,homotypic
@@ -67,6 +77,7 @@ synonymsubjective,SYNONYM
 synonymsubjectiveheterotypic,SYNONYM
 unaccepted,SYNONYM
 unavailable,SYNONYM
+unjustified emendation,SYNONYM,homotypic
 unpublishedname,SYNONYM
 
 2,AMBIGUOUS_SYNONYM
@@ -82,13 +93,16 @@ propartesynonym,AMBIGUOUS_SYNONYM
 
 3,MISAPPLIED
 ismisappliednamefor,MISAPPLIED
+misapplication,MISAPPLIED
 misapplied,MISAPPLIED
 misappliedname,MISAPPLIED
 
 bare,BARE_NAME
-unplaced,BARE_NAME
-unresolved,BARE_NAME
-uncertain,BARE_NAME
-unassessed,BARE_NAME
+interim unpublished,BARE_NAME
 nomendubium,BARE_NAME
 taxoninquirendum,BARE_NAME
+unassessed,BARE_NAME
+unavailable name,BARE_NAME
+uncertain,BARE_NAME
+unplaced,BARE_NAME
+unresolved,BARE_NAME

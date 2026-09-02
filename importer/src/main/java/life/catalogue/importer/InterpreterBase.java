@@ -521,7 +521,13 @@ public class InterpreterBase {
     return settings.get(Setting.EXTINCT) != null && rank != null && !rank.isUncomparable() && !rank.higherThan(settings.getEnum(Setting.EXTINCT));
   }
 
-  public NameUsageData interpretUsage(Term idTerm, ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term basionymIdTerm, Map<Term, Identifier.Scope> altIdTerms) {
+  /**
+   * @param acceptedIdTerm term holding a link to the accepted usage, e.g. dwc:acceptedNameUsageID.
+   *                       Used to upgrade a bare name state into a synonym, see below. Can be null
+   *                       for formats which have no unambiguous accepted id.
+   */
+  public NameUsageData interpretUsage(Term idTerm, ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v,
+                                      Term basionymIdTerm, @Nullable Term acceptedIdTerm, Map<Term, Identifier.Scope> altIdTerms) {
     // name data
     var nn = new NameData(pnu);
     if (basionymIdTerm != null) {
@@ -529,8 +535,22 @@ public class InterpreterBase {
     }
 
     // a synonym by status?
-    EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
+    final String rawStatus = v.get(taxStatusTerm);
+    EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, rawStatus)
       .orElse(()->new EnumNote<>(defaultStatus, null), Issue.TAXONOMIC_STATUS_INVALID, v);
+
+    // a record that declares a bare name state but still links to an accepted usage is a synonym, not a bare name.
+    // WoRMS for example uses states like "unavailable name" for names it does place under an accepted taxon.
+    // This has to happen here: bare names are never stored as usages, so DwcaInserter.updateAccepted,
+    // which does the very same conversion in its 2nd pass, never gets to see them.
+    // We cannot know yet whether the id resolves. If it does not, updateAccepted flags ACCEPTED_NAME_MISSING
+    // and Normalizer.removeOrphanSynonyms turns the record back into the bare name it started as.
+    if (status.val.isBareName() && v.getRawButNot(acceptedIdTerm, nn.getId()) != null) {
+      status = new EnumNote<>(TaxonomicStatus.SYNONYM, status.note);
+    }
+
+    // a nomenclatural statement hidden in the taxonomic status column, e.g. "nomen nudum"
+    NameInterpreter.deriveNomStatus(pnu.getName(), rawStatus, v);
 
     UsageData u;
     if (status.val.isBareName()) {

@@ -56,8 +56,40 @@ public class TaxonomicStatusParserTest extends EnumNoteParserTestBase<TaxonomicS
     assertParse(BARE_NAME, "taxon inquirendum");
   }
 
-  private void assertNote() {
-
+  /**
+   * All 26 distinct dwc:taxonomicStatus values published by WoRMS, see
+   * https://github.com/CatalogueOfLife/backend/issues/1571
+   * WoRMS squeezes nomenclatural statements into this column, so several values are
+   * only synonyms in the CoL sense of the word.
+   */
+  @Test
+  public void worms() throws Exception {
+    assertParse(ACCEPTED, "accepted");
+    assertParse(SYNONYM, "unaccepted");
+    assertParse(BARE_NAME, "unassessed");
+    assertParse(SYNONYM, TaxonomicStatusParser.HOMOTYPIC_NOTE, "superseded combination");
+    assertParse(SYNONYM, "junior subjective synonym");
+    assertParse(SYNONYM, "alternative representation");
+    assertParse(BARE_NAME, "taxon inquirendum");
+    assertParse(SYNONYM, TaxonomicStatusParser.HOMOTYPIC_NOTE, "superseded rank");
+    assertParse(SYNONYM, TaxonomicStatusParser.HOMOTYPIC_NOTE, "misspelling - incorrect subsequent spelling");
+    assertParse(BARE_NAME, "nomen dubium");
+    assertParse(SYNONYM, "nomen nudum");
+    assertParse(SYNONYM, "junior homonym");
+    assertParse(SYNONYM, TaxonomicStatusParser.HOMOTYPIC_NOTE, "junior objective synonym");
+    assertParse(PROVISIONALLY_ACCEPTED, "unreplaced junior homonym");
+    assertParse(BARE_NAME, "uncertain");
+    assertParse(BARE_NAME, "unavailable name");
+    assertParse(SYNONYM, TaxonomicStatusParser.HOMOTYPIC_NOTE, "incorrect grammatical agreement of specific epithet");
+    assertParse(SYNONYM, TaxonomicStatusParser.HOMOTYPIC_NOTE, "misspelling - incorrect original spelling");
+    assertParse(PROVISIONALLY_ACCEPTED, "temporary name");
+    assertParse(SYNONYM, TaxonomicStatusParser.HOMOTYPIC_NOTE, "unjustified emendation");
+    assertParse(MISAPPLIED, "misapplication");
+    assertParse(BARE_NAME, "interim unpublished");
+    assertParse(SYNONYM, "nomen oblitum");
+    assertParse(ACCEPTED, "nomen novum");
+    assertParse(SYNONYM, "nomen rejiciendum");
+    assertParse(ACCEPTED, "nomen protectum");
   }
 
   @Override

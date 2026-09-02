@@ -14,6 +14,7 @@ import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.RelationData;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.interpreter.InterpreterUtils;
+import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.*;
 
@@ -59,7 +60,12 @@ public class ColdpInterpreter extends InterpreterBase {
       }
 
       UsageData u;
-      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(ACC_NOTE, Issue.TAXONOMIC_STATUS_INVALID, v).val;
+      final String rawStatus = v.get(ColdpTerm.status);
+      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, rawStatus).orElse(ACC_NOTE, Issue.TAXONOMIC_STATUS_INVALID, v).val;
+      // a nomenclatural statement hidden in the taxonomic status column, e.g. "nomen nudum".
+      // Only for the single file NameUsage format - the Synonym and Taxon files share a Name across
+      // possibly several usages, so deriving there would mutate it order dependently.
+      NameInterpreter.deriveNomStatus(nn.getName(), rawStatus, v);
       if (status.isBareName()) {
         u = UsageData.buildBareName(Origin.SOURCE);
       } else if (status.isSynonym()) {

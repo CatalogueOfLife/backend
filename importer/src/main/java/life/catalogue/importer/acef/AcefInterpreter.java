@@ -94,7 +94,8 @@ public class AcefInterpreter extends InterpreterBase {
   private Optional<NameUsageData> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
     return interpretName(idTerm, v).map(nat -> {
-      var u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v, null, Collections.emptyMap());
+      var u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v, null,
+        synonym ? AcefTerm.AcceptedTaxonID : null, Collections.emptyMap());
       // status matches up?
       if (synonym != u.ud.isSynonym()) {
         v.add(Issue.TAXONOMIC_STATUS_INVALID);
