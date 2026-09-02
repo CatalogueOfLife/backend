@@ -212,7 +212,8 @@ public class InterpreterBaseTest {
     assertFalse(v.contains(Issue.NOMENCLATURAL_STATUS_INVALID));
     assertFalse(v.contains(Issue.DERIVED_NOMENCLATURAL_STATUS));
 
-    // false friends: in zoology a valid/invalid name is a statement about the taxon, not the name
+    // taxonomic verdicts that read like a nomenclatural status: taxstatus.csv deliberately leaves
+    // their 4th column empty, so nothing is derived. See TaxonomicStatusParserTest.
     for (String falseFriend : new String[]{"valid", "invalid", "doubtful", "uncertain"}) {
       v = new VerbatimRecord();
       v.put(ColdpTerm.ID, "x");

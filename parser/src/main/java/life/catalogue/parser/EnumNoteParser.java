@@ -1,5 +1,6 @@
 package life.catalogue.parser;
 
+import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.common.io.TabReader;
 
 import java.io.IOException;
@@ -33,14 +34,24 @@ public abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote
           LOG.debug("Ignore unmapped value {} on line {}", row[0], reader.getContext().currentLine());
           continue;
         }
-        if (row.length > 3 || Strings.isNullOrEmpty(row[1])) {
+        if (row.length > 4 || Strings.isNullOrEmpty(row[1])) {
           LOG.debug("Ignore invalid mapping in {}, line {} with {} columns", mappingResourceFile, reader.getContext().currentLine(), row.length);
           continue;
         }
         Optional<T> val = Enums.getIfPresent(enumClass, row[1]);
-        String note = row.length == 3 ? row[2] : null;
+        String note = row.length > 2 ? Strings.emptyToNull(row[2]) : null;
+        // an optional 4th column names the NomStatus this key implies, see EnumNote
+        NomStatus nomStatus = null;
+        if (row.length == 4 && !Strings.isNullOrEmpty(row[3])) {
+          Optional<NomStatus> ns = Enums.getIfPresent(NomStatus.class, row[3]);
+          if (ns.isPresent()) {
+            nomStatus = ns.get();
+          } else {
+            LOG.warn("Value {} not present in NomStatus enumeration. Ignore nomenclatural status for {}", row[3], row[0]);
+          }
+        }
         if (val.isPresent()) {
-          add(row[0], val.get(), note);
+          add(row[0], val.get(), note, nomStatus);
         } else {
           LOG.info("Value {} not present in {} enumeration. Ignore mapping to {}", row[1], enumClass.getSimpleName(), row[0]);
         }
@@ -64,9 +75,13 @@ public abstract class EnumNoteParser<T extends Enum> extends ParserBase<EnumNote
    * Blank strings and null values will be ignored!
    */
   public void add(String key, T value, String note) {
+    add(key, value, note, null);
+  }
+
+  public void add(String key, T value, String note, NomStatus nomStatus) {
     key = normalize(key);
     if (key != null) {
-      this.mapping.put(key, new EnumNote<>(value, note));
+      this.mapping.put(key, new EnumNote<>(value, note, nomStatus));
     }
   }
   

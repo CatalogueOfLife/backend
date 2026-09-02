@@ -1,5 +1,7 @@
 package life.catalogue.parser;
 
+import life.catalogue.api.vocab.NomStatus;
+
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -17,7 +19,11 @@ abstract class EnumNoteParserTestBase<T extends Enum> extends ParserTestBase<Enu
     assertEquals(Optional.of(new EnumNote<>(expected, note)), parser.parse(input));
   }
 
+  void assertParse(T expected, String note, NomStatus nomStatus, String input) throws UnparsableException {
+    assertEquals(Optional.of(new EnumNote<>(expected, note, nomStatus)), parser.parse(input));
+  }
+
   void assertParse(T expected, String input) throws UnparsableException {
-    assertParse(expected, null, input);
+    assertParse(expected, (String) null, input);
   }
 }

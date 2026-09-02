@@ -535,8 +535,7 @@ public class InterpreterBase {
     }
 
     // a synonym by status?
-    final String rawStatus = v.get(taxStatusTerm);
-    EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, rawStatus)
+    EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
       .orElse(()->new EnumNote<>(defaultStatus, null), Issue.TAXONOMIC_STATUS_INVALID, v);
 
     // a record that declares a bare name state but still links to an accepted usage is a synonym, not a bare name.
@@ -546,11 +545,11 @@ public class InterpreterBase {
     // We cannot know yet whether the id resolves. If it does not, updateAccepted flags ACCEPTED_NAME_MISSING
     // and Normalizer.removeOrphanSynonyms turns the record back into the bare name it started as.
     if (status.val.isBareName() && v.getRawButNot(acceptedIdTerm, nn.getId()) != null) {
-      status = new EnumNote<>(TaxonomicStatus.SYNONYM, status.note);
+      status = new EnumNote<>(TaxonomicStatus.SYNONYM, status.note, status.nomStatus);
     }
 
     // a nomenclatural statement hidden in the taxonomic status column, e.g. "nomen nudum"
-    NameInterpreter.deriveNomStatus(pnu.getName(), rawStatus, v);
+    NameInterpreter.deriveNomStatus(pnu.getName(), status.nomStatus, v);
 
     UsageData u;
     if (status.val.isBareName()) {

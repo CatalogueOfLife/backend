@@ -7,8 +7,8 @@ acceptedname,ACCEPTED
 aceptado,ACCEPTED
 authority,ACCEPTED
 nomeaceito,ACCEPTED
-nomen novum,ACCEPTED
-nomen protectum,ACCEPTED
+nomen novum,ACCEPTED,,ACCEPTABLE
+nomen protectum,ACCEPTED,,CONSERVED
 preferredname,ACCEPTED
 valid,ACCEPTED
 
@@ -28,7 +28,7 @@ to be determined,PROVISIONALLY_ACCEPTED
 to be done,PROVISIONALLY_ACCEPTED
 to determine,PROVISIONALLY_ACCEPTED
 undetermined,PROVISIONALLY_ACCEPTED
-unreplaced junior homonym,PROVISIONALLY_ACCEPTED
+unreplaced junior homonym,PROVISIONALLY_ACCEPTED,,UNACCEPTABLE
 
 5,SYNONYM
 alternaterepresentation,SYNONYM
@@ -46,19 +46,19 @@ invalid,SYNONYM
 isheterotypicsynonymof,SYNONYM
 ishomotypicsynonymof,SYNONYM,homotypic
 issynonymof,SYNONYM
-junior homonym,SYNONYM
+junior homonym,SYNONYM,,UNACCEPTABLE
 junior objective synonym,SYNONYM,homotypic
 junior subjective synonym,SYNONYM
 juniorsynonym,SYNONYM
 lexicalvariant,SYNONYM
 misnomer,SYNONYM
 misspelling,SYNONYM
-misspelling - incorrect original spelling,SYNONYM,homotypic
-misspelling - incorrect subsequent spelling,SYNONYM,homotypic
+misspelling - incorrect original spelling,SYNONYM,homotypic,NOT_ESTABLISHED
+misspelling - incorrect subsequent spelling,SYNONYM,homotypic,NOT_ESTABLISHED
 noacceped,SYNONYM
-nomen oblitum,SYNONYM
-nomen rejiciendum,SYNONYM
-nomennudum,SYNONYM
+nomen oblitum,SYNONYM,,REJECTED
+nomen rejiciendum,SYNONYM,,REJECTED
+nomennudum,SYNONYM,,NOT_ESTABLISHED
 notaccepted,SYNONYM
 notdescribed,SYNONYM
 othercombination,SYNONYM
@@ -76,7 +76,7 @@ synonymsl,SYNONYM
 synonymsubjective,SYNONYM
 synonymsubjectiveheterotypic,SYNONYM
 unaccepted,SYNONYM
-unavailable,SYNONYM
+unavailable,SYNONYM,,NOT_ESTABLISHED
 unjustified emendation,SYNONYM,homotypic
 unpublishedname,SYNONYM
 
@@ -98,11 +98,11 @@ misapplied,MISAPPLIED
 misappliedname,MISAPPLIED
 
 bare,BARE_NAME
-interim unpublished,BARE_NAME
-nomendubium,BARE_NAME
-taxoninquirendum,BARE_NAME
+interim unpublished,BARE_NAME,,MANUSCRIPT
+nomendubium,BARE_NAME,,DOUBTFUL
+taxoninquirendum,BARE_NAME,,DOUBTFUL
 unassessed,BARE_NAME
-unavailable name,BARE_NAME
+unavailable name,BARE_NAME,,NOT_ESTABLISHED
 uncertain,BARE_NAME
 unplaced,BARE_NAME
 unresolved,BARE_NAME

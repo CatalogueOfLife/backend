@@ -53,7 +53,6 @@ illegitimate,UNACCEPTABLE
 illegitimum,UNACCEPTABLE
 ined,MANUSCRIPT
 ineditus,MANUSCRIPT
-interim unpublished,MANUSCRIPT
 invalid,NOT_ESTABLISHED
 invalidum,NOT_ESTABLISHED
 invalidum negatum,NOT_ESTABLISHED
@@ -66,8 +65,6 @@ later usage,UNACCEPTABLE
 legitimate,ACCEPTABLE
 misapplied,
 misspelling,
-misspelling - incorrect original spelling,NOT_ESTABLISHED
-misspelling - incorrect subsequent spelling,NOT_ESTABLISHED
 misspelling / subsequent emendation,
 mss,MANUSCRIPT
 negatum,
@@ -134,10 +131,8 @@ nom superfl,UNACCEPTABLE
 nom utique rejic,
 nomen abortivum,
 nomen illegitimum,
-nomen novum,ACCEPTABLE
+nomen novum,
 nomen nudum,NOT_ESTABLISHED
-nomen oblitum,REJECTED
-nomen protectum,CONSERVED
 novum,ACCEPTABLE
 nudum,NOT_ESTABLISHED
 nudum invalidum,NOT_ESTABLISHED
@@ -211,7 +206,6 @@ superf nom inval,UNACCEPTABLE
 superfluous,UNACCEPTABLE
 superfluum,UNACCEPTABLE
 superfluum novum,UNACCEPTABLE
-taxon inquirendum,DOUBTFUL
 type cons,
 type designation,
 unavailable,NOT_ESTABLISHED
@@ -221,12 +215,10 @@ unavailable homonym,NOT_ESTABLISHED
 unavailable incorrect original spelling,NOT_ESTABLISHED
 unavailable literature misspelling,NOT_ESTABLISHED
 unavailable manuscript name,NOT_ESTABLISHED
-unavailable name,NOT_ESTABLISHED
 unavailable nomen nudum,NOT_ESTABLISHED
 unavailable other,NOT_ESTABLISHED
 unjustified emendation,
 unnecessary replacement name,
-unreplaced junior homonym,UNACCEPTABLE
 utique rejected,REJECTED
 utique rejected proposed,REJECTED
 valid,ACCEPTABLE
