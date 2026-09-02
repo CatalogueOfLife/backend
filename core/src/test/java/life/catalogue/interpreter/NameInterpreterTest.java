@@ -2,18 +2,25 @@ package life.catalogue.interpreter;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.parser.NomStatusParser;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +38,88 @@ public class NameInterpreterTest {
   @Before
   public void init() {
     ib = new NameInterpreter(new DatasetSettings(), true);
+  }
+
+  /**
+   * taxstatus.csv and nomstatus.csv are both open ended, so a new entry in either can silently make
+   * NameInterpreter.deriveNomStatus start asserting a nomenclatural status for a taxonomic one.
+   * Every key that resolves in both dictionaries has to be a deliberate decision:
+   * either a real nomenclatural term that a source put in the wrong column, or a taxonomic verdict
+   * that merely looks like one - in zoology a "valid" name is a statement about the taxon, not the name.
+   * <p>
+   * If this test fails, a new key started colliding. Do not just widen the expectations: decide which
+   * of the two it is, and either list it below with the status it should derive, or add it to
+   * NameInterpreter.NOM_STATUS_FALSE_FRIENDS so it derives nothing.
+   * See https://github.com/CatalogueOfLife/backend/issues/1571
+   */
+  @Test
+  public void nomStatusDerivationKeys() throws Exception {
+    // taxonomic status values that really are a nomenclatural statement, with what they must derive
+    Map<String, NomStatus> genuine = Map.ofEntries(
+      Map.entry("interim unpublished", NomStatus.MANUSCRIPT),
+      Map.entry("junior homonym", NomStatus.UNACCEPTABLE),
+      Map.entry("misspelling - incorrect original spelling", NomStatus.NOT_ESTABLISHED),
+      Map.entry("misspelling - incorrect subsequent spelling", NomStatus.NOT_ESTABLISHED),
+      Map.entry("nomen novum", NomStatus.ACCEPTABLE),
+      Map.entry("nomen oblitum", NomStatus.REJECTED),
+      Map.entry("nomen protectum", NomStatus.CONSERVED),
+      Map.entry("nomen rejiciendum", NomStatus.REJECTED),
+      Map.entry("nomendubium", NomStatus.DOUBTFUL),
+      Map.entry("nomennudum", NomStatus.NOT_ESTABLISHED),
+      Map.entry("taxoninquirendum", NomStatus.DOUBTFUL),
+      Map.entry("unavailable", NomStatus.NOT_ESTABLISHED),
+      Map.entry("unavailable name", NomStatus.NOT_ESTABLISHED),
+      Map.entry("unreplaced junior homonym", NomStatus.UNACCEPTABLE)
+    );
+    // ... and the ones that only look like one, so they must derive nothing
+    Set<String> falseFriends = Set.of("valid", "invalid", "doubtful", "uncertain");
+
+    Set<String> collisions = new TreeSet<>();
+    for (String key : taxonomicStatusKeys()) {
+      if (NomStatusParser.PARSER.parseOrNull(key) != null) {
+        collisions.add(key);
+      }
+    }
+    Set<String> known = new TreeSet<>(genuine.keySet());
+    known.addAll(falseFriends);
+    assertEquals("A taxstatus.csv key now also parses as a NomStatus. Decide whether it is a real "
+      + "nomenclatural term (list it in this test with the status it must derive) or a taxonomic "
+      + "verdict (add it to NameInterpreter.NOM_STATUS_FALSE_FRIENDS).", known, collisions);
+
+    // the guard lets the real nomenclatural terms through ...
+    for (Map.Entry<String, NomStatus> e : genuine.entrySet()) {
+      assertEquals(e.getKey(), e.getValue(), derivedNomStatus(e.getKey()));
+    }
+    // ... and blocks the false friends
+    for (String ff : falseFriends) {
+      assertNull(ff + " must not derive a nomenclatural status", derivedNomStatus(ff));
+    }
+  }
+
+  private NomStatus derivedNomStatus(String rawTaxonomicStatus) {
+    Name n = new Name();
+    NameInterpreter.deriveNomStatus(n, rawTaxonomicStatus, IssueContainer.simple());
+    return n.getNomStatus();
+  }
+
+  /**
+   * @return the raw first column of every taxstatus.csv row that really maps to a TaxonomicStatus.
+   *         Rows with a blank 2nd column are skipped by the parsers, so they are no keys at all.
+   */
+  private static Set<String> taxonomicStatusKeys() throws IOException {
+    Set<String> keys = new TreeSet<>();
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(
+        NameInterpreter.class.getResourceAsStream("/parser/dicts/taxstatus.csv"), StandardCharsets.UTF_8))) {
+      String line;
+      while ((line = br.readLine()) != null) {
+        String[] cols = line.split(",", -1);
+        if (cols.length > 1 && !cols[0].isBlank() && !cols[1].isBlank()) {
+          keys.add(cols[0]);
+        }
+      }
+    }
+    assertFalse("taxstatus.csv not found on the classpath", keys.isEmpty());
+    return keys;
   }
 
   void assertOenantheL(ParsedNameUsage pnu) {
