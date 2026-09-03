@@ -94,6 +94,27 @@ public class MatchingConfig {
   }
 
   /**
+   * The pid {@link #buildDir(int, long)} put into a transient dir name, so a sweep can tell a crash leftover
+   * from the live build of another process sharing this storageDir.
+   * @return null if the name is not a transient dir or predates the pid in the name
+   */
+  public static Long transientDirPid(String name) {
+    if (!isTransientDir(name)) {
+      return null;
+    }
+    int firstDot = name.indexOf('.');
+    int dash = firstDot < 0 ? -1 : name.indexOf('-', firstDot);
+    if (dash < 0) {
+      return null;
+    }
+    try {
+      return Long.parseLong(name.substring(firstDot + 1, dash));
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
+  /**
    * Makes sure all configured directories do actually exist and create them if missing
    * @return true if at least one dir was newly created
    */

@@ -236,6 +236,13 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
     }
     indexService = buildIndexService(cfg, env);
     jobExecutor = buildJobExecutor(cfg, env);
+    if (jobExecutor != null) {
+      // the read only servers have no ManagedService and no admin API to start components with, so unlike
+      // WsServer the executor is a plain dropwizard managed object that starts with the application.
+      // Registered here, before registerAdditional(), so dropwizard starts it ahead of anything registered
+      // there that submits a job on start - the bundle's usage matcher reconcile above all.
+      env.lifecycle().manage(ManagedUtils.from((life.catalogue.common.Managed) jobExecutor));
+    }
 
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, broker);

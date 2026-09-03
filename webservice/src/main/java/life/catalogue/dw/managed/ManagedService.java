@@ -95,7 +95,7 @@ public class ManagedService {
         c.start();
       }
     } else {
-      LOG.warn("Component {} cannot be started as it is not managed yet", component);
+      warnUnmanaged(component, "started");
     }
   }
 
@@ -108,8 +108,12 @@ public class ManagedService {
         LOG.info("Component {} not running", component);
       }
     } else {
-      LOG.warn("Component {} cannot be stopped as it is not managed yet", component);
+      warnUnmanaged(component, "stopped");
     }
+  }
+
+  private void warnUnmanaged(Component component, String verb) {
+    LOG.warn("Component {} cannot be {} as it is not managed yet", component, verb);
   }
 
 }

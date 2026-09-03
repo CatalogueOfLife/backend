@@ -5,7 +5,7 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.concurrent.AbstractPollingScheduler;
 import life.catalogue.config.SyncManagerConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapper;
@@ -18,65 +18,51 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
-class SyncSchedulerJob implements Runnable {
-  private static final Logger LOG = LoggerFactory.getLogger(SyncSchedulerJob.class);
+/**
+ * Polls the projects with an enabled sync scheduler for outdated sectors and submits syncs for them.
+ * Its own startable component rather than a thread owned by the SyncManager, which no longer has a
+ * lifecycle of its own - it only validates, submits and cancels against the shared job executor.
+ */
+public class SyncScheduler extends AbstractPollingScheduler {
+  private static final Logger LOG = LoggerFactory.getLogger(SyncScheduler.class);
+  private static final String THREAD_NAME = "sync-scheduler";
   private final SqlSessionFactory factory;
   private final SyncManager manager;
   private final SyncManagerConfig cfg;
-  private volatile boolean running;
 
-  public SyncSchedulerJob(SyncManagerConfig cfg, SyncManager manager, SqlSessionFactory factory) {
+  public SyncScheduler(SyncManagerConfig cfg, SyncManager manager, SqlSessionFactory factory) {
+    super(THREAD_NAME, cfg.polling);
     this.manager = manager;
     this.factory = factory;
     this.cfg = cfg;
-    this.running = true;
-  }
-
-  public void terminate() {
-    running = false;
   }
 
   @Override
-  public void run() {
-    MDC.put(LoggingUtils.MDC_KEY_TASK, getClass().getSimpleName());
-
-    while (running) {
-      try {
-        while (!manager.hasStarted()) {
-          LOG.debug("Sync manager not started, sleep for {} minutes", cfg.polling);
-          TimeUnit.MINUTES.sleep(cfg.polling);
-        }
-        while (!manager.isIdle()) {
-          LOG.debug("Syncs busy, sleep for {} minutes", cfg.polling);
-          TimeUnit.MINUTES.sleep(cfg.polling);
-        }
-        List<Sector> sectors = fetch();
-        if (sectors.isEmpty()) {
-          LOG.debug("No sectors eligable to be synced. Sleep for {} minutes", cfg.polling);
-          TimeUnit.MINUTES.sleep(cfg.polling);
-
-        } else {
-          LOG.info("Trying to schedule {} sector syncs", sectors.size());
-          sectors.forEach(this::scheduleSync);
-        }
-      } catch (InterruptedException e) {
-        LOG.info("Interrupted sync scheduler. Stop");
-        running = false;
-
-      } catch (Exception e) {
-        LOG.error("Error scheduling sectors. Shutdown sync scheduler!", e);
-        running = false;
-      }
+  protected void pollOnce() throws InterruptedException {
+    while (isRunning() && !manager.isIdle()) {
+      LOG.debug("Syncs busy, sleep for {} minutes", cfg.polling);
+      TimeUnit.MINUTES.sleep(cfg.polling);
     }
-    MDC.remove(LoggingUtils.MDC_KEY_TASK);
+    if (!isRunning()) {
+      return;
+    }
+    List<Sector> sectors = fetch();
+    if (sectors.isEmpty()) {
+      LOG.debug("No sectors eligable to be synced. Sleep for {} minutes", cfg.polling);
+      TimeUnit.MINUTES.sleep(cfg.polling);
+
+    } else {
+      LOG.info("Trying to schedule {} sector syncs", sectors.size());
+      sectors.forEach(this::scheduleSync);
+    }
   }
 
   private void scheduleSync(Sector s) {
     try {
       manager.sync(s, Users.IMPORTER);
-    } catch (IllegalArgumentException e) {
+    } catch (RuntimeException e) {
+      // one sector that cannot be queued must not cost us the rest of the batch or the scheduler thread
       LOG.warn("Failed to schedule a sector sync {}", s, e);
     }
   }

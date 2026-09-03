@@ -56,6 +56,7 @@ public class ExportManagerIT {
     doReturn(user).when(uDao).get(any());
     exDao = mock(DatasetExportDao.class);
     executor = new JobExecutor(cfg.job, new MetricRegistry(), null, uDao, null);
+    executor.start();
   }
 
   @After

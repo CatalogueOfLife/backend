@@ -69,14 +69,13 @@ import java.util.concurrent.atomic.AtomicLong;
  * process only ever reads. Should a second <em>writing</em> process ever be wanted, this is the invariant
  * that has to be replaced first, with a cross-process lock around build and swap.
  */
-public class UsageMatcherFactory implements DatasetListener, life.catalogue.common.Managed {
+public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherFactory.class);
   /** Extra sidecar JSON property recording the names index {@link NameIndex#created()} the store was built against. */
   static final String NIDX_CREATED_FIELD = "nidxCreated";
   static final String NIDX_ID_FIELD = "nidxId";
   /** Interval below which a repeated {@link #openPersistent(int)} does not rewrite the sidecar mtime again. */
   private static final long TOUCH_INTERVAL_MS = TimeUnit.HOURS.toMillis(1);
-  private volatile boolean started = false;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   private final MatchingConfig cfg;
@@ -803,10 +802,20 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     String[] names = dir.list();
     if (names == null) return;
     for (String n : names) {
-      if (MatchingConfig.isTransientDir(n)) {
-        LOG.info("Removing stray matcher temp dir {}", n);
-        FileUtils.deleteQuietly(new File(dir, n));
+      if (!MatchingConfig.isTransientDir(n)) {
+        continue;
       }
+      // the pid is in the dir name precisely so two processes sharing a storageDir cannot collide, so honour
+      // it here too - this sweep used to delete any temp dir it found, which during a blue-green deploy meant
+      // deleting the in-progress build of the app still serving. A pid that is gone is the crash leftover we
+      // are actually after.
+      Long pid = MatchingConfig.transientDirPid(n);
+      if (pid != null && pid != ProcessHandle.current().pid() && ProcessHandle.of(pid).isPresent()) {
+        LOG.info("Keep matcher temp dir {} of the still running process {}", n, pid);
+        continue;
+      }
+      LOG.info("Removing stray matcher temp dir {}", n);
+      FileUtils.deleteQuietly(new File(dir, n));
     }
   }
 
@@ -827,25 +836,19 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     return keys;
   }
 
-  @Override
-  public void start() {
-    started = true;
+  /**
+   * Sweeps the storage dir and submits a reconcile of the persistent matchers against the live datasets and
+   * names index. Driven by MatcherReconcile on the cron executor rather than by a component start: nothing
+   * in this class was ever gated on having been started - there is no assertOnline on it anywhere - and its
+   * stores are sealed, read only mmaps that any number of processes may open, so unlike the names index it
+   * needs no cross-JVM handover. What it does need is to run, which a cron gives it on every server.
+   */
+  public void maintenance() {
     if (dir != null) {
-      cleanupTempDirs(); // remove crash-leftover .building/.old dirs at startup, before any builds run
+      cleanupTempDirs(); // remove crash-leftover .building/.old dirs, before any builds run
       migrateLegacySidecars(); // must run before reconcile, or on demand matchers lose their last used marker
       executor.submit(new ReconcileJob(Users.MATCHER));
     }
-  }
-
-  @Override
-  public void stop() {
-    close();
-    started = false;
-  }
-
-  @Override
-  public boolean hasStarted() {
-    return started;
   }
 
   private class ReconcileJob extends BackgroundJob {
@@ -854,10 +857,13 @@ public class UsageMatcherFactory implements DatasetListener, life.catalogue.comm
     @Override public boolean isDuplicate(BackgroundJob other) { return other instanceof ReconcileJob; }
   }
 
+  @Override
   public void close() {
     for (UsageMatcher m : matchers.values()) {
       try {
-        m.store().close();
+        // retire, not store().close(): the reference counting exists so a shared mmap is only unmapped once
+        // the last consumer released it, and closing it from under a running MatchingJob is what it prevents
+        m.retire();
       } catch (Exception e) {
         LOG.error("Failed to close matcher for dataset {}", m.datasetKey, e);
       }

@@ -53,10 +53,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -140,6 +142,49 @@ public class AdminResource {
   @Path("/component")
   public Map<String, Boolean> componentState() {
     return componedService.state();
+  }
+
+  /**
+   * Pauses the job executor: the running jobs are left to finish, nothing new is started and the queue is
+   * kept. This is the maintenance verb - use it before swapping the names index or any other resource jobs
+   * read, and resume once the swap is done. Stopping the JobExecutor component instead is the blue-green
+   * verb: it rejects submissions, interrupts what runs and discards the queue.
+   *
+   * @param await optional seconds to wait for the running jobs to end before answering
+   * @return 200 once no job is running, or 409 if some job outlived the await deadline
+   */
+  @POST
+  @Path("/jobs/pause")
+  public Response pauseJobs(@QueryParam("await") Integer await, @Auth User user) throws InterruptedException {
+    LOG.warn("Pausing the job executor by {}", user);
+    exec.pause();
+    if (await != null && await > 0 && !exec.awaitQuiesced(await, TimeUnit.SECONDS)) {
+      LOG.warn("Job executor still had jobs running after {}s", await);
+      return Response.status(Response.Status.CONFLICT).entity(jobsState()).build();
+    }
+    return Response.ok(jobsState()).build();
+  }
+
+  @POST
+  @Path("/jobs/resume")
+  public Map<String, Object> resumeJobs(@Auth User user) {
+    LOG.warn("Resuming the job executor by {}", user);
+    exec.resume();
+    return jobsState();
+  }
+
+  @GET
+  @Path("/jobs/state")
+  public Map<String, Object> jobsState() {
+    Map<String, Object> state = new HashMap<>();
+    state.put("started", exec.hasStarted());
+    state.put("paused", exec.isPaused());
+    // no job is executing, so a resource the jobs read may now be swapped underneath them
+    state.put("quiesced", exec.isQuiesced());
+    state.put("idle", exec.isIdle());
+    state.put("queued", exec.queueSize());
+    state.put("running", exec.getQueue().stream().filter(BackgroundJob::isRunning).map(BackgroundJob::getKey).toList());
+    return state;
   }
 
   @POST

@@ -1,6 +1,7 @@
 package life.catalogue.concurrent;
 
 import life.catalogue.api.exception.TooManyRequestsException;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobLane;
@@ -20,7 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,15 +61,21 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   private final @Nullable EmailNotification emailer;
   private final @Nullable JobDao jobDao; // optional - without it jobs are not persisted, e.g. in CLI tools
   private Map<JobLane, ColExecutor> execs;
-  private List<JobInfo> staleJobs = List.of(); // jobs cancelled at startup as they never survived the last server run
+  // pause gate: workers block before starting a job while paused, so running jobs finish and the queue survives
+  private final ReentrantLock pauseLock = new ReentrantLock();
+  private final Condition unpaused = pauseLock.newCondition();
+  private volatile boolean paused;
+  // handlers given the jobs cancelled at startup, so an owner can resubmit the ones it cares about
+  private final List<Consumer<List<JobInfo>>> staleHandlers = new CopyOnWriteArrayList<>();
   private final Timer timer;
 
   @Override
   public void start() throws Exception {
     if (execs == null) {
+      List<JobInfo> stale = List.of();
       if (jobDao != null) {
         // jobs that were waiting or running when the last server stopped can never finish
-        staleJobs = jobDao.cancelStale();
+        stale = jobDao.cancelStale();
       }
       execs = new EnumMap<>(JobLane.class);
       for (JobLane lane : JobLane.values()) {
@@ -73,16 +83,77 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
         exec.allowCoreThreadTimeOut(true);
         execs.put(lane, exec);
       }
+      // last, as the handlers resubmit and therefore need the pools
+      for (var handler : staleHandlers) {
+        try {
+          handler.accept(stale);
+        } catch (RuntimeException e) {
+          LOG.error("Failed to handle the {} stale jobs of the last server run", stale.size(), e);
+        }
+      }
     }
+  }
+
+  /**
+   * Registers a handler for the jobs that were cancelled on startup because they could never have survived
+   * the last server run, so their owner can resubmit the ones it is responsible for. Called from start()
+   * once the pools exist, since a handler is expected to submit.
+   */
+  public void onStaleJobs(Consumer<List<JobInfo>> handler) {
+    staleHandlers.add(handler);
   }
 
   @Override
   public void stop() throws Exception {
     if (execs != null) {
+      // take the queued jobs out before the pools go down so we can give them a final state.
+      // shutdownNow() would drain them into a list that is thrown away, leaving their rows running forever.
+      // Emptying the gate first also means a job finishing during the shutdown promotes nothing.
+      // release anything blocked on the pause gate first, or shutdownNow cannot get those workers back
+      resume();
+      var discarded = drainQueued();
       for (var exec : execs.values()) {
-        ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+        ExecutorUtils.shutdownNow(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
       }
       execs = null;
+      // a queued job never reached run(), so nothing else will ever record an end for it
+      for (var ftask : discarded) {
+        cancelBeforeStart(ftask);
+      }
+      // running jobs ended themselves via afterExecute; anything left is from a job that never started
+      futures.clear();
+      LOG.info("Job executor stopped, discarding {} queued jobs", discarded.size());
+    }
+  }
+
+  /**
+   * Empties every lane queue and the serial gate.
+   * @return the tasks that were waiting and will now never run
+   */
+  private List<ComparableFutureTask> drainQueued() {
+    List<ComparableFutureTask> drained = new ArrayList<>();
+    for (var q : queues.values()) {
+      List<Runnable> tasks = new ArrayList<>();
+      q.drainTo(tasks);
+      tasks.forEach(t -> drained.add((ComparableFutureTask) t));
+    }
+    // a gate active task sits in a lane queue and is drained above; only the parked ones live in the gate alone
+    drained.addAll(gate.clear());
+    return drained;
+  }
+
+  /**
+   * Gives a job that never made it out of the queue its final state, as run() never got to do it.
+   */
+  private void cancelBeforeStart(ComparableFutureTask ftask) {
+    BackgroundJob job = ftask.task;
+    try {
+      ftask.cancel(false);
+      job.setStatus(JobStatus.CANCELED);
+      job.onCancelBeforeStart();
+      job.persist();
+    } catch (RuntimeException e) {
+      LOG.error("Failed to cancel queued job {}", job.getKey(), e);
     }
   }
 
@@ -92,11 +163,66 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   }
 
   /**
-   * @return the persisted jobs that were cancelled when this executor started,
-   * as they were still waiting or running when the last server stopped.
+   * Stops the executor from starting any further job while the running ones are left to finish.
+   *
+   * This is the maintenance verb, as distinct from stop(): the queue survives, submissions are still
+   * accepted so no user request is lost, and resume() picks up exactly where the pause left off.
+   * stop() is the blue-green verb - it rejects submissions, interrupts what runs and discards the queue.
    */
-  public List<JobInfo> getStaleJobs() {
-    return staleJobs;
+  public void pause() {
+    pauseLock.lock();
+    try {
+      if (!paused) {
+        paused = true;
+        LOG.warn("Job executor paused with {} jobs queued", queueSize());
+      }
+    } finally {
+      pauseLock.unlock();
+    }
+  }
+
+  public void resume() {
+    pauseLock.lock();
+    try {
+      if (paused) {
+        paused = false;
+        unpaused.signalAll();
+        LOG.warn("Job executor resumed with {} jobs queued", queueSize());
+      }
+    } finally {
+      pauseLock.unlock();
+    }
+  }
+
+  public boolean isPaused() {
+    return paused;
+  }
+
+  /**
+   * @return true if no job is currently executing.
+   *
+   * Unlike isIdle() this ignores queued work, which is exactly what a maintenance window needs to know: a
+   * paused executor deliberately keeps its queue but must be running nothing before the names index is
+   * swapped underneath it. It asks the jobs rather than the pools because a worker parked on the pause gate
+   * still counts towards ThreadPoolExecutor.getActiveCount() while its job has not begun.
+   */
+  public boolean isQuiesced() {
+    return !hasStarted() || futures.values().stream().noneMatch(f -> f.task.isRunning());
+  }
+
+  /**
+   * Waits for the running jobs to finish.
+   * @return true if the executor quiesced within the timeout
+   */
+  public boolean awaitQuiesced(int timeout, TimeUnit unit) throws InterruptedException {
+    final long deadline = System.nanoTime() + unit.toNanos(timeout);
+    while (!isQuiesced()) {
+      if (System.nanoTime() > deadline) {
+        return false;
+      }
+      TimeUnit.MILLISECONDS.sleep(100);
+    }
+    return true;
   }
 
   /**
@@ -193,6 +319,16 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     synchronized boolean isEmpty() {
       return groups.isEmpty();
     }
+
+    /**
+     * Drops every group and returns the parked tasks. Active tasks are not returned - they are either
+     * running or still sitting in a lane queue, where the caller drains them from.
+     */
+    synchronized List<ComparableFutureTask> clear() {
+      var parked = parked();
+      groups.clear();
+      return parked;
+    }
   }
 
   public JobExecutor(JobConfig cfg, MetricRegistry registry, @Nullable EmailNotification emailer, UserCrudDao udao, @Nullable JobDao jobDao) throws Exception {
@@ -217,8 +353,6 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       registry.register(MetricRegistry.name(JobExecutor.class, METRIC_GROUP_NAME, "queue", lane.name().toLowerCase()), (Gauge<Integer>) q::size);
     }
     timer = registry.register(MetricRegistry.name(JobExecutor.class, METRIC_GROUP_NAME, "duration"), new Timer());
-    // start up
-    start();
   }
 
   class ColExecutor extends ThreadPoolExecutor {
@@ -227,6 +361,29 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       super(threads, threads, 60L, TimeUnit.SECONDS, queue,
         new NamedThreadFactory("background-worker-" + lane.name().toLowerCase()),
         new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * The pause gate. A worker that has taken a task waits here until the executor is resumed, so a paused
+     * executor starts nothing new while the jobs already running are left to finish.
+     *
+     * Up to one task per lane is dequeued and parked here for the duration of a pause. It has not begun -
+     * BackgroundJob.run() is never entered, no status is written and no database work happens - which is why
+     * isQuiesced() asks the jobs whether they are running rather than asking the pool for its active count.
+     */
+    @Override
+    protected void beforeExecute(Thread t, Runnable r) {
+      pauseLock.lock();
+      try {
+        while (paused) {
+          unpaused.await();
+        }
+      } catch (InterruptedException e) {
+        t.interrupt();
+      } finally {
+        pauseLock.unlock();
+      }
+      super.beforeExecute(t, r);
     }
 
     @Override
@@ -282,24 +439,54 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       var next = gate.release(serial, ftask);
       if (next != null) {
         LOG.info("Unpark job {} serialized by {}", next.task.getKey(), serial);
-        execs.get(next.task.getLane()).execute(next);
+        try {
+          dispatch(next);
+        } catch (RuntimeException e) {
+          // the executor was stopped between the release and the dispatch, so this job never runs
+          LOG.warn("Failed to unpark job {}, cancelling it", next.task.getKey(), e);
+          cancelBeforeStart(next);
+        }
       }
     }
   }
 
+  /**
+   * The single place a task is handed to a worker pool. Every path that starts a job goes through here -
+   * the submit tail and the serial gate promotion - so a gate on running work only has to be applied once.
+   */
+  private void dispatch(ComparableFutureTask ftask) {
+    var pools = execs;
+    if (pools == null) {
+      throw new UnavailableException("The job executor is not running");
+    }
+    pools.get(ftask.task.getLane()).execute(ftask);
+  }
+
   public int queueSize() {
-    return queues.values().stream().mapToInt(PriorityBlockingQueue::size).sum() + gate.parked().size();
+    return (int) queuedStream().count();
   }
 
   public int queueSize(JobLane lane) {
-    return queues.get(lane).size() + (int) gate.parked().stream().filter(t -> t.task.getLane() == lane).count();
+    return (int) queuedStream().filter(j -> j.getLane() == lane).count();
   }
 
   /**
    * @return true if all queues are empty
    */
   public boolean hasEmptyQueue() {
-    return queues.values().stream().allMatch(PriorityBlockingQueue::isEmpty) && gate.isEmpty();
+    return queuedStream().findAny().isEmpty();
+  }
+
+  /**
+   * Every job the executor still owns that has not started yet, wherever it currently sits: a lane queue,
+   * the serial gate, or a worker parked on the pause gate. Reading this off the jobs rather than off the
+   * queues is what keeps a paused executor honest - a task a worker has already taken is out of its
+   * PriorityBlockingQueue but has not begun, and used to be invisible to the whole queue API.
+   */
+  private Stream<BackgroundJob> queuedStream() {
+    return futures.values().stream()
+                  .map(f -> f.task)
+                  .filter(j -> j.getStatus().isQueued());
   }
 
   /**
@@ -375,17 +562,9 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   }
 
   private Stream<BackgroundJob> getQueueStream() {
-    List<BackgroundJob> queued = new ArrayList<>();
-    for (var q : queues.values()) {
-      q.forEach(x -> queued.add(((ComparableFutureTask) x).task));
-    }
-    gate.parked().forEach(t -> queued.add(t.task));
-    return Stream.concat(
-      futures.values().stream()
-             .map(f -> f.task)
-             .filter(BackgroundJob::isRunning),
-      queued.stream()
-    );
+    return futures.values().stream()
+                  .map(f -> f.task)
+                  .filter(j -> j.isRunning() || j.getStatus().isQueued());
   }
 
   @Override
@@ -433,7 +612,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       if (serial != null && !gate.tryAcquire(serial, ftask)) {
         LOG.info("Park {} job {} behind the running job serialized by {}", job.getJobName(), job.getKey(), serial);
       } else {
-        execs.get(lane).execute(ftask);
+        dispatch(ftask);
       }
     } catch (RuntimeException e) {
       futures.remove(job.getKey());
