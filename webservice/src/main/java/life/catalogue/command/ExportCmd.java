@@ -186,7 +186,7 @@ public class ExportCmd extends AbstractMybatisCmd {
       req.setExcel(false);
       req.setForce(force);
       req.setExtended(extended && df != DataFormat.TEXT_TREE);
-      UUID key = manager.submit(req, userKey);
+      UUID key = manager.submit(req, userKey).getKey();
       exportsByDatasetKey.putIfAbsent(d.getKey(), new ArrayList<>());
       exportsByDatasetKey.get(d.getKey()).add(new ExpFormat(key, df));
       System.out.printf("  scheduled %s export %s\n", df, key);

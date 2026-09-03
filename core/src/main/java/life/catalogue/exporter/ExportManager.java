@@ -6,6 +6,7 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.concurrent.BackgroundJob;
@@ -13,6 +14,7 @@ import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.JobDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.search.NameUsageSearchService;
 import life.catalogue.img.ImageService;
@@ -38,6 +40,7 @@ public class ExportManager implements DatasetListener {
   private final ImageService imageService;
   private final JobExecutor executor;
   private final DatasetExportDao dao;
+  private final JobDao jobDao;
   private final DatasetImportDao diDao;
   private final NameUsageSearchService searchService;
   private final @Nullable URI clbURI;
@@ -51,6 +54,7 @@ public class ExportManager implements DatasetListener {
     this.executor = executor;
     this.imageService = imageService;
     dao = exportDao;
+    this.jobDao = new JobDao(factory);
     this.diDao = diDao;
     this.searchService = searchService;
     this.clbURI = clbURI;
@@ -82,13 +86,18 @@ public class ExportManager implements DatasetListener {
     return blocked;
   }
 
-  public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
+  /**
+   * Submits a new export job, or returns the existing export if an identical one exists already
+   * and the request does not force a new one.
+   * @return the new or existing job, tracked and downloaded via /job/{key}
+   */
+  public JobInfo submit(ExportRequest req, int userKey) throws IllegalArgumentException {
     UUID prev = exists(req);
     if (prev != null) {
       if (req.isForce()) {
         LOG.info("Force new {} export by user {}: {}", req.getFormat(), userKey, req);
       } else {
-        return prev;
+        return info(prev);
       }
     }
     validate(req);
@@ -96,21 +105,31 @@ public class ExportManager implements DatasetListener {
       throw new UnavailableException("New export requests are currently not accepted.");
     }
     DatasetExportJob job = buildExportJob(req, userKey);
-    return submit(job);
+    submit(job);
+    return JobDao.buildInfo(job);
+  }
+
+  /**
+   * Renders an existing export job, preferring the live executor state over the db record
+   * which trails a running job. See JobResource#job.
+   */
+  private JobInfo info(UUID key) {
+    var live = executor.getJob(key);
+    return live != null ? JobDao.buildInfo(live) : jobDao.get(key);
   }
 
   /**
    * Submits a new job that exports the result of a name usage search as a ColDP archive, reading from Elasticsearch only.
-   * @return the key of the submitted job, used to track and download the result
+   * @return the submitted job, tracked and downloaded via /job/{key}
    */
-  public UUID submitSearch(int datasetKey, NameUsageSearchRequest searchRequest, int userKey) throws IllegalArgumentException {
+  public JobInfo submitSearch(int datasetKey, NameUsageSearchRequest searchRequest, int userKey) throws IllegalArgumentException {
     if (blocked.get()) {
       throw new UnavailableException("New export requests are currently not accepted.");
     }
     var job = new SearchExport(datasetKey, searchRequest, userKey, searchService, factory, cfg.getNormalizerConfig(), clbURI);
     executor.submit(job);
     LOG.info("Submitted search export {} for dataset {} by user {}", job.getKey(), datasetKey, userKey);
-    return job.getKey();
+    return JobDao.buildInfo(job);
   }
 
   private DatasetExportJob buildExportJob(ExportRequest req, int userKey) {

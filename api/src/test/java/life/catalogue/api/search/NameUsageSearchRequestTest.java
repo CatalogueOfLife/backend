@@ -3,6 +3,9 @@ package life.catalogue.api.search;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.api.vocab.TaxonomicStatus;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -15,6 +18,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -151,6 +157,46 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
 
     req.addFilter(NameUsageSearchParameter.USAGE_ID, "id1001");
     assertFalse(validator.validate(req).isEmpty());
+  }
+
+  /**
+   * The ChecklistBank search page hands its entire URL query string to the search and to the
+   * search download (POST /dataset/{key}/export/search), so every non filter request parameter
+   * it uses must be ignored here instead of blowing up as an unknown filter.
+   */
+  @Test
+  public void addFiltersFromQueryParams() {
+    MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
+    // real filters, as the UI spells them
+    params.add("rank", "SPECIES");
+    params.add("status", "ACCEPTED");
+    params.add("status", "PROVISIONALLY_ACCEPTED");
+    params.add("sectorDatasetKey", "2037");
+    // request parameters that are not filters and must be skipped
+    params.add("q", "Abies");
+    params.add("content", "SCIENTIFIC_NAME");
+    params.add("facet", "rank");
+    params.add("sortBy", "relevance");
+    params.add("reverse", "false");
+    params.add("type", "FUZZY");
+    params.add("limit", "50");
+    params.add("offset", "0");
+
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilters(params);
+
+    assertEquals(3, req.getFilters().size());
+    assertEquals(Set.of(Rank.SPECIES), req.getFilterValues(NameUsageSearchParameter.RANK));
+    assertEquals(Set.of(TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED),
+      req.getFilterValues(NameUsageSearchParameter.STATUS));
+    assertEquals(Set.of(2037), req.getFilterValues(NameUsageSearchParameter.SECTOR_DATASET_KEY));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void addFiltersRejectsUnknownParam() {
+    MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
+    params.add("notAFilter", "x");
+    new NameUsageSearchRequest().addFilters(params);
   }
 
   protected void debug(String json, Wrapper<NameUsageSearchRequest> wrapper, Wrapper<NameUsageSearchRequest> wrapper2) {

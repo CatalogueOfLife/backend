@@ -156,6 +156,38 @@ You can filter the search by various options:
    + *Deprecated*: `whole_words` and `prefix` are still accepted as `type` values and are treated as `standard`. They will be removed in a future major release.
 
 
+### Downloading search results
+Searches are paged and, like any Elasticsearch query, cannot be paged arbitrarily deep.
+To get *all* hits of a filtered search, request a download instead:
+
+```
+curl --user USERNAME:PASSWORD -X POST \
+  "https://api.checklistbank.org/dataset/3/export/search?rank=species&status=accepted&issue=chained_synonym"
+```
+
+The endpoint accepts exactly the same request as the name usage search above, either as query
+parameters or as a JSON body, so the query string of a ChecklistBank search page can be handed
+over unchanged. Paging parameters are ignored - a download always covers the entire result set.
+Authentication is required, but no special role.
+
+It answers with the submitted job:
+
+```json
+{"key": "0f1a9c3e-...", "job": "SearchExport", "status": "waiting", "datasetKey": 3}
+```
+
+The job runs in the background and reads only from the search index, so even very large results
+are fine. Track it and fetch the finished archive through the job API:
+
+ - `GET https://api.checklistbank.org/job/{key}` - the current status
+ - `GET https://api.checklistbank.org/job/{key}.zip` - the result, once the status is `finished`
+
+You also get an email with the download link when it completes. The archive is a ColDP package
+holding a `NameUsage.tsv` of all matched usages, the dataset `metadata.yaml`, and a `README.md`
+describing the executed search together with the dataset citation and a link that repeats the
+same search in ChecklistBank.
+
+
 ## Taxon info and vernacular names
 You can get the vernacular names for a species, e.g. 4QHKG, through either the full taxon info:
 http://api.checklistbank.org/dataset/COL2023/taxon/4QHKG/info

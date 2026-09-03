@@ -3,6 +3,7 @@ package life.catalogue.resources.dataset;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.model.User;
 import life.catalogue.api.search.NameUsageSearchRequest;
@@ -65,8 +66,11 @@ public class DatasetExportResource {
     this.cfg = cfg;
   }
 
+  /**
+   * @return the new or already existing export job, tracked and downloaded via /job/{key}
+   */
   @POST
-  public UUID export(@PathParam("key") int key, @Valid ExportRequest req, @Auth User user) {
+  public JobInfo export(@PathParam("key") int key, @Valid ExportRequest req, @Auth User user) {
     if (req == null) req = new ExportRequest();
     req.setDatasetKey(key);
     if (user == null || !user.isAdmin()) {
@@ -78,14 +82,14 @@ public class DatasetExportResource {
   /**
    * Exports the result of a name usage search as a ColDP archive, reading from Elasticsearch only.
    * Accepts the same search request as the name usage search endpoint, either as a JSON body or as query parameters.
-   * @return the key of the submitted export job, used to track and download the result via /job/{key}
+   * @return the submitted export job, tracked and downloaded via /job/{key}
    */
   @POST
   @Path("search")
-  public UUID exportSearch(@PathParam("key") int key,
-                           @Valid NameUsageSearchResource.SearchRequestBody body,
-                           @Auth User user,
-                           @Context UriInfo uri) {
+  public JobInfo exportSearch(@PathParam("key") int key,
+                              @Valid NameUsageSearchResource.SearchRequestBody body,
+                              @Auth User user,
+                              @Context UriInfo uri) {
     NameUsageSearchRequest req = body == null ? new NameUsageSearchRequest() : body.request;
     if (uri != null) {
       req.addFilters(uri.getQueryParameters());
