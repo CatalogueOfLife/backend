@@ -112,34 +112,30 @@ public class ManagedServiceTest {
   }
 
   /**
-   * nidx-swap.sh and nidx-clear.sh still name the removed components, check the http status and exit 1.
-   * Failing here would abort a swap right after the names index has been stopped, so these have to be
-   * accepted as a no-op until the deploy scripts drop them.
+   * An unknown name reaches here as a 400 from the param converter, but a name that parses yet has no
+   * managed instance - a component only wired on some servers - must stay a logged no-op rather than throw.
    */
   @Test
-  public void removedComponentsAreAcceptedAsNoOps() throws Exception {
+  public void unmanagedComponentIsANoOp() throws Exception {
     List<String> log = new ArrayList<>();
     var svc = service(log, Component.JobExecutor);
 
-    for (Component c : List.of(Component.DatasetImporter, Component.SectorSynchronizer, Component.UsageMatcher)) {
-      assertTrue(c + " must be marked deprecated", c.isDeprecated());
-      svc.start(c);
-      svc.stop(c);
-    }
+    svc.start(Component.NamesIndex);
+    svc.stop(Component.NamesIndex);
     assertTrue(log.isEmpty());
+    assertFalse(svc.state().get("NamesIndex"));
   }
 
+  /**
+   * The names index has to be up before the executor runs jobs that match against it, and the cron executor
+   * submits a matcher reconcile the moment it starts, so it has to come after the executor. Nothing here
+   * cascades, so this order is the whole of the dependency handling.
+   */
   @Test
-  public void deprecatedComponentsAreLastSoTheyCannotShiftTheOrder() {
-    boolean seenDeprecated = false;
-    for (Component c : Component.values()) {
-      if (c.isDeprecated()) {
-        seenDeprecated = true;
-      } else {
-        assertFalse("live component " + c + " is declared after a deprecated one", seenDeprecated);
-      }
-    }
-    assertTrue("the deprecated aliases went missing", seenDeprecated);
+  public void nidxIsFirstAndTheExecutorPrecedesTheCron() {
+    var order = List.of(Component.values());
+    assertEquals(Component.NamesIndex, order.get(0));
+    assertTrue(order.indexOf(Component.JobExecutor) < order.indexOf(Component.CronExecutor));
   }
 
   @Test

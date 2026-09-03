@@ -222,9 +222,14 @@ accord. It does not stop HTTP-triggered writes - the CRUD API writes on the requ
 a job - and `/admin/maintenance` only writes a JSON status file for a UI banner, blocking nothing.
 A submit gate in front of the executor is explicitly *not* a component: `DatasetImporter` and
 `SectorSynchronizer` were exactly that and stopped no work, `UsageMatcher` was not even asked whether it had
-started. All three are gone, kept as deprecated no-op enum values until the deploy scripts stop naming them.
-The usage matchers are kept in step by the `MatcherReconcile` cron job instead, which is what notices that a
-names index swap left every matcher store stale.
+started. All three are gone. The usage matchers are kept in step by the `MatcherReconcile` cron job instead,
+which is what notices that a names index swap left every matcher store stale.
+**Nothing cascades.** `stop(component)` stops that component alone; the enum declaration order (reversed by
+`stopAll`) plus the point of use `assertOnline()` calls - all of them on the names index - are the whole of
+the dependency handling. Stopping `NamesIndex` therefore does not stop the executor, does not stop a running
+job and does not stop a queued one from starting: dependent work fails with a 503 instead of waiting. So
+taking the index down means pause the executor, await quiesced, stop the index, swap, start, resume - which
+is what deploy's `nidx-swap.sh` does.
 See [`docs/2026-09-01-job-component-consolidation.md`](docs/2026-09-01-job-component-consolidation.md).
 
 **Sector Synchronization (Assembly):**

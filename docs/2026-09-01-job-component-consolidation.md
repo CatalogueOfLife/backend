@@ -1,8 +1,7 @@
 # Make the startable components mean something, and let the job executor drain
 
 Date: 2026-09-01
-Status: Shipped. Backend side complete; the deploy repo still has to stop naming the removed
-components and start pausing the job executor (see [Outstanding](#outstanding)).
+Status: Shipped, backend and deploy together. One follow-up left, see [Outstanding](#outstanding).
 
 ## Problem
 
@@ -65,6 +64,32 @@ rejects submissions, interrupts what runs and discards the queue. `pause()` leav
 to finish, starts nothing new, keeps the queue and still accepts submissions, so a maintenance
 window costs no user request. `POST /admin/jobs/pause?await=<seconds>` blocks until nothing is
 running and answers 409 if a job outlives the deadline.
+
+### How dependencies are handled
+
+**Nothing cascades.** `ManagedService.stop(c)` stops `c` and nothing else. The whole of the dependency
+handling is:
+
+1. **The enum declaration order**, which is the start order and, reversed, the stop order. `NamesIndex`
+   first, then `JobExecutor`, then `CronExecutor` — which matters because the cron executor submits a matcher
+   reconcile the moment it starts.
+2. **Point-of-use `assertOnline()`**, all nine call sites on the names index: `BaseMatcher`'s constructor,
+   `RematchJob`/`RematchArchiveJob`/`RematchMissing`, `SyncManager.sync`/`deleteSector`/`queueJob`, and
+   `SyncFactory.assertComponentsOnline()` from `XRelease.prepWork()`.
+
+So stopping `NamesIndex` does **not** stop the job executor, does not stop a running job, and does not stop a
+queued one from starting. Dependent work *fails* with a 503 rather than waiting: a new submission is refused,
+and a job already running throws when it next reaches the index and is recorded FAILED. No corruption, but a
+burst of failed jobs and an index dropped underneath live readers.
+
+That is why quiescing is the operator's explicit, ordered job and not a side effect of a stop:
+
+    pause the executor → await quiesced → stop NamesIndex → DDL → start NamesIndex → resume
+
+`nidx-swap.sh` and `nidx-clear.sh` encode exactly that. Making a stop cascade — or refusing to stop
+`NamesIndex` while the executor runs unpaused — was considered and left out: it would put policy in the
+mechanism for the one component that has a dependent, and `stop-all` already orders things correctly for the
+deploy case. If the manual footgun ever fires in practice, a guard on that one component is the cheap fix.
 
 ### Rejected: a job → component dependency graph
 
@@ -155,18 +180,22 @@ Implemented in five commits on `feat/job-components`. Deviations from the plan w
 
 ## Outstanding
 
-Backend changes ship first, with the deprecated aliases, so every existing script keeps working.
-Then, in the deploy repo:
+The deprecated no-op enum values were dropped again before release: the deploy scripts were changed in
+the same go, so there was nothing left to keep them for. **Backend and deploy must therefore ship together** —
+an old script against a new backend gets a 400 from the param converter for `DatasetImporter` and friends.
 
-1. `nidx-swap.sh` and `nidx-clear.sh`: pause the job executor with `await`, stop `NamesIndex`, run
-   the DDL, start `NamesIndex`, resume. **This is where the swap race is actually closed** — today
-   neither script stops the executor at all.
-2. `start-dev-components.sh`: drop the removed names, add `SyncScheduler`, and move its deliberate
-   subset into the dev `config.yml`.
-3. Document that `redeploy.sh nocomponents` now leaves the job executor stopped, so submissions
-   answer 503 rather than being accepted. Intended — that is what `nocomponents` should have meant.
-4. Grep the `checklistbank` UI for hardcoded component names — `/admin/component` is `@PermitAll`.
-5. A later backend release deletes the deprecated aliases.
+Done in deploy (`feat/job-components`): both nidx scripts pause the executor and await quiescence before
+stopping `NamesIndex`, and refuse the swap on a 409 rather than dropping the table under live readers;
+`start-dev-components.sh` uses the surviving names; `stop-component.sh` no longer stops everything regardless
+of its argument; `README.md`/`CLAUDE.md` document the pause helpers and the `nocomponents` change.
+
+Left:
+
+1. Grep the `checklistbank` UI for hardcoded component names — `/admin/component` is `@PermitAll`, so the UI
+   may well render that map. Anything hardcoding the three removed names needs a look.
+2. `start-dev-components.sh`'s subset is still expressed in the script rather than in the dev `config.yml`.
+   `DoiUpdater` and `Feedback` are already effectively config-gated (no credentials, no token); making
+   `ImportScheduler` and `CronExecutor` config-gated too would let dev use plain `start-all-components.sh`.
 
 ## Known limits
 

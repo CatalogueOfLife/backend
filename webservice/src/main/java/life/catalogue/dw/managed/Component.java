@@ -23,6 +23,11 @@ package life.catalogue.dw.managed;
  * SectorSynchronizer were exactly that: their stop() stopped no work, as their own comments admitted, because
  * the running and queued jobs live in the executor. UsageMatcher was not even a gate - nothing ever asked
  * whether it had started.
+ *
+ * Nothing here cascades: stopping a component stops that component only. The declaration order above and the
+ * point of use assertOnline() calls - all of them on the names index - are the whole of the dependency
+ * handling, so an operator taking the names index down has to pause the job executor first and wait for it
+ * to quiesce. See docs/2026-09-01-job-component-consolidation.md and deploy's nidx-swap.sh.
  */
 public enum Component {
   NamesIndex,
@@ -32,22 +37,5 @@ public enum Component {
   ImportScheduler,
   SyncScheduler,
   GBIFRegistrySync,
-  Feedback,
-
-  /**
-   * Accepted but no longer managed, so the deploy scripts naming them keep working across the release that
-   * removed them. Declared last so they cannot affect the start or stop order. Remove once no script refers
-   * to them - nidx-swap.sh and nidx-clear.sh above all, which should pause the job executor instead.
-   */
-  @Deprecated DatasetImporter,
-  @Deprecated SectorSynchronizer,
-  @Deprecated UsageMatcher;
-
-  public boolean isDeprecated() {
-    try {
-      return getClass().getField(name()).isAnnotationPresent(Deprecated.class);
-    } catch (NoSuchFieldException e) {
-      throw new IllegalStateException(e);
-    }
-  }
+  Feedback
 }
