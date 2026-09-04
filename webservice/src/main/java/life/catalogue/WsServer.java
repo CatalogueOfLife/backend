@@ -30,6 +30,7 @@ import life.catalogue.dw.jersey.ColJerseyBundle;
 import life.catalogue.dw.logging.pg.PgLogBundle;
 import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.managed.Component;
+import life.catalogue.dw.managed.ComponentMode;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
@@ -242,7 +243,7 @@ public class WsServer extends Application<WsServerConfig> {
     JobResult.setDownloadConfigs(cfg.job.downloadURI, cfg.job.downloadDir);
 
     // create a managed service that controls our startable/stoppable components in sync with the DW lifecycle
-    final ManagedService managedService = new ManagedService(env.lifecycle());
+    final ManagedService managedService = new ManagedService(env.lifecycle(), cfg.components);
 
     // use a custom metrics naming strategy that does not involve the user agent name with a version
     httpClient = new HttpClientBuilder(env)
@@ -390,7 +391,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // DOI
     DoiService doiService;
-    if (cfg.doi == null || !cfg.doi.hasCredentials()) {
+    if (cfg.doi == null || !cfg.doi.hasCredentials() || cfg.mode(Component.DoiUpdater) == ComponentMode.DISABLED) {
       doiService = DoiService.passThru();
       LOG.warn("DataCite DOI service not configured!");
     } else {
@@ -438,7 +439,7 @@ public class WsServer extends Application<WsServerConfig> {
     //github feedback
     FeedbackService feedback;
     EmailEncryption encryption = null;
-    if (cfg.github == null) {
+    if (cfg.github == null || cfg.mode(Component.Feedback) == ComponentMode.DISABLED) {
       feedback = FeedbackService.passThru();
       LOG.warn("No feedback configured!");
     } else {

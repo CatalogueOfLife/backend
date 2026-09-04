@@ -137,11 +137,19 @@ public class AdminResource {
     return maintenance.set(on, message);
   }
 
+  /**
+   * @return the managed components with their running state and whether start-all starts them, plus the two server
+   *         wide flags a UI shows next to them. Components that are off for this environment are absent.
+   */
   @GET
   @PermitAll
   @Path("/component")
-  public Map<String, Boolean> componentState() {
-    return componedService.state();
+  public Map<String, Object> componentState() {
+    Map<String, Object> state = new HashMap<>();
+    state.put("idle", componedService.isIdle());
+    state.put("quiesced", exec.isQuiesced());
+    state.put("components", componedService.state());
+    return state;
   }
 
   /**
