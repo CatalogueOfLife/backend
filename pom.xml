@@ -24,8 +24,13 @@
     <java.version>25</java.version>
     <java.maxVersion>25</java.maxVersion>
     <!-- .mvn/jvm.config is not being used by surefire - we need to replicate the settings here! -->
+    <!-- The native access opt in below is needed because the Rust name parser reaches its cdylib
+         through java.lang.foreign, a restricted method the JVM only warns about today and will refuse
+         outright in a later release. The shipped jar opts in through its manifest instead (see the
+         shade ManifestResourceTransformer); test JVMs have no manifest, so they opt in here. -->
     <java.argLine>
       -Djdk.net.URLClassPath.disableClassPathURLCheck=true
+      --enable-native-access=ALL-UNNAMED
       --add-opens=java.base/java.lang=ALL-UNNAMED
       --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
       --add-opens=java.base/java.io=ALL-UNNAMED
@@ -918,6 +923,12 @@
               <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
               <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                 <mainClass>${mainClass}</mainClass>
+                <manifestEntries>
+                  <!-- honoured for a `java -jar` launch, which is how the servers and every CLI command
+                       start. Without it the Rust name parser's foreign lookup warns on every boot and
+                       will be blocked outright by a later JDK. -->
+                  <Enable-Native-Access>ALL-UNNAMED</Enable-Native-Access>
+                </manifestEntries>
               </transformer>
               <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">
                 <resource>config.yaml</resource>
