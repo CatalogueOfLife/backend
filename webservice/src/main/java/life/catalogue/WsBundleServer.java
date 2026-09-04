@@ -107,9 +107,11 @@ public class WsBundleServer extends WsROServer<WsBundleServerConfig> {
     }
 
     matcherFactory = new UsageMatcherFactory(cfg.matching, nameIndex, getSqlSessionFactory(), jobExecutor);
-    // managed so the stores are closed on shutdown and a missing or stale store is rebuilt from the
-    // bundle's own database - the shipped one is normally neither
-    env.lifecycle().manage(ManagedUtils.from((Managed) matcherFactory));
+    // closed on shutdown so the mmapped stores are unmapped. Only closed: the factory's maintenance -
+    // the temp dir sweep and the reconcile that rebuilds a missing or stale store - is a cron job on the
+    // other servers and deliberately never runs here, because a bundle ships its store and a reconcile is
+    // the very thing that would delete it. A store that is missing anyway fails the boot below.
+    env.lifecycle().manage(ManagedUtils.from((AutoCloseable) matcherFactory));
 
     // keyless routing. Registered before the resources so the priority ordering against the alias filter is explicit.
     j.register(new SingleDatasetRewriteFilter(cfg.releaseKey));
