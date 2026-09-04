@@ -2,6 +2,8 @@
 
  import life.catalogue.common.io.Resources;
  import life.catalogue.dw.auth.map.MapAuthenticationFactory;
+ import life.catalogue.dw.managed.Component;
+ import life.catalogue.dw.managed.ComponentMode;
 
  import java.io.File;
  import java.io.FileInputStream;
@@ -97,6 +99,32 @@ public class WsServerConfigTest {
         }
       }
     }
+  }
+
+  /**
+   * The per environment component modes bind as a map of deviations, everything unlisted staying AUTO. Worth a test
+   * of its own because the yaml factory silently ignores what it cannot bind, so a typo here would not fail a deploy
+   * - it would quietly start the very component the environment wanted gone.
+   */
+  @Test
+  public void componentModes() throws Exception {
+    final ObjectMapper yaml = new ObjectMapper(new YAMLFactory());
+    WsServerConfig cfg = yaml.readValue("""
+      components:
+        Feedback: DISABLED
+        DoiUpdater: DISABLED
+        CronExecutor: MANUAL
+        ImportScheduler: MANUAL
+      """, WsServerConfig.class);
+
+    assertEquals(ComponentMode.DISABLED, cfg.mode(Component.Feedback));
+    assertEquals(ComponentMode.DISABLED, cfg.mode(Component.DoiUpdater));
+    assertEquals(ComponentMode.MANUAL, cfg.mode(Component.CronExecutor));
+    assertEquals(ComponentMode.MANUAL, cfg.mode(Component.ImportScheduler));
+    // anything not listed, and every component at all when the key is absent
+    assertEquals(ComponentMode.AUTO, cfg.mode(Component.NamesIndex));
+    assertEquals(ComponentMode.AUTO, cfg.mode(Component.JobExecutor));
+    assertEquals(ComponentMode.AUTO, new WsServerConfig().mode(Component.Feedback));
   }
 
   @Test

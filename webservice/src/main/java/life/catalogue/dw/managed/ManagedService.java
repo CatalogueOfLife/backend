@@ -4,7 +4,8 @@ import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,19 +23,41 @@ import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
  * During deploys we need to run two applications simultaneously which cannot both access the same file system components, often MapDB instances.
  * Starting/stopping these components needs to be controlled outside via the API of a running application.
  * See AdminResource methods.
+ *
+ * Which components exist and which of them start-all starts is per environment configuration, see {@link ComponentMode}.
+ * A {@link ComponentMode#DISABLED} component is never registered, so it is indistinguishable from one this server does
+ * not wire at all: absent from {@link #state()} and a logged no-op to start or stop.
  */
 public class ManagedService {
   private static final Logger LOG = LoggerFactory.getLogger(ManagedService.class);
 
   private final LifecycleEnvironment environment;
-  private final Map<Component, Managed> components = new HashMap<>();
+  private final Map<Component, ComponentMode> modes;
+  private final Map<Component, Managed> components = new EnumMap<>(Component.class);
   private final List<Idle> idle = new ArrayList<>();
 
   public ManagedService(LifecycleEnvironment env) {
-    environment = env;
+    this(env, null);
+  }
+
+  public ManagedService(LifecycleEnvironment env, Map<Component, ComponentMode> modes) {
+    this.environment = env;
+    // not new EnumMap<>(modes) - that throws on an empty non enum map, which a literal "components: {}" yields
+    this.modes = new EnumMap<>(Component.class);
+    if (modes != null) {
+      this.modes.putAll(modes);
+    }
+  }
+
+  public ComponentMode mode(Component component) {
+    return modes.getOrDefault(component, ComponentMode.AUTO);
   }
 
   public void manage(Component component, Managed managed) {
+    if (mode(component) == ComponentMode.DISABLED) {
+      LOG.info("Component {} is disabled in this configuration and not managed", component);
+      return;
+    }
     environment.manage(ManagedUtils.stopOnly(managed));
     components.put(component, managed);
     if (managed instanceof Idle) {
@@ -42,24 +65,41 @@ public class ManagedService {
     }
   }
 
-  public Map<String, Boolean> state() {
-    Map<String, Boolean> state = new HashMap<>();
+  /**
+   * @return the state of every managed component in the enum's own start order. Components that are off or simply
+   *         not wired by this server are absent - there is nothing an operator could do about them.
+   */
+  public Map<String, ComponentState> state() {
+    Map<String, ComponentState> state = new LinkedHashMap<>();
     for (Component c : Component.values()) {
       var m = components.get(c);
-      state.put(c.name(), m != null && m.hasStarted());
+      if (m != null) {
+        state.put(c.name(), new ComponentState(m.hasStarted(), mode(c) != ComponentMode.MANUAL));
+      }
     }
-    // idle summary
-    state.put("idle", idle.stream().allMatch(Idle::isIdle));
     return state;
   }
 
   /**
-   * Tries to start all managed components. If one fails to start, the other ones are still tried and finally an exception thrown.
+   * @return true if all managed components that track idleness are idle
+   */
+  public boolean isIdle() {
+    return idle.stream().allMatch(Idle::isIdle);
+  }
+
+  /**
+   * Tries to start all managed components apart from the manual ones. If one fails to start, the other ones are
+   * still tried and finally an exception thrown.
    * @throws Exception
    */
   public void startAll() throws Exception {
     Exception e = null;
     for (var c : Component.values()) {
+      if (!components.containsKey(c)) continue;
+      if (mode(c) == ComponentMode.MANUAL) {
+        LOG.info("Component {} is manual in this configuration and not started", c);
+        continue;
+      }
       try {
         start(c);
       } catch (Exception ex) {
@@ -72,6 +112,10 @@ public class ManagedService {
     }
   }
 
+  /**
+   * Stops every managed component, the manual ones included - this is the blue green read/write switch and must not
+   * leave a hand started component alive on the app being replaced.
+   */
   public void stopAll() {
     var comps = Component.values();
     ArrayUtils.reverse(comps);
@@ -113,7 +157,7 @@ public class ManagedService {
   }
 
   private void warnUnmanaged(Component component, String verb) {
-    LOG.warn("Component {} cannot be {} as it is not managed yet", component, verb);
+    LOG.warn("Component {} cannot be {} as it is not managed", component, verb);
   }
 
 }

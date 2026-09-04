@@ -230,7 +230,20 @@ the dependency handling. Stopping `NamesIndex` therefore does not stop the execu
 job and does not stop a queued one from starting: dependent work fails with a 503 instead of waiting. So
 taking the index down means pause the executor, await quiesced, stop the index, swap, start, resume - which
 is what deploy's `nidx-swap.sh` does.
-See [`docs/2026-09-01-job-component-consolidation.md`](docs/2026-09-01-job-component-consolidation.md).
+**Which components exist is per environment**, via a `components:` map of deviations in the config that binds to
+`ComponentMode`; anything unlisted is `AUTO`. `MANUAL` is managed and individually startable but skipped by
+`start-all` - the cron executor and the continuous importer on dev, harmless to have around but with no business
+polling by themselves. `DISABLED` is not registered at all: absent from `/admin/component`, no switch in the admin
+UI, and start/stop by name is the same logged no-op as a component a server never wired - Feedback and DoiUpdater
+on dev and test, which open public github issues and register DataCite DOIs. `WsServer` also selects the existing
+`FeedbackService.passThru()`/`DoiService.passThru()` for those two when disabled, so the instance is inert and not
+merely unstartable. It is `DISABLED` and not `OFF` because yaml 1.1 resolves a bare `OFF` to a boolean.
+`stop-all` still stops everything managed, `MANUAL` included - it is the blue-green switch and must not leave a
+hand started scheduler alive on the app being replaced - so `restart-all` leaves the manual ones stopped.
+`GET /admin/component` therefore answers `{idle, quiesced, components: {name: {running, autostart}}}`, letting a UI
+tell "deliberately off here" from "should be running and is not".
+See [`docs/2026-09-01-job-component-consolidation.md`](docs/2026-09-01-job-component-consolidation.md) and
+[`docs/2026-09-04-per-environment-components.md`](docs/2026-09-04-per-environment-components.md).
 
 **Sector Synchronization (Assembly):**
 `SectorSync` in core module merges portions of source datasets into managed projects. A "sector" defines which subtree from a source dataset contributes to a project. The sync process:

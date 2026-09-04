@@ -10,6 +10,8 @@ import life.catalogue.dw.auth.AuthenticationProviderFactory;
 import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
 import life.catalogue.dw.logging.pg.PgLogConfig;
+import life.catalogue.dw.managed.Component;
+import life.catalogue.dw.managed.ComponentMode;
 import life.catalogue.dw.mail.MailBundleConfig;
 import life.catalogue.config.EsConfig;
 import life.catalogue.event.BrokerConfig;
@@ -23,6 +25,8 @@ import life.catalogue.resources.legacy.LegacyConfig;
 
 import java.io.File;
 import java.net.URI;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -126,6 +130,19 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
 
   @Valid
   public GithubConfig github;
+
+  /**
+   * Per environment overrides of how the startable components behave, e.g. so that only prod ever opens a github
+   * feedback issue. Only deviations are listed, anything absent being {@link ComponentMode#AUTO}, so prod carries
+   * no components key at all.
+   */
+  @Valid
+  @NotNull
+  public Map<Component, ComponentMode> components = new EnumMap<>(Component.class);
+
+  public ComponentMode mode(Component c) {
+    return components.getOrDefault(c, ComponentMode.AUTO);
+  }
 
   @Valid
   @NotNull
