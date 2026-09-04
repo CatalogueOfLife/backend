@@ -61,7 +61,23 @@ by three semantic phases.
 - if it is **RELEASE**, **XRELEASE**, or **EXTERNAL**, used as-is.
 - any other origin is rejected with `IllegalArgumentException`.
 
-The resolved key is stored in `sourceDatasetKey` and used by every subsequent pass.
+The resolved key is stored in `sourceDatasetKey` and used by every subsequent pass. It is also written
+into `verbatim_source.source_dataset_key` for every usage the sync inserts, which is the only record of
+which release was read — the sector keeps naming the configured project, and `sector.dataset_attempt`
+holds that project's attempt.
+
+### 0b. What a release records as the source
+
+The project's sector keeps pointing at the project: that is the configuration, and it has to keep
+resolving to the latest release on the next sync. The copy in a **release** is a historical record
+instead, so `SectorMapper.copyDataset` swaps a PROJECT subject for the release that was actually read,
+recovering it from `verbatim_source` and taking `dataset_attempt` from that release as well. Both have
+to move together — a release's attempt never changes, so the two stay equal and
+`DatasetSourceMapper.listProjectSources` reads live metadata rather than looking for an archived copy
+of the project, which `dataset_archive` never holds (only `PgImport` writes it, for reimported
+external datasets). A release therefore cites the concrete (X)Release, with its DOI and version,
+rather than the moving project. A sector without such provenance keeps its project subject.
+See [`2026-09-05-release-source-provenance.md`](2026-09-05-release-source-provenance.md).
 
 ### 1. `deleteOld()` — Wipe previous run
 

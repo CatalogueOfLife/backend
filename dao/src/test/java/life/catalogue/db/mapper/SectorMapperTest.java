@@ -3,9 +3,12 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.junit.MybatisTestUtils;
@@ -200,6 +203,107 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     req.setMode(null);
     req.setPublisherKey(UUID.randomUUID());
     assertEquals(0, mapper().search(req, new Page()).size());
+  }
+
+  /**
+   * A hierarchy sector is configured against a project but synced from one of that projects releases.
+   * The project keeps the project as its subject - that is the configuration - but the copy in the release
+   * has to name the release that was really read, which we recover from the provenance in verbatim_source.
+   */
+  @Test
+  public void copyDatasetSwapsProjectSubjectForTheSyncedRelease() throws Exception {
+    var dm = mapper(DatasetMapper.class);
+
+    // the project the sector is configured against, and the release the sync actually read
+    Dataset project = DatasetMapperTest.create();
+    project.setOrigin(DatasetOrigin.PROJECT);
+    dm.create(project);
+    dm.updateLastImport(project.getKey(), 623, null);
+
+    Dataset release = DatasetMapperTest.create();
+    release.setOrigin(DatasetOrigin.RELEASE);
+    release.setSourceKey(project.getKey());
+    dm.create(release);
+    dm.updateLastImport(release.getKey(), 607, null);
+
+    // an external source, which needs no swapping
+    Dataset external = DatasetMapperTest.create();
+    dm.create(external);
+    dm.updateLastImport(external.getKey(), 5, null);
+
+    // and the release we copy the projects sectors into
+    Dataset target = DatasetMapperTest.create();
+    target.setOrigin(DatasetOrigin.RELEASE);
+    target.setSourceKey(Datasets.COL);
+    dm.create(target);
+
+    Sector hierarchy = createSyncedSector(project.getKey(), release.getKey());
+    Sector attached = createSyncedSector(external.getKey(), external.getKey());
+    commit();
+
+    mapper().copyDataset(Datasets.COL, target.getKey(), false);
+    commit();
+
+    // the project subject is swapped for the release that was read, attempt included
+    Sector copied = mapper().get(DSID.of(target.getKey(), hierarchy.getId()));
+    assertEquals(release.getKey(), copied.getSubjectDatasetKey());
+    assertEquals(Integer.valueOf(607), copied.getDatasetAttempt());
+    // ... while the project itself keeps pointing at the project
+    Sector live = mapper().get(DSID.of(Datasets.COL, hierarchy.getId()));
+    assertEquals(project.getKey(), live.getSubjectDatasetKey());
+    assertEquals(Integer.valueOf(623), live.getDatasetAttempt());
+
+    // an external subject is left alone
+    Sector copiedAttached = mapper().get(DSID.of(target.getKey(), attached.getId()));
+    assertEquals(external.getKey(), copiedAttached.getSubjectDatasetKey());
+    assertEquals(Integer.valueOf(5), copiedAttached.getDatasetAttempt());
+  }
+
+  @Test
+  public void copyDatasetKeepsProjectSubjectWithoutProvenance() throws Exception {
+    var dm = mapper(DatasetMapper.class);
+
+    Dataset project = DatasetMapperTest.create();
+    project.setOrigin(DatasetOrigin.PROJECT);
+    dm.create(project);
+    dm.updateLastImport(project.getKey(), 623, null);
+
+    Dataset target = DatasetMapperTest.create();
+    target.setOrigin(DatasetOrigin.RELEASE);
+    target.setSourceKey(Datasets.COL);
+    dm.create(target);
+
+    // no verbatim_source rows for this sector at all
+    Sector s = createSyncedSector(project.getKey(), null);
+    commit();
+
+    mapper().copyDataset(Datasets.COL, target.getKey(), false);
+    commit();
+
+    Sector copied = mapper().get(DSID.of(target.getKey(), s.getId()));
+    assertEquals(project.getKey(), copied.getSubjectDatasetKey());
+    assertEquals(Integer.valueOf(623), copied.getDatasetAttempt());
+  }
+
+  /**
+   * Creates a sector in the COL project with data, as copyDataset only copies sectors that have names.
+   * @param sourceDatasetKey the dataset to record as the provenance of the sectors data, or null for none
+   */
+  private Sector createSyncedSector(int subjectDatasetKey, Integer sourceDatasetKey) {
+    Sector s = create(DSID.colID(UUID.randomUUID().toString()), DSID.of(subjectDatasetKey, UUID.randomUUID().toString()));
+    mapper().create(s);
+    // updateLastSync copies dataset_attempt from the subject dataset
+    mapper().updateLastSync(s, 1);
+
+    Name n = TestEntityGenerator.newName(Datasets.COL, "n" + s.getId(), "Abies alba");
+    n.setSectorKey(s.getId());
+    mapper(NameMapper.class).create(n);
+
+    if (sourceDatasetKey != null) {
+      var vs = new VerbatimSource(Datasets.COL, s.getId(), s.getId(), sourceDatasetKey, "x" + s.getId(), EntityType.NAME_USAGE);
+      mapper(VerbatimSourceMapper.class).create(vs);
+    }
+    return s;
   }
 
   @Test
