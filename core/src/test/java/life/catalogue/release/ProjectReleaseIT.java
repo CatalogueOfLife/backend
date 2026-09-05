@@ -2,6 +2,9 @@ package life.catalogue.release;
 
 import life.catalogue.TestConfigs;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
@@ -13,9 +16,13 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.jobs.SectorImportRetentionJob;
@@ -189,6 +196,65 @@ public class ProjectReleaseIT extends ProjectBaseIT {
    * A duplication is not a release: {@link ProjectCopyFactory#buildDuplication} never wires retention at
    * all, so running one to completion must never touch the job executor.
    */
+  /**
+   * A hierarchy sector is configured against a project but reads one of that projects releases, which is what the
+   * release has to archive as its source - the project has no archived metadata for the attempt that was synced,
+   * and used to yield a source dataset with a null key that killed the release on the not null constraint.
+   */
+  @Test
+  public void releaseArchivesTheResolvedReleaseAsSource() throws Exception {
+    final int sourceProjectKey = 100;
+    final Integer sourceReleaseKey;
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(false)) {
+      var dm = session.getMapper(DatasetMapper.class);
+
+      // the release of the source project that the sync really read
+      Dataset rel = new Dataset();
+      rel.setTitle("Source #1, release");
+      rel.setType(DatasetType.OTHER);
+      rel.setOrigin(DatasetOrigin.RELEASE);
+      rel.setSourceKey(sourceProjectKey);
+      rel.applyUser(Users.TESTER);
+      dm.create(rel);
+      dm.updateLastImport(rel.getKey(), 7, null);
+      sourceReleaseKey = rel.getKey();
+
+      // the provenance the sync wrote: the sectors data came from that release
+      session.getMapper(VerbatimSourceMapper.class)
+             .create(new VerbatimSource(projectKey, 1, 1, sourceReleaseKey, "x1", EntityType.NAME_USAGE));
+
+      // the sector is configured against the project and synced its attempt 1, which has since moved on to 2 -
+      // so the source metadata is looked for in dataset_archive, where a project never has any
+      Connection c = session.getConnection();
+      var st = c.createStatement();
+      st.execute("UPDATE dataset SET origin='PROJECT' WHERE key = " + sourceProjectKey);
+      st.execute("UPDATE sector SET sync_attempt=1, dataset_attempt=1 WHERE dataset_key=" + projectKey + " AND id=1");
+      st.execute("UPDATE dataset SET attempt=2 WHERE key = " + sourceProjectKey);
+      session.commit();
+      c.commit();
+    }
+    DatasetInfoCache.CACHE.clear();
+
+    ProjectRelease release = buildRelease();
+    release.run();
+    assertEquals(JobStatus.FINISHED, release.getStatus());
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      // the sector copied into the release points at the release that was read, not at the project
+      Sector s = session.getMapper(SectorMapper.class).get(DSID.of(release.newDatasetKey, 1));
+      assertEquals(sourceReleaseKey, s.getSubjectDatasetKey());
+      assertEquals(Integer.valueOf(7), s.getDatasetAttempt());
+      // ... while the project keeps its configuration
+      assertEquals(Integer.valueOf(sourceProjectKey),
+        session.getMapper(SectorMapper.class).get(DSID.of(projectKey, 1)).getSubjectDatasetKey());
+
+      var sources = session.getMapper(DatasetSourceMapper.class).listReleaseSources(release.newDatasetKey, true);
+      assertEquals(1, sources.size());
+      assertEquals(sourceReleaseKey, sources.get(0).getKey());
+    }
+  }
+
   @Test
   public void duplicationSubmitsNoRetentionJob() throws Exception {
     var jobExecutor = mock(JobExecutor.class);

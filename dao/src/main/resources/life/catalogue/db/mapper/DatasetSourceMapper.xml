@@ -130,12 +130,29 @@
     )
   </sql>
 
+  <!--
+    A source is read from dataset_archive when the sector synced an older attempt than the one the source dataset
+    is on now, and from the live dataset otherwise. The archive is only ever written by PgImport when an external
+    dataset is reimported, so an attempt can be missing from it - a project subject has no archived copy at all.
+    The archive branch must therefore join, not left join: a left join produces an all NULL dataset with a null key,
+    which ProjectRelease.finalWork then inserts into dataset_source and dies on. The live branch picks those up
+    instead, so the two branches stay mutually exclusive and cover every source exactly once.
+  -->
+  <sql id="ARCHIVE_MISSING">
+    NOT EXISTS (SELECT TRUE FROM dataset_archive a WHERE a.key = src.key AND a.attempt = src.attempt)
+  </sql>
+
+  <!-- same as ARCHIVE_MISSING, for the single source queries whose src CTE carries no key column -->
+  <sql id="ARCHIVE_MISSING_KEY">
+    NOT EXISTS (SELECT TRUE FROM dataset_archive a WHERE a.key = #{key} AND a.attempt = src.attempt)
+  </sql>
+
   <select id="listProjectSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     <include refid="SECTOR_SUBJECT_DATASETS"/>
     <!-- archived dataset metadata -->
     SELECT <include refid="SELECT"/>, src.sector_modes
     FROM src
-      LEFT JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
+      JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
       LEFT JOIN dataset con ON con.key = #{datasetKey}
     WHERE src.attempt != src.dattempt
@@ -148,7 +165,7 @@
       JOIN dataset d ON d.key = src.key
       LEFT JOIN dataset_import di ON di.dataset_key = src.key AND di.attempt = d.attempt
       LEFT JOIN dataset con ON con.key = #{datasetKey}
-    WHERE src.attempt = src.dattempt OR src.attempt IS NULL
+    WHERE src.attempt = src.dattempt OR src.attempt IS NULL OR <include refid="ARCHIVE_MISSING"/>
 
     ORDER BY 1
   </select>
@@ -158,7 +175,7 @@
     <!-- archived dataset metadata -->
     SELECT <include refid="SELECT_SIMPLE"/>, src.sector_modes
     FROM src
-      LEFT JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
+      JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
     WHERE src.attempt != src.dattempt
 
     UNION
@@ -167,7 +184,7 @@
     SELECT <include refid="SELECT_SIMPLE"/>, src.sector_modes
     FROM src
       JOIN dataset d ON d.key = src.key
-    WHERE src.attempt = src.dattempt OR src.attempt IS NULL
+    WHERE src.attempt = src.dattempt OR src.attempt IS NULL OR <include refid="ARCHIVE_MISSING"/>
 
     ORDER BY 1
   </select>
@@ -196,7 +213,7 @@
     SELECT <include refid="SELECT"/>, src.sector_modes
     FROM src
       JOIN dataset d2 ON d2.key = #{key}
-      LEFT JOIN dataset_archive d ON d.key = #{key} AND d.attempt = src.attempt
+      JOIN dataset_archive d ON d.key = #{key} AND d.attempt = src.attempt
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
       LEFT JOIN dataset con ON con.key = #{datasetKey}
     WHERE src.attempt != d2.attempt
@@ -209,7 +226,7 @@
       JOIN dataset d ON d.key = #{key}
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
       LEFT JOIN dataset con ON con.key = #{datasetKey}
-    WHERE src.attempt = d.attempt OR src.attempt IS NULL
+    WHERE src.attempt = d.attempt OR src.attempt IS NULL OR <include refid="ARCHIVE_MISSING_KEY"/>
   </select>
 
   <select id="getProjectSourceSimple" resultMap="datasetSimpleResultMap">
@@ -222,7 +239,7 @@
     SELECT <include refid="SELECT_SIMPLE_DATASET"/>
     FROM src
     JOIN dataset d2 ON d2.key = #{key}
-    LEFT JOIN dataset_archive d ON d.key = #{key} AND d.attempt = src.attempt
+    JOIN dataset_archive d ON d.key = #{key} AND d.attempt = src.attempt
     WHERE src.attempt != d2.attempt
 
     UNION
@@ -231,7 +248,7 @@
     SELECT <include refid="SELECT_SIMPLE_DATASET"/>
     FROM src
     JOIN dataset d ON d.key = #{key}
-    WHERE src.attempt = d.attempt OR src.attempt IS NULL
+    WHERE src.attempt = d.attempt OR src.attempt IS NULL OR <include refid="ARCHIVE_MISSING_KEY"/>
   </select>
 
   <select id="getReleaseSource" resultMap="datasetSourceReleaseResultMap">

@@ -300,6 +300,12 @@ public class ProjectRelease extends AbstractProjectCopy {
       // This DOES create source dataset records for aggregated publishers.
       // It does not create source records for merge sectors without data in the release itself!
       for (var d : srcDao.listSectorBasedSources(projectKey, newDatasetKey, true)) {
+        if (d.getKey() == null) {
+          // a source we cannot identify has no business in dataset_source - it would fail the insert on the not null
+          // key. The mapper should never hand one out, so say so instead of dying on a constraint violation.
+          LOG.error("Skip unidentifiable source dataset for release {} of project {}", newDatasetKey, projectKey);
+          continue;
+        }
         LOG.info("Archive dataset {}#{} for release {}: {}", d.getKey(), attempt, newDatasetKey, d.getAliasOrTitle());
         psm.create(newDatasetKey, d);
         cm.createRelease(d.getKey(), newDatasetKey, attempt);

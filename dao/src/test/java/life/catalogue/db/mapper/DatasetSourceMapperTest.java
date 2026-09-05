@@ -1,17 +1,24 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.CitationTest;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Setting;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 
@@ -46,6 +53,48 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
   public void listProjectSources() throws Exception {
     mapper().listProjectSources(Datasets.COL, false);
     mapper().listProjectSources(Datasets.COL, true);
+  }
+
+  /**
+   * dataset_archive is only ever written by PgImport when an external dataset is reimported, so the attempt a sector
+   * synced can be missing from it - a project subject has no archived copy at all. The archive branch used to left
+   * join, handing out an all NULL dataset with a null key that ProjectRelease then tried to insert into
+   * dataset_source. The live metadata has to be used instead.
+   */
+  @Test
+  public void listProjectSourcesWithoutArchivedMetadata() throws Exception {
+    var dm = mapper(DatasetMapper.class);
+    var sm = mapper(SectorMapper.class);
+
+    // a source synced at attempt 3 that has since moved on to 5, with nothing archived for 3
+    Dataset source = DatasetMapperTest.create();
+    dm.create(source);
+    dm.updateLastImport(source.getKey(), 3, null);
+
+    Sector s = SectorMapperTest.create(DSID.colID("t1"), DSID.of(source.getKey(), "x"));
+    sm.create(s);
+    sm.updateLastSync(s, 1); // copies dataset_attempt=3 off the source dataset
+    dm.updateLastImport(source.getKey(), 5, null);
+
+    // the sector only counts as a source once it has data in the project
+    Taxon t = TestEntityGenerator.newTaxon(Datasets.COL, "src1", null, Rank.SPECIES, "Abies alba");
+    t.setSectorKey(s.getId());
+    t.getName().setSectorKey(s.getId());
+    mapper(NameMapper.class).create(t.getName());
+    mapper(TaxonMapper.class).create(t);
+    commit();
+
+    var sources = mapper().listProjectSources(Datasets.COL, true);
+    assertEquals(1, sources.size());
+    assertEquals(source.getKey(), sources.get(0).getKey());
+    assertEquals(Integer.valueOf(5), sources.get(0).getAttempt());
+
+    var simple = mapper().listProjectSourcesSimple(Datasets.COL, true);
+    assertEquals(1, simple.size());
+    assertEquals(source.getKey(), simple.get(0).getKey());
+
+    assertNotNull(mapper().getProjectSource(source.getKey(), Datasets.COL));
+    assertNotNull(mapper().getProjectSourceSimple(source.getKey(), Datasets.COL));
   }
 
   @Test

@@ -59,6 +59,10 @@
 
   <sql id="COLS_NO_DATASETKEY">
     subject_dataset_key,
+    <include refid="COLS_NO_SUBJECT"/>
+  </sql>
+
+  <sql id="COLS_NO_SUBJECT">
     subject_id,
     subject_name,
     subject_authorship,
@@ -303,14 +307,34 @@
     VALUES (#{id}, <include refid="PROPS"/>, #{subject.id}, #{createdBy} )
   </insert>
 
+  <!--
+    Copies sectors into a release. A sector configured against a PROJECT subject (hierarchy sectors, see
+    HierarchySync.resolveSourceDatasetKey) is actually synced from one of that projects releases. The project keeps
+    the project as its subject - that is the configuration and it must keep resolving to the latest release on the
+    next sync - but the copy in the release is an immutable record of what the release contains, so it points at the
+    release that was really read. We know which one from the provenance the sync itself wrote into verbatim_source.
+    subject_dataset_key and dataset_attempt have to be swapped together: a releases attempt never moves, so the two
+    stay equal and DatasetSourceMapper.listProjectSources takes its live branch instead of looking for an archived
+    copy of the project metadata that is never written (dataset_archive only ever gets rows from PgImport).
+    Only a sector that really read something else is swapped - one whose provenance names the subject itself, as a
+    sector syncing straight from a live project would, keeps the attempt it synced.
+  -->
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO sector (id, dataset_key, sync_attempt, dataset_attempt, target_id, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
-    SELECT s.id, #{newDatasetKey}, sync_attempt, dataset_attempt, coalesce(<if test="mapIds">m.id2,</if>s.target_id), <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
+    INSERT INTO sector (id, dataset_key, sync_attempt, dataset_attempt, target_id, subject_dataset_key, <include refid="COLS_NO_SUBJECT"/>, original_subject_id, created, created_by )
+    SELECT s.id, #{newDatasetKey}, sync_attempt, coalesce(src.attempt, s.dataset_attempt), coalesce(<if test="mapIds">m.id2,</if>s.target_id), coalesce(src.key, s.subject_dataset_key), <include refid="COLS_NO_SUBJECT"/>, original_subject_id, created, created_by
     FROM sector s
     <if test="mapIds">
       LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=s.target_id
     </if>
-    WHERE dataset_key=#{datasetKey}
+    LEFT JOIN LATERAL (
+      SELECT r.key, r.attempt
+      FROM verbatim_source vs JOIN dataset r ON r.key=vs.source_dataset_key
+      WHERE vs.dataset_key=#{datasetKey} AND vs.sector_key=s.id
+        AND vs.source_dataset_key != s.subject_dataset_key
+        AND EXISTS (SELECT true FROM dataset sd WHERE sd.key=s.subject_dataset_key AND sd.origin='PROJECT')
+      LIMIT 1
+    ) src ON true
+    WHERE s.dataset_key=#{datasetKey}
       AND EXISTS (SELECT true FROM name WHERE dataset_key=#{datasetKey} AND sector_key=s.id LIMIT 1)
   </insert>
 
