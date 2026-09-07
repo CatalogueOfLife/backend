@@ -20,8 +20,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -48,6 +50,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
   protected NameRelationMapper nameRelMapper;
   protected SqlSession session;
   protected TermWriter writer;
+  /** start of the pass the current writer belongs to, see newDataFile/closeWriter */
+  private long passStarted;
   protected final DSID<String> entityKey = DSID.of(datasetKey, "");
   private final SXSSFWorkbook wb;
   protected final boolean inclTreatments;
@@ -454,6 +458,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
   private void exportTreatments() throws IOException, InterruptedException {
     checkIfCancelled();
     if (inclTreatments) {
+      final long started = System.currentTimeMillis();
+      final AtomicInteger treatments = new AtomicInteger();
       try (SqlSession session = factory.openSession()) {
         var mapper = session.getMapper(TreatmentMapper.class);
         if (fullDataset) {
@@ -461,6 +467,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
             checkIfCancelledRuntime();
             try {
               writeTreatment(x);
+              treatments.incrementAndGet();
             } catch (final IOException e) {
               throw new RuntimeException(e);
             }
@@ -472,10 +479,12 @@ public abstract class ArchiveExport extends DatasetExportJob {
             var x = mapper.get(key.id(id));
             if (x != null) {
               writeTreatment(x);
+              treatments.incrementAndGet();
             }
           }
         }
       }
+      logPass("Treatment", treatments.get(), started);
     }
   }
 
@@ -519,8 +528,19 @@ public abstract class ArchiveExport extends DatasetExportJob {
     if (writer != null) {
       closeAdditionalWriters(writer.getRowType());
       writer.close();
+      logPass(writer.getRowType().simpleName(), writer.getCounter(), passStarted);
       writer = null;
     }
+  }
+
+  /**
+   * Logs how long one entity pass took and how fast it went, so a slow export can be attributed
+   * to a single entity from the job log alone.
+   */
+  private void logPass(String rowType, int records, long startedInMillis) {
+    long ms = System.currentTimeMillis() - startedInMillis;
+    LOG.info("Exported {} {} records from dataset {} in {} ({} records/s)", records, rowType, datasetKey,
+      DurationFormatUtils.formatDurationHMS(ms), ms > 0 ? 1000L * records / ms : records);
   }
 
   private boolean newDataFile(Term[] terms) throws IOException {
@@ -534,6 +554,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       } else {
         writer = new TermWriter.TSV(tmpDir, rowType, cols);
       }
+      passStarted = System.currentTimeMillis();
       openAdditionalWriters(rowType);
       return true;
     }

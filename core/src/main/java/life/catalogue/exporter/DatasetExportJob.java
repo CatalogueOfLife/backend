@@ -26,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -163,11 +164,22 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
     try {
       export.setStarted(LocalDateTime.now());
       updateExport(JobStatus.RUNNING);
-      // actual export work
+      // actual export work, timed per phase - a large export runs for hours and the job log
+      // is the only place the time can be attributed to a phase afterwards
+      final long started = System.currentTimeMillis();
       export();
+      logTook(LOG, "Exporting data of dataset " + datasetKey, started);
+
+      long phase = System.currentTimeMillis();
       exportMetadata();
+      logTook(LOG, "Exporting metadata of dataset " + datasetKey, phase);
+
+      phase = System.currentTimeMillis();
       bundle();
+      logTook(LOG, "Bundling archive of dataset " + datasetKey, phase);
+
       LOG.info("Export {} of dataset {} completed", getKey(), datasetKey);
+      logTook(LOG, "Export " + getKey() + " in total", started);
     } finally {
       LOG.info("Remove temporary export directory {}", tmpDir.getAbsolutePath());
       try {
@@ -193,7 +205,9 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
     export.setTaxonCount(counter.getTaxCounter().get());
     export.setTaxaByRankCount(counter.getRankCounterMap());
     try {
+      final long started = System.currentTimeMillis();
       export.calculateSizeAndMd5();
+      logTook(LOG, "Size and MD5 of " + archive, started);
     } catch (IOException e) {
       LOG.error("Failed to read generated archive file stats for {}", archive, e);
     }
@@ -205,6 +219,14 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
     LOG.info("Bundling archive at {}", archive.getAbsolutePath());
     FileUtils.forceMkdir(archive.getParentFile());
     CompressionUtil.zipDir(tmpDir, archive, true);
+    LOG.info("Bundled {} MB archive at {}", archive.length()/1024/1024, archive.getAbsolutePath());
+  }
+
+  /**
+   * Logs how long a single export phase took.
+   */
+  protected static void logTook(Logger logger, String task, long startedInMillis) {
+    logger.info("{} took {}", task, DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - startedInMillis));
   }
 
   protected void exportMetadata() throws IOException {
