@@ -198,17 +198,17 @@ public class ColdpExtendedExportIT extends ExportTest {
   }
 
   /**
-   * A filtered export fetched every taxon's and name's extensions with a query of its own. Above
-   * ArchiveExport.SCAN_THRESHOLD ids it streams the entity once and filters here instead, and the two
-   * must agree exactly - the subtree of a filtered export is a subset of the same rows either way.
+   * A filtered export fetches the ids it wants in batches of ArchiveExport.ID_BATCH_SIZE. A batch of one
+   * is exactly the per id fetching this replaced, so driving the same export at both sizes and comparing
+   * the archives pins the batching down against the behaviour it inherited.
    */
   @Test
-  public void filteredScanMatchesPerIdFetch() throws Exception {
+  public void filteredBatchesMatchSingleIdFetches() throws Exception {
     req.setSynonyms(false); // any filter makes fullDataset false, so both branches become reachable
 
-    final int origThreshold = ArchiveExport.SCAN_THRESHOLD;
+    final int origBatchSize = ArchiveExport.ID_BATCH_SIZE;
     Map<String, List<Map<String, String>>> perId = new LinkedHashMap<>();
-    Map<String, List<Map<String, String>>> scanned = new LinkedHashMap<>();
+    Map<String, List<Map<String, String>>> batched = new LinkedHashMap<>();
     final List<String> files = List.of(
       ColdpTerm.NameUsage.simpleName() + ".tsv",
       ColdpTerm.VernacularName.simpleName() + ".tsv",
@@ -217,7 +217,7 @@ public class ColdpExtendedExportIT extends ExportTest {
       ColdpTerm.Reference.simpleName() + ".tsv"
     );
     try {
-      ArchiveExport.SCAN_THRESHOLD = Integer.MAX_VALUE; // force the per id fetches
+      ArchiveExport.ID_BATCH_SIZE = 1; // one id per query, i.e. the old per id fetching
       var exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
       exp.run();
       assertExportExists(exp.getArchive());
@@ -225,20 +225,20 @@ public class ColdpExtendedExportIT extends ExportTest {
         perId.put(f, readArchiveRows(exp.getArchive(), f));
       }
 
-      ArchiveExport.SCAN_THRESHOLD = 0; // force the streaming scan
+      ArchiveExport.ID_BATCH_SIZE = 1000; // every id of this little dataset in one batch
       exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
       exp.run();
       assertExportExists(exp.getArchive());
       for (String f : files) {
-        scanned.put(f, readArchiveRows(exp.getArchive(), f));
+        batched.put(f, readArchiveRows(exp.getArchive(), f));
       }
     } finally {
-      ArchiveExport.SCAN_THRESHOLD = origThreshold;
+      ArchiveExport.ID_BATCH_SIZE = origBatchSize;
     }
 
     for (String f : files) {
       // neither branch promises an order, so compare as sets
-      assertEquals(f, new HashSet<>(perId.get(f)), new HashSet<>(scanned.get(f)));
+      assertEquals(f, new HashSet<>(perId.get(f)), new HashSet<>(batched.get(f)));
     }
     // and the filter really did keep rows, rather than both branches agreeing on nothing
     assertFalse("expected the root-2 subtree to export some usages", perId.get(files.get(0)).isEmpty());

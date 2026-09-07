@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -70,6 +71,19 @@ abstract class TaxonExtensionMapperTest<T extends ExtensionEntity, M extends Tax
     // test listByTaxon
     List<T> created = TestEntityGenerator.nullifyDate(mapper().listByTaxon(tax));
     assertEquals(originals, created);
+
+    // test listByTaxa, the batch form the archive export uses. It must return what listByTaxon does,
+    // and it must carry the taxonID because the export has no loop variable to take it from.
+    var batch = mapper().listByTaxa(tax.getDatasetKey(), List.of(tax.getId()));
+    for (TaxonExtension<T> te : batch) {
+      assertEquals(tax.getId(), te.getTaxonID());
+    }
+    List<T> batched = TestEntityGenerator.nullifyDate(batch.stream().map(TaxonExtension::getObj).collect(Collectors.toList()));
+    assertEquals(originals, batched);
+    // an unknown id must contribute nothing rather than everything
+    assertTrue(mapper().listByTaxa(tax.getDatasetKey(), List.of("no-such-taxon")).isEmpty());
+    // and a batch of several ids, only one of which exists, still finds it
+    assertEquals(originals.size(), mapper().listByTaxa(tax.getDatasetKey(), List.of("nope", tax.getId(), "nope2")).size());
   
     // processing
     CountHandler handler = new CountHandler();

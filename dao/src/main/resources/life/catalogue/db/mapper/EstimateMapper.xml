@@ -195,6 +195,14 @@
     WHERE est.dataset_key=#{datasetKey}
   </select>
 
+  <!-- the archive export of a subtree, by the taxa the estimates target. See TaxonBatchable. -->
+  <select id="listByTaxa" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS batch(bid) ON batch.bid=est.target_id
+    WHERE est.dataset_key=#{datasetKey}
+  </select>
+
   <update id="updateTaxonID" parameterType="map">
     UPDATE estimate SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
     WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}

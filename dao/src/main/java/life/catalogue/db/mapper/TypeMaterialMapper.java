@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TypeMaterial;
 import life.catalogue.db.*;
+import life.catalogue.db.NameBatchable;
 
 import java.time.LocalDateTime;
 
@@ -14,7 +15,8 @@ import org.apache.ibatis.annotations.Param;
  *
  */
 public interface TypeMaterialMapper extends CRUD<DSID<String>, TypeMaterial>,
-  DatasetProcessable<TypeMaterial>, SectorProcessable<TypeMaterial>, NameProcessable<TypeMaterial>, CopyDataset {
+  DatasetProcessable<TypeMaterial>, SectorProcessable<TypeMaterial>, NameProcessable<TypeMaterial>,
+  NameBatchable<TypeMaterial>, CopyDataset {
 
   /**
    * Deletes all type materials that have no linked name.

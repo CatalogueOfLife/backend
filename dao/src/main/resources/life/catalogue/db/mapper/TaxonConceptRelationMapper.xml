@@ -67,6 +67,14 @@
     ORDER BY tc.id
   </select>
 
+  <!-- the archive export of a subtree, fetching the entities of many taxa at once. See TaxonBatchable. -->
+  <select id="listByTaxa" resultMap="tcRelResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS batch(bid) ON batch.bid=tc.taxon_id
+    WHERE tc.dataset_key = #{datasetKey}
+  </select>
+
   <delete id="deleteByTaxon" parameterType="map">
     DELETE FROM taxon_concept_rel
     WHERE dataset_key = #{key.datasetKey} AND (taxon_id = #{key.id} OR related_taxon_id = #{key.id})

@@ -58,10 +58,13 @@ looked each up through a 10k entry cache. On a release whose references are most
 cache never stood a chance, so it degenerated into two reference lookups per usage. Opt in via
 `inclCitations`, since ColDP would only discard those wide columns.
 
-**Filtered exports scan instead of fetching each id.** The dominant cost above. Above
-`ArchiveExport.SCAN_THRESHOLD` collected ids, each pass streams the entity once and filters in
-Java; below it the per-id fetches are kept, because a small subtree of a huge dataset is still
-better off asking for what it needs.
+**Filtered exports fetch their ids in batches.** The dominant cost above. A filtered export - one
+with a root taxon, a rank limit, an extinct filter, bare names, or synonyms turned off - used to
+fetch every taxon and name with a query of its own, per entity type. It briefly streamed the whole
+entity and filtered in Java instead, which was far quicker for the empty entities but read what it
+did not want and cost the same however small the download was. It now asks for
+`ArchiveExport.ID_BATCH_SIZE` ids at a time through `unnest(?)`, which does neither.
+`ReferenceMapper.listByIds` already existed for this and had simply never been used by the export.
 
 **`NameUsageKeyMap`.** `containsUsageID` was a `containsValue` scan over a map with one entry per
 usage, called per bare name — quadratic. It is a real index now, built only when bare names are
@@ -171,10 +174,11 @@ The metadata phase is now larger than bundling. It writes one YAML per source da
 XRelease, so it is dataset-dependent rather than a regression, but it is the next thing that will
 surface.
 
-### What is still on the table
+### Why the scan was then replaced by batches
 
-The scan reads far more than it keeps, and the cost does not shrink with the size of the download —
-someone exporting a single genus of the COL XRelease pays the same:
+The 3:41 above was measured with the scan-and-filter code, which read far more than it kept, and at
+a cost that did not shrink with the size of the download — someone exporting a single genus of the
+COL XRelease paid the same:
 
 | run | pass | kept / scanned | cost |
 |---|---|---|---|
@@ -183,10 +187,14 @@ someone exporting a single genus of the COL XRelease pays the same:
 | 310362 | Reference | 50,674 / 1,734,879 = 2.9% | 13.3s |
 | 37384 | Multimedia | 1,365,149 / 10,063,402 = 13.6% | 182.8s |
 
-That is 80s of the 197s data phase spent on rows that are discarded. Batched id fetches read only
-what is wanted, at roughly 120 queries per entity rather than 393,007, and would retire
-`SCAN_THRESHOLD` altogether.
+That is 80s of the 197s data phase spent on rows that are discarded, and on iBOL the scan read 7.4×
+more than needed — worse than the per-id loop it had replaced. Batched fetches read only what is
+wanted, at roughly 120 queries per entity rather than 393,007, and retire the threshold altogether.
 
 That also settles the parallel-passes question the other way. Multimedia looked like 75% of the
 iBOL data phase only because it was scanning 10M rows to keep 1.4M; once the extension passes are
 batched the core tree traversal is ~94% of what is left, and there is little to overlap it with.
+
+**Not yet measured.** The batching landed after the 3:41 run. Expect VernacularName, Distribution
+and Reference to fall from tens of seconds to a few, taking the data phase from 3:17 to roughly
+2:05, and the iBOL Multimedia pass well below its 182.8s. Record it here.

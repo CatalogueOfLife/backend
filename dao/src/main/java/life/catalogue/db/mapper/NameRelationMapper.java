@@ -5,6 +5,7 @@ import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.NameUsageRelation;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.*;
+import life.catalogue.db.NameBatchable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,7 +16,8 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.annotations.Param;
 
 public interface NameRelationMapper extends Create<NameRelation>,
-  DatasetProcessable<NameRelation>, SectorProcessable<NameRelation>, NameProcessable<NameRelation>, CopyDataset {
+  DatasetProcessable<NameRelation>, SectorProcessable<NameRelation>, NameProcessable<NameRelation>,
+  NameBatchable<NameRelation>, CopyDataset {
   
   /**
    * Returns the list of name relations for a single name on the other side of the relation (relatedNameId).

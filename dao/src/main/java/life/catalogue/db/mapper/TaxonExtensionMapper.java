@@ -7,6 +7,7 @@ import life.catalogue.api.model.TaxonExtension;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.TaxonBatchable;
 import life.catalogue.db.TaxonProcessable;
 
 import org.apache.ibatis.annotations.Param;
@@ -14,7 +15,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface TaxonExtensionMapper<T extends ExtensionEntity>
-  extends DatasetProcessable<TaxonExtension<T>>, SectorProcessable<T>, TaxonProcessable<T>, CopyDataset {
+  extends DatasetProcessable<TaxonExtension<T>>, SectorProcessable<T>, TaxonProcessable<T>,
+          TaxonBatchable<TaxonExtension<T>>, CopyDataset {
 
 	T get(@Param("key") DSID<Integer> key);
 

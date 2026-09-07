@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SpeciesInteraction;
 import life.catalogue.api.vocab.SpeciesInteractionType;
 import life.catalogue.db.*;
+import life.catalogue.db.TaxonBatchable;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ public interface SpeciesInteractionMapper extends Create<SpeciesInteraction>,
                                                     DatasetProcessable<SpeciesInteraction>,
                                                     SectorProcessable<SpeciesInteraction>,
                                                     TaxonProcessable<SpeciesInteraction>,
+                                                    TaxonBatchable<SpeciesInteraction>,
                                                     CopyDataset {
   /**
    * Returns the list of species interactions for a single taxon on the related side of the relation.

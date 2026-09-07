@@ -5,10 +5,13 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Treatment;
 import life.catalogue.api.vocab.TreatmentFormat;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -41,5 +44,12 @@ public class TreatmentMapperTest extends MapperTestBase<TreatmentMapper> {
     Treatment t2 = mapper().get(t1.getKey());
     //printDiff(t1, t2);
     assertEquals(t1, t2);
+
+    // the batch form the archive export of a subtree uses. A treatment's own id IS the taxon id.
+    var batch = mapper().listByTaxa(t1.getDatasetKey(), List.of(t1.getId()));
+    assertEquals(1, batch.size());
+    assertEquals(t1, batch.get(0));
+    assertTrue(mapper().listByTaxa(t1.getDatasetKey(), List.of("no-such-taxon")).isEmpty());
+    assertEquals(1, mapper().listByTaxa(t1.getDatasetKey(), List.of("nope", t1.getId())).size());
   }
 }

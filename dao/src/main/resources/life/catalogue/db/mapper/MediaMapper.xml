@@ -104,6 +104,14 @@
     WHERE m.dataset_key=#{datasetKey}
   </select>
 
+  <!-- the archive export of a subtree, fetching the entities of many taxa at once. See TaxonBatchable. -->
+  <select id="listByTaxa" resultMap="mediaExtResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS batch(bid) ON batch.bid=m.taxon_id
+    WHERE m.dataset_key=#{datasetKey}
+  </select>
+
   <insert id="create" parameterType="Media" useGeneratedKeys="true" keyProperty="obj.id">
     INSERT INTO media (<include refid="COLS"/>, created, modified, id)
     VALUES (<include refid="PROPS"/>, now(), now(), nextval('media_${obj.datasetKey}_id_seq'))
