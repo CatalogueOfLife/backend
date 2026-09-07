@@ -84,7 +84,11 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
     counter.clear();
     LOG.debug("print {}tree for dataset {}: {}", ordered ? "ordered ":"", params.getDatasetKey(), params);
     try {
-      session = factory.openSession(true);
+      // autocommit MUST stay off: the postgres driver ignores setFetchSize when it is on, so every
+      // one of these tree queries used to be buffered into heap in full despite the mappers' fetchSize.
+      // Nothing here writes, and the TaxonCounter implementations open their own session, so the cursor
+      // is the only thing this transaction holds.
+      session = factory.openSession(false);
       if (ordered || params.hasFilter()) {
         if (showAccordingTo) {
           PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processTreeSimpleInclAccordingTo(params, ordered, ordered), this);
