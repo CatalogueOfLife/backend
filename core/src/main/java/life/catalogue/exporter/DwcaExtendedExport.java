@@ -228,9 +228,8 @@ public class DwcaExtendedExport extends ArchiveExport {
     writer.set(DwcTerm.nomenclaturalCode, n.getCode(), NomCode::getAcronym);
     writer.set(DwcTerm.nomenclaturalStatus, n.getNomStatus(), NomStatus::getBotanicalLabel);
 
-    for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
-      writer.set(DwcTerm.originalNameUsageID, rel.getRelatedNameId());
-    }
+    // resolved by the export query itself, see NameUsageMapper BASIONYM_JOIN
+    writer.set(DwcTerm.originalNameUsageID, n.getBasionymNameId());
     writer.set(DwcTerm.taxonRemarks, u.getRemarks());
   }
 

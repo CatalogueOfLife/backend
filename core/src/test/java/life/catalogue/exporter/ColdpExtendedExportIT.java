@@ -13,7 +13,10 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.MediaType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.api.model.NameRelation;
+import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.img.ImageService;
@@ -26,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +37,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class ColdpExtendedExportIT extends ExportTest {
   ExportRequest req;
@@ -151,6 +156,43 @@ public class ColdpExtendedExportIT extends ExportTest {
     var rows = readArchiveRows(exp.getArchive(), ColdpTerm.Media.simpleName() + ".tsv");
     assertEquals(1, rows.size());
     assertEquals("video", rows.get(0).get(ColdpTerm.type.prefixedName()));
+  }
+
+  /**
+   * ColDP links usages, so basionymID must carry the usage id of the related name - here name-3, whose
+   * usage is the synonym s1. The apple data also holds a SPELLING_CORRECTION relation on name-2, which
+   * must not show up as a basionym.
+   * The value is resolved by the export query (NameUsageMapper BASIONYM_JOIN), not by a lookup per usage.
+   */
+  @Test
+  public void basionymID() throws Exception {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var rel = new NameRelation();
+      rel.setDatasetKey(TestDataRule.APPLE.key);
+      rel.setType(NomRelType.BASIONYM);
+      rel.setNameId("name-1");
+      rel.setRelatedNameId("name-3");
+      rel.applyUser(Users.TESTER);
+      session.getMapper(NameRelationMapper.class).create(rel);
+    }
+
+    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    var rows = readArchiveTsv(exp.getArchive(), ColdpTerm.NameUsage.simpleName() + ".tsv");
+    var root1 = rows.stream().filter(r -> "root-1".equals(r.get(ColdpTerm.ID))).findFirst().orElse(null);
+    assertNotNull("root-1 usage missing from export", root1);
+    assertEquals("s1", root1.get(ColdpTerm.basionymID));
+
+    var root2 = rows.stream().filter(r -> "root-2".equals(r.get(ColdpTerm.ID))).findFirst().orElse(null);
+    assertNotNull("root-2 usage missing from export", root2);
+    assertTrue("a SPELLING_CORRECTION relation is not a basionym", StringUtils.isBlank(root2.get(ColdpTerm.basionymID)));
+
+    // every other usage is unrelated and must stay empty
+    var s1 = rows.stream().filter(r -> "s1".equals(r.get(ColdpTerm.ID))).findFirst().orElse(null);
+    assertNotNull("s1 usage missing from export", s1);
+    assertTrue(StringUtils.isBlank(s1.get(ColdpTerm.basionymID)));
   }
 
   @Test

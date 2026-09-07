@@ -133,9 +133,10 @@ public class ColdpExtendedExport extends ArchiveExport {
   void write(Name n) {
     writer.set(ColdpTerm.nameAlternativeID, n.getIdentifier());
     writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(n.getSectorKey()));
-    for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
-      writer.set(ColdpTerm.basionymID, nameUsageKeyMap.getFirst(rel.getRelatedNameId()));
-    }
+    // resolved by the export query itself, see NameUsageMapper BASIONYM_JOIN. A basionym that is a
+    // bare name has no usage row, so fall back to the id the bare name pass invented for it.
+    writer.set(ColdpTerm.basionymID, ObjectUtils.coalesce(n.getBasionymUsageId(),
+      n.getBasionymNameId() == null ? null : nameUsageKeyMap.getFirst(n.getBasionymNameId())));
     writer.set(ColdpTerm.scientificName, n.getScientificName());
     writer.set(ColdpTerm.authorship, n.getAuthorship());
     writer.set(ColdpTerm.rank, n.getRank());

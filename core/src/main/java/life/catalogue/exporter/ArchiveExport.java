@@ -47,7 +47,6 @@ public abstract class ArchiveExport extends DatasetExportJob {
   protected final LoadingCache<String, String> refCache;
   protected final SectorInfoCache sectorInfoCache;
   private final UriBuilder logoUriBuilder;
-  protected NameRelationMapper nameRelMapper;
   protected SqlSession session;
   protected TermWriter writer;
   /** start of the pass the current writer belongs to, see newDataFile/closeWriter */
@@ -180,7 +179,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
   }
 
   protected void init(SqlSession session) throws Exception {
-    nameRelMapper = session.getMapper(NameRelationMapper.class);
+    // nothing by default - subclasses hook in here
   }
 
   private void exportCore() throws IOException, InterruptedException {
@@ -195,7 +194,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         cursor = num.processDatasetWithClassification(datasetKey, null, null);
       } else {
         var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms());
-        cursor = num.processTree(ttp);
+        cursor = num.processTree(ttp, false, false, true);
       }
       checkIfCancelled();
       // iterate manually (not PgUtils.consume) so the per-record consumeUsage
@@ -209,7 +208,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       // add bare names?
       checkIfCancelled();
       if (req.isBareNames()) {
-        try (var bareNames = num.processDatasetBareNames(datasetKey, null, null)) {
+        try (var bareNames = num.processDatasetBareNames(datasetKey, null, null, true)) {
           for (BareName u : bareNames) {
             consumeUsage(u);
           }

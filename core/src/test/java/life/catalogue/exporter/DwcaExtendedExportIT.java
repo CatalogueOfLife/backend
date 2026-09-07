@@ -3,18 +3,22 @@ package life.catalogue.exporter;
 import life.catalogue.TestConfigs;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.TaxonProperty;
 import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.api.vocab.MediaType;
+import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.TaxonPropertyMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.terms.DcTerm;
@@ -46,6 +50,35 @@ public class DwcaExtendedExportIT extends ExportTest {
     exp.run();
 
     assertExportExists(exp.getArchive());
+  }
+
+  /**
+   * Unlike ColDP, DwC-A writes the related *name* id into originalNameUsageID. The apple data also holds a
+   * SPELLING_CORRECTION relation on name-2, which must not show up as an original name.
+   * The value is resolved by the export query (NameUsageMapper BASIONYM_JOIN), not by a lookup per usage.
+   */
+  @Test
+  public void originalNameUsageID() throws Exception {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var rel = new NameRelation();
+      rel.setDatasetKey(TestDataRule.APPLE.key);
+      rel.setType(NomRelType.BASIONYM);
+      rel.setNameId("name-1");
+      rel.setRelatedNameId("name-3");
+      rel.applyUser(Users.TESTER);
+      session.getMapper(NameRelationMapper.class).create(rel);
+    }
+
+    DwcaExtendedExport exp = new DwcaExtendedExport(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    var rows = readArchiveRows(exp.getArchive(), DwcTerm.Taxon.simpleName() + ".tsv");
+    var root1 = rows.stream().filter(r -> "root-1".equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
+    assertEquals("name-3", root1.get(DwcTerm.originalNameUsageID.prefixedName()));
+
+    var root2 = rows.stream().filter(r -> "root-2".equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
+    assertTrue("a SPELLING_CORRECTION relation is not a basionym", StringUtils.isBlank(root2.get(DwcTerm.originalNameUsageID.prefixedName())));
   }
 
   /**

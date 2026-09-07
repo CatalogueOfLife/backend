@@ -192,6 +192,26 @@
     LEFT JOIN name_match nm ON nm.dataset_key=n.dataset_key AND nm.name_id=n.id
   </sql>
 
+  <!-- Denormalises the BASIONYM name relations of one dataset for the archive exporters, which used to run
+       one name_rel lookup per exported usage. The subquery reads only the basionym rows, so it is built once
+       and hash joined rather than probed per row. DISTINCT ON keeps a name carrying two basionym relations
+       (a data error) from multiplying the exported usage; ORDER BY makes that pick deterministic.
+       ${dk} is the dataset key expression of the enclosing statement, ${nameIdCol} the name id to join on. -->
+  <sql id="BASIONYM_JOIN">
+    LEFT JOIN (
+      SELECT DISTINCT ON (nr.name_id) nr.name_id, nr.related_name_id, bu.id AS usage_id
+      FROM name_rel nr
+        LEFT JOIN name_usage bu ON bu.dataset_key=${dk} AND bu.name_id=nr.related_name_id
+      WHERE nr.dataset_key=${dk} AND nr.type='BASIONYM'::NOMRELTYPE
+      ORDER BY nr.name_id, bu.id
+    ) bas ON bas.name_id=${nameIdCol}
+  </sql>
+
+  <!-- paired with BASIONYM_JOIN, mapped onto Name.basionymNameId / Name.basionymUsageId -->
+  <sql id="BASIONYM_COLS">
+    bas.related_name_id AS n_basionym_name_id, bas.usage_id AS n_basionym_usage_id
+  </sql>
+
   <sql id="FROM_NO_ACCEPTED">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_BASE"/>
     LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
@@ -751,9 +771,13 @@
   </select>
 
   <select id="processDatasetWithClassification" parameterType="map" resultMap="usageClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT_BASE"/>, tm.classification
+    SELECT <include refid="SELECT_BASE"/>, tm.classification, <include refid="BASIONYM_COLS"/>
     FROM <include refid="FROM_BASE"/>
       LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
+      <include refid="BASIONYM_JOIN">
+        <property name="dk" value="#{datasetKey}"/>
+        <property name="nameIdCol" value="u.name_id"/>
+      </include>
     <where>
       u.dataset_key = #{datasetKey}
       <if test="maxRank != null">
@@ -796,8 +820,15 @@
       <property name="alias" value="n"/>
       <property name="prefix" value="n_"/>
     </include>
+    <if test="inclBasionym">, <include refid="BASIONYM_COLS"/></if>
     FROM name n
     LEFT JOIN name_usage u ON u.dataset_key=#{datasetKey} AND n.id = u.name_id
+    <if test="inclBasionym">
+      <include refid="BASIONYM_JOIN">
+        <property name="dk" value="#{datasetKey}"/>
+        <property name="nameIdCol" value="n.id"/>
+      </include>
+    </if>
     <where>
       n.dataset_key=#{datasetKey}
       AND u.id IS NULL
@@ -942,7 +973,14 @@
         <include refid="WHERE_UNION"/>
       </where>
     )
-    SELECT * FROM x
+    SELECT x.*<if test="inclBasionym">, <include refid="BASIONYM_COLS"/></if>
+    FROM x
+    <if test="inclBasionym">
+      <include refid="BASIONYM_JOIN">
+        <property name="dk" value="#{param.datasetKey}"/>
+        <property name="nameIdCol" value="x.n_id"/>
+      </include>
+    </if>
     <if test="depthFirst">ORDER BY x.path</if>
   </select>
 
