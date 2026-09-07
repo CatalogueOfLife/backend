@@ -116,7 +116,8 @@ public class DatasetExportResource {
 
     // an already existing export in the given format
     ExportRequest req = new ExportRequest(key, format);
-    req.setExtended(extended);
+    // exports of formats without extended content are always stored as not extended, so match them that way
+    req.setExtended(extended && format.hasExtendedContent());
     UUID exportKey = exportManager.exists(req);
     if (exportKey != null) {
       return Redirect.temporary(cfg.job.downloadURI(exportKey));

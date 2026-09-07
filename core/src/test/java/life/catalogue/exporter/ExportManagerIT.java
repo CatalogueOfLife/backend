@@ -4,6 +4,7 @@ import life.catalogue.es.search.NameUsageSearchService;
 
 import life.catalogue.TestConfigs;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.concurrent.DatasetBlockingJob;
@@ -28,7 +29,10 @@ import org.junit.*;
 
 import com.codahale.metrics.MetricRegistry;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
@@ -97,6 +101,50 @@ public class ExportManagerIT {
       TimeUnit.SECONDS.sleep(1);
       didRun = true;
     }
+  }
+
+  private ExportManager manager() {
+    cfg.job.downloadURI = URI.create("http://gbif.org/");
+    cfg.job.downloadDir = new File("/tmp/col");
+    cfg.job.threads = 3;
+    return new ExportManager(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), executor, ImageService.passThru(), exDao,
+      mock(DatasetImportDao.class), NameUsageSearchService.passThru(), URI.create("https://www.checklistbank.org"));
+  }
+
+  /**
+   * A request arriving over HTTP carries a bare root id. It has to be normalised before the lookup for an
+   * existing export, or it never equals an identical job already sitting in the queue.
+   */
+  @Test
+  public void normalizeRoot() throws Exception {
+    ExportManager manager = manager();
+
+    ExportRequest req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
+    req.setRoot(new SimpleName("root-1"));
+    ExportRequest bare = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
+    bare.setRoot(new SimpleName("root-1"));
+
+    manager.normalize(req);
+    assertEquals("root-1", req.getRoot().getId());
+    assertNotNull(req.getRoot().getName());
+    assertNotNull(req.getRoot().getRank());
+    // the loaded root differs from the bare one it came in as - that is what broke the queue lookup
+    assertNotEquals(bare, req);
+
+    // ... but two requests of the same shape normalise to equal requests
+    manager.normalize(bare);
+    assertEquals(req, bare);
+
+    // extended is reset for formats without extended content (DOT), again before the lookup
+    ExportRequest dot = new ExportRequest(TestDataRule.APPLE.key, DataFormat.DOT);
+    dot.setExtended(true);
+    manager.normalize(dot);
+    assertFalse(dot.isExtended());
+
+    ExportRequest coldp = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
+    coldp.setExtended(true);
+    manager.normalize(coldp);
+    assertTrue(coldp.isExtended());
   }
 
   @Test

@@ -92,6 +92,8 @@ public class ExportManager implements DatasetListener {
    * @return the new or existing job, tracked and downloaded via /job/{key}
    */
   public JobInfo submit(ExportRequest req, int userKey) throws IllegalArgumentException {
+    // must happen before the lookup: it decides what an identical request even looks like
+    normalize(req);
     UUID prev = exists(req);
     if (prev != null) {
       if (req.isForce()) {
@@ -163,9 +165,15 @@ public class ExportManager implements DatasetListener {
   }
 
   /**
-   * Makes sure taxonID exists if given and check number of records for full excel downlaods
+   * Brings a request into the exact shape it will be stored in, so that the lookup for an existing export
+   * compares the same values that a new job would persist. Must run before {@link #exists(ExportRequest)}.
+   *
+   * Makes sure the root taxon exists if given and replaces it with the fully loaded usage: the db lookup only
+   * ever compares the root id, but the scan over the queued jobs compares whole SimpleNames, so a request
+   * carrying a bare id would never match an identical job already running.
    */
-  private void validate(ExportRequest req) throws IllegalArgumentException {
+  @VisibleForTesting
+  void normalize(ExportRequest req) throws IllegalArgumentException {
     if (req.getTaxonID() != null) {
       try (SqlSession session = factory.openSession()) {
         var root = session.getMapper(NameUsageMapper.class).getSimple(DSID.of(req.getDatasetKey(), req.getTaxonID()));
@@ -174,9 +182,21 @@ public class ExportManager implements DatasetListener {
         } else if (!root.getStatus().isTaxon()) {
           throw new IllegalArgumentException("Root usage " + req.getTaxonID() + " is not an accepted taxon but " + root.getStatus());
         }
+        req.setRoot(root);
       }
     }
 
+    // set extended to false (the default) for formats that make no difference
+    if (!req.getFormat().hasExtendedContent()) {
+      req.setExtended(false);
+    }
+  }
+
+  /**
+   * Checks the number of records for full excel downloads.
+   * Runs after the lookup so an existing export stays downloadable even if it exceeds todays limits.
+   */
+  private void validate(ExportRequest req) throws IllegalArgumentException {
     if (req.isExcel() && req.getTaxonID() == null && req.getMinRank() == null) {
       // check metrics avoiding truncation early
       var imp = diDao.getLast(req.getDatasetKey());
@@ -199,11 +219,6 @@ public class ExportManager implements DatasetListener {
         throwIfTooLarge(ColdpTerm.SpeciesInteraction, imp.getSpeciesInteractionsCount());
         throwIfTooLarge(ColdpTerm.Media, imp.getMediaCount());
       }
-    }
-
-    // set extended to false (the default) for formats that make no difference
-    if (!req.getFormat().hasExtendedContent()) {
-      req.setExtended(false);
     }
   }
 
