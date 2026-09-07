@@ -20,6 +20,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper> {
@@ -202,6 +203,17 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
 
     // now try to list sources
     mapper().listReleaseSources(Datasets.COL, true);
+
+    // the slim projection reads the very same dataset_source row
+    var simple = mapper().getReleaseSourceSimple(rs.getKey(), Datasets.COL);
+    assertNotNull(simple);
+    assertEquals(rs.getKey(), simple.getKey());
+    assertEquals(rs.getIssued(), simple.getIssued());
+    assertEquals(rs.getDoi(), simple.getDoi());
+    assertEquals(rs.getUrl(), simple.getUrl());
+    assertEquals(rs.getGbifKey(), simple.getGbifKey());
+    assertEquals(rs.getAttempt(), simple.getAttempt());
+    assertTrue(simple.hasData());
 
     // limit container authors to just 2 and verify
     DatasetSettings settings = dm.getSettings(Datasets.COL);

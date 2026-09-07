@@ -47,8 +47,13 @@
     d.alias,
     d.title,
     d.version,
+    d.issued,
     d.private,
     d.deleted is not null as deleted,
+    d.attempt,
+    d.doi,
+    d.url,
+    d.gbif_key,
     d.gbif_publisher_key
   </sql>
 
@@ -683,7 +688,7 @@
   </select>
 
   <select id="listGBIF" resultMap="datasetGBIFResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>, d.gbif_key, d.gbif_modified,
+    SELECT <include refid="SELECT_SIMPLE"/>, d.gbif_modified,
       d.settings ->> 'data access' AS data_access,
       d.settings ->> 'data format' AS data_format,
       coalesce((d.settings ->> 'gbif sync lock')::boolean, false) AS gbif_sync_lock
