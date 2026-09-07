@@ -77,6 +77,67 @@ public class CitationConverterTest {
     assertNotNull(d.getCitation());
   }
 
+  static Dataset source() {
+    Dataset d = new Dataset();
+    d.setKey(1000);
+    d.setOrigin(DatasetOrigin.EXTERNAL);
+    d.setTitle("World Database of Nematodes");
+    d.setCreator(Agent.parse(List.of("Deprez, Tim")));
+    d.setVersion("2024-01-01");
+    d.setIssued(FuzzyDate.of(2024,1,1));
+    d.setContainerTitle("Catalogue of Life");
+    d.setContainerVersion("2026-08-26 XR");
+    d.setContainerIssued(FuzzyDate.of(2026,8,26));
+    d.setContainerPublisher(Agent.organisation("Catalogue of Life Foundation", null, "Amsterdam", null, Country.NETHERLANDS));
+    return d;
+  }
+
+  static String cite(Dataset d) {
+    return CslUtil.buildCitation(CitationConverter.toCSL(d.toCitation()));
+  }
+
+  /**
+   * Exports drop the container creators from every source citation, see ArchiveExport.exportMetadata.
+   * Everything else about the container has to survive that - it is what says which release a source DOI
+   * belongs to.
+   */
+  @Test
+  public void sourceCitationWithoutContainerCreators() {
+    Dataset d = source();
+    d.setContainerCreator(Agent.parse(List.of("Banki, Olaf", "Roskov, Yuri")));
+    assertEquals("Deprez, T. (2026). World Database of Nematodes. In O. Banki & Y. Roskov, Catalogue of Life " +
+                 "(2026-08-26 XR). Catalogue of Life Foundation, Amsterdam, Netherlands.", cite(d));
+
+    // only the container creators go, the container itself stays
+    d.setContainerCreator(null);
+    assertEquals("Deprez, T. (2026). World Database of Nematodes. In Catalogue of Life " +
+                 "(2026-08-26 XR). Catalogue of Life Foundation, Amsterdam, Netherlands.", cite(d));
+  }
+
+  /**
+   * Why those container creators are waste rather than data: apa.csl declares et-al-min=21 and
+   * et-al-use-first=19, so any list of 21 or more renders as exactly the same 19 names plus "et al.".
+   * Storing 100 of them on every source of a release, as exports used to, can never show more than these.
+   */
+  @Test
+  public void containerCreatorsBeyondTheEtAlCutoffAreNeverRendered() {
+    Dataset d = source();
+    assertEquals(cite(withContainerCreators(d, 21)), cite(withContainerCreators(d, 100)));
+    // one below the cut-off APA still lists everybody, so 21 is the smallest equivalent list
+    assertNotEquals(cite(withContainerCreators(d, 20)), cite(withContainerCreators(d, 21)));
+  }
+
+  private static Dataset withContainerCreators(Dataset d, int size) {
+    var names = new java.util.ArrayList<String>(size);
+    for (int i = 0; i < size; i++) {
+      // the name parser wants plain letters, so number the agents alphabetically
+      String n = "" + (char) ('a' + i / 26) + (char) ('a' + i % 26);
+      names.add(String.format("Sur%s, Giv%s", n, n));
+    }
+    d.setContainerCreator(Agent.parse(names));
+    return d;
+  }
+
   @Test
   public void citationHook() {
     Citation c = CitationTest.create();

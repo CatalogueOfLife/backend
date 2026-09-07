@@ -146,6 +146,11 @@ public abstract class ArchiveExport extends DatasetExportJob {
         if (src == null) {
           LOG.warn("Skip missing source dataset {} for archive metadata", sk);
         } else {
+          // The container creators repeat the project's entire editor list on every single source.
+          // APA only ever renders the first 19 of them (apa.csl et-al-min=21, et-al-use-first=19),
+          // so with thousands of sources this is megabytes of metadata that no citation can show.
+          // The remaining container properties are kept - they say which release a source DOI belongs to.
+          src.setContainerCreator(null);
           // create source entry in dataset
           dataset.addSource(src.toCitation());
           LOG.info("Write source metadata for {}: {}", src.getKey(), src.getTitle());
