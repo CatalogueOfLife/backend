@@ -36,6 +36,16 @@
         <filtering>false</filtering>
       </testResource>
     </testResources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <!-- Deliberately below the project-wide java.version so GBIF projects still on
+               Java 17 can depend on org.catalogueoflife:vocab.  -->
+          <release>17</release>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
-
 </project>

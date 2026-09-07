@@ -2,10 +2,8 @@ package life.catalogue.api.model;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.UUID;
 
 public class DatasetGBIF extends DatasetSimple {
-  private UUID gbifKey;
   // the GBIF registry modified timestamp we last synced, used to skip unchanged datasets
   private LocalDateTime gbifModified;
   // the data access URL and format we have stored, taken from the dataset settings.
@@ -15,14 +13,6 @@ public class DatasetGBIF extends DatasetSimple {
   private String dataFormat;
   // true if Setting.GBIF_SYNC_LOCK is enabled, i.e. the dataset is never updated by a GBIF sync
   private boolean gbifSyncLock;
-
-  public UUID getGbifKey() {
-    return gbifKey;
-  }
-
-  public void setGbifKey(UUID gbifKey) {
-    this.gbifKey = gbifKey;
-  }
 
   public LocalDateTime getGbifModified() {
     return gbifModified;
@@ -63,7 +53,6 @@ public class DatasetGBIF extends DatasetSimple {
 
     DatasetGBIF that = (DatasetGBIF) o;
     return gbifSyncLock == that.gbifSyncLock
-           && Objects.equals(gbifKey, that.gbifKey)
            && Objects.equals(gbifModified, that.gbifModified)
            && Objects.equals(dataAccess, that.dataAccess)
            && Objects.equals(dataFormat, that.dataFormat);
@@ -71,6 +60,6 @@ public class DatasetGBIF extends DatasetSimple {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), gbifKey, gbifModified, dataAccess, dataFormat, gbifSyncLock);
+    return Objects.hash(super.hashCode(), gbifModified, dataAccess, dataFormat, gbifSyncLock);
   }
 }

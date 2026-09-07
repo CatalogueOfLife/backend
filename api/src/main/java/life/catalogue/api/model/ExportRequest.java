@@ -8,6 +8,7 @@ import org.gbif.nameparser.api.Rank;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ExportRequest {
   // filters
@@ -137,7 +138,12 @@ public class ExportRequest {
     this.minRank = minRank;
   }
 
-  @JsonIgnore
+  /**
+   * A workflow flag, not part of the export identity: it is accepted on input but never serialized back.
+   * It must carry an explicit @JsonProperty - a bare @JsonIgnore on this getter would remove the whole
+   * property and silently drop force from the POST body.
+   */
+  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   public boolean isForce() {
     return force;
   }

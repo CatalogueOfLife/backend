@@ -613,6 +613,30 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
       var ds2 = new DatasetSimple(d);
       assertEquals(ds, ds2);
     }
+
+    // a fully populated dataset so SELECT_SIMPLE and the copy constructor are compared on non null values
+    Dataset d = create();
+    mapper().create(d);
+    commit();
+
+    var ds = mapper().getSimple(d.getKey());
+    assertEquals(new DatasetSimple(mapper().get(d.getKey())), ds);
+    assertNotNull(ds.getIssued());
+    assertNotNull(ds.getDoi());
+    assertNotNull(ds.getUrl());
+    assertNotNull(ds.getGbifKey());
+    assertNotNull(ds.getGbifPublisherKey());
+    // never imported, so no attempt and no data
+    assertNull(ds.getAttempt());
+    assertFalse(ds.hasData());
+
+    // an attempt is what marks a dataset as having data
+    mapper().updateLastImport(d.getKey(), 13, null);
+    commit();
+    ds = mapper().getSimple(d.getKey());
+    assertEquals(new DatasetSimple(mapper().get(d.getKey())), ds);
+    assertEquals((Integer) 13, ds.getAttempt());
+    assertTrue(ds.hasData());
   }
 
   @Test

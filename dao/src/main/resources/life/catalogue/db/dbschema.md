@@ -11,6 +11,22 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-07 backfill dataset_export.tab_format
+The lookup for an already existing export, and the public `tabFormat` search filter, now compare
+`dataset_export.tab_format` - until now the column was written on insert but never read back, so a
+CSV request was happily answered with a pre-existing TSV export.
+
+`tab_format` was added on 2025-02-12 without a `DEFAULT` and without a backfill, so every export
+created before that date holds NULL and would no longer match any request once the filter is live -
+silently orphaning the older export history and re-running those exports once each. `TSV` is and
+always was the `ExportRequest` default, so that is the correct value for those rows.
+
+Run before or together with the deploy.
+
+```sql
+UPDATE dataset_export SET tab_format = 'TSV' WHERE tab_format IS NULL;
+```
+
 #### 2026-09-02 derived nomenclatural status issue
 Sources frequently squeeze a nomenclatural statement into their single taxonomic status column -
 WoRMS publishes `dwc:taxonomicStatus=nomen nudum`, `junior homonym` or `nomen rejiciendum` while

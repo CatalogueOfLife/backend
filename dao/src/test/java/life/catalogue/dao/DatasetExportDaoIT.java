@@ -4,6 +4,7 @@ import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.db.mapper.DatasetExportMapperTest;
@@ -37,5 +38,13 @@ public class DatasetExportDaoIT extends DaoTestBase {
 
     prev = dao.current(e.getRequest());
     assertNotNull(prev);
+
+    // the stored export is CSV, so a TSV request of the very same shape must not reuse it
+    var tsv = e.getRequest();
+    tsv.setTabFormat(TabularFormat.TSV);
+    assertNull(dao.current(tsv));
+
+    tsv.setTabFormat(TabularFormat.CSV);
+    assertNotNull(dao.current(tsv));
   }
 }
