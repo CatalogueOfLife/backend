@@ -15,6 +15,11 @@ import life.catalogue.img.ImageService;
 import java.io.File;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
@@ -23,18 +28,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Wraps a dataset export job and copies the resulting files to the COL download server, updating latest symlinks.
+ * Wraps the dataset exports of one COL release and copies the resulting files to the COL download server,
+ * updating latest symlinks.
+ *
+ * All formats of one release run in a single job because they all block on that release's dataset lock.
+ * As separate jobs only one of them ever won the lock; the others were rejected, resubmitted and then slept
+ * on a worker thread with an escalating backoff of up to five minutes a try, which both wasted most of the
+ * time between two exports and held down two of the executor's threads while doing nothing.
  */
 public class ColReleaseExportJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(ColReleaseExportJob.class);
-  private final DataFormat format;
   private final ReleaseConfig rCfg;
-  private final DatasetExportJob exportJob;
+  /** one export per requested format, in the order they are to be run */
+  private final Map<DataFormat, DatasetExportJob> exportJobs = new LinkedHashMap<>();
   private final boolean latest;
 
-  public ColReleaseExportJob(int datasetKey, int userKey, boolean latest, DataFormat format, ReleaseConfig rcfg, ExporterConfig ecfg, SqlSessionFactory factory) {
+  public ColReleaseExportJob(int datasetKey, int userKey, boolean latest, Collection<DataFormat> formats,
+                             ReleaseConfig rcfg, ExporterConfig ecfg, SqlSessionFactory factory) {
     super(datasetKey, userKey, JobPriority.HIGH);
-    this.format = format;
     this.latest = latest;
     this.rCfg = rcfg;
     this.dataset = loadDataset(factory, datasetKey);
@@ -43,42 +54,60 @@ public class ColReleaseExportJob extends DatasetBlockingJob {
       throw new IllegalArgumentException("Only COL releases are supported, not dataset " + datasetKey);
     }
 
-    ExportRequest req = new ExportRequest(datasetKey, format);
-    req.setExcel(false);
-    req.setExtended(format != DataFormat.TEXT_TREE);
+    for (DataFormat format : formats) {
+      ExportRequest req = new ExportRequest(datasetKey, format);
+      req.setExcel(false);
+      req.setExtended(format != DataFormat.TEXT_TREE);
 
-    exportJob = switch (format) {
-      case COLDP -> new ColdpExtendedExport(req, userKey, factory, ecfg, ImageService.passThru());
-      case DWCA -> new DwcaExtendedExport(req, userKey, factory, ecfg, ImageService.passThru());
-      case TEXT_TREE -> new TextTreeExport(req, userKey, factory, ecfg, ImageService.passThru());
-      default -> throw new IllegalArgumentException("Export format " + format + " is not supported yet");
-    };
+      exportJobs.put(format, switch (format) {
+        case COLDP -> new ColdpExtendedExport(req, userKey, factory, ecfg, ImageService.passThru());
+        case DWCA -> new DwcaExtendedExport(req, userKey, factory, ecfg, ImageService.passThru());
+        case TEXT_TREE -> new TextTreeExport(req, userKey, factory, ecfg, ImageService.passThru());
+        default -> throw new IllegalArgumentException("Export format " + format + " is not supported yet");
+      });
+    }
   }
 
   @Override
   protected void runWithLock() throws Exception {
-    LOG.info("Starting COL export job for dataset {} in format {}", datasetKey, format);
-    exportJob.skipLock();
-    exportJob.run();
-    // the inner export swallows its own InterruptedException, but the thread interrupt
-    // flag stays set - re-check so we don't copy an incomplete archive after a cancel
-    checkIfCancelled();
+    List<DataFormat> failed = new ArrayList<>();
+    for (var entry : exportJobs.entrySet()) {
+      final DataFormat format = entry.getKey();
+      final DatasetExportJob exportJob = entry.getValue();
+      // one bad format must not cost the release its other downloads, so each is judged on its own
+      checkIfCancelled();
+      LOG.info("Starting COL export job for dataset {} in format {}", datasetKey, format);
+      exportJob.skipLock();
+      exportJob.run();
+      // the inner export swallows its own InterruptedException, but the thread interrupt
+      // flag stays set - re-check so we don't copy an incomplete archive after a cancel
+      checkIfCancelled();
 
-    LOG.info("Copy {} export file from {} to COL download server", format, exportJob.archive);
-    copyToCol();
-
-    LOG.info("Finished COL {} export job for dataset {}", format, datasetKey);
+      if (exportJob.isFinished()) {
+        LOG.info("Copy {} export file from {} to COL download server", format, exportJob.archive);
+        copyToCol(format, exportJob);
+        LOG.info("Finished COL {} export job for dataset {}", format, datasetKey);
+      } else {
+        failed.add(format);
+        LOG.error("COL {} export for dataset {} ended as {}. Not copied to the download server",
+          format, datasetKey, exportJob.getStatus());
+      }
+    }
+    if (!failed.isEmpty()) {
+      throw new IllegalStateException("COL exports of dataset " + datasetKey + " failed for " + failed);
+    }
   }
 
-  public DataFormat getFormat() {
-    return format;
+  public Collection<DataFormat> getFormats() {
+    return exportJobs.keySet();
   }
 
-  public DatasetExport getExport() {
-    return exportJob.getExport();
+  public DatasetExport getExport(DataFormat format) {
+    var job = exportJobs.get(format);
+    return job == null ? null : job.getExport();
   }
 
-  private void copyToCol() {
+  private void copyToCol(DataFormat format, DatasetExportJob exportJob) {
     copyToCol(dataset, rCfg.colDownloadDir, format, exportJob.getKey(), exportJob.archive, latest);
   }
 
