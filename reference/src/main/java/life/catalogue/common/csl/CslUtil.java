@@ -26,8 +26,13 @@ import life.catalogue.api.model.CSLType;
 
 public class CslUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CslUtil.class);
-  private final static CslFormatter apaHtml = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.HTML);
-  private final static CslFormatter apaText = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT);
+  /**
+   * A single formatter serialises all its renderings, so we keep a few of each to stop one citation heavy
+   * request - a release with thousands of sources - from blocking every other rendering in the JVM.
+   */
+  private final static int POOL_SIZE = Math.min(8, Math.max(2, Runtime.getRuntime().availableProcessors()));
+  private final static CslFormatterPool apaHtml = new CslFormatterPool(CslFormatter.STYLE.APA, CslFormatter.FORMAT.HTML, POOL_SIZE);
+  private final static CslFormatterPool apaText = new CslFormatterPool(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT, POOL_SIZE);
   private final static Pattern VOLUME_ISSUE_PAGE = Pattern.compile("^(.*?)\\s*(\\d+)\\s*(?:\\(\\s*(\\d+)\\s*\\))?\\s*(?::\\s*(?:(?:p|pp|page)\\.?\\s*)?(\\d+))?\\s*$");
 
 
@@ -41,8 +46,8 @@ public class CslUtil {
 
   /**
    * WARNING!
-   * This is a very slow method that takes a second or more to build the citation string !!!
-   * It uses the JavaScript citeproc library internally.
+   * Rendering a citation is not free - it runs the whole CSL style over the item. Under a millisecond each,
+   * but it adds up: doing it per record of a large list is what makes such a list slow.
    */
   public static String buildCitation(Reference r) {
     return buildCitation(r.getCsl());
