@@ -219,6 +219,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   @JsonIgnore
   private String basionymUsageId;
 
+  /**
+   * The citation of the {@link #publishedInId} reference, joined in by the archive export queries alone.
+   * DwC-A writes citations inline into dwc:namePublishedIn where ColDP writes ids, and looking one up per
+   * exported usage thrashed the exporter's citation cache. Same caveats as {@link #basionymNameId}.
+   */
+  @JsonIgnore
+  private String publishedInCitation;
+
   public static Name build(String name, String authorship, Rank rank) {
     Name n = new Name();
     n.setScientificName(name);
@@ -896,6 +904,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   public void setBasionymUsageId(String basionymUsageId) {
     this.basionymUsageId = basionymUsageId;
+  }
+
+  public String getPublishedInCitation() {
+    return publishedInCitation;
+  }
+
+  public void setPublishedInCitation(String publishedInCitation) {
+    this.publishedInCitation = publishedInCitation;
   }
 
   @Override

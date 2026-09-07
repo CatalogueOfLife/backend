@@ -12,7 +12,9 @@ import life.catalogue.api.vocab.License;
 import life.catalogue.api.vocab.MediaType;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.api.model.DSID;
 import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TaxonPropertyMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
@@ -79,6 +81,35 @@ public class DwcaExtendedExportIT extends ExportTest {
 
     var root2 = rows.stream().filter(r -> "root-2".equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
     assertTrue("a SPELLING_CORRECTION relation is not a basionym", StringUtils.isBlank(root2.get(DwcTerm.originalNameUsageID.prefixedName())));
+  }
+
+  /**
+   * DwC-A writes reference citations inline where ColDP writes ids, so namePublishedIn and nameAccordingTo
+   * must carry the citation text. Both are joined in by the core export query rather than looked up per
+   * usage, see NameUsageMapper inclCitations.
+   */
+  @Test
+  public void inlineCitations() throws Exception {
+    // apple gives name-1 a publishedIn of ref-1 but leaves every accordingTo empty
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      var t = tm.get(DSID.of(TestDataRule.APPLE.key, "root-1"));
+      t.setAccordingToId("ref-1b");
+      tm.update(t);
+    }
+
+    DwcaExtendedExport exp = new DwcaExtendedExport(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    var rows = readArchiveRows(exp.getArchive(), DwcTerm.Taxon.simpleName() + ".tsv");
+    var root1 = rows.stream().filter(r -> "root-1".equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
+    assertEquals("ref-1", root1.get(DwcTerm.namePublishedIn.prefixedName()));
+    assertEquals("ref-1b", root1.get(DwcTerm.nameAccordingTo.prefixedName()));
+
+    // root-2's name-2 has no publishedIn reference at all
+    var root2 = rows.stream().filter(r -> "root-2".equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
+    assertTrue(StringUtils.isBlank(root2.get(DwcTerm.namePublishedIn.prefixedName())));
   }
 
   /**

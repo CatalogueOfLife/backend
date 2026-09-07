@@ -212,6 +212,17 @@
     bas.related_name_id AS n_basionym_name_id, bas.usage_id AS n_basionym_usage_id
   </sql>
 
+  <!-- DwC-A writes reference citations inline (dwc:namePublishedIn, dwc:nameAccordingTo) where ColDP writes
+       ids. Joining them here replaces a reference lookup per exported usage, which stood no chance against
+       the exporter's bounded citation cache on a release whose references are mostly cited once.
+       Only the DwC-A archive export asks for it, see inclCitations. -->
+  <sql id="CITATION_JOIN_PUB">
+    LEFT JOIN reference rpub ON rpub.dataset_key=${dk} AND rpub.id=${idCol}
+  </sql>
+  <sql id="CITATION_JOIN_ACC">
+    LEFT JOIN reference racc ON racc.dataset_key=${dk} AND racc.id=${idCol}
+  </sql>
+
   <sql id="FROM_NO_ACCEPTED">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_BASE"/>
     LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
@@ -772,12 +783,23 @@
 
   <select id="processDatasetWithClassification" parameterType="map" resultMap="usageClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT_BASE"/>, tm.classification, <include refid="BASIONYM_COLS"/>
+    <if test="inclCitations">, rpub.citation AS n_published_in_citation, racc.citation AS according_to</if>
     FROM <include refid="FROM_BASE"/>
       LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
       <include refid="BASIONYM_JOIN">
         <property name="dk" value="#{datasetKey}"/>
         <property name="nameIdCol" value="u.name_id"/>
       </include>
+      <if test="inclCitations">
+        <include refid="CITATION_JOIN_PUB">
+          <property name="dk" value="#{datasetKey}"/>
+          <property name="idCol" value="n.published_in_id"/>
+        </include>
+        <include refid="CITATION_JOIN_ACC">
+          <property name="dk" value="#{datasetKey}"/>
+          <property name="idCol" value="u.according_to_id"/>
+        </include>
+      </if>
     <where>
       u.dataset_key = #{datasetKey}
       <if test="maxRank != null">
@@ -821,12 +843,19 @@
       <property name="prefix" value="n_"/>
     </include>
     <if test="inclBasionym">, <include refid="BASIONYM_COLS"/></if>
+    <if test="inclCitations">, rpub.citation AS n_published_in_citation</if>
     FROM name n
     LEFT JOIN name_usage u ON u.dataset_key=#{datasetKey} AND n.id = u.name_id
     <if test="inclBasionym">
       <include refid="BASIONYM_JOIN">
         <property name="dk" value="#{datasetKey}"/>
         <property name="nameIdCol" value="n.id"/>
+      </include>
+    </if>
+    <if test="inclCitations">
+      <include refid="CITATION_JOIN_PUB">
+        <property name="dk" value="#{datasetKey}"/>
+        <property name="idCol" value="n.published_in_id"/>
       </include>
     </if>
     <where>
@@ -974,11 +1003,22 @@
       </where>
     )
     SELECT x.*<if test="inclBasionym">, <include refid="BASIONYM_COLS"/></if>
+    <if test="inclCitations">, rpub.citation AS n_published_in_citation, racc.citation AS according_to</if>
     FROM x
     <if test="inclBasionym">
       <include refid="BASIONYM_JOIN">
         <property name="dk" value="#{param.datasetKey}"/>
         <property name="nameIdCol" value="x.n_id"/>
+      </include>
+    </if>
+    <if test="inclCitations">
+      <include refid="CITATION_JOIN_PUB">
+        <property name="dk" value="#{param.datasetKey}"/>
+        <property name="idCol" value="x.n_published_in_id"/>
+      </include>
+      <include refid="CITATION_JOIN_ACC">
+        <property name="dk" value="#{param.datasetKey}"/>
+        <property name="idCol" value="x.according_to_id"/>
       </include>
     </if>
     <if test="depthFirst">ORDER BY x.path</if>

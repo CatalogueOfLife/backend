@@ -52,7 +52,8 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   protected void init(SqlSession session) throws Exception {
     super.init(session);
-    nameUsageKeyMap = new NameUsageKeyMap(datasetKey, session);
+    // the reverse usage id index is only needed to keep an invented bare name id from clashing with a real one
+    nameUsageKeyMap = new NameUsageKeyMap(datasetKey, session, req.isBareNames());
   }
 
   @Override

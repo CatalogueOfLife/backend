@@ -66,6 +66,8 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, Rank.SPECIES, Rank.GENUS), 4);
     assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, Rank.SUBGENUS, Rank.GENUS), 0);
     assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, Rank.VARIETY, Rank.SPECIES), 4);
+    // the archive exporters ask for the joined in reference citations - a different SQL shape
+    assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, null, null, true), 4);
   }
 
   @Test

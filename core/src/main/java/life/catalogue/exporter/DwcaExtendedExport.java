@@ -70,6 +70,11 @@ public class DwcaExtendedExport extends ArchiveExport {
   }
 
   @Override
+  boolean inclCitations() {
+    return true; // dwc:namePublishedIn and dwc:nameAccordingTo hold the citation itself, not a reference id
+  }
+
+  @Override
   Term[] define(EntityType entity) {
     switch (entity) {
       case NAME_USAGE:
@@ -196,7 +201,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     write((NameUsage)u);
 
     writer.set(DcTerm.references, u.getLink());
-    writer.set(DwcTerm.nameAccordingTo, citationByID(u.getAccordingToId()));
+    writer.set(DwcTerm.nameAccordingTo, u.getAccordingTo()); // joined in by the core query, see inclCitations
   }
 
   void write(BareName u) {
@@ -214,7 +219,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     writer.set(DwcTerm.taxonRank, n.getRank());
     writer.set(ColdpTerm.notho, n.getNotho());
     writer.set(DwcTerm.taxonomicStatus, u.getStatus());
-    writer.set(DwcTerm.namePublishedIn, citationByID(n.getPublishedInId()));
+    writer.set(DwcTerm.namePublishedIn, n.getPublishedInCitation()); // joined in by the core query
     writer.set(ClbTerm.merged, u.isMerged());
     if (n.getGenus() != null) {
       writer.set(DwcTerm.genericName, n.getGenus());

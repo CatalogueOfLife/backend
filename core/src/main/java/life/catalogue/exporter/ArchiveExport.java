@@ -191,10 +191,10 @@ public abstract class ArchiveExport extends DatasetExportJob {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final Cursor<NameUsageBase> cursor;
       if (fullDataset) {
-        cursor = num.processDatasetWithClassification(datasetKey, null, null);
+        cursor = num.processDatasetWithClassification(datasetKey, null, null, inclCitations());
       } else {
         var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms());
-        cursor = num.processTree(ttp, false, false, true);
+        cursor = num.processTree(ttp, false, false, true, inclCitations());
       }
       checkIfCancelled();
       // iterate manually (not PgUtils.consume) so the per-record consumeUsage
@@ -208,7 +208,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       // add bare names?
       checkIfCancelled();
       if (req.isBareNames()) {
-        try (var bareNames = num.processDatasetBareNames(datasetKey, null, null, true)) {
+        try (var bareNames = num.processDatasetBareNames(datasetKey, null, null, true, inclCitations())) {
           for (BareName u : bareNames) {
             consumeUsage(u);
           }
@@ -577,6 +577,14 @@ public abstract class ArchiveExport extends DatasetExportJob {
      * The following terms are other terms to be included in the given order.
      */
   abstract Term[] define(EntityType entity);
+
+  /**
+   * Whether the core query should join in the publishedIn and accordingTo reference citations.
+   * Only formats that write citations inline instead of reference ids want them - they are wide columns.
+   */
+  boolean inclCitations() {
+    return false;
+  }
 
   void write(NameUsageBase u){
   }

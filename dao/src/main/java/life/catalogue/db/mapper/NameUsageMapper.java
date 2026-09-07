@@ -322,11 +322,21 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   }
 
   /**
-   * Same as processDataset, but also populates the taxon.classification list
+   * Same as processDataset, but also populates the taxon.classification list and, for the archive exporters,
+   * the basionym of every name. Only they use this query.
+   *
+   * @param inclCitations if true also joins in the publishedIn and accordingTo reference citations
+   *                      (Name.publishedInCitation, NameUsageBase.accordingTo). Only DwC-A writes citations
+   *                      inline, and they are wide, so ColDP does not ask for them.
    */
   Cursor<NameUsageBase> processDatasetWithClassification(@Param("datasetKey") int datasetKey,
                                        @Nullable @Param("minRank") Rank minRank,
-                                       @Nullable @Param("maxRank") Rank maxRank);
+                                       @Nullable @Param("maxRank") Rank maxRank,
+                                       @Param("inclCitations") boolean inclCitations);
+
+  default Cursor<NameUsageBase> processDatasetWithClassification(int datasetKey, @Nullable Rank minRank, @Nullable Rank maxRank) {
+    return processDatasetWithClassification(datasetKey, minRank, maxRank, false);
+  }
 
   /**
    * Iterates over all usages for a given dataset in any order and returns simple names.
@@ -357,10 +367,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<BareName> processDatasetBareNames(@Param("datasetKey") int datasetKey,
                                        @Nullable @Param("minRank") Rank minRank,
                                        @Nullable @Param("maxRank") Rank maxRank,
-                                       @Param("inclBasionym") boolean inclBasionym);
+                                       @Param("inclBasionym") boolean inclBasionym,
+                                       @Param("inclCitations") boolean inclCitations);
 
   default Cursor<BareName> processDatasetBareNames(int datasetKey, @Nullable Rank minRank, @Nullable Rank maxRank) {
-    return processDatasetBareNames(datasetKey, minRank, maxRank, false);
+    return processDatasetBareNames(datasetKey, minRank, maxRank, false, false);
   }
 
   /**
@@ -502,18 +513,19 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params,
                                     @Param("depthFirst") boolean depthFirst,
                                     @Param("ordered") boolean ordered,
-                                    @Param("inclBasionym") boolean inclBasionym);
+                                    @Param("inclBasionym") boolean inclBasionym,
+                                    @Param("inclCitations") boolean inclCitations);
 
   /**
    * @param inclBasionym if true also resolves Name.basionymNameId/basionymUsageId. Only the archive exporters
    *                     need it and it costs a scan of the dataset's BASIONYM relations, so it is opt in.
    */
   default Cursor<NameUsageBase> processTree(TreeTraversalParameter params, boolean depthFirst, boolean ordered) {
-    return processTree(params, depthFirst, ordered, false);
+    return processTree(params, depthFirst, ordered, false, false);
   }
 
   default Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params) {
-    return processTree(params, false, false, false);
+    return processTree(params, false, false, false, false);
   }
 
   /**
