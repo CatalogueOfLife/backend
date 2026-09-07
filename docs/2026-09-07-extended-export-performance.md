@@ -91,9 +91,9 @@ all buffered their whole result set into heap despite the mappers' `fetchSize`.
 **The entity passes still run one after another.** The plan had them running concurrently on their
 own connections, which needs the `writer` field turned into a per-pass local threaded through every
 `write` method in both exporters, a thread safe `SectorInfoCache`, and cancellation across the
-passes. It was left out deliberately: the measurement above says the core NameUsage pass dominates
-what remains once the per-id fetches are gone, so Amdahl caps what parallelising the rest can buy,
-and it is the riskiest change in the plan. Worth revisiting against a second measurement.
+passes. Left out deliberately, and the third measurement below argues it should stay out: once the
+extension passes are batched the core tree traversal is ~94% of the data phase, so Amdahl caps what
+overlapping the rest can buy, and this is the riskiest change in the plan.
 
 **`NameUsageKeyMap` still holds one entry per usage** for the whole ColDP job. Translating name id
 to usage id in the NameRelation and TypeMaterial queries would remove it, at the cost of transient
@@ -108,9 +108,10 @@ with a parent cycle that dedup is what makes the query terminate.
 
 ### Second measurement, dev, 2026-09-07
 
-A DwC-A extended export of dataset 37384 on dev, with the new code. It is **not** comparable to the
-first measurement: different dataset, different format, different environment, and unfiltered where
-the first was a subtree. It is a smoke test plus a new profile, not a before/after.
+A DwC-A extended export of the Lepidoptera subtree of dataset 37384 (iBOL) on dev, with the new
+code. It is not a before/after — different dataset, format and environment from the first
+measurement — but it is a filtered export (`root` was set), so it does exercise the new
+scan-and-filter path.
 
 | pass | records | time | share of data phase |
 |---|---|---|---|
@@ -127,26 +128,65 @@ the first was a subtree. It is a smoke test plus a new profile, not a before/aft
 
 The passes account for 242.018s of the 242.040s data phase, so nothing is hiding between them.
 
-What it does show: the new joins run correctly against real data, and the parallel bundler is
-active. What it does **not** show is anything about the filtered export fix — an unfiltered export
-takes the `fullDataset` branch, which always scanned. Validating that needs the first export re-run:
-dataset 316165, same subtree, ColDP extended, on prod.
+**This run exposed a flaw in the scan-and-filter fix.** iBOL has 10,063,402 media rows for 2,032,208
+usages, and the Lepidoptera subtree is 325,378 of those usages (16%). The Multimedia pass therefore
+scanned all 10.06M rows to keep 1,365,149 — **7.4× more than it needed** — at 55,000 rows/s. At the
+~5,600 queries/s the first measurement showed, the per-id loop it replaced would have been about 58s
+against 182.8s. For this shape the change is a regression, because `SCAN_THRESHOLD` keys off the
+number of ids and never off what fraction of the dataset they are. See the third measurement.
 
-### What this profile changes
-
-**The core pass no longer dominates.** Multimedia alone is 75% of the data phase here, against 24%
-for the core. That is a better case for running the entity passes concurrently than the first
-measurement suggested — overlapping those two would cut about a quarter off this export — so the
-"Not done" note above should be re-read against this, not against the subtree run.
-
-**Bundling is still noise** at 6.5s of 4:09, and there is no visible benefit from the parallel
-writer: 8 entries with one of them holding most of the bytes means the big entry is deflated by a
-single thread anyway, and the scatter store adds a copy. It is worth measuring on a ColDP extended
-export, whose treatments directory is many small files, before drawing a conclusion. For an archive
-with one dominant entry the lever that would work is `job.zipLevel`, not `job.zipThreads`.
+**Bundling is noise** at 6.5s of 4:09, and there is no visible benefit from the parallel writer:
+8 entries with one holding most of the bytes means the big entry is deflated by a single thread
+anyway, and the scatter store adds a copy. For an archive with one dominant entry the lever that
+would work is `job.zipLevel`, not `job.zipThreads`.
 
 **Latent, not yet hit:** `Media` and `Distribution` still resolve `dc:source` through the bounded
 citation cache, which is the same pattern that was fixed for usages. This dataset has 1.37M media
 rows and did not suffer, so those rows evidently carry no reference id — but a media or distribution
 heavy dataset that does cite references would hit exactly the old behaviour. The fix is the same
 join, in the media and distribution export queries.
+
+### Third measurement, dev, 2026-09-07 — the headline
+
+A ColDP extended export of the Lepidoptera subtree of the COL XRelease 310362 on dev. This one is a
+near like-for-like with the first measurement: both exported **exactly 608,276 usages**.
+
+| | prod 316165, before | dev 310362, after |
+|---|---|---|
+| **total** | **26:02.0** | **3:41.0** |
+| data phase | 25:51.8 | 3:17.2 |
+| NameUsage | 608,276 in 5:24 | 608,276 in 1:57 (3×) |
+| VernacularName | 87,630 in 2:17 | 93,398 in 27.9s (5×, on 7% more rows) |
+| Distribution | 30,126 in 2:08 | 34,901 in 38.6s (3×, on 16% more rows) |
+| Reference | 53,356 in 24.8s | 50,674 in 13.3s (2×) |
+| the six empty passes | 55s – 3:14 each | 6 – 25 ms each |
+| metadata | 4.3s | 18.9s |
+| bundling | 5.9s / 59 MB | 4.9s / 40 MB |
+
+**7.1× overall.** Caveats: different dataset and environment, and the dev XRelease happens to hold
+no name relations and no type material where prod had 158,793 and 107,847 — excluding those two
+passes it is 6.1×.
+
+The metadata phase is now larger than bundling. It writes one YAML per source dataset of the
+XRelease, so it is dataset-dependent rather than a regression, but it is the next thing that will
+surface.
+
+### What is still on the table
+
+The scan reads far more than it keeps, and the cost does not shrink with the size of the download —
+someone exporting a single genus of the COL XRelease pays the same:
+
+| run | pass | kept / scanned | cost |
+|---|---|---|---|
+| 310362 | Distribution | 34,901 / 2,327,051 = 1.5% | 38.6s |
+| 310362 | VernacularName | 93,398 / 1,990,292 = 4.7% | 27.9s |
+| 310362 | Reference | 50,674 / 1,734,879 = 2.9% | 13.3s |
+| 37384 | Multimedia | 1,365,149 / 10,063,402 = 13.6% | 182.8s |
+
+That is 80s of the 197s data phase spent on rows that are discarded. Batched id fetches read only
+what is wanted, at roughly 120 queries per entity rather than 393,007, and would retire
+`SCAN_THRESHOLD` altogether.
+
+That also settles the parallel-passes question the other way. Multimedia looked like 75% of the
+iBOL data phase only because it was scanning 10M rows to keep 1.4M; once the extension passes are
+batched the core tree traversal is ~94% of what is left, and there is little to overlap it with.
