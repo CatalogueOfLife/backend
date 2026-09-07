@@ -236,7 +236,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
       case NAME_RELATION -> metrics.getNameRelationsCount();
       case SPECIES_INTERACTION -> metrics.getSpeciesInteractionsCount();
       case TAXON_CONCEPT_RELATION -> metrics.getTaxonConceptRelationsCount();
-      // TAXON_PROPERTY has no metric of its own, and the core usages must never be skipped
+      case TAXON_PROPERTY -> metrics.getTaxonPropertyCount();
+      // the core usages must never be skipped
       default -> null;
     };
     if (cnt != null && cnt == 0) {

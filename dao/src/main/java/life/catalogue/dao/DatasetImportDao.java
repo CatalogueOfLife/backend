@@ -189,6 +189,7 @@ public class DatasetImportDao {
     di.setReferenceCount(mapper.countReference(key));
     di.setSynonymCount(mapper.countSynonym(key));
     di.setTaxonCount(mapper.countTaxon(key));
+    di.setTaxonPropertyCount(mapper.countTaxonProperty(key));
     di.setTreatmentCount(mapper.countTreatment(key));
     di.setTypeMaterialCount(mapper.countTypeMaterial(key));
     di.setVerbatimCount(mapper.countVerbatim(key));

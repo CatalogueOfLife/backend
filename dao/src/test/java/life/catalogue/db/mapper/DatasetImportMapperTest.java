@@ -61,6 +61,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     m.setReferenceCount(9781);
     m.setSynonymCount(137);
     m.setTaxonCount(5748329);
+    m.setTaxonPropertyCount(87);
     m.setTreatmentCount(432);
     m.setTypeMaterialCount(432);
     m.setVernacularCount(432);

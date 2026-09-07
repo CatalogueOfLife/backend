@@ -2,7 +2,9 @@ package life.catalogue.dao;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.TaxonProperty;
 import life.catalogue.api.vocab.*;
+import life.catalogue.db.mapper.TaxonPropertyMapper;
 
 import life.catalogue.api.vocab.area.Gazetteer;
 import org.gbif.dwc.terms.AcefTerm;
@@ -12,6 +14,8 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.sql.SQLException;
+
+import org.apache.ibatis.session.SqlSession;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +34,19 @@ public class DatasetImportDaoTest extends DaoTestBase {
 
   @Test
   public void generateDatasetImport() throws SQLException {
+    // taxon properties went uncounted entirely until 2026-09-07, so make sure there is one to count
+    TaxonProperty tp = new TaxonProperty();
+    tp.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
+    tp.setProperty("habitat");
+    tp.setValue("terrestrial");
+    tp.applyUser(Users.TESTER);
+    try (SqlSession session = factory().openSession(true)) {
+      session.getMapper(TaxonPropertyMapper.class).create(tp, TestEntityGenerator.TAXON1.getId());
+    }
+
     DatasetImport d = dao.generateMetrics(TestEntityGenerator.DATASET11.getKey(), Users.TESTER);
+
+    assertEquals((Integer) 1, d.getTaxonPropertyCount());
   
     assertEquals((Integer) 0, d.getTreatmentCount());
     assertEquals((Integer) 0, d.getMediaCount());

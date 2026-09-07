@@ -73,6 +73,7 @@ public class ImportMetrics implements ImportAttempt {
   private Integer sectorCount;
   private Integer synonymCount;
   private Integer taxonCount;
+  private Integer taxonPropertyCount;
   private Integer treatmentCount;
   private Integer typeMaterialCount;
   private Integer vernacularCount;
@@ -294,6 +295,14 @@ public class ImportMetrics implements ImportAttempt {
 
   public void setTreatmentCount(Integer treatmentCount) {
     this.treatmentCount = treatmentCount;
+  }
+
+  public Integer getTaxonPropertyCount() {
+    return taxonPropertyCount;
+  }
+
+  public void setTaxonPropertyCount(Integer taxonPropertyCount) {
+    this.taxonPropertyCount = taxonPropertyCount;
   }
 
   public Integer getVernacularCount() {
@@ -549,6 +558,7 @@ public class ImportMetrics implements ImportAttempt {
       sectorCount = sum(sectorCount, m.sectorCount);
       synonymCount = sum(synonymCount, m.synonymCount);
       taxonCount = sum(taxonCount, m.taxonCount);
+      taxonPropertyCount = sum(taxonPropertyCount, m.taxonPropertyCount);
       treatmentCount = sum(treatmentCount, m.treatmentCount);
       typeMaterialCount = sum(typeMaterialCount, m.typeMaterialCount);
       vernacularCount = sum(vernacularCount, m.vernacularCount);
@@ -649,6 +659,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
       Objects.equals(usagesByOriginCount, that.usagesByOriginCount) &&
       Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
+      Objects.equals(taxonPropertyCount, that.taxonPropertyCount) &&
       Objects.equals(vernacularCount, that.vernacularCount) &&
       Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
       Objects.equals(mergedTaxaByRankCount, that.mergedTaxaByRankCount) &&
@@ -660,7 +671,7 @@ public class ImportMetrics implements ImportAttempt {
   public int hashCode() {
     return Objects.hash(datasetKey, attempt, jobKey, job, status, step, started, finished, createdBy, error,
       nameCount, nameMatchesCount, taxonCount, synonymCount, bareNameCount, referenceCount,
-      typeMaterialCount, distributionCount, estimateCount, mediaCount, treatmentCount, vernacularCount,
+      typeMaterialCount, distributionCount, estimateCount, mediaCount, treatmentCount, taxonPropertyCount, vernacularCount,
       sectorCount, ignoredByReasonCount, appliedDecisionCount,
       namesByTypeCount, namesByStatusCount, namesByCodeCount, namesByRankCount,
       nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,

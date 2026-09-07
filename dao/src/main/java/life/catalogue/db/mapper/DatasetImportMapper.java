@@ -90,6 +90,8 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   Integer countTreatment(@Param("key") int datasetKey);
   Integer countTypeMaterial(@Param("key") int datasetKey);
   Integer countVerbatim(@Param("key") int datasetKey);
+  Integer countTaxonProperty(@Param("key") int datasetKey);
+
   Integer countVernacular(@Param("key") int datasetKey);
   
   List<StringCount> countDistributionsByGazetteer(@Param("key") int datasetKey);

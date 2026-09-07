@@ -72,6 +72,7 @@ public class SectorImportDao {
     si.setTaxonCount(mapper.countTaxon(datasetKey, key));
     si.setTreatmentCount(mapper.countTreatment(datasetKey, key));
     si.setTypeMaterialCount(mapper.countTypeMaterial(datasetKey, key));
+    si.setTaxonPropertyCount(mapper.countTaxonProperty(datasetKey, key));
     si.setVernacularCount(mapper.countVernacular(datasetKey, key));
 
     si.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(datasetKey, key)));

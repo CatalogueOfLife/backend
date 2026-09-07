@@ -146,6 +146,12 @@
       JOIN name_usage t ON t.id=x.taxon_id AND x.dataset_key=t.dataset_key
     WHERE t.dataset_key = #{datasetKey} AND t.sector_key=#{sectorKey}
   </select>
+  <select id="countTaxonProperty" resultType="integer">
+    SELECT count(*)
+    FROM taxon_property x
+      JOIN name_usage t ON t.id=x.taxon_id AND x.dataset_key=t.dataset_key
+    WHERE t.dataset_key = #{datasetKey} AND t.sector_key=#{sectorKey}
+  </select>
   <select id="countVernacular" resultType="integer">
     SELECT count(*)
     FROM vernacular_name x

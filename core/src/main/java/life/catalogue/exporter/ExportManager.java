@@ -218,12 +218,18 @@ public class ExportManager implements DatasetListener {
         throwIfTooLarge(ColdpTerm.TaxonConceptRelation, imp.getTaxonConceptRelationsCount());
         throwIfTooLarge(ColdpTerm.SpeciesInteraction, imp.getSpeciesInteractionsCount());
         throwIfTooLarge(ColdpTerm.Media, imp.getMediaCount());
+        throwIfTooLarge(ColdpTerm.TaxonProperty, imp.getTaxonPropertyCount());
       }
     }
   }
 
+  /**
+   * An unmeasured count is no reason to refuse the export - it is not evidence that the limit is exceeded.
+   * taxon_property_count in particular is null on every metrics row written before it existed, and unboxing
+   * that into the comparison would have thrown.
+   */
   private static void throwIfTooLarge(ColdpTerm type, Integer count){
-    if (count > ExcelTermWriter.MAX_ROWS) {
+    if (count != null && count > ExcelTermWriter.MAX_ROWS) {
       throw new IllegalArgumentException("Excel format can not be used for datasets that have more than "+ExcelTermWriter.MAX_ROWS + " " +type.simpleName() + " records");
     }
   }
