@@ -15,7 +15,7 @@ import life.catalogue.dao.NameUsageArchiver;
 import life.catalogue.db.mapper.DatasetMapper;
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
 
 import life.catalogue.event.EventBroker;
 
@@ -41,7 +41,8 @@ import org.slf4j.LoggerFactory;
  */
 public class PublishReleaseListener implements DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(PublishReleaseListener.class);
-  public static Set<DataFormat> EXPORT_FORMATS = Set.of(DataFormat.TEXT_TREE, DataFormat.COLDP, DataFormat.DWCA);
+  /** ordered: the cheap TextTree lands on the download server first, the two big archives follow */
+  public static List<DataFormat> EXPORT_FORMATS = List.of(DataFormat.TEXT_TREE, DataFormat.COLDP, DataFormat.DWCA);
 
   private final ReleaseConfig rCfg;
   private final ExporterConfig eCfg;
@@ -64,14 +65,13 @@ public class PublishReleaseListener implements DatasetListener {
 
   private void publishCOL(DatasetChanged event){
     LOG.info("Publish COL {} specifics", event.obj.getOrigin());
-    // generate downloads for COL releases
-    for (var format : EXPORT_FORMATS) {
-      try {
-        var expJob = new ColReleaseExportJob(event.obj.getKey(), event.user, true, format, rCfg, eCfg, factory);
-        executor.submit(expJob);
-      } catch (Exception e) {
-        LOG.error("Failed to generate COL {} export for release {}", format, event.obj.getKey(), e);
-      }
+    // generate downloads for COL releases. One job for all formats - they all block on this release's
+    // dataset lock anyway, so as separate jobs they mostly sat in the executor's backoff sleep.
+    try {
+      var expJob = new ColReleaseExportJob(event.obj.getKey(), event.user, true, EXPORT_FORMATS, rCfg, eCfg, factory);
+      executor.submit(expJob);
+    } catch (Exception e) {
+      LOG.error("Failed to generate COL exports for release {}", event.obj.getKey(), e);
     }
 
     // symlink latest logs

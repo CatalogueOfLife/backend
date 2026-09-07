@@ -14,6 +14,7 @@ import org.junit.Test;
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class SpeciesInteractionMapperTest extends MapperTestBase<SpeciesInteractionMapper> {
 
@@ -42,6 +43,20 @@ public class SpeciesInteractionMapperTest extends MapperTestBase<SpeciesInteract
   @Test
   public void sectorProcessable() throws Exception {
     SectorProcessableTestComponent.test(mapper(), DSID.of(Datasets.COL, 1));
+  }
+
+  /** the batch form the archive export of a subtree uses, see TaxonBatchable */
+  @Test
+  public void listByTaxa() throws Exception {
+    mapper.create(newRelation());
+    commit();
+
+    final int dk = DATASET11.getKey();
+    assertEquals(mapper.listByTaxon(DSID.of(dk, TAXON1.getId())).size(),
+                 mapper.listByTaxa(dk, List.of(TAXON1.getId())).size());
+    assertTrue(mapper.listByTaxa(dk, List.of("no-such-taxon")).isEmpty());
+    assertEquals(mapper.listByTaxon(DSID.of(dk, TAXON1.getId())).size(),
+                 mapper.listByTaxa(dk, List.of("nope", TAXON1.getId())).size());
   }
 
   @Test

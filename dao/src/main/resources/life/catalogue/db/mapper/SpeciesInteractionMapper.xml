@@ -70,6 +70,14 @@
     ORDER BY si.id
   </select>
 
+  <!-- the archive export of a subtree, fetching the entities of many taxa at once. See TaxonBatchable. -->
+  <select id="listByTaxa" resultMap="speciesInteractionResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS batch(bid) ON batch.bid=si.taxon_id
+    WHERE si.dataset_key = #{datasetKey}
+  </select>
+
   <delete id="deleteByTaxon" parameterType="map">
     DELETE FROM species_interaction
     WHERE dataset_key = #{key.datasetKey} AND (taxon_id = #{key.id} OR related_taxon_id = #{key.id})

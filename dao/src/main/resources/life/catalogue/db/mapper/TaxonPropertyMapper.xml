@@ -92,6 +92,14 @@
     WHERE p.dataset_key=#{datasetKey}
   </select>
 
+  <!-- the archive export of a subtree, fetching the entities of many taxa at once. See TaxonBatchable. -->
+  <select id="listByTaxa" resultMap="taxPropExtResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS batch(bid) ON batch.bid=p.taxon_id
+    WHERE p.dataset_key=#{datasetKey}
+  </select>
+
   <insert id="create" parameterType="TaxonProperty" useGeneratedKeys="true" keyProperty="obj.id">
     INSERT INTO taxon_property (<include refid="COLS"/>, created, modified, id)
     VALUES (<include refid="PROPS"/>, now(), now(), nextval('taxon_property_${obj.datasetKey}_id_seq'))

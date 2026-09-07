@@ -3,18 +3,25 @@ package life.catalogue.exporter;
 import life.catalogue.TestConfigs;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.TaxonProperty;
 import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.api.vocab.MediaType;
+import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.api.model.DSID;
+import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TaxonPropertyMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.terms.DcTerm;
@@ -46,6 +53,93 @@ public class DwcaExtendedExportIT extends ExportTest {
     exp.run();
 
     assertExportExists(exp.getArchive());
+  }
+
+  /**
+   * Unlike ColDP, DwC-A writes the related *name* id into originalNameUsageID. The apple data also holds a
+   * SPELLING_CORRECTION relation on name-2, which must not show up as an original name.
+   * The value is resolved by the export query (NameUsageMapper BASIONYM_JOIN), not by a lookup per usage.
+   */
+  @Test
+  public void originalNameUsageID() throws Exception {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var rel = new NameRelation();
+      rel.setDatasetKey(TestDataRule.APPLE.key);
+      rel.setType(NomRelType.BASIONYM);
+      rel.setNameId("name-1");
+      rel.setRelatedNameId("name-3");
+      rel.applyUser(Users.TESTER);
+      session.getMapper(NameRelationMapper.class).create(rel);
+    }
+
+    DwcaExtendedExport exp = new DwcaExtendedExport(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    var rows = readArchiveRows(exp.getArchive(), DwcTerm.Taxon.simpleName() + ".tsv");
+    var root1 = rows.stream().filter(r -> "root-1".equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
+    assertEquals("name-3", root1.get(DwcTerm.originalNameUsageID.prefixedName()));
+
+    var root2 = rows.stream().filter(r -> "root-2".equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
+    assertTrue("a SPELLING_CORRECTION relation is not a basionym", StringUtils.isBlank(root2.get(DwcTerm.originalNameUsageID.prefixedName())));
+  }
+
+  /**
+   * DwC-A writes reference citations inline where ColDP writes ids, so namePublishedIn and nameAccordingTo
+   * must carry the citation text. Both are joined in by the core export query rather than looked up per
+   * usage, see NameUsageMapper inclCitations.
+   */
+  @Test
+  public void inlineCitations() throws Exception {
+    // apple gives name-1 a publishedIn of ref-1 but leaves every accordingTo empty
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      var t = tm.get(DSID.of(TestDataRule.APPLE.key, "root-1"));
+      t.setAccordingToId("ref-1b");
+      tm.update(t);
+    }
+
+    DwcaExtendedExport exp = new DwcaExtendedExport(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    var rows = readArchiveRows(exp.getArchive(), DwcTerm.Taxon.simpleName() + ".tsv");
+    var root1 = rows.stream().filter(r -> "root-1".equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
+    assertEquals("ref-1", root1.get(DwcTerm.namePublishedIn.prefixedName()));
+    assertEquals("ref-1b", root1.get(DwcTerm.nameAccordingTo.prefixedName()));
+
+    // root-2's name-2 has no publishedIn reference at all
+    var root2 = rows.stream().filter(r -> "root-2".equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
+    assertTrue(StringUtils.isBlank(root2.get(DwcTerm.namePublishedIn.prefixedName())));
+  }
+
+  /**
+   * meta.xml declares the extensions unconditionally, so an entity skipped because the dataset holds no
+   * record of it must still leave its file behind - a declared file that is missing breaks every reader.
+   */
+  @Test
+  public void skippedEntityStillHasItsDeclaredFile() throws Exception {
+    // apple really has 3 vernacular names; claim there is not one
+    final DatasetImport di = new DatasetImport();
+    di.setVernacularCount(0);
+
+    var req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA);
+    var exp = new DwcaExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru()) {
+      @Override
+      DatasetImport loadMetrics() {
+        return di;
+      }
+    };
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    final String file = GbifTerm.VernacularName.simpleName() + ".tsv";
+    // skipped, so none of the three real records are in it
+    assertTrue(readArchiveRows(exp.getArchive(), file).isEmpty());
+    // but the file exists with its header, and meta.xml still points at it
+    assertTrue(readArchiveHeader(exp.getArchive(), file).contains(DwcTerm.vernacularName.prefixedName()));
+    String meta = readArchiveEntry(exp.getArchive(), "meta.xml");
+    assertTrue("meta.xml declares VernacularName", meta.contains(GbifTerm.VernacularName.qualifiedName()));
   }
 
   /**

@@ -72,6 +72,14 @@
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </select>
 
+  <!-- the archive export of a subtree. A treatment's own id IS the taxon id. See TaxonBatchable. -->
+  <select id="listByTaxa" resultMap="treatmentResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS batch(bid) ON batch.bid=t.id
+    WHERE t.dataset_key = #{datasetKey}
+  </select>
+
   <delete id="deleteByTaxon" parameterType="map">
     DELETE FROM <include refid="FROM"/>
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}

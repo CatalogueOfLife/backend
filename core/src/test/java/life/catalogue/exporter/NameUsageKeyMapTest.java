@@ -22,7 +22,7 @@ public class NameUsageKeyMapTest {
   @Test
   public void add() {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      NameUsageKeyMap map = new NameUsageKeyMap(11, session);
+      NameUsageKeyMap map = new NameUsageKeyMap(11, SqlSessionFactoryRule.getSqlSessionFactory());
 
       assertFalse(map.containsNameID("qwwert"));
       map.add("qwwert", "iop");
@@ -33,6 +33,40 @@ public class NameUsageKeyMapTest {
       assertFalse(map.containsNameID("name-2"));
       assertEquals("root-2", map.getFirst("name-2"));
       assertTrue(map.containsNameID("name-2"));
+    }
+  }
+
+  /**
+   * The reverse usage id index costs one entry per usage, so an export that has no bare names to
+   * de-clash does not build it at all and must say so rather than answer wrongly.
+   */
+  @Test
+  public void usageIDsNotTracked() {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      NameUsageKeyMap map = new NameUsageKeyMap(11, SqlSessionFactoryRule.getSqlSessionFactory(), false);
+
+      map.add("qwwert", "iop");
+      assertEquals("iop", map.getFirst("qwwert"));
+      assertTrue(map.containsNameID("qwwert"));
+      assertThrows(IllegalStateException.class, () -> map.containsUsageID("iop"));
+    }
+  }
+
+  /**
+   * A name with no usage at all left no trace in either map, so every lookup of it re-ran the same
+   * fruitless query. The apple data holds exactly one such bare name.
+   */
+  @Test
+  public void bareNameMissesAreRemembered() {
+    final String bareNameID = "http://services.snsb.info/DTNtaxonlists/rest/v0.1/names/DiversityTaxonNames_Insecta/5009538/";
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      NameUsageKeyMap map = new NameUsageKeyMap(11, SqlSessionFactoryRule.getSqlSessionFactory());
+
+      assertNull(map.getFirst(bareNameID));
+      assertTrue(map.usageIDs(bareNameID).isEmpty());
+      // still a miss, and still not confused with a name that does have a usage
+      assertNull(map.getFirst(bareNameID));
+      assertEquals("root-1", map.getFirst("name-1"));
     }
   }
 }

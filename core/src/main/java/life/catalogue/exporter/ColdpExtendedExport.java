@@ -50,9 +50,10 @@ public class ColdpExtendedExport extends ArchiveExport {
   }
 
   @Override
-  protected void init(SqlSession session) throws Exception {
-    super.init(session);
-    nameUsageKeyMap = new NameUsageKeyMap(datasetKey, session);
+  protected void init() throws Exception {
+    super.init();
+    // the reverse usage id index is only needed to keep an invented bare name id from clashing with a real one
+    nameUsageKeyMap = new NameUsageKeyMap(datasetKey, factory, req.isBareNames());
   }
 
   @Override
@@ -133,9 +134,10 @@ public class ColdpExtendedExport extends ArchiveExport {
   void write(Name n) {
     writer.set(ColdpTerm.nameAlternativeID, n.getIdentifier());
     writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(n.getSectorKey()));
-    for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
-      writer.set(ColdpTerm.basionymID, nameUsageKeyMap.getFirst(rel.getRelatedNameId()));
-    }
+    // resolved by the export query itself, see NameUsageMapper BASIONYM_JOIN. A basionym that is a
+    // bare name has no usage row, so fall back to the id the bare name pass invented for it.
+    writer.set(ColdpTerm.basionymID, ObjectUtils.coalesce(n.getBasionymUsageId(),
+      n.getBasionymNameId() == null ? null : nameUsageKeyMap.getFirst(n.getBasionymNameId())));
     writer.set(ColdpTerm.scientificName, n.getScientificName());
     writer.set(ColdpTerm.authorship, n.getAuthorship());
     writer.set(ColdpTerm.rank, n.getRank());

@@ -12,6 +12,7 @@ import java.util.List;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TypeMaterialMapperTest extends CRUDEntityTestBase<DSID<String>, TypeMaterial, TypeMaterialMapper> {
 
@@ -38,6 +39,21 @@ public class TypeMaterialMapperTest extends CRUDEntityTestBase<DSID<String>, Typ
   @Test
   public void sectorProcessable() throws Exception {
     SectorProcessableTestComponent.test(mapper(), DSID.of(Datasets.COL, 1));
+  }
+
+  /** the batch form the archive export of a subtree uses, see NameBatchable */
+  @Test
+  public void listByNames() {
+    final var name = TestEntityGenerator.NAME1;
+    for (int i = 1; i < 4; i++) {
+      mapper().create(createTestEntity(name.getDatasetKey()));
+    }
+    commit();
+
+    final int dk = name.getDatasetKey();
+    assertEquals(mapper().listByName(name).size(), mapper().listByNames(dk, List.of(name.getId())).size());
+    assertTrue(mapper().listByNames(dk, List.of("no-such-name")).isEmpty());
+    assertEquals(mapper().listByName(name).size(), mapper().listByNames(dk, List.of("nope", name.getId())).size());
   }
 
   @Test

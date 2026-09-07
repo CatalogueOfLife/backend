@@ -2,7 +2,9 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.SpeciesEstimate;
 import life.catalogue.api.search.EstimateSearchRequest;
+import life.catalogue.db.TaxonBatchable;
 
-public interface EstimateMapper extends BaseDecisionMapper<SpeciesEstimate, EstimateSearchRequest> {
+public interface EstimateMapper extends BaseDecisionMapper<SpeciesEstimate, EstimateSearchRequest>,
+  TaxonBatchable<SpeciesEstimate> {
 
 }

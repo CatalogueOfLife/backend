@@ -43,6 +43,7 @@
     ${alias}reference_count,
     ${alias}synonym_count,
     ${alias}taxon_count,
+    ${alias}taxon_property_count,
     ${alias}treatment_count,
     ${alias}type_material_count,
     ${alias}vernacular_count,
@@ -101,6 +102,7 @@
     #{imp.referenceCount},
     #{imp.synonymCount},
     #{imp.taxonCount},
+    #{imp.taxonPropertyCount},
     #{imp.treatmentCount},
     #{imp.typeMaterialCount},
     #{imp.vernacularCount},
@@ -318,6 +320,9 @@
   </select>
   <select id="countVerbatim" resultType="integer">
     SELECT count(*) FROM verbatim WHERE dataset_key = #{key}
+  </select>
+  <select id="countTaxonProperty" resultType="integer">
+    SELECT count(*) FROM taxon_property WHERE dataset_key = #{key}
   </select>
   <select id="countVernacular" resultType="integer">
     SELECT count(*) FROM vernacular_name WHERE dataset_key = #{key}

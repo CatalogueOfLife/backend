@@ -8,11 +8,14 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.junit.SqlSessionFactoryRule;
 
+import java.util.List;
+
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, EstimateSearchRequest, EstimateMapper> {
   Reference ref;
@@ -58,6 +61,19 @@ public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, 
     obj.setEstimate(1289);
   }
   
+  /** the batch form the archive export of a subtree uses, keyed on the taxon an estimate targets */
+  @Test
+  public void listByTaxa(){
+    SpeciesEstimate e = createTestEntity(Datasets.COL);
+    mapper().create(e);
+    commit();
+
+    final String targetId = e.getTarget().getId();
+    assertEquals(1, mapper().listByTaxa(Datasets.COL, List.of(targetId)).size());
+    assertTrue(mapper().listByTaxa(Datasets.COL, List.of("no-such-taxon")).isEmpty());
+    assertEquals(1, mapper().listByTaxa(Datasets.COL, List.of("nope", targetId)).size());
+  }
+
   @Test
   public void process(){
     // processing

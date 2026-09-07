@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TaxonConceptRelation;
 import life.catalogue.api.vocab.TaxonConceptRelType;
 import life.catalogue.db.*;
+import life.catalogue.db.TaxonBatchable;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ public interface TaxonConceptRelationMapper extends Create<TaxonConceptRelation>
                                                     DatasetProcessable<TaxonConceptRelation>,
                                                     SectorProcessable<TaxonConceptRelation>,
                                                     TaxonProcessable<TaxonConceptRelation>,
+                                                    TaxonBatchable<TaxonConceptRelation>,
                                                     CopyDataset {
   
   /**

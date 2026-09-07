@@ -113,6 +113,14 @@
     ORDER BY m.id
   </select>
 
+  <!-- the archive export of a subtree, fetching the entities of many names at once. See NameBatchable. -->
+  <select id="listByNames" resultMap="typeResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS batch(bid) ON batch.bid=m.name_id
+    WHERE m.dataset_key = #{datasetKey}
+  </select>
+
   <delete id="deleteByName" parameterType="map">
     DELETE FROM type_material
     WHERE dataset_key = #{key.datasetKey} AND name_id = #{key.id}

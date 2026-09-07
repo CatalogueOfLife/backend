@@ -19,6 +19,7 @@ import org.junit.Test;
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -51,6 +52,25 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
   @Test
   public void sectorProcessable() throws Exception {
     SectorProcessableTestComponent.test(mapper(), DSID.of(Datasets.COL, 1));
+  }
+
+  /**
+   * The batch form the archive export of a subtree uses. It has to agree with listByName, and it must not
+   * quietly return everything or nothing when an id is unknown.
+   */
+  @Test
+  public void listByNames() throws Exception {
+    nameRelationMapper.create(newNameRelation());
+    nameRelationMapper.create(newNameRelation(NomRelType.BASED_ON));
+    commit();
+
+    final int dk = NAME1.getDatasetKey();
+    assertEquals(nameRelationMapper.listByName(NAME1).size(),
+                 nameRelationMapper.listByNames(dk, List.of(NAME1.getId())).size());
+    assertTrue(nameRelationMapper.listByNames(dk, List.of("no-such-name")).isEmpty());
+    // one batch covering both names returns the union of the two single lookups
+    assertEquals(nameRelationMapper.listByName(NAME1).size() + nameRelationMapper.listByName(NAME2).size(),
+                 nameRelationMapper.listByNames(dk, List.of(NAME1.getId(), "no-such-name", NAME2.getId())).size());
   }
 
   @Test

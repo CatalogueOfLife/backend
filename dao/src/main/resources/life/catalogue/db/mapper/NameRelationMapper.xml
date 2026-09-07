@@ -70,6 +70,14 @@
     WHERE nr.dataset_key = #{key.datasetKey} AND nr.name_id = #{key.id}
   </select>
 
+  <!-- the archive export of a subtree, fetching the entities of many names at once. See NameBatchable. -->
+  <select id="listByNames" resultMap="nameRelResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS batch(bid) ON batch.bid=nr.name_id
+    WHERE nr.dataset_key = #{datasetKey}
+  </select>
+
   <select id="listUsageRelByName" resultMap="usageRelResultMap">
     SELECT <include refid="SELECT"/>, u.id AS related_usage_id
     FROM <include refid="FROM"/>

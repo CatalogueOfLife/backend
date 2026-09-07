@@ -11,6 +11,22 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-07 count taxon properties in the import metrics
+`taxon_property` was the only entity the importer writes, the exporter exports and the sector sync
+copies that never got counted: `ImportMetrics` had no field, and neither metrics table a column.
+The archive exporters now skip an entity the dataset holds no record of, and without a count a
+dataset with no taxon properties still pays for the pass.
+
+Existing rows stay NULL, which reads as "not measured" everywhere: the export gate only skips on a
+count that is explicitly zero, and the Excel row check only rejects on a count that exceeds the
+limit. Both fall back to the old behaviour until a dataset is next imported or released, so no
+backfill is needed and none is possible - the counts of past attempts are not recoverable.
+
+```sql
+ALTER TABLE dataset_import ADD COLUMN taxon_property_count INTEGER;
+ALTER TABLE sector_import ADD COLUMN taxon_property_count INTEGER;
+```
+
 #### 2026-09-07 backfill dataset_export.tab_format
 The lookup for an already existing export, and the public `tabFormat` search filter, now compare
 `dataset_export.tab_format` - until now the column was written on insert but never read back, so a

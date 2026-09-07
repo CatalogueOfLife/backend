@@ -4,7 +4,11 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -14,7 +18,12 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.archivers.zip.ParallelScatterZipCreator;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.commons.compress.parallel.FileBasedScatterGatherBackingStore;
+import org.apache.commons.compress.parallel.ScatterGatherBackingStoreSupplier;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -34,7 +43,7 @@ public class CompressionUtil {
   }
   
   private static final Logger LOG = LoggerFactory.getLogger(CompressionUtil.class);
-  private static final int BUFFER = 2048;
+  private static final int BUFFER = 64 * 1024;
 
   /**
    * Tries to decompress a file trying gzip or zip regardless of the filename or its suffix.
@@ -169,6 +178,60 @@ public class CompressionUtil {
     zipFiles(files, dir, zipFile);
   }
   
+  /**
+   * Zips a directory, deflating the entries on several threads at once. Deflating a multi GB export archive
+   * is otherwise a long single threaded tail on a job that is already done.
+   *
+   * Note that the entries come out in completion order rather than directory order. Both zip readers and the
+   * DwC-A/ColDP formats address files by name, so this only changes the archive's internal layout.
+   *
+   * @param level   java.util.zip.Deflater level, -1 for the default
+   * @param threads deflating threads; 1 or less keeps the single threaded writer
+   */
+  public static void zipDir(File dir, File zipFile, boolean inclSubdirs, int level, int threads) throws IOException {
+    Collection<File> files = org.apache.commons.io.FileUtils.listFiles(dir, null, inclSubdirs);
+    if (threads <= 1 || files.size() < 2) {
+      zipFiles(files, dir, zipFile, level);
+    } else {
+      zipFilesParallel(files, dir, zipFile, level, threads);
+    }
+  }
+
+  private static void zipFilesParallel(Collection<File> files, File rootContext, File zipFile, int level, int threads) throws IOException {
+    LOG.info("Zip {} files into {} with {} threads at level {}", files.size(), zipFile, threads, level);
+    // the scatter store holds the deflated bytes until they are assembled, so it needs room next to the archive
+    final File scatterDir = zipFile.getParentFile();
+    final ExecutorService exec = Executors.newFixedThreadPool(threads);
+    final ScatterGatherBackingStoreSupplier supplier = () -> new FileBasedScatterGatherBackingStore(
+      File.createTempFile("clb-zip-", ".tmp", scatterDir));
+    final ParallelScatterZipCreator creator = new ParallelScatterZipCreator(exec, supplier, level);
+
+    for (File f : files) {
+      String zipPath = StringUtils.removeStart(f.getAbsolutePath(), rootContext.getAbsolutePath() + File.separator);
+      ZipArchiveEntry entry = new ZipArchiveEntry(zipPath);
+      entry.setMethod(ZipEntry.DEFLATED);
+      entry.setSize(f.length());
+      creator.addArchiveEntry(entry, () -> {
+        try {
+          return new BufferedInputStream(new FileInputStream(f), BUFFER);
+        } catch (FileNotFoundException e) {
+          throw new UncheckedIOException(e);
+        }
+      });
+    }
+
+    try (ZipArchiveOutputStream out = new ZipArchiveOutputStream(zipFile)) {
+      creator.writeTo(out);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IOException("Interrupted while zipping " + zipFile, e);
+    } catch (ExecutionException e) {
+      throw new IOException("Failed to zip " + zipFile, e);
+    } finally {
+      exec.shutdownNow();
+    }
+  }
+
   public static void zipFile(File file, File zipFile) throws IOException {
     zipFiles(Set.of(file), file.getParentFile(), zipFile);
   }
@@ -185,14 +248,22 @@ public class CompressionUtil {
    * @throws IOException
    */
   public static void zipFiles(Collection<File> files, File rootContext, File zipFile) throws IOException {
+    zipFiles(files, rootContext, zipFile, Deflater.DEFAULT_COMPRESSION);
+  }
+
+  /**
+   * @param level java.util.zip.Deflater level, -1 for the default. Lower levels trade a somewhat larger
+   *              archive for a lot less CPU, which is worth it on a multi GB export.
+   */
+  public static void zipFiles(Collection<File> files, File rootContext, File zipFile, int level) throws IOException {
     if (files.isEmpty()) {
       LOG.info("no files to zip.");
     } else {
       try (
         FileOutputStream dest = new FileOutputStream(zipFile);
-        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest, BUFFER));
       ) {
-        // out.setMethod(ZipOutputStream.DEFLATED);
+        out.setLevel(level);
         byte[] data = new byte[BUFFER];
         for (File f : files) {
           LOG.debug("Adding file {} to archive", f);

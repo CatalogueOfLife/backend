@@ -1,7 +1,6 @@
 package life.catalogue.exporter;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -33,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
 
 import jakarta.ws.rs.core.UriBuilder;
 
@@ -47,12 +48,11 @@ public abstract class ArchiveExport extends DatasetExportJob {
   protected final LoadingCache<String, String> refCache;
   protected final SectorInfoCache sectorInfoCache;
   private final UriBuilder logoUriBuilder;
-  protected NameRelationMapper nameRelMapper;
-  protected SqlSession session;
   protected TermWriter writer;
   /** start of the pass the current writer belongs to, see newDataFile/closeWriter */
   private long passStarted;
-  protected final DSID<String> entityKey = DSID.of(datasetKey, "");
+  /** entity counts of the exported data, or null if none can be trusted. See loadMetrics. */
+  private DatasetImport metrics;
   private final SXSSFWorkbook wb;
   protected final boolean inclTreatments;
 
@@ -77,8 +77,13 @@ public abstract class ArchiveExport extends DatasetExportJob {
   }
 
   private String lookupReference(String id) {
-    Reference r = session.getMapper(ReferenceMapper.class).get(DSID.of(datasetKey, id));
-    return r == null ? null : r.getCitation();
+    // a short session of its own: the export used to hold one open for its entire run just for this,
+    // which now that nothing queries per usage would sit idle in a transaction for the whole core pass
+    // and be cut down by postgres' idle_in_transaction_session_timeout
+    try (SqlSession s = factory.openSession()) {
+      Reference r = s.getMapper(ReferenceMapper.class).get(DSID.of(datasetKey, id));
+      return r == null ? null : r.getCitation();
+    }
   }
 
   protected String citationByID(String refID) {
@@ -90,9 +95,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   @Override
   protected void export() throws Exception {
-    try (SqlSession session = factory.openSession(false)) {
-      this.session = session;
-      init(session);
+    try {
+      init();
       exportCore();
       exportNameRels();
       exportTaxonRels();
@@ -184,8 +188,89 @@ public abstract class ArchiveExport extends DatasetExportJob {
     super.bundle();
   }
 
-  protected void init(SqlSession session) throws Exception {
-    nameRelMapper = session.getMapper(NameRelationMapper.class);
+  protected void init() throws Exception {
+    metrics = loadMetrics();
+  }
+
+  /**
+   * Entity counts of the data about to be exported, or null when nothing trustworthy is available.
+   *
+   * A project can be edited through the CRUD API between imports without ever getting a new attempt, so its
+   * counts need not describe what is in the tables now - and being wrong here means silently dropping records
+   * from a download. Releases and external datasets only change by release or import, so their counts hold.
+   */
+  @VisibleForTesting
+  DatasetImport loadMetrics() {
+    if (dataset.getOrigin() == DatasetOrigin.PROJECT || dataset.getAttempt() == null) {
+      return null;
+    }
+    try (SqlSession session = factory.openSession()) {
+      var dim = session.getMapper(DatasetImportMapper.class);
+      if (dataset.getOrigin().isRelease()) {
+        // a release keeps its metrics under its mother project and its own attempt, see DatasetImportDao.getLast
+        return dim.get(dataset.getSourceKey(), dataset.getAttempt());
+      }
+      // the newest import of any status, so only trust it when it is the one the dataset currently stands on
+      var di = dim.last(datasetKey);
+      return di != null && Objects.equals(di.getAttempt(), dataset.getAttempt()) ? di : null;
+    } catch (RuntimeException e) {
+      LOG.warn("Failed to read metrics of dataset {}. Export every entity", datasetKey, e);
+      return null;
+    }
+  }
+
+  /**
+   * Whether the dataset holds any record of an entity at all, so a pass that could only produce an empty file
+   * can skip its queries. A filtered export asks for its ids in batches, so an entity with nothing in it still
+   * cost one query per batch - a few hundred of them on a large subtree.
+   *
+   * Only ever answers false on evidence: without metrics, or without a count for the entity, the pass runs.
+   * The file is still created either way, empty but for its header, because DwC-A's meta.xml declares the
+   * extensions unconditionally and a reader would choke on one that is missing.
+   */
+  private boolean hasRecords(EntityType entity) {
+    if (metrics == null) return true;
+    Integer cnt = switch (entity) {
+      case VERNACULAR -> metrics.getVernacularCount();
+      case DISTRIBUTION -> metrics.getDistributionCount();
+      case MEDIA -> metrics.getMediaCount();
+      case TREATMENT -> metrics.getTreatmentCount();
+      case ESTIMATE -> metrics.getEstimateCount();
+      case TYPE_MATERIAL -> metrics.getTypeMaterialCount();
+      case REFERENCE -> metrics.getReferenceCount();
+      case NAME_RELATION -> metrics.getNameRelationsCount();
+      case SPECIES_INTERACTION -> metrics.getSpeciesInteractionsCount();
+      case TAXON_CONCEPT_RELATION -> metrics.getTaxonConceptRelationsCount();
+      case TAXON_PROPERTY -> metrics.getTaxonPropertyCount();
+      // the core usages must never be skipped
+      default -> null;
+    };
+    if (cnt != null && cnt == 0) {
+      LOG.info("Skip {} of dataset {}, its metrics report no record at all", entity, datasetKey);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * How many ids a filtered export asks for at once.
+   *
+   * It used to fetch them one at a time - a round trip per taxon or name, per entity type - and then, for a
+   * while, to stream the whole entity and filter here, which read far more than it kept: a subtree export of
+   * the COL XRelease discarded 98% of the distribution rows it scanned, and the cost did not shrink with the
+   * size of the download. Batches do neither.
+   *
+   * Kept in the low thousands on purpose. Handed a very large array postgres stops doing an index nested
+   * loop and hashes the whole partition instead, which is the scan we are trying to get away from.
+   */
+  @VisibleForTesting
+  static int ID_BATCH_SIZE = 5_000;
+
+  /**
+   * The collected ids of a filtered export, in batches. A full dataset export never asks: it streams.
+   */
+  private Iterable<List<String>> batches(Set<String> ids) {
+    return Iterables.partition(ids, ID_BATCH_SIZE);
   }
 
   private void exportCore() throws IOException, InterruptedException {
@@ -197,10 +282,10 @@ public abstract class ArchiveExport extends DatasetExportJob {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final Cursor<NameUsageBase> cursor;
       if (fullDataset) {
-        cursor = num.processDatasetWithClassification(datasetKey, null, null);
+        cursor = num.processDatasetWithClassification(datasetKey, null, null, inclCitations());
       } else {
         var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms());
-        cursor = num.processTree(ttp);
+        cursor = num.processTree(ttp, false, false, true, inclCitations());
       }
       checkIfCancelled();
       // iterate manually (not PgUtils.consume) so the per-record consumeUsage
@@ -214,7 +299,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       // add bare names?
       checkIfCancelled();
       if (req.isBareNames()) {
-        try (var bareNames = num.processDatasetBareNames(datasetKey, null, null)) {
+        try (var bareNames = num.processDatasetBareNames(datasetKey, null, null, true, inclCitations())) {
           for (BareName u : bareNames) {
             consumeUsage(u);
           }
@@ -309,7 +394,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   protected void exportReferences() throws IOException, InterruptedException {
     checkIfCancelled();
-    if (newDataFile(define(EntityType.REFERENCE))) {
+    if (newDataFile(define(EntityType.REFERENCE)) && hasRecords(EntityType.REFERENCE)) {
       try (SqlSession session = factory.openSession()) {
         ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
         if (fullDataset) {
@@ -324,17 +409,21 @@ public abstract class ArchiveExport extends DatasetExportJob {
             }
           });
         } else {
+          // references are exported last, so refIDs is complete by now
           refIDs.remove(null); // can happen
-          for (String id : refIDs) {
+          int found = 0;
+          for (List<String> batch : batches(refIDs)) {
             checkIfCancelledRuntime();
-            var ref = rm.get(entityKey.id(id));
-            if (ref != null) {
+            for (Reference ref : rm.listByIds(datasetKey, Set.copyOf(batch))) {
               ref.setSectorMode(sectorInfoCache.sector2mode(ref.getSectorKey()));
               write(ref);
               writer.next();
-            } else {
-              LOG.warn("Reference ID {} used but does not exist in dataset {}", id, datasetKey);
+              found++;
             }
+          }
+          // the per id path named each dangling reference; batches can only count them
+          if (found < refIDs.size()) {
+            LOG.warn("{} of {} referenced reference IDs do not exist in dataset {}", refIDs.size()-found, refIDs.size(), datasetKey);
           }
         }
       }
@@ -343,30 +432,24 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private <T extends ExtensionEntity> void exportTaxonExtension(EntityType entity, Class < ? extends TaxonExtensionMapper<T>> mapperClass, ThrowingBiConsumer < String, T, IOException > consumer) throws IOException, InterruptedException {
     checkIfCancelled();
-    if (newDataFile(define(entity))) {
+    if (newDataFile(define(entity)) && hasRecords(entity)) {
       try (SqlSession session = factory.openSession()) {
         TaxonExtensionMapper<T> exm = session.getMapper(mapperClass);
         if (fullDataset) {
           PgUtils.consume(()->exm.processDataset(datasetKey), x -> {
             checkIfCancelledRuntime();
             try {
-              trackRefId(x.getObj());
-              x.getObj().setSectorMode(sectorInfoCache.sector2mode(x.getObj().getSectorKey()));
-              consumer.accept(x.getTaxonID(), x.getObj());
-              this.writer.next();
+              writeExtension(x, consumer);
             } catch (final IOException e) {
               throw new RuntimeException(e);
             }
           });
 
         } else {
-          for (String id : taxonIDs) {
-            for (T x : exm.listByTaxon(entityKey.id(id))) {
-              checkIfCancelledRuntime();
-              trackRefId(x);
-              x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
-              consumer.accept(id, x);
-              this.writer.next();
+          for (List<String> batch : batches(taxonIDs)) {
+            checkIfCancelledRuntime();
+            for (TaxonExtension<T> x : exm.listByTaxa(datasetKey, batch)) {
+              writeExtension(x, consumer);
             }
           }
         }
@@ -376,36 +459,44 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private <T extends SectorScopedEntity<?> & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> void exportNameRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException, InterruptedException {
+  private <T extends SectorScopedEntity<?> & Referenced> void writeRelation(T x, ThrowingConsumer<T, IOException> consumer) throws IOException {
+    trackRefId(x);
+    x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
+    consumer.accept(x);
+    writer.next();
+  }
+
+  private <T extends ExtensionEntity> void writeExtension(TaxonExtension<T> x, ThrowingBiConsumer<String, T, IOException> consumer) throws IOException {
+    trackRefId(x.getObj());
+    x.getObj().setSectorMode(sectorInfoCache.sector2mode(x.getObj().getSectorKey()));
+    consumer.accept(x.getTaxonID(), x.getObj());
+    this.writer.next();
+  }
+
+  private <T extends SectorScopedEntity<?> & Referenced, M extends NameProcessable<T> & DatasetProcessable<T> & NameBatchable<T>> void exportNameRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException, InterruptedException {
     checkIfCancelled();
     new NameRelExporter<T, M>().export(type, mapperClass, consumer);
   }
 
-  private class NameRelExporter<T extends SectorScopedEntity<?> & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> {
+  private class NameRelExporter<T extends SectorScopedEntity<?> & Referenced, M extends NameProcessable<T> & DatasetProcessable<T> & NameBatchable<T>> {
     void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException, InterruptedException {
-      if (newDataFile(define(entity))) {
+      if (newDataFile(define(entity)) && hasRecords(entity)) {
         try (SqlSession session = factory.openSession()) {
           M mapper = session.getMapper(mapperClass);
           if (fullDataset) {
             PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
               checkIfCancelledRuntime();
               try {
-                trackRefId(x);
-                x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
-                consumer.accept(x);
-                writer.next();
+                writeRelation(x, consumer);
               } catch (final IOException e) {
                 throw new RuntimeException(e);
               }
             });
           } else {
-            for (String id : nameIDs) {
-              for (T x : mapper.listByName(entityKey.id(id))) {
-                checkIfCancelledRuntime();
-                trackRefId(x);
-                x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
-                consumer.accept(x);
-                writer.next();
+            for (List<String> batch : batches(nameIDs)) {
+              checkIfCancelledRuntime();
+              for (T x : mapper.listByNames(datasetKey, batch)) {
+                writeRelation(x, consumer);
               }
             }
           }
@@ -416,36 +507,30 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private <T extends SectorScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> void exportTaxonRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException, InterruptedException {
+  private <T extends SectorScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T> & TaxonBatchable<T>> void exportTaxonRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException, InterruptedException {
     checkIfCancelled();
     new TaxonRelExporter<T, M>().export(type, mapperClass, consumer);
   }
 
-  private class TaxonRelExporter<T extends SectorScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> {
+  private class TaxonRelExporter<T extends SectorScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T> & TaxonBatchable<T>> {
     void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
-      if (newDataFile(define(entity))) {
+      if (newDataFile(define(entity)) && hasRecords(entity)) {
         try (SqlSession session = factory.openSession()) {
           M mapper = session.getMapper(mapperClass);
           if (fullDataset) {
             PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
               checkIfCancelledRuntime();
               try {
-                trackRefId(x);
-                x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
-                consumer.accept(x);
-                writer.next();
+                writeRelation(x, consumer);
               } catch (final IOException e) {
                 throw new RuntimeException(e);
               }
             });
           } else {
-            for (String id : taxonIDs) {
-              for (T x : mapper.listByTaxon(entityKey.id(id))) {
-                checkIfCancelledRuntime();
-                trackRefId(x);
-                x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
-                consumer.accept(x);
-                writer.next();
+            for (List<String> batch : batches(taxonIDs)) {
+              checkIfCancelledRuntime();
+              for (T x : mapper.listByTaxa(datasetKey, batch)) {
+                writeRelation(x, consumer);
               }
             }
           }
@@ -462,7 +547,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private void exportTreatments() throws IOException, InterruptedException {
     checkIfCancelled();
-    if (inclTreatments) {
+    if (inclTreatments && hasRecords(EntityType.TREATMENT)) {
       final long started = System.currentTimeMillis();
       final AtomicInteger treatments = new AtomicInteger();
       try (SqlSession session = factory.openSession()) {
@@ -478,11 +563,9 @@ public abstract class ArchiveExport extends DatasetExportJob {
             }
           });
         } else {
-          DSID<String> key = DSID.root(datasetKey);
-          for (String id : taxonIDs) {
+          for (List<String> batch : batches(taxonIDs)) {
             checkIfCancelledRuntime();
-            var x = mapper.get(key.id(id));
-            if (x != null) {
+            for (var x : mapper.listByTaxa(datasetKey, batch)) {
               writeTreatment(x);
               treatments.incrementAndGet();
             }
@@ -495,7 +578,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private void exportEstimates() throws IOException, InterruptedException {
     checkIfCancelled();
-    if (newDataFile(define(EntityType.ESTIMATE))) {
+    if (newDataFile(define(EntityType.ESTIMATE)) && hasRecords(EntityType.ESTIMATE)) {
       try (SqlSession session = factory.openSession()) {
         EstimateMapper mapper = session.getMapper(EstimateMapper.class);
         if (fullDataset) {
@@ -510,13 +593,9 @@ public abstract class ArchiveExport extends DatasetExportJob {
             }
           });
         } else {
-          Page page = new Page(0,100);
-          EstimateSearchRequest req = new EstimateSearchRequest();
-          req.setDatasetKey(datasetKey);
-          for (String id : taxonIDs) {
-            req.setId(id);
-            for (SpeciesEstimate x : mapper.search(req, page)) {
-              checkIfCancelledRuntime();
+          for (List<String> batch : batches(taxonIDs)) {
+            checkIfCancelledRuntime();
+            for (SpeciesEstimate x : mapper.listByTaxa(datasetKey, batch)) {
               trackRefId(x);
               write(x);
               writer.next();
@@ -583,6 +662,14 @@ public abstract class ArchiveExport extends DatasetExportJob {
      * The following terms are other terms to be included in the given order.
      */
   abstract Term[] define(EntityType entity);
+
+  /**
+   * Whether the core query should join in the publishedIn and accordingTo reference citations.
+   * Only formats that write citations inline instead of reference ids want them - they are wide columns.
+   */
+  boolean inclCitations() {
+    return false;
+  }
 
   void write(NameUsageBase u){
   }

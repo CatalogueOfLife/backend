@@ -159,6 +159,14 @@
     WHERE vn.dataset_key = #{datasetKey}
   </select>
 
+  <!-- the archive export of a subtree, fetching the entities of many taxa at once. See TaxonBatchable. -->
+  <select id="listByTaxa" resultMap="vernacularExtNameResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS batch(bid) ON batch.bid=vn.taxon_id
+    WHERE vn.dataset_key = #{datasetKey}
+  </select>
+
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="obj.id">
     INSERT INTO vernacular_name (<include refid="COLS"/>, created, modified, id)
     VALUES (<include refid="PROPS"/>, now(), now(), nextval('vernacular_name_${obj.datasetKey}_id_seq'))

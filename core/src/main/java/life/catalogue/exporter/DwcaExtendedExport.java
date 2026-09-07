@@ -42,8 +42,8 @@ public class DwcaExtendedExport extends ArchiveExport {
   }
 
   @Override
-  protected void init(SqlSession session) throws Exception {
-    super.init(session);
+  protected void init() throws Exception {
+    super.init();
     additionalWriter(defineSpeciesProfile());
   }
 
@@ -67,6 +67,11 @@ public class DwcaExtendedExport extends ArchiveExport {
   void writeSourceMetadata(Dataset src) throws IOException {
     File f = new File(tmpDir, String.format("dataset/%s.xml", src.getKey()));
     EmlWriter.write(src, f);
+  }
+
+  @Override
+  boolean inclCitations() {
+    return true; // dwc:namePublishedIn and dwc:nameAccordingTo hold the citation itself, not a reference id
   }
 
   @Override
@@ -196,7 +201,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     write((NameUsage)u);
 
     writer.set(DcTerm.references, u.getLink());
-    writer.set(DwcTerm.nameAccordingTo, citationByID(u.getAccordingToId()));
+    writer.set(DwcTerm.nameAccordingTo, u.getAccordingTo()); // joined in by the core query, see inclCitations
   }
 
   void write(BareName u) {
@@ -214,7 +219,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     writer.set(DwcTerm.taxonRank, n.getRank());
     writer.set(ColdpTerm.notho, n.getNotho());
     writer.set(DwcTerm.taxonomicStatus, u.getStatus());
-    writer.set(DwcTerm.namePublishedIn, citationByID(n.getPublishedInId()));
+    writer.set(DwcTerm.namePublishedIn, n.getPublishedInCitation()); // joined in by the core query
     writer.set(ClbTerm.merged, u.isMerged());
     if (n.getGenus() != null) {
       writer.set(DwcTerm.genericName, n.getGenus());
@@ -228,9 +233,8 @@ public class DwcaExtendedExport extends ArchiveExport {
     writer.set(DwcTerm.nomenclaturalCode, n.getCode(), NomCode::getAcronym);
     writer.set(DwcTerm.nomenclaturalStatus, n.getNomStatus(), NomStatus::getBotanicalLabel);
 
-    for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
-      writer.set(DwcTerm.originalNameUsageID, rel.getRelatedNameId());
-    }
+    // resolved by the export query itself, see NameUsageMapper BASIONYM_JOIN
+    writer.set(DwcTerm.originalNameUsageID, n.getBasionymNameId());
     writer.set(DwcTerm.taxonRemarks, u.getRemarks());
   }
 
