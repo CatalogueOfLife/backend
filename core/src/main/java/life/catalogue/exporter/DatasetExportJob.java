@@ -218,7 +218,7 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
     checkIfCancelled();
     LOG.info("Bundling archive at {}", archive.getAbsolutePath());
     FileUtils.forceMkdir(archive.getParentFile());
-    CompressionUtil.zipDir(tmpDir, archive, true);
+    CompressionUtil.zipDir(tmpDir, archive, true, jCfg.zipLevel, jCfg.zipThreads);
     LOG.info("Bundled {} MB archive at {}", archive.length()/1024/1024, archive.getAbsolutePath());
   }
 

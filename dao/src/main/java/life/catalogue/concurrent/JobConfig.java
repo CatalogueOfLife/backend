@@ -133,6 +133,18 @@ public class JobConfig {
   @Min(1)
   public int retentionBatchSize = 10_000;
 
+  /**
+   * Threads used to deflate the entries of an export archive at once. 1 keeps the single threaded writer.
+   * They are short lived and only busy during the bundling tail of an export.
+   */
+  public int zipThreads = 4;
+
+  /**
+   * java.util.zip.Deflater level for export archives, -1 for the default (6). Lower levels trade a somewhat
+   * larger archive for a lot less CPU on the bundling tail - worth measuring on a real release before changing.
+   */
+  public int zipLevel = java.util.zip.Deflater.DEFAULT_COMPRESSION;
+
   public String onErrorTo;
 
   public String onErrorFrom;
