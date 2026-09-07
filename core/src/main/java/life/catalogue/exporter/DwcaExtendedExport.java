@@ -42,8 +42,8 @@ public class DwcaExtendedExport extends ArchiveExport {
   }
 
   @Override
-  protected void init(SqlSession session) throws Exception {
-    super.init(session);
+  protected void init() throws Exception {
+    super.init();
     additionalWriter(defineSpeciesProfile());
   }
 

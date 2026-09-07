@@ -5,6 +5,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import java.util.*;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 
 import com.google.common.base.Preconditions;
 
@@ -24,19 +25,23 @@ public class NameUsageKeyMap {
    * re-ran the same fruitless query, because a miss used to leave no trace in either map.
    */
   private final Set<String> bareNameIDs = new HashSet<>();
-  private final NameUsageMapper usageMapper;
+  /**
+   * A factory rather than a session: the map outlives any single export pass, and the session it used to
+   * borrow was one the export held open for its whole run. Lookups are rare now and remembered either way.
+   */
+  private final SqlSessionFactory factory;
   private final int datasetKey;
 
-  public NameUsageKeyMap(int datasetKey, SqlSession session) {
-    this(datasetKey, session, true);
+  public NameUsageKeyMap(int datasetKey, SqlSessionFactory factory) {
+    this(datasetKey, factory, true);
   }
 
   /**
    * @param trackUsageIDs whether to maintain the reverse index that backs {@link #containsUsageID(String)}
    */
-  public NameUsageKeyMap(int datasetKey, SqlSession session, boolean trackUsageIDs) {
+  public NameUsageKeyMap(int datasetKey, SqlSessionFactory factory, boolean trackUsageIDs) {
     this.datasetKey = datasetKey;
-    usageMapper = session.getMapper(NameUsageMapper.class);
+    this.factory = factory;
     usageIDs = trackUsageIDs ? new HashSet<>() : null;
   }
 
@@ -44,7 +49,10 @@ public class NameUsageKeyMap {
     if (bareNameIDs.contains(nameID)) {
       return Collections.emptySet();
     }
-    List<String> uids = usageMapper.listUsageIDsByNameID(datasetKey, nameID);
+    final List<String> uids;
+    try (SqlSession session = factory.openSession()) {
+      uids = session.getMapper(NameUsageMapper.class).listUsageIDsByNameID(datasetKey, nameID);
+    }
     if (uids != null && !uids.isEmpty()) {
       Set<String> uidSet = new HashSet<>(uids);
       add(nameID, uids.remove(0));

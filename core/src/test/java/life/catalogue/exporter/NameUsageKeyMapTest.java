@@ -22,7 +22,7 @@ public class NameUsageKeyMapTest {
   @Test
   public void add() {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      NameUsageKeyMap map = new NameUsageKeyMap(11, session);
+      NameUsageKeyMap map = new NameUsageKeyMap(11, SqlSessionFactoryRule.getSqlSessionFactory());
 
       assertFalse(map.containsNameID("qwwert"));
       map.add("qwwert", "iop");
@@ -43,7 +43,7 @@ public class NameUsageKeyMapTest {
   @Test
   public void usageIDsNotTracked() {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      NameUsageKeyMap map = new NameUsageKeyMap(11, session, false);
+      NameUsageKeyMap map = new NameUsageKeyMap(11, SqlSessionFactoryRule.getSqlSessionFactory(), false);
 
       map.add("qwwert", "iop");
       assertEquals("iop", map.getFirst("qwwert"));
@@ -60,7 +60,7 @@ public class NameUsageKeyMapTest {
   public void bareNameMissesAreRemembered() {
     final String bareNameID = "http://services.snsb.info/DTNtaxonlists/rest/v0.1/names/DiversityTaxonNames_Insecta/5009538/";
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      NameUsageKeyMap map = new NameUsageKeyMap(11, session);
+      NameUsageKeyMap map = new NameUsageKeyMap(11, SqlSessionFactoryRule.getSqlSessionFactory());
 
       assertNull(map.getFirst(bareNameID));
       assertTrue(map.usageIDs(bareNameID).isEmpty());

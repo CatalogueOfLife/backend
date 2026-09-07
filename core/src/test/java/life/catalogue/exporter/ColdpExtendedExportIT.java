@@ -26,6 +26,8 @@ import life.catalogue.junit.TestDataRule;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -193,6 +195,53 @@ public class ColdpExtendedExportIT extends ExportTest {
     var s1 = rows.stream().filter(r -> "s1".equals(r.get(ColdpTerm.ID))).findFirst().orElse(null);
     assertNotNull("s1 usage missing from export", s1);
     assertTrue(StringUtils.isBlank(s1.get(ColdpTerm.basionymID)));
+  }
+
+  /**
+   * A filtered export fetched every taxon's and name's extensions with a query of its own. Above
+   * ArchiveExport.SCAN_THRESHOLD ids it streams the entity once and filters here instead, and the two
+   * must agree exactly - the subtree of a filtered export is a subset of the same rows either way.
+   */
+  @Test
+  public void filteredScanMatchesPerIdFetch() throws Exception {
+    req.setSynonyms(false); // any filter makes fullDataset false, so both branches become reachable
+
+    final int origThreshold = ArchiveExport.SCAN_THRESHOLD;
+    Map<String, List<Map<String, String>>> perId = new LinkedHashMap<>();
+    Map<String, List<Map<String, String>>> scanned = new LinkedHashMap<>();
+    final List<String> files = List.of(
+      ColdpTerm.NameUsage.simpleName() + ".tsv",
+      ColdpTerm.VernacularName.simpleName() + ".tsv",
+      ColdpTerm.Distribution.simpleName() + ".tsv",
+      ColdpTerm.NameRelation.simpleName() + ".tsv",
+      ColdpTerm.Reference.simpleName() + ".tsv"
+    );
+    try {
+      ArchiveExport.SCAN_THRESHOLD = Integer.MAX_VALUE; // force the per id fetches
+      var exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+      exp.run();
+      assertExportExists(exp.getArchive());
+      for (String f : files) {
+        perId.put(f, readArchiveRows(exp.getArchive(), f));
+      }
+
+      ArchiveExport.SCAN_THRESHOLD = 0; // force the streaming scan
+      exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+      exp.run();
+      assertExportExists(exp.getArchive());
+      for (String f : files) {
+        scanned.put(f, readArchiveRows(exp.getArchive(), f));
+      }
+    } finally {
+      ArchiveExport.SCAN_THRESHOLD = origThreshold;
+    }
+
+    for (String f : files) {
+      // neither branch promises an order, so compare as sets
+      assertEquals(f, new HashSet<>(perId.get(f)), new HashSet<>(scanned.get(f)));
+    }
+    // and the filter really did keep rows, rather than both branches agreeing on nothing
+    assertFalse("expected the root-2 subtree to export some usages", perId.get(files.get(0)).isEmpty());
   }
 
   @Test
