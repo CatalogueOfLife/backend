@@ -106,7 +106,47 @@ with a parent cycle that dedup is what makes the query terminate.
 
 ## Outcome
 
-Re-measure a comparable subtree export and a full XRelease export with the same instrumentation and
-record the numbers here. Expected from the measurement above: the five empty passes collapse to a
-scan each, the NameUsage pass loses its per-usage basionym query, and DwC-A additionally loses two
-reference lookups per usage.
+### Second measurement, dev, 2026-09-07
+
+A DwC-A extended export of dataset 37384 on dev, with the new code. It is **not** comparable to the
+first measurement: different dataset, different format, different environment, and unfiltered where
+the first was a subtree. It is a smoke test plus a new profile, not a before/after.
+
+| pass | records | time | share of data phase |
+|---|---|---|---|
+| Taxon | 325,378 | 59.1s | 24.4% |
+| Multimedia | 1,365,149 | 3:02.8 | 75.5% |
+| VernacularName | 0 | 0.064s | 0.0% |
+| Distribution | 0 | 0.023s | 0.0% |
+| MeasurementOrFact | 0 | 0.016s | 0.0% |
+| **data** | | **4:02.0** | |
+| metadata | | 0.3s | |
+| bundling, 8 files, 4 threads, level -1, 59 MB | | 6.5s | |
+| size + MD5 | | 0.5s | |
+| **total** | | **4:08.8** | |
+
+The passes account for 242.018s of the 242.040s data phase, so nothing is hiding between them.
+
+What it does show: the new joins run correctly against real data, and the parallel bundler is
+active. What it does **not** show is anything about the filtered export fix — an unfiltered export
+takes the `fullDataset` branch, which always scanned. Validating that needs the first export re-run:
+dataset 316165, same subtree, ColDP extended, on prod.
+
+### What this profile changes
+
+**The core pass no longer dominates.** Multimedia alone is 75% of the data phase here, against 24%
+for the core. That is a better case for running the entity passes concurrently than the first
+measurement suggested — overlapping those two would cut about a quarter off this export — so the
+"Not done" note above should be re-read against this, not against the subtree run.
+
+**Bundling is still noise** at 6.5s of 4:09, and there is no visible benefit from the parallel
+writer: 8 entries with one of them holding most of the bytes means the big entry is deflated by a
+single thread anyway, and the scatter store adds a copy. It is worth measuring on a ColDP extended
+export, whose treatments directory is many small files, before drawing a conclusion. For an archive
+with one dominant entry the lever that would work is `job.zipLevel`, not `job.zipThreads`.
+
+**Latent, not yet hit:** `Media` and `Distribution` still resolve `dc:source` through the bounded
+citation cache, which is the same pattern that was fixed for usages. This dataset has 1.37M media
+rows and did not suffer, so those rows evidently carry no reference id — but a media or distribution
+heavy dataset that does cite references would hit exactly the old behaviour. The fix is the same
+join, in the media and distribution export queries.
