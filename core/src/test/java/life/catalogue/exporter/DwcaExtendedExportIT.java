@@ -3,6 +3,7 @@ package life.catalogue.exporter;
 import life.catalogue.TestConfigs;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.TaxonProperty;
 import life.catalogue.api.util.RankUtils;
@@ -110,6 +111,35 @@ public class DwcaExtendedExportIT extends ExportTest {
     // root-2's name-2 has no publishedIn reference at all
     var root2 = rows.stream().filter(r -> "root-2".equals(r.get(DwcTerm.taxonID.prefixedName()))).findFirst().orElse(null);
     assertTrue(StringUtils.isBlank(root2.get(DwcTerm.namePublishedIn.prefixedName())));
+  }
+
+  /**
+   * meta.xml declares the extensions unconditionally, so an entity skipped because the dataset holds no
+   * record of it must still leave its file behind - a declared file that is missing breaks every reader.
+   */
+  @Test
+  public void skippedEntityStillHasItsDeclaredFile() throws Exception {
+    // apple really has 3 vernacular names; claim there is not one
+    final DatasetImport di = new DatasetImport();
+    di.setVernacularCount(0);
+
+    var req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA);
+    var exp = new DwcaExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru()) {
+      @Override
+      DatasetImport loadMetrics() {
+        return di;
+      }
+    };
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    final String file = GbifTerm.VernacularName.simpleName() + ".tsv";
+    // skipped, so none of the three real records are in it
+    assertTrue(readArchiveRows(exp.getArchive(), file).isEmpty());
+    // but the file exists with its header, and meta.xml still points at it
+    assertTrue(readArchiveHeader(exp.getArchive(), file).contains(DwcTerm.vernacularName.prefixedName()));
+    String meta = readArchiveEntry(exp.getArchive(), "meta.xml");
+    assertTrue("meta.xml declares VernacularName", meta.contains(GbifTerm.VernacularName.qualifiedName()));
   }
 
   /**

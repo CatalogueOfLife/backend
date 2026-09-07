@@ -51,6 +51,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
   protected TermWriter writer;
   /** start of the pass the current writer belongs to, see newDataFile/closeWriter */
   private long passStarted;
+  /** entity counts of the exported data, or null if none can be trusted. See loadMetrics. */
+  private DatasetImport metrics;
   private final SXSSFWorkbook wb;
   protected final boolean inclTreatments;
 
@@ -182,7 +184,66 @@ public abstract class ArchiveExport extends DatasetExportJob {
   }
 
   protected void init() throws Exception {
-    // nothing by default - subclasses hook in here
+    metrics = loadMetrics();
+  }
+
+  /**
+   * Entity counts of the data about to be exported, or null when nothing trustworthy is available.
+   *
+   * A project can be edited through the CRUD API between imports without ever getting a new attempt, so its
+   * counts need not describe what is in the tables now - and being wrong here means silently dropping records
+   * from a download. Releases and external datasets only change by release or import, so their counts hold.
+   */
+  @VisibleForTesting
+  DatasetImport loadMetrics() {
+    if (dataset.getOrigin() == DatasetOrigin.PROJECT || dataset.getAttempt() == null) {
+      return null;
+    }
+    try (SqlSession session = factory.openSession()) {
+      var dim = session.getMapper(DatasetImportMapper.class);
+      if (dataset.getOrigin().isRelease()) {
+        // a release keeps its metrics under its mother project and its own attempt, see DatasetImportDao.getLast
+        return dim.get(dataset.getSourceKey(), dataset.getAttempt());
+      }
+      // the newest import of any status, so only trust it when it is the one the dataset currently stands on
+      var di = dim.last(datasetKey);
+      return di != null && Objects.equals(di.getAttempt(), dataset.getAttempt()) ? di : null;
+    } catch (RuntimeException e) {
+      LOG.warn("Failed to read metrics of dataset {}. Export every entity", datasetKey, e);
+      return null;
+    }
+  }
+
+  /**
+   * Whether the dataset holds any record of an entity at all, so a pass that could only produce an empty file
+   * can skip its queries. A filtered export asks for its ids in batches, so an entity with nothing in it still
+   * cost one query per batch - a few hundred of them on a large subtree.
+   *
+   * Only ever answers false on evidence: without metrics, or without a count for the entity, the pass runs.
+   * The file is still created either way, empty but for its header, because DwC-A's meta.xml declares the
+   * extensions unconditionally and a reader would choke on one that is missing.
+   */
+  private boolean hasRecords(EntityType entity) {
+    if (metrics == null) return true;
+    Integer cnt = switch (entity) {
+      case VERNACULAR -> metrics.getVernacularCount();
+      case DISTRIBUTION -> metrics.getDistributionCount();
+      case MEDIA -> metrics.getMediaCount();
+      case TREATMENT -> metrics.getTreatmentCount();
+      case ESTIMATE -> metrics.getEstimateCount();
+      case TYPE_MATERIAL -> metrics.getTypeMaterialCount();
+      case REFERENCE -> metrics.getReferenceCount();
+      case NAME_RELATION -> metrics.getNameRelationsCount();
+      case SPECIES_INTERACTION -> metrics.getSpeciesInteractionsCount();
+      case TAXON_CONCEPT_RELATION -> metrics.getTaxonConceptRelationsCount();
+      // TAXON_PROPERTY has no metric of its own, and the core usages must never be skipped
+      default -> null;
+    };
+    if (cnt != null && cnt == 0) {
+      LOG.info("Skip {} of dataset {}, its metrics report no record at all", entity, datasetKey);
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -327,7 +388,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   protected void exportReferences() throws IOException, InterruptedException {
     checkIfCancelled();
-    if (newDataFile(define(EntityType.REFERENCE))) {
+    if (newDataFile(define(EntityType.REFERENCE)) && hasRecords(EntityType.REFERENCE)) {
       try (SqlSession session = factory.openSession()) {
         ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
         if (fullDataset) {
@@ -365,7 +426,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private <T extends ExtensionEntity> void exportTaxonExtension(EntityType entity, Class < ? extends TaxonExtensionMapper<T>> mapperClass, ThrowingBiConsumer < String, T, IOException > consumer) throws IOException, InterruptedException {
     checkIfCancelled();
-    if (newDataFile(define(entity))) {
+    if (newDataFile(define(entity)) && hasRecords(entity)) {
       try (SqlSession session = factory.openSession()) {
         TaxonExtensionMapper<T> exm = session.getMapper(mapperClass);
         if (fullDataset) {
@@ -413,7 +474,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private class NameRelExporter<T extends SectorScopedEntity<?> & Referenced, M extends NameProcessable<T> & DatasetProcessable<T> & NameBatchable<T>> {
     void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException, InterruptedException {
-      if (newDataFile(define(entity))) {
+      if (newDataFile(define(entity)) && hasRecords(entity)) {
         try (SqlSession session = factory.openSession()) {
           M mapper = session.getMapper(mapperClass);
           if (fullDataset) {
@@ -447,7 +508,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private class TaxonRelExporter<T extends SectorScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T> & TaxonBatchable<T>> {
     void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
-      if (newDataFile(define(entity))) {
+      if (newDataFile(define(entity)) && hasRecords(entity)) {
         try (SqlSession session = factory.openSession()) {
           M mapper = session.getMapper(mapperClass);
           if (fullDataset) {
@@ -480,7 +541,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private void exportTreatments() throws IOException, InterruptedException {
     checkIfCancelled();
-    if (inclTreatments) {
+    if (inclTreatments && hasRecords(EntityType.TREATMENT)) {
       final long started = System.currentTimeMillis();
       final AtomicInteger treatments = new AtomicInteger();
       try (SqlSession session = factory.openSession()) {
@@ -511,7 +572,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private void exportEstimates() throws IOException, InterruptedException {
     checkIfCancelled();
-    if (newDataFile(define(EntityType.ESTIMATE))) {
+    if (newDataFile(define(EntityType.ESTIMATE)) && hasRecords(EntityType.ESTIMATE)) {
       try (SqlSession session = factory.openSession()) {
         EstimateMapper mapper = session.getMapper(EstimateMapper.class);
         if (fullDataset) {

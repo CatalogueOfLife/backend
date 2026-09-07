@@ -4,6 +4,7 @@ import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
 import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.Identifier;
 import life.catalogue.api.model.NameUsageBase;
@@ -39,6 +40,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class ColdpExtendedExportIT extends ExportTest {
@@ -242,6 +244,48 @@ public class ColdpExtendedExportIT extends ExportTest {
     }
     // and the filter really did keep rows, rather than both branches agreeing on nothing
     assertFalse("expected the root-2 subtree to export some usages", perId.get(files.get(0)).isEmpty());
+  }
+
+  /**
+   * An entity the dataset holds no record of skips its queries - a filtered export asks for its ids in
+   * batches, so an empty entity still cost one query per batch. The file must still be written, empty but
+   * for its header: DwC-A's meta.xml declares its extensions unconditionally and a reader chokes on a
+   * declared file that is not there.
+   */
+  @Test
+  public void skipEntitiesWithoutRecords() throws Exception {
+    // apple really has 3 vernacular names and 5 distributions; claim there is not one vernacular
+    final DatasetImport di = new DatasetImport();
+    di.setVernacularCount(0);
+
+    var exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru()) {
+      @Override
+      DatasetImport loadMetrics() {
+        return di;
+      }
+    };
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    // the pass was skipped, so none of the three real records made it out
+    final String vernacular = ColdpTerm.VernacularName.simpleName() + ".tsv";
+    assertTrue(readArchiveRows(exp.getArchive(), vernacular).isEmpty());
+    // but the file is there with its header
+    assertTrue("the skipped entity must still write its header",
+      readArchiveHeader(exp.getArchive(), vernacular).contains(ColdpTerm.name.prefixedName()));
+
+    // an entity with no count at all is not skipped - the gate only ever acts on evidence
+    assertEquals(5, readArchiveRows(exp.getArchive(), ColdpTerm.Distribution.simpleName() + ".tsv").size());
+  }
+
+  /**
+   * Apple is a PROJECT, which can be edited between imports without a new attempt, so its counts need not
+   * describe the tables. Nothing may be skipped on them.
+   */
+  @Test
+  public void noMetricsGateForProjects() {
+    var exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    assertNull(exp.loadMetrics());
   }
 
   @Test
