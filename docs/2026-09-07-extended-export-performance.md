@@ -195,6 +195,46 @@ That also settles the parallel-passes question the other way. Multimedia looked 
 iBOL data phase only because it was scanning 10M rows to keep 1.4M; once the extension passes are
 batched the core tree traversal is ~94% of what is left, and there is little to overlap it with.
 
-**Not yet measured.** The batching landed after the 3:41 run. Expect VernacularName, Distribution
-and Reference to fall from tens of seconds to a few, taking the data phase from 3:17 to roughly
-2:05, and the iBOL Multimedia pass well below its 182.8s. Record it here.
+### Fourth measurement, dev, 2026-09-07 — batching
+
+The same export again, same dataset, subtree, box and format, with the batching in place. A true A/B
+against the third measurement.
+
+| pass | records | scan | batched | |
+|---|---|---|---|---|
+| NameUsage | 608,276 | 117.2s | 95.3s | code unchanged - see variance below |
+| VernacularName | 93,398 | 27.9s | 4.2s | **6.6×** |
+| Distribution | 34,901 | 38.6s | 3.4s | **11.2×** |
+| Reference | 50,674 | 13.3s | 3.7s | **3.6×** |
+| the eight empty passes | 0 | 0.10s total | 3.58s total | a regression, see below |
+| **data phase** | | **3:17.2** | **1:49.9** | 1.79× |
+| metadata | | 19.0s | 22.9s | |
+| bundling | | 4.9s | 5.6s | |
+| **total** | | **3:41.0** | **2:18.4** | 1.60× |
+
+**Read the headline number with care.** The NameUsage pass went from 117.2s to 95.3s on identical
+code - neither the batching nor the master merge touches it - so dev carries about 19% run to run
+variance. Had it stayed at 117.2s the total would be 1.38×, and that is the honest figure for what
+batching bought end to end. The per-pass numbers for the three entities that hold rows are 6.6×,
+11.2× and 3.6×, far outside that noise, and together they went from 79.9s to 11.4s.
+
+Against the original prod baseline this is 26:02 → 2:18, but across environments, so indicative only.
+
+### What the batching cost, and what is now on top
+
+**The empty passes got slower: 0.10s → 3.58s.** An entity with no rows for the dataset used to be a
+single scan of an empty table. It is now ~122 batches of 5,000 name ids, or ~78 of taxon ids, each a
+query returning nothing. Paying 3.5s to save 68.5s is plainly the right trade, but it is avoidable:
+the last import metrics already say how many rows each entity has, and a pass whose count is zero
+could be skipped outright. `TaxonExtensionMapper.entityExists(datasetKey)` exists for four of them.
+
+**Metadata is now the second largest item at 22.9s, 17% of the export** - more than bundling and
+everything else outside the core pass put together. The log shows 0 sources and 0 sectors, so it is
+not writing source YAMLs; the time is inside `DatasetYamlWriter.write`, a plain Jackson YAML write of
+the Dataset. The likely mechanism, not yet profiled: `Citation.getCitation()` (Citation.java:368) is
+a Jackson READ_ONLY property that lazily formats through `CitationFormatter`, so serialising an
+XRelease's source list runs a CSL format per source citation.
+
+**The core tree traversal is now 86.7% of the data phase.** That is the next thing worth attacking,
+and it is also the final word on running the entity passes concurrently: there is 15s of other work
+in the data phase to overlap a 95s pass with.
