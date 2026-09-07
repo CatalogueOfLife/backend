@@ -197,7 +197,7 @@ public enum TaxGroup {
 
   @JsonIgnore
   public TaxGroup getPrimaryParent() {
-    return parents.isEmpty() ? null : parents.getFirst();
+    return parents.isEmpty() ? null : parents.iterator().next();
   }
 
   public Set<NomCode> getCodes() {
