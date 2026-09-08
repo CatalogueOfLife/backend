@@ -23,8 +23,10 @@ import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/dataset")
+@Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class DatasetJobResource {
   private final DatasetDao dao;

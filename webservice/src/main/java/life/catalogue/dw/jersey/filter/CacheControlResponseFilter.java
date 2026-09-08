@@ -31,8 +31,11 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
 
   @Override
   public void filter(ContainerRequestContext req, ContainerResponseContext resp) throws IOException {
-    // we allow resources to turn off caching for certain requests by using the dont cache property
-    if (req.getMethod() != null && METHODS.contains(req.getMethod()) && req.getProperty(CacheControlResponseFilter.DONT_CACHE) == null) {
+    // never cache errors - a 4xx/5xx must not be pinned in varnish or a browser for days
+    // we also allow resources to turn off caching for certain requests by using the dont cache property
+    if (req.getMethod() != null && METHODS.contains(req.getMethod())
+        && resp.getStatus() < 400
+        && req.getProperty(CacheControlResponseFilter.DONT_CACHE) == null) {
       if (STATIC_PATH.matcher(req.getUriInfo().getPath()).find()) {
         allowCaching(resp, AGE_EXTERNAL, true);
         return;

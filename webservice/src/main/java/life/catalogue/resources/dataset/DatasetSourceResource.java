@@ -30,6 +30,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
 @Path("/dataset/{key}/source")
+@Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class DatasetSourceResource {
   private final DatasetSourceDao sourceDao;
