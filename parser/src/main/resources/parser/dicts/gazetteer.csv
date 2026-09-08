@@ -1,7 +1,6 @@
 3166,ISO
 3166-1,ISO
 country,ISO
-fao,ISO
 fish,FAO
 fishing,FAO
 ISO 3166,ISO
@@ -26,3 +25,7 @@ bio,REALM
 pa,WDPA
 protectedarea,WDPA
 protected,WDPA
+gie,GI
+island,GI
+islands,GI
+globalislands,GI

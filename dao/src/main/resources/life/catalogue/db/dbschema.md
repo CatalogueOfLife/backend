@@ -11,6 +11,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-08 new Global Islands Gazetteer
+```sql
+ALTER TYPE ISSUE ADD VALUE 'GI' AFTER 'WDPA';
+```
+
 #### 2026-09-07 count taxon properties in the import metrics
 `taxon_property` was the only entity the importer writes, the exporter exports and the sector sync
 copies that never got counted: `ImportMetrics` had no field, and neither metrics table a column.

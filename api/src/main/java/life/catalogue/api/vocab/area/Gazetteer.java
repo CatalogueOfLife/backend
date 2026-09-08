@@ -121,6 +121,16 @@ public enum Gazetteer {
       GenericArea.class
   ),
 
+  GI("Global Islands",
+      "https://apps.usgs.gov/glbeco/gie.html",
+      null,
+      "The Global Islands gazetteer contains all named big islands > 1km2 of the global islands polygon dataset, produced by USGS in partnership with Esri.",
+      false,
+      "^[0-9]+$",
+      null,
+      GenericArea.class
+  ),
+
   TEXT("Free Text",
     null,
     null,
