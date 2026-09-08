@@ -13,7 +13,7 @@ and done it manually. So we can as well log changes here.
 
 #### 2026-09-08 new Global Islands Gazetteer
 ```sql
-ALTER TYPE ISSUE ADD VALUE 'GI' AFTER 'WDPA';
+ALTER TYPE GAZETTEER ADD VALUE 'GI' AFTER 'WDPA';
 ```
 
 #### 2026-09-07 count taxon properties in the import metrics
