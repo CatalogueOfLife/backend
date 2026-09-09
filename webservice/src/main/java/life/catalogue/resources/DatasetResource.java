@@ -124,7 +124,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     }
     return obj;
   }
-  
+
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})

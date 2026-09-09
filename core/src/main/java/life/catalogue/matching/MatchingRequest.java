@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.TabularFormat;
 
@@ -65,6 +66,11 @@ public class MatchingRequest extends TreeTraversalParameter {
       sb.append(".csv");
     }
     return sb.toString();
+  }
+
+  @Override
+  public DSID<String> getTaxonDSID() {
+    return getTaxonID() == null ? null : DSID.of(sourceDatasetKey, getTaxonID());
   }
 
   @Override
