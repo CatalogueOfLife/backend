@@ -679,7 +679,144 @@ public class HierarchySyncIT {
       1, verbatimIssueCount(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK));
   }
 
+  /**
+   * An unranked project usage is never name-placed. UsageMatcher skips its rank filter outright for an
+   * unranked query, so such a name matches any canonical homonym at any rank - which put a project's
+   * unranked container "Biota" under the plant genus Platycladus.
+   * https://github.com/CatalogueOfLife/backend/issues/1575
+   */
+  @Test
+  public void nameMatchSkipsUnrankedNames() throws Exception {
+    final String T_Bioticaceae = "T_Bioticaceae";
+    final String T_Biotica = "T_Biotica";
+    final String P_container = "p_biotica_container";
+
+    // source holds a genus of that name in an unrelated lineage
+    insertTaxon(targetKey, T_Bioticaceae, T_Animalia, Rank.FAMILY, "Bioticaceae");
+    insertTaxon(targetKey, T_Biotica, T_Bioticaceae, Rank.GENUS, "Biotica");
+
+    // project holds a hand made unranked container of the same name at the root
+    insertTaxon(PROJECT_KEY, P_container, null, Rank.UNRANKED, "Biotica");
+
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase container = getByID(PROJECT_KEY, P_container);
+    assertNull("an unranked container must never be re-parented by a name match", container.getParentId());
+    assertEquals(0, verbatimIssueCount(PROJECT_KEY, P_container, Issue.MATCHING_HIGHERRANK));
+  }
+
+  /**
+   * A taxon other sectors attach into is a structural anchor of the project. Moving it drags every
+   * sector's output along, so the name-match fallback must leave it alone even when it matches cleanly.
+   */
+  @Test
+  public void nameMatchSkipsSectorTargets() throws Exception {
+    final String T_Anchorfam = "T_Anchorfam";
+    final String T_Anchorgenus = "T_Anchorgenus";
+    final String P_target = "p_anchor_target";
+
+    insertTaxon(targetKey, T_Anchorfam, T_Animalia, Rank.FAMILY, "Anchoridae");
+    insertTaxon(targetKey, T_Anchorgenus, T_Anchorfam, Rank.GENUS, "Anchorgenus");
+
+    insertTaxon(PROJECT_KEY, P_target, null, Rank.GENUS, "Anchorgenus");
+    createAttachSectorWithTarget(getByID(PROJECT_KEY, P_target));
+
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase target = getByID(PROJECT_KEY, P_target);
+    assertNull("a sector target must never be re-parented by a name match", target.getParentId());
+    assertEquals(0, verbatimIssueCount(PROJECT_KEY, P_target, Issue.MATCHING_HIGHERRANK));
+  }
+
+  /**
+   * A source identifier the source no longer knows must not shadow the name-match fallback: sources
+   * delete and reissue ids, and trusting the mere presence of one leaves the usage unplaced forever.
+   */
+  @Test
+  public void nameMatchRescuesStaleIdentifier() throws Exception {
+    final String T_Stalefam = "T_Stalefam";
+    final String T_Stalegenus = "T_Stalegenus";
+    final String T_Stalesp = "T_Stalesp";
+    final String P_floating = "p_stale_species";
+
+    insertTaxon(targetKey, T_Stalefam, T_Animalia, Rank.FAMILY, "Staleidae");
+    insertTaxon(targetKey, T_Stalegenus, T_Stalefam, Rank.GENUS, "Stalegenus");
+    insertTaxon(targetKey, T_Stalesp, T_Stalegenus, Rank.SPECIES, "Stalegenus specia");
+
+    // the project still points at an id the source has since deleted
+    insertTaxonWithIdentifier(PROJECT_KEY, P_floating, null, Rank.SPECIES, "Stalegenus specia", "T_DELETED_BY_SOURCE");
+
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    NameUsageBase genus = getByName(PROJECT_KEY, Rank.GENUS, "Stalegenus");
+    assertNotNull("genus should have been imported for the name match", genus);
+    NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
+    assertEquals("a usage with a stale identifier must be placed by name instead", genus.getId(), floating.getParentId());
+    assertHasVerbatimIssue(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK);
+  }
+
+  /**
+   * The floating usage is matched with its own project classification, so the matcher can apply its
+   * taxonomic group filter. Without it a zoological name silently matches its botanical homonym and the
+   * usage is re-parented into the wrong kingdom.
+   */
+  @Test
+  public void nameMatchRejectsDisparateKingdom() throws Exception {
+    final String T_Plantae = "T_Plantae";
+    final String T_Lamiaceae = "T_Lamiaceae";
+    final String T_Homonymus = "T_Homonymus";
+    final String P_Animalia = "p_Animalia";
+    final String P_floating = "p_homonymus_specia";
+
+    // the source knows this genus only as a plant
+    insertTaxon(targetKey, T_Plantae, null, Rank.KINGDOM, "Plantae");
+    insertTaxon(targetKey, T_Lamiaceae, T_Plantae, Rank.FAMILY, "Lamiaceae");
+    insertTaxon(targetKey, T_Homonymus, T_Lamiaceae, Rank.GENUS, "Homonymus");
+
+    // the project knows it as an animal
+    insertTaxon(PROJECT_KEY, P_Animalia, null, Rank.KINGDOM, "Animalia");
+    insertTaxon(PROJECT_KEY, P_floating, P_Animalia, Rank.SPECIES, "Homonymus specia");
+
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+
+    runHierarchySync();
+
+    // the genus candidate is rejected as a different taxonomic group, so the walk up settles on the
+    // kingdom the usage already sits under - a no-op placement rather than a jump into the plants
+    NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
+    assertEquals("an animal must not be placed under its botanical homonym", P_Animalia, floating.getParentId());
+    assertNull("the botanical genus must not have been imported", getByName(PROJECT_KEY, Rank.GENUS, "Homonymus"));
+    assertNull("no part of the botanical lineage may be imported", getByName(PROJECT_KEY, Rank.FAMILY, "Lamiaceae"));
+  }
+
   // ---------- helpers ----------
+
+  private static Sector createAttachSectorWithTarget(NameUsageBase target) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      Sector sector = new Sector();
+      sector.setMode(Sector.Mode.ATTACH);
+      sector.setDatasetKey(PROJECT_KEY);
+      sector.setSubjectDatasetKey(targetKey);
+      sector.setTarget(target.toSimpleNameLink());
+      sector.applyUser(USER);
+      s.getMapper(SectorMapper.class).create(sector);
+      return sector;
+    }
+  }
 
   private void runHierarchySync() throws Exception {
     SectorDao sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), null, null);

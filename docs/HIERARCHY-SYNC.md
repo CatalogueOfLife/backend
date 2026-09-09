@@ -242,25 +242,51 @@ end state regardless of how many times it has run. Concretely:
 The two items deferred from v1 — the name-match fallback and project-side dedup of imported
 ancestors — were both implemented on 2026-06-26 (see
 [`2026-06-26-hierarchy-sync-name-match-fallback.md`](2026-06-26-hierarchy-sync-name-match-fallback.md)).
-Phase 1 now runs a name-match sub-pass inside the same `discoverMatches` stream: accepted project
-usages with no source identifier are matched against the source dataset and placed under their
+Phase 1 runs a name-match sub-pass after the same `discoverMatches` scan: accepted project usages
+with no usable source identifier are matched against the source dataset and placed under their
 closest genus-or-higher anchor, flagged `Issue.MATCHING_HIGHERRANK`. No `TODO(hierarchy-sync)`
 markers remain in the source.
+
+### What the name-match fallback refuses to do
+
+Four constraints, all added after it placed a project's unranked container `Biota` under the plant
+genus *Platycladus* via the botanical genus synonym *Biota* D.Don ex Endl.
+(see [backend#1575](https://github.com/CatalogueOfLife/backend/issues/1575)):
+
+- **Unranked and OTHER names are not candidates.** `UsageMatcher` skips its rank filter outright for
+  a null or `UNRANKED` query and its nomenclatural code filter needs a suprageneric rank, so such a
+  name matches any canonical homonym at any rank in any kingdom. `TreeMergeHandler` guards the same
+  shape for merge sectors.
+- **Sector targets are not candidates.** A taxon other sectors attach into is a structural anchor of
+  the project — usually a hand made container — and moving it drags every sector's output with it.
+  Being at the project *root* is not disqualifying: placing exactly those names is the point.
+- **`AMBIGUOUS` matches are rejected.** `UsageMatch.isMatch()` is only "a usage came back" and is
+  true for `AMBIGUOUS`, so the accepted types are named explicitly:
+  `EXACT`, `VARIANT`, `CANONICAL`, `HIGHERRANK`.
+- **The query carries the usage's own project classification**, so `UsageMatcher` applies its
+  taxonomic group filter — it only runs when the query has a classification. The scan therefore
+  collects the whole project tree as `SimpleName`s first and matches afterwards; it is still a
+  single pass over the project.
+
+A source identifier that no longer resolves in the source does **not** count as an identifier match.
+Sources delete and reissue ids, and trusting the mere presence of one shadowed the name fallback and
+left the usage unplaced on every subsequent run. Such usages are counted and logged at WARN.
 
 What is still open, mirroring the javadoc on `HierarchySync`:
 
 - **Convergence for full matches.** Name-matched usages are placement-only and never gain the
   source identifier, so a full EXACT match is re-matched by name on every run rather than
   converging into the identifier path.
-- **Classification-context matching.** Floating usages are matched on their name's implied genus
-  only; a reconstructed project classification could disambiguate homonyms further.
+- **Bad placements are not self-healing.** A rewire is not tagged with the sector, so a re-run does
+  not undo one — `placeNameMatches` sees the parent already equals the target and re-affirms it. A
+  wrong placement has to be corrected in the project by hand.
 - **Performance batching.** Phase 2 / 3 do per-match `NameUsageMapper.get` and
   `SynonymMapper.listByTaxon` calls. For very large projects these can be batched via `listByIds`
   or a streaming join.
-- **Phase-1 name-match cost.** The fallback runs a per-usage source-matcher lookup for every
-  accepted usage lacking a source identifier. It shares the single identifier-discovery stream, so
-  there is no second full scan; if the per-usage match ever dominates it could be gated by a cheap
-  names-index pre-filter.
+- **Phase-1 name-match cost and memory.** The fallback runs a per-usage source-matcher lookup for
+  every accepted usage lacking a source identifier, and the scan holds one `SimpleName` per project
+  usage so classifications can be walked in memory. Both are sized for the projects this feature
+  targets — small checklists delegating their higher classification.
 
 ## Important Files
 

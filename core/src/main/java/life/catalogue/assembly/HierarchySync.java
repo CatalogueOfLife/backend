@@ -8,6 +8,7 @@ import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameCached;
+import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimSource;
@@ -28,6 +29,7 @@ import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
@@ -354,32 +356,52 @@ public class HierarchySync extends SectorRunnable {
    *
    * <ul>
    *   <li><b>identifier match</b> — the usage carries an identifier whose scope maps to the source
-   *       dataset. Populates {@link #projectMatches} + {@link #projectStatuses} + {@link #projectParents};
-   *       these feed phases 2–4. Only attempted when a {@code sourceScope} is configured.</li>
-   *   <li><b>name-match fallback</b> — an accepted taxon <em>without</em> a source identifier whose name
-   *       matches the source dataset (with higher-rank fallback). EXACT/VARIANT/CANONICAL and HIGHERRANK
-   *       matches yield a genus-or-higher source anchor recorded in {@link #namePlacements} (placement
-   *       only); ambiguous / no matches and synonyms are skipped.</li>
+   *       dataset <em>and that identifier still resolves there</em>. Populates {@link #projectMatches} +
+   *       {@link #projectStatuses} + {@link #projectParents}; these feed phases 2–4. Only attempted when a
+   *       {@code sourceScope} is configured. An id the source has since deleted or reissued does not count
+   *       — the usage falls through to the name match rather than being left unplaced for good.</li>
+   *   <li><b>name-match fallback</b> — an accepted taxon <em>without</em> a usable source identifier whose
+   *       name matches the source dataset (with higher-rank fallback), see {@link #nameMatchCandidate}.
+   *       EXACT/VARIANT/CANONICAL and HIGHERRANK matches yield a genus-or-higher source anchor recorded in
+   *       {@link #namePlacements} (placement only); ambiguous / no matches and synonyms are skipped.</li>
    * </ul>
    *
-   * Folding both into a single stream avoids scanning the (potentially very large) project twice. The
-   * source matcher is opened once for the whole stream and used only for the name-match fallback.
+   * The project is scanned exactly once. The scan also collects the whole project tree as
+   * {@link SimpleName}s so the name-match pass that follows it can hand each query its own classification
+   * — without one, {@link UsageMatcher} skips its taxonomic group filter and a name can match a homonym
+   * in another kingdom. The source matcher is opened once for that pass.
    */
   private void discoverMatches(int projectKey, @Nullable String sourceScope) {
+    // Every project usage as a lightweight SimpleName, keyed by its id. The name-match fallback needs the
+    // usage's own classification - UsageMatcher only applies its taxonomic group filter when the query
+    // carries one - and that can only be walked once the whole tree is known, as the stream is in no
+    // particular order. So the stream collects, and the matching runs afterwards. One SimpleName per usage
+    // is in line with the other project wide maps this class already keeps.
+    final Map<String, SimpleName> projectUsages = new HashMap<>();
+    // ids to name match, in stream order so placements stay deterministic
+    final List<String> floating = new ArrayList<>();
+    final Set<String> sectorTargets = loadSectorTargets(projectKey);
+    int staleIds = 0;
+
     // autoCommit=false on the streaming session: the Postgres JDBC driver needs an explicit transaction
     // to keep a server-side cursor (portal) alive across FETCH calls with fetchSize > 0. With
     // autoCommit=true the implicit transaction is committed mid-iteration and the next FETCH would fail
     // with "portal C_NNN does not exist". Mirrors UsageCache.load(SqlSessionFactory).
-    try (SqlSession matchSession = factory.openSession(true);
-         UsageMatcher sourceMatcher = sourceMatcherProvider.apply(sourceDatasetKey, matchSession);
-         SqlSession session = factory.openSession(false);
+    try (SqlSession session = factory.openSession(false);
          Cursor<NameUsageBase> cursor = session.getMapper(NameUsageMapper.class).processDataset(projectKey, null, null)) {
       for (NameUsageBase u : cursor) {
         if (Objects.equals(sectorKey.getId(), u.getSectorKey())) {
           continue; // produced by this sector (defensive: should already be wiped by deleteOld())
         }
+        projectUsages.put(u.getId(), new SimpleName(u));
         // 1) identifier match (only when a scope is configured); takes precedence over name matching
         String tid = sourceScope == null ? null : findSourceIdByIdentifier(u, sourceScope);
+        if (tid != null && !sourceIdExists(tid)) {
+          // the source deleted or reissued this id. Trusting its mere presence would shadow the name match
+          // below for good and leave the usage unplaced, so treat the usage as unidentified instead.
+          staleIds++;
+          tid = null;
+        }
         if (tid != null) {
           projectMatches.put(u.getId(), tid);
           if (u.getStatus() != null) {
@@ -388,24 +410,120 @@ public class HierarchySync extends SectorRunnable {
           projectParents.put(u.getId(), u.getParentId());
           continue;
         }
-        // 2) name-match fallback for accepted taxa without a source identifier (placement only)
-        if (u.getStatus() == null || !u.getStatus().isTaxon()) continue; // accepted taxa only
-        if (u.getName() == null) continue;
-        UsageMatch m;
-        try {
-          m = sourceMatcher.parseAndMatch(new SimpleName(u), true);
-        } catch (NotFoundException nfe) {
-          continue;
+        // 2) name-match fallback for accepted taxa without a usable source identifier (placement only)
+        if (nameMatchCandidate(u, sectorTargets)) {
+          floating.add(u.getId());
         }
-        if (m == null || !m.isMatch()) continue;                          // NONE / AMBIGUOUS / UNSUPPORTED
-        String anchor = anchorFor(m);
-        if (anchor == null) continue;
-        namePlacements.put(u.getId(), anchor);
-        projectParents.put(u.getId(), u.getParentId());                   // for cycle guard + skip-if-unchanged
       }
     } catch (java.io.IOException e) {
       throw new RuntimeException("Failed to stream project usages of dataset " + projectKey, e);
     }
+    if (staleIds > 0) {
+      LOG.warn("Hierarchy sector {}: {} project usages carry a {} identifier that no longer exists in source dataset {}. Placing them by name instead",
+        sectorKey, staleIds, sourceScope, sourceDatasetKey);
+    }
+
+    // now that the project tree is in memory, name match the floating usages with their own classification
+    try (SqlSession matchSession = factory.openSession(true);
+         UsageMatcher sourceMatcher = sourceMatcherProvider.apply(sourceDatasetKey, matchSession)) {
+      for (String usageId : floating) {
+        SimpleName sn = projectUsages.get(usageId);
+        var snc = new SimpleNameClassified<>(new SimpleNameCached(sn), projectClassification(sn, projectUsages));
+        UsageMatch m;
+        try {
+          m = sourceMatcher.parseAndMatch(snc, true);
+        } catch (NotFoundException nfe) {
+          continue;
+        }
+        // isMatch() is merely "a usage came back" and is true for AMBIGUOUS, so name the types we accept
+        if (m == null || !m.isMatch() || !PLACEMENT_MATCH_TYPES.contains(m.type)) continue;
+        String anchor = anchorFor(m);
+        if (anchor == null) continue;
+        namePlacements.put(usageId, anchor);
+        projectParents.put(usageId, sn.getParent());                      // for cycle guard + skip-if-unchanged
+      }
+    }
+  }
+
+  /**
+   * Match types the name-match fallback will place on. Mirrors the whitelist of the ancestor dedup in
+   * {@link #findExistingProjectAncestor}, plus HIGHERRANK which is the whole point of the fallback.
+   * AMBIGUOUS is deliberately absent: it means the matcher could not tell homonyms apart and picked one.
+   */
+  private static final Set<MatchType> PLACEMENT_MATCH_TYPES =
+    Set.of(MatchType.EXACT, MatchType.VARIANT, MatchType.CANONICAL, MatchType.HIGHERRANK);
+
+  /**
+   * Is this project usage a floating name the name-match fallback may re-parent?
+   *
+   * <p>Only accepted taxa qualify - retargeting a synonym's parent is a status change and out of scope.
+   * Being at the project root is expected, not disqualifying: placing exactly those names is the point of
+   * the fallback. Two further exclusions keep it from moving things it has no business moving:
+   *
+   * <ul>
+   *   <li><b>Unranked and OTHER names.</b> {@link UsageMatcher} skips its rank filter outright for a null
+   *       or UNRANKED query (its own comment: external queries often come with no rank) and its
+   *       nomenclatural code filter needs a suprageneric rank, so such a name matches any canonical
+   *       homonym at any rank in any kingdom. TreeMergeHandler guards the same shape for merge sectors.</li>
+   *   <li><b>Sector targets.</b> A taxon other sectors attach into is a structural anchor of the project,
+   *       usually a hand made container. Moving it drags every sector's output with it.</li>
+   * </ul>
+   *
+   * Both were needed to place a project's unranked container "Biota" under the plant genus Platycladus,
+   * via the botanical genus synonym Biota D.Don ex Endl.
+   * See https://github.com/CatalogueOfLife/backend/issues/1575
+   */
+  private static boolean nameMatchCandidate(NameUsageBase u, Set<String> sectorTargets) {
+    if (u.getStatus() == null || !u.getStatus().isTaxon()) return false;
+    if (u.getName() == null) return false;
+    Rank rank = u.getName().getRank();
+    if (rank == null || !rank.notOtherOrUnranked()) return false;
+    return !sectorTargets.contains(u.getId());
+  }
+
+  /**
+   * The ids every sector of this project attaches its output to.
+   */
+  private Set<String> loadSectorTargets(int projectKey) {
+    Set<String> targets = new HashSet<>();
+    try (SqlSession session = factory.openSession(true)) {
+      for (Sector s : session.getMapper(SectorMapper.class).listByDataset(projectKey, null, null)) {
+        if (s.getTarget() != null && s.getTarget().getId() != null) {
+          targets.add(s.getTarget().getId());
+        }
+      }
+    }
+    return targets;
+  }
+
+  /**
+   * Does the given source usage id still resolve in the source dataset?
+   * Warms {@link #sourceCache} on the way, which {@link #collectAncestors} reads straight after.
+   */
+  private boolean sourceIdExists(String sourceId) {
+    try {
+      return sourceCache.getOrLoad(sourceId, sourceLoader) != null;
+    } catch (NotFoundException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Walks a project usage's ancestors from the in-memory tree, nearest parent first and root last -
+   * the same order {@code UsageMatcherPgStore.buildClassification} produces for candidates. Stops on a
+   * dangling parent or a cycle rather than throwing.
+   */
+  private static List<SimpleNameCached> projectClassification(SimpleName sn, Map<String, SimpleName> projectUsages) {
+    var cl = new ArrayList<SimpleNameCached>();
+    var visited = new HashSet<String>();
+    String cur = sn.getParent();
+    while (cur != null && visited.add(cur)) {
+      SimpleName p = projectUsages.get(cur);
+      if (p == null) break;
+      cl.add(new SimpleNameCached(p));
+      cur = p.getParent();
+    }
+    return cl;
   }
 
   private static @Nullable String findSourceIdByIdentifier(NameUsageBase u, String sourceScope) {
