@@ -15,6 +15,7 @@
       <property name="alias" value="di."/>
     </include>,
     di.md5,
+    di.data_md5,
     di.download_uri,
     di.download,
     di.format,
@@ -75,6 +76,7 @@
       <property name="alias" value=""/>
     </include>,
     md5,
+    data_md5,
     download_uri,
     download,
     format,
@@ -132,6 +134,7 @@
     #{imp.datasetKey},
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsProps"/>,
     #{imp.md5},
+    #{imp.dataMd5},
     #{imp.downloadUri},
     #{imp.download},
     #{imp.format}::DATAFORMAT,
@@ -250,6 +253,12 @@
 
   <select id="getMD5" resultType="string">
     SELECT md5
+    FROM <include refid="FROM"/>
+    WHERE di.dataset_key=#{key} AND di.attempt=#{attempt}
+  </select>
+
+  <select id="getDataMD5" resultType="string">
+    SELECT data_md5
     FROM <include refid="FROM"/>
     WHERE di.dataset_key=#{key} AND di.attempt=#{attempt}
   </select>

@@ -457,8 +457,15 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    */
   Integer lastImportAttempt(@Param("key") int datasetKey);
   
+  /**
+   * Records a successful import on the dataset.
+   *
+   * @param dataAttempt the attempt to record as the last one whose data files really changed.
+   *                    Null keeps whatever is stored, i.e. this import found the very same data.
+   */
   int updateLastImport(@Param("key") int key,
                        @Param("attempt") int attempt,
+                       @Nullable @Param("dataAttempt") Integer dataAttempt,
                        @Nullable @Param("doi") DOI versionDOI);
 
   /**

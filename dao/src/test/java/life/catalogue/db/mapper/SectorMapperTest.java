@@ -218,18 +218,18 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     Dataset project = DatasetMapperTest.create();
     project.setOrigin(DatasetOrigin.PROJECT);
     dm.create(project);
-    dm.updateLastImport(project.getKey(), 623, null);
+    dm.updateLastImport(project.getKey(), 623, null, null);
 
     Dataset release = DatasetMapperTest.create();
     release.setOrigin(DatasetOrigin.RELEASE);
     release.setSourceKey(project.getKey());
     dm.create(release);
-    dm.updateLastImport(release.getKey(), 607, null);
+    dm.updateLastImport(release.getKey(), 607, null, null);
 
     // an external source, which needs no swapping
     Dataset external = DatasetMapperTest.create();
     dm.create(external);
-    dm.updateLastImport(external.getKey(), 5, null);
+    dm.updateLastImport(external.getKey(), 5, null, null);
 
     // and the release we copy the projects sectors into
     Dataset target = DatasetMapperTest.create();
@@ -266,7 +266,7 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     Dataset project = DatasetMapperTest.create();
     project.setOrigin(DatasetOrigin.PROJECT);
     dm.create(project);
-    dm.updateLastImport(project.getKey(), 623, null);
+    dm.updateLastImport(project.getKey(), 623, null, null);
 
     Dataset target = DatasetMapperTest.create();
     target.setOrigin(DatasetOrigin.RELEASE);

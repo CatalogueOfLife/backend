@@ -11,6 +11,27 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-09 track when the source data of an import really changed
+Most exporters rewrite their metadata on every run, so the archive MD5 differs even when nothing was
+curated and every monthly import looks like a new version. See
+[CatalogueOfLife/data#1694](https://github.com/CatalogueOfLife/data/issues/1694).
+
+`dataset_import.data_md5` is the checksum over the data files of the extracted archive alone - metadata
+excluded, unrecognised files never listed. `dataset.data_attempt` points at the last attempt whose data
+files actually differed from the one before it, and is only moved by a successful import that found a
+different checksum.
+
+Nothing is backfilled and nothing can be: the data checksums of past attempts are not recoverable
+without re-extracting every archive. Both columns stay NULL until a dataset is next imported, and the
+first import after the deploy has no previous checksum to compare against, so it necessarily reads as
+changed and sets `data_attempt` to itself. No behaviour depends on the columns being present, so the
+DDL can be applied before or after the deploy.
+
+```sql
+ALTER TABLE dataset_import ADD COLUMN data_md5 TEXT;
+ALTER TABLE dataset ADD COLUMN data_attempt INTEGER;
+```
+
 #### 2026-09-08 new Global Islands Gazetteer
 ```sql
 ALTER TYPE GAZETTEER ADD VALUE 'GI' AFTER 'WDPA';

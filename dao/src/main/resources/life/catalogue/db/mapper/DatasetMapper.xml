@@ -6,6 +6,7 @@
 
   <sql id="SELECT">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
+    d.data_attempt,
     d.deleted,
     d.private,
     d.taxonomic_group_scope,
@@ -837,7 +838,10 @@
 
   <update id="updateLastImport" parameterType="integer">
     UPDATE dataset
-    SET attempt = #{attempt}, version_doi = #{doi, typeHandler=life.catalogue.db.type.DoiTypeHandler}
+    SET attempt = #{attempt},
+        <!-- a null dataAttempt means this import found the very same data files, so the old one stands -->
+        data_attempt = coalesce(#{dataAttempt}, data_attempt),
+        version_doi = #{doi, typeHandler=life.catalogue.db.type.DoiTypeHandler}
     WHERE key = #{key}
   </update>
 

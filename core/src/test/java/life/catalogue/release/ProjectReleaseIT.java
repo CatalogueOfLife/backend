@@ -217,7 +217,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
       rel.setSourceKey(sourceProjectKey);
       rel.applyUser(Users.TESTER);
       dm.create(rel);
-      dm.updateLastImport(rel.getKey(), 7, null);
+      dm.updateLastImport(rel.getKey(), 7, null, null);
       sourceReleaseKey = rel.getKey();
 
       // the provenance the sync wrote: the sectors data came from that release

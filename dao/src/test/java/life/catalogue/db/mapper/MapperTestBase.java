@@ -156,7 +156,7 @@ public abstract class MapperTestBase<M> {
       createJob(session, di);
       dim.create(di);
       // also update dataset with attempt
-      dm.updateLastImport(di.getDatasetKey(), di.getAttempt(), null);
+      dm.updateLastImport(di.getDatasetKey(), di.getAttempt(), null, null);
     }
     return di;
   }

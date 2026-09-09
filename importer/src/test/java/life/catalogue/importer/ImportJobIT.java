@@ -251,6 +251,62 @@ public class ImportJobIT {
     verifyLatest(3);
   }
 
+  /**
+   * An archive whose metadata alone was rewritten - the Species File case - still imports,
+   * but must not count as a change of the data.
+   * https://github.com/CatalogueOfLife/data/issues/1694
+   */
+  @Test
+  public void metadataOnlyChangeIsNoDataChange() {
+    setupAndRun(DataFormat.COLDP, nginxRule.getArchive(DataFormat.COLDP));
+    var first = diDao.getLast(d.getKey());
+    assertEquals(1, (int) first.getAttempt());
+    assertNotNull(first.getDataMd5());
+    assertEquals((Integer) 1, datasetDao.get(d.getKey()).getDataAttempt());
+
+    // the very same data files, only metadata.yaml was rewritten
+    switchAccess(nginxRule.getArchive(NginxRule.COLDP_METADATA_CHANGED));
+    run(false);
+
+    var second = diDao.getLast(d.getKey());
+    assertEquals(2, (int) second.getAttempt());
+    // a different archive ...
+    assertNotEquals(first.getMd5(), second.getMd5());
+    // ... holding the very same data
+    assertEquals(first.getDataMd5(), second.getDataMd5());
+
+    var dataset = datasetDao.get(d.getKey());
+    assertEquals((Integer) 2, dataset.getAttempt());
+    assertEquals((Integer) 1, dataset.getDataAttempt());
+    // the metadata change itself did reach the dataset
+    assertEquals(NginxRule.CHANGED_TITLE, dataset.getTitle());
+  }
+
+  /**
+   * A changed data file moves the data attempt along with the import attempt.
+   */
+  @Test
+  public void changedDataMovesTheDataAttempt() {
+    setupAndRun(DataFormat.COLDP, nginxRule.getArchive(DataFormat.COLDP));
+    var first = diDao.getLast(d.getKey());
+
+    switchAccess(nginxRule.getArchive(DataFormat.DWCA));
+    d.setDataFormat(DataFormat.DWCA);
+    run(false);
+
+    var second = diDao.getLast(d.getKey());
+    assertEquals(2, (int) second.getAttempt());
+    assertNotEquals(first.getDataMd5(), second.getDataMd5());
+    assertEquals((Integer) 2, datasetDao.get(d.getKey()).getDataAttempt());
+  }
+
+  private void switchAccess(URI archive) {
+    d.setDataAccess(archive);
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(DatasetMapper.class).updateSettings(d.getKey(), d.getSettings(), Users.TESTER);
+    }
+  }
+
   private void verifyLatest(int attempt) {
     var dataset = datasetDao.get(d.getKey());
     assertEquals(attempt, (int) dataset.getAttempt());

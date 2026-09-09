@@ -72,6 +72,7 @@ public class PgImport implements Callable<Boolean> {
   private final UsageMatcherFactory matcherFactory;
   private final IdentifierScopeResolver scopeResolver;
   private final int attempt;
+  private final Integer dataAttempt;
   private final DOI versionDOI;
   private final DatasetWithSettings dataset;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
@@ -94,10 +95,15 @@ public class PgImport implements Callable<Boolean> {
   private int sRelCounter;
   private int userKey;
 
-  public PgImport(int attempt, DOI versionDOI, DatasetWithSettings dataset, int userKey, ImportStore store,
+  /**
+   * @param dataAttempt the attempt to record as the last one whose source data files really changed,
+   *                    null if this import found the very same data as the last successful one
+   */
+  public PgImport(int attempt, @Nullable Integer dataAttempt, DOI versionDOI, DatasetWithSettings dataset, int userKey, ImportStore store,
                   SqlSessionFactory sessionFactory, ImporterConfig cfg, DatasetDao datasetDao, NameUsageIndexService indexService,
                   @Nullable UsageMatcherFactory matcherFactory, @Nullable IdentifierScopeResolver scopeResolver) {
     this.attempt = attempt;
+    this.dataAttempt = dataAttempt;
     this.versionDOI = versionDOI;
     this.dataset = dataset;
     this.userKey = userKey;
@@ -200,7 +206,7 @@ public class PgImport implements Callable<Boolean> {
         datasetDao.update(old.getDataset(), userKey);
       }
 
-      dm.updateLastImport(dataset.getKey(), attempt, versionDOI);
+      dm.updateLastImport(dataset.getKey(), attempt, dataAttempt, versionDOI);
       dataset.getDataset().setAttempt(attempt);
       dataset.getDataset().setVersionDoi(versionDOI);
       LOG.info("Updated last successful import attempt {} and version doi {} for dataset {}: {}", attempt, versionDOI, dataset.getKey(), dataset.getTitle());

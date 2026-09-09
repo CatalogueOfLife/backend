@@ -109,6 +109,11 @@ public class ImportJob extends DatasetJob {
   private final @Nullable Counter failedCounter;
   private final @Nullable ImportCallbackNotifier callbackNotifier;
   private boolean unchanged;
+  /**
+   * Whether the data files of this attempt differ from the last successful one.
+   * True whenever we could not prove they are the same - a checksum can only ever prove sameness.
+   */
+  private boolean dataChanged = true;
 
   ImportJob(ImportRequest req, DatasetWithSettings d,
             ImporterConfig iCfg, NormalizerConfig nCfg, DoiConfig dCfg,
@@ -391,6 +396,8 @@ public class ImportJob extends DatasetJob {
         setFormat(DataFormatDetector.detectFormat(sourceDir));
         LOG.info("Detected data format {} for dataset {}", dws.getDataFormat(), dws.getKey());
       }
+      hashDataFiles(sourceDir);
+      dao.update(di); // again, the data checksum only exists once the archive was extracted
       // update latest symlink
       updateLatestSymlink(archivePath);
       return true;
@@ -459,6 +466,39 @@ public class ImportJob extends DatasetJob {
     return false;
   }
 
+  /**
+   * Checksums the data files of the extracted archive, i.e. everything but its metadata, and compares it
+   * against the last successful attempt. Exporters commonly rewrite their metadata on every run, which
+   * makes the archive checksum differ even when nothing was curated, so this is what tells the two apart.
+   * <p>
+   * Failing to list or read those files is never fatal here - we simply cannot claim the data is unchanged.
+   */
+  private void hashDataFiles(Path sourceDir) {
+    try {
+      di.setDataMd5(ChecksumUtils.getMD5Checksum(sourceDir, DataFiles.list(sourceDir, dws.getDataFormat())));
+      final String lastDataMD5 = lastDataMD5();
+      dataChanged = lastDataMD5 == null || !lastDataMD5.equals(di.getDataMd5());
+      LOG.info("Data files of dataset {} {}: {}", datasetKey, dataChanged ? "changed" : "unchanged", di.getDataMd5());
+
+    } catch (Exception e) {
+      LOG.warn("Failed to checksum the data files of dataset {}. Treat them as changed. {}", datasetKey, e.getMessage(), e);
+      di.setDataMd5(null);
+      dataChanged = true;
+    }
+  }
+
+  /**
+   * @return the data checksum of the last successful import, null if there was none or it predates the checksum
+   */
+  private String lastDataMD5() {
+    if (dws.getImportAttempt() == null) {
+      return null;
+    }
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(DatasetImportMapper.class).getDataMD5(datasetKey, dws.getImportAttempt());
+    }
+  }
+
   private void updateLatestSymlink(Path archivePath) throws IOException {
     Path latest = nCfg.lastestArchiveSymlink(datasetKey).toPath();
     try {
@@ -515,7 +555,8 @@ public class ImportJob extends DatasetJob {
           var vDOI = dCfg.datasetVersionDOI(datasetKey, getAttempt());
           // this does write to both pg and elastic!
           // pgimport also updates the datasets import attempt & version DOI at the very end - only if successful!
-          var pgImport = new PgImport(di.getAttempt(), vDOI, dws, req.createdBy, store, factory, iCfg, dDao, indexService, matcherFactory, scopeResolver);
+          // only an attempt whose data really differed advances the datasets data attempt
+          var pgImport = new PgImport(di.getAttempt(), dataChanged ? di.getAttempt() : null, vDOI, dws, req.createdBy, store, factory, iCfg, dDao, indexService, matcherFactory, scopeResolver);
           pgImport.call();
 
           LOG.info("Build import metrics for dataset {}", datasetKey);

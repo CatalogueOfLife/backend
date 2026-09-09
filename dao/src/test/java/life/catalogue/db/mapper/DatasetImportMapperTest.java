@@ -95,6 +95,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setDownloadUri(URI.create("http://rs.gbif.org/datasets/nub.zip"));
     d.setDownload(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+    d.setMd5("425DDEE27FB481888CE293ECFE6544A2");
+    d.setDataMd5("726FA1DFED0825D5B3D6420053697B78");
     d.setVerbatimCount(5748923);
     d.setMaxClassificationDepth(31);
     Map<Term, Integer> vcnt = new HashMap<>();
@@ -141,6 +143,20 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     return cnt;
   }
   
+  /**
+   * The checksum of the data files alone, which an import compares against the last successful attempt
+   * to tell a real data change from a metadata only one.
+   */
+  @Test
+  public void dataMd5() throws Exception {
+    DatasetImport d = createBoth(JobStatus.FINISHED);
+    commit();
+
+    assertEquals("726FA1DFED0825D5B3D6420053697B78", mapper().getDataMD5(d.getDatasetKey(), d.getAttempt()));
+    // the archive checksum is a separate column and keeps its own value
+    assertEquals("425DDEE27FB481888CE293ECFE6544A2", mapper().getMD5(d.getDatasetKey(), d.getAttempt()));
+  }
+
   @Test
   public void roundtrip() throws Exception {
     DatasetImport d1 = createBoth(JobStatus.RUNNING);
@@ -324,7 +340,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   public void lastMatchesListOfOne() throws Exception {
     DatasetImport ok = createBoth(JobStatus.FINISHED);
     final int datasetKey = ok.getDatasetKey();
-    mapper(DatasetMapper.class).updateLastImport(datasetKey, ok.getAttempt(), null);
+    mapper(DatasetMapper.class).updateLastImport(datasetKey, ok.getAttempt(), null, null);
 
     DatasetImport failed = create(JobStatus.FAILED);
     failed.setError("damn error");
@@ -359,7 +375,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     mapper().create(d2);
     assertNull(mapper().current(datasetKey));
 
-    mapper(DatasetMapper.class).updateLastImport(datasetKey, d1.getAttempt(), null);
+    mapper(DatasetMapper.class).updateLastImport(datasetKey, d1.getAttempt(), null, null);
     var curr = mapper().current(datasetKey);
     assertNotNull(curr);
     assertEquals(d1.getAttempt(), curr.getAttempt());

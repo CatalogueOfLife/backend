@@ -912,6 +912,7 @@ CREATE TABLE dataset (
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   deleted TIMESTAMP WITHOUT TIME ZONE,
   last_import_attempt TIMESTAMP WITHOUT TIME ZONE,
+  data_attempt INTEGER,
 
   doc tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('dataset', f_unaccent(coalesce(alias,''))), 'A') ||
@@ -1081,6 +1082,7 @@ CREATE TABLE dataset_import (
   verbatim_by_row_type_count JSONB,
   verbatim_by_term_count HSTORE,
   md5 TEXT,
+  data_md5 TEXT,
   download_uri TEXT,
   PRIMARY KEY (dataset_key, attempt)
 );

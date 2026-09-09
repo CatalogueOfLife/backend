@@ -52,6 +52,7 @@ public class Dataset extends DataEntity<Integer> {
       Set<String> exclude = Set.of(
         "key",
         "attempt",
+        "dataAttempt",
         "sourceKey",
         "privat",
         "type",
@@ -131,6 +132,7 @@ public class Dataset extends DataEntity<Integer> {
   @NotNull
   private DatasetOrigin origin;
   private Integer attempt; // last successful import attempt that created the current data
+  private Integer dataAttempt; // last import attempt whose data files really differed, see DatasetImport.dataMd5
   private LocalDateTime imported; // linked via attempt from import table
   private LocalDateTime lastImportAttempt; // last try to import the dataset, will be set even for unchanged attempts
   // state of the last import that was not unchanged.
@@ -210,6 +212,7 @@ public class Dataset extends DataEntity<Integer> {
     this.type = other.type;
     this.origin = other.origin;
     this.attempt = other.attempt;
+    this.dataAttempt = other.dataAttempt;
     this.lastImportAttempt = other.lastImportAttempt;
     this.lastImportState = other.lastImportState;
     this.imported = other.imported;
@@ -438,6 +441,18 @@ public class Dataset extends DataEntity<Integer> {
 
   public void setAttempt(Integer attempt) {
     this.attempt = attempt;
+  }
+
+  /**
+   * @return the last import attempt that found data files differing from the one before it.
+   *         Null if the dataset was never imported or predates the data checksum.
+   */
+  public Integer getDataAttempt() {
+    return dataAttempt;
+  }
+
+  public void setDataAttempt(Integer dataAttempt) {
+    this.dataAttempt = dataAttempt;
   }
 
   public LocalDateTime getLastImportAttempt() {
@@ -955,6 +970,7 @@ public class Dataset extends DataEntity<Integer> {
            && type == dataset.type
            && origin == dataset.origin
            && Objects.equals(attempt, dataset.attempt)
+           && Objects.equals(dataAttempt, dataset.dataAttempt)
            && Objects.equals(lastImportAttempt, dataset.lastImportAttempt)
            && Objects.equals(lastImportState, dataset.lastImportState)
            && Objects.equals(imported, dataset.imported)
@@ -1002,7 +1018,7 @@ public class Dataset extends DataEntity<Integer> {
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin,
-      attempt, lastImportAttempt, lastImportState, imported, deleted,
+      attempt, dataAttempt, lastImportAttempt, lastImportState, imported, deleted,
       gbifKey, gbifPublisherKey, size, notes,
       doi, versionDoi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
       containerKey, containerTitle, containerCreator, containerVersion, containerPublisher, containerIssued,

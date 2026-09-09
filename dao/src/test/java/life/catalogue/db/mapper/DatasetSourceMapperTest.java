@@ -70,12 +70,12 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     // a source synced at attempt 3 that has since moved on to 5, with nothing archived for 3
     Dataset source = DatasetMapperTest.create();
     dm.create(source);
-    dm.updateLastImport(source.getKey(), 3, null);
+    dm.updateLastImport(source.getKey(), 3, null, null);
 
     Sector s = SectorMapperTest.create(DSID.colID("t1"), DSID.of(source.getKey(), "x"));
     sm.create(s);
     sm.updateLastSync(s, 1); // copies dataset_attempt=3 off the source dataset
-    dm.updateLastImport(source.getKey(), 5, null);
+    dm.updateLastImport(source.getKey(), 5, null, null);
 
     // the sector only counts as a source once it has data in the project
     Taxon t = TestEntityGenerator.newTaxon(Datasets.COL, "src1", null, Rank.SPECIES, "Abies alba");
@@ -175,7 +175,7 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     // persist source citations, sth the DatasetDao normally does
     persistDatasetCitations(s);
     // attempt is updated separately, but needed to copy citations into a release
-    dm.updateLastImport(s.getKey(), s.getAttempt(), null);
+    dm.updateLastImport(s.getKey(), s.getAttempt(), null, null);
 
     // archived source dataset
     mapper(DatasetArchiveMapper.class).create(s.getKey());

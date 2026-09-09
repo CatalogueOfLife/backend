@@ -6,11 +6,15 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.TempFile;
+import org.apache.commons.io.FileUtils;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +30,12 @@ import org.testcontainers.utility.MountableFile;
 public class NginxRule extends ExternalResource {
 
   public static String IMAGE = "nginx:1.29.5-alpine";
+  /**
+   * A copy of coldp.zip whose metadata.yaml alone was rewritten - the Species File case of
+   * https://github.com/CatalogueOfLife/data/issues/1694
+   */
+  public static final String COLDP_METADATA_CHANGED = "coldp-meta.zip";
+  public static final String CHANGED_TITLE = "A metadata only change";
 
   private static final Logger LOG = LoggerFactory.getLogger(NginxRule.class);
 
@@ -46,9 +56,26 @@ public class NginxRule extends ExternalResource {
     Path dir = contentFolder.file.toPath();
     Resources.copy("coldp/test.zip", new File(contentFolder.file, "coldp.zip"));
     Resources.copy("dwca/plazi-dwca.zip", new File(contentFolder.file, "dwca.zip"));
+    buildMetadataOnlyVariant(dir);
     return new NginxContainer(IMAGE)
       .withCopyFileToContainer(MountableFile.forHostPath(dir), "/usr/share/nginx/html")
       .waitingFor(new HttpWaitStrategy());
+  }
+
+  /**
+   * Repacks coldp.zip with a single edit to its metadata.yaml, leaving every data file byte identical.
+   */
+  private void buildMetadataOnlyVariant(Path dir) throws IOException {
+    File unpacked = new File(contentFolder.file, "coldp-src");
+    CompressionUtil.decompressFile(unpacked, new File(contentFolder.file, "coldp.zip"));
+
+    Path metadata = unpacked.toPath().resolve("metadata.yaml");
+    String yaml = Files.readString(metadata, StandardCharsets.UTF_8);
+    Files.writeString(metadata, yaml.replace("title: The full dataset title", "title: " + CHANGED_TITLE), StandardCharsets.UTF_8);
+
+    CompressionUtil.zipDir(unpacked, new File(contentFolder.file, COLDP_METADATA_CHANGED), true);
+    // must not be served itself
+    FileUtils.deleteDirectory(unpacked);
   }
 
   public URL getBaseUrl() {
@@ -60,9 +87,12 @@ public class NginxRule extends ExternalResource {
   }
 
   public URI getArchive(DataFormat format) {
+    return getArchive(format.getName().toLowerCase()+".zip");
+  }
+
+  public URI getArchive(String filename) {
     try {
-      URI uri = getBaseUrl().toURI();
-      return uri.resolve(format.getName().toLowerCase()+".zip");
+      return getBaseUrl().toURI().resolve(filename);
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }

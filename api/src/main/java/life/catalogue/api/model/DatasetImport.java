@@ -41,7 +41,14 @@ public class DatasetImport extends ImportMetrics {
    * Present only if downloaded or uploaded.
    */
   private String md5;
-  
+
+  /**
+   * MD5 hash over the data files of the archive alone, i.e. without its metadata.
+   * Tells a real data change apart from a metadata only one, which most exporters produce on every run.
+   * Present only once a downloaded or uploaded archive was extracted.
+   */
+  private String dataMd5;
+
   private Integer verbatimCount;
   
   private Map<Term, Integer> verbatimByTermCount = Maps.newHashMap();
@@ -97,6 +104,14 @@ public class DatasetImport extends ImportMetrics {
   public void setMd5(String md5) {
     this.md5 = md5;
   }
+
+  public String getDataMd5() {
+    return dataMd5;
+  }
+
+  public void setDataMd5(String dataMd5) {
+    this.dataMd5 = dataMd5;
+  }
   
   public Integer getVerbatimCount() {
     return verbatimCount;
@@ -142,6 +157,7 @@ public class DatasetImport extends ImportMetrics {
         format == that.format &&
            Objects.equals(download, that.download) &&
            Objects.equals(md5, that.md5) &&
+           Objects.equals(dataMd5, that.dataMd5) &&
            Objects.equals(verbatimCount, that.verbatimCount) &&
            Objects.equals(verbatimByTermCount, that.verbatimByTermCount) &&
            Objects.equals(verbatimByRowTypeCount, that.verbatimByRowTypeCount);
@@ -149,7 +165,7 @@ public class DatasetImport extends ImportMetrics {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), maxClassificationDepth, downloadUri, origin, format, download, md5, verbatimCount, verbatimByTermCount, verbatimByRowTypeCount);
+    return Objects.hash(super.hashCode(), maxClassificationDepth, downloadUri, origin, format, download, md5, dataMd5, verbatimCount, verbatimByTermCount, verbatimByRowTypeCount);
   }
 
   @Override

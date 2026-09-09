@@ -80,6 +80,31 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     return d;
   }
 
+  /**
+   * dataAttempt records the import at which the source data last really changed,
+   * so it only moves when the import that just succeeded says the data differed.
+   */
+  @Test
+  public void dataAttempt() throws Exception {
+    Dataset d1 = create();
+    mapper().create(d1);
+    commit();
+    assertNull(mapper().get(d1.getKey()).getDataAttempt());
+
+    mapper().updateLastImport(d1.getKey(), 3, 3, null);
+    assertEquals((Integer) 3, mapper().get(d1.getKey()).getDataAttempt());
+
+    // a later import that found the very same data files keeps the old data attempt
+    mapper().updateLastImport(d1.getKey(), 4, null, null);
+    Dataset d2 = mapper().get(d1.getKey());
+    assertEquals((Integer) 4, d2.getAttempt());
+    assertEquals((Integer) 3, d2.getDataAttempt());
+
+    // and it moves again once the data really changed
+    mapper().updateLastImport(d1.getKey(), 5, 5, null);
+    assertEquals((Integer) 5, mapper().get(d1.getKey()).getDataAttempt());
+  }
+
   @Test
   public void settings() throws Exception {
     Dataset d1 = create();
@@ -631,7 +656,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     assertFalse(ds.hasData());
 
     // an attempt is what marks a dataset as having data
-    mapper().updateLastImport(d.getKey(), 13, null);
+    mapper().updateLastImport(d.getKey(), 13, null, null);
     commit();
     ds = mapper().getSimple(d.getKey());
     assertEquals(new DatasetSimple(mapper().get(d.getKey())), ds);
@@ -1318,9 +1343,9 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   public void updateLastImport() throws Exception {
     var d = createTestEntity();
     mapper().create(d);
-    mapper().updateLastImport(d.getKey(), 2, null);
-    mapper().updateLastImport(d.getKey(), 3, DOI.test("test"));
-    mapper().updateLastImport(d.getKey(), 13, DOI.test("test13"));
+    mapper().updateLastImport(d.getKey(), 2, null, null);
+    mapper().updateLastImport(d.getKey(), 3, 3, DOI.test("test"));
+    mapper().updateLastImport(d.getKey(), 13, 13, DOI.test("test13"));
   }
 
   @Test
