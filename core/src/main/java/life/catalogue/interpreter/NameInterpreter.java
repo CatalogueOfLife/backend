@@ -122,6 +122,18 @@ public class NameInterpreter {
     return opt;
   }
 
+  /**
+   * Whether the parser derived the rank from an explicit rank marker in the name string
+   * (e.g. "subsp.", "var.", "f.", "subg.", "sect.") as opposed to the name structure alone.
+   * A bi- or trinomial without any marker yields SPECIES or the vague INFRASPECIFIC_NAME, and a uninomial
+   * yields UNRANKED or a suffix based suprageneric rank - none of which is a statement by the user.
+   */
+  private static boolean hasExplicitRankMarker(Name n) {
+    Rank r = n.getRank();
+    return r != null && r.notOtherOrUnranked() && !r.isUncomparable()
+           && (r.isInfraspecific() || r.isInfragenericStrictly());
+  }
+
   private Optional<ParsedNameUsage> interpret(final boolean allowToInferRank,
                                               final String id, NomCode code, Rank rank, final String sciname, final String authorship, final String publishedInYear,
                                               final String uninomial, final String genus, final String infraGenus, final String species, String infraspecies, final String cultivar,
@@ -282,6 +294,13 @@ public class NameInterpreter {
         )){
           rank = inferred;
         }
+      } else if (rank.otherOrUnranked() && hasExplicitRankMarker(pnu.getName())) {
+        // A rank marker written into the name string is the user stating the rank, not an inference from the
+        // name structure - so honour it even when inference is off. Without this the marker only atomizes the
+        // name and its rank is dropped, leaving e.g. a match request for "Festuca rubra subsp. pruinosa"
+        // unable to tell the subspecies from the variety of the same epithet.
+        // See https://github.com/CatalogueOfLife/backend/issues/1577
+        rank = pnu.getName().getRank();
       }
       // finally use it
       pnu.getName().setRank(rank);
