@@ -1,0 +1,2 @@
+id	scientificName	scientificNameAuthorship	taxonRank	kingdom	family	genus	taxonomicStatus	nomenclaturalCode
+1	Picea abies	(L.) H.Karst.	species	Plantae	Pinaceae	Pic?ea	accepted	ICN

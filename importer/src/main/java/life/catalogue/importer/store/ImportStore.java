@@ -322,6 +322,15 @@ public class ImportStore implements AutoCloseable {
   public void addIssues(VerbatimEntity ent, Issue... issue) {
     addIssues(ent.getVerbatimKey(), issue);
   }
+
+  /**
+   * Copies all issues of the given container onto the entities verbatim record, leaving the container untouched.
+   */
+  public void addIssues(VerbatimEntity ent, IssueContainer issues) {
+    if (issues != null && !issues.getIssues().isEmpty()) {
+      addIssues(ent.getVerbatimKey(), issues.getIssues().toArray(Issue[]::new));
+    }
+  }
   
   public void addIssues(Integer verbatimKey, Issue... issue) {
     if (verbatimKey != null) {
