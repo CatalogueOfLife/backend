@@ -115,6 +115,16 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return super.get(key);
   }
 
+  @GET
+  @Path("{key}/simple")
+  public DatasetSimple getSimple(@PathParam("key") Integer key) {
+    DatasetSimple obj = dao.getSimple(key);
+    if (obj == null) {
+      throw NotFoundException.notFound(Dataset.class, key);
+    }
+    return obj;
+  }
+  
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
