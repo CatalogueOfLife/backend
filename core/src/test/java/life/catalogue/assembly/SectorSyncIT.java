@@ -14,6 +14,7 @@ import org.gbif.nameparser.api.Rank;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
@@ -203,6 +204,78 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
     syncAll();
     assertTree("cat34-35.txt");
+  }
+
+  /**
+   * A merge sector that syncs no usage entities inserts nothing, so it must not be auto blocked by the
+   * subject of an attach sector reading the same source - it would silently sync an empty tree.
+   * https://github.com/CatalogueOfLife/backend/issues/1576
+   */
+  @Test
+  public void vernacularOnlyMergeNotBlockedByAttach() throws Exception {
+    final int srcKey = dataRule.mapKey(DataFormat.ACEF, 1);
+
+    NameUsageBase src = getByName(srcKey, Rank.ORDER, "Fabales");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.PHYLUM, "Tracheophyta");
+    // attach the entire Fabales subtree, but deliberately without any vernacular names
+    createSector(Sector.Mode.ATTACH, src, trg, s -> s.setEntities(Set.of(EntityType.NAME_USAGE)));
+    syncAll();
+
+    Taxon glycine = getDraftTaxonBySourceID(srcKey, "13287"); // Glycine max
+    assertTrue(listVernaculars(glycine).isEmpty());
+
+    // a vernacular only merge sector on the very same source, covering the very same subtree
+    createSector(Sector.Mode.MERGE, srcKey, null, null, s -> {
+      s.setEntities(Set.of(EntityType.VERNACULAR));
+      s.setRanks(Set.of(Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY));
+    });
+    syncMergesOnly();
+
+    var names = vernacularNames(glycine);
+    assertFalse("the merge sector was blocked and synced an empty tree", names.isEmpty());
+    assertTrue(names.contains("Sojabohne"));
+    assertTrue(names.contains("Glicine"));
+    assertTrue(names.contains("Bhat"));
+  }
+
+  /**
+   * The counterpart of {@link #vernacularOnlyMergeNotBlockedByAttach()}: a merge sector that does sync usages
+   * can duplicate an attach sectors subtree, so it stays auto blocked. The COL project relies on this for the
+   * few sources that carry both attach and merge sectors.
+   */
+  @Test
+  public void usageMergeStaysBlockedByAttach() throws Exception {
+    final int srcKey = dataRule.mapKey(DataFormat.ACEF, 1);
+
+    NameUsageBase src = getByName(srcKey, Rank.ORDER, "Fabales");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.PHYLUM, "Tracheophyta");
+    createSector(Sector.Mode.ATTACH, src, trg, s -> s.setEntities(Set.of(EntityType.NAME_USAGE)));
+    syncAll();
+
+    Taxon glycine = getDraftTaxonBySourceID(srcKey, "13287"); // Glycine max
+    assertTrue(listVernaculars(glycine).isEmpty());
+
+    createSector(Sector.Mode.MERGE, srcKey, null, null, s -> {
+      s.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.VERNACULAR));
+      s.setRanks(Set.of(Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY));
+    });
+    syncMergesOnly();
+
+    assertTrue("the attached subtree must stay shielded from a usage syncing merge sector", listVernaculars(glycine).isEmpty());
+  }
+
+  private static List<VernacularName> listVernaculars(DSID<String> usage) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      return session.getMapper(VernacularNameMapper.class).listByTaxon(usage);
+    }
+  }
+
+  private static Set<String> vernacularNames(DSID<String> usage) {
+    Set<String> names = new HashSet<>();
+    for (VernacularName vn : listVernaculars(usage)) {
+      names.add(vn.getName());
+    }
+    return names;
   }
 
   @Test

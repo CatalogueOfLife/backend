@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.EstimateDao;
@@ -185,11 +186,28 @@ public class SectorSync extends SectorRunnable {
     return exception;
   }
 
+  /**
+   * Auto blocking exists to stop two sectors of the same source inserting the same subtree twice.
+   * A merge sector that syncs none of the usage entities cannot insert a usage at all - it only enriches
+   * usages that already exist, see TreeMergeHandler.acceptThrowsNoCatch - so nothing can be duplicated and
+   * blocking it merely prunes its traversal until it silently syncs an empty tree.
+   * Only MERGE is exempt: TreeCopyHandler creates every usage it visits regardless of the entity set.
+   */
+  private static boolean insertsUsages(Sector s) {
+    if (s.getMode() != Sector.Mode.MERGE) return true;
+    var entities = s.getEntities();
+    // entities are defaulted to all in SectorRunnable.loadSectorAndUpdateDatasetImport, but stay defensive
+    return entities == null || entities.isEmpty()
+      || entities.contains(EntityType.NAME_USAGE)
+      || entities.contains(EntityType.TAXON)
+      || entities.contains(EntityType.SYNONYM);
+  }
+
   @Override
   void init() throws Exception {
     super.init(true);
     loadForeignChildren();
-    if (!disableAutoBlocking) {
+    if (!disableAutoBlocking && insertsUsages(sector)) {
       // also load all sector subjects of the same source to auto block them
       // do not include merge subjects for non merge sectors
       try (SqlSession session = factory.openSession()) {
@@ -210,6 +228,7 @@ public class SectorSync extends SectorRunnable {
               d.setNote("Auto blocked subject of sector " + s.getId());
               decisions.put(s.getSubject().getId(), d);
               counter.incrementAndGet();
+              LOG.info("Auto block {} [{}] of sector {} while syncing sector {}", s.getSubject().getLabel(), s.getSubject().getId(), s.getId(), sectorKey);
             }
           }
         );
@@ -375,9 +394,20 @@ public class SectorSync extends SectorRunnable {
       if (sector.getMode() == Sector.Mode.ATTACH || sector.getMode() == Sector.Mode.MERGE) {
         String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
         TreeTraversalParameter ttp = TreeTraversalParameter.dataset(subjectDatasetKey, rootID, blockedIds);
+        // count what the traversal actually yields. A sync that reaches no usage at all looks exactly like
+        // an empty source in the metrics, so say out loud when blocked subtrees are the reason.
+        final AtomicInteger visited = new AtomicInteger();
         PgUtils.consume(
-          () -> um.processTree(ttp, sector.getMode() == Sector.Mode.MERGE, false), treeHandler
+          () -> um.processTree(ttp, sector.getMode() == Sector.Mode.MERGE, false),
+          u -> {
+            visited.incrementAndGet();
+            treeHandler.accept(u);
+          }
         );
+        if (visited.get() == 0 && !blockedIds.isEmpty()) {
+          LOG.warn("Sector {} traversed no usage of source {} at all. Its entire tree is excluded by {} blocked subtrees: {}",
+            sectorKey, subjectDatasetKey, blockedIds.size(), String.join(", ", blockedIds));
+        }
 
       } else if (sector.getMode() == Sector.Mode.UNION) {
         LOG.info("Traverse taxon tree at {}, ignoring immediate children above rank {}. Blocking {} nodes", sector.getSubject().getId(), sector.getPlaceholderRank(), blockedIds.size());
