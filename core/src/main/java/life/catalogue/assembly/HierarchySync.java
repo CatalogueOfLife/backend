@@ -250,6 +250,9 @@ public class HierarchySync extends SectorRunnable {
 
       setStep(ImportState.DELETING);
       deleteOld();
+      // from here on the project no longer holds what the last successful attempt measured,
+      // so a failure must not leave sector.sync_attempt pointing at it - see pinFailedAttempt()
+      markDataDestroyed();
       checkIfCancelled();
 
       // verbatim_source ids are dataset-wide; start fresh from the current max after old sec records are wiped

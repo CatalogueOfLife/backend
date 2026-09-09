@@ -497,4 +497,28 @@
     </if>
   </select>
 
+  <!--
+    Sectors whose current content came from a sync that did not finish.
+
+    Deliberately keyed on sector.sync_attempt rather than on "is there a newer failed attempt": a sync
+    that failed before it deleted anything leaves the previous content and the previous sync_attempt
+    intact and is no cause for alarm - 226 of the 228 SectorSync failures on the COL project in 2026
+    were of that harmless kind ("already queued or running"). Only a sync that got past deleteOld()
+    moves sync_attempt onto its own failed attempt (see SectorRunnable.pinFailedAttempt), so this
+    predicate flags exactly the sectors that now hold a partial copy.
+
+    The sector_import join is inner on purpose: a sector whose pinned attempt row has been reaped by an
+    old retention run has no evidence either way and is not worth blocking a release over.
+  -->
+  <select id="listUnfinishedSyncs" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT_NO_BROKEN"/>
+    FROM sector s
+      JOIN sector_import si ON si.sector_key=s.id AND si.dataset_key=s.dataset_key AND si.attempt=s.sync_attempt
+      JOIN job j ON j.key=si.job_key
+    WHERE s.dataset_key = #{projectKey}
+      AND s.sync_attempt IS NOT NULL
+      AND j.status != 'FINISHED'::JOBSTATUS
+    ORDER BY s.id
+  </select>
+
 </mapper>

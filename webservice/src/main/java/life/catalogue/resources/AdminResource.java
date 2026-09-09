@@ -231,17 +231,22 @@ public class AdminResource {
     return true;
   }
 
+  /**
+   * @param await seconds to wait for the running jobs to finish before the components go down regardless.
+   *              Stopping never used to wait at all, which is how a deploy pulled the names index out from
+   *              under a running sector sync and left it half synced, see ManagedService.stopAll.
+   */
   @POST
   @Path("/component/stop-all")
-  public boolean stopAll() throws Exception {
-    componedService.stopAll();
+  public boolean stopAll(@QueryParam("await") @DefaultValue("" + ManagedService.DEFAULT_QUIESCE_SECONDS) int await) throws Exception {
+    componedService.stopAll(await);
     return true;
   }
 
   @POST
   @Path("/component/restart-all")
-  public boolean restartAll() throws Exception {
-    componedService.stopAll();
+  public boolean restartAll(@QueryParam("await") @DefaultValue("" + ManagedService.DEFAULT_QUIESCE_SECONDS) int await) throws Exception {
+    componedService.stopAll(await);
     componedService.startAll();
     return true;
   }

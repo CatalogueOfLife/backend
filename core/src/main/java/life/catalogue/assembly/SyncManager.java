@@ -10,6 +10,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.JobDao;
 import life.catalogue.config.SyncManagerConfig;
@@ -61,6 +62,47 @@ public class SyncManager implements SectorListener, DatasetListener {
     this.executor = executor;
     this.jobDao = jobDao;
     this.counter = new SyncCounter(registry.timer("life.catalogue.assembly.timer"));
+    executor.onStaleJobs(this::rescheduleInterrupted);
+  }
+
+  /**
+   * Resubmits the sector syncs that a previous server run left queued or running.
+   *
+   * ImportManager has had the same hook for imports since the executor grew one, but nothing registered
+   * for syncs, so a blue-green deploy simply dropped them: the ITIS re-import of 2026-09-01 queued 43
+   * syncs, the executor's stop() wrote 42 of them CANCELED, and nothing ever picked them up again.
+   *
+   * Only SectorSync is resubmitted. A SectorDelete is not: rerunning a deletion the operator may have
+   * since reconsidered is destructive in a way rerunning a sync is not, and a half deleted sector is
+   * caught by SyncScheduler through listUnfinishedSyncs instead.
+   *
+   * Deliberately uncapped. A cap could only silently drop syncs, which is the very failure this hook
+   * exists to fix; the executor serialises them per project anyway (getSerialBy), so a large batch costs
+   * time rather than load.
+   */
+  private void rescheduleInterrupted(List<JobInfo> staleJobs) {
+    final Set<DSID<Integer>> sectors = new LinkedHashSet<>();
+    for (JobInfo stale : staleJobs) {
+      if (!SectorSync.class.getSimpleName().equals(stale.getJob())) continue;
+      if (stale.getDatasetKey() == null || stale.getSectorKey() == null) continue;
+      sectors.add(DSID.of(stale.getDatasetKey(), stale.getSectorKey()));
+    }
+    if (sectors.isEmpty()) return;
+
+    LOG.info("Resubmitting {} sector syncs interrupted by the last server run", sectors.size());
+    int queued = 0;
+    for (var sectorKey : sectors) {
+      try {
+        var settings = projectSettings(sectorKey.getDatasetKey());
+        if (syncSector(sectorKey, Users.IMPORTER, settings.getBoolDefault(Setting.BLOCK_MERGE_SYNCS, false), false)) {
+          queued++;
+        }
+      } catch (RuntimeException e) {
+        // one sector that cannot be queued must not cost us the rest of the batch, nor the server start
+        LOG.warn("Failed to resubmit the interrupted sync of sector {}", sectorKey, e);
+      }
+    }
+    LOG.info("Resubmitted {} of {} sector syncs interrupted by the last server run", queued, sectors.size());
   }
 
   /**
@@ -68,9 +110,9 @@ public class SyncManager implements SectorListener, DatasetListener {
    *
    * Not a Managed component any more: this class owns no queue and no threads, only validation and
    * submission against the shared job executor, so a lifecycle flag here could only ever duplicate or
-   * contradict the executor's. Sector imports left running by a previous server are covered by the
-   * executor cancelling the stale job records on startup, and the polling scheduler is its own
-   * component, see SyncScheduler.
+   * contradict the executor's. Sector syncs left queued or running by a previous server are cancelled by
+   * the executor on startup and resubmitted here, see rescheduleInterrupted, and the polling scheduler is
+   * its own component, see SyncScheduler.
    */
   public boolean isIdle() {
     return getState().isIdle();

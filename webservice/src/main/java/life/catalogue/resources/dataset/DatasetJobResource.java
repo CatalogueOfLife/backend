@@ -80,8 +80,8 @@ public class DatasetJobResource {
   @POST
   @Path("{key}/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void release(@PathParam("key") int key, @Auth User user) {
-    var job = jobFactory.buildRelease(key, user.getKey());
+  public void release(@PathParam("key") int key, @QueryParam("force") boolean force, @Auth User user) {
+    var job = jobFactory.buildRelease(key, user.getKey(), force);
     exec.submit(job);
   }
 
@@ -89,7 +89,7 @@ public class DatasetJobResource {
   @Path("{key}/xrelease")
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public UUID xRelease(@PathParam("key") int key, @Auth User user) {
+  public UUID xRelease(@PathParam("key") int key, @QueryParam("force") boolean force, @Auth User user) {
     Integer releaseKey;
     try (SqlSession session = factory.openSession(true)) {
       releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
@@ -97,7 +97,7 @@ public class DatasetJobResource {
     if (releaseKey == null) {
       throw new IllegalArgumentException("Project " + key + " was never released in public");
     }
-    var job = jobFactory.buildExtendedRelease(releaseKey, user.getKey());
+    var job = jobFactory.buildExtendedRelease(releaseKey, user.getKey(), force);
     exec.submit(job);
     return job.getKey();
   }

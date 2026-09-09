@@ -117,7 +117,19 @@ public class SectorImportRetentionJob extends DatasetBlockingJob {
       for (var p : sim.listPinnedAttempts(datasetKey)) {
         pinned.add(pinKey(p.getSectorKey(), p.getAttempt()));
       }
-      LOG.info("Retention for project {}: cutoff {}, {} pinned attempts", datasetKey, cutoff, pinned.size());
+      // The newest attempt of every sector is kept on top of the pinned ones. A sync that failed after
+      // deleting the sectors previous content is precisely the attempt nothing pins, and it is the only
+      // durable evidence that the sector is now half synced - its counts are NULL because doMetrics()
+      // never ran. Reaping it leaves a sync history of nothing but successful attempts over a project
+      // that has silently lost usages, which is how Sep 2026 went unnoticed for eight days.
+      int newest = 0;
+      for (var p : sim.listNewestAttempts(datasetKey)) {
+        if (pinned.add(pinKey(p.getSectorKey(), p.getAttempt()))) {
+          newest++;
+        }
+      }
+      LOG.info("Retention for project {}: cutoff {}, {} pinned attempts ({} of them only as the newest of their sector)",
+        datasetKey, cutoff, pinned.size(), newest);
     }
 
     // Keyset pagination over the sector_import primary key (sector_key, attempt): each page is fetched in

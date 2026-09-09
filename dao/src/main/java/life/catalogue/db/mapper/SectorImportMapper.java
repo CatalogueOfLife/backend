@@ -137,6 +137,11 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
    */
   List<AttemptInfo> listPinnedAttempts(@Param("projectKey") int projectKey);
 
+  /**
+   * @return the highest attempt of every sector of the project, pinned or not
+   */
+  List<AttemptInfo> listNewestAttempts(@Param("projectKey") int projectKey);
+
   Integer countBareName(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countDistribution(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countEstimate(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);

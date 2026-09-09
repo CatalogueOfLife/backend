@@ -2,12 +2,16 @@ package life.catalogue.dw.managed;
 
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
+import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.concurrent.JobExecutor;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -30,6 +34,11 @@ import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
  */
 public class ManagedService {
   private static final Logger LOG = LoggerFactory.getLogger(ManagedService.class);
+  /**
+   * Seconds stopAll waits for the running jobs to finish before it takes the components down regardless.
+   * Long enough for the ordinary job, short enough that a deploy is not held hostage by a multi hour sync.
+   */
+  public static final int DEFAULT_QUIESCE_SECONDS = 120;
 
   private final LifecycleEnvironment environment;
   private final Map<Component, ComponentMode> modes;
@@ -117,6 +126,14 @@ public class ManagedService {
    * leave a hand started component alive on the app being replaced.
    */
   public void stopAll() {
+    stopAll(DEFAULT_QUIESCE_SECONDS);
+  }
+
+  /**
+   * @param awaitSeconds how long to wait for the running jobs to finish before stopping regardless
+   */
+  public void stopAll(int awaitSeconds) {
+    quiesceJobs(awaitSeconds);
     var comps = Component.values();
     ArrayUtils.reverse(comps);
     for (var c : comps) {
@@ -127,6 +144,41 @@ public class ManagedService {
           LOG.error("Failed to stop component {}", c, e);
         }
       }
+    }
+  }
+
+  /**
+   * Pauses the job executor and waits for whatever is running to finish, before any component is stopped.
+   *
+   * Nothing here cascades, and stopping a component never stopped running work: JobExecutor.stop() only
+   * grants the running jobs ExecutorUtils.MILLIS_TO_DIE (12s) to notice their interrupt, discards the
+   * boolean saying whether they did, and stopAll then pulls the names index out from under whatever is
+   * still going. A sector sync mid processTree() does not unwind in 12s and dies on the dead index with
+   * its old content already deleted - which cost the COL project 25,712 usages on 2026-09-01.
+   *
+   * Pausing first also means the queued jobs wait rather than start into a shutdown; stop() still
+   * discards them as CANCELED and SyncManager.rescheduleInterrupted resubmits the syncs among them.
+   *
+   * Best effort by design: a deploy cannot block forever on a multi hour job, so after awaitSeconds the
+   * components go down anyway and the damage is caught downstream instead - SectorRunnable pins the
+   * failed attempt, SyncScheduler re-syncs the sector and ProjectCopyFactory refuses to release over it.
+   */
+  private void quiesceJobs(int awaitSeconds) {
+    if (!(components.get(Component.JobExecutor) instanceof JobExecutor exec) || !exec.hasStarted()) {
+      return;
+    }
+    exec.pause();
+    try {
+      if (exec.awaitQuiesced(awaitSeconds, TimeUnit.SECONDS)) {
+        LOG.info("Job executor quiesced, stopping all components");
+      } else {
+        LOG.error("Job executor did not quiesce within {}s, stopping all components anyway. Still running: {}",
+          awaitSeconds, exec.getQueue().stream().filter(BackgroundJob::isRunning)
+                            .map(j -> j.getJobName() + " " + j.getKey()).collect(Collectors.joining(", ")));
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      LOG.warn("Interrupted while waiting for the job executor to quiesce, stopping all components anyway");
     }
   }
 

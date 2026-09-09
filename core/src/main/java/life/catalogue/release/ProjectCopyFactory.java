@@ -1,9 +1,11 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.Sector;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -12,10 +14,13 @@ import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 
 import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import jakarta.validation.Validator;
@@ -88,6 +93,16 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not a release
    */
   public XRelease buildExtendedRelease(final int releaseKey, final int userKey) {
+    return buildExtendedRelease(releaseKey, userKey, false);
+  }
+
+  /**
+   * @param force release even though a sector of the project holds the leftovers of a sync that did not finish
+   */
+  public XRelease buildExtendedRelease(final int releaseKey, final int userKey, final boolean force) {
+    if (!force) {
+      assertNoUnfinishedSyncs(factory, DatasetInfoCache.CACHE.info(releaseKey).keyOrProjectKey());
+    }
     XRelease release = new XRelease(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService,
       dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
       cfg, apiURI, clbURI, client, validator);
@@ -113,10 +128,53 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
+    return buildRelease(projectKey, userKey, false);
+  }
+
+  /**
+   * Release the catalogue into a new dataset
+   * @param projectKey the draft catalogue to be released, e.g. 3 for the CoL draft
+   * @param force release even though a sector holds the leftovers of a sync that did not finish
+   *
+   * @throws IllegalArgumentException if the dataset is not managed, or if a sector is half synced and force is false
+   */
+  public ProjectRelease buildRelease(final int projectKey, final int userKey, final boolean force) {
+    if (!force) {
+      assertNoUnfinishedSyncs(factory, projectKey);
+    }
     ProjectRelease release = new ProjectRelease(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, projectKey, userKey,
       cfg, apiURI, clbURI, client, validator);
     wireRetention(release, userKey);
     return release;
+  }
+
+  /**
+   * Refuses to release a project that holds the leftovers of a sector sync which never finished.
+   *
+   * Nothing rolls a sync back, so a sync that dies after deleteOld() leaves the project with whatever its
+   * aborted copy had committed. In Sep 2026 that cost the COL project 25,712 usages of one ITIS sector and
+   * went unnoticed through three release candidates, because the source metrics keep replaying the last
+   * attempt sector.sync_attempt points at.
+   *
+   * This is deliberately a check on attempts, not on counts: it asks whether the job behind the sectors
+   * current content finished, which is one cheap query, rather than recounting every sector against its
+   * metrics. It is also deliberately overridable - a curator who has looked and decided the sector is fine
+   * must be able to release without first re-running a multi hour sync.
+   *
+   * @throws IllegalArgumentException listing the offending sectors
+   */
+  public static void assertNoUnfinishedSyncs(SqlSessionFactory factory, int projectKey) {
+    final List<Sector> broken;
+    try (SqlSession session = factory.openSession(true)) {
+      broken = session.getMapper(SectorMapper.class).listUnfinishedSyncs(projectKey);
+    }
+    if (!broken.isEmpty()) {
+      throw new IllegalArgumentException("Project " + projectKey + " has " + broken.size()
+        + " sector(s) whose content comes from a sync that did not finish, so their metrics describe a tree the project no longer holds: "
+        + broken.stream().map(s -> s.getId() + " (source " + s.getSubjectDatasetKey() + ", attempt " + s.getSyncAttempt() + ")")
+                .collect(Collectors.joining(", "))
+        + ". Re-sync them, or release with force=true to accept the current content.");
+    }
   }
 
   /**

@@ -233,6 +233,72 @@ public class SectorImportRetentionJobIT {
   }
 
   /**
+   * The newest attempt of a sector survives even when nothing pins it and it predates the release.
+   *
+   * This is the row that records a sync which failed: sector.sync_attempt only moves onto a failed
+   * attempt when the sync had already deleted the sectors previous content, so a sync that died earlier
+   * leaves its attempt newest, unpinned and - once a release is cut - older than the cutoff. Reaping it
+   * erased the only evidence of the 2026-09-01 ITIS failure and left a sync history of nothing but
+   * successful attempts.
+   */
+  @Test
+  public void newestAttemptSurvivesUnpinned() {
+    seedWithRelease();
+    final int sectorB = seedSecondSector();
+
+    var job = new SectorImportRetentionJob(Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(),
+      fmDao, Datasets.COL, false);
+    job.run();
+    assertEquals(JobStatus.FINISHED, job.getStatus());
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var sim = session.getMapper(SectorImportMapper.class);
+      DSID<Integer> key = DSID.of(Datasets.COL, sectorB);
+      assertNotNull("attempt 1 is the project pin", sim.get(key, 1));
+      assertNull("attempt 2 is unpinned, old and not the newest", sim.get(key, 2));
+      assertNotNull("attempt 3 is unpinned and old, but the newest of its sector", sim.get(key, 3));
+      // and the first sector is unaffected by the extra keep, its newest (6) was already kept
+      assertNull("sector A attempt 3 is still reaped", sim.get(DSID.of(Datasets.COL, sectorId), 3));
+    }
+  }
+
+  /**
+   * A second sector whose three attempts all predate the release cutoff, pinned on the oldest. Only the
+   * middle one is genuinely deletable once the newest is kept unconditionally.
+   */
+  private int seedSecondSector() {
+    var factory = SqlSessionFactoryRule.getSqlSessionFactory();
+    final LocalDateTime t0 = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).minusDays(50);
+    try (SqlSession session = factory.openSession(true)) {
+      var sm = session.getMapper(SectorMapper.class);
+      var sim = session.getMapper(SectorImportMapper.class);
+
+      Sector s = new Sector();
+      s.setDatasetKey(Datasets.COL);
+      s.setSubjectDatasetKey(TestDataRule.APPLE.key);
+      s.setMode(Sector.Mode.ATTACH);
+      s.applyUser(Users.TESTER);
+      sm.create(s);
+      final int id = s.getId();
+
+      for (int i = 1; i <= 3; i++) {
+        SectorImport si = new SectorImport();
+        si.setDatasetKey(Datasets.COL);
+        si.setSectorKey(id);
+        si.setAttempt(i);
+        // all three well before the release at t0+17d
+        si.setStarted(t0.plusDays(i));
+        si.setCreatedBy(Users.TESTER);
+        si.setNameCount(0);
+        sim.create(si);
+      }
+      sm.updateLastSync(DSID.of(Datasets.COL, id), 1);
+      assertEquals("fixture: sector B must pin attempt 1", (Integer) 1, sm.get(DSID.of(Datasets.COL, id)).getSyncAttempt());
+      return id;
+    }
+  }
+
+  /**
    * Running twice must delete nothing the second time.
    */
   @Test

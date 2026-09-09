@@ -57,6 +57,11 @@ abstract class SectorRunnable extends BackgroundJob {
   final int user;
   final SectorImport state;
   final boolean updateSectorAttemptOnSuccess;
+  /**
+   * Set once this job has deleted the sectors previous content, so a later failure knows the project no
+   * longer holds what the last successful attempt measured. See {@link #pinFailedAttempt()}.
+   */
+  private volatile boolean dataDestroyed;
 
   /**
    * @throws IllegalArgumentException if the sector key is not of PROJECT origin
@@ -219,11 +224,13 @@ abstract class SectorRunnable extends BackgroundJob {
 
     } catch (InterruptedException e) {
       LOG.warn("Interrupted {}", this, e);
+      pinFailedAttempt();
       throw e;
 
     } catch (Exception e) {
       LOG.error("Failed {}", this, e);
       state.setError(ExceptionUtils.getRootCauseMessage(e));
+      pinFailedAttempt();
       throw e;
 
     } finally {
@@ -235,6 +242,37 @@ abstract class SectorRunnable extends BackgroundJob {
       LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDuration(state.getDuration(), "HH:mm:ss"));
       LoggingUtils.removeSourceMDC();
       LoggingUtils.removeSectorMDC();
+    }
+  }
+
+  /**
+   * Declares that the sectors previous content is gone, so this job can no longer be abandoned without
+   * consequence. Call it as soon as the destructive phase has run.
+   */
+  protected void markDataDestroyed() {
+    dataDestroyed = true;
+  }
+
+  /**
+   * Points sector.sync_attempt at the attempt that just failed, but only for a job that had already
+   * deleted the sectors previous content.
+   *
+   * Nothing rolls a sync back: deleteOld() runs on an autocommit session and TreeBaseHandler commits
+   * every 1000 usages and once more from close(), on the exception path included. A sync that dies
+   * mid copy therefore leaves the project holding a partial subtree. Leaving sync_attempt on the last
+   * successful attempt makes DatasetSourceDao replay counts the project no longer holds - which is how
+   * a half synced ITIS sector reached three COL26.9 release candidates unnoticed in Sep 2026.
+   *
+   * Pinning the failed attempt instead reports nothing rather than something false: its sector_import
+   * row carries no counts, because doMetrics() was never reached.
+   */
+  private void pinFailedAttempt() {
+    if (!dataDestroyed || !updateSectorAttemptOnSuccess) return;
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(SectorMapper.class).updateLastSync(sectorKey, state.getAttempt());
+      LOG.warn("Pinned sector {} to the failed sync attempt {}, its previous content was already deleted", sectorKey, state.getAttempt());
+    } catch (RuntimeException e) {
+      LOG.error("Failed to pin sector {} to the failed sync attempt {}", sectorKey, state.getAttempt(), e);
     }
   }
 

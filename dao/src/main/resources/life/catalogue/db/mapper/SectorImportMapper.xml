@@ -413,4 +413,18 @@
                                 WHERE source_key = #{projectKey}
                                   AND origin IN ('RELEASE','XRELEASE')))
   </select>
+
+  <!--
+    The newest attempt of a sector is kept whether or not anything pins it. A sync that failed after it had
+    already deleted the sectors previous content is exactly the row nobody pins - sector.sync_attempt only
+    ever moved on success before Sep 2026 - and it is also the only durable record that the sector is now
+    half synced, since doMetrics() never ran and the counts are NULL. Pruning it left the sync history
+    showing an unbroken run of successful attempts over a project that had lost 25k usages.
+  -->
+  <select id="listNewestAttempts" resultMap="attemptInfoResultMap">
+    SELECT sector_key, max(attempt) AS attempt
+    FROM sector_import
+    WHERE dataset_key = #{projectKey}
+    GROUP BY sector_key
+  </select>
 </mapper>

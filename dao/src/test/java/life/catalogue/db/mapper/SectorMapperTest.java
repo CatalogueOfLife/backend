@@ -143,6 +143,44 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertEquals(0, mapper().listOutdatedSectors(targetDatasetKey, List.of(1,2,3)).size());
   }
 
+  /**
+   * A sector whose sync_attempt points at a job that did not finish is half synced: nothing rolls a sync
+   * back, so it holds whatever the aborted copy committed while its metrics still describe the whole tree.
+   * SectorRunnable.pinFailedAttempt is what moves sync_attempt there, and only for a sync that had already
+   * deleted the previous content - a sync that failed earlier leaves the last successful pin alone and
+   * must not show up here.
+   */
+  @Test
+  public void listUnfinishedSyncs() {
+    add2Sectors();
+    assertEquals(0, mapper().listUnfinishedSyncs(targetDatasetKey).size());
+
+    // s1 synced cleanly - addImport pins the attempt for a FINISHED job
+    addImport(s1, JobStatus.FINISHED, LocalDateTime.now());
+    commit();
+    assertEquals(0, mapper().listUnfinishedSyncs(targetDatasetKey).size());
+
+    // a later sync of s1 fails before it deleted anything: the pin stays on the successful attempt
+    addImport(s1, JobStatus.FAILED, LocalDateTime.now());
+    commit();
+    assertEquals("a failed attempt nothing points at is not a half synced sector",
+      0, mapper().listUnfinishedSyncs(targetDatasetKey).size());
+
+    // s2's sync dies after deleteOld, so pinFailedAttempt moves its pin onto the failed attempt
+    SectorImport si = SectorImportMapperTest.create(JobStatus.FAILED, s2);
+    si.setFinished(LocalDateTime.now());
+    si.setCreatedBy(Users.TESTER);
+    MapperTestBase.createJob(session(), si);
+    mapper(SectorImportMapper.class).create(si);
+    mapper().updateLastSync(s2, si.getAttempt());
+    commit();
+
+    var unfinished = mapper().listUnfinishedSyncs(targetDatasetKey);
+    assertEquals(1, unfinished.size());
+    assertEquals(s2.getId(), unfinished.get(0).getId());
+    assertEquals(si.getAttempt(), (int) unfinished.get(0).getSyncAttempt());
+  }
+
   @Test
   public void broken() {
     add2Sectors();

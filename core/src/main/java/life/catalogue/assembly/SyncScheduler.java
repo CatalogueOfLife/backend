@@ -11,7 +11,9 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapper;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.SqlSession;
@@ -74,14 +76,30 @@ public class SyncScheduler extends AbstractPollingScheduler {
       var req = new DatasetSearchRequest();
       req.setOrigin(List.of(DatasetOrigin.PROJECT));
       var dm = session.getMapper(DatasetMapper.class);
+      var sm = session.getMapper(SectorMapper.class);
       var projectKeys = dm.searchKeys(req, Users.SUPERUSER);
       for (int projKey : projectKeys) {
         var settings = dm.getSettings(projKey);
         if (settings.isEnabled(Setting.SYNC_SCHEDULER)) {
           List<Integer> sourceKeys = settings.getList(Setting.SYNC_SCHEDULER_SOURCES);
-          var outdated = session.getMapper(SectorMapper.class).listOutdatedSectors(projKey, sourceKeys);
-          LOG.info("Scheduling {} outdated sector from project {}", outdated, projKey);
-          sectors.addAll(outdated);
+          // Deduplicated by sector id: a half synced sector whose source also published a newer import
+          // appears in both lists and must not be queued twice.
+          Map<Integer, Sector> eligable = new LinkedHashMap<>();
+          var outdated = sm.listOutdatedSectors(projKey, sourceKeys);
+          outdated.forEach(s -> eligable.put(s.getId(), s));
+          // Sectors left half synced by a sync that died after it had already deleted their previous
+          // content. They hold a partial tree and nothing else will ever repair them: listOutdatedSectors
+          // only asks whether the *source* published a newer import, so a broken sector of a source that
+          // does not re-import sits there indefinitely - eight days, in the Sep 2026 ITIS case.
+          // Deliberately NOT narrowed by SYNC_SCHEDULER_SOURCES: that allowlist governs routine
+          // re-syncing, while these sectors are damaged and also block every release until they are
+          // repaired (ProjectCopyFactory.assertNoUnfinishedSyncs). Honouring the allowlist here would
+          // leave a project outside it permanently unreleasable with nothing to fix it.
+          var unfinished = sm.listUnfinishedSyncs(projKey);
+          unfinished.forEach(s -> eligable.put(s.getId(), s));
+          LOG.info("Scheduling {} sector syncs from project {}: {} outdated, {} left half synced",
+            eligable.size(), projKey, outdated.size(), unfinished.size());
+          sectors.addAll(eligable.values());
         }
       }
       return sectors;

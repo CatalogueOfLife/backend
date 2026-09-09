@@ -121,4 +121,14 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
    */
   List<Sector> listOutdatedSectors(@Param("projectKey") int projectKey, @Param("subjectDatasetKeys") List<Integer> subjectDatasetKeys);
 
+  /**
+   * Lists the sectors of a project whose current content was produced by a sync that did not finish, i.e.
+   * whose sync_attempt points at a failed or cancelled job. Such a sector holds whatever the aborted copy
+   * had committed - nothing rolls a sync back - so its metrics describe a tree the project no longer has.
+   *
+   * A sync that failed before deleting the previous content does not appear here: it never moved
+   * sync_attempt off the last successful attempt.
+   */
+  List<Sector> listUnfinishedSyncs(@Param("projectKey") int projectKey);
+
 }

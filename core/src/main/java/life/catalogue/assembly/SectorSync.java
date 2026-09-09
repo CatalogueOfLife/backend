@@ -139,6 +139,9 @@ public class SectorSync extends SectorRunnable {
     try {
       if (projectTarget) {
         deleteOld();
+        // from here on the project no longer holds what the last successful attempt measured,
+        // so a failure must not leave sector.sync_attempt pointing at it - see pinFailedAttempt()
+        markDataDestroyed();
         checkIfCancelled();
       }
 
