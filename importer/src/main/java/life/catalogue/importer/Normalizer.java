@@ -75,7 +75,7 @@ public class Normalizer implements Callable<Boolean> {
   private final Validator validator;
   private MappingInfos meta;
   // parsing is expensive so we cache the higher taxa names that we need to parse a lot
-  private final LoadingCache<RanKnName, ExtinctName> parseCache = Caffeine.newBuilder()
+  private final LoadingCache<RanKnName, ParsedHigherName> parseCache = Caffeine.newBuilder()
     .maximumSize(10000)
     .build(this::parse);
 
@@ -755,8 +755,9 @@ public class Normalizer implements Callable<Boolean> {
         // we need to lookup the name by its normed form as we create them via createHigherTaxon
         // to be safe we query for both versions
         var rnn = new RanKnName(hr, cl.getByRankCleaned(hr));
-        final ExtinctName normedName = parseCache.get(rnn);
-        for (String uid : store.usageIDsByName(normedName.pname == null ? cl.getByRankCleaned(hr) : normedName.pname.getScientificName(), null, hr, true)) {
+        final ParsedHigherName normedName = parseCache.get(rnn);
+        final Name normedPName = normedName.name().pname;
+        for (String uid : store.usageIDsByName(normedPName == null ? cl.getByRankCleaned(hr) : normedPName.getScientificName(), null, hr, true)) {
           var u = store.usages().objByID(uid);
           // ignore synonyms
           if (u.isSynonym()) continue;
@@ -830,24 +831,34 @@ public class Normalizer implements Callable<Boolean> {
     store.names().update(name);
   }
 
-  private ExtinctName parse(RanKnName rnn) throws InterruptedException {
+  /**
+   * A parsed higher taxon name from a denormalised classification together with the issues its parse raised.
+   * Instances are cached and shared by every taxon using the same rank and name,
+   * so the issues must be copied onto a verbatim record, never moved.
+   */
+  private record ParsedHigherName(ExtinctName name, IssueContainer issues) {}
+
+  private ParsedHigherName parse(RanKnName rnn) throws InterruptedException {
     var ename = new ExtinctName(rnn.name);
     ename.pname = new Name();
     ename.pname.setRank(rnn.rank);
     ename.pname.setScientificName(rnn.name);
     ename.pname.setCode(dataset.getCode());
-    // parses the instance and determines the type - can e.g. be placeholders
-    NameParser.PARSER.parse(ename.pname, IssueContainer.VOID);
+    // parses the instance and determines the type - can e.g. be placeholders.
+    // the issues are kept so createHigherTaxon can put them on the verbatim record of the usage it creates
+    var issues = IssueContainer.simple();
+    NameParser.PARSER.parse(ename.pname, issues);
     // reset rank as parser might have infered ranks from the name!
     ename.pname.setRank(rnn.rank);
-    return ename;
+    return new ParsedHigherName(ename, issues);
   }
 
   /**
    * Creates a new denormalised higher taxon usage.
    * The given uninomial is allowed to contain a dagger to indicate extinct taxa.
    */
-  private UsageData createHigherTaxon(ExtinctName eName, Rank rank, String parentID) {
+  private UsageData createHigherTaxon(ParsedHigherName pName, Rank rank, String parentID) {
+    final ExtinctName eName = pName.name();
     UsageData ud = UsageData.buildTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
     Taxon t = ud.asTaxon();
     eName.pname.setId(null); // we don't want to reuse the name id
@@ -859,7 +870,10 @@ public class Normalizer implements Callable<Boolean> {
       t.setEnvironments(Set.of(dataset.getEnvironment()));
     }
     var nu = new NameUsageData(new NameData(eName.pname), ud);
-    store.createNameAndUsage(nu);
+    if (store.createNameAndUsage(nu)) {
+      // only now does the name have a verbatim record to hold the issues we found while parsing it
+      store.addIssues(nu.nd, pName.issues());
+    }
     return ud;
   }
 

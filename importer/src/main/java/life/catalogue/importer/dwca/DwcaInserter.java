@@ -418,7 +418,10 @@ public class DwcaInserter extends DataCsvInserter {
     if (v.hasTerm(nameTerm)) {
       NomCode code = settings.getEnum(Setting.NOMENCLATURAL_CODE);
 
-        final Name name = NameParser.PARSER.parse(v.get(nameTerm), Rank.UNRANKED, code, IssueContainer.VOID).get().getName();
+        // keep the parser issues aside - they belong to the implicit name we might create below,
+        // not to the source record v, which is also reached when the name resolves to an existing usage
+        final IssueContainer nameIssues = IssueContainer.simple();
+        final Name name = NameParser.PARSER.parse(v.get(nameTerm), Rank.UNRANKED, code, nameIssues).get().getName();
         // force unranked name for non binomials or unparsed names, avoiding wrong parser decisions
         if (!name.isParsed() || !name.isBinomial()) {
           name.setRank(Rank.UNRANKED);
@@ -446,7 +449,10 @@ public class DwcaInserter extends DataCsvInserter {
           if (matches.isEmpty()) {
             // create name
             LOG.debug("{} {} not existing, materialize it", nameTerm.simpleName(), name);
-            return store.createUsageFromSource(createdOrigin, name, source);
+            var nu = store.createUsageFromSource(createdOrigin, name, source);
+            // createUsageFromSource has given the new name a verbatim record to hold the issues
+            store.addIssues(nu.nd, nameIssues);
+            return nu;
 
           } else{
             if (matches.size() > 1) {

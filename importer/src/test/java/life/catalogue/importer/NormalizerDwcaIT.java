@@ -38,6 +38,53 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   }
 
   /**
+   * Implicit higher taxa built from the denormalised classification are parsed like any other name,
+   * but the parser issues used to be thrown away. The genus column here reads "Pic?ea", which the
+   * parser silently repairs to "Picea" while only reporting it as a QUESTION_MARKS_REMOVED warning,
+   * so the created genus must carry that issue on its own verbatim record.
+   */
+  @Test
+  public void denormedClassificationNameIssues() throws Exception {
+    normalize(61);
+
+    UsageData g = byName(Rank.GENUS, "Picea");
+    assertEquals(Origin.DENORMED_CLASSIFICATION, g.usage.getOrigin());
+    Name n = g.usage.getName();
+    assertEquals("Picea", n.getScientificName());
+
+    VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
+    assertNotNull("implicit names must have a verbatim record to hold issues", v);
+    assertTrue(v.contains(Issue.QUESTION_MARKS_REMOVED));
+
+    // the species itself is untouched and keeps its own real verbatim record
+    UsageData sp = byName(Rank.SPECIES, "Picea abies");
+    assertEquals(Origin.SOURCE, sp.usage.getOrigin());
+    assertFalse(store.getVerbatim(sp.usage.getName().getVerbatimKey()).contains(Issue.QUESTION_MARKS_REMOVED));
+  }
+
+  /**
+   * The same for an acceptedNameUsage given as a bare name string, which DwcaInserter has to materialize
+   * as an implicit usage. "Pic?ea abies" is repaired to "Picea abies" by the parser with nothing but a
+   * QUESTION_MARKS_REMOVED warning to show for it.
+   */
+  @Test
+  public void verbatimAcceptedNameIssues() throws Exception {
+    normalize(62);
+
+    UsageData acc = byName(Rank.SPECIES, "Picea abies");
+    assertEquals(Origin.VERBATIM_ACCEPTED, acc.usage.getOrigin());
+    Name n = acc.usage.getName();
+
+    VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
+    assertNotNull("implicit names must have a verbatim record to hold issues", v);
+    assertTrue(v.contains(Issue.QUESTION_MARKS_REMOVED));
+
+    // the synonym record itself must not be blamed for the accepted names spelling
+    UsageData syn = byName(Rank.SPECIES, "Pinus abies");
+    assertFalse(store.getVerbatim(syn.usage.getVerbatimKey()).contains(Issue.QUESTION_MARKS_REMOVED));
+  }
+
+  /**
    * IRMNG dwca test data with same references with same identifier for multiple taxa.
    * References should get normalised, but all duplicates be present as foreign keys on the taxa.
    */

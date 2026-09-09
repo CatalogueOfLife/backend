@@ -1,0 +1,2 @@
+id	scientificName	acceptedNameUsage	taxonRank	taxonomicStatus	nomenclaturalCode
+1	Pinus abies L.	Pic?ea abies (L.) H.Karst.	species	synonym	ICN
