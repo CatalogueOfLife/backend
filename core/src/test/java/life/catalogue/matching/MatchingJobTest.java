@@ -14,6 +14,8 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NameIndexImpl;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -179,6 +181,44 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
       assertNotNull("ZIP should contain at least one entry", entry);
       assertTrue("Entry name should end with .tsv or .csv",
         entry.getName().endsWith(".tsv") || entry.getName().endsWith(".csv"));
+    }
+  }
+
+  @Test
+  public void testMatchingSourceDatasetKeepsOriginalColumns() throws Exception {
+    MatchingRequest req = new MatchingRequest();
+    req.setDatasetKey(dataRule.testData.key);
+    req.setSourceDatasetKey(dataRule.testData.key);
+    var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.matching);
+    job.run();
+    assertNull("Job should not error", job.getError());
+
+    try (ZipFile zipFile = new ZipFile(job.getResult().getFile())) {
+      ZipEntry entry = zipFile.entries().nextElement();
+      try (BufferedReader br = new BufferedReader(new InputStreamReader(zipFile.getInputStream(entry), StandardCharsets.UTF_8))) {
+        String[] header = br.readLine().split("\t", -1);
+        assertEquals("original_ID", header[0]);
+        assertEquals("original_scientificName", header[1]);
+        assertEquals("original_authorship", header[2]);
+        assertEquals("original_phrase", header[3]);
+        assertEquals("original_rank", header[4]);
+        assertEquals("original_code", header[5]);
+        assertEquals("original_group", header[6]);
+        assertEquals("original_status", header[7]);
+        assertEquals("matchType", header[8]);
+
+        int rows = 0;
+        String line;
+        while ((line = br.readLine()) != null) {
+          String[] cols = line.split("\t", -1);
+          assertEquals(header.length, cols.length);
+          assertTrue("original_ID must be filled, got: " + line, StringUtils.isNotBlank(cols[0]));
+          assertTrue("original_scientificName must be filled, got: " + line, StringUtils.isNotBlank(cols[1]));
+          assertTrue("original_rank must be filled, got: " + line, StringUtils.isNotBlank(cols[4]));
+          rows++;
+        }
+        assertTrue("Expected some data rows", rows > 0);
+      }
     }
   }
 }

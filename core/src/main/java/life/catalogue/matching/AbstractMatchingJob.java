@@ -65,6 +65,28 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   }
 
   /**
+   * The "original" input columns emitted when the names to match come from a ChecklistBank source dataset
+   * instead of a file upload. A file upload echoes its own raw header back; a source dataset has none, so
+   * these mirror the {@link SimpleName} fields the matcher is given.
+   */
+  private static final String[] SOURCE_HEADER = {
+    "ID", "scientificName", "authorship", "phrase", "rank", "code", "group", "status"
+  };
+
+  private static String[] sourceRow(SimpleName sn) {
+    return new String[]{
+      sn.getId(),
+      sn.getName(),
+      sn.getAuthorship(),
+      sn.getPhrase(),
+      str(sn.getRank()),
+      str(sn.getCode()),
+      str(sn.getGroup()),
+      str(sn.getStatus())
+    };
+  }
+
+  /**
    * Supplies the matcher to run against. Resolved on the job thread rather than at construction time, because
    * building a persistent store for a large dataset takes minutes and jobs are constructed on an HTTP request
    * thread.
@@ -180,15 +202,17 @@ public abstract class AbstractMatchingJob extends DatasetJob {
           final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
           ttp.setDatasetKey(req.getSourceDatasetKey());
           final AtomicLong count = new AtomicLong(0);
-          writeMatches(writer, null, TreeStreams.dataset(session, ttp)
+          writeMatches(writer, SOURCE_HEADER, TreeStreams.dataset(session, ttp)
                                           .map(sn -> {
+                                            // capture the source usage as the "original" input before we alter its classification
+                                            String[] row = sourceRow(sn);
                                             if (rootClassification != null) {
                                               List<SimpleName> cl = new ArrayList<>();
                                               cl.addAll(sn.getClassification());
                                               cl.addAll(rootClassification);
                                               sn.setClassification(cl);
                                             }
-                                            return new IssueName(sn, new IssueContainer.Simple(), null, count.incrementAndGet());
+                                            return new IssueName(sn, new IssueContainer.Simple(), row, count.incrementAndGet());
                                           }), matcher
           );
         }
@@ -253,7 +277,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
       names.forEach(n -> {
         var m = match(n, matcher);
         var row = new String[size];
-        // first add all original input columns if provided (only works with file uploads)
+        // first add all original input columns if provided
         if (srcHeader != null && n.row != null) {
           int idx = 0;
           for (String val : n.row) {
