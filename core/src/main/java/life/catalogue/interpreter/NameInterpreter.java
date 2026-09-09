@@ -206,8 +206,12 @@ public class NameInterpreter {
           final var atomPNU = pnuFromAtom.get();
           final Name atomN = atomPNU.getName();
 
-          // check name type if its parsable - otherwise we should not use name atoms
-          if (!atomN.getType().isParsable()) {
+          // the atoms only ever claim the default type (SCIENTIFIC, or OTHER for viruses).
+          // Whenever the parser classifies the reconstructed label as something else - unparsable,
+          // but also an INFORMAL name like "Scoloplos sp. 1" whose epithet is an indetermination
+          // marker - the parser wins and the atoms must not be used.
+          // See https://github.com/CatalogueOfLife/data/issues/1568
+          if (!atomN.getType().isParsable() || atomN.getType() != atom.getType()) {
             LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.getLabel(), atomN.getType());
             pnu.setName(atomN);
           } else if (atomN.isParsed()) {

@@ -151,6 +151,22 @@ issue and is not `isIndetermined()`, so it needs its own check (`NameValidator.i
 which also raises `Issue.AUTHORSHIP_INDET_MARKER` at import time. See
 [backend#1510](https://github.com/CatalogueOfLife/backend/issues/1510).
 
+An indetermination marker reaches a merge in three shapes, and each is stopped somewhere else:
+
+| Shape | Example source fields | Stopped by |
+|-------|----------------------|------------|
+| whole string | `scientificName = Panthera sp.` | the name parser types it `INFORMAL` + `INDETERMINED` |
+| split authorship | `scientificName = Berkeleyia`, `authorship = sp.` | `NameValidator.isIndetAuthorship` in `ignoreUsage` |
+| atomised epithet | `genericName = Scoloplos`, `specificEpithet = sp. 1` | `NameInterpreter` letting the parsed type beat the atoms |
+
+The third shape is the one Plazi ColDP archives use most. `PREFER_NAME_ATOMS` has the interpreter
+build the name from the atoms and stamp it `SCIENTIFIC`; the reconstructed label is re-parsed only as
+a sanity check. That check used to adopt the parsed name only when its type was *unparsable*, so an
+`INFORMAL` verdict - which is parsable - was discarded and the name stayed `SCIENTIFIC` with
+`specificEpithet = "sp. 1"`. It now adopts the parsed name whenever the parser disagrees with the
+type the atoms assumed, which lets both the `SECTOR_NAME_TYPES` filter and the `INDETERMINED` filter
+above do their job. See [data#1568](https://github.com/CatalogueOfLife/data/issues/1568).
+
 ## Known Issues / Technical Debt
 
 1. **Dead code**: `synonymizeMisspelledBinomials()` (line ~700) is never called and is nearly identical to `flagDuplicatesAsProvisional()`. Should be removed.

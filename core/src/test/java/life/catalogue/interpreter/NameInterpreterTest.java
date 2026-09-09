@@ -8,6 +8,7 @@ import life.catalogue.coldp.ColdpTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.HashMap;
@@ -144,6 +145,42 @@ public class NameInterpreterTest {
     assertNull(n.getGenus());
     assertNull(n.getSpecificEpithet());
     assertNull(n.getInfraspecificEpithet());
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/1568
+   * Plazi ColDP archives atomise indetermined names, e.g. genericName=Scoloplos with
+   * specificEpithet="sp. 1". Trusting those atoms used to stamp the name SCIENTIFIC, which let it
+   * through the XRelease sector name type filter. The reconstructed label parses as INFORMAL and
+   * that type has to win over the atoms.
+   */
+  @Test
+  public void indetAtomsAreInformal() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var pnu = interpret("species", "Scoloplos sp. 1", "de Blainville, 1828", null,
+      null, "Scoloplos", null, "sp. 1", null, v);
+    var n = pnu.getName();
+    assertEquals(NameType.INFORMAL, n.getType());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertEquals("Scoloplos", n.getGenus());
+    assertNull(n.getSpecificEpithet());
+    assertTrue(v.contains(Issue.INDETERMINED));
+    // this is what TreeBaseHandler.ignoreUsage keys the INDETERMINED merge filter off
+    assertTrue(n.isIndetermined());
+  }
+
+  /**
+   * The same trust must survive for genuinely determined names - atoms still win there.
+   */
+  @Test
+  public void determinedAtomsStayScientific() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var pnu = interpret("species", "Scoloplos armiger", "(O. F. Müller, 1776)", null,
+      null, "Scoloplos", null, "armiger", null, v);
+    var n = pnu.getName();
+    assertEquals(NameType.SCIENTIFIC, n.getType());
+    assertEquals("Scoloplos", n.getGenus());
+    assertEquals("armiger", n.getSpecificEpithet());
   }
 
   @Test
