@@ -874,7 +874,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
         if (!Objects.equals(src.getNamesIndexId(), n.getNamesIndexId())) {
           // update name match in db
           n.setNamesIndexId(src.getNamesIndexId());
-          nmm.update(n, src.getNamesIndexId());
+          // the name might not have had a match record before
+          nmm.persist(n, n.getSectorKey(), src.getNamesIndexId());
           if (existingUsage != null) {
             existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
             // the match type is no longer persisted on Name/name_match; MatchType.NONE is the neutral

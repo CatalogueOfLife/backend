@@ -145,6 +145,41 @@ public class SectorSyncIT extends SectorSyncTestBase {
   }
 
   /**
+   * A synced name without a names index match must not leave an empty match record in the project.
+   */
+  @Test
+  public void unmatchedName() throws Exception {
+    final int srcKey = dataRule.mapKey(DataFormat.COLDP, 14);
+    final DSID<String> id = DSID.of(srcKey, "unmatchable");
+    // add a species with a name the names index never accepts, as its label has no letters or digits.
+    // Placeholder and informal names would not do, the test sectors ignore those name types
+    var n = life.catalogue.api.TestEntityGenerator.newMinimalName(srcKey, id.getId(), "Culex unmatchable", Rank.SPECIES);
+    n.setType(org.gbif.nameparser.api.NameType.OTHER);
+    n.setGenus(null);
+    n.setSpecificEpithet(null);
+    n.setScientificName("???");
+    var t = life.catalogue.api.TestEntityGenerator.newTaxon(n, id.getId(), getByName(srcKey, Rank.GENUS, "Culex").getId());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(life.catalogue.db.mapper.NameMapper.class).create(n);
+      session.getMapper(life.catalogue.db.mapper.TaxonMapper.class).create(t);
+    }
+    try {
+      NameUsageBase src = getByName(srcKey, Rank.ORDER, "Diptera");
+      NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+      createSector(Sector.Mode.ATTACH, src, trg);
+      // every sync verifies there are no empty name matches in the project
+      syncAll();
+
+    } finally {
+      // the source dataset persists for all tests
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+        session.getMapper(life.catalogue.db.mapper.TaxonMapper.class).delete(id);
+        session.getMapper(life.catalogue.db.mapper.NameMapper.class).delete(id);
+      }
+    }
+  }
+
+  /**
    * https://github.com/gbif/checklistbank/issues/187
    */
   @Test

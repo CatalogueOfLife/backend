@@ -50,6 +50,29 @@ public interface MatchMapper {
   );
 
   /**
+   * Creates a new match or updates an existing one.
+   * Unlike update this also works in batch sessions where the number of updated records is unknown.
+   * @param key the name key
+   */
+  void upsert(@Param("key") DSID<String> key,
+              @Param("sectorKey") Integer sectorKey,
+              @Param("nidx") int nidx
+  );
+
+  /**
+   * Stores the match of a name, replacing any existing one.
+   * We never store empty matches: a name without a match has no match record, so a null nidx removes it.
+   * @param key the name key
+   */
+  default void persist(DSID<String> key, Integer sectorKey, @Nullable Integer nidx) {
+    if (nidx == null) {
+      delete(key);
+    } else {
+      upsert(key, sectorKey, nidx);
+    }
+  }
+
+  /**
    * @param key the name key
    * @return the number of records deleted
    */

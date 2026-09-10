@@ -11,6 +11,24 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-10 remove empty name matches
+A `name_match` or `name_usage_archive_match` row with a NULL `index_id` carries no information since the stored
+match type was dropped (2026-07-09 canonical-only names index). Yet imports, sector syncs, `NameDao` and the nidx
+rebuild wrote one for every name without a match, and a rematch that lost a match updated its row to NULL.
+Such a row hides its name from every missing-only rematch (`RematchMissing` in the XRelease preparation,
+`POST /admin/rematch/missing`), which only looks for names without any match row. So the names that got no match
+in the 2026-08-20 rebuild were never retried - that is why ~21.7k ICTV virus names entered COL26.8 without a nidx
+and kept temporary ids. In Sept 2026 prod held millions of them, 3.1M in each 25.x XR alone.
+
+The code no longer stores empty matches: a name without a match has no match row. Run this right after deploying
+that code, before the next release copies matches, then `POST /admin/rematch/missing` to retry all those names.
+For the large releases delete per dataset (`AND dataset_key = ...`) to keep transactions short.
+
+```sql
+DELETE FROM name_match WHERE index_id IS NULL;
+DELETE FROM name_usage_archive_match WHERE index_id IS NULL;
+```
+
 #### 2026-09-08 new Global Islands Gazetteer
 ```sql
 ALTER TYPE GAZETTEER ADD VALUE 'GI' AFTER 'WDPA';

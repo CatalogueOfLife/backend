@@ -7,7 +7,6 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncMergeIT;
 import life.catalogue.assembly.SectorSyncTestBase;
 import life.catalogue.assembly.SyncFactory;
-import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
@@ -226,11 +225,13 @@ public class XReleaseIT extends SectorSyncTestBase {
     AtomicInteger count = new AtomicInteger();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
-      PgUtils.consume(() -> num.processIds(xreleaseKey, true, ShortUUID.MIN_LEN), u -> {
-        var nu = num.get(DSID.of(xreleaseKey, u));
-        System.out.println(nu + " -> " + nu.getName().getType());
-        if (NameIndexImpl.INDEX_NAME_TYPES.contains(nu.getName().getType())) {
-          count.incrementAndGet();
+      PgUtils.consume(() -> num.processIds(xreleaseKey, true, null), u -> {
+        if (!IdProvider.isStableId(u)) {
+          var nu = num.get(DSID.of(xreleaseKey, u));
+          System.out.println(nu + " -> " + nu.getName().getType());
+          if (NameIndexImpl.INDEX_NAME_TYPES.contains(nu.getName().getType())) {
+            count.incrementAndGet();
+          }
         }
       });
     }

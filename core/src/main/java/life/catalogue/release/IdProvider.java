@@ -8,7 +8,6 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.collection.Int2IntBiMap;
 import life.catalogue.common.id.IdConverter;
-import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.TabWriter;
 import life.catalogue.common.io.TempFile;
@@ -484,13 +483,13 @@ public class IdProvider {
   }
 
   protected void mapAllIds(){
-    mapIds(-1);
+    mapIds(false);
   }
   protected void mapTempIds(){
-    mapIds(ShortUUID.MIN_LEN);
+    mapIds(true);
   }
 
-  private void mapIds(int minIdLength){
+  private void mapIds(boolean tempOnly){
     int count;
     try (SqlSession session = factory.openSession(true)) {
       count = session.getMapper(NameUsageMapper.class).count(mappedDatasetKey);
@@ -505,7 +504,7 @@ public class IdProvider {
             LOG.warn("Mismatch between counted, loaded and stored usage counts: {}/{}/{}", count, cntLoaded, cntStore);
           }
           store.analyze(groupAnalyzer);
-          mapIds(store, minIdLength);
+          mapIds(store, tempOnly);
         }
       }
     } catch (IOException e) {
@@ -513,9 +512,29 @@ public class IdProvider {
     }
   }
 
+  /**
+   * @return true if the id is a stable release identifier as issued by #encode(int).
+   *   Anything else, e.g. a ShortUUID or UUID, is a temporary id.
+   */
+  public static boolean isStableId(String id) {
+    // IdConverter.LATIN29 encodes any int with at most 7 characters (29^7 > 2^31)
+    if (id == null || id.length() > 7) {
+      return false;
+    }
+    try {
+      IdConverter.LATIN29.decode(id);
+      return true;
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+  }
+
+  /**
+   * @param tempOnly if true only usages with a temporary id are mapped, keeping existing stable ids as they are
+   */
   @VisibleForTesting
-  protected void mapIds(UsageMatcherStore uStore, int minIdLength){
-    LOG.info("Map {} name usage IDs from dataset {} with a minimum length of {}", uStore.size(), mappedDatasetKey, minIdLength);
+  protected void mapIds(UsageMatcherStore uStore, boolean tempOnly){
+    LOG.info("Map {} name usage IDs from dataset {}{}", uStore.size(), mappedDatasetKey, tempOnly ? ", temporary ids only" : "");
     final int lastRelIds = ids.currentIdCount();
     AtomicInteger counter = new AtomicInteger();
     try (SqlSession writeSession = factory.openSession(false);
@@ -526,9 +545,9 @@ public class IdProvider {
 
       for (var canonId : uStore.allCanonicalIds()) {
         var names = uStore.simpleNamesByCanonicalId(canonId);
-        if (minIdLength > 0 && !names.isEmpty()) {
+        if (tempOnly && !names.isEmpty()) {
           names = names.stream()
-            .filter(n -> n.getId().length() >= minIdLength)
+            .filter(n -> !isStableId(n.getId()))
             .collect(Collectors.toList());
         }
         issueIDs(canonId, names, acceptedNames(names, uStore), nomatchWriter, true);
@@ -543,10 +562,43 @@ public class IdProvider {
     } catch (IOException e) {
       LOG.error("Failed to write ID reports for project " + projectKey, e);
     }
+    reportTemporaryIds(tempOnly);
     // ids remaining from the current attempt will be deleted
     deleted = ids.currentIDs();
     reused = lastRelIds - deleted.size();
     LOG.info("Done mapping name usage IDs. {} ids from the last release will be deleted, {} have been reused.", deleted.size(), reused);
+  }
+
+  /**
+   * Writes all usages which did not get an id mapping to temporary.tsv, as they keep their original id in the release.
+   * These are usages without a names index match, which cannot be given a stable id.
+   *
+   * @param tempOnly if true usages with a stable id are not reported as they were never meant to be mapped
+   */
+  private void reportTemporaryIds(boolean tempOnly) {
+    final File file = new File(reportDir, "temporary.tsv");
+    final List<String> examples = new ArrayList<>();
+    int counter = 0;
+    try (SqlSession session = factory.openSession(true);
+         TabWriter writer = TabWriter.fromFile(file)
+    ) {
+      for (SimpleName sn : session.getMapper(IdMapMapper.class).processUnmappedUsages(mappedDatasetKey)) {
+        if (tempOnly && isStableId(sn.getId())) {
+          continue;
+        }
+        writer.write(new String[]{
+          sn.getId(), Objects.toString(sn.getStatus(), null), Objects.toString(sn.getRank(), null), sn.getName(), sn.getAuthorship()
+        });
+        if (counter++ < 3) {
+          examples.add(sn.getId() + " " + sn.getLabel());
+        }
+      }
+    } catch (IOException e) {
+      LOG.error("Failed to write temporary id report for project " + projectKey, e);
+    }
+    if (counter > 0) {
+      LOG.warn("{} usages keep their original id as they have no names index match, e.g. {}. See {}", counter, examples, file);
+    }
   }
 
   /**

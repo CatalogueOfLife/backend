@@ -106,6 +106,14 @@ public class NamesIndexCmdIT extends CmdTestBase {
       // Kolosvary, 1947" canonicalise to themselves instead of both collapsing onto "Balanus sp.".
       // Expect this to shift again if the parser's canonicalization or type classification changes.
       assertEquals(134, cnt);
+
+      // names without a match, e.g. the placeholders, have no match record at all
+      try (java.sql.Statement st = session.getConnection().createStatement();
+           java.sql.ResultSet rs = st.executeQuery("SELECT count(*) FROM name_match WHERE index_id IS NULL")
+      ) {
+        rs.next();
+        assertEquals(0, rs.getInt(1));
+      }
     }
   }
 }

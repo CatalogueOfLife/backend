@@ -83,12 +83,23 @@ public class IdProviderTest {
 
     @Override
     protected void mapAllIds() {
-      // map ids from test, not from DB
+      mapIds(testStore(), false);
+    }
+
+    @Override
+    protected void mapTempIds() {
+      mapIds(testStore(), true);
+    }
+
+    /**
+     * map ids from test, not from DB
+     */
+    private UsageMatcherStore testStore() {
       UsageMatcherStore store = new UsageMatcherMemStore(projectKey);
       for (var sn : testNames) {
         store.add(sn);
       }
-      mapIds(store, -1);
+      return store;
     }
 
     private int datasetKey(int attempt) {
@@ -280,6 +291,40 @@ public class IdProviderTest {
 
     assertID(101, testNames.get(0)); // new
     assertID(100, testNames.get(1)); // existing
+  }
+
+  @Test
+  public void mapTempIdsOnly() throws Exception {
+    // a stable release id next to two temporary ShortUUIDs from the COL XR.
+    // About 1 in 16000 ShortUUIDs is 19 characters or shorter, like the first one
+    testNames = new ArrayList<>(List.of(
+      sn("B2", 5, 5, SPECIES, "Abies alba", "Mill.", ACCEPTED, null),
+      sn("vYOrvZV81KuK9xP9V-W", 5, 5, SPECIES, "Abies alba", "L.", ACCEPTED, null),
+      sn("TPwerYqrAWQc-trIorzzc2", 5, 5, SPECIES, "Abies alba", "DC.", ACCEPTED, null)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapTempIds();
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var idm = session.getMapper(life.catalogue.db.mapper.IdMapMapper.class);
+      Assert.assertNull(idm.getUsage(projectKey, "B2")); // stable ids stay as they are
+      Assert.assertNotNull(idm.getUsage(projectKey, "vYOrvZV81KuK9xP9V-W"));
+      Assert.assertNotNull(idm.getUsage(projectKey, "TPwerYqrAWQc-trIorzzc2"));
+    }
+  }
+
+  @Test
+  public void reportTemporaryIds() throws Exception {
+    // the store maps none of the 21 usages of the draft project, so all of them keep their original id
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+
+    java.io.File report = new java.io.File(cfg.reportDir(projectKey, 1), "temporary.tsv");
+    assertTrue(report.exists());
+    List<String> lines = java.nio.file.Files.readAllLines(report.toPath());
+    assertEquals(21, lines.size());
+    assertTrue(lines.stream().anyMatch(l -> l.startsWith("b\t")));
   }
 
   void assertID(int id, SimpleNameWithNidx n){

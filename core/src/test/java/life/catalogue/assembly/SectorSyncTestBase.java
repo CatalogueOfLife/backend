@@ -202,7 +202,23 @@ public abstract class SectorSyncTestBase {
     if (ss.getStatus() != JobStatus.FINISHED){
       throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
     }
+    assertNoEmptyMatches(ss.sector.getDatasetKey());
     return ss.getState();
+  }
+
+  /**
+   * Names without a match must not have a match record at all, never one with an empty index id
+   */
+  private static void assertNoEmptyMatches(int datasetKey) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
+         java.sql.Statement st = session.getConnection().createStatement();
+         java.sql.ResultSet rs = st.executeQuery("SELECT count(*) FROM name_match WHERE dataset_key=" + datasetKey + " AND index_id IS NULL")
+    ) {
+      rs.next();
+      assertEquals("empty name matches in dataset " + datasetKey, 0, rs.getInt(1));
+    } catch (java.sql.SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
   void deleteFull(Sector s) {
     SectorDeleteFull sd = SyncFactoryRule.getFactory().deleteFull(s, null, TestDataRule.TEST_USER.getKey());

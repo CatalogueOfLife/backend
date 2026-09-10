@@ -16,4 +16,11 @@
     SELECT id2 FROM ${table}_${datasetKey} WHERE id=#{id}
   </select>
 
+  <select id="processUnmappedUsages" parameterType="map" resultMap="life.catalogue.db.mapper.NameUsageMapper.simpleResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT_SIMPLE"/>
+    FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_SIMPLE"/>
+      LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=u.id
+    WHERE u.dataset_key=#{datasetKey} AND m.id IS NULL
+  </select>
+
 </mapper>

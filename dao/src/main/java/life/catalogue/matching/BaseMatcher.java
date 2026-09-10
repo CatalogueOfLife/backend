@@ -85,7 +85,12 @@ public class BaseMatcher {
 
     void persist(Name n, NameMatch m) {
       datasets.add(n.getDatasetKey());
-      if (update) {
+      if (m.getNidx() == null) {
+        // we never store empty matches: a name without a match has no match record, so it gets rematched later
+        if (update) {
+          nmm.delete(n);
+        }
+      } else if (update) {
         // we don't know upfront whether a match record already exists for this name (e.g. because it was
         // never matched before) - try to update it and fall back to inserting a new record if none was updated
         if (nmm.update(n, m.getNidx()) < 1) {
