@@ -128,12 +128,15 @@
     LEFT JOIN name_usage u ON n.id = u.name_id AND n.dataset_key=u.dataset_key
     WHERE n.dataset_key = #{datasetKey} AND u.id IS NULL AND n.sector_key=#{sectorKey}
   </select>
+  <!--
+    Records attached to a usage or name are counted by their own sector_key, not by the sector owning the usage:
+    a merge sector adds vernacular names and name relations onto usages and names another sector owns.
+    This is also the key deleteBySector removes them by.
+  -->
   <select id="countDistribution" resultType="integer">
-    SELECT count(*)
-    FROM distribution x
-    JOIN name_usage t ON t.id=x.taxon_id AND x.dataset_key=t.dataset_key
-    WHERE t.dataset_key = #{datasetKey} AND t.sector_key=#{sectorKey}
+    SELECT count(*) FROM distribution WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
   </select>
+  <!-- estimates have no sector_key and are editorial, so they are counted for the sector owning their target -->
   <select id="countEstimate" resultType="integer">
     SELECT count(*)
     FROM estimate x
@@ -141,23 +144,15 @@
     WHERE t.dataset_key = #{datasetKey} AND t.sector_key=#{sectorKey}
   </select>
   <select id="countMedia" resultType="integer">
-    SELECT count(*)
-    FROM media x
-      JOIN name_usage t ON t.id=x.taxon_id AND x.dataset_key=t.dataset_key
-    WHERE t.dataset_key = #{datasetKey} AND t.sector_key=#{sectorKey}
+    SELECT count(*) FROM media WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
   </select>
   <select id="countTaxonProperty" resultType="integer">
-    SELECT count(*)
-    FROM taxon_property x
-      JOIN name_usage t ON t.id=x.taxon_id AND x.dataset_key=t.dataset_key
-    WHERE t.dataset_key = #{datasetKey} AND t.sector_key=#{sectorKey}
+    SELECT count(*) FROM taxon_property WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
   </select>
   <select id="countVernacular" resultType="integer">
-    SELECT count(*)
-    FROM vernacular_name x
-      JOIN name_usage t ON t.id=x.taxon_id AND x.dataset_key=t.dataset_key
-    WHERE t.dataset_key = #{datasetKey} AND t.sector_key=#{sectorKey}
+    SELECT count(*) FROM vernacular_name WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
   </select>
+  <!-- treatment rows are never written with a sector_key, so they are counted for the sector owning their usage -->
   <select id="countTreatment" resultType="integer">
     SELECT count(*)
     FROM treatment x
@@ -216,16 +211,14 @@
   </select>
   <select id="countDistributionsByGazetteer" resultType="StringCount">
     SELECT gazetteer AS key, count(*) AS count
-    FROM distribution x
-    JOIN name_usage u ON u.id=x.taxon_id AND u.dataset_key=x.dataset_key
-    WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
+    FROM distribution
+    WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
     GROUP BY gazetteer
   </select>
   <select id="countMediaByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
-    FROM media x
-    JOIN name_usage u ON u.id=x.taxon_id AND u.dataset_key=x.dataset_key
-    WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
+    FROM media
+    WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
     GROUP BY type
   </select>
   <select id="countNamesByType" resultType="StringCount">
@@ -235,25 +228,22 @@
     GROUP BY type
   </select>
   <select id="countNameRelationsByType" resultType="StringCount">
-    SELECT r.type AS key, count(*) AS count
-    FROM name_rel r
-    JOIN name n ON r.name_id=n.id AND r.dataset_key=n.dataset_key AND r.dataset_key=n.dataset_key
-    WHERE n.dataset_key=#{datasetKey} AND n.sector_key=#{sectorKey}
-    GROUP BY r.type
+    SELECT type AS key, count(*) AS count
+    FROM name_rel
+    WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
+    GROUP BY type
   </select>
   <select id="countSpeciesInteractionsByType" resultType="StringCount">
-    SELECT r.type AS key, count(*) AS count
-    FROM species_interaction r
-      JOIN name_usage u ON r.taxon_id=u.id AND r.dataset_key=u.dataset_key
-    WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
-    GROUP BY r.type
+    SELECT type AS key, count(*) AS count
+    FROM species_interaction
+    WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
+    GROUP BY type
   </select>
   <select id="countTaxonConceptRelationsByType" resultType="StringCount">
-    SELECT r.type AS key, count(*) AS count
-    FROM taxon_concept_rel r
-    JOIN name_usage u ON r.taxon_id=u.id AND r.dataset_key=u.dataset_key
-    WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
-    GROUP BY r.type
+    SELECT type AS key, count(*) AS count
+    FROM taxon_concept_rel
+    WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
+    GROUP BY type
   </select>
   <select id="countNamesByStatus" resultType="StringCount">
     SELECT nom_status AS key, count(*) AS count
@@ -322,9 +312,8 @@
   </select>
   <select id="countVernacularsByLanguage" resultType="StringCount">
     SELECT language AS key, count(*) AS count
-    FROM vernacular_name x
-    JOIN name_usage u ON x.dataset_key=u.dataset_key AND u.id=x.taxon_id
-    WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
+    FROM vernacular_name
+    WHERE dataset_key=#{datasetKey} AND sector_key=#{sectorKey}
     GROUP BY language
   </select>
 

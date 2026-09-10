@@ -24,6 +24,7 @@ import java.util.*;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -32,6 +33,8 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -400,6 +403,38 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       case "vernacular":
         validateVernacular(); break;
     }
+  }
+
+  /**
+   * A merge sector also enriches usages it does not own, e.g. with vernacular names which are part of the search documents.
+   * Reindexing only the usages the sector owns leaves those documents stale, so the sync must reindex the enriched ones too.
+   */
+  @Test
+  public void reindexEnrichedUsages() throws Throwable {
+    Assume.assumeTrue("vernacular".equals(project));
+    var index = Mockito.spy(NameUsageIndexService.passThru());
+    var factory = syncFactoryRule.factory(index);
+    var mcfg = info.buildMergeConfig();
+    // v1 adds a german name to the project's own Arthropoda, which no sector owns
+    assertReindexed(index, factory, info.sectors.get(0), mcfg, Rank.PHYLUM, "Arthropoda");
+    // v2 adds german names to Aedes albopictus, which was created by v1
+    assertReindexed(index, factory, info.sectors.get(1), mcfg, Rank.SPECIES, "Aedes albopictus");
+  }
+
+  private static void assertReindexed(NameUsageIndexService index, SyncFactory factory, Sector s, TreeMergeHandlerConfig mcfg,
+                                      Rank rank, String name) {
+    Mockito.clearInvocations(index);
+    SectorSync ss = factory.project(s, null, TestDataRule.TEST_USER.getKey());
+    ss.setMergeCfg(mcfg);
+    ss.run();
+    assertEquals(JobStatus.FINISHED, ss.getStatus());
+
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<Collection<String>> ids = ArgumentCaptor.forClass(Collection.class);
+    Mockito.verify(index).update(Mockito.eq(Datasets.COL), ids.capture());
+    var u = getByName(Datasets.COL, rank, name);
+    assertNotNull(u);
+    assertTrue(name + " was enriched by sector " + s.getId() + " but not reindexed: " + ids.getValue(), ids.getValue().contains(u.getId()));
   }
 
   /**

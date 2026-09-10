@@ -56,6 +56,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int thrown = 0;
   private int created = 0;
   private int updated = 0; // updates
+  private int vernaculars = 0; // vernacular names added to existing usages
+  // ids of existing usages an update changed. Only tracked on request, see trackUpdatedUsages()
+  private @Nullable Set<String> updatedUsageIds;
   private Throwable exception;
   private final @Nullable TreeMergeHandlerConfig cfg;
   private final DSID<Integer> vKey;
@@ -735,6 +738,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
             CopyUtil.transliterateVernacularName(vn, IssueContainer.VOID);
             mapper.create(vn, existingUsageKey.getId());
             existingVNames.add(vn);
+            vernaculars++;
+            trackUpdated(existingUsageKey.getId());
           }
         }
       }
@@ -745,6 +750,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
       if (!upd.isEmpty()) {
         this.updated++;
+        trackUpdated(existingUsageKey.getId());
         // update name & usage vsKey
         // both name and usage can have a key to a verbatim source. Ideally they are the same
         Integer uvsKey = vsm.getVSKeyByUsage(existing);
@@ -1012,10 +1018,31 @@ public class TreeMergeHandler extends TreeBaseHandler {
     session.close();
     batchSession.commit();
     batchSession.close();
-    LOG.info("{}: Total processed={}, thrown={}, ignored={}, created={}, updated={}", sector, counter, thrown, ignored, created, updated);
+    LOG.info("{}: Total processed={}, thrown={}, ignored={}, created={}, updated={}, vernaculars={}", sector, counter, thrown, ignored, created, updated, vernaculars);
   }
 
   public int getUpdated() {
     return updated;
+  }
+
+  /**
+   * Remember the ids of existing usages an update changes, so their search documents can be rebuilt.
+   * Off by default: a release merge updates millions of usages and indexes the entire release afterwards anyway.
+   */
+  void trackUpdatedUsages() {
+    updatedUsageIds = new HashSet<>();
+  }
+
+  /**
+   * @return ids of existing usages changed by an update, empty unless trackUpdatedUsages() was called
+   */
+  Set<String> getUpdatedUsageIds() {
+    return updatedUsageIds == null ? Set.of() : updatedUsageIds;
+  }
+
+  private void trackUpdated(String usageId) {
+    if (updatedUsageIds != null) {
+      updatedUsageIds.add(usageId);
+    }
   }
 }

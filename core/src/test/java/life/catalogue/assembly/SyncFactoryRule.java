@@ -60,6 +60,13 @@ public class SyncFactoryRule extends ExternalResource {
     return syncFactory;
   }
 
+  /**
+   * @return a new sync factory sharing this rule's daos and matcher factory, but indexing through the given service
+   */
+  public SyncFactory factory(NameUsageIndexService indexService) {
+    return new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, NameMatchingRule.getIndex(), sdao, siDao, eDao, indexService, TestUtils.mockedBroker(), null, null);
+  }
+
   public TaxonDao getTdao() {
     return tdao;
   }

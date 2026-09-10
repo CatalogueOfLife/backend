@@ -63,6 +63,8 @@ public class SectorSync extends SectorRunnable {
   private final Supplier<String> nameIdGen;
   private final Supplier<String> typeMaterialIdGen;
   private final @Nullable IdentifierScopeResolver scopeResolver;
+  // existing usages a merge sector enriched. They are not part of the sector, so indexSector does not reindex them
+  private Set<String> updatedUsageIds = Set.of();
   private Throwable exception;
 
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean projectTarget, @Nullable TreeMergeHandlerConfig mergeCfg,
@@ -174,6 +176,10 @@ public class SectorSync extends SectorRunnable {
     if (projectTarget) {
       indexService.indexSector(sector);
       LOG.info("Reindexed sector {} from search index", sectorKey);
+      if (!updatedUsageIds.isEmpty()) {
+        indexService.update(targetDatasetKey, updatedUsageIds);
+        LOG.info("Reindexed {} existing usages enriched by sector {}", updatedUsageIds.size(), sectorKey);
+      }
 
     } else {
       LOG.debug("Will index merge sector {} at the end of the release. Skip immediate indexing", sectorKey);
@@ -370,7 +376,12 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, matcherSupplier, nameIndex, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, scopeResolver);
+      var handler = new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, matcherSupplier, nameIndex, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, scopeResolver);
+      if (projectTarget) {
+        // releases index everything at the end, only a project needs to reindex the usages a merge enriched
+        handler.trackUpdatedUsages();
+      }
+      return handler;
     }
     return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }
@@ -451,6 +462,9 @@ public class SectorSync extends SectorRunnable {
       // copy handler stats to metrics
       state.setAppliedDecisionCount(treeHandler.getDecisionCounter());
       state.setIgnoredByReasonCount(Map.copyOf(treeHandler.getIgnoredCounter()));
+      if (treeHandler instanceof TreeMergeHandler mh) {
+        updatedUsageIds = mh.getUpdatedUsageIds();
+      }
 
     } catch (InterruptedRuntimeException e) {
       // tree handlers are throwing consumer which wrap exceptions as runtime exceptions - unpack them!

@@ -3,11 +3,17 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Distribution;
+import life.catalogue.api.model.Media;
+import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.api.vocab.MediaType;
+import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.api.vocab.area.GenericArea;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -186,6 +192,53 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     assertEquals(0, mapper().countTypeMaterialByStatus(DATASET11.getKey(), 1).size());
     assertEquals(0, mapper().countUsagesByStatus(DATASET11.getKey(), 1).size());
     assertEquals(0, mapper().countVernacularsByLanguage(DATASET11.getKey(), 1).size());
+  }
+
+  /**
+   * A merge sector adds vernacular names and other records onto usages owned by another sector, or by none at all.
+   * Those records carry the merge sector's key and must be counted for it, not for the owner of the usage.
+   */
+  @Test
+  public void countsForeignUsage() throws Exception {
+    // a project usage no sector owns
+    var t = newTaxon(COL);
+    mapper(NameMapper.class).create(t.getName());
+    mapper(TaxonMapper.class).create(t);
+
+    var vn = setUserDate(newVernacularName("Aalbes", "nld"));
+    vn.setDatasetKey(COL);
+    vn.setSectorKey(s.getId());
+    mapper(VernacularNameMapper.class).create(vn, t.getId());
+
+    var d = setUserDate(new Distribution());
+    d.copyArea(new GenericArea("Europe"));
+    d.setDatasetKey(COL);
+    d.setSectorKey(s.getId());
+    mapper(DistributionMapper.class).create(d, t.getId());
+
+    var m = setUserDate(new Media());
+    m.setType(MediaType.IMAGE);
+    m.setDatasetKey(COL);
+    m.setSectorKey(s.getId());
+    mapper(MediaMapper.class).create(m, t.getId());
+
+    var nr = setUserDate(new NameRelation());
+    nr.setType(NomRelType.SPELLING_CORRECTION);
+    nr.setDatasetKey(COL);
+    nr.setSectorKey(s.getId());
+    nr.setNameId(t.getName().getId());
+    mapper(NameRelationMapper.class).create(nr);
+
+    assertEquals((Integer) 1, mapper().countVernacular(COL, s.getId()));
+    assertEquals(1, mapper().countVernacularsByLanguage(COL, s.getId()).size());
+    assertEquals((Integer) 1, mapper().countDistribution(COL, s.getId()));
+    assertEquals(1, mapper().countDistributionsByGazetteer(COL, s.getId()).size());
+    assertEquals((Integer) 1, mapper().countMedia(COL, s.getId()));
+    assertEquals(1, mapper().countMediaByType(COL, s.getId()).size());
+    assertEquals(1, mapper().countNameRelationsByType(COL, s.getId()).size());
+    // and nothing is attributed to another sector
+    assertEquals((Integer) 0, mapper().countVernacular(COL, s2.getId()));
+    assertEquals((Integer) 0, mapper().countMedia(COL, s2.getId()));
   }
 
   @Test
