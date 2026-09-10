@@ -24,10 +24,10 @@
   var NAV = [
     { href: '/', label: 'Browse' },
     { href: '/search', label: 'Search' },
-    { href: '/about', label: 'About' },
     { href: '/sources', label: 'Sources' },
     { href: '/metrics', label: 'Metrics' },
-    { href: '/matching', label: 'Matching' }
+    { href: '/matching', label: 'Matching' },
+    { href: '/about', label: 'About' }
   ];
 
   var COL_SITE = 'https://www.catalogueoflife.org';

@@ -26,6 +26,18 @@
     return '<a href="' + b.escape(href) + '">' + b.escape(text || href) + '</a>';
   }
 
+  /* Dataset descriptions are markdown. Rather than pull in a parser for one field,
+     turn the only construct COL actually uses - inline links - into anchors, and
+     leave everything else as the plain text it already reads as. Runs on already
+     escaped text, so the url is matched in its escaped form and re-escaped on the
+     way out; only http(s) links become anchors. */
+  function mdLinks(escaped) {
+    return escaped.replace(/\[([^\]]+)\]\((https?:&#x2F;&#x2F;[^)\s]+|https?:\/\/[^)\s]+)\)/g,
+      function (_, text, url) {
+        return '<a href="' + url.replace(/&#x2F;/g, '/') + '">' + text + '</a>';
+      });
+  }
+
   b.release.then(function (d) {
     var html = '<table class="about-table"><tbody>' +
       row('Title', b.escape(d.title)) +
@@ -44,7 +56,7 @@
       row('ChecklistBank', link('https://www.checklistbank.org/dataset/' + d.key + '/about',
                                 'dataset ' + d.key + ' on checklistbank.org')) +
       '</tbody></table>' +
-      (d.description ? '<h3>Description</h3><p>' + b.escape(d.description) + '</p>' : '') +
+      (d.description ? '<h3>Description</h3><p>' + mdLinks(b.escape(d.description)) + '</p>' : '') +
       '<h3>Citation</h3><p>' + b.escape(d.citation || '') + '</p>' +
       '<p>' + link(b.api + 'dataset/' + d.key + '.bib', 'Download the BibTeX citation') + '</p>';
 

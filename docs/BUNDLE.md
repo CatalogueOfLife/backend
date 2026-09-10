@@ -242,10 +242,10 @@ untouched, so existing R and OpenRefine clients are unaffected.
 |---|---|
 | `/` | the COL homepage layout: kingdom tiles and the classification tree |
 | `/search` | the full faceted search |
-| `/about` | this release's metadata |
 | `/sources` | the source datasets, grouped by publisher |
 | `/metrics` | headline totals and a rank breakdown |
 | `/matching` | upload a CSV/TSV and match it against this release |
+| `/about` | this release's metadata |
 | `/taxon/{id}`, `/dataset/{key}` | the detail pages |
 
 It is plain HTML around the published
