@@ -516,7 +516,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   protected void persistMatch(Name n) {
-    batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId());
+    // we never store empty matches, so a name without a match gets rematched later on
+    if (n.getNamesIndexId() != null) {
+      batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId());
+    }
   }
 
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {

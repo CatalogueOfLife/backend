@@ -44,6 +44,12 @@
     VALUES (#{key.datasetKey}, #{nidx}, #{key.id})
   </insert>
 
+  <insert id="upsert" parameterType="map" useGeneratedKeys="false">
+    INSERT INTO name_usage_archive_match (dataset_key,index_id,usage_id)
+    VALUES (#{key.datasetKey}, #{nidx}, #{key.id})
+    ON CONFLICT (dataset_key, usage_id) DO UPDATE SET index_id = EXCLUDED.index_id
+  </insert>
+
   <update id="update" parameterType="map">
     UPDATE name_usage_archive_match SET index_id = #{nidx}
     WHERE dataset_key=#{key.datasetKey} AND usage_id = #{key.id}

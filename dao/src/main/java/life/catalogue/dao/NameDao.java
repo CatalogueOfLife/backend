@@ -73,9 +73,11 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
   @Override
   protected boolean createAfter(Name n, int user, NameMapper mapper, SqlSession session) {
     updateUsageIndex(n, session);
-    // create name match
+    // create name match, but never an empty one
     NameMatch m = nameIndex.match(n, true, false);
-    session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNidx());
+    if (m.getNidx() != null) {
+      session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNidx());
+    }
     n.applyMatch(m);
     return true;
   }
@@ -85,7 +87,7 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
     updateUsageIndex(n, session);
     // update name match
     NameMatch m = nameIndex.match(n, true, false);
-    session.getMapper(NameMatchMapper.class).update(n,m.getNidx());
+    session.getMapper(NameMatchMapper.class).persist(n, n.getSectorKey(), m.getNidx());
     n.applyMatch(m);
     return true;
   }

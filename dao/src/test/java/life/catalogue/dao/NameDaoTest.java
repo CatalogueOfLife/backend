@@ -113,6 +113,20 @@ public class NameDaoTest extends DaoTestBase {
     assertEquals(Collections.emptySet(), Set.copyOf(upMatch(dao.homotypicGroup(DSID.of(n.getDatasetKey(), "n7")))));
   }
 
+  @Test
+  public void noEmptyMatches() throws Exception {
+    // a name without a match has no match record at all
+    NameDao noMatchDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+    Name n = TestEntityGenerator.newName("n3");
+    noMatchDao.create(n, Users.IMPORTER);
+    var nmm = mapper(life.catalogue.db.mapper.NameMatchMapper.class);
+    Assert.assertNull(nmm.get(n));
+
+    // a match found later on is stored even though no match record existed before
+    dao.update(n, Users.IMPORTER);
+    assertEquals((Integer) match.getKey(), nmm.get(n).getNidx());
+  }
+
   static List<Name> upMatch(List<Name> names) {
     var nm = NameMatch.match(match.getKey());
     names.forEach(n -> n.applyMatch(nm));

@@ -168,9 +168,23 @@ public class PgImportITBase {
       // import into postgres
       PgImport importer = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), dataset, Users.IMPORTER, store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, indexService, matcherFactory, scopeResolver);
       importer.call();
-      
+      assertNoEmptyMatches(dataset.getKey());
+
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Names without a match must not have a match record at all, never one with an empty index id
+   */
+  private static void assertNoEmptyMatches(int datasetKey) throws java.sql.SQLException {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
+         java.sql.Statement st = session.getConnection().createStatement();
+         java.sql.ResultSet rs = st.executeQuery("SELECT count(*) FROM name_match WHERE dataset_key=" + datasetKey + " AND index_id IS NULL")
+    ) {
+      rs.next();
+      org.junit.Assert.assertEquals("empty name matches in dataset " + datasetKey, 0, rs.getInt(1));
     }
   }
   

@@ -447,14 +447,15 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
               m = ni.match(n, true, false);
               cache.put(cacheKey, m);
             }
-            writeMatch(writer, cols, n, m);
-            if (!m.hasMatch()) {
+            if (m.hasMatch()) {
+              writeMatch(writer, cols, n, m);
+            } else {
+              // we never store empty matches, so the name gets rematched later on
               nomatch++;
             }
           } catch (MatchingException e) {
             error++;
             LOG.error("Failed to match name {} from {}. {} total errors", counter, in, error, e);
-            writeMatch(writer, cols, n, NameMatch.noMatch());
           }
           if (counter % 100000 == 0) {
             LOG.info("Matched {} names from {}. {}% cached, {} errors, {} have no match", counter, in, 100*cached/counter, error, nomatch);
