@@ -34,9 +34,9 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
   @QueryParam("withoutData")
   private boolean withoutData = false;
 
-  // restrict to sectors that have a subject id which points to a different name in the source than what is configured in the subject_name of the sector.
-  @QueryParam("wrongSubject")
-  private boolean wrongSubject = false;
+  // restrict to sectors whose subject or target id points to a different name than the one stored on the sector.
+  @QueryParam("stale")
+  private boolean stale = false;
 
   @QueryParam("publisherKey")
   private UUID publisherKey;
@@ -101,12 +101,12 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     this.nested = nested;
   }
 
-  public boolean isWrongSubject() {
-    return wrongSubject;
+  public boolean isStale() {
+    return stale;
   }
 
-  public void setWrongSubject(boolean wrongSubject) {
-    this.wrongSubject = wrongSubject;
+  public void setStale(boolean stale) {
+    this.stale = stale;
   }
 
   public Integer getMinSize() {
@@ -130,11 +130,11 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
-    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && wrongSubject == that.wrongSubject && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
+    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && stale == that.stale && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, wrongSubject, publisherKey);
+    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, stale, publisherKey);
   }
 }

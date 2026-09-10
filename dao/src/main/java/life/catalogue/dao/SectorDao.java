@@ -106,8 +106,19 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
+  private static boolean isBroken(SimpleNameLink sn) {
+    return sn != null && sn.isBroken();
+  }
+
+  private static boolean isStale(SimpleNameLink sn) {
+    return sn != null && sn.isStale();
+  }
+
   private boolean filterSector(Sector s, SectorSearchRequest req) {
-    if (req.isBroken() && !s.getTarget().isBroken() && !s.getSubject().isBroken()) {
+    if (req.isBroken() && !isBroken(s.getTarget()) && !isBroken(s.getSubject())) {
+      return false;
+    }
+    if (req.isStale() && !isStale(s.getTarget()) && !isStale(s.getSubject())) {
       return false;
     }
     if (req.getMode() != null && !req.getMode().isEmpty() && !req.getMode().contains(s.getMode())) {

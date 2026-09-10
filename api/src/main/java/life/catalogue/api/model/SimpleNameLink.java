@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 public class SimpleNameLink extends SimpleName {
   private boolean broken;
+  private boolean stale;
 
   public static SimpleNameLink of(@Nullable Taxon t) {
     return t == null ? null : t.toSimpleNameLink();
@@ -20,6 +21,7 @@ public class SimpleNameLink extends SimpleName {
   public static SimpleNameLink of(SimpleNameLink sn) {
     SimpleNameLink snl = new SimpleNameLink(sn);
     snl.broken = sn.broken;
+    snl.stale = sn.stale;
     return snl;
   }
 
@@ -62,17 +64,28 @@ public class SimpleNameLink extends SimpleName {
     this.broken = broken;
   }
 
+  /**
+   * True if the id does resolve, but to a usage with a different name than the one stored here.
+   */
+  public boolean isStale() {
+    return stale;
+  }
+
+  public void setStale(boolean stale) {
+    this.stale = stale;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof SimpleNameLink)) return false;
     if (!super.equals(o)) return false;
     SimpleNameLink that = (SimpleNameLink) o;
-    return broken == that.broken;
+    return broken == that.broken && stale == that.stale;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), broken);
+    return Objects.hash(super.hashCode(), broken, stale);
   }
 }

@@ -80,7 +80,8 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
       try (SqlSession session = dao.getFactory().openSession()) {
         var num = session.getMapper(NameUsageMapper.class);
         var nu = num.getSimple(DSID.of(datasetKey, sn.getId()));
-        return nu == null || !nu.getName().equals(sn.getName());
+        // compare case insensitively, in line with the stale flag exposed by SectorMapper
+        return nu == null || !nu.getName().equalsIgnoreCase(sn.getName());
       }
     }
     return false;

@@ -110,18 +110,69 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertEquals(0, mapper().listByTarget(DSID.of(targetDatasetKey,"t32134")).size());
   }
 
+  /**
+   * A link is stale when its id still resolves, but to a usage carrying a different name than the one
+   * stored on the sector - the sector then silently points somewhere else than it claims. That is a
+   * different condition from broken, where the id does not resolve at all.
+   */
   @Test
-  public void listWrongSubject() {
+  public void listStale() {
     add2Sectors();
+
+    // s1 links to taxa that do exist, but createTestEntity gave it random names, so both sides drifted
     SectorSearchRequest req = SectorSearchRequest.byProject(targetDatasetKey);
-    req.setWrongSubject(true);
+    req.setStale(true);
     var res = mapper().search(req, new Page());
     assertEquals(1, res.size());
+    assertEquals(s1.getId(), res.get(0).getId());
     assertEquals(TestEntityGenerator.TAXON1.getId(), res.get(0).getSubjectID());
+    assertTrue(res.get(0).getSubject().isStale());
+    assertTrue(res.get(0).getTarget().isStale());
 
-    req.setWrongSubject(false);
-    res = mapper().search(req, new Page());
-    assertEquals(2, res.size());
+    // s2 points at ids that resolve to nothing at all: broken, and therefore not stale
+    var broken = mapper().get(s2);
+    assertTrue(broken.getSubject().isBroken());
+    assertFalse(broken.getSubject().isStale());
+    assertTrue(broken.getTarget().isBroken());
+    assertFalse(broken.getTarget().isStale());
+
+    req.setStale(false);
+    assertEquals(2, mapper().search(req, new Page()).size());
+  }
+
+  @Test
+  public void staleIgnoresCasingAndCoversBothSides() {
+    // t4 is Coleoptera in the draft tree, root-1 is Malus sylvestris in the source dataset
+    MybatisTestUtils.populateDraftTree(session());
+
+    Sector s = createTestEntity(targetDatasetKey);
+    s.getSubject().setId(TestEntityGenerator.TAXON1.getId());
+    s.getSubject().setName(TestEntityGenerator.NAME1.getScientificName().toUpperCase());
+    s.getTarget().setId("t4");
+    s.getTarget().setName("Coleoptera");
+    mapper().create(s);
+    commit();
+
+    var read = mapper().get(s);
+    assertFalse("a casing only difference is importer normalisation, not a moved id", read.getSubject().isStale());
+    assertFalse(read.getTarget().isStale());
+
+    SectorSearchRequest req = SectorSearchRequest.byProject(targetDatasetKey);
+    req.setStale(true);
+    assertEquals(0, mapper().search(req, new Page()).size());
+
+    // now let the target drift for real, leaving the subject alone
+    s.getTarget().setName("Lepidoptera");
+    mapper().update(s);
+    commit();
+
+    read = mapper().get(s);
+    assertTrue(read.getTarget().isStale());
+    assertFalse(read.getSubject().isStale());
+
+    var res = mapper().search(req, new Page());
+    assertEquals("a stale target on its own is enough", 1, res.size());
+    assertEquals(s.getId(), res.get(0).getId());
   }
 
   @Test
@@ -394,6 +445,8 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     s.setOriginalSubjectId(null);
     s.getTarget().setBroken(false);
     s.getSubject().setBroken(false);
+    s.getTarget().setStale(false);
+    s.getSubject().setStale(false);
     return s;
   }
   
