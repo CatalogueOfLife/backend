@@ -26,29 +26,35 @@ different name stay stale. Run it before anyone rematches the affected sectors.
 -- step 1: what is affected
 SELECT s.dataset_key, s.id, s.subject_name, n.scientific_name, n.authorship
 FROM sector s
+  JOIN dataset d ON d.key=s.dataset_key
   JOIN name_usage u ON u.dataset_key=s.subject_dataset_key AND u.id=s.subject_id
   JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
-WHERE s.subject_authorship IS NULL AND n.authorship IS NOT NULL
+WHERE d.origin='PROJECT' 
+  AND s.subject_authorship IS NULL AND n.authorship IS NOT NULL
   AND lower(s.subject_name) = lower(n.scientific_name || ' ' || n.authorship);
 
 SELECT s.dataset_key, s.id, s.target_name, n.scientific_name, n.authorship
 FROM sector s
+  JOIN dataset d ON d.key=s.dataset_key
   JOIN name_usage u ON u.dataset_key=s.dataset_key AND u.id=s.target_id
   JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
-WHERE s.target_authorship IS NULL AND n.authorship IS NOT NULL
+WHERE d.origin='PROJECT'
+  AND s.target_authorship IS NULL AND n.authorship IS NOT NULL
   AND lower(s.target_name) = lower(n.scientific_name || ' ' || n.authorship);
 
 -- step 2: subjects
 UPDATE sector s SET subject_name = n.scientific_name, subject_authorship = n.authorship
 FROM name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
-WHERE u.dataset_key=s.subject_dataset_key AND u.id=s.subject_id
+WHERE s.dataset_key IN (3,315654) 
+  AND u.dataset_key=s.subject_dataset_key AND u.id=s.subject_id
   AND s.subject_authorship IS NULL AND n.authorship IS NOT NULL
   AND lower(s.subject_name) = lower(n.scientific_name || ' ' || n.authorship);
 
 -- step 3: targets
 UPDATE sector s SET target_name = n.scientific_name, target_authorship = n.authorship
 FROM name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
-WHERE u.dataset_key=s.dataset_key AND u.id=s.target_id
+WHERE s.dataset_key IN (3,315654)
+  AND u.dataset_key=s.dataset_key AND u.id=s.target_id
   AND s.target_authorship IS NULL AND n.authorship IS NOT NULL
   AND lower(s.target_name) = lower(n.scientific_name || ' ' || n.authorship);
 ```
