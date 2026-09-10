@@ -15,7 +15,6 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.NameUsageDao;
@@ -194,7 +193,8 @@ public class NameUsageResource {
   @Produces(MediaType.TEXT_PLAIN)
   public Cursor<String> tmpIds(@PathParam("key") int datasetKey, @QueryParam("minLength") Integer minLength, @Context SqlSession session) {
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    return num.processIds(datasetKey, true, minLength == null ? ShortUUID.MIN_LEN : minLength);
+    // stable release ids have at most 7 characters, see IdProvider.isStableId
+    return num.processIds(datasetKey, true, minLength == null ? 8 : minLength);
   }
 
   NameUsageRequest checkIllegalDatasetKeyParam(int datasetKey, NameUsageRequest query, UriInfo uri){

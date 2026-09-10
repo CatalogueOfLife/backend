@@ -1,6 +1,9 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.SimpleName;
+
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
 
 public interface IdMapMapper {
   String NAME_TBL = "idmap_name";
@@ -40,5 +43,11 @@ public interface IdMapMapper {
   default String getUsage(int datasetKey, String id) {
     return get(datasetKey, USAGE_TBL, id);
   }
+
+  /**
+   * Iterates over all usages of the dataset that have no entry in its usage id mapping table
+   * and therefore keep their original id when the dataset is copied with mapped ids.
+   */
+  Cursor<SimpleName> processUnmappedUsages(@Param("datasetKey") int datasetKey);
 
 }

@@ -75,7 +75,10 @@ Detects and fixes four categories of structural problems:
 
 #### 2i. Cleanup & ID Stabilization
 - **`removeOrphans()`** — deletes names and references not linked to any usage
-- **`mapTmpIDs()`** — `XIdProvider.mapTempIds()` replaces temporary UUIDs (for names without authorship) with stable IDs
+- **`mapTmpIDs()`** — `XIdProvider.mapTempIds()` maps every usage whose id is not yet a stable release id
+  (`IdProvider.isStableId`: at most 7 LATIN29 characters) to a stable ID, e.g. the temporary ShortUUIDs issued to names
+  merged without authorship. Usages without a names index match cannot be given a stable ID and keep their id in the
+  release; they are listed in `temporary.tsv` in the release report directory and logged as a warning.
 - **`updateMetadata()`** — updates release description with source counts using Freemarker templates
 
 ### 3. `copyData()` — Final Copy with ID Mapping
