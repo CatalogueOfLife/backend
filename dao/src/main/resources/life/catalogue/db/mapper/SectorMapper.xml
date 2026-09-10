@@ -166,6 +166,9 @@
         <if test="req.broken">
           AND ((coalesce(s.subject_id, s.subject_name) IS NOT NULL AND ts.id IS NULL) OR (coalesce(s.target_id, s.target_name) IS NOT NULL AND tt.id IS NULL))
         </if>
+        <if test="req.key != null">
+          AND s.id = #{req.key}
+        </if>
         <if test="req.id != null">
           AND (s.subject_id = #{req.id} OR s.target_id = #{req.id})
         </if>

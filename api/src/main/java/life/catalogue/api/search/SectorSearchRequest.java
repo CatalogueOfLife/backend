@@ -12,6 +12,10 @@ import jakarta.ws.rs.QueryParam;
 
 public class SectorSearchRequest extends BaseDecisionSearchRequest {
 
+  // the sector key itself. The inherited id param filters by subject or target taxon id instead.
+  @QueryParam("key")
+  private Integer key;
+
   @QueryParam("subjectDatasetKey")
   private Integer subjectDatasetKey;
   
@@ -51,6 +55,14 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     SectorSearchRequest req = byProject(datasetKey);
     req.subjectDatasetKey = subjectDatasetKey;
     return req;
+  }
+
+  public Integer getKey() {
+    return key;
+  }
+
+  public void setKey(Integer key) {
+    this.key = key;
   }
 
   public Integer getSubjectDatasetKey() {
@@ -130,11 +142,11 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
-    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && stale == that.stale && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
+    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && stale == that.stale && Objects.equals(key, that.key) && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, stale, publisherKey);
+    return Objects.hash(super.hashCode(), key, subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, stale, publisherKey);
   }
 }
