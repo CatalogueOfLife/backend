@@ -12,6 +12,7 @@ import life.catalogue.concurrent.JobConfig;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.dao.UserDao;
+import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.junit.*;
 import life.catalogue.parser.NameParser;
 
@@ -259,6 +260,32 @@ public class UsageMatcherIT {
     } finally {
       exec.stop();
     }
+  }
+
+  /**
+   * A rank marker written into the name string must pick the infraspecific of that very rank when several
+   * share one canonical name. https://github.com/CatalogueOfLife/backend/issues/1577
+   */
+  @Test
+  public void inlineRankMarker() {
+    loadDataset(7);
+
+    assertMatch(interpretAndMatch("Festuca rubra subsp. pruinosa"), "FR_subsp");
+    assertMatch(interpretAndMatch("Festuca rubra var. pruinosa"), "FR_var");
+    assertMatch(interpretAndMatch("Festuca rubra subvar. pruinosa"), "FR_subvar");
+
+    // the species itself still matches, and a marker free trinomial stays unranked - any of the three will do
+    assertMatch(interpretAndMatch("Festuca rubra"), "Festuca_rubra");
+    assertTrue(interpretAndMatch("Festuca rubra pruinosa").isMatch());
+  }
+
+  /**
+   * Matches the way the matching tool and its REST resource do, i.e. through the name interpreter,
+   * so an inline rank marker is interpreted rather than pre-parsed away by the test helpers above.
+   */
+  UsageMatch interpretAndMatch(String sciname) {
+    return AbstractMatchingJob.interpretAndMatch(SimpleName.sn(sciname), List.of(), new IssueContainer.Simple(), false,
+      new NameInterpreter(new DatasetSettings(), true), utils, matcher);
   }
 
   /**

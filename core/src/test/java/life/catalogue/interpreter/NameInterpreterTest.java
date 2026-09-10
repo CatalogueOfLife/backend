@@ -184,6 +184,39 @@ public class NameInterpreterTest {
   }
 
   @Test
+  public void inlineRankMarkerIsAdopted() {
+    // an explicit rank marker in the name string is the user stating the rank, not an inference
+    assertEquals(Rank.SUBSPECIES, rank("Festuca rubra subsp. pruinosa"));
+    assertEquals(Rank.VARIETY, rank("Festuca rubra var. pruinosa"));
+    assertEquals(Rank.SUBVARIETY, rank("Festuca rubra subvar. pruinosa"));
+    assertEquals(Rank.FORM, rank("Abies alba f. alba"));
+    // infrageneric markers too
+    assertEquals(Rank.SUBGENUS, rank("Quercus subg. Quercus"));
+    assertEquals(Rank.SECTION_BOTANY, rank("Quercus sect. Cerris"));
+  }
+
+  @Test
+  public void rankFromNameStructureAloneIsNotAdopted() {
+    // without a marker the parser derives a rank from the name structure only - keep ignoring that,
+    // external match requests rely on staying unranked
+    assertEquals(Rank.UNRANKED, rank("Festuca rubra pruinosa"));  // -> INFRASPECIFIC_NAME
+    assertEquals(Rank.UNRANKED, rank("Aeshna subarctica"));       // -> SPECIES
+    assertEquals(Rank.UNRANKED, rank("Aeshna (Aeshna) subarctica"));
+    assertEquals(Rank.UNRANKED, rank("Quercus (Cerris)"));        // -> INFRAGENERIC_NAME
+    assertEquals(Rank.UNRANKED, rank("Poaceae"));                 // -> FAMILY by suffix
+  }
+
+  @Test
+  public void suppliedRankWinsOverInlineMarker() {
+    VerbatimRecord v = new VerbatimRecord();
+    assertEquals(Rank.VARIETY, ib.interpret(SimpleName.sn(Rank.VARIETY, "Festuca rubra subsp. pruinosa"), v).get().getName().getRank());
+  }
+
+  private Rank rank(String sciname) {
+    return ib.interpret(SimpleName.sn(sciname), new VerbatimRecord()).get().getName().getRank();
+  }
+
+  @Test
   public void interpretName() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
     ParsedNameUsage pnu;

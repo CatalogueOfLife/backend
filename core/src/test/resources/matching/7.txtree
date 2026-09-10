@@ -1,0 +1,10 @@
+Plantae [kingdom] {ID=Plantae}
+  Tracheophyta [phylum] {ID=Tracheophyta}
+    Liliopsida [class] {ID=Liliopsida}
+      Poales Small [order] {ID=Poales}
+        Poaceae [family] {ID=Poaceae}
+          Festuca Tourn. ex L. [genus] {ID=Festuca}
+            Festuca rubra L. [species] {ID=Festuca_rubra}
+              Festuca rubra subsp. pruinosa (Hack.) Piper [subspecies] {ID=FR_subsp}
+              Festuca rubra var. pruinosa (Hack.) Keble Martin & Fraser [variety] {ID=FR_var}
+              Festuca rubra subvar. pruinosa Hack. [subvariety] {ID=FR_subvar}
