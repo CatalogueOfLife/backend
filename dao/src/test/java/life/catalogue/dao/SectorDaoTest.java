@@ -89,6 +89,38 @@ public class SectorDaoTest extends DaoTestBase {
   }
 
   /**
+   * Subject and target are a copy of their linked usages. A client can change the linked id, but never the stored
+   * name - the sector form used to send the full label with authorship as the name.
+   */
+  @Test
+  public void updateCopiesLinkedNames() {
+
+    try (SqlSession session = factory().openSession(true)) {
+      MybatisTestUtils.populateDraftTree(session);
+      MybatisTestUtils.populateTestTree(12, session);
+    }
+
+    Sector s = SectorMapperTest.create();
+    s.getSubject().setId("root-1");
+    s.getTarget().setId("t4"); // Coleoptera
+    dao.create(s, user);
+    final String subjectName = dao.get(s).getSubject().getName();
+
+    // a new target id sent with a label as its name
+    s = dao.get(s);
+    s.getSubject().setName(subjectName + " Mill.");
+    s.getTarget().setId("t1"); // Animalia
+    s.getTarget().setName("Animalia Linnaeus, 1758");
+    s.getTarget().setAuthorship(null);
+    dao.update(s, user);
+
+    var read = dao.get(s);
+    assertEquals("an unchanged id keeps the stored name", subjectName, read.getSubject().getName());
+    assertEquals("t1", read.getTarget().getId());
+    assertEquals("a new id copies the name from its usage", "Animalia", read.getTarget().getName());
+  }
+
+  /**
    * Only one subject less merge sector is allowed per source dataset,
    * but merge sectors with a subject must not block that. See https://github.com/CatalogueOfLife/backend/issues/1560
    */

@@ -11,6 +11,48 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-10 split authorship out of sector subject and target names
+Editing a sector in the UI sent the picked subject or target as `{id, name}` with the suggestion label as the name,
+which carries the authorship since the ES suggest rewrite (2026-02-23). `SectorDao.updateBefore` stored it verbatim,
+leaving e.g. `target_name='Rhodophyta Wettstein, 1901'` with a NULL `target_authorship`. The new `?stale=true`
+filter wrongly reports those sectors, and a rematch cannot match such a name at all, so it would break the sector.
+Sector updates now copy subject and target from the linked usage whenever the id changes and ignore client names.
+
+This repairs the rows already written, in projects and releases alike (releases copy sectors verbatim). It only
+touches names that equal the full label of the usage their id still links to, so sectors whose id really moved to a
+different name stay stale. Run it before anyone rematches the affected sectors.
+
+```sql
+-- step 1: what is affected
+SELECT s.dataset_key, s.id, s.subject_name, n.scientific_name, n.authorship
+FROM sector s
+  JOIN name_usage u ON u.dataset_key=s.subject_dataset_key AND u.id=s.subject_id
+  JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+WHERE s.subject_authorship IS NULL AND n.authorship IS NOT NULL
+  AND lower(s.subject_name) = lower(n.scientific_name || ' ' || n.authorship);
+
+SELECT s.dataset_key, s.id, s.target_name, n.scientific_name, n.authorship
+FROM sector s
+  JOIN name_usage u ON u.dataset_key=s.dataset_key AND u.id=s.target_id
+  JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+WHERE s.target_authorship IS NULL AND n.authorship IS NOT NULL
+  AND lower(s.target_name) = lower(n.scientific_name || ' ' || n.authorship);
+
+-- step 2: subjects
+UPDATE sector s SET subject_name = n.scientific_name, subject_authorship = n.authorship
+FROM name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+WHERE u.dataset_key=s.subject_dataset_key AND u.id=s.subject_id
+  AND s.subject_authorship IS NULL AND n.authorship IS NOT NULL
+  AND lower(s.subject_name) = lower(n.scientific_name || ' ' || n.authorship);
+
+-- step 3: targets
+UPDATE sector s SET target_name = n.scientific_name, target_authorship = n.authorship
+FROM name_usage u JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+WHERE u.dataset_key=s.dataset_key AND u.id=s.target_id
+  AND s.target_authorship IS NULL AND n.authorship IS NOT NULL
+  AND lower(s.target_name) = lower(n.scientific_name || ' ' || n.authorship);
+```
+
 #### 2026-09-10 remove empty name matches
 A `name_match` or `name_usage_archive_match` row with a NULL `index_id` carries no information since the stored
 match type was dropped (2026-07-09 canonical-only names index). Yet imports, sector syncs, `NameDao` and the nidx

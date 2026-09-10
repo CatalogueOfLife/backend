@@ -283,9 +283,29 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       throw new IllegalArgumentException(String.format("Sector mode is immutable and cannot be changed from %s to %s", s.getMode(), old.getMode()));
     }
     requireTaxonIdExists(s.getTargetAsDSID(), session);
+    // subject and target are a denormalised copy of the linked usages and never taken from the client
+    TaxonMapper tm = session.getMapper(TaxonMapper.class);
+    s.setSubject(refreshLink(s.getSubject(), old.getSubject(), s::getSubjectAsDSID, tm));
+    s.setTarget(refreshLink(s.getTarget(), old.getTarget(), s::getTargetAsDSID, tm));
     if (s.getPriority() != null && !Objects.equals(s.getPriority(), old.getPriority())) {
       updatePriorities(s, mapper);
     }
+  }
+
+  /**
+   * Keeps the stored link while its id is unchanged, so a stale link stays visible until it gets rematched.
+   * A newly linked id copies name and authorship from its usage. An id that does not resolve keeps what was given,
+   * so the broken link can still be rematched by name.
+   */
+  private static SimpleNameLink refreshLink(SimpleNameLink link, SimpleNameLink old, Supplier<DSID<String>> getter, TaxonMapper tm) {
+    if (link == null || link.getId() == null) {
+      return link;
+    }
+    if (old != null && link.getId().equals(old.getId())) {
+      return old;
+    }
+    Taxon tax = tm.get(getter.get());
+    return tax == null ? link : tax.toSimpleNameLink();
   }
   private static void requireTaxonIdExists(DSID<String> key, SqlSession session){
     if (key != null && key.getId() != null) {
