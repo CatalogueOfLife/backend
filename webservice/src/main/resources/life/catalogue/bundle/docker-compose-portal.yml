@@ -1,0 +1,19 @@
+
+  # The mini portal: a browsable COL website for this one release, on http://localhost/
+  # Static pages only - it holds no release key, discovering the release at runtime through
+  # the keyless /api/dataset, so one image serves every COL release.
+  # Written into the compose file only for releases of the COL project; any other project
+  # gets an API only bundle, because the portal's styling and its kingdom tiles are COL specific.
+  web:
+    image: ${CLB_PORTAL_IMAGE:-{{PORTAL_IMAGE}}}
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "${CLB_PORTAL_PORT:-80}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 10s

@@ -281,7 +281,13 @@ elastic - there is no pass through mode), `buildIndexService()`, `buildJobExecut
 `registerAdditional()`. Keyless URLs like `/taxon/{id}` are rewritten to `/dataset/{releaseKey}/taxon/{id}` by
 `SingleDatasetRewriteFilter` so no resource is forked. `BundleBuildCmd` (`bundleBuild`) produces the data
 artifact by copying the release into a temporary database with binary COPY and `pg_dump`ing that - the tables
-are hash partitioned, so there is no partition to detach. See [`docs/BUNDLE.md`](docs/BUNDLE.md).
+are hash partitioned, so there is no partition to detach.
+A bundle built from a **COL release** additionally gets the **mini portal**: static HTML in `bundle/portal/`
+around the published `col-browser` UMD bundle, served by an nginx sidecar that also reverse proxies `/api/`
+to the app. It is a second image (`clb-bundle-portal`), tagged with the backend version like the app image and
+carrying no release key - the page discovers its release at runtime from the keyless `/api/dataset`. Any other
+project gets an API only bundle: `BundleBuildCmd` splices the compose `web:` block in only when
+`release.getSourceKey() == Datasets.COL`, overridable with `--portal`. See [`docs/BUNDLE.md`](docs/BUNDLE.md).
 
 ## Development Guidelines
 

@@ -22,6 +22,7 @@ curl 'localhost:8080/match/nameusage?q=Puma+concolor'
 ```
 
 In OpenRefine, add `http://localhost:8080/reconcile` as a standard reconciliation service.
+{{PORTAL_README}}
 
 The keyed forms (`/dataset/{{RELEASE_KEY}}/taxon/{id}/info`) work too, so code written against
 `api.checklistbank.org` runs unchanged against this bundle.
@@ -36,7 +37,7 @@ The keyed forms (`/dataset/{{RELEASE_KEY}}/taxon/{id}/info`) work too, so code w
 | `metrics/` | file based dataset metrics |
 | `bundle.json` | release key, title, attempt, build time, source |
 | `config.yml` | the app config, release key already filled in |
-| `docker-compose.yml` | the three services |
+| `docker-compose.yml` | the services this bundle runs |
 | `restore.sh` | Postgres first boot restore hook |
 
 This directory is mounted read-write: the names index grows as new names are matched.

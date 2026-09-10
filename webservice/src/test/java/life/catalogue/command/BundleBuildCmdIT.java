@@ -76,6 +76,44 @@ public class BundleBuildCmdIT extends CmdTestBase {
       assertTrue("image not baked into the compose file",
         Files.readString(compose.toPath()).contains(BundleBuildCmd.DEFAULT_IMAGE));
 
+      // apple is not a COL release, so it must get an API only bundle - the mini portal is a COL
+      // website and would misrepresent any other project
+      String composeYaml = Files.readString(compose.toPath());
+      assertFalse("a non COL release must not ship the mini portal", composeYaml.contains("  web:"));
+      assertFalse("a non COL release must not reference the portal image",
+        composeYaml.contains(BundleBuildCmd.DEFAULT_PORTAL_IMAGE));
+
+    } finally {
+      org.apache.commons.io.FileUtils.deleteQuietly(dir);
+    }
+  }
+
+  /**
+   * --portal true forces the mini portal on for a dataset the detection would otherwise skip, which is
+   * the same code path a real COL release takes.
+   */
+  @Test
+  public void testBuildWithPortal() throws Exception {
+    Assume.assumeTrue("pg_dump is required to build a bundle", pgDumpAvailable());
+
+    File dir = Files.createTempDirectory("col-bundle-portal").toFile();
+    dir.delete();
+    try {
+      final int key = TestDataRule.APPLE.key;
+      createImportWithMetrics(key);
+
+      assertTrue(run("bundleBuild", "--delete", "--key", Integer.toString(key),
+        "--dir", dir.getAbsolutePath(), "--portal", "true").isEmpty());
+
+      File compose = new File(dir, "docker-compose.yml");
+      String composeYaml = Files.readString(compose.toPath());
+      assertFalse("the spliced in portal service must leave no placeholder", composeYaml.contains("{{"));
+      assertTrue("the mini portal service is missing", composeYaml.contains("  web:"));
+      assertTrue("the portal image is not baked in", composeYaml.contains(BundleBuildCmd.DEFAULT_PORTAL_IMAGE));
+      // the portal block sits among the services, never after the volumes block
+      assertTrue("the portal service must precede the volumes block",
+        composeYaml.indexOf("  web:") < composeYaml.indexOf("\nvolumes:"));
+
     } finally {
       org.apache.commons.io.FileUtils.deleteQuietly(dir);
     }

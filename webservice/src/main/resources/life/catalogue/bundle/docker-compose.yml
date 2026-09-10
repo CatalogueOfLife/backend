@@ -3,10 +3,12 @@
 #
 #   docker compose up --wait
 #
-# Three services, all mandatory:
+# Three mandatory services plus, for COL releases, a fourth:
 #   postgres  restores the shipped release dump on first boot
 #   elastic   always present - the bundle has no pass through search mode
 #   app       the read API + name matching + OpenRefine reconciliation for that one release
+#   web       the mini portal on http://localhost/ - present only when this bundle was built
+#             from a release of the COL project, see BundleBuildCmd
 #
 # `--wait` blocks until the app is healthy, which includes the first boot elastic indexing.
 # Override the image with CLB_BUNDLE_IMAGE if you build your own.
@@ -79,7 +81,7 @@ services:
       timeout: 10s
       retries: 240
       start_period: 60s
-
+{{PORTAL_SERVICE}}
 volumes:
   pgdata:
   esdata:

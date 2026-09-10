@@ -1,0 +1,127 @@
+/*
+ * Bundle mini portal additions.
+ *
+ * foundation.css / style.css / custom.css are copied verbatim from the COL portal
+ * and carry the site chrome, the homepage kingdom tiles and the top bar. What is
+ * missing there lives in Astro component <style> blocks, so the footer layout and
+ * the version panel are reproduced here, plus the few bundle-only bits.
+ */
+
+/* ------------------------------------------------------------------ footer */
+/* Version (left) - logo (exact centre) - brand (right), as in Footer.astro. */
+.footer-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 2.5rem 1rem 1.5rem;
+}
+.footer-version { flex: 1; text-align: right; }
+.footer-version ul { margin: 0; list-style: none; }
+.footer-logo-link { flex: none; display: block; }
+.footer-square-logo {
+  width: 127px;
+  height: 127px;
+  margin-top: 3px;
+  border-radius: 4px;
+  display: block;
+}
+.footer-brand { flex: 1; text-align: left; }
+.footer-brand h4 { margin: 0 0 0.5rem; }
+.footer-links { margin: 0 0 1rem; padding: 0; list-style: none; }
+.footer-links li { margin: 0; }
+
+#GCBR { display: flex; align-items: center; gap: 0.6rem; margin: 0; }
+#GCBR .gcbr-text { text-align: left; font-size: 0.9rem; line-height: 1.2; }
+#GCBR .cbdr-logo { height: 40px; }
+
+.footer-disclaimer p {
+  max-width: 55rem;
+  margin: 0 auto;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+@media only screen and (max-width: 640px) {
+  .footer-main { flex-direction: column; align-items: center; gap: 1.5rem; }
+  .footer-logo-link { order: -1; }
+  .footer-version, .footer-brand { text-align: center; }
+  #GCBR { justify-content: center; }
+}
+
+/* ---------------------------------------------------------- version panel */
+.version-heading { display: flex; align-items: center; gap: 10px; }
+.bibtex-link img { height: 26px; display: block; }
+
+/* ------------------------------------------------------------- page frame */
+/* Island pages sit on white, like the portal's own island wrappers. */
+.island-row { background: #fff; padding-top: 10px; }
+.page-heading { margin: 24px 0 8px; }
+.page-intro { color: #666; margin-bottom: 20px; }
+
+.bundle-error {
+  background: #fff4f4;
+  border: 1px solid #e8b4b4;
+  padding: 16px 20px;
+  margin: 20px 0;
+}
+.bundle-error h4 { margin-top: 0; color: #a33; }
+.bundle-error code { background: #f6e7e7; }
+
+.bundle-loading { color: #999; padding: 24px 0; }
+
+/* -------------------------------------------------------------- stat tiles */
+/* A KPI row, not four competing hero figures: one modest value per tile with its
+   label beneath. Raleway is inherited from the site, so these match the chrome.
+   Deliberately no tabular-nums - that gives every digit the width of a 0, which
+   reads loose at display sizes; it belongs in columns of numbers, not here. */
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 24px 0 12px;
+}
+.stat-tile {
+  flex: 1 1 150px;
+  padding-right: 16px;
+  margin-bottom: 12px;
+}
+.stat-value {
+  display: block;
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: #333;
+}
+.stat-label {
+  display: block;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+/* ------------------------------------------------------------------ about */
+.about-table { width: 100%; }
+.about-table th {
+  text-align: left;
+  width: 12rem;
+  vertical-align: top;
+  font-weight: 700;
+  padding: 6px 12px 6px 0;
+}
+.about-table td { padding: 6px 0; vertical-align: top; }
+
+/* --------------------------------------------------------------- matching */
+.match-drop {
+  border: 2px dashed #ccc;
+  background: #fafafa;
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s linear, background 0.2s linear;
+}
+.match-drop:hover, .match-drop.dragover { border-color: #4f9d69; background: #f2f9f4; }
+.match-drop.has-file { border-style: solid; border-color: #4f9d69; background: #f2f9f4; }
+.match-file { font-weight: 700; }
+.match-status { margin: 16px 0; }
+.match-columns { font-size: 0.9rem; color: #666; }
+.match-columns code { background: #f3f3f3; }

@@ -3,6 +3,7 @@ package life.catalogue.command;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.dao.FileMetricsDatasetDao;
 import life.catalogue.dao.Partitioner;
@@ -32,6 +33,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -43,6 +45,7 @@ import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.zaxxer.hikari.HikariDataSource;
 
 import net.sourceforge.argparse4j.impl.Arguments;
@@ -74,13 +77,20 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
   private static final String ARG_DIR = "dir";
   private static final String ARG_DELETE = "delete";
   private static final String ARG_IMAGE = "image";
+  private static final String ARG_PORTAL_IMAGE = "portal-image";
+  private static final String ARG_PORTAL = "portal";
 
   /** Where the generated docker-compose.yml pulls the app image from unless --image says otherwise. */
   static final String DEFAULT_IMAGE = "ghcr.io/catalogueoflife/clb-bundle:latest";
+  /** Likewise for the mini portal image, which like the app image carries no release key. */
+  static final String DEFAULT_PORTAL_IMAGE = "ghcr.io/catalogueoflife/clb-bundle-portal:latest";
 
   /** Runtime files copied into every artifact so a bundle is usable as downloaded. */
   private static final String TEMPLATE_DIR = "life/catalogue/bundle/";
   private static final List<String> TEMPLATES = List.of("config.yml", "docker-compose.yml", "restore.sh", "README.md");
+  /** Fragments spliced into the templates above for COL releases only, keyed by the token they fill. */
+  private static final Map<String, String> PORTAL_FRAGMENTS =
+    Map.of("{{PORTAL_SERVICE}}", "docker-compose-portal.yml", "{{PORTAL_README}}", "README-portal.md");
 
   /**
    * Every dataset row the release slice needs a foreign key to satisfy: the release itself, the project it
@@ -130,6 +140,17 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
       .type(String.class)
       .required(false)
       .help("App image the generated docker-compose.yml pulls, default " + DEFAULT_IMAGE);
+    subparser.addArgument("--" + ARG_PORTAL_IMAGE)
+      .dest(ARG_PORTAL_IMAGE)
+      .type(String.class)
+      .required(false)
+      .help("Mini portal image the generated docker-compose.yml pulls, default " + DEFAULT_PORTAL_IMAGE);
+    subparser.addArgument("--" + ARG_PORTAL)
+      .dest(ARG_PORTAL)
+      .type(Boolean.class)
+      .required(false)
+      .help("Ship the mini portal. Defaults to true for releases of the COL project and false for any other,"
+            + " because the portal is styled and worded for the Catalogue of Life");
   }
 
   @Override
@@ -497,11 +518,19 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
    */
   private void writeRuntimeFiles() throws IOException {
     final String image = ObjectUtils.coalesce(ns.getString(ARG_IMAGE), DEFAULT_IMAGE);
+    final String portalImage = ObjectUtils.coalesce(ns.getString(ARG_PORTAL_IMAGE), DEFAULT_PORTAL_IMAGE);
     final String title = ObjectUtils.coalesce(release.getAlias(), release.getTitle(), "COL release " + key);
+    final boolean portal = withPortal();
     for (String name : TEMPLATES) {
-      String content = new String(Resources.getResourceAsStream(TEMPLATE_DIR + name).readAllBytes(), StandardCharsets.UTF_8)
+      String content = readTemplate(name);
+      // splice the optional fragments in first, so they may use the same tokens as the templates
+      for (var frag : PORTAL_FRAGMENTS.entrySet()) {
+        content = content.replace(frag.getKey(), portal ? readTemplate(frag.getValue()) : "");
+      }
+      content = content
         .replace("{{RELEASE_KEY}}", String.valueOf(key))
         .replace("{{IMAGE}}", image)
+        .replace("{{PORTAL_IMAGE}}", portalImage)
         .replace("{{TITLE}}", title)
         .replace("{{BUILT}}", DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.now()));
       File f = new File(dir, name);
@@ -510,7 +539,31 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
         LOG.warn("Failed to make {} executable", f);
       }
     }
-    LOG.info("Wrote {} into the bundle, app image {}", TEMPLATES, image);
+    LOG.info("Wrote {} into the bundle, app image {}, mini portal {}", TEMPLATES, image,
+      portal ? portalImage : "omitted");
+  }
+
+  private String readTemplate(String name) throws IOException {
+    return new String(Resources.getResourceAsStream(TEMPLATE_DIR + name).readAllBytes(), StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Whether to ship the mini portal alongside the API. It is a COL website - Foundation styling, COL logos
+   * and kingdom tiles keyed to COL taxon ids - so a bundle of any other project is better off with no portal
+   * than with one that misrepresents it. {@code --portal} overrides the detection either way.
+   */
+  @VisibleForTesting
+  boolean withPortal() {
+    Boolean explicit = ns.getBoolean(ARG_PORTAL);
+    if (explicit != null) {
+      return explicit;
+    }
+    // the release itself is never the COL project, so it is the project behind it that decides
+    boolean col = release.getSourceKey() != null && release.getSourceKey() == Datasets.COL;
+    if (!col) {
+      LOG.info("Release {} is not a COL release, omitting the mini portal. Use --portal true to force it.", key);
+    }
+    return col;
   }
 
   private static String quote(String s) {

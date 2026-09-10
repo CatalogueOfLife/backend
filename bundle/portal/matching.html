@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<title>Name matching | Catalogue of Life</title>
+<link rel="stylesheet" href="/css/foundation.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/custom.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@2/umd/main.css" />
+<link rel="stylesheet" href="/css/portal.css" />
+<link href="https://fonts.googleapis.com/css?family=Raleway:400,700,300" rel="stylesheet" />
+</head>
+<body data-page="/matching">
+<div id="site-header"></div>
+<div id="main">
+<div class="full">
+  <div class="row">
+    <div class="large-8 columns prose">
+      <h2 class="page-heading">Name matching</h2>
+      <p class="page-intro">
+        Upload a CSV or TSV file of names and match every row against this release.
+        The matched file is streamed straight back to your browser &mdash; nothing is stored here.
+      </p>
+
+      <div id="match-drop" class="match-drop">
+        <p class="match-file" id="match-filename">Drop a CSV or TSV file here, or click to choose one</p>
+        <p class="match-columns">The first row must be a header containing a <code>scientificName</code> column</p>
+      </div>
+      <input type="file" id="match-input" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values,text/plain" hidden />
+
+      <div class="match-status" id="match-status"></div>
+
+      <p>
+        <button type="button" class="button" id="match-run" disabled>Match names</button>
+        <label style="display:inline-block; margin-left:16px;">
+          Result format
+          <select id="match-format" style="width:auto; display:inline-block; margin:0 0 0 8px;">
+            <option value="TSV">TSV</option>
+            <option value="CSV">CSV</option>
+          </select>
+        </label>
+      </p>
+
+      <h3>Input columns</h3>
+      <p class="match-columns">
+        <code>scientificName</code> is required. <code>ID</code>, <code>authorship</code>,
+        <code>rank</code>, <code>code</code> and <code>status</code> are used when present, as are
+        classification columns such as <code>kingdom</code>, <code>phylum</code>, <code>class</code>,
+        <code>order</code>, <code>family</code> and <code>genus</code> &mdash; they disambiguate homonyms.
+        Every column you supply is echoed back prefixed with <code>original_</code>.
+      </p>
+    </div>
+    <div class="large-4 columns">
+      <h3>How it works</h3>
+      <p>
+        Matching runs synchronously against the names index shipped with this bundle, so the result
+        arrives as one download when the whole file is done. Large files simply take longer; keep the
+        tab open until the download appears.
+      </p>
+      <p>
+        The same endpoint is available directly for scripting:
+      </p>
+      <pre><code>curl -X POST \
+  -H 'Content-Type: text/csv' \
+  --data-binary @names.csv \
+  'http://localhost:8080/match/nameusage?format=CSV' \
+  -o matched.zip</code></pre>
+      <p class="match-columns">
+        The response is a ZIP holding one matched table.
+      </p>
+    </div>
+  </div>
+</div>
+</div>
+<div id="site-footer"></div>
+<!-- col-browser bundles React 19 itself and exposes it as ColBrowser.React -->
+<script>if(!window.setImmediate)window.setImmediate=function(fn){return setTimeout(fn,0)};</script>
+<script src="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@2/umd/col-browser.min.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/matching.js"></script>
+</body>
+</html>

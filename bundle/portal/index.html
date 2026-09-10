@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<title>Catalogue of Life</title>
+<link rel="stylesheet" href="/css/foundation.css" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/custom.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@2/umd/main.css" />
+<link rel="stylesheet" href="/css/portal.css" />
+<link href="https://fonts.googleapis.com/css?family=Raleway:400,700,300" rel="stylesheet" />
+</head>
+<body data-page="/">
+<div id="site-header"></div>
+<div id="main">
+<div class="full" id="homepage">
+  <div class="row">
+    <div class="introduction">
+      The most complete authoritative list of the world&#39;s species &mdash; maintained by hundreds of global
+      taxonomists. This is a self contained copy of a single release.
+      <a href="/about">About this release</a>
+    </div>
+  </div>
+  <div class="row">
+    <div class="medium-8 columns" style="background: white; margin-top: 20px;">
+      <div class="row kingdoms" id="kingdoms"></div>
+      <div class="row">
+        <div class="full main-tree">
+          <div id="tree" class="catalogue-of-life"></div>
+        </div>
+      </div>
+    </div>
+    <div class="medium-4 columns">
+      <br />
+      <h3 class="version-heading">
+        <span>Active Version</span>
+        <a id="version-bibtex" class="bibtex-link" href="#"><img src="/images/logos/bibtex_logo.png" alt="BibTeX" /></a>
+      </h3>
+      <div id="version">
+        <span id="version-alias"></span>
+        Issued: <i id="version-issued"></i><br />
+        <span id="version-doi-row" hidden>DOI: <a id="version-doi" href="#"></a></span>
+      </div>
+
+      <h3>Release in a box</h3>
+      <p>
+        Everything on this site is served by the copy of ChecklistBank running next to it &mdash; its own
+        database and search index, with no call to the internet for the taxonomic data. The full
+        Catalogue of Life, with every release and the tools around it, lives at
+        <a href="https://www.catalogueoflife.org">catalogueoflife.org</a>.
+      </p>
+      <p>
+        The same data is available as a JSON API on port 8080. See
+        <a href="/about">About</a> for what this release contains.
+      </p>
+    </div>
+  </div>
+</div>
+</div>
+<div id="site-footer"></div>
+<!-- col-browser bundles React 19 itself and exposes it as ColBrowser.React -->
+<script>if(!window.setImmediate)window.setImmediate=function(fn){return setTimeout(fn,0)};</script>
+<script src="https://cdn.jsdelivr.net/gh/CatalogueOfLife/portal-components@2/umd/col-browser.min.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/index.js"></script>
+</body>
+</html>

@@ -3,7 +3,8 @@
 A self contained Docker bundle that serves **one** Catalogue of Life release: the read ChecklistBank
 API, name matching and OpenRefine reconciliation, backed by its own Postgres and its own
 Elasticsearch. It exists for offline R-client and OpenRefine users and doubles as a relocatable
-matching tier.
+matching tier. A COL release additionally gets a **mini portal** on port 80 - a small COL website
+for browsing that one release, see [The mini portal](#the-mini-portal).
 
 It supersedes nothing: the DB-free single dataset `WsMatchingServer` still exists and still serves
 matching only. The bundle is the fuller thing — it has a database and therefore reuses every read
@@ -20,6 +21,7 @@ The design record behind it is [`2026-06-20-clb-release-in-a-box-bundle.md`](202
 | keyless routing | `webservice/src/main/java/life/catalogue/dw/jersey/filter/SingleDatasetRewriteFilter.java` |
 | data artifact builder | `webservice/src/main/java/life/catalogue/command/BundleBuildCmd.java` (`bundleBuild`) |
 | image | [`../bundle/Dockerfile`](../bundle/Dockerfile) |
+| mini portal | [`../bundle/portal/`](../bundle/portal), served by [`../bundle/Dockerfile.portal`](../bundle/Dockerfile.portal) + [`../bundle/nginx.conf`](../bundle/nginx.conf) |
 | runtime templates | `webservice/src/main/resources/life/catalogue/bundle/` |
 
 `WsBundleServer` extends `WsROServer`, so the entire read API — dataset, taxon, tree, name, synonym,
@@ -99,7 +101,7 @@ col-3287-bundle/
   matcher/{releaseKey}/   usages.bin, canonical.bin, groups.bin, dataset.json
   metrics/                the file based dataset metrics of the release
   bundle.json             release key, title, attempt, source db, build time
-  docker-compose.yml      the three services, app image filled in from --image
+  docker-compose.yml      the services, images filled in from --image / --portal-image
   config.yml              the app config, releaseKey filled in
   restore.sh              postgres first boot restore hook
   README.md               what it is and how to use it
@@ -139,8 +141,9 @@ build a transition table of everything a `COPY` inserts — and the counter is r
 
 The two halves have opposite properties, so they travel separately:
 
-- **The image is release agnostic** and changes with the backend, so it is tagged with the backend
-  version and pushed once per release of the code, not once per COL release.
+- **The images are release agnostic** and change with the backend, so they are tagged with the
+  backend version and pushed once per release of the code, not once per COL release. There are two,
+  `clb-bundle` and `clb-bundle-portal`, and they always carry the same tag.
 - **The data artifact is immutable** and multi GB, so it is published as a `tar` next to the other
   downloads of that release, with a `.sha256` beside it. `bundle.json` doubles as its manifest.
 
@@ -153,10 +156,13 @@ Three pieces, one per artifact, each triggered by the thing that actually change
 
 ### The image — GitHub Actions, on a backend release
 
-[`.github/workflows/bundle-image.yml`](../.github/workflows/bundle-image.yml) builds
-`bundle/Dockerfile` and pushes `ghcr.io/catalogueoflife/clb-bundle:<version>` plus `:latest` on every
-`v*` tag, using the built in `GITHUB_TOKEN`. `workflow_dispatch` rebuilds a tag by hand. The image
-carries no release key, so one build serves every COL release and the version tracks the backend.
+[`.github/workflows/bundle-image.yml`](../.github/workflows/bundle-image.yml) builds both
+`bundle/Dockerfile` and `bundle/Dockerfile.portal` and pushes
+`ghcr.io/catalogueoflife/clb-bundle:<version>` and `clb-bundle-portal:<version>` plus `:latest` on
+every `v*` tag, using the built in `GITHUB_TOKEN`. A single `tags` job resolves the version so the
+two images can never be tagged differently. `workflow_dispatch` rebuilds a tag by hand. Neither
+image carries a release key, so one build serves every COL release and the version tracks the
+backend.
 
 ### The data artifact — a Jenkins job, one argument
 
@@ -226,12 +232,62 @@ is what *causes* publication (`PUT /dataset/{key}/publish`), so firing it from a
 would be circular. Only the `actions` list runs early enough for that, and using it would turn
 publishing a release from a human decision into an automatic one.
 
+## The mini portal
+
+A bundle built from a **COL release** also ships a small website for browsing that release, served
+by an `nginx:alpine` sidecar (the compose `web` service) on <http://localhost/>. The API on 8080 is
+untouched, so existing R and OpenRefine clients are unaffected.
+
+| Page | What it is |
+|---|---|
+| `/` | the COL homepage layout: kingdom tiles and the classification tree |
+| `/search` | the full faceted search |
+| `/about` | this release's metadata |
+| `/sources` | the source datasets, grouped by publisher |
+| `/metrics` | headline totals and a rank breakdown |
+| `/matching` | upload a CSV/TSV and match it against this release |
+| `/taxon/{id}`, `/dataset/{key}` | the detail pages |
+
+It is plain HTML around the published
+[`col-browser`](https://github.com/CatalogueOfLife/portal-components) UMD bundle - the same
+components the real portal mounts - so there is no node build anywhere in this repo. Look and feel
+come from the portal's own `foundation.css` / `style.css` / `custom.css`, copied into
+`bundle/portal/css/`.
+
+**It never learns its release key at build time.** One call to the keyless `/api/dataset` - which
+`SingleDatasetRewriteFilter` turns into `/dataset/{releaseKey}` - yields the key every component
+needs plus the metadata `/about` and the footer render. That is what lets the whole site ship as one
+release agnostic image whose tag tracks the backend, exactly like the app image, and it means a
+frontend fix reaches an already downloaded artifact by pulling a new image rather than rebuilding
+multi GB of data.
+
+`nginx.conf` does two things: it reverse proxies `/api/` to `app:8080` (so the page is same origin
+and CORS never enters into it), and it falls `/taxon/…` and `/dataset/…` back to their one page each.
+Everything else 404s rather than rendering a detail page with an error in it. Note that rewriting the
+`/api` prefix costs the percent encoding - nginx normalises the URI - so an id containing `%2F` would
+reach the app as a real slash. COL ids are short opaque strings, and the app's own port 8080 still
+reads the raw path, so nothing the portal links to is affected.
+
+### Why COL releases only
+
+The portal is a COL website: COL logos, COL wording, and kingdom tiles keyed to the COL taxon ids
+`N`/`P`/`F`/`C`. Pointed at some other project it would misrepresent it. So `BundleBuildCmd` writes
+the `web` service into `docker-compose.yml` only when `release.getSourceKey() == Datasets.COL`, and
+any other project gets the same API only bundle as before. `--portal true|false` overrides the
+detection in either direction; `--portal-image` picks the image, as `--image` does for the app.
+
+Mechanically the compose template carries a `{{PORTAL_SERVICE}}` token that expands either to the
+`web:` block (its own template, `docker-compose-portal.yml`) or to nothing.
+
 ## Running it
 
 ```bash
 tar xaf col-3287-bundle.tar.zst && cd col-3287-bundle
 docker compose up --wait
 ```
+
+For a COL release that also brings up the mini portal on <http://localhost/>; the API is on 8080
+either way.
 
 `postgres` restores `release.dump` through `/docker-entrypoint-initdb.d` on first boot, `elastic`
 comes up empty, and the app fills it. First boot on a full COL release therefore takes a while;
@@ -243,5 +299,15 @@ the matcher store keeps its taxonomic group cache in `groups.bin`.
 ## What a bundle does not do
 
 No import, sync, release, export-job or admin write endpoints. No GBIF registry authentication (the
-config ships an empty `MapAuthenticationFactory`), no mail, no DOI registration. Bulk matching is
-streaming only.
+config ships an empty `MapAuthenticationFactory`), no mail, no DOI registration.
+
+**Bulk matching is streaming only.** The mini portal's `/matching` page posts the raw file to the
+keyless `POST /match/nameusage`, which needs no credentials and streams the annotated result back on
+the same request. There is no job to poll and no result to re-download later: the async
+`POST /dataset/{key}/match/nameusage/job` requires `@Auth`, and nobody can authenticate against an
+empty user map. Two details bite anyone calling it directly - the request is **not** multipart (raw
+bytes with a `text/*` content type; `FormData` gets a 415), and the response is a **ZIP** even though
+it is labelled `text/plain`.
+
+The mini portal is a COL-release-only extra and is absent from every other bundle, see
+[Why COL releases only](#why-col-releases-only).

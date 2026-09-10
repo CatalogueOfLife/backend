@@ -1,0 +1,71 @@
+.caption-absolute { position: absolute; bottom: 0; right: 0; background: rgba(0, 0, 0, 0.3); color: white; }
+
+.caption-absolute a { color: white !important; }
+
+.caption, .caption p { padding: 3px; font-size: 0.9rem !important; color: inherit; }
+
+.caption a, .caption p a { color: #999; text-decoration: underline; }
+
+.caption *, .caption p * { padding: 0; margin: 0; }
+
+.entryList { display: flex; flex-direction: row; flex-wrap: wrap; }
+
+.entryList > div { flex: 1 1 50%; }
+
+.entryList .icon-text-simple p, .entryList .icon-text-simple h3 { margin-left: 20px; }
+
+@media only screen and (max-width: 480px) { .entryList > div { flex: 1 1 100%; } }
+
+.contact-map iframe { width: 100%; }
+
+figure { margin: 0 0 1em 0; }
+
+figcaption { font-size: 0.9rem; }
+
+.modDefaultSlider .sequence .title h2 { text-shadow: 0px 0px 1px rgba(0, 0, 0, 0.3); /* add a small border to text on the homepage hero to make it easier to find images */ }
+
+.linkBlock { position: relative; }
+
+.linkBlock .blockLink { position: absolute; top: 0; bottom: 0; left: 0; right: 0; display: block; }
+
+a.inherit { color: inherit; }
+
+a.inherit:hover { color: #F9CE06; }
+
+:target::before { content: ""; display: block; margin-top: -80px; height: 80px; width: 1px; }
+
+pre code { display: block; }
+
+.full { min-height: 30vh; }
+
+body { color: #444; }
+
+.links a { color: #555; }
+
+.top-bar-section ul li > a { color: #555; }
+
+.top-bar-section ul li.active:not(.has-form) a:not(.button) { color: #333; }
+
+.top-bar-section ul li.active:not(.has-form) a:not(.button):hover { color: #333; }
+
+.top-bar-section ul li:hover:not(.has-form) > a { color: #333; }
+
+ul.posticon li { list-style: disc; margin-left: 1rem; }
+
+.xr-icon { background: #f9f0ff; border-color: #d3adf7; border-radius: 3px; border: 1px solid #d9d9d9; color: #722ed1; cursor: default; display: inline-block; font-family: monospace; font-feature-settings: "tnum"; font-variant: tabular-nums; font-weight: 500; list-style: none; font-size: 0.8rem; opacity: 1; ox-sizing: border-box; padding: 2px; margin-bottom: 2px; transition: all 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86); vertical-align: middle; white-space: nowrap; line-height: 1.0; height: auto; }
+
+#homepage .introduction { text-align: left; padding-left: 16px; }
+
+/* The right column isn't `.prose`, so its section headings need explicit top
+   spacing (the version panel's heading is the first and stays put). */
+#homepage .medium-4 h3:not(.version-heading) { margin-top: 1.6rem; }
+
+img.cbdr-logo { height: 42px !important; margin-bottom: 10px; }
+
+/* Post titles read like the site's headings (dark), not coloured links;
+   they only take the link colour on hover. */
+.modBlogPost h3 a, .modBlogPost h4 a { color: #333; }
+
+.modBlogPost h3 a:hover, .modBlogPost h4 a:hover { color: #1d7ea9; }
+
+/*# sourceMappingURL=custom.css.map */

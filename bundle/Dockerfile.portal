@@ -1,0 +1,14 @@
+# CLB release-in-a-box - the mini portal image.
+#
+# Static pages only: it holds no release key and no data, so one image serves any
+# COL release and is tagged with the backend version like the app image. The
+# release identifies itself at runtime through the keyless /api/dataset, which the
+# app rewrites to its single release.
+#
+#   docker build -f bundle/Dockerfile.portal -t clb-bundle-portal .
+FROM nginx:alpine
+
+COPY bundle/nginx.conf /etc/nginx/conf.d/default.conf
+COPY bundle/portal/ /usr/share/nginx/html/
+
+EXPOSE 80
