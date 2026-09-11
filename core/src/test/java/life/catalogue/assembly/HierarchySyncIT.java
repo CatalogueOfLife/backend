@@ -18,8 +18,8 @@ import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.junit.TreeRepoRule;
 import life.catalogue.matching.IdentifierScopeResolver;
+import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherFactory;
-import life.catalogue.matching.nidx.NameIndex;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
@@ -28,6 +28,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiFunction;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.AfterClass;
@@ -1011,7 +1012,139 @@ public class HierarchySyncIT {
     matchingRule.rematch(PROJECT_KEY);
   }
 
+  // ---------- references to imported usages across re-syncs ----------
+
+  /**
+   * A re-sync deletes what the sector imported and imports it again. It has to come back under the same ids,
+   * or everything pointing at the imported usages - children, synonyms, sector targets - dangles.
+   */
+  @Test
+  public void resyncKeepsIdsOfImportedUsages() throws Exception {
+    runHierarchySync();
+    String felidae = getByName(PROJECT_KEY, Rank.FAMILY, "Felidae").getId();
+    String silvestris = getByName(PROJECT_KEY, Rank.SPECIES, "Felis silvestris").getId();
+
+    runHierarchySync();
+
+    assertEquals("an imported ancestor must keep its id", felidae, getByName(PROJECT_KEY, Rank.FAMILY, "Felidae").getId());
+    assertEquals("a copied synonym must keep its id", silvestris, getByName(PROJECT_KEY, Rank.SPECIES, "Felis silvestris").getId());
+  }
+
+  /**
+   * A curator places a taxon under an imported ancestor. The next sync must not leave it pointing at a deleted row.
+   */
+  @Test
+  public void usageUnderImportedTaxonSurvivesResync() throws Exception {
+    runHierarchySync();
+    String felidae = getByName(PROJECT_KEY, Rank.FAMILY, "Felidae").getId();
+    insertTaxon(PROJECT_KEY, P_Custom, felidae, Rank.GENUS, "Customia");
+
+    runHierarchySync();
+
+    NameUsageBase custom = getByID(PROJECT_KEY, P_Custom);
+    assertEquals(felidae, custom.getParentId());
+    assertNotNull("the parent must still exist", getByID(PROJECT_KEY, custom.getParentId()));
+    assertEquals(0, verbatimIssueCount(PROJECT_KEY, P_Custom, Issue.PARENT_ID_INVALID));
+  }
+
+  /**
+   * A merge sector adds vernacular names to usages another sector owns - the imported ancestors included.
+   * They carry the merge sector's key, so the hierarchy sync neither deletes nor copies them, and they must survive.
+   */
+  @Test
+  public void foreignVernacularOnImportedTaxonSurvivesResync() throws Exception {
+    runHierarchySync();
+    String felidae = getByName(PROJECT_KEY, Rank.FAMILY, "Felidae").getId();
+    Sector merge = createMergeSector();
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      VernacularName vn = new VernacularName();
+      vn.setDatasetKey(PROJECT_KEY);
+      vn.setSectorKey(merge.getId());
+      vn.setName("Katzen");
+      vn.setLanguage("deu");
+      vn.applyUser(USER);
+      s.getMapper(VernacularNameMapper.class).create(vn, felidae);
+    }
+
+    runHierarchySync();
+
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var vnames = s.getMapper(VernacularNameMapper.class).listByTaxon(DSID.of(PROJECT_KEY, felidae));
+      assertEquals("the merge sector's vernacular must still be attached to Felidae", 1, vnames.size());
+      assertEquals("Katzen", vnames.get(0).getName());
+    }
+  }
+
+  /**
+   * The source dropped a taxon the project still refers to. Whatever is left pointing at the deleted import loses its
+   * parent and is flagged, instead of dangling: a missing parent aborts releases and a synonym without accepted aborts
+   * the search index.
+   */
+  @Test
+  public void referencesToDroppedImportsAreRepaired() throws Exception {
+    runHierarchySync();
+    String felidae = getByName(PROJECT_KEY, Rank.FAMILY, "Felidae").getId();
+    insertTaxon(PROJECT_KEY, P_Custom, felidae, Rank.GENUS, "Customia");
+    insertSynonym(PROJECT_KEY, P_Custom_syn, felidae, Rank.FAMILY, "Customiidae");
+    // the source dissolves Felidae
+    setParent(targetKey, T_Felis, T_Animalia);
+    deleteUsage(targetKey, T_Felidae);
+
+    HierarchySync sync = runHierarchySync();
+
+    NameUsageBase custom = getByID(PROJECT_KEY, P_Custom);
+    assertNull("a taxon under the dropped import must lose its parent", custom.getParentId());
+    assertHasVerbatimIssue(PROJECT_KEY, P_Custom, Issue.PARENT_ID_INVALID);
+    NameUsageBase syn = getByID(PROJECT_KEY, P_Custom_syn);
+    assertNull("a synonym of the dropped import must lose its accepted", syn.getParentId());
+    assertHasVerbatimIssue(PROJECT_KEY, P_Custom_syn, Issue.ACCEPTED_ID_INVALID);
+    assertTrue("the sync should warn about the repair: " + sync.getState().getWarnings(),
+      sync.getState().getWarnings().stream().anyMatch(w -> w.startsWith("2 usages pointed at a parent that no longer exists")));
+  }
+
+  /**
+   * A sync that fails after deleting its imports must still repair what points at them.
+   */
+  @Test
+  public void failedSyncStillRepairsDanglingParents() throws Exception {
+    runHierarchySync();
+    String felidae = getByName(PROJECT_KEY, Rank.FAMILY, "Felidae").getId();
+    insertTaxon(PROJECT_KEY, P_Custom, felidae, Rank.GENUS, "Customia");
+
+    // the source matcher is first needed right after the old imports are gone
+    HierarchySync sync = newHierarchySync((dk, session) -> {
+      throw new IllegalStateException("source matcher unavailable");
+    });
+    sync.run();
+    assertEquals(JobStatus.FAILED, sync.getStatus());
+
+    NameUsageBase custom = getByID(PROJECT_KEY, P_Custom);
+    assertNull(custom.getParentId());
+    assertHasVerbatimIssue(PROJECT_KEY, P_Custom, Issue.PARENT_ID_INVALID);
+  }
+
+  static final String P_Custom = "p_custom";
+  static final String P_Custom_syn = "p_custom_syn";
+
   // ---------- helpers ----------
+
+  private static Sector createMergeSector() {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      Sector sector = new Sector();
+      sector.setMode(Sector.Mode.MERGE);
+      sector.setDatasetKey(PROJECT_KEY);
+      sector.setSubjectDatasetKey(targetKey);
+      sector.applyUser(USER);
+      s.getMapper(SectorMapper.class).create(sector);
+      return sector;
+    }
+  }
+
+  private static void deleteUsage(int datasetKey, String id) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      s.getMapper(NameUsageMapper.class).delete(DSID.of(datasetKey, id));
+    }
+  }
 
   private static void insertSynonymWithAuthorship(int datasetKey, String id, String acceptedId, Rank rank, String scientificName,
                                                   Authorship combinationAuthorship) {
@@ -1047,34 +1180,38 @@ public class HierarchySyncIT {
     }
   }
 
-  private void runHierarchySync() throws Exception {
+  private HierarchySync runHierarchySync() throws Exception {
+    HierarchySync sync = newHierarchySync(null);
+    sync.run();
+    if (sync.getStatus() != JobStatus.FINISHED) {
+      throw new AssertionError("HierarchySync did not finish cleanly: status=" + sync.getStatus() + " error=" + sync.getState().getError());
+    }
+    return sync;
+  }
+
+  /**
+   * @param sourceMatcherProvider replaces the postgres matcher against the source dataset if given
+   */
+  private HierarchySync newHierarchySync(BiFunction<Integer, SqlSession, UsageMatcher> sourceMatcherProvider) {
     SectorDao sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), null, null);
     SectorImportDao siDao = new SectorImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), TreeRepoRule.getRepo());
     EventBroker bus = TestUtils.mockedBroker();
-    NameIndex ni = NameMatchingRule.getIndex();
-    UsageMatcherFactory matcherFactory = new UsageMatcherFactory(new MatchingConfig(), ni, SqlSessionFactoryRule.getSqlSessionFactory(), null);
-    try {
-      HierarchySync sync = new HierarchySync(
-        hierarchySector,
-        SqlSessionFactoryRule.getSqlSessionFactory(),
-        session -> matcherFactory.postgres(PROJECT_KEY, session),
-        (dk, session) -> matcherFactory.postgres(dk, session),
-        LatestDatasetKeyCache.passThru(),
-        bus,
-        NameUsageIndexService.passThru(),
-        sdao,
-        siDao,
-        null,
-        scopeResolver,
-        USER
-      );
-      sync.run();
-      if (sync.getStatus() != JobStatus.FINISHED) {
-        throw new AssertionError("HierarchySync did not finish cleanly: status=" + sync.getStatus() + " error=" + sync.getState().getError());
-      }
-    } finally {
-      matcherFactory.close();
-    }
+    // postgres matchers read live data and hold no resources beyond the session they are given
+    UsageMatcherFactory matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), null);
+    return new HierarchySync(
+      hierarchySector,
+      SqlSessionFactoryRule.getSqlSessionFactory(),
+      session -> matcherFactory.postgres(PROJECT_KEY, session),
+      sourceMatcherProvider != null ? sourceMatcherProvider : (dk, session) -> matcherFactory.postgres(dk, session),
+      LatestDatasetKeyCache.passThru(),
+      bus,
+      NameUsageIndexService.passThru(),
+      sdao,
+      siDao,
+      null,
+      scopeResolver,
+      USER
+    );
   }
 
   private static int createExternalDataset(String title) {

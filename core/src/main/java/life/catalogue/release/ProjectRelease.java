@@ -258,6 +258,16 @@ public class ProjectRelease extends AbstractProjectCopy {
       prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
     }
 
+    // the id provider walks every classification and aborts on a parent that no longer exists,
+    // which a sector re-sync can leave behind in the project
+    try (SqlSession session = factory.openSession(false)) {
+      var repaired = TreeRepair.fixMissingParents(session, projectKey, null, user);
+      session.commit();
+      if (!repaired.isEmpty()) {
+        LOG.warn("Moved {} usages of project {} with a parent that no longer exists to the root", repaired.size(), projectKey);
+      }
+    }
+
     // map ids
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
