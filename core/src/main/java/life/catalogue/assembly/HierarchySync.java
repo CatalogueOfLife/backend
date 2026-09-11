@@ -12,6 +12,7 @@ import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimSource;
+import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
@@ -26,6 +27,7 @@ import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
+import life.catalogue.dao.TreeRepair;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -33,6 +35,7 @@ import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
+import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.matching.IdentifierScopeResolver;
@@ -182,6 +185,16 @@ public class HierarchySync extends SectorRunnable {
   private final Map<String, List<String>> acceptedChains = new HashMap<>();
   /** accepted project usages matched to a source synonym. Phase 2 demotes them, so phase 1 neither moves nor reuses them. */
   private final Set<String> pendingDemotes = new HashSet<>();
+  /**
+   * source id -> project id of the usages the previous run imported, read before they are deleted. A usage imported
+   * again for the same source id gets its old id back, so references to it stay valid. Each id is handed out once.
+   */
+  private final Map<String, String> previousIds = new HashMap<>();
+  /**
+   * source id of a previous import -> the vernacular names other sectors (merge sectors) attached to it. They have
+   * to go before the import can be deleted, and are attached again to whatever represents that source id afterwards.
+   */
+  private final Map<String, List<VernacularName>> foreignVernaculars = new HashMap<>();
 
   /** Lazily-filled cache for source dataset usages; constructed/closed around the four phases in {@link #doWork()}. */
   private UsageCache sourceCache;
@@ -253,13 +266,16 @@ public class HierarchySync extends SectorRunnable {
     // classification CTEs and per-match source row fetches on larger projects.
     final File cacheFile = new File(System.getProperty("java.io.tmpdir"),
       "HierarchySync-UC-" + sectorKey.getId() + "-" + UUID.randomUUID());
+    boolean deleted = false;
     try (UsageCache cache = UsageCache.mapDB(sourceDatasetKey, cacheFile);
          SqlSession loaderSession = factory.openSession(true)) {
       this.sourceCache = cache;
       this.sourceLoader = new CacheLoader.MybatisSession(loaderSession, sourceDatasetKey);
 
       setStep(ImportState.DELETING);
+      detachPreviousImports();
       deleteOld();
+      deleted = true;
       // from here on the project no longer holds what the last successful attempt measured,
       // so a failure must not leave sector.sync_attempt pointing at it - see pinFailedAttempt()
       markDataDestroyed();
@@ -289,6 +305,19 @@ public class HierarchySync extends SectorRunnable {
     } finally {
       this.sourceCache = null;
       this.sourceLoader = null;
+      // never mask the error of a failed sync with one of these
+      try {
+        reattachForeignVernaculars(!deleted);
+      } catch (RuntimeException e) {
+        LOG.error("Hierarchy sector {}: failed to attach the vernacular names of other sectors again", sectorKey, e);
+      }
+      if (deleted) {
+        try {
+          repairDanglingParents();
+        } catch (RuntimeException e) {
+          LOG.error("Hierarchy sector {}: failed to repair usages with a parent that no longer exists", sectorKey, e);
+        }
+      }
     }
   }
 
@@ -343,6 +372,7 @@ public class HierarchySync extends SectorRunnable {
 
     // Pass 3: insert ancestors top-down with project-side dedup; populates sourceToProject.
     insertAncestorsTopDown(projectKey, ancestorsToInsert, sourceScope);
+    reattachForeignVernaculars(false);
 
     // Pass 4: rewire id-matched accepted usages to their closest project ancestor.
     rewireProjectParents(projectKey, sourceChainForAccepted);
@@ -838,8 +868,9 @@ public class HierarchySync extends SectorRunnable {
             t.getName().setVerbatimSourceKey(v.getId());
           }
           // copy. No extension entities; reference linkage is dropped in this phase.
+          // the id the previous run gave the import of this source taxon, so nothing pointing at it dangles
           CopyUtil.copyUsage(batch, t, DSID.of(projectKey, projectParentId), user, Set.of(),
-            ref -> null, refId -> null);
+            CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, sn -> reuseId(origSourceId), nidx -> null, ref -> null, refId -> null);
 
           // CopyUtil mutated t to its new project id - record mapping
           sourceToProject.put(origSourceId, t.getId());
@@ -1326,8 +1357,9 @@ public class HierarchySync extends SectorRunnable {
             syn.getName().setVerbatimSourceKey(v.getId());
           }
           // copy. parent = the project's accepted taxon. No extension entities; reference linkage dropped.
+          // The synonym keeps the id the previous run gave it.
           CopyUtil.copyUsage(batch, syn, DSID.of(projectKey, projectAcceptedId), user, Set.of(),
-            ref -> null, refId -> null);
+            CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, sn -> reuseId(origSourceId), nidx -> null, ref -> null, refId -> null);
 
           if (sourceScope != null) {
             writeNum.addIdentifier(DSID.of(projectKey, syn.getId()), List.of(new Identifier(sourceScope, origSourceId)));
@@ -1449,6 +1481,120 @@ public class HierarchySync extends SectorRunnable {
     writeVsm.create(v);
     pn.setVerbatimSourceKey(v.getId());
     return DSID.of(projectKey, v.getId());
+  }
+
+  /**
+   * Reads what the previous run imported before {@link #deleteOld()} removes it: the project id of every import by its
+   * source id, so the import of the same source taxon gets it back, and the vernacular names other sectors attached to
+   * the imported taxa. Those are taken off right away - their foreign key is enforced and would fail the delete.
+   * Every import carries a verbatim source with its source id, so this does not depend on an identifier scope.
+   */
+  private void detachPreviousImports() {
+    final int projectKey = sectorKey.getDatasetKey();
+    final Map<Integer, String> sourceIdsByVSKey = new HashMap<>();
+    final Map<String, String> importedTaxa = new HashMap<>(); // project id -> source id
+    // autoCommit=false keeps the cursors alive, see discoverMatches
+    try (SqlSession session = factory.openSession(false)) {
+      try (Cursor<VerbatimSource> cursor = session.getMapper(VerbatimSourceMapper.class).processSector(sector)) {
+        for (VerbatimSource v : cursor) {
+          if (v.getSourceId() != null) {
+            sourceIdsByVSKey.put(v.getId(), v.getSourceId());
+          }
+        }
+      }
+      try (Cursor<NameUsageBase> cursor = session.getMapper(NameUsageMapper.class).processSector(sector)) {
+        for (NameUsageBase u : cursor) {
+          String sourceId = u.getVerbatimSourceKey() == null ? null : sourceIdsByVSKey.get(u.getVerbatimSourceKey());
+          if (sourceId != null) {
+            previousIds.putIfAbsent(sourceId, u.getId());
+            if (u.getStatus() != null && u.getStatus().isTaxon()) {
+              importedTaxa.put(u.getId(), sourceId);
+            }
+          }
+        }
+      }
+    } catch (java.io.IOException e) {
+      throw new RuntimeException("Failed to read the previous imports of hierarchy sector " + sectorKey, e);
+    }
+
+    int detached = 0;
+    try (SqlSession session = factory.openSession(true)) {
+      VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
+      for (Map.Entry<String, String> e : importedTaxa.entrySet()) {
+        final DSID<String> key = DSID.of(projectKey, e.getKey());
+        List<VernacularName> vnames = vm.listByTaxon(key);
+        if (!vnames.isEmpty()) {
+          // this sector copies no extensions, so all of them came from another sector
+          foreignVernaculars.computeIfAbsent(e.getValue(), k -> new ArrayList<>()).addAll(vnames);
+          vm.deleteByTaxon(key);
+          detached += vnames.size();
+        }
+      }
+    }
+    LOG.info("Hierarchy sector {}: read {} previous imports and detached {} vernacular names other sectors attached to them",
+      sectorKey, previousIds.size(), detached);
+  }
+
+  /**
+   * Attaches the vernacular names taken off the previous imports to whatever represents their source taxon now: the
+   * re-import - under its old id - or an existing project usage it was deduplicated against. Names whose source taxon
+   * was not imported again are dropped with a warning; their merge sector brings them back on its next sync.
+   * Idempotent, every name is attached at most once.
+   *
+   * @param previousImportsExist true if the previous imports were never deleted, so the names go back where they were
+   */
+  private void reattachForeignVernaculars(boolean previousImportsExist) {
+    if (foreignVernaculars.isEmpty()) return;
+    int attached = 0;
+    int dropped = 0;
+    try (SqlSession session = factory.openSession(true)) {
+      VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
+      var iter = foreignVernaculars.entrySet().iterator();
+      while (iter.hasNext()) {
+        var e = iter.next();
+        String projectId = previousImportsExist ? previousIds.get(e.getKey()) : sourceToProject.get(e.getKey());
+        if (projectId == null) {
+          dropped += e.getValue().size();
+        } else {
+          for (VernacularName vn : e.getValue()) {
+            vn.setId(null);
+            vm.create(vn, projectId);
+            attached++;
+          }
+        }
+        iter.remove();
+      }
+    }
+    if (dropped > 0) {
+      LOG.warn("Hierarchy sector {}: dropped {} vernacular names of other sectors whose taxon is no longer imported", sectorKey, dropped);
+      state.addWarning(String.format("%d vernacular names of other sectors were dropped, as their taxon is no longer imported", dropped));
+    }
+    LOG.info("Hierarchy sector {}: attached {} vernacular names of other sectors again", sectorKey, attached);
+  }
+
+  /**
+   * @return the id the previous run gave the import of this source taxon - handed out once - or a new one
+   */
+  private String reuseId(String sourceId) {
+    String id = previousIds.remove(sourceId);
+    return id != null ? id : CopyUtil.ID_GENERATOR.get();
+  }
+
+  /**
+   * Moves the usages of the project whose parent no longer exists to the root and flags them, see
+   * {@link TreeRepair#fixMissingParents}. Whatever pointed at an import whose source taxon is gone dangles otherwise -
+   * or at every import, when the sync failed after deleting them. Covers the whole project, so it also catches what
+   * other syncs left behind.
+   */
+  private void repairDanglingParents() {
+    try (SqlSession session = factory.openSession(false)) {
+      List<String> repaired = TreeRepair.fixMissingParents(session, sectorKey.getDatasetKey(), null, user);
+      session.commit();
+      if (!repaired.isEmpty()) {
+        state.addWarning(String.format("%d usages pointed at a parent that no longer exists and were moved to the root, e.g. %s",
+          repaired.size(), String.join(", ", repaired.subList(0, Math.min(5, repaired.size())))));
+      }
+    }
   }
 
   /**
