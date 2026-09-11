@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -82,11 +83,14 @@ import org.slf4j.LoggerFactory;
  *       topological sort over {@code parent_id} (rank ordinals are unreliable — UNRANKED / OTHER
  *       sit at the bottom regardless of tree position). Every inserted record is tagged with the
  *       sector's id and {@link Sector.Mode#HIERARCHY}, plus a source-dataset identifier so future
- *       runs can match by id. Finally each accepted matched project usage is rewired to its
- *       newly-imported immediate above-genus ancestor; synonyms are intentionally not rewired
- *       (their {@code parent_id} must keep pointing at an accepted taxon, not a higher-rank
- *       ancestor). Project usages lacking a source identifier are then re-matched against the
- *       source by name; full and higher-rank (HIGHERRANK) matches nest the usage under the
+ *       runs can match by id. When a match is a source synonym whose accepted taxon below genus has no
+ *       project equivalent, that accepted is imported too, so phase 2 can demote to it (backend#1582).
+ *       Finally each project usage accepted in both project and source is rewired to its closest
+ *       project ancestor; synonyms and usages about to be demoted are intentionally not rewired
+ *       (their {@code parent_id} must end up pointing at an accepted taxon, not a higher-rank
+ *       ancestor). Project usages lacking a source identifier are re-matched against the source by
+ *       name first. EXACT and VARIANT matches are treated like identifier matches and gain the source
+ *       identifier; the remaining full and higher-rank (HIGHERRANK) matches nest the usage under the
  *       resolved genus-or-higher anchor (importing it, or reusing an equivalent project node)
  *       and are flagged with {@code Issue.MATCHING_HIGHERRANK}; status, synonymy and authorship
  *       are left untouched for these.</li>
@@ -172,6 +176,12 @@ public class HierarchySync extends SectorRunnable {
   private Map<String, String> matchReverse = null;
   /** project usage id -> source anchor id (genus-or-higher) to nest a name-matched usage under. Placement-only. */
   private final Map<String, String> namePlacements = new LinkedHashMap<>();
+  /** name matched project usages promoted to a full match (in {@link #projectMatches}), which gain the source identifier. */
+  private final Set<String> nameMatched = new LinkedHashSet<>();
+  /** source id of an accepted taxon below genus that is missing in the project -> its source ancestor ids, nearest first. */
+  private final Map<String, List<String>> acceptedChains = new HashMap<>();
+  /** accepted project usages matched to a source synonym. Phase 2 demotes them, so phase 1 neither moves nor reuses them. */
+  private final Set<String> pendingDemotes = new HashSet<>();
 
   /** Lazily-filled cache for source dataset usages; constructed/closed around the four phases in {@link #doWork()}. */
   private UsageCache sourceCache;
@@ -321,8 +331,8 @@ public class HierarchySync extends SectorRunnable {
       LOG.info("Hierarchy sector {}: no project usages matched to source dataset {} - phase 1 has nothing to do", sectorKey, sourceDatasetKey);
       return;
     }
-    LOG.info("Hierarchy sector {}: matched {} usages by id, {} by name to source dataset {}",
-      sectorKey, projectMatches.size(), namePlacements.size(), sourceDatasetKey);
+    LOG.info("Hierarchy sector {}: matched {} usages by id, {} fully by name and placed {} by name in source dataset {}",
+      sectorKey, projectMatches.size() - nameMatched.size(), nameMatched.size(), namePlacements.size(), sourceDatasetKey);
     // Build matchReverse eagerly so phase 1 rewiring, dedup and phase 2 can resolve source ids through it.
     buildMatchReverse();
 
@@ -336,6 +346,7 @@ public class HierarchySync extends SectorRunnable {
 
     // Pass 4: rewire id-matched accepted usages to their closest project ancestor.
     rewireProjectParents(projectKey, sourceChainForAccepted);
+    identifyNameMatches(projectKey, sourceScope);
 
     // Pass 5: place name-matched usages under their anchor and flag them.
     placeNameMatches(projectKey);
@@ -365,8 +376,10 @@ public class HierarchySync extends SectorRunnable {
    *       — the usage falls through to the name match rather than being left unplaced for good.</li>
    *   <li><b>name-match fallback</b> — an accepted taxon <em>without</em> a usable source identifier whose
    *       name matches the source dataset (with higher-rank fallback), see {@link #nameMatchCandidate}.
-   *       EXACT/VARIANT/CANONICAL and HIGHERRANK matches yield a genus-or-higher source anchor recorded in
-   *       {@link #namePlacements} (placement only); ambiguous / no matches and synonyms are skipped.</li>
+   *       An unsnapped EXACT or VARIANT match of an unclaimed source usage is as good as an identifier match
+   *       and joins {@link #projectMatches}, recorded in {@link #nameMatched}. Other CANONICAL, HIGHERRANK and
+   *       snapped matches yield a genus-or-higher source anchor recorded in {@link #namePlacements} (placement
+   *       only); ambiguous / no matches and synonyms are skipped.</li>
    * </ul>
    *
    * The project is scanned exactly once. The scan also collects the whole project tree as
@@ -398,12 +411,16 @@ public class HierarchySync extends SectorRunnable {
         }
         projectUsages.put(u.getId(), new SimpleName(u));
         // 1) identifier match (only when a scope is configured); takes precedence over name matching
-        String tid = sourceScope == null ? null : findSourceIdByIdentifier(u, sourceScope);
-        if (tid != null && !sourceIdExists(tid)) {
-          // the source deleted or reissued this id. Trusting its mere presence would shadow the name match
-          // below for good and leave the usage unplaced, so treat the usage as unidentified instead.
-          staleIds++;
-          tid = null;
+        String tid = null;
+        if (sourceScope != null) {
+          // the first id that still resolves. A name match adds the current id next to a stale one, so a usage can carry both
+          List<String> ids = sourceIdsByIdentifier(u, sourceScope);
+          tid = ids.stream().filter(this::sourceIdExists).findFirst().orElse(null);
+          if (tid == null && !ids.isEmpty()) {
+            // the source deleted or reissued these ids. Trusting their mere presence would shadow the name match
+            // below for good and leave the usage unplaced, so treat the usage as unidentified instead.
+            staleIds++;
+          }
         }
         if (tid != null) {
           projectMatches.put(u.getId(), tid);
@@ -426,7 +443,9 @@ public class HierarchySync extends SectorRunnable {
         sectorKey, staleIds, sourceScope, sourceDatasetKey);
     }
 
-    // now that the project tree is in memory, name match the floating usages with their own classification
+    // now that the project tree is in memory, name match the floating usages with their own classification.
+    // A source usage that is already matched by id, or by an earlier name, is only good for placement.
+    final Set<String> claimed = new HashSet<>(projectMatches.values());
     try (SqlSession matchSession = factory.openSession(true);
          UsageMatcher sourceMatcher = sourceMatcherProvider.apply(sourceDatasetKey, matchSession)) {
       for (String usageId : floating) {
@@ -440,6 +459,15 @@ public class HierarchySync extends SectorRunnable {
         }
         // isMatch() is merely "a usage came back" and is true for AMBIGUOUS, so name the types we accept
         if (m == null || !m.isMatch() || !PLACEMENT_MATCH_TYPES.contains(m.type)) continue;
+        if (PROMOTE_MATCH_TYPES.contains(m.type) && !m.ignore && claimed.add(m.usage.getId())) {
+          // the very same name: as good as an identifier, so status, synonymy and authorship follow the source.
+          // That is what demotes a name the source has as a synonym, see backend#1582
+          projectMatches.put(usageId, m.usage.getId());
+          projectStatuses.put(usageId, sn.getStatus());
+          projectParents.put(usageId, sn.getParent());
+          nameMatched.add(usageId);
+          continue;
+        }
         String anchor = anchorFor(m);
         if (anchor == null) continue;
         namePlacements.put(usageId, anchor);
@@ -455,6 +483,15 @@ public class HierarchySync extends SectorRunnable {
    */
   private static final Set<MatchType> PLACEMENT_MATCH_TYPES =
     Set.of(MatchType.EXACT, MatchType.VARIANT, MatchType.CANONICAL, MatchType.HIGHERRANK);
+
+  /**
+   * Match types that make a name match as good as an identifier match, so it goes through status realignment,
+   * synonymy and authorship like one. {@link UsageMatcher} labels a surviving candidate EXACT or VARIANT from the live
+   * labels; a VARIANT typically differs by an authorship only one side carries, as clear author conflicts below genus
+   * are filtered out before. A snapped match ({@link UsageMatch#ignore}) is the matcher's best guess among several
+   * candidates and stays placement only.
+   */
+  private static final Set<MatchType> PROMOTE_MATCH_TYPES = Set.of(MatchType.EXACT, MatchType.VARIANT);
 
   /**
    * Is this project usage a floating name the name-match fallback may re-parent?
@@ -529,15 +566,16 @@ public class HierarchySync extends SectorRunnable {
     return cl;
   }
 
-  private static @Nullable String findSourceIdByIdentifier(NameUsageBase u, String sourceScope) {
-    List<Identifier> ids = u.getIdentifier();
-    if (ids == null) return null;
-    for (Identifier id : ids) {
-      if (sourceScope.equalsIgnoreCase(id.getScope())) {
-        return id.getId();
+  private static List<String> sourceIdsByIdentifier(NameUsageBase u, String sourceScope) {
+    List<String> result = new ArrayList<>();
+    if (u.getIdentifier() != null) {
+      for (Identifier id : u.getIdentifier()) {
+        if (sourceScope.equalsIgnoreCase(id.getScope())) {
+          result.add(id.getId());
+        }
       }
     }
-    return null;
+    return result;
   }
 
   /**
@@ -592,9 +630,19 @@ public class HierarchySync extends SectorRunnable {
           ancestors.putIfAbsent(t.getId(), t);
         }
       }
+      final boolean sourceSynonym = !chain.isEmpty() && chain.get(0).getStatus() != null && chain.get(0).getStatus().isSynonym();
+      if (sourceSynonym && chain.size() > 1) {
+        collectMissingAccepted(chain, ancestors);
+      }
       TaxonomicStatus ps = projectStatuses.get(e.getKey());
       if (ps != null && ps.isTaxon() && !chainIds.isEmpty()) {
-        sourceChainForAccepted.put(e.getKey(), chainIds);
+        if (sourceSynonym) {
+          // phase 2 demotes it to a synonym of the source's accepted. Moving the still accepted usage under that
+          // accepted's ancestors first put Gyraulus crista into the genus Armiger, see backend#1582
+          pendingDemotes.add(e.getKey());
+        } else {
+          sourceChainForAccepted.put(e.getKey(), chainIds);
+        }
       }
     }
 
@@ -623,6 +671,55 @@ public class HierarchySync extends SectorRunnable {
   }
 
   /**
+   * A matched source synonym whose accepted taxon has no project equivalent: collects that accepted to be imported,
+   * so phase 2 has something to demote the project usage to, and records its source ancestors to place it under.
+   * Accepted taxa of genus rank or higher are collected as ordinary ancestors already.
+   *
+   * @param chain the source classification of the matched synonym, starting with the synonym itself
+   */
+  private void collectMissingAccepted(List<SimpleNameCached> chain, Map<String, SimpleNameCached> ancestors) {
+    SimpleNameCached acc = chain.get(1);
+    if (acc.getStatus() == null || !acc.getStatus().isTaxon()) return;
+    Rank rank = acc.getRank();
+    if (rank == null || !rank.notOtherOrUnranked() || rank.higherOrEqualsTo(Rank.GENUS)) return;
+    if (matchReverse.containsKey(acc.getId())) return; // a project usage is matched to it, phase 2 resolves that one
+    ancestors.putIfAbsent(acc.getId(), acc);
+    acceptedChains.computeIfAbsent(acc.getId(), k -> chain.subList(2, chain.size()).stream().map(SimpleName::getId).toList());
+  }
+
+  /**
+   * Is an ancestor to be inserted still waiting for one of its parents? An imported accepted taxon below genus waits
+   * for every collected ancestor on its source chain, as its direct parent - a species or subgenus - is usually never
+   * collected at all.
+   */
+  private boolean awaitsParent(SimpleNameCached cached, Map<String, SimpleNameCached> remaining) {
+    List<String> chain = acceptedChains.get(cached.getId());
+    if (chain == null) {
+      return cached.getParent() != null && remaining.containsKey(cached.getParent());
+    }
+    return chain.stream().anyMatch(remaining::containsKey);
+  }
+
+  /**
+   * The project parent for an ancestor being inserted: the project copy of its source parent, or null to make it a
+   * project root. An imported accepted taxon below genus goes under the closest ancestor on its source chain the
+   * project holds.
+   */
+  private @Nullable String projectParentFor(SimpleNameCached cached) {
+    List<String> chain = acceptedChains.get(cached.getId());
+    if (chain == null) {
+      return cached.getParent() == null ? null : sourceToProject.get(cached.getParent());
+    }
+    for (String sourceId : chain) {
+      String pid = resolveProjectIdForSource(sourceId);
+      if (pid != null) {
+        return pid;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Resolves a source ancestor to an existing accepted project usage, so we can reuse it instead of
    * importing a duplicate. Resolution order:
    *   1. by identifier — the ancestor's source id is already a matched project usage ({@link #matchReverse});
@@ -643,10 +740,17 @@ public class HierarchySync extends SectorRunnable {
         return accepted;
       }
     }
-    // 2. by name
+    // 2. by name. Binomials below genus have homonyms across codes, so an imported accepted is matched with its
+    // source classification - the matcher only applies its taxonomic group filter to a query that has one
     UsageMatch m;
     try {
-      m = projectMatcher.parseAndMatch(new SimpleName(sourceAncestor), false);
+      if (acceptedChains.containsKey(sourceAncestor.getId())) {
+        List<SimpleNameCached> cl = sourceCache.getClassification(sourceAncestor.getId(), sourceLoader);
+        var snc = new SimpleNameClassified<>(new SimpleNameCached(new SimpleName(sourceAncestor)), cl.subList(1, cl.size()));
+        m = projectMatcher.parseAndMatch(snc, false);
+      } else {
+        m = projectMatcher.parseAndMatch(new SimpleName(sourceAncestor), false);
+      }
     } catch (NotFoundException e) {
       return null;
     }
@@ -687,8 +791,7 @@ public class HierarchySync extends SectorRunnable {
         // our required set (so we'll attach it as a project root), or parent has already been inserted
         List<SimpleNameCached> ready = new ArrayList<>();
         for (SimpleNameCached cached : remaining.values()) {
-          String pid = cached.getParent();
-          if (pid == null || !remaining.containsKey(pid)) {
+          if (!awaitsParent(cached, remaining)) {
             ready.add(cached);
           }
         }
@@ -700,13 +803,13 @@ public class HierarchySync extends SectorRunnable {
         }
         for (SimpleNameCached cached : ready) {
           final String origSourceId = cached.getId();
-          final String origSourceParentId = cached.getParent();
           // resolve project parent: if our parent is in the inserted set, use the new project id; otherwise null (root)
-          String projectParentId = origSourceParentId == null ? null : sourceToProject.get(origSourceParentId);
+          String projectParentId = projectParentFor(cached);
 
-          // project-side dedup: reuse an existing equivalent project node instead of importing a copy
+          // project-side dedup: reuse an existing equivalent project node instead of importing a copy.
+          // Never a usage phase 2 is about to demote - it would become a synonym of itself.
           String existing = findExistingProjectAncestor(cached, projectMatcher);
-          if (existing != null) {
+          if (existing != null && !pendingDemotes.contains(existing)) {
             sourceToProject.put(origSourceId, existing);
             remaining.remove(origSourceId);
             continue;
@@ -816,6 +919,25 @@ public class HierarchySync extends SectorRunnable {
   }
 
   /**
+   * Adds the source identifier to every name matched usage that was promoted to a full match, so the next run finds
+   * it by id. A usage demoted to a synonym would otherwise be lost: synonyms are never name matched, and the accepted
+   * it points at is deleted and imported anew. Placement-only matches gain no identifier.
+   */
+  private void identifyNameMatches(int projectKey, @Nullable String sourceScope) {
+    if (sourceScope == null || nameMatched.isEmpty()) return;
+    int written = 0;
+    try (SqlSession batch = factory.openSession(ExecutorType.BATCH, false)) {
+      NameUsageMapper num = batch.getMapper(NameUsageMapper.class);
+      for (String projectId : nameMatched) {
+        num.addIdentifier(DSID.of(projectKey, projectId), List.of(new Identifier(sourceScope, projectMatches.get(projectId))));
+        if (++written % 1000 == 0) batch.commit();
+      }
+      batch.commit();
+    }
+    LOG.info("Hierarchy sector {}: added a {} identifier to {} usages matched fully by name", sectorKey, sourceScope, written);
+  }
+
+  /**
    * Rewires each name-matched project usage under the project equivalent of its source anchor (imported
    * or deduped in phase 1) and flags it with {@link Issue#MATCHING_HIGHERRANK}. Placement only — status,
    * synonymy, authorship and identifiers are untouched. Skips updates that would be a no-op or create a
@@ -913,6 +1035,10 @@ public class HierarchySync extends SectorRunnable {
     }
     final int projectKey = sectorKey.getDatasetKey();
     int demoted = 0, promoted = 0, synonymRetargeted = 0, unchanged = 0, unresolved = 0, cycleBlocked = 0;
+    // source labels of the usages that could not be demoted or promoted, for the sync warnings
+    final List<String> undemoted = new ArrayList<>();
+    final List<String> unpromoted = new ArrayList<>();
+    final Set<String> promotedIds = new HashSet<>();
 
     try (SqlSession session = factory.openSession(true);
          SqlSession batch = factory.openSession(ExecutorType.BATCH, false)) {
@@ -920,99 +1046,125 @@ public class HierarchySync extends SectorRunnable {
       NameUsageMapper writeNum = batch.getMapper(NameUsageMapper.class);
       int written = 0;
 
-      for (Map.Entry<String, String> e : projectMatches.entrySet()) {
-        final String projectId = e.getKey();
-        final String sourceId = e.getValue();
-        TaxonomicStatus pStatus = projectStatuses.get(projectId);
-        SimpleNameCached source = sourceCache.getOrLoad(sourceId, sourceLoader);
-        if (source == null) {
-          // source gone? skip — phase 1 would have warned earlier, no point spamming again
-          continue;
-        }
-        TaxonomicStatus tStatus = source.getStatus();
-        if (pStatus == null || tStatus == null) {
-          unresolved++;
-          continue;
-        }
-
-        // both accepted -> already handled by phase 1 rewire
-        if (pStatus.isTaxon() && tStatus.isTaxon()) {
-          unchanged++;
-          continue;
-        }
-
-        // figure out the intended project parent given the source's parent
-        String newProjectParent = resolveProjectIdForSource(source.getParent());
-
-        if (pStatus.isTaxon() && tStatus.isSynonym()) {
-          // accepted -> synonym (demote)
-          if (newProjectParent == null) {
-            LOG.info("Hierarchy sector {}: cannot demote {} to synonym - source accepted parent {} not found in project", sectorKey, projectId, source.getParent());
-            unresolved++;
+      // promotions first: with an inverted synonymy the accepted a demotion needs may only exist as a project
+      // synonym that is about to be promoted, and the outcome must not depend on the order of the matches
+      for (boolean promotePass : new boolean[]{true, false}) {
+        for (Map.Entry<String, String> e : projectMatches.entrySet()) {
+          final String projectId = e.getKey();
+          final String sourceId = e.getValue();
+          if (promotedIds.contains(projectId)) {
             continue;
           }
-          if (wouldCreateCycle(projectKey, projectId, newProjectParent, readNum)) {
-            LOG.warn("Hierarchy sector {}: skipping demote of {} - new parent {} would create a cycle", sectorKey, projectId, newProjectParent);
-            cycleBlocked++;
+          TaxonomicStatus pStatus = projectStatuses.get(projectId);
+          SimpleNameCached source = sourceCache.getOrLoad(sourceId, sourceLoader);
+          if (source == null) {
+            // source gone? skip — phase 1 would have warned earlier, no point spamming again
             continue;
           }
-          writeNum.updateParentAndStatus(DSID.of(projectKey, projectId), newProjectParent, tStatus, user);
-          projectStatuses.put(projectId, tStatus);
-          projectParents.put(projectId, newProjectParent);
-          demoted++;
-          if (++written % 1000 == 0) batch.commit();
-          continue;
-        }
+          TaxonomicStatus tStatus = source.getStatus();
+          if (pStatus == null || tStatus == null) {
+            if (!promotePass) {
+              unresolved++;
+            }
+            continue;
+          }
+          if (promotePass != (pStatus.isSynonym() && tStatus.isTaxon())) {
+            continue;
+          }
 
-        if (pStatus.isSynonym() && tStatus.isTaxon()) {
-          // synonym -> accepted (promote)
-          if (newProjectParent == null) {
-            LOG.info("Hierarchy sector {}: cannot promote {} to accepted - source parent {} not found in project", sectorKey, projectId, source.getParent());
-            unresolved++;
+          // both accepted -> already handled by phase 1 rewire
+          if (pStatus.isTaxon() && tStatus.isTaxon()) {
+            unchanged++;
             continue;
           }
-          if (wouldCreateCycle(projectKey, projectId, newProjectParent, readNum)) {
-            LOG.warn("Hierarchy sector {}: skipping promote of {} - new parent {} would create a cycle", sectorKey, projectId, newProjectParent);
-            cycleBlocked++;
-            continue;
-          }
-          writeNum.updateParentAndStatus(DSID.of(projectKey, projectId), newProjectParent, tStatus, user);
-          projectStatuses.put(projectId, tStatus);
-          projectParents.put(projectId, newProjectParent);
-          promoted++;
-          if (++written % 1000 == 0) batch.commit();
-          continue;
-        }
 
-        // both synonym - retarget if the accepted differs, plus tweak status subtype if needed
-        if (pStatus.isSynonym() && tStatus.isSynonym()) {
-          if (newProjectParent != null) {
+          // figure out the intended project parent given the source's parent
+          String newProjectParent = resolveProjectIdForSource(source.getParent());
+
+          if (pStatus.isTaxon() && tStatus.isSynonym()) {
+            // accepted -> synonym (demote)
+            if (newProjectParent == null) {
+              LOG.warn("Hierarchy sector {}: cannot demote {} to synonym - source accepted parent {} not found in project", sectorKey, projectId, source.getParent());
+              undemoted.add(source.getLabel());
+              continue;
+            }
             if (wouldCreateCycle(projectKey, projectId, newProjectParent, readNum)) {
-              LOG.warn("Hierarchy sector {}: skipping synonym retarget of {} - new parent {} would create a cycle", sectorKey, projectId, newProjectParent);
+              LOG.warn("Hierarchy sector {}: skipping demote of {} - new parent {} would create a cycle", sectorKey, projectId, newProjectParent);
               cycleBlocked++;
               continue;
             }
-            // even if status subtype matches, retarget the parent to the project's accepted equivalent
             writeNum.updateParentAndStatus(DSID.of(projectKey, projectId), newProjectParent, tStatus, user);
             projectStatuses.put(projectId, tStatus);
             projectParents.put(projectId, newProjectParent);
-            synonymRetargeted++;
+            demoted++;
             if (++written % 1000 == 0) batch.commit();
-          } else if (pStatus != tStatus) {
-            // can't retarget but at least align the synonym subtype
-            writeNum.updateStatus(DSID.of(projectKey, projectId), tStatus, user);
+            continue;
+          }
+
+          if (pStatus.isSynonym() && tStatus.isTaxon()) {
+            // synonym -> accepted (promote)
+            if (newProjectParent == null) {
+              LOG.warn("Hierarchy sector {}: cannot promote {} to accepted - source parent {} not found in project", sectorKey, projectId, source.getParent());
+              unpromoted.add(source.getLabel());
+              continue;
+            }
+            if (wouldCreateCycle(projectKey, projectId, newProjectParent, readNum)) {
+              LOG.warn("Hierarchy sector {}: skipping promote of {} - new parent {} would create a cycle", sectorKey, projectId, newProjectParent);
+              cycleBlocked++;
+              continue;
+            }
+            writeNum.updateParentAndStatus(DSID.of(projectKey, projectId), newProjectParent, tStatus, user);
             projectStatuses.put(projectId, tStatus);
-            synonymRetargeted++;
+            projectParents.put(projectId, newProjectParent);
+            promotedIds.add(projectId);
+            promoted++;
             if (++written % 1000 == 0) batch.commit();
-          } else {
-            unchanged++;
+            continue;
+          }
+
+          // both synonym - retarget if the accepted differs, plus tweak status subtype if needed
+          if (pStatus.isSynonym() && tStatus.isSynonym()) {
+            if (newProjectParent != null) {
+              if (wouldCreateCycle(projectKey, projectId, newProjectParent, readNum)) {
+                LOG.warn("Hierarchy sector {}: skipping synonym retarget of {} - new parent {} would create a cycle", sectorKey, projectId, newProjectParent);
+                cycleBlocked++;
+                continue;
+              }
+              // even if status subtype matches, retarget the parent to the project's accepted equivalent
+              writeNum.updateParentAndStatus(DSID.of(projectKey, projectId), newProjectParent, tStatus, user);
+              projectStatuses.put(projectId, tStatus);
+              projectParents.put(projectId, newProjectParent);
+              synonymRetargeted++;
+              if (++written % 1000 == 0) batch.commit();
+            } else if (pStatus != tStatus) {
+              // can't retarget but at least align the synonym subtype
+              writeNum.updateStatus(DSID.of(projectKey, projectId), tStatus, user);
+              projectStatuses.put(projectId, tStatus);
+              synonymRetargeted++;
+              if (++written % 1000 == 0) batch.commit();
+            } else {
+              unchanged++;
+            }
           }
         }
       }
       batch.commit();
     }
-    LOG.info("Hierarchy sector {}: phase 2 done - demoted={}, promoted={}, synonyms retargeted/realigned={}, unchanged={}, unresolved={}, cycle-blocked={}",
-      sectorKey, demoted, promoted, synonymRetargeted, unchanged, unresolved, cycleBlocked);
+    warnUnresolved("demoted to a synonym", undemoted);
+    warnUnresolved("promoted to accepted", unpromoted);
+    LOG.info("Hierarchy sector {}: phase 2 done - demoted={}, promoted={}, synonyms retargeted/realigned={}, unchanged={}, unresolved={}, " +
+        "not demoted={}, not promoted={}, cycle-blocked={}",
+      sectorKey, demoted, promoted, synonymRetargeted, unchanged, unresolved, undemoted.size(), unpromoted.size(), cycleBlocked);
+  }
+
+  /**
+   * Adds a single warning to the sync for all usages phase 2 could not realign, with a few example names.
+   */
+  private void warnUnresolved(String action, List<String> sourceLabels) {
+    if (!sourceLabels.isEmpty()) {
+      state.addWarning(String.format("%d usages could not be %s, as their parent in source dataset %d has no equivalent in the project, e.g. %s",
+        sourceLabels.size(), action, sourceDatasetKey, String.join("; ", sourceLabels.subList(0, Math.min(5, sourceLabels.size())))));
+    }
   }
 
   /**

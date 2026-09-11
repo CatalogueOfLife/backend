@@ -205,7 +205,8 @@ public class HierarchySyncIT {
    * to the target: A is accepted with B as its synonym in the project, but the target has B
    * accepted with A as its synonym. Phase 2 must not produce the 2-cycle A ↔ B (which the old
    * code did, because it happily resolved a target accepted id to the project synonym that
-   * carried that id and used the synonym as a parent_id).
+   * carried that id and used the synonym as a parent_id). Since promotions run before demotions
+   * the pair ends up exactly as in the target.
    */
   @Test
   public void invertedSynonymyDoesNotCreateCycle() throws Exception {
@@ -231,14 +232,11 @@ public class HierarchySyncIT {
     assertNotNull(a);
     assertNotNull(b);
 
-    // The cycle guard must have blocked the demote of A — leaving A accepted with its original
-    // (non-B) parent. The only forbidden outcome is A.parent_id == B, which would close the loop.
-    assertNotEquals("P_A.parent_id must not equal P_B (would close a parent cycle)", P_B, a.getParentId());
-
-    // No project-side cycle anywhere in this pair.
-    if (P_A.equals(b.getParentId())) {
-      assertNotEquals("If P_B still points at P_A, then P_A must not point back at P_B", P_B, a.getParentId());
-    }
+    // Promotions run before demotions: B leaves A first, so A can then become B's synonym without closing a loop.
+    assertTrue("B is accepted in the target and must have been promoted", b.getStatus().isTaxon());
+    assertNotEquals("P_B must no longer point at P_A", P_A, b.getParentId());
+    assertTrue("A is a synonym in the target and must have been demoted", a.getStatus().isSynonym());
+    assertEquals("A must have become a synonym of B", P_B, a.getParentId());
   }
 
   /**
@@ -529,8 +527,9 @@ public class HierarchySyncIT {
   }
 
   /**
-   * Name-match fallback, full match: a species that exists in the source but was never id-matched is
-   * placed under its genus (imported) without becoming an identifier match (no status/synonym change).
+   * Full name match: a species that exists in the source but was never id-matched is placed under its genus
+   * (imported) and treated like an identifier match - it gains the source identifier and is no higher rank
+   * placement. See backend#1582.
    */
   @Test
   public void nameMatchFullMatchPlacesUnderGenus() throws Exception {
@@ -556,8 +555,9 @@ public class HierarchySyncIT {
     assertNotNull("genus Agrostemma should have been imported", genus);
     NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
     assertEquals("floating species should nest under its genus", genus.getId(), floating.getParentId());
-    assertNull("placed species must not gain an identifier", floating.getIdentifier());
-    assertHasVerbatimIssue(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK);
+    assertHasIdentifier(floating, SCOPE, T_Ag_githago);
+    assertEquals("a full match is no higher rank placement", 0,
+      verbatimIssueCount(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK));
   }
 
   /**
@@ -764,7 +764,11 @@ public class HierarchySyncIT {
     assertNotNull("genus should have been imported for the name match", genus);
     NameUsageBase floating = getByID(PROJECT_KEY, P_floating);
     assertEquals("a usage with a stale identifier must be placed by name instead", genus.getId(), floating.getParentId());
-    assertHasVerbatimIssue(PROJECT_KEY, P_floating, Issue.MATCHING_HIGHERRANK);
+    assertHasIdentifier(floating, SCOPE, T_Stalesp);
+
+    // the next run follows the identifier that still resolves and adds no further one
+    runHierarchySync();
+    assertEquals(2, getByID(PROJECT_KEY, P_floating).getIdentifier().size());
   }
 
   /**
@@ -803,7 +807,232 @@ public class HierarchySyncIT {
     assertNull("no part of the botanical lineage may be imported", getByName(PROJECT_KEY, Rank.FAMILY, "Lamiaceae"));
   }
 
+  // ---------- a synonym of an accepted taxon the project lacks, backend#1582 ----------
+
+  static final String T_Planorbidae = "T_Planorbidae";
+  static final String T_Armiger = "T_Armiger";
+  static final String T_Arm_crista = "T_Arm_crista";
+  static final String T_Gyr_crista = "T_Gyr_crista";
+  static final String P_Gyr_crista = "p_Gyr_crista";
+
+  /**
+   * The project name carries the id of a source synonym whose accepted taxon the project does not hold.
+   * The accepted has to be imported and the project name demoted to its synonym. It used to stay accepted
+   * and was moved under the accepted's genus instead: Gyraulus crista under Armiger in the Archis project.
+   * https://github.com/CatalogueOfLife/backend/issues/1582
+   */
+  @Test
+  public void idMatchedSynonymOfMissingAcceptedIsDemoted() throws Exception {
+    populateArmigerCrista(null);
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Gyr_crista, null, Rank.SPECIES, "Gyraulus crista", T_Gyr_crista);
+
+    runHierarchySync();
+
+    assertDemotedToImportedArmigerCrista();
+  }
+
+  /**
+   * A re-run deletes the imported accepted the demoted synonym points at. The synonym is then a project
+   * synonym of a source synonym and has to be retargeted to the re-imported accepted.
+   */
+  @Test
+  public void demotionToImportedAcceptedSurvivesRerun() throws Exception {
+    populateArmigerCrista(null);
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Gyr_crista, null, Rank.SPECIES, "Gyraulus crista", T_Gyr_crista);
+
+    runHierarchySync();
+    int taxa = countDataset(PROJECT_KEY, false);
+    int synonyms = countDataset(PROJECT_KEY, true);
+
+    runHierarchySync();
+
+    assertEquals("a second sync must not duplicate accepted taxa", taxa, countDataset(PROJECT_KEY, false));
+    assertEquals("a second sync must not duplicate synonyms", synonyms, countDataset(PROJECT_KEY, true));
+    assertDemotedToImportedArmigerCrista();
+  }
+
+  /**
+   * A full name match is as good as an identifier: without one the name is demoted all the same, and it
+   * gains the source identifier so the next run can find the synonym it became.
+   */
+  @Test
+  public void exactNameMatchSynonymOfMissingAcceptedIsDemoted() throws Exception {
+    populateArmigerCrista(null);
+    insertTaxon(PROJECT_KEY, P_Gyr_crista, null, Rank.SPECIES, "Gyraulus crista");
+    rematchNames();
+
+    runHierarchySync();
+
+    assertDemotedToImportedArmigerCrista();
+    assertHasIdentifier(getByID(PROJECT_KEY, P_Gyr_crista), SCOPE, T_Gyr_crista);
+    assertEquals("a full match is no higher rank placement", 0,
+      verbatimIssueCount(PROJECT_KEY, P_Gyr_crista, Issue.MATCHING_HIGHERRANK));
+  }
+
+  /**
+   * The source synonym carries an authorship the project name lacks - the shape of the Archis text tree names.
+   */
+  @Test
+  public void variantNameMatchSynonymOfMissingAcceptedIsDemoted() throws Exception {
+    populateArmigerCrista(auth("Linnaeus", "1758"));
+    insertTaxon(PROJECT_KEY, P_Gyr_crista, null, Rank.SPECIES, "Gyraulus crista");
+    rematchNames();
+
+    runHierarchySync();
+
+    assertDemotedToImportedArmigerCrista();
+    assertHasIdentifier(getByID(PROJECT_KEY, P_Gyr_crista), SCOPE, T_Gyr_crista);
+  }
+
+  /**
+   * Once demoted a name-matched usage is a synonym and never name matched again, so only the identifier it
+   * gained keeps it attached to the accepted that the re-run imports anew.
+   */
+  @Test
+  public void nameMatchedDemotionSurvivesRerun() throws Exception {
+    populateArmigerCrista(null);
+    insertTaxon(PROJECT_KEY, P_Gyr_crista, null, Rank.SPECIES, "Gyraulus crista");
+    rematchNames();
+
+    runHierarchySync();
+    runHierarchySync();
+
+    assertDemotedToImportedArmigerCrista();
+    assertEquals("a re-run must not add the identifier again", 1, getByID(PROJECT_KEY, P_Gyr_crista).getIdentifier().size());
+  }
+
+  /**
+   * The accepted exists in the project already, without any identifier. It is reused, not imported again.
+   */
+  @Test
+  public void demotesToExistingProjectAccepted() throws Exception {
+    final String P_Armiger = "p_Armiger";
+    final String P_Arm_crista = "p_Arm_crista";
+    populateArmigerCrista(null);
+    insertTaxon(PROJECT_KEY, P_Armiger, null, Rank.GENUS, "Armiger");
+    insertTaxon(PROJECT_KEY, P_Arm_crista, P_Armiger, Rank.SPECIES, "Armiger crista");
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Gyr_crista, null, Rank.SPECIES, "Gyraulus crista", T_Gyr_crista);
+    rematchNames();
+
+    runHierarchySync();
+
+    NameUsageBase accepted = getByName(PROJECT_KEY, Rank.SPECIES, "Armiger crista");
+    assertEquals("the existing project Armiger crista must be reused", P_Arm_crista, accepted.getId());
+    assertNull(accepted.getSectorKey());
+    NameUsageBase gyr = getByID(PROJECT_KEY, P_Gyr_crista);
+    assertTrue(gyr.getStatus().isSynonym());
+    assertEquals(P_Arm_crista, gyr.getParentId());
+  }
+
+  /**
+   * An infraspecific accepted whose species the project does not hold goes under the genus. Its direct source
+   * parent is never imported, so insertion order and parent have to follow the source chain.
+   */
+  @Test
+  public void importedInfraspecificAcceptedNestsUnderGenus() throws Exception {
+    final String T_Arm_crista_cristata = "T_Arm_crista_cristata";
+    final String T_Gyr_crista_cristata = "T_Gyr_crista_cristata";
+    final String P_Gyr_crista_cristata = "p_Gyr_crista_cristata";
+    populateArmigerCrista(null);
+    insertTaxon(targetKey, T_Arm_crista_cristata, T_Arm_crista, Rank.SUBSPECIES, "Armiger crista cristata");
+    insertSynonym(targetKey, T_Gyr_crista_cristata, T_Arm_crista_cristata, Rank.SUBSPECIES, "Gyraulus crista cristata");
+    insertTaxonWithIdentifier(PROJECT_KEY, P_Gyr_crista_cristata, null, Rank.SUBSPECIES, "Gyraulus crista cristata", T_Gyr_crista_cristata);
+
+    runHierarchySync();
+
+    NameUsageBase armiger = getByName(PROJECT_KEY, Rank.GENUS, "Armiger");
+    assertNotNull(armiger);
+    NameUsageBase accepted = getByName(PROJECT_KEY, Rank.SUBSPECIES, "Armiger crista cristata");
+    assertNotNull("the missing infraspecific accepted should have been imported", accepted);
+    assertEquals("it nests under the genus, as its species is not in the project", armiger.getId(), accepted.getParentId());
+    assertNull("the species is not imported", getByName(PROJECT_KEY, Rank.SPECIES, "Armiger crista"));
+    NameUsageBase gyr = getByID(PROJECT_KEY, P_Gyr_crista_cristata);
+    assertTrue(gyr.getStatus().isSynonym());
+    assertEquals(accepted.getId(), gyr.getParentId());
+  }
+
+  /**
+   * Guard for the promotion of name matches: an authorship conflict removes the species candidate, so the
+   * usage falls back to a higher rank placement and keeps its status.
+   */
+  @Test
+  public void authorshipConflictStaysPlacementOnly() throws Exception {
+    populateArmigerCrista(auth("Linnaeus", "1758"));
+    insertTaxon(targetKey, "T_Gyraulus", T_Planorbidae, Rank.GENUS, "Gyraulus");
+    insertTaxonWithAuthorship(PROJECT_KEY, P_Gyr_crista, null, Rank.SPECIES, "Gyraulus crista", auth("Smith", "1900"), null);
+    rematchNames();
+
+    runHierarchySync();
+
+    NameUsageBase gyraulus = getByName(PROJECT_KEY, Rank.GENUS, "Gyraulus");
+    assertNotNull("the genus should have been imported for the higher rank match", gyraulus);
+    NameUsageBase gyr = getByID(PROJECT_KEY, P_Gyr_crista);
+    assertTrue("a higher rank placement must not change the status", gyr.getStatus().isTaxon());
+    assertEquals(gyraulus.getId(), gyr.getParentId());
+    assertNull("a higher rank placement must not gain an identifier", gyr.getIdentifier());
+    assertHasVerbatimIssue(PROJECT_KEY, P_Gyr_crista, Issue.MATCHING_HIGHERRANK);
+    assertNull("nothing may be imported for the conflicting species", getByName(PROJECT_KEY, Rank.SPECIES, "Armiger crista"));
+  }
+
+  /**
+   * Source: Animalia > Planorbidae > Armiger > Armiger crista, with Gyraulus crista as its synonym.
+   * An authorship on the synonym makes an authorless project name a VARIANT rather than an EXACT match.
+   */
+  private static void populateArmigerCrista(Authorship synonymAuthorship) {
+    insertTaxon(targetKey, T_Planorbidae, T_Animalia, Rank.FAMILY, "Planorbidae");
+    insertTaxon(targetKey, T_Armiger, T_Planorbidae, Rank.GENUS, "Armiger");
+    insertTaxon(targetKey, T_Arm_crista, T_Armiger, Rank.SPECIES, "Armiger crista");
+    insertSynonymWithAuthorship(targetKey, T_Gyr_crista, T_Arm_crista, Rank.SPECIES, "Gyraulus crista", synonymAuthorship);
+  }
+
+  private void assertDemotedToImportedArmigerCrista() {
+    NameUsageBase armiger = getByName(PROJECT_KEY, Rank.GENUS, "Armiger");
+    assertNotNull("genus Armiger should have been imported", armiger);
+    NameUsageBase accepted = getByName(PROJECT_KEY, Rank.SPECIES, "Armiger crista");
+    assertNotNull("the missing accepted Armiger crista should have been imported", accepted);
+    assertTrue(accepted.getStatus().isTaxon());
+    assertEquals(hierarchySector.getId(), accepted.getSectorKey());
+    assertEquals("the imported accepted should nest under its genus", armiger.getId(), accepted.getParentId());
+    assertHasIdentifier(accepted, SCOPE, T_Arm_crista);
+    assertVerbatimSource(accepted, targetKey, T_Arm_crista);
+
+    NameUsageBase gyr = getByID(PROJECT_KEY, P_Gyr_crista);
+    assertTrue("Gyraulus crista should have been demoted to a synonym", gyr.getStatus().isSynonym());
+    assertEquals("Gyraulus crista should be a synonym of the imported Armiger crista", accepted.getId(), gyr.getParentId());
+    assertEquals("the demoted name must not be copied in again as a synonym", 1,
+      listByName(PROJECT_KEY, Rank.SPECIES, "Gyraulus crista").size());
+  }
+
+  /** Names must be matched to the names index for the postgres matcher to find candidates. */
+  private void rematchNames() {
+    // reset the shared in-memory nidx so stale IDs from prior tests do not cause FK violations
+    NameMatchingRule.getIndex().reset();
+    matchingRule.rematch(targetKey);
+    matchingRule.rematch(PROJECT_KEY);
+  }
+
   // ---------- helpers ----------
+
+  private static void insertSynonymWithAuthorship(int datasetKey, String id, String acceptedId, Rank rank, String scientificName,
+                                                  Authorship combinationAuthorship) {
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      Name n = buildName(datasetKey, id, scientificName, rank);
+      if (combinationAuthorship != null) {
+        n.setCombinationAuthorship(combinationAuthorship);
+        n.rebuildAuthorship();
+      }
+      s.getMapper(NameMapper.class).create(n);
+      Synonym syn = new Synonym();
+      syn.setDatasetKey(datasetKey);
+      syn.setId(id);
+      syn.setName(n);
+      syn.setStatus(TaxonomicStatus.SYNONYM);
+      syn.setParentId(acceptedId);
+      syn.setOrigin(life.catalogue.api.vocab.Origin.SOURCE);
+      syn.applyUser(USER);
+      s.getMapper(SynonymMapper.class).create(syn);
+    }
+  }
 
   private static Sector createAttachSectorWithTarget(NameUsageBase target) {
     try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
