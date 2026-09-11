@@ -38,7 +38,8 @@ living on the project. The sector carries:
 | `mode = HIERARCHY` | distinguishes from ATTACH / UNION / MERGE |
 | `id` | the sectorKey tagged on every record produced by the sync |
 
-Records produced by the sync (imported above-genus taxa + their copied synonyms) carry that
+Records produced by the sync (imported taxa of genus rank or higher, accepted taxa below genus imported
+so a project name can be demoted to them, and the synonyms copied for all of these) carry that
 `sector_key` and `sector_mode = HIERARCHY`, so a previous run is wiped through the standard
 `SectorProcessable.MAPPERS` deletion path before a new one starts. Project usages that were merely
 *rewired* (parent_id or status updated) are not tagged — that keeps user data outside the sector's
@@ -93,9 +94,9 @@ Implemented as four passes inside `syncHigherClassification()`:
 #### 2a. `discoverMatches`
 
 Streams every project usage via `NameUsageMapper.processDataset(projectKey, null, null)`. For each
-usage, scans `NameUsageBase.identifier` for an entry whose scope (resolved via
-`IdentifierScopeResolver.resolve(sourceDatasetKey)`) matches the target. Matches populate two
-in-memory maps used by phases 2 and 3:
+usage, scans `NameUsageBase.identifier` for entries whose scope (resolved via
+`IdentifierScopeResolver.resolve(sourceDatasetKey)`) matches the target and takes the first id that
+still resolves in the source. Matches populate the in-memory maps used by phases 2 to 4:
 
 - `projectMatches: projectId → targetId`
 - `projectStatuses: projectId → TaxonomicStatus`
@@ -104,14 +105,28 @@ Usages already tagged with this sector's key are skipped defensively.
 
 > Identifiers on `Name` are intentionally **not** consulted — only `NameUsageBase.identifier`.
 
+Accepted usages without a usable identifier are then matched by name (see
+[What the name-match fallback refuses to do](#what-the-name-match-fallback-refuses-to-do)). An
+`EXACT` or `VARIANT` match that the matcher did not snap, to a source usage no other project usage
+claimed, is **as good as an identifier**: it joins `projectMatches` and therefore goes through phases
+2 to 4, and phase 1 adds the source identifier to the usage once the rewiring is done. Without that
+identifier a usage demoted to a synonym would be lost on the next run, as synonyms are never name
+matched. All other accepted name matches are used for placement only.
+
 #### 2b. `collectAncestors`
 
-For each match calls `TaxonMapper.classification(DSID(sourceDatasetKey, targetId))`. The recursive
-CTE returns the parent chain ordered immediate-parent-up-to-root, excluding the start node.
-Ancestors with rank strictly higher than `GENUS` (`Rank.higherThan(GENUS)`) are unioned into a
-single `Map<targetId, Taxon>`. The first such ancestor becomes the project usage's
-**immediate above-genus ancestor** — but only recorded for **accepted** project usages; synonyms
-must keep `parent_id` pointing at an accepted taxon, not at a higher-rank ancestor.
+For each match walks the source classification from the lazily filled `UsageCache` - the matched usage
+first, then its parents up to the root. Ancestors of rank `GENUS` or higher are unioned into a single
+map to import. The chain is recorded for rewiring only for usages that are accepted **both** in the
+project and the source; a project usage the source has as a synonym is left to phase 2, which demotes
+it. Moving it under the ancestors of its source accepted first is what put *Gyraulus crista* into the
+genus *Armiger* ([backend#1582](https://github.com/CatalogueOfLife/backend/issues/1582)).
+
+When the matched source usage is a synonym whose accepted taxon is ranked below genus and matched by no
+project usage, that **accepted taxon is imported as well**, together with its source ancestor chain.
+This applies to a project usage that is accepted (to be demoted) as much as to one that is a synonym
+already - which is what a demoted usage is on the next run, after `deleteOld` removed the accepted it
+pointed at.
 
 #### 2c. `insertAncestorsTopDown`
 
@@ -137,11 +152,18 @@ For each insertion:
 The map `targetToProject: targetAncestorId → newProjectId` is built as a side effect and shared
 with phases 2 and 3.
 
+An imported accepted taxon below genus waits until no ancestor on its source chain is pending, as its
+direct source parent (a species or subgenus) is usually never collected. It is placed under the
+closest ancestor on that chain the project holds. Before importing anything the sync looks for an
+equivalent accepted project usage (by identifier, then by name and rank) and reuses it; a project usage
+that phase 2 is about to demote is never reused as its own accepted.
+
 #### 2d. `rewireProjectParents`
 
-Calls `NameUsageMapper.updateParentId(...)` for every **accepted** matched project usage,
-re-anchoring it under its newly-imported immediate above-genus ancestor. Synonyms are not rewired
-in this pass; phase 2 handles them.
+Calls `NameUsageMapper.updateParentId(...)` for every matched project usage that is accepted in the
+project and the source, re-anchoring it under the closest ancestor the project now holds. Synonyms and
+usages the source has as synonyms are not rewired in this pass; phase 2 handles them. Afterwards
+promoted name matches receive the source identifier.
 
 Each move is checked with `wouldCreateCycle(...)` first, the same guard phases 2 and 5 use. Two
 usages of this pass can otherwise be rewired onto each other — each move legal on its own, together
@@ -150,8 +172,9 @@ are logged and counted as `cycle-blocked`.
 
 ### 3. Phase 2 — Status realignment
 
-`realignStatus()` iterates `projectMatches` and, for each pair, loads the target usage to compare
-statuses. Decisions:
+`realignStatus()` iterates `projectMatches` twice, promotions first, and for each pair loads the
+target usage to compare statuses. Promoting first matters for inverted synonymy: the accepted a
+demotion needs may only exist as a project synonym that is about to be promoted. Decisions:
 
 | project | target | action |
 |---|---|---|
@@ -160,10 +183,11 @@ statuses. Decisions:
 | synonym | accepted | promote — `updateParentAndStatus(projectId, projectEquivOf(target.parentId), target.status)` |
 | synonym | synonym | retarget the synonym's accepted parent (and align subtype if it differs) |
 
-`projectEquivOf(targetId)` first checks `targetToProject` (newly imported ancestors) and falls back
-to a lazily-built reverse of `projectMatches`. If neither resolves, the project usage is left
-untouched and counted as `unresolved` in the run summary — we'd rather skip a record than orphan
-it.
+`projectEquivOf(targetId)` first checks `targetToProject` (newly imported ancestors, including
+accepted taxa below genus imported for exactly this purpose) and falls back to a lazily-built reverse
+of `projectMatches`. If neither resolves, the project usage is left untouched - we'd rather skip a
+record than orphan it. Such demotions and promotions are logged at WARN, counted separately, and
+summarised with a few example names as a warning of the sector sync.
 
 Each successful update writes back into the in-memory `projectStatuses` so phase 3 can read the
 post-realignment status without a re-query.
@@ -172,10 +196,10 @@ post-realignment status without a re-query.
 
 `copySynonymies()` builds the universe of accepted (project, target) pairs:
 
-- every entry of `targetToProject` (above-genus ancestors imported in phase 1 — accepted by
-  construction), plus
+- every entry of `targetToProject` (ancestors of genus rank or higher, and accepted taxa below genus
+  imported for a demotion, all accepted by construction), plus
 - every matched project usage whose effective `projectStatuses` value is `isTaxon()` (originally
-  accepted, or promoted by phase 2).
+  accepted, or promoted by phase 2). That includes full name matches.
 
 For each accepted pair, `SynonymMapper.listByTaxon(DSID(sourceDatasetKey, targetAcceptedId))`
 returns every synonym of the target's accepted taxon. Synonyms whose target id is already
@@ -232,10 +256,15 @@ works for HIERARCHY-mode sectors with no new endpoint. The cancel path
 The combination of `deleteBySector` + sectorKey tagging means re-running the sync produces the same
 end state regardless of how many times it has run. Concretely:
 
-- imported above-genus ancestors are wiped and re-imported (with the same content; new ids).
+- imported ancestors and imported accepted taxa below genus are wiped and re-imported (with the same
+  content; new ids).
 - imported synonyms (phase 3) are wiped and re-imported.
 - project usages that were rewired or had their status flipped are *not* tagged with the sector;
-  the new run simply re-applies the same rewire / flip if the target still says so.
+  the new run simply re-applies the same rewire / flip if the target still says so. A usage demoted
+  to an imported accepted is a project synonym on the next run whose accepted was just deleted; it is
+  found again by its source identifier - which is why promoted name matches gain one - and retargeted
+  to the re-imported accepted.
+- a usage no longer matched on a later run keeps pointing at the deleted import, see Limitations.
 
 ## Limitations / Future work
 
@@ -243,8 +272,10 @@ The two items deferred from v1 — the name-match fallback and project-side dedu
 ancestors — were both implemented on 2026-06-26 (see
 [`2026-06-26-hierarchy-sync-name-match-fallback.md`](2026-06-26-hierarchy-sync-name-match-fallback.md)).
 Phase 1 runs a name-match sub-pass after the same `discoverMatches` scan: accepted project usages
-with no usable source identifier are matched against the source dataset and placed under their
-closest genus-or-higher anchor, flagged `Issue.MATCHING_HIGHERRANK`. No `TODO(hierarchy-sync)`
+with no usable source identifier are matched against the source dataset. Full matches are promoted to
+identifier matches (since 2026-09-11, see
+[`2026-09-11-hierarchy-sync-demote-to-missing-accepted.md`](2026-09-11-hierarchy-sync-demote-to-missing-accepted.md));
+the others are placed under their closest genus-or-higher anchor, flagged `Issue.MATCHING_HIGHERRANK`. No `TODO(hierarchy-sync)`
 markers remain in the source.
 
 ### What the name-match fallback refuses to do
@@ -270,13 +301,28 @@ genus *Platycladus* via the botanical genus synonym *Biota* D.Don ex Endl.
 
 A source identifier that no longer resolves in the source does **not** count as an identifier match.
 Sources delete and reissue ids, and trusting the mere presence of one shadowed the name fallback and
-left the usage unplaced on every subsequent run. Such usages are counted and logged at WARN.
+left the usage unplaced on every subsequent run. Such usages are counted and logged at WARN. A usage can
+therefore carry a stale id next to the current one, added by a later full name match; the first id that
+still resolves wins.
+
+These constraints guard every name match, including the full ones that get promoted to an identifier
+match. Only `EXACT` and `VARIANT` are promoted, and only when the matcher did not snap to the usage: a
+snap is its pick among several candidates, for example two source synonyms of the same accepted taxon.
+`CANONICAL`, `HIGHERRANK` and snapped matches stay placement only and flag the usage
+`MATCHING_HIGHERRANK`; see [the design record](2026-09-11-hierarchy-sync-demote-to-missing-accepted.md).
 
 What is still open, mirroring the javadoc on `HierarchySync`:
 
-- **Convergence for full matches.** Name-matched usages are placement-only and never gain the
-  source identifier, so a full EXACT match is re-matched by name on every run rather than
-  converging into the identifier path.
+- **Dangling references across `deleteOld`.** Imported usages get new ids on every run and nothing
+  relinks what points at them. Usages matched again are re-pointed, anything else - a usage the source
+  no longer has, a curator's edit under an imported taxon, a sector targeting one - keeps pointing at
+  a deleted row, and so does everything while a sync runs or after one failed between the delete and
+  phase 2. Stable ids and a repair step are planned separately.
+- **Wrong full name matches stick.** A promoted name match gains the source identifier, which
+  `deleteBySector` does not remove from untagged usages, so later runs follow that identifier.
+- **Snapped matches stay placement only.** When a name matches several source synonyms of the same
+  accepted taxon (e.g. *Gyraulus crista* and *Gyraulus (Armiger) crista*) the matcher snaps to one of
+  them and the usage is not demoted by name.
 - **Bad placements are not self-healing.** A rewire is not tagged with the sector, so a re-run does
   not undo one — `placeNameMatches` sees the parent already equals the target and re-affirms it. A
   wrong placement has to be corrected in the project by hand.
