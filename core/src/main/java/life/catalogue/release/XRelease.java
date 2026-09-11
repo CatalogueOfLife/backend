@@ -431,24 +431,9 @@ public class XRelease extends ProjectRelease {
       }
 
       // look for non existing parents
-      var num = session.getMapper(NameUsageMapper.class);
-      var missing = num.listMissingParentIds(tmpProjectKey);
-      if (missing != null && !missing.isEmpty()) {
-        LOG.error("{} usages found with a non existing parentID", missing.size());
-        final String parent;
-        if (mergeCfg.hasIncertae()) {
-          parent = mergeCfg.incertae.getId();
-        } else {
-          parent = null;
-        }
-        final DSID<String> key = DSID.root(tmpProjectKey);
-        for (String id : missing) {
-          key.id(id);
-          num.updateParentId(key, parent, user);
-          adder.addIssue(id, Issue.PARENT_ID_INVALID);
-          session.commit();
-        }
-        LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),newDatasetKey);
+      var missing = TreeRepair.fixMissingParents(session, tmpProjectKey, mergeCfg.hasIncertae() ? mergeCfg.incertae.getId() : null, user);
+      if (!missing.isEmpty()) {
+        LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(), newDatasetKey);
       }
       session.commit();
     }

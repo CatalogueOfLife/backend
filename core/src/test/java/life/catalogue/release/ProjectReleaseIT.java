@@ -255,6 +255,38 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     }
   }
 
+  /**
+   * A project usage whose parent no longer exists - what a hierarchy sector re-sync can leave behind - used to abort
+   * the release in the id provider. It is repaired in the project and flagged instead.
+   */
+  @Test
+  public void releaseRepairsMissingParents() throws Exception {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      // 13 is the parent of the accepted 15 and 16 and of the synonym 14. Its vernacular name is enforced by a
+      // foreign key, the parent_id self reference is not.
+      session.getConnection().createStatement().execute("DELETE FROM vernacular_name WHERE dataset_key=" + projectKey + " AND taxon_id='13'");
+      var num = session.getMapper(NameUsageMapper.class);
+      num.delete(DSID.of(projectKey, "13"));
+      assertEquals(List.of("14", "15", "16"), num.listMissingParentIds(projectKey).stream().sorted().toList());
+    }
+
+    ProjectRelease release = buildRelease();
+    release.run();
+    assertEquals("release failed: " + release.getError(), JobStatus.FINISHED, release.getStatus());
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      assertTrue("the project must be repaired", num.listMissingParentIds(projectKey).isEmpty());
+      assertNull(num.get(DSID.of(projectKey, "15")).getParentId());
+      assertNull(num.get(DSID.of(projectKey, "14")).getParentId());
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+      assertTrue(vsm.getIssues(DSID.of(projectKey, vsm.getVSKeyByUsage(DSID.of(projectKey, "15"))))
+                    .getIssues().contains(life.catalogue.api.vocab.Issue.PARENT_ID_INVALID));
+      assertTrue(vsm.getIssues(DSID.of(projectKey, vsm.getVSKeyByUsage(DSID.of(projectKey, "14"))))
+                    .getIssues().contains(life.catalogue.api.vocab.Issue.ACCEPTED_ID_INVALID));
+    }
+  }
+
   @Test
   public void duplicationSubmitsNoRetentionJob() throws Exception {
     var jobExecutor = mock(JobExecutor.class);

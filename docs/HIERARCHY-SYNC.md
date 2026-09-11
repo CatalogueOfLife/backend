@@ -256,15 +256,27 @@ works for HIERARCHY-mode sectors with no new endpoint. The cancel path
 The combination of `deleteBySector` + sectorKey tagging means re-running the sync produces the same
 end state regardless of how many times it has run. Concretely:
 
-- imported ancestors and imported accepted taxa below genus are wiped and re-imported (with the same
-  content; new ids).
-- imported synonyms (phase 3) are wiped and re-imported.
+- imported ancestors, imported accepted taxa below genus and copied synonyms are wiped and re-imported
+  with the same content **and the same ids**. Before `deleteOld` the sync reads its verbatim sources and
+  keeps `source id -> project id`; the copy hands each previous id out again (at most once) for the same
+  source id, and a new random one otherwise. Everything pointing at an import - children, demoted
+  synonyms, a curator's edits, sector targets, estimates - is valid again once the run is done.
+- vernacular names a merge sector attached to an import carry the merge sector's key, and their foreign
+  key to `name_usage` *is* enforced, so they would make `deleteOld` fail. The sync takes them off its
+  imports before deleting them and attaches them again to whatever represents the same source id after
+  phase 1 - the re-import or an existing project usage it deduplicated against. Names whose source taxon
+  is gone are dropped with a warning; the merge sector brings them back on its next sync.
 - project usages that were rewired or had their status flipped are *not* tagged with the sector;
   the new run simply re-applies the same rewire / flip if the target still says so. A usage demoted
-  to an imported accepted is a project synonym on the next run whose accepted was just deleted; it is
-  found again by its source identifier - which is why promoted name matches gain one - and retargeted
-  to the re-imported accepted.
-- a usage no longer matched on a later run keeps pointing at the deleted import, see Limitations.
+  to an imported accepted is a project synonym on the next run; it is found again by its source
+  identifier - which is why promoted name matches gain one - and stays attached to the re-imported
+  accepted.
+- when the source dropped a taxon, whatever still points at its former import is repaired after the
+  sync, failed syncs included: `TreeRepair.fixMissingParents` sets the parent to null and flags the usage
+  `PARENT_ID_INVALID`, or `ACCEPTED_ID_INVALID` for a synonym, and the sync reports a warning with the count.
+  `ProjectRelease` runs the same repair on the project before it maps ids, `XRelease` with its incertae
+  sedis taxon as the new parent. See
+  [`2026-09-11-hierarchy-sync-stable-ids.md`](2026-09-11-hierarchy-sync-stable-ids.md).
 
 ## Limitations / Future work
 
@@ -313,11 +325,11 @@ snap is its pick among several candidates, for example two source synonyms of th
 
 What is still open, mirroring the javadoc on `HierarchySync`:
 
-- **Dangling references across `deleteOld`.** Imported usages get new ids on every run and nothing
-  relinks what points at them. Usages matched again are re-pointed, anything else - a usage the source
-  no longer has, a curator's edit under an imported taxon, a sector targeting one - keeps pointing at
-  a deleted row, and so does everything while a sync runs or after one failed between the delete and
-  phase 2. Stable ids and a repair step are planned separately.
+- **The window during a sync.** Between `deleteOld` and the re-import the imported rows are gone, so
+  the project serves dangling references for the minutes a sync runs, like with every other sector sync.
+- **Dropped source taxa lose more than their children's parent.** The repair only covers `parent_id`.
+  An attach sector targeting a taxon the source dropped is left with a broken target and estimates with
+  a broken reference - both are flagged as such and can be rematched.
 - **Wrong full name matches stick.** A promoted name match gains the source identifier, which
   `deleteBySector` does not remove from untagged usages, so later runs follow that identifier.
 - **Snapped matches stay placement only.** When a name matches several source synonyms of the same
