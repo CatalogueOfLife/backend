@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.ibatis.exceptions.PersistenceException;
+import javax.annotation.Nullable;
+
 import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
@@ -70,11 +71,84 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   }
 
   @Test
-  public void getBySubject() {
+  public void listBySubject() {
     add2Sectors();
-    assertNotNull(mapper().getBySubject(targetDatasetKey, DSID.of(subjectDatasetKey, TestEntityGenerator.TAXON1.getId())));
-    assertNull(mapper().getBySubject(targetDatasetKey, DSID.of(subjectDatasetKey +1, TestEntityGenerator.TAXON1.getId())));
-    assertNull(mapper().getBySubject(targetDatasetKey, DSID.of(subjectDatasetKey, TestEntityGenerator.TAXON1.getId()+"dfrtgzh")));
+    final var subject = DSID.of(subjectDatasetKey, TestEntityGenerator.TAXON1.getId());
+    assertEquals(List.of(s1.getId()), keys(mapper().listBySubject(targetDatasetKey, subject)));
+    assertTrue(mapper().listBySubject(targetDatasetKey, DSID.of(subjectDatasetKey +1, TestEntityGenerator.TAXON1.getId())).isEmpty());
+    assertTrue(mapper().listBySubject(targetDatasetKey, DSID.of(subjectDatasetKey, TestEntityGenerator.TAXON1.getId()+"dfrtgzh")).isEmpty());
+
+    // sectors may share a subject, see https://github.com/CatalogueOfLife/backend/issues/1581
+    Sector s3 = sector(Sector.Mode.MERGE, subjectDatasetKey, TestEntityGenerator.TAXON1.getId());
+    commit();
+    assertEquals(List.of(s1.getId(), s3.getId()), keys(mapper().listBySubject(targetDatasetKey, subject)));
+  }
+
+  @Test
+  public void duplicates() {
+    MybatisTestUtils.populateDraftTree(session());
+    final String subject = TestEntityGenerator.TAXON1.getId();
+    // an attach and a merge sector on the same subject
+    Sector attach = sector(Sector.Mode.ATTACH, subjectDatasetKey, subject);
+    Sector merge = sector(Sector.Mode.MERGE, subjectDatasetKey, subject);
+    // two subject less merge sectors from the same source
+    Sector whole1 = sector(Sector.Mode.MERGE, subjectDatasetKey, null);
+    Sector whole2 = sector(Sector.Mode.MERGE, subjectDatasetKey, null);
+    // no duplicates: another subject and a subject less merge sector from another source
+    sector(Sector.Mode.ATTACH, subjectDatasetKey, TestEntityGenerator.TAXON2.getId());
+    sector(Sector.Mode.MERGE, 12, null);
+    commit();
+
+    // flat search, grouped by subject with subject less sectors first
+    var req = SectorSearchRequest.byProject(targetDatasetKey);
+    req.setDuplicates(true);
+    assertEquals(List.of(whole1.getId(), whole2.getId(), attach.getId(), merge.getId()), keys(mapper().search(req, new Page())));
+    assertEquals(4, mapper().countSearch(req));
+    assertEquals(List.of(attach.getId(), merge.getId()), keys(mapper().search(req, new Page(2, 10))));
+
+    // groups
+    var groups = mapper().duplicates(req, new Page());
+    assertEquals(2, groups.size());
+    assertEquals(2, mapper().countDuplicates(req));
+    assertEquals(targetDatasetKey, groups.get(0).getDatasetKey());
+    assertEquals(subjectDatasetKey, groups.get(0).getSubjectDatasetKey());
+    assertNull(groups.get(0).getSubjectId());
+    assertArrayEquals(new int[]{whole1.getId(), whole2.getId()}, groups.get(0).getKeys());
+    assertEquals(subject, groups.get(1).getSubjectId());
+    assertArrayEquals(new int[]{attach.getId(), merge.getId()}, groups.get(1).getKeys());
+    // the page applies to groups
+    groups = mapper().duplicates(req, new Page(1, 10));
+    assertEquals(1, groups.size());
+    assertEquals(subject, groups.get(0).getSubjectId());
+
+    // filters apply before duplicates are detected
+    req.setMode(Set.of(Sector.Mode.MERGE));
+    assertEquals(List.of(whole1.getId(), whole2.getId()), keys(mapper().search(req, new Page())));
+    assertEquals(2, mapper().countSearch(req));
+    assertEquals(1, mapper().countDuplicates(req));
+
+    req.setMode(Set.of(Sector.Mode.ATTACH));
+    assertTrue(mapper().search(req, new Page()).isEmpty());
+    assertEquals(0, mapper().countSearch(req));
+    assertTrue(mapper().duplicates(req, new Page()).isEmpty());
+    assertEquals(0, mapper().countDuplicates(req));
+  }
+
+  private Sector sector(Sector.Mode mode, int sourceDatasetKey, @Nullable String subjectID) {
+    Sector s = createTestEntity(targetDatasetKey);
+    s.setMode(mode);
+    s.setSubjectDatasetKey(sourceDatasetKey);
+    if (subjectID == null) {
+      s.setSubject(null);
+    } else {
+      s.getSubject().setId(subjectID);
+    }
+    mapper().create(s);
+    return s;
+  }
+
+  private static List<Integer> keys(List<Sector> sectors) {
+    return sectors.stream().map(Sector::getId).toList();
   }
 
   @Test
@@ -523,15 +597,21 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     s.setNote("not my thing");
   }
   
-  @Test(expected = PersistenceException.class)
-  public void unique() throws Exception {
+  /**
+   * Sectors may share a subject, see https://github.com/CatalogueOfLife/backend/issues/1581
+   */
+  @Test
+  public void sharedSubject() throws Exception {
     Sector d1 = create();
     mapper().create(d1);
     commit();
+    final int key1 = d1.getId();
 
-    // now it has a id that already exists
+    // the same subject again gets a new key
     mapper().create(d1);
     commit();
+    assertNotEquals(key1, (int) d1.getId());
+    assertEquals(2, mapper().listBySubject(targetDatasetKey, d1.getSubjectAsDSID()).size());
   }
   
   @Test

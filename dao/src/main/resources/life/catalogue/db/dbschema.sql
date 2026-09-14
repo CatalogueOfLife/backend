@@ -1193,7 +1193,7 @@ CREATE TABLE sector (
   extinct_filter BOOLEAN,
   name_filter TEXT,
   note TEXT,
-  UNIQUE (dataset_key, subject_dataset_key, subject_id),
+  -- several sectors may share a subject, e.g. an attach and a vernacular only merge sector. See SectorSearchRequest.duplicates
   PRIMARY KEY (dataset_key, id)
 );
 
