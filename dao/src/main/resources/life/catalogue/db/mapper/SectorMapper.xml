@@ -323,6 +323,27 @@
   </insert>
 
   <!--
+    True if sector s has any data in dataset #{datasetKey}, i.e. a row in one of the tables with a foreign key to sector.
+    copyDataset and deleteOrphans must draw the same line. A merge sector can own no name at all and still have data,
+    e.g. vernacular names it added to usages of other sectors, see https://github.com/CatalogueOfLife/checklistbank/issues/1728
+  -->
+  <sql id="hasData">
+    (EXISTS (SELECT true FROM name_usage x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM name_match x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM name_rel x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM type_material x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM reference x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM taxon_concept_rel x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM species_interaction x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM vernacular_name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM distribution x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM treatment x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM media x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id)
+    OR EXISTS (SELECT true FROM taxon_property x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id))
+  </sql>
+
+  <!--
     Copies sectors into a release. A sector configured against a PROJECT subject (hierarchy sectors, see
     HierarchySync.resolveSourceDatasetKey) is actually synced from one of that projects releases. The project keeps
     the project as its subject - that is the configuration and it must keep resolving to the latest release on the
@@ -350,7 +371,7 @@
       LIMIT 1
     ) src ON true
     WHERE s.dataset_key=#{datasetKey}
-      AND EXISTS (SELECT true FROM name WHERE dataset_key=#{datasetKey} AND sector_key=s.id LIMIT 1)
+      AND <include refid="hasData"/>
   </insert>
 
   <update id="update" parameterType="Sector">
@@ -472,31 +493,8 @@
   </update>
 
   <delete id="deleteOrphans" parameterType="map">
-    DELETE FROM sector s WHERE dataset_key = #{datasetKey} AND NOT EXISTS (
-      SELECT true FROM name_usage x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-    ) AND NOT EXISTS (
-      SELECT true FROM name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-    ) AND NOT EXISTS (
-      SELECT true FROM reference x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-
-    ) AND NOT EXISTS (
-      SELECT true FROM vernacular_name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-    ) AND NOT EXISTS (
-      SELECT true FROM media x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-    ) AND NOT EXISTS (
-      SELECT true FROM distribution x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-    ) AND NOT EXISTS (
-      SELECT true FROM species_interaction x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-    ) AND NOT EXISTS (
-      SELECT true FROM taxon_property x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-
-    ) AND NOT EXISTS (
-      SELECT true FROM name_rel x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-    ) AND NOT EXISTS (
-      SELECT true FROM type_material x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-    ) AND NOT EXISTS (
-      SELECT true FROM treatment x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
-    )
+    DELETE FROM sector s
+    WHERE dataset_key = #{datasetKey} AND NOT <include refid="hasData"/>
   </delete>
 
   <select id="listOutdatedSectors" resultMap="sectorResultMap">

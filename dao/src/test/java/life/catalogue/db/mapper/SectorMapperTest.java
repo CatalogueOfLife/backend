@@ -8,7 +8,9 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimSource;
+import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.junit.MybatisTestUtils;
@@ -385,7 +387,63 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   }
 
   /**
-   * Creates a sector in the COL project with data, as copyDataset only copies sectors that have names.
+   * A merge sector that only adds vernacular names to usages of another sector owns no name at all, but it
+   * does have data. Releases used to drop it while still copying its vernacular names, which then pointed at a
+   * sector the release did not have: https://github.com/CatalogueOfLife/checklistbank/issues/1728
+   */
+  @Test
+  public void copyDatasetKeepsSectorsWithOnlyExtensions() throws Exception {
+    var dm = mapper(DatasetMapper.class);
+
+    Dataset external = DatasetMapperTest.create();
+    dm.create(external);
+    dm.updateLastImport(external.getKey(), 5, null);
+
+    Dataset target = DatasetMapperTest.create();
+    target.setOrigin(DatasetOrigin.RELEASE);
+    target.setSourceKey(Datasets.COL);
+    dm.create(target);
+
+    // an attached sector owning a taxon
+    Sector attached = createSyncedSector(external.getKey(), null);
+    Taxon t = TestEntityGenerator.newMinimalTaxon(Datasets.COL, "t" + attached.getId(), null, Rank.SPECIES, "Abies alba");
+    t.setSectorKey(attached.getId());
+    t.getName().setSectorKey(attached.getId());
+    insertTaxon(t);
+
+    // a merge sector that only added a vernacular name to that taxon
+    Sector merged = create(DSID.colID(UUID.randomUUID().toString()), DSID.of(external.getKey(), UUID.randomUUID().toString()));
+    merged.setMode(Sector.Mode.MERGE);
+    merged.setTarget(null);
+    mapper().create(merged);
+    VernacularName vn = TestEntityGenerator.newVernacularName("Weißtanne", "deu");
+    vn.setDatasetKey(Datasets.COL);
+    vn.setSectorKey(merged.getId());
+    TestEntityGenerator.setUser(vn);
+    mapper(VernacularNameMapper.class).create(vn, t.getId());
+
+    // and a sector without any data
+    Sector empty = create(DSID.colID(UUID.randomUUID().toString()), DSID.of(external.getKey(), UUID.randomUUID().toString()));
+    mapper().create(empty);
+    commit();
+
+    mapper().copyDataset(Datasets.COL, target.getKey(), false);
+    commit();
+
+    assertNotNull(mapper().get(DSID.of(target.getKey(), attached.getId())));
+    assertNotNull("a sector with only vernacular names has data", mapper().get(DSID.of(target.getKey(), merged.getId())));
+    assertNull(mapper().get(DSID.of(target.getKey(), empty.getId())));
+
+    // the orphan cleanup draws the same line
+    mapper().deleteOrphans(Datasets.COL);
+    commit();
+    assertNotNull(mapper().get(DSID.of(Datasets.COL, attached.getId())));
+    assertNotNull(mapper().get(DSID.of(Datasets.COL, merged.getId())));
+    assertNull(mapper().get(DSID.of(Datasets.COL, empty.getId())));
+  }
+
+  /**
+   * Creates a sector in the COL project with data, as copyDataset only copies sectors that have data.
    * @param sourceDatasetKey the dataset to record as the provenance of the sectors data, or null for none
    */
   private Sector createSyncedSector(int subjectDatasetKey, Integer sourceDatasetKey) {
