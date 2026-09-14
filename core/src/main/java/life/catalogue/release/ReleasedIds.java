@@ -21,7 +21,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
  * Tracks released ids incl historic releases.
  * Each ID is only represented by the first/earliest, i.e. the lowest release attempt.
  * As release attempts are unique and sequential for all releases of the project
- * we do not care if the ID first originated from a public Release or XRelease.
+ * we do not care if the ID first originated from a public Release or XRelease,
+ * but we do remember if an ID has never been used outside of extended releases, see ReleasedId.xrOnly.
  */
 public class ReleasedIds {
 
@@ -35,6 +36,7 @@ public class ReleasedIds {
     public final int canonId;
     public final int attempt;
     public final boolean isCurrent;
+    public final boolean xrOnly; // only ever issued in extended releases, never in a base release
     public final Rank rank;
     public final String authorship;
     public final String phrase;
@@ -44,21 +46,30 @@ public class ReleasedIds {
 
     /**
      * @param sn simple name with parent being a scientificName, not ID!
+     * @param xrOnly true if the id only ever appeared in extended releases
      * @throws IllegalArgumentException if the string id cannot be converted into an int, e.g. if it was a temp UUID
      */
-    public static ReleasedId create(SimpleNameWithNidx sn, int attempt, boolean currentID) throws IllegalArgumentException {
-      return new ReleasedId(IdConverter.LATIN29.decode(sn.getId()), attempt, currentID, sn);
+    public static ReleasedId create(SimpleNameWithNidx sn, int attempt, boolean currentID, boolean xrOnly) throws IllegalArgumentException {
+      return new ReleasedId(IdConverter.LATIN29.decode(sn.getId()), attempt, currentID, xrOnly, sn);
     }
 
     /**
      * @param sn simple name with parent being a scientificName, not ID!
      */
     protected ReleasedId(int id, int attempt, boolean isCurrent, SimpleNameWithNidx sn) {
+      this(id, attempt, isCurrent, false, sn);
+    }
+
+    /**
+     * @param sn simple name with parent being a scientificName, not ID!
+     */
+    protected ReleasedId(int id, int attempt, boolean isCurrent, boolean xrOnly, SimpleNameWithNidx sn) {
       this.id = id;
       this.nxId = sn.getNamesIndexId();
       this.canonId = sn.getCanonicalId();
       this.attempt = attempt;
       this.isCurrent = isCurrent;
+      this.xrOnly = xrOnly;
       this.rank = sn.getRank();
       this.authorship = sn.getAuthorship();
       this.phrase = sn.getPhrase();

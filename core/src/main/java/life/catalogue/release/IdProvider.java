@@ -76,6 +76,9 @@ public class IdProvider {
   // BOLD codes, e.g. BOLD:AAA3374 - the colon is replaced by a dot to form the usage id
   protected static final Pattern BOLD_ID = Pattern.compile("^BOLD:[A-Z0-9]+$", Pattern.CASE_INSENSITIVE);
   static final Function<SimpleNameWithNidx, String> NO_ACCEPTED_NAMES = n -> null;
+  // score reduction for ids only ever issued in extended releases when mapping a base release, see #matchScore.
+  // It must exceed the +6 of an authorship match.
+  static final int XR_ONLY_PENALTY = 7;
   private final int projectKey;
   private final int attempt;
   private final DatasetOrigin origin;
@@ -462,7 +465,7 @@ public class IdProvider {
 
         } else {
           sn.setGroup( groupAnalyzer.analyze(sn, sn.getClassification()) );
-          var rl = ReleasedId.create(sn, dataset2attempt.getValue(firstReleaseKey), isCurrent);
+          var rl = ReleasedId.create(sn, dataset2attempt.getValue(firstReleaseKey), isCurrent, isXrOnly(rkeys));
           ids.add(rl);
           LOG.debug("Add {} from {}/{}: {}", sn.getId(), rl.attempt, firstReleaseKey, sn);
         }
@@ -471,6 +474,24 @@ public class IdProvider {
         stats.temporary.incrementAndGet();
       }
     }
+  }
+
+  /**
+   * @return true if all not ignored releases of an id are extended releases.
+   *   Releases we do not know, e.g. deleted or private ones, never count as extended releases.
+   */
+  private boolean isXrOnly(int[] releaseKeys) {
+    boolean xr = false;
+    for (int key : releaseKeys) {
+      if (!prCfg.ignoredReleases.contains(key)) {
+        var rel = dataset2release.get(key);
+        if (rel == null || rel.origin != DatasetOrigin.XRELEASE) {
+          return false;
+        }
+        xr = true;
+      }
+    }
+    return xr;
   }
 
   @VisibleForTesting
@@ -670,7 +691,7 @@ public class IdProvider {
       ReleasedId[] rids = ids.byCanonId(canonId);
       if (rids != null) {
         IntSet ids = new IntOpenHashSet();
-        ScoreMatrix scores = new ScoreMatrix(names, rids, (n, r) -> matchScore(n, acceptedNames.apply(n), r));
+        ScoreMatrix scores = new ScoreMatrix(names, rids, (n, r) -> matchScore(n, acceptedNames.apply(n), r, origin));
         List<ScoreMatrix.ReleaseMatch> best = scores.highest();
         while (!best.isEmpty()) {
           // best is sorted, issue as they come but avoid already released ids
@@ -751,11 +772,18 @@ public class IdProvider {
    * For synonyms we evaluate the accepted name.
    * This helps with sticky ids for pro parte synonyms.
    *
+   * A base release prefers ids it has used before over ids that were only ever issued in extended releases.
+   * The archive keeps the first version of every id, so an old base release id often carries an authorship
+   * its name has since changed, while the extended release id of a duplicate from another source carries today's.
+   * Such an id therefore scores XR_ONLY_PENALTY less, more than an authorship match is worth.
+   * It still matches, so a name moving from an extended release into the base release keeps its id.
+   *
    * @param acceptedName scientific name of the accepted name for synonyms, null if unknown - which simply
    *                     removes the accepted name from the comparison, it never blocks a match
+   * @param origin of the release the ids are issued for
    * @return zero for no match, positive for a match. The higher the better!
    */
-  private static int matchScore(SimpleNameWithNidx n, @Nullable String acceptedName, ReleasedId r) {
+  private static int matchScore(SimpleNameWithNidx n, @Nullable String acceptedName, ReleasedId r, DatasetOrigin origin) {
     // only one is a misapplied name - never match to anything else
     if (!Objects.equals(n.getStatus(), r.status) && (n.getStatus()==MISAPPLIED || r.status==MISAPPLIED) ) {
       return 0;
@@ -794,6 +822,10 @@ public class IdProvider {
       score += 5;
     } else if (n.getStatus() == MISAPPLIED) {
       return 0;
+    }
+    // ids from extended releases only - but never turn a match into no match
+    if (r.xrOnly && origin == DatasetOrigin.RELEASE) {
+      score = Math.max(1, score - XR_ONLY_PENALTY);
     }
 
     // no less than zero

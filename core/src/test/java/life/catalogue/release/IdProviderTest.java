@@ -42,7 +42,9 @@ public class IdProviderTest {
 
   ReleaseConfig cfg;
   ProjectReleaseConfig prCfg;
-  Map<Integer, List<ArchivedNameUsageMapper.ArchivedSimpleName>> prevIdsByAttempt = new HashMap<>();
+  Map<Integer, List<ArchivedNameUsageMapper.ArchivedSimpleName>> prevIdsByAttempt = new TreeMap<>();
+  // attempts not listed are base releases
+  Map<Integer, DatasetOrigin> originByAttempt = new HashMap<>();
   List<SimpleNameCached> testNames = new ArrayList<>();
 
   @Before
@@ -115,10 +117,12 @@ public class IdProviderTest {
       for (Map.Entry<Integer, List<ArchivedNameUsageMapper.ArchivedSimpleName>> rel : prevIdsByAttempt.entrySet()) {
         int attempt = rel.getKey();
         int datasetKey = datasetKey(attempt);
-        getDatasetAttemptMap().put(datasetKey, attempt);
+        addRelease(new Release(datasetKey, originByAttempt.getOrDefault(attempt, DatasetOrigin.RELEASE), attempt));
         for (var sn : rel.getValue()) {
           if (names.containsKey(sn.getId())) {
-            sn.setReleaseKeys(ArrayUtils.add(sn.getReleaseKeys(), datasetKey));
+            // like the archive we keep the first version of an id and only add the release
+            var first = names.get(sn.getId());
+            first.setReleaseKeys(ArrayUtils.add(first.getReleaseKeys(), datasetKey));
           } else {
             sn.setReleaseKeys(new int[] {datasetKey});
             names.put(sn.getId(), sn);
@@ -242,6 +246,60 @@ public class IdProviderTest {
 
     assertID(30, testNames.get(0)); // matches by authorship "Mill."
     assertID(31, testNames.get(1)); // matches by authorship "L."
+  }
+
+  @Test
+  public void baseReleaseKeepsItsIdOverXrOnlyId() throws Exception {
+    // Cedrus deodara in COL26.7: the archive keeps the first version of id 40 with an authorship the name has changed since.
+    // An extended release gave a provisionally accepted duplicate from another source id 41 with today's authorship.
+    // Authorship (+6) outweighs status (+5), so the base release used to take the extended release id.
+    prevIdsByAttempt.put(1, List.of(
+      sn(40, 3, 3, SPECIES, "Cedrus deodara", "(Lamb.) G.Don", ACCEPTED)
+    ));
+    prevIdsByAttempt.put(2, List.of(
+      sn(40, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED),
+      sn(41, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", PROVISIONALLY_ACCEPTED)
+    ));
+    originByAttempt.put(2, DatasetOrigin.XRELEASE);
+    prevIdsByAttempt.put(3, List.of(
+      sn(40, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
+    ));
+
+    testNames = new ArrayList<>(List.of(
+      sn(3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(0, report.deleted.size());
+    assertEquals(0, report.resurrected.size());
+
+    assertID(40, testNames.get(0));
+  }
+
+  @Test
+  public void xrOnlyIdReusedWithoutBaseCandidate() throws Exception {
+    // a name moving from the extended release into the base release keeps its extended release id
+    prevIdsByAttempt.put(1, List.of());
+    prevIdsByAttempt.put(2, List.of(
+      sn(41, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", PROVISIONALLY_ACCEPTED)
+    ));
+    originByAttempt.put(2, DatasetOrigin.XRELEASE);
+    prevIdsByAttempt.put(3, List.of());
+
+    testNames = new ArrayList<>(List.of(
+      sn(3, 3, GENUS, "Cedrus deodara", null, ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(1, report.resurrected.size());
+
+    assertID(41, testNames.get(0)); // even a weak match (rank, status & authorship all differ) is kept
   }
 
   @Test

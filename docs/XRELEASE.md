@@ -96,6 +96,20 @@ Second invocation copies from `tmpProjectKey` → `newDatasetKey` (final release
 ### 6. `index()` — Elasticsearch
 Indexes all name usages for search.
 
+## Stable IDs shared with base releases
+
+All releases of a project, base and extended, draw their IDs from one archive (`name_usage_archive`), which keeps
+the **first** version of every ID it has seen and only ever appends release keys to it. `XIdProvider` removes the IDs
+of the base release from its pool, so an extended release never takes over a base release ID. The next base release
+(`ProjectRelease` → `IdProvider`) however sees every archived ID, including those only ever issued in extended
+releases to names merged from other sources.
+
+When mapping a base release, `IdProvider.matchScore` scores such XR-only IDs `XR_ONLY_PENALTY` (7) lower. That is
+more than an authorship match (+6) is worth. The archived version of an old base release ID often carries an authorship
+the name has changed since, and the penalty stops a duplicate's XR ID with today's authorship from replacing it. An
+XR-only ID never drops to no match, so a name moving from the extended release into the base release keeps its ID.
+Releases missing from the release list, e.g. deleted or private ones, never count as extended releases.
+
 ## Key Classes
 
 | Class | Role |
