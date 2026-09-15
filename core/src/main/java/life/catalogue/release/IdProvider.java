@@ -526,6 +526,12 @@ public class IdProvider {
     if (firstReleaseKey == -1) {
       stats.ignored.incrementAndGet();
       LOG.info("Ignoring ID {} from all releases: {}", sn.getId(), sn.getLabel());
+      // ignored releases were still published, so their ids must never be issued again
+      try {
+        ids.considerMaxID(IdConverter.LATIN29.decode(sn.getId()));
+      } catch (IllegalArgumentException e) {
+        // expected for temp identifiers, which the sequence never issues
+      }
 
     } else {
       try {

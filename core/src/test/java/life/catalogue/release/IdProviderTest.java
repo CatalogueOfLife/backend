@@ -449,6 +449,26 @@ public class IdProviderTest {
   }
 
   @Test
+  public void idOfAnIgnoredReleaseIsNeverIssuedAgain() throws Exception {
+    // id 1 was only ever published in a release the project config ignores. It is no candidate for any name, but the
+    // id sequence still has to start above it, or a new name is handed an id that already was published.
+    prevIdsByAttempt.put(1, List.of(
+      sn(1, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
+    ));
+    prCfg.ignoredReleases = new ArrayList<>(List.of(1001));
+
+    testNames = new ArrayList<>(List.of(
+      sn(9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(1, report.created.size());
+    assertID(2, testNames.get(0));
+  }
+
+  @Test
   public void unmatched() throws Exception {
     // 1st attempt
     prevIdsByAttempt.put(1, List.of(
