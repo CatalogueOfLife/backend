@@ -137,8 +137,8 @@ public class IdProviderIT {
         int val = IdConverter.LATIN29.decode(id);
         maxID.set(Math.max(val, maxID.get()));
       });
-      // largest id issued is:
-      assertEquals("3J", IdConverter.LATIN29.encode(maxID.get()));
+      // largest id issued is the 13th new one above B2: the ids the ignored release 13 published are never issued again
+      assertEquals("BH", IdConverter.LATIN29.encode(maxID.get()));
 
       // assert existing ids
       assertEquals(25, idm.countUsage(projectKey));
