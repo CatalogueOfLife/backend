@@ -113,6 +113,10 @@ public class NameUsageArchiver {
   /**
    * Runs the per release step for every public, not deleted release of the project, highest rank first, so a record is
    * rewritten at most once, by its best release. Then tidies the release keys of all records of the project.
+   *
+   * The given ranking decides the order only. A refresh runs for hours and nothing stops a release from being published
+   * or deleted meanwhile, so every release is ranked again right before it is archived, and skipped if it is no longer
+   * archivable.
    */
   public ArchiveStats archiveProject(ReleaseRanking ranking, boolean copyMatches, boolean dryRun) {
     final int projectKey = ranking.getProjectKey();
@@ -120,7 +124,12 @@ public class NameUsageArchiver {
       dryRun ? "Counting what would change in" : "Refreshing", projectKey, ranking.describe());
     var total = new ArchiveStats();
     for (var r : ranking.archivable()) {
-      total.add(archiveRelease(ranking, r.getKey(), copyMatches, dryRun));
+      final var fresh = ranking(projectKey);
+      if (fresh.archivable().stream().noneMatch(x -> x.getKey() == r.getKey())) {
+        LOG.warn("Release {} of project {} is no longer archivable, skip it", r.getKey(), projectKey);
+        continue;
+      }
+      total.add(archiveRelease(fresh, r.getKey(), copyMatches, dryRun));
     }
     if (!dryRun) {
       try (SqlSession session = factory.openSession(true)) {

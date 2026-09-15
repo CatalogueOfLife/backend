@@ -213,6 +213,26 @@ public class NameUsageArchiverIT {
   }
 
   @Test
+  public void archiveProjectRanksAgainBeforeEveryRelease() throws Exception {
+    // a refresh ranked the project while base release 14 was still private ...
+    execute("UPDATE dataset SET private=true WHERE key=14");
+    DatasetInfoCache.CACHE.clear();
+    var stale = archiver.ranking(PROJECT);
+    // ... then, while it ran, 14 was published and archived, and extended release 13 was deleted
+    execute("UPDATE dataset SET private=false WHERE key=14");
+    execute("UPDATE dataset SET deleted=now() WHERE key=13");
+    DatasetInfoCache.CACHE.clear();
+    archiver.archiveRelease(14);
+
+    archiver.archiveProject(stale, true, false);
+    // base release 12 must not roll back the versions 14 holds
+    assertEquals("Miller", get("A").getName().getAuthorship());
+    assertEquals("Pinus mugo", get("E").getName().getScientificName());
+    // and the deleted 13 is not archived anymore
+    assertNull(get("D"));
+  }
+
+  @Test
   public void dryRunWritesNothing() {
     var stats = archiver.archiveProject(archiver.ranking(PROJECT), true, true);
     assertEquals(1, stats.inserted);
