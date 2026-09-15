@@ -286,10 +286,17 @@ contradictions. `IdCandidate` orders the pairings: evidence first and never outw
 longevity based rather than currency based (base-release-seen before xr-only, then more releases, then earlier first
 release), which is what makes a removed erroneous duplicate lose to the id it duplicated. Ids are handed out greedily,
 best pairing first.
-The archive is the memory all of this reads: one row per id ever issued, refreshed on each publish to the **latest**
-release that carried it - it used to freeze the first version, which is why an old id kept losing to a younger
-duplicate. An id a release drops can record which id took it over (`name_usage_archive.superseded_by`, staged per
-release in `usage_id_superseded` and only applied on publish).
+The archive is the memory all of this reads: one row per id ever issued, holding the version of the highest ranked
+release that carries it (`ReleaseRanking`: base release generations newest first, an extended release in the generation
+of the base release its job recorded as `params.baseReleaseKey`, the base release above its extended releases). It used
+to freeze the first version, which is why an old id kept losing to a younger duplicate. Publishing runs the per release
+step `NameUsageArchiver.archiveRelease`, which never deletes a row, is safe to run twice - the broker delivers the event
+to both apps of a blue-green deploy - and writes the release key last, so a key's presence means the release was
+archived completely: base and extended release jobs refuse to start while a public release of their project lacks its
+key. `ArchiveRefreshJob` (`POST /admin/archive/refresh?projectKey=`) refreshes a whole project in place and rematches it
+through the names index. An id a release drops can record which id took it over (`name_usage_archive.superseded_by`,
+staged per release in `usage_id_superseded`, applied on publish by the project's highest ranked release only). See
+[`docs/2026-09-15-name-usage-archive-migration.md`](docs/2026-09-15-name-usage-archive-migration.md).
 `XIdProvider` mints nothing but temp ids during the merge; the one `mapTempIds()` pass at the end of `XRelease`
 assigns the stable ones, so the whole canonical group competes at once instead of usage by usage in sector order.
 `name` records take the stable id of one of their own usages (`idmap_name_<key>`), off by default behind

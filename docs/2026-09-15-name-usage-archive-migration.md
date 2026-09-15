@@ -1,9 +1,8 @@
 # Name usage archive: newest version per id, and a migration that keeps every id
 
 Date: 2026-09-15
-Status: designed, not yet implemented. It replaces the archive migration of
-[2026-09-15-stable-id-evidence-model.md](2026-09-15-stable-id-evidence-model.md) and its `dbschema.md` entry, which
-delete an archive and must not be run.
+Status: implemented on branch `chore/col-stable-id-improvement`, not merged or deployed yet. It replaces the archive
+migration of [2026-09-15-stable-id-evidence-model.md](2026-09-15-stable-id-evidence-model.md).
 
 ## Why
 
@@ -174,3 +173,26 @@ From the same review, deliberately left for their own changes:
 - **The newest release by key**: extended release edits of base usages would become the evidence the next base release
   is scored against, rows would flip twice a month, and a late extended release would roll data back.
 - **Base releases only**: an id kept alive only by extended releases would stay frozen at its last base version.
+
+## Outcome
+
+- The release start check runs right after the release job created its dataset and import metrics
+  (`ProjectRelease.initJob`, which `XRelease.initJob` passes through), not before. A job failing earlier breaks
+  `onError` and `onFinishLocked`, which expect both. It still runs before any id work.
+- The version comparison picks a name's basionym with an ordered `LIMIT 1` lateral join. The plain join the branch used
+  yields one row per basionym relation and an UPDATE applies an arbitrary one, so the "only rewrite what differs"
+  statement would have written on every run.
+- The basionym lookup in the version statements filters `name_rel` and `name` on the literal release key instead of
+  correlating on the usage's dataset key. A correlated `LIMIT 1` lateral subquery is not flattened, so Postgres planned
+  every `name_rel` and `name` partition; EXPLAIN confirmed a single partition each with the literal key.
+- A dry run counts each release against the archive as it is before the run, so the counts of lower ranked releases
+  include records a higher ranked one would already have written.
+- `createMissingMatches`, `refreshMatches` and `createAllMatches` are gone: matches follow the release usage's own
+  `name_id` on publish, and the names index in the refresh job.
+- A release that does not supply versions only writes and removes archive matches for the rows it inserted in the same
+  run (`cardinality(release_keys) = 0`, via an `insertedOnly` flag on `copyReleaseMatches` and
+  `deleteUnmatchedReleaseMatches`). The plan's first version also re-pointed the matches of ids only deleted or
+  ignored releases carried.
+- Tests: `ReleaseRankingTest`, `NameUsageArchiverIT` on the `archive` fixture, including
+  `nonSupplyingReleaseOnlyTouchesMatchesItInserted`, `ArchiveRefreshJobIT` and
+  `ProjectReleaseIT.releaseRefusesUnarchivedPublicRelease`.

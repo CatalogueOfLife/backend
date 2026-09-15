@@ -123,12 +123,13 @@ Three further changes fall out of this:
 
 ## Migration
 
-Two `dbschema.md` entries dated 2026-09-15: the `superseded_by` column plus the `usage_id_superseded`
-staging table, and — no DDL but mandatory — a **one-off rebuild of every project's name usage archive**
-before the first release after this deploy, because existing archives still hold first versions. Expect a
-one-off burst of id churn on that first release, concentrated on names whose authorship or rank was
-corrected since their id was minted, and near zero from then on. Diff `created.tsv` / `deleted.tsv` /
-`resurrected.tsv` against the previous attempt before publishing it.
+Two `dbschema.md` entries dated 2026-09-15: the `superseded_by` column plus the `usage_id_superseded` staging table,
+and - no DDL but mandatory - a one-off **refresh** of every project's name usage archive before the first release after
+this deploy, because existing archives still hold first versions. The rebuild first planned here deleted each archive
+and would have lost every id only deleted releases carried; the refresh replacing it is designed in
+[2026-09-15-name-usage-archive-migration.md](2026-09-15-name-usage-archive-migration.md). Expect a one-off burst of id
+churn on that first release, concentrated on names whose authorship or rank was corrected since their id was minted,
+and near zero from then on.
 
 ## Not done
 

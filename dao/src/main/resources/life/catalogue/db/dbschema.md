@@ -39,40 +39,48 @@ disappeared and every link to it broke. The release now records which id took ov
 that into `name_usage_archive.superseded_by` so an old id can be resolved to its survivor.
 
 `usage_id_superseded` is keyed by the RELEASE and is staging only: the release writes it while it is built, and
-`NameUsageArchiver.archiveRelease` applies and drops it when the release goes public. A release that is never
-published, or is deleted again, therefore leaves no redirect behind on an id that is still live - hence the cascade.
+`NameUsageArchiver.archiveRelease` applies it when the release goes public if that release is the project's highest
+ranked one, and drops it either way. A release that is never published, or is deleted again, therefore leaves no
+redirect behind on an id that is still live - hence the cascade.
 An id a later release resurrects has its `superseded_by` cleared again.
 
 No backfill: the pairing is release time knowledge and cannot be reconstructed from the archive afterwards.
 
-#### 2026-09-15 name usage archive holds the latest version of an id, not the first
-No DDL, but a **data migration that has to run before the first release after this deploy**.
+#### 2026-09-15 name usage archive holds the newest version of an id, not the first
+No DDL, but a **data refresh per project before its first release after this deploy**, done by an admin job.
 
 `name_usage_archive` only ever inserted an id and then appended release keys to it, so every archived usage carried
 the name, authorship, rank, status and classification of the release that first minted its id - for COL often a
-decade out of date. That is the snapshot the id provider scores the next release against, so after any editorial
-correction the legitimate id silently lost the very attributes that identify it and could be outscored by a younger
-duplicate carrying today's data. `NameUsageArchiver.archiveRelease` now also calls
-`ArchivedNameUsageMapper.updateExistingUsages` (and re-points the archive matches of changed names), so from now on
-the archive tracks the latest release an id appeared in - which for a deleted id is the last release it was still in.
+decade out of date. That is the snapshot the id provider scores the next release against. Publishing now runs
+`NameUsageArchiver.archiveRelease`, which keeps every id at the version of its highest ranked release, see
+`docs/2026-09-15-name-usage-archive-migration.md`.
 
-Existing archives still hold first versions and have to be rebuilt once, project by project:
+Existing archives are refreshed in place, never deleted: deleting one loses every id only deleted releases carried, and
+can start the id sequence below an already published id. Per project, COL first:
 
 ```sql
--- per project, e.g. COL = 3. Check the count first, this deletes the archive.
-SELECT count(*) FROM name_usage_archive WHERE dataset_key = 3;
-DELETE FROM name_usage_archive_match WHERE dataset_key = 3;
-DELETE FROM name_usage_archive WHERE dataset_key = 3;
+-- 1. back up the project's archive
+CREATE TABLE name_usage_archive_bak_3 AS SELECT * FROM name_usage_archive WHERE dataset_key = 3;
+CREATE TABLE name_usage_archive_match_bak_3 AS SELECT * FROM name_usage_archive_match WHERE dataset_key = 3;
 ```
 
-then re-run the archive build for that project (`ArchiveCmd` / `NameUsageArchiver.rebuildProject`), which replays the
-public releases in attempt order so the newest version wins. This requires **all public releases to still be
-present** - a release that was deleted in the meantime cannot contribute and its ids keep whatever the next release
-that carried them says. Expect a one-off burst of id churn on the first release afterwards, concentrated on names
-whose authorship or rank was corrected since their id was minted, and near zero from then on.
+2. `POST /admin/archive/refresh?projectKey=3&dryRun=true`, then check the release ranking in the job log and the counts
+   in the job's step
+3. `POST /admin/archive/refresh?projectKey=3`
+4. `VACUUM (ANALYZE) name_usage_archive;` - the first run rewrites most rows
+5. before publishing the first release afterwards, diff its created, deleted and resurrected reports against the
+   previous attempt
 
-Note that `createAllMatches` used `release_keys[0]` while Postgres arrays are 1 based, so it silently matched
-nothing; it now uses the last release key.
+Until the job ran, a release of a project whose archive lacks one of its public releases refuses to start.
+Do not use deploy's `archive.sh`: the `archive` command refuses a non empty archive, and emptying it first is exactly
+what loses ids. Rollback:
+
+```sql
+DELETE FROM name_usage_archive_match WHERE dataset_key = 3;
+DELETE FROM name_usage_archive WHERE dataset_key = 3;
+INSERT INTO name_usage_archive SELECT * FROM name_usage_archive_bak_3;
+INSERT INTO name_usage_archive_match SELECT * FROM name_usage_archive_match_bak_3;
+```
 
 #### 2026-09-10 split authorship out of sector subject and target names
 Editing a sector in the UI sent the picked subject or target as `{id, name}` with the suggestion label as the name,
