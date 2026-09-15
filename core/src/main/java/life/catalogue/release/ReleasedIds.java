@@ -4,7 +4,6 @@ import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
-import life.catalogue.matching.NameIdentity;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -47,7 +46,6 @@ public class ReleasedIds {
     public final String parent; // this should be the scientific name of the parent, not the ID !!!
     public final TaxGroup group;
     public final NomCode code;
-    private NameIdentity.Facts facts;
 
     /**
      * @param sn simple name with parent being a scientificName, not ID!
@@ -83,17 +81,6 @@ public class ReleasedIds {
       this.parent = sn.getParent();
       this.group = sn.getGroup();
       this.code = sn.getCode();
-    }
-
-    /**
-     * The comparison facts for this id, built on first use and kept: an id is usually compared against several usages
-     * of its canonical group and the authorship only needs parsing once.
-     */
-    public NameIdentity.Facts facts() {
-      if (facts == null) {
-        facts = new NameIdentity.Facts(rank, authorship, phrase, status, code, group, parent);
-      }
-      return facts;
     }
 
     public String id() {

@@ -798,12 +798,19 @@ public class IdProvider {
    * means and is a total order, so the outcome does not depend on the order the store happens to return usages in.
    */
   private void assign(List<SimpleNameWithNidx> names, ReleasedId[] rids, Function<SimpleNameWithNidx, String> acceptedNames) {
+    // the facts are built once per side and dropped again with this group: they cache the parsed authorship, which
+    // is worth having across the pairings of one group but must not be kept for every archived id of the project
+    final NameIdentity.Facts[] relFacts = new NameIdentity.Facts[rids.length];
+    for (int i = 0; i < rids.length; i++) {
+      var r = rids[i];
+      relFacts[i] = new NameIdentity.Facts(r.rank, r.authorship, r.phrase, r.status, r.code, r.group, r.parent);
+    }
     final List<IdCandidate> candidates = new ArrayList<>();
     for (var n : names) {
-      // built once per usage, it caches the parsed authorship for all candidates below
       var facts = new NameIdentity.Facts(n, acceptedNames.apply(n));
-      for (var r : rids) {
-        var verdict = identity.compare(facts, r.facts());
+      for (int i = 0; i < rids.length; i++) {
+        var r = rids[i];
+        var verdict = identity.compare(facts, relFacts[i]);
         if (verdict.isContradicted()) {
           continue; // a different name, whatever else agrees
         }
