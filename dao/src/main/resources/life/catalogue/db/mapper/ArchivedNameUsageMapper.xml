@@ -324,6 +324,40 @@
       AND NOT EXISTS (SELECT true FROM name_usage_archive a WHERE a.dataset_key=#{projectKey} AND a.id=u.id)
   </insert>
 
+  <insert id="addSuperseded" parameterType="map">
+    INSERT INTO usage_id_superseded (dataset_key, id, superseded_by)
+    VALUES (#{releaseKey}, #{id}, #{supersededBy})
+    ON CONFLICT (dataset_key, id) DO UPDATE SET superseded_by = EXCLUDED.superseded_by
+  </insert>
+
+  <select id="processSuperseded" parameterType="map" resultType="map" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT id, superseded_by AS supersededBy
+    FROM usage_id_superseded
+    WHERE dataset_key = #{releaseKey}
+    ORDER BY id
+  </select>
+
+  <update id="clearSuperseded" parameterType="map">
+    UPDATE name_usage_archive a SET superseded_by = null
+    FROM name_usage u
+    WHERE a.dataset_key=#{projectKey}
+      AND u.dataset_key=#{releaseKey}
+      AND a.id=u.id
+      AND a.superseded_by IS NOT NULL
+  </update>
+
+  <update id="applySuperseded" parameterType="map">
+    UPDATE name_usage_archive a SET superseded_by = s.superseded_by
+    FROM usage_id_superseded s
+    WHERE s.dataset_key=#{releaseKey}
+      AND a.dataset_key=#{projectKey}
+      AND a.id=s.id
+  </update>
+
+  <delete id="deleteSuperseded" parameterType="map">
+    DELETE FROM usage_id_superseded WHERE dataset_key = #{releaseKey}
+  </delete>
+
   <update id="truncate">
     TRUNCATE name_usage_archive
   </update>

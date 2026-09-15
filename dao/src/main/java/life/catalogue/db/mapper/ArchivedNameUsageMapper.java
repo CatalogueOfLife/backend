@@ -5,6 +5,7 @@ import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -78,6 +79,38 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
    * @return number of new archive records
    */
   int createMissingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * Records that an identifier a release stopped using was taken over by another one - typically because the two were
+   * duplicates of the same name and the junior one was removed.
+   *
+   * Staged per RELEASE, not per project: a release that is never published, or is deleted again, must not leave a
+   * redirect behind on an identifier that is still live. {@code NameUsageArchiver.archiveRelease} folds these into
+   * {@code name_usage_archive.superseded_by} once the release goes public.
+   */
+  void addSuperseded(@Param("releaseKey") int releaseKey, @Param("id") String id, @Param("supersededBy") String supersededBy);
+
+  /**
+   * Streams the staged supersede pairs of one release as {id, supersededBy} maps, ordered by id.
+   */
+  Cursor<Map<String, Object>> processSuperseded(@Param("releaseKey") int releaseKey);
+
+  /**
+   * Clears superseded_by for every archived id the given release does have, i.e. the ones it resurrected.
+   * @return number of cleared archive records
+   */
+  int clearSuperseded(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * Copies the supersede pairs staged for the given release into the project archive.
+   * @return number of updated archive records
+   */
+  int applySuperseded(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * Drops the staged supersede pairs of a release once they have been applied to the archive.
+   */
+  int deleteSuperseded(@Param("releaseKey") int releaseKey);
 
   /**
    * Lists all name usage identifiers with the same names index key across all datasets.

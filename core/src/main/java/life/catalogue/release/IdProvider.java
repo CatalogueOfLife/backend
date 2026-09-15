@@ -101,6 +101,8 @@ public class IdProvider {
   private final IntSet created = new IntOpenHashSet();
   private Int2IntMap deleted = new Int2IntOpenHashMap(); // maps to release attempt for reporting!
   private final Int2IntMap resurrected = new Int2IntOpenHashMap(); // maps to release attempt for reporting!
+  // a dying id -> the id of the usage that took it over, see #recordSuperseded
+  private final Int2IntMap superseded = new Int2IntOpenHashMap();
   private final SortedMap<String, List<InstableName>> unstable = new TreeMap<>();
   private final CountMap<String> uniteVersions = new CountMap<>();
   protected IdMapMapper idm;
@@ -211,16 +213,40 @@ public class IdProvider {
     public final IntSet created;
     public final Int2IntMap deleted;
     public final Int2IntMap resurrected;
+    /** a deleted id -> the id that took it over, a subset of deleted */
+    public final Int2IntMap superseded;
 
-    IdReport(IntSet created, Int2IntMap deleted, Int2IntMap resurrected) {
+    IdReport(IntSet created, Int2IntMap deleted, Int2IntMap resurrected, Int2IntMap superseded) {
       this.created = created;
       this.deleted = deleted;
       this.resurrected = resurrected;
+      this.superseded = superseded;
     }
   }
 
   public IdReport getReport() {
-    return new IdReport(created, deleted, resurrected);
+    return new IdReport(created, deleted, resurrected, superseded);
+  }
+
+  /**
+   * Stages the supersede pairs against the release being built. They are only folded into the project archive once
+   * that release is actually published - an abandoned release must not leave a redirect on a still live id.
+   */
+  private void persistSuperseded() {
+    if (superseded.isEmpty()) {
+      return;
+    }
+    try (SqlSession session = factory.openSession(false)) {
+      var anum = session.getMapper(ArchivedNameUsageMapper.class);
+      anum.deleteSuperseded(releaseDatasetKey); // a previous, failed attempt at this very release
+      for (var entry : superseded.int2IntEntrySet()) {
+        anum.addSuperseded(releaseDatasetKey, encode(entry.getIntKey()), encode(entry.getIntValue()));
+      }
+      session.commit();
+      LOG.info("Staged {} superseded ids for release {}", superseded.size(), releaseDatasetKey);
+    } catch (RuntimeException e) {
+      LOG.error("Failed to stage {} superseded ids for release {}", superseded.size(), releaseDatasetKey, e);
+    }
   }
 
   protected void report() {
@@ -230,6 +256,7 @@ public class IdProvider {
       reportFile(tmp.file,"resurrected.tsv", resurrected.keySet(), resurrected, false);
       // read ID from this release & ID mapping
       reportFile(tmp.file,"created.tsv", created, id -> -1, false);
+      reportSuperseded(tmp.file);
       // clear instable names, removing the ones with just deletions
       unstable.entrySet().removeIf(entry -> entry.getValue().parallelStream().allMatch(n -> n.del));
       final var unstableFile = new File(tmp.file, "unstable.txt");
@@ -263,6 +290,35 @@ public class IdProvider {
       LOG.error("Failed to write ID reports for project "+projectKey, e);
     }
     LOG.info("ID provision done. Reused {} stable IDs for project release {}-{} ({}), resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, releaseDatasetKey, resurrected.size(), created.size(), deleted.size());
+  }
+
+  /**
+   * Which of the deleted ids were taken over by another id rather than simply vanishing, as
+   * {@code oldId, newId, rank, status, name, authorship} of the surviving usage.
+   */
+  private void reportSuperseded(File dir) throws IOException {
+    if (superseded.isEmpty()) {
+      return;
+    }
+    File f = new File(dir, "superseded.tsv");
+    try (TabWriter tsv = TabWriter.fromFile(f);
+         SqlSession session = factory.openSession(true)
+    ) {
+      var num = session.getMapper(NameUsageMapper.class);
+      LOG.info("Writing superseded ID report for project release {}-{} of {} IDs to {}", projectKey, attempt, superseded.size(), f);
+      for (int id : superseded.keySet().intStream().sorted().toArray()) {
+        final String newID = encode(superseded.get(id));
+        var sn = num.getSimple(DSID.of(releaseDatasetKey, newID));
+        tsv.write(new String[]{
+          encode(id),
+          newID,
+          sn == null ? null : VocabularyUtils.toString(sn.getRank()),
+          sn == null ? null : VocabularyUtils.toString(sn.getStatus()),
+          sn == null ? null : sn.getName(),
+          sn == null ? null : sn.getAuthorship()
+        });
+      }
+    }
   }
 
   private void writeInstableName(Writer writer, InstableName n) {
@@ -593,7 +649,9 @@ public class IdProvider {
     // ids remaining from the current attempt will be deleted
     deleted = ids.currentIDs();
     reused = lastRelIds - deleted.size();
-    LOG.info("Done mapping name usage IDs. {} ids from the last release will be deleted, {} have been reused.", deleted.size(), reused);
+    persistSuperseded();
+    LOG.info("Done mapping name usage IDs. {} ids from the last release will be deleted ({} of them superseded by another id), {} have been reused.",
+      deleted.size(), superseded.size(), reused);
   }
 
   /**
@@ -737,6 +795,32 @@ public class IdProvider {
       if (c.name.getCanonicalId() == null && !taken.contains(c.rid.id)) {
         release(c);
         taken.add(c.rid.id);
+      }
+    }
+    recordSuperseded(candidates);
+  }
+
+  /**
+   * Works out which id took over from an id this release drops, so an old link can still be resolved instead of
+   * simply going missing. This is the erroneous duplicate case: one name ends up in a release twice, the duplicate is
+   * spotted and removed, and the id it had needs to point at the survivor.
+   *
+   * Deliberately narrow. A pair is only recorded when the dying id was in the last release, was not taken by anything
+   * in this one, and some usage of its own canonical group did get an id - and then it is the usage whose evidence
+   * against it ranked highest, never just any usage of the group. An id whose every pairing was contradicted records
+   * nothing: it is not the same name as what is left, so there is nothing to redirect to. A whole group disappearing
+   * records nothing either.
+   *
+   * @param candidates all not contradicted pairings of this canonical group, best first, after the assignment
+   */
+  private void recordSuperseded(List<IdCandidate> candidates) {
+    for (var c : candidates) {
+      if (c.rid.isCurrent                        // the last release had this id
+          && ids.containsId(c.rid.id)            // and nothing in this release took it
+          && c.name.getCanonicalId() != null     // while the usage it fits best did get one
+          && !superseded.containsKey(c.rid.id)   // candidates are sorted, so the first hit is the best one
+      ) {
+        superseded.put(c.rid.id, c.name.getCanonicalId().intValue());
       }
     }
   }

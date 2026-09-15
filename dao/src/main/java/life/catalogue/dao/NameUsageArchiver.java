@@ -148,6 +148,15 @@ public class NameUsageArchiver {
       created = anum.createMissingUsages(projectKey, releaseKey);
       LOG.info("Created {} new archive records from release {} of project {}", created, releaseKey, projectKey);
 
+      // an id this release resurrected is live again and must not keep pointing at whatever replaced it,
+      // so clear before applying
+      int cleared = anum.clearSuperseded(projectKey, releaseKey);
+      int supers = anum.applySuperseded(projectKey, releaseKey);
+      anum.deleteSuperseded(releaseKey);
+      if (cleared > 0 || supers > 0) {
+        LOG.info("Recorded {} superseded ids and cleared {} resurrected ones from release {} of project {}", supers, cleared, releaseKey, projectKey);
+      }
+
       if (copyMatches) {
         var anumm = session.getMapper(ArchivedNameUsageMatchMapper.class);
         LOG.info("Copy missing archive matches from release {} of project {}", releaseKey, projectKey);

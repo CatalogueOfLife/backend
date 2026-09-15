@@ -417,6 +417,10 @@ public class IdProviderTest {
     assertEquals(1, report.deleted.size()); // the junior duplicate
 
     assertID(70, testNames.get(0));
+
+    // and the dead duplicate points at the survivor, so an old link still resolves
+    assertEquals(1, report.superseded.size());
+    assertEquals(70, report.superseded.get(71));
   }
 
   @Test

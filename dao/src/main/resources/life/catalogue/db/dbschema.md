@@ -11,6 +11,29 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-15 record which id superseded a deleted one
+```sql
+ALTER TABLE name_usage_archive ADD COLUMN superseded_by TEXT;
+
+CREATE TABLE usage_id_superseded (
+  dataset_key INTEGER NOT NULL,
+  id TEXT NOT NULL,
+  superseded_by TEXT NOT NULL,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key) REFERENCES dataset ON DELETE CASCADE
+);
+```
+When one name ends up in a release twice and the erroneous duplicate is later removed, the id it had simply
+disappeared and every link to it broke. The release now records which id took over, and publishing the release folds
+that into `name_usage_archive.superseded_by` so an old id can be resolved to its survivor.
+
+`usage_id_superseded` is keyed by the RELEASE and is staging only: the release writes it while it is built, and
+`NameUsageArchiver.archiveRelease` applies and drops it when the release goes public. A release that is never
+published, or is deleted again, therefore leaves no redirect behind on an id that is still live - hence the cascade.
+An id a later release resurrects has its `superseded_by` cleared again.
+
+No backfill: the pairing is release time knowledge and cannot be reconstructed from the archive afterwards.
+
 #### 2026-09-15 name usage archive holds the latest version of an id, not the first
 No DDL, but a **data migration that has to run before the first release after this deploy**.
 
