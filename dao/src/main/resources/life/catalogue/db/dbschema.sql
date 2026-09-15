@@ -1984,8 +1984,9 @@ CREATE INDEX ON name_usage_archive_match (index_id);
 
 -- Which id took over from an id a release stopped using, as worked out while that release was built.
 -- Keyed by the RELEASE, not the project: a release that is never published, or is deleted again, must not leave a
--- redirect behind on an id that is still live. NameUsageArchiver folds these into name_usage_archive.superseded_by
--- when the release is published.
+-- redirect behind on an id that is still live. NameUsageArchiver drops them when it archives the published release,
+-- and folds them into name_usage_archive.superseded_by first only for the highest ranked supplying base and extended
+-- release of the newest generation, skipping ids another supplying release of that generation carries.
 CREATE TABLE usage_id_superseded (
   dataset_key INTEGER NOT NULL,
   id TEXT NOT NULL,

@@ -65,6 +65,8 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
     assertFalse(mapper().isReleaseArchived(Datasets.COL, rel));
     assertFalse(mapper().hasUsages(rel));
     assertEquals(0, mapper().clearSuperseded(Datasets.COL, rel));
+    assertEquals(0, mapper().applySuperseded(Datasets.COL, rel, List.of()));
+    assertEquals(0, mapper().applySuperseded(Datasets.COL, rel, List.of(1, 2)));
   }
 
   public static ArchivedNameUsage create() {

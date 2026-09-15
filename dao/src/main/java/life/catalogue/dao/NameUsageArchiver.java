@@ -177,10 +177,14 @@ public class NameUsageArchiver {
           stats.matchesCopied = amm.copyReleaseMatches(projectKey, releaseKey, blocking, !supplies);
           stats.matchesDeleted = amm.deleteUnmatchedReleaseMatches(projectKey, releaseKey, blocking, !supplies);
         }
-        // redirects are decided by the newest release alone, the staged pairs of an older one are stale
-        if (ranking.isTop(releaseKey)) {
+        // redirects are decided by the newest generation, the staged pairs of any other release are stale
+        if (supplies && ranking.isNewestGeneration(releaseKey)) {
           stats.supersededCleared = anum.clearSuperseded(projectKey, releaseKey);
-          stats.supersededApplied = anum.applySuperseded(projectKey, releaseKey);
+        }
+        if (ranking.decidesRedirects(releaseKey)) {
+          // an id another supplying release of the newest generation carries is live
+          var liveIn = ranking.newestGenerationSupplyingKeys().stream().filter(k -> k != releaseKey).toList();
+          stats.supersededApplied = anum.applySuperseded(projectKey, releaseKey, liveIn);
         }
         anum.deleteSuperseded(releaseKey);
         // last: a release key in the archive means the release was archived completely

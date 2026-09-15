@@ -336,12 +336,20 @@
       AND a.superseded_by IS NOT NULL
   </update>
 
+  <!-- liveIn holds literal keys, never bind parameters: name_usage is hash partitioned -->
   <update id="applySuperseded" parameterType="map">
     UPDATE name_usage_archive a SET superseded_by = s.superseded_by
     FROM usage_id_superseded s
     WHERE s.dataset_key=#{releaseKey}
       AND a.dataset_key=#{projectKey}
       AND a.id=s.id
+      AND a.superseded_by IS DISTINCT FROM s.superseded_by
+      <if test="liveIn != null and !liveIn.isEmpty()">
+      AND NOT EXISTS (
+        SELECT true FROM name_usage u
+        WHERE u.dataset_key IN (<foreach collection="liveIn" item="k" separator=",">${k}</foreach>) AND u.id=s.id
+      )
+      </if>
   </update>
 
   <delete id="deleteSuperseded" parameterType="map">

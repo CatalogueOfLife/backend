@@ -104,8 +104,10 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
    * duplicates of the same name and the junior one was removed.
    *
    * Staged per RELEASE, not per project: a release that is never published, or is deleted again, must not leave a
-   * redirect behind on an identifier that is still live. {@code NameUsageArchiver.archiveRelease} folds these into
-   * {@code name_usage_archive.superseded_by} once the release goes public.
+   * redirect behind on an identifier that is still live. {@code NameUsageArchiver.archiveRelease} drops them when it
+   * archives the published release, and folds them into {@code name_usage_archive.superseded_by} first only if that
+   * release decides redirects: the highest ranked supplying base or extended release of the newest generation, see
+   * {@code ReleaseRanking.decidesRedirects}.
    */
   void addSuperseded(@Param("releaseKey") int releaseKey, @Param("id") String id, @Param("supersededBy") String supersededBy);
 
@@ -121,10 +123,13 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   int clearSuperseded(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
 
   /**
-   * Copies the supersede pairs staged for the given release into the project archive.
+   * Copies the supersede pairs staged for the given release into the project archive, where the record lacks that redirect.
+   * @param liveIn the keys of releases whose ids are live and get no redirect, i.e. the other supplying releases of the
+   *   newest generation
    * @return number of updated archive records
    */
-  int applySuperseded(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+  int applySuperseded(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey,
+                      @Param("liveIn") List<Integer> liveIn);
 
   /**
    * Drops the staged supersede pairs of a release once they have been applied to the archive.

@@ -151,17 +151,65 @@ public class NameUsageArchiverIT {
     assertNewestGenerations();
   }
 
+  void execute(String statement) throws Exception {
+    try (SqlSession session = factory.openSession(true);
+         Statement st = session.getConnection().createStatement()
+    ) {
+      st.execute(statement);
+    }
+  }
+
+  String supersededBy(String id) throws Exception {
+    return sql("SELECT superseded_by FROM name_usage_archive WHERE dataset_key=" + PROJECT + " AND id='" + id + "'");
+  }
+
   @Test
-  public void supersededOnlyFromTheHighestRankedRelease() throws Exception {
+  public void supersededOnlyFromTheNewestGeneration() throws Exception {
     try (SqlSession session = factory.openSession(true)) {
       var anum = session.getMapper(ArchivedNameUsageMapper.class);
       anum.addSuperseded(14, "C", "A"); // the newest release dropped C in favour of A
-      anum.addSuperseded(12, "B", "A"); // an older release's staging is stale
+      anum.addSuperseded(12, "B", "A"); // the staging of a release of an older generation is stale
     }
     archiver.archiveProject(archiver.ranking(PROJECT), true, false);
-    assertEquals("A", sql("SELECT superseded_by FROM name_usage_archive WHERE dataset_key=3 AND id='C'"));
-    assertNull(sql("SELECT superseded_by FROM name_usage_archive WHERE dataset_key=3 AND id='B'"));
+    assertEquals("A", supersededBy("C"));
+    assertNull(supersededBy("B"));
     assertEquals("0", sql("SELECT count(*) FROM usage_id_superseded"));
+  }
+
+  @Test
+  public void lateExtendedReleaseOfAnOlderGenerationLeavesRedirectsAlone() throws Exception {
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(ArchivedNameUsageMapper.class).addSuperseded(13, "B", "A");
+    }
+    archiver.archiveProject(archiver.ranking(PROJECT), true, false);
+    assertNull(supersededBy("B"));
+    assertEquals("0", sql("SELECT count(*) FROM usage_id_superseded"));
+  }
+
+  @Test
+  public void extendedReleaseOfTheNewestGenerationDecidesRedirects() throws Exception {
+    // without base release 14 the newest generation is base release 12 with its extended release 13
+    execute("UPDATE dataset SET private=true WHERE key=14");
+    DatasetInfoCache.CACHE.clear();
+    try (SqlSession session = factory.openSession(true)) {
+      var anum = session.getMapper(ArchivedNameUsageMapper.class);
+      anum.addSuperseded(13, "B", "A");
+      anum.addSuperseded(13, "C", "A"); // base release 12 of the same generation still carries C
+    }
+    archiver.archiveProject(archiver.ranking(PROJECT), true, false);
+    assertEquals("A", supersededBy("B"));
+    assertNull(supersededBy("C"));
+    assertEquals("0", sql("SELECT count(*) FROM usage_id_superseded"));
+  }
+
+  @Test
+  public void resurrectedIdLosesItsRedirect() throws Exception {
+    execute("UPDATE name_usage_archive SET superseded_by='A' WHERE dataset_key=" + PROJECT + " AND id IN ('C', 'E')");
+    archiver.archiveProject(archiver.ranking(PROJECT), true, false);
+    // release 14 of the newest generation carries E
+    assertNull(supersededBy("E"));
+    // only releases of an older generation carry C
+    assertEquals("A", supersededBy("C"));
   }
 
   @Test

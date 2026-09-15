@@ -150,12 +150,57 @@ public class ReleaseRanking {
   }
 
   /**
-   * @return true if the release is the project's highest ranked archivable release
+   * @return the generation of the highest ranked archivable release, null if the project has none
    */
-  public boolean isTop(int releaseKey) {
-    require(releaseKey);
-    var archivable = archivable();
-    return !archivable.isEmpty() && archivable.get(0).getKey() == releaseKey;
+  @Nullable
+  private Integer newestGeneration() {
+    return ranked.stream()
+      .filter(ArchivableRelease::isArchivable)
+      .findFirst()
+      .map(this::generation)
+      .orElse(null);
+  }
+
+  /**
+   * @return true if the release belongs to the newest generation, the generation of the highest ranked archivable release
+   */
+  public boolean isNewestGeneration(int releaseKey) {
+    var r = require(releaseKey);
+    final Integer newest = newestGeneration();
+    return newest != null && generation(r) == newest;
+  }
+
+  /**
+   * @return the keys of the supplying releases of the newest generation, highest rank first
+   */
+  public List<Integer> newestGenerationSupplyingKeys() {
+    final Integer newest = newestGeneration();
+    if (newest == null) {
+      return List.of();
+    }
+    return ranked.stream()
+      .filter(r -> supplies(r.getKey()) && generation(r) == newest)
+      .map(ArchivableRelease::getKey)
+      .toList();
+  }
+
+  /**
+   * Superseded redirects are decided by the newest generation: its highest ranked supplying base release and its highest
+   * ranked supplying extended release each apply the pairs staged for them.
+   * @return true if the release supplies versions, belongs to the newest generation and no supplying release of the same
+   *   origin in the newest generation ranks above it
+   */
+  public boolean decidesRedirects(int releaseKey) {
+    var release = require(releaseKey);
+    if (!supplies(releaseKey) || !isNewestGeneration(releaseKey)) {
+      return false;
+    }
+    for (int key : newestGenerationSupplyingKeys()) {
+      if (byKey.get(key).getOrigin() == release.getOrigin()) {
+        return key == releaseKey;
+      }
+    }
+    return false;
   }
 
   @Nullable

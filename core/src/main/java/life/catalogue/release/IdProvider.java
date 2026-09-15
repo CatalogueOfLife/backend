@@ -237,8 +237,10 @@ public class IdProvider {
   }
 
   /**
-   * Stages the supersede pairs against the release being built. They are only folded into the project archive once
-   * that release is actually published - an abandoned release must not leave a redirect on a still live id.
+   * Stages the supersede pairs against the release being built - an abandoned release must not leave a redirect on a
+   * still live id. Archiving the published release drops them, and folds them into the project archive first only if
+   * that release decides redirects: the highest ranked supplying base or extended release of the newest generation,
+   * see ReleaseRanking.decidesRedirects.
    */
   private void persistSuperseded() {
     if (superseded.isEmpty()) {

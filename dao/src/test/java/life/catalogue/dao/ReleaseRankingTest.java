@@ -47,8 +47,46 @@ public class ReleaseRankingTest {
       xr(22, 5, JAN.plusMonths(1).plusDays(9), 20)
     );
     assertEquals(List.of(20, 22, 21, 10, 11), keys(r.archivable()));
-    assertTrue(r.isTop(20));
-    assertFalse(r.isTop(22));
+  }
+
+  @Test
+  public void redirectsAreDecidedByTheNewestGeneration() {
+    var r = rank(
+      base(10, 1, JAN),
+      xr(11, 2, JAN.plusDays(3), 10),
+      base(20, 3, JAN.plusMonths(1)),
+      xr(21, 4, JAN.plusMonths(1).plusDays(3), 20),
+      xr(22, 5, JAN.plusMonths(1).plusDays(9), 20)
+    );
+    assertTrue(r.isNewestGeneration(20));
+    assertTrue(r.isNewestGeneration(21));
+    assertTrue(r.isNewestGeneration(22));
+    assertFalse(r.isNewestGeneration(10));
+    assertFalse(r.isNewestGeneration(11));
+    assertEquals(List.of(20, 22, 21), r.newestGenerationSupplyingKeys());
+    // the base release and its newest extended release
+    assertTrue(r.decidesRedirects(20));
+    assertTrue(r.decidesRedirects(22));
+    // an older extended release of the same generation
+    assertFalse(r.decidesRedirects(21));
+    // releases of an older generation
+    assertFalse(r.decidesRedirects(10));
+    assertFalse(r.decidesRedirects(11));
+  }
+
+  @Test
+  public void ignoredReleaseDecidesNoRedirects() {
+    var r = rank(new IntOpenHashSet(new int[]{22}),
+      base(20, 3, JAN.plusMonths(1)),
+      xr(21, 4, JAN.plusMonths(1).plusDays(3), 20),
+      xr(22, 5, JAN.plusMonths(1).plusDays(9), 20)
+    );
+    assertTrue(r.isNewestGeneration(22));
+    assertEquals(List.of(20, 21), r.newestGenerationSupplyingKeys());
+    assertTrue(r.decidesRedirects(20));
+    assertFalse(r.decidesRedirects(22));
+    // the next supplying extended release of the generation decides instead
+    assertTrue(r.decidesRedirects(21));
   }
 
   @Test
@@ -107,7 +145,10 @@ public class ReleaseRankingTest {
       new ArchivableRelease(30, RELEASE, 3, false, JAN.plusMonths(2), JAN.plusMonths(3), null)
     );
     assertEquals(List.of(10), keys(r.archivable()));
-    assertTrue(r.isTop(10));
+    // the newest generation is the one of the highest ranked archivable release
+    assertTrue(r.decidesRedirects(10));
+    assertFalse(r.isNewestGeneration(20));
+    assertFalse(r.decidesRedirects(20));
     assertFalse(r.supplies(20));
     assertFalse(r.supplies(30));
   }
@@ -147,5 +188,15 @@ public class ReleaseRankingTest {
   @Test(expected = IllegalArgumentException.class)
   public void unknownReleaseInIsFallbackBase() {
     rank(base(10, 1, JAN)).isFallbackBase(99);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void unknownReleaseInIsNewestGeneration() {
+    rank(base(10, 1, JAN)).isNewestGeneration(99);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void unknownReleaseInDecidesRedirects() {
+    rank(base(10, 1, JAN)).decidesRedirects(99);
   }
 }
