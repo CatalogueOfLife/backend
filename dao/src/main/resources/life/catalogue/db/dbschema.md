@@ -39,10 +39,11 @@ disappeared and every link to it broke. The release now records which id took ov
 that into `name_usage_archive.superseded_by` so an old id can be resolved to its survivor.
 
 `usage_id_superseded` is keyed by the RELEASE and is staging only: the release writes it while it is built, and
-`NameUsageArchiver.archiveRelease` applies it when the release goes public if that release is the project's highest
-ranked one, and drops it either way. A release that is never published, or is deleted again, therefore leaves no
-redirect behind on an id that is still live - hence the cascade.
-An id a later release resurrects has its `superseded_by` cleared again.
+`NameUsageArchiver.archiveRelease` drops it when the release goes public. Redirects are decided by the newest release
+generation: only its highest ranked supplying base release and its highest ranked supplying extended release apply
+their pairs first, skipping ids another supplying release of that generation carries. A release that is never
+published, or is deleted again, therefore leaves no redirect behind on an id that is still live - hence the cascade.
+An id a supplying release of the newest generation carries has its `superseded_by` cleared again.
 
 No backfill: the pairing is release time knowledge and cannot be reconstructed from the archive afterwards.
 
@@ -56,30 +57,53 @@ decade out of date. That is the snapshot the id provider scores the next release
 `docs/2026-09-15-name-usage-archive-migration.md`.
 
 Existing archives are refreshed in place, never deleted: deleting one loses every id only deleted releases carried, and
-can start the id sequence below an already published id. Per project, COL first:
+can start the id sequence below an already published id.
+
+Publish no release during the deploy itself, while the old app's listener still runs the old archiving code. The first
+run rewrites most rows in place, which can roughly double the size of the table and its indexes until they are vacuumed,
+plus as much WAL to the standby: check the free disk first. It takes hours for COL, whose release jobs wait on the
+project lock meanwhile. The projects to refresh:
 
 ```sql
--- 1. back up the project's archive
+SELECT DISTINCT dataset_key FROM name_usage_archive ORDER BY dataset_key;
+```
+
+Per project, COL first:
+
+```sql
+-- 1. back up the project's archive and the superseded pairs staged for its releases
 CREATE TABLE name_usage_archive_bak_3 AS SELECT * FROM name_usage_archive WHERE dataset_key = 3;
 CREATE TABLE name_usage_archive_match_bak_3 AS SELECT * FROM name_usage_archive_match WHERE dataset_key = 3;
+CREATE TABLE usage_id_superseded_bak_3 AS
+  SELECT s.* FROM usage_id_superseded s JOIN dataset d ON d.key = s.dataset_key WHERE d.source_key = 3;
 ```
 
 2. `POST /admin/archive/refresh?projectKey=3&dryRun=true`, then check the release ranking in the job log and the counts
    in the job's step
-3. `POST /admin/archive/refresh?projectKey=3`
-4. `VACUUM (ANALYZE) name_usage_archive;` - the first run rewrites most rows
+3. `POST /admin/archive/refresh?projectKey=3`. Do not publish a release of the project while it runs; if one was
+   published meanwhile, run the refresh again after it finished
+4. `VACUUM (ANALYZE) name_usage_archive;` and `VACUUM (ANALYZE) name_usage_archive_match;` - the first run rewrites
+   most rows
 5. before publishing the first release afterwards, diff its created, deleted and resurrected reports against the
    previous attempt
+6. once that release looks right, drop the backups:
+   `DROP TABLE name_usage_archive_bak_3, name_usage_archive_match_bak_3, usage_id_superseded_bak_3;`
 
-Until the job ran, a release of a project whose archive lacks one of its public releases refuses to start.
+The release start check does not detect an archive that is complete but not refreshed yet, because an archive written
+by the old code already carries every release key. Hold every release of a project until its refresh has finished, and
+after a failed or cancelled refresh run it again before starting a release.
 Do not use deploy's `archive.sh`: the `archive` command refuses a non empty archive, and emptying it first is exactly
-what loses ids. Rollback:
+what loses ids. Rollback, with releases and publishing paused:
 
 ```sql
+BEGIN;
 DELETE FROM name_usage_archive_match WHERE dataset_key = 3;
 DELETE FROM name_usage_archive WHERE dataset_key = 3;
+DELETE FROM usage_id_superseded s USING dataset d WHERE d.key = s.dataset_key AND d.source_key = 3;
 INSERT INTO name_usage_archive SELECT * FROM name_usage_archive_bak_3;
 INSERT INTO name_usage_archive_match SELECT * FROM name_usage_archive_match_bak_3;
+INSERT INTO usage_id_superseded SELECT * FROM usage_id_superseded_bak_3;
+COMMIT;
 ```
 
 #### 2026-09-10 split authorship out of sector subject and target names

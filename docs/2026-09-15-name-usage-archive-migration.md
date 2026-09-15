@@ -193,6 +193,33 @@ From the same review, deliberately left for their own changes:
   run (`cardinality(release_keys) = 0`, via an `insertedOnly` flag on `copyReleaseMatches` and
   `deleteUnmatchedReleaseMatches`). The plan's first version also re-pointed the matches of ids only deleted or
   ignored releases carried.
+- Superseded redirects are decided by the newest generation, among releases that supply versions, not by the
+  project's highest ranked release as step 4 says. Every supplying release of the newest generation clears
+  `superseded_by` on the ids it carries; its highest ranked supplying base release and its highest ranked supplying
+  extended release each apply their staged pairs, skipping ids another supplying release of that generation carries
+  (`ReleaseRanking.decidesRedirects`). Every other release applies and clears nothing, and every release drops its
+  staged pairs. Extended releases stage pairs too, diffed against the previous extended release, so the ids dropped
+  between two of them are in no base release's deleted set: step 4 always discarded those, and publish order decided
+  the rest.
+- The per release step being safe to run twice covers one release archived twice, not different releases at once. A
+  refresh runs for hours and its project lock does not stop publishing, so `archiveProject` ranks the project again
+  right before every release it archives and skips one that is no longer archivable; the ranking it is given only
+  decides the order and the logged ranking. There is no cross JVM lock: do not publish a release of the project while
+  its refresh runs, and if one was published meanwhile, run the refresh again after it finished.
+- The release start check is no safety net for the migration. It does not detect an archive that is complete but not
+  refreshed yet, because an archive written by the old code already carries every release key, and a failed or
+  cancelled refresh can leave rows with an empty `release_keys` while the release key is on other rows. Hold every
+  release of a project until its refresh has finished, and after a failed or cancelled refresh run it again before
+  starting a release. `IdProvider` now also feeds an archived id without a release key it counts - such a row, or an
+  id only ignored releases carried - into the id sequence, so it is never issued again.
+- The runbook in `dbschema.md` adds: publish no release during the deploy itself, while the old app's listener still
+  runs the old archiving code; a query listing the projects to refresh; a free disk check, as rewriting most rows in
+  place can roughly double table and index size until vacuum, plus the WAL to the standby; COL takes hours, with its
+  release jobs waiting on the project lock; the staged superseded pairs are backed up too; `name_usage_archive_match`
+  is vacuumed as well; the backups are dropped once the first release afterwards looks right; and the rollback runs in
+  one transaction with releases and publishing paused.
+- The renamed count of a dry run is not the rematch load, the rematch walks every archived name of the project: it only
+  approximates the matches that change.
 - Tests: `ReleaseRankingTest`, `NameUsageArchiverIT` on the `archive` fixture, including
   `nonSupplyingReleaseOnlyTouchesMatchesItInserted`, `ArchiveRefreshJobIT` and
   `ProjectReleaseIT.releaseRefusesUnarchivedPublicRelease`.

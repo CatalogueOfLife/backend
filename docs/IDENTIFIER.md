@@ -138,9 +138,11 @@ the same author. The one minted a release or two ago is the one that dies.
 
 Where it can tell, COL also records which identifier took over: when the dead identifier was in the previous
 release, and a remaining usage of the same name that it could have belonged to kept an existing identifier.
-That pairing is listed in `superseded.tsv` (see below) and kept in the project's identifier archive once the
-release is published. An extended release does not reconsider the identifiers it inherits from its base
-release, so removing the extended copy of a name that is also in the base release records no pairing.
+That pairing is listed in `superseded.tsv` (see below). The project's identifier archive keeps it once the release
+is published, but only if it is the newest published base release or the newest published extended release built on
+it, and no other of those releases - the base release and the extended releases built on it - still carries the dead
+identifier. An extended release does not reconsider the identifiers it inherits from its base release, so removing
+the extended copy of a name that is also in the base release records no pairing.
 
 > Requesting a dead identifier does **not** redirect you to its survivor. The replacement is recorded, but
 > the API does not resolve it, so an old identifier still returns nothing.

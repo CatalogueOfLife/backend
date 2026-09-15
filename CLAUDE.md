@@ -295,7 +295,9 @@ to both apps of a blue-green deploy - and writes the release key last, so a key'
 archived completely: base and extended release jobs refuse to start while a public release of their project lacks its
 key. `ArchiveRefreshJob` (`POST /admin/archive/refresh?projectKey=`) refreshes a whole project in place and rematches it
 through the names index. An id a release drops can record which id took it over (`name_usage_archive.superseded_by`,
-staged per release in `usage_id_superseded`, applied on publish by the project's highest ranked release only). See
+staged per release in `usage_id_superseded`). Redirects are decided by the newest generation: on publish its highest
+ranked supplying base and extended release apply their pairs, skipping ids another supplying release of that
+generation carries, and each of its supplying releases clears the redirects of the ids it carries. See
 [`docs/2026-09-15-name-usage-archive-migration.md`](docs/2026-09-15-name-usage-archive-migration.md).
 `XIdProvider` mints nothing but temp ids during the merge; the one `mapTempIds()` pass at the end of `XRelease`
 assigns the stable ones, so the whole canonical group competes at once instead of usage by usage in sector order.

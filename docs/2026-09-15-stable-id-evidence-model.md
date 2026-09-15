@@ -1,7 +1,7 @@
 # Stable id generation for COL (x)releases
 
 Date: 2026-09-15
-Status: implemented on branch `claude/col-stable-id-generation-ar5yzk`, not merged or deployed yet. The HTTP
+Status: implemented on branch `chore/col-stable-id-improvement`, not merged or deployed yet. The HTTP
 resolution of a superseded id and the loose-spelling fallback are not implemented (see Not done).
 
 ## The problem
