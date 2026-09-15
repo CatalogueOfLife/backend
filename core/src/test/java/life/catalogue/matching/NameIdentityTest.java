@@ -39,6 +39,30 @@ public class NameIdentityTest {
   }
 
   @Test
+  public void citationVariantsOfOneAuthorAreEqualEvidence() {
+    // AuthorComparator accepts years up to 11 apart and a combination author lined up against the same basionym
+    // author. An exact copy of a citation is deliberately no better evidence than such a variant of it: which of their
+    // ids a name keeps is left to seniority, so a removed duplicate cannot keep its junior id by being cited its own way
+    var exact = identity.compare(f(SUBSPECIES, "Bryk, 1948", ACCEPTED), f(SUBSPECIES, "Bryk, 1948", ACCEPTED));
+    var variant = identity.compare(f(SUBSPECIES, "Bryk, 1948", ACCEPTED), f(SUBSPECIES, "(Bryk, 1949)", ACCEPTED));
+    assertEquals(CONFIRMED, exact.evidence);
+    assertEquals(exact, variant);
+    assertEquals(exact, identity.compare(f(SPECIES, "Dyar, 1902", ACCEPTED), f(SPECIES, "Dyar, 1899", ACCEPTED)));
+  }
+
+  @Test
+  public void yearsTooFarApartContradict() {
+    assertEquals(CONTRADICTED, ev(f(SPECIES, "Dyar, 1880", ACCEPTED), f(SPECIES, "Dyar, 1902", ACCEPTED)));
+  }
+
+  @Test
+  public void differentBasionymAndCombinationAuthorsTellUsNothing() {
+    // a basionym author can only ever be lined up against a combination author as a guess: agreeing confirms,
+    // disagreeing is no evidence either way
+    assertEquals(PLAUSIBLE, ev(f(SPECIES, "(Smith, 1900)", ACCEPTED), f(SPECIES, "Jones, 1900", ACCEPTED)));
+  }
+
+  @Test
   public void addedOrRemovedAuthorshipNeverBlocks() {
     // https://github.com/CatalogueOfLife/backend/issues/1326
     assertEquals(PLAUSIBLE, ev(f(GENUS, null, ACCEPTED), f(GENUS, "Trew", ACCEPTED)));

@@ -102,13 +102,19 @@ public class IdProviderArchiveIT {
 
       // assert
       assertEquals(8, idm.countUsage(projectKey));
-      assertEquals("56TT9", idm.getUsage(projectKey, "t1"));
-      assertEquals("5HP96", idm.getUsage(projectKey, "t2"));
-      assertEquals("5KH5P", idm.getUsage(projectKey, "t3"));
-      assertEquals("627WF", idm.getUsage(projectKey, "t4"));
+      // None of these releases are in the dataset table, so no archived id counts as current and every tie is settled
+      // by how many releases carried an id. The expectations used to be the lowest id.
+      // four archived ids carry exactly this name and authorship: C5BX3, in 14 releases, beats 56TT9, in 2
+      assertEquals("C5BX3", idm.getUsage(projectKey, "t1"));
+      // t2, t3 and t7 are exact copies of one archived version, but a variant of the same authorship - a year or a
+      // few off, or with the author as basionym author - is equally CONFIRMED and lived longer, so it wins
+      assertEquals("BLCLH", idm.getUsage(projectKey, "t2")); // (Bryk, 1949) in 14 releases over Bryk, 1948 in 5
+      assertEquals("B779Q", idm.getUsage(projectKey, "t3")); // Dyar, 1899 in 17 releases over Dyar, 1902 in 3
+      // an unauthored genus says nothing against "Abies Mill.", so again seniority decides: 18 releases over 3
+      assertEquals("C66T4", idm.getUsage(projectKey, "t4"));
       assertEquals("679P", idm.getUsage(projectKey, "t5"));
       assertEquals("679Q", idm.getUsage(projectKey, "t6"));
-      assertEquals("6QPSN", idm.getUsage(projectKey, "t7"));
+      assertEquals("BM4CL", idm.getUsage(projectKey, "t7")); // (Swinhoe, 1886) in 16 releases over Swinhoe, 1885 in 3
       assertEquals("8K9Y", idm.getUsage(projectKey, "t8"));
     }
   }

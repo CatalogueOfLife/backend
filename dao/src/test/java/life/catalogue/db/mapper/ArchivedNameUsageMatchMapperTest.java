@@ -46,6 +46,12 @@ public class ArchivedNameUsageMatchMapperTest extends MapperTestBase<ArchivedNam
   }
 
   @Test
+  public void refreshMatches() throws Exception {
+    // no real data to re-point but tests valid SQL - only publishing a release runs it otherwise
+    mapper().refreshMatches(Datasets.COL, 1000);
+  }
+
+  @Test
   public void persist() throws Exception {
     var key = DSID.of(appleKey, "xxx");
     // creates a new match, then updates it. The apple names index has entries 1-4

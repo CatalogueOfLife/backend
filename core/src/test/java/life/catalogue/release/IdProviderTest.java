@@ -120,9 +120,11 @@ public class IdProviderTest {
         addRelease(new Release(datasetKey, originByAttempt.getOrDefault(attempt, DatasetOrigin.RELEASE), attempt));
         for (var sn : rel.getValue()) {
           if (names.containsKey(sn.getId())) {
-            // like the archive we keep the first version of an id and only add the release
-            var first = names.get(sn.getId());
-            first.setReleaseKeys(ArrayUtils.add(first.getReleaseKeys(), datasetKey));
+            // like the archive we keep the latest version of an id, together with every release that carried it.
+            // Attempts are iterated in ascending order, so this release is the newest one seen so far
+            var previous = names.get(sn.getId());
+            sn.setReleaseKeys(ArrayUtils.add(previous.getReleaseKeys(), datasetKey));
+            names.put(sn.getId(), sn);
           } else {
             sn.setReleaseKeys(new int[] {datasetKey});
             names.put(sn.getId(), sn);
@@ -250,11 +252,12 @@ public class IdProviderTest {
 
   @Test
   public void baseReleaseKeepsItsIdOverXrOnlyId() throws Exception {
-    // Cedrus deodara in COL26.7: the archive keeps the first version of id 40 with an authorship the name has changed since.
-    // An extended release gave a provisionally accepted duplicate from another source id 41 with today's authorship.
-    // The old flat score let authorship (+6) outweigh status (+5) and the base release took the extended release id.
-    // Now both are equally CONFIRMED - AuthorComparator lines up the shared combination author G.Don - and the base
-    // release id wins because an id only ever issued in an extended release is junior to one a base release used.
+    // Cedrus deodara in COL26.7: id 40 changed its authorship over the base releases. An extended release gave a
+    // provisionally accepted duplicate from another source id 41 with today's authorship.
+    // The archive used to keep the first version of id 40, and the old flat score let authorship (+6) outweigh
+    // status (+5), so the base release took the extended release id. The archive now keeps the latest version, both
+    // ids carry the very same authorship, and the base release id wins because an id only ever issued in an extended
+    // release is junior to one a base release used.
     prevIdsByAttempt.put(1, List.of(
       sn(40, 3, 3, SPECIES, "Cedrus deodara", "(Lamb.) G.Don", ACCEPTED)
     ));
