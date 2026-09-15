@@ -86,6 +86,7 @@ public class IdProvider {
   private final int mappedDatasetKey; // from
   private final int releaseDatasetKey; // to
   private final @Nullable Integer lastReleaseKey;
+  private @Nullable Integer prevReleaseKey;
   private final SqlSessionFactory factory;
   private final TaxGroupAnalyzer groupAnalyzer;
   private final NameIdentity identity = new NameIdentity();
@@ -156,6 +157,13 @@ public class IdProvider {
       keySequence.set(ids.maxKey());
       LOG.info("Max existing id = {} ({}). Start ID sequence with {} ({})", ids.maxKey(), encode(ids.maxKey()), peek(), encode(peek()));
     }
+  }
+
+  /**
+   * @param prevReleaseKey the previous release of the same origin, used to keep name ids sticky. Optional.
+   */
+  public void setPrevReleaseKey(@Nullable Integer prevReleaseKey) {
+    this.prevReleaseKey = prevReleaseKey;
   }
 
   /**
@@ -645,6 +653,7 @@ public class IdProvider {
     } catch (IOException e) {
       LOG.error("Failed to write ID reports for project " + projectKey, e);
     }
+    mapNameIds();
     reportTemporaryIds(tempOnly);
     // ids remaining from the current attempt will be deleted
     deleted = ids.currentIDs();
@@ -652,6 +661,23 @@ public class IdProvider {
     persistSuperseded();
     LOG.info("Done mapping name usage IDs. {} ids from the last release will be deleted ({} of them superseded by another id), {} have been reused.",
       deleted.size(), superseded.size(), reused);
+  }
+
+  /**
+   * Gives every name the stable id of one of its own usages, so a name is as stable as the usages that carry it and
+   * an exported NameID means the same thing from one release to the next. See IdMapMapper#mapNamesFromUsages.
+   *
+   * Nothing is matched a second time here - names have no identity of their own in this scheme, which is the point:
+   * it cannot drift away from the usage ids and it costs one statement.
+   */
+  private void mapNameIds() {
+    if (!prCfg.stableNameIds) {
+      return;
+    }
+    try (SqlSession session = factory.openSession(true)) {
+      int mapped = session.getMapper(IdMapMapper.class).mapNamesFromUsages(mappedDatasetKey, prevReleaseKey);
+      LOG.info("Mapped {} name ids of dataset {} from their usages", mapped, mappedDatasetKey);
+    }
   }
 
   /**

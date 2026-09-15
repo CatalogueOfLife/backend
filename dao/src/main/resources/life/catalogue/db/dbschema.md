@@ -11,6 +11,17 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-15 stable name ids
+No DDL - `idmap_name_<key>` has always been created per release run and joined by all five places that reference a
+name id (`NameMapper`, `NameUsageMapper.name_id`, `NameRelationMapper` for both sides, `TypeMaterialMapper`,
+`NameMatchMapper`), it was simply never filled, so names kept the project's ShortUUID or source id and changed from
+release to release. `IdMapMapper.mapNamesFromUsages` now fills it: every name takes the stable id of one of its own
+usages, so a name id is as stable as the usages carrying it and `NameID` means the same thing across releases.
+
+Off by default. Enable per project with `stableNameIds: true` in the project's release config, COL first: it replaces
+every name id in a release with a 7 character LATIN29 one, which is a visible change to the NameID column of every
+COLDP and DwC-A export and worth telling data users about first.
+
 #### 2026-09-15 record which id superseded a deleted one
 ```sql
 ALTER TABLE name_usage_archive ADD COLUMN superseded_by TEXT;

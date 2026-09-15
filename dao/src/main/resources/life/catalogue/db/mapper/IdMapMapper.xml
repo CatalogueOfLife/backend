@@ -16,6 +16,34 @@
     SELECT id2 FROM ${table}_${datasetKey} WHERE id=#{id}
   </select>
 
+  <insert id="mapNamesFromUsages" parameterType="map">
+    <!-- Give every name the stable id of one of its own usages. A name can carry several usages - pro parte
+         synonyms, or the same name accepted in one branch and a synonym in another - so exactly one is picked per
+         name, and DISTINCT ON does that in one statement.
+
+         The order of preference:
+          1. the usage whose id was this name's id in the previous release, which is what keeps a name id from moving
+             when its accepted usage is sunk into synonymy
+          2. a usage that actually got a stable id over one that kept a temporary one
+          3. an accepted usage over a synonym
+          4. the lowest id. length() first because LATIN29 is unpadded base 29, so plain text order is not numeric
+             order ("32" sorts before "Z") and the lowest id has to be the oldest one.
+
+         idmap_name.id2 is UNIQUE and holds: distinct names never share a usage, so they never pick the same id. -->
+    INSERT INTO idmap_name_${datasetKey} (id, id2)
+    SELECT DISTINCT ON (u.name_id) u.name_id, coalesce(mu.id2, u.id)
+    FROM name_usage u
+      LEFT JOIN idmap_name_usage_${datasetKey} mu ON mu.id = u.id
+    WHERE u.dataset_key = #{datasetKey}
+    ORDER BY u.name_id,
+      <if test="prevReleaseKey != null">
+      EXISTS (SELECT true FROM name pn WHERE pn.dataset_key = #{prevReleaseKey} AND pn.id = coalesce(mu.id2, u.id)) DESC,
+      </if>
+      (mu.id2 IS NOT NULL) DESC,
+      is_synonym(u.status),
+      length(coalesce(mu.id2, u.id)), coalesce(mu.id2, u.id)
+  </insert>
+
   <select id="processUnmappedUsages" parameterType="map" resultMap="life.catalogue.db.mapper.NameUsageMapper.simpleResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT_SIMPLE"/>
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_SIMPLE"/>

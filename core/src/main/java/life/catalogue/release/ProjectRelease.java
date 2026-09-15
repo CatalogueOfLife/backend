@@ -272,6 +272,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
     idProvider = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, prCfg, factory);
+    idProvider.setPrevReleaseKey(prevReleaseKey);
     idProvider.mapAllIds();
     DateUtils.logDuration(LOG, "ID provider", start);
   }
