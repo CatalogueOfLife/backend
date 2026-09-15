@@ -46,7 +46,8 @@ public class ArchiveRefreshJob extends DatasetBlockingJob {
 
   @Override
   public boolean isDuplicate(BackgroundJob other) {
-    return other instanceof ArchiveRefreshJob job && job.datasetKey == datasetKey;
+    // a dry run only counts, it is no duplicate of a real run of the same project
+    return other instanceof ArchiveRefreshJob job && job.datasetKey == datasetKey && job.dryRun == dryRun;
   }
 
   @Override

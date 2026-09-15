@@ -118,7 +118,8 @@ public class ProjectRelease extends AbstractProjectCopy {
     var missing = new NameUsageArchiver(factory).unarchivedReleases(projectKey);
     if (!missing.isEmpty()) {
       throw new IllegalStateException(String.format("Public releases %s of project %s are missing from the name usage archive, "
-          + "so their identifiers could be issued again. Archive them first with POST /admin/archive/refresh?projectKey=%s",
+          + "so their identifiers could be issued again. If one was just published, wait for its archiving on publish to finish; "
+          + "otherwise archive them first with POST /admin/archive/refresh?projectKey=%s",
         missing, projectKey, projectKey));
     }
   }

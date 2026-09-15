@@ -57,6 +57,13 @@ public class ArchiveRefreshJobIT {
   }
 
   @Test
+  public void dryRunIsNoDuplicateOfARealRun() {
+    assertTrue(job(true).isDuplicate(job(true)));
+    assertFalse(job(true).isDuplicate(job(false)));
+    assertFalse(job(false).isDuplicate(job(true)));
+  }
+
+  @Test
   public void dryRunWritesNothing() throws Exception {
     var job = job(true);
     job.run();
