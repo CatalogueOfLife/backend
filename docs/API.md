@@ -46,7 +46,7 @@ ChecklistBank distinguishes 3 kind of datasets indicated by their ```origin``` p
 
  - ```external```: datasets which are maintained outside of ChecklistBank and are imported for read accecss only. This is the vast majority of all datasets
  - ```project```: datasets which are maintained inside ChecklistBank and which often include & sync data from other sources. The Catalogue of Life checklist is such a project with datasetKey=3
- - ```release```: immutable snapshots of a project with stable identifiers
+ - ```release```: immutable snapshots of a project with stable identifiers, see [IDENTIFIER.md](IDENTIFIER.md)
 
 The API also provides some simple magic dataset keys, that will allow you to access some datasets without knowing the latest key:
 
@@ -138,6 +138,7 @@ Not that paging is restricted to a maximum of 100.000 records.
 The Catalogue of Life checkist is a project in ChecklistBank with the datasetKey=3.
 Projects are living datasets that can change at any time, might temporarily have duplicate or bad data and therefore also do not use stable identifiers.
 For regular use only immutable releases should be used, which are created on a monthly basis for COL.
+See [IDENTIFIER.md](IDENTIFIER.md) for what keeps a release identifier attached to the same name, and how to track the ones that do change.
 Monthly releases will not change, but they might be deleted at some point after a minimum retention of one year.
 Once a year the Catalogue of Life also releases an annual checklist with long term support, which will never be deleted. 
 

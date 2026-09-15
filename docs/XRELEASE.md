@@ -102,6 +102,9 @@ Indexes all name usages for search.
 
 ## Stable IDs shared with base releases
 
+[`IDENTIFIER.md`](IDENTIFIER.md) describes the identifier rules for data users; this section covers only what is
+specific to extended releases.
+
 All releases of a project, base and extended, draw their IDs from one archive (`name_usage_archive`).
 `XIdProvider` removes the IDs of the base release from its pool, so an extended release never takes over a base
 release ID. The next base release (`ProjectRelease` → `IdProvider`) however sees every archived ID, including those

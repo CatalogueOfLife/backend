@@ -293,8 +293,9 @@ release in `usage_id_superseded` and only applied on publish).
 `XIdProvider` mints nothing but temp ids during the merge; the one `mapTempIds()` pass at the end of `XRelease`
 assigns the stable ones, so the whole canonical group competes at once instead of usage by usage in sector order.
 `name` records take the stable id of one of their own usages (`idmap_name_<key>`), off by default behind
-`ProjectReleaseConfig.stableNameIds`. See
-[`docs/2026-09-15-stable-id-evidence-model.md`](docs/2026-09-15-stable-id-evidence-model.md).
+`ProjectReleaseConfig.stableNameIds`. [`docs/IDENTIFIER.md`](docs/IDENTIFIER.md) explains the rules for data
+users; [`docs/2026-09-15-stable-id-evidence-model.md`](docs/2026-09-15-stable-id-evidence-model.md) is the design
+record.
 
 **Release Bundle ("CLB in a box"):**
 `WsBundleServer` serves exactly one release from its own bundled Postgres and Elasticsearch - the read API
@@ -334,7 +335,7 @@ Follows Twitter Commons style guide with CoL customizations:
 All project documentation lives in `docs/`. Two kinds, distinguished by filename — keep them apart:
 
 - **`ALL-CAPS.md` — human-facing reference for CURRENT behavior.** What the code does today
-  (`API.md`, `XRELEASE.md`, `HIERARCHY-SYNC.md`, `DOI.md`, `OPENREFINE.md`,
+  (`API.md`, `IDENTIFIER.md`, `XRELEASE.md`, `HIERARCHY-SYNC.md`, `DOI.md`, `OPENREFINE.md`,
   `DATASET-TEMPLATES.md`, `AUTHORMAP-GENERATOR.md`). These are living documents: when behavior
   changes, update them. They must never describe a plan or a future state.
 - **`YYYY-MM-DD-lower-case-name.md` — dated design records from agent/superpower sessions.** The
