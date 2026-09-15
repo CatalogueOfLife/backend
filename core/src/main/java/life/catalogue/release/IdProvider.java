@@ -571,7 +571,7 @@ public class IdProvider {
             .filter(n -> !isStableId(n.getId()))
             .collect(Collectors.toList());
         }
-        issueIDs(canonId, names, acceptedNames(names, uStore), nomatchWriter, true);
+        issueIDs(canonId, names, acceptedNames(names, uStore), nomatchWriter);
         int before = counter.get() / batchSize;
         int after = counter.addAndGet(names.size()) / batchSize;
         if (before != after) {
@@ -660,16 +660,14 @@ public class IdProvider {
    * @param acceptedNames resolves the scientific name of a synonyms accepted name, see #acceptedNames
    */
   void issueIDs(final Integer canonId, List<? extends SimpleNameWithNidx> allNames, Function<SimpleNameWithNidx, String> acceptedNames,
-                Writer nomatchWriter, boolean persistIdMapping) throws IOException {
+                Writer nomatchWriter) throws IOException {
     // OTU names (UNITE/BOLD) use their code verbatim as the stable id, regardless of names-index matching.
     // Handle them up front and exclude them from the id minting/matching below.
     final List<SimpleNameWithNidx> names = new ArrayList<>(allNames.size());
     for (var n : allNames) {
       final String otu = otuId(n);
       if (otu != null) {
-        if (persistIdMapping) {
-          idm.mapUsage(mappedDatasetKey, n.getId(), otu);
-        }
+        idm.mapUsage(mappedDatasetKey, n.getId(), otu);
       } else {
         names.add(n);
       }
@@ -709,9 +707,7 @@ public class IdProvider {
         if (sn.getCanonicalId() == null) {
           issueNewId(sn);
         }
-        if (persistIdMapping) {
-          idm.mapUsage(mappedDatasetKey, sn.getId(), encode(sn.getCanonicalId()));
-        }
+        idm.mapUsage(mappedDatasetKey, sn.getId(), encode(sn.getCanonicalId()));
       }
     }
   }

@@ -38,7 +38,7 @@ The key innovation is a **two-phase copy**: base release → temporary project (
 #### 2d. Merge infrastructure setup
 - Creates `TreeMergeHandlerConfig` — sets up incertae sedis placeholder taxon, blocked name filters
 - Loads the `UsageMatcher` store with data from the now-populated temp project
-- Creates `XIdProvider` for stable ID generation, removes existing IDs from temp dataset
+- Creates `XIdProvider` for ID generation, removes existing IDs from temp dataset
 
 #### 2e. `mergeSectors()` — Sector Sync
 For each sector (ordered by priority):
@@ -76,8 +76,12 @@ Detects and fixes four categories of structural problems:
 #### 2i. Cleanup & ID Stabilization
 - **`removeOrphans()`** — deletes names and references not linked to any usage
 - **`mapTmpIDs()`** — `XIdProvider.mapTempIds()` maps every usage whose id is not yet a stable release id
-  (`IdProvider.isStableId`: at most 7 LATIN29 characters) to a stable ID, e.g. the temporary ShortUUIDs issued to names
-  merged without authorship. Usages without a names index match cannot be given a stable ID and keep their id in the
+  (`IdProvider.isStableId`: at most 7 LATIN29 characters) to a stable ID. Every merged usage arrives here with a
+  temporary ShortUUID: `XIdProvider.issue()` mints nothing but temp ids, so the whole canonical group is scored at once
+  by this single pass rather than usage by usage in whatever order the sectors happened to be merged. It also runs
+  after `removeOrphans`, so no stable id is burnt on a usage that is dropped again in the same run. The base release's
+  own ids are stable already and are therefore skipped, on top of being held out of the pool by
+  `removeIdsFromDataset`. Usages without a names index match cannot be given a stable ID and keep their id in the
   release; they are listed in `temporary.tsv` in the release report directory and logged as a warning.
 - **`updateMetadata()`** — updates release description with source counts using Freemarker templates
 
@@ -117,7 +121,7 @@ Releases missing from the release list, e.g. deleted or private ones, never coun
 | `XRelease` | Orchestrator — extends ProjectRelease |
 | `XReleaseConfig` | Config: consolidation flags, blocked names, exclusions, thread counts |
 | `TreeMergeHandlerConfig` | Merge config: incertae sedis setup, blocked name patterns |
-| `XIdProvider` | Stable ID generation using NameIndex canonical lookups |
+| `XIdProvider` | Temporary ids during the merge; the batch stable-id pass inherited from `IdProvider` |
 | `SyncFactory` | Creates SectorSync instances for release-mode merging |
 | `SectorSync` | Executes a single sector merge (tree traversal + matching) |
 | `TreeMergeHandler` | Per-usage merge logic: match, create/update, apply decisions |

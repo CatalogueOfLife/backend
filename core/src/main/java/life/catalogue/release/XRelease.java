@@ -485,19 +485,6 @@ public class XRelease extends ProjectRelease {
     DateUtils.logDuration(LOG, "Building sector metrics", start);
   }
 
-  @Override
-  protected void onFinishLocked() throws Exception {
-    // release id generator resources
-    try {
-      if (usageIdGen != null) {
-        usageIdGen.close();
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to close id generator", e);
-    }
-    super.onFinishLocked();
-  }
-
   protected void mergeSectors() throws Exception {
     mergeSectors(Integer.MAX_VALUE);
   }
