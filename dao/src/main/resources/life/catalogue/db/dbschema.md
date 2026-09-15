@@ -11,6 +11,69 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-15 stable name ids
+No DDL - `idmap_name_<key>` has always been created per release run and joined by all five places that reference a
+name id (`NameMapper`, `NameUsageMapper.name_id`, `NameRelationMapper` for both sides, `TypeMaterialMapper`,
+`NameMatchMapper`), it was simply never filled, so names kept the project's ShortUUID or source id and changed from
+release to release. `IdMapMapper.mapNamesFromUsages` now fills it: every name takes the stable id of one of its own
+usages, so a name id is as stable as the usages carrying it and `NameID` means the same thing across releases.
+
+Off by default. Enable per project with `stableNameIds: true` in the project's release config, COL first: it replaces
+every name id in a release with a 7 character LATIN29 one, which is a visible change to the NameID column of every
+COLDP and DwC-A export and worth telling data users about first.
+
+#### 2026-09-15 record which id superseded a deleted one
+```sql
+ALTER TABLE name_usage_archive ADD COLUMN superseded_by TEXT;
+
+CREATE TABLE usage_id_superseded (
+  dataset_key INTEGER NOT NULL,
+  id TEXT NOT NULL,
+  superseded_by TEXT NOT NULL,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key) REFERENCES dataset ON DELETE CASCADE
+);
+```
+When one name ends up in a release twice and the erroneous duplicate is later removed, the id it had simply
+disappeared and every link to it broke. The release now records which id took over, and publishing the release folds
+that into `name_usage_archive.superseded_by` so an old id can be resolved to its survivor.
+
+`usage_id_superseded` is keyed by the RELEASE and is staging only: the release writes it while it is built, and
+`NameUsageArchiver.archiveRelease` applies and drops it when the release goes public. A release that is never
+published, or is deleted again, therefore leaves no redirect behind on an id that is still live - hence the cascade.
+An id a later release resurrects has its `superseded_by` cleared again.
+
+No backfill: the pairing is release time knowledge and cannot be reconstructed from the archive afterwards.
+
+#### 2026-09-15 name usage archive holds the latest version of an id, not the first
+No DDL, but a **data migration that has to run before the first release after this deploy**.
+
+`name_usage_archive` only ever inserted an id and then appended release keys to it, so every archived usage carried
+the name, authorship, rank, status and classification of the release that first minted its id - for COL often a
+decade out of date. That is the snapshot the id provider scores the next release against, so after any editorial
+correction the legitimate id silently lost the very attributes that identify it and could be outscored by a younger
+duplicate carrying today's data. `NameUsageArchiver.archiveRelease` now also calls
+`ArchivedNameUsageMapper.updateExistingUsages` (and re-points the archive matches of changed names), so from now on
+the archive tracks the latest release an id appeared in - which for a deleted id is the last release it was still in.
+
+Existing archives still hold first versions and have to be rebuilt once, project by project:
+
+```sql
+-- per project, e.g. COL = 3. Check the count first, this deletes the archive.
+SELECT count(*) FROM name_usage_archive WHERE dataset_key = 3;
+DELETE FROM name_usage_archive_match WHERE dataset_key = 3;
+DELETE FROM name_usage_archive WHERE dataset_key = 3;
+```
+
+then re-run the archive build for that project (`ArchiveCmd` / `NameUsageArchiver.rebuildProject`), which replays the
+public releases in attempt order so the newest version wins. This requires **all public releases to still be
+present** - a release that was deleted in the meantime cannot contribute and its ids keep whatever the next release
+that carried them says. Expect a one-off burst of id churn on the first release afterwards, concentrated on names
+whose authorship or rank was corrected since their id was minted, and near zero from then on.
+
+Note that `createAllMatches` used `release_keys[0]` while Postgres arrays are 1 based, so it silently matched
+nothing; it now uses the last release key.
+
 #### 2026-09-10 split authorship out of sector subject and target names
 Editing a sector in the UI sent the picked subject or target as `{id, name}` with the suggestion label as the name,
 which carries the authorship since the ES suggest rewrite (2026-02-23). `SectorDao.updateBefore` stored it verbatim,

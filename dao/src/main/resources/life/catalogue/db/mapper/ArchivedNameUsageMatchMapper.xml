@@ -73,6 +73,16 @@
     TRUNCATE name_usage_archive_match
   </update>
 
+  <update id="refreshMatches" parameterType="map">
+    UPDATE name_usage_archive_match am
+    SET index_id = m.index_id
+    FROM name_usage_archive a
+      JOIN name_match m ON m.name_id=a.n_id AND m.dataset_key=#{releaseKey}
+    WHERE am.dataset_key=#{projectKey} AND am.usage_id=a.id
+      AND a.dataset_key=#{projectKey}
+      AND am.index_id IS DISTINCT FROM m.index_id
+  </update>
+
   <insert id="createMissingMatches" parameterType="map">
     INSERT INTO name_usage_archive_match (dataset_key,index_id,usage_id)
     SELECT #{projectKey}, m.index_id, a.id
@@ -84,10 +94,13 @@
   </insert>
 
   <insert id="createAllMatches" parameterType="map">
+    <!-- the LAST release an id appeared in, which is the version the archived name is kept at. Postgres arrays are
+         1 based, so the previous release_keys[0] silently matched nothing at all. -->
     INSERT INTO name_usage_archive_match (dataset_key,index_id,usage_id)
     SELECT a.dataset_key, m.index_id, a.id
     FROM name_usage_archive a
-       JOIN name_match m ON m.name_id=a.n_id AND m.dataset_key=a.release_keys[0]
+       JOIN name_match m ON m.name_id=a.n_id AND m.dataset_key=a.release_keys[array_upper(a.release_keys, 1)]
+    ON CONFLICT (dataset_key, usage_id) DO NOTHING
   </insert>
 
 </mapper>

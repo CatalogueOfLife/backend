@@ -14,6 +14,8 @@ import life.catalogue.junit.TestDataRule;
 import org.gbif.nameparser.api.NameType;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -149,6 +151,51 @@ public class IdProviderIT {
       // assert new ids - which exactly is not deterministic
       assertNew("11", idm); // Lynx, B1 is not a proper stable ID - 1 is a reserved character!
       assertNew("10", idm); // Lynx lynx (Linnaeus, 1758)
+    }
+  }
+
+  /**
+   * Names have no identity of their own: each one takes the stable id of one of its own usages.
+   * Asserted as that invariant rather than as concrete ids, because which usage of a name wins follows from the
+   * usage id mapping and is not interesting in itself.
+   */
+  @Test
+  public void mapNameIds() throws Exception {
+    var prCfg = new ProjectReleaseConfig();
+    prCfg.stableNameIds = true;
+    init(new ReleaseConfig(), prCfg);
+
+    provider.mapAllIds();
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      IdMapMapper idm = session.getMapper(IdMapMapper.class);
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+
+      // the released id of every usage, grouped by the name it carries
+      Map<String, Set<String>> usageIdsByName = new HashMap<>();
+      num.processDataset(projectKey, null, null).forEach(nu -> {
+        var mapped = idm.getUsage(projectKey, nu.getId());
+        usageIdsByName.computeIfAbsent(nu.getName().getId(), k -> new HashSet<>())
+                      .add(mapped == null ? nu.getId() : mapped);
+      });
+      assertFalse(usageIdsByName.isEmpty());
+
+      for (var entry : usageIdsByName.entrySet()) {
+        String nameID = idm.getName(projectKey, entry.getKey());
+        assertNotNull("name " + entry.getKey() + " was not mapped", nameID);
+        assertTrue("name id " + nameID + " is not the id of any of its own usages " + entry.getValue(),
+          entry.getValue().contains(nameID));
+      }
+      // every name with a usage is mapped exactly once, and nothing else is
+      assertEquals(usageIdsByName.size(), idm.countName(projectKey));
+    }
+  }
+
+  @Test
+  public void nameIdsAreOffByDefault() throws Exception {
+    init(new ReleaseConfig(), new ProjectReleaseConfig());
+    provider.mapAllIds();
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      assertEquals(0, session.getMapper(IdMapMapper.class).countName(projectKey));
     }
   }
 

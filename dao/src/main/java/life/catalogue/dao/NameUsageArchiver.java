@@ -20,6 +20,11 @@ import org.slf4j.LoggerFactory;
  * Service that builds the name usage archive for projects.
  * All name usages of all public releases will be included in the archive.
  *
+ * An id is archived once, when the release that minted it is published, and every later release it survives adds its
+ * key to release_keys and refreshes the archived copy of the name. The archive therefore holds every id this project
+ * ever issued, each as it looked in the *latest* release that carried it - which for a deleted id is the last release
+ * it was still in. That is what the release id mapping scores the next release against.
+ *
  * If you want to rebuild an existing archive please manually delete the existing archive records first.
  * This guarantees that no existing archive is deleted or overwritten accidently by this tool.
  */
@@ -133,15 +138,35 @@ public class NameUsageArchiver {
       int updated = anum.addReleaseKey(projectKey, releaseKey);
       LOG.info("Updated {} archive records which exist in release {} of project {}", updated, releaseKey, projectKey);
 
+      // the archive is the memory the next release scores its ids against, so it has to hold what a name looks like
+      // now, not what it looked like when its id was first issued
+      LOG.info("Refreshing changed archive records from release {} of project {}", releaseKey, projectKey);
+      int refreshed = anum.updateExistingUsages(projectKey, releaseKey);
+      LOG.info("Refreshed {} changed archive records from release {} of project {}", refreshed, releaseKey, projectKey);
+
       LOG.info("Creating missing archive records from release {} of project {}", releaseKey, projectKey);
       created = anum.createMissingUsages(projectKey, releaseKey);
       LOG.info("Created {} new archive records from release {} of project {}", created, releaseKey, projectKey);
 
+      // an id this release resurrected is live again and must not keep pointing at whatever replaced it,
+      // so clear before applying
+      int cleared = anum.clearSuperseded(projectKey, releaseKey);
+      int supers = anum.applySuperseded(projectKey, releaseKey);
+      anum.deleteSuperseded(releaseKey);
+      if (cleared > 0 || supers > 0) {
+        LOG.info("Recorded {} superseded ids and cleared {} resurrected ones from release {} of project {}", supers, cleared, releaseKey, projectKey);
+      }
+
       if (copyMatches) {
-        LOG.info("Copy missing archive matches from release {} of project {}", releaseKey, projectKey);
         var anumm = session.getMapper(ArchivedNameUsageMatchMapper.class);
+        LOG.info("Copy missing archive matches from release {} of project {}", releaseKey, projectKey);
         var matches = anumm.createMissingMatches(projectKey, releaseKey);
         LOG.info("Copied {} archive matches from release {} of project {}", matches, releaseKey, projectKey);
+        // a refreshed name usually sits in a different names index bucket - the archive match has to follow it there
+        if (refreshed > 0) {
+          var repointed = anumm.refreshMatches(projectKey, releaseKey);
+          LOG.info("Re-pointed {} archive matches of changed names from release {} of project {}", repointed, releaseKey, projectKey);
+        }
       }
     }
     return created;

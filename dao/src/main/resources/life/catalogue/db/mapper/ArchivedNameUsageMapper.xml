@@ -188,6 +188,76 @@
       AND a.id=u.id
   </update>
 
+  <update id="updateExistingUsages" parameterType="map">
+    UPDATE name_usage_archive a SET
+      n_id = n.id,
+      n_rank = n.rank,
+      n_candidatus = n.candidatus,
+      n_notho = n.notho,
+      n_code = n.code,
+      n_nom_status = n.nom_status,
+      n_original_spelling = n.original_spelling,
+      n_gender_agreement = n.gender_agreement,
+      n_gender = n.gender,
+      n_origin = n.origin,
+      n_type = n.type,
+      n_scientific_name = n.scientific_name,
+      n_authorship = n.authorship,
+      n_uninomial = n.uninomial,
+      n_genus = n.genus,
+      n_infrageneric_epithet = n.infrageneric_epithet,
+      n_specific_epithet = n.specific_epithet,
+      n_infraspecific_epithet = n.infraspecific_epithet,
+      n_cultivar_epithet = n.cultivar_epithet,
+      n_basionym_authors = n.basionym_authors,
+      n_basionym_ex_authors = n.basionym_ex_authors,
+      n_basionym_year = n.basionym_year,
+      n_combination_authors = n.combination_authors,
+      n_combination_ex_authors = n.combination_ex_authors,
+      n_combination_year = n.combination_year,
+      n_sanctioning_author = n.sanctioning_author,
+      n_published_in_id = n.published_in_id,
+      n_published_in_page = n.published_in_page,
+      n_nomenclatural_note = n.nomenclatural_note,
+      n_unparsed = n.unparsed,
+      n_identifier = n.identifier,
+      n_etymology = n.etymology,
+      n_link = n.link,
+      n_remarks = n.remarks,
+
+      extinct = u.extinct,
+      status = u.status,
+      origin = u.origin,
+      parent_id = u.parent_id,
+      name_phrase = u.name_phrase,
+      identifier = u.identifier,
+      link = u.link,
+      remarks = u.remarks,
+
+      according_to = ra.citation,
+      basionym = CASE WHEN bn.id IS NULL THEN null ELSE (bn.id,bn.rank,bn.scientific_name,bn.authorship)::simple_name END,
+      accepted = CASE WHEN is_synonym(u.status) THEN (up.id,np.rank,np.scientific_name,np.authorship)::simple_name END,
+      classification = CASE WHEN is_synonym(u.status) THEN mp.classification ELSE m.classification END,
+      published_in = rp.citation
+    FROM name_usage u
+      JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+      LEFT JOIN reference ra ON ra.dataset_key=u.dataset_key AND ra.id=u.according_to_id
+      LEFT JOIN name_rel br ON br.dataset_key=u.dataset_key AND br.name_id=n.id AND br.type='BASIONYM'::nomreltype
+      LEFT JOIN name bn ON bn.dataset_key=u.dataset_key AND bn.id=br.related_name_id
+      LEFT JOIN taxon_metrics m ON m.dataset_key=u.dataset_key AND m.taxon_id=u.id
+      LEFT JOIN taxon_metrics mp ON mp.dataset_key=u.dataset_key AND mp.taxon_id=u.parent_id
+      LEFT JOIN name_usage up ON up.dataset_key=u.dataset_key AND up.id=u.parent_id
+      LEFT JOIN name np ON np.dataset_key=u.dataset_key AND np.id=up.name_id
+      LEFT JOIN reference rp ON rp.dataset_key=u.dataset_key AND rp.id=n.published_in_id
+    WHERE a.dataset_key=#{projectKey}
+      AND u.dataset_key=#{releaseKey}
+      AND a.id=u.id
+      <!-- only rewrite rows that really changed: a blanket UPDATE of a multi million row table every month
+           would bloat it for nothing, and it is the identity bearing columns that matter here -->
+      AND (a.n_scientific_name, a.n_authorship, a.n_rank, a.n_code, a.status, a.name_phrase) IS DISTINCT FROM
+          (n.scientific_name, n.authorship, n.rank, n.code, u.status, u.name_phrase)
+  </update>
+
   <insert id="createMissingUsages" parameterType="map">
     INSERT INTO name_usage_archive (<include refid="COLS"/>)
     SELECT distinct on (u.id) u.id, n.id, #{projectKey},
@@ -253,6 +323,40 @@
     WHERE u.dataset_key=#{releaseKey}
       AND NOT EXISTS (SELECT true FROM name_usage_archive a WHERE a.dataset_key=#{projectKey} AND a.id=u.id)
   </insert>
+
+  <insert id="addSuperseded" parameterType="map">
+    INSERT INTO usage_id_superseded (dataset_key, id, superseded_by)
+    VALUES (#{releaseKey}, #{id}, #{supersededBy})
+    ON CONFLICT (dataset_key, id) DO UPDATE SET superseded_by = EXCLUDED.superseded_by
+  </insert>
+
+  <select id="processSuperseded" parameterType="map" resultType="map" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT id, superseded_by AS supersededBy
+    FROM usage_id_superseded
+    WHERE dataset_key = #{releaseKey}
+    ORDER BY id
+  </select>
+
+  <update id="clearSuperseded" parameterType="map">
+    UPDATE name_usage_archive a SET superseded_by = null
+    FROM name_usage u
+    WHERE a.dataset_key=#{projectKey}
+      AND u.dataset_key=#{releaseKey}
+      AND a.id=u.id
+      AND a.superseded_by IS NOT NULL
+  </update>
+
+  <update id="applySuperseded" parameterType="map">
+    UPDATE name_usage_archive a SET superseded_by = s.superseded_by
+    FROM usage_id_superseded s
+    WHERE s.dataset_key=#{releaseKey}
+      AND a.dataset_key=#{projectKey}
+      AND a.id=s.id
+  </update>
+
+  <delete id="deleteSuperseded" parameterType="map">
+    DELETE FROM usage_id_superseded WHERE dataset_key = #{releaseKey}
+  </delete>
 
   <update id="truncate">
     TRUNCATE name_usage_archive

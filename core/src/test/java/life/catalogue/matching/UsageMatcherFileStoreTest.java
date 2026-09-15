@@ -175,9 +175,9 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
   }
 
   /**
-   * The order of the usages within a canonical bucket is the order they were added in. Not cosmetic:
-   * IdProvider.issueIDs walks the bucket in this order and which usage reuses which released id follows
-   * from it, so a reordering silently reshuffles stable ids across a release.
+   * The order of the usages within a canonical bucket is the order they were added in, so a store built twice from
+   * the same data is byte for byte the same. IdProvider walks the bucket in this order, though it no longer depends
+   * on it: IdCandidate is a total order down to the name itself.
    */
   @Test
   public void canonicalOrderIsInsertionOrder() throws IOException {

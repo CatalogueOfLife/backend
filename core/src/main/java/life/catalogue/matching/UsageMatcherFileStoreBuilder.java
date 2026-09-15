@@ -255,9 +255,8 @@ public class UsageMatcherFileStoreBuilder implements UsageSink, AutoCloseable {
       }
     }
     final int size = m;
-    // sort by canonical id, then by slot: quicksort is not stable, and the order of the usages within a
-    // canonical bucket is not cosmetic - IdProvider hands them to issueIDs in this order and which usage
-    // reuses which released id depends on it. Ordering by slot keeps the insertion (dataset scan) order.
+    // sort by canonical id, then by slot: quicksort is not stable, so ordering by slot is what keeps the
+    // insertion (dataset scan) order within a canonical bucket, and with it a reproducible store.
     Arrays.parallelQuickSort(0, size,
       (a, b) -> {
         int c = Integer.compare(ids[a], ids[b]);
