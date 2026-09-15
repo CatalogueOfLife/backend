@@ -43,9 +43,12 @@ public class ArchivedNameUsageMatchMapperTest extends MapperTestBase<ArchivedNam
 
   @Test
   public void releaseMatches() throws Exception {
-    // apple has no release data, but this proves both statements run against the schema
-    assertEquals(0, mapper().copyReleaseMatches(Datasets.COL, 1000, List.of()));
-    assertEquals(0, mapper().deleteUnmatchedReleaseMatches(Datasets.COL, 1000, List.of(1, 2)));
+    // apple has no release data, but this proves both statements, and both the supplying and the insertedOnly
+    // variant, run against the schema
+    assertEquals(0, mapper().copyReleaseMatches(Datasets.COL, 1000, List.of(), false));
+    assertEquals(0, mapper().deleteUnmatchedReleaseMatches(Datasets.COL, 1000, List.of(1, 2), false));
+    assertEquals(0, mapper().copyReleaseMatches(Datasets.COL, 1000, List.of(), true));
+    assertEquals(0, mapper().deleteUnmatchedReleaseMatches(Datasets.COL, 1000, List.of(1, 2), true));
   }
 
   @Test

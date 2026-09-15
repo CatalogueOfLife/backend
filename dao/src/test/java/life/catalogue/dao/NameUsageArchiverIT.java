@@ -22,6 +22,8 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+
 import static org.junit.Assert.*;
 
 /**
@@ -171,5 +173,24 @@ public class NameUsageArchiverIT {
     assertNull(get("D"));
     assertEquals("Mill.", get("A").getName().getAuthorship());
     assertEquals(List.of(13, 14), archiver.unarchivedReleases(PROJECT));
+  }
+
+  @Test
+  public void nonSupplyingReleaseOnlyTouchesMatchesItInserted() {
+    // 13 is ignored: it never supplies a version, but D only ever existed there, so it still inserts D
+    var ignoring = new NameUsageArchiver(factory, projectKey -> new IntOpenHashSet(new int[]{13}));
+    var ranking = ignoring.ranking(PROJECT);
+
+    ignoring.archiveProject(ranking, true, false);
+    assertEquals(Integer.valueOf(3), nidx("D"));
+
+    // simulate a match some other, later process pointed elsewhere; a rerun of the ignored release must not touch it
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(ArchivedNameUsageMatchMapper.class).persist(DSID.of(PROJECT, "D"), null, 6);
+    }
+
+    var again = ignoring.archiveProject(ignoring.ranking(PROJECT), true, false);
+    assertEquals(Integer.valueOf(6), nidx("D"));
+    assertTrue("a rerun of the ignored release wrote " + again, again.isUnchanged());
   }
 }

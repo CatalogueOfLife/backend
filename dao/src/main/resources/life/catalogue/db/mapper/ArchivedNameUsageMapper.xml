@@ -101,8 +101,8 @@
       LEFT JOIN reference ra ON ra.dataset_key=u.dataset_key AND ra.id=u.according_to_id
       LEFT JOIN LATERAL (
         SELECT (bn.id,bn.rank,bn.scientific_name,bn.authorship)::simple_name AS sn
-        FROM name_rel br JOIN name bn ON bn.dataset_key=br.dataset_key AND bn.id=br.related_name_id
-        WHERE br.dataset_key=u.dataset_key AND br.name_id=n.id AND br.type='BASIONYM'::nomreltype
+        FROM name_rel br JOIN name bn ON bn.dataset_key=${releaseKey} AND bn.id=br.related_name_id
+        WHERE br.dataset_key=${releaseKey} AND br.name_id=n.id AND br.type='BASIONYM'::nomreltype
         ORDER BY bn.id
         LIMIT 1
       ) bas ON true

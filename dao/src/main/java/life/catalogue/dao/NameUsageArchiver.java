@@ -174,8 +174,8 @@ public class NameUsageArchiver {
         }
         if (copyMatches) {
           var amm = session.getMapper(ArchivedNameUsageMatchMapper.class);
-          stats.matchesCopied = amm.copyReleaseMatches(projectKey, releaseKey, blocking);
-          stats.matchesDeleted = amm.deleteUnmatchedReleaseMatches(projectKey, releaseKey, blocking);
+          stats.matchesCopied = amm.copyReleaseMatches(projectKey, releaseKey, blocking, !supplies);
+          stats.matchesDeleted = amm.deleteUnmatchedReleaseMatches(projectKey, releaseKey, blocking, !supplies);
         }
         // redirects are decided by the newest release alone, the staged pairs of an older one are stale
         if (ranking.isTop(releaseKey)) {

@@ -284,12 +284,6 @@
     <result property="privat" column="private" />
   </resultMap>
 
-  <!-- mapUnderscoreToCamelCase is off project wide, so base_release_key needs an explicit mapping -->
-  <resultMap id="archivableReleaseResultMap" type="life.catalogue.db.mapper.DatasetMapper$ArchivableRelease" autoMapping="true">
-    <id property="key" column="key"/>
-    <result property="baseReleaseKey" column="base_release_key"/>
-  </resultMap>
-
   <resultMap id="settingsResultMap" type="DatasetSettings" autoMapping="false">
     <id column="key"/>
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.SettingsTypeHandler"/>
@@ -492,7 +486,7 @@
     ORDER BY d.attempt, d.key
   </select>
 
-  <select id="listReleasesForArchive" resultMap="archivableReleaseResultMap">
+  <select id="listReleasesForArchive" resultType="life.catalogue.db.mapper.DatasetMapper$ArchivableRelease">
     SELECT d.key, d.origin, d.attempt, d.private AS privat, d.created, d.deleted,
       CASE WHEN d.origin = 'XRELEASE'::DATASETORIGIN THEN (j.params->>'baseReleaseKey')::int END AS base_release_key
     FROM dataset d
