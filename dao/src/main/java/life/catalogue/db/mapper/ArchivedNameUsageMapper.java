@@ -45,40 +45,59 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   );
 
   /**
-   * Adds the release_key to the list of existing release keys
-   * for all archived usages for a given project that still exist in the given release (based on the usage ID alone)
-   * @param projectKey
-   * @param releaseKey
-   * @return number of updated archive records
+   * Inserts the archive records missing for the usages of a release, with empty release keys: addReleaseKey adds the
+   * key last. Safe to run twice, also at the same time.
+   * @return number of inserted archive records
+   */
+  int createMissingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * Rewrites the archived version of the usages of a release wherever any archived column differs, skipping records
+   * that carry one of the blocking release keys, i.e. whose version a higher ranked release holds. See ReleaseRanking.
+   * @return number of rewritten archive records
+   */
+  int updateExistingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey,
+                           @Param("blocking") List<Integer> blocking);
+
+  /**
+   * Adds the release key, keeping the array sorted, to every archive record of a usage of the release that lacks it.
+   * The per release step runs this last, so a release key present in the archive means the release was archived completely.
+   * @return number of archive records the key was added to
    */
   int addReleaseKey(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
 
   /**
-   * Refreshes the archived copy of every usage of the given release that is already archived (based on the usage ID
-   * alone), so the archive holds the name, authorship, rank, status and classification as of the *latest* release the
-   * id appeared in rather than the first one that minted it.
-   *
-   * The archive is what the release id provider scores the next release against, and a decade old
-   * snapshot loses every attribute the project has corrected since - which is how a long lived id ends up outscored
-   * by a duplicate carrying today's data.
-   *
-   * Only rows whose identity bearing columns actually changed are rewritten, so the monthly cost is proportional to
-   * the editorial changes rather than to the size of the archive.
-   *
-   * @param projectKey
-   * @param releaseKey
-   * @return number of refreshed archive records
+   * Sorts and de-duplicates the release keys of every archive record of a project.
+   * @return number of changed archive records
    */
-  int updateExistingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+  int tidyReleaseKeys(@Param("projectKey") int projectKey);
 
   /**
-   * Create new archive records for all usages in the given release
-   * which not yet exist in the archive (based on the usage ID alone)
-   * @param projectKey
-   * @param releaseKey
-   * @return number of new archive records
+   * Dry run counterpart of createMissingUsages.
    */
-  int createMissingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+  int countMissingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * Dry run counterpart of updateExistingUsages.
+   * @param renamedOnly if true only counts records whose scientific name would change
+   */
+  int countOutdatedUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey,
+                          @Param("blocking") List<Integer> blocking, @Param("renamedOnly") boolean renamedOnly);
+
+  /**
+   * Dry run counterpart of addReleaseKey, counting existing archive records only.
+   */
+  int countMissingReleaseKeys(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * @return true if any archive record of the project carries the release key
+   */
+  boolean isReleaseArchived(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * @return true if the release has any name usage
+   */
+  boolean hasUsages(@Param("releaseKey") int releaseKey);
 
   /**
    * Records that an identifier a release stopped using was taken over by another one - typically because the two were

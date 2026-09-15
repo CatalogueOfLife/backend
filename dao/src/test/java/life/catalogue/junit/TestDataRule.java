@@ -105,6 +105,12 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final static TestData DUPLICATES = new TestData("duplicates", 1000, Set.of(3, 1000));
   public final static TestData NIDX = new TestData("nidx", null, Set.of(100, 101, 102));
   public final static TestData COL_SYNCED = new TestData("colsynced", 3, null);
+  /**
+   * A project with base releases 11 (deleted), 12 and 14, extended release 13 built on 12, and an archive that still
+   * holds first versions and never got 13 or 14. See NameUsageArchiverIT.
+   */
+  public final static TestData ARCHIVE = new TestData("archive", 3,
+    Map.of("name", Map.of("type", NameType.SCIENTIFIC)), Set.of(3, 12, 13, 14), false);
 
   public static class TestData {
     public final String name;
@@ -316,6 +322,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public static TestDataRule colSynced() {
     return new TestDataRule(COL_SYNCED);
+  }
+
+  public static TestDataRule archive() {
+    return new TestDataRule(ARCHIVE);
   }
 
   private TestDataRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {

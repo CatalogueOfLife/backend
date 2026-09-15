@@ -1,0 +1,5 @@
+key,job_class,lane,status,priority,dataset_key,created_by,created,params
+a3333333-3333-3333-3333-000000000001,ProjectRelease,DEFAULT,FINISHED,LOW,3,100,2020-01-01 00:00:00,"{""projectKey"": 3, ""newDatasetKey"": 11}"
+a3333333-3333-3333-3333-000000000002,ProjectRelease,DEFAULT,FINISHED,LOW,3,100,2020-02-01 00:00:00,"{""projectKey"": 3, ""newDatasetKey"": 12}"
+a3333333-3333-3333-3333-000000000003,XRelease,DEFAULT,FINISHED,LOW,3,100,2020-02-05 00:00:00,"{""projectKey"": 3, ""baseReleaseKey"": 12, ""newDatasetKey"": 13}"
+a3333333-3333-3333-3333-000000000004,ProjectRelease,DEFAULT,FINISHED,LOW,3,100,2020-03-01 00:00:00,"{""projectKey"": 3, ""newDatasetKey"": 14}"

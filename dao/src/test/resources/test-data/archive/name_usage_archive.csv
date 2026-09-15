@@ -1,0 +1,5 @@
+id,n_id,dataset_key,n_rank,n_scientific_name,n_authorship,status,release_keys
+A,na,3,SPECIES,Abies alba,Mill.,ACCEPTED,"{11,12}"
+B,nb,3,SPECIES,Cedrus libani,A.Rich.,ACCEPTED,{11}
+C,nc,3,SPECIES,Picea abies,(L.) H.Karst.,ACCEPTED,{12}
+E,ne,3,SPECIES,Pinus nigra,J.F.Arnold,ACCEPTED,{12}

@@ -3,6 +3,8 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.vocab.Datasets;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -40,15 +42,10 @@ public class ArchivedNameUsageMatchMapperTest extends MapperTestBase<ArchivedNam
   }
 
   @Test
-  public void createMissingUsages() throws Exception {
-    mapper().createMissingMatches(Datasets.COL, 1000);
-    mapper().createAllMatches();
-  }
-
-  @Test
-  public void refreshMatches() throws Exception {
-    // no real data to re-point but tests valid SQL - only publishing a release runs it otherwise
-    mapper().refreshMatches(Datasets.COL, 1000);
+  public void releaseMatches() throws Exception {
+    // apple has no release data, but this proves both statements run against the schema
+    assertEquals(0, mapper().copyReleaseMatches(Datasets.COL, 1000, List.of()));
+    assertEquals(0, mapper().deleteUnmatchedReleaseMatches(Datasets.COL, 1000, List.of(1, 2)));
   }
 
   @Test

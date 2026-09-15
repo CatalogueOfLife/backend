@@ -207,7 +207,7 @@ public class XReleaseIT extends SectorSyncTestBase {
       dm.update(d);
     }
     // archive release for ids
-    archiver.archiveRelease(releaseKey, true);
+    archiver.archiveRelease(releaseKey);
 
     // extended release
     XRelease xrel = projectCopyFactory.buildExtendedRelease(releaseKey, Users.RELEASER);

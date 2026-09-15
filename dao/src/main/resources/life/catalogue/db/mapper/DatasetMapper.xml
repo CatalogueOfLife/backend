@@ -284,6 +284,12 @@
     <result property="privat" column="private" />
   </resultMap>
 
+  <!-- mapUnderscoreToCamelCase is off project wide, so base_release_key needs an explicit mapping -->
+  <resultMap id="archivableReleaseResultMap" type="life.catalogue.db.mapper.DatasetMapper$ArchivableRelease" autoMapping="true">
+    <id property="key" column="key"/>
+    <result property="baseReleaseKey" column="base_release_key"/>
+  </resultMap>
+
   <resultMap id="settingsResultMap" type="DatasetSettings" autoMapping="false">
     <id column="key"/>
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.SettingsTypeHandler"/>
@@ -483,6 +489,17 @@
     SELECT key, #{projectKey} AS projectKey, attempt, origin, alias, version, private, deleted IS NOT NULL AS deleted
     FROM dataset d
     WHERE <include refid="WHERE_PROJECT_RELEASE"/>
+    ORDER BY d.attempt, d.key
+  </select>
+
+  <select id="listReleasesForArchive" resultMap="archivableReleaseResultMap">
+    SELECT d.key, d.origin, d.attempt, d.private AS privat, d.created, d.deleted,
+      CASE WHEN d.origin = 'XRELEASE'::DATASETORIGIN THEN (j.params->>'baseReleaseKey')::int END AS base_release_key
+    FROM dataset d
+      LEFT JOIN dataset_import di ON di.dataset_key=d.source_key AND di.attempt=d.attempt
+      LEFT JOIN job j ON j.key=di.job_key
+    WHERE d.source_key=#{projectKey}
+      AND <include refid="IS_RELEASE"/>
     ORDER BY d.attempt, d.key
   </select>
 

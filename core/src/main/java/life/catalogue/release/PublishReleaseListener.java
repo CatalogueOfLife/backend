@@ -118,11 +118,10 @@ public class PublishReleaseListener implements DatasetListener {
         publishCOL(event);
       }
 
-      // When a release gets published we need to modify the projects name archive:
-      // a) Usages with new ids need to be added
-      // b) For all still existing usages the release_key needs to be added
+      // the published release enters the project's name usage archive. Both apps of a blue-green deploy receive this
+      // event, which the archiver is safe against
       try {
-        archiver.archiveRelease(event.obj.getKey(), true);
+        archiver.archiveRelease(event.obj.getKey());
       } catch (Exception e) {
         LOG.error("Failed to archive names for published release {}", event.obj.getKey(), e);
       }
