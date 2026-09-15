@@ -11,6 +11,35 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-15 name usage archive holds the latest version of an id, not the first
+No DDL, but a **data migration that has to run before the first release after this deploy**.
+
+`name_usage_archive` only ever inserted an id and then appended release keys to it, so every archived usage carried
+the name, authorship, rank, status and classification of the release that first minted its id - for COL often a
+decade out of date. That is the snapshot the id provider scores the next release against, so after any editorial
+correction the legitimate id silently lost the very attributes that identify it and could be outscored by a younger
+duplicate carrying today's data. `NameUsageArchiver.archiveRelease` now also calls
+`ArchivedNameUsageMapper.updateExistingUsages` (and re-points the archive matches of changed names), so from now on
+the archive tracks the latest release an id appeared in - which for a deleted id is the last release it was still in.
+
+Existing archives still hold first versions and have to be rebuilt once, project by project:
+
+```sql
+-- per project, e.g. COL = 3. Check the count first, this deletes the archive.
+SELECT count(*) FROM name_usage_archive WHERE dataset_key = 3;
+DELETE FROM name_usage_archive_match WHERE dataset_key = 3;
+DELETE FROM name_usage_archive WHERE dataset_key = 3;
+```
+
+then re-run the archive build for that project (`ArchiveCmd` / `NameUsageArchiver.rebuildProject`), which replays the
+public releases in attempt order so the newest version wins. This requires **all public releases to still be
+present** - a release that was deleted in the meantime cannot contribute and its ids keep whatever the next release
+that carried them says. Expect a one-off burst of id churn on the first release afterwards, concentrated on names
+whose authorship or rank was corrected since their id was minted, and near zero from then on.
+
+Note that `createAllMatches` used `release_keys[0]` while Postgres arrays are 1 based, so it silently matched
+nothing; it now uses the last release key.
+
 #### 2026-09-10 split authorship out of sector subject and target names
 Editing a sector in the UI sent the picked subject or target as `{id, name}` with the suggestion label as the name,
 which carries the authorship since the ES suggest rewrite (2026-02-23). `SectorDao.updateBefore` stored it verbatim,

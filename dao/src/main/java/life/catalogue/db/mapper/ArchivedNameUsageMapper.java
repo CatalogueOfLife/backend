@@ -53,6 +53,24 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   int addReleaseKey(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
 
   /**
+   * Refreshes the archived copy of every usage of the given release that is already archived (based on the usage ID
+   * alone), so the archive holds the name, authorship, rank, status and classification as of the *latest* release the
+   * id appeared in rather than the first one that minted it.
+   *
+   * The archive is what the release id provider scores the next release against, and a decade old
+   * snapshot loses every attribute the project has corrected since - which is how a long lived id ends up outscored
+   * by a duplicate carrying today's data.
+   *
+   * Only rows whose identity bearing columns actually changed are rewritten, so the monthly cost is proportional to
+   * the editorial changes rather than to the size of the archive.
+   *
+   * @param projectKey
+   * @param releaseKey
+   * @return number of refreshed archive records
+   */
+  int updateExistingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
    * Create new archive records for all usages in the given release
    * which not yet exist in the archive (based on the usage ID alone)
    * @param projectKey
