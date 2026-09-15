@@ -143,4 +143,9 @@ public class ReleaseRankingTest {
   public void unknownRelease() {
     rank(base(10, 1, JAN)).supplies(99);
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void unknownReleaseInIsFallbackBase() {
+    rank(base(10, 1, JAN)).isFallbackBase(99);
+  }
 }

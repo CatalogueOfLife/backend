@@ -168,6 +168,7 @@ public class ReleaseRanking {
    * @return true if the base release of the extended release was not recorded by its job and came from the fallback rule
    */
   public boolean isFallbackBase(int xreleaseKey) {
+    require(xreleaseKey);
     return fallbackBase.contains(xreleaseKey);
   }
 
