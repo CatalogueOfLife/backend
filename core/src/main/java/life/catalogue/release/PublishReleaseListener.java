@@ -34,10 +34,9 @@ import org.slf4j.LoggerFactory;
  * Class to listen to dataset changes and act if a release dataset was changed from private to public.
  * It then
  *  - publishes the concept DOI
+ *  - archives the name usages of the release, see NameUsageArchiver
  * For COL releases it also does:
  *  - copies existing exports to the COL export folder
- *  - inserts deleted ids from the reports into the names archive
- *  - removes resurrected ids from the names archive
  */
 public class PublishReleaseListener implements DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(PublishReleaseListener.class);
@@ -59,7 +58,7 @@ public class PublishReleaseListener implements DatasetListener {
     this.factory = factory;
     this.executor = executor;
     this.httpClient = httpClient;
-    this.archiver = new NameUsageArchiver(factory);
+    this.archiver = new NameUsageArchiver(factory, new IgnoredReleases(factory));
     this.bus = bus;
   }
 

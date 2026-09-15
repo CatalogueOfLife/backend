@@ -356,6 +356,15 @@ public class AdminResource {
     return runJob(new RematchArchiveJob(user.getKey(),factory, namesIndex));
   }
 
+  @POST
+  @Path("/archive/refresh")
+  public JobInfo refreshArchive(@QueryParam("projectKey") Integer projectKey,
+                                @QueryParam("dryRun") boolean dryRun,
+                                @Auth User user) {
+    Preconditions.checkArgument(projectKey != null, "A projectKey parameter must be given");
+    return runJob(new ArchiveRefreshJob(user.getKey(), factory, namesIndex, projectKey, dryRun));
+  }
+
   @GET
   @Path("/rematch/scheduler/preview")
   public Response rematchPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
