@@ -252,7 +252,9 @@ public class IdProviderTest {
   public void baseReleaseKeepsItsIdOverXrOnlyId() throws Exception {
     // Cedrus deodara in COL26.7: the archive keeps the first version of id 40 with an authorship the name has changed since.
     // An extended release gave a provisionally accepted duplicate from another source id 41 with today's authorship.
-    // Authorship (+6) outweighs status (+5), so the base release used to take the extended release id.
+    // The old flat score let authorship (+6) outweigh status (+5) and the base release took the extended release id.
+    // Now both are equally CONFIRMED - AuthorComparator lines up the shared combination author G.Don - and the base
+    // release id wins because an id only ever issued in an extended release is junior to one a base release used.
     prevIdsByAttempt.put(1, List.of(
       sn(40, 3, 3, SPECIES, "Cedrus deodara", "(Lamb.) G.Don", ACCEPTED)
     ));
@@ -281,7 +283,9 @@ public class IdProviderTest {
 
   @Test
   public void xrOnlyIdReusedWithoutBaseCandidate() throws Exception {
-    // a name moving from the extended release into the base release keeps its extended release id
+    // a name moving from the extended release into the base release keeps its extended release id.
+    // Provisionally accepted becoming accepted is the normal way that move looks, and is not a difference:
+    // both are taxa, so only the authorship and the rank decide, and both agree.
     prevIdsByAttempt.put(1, List.of());
     prevIdsByAttempt.put(2, List.of(
       sn(41, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", PROVISIONALLY_ACCEPTED)
@@ -290,7 +294,7 @@ public class IdProviderTest {
     prevIdsByAttempt.put(3, List.of());
 
     testNames = new ArrayList<>(List.of(
-      sn(3, 3, GENUS, "Cedrus deodara", null, ACCEPTED)
+      sn(3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -299,7 +303,120 @@ public class IdProviderTest {
     assertEquals(0, report.created.size());
     assertEquals(1, report.resurrected.size());
 
-    assertID(41, testNames.get(0)); // even a weak match (rank, status & authorship all differ) is kept
+    assertID(41, testNames.get(0));
+  }
+
+  @Test
+  public void contradictedRankNeverTakesAnId() throws Exception {
+    // the only archived id of the canonical group sits at a different, concrete rank.
+    // Nothing else can make that the same name, so a new id is minted rather than the old one handed over.
+    prevIdsByAttempt.put(1, List.of(
+      sn(41, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
+    ));
+
+    testNames = new ArrayList<>(List.of(
+      sn(3, 3, GENUS, "Cedrus deodara", null, ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(1, report.created.size());
+    assertEquals(1, report.deleted.size());
+    assertEquals(0, report.resurrected.size());
+  }
+
+  @Test
+  public void authorshipAddedKeepsTheId() throws Exception {
+    // https://github.com/CatalogueOfLife/backend/issues/1326 - an unqualified genus that gains its authorship is
+    // missing information turning into information, not a different name.
+    prevIdsByAttempt.put(1, List.of(
+      sn(60, 9, 9, GENUS, "Cedrus", null, ACCEPTED)
+    ));
+
+    testNames = new ArrayList<>(List.of(
+      sn(9, 9, GENUS, "Cedrus", "Trew", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(0, report.deleted.size());
+
+    assertID(60, testNames.get(0));
+  }
+
+  @Test
+  public void authorshipSpelledOutKeepsTheId() throws Exception {
+    // a mere spelling difference in the authorship is the same author. The old exact string comparison minted a new
+    // id for every one of these.
+    prevIdsByAttempt.put(1, List.of(
+      sn(61, 9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+    ));
+
+    testNames = new ArrayList<>(List.of(
+      sn(9, 9, SPECIES, "Abies alba", "Miller", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(0, report.deleted.size());
+
+    assertID(61, testNames.get(0));
+  }
+
+  @Test
+  public void changedAuthorshipGetsANewId() throws Exception {
+    // ... but a genuinely different author is a different name and must be advertised as such, see #1326.
+    prevIdsByAttempt.put(1, List.of(
+      sn(62, 9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+    ));
+
+    testNames = new ArrayList<>(List.of(
+      sn(9, 9, SPECIES, "Abies alba", "DC.", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(1, report.created.size());
+    assertEquals(1, report.deleted.size());
+  }
+
+  @Test
+  public void longLivedIdSurvivesTheRemovedDuplicate() throws Exception {
+    // the erroneous duplicate case: one name ends up in the release twice, one of them removed again later.
+    // The id that served every release so far must be the survivor, not the one minted last month.
+    for (int attempt = 1; attempt <= 4; attempt++) {
+      prevIdsByAttempt.put(attempt, List.of(
+        sn(70, 9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+      ));
+    }
+    // the duplicate appears in the last two releases only
+    prevIdsByAttempt.put(4, List.of(
+      sn(70, 9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(71, 9, 9, SPECIES, "Abies alba", "Mill.", PROVISIONALLY_ACCEPTED)
+    ));
+    prevIdsByAttempt.put(5, List.of(
+      sn(70, 9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(71, 9, 9, SPECIES, "Abies alba", "Mill.", PROVISIONALLY_ACCEPTED)
+    ));
+
+    // the duplicate is spotted and removed - a single usage is left
+    testNames = new ArrayList<>(List.of(
+      sn(9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(1, report.deleted.size()); // the junior duplicate
+
+    assertID(70, testNames.get(0));
   }
 
   @Test

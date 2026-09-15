@@ -12,10 +12,10 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.TabWriter;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.common.text.StringUtils;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
+import life.catalogue.matching.NameIdentity;
 import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.matching.UsageMatcherFileStoreBuilder;
 import life.catalogue.matching.UsageMatcherStore;
@@ -43,8 +43,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import it.unimi.dsi.fastutil.ints.*;
 
-import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
-
 /**
  * Generates a usage id mapping table that maps all name usages from the project source
  * to some stable integer based identifiers.
@@ -56,18 +54,24 @@ import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
  *
  * Basic steps:
  *
- * 1) Generate a ReleasedIds view on all previous releases,
- *    keyed on their usage id and names index id (nxId).
- *    For each id only use the version from its earliest release.
- *    Include ALL ids, also deleted ones.
- *    Convert ids to their int representation to save memory and simplify comparison etc.
- *    Expose only properties needed for matching, i.e. id (int), nxId (int), status, parentID (int), ???
+ * 1) Build a {@link ReleasedIds} view of every id this project ever released, from {@code name_usage_archive}.
+ *    Ids are kept as ints to save memory, bucketed by their canonical names index id, and carry the few properties
+ *    the comparison needs plus what makes them senior: the earliest release they appeared in, how many releases
+ *    carried them, whether the last release still had them and whether a base release ever used them.
+ *    Deleted ids are included - they are the resurrection candidates.
  *
- * 2) Process all name usages as groups by their canonical name index id, i.e. all usages that share the same name regardless of
- *    their authorship. Process groups by ranks from top down (allows to compare parentIds).
+ * 2) Walk the usages to be released one canonical names index group at a time, i.e. all usages sharing the same name
+ *    regardless of authorship, which after the move to a canonical only names index is the entire name based grouping.
  *
- * 3) Match all usages in such a group ordered by their status:
- *    First assign ids for accepted, then prov accepted, synonyms, ambiguous syns and finally misapplied names
+ * 3) Within a group, compare every usage against every released id of that group with {@link NameIdentity}, which
+ *    answers three valued per attribute: a contradiction (a genuinely different authorship, an incompatible rank, a
+ *    disparate tax group, a misapplied name against a non misapplied one, two different nomenclatural codes) rules a
+ *    pairing out altogether, while missing information - an authorship that was added or removed, an unranked name -
+ *    never does. See <a href="https://github.com/CatalogueOfLife/backend/issues/1326">#1326</a>.
+ *    Resurrecting an id the last release no longer had needs more than the absence of contradictions.
+ *
+ * 4) Hand the ids out greedily, best pairing first, see {@link IdCandidate} for the ordering. Usages left without an
+ *    id get a freshly minted one; released ids left over that the last release still had count as deleted.
  */
 public class IdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(IdProvider.class);
@@ -76,9 +80,6 @@ public class IdProvider {
   // BOLD codes, e.g. BOLD:AAA3374 - the colon is replaced by a dot to form the usage id
   protected static final Pattern BOLD_ID = Pattern.compile("^BOLD:[A-Z0-9]+$", Pattern.CASE_INSENSITIVE);
   static final Function<SimpleNameWithNidx, String> NO_ACCEPTED_NAMES = n -> null;
-  // score reduction for ids only ever issued in extended releases when mapping a base release, see #matchScore.
-  // It must exceed the +6 of an authorship match.
-  static final int XR_ONLY_PENALTY = 7;
   private final int projectKey;
   private final int attempt;
   private final DatasetOrigin origin;
@@ -87,6 +88,7 @@ public class IdProvider {
   private final @Nullable Integer lastReleaseKey;
   private final SqlSessionFactory factory;
   private final TaxGroupAnalyzer groupAnalyzer;
+  private final NameIdentity identity = new NameIdentity();
   private final ReleaseConfig cfg;
   private final ProjectReleaseConfig prCfg;
   private final ReleasedIds ids;
@@ -437,18 +439,22 @@ public class IdProvider {
     stats.counter.incrementAndGet();
     // use the first not ignored release
     int firstReleaseKey = -1;
+    int releaseCount = 0;
     boolean isCurrent = false;
     // make sure keys are sorted chronologically, starting with earliest
     var rkeys = sn.getReleaseKeys();
     Arrays.sort(rkeys);
     for (int key : rkeys) {
-      if (firstReleaseKey < 0 && !prCfg.ignoredReleases.contains(key)) {
+      if (prCfg.ignoredReleases.contains(key)) {
+        continue;
+      }
+      // how many releases carried this id is what makes it senior, so we cannot stop early anymore
+      releaseCount++;
+      if (firstReleaseKey < 0) {
         firstReleaseKey = key;
-        if (isCurrent || lastReleaseKey == null) break;
       }
       if (lastReleaseKey != null && key == lastReleaseKey) {
         isCurrent = true;
-        if (firstReleaseKey > 0) break;
       }
     }
     if (firstReleaseKey == -1) {
@@ -465,7 +471,7 @@ public class IdProvider {
 
         } else {
           sn.setGroup( groupAnalyzer.analyze(sn, sn.getClassification()) );
-          var rl = ReleasedId.create(sn, dataset2attempt.getValue(firstReleaseKey), isCurrent, isXrOnly(rkeys));
+          var rl = ReleasedId.create(sn, dataset2attempt.getValue(firstReleaseKey), releaseCount, isCurrent, isXrOnly(rkeys));
           ids.add(rl);
           LOG.debug("Add {} from {}/{}: {}", sn.getId(), rl.attempt, firstReleaseKey, sn);
         }
@@ -685,22 +691,10 @@ public class IdProvider {
     } else {
       // convenient "hack": we keep the new identifiers as the canonicalID property of SimpleNameWithNidx
       names.forEach(n->n.setCanonicalId(null));
-      // how many released ids do exist for this canonical names index id?
+      // which released ids do exist for this canonical names index id?
       ReleasedId[] rids = ids.byCanonId(canonId);
       if (rids != null) {
-        IntSet ids = new IntOpenHashSet();
-        ScoreMatrix scores = new ScoreMatrix(names, rids, (n, r) -> matchScore(n, acceptedNames.apply(n), r, origin));
-        List<ScoreMatrix.ReleaseMatch> best = scores.highest();
-        while (!best.isEmpty()) {
-          // best is sorted, issue as they come but avoid already released ids
-          for (ScoreMatrix.ReleaseMatch m : best) {
-            if (m.name.getCanonicalId()==null && !ids.contains(m.rid.id)) {
-              release(m, scores);
-              ids.add(m.rid.id);
-            }
-          }
-          best = scores.highest();
-        }
+        assign(names, rids, acceptedNames);
       }
       // persist mappings and issue new ids for missing ones
       for (var sn : names) {
@@ -712,16 +706,50 @@ public class IdProvider {
     }
   }
 
-  private void release(ScoreMatrix.ReleaseMatch rm, ScoreMatrix scores){
-    if (!ids.containsId(rm.rid.id)) {
-      throw new IllegalArgumentException("Cannot release " + rm.rid.id + " which does not exist (anymore)");
+  /**
+   * Hands out the released ids of one canonical group to the usages of that group, best pairing first.
+   *
+   * Deliberately greedy rather than a global optimum: for identifier stability the strongest pairing must be locked
+   * in first and never moved off its best partner to improve some total. {@link IdCandidate} defines what "best"
+   * means and is a total order, so the outcome does not depend on the order the store happens to return usages in.
+   */
+  private void assign(List<SimpleNameWithNidx> names, ReleasedId[] rids, Function<SimpleNameWithNidx, String> acceptedNames) {
+    final List<IdCandidate> candidates = new ArrayList<>();
+    for (var n : names) {
+      // built once per usage, it caches the parsed authorship for all candidates below
+      var facts = new NameIdentity.Facts(n, acceptedNames.apply(n));
+      for (var r : rids) {
+        var verdict = identity.compare(facts, r.facts());
+        if (verdict.isContradicted()) {
+          continue; // a different name, whatever else agrees
+        }
+        // resurrecting an id that is not in the last release needs more than "nothing speaks against it":
+        // an erroneous duplicate that was removed must not silently come back on a usage we know little about
+        if (!r.isCurrent && verdict.evidence.compareTo(NameIdentity.Evidence.PLAUSIBLE) < 0) {
+          continue;
+        }
+        candidates.add(new IdCandidate(n, r, verdict));
+      }
     }
-    ids.remove(rm.rid.id);
-    rm.name.setCanonicalId(rm.rid.id);
-    if (!rm.rid.isCurrent) {
-      resurrected.put(rm.rid.id, rm.rid.attempt);
+    Collections.sort(candidates);
+    final IntSet taken = new IntOpenHashSet();
+    for (var c : candidates) {
+      if (c.name.getCanonicalId() == null && !taken.contains(c.rid.id)) {
+        release(c);
+        taken.add(c.rid.id);
+      }
     }
-    scores.remove(rm);
+  }
+
+  private void release(IdCandidate c){
+    if (!ids.containsId(c.rid.id)) {
+      throw new IllegalArgumentException("Cannot release " + c.rid.id + " which does not exist (anymore)");
+    }
+    ids.remove(c.rid.id);
+    c.name.setCanonicalId(c.rid.id);
+    if (!c.rid.isCurrent) {
+      resurrected.put(c.rid.id, c.rid.attempt);
+    }
   }
 
   private void issueNewId(life.catalogue.api.model.SimpleNameWithNidx n) {
@@ -756,76 +784,6 @@ public class IdProvider {
       });
       LOG.info("Removed {} out of {} stable identifiers from dataset {}. Bumped keySequence for {} base-release identifiers not in xrelease archive", removed, counter, datasetKey, other);
     }
-  }
-
-  /**
-   * For homonyms or names very much alike we must provide a deterministic rule
-   * that selects a stable id based on all previous releases.
-   *
-   * This can happen due to real homonyms, erroneous duplicates in the data
-   * or potentially extensive pro parte synonyms as we have now for some genera like Achorutini Börner, C, 1901.
-   *
-   * For synonyms we evaluate the accepted name.
-   * This helps with sticky ids for pro parte synonyms.
-   *
-   * A base release prefers ids it has used before over ids that were only ever issued in extended releases.
-   * The archive keeps the first version of every id, so an old base release id often carries an authorship
-   * its name has since changed, while the extended release id of a duplicate from another source carries today's.
-   * Such an id therefore scores XR_ONLY_PENALTY less, more than an authorship match is worth.
-   * It still matches, so a name moving from an extended release into the base release keeps its id.
-   *
-   * @param acceptedName scientific name of the accepted name for synonyms, null if unknown - which simply
-   *                     removes the accepted name from the comparison, it never blocks a match
-   * @param origin of the release the ids are issued for
-   * @return zero for no match, positive for a match. The higher the better!
-   */
-  private static int matchScore(SimpleNameWithNidx n, @Nullable String acceptedName, ReleasedId r, DatasetOrigin origin) {
-    // only one is a misapplied name - never match to anything else
-    if (!Objects.equals(n.getStatus(), r.status) && (n.getStatus()==MISAPPLIED || r.status==MISAPPLIED) ) {
-      return 0;
-    }
-
-    int score = 1;
-    // exact same status
-    if (Objects.equals(n.getStatus(), r.status)) {
-      score += 5;
-    }
-    // rank
-    if (Objects.equals(n.getRank(), r.rank)) {
-      score += 10;
-    }
-    // accepted name for synonyms
-    if (acceptedName != null && n.getStatus() != null && n.getStatus().isSynonym()) {
-      // block synonyms with different accepted names aka parent
-      if (StringUtils.equalsIgnoreCase(acceptedName, r.parent)) {
-        score += 6;
-      }
-    }
-    // tax group
-    if (n.getGroup() != null) {
-      if (Objects.equals(n.getGroup(), r.group)) {
-        score += 2;
-      } else if (n.getGroup().isDisparateTo(r.group)) {
-        return 0;
-      }
-    }
-    // exact same authorship
-    if (StringUtils.equalsDigitOrAsciiLettersIgnoreCase(n.getAuthorship(), r.authorship)) {
-      score += 6;
-    }
-    // name phrase is key for misapplied names!
-    if (StringUtils.equalsDigitOrAsciiLettersIgnoreCase(n.getPhrase(), r.phrase)) {
-      score += 5;
-    } else if (n.getStatus() == MISAPPLIED) {
-      return 0;
-    }
-    // ids from extended releases only - but never turn a match into no match
-    if (r.xrOnly && origin == DatasetOrigin.RELEASE) {
-      score = Math.max(1, score - XR_ONLY_PENALTY);
-    }
-
-    // no less than zero
-    return Math.max(0, score);
   }
 
   static String encode(int id) {
