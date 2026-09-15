@@ -473,4 +473,99 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    */
   Integer getMaxKey(@Param("limit") Integer limit);
 
+  /**
+   * A release of a project as the name usage archive ranks it, see life.catalogue.dao.ReleaseRanking.
+   */
+  class ArchivableRelease {
+    private int key;
+    private DatasetOrigin origin;
+    private Integer attempt;
+    private boolean privat;
+    private LocalDateTime created;
+    private LocalDateTime deleted;
+    private Integer baseReleaseKey; // as recorded by the job that built an extended release
+
+    public ArchivableRelease() {
+    }
+
+    public ArchivableRelease(int key, DatasetOrigin origin, Integer attempt, boolean privat, LocalDateTime created,
+                             @Nullable LocalDateTime deleted, @Nullable Integer baseReleaseKey) {
+      this.key = key;
+      this.origin = origin;
+      this.attempt = attempt;
+      this.privat = privat;
+      this.created = created;
+      this.deleted = deleted;
+      this.baseReleaseKey = baseReleaseKey;
+    }
+
+    /**
+     * @return true if the release is public and not deleted, so its data exists and may be archived
+     */
+    public boolean isArchivable() {
+      return !privat && deleted == null;
+    }
+
+    public int getKey() {
+      return key;
+    }
+
+    public void setKey(int key) {
+      this.key = key;
+    }
+
+    public DatasetOrigin getOrigin() {
+      return origin;
+    }
+
+    public void setOrigin(DatasetOrigin origin) {
+      this.origin = origin;
+    }
+
+    public Integer getAttempt() {
+      return attempt;
+    }
+
+    public void setAttempt(Integer attempt) {
+      this.attempt = attempt;
+    }
+
+    public boolean isPrivat() {
+      return privat;
+    }
+
+    public void setPrivat(boolean privat) {
+      this.privat = privat;
+    }
+
+    public LocalDateTime getCreated() {
+      return created;
+    }
+
+    public void setCreated(LocalDateTime created) {
+      this.created = created;
+    }
+
+    public LocalDateTime getDeleted() {
+      return deleted;
+    }
+
+    public void setDeleted(LocalDateTime deleted) {
+      this.deleted = deleted;
+    }
+
+    public Integer getBaseReleaseKey() {
+      return baseReleaseKey;
+    }
+
+    public void setBaseReleaseKey(Integer baseReleaseKey) {
+      this.baseReleaseKey = baseReleaseKey;
+    }
+
+    @Override
+    public String toString() {
+      return origin + " " + key;
+    }
+  }
+
 }
