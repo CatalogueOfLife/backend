@@ -152,6 +152,30 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     if (req.isWithoutData() && req.getDatasetKey() == null) {
       throw new IllegalArgumentException("DatasetKey must be given if withoutData filter is requested");
     }
+    if (req.isDuplicates() && req.isNested()) {
+      throw new IllegalArgumentException("The duplicates filter cannot be combined with nested sectors");
+    }
+  }
+
+  /**
+   * Groups of sectors sharing the same subject, i.e. potential duplicates.
+   * All request filters apply to the sectors before they are grouped, the page applies to the groups.
+   */
+  public ResultPage<SectorDuplicate> duplicates(SectorSearchRequest request, Page page) {
+    validate(request);
+    Page p = page == null ? new Page() : page;
+    try (SqlSession session = factory.openSession()) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      List<SectorDuplicate> result = new ArrayList<>();
+      for (var group : sm.duplicates(request, p)) {
+        List<Sector> sectors = new ArrayList<>();
+        for (int key : group.getKeys()) {
+          sectors.add(sm.get(DSID.of(group.getDatasetKey(), key)));
+        }
+        result.add(new SectorDuplicate(group.getDatasetKey(), group.getSubjectDatasetKey(), group.getSubjectId(), sectors));
+      }
+      return new ResultPage<>(p, result, () -> sm.countDuplicates(request));
+    }
   }
 
   @Override
@@ -176,22 +200,16 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       var subject = reloadTaxon(s, "subject", s::getSubjectAsDSID, s::setSubject, tm);
       var target = reloadTaxon(s, "target", s::getTargetAsDSID, s::setTarget, tm);
 
-      // ensure sector without subject is the only one
+      // Sectors may share a subject, including several subject less merge sectors from the same source.
+      // They are not blocked but reported as potential duplicates, see https://github.com/CatalogueOfLife/backend/issues/1581
       if (subject == null) {
-        if (s.getMode() == Sector.Mode.MERGE) {
-          // ensure there is only 1 merge sector without a subject per source dataset.
-          // Merge sectors with a subject from the same source are fine and must not block this!
-          var other = mapper.listByDataset(s.getDatasetKey(), s.getSubjectDatasetKey(), Sector.Mode.MERGE);
-          if (other != null && other.stream().anyMatch(o -> o.getSubjectID() == null)) {
-            throw new IllegalArgumentException("A merge sector from source " + s.getSubjectDatasetKey() + " without subject exists already in project " + s.getDatasetKey());
-          }
-        } else if (s.getMode() == Sector.Mode.HIERARCHY) {
+        if (s.getMode() == Sector.Mode.HIERARCHY) {
           // a project's higher classification can only be delegated to one target — enforce one HIERARCHY sector per project
           var other = mapper.listByDataset(s.getDatasetKey(), null, Sector.Mode.HIERARCHY);
           if (other != null && !other.isEmpty()) {
             throw new IllegalArgumentException("A hierarchy sector in project " + s.getDatasetKey() + " exists already");
           }
-        } else {
+        } else if (s.getMode() != Sector.Mode.MERGE) {
           throw new IllegalArgumentException(s.getMode() + " sector in project " + s.getDatasetKey() + " does not have a subject");
         }
       }

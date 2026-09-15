@@ -233,12 +233,13 @@
     WHERE dataset_key = #{datasetKey} AND id = #{id}
   </select>
 
-  <select id="getBySubject" resultMap="sectorResultMap">
+  <select id="listBySubject" resultMap="sectorResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE subject_dataset_key = #{key.datasetKey}
     AND s.dataset_key = #{datasetKey}
     AND subject_id = #{key.id}
+    <include refid="PRIORITY_ORDER"/>
   </select>
 
   <select id="listByTarget" resultMap="sectorResultMap">
@@ -432,10 +433,32 @@
     WHERE s.dataset_key=#{datasetKey}
   </select>
 
-  <select id="countSearch" resultType="integer">
-    SELECT count(*)
+  <!--
+    Sectors matching the search filters with the number of them sharing the same subject in column dupes.
+    Filters apply before the count, so a filtered duplicate search and the duplicate groups list the same sectors.
+    Window partitions treat NULLs as equal: subject less sectors from the same source share their missing subject.
+  -->
+  <sql id="SEARCH_DUPES">
+    SELECT <include refid="SELECT"/>, count(*) OVER (PARTITION BY s.dataset_key, s.subject_dataset_key, s.subject_id) AS dupes
     FROM <include refid="FROM"/>
     <include refid="WHERE"/>
+  </sql>
+
+  <sql id="DUPES_ORDER">
+    ORDER BY dataset_key, subject_dataset_key, subject_id NULLS FIRST
+  </sql>
+
+  <select id="countSearch" resultType="integer">
+    <choose>
+      <when test="req != null and req.duplicates">
+        SELECT count(*) FROM (<include refid="SEARCH_DUPES"/>) x WHERE dupes > 1
+      </when>
+      <otherwise>
+        SELECT count(*)
+        FROM <include refid="FROM"/>
+        <include refid="WHERE"/>
+      </otherwise>
+    </choose>
   </select>
 
   <select id="listProjectKeys" parameterType="map" resultType="integer">
@@ -445,18 +468,55 @@
   </select>
 
   <select id="search" resultMap="sectorResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    <include refid="WHERE"/>
-    <include refid="PRIORITY_ORDER"/>
+    <choose>
+      <when test="req != null and req.duplicates">
+        SELECT * FROM (<include refid="SEARCH_DUPES"/>) x WHERE dupes > 1
+        <include refid="DUPES_ORDER"/>, priority NULLS LAST, id
+      </when>
+      <otherwise>
+        SELECT <include refid="SELECT"/>
+        FROM <include refid="FROM"/>
+        <include refid="WHERE"/>
+        <include refid="PRIORITY_ORDER"/>
+      </otherwise>
+    </choose>
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="processSearch" resultMap="sectorResultMap">
-    SELECT <include refid="SELECT"/>
+    <choose>
+      <when test="req != null and req.duplicates">
+        SELECT * FROM (<include refid="SEARCH_DUPES"/>) x WHERE dupes > 1
+      </when>
+      <otherwise>
+        SELECT <include refid="SELECT"/>
+        FROM <include refid="FROM"/>
+        <include refid="WHERE"/>
+      </otherwise>
+    </choose>
+    ORDER BY id desc
+  </select>
+
+  <resultMap id="sectorDuplicateResultMap" type="life.catalogue.api.model.SectorDuplicate$Mybatis" autoMapping="true">
+    <result property="keys" column="keys" typeHandler="life.catalogue.db.type2.IntArrayTypeHandler"/>
+  </resultMap>
+
+  <sql id="DUPLICATE_GROUPS">
     FROM <include refid="FROM"/>
     <include refid="WHERE"/>
-    ORDER BY id desc
+    GROUP BY s.dataset_key, s.subject_dataset_key, s.subject_id
+    HAVING count(*) > 1
+  </sql>
+
+  <select id="duplicates" resultMap="sectorDuplicateResultMap">
+    SELECT s.dataset_key, s.subject_dataset_key, s.subject_id, array_agg(s.id ORDER BY s.priority NULLS LAST, s.id) AS keys
+    <include refid="DUPLICATE_GROUPS"/>
+    <include refid="DUPES_ORDER"/>
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="countDuplicates" resultType="integer">
+    SELECT count(*) FROM (SELECT 1 <include refid="DUPLICATE_GROUPS"/>) x
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
