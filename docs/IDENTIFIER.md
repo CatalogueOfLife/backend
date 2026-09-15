@@ -30,6 +30,11 @@ A COL *release* is an immutable snapshot and its identifiers are stable. The und
 continuously, may temporarily hold duplicate or incomplete data, and does **not** use stable identifiers
 — never cite a project identifier. See [`API.md`](API.md) for how datasets, projects and releases relate.
 
+COL publishes two kinds of release: the **base release**, and the **extended release** built on top of it
+with names merged in from further sources. Both draw on one pool of identifiers. Wherever this document
+speaks of *the previous release*, it means the previous release of the same kind: the previous base release
+for a base release, the previous extended release for an extended one.
+
 ### Two kinds of name keep their own identifier
 
 Where a name already has a globally recognised identifier, COL adopts it rather than minting one of its
@@ -77,26 +82,27 @@ the information got better, the name did not change.
 
 | | a **different** name | the **same** name | tells us **nothing** |
 |---|---|---|---|
-| scientific name | a different canonical name | gender endings and common epithet spellings: `Felis rufus` ↔ `Felis rufa`, `baileyi` ↔ `baileii` | |
-| authorship | a genuinely different author: `Mill.` → `DC.` | the same author cited differently: `Mill.` = `Miller`, `L.` = `Linné`; years within a small tolerance | authorship added or removed; a combination author lined up against a basionym author |
-| rank | species against genus | | unranked against a concrete rank; the deliberately vague ranks such as "suprageneric name" |
-| taxonomic status | a misapplied name against anything that is not one | accepted ↔ synonym; accepted ↔ provisionally accepted | |
-| nomenclatural code | zoological against botanical — the *Oenanthe* case | | one side not stated |
-| taxonomic group | an animal against a plant | | one side unplaced |
-| name phrase (`sensu …`) | a different `sensu` on two misapplied names | | one side missing |
-| accepted name | never on its own | corroborates — this is what keeps pro parte synonyms of one and the same name apart | |
+| scientific name | a different name once epithet spellings are folded | gender endings and common epithet spellings: `Felis rufus` ↔ `Felis rufa`, `baileyi` ↔ `baileii` | |
+| authorship | a different author: `Mill.` → `DC.`; the same author with publication years more than 11 apart | the same author cited differently: `Mill.` = `Miller`, `L.` = `Linné`, publication years up to 11 apart; the same combination author, whatever the basionym author in brackets: `(Lamb.) G.Don` = `(Roxb. ex D.Don) G.Don`; one side's basionym author matching the other side's combination author: `(Bryk, 1949)` = `Bryk, 1948` | authorship added or removed; an authorship that cannot be parsed; one side's basionym author not matching the other side's combination author |
+| rank | two different concrete ranks: species against genus; the catch-all rank "other" against any other rank | the same rank | unranked against any rank but "other"; a vague rank against a rank it covers: "suprageneric name" against family |
+| taxonomic status | a misapplied name against anything that is not one | the same kind of status: accepted ↔ provisionally accepted, synonym ↔ ambiguous synonym | a taxon sunk into synonymy, or a synonym raised to accepted |
+| nomenclatural code | two different codes: zoological against botanical — the *Oenanthe* case | the same code | one side not stated |
+| taxonomic group | groups on separate branches: an animal against a plant | the same group | one side unplaced; one group within the other: insects against arthropods |
+| name phrase (`sensu …`) | a different phrase on two misapplied names | the same phrase | one side missing; a different phrase on names that are not misapplied |
+| accepted name | never on its own | the same accepted name for two synonyms — this is what keeps pro parte synonyms of one and the same name apart | |
 
 Two rules follow from the table.
 
 **Full agreement needs both authorship and rank.** A candidate where both positively agree is treated as
 confirmed; one where only a single one of them does is merely plausible. Everything else that agrees —
-status, code, taxonomic group, accepted name — strengthens a candidate but cannot by itself make it a
-confirmed match.
+status, code, taxonomic group, name phrase, accepted name — strengthens a candidate but cannot by itself
+make it a confirmed match. How an authorship is written beyond that does not count: an exact copy of an
+earlier citation is no stronger evidence than a variant COL reads as the same author.
 
-**Bringing an identifier back takes more than keeping one.** An identifier the last release still had can
-be kept on fairly thin evidence. One that was already dropped in an earlier release needs positive
-agreement on authorship or rank before it is resurrected, so that an identifier removed as an error does
-not quietly reappear on a name nobody has much information about.
+**Bringing an identifier back takes more than keeping one.** An identifier the previous release still had
+can be kept on fairly thin evidence. One that was already dropped needs positive agreement on authorship or
+rank before it is resurrected, so that an identifier removed as an error does not quietly reappear on a
+name nobody has much information about.
 
 ## When several old identifiers would fit
 
@@ -106,9 +112,11 @@ was present more than once in the past.
 Evidence decides first, and nothing below can outweigh it. Only when the data says *exactly* as much
 about two candidates does age decide, and then COL prefers **longevity over recency**:
 
-1. an identifier a normal release has used, over one only ever issued in an extended release
-2. the identifier that appeared in more releases
-3. the identifier issued earliest
+1. an identifier a base release has used, over one only ever issued in an extended release
+2. the identifier that appeared in more releases, base and extended releases counted alike
+3. the identifier whose first release was the earliest
+4. an identifier the previous release still had, over one that has to be brought back
+5. the lowest identifier
 
 An identifier that served twenty releases and was dropped last month is cited in far more publications
 than the one minted to replace it, so restoring the older one costs the community less than keeping the
@@ -120,16 +128,22 @@ for years could be replaced by one issued weeks ago
 
 This is the case the ranking above is really built for.
 
-A name reaches a release twice — say once from the base release and once merged from another source.
-Both copies get an identifier: the old, long-lived one and a newly minted one. Some releases later an
-editor spots the duplication and removes one of the two usages.
+A name reaches a release twice — say two sources contribute the same taxon. Both copies get an identifier:
+the old, long-lived one and a newly minted one. Some releases later an editor spots the duplication and
+removes one of the two usages.
 
-**The older, more widely cited identifier survives.** The one minted a release or two ago is the one that
-dies. COL records which identifier took over from it; that pairing is listed in the release reports (see
-below) and stored with the release.
+**The older, more widely cited identifier survives**, whichever of the two copies was removed, unless the
+data speaks against it. The copies being cited differently does not, as long as COL reads both citations as
+the same author. The one minted a release or two ago is the one that dies.
 
-> Requesting a dead identifier does **not** yet redirect you to its survivor. The replacement is
-> recorded, but resolving it over the API is not implemented, so an old identifier still returns nothing.
+Where it can tell, COL also records which identifier took over: when the dead identifier was in the previous
+release, and a remaining usage of the same name that it could have belonged to kept an existing identifier.
+That pairing is listed in `superseded.tsv` (see below) and kept in the project's identifier archive once the
+release is published. An extended release does not reconsider the identifiers it inherits from its base
+release, so removing the extended copy of a name that is also in the base release records no pairing.
+
+> Requesting a dead identifier does **not** redirect you to its survivor. The replacement is recorded, but
+> the API does not resolve it, so an old identifier still returns nothing.
 
 ## What can still change your identifier
 
@@ -137,17 +151,15 @@ Being honest about the remaining cases matters more than a reassuring summary.
 
 - **A genuinely changed author gives a new identifier — by design.** If `Mill.` becomes `DC.`, this is
   not the same name, and COL advertises that by issuing a new identifier rather than silently carrying
-  the old one over. This has been policy since 2021 and is deliberate
-  ([#1326](https://github.com/CatalogueOfLife/backend/issues/1326)).
+  the old one over. A publication year corrected by more than 11 years counts the same way. This has been
+  policy since 2021 and is deliberate ([#1326](https://github.com/CatalogueOfLife/backend/issues/1326)).
 - **Spelling variants in the genus or in a single-word name are not folded.** Epithets are: `rufus` and
-  `rufa` are matched. Genus names and other uninomials are compared as written, so `Mammillaria` and
-  `Mamillaria` are two different names to COL and receive two different identifiers. There is no
-  recovery from this today.
-- **Names that cannot be parsed or indexed never get a stable identifier.** They keep a temporary one for
-  the life of the release. Placeholder names are the common case.
-- **Expect a one-off burst of change** at the first release after the identifier rules were reworked,
-  concentrated on names whose authorship or rank had been corrected years after their identifier was
-  first issued. It settles from the next release on.
+  `rufa` are matched. Genus names and other uninomials are compared as written, apart from case, accents
+  and punctuation, so `Mammillaria` and `Mamillaria` are two different names to COL and receive two
+  different identifiers. There is no recovery from this.
+- **Names left out of the names index never get a stable identifier.** They keep a temporary one for the
+  life of the release. Placeholder names are the common case; names that merely cannot be parsed are
+  indexed and do get stable identifiers.
 
 ## Tracking what changed between releases
 
@@ -164,13 +176,13 @@ bundled in `id-reports.gz`; two sit alongside it.
 |---|---|---|
 | `created.tsv` | identifiers issued for the first time in this release | you want to know what is new |
 | `deleted.tsv` | identifiers the previous release had and this one does not | a link of yours stopped working |
-| `resurrected.tsv` | identifiers brought back after one or more releases without them | an identifier reappeared |
+| `resurrected.tsv` | identifiers this release brought back that the previous release did not have | an identifier reappeared |
 | `superseded.tsv` | deleted identifiers that another identifier took over, with the surviving name | a duplicate you cited was cleaned up |
 | `unstable.txt` | names whose identifiers churned, grouped by scientific name | you are auditing instability for a group |
 | `temporary.tsv` | usages that could not be given a stable identifier | a name has an unexpectedly long identifier |
 | `nomatch.txt` | usages with no names index match at all | you are diagnosing why a name never stabilises |
 
-`temporary.tsv` and `nomatch.txt` are written directly into the release directory, not into the archive.
+`temporary.tsv` and `nomatch.txt` are written directly into the release directory, not into `id-reports.gz`.
 
 ## Identifiers for names, as opposed to usages
 
@@ -179,8 +191,8 @@ usage, `nameID` pointing at the name it uses. A name record can also be given a 
 identifier of one of its own usages, so that for the great majority of names the name and its usage share
 one.
 
-> This is available per project but is **off for COL today**, so the `nameID` column of COL exports is
-> not yet stable across releases. Treat it as a within-release link only.
+> This is a per project setting, off by default and off for COL, so the `nameID` column of COL exports is
+> not stable across releases. Treat it as a within-release link only.
 
 ## Further reading
 

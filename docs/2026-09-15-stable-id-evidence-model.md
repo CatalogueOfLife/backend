@@ -1,7 +1,8 @@
 # Stable id generation for COL (x)releases
 
 Date: 2026-09-15
-Status: shipped, except the HTTP resolution of a superseded id and the loose-spelling fallback (see Not done).
+Status: implemented on branch `claude/col-stable-id-generation-ar5yzk`, not merged or deployed yet. The HTTP
+resolution of a superseded id and the loose-spelling fallback are not implemented (see Not done).
 
 ## The problem
 
@@ -105,6 +106,17 @@ Three further changes fall out of this:
   `xrOnlyIdReusedWithoutBaseCandidate` used to assert that *"even a weak match (rank, status & authorship
   all differ) is kept"*; that pairing is now contradicted, so the fixture was made to look like a real
   extended-to-base move and the old behaviour is pinned as its own contradiction test.
+- The branch was written without a Java 25 toolchain and first compiled and tested afterwards. It compiled
+  as is. `IdProviderArchiveIT`, built from real COL archive rows, then had five of its eight expectations
+  change premise: every one of those candidates was equally `CONFIRMED`, so the id in the most releases now
+  wins where the lowest id used to. Three of them are citation variants `AuthorComparator` reads as the same
+  author, a name cited `Bryk, 1948` taking the id archived as `(Bryk, 1949)` for 14 releases over the one
+  archived as `Bryk, 1948` for 5.
+  An extra corroboration for an authorship identical after folding was tried to keep those on the exactly
+  matching id, and dropped again: the surviving copy of a removed duplicate would then keep its own, junior
+  or xr-only, id whenever the two copies were cited differently - which is the case longevity exists for.
+  `NameIdentityTest.citationVariantsOfOneAuthorAreEqualEvidence` pins that. `IdProviderTest`'s archive stand-in
+  was switched to keep the latest version of an id, like the archive.
 - `stableNameIds` is off by default. It changes every name id in a release at once — from a 22-character
   ShortUUID to a 7-character LATIN29 id — which is visible in the `NameID` column of every COLDP and DwC-A
   export, so it wants a heads-up to data users and goes to COL first.
