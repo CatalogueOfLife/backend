@@ -135,23 +135,16 @@ public class TreeDao {
 
     SectorMapper sm = session.getMapper(SectorMapper.class);
     TreeMapper tm = session.getMapper(TreeMapper.class);
-    final Map<String, Sector> sectors = new HashMap<>(); // for Type.SOURCE
+    final Map<String, List<Sector>> sectors = new HashMap<>(); // for Type.SOURCE
     for (TreeNode n : nodes) {
       RankID key = RankID.parseID(n);
       // only check placeholders that have no sector yet
       if (key.rank == null || n.getSectorKey() != null) continue;
 
       if (type == TreeNode.Type.SOURCE) {
-        // load sector only once if id is the same
-        if (!sectors.containsKey(key.getId())) {
-          sectors.put(key.getId(), sm.getBySubject(projectKey, key));
-        }
-        if (sectors.get(key.getId()) != null) {
-          Sector s = sectors.get(key.getId());
-          if (s.getPlaceholderRank() == key.rank) {
-            n.setSectorKey(s.getId());
-          }
-        }
+        // load sectors only once if id is the same
+        var subjectSectors = sectors.computeIfAbsent(key.getId(), id -> sm.listBySubject(projectKey, key));
+        placeholderSector(subjectSectors, key.rank).ifPresent(s -> n.setSectorKey(s.getId()));
       } else if (type == TreeNode.Type.PROJECT) {
         // look at all sectors of children - if they are all the same the placeholder also belongs to them
         List<Integer> secKeys = tm.childrenSectors(key, key.rank);
@@ -160,6 +153,16 @@ public class TreeDao {
         }
       }
     }
+  }
+
+  /**
+   * Several sectors can share a subject. Picks the most important one covering the given placeholder rank.
+   * @param sectors sectors sharing a subject, ordered by priority
+   */
+  private static Optional<Sector> placeholderSector(List<Sector> sectors, Rank rank) {
+    return sectors.stream()
+      .filter(s -> s.getPlaceholderRank() == rank)
+      .findFirst();
   }
 
   private static List<TreeNode> parentPlaceholder(TreeMapper trm, TreeNode tn, @Nullable Rank exclRank, boolean inclExtinct){
@@ -222,10 +225,8 @@ public class TreeDao {
         // does a placeholder sector exist with a matching placeholder rank?
         if (type == TreeNode.Type.SOURCE) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
-          Sector s = sm.getBySubject(projectKey, parent);
-          if (s != null && s.getPlaceholderRank() == placeHolder.getRank()) {
-            placeHolder.setSectorKey(s.getId());
-          }
+          placeholderSector(sm.listBySubject(projectKey, parent), placeHolder.getRank())
+            .ifPresent(s -> placeHolder.setSectorKey(s.getId()));
         }
         result.add(placeHolder);
       }

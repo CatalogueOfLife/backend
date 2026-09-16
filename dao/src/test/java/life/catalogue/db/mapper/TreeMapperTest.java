@@ -217,7 +217,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     s.setSubject(nameref("t2"));
     s.setTarget(nameref("root-1"));
     sm.create(s);
-  
+
     EditorialDecision d1 = TestEntityGenerator.setUser(new EditorialDecision());
     d1.setDatasetKey(COL);
     d1.setSubjectDatasetKey(dataset11);
@@ -261,6 +261,41 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
     nodes = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "t2"), true, new Page());
     noSectors(noSectors(nodes));
+  }
+
+  /**
+   * Several sectors can share a subject, see https://github.com/CatalogueOfLife/backend/issues/1581
+   * A source node still carries only the most important sector, and paging counts nodes, not sectors.
+   */
+  @Test
+  public void sourceSectorsSharingSubject() {
+    MybatisTestUtils.populateDraftTree(session());
+    MybatisTestUtils.populateTestTree(dataset11, session());
+
+    SectorMapper sm = mapper(SectorMapper.class);
+    Sector attach = TestEntityGenerator.setUserDate(new Sector());
+    attach.setDatasetKey(COL);
+    attach.setSubjectDatasetKey(dataset11);
+    attach.setSubject(nameref("t4"));
+    attach.setTarget(nameref("t3"));
+    attach.setMode(Sector.Mode.ATTACH);
+    attach.setPriority(2);
+    sm.create(attach);
+
+    Sector union = new Sector(attach);
+    union.setMode(Sector.Mode.UNION);
+    union.setPriority(1);
+    sm.create(union);
+    commit();
+
+    // Insecta has 2 children: Coleoptera with both sectors and Lepidoptera
+    List<TreeNode> nodes = mapper().children(COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "t3"), true, new Page(0, 2));
+    assertEquals(2, nodes.size());
+    assertEquals("t4", nodes.get(0).getId());
+    assertEquals(union.getId(), nodes.get(0).getSectorKey());
+    assertEquals(Sector.Mode.UNION, nodes.get(0).getSectorMode());
+    assertEquals("t5", nodes.get(1).getId());
+    assertNull(nodes.get(1).getSectorKey());
   }
 
   private static void equals(EditorialDecision d1, EditorialDecision d2){
