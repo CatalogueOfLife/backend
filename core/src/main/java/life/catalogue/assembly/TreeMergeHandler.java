@@ -349,7 +349,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     } else {
       // *** CREATE ***
       if ( nu.isTaxon() && syncTaxa && !isAmbiguousGenus(nu) ||  nu.isSynonym() && syncSynonyms) {
-        sn = create(nu, parent);
+        sn = create(nu, parent, mod);
       }
     }
 
@@ -448,7 +448,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
   }
 
-  private SimpleNameWithNidx create(NameUsageBase nu, Usage parent) {
+  private SimpleNameWithNidx create(NameUsageBase nu, Usage parent, ModifiedUsage mod) {
     // replace accepted taxa with doubtful ones for genus parents which are synonyms
     // provisionally accepted species & infraspecies will not create an implicit genus or species !!!
     if (nu.getStatus() == TaxonomicStatus.ACCEPTED && parent != null && parent.status.isSynonym() && parent.rank == Rank.GENUS) {
@@ -499,17 +499,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // only add a new name if we do not have already multiple names that we cannot clearly match
     // track if we are outside of the sector target
-    Issue[] issues;
     if (target != null && parent != null
       && !Objects.equals(parent.id, target.getId())
       && !containsID(matcher.store().getClassification(parent.id), target.getId())
     ) {
-      issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
-    } else {
-      issues = new Issue[0];
+      mod.add(Issue.SYNC_OUTSIDE_TARGET);
     }
-    // *** CREATE ***
-    var sn = super.create(nu, parent, issues);
+    // *** CREATE *** keeping the issues flagged while processing, e.g. the name validation
+    var sn = super.create(nu, parent, mod);
     created++;
     parents.setMatch(sn);
     matcher.store().add(sn);

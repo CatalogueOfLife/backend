@@ -216,6 +216,55 @@ public class SectorSyncIT extends SectorSyncTestBase {
   /**
    * https://github.com/CatalogueOfLife/backend/issues/1230
    */
+  /**
+   * A sync validates every name it copies but used to throw those issues away,
+   * so the live project showed no name issues at all between releases.
+   */
+  @Test
+  public void nameIssuesStoredBySync() throws Exception {
+    // ATTACH sector, copied by the TreeCopyHandler
+    final int srcKey = dataRule.mapKey(DataFormat.COLDP, 14);
+    stripAuthorship(srcKey, "Culicidae-Culicinae-Culicini-Culex-americanus-d0be074c0");
+
+    NameUsageBase src = getByName(srcKey, Rank.ORDER, "Diptera");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    createSector(Sector.Mode.ATTACH, src, trg);
+    syncAll();
+
+    assertIssue(getByName(Datasets.COL, Rank.SPECIES, "Culex americanus"), Issue.MISSING_AUTHORSHIP);
+
+    // MERGE sector, created by the TreeMergeHandler
+    final int mergeKey = dataRule.mapKey(DataFormat.COLDP, 35);
+    stripAuthorship(mergeKey, "s2");
+
+    NameUsageBase msrc = getByName(mergeKey, Rank.FAMILY, "Chrysomelidae");
+    createSector(Sector.Mode.MERGE, msrc, trg, s -> {
+      s.setRanks(Set.of(Rank.FAMILY, Rank.GENUS, Rank.SUBGENUS, Rank.SPECIES));
+    });
+    syncMergesOnly();
+
+    assertIssue(getByName(Datasets.COL, Rank.SPECIES, "Chaetocnema (Chaetocnema) babai"), Issue.MISSING_AUTHORSHIP);
+  }
+
+  void assertIssue(NameUsageBase u, Issue issue) {
+    assertNotNull(u);
+    var v = getSource(DSID.of(Datasets.COL, u.getId()));
+    assertNotNull("no verbatim source for " + u.getLabel(), v);
+    assertTrue("missing " + issue + " on " + u.getLabel() + ", found " + v.getIssues(), v.getIssues().contains(issue));
+  }
+
+  private void stripAuthorship(int datasetKey, String nameID) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var nm = session.getMapper(NameMapper.class);
+      Name n = nm.get(DSID.of(datasetKey, nameID));
+      assertNotNull("no name " + nameID + " in dataset " + datasetKey, n);
+      n.setAuthorship(null);
+      n.setCombinationAuthorship(new org.gbif.nameparser.api.Authorship());
+      n.setBasionymAuthorship(new org.gbif.nameparser.api.Authorship());
+      nm.update(n);
+    }
+  }
+
   @Test
   public void subgenera() throws Exception {
     final int srcKey1 = dataRule.mapKey(DataFormat.COLDP, 34);
