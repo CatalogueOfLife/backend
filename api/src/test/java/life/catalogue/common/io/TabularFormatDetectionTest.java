@@ -12,9 +12,17 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 public class TabularFormatDetectionTest {
+  private static final String NAMES = """
+    ACANTHACEAE
+    ADN Suelo
+    Aaroniella
+    Aaroniella badonneli
+    Aaroniella badonneli (Danks, 1950)
+    Aaronsohnia factorovskyi Warb. & Eig.
+    Aaronsohnia pubescens (Desf.) K.Bremer & Humphries
+    """;
 
   @Rule
   public TemporaryFolder folder = new TemporaryFolder();
@@ -25,41 +33,53 @@ public class TabularFormatDetectionTest {
     return f;
   }
 
+  private TabularFormat detect(String content) throws IOException {
+    return TabularFormatDetection.detectFormat(write(content), StandardCharsets.UTF_8);
+  }
+
   @Test
   public void detectTsv() throws IOException {
-    File f = write("id\tscientificName\tauthorship\n1\tAbies alba\tMiller, 1891\n2\tPinus sylvestris\tL.\n");
-    assertEquals(TabularFormat.TSV, TabularFormatDetection.detectFormat(f, StandardCharsets.UTF_8));
+    assertEquals(TabularFormat.TSV, detect("id\tscientificName\tauthorship\n1\tAbies alba\tMiller, 1891\n2\tPinus sylvestris\tL.\n"));
   }
 
   @Test
   public void detectCsv() throws IOException {
-    File f = write("id,scientificName,authorship\n1,Abies alba,Mill.\n2,Pinus sylvestris,L.\n");
-    assertEquals(TabularFormat.CSV, TabularFormatDetection.detectFormat(f, StandardCharsets.UTF_8));
+    assertEquals(TabularFormat.CSV, detect("id,scientificName,authorship\n1,Abies alba,Mill.\n2,Pinus sylvestris,L.\n"));
   }
 
   @Test
   public void csvWithCommasInValues() throws IOException {
-    // commas in quoted values still dominate over no tabs
-    File f = write("id,name\n1,\"Müller, 1758\"\n2,\"Koch, 1845\"\n");
-    assertEquals(TabularFormat.CSV, TabularFormatDetection.detectFormat(f, StandardCharsets.UTF_8));
+    // commas inside quoted values are not delimiters
+    assertEquals(TabularFormat.CSV, detect("id,name\n1,\"Müller, 1758\"\n2,\"Koch, 1845\"\n"));
+  }
+
+  @Test
+  public void blankLinesIgnored() throws IOException {
+    assertEquals(TabularFormat.CSV, detect("id,name\n\n1,Abies\n  \n2,Pinus\n"));
   }
 
   @Test(expected = IOException.class)
   public void emptyFile() throws IOException {
-    File f = write("");
-    assertNull(TabularFormatDetection.detectFormat(f, StandardCharsets.UTF_8));
-  }
-
-  @Test(expected = IOException.class)
-  public void noDelimiters() throws IOException {
-    File f = write("justaplainword\nanotherword\n");
-    assertNull(TabularFormatDetection.detectFormat(f, StandardCharsets.UTF_8));
+    detect("");
   }
 
   @Test
-  public void singleColumnTsv() throws IOException {
-    // one tab per line beats zero commas
-    File f = write("col1\tcol2\nfoo\tbar\n");
-    assertEquals(TabularFormat.TSV, TabularFormatDetection.detectFormat(f, StandardCharsets.UTF_8));
+  public void singleColumn() throws IOException {
+    assertEquals(TabularFormat.TSV, detect("justaplainword\nanotherword\n"));
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/checklistbank/issues/1730
+   */
+  @Test
+  public void singleColumnWithCommas() throws IOException {
+    assertEquals(TabularFormat.TSV, detect("scientificName\n" + NAMES));
+    // no header, first name already has a comma
+    assertEquals(TabularFormat.TSV, detect("Abies alba Mill., 1768\n" + NAMES));
+  }
+
+  @Test
+  public void tsvWithCommasInValues() throws IOException {
+    assertEquals(TabularFormat.TSV, detect("col1\tcol2\nfoo, bar\tbaz\n"));
   }
 }

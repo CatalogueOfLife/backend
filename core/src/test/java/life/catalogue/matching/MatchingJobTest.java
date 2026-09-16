@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -110,6 +111,36 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   public void testMatchUploadTsvWithUtf16leBom() throws Exception {
     // Excel "Unicode Text" export on Windows: UTF-16 LE + BOM, tab-delimited
     runUploadMatching("\t", StandardCharsets.UTF_16LE, new byte[]{(byte) 0xFF, (byte) 0xFE}, "txt");
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/checklistbank/issues/1730
+   * A single column with commas in the authorship must not be split, whether the format is probed or given.
+   */
+  @Test
+  public void testMatchUploadSingleColumnWithCommas() throws Exception {
+    for (String suffix : new String[]{"txt", "tsv"}) {
+      File upload = File.createTempFile("col-single-col-", "." + suffix);
+      upload.deleteOnExit();
+      Files.writeString(upload.toPath(), "scientificName\nAus bus\nAaroniella badonneli (Danks, 1950)\nCus dus Smith\n");
+
+      MatchingRequest req = new MatchingRequest();
+      req.setDatasetKey(dataRule.testData.key);
+      req.setUpload(upload);
+      var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.matching);
+      job.run();
+      assertNull("Job should not error for " + suffix, job.getError());
+
+      try (ZipFile zipFile = new ZipFile(job.getResult().getFile())) {
+        ZipEntry entry = zipFile.entries().nextElement();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(zipFile.getInputStream(entry), StandardCharsets.UTF_8))) {
+          assertTrue(br.readLine().startsWith("original_scientificName\t"));
+          assertEquals("Aus bus", br.readLine().split("\t")[0]);
+          assertEquals("Aaroniella badonneli (Danks, 1950)", br.readLine().split("\t")[0]);
+          assertEquals("Cus dus Smith", br.readLine().split("\t")[0]);
+        }
+      }
+    }
   }
 
   private void runUploadMatching(String sep, java.nio.charset.Charset charset, byte[] bom, String suffix) throws Exception {

@@ -39,7 +39,8 @@ public class FixedNameUsageMatchingResource extends AbstractNameUsageMatchingRes
   }
 
   @POST
-  @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_CSV_ALT2, MoreMediaTypes.TEXT_WILDCARD})
+  @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_CSV_ALT1, MoreMediaTypes.TEXT_CSV_ALT2,
+    MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_TSV_ALT1, MoreMediaTypes.TEXT_WILDCARD})
   public Response matchTsvJob(@BeanParam @Valid MatchingRequest req,
                               @Context HttpHeaders headers,
                               InputStream data) throws IOException {
