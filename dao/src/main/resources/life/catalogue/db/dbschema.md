@@ -106,6 +106,21 @@ INSERT INTO usage_id_superseded SELECT * FROM usage_id_superseded_bak_3;
 COMMIT;
 ```
 
+#### 2026-09-14 allow sectors sharing a subject
+Sectors with entity or rank filters can legitimately share a subject, e.g. an ATTACH sector and a vernacular only
+MERGE sector on the same source taxon. The unique constraint rejected the second one with `Sector already exists`,
+see https://github.com/CatalogueOfLife/backend/issues/1581. Potential duplicates are now reported by
+`GET /dataset/{key}/sector?duplicates=true` and `GET /dataset/{key}/sector/duplicate` instead.
+
+Dropping the constraint also drops its unique index, and the plain index on the same columns was dropped earlier in this
+log, so it is recreated. Old code never relied on the constraint, so this can run before the deploy.
+Verify the constraint name with `\d sector` first.
+
+```sql
+ALTER TABLE sector DROP CONSTRAINT sector_dataset_key_subject_dataset_key_subject_id_key;
+CREATE INDEX IF NOT EXISTS sector_dataset_key_subject_dataset_key_subject_id_idx ON sector (dataset_key, subject_dataset_key, subject_id);
+```
+
 #### 2026-09-10 split authorship out of sector subject and target names
 Editing a sector in the UI sent the picked subject or target as `{id, name}` with the suggestion label as the name,
 which carries the authorship since the ES suggest rewrite (2026-02-23). `SectorDao.updateBefore` stored it verbatim,

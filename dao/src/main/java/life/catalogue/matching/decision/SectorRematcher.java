@@ -41,13 +41,8 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
       NameUsage u = matchSubjectUniquely(obj.getSubjectDatasetKey(), obj, obj.getSubject(), obj.getOriginalSubjectId());
       obj.getSubject().setId(null);
       if (u != null) {
-        // see if we already have another sector with the same subject ID
-        Sector s2 = mapper.getBySubject(projectKey, u);
-        if (s2 != null && !s2.getId().equals(obj.getId())) {
-          LOG.warn("Sector {} seems to be a duplicate of {} for subject {} in project {}. Keep sector {} broken", obj, s2, u.getName().getScientificName(), projectKey, obj.getId());
-        } else {
-          obj.getSubject().setId(u.getId());
-        }
+        // other sectors may share the subject, they are reported as potential duplicates by the sector search
+        obj.getSubject().setId(u.getId());
       }
     }
     // target can have multiple sectors

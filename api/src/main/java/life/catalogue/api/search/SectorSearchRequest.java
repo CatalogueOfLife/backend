@@ -45,6 +45,11 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
   @QueryParam("publisherKey")
   private UUID publisherKey;
 
+  // restrict to sectors that share their subject with another sector matching all other filters.
+  // Subject less sectors from the same source share their missing subject.
+  @QueryParam("duplicates")
+  private boolean duplicates = false;
+
   public static SectorSearchRequest byProject(int datasetKey){
     SectorSearchRequest req = new SectorSearchRequest();
     req.datasetKey = datasetKey;
@@ -137,16 +142,24 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     this.publisherKey = publisherKey;
   }
 
+  public boolean isDuplicates() {
+    return duplicates;
+  }
+
+  public void setDuplicates(boolean duplicates) {
+    this.duplicates = duplicates;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
-    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && stale == that.stale && Objects.equals(key, that.key) && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
+    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && stale == that.stale && duplicates == that.duplicates && Objects.equals(key, that.key) && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, stale, publisherKey);
+    return Objects.hash(super.hashCode(), key, subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, stale, duplicates, publisherKey);
   }
 }

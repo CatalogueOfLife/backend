@@ -7,6 +7,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
@@ -16,6 +17,9 @@ import life.catalogue.img.ThumborService;
 import life.catalogue.junit.MybatisTestUtils;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
+
+import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -121,34 +125,63 @@ public class SectorDaoTest extends DaoTestBase {
   }
 
   /**
-   * Only one subject less merge sector is allowed per source dataset,
-   * but merge sectors with a subject must not block that. See https://github.com/CatalogueOfLife/backend/issues/1560
+   * Sectors may share a subject, including several subject less merge sectors from the same source.
+   * They are reported as potential duplicates instead. Only the hierarchy sector must remain the only one in a project.
+   * See https://github.com/CatalogueOfLife/backend/issues/1560 and https://github.com/CatalogueOfLife/backend/issues/1581
    */
   @Test
-  public void createMergeSectorsWithoutSubject() {
+  public void createSectorsSharingSubject() {
 
     try (SqlSession session = factory().openSession(true)) {
       MybatisTestUtils.populateDraftTree(session);
       MybatisTestUtils.populateTestTree(12, session);
     }
 
-    // merge sectors with a subject from the same source are fine and unlimited
-    dao.create(mergeSector(12, "t2"), user);
+    // an attach sector and a vernacular only merge sector on the same subject
+    Sector attach = SectorMapperTest.create();
+    attach.setSubjectDatasetKey(12);
+    attach.getSubject().setId("t2");
+    attach.getTarget().setId("t1"); // Animalia
+    attach.setMode(Sector.Mode.ATTACH);
+    dao.create(attach, user);
+
+    Sector vernacular = mergeSector(12, "t2");
+    vernacular.setEntities(Set.of(EntityType.VERNACULAR));
+    dao.create(vernacular, user);
+
+    // merge sectors with another subject are no duplicates
     dao.create(mergeSector(12, "t3"), user);
 
-    // the first subject less merge sector is allowed
+    // several subject less merge sectors from the same source
     dao.create(mergeSector(12, null), user);
+    dao.create(mergeSector(12, null), user);
+    // another source dataset can have its own subject less merge sector
+    dao.create(mergeSector(11, null), user);
 
-    // ... but only one per source dataset
+    var req = SectorSearchRequest.byProject(Datasets.COL);
+    req.setDuplicates(true);
+    assertEquals(4, dao.search(req, new Page()).getTotal());
+    var groups = dao.duplicates(req, new Page());
+    assertEquals(2, groups.getTotal());
+    assertNull(groups.getResult().get(0).getSubjectId());
+    assertEquals(2, groups.getResult().get(0).getSectors().size());
+    assertEquals("t2", groups.getResult().get(1).getSubjectId());
+    assertEquals(List.of(attach.getId(), vernacular.getId()), groups.getResult().get(1).getSectors().stream().map(Sector::getId).toList());
+
+    // there is only one hierarchy sector per project
+    dao.create(hierarchySector(), user);
     try {
-      dao.create(mergeSector(12, null), user);
-      fail("A second subject less merge sector for source 12 must not be allowed");
+      dao.create(hierarchySector(), user);
+      fail("A second hierarchy sector must not be allowed");
     } catch (IllegalArgumentException e) {
       // expected
     }
+  }
 
-    // another source dataset can have its own subject less merge sector
-    dao.create(mergeSector(11, null), user);
+  static Sector hierarchySector() {
+    Sector s = mergeSector(12, null);
+    s.setMode(Sector.Mode.HIERARCHY);
+    return s;
   }
 
   static Sector mergeSector(int subjectDatasetKey, @Nullable String subjectID) {

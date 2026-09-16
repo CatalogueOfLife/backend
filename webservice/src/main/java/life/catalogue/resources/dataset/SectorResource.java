@@ -59,12 +59,29 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @Override
   ResultPage<Sector> searchImpl(int datasetKey, SectorSearchRequest req, Page page) {
+    scope(datasetKey, req);
+    return dao.search(req, page);
+  }
+
+  /**
+   * Groups of sectors sharing the same subject, i.e. potential duplicates.
+   * Takes all sector search filters, which apply to the sectors before they are grouped. The page applies to the groups.
+   */
+  @GET
+  @Path("duplicate")
+  public ResultPage<SectorDuplicate> duplicates(@PathParam("key") int datasetKey,
+                                                @Valid @BeanParam SectorSearchRequest req,
+                                                @Valid @BeanParam Page page) {
+    scope(datasetKey, req);
+    return dao.duplicates(req, page);
+  }
+
+  private static void scope(int datasetKey, SectorSearchRequest req) {
     if (req.isSubject()) {
       req.setSubjectDatasetKey(datasetKey);
     } else {
       req.setDatasetKey(datasetKey);
     }
-    return dao.search(req, page);
   }
 
   @DELETE

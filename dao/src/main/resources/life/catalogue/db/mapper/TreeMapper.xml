@@ -64,8 +64,15 @@
     LEFT JOIN taxon_metrics tm ON tm.dataset_key=t.dataset_key AND tm.taxon_id=t.id
     <if test="type != null">
       <if test="type == @life.catalogue.api.model.TreeNode$Type@SOURCE">
-        LEFT JOIN sector s ON s.subject_id=t.id AND s.dataset_key=#{projectKey} AND s.subject_dataset_key=#{datasetKey}
-          AND s.placeholder_rank IS NULL AND s.mode != 'MERGE'
+        <!-- several sectors can share a subject, show the most important one only so a node is never listed twice -->
+        LEFT JOIN LATERAL (
+          SELECT x.id, x.subject_dataset_key, x.mode
+          FROM sector x
+          WHERE x.subject_id=t.id AND x.dataset_key=#{projectKey} AND x.subject_dataset_key=#{datasetKey}
+            AND x.placeholder_rank IS NULL AND x.mode != 'MERGE'
+          ORDER BY x.priority NULLS LAST, x.id
+          LIMIT 1
+        ) s ON true
         LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{projectKey} AND ed.subject_dataset_key=#{datasetKey}
       </if>
       <if test="type == @life.catalogue.api.model.TreeNode$Type@PROJECT">

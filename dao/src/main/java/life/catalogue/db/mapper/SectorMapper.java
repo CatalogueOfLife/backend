@@ -1,7 +1,9 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SectorDuplicate;
 import life.catalogue.api.search.SectorSearchRequest;
 
 import java.util.List;
@@ -14,10 +16,24 @@ import org.apache.ibatis.cursor.Cursor;
 
 public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchRequest> {
 
+  /**
+   * Lists groups of sectors that share the same subject, ordered by dataset, subject dataset and subject id.
+   * All search filters apply to the sectors before they are grouped, the page applies to the groups.
+   * Subject less sectors from the same source form a group, too.
+   */
+  List<SectorDuplicate.Mybatis> duplicates(@Param("req") SectorSearchRequest req,
+                                           @Param("page") Page page);
+
+  int countDuplicates(@Param("req") SectorSearchRequest req);
+
   Sector.Mode getMode(@Param("datasetKey") int datasetKey,
                       @Param("id") int id);
-  Sector getBySubject(@Param("datasetKey") int datasetKey,
-                      @Param("key") DSID<String> key);
+  /**
+   * List all sectors of a project or release with the given subject, ordered by priority and key.
+   * Several sectors can share a subject, e.g. an attach and a vernacular only merge sector.
+   */
+  List<Sector> listBySubject(@Param("datasetKey") int datasetKey,
+                             @Param("key") DSID<String> key);
   
   List<Sector> listByTarget(@Param("key") DSID<String> key);
 
