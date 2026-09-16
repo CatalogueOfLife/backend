@@ -6,8 +6,10 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.BackgroundJob;
@@ -146,6 +148,34 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
     // test email templates
     EmailNotificationTemplateTest.testTemplates(release);
+  }
+
+  /**
+   * A release validates its own copy of the data. Issues copied from the project are dropped first,
+   * so stale flags go away and the release carries validation issues even if the project was never validated.
+   */
+  @Test
+  public void releaseValidates() throws Exception {
+    var adustus = SectorSyncIT.getByName(projectKey, org.gbif.nameparser.api.Rank.SPECIES, "Canis adustus");
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      // a stale issue in the project that does not apply to the name
+      new life.catalogue.dao.IssueAdder(projectKey, session).addIssue(adustus.getId(), Issue.WRONG_MONOMIAL_CASE);
+    }
+
+    ProjectRelease release = buildRelease();
+    release.run();
+    assertEquals(JobStatus.FINISHED, release.getStatus());
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      // Canis adustus has no authorship, released as P
+      var v = session.getMapper(VerbatimSourceMapper.class).getByUsage(DSID.of(release.newDatasetKey, "P"));
+      assertNotNull(v);
+      assertTrue(v.getIssues().contains(Issue.MISSING_AUTHORSHIP));
+      assertFalse(v.getIssues().contains(Issue.WRONG_MONOMIAL_CASE));
+    }
+    DatasetImport imp = new DatasetImportDao(release.factory, new File("/tmp")).getLast(projectKey);
+    assertTrue(imp.getIssuesCount().getOrDefault(Issue.MISSING_AUTHORSHIP, 0) > 0);
+    assertFalse(imp.getIssuesCount().containsKey(Issue.WRONG_MONOMIAL_CASE));
   }
 
   private ProjectRelease buildRelease() {

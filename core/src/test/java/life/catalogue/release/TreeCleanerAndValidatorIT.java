@@ -1,10 +1,9 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.assembly.SectorSyncIT;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.junit.PgSetupRule;
@@ -15,6 +14,7 @@ import life.catalogue.junit.TxtTreeDataRule;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
@@ -27,6 +27,7 @@ import static org.junit.Assert.*;
 public class TreeCleanerAndValidatorIT {
 
   final static int datasetKey = 100;
+  final static int synParentKey = 101;
 
   public final static SqlSessionFactoryRule pg = new PgSetupRule(); // PgConnectionRule("col", "postgres", "postgres");
 
@@ -34,20 +35,20 @@ public class TreeCleanerAndValidatorIT {
   public final static TestRule chain = RuleChain
     .outerRule(pg)
     .around(TestDataRule.empty())
-    .around(new TxtTreeDataRule(datasetKey, "txtree/validation/mismatch.txtree"));
+    .around(new TxtTreeDataRule(List.of(
+      new TxtTreeDataRule.TreeDataset(datasetKey, "txtree/validation/mismatch.txtree"),
+      new TxtTreeDataRule.TreeDataset(synParentKey, "txtree/validation/synonym-parent.txtree")
+    )));
+
+  static void validate(int key) {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      new TreeCleanerAndValidator(session, key, false).validate(session);
+    }
+  }
 
   @Test
   public void parentMismatch() throws IOException {
-    final var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    try (SqlSession session = factory.openSession(true)) {
-      var num = session.getMapper(NameUsageMapper.class);
-      var tcv = new TreeCleanerAndValidator(session, datasetKey, false);
-      TreeTraversalParameter params = new TreeTraversalParameter();
-      params.setDatasetKey(datasetKey);
-      params.setSynonyms(true);
-
-      PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), tcv);
-    }
+    validate(datasetKey);
 
     // start tests
     assertIssues(Rank.SPECIES, "Diamesa aberrata");
@@ -73,12 +74,39 @@ public class TreeCleanerAndValidatorIT {
     assertIssues(Rank.SUBFAMILY, "Hymenoidaloidiea", Issue.NO_SPECIES_INCLUDED, Issue.MISSING_AUTHORSHIP);
   }
 
+  /**
+   * An accepted taxon whose parent is a synonym, as merges and homotypic grouping leave behind in extended releases,
+   * must not abort the validation. It used to throw "Usage parent ... not found" from the parent stack, which the
+   * xrelease swallowed, leaving every usage after it unvalidated.
+   */
+  @Test
+  public void taxonBelowSynonym() throws Exception {
+    var kundera = SectorSyncIT.getByName(synParentKey, Rank.SPECIES, "Diamesa kundera");
+    var syn = SectorSyncIT.getByName(synParentKey, Rank.GENUS, "Onychodiamesa");
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(NameUsageMapper.class).updateParentId(DSID.of(synParentKey, kundera.getId()), syn.getId(), Users.TESTER);
+    }
+
+    validate(synParentKey);
+
+    // both roots are validated, whichever is traversed first
+    assertIssues(synParentKey, Rank.KINGDOM, "Animalia", Issue.MISSING_AUTHORSHIP);
+    assertIssues(synParentKey, Rank.SPECIES, "Diamesa aberrata");
+    assertIssues(synParentKey, Rank.SPECIES, "Poa annua", Issue.MISSING_AUTHORSHIP);
+    // the taxon below the synonym is left out
+    assertIssues(synParentKey, Rank.SPECIES, "Diamesa kundera");
+  }
+
   void assertIssues(Rank rank, String name, Issue ... issues) {
-    var u = SectorSyncIT.getByName(datasetKey, rank, name);
+    assertIssues(datasetKey, rank, name, issues);
+  }
+
+  void assertIssues(int key, Rank rank, String name, Issue ... issues) {
+    var u = SectorSyncIT.getByName(key, rank, name);
     assertNotNull(u);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var vm = session.getMapper(VerbatimSourceMapper.class);
-      var v = vm.getByUsage(DSID.of(datasetKey, u.getId()));
+      var v = vm.getByUsage(DSID.of(key, u.getId()));
       if (issues == null || issues.length == 0) {
         assertFalse(v != null && v.hasIssues());
       } else {

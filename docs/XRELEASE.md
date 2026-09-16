@@ -64,7 +64,13 @@ Traverses the entire accepted name tree depth-first:
 - **Name validation** — parsing issues, code compliance
 - **Classification integrity** — parent/child rank order, genus/species mismatches, publication dates
 - **`TaxonMetricsBuilder`** — builds per-taxon counts (species, synonyms, etc.) during traversal
-- Flags issues to `VerbatimSource` records via `IssueAdder`
+- Flags issues to `VerbatimSource` records via `IssueAdder`, which never stores an issue twice
+- Skips accepted taxa below a synonym parent and their descendants, which `flagLoops()` repoints next.
+  The parent stack only tracks accepted taxa, so they used to abort the traversal after the first root.
+- A failure fails the release. It used to be logged and swallowed, which left most of the tree unvalidated.
+
+A plain `ProjectRelease` runs the same validation on its copied data in `finalWork()`, after dropping the issues
+copied from the project. The XRelease overrides that as a no-op, since it validates here already.
 
 #### 2h. `flagLoops()` — Structural Integrity
 Detects and fixes four categories of structural problems:
