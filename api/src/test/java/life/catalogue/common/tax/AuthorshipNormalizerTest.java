@@ -110,6 +110,19 @@ import static org.junit.Assert.*;
       assertEquals("c h bipontinus schultz", comp.lookup("sch bip"));
       assertEquals("c h bipontinus schultz", comp.lookup("schultz bip"));
     }
+
+    /**
+     * An authormap canonical must not turn part of a compound surname into an initial - it invents
+     * initials that then conflict with the ones real sources cite.
+     * https://github.com/CatalogueOfLife/backend/issues/1595
+     */
+    @Test
+    public void compoundSurnameCanonicals() throws Exception {
+      var bory = new Author(comp.lookup("bory"));
+      assertEquals("vincent", bory.surname);
+      assertEquals("bory", bory.surnamePrefix);
+      assertEquals("j b g m", bory.initials);
+    }
   
     @Test
     public void normalizeName() throws Exception {
@@ -153,12 +166,38 @@ import static org.junit.Assert.*;
       assertAuthor("h g l reichenbach", "h g l", "reichenbach");
       assertAuthor("c linnaeus filius", "c", "linnaeus");
     }
-    
+
+    /**
+     * The first part of a compound surname with a nobiliary particle is a surname of its own,
+     * as sources often cite only that part.
+     * https://github.com/CatalogueOfLife/backend/issues/1595
+     */
+    @Test
+    public void compoundSurnameParsing() throws Exception {
+      assertAuthor("j b m bory de st vincent", "j b m", "vincent", "bory");
+      assertAuthor("bory de saint vincent", null, "vincent", "bory");
+      assertAuthor("a kerner von marilaun", "a", "marilaun", "kerner");
+      assertAuthor("palisot de beauvois", null, "beauvois", "palisot");
+      // particle starts the surname, so there is no first part to compare
+      assertAuthor("de roon", null, "roon", null);
+      assertAuthor("van der hoeven", null, "hoeven", null);
+      assertAuthor("p m e l de la chapelle", "p m e l", "chapelle", null);
+      assertAuthor("j b b de saint vincent", "j b b", "vincent", null);
+      // no particle at all
+      assertAuthor("white herbert harvey", null, "harvey", null);
+      assertAuthor("doring", null, "doring", null);
+    }
+
     private void assertAuthor(String full, String initials, String surname) {
+      assertAuthor(full, initials, surname, null);
+    }
+
+    private void assertAuthor(String full, String initials, String surname, String surnamePrefix) {
       Author a = new Author(full);
       assertEquals(full, a.fullname);
       assertEquals(initials, a.initials);
       assertEquals(surname, a.surname);
+      assertEquals(surnamePrefix, a.surnamePrefix);
     }
     
     @Test
