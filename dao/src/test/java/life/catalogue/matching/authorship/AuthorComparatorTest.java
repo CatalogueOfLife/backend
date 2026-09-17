@@ -671,6 +671,32 @@ public class AuthorComparatorTest {
     assertEquals(Equality.DIFFERENT, comp.compareAuthorteam(dc, candolle, org.gbif.nameparser.api.NomCode.ZOOLOGICAL));
   }
 
+  /**
+   * A compound surname with a nobiliary particle is often cited by its first part alone,
+   * e.g. "Bory" for "Bory de Saint-Vincent" or "Kerner" for "Kerner von Marilaun".
+   * https://github.com/CatalogueOfLife/backend/issues/1595
+   */
+  @Test
+  public void compoundSurnames() throws Exception {
+    // the Achnanthes genus duplicated in XR 26.9: Brazil, AlgaeBase and FinBIF spellings of the same author
+    assertAuth("Bory", Equality.EQUAL, "Bory de Saint-Vincent");
+    assertAuth("Bory de Saint-Vincent", Equality.EQUAL, "J.B.M. Bory de St. Vincent");
+    assertAuth("Bory", Equality.EQUAL, "J.B.M. Bory de St. Vincent");
+    // initials on both sides, compatible
+    assertAuth("J.B. Bory", Equality.EQUAL, "J.B.M. Bory de St. Vincent");
+
+    assertAuth("Kerner", Equality.EQUAL, "Kerner von Marilaun");
+    assertAuth("Kerner", Equality.EQUAL, "A. Kerner von Marilaun");
+    assertAuth("Palisot", Equality.EQUAL, "Palisot de Beauvois");
+
+    // conflicting initials still separate relatives
+    assertAuth("K. Bory", Equality.DIFFERENT, "J.B.M. Bory de St. Vincent");
+    assertAuth("J.E.Sm.", Equality.DIFFERENT, "J.G.Sm.");
+    // and unrelated surnames stay different
+    assertAuth("Bory", Equality.DIFFERENT, "Kerner von Marilaun");
+    assertAuth("Conrad von Baldenstein", Equality.DIFFERENT, "Buddenbrocks");
+  }
+
   private void assertAuth(AuthorshipNormalizer.Author a1, Equality eq, AuthorshipNormalizer.Author a2) {
     assertEquals(eq, comp.compare(a1, a2, AuthorComparator.MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, AuthorComparator.MIN_JARO_SURNAME_DISTANCE));
   }

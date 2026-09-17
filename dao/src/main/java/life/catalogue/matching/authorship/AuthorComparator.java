@@ -267,7 +267,7 @@ public class AuthorComparator {
     } else {
 
       String common = StringUtils.getCommonPrefix(a1.surname, a2.surname);
-      if (a1.surname.equals(a2.surname) || jaro(a1.surname, a2.surname) > jaroDistance || common.length() >= minCommonStart) {
+      if (surnamesMatch(a1.surname, a2.surname, minCommonStart, jaroDistance)) {
         // do both names have a single initial which is different?
         // this is often the case when authors are relatives like brothers or son & father
         if (a1.initialsOrSuffixDiffer(a2)) {
@@ -291,9 +291,35 @@ public class AuthorComparator {
         // likey a short abbreviation
         return Equality.EQUAL;
 
+      } else if (!a1.initialsOrSuffixDiffer(a2) && compoundSurnamesMatch(a1, a2, minCommonStart, jaroDistance)) {
+        // compound surnames like "Bory de Saint-Vincent" or "Kerner von Marilaun" are often cited by
+        // their first part alone, which the last word based surname comparison above cannot see.
+        // Still requires non conflicting initials so relatives stay apart.
+        // https://github.com/CatalogueOfLife/backend/issues/1595
+        return Equality.EQUAL;
       }
     }
     return Equality.DIFFERENT;
+  }
+
+  /**
+   * Compares the first part of one author's compound surname against the other author's plain surname.
+   * The two first parts are deliberately never compared with each other: that part can just as well be a
+   * middle name ("Conrad von Baldenstein" vs "Conrad von Buddenbrocks"), which would merge different authors.
+   */
+  private static boolean compoundSurnamesMatch(final Author a1, final Author a2, final int minCommonStart, final int jaroDistance) {
+    return surnamesMatch(a1.surnamePrefix, a2.surname, minCommonStart, jaroDistance)
+        || surnamesMatch(a1.surname, a2.surnamePrefix, minCommonStart, jaroDistance);
+  }
+
+  /**
+   * The surname equality rule: identical, fuzzily similar or sharing a long enough common start.
+   */
+  private static boolean surnamesMatch(@Nullable final String s1, @Nullable final String s2, final int minCommonStart, final int jaroDistance) {
+    if (s1 == null || s2 == null) {
+      return false;
+    }
+    return s1.equals(s2) || jaro(s1, s2) > jaroDistance || StringUtils.getCommonPrefix(s1, s2).length() >= minCommonStart;
   }
   
 }
