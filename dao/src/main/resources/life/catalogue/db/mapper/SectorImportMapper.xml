@@ -97,6 +97,31 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <resultMap id="sectorMetricsResultMap" type="SectorMetrics" autoMapping="true"/>
+
+  <!--
+    The two dataset keys are deliberately separate and NOT the single key the FROM fragment above joins on:
+    a release carries copies of the project's sector rows under its own dataset key while the sector_import
+    rows it points at stay under the project key, so "s.dataset_key = si.dataset_key" matches nothing at all
+    for a release. Sectors are listed by #{datasetKey} (release or project), metrics are read by #{projectKey}.
+
+    usages_by_status_count is an hstore, and summing it with each() is the SQL equivalent of
+    ImportMetrics.getUsagesCount(). Selecting the hstore itself instead would drag the whole 60 column
+    metrics row - most of it further hstores - over the wire for up to ~22.000 sectors of an extended release.
+
+    LEFT JOIN, not JOIN: a sector whose metrics were pruned by the retention job, or which was never synced,
+    must still be listed. It comes back with a null attempt and zero counts, which is what tells a review
+    "unknown" apart from a genuine zero.
+  -->
+  <select id="listMetrics" resultMap="sectorMetricsResultMap">
+    SELECT s.id AS sector_key, s.mode, s.subject_dataset_key, s.subject_name, s.target_name, s.target_rank,
+           si.attempt, si.taxon_count, si.synonym_count,
+           coalesce((SELECT sum(value::int) FROM each(si.usages_by_status_count)), 0) AS usages_count
+    FROM sector s
+    LEFT JOIN sector_import si ON si.sector_key = s.id AND si.dataset_key = #{projectKey} AND si.attempt = s.sync_attempt
+    WHERE s.dataset_key = #{datasetKey}
+  </select>
+
   <insert id="create" parameterType="SectorImport">
     <selectKey keyProperty="imp.attempt" resultType="integer" order="BEFORE">
       <if test="imp.attempt &lt;= 0">SELECT coalesce(max(attempt)+1, 1) FROM sector_import WHERE sector_key=#{imp.sectorKey}</if>

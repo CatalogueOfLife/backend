@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.model.SectorMetrics;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
@@ -48,6 +49,20 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
                           @Param("modes") @Nullable Collection<Sector.Mode> modes,
                           @Param("current") @Nullable Boolean current,
                           @Param("page") @Nullable Page page);
+
+  /**
+   * One compact row per sector of datasetKey, carrying the metrics of the sync attempt the sector points at.
+   *
+   * This exists because a release cannot be queried through {@link #list} at all: that statement joins
+   * {@code sector s ON s.id=si.sector_key AND s.dataset_key=si.dataset_key}, and a release's sector rows are
+   * copies under the release key while the sector_import rows stay under the project key, so the join never
+   * matches and a release always answers with nothing. Here the two keys are given separately.
+   *
+   * @param datasetKey the dataset whose sectors are listed - a project or one of its releases
+   * @param projectKey the project the sector_import metrics live under. Pass the same value as datasetKey for a project.
+   * @return one row per sector, with zero counts and a null attempt for a sector that has no metrics
+   */
+  List<SectorMetrics> listMetrics(@Param("datasetKey") int datasetKey, @Param("projectKey") int projectKey);
 
   void create(@Param("imp") SectorImport sectorImport);
 

@@ -9,14 +9,20 @@ import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.model.SectorMetrics;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.MediaType;
 import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.area.GenericArea;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -157,6 +163,94 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   @Test
   public void deleteByDataset() throws Exception {
     mapper().deleteByDataset(Datasets.COL);
+  }
+
+  /**
+   * listMetrics exists because list() cannot answer for a release at all: it joins the sector to the metrics on
+   * a single dataset key, and a release keeps its sectors under its own key while the sector_import rows stay
+   * under the project. The release half of this test is therefore the whole point - a project-only assertion
+   * would pass just as well against the broken single-key join.
+   *
+   * Nothing here is committed: these COL scoped rows are not part of the apple fixture the test data rule
+   * reloads, so a commit would leak into the next test (see jobCleanupKeepsSyncJobs above).
+   */
+  @Test
+  public void listMetrics() throws Exception {
+    mapper().deleteByDataset(COL);
+
+    // s gets a sync the sector points at, with deliberately small, deterministic usage counts - the shared
+    // fill() fixture uses random ints near Integer.MAX_VALUE, which no sum over an hstore could be asserted on
+    SectorImport si = create(JobStatus.FINISHED, s);
+    si.setTaxonCount(100);
+    si.setSynonymCount(40);
+    si.setUsagesByStatusCount(Map.of(TaxonomicStatus.ACCEPTED, 100, TaxonomicStatus.SYNONYM, 40));
+    createJob(session(), si);
+    mapper().create(si);
+    mapper(SectorMapper.class).updateLastSync(DSID.of(COL, s.getId()), si.getAttempt());
+
+    // an attempt nobody points at must be ignored - the join is on sync_attempt, not on the newest row
+    SectorImport stale = create(JobStatus.FINISHED, s);
+    stale.setUsagesByStatusCount(Map.of(TaxonomicStatus.ACCEPTED, 999999));
+    createJob(session(), stale);
+    mapper().create(stale);
+
+    // s2 is never synced at all
+    var byKey = mapper().listMetrics(COL, COL).stream()
+      .collect(Collectors.toMap(SectorMetrics::getSectorKey, Function.identity()));
+    assertEquals(2, byKey.size());
+
+    var m = byKey.get(s.getId());
+    assertNotNull(m);
+    assertEquals((Integer) si.getAttempt(), m.getAttempt());
+    assertEquals(140, m.getUsagesCount());
+    assertEquals((Integer) 100, m.getTaxonCount());
+    assertEquals((Integer) 40, m.getSynonymCount());
+    assertEquals(Sector.Mode.ATTACH, m.getMode());
+    assertEquals(s.getSubjectDatasetKey(), m.getSubjectDatasetKey());
+    assertEquals(s.getSubject().getName(), m.getSubjectName());
+    assertEquals(s.getTarget().getName(), m.getTargetName());
+
+    // a sector without metrics is listed with a null attempt, not dropped - "unknown" must be visible
+    var m2 = byKey.get(s2.getId());
+    assertNotNull(m2);
+    assertNull(m2.getAttempt());
+    assertEquals(0, m2.getUsagesCount());
+
+    // now the release: sector rows copied under the release key with the same ids and sync_attempt, exactly
+    // as SectorMapper.copyDataset does, while every sector_import row stays under the project key
+    final int releaseKey = createRelease();
+    try (var st = connection().createStatement()) {
+      st.execute("INSERT INTO sector (id, dataset_key, subject_dataset_key, mode, sync_attempt, subject_name, target_name, target_rank, created_by, modified_by)"
+        + " SELECT id, " + releaseKey + ", subject_dataset_key, mode, sync_attempt, subject_name, target_name, target_rank, created_by, modified_by"
+        + " FROM sector WHERE dataset_key=" + COL);
+    }
+
+    var relByKey = mapper().listMetrics(releaseKey, COL).stream()
+      .collect(Collectors.toMap(SectorMetrics::getSectorKey, Function.identity()));
+    assertEquals(2, relByKey.size());
+    var rm = relByKey.get(s.getId());
+    assertNotNull(rm);
+    assertEquals((Integer) si.getAttempt(), rm.getAttempt());
+    assertEquals(140, rm.getUsagesCount());
+    assertEquals((Integer) 100, rm.getTaxonCount());
+    assertEquals(s.getSubject().getName(), rm.getSubjectName());
+    assertNull(relByKey.get(s2.getId()).getAttempt());
+
+    // and the project key really is what resolves the metrics - reading them under the release key finds none
+    for (var none : mapper().listMetrics(releaseKey, releaseKey)) {
+      assertNull(none.getAttempt());
+      assertEquals(0, none.getUsagesCount());
+    }
+  }
+
+  private int createRelease() {
+    var d = DatasetMapperTest.create();
+    d.setOrigin(DatasetOrigin.RELEASE);
+    d.setSourceKey(COL);
+    d.setAttempt(1);
+    d.setPrivat(false);
+    mapper(DatasetMapper.class).create(d);
+    return d.getKey();
   }
 
   @Test

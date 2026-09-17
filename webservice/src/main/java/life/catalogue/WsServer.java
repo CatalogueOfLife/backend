@@ -451,6 +451,24 @@ public class WsServer extends Application<WsServerConfig> {
     }
     managedService.manage(Component.Feedback, feedback);
 
+    // agentic release review - optional, absent on any deployment without an ai config block.
+    // The hosts the agent is told about follow this server unless the config overrides them, so a dev
+    // deployment can never accidentally point its sandbox at the production API.
+    if (cfg.ai == null) {
+      LOG.info("No AI release review configured");
+    } else {
+      if (cfg.ai.apiURI == null) {
+        cfg.ai.apiURI = cfg.apiURI;
+      }
+      if (cfg.ai.clbURI == null) {
+        cfg.ai.clbURI = cfg.clbURI;
+      }
+      if (cfg.ai.apiURI == null) {
+        LOG.error("AI release review configured without an apiURI. Reviews will fail.");
+      }
+      LOG.info("Using AI release review {}", cfg.ai);
+    }
+
     // assembly
     SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, executor, jobDao, env.metrics());
     SyncScheduler syncScheduler = new SyncScheduler(cfg.syncs, syncManager, getSqlSessionFactory());
@@ -473,6 +491,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetExportResource(getSqlSessionFactory(), mdao, exportManager, cfg));
     j.register(new DatasetJobResource(getSqlSessionFactory(), ddao, syncManager, copyFactory, executor));
     j.register(new DatasetReviewerResource(adao));
+    j.register(new DatasetReviewResource(getSqlSessionFactory(), cfg.release, executor, auth.getJwtCodec(), cfg.ai, httpClient));
     j.register(new DatasetBreakdownResource(tdao));
     j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
     j.register(new NameUsageMatchingResource(cfg.matching, executor, getSqlSessionFactory(), matcherFactory));
