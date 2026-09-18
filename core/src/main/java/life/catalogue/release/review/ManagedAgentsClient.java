@@ -152,14 +152,19 @@ public class ManagedAgentsClient {
   }
 
   /**
+   * An uploaded file and where to mount it, e.g. /sector-metrics.json. The agent reads it under
+   * /mnt/session/uploads/ followed by the mount path.
+   */
+  public record Mount(String fileId, String mountPath) {}
+
+  /**
    * Starts a session on the configured agent and environment.
    *
-   * @param task      the rendered review task, sent as the first user message
-   * @param fileId    an uploaded file to mount into the session, or null for none
-   * @param mountPath where to mount it, e.g. /sector-metrics.json. The agent reads it under /mnt/session/uploads/.
+   * @param task   the rendered review task, sent as the first user message
+   * @param mounts the uploaded files to mount into the session
    * @return the new session id
    */
-  public String createSession(String task, @Nullable String fileId, @Nullable String mountPath) throws IOException {
+  public String createSession(String task, List<Mount> mounts) throws IOException {
     ObjectNode body = OM.createObjectNode();
     body.put("agent", cfg.agentId);
     body.put("environment_id", cfg.environmentId);
@@ -173,12 +178,15 @@ public class ManagedAgentsClient {
     budget.set("max_list_cost", cost);
     body.set("budget", budget);
 
-    if (fileId != null) {
-      ObjectNode res = OM.createObjectNode();
-      res.put("type", "file");
-      res.put("file_id", fileId);
-      res.put("mount_path", mountPath);
-      body.putArray("resources").add(res);
+    if (!mounts.isEmpty()) {
+      var resources = body.putArray("resources");
+      for (var m : mounts) {
+        ObjectNode res = OM.createObjectNode();
+        res.put("type", "file");
+        res.put("file_id", m.fileId());
+        res.put("mount_path", m.mountPath());
+        resources.add(res);
+      }
     }
 
     ObjectNode text = OM.createObjectNode();

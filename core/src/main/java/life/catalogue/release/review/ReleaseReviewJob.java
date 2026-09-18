@@ -9,11 +9,17 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipFile;
 
 import javax.annotation.Nullable;
 
@@ -34,11 +40,13 @@ import org.slf4j.LoggerFactory;
  *     review bot, which is rotated into the vault credential for this run;
  *  2. it computes the sector comparison in process and mounts it as a file, because that comparison needs
  *     editor rights over the API and the bot deliberately has none - and because no release can be asked
- *     for its sector sync metrics over the API at all;
+ *     for its sector sync metrics over the API at all. For a similar reason it mounts the release reports of
+ *     both releases, which live on the download host the sandbox cannot reach: the ID reports as they are,
+ *     and the job log as a digest, since the log itself runs to several GB;
  *  3. it writes the result to the release report directory, which is what makes a review durable and
  *     publicly linkable.
  *
- * Everything the agent itself reads, it reads over the ChecklistBank API with its own read-only credential.
+ * Everything else the agent reads, it reads over the ChecklistBank API with its own read-only credential.
  */
 public class ReleaseReviewJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(ReleaseReviewJob.class);
@@ -48,6 +56,16 @@ public class ReleaseReviewJob extends BackgroundJob {
   static final String MOUNT_PATH = "/" + METRICS_FILE;
   /** where the agent finds it inside the sandbox */
   static final String SANDBOX_METRICS_PATH = "/mnt/session/uploads/" + METRICS_FILE;
+  /** release report files, see IdProvider and JobAppender */
+  static final String LOG_FILE = "job.log.gz";
+  static final String ID_REPORTS_FILE = "id-reports.gz";
+  static final String SANDBOX_UPLOADS = "/mnt/session/uploads/";
+  static final String LOG_DIGEST_FILE = "job-log-digest.md";
+  static final String ID_REPORTS_DIR = "id-reports";
+  static final String PREFIX_PREVIOUS = "previous-";
+  /** an ID report bigger than this is left out rather than failing the review */
+  static final long MAX_UPLOAD_BYTES = 200L * 1024 * 1024;
+  private static final ContentType TEXT = ContentType.create("text/plain", StandardCharsets.UTF_8);
   /** the single file the agent is asked to produce */
   static final String SANDBOX_OUTPUT_PATH = "/mnt/session/outputs/" + ReleaseReviewStore.REPORT_FILE;
   /** how long to keep asking for the output files after the session went idle */
@@ -105,6 +123,7 @@ public class ReleaseReviewJob extends BackgroundJob {
     setStep("resolving release");
     final Dataset release;
     final Integer prevKey;
+    final Integer prevAttempt;
     final List<Dataset> history;
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
@@ -119,6 +138,8 @@ public class ReleaseReviewJob extends BackgroundJob {
       projectKey = release.getSourceKey();
       attempt = release.getAttempt();
       prevKey = dm.previousRelease(releaseKey);
+      var prev = prevKey == null ? null : dm.get(prevKey);
+      prevAttempt = prev == null ? null : prev.getAttempt();
       history = dm.listReleases(projectKey, false, false);
     }
     if (prevKey == null) {
@@ -153,11 +174,24 @@ public class ReleaseReviewJob extends BackgroundJob {
     LOG.info("Comparing release {} against {} flagged {} of its sectors", releaseKey, prevKey, diffs.size());
 
     setStep("uploading sector metrics");
-    String fileId = client.uploadFile(METRICS_FILE, metrics, ContentType.APPLICATION_JSON);
+    List<ManagedAgentsClient.Mount> mounts = new ArrayList<>();
+    mounts.add(new ManagedAgentsClient.Mount(
+      client.uploadFile(METRICS_FILE, metrics, ContentType.APPLICATION_JSON), MOUNT_PATH));
+
+    // what got mounted, and what was missing, is listed in the prompt
+    StringBuilder reports = new StringBuilder();
+    setStep("digesting release logs");
+    final File reportDir = rCfg.reportDir(projectKey, attempt);
+    final File prevReportDir = prevAttempt == null ? null : rCfg.reportDir(projectKey, prevAttempt);
+    mountLogDigest(client, mounts, reports, "this release", reportDir, "");
+    mountLogDigest(client, mounts, reports, "the previous release", prevReportDir, PREFIX_PREVIOUS);
+    setStep("uploading ID reports");
+    mountIdReports(client, mounts, reports, "this release", reportDir, "");
+    mountIdReports(client, mounts, reports, "the previous release", prevReportDir, PREFIX_PREVIOUS);
 
     setStep("starting session");
-    String task = renderPrompt(release, prevKey, history);
-    String sessionId = client.createSession(task, fileId, MOUNT_PATH);
+    String task = renderPrompt(release, prevKey, history, reports.toString().strip());
+    String sessionId = client.createSession(task, mounts);
     info.setSessionId(sessionId);
     store.write(projectKey, attempt, info);
 
@@ -175,6 +209,72 @@ public class ReleaseReviewJob extends BackgroundJob {
     info.setError(null);
     store.write(projectKey, attempt, info);
     LOG.info("Wrote release review of {} to {}", releaseKey, store.report(projectKey, attempt));
+  }
+
+  /**
+   * Mounts a digest of a release's job log. Streaming the gzipped log takes a minute or two for a big release,
+   * but the log itself is several GB and far too much for the agent to read.
+   */
+  static void mountLogDigest(ManagedAgentsClient client, List<ManagedAgentsClient.Mount> mounts, StringBuilder reports,
+                             String which, @Nullable File reportDir, String prefix) throws IOException {
+    File log = reportDir == null ? null : new File(reportDir, LOG_FILE);
+    if (log == null || !log.exists()) {
+      reports.append("- **not available:** the job log of ").append(which)
+        .append(" - there is no ").append(LOG_FILE).append(" in its report directory\n");
+      return;
+    }
+    LOG.info("Digesting release log {}", log);
+    byte[] digest = ReleaseLogDigest.digest(log).getBytes(StandardCharsets.UTF_8);
+    String name = prefix + LOG_DIGEST_FILE;
+    mounts.add(new ManagedAgentsClient.Mount(client.uploadFile(name, digest, TEXT), "/" + name));
+    reports.append("- `").append(SANDBOX_UPLOADS).append(name).append("` - the job log digest of ").append(which).append('\n');
+  }
+
+  /**
+   * Mounts the entries of a release's ID reports as plain text files, so the agent needs no unzip -
+   * id-reports.gz is a zip archive despite its name.
+   */
+  static void mountIdReports(ManagedAgentsClient client, List<ManagedAgentsClient.Mount> mounts, StringBuilder reports,
+                             String which, @Nullable File reportDir, String prefix) throws IOException {
+    File zip = reportDir == null ? null : new File(reportDir, ID_REPORTS_FILE);
+    if (zip == null || !zip.exists()) {
+      reports.append("- **not available:** the ID reports of ").append(which)
+        .append(" - there is no ").append(ID_REPORTS_FILE).append(" in its report directory\n");
+      return;
+    }
+    final String dir = prefix + ID_REPORTS_DIR;
+    List<String> mounted = new ArrayList<>();
+    List<String> skipped = new ArrayList<>();
+    try (var zf = new ZipFile(zip)) {
+      for (var entry : Collections.list(zf.entries())) {
+        if (entry.isDirectory()) {
+          continue;
+        }
+        String name = new File(entry.getName()).getName();
+        if (entry.getSize() > MAX_UPLOAD_BYTES) {
+          LOG.warn("Skip ID report {} of {} bytes in {}", name, entry.getSize(), zip);
+          skipped.add(name + " (too big)");
+          continue;
+        }
+        byte[] content;
+        try (var in = zf.getInputStream(entry)) {
+          content = in.readAllBytes();
+        }
+        // an empty report says nothing a count of zero would not
+        if (content.length == 0) {
+          skipped.add(name + " (empty)");
+          continue;
+        }
+        mounts.add(new ManagedAgentsClient.Mount(client.uploadFile(dir + "-" + name, content, TEXT), "/" + dir + "/" + name));
+        mounted.add(name);
+      }
+    }
+    reports.append("- `").append(SANDBOX_UPLOADS).append(dir).append("/` - the ID reports of ").append(which)
+      .append(": ").append(mounted.isEmpty() ? "none" : String.join(", ", mounted));
+    if (!skipped.isEmpty()) {
+      reports.append("; not mounted: ").append(String.join(", ", skipped));
+    }
+    reports.append('\n');
   }
 
   /**
@@ -263,7 +363,7 @@ public class ReleaseReviewJob extends BackgroundJob {
     return html.size() == 1 ? html.get(0) : null;
   }
 
-  private String renderPrompt(Dataset release, int prevKey, List<Dataset> history) throws Exception {
+  private String renderPrompt(Dataset release, int prevKey, List<Dataset> history, String releaseReports) throws Exception {
     String prevAlias = history.stream()
       .filter(d -> d.getKey() != null && d.getKey() == prevKey)
       .map(ReleaseReviewJob::label)
@@ -283,6 +383,8 @@ public class ReleaseReviewJob extends BackgroundJob {
       .replace("{{clbURI}}", stripTrailingSlash(cfg.clbURI.toString()))
       .replace("{{secretName}}", cfg.secretName)
       .replace("{{sectorMetricsPath}}", SANDBOX_METRICS_PATH)
+      .replace("{{reportsURI}}", rCfg.reportURI(projectKey, attempt).toString())
+      .replace("{{releaseReports}}", releaseReports)
       .replace("{{outputPath}}", SANDBOX_OUTPUT_PATH);
   }
 
