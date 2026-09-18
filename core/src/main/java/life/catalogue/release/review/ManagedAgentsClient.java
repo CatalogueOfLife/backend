@@ -3,8 +3,11 @@ package life.catalogue.release.review;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -25,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * A deliberately small client for the handful of Anthropic Managed Agents calls the release review needs.
@@ -267,10 +271,14 @@ public class ManagedAgentsClient {
   }
 
   /**
-   * The cost of a session, wherever the API happens to put it. Reported verbatim for the report page, so a
-   * shape we do not know simply comes back as null instead of failing a finished review.
+   * The cost of a session, wherever the API happens to put it. A shape we do not know simply comes back as null
+   * instead of failing a finished review.
+   *
+   * The documented {@code usage.list_cost} is {@code {amount, currency}} with the amount an integer string in minor
+   * units, exactly like the {@code max_list_cost} of the budget we send - so {"605", "USD"} is 6.05 USD, not 605.
    */
-  private static @Nullable String cost(JsonNode session) {
+  @VisibleForTesting
+  static @Nullable String cost(JsonNode session) {
     for (String field : new String[]{"list_cost", "listCost", "cost", "total_cost"}) {
       JsonNode n = session.path(field);
       if (n.isMissingNode() || n.isNull()) {
@@ -284,11 +292,25 @@ public class ManagedAgentsClient {
         String amount = text(n, "amount");
         if (amount != null) {
           String currency = text(n, "currency");
-          return currency == null ? amount : amount + " " + currency;
+          return currency == null ? amount : majorUnits(amount, currency) + " " + currency;
         }
       }
     }
     return null;
+  }
+
+  /**
+   * Converts an integer amount of minor units, e.g. cents, into the major unit of its currency.
+   * Anything that is not an integer or not a known currency is returned verbatim rather than guessed at.
+   */
+  private static String majorUnits(String minorUnits, String currency) {
+    try {
+      int digits = Currency.getInstance(currency).getDefaultFractionDigits();
+      return digits < 0 ? minorUnits : new BigDecimal(new BigInteger(minorUnits), digits).toPlainString();
+    } catch (IllegalArgumentException e) {
+      // also covers NumberFormatException
+      return minorUnits;
+    }
   }
 
   private static @Nullable String text(JsonNode node, String field) {
