@@ -16,6 +16,7 @@ import life.catalogue.release.review.AiReviewConfig;
 import life.catalogue.release.review.ReleaseReviewInfo;
 import life.catalogue.release.review.ReleaseReviewJob;
 import life.catalogue.release.review.ReleaseReviewStore;
+import life.catalogue.resources.ResourceUtils;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
@@ -37,6 +38,8 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.ServiceUnavailableException;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -76,7 +79,9 @@ public class DatasetReviewResource {
   }
 
   @GET
-  public ReleaseReviewInfo get(@PathParam("key") int key) {
+  public ReleaseReviewInfo get(@PathParam("key") int key, @Context ContainerRequestContext ctx) {
+    // the release is immutable, its review status is not - a cached "running" would never turn into "finished"
+    ResourceUtils.dontCache(ctx);
     try (SqlSession session = factory.openSession()) {
       return build(session, requireRelease(session, key));
     }
