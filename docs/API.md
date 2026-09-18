@@ -303,65 +303,136 @@ Authentification in the CLB API works either as plain `BasicAuth` for every requ
 Basic API Docs https://api.checklistbank.org/#/default/match_1  
 
 ## Names Index
-The _Names Index_ (nidx) is a ChecklistBank component that automatically tracks all unique names across all datasets. 
-It is the heart of the name matching, but can also be used directly to find related names.
-Every name in the index links back to a _canonical_ version of the name which is unranked and does not have any authorship.
-Otherwise names are considered the same only if the latin name, rank & authorship match up according to a rather strict similarity algorithm.
-As this algorithm is continuously being improved, entries in the index and their related names cluster differ over time 
-and nidx identifiers should not be stored for a longer time as they are not guaranteed to be stable.
 
-Names Index entries should also not be seen as nomenclaturally scrutinized data. Any name present in any of the CLB datasets will be included 
-as long as their Name.type is not one of:
+The _Names Index_ (nidx) is a technical component of ChecklistBank. It gives every distinct **canonical name** found in any dataset an integer id,
+so that names can be linked across datasets. The name matching uses it as a first step to find candidate names quickly,
+and then compares the authorship, rank and classification of those candidates itself.
 
- - `no_name`: 1234
- - `placeholder`: Asteraceae incertae sedis
- - `informal`: Abies spec.
+The names index is not a nomenclator and far from a global list of names.
+An entry is a normalized name string, not a name: it has no authorship, rank, nomenclatural code, status or publication.
+Homonyms, names at different ranks and names that differ only in their gender ending or in frequent spelling variations all share one entry.
+_Abies alba_ Mill. and _Abies alba_ (Aiton) Michx., two unrelated names, are the same entry.
+The index also contains misspellings, informal names, identifiers and anything else that looks like a name in the source data, and nobody reviews its content.
 
-A names index entry can be resolved like this:
-https://api.checklistbank.org/nidx/2
+Use nidx ids only to link names within ChecklistBank and don't store them for long.
+Entries are never changed, but improvements to the name parser or the normalization require a rebuild of the index, which assigns new ids to all names.
+
+### Single tier
+
+Until August 2026 the index had two tiers: an entry for every distinct combination of name, rank and authorship,
+each linked through a `canonicalId` to an unranked entry without authorship.
+The specific tier has been removed. Every name now links directly to its canonical entry,
+and homonyms are told apart by the name matching against a dataset, which compares the actual authorship and rank of the names.
+
+For API users this means:
+
+- `namesIndexId` on a name always points to a canonical entry. Where a `canonicalId` still appears next to it, e.g. in matching results, it has the same value.
+- `/nidx/{id}` returns the canonical name, its normalized key and the full names matched to it, not a parsed name.
+- `/nidx/{id}/group` and the ID mapping exports (`/nidx/export`) have been removed.
+- `/nidx/match` is deprecated. Use the [name matching API](#name-matching) against a dataset instead.
+
+### Building the canonical name
+
+The canonical name is assembled from the parsed parts of a name:
+
+- a uninomial stays as it is: _Abies_ Mill. → `Abies`
+- a binomial or trinomial keeps the genus, the specific and the infraspecific epithet, plus a cultivar epithet if there is one:
+  _Abies alba_ subsp. _apennina_ Brullo, Scelsi & Spamp. → `Abies alba apennina`, _Acer rubrum_ 'Armstrong' → `Acer rubrum Armstrong`
+- an infrageneric name is reduced to its epithet: _Abies_ sect. _Grandis_ → `Grandis`.
+  Sections of the same name in different genera therefore share one entry, see https://api.checklistbank.org/nidx/24727
+
+Authorship, rank markers, hybrid signs, the _Candidatus_ prefix, a subgenus given in a binomial, qualifiers like _cf._ or _aff._
+and any unparsed remainder of the name are dropped.
+_Abies cf. alba_, _Abies aff. alba_ and _Abies alba_ Mill. all share one entry, and so do _Quercus_ × _rosacea_ and _Quercus rosacea_.
+
+### Names that are not fully parsed
+
+Names that cannot be broken down into a uninomial, binomial or infrageneric name use their full scientific name as the canonical name. This covers:
+
+- indetermined and phrase names (name type `informal`), e.g. `Abies sp.` or `Pultenaea sp. 'Maryborough' (T.D.Stanley 87)`. `Abies sp.` is a separate entry from `Abies`.
+- names the parser does not understand (name type `other`), e.g. virus names like `Tobacco mosaic virus`
+- hybrid formulas (name type `formula`), e.g. `Salix alba × Salix fragilis`
+- identifiers (name type `identifier`), e.g. BOLD BINs like `BOLD:AAA1200` or UNITE species hypotheses like `SH0864600.10FU`
+
+The same normalization as for all other names applies (see below).
+As lowercase words are stemmed too, the key for _Tobacco mosaic virus_ becomes `tobacco mosaic vir`.
+If the authorship of an unparsable name is part of its name string, it also becomes part of the key,
+so such names only link to names that are written the same way.
+
+### Normalization
+
+The canonical name is reduced to a normalized key, and all names with the same key share one entry:
+
+1. Ligatures are split (`æ` → `ae`, `œ` → `oe`, `ß` → `ss`) and accents are removed (`é` → `e`, `ö` → `o`).
+2. Hyphens, apostrophes, quotes, `?`, `!` and `_` are removed, `, . : ;` become spaces, and whitespace is collapsed.
+3. The hybrid sign `×` is removed.
+4. In names with several words, the first word (the genus or uninomial) is kept as it is.
+   Every following word that starts with a lowercase letter is normalized further:
+   - the Latin gender ending is removed: `alba`, `albus` and `album` become `alb`, `rubra` and `rubrum` become `ruber`
+   - `j` and `y` become `i`, except at the start of a word
+   - double letters become single ones: `apennina` → `apenina`
+   - an `h` following a `g`, `r` or `t` is removed
+
+   Words that start with an uppercase letter, e.g. cultivar epithets, are kept as they are.
+5. The key is lowercased, and any character that is still not ASCII is replaced with `*`.
+
+Some entries from the index with their keys:
+
+| Canonical name | Normalized key |
+|---|---|
+| `Abies alba` | `abies alb` |
+| `Abies alba apennina` | `abies alb apenin` |
+| `Acer rubrum Albo-Variegatum` | `acer ruber albovariegatum` |
+| `Pultenaea sp. 'maryborough' (t.d.stanley 87)` | `pultenaea sp mariboroug (t d stanlei 87)` |
+| `Tobacco mosaic virus` | `tobacco mosaic vir` |
+| `BOLD:AAA1200` | `bold aaa1200` |
+
+The `scientificName` of an entry is the canonical name of whichever name created the entry first.
+It is a label, not a corrected name: the entry for _Acer rubrum_ is currently labelled `Acer rubra`, see https://api.checklistbank.org/nidx/96130
+
+### Names that are not indexed
+
+Almost every name gets an entry, including misspelled, informal and unparsable names. The exceptions are:
+
+- placeholder names (name type `placeholder`), e.g. _Asteraceae incertae sedis_ or _unknown genus_
+- names without any Latin letter or digit, e.g. names written only in Chinese or Cyrillic script
+
+These names have no `namesIndexId`.
+
+### API resources
+
+The metadata of the index with its id, creation date and size:
+https://api.checklistbank.org/nidx/metadata
+
+A names index entry with the full names matched to it and how often each of them occurs:
+https://api.checklistbank.org/nidx/24074
+
 ```json
 {
- "created":"2023-02-22T18:52:01.575189",
- "modified":"2023-02-22T18:52:01.575189",
- "canonicalId":1,
- "scientificName":"Animalia",
- "rank":"kingdom",
- "uninomial":"Animalia",
- "labelHtml":"Animalia",
- "parsed":true,
- "id":2,
+  "nidx": 24074,
+  "normalizedName": "abies alb",
+  "scientificName": "Abies alba",
+  "labels": [
+    { "label": "Abies alba Mill.", "count": 116 },
+    { "label": "Abies alba (Aiton) Michx.", "count": 34 },
+    { "label": "Abies alba", "count": 21 },
+    { "label": "Abies alba (Aiton) Jess.", "count": 16 }
+  ]
 }
 ```
 
-The `canonicalId` points to the canonical version of the name:
-https://api.checklistbank.org/nidx/1
+All usages of an entry across ChecklistBank with their classification. Deleted and temporary datasets and projects are left out:
+https://api.checklistbank.org/nidx/24074/usages
 
-You can list all index names that share the same canonical name with the group resource:
-https://api.checklistbank.org/nidx/1/group
+The same usages through the name usage search:
+https://api.checklistbank.org/nameusage?nidx=24074
 
-The names index id also allows to find all name instances in CheckistBank no matter which dataset they belong to:
-https://api.checklistbank.org/nameusage?nidx=1
+Entries whose `scientificName` matches a regular expression anchored at the start of the name.
+This searches the labels, not the normalized keys, so `Acer rubrum` does not find the entry labelled `Acer rubra`:
+https://api.checklistbank.org/nidx/pattern?q=Abies%20alba
 
-### Names Index ID mapping exports
-Another feature driven by the names index are exports of ID mappings between different datasets.
-Similar to downloads this is an asynchroneous job that will result in a compressed CSV file with all names from the requested datasets 
-aligned according to their names index match. An optional `min` parameter can be given to only include names that appear in at least the given number of datasets.
-
-For example an export of ID mappings between the [Catalogue of World Gelechiidae](https://www.checklistbank.org/dataset/2362/about) 
-and [LepIndex](https://www.checklistbank.org/dataset/1018/about) can be triggered with
- ```bash
-curl --user USERNAME:PASSWORD -X POST "https://api.checklistbank.org/nidx/export?datasetKey=1018&datasetKey=2362&min=2"
- ```
-
-The top of the result file would look like this:
-```
-rank	scientificName	authorship	IDdataset1018	IDdataset2362
-species	Acanthophila piceana	Sulcs, 1968	100532	4263-4266
-species	Acompsia angulifera	Walsingham, 1897	98070	2517-2518
-species	Acompsia dimorpha	Petry, 1904	98076	28
-species	Acompsia fuscella	Duponchel, 1844	103303	7819-7824
-```
-
+To find the entry for a given name, match the name against a dataset that contains it and read the `namesIndexId` of the result:
+https://api.checklistbank.org/dataset/3LR/match/nameusage?q=Acer%20rubrum
 
 ## Github import hooks
 Github repositories are very well suited to to host source data in ColDP or DwC archives if individual files do not exceed the 100MB limit.
