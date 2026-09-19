@@ -28,7 +28,9 @@ of the form `catalogueoflife.org/data/taxon/{id}`.
 
 A COL *release* is an immutable snapshot and its identifiers are stable. The underlying *project* changes
 continuously, may temporarily hold duplicate or incomplete data, and does **not** use stable identifiers
-— never cite a project identifier. See [`API.md`](API.md) for how datasets, projects and releases relate.
+— never cite a project identifier. See the
+[ChecklistBank API guide](https://www.checklistbank.org/about/API) for how datasets, projects and
+releases relate.
 
 COL publishes two kinds of release: the **base release**, and the **extended release** built on top of it
 with names merged in from further sources. Both draw on one pool of identifiers. Wherever this document
@@ -202,7 +204,8 @@ one.
 
 ## Further reading
 
-- [`API.md`](API.md) — datasets, projects, releases, and the compound keys that address a record
+- [ChecklistBank API guide](https://www.checklistbank.org/about/API) — datasets, projects, releases,
+  and the compound keys that address a record
 - [`XRELEASE.md`](XRELEASE.md) — how base releases and extended releases share one pool of identifiers
 - [`2026-09-15-stable-id-evidence-model.md`](2026-09-15-stable-id-evidence-model.md) — the design record
   behind the current rules, for developers
