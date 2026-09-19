@@ -76,13 +76,13 @@ A A D Thouars	BOT	A.Thouars	Abel Aubert Dupetit Thouars
 A A Derbès	BOT	Derbès	August Alphonse Derbès
 A A Dewèvre	BOT	Dewèvre	Alfred Aloys Dewèvre
 A A Eaton	BOT	A.A.Eaton	Alvah Augustus Eaton
-A A F von Waldheim	BOT	A.A.Fisch.Waldh.	Alexandr Alexandrovich Fischer von Waldheim
+A A Fischer von Waldheim	BOT	A.A.Fisch.Waldh.	Alexandr Alexandrovich Fischer von Waldheim
 A A Fedorov	BOT	Fed.	Andrey Aleksandrovich Fedorov
 A A Grossheim	BOT	Grossh.	Alexander Alfonsovich Grossheim
 A A H Léveillé	BOT	H.Lév.	Augustin Abel Hector Léveillé
 A A Heller	BOT	A.Heller	Amos Arthur Heller
 A A Henderson	BOT	A.A.Hend.	Andrew Augustus Henderson
-A A Morales	BOT	Amor	Angel Amor Morales	Ángel Amor Morales
+A Amor Morales	BOT	Amor	Angel Amor Morales	Ángel Amor Morales
 A A Obermeyer	BOT	Oberm.	Anna Amelia Obermeyer
 A A Parmentier	BOT	Parm.	Antoine Auguste Parmentier
 A A Pearson	BOT	A.Pearson	Arthur Anselm Pearson
@@ -159,7 +159,7 @@ A Cunningham	BOT	A.Cunn.	Allan Cunningham
 A D Cotton	BOT	Cotton	Arthur Disbrowe Cotton
 A D Danilov	BOT	A.D.Danilov	Alexander Danilovich Danilov
 A D E Elmer	BOT	Elmer	Adolph Daniel Edward Elmer
-A D F de Bandaroy	BOT	Foug.	Auguste Denis Fougeroux de Bandaroy
+A D Fougeroux de Bandaroy	BOT	Foug.	Auguste Denis Fougeroux de Bandaroy
 A D Hardy	BOT	A.D.Hardy	Alfred Douglas Hardy
 A D Hawkes	BOT	A.D.Hawkes	Alex Drum Hawkes
 A D Houghton	BOT	Houghton	Arthur Duvernoix Houghton
@@ -197,7 +197,7 @@ A F Bartsch	BOT	A.F.Bartsch	Alfred Frank Bartsch
 A F Blakeslee	BOT	Blakeslee	Albert Francis Blakeslee
 A F Flerow	BOT	Flerow	Alexandr Fedorovich Flerow
 A F G Kerr	BOT	Kerr	Arthur Francis George Kerr
-A F G y Gauna	BOT	Gredilla	Apolinar Federico Gredilla y Gauna
+A F Gredilla y Gauna	BOT	Gredilla	Apolinar Federico Gredilla y Gauna
 A F le Jolis	BOT	Le Jol.	Auguste François le Jolis
 A F M Glaziou	BOT	Glaz.	Auguste François Marie Glaziou
 A F M L A von Keyserling	BOT	Keyserl.	Alexander Friedrich Michael Leberecht Arthur von Keyserling
@@ -219,7 +219,7 @@ A G Blytt	BOT	A.Blytt	Axel Gudbrand Blytt
 A G Borissova	BOT	Boriss.	Antonina Georgievna Borissova
 A G C Lawalrée	BOT	Lawalrée	André Gilles Célestin Lawalrée
 A G Dietrich	BOT	A.Dietr.	Albert Gottfried Dietrich
-A G F von Waldheim	BOT	Fisch.Waldh.	Alexander Gregorevich Fischer von Waldheim
+A G Fischer von Waldheim	BOT	Fisch.Waldh.	Alexander Gregorevich Fischer von Waldheim
 A G Floyd	BOT	A.G.Floyd	Alexander G. Floyd
 A G H von Bongard	BOT	Bong.	August Gustav Heinrich von Bongard
 A G Jones	BOT	A.G.Jones	Almut Gitter Jones
@@ -245,7 +245,7 @@ A Gray	BOT	A.Gray	Asa Gray
 A Guillaumin	BOT	Guillaumin	André Guillaumin
 A Güner	BOT	Güner	Adil Güner
 A H C de Coincy	BOT	Coincy	Auguste Henri Cornut de Coincy
-A H du Pavillon	BOT	A.Huet	Alfred Huet du Pavillon
+A Huet du Pavillon	BOT	A.Huet	Alfred Huet du Pavillon
 A H Evans	BOT	A.H.Evans	Arthur Humble Evans
 A H G Alston	BOT	Alston	Arthur Hugh Garfit Alston
 A H G de Cassini	BOT	Cass.	Alexandre Henri Gabriel de Cassini
@@ -283,13 +283,13 @@ A I Vvedensky	BOT	Vved.	Alexei Ivanovich Vvedensky
 A J B Chevalier	BOT	A.Chev.	Auguste Jean Baptiste Chevalier
 A J Cavanilles	BOT	Cav.	Antonio José Cavanilles
 A J Cronquist	BOT	Cronquist	Arthur John Cronquist
-A J D Bruijn	BOT	Bruijn	Ary Johannes De Bruijn	Ary Johannes de Bruijn
+A J De Bruijn	BOT	Bruijn	Ary Johannes De Bruijn	Ary Johannes de Bruijn
 A J Delahoussaye	BOT	Delahouss.	A. James Delahoussaye
 A J Eames	BOT	A.J.Eames	Arthur Johnson Eames
 A J Ewart	BOT	Ewart	Alfred James Ewart
 A J G H Kostermans	BOT	Kosterm.	André Joseph Guillaume Henri Kostermans
 A J G K Batsch	BOT	Batsch	August Johann Georg Karl Batsch
-A J Hartman	BOT	Al.Jahn	Alfredo Jahn Hartman
+A Jahn Hartman	BOT	Al.Jahn	Alfredo Jahn Hartman
 A J Hill	BOT	A.J.Hill	Albert Joseph Hill
 A J Huxley	BOT	Huxley	Anthony Julian Huxley
 A J J Jalas	BOT	Jalas	Arvo Jaakko Juhani Jalas
@@ -310,7 +310,7 @@ A K J Hartwig	BOT	Hartwig	August Karl Julius Hartwig
 A K Pradeep	BOT	Pradeep	Ayilliath K. Pradeep
 A K S K Prasad	BOT	A.K.S.Prasad	Akshinthala K. Sai Krishna Prasad	Akshinthala K.Sai Krishna Prasad
 A K Schindler	BOT	Schindl.	Anton Karl Schindler
-A K von Marilaun	BOT	A.Kern.	Anton Kerner von Marilaun
+A Kerner von Marilaun	BOT	A.Kern.	Anton Kerner von Marilaun
 A K Wallace	BOT	A.K.Wallace	Anne Karin Wallace
 A Kanis	BOT	Kanis	Andrias Kanis
 A Kanitz	BOT	Kanitz	August Kanitz
@@ -343,8 +343,8 @@ A Lounsberry	BOT	Lounsb.	Alice Lounsberry
 A Lourteig	BOT	Lourteig	Alicia Lourteig
 A Lowrie	BOT	Lowrie	Allen Lowrie
 A M Amirkhanov	BOT	Amirkh.	Amirkhan Magomedovich Amirkhanov
-A M F J P de Beauvois	BOT	P.Beauv.	Ambroise Marie François Joseph Palisot de Beauvois
-A M H Jr	BOT	Harvill	Alton McCaleb Harvill, Jr	Alton McCaleb Harvill, Jr.
+A M F J Palisot de Beauvois	BOT	P.Beauv.	Ambroise Marie François Joseph Palisot de Beauvois
+A M Harvill	BOT	Harvill	Alton McCaleb Harvill, Jr	Alton McCaleb Harvill, Jr.
 A M Henssen	BOT	Henssen	Aino Marjatta Henssen
 A M Husson	BOT	Husson	A. M. Husson	A.M. Husson
 A M Raynal	BOT	A.Raynal	Aline Marie Raynal
@@ -419,7 +419,7 @@ A Ricken	BOT	Ricken	Adalbert Ricken
 A Riocreux	BOT	Riocreux	Alfred Riocreux
 A Risso	BOT	Risso	Antoine Risso
 A Robinson	BOT	A.S.Rob.	Alastair Robinson
-A S Alva	BOT	Sagást.	Abundio Sagástegui Alva
+A Sagástegui Alva	BOT	Sagást.	Abundio Sagástegui Alva
 A S Hitchcock	BOT	Hitchc.	Albert Spear Hitchcock
 A S Lazarenko	BOT	Laz.	Andrei Sazontovich Lazarenko
 A S Pearse	BOT	Pearse	Arthur Sperry Pearse
@@ -5451,7 +5451,7 @@ B K Simon	BOT	B.K.Simon	Bryan Kenneth Simon
 B L Andersson	BOT	L.Andersson	Bengt Lennart Andersson
 B L Clark	BOT	B.L.Clark	Bonnie Lynne Clark
 B L Robinson	BOT	B.L.Rob.	Benjamin Lincoln Robinson
-B L T Sr.	BOT	B.L.Turner	Billie Lee Turner Sr.
+B L Turner	BOT	B.L.Turner	Billie Lee Turner Sr.
 B Li	BOT	Bo Li
 B M Bartholomew	BOT	B.M.Barthol.	Bruce Monroe Bartholomew
 B M Davis	BOT	B.M.Davis	Bradley Moore Davis
@@ -7090,7 +7090,7 @@ C B Plowright	BOT	Plowr.	Charles Bagge Plowright
 C B Presl	BOT	C.Presl	Carl Borivoj Presl
 C B Robinson	BOT	C.B.Rob.	Charles Budd Robinson
 C B von Trinius	BOT	Trin.	Carl Bernhard von Trinius
-C B von Wattenwyl	BOT	Brunner	Carl Brunner von Wattenwyl	Brunner von Wattenwyl
+C Brunner von Wattenwyl	BOT	Brunner	Carl Brunner von Wattenwyl	Brunner von Wattenwyl
 C Babington	BOT	C.Bab.	Churchill Babington
 C Backeberg	BOT	Backeb.	Curt Backeberg
 C Baehni	BOT	Baehni	Charles Baehni
@@ -7126,7 +7126,7 @@ C D Badham	BOT	Badham	Charles David Badham
 C D Beadle	BOT	Beadle	Chauncey Delos Beadle
 C D Darlington	BOT	C.D.Darl.	Cyril Dean Darlington
 C D F Meissner	BOT	Meisn.	Carl Daniel Friedrich Meissner
-C D Jong	BOT	C.De Jong	Cornelis De Jong
+C De Jong	BOT	C.De Jong	Cornelis De Jong
 C D Játiva	BOT	Játiva	Carlos D. Játiva
 C D Marsh	BOT	Marsh	Charles Dwight Marsh
 C D Walcott	BOT	C.Walcott	Charles Doolittle Walcott	Walcott
@@ -7154,7 +7154,7 @@ C E Lane-Poole	BOT	Lane-Poole	Charles Edward Lane-Poole
 C E Langethal	BOT	Langeth.	Christian Eduard Langethal
 C E Moss	BOT	Moss	Charles Edward Moss
 C E O Kuntze	BOT	Kuntze	Carl Ernst Otto Kuntze
-C E Otterstrøm	BOT	C.E.O.Jensen	Christian Erasmus Otterstrøm
+C E O Jensen	BOT	C.E.O.Jensen	Christian Erasmus Otterstrøm
 C E Parkinson	BOT	C.E.Parkinson	Charles Edward Parkinson
 C E Ridsdale	BOT	Ridsdale	Colin Ernest Ridsdale
 C E von Weigel	BOT	Weigel	Christian Ehrenfried von Weigel
@@ -7199,7 +7199,7 @@ C G Alm	BOT	Alm	Carl Gustav Alm
 C G Brügger	BOT	Brügger	Christian Georg Brügger
 C G C Reinwardt	BOT	Reinw.	Caspar Georg Carl Reinwardt
 C G Carus	BOT	Carus	Carl Gustav Carus
-C G D N von Esenbeck	BOT	Nees	Christian Gottfried Daniel Nees von Esenbeck
+C G D Nees von Esenbeck	BOT	Nees	Christian Gottfried Daniel Nees von Esenbeck
 C G Ehrenberg	BOT	Ehrenb.	Christian Gottfried Ehrenberg	Ehrenberg
 C G F von Hochstetter	BOT	C.G.F.Hochst.	Christian Gottlob Ferdinand von Hochstetter
 C G G J van Steenis	BOT	Steenis	Cornelis Gijsbert Gerrit Jan van Steenis
@@ -7270,7 +7270,7 @@ C L Boynton	BOT	C.L.Boynton	Charles Lawrence Boynton
 C L Fenton	BOT	C.L.Fenton	Carroll Lane Fenton
 C L Gilly	BOT	Gilly	Charles Louis Gilly
 C L Hitchcock	BOT	C.L.Hitchc.	Charles Leo Hitchcock
-C L L de Brutelle	BOT	L'Hér.	Charles Louis L'Héritier de Brutelle
+C L L'Héritier de Brutelle	BOT	L'Hér.	Charles Louis L'Héritier de Brutelle
 C L Lesquereux	BOT	Lesq.	Charles Léo Lesquereux
 C L Lundell	BOT	Lundell	Cyrus Longworth Lundell
 C L Pollard	BOT	Pollard	Charles Louis Pollard
@@ -7295,11 +7295,11 @@ C M Gottsche	BOT	Gottsche	Carl Moritz Gottsche
 C M J Mathieu	BOT	Mathieu	Charles Marie Joseph Mathieu
 C M Matteri	BOT	Matteri	Celina Maria Matteri
 C M Ochoa	BOT	Ochoa	Carlos M. Ochoa
-C M P Valdés	BOT	Panfet	Cristina Mercedes Panfet Valdés
+C M Panfet Valdés	BOT	Panfet	Cristina Mercedes Panfet Valdés
 C M Palmer	BOT	C.Palmer	Charles Mervin Palmer
 C M Pannell	BOT	Pannell	Caroline M. Pannell
 C M Pitard	BOT	Pit.	Charles-Joseph Marie Pitard
-C M Pizarro	BOT	Muñoz	Carlos Muñoz Pizarro
+C Muñoz Pizarro	BOT	Muñoz	Carlos Muñoz Pizarro
 C M Rivière	BOT	C.Rivière	Charles Marie Rivière
 C MacMillan	BOT	MacMill.	Conway MacMillan
 C Martin	BOT	C.Martin	Charles-Édouard Martin
@@ -7344,13 +7344,13 @@ C R Zeiller	BOT	Zeiller	Charles René Zeiller
 C Ramesh	BOT	C.Ramesh	Ch. Ramesh
 C Raynaud	BOT	Raynaud	Christian Raynaud
 C Ríos	BOT	C.Ríos	Carlos Ríos
-C S de Manoncourt	BOT	Sonnini	Charles-Nicolas-Sigisbert Sonnini de Manoncourt
-C S F Lajos	BOT	Haynald	Cardinal Stephan Franz Lajos
+C Sonnini de Manoncourt	BOT	Sonnini	Charles-Nicolas-Sigisbert Sonnini de Manoncourt
+S F L Haynald	BOT	Haynald	Cardinal Stephan Franz Lajos
 C S Keener	BOT	Keener	Carl Samuel Keener
 C S Kindt	BOT	Kindt	Christian Sommer Kindt
 C S Kunth	BOT	Kunth	Carl Sigismund Kunth
 C S Li	BOT	C.S.Li	Cheng Sen Li
-C S P Rao	BOT	Prak.Rao	Chellapilla Surya Prakasa Rao
+C S Prakasa Rao	BOT	Prak.Rao	Chellapilla Surya Prakasa Rao
 C S Rafinesque	BOT	Raf.	Constantine Samuel Rafinesque	Rafinesque
 C S Sargent	BOT	Sarg.	Charles Sprague Sargent
 C S Tawan	BOT	Tawan	Cheksum Supiah Tawan
@@ -7384,7 +7384,7 @@ C von Ettingshausen	BOT	Ettingsh.	Constantin von Ettingshausen
 C von Fischer-Ooster	BOT	Fisch.-Oost.	Carl von Fischer-Ooster
 C von Steven	BOT	Steven	Christian von Steven
 C W Andrews	BOT	C.W.Andrews	Charles William Andrews
-C W D Vis	BOT	De Vis	Charles Walter De Vis
+C W De Vis	BOT	De Vis	Charles Walter De Vis
 C W Eddy	BOT	Eddy	Caspar Wistar Eddy
 C W L E Suffrian	BOT	Suffrian	Christian Wilhelm Ludwig Eduard Suffrian
 C W Powell	BOT	C.W.Powell	Charles Wesley Powell
@@ -10429,7 +10429,7 @@ D A Vandelli	BOT	Vand.	Domenico Agostino Vandelli
 D A Webb	BOT	D.A.Webb	David Allardice Webb	D. A. Webb
 D Arora	BOT	D.Arora	David Arora
 D B Lellinger	BOT	Lellinger	David B. Lellinger
-D B y Espinosa	BOT	Bello	Domingo Bello y Espinosa
+D Bello y Espinosa	BOT	Bello	Domingo Bello y Espinosa
 D Bishop	BOT	Bishop	David Bishop
 D Brandis	BOT	Brandis	Dietrich Brandis
 D Brândză	BOT	D.Brândză.	Dimitrie Brândză
@@ -10446,7 +10446,7 @@ D Cranz	BOT	Cranz	David Cranz
 D D Baldwin	BOT	D.D.Baldwin	David Dwight Baldwin
 D D Cunningham	BOT	D.D.Cunn.	David Douglas Cunningham
 D D Dod	BOT	Dod	Donald Dungan Dod
-D D Franceschi	BOT	De Franceschi	D. De Franceschi
+D De Franceschi	BOT	De Franceschi	D. De Franceschi
 D D Keck	BOT	D.D.Keck	David D. Keck
 D D Perkins	BOT	D.D.Perkins	David Dexter Perkins
 D D Tao	BOT	D.D.Tao	De Ding Tao
@@ -10536,7 +10536,7 @@ D R McCord	BOT	McCord	David Ross McCord
 D Rapin	BOT	Rapin	Daniel Rapin
 D Robertson	BOT	Robertson	David Robertson
 D Rutherford	BOT	Rutherf.	Daniel Rutherford
-D S Benjamin	BOT	Sucre	Dimitri Sucre Benjamin
+D Sucre Benjamin	BOT	Sucre	Dimitri Sucre Benjamin
 D S Correll	BOT	Correll	Donovan Stewart Correll
 D S Edwards	BOT	D.S.Edwards	David Sydney Edwards
 D S Pokle	BOT	Pokle	Dileep Sadashivrao Pokle
@@ -12701,7 +12701,7 @@ E Blackwell	BOT	Blackw.	Elizabeth Blackwell
 E Blatter	BOT	Blatt.	Ethelbert Blatter
 E Brainerd	BOT	Brainerd	Ezra Brainerd
 E Bretschneider	BOT	Bretschn.	Emil Bretschneider
-E C de la Hoz	BOT	Carbonó	Eduino Carbonó de la Hoz
+E Carbonó de la Hoz	BOT	Carbonó	Eduino Carbonó de la Hoz
 E C Hall	BOT	E.C.Hall	Edwin Cuthbert Hall
 E C Hansen	BOT	E.C.Hansen	Emil Christian Hansen
 E C Howe	BOT	Howe	Eliot Calvin Howe
@@ -12717,7 +12717,7 @@ E Christophersen	BOT	Christoph.	Erling Christophersen
 E Clement	BOT	E.J.Clement	E.J. Clement
 E Cordus	BOT	E.Cordus	Euricius Cordus
 E D Clarke	BOT	E.D.Clarke	Edward Daniel Clarke
-E D del Castillo	BOT	Drake	Emmanuel Drake del Castillo
+E Drake del Castillo	BOT	Drake	Emmanuel Drake del Castillo
 E D Marquand	BOT	Marquand	Ernest David Marquand
 E D Merrill	BOT	Merr.	Elmer Drew Merrill
 E D Schulz	BOT	E.D.Schulz	Ellen Dorothy Schulz
@@ -12734,13 +12734,13 @@ E E Honey	BOT	Honey	Edwin Earle Honey
 E E Lamont	BOT	E.E.Lamont	Eric E. Lamont
 E E Lord	BOT	Lord	Ernest E. Lord
 E E Nelson	BOT	E.E.Nelson	Elias Emanuel Nelson
-E E Pereira	BOT	Esteves	Eddie Esteves Pereira
+E Esteves Pereira	BOT	Esteves	Eddie Esteves Pereira
 E E Sherff	BOT	Sherff	Earl Edward Sherff
 E E Simon	BOT	E.Simon	Eugène Ernest Simon
 E E Sterns	BOT	Sterns	Emerson Ellick Sterns
 E E Wilson	BOT	E.E.Wilson	Edward Elmer Wilson
-E F A Walter	BOT	Mig.	Emil Friedrich August Walter
-E F Andins	BOT	Foldats	Ernesto Foldats Andins
+E F A W Migula	BOT	Mig.	Emil Friedrich August Walter
+E Foldats Andins	BOT	Foldats	Ernesto Foldats Andins
 E F Berger	BOT	Berger	Ernst Friedrich Berger
 E F Bromhead	BOT	Bromhead	Edward Ffrench Bromhead
 E F de Vogel	BOT	de Vogel	Eduard Ferdinand de Vogel
@@ -12755,7 +12755,7 @@ E Fenzl	BOT	Fenzl	Eduard Fenzl
 E Fischer	BOT	E.Fisch.	Eduard Fischer
 E Fischer	BOT	Eb.Fisch.	Eberhard Fischer
 E Forbes	BOT	E.Forbes	Edward Forbes	Forbes
-E G A later Hooper	BOT	E.G.Andrews	Elisabeth G. Andrews, later Hooper	E.G. Andrews
+E G Andrews	BOT	E.G.Andrews	Elisabeth G. Andrews, later Hooper	E.G. Andrews
 E G Baker	BOT	Baker f.	Edmund Gilbert Baker
 E G Baldinger	BOT	Baldinger	Ernst Gottfried Baldinger
 E G Britton	BOT	E.Britton	Elizabeth Gertrude Britton
@@ -12763,7 +12763,7 @@ E G Camus	BOT	E.G.Camus	Edmond Gustave Camus
 E G H Oliver	BOT	E.G.H.Oliv.	Edward George Hudson Oliver
 E G Henderson	BOT	Hend.	Edward George Henderson
 E G Laxmann	BOT	Laxm.	Erich G. Laxmann
-E G López	BOT	Guinea	Emilio Guinea López
+E Guinea López	BOT	Guinea	Emilio Guinea López
 E G Pobedimova	BOT	Pobed.	Evgeniia Georgievna Pobedimova
 E G Pritzel	BOT	E.Pritz.	Ernst Georg Pritzel
 E G von Steudel	BOT	Steud.	Ernst Gottlieb von Steudel
@@ -12773,7 +12773,7 @@ E Gertrude	BOT	E.G.Clem.	Edith Gertrude
 E Gilbert	BOT	E.-J.Gilbert	Edouard-Jean Gilbert	Édouard-Jean Gilbert
 E H Clarkson	BOT	Clarkson	Edward Hale Clarkson
 E H Daubs	BOT	Daubs	Edwin Horace Daubs
-E H del Villar	BOT	Villar	Emile Huguet del Villar
+E Huguet del Villar	BOT	Villar	Emile Huguet del Villar
 E H Eames	BOT	Eames	Edwin Hubert Eames
 E H F Meyer	BOT	E.Mey.	Ernst Heinrich Friedrich Meyer
 E H G Ule	BOT	Ule	Ernst Heinrich Georg Ule
@@ -12815,7 +12815,7 @@ E J Schwartz	BOT	Schwartz	Ernest Justus Schwartz
 E Jakob	BOT	L.Post	Ernst Jakob
 E Janczewski	BOT	Jancz.	Edward Janczewski
 E K Balls	BOT	Balls	Edward Kent Balls
-E K Kartawinata	BOT	Kuswata	E. Kuswata Kartawinata
+E Kuswata Kartawinata	BOT	Kuswata	E. Kuswata Kartawinata
 E K L Schneider	BOT	L.Schneid.	Eduard Karl Ludwig Schneider
 E Kaempfer	BOT	Kaempf.	Engelbert Kaempfer
 E Kann	BOT	Kann	Edith Kann
@@ -12867,10 +12867,10 @@ E P Bicknell	BOT	E.P.Bicknell	Eugene Pintard Bicknell
 E P James	BOT	E.James	Edwin P. James
 E P Killip	BOT	Killip	Ellsworth Paine Killip
 E P N Fournier	BOT	E.Fourn.	Eugène Pierre Nicolas Fournier	Fourn.
-E P P de la Bâthie	BOT	E.P.Perrier	Eugène Pierre Perrier de la Bâthie	Eugène Pierre Perrier de La Bâthie
+E P Perrier de la Bâthie	BOT	E.P.Perrier	Eugène Pierre Perrier de la Bâthie	Eugène Pierre Perrier de La Bâthie
 E P Phillips	BOT	E.Phillips	Edwin Percy Phillips
 E P Plumstead	BOT	Plumst.	Edna Pauline Plumstead
-E P Ruiz	BOT	Paunero	Elena Paunero Ruiz
+E Paunero Ruiz	BOT	Paunero	Elena Paunero Ruiz
 E P Sheldon	BOT	E.Sheld.	Edmund Perry Sheldon
 E P Stebbing	BOT	Stebbing	Edward Percy Stebbing
 E Palla	BOT	Palla	Eduard Palla
@@ -12881,7 +12881,7 @@ E Peter-Stibal	BOT	E.Peter	Elfriede Peter-Stibal
 E Pospichal	BOT	Posp.	Eduard Pospichal
 E Prager	BOT	Prag.	Ernst Prager
 E Pynaert	BOT	Pynaert	Edouard-Christophe Pynaert
-E Q y Argüelles	BOT	Quisumb.	Eduardo Quisumbíng y Argüelles
+E Quisumbíng y Argüelles	BOT	Quisumb.	Eduardo Quisumbíng y Argüelles
 E R Lankester	BOT	Lank.	E. Ray Lankester
 E R Noble	BOT	E.R.Noble	Elmer Ray Noble
 E R S Sventenius	BOT	Svent.	Eric R. Svensson Sventenius
@@ -15436,14 +15436,14 @@ F A de Arrábida	BOT	Arráb.	Francisco Antonio de Arrábida
 F A F C Went	BOT	Went	Friedrich August Ferdinand Christian Went
 F A Flückiger	BOT	Flueck.	Friedrich August Flückiger
 F A G Bitter	BOT	Bitter	Friedrich August Georg Bitter
-F A García	BOT	Amich	Francisco Amich García
-F A H von Hazslin	BOT	Hazsl.	Friedrich August Hazslinszky von Hazslin
+F Amich García	BOT	Amich	Francisco Amich García
+F A Hazslinszky von Hazslin	BOT	Hazsl.	Friedrich August Hazslinszky von Hazslin
 F A Haage	BOT	Haage	Friedrich Adolph Haage
 F A J von Wangenheim	BOT	Wangenh.	Friedrich Adam Julius von Wangenheim
 F A Körnicke	BOT	Körn.	Friedrich August Körnicke
 F A Lees	BOT	F.Lees	Frederick Arnold Lees
 F A M Kuhn	BOT	Kuhn	Friedrich Adalbert Maximilian Kuhn
-F A M von Bieberstein	BOT	M.Bieb.	Friedrich August Marschall von Bieberstein
+F A Marschall von Bieberstein	BOT	M.Bieb.	Friedrich August Marschall von Bieberstein
 F A McClure	BOT	McClure	Floyd Alonzo McClure
 F A Menge	BOT	Menge	Franz Anton Menge
 F A Michaux	BOT	F.Michx.	François Andre Michaux	François André Michaux
@@ -15454,7 +15454,7 @@ F A Sauvalle	BOT	Sauvalle	Francisco Adolfo Sauvalle
 F A Stafleu	BOT	Stafleu	Frans Antonie Stafleu
 F A von Zenker	BOT	F.Zenker	Friedrich Albert von Zenker
 F A W Miquel	BOT	Miq.	Friedrich Anton Wilhelm Miquel
-F A Z von Plobsheim	BOT	Z.Plobsh.	Friedrich August Zorn von Plobsheim
+F A Zorn von Plobsheim	BOT	Z.Plobsh.	Friedrich August Zorn von Plobsheim
 F A Zea	BOT	Zea	Francisco Antonio Zea
 F Albers	BOT	F.Albers	Focke Albers
 F Allamand	BOT	Allam.	Frederick Allamand	F.Allam.
@@ -15486,7 +15486,7 @@ F C F B Schmidt	BOT	F.Schmidt	Friedrich Carl Fedor Bogdanovich Schmidt
 F C G Arnold	BOT	Arnold	Ferdinand Christian Gustav Arnold
 F C Hoehne	BOT	Hoehne	Frederico Carlos Hoehne
 F C How	BOT	F.C.How	Foon Chew How
-F C J G de la Sarraz	BOT	Ging.	Frédéric Charles Jean Gingins de la Sarraz
+F C J Gingins de la Sarraz	BOT	Ging.	Frédéric Charles Jean Gingins de la Sarraz
 F C Meier	BOT	Meier	Fred Campbell Meier
 F C Mertens	BOT	Mert.	Franz Carl Mertens
 F Cavara	BOT	Cavara	Fridiano Cavara
@@ -15605,7 +15605,7 @@ F Ludwig	BOT	F.Ludw.	Friedrich Ludwig
 F M Bailey	BOT	F.M.Bailey	Frederick Manson Bailey
 F M Blanco	BOT	Blanco	Francisco Manuel Blanco
 F M C de Mello de Ficalho	BOT	Ficalho	Franciso Manoel Carlos de Mello de Ficalho
-F M Flores	BOT	Mart.Flores	Fernando Martínez Flores
+F Martínez Flores	BOT	Mart.Flores	Fernando Martínez Flores
 F M Hueber	BOT	Hueber	Francis Maurice Hueber
 F M Knuth	BOT	F.M.Knuth	Frederik Marcus Knuth
 F M L Corbière	BOT	Corb.	François Marie Louis Corbière
@@ -15641,7 +15641,7 @@ F R de Tussac	BOT	Tussac	François Richard de Tussac
 F R Fosberg	BOT	Fosberg	Francis Raymond Fosberg
 F R Kjellman	BOT	Kjellm.	Frans Reinhold Kjellman
 F R M Wilson	BOT	F.Wilson	Francis Robert Muter Wilson
-F R von Schreckenstein	BOT	Rot Schreck.	Friedrich Rot von Schreckenstein
+F Rot von Schreckenstein	BOT	Rot Schreck.	Friedrich Rot von Schreckenstein
 F Rawitscher	BOT	Rawitscher	Felix Rawitscher
 F Reader	BOT	Reader	Felix Reader
 F Reiss	BOT	Reiss	Frederick Reiss
@@ -15674,7 +15674,7 @@ F Thonner	BOT	Thonner	Franz Thonner
 F Tom	BOT	F.T.Brooks	Frederick Tom
 F Turner	BOT	F.Turner	Frederick Turner
 F V Coville	BOT	Coville	Frederick Vernon Coville
-F V M de Vaumartoise	BOT	Mérat	François Victor Mérat de Vaumartoise
+F V Mérat de Vaumartoise	BOT	Mérat	François Victor Mérat de Vaumartoise
 F V Raspail	BOT	Raspail	François Vincent Raspail	François-Vincent Raspail
 F Vierhapper	BOT	F.Vierh.	Friedrich Vierhapper
 F Vignolo-Lutati	BOT	Vignolo	Ferdinando Vignolo-Lutati
@@ -17769,7 +17769,7 @@ G A H Dahlstedt	BOT	Dahlst.	Gustav Adolf Hugo Dahlstedt
 G A Honckeny	BOT	Honck.	Gerhard August Honckeny
 G A Klebs	BOT	G.A.Klebs	Georg Albrecht Klebs
 G A L D Schellenberg	BOT	G.Schellenb.	Gustav August Ludwig David Schellenberg
-G A L González	BOT	G.López	Ginés Alejandro López González
+G A López González	BOT	G.López	Ginés Alejandro López González
 G A M Zanardini	BOT	Zanardini	Giovanni Antonio Maria Zanardini
 G A Nadson	BOT	Nadson	Georgii Adamovich Nadson
 G A Noble	BOT	G.A.Noble	Glenn Arthur Noble
@@ -17796,7 +17796,7 @@ G B Popov	BOT	G.B.Popov	George Basil Popov
 G B S Lantzius-Béninga	BOT	Lantz.-Bén.	Georg Boyung Scato Lantzius-Béninga
 G B Sartorelli	BOT	Sart.	Giovanni Battista Sartorelli
 G B Sudworth	BOT	Sudw.	George Bishop Sudworth
-G B von Mannagetta und Lerchenau	BOT	Beck	Günther Beck von Mannagetta und Lerchenau
+G Beck von Mannagetta und Lerchenau	BOT	Beck	Günther Beck von Mannagetta und Lerchenau
 G Barker	BOT	Barker	George Barker
 G Bartolo	BOT	Bartolo	Giuseppina Bartolo
 G Bauhin	BOT	C.Bauhin	Gaspard Bauhin
@@ -17810,7 +17810,7 @@ G C Clementi	BOT	Clementi	Giuseppe C. Clementi
 G C Druce	BOT	Druce	George Claridge Druce
 G C G Argent	BOT	Argent	Graham Charles George Argent
 G C Heim	BOT	Heim	Georg Christoph Heim
-G C III	BOT	G.Clifford	George Clifford III
+G Clifford	BOT	G.Clifford	George Clifford III
 G C M Birdwood	BOT	Birdw.	George Christopher Molesworth Birdwood
 G C Nel	BOT	Nel	Gert Cornelius Nel
 G C Oeder	BOT	Oeder	Georg Christian Oeder
@@ -17828,7 +17828,7 @@ G Cufodontis	BOT	Cufod.	Georg Cufodontis
 G Cuvier	ANY	Georges Cuvier	Cuvier
 G D Ehret	BOT	Ehret	Georg Dionysius Ehret
 G D Haviland	BOT	Havil.	George Darby Haviland	Haviland
-G D Notaris	BOT	De Not.	Giuseppe De Notaris
+G De Notaris	BOT	De Not.	Giuseppe De Notaris
 G D Rowley	BOT	G.D.Rowley	Gordon Douglas Rowley
 G D Swezey	BOT	Swezey	Goodwin Deloss Swezey
 G D Wallace	BOT	G.D.Wallace	Gary D. Wallace
@@ -17874,7 +17874,7 @@ G F Reuter	BOT	Reut.	George François Reuter
 G F Schnittspahn	BOT	Schnittsp.	Georg Friedrich Schnittspahn
 G F Scott-Elliot	BOT	Scott-Elliot	George Francis Scott-Elliot
 G F Sobolewsky	BOT	Sobol.	Gregor Fedorovitch Sobolewsky
-G F von Waldheim	BOT	G.Fisch.Waldh.	Gotthelf Fischer von Waldheim	Fischer von Waldheim	G. Fischer	Fischer de Waldheim
+G Fischer von Waldheim	BOT	G.Fisch.Waldh.	Gotthelf Fischer von Waldheim	Fischer von Waldheim	G. Fischer	Fischer de Waldheim
 G F W Meyer	BOT	G.Mey.	Georg Friedrich Wilhelm Meyer
 G Finlayson	BOT	Finl.	George Finlayson
 G Finschow	BOT	Finschow	Günter Finschow
@@ -17884,7 +17884,7 @@ G Forrest	BOT	Forrest	George Forrest
 G Forster	BOT	G.Forst.	Georg Forster
 G G Balsamo-Crivelli	BOT	Bals.-Criv.	Giuseppe Gabriel Balsamo-Crivelli
 G G Bondar	BOT	Bondar	Gregório Gregorievich Bondar
-G G H de Menéndez	BOT	Hässel	Gabriela Gustava Hässel de Menéndez
+G G Hässel de Menéndez	BOT	Hässel	Gabriela Gustava Hässel de Menéndez
 G G H Hamel	BOT	Hamel	Gontran Georges Henri Hamel
 G G Moris	BOT	Moris	Giuseppe Giacinto Moris
 G G Niles	BOT	G.G.Niles	Grace Greylock Niles
@@ -17943,7 +17943,7 @@ G L Benny	BOT	Benny	Gerald Leonard Benny
 G L Church	BOT	G.L.Church	George Lyle Church
 G L E Krebs	BOT	Krebs	Georg Ludwig Engelhard Krebs
 G L Koeler	BOT	Koeler	Georg Ludwig Koeler
-G L M D de Courset	BOT	Dum.Cours.	Georges Louis Marie Dumont de Courset
+G L M Dumont de Courset	BOT	Dum.Cours.	Georges Louis Marie Dumont de Courset
 G L Moretti	BOT	Moretti	Giuseppe L. Moretti
 G L Nesom	BOT	G.L.Nesom	Guy L. Nesom
 G L Robinson	BOT	G.L.Rob.	George Leslie Robinson
@@ -20859,7 +20859,7 @@ H A Hesse	BOT	Hesse	Hermann Albrecht Hesse
 H A Jacques	BOT	Jacques	Henri Antoine Jacques
 H A Kelly	BOT	Kelly	Howard Atwood Kelly
 H A L Wiggers	BOT	A.Wigg.	Heinrich August Ludwig Wiggers
-H A Liogier	BOT	Alain	Henri Alain Liogier
+H Alain Liogier	BOT	Alain	Henri Alain Liogier
 H A Lorentz	BOT	H.Lorentz	Hendrik Anton Lorentz
 H A McAllister	BOT	McAll.	Hugh A. McAllister
 H A Miller	BOT	H.A.Mill.	Harvey Alfred Miller
@@ -20892,8 +20892,8 @@ H Bolus	BOT	Bolus	Harry Bolus
 H Bourdot	BOT	Bourdot	Hubert Bourdot
 H Brücher	BOT	Brücher	Heinz Brücher
 H C Andrews	BOT	Andrews	Henry Charles Andrews
-H C B Jr.	BOT	Beardslee	Henry Curtis Beardslee, Jr.
-H C B Sr.	BOT	H.C.Beardslee	Henry Curtis Beardslee, Sr.
+H C Beardslee f.	BOT	Beardslee	Henry Curtis Beardslee, Jr.
+H C Beardslee	BOT	H.C.Beardslee	Henry Curtis Beardslee, Sr.
 H C Bastian	BOT	Bastian	Henry Charlton Bastian
 H C Bold	BOT	H.C.Bold	Harold Charles Bold
 H C Cowles	BOT	Cowles	Henry Chandler Cowles
@@ -20956,7 +20956,7 @@ H G Flörke	BOT	Flörke	Heinrich Gustav Flörke
 H G Fourcade	BOT	Fourc.	Henry Georges Fourcade
 H G Galeotti	BOT	Galeotti	Henri Guillaume Galeotti
 H G L Reichenbach	BOT	Rchb.	Heinrich Gottlieb Ludwig Reichenbach
-H G Lűer	BOT	Gunckel	Hugo Gunckel Lűer	Hugo Gunckel Lüer
+H Gunckel Lűer	BOT	Gunckel	Hugo Gunckel Lűer	Hugo Gunckel Lüer
 H G Muehlenbeck	BOT	Muehlenbeck	Heinrich Gustav Muehlenbeck	Heinrich Gustav Mühlenbeck
 H G P Duyfjes	BOT	H.G.P.Duyfjes	Hendrik Gerard Pieter Duyfjes
 H G Reichenbach	BOT	Rchb.f.	Heinrich Gustav Reichenbach
@@ -21012,7 +21012,7 @@ H Jacobsen	BOT	Jacobsen	Hans Jacobsen
 H Jacquinot	BOT	Jacquinot	Honoré Jacquinot
 H Junius	BOT	Junius	Hadrianus Junius
 H Jäger	BOT	H.Jaeger	Hermann Jäger
-H K A Shaw	BOT	Airy Shaw	Herbert Kenneth Airy Shaw
+H K Airy Shaw	BOT	Airy Shaw	Herbert Kenneth Airy Shaw
 H K A Winkler	BOT	H.K.A.Winkl.	Hans Karl Albert Winkler
 H K Beyrich	BOT	Beyr.	Heinrich Karl Beyrich
 H K H Hoffmann	BOT	H.Hoffm.	Heinrich Karl Hermann Hoffmann
@@ -21053,7 +21053,7 @@ H M Curran	BOT	H.M.Curran	Hugh McCullum Curran
 H M Gaussen	BOT	Gaussen	Henri Marcel Gaussen
 H M Hall	BOT	H.M.Hall	Harvey Monroe Hall
 H M Heybroek	BOT	Heybroek	Hans M. Heybroek
-H M Jr.	BOT	H.Mann	Horace Mann Jr.
+H Mann	BOT	H.Mann	Horace Mann Jr.
 H M L Bolus	BOT	L.Bolus	Harriet Margaret Louisa Bolus
 H M Ospina	BOT	Ospina	Hernandez Mariano Ospina
 H M Raup	BOT	Raup	Hugh Miller Raup
@@ -21094,17 +21094,17 @@ H Poselger	BOT	Poselg.	Heinrich Poselger
 H Pottinger	BOT	H.Pottinger	Henry Pottinger
 H Prat	BOT	H.Prat	Henri Prat
 H R E Handel-Mazzetti	BOT	Hand.-Mazz.	Heinrich Raphael Eduard Handel-Mazzetti
-H R López	BOT	Ruiz	Hipólito Ruiz López
+H Ruiz López	BOT	Ruiz	Hipólito Ruiz López
 H R Oppenheimer	BOT	Oppenh.	Heinz Reinhard Oppenheimer
 H Resvoll-Holmsen	BOT	Resv.-Holms.	Hanna Resvoll-Holmsen
 H Rodin	BOT	Rodin	Hippolyte Rodin
 H Roivainen	BOT	Roiv.	Heikki Roivainen
 H Romagnesi	BOT	Romagn.	Henri Romagnesi
 H Rooke	BOT	Rooke	Hayman Rooke
-H S Boza	BOT	Saralegui	Hildelisa Saralegui Boza
+H Saralegui Boza	BOT	Saralegui	Hildelisa Saralegui Boza
 H S Gentry	BOT	Gentry	Howard Scott Gentry
 H S Irwin	BOT	H.S.Irwin	Howard Samuel Irwin
-H S John	BOT	H.St.John	Harold St. John
+H St. John	BOT	H.St.John	Harold St. John
 H S Kiu	BOT	H.S.Kiu	Hua Shing Kiu
 H S Lo	BOT	H.S.Lo	Hsien Shui Lo
 H S Osborn	BOT	H.Osborn	Henry Stafford Osborn
@@ -21144,7 +21144,7 @@ H W Bristow	BOT	Bristow	Henry William Bristow
 H W Burgess	BOT	Burgess	Henry W. Burgess
 H W C Nothdurft	BOT	Nothdurft	Heinrich Wilhelm Christian Nothdurft
 H W Clark	BOT	H.W.Clark	Howard Walton Clark
-H W Eduard	BOT	H.Bruggen	Heinrich Wilhelm Eduard
+H W E van Bruggen	BOT	H.Bruggen	Heinrich Wilhelm Eduard
 H W Harkness	BOT	Harkn.	Harvey Willson Harkness
 H w Kowalskich Ryppowa	BOT	Ryppowa	Halina w Kowalskich Ryppowa
 H W Kurz	BOT	H.W.Kurz	Holger Willibald Kurz
@@ -21155,7 +21155,7 @@ H W R Marloth	BOT	Marloth	Hermann Wilhelm Rudolf Marloth
 H W Sargent	BOT	H.W.Sarg.	Henry Winthrop Sargent
 H W Schott	BOT	Schott	Heinrich Wilhelm Schott
 H W Sibthorp	BOT	H.Sibth.	Humphry Waldo Sibthorp
-H W von Fernsee	BOT	Wawra	Heinrich Wawra von Fernsee
+H Wawra von Fernsee	BOT	Wawra	Heinrich Wawra von Fernsee
 H W Wollenweber	BOT	Wollenw.	Hans Wilhelm Wollenweber
 H Wallwork	BOT	Wallwork	H. Wallwork
 H Wendland	BOT	H.Wendl.	Hermann Wendland
@@ -24814,20 +24814,20 @@ J A Clark	BOT	J.A.Clark	Josephine Adelaide Clark
 J A Crabbe	BOT	Crabbe	James Albert Crabbe
 J A Daveau	BOT	Daveau	Jules Alexandre Daveau
 J A de la Ossa	BOT	Ossa	José Antonio de la Ossa
-J A G B de Crèvecœur	BOT	Boucher	Jules Armand Guillaume Boucher de Crèvecœur	Jules Armand Guillaume Boucher de Crèvecoeur
-J A Galé	BOT	Acuña	Julián Acuña Galé
+J A G Boucher de Crèvecœur	BOT	Boucher	Jules Armand Guillaume Boucher de Crèvecœur	Jules Armand Guillaume Boucher de Crèvecoeur
+J Acuña Galé	BOT	Acuña	Julián Acuña Galé
 J A Güldenstädt	BOT	Gueldenst.	Johann Anton Güldenstädt
 J A Henriques	BOT	Henriq	Julio Augusto Henriques	Júlio Augusto Henriques
 J A I Pancher	BOT	Pancher	Jean Armand Isidore Pancher
 J A Janse	BOT	Janse	Johannes Albertus Janse
 J A Kneucker	BOT	Kneuck.	Johann Andreas Kneucker
 J A Lombardi	BOT	Lombardi	Julio Antonio Lombardi
-J A M Rosito	BOT	Ant.Molina	José Antonio Molina Rosito
+J A Molina Rosito	BOT	Ant.Molina	José Antonio Molina Rosito
 J A Martindale	BOT	J.A.Martind.	Joseph Anthony Martindale
 J A Muir	BOT	J.A.Muir	John A. Muir
 J A Murray	BOT	Murray	Johan Andreas Murray
 J A N Parnell	BOT	J.Parn.	John Adrian Naicker Parnell
-J A P Jiménez	BOT	Pav.	José Antonio Pavón Jiménez
+J A Pavón Jiménez	BOT	Pav.	José Antonio Pavón Jiménez
 J A Paine	BOT	Paine	John Alsop Paine
 J A Palmer	BOT	J.A.Palmer	Julius Auboineau Palmer
 J A Panter	BOT	Panter	Jacqueline Anne Panter
@@ -24871,8 +24871,8 @@ J B G W Fresenius	BOT	Fresen.	Johann Baptist Georg Wolfgang Fresenius
 J B H Martinet	BOT	Martinet	Jean Baptiste Henri Martinet
 J B Hombron	BOT	Hombr.	Jacques Bernard Hombron
 J B Irwin	BOT	Irwin	James Bruce Irwin
-J B K Gawler	BOT	Ker Gawl.	John Bellenden Ker Gawler
-J B L de la Tour	BOT	Lesch.	Jean Baptiste Leschenault de la Tour	Jean-Baptiste Leschenault de La Tour
+J B Ker Gawler	BOT	Ker Gawl.	John Bellenden Ker Gawler
+J B Leschenault de la Tour	BOT	Lesch.	Jean Baptiste Leschenault de la Tour	Jean-Baptiste Leschenault de La Tour
 J B L Pierre	BOT	Pierre	Jean Baptiste Louis Pierre
 J B Latour-Marliac	BOT	Lat.-Marl.	Joseph Bory Latour-Marliac
 J B Martínez-Laborde	BOT	Mart.-Laborde	Juan Batista Martínez-Laborde
@@ -24880,7 +24880,7 @@ J B Nelson	BOT	J.B.Nelson	John B. Nelson
 J B Petersen	BOT	J.B.Petersen	Johannes Boye Petersen
 J B Pollock	BOT	Pollock	James Barkley Pollock
 J B R von Spix	BOT	Spix	Johann Baptist Ritter von Spix
-J B Rodrigues	BOT	Barb.Rodr.	João Barbosa Rodrigues
+J Barbosa Rodrigues	BOT	Barb.Rodr.	João Barbosa Rodrigues
 J B S Norton	BOT	Norton	John Bitting Smith Norton
 J B Saint-Lager	BOT	St.-Lag.	Jean Baptiste Saint-Lager
 J B Schnetzler	BOT	Schnetzl.	Johann Balthasar Schnetzler
@@ -24936,15 +24936,15 @@ J C Fabricius	BOT	J.Fabr.	Johan Christian Fabricius
 J C Fischer	BOT	J.C.Fisch.	Johann Carl Fischer
 J C Frémont	BOT	Frém.	John C. Frémont
 J C G Baumgarten	BOT	Baumg.	Johann Christian Gottlob Baumgarten
-J C G Jr.	BOT	J.C.Gomes	José Corrêa Gomes, Jr.
+J C Gomes	BOT	J.C.Gomes	José Corrêa Gomes, Jr.
 J C Hasskarl	BOT	Hassk.	Justus Carl Hasskarl
 J C Hendel	BOT	Hendel	Johann Christian Hendel
 J C Ives	BOT	Ives	Joseph Christmas Ives
-J C L Duke	BOT	La Duke	John C. La Duke
+J C La Duke	BOT	La Duke	John C. La Duke
 J C Loddiges	BOT	Lodd.	Joachim Conrad Loddiges
 J C Loudon	BOT	Loudon	John Claudius Loudon
 J C M Grenier	BOT	Gren.	Jean Charles Marie Grenier
-J C M Macchiavello	BOT	J.C.Martínez	J. Carlos Martínez Macchiavello	J.Carlos Martínez Macchiavello
+J C Martínez Macchiavello	BOT	J.C.Martínez	J. Carlos Martínez Macchiavello	J.Carlos Martínez Macchiavello
 J C M Radermacher	BOT	Raderm.	Jacob Cornelis Matthieu Radermacher
 J C Manning	BOT	J.C.Manning	John Charles Manning
 J C Mikan	BOT	J.C.Mikan	Johann Christian Mikan
@@ -24982,14 +24982,14 @@ J D Dana	BOT	Dana	James Dwight Dana
 J D Dwyer	BOT	Dwyer	John Duncan Dwyer
 J D Hooker	BOT	Hook.f.	Joseph Dalton Hooker
 J D Leandri	BOT	Leandri	Jacques Désiré Leandri
-J D R Jr.	BOT	J.D.Ray	James Davis Ray, Jr.
+J D Ray	BOT	J.D.Ray	James Davis Ray, Jr.
 J D Rodrígues	BOT	Rodr.	José Demetrio Rodrígues
 J D Salmon	BOT	Salmon	John Drew Salmon
 J D Sauer	BOT	J.D.Sauer	Jonathan Deininger Sauer
 J D Schnekker	BOT	Schnekker	Johannes Daniel Schnekker
 J D Schoepff	BOT	Schoepff	Johann David Schoepff
 J D Schultze	BOT	J.D.Schultze	Johannes Dominik Schultze
-J D Smith	BOT	Donn.Sm.	John Donnell Smith
+J Donnell Smith	BOT	Donn.Sm.	John Donnell Smith
 J D Surian	BOT	Surian	Joseph Donat Surian
 J D Titius	BOT	Titius	Johann Daniel Titius
 J d'Ascensão Guimarães	BOT	J.A.Guim.	José d'Ascensão Guimarães
@@ -25012,7 +25012,7 @@ J Drummond	BOT	J.Drumm.	James Drummond
 J Dulac	BOT	Dulac	Joseph Dulac
 J E Alexander	BOT	J.E.Alexander	James Edward Alexander
 J E Areschoug	BOT	Aresch.	Johan Erhard Areschoug
-J E B the Elder	BOT	Bowman	John Eddowes Bowman the Elder
+J E Bowman	BOT	Bowman	John Eddowes Bowman the Elder
 J E B Warming	BOT	Warm.	Johannes Eugenius Bülow Warming
 J E Bagnall	BOT	Bagn.	James Eustace Bagnall
 J E Braggins	BOT	Braggins	John E. Braggins
@@ -25030,7 +25030,7 @@ J E Kablick	BOT	Kablík.	Josephine Ettel Kablick
 J E Laferrière	BOT	Laferr.	Joseph E. Laferrière
 J E Lange	BOT	J.E.Lange	Jakob Emanuel Lange
 J E Leefe	BOT	Leefe	John Ewbank Leefe
-J E M L Maout	BOT	Le Maout	Jean Emmanuel Maurice Le Maout
+J E M Le Maout	BOT	Le Maout	Jean Emmanuel Maurice Le Maout
 J E Madsen	BOT	Madsen	Jens E. Madsen
 J E Palmér	BOT	J.E.Palmér	Johan Ernst Palmér
 J E Raven	BOT	Raven	John Earle Raven
@@ -25051,7 +25051,7 @@ J F B de Saint-Amans	BOT	St.-Amans	Jean Florimond Boudon de Saint-Amans
 J F Bailey	BOT	J.F.Bailey	John Frederick Bailey
 J F Barcelona	BOT	Barcelona	Julie F. Barcelona
 J F Brenckle	BOT	Brenckle	Jacob Frederic Brenckle
-J F C da Serra	BOT	Corrêa	José Francisco Corrêa da Serra
+J F Corrêa da Serra	BOT	Corrêa	José Francisco Corrêa da Serra
 J F C Grimm	BOT	Grimm	Johann Friedrich Carl Grimm
 J F Caflisch	BOT	Caflisch	Jakob Friedrich Caflisch
 J F Clark	BOT	J.F.Clark	Judson Freeman Clark
@@ -25063,7 +25063,7 @@ J F Ehrhart	BOT	Ehrh.	Jakob Friedrich Ehrhart
 J F Freyn	BOT	Freyn	Josef Franz Freyn
 J F Gmelin	ANY	Gmelin	Johann Friedrich Gmelin	J.F.Gmel.
 J F Horobin	BOT	Horobin	John F. Horobin
-J F Jr.	BOT	Fraser f.	John Fraser Jr.
+J Fraser f.	BOT	Fraser f.	John Fraser Jr.
 J F Klotzsch	BOT	Klotzsch	Johann Friedrich Klotzsch
 J F Laterrade	BOT	Laterr.	Jean François Laterrade
 J F M Cannon	BOT	Cannon	John Francis Michael Cannon
@@ -25117,7 +25117,7 @@ J G Stedman	BOT	Stedman	John Gabriel Stedman
 J G Strutt	BOT	Strutt	Jacob George Strutt
 J G Veitch	BOT	Veitch	John Gould Veitch
 J G von Kurr	BOT	Kurr	Johann Gottlieb von Kurr
-J G W Boer	BOT	Wess.Boer	Jan Gerard Wessels Boer
+J G Wessels Boer	BOT	Wess.Boer	Jan Gerard Wessels Boer
 J G Wallerius	BOT	Wallerius	Johan Gottschalk Wallerius
 J G West	BOT	J.G.West	Judith Gay West
 J G Zinn	BOT	Zinn	Johann Gottfried Zinn
@@ -25139,7 +25139,7 @@ J H Adam	BOT	J.H.Adam	Jumaat Haji Adam
 J H Balfour	BOT	Balf.	John Hutton Balfour
 J H Barnhart	BOT	Barnhart	John Hendley Barnhart
 J H Cherler	BOT	Cherler	Johann Heinrich Cherler
-J H de Lehaie	BOT	J.Houz.	Jean Houzeau de Lehaie
+J Houzeau de Lehaie	BOT	J.Houz.	Jean Houzeau de Lehaie
 J H Dierbach	BOT	Dierb.	Johann Heinrich Dierbach
 J H F Link	BOT	Link	Johann Heinrich Friedrich Link
 J H Holland	BOT	Holland	John Henry Holland
@@ -25193,7 +25193,7 @@ J J M de Lexarza	BOT	Lex.	Juan José Martinez de Lexarza	Juan José Martínez de
 J J M Duque	BOT	Duque	Jaramillo Jesus Maria Duque
 J J Nöggerath	BOT	Noegg.	Johann Jakob Nöggerath
 J J Ochse	BOT	Ochse	Jacob Jonas Ochse
-J J P III	BOT	Pipoly	John J. Pipoly III
+J J Pipoly	BOT	Pipoly	John J. Pipoly III
 J J P Moldenhawer	BOT	Moldenh.	Johann Jacob Paul Moldenhawer
 J J Peyritsch	BOT	Peyr.	Johann Joseph Peyritsch
 J J Reichard	BOT	Reichard	Johann Jacob Reichard
@@ -25208,11 +25208,11 @@ J J Wurdack	BOT	Wurdack	John Julius Wurdack
 J Jonston	BOT	Jonst.	John Jonston
 J Jundzill	BOT	J.Jundz.	Józef Jundzill	Józef Jundziłł
 J K Bartlett	BOT	J.K.Bartlett	John Kenneth Bartlett
-J K Jr.	BOT	J.Kickx f.	Jean Kickx, Jr.
+J Kickx f.	BOT	J.Kickx f.	Jean Kickx, Jr.
 J K Morton	BOT	J.K.Morton	John Kenneth Morton
 J K Scriba	BOT	J.Scriba	Julius Karl Scriba
 J K Small	BOT	Small	John Kunkel Small
-J K Sr.	BOT	J.Kickx	Jean Kickx, Sr.
+J Kickx	BOT	J.Kickx	Jean Kickx, Sr.
 J K Townsend	BOT	J.K.Towns.	John Kirk Townsend	Townsend
 J K Wipff	BOT	Wipff	Joseph K. Wipff
 J Karl	BOT	Müll.Hal.	Johann Karl
@@ -25227,8 +25227,8 @@ J L Clark	BOT	J.L.Clark	John Littner Clark
 J L D Meenks	BOT	Meenks	Jan L. D. Meenks	Jan L.D. Meenks
 J L E Avé-Lallemant	BOT	Avé-Lall.	Julius Léopold Eduard Avé-Lallemant
 J L E R von Hanstein	BOT	Hanst.	Johannes Ludwig Emil Robert von Hanstein
-J L F Alonso	BOT	Fern.Alonso	José Luis Fernández Alonso
-J L FRS	BOT	Lightf.	John Lightfoot FRS
+J L Fernández Alonso	BOT	Fern.Alonso	José Luis Fernández Alonso
+J Lightfoot	BOT	Lightf.	John Lightfoot FRS
 J L G Meinecke	BOT	Meinecke	Johann Ludwig Georg Meinecke
 J L Gentry	BOT	J.L.Gentry	Johnnie Lee Gentry
 J L Holub	BOT	Holub	Josef Ludwig Holub
@@ -25258,7 +25258,7 @@ J Loiseleur-Deslongchamps	BOT	Loisel.	Jean-Louis-Auguste Loiseleur-Deslongchamps
 J Lunell	BOT	Lunell	Joël Lunell
 J Léveillé	BOT	Lév.	Joseph-Henri Léveillé
 J M A do Amaral Franco	BOT	Franco	João Manuel Antonio do Amaral Franco
-J M Argoviensis	BOT	Müll.Arg.	Johannes Müller Argoviensis
+J Müller Argoviensis	BOT	Müll.Arg.	Johannes Müller Argoviensis
 J M Bates	BOT	Bates	John Mallory Bates
 J M Bechstein	BOT	Bechst.	Johann Matthäus Bechstein
 J M Beitel	BOT	Beitel	Joseph M. Beitel
@@ -25275,10 +25275,10 @@ J M da Conceição Vellozo	BOT	Vell.	José Mariano da Conceição Vellozo
 J M Dalziel	BOT	Dalziel	John McEwan Dalziel
 J M Darby	BOT	Darby	John M. Darby
 J M Greenman	BOT	Greenm.	Jesse More Greenman
-J M H A P de la Bâthie	BOT	H.Perrier	Joseph Marie Henry Alfred Perrier de la Bâthie
+J M H A Perrier de la Bâthie	BOT	H.Perrier	Joseph Marie Henry Alfred Perrier de la Bâthie
 J M J de Wet	BOT	de Wet	Johannes Martenis Jacob de Wet
 J M Lydgate	BOT	Lydgate	John Mortimer Lydgate
-J M M Parras	BOT	Mart.Parras	José María Martinez Parras
+J M Martinez Parras	BOT	Mart.Parras	José María Martinez Parras
 J M MacDougal	BOT	J.M.MacDougal	John Mochrie MacDougal
 J M Macfarlane	BOT	Macfarl.	John Muirhead Macfarlane
 J M Mociño	BOT	Moc.	José Mariano Mociño
@@ -25331,7 +25331,7 @@ J P A S de Grateloup	BOT	Gratel.	Jean Pierre A. Sylvestre de Grateloup
 J P Anderson	BOT	J.P.Anderson	Jacob Peter Anderson
 J P B Delessert	BOT	Deless.	Jules Paul Benjamin Delessert
 J P B von Röhr	BOT	Rohr	Julius Philip Benjamin von Röhr
-J P D Roi	BOT	Du Roi	Johann Philipp Du Roi
+J P Du Roi	BOT	Du Roi	Johann Philipp Du Roi
 J P D W Payens	BOT	Payens	Joannes Petrus Dominicus Wilhelmus Payens
 J P de Clairville	BOT	Clairv.	Joseph Philippe de Clairville
 J P de Tournefort	BOT	Tourn.	Joseph Pitton de Tournefort
@@ -25386,7 +25386,7 @@ J Roux	BOT	J.Roux	Jean Roux	Roux
 J Roux	BOT	Jacques Roux
 J S Beard	BOT	Beard	John Stanley Beard
 J S C D d'Urville	BOT	d'Urv.	Jules Sébastian César Dumont d'Urville
-J S de Carondelet	BOT	Squivet	Joseph Squivet de Carondelet
+J Squivet de Carondelet	BOT	Squivet	Joseph Squivet de Carondelet
 J S Gamble	BOT	Gamble	James Sykes Gamble
 J S Henslow	BOT	Hensl.	John Stevens Henslow
 J S Jalal	BOT	Jalal	Jeewan Singh Jalal
@@ -25448,9 +25448,9 @@ J Thurmann	BOT	Thurm.	Jules Thurmann
 J Torrey	BOT	Torr.	John Torrey
 J Tradescant filius	BOT	Trad.	John Tradescant the younger	John Tradescant the Younger
 J V de Martrin-Donos	BOT	Martrin-Donos	Julien Victor de Martrin-Donos
-J V de Miranda	BOT	Velloso	Joaquim Velloso de Miranda
+J Velloso de Miranda	BOT	Velloso	Joaquim Velloso de Miranda
 J V F Lamouroux	BOT	J.V.Lamour.	Jean Vincent Félix Lamouroux	Lamouroux
-J V Scheepen	BOT	Van Scheepen	Johan Van Scheepen	Johan van Scheepen
+J Van Scheepen	BOT	Van Scheepen	Johan Van Scheepen	Johan van Scheepen
 J V Schneider	BOT	J.V.Schneid.	Julio Valentin Schneider
 J V Thompson	BOT	J.V.Thomps.	John Vaughan Thompson
 J V Viviand-Morel	BOT	Viv.-Morel	Joseph Victor Viviand-Morel
@@ -25479,13 +25479,13 @@ J W H Trail	BOT	Trail	James William Helenus Trail
 J W Hardin	BOT	Hardin	James Walker Hardin
 J W Heslop-Harrison	BOT	Hesl.-Harr.	John William Heslop-Harrison	Heslop-Harrison
 J W Hornemann	BOT	Hornem.	Jens Wilken Hornemann
-J W Jr.	BOT	J.Woods	Joseph Woods Jr.
+J Woods	BOT	J.Woods	Joseph Woods Jr.
 J W Krause	BOT	Krause	Johann Wilhelm Krause
 J W M Radius	BOT	Radius	Justus Wilhelm Martin Radius
 J W Masters	BOT	J.W.Mast.	John William Masters
 J W Meigen	BOT	Meigen	Johann Wilhelm Meigen
 J W Powell	BOT	J.W.Powell	John Wesley Powell
-J W R von Rawicz	BOT	Warsz.	Józef Warszewicz Ritter von Rawicz
+J Warszewicz	BOT	Warsz.	Józef Warszewicz Ritter von Rawicz
 J W Robbins	BOT	J.W.Robbins	James Watson Robbins
 J W Sturm	BOT	Sturm	Jacob W. Sturm
 J W Thieret	BOT	Thieret	John William Thieret
@@ -31365,7 +31365,7 @@ K Perch-Nielsen	BOT	Perch-Nielsen	Katharina Perch-Nielsen
 K Prasad	BOT	K.Prasad	Kothareddy Prasad
 K R Mattox	BOT	Mattox	Karl R. Mattox
 K R Robertson	BOT	K.R.Robertson	Kenneth R. Robertson
-K R S von Bere	BOT	Soó	Károly Rezső Soó von Bere
+K R Soó von Bere	BOT	Soó	Károly Rezső Soó von Bere
 K R von Goebel	BOT	K.I.Goebel	Karl Ritter von Goebel
 K Rahn	BOT	Rahn	Knud Rahn
 K Rataj	BOT	Rataj	Karel Rataj
@@ -33353,7 +33353,7 @@ L A T Radlkofer	BOT	Radlk.	Ludwig Adolph Timotheus Radlkofer
 L Allorge	BOT	L.Allorge	Lucile Allorge
 L B Holm-Nielsen	BOT	Holm-Niels.	Lauritz Broder Holm-Nielsen
 L B Smith	BOT	L.B.Sm.	Lyman Bradford Smith
-L B V Houtte	BOT	Van Houtte	Louis Benoit Van Houtte
+L B Van Houtte	BOT	Van Houtte	Louis Benoit Van Houtte
 L Beissner	BOT	Beissn.	Ludwig Beissner
 L Benjamin	BOT	Benj.	Ludwig Benjamin
 L Bernardi	BOT	Bernardi	Luciano Bernardi
@@ -33373,7 +33373,7 @@ L C S L Hussenot	BOT	Hussenot	Louis Cincinnatus Sévérin Léon Hussenot
 L C Snyder	BOT	Snyder	Leon Carleton Snyder
 L C Treviranus	BOT	Trevir.	Ludolf Christian Treviranus
 L C Wheeler	BOT	L.C.Wheeler	Louis Cutter Wheeler
-L C y Fernández de Córdoba	BOT	Ceballos	Luis Ceballos y Fernández de Córdoba
+L Ceballos y Fernández de Córdoba	BOT	Ceballos	Luis Ceballos y Fernández de Córdoba
 L Chenault	BOT	Chenault	Léon Chenault
 L Clark	BOT	L.Clark	Lois Clark
 L Constance	BOT	Constance	Lincoln Constance
@@ -33382,7 +33382,7 @@ L D Gottlieb	BOT	Gottlieb	Leslie David Gottlieb
 L D Gómez	BOT	L.D.Gómez	Luis Diego Gómez
 L D J Courchet	BOT	Courchet	Lucien Désiré Joseph Courchet
 L D Planchon	BOT	L.Planch.	Louis David Planchon
-L D Smet	BOT	De Smet	Louis De Smet
+L De Smet	BOT	De Smet	Louis De Smet
 L D von Schweinitz	BOT	Schwein.	Lewis David von Schweinitz
 L Danesi	BOT	Danesi	L. Danesi
 L Diers	BOT	Diers	Lothar Diers
@@ -33409,7 +33409,7 @@ L G Clark	BOT	L.G.Clark	Lynn G. Clark
 L G E Rowntree	BOT	Rowntree	Lester Gertrude Ellen Rowntree
 L G Genevier	BOT	Genev.	Léon Gaston Genevier
 L G Gillekens	BOT	Gillek.	Léopold Guillaume Gillekens
-L G L Monnier	BOT	Le Monn.	Louis Guillaume Le Monnier
+L G Le Monnier	BOT	Le Monn.	Louis Guillaume Le Monnier
 L G M Baas-Becking	BOT	Baas-Beck.	Lourens Gerhard Marinus Baas-Becking
 L G Saw	BOT	Saw	Leng Guan Saw
 L G Yates	BOT	Yates	Lorenzo Gordin Yates
@@ -33455,7 +33455,7 @@ L M Cranwell	BOT	Cranwell	Lucy May Cranwell
 L M Jalink	BOT	Jalink	Leonardo Martinus Jalink
 L M Perry	BOT	L.M.Perry	Lily May Perry
 L M Underwood	BOT	Underw.	Lucien Marcus Underwood
-L M V de Seoane	BOT	Villar-Seoane	Liliana Mónica Villar de Seoane
+L M Villar de Seoane	BOT	Villar-Seoane	Liliana Mónica Villar de Seoane
 L M Vidal	BOT	L.M.Vidal	Luis Mariano Vidal
 L Madani	BOT	Madani	Leopold Madani
 L Margulis	BOT	Margulis	Lynn Margulis
@@ -33474,7 +33474,7 @@ L Pryor	BOT	L.D.Pryor	Lindsay Pryor
 L Quehl	BOT	Quehl	Leopold Quehl
 L Quélet	BOT	Quél.	Lucien Quélet
 L R Blinks	BOT	L.R.Blinks	Lawrence Rogers Blinks
-L R de Carbonnières	BOT	Ramond	Louis Ramond de Carbonnières
+L Ramond de Carbonnières	BOT	Ramond	Louis Ramond de Carbonnières
 L R Jones	BOT	L.R.Jones	Lewis Ralph Jones
 L R Landrum	BOT	Landrum	Leslie R. Landrum
 L R Parodi	BOT	Parodi	Lorenzo Raimundo Parodi
@@ -35862,7 +35862,7 @@ M A Carleton	BOT	Carleton	Mark Alfred Carleton
 M A Chase	BOT	Chase	Mary Agnes Chase
 M A Clements	BOT	M.A.Clem.	Mark Alwin Clements
 M A Curtis	BOT	M.A.Curtis	Moses Ashley Curtis
-M A da Câmara	BOT	Arruda	Manuel Arruda da Câmara
+M Arruda da Câmara	BOT	Arruda	Manuel Arruda da Câmara
 M A Diniz	BOT	M.A.Diniz	Maria Adélia Diniz
 M A Dix	BOT	M.A.Dix	Margaret A. Dix
 M A F Breistroffer	BOT	Breistr.	Maurice A. F. Breistroffer
@@ -35879,7 +35879,7 @@ M A Schebalina	BOT	Scheb.	M. A. Schebalina	M.A. Schebalina
 M A Seubert	BOT	Seub.	Moritz August Seubert
 M A Tartenova	BOT	Tartenova	M. A. Tartenova	M.A. Tartenova
 M A Timeroy	BOT	Timeroy	Marc Antoine Timeroy
-M A W Khan	BOT	Wad.Khan	M. A. Wadood Khan
+M A Wadood Khan	BOT	Wad.Khan	M. A. Wadood Khan
 M A Wall	BOT	M.A.Wall	M. A. Wall	M.A. Wall
 M Adanson	BOT	Adans.	Michel Adanson
 M Allemão	BOT	M.Allemão	Manoel Allemão
@@ -35901,8 +35901,8 @@ M C Boulter	BOT	Boulter	Michael Charles Boulter
 M C C Stopes	BOT	Stopes	Marie Charlotte Carmichael Stopes
 M C Chang	BOT	M.C.Chang	Mei Chen Chang
 M C Cooke	BOT	Cooke	Mordecai Cubitt Cooke
-M C D de Maisonneuve	BOT	Durieu	Michel Charles Durieu de Maisonneuve
-M C Deloya	BOT	M.Caball.	Miguel Caballero Deloya
+M C Durieu de Maisonneuve	BOT	Durieu	Michel Charles Durieu de Maisonneuve
+M Caballero Deloya	BOT	M.Caball.	Miguel Caballero Deloya
 M C Ferguson	BOT	M.C.Ferguson	Margaret Clay Ferguson
 M C G Gautier	BOT	Gaut.	Marie Clément Gaston Gautier
 M C Johnston	BOT	M.C.Johnst.	Marshall Conring Johnston
@@ -35910,7 +35910,7 @@ M C Knowles	BOT	M.Knowles	Matilda Cullen Knowles
 M C Leavenworth	BOT	Leavenw.	Melines Conklin Leavenworth
 M C Martínez	BOT	M.C.Martínez	María Cristina Martínez
 M C P Langeron	BOT	Langeron	Maurice Charles Pierre Langeron
-M C y Nuñez de Caceres	BOT	Castañeda	Marcelino Castañeda y Nuñez de Caceres
+M Castañeda y Nuñez de Caceres	BOT	Castañeda	Marcelino Castañeda y Nuñez de Caceres
 M Catalano	BOT	M.Catal.	Marcello Catalano
 M Cheek	BOT	Cheek	Martin Cheek
 M Clemente-Muñoz	BOT	Clem.-Muñoz	M. Clemente-Muñoz
@@ -35918,7 +35918,7 @@ M Clémencet	BOT	Clémencet	Marien Clémencet
 M Console	BOT	Console	Michelangelo Console
 M Curzi	BOT	Curzi	Mario Curzi
 M Cárdenas	BOT	Cárdenas	Martín Cárdenas
-M D C A.	BOT	M.D.Correa	Mireya D. Correa A.
+M D Correa	BOT	M.D.Correa	Mireya D. Correa A.
 M D Henderson	BOT	M.D.Hend.	Mayda Doris Henderson
 M D Windham	BOT	Windham	Michael D. Windham
 M de l'Obel	BOT	Lobel	Matthias de l'Obel
@@ -35945,7 +35945,7 @@ M Flinders	BOT	Flinders	Matthew Flinders
 M Foster	BOT	Foster	Michael Foster
 M G Brooks	BOT	M.G.Brooks	Maurice Graham Brooks
 M G Calder	BOT	M.G.Calder	Mary Gordon Calder
-M G de la Maya y Jiménez	BOT	M.Gómez	Manuel Gómez de la Maya y Jiménez
+M Gómez de la Maya y Jiménez	BOT	M.Gómez	Manuel Gómez de la Maya y Jiménez
 M G Henry	BOT	M.G.Henry	Mary Gibson Henry
 M G Lelong	BOT	Lelong	Michel G. Lelong
 M G Popov	BOT	Popov	Mikhail Grigoríevič Popov
@@ -35993,7 +35993,7 @@ M L Fernald	BOT	Fernald	Merritt Lyndon Fernald
 M L G Colomb	BOT	Colomb	Marie Louis Georges Colomb
 M L Green	BOT	M.L.Green	Mary Letitia Green
 M L Hauser	BOT	Hauser	Margit Luise Hauser
-M L y Segura	BOT	Lag.	Mariano Lagasca y Segura
+M Lagasca y Segura	BOT	Lag.	Mariano Lagasca y Segura
 M Lauzac-Marchal	BOT	Lauz.-March.	Marguerite Lauzac-Marchal
 M Lawrance	BOT	Lawrance	Mary Lawrance
 M Lewis	BOT	Lewis	Meriwether Lewis
@@ -36002,12 +36002,12 @@ M Lichtenstein	BOT	Licht.	Martin Lichtenstein
 M Lidén	BOT	Lidén	Magnus Lidén
 M Lojacono	BOT	Lojac.	Michele Lojacono
 M Lüth	BOT	Lüth	Michael Lüth
-M M Bolaños	BOT	Martín Bol.	Manuel Martín Bolaños
+M Martín Bolaños	BOT	Martín Bol.	Manuel Martín Bolaños
 M M Iljin	BOT	Iljin	Modest Mikhaĭlovich Iljin
 M M Jakubziner	BOT	Jakubz.	Moisej Markovič Jakubziner
 M M M Dubard	BOT	Dubard	Marcel Marie Maurice Dubard
-M M M Ortega	BOT	M.M.Mart.Ort.	María Montserrat Martínez Ortega
-M M Martínez	BOT	Mart.Mart.	M. Martínez Martínez
+M M Martínez Ortega	BOT	M.M.Mart.Ort.	María Montserrat Martínez Ortega
+M Martínez Martínez	BOT	Mart.Mart.	M. Martínez Martínez
 M M V Walcott	BOT	M.Walcott	Mary Morris Vaux Walcott
 M M Villada	BOT	Villada	Manuel Maria Villada
 M Mappus	BOT	Mappus	Marcus Mappus
@@ -36032,7 +36032,7 @@ M Prins	BOT	M.Prins	Marie Prins
 M Pěčková	BOT	Pěčková	Milena Pěčková
 M R B Levyns	BOT	Levyns	Margaret Rutherford Bryan Levyns
 M R Davis	BOT	M.R.Davis	M. R. Davis	M.R. Davis
-M R Goyena	BOT	Ram.Goyena	Miguel Ramírez Goyena
+M Ramírez Goyena	BOT	Ram.Goyena	Miguel Ramírez Goyena
 M R Henderson	BOT	M.R.Hend.	Murray Ross Henderson
 M R Jacobs	BOT	Jacobs	Maxwell Ralph Jacobs
 M R Schomburgk	BOT	M.R.Schomb.	Moritz Richard Schomburgk
@@ -36042,7 +36042,7 @@ M S Balakrishnan	BOT	M.S.Balakr.	Madura S. Balakrishnan
 M S Bebb	BOT	Bebb	Michael Schuck Bebb
 M S Gatty	BOT	Gatty	Margaret Scott Gatty
 M S Pandeirada	BOT	Pandeir.	Mariana Sofia Pandeirada
-M S y Lacasta	BOT	Sessé	Martín Sessé y Lacasta
+M Sessé y Lacasta	BOT	Sessé	Martín Sessé y Lacasta
 M S Young	BOT	M.S.Young	Mary Sophie Young
 M Sachet	BOT	Sachet	Marie-Hélène Sachet
 M Sanjappa	BOT	Sanjappa	Munivenkatappa Sanjappa
@@ -36064,7 +36064,7 @@ M Thulin	BOT	Thulin	Mats Thulin
 M Treub	BOT	Treub	Melchior Treub
 M Tsvet	BOT	Tswett	Mikhail Tsvet
 M Twizeyimana	BOT	M Twizeyimana
-M V II	BOT	M.Vahl	Martin Vahl II
+M Vahl f.	BOT	M.Vahl	Martin Vahl II
 M Vahl	BOT	Vahl	Martin Vahl
 M Vural	BOT	Vural	Mecit Vural
 M W Callmander	BOT	Callm.	Martin Wilhelm Callmander
@@ -40781,7 +40781,7 @@ N A Busch	BOT	N.Busch	Nicolaĭ Adolfowitsch Busch
 N A Cobb	BOT	Cobb	Nathan Augustus Cobb
 N A Dalzell	BOT	Dalzell	Nicol Alexander Dalzell
 N A Desvaux	BOT	Desv.	Nicaise Auguste Desvaux
-N A Erik	BOT	Nordensk.	Nils Adolph Erik
+N A E Nordenskiöld	BOT	Nordensk.	Nils Adolph Erik
 N A Stojanov	BOT	Stoj.	Nikolai Andreev Stojanov
 N A Wakefield	BOT	N.A.Wakef.	Norman Arthur Wakefield
 N B Alexeeva	BOT	Alexeeva.	N. B. Alexeeva
@@ -40794,7 +40794,7 @@ N Bui	BOT	Bui	Ngoc-Sanh Bui
 N C Fassett	BOT	Fassett	Norman Carter Fassett
 N C Henderson	BOT	N.C.Hend.	Norlan C. Henderson
 N C Kindberg	BOT	Kindb.	Nils Conrad Kindberg
-N C M III	BOT	Melvin	Norman C. Melvin, III
+N C Melvin	BOT	Melvin	Norman C. Melvin, III
 N C Seringe	BOT	Ser.	Nicolas Charles Seringe
 N de Saussure	BOT	N.T.Sauss.	Nicolas-Théodore de Saussure	Nicolas Théodore de Saussure
 N Diego	BOT	Diego	Nelly Diego
@@ -40840,7 +40840,7 @@ N P H Persson	BOT	Perss.	Nathan Petter Herman Persson
 N P Pratov	BOT	N.P.Pratov	N. P. Pratov
 N P Taylor	BOT	N.P.Taylor	Nigel Paul Taylor
 N Pringsheim	BOT	Pringsh.	Nathanael Pringsheim
-N R von Rosenstein	BOT	N.Rosén	Nils Rosén von Rosenstein	Rosenstein
+N Rosén von Rosenstein	BOT	N.Rosén	Nils Rosén von Rosenstein	Rosenstein
 N Ramesh	BOT	N.Ramesh	N. Ramesh
 N Roux	BOT	N.Roux	Nisius Roux
 N S E Selander	BOT	Selander	Nils Sten Edvard Selander
@@ -42264,7 +42264,7 @@ O J Richard	BOT	O.J.Rich.	Olivier Jules Richard
 O J Sopp	BOT	Johan-Olsen	Olav Johan Sopp	Sopp
 O K Berg	BOT	O.Berg	Otto Karl Berg
 O K Lakela	BOT	Lakela	Olga Korhoven Lakela
-O K M Jr.	BOT	O.K.Mill.	Orson Knapp Miller, Jr.
+O K Miller	BOT	O.K.Mill.	Orson Knapp Miller, Jr.
 O K S Passarge	BOT	Passarge	Otto Karl Siegfried Passarge
 O Kersten	BOT	Kerst.	Otto Kersten
 O M Afonina	BOT	Afonina	Olga Mikhailovna Afonina
@@ -42951,7 +42951,7 @@ P C Kanjilal	BOT	P.C.Kanjilal	Praphulla Chandra Kanjilal
 P C Keng	BOT	Keng f.	Pai Chieh Keng
 P C M Petit	BOT	P.Petit	Paul Charles Mirbel Petit
 P C Pant	BOT	P.C.Pant	P. C. Pant	P.C. Pant
-P C Porto	BOT	Porto	Paulo Campos Porto
+P Campos Porto	BOT	Porto	Paulo Campos Porto
 P C Standley	BOT	Standl.	Paul Carpenter Standley
 P Camper	BOT	Camper	Petrus Camper
 P Chantaranothai	BOT	Chantar.	Pranom Chantaranothai
@@ -42982,7 +42982,7 @@ P F Cockburn	BOT	Cockburn	Peter Francis Cockburn
 P F Culmann	BOT	Culm.	Paul Frederic Culmann	Paul Frédéric Culmann
 P F Curie	BOT	Curie	Peter Friedrich Curie	Peter Friedrich Cürie
 P F Horaninow	BOT	Horan.	Paul Fedorowitsch Horaninow
-P F i Quer	BOT	Font Quer	Pius Font i Quer
+P Font i Quer	BOT	Font Quer	Pius Font i Quer
 P F P W von Württemberg	BOT	Württemb.	Prince Friedrich Paul Wilhelm von Württemberg
 P F Reinsch	BOT	Reinsch	Paul Friedrich Reinsch
 P F Stevens	BOT	P.F.Stevens	Peter F. Stevens
@@ -43059,7 +43059,7 @@ P M Opiz	BOT	Opiz	Philipp Maximilian Opiz
 P M R Aucher-Éloy	BOT	Aucher	Pierre Martin Rémi Aucher-Éloy
 P M Stockdale	BOT	Stockdale	Phyllis Margaret Stockdale
 P M T de Serres de Mesplès	BOT	M.Serres	Pierre Marcel Toussaint de Serres de Mesplès
-P M É L de la Chapelle	BOT	Lamy	Pierre Marie Édouard Lamy de la Chapelle
+P M É Lamy de la Chapelle	BOT	Lamy	Pierre Marie Édouard Lamy de la Chapelle
 P Maas	BOT	Maas	Paul Maas
 P MacOwan	BOT	MacOwan	Peter MacOwan
 P Magnol	BOT	Magnol	Pierre Magnol
@@ -43070,7 +43070,7 @@ P Miller	BOT	Mill.	Philip Miller
 P Morat	BOT	Morat	Philippe Morat
 P Mouillefert	BOT	Mouill.	Pierre Mouillefert
 P Mouterde	BOT	Mouterde	Paul Mouterde
-P N le Chéron	BOT	Incarv.	Pierre Nicolas le Chéron
+P N le Chéron d'Incarville	BOT	Incarv.	Pierre Nicolas le Chéron
 P Neill	BOT	Neill	Patrick Neill
 P Nielsen	BOT	Nielsen	Peter Nielsen
 P Osbeck	BOT	Osbeck	Pehr Osbeck
@@ -43119,7 +43119,7 @@ P von Glehn	BOT	Glehn	Peter von Glehn
 P von Luetzelburg	BOT	Luetzelb.	Philipp von Luetzelburg
 P W A Zimmermann	BOT	Zimm.	Philipp Wilhelm Albrecht Zimmermann
 P W Ball	BOT	P.W.Ball	Peter William Ball
-P W Jackson	BOT	P.S.Wyse Jacks.	Peter Wyse Jackson
+P Wyse Jackson	BOT	P.S.Wyse Jacks.	Peter Wyse Jackson
 P W Korthals	BOT	Korth.	Pieter Willem Korthals
 P W Leenhouts	BOT	Leenh.	Pieter Willem Leenhouts
 P W Magnus	BOT	Magnus	Paul Wilhelm Magnus
@@ -45622,9 +45622,9 @@ R A Dümmer	BOT	Dümmer	Richard Arnold Dümmer
 R A Foster	BOT	R.A.Foster	Robert A. Foster
 R A Harper	BOT	R.A.Harper	Robert Almer Harper
 R A Howard	BOT	R.A.Howard	Richard Alden Howard
-R A L P de la Varde	BOT	P.de la Varde	Robert André Léopold Potier de la Varde
+R A L Potier de la Varde	BOT	P.de la Varde	Robert André Léopold Potier de la Varde
 R A Lewin	BOT	Lewin	Ralph Arnold Lewin
-R A M Geesteranus	BOT	Maas Geest.	Rudolph Arnold Maas Geesteranus
+R A Maas Geesteranus	BOT	Maas Geest.	Rudolph Arnold Maas Geesteranus
 R A Philippi	BOT	Phil.	Rodolfo Amando Philippi
 R A Rolfe	BOT	Rolfe	Robert Allen Rolfe
 R A Salisbury	BOT	Salisb.	Richard Anthony Salisbury
@@ -45651,7 +45651,7 @@ R Bradley	BOT	Bradley	Richard Bradley
 R Braithwaite	BOT	Braithw.	Robert Braithwaite
 R Brown	BOT	R.Br.	Robert Brown	R.Br.bis	R.Br.ter
 R Buxton	BOT	Buxton	Richard Buxton
-R C B van den Brink	BOT	Bakh.	Reinier Cornelis Bakhuizen van den Brink	Bakh.f.
+R C Bakhuizen van den Brink	BOT	Bakh.	Reinier Cornelis Bakhuizen van den Brink	Bakh.f.
 R C Barneby	BOT	Barneby	Rupert Charles Barneby
 R C Clark	BOT	R.C.Clark	Ross C. Clark
 R C Foster	BOT	R.C.Foster	Robert Crichton Foster
@@ -45690,10 +45690,10 @@ R E Cleland	BOT	R.E.Cleland	Ralph Erskine Cleland
 R E D Baker	BOT	R.E.D.Baker	Richard Eric Defoe Baker
 R E Daniels	BOT	R.E.Daniels	Roger Edward Daniels
 R E Fries	BOT	R.E.Fr.	Robert Elias Fries
-R E G P Sermolli	BOT	Pic.Serm.	Rodolfo Emilio Giuseppe Pichi Sermolli	Rodolfo Emilio Giuseppe Pichi-Sermolli
+R E G Pichi Sermolli	BOT	Pic.Serm.	Rodolfo Emilio Giuseppe Pichi Sermolli	Rodolfo Emilio Giuseppe Pichi-Sermolli
 R E Gereau	BOT	Gereau	Roy Emile Gereau
 R E Holttum	BOT	Holttum	Richard Eric Holttum
-R E Jr.	BOT	Ether.	Robert Etheridge, Jr.
+R Etheridge	BOT	Ether.	Robert Etheridge, Jr.
 R E Kunze	BOT	R.E.Kunze	Richard Ernest Kunze
 R E Lee	BOT	R.E.Lee	Robert Edwin Lee
 R E Magill	BOT	Magill	Robert Earle Magill
@@ -45786,14 +45786,14 @@ R L Taylor	BOT	Roy L.Taylor	Roy L. Taylor
 R Lancaster	BOT	Lancaster	Roy Lancaster
 R Lauterborn	BOT	Lauterborn	Robert Lauterborn
 R Lundin	BOT	Lundin	Roger Lundin
-R M Crovetto	BOT	Mart.Crov.	Raul Martinez Crovetto
+R Martinez Crovetto	BOT	Mart.Crov.	Raul Martinez Crovetto
 R M Harper	BOT	R.M.Harper	Roland McMillan Harper
 R M Johnston	BOT	R.M.Johnst.	Robert Mackenzie Johnston
 R M King	BOT	R.M.King	Robert Merrill King
 R M Schuster	BOT	R.M.Schust.	Rudolf M. Schuster
 R M T Dahlgren	BOT	R.Dahlgren	Rolf Martin Theodor Dahlgren
-R M T Jr.	BOT	R.M.Tryon	Rolla Milton Tryon, Jr.
-R M Valverde	BOT	R.Morales	Ramón Morales Valverde
+R M Tryon	BOT	R.M.Tryon	Rolla Milton Tryon, Jr.
+R Morales Valverde	BOT	R.Morales	Ramón Morales Valverde
 R Maire	BOT	Maire	René Maire
 R Mansfeld	BOT	Mansf.	Rudolf Mansfeld
 R Marnock	BOT	Marnock	Robert Marnock
@@ -45826,7 +45826,7 @@ R R Haynes	BOT	R.R.Haynes	Robert Ralph Haynes
 R R Scott	BOT	R.R.Scott	Robert Robinson Scott
 R R Shrock	BOT	Shrock	Robert Rakes Shrock
 R R Stewart	BOT	R.R.Stewart	Ralph Randles Stewart
-R R von Rumwerth	BOT	Rapaics	Raymund Rapaics von Rumwerth
+R Rapaics von Rumwerth	BOT	Rapaics	Raymund Rapaics von Rumwerth
 R Rabevohitra	BOT	R.Rabev.	Raymond Rabevohitra
 R Raimann	BOT	Raim.	Rudolph Raimann
 R Rasmussen	BOT	Rasm.	Rasmus Rasmussen
@@ -45864,7 +45864,7 @@ R Viguier	BOT	R.Vig.	René Viguier
 R Virot	BOT	Virot	Robert Virot
 R Vásquez	BOT	R.Vásquez	Roberto Vásquez
 R W Brown	BOT	R.W.Br.	Roland Wilbur Brown
-R W D of Elston	BOT	R.W.Darwin	Robert Waring Darwin of Elston
+R W Darwin	BOT	R.W.Darwin	Robert Waring Darwin of Elston
 R W Freckmann	BOT	Freckmann	Robert W. Freckmann
 R W Pohl	BOT	R.W.Pohl	Richard Walter Pohl
 R W Rawson	BOT	Rawson	Rawson W. Rawson
@@ -49031,7 +49031,7 @@ S Bloembergen	BOT	Siebe Bloembergen
 S C Chen	BOT	S.C.Chen	Sing Chi Chen
 S C Craveiro	BOT	Craveiro	Sandra Carla Craveiro
 S C Dyal	BOT	Dyal	Sarah Creecie Dyal
-S C Holmes	BOT	S.Carter	Susan Carter Holmes
+S Carter Holmes	BOT	S.Carter	Susan Carter Holmes
 S C Lee	BOT	S.C.Lee	Shun Ching Lee
 S C Srivastava	BOT	S.C.Srivast.	Suresh Chandra Srivastava
 S C Stuntz	BOT	Stuntz	Stephen Conrad Stuntz
@@ -49053,7 +49053,7 @@ S F Gray	BOT	Samuel Frederick Gray
 S F L Endlicher	BOT	Endl.	Stephan Friedrich Ladislaus Endlicher
 S F N R von Stein	BOT	F.Stein	Samuel Friedrich Nathaniel Ritter von Stein
 S G A Doorenbos	BOT	Door.	Simeon Gottfried Albert Doorenbos
-S G Cross	BOT	Gale	Shirley Gale Cross
+S Gale Cross	BOT	Gale	Shirley Gale Cross
 S G Gmelin	BOT	S.G.Gmel.	Samuel Gottlieb Gmelin
 S G K G Blomquist	BOT	Blomq.	Sven Gustaf Krister Gustafson Blomquist
 S G Navashin	BOT	Navashin	Sergei Gavrilovich Navashin
@@ -49087,7 +49087,7 @@ S Jennings	BOT	S.Jenn.	Samuel Jennings
 S K Chen	BOT	S.K.Chen	Shu Kun Chen
 S K Czerepanov	BOT	Czerep.	Sergei Kirillovich Czerepanov
 S K Lee	BOT	S.K.Lee	Shu Kang Lee
-S K Osaloo	BOT	Kaz.Osaloo	Shahrokh Kazempour Osaloo
+S Kazempour Osaloo	BOT	Kaz.Osaloo	Shahrokh Kazempour Osaloo
 S K Pandé	BOT	Pandé	S. K. Pandé	S.K. Pandé
 S Kim	BOT	S.Kim	Sangtae Kim
 S Kim	BOT	S.T.Kim	Sang-Tae Kim
@@ -52555,7 +52555,7 @@ T F Cheeseman	BOT	Cheeseman	Thomas Frederic Cheeseman
 T F Daniel	BOT	T.F.Daniel	Thomas Franklin Daniel
 T F Forster	BOT	T.F.Forst.	Thomas Furley Forster
 T F J Basiner	BOT	Basiner	Theodor Friedrich Julius Basiner
-T F L N von Esenbeck	BOT	T.Nees	Theodor Friedrich Ludwig Nees von Esenbeck
+T F L Nees von Esenbeck	BOT	T.Nees	Theodor Friedrich Ludwig Nees von Esenbeck
 T F Marsson	BOT	T.Marsson	Theodor Friedrich Marsson
 T Fukuhara	BOT	Fukuhara	Tatsundo Fukuhara
 T Furuki	BOT	Furuki	Tatsuwo Furuki
@@ -54779,17 +54779,17 @@ Uygar Sarpkaya	BOT	Uygar Sarpkaya
 Uzi Plitmann	BOT	Uzi Plitmann
 Uğur Erkmen	BOT	Uğur Erkmen
 V A Funk	BOT	V.A.Funk	Victoria Ann Funk
-V A K also Valentina Alekseevna Koroleva-Pavlova	BOT	Korol.	Valentina Alekseevna Koroleva, also Valentina Alekseevna Koroleva-Pavlova
+V A Koroleva	BOT	Korol.	Valentina Alekseevna Koroleva, also Valentina Alekseevna Koroleva-Pavlova
 V A Matthews	BOT	V.A.Matthews	Victoria Ann Matthews
 V A Nikitin	BOT	V.A.Nikitin	Vladimir Alekseevich Nikitin
 V A Petrov	BOT	Petrov	Vsevolod Alexeevič Petrov
 V Ahmadjian	BOT	Ahmadjian	Vernon Ahmadjian
-V B A T de Saint-Léon	BOT	Trevis.	Vittore Benedetto Antonio Trevisan de Saint-Léon
+V B A Trevisan de Saint-Léon	BOT	Trevis.	Vittore Benedetto Antonio Trevisan de Saint-Léon
 V B Heinrich	BOT	V.B.Heinrich	Volker B. Heinrich
 V B Wittrock	BOT	Wittr.	Veit Brecher Wittrock
 V Bartelletti	BOT	Bartell.	Veturia Bartelletti
 V Bittrich	BOT	Bittrich	Volker Bittrich
-V C de Miranda	BOT	Cherm.Mir.	Vicente Chermont de Miranda
+V Chermont de Miranda	BOT	Cherm.Mir.	Vicente Chermont de Miranda
 V Calestani	BOT	Calest.	Vittorio Calestani
 V Cordus	BOT	V.Cordus	Valerius Cordus
 V D Matthews	BOT	V.D.Matthews	Velma Dare Matthews
@@ -56081,7 +56081,7 @@ W G Craib	BOT	Craib	William Grant Craib
 W G Farlow	BOT	Farl.	William Gilson Farlow
 W G Lee	BOT	W.G.Lee	William George Lee
 W G Schneider	BOT	W.G.Schneid.	Wilhelm Gottlieb Schneider
-W G T von Tilenau	BOT	Tilesius	Wilhelm Gottlieb Tilesius von Tilenau
+W G Tilesius von Tilenau	BOT	Tilesius	Wilhelm Gottlieb Tilesius von Tilenau
 W G Walpers	BOT	Walp.	Wilhelm Gerhard Walpers
 W Goldring	BOT	Goldring	William Goldring
 W Griffith	BOT	Griff.	William Griffith
@@ -56222,7 +56222,7 @@ W T Davis	BOT	W.T.Davis	William Thompson Davis
 W T Gillis	BOT	Gillis	William Thomas Gillis
 W T Stearn	BOT	Stearn	William Thomas Stearn
 W T Swingle	BOT	Swingle	Walter Tennyson Swingle
-W T Thiselton	BOT	Dyer	William Turner Thiselton
+W T Thiselton-Dyer	BOT	Dyer	William Turner Thiselton
 W Theobald	BOT	W.Theob.	William Theobald
 W Trelease	BOT	Trel.	William Trelease
 W Troll	BOT	Troll	Wilhelm Troll
@@ -56233,7 +56233,7 @@ W Vink	BOT	Vink	Willem Vink
 W W Ashe	BOT	Ashe	William Willard Ashe
 W W Diehl	BOT	Diehl	William Webster Diehl
 W W Eggleston	BOT	Eggl.	Willard Webster Eggleston
-W W Jr.	BOT	W.West	William West Jr.	William West Jr
+W West f.	BOT	W.West	William West Jr.	William West Jr
 W W Payne	BOT	W.W.Payne	Willard William Payne
 W W Smith	BOT	W.W.Sm.	William Wright Smith
 W W Spicer	BOT	Spicer	William Webb Spicer
@@ -59473,7 +59473,7 @@ Z H Yang	BOT	Z.H.Yang	Zen Hong Yang
 Z Iwatsuki	BOT	Z.Iwats.	Zennoske Iwatsuki
 Z K Kurbanbekov	BOT	Kurbanb.	Z. K. Kurbanbekov	Z.K. Kurbanbekov
 Z Kereszty	BOT	Kereszty	Zoltán Kereszty
-Z L de Febres	BOT	Luces	Zoraida Luces de Febres
+Z Luces de Febres	BOT	Luces	Zoraida Luces de Febres
 Z N Smirnova	BOT	Smirnova	Zoya Nikolayevna Smirnova
 Z P Wang	BOT	Z.P.Wang	Zheng Ping Wang
 Z Pilous	BOT	Pilous	Zdeněk Pilous
@@ -60082,7 +60082,7 @@ Zübeyde Uğurlu	BOT	Zübeyde Uğurlu
 Á Cabrera	BOT	A.Cabrera	Ángel Cabrera	Á.Cabrera
 Á L Cabrera	BOT	Cabrera	Ángel Lulio Cabrera
 Á Löve	BOT	Á.Löve	Áskell Löve
-Á M Rodriguez	BOT	Marrero Rodr.	Águedo Marrero Rodriguez
+Á Marrero Rodriguez	BOT	Marrero Rodr.	Águedo Marrero Rodriguez
 Ádám Boros	BOT	Ádám Boros
 Ágda Nara Tavares Bandeira	BOT	Ágda Nara Tavares Bandeira
 Ágnes Révay	BOT	Ágnes Révay
@@ -60133,7 +60133,7 @@ Zübeyde Uğurlu	BOT	Zübeyde Uğurlu
 Çenet	BOT	Çenet
 Çinbilgel	BOT	Çinbilgel
 É A Goeldi	BOT	Goeldi	Émil August Goeldi
-É A J D Wildeman	BOT	De Wild.	Émile Auguste Joseph De Wildeman
+É A J De Wildeman	BOT	De Wild.	Émile Auguste Joseph De Wildeman
 É André	BOT	André	Édouard André
 É Bescherelle	BOT	Besch.	Émile Bescherelle
 É Burnat	BOT	Burnat	Émile Burnat
@@ -60146,7 +60146,7 @@ Zübeyde Uğurlu	BOT	Zübeyde Uğurlu
 É Marchal	BOT	Marchal	Élie Marchal
 É Marchoux	BOT	Marchoux	Émile Marchoux
 É Martin	BOT	E.Martin	Émile Martin
-É P D de Fontbressin	BOT	Duchass.	Édouard Placide Duchassaing de Fontbressin
+É P Duchassaing de Fontbressin	BOT	Duchass.	Édouard Placide Duchassaing de Fontbressin
 É P Ventenat	BOT	Vent.	Étienne Pierre Ventenat
 É Pradal	BOT	Pradal	Émile Pradal
 É Roubaud	BOT	Roubaud	Émile Roubaud
