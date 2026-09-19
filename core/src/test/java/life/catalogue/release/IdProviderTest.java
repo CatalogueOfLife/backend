@@ -9,6 +9,7 @@ import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
+import life.catalogue.db.mapper.IdMapMapper;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -574,8 +575,13 @@ public class IdProviderTest {
     assertTrue(lines.stream().anyMatch(l -> l.startsWith("b\t")));
   }
 
+  /**
+   * Asserts the id mapping persisted for a test name.
+   */
   void assertID(int id, SimpleNameWithNidx n){
-    assertEquals((Integer)id, n.getCanonicalId());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      assertEquals(IdProvider.encode(id), session.getMapper(IdMapMapper.class).getUsage(projectKey, n.getId()));
+    }
   }
 
   static ArchivedNameUsageMapper.ArchivedSimpleName sn(int id, Integer canonId, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
