@@ -61,7 +61,7 @@ public class UsageMatcherFactoryTest {
     File dir = new File(tmp.getRoot(), String.valueOf(key));
     try (var b = new UsageMatcherFileStoreBuilder(key, dir)) {
       var sn = new SimpleNameCached("u1", "Aus bus", org.gbif.nameparser.api.Rank.SPECIES);
-      sn.setCanonicalId(1);
+      sn.setNamesIndexId(1);
       b.add(sn);
       b.seal().close();
     }

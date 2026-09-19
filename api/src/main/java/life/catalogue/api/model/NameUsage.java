@@ -9,7 +9,6 @@ import org.gbif.nameparser.api.Rank;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -126,12 +125,8 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, VerbatimSourceE
     return sn;
   }
 
-  default SimpleNameClassified<SimpleNameCached> toSimpleNameClassified(Integer canonicalNidx) {
-    return new SimpleNameClassified<>(asUsageBase(), canonicalNidx);
-  }
-
-  default SimpleNameWithNidx toSimpleNameWithNidx(Function<Integer, Integer> nidx2canonical) {
-    SimpleNameWithNidx sn = new SimpleNameWithNidx(getName(), nidx2canonical.apply(getName().getNamesIndexId()));
+  default SimpleNameWithNidx toSimpleNameWithNidx() {
+    SimpleNameWithNidx sn = new SimpleNameWithNidx(getName(), getName().getNamesIndexId());
     sn.setStatus(getStatus());
     sn.setCode(getName().getCode());
     sn.setParent(getParentId());

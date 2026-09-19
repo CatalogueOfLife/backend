@@ -76,18 +76,18 @@ public class UsageMatcherMemStore implements UsageMatcherStore {
   @Override
   public void add(SimpleNameCached sn) {
     var old = usages.put(sn.getId(), sn);
-    if (old != null && !Objects.equals(old.getCanonicalId(), sn.getCanonicalId())) {
+    if (old != null && !Objects.equals(old.getNamesIndexId(), sn.getNamesIndexId())) {
       // the usage moved to a different canonical name, drop it from the old bucket
-      if (old.getCanonicalId() != null) {
-        var ids = byCanonNidx.get(old.getCanonicalId());
+      if (old.getNamesIndexId() != null) {
+        var ids = byCanonNidx.get(old.getNamesIndexId());
         if (ids != null) {
           ids.remove(old.getId());
         }
       }
       old = null; // fall through to the insert below
     }
-    if (old == null && sn.getCanonicalId() != null) {
-      byCanonNidx.computeIfAbsent(sn.getCanonicalId(), k -> new HashSet<>()).add(sn.getId());
+    if (old == null && sn.getNamesIndexId() != null) {
+      byCanonNidx.computeIfAbsent(sn.getNamesIndexId(), k -> new HashSet<>()).add(sn.getId());
     }
   }
 

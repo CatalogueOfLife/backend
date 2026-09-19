@@ -91,8 +91,8 @@ public class UsageMatcherFileStoreBuilder implements UsageSink, AutoCloseable {
       pos += 4L + id.length + body.length;
       var g = sn.getGroup();
       groups.writeByte(g == null ? 0 : g.ordinal() + 1);
-      if (sn.getCanonicalId() != null) {
-        canon.writeInt(sn.getCanonicalId());
+      if (sn.getNamesIndexId() != null) {
+        canon.writeInt(sn.getNamesIndexId());
         canon.writeInt(n);
         canonPairs++;
       }

@@ -34,10 +34,4 @@ public class XIdProvider extends IdProvider implements UsageIdGen {
     return otu != null ? otu : ShortUUID.ID_GEN.get();
   }
 
-  @Override
-  public Integer nidx2canonical(Integer nidx) {
-    // single-tier canonical-only index: a nidx is its own canonical, so no lookup is needed
-    return nidx;
-  }
-
 }

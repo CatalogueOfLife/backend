@@ -3,7 +3,6 @@ package life.catalogue.release;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
@@ -163,22 +162,22 @@ public class IdProviderTest {
   public void basic() throws Exception {
     // 1st attempt
     prevIdsByAttempt.put(1, List.of(
-      sn(2,0,  2, GENUS, "Abies", null, ACCEPTED),
-      sn(10,1,  10, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
-      sn(11,1,  11, SPECIES, "Abies alba", "Mill.", ACCEPTED),
-      sn(12,2,  12, SPECIES, "Picea alba ", null, SYNONYM, "Abies alba")
+      sn(2, 0, GENUS, "Abies", null, ACCEPTED),
+      sn(10, 1, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
+      sn(11, 1, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(12, 2, SPECIES, "Picea alba ", null, SYNONYM, "Abies alba")
     ));
     // 2nd attempt
     prevIdsByAttempt.put(2, List.of(
-      sn(20,1,  11, SPECIES, "Abies alba", "Mill", ACCEPTED),
-      sn(13,2, 13, SPECIES, "Picea alba ", "DC.", SYNONYM, "Abies alba")
+      sn(20, 1, SPECIES, "Abies alba", "Mill", ACCEPTED),
+      sn(13, 2, SPECIES, "Picea alba ", "DC.", SYNONYM, "Abies alba")
     ));
 
     // test names
     testNames = new ArrayList<>(List.of(
-      sn(1, 10, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
-      sn(1, 11, SPECIES, "Abies alba", "Mill.", ACCEPTED),
-      sn(1, 11, SPECIES, "Abies alba", "Mill", SYNONYM, "Abies albi")
+      sn(1, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
+      sn(1, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(1, SPECIES, "Abies alba", "Mill", SYNONYM, "Abies albi")
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -200,20 +199,20 @@ public class IdProviderTest {
     // pairing, and an added authorship is missing information turning into information, not a different name. So the
     // id the last release published stays with the name and the better corroborated resurrection does not take it.
     prevIdsByAttempt.put(1, List.of(
-      sn(80, 9, 9, FAMILY, "Lycaenidae", null, ACCEPTED),
-      sn(81, 9, 9, FAMILY, "Lycaenidae", "Leach, 1815", ACCEPTED)
+      sn(80, 9, FAMILY, "Lycaenidae", null, ACCEPTED),
+      sn(81, 9, FAMILY, "Lycaenidae", "Leach, 1815", ACCEPTED)
     ));
     prevIdsByAttempt.put(2, List.of(
-      sn(80, 9, 9, FAMILY, "Lycaenidae", null, ACCEPTED),
-      sn(81, 9, 9, FAMILY, "Lycaenidae", "Leach, 1815", ACCEPTED)
+      sn(80, 9, FAMILY, "Lycaenidae", null, ACCEPTED),
+      sn(81, 9, FAMILY, "Lycaenidae", "Leach, 1815", ACCEPTED)
     ));
     // the last release has only 80 left, so 81 would have to be resurrected
     prevIdsByAttempt.put(3, List.of(
-      sn(80, 9, 9, FAMILY, "Lycaenidae", null, ACCEPTED)
+      sn(80, 9, FAMILY, "Lycaenidae", null, ACCEPTED)
     ));
 
     testNames = new ArrayList<>(List.of(
-      sn(9, 9, FAMILY, "Lycaenidae", "Leach, 1815", ACCEPTED)
+      sn(9, FAMILY, "Lycaenidae", "Leach, 1815", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -243,17 +242,17 @@ public class IdProviderTest {
   public void misappliedAndUnparsable() throws Exception {
     // 1st attempt
     prevIdsByAttempt.put(1, List.of(
-      sn(2,0, 2, GENUS, "Abies", null, ACCEPTED),
-      sn(10,1,  10, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
-      sn(11,1,  11, SPECIES, "Abies alba", "Mill.", ACCEPTED),
-      sn(12,2,  12, SPECIES, "Picea alba ", null, SYNONYM, "Abies alba")
+      sn(2, 0, GENUS, "Abies", null, ACCEPTED),
+      sn(10, 1, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
+      sn(11, 1, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(12, 2, SPECIES, "Picea alba ", null, SYNONYM, "Abies alba")
     ));
 
     // test names
     testNames = new ArrayList<>(List.of(
-      sn(1, 10, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
-      sn(1, 11, SPECIES, "Abies alba", "Mill.", ACCEPTED),
-      sn(1, 11, SPECIES, "Abies alba", "Mill", SYNONYM, "Abies albi")
+      sn(1, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
+      sn(1, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(1, SPECIES, "Abies alba", "Mill", SYNONYM, "Abies albi")
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -271,18 +270,17 @@ public class IdProviderTest {
   @Test
   public void sameCanonicalIdDifferentAuthorsKeepDistinctIds() throws Exception {
     // Under the canonical-only names index, every usage in a canonical group shares one
-    // namesIndexId (canonId == nxId for all of them), so the old "exact names index" scoring
-    // term in matchScore() contributes the *same* amount to every candidate pairing below and
-    // can never discriminate between them. Only authorship (+ rank) can - this pins that.
+    // namesIndexId, so the names index cannot discriminate between the candidate pairings
+    // below. Only authorship (+ rank) can - this pins that.
     prevIdsByAttempt.put(1, List.of(
-      sn(30, 5, 5, SPECIES, "Abies alba", "Mill.", ACCEPTED),
-      sn(31, 5, 5, SPECIES, "Abies alba", "L.", ACCEPTED)
+      sn(30, 5, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(31, 5, SPECIES, "Abies alba", "L.", ACCEPTED)
     ));
 
     // test names: same canonical id/nidx (5/5) for both, only authorship differs
     testNames = new ArrayList<>(List.of(
-      sn(5, 5, SPECIES, "Abies alba", "Mill.", ACCEPTED),
-      sn(5, 5, SPECIES, "Abies alba", "L.", ACCEPTED)
+      sn(5, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(5, SPECIES, "Abies alba", "L.", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -305,19 +303,19 @@ public class IdProviderTest {
     // ids carry the very same authorship, and the base release id wins because an id only ever issued in an extended
     // release is junior to one a base release used.
     prevIdsByAttempt.put(1, List.of(
-      sn(40, 3, 3, SPECIES, "Cedrus deodara", "(Lamb.) G.Don", ACCEPTED)
+      sn(40, 3, SPECIES, "Cedrus deodara", "(Lamb.) G.Don", ACCEPTED)
     ));
     prevIdsByAttempt.put(2, List.of(
-      sn(40, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED),
-      sn(41, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", PROVISIONALLY_ACCEPTED)
+      sn(40, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED),
+      sn(41, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", PROVISIONALLY_ACCEPTED)
     ));
     originByAttempt.put(2, DatasetOrigin.XRELEASE);
     prevIdsByAttempt.put(3, List.of(
-      sn(40, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
+      sn(40, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
     ));
 
     testNames = new ArrayList<>(List.of(
-      sn(3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
+      sn(3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -337,13 +335,13 @@ public class IdProviderTest {
     // both are taxa, so only the authorship and the rank decide, and both agree.
     prevIdsByAttempt.put(1, List.of());
     prevIdsByAttempt.put(2, List.of(
-      sn(41, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", PROVISIONALLY_ACCEPTED)
+      sn(41, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", PROVISIONALLY_ACCEPTED)
     ));
     originByAttempt.put(2, DatasetOrigin.XRELEASE);
     prevIdsByAttempt.put(3, List.of());
 
     testNames = new ArrayList<>(List.of(
-      sn(3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
+      sn(3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -360,11 +358,11 @@ public class IdProviderTest {
     // the only archived id of the canonical group sits at a different, concrete rank.
     // Nothing else can make that the same name, so a new id is minted rather than the old one handed over.
     prevIdsByAttempt.put(1, List.of(
-      sn(41, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
+      sn(41, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
     ));
 
     testNames = new ArrayList<>(List.of(
-      sn(3, 3, GENUS, "Cedrus deodara", null, ACCEPTED)
+      sn(3, GENUS, "Cedrus deodara", null, ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -380,11 +378,11 @@ public class IdProviderTest {
     // https://github.com/CatalogueOfLife/backend/issues/1326 - an unqualified genus that gains its authorship is
     // missing information turning into information, not a different name.
     prevIdsByAttempt.put(1, List.of(
-      sn(60, 9, 9, GENUS, "Cedrus", null, ACCEPTED)
+      sn(60, 9, GENUS, "Cedrus", null, ACCEPTED)
     ));
 
     testNames = new ArrayList<>(List.of(
-      sn(9, 9, GENUS, "Cedrus", "Trew", ACCEPTED)
+      sn(9, GENUS, "Cedrus", "Trew", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -401,11 +399,11 @@ public class IdProviderTest {
     // a mere spelling difference in the authorship is the same author. The old exact string comparison minted a new
     // id for every one of these.
     prevIdsByAttempt.put(1, List.of(
-      sn(61, 9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+      sn(61, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
     ));
 
     testNames = new ArrayList<>(List.of(
-      sn(9, 9, SPECIES, "Abies alba", "Miller", ACCEPTED)
+      sn(9, SPECIES, "Abies alba", "Miller", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -421,11 +419,11 @@ public class IdProviderTest {
   public void changedAuthorshipGetsANewId() throws Exception {
     // ... but a genuinely different author is a different name and must be advertised as such, see #1326.
     prevIdsByAttempt.put(1, List.of(
-      sn(62, 9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+      sn(62, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
     ));
 
     testNames = new ArrayList<>(List.of(
-      sn(9, 9, SPECIES, "Abies alba", "DC.", ACCEPTED)
+      sn(9, SPECIES, "Abies alba", "DC.", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -441,22 +439,22 @@ public class IdProviderTest {
     // The id that served every release so far must be the survivor, not the one minted last month.
     for (int attempt = 1; attempt <= 4; attempt++) {
       prevIdsByAttempt.put(attempt, List.of(
-        sn(70, 9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+        sn(70, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
       ));
     }
     // the duplicate appears in the last two releases only
     prevIdsByAttempt.put(4, List.of(
-      sn(70, 9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED),
-      sn(71, 9, 9, SPECIES, "Abies alba", "Mill.", PROVISIONALLY_ACCEPTED)
+      sn(70, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(71, 9, SPECIES, "Abies alba", "Mill.", PROVISIONALLY_ACCEPTED)
     ));
     prevIdsByAttempt.put(5, List.of(
-      sn(70, 9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED),
-      sn(71, 9, 9, SPECIES, "Abies alba", "Mill.", PROVISIONALLY_ACCEPTED)
+      sn(70, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(71, 9, SPECIES, "Abies alba", "Mill.", PROVISIONALLY_ACCEPTED)
     ));
 
     // the duplicate is spotted and removed - a single usage is left
     testNames = new ArrayList<>(List.of(
-      sn(9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+      sn(9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -478,14 +476,14 @@ public class IdProviderTest {
     // The archive keeps the accepted names scientific name, the matcher store keys the parent by usage id,
     // so the id can only be picked correctly if we resolve that id into a name first.
     prevIdsByAttempt.put(1, List.of(
-      sn(50, 7, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "Abies alba"),
-      sn(51, 7, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "Larix alba")
+      sn(50, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "Abies alba"),
+      sn(51, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "Larix alba")
     ));
 
     // just like the real store, the synonym points at its accepted name by usage id
     testNames = new ArrayList<>(List.of(
-      sn("acc", 8, 8, SPECIES, "Larix alba", "Mill.", ACCEPTED, null),
-      sn("syn", 7, 7, SPECIES, "Picea alba", "DC.", SYNONYM, "acc")
+      sn("acc", 8, SPECIES, "Larix alba", "Mill.", ACCEPTED, null),
+      sn("syn", 7, SPECIES, "Picea alba", "DC.", SYNONYM, "acc")
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -499,12 +497,12 @@ public class IdProviderTest {
     // id 1 was only ever published in a release the project config ignores. It is no candidate for any name, but the
     // id sequence still has to start above it, or a new name is handed an id that already was published.
     prevIdsByAttempt.put(1, List.of(
-      sn(1, 3, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
+      sn(1, 3, SPECIES, "Cedrus deodara", "(Roxb. ex D.Don) G.Don", ACCEPTED)
     ));
     prCfg.ignoredReleases = new ArrayList<>(List.of(1001));
 
     testNames = new ArrayList<>(List.of(
-      sn(9, 9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+      sn(9, SPECIES, "Abies alba", "Mill.", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -518,16 +516,16 @@ public class IdProviderTest {
   public void unmatched() throws Exception {
     // 1st attempt
     prevIdsByAttempt.put(1, List.of(
-      sn(1, 10, SPECIES_AGGREGATE, "Abies alba", null, ACCEPTED),
-      sn(1, 10, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
-      sn(1, 11, SPECIES, "Abies alba", "Mill.", ACCEPTED),
-      sn(100, 1, 11, SPECIES, "Abies alba", "Mill.", PROVISIONALLY_ACCEPTED)
+      sn(1, SPECIES_AGGREGATE, "Abies alba", null, ACCEPTED),
+      sn(1, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
+      sn(1, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(100, 1, SPECIES, "Abies alba", "Mill.", PROVISIONALLY_ACCEPTED)
     ));
 
     // test names
     testNames = new ArrayList<>(List.of(
-      sn(1, 10, SPECIES, "Abies alba", null, ACCEPTED),
-      sn(1, 11, SPECIES, "Abies alba", "Mill.", ACCEPTED)
+      sn(1, SPECIES, "Abies alba", null, ACCEPTED),
+      sn(1, SPECIES, "Abies alba", "Mill.", ACCEPTED)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -546,9 +544,9 @@ public class IdProviderTest {
     // a stable release id next to two temporary ShortUUIDs from the COL XR.
     // About 1 in 16000 ShortUUIDs is 19 characters or shorter, like the first one
     testNames = new ArrayList<>(List.of(
-      sn("B2", 5, 5, SPECIES, "Abies alba", "Mill.", ACCEPTED, null),
-      sn("vYOrvZV81KuK9xP9V-W", 5, 5, SPECIES, "Abies alba", "L.", ACCEPTED, null),
-      sn("TPwerYqrAWQc-trIorzzc2", 5, 5, SPECIES, "Abies alba", "DC.", ACCEPTED, null)
+      sn("B2", 5, SPECIES, "Abies alba", "Mill.", ACCEPTED, null),
+      sn("vYOrvZV81KuK9xP9V-W", 5, SPECIES, "Abies alba", "L.", ACCEPTED, null),
+      sn("TPwerYqrAWQc-trIorzzc2", 5, SPECIES, "Abies alba", "DC.", ACCEPTED, null)
     ));
 
     IdTestProvider provider = new IdTestProvider();
@@ -584,24 +582,21 @@ public class IdProviderTest {
     }
   }
 
-  static ArchivedNameUsageMapper.ArchivedSimpleName sn(int id, Integer canonId, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
-    return sn(id, canonId,nidx, rank, name, authorship, status, null);
+  static ArchivedNameUsageMapper.ArchivedSimpleName sn(int id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
+    return sn(id, nidx, rank, name, authorship, status, null);
   }
-  static ArchivedNameUsageMapper.ArchivedSimpleName sn(int id, Integer canonId, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
-    return sn(IdConverter.LATIN29.encode(id), canonId, nidx, rank, name, authorship, status, parent);
+  static ArchivedNameUsageMapper.ArchivedSimpleName sn(int id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+    return sn(IdConverter.LATIN29.encode(id), nidx, rank, name, authorship, status, parent);
   }
-  static ArchivedNameUsageMapper.ArchivedSimpleName sn(Integer canonId, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
-    return sn(UUID.randomUUID().toString(), canonId, nidx, rank, name, authorship, status, null);
+  static ArchivedNameUsageMapper.ArchivedSimpleName sn(Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
+    return sn(UUID.randomUUID().toString(), nidx, rank, name, authorship, status, null);
   }
-  static ArchivedNameUsageMapper.ArchivedSimpleName sn(Integer canonId, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
-    return sn(UUID.randomUUID().toString(), canonId, nidx, rank, name, authorship, status, parent);
+  static ArchivedNameUsageMapper.ArchivedSimpleName sn(Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+    return sn(UUID.randomUUID().toString(), nidx, rank, name, authorship, status, parent);
   }
-  static ArchivedNameUsageMapper.ArchivedSimpleName sn(String id, Integer canonId, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+  static ArchivedNameUsageMapper.ArchivedSimpleName sn(String id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
     var sn = new ArchivedNameUsageMapper.ArchivedSimpleName();
-    // nidx
-    sn.setCanonicalId(canonId);
     sn.setNamesIndexId(nidx);
-    sn.setNamesIndexMatchType(MatchType.EXACT);
     // simple name
     sn.setId(id);
     sn.setRank(rank);

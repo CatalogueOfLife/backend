@@ -870,7 +870,7 @@ public class HierarchySync extends SectorRunnable {
           // copy. No extension entities; reference linkage is dropped in this phase.
           // the id the previous run gave the import of this source taxon, so nothing pointing at it dangles
           CopyUtil.copyUsage(batch, t, DSID.of(projectKey, projectParentId), user, Set.of(),
-            CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, sn -> reuseId(origSourceId), nidx -> null, ref -> null, refId -> null);
+            CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, sn -> reuseId(origSourceId), ref -> null, refId -> null);
 
           // CopyUtil mutated t to its new project id - record mapping
           sourceToProject.put(origSourceId, t.getId());
@@ -1359,7 +1359,7 @@ public class HierarchySync extends SectorRunnable {
           // copy. parent = the project's accepted taxon. No extension entities; reference linkage dropped.
           // The synonym keeps the id the previous run gave it.
           CopyUtil.copyUsage(batch, syn, DSID.of(projectKey, projectAcceptedId), user, Set.of(),
-            CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, sn -> reuseId(origSourceId), nidx -> null, ref -> null, refId -> null);
+            CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, sn -> reuseId(origSourceId), ref -> null, refId -> null);
 
           if (sourceScope != null) {
             writeNum.addIdentifier(DSID.of(projectKey, syn.getId()), List.of(new Identifier(sourceScope, origSourceId)));

@@ -46,7 +46,7 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
   @Test
   public void reopenPreservesData() throws IOException {
     var dir = newDir();
-    var sn = snc("abc", "xyz", "Aus bus", "Smith", Rank.SPECIES, 42, 99);
+    var sn = snc("abc", "xyz", "Aus bus", "Smith", Rank.SPECIES, 42);
     try (var builder = new UsageMatcherFileStoreBuilder(77, dir)) {
       builder.add(sn);
       try (var store = builder.seal()) {
@@ -71,8 +71,8 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
   public void taxGroupSurvivesReopen() throws IOException {
     var dir = newDir();
     try (var builder = new UsageMatcherFileStoreBuilder(78, dir)) {
-      builder.add(snc("a", null, "Aus", null, Rank.GENUS, 1, 1));
-      builder.add(snc("b", "a", "Aus bus", null, Rank.SPECIES, 2, 2));
+      builder.add(snc("a", null, "Aus", null, Rank.GENUS, 1));
+      builder.add(snc("b", "a", "Aus bus", null, Rank.SPECIES, 2));
       try (var store = builder.seal()) {
         assertNull(store.get("a").getGroup());
         store.update("a", TaxGroup.Plants);
@@ -94,12 +94,12 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
   @Test
   public void sealedStoreRejectsWrites() throws IOException {
     try (var builder = new UsageMatcherFileStoreBuilder(80, newDir())) {
-      builder.add(snc("a", null, "Aus", null, Rank.GENUS, 1, 1));
+      builder.add(snc("a", null, "Aus", null, Rank.GENUS, 1));
       try (var store = builder.seal()) {
-        assertThrows(UnsupportedOperationException.class, () -> store.add(snc("b", null, "Bus", null, Rank.GENUS, 2, 2)));
+        assertThrows(UnsupportedOperationException.class, () -> store.add(snc("b", null, "Bus", null, Rank.GENUS, 2)));
         assertThrows(UnsupportedOperationException.class, () -> store.updateParentId("a", "b"));
       }
-      assertThrows(IllegalStateException.class, () -> builder.add(snc("c", null, "Cus", null, Rank.GENUS, 3, 3)));
+      assertThrows(IllegalStateException.class, () -> builder.add(snc("c", null, "Cus", null, Rank.GENUS, 3)));
       assertThrows(IllegalStateException.class, builder::seal);
     }
   }
@@ -108,9 +108,9 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
   @Test
   public void duplicateIdsKeepTheLast() throws IOException {
     try (var builder = new UsageMatcherFileStoreBuilder(81, newDir())) {
-      builder.add(snc("a", null, "Aus", "Smith", Rank.GENUS, 1, 1));
-      builder.add(snc("b", null, "Bus", "Smith", Rank.GENUS, 2, 2));
-      builder.add(snc("a", null, "Aus rewritten", "Miller", Rank.GENUS, 3, 3));
+      builder.add(snc("a", null, "Aus", "Smith", Rank.GENUS, 1));
+      builder.add(snc("b", null, "Bus", "Smith", Rank.GENUS, 2));
+      builder.add(snc("a", null, "Aus rewritten", "Miller", Rank.GENUS, 3));
       try (var store = builder.seal()) {
         assertEquals(2, store.size());
         assertEquals("Aus rewritten", store.get("a").getName());
@@ -131,7 +131,7 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
     try (var builder = new UsageMatcherFileStoreBuilder(82, newDir())) {
       int i = 0;
       for (var id : ids) {
-        builder.add(snc(id, null, "Aus bus", "Smith", Rank.SPECIES, ++i, i));
+        builder.add(snc(id, null, "Aus bus", "Smith", Rank.SPECIES, ++i));
       }
       try (var store = builder.seal()) {
         assertEquals(ids.size(), store.size());
@@ -156,7 +156,7 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
         String id = Long.toHexString(rnd.nextLong()) + "-" + i;
         String name = "Aus " + rnd.nextInt(1000);
         expected.put(id, name);
-        builder.add(snc(id, null, name, "Smith, " + (1800 + rnd.nextInt(200)), Rank.SPECIES, 1 + i % 700, i));
+        builder.add(snc(id, null, name, "Smith, " + (1800 + rnd.nextInt(200)), Rank.SPECIES, 1 + i % 700));
       }
       try (var store = builder.seal()) {
         assertEquals(expected.size(), store.size());
@@ -184,8 +184,8 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
     try (var builder = new UsageMatcherFileStoreBuilder(86, newDir())) {
       // interleaved, so the two buckets are not contiguous runs in the input
       for (int i = 0; i < 50; i++) {
-        builder.add(snc("a" + i, null, "Aus bus", "Smith", Rank.SPECIES, 1, 1));
-        builder.add(snc("b" + i, null, "Bus aus", "Miller", Rank.SPECIES, 2, 2));
+        builder.add(snc("a" + i, null, "Aus bus", "Smith", Rank.SPECIES, 1));
+        builder.add(snc("b" + i, null, "Bus aus", "Miller", Rank.SPECIES, 2));
       }
       try (var store = builder.seal()) {
         var expectedA = new java.util.ArrayList<String>();
@@ -204,15 +204,14 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
   @Test
   public void usagesWithoutCanonical() throws IOException {
     try (var builder = new UsageMatcherFileStoreBuilder(85, newDir())) {
-      var unmatched = snc("a", null, "Aus?", null, Rank.UNRANKED, 1, 1);
-      unmatched.setCanonicalId(null);
+      var unmatched = snc("a", null, "Aus?", null, Rank.UNRANKED, 1);
       unmatched.setNamesIndexId(null);
       builder.add(unmatched);
-      builder.add(snc("b", null, "Bus", "Smith", Rank.GENUS, 2, 2));
+      builder.add(snc("b", null, "Bus", "Smith", Rank.GENUS, 2));
       try (var store = builder.seal()) {
         assertEquals(2, store.size());
         assertEquals(1, store.canonicalSize());
-        assertNull(store.get("a").getCanonicalId());
+        assertNull(store.get("a").getNamesIndexId());
         assertEquals("Aus?", store.get("a").getName());
         assertEquals(2, stream(store.all()).count());
         assertEquals(java.util.List.of("b"), store.simpleNamesByCanonicalId(2).stream().map(x -> x.getId()).toList());
@@ -239,7 +238,7 @@ public class UsageMatcherFileStoreTest extends UsageMatcherStoreTestBase {
     var dir = newDir();
     try (var builder = new UsageMatcherFileStoreBuilder(91, dir)) {
       for (int i = 0; i < 20; i++) {
-        builder.add(snc("u" + i, i == 0 ? null : "u0", "Aus bus" + i, "Smith", Rank.SPECIES, 100 + i % 7, 500 + i));
+        builder.add(snc("u" + i, i == 0 ? null : "u0", "Aus bus" + i, "Smith", Rank.SPECIES, 100 + i % 7));
       }
       builder.seal().close();
     }

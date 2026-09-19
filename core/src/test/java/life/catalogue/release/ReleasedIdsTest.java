@@ -1,7 +1,6 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
@@ -50,12 +49,11 @@ public class ReleasedIdsTest {
     ids.remove(r.id);
     assertNull(ids.byId(3));
     assertEquals(9, ids.size());
-    assertEquals(3, r.nxId);
-    assertEquals(9, ids.byCanonId(r.canonId).length);
+    assertEquals(1, r.nxId);
+    assertEquals(9, ids.byCanonId(r.nxId).length);
     assertNull(ids.byCanonId(2));
     assertNull(ids.byCanonId(3));
 
-    // id 0 has nx id = 2
     ids.remove(0);
     assertEquals(8, ids.size());
     assertEquals(8, ids.byCanonId(1).length);
@@ -69,19 +67,9 @@ public class ReleasedIdsTest {
 
   ReleasedId gen(){
     int id = counter++;
-    int nxId;
-    if (id % 1000 == 0) {
-      nxId = id % 1000+2;
-    } else if (id % 100 == 0) {
-      nxId = id % 1000+1;
-    } else {
-      nxId = id % 1000;
-    }
-
     SimpleNameWithNidx sn = new SimpleNameWithNidx();
-    sn.setCanonicalId(1);
-    sn.setNamesIndexId(nxId);
-    sn.setNamesIndexMatchType(MatchType.EXACT);
+    // every ten ids share one names index id
+    sn.setNamesIndexId(id / 10 + 1);
     sn.setStatus(TaxonomicStatus.ACCEPTED);
     sn.setName("Abies");
     sn.setGroup(TaxGroup.Angiosperms);
