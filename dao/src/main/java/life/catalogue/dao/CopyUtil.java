@@ -51,14 +51,13 @@ public class CopyUtil {
                                                                  Supplier<String> nameIdSupplier,
                                                                  Supplier<String> typeMaterialIdSupplier,
                                                                  Function<SimpleNameWithNidx, String> usageIdSupplier,
-                                                                 Function<Integer, Integer> nidx2canonical,
                                                                  Function<Reference, String> lookupReference,
                                                                  Function<String, String> lookupByIdReference) {
     final DSID<String> origT = new DSIDValue<>(t);
     final DSID<String> origN = new DSIDValue<>(t.getName());
     copyName(batchSession, t, targetParent.getDatasetKey(), user, lookupReference, nameIdSupplier);
     
-    setKeys(t, targetParent.getDatasetKey(), usageIdSupplier, nidx2canonical);
+    setKeys(t, targetParent.getDatasetKey(), usageIdSupplier);
     t.applyUser(user, true);
     t.setOrigin(Origin.SOURCE);
     t.setParentId(targetParent.getId());
@@ -127,7 +126,7 @@ public class CopyUtil {
                                                                  Set<EntityType> include,
                                                                  Function<Reference, String> lookupReference,
                                                                  Function<String, String> lookupByIdReference) {
-    return copyUsage(batchSession, t, targetParent, user, include, ID_GENERATOR, ID_GENERATOR, n -> ID_GENERATOR.get(), i -> null, lookupReference, lookupByIdReference);
+    return copyUsage(batchSession, t, targetParent, user, include, ID_GENERATOR, ID_GENERATOR, n -> ID_GENERATOR.get(), lookupReference, lookupByIdReference);
   }
 
 
@@ -148,10 +147,10 @@ public class CopyUtil {
     batchSession.getMapper(NameMapper.class).create(n);
   }
   
-  private static NameUsageBase setKeys(NameUsageBase t, int datasetKey, Function<SimpleNameWithNidx, String> idSupplier, Function<Integer, Integer> nidx2canonical) {
+  private static NameUsageBase setKeys(NameUsageBase t, int datasetKey, Function<SimpleNameWithNidx, String> idSupplier) {
     t.setDatasetKey(datasetKey);
     t.setVerbatimKey(null);
-    SimpleNameWithNidx sn = t.toSimpleNameWithNidx(nidx2canonical);
+    SimpleNameWithNidx sn = t.toSimpleNameWithNidx();
     t.setId(idSupplier.apply(sn));
     return t;
   }

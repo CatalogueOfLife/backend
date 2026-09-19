@@ -775,7 +775,7 @@ public class IdProvider {
   }
 
   /**
-   * Populates sn.canonicalId with either an existing or new int based ID
+   * Maps every name, OTU names excluded, to either an existing or new int based ID
    * @param canonId the canonical names index id that all names are mapped to
    * @param acceptedNames resolves the scientific name of a synonyms accepted name, see #acceptedNames
    */
@@ -803,19 +803,19 @@ public class IdProvider {
       }
 
     } else {
-      // convenient "hack": we keep the new identifiers as the canonicalID property of SimpleNameWithNidx
-      names.forEach(n->n.setCanonicalId(null));
+      // the issued ids by name. By identity: names compare by value, but two equal names still need an id each
+      final Map<SimpleNameWithNidx, Integer> issued = new IdentityHashMap<>();
       // which released ids do exist for this canonical names index id?
       ReleasedId[] rids = ids.byCanonId(canonId);
       if (rids != null) {
-        assign(names, rids, acceptedNames);
+        assign(names, rids, acceptedNames, issued);
       }
       // persist mappings and issue new ids for missing ones
       for (var sn : names) {
-        if (sn.getCanonicalId() == null) {
-          issueNewId(sn);
+        if (!issued.containsKey(sn)) {
+          issueNewId(sn, issued);
         }
-        idm.mapUsage(mappedDatasetKey, sn.getId(), encode(sn.getCanonicalId()));
+        idm.mapUsage(mappedDatasetKey, sn.getId(), encode(issued.get(sn)));
       }
     }
   }
@@ -827,7 +827,8 @@ public class IdProvider {
    * in first and never moved off its best partner to improve some total. {@link IdCandidate} defines what "best"
    * means and is a total order, so the outcome does not depend on the order the store happens to return usages in.
    */
-  private void assign(List<SimpleNameWithNidx> names, ReleasedId[] rids, Function<SimpleNameWithNidx, String> acceptedNames) {
+  private void assign(List<SimpleNameWithNidx> names, ReleasedId[] rids, Function<SimpleNameWithNidx, String> acceptedNames,
+                      Map<SimpleNameWithNidx, Integer> issued) {
     // the facts are built once per side and dropped again with this group: they cache the parsed authorship, which
     // is worth having across the pairings of one group but must not be kept for every archived id of the project
     final NameIdentity.Facts[] relFacts = new NameIdentity.Facts[rids.length];
@@ -855,12 +856,12 @@ public class IdProvider {
     Collections.sort(candidates);
     final IntSet taken = new IntOpenHashSet();
     for (var c : candidates) {
-      if (c.name.getCanonicalId() == null && !taken.contains(c.rid.id)) {
-        release(c);
+      if (!issued.containsKey(c.name) && !taken.contains(c.rid.id)) {
+        release(c, issued);
         taken.add(c.rid.id);
       }
     }
-    recordSuperseded(candidates);
+    recordSuperseded(candidates, issued);
   }
 
   /**
@@ -875,33 +876,34 @@ public class IdProvider {
    * records nothing either.
    *
    * @param candidates all not contradicted pairings of this canonical group, best first, after the assignment
+   * @param issued the ids the assignment gave the usages of this group
    */
-  private void recordSuperseded(List<IdCandidate> candidates) {
+  private void recordSuperseded(List<IdCandidate> candidates, Map<SimpleNameWithNidx, Integer> issued) {
     for (var c : candidates) {
       if (c.rid.isCurrent                        // the last release had this id
           && ids.containsId(c.rid.id)            // and nothing in this release took it
-          && c.name.getCanonicalId() != null     // while the usage it fits best did get one
+          && issued.containsKey(c.name)          // while the usage it fits best did get one
           && !superseded.containsKey(c.rid.id)   // candidates are sorted, so the first hit is the best one
       ) {
-        superseded.put(c.rid.id, c.name.getCanonicalId().intValue());
+        superseded.put(c.rid.id, issued.get(c.name).intValue());
       }
     }
   }
 
-  private void release(IdCandidate c){
+  private void release(IdCandidate c, Map<SimpleNameWithNidx, Integer> issued){
     if (!ids.containsId(c.rid.id)) {
       throw new IllegalArgumentException("Cannot release " + c.rid.id + " which does not exist (anymore)");
     }
     ids.remove(c.rid.id);
-    c.name.setCanonicalId(c.rid.id);
+    issued.put(c.name, c.rid.id);
     if (!c.rid.isCurrent) {
       resurrected.put(c.rid.id, c.rid.attempt);
     }
   }
 
-  private void issueNewId(life.catalogue.api.model.SimpleNameWithNidx n) {
+  private void issueNewId(SimpleNameWithNidx n, Map<SimpleNameWithNidx, Integer> issued) {
     int id = keySequence.incrementAndGet();
-    n.setCanonicalId(id);
+    issued.put(n, id);
     created.add(id);
   }
 

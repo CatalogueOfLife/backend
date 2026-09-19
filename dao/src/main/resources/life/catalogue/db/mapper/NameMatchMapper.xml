@@ -25,12 +25,6 @@
     WHERE nm.dataset_key = #{key.datasetKey} AND nm.name_id = #{key.id}
   </select>
 
-  <select id="getCanonicalNidx" resultType="integer">
-    SELECT n.id AS canonical_id
-    FROM name_match nm LEFT JOIN names_index n ON n.id=nm.index_id
-    WHERE nm.dataset_key = #{key.datasetKey} AND nm.name_id = #{key.id}
-  </select>
-
   <select id="processSector" parameterType="map" resultMap="nameMatchResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT nm.index_id AS nidx, nm.index_id IS NOT NULL AS matched
     FROM name_match nm

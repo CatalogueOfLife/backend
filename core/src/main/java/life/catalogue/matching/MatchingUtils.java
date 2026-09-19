@@ -16,48 +16,19 @@ public class MatchingUtils {
     this.nameIndex = nameIndex;
   }
 
-  public static NidxMatch noMatch() {
-    return new NidxMatch(null, null);
-  }
-
-  public static class NidxMatch {
-    public final Integer id;
-    public final Integer canonicalId;
-
-    public NidxMatch(Integer id, Integer canonicalId) {
-      this.id = id;
-      this.canonicalId = canonicalId;
-    }
-
-    public boolean hasNidx() {
-      return id != null;
-    }
-
-    public DSIDValue<Integer> canonicalDSID(int datasetKey){
-      return new DSIDValue<>(datasetKey, canonicalId);
-    }
-  }
-
   /**
-   * @return a wrapper class that is never null. It holds the canonical names index id or null if it cant be matched
+   * @return the names index id of the usages name, matching it first if it has none yet. Null if it cannot be matched
    */
-  public NidxMatch nidxAndMatchIfNeeded(NameUsageBase nu, boolean allowInserts) {
+  public Integer nidxAndMatchIfNeeded(NameUsageBase nu, boolean allowInserts) {
     // the names index id is the only persisted signal we have - a null id means we have not matched yet
     // (we no longer distinguish an unmatched name from one that was never attempted)
     if (nu.getName().getNamesIndexId() == null) {
-      // try to match
       var match = nameIndex.match(nu.getName(), allowInserts, false);
       if (match.isMatched()) {
         nu.getName().setNamesIndexId(match.getNidx());
       }
-      return match.isMatched() ? new NidxMatch(match.getNidx(), match.getNidx()) : MatchingUtils.noMatch();
-
-    } else {
-      // already matched: single-tier index means the canonical id equals the names index id itself,
-      // so we avoid the (now db-backed) nameIndex.get() lookup in this hot path
-      Integer nidxId = nu.getName().getNamesIndexId();
-      return new NidxMatch(nidxId, nidxId);
     }
+    return nu.getName().getNamesIndexId();
   }
 
   /**
@@ -65,8 +36,7 @@ public class MatchingUtils {
    */
   public SimpleNameCached toSimpleNameCached(NameUsageBase nu) {
     if (nu != null) {
-      var nidx = nidxAndMatchIfNeeded(nu, true);
-      return new SimpleNameCached(nu, nidx.canonicalId);
+      return new SimpleNameCached(nu, nidxAndMatchIfNeeded(nu, true));
     }
     return null;
   }
@@ -84,8 +54,7 @@ public class MatchingUtils {
   public SimpleNameClassified<SimpleNameCached> toSimpleNameClassified(NameUsageBase nu, List<SimpleNameCached> classification) {
     SimpleNameClassified<SimpleNameCached> snc = null;
     if (nu != null) {
-      var nidx = nidxAndMatchIfNeeded(nu, true);
-      snc = new SimpleNameClassified<>(nu, nidx.canonicalId);
+      snc = new SimpleNameClassified<>(nu, nidxAndMatchIfNeeded(nu, true));
       snc.setClassification(classification);
     }
     return snc;

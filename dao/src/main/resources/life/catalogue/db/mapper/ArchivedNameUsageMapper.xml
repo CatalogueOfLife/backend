@@ -170,10 +170,7 @@
       u.status,
       CASE WHEN is_synonym(u.status) THEN (u.accepted).name ELSE u.classification[array_upper(u.classification, 1)].name END AS parent,
       u.classification,
-      m.index_id AS canonical_id,
-      m.index_id AS namesIndexId,
-      <!-- the match type is no longer persisted; NONE is the neutral "no information" default, see dbschema.md -->
-      'NONE'::MATCHTYPE AS namesIndexMatchType
+      m.index_id AS namesIndexId
     FROM name_usage_archive u
       LEFT JOIN name_usage_archive_match m ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
     WHERE u.dataset_key=#{datasetKey}

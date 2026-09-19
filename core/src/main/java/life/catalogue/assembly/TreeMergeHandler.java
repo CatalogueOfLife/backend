@@ -902,15 +902,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
           nmm.persist(n, n.getSectorKey(), src.getNamesIndexId());
           if (existingUsage != null) {
             existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
-            // the match type is no longer persisted on Name/name_match; MatchType.NONE is the neutral
-            // "no information" default (see SimpleNameWithNidx re-sourcing), scoring 0 in IdProvider
-            existingUsage.usage.setNamesIndexMatchType(MatchType.NONE);
-            // warn if can on canonical nidx changed - this should not be the case
-            final var canonicalNidx = nameIndex.getCanonical(src.getNamesIndexId());
-            if (!Objects.equals(existingUsage.usage.getCanonicalId(), canonicalNidx)) {
-              LOG.warn("Updated name {} changed it's canonical nidx: {} -> {}", n.getLabel(), existingUsage.usage.getCanonicalId(), canonicalNidx);
-              existingUsage.usage.setCanonicalId(canonicalNidx);
-            }
           }
         }
         // keep matcher storage in sync

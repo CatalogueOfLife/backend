@@ -1,13 +1,9 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.MatchType;
-
 import java.util.Objects;
 
 public class SimpleNameWithNidx extends SimpleName {
-  private Integer canonicalId;
   private Integer namesIndexId;
-  private MatchType namesIndexMatchType;
 
   public SimpleNameWithNidx() {
   }
@@ -16,43 +12,25 @@ public class SimpleNameWithNidx extends SimpleName {
     super(other);
   }
 
-  public SimpleNameWithNidx(SimpleName other, Integer canonicalId) {
-    super(other);
-    this.canonicalId = canonicalId;
-  }
   public SimpleNameWithNidx(SimpleNameWithNidx other) {
     super(other);
-    canonicalId = other.canonicalId;
     namesIndexId = other.namesIndexId;
-    namesIndexMatchType = other.namesIndexMatchType;
   }
 
   /**
-   * @param canonicalId the canonicalId as its not included in a Name instance
+   * @param namesIndexId the names index id, which replaces the one of the name
    */
-  public SimpleNameWithNidx(Name n, Integer canonicalId) {
+  public SimpleNameWithNidx(Name n, Integer namesIndexId) {
     super(n);
-    this.canonicalId = canonicalId;
-    namesIndexId = n.getNamesIndexId();
-    namesIndexMatchType = MatchType.NONE;
+    this.namesIndexId = namesIndexId;
   }
 
   /**
-   * @param canonicalId the canonicalId as its not included in a Name instance
+   * @param namesIndexId the names index id, which replaces the one of the usages name
    */
-  public SimpleNameWithNidx(NameUsageBase u, Integer canonicalId) {
+  public SimpleNameWithNidx(NameUsageBase u, Integer namesIndexId) {
     super(u);
-    this.canonicalId = canonicalId;
-    namesIndexId = u.getName().getNamesIndexId();
-    namesIndexMatchType = MatchType.NONE;
-  }
-
-  public MatchType getNamesIndexMatchType() {
-    return namesIndexMatchType;
-  }
-
-  public void setNamesIndexMatchType(MatchType namesIndexMatchType) {
-    this.namesIndexMatchType = namesIndexMatchType;
+    this.namesIndexId = namesIndexId;
   }
 
   public Integer getNamesIndexId() {
@@ -63,31 +41,10 @@ public class SimpleNameWithNidx extends SimpleName {
     this.namesIndexId = namesIndexId;
   }
 
-  public Integer getCanonicalId() {
-    return canonicalId;
-  }
-
-  public void setCanonicalId(Integer canonicalId) {
-    this.canonicalId = canonicalId;
-  }
-
-  public boolean isCanonical() {
-    return Objects.equals(canonicalId, namesIndexId);
-  }
-
   public void applyMatch(NameMatch m) {
-    if (m.isMatched()) {
-      // the nidx match no longer carries a MatchType; the usage-match layer recomputes EXACT/VARIANT
-      // from the live labels, so we only apply the id here (see UsageMatcher)
-      setNamesIndexId(m.getNidx());
-      // single-tier index: the matched entry is its own canonical, so its nidx is the canonical id
-      setCanonicalId(m.getNidx());
-
-    } else {
-      setNamesIndexMatchType(MatchType.NONE);
-      setNamesIndexId(null);
-      setCanonicalId(null);
-    }
+    // the nidx match carries no MatchType; the usage-match layer computes EXACT/VARIANT
+    // from the live labels, so we only apply the id here (see UsageMatcher)
+    setNamesIndexId(m.isMatched() ? m.getNidx() : null);
   }
 
   @Override
@@ -96,19 +53,17 @@ public class SimpleNameWithNidx extends SimpleName {
     if (!(o instanceof SimpleNameWithNidx)) return false;
     if (!super.equals(o)) return false;
     SimpleNameWithNidx that = (SimpleNameWithNidx) o;
-    return Objects.equals(canonicalId, that.canonicalId) && Objects.equals(namesIndexId, that.namesIndexId) && namesIndexMatchType == that.namesIndexMatchType;
+    return Objects.equals(namesIndexId, that.namesIndexId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), canonicalId, namesIndexId, namesIndexMatchType);
+    return Objects.hash(super.hashCode(), namesIndexId);
   }
 
   @Override
   public void toStringAdditionalInfo(StringBuilder sb) {
     sb.append(" | nidx ");
-    sb.append(canonicalId);
-    sb.append('-');
     sb.append(namesIndexId);
   }
 

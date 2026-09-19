@@ -73,8 +73,7 @@
   </sql>
 
   <sql id="SELECT_SIMPLE_CACHED">
-    <!-- the match type is no longer persisted; NONE is the neutral "no information" default, see dbschema.md -->
-    <include refid="SELECT_SIMPLE"/>, u.sector_key, nm.index_id, nm.index_id AS canonical_id, 'NONE'::MATCHTYPE AS type
+    <include refid="SELECT_SIMPLE"/>, u.sector_key, nm.index_id
   </sql>
 
   <sql id="SELECT_LINNEAN_USAGE">
@@ -316,8 +315,6 @@
     <result property="parent" column="parent_id"/>
     <result property="phrase" column="name_phrase" />
     <result property="namesIndexId" column="index_id" />
-    <result property="canonicalId" column="canonical_id" />
-    <result property="namesIndexMatchType" column="type" />
   </resultMap>
 
   <resultMap id="simpleInDatasetResultMap" type="SimpleNameInDataset" autoMapping="true">
@@ -357,8 +354,6 @@
     <result property="parent" column="parent"/>
     <result property="phrase" column="name_phrase" />
     <result property="namesIndexId" column="index_id" />
-    <result property="canonicalId" column="canonical_id" />
-    <result property="namesIndexMatchType" column="type" />
   </resultMap>
 
   <resultMap id="idResultMap" type="UsageNameID" autoMapping="false">
@@ -633,8 +628,8 @@
 
   <!--
     Phase 1 of the related usage lookup. Resolves the origin usage's names index entry and returns every
-    name matched to that same entry. The index is single-tier (canonicalId == index_id), so one equality
-    covers the canonical and all of its authorship variants.
+    name matched to that same entry. The index is canonical only, so one equality covers the canonical
+    and all of its authorship variants.
 
     Only name_match is read on the related side. name and name_usage are joined by the second phase per dataset,
     because there is no dataset_key to prune them by here and postgres locks every partition plus every index of
@@ -647,7 +642,7 @@
     SELECT DISTINCT nm.dataset_key, nm.name_id
     FROM name_usage orig
       JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
-      <!-- single-tier index: canonicalId == index_id, so every usage matching the same index_id is
+      <!-- canonical only index: every usage matching the same index_id is
            related. This also links the authorship variants that the former canonical_id expansion
            reached explicitly (intentional broadening, see task-8-report.md). -->
       JOIN name_match nm ON nm.index_id=nmo.index_id
@@ -1203,8 +1198,7 @@
   </select>
 
   <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMapParentName" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
-    <!-- the match type is no longer persisted; NONE is the neutral "no information" default, see dbschema.md -->
-    SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, nm.index_id AS canonical_id, 'NONE'::MATCHTYPE AS type, np.scientific_name AS parent
+    SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, np.scientific_name AS parent
     FROM name_usage u
       JOIN name n ON n.dataset_key=#{datasetKey} AND n.id=u.name_id
       LEFT JOIN name_usage up ON up.dataset_key=#{datasetKey} AND up.id=u.parent_id

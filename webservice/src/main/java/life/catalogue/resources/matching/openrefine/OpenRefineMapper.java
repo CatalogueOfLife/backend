@@ -1,9 +1,11 @@
 package life.catalogue.resources.matching.openrefine;
 
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.matching.UsageMatch;
+import life.catalogue.matching.UsageMatcher;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -38,18 +40,32 @@ public class OpenRefineMapper {
     }
   }
 
-  /** Maps a usage match (primary + alternatives) to an OpenRefine result for a single query. */
-  public static OpenRefineModel.Result toResult(UsageMatch match) {
+  /**
+   * Maps a usage match (primary + alternatives) to an OpenRefine result for a single query.
+   * Alternatives are scored by comparing their label to the query like the primary match,
+   * but never above the primary: they are candidates the matcher considered and did not choose,
+   * and the ones of a higher rank match belong to that higher name, not to the query.
+   *
+   * @param query the interpreted name the match was made for
+   */
+  public static OpenRefineModel.Result toResult(SimpleName query, UsageMatch match) {
     var result = new OpenRefineModel.Result();
+    Double maxAltScore = null;
     if (match != null && match.isMatch()) {
       // OpenRefine auto-matches a cell when a single candidate has match=true.
       // Only do that for unambiguous exact hits.
       boolean autoMatch = match.type == MatchType.EXACT;
-      result.result.add(toCandidate(match.usage, match.type, autoMatch));
+      var primary = toCandidate(match.usage, match.type, autoMatch);
+      maxAltScore = primary.score;
+      result.result.add(primary);
     }
     if (match != null && match.alternatives != null) {
       for (var alt : match.alternatives) {
-        result.result.add(toCandidate(alt, alt.getNamesIndexMatchType(), false));
+        var c = toCandidate(alt, UsageMatcher.labelType(query, alt), false);
+        if (maxAltScore != null) {
+          c.score = Math.min(c.score, maxAltScore);
+        }
+        result.result.add(c);
       }
     }
     return result;

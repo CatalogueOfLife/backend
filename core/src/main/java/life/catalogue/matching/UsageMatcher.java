@@ -147,29 +147,36 @@ public class UsageMatcher implements AutoCloseable {
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose) throws NotFoundException {
-    if (snc.getCanonicalId() == null) {
-      return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey, snc.getNamesIndexMatchType());
+    if (snc.getNamesIndexId() == null) {
+      return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey);
     }
     if (snc.getClassification()==null) {
       snc.setClassification(Collections.emptyList());
     }
-    var existing = store().usagesByCanonicalId(snc.getCanonicalId());
+    var existing = store().usagesByCanonicalId(snc.getNamesIndexId());
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
       var match = filterCandidates(snc, new ArrayList<>(existing), verbose);
-      if (match.isMatch() && match.type != MatchType.AMBIGUOUS && match.type != MatchType.CANONICAL) {
-        // classify the usage match purely from the live labels - independent of any names index match type!
-        String label = SciNameNormalizer.normalizeWhitespaceAndPunctuation(snc.getLabel());
-        String matchLabel = SciNameNormalizer.normalizeWhitespaceAndPunctuation(match.usage.getLabel());
-        MatchType computed = label.equals(matchLabel) ? MatchType.EXACT : MatchType.VARIANT;
+      // AMBIGUOUS remains unchanged, any other match is classified from the labels
+      if (match.isMatch() && match.type != MatchType.AMBIGUOUS) {
+        MatchType computed = labelType(snc, match.usage);
         if (computed != match.type) {
           match = new UsageMatch(match, computed);
         }
       }
-      // AMBIGUOUS and CANONICAL match types remain unchanged
       return match;
     }
     return UsageMatch.empty(datasetKey);
+  }
+
+  /**
+   * Classifies a usage match purely from the live labels, independent of the names index:
+   * EXACT if both labels are the same after normalizing whitespace and punctuation, VARIANT otherwise.
+   */
+  public static MatchType labelType(SimpleName query, SimpleName candidate) {
+    String label = SciNameNormalizer.normalizeWhitespaceAndPunctuation(query.getLabel());
+    String candidateLabel = SciNameNormalizer.normalizeWhitespaceAndPunctuation(candidate.getLabel());
+    return label.equals(candidateLabel) ? MatchType.EXACT : MatchType.VARIANT;
   }
 
   /**
@@ -185,10 +192,10 @@ public class UsageMatcher implements AutoCloseable {
   private UsageMatch matchHigherRank(SimpleNameClassified<SimpleNameCached> snc, boolean verbose) throws NotFoundException {
     for (var q : higherRankCandidates(snc)) {
       // make sure the higher name is matched to the names index, but never insert
-      if (q.getCanonicalId() == null) {
+      if (q.getNamesIndexId() == null) {
         q.applyMatch(nameIndex.match(q, false, false));
       }
-      if (q.getCanonicalId() == null) {
+      if (q.getNamesIndexId() == null) {
         continue; // not in the names index, try the next higher rank
       }
       var match = match(q, false, verbose);

@@ -8,7 +8,6 @@ import life.catalogue.common.id.IdConverter;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -33,8 +32,7 @@ public class ReleasedIds {
 
   public static class ReleasedId {
     public final int id;
-    public final int nxId;
-    public final int canonId;
+    public final int nxId; // the canonical names index id, which groups all ids of the same name
     public final int attempt; // of the earliest release the id appeared in
     public final int releaseCount; // number of not ignored releases the id appeared in
     public final boolean isCurrent;
@@ -69,7 +67,6 @@ public class ReleasedIds {
     protected ReleasedId(int id, int attempt, int releaseCount, boolean isCurrent, boolean xrOnly, SimpleNameWithNidx sn) {
       this.id = id;
       this.nxId = sn.getNamesIndexId();
-      this.canonId = sn.getCanonicalId();
       this.attempt = attempt;
       this.releaseCount = releaseCount;
       this.isCurrent = isCurrent;
@@ -85,10 +82,6 @@ public class ReleasedIds {
 
     public String id() {
       return IdConverter.LATIN29.encode(id);
-    }
-
-    public boolean isCanonical() {
-      return Objects.equals(canonId, nxId);
     }
   }
 
@@ -113,11 +106,11 @@ public class ReleasedIds {
   public ReleasedId remove(int id) throws IllegalArgumentException {
     ReleasedId r = byId.remove(id);
     if (r != null) {
-      ReleasedId[] rids = ArrayUtils.removeAllOccurrences(byCanonId.get(r.canonId), r);
+      ReleasedId[] rids = ArrayUtils.removeAllOccurrences(byCanonId.get(r.nxId), r);
       if (rids == null || rids.length == 0) {
-        byCanonId.remove(r.canonId);
+        byCanonId.remove(r.nxId);
       } else {
-        byCanonId.put(r.canonId, rids);
+        byCanonId.put(r.nxId, rids);
       }
     }
     return r;
@@ -155,10 +148,10 @@ public class ReleasedIds {
       throw new IllegalStateException("Duplicate identifier. ReleaseId "+ id.attempt + ":" + id.id +" already exists in attempt " + byId.get(id.id).attempt);
     }
     byId.put(id.id, id);
-    if (byCanonId.containsKey(id.canonId)) {
-      byCanonId.put(id.canonId, ArrayUtils.add(byCanonId.get(id.canonId), id));
+    if (byCanonId.containsKey(id.nxId)) {
+      byCanonId.put(id.nxId, ArrayUtils.add(byCanonId.get(id.nxId), id));
     } else {
-      byCanonId.put(id.canonId, new ReleasedId[]{id});
+      byCanonId.put(id.nxId, new ReleasedId[]{id});
     }
     considerMaxID(id.id);
   }

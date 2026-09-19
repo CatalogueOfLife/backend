@@ -40,16 +40,16 @@ public abstract class UsageMatcherStoreTestBase {
   @Test
   public void basics() throws IOException {
     var sink = createSink(1);
-    var sn0 = add(snc("0", null, "Ausaceae", null, Rank.FAMILY, 0, 10), sink);
-    var sn1 = add(snc("1", "4", "Aus bus", "Smith", Rank.SPECIES, 1, 11), sink);
-    var sn2 = add(snc("2", "4", "Aus cus", "Miller", Rank.SPECIES, 2, 12), sink);
-    var sn3 = add(snc("3", "1", "Aus bus cus", "(Miller)", Rank.SUBSPECIES, 3, 13), sink);
-    var sn4 = add(snc("4", "0", "Aus", "Green", Rank.GENUS, 4, 14), sink);
-    var sn5 = add(sncSyn("5", "2", "Aus cus", "Jackson", Rank.SPECIES, 2, 15), sink);
+    var sn0 = add(snc("0", null, "Ausaceae", null, Rank.FAMILY, 0), sink);
+    var sn1 = add(snc("1", "4", "Aus bus", "Smith", Rank.SPECIES, 1), sink);
+    var sn2 = add(snc("2", "4", "Aus cus", "Miller", Rank.SPECIES, 2), sink);
+    var sn3 = add(snc("3", "1", "Aus bus cus", "(Miller)", Rank.SUBSPECIES, 3), sink);
+    var sn4 = add(snc("4", "0", "Aus", "Green", Rank.GENUS, 4), sink);
+    var sn5 = add(sncSyn("5", "2", "Aus cus", "Jackson", Rank.SPECIES, 2), sink);
 
     try (UsageMatcherStore store = seal(sink)) {
       assertEquals(6, store.size());
-      // 6 usages but only 5 distinct canonical ids (sn2 and sn5 share canonical id 2)
+      // 6 usages but only 5 distinct names index ids (sn2 and sn5 share nidx 2)
       assertEquals(5, store.canonicalSize());
 
       assertEquals(sn2, store.get(sn2.getId()));
@@ -98,7 +98,7 @@ public abstract class UsageMatcherStoreTestBase {
     final int n = 20_000;
     var sink = createSink(2);
     for (int i = 0; i < n; i++) {
-      sink.add(snc("u" + i, null, "Aus bus", "Smith", Rank.SPECIES, hotCanonical, hotCanonical));
+      sink.add(snc("u" + i, null, "Aus bus", "Smith", Rank.SPECIES, hotCanonical));
     }
     try (UsageMatcherStore store = seal(sink)) {
       assertEquals("all usages remain stored", n, store.size());
@@ -118,7 +118,7 @@ public abstract class UsageMatcherStoreTestBase {
   @Test
   public void classificationIsResolvedLazily() throws IOException {
     var sink = createSink(3);
-    sink.add(snc("orphan", "gone", "Aus bus", "Smith", Rank.SPECIES, 5, 5));
+    sink.add(snc("orphan", "gone", "Aus bus", "Smith", Rank.SPECIES, 5));
     try (UsageMatcherStore store = seal(sink)) {
       // collecting the candidates must not resolve anything, or the missing parent would blow up here
       var candidates = store.usagesByCanonicalId(5);
@@ -142,18 +142,17 @@ public abstract class UsageMatcherStoreTestBase {
     }
   }
 
-  public SimpleNameCached sncSyn(String id, String parentId, String name, String authorship, Rank rank, int canonicalId, int nidxId) {
-    var snc = snc(id, parentId, name, authorship, rank, canonicalId, nidxId);
+  public SimpleNameCached sncSyn(String id, String parentId, String name, String authorship, Rank rank, int nidx) {
+    var snc = snc(id, parentId, name, authorship, rank, nidx);
     snc.setStatus(TaxonomicStatus.SYNONYM);
     return snc;
   }
 
-  public SimpleNameCached snc(String id, String parentId, String name, String authorship, Rank rank, int canonicalId, int nidxId) {
+  public SimpleNameCached snc(String id, String parentId, String name, String authorship, Rank rank, int nidx) {
     var sn = new SimpleNameCached(id, name, rank);
     sn.setParent(parentId);
     sn.setAuthorship(authorship);
-    sn.setCanonicalId(canonicalId);
-    sn.setNamesIndexId(nidxId);
+    sn.setNamesIndexId(nidx);
     sn.setStatus(TaxonomicStatus.ACCEPTED);
     return sn;
   }

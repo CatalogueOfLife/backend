@@ -52,8 +52,11 @@ public class UsageMatch implements DSID<String> {
     return new UsageMatch(original.datasetKey, original.usage, original.sectorKey, original.type, true, original.doubtfulUsage, original.alternatives);
   }
 
+  /**
+   * A match with no type yet. UsageMatcher.match classifies it from the labels, see UsageMatcher#labelType.
+   */
   public static UsageMatch match(SimpleNameClassified<SimpleNameCached> usage, int datasetKey, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
-    return UsageMatch.match(usage.getNamesIndexMatchType(), usage, datasetKey, rmFromAlt(usage, alternatives));
+    return UsageMatch.match(MatchType.NONE, usage, datasetKey, rmFromAlt(usage, alternatives));
   }
 
   public static UsageMatch match(MatchType type, SimpleNameClassified<SimpleNameCached> usage, int datasetKey, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
@@ -64,7 +67,7 @@ public class UsageMatch implements DSID<String> {
    * Snaps to a usage but flag it to be ignored in immediate processing.
    */
   public static UsageMatch snap(SimpleNameClassified<SimpleNameCached> usage, int datasetKey, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
-    return new UsageMatch(datasetKey, usage, null, usage.getNamesIndexMatchType(), true, null, rmFromAlt(usage, alternatives));
+    return new UsageMatch(datasetKey, usage, null, MatchType.NONE, true, null, rmFromAlt(usage, alternatives));
   }
 
   /**
@@ -82,10 +85,6 @@ public class UsageMatch implements DSID<String> {
    */
   public static UsageMatch unresolvedHomonym(MatchType type, List<SimpleNameClassified<SimpleNameCached>> alternatives, int datasetKey) {
     return new UsageMatch(datasetKey, null, null, type, false, null, alternatives, true);
-  }
-
-  public static UsageMatch empty(SimpleNameClassified<SimpleNameCached> doubtfulUsage, int datasetKey) {
-    return new UsageMatch(datasetKey, null, null, doubtfulUsage.getNamesIndexMatchType(), false, doubtfulUsage, null);
   }
 
   public static UsageMatch empty(int datasetKey, MatchType type) {

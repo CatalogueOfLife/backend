@@ -336,7 +336,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
     // copy usage with all associated information. This assigns a new id !!!
     CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user, entities,
-      nameIdGen, typeMaterialIdGen, usageIdGen::issue, usageIdGen::nidx2canonical,
+      nameIdGen, typeMaterialIdGen, usageIdGen::issue,
       this::lookupOrCreateReference, this::lookupOrCreateReference
     );
     // match name
@@ -463,7 +463,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         // apply inherited decisions
         applyInheritedDecisions(t, taxon.getParentId());
         // finally assign a (stable) id
-        t.setId(usageIdGen.issue(t.toSimpleNameWithNidx(usageIdGen::nidx2canonical)));
+        t.setId(usageIdGen.issue(t.toSimpleNameWithNidx()));
         tm.create(t);
         // allow reuse of implicit names
         cacheImplicit(t);

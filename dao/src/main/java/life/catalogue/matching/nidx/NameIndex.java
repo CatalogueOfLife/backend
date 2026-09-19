@@ -59,18 +59,6 @@ public interface NameIndex extends Managed, AutoCloseable {
   NameIndexEntry get(Integer key);
 
   /**
-   * The names index is single-tier & canonical-only: every entry is its own canonical name, so this
-   * simply returns the given key if an entry exists for it, or null otherwise.
-   */
-  default Integer getCanonical(Integer key) {
-    var ni = get(key);
-    if (ni != null) {
-      return ni.getKey();
-    }
-    return null;
-  }
-
-  /**
    * Prints basic index info to stdout for debugging purposes.
    */
   default void printIndex() {

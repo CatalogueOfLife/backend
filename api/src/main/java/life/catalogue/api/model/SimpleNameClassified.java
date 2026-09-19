@@ -1,6 +1,5 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NomCode;
@@ -31,8 +30,8 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
     super(other);
   }
 
-  public SimpleNameClassified(NameUsageBase other, Integer canonicalId) {
-    super(other, canonicalId);
+  public SimpleNameClassified(NameUsageBase other, Integer namesIndexId) {
+    super(other, namesIndexId);
   }
 
   public SimpleNameClassified(SimpleNameWithNidx other) {
@@ -53,11 +52,12 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
     this.classification = classification;
   }
 
+  /**
+   * @return a copy without authorship. The names index is canonical only, so the names index id stays the same.
+   */
   public static <T extends SimpleName> SimpleNameClassified<T> canonicalCopy(SimpleNameClassified<T> src) {
     var snc =  new SimpleNameClassified<>(src);
     snc.setAuthorship(null);
-    snc.setNamesIndexId(src.getCanonicalId());
-    snc.setNamesIndexMatchType(MatchType.CANONICAL);
     return snc;
   }
 

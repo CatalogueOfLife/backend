@@ -84,6 +84,29 @@ public class SimpleNameTest {
     Assert.assertFalse(json.has("parent"));
   }
 
+  /**
+   * Matched usages and their classification carry only the names index id - the canonical id, the canonical
+   * flag and the names index match type were leftovers of the two tier names index (#1599).
+   */
+  @Test
+  public void serializedNidx() throws Exception {
+    var parent = new SimpleNameCached("g", "Abies", Rank.GENUS);
+    parent.setNamesIndexId(1);
+    var sn = new SimpleNameClassified<SimpleNameCached>(new SimpleNameCached("s", "Abies alba", Rank.SPECIES));
+    sn.setAuthorship("Mill.");
+    sn.setNamesIndexId(2);
+    sn.setClassification(List.of(parent));
+    JsonNode json = ApiModule.MAPPER.readTree(ApiModule.MAPPER.writeValueAsString(sn));
+
+    for (JsonNode node : List.of(json, json.get("classification").get(0))) {
+      Assert.assertTrue(node.has("namesIndexId"));
+      Assert.assertFalse(node.has("canonicalId"));
+      Assert.assertFalse(node.has("canonical"));
+      Assert.assertFalse(node.has("namesIndexMatchType"));
+    }
+    Assert.assertEquals(2, json.get("namesIndexId").asInt());
+  }
+
   static SimpleName sn(Rank rank, String name, String author) {
     return new SimpleName(null, name, author, rank);
   }

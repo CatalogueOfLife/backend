@@ -41,7 +41,7 @@ public class UsageMatcherPgStoreTest {
       // VARIANT) both resolve to the very same canonical names index entry (id 2 = "Abies alba",
       // self-referencing), so the canonical group for dataset 102 contains both usages - not just the
       // one that happened to be looked up first.
-      var usages = store.usagesByCanonicalId(u1.getCanonicalId());
+      var usages = store.usagesByCanonicalId(u1.getNamesIndexId());
       assertEquals(2, usages.size());
       var ids = usages.stream().map(SimpleNameClassified::getId).collect(Collectors.toSet());
       assertEquals(Set.of(u1.getId(), u2.getId()), ids);
