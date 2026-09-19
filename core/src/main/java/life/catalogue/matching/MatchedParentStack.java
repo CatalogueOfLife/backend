@@ -26,6 +26,7 @@ public class MatchedParentStack {
   private MatchedUsage rootMU;
   private final LinkedList<MatchedUsage> parents = new LinkedList<>();
   private String doubtfulUsageID = null;
+  private String skippedUsageID = null;
   private boolean first = true;
 
   /**
@@ -168,6 +169,34 @@ public class MatchedParentStack {
     }
   }
 
+  public boolean isSkipped() {
+    return skippedUsageID != null;
+  }
+
+  public MatchedUsage getSkipped() {
+    if (skippedUsageID != null) {
+      for (var u : parents) {
+        if (skippedUsageID.equals(u.usage.getId())) {
+          return u;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Excludes the current usage and all its descendants from the sync.
+   * <p>
+   * Unlike an ordinary skip, which keeps processing the children so they attach to the nearest matched
+   * ancestor, this drops the entire subtree. Used when a usage could not be placed with confidence and
+   * its children therefore have nowhere sensible to go.
+   */
+  public void markSubtreeAsSkipped() {
+    if (!parents.isEmpty() && skippedUsageID == null) {
+      skippedUsageID = parents.getLast().usage.getId();
+    }
+  }
+
   /**
    * @return the lowest matched parent to be used for newly created usages or the root taxon if no parents exist.
    */
@@ -236,6 +265,10 @@ public class MatchedParentStack {
           if (doubtfulUsageID != null && doubtfulUsageID.equals(p.getId())) {
             doubtfulUsageID = null;
           }
+          // same for the skipped marker - we have left that subtree
+          if (skippedUsageID != null && skippedUsageID.equals(p.getId())) {
+            skippedUsageID = null;
+          }
         }
       }
       if (!first && parents.isEmpty()) {
@@ -264,6 +297,7 @@ public class MatchedParentStack {
   private void clear() {
     parents.clear();
     doubtfulUsageID = null;
+    skippedUsageID = null;
   }
 
   /**
