@@ -128,8 +128,9 @@ then extract with `value.parseJson()[0].parsed`.
 - Adapter code: `webservice/.../resources/matching/openrefine/`
   (`OpenRefineModel`, `OpenRefineMapper`, `AbstractReconciliationResource`,
   `ReconciliationResource`, `DefaultReconciliationResource`).
-- Reconciliation reuses the exact matcher path of `/dataset/{key}/match/nameusage`
-  (`AbstractMatchingJob.interpretAndMatch`); only the request/response shape differs.
+- Reconciliation reuses the exact matcher path of `/dataset/{key}/match/nameusage`: it interprets the
+  name with `AbstractMatchingJob.interpret` and matches it like `interpretAndMatch` does, keeping the
+  interpreted name to score the alternatives against. Only the request/response shape differs.
 - Registered next to `NameUsageMatchingResource` in `WsServer`, and on the single release bundle,
   where the keyless rewrite makes it reachable at `/reconcile` — see below.
 
