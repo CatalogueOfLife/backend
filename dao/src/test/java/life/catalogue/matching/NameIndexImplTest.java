@@ -193,20 +193,22 @@ public class NameIndexImplTest {
     n.setType(NameType.OTHER);
     assertNoInsert(n);
 
+    // the authorship does not make "?" indexable: its key is empty, and every name with an empty key
+    // used to share one entry, see https://github.com/CatalogueOfLife/backend/issues/1598
     n = new Name();
     n.setRank(Rank.SUBGENUS);
     n.setInfragenericEpithet("?");
     n.setAuthorship("Nardo");
     n.setCombinationAuthorship(Authorship.authors("Nardo"));
     n.setType(NameType.SCIENTIFIC);
-    var quest = assertInsert(n);
+    assertNoInsert(n);
 
     n = new Name();
     n.setUninomial("'");
     n.setRank(Rank.FAMILY);
     n.setCode(NomCode.ZOOLOGICAL);
     n.setType(NameType.SCIENTIFIC);
-    assertMatch(quest.getNidx(), n); // matches the weird canonical "?"
+    assertNoInsert(n);
 
     // good infragenerics: single-tier collapses every "Tragulla" spelling onto one canonical uninomial
     n = new Name();
@@ -512,6 +514,41 @@ public class NameIndexImplTest {
 
     // every type but PLACEHOLDER is indexed: 5 OTHER + 2 INFORMAL + 1 FORMULA names, 1 canonical idxn each
     assertEquals(8, ni.size());
+  }
+
+  /**
+   * A key without any ASCII letter or digit is not indexed. Names written in a non-Latin script or made of
+   * punctuation only would otherwise all share one entry per key shape, e.g. "**" or "".
+   * https://github.com/CatalogueOfLife/backend/issues/1598
+   */
+  @Test
+  public void nonAsciiKeys() throws Exception {
+    for (String sn : List.of("冷杉", "云杉", "褐鳟", "五龙洞暗蛛", "Абиес", "Ἀβιής", "?", "'", "..", "? ?")) {
+      assertNoInsert(Name.newBuilder().scientificName(sn).rank(Rank.UNRANKED).type(NameType.OTHER).build());
+    }
+    Name n = new Name();
+    n.setUninomial("?");
+    n.setCombinationAuthorship(Authorship.yearAuthors("1951", "Powell"));
+    n.rebuildAuthorship();
+    n.setRank(Rank.GENUS);
+    n.setType(NameType.SCIENTIFIC);
+    assertNoInsert(n);
+    assertEquals(0, ni.size());
+
+    // entries written before the rule existed are never matched either
+    ni.store().add("**", 99);
+    ni.store().add("", 98);
+    for (String sn : List.of("冷杉", "?")) {
+      var m = ni.match(Name.newBuilder().scientificName(sn).rank(Rank.UNRANKED).type(NameType.OTHER).build(), false, false);
+      assertFalse(sn, m.isMatched());
+    }
+
+    // a latin name with a stray unfoldable character keeps its ASCII letters and stays indexed.
+    // Known limitation: names that only differ in that character share the entry
+    var m = ni.match(Name.newBuilder().scientificName("Asero禱").rank(Rank.GENUS).type(NameType.OTHER).build(), true, false);
+    assertTrue(m.isMatched());
+    var m2 = ni.match(Name.newBuilder().scientificName("Asero妖").rank(Rank.GENUS).type(NameType.OTHER).build(), false, false);
+    assertEquals(m.getNidx(), m2.getNidx());
   }
 
   private static Name create(String genus, String species) {

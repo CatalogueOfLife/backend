@@ -23,7 +23,9 @@
  * name string of a query against the stored entry and returns a bare
  * {@link life.catalogue.api.model.NameMatch NameMatch(Integer nidx, boolean matched)} — there is no
  * {@code IndexName} model, no MapDB store, no KryoPool registration, and no names-index-level
- * {@code MatchType} anymore (all removed). Authorship and rank are deliberately absent from the index.</p>
+ * {@code MatchType} anymore (all removed). Authorship and rank are deliberately absent from the index.
+ * A name whose key holds no ASCII letter or digit, e.g. one written in a non Latin script, is neither
+ * matched nor inserted.</p>
  *
  * <p>EXACT/VARIANT classification is no longer computed by this package at all — it is computed at the
  * USAGE layer by {@link life.catalogue.matching.UsageMatcher} from the live usage labels, once a nidx
