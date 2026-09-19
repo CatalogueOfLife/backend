@@ -96,12 +96,12 @@ public class ReleaseReviewJobTest {
   @Test
   public void configNeverPrintsTheApiKey() {
     var cfg = new AiReviewConfig();
-    cfg.apiKey = "sk-ant-secret-value";
+    cfg.apiKey = "not-a-real-api-key";
     cfg.agentId = "agent_1";
     cfg.environmentId = "env_1";
     cfg.vaultId = "vault_1";
     cfg.credentialId = "cred_1";
-    assertTrue(!cfg.toString().contains("sk-ant-secret-value"));
+    assertTrue(!cfg.toString().contains("not-a-real-api-key"));
     assertTrue(cfg.toString().contains("agent_1"));
   }
 }
