@@ -99,12 +99,16 @@ what loses ids. Rollback, with releases and publishing paused:
 BEGIN;
 DELETE FROM name_usage_archive_match WHERE dataset_key = 3;
 DELETE FROM name_usage_archive WHERE dataset_key = 3;
-DELETE FROM usage_id_superseded s USING dataset d WHERE d.key = s.dataset_key AND d.source_key = 3;
 INSERT INTO name_usage_archive SELECT * FROM name_usage_archive_bak_3;
 INSERT INTO name_usage_archive_match SELECT * FROM name_usage_archive_match_bak_3;
-INSERT INTO usage_id_superseded SELECT * FROM usage_id_superseded_bak_3;
+INSERT INTO usage_id_superseded SELECT * FROM usage_id_superseded_bak_3 ON CONFLICT DO NOTHING;
 COMMIT;
 ```
+
+The two archive tables are replaced wholesale, `usage_id_superseded` is only topped up. It is staging for releases that
+have not published yet, the refresh merely consumes rows from it, and a release built after the backup stages its pairs
+there and nowhere else in the database - deleting the project's rows before restoring would throw that release's
+redirects away. The pairs the refresh consumed come back, anything newer is left alone.
 
 #### 2026-09-14 allow sectors sharing a subject
 Sectors with entity or rank filters can legitimately share a subject, e.g. an ATTACH sector and a vernacular only
