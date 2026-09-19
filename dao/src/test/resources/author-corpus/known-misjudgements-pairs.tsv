@@ -1,0 +1,10 @@
+label	source	weight	support	yearAgree	yearConflict	freqA	freqB	intraYearDiff	intraNoYear	intraYearAgree	code	rank	nidx	scientificName	keyA	keyB	datasetKeyA	nameIdA	authorshipA	combAuthorsA	combExA	combYearA	basAuthorsA	basExA	basYearA	sanctioningA	datasetKeyB	nameIdB	authorshipB	combAuthorsB	combExB	combYearB	basAuthorsB	basExB	basYearB	sanctioningB
+DIFF	INTRA_YEARDIFF	10	0	0	0	20	20	10	0	0		SPECIES	1	Aus bus1	;;;martin	;;;martius	1	n11	Martin	Martin							1	n11	Martius	Martius						
+DIFF	INTRA_YEARDIFF	10	0	0	0	20	20	10	0	0	ZOOLOGICAL	SPECIES	2	Aus bus2	;;;grgray	;;;jegray	1	n21	G.R. Gray	G.R. Gray							1	n21	J.E. Gray	J.E. Gray						
+DIFF	INTRA_YEARDIFF	10	0	0	0	20	20	10	0	0	BOTANICAL	SPECIES	3	Aus bus3	;;;albrongn	;;;brongn	1	n31	Al.Brongn.	Al.Brongn.							1	n31	Brongn.	Brongn.						
+DIFF	INTRA_YEARDIFF	10	0	0	0	20	20	10	0	0		SPECIES	4	Aus bus4	;;;brown|jones	;;;smith|jones	1	n41	Brown & Jones	Brown|Jones							1	n41	Smith & Jones	Smith|Jones						
+DIFF	INTRA_YEARDIFF	10	0	0	0	20	20	10	0	0	ZOOLOGICAL	SPECIES	5	Aus bus5	;;;li	;;;liu	1	n51	Li, 1990	Li		1990					1	n51	Liu, 1990	Liu		1990				
+SAME	CROSS	10	10	0	0	20	20	0	0	0	ZOOLOGICAL	SPECIES	6	Aus bus6	;;;sw	;;;swainson	1	n61	Sw., 1820	Sw.		1820					2	n62	Swainson, 1820	Swainson		1820				
+SAME	CROSS	10	10	0	0	20	20	0	0	0	BOTANICAL	SPECIES	7	Aus bus7	;;;wangwentsai	;;;wtwang	1	n71	Wang Wen Tsai	Wang Wen Tsai							2	n72	W.T. Wang	W.T. Wang						
+SAME	CROSS	10	10	0	0	20	20	0	0	0	BOTANICAL	SPECIES	8	Aus bus8	;;;gómez	;;;gómezcampo	1	n81	Gómez	Gómez							2	n82	Gómez-Campo	Gómez-Campo						
+DUBIOUS	INTRA_NOYEAR	65	0	0	0	20	20	0	65	0	BOTANICAL	SPECIES	9	Aus bus9	;;;pohl	;;pohl;benth	1	n91	Pohl	Pohl							1	n92	Pohl ex Benth.	Benth.	Pohl					

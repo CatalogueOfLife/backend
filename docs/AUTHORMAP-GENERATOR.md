@@ -13,6 +13,10 @@ tools work on it, both test scope and never run by the build:
 
 The root pom pins exec's `mainClass`, so run both with `-DmainClass`, not `-Dexec.mainClass`.
 
+What an edit does to author matching is measured against the corpus described in
+[AUTHOR-CORPUS.md](AUTHOR-CORPUS.md). Its report also lists the alias candidates the map lacks, ranked by
+the number of names they affect.
+
 ## Where the rows come from
 - **The IPNI base**: the initials canonicals such as `C G D Nees von Esenbeck`. They were
   generated in 2015 for GBIF's checklistbank from an IPNI author export whose source was not kept,

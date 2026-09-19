@@ -1,0 +1,32 @@
+index_id	dataset_key	name_id	rank	code	nom_status	scientific_name	authorship	combination_authors	combination_ex_authors	combination_year	basionym_authors	basionym_ex_authors	basionym_year	sanctioning_author
+1	1	a1	SPECIES	BOTANICAL		Aus albus	L.	L.						
+1	2	b1	SPECIES			Aus albus	Linné	Linné						
+2	1	a2	SPECIES	BOTANICAL		Aus bus	L., 1753	L.		1753				
+2	2	b2	SPECIES			Aus bus	Linné, 1753	Linné		1753				
+3	1	a3	SPECIES	BOTANICAL		Aus cus	L.	L.						
+3	2	b3	SPECIES			Aus cus	Linné	Linné						
+4	1	a4	SPECIES			Aus dus	Mill.	Mill.						
+4	1	a5	SPECIES			Aus dus	Hook.	Hook.						
+4	2	b4	SPECIES			Aus dus	Miller	Miller						
+4	2	b5	SPECIES			Aus dus	Hooker	Hooker						
+5	1	a6	SPECIES			Aus eus	J.E.Gray	J.E.Gray						
+5	2	b6	SPECIES			Aus eus	J. E. Gray	J. E. Gray						
+6	1	a7	SPECIES	BOTANICAL		Aus fus	Sm.	Sm.						
+6	2	b7	SPECIES	ZOOLOGICAL		Aus fus	Smith	Smith						
+7	1	a8	SPECIES	ZOOLOGICAL		Aus gus	Pallas, 1771	Pallas		1771				
+7	1	a9	SPECIES	ZOOLOGICAL		Aus gus	Pimbus, 1801	Pimbus		1801				
+8	1	a10	SPECIES			Aus hus	Bryk, 1948	Bryk		1948				
+8	1	a11	SPECIES			Aus hus	Bryk & Eisner, 1948	Bryk|Eisner		1948				
+10	1	a20	SPECIES	BOTANICAL		Aus ius	DC.	DC.						
+10	2	b20	SPECIES			Aus ius	de Candolle	de Candolle						
+10	3	c20	SPECIES			Aus ius	de Candolle	de Candolle						
+11	1	a21	SPECIES	BOTANICAL		Aus jus	DC.	DC.						
+11	2	b21	SPECIES			Aus jus	de Candolle	de Candolle						
+11	3	c21	SPECIES			Aus jus	de Candolle	de Candolle						
+12	1	a22	SPECIES	BOTANICAL		Aus kus	DC.	DC.						
+12	2	b22	SPECIES			Aus kus	de Candolle	de Candolle						
+12	3	c22	SPECIES			Aus kus	de Candolle	de Candolle						
+13	1	a30	SPECIES			Aus lus	Walker, 1856	Walker		1856				
+13	2	b30	SPECIES			Aus lus	Walk., 1870	Walk.		1870				
+13	1	a31	SUBSPECIES			Aus lus	(Walker)				Walker			
+13	2	b31	SUBSPECIES			Aus lus	Walker	Walker						
