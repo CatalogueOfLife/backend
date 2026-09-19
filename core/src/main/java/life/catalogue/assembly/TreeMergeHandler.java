@@ -247,6 +247,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
+    // an ancestor was dropped as an undecidable homonym, so this usage goes with it.
+    // Its whole subtree has to be skipped: with the ancestor never matched or created there is nothing
+    // sensible left to attach to, and the descendants would otherwise be orphaned onto the family above.
+    if (parents.isSkipped()) {
+      incIgnored(IgnoreReason.IGNORED_PARENT, nu);
+      return;
+    }
+
     boolean unique = nu.getName().getRank().isSupraspecific() && cfg != null && cfg.xCfg.enforceUnique(nu.getName());
     boolean markMatch = false;
 
@@ -309,6 +317,19 @@ public class TreeMergeHandler extends TreeBaseHandler {
         match = UsageMatch.empty(targetDatasetKey);
         //TODO: reuse existing name instance for pro parte usages when they are created below
       }
+    }
+
+    // An existing usage shares this canonical name but carries different authorship, and neither the
+    // ranks the two classifications share nor their taxonomic group can tell a real homonym from the
+    // very same taxon. Creating the name would fabricate a duplicate genus, so drop it and its whole
+    // subtree instead - a genus we cannot place with confidence contributes nothing rather than a
+    // second copy. See https://github.com/CatalogueOfLife/data/issues/1718
+    if (!match.isMatch() && match.unresolvedHomonym) {
+      LOG.warn("Skip {} {} [{}] from {} and its entire subtree: another {} of the same name but different authorship exists in {}, and neither the ranks they share nor their taxonomic group can tell them apart. Source classification: {}",
+        nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, nu.getName().getRank(), targetDatasetKey, parents.classificationToString());
+      parents.markSubtreeAsSkipped();
+      incIgnored(IgnoreReason.AMBIGUOUS_HOMONYM, nu);
+      return;
     }
 
     // remember the match

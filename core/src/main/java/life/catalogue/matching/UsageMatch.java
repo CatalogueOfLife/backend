@@ -18,16 +18,26 @@ public class UsageMatch implements DSID<String> {
   public final SimpleNameClassified<SimpleNameCached> doubtfulUsage;
   public final MatchType type;
   public final List<SimpleNameClassified<SimpleNameCached>> alternatives;
+  /**
+   * True when there was no match because same-canonical candidates existed but could not be told apart
+   * from this name - see {@link #unresolvedHomonym(MatchType, List, int)}.
+   */
+  @JsonIgnore
+  public final boolean unresolvedHomonym;
 
   protected UsageMatch(UsageMatch src) {
-    this(src.datasetKey, src.usage, src.sectorKey, src.type, src.ignore, src.doubtfulUsage, src.alternatives);
+    this(src.datasetKey, src.usage, src.sectorKey, src.type, src.ignore, src.doubtfulUsage, src.alternatives, src.unresolvedHomonym);
   }
 
   protected UsageMatch(UsageMatch src, MatchType type) {
-    this(src.datasetKey, src.usage, src.sectorKey, type, src.ignore, src.doubtfulUsage, src.alternatives);
+    this(src.datasetKey, src.usage, src.sectorKey, type, src.ignore, src.doubtfulUsage, src.alternatives, src.unresolvedHomonym);
   }
 
   protected UsageMatch(int datasetKey, SimpleNameClassified<SimpleNameCached> usage, Integer sectorKey, MatchType type, boolean ignore, SimpleNameClassified<SimpleNameCached> doubtfulUsage, List<SimpleNameClassified<SimpleNameCached>> alternatives) {
+    this(datasetKey, usage, sectorKey, type, ignore, doubtfulUsage, alternatives, false);
+  }
+
+  protected UsageMatch(int datasetKey, SimpleNameClassified<SimpleNameCached> usage, Integer sectorKey, MatchType type, boolean ignore, SimpleNameClassified<SimpleNameCached> doubtfulUsage, List<SimpleNameClassified<SimpleNameCached>> alternatives, boolean unresolvedHomonym) {
     this.datasetKey = datasetKey;
     this.usage = usage;
     this.sectorKey = sectorKey;
@@ -35,6 +45,7 @@ public class UsageMatch implements DSID<String> {
     this.ignore = ignore;
     this.doubtfulUsage = doubtfulUsage;
     this.alternatives = alternatives;
+    this.unresolvedHomonym = unresolvedHomonym;
   }
 
   public static UsageMatch ignore(UsageMatch original) {
@@ -61,6 +72,16 @@ public class UsageMatch implements DSID<String> {
    */
   public static UsageMatch empty(MatchType type, List<SimpleNameClassified<SimpleNameCached>> alternatives, int datasetKey) {
     return new UsageMatch(datasetKey, null, null, type, false, null, alternatives);
+  }
+
+  /**
+   * No match, and deliberately not one that should be created either: candidates sharing the canonical
+   * name did exist, but carried different authorship over a classification too shallow to tell a real
+   * homonym from the very same taxon. Creating a new usage would fabricate a duplicate, so callers are
+   * expected to skip the name instead of inserting it.
+   */
+  public static UsageMatch unresolvedHomonym(MatchType type, List<SimpleNameClassified<SimpleNameCached>> alternatives, int datasetKey) {
+    return new UsageMatch(datasetKey, null, null, type, false, null, alternatives, true);
   }
 
   public static UsageMatch empty(SimpleNameClassified<SimpleNameCached> doubtfulUsage, int datasetKey) {

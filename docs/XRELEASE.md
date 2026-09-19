@@ -190,6 +190,37 @@ a sanity check. That check used to adopt the parsed name only when its type was 
 type the atoms assumed, which lets both the `SECTOR_NAME_TYPES` filter and the `INDETERMINED` filter
 above do their job. See [data#1568](https://github.com/CatalogueOfLife/data/issues/1568).
 
+### Genus homonyms
+
+Two genus usages sharing a canonical name but carrying **different authorship** are decided by lineage
+in `UsageMatcher.filterCandidates`, not by the family rank alone:
+
+1. Compare the two classifications at the **lowest rank they share between FAMILY and ORDER**
+   (`UsageMatcher.isEvidenceRank`). Equal there means one and the same genus published under another
+   author citation - the candidate is kept and, being the only survivor, becomes a `snap` match: reused
+   as the parent for the incoming children, never updated, so the target keeps its own authorship.
+   Different there means real homonyms and the candidate is dropped, which creates a second genus.
+2. Sharing no rank in that window leaves it to the **taxonomic group**: a disparate `TaxGroup` still
+   means different taxa, so a new genus is created.
+3. If the groups do not contradict each other either, the merge is genuinely undecidable. The name is
+   then **skipped together with its whole subtree** rather than inserted - a fabricated duplicate genus
+   splits the species of a real one across two entries, which is worse than omitting one source's copy.
+   `TreeMergeHandler` logs a warning and counts it under `IgnoreReason.AMBIGUOUS_HOMONYM` in the sector
+   import metrics; descendants are counted under `IGNORED_PARENT`. Watch that counter after a release -
+   it is the only measure of what the skip cost.
+
+The window exists because family is the best indicator but is regularly absent: Flora e Funga do Brasil
+files its fungal genera straight under the order, which is what produced a duplicate *Amanita* in the
+2026-09 XR ([data#1718](https://github.com/CatalogueOfLife/data/issues/1718)). Above ORDER the evidence
+is too thin to act on - every beetle genus shares a kingdom with every other one. It is deliberately the
+lowest *shared* rank rather than the lowest *agreeing* one (`lowestClassificationMatch`): *Mycetochara*
+in Tenebrionidae and in Staphylinidae agree at ORDER, and letting that stand in for the conflicting
+FAMILY would merge two genera that are genuinely different.
+
+Species and below are untouched by this and keep the stricter rule that authorship must compare EQUAL -
+two same-named species in one genus are classic homonyms. See `txtree/genushomonyms/readme.md` for the
+worked scenario.
+
 ## Known Issues / Technical Debt
 
 1. **Dead code**: `synonymizeMisspelledBinomials()` (line ~700) is never called and is nearly identical to `flagDuplicatesAsProvisional()`. Should be removed.
