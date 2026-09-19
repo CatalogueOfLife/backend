@@ -153,8 +153,13 @@ public abstract class AbstractReconciliationResource {
       return new OpenRefineModel.Result();
     }
     IssueContainer issues = new IssueContainer.Simple();
-    UsageMatch match = AbstractMatchingJob.interpretAndMatch(sn, sn.getClassification(), issues, true, interpreter, utils, matcher);
-    return OpenRefineMapper.toResult(match);
+    var query = AbstractMatchingJob.interpret(sn, sn.getClassification(), issues, interpreter, utils);
+    if (query.isEmpty()) {
+      return new OpenRefineModel.Result();
+    }
+    // like any external match request, fall back to a higher rank match when the name itself cannot be matched
+    UsageMatch match = matcher.match(query.get(), false, true, true);
+    return OpenRefineMapper.toResult(query.get(), match);
   }
 
   // ---- Data extension ----

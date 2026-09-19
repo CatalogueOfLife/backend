@@ -19,10 +19,16 @@ import static org.junit.Assert.*;
 
 public class OpenRefineMapperTest {
 
-  static SimpleNameClassified<SimpleNameCached> name(String id, String name, String authorship, MatchType nidxType) {
-    var sn = SimpleNameClassified.snc(id, Rank.SPECIES, NomCode.ZOOLOGICAL, TaxonomicStatus.ACCEPTED, name, authorship);
-    sn.setNamesIndexMatchType(nidxType);
-    return sn;
+  static SimpleNameClassified<SimpleNameCached> name(String id, String name, String authorship) {
+    return name(id, Rank.SPECIES, name, authorship);
+  }
+
+  static SimpleNameClassified<SimpleNameCached> name(String id, Rank rank, String name, String authorship) {
+    return SimpleNameClassified.snc(id, rank, NomCode.BOTANICAL, TaxonomicStatus.ACCEPTED, name, authorship);
+  }
+
+  static double[] scores(OpenRefineModel.Result result) {
+    return result.result.stream().mapToDouble(c -> c.score).toArray();
   }
 
   @Test
@@ -39,10 +45,10 @@ public class OpenRefineMapperTest {
 
   @Test
   public void exactMatchIsAutoMatched() {
-    var usage = name("42", "Puma concolor", "(Linnaeus, 1771)", MatchType.EXACT);
+    var usage = name("42", "Puma concolor", "(Linnaeus, 1771)");
     var match = UsageMatch.match(MatchType.EXACT, usage, 3, null);
 
-    var result = OpenRefineMapper.toResult(match);
+    var result = OpenRefineMapper.toResult(name(null, "Puma concolor", "(Linnaeus, 1771)"), match);
 
     assertEquals(1, result.result.size());
     var c = result.result.get(0);
@@ -56,20 +62,72 @@ public class OpenRefineMapperTest {
 
   @Test
   public void ambiguousIsNotAutoMatched() {
-    var usage = name("1", "Aus", null, MatchType.AMBIGUOUS);
-    var alt = name("2", "Aus", null, MatchType.AMBIGUOUS);
+    var usage = name("1", "Aus", null);
+    var alt = name("2", "Aus", null);
     var match = UsageMatch.match(MatchType.AMBIGUOUS, usage, 3, List.of(alt));
 
-    var result = OpenRefineMapper.toResult(match);
+    var result = OpenRefineMapper.toResult(name(null, "Aus", null), match);
 
     assertEquals(2, result.result.size());
     assertFalse("ambiguous primary must not auto-match", result.result.get(0).match);
+    assertFalse(result.result.get(1).match);
+    // the alternative has the very same label, but is no better than the ambiguous primary
+    assertArrayEquals(new double[]{75, 75}, scores(result), 0.0001);
+  }
+
+  /**
+   * Alternatives used to be scored by their names index match type, which is always NONE since the names
+   * index became canonical only, so all of them scored 0 (#1599).
+   */
+  @Test
+  public void alternativesAreScoredByLabel() {
+    var usage = name("1", "Abies alba", "Mill.");
+    var alt1 = name("2", "Abies alba", "(Aiton) Michx.");
+    var alt2 = name("3", "Abies alba", "(Aiton) Jess.");
+    var match = UsageMatch.match(MatchType.VARIANT, usage, 3, List.of(alt1, alt2));
+
+    var result = OpenRefineMapper.toResult(name(null, "Abies alba", null), match);
+
+    assertEquals(List.of("1", "2", "3"), result.result.stream().map(c -> c.id).toList());
+    assertArrayEquals(new double[]{98, 98, 98}, scores(result), 0.0001);
+    assertFalse(result.result.get(1).match);
+  }
+
+  @Test
+  public void alternativesNeverOutscoreThePrimary() {
+    // a same label homonym the matcher rejected, e.g. for its classification
+    var usage = name("1", "Abies alba", "Mill.");
+    var alt = name("2", "Abies alba", "L.");
+    var match = UsageMatch.match(MatchType.VARIANT, usage, 3, List.of(alt));
+
+    var result = OpenRefineMapper.toResult(name(null, "Abies alba", "L."), match);
+    assertArrayEquals(new double[]{98, 98}, scores(result), 0.0001);
+
+    // the alternatives of a higher rank match are those of the higher name
+    var genus = name("g1", Rank.GENUS, "Abies", "Mill.");
+    var altGenus = name("g2", Rank.GENUS, "Abies", "Hill");
+    match = UsageMatch.match(MatchType.HIGHERRANK, genus, 3, List.of(altGenus));
+
+    result = OpenRefineMapper.toResult(name(null, "Abies nova", "Smith"), match);
+    assertArrayEquals(new double[]{50, 50}, scores(result), 0.0001);
+  }
+
+  @Test
+  public void alternativesWithoutPrimary() {
+    var alt1 = name("1", "Abies alba", "Mill.");
+    var alt2 = name("2", "Abies alba", "L.");
+    var match = UsageMatch.empty(MatchType.NONE, List.of(alt1, alt2), 3);
+
+    var result = OpenRefineMapper.toResult(name(null, "Abies alba", "Mill."), match);
+
+    assertArrayEquals(new double[]{100, 98}, scores(result), 0.0001);
+    assertFalse(result.result.get(0).match);
     assertFalse(result.result.get(1).match);
   }
 
   @Test
   public void noMatchYieldsEmptyResult() {
-    var result = OpenRefineMapper.toResult(UsageMatch.empty(3));
+    var result = OpenRefineMapper.toResult(name(null, "Aus", null), UsageMatch.empty(3));
     assertTrue(result.result.isEmpty());
   }
 
@@ -89,7 +147,7 @@ public class OpenRefineMapperTest {
 
   @Test
   public void extendValuesFromUsageAndClassification() {
-    var usage = name("42", "Puma concolor", "(Linnaeus, 1771)", MatchType.EXACT);
+    var usage = name("42", "Puma concolor", "(Linnaeus, 1771)");
     usage.setNamesIndexId(987);
     var family = SimpleNameClassified.snc("f1", Rank.FAMILY, NomCode.ZOOLOGICAL, TaxonomicStatus.ACCEPTED, "Felidae", null);
     usage.setClassification(List.of(family));
@@ -105,7 +163,7 @@ public class OpenRefineMapperTest {
 
   @Test
   public void buildExtendResponseFillsRequestedColumns() {
-    var usage = name("42", "Puma concolor", "(Linnaeus, 1771)", MatchType.EXACT);
+    var usage = name("42", "Puma concolor", "(Linnaeus, 1771)");
     var family = SimpleNameClassified.snc("f1", Rank.FAMILY, NomCode.ZOOLOGICAL, TaxonomicStatus.ACCEPTED, "Felidae", null);
     usage.setClassification(List.of(family));
 
@@ -148,7 +206,7 @@ public class OpenRefineMapperTest {
     // the global mapper uses NON_EMPTY inclusion; the reconciliation spec still requires the
     // "result" field to be present (as an empty array) or OpenRefine errors with
     // "JSON response without result field". Verify it survives serialization.
-    var out = Map.of("q0", OpenRefineMapper.toResult(UsageMatch.empty(3)));
+    var out = Map.of("q0", OpenRefineMapper.toResult(name(null, "Aus", null), UsageMatch.empty(3)));
     String json = ApiModule.MAPPER.writeValueAsString(out);
     var node = ApiModule.MAPPER.readTree(json);
     assertTrue("q0 must carry a result field", node.path("q0").has("result"));

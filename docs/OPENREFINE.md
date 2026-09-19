@@ -41,8 +41,10 @@ CORS is enabled, so modern OpenRefine (3.x+) talks to it directly — no JSONP n
    `{key}` accepts the usual dataset-key aliases, e.g. `3LXR` (latest COL extended release),
    `3LR` (latest normal release), `COL2024`, or `gbif-<uuid>` — these are rewritten to the real
    release key automatically.
-3. Reconcile the column. Exact hits (`matchType=EXACT`) auto-match; ambiguous/variant/canonical
-   hits are offered as a candidate list to pick from.
+3. Reconcile the column. Exact hits (`matchType=EXACT`) auto-match; ambiguous, variant and higher
+   rank hits are offered as a candidate list to pick from. The matched taxon comes first, followed by
+   the other taxa the matcher considered. Those are scored like the match, by comparing their name and
+   authorship with the cell (100 exact, 98 variant), but never above the match itself.
 
 ### Improving matches with property hints
 

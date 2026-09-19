@@ -24,6 +24,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicLong;
@@ -362,7 +363,18 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   public static UsageMatch interpretAndMatch(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
                                        NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
   ) {
-    UsageMatch match;
+    var snc = interpret(sn, classification, issues, interpreter, utils);
+    // external match requests fall back to a higher rank match when the name itself cannot be matched
+    return snc.isPresent() ? matcher.match(snc.get(), false, verbose, true) : UsageMatch.empty(0);
+  }
+
+  /**
+   * Parses a name to be matched and matches it to the names index.
+   * @return the name as the usage matcher expects it, empty and flagged as unparsable if it cannot be parsed
+   */
+  public static Optional<SimpleNameClassified<SimpleNameCached>> interpret(SimpleName sn, List<SimpleNameCached> classification,
+                                                                          IssueContainer issues, NameInterpreter interpreter, MatchingUtils utils
+  ) {
     var opt = interpreter.interpret(sn, issues);
     if (opt.isPresent()) {
       NameUsageBase nu = (NameUsageBase) NameUsage.create(sn.getStatus(), opt.get().getName());
@@ -370,14 +382,10 @@ public abstract class AbstractMatchingJob extends DatasetJob {
       if (nu.getRank() == Rank.UNRANKED) {
         nu.getName().setRank(null);
       }
-      var snc = utils.toSimpleNameClassified(nu, classification);
-      // external match requests fall back to a higher rank match when the name itself cannot be matched
-      match = matcher.match(snc, false, verbose, true);
-    } else {
-      match = UsageMatch.empty(0);
-      issues.add(Issue.UNPARSABLE_NAME);
+      return Optional.of(utils.toSimpleNameClassified(nu, classification));
     }
-    return match;
+    issues.add(Issue.UNPARSABLE_NAME);
+    return Optional.empty();
   }
 
   private static class MappedStream {
