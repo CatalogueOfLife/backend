@@ -20,6 +20,7 @@ import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -302,8 +303,28 @@ public class ProjectRelease extends AbstractProjectCopy {
     super.onLogAppenderClose();
   }
 
+  /**
+   * Validates the copied release data, replacing all issues that came with the project.
+   * Sector syncs keep no validation issues and projects are rarely validated, so a release that only copied them
+   * carried hardly any issues at all. A failing validation fails the release.
+   */
+  protected void validateRelease() throws InterruptedException {
+    checkIfCancelled();
+    LOG.info("Remove copied issues and validate release {}", newDatasetKey);
+    final LocalDateTime start = LocalDateTime.now();
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(VerbatimSourceMapper.class).removeAllIssues(newDatasetKey);
+      var consumer = new TreeCleanerAndValidator(session, newDatasetKey, false);
+      consumer.validate(session);
+      LOG.info("{} usages out of {} flagged with issues during validation of release {}", consumer.getFlagged(), consumer.getCounter(), newDatasetKey);
+    }
+    DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
+  }
+
   @Override
   void finalWork() throws Exception {
+    validateRelease();
+
     // write id reports - XRelease has its own and idProvider will be null
     checkIfCancelled();
     if (idProvider != null) {

@@ -247,6 +247,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
+    // an ancestor was dropped as an undecidable homonym, so this usage goes with it.
+    // Its whole subtree has to be skipped: with the ancestor never matched or created there is nothing
+    // sensible left to attach to, and the descendants would otherwise be orphaned onto the family above.
+    if (parents.isSkipped()) {
+      incIgnored(IgnoreReason.IGNORED_PARENT, nu);
+      return;
+    }
+
     boolean unique = nu.getName().getRank().isSupraspecific() && cfg != null && cfg.xCfg.enforceUnique(nu.getName());
     boolean markMatch = false;
 
@@ -311,6 +319,19 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
     }
 
+    // An existing usage shares this canonical name but carries different authorship, and neither the
+    // ranks the two classifications share nor their taxonomic group can tell a real homonym from the
+    // very same taxon. Creating the name would fabricate a duplicate genus, so drop it and its whole
+    // subtree instead - a genus we cannot place with confidence contributes nothing rather than a
+    // second copy. See https://github.com/CatalogueOfLife/data/issues/1718
+    if (!match.isMatch() && match.unresolvedHomonym) {
+      LOG.warn("Skip {} {} [{}] from {} and its entire subtree: another {} of the same name but different authorship exists in {}, and neither the ranks they share nor their taxonomic group can tell them apart. Source classification: {}",
+        nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, nu.getName().getRank(), targetDatasetKey, parents.classificationToString());
+      parents.markSubtreeAsSkipped();
+      incIgnored(IgnoreReason.AMBIGUOUS_HOMONYM, nu);
+      return;
+    }
+
     // remember the match
     parents.setMatch(match.usage);
     if (markMatch) {
@@ -349,7 +370,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     } else {
       // *** CREATE ***
       if ( nu.isTaxon() && syncTaxa && !isAmbiguousGenus(nu) ||  nu.isSynonym() && syncSynonyms) {
-        sn = create(nu, parent);
+        sn = create(nu, parent, mod);
       }
     }
 
@@ -448,7 +469,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
   }
 
-  private SimpleNameWithNidx create(NameUsageBase nu, Usage parent) {
+  private SimpleNameWithNidx create(NameUsageBase nu, Usage parent, ModifiedUsage mod) {
     // replace accepted taxa with doubtful ones for genus parents which are synonyms
     // provisionally accepted species & infraspecies will not create an implicit genus or species !!!
     if (nu.getStatus() == TaxonomicStatus.ACCEPTED && parent != null && parent.status.isSynonym() && parent.rank == Rank.GENUS) {
@@ -499,17 +520,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // only add a new name if we do not have already multiple names that we cannot clearly match
     // track if we are outside of the sector target
-    Issue[] issues;
     if (target != null && parent != null
       && !Objects.equals(parent.id, target.getId())
       && !containsID(matcher.store().getClassification(parent.id), target.getId())
     ) {
-      issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
-    } else {
-      issues = new Issue[0];
+      mod.add(Issue.SYNC_OUTSIDE_TARGET);
     }
-    // *** CREATE ***
-    var sn = super.create(nu, parent, issues);
+    // *** CREATE *** keeping the issues flagged while processing, e.g. the name validation
+    var sn = super.create(nu, parent, mod);
     created++;
     parents.setMatch(sn);
     matcher.store().add(sn);

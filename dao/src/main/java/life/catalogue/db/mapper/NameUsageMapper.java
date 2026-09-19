@@ -586,10 +586,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
    * @param ordered if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
+   * @param skipSynonymChildren if true the traversal does not descend into usages whose parent is a synonym.
+   *                            They have no valid classification and break consumers that only track accepted parents.
    */
   Cursor<LinneanNameUsage> processTreeLinneanUsage(@Param("param") TreeTraversalParameter params,
                                                  @Param("depthFirst") boolean depthFirst,
-                                                 @Param("ordered") boolean ordered);
+                                                 @Param("ordered") boolean ordered,
+                                                 @Param("skipSynonymChildren") boolean skipSynonymChildren);
+
+  default Cursor<LinneanNameUsage> processTreeLinneanUsage(TreeTraversalParameter params, boolean depthFirst, boolean ordered) {
+    return processTreeLinneanUsage(params, depthFirst, ordered, false);
+  }
 
   default Cursor<LinneanNameUsage> processTreeLinneanUsage(@Param("param") TreeTraversalParameter params) {
     return processTreeLinneanUsage(params, false, false);

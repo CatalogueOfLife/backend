@@ -5,7 +5,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.EmptySqlSessionFactory;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
@@ -27,6 +26,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableSet;
 
 import javax.annotation.Nullable;
@@ -49,6 +49,8 @@ public class NameIndexImpl implements NameIndex {
   public static final Set<NameType> INDEX_NAME_TYPES = ImmutableSet.of(
       NameType.SCIENTIFIC, NameType.FORMULA, NameType.INFORMAL, NameType.OTHER, NameType.IDENTIFIER
   );
+  // keys are lower case, see key()
+  private static final CharMatcher ASCII_LETTER_OR_DIGIT = CharMatcher.inRange('a', 'z').or(CharMatcher.inRange('0', '9'));
 
   private final NameIndexStore store;
   private final AuthorComparator authComp;
@@ -105,6 +107,10 @@ public class NameIndexImpl implements NameIndex {
         name.setRank(ScientificName.CANONICAL_RANK);
       }
       final String key = key(name);
+      if (!indexable(key)) {
+        LOG.debug("Name {} has no indexable key >>{}<<", name.getLabel(), key);
+        return NameMatch.noMatch();
+      }
       int nidx = store.get(key);
       NameMatch m = nidx > 0 ? NameMatch.match(nidx) : NameMatch.noMatch();
       if (allowInserts && !m.isMatched() && eligable(name)) {
@@ -125,11 +131,20 @@ public class NameIndexImpl implements NameIndex {
   /**
    * Checks if the given name is eligable to be included in the names index.
    * We allow bad names in the index - it is not a reference, just a lookup.
-   * But we exclude no names and placeholders
+   * But we exclude no names and placeholders.
+   * A name also needs an {@link #indexable} key, which match checks before it even looks the key up.
    */
   private static boolean eligable(Name n){
-    return INDEX_NAME_TYPES.contains(n.getType())
-      && StringUtils.digitOrAsciiLetters(n.getLabel()) != null;
+    return INDEX_NAME_TYPES.contains(n.getType());
+  }
+
+  /**
+   * A key is only indexed if it contains at least one ASCII letter or digit.
+   * Names written in a non Latin script or made of punctuation only have keys like "**" or "", which would
+   * put every name of the same shape into one shared entry. The authorship never counts, it is not part of the key.
+   */
+  private static boolean indexable(String key) {
+    return ASCII_LETTER_OR_DIGIT.matchesAnyOf(key);
   }
 
   @Override
@@ -219,7 +234,8 @@ public class NameIndexImpl implements NameIndex {
   }
 
   /**
-   * @return A pure ASCII key based on the newly formatted canonical name or scientific name as the fallback
+   * @return A lower case ASCII key based on the newly formatted canonical name or scientific name as the fallback.
+   *   Characters that cannot be folded to ASCII are replaced by *
    */
   private static String key(FormattableName n) {
     String origName = NameFormatter.canonicalName(n);

@@ -281,6 +281,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   /**
+   * Creates the usage with all issues flagged for it while it was processed,
+   * above all the name validation done in processCommon.
+   */
+  protected SimpleNameCached create(NameUsageBase u, @Nullable Usage parent, IssueContainer issues) {
+    return create(u, parent, issues.getIssues().toArray(Issue[]::new));
+  }
+
+  /**
    * Creates a new usage with the lowest current matched parent.
    * Updates the parent stack with the newly created taxon as the current parent match.
    * Increases stat counters.

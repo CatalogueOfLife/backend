@@ -115,7 +115,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       {"biota", List.of("wcvp", "lcvp", "ipni")}, // TODO: should be merged: Biota macrocarpa hort. ex Gordon AND Biota macrocarpa Godr.
       {"saccolomataceae", List.of("orthiopteris")},
       {"protected", List.of("src")}, // XReleaseConfig.protectedGroups shields the Carabus subtree from merges
-      {"bareauthorship", List.of("src")} // bare-name merge candidates must be filtered by authorship, see readme.md
+      {"bareauthorship", List.of("src")}, // bare-name merge candidates must be filtered by authorship, see readme.md
+      {"genushomonyms", List.of("src")} // genus homonyms decided by the lowest shared rank, see readme.md
     });
   }
 
@@ -558,6 +559,58 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       u = getByName(Datasets.COL, Rank.PHYLUM, "Arthropoda");
       assertVNames(u, 2, vnm);
     }
+  }
+
+  /**
+   * Invoked by reflection from {@link #syncAndCompare()} for the "genushomonyms" project.
+   * See txtree/genushomonyms/readme.md for the full scenario writeup and data#1718.
+   * <p>
+   * Two usages sharing a canonical genus name but carrying different authorship are compared at the
+   * lowest rank present in both classifications, within a window from FAMILY up to ORDER. This asserts
+   * all three verdicts, including the two things the tree diff alone cannot show: that the surviving
+   * genus kept its own authorship, and that the undecided genus was skipped rather than duplicated.
+   */
+  public void genushomonymsValidate() {
+    // SAME: the source Amanita has no family at all, but both agree at ORDER (Agaricales), so the
+    // target genus is reused. It must stay single, and must NOT adopt the incoming "Pers." - the keep
+    // path snaps to the existing usage and never updates it.
+    var amanita = listByName(Datasets.COL, Rank.GENUS, "Amanita");
+    assertEquals("A genus agreeing at order level must not be duplicated", 1, amanita.size());
+    assertEquals("Dill. ex Boehm., 1760", amanita.get(0).getName().getAuthorship());
+
+    // ... and the source species merged underneath that very genus
+    var caesarea = getByName(Datasets.COL, Rank.SPECIES, "Amanita caesarea");
+    assertNotNull("The source species must be merged under the existing genus", caesarea);
+    assertEquals(amanita.get(0).getId(), caesarea.getParentId());
+
+    // CONFLICT: both Bus usages carry a family and the families differ, so they stay separate genera.
+    // They do agree at ORDER (Coleoptera) - if the check used the lowest *agreeing* rank instead of the
+    // lowest *shared* one, that agreement would mask the family conflict and collapse them into one.
+    var bus = listByName(Datasets.COL, Rank.GENUS, "Bus");
+    assertEquals("Genera conflicting at family level must stay separate", 2, bus.size());
+    var busAuthors = new HashSet<String>();
+    for (var u : bus) {
+      busAuthors.add(u.getName().getAuthorship());
+    }
+    assertEquals(Set.of("Cameron, 1939", "Berthold, 1827"), busAuthors);
+
+    // CONFLICT by taxonomic group: neither Dus offers a rank between family and order, but one is a
+    // vascular plant and the other a beetle. A disparate group decides it even when the ranks cannot.
+    var dus = listByName(Datasets.COL, Rank.GENUS, "Dus");
+    assertEquals("Genera in disparate taxonomic groups must stay separate", 2, dus.size());
+    assertNotNull("The plant Dus must be created rather than skipped",
+      getByName(Datasets.COL, Rank.SPECIES, "Dus secundus"));
+
+    // UNDECIDED: the source Cus sits straight under the phylum, so the two share no rank between
+    // family and order. Unlike Dus its group does not contradict the target's, so nothing decides it ...
+    var cus = listByName(Datasets.COL, Rank.GENUS, "Cus");
+    assertEquals("An undecidable genus must not be created", 1, cus.size());
+    assertEquals("Mill.", cus.get(0).getName().getAuthorship());
+
+    // ... and so is its whole subtree, which is the part that distinguishes this from a plain skip:
+    // a skipped genus must not leave its species orphaned under the nearest matched parent.
+    assertNull("The descendants of a skipped genus must be skipped too",
+      getByName(Datasets.COL, Rank.SPECIES, "Cus secundus"));
   }
 
   void assertVNames(DSID<String> key, int num, VernacularNameMapper vnm) {

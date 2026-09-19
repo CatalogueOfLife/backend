@@ -289,6 +289,28 @@ public class UsageMatcherIT {
   }
 
   /**
+   * A genus whose author is cited by the first part of his compound surname in one source and with initials
+   * and the full surname in another. The XR merged such a genus twice.
+   * https://github.com/CatalogueOfLife/backend/issues/1595
+   */
+  @Test
+  public void compoundSurnameGenus() throws InterruptedException {
+    loadDataset(8);
+
+    // AlgaeBase spelling, same family
+    var m = match(Rank.GENUS, "Achnanthes", "Bory de Saint-Vincent", cl().kingdom("Chromista").family("Achnanthaceae"));
+    assertMatch(m, "Achnanthes");
+
+    // FinBIF spells the author with initials and places the genus in another family
+    m = match(Rank.GENUS, "Achnanthes", "J.B.M. Bory de St. Vincent", cl().kingdom("Chromista").family("Achnanthidiaceae"));
+    assertMatch(m, "Achnanthes");
+
+    // a genuinely different author is still no match
+    m = match(Rank.GENUS, "Achnanthes", "K. Hustedt", cl().kingdom("Chromista").family("Achnanthidiaceae"));
+    assertNoMatch(m);
+  }
+
+  /**
    * Monomial homonyms & suprageneric_rank filter
    */
   @Test

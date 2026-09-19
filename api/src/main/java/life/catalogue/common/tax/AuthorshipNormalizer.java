@@ -41,6 +41,11 @@ public class AuthorshipNormalizer {
   private static final Pattern AUTHOR = Pattern.compile("^((?:[a-z]\\s)*).*?([a-z]+)( (?:filius|fil|fl|f|bis|ter)\\.?)?$");
   private static final String AUTHOR_MAP_FILENAME = "authorship/authormap.txt";
   private static final Pattern PUNCTUATION = Pattern.compile("[\\p{Punct}&&[^,]]+");
+  /** nobiliary particles joining the parts of a compound surname, e.g. "Bory de Saint-Vincent" */
+  private static final Set<String> PARTICLES = Set.of(
+    "de", "del", "della", "den", "der", "des", "di", "do", "dos", "du", "da", "das",
+    "la", "le", "les", "ten", "ter", "van", "von", "y", "af", "av", "zu"
+  );
   private final Map<String, String> botMap;   // BOT + ANY entries
   private final Map<String, String> zooMap;   // ZOO + ANY entries
 
@@ -242,8 +247,14 @@ public class AuthorshipNormalizer {
     public final @NotNull String fullname;
     public final String initials;
     public final @NotNull String surname;
+    /**
+     * First part of a compound surname joined by a nobiliary particle, e.g. "bory" in
+     * "bory de saint vincent" or "kerner" in "kerner von marilaun". Null if there is none.
+     * Sources regularly cite just that part, while {@link #surname} only ever holds the last word.
+     */
+    public final String surnamePrefix;
     public final String suffix;
-  
+
     public Author(String a) {
       fullname = a;
       Matcher m = AUTHOR.matcher(a);
@@ -259,13 +270,35 @@ public class AuthorshipNormalizer {
         surname = trim(a);
         suffix = "";
       }
+      surnamePrefix = compoundSurnamePrefix(a);
     }
 
     public Author(String fullname, String initials, String surname, String suffix) {
       this.fullname = Preconditions.checkNotNull(fullname);
       this.initials = initials;
       this.surname = Preconditions.checkNotNull(surname);
+      this.surnamePrefix = null;
       this.suffix = suffix;
+    }
+
+    /**
+     * @return the word before the first nobiliary particle of a normalized author string,
+     *         or null if there is no such particle or it starts the surname already
+     */
+    private static String compoundSurnamePrefix(String a) {
+      if (a == null) return null;
+      String[] words = StringUtils.split(a.toLowerCase(), ' ');
+      // skip leading initials
+      int start = 0;
+      while (start < words.length && words[start].length() == 1) {
+        start++;
+      }
+      for (int i = start + 1; i < words.length - 1; i++) {
+        if (PARTICLES.contains(words[i]) && !PARTICLES.contains(words[i - 1])) {
+          return words[i - 1];
+        }
+      }
+      return null;
     }
 
     private String trim(String x) {

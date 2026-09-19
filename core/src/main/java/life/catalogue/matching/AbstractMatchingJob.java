@@ -33,6 +33,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -391,8 +392,14 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   private MappedStream streamUpload() throws IOException {
     final InputStream data = new FileInputStream(req.getUpload());
     var reader  = CharsetDetectingStream.createReader(data);
-    final var fileFormat = TabularFormatDetection.detectFormat(req.getUpload(), reader.charset);
-    LOG.info("Treat upload file {} as {} with {} encoding", req.getUpload(), fileFormat, reader.charset);
+    // an explicit csv or tsv content type is kept as the upload file suffix, anything else is probed
+    final String suffix = FilenameUtils.getExtension(req.getUpload().getName()).toLowerCase();
+    final boolean explicit = suffix.equals("csv") || suffix.equals("tsv");
+    final var fileFormat = explicit ?
+                           TabularFormat.valueOf(suffix.toUpperCase()) :
+                           TabularFormatDetection.detectFormat(req.getUpload(), reader.charset);
+    LOG.info("Treat upload file {} as {} ({}) with {} encoding", req.getUpload(), fileFormat,
+      explicit ? "content type" : "detected", reader.charset);
     final AbstractParser<?> parser = fileFormat == TabularFormat.CSV ?
                                TabReader.newParser(CsvReader.csvSetting()) :
                                TabReader.newParser(CsvReader.tsvSetting());

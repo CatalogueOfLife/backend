@@ -7,6 +7,7 @@ import life.catalogue.assembly.TreeMergeHandler;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.IssueAdder;
 import life.catalogue.dao.ParentStack;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.NameValidator;
 
@@ -47,10 +48,12 @@ import org.slf4j.LoggerFactory;
  *
  *  5) flag species that have been described before the genus was published
  *
+ * Use {@link #validate(SqlSession)} to traverse a whole dataset.
  */
 public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
   static final Logger LOG = LoggerFactory.getLogger(TreeCleanerAndValidator.class);
 
+  private final int datasetKey;
   private final IssueAdder issueAdder;
   private final ParentStack<XLinneanNameUsage> parents;
   private final AtomicInteger counter = new AtomicInteger(0);
@@ -59,6 +62,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
 
   public TreeCleanerAndValidator(SqlSession session, int datasetKey, boolean removeEmptyGenera) {
     DaoUtils.requireProjectOrRelease(datasetKey);
+    this.datasetKey = datasetKey;
     this.parents = new ParentStack<>();
     this.issueAdder = new IssueAdder(datasetKey, session);
     if (removeEmptyGenera) {
@@ -107,6 +111,24 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
 
   ParentStack<XLinneanNameUsage> stack() {
     return parents;
+  }
+
+  /**
+   * Traverses the entire tree of the dataset depth first, synonyms included, validates every usage
+   * and flushes the parent stack at the end so the last branch gets completed too.
+   *
+   * Usages whose parent is a synonym are not traversed, neither are their descendants.
+   * Only accepted taxa are pushed onto the parent stack, so they would abort the entire traversal,
+   * and they have no valid classification to validate against anyway.
+   *
+   * @param session the session to stream the tree with
+   */
+  public void validate(SqlSession session) {
+    TreeTraversalParameter params = TreeTraversalParameter.dataset(datasetKey);
+    params.setSynonyms(true);
+    var num = session.getMapper(NameUsageMapper.class);
+    PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false, true), this);
+    parents.flush();
   }
 
   public static class XLinneanNameUsage extends LinneanNameUsage {

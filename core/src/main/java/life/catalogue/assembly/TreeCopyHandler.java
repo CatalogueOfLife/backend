@@ -166,7 +166,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
     String origNameID= mod.usage.getName().getId();
     final var orig = DSID.copy(mod.usage);
     final var origParentId = mod.usage.getParentId();
-    var sn = create(mod.usage, parent);
+    var sn = create(mod.usage, parent, mod);
 
     // remember old to new id mappings
     ids.put(orig.getId(), usage(mod.usage, origParentId, decisions.get(orig.getId())));

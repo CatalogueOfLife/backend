@@ -228,6 +228,14 @@ public class XRelease extends ProjectRelease {
     super.metrics();
   }
 
+  /**
+   * The temporary project has been validated in prepWork already, see validateAndCleanTree().
+   */
+  @Override
+  protected void validateRelease() {
+    // nothing to do
+  }
+
   @Override
   void finalWork() throws Exception {
     super.finalWork();
@@ -646,20 +654,11 @@ public class XRelease extends ProjectRelease {
           }
         }
       });
-      // traverse accepted tree
-      var num = sessionRO.getMapper(NameUsageMapper.class);
-      TreeTraversalParameter params = new TreeTraversalParameter();
-      params.setDatasetKey(newDatasetKey);
-      params.setSynonyms(true);
-
-      PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), consumer);
-      stack.flush();
+      // traverse accepted tree - a failure must fail the release, it used to leave most of the tree silently unvalidated
+      consumer.validate(sessionRO);
       session.commit();
       metrics.setMaxClassificationDepth(consumer.getMaxDepth());
       LOG.info("{} usages out of {} flagged with issues during validation", consumer.getFlagged(), consumer.getCounter());
-
-    } catch (Exception e) {
-      LOG.error("Name validation, cleaning & metrics failed", e);
     }
     DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
   }

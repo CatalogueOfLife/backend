@@ -1,87 +1,108 @@
-# Catalogue of Life Backend
+# ChecklistBank Backend
+
+The ChecklistBank backend is a [Dropwizard](https://www.dropwizard.io/) application that drives the
+[ChecklistBank API](https://api.checklistbank.org/). It holds almost all data, search, name matching, import,
+release and sync logic of ChecklistBank and the Catalogue of Life.
+`webservice` is the maven module that builds the application. The API is documented at
+[checklistbank.org/about/API](https://www.checklistbank.org/about/API).
+
+Related repositories:
+
+- [CatalogueOfLife/checklistbank](https://github.com/CatalogueOfLife/checklistbank) - the frontend for [checklistbank.org](https://www.checklistbank.org)
+- [CatalogueOfLife/portal](https://github.com/CatalogueOfLife/portal) - the [catalogueoflife.org](https://www.catalogueoflife.org) website
+- [CatalogueOfLife/portal-components](https://github.com/CatalogueOfLife/portal-components) - embeddable tree, search and taxon components
+- [CatalogueOfLife/coldp](https://github.com/CatalogueOfLife/coldp) - the COL Data Package format
 
 For source code contributions please see our [developer guide](DEVELOPER-GUIDE.md).
-The COL backend is a [Dropwizard](https://www.dropwizard.io/) application, that drives the [COL ChecklistBank API](https://api.checklistbank.org/). 
-`webservice` is the maven module that builds the application.
 
 
 ## Prerequisites
-1. Java 11 JDK
-1. Maven 3.8
+1. Java 25 JDK
+1. Maven 3.9.5 or later
 1. Postgres 17
+1. Elasticsearch 9, optional - without it the name usage search is not available
+1. Docker, for the integration tests which use [Testcontainers](https://testcontainers.com/)
 
-## Run the COL WS application locally
-1. cd into `webservice`
-1. Run `mvn clean install` to build your application
-1. create a local [config.yml](webservice/src/main/resources/config.yaml) file
-1. On the first run init a new, empty database & search index with `java -jar target/webservice-1.0-SNAPSHOT.jar init --num 4 config.yml`. --num 4 will configure the number of partitions to use for external datasets
-1. Start application with `java -jar target/webservice-1.0-SNAPSHOT.jar server config.yml`
-1. To check that your application is running enter url `http://localhost:8080`
 
-For development tests you can also run the application straight from your IDE 
-by executing the main `WsServer.java` class and passing it the right arguments `server /path/to/config.yml`
+## Build & test
+```bash
+mvn clean install               # build everything and run all tests
+mvn clean install -DskipTests   # build only
+mvn test                        # unit tests (*Test)
+mvn verify                      # also the integration tests (*IT), which need Docker
+```
 
-In order to avoid real authentication against the GBIF registry you can change the AuthBundle and use a LocalAuthFilter
-instead of the real AuthFilter. This authenticates every request with a test account with full admin privileges.
+
+## Run the application locally
+1. Build the project with `mvn clean install -DskipTests`
+1. cd into `webservice` and create a local `config.yml`. [config-local.yaml](webservice/config-local.yaml) is a good starting point
+1. On the first run create a new, empty database & search index with `java -jar target/webservice-*-SNAPSHOT.jar init --num 4 config.yml`.
+   `--num` sets the number of hash partitions for the data tables
+1. Start the application with `java -jar target/webservice-*-SNAPSHOT.jar server config.yml`
+1. Start the background components as an admin with `curl -X POST -u admin:<password> http://localhost:8080/admin/component/start-all`.
+   Dropwizard does not start them by itself - the names index, the job executor and the schedulers stay off until you do
+1. Check that the application is running at `http://localhost:8080`
+
+For development you can also run the application straight from your IDE
+by executing the main `WsServer.java` class and passing it the arguments `server /path/to/config.yml`.
+
+To avoid real authentication against the GBIF registry configure the `map` authentication in your config,
+which authenticates against a fixed list of users and roles:
+
+```yaml
+auth:
+  type: map
+  users:
+    - username: admin
+      password: admin
+      role: admin
+```
+
+The jar also contains a number of CLI commands, e.g. `index` to rebuild the search index, `nidx` to rebuild the names index
+or `export` to export a dataset. Run `java -jar target/webservice-*-SNAPSHOT.jar -h` to list them all.
+
+
+### Servers
+The same jar provides several Dropwizard applications:
+
+| Main class | Purpose |
+|---|---|
+| `WsServer` | The main read/write server with imports, syncs, releases and exports. The jar's default main class |
+| `WsROServer` | A read-only server for the public API, run next to `WsServer` in production |
+| `WsMatchingServer` | A standalone name matching service for a single dataset, see the `matchingServerBuild` command |
+| `WsBundleServer` | Serves a single release from its own Postgres & Elasticsearch, see [BUNDLE.md](docs/BUNDLE.md) |
+
+Start any but the default one with `java -cp target/webservice-*-SNAPSHOT.jar life.catalogue.WsROServer server config.yml`.
 
 
 ## Health Check
-To see your applications health enter url `http://localhost:8081/healthcheck`
+To see your application's health open the admin port at `http://localhost:8081/healthcheck`.
 
 
 ## Maven modules
 
-### api
-The main API with model classes and shared common utilities classes.
+| Module | Content |
+|---|---|
+| `api` | The main API with model classes and shared common utility classes |
+| `vocab` | Controlled vocabularies used by the API |
+| `coldp` | Terms of the [ColDP](https://github.com/CatalogueOfLife/coldp) format with minimal dependencies |
+| `parser` | Parsers for enumerations and other controlled vocabularies, including a GBIF name parser wrapper |
+| `reader` | CSV readers for DwC-A, ColDP and ACEF |
+| `reader-xls` | Excel spreadsheet support for DwC-A, ColDP and ACEF |
+| `metadata` | Maps dataset metadata formats like ColDP and EML to the API |
+| `reference` | Citation formatting (CSL/citeproc, BibTeX) |
+| `kryo` | Kryo binary serialisation of the API model classes |
+| `pgcopy` | Reading and writing the Postgres binary copy format |
+| `doi` | DOI registration and management in DataCite |
+| `dao` | The Postgres persistence layer with MyBatis mappers, Elasticsearch and the names index |
+| `core` | Business logic not tied to the webservice: assembly & sector sync, releases, exports, matching and jobs |
+| `importer` | Dataset imports and normalisation for ColDP, DwC-A, ACEF and text trees |
+| `webservice` | The Dropwizard applications, JSON resources and CLI commands |
 
-### dao
-The postgres persistence layer.
-
-### doi
-Code dealing with (dataset) DOI registration and management in DataCite.
-
-### parser
-Various parsers/interpreters used mostly for importing.
-Contains a GBIF name parser wrapper.
-
-### webservice
-The Dropwizard based JSON webservices, importer and assembly code.
-
-
-
-## Dataset imports
-The admin server should be used to import known datasets from their registered data access URL.
-Imports are scheduled in an internal, non persistent queue. 
-Scheduling a dataset for importing is done by POSTing an import request object to the importer resource like this:
-
-```curl -X POST -d "{'datasetKey'=1000, 'priority'=false}" "http://localhost:8080/importer/queue"```
-
-The priority parameter places the request on the beginning of the queue.
+The [bundle](bundle) folder holds the Docker images of the single release "CLB in a box".
 
 
-### Data Normalizer
-All data is normalized prior to inserting it into the database.
-This includes transforming a flat classification into a parent child hierarchy 
-with just a single record for a uniue higher taxon.
- 
-### Import behaviour
-We have built the importer to fail early when encountering issue to not overwrite existing good data.
-Examples of data errors that cause the importer to abort are:
- 
- - unreadable data files (we only support UTF8, 16 and Latin1, Windows1552 & MacRoman as 8bit encodings)
- - missing required fields (e.g. AcceptedSpeciesID or the scientific name)
- 
-
-The importer does gracefully handle empty lines and skip lines with less columns than expected 
-(this shows as warning logs as bad delimiter escaping is often the root cause).
-
-### Issue flagging
-The dataset import flags records that have problems. 
-For each entire dataset import aggregate metrics are stored and can be retrieved even for historic versions for comparison and change analytics.
-
-All potential issues that are handled can be found here:
-https://github.com/Sp2000/colplus-backend/blob/master/colplus-api/src/main/java/org/col/api/vocab/Issue.java#L6
-
-For example:
-
- - declared accepted taxa are missing in the sources (e.g. a synonym declaring an AcceptedSpeciesID which does not exist)
+## Documentation
+Further documentation lives in [docs](docs). Files with an ALL-CAPS name describe the current behaviour,
+e.g. [XRELEASE.md](docs/XRELEASE.md), [HIERARCHY-SYNC.md](docs/HIERARCHY-SYNC.md), [DOI.md](docs/DOI.md) or [OPENREFINE.md](docs/OPENREFINE.md).
+Dated files are historical design records of individual changes and are not kept up to date.

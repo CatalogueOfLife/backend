@@ -22,3 +22,13 @@ offline by `AuthorMapGenerator` (test scope, never run by the build).
 1. Review `authormap-diff-report.txt` — every removed canonical/alias.
 2. Move anything worth keeping into `authormap-manual.txt` and re-run.
 3. `git diff` the regenerated `authormap.txt`, run `mvn -pl api test`, commit.
+
+## Compound surnames in a canonical
+
+A canonical is read as `initials… surname`, the surname being its last word. Parts of a compound
+surname must therefore stay spelled out: `J B G M Bory de Saint-Vincent`, not
+`J B B de Saint-Vincent`. The short form invents an initial "B" out of "Bory", which then conflicts
+with the real initials a source cites ("J.B.M. Bory de St. Vincent") and makes the two compare as
+different authors. The IPNI-derived base carries that mangling in a few hundred
+`initials + particle + surname` canonicals; correct them in `authormap-manual.txt` as they surface.
+See [backend#1595](https://github.com/CatalogueOfLife/backend/issues/1595).

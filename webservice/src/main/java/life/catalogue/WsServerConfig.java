@@ -21,6 +21,7 @@ import life.catalogue.img.ImgConfig;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.matching.DockerConfig;
 import life.catalogue.matching.nidx.NamesIndexConfig;
+import life.catalogue.release.review.AiReviewConfig;
 import life.catalogue.resources.legacy.LegacyConfig;
 
 import java.io.File;
@@ -130,6 +131,13 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
 
   @Valid
   public GithubConfig github;
+
+  /**
+   * The agentic release review. Entirely optional - without it a release simply cannot be reviewed by AI and
+   * {@code POST /dataset/{key}/review} answers 503. Its credentials live in the deploy repo, never here.
+   */
+  @Valid
+  public AiReviewConfig ai;
 
   /**
    * Per environment overrides of how the startable components behave, e.g. so that only prod ever opens a github

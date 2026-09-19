@@ -6,11 +6,13 @@ import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.dao.*;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.matching.decision.RematcherBase;
+import life.catalogue.release.review.SectorMetricsComparator;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
 
@@ -120,6 +122,31 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
     List<SectorImport> imports = sim.list(sectorKey, datasetKey, subjectDatasetKey, states, modes, null, page);
     return new ResultPage<>(page, imports, () -> sim.count(sectorKey, datasetKey, subjectDatasetKey, immutableStates, modes));
+  }
+
+  /**
+   * Compares the sector sync metrics of this dataset with another one, by default the previous public release
+   * of the same kind. Answers only the sectors worth a look during a release review.
+   *
+   * Editor rights, because it's potentially expensive.
+   */
+  @GET
+  @Path("sync/compare")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public List<SectorMetricsDiff> compareSyncMetrics(@PathParam("key") int datasetKey,
+                                                    @QueryParam("to") Integer otherKey,
+                                                    @QueryParam("minChange") @DefaultValue("0.1") double minChange,
+                                                    @Context SqlSession session) {
+    if (otherKey == null) {
+      otherKey = session.getMapper(DatasetMapper.class).previousRelease(datasetKey);
+      if (otherKey == null) {
+        throw new IllegalArgumentException("Dataset " + datasetKey + " has no previous public release to compare with. Use the to parameter.");
+      }
+    }
+    if (otherKey == datasetKey) {
+      throw new IllegalArgumentException("Cannot compare dataset " + datasetKey + " with itself");
+    }
+    return SectorMetricsComparator.compare(session, datasetKey, otherKey, minChange);
   }
 
   @POST

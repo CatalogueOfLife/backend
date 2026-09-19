@@ -80,6 +80,7 @@ public class SingleDatasetRewriteFilterTest {
     "export",     // DatasetExportResource, only the global /export is mounted
     "legacy",     // LegacyWebserviceResource
     "match",      // served globally and already keyless by FixedNameUsageMatchingResource
+    "review",     // DatasetReviewResource, rw server only - its POST triggers a paid AI review job
     "reviewer",   // DatasetReviewerResource, a write resource
     "taxalign"    // DatasetTaxDiffResource
   );

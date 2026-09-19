@@ -24858,7 +24858,7 @@ J Andrews	BOT	J.Andrews	J. Andrews
 J Arechavaleta	BOT	Arechav.	José Arechavaleta
 J Arènes	BOT	Arènes	Jean Arènes
 J B A Guillemin	BOT	Guill.	Jean Baptiste Antoine Guillemin
-J B B de Saint-Vincent	BOT	Bory	Jean Baptiste Bory de Saint-Vincent	Jean-Baptiste Bory de Saint-Vincent	Bory de St.Vincent
+J B G M Bory de Saint-Vincent	BOT	Bory	Jean Baptiste Bory de Saint-Vincent	Jean-Baptiste Bory de Saint-Vincent	Bory de St.Vincent	Bory de Saint-Vincent	J.B.M. Bory de St. Vincent
 J B C F Aublet	BOT	Aubl.	Jean Baptiste Christophore Fusée Aublet
 J B Cleland	BOT	Cleland	John Burton Cleland
 J B Comber	BOT	J.B.Comber	James Boughtwood Comber

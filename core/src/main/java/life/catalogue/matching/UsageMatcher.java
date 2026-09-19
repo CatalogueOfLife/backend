@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 
@@ -342,16 +343,48 @@ public class UsageMatcher implements AutoCloseable {
     }
 
     // remove canonical matches between 2 qualified, non suprageneric names
-    // for genus matches we keep the canonical matches and compare their family further down.
+    // for genus matches we keep the canonical matches and compare their lineage further down.
     // Two qualified names are only merged when their authorship compares EQUAL - a DIFFERENT or merely
     // UNKNOWN comparison keeps them as separate entries. Year-only authorship is handled below.
     if (qualifiedName && !nu.getRank().isGenusOrSuprageneric() && !isYearOnlyAuthorship(nu)) {
       existing.removeIf(u -> u.hasAuthorship() && notEqualAuthorship(u, nu) );
     }
 
-    // remove canonical matches between 2 qualified genus names, UNLESS they are in the exact same family!
+    // Two qualified genus names sharing a canonical but differing in authorship are decided by lineage:
+    // compare at the lowest rank their classifications share between FAMILY and ORDER. Equal there means
+    // the same genus published under another author citation, different means real homonyms. Sharing no
+    // such rank leaves it to the taxonomic group, and if that does not contradict either we genuinely
+    // cannot tell - in which case the name must be skipped rather than inserted as a duplicate.
+    // See https://github.com/CatalogueOfLife/data/issues/1718
+    boolean unresolvedHomonym = false;
     if (qualifiedName && nu.getRank() == Rank.GENUS) {
-      existing.removeIf(u -> u.hasAuthorship() && differentAuthorship(u, nu) && !sameFamily(u, nu.getClassification()));
+      TaxGroup group = null;
+      boolean groupAnalyzed = false;
+      var iter = existing.iterator();
+      while (iter.hasNext()) {
+        var u = iter.next();
+        if (!u.hasAuthorship() || !differentAuthorship(u, nu)) {
+          continue; // equal or incomparable authorship is no homonym question - leave it to the other filters
+        }
+        switch (compareLineage(u, nu.getClassification())) {
+          case SAME -> { } // keep the candidate
+          case CONFLICT -> iter.remove();
+          case UNDECIDED -> {
+            iter.remove();
+            // The shared ranks did not settle it, but a disparate taxonomic group still does: a genus in
+            // the Protozoa is not the sponge genus of the same name, however little classification either
+            // side supplies. Only when the groups do not contradict each other is this truly undecidable -
+            // and then the name must be skipped rather than inserted as a duplicate.
+            if (!groupAnalyzed) {
+              group = groupAnalyzer.analyze(nu, nu.getClassification());
+              groupAnalyzed = true;
+            }
+            if (classificationMatches(group, nu, u)) {
+              unresolvedHomonym = true;
+            }
+          }
+        }
+      }
       // snap if there is just one genus left?
       snap = !existing.isEmpty() && existing.stream()
         .allMatch(u -> u.hasAuthorship() && differentAuthorship(u, nu));
@@ -374,7 +407,11 @@ public class UsageMatcher implements AutoCloseable {
 
     // shortcut if no candidates are left
     if (existing.isEmpty()) {
-      return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
+      // an undecidable genus homonym is not simply "no match" - inserting it would create the very
+      // duplicate we removed the candidate to avoid, so say so and let the caller skip the name
+      return unresolvedHomonym
+        ? UsageMatch.unresolvedHomonym(MatchType.NONE, alt, datasetKey)
+        : UsageMatch.empty(MatchType.NONE, alt, datasetKey);
     }
 
     // Avoid tax group comparison for supragenerics if they both are properly accepted
@@ -662,10 +699,66 @@ public class UsageMatcher implements AutoCloseable {
       .findFirst();
   }
 
-  private boolean sameFamily(SimpleNameClassified<SimpleNameCached> u, List<SimpleNameCached> parents) {
-    var fam1 = u.getClassification().stream().filter(n -> n.getRank()==Rank.FAMILY).findFirst();
-    var fam2 = parents.stream().filter(n -> n.getRank()==Rank.FAMILY).findFirst();
-    return fam1.isPresent() && fam2.isPresent() && fam1.get().getName().equalsIgnoreCase(fam2.get().getName());
+  /**
+   * The verdict of comparing two classifications, see {@link #compareLineage}.
+   */
+  enum Lineage {
+    /** they agree at the lowest rank they share, so this is one and the same taxon */
+    SAME,
+    /** they disagree there, so these are real homonyms in different lineages */
+    CONFLICT,
+    /** they share no rank that carries enough weight, so it cannot be told either way */
+    UNDECIDED
+  }
+
+  /**
+   * The ranks that count as evidence when deciding whether two same-named, differently authored genera are
+   * the same taxon: FAMILY up to ORDER.
+   * <p>
+   * Family is the best indicator, but sources regularly omit it - Flora e Funga do Brasil files its fungal
+   * genera straight under the order - so the next higher shared rank has to serve instead. Above ORDER the
+   * evidence gets too thin to act on: every beetle genus shares a kingdom with every other one.
+   */
+  @VisibleForTesting
+  static boolean isEvidenceRank(Rank r) {
+    return r != null && r.notOtherOrUnranked() && !r.isUncomparable()
+           && !r.higherThan(Rank.ORDER) && !r.lowerThan(Rank.FAMILY);
+  }
+
+  /**
+   * Compares a candidate's classification against the queried name's parents at the lowest rank the two
+   * share within {@link #isEvidenceRank}.
+   * <p>
+   * This is deliberately the lowest <em>shared</em> rank, not the lowest <em>agreeing</em> one that
+   * {@link #lowestClassificationMatch} looks for: Mycetochara in Tenebrionidae and Mycetochara in
+   * Staphylinidae agree at ORDER, and letting that agreement stand in for the conflicting FAMILY would
+   * merge two genera that are genuinely different.
+   *
+   * @param parents the classification of the name being matched, ordered highest rank first
+   * @see <a href="https://github.com/CatalogueOfLife/data/issues/1718">data#1718</a>
+   */
+  @VisibleForTesting
+  static Lineage compareLineage(SimpleNameClassified<SimpleNameCached> candidate, List<SimpleNameCached> parents) {
+    if (parents == null) {
+      return Lineage.UNDECIDED;
+    }
+    Rank lowest = null;
+    String candidateName = null;
+    String parentName = null;
+    for (var p : parents) {
+      if (!isEvidenceRank(p.getRank())) continue;
+      var cp = candidate.getByRank(p.getRank());
+      if (cp == null || cp.getName() == null || p.getName() == null) continue;
+      if (lowest == null || lowest.higherThan(p.getRank())) {
+        lowest = p.getRank();
+        candidateName = cp.getName();
+        parentName = p.getName();
+      }
+    }
+    if (lowest == null) {
+      return Lineage.UNDECIDED;
+    }
+    return candidateName.equalsIgnoreCase(parentName) ? Lineage.SAME : Lineage.CONFLICT;
   }
 
   private Rank lowestClassificationMatch(SimpleNameClassified<SimpleNameCached> candidate, List<SimpleNameCached> parents) {

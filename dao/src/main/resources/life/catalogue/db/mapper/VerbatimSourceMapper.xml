@@ -148,8 +148,9 @@
   </update>
 
   <update id="addIssues" parameterType="map">
+    <!-- keep the array free of duplicates: metrics count issues by unnesting it -->
     UPDATE verbatim_source
-    SET issues = array_cat(issues, ARRAY[<foreach item="iss" collection="issues" separator=",">'${iss}'::ISSUE</foreach>])
+    SET issues = ARRAY(SELECT DISTINCT unnest(array_cat(issues, ARRAY[<foreach item="iss" collection="issues" separator=",">'${iss}'::ISSUE</foreach>])))
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 

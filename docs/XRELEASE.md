@@ -64,7 +64,13 @@ Traverses the entire accepted name tree depth-first:
 - **Name validation** — parsing issues, code compliance
 - **Classification integrity** — parent/child rank order, genus/species mismatches, publication dates
 - **`TaxonMetricsBuilder`** — builds per-taxon counts (species, synonyms, etc.) during traversal
-- Flags issues to `VerbatimSource` records via `IssueAdder`
+- Flags issues to `VerbatimSource` records via `IssueAdder`, which never stores an issue twice
+- Skips accepted taxa below a synonym parent and their descendants, which `flagLoops()` repoints next.
+  The parent stack only tracks accepted taxa, so they used to abort the traversal after the first root.
+- A failure fails the release. It used to be logged and swallowed, which left most of the tree unvalidated.
+
+A plain `ProjectRelease` runs the same validation on its copied data in `finalWork()`, after dropping the issues
+copied from the project. The XRelease overrides that as a no-op, since it validates here already.
 
 #### 2h. `flagLoops()` — Structural Integrity
 Detects and fixes four categories of structural problems:
@@ -194,6 +200,37 @@ a sanity check. That check used to adopt the parsed name only when its type was 
 `specificEpithet = "sp. 1"`. It now adopts the parsed name whenever the parser disagrees with the
 type the atoms assumed, which lets both the `SECTOR_NAME_TYPES` filter and the `INDETERMINED` filter
 above do their job. See [data#1568](https://github.com/CatalogueOfLife/data/issues/1568).
+
+### Genus homonyms
+
+Two genus usages sharing a canonical name but carrying **different authorship** are decided by lineage
+in `UsageMatcher.filterCandidates`, not by the family rank alone:
+
+1. Compare the two classifications at the **lowest rank they share between FAMILY and ORDER**
+   (`UsageMatcher.isEvidenceRank`). Equal there means one and the same genus published under another
+   author citation - the candidate is kept and, being the only survivor, becomes a `snap` match: reused
+   as the parent for the incoming children, never updated, so the target keeps its own authorship.
+   Different there means real homonyms and the candidate is dropped, which creates a second genus.
+2. Sharing no rank in that window leaves it to the **taxonomic group**: a disparate `TaxGroup` still
+   means different taxa, so a new genus is created.
+3. If the groups do not contradict each other either, the merge is genuinely undecidable. The name is
+   then **skipped together with its whole subtree** rather than inserted - a fabricated duplicate genus
+   splits the species of a real one across two entries, which is worse than omitting one source's copy.
+   `TreeMergeHandler` logs a warning and counts it under `IgnoreReason.AMBIGUOUS_HOMONYM` in the sector
+   import metrics; descendants are counted under `IGNORED_PARENT`. Watch that counter after a release -
+   it is the only measure of what the skip cost.
+
+The window exists because family is the best indicator but is regularly absent: Flora e Funga do Brasil
+files its fungal genera straight under the order, which is what produced a duplicate *Amanita* in the
+2026-09 XR ([data#1718](https://github.com/CatalogueOfLife/data/issues/1718)). Above ORDER the evidence
+is too thin to act on - every beetle genus shares a kingdom with every other one. It is deliberately the
+lowest *shared* rank rather than the lowest *agreeing* one (`lowestClassificationMatch`): *Mycetochara*
+in Tenebrionidae and in Staphylinidae agree at ORDER, and letting that stand in for the conflicting
+FAMILY would merge two genera that are genuinely different.
+
+Species and below are untouched by this and keep the stricter rule that authorship must compare EQUAL -
+two same-named species in one genus are classic homonyms. See `txtree/genushomonyms/readme.md` for the
+worked scenario.
 
 ## Known Issues / Technical Debt
 

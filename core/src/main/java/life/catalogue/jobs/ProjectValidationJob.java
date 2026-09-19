@@ -1,13 +1,10 @@
 package life.catalogue.jobs;
 
-import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.common.date.DateUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.release.TreeCleanerAndValidator;
@@ -46,25 +43,18 @@ public class ProjectValidationJob extends DatasetBlockingJob {
 
     LOG.info("Clean and validate entire project {}", datasetKey);
     final LocalDateTime start = LocalDateTime.now();
+    // a failure fails the job - the issues have been removed already and must not look validated
     try (SqlSession session = factory.openSession(true)) {
       var consumer = new TreeCleanerAndValidator(session, datasetKey, false);
-      var num = session.getMapper(NameUsageMapper.class);
-      TreeTraversalParameter params = new TreeTraversalParameter();
-      params.setDatasetKey(datasetKey);
-      params.setSynonyms(true);
-
-      PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), consumer);
+      consumer.validate(session);
       LOG.info("Maximum depth of {} found for accepted tree of project {}", consumer.getMaxDepth(), datasetKey);
       LOG.info("{} usages out of {} flagged with issues during validation", consumer.getFlagged(), consumer.getCounter());
-
-      // reindex entire dataset
-      LOG.info("Reindex project {}", datasetKey);
-      indexService.indexDataset(datasetKey);
-
-    } catch (Exception e) {
-      LOG.error("Name validation & cleaning failed", e);
     }
     DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
+
+    // reindex entire dataset
+    LOG.info("Reindex project {}", datasetKey);
+    indexService.indexDataset(datasetKey);
   }
 
   @Override

@@ -80,6 +80,27 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     assertEquals(issues, iss);
   }
 
+  /**
+   * Issues read back as a set hide duplicates, but the metrics count the stored array by unnesting it.
+   * A release validates data that already carries issues, so adding an existing issue must not store it twice.
+   */
+  @Test
+  public void addIssuesStoresNoDuplicates() throws Exception {
+    VerbatimSource v1 = create(); // 2 issues
+    mapper().create(v1);
+
+    mapper().addIssues(v1, Set.of(Issue.BASIONYM_DERIVED, DOI_NOT_FOUND));
+    mapper().addIssue(v1, DOI_NOT_FOUND);
+
+    try (var st = connection().prepareStatement("SELECT cardinality(issues) FROM verbatim_source WHERE dataset_key = ? AND id = ?")) {
+      st.setInt(1, v1.getDatasetKey());
+      st.setInt(2, v1.getId());
+      var rs = st.executeQuery();
+      assertTrue(rs.next());
+      assertEquals(3, rs.getInt(1));
+    }
+  }
+
   @Test
   public void delete() {
     var t = createTaxon();
