@@ -187,9 +187,54 @@ public class IdProviderTest {
     assertEquals(1, report.deleted.size());
     assertEquals(2, report.resurrected.size());
 
-    assertID(10, testNames.get(0)); // resurrected
-    assertID(11, testNames.get(1)); // current Mill. matches oldest Mill
-    assertID(20, testNames.get(2)); // different synonym parent
+    assertID(10, testNames.get(0)); // resurrected, no id of the last release fits it
+    assertID(20, testNames.get(1)); // keeps the id the last release published rather than resurrecting 11
+    assertID(11, testNames.get(2)); // resurrected: same authorship, and 20 is taken
+  }
+
+  @Test
+  public void currentIdWinsOverBetterEvidencedResurrection() throws Exception {
+    // COL26.9 (attempt 629) put Lycaenidae, published as C98 without authorship since COL21, onto PR9JG - an id from
+    // a release deleted since, carrying the authorship the name has meanwhile acquired. Nothing contradicts either
+    // pairing, and an added authorship is missing information turning into information, not a different name. So the
+    // id the last release published stays with the name and the better corroborated resurrection does not take it.
+    prevIdsByAttempt.put(1, List.of(
+      sn(80, 9, 9, FAMILY, "Lycaenidae", null, ACCEPTED),
+      sn(81, 9, 9, FAMILY, "Lycaenidae", "Leach, 1815", ACCEPTED)
+    ));
+    prevIdsByAttempt.put(2, List.of(
+      sn(80, 9, 9, FAMILY, "Lycaenidae", null, ACCEPTED),
+      sn(81, 9, 9, FAMILY, "Lycaenidae", "Leach, 1815", ACCEPTED)
+    ));
+    // the last release has only 80 left, so 81 would have to be resurrected
+    prevIdsByAttempt.put(3, List.of(
+      sn(80, 9, 9, FAMILY, "Lycaenidae", null, ACCEPTED)
+    ));
+
+    testNames = new ArrayList<>(List.of(
+      sn(9, 9, FAMILY, "Lycaenidae", "Leach, 1815", ACCEPTED)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapAllIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(0, report.resurrected.size());
+    assertEquals(0, report.deleted.size());
+
+    assertID(80, testNames.get(0));
+  }
+
+  @Test
+  public void idOfAVanishedReleaseIsNotTheOldest() throws Exception {
+    // deleted and private releases are loaded like any other, so their ids keep their real attempt. A release whose
+    // dataset row is gone for good used to resolve to attempt 0 through the primitive map - older than every real
+    // attempt, which made such an id the most senior candidate of its canonical group. It ranks last instead.
+    IdTestProvider provider = new IdTestProvider();
+    provider.addRelease(new IdProvider.Release(1001, DatasetOrigin.RELEASE, 1));
+
+    assertEquals(1, provider.attemptOf(1001));
+    assertEquals(Integer.MAX_VALUE, provider.attemptOf(4711));
   }
 
   @Test

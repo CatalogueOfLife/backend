@@ -120,6 +120,18 @@ Three further changes fall out of this:
 - `stableNameIds` is off by default. It changes every name id in a release at once — from a 22-character
   ShortUUID to a 7-character LATIN29 id — which is visible in the `NameID` column of every COLDP and DwC-A
   export, so it wants a heads-up to data users and goes to COL first.
+- **2026-09-16, prompted by the review of COL26.9 (attempt 629).** That release put 34,796 names on other
+  identifiers, 31,610 of which had been in continuous use since COL21, on code that predates this branch.
+  The job log named two causes, and both are fixed here. First, an archived id whose earliest release had
+  since been deleted resolved to **attempt 0** — older than every real attempt, so the id of a long gone
+  release outranked ids in continuous use. `IdProvider.loadReleaseAttempts` now loads deleted and private
+  releases as well (a deleted release keeps its `dataset` row and with it its `attempt`), and `attemptOf`
+  ranks a release whose row is gone for good last rather than first. Second, a resurrected id that agreed on
+  authorship outranked the id the previous release published, because evidence sat above everything:
+  *Lycaenidae* `C98`, archived without authorship and published since COL21, lost to `PR9JG`
+  (*Lycaenidae* Leach, 1815) from a release deleted in the meantime. `IdCandidate` now compares
+  `isCurrent` **before** the verdict. Evidence still gates a pairing rather than ranking it: a contradicted
+  pairing never becomes a candidate, and a resurrection still needs positive agreement on authorship or rank.
 
 ## Migration
 

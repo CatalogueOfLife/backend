@@ -281,11 +281,15 @@ id - which, the index being canonical-only, is the entire name based grouping, s
 all the discriminating power. `NameIdentity` compares them three valued on `AuthorComparator` and `RankComparator`:
 a contradiction (changed authorship, incompatible rank, disparate `TaxGroup`, misapplied against non misapplied, two
 concrete nomenclatural codes) rules a pairing out, while missing information - an authorship added or removed, an
-unranked name - never does. Resurrecting an id the last release no longer had needs more than the absence of
-contradictions. `IdCandidate` orders the pairings: evidence first and never outweighed, then seniority, which is
-longevity based rather than currency based (base-release-seen before xr-only, then more releases, then earlier first
-release), which is what makes a removed erroneous duplicate lose to the id it duplicated. Ids are handed out greedily,
-best pairing first.
+unranked name - never does. Evidence gates a pairing rather than ranking it: a contradicted pairing is dropped before
+it is a candidate at all, and resurrecting an id the last release no longer had needs positive agreement on authorship
+or rank on top of that. `IdCandidate` then orders what is left: an id the last release still had first - the world
+already cites it, and a better corroborated resurrection must not take it away - then the evidence, then seniority,
+which is longevity based rather than currency based (base-release-seen before xr-only, then more releases, then earlier
+first release), which is what makes a removed erroneous duplicate lose to the id it duplicated. An id's attempt comes
+from the release it first appeared in, deleted and private releases included: their `dataset` row survives and carries
+the attempt, and a release whose row is gone for good ranks last on seniority instead of first (attempt 0 used to make
+it the most senior id of its group). Ids are handed out greedily, best pairing first.
 The archive is the memory all of this reads: one row per id ever issued, holding the version of the highest ranked
 release that carries it (`ReleaseRanking`: base release generations newest first, an extended release in the generation
 of the base release its job recorded as `params.baseReleaseKey`, the base release above its extended releases). It used

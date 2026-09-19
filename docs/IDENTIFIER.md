@@ -109,19 +109,23 @@ name nobody has much information about.
 Sometimes more than one previous identifier is a candidate for the same name — typically because the name
 was present more than once in the past.
 
-Evidence decides first, and nothing below can outweigh it. Only when the data says *exactly* as much
-about two candidates does age decide, and then COL prefers **longevity over recency**:
+An identifier the previous release still carried comes first, and nothing below can take it away. Only
+candidates that nothing in the table above contradicts get this far, so between them the one already in
+circulation is the one your links and citations point at. Below that the evidence decides, and only when the
+data says *exactly* as much about two candidates does age decide, and then COL prefers
+**longevity over recency**:
 
-1. an identifier a base release has used, over one only ever issued in an extended release
-2. the identifier that appeared in more releases, base and extended releases counted alike
-3. the identifier whose first release was the earliest
-4. an identifier the previous release still had, over one that has to be brought back
-5. the lowest identifier
+1. an identifier the previous release still had, over one that has to be brought back
+2. the identifier the data says more about — see the table above
+3. an identifier a base release has used, over one only ever issued in an extended release
+4. the identifier that appeared in more releases, base and extended releases counted alike
+5. the identifier whose first release was the earliest
+6. the lowest identifier
 
-An identifier that served twenty releases and was dropped last month is cited in far more publications
-than the one minted to replace it, so restoring the older one costs the community less than keeping the
-newer. This is deliberate, and it is the answer to the long-standing complaint that an identifier used
-for years could be replaced by one issued weeks ago
+Among identifiers that all have to be brought back, one that served twenty releases and was dropped last
+month is cited in far more publications than the one minted to replace it, so restoring the older one costs
+the community less than keeping the newer. This is deliberate, and it is the answer to the long-standing
+complaint that an identifier used for years could be replaced by one issued weeks ago
 ([#1289](https://github.com/CatalogueOfLife/backend/issues/1289)).
 
 ## Duplicates that get removed
