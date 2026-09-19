@@ -74,6 +74,14 @@ public class ProjectReleaseConfig {
    */
   public boolean removeBareNames = true;
 
+  /**
+   * If true names get stable identifiers too, reusing the identifier of one of their own usages. Off by default:
+   * it replaces every name id in a release - today the project's ShortUUID or source id, which is not stable across
+   * releases anyway - with a 7 character LATIN29 one, and that is a visible change to the NameID column of every
+   * COLDP and DwC-A export.
+   */
+  public boolean stableNameIds = false;
+
   // list of dataset keys of releases to ignore (e.g. they contain bad ids)
   @NotNull
   public List<Integer> ignoredReleases = new ArrayList<>();

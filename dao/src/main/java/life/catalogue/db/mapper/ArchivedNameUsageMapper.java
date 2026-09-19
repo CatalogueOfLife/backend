@@ -5,6 +5,7 @@ import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -44,22 +45,96 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   );
 
   /**
-   * Adds the release_key to the list of existing release keys
-   * for all archived usages for a given project that still exist in the given release (based on the usage ID alone)
-   * @param projectKey
-   * @param releaseKey
-   * @return number of updated archive records
+   * Inserts the archive records missing for the usages of a release, with empty release keys: addReleaseKey adds the
+   * key last. Safe to run twice, also at the same time.
+   * @return number of inserted archive records
+   */
+  int createMissingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * Rewrites the archived version of the usages of a release wherever any archived column differs, skipping records
+   * that carry one of the blocking release keys, i.e. whose version a higher ranked release holds. See ReleaseRanking.
+   * @return number of rewritten archive records
+   */
+  int updateExistingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey,
+                           @Param("blocking") List<Integer> blocking);
+
+  /**
+   * Adds the release key, keeping the array sorted, to every archive record of a usage of the release that lacks it.
+   * The per release step runs this last, so a release key present in the archive means the release was archived completely.
+   * @return number of archive records the key was added to
    */
   int addReleaseKey(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
 
   /**
-   * Create new archive records for all usages in the given release
-   * which not yet exist in the archive (based on the usage ID alone)
-   * @param projectKey
-   * @param releaseKey
-   * @return number of new archive records
+   * Sorts and de-duplicates the release keys of every archive record of a project.
+   * @return number of changed archive records
    */
-  int createMissingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+  int tidyReleaseKeys(@Param("projectKey") int projectKey);
+
+  /**
+   * Dry run counterpart of createMissingUsages.
+   */
+  int countMissingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * Dry run counterpart of updateExistingUsages.
+   * @param renamedOnly if true only counts records whose scientific name would change
+   */
+  int countOutdatedUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey,
+                          @Param("blocking") List<Integer> blocking, @Param("renamedOnly") boolean renamedOnly);
+
+  /**
+   * Dry run counterpart of addReleaseKey, counting existing archive records only.
+   */
+  int countMissingReleaseKeys(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * @return true if any archive record of the project carries the release key
+   */
+  boolean isReleaseArchived(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * @return true if the release has any name usage
+   */
+  boolean hasUsages(@Param("releaseKey") int releaseKey);
+
+  /**
+   * Records that an identifier a release stopped using was taken over by another one - typically because the two were
+   * duplicates of the same name and the junior one was removed.
+   *
+   * Staged per RELEASE, not per project: a release that is never published, or is deleted again, must not leave a
+   * redirect behind on an identifier that is still live. {@code NameUsageArchiver.archiveRelease} drops them when it
+   * archives the published release, and folds them into {@code name_usage_archive.superseded_by} first only if that
+   * release decides redirects: the highest ranked supplying base or extended release of the newest generation, see
+   * {@code ReleaseRanking.decidesRedirects}.
+   */
+  void addSuperseded(@Param("releaseKey") int releaseKey, @Param("id") String id, @Param("supersededBy") String supersededBy);
+
+  /**
+   * Streams the staged supersede pairs of one release as {id, supersededBy} maps, ordered by id.
+   */
+  Cursor<Map<String, Object>> processSuperseded(@Param("releaseKey") int releaseKey);
+
+  /**
+   * Clears superseded_by for every archived id the given release does have, i.e. the ones it resurrected.
+   * @return number of cleared archive records
+   */
+  int clearSuperseded(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * Copies the supersede pairs staged for the given release into the project archive, where the record lacks that redirect.
+   * @param liveIn the keys of releases whose ids are live and get no redirect, i.e. the other supplying releases of the
+   *   newest generation
+   * @return number of updated archive records
+   */
+  int applySuperseded(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey,
+                      @Param("liveIn") List<Integer> liveIn);
+
+  /**
+   * Drops the staged supersede pairs of a release once they have been applied to the archive.
+   */
+  int deleteSuperseded(@Param("releaseKey") int releaseKey);
 
   /**
    * Lists all name usage identifiers with the same names index key across all datasets.

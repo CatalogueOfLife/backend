@@ -34,10 +34,9 @@ import org.slf4j.LoggerFactory;
  * Class to listen to dataset changes and act if a release dataset was changed from private to public.
  * It then
  *  - publishes the concept DOI
+ *  - archives the name usages of the release, see NameUsageArchiver
  * For COL releases it also does:
  *  - copies existing exports to the COL export folder
- *  - inserts deleted ids from the reports into the names archive
- *  - removes resurrected ids from the names archive
  */
 public class PublishReleaseListener implements DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(PublishReleaseListener.class);
@@ -59,7 +58,7 @@ public class PublishReleaseListener implements DatasetListener {
     this.factory = factory;
     this.executor = executor;
     this.httpClient = httpClient;
-    this.archiver = new NameUsageArchiver(factory);
+    this.archiver = new NameUsageArchiver(factory, new IgnoredReleases(factory));
     this.bus = bus;
   }
 
@@ -118,11 +117,10 @@ public class PublishReleaseListener implements DatasetListener {
         publishCOL(event);
       }
 
-      // When a release gets published we need to modify the projects name archive:
-      // a) Usages with new ids need to be added
-      // b) For all still existing usages the release_key needs to be added
+      // the published release enters the project's name usage archive. Both apps of a blue-green deploy receive this
+      // event, which the archiver is safe against
       try {
-        archiver.archiveRelease(event.obj.getKey(), true);
+        archiver.archiveRelease(event.obj.getKey());
       } catch (Exception e) {
         LOG.error("Failed to archive names for published release {}", event.obj.getKey(), e);
       }

@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
 
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
@@ -34,7 +35,8 @@ public class ReleasedIds {
     public final int id;
     public final int nxId;
     public final int canonId;
-    public final int attempt;
+    public final int attempt; // of the earliest release the id appeared in
+    public final int releaseCount; // number of not ignored releases the id appeared in
     public final boolean isCurrent;
     public final boolean xrOnly; // only ever issued in extended releases, never in a base release
     public final Rank rank;
@@ -43,31 +45,33 @@ public class ReleasedIds {
     public final TaxonomicStatus status;
     public final String parent; // this should be the scientific name of the parent, not the ID !!!
     public final TaxGroup group;
+    public final NomCode code;
 
     /**
      * @param sn simple name with parent being a scientificName, not ID!
      * @param xrOnly true if the id only ever appeared in extended releases
      * @throws IllegalArgumentException if the string id cannot be converted into an int, e.g. if it was a temp UUID
      */
-    public static ReleasedId create(SimpleNameWithNidx sn, int attempt, boolean currentID, boolean xrOnly) throws IllegalArgumentException {
-      return new ReleasedId(IdConverter.LATIN29.decode(sn.getId()), attempt, currentID, xrOnly, sn);
+    public static ReleasedId create(SimpleNameWithNidx sn, int attempt, int releaseCount, boolean currentID, boolean xrOnly) throws IllegalArgumentException {
+      return new ReleasedId(IdConverter.LATIN29.decode(sn.getId()), attempt, releaseCount, currentID, xrOnly, sn);
     }
 
     /**
      * @param sn simple name with parent being a scientificName, not ID!
      */
     protected ReleasedId(int id, int attempt, boolean isCurrent, SimpleNameWithNidx sn) {
-      this(id, attempt, isCurrent, false, sn);
+      this(id, attempt, 1, isCurrent, false, sn);
     }
 
     /**
      * @param sn simple name with parent being a scientificName, not ID!
      */
-    protected ReleasedId(int id, int attempt, boolean isCurrent, boolean xrOnly, SimpleNameWithNidx sn) {
+    protected ReleasedId(int id, int attempt, int releaseCount, boolean isCurrent, boolean xrOnly, SimpleNameWithNidx sn) {
       this.id = id;
       this.nxId = sn.getNamesIndexId();
       this.canonId = sn.getCanonicalId();
       this.attempt = attempt;
+      this.releaseCount = releaseCount;
       this.isCurrent = isCurrent;
       this.xrOnly = xrOnly;
       this.rank = sn.getRank();
@@ -76,6 +80,7 @@ public class ReleasedIds {
       this.status = sn.getStatus();
       this.parent = sn.getParent();
       this.group = sn.getGroup();
+      this.code = sn.getCode();
     }
 
     public String id() {

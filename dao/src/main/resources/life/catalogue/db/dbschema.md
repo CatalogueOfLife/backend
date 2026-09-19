@@ -11,6 +11,101 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-15 stable name ids
+No DDL - `idmap_name_<key>` has always been created per release run and joined by all five places that reference a
+name id (`NameMapper`, `NameUsageMapper.name_id`, `NameRelationMapper` for both sides, `TypeMaterialMapper`,
+`NameMatchMapper`), it was simply never filled, so names kept the project's ShortUUID or source id and changed from
+release to release. `IdMapMapper.mapNamesFromUsages` now fills it: every name takes the stable id of one of its own
+usages, so a name id is as stable as the usages carrying it and `NameID` means the same thing across releases.
+
+Off by default. Enable per project with `stableNameIds: true` in the project's release config, COL first: it replaces
+every name id in a release with a 7 character LATIN29 one, which is a visible change to the NameID column of every
+COLDP and DwC-A export and worth telling data users about first.
+
+#### 2026-09-15 record which id superseded a deleted one
+```sql
+ALTER TABLE name_usage_archive ADD COLUMN superseded_by TEXT;
+
+CREATE TABLE usage_id_superseded (
+  dataset_key INTEGER NOT NULL,
+  id TEXT NOT NULL,
+  superseded_by TEXT NOT NULL,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key) REFERENCES dataset ON DELETE CASCADE
+);
+```
+When one name ends up in a release twice and the erroneous duplicate is later removed, the id it had simply
+disappeared and every link to it broke. The release now records which id took over, and publishing the release folds
+that into `name_usage_archive.superseded_by` so an old id can be resolved to its survivor.
+
+`usage_id_superseded` is keyed by the RELEASE and is staging only: the release writes it while it is built, and
+`NameUsageArchiver.archiveRelease` drops it when the release goes public. Redirects are decided by the newest release
+generation: only its highest ranked supplying base release and its highest ranked supplying extended release apply
+their pairs first, skipping ids another supplying release of that generation carries. A release that is never
+published, or is deleted again, therefore leaves no redirect behind on an id that is still live - hence the cascade.
+An id a supplying release of the newest generation carries has its `superseded_by` cleared again.
+
+No backfill: the pairing is release time knowledge and cannot be reconstructed from the archive afterwards.
+
+#### 2026-09-15 name usage archive holds the newest version of an id, not the first
+No DDL, but a **data refresh per project before its first release after this deploy**, done by an admin job.
+
+`name_usage_archive` only ever inserted an id and then appended release keys to it, so every archived usage carried
+the name, authorship, rank, status and classification of the release that first minted its id - for COL often a
+decade out of date. That is the snapshot the id provider scores the next release against. Publishing now runs
+`NameUsageArchiver.archiveRelease`, which keeps every id at the version of its highest ranked release, see
+`docs/2026-09-15-name-usage-archive-migration.md`.
+
+Existing archives are refreshed in place, never deleted: deleting one loses every id only deleted releases carried, and
+can start the id sequence below an already published id.
+
+Publish no release during the deploy itself, while the old app's listener still runs the old archiving code. The first
+run rewrites most rows in place, which can roughly double the size of the table and its indexes until they are vacuumed,
+plus as much WAL to the standby: check the free disk first. It takes hours for COL, whose release jobs wait on the
+project lock meanwhile. The projects to refresh:
+
+```sql
+SELECT DISTINCT dataset_key FROM name_usage_archive ORDER BY dataset_key;
+```
+
+Per project, COL first:
+
+```sql
+-- 1. back up the project's archive and the superseded pairs staged for its releases
+CREATE TABLE name_usage_archive_bak_3 AS SELECT * FROM name_usage_archive WHERE dataset_key = 3;
+CREATE TABLE name_usage_archive_match_bak_3 AS SELECT * FROM name_usage_archive_match WHERE dataset_key = 3;
+CREATE TABLE usage_id_superseded_bak_3 AS
+  SELECT s.* FROM usage_id_superseded s JOIN dataset d ON d.key = s.dataset_key WHERE d.source_key = 3;
+```
+
+2. `POST /admin/archive/refresh?projectKey=3&dryRun=true`, then check the release ranking in the job log and the counts
+   in the job's step
+3. `POST /admin/archive/refresh?projectKey=3`. Do not publish a release of the project while it runs; if one was
+   published meanwhile, run the refresh again after it finished
+4. `VACUUM (ANALYZE) name_usage_archive;` and `VACUUM (ANALYZE) name_usage_archive_match;` - the first run rewrites
+   most rows
+5. before publishing the first release afterwards, diff its created, deleted and resurrected reports against the
+   previous attempt
+6. once that release looks right, drop the backups:
+   `DROP TABLE name_usage_archive_bak_3, name_usage_archive_match_bak_3, usage_id_superseded_bak_3;`
+
+The release start check does not detect an archive that is complete but not refreshed yet, because an archive written
+by the old code already carries every release key. Hold every release of a project until its refresh has finished, and
+after a failed or cancelled refresh run it again before starting a release.
+Do not use deploy's `archive.sh`: the `archive` command refuses a non empty archive, and emptying it first is exactly
+what loses ids. Rollback, with releases and publishing paused:
+
+```sql
+BEGIN;
+DELETE FROM name_usage_archive_match WHERE dataset_key = 3;
+DELETE FROM name_usage_archive WHERE dataset_key = 3;
+DELETE FROM usage_id_superseded s USING dataset d WHERE d.key = s.dataset_key AND d.source_key = 3;
+INSERT INTO name_usage_archive SELECT * FROM name_usage_archive_bak_3;
+INSERT INTO name_usage_archive_match SELECT * FROM name_usage_archive_match_bak_3;
+INSERT INTO usage_id_superseded SELECT * FROM usage_id_superseded_bak_3;
+COMMIT;
+```
+
 #### 2026-09-14 allow sectors sharing a subject
 Sectors with entity or rank filters can legitimately share a subject, e.g. an ATTACH sector and a vernacular only
 MERGE sector on the same source taxon. The unique constraint rejected the second one with `Sector already exists`,

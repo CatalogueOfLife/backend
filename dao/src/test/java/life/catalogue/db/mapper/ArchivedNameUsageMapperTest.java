@@ -50,8 +50,23 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
   }
 
   @Test
-  public void createMissingUsages() throws Exception {
-    mapper().createMissingUsages(Datasets.COL, 1000);
+  public void archiveStatements() throws Exception {
+    // apple has no release data, but this proves every statement runs against the schema
+    final int rel = 1000;
+    assertEquals(0, mapper().createMissingUsages(Datasets.COL, rel));
+    assertEquals(0, mapper().updateExistingUsages(Datasets.COL, rel, List.of()));
+    assertEquals(0, mapper().updateExistingUsages(Datasets.COL, rel, List.of(1, 2)));
+    assertEquals(0, mapper().addReleaseKey(Datasets.COL, rel));
+    assertEquals(0, mapper().tidyReleaseKeys(Datasets.COL));
+    assertEquals(0, mapper().countMissingUsages(Datasets.COL, rel));
+    assertEquals(0, mapper().countOutdatedUsages(Datasets.COL, rel, List.of(1), false));
+    assertEquals(0, mapper().countOutdatedUsages(Datasets.COL, rel, List.of(), true));
+    assertEquals(0, mapper().countMissingReleaseKeys(Datasets.COL, rel));
+    assertFalse(mapper().isReleaseArchived(Datasets.COL, rel));
+    assertFalse(mapper().hasUsages(rel));
+    assertEquals(0, mapper().clearSuperseded(Datasets.COL, rel));
+    assertEquals(0, mapper().applySuperseded(Datasets.COL, rel, List.of()));
+    assertEquals(0, mapper().applySuperseded(Datasets.COL, rel, List.of(1, 2)));
   }
 
   public static ArchivedNameUsage create() {

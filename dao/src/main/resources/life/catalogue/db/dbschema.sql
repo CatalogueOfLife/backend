@@ -1368,6 +1368,9 @@ CREATE TABLE name_usage_archive (
   classification SIMPLE_NAME[],
   published_in TEXT,
   release_keys INT[],
+  -- the id that took over when this one died, e.g. because it was an erroneous duplicate that got removed.
+  -- Only ever set for an id no longer in the latest release, and cleared again if the id is resurrected.
+  superseded_by TEXT,
 
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key) REFERENCES dataset
@@ -1978,6 +1981,19 @@ CREATE TABLE name_usage_archive_match (
 );
 CREATE INDEX ON name_usage_archive_match (dataset_key, index_id);
 CREATE INDEX ON name_usage_archive_match (index_id);
+
+-- Which id took over from an id a release stopped using, as worked out while that release was built.
+-- Keyed by the RELEASE, not the project: a release that is never published, or is deleted again, must not leave a
+-- redirect behind on an id that is still live. NameUsageArchiver drops them when it archives the published release,
+-- and folds them into name_usage_archive.superseded_by first only for the highest ranked supplying base and extended
+-- release of the newest generation, skipping ids another supplying release of that generation carries.
+CREATE TABLE usage_id_superseded (
+  dataset_key INTEGER NOT NULL,
+  id TEXT NOT NULL,
+  superseded_by TEXT NOT NULL,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key) REFERENCES dataset ON DELETE CASCADE
+);
 
 --
 -- LOOKUPS mostly for manual queries

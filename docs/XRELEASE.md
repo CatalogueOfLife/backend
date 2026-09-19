@@ -38,7 +38,7 @@ The key innovation is a **two-phase copy**: base release → temporary project (
 #### 2d. Merge infrastructure setup
 - Creates `TreeMergeHandlerConfig` — sets up incertae sedis placeholder taxon, blocked name filters
 - Loads the `UsageMatcher` store with data from the now-populated temp project
-- Creates `XIdProvider` for stable ID generation, removes existing IDs from temp dataset
+- Creates `XIdProvider` for ID generation, removes existing IDs from temp dataset
 
 #### 2e. `mergeSectors()` — Sector Sync
 For each sector (ordered by priority):
@@ -82,8 +82,12 @@ Detects and fixes four categories of structural problems:
 #### 2i. Cleanup & ID Stabilization
 - **`removeOrphans()`** — deletes names and references not linked to any usage
 - **`mapTmpIDs()`** — `XIdProvider.mapTempIds()` maps every usage whose id is not yet a stable release id
-  (`IdProvider.isStableId`: at most 7 LATIN29 characters) to a stable ID, e.g. the temporary ShortUUIDs issued to names
-  merged without authorship. Usages without a names index match cannot be given a stable ID and keep their id in the
+  (`IdProvider.isStableId`: at most 7 LATIN29 characters) to a stable ID. Every merged usage arrives here with a
+  temporary ShortUUID: `XIdProvider.issue()` mints nothing but temp ids, so the whole canonical group is scored at once
+  by this single pass rather than usage by usage in whatever order the sectors happened to be merged. It also runs
+  after `removeOrphans`, so no stable id is burnt on a usage that is dropped again in the same run. The base release's
+  own ids are stable already and are therefore skipped, on top of being held out of the pool by
+  `removeIdsFromDataset`. Usages without a names index match cannot be given a stable ID and keep their id in the
   release; they are listed in `temporary.tsv` in the release report directory and logged as a warning.
 - **`updateMetadata()`** — updates release description with source counts using Freemarker templates
 
@@ -104,17 +108,24 @@ Indexes all name usages for search.
 
 ## Stable IDs shared with base releases
 
-All releases of a project, base and extended, draw their IDs from one archive (`name_usage_archive`), which keeps
-the **first** version of every ID it has seen and only ever appends release keys to it. `XIdProvider` removes the IDs
-of the base release from its pool, so an extended release never takes over a base release ID. The next base release
-(`ProjectRelease` → `IdProvider`) however sees every archived ID, including those only ever issued in extended
-releases to names merged from other sources.
+[`IDENTIFIER.md`](IDENTIFIER.md) describes the identifier rules for data users; this section covers only what is
+specific to extended releases.
 
-When mapping a base release, `IdProvider.matchScore` scores such XR-only IDs `XR_ONLY_PENALTY` (7) lower. That is
-more than an authorship match (+6) is worth. The archived version of an old base release ID often carries an authorship
-the name has changed since, and the penalty stops a duplicate's XR ID with today's authorship from replacing it. An
-XR-only ID never drops to no match, so a name moving from the extended release into the base release keeps its ID.
-Releases missing from the release list, e.g. deleted or private ones, never count as extended releases.
+All releases of a project, base and extended, draw their IDs from one archive (`name_usage_archive`).
+`XIdProvider` removes the IDs of the base release from its pool, so an extended release never takes over a base
+release ID. The next base release (`ProjectRelease` → `IdProvider`) however sees every archived ID, including those
+only ever issued in extended releases to names merged from other sources.
+
+An ID only ever issued in an extended release is **junior** to one a base release has used: it loses any tie the
+evidence left, see `IdCandidate`. That is what stops a duplicate merged from another source from taking over an old
+base release ID, while still letting a name that moves from the extended release into the base release keep its ID -
+an XR-only ID is never ruled out, it only ranks below. Releases missing from the release list, e.g. deleted or private
+ones, never count as extended releases.
+
+This replaced an `XR_ONLY_PENALTY` of 7 points subtracted from a flat score, sized to exceed the 6 points an
+authorship match was worth. That penalty compensated for the archive keeping the *first* version of every ID, so an
+old base release ID often carried an authorship its name had changed since and lost to a younger duplicate carrying
+today's.
 
 ## Key Classes
 
@@ -123,7 +134,7 @@ Releases missing from the release list, e.g. deleted or private ones, never coun
 | `XRelease` | Orchestrator — extends ProjectRelease |
 | `XReleaseConfig` | Config: consolidation flags, blocked names, exclusions, thread counts |
 | `TreeMergeHandlerConfig` | Merge config: incertae sedis setup, blocked name patterns |
-| `XIdProvider` | Stable ID generation using NameIndex canonical lookups |
+| `XIdProvider` | Temporary ids during the merge; the batch stable-id pass inherited from `IdProvider` |
 | `SyncFactory` | Creates SectorSync instances for release-mode merging |
 | `SectorSync` | Executes a single sector merge (tree traversal + matching) |
 | `TreeMergeHandler` | Per-usage merge logic: match, create/update, apply decisions |
@@ -132,7 +143,7 @@ Releases missing from the release list, e.g. deleted or private ones, never coun
 | `SectorPriority` | Resolves conflicts: lower priority number = higher authority |
 | `TreeCleanerAndValidator` | Tree validation, issue flagging, metrics building |
 | `IssueAdder` | Writes issues to VerbatimSource records |
-| `IdProvider` | Base class for stable ID mapping across releases (score matrix) |
+| `IdProvider` | Base class for stable ID mapping across releases (`NameIdentity` evidence + `IdCandidate` ordering) |
 
 ## Configuration (XReleaseConfig)
 

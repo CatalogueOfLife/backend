@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.NameUsageArchiver;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.release.IgnoredReleases;
 
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class ArchiveCmd extends AbstractMybatisCmd {
 
   @Override
   public void execute() throws Exception {
-    archiver = new NameUsageArchiver(factory);
+    archiver = new NameUsageArchiver(factory, new IgnoredReleases(factory));
 
     Integer projectKey = ns.get(ARG_KEY);
     if (projectKey != null) {

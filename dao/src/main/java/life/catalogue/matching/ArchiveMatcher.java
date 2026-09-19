@@ -39,4 +39,20 @@ public class ArchiveMatcher extends BaseMatcher {
       LOG.info("Created {} name matches for {} archived names and {} not matching", updated, total, nomatch);
     }
   }
+
+  /**
+   * Rematches the archived names of one project through the names index. Only changed matches are written, and an
+   * archived name that no longer matches loses its match record. Other projects are left alone.
+   */
+  public void match(int projectKey) {
+    LOG.info("Rematch the name usage archive of project {}", projectKey);
+    try (SqlSession readOnlySession = factory.openSession(true)) {
+      var amum = readOnlySession.getMapper(ArchivedNameUsageMapper.class);
+      try (BulkMatchHandler hn = new BulkMatchHandler(true, ArchivedNameUsageMatchMapper.class, true)) {
+        PgUtils.consume(() -> amum.processArchivedNames(projectKey, false), hn);
+      }
+    } finally {
+      LOG.info("Rematched {} archived names of project {}: {} changed, {} without a match", total, projectKey, updated, nomatch);
+    }
+  }
 }

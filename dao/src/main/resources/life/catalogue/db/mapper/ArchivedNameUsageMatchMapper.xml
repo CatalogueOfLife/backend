@@ -73,21 +73,36 @@
     TRUNCATE name_usage_archive_match
   </update>
 
-  <insert id="createMissingMatches" parameterType="map">
-    INSERT INTO name_usage_archive_match (dataset_key,index_id,usage_id)
-    SELECT #{projectKey}, m.index_id, a.id
-    FROM name_usage_archive a
-      JOIN name_match m ON m.name_id=a.n_id
-    WHERE a.dataset_key=#{projectKey}
-      AND m.dataset_key=#{releaseKey}
-      AND NOT EXISTS (SELECT true FROM name_usage_archive_match WHERE dataset_key=#{projectKey} AND usage_id=a.id)
+  <!-- a supplying release may rewrite the match of any record it does not hold the version of (blocked by a higher
+       ranked release); a non supplying release (ignored, private, or a lower ranked duplicate generation) only ever
+       inserted the record in the first place, so it may only touch the match of the record it just inserted, never
+       one whose version another release already supplied. -->
+  <insert id="copyReleaseMatches" parameterType="map">
+    INSERT INTO name_usage_archive_match (dataset_key, index_id, usage_id)
+    SELECT #{projectKey}, nm.index_id, u.id
+    FROM name_usage u
+      JOIN name_match nm ON nm.dataset_key=u.dataset_key AND nm.name_id=u.name_id
+      JOIN name_usage_archive a ON a.dataset_key=#{projectKey} AND a.id=u.id
+    WHERE u.dataset_key=${releaseKey}
+      AND <choose>
+        <when test="insertedOnly">cardinality(a.release_keys) = 0</when>
+        <otherwise>NOT (a.release_keys &amp;&amp; <include refid="life.catalogue.db.mapper.ArchivedNameUsageMapper.BLOCKING"/>)</otherwise>
+      </choose>
+    ON CONFLICT (dataset_key, usage_id) DO UPDATE SET index_id = EXCLUDED.index_id
+      WHERE name_usage_archive_match.index_id IS DISTINCT FROM EXCLUDED.index_id
   </insert>
 
-  <insert id="createAllMatches" parameterType="map">
-    INSERT INTO name_usage_archive_match (dataset_key,index_id,usage_id)
-    SELECT a.dataset_key, m.index_id, a.id
-    FROM name_usage_archive a
-       JOIN name_match m ON m.name_id=a.n_id AND m.dataset_key=a.release_keys[0]
-  </insert>
+  <delete id="deleteUnmatchedReleaseMatches" parameterType="map">
+    DELETE FROM name_usage_archive_match am
+    USING name_usage u, name_usage_archive a
+    WHERE am.dataset_key=#{projectKey}
+      AND u.dataset_key=${releaseKey} AND u.id=am.usage_id
+      AND a.dataset_key=#{projectKey} AND a.id=am.usage_id
+      AND <choose>
+        <when test="insertedOnly">cardinality(a.release_keys) = 0</when>
+        <otherwise>NOT (a.release_keys &amp;&amp; <include refid="life.catalogue.db.mapper.ArchivedNameUsageMapper.BLOCKING"/>)</otherwise>
+      </choose>
+      AND NOT EXISTS (SELECT true FROM name_match nm WHERE nm.dataset_key=${releaseKey} AND nm.name_id=u.name_id)
+  </delete>
 
 </mapper>

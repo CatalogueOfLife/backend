@@ -186,8 +186,15 @@ public class XRelease extends ProjectRelease {
     // load matcher
     this.matcher.store().load(factory);
 
+    // prev release of the same origin. Resolved before the ids are mapped: the id provider needs it to keep name ids
+    // sticky, and newDatasetKey points at the temp project from here until the final copy
+    try (SqlSession session = factory.openSession(true)) {
+      prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(xreleaseDatasetKey);
+    }
+
     // setup id generator
     usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, factory);
+    usageIdGen.setPrevReleaseKey(prevReleaseKey);
     usageIdGen.removeIdsFromDataset(tmpProjectKey);
 
     mergeSectors();
@@ -211,11 +218,6 @@ public class XRelease extends ProjectRelease {
 
     // update metadata
     updateMetadata();
-
-    // prev release
-    try (SqlSession session = factory.openSession(true)) {
-      prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
-    }
   }
 
   @Override
@@ -491,19 +493,6 @@ public class XRelease extends ProjectRelease {
       }
     }
     DateUtils.logDuration(LOG, "Building sector metrics", start);
-  }
-
-  @Override
-  protected void onFinishLocked() throws Exception {
-    // release id generator resources
-    try {
-      if (usageIdGen != null) {
-        usageIdGen.close();
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to close id generator", e);
-    }
-    super.onFinishLocked();
   }
 
   protected void mergeSectors() throws Exception {

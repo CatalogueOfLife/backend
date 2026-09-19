@@ -489,6 +489,12 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   @Test
+  public void listReleasesForArchive() throws Exception {
+    // apple has no releases of COL, but this proves the statement and its result mapping run
+    assertTrue(mapper().listReleasesForArchive(Datasets.COL).isEmpty());
+  }
+
+  @Test
   public void count() throws Exception {
     assertEquals(3, mapper().count(null, null));
 

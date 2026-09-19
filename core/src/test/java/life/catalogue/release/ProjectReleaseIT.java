@@ -326,4 +326,20 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     verifyNoInteractions(jobExecutor);
   }
 
+  /**
+   * A public release missing from the name usage archive, e.g. because archiving it on publish failed, would let the id
+   * provider issue its identifiers again. The release refuses to start instead.
+   */
+  @Test
+  public void releaseRefusesUnarchivedPublicRelease() throws Exception {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getConnection().createStatement().execute(
+        "UPDATE name_usage_archive SET release_keys = array_remove(release_keys, 13) WHERE dataset_key=" + projectKey);
+    }
+    ProjectRelease release = buildRelease();
+    release.run();
+    assertEquals(JobStatus.FAILED, release.getStatus());
+    assertTrue(release.getError().getMessage(), release.getError().getMessage().contains("[13]"));
+  }
+
 }

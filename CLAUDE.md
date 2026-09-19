@@ -274,6 +274,42 @@ The most complex pipeline in the codebase. Builds an extended release by merging
 Uses a two-phase copy: base release → temporary project (for merging) → final release (with stable ID mapping). Key classes in `core/release/` and `core/assembly/`. 
 See [`docs/XRELEASE.md`](docs/XRELEASE.md) for detailed pipeline documentation. Important gotcha: `newDatasetKey` is temporarily reassigned to `tmpProjectKey` during `prepWork()` — methods called in that window operate on the temp dataset.
 
+**Stable identifiers:**
+A release maps every usage to a stable LATIN29 int id (`IdProvider` → `idmap_name_usage_<key>` → `copyDataset`'s
+`coalesce(mu.id2, u.id)`). Candidates are the ids of `name_usage_archive` sharing the usage's canonical names index
+id - which, the index being canonical-only, is the entire name based grouping, so authorship, rank and status carry
+all the discriminating power. `NameIdentity` compares them three valued on `AuthorComparator` and `RankComparator`:
+a contradiction (changed authorship, incompatible rank, disparate `TaxGroup`, misapplied against non misapplied, two
+concrete nomenclatural codes) rules a pairing out, while missing information - an authorship added or removed, an
+unranked name - never does. Evidence gates a pairing rather than ranking it: a contradicted pairing is dropped before
+it is a candidate at all, and resurrecting an id the last release no longer had needs positive agreement on authorship
+or rank on top of that. `IdCandidate` then orders what is left: an id the last release still had first - the world
+already cites it, and a better corroborated resurrection must not take it away - then the evidence, then seniority,
+which is longevity based rather than currency based (base-release-seen before xr-only, then more releases, then earlier
+first release), which is what makes a removed erroneous duplicate lose to the id it duplicated. An id's attempt comes
+from the release it first appeared in, deleted and private releases included: their `dataset` row survives and carries
+the attempt, and a release whose row is gone for good ranks last on seniority instead of first (attempt 0 used to make
+it the most senior id of its group). Ids are handed out greedily, best pairing first.
+The archive is the memory all of this reads: one row per id ever issued, holding the version of the highest ranked
+release that carries it (`ReleaseRanking`: base release generations newest first, an extended release in the generation
+of the base release its job recorded as `params.baseReleaseKey`, the base release above its extended releases). It used
+to freeze the first version, which is why an old id kept losing to a younger duplicate. Publishing runs the per release
+step `NameUsageArchiver.archiveRelease`, which never deletes a row, is safe to run twice - the broker delivers the event
+to both apps of a blue-green deploy - and writes the release key last, so a key's presence means the release was
+archived completely: base and extended release jobs refuse to start while a public release of their project lacks its
+key. `ArchiveRefreshJob` (`POST /admin/archive/refresh?projectKey=`) refreshes a whole project in place and rematches it
+through the names index. An id a release drops can record which id took it over (`name_usage_archive.superseded_by`,
+staged per release in `usage_id_superseded`). Redirects are decided by the newest generation: on publish its highest
+ranked supplying base and extended release apply their pairs, skipping ids another supplying release of that
+generation carries, and each of its supplying releases clears the redirects of the ids it carries. See
+[`docs/2026-09-15-name-usage-archive-migration.md`](docs/2026-09-15-name-usage-archive-migration.md).
+`XIdProvider` mints nothing but temp ids during the merge; the one `mapTempIds()` pass at the end of `XRelease`
+assigns the stable ones, so the whole canonical group competes at once instead of usage by usage in sector order.
+`name` records take the stable id of one of their own usages (`idmap_name_<key>`), off by default behind
+`ProjectReleaseConfig.stableNameIds`. [`docs/IDENTIFIER.md`](docs/IDENTIFIER.md) explains the rules for data
+users; [`docs/2026-09-15-stable-id-evidence-model.md`](docs/2026-09-15-stable-id-evidence-model.md) is the design
+record.
+
 **Release Bundle ("CLB in a box"):**
 `WsBundleServer` serves exactly one release from its own bundled Postgres and Elasticsearch - the read API
 plus matching and OpenRefine reconciliation. It `extends WsROServer<WsBundleServerConfig>`, which is generic
@@ -312,7 +348,7 @@ Follows Twitter Commons style guide with CoL customizations:
 All project documentation lives in `docs/`. Two kinds, distinguished by filename — keep them apart:
 
 - **`ALL-CAPS.md` — human-facing reference for CURRENT behavior.** What the code does today
-  (`API.md`, `XRELEASE.md`, `HIERARCHY-SYNC.md`, `DOI.md`, `OPENREFINE.md`,
+  (`API.md`, `IDENTIFIER.md`, `XRELEASE.md`, `HIERARCHY-SYNC.md`, `DOI.md`, `OPENREFINE.md`,
   `DATASET-TEMPLATES.md`, `AUTHORMAP-GENERATOR.md`). These are living documents: when behavior
   changes, update them. They must never describe a plan or a future state.
 - **`YYYY-MM-DD-lower-case-name.md` — dated design records from agent/superpower sessions.** The

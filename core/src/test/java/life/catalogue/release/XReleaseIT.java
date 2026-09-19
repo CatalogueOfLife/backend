@@ -207,7 +207,10 @@ public class XReleaseIT extends SectorSyncTestBase {
       dm.update(d);
     }
     // archive release for ids
-    archiver.archiveRelease(releaseKey, true);
+    archiver.archiveRelease(releaseKey);
+    // publishing reaches both apps of a deploy: on real release data a second run must write nothing
+    var again = archiver.archiveRelease(releaseKey);
+    assertTrue("second archiving wrote " + again, again.isUnchanged());
 
     // extended release
     XRelease xrel = projectCopyFactory.buildExtendedRelease(releaseKey, Users.RELEASER);

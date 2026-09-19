@@ -100,12 +100,29 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   void initJob() throws Exception {
     super.initJob();
+    assertReleasesArchived();
     // point to release in CLB - this requires the datasetKey to exist already
     newDataset.setUrl(UriBuilder.fromUri(clbURI)
       .path("dataset")
       .path(newDataset.getKey().toString())
       .build());
     dDao.update(newDataset, user);
+  }
+
+  /**
+   * Every public release of the project has to be in the name usage archive before ids are mapped: the id sequence starts
+   * above the highest archived id, so the ids only an unarchived release carries could be issued again to other names.
+   * Publishing archives a release; this catches the ones whose archiving failed or never happened.
+   * It runs once the release dataset and its import metrics exist, which the error handling of a failed job expects.
+   */
+  private void assertReleasesArchived() {
+    var missing = new NameUsageArchiver(factory).unarchivedReleases(projectKey);
+    if (!missing.isEmpty()) {
+      throw new IllegalStateException(String.format("Public releases %s of project %s are missing from the name usage archive, "
+          + "so their identifiers could be issued again. If one was just published, wait for its archiving on publish to finish; "
+          + "otherwise archive them first with POST /admin/archive/refresh?projectKey=%s",
+        missing, projectKey, projectKey));
+    }
   }
 
   @Override
@@ -273,6 +290,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
     idProvider = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, prCfg, factory);
+    idProvider.setPrevReleaseKey(prevReleaseKey);
     idProvider.mapAllIds();
     DateUtils.logDuration(LOG, "ID provider", start);
   }
