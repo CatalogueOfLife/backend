@@ -100,7 +100,6 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   });
   private static Fory register(Fory fury) {
     fury.register(SimpleNameCached.class);
-    fury.register(MatchType.class);
     fury.register(Rank.class);
     fury.register(NomCode.class);
     fury.register(TaxonomicStatus.class);

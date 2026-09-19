@@ -42,13 +42,13 @@ public class SimpleNameCached extends SimpleNameWithNidx {
     this.marked = other.marked;
   }
 
-  public SimpleNameCached(NameUsageBase u, Integer canonicalId) {
-    super(u, canonicalId);
+  public SimpleNameCached(NameUsageBase u, Integer namesIndexId) {
+    super(u, namesIndexId);
     this.sectorKey = u.getSectorKey();
   }
 
-  public SimpleNameCached(Name n, Integer canonicalId) {
-    super(n, canonicalId);
+  public SimpleNameCached(Name n, Integer namesIndexId) {
+    super(n, namesIndexId);
     this.sectorKey = n.getSectorKey();
   }
 

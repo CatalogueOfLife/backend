@@ -3,7 +3,6 @@ package life.catalogue.cache;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import life.catalogue.common.io.TempFile;
@@ -43,7 +42,6 @@ public class UsageCacheMapDBTest {
     sn.setRank(Rank.GENUS);
     sn.setStatus(TaxonomicStatus.MISAPPLIED);
     sn.setCode(NomCode.BOTANICAL);
-    sn.setNamesIndexMatchType(MatchType.EXACT);
 
     assertFalse(cache.contains("a"));
 

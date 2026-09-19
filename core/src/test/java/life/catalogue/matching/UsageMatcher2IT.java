@@ -217,25 +217,17 @@ public class UsageMatcher2IT {
   }
 
   /**
-   * The usage EXACT/VARIANT classification must be computed from the live labels only, not seeded from the
-   * candidate's stored names index match type. name_match.type / Name.namesIndexType are no longer persisted
-   * at all (see dbschema.md), so matcher.store() candidates never carry a meaningful namesIndexMatchType any
-   * more - explicitly wipe it to null too (simulating legacy data) and verify the usage match type is still
-   * derived correctly purely from comparing the normalized labels.
+   * The usage EXACT/VARIANT classification is computed from the live labels only - the canonical only
+   * names index has no notion of it.
    */
   @Test
-  public void exactAndVariantIndependentOfNidxType() throws Exception {
-    // wipe the stored candidate's names index match type so the old seed-then-flip logic has nothing to seed from
-    var oen1 = new SimpleNameCached(matcher.store().get("oen1"));
-    oen1.setNamesIndexMatchType(null);
-    matcher.store().add(oen1);
-
-    // byte-identical label -> EXACT, even though the seed nidx type on the matched candidate is null
+  public void exactAndVariantFromLabels() throws Exception {
+    // byte-identical label -> EXACT
     var match = match(Rank.GENUS, "Oenanthe", "L.", null, null);
     assertEquals("oen1", match.usage.getId());
     assertEquals(MatchType.EXACT, match.type);
 
-    // spelling-different authorship -> VARIANT, even though the seed nidx type on the matched candidate is null
+    // spelling-different authorship -> VARIANT
     match = match(Rank.GENUS, "Oenanthe", "Lin.", null, null);
     assertEquals("oen1", match.usage.getId());
     assertEquals(MatchType.VARIANT, match.type);

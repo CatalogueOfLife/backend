@@ -30,8 +30,8 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
     super(other);
   }
 
-  public SimpleNameClassified(NameUsageBase other, Integer canonicalId) {
-    super(other, canonicalId);
+  public SimpleNameClassified(NameUsageBase other, Integer namesIndexId) {
+    super(other, namesIndexId);
   }
 
   public SimpleNameClassified(SimpleNameWithNidx other) {

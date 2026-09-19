@@ -92,9 +92,7 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
     var res = mapper().listByCanonNIDX( datasetKey, canonNidx);
     assertEquals(expectedNum, res.size());
     for (var sn : res) {
-      assertEquals((Integer)canonNidx, sn.getCanonicalId());
-      assertNotNull(sn.getNamesIndexId());
-      assertNotNull(sn.getNamesIndexMatchType());
+      assertEquals((Integer)canonNidx, sn.getNamesIndexId());
       assertNotNull(sn.getRank());
       assertNotNull(sn.getName());
     }

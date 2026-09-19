@@ -71,8 +71,12 @@ public class UsageMatcherFileStore implements UsageMatcherStore {
   static final int MAGIC_USAGES = 0x434C5553; // CLUS
   static final int MAGIC_CANONICAL = 0x434C4341; // CLCA
   static final int MAGIC_GROUPS = 0x434C4752; // CLGR
-  /** Bumped whenever the layout changes; an older file is rejected and the store rebuilt. */
-  static final int FORMAT_VERSION = 1;
+  /**
+   * Bumped whenever the layout changes; an older file is rejected and the store rebuilt.
+   * The records are fury serialized SimpleNameCached instances, so a change of its fields changes the layout too.
+   * 2: dropped canonicalId and namesIndexMatchType
+   */
+  static final int FORMAT_VERSION = 2;
 
   static final int USAGES_HEADER = 32;
   static final int CANONICAL_HEADER = 32;

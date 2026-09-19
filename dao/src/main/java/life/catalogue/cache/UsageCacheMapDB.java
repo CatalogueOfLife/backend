@@ -2,7 +2,6 @@ package life.catalogue.cache;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameCached;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
@@ -77,7 +76,6 @@ public class UsageCacheMapDB implements UsageCache {
       kryo.register(DSID.class);
       kryo.register(SimpleNameCached.class);
       kryo.register(Rank.class);
-      kryo.register(MatchType.class);
       kryo.register(TaxonomicStatus.class);
       kryo.register(NomCode.class);
       kryo.register(TaxGroup.class);
