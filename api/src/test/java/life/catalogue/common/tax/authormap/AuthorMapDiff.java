@@ -41,7 +41,7 @@ public class AuthorMapDiff {
     r.removedCanonicals().forEach(c -> sb.append("- ").append(c).append('\n'));
     sb.append("\n## Removed alias keys (").append(r.removedAliasKeys().size()).append(")\n");
     r.removedAliasKeys().forEach(k -> sb.append("- ").append(k).append('\n'));
-    sb.append("\nReview these and move any worth keeping into authormap-manual.txt.\n");
+    sb.append("\nReview these and add any worth keeping back to authormap.txt by hand, then re-run.\n");
     return sb.toString();
   }
 }

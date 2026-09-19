@@ -7,13 +7,13 @@ import static org.junit.Assert.*;
 public class AuthorMapMergerTest {
   @Test
   public void unionsSharedFullNameAndPromotesToAny() {
-    List<AuthorEntry> manual = List.of(
+    List<AuthorEntry> existing = List.of(
       new AuthorEntry("C Linnaeus", AuthorCode.BOT, List.of("L.", "Carl Linnaeus")));
     List<AuthorEntry> wikidata = List.of(
       new AuthorEntry("Linnaeus", AuthorCode.ZOO, List.of("Carl Linnaeus", "Linné")),
       new AuthorEntry("G Cuvier", AuthorCode.ZOO, List.of("Georges Cuvier")));
 
-    List<AuthorEntry> merged = AuthorMapMerger.merge(List.of(manual, wikidata), 2);
+    List<AuthorEntry> merged = AuthorMapMerger.merge(List.of(existing, wikidata), 1);
 
     AuthorEntry linn = merged.stream().filter(e -> e.canonical().equals("C Linnaeus")).findFirst().orElseThrow();
     assertEquals(AuthorCode.ANY, linn.code());              // BOT + ZOO -> ANY, bridged on full name "Carl Linnaeus"
@@ -25,12 +25,12 @@ public class AuthorMapMergerTest {
   }
 
   @Test
-  public void manualCanonicalAndCodeWin() {
-    List<AuthorEntry> manual = List.of(new AuthorEntry("J F Gmelin", AuthorCode.ANY, List.of("Gmelin", "Johann Friedrich Gmelin")));
+  public void existingCanonicalAndCodeWin() {
+    List<AuthorEntry> existing = List.of(new AuthorEntry("J F Gmelin", AuthorCode.ANY, List.of("Gmelin", "Johann Friedrich Gmelin")));
     List<AuthorEntry> other  = List.of(new AuthorEntry("Johann Gmelin", AuthorCode.BOT, List.of("J.F.Gmel.", "Johann Friedrich Gmelin")));
-    List<AuthorEntry> merged = AuthorMapMerger.merge(List.of(manual, other), 2);
+    List<AuthorEntry> merged = AuthorMapMerger.merge(List.of(existing, other), 1);
     AuthorEntry g = merged.stream().filter(e -> e.canonical().equals("J F Gmelin")).findFirst().orElseThrow();
-    assertEquals("J F Gmelin", g.canonical());   // manual canonical (earliest) wins
+    assertEquals("J F Gmelin", g.canonical());   // existing canonical (earliest) wins
     assertEquals(AuthorCode.ANY, g.code());
     assertTrue(g.aliases().contains("J.F.Gmel."));   // aliases unioned via shared full name
   }
@@ -64,13 +64,14 @@ public class AuthorMapMergerTest {
 
   @Test
   public void ambiguousKeyKeptAtHighestPrecedenceCuratedHolder() {
-    // two curated authors share a bare surname; manual (source 0) outranks existing (source 1)
-    List<AuthorEntry> manual = List.of(new AuthorEntry("J F Gmelin", AuthorCode.ANY, List.of("Gmelin", "Johann Friedrich Gmelin")));
-    List<AuthorEntry> existing = List.of(new AuthorEntry("S G Gmelin", AuthorCode.BOT, List.of("Gmelin", "Samuel Gottlieb Gmelin")));
-    List<AuthorEntry> merged = AuthorMapMerger.merge(List.of(manual, existing), 2); // both curated
+    // two curated authors share a bare surname; the earlier row outranks the later one
+    List<AuthorEntry> existing = List.of(
+      new AuthorEntry("J F Gmelin", AuthorCode.ANY, List.of("Gmelin", "Johann Friedrich Gmelin")),
+      new AuthorEntry("S G Gmelin", AuthorCode.BOT, List.of("Gmelin", "Samuel Gottlieb Gmelin")));
+    List<AuthorEntry> merged = AuthorMapMerger.merge(List.of(existing), 1);
     AuthorEntry jf = merged.stream().filter(e -> e.canonical().equals("J F Gmelin")).findFirst().orElseThrow();
     AuthorEntry sg = merged.stream().filter(e -> e.canonical().equals("S G Gmelin")).findFirst().orElseThrow();
-    assertTrue(jf.aliases().contains("Gmelin"));            // highest-precedence curated (manual) keeps it
+    assertTrue(jf.aliases().contains("Gmelin"));            // highest-precedence curated holder keeps it
     assertFalse(sg.aliases().stream().anyMatch(a -> a.equalsIgnoreCase("Gmelin"))); // stripped from lower-precedence curated
   }
 }

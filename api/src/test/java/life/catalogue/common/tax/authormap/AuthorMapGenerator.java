@@ -4,47 +4,32 @@ import java.nio.file.*;
 import java.util.*;
 
 /**
- * Developer tool (NOT part of the app or test suite) that regenerates
- * api/src/main/resources/authorship/authormap.txt from multiple sources.
+ * Developer tool (NOT part of the app or test suite) that grows
+ * api/src/main/resources/authorship/authormap.txt with authors from Wikidata.
  *
- * Run from the module root, e.g. from the IDE main, or:
+ * Run from the repository root, e.g. from the IDE main, or:
  *   mvn -q -pl api exec:java -Dexec.classpathScope=test \
- *       -Dexec.mainClass=life.catalogue.common.tax.authormap.AuthorMapGenerator \
+ *       -DmainClass=life.catalogue.common.tax.authormap.AuthorMapGenerator \
  *       -Dexec.args="api/src/main/resources/authorship"
  *
- * Precedence (highest first): manual > existing(IPNI) > wikidata > dumps.
+ * Precedence (highest first): existing map > wikidata. The map itself is curated in place,
+ * so every hand correction in it survives a regeneration.
  */
 public class AuthorMapGenerator {
 
   public static void main(String[] args) throws Exception {
     Path dir = Paths.get(args.length > 0 ? args[0] : "api/src/main/resources/authorship");
     Path existing = dir.resolve("authormap.txt");
-    Path manual = dir.resolve("authormap-manual.txt");
 
-    List<AuthorSource> sources = new ArrayList<>();
-    sources.add(TsvDumpSource.manual(manual));      // precedence 0 (highest, locked)
-    sources.add(TsvDumpSource.existingMap(existing)); // precedence 1 (IPNI base + continuity)
-    sources.add(new WikidataSource());              // precedence 2
-    // Optional downloaded dumps: pass as extra args "ipni=/path" / "huh=/path"
-    for (int i = 1; i < args.length; i++) {
-      String[] kv = args[i].split("=", 2);
-      if (kv.length == 2) {
-        // IPNI/HUH dump columns: standardForm, abbreviation, fullName  (adjust to the actual dump)
-        sources.add(TsvDumpSource.dump(kv[0], Paths.get(kv[1]), 0, -1, AuthorCode.BOT, 1, 2));
-      }
-    }
-
-    // snapshot the current file for the diff before overwriting
+    // snapshot the current file for the diff before overwriting, it is also the curated source
     List<AuthorEntry> before = Files.exists(existing) ? AuthorMapIO.read(existing) : List.of();
+    System.out.printf("source %-10s : %d entries%n", "existing", before.size());
 
-    List<List<AuthorEntry>> read = new ArrayList<>();
-    for (AuthorSource s : sources) {
-      List<AuthorEntry> e = s.read();
-      System.out.printf("source %-10s : %d entries%n", s.name(), e.size());
-      read.add(e);
-    }
+    AuthorSource wikidata = new WikidataSource();
+    List<AuthorEntry> wd = wikidata.read();
+    System.out.printf("source %-10s : %d entries%n", wikidata.name(), wd.size());
 
-    List<AuthorEntry> merged = AuthorMapMerger.merge(read, 2);
+    List<AuthorEntry> merged = AuthorMapMerger.merge(List.of(before, wd), 1);
     System.out.printf("merged            : %d entries%n", merged.size());
 
     AuthorMapDiff.Result diff = AuthorMapDiff.diff(before, merged);
