@@ -1,4 +1,0 @@
-G Cuvier	ZOO	Georges Cuvier
-F Cuvier	ZOO	Frédéric Cuvier
-J F Gmelin	ANY	Gmelin	Johann Friedrich Gmelin
-J B G M Bory de Saint-Vincent	BOT	Bory	Jean Baptiste Bory de Saint-Vincent	Jean-Baptiste Bory de Saint-Vincent	Bory de St.Vincent	Bory de Saint-Vincent	J.B.M. Bory de St. Vincent

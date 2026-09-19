@@ -697,6 +697,23 @@ public class AuthorComparatorTest {
     assertAuth("Conrad von Baldenstein", Equality.DIFFERENT, "Buddenbrocks");
   }
 
+  /**
+   * The IPNI derived authormap canonicals used to collapse the first part of a compound surname into an
+   * invented initial ("A A F von Waldheim" for Fischer von Waldheim), so a standard form that only the map
+   * can resolve never matched a source citing initials and that first part.
+   * https://github.com/CatalogueOfLife/backend/issues/1597
+   */
+  @Test
+  public void authormapCompoundSurnames() throws Exception {
+    assertAuth("A.A.Fisch.Waldh.", Equality.EQUAL, "A.A. Fischer");
+    assertAuth("Dum.Cours.", Equality.EQUAL, "G.L.M. Dumont");
+    assertAuth("Cherm.Mir.", Equality.EQUAL, "V. Chermont");
+    assertAuth("Rot Schreck.", Equality.EQUAL, "F. Rot");
+    assertAuth("P.Beauv.", Equality.EQUAL, "A.M.F.J. Palisot");
+    // a generational suffix is no surname, but father and son still stay apart
+    assertAuth("J.Kickx", Equality.DIFFERENT, "J.Kickx f.");
+  }
+
   private void assertAuth(AuthorshipNormalizer.Author a1, Equality eq, AuthorshipNormalizer.Author a2) {
     assertEquals(eq, comp.compare(a1, a2, AuthorComparator.MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, AuthorComparator.MIN_JARO_SURNAME_DISTANCE));
   }

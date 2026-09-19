@@ -17,9 +17,9 @@ public class AuthorMapMerger {
   }
 
   /**
-   * @param sources      highest precedence first (index 0 = manual). Canonical form comes from the
+   * @param sources      highest precedence first (index 0 = the existing map). Canonical form comes from the
    *                     earliest (highest-precedence) contributor.
-   * @param curatedCount the first curatedCount sources are authoritative (manual + existing IPNI);
+   * @param curatedCount the first curatedCount sources are authoritative (the existing, hand curated map);
    *                     their alias keys are protected when disambiguating ambiguous keys.
    */
   public static List<AuthorEntry> merge(List<List<AuthorEntry>> sources, int curatedCount) {
