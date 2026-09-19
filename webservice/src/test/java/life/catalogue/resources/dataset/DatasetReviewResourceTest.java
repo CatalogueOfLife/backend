@@ -6,6 +6,7 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.JwtCodec;
+import life.catalogue.dw.jersey.filter.CacheControlResponseFilter;
 import life.catalogue.junit.DatasetInfoCacheMockRule;
 import life.catalogue.release.review.ReleaseReviewInfo;
 import life.catalogue.release.review.ReleaseReviewJob;
@@ -26,11 +27,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import jakarta.ws.rs.container.ContainerRequestContext;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -56,6 +60,7 @@ public class DatasetReviewResourceTest {
   ReleaseConfig rCfg;
   DatasetReviewResource resource;
   JobExecutor exec;
+  ContainerRequestContext ctx;
 
   @Before
   public void setup() throws Exception {
@@ -90,6 +95,7 @@ public class DatasetReviewResourceTest {
     JwtCodec jwt = new JwtCodec("a-signing-key-long-enough-for-hmac-sha256-in-a-unit-test");
     // no ai config: the review page must still work everywhere, it is the trigger that needs one
     resource = new DatasetReviewResource(factory, rCfg, exec, jwt, null, null);
+    ctx = mock(ContainerRequestContext.class);
   }
 
   @After
@@ -99,7 +105,7 @@ public class DatasetReviewResourceTest {
 
   @Test
   public void unreviewedRelease() {
-    ReleaseReviewInfo info = resource.get(RELEASE);
+    ReleaseReviewInfo info = resource.get(RELEASE, ctx);
     assertEquals(ReleaseReviewInfo.Status.NONE, info.getStatus());
     assertEquals(RELEASE, info.getReleaseKey());
     assertEquals(PROJECT, info.getProjectKey());
@@ -109,6 +115,15 @@ public class DatasetReviewResourceTest {
     assertEquals((Integer) PREV_RELEASE, info.getPreviousReleaseKey());
     assertNull(info.getReportURI());
     assertNull(info.getSessionId());
+  }
+
+  /**
+   * Every other GET under a release is cached for days, but the review status changes while a job runs.
+   */
+  @Test
+  public void statusIsNeverCached() {
+    resource.get(RELEASE, ctx);
+    verify(ctx).setProperty(CacheControlResponseFilter.DONT_CACHE, true);
   }
 
   /**
@@ -123,7 +138,7 @@ public class DatasetReviewResourceTest {
     FileUtils.forceMkdir(dir);
     Files.write(store.report(PROJECT, ATTEMPT).toPath(), "<html>review</html>".getBytes(StandardCharsets.UTF_8));
 
-    ReleaseReviewInfo info = resource.get(RELEASE);
+    ReleaseReviewInfo info = resource.get(RELEASE, ctx);
     assertEquals(ReleaseReviewInfo.Status.FINISHED, info.getStatus());
     assertEquals(URI.create("https://download.example.org/releases/" + PROJECT + "/" + ATTEMPT + "/review.html"),
       info.getReportURI());
@@ -143,14 +158,14 @@ public class DatasetReviewResourceTest {
     stale.setStatus(ReleaseReviewInfo.Status.RUNNING);
     store.write(PROJECT, ATTEMPT, stale);
 
-    ReleaseReviewInfo info = resource.get(RELEASE);
+    ReleaseReviewInfo info = resource.get(RELEASE, ctx);
     assertEquals(ReleaseReviewInfo.Status.FAILED, info.getStatus());
     assertNull(info.getReportURI());
   }
 
   @Test
   public void onlyReleasesCanBeReviewed() {
-    assertThrows(IllegalArgumentException.class, () -> resource.get(PROJECT));
+    assertThrows(IllegalArgumentException.class, () -> resource.get(PROJECT, ctx));
   }
 
   /**

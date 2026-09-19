@@ -58,6 +58,40 @@ and `flag`, one of:
 
 Sectors that barely changed are not in the file. Its length is therefore not the number of sectors in the release.
 
+### Release reports
+
+The release job leaves reports for every release at `{{reportsURI}}`, a host this sandbox cannot reach. Those a
+review needs are mounted read-only, for this release and for the one it is compared against:
+
+{{releaseReports}}
+
+A report that is not available cannot be checked - say so in the report rather than working around it.
+
+**Job log digests.** A release log runs to several GB, almost all of it one line per identifier. The digest
+keeps what a reviewer needs: the lines per level and logger; a timeline quoting, with timestamps, every line of
+the loggers that log little - the steps the job went through, their counts, every warning and error among them
+- together with the rare messages of the loggers that log a lot; and for each of those a summary of its count,
+its message patterns and its first and last lines. DEBUG lines are only counted. Credentials are redacted - never
+try to recover one.
+
+**ID reports.** Tab separated, no header, with the columns `ID`, `rank`, `status`, `name`, `authorship`:
+
+- `created.tsv` - identifiers the release issued for the first time.
+- `deleted.tsv` - identifiers of the release before it that it no longer uses.
+- `resurrected.tsv` - identifiers of an older release, not used by the release before it, that are used again.
+
+and `unstable.txt`, the names whose identifier changed: the name on a line of its own, followed by one line per
+usage, `-` for an identifier that went away and `+` for the one that replaced it, e.g.
+
+```
+Abacetus biimpressus
+ - Abacetus biimpressus Straneo, 1951 [SYNONYM SPECIES 2328:8HTM nidx=null parent=5DDVS]
+ + Abacetus biimpressus Straneo, 1951 [SYNONYM SPECIES 9837:8KZPV nidx=null parent=8MDJK]
+```
+
+The ID reports can hold hundreds of thousands of lines. Count and filter them with `wc`, `cut`, `sort | uniq -c`
+and `grep` instead of reading them whole.
+
 ### Endpoints you will need
 
 | purpose | request |
@@ -101,7 +135,16 @@ explicitly in the report rather than silently dropping it.
 7. **Name diff at order level.** `GET /dataset/{{releaseKey}}/diff/{{previousReleaseKey}}?minRank=order&authorship=false&synonyms=false`
    gives the names added and removed above order rank. Lost orders and newly invented orders both deserve a
    line in the report. If the diff is too large to quote, quote the counts and a representative sample.
-8. **Unexpected drops and spikes.** Anything from the steps above that moves by more than ~10% without an
+8. **Identifier stability.** Stable identifiers are a promise COL makes to everyone who links to it. From the ID
+   reports, count created, deleted and resurrected identifiers and unstable names, for this release and the
+   previous one, and compare them. List every deleted identifier of an accepted name at genus rank or above
+   individually, summarise the other deletions by rank and status, and call out any count far above the
+   previous release's.
+9. **The release job.** Read both job log digests. Report every ERROR and every WARN pattern of this release
+   with its count and how that compares with the previous release, and anything in the timeline that says a
+   step was skipped, failed or processed nothing. Compare the durations of the main steps between the two
+   releases and mention any that changed a lot.
+10. **Unexpected drops and spikes.** Anything from the steps above that moves by more than ~10% without an
    obvious cause. Say what you think caused it and how confident you are.
 
 ## The report
@@ -112,7 +155,7 @@ Write a single, self-contained HTML file to `{{outputPath}}`.
   loads anything remote, and preferably no JavaScript at all. The file is served as a static document from the
   ChecklistBank download host.
 - Readable on a phone as well as a laptop, and legible when printed.
-- Every number you state must come from a request you actually made or from the mounted file. Do not estimate,
+- Every number you state must come from a request you actually made or from a mounted file. Do not estimate,
   do not extrapolate, and never fill a gap with a plausible-looking figure. If you did not measure it, say so.
 
 Structure it in this order:
@@ -123,11 +166,14 @@ Structure it in this order:
    what you think it means, and a link into ChecklistBank so the reviewer can look for themselves.
 3. **Totals and ranks** - the headline comparison, as a table with absolute and relative change.
 4. **Issues** - the issue counts that grew.
-5. **Per-source findings** - one subsection per source dataset that changed materially, with its sector(s),
+5. **Identifiers** - created, deleted, resurrected and unstable counts of both releases, and the deleted higher
+   taxa.
+6. **Release job** - the errors and warnings of the job, and anything its timeline shows went wrong.
+7. **Per-source findings** - one subsection per source dataset that changed materially, with its sector(s),
    the numbers, and a link to the source in ChecklistBank.
-6. **Everything checked and found fine** - a short list, so the reviewer can see what the review covered. A
+8. **Everything checked and found fine** - a short list, so the reviewer can see what the review covered. A
    checklist item you could not complete belongs here too, marked as not checked and why.
-7. **Method** - the release pair, the date, and the endpoints you used.
+9. **Method** - the release pair, the date, the endpoints and the mounted files you used.
 
 Link back to the UI at `{{clbURI}}`, using these patterns:
 
@@ -138,6 +184,8 @@ Link back to the UI at `{{clbURI}}`, using these patterns:
 - names carrying an issue: `{{clbURI}}/dataset/{key}/names?issue={ISSUE}`
 - a single usage: `{{clbURI}}/dataset/{key}/taxon/{id}`
 - duplicates: `{{clbURI}}/dataset/{key}/duplicates?category=uninomial&minSize=2&mode=STRICT&rankDifferent=false&status=accepted&rank={rank}`
+
+and to the release reports of this release at `{{reportsURI}}/`, which is where the review itself is published.
 
 Write the file, verify it exists and is valid HTML, and then stop. The file is the deliverable; nothing you say
 in the conversation is kept.

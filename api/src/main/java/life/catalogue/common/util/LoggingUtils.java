@@ -3,6 +3,7 @@ package life.catalogue.common.util;
 import life.catalogue.api.model.DSID;
 
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -26,6 +27,22 @@ public class LoggingUtils {
   public static final String MDC_KEY_SECTOR  = "sector";
   public static final String MDC_KEY_ATTEMPT = "attempt";
   public static final String MDC_KEY_SOURCE = "source";
+
+  // parameter names that carry a secret; a name merely ending in key, like datasetKey, is an identifier
+  private static final Pattern CREDENTIAL = Pattern.compile(
+    "(?i)\\b((?:token|key|apikey|api_key|access_token|secret|password|pwd)=)[^&\\s\"',;]+");
+  private static final Pattern BEARER = Pattern.compile("(?i)\\b(Bearer )\\S+");
+
+  /**
+   * Replaces the values of credential parameters and bearer tokens with REDACTED, e.g. in a URL about to be
+   * logged. Job logs of releases are published with the release.
+   */
+  public static String redactCredentials(@Nullable String x) {
+    if (x == null) {
+      return null;
+    }
+    return BEARER.matcher(CREDENTIAL.matcher(x).replaceAll("$1REDACTED")).replaceAll("$1REDACTED");
+  }
 
   public static String getMDC(String key) {
     return MDC.get(key);

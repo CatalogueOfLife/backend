@@ -2,6 +2,7 @@ package life.catalogue.config;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.text.CitationUtils;
+import life.catalogue.common.util.LoggingUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -48,12 +49,14 @@ public class ReleaseAction {
       x = CitationUtils.fromTemplate(escapedCopy(release), url);
       uri = new URI(x);
     } catch (IllegalArgumentException e) {
-      LOG.warn("Bad URL template for action {} {}: {}", method, uri, e.getMessage());
+      LOG.warn("Bad URL template for action {} {}: {}", method, LoggingUtils.redactCredentials(url), e.getMessage());
       return -1;
     } catch (URISyntaxException e) {
-      LOG.error("Failed to call release action with invalid URI: {}", x);
+      LOG.error("Failed to call release action with invalid URI: {}", LoggingUtils.redactCredentials(x));
       return -1;
     }
+    // release job logs are published with the release, so a token in the URL must not end up in them
+    final String loggedUri = LoggingUtils.redactCredentials(uri.toString());
 
     var builder = ClassicRequestBuilder.create(method.trim().toUpperCase()).setUri(uri);
 
@@ -66,15 +69,15 @@ public class ReleaseAction {
     try (CloseableHttpResponse response = client.execute(req)) {
       final int status = response.getCode();
       if (isSuccess(status)) {
-        LOG.info("{} {} -> {}", method, uri, status);
+        LOG.info("{} {} -> {}", method, loggedUri, status);
       } else {
         // a hook that quietly 404s because its endpoint moved is otherwise invisible, see
         // the /admin/matcher/{key}/prepare action that kept firing long after that endpoint was gone
-        LOG.warn("Release action failed with HTTP {} {}: {} {}", status, response.getReasonPhrase(), method, uri);
+        LOG.warn("Release action failed with HTTP {} {}: {} {}", status, response.getReasonPhrase(), method, loggedUri);
       }
       return status;
     } catch (Exception e) {
-      LOG.error("Failed to {} {}: {}", method, uri, e.getMessage());
+      LOG.error("Failed to {} {}: {}", method, loggedUri, LoggingUtils.redactCredentials(e.getMessage()));
       return -1;
     }
   }

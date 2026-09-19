@@ -128,8 +128,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
    * Compares the sector sync metrics of this dataset with another one, by default the previous public release
    * of the same kind. Answers only the sectors worth a look during a release review.
    *
-   * Editor rights, because a project's sector layout is not public. AuthFilter evaluates a release by its
-   * project, so this means the project's editors and admins.
+   * Editor rights, because it's potentially expensive.
    */
   @GET
   @Path("sync/compare")
