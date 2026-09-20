@@ -72,6 +72,14 @@ many rows the author map had.
   lacks, and the dubious pairs - judged `EQUAL` those are mostly duplicate records in the dataset they come from;
 - different names per dataset. A dataset far above the others holds duplicates rather than homonyms.
 
+**What the author map is worth** shows in a second report without it, diffed against the first. `fixed` is then
+what the map gets right and `regressed` what it breaks:
+
+    mvn -q -pl dao test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
+      -Dexec.args="-Xmx4g -cp %classpath life.catalogue.matching.authorship.corpus.AuthorCorpusReport target/author-corpus/pairs.tsv.gz target/author-corpus/nomap nomap"
+    mvn -q -pl dao test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
+      -Dexec.args="-cp %classpath life.catalogue.matching.authorship.corpus.AuthorVerdictDiff target/author-corpus/nomap/verdicts.tsv.gz target/author-corpus/verdicts.tsv.gz"
+
 ## Changing the author comparison
 
 1. Keep the verdicts of master: `cp dao/target/author-corpus/verdicts.tsv.gz dao/target/author-corpus/verdicts-before.tsv.gz`

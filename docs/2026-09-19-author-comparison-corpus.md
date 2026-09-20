@@ -178,6 +178,19 @@ Tropicos cite the same publications once under the son and once under the father
 by construction would split those 350 names in an extended release. Identity has to be evidence that loses
 against recurrence in the data, not a veto.
 
+**What the author map is worth** (2026-09-20, after the code of the names reached the map). The report was run
+once more without the map and the verdicts diffed. Of 52,785 same acts the map decides 161: it gets 123 right,
+standing for 2,010 names, and breaks 38, standing for 570. Without it 94.0% of the same acts compare `EQUAL`, with
+it 94.1%. What it gets right are standard forms that are no prefix of the surname or carry a filius - `DC.`,
+`Hook.f.`, `Rchb.`, `Schltdl.`, `Balf.f.`, `L.f.`, `Selys`. It also keeps `L.` apart from `Lam.`, `Lour.`,
+`Ledeb.`, `Lindl.` and every other author starting with an L, which the one letter prefix rule would otherwise all
+make `EQUAL`: 424 dubious pairs on 1,173 names. What it breaks is mostly one row: `H.H.Hu` / `Hu` on 277 names,
+because folding `ue` to `u` turns the alias `Hue` into the key `hu`.
+So a 60,000 row map matters for some hundred famous abbreviations, and anything that only scopes or disambiguates
+its rows - by taxonomic group, by person identifiers - can at best win back those 570 names on this corpus. The
+corpus does under-represent the case identity is meant for, relatives working in one field, as a dataset rarely
+lists both with years.
+
 **Deviations from the plan.** The tools run through `exec:exec` in a forked JVM, not `exec:java`, which fails on
 the SAX provider of the dao test classpath and would run in maven's 512 MB heap. The pairs file carries all
 counters and both keys. The verdict of a pair is identified by code and both keys. The sample holds 16,679

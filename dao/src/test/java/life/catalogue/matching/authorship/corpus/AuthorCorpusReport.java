@@ -40,6 +40,7 @@ public class AuthorCorpusReport {
   static final String REPORT = "report.txt";
   static final String VERDICTS = "verdicts.tsv.gz";
   private static final String AUTHOR_MAP = "authorship/authormap.txt";
+  private static final String NO_AUTHOR_MAP = "nomap";
   private static final int TOP = 200;
   private static final int MIN_ALIAS_WEIGHT = 10;
   private static final Comparator<Verdict> LIGHTEST_FIRST = Comparator.comparingInt((Verdict v) -> v.pair().weight())
@@ -91,9 +92,13 @@ public class AuthorCorpusReport {
     return p.code() == null ? "-" : p.code().name();
   }
 
-  public static void report(File pairs, File outDir, AuthorComparator comparator) throws IOException {
-    final AuthorshipNormalizer normalizer = AuthorshipNormalizer.INSTANCE;
-    final CorpusEvaluator evaluator = new CorpusEvaluator(comparator);
+  /**
+   * @param withAuthorMap false to compare without the author map. Diffed against a report with it, that shows
+   *                      which pairs the map gets right and which it breaks
+   */
+  public static void report(File pairs, File outDir, boolean withAuthorMap) throws IOException {
+    final AuthorshipNormalizer normalizer = withAuthorMap ? AuthorshipNormalizer.INSTANCE : AuthorshipNormalizer.createWithoutAuthormap();
+    final CorpusEvaluator evaluator = new CorpusEvaluator(new AuthorComparator(normalizer));
     final CorpusEvaluator.Result result = new CorpusEvaluator.Result(false);
 
     List<Top> tops = List.of(
@@ -109,7 +114,7 @@ public class AuthorCorpusReport {
       new Top("Same act judged UNKNOWN", "Mostly a basionym author on one side against a combination author on the other.",
         v -> v.pair().label() == Label.SAME && v.verdict() == Equality.UNKNOWN),
       new Top("Alias candidates the author map lacks", "Same act, one author differs, and the map does not bring the two to one canonical.",
-        v -> v.pair().label() == Label.SAME && v.pair().weight() >= MIN_ALIAS_WEIGHT && lacksAlias(normalizer, v.pair())),
+        v -> withAuthorMap && v.pair().label() == Label.SAME && v.pair().weight() >= MIN_ALIAS_WEIGHT && lacksAlias(normalizer, v.pair())),
       new Top("Dubious pairs judged EQUAL",
         "Kept apart by one dataset with nothing to tell a homonym from a duplicate. Judged EQUAL it is most "
         + "likely a second record of the name in that dataset. Not part of any matrix.",
@@ -154,7 +159,7 @@ public class AuthorCorpusReport {
     sb.append("input: ").append(pairs).append('\n');
     sb.append(String.format("pairs: %,d %s%n", total[0], labels));
     // says which author map the verdicts come from: -pl dao takes it from the api jar in ~/.m2, not from the checkout
-    sb.append(String.format("author map: %,d rows%n", Resources.lines(AUTHOR_MAP).count()));
+    sb.append(withAuthorMap ? String.format("author map: %,d rows%n", Resources.lines(AUTHOR_MAP).count()) : "author map: none\n");
     sb.append(String.format("max heap: %,d MB%n", Runtime.getRuntime().maxMemory() >> 20));
 
     sb.append("\n## Confusion matrix\nWith the years and the code of the names, which is what production gets to see. "
@@ -201,12 +206,13 @@ public class AuthorCorpusReport {
   }
 
   public static void main(String[] args) throws IOException {
-    if (args.length != 2 || !new File(args[0]).isFile()) {
-      System.err.println("Usage: AuthorCorpusReport <pairs.tsv[.gz]> <output directory>");
+    boolean noMap = args.length == 3 && args[2].equals(NO_AUTHOR_MAP);
+    if (!(args.length == 2 || noMap) || !new File(args[0]).isFile()) {
+      System.err.println("Usage: AuthorCorpusReport <pairs.tsv[.gz]> <output directory> [" + NO_AUTHOR_MAP + "]");
       System.exit(1);
     }
     File outDir = new File(args[1]);
-    report(new File(args[0]), outDir, new AuthorComparator(AuthorshipNormalizer.INSTANCE));
+    report(new File(args[0]), outDir, !noMap);
     System.out.println(Files.readString(new File(outDir, REPORT).toPath()).lines().limit(60).reduce("", (x, y) -> x + y + "\n"));
     System.out.println("Full report in " + new File(outDir, REPORT));
   }

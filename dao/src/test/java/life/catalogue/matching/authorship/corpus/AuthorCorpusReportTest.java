@@ -1,8 +1,6 @@
 package life.catalogue.matching.authorship.corpus;
 
 import life.catalogue.common.io.Resources;
-import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.matching.authorship.AuthorComparator;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -28,8 +26,7 @@ public class AuthorCorpusReportTest {
   @Before
   public void report() throws Exception {
     File dir = tmp.newFolder("report");
-    AuthorCorpusReport.report(Resources.toFile(CorpusEvaluatorTest.KNOWN_MISJUDGEMENTS), dir,
-      new AuthorComparator(AuthorshipNormalizer.INSTANCE));
+    AuthorCorpusReport.report(Resources.toFile(CorpusEvaluatorTest.KNOWN_MISJUDGEMENTS), dir, true);
     report = Files.readString(new File(dir, AuthorCorpusReport.REPORT).toPath());
     verdicts = AuthorVerdictDiff.read(new File(dir, AuthorCorpusReport.VERDICTS));
   }
@@ -81,6 +78,24 @@ public class AuthorCorpusReportTest {
     assertFalse(section("Dubious pairs judged DIFFERENT").contains("Pohl"));
     assertTrue(section("Dubious pairs by what makes them dubious").contains("INTRA_NOYEAR"));
     assertFalse(section("Different names judged EQUAL").contains("Pohl"));
+  }
+
+  /**
+   * What the author map is worth shows in a second report without it, diffed against the first. The map makes
+   * the brothers Gray one author by expanding "G.R. Gray" to a full name that has no initials left to differ.
+   */
+  @Test
+  public void withoutTheAuthorMap() throws Exception {
+    assertTrue(section("Different names judged EQUAL").contains("J.E. Gray"));
+    assertTrue(report.substring(0, report.indexOf("## ")).contains("author map: 60,"));
+
+    File dir = tmp.newFolder("nomap");
+    AuthorCorpusReport.report(Resources.toFile(CorpusEvaluatorTest.KNOWN_MISJUDGEMENTS), dir, false);
+    report = Files.readString(new File(dir, AuthorCorpusReport.REPORT).toPath());
+    assertFalse(section("Different names judged EQUAL").contains("J.E. Gray"));
+    assertTrue(report.substring(0, report.indexOf("## ")).contains("author map: none"));
+    // without a map there is nothing a pair could be missing in it
+    assertTrue(section("Alias candidates the author map lacks").contains("\n0 pairs"));
   }
 
   @Test
