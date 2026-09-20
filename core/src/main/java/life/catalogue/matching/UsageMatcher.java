@@ -688,8 +688,11 @@ public class UsageMatcher implements AutoCloseable {
     return ba != null ? ba.getYear() : null;
   }
 
-  private ScientificName parseSciName(SimpleName sn) {
+  @VisibleForTesting
+  static ScientificName parseSciName(SimpleName sn) {
     Name n = new Name();
+    // the author comparison looks up abbreviations in the author map of that code
+    n.setCode(sn.getCode());
     var optAuthor = NameParser.PARSER.parseAuthorship(sn.getAuthorship());
     if (optAuthor.isPresent()) {
       var a = optAuthor.get();

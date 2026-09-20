@@ -1,6 +1,7 @@
 package life.catalogue.printer.diff;
 
 import life.catalogue.api.model.ScientificName;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.matching.Equality;
@@ -164,7 +165,7 @@ public class ChangedMatcher {
     if (e1 == null || e2 == null || e1.isEmpty() || e2.isEmpty()) {
       return Equality.UNKNOWN;
     }
-    return AUTHOR_CMP.compare(e1, e2);
+    return AUTHOR_CMP.compare(e1, e2, ObjectUtils.coalesce(a1.getCode(), a2.getCode()));
   }
 
   /** The authorship carrying the author+year: the combination authorship, or the basionym for parenthetical names. */

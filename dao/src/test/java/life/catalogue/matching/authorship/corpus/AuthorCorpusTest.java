@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Guards the author comparison against getting worse on a frozen sample of the corpus mined from ChecklistBank.
  * <p>
- * The numbers are what master did on 2026-09-19, not what is right: 5% of the same acts are still judged DIFFERENT.
+ * The numbers are what the comparison does today, not what is right: 5% of the same acts are still judged DIFFERENT.
  * A change that moves them is meant to - look at what flipped with AuthorVerdictDiff on the full corpus, then set
  * the new numbers here. See docs/AUTHOR-CORPUS.md
  */
@@ -48,7 +48,7 @@ public class AuthorCorpusTest {
 
   @Test
   public void all() {
-    assertPinned(CorpusEvaluator.ALL, 7283, 350, 8604, 114);
+    assertPinned(CorpusEvaluator.ALL, 7291, 343, 8604, 114);
   }
 
   @Test
@@ -58,7 +58,7 @@ public class AuthorCorpusTest {
 
   @Test
   public void zoological() {
-    assertPinned(NomCode.ZOOLOGICAL.name(), 2859, 175, 2715, 37);
+    assertPinned(NomCode.ZOOLOGICAL.name(), 2867, 168, 2715, 37);
   }
 
   /**
@@ -72,6 +72,8 @@ public class AuthorCorpusTest {
     String actual = String.format("%s is now: %d, %d, %d, %d", scope,
       m.count(Label.SAME, Equality.EQUAL), m.count(Label.SAME, Equality.DIFFERENT),
       m.count(Label.DIFF, Equality.DIFFERENT), m.count(Label.DIFF, Equality.EQUAL));
+    // what to pin next, also when nothing fails
+    System.out.println(actual);
     assertTrue("fewer same acts judged EQUAL. " + actual, m.count(Label.SAME, Equality.EQUAL) >= sameEqual * (1 - HEADROOM));
     assertTrue("more same acts judged DIFFERENT. " + actual, m.count(Label.SAME, Equality.DIFFERENT) <= sameDifferent * (1 + HEADROOM));
     assertTrue("fewer different names judged DIFFERENT. " + actual,

@@ -7199,7 +7199,7 @@ C G Alm	BOT	Alm	Carl Gustav Alm
 C G Brügger	BOT	Brügger	Christian Georg Brügger
 C G C Reinwardt	BOT	Reinw.	Caspar Georg Carl Reinwardt
 C G Carus	BOT	Carus	Carl Gustav Carus
-C G D Nees von Esenbeck	BOT	Nees	Christian Gottfried Daniel Nees von Esenbeck
+C G D Nees von Esenbeck	ANY	Nees	Christian Gottfried Daniel Nees von Esenbeck
 C G Ehrenberg	BOT	Ehrenb.	Christian Gottfried Ehrenberg	Ehrenberg
 C G F von Hochstetter	BOT	C.G.F.Hochst.	Christian Gottlob Ferdinand von Hochstetter
 C G G J van Steenis	BOT	Steenis	Cornelis Gijsbert Gerrit Jan van Steenis
@@ -12768,7 +12768,7 @@ E G Pobedimova	BOT	Pobed.	Evgeniia Georgievna Pobedimova
 E G Pritzel	BOT	E.Pritz.	Ernst Georg Pritzel
 E G von Steudel	BOT	Steud.	Ernst Gottlieb von Steudel
 E G Voss	BOT	E.G.Voss	Edward Groesbeck Voss
-E Geoffroy	BOT	Geoffroy	É. Geoffroy Saint-Hilaire
+E Geoffroy	ANY	Geoffroy	É. Geoffroy Saint-Hilaire	Étienne Geoffroy Saint-Hilaire
 E Gertrude	BOT	E.G.Clem.	Edith Gertrude
 E Gilbert	BOT	E.-J.Gilbert	Edouard-Jean Gilbert	Édouard-Jean Gilbert
 E H Clarkson	BOT	Clarkson	Edward Hale Clarkson
@@ -60231,7 +60231,6 @@ Zübeyde Uğurlu	BOT	Zübeyde Uğurlu
 Étienne Chevalier	BOT	Étienne Chevalier
 Étienne Denisse	BOT	Étienne Denisse
 Étienne Edmond Foëx	BOT	Étienne Edmond Foëx
-Étienne Geoffroy Saint-Hilaire	ZOO	Étienne Geoffroy Saint-Hilaire
 Étienne Lapeyrère	BOT	Étienne Lapeyrère
 Étienne Laurent Joseph Hippolyte Boyer de Fonscolombe (1772-1853)	ZOO	Étienne Laurent Joseph Hippolyte Boyer de Fonscolombe (1772-1853)	Boyer de Fonscolombe
 Étienne Louis Geoffroy	ZOO	Étienne Louis Geoffroy

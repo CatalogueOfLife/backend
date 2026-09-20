@@ -52,6 +52,15 @@ public class AuthorComparator {
    * with a small difference of 11 years being accepted.
    */
   public Equality compare(@Nullable Authorship a1, @Nullable Authorship a2) {
+    return compare(a1, a2, null);
+  }
+
+  /**
+   * @param code the nomenclatural code of the names, which selects the author map to look up abbreviations in.
+   *             Unlike in {@link #compareStrict(Authorship, Authorship, NomCode, int)} it does not select the relevant
+   *             author team: ex authors keep being compared, as sources leave them out all the time.
+   */
+  public Equality compare(@Nullable Authorship a1, @Nullable Authorship a2, @Nullable NomCode code) {
     // compare year first - simpler to calculate
     var yc = new YearComparator(11, a1, a2);
     Equality result = yc.compare();
@@ -59,9 +68,9 @@ public class AuthorComparator {
     if (result != Equality.DIFFERENT) {
       Equality aresult;
       if (result == Equality.EQUAL || !yc.hasYears()) {
-        aresult = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, null);
+        aresult = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, null, code);
       } else {
-        aresult = compareAuthorteam(a1, a2, minCommonSubstring * 3, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, 99, null);
+        aresult = compareAuthorteam(a1, a2, minCommonSubstring * 3, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, 99, null, code);
         // if unknown years and author is also unknown, make this a mismatch
         if (aresult == Equality.UNKNOWN) {
           return Equality.DIFFERENT;
@@ -82,8 +91,16 @@ public class AuthorComparator {
    * with a small difference of 2 years being accepted.
    */
   public Equality compareAuthorsFirst(@Nullable Authorship a1, @Nullable Authorship a2) {
+    return compareAuthorsFirst(a1, a2, null);
+  }
+
+  /**
+   * @param code the nomenclatural code of the names, which selects the author map to look up abbreviations in
+   */
+  public Equality compareAuthorsFirst(@Nullable Authorship a1, @Nullable Authorship a2, @Nullable NomCode code) {
     // compare year first - simpler to calculate
-    Equality result = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, null);
+    Equality result = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE,
+      null, code);
     if (result != Equality.EQUAL) {
       // if authors are not the same we allow a positive year comparison to override it as author comparison is very difficult
       Equality yresult = new YearComparator(a1.getYear(), a2.getYear()).compare();
@@ -115,7 +132,8 @@ public class AuthorComparator {
    * Does a comparison of recombination and basionym authorship using the author compare method once for the recombination authorship and once for the basionym.
    */
   public Equality compare(ScientificName n1, ScientificName n2) {
-    return compare(n1, n2, this::compare);
+    final NomCode code = ObjectUtils.coalesce(n1.getCode(), n2.getCode());
+    return compare(n1, n2, (a1, a2) -> compare(a1, a2, code));
   }
 
   /**
@@ -123,7 +141,8 @@ public class AuthorComparator {
    * This is used by GBIF matching algorithm.
    */
   public Equality compareAuthorsFirst(ScientificName n1, ScientificName n2) {
-    return compare(n1, n2, this::compareAuthorsFirst);
+    final NomCode code = ObjectUtils.coalesce(n1.getCode(), n2.getCode());
+    return compare(n1, n2, (a1, a2) -> compareAuthorsFirst(a1, a2, code));
   }
 
   private Equality compare(
@@ -175,7 +194,7 @@ public class AuthorComparator {
    */
   public boolean compareStrict(Authorship a1, Authorship a2, NomCode code, int yearDifferenceAllowed) {
     // strictly compare authors first
-    Equality result = compareAuthorteam(a1, a2, minCommonSubstring, Integer.MAX_VALUE, 100, code);
+    Equality result = compareAuthorteam(a1, a2, minCommonSubstring, Integer.MAX_VALUE, 100, code, code);
     if (result != Equality.EQUAL) {
       return false;
     }
@@ -192,26 +211,30 @@ public class AuthorComparator {
    * 2) checks for equality of the longest common substring
    * 3) do an author lookup and then check for common substring
    *
-   * @param code the code determines which ex author to use. If null both authorteams are used for matching
+   * @param code the code determines which ex author to use and which author map. If null both authorteams are used for matching
    */
   @VisibleForTesting
   Equality compareAuthorteam(Authorship a1, Authorship a2, NomCode code) {
-    return compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, code);
+    return compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, code, code);
   }
 
+  /**
+   * @param teamCode determines which of authors and ex authors are compared. If null both are
+   * @param mapCode  determines the author map abbreviations are looked up in
+   */
   private Equality compareAuthorteam(@Nullable Authorship a1, @Nullable Authorship a2,
                                      final int minCommonSubstring, final int maxAuthorLengthWithoutLookup, final int jaroDistance,
-                                     NomCode code
+                                     @Nullable NomCode teamCode, @Nullable NomCode mapCode
   ) {
     // convert to all lower case, ascii only, no punctuation but commas seperating authors and normed whitespace
-    List<String> authorTeam1 = normalizer.lookup(AuthorshipNormalizer.normalize(a1, code), maxAuthorLengthWithoutLookup, code);
-    List<String> authorTeam2 = normalizer.lookup(AuthorshipNormalizer.normalize(a2, code), maxAuthorLengthWithoutLookup, code);
+    List<String> authorTeam1 = normalizer.lookup(AuthorshipNormalizer.normalize(a1, teamCode), maxAuthorLengthWithoutLookup, mapCode);
+    List<String> authorTeam2 = normalizer.lookup(AuthorshipNormalizer.normalize(a2, teamCode), maxAuthorLengthWithoutLookup, mapCode);
     if (!authorTeam1.isEmpty() && !authorTeam2.isEmpty()) {
       Equality equality = compareNormalizedAuthorteam(authorTeam1, authorTeam2, minCommonSubstring, jaroDistance);
       if (equality != Equality.EQUAL) {
         // try again by looking up entire author strings
-        List<String> authorTeam1l = normalizer.lookup(authorTeam1, code);
-        List<String> authorTeam2l = normalizer.lookup(authorTeam2, code);
+        List<String> authorTeam1l = normalizer.lookup(authorTeam1, mapCode);
+        List<String> authorTeam2l = normalizer.lookup(authorTeam2, mapCode);
         // only compare again if the queue is actually different then before
         if (!authorTeam1.equals(authorTeam1l) || !authorTeam2.equals(authorTeam2l)) {
           equality = compareNormalizedAuthorteam(authorTeam1l, authorTeam2l, minCommonSubstring, jaroDistance);

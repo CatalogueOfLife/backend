@@ -2,7 +2,10 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.matching.authorship.AuthorComparator;
 
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
@@ -108,5 +111,35 @@ public class UsageMatcherTest {
     var candidate = candidate(sn(Rank.FAMILY, "Tenebrionidae"), sn(Rank.ORDER, "Coleoptera"));
     var parents = List.of(sn(Rank.ORDER, "COLEOPTERA"), sn(Rank.FAMILY, "TENEBRIONIDAE"));
     assertEquals(Lineage.SAME, compareLineage(candidate, parents));
+  }
+
+  static SimpleNameCached authored(NomCode code, String authorship) {
+    var sn = sn(Rank.SPECIES, "Aus bus");
+    sn.setCode(code);
+    sn.setAuthorship(authorship);
+    return sn;
+  }
+
+  /**
+   * The author map is split by nomenclatural code. A usage that loses its code on the way to the author
+   * comparison is looked up in the botanical map, where the zoologist Swainson's "Sw." is the botanist Swartz.
+   */
+  @Test
+  public void authorComparisonGetsTheCode() {
+    var sci = UsageMatcher.parseSciName(authored(NomCode.ZOOLOGICAL, "(Sw., 1820)"));
+    assertEquals(NomCode.ZOOLOGICAL, sci.getCode());
+    assertEquals(List.of("Sw."), sci.getBasionymAuthorship().getAuthors());
+    assertEquals("1820", sci.getBasionymAuthorship().getYear());
+
+    var comp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
+    assertEquals(Equality.EQUAL, comp.compare(
+      UsageMatcher.parseSciName(authored(NomCode.ZOOLOGICAL, "Sw., 1820")),
+      UsageMatcher.parseSciName(authored(NomCode.ZOOLOGICAL, "Swainson, 1820"))
+    ));
+    // a usage without a code still compares, as before
+    assertEquals(Equality.EQUAL, comp.compare(
+      UsageMatcher.parseSciName(authored(null, "Mill.")),
+      UsageMatcher.parseSciName(authored(null, "Miller"))
+    ));
   }
 }

@@ -59,13 +59,15 @@ public class AuthorCorpusReportTest {
     assertFalse(s, s.contains("Swainson"));
   }
 
-  /** with the same year on both sides it takes the authors to keep Sw. and Swainson apart */
+  /** neither pair has a year, so it takes the authors to keep them apart */
   @Test
   public void tellsAuthorFromYearCausedMisses() {
     String s = section("Same act judged DIFFERENT by its authors");
-    assertTrue(s, s.contains("Swainson"));
     assertTrue(s, s.contains("Wang Wen Tsai"));
-    assertFalse(section("Same act judged DIFFERENT by its years only").contains("Swainson"));
+    assertTrue(s, s.contains("G\u00f3mez-Campo"));
+    assertFalse(section("Same act judged DIFFERENT by its years only").contains("Wang Wen Tsai"));
+    // judged EQUAL since the code of the names selects the author map
+    assertFalse(s, s.contains("Swainson"));
   }
 
   /**

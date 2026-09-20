@@ -714,6 +714,72 @@ public class AuthorComparatorTest {
     assertAuth("J.Kickx", Equality.DIFFERENT, "J.Kickx f.");
   }
 
+  private static Name name(NomCode code, String authorship) {
+    Name n = new Name();
+    n.setCode(code);
+    n.setCombinationAuthorship(parse(authorship));
+    return n;
+  }
+
+  /**
+   * The author map is split by nomenclatural code, but the code of the names never reached it: every comparison
+   * went through the botanical map, which turns the zoologist Swainson's "Sw." into the botanist Swartz.
+   */
+  @Test
+  public void codeOfTheNamesSelectsTheAuthorMap() {
+    assertEquals(Equality.EQUAL, comp.compare(name(NomCode.ZOOLOGICAL, "Sw., 1820"), name(NomCode.ZOOLOGICAL, "Swainson, 1820")));
+    // one code is enough
+    assertEquals(Equality.EQUAL, comp.compare(name(null, "Sw., 1820"), name(NomCode.ZOOLOGICAL, "Swainson, 1820")));
+    // in botany it still is Swartz
+    assertEquals(Equality.DIFFERENT, comp.compare(name(NomCode.BOTANICAL, "Sw."), name(NomCode.BOTANICAL, "Swainson")));
+    assertEquals(Equality.EQUAL, comp.compare(name(NomCode.BOTANICAL, "Sw."), name(NomCode.BOTANICAL, "Swartz")));
+    // and without any code it stays what it was
+    assertEquals(Equality.DIFFERENT, comp.compare(name(null, "Sw."), name(null, "Swainson")));
+
+    // a botanical standard form is none in zoology
+    assertEquals(Equality.EQUAL, comp.compare(name(NomCode.BOTANICAL, "DC."), name(NomCode.BOTANICAL, "de Candolle")));
+    assertEquals(Equality.DIFFERENT, comp.compare(name(NomCode.ZOOLOGICAL, "DC."), name(NomCode.ZOOLOGICAL, "de Candolle")));
+  }
+
+  /**
+   * Étienne Geoffroy Saint-Hilaire was a zoologist and Nees von Esenbeck also described Hymenoptera, but their rows
+   * in the author map came from IPNI and were botanical only. As long as no code reached the map that went unnoticed.
+   */
+  @Test
+  public void botanistsWhoAlsoNamedAnimals() {
+    final NomCode zoo = NomCode.ZOOLOGICAL;
+    assertEquals(Equality.EQUAL, comp.compare(name(zoo, "Geoffroy, 1806"), name(zoo, "É. Geoffroy Saint-Hilaire, 1806")));
+    assertEquals(Equality.EQUAL, comp.compare(name(zoo, "E. Geoffroy, 1818"), name(zoo, "Étienne Geoffroy Saint-Hilaire, 1818")));
+    assertEquals(Equality.EQUAL, comp.compare(name(zoo, "Nees, 1811"), name(zoo, "Nees ab Esenbeck, 1811")));
+    // and still in botany
+    assertEquals(Equality.EQUAL, comp.compare(name(NomCode.BOTANICAL, "Nees"), name(NomCode.BOTANICAL, "Nees von Esenbeck")));
+  }
+
+  @Test
+  public void codeSelectsTheAuthorMapForAuthorships() {
+    assertEquals(Equality.EQUAL, comp.compare(parse("Sw., 1820"), parse("Swainson, 1820"), NomCode.ZOOLOGICAL));
+    assertEquals(Equality.DIFFERENT, comp.compare(parse("Sw., 1820"), parse("Swainson, 1820"), NomCode.BOTANICAL));
+    assertEquals(Equality.DIFFERENT, comp.compare(parse("Sw., 1820"), parse("Swainson, 1820"), null));
+  }
+
+  /**
+   * The code must only select the author map. It must not make the lax comparison drop the ex authors the way
+   * the strict one does: "Pohl" and "Pohl ex Benth." are one name cited in two ways, and the corpus is full of them.
+   */
+  @Test
+  public void codeDoesNotDropExAuthors() {
+    for (NomCode code : new NomCode[]{null, NomCode.BOTANICAL, NomCode.ZOOLOGICAL}) {
+      assertEquals(String.valueOf(code), Equality.EQUAL, comp.compare(name(code, "Pohl"), name(code, "Pohl ex Benth.")));
+    }
+    // "Rchb." is a botanical standard form only
+    for (NomCode code : new NomCode[]{null, NomCode.BOTANICAL}) {
+      assertEquals(String.valueOf(code), Equality.EQUAL,
+        comp.compare(name(code, "Reichenbach, 1837"), name(code, "Rchb. ex Andrz., 1837")));
+    }
+    // the strict comparison keeps telling them apart by the code
+    assertFalse(comp.compareStrict(parse("Reichenbach"), parse("Rchb. ex Andrz."), NomCode.BOTANICAL, 0));
+  }
+
   private void assertAuth(AuthorshipNormalizer.Author a1, Equality eq, AuthorshipNormalizer.Author a2) {
     assertEquals(eq, comp.compare(a1, a2, AuthorComparator.MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, AuthorComparator.MIN_JARO_SURNAME_DISTANCE));
   }

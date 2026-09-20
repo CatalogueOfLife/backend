@@ -29,9 +29,9 @@ public class CorpusEvaluatorTest {
   }
 
   /**
-   * A characterisation of master on 2026-09-19, not a statement of what is right: five pairs of different people
-   * the comparator takes for one and three citations of one act it keeps apart. Whoever fixes one of them moves
-   * the numbers in here, which is the point.
+   * A characterisation, not a statement of what is right: five pairs of different people the comparator takes for
+   * one and three citations of one act, two of which it keeps apart. Whoever fixes one of them moves the numbers
+   * in here, which is the point. "Sw." / "Swainson" was the third until the code of the names reached the author map.
    */
   @Test
   public void knownMisjudgements() throws Exception {
@@ -39,15 +39,16 @@ public class CorpusEvaluatorTest {
     var all = result.matrix(CorpusEvaluator.ALL, true);
     assertEquals(5, all.count(Label.DIFF, Equality.EQUAL));
     assertEquals(0, all.count(Label.DIFF, Equality.DIFFERENT));
-    assertEquals(3, all.count(Label.SAME, Equality.DIFFERENT));
-    assertEquals(0, all.count(Label.SAME, Equality.EQUAL));
+    assertEquals(2, all.count(Label.SAME, Equality.DIFFERENT));
+    assertEquals(1, all.count(Label.SAME, Equality.EQUAL));
   }
 
   @Test
   public void splitsByCode() throws Exception {
     var result = evaluator.evaluate(CorpusIO.readPairs(Resources.toFile(KNOWN_MISJUDGEMENTS)));
     assertEquals(2, result.matrix("ZOOLOGICAL", true).count(Label.DIFF, Equality.EQUAL));
-    assertEquals(1, result.matrix("ZOOLOGICAL", true).count(Label.SAME, Equality.DIFFERENT));
+    assertEquals(0, result.matrix("ZOOLOGICAL", true).count(Label.SAME, Equality.DIFFERENT));
+    assertEquals(1, result.matrix("ZOOLOGICAL", true).count(Label.SAME, Equality.EQUAL));
     assertEquals(2, result.matrix("BOTANICAL", true).count(Label.SAME, Equality.DIFFERENT));
     assertEquals(2, result.matrix(CorpusEvaluator.OTHER, true).count(Label.DIFF, Equality.EQUAL));
   }

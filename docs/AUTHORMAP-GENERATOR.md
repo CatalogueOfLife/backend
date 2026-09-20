@@ -17,6 +17,16 @@ What an edit does to author matching is measured against the corpus described in
 [AUTHOR-CORPUS.md](AUTHOR-CORPUS.md). Its report also lists the alias candidates the map lacks, ranked by
 the number of names they affect.
 
+## What the code of a row does
+The nomenclatural code of the names being compared selects the rows that apply: `BOT` and `ANY` for a botanical
+name or one without a code, `ZOO` and `ANY` for a zoological one. A `BOT` row therefore does nothing for an animal,
+which is wanted for a standard form (`Sw.` is Swartz in botany and Swainson in zoology) and wrong for an author
+who named both: `E Geoffroy` and `C G D Nees von Esenbeck` came from IPNI as `BOT` and are `ANY`.
+
+The same person often sits in two rows, an IPNI one holding the standard form and a Wikidata one holding the full
+name, because the generator only joins rows that share a full name. Merge them into one `ANY` row when you meet
+them; the corpus report shows the pairs this breaks.
+
 ## Where the rows come from
 - **The IPNI base**: the initials canonicals such as `C G D Nees von Esenbeck`. They were
   generated in 2015 for GBIF's checklistbank from an IPNI author export whose source was not kept,
