@@ -4,9 +4,11 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.JobDao;
 import life.catalogue.dao.UserCrudDao;
 
+import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -195,6 +197,43 @@ public class JobExecutorTest {
     assertSame(err, job.getError());
     assertEquals("inserting", job.getStep());
     assertNotNull(job.getFinished());
+  }
+
+  /** Throws a cancellation the way a library reports it, wrapped into an unchecked exception. */
+  static class WrappedInterruptJob extends BackgroundJob {
+    private final Exception ex;
+
+    WrappedInterruptJob(Exception ex) {
+      super(1);
+      this.ex = ex;
+    }
+
+    @Override
+    public void execute() throws Exception {
+      setStep("processing");
+      throw ex;
+    }
+  }
+
+  /**
+   * The elasticsearch client catches the interrupt of a cancelled job waiting for a response and rethrows it as a plain
+   * RuntimeException, which recorded a cancelled search export as failed with "thread waiting for the response was interrupted".
+   */
+  @Test
+  public void wrappedInterruptIsCancel() {
+    var esStyle = new RuntimeException("thread waiting for the response was interrupted", new InterruptedException());
+    var unchecked = new InterruptedRuntimeException("cancelled");
+    for (Exception ex : List.of(esStyle, unchecked, new IllegalStateException("outer", esStyle))) {
+      var job = new WrappedInterruptJob(ex);
+      job.run();
+      assertEquals(JobStatus.CANCELED, job.getStatus());
+      assertNull(job.getError());
+      assertEquals("processing", job.getStep());
+    }
+    // a timeout is no cancellation
+    var job = new WrappedInterruptJob(new RuntimeException(new SocketTimeoutException("Read timed out")));
+    job.run();
+    assertEquals(JobStatus.FAILED, job.getStatus());
   }
 
   static class FailJob extends BackgroundJob {

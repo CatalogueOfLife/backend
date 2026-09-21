@@ -153,7 +153,10 @@ Every asynchronous unit of work - imports, sector syncs, releases, exports, matc
 persists the final state and sends the completion email. It catches `Throwable`, not `Exception`, so a job
 killed by an `Error` - heap exhaustion above all - is recorded as FAILED with that error instead of leaving
 its row still running and empty; the `Error` is then rethrown once the final state is persisted, because
-whether the JVM can carry on is not a single job's call. Fine grained progress is a free text `step`, not a
+whether the JVM can carry on is not a single job's call. An exception with an `InterruptedException` (or
+`InterruptedRuntimeException`) anywhere in its cause chain is a cancel, not a failure: libraries wrap the interrupt
+of a cancelled job, the elasticsearch client as a `RuntimeException` "thread waiting for the response was
+interrupted". Fine grained progress is a free text `step`, not a
 status - the old `ImportState` enum column is gone from the db (`IMPORTSTATE` dropped).
 The executor has three lanes (`JobLane`: DEFAULT, IMPORT, SYNC - a vocab enum, so it is served at
 `/vocab/joblane` and persisted as the `job.lane` column), each with its own worker pool and priority
