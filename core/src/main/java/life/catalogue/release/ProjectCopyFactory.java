@@ -99,12 +99,12 @@ public class ProjectCopyFactory {
   /**
    * @param force release even though a sector of the project holds the leftovers of a sync that did not finish
    */
-  public XRelease buildExtendedRelease(final int releaseKey, final int userKey, final boolean force) {
+  public XRelease buildExtendedRelease(final int baseReleaseKey, final int userKey, final boolean force) {
     if (!force) {
-      assertNoUnfinishedSyncs(factory, DatasetInfoCache.CACHE.info(releaseKey).keyOrProjectKey());
+      assertNoUnfinishedSyncs(factory, DatasetInfoCache.CACHE.info(baseReleaseKey).keyOrProjectKey());
     }
     XRelease release = new XRelease(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService,
-      dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
+      dDao, diDao, siDao, rDao, nDao, sDao, baseReleaseKey, userKey,
       cfg, apiURI, clbURI, client, validator);
     wireRetention(release, userKey);
     return release;

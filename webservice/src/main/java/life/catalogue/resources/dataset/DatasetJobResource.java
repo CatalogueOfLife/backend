@@ -90,14 +90,14 @@ public class DatasetJobResource {
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public UUID xRelease(@PathParam("key") int key, @QueryParam("force") boolean force, @Auth User user) {
-    Integer releaseKey;
+    Integer baseReleaseKey;
     try (SqlSession session = factory.openSession(true)) {
-      releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
+      baseReleaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
     }
-    if (releaseKey == null) {
+    if (baseReleaseKey == null) {
       throw new IllegalArgumentException("Project " + key + " was never released in public");
     }
-    var job = jobFactory.buildExtendedRelease(releaseKey, user.getKey(), force);
+    var job = jobFactory.buildExtendedRelease(baseReleaseKey, user.getKey(), force);
     exec.submit(job);
     return job.getKey();
   }
