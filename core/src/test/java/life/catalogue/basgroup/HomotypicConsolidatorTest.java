@@ -53,7 +53,6 @@ public class HomotypicConsolidatorTest {
   @Test
   public void findPrimaryUsage() throws Exception {
     var vsm = mock(VerbatimSourceMapper.class);
-    when(vsm.getMaxID(anyInt())).thenReturn(100);
 
     var session = mock(SqlSession.class);
     when(session.getMapper(VerbatimSourceMapper.class)).thenReturn(vsm);
