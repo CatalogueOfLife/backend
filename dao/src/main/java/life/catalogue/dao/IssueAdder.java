@@ -18,8 +18,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Convenience class for adding issues to project or releases.
  * It manages missing verbatim source records under the hood.
  *
- * As it relies on a serial verbatim source id generator looking at the current maximum at startup,
+ * As it relies on a serial verbatim source id generator looking at the current maximum at first use,
  * do not use this class in parallel for the same dataset!
+ *
+ * Creating an adder does not touch the session, so it opens no transaction on a non autocommit session:
+ * callers build one before long running reads and postgres kills a transaction left idle for too long.
  */
 public class IssueAdder {
   private final int datasetKey;
@@ -36,13 +39,19 @@ public class IssueAdder {
     this.vkey = DSID.root(datasetKey);
     this.vsm = session.getMapper(VerbatimSourceMapper.class);
     this.um = session.getMapper(NameUsageMapper.class);
-    vsIdGen = new AtomicInteger(vsm.getMaxID(datasetKey)+1);
+  }
+
+  private int nextVerbatimSourceId() {
+    if (vsIdGen == null) {
+      vsIdGen = new AtomicInteger(vsm.getMaxID(datasetKey)+1);
+    }
+    return vsIdGen.incrementAndGet();
   }
 
   public void addIssues(Integer verbatimSourceKey, String usageID, Set<Issue> issues) {
     if (verbatimSourceKey == null) {
       // create new record attached to used
-      var vs = new VerbatimSource(datasetKey, vsIdGen.incrementAndGet(), null, null, null, null);
+      var vs = new VerbatimSource(datasetKey, nextVerbatimSourceId(), null, null, null, null);
       vs.setIssues(issues);
       vsm.create(vs);
       um.updateVerbatimSourceKey(ukey.id(usageID), vs.getId());

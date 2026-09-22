@@ -636,6 +636,8 @@ public class XRelease extends ProjectRelease {
     try (SqlSession sessionRO = factory.openSession(true);
          SqlSession session = factory.openSession(false)
     ) {
+      // nothing may touch session before the traversal streams: the path sorted tree query takes longer than the
+      // idle-in-transaction timeout of prod postgres on COL and a transaction opened here gets killed, see #1605
       var consumer = new TreeCleanerAndValidator(session, newDatasetKey, xCfg.removeEmptyGenera);
       // add metrics generator to tree traversal
       var stack = consumer.stack();
