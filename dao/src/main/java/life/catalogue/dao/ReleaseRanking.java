@@ -22,7 +22,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
  * a newer extended release above an older one.
  *
  * The base release of an extended release is the one its job recorded as params.baseReleaseKey. Where that is missing
- * it is the newest base release that is not private, was not deleted before the extended release was created, and was
+ * it is the newest base release that was not deleted before the extended release was created, and was
  * created at least one full day before it. Dataset notes are never read, other projects may write them differently.
  */
 public class ReleaseRanking {
@@ -34,7 +34,7 @@ public class ReleaseRanking {
   private final List<ArchivableRelease> ranked;
 
   /**
-   * @param releases every release of the project, private and deleted ones included, but no temporary datasets
+   * @param releases the public releases of the project, deleted ones included, but no private or temporary datasets
    * @param ignored the release keys the project's release configs ignore
    */
   public ReleaseRanking(int projectKey, List<ArchivableRelease> releases, IntSet ignored) {
@@ -65,7 +65,7 @@ public class ReleaseRanking {
     }
     final LocalDateTime latest = xr.getCreated().minusDays(1);
     return releases.stream()
-      .filter(r -> r.getOrigin() == DatasetOrigin.RELEASE && !r.isPrivat() && r.getCreated() != null)
+      .filter(r -> r.getOrigin() == DatasetOrigin.RELEASE && r.getCreated() != null)
       .filter(r -> r.getDeleted() == null || r.getDeleted().isAfter(xr.getCreated()))
       .filter(r -> !r.getCreated().isAfter(latest))
       .max(Comparator.comparing(ArchivableRelease::getCreated).thenComparingInt(ArchivableRelease::getKey))
@@ -103,7 +103,7 @@ public class ReleaseRanking {
   private ArchivableRelease require(int releaseKey) {
     var r = byKey.get(releaseKey);
     if (r == null) {
-      throw new IllegalArgumentException("Dataset " + releaseKey + " is no release of project " + projectKey);
+      throw new IllegalArgumentException("Dataset " + releaseKey + " is no public release of project " + projectKey);
     }
     return r;
   }
@@ -113,7 +113,7 @@ public class ReleaseRanking {
   }
 
   /**
-   * @return the public, not deleted releases, highest rank first
+   * @return the releases that were not deleted, highest rank first
    */
   public List<ArchivableRelease> archivable() {
     return ranked.stream().filter(ArchivableRelease::isArchivable).toList();
@@ -231,7 +231,7 @@ public class ReleaseRanking {
         }
       }
       if (!r.isArchivable()) {
-        sb.append(r.isPrivat() ? ", private" : ", deleted");
+        sb.append(", deleted");
       } else if (!supplies(r.getKey())) {
         sb.append(", ignored");
       }

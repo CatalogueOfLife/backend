@@ -242,7 +242,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<DatasetRelease> listReleasesQuick(@Param("projectKey") int projectKey, @Param("inclDeleted") boolean inclDeleted, @Param("inclPrivate") boolean inclPrivate);
 
   /**
-   * Lists every release of a project for the name usage archive, private and deleted ones included, but no temporary
+   * Lists the public releases of a project for the name usage archive, deleted ones included, but no private or temporary
    * datasets, ordered by attempt. An extended release carries the base release key its job recorded, if any.
    */
   List<ArchivableRelease> listReleasesForArchive(@Param("projectKey") int projectKey);
@@ -486,7 +486,6 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
     private int key;
     private DatasetOrigin origin;
     private Integer attempt;
-    private boolean privat;
     private LocalDateTime created;
     private LocalDateTime deleted;
     private Integer baseReleaseKey; // as recorded by the job that built an extended release
@@ -494,22 +493,21 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
     public ArchivableRelease() {
     }
 
-    public ArchivableRelease(int key, DatasetOrigin origin, Integer attempt, boolean privat, LocalDateTime created,
+    public ArchivableRelease(int key, DatasetOrigin origin, Integer attempt, LocalDateTime created,
                              @Nullable LocalDateTime deleted, @Nullable Integer baseReleaseKey) {
       this.key = key;
       this.origin = origin;
       this.attempt = attempt;
-      this.privat = privat;
       this.created = created;
       this.deleted = deleted;
       this.baseReleaseKey = baseReleaseKey;
     }
 
     /**
-     * @return true if the release is public and not deleted, so its data exists and may be archived
+     * @return true if the release is not deleted, so its data exists and may be archived
      */
     public boolean isArchivable() {
-      return !privat && deleted == null;
+      return deleted == null;
     }
 
     public int getKey() {
@@ -536,13 +534,6 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
       this.attempt = attempt;
     }
 
-    public boolean isPrivat() {
-      return privat;
-    }
-
-    public void setPrivat(boolean privat) {
-      this.privat = privat;
-    }
 
     public LocalDateTime getCreated() {
       return created;
