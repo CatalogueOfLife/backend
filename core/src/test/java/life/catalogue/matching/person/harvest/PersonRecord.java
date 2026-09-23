@@ -125,12 +125,17 @@ public record PersonRecord(
       }
     }
 
+    // no ternaries here: mixing Integer and int in one unboxes a null into a NullPointerException
     private static Integer min(Integer a, Integer b) {
-      return a == null ? b : b == null ? a : Math.min(a, b);
+      if (a == null) return b;
+      if (b == null) return a;
+      return Math.min(a, b);
     }
 
     private static Integer max(Integer a, Integer b) {
-      return a == null ? b : b == null ? a : Math.max(a, b);
+      if (a == null) return b;
+      if (b == null) return a;
+      return Math.max(a, b);
     }
 
     public PersonRecord build() {

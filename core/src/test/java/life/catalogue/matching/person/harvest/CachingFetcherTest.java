@@ -40,6 +40,24 @@ public class CachingFetcherTest {
     assertEquals("ok", new CachingFetcher(dir, url -> "ok").get("a"));
   }
 
+  /** sources hand over years they could not read as null: they must neither fail nor erase a known year */
+  @Test
+  public void builderYearsIgnoreNull() {
+    var b = new PersonRecord.Builder(life.catalogue.matching.person.Provenance.IPNI);
+    b.ipni = "1-1";
+    b.born(null);
+    b.died(null);
+    assertNull(b.build().born());
+    b.born(1800);
+    b.born(null);
+    b.born(1790);
+    b.died(1850);
+    b.died(null);
+    b.died(1855);
+    assertEquals(Integer.valueOf(1790), b.build().born());
+    assertEquals(Integer.valueOf(1855), b.build().died());
+  }
+
   @Test
   public void recordIdsOwnFirst() {
     var b = new PersonRecord.Builder(life.catalogue.matching.person.Provenance.IPNI);
