@@ -164,6 +164,25 @@ public class WikidataPersonSourceTest {
     assertEquals(2, records.get(0).names().size());
   }
 
+  /** a label only in "mul", the language Wikidata keeps names in for all languages, is asked for again */
+  @Test
+  public void mulLabels() throws Exception {
+    var source = new WikidataPersonSource(url -> {
+      String q = URLDecoder.decode(url, StandardCharsets.UTF_8);
+      if (q.contains("wbgetentities") && q.contains("languages=mul") && q.contains("ids=Q9"))
+        return "{\"entities\":{\"Q9\":{\"id\":\"Q9\",\"labels\":{\"mul\":{\"language\":\"mul\",\"value\":\"Kurt M. Neubig\"}}}}}";
+      if (q.contains("wbgetentities") && q.contains("languages=mul") && q.contains("ids=Q77"))
+        return "{\"entities\":{\"Q77\":{\"id\":\"Q77\",\"labels\":{\"mul\":{\"language\":\"mul\",\"value\":\"Neubig\"}}}}}";
+      if (q.contains("wbgetentities") && q.contains("ids=Q9")) return entities(entityWithClaims("Q9", claims(item("P734", "Q77")), null));
+      if (q.contains("wbgetentities") && q.contains("ids=Q77")) return entities(entity("Q77", null));
+      if (q.contains("wdt:P428") && q.contains("OFFSET 0")) return sparql(id("Q9", "Neubig"));
+      return sparql();
+    });
+    PersonRecord r = source.read().get(0);
+    assertTrue(r.names().contains(new PersonRecord.Form("Kurt M. Neubig", NameKind.FULL, FormCode.ANY)));
+    assertEquals("Neubig", r.family());
+  }
+
   @Test
   public void redirects() throws Exception {
     var source = new WikidataPersonSource(url -> "{\"results\":{\"bindings\":[{\"old\":{\"type\":\"uri\",\"value\":\"http://www.wikidata.org/entity/Q1\"},"

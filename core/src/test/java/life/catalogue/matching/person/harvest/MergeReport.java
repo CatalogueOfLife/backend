@@ -16,6 +16,8 @@ public class MergeReport {
   public int withoutId;
   public int relationsDropped;
   public final List<String> conflicts = new ArrayList<>();
+  /** a value of the files a source now gives otherwise: the harvest keeps the file's, a person decides */
+  public final List<String> changed = new ArrayList<>();
   public final List<String> ambiguous = new ArrayList<>();
   public final List<String> notSeen = new ArrayList<>();
 
@@ -26,6 +28,7 @@ public class MergeReport {
     sb.append(String.format("dropped: records without a name %,d, records without an id %,d, relations to no person %,d%n",
       withoutName, withoutId, relationsDropped));
     list(sb, "Sources disagree", conflicts);
+    list(sb, "The files and a source disagree", changed);
     list(sb, "Authority ids claimed by two persons", ambiguous);
     list(sb, "In the files but in no source any more", notSeen);
     return sb.toString();

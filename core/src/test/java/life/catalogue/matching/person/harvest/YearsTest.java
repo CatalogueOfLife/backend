@@ -23,10 +23,17 @@ public class YearsTest {
 
   @Test
   public void wikidataTimes() {
-    assertEquals(Integer.valueOf(1788), Years.wikidata("1788-01-01T00:00:00Z"));
-    assertEquals(Integer.valueOf(1788), Years.wikidata("+1788-06-11T00:00:00Z"));
-    assertNull(Years.wikidata("-0350-01-01T00:00:00Z"));
-    assertNull(Years.wikidata("t123456"));
-    assertNull(Years.wikidata(null));
+    assertEquals(Integer.valueOf(1788), Years.wikidata("1788-01-01T00:00:00Z", 11));
+    assertEquals(Integer.valueOf(1788), Years.wikidata("+1788-06-11T00:00:00Z", 9));
+    assertNull(Years.wikidata("-0350-01-01T00:00:00Z", 9));
+    assertNull(Years.wikidata("t123456", 11));
+    assertNull(Years.wikidata(null, 11));
+  }
+
+  /** "+2000-00-00" with precision 7 is the 20th century, not the year 2000: anything vaguer than a year is no year */
+  @Test
+  public void wikidataPrecisionBelowAYear() {
+    assertNull(Years.wikidata("+2000-00-00T00:00:00Z", 7));
+    assertNull(Years.wikidata("+1850-00-00T00:00:00Z", 8));
   }
 }

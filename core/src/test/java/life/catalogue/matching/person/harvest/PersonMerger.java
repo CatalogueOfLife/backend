@@ -19,7 +19,10 @@ import static life.catalogue.matching.person.Provenance.*;
  *   empty cells and adds lines.</li>
  *   <li>Where the records of one run disagree, IPNI wins for a person with an IPNI and no ZooBank id, ZooBank for one
  *   with a ZooBank and no IPNI id, Wikidata otherwise, and the disagreement is reported.</li>
- *   <li>Two persons with different ids of one authority are never merged.</li>
+ *   <li>Two persons with different ids of one authority are never merged, and a curated person is never merged into
+ *   another: a source joining it to another person is reported instead.</li>
+ *   <li>An authority is always right about its own id: a record joins the person holding its own id, whatever else it
+ *   links to.</li>
  * </ul>
  */
 public class PersonMerger {
@@ -93,15 +96,27 @@ public class PersonMerger {
     Map<String, Draft> index = new HashMap<>();
     for (Person p : existing.persons()) {
       Draft d = Draft.of(p);
-      String moved = d.wikidata == null ? null : wikidataRedirects.get(d.wikidata);
-      if (moved != null) {
-        d.wikidata = moved;
-        report.redirected++;
-      }
       drafts.add(d);
       d.authorityIds().forEach(id -> index.put(id, d));
     }
     report.existing = drafts.size();
+    // a redirect onto an item another person of the files holds makes the two one person
+    for (Draft d : List.copyOf(drafts)) {
+      String moved = d.wikidata == null ? null : wikidataRedirects.get(d.wikidata);
+      if (moved == null || !drafts.contains(d)) continue;
+      Draft holder = index.get(Person.WIKIDATA + moved);
+      String old = d.wikidata;
+      d.wikidata = moved;
+      if (holder != null && holder != d) {
+        if (join(holder, d, drafts, index, "a Wikidata redirect of " + old + " to " + moved) == null) {
+          d.wikidata = old;
+          continue;
+        }
+      } else {
+        index.put(Person.WIKIDATA + moved, d);
+      }
+      report.redirected++;
+    }
 
     // Wikidata records carry the links between the authorities, so they go first
     List<PersonRecord> ordered = new ArrayList<>(records);
@@ -135,31 +150,32 @@ public class PersonMerger {
   }
 
   private Draft attach(PersonRecord r, List<Draft> drafts, Map<String, Draft> index) {
-    List<Draft> matches = new ArrayList<>();
-    for (String id : r.ids()) {
-      Draft d = index.get(id);
-      if (d == null || matches.contains(d)) continue;
-      if (compatible(d, r)) {
-        matches.add(d);
-      } else {
-        // another item of the same authority claims this id: two persons until somebody merges them upstream
-        report.ambiguous.add(describe(d) + " and a " + r.source().value() + " record of " + String.join(", ", r.ids())
-          + " share " + id);
+    List<String> ids = new ArrayList<>(r.ids());
+    // an authority is always right about its own id, which comes first
+    Draft d = index.get(ids.get(0));
+    if (d == null) {
+      for (String id : ids.subList(1, ids.size())) {
+        Draft o = index.get(id);
+        if (o != null && compatible(o, r)) {
+          d = o;
+          break;
+        }
       }
     }
-    Draft d;
-    if (matches.isEmpty()) {
+    if (d == null) {
       d = new Draft();
       drafts.add(d);
-    } else {
-      d = matches.get(0);
-      for (Draft other : matches.subList(1, matches.size())) {
-        if (compatible(d, other)) {
-          absorb(d, other, drafts, index);
-        } else {
-          report.ambiguous.add(describe(other) + " and " + describe(d) + " are both linked by a " + r.source().value()
-            + " record of " + String.join(", ", r.ids()));
-        }
+    }
+    for (String id : ids) {
+      Draft o = index.get(id);
+      if (o == null || o == d) continue;
+      // a new draft holds no ids yet, so the record speaks for it
+      if (compatible(o, r) && compatible(d, o)) {
+        Draft kept = join(d, o, drafts, index, "a " + r.source().value() + " record of " + String.join(", ", ids));
+        d = kept == null ? d : kept;
+      } else {
+        report.ambiguous.add(describe(o) + " and " + describe(d) + " are both linked by a " + r.source().value()
+          + " record of " + String.join(", ", ids) + ", sharing " + id);
       }
     }
     link(d, r, index);
@@ -182,27 +198,50 @@ public class PersonMerger {
     return d.id != null ? d.id : String.join("/", d.authorityIds());
   }
 
-  /** the other draft is the same person: its ids, values and records move over */
-  private void absorb(Draft d, Draft other, List<Draft> drafts, Map<String, Draft> index) {
-    if (d.wikidata == null) d.wikidata = other.wikidata;
-    if (d.ipni == null) d.ipni = other.ipni;
-    if (d.zoobank == null) d.zoobank = other.zoobank;
-    if (other.id != null) d.formerIds.add(other.id);
-    d.formerIds.addAll(other.formerIds);
-    if (d.family == null) d.family = other.family;
-    if (d.given == null) d.given = other.given;
-    if (d.suffix == null) d.suffix = other.suffix;
-    if (d.born == null) d.born = other.born;
-    if (d.died == null) d.died = other.died;
-    if (d.activeFrom == null) d.activeFrom = other.activeFrom;
-    if (d.activeTo == null) d.activeTo = other.activeTo;
-    if (d.groups.isEmpty()) d.groups.addAll(other.groups);
-    if (d.source == null || (!d.existing && other.existing)) d.source = other.source;
-    d.existing |= other.existing;
-    d.records.addAll(other.records);
+  /**
+   * Makes two drafts one person: the ids, values and records of the other move over to keep, which keeps its own values
+   * and reports every one of the other it drops. A curated person is never joined, its line would change: the link is
+   * reported instead.
+   *
+   * @return the draft that stays, null if the two were not joined
+   */
+  @Nullable
+  private Draft join(Draft keep, Draft other, List<Draft> drafts, Map<String, Draft> index, String why) {
+    if (keep.source == CURATED || other.source == CURATED) {
+      report.ambiguous.add(describe(keep) + " and " + describe(other) + " are linked by " + why
+        + ", but a curated person is never joined");
+      return null;
+    }
+    // a redirect joins without asking whether the ids agree: a dropped id is reported and still finds keep
+    keep.wikidata = keep(keep, other, "wikidata", keep.wikidata, other.wikidata);
+    keep.ipni = keep(keep, other, "ipni", keep.ipni, other.ipni);
+    keep.zoobank = keep(keep, other, "zoobank", keep.zoobank, other.zoobank);
+    if (other.id != null) keep.formerIds.add(other.id);
+    keep.formerIds.addAll(other.formerIds);
+    keep.family = keep(keep, other, "family", keep.family, other.family);
+    keep.given = keep(keep, other, "given", keep.given, other.given);
+    keep.suffix = keep(keep, other, "suffix", keep.suffix, other.suffix);
+    keep.born = keep(keep, other, "born", keep.born, other.born);
+    keep.died = keep(keep, other, "died", keep.died, other.died);
+    keep.activeFrom = keep(keep, other, "activeFrom", keep.activeFrom, other.activeFrom);
+    keep.activeTo = keep(keep, other, "activeTo", keep.activeTo, other.activeTo);
+    if (keep.groups.isEmpty()) keep.groups.addAll(other.groups);
+    if (keep.source == null || (!keep.existing && other.existing)) keep.source = other.source;
+    keep.existing |= other.existing;
+    keep.records.addAll(other.records);
     drafts.remove(other);
-    d.authorityIds().forEach(id -> index.put(id, d));
+    other.authorityIds().forEach(id -> index.put(id, keep));
+    keep.authorityIds().forEach(id -> index.put(id, keep));
     report.merged++;
+    return keep;
+  }
+
+  private <T> T keep(Draft keep, Draft other, String field, @Nullable T kept, @Nullable T dropped) {
+    if (kept == null) return dropped;
+    if (dropped != null && !kept.equals(dropped)) {
+      report.conflicts.add(describe(keep) + " " + field + ": kept " + kept + ", dropped " + dropped + " of " + describe(other));
+    }
+    return kept;
   }
 
   /** the draft takes the ids of the record it lacks, unless another person holds them */
@@ -270,18 +309,22 @@ public class PersonMerger {
     d.family = fill(d, "family", d.family, recs, PersonRecord::family, sameText);
     d.given = fill(d, "given", d.given, recs, PersonRecord::given, sameText);
     d.suffix = fill(d, "suffix", d.suffix, recs, PersonRecord::suffix, sameText);
-    Integer bornBefore = d.born;
-    Integer diedBefore = d.died;
+    Integer[] before = {d.born, d.died, d.activeFrom, d.activeTo};
     d.born = fill(d, "born", d.born, recs, PersonRecord::born, sameYear);
     d.died = fill(d, "died", d.died, recs, PersonRecord::died, sameYear);
-    // years of two sources, or a source's own error, must not make an impossible person: unknown beats wrong
-    if (d.born != null && d.died != null && d.born > d.died) {
-      report.conflicts.add(d.id + " born " + d.born + " after died " + d.died + ": the filled years are left out");
-      d.born = bornBefore;
-      d.died = diedBefore;
-    }
     d.activeFrom = fill(d, "activeFrom", d.activeFrom, recs, PersonRecord::activeFrom, sameYear);
     d.activeTo = fill(d, "activeTo", d.activeTo, recs, PersonRecord::activeTo, sameYear);
+    // years of two sources, or a source's own error, must not make an impossible person: unknown beats wrong
+    String impossible = d.born != null && d.died != null && d.born > d.died ? "born " + d.born + " after died " + d.died
+      : d.born != null && d.activeFrom != null && d.activeFrom < d.born ? "active from " + d.activeFrom + " before born " + d.born
+      : null;
+    if (impossible != null) {
+      report.conflicts.add(d.id + " " + impossible + ": the filled years are left out");
+      d.born = before[0];
+      d.died = before[1];
+      d.activeFrom = before[2];
+      d.activeTo = before[3];
+    }
     if (d.groups.isEmpty()) {
       recs.forEach(r -> d.groups.addAll(r.groups()));
     }
@@ -303,6 +346,9 @@ public class PersonMerger {
       } else if (!same.test(chosen, v)) {
         report.conflicts.add(d.id + " " + field + ": " + from.value() + " " + chosen + ", " + r.source().value() + " " + v);
       }
+    }
+    if (current != null && chosen != null && !same.test(current, chosen)) {
+      report.changed.add(d.id + " " + field + ": files " + current + ", " + from.value() + " " + chosen);
     }
     return current != null ? current : chosen;
   }

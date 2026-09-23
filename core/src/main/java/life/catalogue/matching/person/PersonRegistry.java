@@ -12,10 +12,11 @@ import javax.annotation.Nullable;
 
 /**
  * The persons of the registry with every name form they are cited by, looked up the way citations are compared:
- * under their {@link AuthorshipNormalizer#normalize(String)} key. Next to the forms of the files, two forms are
- * derived per person with a family name: the initials of the given names with family name and suffix
- * ("G. B. Sowerby II") and the bare family name ("Sowerby"). A key may name several persons; that is intended, a
- * bare surname proposes candidates only.
+ * under their {@link AuthorshipNormalizer#normalize(String)} key. Next to the forms of the files, forms are derived
+ * per person with a family name: the initials of the given names with family name and suffix ("G. B. Sowerby II"),
+ * the same of every full name that ends with the family name, as a source often lists fewer given names than its
+ * label holds, and the bare family name ("Sowerby"). Nobiliary particles stay words ("A. P. de Candolle"). A key may
+ * name several persons; that is intended, a bare surname proposes candidates only.
  * <p>
  * Loaded once and only by what asks for it, so the string comparison pays nothing.
  */
@@ -45,6 +46,10 @@ public class PersonRegistry {
   public PersonRegistry(PersonFiles.Content c) {
     size = c.persons().size();
     for (Person p : c.persons()) {
+      if (p.id() == null) {
+        problems.add("a person without an id: " + p.family());
+        continue;
+      }
       for (String id : p.allIds()) {
         Person prev = byId.putIfAbsent(id, p);
         if (prev != null && prev != p) {
@@ -61,9 +66,12 @@ public class PersonRegistry {
       if (p.born() != null && p.died() != null && p.born() > p.died()) {
         problems.add(p.id() + " was born after it died");
       }
+      if (p.born() != null && p.activeFrom() != null && p.activeFrom() < p.born()) {
+        problems.add(p.id() + " was active before it was born");
+      }
       if (p.family() != null) {
         add(p.family(), p, FormCode.ANY);
-        add(initials(p.given()) + p.family() + (p.suffix() == null ? "" : " " + p.suffix()), p, FormCode.ANY);
+        add(initials(p.given()) + p.family() + suffix(p), p, FormCode.ANY);
       }
     }
     Set<Person> named = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -75,9 +83,15 @@ public class PersonRegistry {
       }
       named.add(p);
       add(n.form(), p, n.code());
+      if (n.kind() == NameKind.FULL && p.family() != null) {
+        String given = givenOf(n.form(), p);
+        if (given != null) {
+          add(initials(given) + p.family() + suffix(p), p, FormCode.ANY);
+        }
+      }
     }
     for (Person p : c.persons()) {
-      if (!named.contains(p)) {
+      if (p.id() != null && !named.contains(p)) {
         problems.add(p.id() + " has no name");
       }
     }
@@ -105,13 +119,39 @@ public class PersonRegistry {
     }
   }
 
+  private static String suffix(Person p) {
+    return p.suffix() == null ? "" : " " + p.suffix();
+  }
+
   /**
-   * @return "G. B. " for "George Brettingham", "J. B. " for "Jean-Baptiste", empty for none
+   * @return the words of a full name before the family name, "George Brettingham" of "George Brettingham Sowerby II",
+   *         null for a name that does not end with the person's family name and suffix
+   */
+  @Nullable
+  private static String givenOf(String full, Person p) {
+    String name = full.strip();
+    String suffix = suffix(p);
+    if (!suffix.isEmpty() && name.endsWith(suffix)) {
+      name = name.substring(0, name.length() - suffix.length());
+    }
+    String family = " " + p.family();
+    if (!name.endsWith(family)) return null;
+    String given = name.substring(0, name.length() - family.length()).strip();
+    return given.isEmpty() ? null : given;
+  }
+
+  /**
+   * @return "G. B. " for "George Brettingham", "J. B. " for "Jean-Baptiste", "A. P. de " for "Augustin Pyramus de",
+   *         empty for none
    */
   static String initials(@Nullable String given) {
     if (given == null) return "";
     StringBuilder sb = new StringBuilder();
     for (String part : given.split("[\\s-]+")) {
+      if (AuthorshipNormalizer.PARTICLES.contains(part)) {
+        sb.append(part).append(' ');
+        continue;
+      }
       String letters = part.replaceAll("^[^\\p{L}]+", "");
       if (!letters.isEmpty()) {
         sb.append(letters.charAt(0)).append(". ");

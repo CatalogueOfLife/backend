@@ -28,7 +28,8 @@ and every file is written sorted so a harvest diffs line by line.
   label, with a trailing `I` to `IV`, `Jr.` or `Sr.` of the label as suffix. They are never split off a full name: the
   last word is not the surname in `Geoffroy Saint-Hilaire` or `Ruiz López`.
 - **Years** only: `born`, `died`, and the active years `activeFrom`/`activeTo` for a floruit. A single floruit year
-  is both.
+  is both. A Wikidata date less precise than a year is no year: `+2000-00-00` at century precision is the 20th century,
+  not 2000, and is left out.
 - **`groups`**: `TaxGroup` values from what an authority records, never mined from our own names. IPNI's taxon groups
   map `Spermatophytes` to angiosperms and gymnosperms, `Mycology` to fungi and the rest by their name; `Fossils` and
   `Pre-Linnaean` are no group. Wikidata's field of work (P101) maps by its English label, `botany` to plants and
@@ -41,15 +42,19 @@ and every file is written sorted so a harvest diffs line by line.
 - **`source`**: `wikidata`, `ipni`, `zoobank` or `curated`.
 
 `PersonRegistryFilesTest` guards the committed files: every reference resolves, ids and former ids are unique, every
-id matches the authority ids of its person, nobody is born after they died and every person has a name form.
+id matches the authority ids of its person, nobody is born after they died or active before they were born, and every
+person has a name form.
 
 ## Looking up a citation
 
 `PersonRegistry.get()` loads the files once, on first use. `candidates(citation, code)` folds the citation with
 `AuthorshipNormalizer.normalize`, the key citations are compared by everywhere, and returns every person with a form
-under that key whose code applies. Two forms are derived per person with a family name when loading: the initials of
-the given names with family name and suffix (`g b sowerby ii`), and the bare family name (`sowerby`). A bare surname
-therefore proposes every person of that name; the registry only ever proposes candidates, it decides nothing.
+under that key whose code applies. Forms are derived per person with a family name when loading: the initials of the
+given names with family name and suffix (`g b sowerby ii`), the same of every `FULL` form that ends with the family name
+and suffix, and the bare family name (`sowerby`). The `FULL` forms count because Wikidata's given names often hold fewer
+names than its label: G. B. Sowerby II has only `George`. Nobiliary particles, which IPNI puts at the end of the
+forename, stay words: `Augustin Pyramus de` gives `A. P. de Candolle`. A bare surname therefore proposes every person of
+that name; the registry only ever proposes candidates, it decides nothing.
 `get(anyId)` resolves any id of a person and `relatives(person)` gives parents, children and siblings.
 
 ## Harvesting
@@ -72,7 +77,9 @@ through the query service. Everything else comes from the Wikidata API (`wbgeten
 serially and without `maxlag`, which counts the lag of the query service and refused every request while it was
 loaded): the English label (`FULL`) and aliases (`VARIANT`) of every person and its statements - family and given
 names (P734, P735), birth and death (P569, P570), active years (P2031, P2032, P1317), field of work (P101), parents
-(P22, P25) and siblings (P3373), without deprecated ones - and then the labels of the name and field items. The query
+(P22, P25) and siblings (P3373), without deprecated ones - and then the labels of the name and field items. An item
+without an English label is asked again for its `mul` label, Wikidata's label for all languages, which many name items
+and persons carry instead. The query
 service took half a minute to a minute for the statements or labels of a hundred persons, the API answers fifty in a
 few seconds. The cached API answers take a gigabyte or two. Items of the files that disappeared are asked the query
 service for a redirect, which moves the person to the new Q-id.
@@ -84,21 +91,33 @@ records are skipped. Authors whose surname starts with no letter A to Z are not 
 total with what was harvested.
 
 **Merging** joins records and persons on shared authority ids only, never on names; Wikidata's P586 and P2006 are what
-link a Wikidata item to an IPNI or ZooBank author. It fills empty cells and adds lines, it never overwrites a value and
-never removes a line. Where the records of one run disagree, IPNI wins for a person with an IPNI and no ZooBank id,
-ZooBank for one with a ZooBank and no IPNI id, Wikidata otherwise; years within 2 of each other agree. Two items of one
-authority that claim the same id of another stay two persons. A new person without any name form is not written.
+link a Wikidata item to an IPNI or ZooBank author. An authority is always right about its own id: a record joins the
+person holding its own id, whatever else it links to, and a linked id another person holds is reported, not taken. It
+fills empty cells and adds lines, it never overwrites a value. Where the records of one run disagree, IPNI wins for a
+person with an IPNI and no ZooBank id, ZooBank for one with a ZooBank and no IPNI id, Wikidata otherwise; years within 2
+of each other agree. Years that would make a person impossible - born after death, active before birth - are left out
+and reported: unknown beats wrong. Two items of one authority that claim the same id of another stay two persons. A new
+person without any name form is not written.
 
-**The report**, `target/person-harvest/report.txt`, lists what needs a person: the disagreements, the ids claimed
-twice, the persons of the files no source has any more, what the sources could not map (fields of work, IPNI taxon
-groups, dates) and the rows of `authormap.txt` no person resolves.
+Two persons of the files become one when a record links them or a Wikidata redirect moves one onto the item of the
+other: the person holding the record's own id, or the redirect's target, keeps its values, and every differing value
+of the other is reported as dropped. Its line goes, its id becomes a former id and its name lines follow it. A curated
+person is never joined with another; the link is reported instead.
+
+**The report**, `target/person-harvest/report.txt`, lists what needs a person: the disagreements between sources, the
+values of the files a source now gives otherwise, the ids claimed twice, the persons of the files no source has any
+more, what the sources could not map (fields of work, IPNI taxon groups, dates) and the rows of `authormap.txt` no
+person resolves. As a harvest never overwrites a value, the second list is the only place an upstream correction shows
+up.
 
 ## Curating by hand
 
 A line with `source` `curated` is the way to add what no authority has: an alias the report shows missing, a relation
 the authorities lack, or a person with no authority id at all, who gets a `clb:N` id, N one above the highest in use.
-A curated line is never removed or overwritten by a harvest, and a curated person keeps its values. Run
-`PersonRegistryFilesTest` after editing.
+A harvest never removes a curated line nor changes its values, and never joins a curated person with another. Its ids
+still follow the authorities: a Wikidata redirect or a newly linked authority id changes `wikidata` and `id`, the old id
+going to `formerIds`, and curated name and relation lines keep resolving through it. Run `PersonRegistryFilesTest`
+after editing.
 
 ## ZooBank
 

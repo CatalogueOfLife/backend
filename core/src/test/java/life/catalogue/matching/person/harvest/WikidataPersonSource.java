@@ -79,14 +79,23 @@ public class WikidataPersonSource implements PersonSource {
     List<String> qids = new ArrayList<>(builders.keySet());
     Pending pending = new Pending();
     for (int i = 0; i < qids.size(); i += ENTITY_BATCH) {
-      addEntities(entities(qids.subList(i, Math.min(i + ENTITY_BATCH, qids.size())), "labels|aliases|claims"), builders, pending);
+      addEntities(entities(qids.subList(i, Math.min(i + ENTITY_BATCH, qids.size())), "labels|aliases|claims", "en"), builders, pending);
       progress("persons", i, ENTITY_BATCH, qids.size());
+    }
+    // names without an English label are mostly kept in "mul", the label for all languages
+    List<String> unlabelled = builders.values().stream().filter(b -> b.label == null).map(b -> b.wikidata).toList();
+    for (int i = 0; i < unlabelled.size(); i += ENTITY_BATCH) {
+      addEntities(entities(unlabelled.subList(i, Math.min(i + ENTITY_BATCH, unlabelled.size())), "labels|aliases", "mul"), builders, pending);
     }
     List<String> items = new ArrayList<>(pending.items());
     Map<String, String> labels = new HashMap<>();
     for (int i = 0; i < items.size(); i += ENTITY_BATCH) {
-      labels.putAll(labels(entities(items.subList(i, Math.min(i + ENTITY_BATCH, items.size())), "labels")));
+      labels.putAll(labels(entities(items.subList(i, Math.min(i + ENTITY_BATCH, items.size())), "labels", "en")));
       progress("item labels", i, ENTITY_BATCH, items.size());
+    }
+    List<String> unlabelledItems = items.stream().filter(i -> !labels.containsKey(i)).toList();
+    for (int i = 0; i < unlabelledItems.size(); i += ENTITY_BATCH) {
+      labels.putAll(labels(entities(unlabelledItems.subList(i, Math.min(i + ENTITY_BATCH, unlabelledItems.size())), "labels", "mul")));
     }
     resolve(builders, pending, labels);
     persons = builders.size();
@@ -148,21 +157,23 @@ public class WikidataPersonSource implements PersonSource {
     for (JsonNode e : api.path("entities")) {
       PersonRecord.Builder pb = builders.get(e.path("id").asText(null));
       if (pb == null) continue;
-      String label = e.path("labels").path("en").path("value").asText(null);
-      if (label != null) {
+      String label = label(e);
+      if (label != null && pb.label == null) {
         pb.label(label);
       }
-      for (JsonNode a : e.path("aliases").path("en")) {
-        pb.name(a.path("value").asText(null), NameKind.VARIANT, FormCode.ANY);
+      for (String lang : List.of("en", "mul")) {
+        for (JsonNode a : e.path("aliases").path(lang)) {
+          pb.name(a.path("value").asText(null), NameKind.VARIANT, FormCode.ANY);
+        }
       }
       JsonNode claims = e.path("claims");
-      values(claims, "P569").forEach(v -> pb.born(Years.wikidata(v.path("time").asText(null))));
-      values(claims, "P570").forEach(v -> pb.died(Years.wikidata(v.path("time").asText(null))));
-      values(claims, "P2031").forEach(v -> pb.activeFrom(Years.wikidata(v.path("time").asText(null))));
-      values(claims, "P2032").forEach(v -> pb.activeTo(Years.wikidata(v.path("time").asText(null))));
+      values(claims, "P569").forEach(v -> pb.born(year(v)));
+      values(claims, "P570").forEach(v -> pb.died(year(v)));
+      values(claims, "P2031").forEach(v -> pb.activeFrom(year(v)));
+      values(claims, "P2032").forEach(v -> pb.activeTo(year(v)));
       values(claims, "P1317").forEach(v -> {
-        pb.activeFrom(Years.wikidata(v.path("time").asText(null)));
-        pb.activeTo(Years.wikidata(v.path("time").asText(null)));
+        pb.activeFrom(year(v));
+        pb.activeTo(year(v));
       });
       for (String p : List.of("P22", "P25")) {
         values(claims, p).forEach(v -> link(pb, RelationType.PARENT, v.path("id").asText(null)));
@@ -172,6 +183,19 @@ public class WikidataPersonSource implements PersonSource {
       values(claims, "P735").forEach(v -> pend(pending.given(), pb.wikidata, v.path("id").asText(null)));
       values(claims, "P101").forEach(v -> pend(pending.field(), pb.wikidata, v.path("id").asText(null)));
     }
+  }
+
+  private static Integer year(JsonNode time) {
+    return Years.wikidata(time.path("time").asText(null), time.path("precision").asInt(11));
+  }
+
+  /**
+   * @return the English label, else the one Wikidata keeps for all languages ("mul"), else null
+   */
+  private static String label(JsonNode e) {
+    JsonNode labels = e.path("labels");
+    String en = labels.path("en").path("value").asText(null);
+    return en != null ? en : labels.path("mul").path("value").asText(null);
   }
 
   /**
@@ -194,7 +218,7 @@ public class WikidataPersonSource implements PersonSource {
   static Map<String, String> labels(JsonNode api) {
     Map<String, String> labels = new HashMap<>();
     for (JsonNode e : api.path("entities")) {
-      String label = e.path("labels").path("en").path("value").asText(null);
+      String label = label(e);
       if (label != null) {
         labels.put(e.path("id").asText(), label);
       }
@@ -250,8 +274,8 @@ public class WikidataPersonSource implements PersonSource {
    * Without maxlag: it is meant for writers, and Wikidata counts the update lag of its query service into it, which
    * refused every request for hours when the query service was loaded. These are serial reads a second apart.
    */
-  private JsonNode entities(List<String> ids, String props) throws Exception {
-    return Json.MAPPER.readTree(fetcher.get(API + "?action=wbgetentities&format=json&languages=en&props="
+  private JsonNode entities(List<String> ids, String props, String language) throws Exception {
+    return Json.MAPPER.readTree(fetcher.get(API + "?action=wbgetentities&format=json&languages=" + language + "&props="
       + URLEncoder.encode(props, StandardCharsets.UTF_8) + "&ids=" + URLEncoder.encode(String.join("|", ids), StandardCharsets.UTF_8)));
   }
 

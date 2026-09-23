@@ -63,6 +63,43 @@ public class PersonRegistryTest {
     assertEquals(Set.of(), reg.candidates("Linnaeus", null));
   }
 
+  /**
+   * Wikidata often lists fewer given names than the label holds (G. B. Sowerby II has only "George"), and IPNI puts a
+   * particle at the end of the forename. Initials come from the label too, and particles stay words.
+   */
+  @Test
+  public void initialsOfTheLabelAndParticles() {
+    var sowerby = new Person("wd:Q1223045", "Q1223045", null, null, List.of(), "Sowerby", "George", "II", null, null, null, null,
+      Set.of(), Provenance.WIKIDATA);
+    var candolle = new Person("ipni:1-1", null, "1-1", null, List.of(), "Candolle", "Augustin Pyramus de", null, null, null, null, null,
+      Set.of(), Provenance.IPNI);
+    var reg = new PersonRegistry(new PersonFiles.Content(List.of(sowerby, candolle),
+      List.of(new PersonName("wd:Q1223045", "George Brettingham Sowerby II", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA),
+        new PersonName("ipni:1-1", "DC.", NameKind.STANDARD, FormCode.BOT, Provenance.IPNI)),
+      List.of()));
+    assertEquals(Set.of(sowerby), reg.candidates("G.B. Sowerby II", NomCode.ZOOLOGICAL));
+    assertEquals(Set.of(candolle), reg.candidates("A. P. de Candolle", NomCode.BOTANICAL));
+    assertEquals(Set.of(candolle), reg.candidates("A.P.de Candolle", NomCode.BOTANICAL));
+  }
+
+  @Test
+  public void activeBeforeBornIsAProblem() {
+    var p = new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, 1900, null, 1844, null, Set.of(), Provenance.WIKIDATA);
+    var reg = new PersonRegistry(new PersonFiles.Content(List.of(p),
+      List.of(new PersonName("wd:Q1", "A. Doe", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA)), List.of()));
+    assertEquals(List.of("wd:Q1 was active before it was born"), reg.problems());
+  }
+
+  /** a person without an id is reported, never a crash of whoever loads the files */
+  @Test
+  public void personWithoutIdIsAProblem() {
+    var p = new Person(null, null, null, null, List.of(), "Doe", null, null, null, null, null, null, Set.of(), Provenance.WIKIDATA);
+    var reg = new PersonRegistry(new PersonFiles.Content(List.of(SWARTZ, p),
+      List.of(new PersonName("wd:Q3", "Sw.", NameKind.STANDARD, FormCode.BOT, Provenance.IPNI)), List.of()));
+    assertEquals(List.of("a person without an id: Doe"), reg.problems());
+    assertEquals(Set.of(SWARTZ), reg.candidates("Sw.", NomCode.BOTANICAL));
+  }
+
   @Test
   public void relativesBothWays() {
     var reg = registry();

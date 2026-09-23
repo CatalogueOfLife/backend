@@ -195,6 +195,117 @@ public class PersonMergerTest {
     assertEquals(Integer.valueOf(1801), p.died());
   }
 
+  /** a person active before being born is as impossible as one dying before */
+  @Test
+  public void activeBeforeBornIsLeftOut() {
+    var w = wd("Q1");
+    w.ipni = "7-1";
+    w.label("Ann Doe");
+    w.born(1900);
+    var i = ipni("7-1");
+    i.name("Doe", NameKind.STANDARD, FormCode.BOT);
+    i.activeFrom(1844);
+    var r = merge(PersonFiles.Content.empty(), w.build(), i.build());
+    Person p = r.content().persons().get(0);
+    assertNull(p.born());
+    assertNull(p.activeFrom());
+  }
+
+  /** an authority is always right about its own id: Wikidata moving its IPNI link does not move the item */
+  @Test
+  public void ownIdWins() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q5", "Q5", "1-1", null, List.of(), null, null, null, null, null, null, null, Set.of(), Provenance.WIKIDATA),
+        new Person("wd:Q6", "Q6", "2-2", null, List.of(), null, null, null, null, null, null, null, Set.of(), Provenance.WIKIDATA)),
+      List.of(new PersonName("wd:Q5", "A. Doe", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA),
+        new PersonName("wd:Q6", "B. Doe", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA)),
+      List.of());
+    var w = wd("Q5");
+    w.ipni = "2-2";
+    w.label("A. Doe");
+    var r = merge(existing, w.build());
+    assertEquals(2, r.content().persons().size());
+    assertEquals("1-1", person(r.content(), "wd:Q5").ipni());
+    assertEquals("2-2", person(r.content(), "wd:Q6").ipni());
+    assertEquals(List.of("wd:Q6"), r.report().notSeen);
+    assertFalse(r.report().ambiguous.isEmpty());
+  }
+
+  /** Wikidata merging a duplicate item redirects one person of the files onto another: they become one */
+  @Test
+  public void redirectOntoAnotherPerson() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, 1800, null, null, null, Set.of(), Provenance.WIKIDATA),
+        new Person("wd:Q2", "Q2", null, null, List.of(), null, null, null, null, 1870, null, null, Set.of(), Provenance.WIKIDATA)),
+      List.of(new PersonName("wd:Q1", "A. Doe", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA),
+        new PersonName("wd:Q2", "Ann Doe", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA)),
+      List.of());
+    var w = wd("Q2");
+    w.label("Ann Doe");
+    var r = new PersonMerger().merge(existing, List.of(w.build()), Map.of("Q1", "Q2"));
+    assertEquals(List.of(), new PersonRegistry(r.content()).problems());
+    assertEquals(1, r.content().persons().size());
+    Person p = r.content().persons().get(0);
+    assertEquals("wd:Q2", p.id());
+    assertEquals(List.of("wd:Q1"), p.formerIds());
+    assertEquals(Integer.valueOf(1800), p.born());
+    assertEquals(Integer.valueOf(1870), p.died());
+  }
+
+  /** a curated person keeps its line and its values, even when a source links it to another person */
+  @Test
+  public void curatedIsNeverAbsorbed() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("zb:Z", null, null, "Z", List.of(), null, null, null, 1850, null, null, null, Set.of(), Provenance.CURATED),
+        new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, 1805, null, null, null, Set.of(), Provenance.WIKIDATA)),
+      List.of(new PersonName("zb:Z", "Zed", NameKind.CITATION, FormCode.ZOO, Provenance.CURATED),
+        new PersonName("wd:Q1", "Zed Doe", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA)),
+      List.of());
+    var w = wd("Q1");
+    w.zoobank = "Z";
+    w.label("Zed Doe");
+    var r = merge(existing, w.build());
+    assertEquals(2, r.content().persons().size());
+    Person z = person(r.content(), "zb:Z");
+    assertEquals(Integer.valueOf(1850), z.born());
+    assertEquals(Provenance.CURATED, z.source());
+    assertFalse(r.report().ambiguous.isEmpty());
+  }
+
+  /** two persons of the files joined by a new link keep one value per cell, and the other one is reported */
+  @Test
+  public void joiningReportsWhatItDrops() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("ipni:9-1", null, "9-1", null, List.of(), "Bojko", null, null, null, null, null, null, Set.of(), Provenance.IPNI),
+        new Person("wd:Q1", "Q1", null, null, List.of(), "Boyko Bojko", null, null, null, null, null, null, Set.of(), Provenance.WIKIDATA)),
+      List.of(new PersonName("ipni:9-1", "Bojko", NameKind.STANDARD, FormCode.BOT, Provenance.IPNI),
+        new PersonName("wd:Q1", "Hugo Boyko Bojko", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA)),
+      List.of());
+    var w = wd("Q1");
+    w.ipni = "9-1";
+    w.label("Hugo Boyko Bojko");
+    var r = merge(existing, w.build());
+    assertEquals(1, r.content().persons().size());
+    assertEquals(List.of("ipni:9-1"), r.content().persons().get(0).formerIds());
+    assertTrue(String.join("\n", r.report().conflicts), r.report().conflicts.stream().anyMatch(c -> c.contains("family") && c.contains("Bojko")));
+  }
+
+  /** after the first harvest the files hold a value, and only the report can show that a source now says otherwise */
+  @Test
+  public void filesAndSourceDisagree() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, 1700, null, null, null, Set.of(), Provenance.WIKIDATA)),
+      List.of(new PersonName("wd:Q1", "A. Doe", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA)),
+      List.of());
+    var w = wd("Q1");
+    w.label("A. Doe");
+    w.born(1750);
+    var r = merge(existing, w.build());
+    assertEquals(Integer.valueOf(1700), r.content().persons().get(0).born());
+    assertEquals(1, r.report().changed.size());
+    assertTrue(r.report().changed.get(0), r.report().changed.get(0).contains("born: files 1700, wikidata 1750"));
+  }
+
   @Test
   public void redirectedItem() {
     var existing = new PersonFiles.Content(

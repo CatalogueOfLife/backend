@@ -50,11 +50,13 @@ final class Years {
   }
 
   /**
-   * @return the year of a Wikidata time value like "+1788-01-01T00:00:00Z", null for a year before the common era
+   * @param precision Wikidata's precision of the value: 9 is a year, 7 a century ("+2000-00-00" meaning the 20th)
+   * @return the year of a Wikidata time value like "+1788-01-01T00:00:00Z", null for a year before the common era and
+   *         for anything vaguer than a year
    */
   @Nullable
-  static Integer wikidata(@Nullable String time) {
-    if (time == null) return null;
+  static Integer wikidata(@Nullable String time, int precision) {
+    if (time == null || precision < 9) return null;
     Matcher m = WIKIDATA.matcher(time);
     return m.find() ? Integer.valueOf(m.group(1)) : null;
   }

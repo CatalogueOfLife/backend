@@ -42,7 +42,7 @@ public class AuthorshipNormalizer {
   private static final String AUTHOR_MAP_FILENAME = "authorship/authormap.txt";
   private static final Pattern PUNCTUATION = Pattern.compile("[\\p{Punct}&&[^,]]+");
   /** nobiliary particles joining the parts of a compound surname, e.g. "Bory de Saint-Vincent" */
-  private static final Set<String> PARTICLES = Set.of(
+  public static final Set<String> PARTICLES = Set.of(
     "de", "del", "della", "den", "der", "des", "di", "do", "dos", "du", "da", "das",
     "la", "le", "les", "ten", "ter", "van", "von", "y", "af", "av", "zu"
   );
