@@ -247,10 +247,11 @@ public class WikidataPersonSource implements PersonSource {
   }
 
   /**
-   * maxlag makes the API answer an error instead of adding to the lag of its databases, which the fetcher retries
+   * Without maxlag: it is meant for writers, and Wikidata counts the update lag of its query service into it, which
+   * refused every request for hours when the query service was loaded. These are serial reads a second apart.
    */
   private JsonNode entities(List<String> ids, String props) throws Exception {
-    return Json.MAPPER.readTree(fetcher.get(API + "?action=wbgetentities&format=json&maxlag=5&languages=en&props="
+    return Json.MAPPER.readTree(fetcher.get(API + "?action=wbgetentities&format=json&languages=en&props="
       + URLEncoder.encode(props, StandardCharsets.UTF_8) + "&ids=" + URLEncoder.encode(String.join("|", ids), StandardCharsets.UTF_8)));
   }
 

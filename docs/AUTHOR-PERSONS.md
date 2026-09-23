@@ -63,13 +63,14 @@ It reads the three files, reads every source, merges, and writes the files back 
 checks as `PersonRegistryFilesTest`. Every answer of Wikidata and IPNI is cached in `target/person-harvest/cache`, so a
 run that dies resumes where it stopped; delete the cache for a fresh harvest. It pauses 1 s between Wikidata and
 250 ms between IPNI requests and retries with a growing pause. An answer that is no complete JSON object, or that is
-an API error such as `maxlag`, counts as a failed request: the query service sometimes answers 200 with a body cut
+an API error, counts as a failed request: the query service sometimes answers 200 with a body cut
 off. Such an answer is retried and never cached.
 
 **Wikidata** gives everyone with a botanist author abbreviation (P428, `STANDARD`/`BOT`), a zoologist author citation
 (P835, `CITATION`/`ZOO`), an IPNI author id (P586) or a ZooBank author id (P2006), paged one property at a time
 through the query service. Everything else comes from the Wikidata API (`wbgetentities`, 50 items at a time,
-`maxlag=5`): the English label (`FULL`) and aliases (`VARIANT`) of every person and its statements - family and given
+serially and without `maxlag`, which counts the lag of the query service and refused every request while it was
+loaded): the English label (`FULL`) and aliases (`VARIANT`) of every person and its statements - family and given
 names (P734, P735), birth and death (P569, P570), active years (P2031, P2032, P1317), field of work (P101), parents
 (P22, P25) and siblings (P3373), without deprecated ones - and then the labels of the name and field items. The query
 service took half a minute to a minute for the statements or labels of a hundred persons, the API answers fifty in a
