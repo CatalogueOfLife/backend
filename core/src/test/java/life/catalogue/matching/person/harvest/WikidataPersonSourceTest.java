@@ -73,6 +73,15 @@ public class WikidataPersonSourceTest {
     assertTrue(source.stats(), source.stats().contains("politics"));
   }
 
+  /** the query service answers HTTP 431 to a request line above 8 KB, a batch of facts must stay below */
+  @Test
+  public void factBatchFitsIntoAGetRequest() {
+    List<String> qids = java.util.stream.IntStream.range(0, WikidataPersonSource.BATCH).mapToObj(i -> "Q" + (123456789 + i)).toList();
+    String url = WikidataPersonSource.ENDPOINT + "?format=json&query="
+      + java.net.URLEncoder.encode(WikidataPersonSource.factQuery(qids), java.nio.charset.StandardCharsets.UTF_8);
+    assertTrue(url.length() + " characters", url.length() < 6000);
+  }
+
   @Test
   public void standardFormIsBotanical() throws Exception {
     Map<String, PersonRecord.Builder> persons = new TreeMap<>();

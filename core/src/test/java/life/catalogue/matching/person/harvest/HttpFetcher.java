@@ -7,6 +7,8 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Fetches politely: a pause before every request, growing with each retry, so a rate limit (HTTP 429) or a
  * timeout of the Wikidata query service costs a wait, not the run.
@@ -37,7 +39,7 @@ public class HttpFetcher implements Fetcher {
         if (resp.statusCode() == 200) {
           return resp.body();
         }
-        last = new IllegalStateException("HTTP " + resp.statusCode() + " for " + url);
+        last = new IllegalStateException("HTTP " + resp.statusCode() + " for " + StringUtils.abbreviate(url, 200));
       } catch (Exception e) {
         last = e;
       }

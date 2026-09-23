@@ -27,7 +27,8 @@ public class WikidataPersonSource implements PersonSource {
   static final String ENDPOINT = "https://query.wikidata.org/sparql";
   static final String ENTITY = "http://www.wikidata.org/entity/";
   static final int PAGE = 5000;
-  static final int BATCH = 400;
+  // the query service answers HTTP 431 to a request line above 8 KB, 100 Q-ids and the query stay well below
+  static final int BATCH = 100;
   // Wikidata labels occasionally hold raw control characters that strict JSON rejects
   private static final ObjectMapper MAPPER = JsonMapper.builder().enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS).build();
 
