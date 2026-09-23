@@ -658,7 +658,7 @@ public class AuthorComparatorTest {
     // "DC." would expand to "Augustin Pyramus de Candolle" under botany; under zoology it must be treated as a plain, unexpanded token.
     // Note: the brief's original example ("L." vs "Linnaeus") does not discriminate here because a lone initial surname ("l")
     // always fuzzy-matches any surname sharing its first letter via the generic short-common-substring heuristic in
-    // AuthorComparator.compare(Author, Author, ...), regardless of NomCode or the author map. "DC." vs "de Candolle" has no
+    // StringAuthorMatcher.compare(Author, Author, ...), regardless of NomCode or the author map. "DC." vs "de Candolle" has no
     // such common-prefix relationship (surnames "dc" vs "candolle"), so it correctly isolates the author-map lookup behavior.
     var dc = new org.gbif.nameparser.api.Authorship();
     dc.getAuthors().add("DC.");
@@ -781,7 +781,7 @@ public class AuthorComparatorTest {
   }
 
   private void assertAuth(AuthorshipNormalizer.Author a1, Equality eq, AuthorshipNormalizer.Author a2) {
-    assertEquals(eq, comp.compare(a1, a2, AuthorComparator.MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, AuthorComparator.MIN_JARO_SURNAME_DISTANCE));
+    assertEquals(eq, StringAuthorMatcher.compare(a1, a2, AuthorMatcher.Mode.LAX.minCommonStart, AuthorMatcher.Mode.LAX.jaroDistance));
   }
   private void assertAuth(String a1, String y1, Equality eq, String a2, String y2) throws InterruptedException {
     assertEquals(a1 + " VS " + a2, eq, comp.compare(parse(a1, y1), parse(a2, y2)));

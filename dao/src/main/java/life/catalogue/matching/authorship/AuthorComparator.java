@@ -2,9 +2,10 @@ package life.catalogue.matching.authorship;
 
 import life.catalogue.api.model.ScientificName;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
-import life.catalogue.matching.similarity.JaroWinkler;
+import life.catalogue.matching.authorship.AuthorMatcher.Mode;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
@@ -16,13 +17,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.annotations.VisibleForTesting;
-
-import static life.catalogue.common.tax.AuthorshipNormalizer.Author;
 
 /**
  * Utility to compare scientific name authorships, i.e. the recombination and basionym author and publishing year.
@@ -32,27 +27,29 @@ import static life.catalogue.common.tax.AuthorshipNormalizer.Author;
  * <p>
  * The class exposes two kind of compare methods. A strict one always requiring both year and author to match
  * and a more lax default comparison that only looks at years when the authors differ (as it is quite hard to compare authors)
+ * <p>
+ * Who an author is, is decided by an {@link AuthorMatcher}: this class keeps what is about the structure of a name - the
+ * year tolerances, combination against basionym authorship and which team counts under which code. The default matcher
+ * compares strings, see {@link StringAuthorMatcher}.
  */
 public class AuthorComparator {
-  private static final Logger LOG = LoggerFactory.getLogger(AuthorComparator.class);
-  
-  private final AuthorshipNormalizer normalizer;
-  static final int MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP = 4;
-  static final int MIN_JARO_SURNAME_DISTANCE = 90;
-  private final int minCommonSubstring;
-  
+  private final AuthorMatcher matcher;
+
   public AuthorComparator(AuthorshipNormalizer normalizer) {
-    this.normalizer = normalizer;
-    minCommonSubstring = 4;
+    this(new StringAuthorMatcher(normalizer));
   }
-  
+
+  public AuthorComparator(AuthorMatcher matcher) {
+    this.matcher = matcher;
+  }
+
   /**
    * Compares the authorteams and year of two names.
    * If given both the year and authorteam needs to match to yield an EQUAL,
    * with a small difference of 11 years being accepted.
    */
   public Equality compare(@Nullable Authorship a1, @Nullable Authorship a2) {
-    return compare(a1, a2, null);
+    return compare(a1, a2, (NomCode) null);
   }
 
   /**
@@ -61,6 +58,20 @@ public class AuthorComparator {
    *             author team: ex authors keep being compared, as sources leave them out all the time.
    */
   public Equality compare(@Nullable Authorship a1, @Nullable Authorship a2, @Nullable NomCode code) {
+    return compare(a1, a2, code, null);
+  }
+
+  /**
+   * @param group the taxonomic group of both names if known, for a matcher that knows which groups a person worked on
+   */
+  public Equality compare(@Nullable Authorship a1, @Nullable Authorship a2, @Nullable NomCode code, @Nullable TaxGroup group) {
+    return compareAuthorships(a1, a2, new AuthorContext(code, group));
+  }
+
+  /**
+   * Not an overload of compare: next to compare(a1, a2, NomCode) every call passing a literal null would be ambiguous.
+   */
+  private Equality compareAuthorships(@Nullable Authorship a1, @Nullable Authorship a2, AuthorContext ctx) {
     // compare year first - simpler to calculate
     var yc = new YearComparator(11, a1, a2);
     Equality result = yc.compare();
@@ -68,9 +79,9 @@ public class AuthorComparator {
     if (result != Equality.DIFFERENT) {
       Equality aresult;
       if (result == Equality.EQUAL || !yc.hasYears()) {
-        aresult = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, null, code);
+        aresult = compareAuthorteam(a1, a2, null, ctx, Mode.LAX);
       } else {
-        aresult = compareAuthorteam(a1, a2, minCommonSubstring * 3, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, 99, null, code);
+        aresult = compareAuthorteam(a1, a2, null, ctx, Mode.YEAR_CONFLICT);
         // if unknown years and author is also unknown, make this a mismatch
         if (aresult == Equality.UNKNOWN) {
           return Equality.DIFFERENT;
@@ -99,8 +110,7 @@ public class AuthorComparator {
    */
   public Equality compareAuthorsFirst(@Nullable Authorship a1, @Nullable Authorship a2, @Nullable NomCode code) {
     // compare year first - simpler to calculate
-    Equality result = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE,
-      null, code);
+    Equality result = compareAuthorteam(a1, a2, null, new AuthorContext(code, null), Mode.LAX);
     if (result != Equality.EQUAL) {
       // if authors are not the same we allow a positive year comparison to override it as author comparison is very difficult
       Equality yresult = new YearComparator(a1.getYear(), a2.getYear()).compare();
@@ -127,13 +137,20 @@ public class AuthorComparator {
     }
     return result;
   }
-  
+
   /**
    * Does a comparison of recombination and basionym authorship using the author compare method once for the recombination authorship and once for the basionym.
    */
   public Equality compare(ScientificName n1, ScientificName n2) {
-    final NomCode code = ObjectUtils.coalesce(n1.getCode(), n2.getCode());
-    return compare(n1, n2, (a1, a2) -> compare(a1, a2, code));
+    return compare(n1, n2, (TaxGroup) null);
+  }
+
+  /**
+   * @param group the taxonomic group of both names if known, for a matcher that knows which groups a person worked on
+   */
+  public Equality compare(ScientificName n1, ScientificName n2, @Nullable TaxGroup group) {
+    final AuthorContext ctx = new AuthorContext(ObjectUtils.coalesce(n1.getCode(), n2.getCode()), group);
+    return compare(n1, n2, (a1, a2) -> compareAuthorships(a1, a2, ctx));
   }
 
   /**
@@ -177,7 +194,7 @@ public class AuthorComparator {
       || compareStrict(n1.getCombinationAuthorship(), n2.getCombinationAuthorship(), code, 0);
     return a1 && a2;
   }
-  
+
   /**
    * Compares two sets of author & year for equality.
    * This is more strict than the normal compare method and requires both authors and year to match.
@@ -194,7 +211,7 @@ public class AuthorComparator {
    */
   public boolean compareStrict(Authorship a1, Authorship a2, NomCode code, int yearDifferenceAllowed) {
     // strictly compare authors first
-    Equality result = compareAuthorteam(a1, a2, minCommonSubstring, Integer.MAX_VALUE, 100, code, code);
+    Equality result = compareAuthorteam(a1, a2, code, new AuthorContext(code, null), Mode.STRICT);
     if (result != Equality.EQUAL) {
       return false;
     }
@@ -204,145 +221,29 @@ public class AuthorComparator {
     }
     return Equality.DIFFERENT != new YearComparator(yearDifferenceAllowed, a1.getYear(), a2.getYear()).compare();
   }
-  
+
   /**
-   * Does an author comparison, normalizing the strings and try 3 comparisons:
-   * 1) checks regular string equality
-   * 2) checks for equality of the longest common substring
-   * 3) do an author lookup and then check for common substring
-   *
    * @param code the code determines which ex author to use and which author map. If null both authorteams are used for matching
    */
   @VisibleForTesting
   Equality compareAuthorteam(Authorship a1, Authorship a2, NomCode code) {
-    return compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, MIN_JARO_SURNAME_DISTANCE, code, code);
+    return compareAuthorteam(a1, a2, code, new AuthorContext(code, null), Mode.LAX);
   }
 
   /**
+   * Selects and normalizes both teams and hands them to the matcher, never an empty one.
+   *
    * @param teamCode determines which of authors and ex authors are compared. If null both are
-   * @param mapCode  determines the author map abbreviations are looked up in
    */
-  private Equality compareAuthorteam(@Nullable Authorship a1, @Nullable Authorship a2,
-                                     final int minCommonSubstring, final int maxAuthorLengthWithoutLookup, final int jaroDistance,
-                                     @Nullable NomCode teamCode, @Nullable NomCode mapCode
-  ) {
+  private Equality compareAuthorteam(@Nullable Authorship a1, @Nullable Authorship a2, @Nullable NomCode teamCode,
+                                     AuthorContext ctx, Mode mode) {
     // convert to all lower case, ascii only, no punctuation but commas seperating authors and normed whitespace
-    List<String> authorTeam1 = normalizer.lookup(AuthorshipNormalizer.normalize(a1, teamCode), maxAuthorLengthWithoutLookup, mapCode);
-    List<String> authorTeam2 = normalizer.lookup(AuthorshipNormalizer.normalize(a2, teamCode), maxAuthorLengthWithoutLookup, mapCode);
-    if (!authorTeam1.isEmpty() && !authorTeam2.isEmpty()) {
-      Equality equality = compareNormalizedAuthorteam(authorTeam1, authorTeam2, minCommonSubstring, jaroDistance);
-      if (equality != Equality.EQUAL) {
-        // try again by looking up entire author strings
-        List<String> authorTeam1l = normalizer.lookup(authorTeam1, mapCode);
-        List<String> authorTeam2l = normalizer.lookup(authorTeam2, mapCode);
-        // only compare again if the queue is actually different then before
-        if (!authorTeam1.equals(authorTeam1l) || !authorTeam2.equals(authorTeam2l)) {
-          equality = compareNormalizedAuthorteam(authorTeam1l, authorTeam2l, minCommonSubstring, jaroDistance);
-        }
-      }
-      return equality;
+    List<String> team1 = AuthorshipNormalizer.normalize(a1, teamCode);
+    List<String> team2 = AuthorshipNormalizer.normalize(a2, teamCode);
+    if (team1.isEmpty() || team2.isEmpty()) {
+      return Equality.UNKNOWN;
     }
-    return Equality.UNKNOWN;
+    return matcher.compareTeams(new AuthorTeam(team1, a1.getYear()), new AuthorTeam(team2, a2.getYear()), ctx, mode);
   }
 
-  /**
-   * compares entire author team strings
-   */
-  private Equality compareNormalizedAuthorteam(final List<String> authorTeam1, final List<String> authorTeam2, final int minCommonStart, final int jaroDistance) {
-    // quick check avoiding subsequent heavier processing
-    if (authorTeam1.equals(authorTeam2)) {
-      // we can stop here, authors are equal, thats enough
-      return Equality.EQUAL;
-      
-    } else {
-      // compare all authors to each other - a single match is good enough!
-      for (String author1 : authorTeam1) {
-        Author a1 = new Author(author1);
-        for (String author2 : authorTeam2) {
-          Author a2 = new Author(author2);
-          if (Equality.EQUAL == compare(a1, a2, minCommonStart, jaroDistance)) {
-            return Equality.EQUAL;
-          }
-        }
-      }
-    }
-    return Equality.DIFFERENT;
-  }
-
-  private static double jaro(final String a1, final String a2) {
-    var sim = JaroWinkler.similarity(a1, a2);
-    // for really short names add some penalty
-    if (a1.length() + a2.length() < 10) {
-      sim = sim - (10 - a1.length() - a2.length()) * 5;
-    }
-    return sim;
-  }
-
-  /**
-   * compares a single author potentially with initials
-   */
-  @VisibleForTesting
-  static Equality compare(final Author a1, final Author a2, final int minCommonStart, final int jaroDistance) {
-    if (a1.equals(a2.fullname)) {
-      // we can stop here, authors are equal, thats enough
-      return Equality.EQUAL;
-      
-    } else {
-
-      String common = StringUtils.getCommonPrefix(a1.surname, a2.surname);
-      if (surnamesMatch(a1.surname, a2.surname, minCommonStart, jaroDistance)) {
-        // do both names have a single initial which is different?
-        // this is often the case when authors are relatives like brothers or son & father
-        if (a1.initialsOrSuffixDiffer(a2)) {
-          return Equality.DIFFERENT;
-        } else {
-          return Equality.EQUAL;
-        }
-
-      } else if (!a1.initialsOrSuffixDiffer(a2) && (a1.surname.equals(common) && (a2.surname.startsWith(common))
-          || a2.surname.equals(common) && (a1.surname.startsWith(common)))
-          ) {
-        // short common surname, matching in full to one of them
-        // and in addition existing and not conflicting initials
-        return Equality.EQUAL;
-        
-      } else if (a1.fullname.equals(common) && (a2.surname.startsWith(common))
-          || a2.fullname.equals(common) && (a1.surname.startsWith(common))
-          ) {
-        // the smallest common substring is the same as one of the inputs
-        // if it also matches the start of the first longer surname then we are ok as the entire string is the best match we can have
-        // likey a short abbreviation
-        return Equality.EQUAL;
-
-      } else if (!a1.initialsOrSuffixDiffer(a2) && compoundSurnamesMatch(a1, a2, minCommonStart, jaroDistance)) {
-        // compound surnames like "Bory de Saint-Vincent" or "Kerner von Marilaun" are often cited by
-        // their first part alone, which the last word based surname comparison above cannot see.
-        // Still requires non conflicting initials so relatives stay apart.
-        // https://github.com/CatalogueOfLife/backend/issues/1595
-        return Equality.EQUAL;
-      }
-    }
-    return Equality.DIFFERENT;
-  }
-
-  /**
-   * Compares the first part of one author's compound surname against the other author's plain surname.
-   * The two first parts are deliberately never compared with each other: that part can just as well be a
-   * middle name ("Conrad von Baldenstein" vs "Conrad von Buddenbrocks"), which would merge different authors.
-   */
-  private static boolean compoundSurnamesMatch(final Author a1, final Author a2, final int minCommonStart, final int jaroDistance) {
-    return surnamesMatch(a1.surnamePrefix, a2.surname, minCommonStart, jaroDistance)
-        || surnamesMatch(a1.surname, a2.surnamePrefix, minCommonStart, jaroDistance);
-  }
-
-  /**
-   * The surname equality rule: identical, fuzzily similar or sharing a long enough common start.
-   */
-  private static boolean surnamesMatch(@Nullable final String s1, @Nullable final String s2, final int minCommonStart, final int jaroDistance) {
-    if (s1 == null || s2 == null) {
-      return false;
-    }
-    return s1.equals(s2) || jaro(s1, s2) > jaroDistance || StringUtils.getCommonPrefix(s1, s2).length() >= minCommonStart;
-  }
-  
 }

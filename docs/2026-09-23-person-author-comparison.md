@@ -1,8 +1,8 @@
 # Comparing authors as persons
 
 Date: 2026-09-23
-Status: design agreed on 2026-09-23, not implemented. Four phases, each with its own implementation plan. The branch is
-`fix/author-nomcode`, stacked on `feat/author-corpus`.
+Status: design agreed on 2026-09-23. Phases 0 and 1 are implemented on branch `fix/author-nomcode` (stacked on
+`feat/author-corpus`, not merged); phases 2 and 3 are not implemented. Four phases, each with its own implementation plan.
 
 This is step 2 of "Next" in [2026-09-19-author-comparison-corpus.md](2026-09-19-author-comparison-corpus.md): compare
 people, not rewritten strings. It is built as an experiment next to the current comparison, which stays in production
@@ -253,3 +253,10 @@ was a stale parse of WFO folding the dotless i rather than a comparison defect. 
 `hort.`, `A.Cleve` / `Cleve-Euler`, `H.H.Hu` / `Hu`, `C.Presl` / `K.B. Presl` and `G. B. Sowerby II` / `Sowerby` -
 relatives and aliases, what the person model is meant for. The frozen sample was refreshed from this corpus: 16,641
 pairs.
+
+**Phase 1, the seam** (2026-09-23). `AuthorMatcher`, `StringAuthorMatcher`, `AuthorTeam` and `AuthorContext` as designed;
+`Mode` carries the parameters the comparator used to pass (`LAX` 4/4/90, `YEAR_CONFLICT` 12/4/99, `STRICT` 4/all/100).
+On the re-parsed corpus `AuthorVerdictDiff` found 0 of 419,512 verdicts changed. A matcher's `UNKNOWN` in a year conflict
+still becomes `DIFFERENT`, the rule the comparator already had, and phase 3's relatives policy meets it there.
+Deviation: the comparator's new overloads take a `TaxGroup` next to the code rather than an `AuthorContext`, since a
+public `compare(Authorship, Authorship, AuthorContext)` would make every existing call with a `null` code ambiguous.
