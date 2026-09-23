@@ -53,6 +53,13 @@ For each sector (ordered by priority):
 
 The single `UsageMatcher` instance is shared across all sector syncs for efficiency.
 
+An existing name only takes over the publishedIn reference of a source name if it has none. If it cites a different
+reference, `PublishedInIdentity` compares both on DOI, year and page and the name gets only what is missing - page and
+page link, e.g. from BHL - when they cite the same page or work; the DOI of an article goes onto the existing
+reference when both share title and year. An author & year stub like `Benth. (1842).` is replaced by the source
+reference for that name alone. Any contradiction merges nothing, see
+[2026-09-23-merge-published-in-links.md](2026-09-23-merge-published-in-links.md).
+
 #### 2f. `homotypicGrouping()` — Post-Merge Consolidation
 Runs on the temporary project once all sectors are merged. Wherever sources compete, `SectorPriority` ranks them:
 data managed in the project first, then the sectors of the base release, then the merge sectors by their `priority`
