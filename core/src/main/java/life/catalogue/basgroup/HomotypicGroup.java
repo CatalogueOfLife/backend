@@ -26,11 +26,13 @@ public class HomotypicGroup<T> {
   // basionym and its recombinations
   private T basionym;
   private int basionymPriority;
+  private String basionymLabel;
   private final List<T> basionymVariations = new ArrayList<>();
   private final List<T> recombinations = new ArrayList<>();
   // based on via ex author and its subsequent combinations (might already be included in aboves lists)
   private T basedOn;
   private int basedOnPriority;
+  private String basedOnLabel;
   private final Set<String> basedOnNameIDs = new HashSet<>(); // identifier of names with the basedon names author as part of its ex authorship
   private final List<T> basedOnVariations = new ArrayList<>(); // orth vars of the based on name
 
@@ -53,16 +55,38 @@ public class HomotypicGroup<T> {
     this.basionym = basionym;
   }
   public void addBasionym(T obj, int basionymPriority) {
+    addBasionym(obj, basionymPriority, null);
+  }
+
+  /**
+   * Keeps the most trusted original name as the basionym, all others become its variations.
+   * Equally trusted names are ordered by their label, so the choice does not depend on the order they are added in.
+   *
+   * @param label the label of the name, if null an equally trusted basionym stays
+   */
+  public void addBasionym(T obj, int basionymPriority, @Nullable String label) {
     if (basionym == null) {
       this.basionym = obj;
       this.basionymPriority = basionymPriority;
-    } else if (basionymPriority < this.basionymPriority) {
+      this.basionymLabel = label;
+    } else if (precedes(basionymPriority, label, this.basionymPriority, this.basionymLabel)) {
       basionymVariations.add(this.basionym);
       this.basionym = obj;
       this.basionymPriority = basionymPriority;
+      this.basionymLabel = label;
     } else {
       basionymVariations.add(obj);
     }
+  }
+
+  /**
+   * @return true if the first name is more trusted than the second or equally trusted and alphabetically first
+   */
+  private static boolean precedes(int prio, @Nullable String label, int prio2, @Nullable String label2) {
+    if (prio != prio2) {
+      return prio < prio2;
+    }
+    return label != null && label2 != null && label.compareTo(label2) < 0;
   }
 
   public void add(T obj, FormattableName name, int prio) {
@@ -71,7 +95,7 @@ public class HomotypicGroup<T> {
       addRecombination(obj);
       year = name.getBasionymAuthorship().getYear();
     } else {
-      addBasionym(obj, prio);
+      addBasionym(obj, prio, name.getLabel());
       year = name.getCombinationAuthorship().getYear();
     }
     // we add the first matched year to the reference authorship in case it does not yet exist
@@ -114,13 +138,25 @@ public class HomotypicGroup<T> {
   }
 
   public void addBasedOn(T obj, int prio) {
+    addBasedOn(obj, prio, null);
+  }
+
+  /**
+   * Keeps the most trusted name as the one this group is based on, all others become its variations.
+   * Equally trusted names are ordered by their label like the basionym.
+   *
+   * @param label the label of the name, if null an equally trusted based on name stays
+   */
+  public void addBasedOn(T obj, int prio, @Nullable String label) {
     if (basedOn == null) {
       basedOn = obj;
       basedOnPriority = prio;
-    } else if (prio < basedOnPriority) {
+      basedOnLabel = label;
+    } else if (precedes(prio, label, basedOnPriority, basedOnLabel)) {
       basedOnVariations.add(basedOn);
       basedOn = obj;
       basedOnPriority = prio;
+      basedOnLabel = label;
     } else {
       basedOnVariations.add(obj);
     }

@@ -129,7 +129,7 @@ public class BasionymSorter<T extends HasID<String>> {
             break;
           } else if (gex != null && authorComp.compareStrict(cand, gex, code, 2)) {
             // homotypic based on relations
-            g.addBasedOn(obj.obj, prio);
+            g.addBasedOn(obj.obj, prio, obj.name.getLabel());
             create = false;
             break;
           }
@@ -228,7 +228,7 @@ public class BasionymSorter<T extends HasID<String>> {
     for (T b : basedOn) {
       var key = genusPartition.get(genusKey(nameResolver.apply(b)));
       if (key != null) {
-        split.get(key).addBasedOn(b, priorityFunc.applyAsInt(b));
+        split.get(key).addBasedOn(b, priorityFunc.applyAsInt(b), nameResolver.apply(b).getLabel());
         members.get(key).add(b);
       } else {
         unplacedBasedOn.add(b);
@@ -250,7 +250,7 @@ public class BasionymSorter<T extends HasID<String>> {
       var key = genusPartition.get(e.getKey());
       if (key != null) {
         for (T r : e.getValue()) {
-          addLinked(split.get(key), r, unplacedBasedOn);
+          addLinked(split.get(key), r, unplacedBasedOn, nameResolver);
         }
         members.get(key).addAll(e.getValue());
         iter0.remove();
@@ -277,7 +277,7 @@ public class BasionymSorter<T extends HasID<String>> {
         if (target != null && !ambiguous) {
           var sg = split.get(target);
           for (T r : cluster) {
-            addLinked(sg, r, unplacedBasedOn);
+            addLinked(sg, r, unplacedBasedOn, nameResolver);
           }
           members.get(target).addAll(cluster);
           iter.remove();
@@ -291,7 +291,7 @@ public class BasionymSorter<T extends HasID<String>> {
     for (var cluster : clusters.values()) {
       var sg = newGroup(cluster.get(0), g, nameResolver);
       for (T r : cluster) {
-        addLinked(sg, r, unplacedBasedOn);
+        addLinked(sg, r, unplacedBasedOn, nameResolver);
       }
       result.add(sg);
     }
@@ -365,9 +365,9 @@ public class BasionymSorter<T extends HasID<String>> {
   /**
    * Adds a recombination, or a based on name that had no group of its own genus, keeping its role.
    */
-  private void addLinked(HomotypicGroup<T> g, T obj, List<T> basedOn) {
+  private void addLinked(HomotypicGroup<T> g, T obj, List<T> basedOn, Function<T, ? extends FormattableName> nameResolver) {
     if (basedOn.contains(obj)) {
-      g.addBasedOn(obj, priorityFunc.applyAsInt(obj));
+      g.addBasedOn(obj, priorityFunc.applyAsInt(obj), nameResolver.apply(obj).getLabel());
     } else {
       g.addRecombination(obj);
     }

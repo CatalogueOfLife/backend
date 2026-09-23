@@ -77,6 +77,24 @@ public class HomotypicConsolidator {
   }
 
   /**
+   * @return true if both names are the same name and rank spelled differently only in their terminal epithet,
+   *   e.g. Trachelosiphon colombianum and T. columbianum or Aus albus and Aus alba
+   */
+  @VisibleForTesting
+  static boolean isOrthographicVariant(FormattableName n1, FormattableName n2) {
+    return n1.getRank() == n2.getRank()
+      && n1.getGenus() != null && n1.getGenus().equalsIgnoreCase(n2.getGenus())
+      && equalsIgnoreCase(n1.getInfragenericEpithet(), n2.getInfragenericEpithet())
+      && (n1.getInfraspecificEpithet() == null || equalsIgnoreCase(n1.getSpecificEpithet(), n2.getSpecificEpithet()))
+      && n1.getTerminalEpithet() != null && n2.getTerminalEpithet() != null
+      && !n1.getTerminalEpithet().equalsIgnoreCase(n2.getTerminalEpithet());
+  }
+
+  private static boolean equalsIgnoreCase(@Nullable String s1, @Nullable String s2) {
+    return s1 == null ? s2 == null : s1.equalsIgnoreCase(s2);
+  }
+
+  /**
    * @return true if the relation says both names are homotypic and it came with the data, not from an earlier grouping
    */
   private static boolean isHomotypicEvidence(NameRelation nr) {
@@ -292,12 +310,10 @@ public class HomotypicConsolidator {
                   }
                 }
                 for (var u : group.getBasionymVariations()) {
-                  // an original name in another genus is no spelling variant, but likely a recombination missing its brackets
-                  if (Objects.equals(basionym.getGenus(), u.getGenus())) {
-                    if (createRelationIfNotExisting(basionym, u, NomRelType.SPELLING_CORRECTION, nrm)) {
-                      newSpellingRelations++;
-                    }
-                  } else if (createRelationIfNotExisting(u, basionym, NomRelType.HOMOTYPIC, nrm)) {
+                  var type = relateVariation(basionym, u, nrm);
+                  if (type == NomRelType.SPELLING_CORRECTION) {
+                    newSpellingRelations++;
+                  } else if (type != null) {
                     newHomotypicRelations++;
                   }
                 }
@@ -320,11 +336,10 @@ public class HomotypicConsolidator {
                   newBasedOnRelations++;
                 }
                 for (var u : group.getBasedOnVariations()) {
-                  if (Objects.equals(basedOn.getGenus(), u.getGenus())) {
-                    if (createRelationIfNotExisting(basedOn, u, NomRelType.SPELLING_CORRECTION, nrm)) {
-                      newSpellingRelations++;
-                    }
-                  } else if (createRelationIfNotExisting(u, basedOn, NomRelType.HOMOTYPIC, nrm)) {
+                  var type = relateVariation(basedOn, u, nrm);
+                  if (type == NomRelType.SPELLING_CORRECTION) {
+                    newSpellingRelations++;
+                  } else if (type != null) {
                     newHomotypicRelations++;
                   }
                 }
@@ -602,6 +617,28 @@ public class HomotypicConsolidator {
         return true;
       }
       return false;
+    }
+
+    /**
+     * Relates another original name of a group to its basionym or based on name, the most trusted of them.
+     * An orthographic variant becomes a spelling correction, pointing from the most trusted spelling to the variant.
+     * Any other variation, the same name at another rank missing its brackets or a name of another genus,
+     * is only said to be homotypic. Duplicates, i.e. the same name and rank with an authorship the grouping already
+     * found equal but maybe cited differently, are one and the same name and get no relation at all.
+     *
+     * @return the type of the relation created or null if none was
+     */
+    @Nullable
+    private NomRelType relateVariation(LinneanNameUsage original, LinneanNameUsage variation, NameRelationMapper mapper) {
+      if (Objects.equals(variation.getNameId(), original.getNameId())
+        || variation.getRank() == original.getRank() && variation.getScientificName().equalsIgnoreCase(original.getScientificName())
+      ) {
+        return null;
+      }
+      if (isOrthographicVariant(original, variation)) {
+        return createRelationIfNotExisting(original, variation, NomRelType.SPELLING_CORRECTION, mapper) ? NomRelType.SPELLING_CORRECTION : null;
+      }
+      return createRelationIfNotExisting(variation, original, NomRelType.HOMOTYPIC, mapper) ? NomRelType.HOMOTYPIC : null;
     }
 
     /**

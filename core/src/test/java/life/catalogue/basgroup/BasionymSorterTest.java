@@ -586,4 +586,24 @@ public class BasionymSorterTest {
     assertEquals(1, groupOf(groups, "Epidendrum mathewsii Rchb.f.").size());
   }
 
+  /**
+   * Equally trusted spellings of one name are ordered by their label, whatever the order they come in.
+   */
+  @Test
+  public void equalPriorityBasionymIsStable() throws Exception {
+    var names = names(1,
+      "Trachelosiphon columbianum Schltr.",
+      "Eurystyles colombiana (Schltr.) Schltr.",
+      "Trachelosiphon colombianum Schltr."
+    );
+    for (int i = 0; i < 2; i++) {
+      var groups = groupBasionyms(NomCode.BOTANICAL, "colombiana", names);
+      assertEquals(1, groups.size());
+      var g = groups.iterator().next();
+      assertEquals("Trachelosiphon colombianum Schltr.", g.getBasionym().getLabel());
+      assertEquals("Trachelosiphon columbianum Schltr.", g.getBasionymVariations().get(0).getLabel());
+      Collections.reverse(names);
+    }
+  }
+
 }

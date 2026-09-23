@@ -1,18 +1,12 @@
 package life.catalogue.basgroup;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.api.vocab.Users;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.junit.*;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
@@ -50,21 +44,9 @@ public class HomotypicConsolidatorOrchidsIT {
     hc.consolidate();
     HomotypicConsolidatorIT.assertNoLoop(datasetKey);
 
+    var rels = HomotypicConsolidatorIT.assertGrouperRelations(datasetKey);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
-      var nm = session.getMapper(NameMapper.class);
       var num = session.getMapper(NameUsageMapper.class);
-      Set<String> rels = new HashSet<>();
-      for (NameRelation nr : session.getMapper(NameRelationMapper.class).processDataset(datasetKey)) {
-        if (nr.getCreatedBy() == Users.HOMOTYPIC_GROUPER) {
-          var n1 = nm.get(DSID.of(datasetKey, nr.getNameId()));
-          var n2 = nm.get(DSID.of(datasetKey, nr.getRelatedNameId()));
-          if (nr.getType() == NomRelType.SPELLING_CORRECTION) {
-            assertEquals("spelling correction across genera: " + n1.getLabel() + " -> " + n2.getLabel(), n1.getGenus(), n2.getGenus());
-          }
-          rels.add(n1.getLabel() + " " + nr.getType() + " " + n2.getLabel());
-        }
-      }
-      rels.forEach(System.out::println);
       // Altensteinia columbiana (Schltr.) Garay is no orthographic variant of the colombiana names by its strict authorship,
       // so it stays alone and only has its synonymy
       assertEquals(Set.of(
@@ -72,10 +54,12 @@ public class HomotypicConsolidatorOrchidsIT {
         "Nanodes mathewsii (Rchb.f.) Rolfe BASIONYM Epidendrum mathewsii Rchb.f.",
         "Aa matthewsii (Rchb.f.) Schltr. BASIONYM Altensteinia matthewsii Rchb.f.",
         "Aa mathewsii (Rchb.fil.) Schltr. BASIONYM Altensteinia matthewsii Rchb.f.",
-        // the source lists Eria under Phreatia, which makes them one name, one of them missing its brackets
-        "Eria matthewsii Rchb.f. HOMOTYPIC Phreatia matthewsii Rchb.f.",
-        "Pinalia matthewsii (Rchb.f.) Kuntze BASIONYM Phreatia matthewsii Rchb.f.",
+        // the source lists Eria under Phreatia, which makes them one name, one of them missing its brackets.
+        // Equally trusted, the alphabetically first becomes the basionym
+        "Phreatia matthewsii Rchb.f. HOMOTYPIC Eria matthewsii Rchb.f.",
+        "Pinalia matthewsii (Rchb.f.) Kuntze BASIONYM Eria matthewsii Rchb.f.",
         "Eurystyles colombiana (Schltr.) Schltr. BASIONYM Trachelosiphon colombianum Schltr.",
+        // one name spelled two ways by the same source, the alphabetically first spelling wins
         "Trachelosiphon colombianum Schltr. SPELLING_CORRECTION Trachelosiphon columbianum Schltr."
       ), rels);
 
