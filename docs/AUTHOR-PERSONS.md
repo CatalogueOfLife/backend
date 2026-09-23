@@ -68,12 +68,13 @@ off. Such an answer is retried and never cached.
 
 **Wikidata** gives everyone with a botanist author abbreviation (P428, `STANDARD`/`BOT`), a zoologist author citation
 (P835, `CITATION`/`ZOO`), an IPNI author id (P586) or a ZooBank author id (P2006), paged one property at a time
-through the query service. Their statements come from the query service too, 100 persons at a time: family and given
+through the query service. Everything else comes from the Wikidata API (`wbgetentities`, 50 items at a time,
+`maxlag=5`): the English label (`FULL`) and aliases (`VARIANT`) of every person and its statements - family and given
 names (P734, P735), birth and death (P569, P570), active years (P2031, P2032, P1317), field of work (P101), parents
-(P22, P25) and siblings (P3373). Labels come from the Wikidata API (`wbgetentities`, 50 items at a time, `maxlag=5`)
-instead: the English label (`FULL`) and aliases (`VARIANT`) of every person, and the labels of the name and field
-items. Label lookups on the query service take a minute per hundred items, the API answers in seconds. Items of the
-files that disappeared are asked for a redirect, which moves the person to the new Q-id.
+(P22, P25) and siblings (P3373), without deprecated ones - and then the labels of the name and field items. The query
+service took half a minute to a minute for the statements or labels of a hundred persons, the API answers fifty in a
+few seconds. The cached API answers take a gigabyte or two. Items of the files that disappeared are asked the query
+service for a redirect, which moves the person to the new Q-id.
 
 **IPNI** has no bulk download, but its author search pages with a cursor and stops after 10,000 records per query. It
 is asked by surname prefix, A to Z, splitting a prefix with more authors into longer ones. It gives the standard form

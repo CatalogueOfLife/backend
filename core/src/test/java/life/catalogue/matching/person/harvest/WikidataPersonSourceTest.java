@@ -36,9 +36,28 @@ public class WikidataPersonSourceTest {
     return "{\"person\":{\"type\":\"uri\",\"value\":\"http://www.wikidata.org/entity/" + q + "\"},\"v\":{\"type\":\"literal\",\"value\":\"" + v + "\"}}";
   }
 
-  static String statement(String q, String p, String v) {
-    return "{\"person\":{\"type\":\"uri\",\"value\":\"http://www.wikidata.org/entity/" + q + "\"},"
-      + "\"prop\":{\"type\":\"uri\",\"value\":\"http://www.wikidata.org/prop/direct/" + p + "\"},\"v\":{\"value\":\"" + v + "\"}}";
+  static String time(String p, String time) {
+    return claim(p, "{\"time\":\"" + time + "\",\"precision\":11}", "normal");
+  }
+
+  static String item(String p, String q) {
+    return claim(p, "{\"entity-type\":\"item\",\"id\":\"" + q + "\"}", "normal");
+  }
+
+  static String claim(String p, String value, String rank) {
+    return "{\"p\":\"" + p + "\",\"mainsnak\":{\"snaktype\":\"value\",\"property\":\"" + p + "\",\"datavalue\":{\"value\":" + value
+      + "}},\"rank\":\"" + rank + "\"}";
+  }
+
+  /** claims grouped by property, the way wbgetentities has them */
+  static String claims(String... claims) {
+    java.util.Map<String, java.util.List<String>> byProp = new java.util.LinkedHashMap<>();
+    for (String c : claims) {
+      String p = c.substring(6, c.indexOf('"', 6));
+      byProp.computeIfAbsent(p, k -> new java.util.ArrayList<>()).add(c);
+    }
+    return byProp.entrySet().stream().map(e -> "\"" + e.getKey() + "\":[" + String.join(",", e.getValue()) + "]")
+      .collect(java.util.stream.Collectors.joining(",", "{", "}"));
   }
 
   static String entities(String... entities) {
@@ -46,7 +65,12 @@ public class WikidataPersonSourceTest {
   }
 
   static String entity(String q, String label, String... aliases) {
+    return entityWithClaims(q, null, label, aliases);
+  }
+
+  static String entityWithClaims(String q, String claims, String label, String... aliases) {
     StringBuilder sb = new StringBuilder("\"" + q + "\":{\"id\":\"" + q + "\"");
+    if (claims != null) sb.append(",\"claims\":").append(claims);
     if (label != null) sb.append(",\"labels\":{\"en\":{\"language\":\"en\",\"value\":\"").append(label).append("\"}}");
     if (aliases.length > 0) {
       sb.append(",\"aliases\":{\"en\":[");
@@ -58,8 +82,6 @@ public class WikidataPersonSourceTest {
     return sb.append("}").toString();
   }
 
-  static final String ITEM = "http://www.wikidata.org/entity/";
-
   @Test
   public void idsStatementsAndLabels() throws Exception {
     Map<String, PersonRecord.Builder> persons = new TreeMap<>();
@@ -70,18 +92,23 @@ public class WikidataPersonSourceTest {
       throw new AssertionError("no network");
     });
     var pending = new WikidataPersonSource.Pending();
-    WikidataPersonSource.addStatements(rows(
-      statement("Q2", "P569", "+1812-08-12T00:00:00Z"),
-      statement("Q2", "P570", "1884-07-26T00:00:00Z"),
-      statement("Q2", "P734", ITEM + "Q100"),
-      statement("Q2", "P735", ITEM + "Q101"),
-      statement("Q2", "P735", ITEM + "Q102"),
-      statement("Q2", "P101", ITEM + "Q200"),
-      statement("Q2", "P101", ITEM + "Q201"),
-      statement("Q2", "P22", ITEM + "Q1"),
-      statement("Q2", "P3373", ITEM + "Q3")
-    ), persons, pending);
-    WikidataPersonSource.addEntities(MAPPER.readTree(entities(entity("Q2", "George Brettingham Sowerby II", "G. B. Sowerby"))), persons);
+    String claims = claims(
+      time("P569", "+1812-08-12T00:00:00Z"),
+      time("P570", "1884-07-26T00:00:00Z"),
+      // a deprecated statement is wrong by definition
+      claim("P570", "{\"time\":\"+1799-01-01T00:00:00Z\"}", "deprecated"),
+      item("P734", "Q100"),
+      item("P735", "Q101"),
+      item("P735", "Q102"),
+      item("P101", "Q200"),
+      item("P101", "Q201"),
+      item("P22", "Q1"),
+      item("P3373", "Q3"),
+      // an unknown value has no datavalue
+      "{\"p\":\"P25\",\"mainsnak\":{\"snaktype\":\"somevalue\",\"property\":\"P25\"},\"rank\":\"normal\"}"
+    );
+    WikidataPersonSource.addEntities(MAPPER.readTree(entities(entityWithClaims("Q2", claims, "George Brettingham Sowerby II", "G. B. Sowerby"))),
+      persons, pending);
     assertEquals(Set.of("Q100", "Q101", "Q102", "Q200", "Q201"), pending.items());
     source.resolve(persons, pending, WikidataPersonSource.labels(MAPPER.readTree(entities(entity("Q100", "Sowerby"),
       entity("Q101", "Brettingham"), entity("Q102", "George"), entity("Q200", "malacology"), entity("Q201", "politics")))));
@@ -104,12 +131,12 @@ public class WikidataPersonSourceTest {
     assertTrue(source.stats(), source.stats().contains("politics"));
   }
 
-  /** the query service answers HTTP 431 to a request line above 8 KB, a batch of statements must stay below */
+  /** the query service answers HTTP 431 to a request line above 8 KB, a batch of redirects must stay below */
   @Test
-  public void statementBatchFitsIntoAGetRequest() {
+  public void redirectBatchFitsIntoAGetRequest() {
     List<String> qids = IntStream.range(0, WikidataPersonSource.BATCH).mapToObj(i -> "Q" + (123456789 + i)).toList();
     String url = WikidataPersonSource.SPARQL + "?format=json&query="
-      + URLEncoder.encode(WikidataPersonSource.statementQuery(qids), StandardCharsets.UTF_8);
+      + URLEncoder.encode(WikidataPersonSource.redirectQuery(qids), StandardCharsets.UTF_8);
     assertTrue(url.length() + " characters", url.length() < 6000);
   }
 
@@ -120,14 +147,13 @@ public class WikidataPersonSourceTest {
     assertEquals(List.of(new PersonRecord.Form("Sw.", NameKind.STANDARD, FormCode.BOT)), persons.get("Q5").build().names());
   }
 
-  /** read() pages the ids, batches the statements through SPARQL and the labels through the API */
+  /** read() pages the ids through the query service, then asks the API for the persons and their name items */
   @Test
   public void read() throws Exception {
     var source = new WikidataPersonSource(url -> {
       String q = URLDecoder.decode(url, StandardCharsets.UTF_8);
-      if (q.contains("wbgetentities") && q.contains("ids=Q9")) return entities(entity("Q9", "Olof Swartz"));
+      if (q.contains("wbgetentities") && q.contains("ids=Q9")) return entities(entityWithClaims("Q9", claims(item("P734", "Q77")), "Olof Swartz"));
       if (q.contains("wbgetentities") && q.contains("ids=Q77")) return entities(entity("Q77", "Swartz"));
-      if (q.contains("VALUES ?prop")) return sparql(statement("Q9", "P734", ITEM + "Q77"));
       if (q.contains("wdt:P428") && q.contains("OFFSET 0")) return sparql(id("Q9", "Sw."));
       return sparql();
     });
