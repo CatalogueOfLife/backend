@@ -91,6 +91,10 @@ public class CorpusIO {
     }
   }
 
+  public static TabWriter exportWriter(File export) throws IOException {
+    return writer(export, ExportRow.COLUMNS);
+  }
+
   public static TabWriter pairWriter(File pairs) throws IOException {
     return writer(pairs, AuthorPair.COLUMNS);
   }

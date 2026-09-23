@@ -60,6 +60,18 @@ public record ExportRow(
     );
   }
 
+  /**
+   * The inverse of {@link #of(String[])}.
+   */
+  public String[] toRow() {
+    return new String[]{
+      String.valueOf(nidx), String.valueOf(datasetKey), nameId, rank, code == null ? null : code.name(), nomStatus,
+      scientificName, authorship,
+      team(combAuthors), team(combExAuthors), combYear,
+      team(basAuthors), team(basExAuthors), basYear, sanctioningAuthor
+    };
+  }
+
   static String col(String[] row, int idx) {
     return idx < row.length ? StringUtils.trimToNull(row[idx]) : null;
   }
