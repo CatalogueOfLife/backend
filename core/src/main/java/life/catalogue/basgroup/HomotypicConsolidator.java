@@ -12,6 +12,7 @@ import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.IssueAdder;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameRelationMapper;
@@ -29,6 +30,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
@@ -53,8 +55,9 @@ public class HomotypicConsolidator {
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_ORDER = Comparator.comparing(u -> STATUS_ORDER.indexOf(u.getStatus()));
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_RANK_ORDER = PREFERRED_STATUS_ORDER.thenComparing(LinneanNameUsage::getRank);
   private static final int MAX_NAME_DIFF = 1;
+  private static final Set<NomRelType> HOMOTYPIC_REL_TYPES = Set.of(NomRelType.BASIONYM, NomRelType.HOMOTYPIC, NomRelType.BASED_ON);
 
-  private final SqlSession session;
+  private final SqlSessionFactory factory;
   private final int datasetKey;
   private final List<SimpleName> taxa;
   private boolean consolidateMisspellings = false;
@@ -62,7 +65,8 @@ public class HomotypicConsolidator {
   private final AuthorComparator authorComparator;
   private final BasionymSorter<LinneanNameUsage> basSorter;
   private final ToIntFunction<LinneanNameUsage> priorityFunc;
-  private final IssueAdder issueAdder;
+  // issues by usage id, collected by the parallel tasks and written once they are done
+  private final Map<String, Set<Issue>> issues = new ConcurrentHashMap<>();
 
   @VisibleForTesting
   public static boolean isSameName(ConsolidationName n1, ConsolidationName n2, ModifiedDamerauLevenshtein mdl) {
@@ -70,6 +74,13 @@ public class HomotypicConsolidator {
       && Objects.equals(n1.getAuthorship(), n2.getAuthorship())
       && Math.abs(n1.getName().length()-n2.getName().length()) <= MAX_NAME_DIFF
       && mdl.getEditDistance(n1.getName(), n2.getName()) <= MAX_NAME_DIFF;
+  }
+
+  /**
+   * @return true if the relation says both names are homotypic and it came with the data, not from an earlier grouping
+   */
+  private static boolean isHomotypicEvidence(NameRelation nr) {
+    return HOMOTYPIC_REL_TYPES.contains(nr.getType()) && !Objects.equals(nr.getCreatedBy(), Users.HOMOTYPIC_GROUPER);
   }
 
   /**
@@ -106,13 +117,13 @@ public class HomotypicConsolidator {
   }
 
   private HomotypicConsolidator(SqlSessionFactory factory, int datasetKey, List<SimpleName> taxa, ToIntFunction<LinneanNameUsage> priorityFunc) {
-    this.session = factory.openSession(true);
+    DaoUtils.requireProjectOrRelease(datasetKey);
+    this.factory = factory;
     this.datasetKey = datasetKey;
     this.priorityFunc = priorityFunc;
     this.taxa = taxa;
     authorComparator = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
     basSorter = new BasionymSorter<>(authorComparator, priorityFunc);
-    issueAdder = new IssueAdder(datasetKey, session);
   }
 
   public void setBasionymExclusions(Map<String, Set<String>> basionymExclusions) {
@@ -123,19 +134,24 @@ public class HomotypicConsolidator {
     consolidate(4, null);
   }
   public void consolidate(int threads, @Nullable UUID jobKey) {
-    try {
-      LOG.info("Discover homotypic relations in {} distinct higher groups from dataset {}, using {} threads", taxa.size(), datasetKey, threads);
-      var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("ht-consolidator-worker"));
-      for (var tax : taxa) {
-        var task = new ConsolidatorTask(tax, consolidateMisspellings, jobKey);
-        exec.submit(task);
-      }
-      ExecutorUtils.shutdown(exec);
-
-    } finally {
-      session.commit();
-      session.close();
+    LOG.info("Discover homotypic relations in {} distinct higher groups from dataset {}, using {} threads", taxa.size(), datasetKey, threads);
+    var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("ht-consolidator-worker"));
+    for (var tax : taxa) {
+      var task = new ConsolidatorTask(tax, consolidateMisspellings, jobKey);
+      exec.submit(task);
     }
+    ExecutorUtils.shutdown(exec);
+    // an IssueAdder must not be used in parallel, it generates verbatim source ids
+    LOG.info("Add issues to {} usages in dataset {}", issues.size(), datasetKey);
+    try (SqlSession session = factory.openSession(true)) {
+      var issueAdder = new IssueAdder(datasetKey, session);
+      issues.forEach(issueAdder::addIssues);
+    }
+    issues.clear();
+  }
+
+  private void addIssue(String usageID, Issue issue) {
+    issues.computeIfAbsent(usageID, k -> ConcurrentHashMap.newKeySet()).add(issue);
   }
 
   /**
@@ -157,11 +173,13 @@ public class HomotypicConsolidator {
    */
   private class ConsolidatorTask implements Runnable {
     private final ModifiedDamerauLevenshtein mdl = new ModifiedDamerauLevenshtein();
+    private SqlSession session; // each task has its own, a session must not be shared between threads
     private final SimpleName tax;
     private final DSID<String> dsid;
     private final boolean consolidateMisspellings;
     private int synCounter;
     private Map<String, LinneanNameUsage> usages; // lookup by id for each taxon group being consolidated
+    private final Map<String, Set<String>> relatedNames = new HashMap<>(); // name id -> directly related name ids from the data
     private final UUID parentJobKey;
 
     /**
@@ -186,12 +204,17 @@ public class HomotypicConsolidator {
       if (parentJobKey != null) {
         LoggingUtils.setJobMDC(parentJobKey, getClass());
       }
-      try {
+      try (SqlSession session = factory.openSession(true)) {
+        this.session = session;
         homotypicConsolidation();
         if (consolidateMisspellings) {
           misspellingConsolidation();
         }
+      } catch (RuntimeException e) {
+        // the executor would swallow it silently and leave the rest of the group unconsolidated
+        LOG.error("Homotypic consolidation of {} failed", tax, e);
       } finally {
+        session = null;
         LoggingUtils.removeJobMDC();
       }
     }
@@ -241,11 +264,22 @@ public class HomotypicConsolidator {
 
       // now compare authorships for each epithet group
       for (var epithetGroup : epithets.entrySet()) {
-        var groups = basSorter.groupBasionyms(tax.getCode(), epithetGroup.getKey(), epithetGroup.getValue(), a -> a, this::flagConsolidationIssue);
+        var groups = basSorter.groupBasionyms(tax.getCode(), epithetGroup.getKey(), epithetGroup.getValue(), a -> a, this::flagConsolidationIssue, this::linked);
         // go through groups and persistent basionym relations where needed
         for (var group : groups) {
           // we only need to work on groups with at least 2 names
           if (group.size() > 1) {
+            LOG.info("Consolidate homotypic group {} {} with {} names in {}. Basionym={} and BasedOn={}", group.getEpithet(), group.getAuthorship(), group.size(), tax, group.getBasionym(), group.getBasedOn());
+            final LinneanNameUsage primary = findPrimaryUsage(group, session);
+            if (primary == null) {
+              // we did not find a usage to trust, maybe a bad grouping. Skip without any relations, but mark accepted names with issues
+              for (var u : group.getAll()) {
+                if (u.getStatus().isTaxon()) {
+                  addIssue(u.getId(), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
+                }
+              }
+              continue;
+            }
             NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
             // create relations for basionym & variations + recombinations
             if (group.hasRecombinations() || group.hasBasionymVariations()) {
@@ -258,8 +292,13 @@ public class HomotypicConsolidator {
                   }
                 }
                 for (var u : group.getBasionymVariations()) {
-                  if (createRelationIfNotExisting(basionym, u, NomRelType.SPELLING_CORRECTION, nrm)) {
-                    newSpellingRelations++;
+                  // an original name in another genus is no spelling variant, but likely a recombination missing its brackets
+                  if (Objects.equals(basionym.getGenus(), u.getGenus())) {
+                    if (createRelationIfNotExisting(basionym, u, NomRelType.SPELLING_CORRECTION, nrm)) {
+                      newSpellingRelations++;
+                    }
+                  } else if (createRelationIfNotExisting(u, basionym, NomRelType.HOMOTYPIC, nrm)) {
+                    newHomotypicRelations++;
                   }
                 }
               } else {
@@ -281,15 +320,19 @@ public class HomotypicConsolidator {
                   newBasedOnRelations++;
                 }
                 for (var u : group.getBasedOnVariations()) {
-                  if (createRelationIfNotExisting(basedOn, u, NomRelType.SPELLING_CORRECTION, nrm)) {
-                    newSpellingRelations++;
+                  if (Objects.equals(basedOn.getGenus(), u.getGenus())) {
+                    if (createRelationIfNotExisting(basedOn, u, NomRelType.SPELLING_CORRECTION, nrm)) {
+                      newSpellingRelations++;
+                    }
+                  } else if (createRelationIfNotExisting(u, basedOn, NomRelType.HOMOTYPIC, nrm)) {
+                    newHomotypicRelations++;
                   }
                 }
               }
               session.commit();
             }
             // finally make sure we only have one accepted name!
-            consolidate(group);
+            consolidate(group, primary);
           } else {
             LOG.debug("Skip single name group {}", group);
           }
@@ -301,6 +344,37 @@ public class HomotypicConsolidator {
       LOG.info("Discovered {} new basionym, {} homotypic, {} based on and {} spelling relations. Created {} basionym placeholders and converted {} taxa into synonyms in {}",
         newBasionymRelations, newHomotypicRelations, newBasedOnRelations, newSpellingRelations, newBasionyms, synCounter, tax);
       usages = null;
+      relatedNames.clear();
+    }
+
+    /**
+     * @return true if the data itself says both usages are homotypic: one is the synonym of the other,
+     * both are synonyms of the same accepted name or their names are related by a homotypic name relation
+     * not created by the grouper itself.
+     */
+    private boolean linked(LinneanNameUsage u1, LinneanNameUsage u2) {
+      if (u1.getStatus().isSynonym() && u2.getId().equals(u1.getParentId())
+        || u2.getStatus().isSynonym() && u1.getId().equals(u2.getParentId())
+        || u1.getStatus().isSynonym() && u2.getStatus().isSynonym() && Objects.equals(u1.getParentId(), u2.getParentId())
+      ) {
+        return true;
+      }
+      return relatedNames(u1.getNameId()).contains(u2.getNameId());
+    }
+
+    private Set<String> relatedNames(String nameId) {
+      return relatedNames.computeIfAbsent(nameId, id -> {
+        var nrm = session.getMapper(NameRelationMapper.class);
+        var key = DSID.of(datasetKey, id);
+        Set<String> ids = new HashSet<>();
+        for (var nr : nrm.listByName(key)) {
+          if (isHomotypicEvidence(nr)) ids.add(nr.getRelatedNameId());
+        }
+        for (var nr : nrm.listByRelatedName(key)) {
+          if (isHomotypicEvidence(nr)) ids.add(nr.getNameId());
+        }
+        return ids;
+      });
     }
 
     private void misspellingConsolidation() {
@@ -341,10 +415,10 @@ public class HomotypicConsolidator {
             syn = n1;
           }
           if (acc != null) {
-            var accLNU = load(acc.getId());
-            var synLNU = load(syn.getId());
+            var accLNU = load(session, acc.getId());
+            var synLNU = load(session, syn.getId());
             updateParentAndStatus(synLNU.getId(), accLNU.getId(), TaxonomicStatus.SYNONYM, session.getMapper(NameUsageMapper.class));
-            issueAdder.addIssue(synLNU.getVerbatimSourceKey(), synLNU.getId(), Issue.MISSPELLING_CONSOLIDATION);
+            addIssue(synLNU.getId(), Issue.MISSPELLING_CONSOLIDATION);
             if (synCounter % 1000 == 0) {
               session.commit();
             }
@@ -512,7 +586,7 @@ public class HomotypicConsolidator {
     }
 
     private void flagConsolidationIssue(Pair<LinneanNameUsage, Issue> obj) {
-      issueAdder.addIssue(obj.key().getVerbatimSourceKey(), obj.key().getId(), obj.value());
+      addIssue(obj.key().getId(), obj.value());
     }
 
     private boolean createRelationIfNotExisting(LinneanNameUsage from, LinneanNameUsage to, NomRelType relType, NameRelationMapper mapper) {
@@ -548,23 +622,12 @@ public class HomotypicConsolidator {
      * In case we have duplicates of the basionym treat them just as recombinations that need to be consolidated and synonymised to the primary accepted name.
      *
      * @param group homotypic group to consolidate
+     * @param primary the most trusted usage of the group, see {@link #findPrimaryUsage(HomotypicGroup, SqlSession)}
      */
-    private void consolidate(HomotypicGroup<LinneanNameUsage> group) {
+    private void consolidate(HomotypicGroup<LinneanNameUsage> group, LinneanNameUsage primary) {
       if (group.size() > 1) {
-        LOG.info("Consolidate homotypic group {} {} with {} names in {}. Basionym={} and BasedOn={}", group.getEpithet(), group.getAuthorship(), group.size(), tax, group.getBasionym(), group.getBasedOn());
-        final LinneanNameUsage primary = findPrimaryUsage(group);
-        if (primary == null) {
-          // we did not find a usage to trust. skip, but mark accepted names with issues
-          for (var u : group.getAll()) {
-            if (u.getStatus().isTaxon()) {
-              issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
-            }
-          }
-          return;
-        }
-
         // get the accepted usage in case of synonyms - caution, this can now be an autonym that is happy to live with its accepted species
-        final var primaryAcc = primary.getStatus().isSynonym() ? load(primary.getParentId()) : primary;
+        final var primaryAcc = primary.getStatus().isSynonym() ? load(session, primary.getParentId()) : primary;
         // use the highest priority from either primary or the accepted usage of it if its different
         final int primaryPrio = Math.min(priorityFunc.applyAsInt(primary), priorityFunc.applyAsInt(primaryAcc));
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
@@ -597,7 +660,7 @@ public class HomotypicConsolidator {
               LOG.debug("Same priority, keep usage: {}", u);
             } else {
               LOG.warn("Unexpected priorities. Keep usage: {}", u);
-              issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
+              addIssue(u.getId(), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
             }
           }
         }
@@ -606,6 +669,7 @@ public class HomotypicConsolidator {
     }
 
     private void delete(LinneanNameUsage u, SqlSession session) {
+      issues.remove(u.getId());
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       num.delete(dsid.id(u.getId()));
     }
@@ -652,7 +716,7 @@ public class HomotypicConsolidator {
 
       // convert to synonym, removing old parent relation
       if (issue != null) {
-        issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), issue);
+        addIssue(u.getId(), issue);
       }
 
       // move all descendants!
@@ -716,7 +780,7 @@ public class HomotypicConsolidator {
    * or we did a bad basionym detection and we would wrongly lump names.
    */
   @VisibleForTesting
-  protected LinneanNameUsage findPrimaryUsage(HomotypicGroup<LinneanNameUsage> group) {
+  protected LinneanNameUsage findPrimaryUsage(HomotypicGroup<LinneanNameUsage> group, SqlSession session) {
     if (group == null || group.isEmpty()) {
       return null;
     }
@@ -763,7 +827,7 @@ public class HomotypicConsolidator {
             accepted.add(nu);
           } else {
             // load from db - might be the accepted name of a synonym
-            accepted.add(load(id));
+            accepted.add(load(session, id));
           }
         }
 
@@ -812,7 +876,7 @@ public class HomotypicConsolidator {
     return epithet != null && SciNameNormalizer.normalizeEpithet(epithet).equals(SciNameNormalizer.normalizeEpithet(name.getTerminalEpithet()));
   }
 
-  private LinneanNameUsage load(String id) {
+  private LinneanNameUsage load(SqlSession session, String id) {
     final var dsid = DSID.of(datasetKey, id);
     var nub = session.getMapper(NameUsageMapper.class).get(dsid);
     return new LinneanNameUsage(nub);

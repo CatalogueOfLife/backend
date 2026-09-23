@@ -6,7 +6,6 @@ import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
 
 import life.catalogue.matching.similarity.ModifiedDamerauLevenshtein;
 
@@ -24,7 +23,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -52,13 +50,8 @@ public class HomotypicConsolidatorTest {
 
   @Test
   public void findPrimaryUsage() throws Exception {
-    var vsm = mock(VerbatimSourceMapper.class);
-
     var session = mock(SqlSession.class);
-    when(session.getMapper(VerbatimSourceMapper.class)).thenReturn(vsm);
-
     var factory = mock(SqlSessionFactory.class);
-    when(factory.openSession(anyBoolean())).thenReturn(session);
 
     var infoCache = TestUtils.mockedInfoCache();
     var info = new DatasetInfoCache.DatasetInfo(3, DatasetOrigin.PROJECT,3, null, false);
@@ -69,7 +62,7 @@ public class HomotypicConsolidatorTest {
     var bg = new HomotypicGroup<LinneanNameUsage>(null, "sapiens", Authorship.authors("Linnaeus"), NomCode.ZOOLOGICAL);
     bg.setBasionym(lnu("1", Rank.SUBSPECIES, "Nasua olivacea quitensis", "Lönnberg, 1913"));
     bg.addRecombination(lnu("2", Rank.SUBSPECIES, "Nasuella olivacea quitensis", "(Lönnberg, 1913)", TaxonomicStatus.SYNONYM, "1"));
-    var primary = hc.findPrimaryUsage(bg);
+    var primary = hc.findPrimaryUsage(bg, session);
     assertEquals("1", primary.getId());
   }
 

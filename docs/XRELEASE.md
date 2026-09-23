@@ -55,6 +55,15 @@ The single `UsageMatcher` instance is shared across all sector syncs for efficie
 
 #### 2f. `homotypicGrouping()` — Post-Merge Consolidation
 - **`HomotypicConsolidator`** — detects basionym groups per family, synonymizes lower-priority duplicates using `SectorPriority`
+  - Names are grouped by terminal epithet and basionym author (`BasionymSorter`). Original names of that author in
+    different genera stay separate groups when a single source lists them separately, i.e. with the same priority and
+    not linked by synonymy or a name relation. Without such evidence they are still lumped, since a missing bracket is
+    the likelier explanation, and linked by `HOMOTYPIC` rather than `SPELLING_CORRECTION`, which is kept for variants
+    in one genus.
+  - A recombination joins one of those separate groups only if it shares that group's genus, or the data links it to
+    that group alone; otherwise it is left without a basionym.
+  - A group whose primary usage cannot be determined (several accepted names from the most trusted source) gets
+    `HOMOTYPIC_CONSOLIDATION_UNRESOLVED` on its accepted names and no name relations at all.
 - **Misspelling consolidation** (optional) — fuzzy-matches names within families (Damerau-Levenshtein ≤ 1)
 - **`flagDuplicatesAsProvisional()`** (optional) — marks accepted homonyms (same name, different author) from lower-priority sectors as `PROVISIONALLY_ACCEPTED`
 - **`moveSynonymChains()`** — fixes synonym-of-synonym chains created during consolidation
