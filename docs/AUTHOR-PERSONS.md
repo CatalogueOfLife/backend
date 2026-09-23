@@ -1,0 +1,108 @@
+# The person registry
+
+Authors of scientific names as persons, keyed by the identifiers authorities give them: Wikidata Q-ids, IPNI author
+ids and ZooBank author ids. Nothing in production uses it yet. The person based author comparison that is meant to use
+it, and to be measured against the string comparison first, is designed in
+[2026-09-23-person-author-comparison.md](2026-09-23-person-author-comparison.md).
+
+Code in `core`, package `life.catalogue.matching.person`. Files in `core/src/main/resources/authorship/persons/`.
+The harvest that grows them is test scope, in `life.catalogue.matching.person.harvest`.
+
+## The files
+
+Three tab delimited files with a header that is verified on reading. Lists are pipe separated, an empty cell is null,
+and every file is written sorted so a harvest diffs line by line.
+
+| file | columns |
+|---|---|
+| `persons.tsv` | `id wikidata ipni zoobank formerIds family given suffix born died activeFrom activeTo groups source` |
+| `names.tsv` | `person form kind code source` |
+| `relations.tsv` | `person relation other source` |
+
+- **`id`** is the best identifier a person has, prefixed: `wd:Q…` with a Wikidata id, else `ipni:…`, else `zb:…`, else a
+  curated `clb:N`. A person that gains a better id - an IPNI author Wikidata links later - keeps the old one in
+  `formerIds`, so every line that refers to it keeps resolving. Lines may refer to a person by any of its ids, its former
+  ids or a prefixed authority id.
+- **`family`, `given`, `suffix`** are the structured name as an authority records it: IPNI's surname and forename (the
+  filius `f.` from the standard form), or Wikidata's family and given names (P734, P735) put in the order of the
+  label, with a trailing `I` to `IV`, `Jr.` or `Sr.` of the label as suffix. They are never split off a full name: the
+  last word is not the surname in `Geoffroy Saint-Hilaire` or `Ruiz López`.
+- **Years** only: `born`, `died`, and the active years `activeFrom`/`activeTo` for a floruit. A single floruit year
+  is both.
+- **`groups`**: `TaxGroup` values from what an authority records, never mined from our own names. IPNI's taxon groups
+  map `Spermatophytes` to angiosperms and gymnosperms, `Mycology` to fungi and the rest by their name; `Fossils` and
+  `Pre-Linnaean` are no group. Wikidata's field of work (P101) maps by its English label, `botany` to plants and
+  fungi, `malacology` to molluscs and so on (`Groups` holds the table).
+- **`kind`**: `STANDARD` for a botanical standard form (IPNI, Wikidata P428), `CITATION` for a zoological author citation
+  (Wikidata P835, ZooBank), `FULL` for the full name, `VARIANT` for any other spelling or alias.
+- **`code`**: `BOT`, `ZOO` or `ANY`, meaning what it means in `authormap.txt`. A zoological name is cited by `ZOO` and
+  `ANY` forms, any other by `BOT` and `ANY` forms: `Sw.` is Swartz in botany and nobody in zoology.
+- **`relation`**: `PARENT`, where `person PARENT other` says that other is a parent of person, or `SIBLING`.
+- **`source`**: `wikidata`, `ipni`, `zoobank` or `curated`.
+
+`PersonRegistryFilesTest` guards the committed files: every reference resolves, ids and former ids are unique, every
+id matches the authority ids of its person, nobody is born after they died and every person has a name form.
+
+## Looking up a citation
+
+`PersonRegistry.get()` loads the files once, on first use. `candidates(citation, code)` folds the citation with
+`AuthorshipNormalizer.normalize`, the key citations are compared by everywhere, and returns every person with a form
+under that key whose code applies. Two forms are derived per person with a family name when loading: the initials of
+the given names with family name and suffix (`g b sowerby ii`), and the bare family name (`sowerby`). A bare surname
+therefore proposes every person of that name; the registry only ever proposes candidates, it decides nothing.
+`get(anyId)` resolves any id of a person and `relatives(person)` gives parents, children and siblings.
+
+## Harvesting
+
+    mvn -q -pl dao -am install -DskipTests
+    cd core
+    mvn -q test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
+      -Dexec.args="-Xmx4g -cp %classpath life.catalogue.matching.person.harvest.PersonHarvest src/main/resources/authorship/persons target/person-harvest"
+
+It reads the three files, reads every source, merges, and writes the files back only if the result passes the same
+checks as `PersonRegistryFilesTest`. Every answer of Wikidata and IPNI is cached in `target/person-harvest/cache`, so a
+run that dies resumes where it stopped; delete the cache for a fresh harvest. It pauses 1 s between Wikidata and
+250 ms between IPNI requests and retries with a growing pause. An answer that is no complete JSON object, or that is
+an API error such as `maxlag`, counts as a failed request: the query service sometimes answers 200 with a body cut
+off. Such an answer is retried and never cached.
+
+**Wikidata** gives everyone with a botanist author abbreviation (P428, `STANDARD`/`BOT`), a zoologist author citation
+(P835, `CITATION`/`ZOO`), an IPNI author id (P586) or a ZooBank author id (P2006), paged one property at a time
+through the query service. Their statements come from the query service too, 100 persons at a time: family and given
+names (P734, P735), birth and death (P569, P570), active years (P2031, P2032, P1317), field of work (P101), parents
+(P22, P25) and siblings (P3373). Labels come from the Wikidata API (`wbgetentities`, 50 items at a time, `maxlag=5`)
+instead: the English label (`FULL`) and aliases (`VARIANT`) of every person, and the labels of the name and field
+items. Label lookups on the query service take a minute per hundred items, the API answers in seconds. Items of the
+files that disappeared are asked for a redirect, which moves the person to the new Q-id.
+
+**IPNI** has no bulk download, but its author search pages with a cursor and stops after 10,000 records per query. It
+is asked by surname prefix, A to Z, splitting a prefix with more authors into longer ones. It gives the standard form
+(`STANDARD`, `BOT`), forename and surname (`FULL`), alternative names (`VARIANT`), dates and taxon groups. Suppressed
+records are skipped. Authors whose surname starts with no letter A to Z are not asked for: the report compares IPNI's
+total with what was harvested.
+
+**Merging** joins records and persons on shared authority ids only, never on names; Wikidata's P586 and P2006 are what
+link a Wikidata item to an IPNI or ZooBank author. It fills empty cells and adds lines, it never overwrites a value and
+never removes a line. Where the records of one run disagree, IPNI wins for a person with an IPNI and no ZooBank id,
+ZooBank for one with a ZooBank and no IPNI id, Wikidata otherwise; years within 2 of each other agree. Two items of one
+authority that claim the same id of another stay two persons. A new person without any name form is not written.
+
+**The report**, `target/person-harvest/report.txt`, lists what needs a person: the disagreements, the ids claimed
+twice, the persons of the files no source has any more, what the sources could not map (fields of work, IPNI taxon
+groups, dates) and the rows of `authormap.txt` no person resolves.
+
+## Curating by hand
+
+A line with `source` `curated` is the way to add what no authority has: an alias the report shows missing, a relation
+the authorities lack, or a person with no authority id at all, who gets a `clb:N` id, N one above the highest in use.
+A curated line is never removed or overwritten by a harvest, and a curated person keeps its values. Run
+`PersonRegistryFilesTest` after editing.
+
+## ZooBank
+
+ZooBank has no bulk access. Author dumps have been requested, and `ZooBankDumpSource` is the placeholder for them: the
+harvest takes `--zoobank <dump>` and refuses to run with it until the reader for the dump's format is written. What
+it maps to is fixed: the author UUID becomes the `zb:` id and the `zoobank` column, the names ZooBank cites the author
+by become `CITATION`/`ZOO` forms and other name records of the author `VARIANT` forms, the lifespan becomes `born` and
+`died`, and a Wikidata, IPNI or ORCID link in the dump is a join key. Until then ZooBank ids come through Wikidata's
+P2006 only.

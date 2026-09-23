@@ -11,29 +11,45 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 
 /**
  * Persons from Wikidata: everyone with a botanist author abbreviation (P428), a zoologist author citation (P835), an
- * IPNI author id (P586) or a ZooBank author id (P2006). The ids are paged one property at a time. The facts of the
- * persons are then asked for in batches of items, one UNION per fact so that multi valued facts never multiply rows:
- * English label and aliases, family and given names (P734, P735), birth and death (P569, P570), active years (P2031,
- * P2032, P1317), field of work (P101), parents (P22, P25) and siblings (P3373).
+ * IPNI author id (P586) or a ZooBank author id (P2006), the ids paged one property at a time through the query service.
+ * Their statements come from the query service too, a batch of persons at a time: family and given names (P734, P735),
+ * birth and death (P569, P570), active years (P2031, P2032, P1317), field of work (P101), parents (P22, P25) and
+ * siblings (P3373). Labels come from the Wikidata API instead - the English label and aliases of every person, and the
+ * labels of the name and field items - because label lookups on the query service take a minute per hundred items.
  */
 public class WikidataPersonSource implements PersonSource {
-  static final String ENDPOINT = "https://query.wikidata.org/sparql";
+  static final String SPARQL = "https://query.wikidata.org/sparql";
+  static final String API = "https://www.wikidata.org/w/api.php";
   static final String ENTITY = "http://www.wikidata.org/entity/";
   static final int PAGE = 5000;
   // the query service answers HTTP 431 to a request line above 8 KB, 100 Q-ids and the query stay well below
   static final int BATCH = 100;
-  // Wikidata labels occasionally hold raw control characters that strict JSON rejects
-  private static final ObjectMapper MAPPER = JsonMapper.builder().enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS).build();
+  // the most wbgetentities takes at once
+  static final int ENTITY_BATCH = 50;
 
   enum IdProperty {
     P428, P835, P586, P2006
+  }
+
+  /**
+   * The name and field items of the persons, whose labels are asked for once all statements are in.
+   */
+  record Pending(Map<String, List<String>> family, Map<String, List<String>> given, Map<String, List<String>> field) {
+    Pending() {
+      this(new LinkedHashMap<>(), new LinkedHashMap<>(), new LinkedHashMap<>());
+    }
+
+    Set<String> items() {
+      Set<String> items = new LinkedHashSet<>();
+      for (var m : List.of(family, given, field)) {
+        m.values().forEach(items::addAll);
+      }
+      return items;
+    }
   }
 
   private final Fetcher fetcher;
@@ -61,33 +77,37 @@ public class WikidataPersonSource implements PersonSource {
       }
     }
     List<String> qids = new ArrayList<>(builders.keySet());
+    Pending pending = new Pending();
     for (int i = 0; i < qids.size(); i += BATCH) {
-      addFacts(query(factQuery(qids.subList(i, Math.min(i + BATCH, qids.size())))), builders);
-      if ((i / BATCH) % 20 == 0) {
-        System.out.printf("  wikidata facts %d of %d persons%n", i, qids.size());
-      }
+      addStatements(query(statementQuery(qids.subList(i, Math.min(i + BATCH, qids.size())))), builders, pending);
+      progress("statements", i, BATCH, qids.size());
     }
+    for (int i = 0; i < qids.size(); i += ENTITY_BATCH) {
+      addEntities(entities(qids.subList(i, Math.min(i + ENTITY_BATCH, qids.size())), "labels|aliases"), builders);
+      progress("labels", i, ENTITY_BATCH, qids.size());
+    }
+    List<String> items = new ArrayList<>(pending.items());
+    Map<String, String> labels = new HashMap<>();
+    for (int i = 0; i < items.size(); i += ENTITY_BATCH) {
+      labels.putAll(labels(entities(items.subList(i, Math.min(i + ENTITY_BATCH, items.size())), "labels")));
+      progress("item labels", i, ENTITY_BATCH, items.size());
+    }
+    resolve(builders, pending, labels);
     persons = builders.size();
     return builders.values().stream().map(PersonRecord.Builder::build).toList();
   }
 
-  static String factQuery(List<String> qids) {
+  private static void progress(String what, int i, int batch, int total) {
+    if ((i / batch) % 100 == 0) {
+      System.out.printf("  wikidata %s %d of %d%n", what, i, total);
+    }
+  }
+
+  static String statementQuery(List<String> qids) {
     String values = qids.stream().map(q -> "wd:" + q).collect(Collectors.joining(" "));
-    return "SELECT ?person ?p ?v WHERE { VALUES ?person { " + values + " }"
-      + " { ?person rdfs:label ?v FILTER(LANG(?v) = \"en\") BIND(\"label\" AS ?p) }"
-      + " UNION { ?person skos:altLabel ?v FILTER(LANG(?v) = \"en\") BIND(\"alias\" AS ?p) }"
-      + " UNION { ?person wdt:P734 ?x . ?x rdfs:label ?v FILTER(LANG(?v) = \"en\") BIND(\"family\" AS ?p) }"
-      + " UNION { ?person wdt:P735 ?x . ?x rdfs:label ?v FILTER(LANG(?v) = \"en\") BIND(\"given\" AS ?p) }"
-      + " UNION { ?person wdt:P569 ?v BIND(\"born\" AS ?p) }"
-      + " UNION { ?person wdt:P570 ?v BIND(\"died\" AS ?p) }"
-      + " UNION { ?person wdt:P2031 ?v BIND(\"activeFrom\" AS ?p) }"
-      + " UNION { ?person wdt:P2032 ?v BIND(\"activeTo\" AS ?p) }"
-      + " UNION { ?person wdt:P1317 ?v BIND(\"floruit\" AS ?p) }"
-      + " UNION { ?person wdt:P101 ?x . ?x rdfs:label ?v FILTER(LANG(?v) = \"en\") BIND(\"field\" AS ?p) }"
-      + " UNION { ?person wdt:P22 ?v BIND(\"parent\" AS ?p) }"
-      + " UNION { ?person wdt:P25 ?v BIND(\"parent\" AS ?p) }"
-      + " UNION { ?person wdt:P3373 ?v BIND(\"sibling\" AS ?p) }"
-      + " }";
+    return "SELECT ?person ?prop ?v WHERE { VALUES ?person { " + values + " }"
+      + " VALUES ?prop { wdt:P734 wdt:P735 wdt:P569 wdt:P570 wdt:P2031 wdt:P2032 wdt:P1317 wdt:P101 wdt:P22 wdt:P25 wdt:P3373 }"
+      + " ?person ?prop ?v }";
   }
 
   /**
@@ -116,36 +136,38 @@ public class WikidataPersonSource implements PersonSource {
     return rows;
   }
 
-  void addFacts(JsonNode json, Map<String, PersonRecord.Builder> builders) {
+  static void addStatements(JsonNode json, Map<String, PersonRecord.Builder> builders, Pending pending) {
     for (JsonNode b : json.path("results").path("bindings")) {
       PersonRecord.Builder pb = builders.get(qid(text(b, "person")));
-      String p = text(b, "p");
+      String prop = text(b, "prop");
       String v = text(b, "v");
-      if (pb == null || p == null || v == null) continue;
-      switch (p) {
-        case "label" -> pb.label(v);
-        case "alias" -> pb.name(v, NameKind.VARIANT, FormCode.ANY);
-        case "family" -> pb.family(v);
-        case "given" -> pb.given(v);
-        case "born" -> pb.born(Years.wikidata(v));
-        case "died" -> pb.died(Years.wikidata(v));
-        case "activeFrom" -> pb.activeFrom(Years.wikidata(v));
-        case "activeTo" -> pb.activeTo(Years.wikidata(v));
-        case "floruit" -> {
+      if (pb == null || prop == null || v == null) continue;
+      switch (prop.substring(prop.lastIndexOf('/') + 1)) {
+        case "P569" -> pb.born(Years.wikidata(v));
+        case "P570" -> pb.died(Years.wikidata(v));
+        case "P2031" -> pb.activeFrom(Years.wikidata(v));
+        case "P2032" -> pb.activeTo(Years.wikidata(v));
+        case "P1317" -> {
           pb.activeFrom(Years.wikidata(v));
           pb.activeTo(Years.wikidata(v));
         }
-        case "field" -> {
-          var groups = Groups.field(v);
-          if (groups.isEmpty()) {
-            unmappedFields.merge(v.toLowerCase(), 1, Integer::sum);
-          }
-          pb.groups.addAll(groups);
-        }
-        case "parent" -> link(pb, RelationType.PARENT, v);
-        case "sibling" -> link(pb, RelationType.SIBLING, v);
+        case "P22", "P25" -> link(pb, RelationType.PARENT, v);
+        case "P3373" -> link(pb, RelationType.SIBLING, v);
+        case "P734" -> pend(pending.family(), pb.wikidata, v);
+        case "P735" -> pend(pending.given(), pb.wikidata, v);
+        case "P101" -> pend(pending.field(), pb.wikidata, v);
         default -> {
         }
+      }
+    }
+  }
+
+  private static void pend(Map<String, List<String>> map, String person, String iri) {
+    String item = qid(iri);
+    if (item != null) {
+      List<String> items = map.computeIfAbsent(person, k -> new ArrayList<>());
+      if (!items.contains(item)) {
+        items.add(item);
       }
     }
   }
@@ -155,6 +177,54 @@ public class WikidataPersonSource implements PersonSource {
     if (q != null) {
       pb.link(type, Person.WIKIDATA + q);
     }
+  }
+
+  /**
+   * Adds the English label and aliases of wbgetentities answers to the persons.
+   */
+  static void addEntities(JsonNode api, Map<String, PersonRecord.Builder> builders) {
+    for (JsonNode e : api.path("entities")) {
+      PersonRecord.Builder pb = builders.get(e.path("id").asText(null));
+      if (pb == null) continue;
+      String label = e.path("labels").path("en").path("value").asText(null);
+      if (label != null) {
+        pb.label(label);
+      }
+      for (JsonNode a : e.path("aliases").path("en")) {
+        pb.name(a.path("value").asText(null), NameKind.VARIANT, FormCode.ANY);
+      }
+    }
+  }
+
+  /**
+   * @return the English label of every entity of a wbgetentities answer that has one
+   */
+  static Map<String, String> labels(JsonNode api) {
+    Map<String, String> labels = new HashMap<>();
+    for (JsonNode e : api.path("entities")) {
+      String label = e.path("labels").path("en").path("value").asText(null);
+      if (label != null) {
+        labels.put(e.path("id").asText(), label);
+      }
+    }
+    return labels;
+  }
+
+  /**
+   * Gives the persons the family and given names and the groups of their pending items.
+   */
+  void resolve(Map<String, PersonRecord.Builder> builders, Pending pending, Map<String, String> labels) {
+    pending.family().forEach((q, items) -> items.forEach(i -> builders.get(q).family(labels.get(i))));
+    pending.given().forEach((q, items) -> items.forEach(i -> builders.get(q).given(labels.get(i))));
+    pending.field().forEach((q, items) -> items.forEach(i -> {
+      String label = labels.get(i);
+      if (label == null) return;
+      var groups = Groups.field(label);
+      if (groups.isEmpty()) {
+        unmappedFields.merge(label.toLowerCase(), 1, Integer::sum);
+      }
+      builders.get(q).groups.addAll(groups);
+    }));
   }
 
   /**
@@ -178,7 +248,15 @@ public class WikidataPersonSource implements PersonSource {
   }
 
   private JsonNode query(String sparql) throws Exception {
-    return MAPPER.readTree(fetcher.get(ENDPOINT + "?format=json&query=" + URLEncoder.encode(sparql, StandardCharsets.UTF_8)));
+    return Json.MAPPER.readTree(fetcher.get(SPARQL + "?format=json&query=" + URLEncoder.encode(sparql, StandardCharsets.UTF_8)));
+  }
+
+  /**
+   * maxlag makes the API answer an error instead of adding to the lag of its databases, which the fetcher retries
+   */
+  private JsonNode entities(List<String> ids, String props) throws Exception {
+    return Json.MAPPER.readTree(fetcher.get(API + "?action=wbgetentities&format=json&maxlag=5&languages=en&props="
+      + URLEncoder.encode(props, StandardCharsets.UTF_8) + "&ids=" + URLEncoder.encode(String.join("|", ids), StandardCharsets.UTF_8)));
   }
 
   private static String qid(String iri) {

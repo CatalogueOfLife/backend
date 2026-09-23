@@ -5,10 +5,14 @@ import life.catalogue.matching.person.FormCode;
 import life.catalogue.matching.person.NameKind;
 import life.catalogue.matching.person.RelationType;
 
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
 
@@ -21,20 +25,43 @@ public class WikidataPersonSourceTest {
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   static JsonNode rows(String... rows) throws Exception {
-    return MAPPER.readTree("{\"results\":{\"bindings\":[" + String.join(",", rows) + "]}}");
+    return MAPPER.readTree(sparql(rows));
+  }
+
+  static String sparql(String... rows) {
+    return "{\"results\":{\"bindings\":[" + String.join(",", rows) + "]}}";
   }
 
   static String id(String q, String v) {
     return "{\"person\":{\"type\":\"uri\",\"value\":\"http://www.wikidata.org/entity/" + q + "\"},\"v\":{\"type\":\"literal\",\"value\":\"" + v + "\"}}";
   }
 
-  static String fact(String q, String p, String v) {
-    return "{\"person\":{\"type\":\"uri\",\"value\":\"http://www.wikidata.org/entity/" + q + "\"},\"p\":{\"type\":\"literal\",\"value\":\""
-      + p + "\"},\"v\":{\"type\":\"literal\",\"value\":\"" + v + "\"}}";
+  static String statement(String q, String p, String v) {
+    return "{\"person\":{\"type\":\"uri\",\"value\":\"http://www.wikidata.org/entity/" + q + "\"},"
+      + "\"prop\":{\"type\":\"uri\",\"value\":\"http://www.wikidata.org/prop/direct/" + p + "\"},\"v\":{\"value\":\"" + v + "\"}}";
   }
 
+  static String entities(String... entities) {
+    return "{\"entities\":{" + String.join(",", entities) + "}}";
+  }
+
+  static String entity(String q, String label, String... aliases) {
+    StringBuilder sb = new StringBuilder("\"" + q + "\":{\"id\":\"" + q + "\"");
+    if (label != null) sb.append(",\"labels\":{\"en\":{\"language\":\"en\",\"value\":\"").append(label).append("\"}}");
+    if (aliases.length > 0) {
+      sb.append(",\"aliases\":{\"en\":[");
+      for (int i = 0; i < aliases.length; i++) {
+        sb.append(i == 0 ? "" : ",").append("{\"language\":\"en\",\"value\":\"").append(aliases[i]).append("\"}");
+      }
+      sb.append("]}");
+    }
+    return sb.append("}").toString();
+  }
+
+  static final String ITEM = "http://www.wikidata.org/entity/";
+
   @Test
-  public void idsAndFacts() throws Exception {
+  public void idsStatementsAndLabels() throws Exception {
     Map<String, PersonRecord.Builder> persons = new TreeMap<>();
     assertEquals(1, WikidataPersonSource.addIds(rows(id("Q2", "9936-1")), WikidataPersonSource.IdProperty.P586, persons));
     WikidataPersonSource.addIds(rows(id("Q2", "G.B.Sowerby II")), WikidataPersonSource.IdProperty.P835, persons);
@@ -42,19 +69,23 @@ public class WikidataPersonSourceTest {
     var source = new WikidataPersonSource(url -> {
       throw new AssertionError("no network");
     });
-    source.addFacts(rows(
-      fact("Q2", "label", "George Brettingham Sowerby II"),
-      fact("Q2", "alias", "G. B. Sowerby"),
-      fact("Q2", "family", "Sowerby"),
-      fact("Q2", "given", "Brettingham"),
-      fact("Q2", "given", "George"),
-      fact("Q2", "born", "+1812-08-12T00:00:00Z"),
-      fact("Q2", "died", "1884-07-26T00:00:00Z"),
-      fact("Q2", "field", "malacology"),
-      fact("Q2", "field", "politics"),
-      fact("Q2", "parent", "http://www.wikidata.org/entity/Q1"),
-      fact("Q2", "sibling", "http://www.wikidata.org/entity/Q3")
-    ), persons);
+    var pending = new WikidataPersonSource.Pending();
+    WikidataPersonSource.addStatements(rows(
+      statement("Q2", "P569", "+1812-08-12T00:00:00Z"),
+      statement("Q2", "P570", "1884-07-26T00:00:00Z"),
+      statement("Q2", "P734", ITEM + "Q100"),
+      statement("Q2", "P735", ITEM + "Q101"),
+      statement("Q2", "P735", ITEM + "Q102"),
+      statement("Q2", "P101", ITEM + "Q200"),
+      statement("Q2", "P101", ITEM + "Q201"),
+      statement("Q2", "P22", ITEM + "Q1"),
+      statement("Q2", "P3373", ITEM + "Q3")
+    ), persons, pending);
+    WikidataPersonSource.addEntities(MAPPER.readTree(entities(entity("Q2", "George Brettingham Sowerby II", "G. B. Sowerby"))), persons);
+    assertEquals(Set.of("Q100", "Q101", "Q102", "Q200", "Q201"), pending.items());
+    source.resolve(persons, pending, WikidataPersonSource.labels(MAPPER.readTree(entities(entity("Q100", "Sowerby"),
+      entity("Q101", "Brettingham"), entity("Q102", "George"), entity("Q200", "malacology"), entity("Q201", "politics")))));
+
     PersonRecord r = persons.get("Q2").build();
     assertEquals("Q2", r.wikidata());
     assertEquals("9936-1", r.ipni());
@@ -73,12 +104,12 @@ public class WikidataPersonSourceTest {
     assertTrue(source.stats(), source.stats().contains("politics"));
   }
 
-  /** the query service answers HTTP 431 to a request line above 8 KB, a batch of facts must stay below */
+  /** the query service answers HTTP 431 to a request line above 8 KB, a batch of statements must stay below */
   @Test
-  public void factBatchFitsIntoAGetRequest() {
-    List<String> qids = java.util.stream.IntStream.range(0, WikidataPersonSource.BATCH).mapToObj(i -> "Q" + (123456789 + i)).toList();
-    String url = WikidataPersonSource.ENDPOINT + "?format=json&query="
-      + java.net.URLEncoder.encode(WikidataPersonSource.factQuery(qids), java.nio.charset.StandardCharsets.UTF_8);
+  public void statementBatchFitsIntoAGetRequest() {
+    List<String> qids = IntStream.range(0, WikidataPersonSource.BATCH).mapToObj(i -> "Q" + (123456789 + i)).toList();
+    String url = WikidataPersonSource.SPARQL + "?format=json&query="
+      + URLEncoder.encode(WikidataPersonSource.statementQuery(qids), StandardCharsets.UTF_8);
     assertTrue(url.length() + " characters", url.length() < 6000);
   }
 
@@ -89,18 +120,21 @@ public class WikidataPersonSourceTest {
     assertEquals(List.of(new PersonRecord.Form("Sw.", NameKind.STANDARD, FormCode.BOT)), persons.get("Q5").build().names());
   }
 
-  /** read() pages the id queries and batches the facts, all through the fetcher */
+  /** read() pages the ids, batches the statements through SPARQL and the labels through the API */
   @Test
   public void read() throws Exception {
     var source = new WikidataPersonSource(url -> {
-      String q = java.net.URLDecoder.decode(url, java.nio.charset.StandardCharsets.UTF_8);
-      if (q.contains("VALUES ?person")) return "{\"results\":{\"bindings\":[" + fact("Q9", "label", "Olof Swartz") + "]}}";
-      if (q.contains("wdt:P428") && q.contains("OFFSET 0")) return "{\"results\":{\"bindings\":[" + id("Q9", "Sw.") + "]}}";
-      return "{\"results\":{\"bindings\":[]}}";
+      String q = URLDecoder.decode(url, StandardCharsets.UTF_8);
+      if (q.contains("wbgetentities") && q.contains("ids=Q9")) return entities(entity("Q9", "Olof Swartz"));
+      if (q.contains("wbgetentities") && q.contains("ids=Q77")) return entities(entity("Q77", "Swartz"));
+      if (q.contains("VALUES ?prop")) return sparql(statement("Q9", "P734", ITEM + "Q77"));
+      if (q.contains("wdt:P428") && q.contains("OFFSET 0")) return sparql(id("Q9", "Sw."));
+      return sparql();
     });
     List<PersonRecord> records = source.read();
     assertEquals(1, records.size());
     assertEquals("Q9", records.get(0).wikidata());
+    assertEquals("Swartz", records.get(0).family());
     assertEquals(2, records.get(0).names().size());
   }
 

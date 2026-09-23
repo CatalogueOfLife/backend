@@ -37,9 +37,9 @@ public class PersonHarvest {
     Path dir = Path.of(args[0]);
     Path work = Path.of(args[1]);
     var wikidata = new WikidataPersonSource(new CachingFetcher(work.resolve("cache/wikidata"),
-      new HttpFetcher("application/sparql-results+json", Duration.ofSeconds(1))));
+      new RetryingFetcher(new HttpFetcher("application/json"), Duration.ofSeconds(1), Json::complete), Json::complete));
     var ipni = new IpniPersonSource(new CachingFetcher(work.resolve("cache/ipni"),
-      new HttpFetcher("application/json", Duration.ofMillis(250))));
+      new RetryingFetcher(new HttpFetcher("application/json"), Duration.ofMillis(250), Json::complete), Json::complete));
     List<PersonSource> sources = new ArrayList<>(List.of(wikidata, ipni));
     if (args.length == 4) {
       sources.add(new ZooBankDumpSource(Path.of(args[3])));
