@@ -166,6 +166,35 @@ public class PersonMergerTest {
     assertEquals(1, r.report().conflicts.size());
   }
 
+  /**
+   * Years from two sources, or one source's own error (Wikidata has persons dying before they were born), must not
+   * make an impossible person: the filled years are left out and reported, unknown beats wrong.
+   */
+  @Test
+  public void bornAfterDiedIsLeftOut() {
+    var w = wd("Q1");
+    w.label("Joseph Donat Surian");
+    w.born(1700);
+    w.died(1691);
+    var r = merge(PersonFiles.Content.empty(), w.build());
+    Person p = r.content().persons().get(0);
+    assertNull(p.born());
+    assertNull(p.died());
+    assertTrue(String.join("\n", r.report().conflicts), r.report().conflicts.stream().anyMatch(c -> c.contains("born 1700 after died 1691")));
+
+    // a year already in the files stays, only the filled one goes
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q2", "Q2", null, null, List.of(), null, null, null, null, 1801, null, null, Set.of(), Provenance.CURATED)),
+      List.of(new PersonName("wd:Q2", "A. B. Koelpin", NameKind.FULL, FormCode.ANY, Provenance.CURATED)),
+      List.of());
+    var k = wd("Q2");
+    k.born(1805);
+    r = merge(existing, k.build());
+    p = r.content().persons().get(0);
+    assertNull(p.born());
+    assertEquals(Integer.valueOf(1801), p.died());
+  }
+
   @Test
   public void redirectedItem() {
     var existing = new PersonFiles.Content(

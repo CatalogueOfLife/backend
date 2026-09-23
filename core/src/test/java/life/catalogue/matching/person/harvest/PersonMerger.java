@@ -270,8 +270,16 @@ public class PersonMerger {
     d.family = fill(d, "family", d.family, recs, PersonRecord::family, sameText);
     d.given = fill(d, "given", d.given, recs, PersonRecord::given, sameText);
     d.suffix = fill(d, "suffix", d.suffix, recs, PersonRecord::suffix, sameText);
+    Integer bornBefore = d.born;
+    Integer diedBefore = d.died;
     d.born = fill(d, "born", d.born, recs, PersonRecord::born, sameYear);
     d.died = fill(d, "died", d.died, recs, PersonRecord::died, sameYear);
+    // years of two sources, or a source's own error, must not make an impossible person: unknown beats wrong
+    if (d.born != null && d.died != null && d.born > d.died) {
+      report.conflicts.add(d.id + " born " + d.born + " after died " + d.died + ": the filled years are left out");
+      d.born = bornBefore;
+      d.died = diedBefore;
+    }
     d.activeFrom = fill(d, "activeFrom", d.activeFrom, recs, PersonRecord::activeFrom, sameYear);
     d.activeTo = fill(d, "activeTo", d.activeTo, recs, PersonRecord::activeTo, sameYear);
     if (d.groups.isEmpty()) {
