@@ -26,10 +26,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -37,6 +41,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 import jakarta.ws.rs.core.UriInfo;
@@ -81,20 +86,44 @@ public class DatasetExportResource {
 
   /**
    * Exports the result of a name usage search as a ColDP archive, reading from Elasticsearch only.
-   * Accepts the same search request as the name usage search endpoint, either as a JSON body or as query parameters.
+   * Accepts the same search request as the name usage search endpoint, as a JSON body, as query parameters or both.
+   * The query string is read exactly like the GET search reads it, and a parameter given there wins over the body.
    * @return the submitted export job, tracked and downloaded via /job/{key}
    */
   @POST
   @Path("search")
   public JobInfo exportSearch(@PathParam("key") int key,
                               @Valid NameUsageSearchResource.SearchRequestBody body,
+                              @BeanParam NameUsageSearchRequest query,
                               @Auth User user,
                               @Context UriInfo uri) {
-    NameUsageSearchRequest req = body == null ? new NameUsageSearchRequest() : body.request;
-    if (uri != null) {
-      req.addFilters(uri.getQueryParameters());
-    }
+    var req = searchRequest(body == null ? null : body.request, query, uri.getQueryParameters());
     return exportManager.submitSearch(key, req, user.getKey());
+  }
+
+  /**
+   * Merges the JSON body with the query string. Only filters used to be read from the query string, so q, content, type,
+   * sortBy and reverse were silently dropped and a q=Abies download exported the entire dataset.
+   *
+   * @param body the search from the JSON body, null if there was none
+   * @param query the search as jersey binds the query string for the GET search
+   * @param params the raw query string, which tells a parameter that was given from a bound default
+   */
+  @VisibleForTesting
+  static NameUsageSearchRequest searchRequest(@Nullable NameUsageSearchRequest body, NameUsageSearchRequest query,
+                                              MultivaluedMap<String, String> params) {
+    NameUsageSearchRequest req = body == null ? query : body;
+    if (body != null) {
+      if (params.containsKey("q")) req.setQ(query.getQ());
+      if (params.containsKey("content")) req.setContent(query.getContent());
+      if (params.containsKey("type")) req.setSearchType(query.getSearchType());
+      if (params.containsKey("sortBy")) req.setSortBy(query.getSortBy());
+      if (params.containsKey("reverse")) req.setReverse(query.isReverse());
+      if (params.containsKey("minRank")) req.setMinRank(query.getMinRank());
+      if (params.containsKey("maxRank")) req.setMaxRank(query.getMaxRank());
+    }
+    req.addFilters(params);
+    return req;
   }
 
   /**

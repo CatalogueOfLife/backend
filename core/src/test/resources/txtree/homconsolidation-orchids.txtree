@@ -1,0 +1,20 @@
+Orchidaceae [family] {ID=orch CODE=BOTANICAL}
+  Epidendrum mathewsii Rchb.f. [species] {ID=epi PRIO=1}
+    =Neolehmannia mathewsii (Rchb.f.) Garay [species] {ID=neo PRIO=1}
+    =Nanodes mathewsii (Rchb.f.) Rolfe [species] {ID=nan PRIO=1}
+  Phreatia matthewsii Rchb.f. [species] {ID=phr PRIO=1}
+    =Eria matthewsii Rchb.f. [species] {ID=eri PRIO=1}
+    =Pinalia matthewsii (Rchb.f.) Kuntze [species] {ID=pin PRIO=1}
+  Maxillaria graminifolia (Kunth) Rchb.f. [species] {ID=gra PRIO=1}
+    =Maxillaria matthewsii Rchb.f. [species] {ID=max PRIO=1}
+  Aa matthewsii (Rchb.f.) Schltr. [species] {ID=aam PRIO=1}
+    =Altensteinia matthewsii Rchb.f. [species] {ID=alm PRIO=1}
+  Aa mathewsii (Rchb.fil.) Schltr. [species] {ID=aam2 PRIO=2}
+  Octomeria colombiana Schltr. [species] {ID=oct PRIO=1}
+  Aa colombiana Schltr. [species] {ID=aac PRIO=1}
+    =Altensteinia columbiana (Schltr.) Garay [species] {ID=alc PRIO=1}
+  Eurystyles colombiana (Schltr.) Schltr. [species] {ID=eur PRIO=1}
+    =Trachelosiphon colombianum Schltr. [species] {ID=tra PRIO=1}
+    =Trachelosiphon columbianum Schltr. [species] {ID=tra2 PRIO=1}
+  Monophyllorchis colombiana Schltr. [species] {ID=mon PRIO=1}
+  Monophyllorchis colombiana Schltr. [species] {ID=mon2 PRIO=1}

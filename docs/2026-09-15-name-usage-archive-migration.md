@@ -1,8 +1,8 @@
 # Name usage archive: newest version per id, and a migration that keeps every id
 
 Date: 2026-09-15
-Status: implemented on branch `chore/col-stable-id-improvement`, not merged or deployed yet. It replaces the archive
-migration of [2026-09-15-stable-id-evidence-model.md](2026-09-15-stable-id-evidence-model.md).
+Status: implemented on branch `chore/col-stable-id-improvement`. 
+It replaces the archive migration of [2026-09-15-stable-id-evidence-model.md](2026-09-15-stable-id-evidence-model.md).
 
 ## Why
 

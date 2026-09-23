@@ -53,11 +53,68 @@ For each sector (ordered by priority):
 
 The single `UsageMatcher` instance is shared across all sector syncs for efficiency.
 
+An existing name only takes over the publishedIn reference of a source name if it has none. If it cites a different
+reference, `PublishedInIdentity` compares both on DOI, year and page and the name gets only what is missing - page and
+page link, e.g. from BHL - when they cite the same page or work; the DOI of an article goes onto the existing
+reference when both share title and year. An author & year stub like `Benth. (1842).` is replaced by the source
+reference for that name alone. Any contradiction merges nothing, see
+[2026-09-23-merge-published-in-links.md](2026-09-23-merge-published-in-links.md).
+
 #### 2f. `homotypicGrouping()` — Post-Merge Consolidation
-- **`HomotypicConsolidator`** — detects basionym groups per family, synonymizes lower-priority duplicates using `SectorPriority`
-- **Misspelling consolidation** (optional) — fuzzy-matches names within families (Damerau-Levenshtein ≤ 1)
-- **`flagDuplicatesAsProvisional()`** (optional) — marks accepted homonyms (same name, different author) from lower-priority sectors as `PROVISIONALLY_ACCEPTED`
-- **`moveSynonymChains()`** — fixes synonym-of-synonym chains created during consolidation
+Runs on the temporary project once all sectors are merged. Wherever sources compete, `SectorPriority` ranks them:
+data managed in the project first, then the sectors of the base release, then the merge sectors by their `priority`
+(lower is more trusted; merge sectors without one come last).
+
+**`HomotypicConsolidator`** (`homotypicConsolidation`) works family by family, `homotypicConsolidationThreads`
+families at a time. Names outside any family are never grouped. Within a family it:
+1. Collects all names of species rank or below, accepted and synonyms, except autonyms, unparsed names, identifiers
+   and the epithets `basionymExclusions` lists for the family, keyed by their normalized terminal epithet, which ignores
+   gender endings.
+2. Merges orthographic variants of an epithet into one key: names whose authorships compare strictly equal and whose
+   full names are at least 92% similar (`ScientificNameSimilarity`), e.g. *Aphanizomenon holsaticum* / *holtsaticum*
+   Richter.
+3. Splits each key into groups by basionym author, or combination author for names without brackets
+   (`BasionymSorter`). The most trusted original name of a group becomes its basionym; among equally trusted ones the
+   alphabetically first label, so the choice does not depend on the order the names are read in. A name by the author
+   before an "ex" (Desf. in Desf. ex F.Dietr.) joins that group as the name it is based on, chosen the same way.
+   Original names of one author in different genera stay separate groups when a single source lists them separately,
+   i.e. with the same priority and not linked by synonymy or a name relation. Without that evidence they are lumped,
+   since a missing bracket is the likelier explanation. A recombination joins one of those separate groups only if it
+   shares that group's genus or the data links it to that group alone; otherwise it forms a group of its own without
+   a basionym.
+4. Picks the primary usage of each group from its most trusted source. If that source holds several usages they must
+   point to one accepted name, or exactly one of them must be accepted, or one accepted name must be left carrying the
+   group's epithet once a species is preferred over its own autonym. Otherwise the group is left alone: its accepted
+   names get `HOMOTYPIC_CONSOLIDATION_UNRESOLVED` and no relations are created.
+5. Creates the missing name relations, all with `createdBy` 14 (`Users.HOMOTYPIC_GROUPER`): `BASIONYM` from every
+   recombination to the basionym, `HOMOTYPIC` between the recombinations of a group without one, `BASED_ON` from the
+   name with the "ex" author to the name it is based on. Every further original name is related to the basionym or
+   based on name as well:
+   - an orthographic variant - same genus and rank, only the terminal epithet spelled differently, gender endings
+     included - gets a `SPELLING_CORRECTION` from the basionym to the variant, i.e. from the most trusted source's
+     spelling to the others. The grouper cannot know which spelling is correct, source priority decides.
+   - anything else - the same name at another rank missing its brackets, another species or subgenus, or a name of
+     another genus lumped by step 3, a misspelled genus included - gets `HOMOTYPIC` towards the basionym.
+   - duplicates, the same name and rank maybe cited with a different authorship, get no relation at all.
+6. Turns every usage of a less trusted source, accepted or synonym, into a synonym of the primary's accepted name,
+   moving its descendants along and flagging `HOMOTYPIC_CONSOLIDATION`. A converted name identical to that accepted
+   name or to one of its synonyms is deleted. Usages from a source as trusted as the primary's are kept as they are.
+
+Issues are written once all families are done.
+
+**Misspelling consolidation** (`misspellingConsolidation`) runs in the same per family task afterwards. It walks the
+family's accepted names in alphabetical order and compares each one with the 10 before it: same rank, identical
+authorship string, full names at most one edit apart (`ModifiedDamerauLevenshtein`), code compliant name types only.
+The less trusted name becomes a synonym of the other with `MISSPELLING_CONSOLIDATION`; no relation is created. Two equally
+trusted names from the project or from the base release are both kept, see Known Issues for merge sources. As only
+alphabetical neighbours are compared, a misspelling in the first letters is never found.
+
+**`flagDuplicatesAsProvisional()`** (`flagDuplicatesAsProvisional`) groups the accepted names by scientific name,
+ignoring case and authorship, if the names of a group share one rank and code. All but the most trusted become
+`PROVISIONALLY_ACCEPTED` with `DUPLICATE_NAME`, and several equally trusted ones are all kept. This catches homonyms
+with different authors as well as duplicates the consolidation left alone. A failure is logged and ignored.
+
+**`moveSynonymChains()`** repoints synonyms of synonyms to their accepted name, in up to 10 passes.
 
 #### 2g. `validateAndCleanTree()` — Validation & Metrics
 Traverses the entire accepted name tree depth-first:
@@ -234,8 +291,9 @@ worked scenario.
 
 ## Known Issues / Technical Debt
 
-1. **Dead code**: `synonymizeMisspelledBinomials()` (line ~700) is never called and is nearly identical to `flagDuplicatesAsProvisional()`. Should be removed.
+1. **Dead code**: `synonymizeMisspelledBinomials()` (line ~675) is never called. Despite its javadoc it does not synonymize misspellings but is a verbatim copy of `flagDuplicatesAsProvisional()`. Should be removed.
 2. **Unimplemented**: `cleanImplicitTaxa()` only logs a warning — placeholder for future work.
 3. **Typo in mapper**: `detectParentSynonyms` method name has a typo (should be `detectParentSynonyms`).
 4. **Double semicolons**: Lines 148, 239 have `;;` — cosmetic.
-5. **`newDatasetKey` dual use**: The field is temporarily reassigned to `tmpProjectKey` during `prepWork()` (line 180) and restored later (line 210). This implicit state mutation makes the code fragile and hard to follow — methods called between these lines must be aware which dataset `newDatasetKey` currently refers to.
+5. **Misspelling ties**: in misspelling consolidation two names from the same merge source are equally trusted, yet one of them is still synonymized - the one sorting later. Two distinct species of one author one letter apart, e.g. *Aus bus* L. and *Aus cus* L., are lumped that way. The `isConsolidated()` guard on the comparison window never fires either, as `ConsolidationName.consolidatedId` is never set.
+6. **`newDatasetKey` dual use**: The field is temporarily reassigned to `tmpProjectKey` during `prepWork()` (line 180) and restored later (line 210). This implicit state mutation makes the code fragile and hard to follow — methods called between these lines must be aware which dataset `newDatasetKey` currently refers to.

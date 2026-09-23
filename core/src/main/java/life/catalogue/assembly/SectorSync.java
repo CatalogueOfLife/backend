@@ -9,6 +9,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
@@ -511,6 +512,11 @@ public class SectorSync extends SectorRunnable {
       throw new IllegalArgumentException(String.format("Deleting sector data can only be done in the project %s, not in dataset %s", sector.getDatasetKey(), targetDatasetKey));
     }
     try (SqlSession session = factory.openSession(true)) {
+      // a merge sector gives names of other sectors its references, which the sync will do again
+      int foreign = session.getMapper(NameMapper.class).removeForeignPublishedIn(sector);
+      if (foreign > 0) {
+        LOG.info("Removed {} publishedIn references from names outside of sector {}", foreign, sector);
+      }
       // TODO: deal with species estimates separately as they are on a shared table
       for (Class<? extends SectorProcessable<?>> m : SectorProcessable.MAPPERS) {
         int count = session.getMapper(m).deleteBySector(sector);

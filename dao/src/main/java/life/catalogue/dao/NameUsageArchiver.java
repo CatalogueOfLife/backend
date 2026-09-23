@@ -159,7 +159,7 @@ public class NameUsageArchiver {
    */
   public ArchiveStats archiveRelease(ReleaseRanking ranking, int releaseKey, boolean copyMatches, boolean dryRun) {
     if (!ranking.isArchivable(releaseKey)) {
-      throw new IllegalArgumentException("Release " + releaseKey + " is private or deleted and cannot be archived");
+      throw new IllegalArgumentException("Release " + releaseKey + " is deleted and cannot be archived");
     }
     final int projectKey = ranking.getProjectKey();
     final boolean supplies = ranking.supplies(releaseKey);

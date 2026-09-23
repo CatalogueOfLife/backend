@@ -408,6 +408,14 @@
     WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id}
   </delete>
 
+  <update id="removeForeignPublishedIn" parameterType="map">
+    UPDATE name n SET published_in_id = NULL, published_in_page = NULL, published_in_page_link = NULL
+    FROM reference r
+    WHERE n.dataset_key = #{key.datasetKey} AND r.dataset_key = #{key.datasetKey}
+      AND r.sector_key = #{key.id} AND n.published_in_id = r.id
+      AND n.sector_key IS DISTINCT FROM #{key.id}
+  </update>
+
   <update id="removeSectorKey" parameterType="map">
     UPDATE name SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}

@@ -66,17 +66,17 @@ public class XRelease extends ProjectRelease {
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherFactory matcherFactory, NameIndex nidx, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
-           int releaseKey, int userKey, ReleaseConfig cfg, URI apiURI, URI clbURI, CloseableHttpClient client, Validator validator
+           int baseReleaseKey, int userKey, ReleaseConfig cfg, URI apiURI, URI clbURI, CloseableHttpClient client, Validator validator
   ) {
-    super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, releaseKey, userKey, cfg, apiURI, clbURI, client, validator);
+    super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, baseReleaseKey, userKey, cfg, apiURI, clbURI, client, validator);
     this.siDao = siDao;
     this.syncFactory = syncFactory;
     this.matcherFactory = matcherFactory;
     this.ni = nidx;
-    baseReleaseKey = releaseKey;
+    this.baseReleaseKey = baseReleaseKey;
     fullUser.setKey(userKey);
     sectorProjectKey = DSID.root(projectKey);
-    LOG.info("Build extended release for project {} from public release {}", projectKey, baseReleaseKey);
+    LOG.info("Build extended release for project {} from public release {}", projectKey, this.baseReleaseKey);
   }
 
   @VisibleForTesting
@@ -636,6 +636,8 @@ public class XRelease extends ProjectRelease {
     try (SqlSession sessionRO = factory.openSession(true);
          SqlSession session = factory.openSession(false)
     ) {
+      // nothing may touch session before the traversal streams: the path sorted tree query takes longer than the
+      // idle-in-transaction timeout of prod postgres on COL and a transaction opened here gets killed, see #1605
       var consumer = new TreeCleanerAndValidator(session, newDatasetKey, xCfg.removeEmptyGenera);
       // add metrics generator to tree traversal
       var stack = consumer.stack();

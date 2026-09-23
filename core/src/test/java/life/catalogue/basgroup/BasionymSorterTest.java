@@ -9,11 +9,9 @@ import life.catalogue.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -52,9 +50,50 @@ public class BasionymSorterTest {
     return sorter.groupBasionyms(code, epithet, names, Functions.identity(), n->{});
   }
 
+  Collection<HomotypicGroup<Name>> groupBasionyms(NomCode code, String epithet, List<Name> names, BiPredicate<Name, Name> linked) {
+    return sorter.groupBasionyms(code, epithet, names, Functions.identity(), n->{}, linked);
+  }
+
+  /**
+   * @param pairs name labels, each two consecutive ones linked by the data
+   * @return a symmetric predicate linking the given pairs of names by their label
+   */
+  static BiPredicate<Name, Name> links(String... pairs) {
+    Set<String> links = new HashSet<>();
+    for (int i = 0; i < pairs.length; i += 2) {
+      links.add(pairs[i] + "|" + pairs[i+1]);
+      links.add(pairs[i+1] + "|" + pairs[i]);
+    }
+    return (n1, n2) -> links.contains(n1.getLabel() + "|" + n2.getLabel());
+  }
+
+  static HomotypicGroup<Name> groupOf(Collection<HomotypicGroup<Name>> groups, String label) {
+    return groups.stream()
+      .filter(g -> g.getAll().stream().anyMatch(n -> n.getLabel().equals(label)))
+      .findFirst()
+      .orElseThrow(() -> new AssertionError("No group with " + label));
+  }
+
+  static Set<String> labels(HomotypicGroup<Name> g) {
+    return g.getAll().stream().map(Name::getLabel).collect(Collectors.toSet());
+  }
+
   @Before
   public void init() {
     PRIO.set(1);
+  }
+
+  /**
+   * @return names all with the same priority, as if they came from one source
+   */
+  private List<Name> names(int prio, String... names) throws Exception {
+    return Arrays.stream(names)
+        .map(n -> {
+          var pn = BasionymSorterTest.parse(n);
+          pn.setSectorKey(prio);
+          return pn;
+        })
+        .collect(Collectors.toList());
   }
 
   /**
@@ -334,6 +373,7 @@ public class BasionymSorterTest {
 
     Collection<HomotypicGroup<Name>> groups = groupBasionyms(null, "aequatorialis", names);
     // multiple basionyms, no clear group!
+    // They come from different sources, so nothing tells a missing bracket from another name and they stay lumped
     assertEquals(1, groups.size());
     HomotypicGroup<Name> bg = groups.iterator().next();
     assertEquals("aequatorialis", bg.getEpithet());
@@ -375,6 +415,194 @@ public class BasionymSorterTest {
         default:
           fail("Unknown basionym group " + g.getRecombinations().get(0));
       }
+    }
+  }
+
+  /**
+   * Rchb.f. published matthewsii in five genera of the Orchidaceae. These are distinct names, not spelling variants
+   * of one basionym, which the one source listing them all separately tells.
+   * The recombinations cannot be told apart by their authorship.
+   * https://github.com/CatalogueOfLife/backend/issues/1600
+   */
+  @Test
+  public void sameAuthorSeveralGenera() throws Exception {
+    List<Name> names = names(1,
+      "Epidendrum mathewsii Rchb.f.",
+      "Phreatia matthewsii Rchb.f.",
+      "Eria matthewsii Rchb.f.",
+      "Maxillaria matthewsii Rchb.f.",
+      "Altensteinia matthewsii Rchb.f.",
+      "Aa matthewsii (Rchb.f.) Schltr.",
+      "Aa mathewsii (Rchb.f.) Schltr.",
+      "Pinalia matthewsii (Rchb.f.) Kuntze",
+      "Neolehmannia mathewsii (Rchb.f.) Garay",
+      "Nanodes mathewsii (Rchb.f.) Rolfe"
+    );
+
+    // no evidence: every original on its own, recombinations only with their own genus
+    var groups = groupBasionyms(NomCode.BOTANICAL, "matthewsii", names);
+    assertEquals(9, groups.size());
+    for (var orig : List.of("Epidendrum mathewsii Rchb.f.", "Phreatia matthewsii Rchb.f.", "Eria matthewsii Rchb.f.",
+      "Maxillaria matthewsii Rchb.f.", "Altensteinia matthewsii Rchb.f.")) {
+      var g = groupOf(groups, orig);
+      assertEquals(1, g.size());
+      assertEquals(orig, g.getBasionym().getLabel());
+      assertFalse(g.hasBasionymVariations());
+    }
+    var aa = groupOf(groups, "Aa matthewsii (Rchb.f.) Schltr.");
+    assertNull(aa.getBasionym());
+    assertEquals(Set.of("Aa matthewsii (Rchb.f.) Schltr.", "Aa mathewsii (Rchb.f.) Schltr."), labels(aa));
+    assertEquals(1, groupOf(groups, "Pinalia matthewsii (Rchb.f.) Kuntze").size());
+
+    // synonymy or relations from the data attach recombinations
+    groups = groupBasionyms(NomCode.BOTANICAL, "matthewsii", names, links(
+      "Aa matthewsii (Rchb.f.) Schltr.", "Altensteinia matthewsii Rchb.f.",
+      "Neolehmannia mathewsii (Rchb.f.) Garay", "Epidendrum mathewsii Rchb.f.",
+      "Nanodes mathewsii (Rchb.f.) Rolfe", "Epidendrum mathewsii Rchb.f.",
+      "Pinalia matthewsii (Rchb.f.) Kuntze", "Eria matthewsii Rchb.f."
+    ));
+    assertEquals(5, groups.size());
+    var epi = groupOf(groups, "Epidendrum mathewsii Rchb.f.");
+    assertEquals("Epidendrum mathewsii Rchb.f.", epi.getBasionym().getLabel());
+    assertEquals(Set.of("Epidendrum mathewsii Rchb.f.", "Neolehmannia mathewsii (Rchb.f.) Garay", "Nanodes mathewsii (Rchb.f.) Rolfe"), labels(epi));
+    var alt = groupOf(groups, "Altensteinia matthewsii Rchb.f.");
+    assertEquals("Altensteinia matthewsii Rchb.f.", alt.getBasionym().getLabel());
+    // the whole Aa cluster follows the one linked name
+    assertEquals(Set.of("Altensteinia matthewsii Rchb.f.", "Aa matthewsii (Rchb.f.) Schltr.", "Aa mathewsii (Rchb.f.) Schltr."), labels(alt));
+    assertEquals(2, groupOf(groups, "Eria matthewsii Rchb.f.").size());
+    assertEquals(1, groupOf(groups, "Phreatia matthewsii Rchb.f.").size());
+    assertEquals(1, groupOf(groups, "Maxillaria matthewsii Rchb.f.").size());
+
+    // evidence pointing at two originals is no evidence
+    groups = groupBasionyms(NomCode.BOTANICAL, "matthewsii", names, links(
+      "Pinalia matthewsii (Rchb.f.) Kuntze", "Eria matthewsii Rchb.f.",
+      "Pinalia matthewsii (Rchb.f.) Kuntze", "Phreatia matthewsii Rchb.f."
+    ));
+    var pin = groupOf(groups, "Pinalia matthewsii (Rchb.f.) Kuntze");
+    assertEquals(1, pin.size());
+    assertNull(pin.getBasionym());
+    assertEquals(1, groupOf(groups, "Eria matthewsii Rchb.f.").size());
+  }
+
+  /**
+   * Schltr. published colombiana in many orchid genera.
+   * Spelling variants of an original in the same genus stay variations of it.
+   * https://github.com/CatalogueOfLife/backend/issues/1600
+   */
+  @Test
+  public void sameAuthorSeveralGeneraVariations() throws Exception {
+    List<Name> names = names(1,
+      "Octomeria colombiana Schltr.",
+      "Aa colombiana Schltr.",
+      "Trachelosiphon colombianum Schltr.",
+      "Trachelosiphon columbianum Schltr.",
+      "Eurystyles colombiana (Schltr.) Schltr.",
+      "Altensteinia columbiana (Schltr.) Garay"
+    );
+
+    var groups = groupBasionyms(NomCode.BOTANICAL, "colombiana", names, links(
+      "Eurystyles colombiana (Schltr.) Schltr.", "Trachelosiphon columbianum Schltr.",
+      "Altensteinia columbiana (Schltr.) Garay", "Aa colombiana Schltr."
+    ));
+    assertEquals(3, groups.size());
+    var tra = groupOf(groups, "Trachelosiphon colombianum Schltr.");
+    assertEquals("Trachelosiphon colombianum Schltr.", tra.getBasionym().getLabel());
+    assertEquals(1, tra.getBasionymVariations().size());
+    assertEquals("Trachelosiphon columbianum Schltr.", tra.getBasionymVariations().get(0).getLabel());
+    assertEquals(1, tra.getRecombinations().size());
+    assertEquals("Eurystyles colombiana (Schltr.) Schltr.", tra.getRecombinations().get(0).getLabel());
+
+    var aa = groupOf(groups, "Aa colombiana Schltr.");
+    assertEquals("Aa colombiana Schltr.", aa.getBasionym().getLabel());
+    assertEquals(1, aa.getRecombinations().size());
+
+    var oct = groupOf(groups, "Octomeria colombiana Schltr.");
+    assertEquals(1, oct.size());
+    assertFalse(oct.hasBasionymVariations());
+  }
+
+  /**
+   * A combination in the genus of one of the original names is a rank change of it and needs no further evidence.
+   * Fooia abbreviata K.Koch is made up to have a second original genus.
+   */
+  @Test
+  public void sameAuthorSeveralGeneraRankChange() throws Exception {
+    List<Name> names = names(1,
+      "Centaurea salicifolia subsp. abbreviata K. Koch",
+      "Fooia abbreviata K.Koch",
+      "Centaurea abbreviata (K.Koch) Hand.-Mazz.",
+      "Jacea abbreviata (K.Koch) Soják"
+    );
+
+    var groups = groupBasionyms(NomCode.BOTANICAL, "abbreviata", names);
+    assertEquals(3, groups.size());
+    var cent = groupOf(groups, "Centaurea salicifolia subsp. abbreviata K.Koch");
+    assertEquals("Centaurea salicifolia subsp. abbreviata K.Koch", cent.getBasionym().getLabel());
+    assertEquals(1, cent.getRecombinations().size());
+    assertEquals("Centaurea abbreviata (K.Koch) Hand.-Mazz.", cent.getRecombinations().get(0).getLabel());
+    assertEquals(1, groupOf(groups, "Fooia abbreviata K.Koch").size());
+    assertNull(groupOf(groups, "Jacea abbreviata (K.Koch) Soják").getBasionym());
+  }
+
+  /**
+   * Original names of different genera from different sources are most likely one name missing its brackets.
+   */
+  @Test
+  public void missingBrackets() throws Exception {
+    List<Name> names = names(
+      "Bdellodes livistonana Khan & Anwarullah, 1970",
+      "Odontoscirus livistonana Khan & Anwarullah, 1970"
+    );
+    var groups = groupBasionyms(NomCode.ZOOLOGICAL, "livistonana", names);
+    assertEquals(1, groups.size());
+    var g = groups.iterator().next();
+    assertEquals("Bdellodes livistonana Khan & Anwarullah, 1970", g.getBasionym().getLabel());
+    assertEquals(1, g.getBasionymVariations().size());
+  }
+
+  /**
+   * Two original names one source lists separately are distinct.
+   * A third from another source could be either of them missing brackets, so it is kept on its own.
+   * The source linking two of them makes them one name though.
+   */
+  @Test
+  public void distinctOriginalsFromOneSource() throws Exception {
+    var names = new ArrayList<Name>();
+    names.addAll(names(1, "Epidendrum mathewsii Rchb.f.", "Altensteinia matthewsii Rchb.f."));
+    names.addAll(names(2, "Eria matthewsii Rchb.f."));
+
+    var groups = groupBasionyms(NomCode.BOTANICAL, "matthewsii", names);
+    assertEquals(3, groups.size());
+    for (var g : groups) {
+      assertEquals(1, g.size());
+      assertNotNull(g.getBasionym());
+    }
+
+    groups = groupBasionyms(NomCode.BOTANICAL, "matthewsii", names, links(
+      "Eria matthewsii Rchb.f.", "Altensteinia matthewsii Rchb.f."
+    ));
+    assertEquals(2, groups.size());
+    assertEquals(2, groupOf(groups, "Eria matthewsii Rchb.f.").size());
+    assertEquals(1, groupOf(groups, "Epidendrum mathewsii Rchb.f.").size());
+  }
+
+  /**
+   * Equally trusted spellings of one name are ordered by their label, whatever the order they come in.
+   */
+  @Test
+  public void equalPriorityBasionymIsStable() throws Exception {
+    var names = names(1,
+      "Trachelosiphon columbianum Schltr.",
+      "Eurystyles colombiana (Schltr.) Schltr.",
+      "Trachelosiphon colombianum Schltr."
+    );
+    for (int i = 0; i < 2; i++) {
+      var groups = groupBasionyms(NomCode.BOTANICAL, "colombiana", names);
+      assertEquals(1, groups.size());
+      var g = groups.iterator().next();
+      assertEquals("Trachelosiphon colombianum Schltr.", g.getBasionym().getLabel());
+      assertEquals("Trachelosiphon columbianum Schltr.", g.getBasionymVariations().get(0).getLabel());
+      Collections.reverse(names);
     }
   }
 

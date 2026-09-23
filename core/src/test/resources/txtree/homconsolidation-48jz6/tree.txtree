@@ -1,0 +1,28 @@
+Orchidaceae [family] {ID=orch CODE=BOTANICAL}
+  Aa colombiana Schltr. [species] {ID=8H9N PRIO=1}
+    =Altensteinia columbiana (Schltr.) Garay [species] {ID=C9BW PRIO=1}
+  Campylocentrum kuntzei Cogn. ex Kuntze [species] {ID=QGSP PRIO=1}
+    =Campylocentrum colombianum Schltr. [species] {ID=QGRW PRIO=1}
+  Epidendrum microphyllum Lindl. [species] {ID=6FS4P PRIO=1}
+    =Lanium colombianum Schltr. [species] {ID=7WVJ7 PRIO=1}
+    =Lanium microphyllum subsp. colombianum (Schltr.) Brieger [subspecies] {ID=8XBTR PRIO=1}
+  Eriopsis rutidobulbon Hook. [species] {ID=6GQTK PRIO=1}
+    =Eriopsis colombiana Schltr. [species] {ID=3B5H9 PRIO=1}
+  Eurystyles colombiana (Schltr.) Schltr. [species] {ID=7W5PT PRIO=1}
+    =Trachelosiphon colombianum Schltr. [species] {ID=TG5J6 PRIO=106}
+    =Trachelosiphon columbianum Schltr. [species] {ID=7YCFG PRIO=1}
+  Jacquiniella colombiana Schltr. [species] {ID=3QJZY PRIO=1}
+  Lepanthes auriculata Luer [species] {ID=6P8BG PRIO=1}
+  Liparis jamaicensis Lindl. ex Griseb. [species] {ID=3V9MX PRIO=1}
+    =Liparis colombiana Schltr. [species] {ID=7WZ2X PRIO=1}
+  Monophyllorchis colombiana Schltr. [species] {ID=7XCKH PRIO=1}
+  Octomeria colombiana Schltr. [species] {ID=48JZ6 PRIO=1}
+    =Octomeria amazonica Pabst [species] {ID=7XJL7 PRIO=1}
+    =Octomeria auriculata Luer & Dalström [species] {ID=7XJLB PRIO=1}
+  Polystachya concreta (Jacq.) Garay & H.R.Sweet [species] {ID=4LM8B PRIO=1}
+    =Polystachya colombiana Schltr. [species] {ID=7Y348 PRIO=1}
+  Porroglossum mordax (Rchb.f.) H.R.Sweet [species] {ID=6VVJL PRIO=1}
+    =Masdevallia colombiana (Schltr.) P.H.Allen [species] {ID=7X67X PRIO=1}
+    =Porroglossum colombianum Schltr. [species] {ID=7Y3GW PRIO=1}
+  Sarcoglottis amazonica Pabst [species] {ID=79M4F PRIO=1}
+  Sertifera colombiana Schltr. [species] {ID=4WY7L PRIO=1}

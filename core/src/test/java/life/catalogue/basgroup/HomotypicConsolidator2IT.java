@@ -138,6 +138,7 @@ public class HomotypicConsolidator2IT {
   }
 
   void assertTree(String filename, String rootID) throws IOException {
+    HomotypicConsolidatorIT.assertGrouperRelations(dataRule.testData.key);
     SectorSyncIT.assertTree(filename, dataRule.testData.key, rootID, openResourceStream(filename));
   }
 

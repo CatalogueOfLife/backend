@@ -61,6 +61,15 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank, @Param("nameIds") Collection<String> excludeNameIds);
 
   /**
+   * Removes the publishedIn reference, page and page link from all names of other sectors or the project itself
+   * that cite a reference of the given sector. A merge sector gives existing names its references,
+   * which would otherwise block deleting the sector's references before it is synced again.
+   * @param key the sector key
+   * @return number of names changed
+   */
+  int removeForeignPublishedIn(@Param("key") DSID<Integer> key);
+
+  /**
    * Iterates over the names that are missing a name match record of a given dataset.
    */
   Cursor<Name> processDatasetWithoutMatches(@Nullable @Param("datasetKey") Integer datasetKey);

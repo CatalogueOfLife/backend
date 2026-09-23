@@ -18,11 +18,11 @@ public class ReleaseRankingTest {
   static final LocalDateTime JAN = LocalDateTime.of(2026, 1, 1, 10, 0);
 
   static ArchivableRelease base(int key, int attempt, LocalDateTime created) {
-    return new ArchivableRelease(key, RELEASE, attempt, false, created, null, null);
+    return new ArchivableRelease(key, RELEASE, attempt, created, null, null);
   }
 
   static ArchivableRelease xr(int key, int attempt, LocalDateTime created, Integer baseKey) {
-    return new ArchivableRelease(key, XRELEASE, attempt, false, created, null, baseKey);
+    return new ArchivableRelease(key, XRELEASE, attempt, created, null, baseKey);
   }
 
   static ReleaseRanking rank(IntSet ignored, ArchivableRelease... releases) {
@@ -103,12 +103,11 @@ public class ReleaseRankingTest {
   }
 
   @Test
-  public void fallbackBaseIsTheNewestPublicBaseReleaseAtLeastOneDayOlder() {
+  public void fallbackBaseIsTheNewestBaseReleaseAtLeastOneDayOlder() {
     var created = JAN.plusMonths(2);
     var r = rank(
       base(10, 1, JAN),
-      new ArchivableRelease(20, RELEASE, 2, true, JAN.plusMonths(1), null, null), // private
-      new ArchivableRelease(30, RELEASE, 3, false, JAN.plusMonths(1).plusDays(5), created.minusDays(2), null), // deleted before the XR
+      new ArchivableRelease(30, RELEASE, 3, JAN.plusMonths(1).plusDays(5), created.minusDays(2), null), // deleted before the XR
       base(40, 4, created.minusHours(12)), // less than a full day older
       xr(50, 5, created, null)
     );
@@ -120,7 +119,7 @@ public class ReleaseRankingTest {
   public void fallbackBaseMayHaveBeenDeletedSince() {
     var created = JAN.plusMonths(1);
     var r = rank(
-      new ArchivableRelease(10, RELEASE, 1, false, JAN, created.plusMonths(12), null),
+      new ArchivableRelease(10, RELEASE, 1, JAN, created.plusMonths(12), null),
       xr(11, 2, created, null)
     );
     assertEquals(Integer.valueOf(10), r.baseRelease(11));
@@ -138,18 +137,16 @@ public class ReleaseRankingTest {
   }
 
   @Test
-  public void privateAndDeletedReleasesAreNotArchivable() {
+  public void deletedReleasesAreNotArchivable() {
     var r = rank(
       base(10, 1, JAN),
-      new ArchivableRelease(20, RELEASE, 2, true, JAN.plusMonths(1), null, null),
-      new ArchivableRelease(30, RELEASE, 3, false, JAN.plusMonths(2), JAN.plusMonths(3), null)
+      new ArchivableRelease(30, RELEASE, 3, JAN.plusMonths(2), JAN.plusMonths(3), null)
     );
     assertEquals(List.of(10), keys(r.archivable()));
     // the newest generation is the one of the highest ranked archivable release
     assertTrue(r.decidesRedirects(10));
-    assertFalse(r.isNewestGeneration(20));
-    assertFalse(r.decidesRedirects(20));
-    assertFalse(r.supplies(20));
+    assertFalse(r.isNewestGeneration(30));
+    assertFalse(r.decidesRedirects(30));
     assertFalse(r.supplies(30));
   }
 

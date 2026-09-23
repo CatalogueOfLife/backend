@@ -921,8 +921,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // just add a reference
         setPubInRef(n, src, upd);
       } else {
-        // TODO: merge reference. Update reference links & DOI
-
+        mergePubInRef(n, src, upd);
       }
     }
 
@@ -986,6 +985,65 @@ public class TreeMergeHandler extends TreeBaseHandler {
     n.setPublishedInPageLink(src.getPublishedInPageLink());
     upd.add(InfoGroup.PUBLISHED_IN);
     LOG.debug("Updated {} with publishedIn", n);
+  }
+
+  /**
+   * Merges the publishedIn of a source name into a name which already cites a different reference, see #1606.
+   * Only when {@link PublishedInIdentity} finds both cite the same page or work, the name gets the page and page link it
+   * is missing, and its reference the DOI and URL of the same article. The reference is shared by other names, so it is
+   * never changed on weaker evidence and its citation is kept as it is - references are looked up by their citation.
+   * An existing reference that is nothing but the authors and year of the name is replaced by the source reference for
+   * this name only.
+   */
+  private void mergePubInRef(Name n, Name src, Set<InfoGroup> upd) {
+    Reference ref = rm.get(DSID.of(targetDatasetKey, n.getPublishedInId()));
+    Reference srcRef = rm.get(DSID.of(src.getDatasetKey(), src.getPublishedInId()));
+    if (ref == null || srcRef == null) {
+      return;
+    }
+    var v = PublishedInIdentity.compare(n, ref, src, srcRef);
+    if (v.contradicted()) {
+      LOG.debug("Do not merge publishedIn of {} from {}: {}", n, src, v.reason());
+
+    } else if (v.stub()) {
+      n.setPublishedInId(lookupOrCreateReference(srcRef));
+      if (src.getPublishedInPage() != null) {
+        n.setPublishedInPage(src.getPublishedInPage());
+      }
+      if (src.getPublishedInPageLink() != null) {
+        n.setPublishedInPageLink(src.getPublishedInPageLink());
+      }
+      upd.add(InfoGroup.PUBLISHED_IN);
+      LOG.debug("Replaced publishedIn stub {} of {} with {}", ref.getCitation(), n, srcRef.getCitation());
+
+    } else if (v.samePage() || v.sameWork()) {
+      boolean changed = false;
+      if (n.getPublishedInPage() == null && src.getPublishedInPage() != null) {
+        n.setPublishedInPage(src.getPublishedInPage());
+        changed = true;
+      }
+      if (n.getPublishedInPageLink() == null && src.getPublishedInPageLink() != null) {
+        n.setPublishedInPageLink(src.getPublishedInPageLink());
+        changed = true;
+      }
+      if (v.doi() != null) {
+        if (ref.getCsl() == null) {
+          ref.setCsl(new CslData());
+        }
+        ref.getCsl().setDOI(v.doi());
+        if (ref.getCsl().getURL() == null && srcRef.getCsl() != null) {
+          ref.getCsl().setURL(srcRef.getCsl().getURL());
+        }
+        ref.applyUser(user);
+        rm.update(ref);
+        changed = true;
+        LOG.debug("Added DOI {} to reference {}", v.doi(), ref.getCitation());
+      }
+      if (changed) {
+        upd.add(InfoGroup.PUBLISHED_IN);
+        LOG.debug("Merged publishedIn of {} from {}", n, src);
+      }
+    }
   }
 
   /**
