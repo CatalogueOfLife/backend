@@ -1014,7 +1014,10 @@
             <useSystemClassLoader>false</useSystemClassLoader>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <!-- use default JVM settings <argLine>-Xmx256m</argLine> -->
-            <runOrder>failedfirst</runOrder>
+            <!--
+            No failedfirst or balanced runOrder: both keep a run history in ${basedir}/.surefire-<config hash>,
+            and as the hash covers -Dtest and every other setting, each distinct invocation left a new file behind.
+            -->
             <includes>
               <include>**/*Test.java</include>
             </includes>
