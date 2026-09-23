@@ -38,6 +38,12 @@ public class AuthorCorpusReportTest {
     return report.substring(start, end < 0 ? report.length() : end);
   }
 
+  /** a corpus is only comparable to one parsed by the same parser */
+  @Test
+  public void headerNamesTheParser() {
+    assertTrue(report.lines().limit(8).anyMatch(l -> l.equals("name parser: " + NameParserVersion.get())));
+  }
+
   @Test
   public void oneVerdictPerPair() {
     assertEquals(9, verdicts.size());

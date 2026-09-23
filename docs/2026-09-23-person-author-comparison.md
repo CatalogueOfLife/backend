@@ -229,3 +229,27 @@ Phases 0, 1 and 2 are independent of each other; phase 3 needs all three.
 - **Relatives as a hard `DIFFERENT`**, which would split the 350 `A.DC.` / `DC.` names. It is a policy measured both ways.
 - **Working around parser defects in the normalizer**, e.g. cutting `in` citations off an author string. They were fixed
   in the parser (name-parser-rust#20 to #22) and the corpus is re-parsed instead.
+
+## Outcome
+
+**Phase 0, the re-parsed baseline** (2026-09-23, name parser 0.2.2-SNAPSHOT built from name-parser-rust `e38bf70`,
+the native jar of 2026-09-23T17:31Z). The fixed parser was on neither Nexus nor in the local repository yet and had to
+be built locally. Of 12,373,803 names 76,231 changed their parse and 1,378 were dropped - IRMNG 21,628, WoRMS 15,354,
+ITIS 8,496, IPNI 6,931 and ZooBank 6,254 changed most, the datasets with the `in` citations. Mining gave 50,004 `SAME`,
+95,541 `DIFF` and 273,967 `DUBIOUS` pairs over 714,553 author keys, 18k keys fewer than before as `X in Y` now reduces
+to its author. The string matcher on it:
+
+| | EQUAL | DIFFERENT | UNKNOWN | pairs |
+|---|---|---|---|---|
+| `SAME` | 95.9% | 3.9% | 0.2% | 50,004 |
+| `DIFF` | 1.3% | 92.0% | 6.7% | 95,541 |
+| `SAME` without years | 96.0% | 3.8% | 0.2% | |
+| `DIFF` without years | 2.3% | 91.1% | 6.6% | |
+
+Weighted by names 96.5% of the same acts compare `EQUAL`, against 95.0% on the export as it was. Same acts judged
+`DIFFERENT` by their authors went from 2,912 pairs backed by 23,349 names to 1,915 pairs backed by 15,354. The whole
+`X in Y` class left the worklist (`Grunow in Van Heurck` alone stood for 416 names), and so did `Yıld.` / `Yıld.`, which
+was a stale parse of WFO folding the dotless i rather than a comparison defect. The top of the list is now `Anon.` /
+`hort.`, `A.Cleve` / `Cleve-Euler`, `H.H.Hu` / `Hu`, `C.Presl` / `K.B. Presl` and `G. B. Sowerby II` / `Sowerby` -
+relatives and aliases, what the person model is meant for. The frozen sample was refreshed from this corpus: 16,641
+pairs.

@@ -43,22 +43,22 @@ public class AuthorCorpusTest {
   /** the pins below are only worth something for the very pairs they were taken from */
   @Test
   public void sample() {
-    assertEquals(16679, pairs.size());
+    assertEquals(16641, pairs.size());
   }
 
   @Test
   public void all() {
-    assertPinned(CorpusEvaluator.ALL, 7291, 343, 8604, 114);
+    assertPinned(CorpusEvaluator.ALL, 7368, 229, 8611, 102);
   }
 
   @Test
   public void botanical() {
-    assertPinned(NomCode.BOTANICAL.name(), 2860, 137, 2959, 53);
+    assertPinned(NomCode.BOTANICAL.name(), 2883, 108, 2994, 48);
   }
 
   @Test
   public void zoological() {
-    assertPinned(NomCode.ZOOLOGICAL.name(), 2867, 168, 2715, 37);
+    assertPinned(NomCode.ZOOLOGICAL.name(), 2923, 99, 2719, 31);
   }
 
   /**

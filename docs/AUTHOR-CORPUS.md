@@ -9,9 +9,9 @@ All of it is test scope code in `dao/src/test/java/life/catalogue/matching/autho
 in the build except the fast guard test on a committed sample.
 
 ```
-author-corpus-export.sql ──▶ author-corpus.tsv.gz ──AuthorPairMiner──▶ pairs.tsv.gz ──AuthorCorpusReport──▶ report.txt
-      (run by hand)            (~200 MB, not in git)                                                     └─▶ verdicts.tsv.gz ──AuthorVerdictDiff
-                                                                       └──AuthorPairSampler──▶ author-pairs-sample.tsv.gz ──AuthorCorpusTest
+author-corpus-export.sql ──▶ author-corpus.tsv.gz ──CorpusReparser──▶ reparsed export ──AuthorPairMiner──▶ pairs.tsv.gz ──AuthorCorpusReport──▶ report.txt
+      (run by hand)            (~200 MB, not in git)                                                                                        └─▶ verdicts.tsv.gz ──AuthorVerdictDiff
+                                                                                               └──AuthorPairSampler──▶ author-pairs-sample.tsv.gz ──AuthorCorpusTest
 ```
 
 ## What a label means
@@ -48,15 +48,24 @@ The corpus of September 2026 was exported from prod with
 12.4 million names of 3.1 million names index ids. `AuthorCorpusExportIT` runs the statement against the test
 schema, so a renamed column fails there and not on prod.
 
-**2. Mine** the labelled pairs, which takes about a minute. It prints how many pairs got which label and writes
+**2. Re-parse.** The export holds the parse each dataset got when it was imported, including parser defects fixed
+since. `CorpusReparser` runs every name through the import's parse again, name and authorship separately, and rewrites
+the parsed author columns. A name the export script would not export with today's parse is dropped. It writes
+`reparse-stats.txt` with the parser version and, per dataset, the rows read, changed and dropped. Mine the re-parsed
+export, never the raw one. The report header names the parser too, and two reports are only comparable when it matches.
+
+    mvn -q -pl dao test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
+      -Dexec.args="-Xmx4g --enable-native-access=ALL-UNNAMED -cp %classpath life.catalogue.matching.authorship.corpus.CorpusReparser /path/to/author-corpus.tsv.gz target/author-corpus/reparsed/author-corpus.tsv.gz"
+
+**3. Mine** the labelled pairs, which takes about a minute. It prints how many pairs got which label and writes
 the same to `miner-stats.txt`:
 
     mvn -q -pl dao test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
-      -Dexec.args="-Xmx4g -cp %classpath life.catalogue.matching.authorship.corpus.AuthorPairMiner /path/to/author-corpus.tsv.gz target/author-corpus/pairs.tsv.gz"
+      -Dexec.args="-Xmx4g -cp %classpath life.catalogue.matching.authorship.corpus.AuthorPairMiner target/author-corpus/reparsed/author-corpus.tsv.gz target/author-corpus/pairs.tsv.gz"
 
-**3. Report.** `-pl dao` takes the `api` module, and with it `AuthorshipNormalizer` and the author map, from
+**4. Report.** `-pl dao` takes the `api` module, and with it `AuthorshipNormalizer` and the author map, from
 `~/.m2` and not from the checkout - install first or the report measures the old code. Its header says how
-many rows the author map had.
+many rows the author map had and which name parser the tools ran with.
 
     mvn -q -pl dao -am install -DskipTests
     mvn -q -pl dao test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
@@ -99,7 +108,7 @@ fails it, which is the point: update its numbers.
 
 ## Refreshing the sample
 
-Only with a new export. The sample takes, per label and code, the 1000 pairs with most names behind them plus
+Only with a new export or a new parser, after a re-parse. The sample takes, per label and code, the 1000 pairs with most names behind them plus
 about 2000 of the rest selected by a hash, never by what the comparator says about them:
 
     mvn -q -pl dao test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
