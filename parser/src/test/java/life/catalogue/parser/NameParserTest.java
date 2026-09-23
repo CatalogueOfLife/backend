@@ -117,6 +117,29 @@ public class NameParserTest {
   }
 
   /**
+   * A separately supplied authorship, as almost every ChecklistBank import has one, used to keep an "in" citation
+   * inside the author, glue an all-capitals author onto the one before and read a generational "I" as an initial:
+   * gbif/name-parser-rust#20, #21 and #22, fixed in 0.2.2.
+   */
+  @Test
+  public void separateAuthorshipDefectsFixedUpstream() throws Exception {
+    assertCombAuthors("Actinocyclus australis", "Grunow in Van Heurck, 1883", "Grunow");
+    assertCombAuthors("Mastogloia emarginata", "Hustedt in Schmidt et al., 1925", "Hustedt");
+    assertCombAuthors("Peperomia arctebaccata", "Trel. in J.F.Macbr.", "Trel.");
+    assertCombAuthors("Aegerita punctiformis", "Lam. & DC.", "Lam.", "DC.");
+    assertCombAuthors("Amarula aqua", "G. B. Sowerby I, 1825", "G.B.Sowerby I");
+  }
+
+  private static void assertCombAuthors(String name, String authorship, String... authors) {
+    Name n = new Name();
+    n.setScientificName(name);
+    n.setAuthorship(authorship);
+    n.setRank(Rank.SPECIES);
+    NameParser.PARSER.parse(n, new IssueContainer.Simple());
+    assertEquals(authorship, List.of(authors), n.getCombinationAuthorship().getAuthors());
+  }
+
+  /**
    * https://github.com/CatalogueOfLife/backend/issues/1523
    * "Rchb.f." (Reichenbach filius) must be kept as the parenthesised basionym author, not reduced to
    * a bare "f." with the basionym brackets lost, when the authorship is parsed inline from the name string.
