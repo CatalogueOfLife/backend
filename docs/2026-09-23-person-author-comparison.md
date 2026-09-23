@@ -1,8 +1,8 @@
 # Comparing authors as persons
 
 Date: 2026-09-23
-Status: design agreed on 2026-09-23. Phases 0 and 1 are implemented on branch `fix/author-nomcode` (stacked on
-`feat/author-corpus`, not merged); phases 2 and 3 are not implemented. Four phases, each with its own implementation plan.
+Status: design agreed on 2026-09-23. Phases 0, 1 and 2 are implemented on branch `fix/author-nomcode` (stacked on
+`feat/author-corpus`, not merged); phase 3 is not implemented. Four phases, each with its own implementation plan.
 
 This is step 2 of "Next" in [2026-09-19-author-comparison-corpus.md](2026-09-19-author-comparison-corpus.md): compare
 people, not rewritten strings. It is built as an experiment next to the current comparison, which stays in production
@@ -261,3 +261,29 @@ On the re-parsed corpus `AuthorVerdictDiff` found 0 of 419,512 verdicts changed.
 still becomes `DIFFERENT`, the rule the comparator already had, and phase 3's relatives policy meets it there.
 Deviation: the comparator's new overloads take a `TaxGroup` next to the code rather than an `AuthorContext`, since a
 public `compare(Authorship, Authorship, AuthorContext)` would make every existing call with a `null` code ambiguous.
+
+**Phase 2, the registry** (2026-09-24). The first harvest gave 87,063 persons with 282,535 name forms and 484
+relations, 20 MB of plain text: 76,603 Wikidata items and all 65,018 IPNI authors, joined through P586. 238 Wikidata
+items without any name were not written and 3,808 relations to persons outside the registry were dropped. Of the
+60,299 rows of `authormap.txt` only 25 resolve to no person. The report counts 19,888 disagreements between sources,
+nearly all given names of different completeness (IPNI "Andriy V." against Wikidata "Andriy"), and 28 authority ids
+claimed by two persons, mostly two Wikidata items of one IPNI or ZooBank author. The cached answers make a rerun a
+matter of minutes; the requests themselves took about an hour and a half.
+
+Deviations from the plan, all found by the first harvest:
+- **Wikidata's labels and statements come from the API**, `wbgetentities`, 50 persons at a time. The query service
+  kept only the id pages and the redirects: on the day of the harvest it lagged by an hour and a half and took 30 s to a
+  minute for the labels or the statements of a hundred persons, a harvest of ten hours. The API answered fifty in
+  three seconds.
+- **`maxlag` is not sent.** Wikidata counts the lag of the query service into it and refused every request. It is
+  meant for writers; the harvest reads serially, a second apart.
+- **A fact batch of 400 Q-ids** made a GET request of 10 KB, which the query service answers with HTTP 431. The
+  redirect queries now take 100.
+- **Answers are checked**: the query service sometimes answers 200 with a body cut off, and the API answers errors with
+  200. `RetryingFetcher` retries an answer that is no complete JSON object, and the cache neither keeps nor serves one.
+- **Years that make a person die before being born are left out** and reported - five persons, from years of two
+  sources or a Wikidata error such as Q1422175, born 1700 and died 1691.
+
+Left for the next harvest: disagreements that only differ in completeness, one name a prefix of the other, should not
+count; fields of work such as "systematic botany", "paleobotany", "algae" and "beetle", and IPNI's "Cryptogamic",
+map to no group yet; IPNI dates with an em dash, a shortened end year (`fl. 1867-68`) or a single year are not read.
