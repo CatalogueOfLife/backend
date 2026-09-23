@@ -112,6 +112,7 @@ public class CorpusReparser {
         }
       });
     }
+    CorpusIO.writeParser(out, NameParserVersion.get());
     return render();
   }
 

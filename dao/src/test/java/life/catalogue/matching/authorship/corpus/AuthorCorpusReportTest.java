@@ -38,10 +38,21 @@ public class AuthorCorpusReportTest {
     return report.substring(start, end < 0 ? report.length() : end);
   }
 
-  /** a corpus is only comparable to one parsed by the same parser */
+  /**
+   * A corpus is only comparable to one parsed by the same parser. The report parses nothing itself, so it names the
+   * parser the pairs came with, never the one on its own classpath.
+   */
   @Test
-  public void headerNamesTheParser() {
-    assertTrue(report.lines().limit(8).anyMatch(l -> l.equals("name parser: " + NameParserVersion.get())));
+  public void headerNamesTheCorpusParser() throws Exception {
+    assertTrue(report, report.lines().limit(8).anyMatch(l -> l.equals("corpus parsed by: the imports, not re-parsed")));
+
+    File pairs = new File(tmp.getRoot(), "pairs.tsv");
+    Files.copy(Resources.toFile(CorpusEvaluatorTest.KNOWN_MISJUDGEMENTS).toPath(), pairs.toPath());
+    CorpusIO.writeParser(pairs, "0.2.2-SNAPSHOT (test)");
+    File dir = tmp.newFolder("reparsed");
+    AuthorCorpusReport.report(pairs, dir, true);
+    String reparsed = Files.readString(new File(dir, AuthorCorpusReport.REPORT).toPath());
+    assertTrue(reparsed, reparsed.lines().limit(8).anyMatch(l -> l.equals("corpus parsed by: 0.2.2-SNAPSHOT (test)")));
   }
 
   @Test

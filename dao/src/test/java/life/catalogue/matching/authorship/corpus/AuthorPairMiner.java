@@ -158,6 +158,10 @@ public class AuthorPairMiner {
         }
       }));
     }
+    String parser = CorpusIO.readParser(export);
+    if (parser != null) {
+      CorpusIO.writeParser(pairsOut, parser);
+    }
     return stats;
   }
 

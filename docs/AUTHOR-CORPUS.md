@@ -51,9 +51,16 @@ schema, so a renamed column fails there and not on prod.
 **2. Re-parse.** The export holds the parse each dataset got when it was imported, including parser defects fixed
 since. `CorpusReparser` runs every name through the import's parse again, name and authorship separately, and rewrites
 the parsed author columns. A name the export script would not export with today's parse is dropped. It writes
-`reparse-stats.txt` with the parser version and, per dataset, the rows read, changed and dropped. Mine the re-parsed
-export, never the raw one. The report header names the parser too, and two reports are only comparable when it matches.
+`reparse-stats.txt` with the parser version and, per dataset, the rows read, changed and dropped, and names the parser
+in a `.parser` file next to the re-parsed export. The miner passes that file on to the pairs, and the report header
+prints it as `corpus parsed by`, or `the imports, not re-parsed` for pairs mined from a raw export. Mine the re-parsed
+export, never the raw one: two reports are only comparable when their corpus was parsed by the same parser.
 
+`-pl dao` takes the `parser` and `api` modules from `~/.m2` and not from the checkout, so install first - here and
+before every report - or the re-parse runs an old `NameParser` and the report an old `AuthorshipNormalizer` and
+author map:
+
+    mvn -q -pl dao -am install -DskipTests
     mvn -q -pl dao test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
       -Dexec.args="-Xmx4g --enable-native-access=ALL-UNNAMED -cp %classpath life.catalogue.matching.authorship.corpus.CorpusReparser /path/to/author-corpus.tsv.gz target/author-corpus/reparsed/author-corpus.tsv.gz"
 
@@ -63,9 +70,8 @@ the same to `miner-stats.txt`:
     mvn -q -pl dao test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
       -Dexec.args="-Xmx4g -cp %classpath life.catalogue.matching.authorship.corpus.AuthorPairMiner target/author-corpus/reparsed/author-corpus.tsv.gz target/author-corpus/pairs.tsv.gz"
 
-**4. Report.** `-pl dao` takes the `api` module, and with it `AuthorshipNormalizer` and the author map, from
-`~/.m2` and not from the checkout - install first or the report measures the old code. Its header says how
-many rows the author map had and which name parser the tools ran with.
+**4. Report.** Install first, as for the re-parse, or the report measures the old code. Its header says how many rows
+the author map had and which parser the corpus was parsed by.
 
     mvn -q -pl dao -am install -DskipTests
     mvn -q -pl dao test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
@@ -125,6 +131,7 @@ Tab delimited with a header that is verified on reading, gzipped if the name end
 | export | `index_id dataset_key name_id rank code nom_status scientific_name authorship combination_authors combination_ex_authors combination_year basionym_authors basionym_ex_authors basionym_year sanctioning_author`, the authors of a team separated by a pipe, sorted by `index_id, rank` |
 | pairs | `label source weight support yearAgree yearConflict freqA freqB intraYearDiff intraNoYear intraYearAgree code rank nidx scientificName keyA keyB`, then `datasetKey nameId authorship combAuthors combEx combYear basAuthors basEx basYear sanctioning` once with suffix `A` and once with `B`. One pair of names that shows the pair of keys, side A being the key that sorts first |
 | verdicts | `code keyA keyB label source weight verdict verdictNoYear authorshipA authorshipB`, a pair being identified by the first three |
+| `<file>.parser` | one line naming the parser the authors of `<file>` were parsed with, next to a re-parsed export and the pairs mined from it |
 
 `weight` is the number of names backing a label. All numbers count names, never datasets: IPNI, WCVP and WFO
 share a lineage and would otherwise vote three times.

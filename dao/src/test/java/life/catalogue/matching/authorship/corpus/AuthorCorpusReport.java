@@ -160,7 +160,8 @@ public class AuthorCorpusReport {
     sb.append(String.format("pairs: %,d %s%n", total[0], labels));
     // says which author map the verdicts come from: -pl dao takes it from the api jar in ~/.m2, not from the checkout
     sb.append(withAuthorMap ? String.format("author map: %,d rows%n", Resources.lines(AUTHOR_MAP).count()) : "author map: none\n");
-    sb.append("name parser: ").append(NameParserVersion.get()).append('\n');
+    String parser = CorpusIO.readParser(pairs);
+    sb.append("corpus parsed by: ").append(parser == null ? "the imports, not re-parsed" : parser).append('\n');
     sb.append(String.format("max heap: %,d MB%n", Runtime.getRuntime().maxMemory() >> 20));
 
     sb.append("\n## Confusion matrix\nWith the years and the code of the names, which is what production gets to see. "

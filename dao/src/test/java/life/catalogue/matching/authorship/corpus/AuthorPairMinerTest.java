@@ -46,6 +46,23 @@ public class AuthorPairMinerTest {
     return pairs.get(keyA + " " + keyB);
   }
 
+  /** the parser a re-parsed export was parsed with travels on to the pairs, for the report header */
+  @Test
+  public void parserTravelsWithThePairs() throws Exception {
+    File export = new File(tmp.getRoot(), "export.tsv");
+    java.nio.file.Files.copy(Resources.toFile(FIXTURE).toPath(), export.toPath());
+    CorpusIO.writeParser(export, "0.2.2-SNAPSHOT (test)");
+    File out = new File(tmp.getRoot(), "reparsed-pairs.tsv.gz");
+    new AuthorPairMiner(LabelRules.DEFAULT, 20).mine(export, out);
+    assertEquals("0.2.2-SNAPSHOT (test)", CorpusIO.readParser(out));
+  }
+
+  /** an export straight from the database carries the parses of its imports, and says nothing */
+  @Test
+  public void noParserWithoutAReparse() throws Exception {
+    assertEquals(null, CorpusIO.readParser(new File(tmp.getRoot(), "pairs.tsv.gz")));
+  }
+
   @Test
   public void writesLabelledPairsOnly() {
     assertEquals(

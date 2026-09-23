@@ -90,6 +90,8 @@ public class CorpusReparserTest {
     assertEquals(List.of("L."), rows.get(1).combAuthors());
 
     assertTrue(stats, stats.contains("name parser: " + NameParserVersion.get()));
+    // and next to the export, for the miner to pass on
+    assertEquals(NameParserVersion.get(), CorpusIO.readParser(out));
     // 3 rows read, the Grunow one changed, the year only one dropped
     assertTrue(stats, stats.matches("(?s).*\\ball\\s+3\\s+1\\s+1\\b.*"));
   }

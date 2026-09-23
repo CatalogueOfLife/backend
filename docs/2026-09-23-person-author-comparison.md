@@ -233,8 +233,9 @@ Phases 0, 1 and 2 are independent of each other; phase 3 needs all three.
 ## Outcome
 
 **Phase 0, the re-parsed baseline** (2026-09-23, name parser 0.2.2-SNAPSHOT built from name-parser-rust `e38bf70`,
-the native jar of 2026-09-23T17:31Z). The fixed parser was on neither Nexus nor in the local repository yet and had to
-be built locally. Of 12,373,803 names 76,231 changed their parse and 1,378 were dropped - IRMNG 21,628, WoRMS 15,354,
+the native jar of 2026-09-23T17:31Z). Nexus had the fixed build in `repository/snapshots` (`0.2.2-20260923.133442-7`),
+but `repository/gbif`, the only snapshot source of the build, did not serve it, so it was built and installed locally.
+Until that group serves it, the new parser tests fail on any machine without that local install. Of 12,373,803 names 76,231 changed their parse and 1,378 were dropped - IRMNG 21,628, WoRMS 15,354,
 ITIS 8,496, IPNI 6,931 and ZooBank 6,254 changed most, the datasets with the `in` citations. Mining gave 50,004 `SAME`,
 95,541 `DIFF` and 273,967 `DUBIOUS` pairs over 714,553 author keys, 18k keys fewer than before as `X in Y` now reduces
 to its author. The string matcher on it:

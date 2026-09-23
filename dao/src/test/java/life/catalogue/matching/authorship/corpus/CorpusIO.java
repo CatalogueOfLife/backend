@@ -12,12 +12,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import javax.annotation.Nullable;
 
 /**
  * Reads and writes the tab delimited files of the author corpus. Any file ending in <code>.gz</code> is gzipped.
@@ -89,6 +92,27 @@ public class CorpusIO {
         rowConsumer.accept(iter.next());
       }
     }
+  }
+
+  /**
+   * The file next to a corpus file that names the parser its authors were parsed with. The re-parse writes it and the
+   * miner passes it on, so a report can name the parser of its corpus - it parses nothing itself.
+   */
+  private static File parserFile(File data) {
+    return new File(data.getAbsoluteFile().getParentFile(), data.getName() + ".parser");
+  }
+
+  public static void writeParser(File data, String parser) throws IOException {
+    Files.writeString(parserFile(data).toPath(), parser + "\n", StandardCharsets.UTF_8);
+  }
+
+  /**
+   * @return the parser a corpus file was parsed with, or null if it holds the parses of the imports
+   */
+  @Nullable
+  public static String readParser(File data) throws IOException {
+    File f = parserFile(data);
+    return f.exists() ? Files.readString(f.toPath(), StandardCharsets.UTF_8).trim() : null;
   }
 
   public static TabWriter exportWriter(File export) throws IOException {
