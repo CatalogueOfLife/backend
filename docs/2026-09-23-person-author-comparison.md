@@ -262,10 +262,10 @@ still becomes `DIFFERENT`, the rule the comparator already had, and phase 3's re
 Deviation: the comparator's new overloads take a `TaxGroup` next to the code rather than an `AuthorContext`, since a
 public `compare(Authorship, Authorship, AuthorContext)` would make every existing call with a `null` code ambiguous.
 
-**Phase 2, the registry** (2026-09-24). The first harvest gave 87,063 persons with 282,535 name forms and 484
-relations, 20 MB of plain text: 76,603 Wikidata items and all 65,018 IPNI authors, joined through P586. 238 Wikidata
-items without any name were not written and 3,808 relations to persons outside the registry were dropped. Of the
-60,299 rows of `authormap.txt` only 25 resolve to no person. The report counts 19,888 disagreements between sources,
+**Phase 2, the registry** (2026-09-24). The first harvest gave 87,300 persons with 283,553 name forms and 486
+relations, 20 MB of plain text: 76,603 Wikidata items and all 65,018 IPNI authors, joined through P586. One Wikidata
+item without any name was not written and 3,808 relations to persons outside the registry were dropped. Of the
+60,299 rows of `authormap.txt` only 17 resolve to no person. The report counts 20,041 disagreements between sources,
 nearly all given names of different completeness (IPNI "Andriy V." against Wikidata "Andriy"), and 28 authority ids
 claimed by two persons, mostly two Wikidata items of one IPNI or ZooBank author. The cached answers make a rerun a
 matter of minutes; the requests themselves took about an hour and a half.
@@ -283,6 +283,32 @@ Deviations from the plan, all found by the first harvest:
   200. `RetryingFetcher` retries an answer that is no complete JSON object, and the cache neither keeps nor serves one.
 - **Years that make a person die before being born are left out** and reported - five persons, from years of two
   sources or a Wikidata error such as Q1422175, born 1700 and died 1691.
+
+The final review of the phase found the first committed files wrong in ways the tests had not pinned, and the files were
+regenerated from the cache, from empty files, since a harvest never overwrites a value:
+- **Dates less precise than a year were read as years.** `+2000-00-00` at century precision became 2000: 422 persons
+  were born in 2000 and 42 active before they were born, which phase 3's narrowing would have ruled out for nearly
+  every name they published. Such dates are now no year, years that make a person active before birth are left out like
+  those making it die before birth, and the registry reports both. Birth years went from 35,327 to 34,750; the two
+  persons still born in 2000 have the year from IPNI.
+- **English labels only lost names.** 1,061 persons and 1,373 name and field items have no English label but a `mul`
+  one, Wikidata's label for all languages: `Kurt M. Neubig` (Q5961005) is one. They are asked again for `mul`, which
+  wrote 237 more persons and 272 more family names.
+- **The merger failed on the next harvest's likeliest events.** A Wikidata redirect onto an item another person of the
+  files holds gave two persons one id and blocked the write; a record whose authority changed a linked id went to a
+  new person without its own id, or to one without any id. A record now joins the person holding its own id, a redirect
+  joins the two persons, and a join keeps one value per cell and reports what it drops. A curated person is never joined
+  with another. The second harvest would also have been silent about a source changing a value of the files, as the
+  merge only fills; those differences are now a list of their own in the report.
+- **Derived initials missed what the data holds.** Wikidata's given names often hold fewer names than its label (G. B.
+  Sowerby II has only "George"), and IPNI puts a particle at the end of the forename, which became an initial. Initials
+  now come from every full name ending with the family name as well, and particles stay words: `G.B. Sowerby II`,
+  `A. P. de Candolle` and `C.F.P. von Martius` resolve.
+
+Left for later, from the same review: several family names of one person are joined into one (Carl Linnaeus has
+`Linné von Linné`); one id per authority is kept although 179 items carry several IPNI ids; authority ids are not
+checked for their format; `Hooker f.` resolves to nobody, as family plus suffix is not derived; and the author map
+check counts a row resolved when any of its strings is.
 
 Left for the next harvest: disagreements that only differ in completeness, one name a prefix of the other, should not
 count; fields of work such as "systematic botany", "paleobotany", "algae" and "beetle", and IPNI's "Cryptogamic",
