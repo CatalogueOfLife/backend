@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.PersonMapper">
+
+  <sql id="PERSON_COLS">
+    p.id, p.wikidata, p.ipni, p.zoobank, p.former_ids, p.family, p.given, p.suffix, p.born, p.died, p.active_from,
+    p.active_to, p.groups, p.source, p.retired, p.successor, p.created, p.modified
+  </sql>
+
+  <resultMap id="personResultMap" type="life.catalogue.db.mapper.PersonMapper$PersonRow" autoMapping="true">
+    <result property="formerIds" column="former_ids" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
+    <result property="groups" column="groups" typeHandler="life.catalogue.db.type2.TaxGroupSetTypeHandler"/>
+  </resultMap>
+
+  <select id="list" resultMap="personResultMap">
+    SELECT <include refid="PERSON_COLS"/>
+    FROM person p
+  </select>
+
+  <select id="listNames" resultType="life.catalogue.db.mapper.PersonMapper$NameRow">
+    SELECT person_id, form, kind, code, source
+    FROM person_name
+    WHERE kind != 'DERIVED'
+  </select>
+
+  <select id="listRelations" resultType="life.catalogue.db.mapper.PersonMapper$RelationRow">
+    SELECT person_id, relation, other_id, source
+    FROM person_relation
+  </select>
+</mapper>

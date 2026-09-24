@@ -17,9 +17,58 @@ CREATE TYPE PERSONFORMCODE AS ENUM ('BOT', 'ZOO', 'ANY');
 CREATE TYPE PERSONNAMEKIND AS ENUM ('STANDARD', 'CITATION', 'FULL', 'VARIANT', 'DERIVED');
 CREATE TYPE PERSONRELATIONTYPE AS ENUM ('PARENT', 'SIBLING');
 CREATE TYPE PERSONSOURCE AS ENUM ('CURATED', 'IPNI', 'ZOOBANK', 'WIKIDATA');
+
+CREATE TABLE person (
+  id TEXT PRIMARY KEY,
+  wikidata TEXT,
+  ipni TEXT,
+  zoobank TEXT,
+  former_ids TEXT[],
+  family TEXT,
+  given TEXT,
+  suffix TEXT,
+  born INTEGER,
+  died INTEGER,
+  active_from INTEGER,
+  active_to INTEGER,
+  groups TAXGROUP[],
+  source PERSONSOURCE NOT NULL,
+  retired DATE,
+  successor TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+  modified TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+);
+
+CREATE TABLE person_id (
+  any_id TEXT PRIMARY KEY,
+  person_id TEXT NOT NULL REFERENCES person ON DELETE CASCADE
+);
+CREATE INDEX ON person_id (person_id);
+
+CREATE TABLE person_name (
+  person_id TEXT NOT NULL REFERENCES person ON DELETE CASCADE,
+  form TEXT NOT NULL,
+  kind PERSONNAMEKIND NOT NULL,
+  code PERSONFORMCODE NOT NULL,
+  source PERSONSOURCE NOT NULL,
+  key TEXT
+);
+CREATE INDEX ON person_name (key);
+CREATE INDEX ON person_name (person_id);
+
+CREATE TABLE person_relation (
+  person_id TEXT NOT NULL REFERENCES person ON DELETE CASCADE,
+  relation PERSONRELATIONTYPE NOT NULL,
+  other_id TEXT NOT NULL REFERENCES person ON DELETE CASCADE,
+  source PERSONSOURCE NOT NULL,
+  PRIMARY KEY (person_id, relation, other_id)
+);
+CREATE INDEX ON person_relation (other_id);
 ```
 The person registry of author matching moves from files in the code into the database, see
-`docs/2026-09-24-person-registry-service.md`.
+`docs/2026-09-24-person-registry-service.md`. The tables start empty: after the deploy an admin imports the registry
+of the branch with `POST /admin/persons/import` (the zip of `core/src/test/resources/authorship/persons/`), then starts
+a first `POST /admin/persons/harvest` and reads its report against the imported state.
 
 #### 2026-09-15 record which id superseded a deleted one
 ```sql

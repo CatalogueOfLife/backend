@@ -1337,6 +1337,56 @@ CREATE TABLE names_index (
 CREATE INDEX ON names_index (scientific_name);
 CREATE UNIQUE INDEX names_index_normalized_idx ON names_index (normalized);
 
+-- the person registry of author matching, global: persons with Wikidata, IPNI and ZooBank ids
+CREATE TABLE person (
+  id TEXT PRIMARY KEY,
+  wikidata TEXT,
+  ipni TEXT,
+  zoobank TEXT,
+  former_ids TEXT[],
+  family TEXT,
+  given TEXT,
+  suffix TEXT,
+  born INTEGER,
+  died INTEGER,
+  active_from INTEGER,
+  active_to INTEGER,
+  groups TAXGROUP[],
+  source PERSONSOURCE NOT NULL,
+  retired DATE,
+  successor TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+  modified TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+);
+
+-- every id a person answers to: its own, its former ids and its prefixed authority ids
+CREATE TABLE person_id (
+  any_id TEXT PRIMARY KEY,
+  person_id TEXT NOT NULL REFERENCES person ON DELETE CASCADE
+);
+CREATE INDEX ON person_id (person_id);
+
+-- the key is the form folded as citations are, computed in java
+CREATE TABLE person_name (
+  person_id TEXT NOT NULL REFERENCES person ON DELETE CASCADE,
+  form TEXT NOT NULL,
+  kind PERSONNAMEKIND NOT NULL,
+  code PERSONFORMCODE NOT NULL,
+  source PERSONSOURCE NOT NULL,
+  key TEXT
+);
+CREATE INDEX ON person_name (key);
+CREATE INDEX ON person_name (person_id);
+
+CREATE TABLE person_relation (
+  person_id TEXT NOT NULL REFERENCES person ON DELETE CASCADE,
+  relation PERSONRELATIONTYPE NOT NULL,
+  other_id TEXT NOT NULL REFERENCES person ON DELETE CASCADE,
+  source PERSONSOURCE NOT NULL,
+  PRIMARY KEY (person_id, relation, other_id)
+);
+CREATE INDEX ON person_relation (other_id);
+
 
 CREATE TABLE name_usage_archive (
   id TEXT NOT NULL,
