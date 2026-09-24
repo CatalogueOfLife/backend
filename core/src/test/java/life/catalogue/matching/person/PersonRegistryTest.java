@@ -174,4 +174,16 @@ public class PersonRegistryTest {
     assertEquals(Set.of("sw", "olof swartz", "o swartz", "swartz"), reg.keys(SWARTZ, NomCode.BOTANICAL));
     assertEquals(Set.of("olof swartz", "o swartz", "swartz"), reg.keys(SWARTZ, NomCode.ZOOLOGICAL));
   }
+
+  /** a variant written with initials, "J.C. Sowerby", gives both initials, not his father's bare "J. Sowerby" */
+  @Test
+  public void initialsOfDottedNames() {
+    assertEquals("J. C. ", PersonRegistry.initials("J.C."));
+    var jdc = new Person("wd:Q7", "Q7", null, null, List.of(), "Sowerby", "James de Carle", null, 1787, 1871, null, null, Set.of(),
+      Provenance.WIKIDATA);
+    var reg = new PersonRegistry(new PersonFiles.Content(List.of(jdc),
+      List.of(new PersonName("wd:Q7", "J.C. Sowerby", NameKind.VARIANT, FormCode.ANY, Provenance.WIKIDATA)), List.of()));
+    assertEquals(Set.of(), reg.candidates("J. Sowerby", NomCode.ZOOLOGICAL));
+    assertEquals(Set.of(jdc), reg.candidates("J. C. Sowerby", NomCode.ZOOLOGICAL));
+  }
 }

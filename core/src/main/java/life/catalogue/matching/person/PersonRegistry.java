@@ -156,14 +156,14 @@ public class PersonRegistry {
   }
 
   /**
-   * @return "G. B. " for "George Brettingham", "J. B. " for "Jean-Baptiste", "A. P. de " for "Augustin Pyramus de",
-   *         empty for none
+   * @return "G. B. " for "George Brettingham", "J. B. " for "Jean-Baptiste", "J. C. " for "J.C.", "A. P. de " for
+   *         "Augustin Pyramus de", empty for none
    */
   static String initials(@Nullable String given) {
     if (given == null) return "";
     StringBuilder sb = new StringBuilder();
-    // IPNI lists alternative forenames in brackets: "Carl (Karl, Carel, Carolus) Bořivoj"
-    for (String part : given.replaceAll("\\([^)]*\\)", " ").split("[\\s-]+")) {
+    // IPNI lists alternative forenames in brackets: "Carl (Karl, Carel, Carolus) Bořivoj"; a variant may be dotted: "J.C."
+    for (String part : given.replaceAll("\\([^)]*\\)", " ").split("[\\s.-]+")) {
       if (AuthorshipNormalizer.PARTICLES.contains(part)) {
         sb.append(part).append(' ');
         continue;
