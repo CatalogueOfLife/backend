@@ -27,9 +27,14 @@ public class PersonRegistry {
   private record Form(Person person, FormCode code) {
   }
 
+  private record Keyed(String key, FormCode code) {
+  }
+
   private final int size;
   private final Map<String, Person> byId = new HashMap<>();
   private final Map<String, List<Form>> byKey = new HashMap<>();
+  // identity: the persons the registry hands out are its own instances, and records hash all their fields
+  private final Map<Person, List<Keyed>> keysByPerson = new IdentityHashMap<>();
   private final Map<String, Set<Person>> relatives = new HashMap<>();
   private final List<String> problems = new ArrayList<>();
 
@@ -121,6 +126,11 @@ public class PersonRegistry {
       if (!forms.contains(f)) {
         forms.add(f);
       }
+      List<Keyed> keys = keysByPerson.computeIfAbsent(p, x -> new ArrayList<>(4));
+      Keyed k = new Keyed(key, code);
+      if (!keys.contains(k)) {
+        keys.add(k);
+      }
     }
   }
 
@@ -180,6 +190,19 @@ public class PersonRegistry {
       }
     }
     return persons;
+  }
+
+  /**
+   * @return the keys of every form of the person whose code applies, derived ones included, as citations are normalized
+   */
+  public Set<String> keys(Person p, @Nullable NomCode code) {
+    Set<String> keys = new LinkedHashSet<>();
+    for (Keyed k : keysByPerson.getOrDefault(p, List.of())) {
+      if (k.code().appliesTo(code)) {
+        keys.add(k.key());
+      }
+    }
+    return keys;
   }
 
   /**

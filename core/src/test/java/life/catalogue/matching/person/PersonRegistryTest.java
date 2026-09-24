@@ -166,4 +166,12 @@ public class PersonRegistryTest {
     assertEquals(Set.of(presl), reg.candidates("K.B. Presl", NomCode.BOTANICAL));
     assertEquals(Set.of(presl), reg.candidates("C. B. Presl", NomCode.BOTANICAL));
   }
+
+  /** the keys of a person's forms, derived ones included, as the fallback compares them */
+  @Test
+  public void keysOfAPerson() {
+    var reg = registry();
+    assertEquals(Set.of("sw", "olof swartz", "o swartz", "swartz"), reg.keys(SWARTZ, NomCode.BOTANICAL));
+    assertEquals(Set.of("olof swartz", "o swartz", "swartz"), reg.keys(SWARTZ, NomCode.ZOOLOGICAL));
+  }
 }
