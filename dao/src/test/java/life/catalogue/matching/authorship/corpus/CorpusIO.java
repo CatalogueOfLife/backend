@@ -40,12 +40,16 @@ public class CorpusIO {
 
   /**
    * Streams the export, handing over the consecutive rows that share a names index id and a rank.
+   * An export from before the classification column reads as well, its rows without a classification.
    * The export is sorted by exactly that, so a group is complete when it is handed over.
    */
   public static void readGroups(File export, Consumer<List<ExportRow>> groupConsumer) throws IOException {
     try (TabReader reader = TabReader.tab(open(export), StandardCharsets.UTF_8, 0, 1)) {
       var iter = reader.iterator();
-      verifyHeader(export, ExportRow.COLUMNS, iter.hasNext() ? iter.next() : new String[0]);
+      String[] header = iter.hasNext() ? iter.next() : new String[0];
+      if (!ExportRow.COLUMNS_WITHOUT_CLASSIFICATION.equals(Arrays.asList(header))) {
+        verifyHeader(export, ExportRow.COLUMNS, header);
+      }
 
       List<ExportRow> group = new ArrayList<>();
       while (iter.hasNext()) {

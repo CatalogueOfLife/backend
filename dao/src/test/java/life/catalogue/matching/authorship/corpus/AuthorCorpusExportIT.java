@@ -55,6 +55,13 @@ public class AuthorCorpusExportIT {
       try (Statement st = con.createStatement()) {
         // the test data comes without parsed authors
         st.execute("UPDATE name SET combination_authors = ARRAY[authorship] WHERE authorship IS NOT NULL");
+        // the classification comes from the metrics of the taxon, for a synonym from those of its accepted taxon,
+        // and holds the names the group is derived from only: none below the rank of a suprageneric name
+        st.execute("UPDATE name_usage SET status = 'SYNONYM', parent_id = 'u1x' WHERE dataset_key = 102 AND id = 'u2x'");
+        st.execute("INSERT INTO taxon_metrics (dataset_key, taxon_id, classification) VALUES "
+          + "(100, 'u1', ARRAY[('k', 'KINGDOM', 'Plantae', null)::simple_name, ('c', 'UNRANKED', 'Coniferae', null)::simple_name,"
+          + "  ('f', 'FAMILY', 'Pinaceae', null)::simple_name, ('g', 'GENUS', 'Abies', null)::simple_name]),"
+          + "(102, 'u1x', ARRAY[('k', 'KINGDOM', 'Plantae', null)::simple_name, ('o', 'ORDER', 'Pinales', null)::simple_name])");
       }
       try (OutputStream out = new FileOutputStream(export)) {
         con.getCopyAPI().copyOut(copyStatement("100,101,102"), out);
@@ -76,5 +83,8 @@ public class AuthorCorpusExportIT {
     assertEquals(NomCode.BOTANICAL, abies.get(0).code());
     assertEquals(List.of("Miller"), abies.get(0).combAuthors());
     assertEquals(List.of("Mill."), abies.get(2).combAuthors());
+    assertEquals(List.of("Plantae", "Coniferae", "Pinaceae"), abies.get(0).classification());
+    assertEquals(List.of("Plantae", "Pinales"), abies.get(1).classification());
+    assertEquals(List.of("Plantae", "Pinales"), abies.get(2).classification());
   }
 }

@@ -1,4 +1,5 @@
 -- Flat export of authored names for the author comparison corpus. Read only, safe on a hot standby.
+-- For external datasets only: the classification comes from taxon_metrics, which imports fill.
 -- See docs/AUTHOR-CORPUS.md
 --
 --   psql -X -q -v ON_ERROR_STOP=1 -v keys='<k1>,<k2>,...' -f author-corpus-export.sql "<conninfo>" | gzip > author-corpus.tsv.gz
@@ -13,7 +14,7 @@ SET statement_timeout = 0;
 COPY (
   SELECT index_id, dataset_key, name_id, rank, code, nom_status, scientific_name, authorship,
          combination_authors, combination_ex_authors, combination_year,
-         basionym_authors, basionym_ex_authors, basionym_year, sanctioning_author
+         basionym_authors, basionym_ex_authors, basionym_year, sanctioning_author, classification
   FROM (
     SELECT nm.index_id, n.dataset_key, n.id AS name_id, n.rank, n.code, n.nom_status, n.scientific_name, n.authorship,
            array_to_string(n.combination_authors, '|')    AS combination_authors,
@@ -34,6 +35,23 @@ COPY (
       AND strpos(array_to_string(n.combination_authors || n.combination_ex_authors
                                  || n.basionym_authors || n.basionym_ex_authors, ''), '|') = 0
   ) x
+    -- the higher taxa of the name's taxon, or of the accepted taxon of a synonym, root first: the names the taxonomic
+    -- group is derived from, none below a suprageneric name. One usage per name, an accepted one first.
+    LEFT JOIN LATERAL (
+      SELECT array_to_string(ARRAY(
+               SELECT replace(c.name, '|', ' ')
+               FROM unnest(tm.classification) WITH ORDINALITY AS c(id, rank, name, authorship, ord)
+               WHERE c.rank IS NULL OR c.rank <= 'SUPRAGENERIC_NAME'::rank OR c.rank IN ('OTHER', 'UNRANKED')
+               ORDER BY c.ord
+             ), '|') AS classification
+      FROM name_usage u
+        JOIN taxon_metrics tm ON tm.dataset_key = u.dataset_key
+                             AND tm.taxon_id = CASE WHEN is_synonym(u.status) THEN u.parent_id ELSE u.id END
+      WHERE u.dataset_key = x.dataset_key AND u.name_id = x.name_id
+        AND u.dataset_key IN (:keys) AND tm.dataset_key IN (:keys)
+      ORDER BY is_synonym(u.status), u.id
+      LIMIT 1
+    ) cl ON true
   WHERE grp > 1
   ORDER BY index_id, rank, dataset_key, name_id
 ) TO STDOUT WITH (FORMAT text, NULL '', HEADER);

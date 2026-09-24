@@ -94,22 +94,33 @@ public class TaxGroupAnalyzer {
    * If nothing can be found, null is returned for unknown.
    */
   public TaxGroup analyze(SimpleName name, Collection<? extends SimpleName> classification) {
+    // only try to analyze names above genus level
+    // otherwise we will often hit false positives as the group parsers work with higher names only!
+    List<String> higher = classification == null ? List.of() : classification.stream()
+      .filter(this::considerName)
+      .map(SimpleName::getName)
+      .toList();
+    return analyzeNames(name, higher);
+  }
+
+  /**
+   * Like {@link #analyze(SimpleName, Collection)} for a classification of bare names, as a flat export or a caller
+   * without the parent usages has them. Every name of the classification counts, so leave out genus and below: the
+   * group parsers work with higher names only.
+   *
+   * @param classification the names of the higher taxa, in any order
+   */
+  public TaxGroup analyzeNames(SimpleName name, Collection<String> classification) {
     CountEnumMap<TaxGroup> groups = new CountEnumMap<>(TaxGroup.class);
     Optional<? extends TaxGroup> pg;
     try {
-      // only try to analyze names above genus level
-      // otherwise we will often hit false positives as the group parsers work with higher names only!
       if (considerName(name)) {
         pg = parser.parse(name.getName());
         pg.ifPresent(groups::inc);
       }
-      if (classification != null) {
-        for (var sn : classification) {
-          if (considerName(sn)) {
-            pg = parser.parse(sn.getName());
-            pg.ifPresent(groups::inc);
-          }
-        }
+      for (String higher : classification) {
+        pg = parser.parse(higher);
+        pg.ifPresent(groups::inc);
       }
     } catch (UnparsableException e) {
       LOG.error("Error analyzing taxonomic group", e);

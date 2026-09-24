@@ -37,5 +37,7 @@ public class AuthorCorpusExportSqlTest {
     String sql = Resources.toString(CorpusIO.EXPORT_SQL);
     assertTrue(sql.contains("n.dataset_key IN (:keys)"));
     assertTrue(sql.contains("nm.dataset_key IN (:keys)"));
+    assertTrue(sql.contains("u.dataset_key IN (:keys)"));
+    assertTrue(sql.contains("tm.dataset_key IN (:keys)"));
   }
 }

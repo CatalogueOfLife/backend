@@ -48,6 +48,12 @@ The corpus of September 2026 was exported from prod with
 12.4 million names of 3.1 million names index ids. `AuthorCorpusExportIT` runs the statement against the test
 schema, so a renamed column fails there and not on prod.
 
+The taxonomic group of a name is persisted nowhere, so the export carries what it is derived from instead: the names
+of the higher taxa of the name's taxon, or of the accepted taxon of a synonym, from `taxon_metrics`, which imports fill
+for external datasets. Only ranks down to a suprageneric name are kept, the ones `TaxGroupAnalyzer` reads, and
+`ExportRow.group()` derives the group with `TaxGroupAnalyzer.analyzeNames`. An export from before that column still
+reads, without a classification and so with a group from the code at best.
+
 **2. Re-parse.** The export holds the parse each dataset got when it was imported, including parser defects fixed
 since. `CorpusReparser` runs every name through the import's parse again, name and authorship separately, and rewrites
 the parsed author columns. A name the export script would not export with today's parse is dropped. It writes
@@ -128,7 +134,7 @@ Tab delimited with a header that is verified on reading, gzipped if the name end
 
 | file | columns |
 |---|---|
-| export | `index_id dataset_key name_id rank code nom_status scientific_name authorship combination_authors combination_ex_authors combination_year basionym_authors basionym_ex_authors basionym_year sanctioning_author`, the authors of a team separated by a pipe, sorted by `index_id, rank` |
+| export | `index_id dataset_key name_id rank code nom_status scientific_name authorship combination_authors combination_ex_authors combination_year basionym_authors basionym_ex_authors basionym_year sanctioning_author classification`, the authors of a team and the higher taxa, root first, separated by a pipe, sorted by `index_id, rank` |
 | pairs | `label source weight support yearAgree yearConflict freqA freqB intraYearDiff intraNoYear intraYearAgree code rank nidx scientificName keyA keyB`, then `datasetKey nameId authorship combAuthors combEx combYear basAuthors basEx basYear sanctioning` once with suffix `A` and once with `B`. One pair of names that shows the pair of keys, side A being the key that sorts first |
 | verdicts | `code keyA keyB label source weight verdict verdictNoYear authorshipA authorshipB`, a pair being identified by the first three |
 | `<file>.parser` | one line naming the parser the authors of `<file>` were parsed with, next to a re-parsed export and the pairs mined from it |

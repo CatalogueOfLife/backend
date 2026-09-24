@@ -82,6 +82,20 @@ public class TaxGroupAnalyzerTest {
   }
 
   /**
+   * The names of a classification without their ranks, as a flat export or a caller without the parent usages has
+   * them: every name counts, so the caller leaves out genus and below.
+   */
+  @Test
+  public void analyzeNames() {
+    assertEquals(TaxGroup.Chordates, analyzer.analyzeNames(sn("Puma"), List.of("Animalia", "Vertebrata", "Felidae")));
+    assertEquals(TaxGroup.Angiosperms, analyzer.analyzeNames(sn("Abies alba"), List.of("Monocotyledoneae")));
+    assertEquals(TaxGroup.Animals, analyzer.analyzeNames(sn("Animalia"), List.of()));
+    assertEquals(TaxGroup.Eukaryotes, analyzer.analyzeNames(sn(Rank.SPECIES, NomCode.BOTANICAL, "Abies alba", null), List.of()));
+    assertEquals(TaxGroup.Algae, analyzer.analyzeNames(sn("Acrochaetium"),
+      List.of("Protista", "Rhodophyta", "Florideophyceae", "Acrochaetiales", "Acrochaetiaceae")));
+  }
+
+  /**
    * https://github.com/CatalogueOfLife/xcol/issues/146
    */
   @Test

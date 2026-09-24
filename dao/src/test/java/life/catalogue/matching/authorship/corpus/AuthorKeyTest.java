@@ -13,7 +13,8 @@ public class AuthorKeyTest {
 
   static ExportRow row(List<String> basEx, List<String> bas, String basYear,
                        List<String> combEx, List<String> comb, String combYear, String sanct) {
-    return new ExportRow(1, 1, "x", "SPECIES", null, null, "Aus bus", "verbatim", comb, combEx, combYear, bas, basEx, basYear, sanct);
+    return new ExportRow(1, 1, "x", "SPECIES", null, null, "Aus bus", "verbatim", comb, combEx, combYear, bas, basEx, basYear, sanct,
+      List.of());
   }
 
   static AuthorKey comb(String... authors) {

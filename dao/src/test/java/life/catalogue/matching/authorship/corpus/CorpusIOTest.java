@@ -1,5 +1,7 @@
 package life.catalogue.matching.authorship.corpus;
 
+import life.catalogue.api.vocab.TaxGroup;
+
 import org.gbif.nameparser.api.NomCode;
 
 import java.io.File;
@@ -26,9 +28,13 @@ public class CorpusIOTest {
   public TemporaryFolder tmp = new TemporaryFolder();
 
   private File export(String name, String... lines) throws IOException {
+    return exportWithHeader(name, HEADER, lines);
+  }
+
+  private File exportWithHeader(String name, String header, String... lines) throws IOException {
     File f = tmp.newFile(name);
     try (Writer w = name.endsWith(".gz") ? UTF8IoUtils.writerFromGzipFile(f) : UTF8IoUtils.writerFromFile(f)) {
-      w.write(HEADER);
+      w.write(header);
       for (String l : lines) {
         w.write(l);
         w.write('\n');
@@ -46,7 +52,8 @@ public class CorpusIOTest {
   @Test
   public void readsAllColumns() throws Exception {
     File f = export("e.tsv",
-      "7\t2006\tn1\tSPECIES\tBOTANICAL\tACCEPTABLE\tAus bus\t(L.) Hook. ex Mill., 1768\tMill.\tHook.\t1768\tL.\t\t1753\tFr.",
+      "7\t2006\tn1\tSPECIES\tBOTANICAL\tACCEPTABLE\tAus bus\t(L.) Hook. ex Mill., 1768\tMill.\tHook.\t1768\tL.\t\t1753\tFr.\t"
+        + "Plantae|Pinaceae",
       "7\t2004\tn2\tSPECIES\t\t\tAus bus\tL.\tL.\t\t\t\t\t\t"
     );
     var rows = groups(f).get(0);
@@ -68,6 +75,29 @@ public class CorpusIOTest {
     assertEquals(List.of(), r.basExAuthors());
     assertEquals("1753", r.basYear());
     assertEquals("Fr.", r.sanctioningAuthor());
+    assertEquals(List.of("Plantae", "Pinaceae"), r.classification());
+    assertEquals(List.of(), rows.get(1).classification());
+  }
+
+  /** an export from before the classification column still reads, without a classification */
+  @Test
+  public void exportWithoutClassification() throws Exception {
+    String header = String.join("\t", ExportRow.COLUMNS.subList(0, ExportRow.COLUMNS.size() - 1)) + "\n";
+    File f = exportWithHeader("e.tsv", header, "7\t2006\tn1\tSPECIES\t\t\tAus bus\tL.\tL.\t\t\t\t\t\t");
+    ExportRow r = groups(f).get(0).get(0);
+    assertEquals(List.of("L."), r.combAuthors());
+    assertEquals(List.of(), r.classification());
+  }
+
+  /** the group is not stored anywhere, it is derived from the classification as the matching derives it */
+  @Test
+  public void classificationGivesTheGroup() throws Exception {
+    File f = export("e.tsv",
+      "7\t2006\tn1\tSPECIES\t\t\tAus bus\tL.\tL.\t\t\t\t\t\t\tAnimalia|Mollusca|Gastropoda",
+      "7\t2004\tn2\tSPECIES\tZOOLOGICAL\t\tAus bus\tL.\tL.\t\t\t\t\t\t\t");
+    var rows = groups(f).get(0);
+    assertEquals(TaxGroup.Gastropods, rows.get(0).group());
+    assertEquals(TaxGroup.Eukaryotes, rows.get(1).group());
   }
 
   /**

@@ -24,7 +24,7 @@ public class CorpusReparserTest {
 
   private static ExportRow row(String rank, String name, String authorship, List<String> comb, String combYear) {
     return new ExportRow(7, 2011, "n1", rank, NomCode.BOTANICAL, null, name, authorship,
-      comb, List.of(), combYear, List.of(), List.of(), null, null);
+      comb, List.of(), combYear, List.of(), List.of(), null, null, List.of("Plantae"));
   }
 
   /** the export holds the parse of the day a dataset was imported, name-parser-rust#20 among it */
@@ -68,7 +68,8 @@ public class CorpusReparserTest {
   @Test
   public void rowRoundTrip() {
     ExportRow r = new ExportRow(1, 2, "x", "SPECIES", null, "nom. illeg.", "Aus bus", "(Mill.) L. ex DC., 1753",
-      List.of("L."), List.of("DC."), "1753", List.of("Mill."), List.of(), null, "Fr.");
+      List.of("L."), List.of("DC."), "1753", List.of("Mill."), List.of(), null, "Fr.",
+      List.of("Plantae", "Pinaceae"));
     assertEquals(r, ExportRow.of(r.toRow()));
   }
 

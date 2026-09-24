@@ -75,7 +75,7 @@ public class CorpusReparser {
       row.scientificName(), row.authorship(),
       List.copyOf(comb.getAuthors()), List.copyOf(comb.getExAuthors()), comb.getYear(),
       List.copyOf(bas.getAuthors()), List.copyOf(bas.getExAuthors()), bas.getYear(),
-      p.getSanctioningAuthor()
+      p.getSanctioningAuthor(), row.classification()
     );
   }
 
