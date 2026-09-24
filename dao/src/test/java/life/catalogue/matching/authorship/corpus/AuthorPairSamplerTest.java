@@ -22,7 +22,7 @@ public class AuthorPairSamplerTest {
     var b = new AuthorPair.Side(2, "b" + n, "B" + n, List.of("B" + n), List.of(), null, List.of(), List.of(), null, null);
     return new AuthorPair(label, label == Label.SAME ? Source.CROSS : Source.INTRA_YEARDIFF, weight,
       new PairStat(weight, 0, 0, 9, 9, 0, 0, 0),
-      code, "SPECIES", n, "Aus bus", ";;;a" + n, ";;;b" + n, a, b);
+      code, "SPECIES", n, "Aus bus", ";;;a" + n, ";;;b" + n, a, b, null);
   }
 
   private static List<AuthorPair> corpus() {

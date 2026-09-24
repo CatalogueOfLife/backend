@@ -10,6 +10,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 
 import org.junit.Rule;
@@ -182,5 +183,25 @@ public class CorpusIOTest {
     }
     var e = assertThrows(IllegalArgumentException.class, () -> groups(f));
     assertTrue(e.getMessage(), e.getMessage().contains("header"));
+  }
+
+  /** a pairs file from before the group column still reads, the committed fixtures among them */
+  @Test
+  public void pairsWithoutGroup() throws Exception {
+    var pairs = CorpusIO.readPairs(Resources.toFile(CorpusEvaluatorTest.KNOWN_MISJUDGEMENTS));
+    assertEquals(9, pairs.size());
+    assertTrue(pairs.stream().allMatch(p -> p.group() == null));
+  }
+
+  @Test
+  public void pairGroupRoundTrip() throws Exception {
+    AuthorPair p = CorpusIO.readPairs(Resources.toFile(CorpusEvaluatorTest.KNOWN_MISJUDGEMENTS)).get(0);
+    AuthorPair g = new AuthorPair(p.label(), p.source(), p.weight(), p.stat(), p.code(), p.rank(), p.nidx(), p.scientificName(),
+      p.keyA(), p.keyB(), p.a(), p.b(), TaxGroup.Gastropods);
+    File f = tmp.newFile("pairs.tsv");
+    try (var w = CorpusIO.writer(f, AuthorPair.COLUMNS)) {
+      w.write(g.toRow());
+    }
+    assertEquals(List.of(g), CorpusIO.readPairs(f));
   }
 }

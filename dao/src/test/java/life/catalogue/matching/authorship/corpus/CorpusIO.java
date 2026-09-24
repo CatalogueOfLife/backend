@@ -127,8 +127,20 @@ public class CorpusIO {
     return writer(pairs, AuthorPair.COLUMNS);
   }
 
+  /**
+   * Streams the pairs. A pairs file from before the group column reads as well, its pairs without a group.
+   */
   public static void readPairs(File pairs, Consumer<AuthorPair> pairConsumer) throws IOException {
-    read(pairs, AuthorPair.COLUMNS, row -> pairConsumer.accept(AuthorPair.of(row)));
+    try (TabReader reader = TabReader.tab(open(pairs), StandardCharsets.UTF_8, 0, 1)) {
+      var iter = reader.iterator();
+      String[] header = iter.hasNext() ? iter.next() : new String[0];
+      if (!AuthorPair.COLUMNS_WITHOUT_GROUP.equals(Arrays.asList(header))) {
+        verifyHeader(pairs, AuthorPair.COLUMNS, header);
+      }
+      while (iter.hasNext()) {
+        pairConsumer.accept(AuthorPair.of(iter.next()));
+      }
+    }
   }
 
   public static List<AuthorPair> readPairs(File pairs) throws IOException {

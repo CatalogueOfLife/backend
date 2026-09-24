@@ -139,7 +139,7 @@ Tab delimited with a header that is verified on reading, gzipped if the name end
 | file | columns |
 |---|---|
 | export | `index_id dataset_key name_id rank code nom_status scientific_name authorship combination_authors combination_ex_authors combination_year basionym_authors basionym_ex_authors basionym_year sanctioning_author classification`, the authors of a team and the higher taxa, root first, separated by a pipe, sorted by `index_id, rank` |
-| pairs | `label source weight support yearAgree yearConflict freqA freqB intraYearDiff intraNoYear intraYearAgree code rank nidx scientificName keyA keyB`, then `datasetKey nameId authorship combAuthors combEx combYear basAuthors basEx basYear sanctioning` once with suffix `A` and once with `B`. One pair of names that shows the pair of keys, side A being the key that sorts first |
+| pairs | `label source weight support yearAgree yearConflict freqA freqB intraYearDiff intraNoYear intraYearAgree code rank nidx scientificName keyA keyB`, then `datasetKey nameId authorship combAuthors combEx combYear basAuthors basEx basYear sanctioning` once with suffix `A` and once with `B`, then `group`. One pair of names that shows the pair of keys, side A being the key that sorts first. `group` is the taxonomic group both names belong to, derived from their classification (`AuthorPair.commonGroup`: the broader of two nested groups), empty when unknown or disparate; a pairs file without it still reads |
 | verdicts | `code keyA keyB label source weight verdict verdictNoYear authorshipA authorshipB`, a pair being identified by the first three |
 | `<file>.parser` | one line naming the parser the authors of `<file>` were parsed with, next to a re-parsed export and the pairs mined from it |
 

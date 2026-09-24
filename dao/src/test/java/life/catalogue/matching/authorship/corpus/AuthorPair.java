@@ -1,6 +1,7 @@
 package life.catalogue.matching.authorship.corpus;
 
 import life.catalogue.api.model.Name;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.matching.authorship.corpus.LabelRules.Label;
 import life.catalogue.matching.authorship.corpus.LabelRules.Source;
 
@@ -19,11 +20,12 @@ import javax.annotation.Nullable;
  *
  * @param weight number of names backing the label
  * @param code   the nomenclatural code of the names, taken from the whole group if these two do not have one
+ * @param group  the taxonomic group of the two names, see {@link #commonGroup}; null if unknown or disparate
  */
 public record AuthorPair(
   Label label, Source source, int weight, PairStat stat,
   @Nullable NomCode code, String rank, int nidx, String scientificName,
-  String keyA, String keyB, Side a, Side b
+  String keyA, String keyB, Side a, Side b, @Nullable TaxGroup group
 ) {
   private static final List<String> SIDE_COLUMNS = List.of(
     "datasetKey", "nameId", "authorship", "combAuthors", "combEx", "combYear", "basAuthors", "basEx", "basYear", "sanctioning"
@@ -32,8 +34,24 @@ public record AuthorPair(
     Stream.of("label", "source", "weight", "support", "yearAgree", "yearConflict", "freqA", "freqB",
       "intraYearDiff", "intraNoYear", "intraYearAgree", "code", "rank", "nidx", "scientificName", "keyA", "keyB"),
     SIDE_COLUMNS.stream().map(c -> c + "A"),
-    SIDE_COLUMNS.stream().map(c -> c + "B")
+    SIDE_COLUMNS.stream().map(c -> c + "B"),
+    Stream.of("group")
   ).flatMap(s -> s).toList();
+  /** the columns of a pairs file from before the group, which still reads */
+  public static final List<String> COLUMNS_WITHOUT_GROUP = COLUMNS.subList(0, COLUMNS.size() - 1);
+
+  /**
+   * @return the group both names belong to: the broader of two nested groups, the one known if the other is not, null
+   *         for disparate ones
+   */
+  @Nullable
+  public static TaxGroup commonGroup(@Nullable TaxGroup a, @Nullable TaxGroup b) {
+    if (a == null) return b;
+    if (b == null) return a;
+    if (a.contains(b)) return a;
+    if (b.contains(a)) return b;
+    return null;
+  }
 
   /**
    * One name of a pair with everything needed to rebuild its parsed authorship without a name parser.
@@ -117,6 +135,7 @@ public record AuthorPair(
     row.add(keyB);
     a.addTo(row);
     b.addTo(row);
+    row.add(group == null ? null : group.name());
     return row.toArray(new String[0]);
   }
 
@@ -128,8 +147,13 @@ public record AuthorPair(
       code == null ? null : NomCode.valueOf(code), ExportRow.col(row, 12), num(row, 13), ExportRow.col(row, 14),
       // a key starts with its slot separators, which must not be trimmed away
       row[15], row[16],
-      Side.of(row, 17), Side.of(row, 17 + SIDE_COLUMNS.size())
+      Side.of(row, 17), Side.of(row, 17 + SIDE_COLUMNS.size()), group(ExportRow.col(row, COLUMNS.size() - 1))
     );
+  }
+
+  @Nullable
+  private static TaxGroup group(@Nullable String name) {
+    return name == null ? null : TaxGroup.valueOf(name);
   }
 
   private static int num(String[] row, int idx) {

@@ -368,7 +368,8 @@ public class AuthorPairMiner {
     ExportRow b = swap ? low : high;
     PairStat stat = stat(idx, keyIds.getInt(swap ? keyHigh : keyLow), keyIds.getInt(swap ? keyLow : keyHigh));
     AuthorPair pair = new AuthorPair(l.label(), l.source(), l.weight(), stat, code, a.rank(), a.nidx(), a.scientificName(),
-      swap ? keyHigh : keyLow, swap ? keyLow : keyHigh, AuthorPair.Side.of(a), AuthorPair.Side.of(b));
+      swap ? keyHigh : keyLow, swap ? keyLow : keyHigh, AuthorPair.Side.of(a), AuthorPair.Side.of(b),
+      AuthorPair.commonGroup(a.group(), b.group()));
     try {
       writer.write(pair.toRow());
     } catch (IOException e) {

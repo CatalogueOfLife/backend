@@ -78,8 +78,8 @@ public class CorpusEvaluator {
 
   public Verdict evaluate(AuthorPair p) {
     return new Verdict(p,
-      comparator.compare(p.a().toName(p.code(), true), p.b().toName(p.code(), true)),
-      comparator.compare(p.a().toName(p.code(), false), p.b().toName(p.code(), false))
+      comparator.compare(p.a().toName(p.code(), true), p.b().toName(p.code(), true), p.group()),
+      comparator.compare(p.a().toName(p.code(), false), p.b().toName(p.code(), false), p.group())
     );
   }
 

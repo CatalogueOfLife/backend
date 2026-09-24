@@ -1,5 +1,6 @@
 package life.catalogue.matching.authorship.corpus;
 
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
@@ -9,7 +10,10 @@ import life.catalogue.matching.authorship.corpus.LabelRules.Source;
 
 import org.gbif.nameparser.api.NomCode;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.junit.Test;
 
@@ -21,11 +25,16 @@ public class CorpusEvaluatorTest {
   private final CorpusEvaluator evaluator = new CorpusEvaluator(new AuthorComparator(AuthorshipNormalizer.INSTANCE));
 
   private static AuthorPair pair(Label label, NomCode code, int weight, String authorA, String yearA, String authorB, String yearB) {
+    return pair(label, code, weight, authorA, yearA, authorB, yearB, null);
+  }
+
+  private static AuthorPair pair(Label label, NomCode code, int weight, String authorA, String yearA, String authorB, String yearB,
+                                 @Nullable TaxGroup group) {
     var a = new AuthorPair.Side(1, "a", authorA, List.of(authorA), List.of(), yearA, List.of(), List.of(), null, null);
     var b = new AuthorPair.Side(2, "b", authorB, List.of(authorB), List.of(), yearB, List.of(), List.of(), null, null);
     return new AuthorPair(label, label == Label.SAME ? Source.CROSS : Source.INTRA_YEARDIFF, weight,
       new PairStat(weight, 0, 0, 9, 9, 0, 0, 0),
-      code, "SPECIES", 1, "Aus bus", "a", "b", a, b);
+      code, "SPECIES", 1, "Aus bus", "a", "b", a, b, group);
   }
 
   /**
@@ -80,5 +89,17 @@ public class CorpusEvaluatorTest {
     var result = evaluator.evaluate(List.of(pair(Label.DUBIOUS, null, 3, "Bryk", "1948", "Bryk", "1948")));
     assertEquals(0, result.matrix(CorpusEvaluator.ALL, true).total());
     assertEquals(1, result.verdicts().size());
+  }
+
+  /** the group of the pair reaches the matcher, with the years and without */
+  @Test
+  public void passesTheGroup() {
+    List<TaxGroup> groups = new ArrayList<>();
+    var e = new CorpusEvaluator(new AuthorComparator((t1, t2, ctx, mode) -> {
+      groups.add(ctx.group());
+      return Equality.EQUAL;
+    }));
+    e.evaluate(pair(Label.SAME, NomCode.ZOOLOGICAL, 1, "Sowerby", "1842", "G. B. Sowerby II", "1842", TaxGroup.Gastropods));
+    assertEquals(List.of(TaxGroup.Gastropods, TaxGroup.Gastropods), groups);
   }
 }

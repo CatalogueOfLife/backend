@@ -1,5 +1,6 @@
 package life.catalogue.matching.authorship.corpus;
 
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.matching.authorship.corpus.LabelRules.Label;
@@ -204,5 +205,11 @@ public class AuthorPairMinerTest {
     s = new AuthorPairMiner(LabelRules.DEFAULT, 4).mine(export, out);
     assertEquals(0, s.capped);
     assertEquals(6, CorpusIO.readPairs(out).size());
+  }
+
+  /** a pair carries the group of its names, derived from their classification */
+  @Test
+  public void pairsCarryTheirGroup() {
+    assertEquals(TaxGroup.Angiosperms, pair(";;;dc", ";;;decandolle").group());
   }
 }
