@@ -20,6 +20,8 @@ import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -33,6 +35,18 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HomotypicConsolidatorTest {
+  private DatasetInfoCache infoCache;
+
+  // findPrimaryUsage replaces the static cache by a mock, which a later test class in the same fork would read otherwise
+  @Before
+  public void keepInfoCache() {
+    infoCache = DatasetInfoCache.CACHE;
+  }
+
+  @After
+  public void restoreInfoCache() {
+    DatasetInfoCache.CACHE = infoCache;
+  }
 
   @Test
   public void isSameName() throws Exception {
@@ -87,9 +101,9 @@ public class HomotypicConsolidatorTest {
     var session = mock(SqlSession.class);
     var factory = mock(SqlSessionFactory.class);
 
-    var infoCache = TestUtils.mockedInfoCache();
+    var mockedCache = TestUtils.mockedInfoCache();
     var info = new DatasetInfoCache.DatasetInfo(3, DatasetOrigin.PROJECT,3, null, false);
-    when(infoCache.info(anyInt())).thenReturn(info);
+    when(mockedCache.info(anyInt())).thenReturn(info);
 
     var hc = HomotypicConsolidator.forTaxa(factory, 3, List.of(), u -> 1);
 
