@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * What a merge did and everything a person should look at.
+ * What a merge did - a diff of the registry - and everything a person should look at.
  */
 public class MergeReport {
   private static final int LIST_LIMIT = 500;
@@ -15,11 +15,21 @@ public class MergeReport {
   public int withoutName;
   public int withoutId;
   public int relationsDropped;
-  public final List<String> conflicts = new ArrayList<>();
-  /** a value of the files a source now gives otherwise: the harvest keeps the file's, a person decides */
+  public final List<String> addedPersons = new ArrayList<>();
+  /** persons of before that became part of another: "wd:Q1 into wd:Q2: a Wikidata redirect of Q1 to Q2" */
+  public final List<String> joined = new ArrayList<>();
+  public final List<String> retired = new ArrayList<>();
+  public final List<String> unretired = new ArrayList<>();
+  /** a value of a person of before the sources give otherwise now: "wd:Q1 born: 1700 -> 1750" */
   public final List<String> changed = new ArrayList<>();
+  /** a value of a curated person the sources give otherwise, which stays */
+  public final List<String> curatedKept = new ArrayList<>();
+  public final List<String> formsAdded = new ArrayList<>();
+  public final List<String> formsRemoved = new ArrayList<>();
+  public final List<String> relationsAdded = new ArrayList<>();
+  public final List<String> relationsRemoved = new ArrayList<>();
+  public final List<String> conflicts = new ArrayList<>();
   public final List<String> ambiguous = new ArrayList<>();
-  public final List<String> notSeen = new ArrayList<>();
 
   public String render() {
     StringBuilder sb = new StringBuilder();
@@ -27,10 +37,18 @@ public class MergeReport {
       existing, added, merged, redirected));
     sb.append(String.format("dropped: records without a name %,d, records without an id %,d, relations to no person %,d%n",
       withoutName, withoutId, relationsDropped));
+    list(sb, "Values changed", changed);
+    list(sb, "Persons added", addedPersons);
+    list(sb, "Persons joined", joined);
+    list(sb, "Persons retired", retired);
+    list(sb, "Persons no longer retired", unretired);
+    list(sb, "Forms added", formsAdded);
+    list(sb, "Forms removed", formsRemoved);
+    list(sb, "Relations added", relationsAdded);
+    list(sb, "Relations removed", relationsRemoved);
+    list(sb, "Curated values the sources give otherwise", curatedKept);
     list(sb, "Sources disagree", conflicts);
-    list(sb, "The files and a source disagree", changed);
     list(sb, "Authority ids claimed by two persons", ambiguous);
-    list(sb, "In the files but in no source any more", notSeen);
     return sb.toString();
   }
 

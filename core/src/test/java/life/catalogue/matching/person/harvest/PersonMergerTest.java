@@ -10,15 +10,18 @@ import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.matching.person.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 public class PersonMergerTest {
+  static final LocalDate DAY = LocalDate.of(2026, 9, 24);
 
   static PersonRecord.Builder wd(String q) {
     var b = new PersonRecord.Builder(PersonSource.WIKIDATA);
@@ -39,7 +42,7 @@ public class PersonMergerTest {
   }
 
   static PersonMerger.Result merge(PersonFiles.Content existing, PersonRecord... records) {
-    var r = new PersonMerger().merge(existing, List.of(records), Map.of());
+    var r = new PersonMerger(DAY).merge(existing, List.of(records), Map.of());
     assertEquals(List.of(), new MemoryPersonStore(r.content()).problems());
     return r;
   }
@@ -98,25 +101,6 @@ public class PersonMergerTest {
     assertTrue(r.report().conflicts.get(0), r.report().conflicts.get(0).contains("born"));
   }
 
-  /** a value in the files is never overwritten, a curated line never removed */
-  @Test
-  public void fillsOnly() {
-    var existing = new PersonFiles.Content(
-      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), "Linnaeus", null, null, 1707, null, null, null, Set.of(), PersonSource.CURATED)),
-      List.of(new PersonName("wd:Q1", "L.", PersonNameKind.STANDARD, PersonFormCode.BOT, PersonSource.CURATED)),
-      List.of());
-    var w = wd("Q1");
-    w.label("Carl Linnaeus");
-    w.born(1708);
-    w.died(1778);
-    var r = merge(existing, w.build());
-    Person p = r.content().persons().get(0);
-    assertEquals(Integer.valueOf(1707), p.born());
-    assertEquals(Integer.valueOf(1778), p.died());
-    assertEquals(PersonSource.CURATED, p.source());
-    assertEquals(2, r.content().names().size());
-  }
-
   /** an IPNI person that Wikidata links later moves to its Q-id and keeps the IPNI one as a former id */
   @Test
   public void gainsABetterId() {
@@ -128,7 +112,9 @@ public class PersonMergerTest {
     var w = wd("Q5");
     w.ipni = "9-1";
     w.label("James Sowerby");
-    var r = merge(existing, w.build());
+    var i = ipni("9-1");
+    i.name("Sowerby", PersonNameKind.STANDARD, PersonFormCode.BOT);
+    var r = merge(existing, w.build(), i.build());
     Person p = r.content().persons().get(0);
     assertEquals("wd:Q5", p.id());
     assertEquals(List.of("ipni:9-1"), p.formerIds());
@@ -189,7 +175,7 @@ public class PersonMergerTest {
     assertNull(p.died());
     assertTrue(String.join("\n", r.report().conflicts), r.report().conflicts.stream().anyMatch(c -> c.contains("born 1700 after died 1691")));
 
-    // a year already in the files stays, only the filled one goes
+    // a curated line keeps its years, the source's are only reported
     var existing = new PersonFiles.Content(
       List.of(new Person("wd:Q2", "Q2", null, null, List.of(), null, null, null, null, 1801, null, null, Set.of(), PersonSource.CURATED)),
       List.of(new PersonName("wd:Q2", "A. B. Koelpin", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.CURATED)),
@@ -234,7 +220,7 @@ public class PersonMergerTest {
     assertEquals(2, r.content().persons().size());
     assertEquals("1-1", person(r.content(), "wd:Q5").ipni());
     assertEquals("2-2", person(r.content(), "wd:Q6").ipni());
-    assertEquals(List.of("wd:Q6"), r.report().notSeen);
+    assertEquals(List.of("wd:Q6"), r.report().retired);
     assertFalse(r.report().ambiguous.isEmpty());
   }
 
@@ -249,14 +235,19 @@ public class PersonMergerTest {
       List.of());
     var w = wd("Q2");
     w.label("Ann Doe");
-    var r = new PersonMerger().merge(existing, List.of(w.build()), Map.of("Q1", "Q2"));
+    var r = new PersonMerger(DAY).merge(existing, List.of(w.build()), Map.of("Q1", "Q2"));
     assertEquals(List.of(), new MemoryPersonStore(r.content()).problems());
     assertEquals(1, r.content().persons().size());
     Person p = r.content().persons().get(0);
     assertEquals("wd:Q2", p.id());
     assertEquals(List.of("wd:Q1"), p.formerIds());
-    assertEquals(Integer.valueOf(1800), p.born());
-    assertEquals(Integer.valueOf(1870), p.died());
+    // the old id finds the person it was joined into
+    assertSame(p, new MemoryPersonStore(r.content()).get("wd:Q1"));
+    // the values follow the item that stays, and it gives none
+    assertNull(p.born());
+    assertNull(p.died());
+    assertEquals(1, r.report().joined.size());
+    assertTrue(r.report().joined.get(0), r.report().joined.get(0).startsWith("wd:Q1 into wd:Q2"));
   }
 
   /** a curated person keeps its line and its values, even when a source links it to another person */
@@ -297,22 +288,6 @@ public class PersonMergerTest {
     assertTrue(String.join("\n", r.report().conflicts), r.report().conflicts.stream().anyMatch(c -> c.contains("family") && c.contains("Bojko")));
   }
 
-  /** after the first harvest the files hold a value, and only the report can show that a source now says otherwise */
-  @Test
-  public void filesAndSourceDisagree() {
-    var existing = new PersonFiles.Content(
-      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, 1700, null, null, null, Set.of(), PersonSource.WIKIDATA)),
-      List.of(new PersonName("wd:Q1", "A. Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA)),
-      List.of());
-    var w = wd("Q1");
-    w.label("A. Doe");
-    w.born(1750);
-    var r = merge(existing, w.build());
-    assertEquals(Integer.valueOf(1700), r.content().persons().get(0).born());
-    assertEquals(1, r.report().changed.size());
-    assertTrue(r.report().changed.get(0), r.report().changed.get(0).contains("born: files 1700, wikidata 1750"));
-  }
-
   @Test
   public void redirectedItem() {
     var existing = new PersonFiles.Content(
@@ -321,7 +296,7 @@ public class PersonMergerTest {
       List.of());
     var w = wd("Q2");
     w.label("Ann Doe");
-    var r = new PersonMerger().merge(existing, List.of(w.build()), Map.of("Q1", "Q2"));
+    var r = new PersonMerger(DAY).merge(existing, List.of(w.build()), Map.of("Q1", "Q2"));
     assertEquals(List.of(), new MemoryPersonStore(r.content()).problems());
     assertEquals(1, r.content().persons().size());
     Person p = r.content().persons().get(0);
@@ -358,17 +333,6 @@ public class PersonMergerTest {
     assertEquals(1, r.report().withoutName);
   }
 
-  @Test
-  public void notSeenIsKept() {
-    var existing = new PersonFiles.Content(
-      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, null, null, null, null, Set.of(), PersonSource.WIKIDATA)),
-      List.of(new PersonName("wd:Q1", "A. Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA)),
-      List.of());
-    var r = merge(existing);
-    assertEquals(1, r.content().persons().size());
-    assertEquals(List.of("wd:Q1"), r.report().notSeen);
-  }
-
   /** a second IPNI id of an item is a former id of its person, and the IPNI author of that id joins it */
   @Test
   public void secondIpniIdOfAnItem() {
@@ -402,6 +366,7 @@ public class PersonMergerTest {
     w.ipni = "1-1";
     w.otherId(Person.IPNI + "2-2");
     w.label("Anna Smith");
+    w.family("Smith");
     var r = merge(existing, w.build());
     assertEquals(1, r.content().persons().size());
     Person p = r.content().persons().get(0);
@@ -425,5 +390,128 @@ public class PersonMergerTest {
     assertEquals(2, r.content().persons().size());
     assertEquals(List.of(), person(r.content(), "wd:Q2").formerIds());
     assertEquals(1, r.report().ambiguous.size());
+  }
+
+  /** a curated person keeps its line as it is, empty cells included; what the sources say otherwise is reported */
+  @Test
+  public void curatedLineWins() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), "Linnaeus", null, null, 1707, null, null, null, Set.of(),
+        PersonSource.CURATED)),
+      List.of(new PersonName("wd:Q1", "L.", PersonNameKind.STANDARD, PersonFormCode.BOT, PersonSource.CURATED)),
+      List.of());
+    var w = wd("Q1");
+    w.label("Carl Linnaeus");
+    w.born(1708);
+    w.died(1778);
+    var r = merge(existing, w.build());
+    Person p = r.content().persons().get(0);
+    assertEquals(Integer.valueOf(1707), p.born());
+    assertNull(p.died());
+    assertEquals(PersonSource.CURATED, p.source());
+    assertEquals(2, r.content().names().size());
+    String kept = String.join("\n", r.report().curatedKept);
+    assertTrue(kept, r.report().curatedKept.contains("wd:Q1 born: curated 1707, sources 1708"));
+    assertTrue(kept, r.report().curatedKept.contains("wd:Q1 died: curated null, sources 1778"));
+  }
+
+  /** an IPNI birth year changing upstream changes the registry, and the report says from what to what */
+  @Test
+  public void followsTheSource() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("ipni:1-1", null, "1-1", null, List.of(), "Doe", null, null, 1800, null, null, null, Set.of(),
+        PersonSource.IPNI)),
+      List.of(new PersonName("ipni:1-1", "Doe", PersonNameKind.STANDARD, PersonFormCode.BOT, PersonSource.IPNI)),
+      List.of());
+    var i = ipni("1-1");
+    i.family("Doe");
+    i.name("Doe", PersonNameKind.STANDARD, PersonFormCode.BOT);
+    i.born(1801);
+    var r = merge(existing, i.build());
+    assertEquals(Integer.valueOf(1801), r.content().persons().get(0).born());
+    assertEquals(List.of("ipni:1-1 born: 1800 -> 1801"), r.report().changed);
+  }
+
+  /** a person no source has any more keeps its row and ids, retired, and loses its harvested forms */
+  @Test
+  public void notSeenIsRetired() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, null, null, null, null, Set.of(),
+        PersonSource.WIKIDATA)),
+      List.of(new PersonName("wd:Q1", "A. Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA)),
+      List.of());
+    var r = merge(existing);
+    Person p = r.content().persons().get(0);
+    assertEquals(DAY, p.retired());
+    assertEquals(List.of("wd:Q1"), r.report().retired);
+    assertEquals(List.of(), r.content().names());
+    assertEquals(List.of("wd:Q1 A. Doe FULL ANY"), r.report().formsRemoved);
+  }
+
+  /** a retired person a source names again is back */
+  @Test
+  public void retiredComesBack() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, null, null, null, null, Set.of(),
+        PersonSource.WIKIDATA, LocalDate.of(2026, 1, 1), null)),
+      List.of(), List.of());
+    var w = wd("Q1");
+    w.label("A. Doe");
+    var r = merge(existing, w.build());
+    assertNull(r.content().persons().get(0).retired());
+    assertEquals(List.of("wd:Q1"), r.report().unretired);
+  }
+
+  /** a source still listing a person but naming it no more retires it too: nobody can cite it */
+  @Test
+  public void noSourceNamesIt() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, null, null, null, null, Set.of(),
+        PersonSource.WIKIDATA)),
+      List.of(new PersonName("wd:Q1", "A. Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA)),
+      List.of());
+    var r = merge(existing, wd("Q1").build());
+    assertEquals(DAY, r.content().persons().get(0).retired());
+    assertEquals(List.of("wd:Q1: no source names it"), r.report().retired);
+  }
+
+  /** a form a source no longer gives goes, a curated one stays */
+  @Test
+  public void formDropped() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, null, null, null, null, Set.of(),
+        PersonSource.WIKIDATA)),
+      List.of(new PersonName("wd:Q1", "Ann Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA),
+        new PersonName("wd:Q1", "Nan Doe", PersonNameKind.VARIANT, PersonFormCode.ANY, PersonSource.WIKIDATA),
+        new PersonName("wd:Q1", "A. D.", PersonNameKind.VARIANT, PersonFormCode.ANY, PersonSource.CURATED)),
+      List.of());
+    var w = wd("Q1");
+    w.label("Ann Doe");
+    var r = merge(existing, w.build());
+    assertEquals(Set.of("Ann Doe", "A. D."), r.content().names().stream().map(PersonName::form).collect(Collectors.toSet()));
+    assertEquals(List.of("wd:Q1 Nan Doe VARIANT ANY"), r.report().formsRemoved);
+    assertEquals(List.of(), r.report().formsAdded);
+  }
+
+  /** a relation a source no longer gives goes, a curated one stays */
+  @Test
+  public void relationDropped() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, null, null, null, null, Set.of(),
+          PersonSource.WIKIDATA),
+        new Person("wd:Q2", "Q2", null, null, List.of(), null, null, null, null, null, null, null, Set.of(),
+          PersonSource.WIKIDATA)),
+      List.of(new PersonName("wd:Q1", "A. Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA),
+        new PersonName("wd:Q2", "B. Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA)),
+      List.of(new PersonRelation("wd:Q2", PersonRelationType.PARENT, "wd:Q1", PersonSource.WIKIDATA),
+        new PersonRelation("wd:Q2", PersonRelationType.SIBLING, "wd:Q1", PersonSource.CURATED)));
+    var a = wd("Q1");
+    a.label("A. Doe");
+    var b = wd("Q2");
+    b.label("B. Doe");
+    var r = merge(existing, a.build(), b.build());
+    assertEquals(List.of(new PersonRelation("wd:Q2", PersonRelationType.SIBLING, "wd:Q1", PersonSource.CURATED)),
+      r.content().relations());
+    assertEquals(List.of("wd:Q2 PARENT wd:Q1"), r.report().relationsRemoved);
   }
 }
