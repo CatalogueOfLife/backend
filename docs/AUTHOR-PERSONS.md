@@ -28,8 +28,8 @@ and every file is written sorted so a harvest diffs line by line.
   filius `f.` from the standard form), or Wikidata's family and given names (P734, P735) put in the order of the
   label, with a trailing `I` to `IV`, `Jr.` or `Sr.` of the label as suffix. They are never split off a full name: the
   last word is not the surname in `Geoffroy Saint-Hilaire` or `Ruiz López`. Wikidata's several family names of one
-  person are alternatives - a maiden and a married name, a latinised one - so only those its label holds are kept,
-  else the first.
+  person are alternatives - a maiden and a married name, a latinised one - so only those its label holds are kept, none
+  that is part of another it holds (`Pickard` of `Pickard-Cambridge`), else the first.
 - **Years** only: `born`, `died`, and the active years `activeFrom`/`activeTo` for a floruit. A single floruit year
   is both. A Wikidata date less precise than a year is no year: `+2000-00-00` at century precision is the 20th century,
   not 2000, and is left out.
@@ -52,7 +52,9 @@ person has a name form.
 
 `PersonRegistry.get()` loads the files once, on first use. `candidates(citation, code)` folds the citation with
 `AuthorshipNormalizer.normalize`, the key citations are compared by everywhere, and returns every person with a form
-under that key whose code applies. Forms are derived per person with a family name when loading: the initials of the
+under that key whose code applies. Keys are normalized until they no longer change, on the forms as on the citations:
+normalizing twice can change a key (`McQueen`, `Saeed`, `Đinh`), and the comparator hands over authors normalized
+already. Forms are derived per person with a family name when loading: the initials of the
 given names with family name and suffix (`g b sowerby ii`), the same of every `FULL` or `VARIANT` form that ends with
 the family name and suffix, the family name with its suffix (`hooker filius`) and the bare family name (`sowerby`). The
 full names and variants count because Wikidata's given names often hold fewer names than its label - G. B. Sowerby II
@@ -79,8 +81,10 @@ used in production ([AUTHOR-CORPUS.md](AUTHOR-CORPUS.md)).
   with the years: under `UNKNOWN`, relatives citing the same year end `EQUAL`, a few years apart `DIFFERENT`, and without
   years `UNKNOWN`.
 - An author that resolves to nobody goes to the string comparison, against itself or, if the other side resolved,
-  against every form of the other side's persons. `L. Cox` thus meets the `L. R. Cox` derived for the person `Cox`
-  names. Only this fallback depends on the comparator's mode.
+  against every form of the other side's persons the string comparison can read. `L. Cox` thus meets the `L. R. Cox`
+  derived for the person `Cox` names. Comma forms such as `gaimard, j p` and forms of initials only such as `j t s` are
+  left out: they parse to a one letter surname, which the comparison takes for the start of any surname. Only this
+  fallback depends on the comparator's mode.
 - Teams keep the rule of the string comparison: any author of one that is any author of the other makes them `EQUAL`.
 - `explain` returns what every author pair resolved to and which rule decided it: `IDENTICAL` teams, `IDENTITY`,
   `RELATIVES` or `FALLBACK`. A listener given to the matcher sees every explanation.
