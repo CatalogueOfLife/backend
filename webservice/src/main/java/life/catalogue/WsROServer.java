@@ -32,6 +32,8 @@ import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ThumborService;
 import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.person.PersonStore;
+import life.catalogue.matching.person.PgPersonStore;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.parser.AreaParser;
@@ -204,6 +206,9 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
     // event broker
     broker = new EventBroker(cfg.broker);
     env.lifecycle().manage(ManagedUtils.from(broker));
+    // the person registry, whose caches every server clears on a PersonsChanged event
+    var persons = new PgPersonStore(getSqlSessionFactory(), cfg.persons);
+    broker.register(persons);
 
     // validation
     var validator = env.getValidator();
@@ -278,7 +283,7 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
       ddao, dsdao, new AtomicBoolean(),
       diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, imgService, thumborService,
-      FeedbackService.passThru(), doiResolver, areaLookup
+      FeedbackService.passThru(), doiResolver, areaLookup, persons
     );
 
     // app specific additions on top of the shared read only stack
@@ -342,7 +347,8 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
                                         NameDao ndao, PublisherDao pdao, SectorPublisherDao spdao, ReferenceDao rdao,
                                         NameUsageDao nudao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService,
-                                        ImageService imgService, ThumborService thumborService, FeedbackService feedbackService, DoiResolver doiResolver, AreaLabelLookup areaLookup) {
+                                        ImageService imgService, ThumborService thumborService, FeedbackService feedbackService, DoiResolver doiResolver, AreaLabelLookup areaLookup,
+                                        PersonStore persons) {
     // dataset scoped resources
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetImportResource(diDao));
@@ -374,6 +380,7 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
     j.register(new VersionResource(cfg.versionString(), LocalDateTime.now()));
     j.register(new VocabResource(cfg.gazetteerDir, areaLookup));
     j.register(new IdentifierScopeResource());
+    j.register(new PersonResource(persons, factory));
 
     // global parsers
     j.register(new HomotypicGroupingResource());

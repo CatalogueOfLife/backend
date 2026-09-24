@@ -183,6 +183,10 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @NotNull
   public MatchingConfig matching = new MatchingConfig();
 
+  @Valid
+  @NotNull
+  public PersonConfig persons = new PersonConfig();
+
   /**
    * Per-deployment mapping from dataset keys to identifier scope strings.
    * Used by the identifier scope registry to attach scoped identifiers during

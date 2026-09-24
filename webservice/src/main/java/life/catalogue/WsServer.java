@@ -66,6 +66,7 @@ import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.person.PgPersonStore;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.parser.AreaParser;
@@ -277,6 +278,9 @@ public class WsServer extends Application<WsServerConfig> {
     // event broker - starts immediately
     var broker = new EventBroker(cfg.broker);
     env.lifecycle().manage(ManagedUtils.from(broker));
+    // the person registry, whose caches every server clears on a PersonsChanged event
+    var persons = new PgPersonStore(getSqlSessionFactory(), cfg.persons);
+    broker.register(persons);
 
     // validation
     var validator = env.getValidator();
@@ -506,7 +510,7 @@ public class WsServer extends Application<WsServerConfig> {
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
       ddao, dsdao, exportManager.blocked(), diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService,
-      imgService, thumborService, feedback, doiResolver, areaLookup
+      imgService, thumborService, feedback, doiResolver, areaLookup, persons
     );
 
     // global

@@ -89,6 +89,26 @@ used in production ([AUTHOR-CORPUS.md](AUTHOR-CORPUS.md)).
 - `explain` returns what every author pair resolved to and which rule decided it: `IDENTICAL` teams, `IDENTITY`,
   `RELATIVES` or `FALLBACK`. A listener given to the matcher sees every explanation.
 
+## The API
+
+Read only, on both servers:
+
+- `GET /person/{id}` - a person with its forms and relations. `id` is any id the person answers to: `wd:Q157501`,
+  `ipni:4084-1` or a former id. The forms are those the sources and curators gave, not the derived ones. 404 for none.
+- `GET /person/match?q=Hook.f.&code=botanical&year=1867&group=Angiosperms` - one author citation; everything but `q`
+  is optional. The answer holds the citation, the key it was looked up by, a status and the candidates: `RESOLVED`
+  with one person, `AMBIGUOUS` with several, `UNKNOWN` with none, and `RULED_OUT` with the persons the year or the
+  group excluded, narrowed as `PersonResolver` narrows them.
+- `GET /person/match/authorship?q=(L.) Mill. ex DC.&code=botanical` - a whole authorship, split by the name parser.
+  The answer holds one citation match per author of `combination`, `combinationEx`, `basionym`, `basionymEx` and
+  `sanctioning`; the combination and its ex authors are narrowed by the year of the combination, the basionym and its
+  ex authors by the year of the basionym. An authorship the parser cannot read has the status `UNPARSABLE` and no
+  matches.
+- `GET /person/export` - the registry as a zip of its three files.
+
+`code` takes what the rest of the API takes for a nomenclatural code, `group` a `TaxGroup`; an unknown value, or a
+`year` that is no number, is a 400.
+
 ## Harvesting
 
     mvn -q -pl dao -am install -DskipTests
