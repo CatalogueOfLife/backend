@@ -150,7 +150,7 @@ public record PersonRecord(
     public PersonRecord build() {
       // insertion ordered: the merger joins in this order, and Set.copyOf iterates in an order that changes between runs
       return new PersonRecord(source, wikidata, ipni, zoobank, Collections.unmodifiableSet(new LinkedHashSet<>(otherIds)),
-        Names.ordered(family, label), Names.ordered(given, label),
+        Names.family(family, label), Names.ordered(given, label),
         suffix != null ? suffix : Names.suffix(label), born, died, activeFrom, activeTo, Set.copyOf(groups),
         List.copyOf(names), List.copyOf(relations));
     }

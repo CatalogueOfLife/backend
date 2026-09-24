@@ -35,4 +35,15 @@ public class NamesTest {
     assertEquals("Nees", Names.surnameFirst("Nees"));
     assertNull(Names.surnameFirst(" "));
   }
+
+  /** several family names of one person are alternatives - maiden and married, latinised - unless the label holds them */
+  @Test
+  public void family() {
+    assertEquals("Ruiz López", Names.family(List.of("López", "Ruiz"), "Hipólito Ruiz López"));
+    assertEquals("Linnaeus", Names.family(List.of("Linné", "von Linné", "Linnaeus"), "Carl Linnaeus"));
+    assertEquals("Linné", Names.family(List.of("Linné", "von Linné"), "Carl Linnaeus"));
+    assertEquals("Married", Names.family(List.of("Maiden", "Married"), "Anna Married"));
+    assertEquals("Smith", Names.family(List.of("Smith"), null));
+    assertNull(Names.family(List.of(), "Carl Linnaeus"));
+  }
 }

@@ -37,6 +37,22 @@ final class Names {
   }
 
   /**
+   * Several family names of one person are alternatives - a maiden and a married name, a latinised one - unless the
+   * label holds them together, as it does for "Ruiz López".
+   *
+   * @return the parts the label holds, in its order, else the first part; null for none
+   */
+  @Nullable
+  static String family(List<String> parts, @Nullable String label) {
+    if (parts.isEmpty()) return null;
+    if (label != null) {
+      List<String> held = parts.stream().filter(label::contains).toList();
+      if (!held.isEmpty()) return ordered(held, label);
+    }
+    return parts.get(0);
+  }
+
+  /**
    * @return a generation (I to IV) or Jr./Sr. ending the label, null for none
    */
   @Nullable

@@ -14,9 +14,10 @@ import javax.annotation.Nullable;
  * The persons of the registry with every name form they are cited by, looked up the way citations are compared:
  * under their {@link AuthorshipNormalizer#normalize(String)} key. Next to the forms of the files, forms are derived
  * per person with a family name: the initials of the given names with family name and suffix ("G. B. Sowerby II"),
- * the same of every full name that ends with the family name, as a source often lists fewer given names than its
- * label holds, and the bare family name ("Sowerby"). Nobiliary particles stay words ("A. P. de Candolle"). A key may
- * name several persons; that is intended, a bare surname proposes candidates only.
+ * the same of every full name or variant that ends with the family name, as a source often lists fewer given names
+ * than its label holds, the family name with its suffix ("Hooker f.") and the bare family name ("Sowerby"). Nobiliary
+ * particles stay words ("A. P. de Candolle"), bracketed alternatives of a forename give no initials. A key may name
+ * several persons; that is intended, a bare surname proposes candidates only.
  * <p>
  * Loaded once and only by what asks for it, so the string comparison pays nothing.
  */
@@ -72,6 +73,10 @@ public class PersonRegistry {
       if (p.family() != null) {
         add(p.family(), p, FormCode.ANY);
         add(initials(p.given()) + p.family() + suffix(p), p, FormCode.ANY);
+        if (p.suffix() != null) {
+          // relatives are cited by the family name and suffix alone: "Hooker f.", "Sowerby II"
+          add(p.family() + suffix(p), p, FormCode.ANY);
+        }
       }
     }
     Set<Person> named = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -83,7 +88,7 @@ public class PersonRegistry {
       }
       named.add(p);
       add(n.form(), p, n.code());
-      if (n.kind() == NameKind.FULL && p.family() != null) {
+      if ((n.kind() == NameKind.FULL || n.kind() == NameKind.VARIANT) && p.family() != null) {
         String given = givenOf(n.form(), p);
         if (given != null) {
           add(initials(given) + p.family() + suffix(p), p, FormCode.ANY);
@@ -147,7 +152,8 @@ public class PersonRegistry {
   static String initials(@Nullable String given) {
     if (given == null) return "";
     StringBuilder sb = new StringBuilder();
-    for (String part : given.split("[\\s-]+")) {
+    // IPNI lists alternative forenames in brackets: "Carl (Karl, Carel, Carolus) Bořivoj"
+    for (String part : given.replaceAll("\\([^)]*\\)", " ").split("[\\s-]+")) {
       if (AuthorshipNormalizer.PARTICLES.contains(part)) {
         sb.append(part).append(' ');
         continue;

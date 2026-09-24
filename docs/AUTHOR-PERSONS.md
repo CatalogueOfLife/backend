@@ -27,7 +27,9 @@ and every file is written sorted so a harvest diffs line by line.
 - **`family`, `given`, `suffix`** are the structured name as an authority records it: IPNI's surname and forename (the
   filius `f.` from the standard form), or Wikidata's family and given names (P734, P735) put in the order of the
   label, with a trailing `I` to `IV`, `Jr.` or `Sr.` of the label as suffix. They are never split off a full name: the
-  last word is not the surname in `Geoffroy Saint-Hilaire` or `Ruiz López`.
+  last word is not the surname in `Geoffroy Saint-Hilaire` or `Ruiz López`. Wikidata's several family names of one
+  person are alternatives - a maiden and a married name, a latinised one - so only those its label holds are kept,
+  else the first.
 - **Years** only: `born`, `died`, and the active years `activeFrom`/`activeTo` for a floruit. A single floruit year
   is both. A Wikidata date less precise than a year is no year: `+2000-00-00` at century precision is the 20th century,
   not 2000, and is left out.
@@ -51,10 +53,12 @@ person has a name form.
 `PersonRegistry.get()` loads the files once, on first use. `candidates(citation, code)` folds the citation with
 `AuthorshipNormalizer.normalize`, the key citations are compared by everywhere, and returns every person with a form
 under that key whose code applies. Forms are derived per person with a family name when loading: the initials of the
-given names with family name and suffix (`g b sowerby ii`), the same of every `FULL` form that ends with the family name
-and suffix, and the bare family name (`sowerby`). The `FULL` forms count because Wikidata's given names often hold fewer
-names than its label: G. B. Sowerby II has only `George`. Nobiliary particles, which IPNI puts at the end of the
-forename, stay words: `Augustin Pyramus de` gives `A. P. de Candolle`. A bare surname therefore proposes every person of
+given names with family name and suffix (`g b sowerby ii`), the same of every `FULL` or `VARIANT` form that ends with
+the family name and suffix, the family name with its suffix (`hooker filius`) and the bare family name (`sowerby`). The
+full names and variants count because Wikidata's given names often hold fewer names than its label - G. B. Sowerby II
+has only `George` - and a variant may hold another spelling: `Karel Bořivoj Presl` gives `K. B. Presl`. Nobiliary
+particles, which IPNI puts at the end of the forename, stay words: `Augustin Pyramus de` gives `A. P. de Candolle`.
+Alternatives IPNI lists in brackets, `Carl (Karl, Carel, Carolus) Bořivoj`, give no initials. A bare surname therefore proposes every person of
 that name; the registry only ever proposes candidates, it decides nothing.
 `get(anyId)` resolves any id of a person and `relatives(person)` gives parents, children and siblings.
 

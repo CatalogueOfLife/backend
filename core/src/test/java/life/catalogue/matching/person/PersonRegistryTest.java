@@ -138,4 +138,32 @@ public class PersonRegistryTest {
     assertTrue(p, p.contains("unknown person wd:Q404"));
     assertTrue(p, p.contains("wd:Q7 has no name"));
   }
+
+  /** relatives are cited by the family name and suffix alone: "Hooker f.", "Sowerby II" */
+  @Test
+  public void familyWithSuffix() {
+    var hooker = new Person("wd:Q157501", "Q157501", "4084-1", null, List.of(), "Hooker", "Joseph Dalton", "f.", 1817, 1911, null,
+      null, Set.of(), Provenance.WIKIDATA);
+    var reg = new PersonRegistry(new PersonFiles.Content(List.of(hooker, SOWERBY2),
+      List.of(new PersonName("wd:Q157501", "Hook.f.", NameKind.STANDARD, FormCode.BOT, Provenance.IPNI),
+        new PersonName("wd:Q2", "G.B.Sowerby II", NameKind.CITATION, FormCode.ZOO, Provenance.WIKIDATA)),
+      List.of()));
+    assertEquals(Set.of(hooker), reg.candidates("Hooker f.", NomCode.BOTANICAL));
+    assertEquals(Set.of(hooker), reg.candidates("Hooker fil.", NomCode.BOTANICAL));
+    assertEquals(Set.of(SOWERBY2), reg.candidates("Sowerby II", NomCode.ZOOLOGICAL));
+  }
+
+  /** IPNI lists alternative forenames in brackets, and a variant ending with the family name gives initials too */
+  @Test
+  public void initialsOfVariantsWithoutBracketedAlternatives() {
+    assertEquals("C. B. ", PersonRegistry.initials("Carl (Karl, Carel, Carolus) Bořivoj (Boriwog, Boriwag)"));
+    var presl = new Person("wd:Q5", "Q5", null, null, List.of(), "Presl", "Carl (Karl, Carel, Carolus) Bořivoj (Boriwog, Boriwag)",
+      null, 1794, 1852, null, null, Set.of(), Provenance.IPNI);
+    var reg = new PersonRegistry(new PersonFiles.Content(List.of(presl),
+      List.of(new PersonName("wd:Q5", "C.Presl", NameKind.STANDARD, FormCode.BOT, Provenance.IPNI),
+        new PersonName("wd:Q5", "Karel Bořivoj Presl", NameKind.VARIANT, FormCode.ANY, Provenance.WIKIDATA)),
+      List.of()));
+    assertEquals(Set.of(presl), reg.candidates("K.B. Presl", NomCode.BOTANICAL));
+    assertEquals(Set.of(presl), reg.candidates("C. B. Presl", NomCode.BOTANICAL));
+  }
 }
