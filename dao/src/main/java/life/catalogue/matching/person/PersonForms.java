@@ -15,7 +15,8 @@ import javax.annotation.Nullable;
  * family name ("Sowerby"), the initials of the given names with family name and suffix ("G. B. Sowerby II"), the family
  * name with its suffix ("Hooker f."), and the initials of every full name or variant that ends with the family name, as
  * a source often lists fewer given names than its label holds. Nobiliary particles stay words ("A. P. de Candolle"),
- * bracketed alternatives of a forename give no initials. Derived forms apply to every code.
+ * bracketed alternatives of a forename give no initials. Derived forms apply to every code. A retired person derives
+ * nothing: it is found by its ids, and by curated forms only.
  */
 public final class PersonForms {
   private PersonForms() {
@@ -25,7 +26,7 @@ public final class PersonForms {
    * @return the forms derived from the structured name, none without a family name
    */
   public static List<String> of(Person p) {
-    if (p.family() == null) return List.of();
+    if (p.family() == null || p.retired() != null) return List.of();
     List<String> forms = new ArrayList<>(3);
     forms.add(p.family());
     forms.add(initials(p.given()) + p.family() + suffix(p));
@@ -42,7 +43,9 @@ public final class PersonForms {
    */
   @Nullable
   public static String of(Person p, PersonName n) {
-    if (p.family() == null || (n.kind() != PersonNameKind.FULL && n.kind() != PersonNameKind.VARIANT)) return null;
+    if (p.family() == null || p.retired() != null || (n.kind() != PersonNameKind.FULL && n.kind() != PersonNameKind.VARIANT)) {
+      return null;
+    }
     String given = givenOf(n.form(), p);
     return given == null ? null : initials(given) + p.family() + suffix(p);
   }

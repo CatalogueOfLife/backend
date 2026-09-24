@@ -98,8 +98,13 @@ public class MemoryPersonStore implements PersonStore {
       }
     }
     for (Person p : c.persons()) {
-      if (p.id() != null && !named.contains(p)) {
+      if (p.id() == null) continue;
+      // a retired person lost its harvested forms and may have no other
+      if (p.retired() == null && !named.contains(p)) {
         problems.add(p.id() + " has no name");
+      }
+      if (p.successor() != null && !byId.containsKey(p.successor())) {
+        problems.add(p.id() + " has an unknown successor " + p.successor());
       }
     }
     for (PersonRelation r : c.relations()) {

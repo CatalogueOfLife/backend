@@ -13,6 +13,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 
 import org.gbif.nameparser.api.NomCode;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -237,5 +238,29 @@ public class MemoryPersonStoreTest {
     assertEquals(List.of(new PersonRelation("wd:Q2", PersonRelationType.PARENT, "wd:Q1", PersonSource.WIKIDATA)), info.relations());
     assertEquals(info.relations(), reg.info("wd:Q1").relations());
     assertNull(reg.info("wd:Q404"));
+  }
+
+  static final Person DOE = new Person("wd:Q8", "Q8", null, null, List.of("ipni:8-1"), "Doe", "Ann", null, null, null, null,
+    null, Set.of(), PersonSource.WIKIDATA, LocalDate.of(2026, 9, 24), null);
+
+  /** a retired person is found by its ids and its curated forms, derives nothing and needs no name */
+  @Test
+  public void retiredPerson() {
+    var reg = new MemoryPersonStore(new PersonFiles.Content(List.of(DOE),
+      List.of(new PersonName("wd:Q8", "Nan Doe-Roe", PersonNameKind.VARIANT, PersonFormCode.ANY, PersonSource.CURATED)), List.of()));
+    assertEquals(List.of(), reg.problems());
+    assertSame(DOE, reg.get("ipni:8-1"));
+    assertEquals(Set.of(DOE), reg.candidates("Nan Doe-Roe", NomCode.BOTANICAL));
+    assertEquals(Set.of(), reg.candidates("Doe", NomCode.BOTANICAL));
+    assertEquals(Set.of(), reg.candidates("A. Doe", NomCode.BOTANICAL));
+    assertEquals(List.of(), new MemoryPersonStore(new PersonFiles.Content(List.of(DOE), List.of(), List.of())).problems());
+  }
+
+  @Test
+  public void unknownSuccessorIsAProblem() {
+    var joined = new Person("wd:Q8", "Q8", null, null, List.of(), "Doe", null, null, null, null, null, null, Set.of(),
+      PersonSource.WIKIDATA, LocalDate.of(2026, 9, 24), "wd:Q404");
+    assertEquals(List.of("wd:Q8 has an unknown successor wd:Q404"),
+      new MemoryPersonStore(new PersonFiles.Content(List.of(joined), List.of(), List.of())).problems());
   }
 }
