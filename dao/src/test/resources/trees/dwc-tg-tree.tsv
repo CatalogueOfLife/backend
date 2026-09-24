@@ -26,7 +26,7 @@ t32	t30		accepted	species	Urocyon ×littoralis		Animalia	Chordata	Mammalia	Carni
 t33	t30		accepted	species	Urocyon ×minicephalus		Animalia	Chordata	Mammalia	Carnivora						×Urocyon		Biota;Animalia;Chordata;Mammalia;Carnivora;×Urocyon		chordates
 ttl3	t1		accepted	class	Trilobita		Animalia											Biota;Animalia	otherarthropods	otherarthropods
 ttl4	ttl3		accepted	order	Asaphida		Animalia		Trilobita									Biota;Animalia;Trilobita	otherarthropods	otherarthropods
-ttl5	ttl4		accepted	family	Asaphidae		Animalia		Trilobita	Asaphida								Biota;Animalia;Trilobita;Asaphida	otherarthropods	otherarthropods
+ttl5	ttl4		accepted	family	Asaphidae		Animalia		Trilobita	Asaphida								Biota;Animalia;Trilobita;Asaphida	animals	otherarthropods
 ttl6	ttl4		accepted	family	Remopleurididae		Animalia		Trilobita	Asaphida								Biota;Animalia;Trilobita;Asaphida	otherarthropods	otherarthropods
 ttl10	ttl6		accepted	genus	Asaphus		Animalia		Trilobita	Asaphida		Remopleurididae						Biota;Animalia;Trilobita;Asaphida;Remopleurididae		otherarthropods
 ttl14	ttl10		accepted	species	Asaphus expansus	Wahlenberg, 1818	Animalia		Trilobita	Asaphida		Remopleurididae				Asaphus		Biota;Animalia;Trilobita;Asaphida;Remopleurididae;Asaphus		otherarthropods
