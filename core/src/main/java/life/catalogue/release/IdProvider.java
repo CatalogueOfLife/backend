@@ -65,9 +65,9 @@ import it.unimi.dsi.fastutil.ints.*;
  *
  * 3) Within a group, compare every usage against every released id of that group with {@link NameIdentity}, which
  *    answers three valued per attribute: a contradiction (a genuinely different authorship, an incompatible rank, a
- *    disparate tax group, a misapplied name against a non misapplied one, two different nomenclatural codes) rules a
- *    pairing out altogether, while missing information - an authorship that was added or removed, an unranked name -
- *    never does. See <a href="https://github.com/CatalogueOfLife/backend/issues/1326">#1326</a>.
+ *    misapplied name against a non misapplied one, and unless the authorship agrees a disparate tax group or two
+ *    different nomenclatural codes) rules a pairing out altogether, while missing information - an authorship that
+ *    was added or removed, an unranked name - never does. See <a href="https://github.com/CatalogueOfLife/backend/issues/1326">#1326</a>.
  *    Resurrecting an id the last release no longer had needs more than the absence of contradictions.
  *
  * 4) Hand the ids out greedily, best pairing first, see {@link IdCandidate} for the ordering. Usages left without an

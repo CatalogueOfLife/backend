@@ -111,17 +111,44 @@ public class NameIdentityTest {
 
   @Test
   public void differentCodesContradict() {
-    // Oenanthe the bird versus Oenanthe the plant
+    // Oenanthe the bird versus Oenanthe the plant, once without an authorship to tell them apart
     var bird = new NameIdentity.Facts(GENUS, "Vieillot, 1816", null, ACCEPTED, NomCode.ZOOLOGICAL, null, null);
-    var plant = new NameIdentity.Facts(GENUS, "Vieillot, 1816", null, ACCEPTED, NomCode.BOTANICAL, null, null);
+    var plant = new NameIdentity.Facts(GENUS, "L.", null, ACCEPTED, NomCode.BOTANICAL, null, null);
+    var unauthoredPlant = new NameIdentity.Facts(GENUS, null, null, ACCEPTED, NomCode.BOTANICAL, null, null);
     assertEquals(CONTRADICTED, identity.compare(bird, plant).evidence);
+    assertEquals(CONTRADICTED, identity.compare(bird, unauthoredPlant).evidence);
   }
 
   @Test
   public void disparateTaxGroupsContradict() {
     var animal = new NameIdentity.Facts(GENUS, "Mill.", null, ACCEPTED, null, TaxGroup.Insects, null);
-    var plant = new NameIdentity.Facts(GENUS, "Mill.", null, ACCEPTED, null, TaxGroup.Angiosperms, null);
+    var plant = new NameIdentity.Facts(GENUS, null, null, ACCEPTED, null, TaxGroup.Angiosperms, null);
     assertEquals(CONTRADICTED, identity.compare(animal, plant).evidence);
+  }
+
+  /**
+   * COL XR attempt 632: fungi and diatoms published with the zoological code in one release and the botanical one
+   * in the next, and species attached to a homonym genus in another kingdom - Platygaster wasps under Diptera, Ilex
+   * under springtails. The name did not change, so the equal authorship keeps it, but only as plausible.
+   */
+  @Test
+  public void equalAuthorshipOverrulesCodeAndGroup() {
+    var zoo = new NameIdentity.Facts(SPECIES, "Senwanna, Kodchasee, J. Kumla & N. Suwannar., 2026", null, ACCEPTED,
+      NomCode.ZOOLOGICAL, TaxGroup.Ascomycetes, null);
+    var bot = new NameIdentity.Facts(SPECIES, "Senwanna, Kodchasee, J. Kumla & N. Suwannar., 2026", null, ACCEPTED,
+      NomCode.BOTANICAL, TaxGroup.Ascomycetes, null);
+    assertEquals(PLAUSIBLE, identity.compare(zoo, bot).evidence);
+
+    var underFlies = new NameIdentity.Facts(SPECIES, "Buhl, 2017", null, PROVISIONALLY_ACCEPTED, NomCode.ZOOLOGICAL,
+      TaxGroup.Diptera, null);
+    var underWasps = new NameIdentity.Facts(SPECIES, "Buhl, 2017", null, PROVISIONALLY_ACCEPTED, NomCode.ZOOLOGICAL,
+      TaxGroup.Hymenoptera, null);
+    var unchanged = new NameIdentity.Facts(SPECIES, "Buhl, 2017", null, PROVISIONALLY_ACCEPTED, NomCode.ZOOLOGICAL,
+      TaxGroup.Diptera, null);
+    var moved = identity.compare(underFlies, underWasps);
+    assertEquals(PLAUSIBLE, moved.evidence);
+    // a candidate that stayed in place still ranks higher
+    assertTrue(identity.compare(underFlies, unchanged).compareTo(moved) > 0);
   }
 
   @Test

@@ -282,9 +282,11 @@ A release maps every usage to a stable LATIN29 int id (`IdProvider` → `idmap_n
 `coalesce(mu.id2, u.id)`). Candidates are the ids of `name_usage_archive` sharing the usage's canonical names index
 id - which, the index being canonical-only, is the entire name based grouping, so authorship, rank and status carry
 all the discriminating power. `NameIdentity` compares them three valued on `AuthorComparator` and `RankComparator`:
-a contradiction (changed authorship, incompatible rank, disparate `TaxGroup`, misapplied against non misapplied, two
-concrete nomenclatural codes) rules a pairing out, while missing information - an authorship added or removed, an
-unranked name - never does. Evidence gates a pairing rather than ranking it: a contradicted pairing is dropped before
+a contradiction (changed authorship, incompatible rank, misapplied against non misapplied) rules a pairing out, while
+missing information - an authorship added or removed, an unranked name - never does. A disparate `TaxGroup` or two
+concrete nomenclatural codes contradict too, unless the authorship positively agrees: both follow placement and source
+metadata, which flip for one and the same usage (a species under a homonym genus of another kingdom, a fungus coded
+zoological until the next import), so equal authorship keeps such a pairing, capped at PLAUSIBLE. Evidence gates a pairing rather than ranking it: a contradicted pairing is dropped before
 it is a candidate at all, and resurrecting an id the last release no longer had needs positive agreement on authorship
 or rank on top of that. `IdCandidate` then orders what is left: an id the last release still had first - the world
 already cites it, and a better corroborated resurrection must not take it away - then the evidence, then seniority,
