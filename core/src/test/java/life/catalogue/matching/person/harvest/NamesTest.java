@@ -43,6 +43,10 @@ public class NamesTest {
     assertEquals("Linnaeus", Names.family(List.of("Linné", "von Linné", "Linnaeus"), "Carl Linnaeus"));
     assertEquals("Linné", Names.family(List.of("Linné", "von Linné"), "Carl Linnaeus"));
     assertEquals("Married", Names.family(List.of("Maiden", "Married"), "Anna Married"));
+    // a part of another family name is no family name of its own
+    assertEquals("Pickard-Cambridge", Names.family(List.of("Pickard-Cambridge", "Pickard"), "Octavius Pickard-Cambridge"));
+    assertEquals("Nees von Esenbeck", Names.family(List.of("Nees von Esenbeck", "Nees"), "Christian Gottfried Daniel Nees von Esenbeck"));
+    assertEquals("von Linné", Names.family(List.of("Linné", "von Linné"), "Carl von Linné"));
     assertEquals("Smith", Names.family(List.of("Smith"), null));
     assertNull(Names.family(List.of(), "Carl Linnaeus"));
   }

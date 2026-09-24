@@ -1,5 +1,6 @@
 package life.catalogue.matching.person;
 
+import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
 import life.catalogue.matching.authorship.AuthorContext;
 import life.catalogue.matching.authorship.AuthorMatcher;
@@ -145,14 +146,22 @@ public class PersonAuthorMatcher implements AuthorMatcher {
     return false;
   }
 
-  /** an unresolved author stands for itself, a resolved one also for every form of its persons */
+  /** an unresolved author stands for itself, a resolved one also for every readable form of its persons */
   private Collection<String> forms(String author, Set<Person> persons, AuthorContext ctx) {
     if (persons.isEmpty()) {
       return List.of(author);
     }
     Set<String> forms = new LinkedHashSet<>();
     forms.add(author);
-    persons.forEach(p -> forms.addAll(registry.keys(p, ctx.code())));
+    persons.forEach(p -> registry.keys(p, ctx.code()).stream().filter(PersonAuthorMatcher::readable).forEach(forms::add));
     return forms;
+  }
+
+  /**
+   * A form the string comparison can read. A comma form such as "gaimard, j p" or one of initials only such as "j p g"
+   * parses to a one letter surname, which the comparison takes for the start of any surname beginning with it.
+   */
+  private static boolean readable(String key) {
+    return key.indexOf(',') < 0 && new AuthorshipNormalizer.Author(key).surname.length() > 1;
   }
 }

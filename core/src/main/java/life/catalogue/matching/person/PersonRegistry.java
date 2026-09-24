@@ -119,7 +119,7 @@ public class PersonRegistry {
   }
 
   private void add(String form, Person p, FormCode code) {
-    String key = AuthorshipNormalizer.normalize(form);
+    String key = key(form);
     if (key != null) {
       List<Form> forms = byKey.computeIfAbsent(key, k -> new ArrayList<>(1));
       Form f = new Form(p, code);
@@ -181,7 +181,7 @@ public class PersonRegistry {
    *         bare surname, none for an author the registry does not know
    */
   public Set<Person> candidates(String citation, @Nullable NomCode code) {
-    String key = AuthorshipNormalizer.normalize(citation);
+    String key = key(citation);
     if (key == null) return Set.of();
     Set<Person> persons = new LinkedHashSet<>();
     for (Form f : byKey.getOrDefault(key, List.of())) {
@@ -190,6 +190,23 @@ public class PersonRegistry {
       }
     }
     return persons;
+  }
+
+  /**
+   * The key of a form or citation: {@link AuthorshipNormalizer#normalize(String)} until it no longer changes. The
+   * comparator hands over authors normalized already, and normalizing is not always idempotent - a capital Đ is only
+   * folded once lower cased, and removing an e can make a new "ae", "oe" or "ue" - so a key normalized once would miss
+   * them.
+   */
+  @Nullable
+  static String key(@Nullable String form) {
+    String key = AuthorshipNormalizer.normalize(form);
+    for (int i = 0; key != null && i < 5; i++) {
+      String next = AuthorshipNormalizer.normalize(key);
+      if (key.equals(next)) break;
+      key = next;
+    }
+    return key;
   }
 
   /**

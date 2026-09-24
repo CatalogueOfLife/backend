@@ -40,14 +40,18 @@ final class Names {
    * Several family names of one person are alternatives - a maiden and a married name, a latinised one - unless the
    * label holds them together, as it does for "Ruiz López".
    *
-   * @return the parts the label holds, in its order, else the first part; null for none
+   * @return the parts the label holds, in its order, else the first part; null for none. A part of another part the
+   *         label holds is none of its own: "Pickard" of "Pickard-Cambridge", "Linné" of "von Linné"
    */
   @Nullable
   static String family(List<String> parts, @Nullable String label) {
     if (parts.isEmpty()) return null;
     if (label != null) {
       List<String> held = parts.stream().filter(label::contains).toList();
-      if (!held.isEmpty()) return ordered(held, label);
+      List<String> whole = held.stream()
+        .filter(p -> held.stream().noneMatch(q -> q.length() > p.length() && q.contains(p)))
+        .toList();
+      if (!whole.isEmpty()) return ordered(whole, label);
     }
     return parts.get(0);
   }

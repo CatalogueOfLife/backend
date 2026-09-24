@@ -1,10 +1,12 @@
 package life.catalogue.matching.person;
 
 import life.catalogue.api.vocab.TaxGroup;
+import life.catalogue.common.tax.AuthorshipNormalizer;
 
 import org.gbif.nameparser.api.NomCode;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
@@ -185,5 +187,25 @@ public class PersonRegistryTest {
       List.of(new PersonName("wd:Q7", "J.C. Sowerby", NameKind.VARIANT, FormCode.ANY, Provenance.WIKIDATA)), List.of()));
     assertEquals(Set.of(), reg.candidates("J. Sowerby", NomCode.ZOOLOGICAL));
     assertEquals(Set.of(jdc), reg.candidates("J. C. Sowerby", NomCode.ZOOLOGICAL));
+  }
+
+  /**
+   * The comparator hands over authors normalized already, and normalizing is not always idempotent: a capital Đ is only
+   * folded once lower cased, and removing an e can make a new "ae", "oe" or "ue". Such names resolve all the same.
+   */
+  @Test
+  public void normalizedCitationsOfUnstableKeys() {
+    var dinh = person("wd:Q21", "Q21", "Đinh", "Van", null);
+    var mcqueen = person("wd:Q22", "Q22", "McQueen", "Anna", null);
+    var saeed = person("wd:Q23", "Q23", "Saeed", "Omar", null);
+    var reg = new PersonRegistry(new PersonFiles.Content(List.of(dinh, mcqueen, saeed),
+      List.of(new PersonName("wd:Q21", "Van Đinh", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA),
+        new PersonName("wd:Q22", "Anna McQueen", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA),
+        new PersonName("wd:Q23", "Omar Saeed", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA)),
+      List.of()));
+    for (var e : Map.of("Đinh", dinh, "McQueen", mcqueen, "Saeed", saeed, "A. McQueen", mcqueen).entrySet()) {
+      assertEquals(e.getKey(), Set.of(e.getValue()), reg.candidates(e.getKey(), NomCode.ZOOLOGICAL));
+      assertEquals(e.getKey(), Set.of(e.getValue()), reg.candidates(AuthorshipNormalizer.normalize(e.getKey()), NomCode.ZOOLOGICAL));
+    }
   }
 }

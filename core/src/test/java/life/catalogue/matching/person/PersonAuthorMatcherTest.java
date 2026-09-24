@@ -170,4 +170,24 @@ public class PersonAuthorMatcherTest {
     var strict = new AuthorComparator(matcher(RelativesPolicy.DIFFERENT));
     assertEquals(Equality.DIFFERENT, strict.compare(Authorship.yearAuthors("1850", "Hook."), Authorship.yearAuthors("1850", "Hook.f."), NomCode.BOTANICAL));
   }
+
+  /**
+   * The fallback compares only forms a string comparison can read: a comma form such as "gaimard, j p" or one of initials
+   * only such as "j p g" parses to a one letter surname, which the comparison takes for the start of any surname.
+   */
+  @Test
+  public void fallbackSkipsUnreadableForms() {
+    var gaimard = person("Q31", "Gaimard", "Joseph Paul", null, 1793, 1858, Set.of());
+    var reg = new PersonRegistry(new PersonFiles.Content(List.of(gaimard),
+      List.of(name(gaimard, "Joseph Paul Gaimard", NameKind.FULL, FormCode.ANY), name(gaimard, "Gaimard, J.P.", NameKind.VARIANT, FormCode.ANY),
+        name(gaimard, "J.P.G.", NameKind.VARIANT, FormCode.ANY)),
+      List.of()));
+    var m = new PersonAuthorMatcher(reg, new PersonResolver(reg, new PersonResolver.Margins(10, 20, 15)), strings, RelativesPolicy.UNKNOWN,
+      null);
+    Explanation e = m.explain(team("1836", "Gaimard"), team("1836", "R. A. Philippi"), ZOO, Mode.LAX);
+    assertEquals(Rule.FALLBACK, e.decisions().get(0).rule());
+    assertEquals(Equality.DIFFERENT, e.verdict());
+    // readable forms still meet: "J. Gaimard" and the derived "J. P. Gaimard"
+    assertEquals(Equality.EQUAL, m.compareTeams(team(null, "J. Gaimard"), team(null, "Gaimard"), ZOO, Mode.LAX));
+  }
 }
