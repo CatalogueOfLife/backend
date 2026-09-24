@@ -1,135 +1,25 @@
 person	form	kind	code	source
-ipni:12306-1	Wagab.	STANDARD	BOT	ipni
-ipni:12306-1	Michio Wagabayashi	FULL	ANY	ipni
-ipni:12389-1	Curran	STANDARD	BOT	ipni
-ipni:12389-1	Mary Katharine Curran	FULL	ANY	ipni
-ipni:12444-1	Goujaud	STANDARD	BOT	ipni
-ipni:12444-1	Aimé Jacques Alexandre Goujaud	FULL	ANY	ipni
-ipni:12584-1	F.F.Jones	STANDARD	BOT	ipni
-ipni:12584-1	Florence Freeman Jones	FULL	ANY	ipni
-ipni:12584-1	Florence Lucinda Jones	VARIANT	ANY	ipni
-ipni:12601-1	Kensit	STANDARD	BOT	ipni
-ipni:12601-1	Harriet Margaret Louisa Kensit	FULL	ANY	ipni
-ipni:12603-1	P.M.Kern	STANDARD	BOT	ipni
-ipni:12603-1	Patricia M. Kern	FULL	ANY	ipni
-ipni:12643-1	F.M.Leight.	STANDARD	BOT	ipni
-ipni:12643-1	Frances Margaret Leighton	FULL	ANY	ipni
-ipni:12870-1	Skalická	STANDARD	BOT	ipni
-ipni:12870-1	Anna Skalická	FULL	ANY	ipni
 ipni:13050-1	E.G.Clem.	STANDARD	BOT	ipni
 ipni:13050-1	Edith Gertrude (Schwartz) Clements	FULL	ANY	ipni
-ipni:13406-1	C.O.Goodd.	STANDARD	BOT	ipni
-ipni:13406-1	Charlotte Olive Goodding	FULL	ANY	ipni
-ipni:13406-1	Charlotte Goodding Reeder	VARIANT	ANY	ipni
-ipni:13445-1	Zavort.	STANDARD	BOT	ipni
-ipni:13445-1	Joyce E. Zavortink	FULL	ANY	ipni
-ipni:13579-1	Fenley	STANDARD	BOT	ipni
-ipni:13579-1	Kittie Lucille Fenley	FULL	ANY	ipni
-ipni:14106-1	Noerdl.	STANDARD	BOT	ipni
-ipni:14106-1	Hermann Noerdlinger	FULL	ANY	ipni
 ipni:1513-1	Chandrasekh.	STANDARD	BOT	ipni
 ipni:1513-1	P. Chandrasekharan	FULL	ANY	ipni
-ipni:15505-1	N.Zhao	STANDARD	BOT	ipni
-ipni:15505-1	Neng Zhao	FULL	ANY	ipni
-ipni:16499-1	Breen	STANDARD	BOT	ipni
-ipni:16499-1	Ruth Olive Schornhurst Breen	FULL	ANY	ipni
-ipni:1796-1	Corb.	STANDARD	BOT	ipni
-ipni:1796-1	François Marie Louis Corbière	FULL	ANY	ipni
-ipni:18685-1	S.G.M.Fawc.	STANDARD	BOT	ipni
-ipni:18685-1	Stella Grace Maisie Fawcett	FULL	ANY	ipni
-ipni:18944-1	E.F.Franklin	STANDARD	BOT	ipni
-ipni:18944-1	Esmé Frances Franklin	FULL	ANY	ipni
 ipni:20002549-1	Keiñl.	STANDARD	BOT	ipni
 ipni:20002549-1	Keiñl.	FULL	ANY	ipni
-ipni:20003022-1	Cañ.-Gib.	STANDARD	BOT	ipni
-ipni:20003022-1	Connie Fe Cañete-Gibas	FULL	ANY	ipni
-ipni:20006141-2	R.A.Nelson	STANDARD	BOT	ipni
-ipni:20006141-2	Ruth Ashton Nelson	FULL	ANY	ipni
 ipni:20009311-2	T.B.Zhao	STANDARD	BOT	ipni
 ipni:20009311-2	Tianbang Zhao	FULL	ANY	ipni
 ipni:20009311-2	Tian Bang Zhao	VARIANT	ANY	ipni
-ipni:20009757-1	C.Pedrotti	STANDARD	BOT	ipni
-ipni:20009757-1	Carmela Cortini Pedrotti	FULL	ANY	ipni
-ipni:20010524-1	Ottaviani	STANDARD	BOT	ipni
-ipni:20010524-1	Vicenzo Ottaviani	FULL	ANY	ipni
-ipni:20011057-2	Ed.L.Taylor	STANDARD	BOT	ipni
-ipni:20011057-2	Edith L. Taylor	FULL	ANY	ipni
-ipni:20011057-2	Edith L. Smoot	VARIANT	ANY	ipni
-ipni:20015776-1	T.B.Nguyen	STANDARD	BOT	ipni
-ipni:20015776-1	Tien Ban Nguyen	FULL	ANY	ipni
-ipni:20019047-1	Bano	STANDARD	BOT	ipni
-ipni:20019047-1	Roohi Bano	FULL	ANY	ipni
-ipni:20020435-1	D.G.Ribeiro	STANDARD	BOT	ipni
-ipni:20020435-1	Dalva G. Ribeiro	FULL	ANY	ipni
-ipni:20023881-1	M.P.Morim	STANDARD	BOT	ipni
-ipni:20023881-1	Marli Pires Morim	FULL	ANY	ipni
-ipni:20023881-1	Marli Morim de Lima	VARIANT	ANY	ipni
-ipni:20023881-1	Marli Pires Morim de Lima	VARIANT	ANY	ipni
-ipni:20024699-1	D.Crantz	STANDARD	BOT	ipni
-ipni:20024699-1	David Crantz	FULL	ANY	ipni
-ipni:20024862-1	Bolsan.	STANDARD	BOT	ipni
-ipni:20024862-1	Renato Ximenes Bolsanello	FULL	ANY	ipni
-ipni:20027225-1	K.Řeháková	STANDARD	BOT	ipni
-ipni:20027225-1	Klára Řeháková	FULL	ANY	ipni
-ipni:20027225-1	Klára Kaštovská	VARIANT	ANY	ipni
-ipni:20027226-1	Řezáčová	STANDARD	BOT	ipni
-ipni:20027226-1	Magda Řezáčová	FULL	ANY	ipni
-ipni:20027226-1	Magda Řezáčová-Škaloudová	VARIANT	ANY	ipni
-ipni:20027226-1	Magda Škaloudová	VARIANT	ANY	ipni
-ipni:20027964-1	M.Kang	STANDARD	BOT	ipni
-ipni:20027964-1	Ming Kang	FULL	ANY	ipni
-ipni:20029357-1	N.Schuetz	STANDARD	BOT	ipni
-ipni:20029357-1	Nicole Schuetz	FULL	ANY	ipni
-ipni:20030925-1	V.S.Samp.	STANDARD	BOT	ipni
-ipni:20030925-1	Valéria Silva Sampaio	FULL	ANY	ipni
-ipni:20031861-1	Bo Y.Yang	STANDARD	BOT	ipni
-ipni:20031861-1	Bo Yun Yang	FULL	ANY	ipni
 ipni:20034414-1	A.B.Peña	STANDARD	BOT	ipni
 ipni:20034414-1	Alexandrina Bácenas Peña	FULL	ANY	ipni
-ipni:20034622-1	Amtoft	STANDARD	BOT	ipni
-ipni:20034622-1	Anja Amtoft	FULL	ANY	ipni
 ipni:20034839-1	Ban.Lal	STANDARD	BOT	ipni
 ipni:20034839-1	Banwari Lal	FULL	ANY	ipni
-ipni:20034918-1	E.M.Bulakh	STANDARD	BOT	ipni
-ipni:20034918-1	E.M. Bulakh	FULL	ANY	ipni
 ipni:20034935-1	Bremme	STANDARD	BOT	ipni
 ipni:20034935-1	Bremme	FULL	ANY	ipni
-ipni:20035330-1	Caruana-Gatto	STANDARD	BOT	ipni
-ipni:20035330-1	Caruana-Gatto	FULL	ANY	ipni
-ipni:20035382-1	Gunde Cimerman	STANDARD	BOT	ipni
-ipni:20035382-1	N. Gunde Cimerman	FULL	ANY	ipni
-ipni:20035976-1	E.J.Carvajal	STANDARD	BOT	ipni
-ipni:20035976-1	Enrique Javier Carvajal Barriga	FULL	ANY	ipni
-ipni:20036563-1	H.F.Glen	STANDARD	BOT	ipni
-ipni:20036563-1	Hugh (Francis) Glen	FULL	ANY	ipni
-ipni:20036888-1	Marinc.	STANDARD	BOT	ipni
-ipni:20036888-1	Seonju Marincowitz	FULL	ANY	ipni
-ipni:20037684-1	Sh.Kurogi	STANDARD	BOT	ipni
-ipni:20037684-1	Shuichi Kurogi	FULL	ANY	ipni
-ipni:20037714-1	Ramirez-Prado	STANDARD	BOT	ipni
-ipni:20037714-1	J.H. Ramirez-Prado	FULL	ANY	ipni
-ipni:20038209-1	Yi Li	STANDARD	BOT	ipni
-ipni:20038209-1	Yi Li	FULL	ANY	ipni
 ipni:20038346-1	M.Véliz	STANDARD	BOT	ipni
 ipni:20038346-1	Mario Véliz Pérez	FULL	ANY	ipni
 ipni:20038829-1	P.C.Y.Wood	STANDARD	BOT	ipni
 ipni:20038829-1	P.C.Y. Wood	FULL	ANY	ipni
-ipni:20039008-1	X.Zhao	STANDARD	BOT	ipni
-ipni:20039008-1	Xin Zhao	FULL	ANY	ipni
-ipni:20039317-1	J.J.Oliveira	STANDARD	BOT	ipni
-ipni:20039317-1	J.J. Oliveira	FULL	ANY	ipni
 ipni:20039621-1	Yuan Y.Chen	STANDARD	BOT	ipni
 ipni:20039621-1	Yuan You Chen	FULL	ANY	ipni
-ipni:20039864-1	Pérez-Pérez	STANDARD	BOT	ipni
-ipni:20039864-1	Rosa Emilia Pérez-Pérez	FULL	ANY	ipni
-ipni:20039927-1	Xin Yu Wang	STANDARD	BOT	ipni
-ipni:20039927-1	Xin Yu Wang	FULL	ANY	ipni
-ipni:20040629-1	Aguero	STANDARD	BOT	ipni
-ipni:20040629-1	Blanka Aguero	FULL	ANY	ipni
-ipni:20040629-1	Buryová Aguero	VARIANT	ANY	ipni
-ipni:20040629-1	Buryová Shaw	VARIANT	ANY	ipni
-ipni:20041894-1	Yu Hsin Tseng	STANDARD	BOT	ipni
-ipni:20041894-1	Yu Hsin Tseng	FULL	ANY	ipni
 ipni:20045077-1	Aongyong	STANDARD	BOT	ipni
 ipni:20045077-1	Kithisak Aongyong	FULL	ANY	ipni
 ipni:20045077-1	Kithisak Chanthamrong	VARIANT	ANY	ipni
@@ -2428,9 +2318,6 @@ ipni:20051508-1	Z.Q.Yi	STANDARD	BOT	ipni
 ipni:20051508-1	Zhao-Qin Yi	FULL	ANY	ipni
 ipni:20051509-1	Yue Hu Wang	STANDARD	BOT	ipni
 ipni:20051509-1	Yue Hu Wang	FULL	ANY	ipni
-ipni:20051619-1	Chanton-Güvenç	STANDARD	BOT	ipni
-ipni:20051619-1	Nicole Chanton-Güvenç	FULL	ANY	ipni
-ipni:20051619-1	Nicole Chanton	VARIANT	ANY	ipni
 ipni:20051721-1	R.Taylor bis	STANDARD	BOT	ipni
 ipni:20051721-1	Richard, Reverend Taylor	FULL	ANY	ipni
 ipni:20051724-1	Rouchy	STANDARD	BOT	ipni
@@ -8770,9 +8657,6 @@ ipni:20080370-1	B.K.Bliss	STANDARD	BOT	ipni
 ipni:20080370-1	B.K. Bliss	FULL	ANY	ipni
 ipni:20080371-1	S.B.Bliss	STANDARD	BOT	ipni
 ipni:20080371-1	S.B. Bliss	FULL	ANY	ipni
-ipni:20080372-1	Kuvaeva	STANDARD	BOT	ipni
-ipni:20080372-1	Sofia Borisovna Kuvaeva	FULL	ANY	ipni
-ipni:20080372-1	Sofia Borisovna Smirnova	VARIANT	ANY	ipni
 ipni:20080373-1	Corr.-Bravo	STANDARD	BOT	ipni
 ipni:20080373-1	Lina M. Corrales Bravo	FULL	ANY	ipni
 ipni:20080373-1	Lina Corrales	VARIANT	ANY	ipni
@@ -10890,9 +10774,6 @@ ipni:20084746-1	Karadelev	STANDARD	BOT	ipni
 ipni:20084746-1	Mitko Karadelev	FULL	ANY	ipni
 ipni:20084747-1	Kapitonov	STANDARD	BOT	ipni
 ipni:20084747-1	V.I. Kapitonov	FULL	ANY	ipni
-ipni:20084748-1	Kantel.	STANDARD	BOT	ipni
-ipni:20084748-1	Annina Kantelinen	FULL	ANY	ipni
-ipni:20084748-1	Annina Launis	VARIANT	ANY	ipni
 ipni:20084749-1	Kanp.	STANDARD	BOT	ipni
 ipni:20084749-1	A. Kanpiengjai	FULL	ANY	ipni
 ipni:20084750-1	Kanongn.	STANDARD	BOT	ipni
@@ -22342,283 +22223,13 @@ ipni:20101558-1	Sheehan	STANDARD	BOT	ipni
 ipni:20101558-1	B. Sheehan	FULL	ANY	ipni
 ipni:20101559-1	Youngsoo Kim	STANDARD	BOT	ipni
 ipni:20101559-1	Youngsoo Kim	FULL	ANY	ipni
-ipni:20232-1	Hern.-Padr.	STANDARD	BOT	ipni
-ipni:20232-1	C. Hernández-Padrón	FULL	ANY	ipni
-ipni:20550-1	L.W.Hsu	STANDARD	BOT	ipni
-ipni:20550-1	Lian Wang Hsu	FULL	ANY	ipni
-ipni:20550-1	Lian Wang Xu	VARIANT	ANY	ipni
-ipni:2153-1	Desj.-Shost.	STANDARD	BOT	ipni
-ipni:2153-1	Natalia Alekseevna Desjatova-Shostenko	FULL	ANY	ipni
-ipni:2153-1	Natalia Alekseevna Desjatova	VARIANT	ANY	ipni
-ipni:2153-1	Natalia Alekseevna Shostenko	VARIANT	ANY	ipni
-ipni:2153-1	Natalia Shostenko-Dessiatova	VARIANT	ANY	ipni
-ipni:2153-1	Natalja Alexejewna Dessjatowa-Schostenko	VARIANT	ANY	ipni
-ipni:2153-1	Nathalie Roussine	VARIANT	ANY	ipni
 ipni:22422-1	Liro	STANDARD	BOT	ipni
 ipni:22422-1	Johan Ivar Liro	FULL	ANY	ipni
-ipni:22826-1	Malme	STANDARD	BOT	ipni
-ipni:22826-1	Gustaf Oskar Andersson Malme	FULL	ANY	ipni
-ipni:22826-1	Gustaf Oskar Andersson	VARIANT	ANY	ipni
-ipni:23150-1	McGinty	STANDARD	BOT	ipni
-ipni:23150-1	C.G. McGinty	FULL	ANY	ipni
-ipni:23666-1	Mosca	STANDARD	BOT	ipni
-ipni:23666-1	Anna Maria L. Mosca	FULL	ANY	ipni
-ipni:24591-1	Passini	STANDARD	BOT	ipni
-ipni:24591-1	Marie-Françoise Passini	FULL	ANY	ipni
-ipni:24591-1	Marie-Françoise Robert-Passini	VARIANT	ANY	ipni
-ipni:24722-1	V.Pereira	STANDARD	BOT	ipni
-ipni:24722-1	Maria Verônica Leite Pereira	FULL	ANY	ipni
-ipni:2506-1	Elffers	STANDARD	BOT	ipni
-ipni:2506-1	Joan Elffers	FULL	ANY	ipni
-ipni:26430-1	M.B.Schwarz	STANDARD	BOT	ipni
-ipni:26430-1	Marie Beatrice Schwarz	FULL	ANY	ipni
-ipni:26430-1	Bea Schwarz	VARIANT	ANY	ipni
-ipni:26430-1	Marie Beatrice Schol-Schwarz	VARIANT	ANY	ipni
-ipni:26899-1	Šmarda	STANDARD	BOT	ipni
-ipni:26899-1	Jan Šmarda	FULL	ANY	ipni
-ipni:26928-1	G.L.Sm.	STANDARD	BOT	ipni
-ipni:26928-1	Gary Lane Smith	FULL	ANY	ipni
-ipni:26928-1	Gary Lane Merrill	VARIANT	ANY	ipni
-ipni:26928-1	Gary Lane Smith Merrill	VARIANT	ANY	ipni
-ipni:27509-1	Tanda	STANDARD	BOT	ipni
-ipni:27509-1	Seinosuke Tanda	FULL	ANY	ipni
-ipni:27636-1	Thaithong	STANDARD	BOT	ipni
-ipni:27636-1	Obchant Thaithong	FULL	ANY	ipni
-ipni:2781-1	Flerow	STANDARD	BOT	ipni
-ipni:2781-1	Alexandr Fedorovich Flerow	FULL	ANY	ipni
-ipni:2781-1	Aleksandr Fedorovitch [Fedorovic, Theodorovich, Theodorowitsch] Flerov	VARIANT	ANY	ipni
-ipni:2781-1	Alexandr Fedorovich Flerov	VARIANT	ANY	ipni
-ipni:28997-1	J.M.Yen	STANDARD	BOT	ipni
-ipni:28997-1	Jo Min Yen	FULL	ANY	ipni
-ipni:29528-1	B.Hickel	STANDARD	BOT	ipni
-ipni:29528-1	Barbara Hickel	FULL	ANY	ipni
-ipni:29815-1	Kindra	STANDARD	BOT	ipni
-ipni:29815-1	G.S. Kindra	FULL	ANY	ipni
-ipni:29873-1	Komárk.-Legn.	STANDARD	BOT	ipni
-ipni:29873-1	Jaroslava Komárková-Legnerová	FULL	ANY	ipni
-ipni:29873-1	Jaroslava Babická	VARIANT	ANY	ipni
-ipni:29873-1	Jaroslava Komárková	VARIANT	ANY	ipni
-ipni:29873-1	Jaroslava Legnerová	VARIANT	ANY	ipni
-ipni:3023-1	J.Garden	STANDARD	BOT	ipni
-ipni:3023-1	Joy Garden	FULL	ANY	ipni
-ipni:30503-1	A.Steinm.	STANDARD	BOT	ipni
-ipni:30503-1	A. Steinmann	FULL	ANY	ipni
-ipni:31015-1	Artr.	STANDARD	BOT	ipni
-ipni:31015-1	Ferdinando Augusto Artraria	FULL	ANY	ipni
-ipni:31056-1	Asta-Giac.	STANDARD	BOT	ipni
-ipni:31056-1	Julliet Asta-Giacometti	FULL	ANY	ipni
-ipni:31191-1	J.K.Bai	STANDARD	BOT	ipni
-ipni:31191-1	Jin Kai Bai	FULL	ANY	ipni
-ipni:31607-1	Umam.Rao	STANDARD	BOT	ipni
-ipni:31607-1	M. Umamaheswara Rao	FULL	ANY	ipni
-ipni:31892-1	C.K.Zeng	STANDARD	BOT	ipni
-ipni:31892-1	Cheng Kui (? Tseng Cheng Kuei) Zeng	FULL	ANY	ipni
-ipni:32059-1	Schembel	STANDARD	BOT	ipni
-ipni:32059-1	S.J. Schembel	FULL	ANY	ipni
-ipni:32129-1	Ljubitsk.	STANDARD	BOT	ipni
-ipni:32129-1	Lidia Ivanovna Ljubitskaya	FULL	ANY	ipni
-ipni:32129-1	Lydia Ivanovna Ljubitskaya	VARIANT	ANY	ipni
-ipni:32363-1	E.S.Barton	STANDARD	BOT	ipni
-ipni:32363-1	Ethel Sarel Barton	FULL	ANY	ipni
-ipni:32542-1	Bristol	STANDARD	BOT	ipni
-ipni:32542-1	B.Muriel Bristol	FULL	ANY	ipni
-ipni:32642-1	Carralves	STANDARD	BOT	ipni
-ipni:32642-1	Matilde Gonçalves Carralves	FULL	ANY	ipni
-ipni:32642-1	Matilde Gonçalves-Carralves	VARIANT	ANY	ipni
-ipni:32678-1	C.F.Chang	STANDARD	BOT	ipni
-ipni:32678-1	Chun Fu Chang	FULL	ANY	ipni
-ipni:32906-1	Dellow	STANDARD	BOT	ipni
-ipni:32906-1	Vivienne Dellow	FULL	ANY	ipni
-ipni:32906-1	Una Vivienne Cassie Cooper (née Dellow)	VARIANT	ANY	ipni
-ipni:33039-1	Enjumet	STANDARD	BOT	ipni
-ipni:33039-1	Monique Enjumet	FULL	ANY	ipni
-ipni:33140-1	M.Fox	STANDARD	BOT	ipni
-ipni:33140-1	Margaret Fox	FULL	ANY	ipni
-ipni:33241-1	Legnerová	STANDARD	BOT	ipni
-ipni:33241-1	Jaroslava Legnerová	FULL	ANY	ipni
-ipni:3329-1	A.D.Grant	STANDARD	BOT	ipni
-ipni:3329-1	Alva Day Grant	FULL	ANY	ipni
-ipni:3329-1	Alva George Day	VARIANT	ANY	ipni
-ipni:3333-1	K.A.Grant	STANDARD	BOT	ipni
-ipni:3333-1	Karen S.Alt Grant	FULL	ANY	ipni
-ipni:33337-1	Lühnem.	STANDARD	BOT	ipni
-ipni:33337-1	G.H. Lühnemann	FULL	ANY	ipni
-ipni:33668-1	L.M.Newton	STANDARD	BOT	ipni
-ipni:33668-1	Linda Mary Newton	FULL	ANY	ipni
-ipni:33870-1	M.Póv.Reis	STANDARD	BOT	ipni
-ipni:33870-1	Manuel Póvoa dos Reis	FULL	ANY	ipni
-ipni:33938-1	Punčoch.	STANDARD	BOT	ipni
-ipni:33938-1	Marcela Punčochárová	FULL	ANY	ipni
-ipni:3397-1	Griseb.	STANDARD	BOT	ipni
-ipni:3397-1	August Heinrich Rudolf Grisebach	FULL	ANY	ipni
-ipni:34062-1	Cadman	STANDARD	BOT	ipni
-ipni:34062-1	Mandy-Jane Cadman	FULL	ANY	ipni
 ipni:34301-1	Dechatres	STANDARD	BOT	ipni
 ipni:34301-1	R. Dechatres	FULL	ANY	ipni
-ipni:34304-1	F.Desp.	STANDARD	BOT	ipni
-ipni:34304-1	F. Desportes	FULL	ANY	ipni
-ipni:34522-1	Gizhitsk.	STANDARD	BOT	ipni
-ipni:34522-1	Z.K. Gizhitskaya	FULL	ANY	ipni
-ipni:34545-1	Johan-Olsen	STANDARD	BOT	ipni
-ipni:34545-1	Olav Johan-Olsen	FULL	ANY	ipni
-ipni:34545-1	Olav J. Johan-Olsen	VARIANT	ANY	ipni
-ipni:34545-1	Olav Johan Olsen-Sopp	VARIANT	ANY	ipni
-ipni:34545-1	Olav Johan Sopp	VARIANT	ANY	ipni
-ipni:34675-1	Borodina	STANDARD	BOT	ipni
-ipni:34675-1	Alisa Evgenievna. Borodina	FULL	ANY	ipni
-ipni:34976-1	Fling	STANDARD	BOT	ipni
-ipni:34976-1	Eva Myrtelle Fling	FULL	ANY	ipni
-ipni:34983-1	Kivir.	STANDARD	BOT	ipni
-ipni:34983-1	Kaalo Eemeli Kivirikko	FULL	ANY	ipni
-ipni:35133-1	G.B.F.Nilsson	STANDARD	BOT	ipni
-ipni:35133-1	Gunnar Bror Fritiof Nilsson	FULL	ANY	ipni
-ipni:35133-1	Gunnar Bror Fritiof Degelius	VARIANT	ANY	ipni
-ipni:35133-1	Gunnar Bror Fritiof Nilsson-Degelius	VARIANT	ANY	ipni
-ipni:35318-1	T.E.Raven	STANDARD	BOT	ipni
-ipni:35318-1	Tamra Engelhorn Raven	FULL	ANY	ipni
-ipni:35349-1	Samsudin	STANDARD	BOT	ipni
-ipni:35349-1	Wahid bin Samsudin	FULL	ANY	ipni
-ipni:35376-1	Vaga	STANDARD	BOT	ipni
-ipni:35376-1	August Vaga	FULL	ANY	ipni
-ipni:35376-1	August Ja. Waga	VARIANT	ANY	ipni
-ipni:35376-1	August Waga	VARIANT	ANY	ipni
-ipni:35376-1	August Yanovich Vaga	VARIANT	ANY	ipni
-ipni:35434-1	Zhurb.	STANDARD	BOT	ipni
-ipni:35434-1	Mikhail P. Zhurbenko	FULL	ANY	ipni
-ipni:35490-1	Malmberg	STANDARD	BOT	ipni
-ipni:35490-1	August Johan Malmberg	FULL	ANY	ipni
-ipni:35547-1	Hetrick	STANDARD	BOT	ipni
-ipni:35547-1	B.A.D. Hetrick	FULL	ANY	ipni
-ipni:35727-1	Käärik	STANDARD	BOT	ipni
-ipni:35727-1	A. Käärik	FULL	ANY	ipni
-ipni:36282-1	Mucher	STANDARD	BOT	ipni
-ipni:36282-1	Walter Karl Mucher	FULL	ANY	ipni
-ipni:36282-1	Walter Karl Rottensteiner	VARIANT	ANY	ipni
-ipni:36282-1	Walter Karl Starmühler	VARIANT	ANY	ipni
-ipni:36294-1	L.Torres	STANDARD	BOT	ipni
-ipni:36294-1	Leticia Torres	FULL	ANY	ipni
-ipni:36294-1	Leticia Torres-Colin	VARIANT	ANY	ipni
-ipni:36317-1	Deck.-Walt.	STANDARD	BOT	ipni
-ipni:36317-1	Deena S. Decker-Walters	FULL	ANY	ipni
-ipni:36349-1	Ceyn.-Giełd	STANDARD	BOT	ipni
-ipni:36349-1	Mirosława Ceynowa-Giełdon	FULL	ANY	ipni
-ipni:36360-1	Canne-Hill.	STANDARD	BOT	ipni
-ipni:36360-1	Judith Marie Canne-Hilliker	FULL	ANY	ipni
-ipni:36360-1	Judith Marie Canne	VARIANT	ANY	ipni
-ipni:36576-1	Brandão	STANDARD	BOT	ipni
-ipni:36576-1	Mitzi Brandão	FULL	ANY	ipni
-ipni:36923-1	Ochot.-Booth	STANDARD	BOT	ipni
-ipni:36923-1	Helga Ochoterena-Booth	FULL	ANY	ipni
-ipni:36923-1	Helga Ochoterena	VARIANT	ANY	ipni
-ipni:36960-1	M.G.Henry	STANDARD	BOT	ipni
-ipni:36960-1	Mary Gibson Henry	FULL	ANY	ipni
-ipni:37026-1	Santana Mich.	STANDARD	BOT	ipni
-ipni:37026-1	Francisco Javier Santana Michel	FULL	ANY	ipni
-ipni:37026-1	Francisco Javier Santana	VARIANT	ANY	ipni
-ipni:37120-1	C.A.Vargas	STANDARD	BOT	ipni
-ipni:37120-1	Carlos A. Vargas	FULL	ANY	ipni
-ipni:37501-1	Starm.	STANDARD	BOT	ipni
-ipni:37501-1	Walter Karl Starmühler	FULL	ANY	ipni
-ipni:37501-1	Walter Karl Mucher	VARIANT	ANY	ipni
-ipni:37501-1	Walter Karl Rottensteiner	VARIANT	ANY	ipni
-ipni:37550-1	K.Gould	STANDARD	BOT	ipni
-ipni:37550-1	Katherine Gould	FULL	ANY	ipni
-ipni:37550-1	Katherine R. Gould	VARIANT	ANY	ipni
-ipni:37714-1	P.J.F.Guim.	STANDARD	BOT	ipni
-ipni:37714-1	Paulo José Fernandes Guimarães	FULL	ANY	ipni
-ipni:37921-1	F.S.Zhang	STANDARD	BOT	ipni
-ipni:37921-1	Fang Szu Zhang	FULL	ANY	ipni
-ipni:38069-1	M.E.Endress	STANDARD	BOT	ipni
-ipni:38069-1	Mary E. Endress	FULL	ANY	ipni
-ipni:38069-1	Mary E. Fallen	VARIANT	ANY	ipni
-ipni:38373-1	Marg.	STANDARD	BOT	ipni
-ipni:38373-1	Hanna Bogna Margońska	FULL	ANY	ipni
-ipni:38784-1	Savczenko	STANDARD	BOT	ipni
-ipni:38784-1	H.V. Savczenko	FULL	ANY	ipni
-ipni:38784-1	A.V. Boiko	VARIANT	ANY	ipni
-ipni:38784-1	A.V. Savchenko	VARIANT	ANY	ipni
-ipni:38784-1	G.V. Boiko	VARIANT	ANY	ipni
-ipni:38784-1	G.V. Savchenko	VARIANT	ANY	ipni
-ipni:39343-1	Shantser	STANDARD	BOT	ipni
-ipni:39343-1	Ivan Alekseyevich Shantser	FULL	ANY	ipni
-ipni:39364-1	R.Sánchez	STANDARD	BOT	ipni
-ipni:39364-1	Roberto Sánchez	FULL	ANY	ipni
-ipni:39364-1	Roberto Sánchez Montaño	VARIANT	ANY	ipni
-ipni:39446-1	Clausing	STANDARD	BOT	ipni
-ipni:39446-1	Gudrun Clausing	FULL	ANY	ipni
-ipni:39446-1	Gudrun Kadereit	VARIANT	ANY	ipni
-ipni:39533-1	Hunger	STANDARD	BOT	ipni
-ipni:39533-1	Susanne Hunger	FULL	ANY	ipni
-ipni:39594-1	Phattar.	STANDARD	BOT	ipni
-ipni:39594-1	Kanlaya Phattarahirankanok	FULL	ANY	ipni
-ipni:39594-1	Nannapat Pattharahirantricin	VARIANT	ANY	ipni
-ipni:39606-1	McGann	STANDARD	BOT	ipni
-ipni:39606-1	Thomas D. McGann	FULL	ANY	ipni
-ipni:39849-1	G.J.Campb.	STANDARD	BOT	ipni
-ipni:39849-1	Gael Jean Campbell	FULL	ANY	ipni
-ipni:39962-1	H.Correvon	STANDARD	BOT	ipni
-ipni:39962-1	H. Correvon	FULL	ANY	ipni
-ipni:40219-1	M.E.Reiner	STANDARD	BOT	ipni
-ipni:40219-1	Maria Elena Reiner	FULL	ANY	ipni
-ipni:40219-1	Maria Elena Reiner-Drehwald	VARIANT	ANY	ipni
-ipni:40232-1	La Farge-Engl.	STANDARD	BOT	ipni
-ipni:40232-1	Catherine La Farge-England	FULL	ANY	ipni
-ipni:40232-1	Catherine La Farge	VARIANT	ANY	ipni
-ipni:40232-1	Catherine LaFarge-England	VARIANT	ANY	ipni
-ipni:40546-1	Kras-Lap.	STANDARD	BOT	ipni
-ipni:40546-1	Marta Kras-Lapinska	FULL	ANY	ipni
-ipni:4211-1	Hughes	STANDARD	BOT	ipni
-ipni:4211-1	Dorothy Kate Hughes	FULL	ANY	ipni
-ipni:4470-1	A.Jenn.	STANDARD	BOT	ipni
-ipni:4470-1	Alfred Vaughan Jennings	FULL	ANY	ipni
-ipni:4950-1	Komlodi	STANDARD	BOT	ipni
-ipni:4950-1	Magda Komlódi	FULL	ANY	ipni
-ipni:5324-1	Laurent	STANDARD	BOT	ipni
-ipni:5324-1	Émile Laurent	FULL	ANY	ipni
-ipni:5439-1	Leibold	STANDARD	BOT	ipni
-ipni:5439-1	Friedrich Ernst Leibold	FULL	ANY	ipni
-ipni:5439-1	Friedrich Ernst Leyboldt	VARIANT	ANY	ipni
-ipni:5541-1	M.E.Lewis	STANDARD	BOT	ipni
-ipni:5541-1	Margaret Ensign Lewis	FULL	ANY	ipni
-ipni:5968-1	F.Maek.	STANDARD	BOT	ipni
-ipni:5968-1	Fumio Maekawa	FULL	ANY	ipni
-ipni:6338-1	Melvaine	STANDARD	BOT	ipni
-ipni:6338-1	Alma Theodora Melvaine	FULL	ANY	ipni
-ipni:6338-1	Alma Theodora Lee	VARIANT	ANY	ipni
-ipni:6633-1	Mord.Laun.	STANDARD	BOT	ipni
-ipni:6633-1	Jean Claude Mien Mordant de Launay	FULL	ANY	ipni
-ipni:6859-1	D.L.Nash	STANDARD	BOT	ipni
-ipni:6859-1	Dorothy L. Nash	FULL	ANY	ipni
-ipni:6859-1	Dorothy L. Nash Gibson	VARIANT	ANY	ipni
-ipni:6991-1	Nilson	STANDARD	BOT	ipni
-ipni:6991-1	Birger Nilson	FULL	ANY	ipni
-ipni:7382-1	B.R.Paterson	STANDARD	BOT	ipni
-ipni:7382-1	Betsy Rivers Paterson	FULL	ANY	ipni
-ipni:822-1	I.Bjørnstad	STANDARD	BOT	ipni
-ipni:822-1	Inger Nordal Bjørnstad	FULL	ANY	ipni
-ipni:822-1	Inger Nordal Björnstad	VARIANT	ANY	ipni
-ipni:8396-1	Rikli	STANDARD	BOT	ipni
-ipni:8396-1	Martin Albert Rikli	FULL	ANY	ipni
-ipni:8591-1	N.Rosén	STANDARD	BOT	ipni
-ipni:8591-1	Nils Rosén	FULL	ANY	ipni
 ipni:9303-1	W.Schultze	STANDARD	BOT	ipni
 ipni:9303-1	Willy Carl Max Schultze	FULL	ANY	ipni
 ipni:9303-1	Wilhelm Schultze	VARIANT	ANY	ipni
-ipni:9440-1	Seid.	STANDARD	BOT	ipni
-ipni:9440-1	Christiane Eva Seidenschnur	FULL	ANY	ipni
-ipni:9585-1	Shivas	STANDARD	BOT	ipni
-ipni:9585-1	Mary Grant Shivas	FULL	ANY	ipni
-ipni:9784-1	D.A.Sm.	STANDARD	BOT	ipni
-ipni:9784-1	Doris Alma Smith	FULL	ANY	ipni
-ipni:9899-1	Sopp	STANDARD	BOT	ipni
-ipni:9899-1	Olav Johan Sopp	FULL	ANY	ipni
-ipni:9899-1	Olav Johan Johan-Olsen	VARIANT	ANY	ipni
-ipni:9899-1	Olav Johan Olsen-Sopp	VARIANT	ANY	ipni
-ipni:9930-1	Souza Brito	STANDARD	BOT	ipni
-ipni:9930-1	Ezequiel Candido Souza Brito	FULL	ANY	ipni
-ipni:9964-1	Speschnew	STANDARD	BOT	ipni
-ipni:9964-1	Nicolai Nicolaievich von Speschnew	FULL	ANY	ipni
-ipni:9964-1	Nicolai Nicolaievich von Spechnew	VARIANT	ANY	ipni
 wd:Q100142069	Eggens	STANDARD	BOT	wikidata
 wd:Q100142069	Frida Eggens	FULL	ANY	wikidata
 wd:Q100142069	Eggens	VARIANT	ANY	wikidata
@@ -28156,6 +27767,7 @@ wd:Q109811232	Coscarón, Sixto	VARIANT	ANY	wikidata
 wd:Q109811232	Sixto Coscaron	VARIANT	ANY	wikidata
 wd:Q1098151	F.Desp.	STANDARD	BOT	wikidata
 wd:Q1098151	N.H.F.Desp.	STANDARD	BOT	wikidata
+wd:Q1098151	F. Desportes	FULL	ANY	ipni
 wd:Q1098151	Narcisse Henri François Desportes	FULL	ANY	wikidata
 wd:Q1098151	F. Desportes	VARIANT	ANY	wikidata
 wd:Q1098151	F.Desp.	VARIANT	ANY	wikidata
@@ -28638,6 +28250,7 @@ wd:Q110908892	Harim Cha	FULL	ANY	wikidata
 wd:Q110908963	Adam R. Wall	FULL	ANY	wikidata
 wd:Q11091426	C.K.Tseng	STANDARD	BOT	wikidata
 wd:Q11091426	C.K.Zeng	STANDARD	BOT	wikidata
+wd:Q11091426	Cheng Kui (? Tseng Cheng Kuei) Zeng	FULL	ANY	ipni
 wd:Q11091426	Cheng Kwei (Kuei) Tseng	FULL	ANY	ipni
 wd:Q11091426	Zeng Chengkui	FULL	ANY	wikidata
 wd:Q11091426	C.K. Tseng	VARIANT	ANY	wikidata
@@ -31424,6 +31037,7 @@ wd:Q11852700	Brusin Arne	VARIANT	ANY	ipni
 wd:Q11852700	Rousi	VARIANT	ANY	wikidata
 wd:Q11853412	Malmberg	STANDARD	BOT	wikidata
 wd:Q11853412	Mela	STANDARD	BOT	wikidata
+wd:Q11853412	August Johan Malmberg	FULL	ANY	ipni
 wd:Q11853412	Aukusti Juhana Mela	FULL	ANY	wikidata
 wd:Q11853412	A.J. Malmberg	VARIANT	ANY	wikidata
 wd:Q11853412	A.J. Mela	VARIANT	ANY	wikidata
@@ -31940,10 +31554,12 @@ wd:Q119140246	Wan-Ling Zhang	FULL	ANY	wikidata
 wd:Q119140246	Wanling Zhang	VARIANT	ANY	wikidata
 wd:Q119140251	Kuvaeva	STANDARD	BOT	wikidata
 wd:Q119140251	S.B.Smirnova	STANDARD	BOT	wikidata
+wd:Q119140251	Sofia Borisovna Kuvaeva	FULL	ANY	ipni
 wd:Q119140251	Sofia Borisovna Smirnova	FULL	ANY	wikidata
 wd:Q119140251	S.B. Kuvaeva	VARIANT	ANY	wikidata
 wd:Q119140251	S.B. Smirnova	VARIANT	ANY	wikidata
 wd:Q119140251	Sofia Borisovna Kuvaeva	VARIANT	ANY	wikidata
+wd:Q119140251	Sofia Borisovna Smirnova	VARIANT	ANY	ipni
 wd:Q119140417	Gasenb.	STANDARD	BOT	wikidata
 wd:Q119140417	Vladimir Liutsianovich Gasenbusch	FULL	ANY	wikidata
 wd:Q119140424	S.L.Pînzari	STANDARD	BOT	wikidata
@@ -32274,8 +31890,10 @@ wd:Q11975472	Broch	VARIANT	ANY	wikidata
 wd:Q11977210	I.Bjørnstad	STANDARD	BOT	wikidata
 wd:Q11977210	Nordal	STANDARD	BOT	wikidata
 wd:Q11977210	Inger Nordal	FULL	ANY	wikidata
+wd:Q11977210	Inger Nordal Bjørnstad	FULL	ANY	ipni
 wd:Q11977210	I.Bjørnstad	VARIANT	ANY	wikidata
 wd:Q11977210	Inger Bjørnstad	VARIANT	ANY	wikidata
+wd:Q11977210	Inger Nordal Björnstad	VARIANT	ANY	ipni
 wd:Q11977210	Inger Nordal Bjørnstad	VARIANT	ANY	wikidata
 wd:Q11977210	Nordal	VARIANT	ANY	wikidata
 wd:Q11977695	Jørst.	STANDARD	BOT	wikidata
@@ -32916,6 +32534,8 @@ wd:Q121620	Christian Carl Friedrich Ferdinand Senft	FULL	ANY	ipni
 wd:Q121620	Ferdinand Senft	FULL	ANY	wikidata
 wd:Q121620	Christian Carl Friedrich Ferdinand Senft	VARIANT	ANY	wikidata
 wd:Q121620	Senft	VARIANT	ANY	wikidata
+wd:Q1216378	G.B. Sowerby III	CITATION	ZOO	curated
+wd:Q1216378	George Brettingham Sowerby III	FULL	ANY	curated
 wd:Q121681553	Robert D. Ward	FULL	ANY	wikidata
 wd:Q121681553	Bob Ward	VARIANT	ANY	wikidata
 wd:Q121681553	Robert David Ward	VARIANT	ANY	wikidata
@@ -33315,8 +32935,10 @@ wd:Q123000361	M.B.Shende	VARIANT	ANY	wikidata
 wd:Q123000398	Chanton	STANDARD	BOT	wikidata
 wd:Q123000398	Chanton-Güvenç	STANDARD	BOT	wikidata
 wd:Q123000398	Nicole Chanton	FULL	ANY	wikidata
+wd:Q123000398	Nicole Chanton-Güvenç	FULL	ANY	ipni
 wd:Q123000398	N. Chanton	VARIANT	ANY	wikidata
 wd:Q123000398	N. Chanton-Güvenç	VARIANT	ANY	wikidata
+wd:Q123000398	Nicole Chanton	VARIANT	ANY	ipni
 wd:Q123000398	Nicole Chanton-Güvenç	VARIANT	ANY	wikidata
 wd:Q123000420	N.P.Malakhova	STANDARD	BOT	wikidata
 wd:Q123000420	Nadezhda Petrovna Malakhova	FULL	ANY	wikidata
@@ -33470,6 +33092,7 @@ wd:Q123103816	Anthony Swinehart	VARIANT	ANY	wikidata
 wd:Q12313530	G.L.Merr.	STANDARD	BOT	wikidata
 wd:Q12313530	G.L.Sm.	STANDARD	BOT	wikidata
 wd:Q12313530	Gary Lane Merrill	FULL	ANY	ipni
+wd:Q12313530	Gary Lane Smith	FULL	ANY	ipni
 wd:Q12313530	Gary Lane Smith Merrill	FULL	ANY	wikidata
 wd:Q12313530	G. L. Smith Merrill	VARIANT	ANY	wikidata
 wd:Q12313530	G.L. Sm.	VARIANT	ANY	wikidata
@@ -34889,6 +34512,7 @@ wd:Q125689034	Monzoli	STANDARD	BOT	wikidata
 wd:Q125689034	João Victor Longhi Monzoli	FULL	ANY	wikidata
 wd:Q1256926	Lun.	STANDARD	BOT	wikidata
 wd:Q1256926	Lühnem.	STANDARD	BOT	wikidata
+wd:Q1256926	G.H. Lühnemann	FULL	ANY	ipni
 wd:Q1256926	Georg Heinrich Lunemann	FULL	ANY	ipni
 wd:Q1256926	Georg Heinrich Lünemann	FULL	ANY	wikidata
 wd:Q1256926	G.H. Lühnemann	VARIANT	ANY	wikidata
@@ -37114,6 +36738,7 @@ wd:Q13225317	Norbert Rebmann	FULL	ANY	wikidata
 wd:Q13225317	Rebmann	VARIANT	ANY	wikidata
 wd:Q13225449	Glen	STANDARD	BOT	wikidata
 wd:Q13225449	H.F.Glen	STANDARD	BOT	wikidata
+wd:Q13225449	Hugh (Francis) Glen	FULL	ANY	ipni
 wd:Q13225449	Hugh Francis Glen	FULL	ANY	wikidata
 wd:Q13225449	Glen	VARIANT	ANY	wikidata
 wd:Q13225449	H.F.Glen	VARIANT	ANY	wikidata
@@ -38060,6 +37685,7 @@ wd:Q13402892	Marhold	VARIANT	ANY	wikidata
 wd:Q13402897	Caruana	STANDARD	BOT	wikidata
 wd:Q13402897	Caruana-Gatto	STANDARD	BOT	wikidata
 wd:Q13402897	Alfredo Caruana Gatto	FULL	ANY	wikidata
+wd:Q13402897	Caruana-Gatto	FULL	ANY	ipni
 wd:Q13402897	A. Caruana Gatto	VARIANT	ANY	wikidata
 wd:Q13402897	A. Caruana-Gatto	VARIANT	ANY	wikidata
 wd:Q13402897	Alfredo Caruana	VARIANT	ANY	ipni
@@ -38238,6 +37864,7 @@ wd:Q13409381	Rottenst.	STANDARD	BOT	wikidata
 wd:Q13409381	Starm.	STANDARD	BOT	wikidata
 wd:Q13409381	Walter Karl Mucher	FULL	ANY	wikidata
 wd:Q13409381	Walter Karl Rottensteiner	FULL	ANY	ipni
+wd:Q13409381	Walter Karl Starmühler	FULL	ANY	ipni
 wd:Q13409381	Mucher	VARIANT	ANY	wikidata
 wd:Q13409381	Rottenst.	VARIANT	ANY	wikidata
 wd:Q13409381	Starm.	VARIANT	ANY	wikidata
@@ -39723,7 +39350,9 @@ wd:Q13501784	Ramón Cuevas-Guzmán	VARIANT	ANY	wikidata
 wd:Q13501802	Santana Mich.	STANDARD	BOT	wikidata
 wd:Q13501802	Santana-Michel	STANDARD	BOT	wikidata
 wd:Q13501802	Francisco J. Santana-Michel	FULL	ANY	wikidata
+wd:Q13501802	Francisco Javier Santana Michel	FULL	ANY	ipni
 wd:Q13501802	Francisco J. Santana Michel	VARIANT	ANY	wikidata
+wd:Q13501802	Francisco Javier Santana	VARIANT	ANY	ipni
 wd:Q13501802	Francisco Javier Santana Michel	VARIANT	ANY	wikidata
 wd:Q13501802	Francisco Santana Michel	VARIANT	ANY	wikidata
 wd:Q13501802	Santana Mich.	VARIANT	ANY	wikidata
@@ -41528,6 +41157,7 @@ wd:Q137106243	José Carlos Martínez García-Ramos	VARIANT	ANY	wikidata
 wd:Q1371153	N.Rosén	STANDARD	BOT	wikidata
 wd:Q1371153	Rosenstein	STANDARD	BOT	wikidata
 wd:Q1371153	Nils Rosenstein	FULL	ANY	ipni
+wd:Q1371153	Nils Rosén	FULL	ANY	ipni
 wd:Q1371153	Nils Rosén von Rosenstein	FULL	ANY	wikidata
 wd:Q1371153	N.Rosen	VARIANT	ANY	wikidata
 wd:Q1371153	N.Rosén	VARIANT	ANY	wikidata
@@ -44452,6 +44082,7 @@ wd:Q15300543	Friedrich Ernst Leibold	FULL	ANY	wikidata
 wd:Q15300543	F.E. Leibold	VARIANT	ANY	wikidata
 wd:Q15300543	F.E.Leyb.	VARIANT	ANY	wikidata
 wd:Q15300543	Friedrich Ernst Leybold	VARIANT	ANY	wikidata
+wd:Q15300543	Friedrich Ernst Leyboldt	VARIANT	ANY	ipni
 wd:Q15300543	Leibold	VARIANT	ANY	wikidata
 wd:Q15300587	Koelle	STANDARD	BOT	wikidata
 wd:Q15300587	Johann Ludwig Christian Koelle	FULL	ANY	wikidata
@@ -45567,6 +45198,7 @@ wd:Q15920859	Cassie	STANDARD	BOT	wikidata
 wd:Q15920859	Dellow	STANDARD	BOT	wikidata
 wd:Q15920859	Una Vivienne Cassie	FULL	ANY	ipni
 wd:Q15920859	Vivienne Cassie Cooper	FULL	ANY	wikidata
+wd:Q15920859	Vivienne Dellow	FULL	ANY	ipni
 wd:Q15920859	Cassie	VARIANT	ANY	wikidata
 wd:Q15920859	Dellow	VARIANT	ANY	wikidata
 wd:Q15920859	U. Vivienne Cassie	VARIANT	ANY	ipni
@@ -45574,6 +45206,7 @@ wd:Q15920859	U.Vivienne Cassie	VARIANT	ANY	wikidata
 wd:Q15920859	Una V. Cassie Cooper	VARIANT	ANY	wikidata
 wd:Q15920859	Una Vivienne Cassie	VARIANT	ANY	wikidata
 wd:Q15920859	Una Vivienne Cassie Cooper	VARIANT	ANY	wikidata
+wd:Q15920859	Una Vivienne Cassie Cooper (née Dellow)	VARIANT	ANY	ipni
 wd:Q15920859	Una Vivienne Cassie-Dellow	VARIANT	ANY	wikidata
 wd:Q15920859	Una Vivienne Dellow	VARIANT	ANY	wikidata
 wd:Q15920859	V. Cassie	VARIANT	ANY	wikidata
@@ -47045,6 +46678,7 @@ wd:Q16300913	Anton Doroszenko	FULL	ANY	wikidata
 wd:Q16300913	Doroszenko	VARIANT	ANY	wikidata
 wd:Q16300919	Fallen	STANDARD	BOT	wikidata
 wd:Q16300919	M.E.Endress	STANDARD	BOT	wikidata
+wd:Q16300919	Mary E. Endress	FULL	ANY	ipni
 wd:Q16300919	Mary E. Fallen	FULL	ANY	ipni
 wd:Q16300919	Mary Endress	FULL	ANY	wikidata
 wd:Q16300919	Fallen	VARIANT	ANY	wikidata
@@ -47308,6 +46942,7 @@ wd:Q1640072	John T. Nichols	VARIANT	ANY	wikidata
 wd:Q1640072	Nichols	VARIANT	ANY	wikidata
 wd:Q16403549	Käärik	STANDARD	BOT	wikidata
 wd:Q16403549	Math.-Käärik	STANDARD	BOT	wikidata
+wd:Q16403549	A. Käärik	FULL	ANY	ipni
 wd:Q16403549	Aino Käärik	FULL	ANY	wikidata
 wd:Q16403549	Aino Mathiesen-Käärik	FULL	ANY	ipni
 wd:Q16403549	Aino Mathiesen	VARIANT	ANY	ipni
@@ -47409,6 +47044,7 @@ wd:Q16457185	Franz Xaver von Hartmann	FULL	ANY	wikidata
 wd:Q16457185	Hartmann	VARIANT	ANY	wikidata
 wd:Q16458415	D.L.Nash	STANDARD	BOT	wikidata
 wd:Q16458415	D.N.Gibson	STANDARD	BOT	wikidata
+wd:Q16458415	Dorothy L. Nash	FULL	ANY	ipni
 wd:Q16458415	Dorothy L. Nash Gibson	FULL	ANY	ipni
 wd:Q16458415	Dorothy N. Gibson	FULL	ANY	wikidata
 wd:Q16458415	D. L. N. Gibson	VARIANT	ANY	wikidata
@@ -48448,6 +48084,7 @@ wd:Q16872648	R.W.Phillips	VARIANT	ANY	wikidata
 wd:Q16872648	Reginald W. Phillips	VARIANT	ANY	wikidata
 wd:Q16873131	Bristol	STANDARD	BOT	wikidata
 wd:Q16873131	Roach	STANDARD	BOT	wikidata
+wd:Q16873131	B.Muriel Bristol	FULL	ANY	ipni
 wd:Q16873131	Blanche Muriel Bristol Roach	FULL	ANY	ipni
 wd:Q16873131	Muriel Bristol	FULL	ANY	wikidata
 wd:Q16873131	B.Muriel Bristol	VARIANT	ANY	wikidata
@@ -49453,6 +49090,7 @@ wd:Q17381577	Kelso	VARIANT	ANY	wikidata
 wd:Q17381577	Leon Hugh Kelso	VARIANT	ANY	wikidata
 wd:Q17381689	Kivir.	STANDARD	BOT	wikidata
 wd:Q17381689	Stenroos	STANDARD	BOT	wikidata
+wd:Q17381689	Kaalo Eemeli Kivirikko	FULL	ANY	ipni
 wd:Q17381689	Kaarlo Eemeli Kivirikko	FULL	ANY	wikidata
 wd:Q17381689	Karl Emil Stenroos	FULL	ANY	ipni
 wd:Q17381689	Kaalo Eemeli Kivirikko	VARIANT	ANY	wikidata
@@ -49817,6 +49455,7 @@ wd:Q17626918	Knaggs	VARIANT	ANY	wikidata
 wd:Q17628690	D.S.Decker	STANDARD	BOT	wikidata
 wd:Q17628690	Deck.-Walt.	STANDARD	BOT	wikidata
 wd:Q17628690	Deena S. Decker	FULL	ANY	wikidata
+wd:Q17628690	Deena S. Decker-Walters	FULL	ANY	ipni
 wd:Q17628690	Deena Sue Decker	FULL	ANY	ipni
 wd:Q17628690	D.S.Decker	VARIANT	ANY	wikidata
 wd:Q17628690	Deck.-Walt.	VARIANT	ANY	wikidata
@@ -50405,6 +50044,7 @@ wd:Q18226846	Lyubov Vasilyeva	VARIANT	ANY	wikidata
 wd:Q18229593	Bulach	STANDARD	BOT	wikidata
 wd:Q18229593	E.M.Bulakh	STANDARD	BOT	wikidata
 wd:Q18229593	E.M. Bulach	FULL	ANY	ipni
+wd:Q18229593	E.M. Bulakh	FULL	ANY	ipni
 wd:Q18229593	Yevgenia Mironovna Bulakh	FULL	ANY	wikidata
 wd:Q18229593	Bulach	VARIANT	ANY	wikidata
 wd:Q18229593	E.M. Bulakh	VARIANT	ANY	wikidata
@@ -51733,6 +51373,7 @@ wd:Q18745050	Dawud Mohammad Hasan Al-Eisawi	VARIANT	ANY	ipni
 wd:Q18745441	Bân	STANDARD	BOT	wikidata
 wd:Q18745441	T.B.Nguyen	STANDARD	BOT	wikidata
 wd:Q18745441	Nguyên Tiên Bân	FULL	ANY	wikidata
+wd:Q18745441	Tien Ban Nguyen	FULL	ANY	ipni
 wd:Q18745441	Bân	VARIANT	ANY	wikidata
 wd:Q18745441	T.B.Nguyen	VARIANT	ANY	wikidata
 wd:Q18745441	Tien Ban Nguyen	VARIANT	ANY	wikidata
@@ -51922,6 +51563,7 @@ wd:Q18808407	Speschnew	STANDARD	BOT	wikidata
 wd:Q18808407	Spieshnev	STANDARD	BOT	wikidata
 wd:Q18808407	Nicolai Nicolaievich von Speschnew	FULL	ANY	wikidata
 wd:Q18808407	Nikolai Spieshnev	FULL	ANY	ipni
+wd:Q18808407	Nicolai Nicolaievich von Spechnew	VARIANT	ANY	ipni
 wd:Q18808407	Nikolai Nikolajewitsch Speschnew	VARIANT	ANY	wikidata
 wd:Q18808407	Speschnew	VARIANT	ANY	wikidata
 wd:Q18808407	Spieshnev	VARIANT	ANY	wikidata
@@ -52482,6 +52124,7 @@ wd:Q18982514	M.E. Anchev	VARIANT	ANY	ipni
 wd:Q18982520	C.E.Anderson	STANDARD	BOT	wikidata
 wd:Q18982520	Seid.	STANDARD	BOT	wikidata
 wd:Q18982520	Christiane Eva Anderson	FULL	ANY	wikidata
+wd:Q18982520	Christiane Eva Seidenschnur	FULL	ANY	ipni
 wd:Q18982520	C. E. Seidenschnur	VARIANT	ANY	wikidata
 wd:Q18982520	C.E.Anderson	VARIANT	ANY	wikidata
 wd:Q18982520	Christiane Anderson	VARIANT	ANY	wikidata
@@ -53009,6 +52652,7 @@ wd:Q18983604	N.Chao	STANDARD	BOT	wikidata
 wd:Q18983604	N.Zhao	STANDARD	BOT	wikidata
 wd:Q18983604	Liang-Neng Zhao	FULL	ANY	wikidata
 wd:Q18983604	Neng Chao	FULL	ANY	ipni
+wd:Q18983604	Neng Zhao	FULL	ANY	ipni
 wd:Q18983604	Liang Neng Chao	VARIANT	ANY	ipni
 wd:Q18983604	N. Zhao	VARIANT	ANY	ipni
 wd:Q18983604	N.Chao	VARIANT	ANY	wikidata
@@ -54063,6 +53707,7 @@ wd:Q18985679	S.M. Huang	FULL	ANY	wikidata
 wd:Q18985679	S.M.Huang	VARIANT	ANY	wikidata
 wd:Q18985687	D.Popenoe	STANDARD	BOT	wikidata
 wd:Q18985687	Hughes	STANDARD	BOT	wikidata
+wd:Q18985687	Dorothy Kate Hughes	FULL	ANY	ipni
 wd:Q18985687	Dorothy Kate Popenoe	FULL	ANY	ipni
 wd:Q18985687	Dorothy Popenoe	FULL	ANY	wikidata
 wd:Q18985687	D. H. Popenoe	VARIANT	ANY	wikidata
@@ -54313,6 +53958,7 @@ wd:Q18986206	Hua Xing Qiu	VARIANT	ANY	wikidata
 wd:Q18986221	Klásk.	STANDARD	BOT	wikidata
 wd:Q18986221	Skalická	STANDARD	BOT	wikidata
 wd:Q18986221	Anna Klásková	FULL	ANY	wikidata
+wd:Q18986221	Anna Skalická	FULL	ANY	ipni
 wd:Q18986221	Anna Holubová-Klasková	VARIANT	ANY	ipni
 wd:Q18986221	Anna Klaskova	VARIANT	ANY	wikidata
 wd:Q18986221	Anna Klaskova Skalicka	VARIANT	ANY	wikidata
@@ -57206,6 +56852,7 @@ wd:Q19272797	T.M.Ramakrishna	VARIANT	ANY	wikidata
 wd:Q19272834	Cadman	STANDARD	BOT	wikidata
 wd:Q19272834	M.Balkwill	STANDARD	BOT	wikidata
 wd:Q19272834	Mandy-Jane Balkwill	FULL	ANY	wikidata
+wd:Q19272834	Mandy-Jane Cadman	FULL	ANY	ipni
 wd:Q19272834	Cadman	VARIANT	ANY	wikidata
 wd:Q19272834	M.-J. Balkwill	VARIANT	ANY	wikidata
 wd:Q19272834	M.Balkwill	VARIANT	ANY	wikidata
@@ -59125,6 +58772,7 @@ wd:Q19862392	Madison	STANDARD	BOT	wikidata
 wd:Q19862392	Michael T. Madison	FULL	ANY	wikidata
 wd:Q19862926	L.I.Savicz	STANDARD	BOT	wikidata
 wd:Q19862926	Ljubitsk.	STANDARD	BOT	wikidata
+wd:Q19862926	Lidia Ivanovna Ljubitskaya	FULL	ANY	ipni
 wd:Q19862926	Lidija Savich-Lyubitskaya	FULL	ANY	wikidata
 wd:Q19862926	Lydia Ivanovna Savicz-Lubitskaya	FULL	ANY	ipni
 wd:Q19862926	L.I.Savicz	VARIANT	ANY	wikidata
@@ -63406,6 +63054,7 @@ wd:Q21338273	Efraín Reinel Henao	VARIANT	ANY	wikidata
 wd:Q21338275	A.A.Wynns	STANDARD	BOT	wikidata
 wd:Q21338275	Amtoft	STANDARD	BOT	wikidata
 wd:Q21338275	A.A. Wynns	FULL	ANY	ipni
+wd:Q21338275	Anja Amtoft	FULL	ANY	ipni
 wd:Q21338275	Anja Amtoft Wynns	FULL	ANY	wikidata
 wd:Q21338275	A.A.Wynns	VARIANT	ANY	wikidata
 wd:Q21338275	Amtoft	VARIANT	ANY	wikidata
@@ -64982,8 +64631,10 @@ wd:Q21339036	R.R.Bloxam	VARIANT	ANY	wikidata
 wd:Q21339039	Degel.	STANDARD	BOT	wikidata
 wd:Q21339039	G.B.F.Nilsson	STANDARD	BOT	wikidata
 wd:Q21339039	Gunnar Bror Fritiof Degelius	FULL	ANY	wikidata
+wd:Q21339039	Gunnar Bror Fritiof Nilsson	FULL	ANY	ipni
 wd:Q21339039	Degel.	VARIANT	ANY	wikidata
 wd:Q21339039	G.B.F.Nilsson	VARIANT	ANY	wikidata
+wd:Q21339039	Gunnar Bror Fritiof Degelius	VARIANT	ANY	ipni
 wd:Q21339039	Gunnar Bror Fritiof Nilsson	VARIANT	ANY	wikidata
 wd:Q21339039	Gunnar Bror Fritiof Nilsson-Degelius	VARIANT	ANY	ipni
 wd:Q21339039	Gunnar Degelius	VARIANT	ANY	wikidata
@@ -65433,6 +65084,7 @@ wd:Q21339242	E. Timdal	VARIANT	ANY	wikidata
 wd:Q21339242	Timdal	VARIANT	ANY	wikidata
 wd:Q21339243	Zhurb.	STANDARD	BOT	wikidata
 wd:Q21339243	Zhurbenko	STANDARD	BOT	wikidata
+wd:Q21339243	Mikhail P. Zhurbenko	FULL	ANY	ipni
 wd:Q21339243	Mikhail Petrovich Zhurbenko	FULL	ANY	wikidata
 wd:Q21339243	M. Zhurbenko	VARIANT	ANY	wikidata
 wd:Q21339243	Mikhail P Zhurbenko	VARIANT	ANY	wikidata
@@ -65926,6 +65578,7 @@ wd:Q21339476	Carl Friedrich Ferdinand Genth	FULL	ANY	wikidata
 wd:Q21339476	Genth	VARIANT	ANY	wikidata
 wd:Q21339482	Hern.-Padr.	STANDARD	BOT	wikidata
 wd:Q21339482	Hern.Padrón	STANDARD	BOT	wikidata
+wd:Q21339482	C. Hernández-Padrón	FULL	ANY	ipni
 wd:Q21339482	C.E. Hernández Padrón	FULL	ANY	ipni
 wd:Q21339482	Consuelo Hernández-Padrón	FULL	ANY	wikidata
 wd:Q21339482	C. Hernández-Padrón	VARIANT	ANY	wikidata
@@ -66015,10 +65668,12 @@ wd:Q21339510	William W. Safranek	FULL	ANY	wikidata
 wd:Q21339510	Safranek	VARIANT	ANY	wikidata
 wd:Q21339512	L.W.Hsu	STANDARD	BOT	wikidata
 wd:Q21339512	L.W.Xu	STANDARD	BOT	wikidata
+wd:Q21339512	Lian Wang Hsu	FULL	ANY	ipni
 wd:Q21339512	Lian Wang Xu	FULL	ANY	ipni
 wd:Q21339512	Lian-Wang Xu	FULL	ANY	wikidata
 wd:Q21339512	L.W.Hsu	VARIANT	ANY	wikidata
 wd:Q21339512	L.W.Xu	VARIANT	ANY	wikidata
+wd:Q21339512	Lian Wang Xu	VARIANT	ANY	ipni
 wd:Q21339512	Lian-Wang Hsü	VARIANT	ANY	wikidata
 wd:Q21339514	Eichlin	CITATION	ZOO	wikidata
 wd:Q21339514	Thomas Drake Eichlin	FULL	ANY	wikidata
@@ -69698,6 +69353,7 @@ wd:Q21341216	Yan-Feng Tong	FULL	ANY	wikidata
 wd:Q21341216	Yanfeng Tong	VARIANT	ANY	wikidata
 wd:Q21341217	Ashton	STANDARD	BOT	wikidata
 wd:Q21341217	R.A.Nelson	STANDARD	BOT	wikidata
+wd:Q21341217	Ruth Ashton Nelson	FULL	ANY	ipni
 wd:Q21341217	Ruth Elizabeth Ashton	FULL	ANY	ipni
 wd:Q21341217	Ruth Elizabeth Ashton Nelson	FULL	ANY	wikidata
 wd:Q21341217	Ashton	VARIANT	ANY	wikidata
@@ -69956,8 +69612,10 @@ wd:Q21341347	Bacc.	STANDARD	BOT	wikidata
 wd:Q21341347	Pasquale Baccarini	FULL	ANY	wikidata
 wd:Q21341347	Bacc.	VARIANT	ANY	wikidata
 wd:Q21341349	Samsuddin	STANDARD	BOT	wikidata
+wd:Q21341349	Samsudin	STANDARD	BOT	ipni
 wd:Q21341349	Wahid	STANDARD	BOT	wikidata
 wd:Q21341349	Mohd Wahid bin Samsudin	FULL	ANY	wikidata
+wd:Q21341349	Wahid bin Samsudin	FULL	ANY	ipni
 wd:Q21341349	[bin] Samsud[d]in Wahid	FULL	ANY	ipni
 wd:Q21341349	Samsuddin	VARIANT	ANY	wikidata
 wd:Q21341349	Wahid	VARIANT	ANY	wikidata
@@ -70500,6 +70158,7 @@ wd:Q21341604	Anthony (Antony) Gepp	VARIANT	ANY	wikidata
 wd:Q21341606	Lesley Ballantyne	FULL	ANY	wikidata
 wd:Q21341607	E.Gepp	STANDARD	BOT	wikidata
 wd:Q21341607	E.S.Barton	STANDARD	BOT	wikidata
+wd:Q21341607	Ethel Sarel Barton	FULL	ANY	ipni
 wd:Q21341607	Ethel Sarel Barton Gepp	FULL	ANY	wikidata
 wd:Q21341607	E. S. B. Gepp	VARIANT	ANY	wikidata
 wd:Q21341607	E. S. Gepp	VARIANT	ANY	wikidata
@@ -71992,6 +71651,7 @@ wd:Q21387669	Aleksandr Evsyukov	FULL	ANY	wikidata
 wd:Q21387670	Nováková	STANDARD	BOT	wikidata
 wd:Q21387670	Punčoch.	STANDARD	BOT	wikidata
 wd:Q21387670	Marcela Nováková	FULL	ANY	wikidata
+wd:Q21387670	Marcela Punčochárová	FULL	ANY	ipni
 wd:Q21387670	Marcela Punčochárová	VARIANT	ANY	wikidata
 wd:Q21387670	Nováková	VARIANT	ANY	wikidata
 wd:Q21387670	Punčoch.	VARIANT	ANY	wikidata
@@ -74881,6 +74541,8 @@ wd:Q21389622	Sebastian Dariusz Salata	VARIANT	ANY	wikidata
 wd:Q21389625	Aymée Robainas Barcia	FULL	ANY	wikidata
 wd:Q21389625	Aymee Robainas-Barcia	VARIANT	ANY	wikidata
 wd:Q21389627	Xin Y.Wang	STANDARD	BOT	wikidata
+wd:Q21389627	Xin Yu Wang	STANDARD	BOT	ipni
+wd:Q21389627	Xin Yu Wang	FULL	ANY	ipni
 wd:Q21389627	Xin-Yu Wang	FULL	ANY	wikidata
 wd:Q21389627	Xue Yuan Wang	FULL	ANY	ipni
 wd:Q21389627	Wang Xin-Yu	VARIANT	ANY	wikidata
@@ -75106,6 +74768,7 @@ wd:Q21389784	A.P.Fontana	VARIANT	ANY	wikidata
 wd:Q21389787	Yiau-Min Huang	FULL	ANY	wikidata
 wd:Q21389789	J.M.Yen	STANDARD	BOT	wikidata
 wd:Q21389789	W.Y.Yen	STANDARD	BOT	wikidata
+wd:Q21389789	Jo Min Yen	FULL	ANY	ipni
 wd:Q21389789	Jo-Min Yen	FULL	ANY	wikidata
 wd:Q21389789	Wen Yu Yen	FULL	ANY	ipni
 wd:Q21389789	J.M.Yen	VARIANT	ANY	wikidata
@@ -82237,6 +81900,7 @@ wd:Q21394382	P. M. Giachino	VARIANT	ANY	wikidata
 wd:Q21394383	Cheng-Jin Yan	FULL	ANY	wikidata
 wd:Q21394385	E.F.Franklin	STANDARD	BOT	wikidata
 wd:Q21394385	Hennessy	STANDARD	BOT	wikidata
+wd:Q21394385	Esmé Frances Franklin	FULL	ANY	ipni
 wd:Q21394385	Esmé Frances Hennessy	FULL	ANY	wikidata
 wd:Q21394385	E. F. F. H.	VARIANT	ANY	wikidata
 wd:Q21394385	E.F.Franklin	VARIANT	ANY	wikidata
@@ -86803,6 +86467,7 @@ wd:Q21505122	Maria Angeles Alonso Vargas	VARIANT	ANY	wikidata
 wd:Q21505125	K.A.Grant	STANDARD	BOT	wikidata
 wd:Q21505125	K.S.Alt	STANDARD	BOT	wikidata
 wd:Q21505125	Karen S. Alt	FULL	ANY	wikidata
+wd:Q21505125	Karen S.Alt Grant	FULL	ANY	ipni
 wd:Q21505125	K.A.Grant	VARIANT	ANY	wikidata
 wd:Q21505125	K.S.Alt	VARIANT	ANY	wikidata
 wd:Q21505125	Karen S.Alt Grant	VARIANT	ANY	wikidata
@@ -87266,6 +86931,7 @@ wd:Q21505362	Z.T. Artyushenko	VARIANT	ANY	ipni
 wd:Q21505363	Artaria	STANDARD	BOT	wikidata
 wd:Q21505363	Artr.	STANDARD	BOT	wikidata
 wd:Q21505363	Ferdinando Augusto Artaria	FULL	ANY	wikidata
+wd:Q21505363	Ferdinando Augusto Artraria	FULL	ANY	ipni
 wd:Q21505363	Artr.	VARIANT	ANY	wikidata
 wd:Q21505363	Ferdinando Augusto Artraria	VARIANT	ANY	wikidata
 wd:Q21505364	Arts	STANDARD	BOT	wikidata
@@ -87494,6 +87160,7 @@ wd:Q21505536	E.Z.Bai	VARIANT	ANY	wikidata
 wd:Q21505537	C.K.Bai	STANDARD	BOT	wikidata
 wd:Q21505537	J.K.Bai	STANDARD	BOT	wikidata
 wd:Q21505537	C.K. Bai	FULL	ANY	ipni
+wd:Q21505537	Jin Kai Bai	FULL	ANY	ipni
 wd:Q21505537	Jin-Kai Bai	FULL	ANY	wikidata
 wd:Q21505537	C.K.Bai	VARIANT	ANY	wikidata
 wd:Q21505537	Chin-Kai Bai	VARIANT	ANY	wikidata
@@ -89188,6 +88855,7 @@ wd:Q21506321	Borodina	STANDARD	BOT	wikidata
 wd:Q21506321	Grabovsk.	STANDARD	BOT	wikidata
 wd:Q21506321	Alisa E. Grabovskaja	FULL	ANY	wikidata
 wd:Q21506321	Alisa Evgenievna Grabovskaya	FULL	ANY	ipni
+wd:Q21506321	Alisa Evgenievna. Borodina	FULL	ANY	ipni
 wd:Q21506321	A.E. Borodina	VARIANT	ANY	wikidata
 wd:Q21506321	Alisa Evgenievna Borodina	VARIANT	ANY	wikidata
 wd:Q21506321	Alisa Evgenievna Borodina-Grabovskaja	VARIANT	ANY	wikidata
@@ -90136,6 +89804,7 @@ wd:Q21506808	Cáceres Gonz.	VARIANT	ANY	wikidata
 wd:Q21506809	Cachon-Enj.	STANDARD	BOT	wikidata
 wd:Q21506809	Enjumet	STANDARD	BOT	wikidata
 wd:Q21506809	Monique Cachon-Enjumet	FULL	ANY	wikidata
+wd:Q21506809	Monique Enjumet	FULL	ANY	ipni
 wd:Q21506809	Cachon-Enj.	VARIANT	ANY	wikidata
 wd:Q21506809	Enjumet	VARIANT	ANY	wikidata
 wd:Q21506809	Monique Cachon	VARIANT	ANY	wikidata
@@ -90710,6 +90379,7 @@ wd:Q21508214	Chin S.Chang	VARIANT	ANY	wikidata
 wd:Q21508214	Chin-Sung Chang	VARIANT	ANY	wikidata
 wd:Q21508217	C.F.Chang	STANDARD	BOT	wikidata
 wd:Q21508217	J.F.Zhang	STANDARD	BOT	wikidata
+wd:Q21508217	Chun Fu Chang	FULL	ANY	ipni
 wd:Q21508217	Jun Fu Zhang	FULL	ANY	ipni
 wd:Q21508217	Jun-Fu Zhang	FULL	ANY	wikidata
 wd:Q21508217	C.F.Chang	VARIANT	ANY	wikidata
@@ -91672,6 +91342,7 @@ wd:Q21509114	Roberto Corti	FULL	ANY	wikidata
 wd:Q21509114	R.Corti	VARIANT	ANY	wikidata
 wd:Q21509117	C.Pedrotti	STANDARD	BOT	wikidata
 wd:Q21509117	Cort.-Pedr.	STANDARD	BOT	wikidata
+wd:Q21509117	Carmela Cortini Pedrotti	FULL	ANY	ipni
 wd:Q21509117	Carmela Cortini-Pedrotti	FULL	ANY	wikidata
 wd:Q21509117	C.Pedrotti	VARIANT	ANY	wikidata
 wd:Q21509117	Carmela Cortini	VARIANT	ANY	wikidata
@@ -93116,6 +92787,7 @@ wd:Q21510518	John Bitting Smith Norton	FULL	ANY	wikidata
 wd:Q21510518	J.B.S. Norton	VARIANT	ANY	wikidata
 wd:Q21510519	B.A.Daniels	STANDARD	BOT	wikidata
 wd:Q21510519	Hetrick	STANDARD	BOT	wikidata
+wd:Q21510519	B.A.D. Hetrick	FULL	ANY	ipni
 wd:Q21510519	Barbara A. Daniels	FULL	ANY	ipni
 wd:Q21510519	Barbara Hetrick	FULL	ANY	wikidata
 wd:Q21510519	B. A .D. Hetrick	VARIANT	ANY	wikidata
@@ -93884,6 +93556,7 @@ wd:Q21511755	William Ross Elder	FULL	ANY	wikidata
 wd:Q21511755	Elder	VARIANT	ANY	wikidata
 wd:Q21511777	Elffers	STANDARD	BOT	wikidata
 wd:Q21511777	Munday	STANDARD	BOT	wikidata
+wd:Q21511777	Joan Elffers	FULL	ANY	ipni
 wd:Q21511777	Joan Munday	FULL	ANY	wikidata
 wd:Q21511777	Elffers	VARIANT	ANY	wikidata
 wd:Q21511777	J. Elffers	VARIANT	ANY	wikidata
@@ -94037,6 +93710,7 @@ wd:Q21512171	Engelh.	VARIANT	ANY	wikidata
 wd:Q21512177	Engelhorn	STANDARD	BOT	wikidata
 wd:Q21512177	T.E.Raven	STANDARD	BOT	wikidata
 wd:Q21512177	Tamra Engelhorn	FULL	ANY	wikidata
+wd:Q21512177	Tamra Engelhorn Raven	FULL	ANY	ipni
 wd:Q21512177	Engelhorn	VARIANT	ANY	wikidata
 wd:Q21512177	T.E.Raven	VARIANT	ANY	wikidata
 wd:Q21512177	Tamra Engelhorn Raven	VARIANT	ANY	wikidata
@@ -94698,10 +94372,13 @@ wd:Q21513217	Flentje	VARIANT	ANY	wikidata
 wd:Q21513219	Flerov	STANDARD	BOT	wikidata
 wd:Q21513219	Flerow	STANDARD	BOT	wikidata
 wd:Q21513219	Aleksandr Fedorovich Flerov	FULL	ANY	wikidata
+wd:Q21513219	Alexandr Fedorovich Flerow	FULL	ANY	ipni
+wd:Q21513219	Aleksandr Fedorovitch [Fedorovic, Theodorovich, Theodorowitsch] Flerov	VARIANT	ANY	ipni
 wd:Q21513219	Aleksandr Flerov	VARIANT	ANY	wikidata
 wd:Q21513219	Aleksandr Fyodorovich Flerov	VARIANT	ANY	wikidata
 wd:Q21513219	Aleksandr Fyodorovich Flyorov	VARIANT	ANY	wikidata
 wd:Q21513219	Aleksandr [Alexander] Fedorovitch [Fedorovic, Theodorovich, Theodorowitsch] Flerov	VARIANT	ANY	wikidata
+wd:Q21513219	Alexandr Fedorovich Flerov	VARIANT	ANY	ipni
 wd:Q21513219	Alexandr Fedorovich Flerow	VARIANT	ANY	wikidata
 wd:Q21513219	Flerov	VARIANT	ANY	wikidata
 wd:Q21513219	Flerow	VARIANT	ANY	wikidata
@@ -96311,6 +95988,7 @@ wd:Q21514167	Charles Jay Gould	FULL	ANY	wikidata
 wd:Q21514167	C.J.Gould	VARIANT	ANY	wikidata
 wd:Q21514168	K.G.Mathews	STANDARD	BOT	wikidata
 wd:Q21514168	K.Gould	STANDARD	BOT	wikidata
+wd:Q21514168	Katherine Gould	FULL	ANY	ipni
 wd:Q21514168	Katherine Gould Mathews	FULL	ANY	ipni
 wd:Q21514168	Katherine R. Gould Mathews	FULL	ANY	wikidata
 wd:Q21514168	K. G. Mathews	VARIANT	ANY	wikidata
@@ -96349,6 +96027,7 @@ wd:Q21514180	Gowen	VARIANT	ANY	wikidata
 wd:Q21514182	D.A.Sm.	STANDARD	BOT	wikidata
 wd:Q21514182	Goy	STANDARD	BOT	wikidata
 wd:Q21514182	Doris Alma Goy	FULL	ANY	wikidata
+wd:Q21514182	Doris Alma Smith	FULL	ANY	ipni
 wd:Q21514182	D. A. Goy	VARIANT	ANY	wikidata
 wd:Q21514182	D. A. Smith	VARIANT	ANY	wikidata
 wd:Q21514182	D.A.Sm.	VARIANT	ANY	wikidata
@@ -100075,6 +99754,7 @@ wd:Q21516654	Edwin William Humphreys	FULL	ANY	wikidata
 wd:Q21516654	Humphreys	VARIANT	ANY	wikidata
 wd:Q21516658	Hunger	STANDARD	BOT	wikidata
 wd:Q21516658	King-Jones	STANDARD	BOT	wikidata
+wd:Q21516658	Susanne Hunger	FULL	ANY	ipni
 wd:Q21516658	Susanne King-Jones	FULL	ANY	wikidata
 wd:Q21516658	King-Jones	VARIANT	ANY	wikidata
 wd:Q21516658	Susanne Hunger	VARIANT	ANY	wikidata
@@ -100384,6 +100064,7 @@ wd:Q21516783	F.Irvine	VARIANT	ANY	wikidata
 wd:Q21516784	L.M.Irvine	STANDARD	BOT	wikidata
 wd:Q21516784	L.M.Newton	STANDARD	BOT	wikidata
 wd:Q21516784	Linda Mary Irvine	FULL	ANY	wikidata
+wd:Q21516784	Linda Mary Newton	FULL	ANY	ipni
 wd:Q21516784	L. M. Irvine	VARIANT	ANY	wikidata
 wd:Q21516784	L.M.Irvine	VARIANT	ANY	wikidata
 wd:Q21516784	L.M.Newton	VARIANT	ANY	wikidata
@@ -100515,6 +100196,7 @@ wd:Q21516847	Joseph Bernhard Jack	VARIANT	ANY	wikidata
 wd:Q21516848	B.R.Paterson	STANDARD	BOT	wikidata
 wd:Q21516848	Jackes	STANDARD	BOT	wikidata
 wd:Q21516848	Betsy Rivers Jackes	FULL	ANY	wikidata
+wd:Q21516848	Betsy Rivers Paterson	FULL	ANY	ipni
 wd:Q21516848	B.R.Paterson	VARIANT	ANY	wikidata
 wd:Q21516848	Betsy Jackes	VARIANT	ANY	wikidata
 wd:Q21516848	Betsy Paterson	VARIANT	ANY	wikidata
@@ -102167,8 +101849,10 @@ wd:Q21517702	Komárk.-Legn.	STANDARD	BOT	wikidata
 wd:Q21517702	Komárková	STANDARD	BOT	wikidata
 wd:Q21517702	Legnerová	STANDARD	BOT	wikidata
 wd:Q21517702	Jaroslava Komárková-Legnerová	FULL	ANY	wikidata
+wd:Q21517702	Jaroslava Legnerová	FULL	ANY	ipni
 wd:Q21517702	J. Komárková	VARIANT	ANY	wikidata
 wd:Q21517702	J. Legnerová	VARIANT	ANY	wikidata
+wd:Q21517702	Jaroslava Babická	VARIANT	ANY	ipni
 wd:Q21517702	Jaroslava Komarkova-Legnerova	VARIANT	ANY	wikidata
 wd:Q21517702	Jaroslava Komárková	VARIANT	ANY	wikidata
 wd:Q21517702	Jaroslava Komárková-Legnerová	VARIANT	ANY	wikidata
@@ -103000,6 +102684,7 @@ wd:Q21518253	La Farge-Engl.	STANDARD	BOT	wikidata
 wd:Q21518253	Catherine La Farge	FULL	ANY	ipni
 wd:Q21518253	Catherine La Farge-England	FULL	ANY	wikidata
 wd:Q21518253	Catherine La Farge	VARIANT	ANY	wikidata
+wd:Q21518253	Catherine LaFarge-England	VARIANT	ANY	ipni
 wd:Q21518253	La Farge	VARIANT	ANY	wikidata
 wd:Q21518253	La Farge-Engl.	VARIANT	ANY	wikidata
 wd:Q21518255	La Rivers	STANDARD	BOT	wikidata
@@ -104726,6 +104411,7 @@ wd:Q21519637	Jin Yu Luo	FULL	ANY	wikidata
 wd:Q21519637	J.Y.Luo	VARIANT	ANY	wikidata
 wd:Q21519643	Luppi Mosca	STANDARD	BOT	wikidata
 wd:Q21519643	Mosca	STANDARD	BOT	wikidata
+wd:Q21519643	Anna Maria L. Mosca	FULL	ANY	ipni
 wd:Q21519643	Anna Maria Luppi Mosca	FULL	ANY	wikidata
 wd:Q21519643	Luppi Mosca	VARIANT	ANY	wikidata
 wd:Q21519643	Mosca	VARIANT	ANY	wikidata
@@ -108918,6 +108604,7 @@ wd:Q21522641	John Parker	VARIANT	ANY	wikidata
 wd:Q21522642	Fenley	STANDARD	BOT	wikidata
 wd:Q21522642	K.F.Parker	STANDARD	BOT	wikidata
 wd:Q21522642	Kittie Fenley Parker	FULL	ANY	wikidata
+wd:Q21522642	Kittie Lucille Fenley	FULL	ANY	ipni
 wd:Q21522642	Fenley	VARIANT	ANY	wikidata
 wd:Q21522642	K. L. Parker	VARIANT	ANY	wikidata
 wd:Q21522642	K.F.Parker	VARIANT	ANY	wikidata
@@ -109038,8 +108725,10 @@ wd:Q21522691	Paul Morrison Patterson	FULL	ANY	wikidata
 wd:Q21522691	P.Patt.	VARIANT	ANY	wikidata
 wd:Q21522692	Patthar.	STANDARD	BOT	wikidata
 wd:Q21522692	Phattar.	STANDARD	BOT	wikidata
+wd:Q21522692	Kanlaya Phattarahirankanok	FULL	ANY	ipni
 wd:Q21522692	Nannapat Pattharahirantricin	FULL	ANY	wikidata
 wd:Q21522692	Kanlaya Phattarahirankanok	VARIANT	ANY	wikidata
+wd:Q21522692	Nannapat Pattharahirantricin	VARIANT	ANY	ipni
 wd:Q21522692	Patthar.	VARIANT	ANY	wikidata
 wd:Q21522692	Phattar.	VARIANT	ANY	wikidata
 wd:Q21522693	Pattison	STANDARD	BOT	wikidata
@@ -111448,6 +111137,7 @@ wd:Q21607147	Don Rupert Reynolds	VARIANT	ANY	wikidata
 wd:Q21607148	Řezáč.-Škal.	STANDARD	BOT	wikidata
 wd:Q21607148	Řezáčová	STANDARD	BOT	wikidata
 wd:Q21607148	Škaloudová	STANDARD	BOT	wikidata
+wd:Q21607148	Magda Řezáčová	FULL	ANY	ipni
 wd:Q21607148	Magda Řezáčová-Škaloudová	FULL	ANY	wikidata
 wd:Q21607148	Magda Škaloudová	FULL	ANY	ipni
 wd:Q21607148	Magda Řezáčová	VARIANT	ANY	ipni
@@ -113105,6 +112795,7 @@ wd:Q21607862	Richard Schander	FULL	ANY	wikidata
 wd:Q21607862	Schander	VARIANT	ANY	wikidata
 wd:Q21607863	Schanzer	STANDARD	BOT	wikidata
 wd:Q21607863	Shantser	STANDARD	BOT	wikidata
+wd:Q21607863	Ivan Alekseyevich Shantser	FULL	ANY	ipni
 wd:Q21607863	Ivan Alexeevich Schanzer	FULL	ANY	wikidata
 wd:Q21607863	Ivan A. Schanzer	VARIANT	ANY	wikidata
 wd:Q21607863	Ivan Alekseyevich Shantser	VARIANT	ANY	wikidata
@@ -113750,6 +113441,7 @@ wd:Q21608520	Anne Louise Schutte	FULL	ANY	wikidata
 wd:Q21608520	Schutte	VARIANT	ANY	wikidata
 wd:Q21608521	N.Schuetz	STANDARD	BOT	wikidata
 wd:Q21608521	N.Schütz	STANDARD	BOT	wikidata
+wd:Q21608521	Nicole Schuetz	FULL	ANY	ipni
 wd:Q21608521	Nicole Schütz	FULL	ANY	wikidata
 wd:Q21608521	N.Schuetz	VARIANT	ANY	wikidata
 wd:Q21608521	N.Schütz	VARIANT	ANY	wikidata
@@ -114278,6 +113970,8 @@ wd:Q21608757	Aguero	VARIANT	ANY	wikidata
 wd:Q21608757	B.Shaw	VARIANT	ANY	wikidata
 wd:Q21608757	Blanka Aguero	VARIANT	ANY	ipni
 wd:Q21608757	Blanka Shaw	VARIANT	ANY	wikidata
+wd:Q21608757	Buryová Aguero	VARIANT	ANY	ipni
+wd:Q21608757	Buryová Shaw	VARIANT	ANY	ipni
 wd:Q21608758	C.G.Shaw bis	STANDARD	BOT	wikidata
 wd:Q21608758	Charles Gardner Shaw	FULL	ANY	wikidata
 wd:Q21608758	C.G. Shaw III	VARIANT	ANY	ipni
@@ -115629,6 +115323,7 @@ wd:Q21609643	Christopher Maximilian Steenbock	FULL	ANY	wikidata
 wd:Q21609643	Steenbock	VARIANT	ANY	wikidata
 wd:Q21609646	M.Fox	STANDARD	BOT	wikidata
 wd:Q21609646	Steentoft	STANDARD	BOT	wikidata
+wd:Q21609646	Margaret Fox	FULL	ANY	ipni
 wd:Q21609646	Margaret Fox Steentoft Nielsen	FULL	ANY	wikidata
 wd:Q21609646	Margaret Steentoft	FULL	ANY	ipni
 wd:Q21609646	M.Fox	VARIANT	ANY	wikidata
@@ -115686,6 +115381,7 @@ wd:Q21609734	Steininger	VARIANT	ANY	wikidata
 wd:Q21609739	A.Steinm.	STANDARD	BOT	wikidata
 wd:Q21609739	B.A.Steinm.	STANDARD	BOT	wikidata
 wd:Q21609739	(B.) Alfred Steinmann	FULL	ANY	wikidata
+wd:Q21609739	A. Steinmann	FULL	ANY	ipni
 wd:Q21609739	A. Steinmann	VARIANT	ANY	wikidata
 wd:Q21609739	A.Steinm.	VARIANT	ANY	wikidata
 wd:Q21609739	Alfred Steinmann	VARIANT	ANY	wikidata
@@ -116488,6 +116184,7 @@ wd:Q21610130	Hsing Chien Sze	FULL	ANY	wikidata
 wd:Q21610130	H.C.Sze	VARIANT	ANY	wikidata
 wd:Q21610131	Schembel	STANDARD	BOT	wikidata
 wd:Q21610131	Szembel	STANDARD	BOT	wikidata
+wd:Q21610131	S.J. Schembel	FULL	ANY	ipni
 wd:Q21610131	Stefan Julianovič Szembel	FULL	ANY	wikidata
 wd:Q21610131	S.J. Schembel	VARIANT	ANY	wikidata
 wd:Q21610131	S.J. Szembel	VARIANT	ANY	wikidata
@@ -127378,6 +127075,7 @@ wd:Q22668691	Xue, Bin E	VARIANT	ANY	wikidata
 wd:Q22668753	L.R.Sánchez	STANDARD	BOT	wikidata
 wd:Q22668753	R.Sánchez	STANDARD	BOT	wikidata
 wd:Q22668753	Luis Roberto Sánchez	FULL	ANY	wikidata
+wd:Q22668753	Roberto Sánchez	FULL	ANY	ipni
 wd:Q22668753	L.R.Sánchez	VARIANT	ANY	wikidata
 wd:Q22668753	R.Sánchez	VARIANT	ANY	wikidata
 wd:Q22668753	Roberto Sánchez Montaño	VARIANT	ANY	wikidata
@@ -130048,6 +129746,7 @@ wd:Q2373009	A.Heller	VARIANT	ANY	wikidata
 wd:Q2373009	Doc Heller	VARIANT	ANY	wikidata
 wd:Q23731487	D.G.Ribeiro	STANDARD	BOT	wikidata
 wd:Q23731487	Graciano-Ribeiro	STANDARD	BOT	wikidata
+wd:Q23731487	Dalva G. Ribeiro	FULL	ANY	ipni
 wd:Q23731487	Dalva Graciano Ribeiro	FULL	ANY	wikidata
 wd:Q23731487	Dalva Graciano-Ribeiro	FULL	ANY	ipni
 wd:Q23731487	D.G.Ribeiro	VARIANT	ANY	wikidata
@@ -130457,6 +130156,7 @@ wd:Q2419675	Edward Frederick Kraus	FULL	ANY	wikidata
 wd:Q2419675	Fred Kraus	VARIANT	ANY	wikidata
 wd:Q2420048	Correvon	STANDARD	BOT	wikidata
 wd:Q2420048	H.Correvon	STANDARD	BOT	wikidata
+wd:Q2420048	H. Correvon	FULL	ANY	ipni
 wd:Q2420048	Louis Henry Correvon	FULL	ANY	wikidata
 wd:Q2420048	Correvon	VARIANT	ANY	wikidata
 wd:Q2420048	H. Correvon	VARIANT	ANY	wikidata
@@ -139133,6 +138833,7 @@ wd:Q26713961	J.P.Perry	STANDARD	BOT	wikidata
 wd:Q26713961	Jesse Parker Perry	FULL	ANY	wikidata
 wd:Q26713962	M.-F.Robert	STANDARD	BOT	wikidata
 wd:Q26713962	Passini	STANDARD	BOT	wikidata
+wd:Q26713962	Marie-Françoise Passini	FULL	ANY	ipni
 wd:Q26713962	Marie-Françoise Robert	FULL	ANY	wikidata
 wd:Q26713962	M-F. Passini	VARIANT	ANY	wikidata
 wd:Q26713962	Marie-Françoise Robert	VARIANT	ANY	wikidata
@@ -140682,6 +140383,7 @@ wd:Q26714624	Yu Yuan Huang	FULL	ANY	ipni
 wd:Q26714625	F.C.Zhang	STANDARD	BOT	wikidata
 wd:Q26714625	F.S.Zhang	STANDARD	BOT	wikidata
 wd:Q26714625	Fang Ci Zhang	FULL	ANY	ipni
+wd:Q26714625	Fang Szu Zhang	FULL	ANY	ipni
 wd:Q26714625	Fang-Ci Zhang	FULL	ANY	wikidata
 wd:Q26714625	F.C.Zhang	VARIANT	ANY	wikidata
 wd:Q26714625	F.S.Zhang	VARIANT	ANY	wikidata
@@ -150137,6 +149839,7 @@ wd:Q3164457	Thibaud de Chauvalon	VARIANT	ANY	ipni
 wd:Q3164795	Laun.	STANDARD	BOT	wikidata
 wd:Q3164795	Mord.Laun.	STANDARD	BOT	wikidata
 wd:Q3164795	Jean Claude Michel Mordant de Launay	FULL	ANY	ipni
+wd:Q3164795	Jean Claude Mien Mordant de Launay	FULL	ANY	ipni
 wd:Q3164795	Jean-Claude Michel Mornant de Launay	FULL	ANY	wikidata
 wd:Q3164795	Jean Claude Mien Mordant de Launay	VARIANT	ANY	wikidata
 wd:Q3164795	Laun.	VARIANT	ANY	wikidata
@@ -151195,6 +150898,7 @@ wd:Q3261480	Kiener	VARIANT	ANY	wikidata
 wd:Q32615070	Heinrich Vicentini	FULL	ANY	wikidata
 wd:Q3261587	Corb.	STANDARD	BOT	wikidata
 wd:Q3261587	L.Corb.	STANDARD	BOT	wikidata
+wd:Q3261587	François Marie Louis Corbière	FULL	ANY	ipni
 wd:Q3261587	L. Corbière	FULL	ANY	ipni
 wd:Q3261587	Louis Corbière	FULL	ANY	wikidata
 wd:Q3261587	Corb.	VARIANT	ANY	wikidata
@@ -151616,10 +151320,14 @@ wd:Q3294542	Johan-Olsen	STANDARD	BOT	wikidata
 wd:Q3294542	Olsen-Sopp	STANDARD	BOT	wikidata
 wd:Q3294542	Sopp	STANDARD	BOT	wikidata
 wd:Q3294542	Olav Johan Sopp	FULL	ANY	wikidata
+wd:Q3294542	Olav Johan-Olsen	FULL	ANY	ipni
 wd:Q3294542	J. Olsen	VARIANT	ANY	wikidata
 wd:Q3294542	Johan Olsen	VARIANT	ANY	wikidata
 wd:Q3294542	Johan-Olsen	VARIANT	ANY	wikidata
+wd:Q3294542	Olav J. Johan-Olsen	VARIANT	ANY	ipni
+wd:Q3294542	Olav Johan Johan-Olsen	VARIANT	ANY	ipni
 wd:Q3294542	Olav Johan Olsen-Sopp	VARIANT	ANY	wikidata
+wd:Q3294542	Olav Johan Sopp	VARIANT	ANY	ipni
 wd:Q3294542	Olsen-Sopp	VARIANT	ANY	wikidata
 wd:Q3294542	Sopp	VARIANT	ANY	wikidata
 wd:Q32945428	Marcia Regina De-Souza	FULL	ANY	wikidata
@@ -157992,6 +157700,7 @@ wd:Q33696262	Leticia Torres	FULL	ANY	wikidata
 wd:Q33696262	Leticia Torres-Colín	FULL	ANY	ipni
 wd:Q33696262	L.Torres	VARIANT	ANY	wikidata
 wd:Q33696262	L.Torres-Colín	VARIANT	ANY	wikidata
+wd:Q33696262	Leticia Torres-Colin	VARIANT	ANY	ipni
 wd:Q33696262	Leticia Torres-Colín	VARIANT	ANY	wikidata
 wd:Q33696278	C.Torres	STANDARD	BOT	wikidata
 wd:Q33696278	Cristina Torres Gómez	FULL	ANY	wikidata
@@ -158211,6 +157920,7 @@ wd:Q33697358	Varela	VARIANT	ANY	wikidata
 wd:Q33697375	C.A.Vargas	STANDARD	BOT	wikidata
 wd:Q33697375	C.Vargas	STANDARD	BOT	wikidata
 wd:Q33697375	C. Vargas	FULL	ANY	ipni
+wd:Q33697375	Carlos A. Vargas	FULL	ANY	ipni
 wd:Q33697375	Carlos Alberto Vargas Rincón	FULL	ANY	wikidata
 wd:Q33697375	C.A.Vargas	VARIANT	ANY	wikidata
 wd:Q33697375	C.Vargas	VARIANT	ANY	wikidata
@@ -172988,8 +172698,12 @@ wd:Q36560163	G.V.Boiko	STANDARD	BOT	wikidata
 wd:Q36560163	Savczenko	STANDARD	BOT	wikidata
 wd:Q36560163	Ganna V. Boiko	FULL	ANY	wikidata
 wd:Q36560163	Ganna Volodymyrivna Boiko	FULL	ANY	ipni
+wd:Q36560163	H.V. Savczenko	FULL	ANY	ipni
+wd:Q36560163	A.V. Boiko	VARIANT	ANY	ipni
+wd:Q36560163	A.V. Savchenko	VARIANT	ANY	ipni
 wd:Q36560163	Anna Vladimirovna Boiko	VARIANT	ANY	ipni
 wd:Q36560163	Anna Vladimirovna Savchenko	VARIANT	ANY	wikidata
+wd:Q36560163	G.V. Boiko	VARIANT	ANY	ipni
 wd:Q36560163	G.V. Savchenko	VARIANT	ANY	ipni
 wd:Q36560163	G.V.Boiko	VARIANT	ANY	wikidata
 wd:Q36560163	Ganna Volodymyrivna Boiko	VARIANT	ANY	wikidata
@@ -190182,6 +189896,7 @@ wd:Q36641657	Norbert Griebl	FULL	ANY	wikidata
 wd:Q36641657	Griebl	VARIANT	ANY	wikidata
 wd:Q36641688	Gunde Cimerman	STANDARD	BOT	wikidata
 wd:Q36641688	Gunde-Cim.	STANDARD	BOT	wikidata
+wd:Q36641688	N. Gunde Cimerman	FULL	ANY	ipni
 wd:Q36641688	N. Gunde-Cimerman	FULL	ANY	ipni
 wd:Q36641688	Nina Gunde-Cimerman	FULL	ANY	wikidata
 wd:Q36641688	Gunde Cimerman	VARIANT	ANY	wikidata
@@ -198464,6 +198179,7 @@ wd:Q36684033	S.M.Tan	VARIANT	ANY	wikidata
 wd:Q36684046	Tanada	STANDARD	BOT	wikidata
 wd:Q36684046	Tanda	STANDARD	BOT	wikidata
 wd:Q36684046	S. Tanada	FULL	ANY	wikidata
+wd:Q36684046	Seinosuke Tanda	FULL	ANY	ipni
 wd:Q36684046	S. Tanda	VARIANT	ANY	wikidata
 wd:Q36684046	Seinosuke Tanda	VARIANT	ANY	wikidata
 wd:Q36684046	Tanada	VARIANT	ANY	wikidata
@@ -200906,6 +200622,7 @@ wd:Q36695071	V.Ja. Czerdantseva	FULL	ANY	wikidata
 wd:Q36695071	Czerd.	VARIANT	ANY	wikidata
 wd:Q36695088	V.S.Samp.	STANDARD	BOT	wikidata
 wd:Q36695088	V.Samp.	STANDARD	BOT	wikidata
+wd:Q36695088	Valéria Silva Sampaio	FULL	ANY	ipni
 wd:Q36695088	Valéria da Silva Sampaio	FULL	ANY	wikidata
 wd:Q36695088	V.S.Samp.	VARIANT	ANY	wikidata
 wd:Q36695088	V.Samp.	VARIANT	ANY	wikidata
@@ -204257,6 +203974,7 @@ wd:Q36711214	Z.H.Gao	VARIANT	ANY	wikidata
 wd:Q36711231	Girz.	STANDARD	BOT	wikidata
 wd:Q36711231	Gizhitsk.	STANDARD	BOT	wikidata
 wd:Q36711231	Z. Girzitska	FULL	ANY	ipni
+wd:Q36711231	Z.K. Gizhitskaya	FULL	ANY	ipni
 wd:Q36711231	Zoya Konstantinovna Gizhitskaya	FULL	ANY	wikidata
 wd:Q36711231	Girz.	VARIANT	ANY	wikidata
 wd:Q36711231	Gizhitsk.	VARIANT	ANY	wikidata
@@ -206600,6 +206318,7 @@ wd:Q405702	Bonpl.	STANDARD	BOT	wikidata
 wd:Q405702	Goujaud	STANDARD	BOT	wikidata
 wd:Q405702	Aimé Bonpland	FULL	ANY	wikidata
 wd:Q405702	Aimé Jacques Alexandre Bonpland	FULL	ANY	ipni
+wd:Q405702	Aimé Jacques Alexandre Goujaud	FULL	ANY	ipni
 wd:Q405702	Aime Bonpland	VARIANT	ANY	wikidata
 wd:Q405702	Aime Jacques Alexandre Bonpland	VARIANT	ANY	wikidata
 wd:Q405702	Aimé Jacques Alexandre Bonpland	VARIANT	ANY	wikidata
@@ -208923,9 +208642,11 @@ wd:Q426057	Richard Mark Bateman	VARIANT	ANY	wikidata
 wd:Q4260633	A.T.Lee	STANDARD	BOT	wikidata
 wd:Q4260633	Melvaine	STANDARD	BOT	wikidata
 wd:Q4260633	Alma Theodora Lee	FULL	ANY	wikidata
+wd:Q4260633	Alma Theodora Melvaine	FULL	ANY	ipni
 wd:Q4260633	A.T.Lee	VARIANT	ANY	wikidata
 wd:Q4260633	Alma Lee	VARIANT	ANY	wikidata
 wd:Q4260633	Alma T. Lee	VARIANT	ANY	wikidata
+wd:Q4260633	Alma Theodora Lee	VARIANT	ANY	ipni
 wd:Q4260633	Alma Theodora Melvaine	VARIANT	ANY	wikidata
 wd:Q4260633	Melvaine	VARIANT	ANY	wikidata
 wd:Q4260893	Libosch.	STANDARD	BOT	wikidata
@@ -208995,6 +208716,8 @@ wd:Q42638614	Gar.Singh	STANDARD	BOT	ipni
 wd:Q42638614	Garima Singh	STANDARD	BOT	wikidata
 wd:Q42638614	Garima Singh	FULL	ANY	wikidata
 wd:Q4264539	Lloyd	STANDARD	BOT	wikidata
+wd:Q4264539	McGinty	STANDARD	BOT	ipni
+wd:Q4264539	C.G. McGinty	FULL	ANY	ipni
 wd:Q4264539	Curtis Gates Lloyd	FULL	ANY	wikidata
 wd:Q4264539	C. G. Lloyd	VARIANT	ANY	wikidata
 wd:Q4264539	C.G. Lloyd	VARIANT	ANY	wikidata
@@ -210192,6 +209915,7 @@ wd:Q433419	W.Wight	VARIANT	ANY	wikidata
 wd:Q433419	William F. Wright	VARIANT	ANY	ipni
 wd:Q433575	M.G.Henry	STANDARD	BOT	wikidata
 wd:Q433575	M.K.Henry	STANDARD	BOT	wikidata
+wd:Q433575	Mary Gibson Henry	FULL	ANY	ipni
 wd:Q433575	Mary K. Henry	FULL	ANY	ipni
 wd:Q433575	Mary Klett Gibson Henry	FULL	ANY	wikidata
 wd:Q433575	M. G. Henry	VARIANT	ANY	wikidata
@@ -211786,6 +211510,7 @@ wd:Q4516707	Cif.	VARIANT	ANY	wikidata
 wd:Q451753	Curran	STANDARD	BOT	wikidata
 wd:Q451753	K.Brandegee	STANDARD	BOT	wikidata
 wd:Q451753	Mary Katharine Brandegee	FULL	ANY	wikidata
+wd:Q451753	Mary Katharine Curran	FULL	ANY	ipni
 wd:Q451753	Curran	VARIANT	ANY	wikidata
 wd:Q451753	K.Brandegee	VARIANT	ANY	wikidata
 wd:Q451753	Katharine Brandegee	VARIANT	ANY	wikidata
@@ -217805,6 +217530,7 @@ wd:Q47119872	J.Kane	VARIANT	ANY	wikidata
 wd:Q47119875	S.Kaneko	STANDARD	BOT	wikidata
 wd:Q47119875	Shigeru Kaneko	FULL	ANY	wikidata
 wd:Q47119875	S.Kaneko	VARIANT	ANY	wikidata
+wd:Q47119881	M.Kang	STANDARD	BOT	ipni
 wd:Q47119881	Ming Kang	STANDARD	BOT	wikidata
 wd:Q47119881	Ming Kang	FULL	ANY	wikidata
 wd:Q47119881	M.Kang	VARIANT	ANY	wikidata
@@ -225918,6 +225644,7 @@ wd:Q4815030	Sarah Allen Plummer Lemmon	VARIANT	ANY	wikidata
 wd:Q4815030	Sarah Plummer Lemmon	VARIANT	ANY	wikidata
 wd:Q4815049	Marg.	STANDARD	BOT	wikidata
 wd:Q4815049	Margońska	STANDARD	BOT	wikidata
+wd:Q4815049	Hanna Bogna Margońska	FULL	ANY	ipni
 wd:Q4815049	Hanna Margońska	FULL	ANY	wikidata
 wd:Q4815049	Hanna B. Margońska	VARIANT	ANY	wikidata
 wd:Q4815049	Hanna Bogna Margońska	VARIANT	ANY	wikidata
@@ -225941,8 +225668,10 @@ wd:Q4815103	Stella Sealy	VARIANT	ANY	wikidata
 wd:Q4815122	M.B.Schwarz	STANDARD	BOT	wikidata
 wd:Q4815122	Schol-Schwarz	STANDARD	BOT	wikidata
 wd:Q4815122	Marie Beatrice Schol-Schwarz	FULL	ANY	wikidata
+wd:Q4815122	Marie Beatrice Schwarz	FULL	ANY	ipni
 wd:Q4815122	Bea Schwarz	VARIANT	ANY	wikidata
 wd:Q4815122	M.B.Schwarz	VARIANT	ANY	wikidata
+wd:Q4815122	Marie Beatrice Schol-Schwarz	VARIANT	ANY	ipni
 wd:Q4815122	Schol-Schwarz	VARIANT	ANY	wikidata
 wd:Q4815140	Tindale	STANDARD	BOT	wikidata
 wd:Q4815140	Mary Douglas Tindale	FULL	ANY	wikidata
@@ -226008,6 +225737,9 @@ wd:Q4820779	August Mentz	FULL	ANY	wikidata
 wd:Q4820779	Mentz	VARIANT	ANY	wikidata
 wd:Q4820842	Vaga	STANDARD	BOT	wikidata
 wd:Q4820842	August Vaga	FULL	ANY	wikidata
+wd:Q4820842	August Ja. Waga	VARIANT	ANY	ipni
+wd:Q4820842	August Waga	VARIANT	ANY	ipni
+wd:Q4820842	August Yanovich Vaga	VARIANT	ANY	ipni
 wd:Q4820864	Kremp.	STANDARD	BOT	wikidata
 wd:Q4820864	August von Krempelhuber	FULL	ANY	wikidata
 wd:Q4820864	Kremp.	VARIANT	ANY	wikidata
@@ -227421,6 +227153,7 @@ wd:Q5103991	S.G.M.Carr	STANDARD	BOT	wikidata
 wd:Q5103991	S.G.M.Fawc.	STANDARD	BOT	wikidata
 wd:Q5103991	Maisie Carr	FULL	ANY	wikidata
 wd:Q5103991	Stella Grace Maisie Carr	FULL	ANY	ipni
+wd:Q5103991	Stella Grace Maisie Fawcett	FULL	ANY	ipni
 wd:Q5103991	Maisie Carr	VARIANT	ANY	ipni
 wd:Q5103991	S.G.M.Carr	VARIANT	ANY	wikidata
 wd:Q5103991	S.G.M.Fawc.	VARIANT	ANY	wikidata
@@ -235675,8 +235408,10 @@ wd:Q5765090	Gilg-Ben.	VARIANT	ANY	wikidata
 wd:Q5765094	C.O.Goodd.	STANDARD	BOT	wikidata
 wd:Q5765094	C.Reeder	STANDARD	BOT	wikidata
 wd:Q5765094	Charlotte Goodding Reeder	FULL	ANY	wikidata
+wd:Q5765094	Charlotte Olive Goodding	FULL	ANY	ipni
 wd:Q5765094	C.O.Goodd.	VARIANT	ANY	wikidata
 wd:Q5765094	C.Reeder	VARIANT	ANY	wikidata
+wd:Q5765094	Charlotte Goodding Reeder	VARIANT	ANY	ipni
 wd:Q5765094	Charlotte O. Goodding	VARIANT	ANY	wikidata
 wd:Q5765094	Charlotte Olive Goodding	VARIANT	ANY	wikidata
 wd:Q5765094	Charlotte Olive Goodding-Reeder	VARIANT	ANY	wikidata
@@ -238042,6 +237777,7 @@ wd:Q5873799	Gabriele Kothe	VARIANT	ANY	wikidata
 wd:Q5873799	Kothe-Heinr.	VARIANT	ANY	wikidata
 wd:Q5873897	Campb.-Young	STANDARD	BOT	wikidata
 wd:Q5873897	G.J.Campb.	STANDARD	BOT	wikidata
+wd:Q5873897	Gael Jean Campbell	FULL	ANY	ipni
 wd:Q5873897	Gael Jean Campbell-Young	FULL	ANY	wikidata
 wd:Q5873897	Campb.-Young	VARIANT	ANY	wikidata
 wd:Q5873897	G. J. Campbell-Young	VARIANT	ANY	wikidata
@@ -238489,10 +238225,12 @@ wd:Q5887164	G.F.Tao	VARIANT	ANY	wikidata
 wd:Q5887164	Guangfu Tao	VARIANT	ANY	ipni
 wd:Q5887579	Clausing	STANDARD	BOT	wikidata
 wd:Q5887579	G.Kadereit	STANDARD	BOT	wikidata
+wd:Q5887579	Gudrun Clausing	FULL	ANY	ipni
 wd:Q5887579	Gudrun Kadereit	FULL	ANY	wikidata
 wd:Q5887579	G. Clausing	VARIANT	ANY	wikidata
 wd:Q5887579	G.Kadereit	VARIANT	ANY	wikidata
 wd:Q5887579	Gudrun Clausing	VARIANT	ANY	wikidata
+wd:Q5887579	Gudrun Kadereit	VARIANT	ANY	ipni
 wd:Q5888131	Guido Pereira	FULL	ANY	wikidata
 wd:Q5888131	Guido Agustín Pereira Suárez	VARIANT	ANY	wikidata
 wd:Q5888200	Vigin.	STANDARD	BOT	wikidata
@@ -238926,6 +238664,7 @@ wd:Q5897098	Nagam.	VARIANT	ANY	wikidata
 wd:Q5897484	Kajanus	STANDARD	BOT	wikidata
 wd:Q5897484	Nilson	STANDARD	BOT	wikidata
 wd:Q5897484	Birger Kajanus	FULL	ANY	wikidata
+wd:Q5897484	Birger Nilson	FULL	ANY	ipni
 wd:Q5897484	Birger Nilson	VARIANT	ANY	wikidata
 wd:Q5897484	Birger Nilsson	VARIANT	ANY	wikidata
 wd:Q5897484	Kajanus	VARIANT	ANY	wikidata
@@ -240221,6 +239960,7 @@ wd:Q5933632	J.T.Atwood	VARIANT	ANY	wikidata
 wd:Q5933635	J.T.Hunter	STANDARD	BOT	wikidata
 wd:Q5933635	McGann	STANDARD	BOT	wikidata
 wd:Q5933635	John T. Hunter	FULL	ANY	wikidata
+wd:Q5933635	Thomas D. McGann	FULL	ANY	ipni
 wd:Q5933635	J.T.Hunter	VARIANT	ANY	wikidata
 wd:Q5933635	John Hunter	VARIANT	ANY	wikidata
 wd:Q5933635	McGann	VARIANT	ANY	wikidata
@@ -240608,6 +240348,7 @@ wd:Q5946776	Raymond Hamet	VARIANT	ANY	ipni
 wd:Q5946776	Raymond-Hamet	VARIANT	ANY	wikidata
 wd:Q5946819	J.Garden	STANDARD	BOT	wikidata
 wd:Q5946819	Joy Thomps.	STANDARD	BOT	wikidata
+wd:Q5946819	Joy Garden	FULL	ANY	ipni
 wd:Q5946819	Joy Thompson	FULL	ANY	wikidata
 wd:Q5946819	Joy Garden	VARIANT	ANY	wikidata
 wd:Q5946819	Joy Gardiner-Garden	VARIANT	ANY	wikidata
@@ -244150,6 +243891,7 @@ wd:Q6001942	M.Infante	VARIANT	ANY	wikidata
 wd:Q6001951	Kras	STANDARD	BOT	wikidata
 wd:Q6001951	Kras-Lap.	STANDARD	BOT	wikidata
 wd:Q6001951	Marta Kras	FULL	ANY	wikidata
+wd:Q6001951	Marta Kras-Lapinska	FULL	ANY	ipni
 wd:Q6001951	Kras	VARIANT	ANY	wikidata
 wd:Q6001951	Marta Monika Kras	VARIANT	ANY	wikidata
 wd:Q6002134	Hilend	STANDARD	BOT	wikidata
@@ -244253,10 +243995,12 @@ wd:Q6003651	Mulgura	VARIANT	ANY	wikidata
 wd:Q6003651	Múlgura	VARIANT	ANY	wikidata
 wd:Q6003694	M.E.Reiner	STANDARD	BOT	wikidata
 wd:Q6003694	Reiner-Drehwald	STANDARD	BOT	wikidata
+wd:Q6003694	Maria Elena Reiner	FULL	ANY	ipni
 wd:Q6003694	María Elena Reiner	FULL	ANY	wikidata
 wd:Q6003694	María Elena Reiner-Drehwald	FULL	ANY	ipni
 wd:Q6003694	M.E.Reiner	VARIANT	ANY	wikidata
 wd:Q6003694	Maria Elena Reiner	VARIANT	ANY	wikidata
+wd:Q6003694	Maria Elena Reiner-Drehwald	VARIANT	ANY	ipni
 wd:Q6003694	María Elena Reiner	VARIANT	ANY	ipni
 wd:Q6003694	María Elena Reiner-Drehwald	VARIANT	ANY	wikidata
 wd:Q6003694	Reiner-Drehwald	VARIANT	ANY	wikidata
@@ -244419,6 +244163,7 @@ wd:Q6006192	Gonç.-Carr.	STANDARD	BOT	wikidata
 wd:Q6006192	Matilde Gonçalves Carralves	FULL	ANY	wikidata
 wd:Q6006192	Carralves	VARIANT	ANY	wikidata
 wd:Q6006192	Matilde Florentina Gonçalves Carralves	VARIANT	ANY	wikidata
+wd:Q6006192	Matilde Gonçalves-Carralves	VARIANT	ANY	ipni
 wd:Q60062649	Barensteiner	CITATION	ZOO	wikidata
 wd:Q60062649	Ruth Barensteiner	FULL	ANY	wikidata
 wd:Q60062649	Barensteiner, Ruth	VARIANT	ANY	wikidata
@@ -244901,14 +244646,18 @@ wd:Q603858	E.C.Hansen	STANDARD	BOT	wikidata
 wd:Q603858	Emil Christian Hansen	FULL	ANY	wikidata
 wd:Q603858	E.C.Hansen	VARIANT	ANY	wikidata
 wd:Q6038626	Des.-Shost.	STANDARD	BOT	wikidata
+wd:Q6038626	Desj.-Shost.	STANDARD	BOT	ipni
 wd:Q6038626	Roussine	STANDARD	BOT	wikidata
+wd:Q6038626	Natalia Alekseevna Desjatova-Shostenko	FULL	ANY	ipni
 wd:Q6038626	Nathalie A. Desjatova-Shostenko	FULL	ANY	wikidata
 wd:Q6038626	Nathalie A. Roussine	FULL	ANY	ipni
 wd:Q6038626	Des.-Shost.	VARIANT	ANY	wikidata
 wd:Q6038626	N. A. Desjatova-Shostenko	VARIANT	ANY	wikidata
 wd:Q6038626	N. Desjatova-Šostenko	VARIANT	ANY	wikidata
+wd:Q6038626	Natalia Alekseevna Desjatova	VARIANT	ANY	ipni
 wd:Q6038626	Natalia Alekseevna Desjatova-Shostenko	VARIANT	ANY	wikidata
 wd:Q6038626	Natalia Alekseevna Shostenko	VARIANT	ANY	wikidata
+wd:Q6038626	Natalia Shostenko-Dessiatova	VARIANT	ANY	ipni
 wd:Q6038626	Nataliya Oleksiyivna Shostenko	VARIANT	ANY	wikidata
 wd:Q6038626	Natalja Alexejewna Dessjatowa-Schostenko	VARIANT	ANY	wikidata
 wd:Q6038626	Natalja Dessjatowa-Schostenko	VARIANT	ANY	wikidata
@@ -245301,6 +245050,7 @@ wd:Q6066422	Patricia A. Harding	VARIANT	ANY	wikidata
 wd:Q6066521	P.K.Holmgren	STANDARD	BOT	wikidata
 wd:Q6066521	P.M.Kern	STANDARD	BOT	wikidata
 wd:Q6066521	Patricia Kern Holmgren	FULL	ANY	wikidata
+wd:Q6066521	Patricia M. Kern	FULL	ANY	ipni
 wd:Q6066521	P. K. Holmgren	VARIANT	ANY	wikidata
 wd:Q6066521	P. Kern	VARIANT	ANY	wikidata
 wd:Q6066521	P. M. Kern	VARIANT	ANY	wikidata
@@ -250783,6 +250533,7 @@ wd:Q63762376	Feist	VARIANT	ANY	wikidata
 wd:Q63764	Kensit	STANDARD	BOT	wikidata
 wd:Q63764	L.Bolus	STANDARD	BOT	wikidata
 wd:Q63764	Harriet Margaret Louisa Bolus	FULL	ANY	wikidata
+wd:Q63764	Harriet Margaret Louisa Kensit	FULL	ANY	ipni
 wd:Q63764	H M L Bolus	VARIANT	ANY	wikidata
 wd:Q63764	H. M. L. Bolus	VARIANT	ANY	wikidata
 wd:Q63764	H. M. Louisa Bolus	VARIANT	ANY	wikidata
@@ -251622,6 +251373,7 @@ wd:Q6469693	Laco Mucina	VARIANT	ANY	wikidata
 wd:Q6469693	Mucina	VARIANT	ANY	wikidata
 wd:Q64699242	Ram.-Prado	STANDARD	BOT	wikidata
 wd:Q64699242	Ramirez-Prado	STANDARD	BOT	wikidata
+wd:Q64699242	J.H. Ramirez-Prado	FULL	ANY	ipni
 wd:Q64699242	Jorge Humberto Ramírez-Prado	FULL	ANY	wikidata
 wd:Q64699242	Jorge Ramírez-Prado	FULL	ANY	ipni
 wd:Q64699242	J.H. Ramirez-Prado	VARIANT	ANY	wikidata
@@ -256788,6 +256540,7 @@ wd:Q76350684	Paola Pulido-Santacruz	FULL	ANY	wikidata
 wd:Q76351	Griseb.	STANDARD	BOT	wikidata
 wd:Q76351	Grisebach	STANDARD	BOT	wikidata
 wd:Q76351	August Grisebach	FULL	ANY	wikidata
+wd:Q76351	August Heinrich Rudolf Grisebach	FULL	ANY	ipni
 wd:Q76351	Griseb.	FULL	ANY	ipni
 wd:Q76351	A.H.R.G. Grisebach	VARIANT	ANY	wikidata
 wd:Q76351	August Heinrich Rudolf Grisebach	VARIANT	ANY	wikidata
@@ -268473,6 +268226,7 @@ wd:Q88831694	Jun Okamoto	FULL	ANY	wikidata
 wd:Q88831694	J.Okamoto	VARIANT	ANY	wikidata
 wd:Q88831702	J.J.Oliveira	STANDARD	BOT	wikidata
 wd:Q88831702	J.S.Oliveira	STANDARD	BOT	wikidata
+wd:Q88831702	J.J. Oliveira	FULL	ANY	ipni
 wd:Q88831702	J.S. Oliveira	FULL	ANY	ipni
 wd:Q88831702	Jadson José Souza de Oliveira	FULL	ANY	wikidata
 wd:Q88831702	J.J.Oliveira	VARIANT	ANY	wikidata
@@ -279339,6 +279093,7 @@ wd:Q89865039	Jerri L. Bartholomew	FULL	ANY	wikidata
 wd:Q89865039	Jerri Bartholomew	VARIANT	ANY	wikidata
 wd:Q89872	Cranz	STANDARD	BOT	wikidata
 wd:Q89872	D.Crantz	STANDARD	BOT	wikidata
+wd:Q89872	David Crantz	FULL	ANY	ipni
 wd:Q89872	David Cranz	FULL	ANY	wikidata
 wd:Q89872	Cranz	VARIANT	ANY	wikidata
 wd:Q89872	D.Crantz	VARIANT	ANY	wikidata
@@ -280754,6 +280509,7 @@ wd:Q92092557	Hua Zheng	VARIANT	ANY	wikidata
 wd:Q92100	Noerdl.	STANDARD	BOT	wikidata
 wd:Q92100	Nördl.	STANDARD	BOT	wikidata
 wd:Q92100	Herman von Nördlinger	FULL	ANY	ipni
+wd:Q92100	Hermann Noerdlinger	FULL	ANY	ipni
 wd:Q92100	Hermann von Nördlinger	FULL	ANY	wikidata
 wd:Q92100	Herman von Nördlinger	VARIANT	ANY	wikidata
 wd:Q92100	Hermann Noerdlinger	VARIANT	ANY	wikidata

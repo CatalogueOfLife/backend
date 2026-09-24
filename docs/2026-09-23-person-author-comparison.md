@@ -262,12 +262,14 @@ still becomes `DIFFERENT`, the rule the comparator already had, and phase 3's re
 Deviation: the comparator's new overloads take a `TaxGroup` next to the code rather than an `AuthorContext`, since a
 public `compare(Authorship, Authorship, AuthorContext)` would make every existing call with a `null` code ambiguous.
 
-**Phase 2, the registry** (2026-09-24). The first harvest gave 87,300 persons with 283,553 name forms and 486
-relations, 20 MB of plain text: 76,603 Wikidata items and all 65,018 IPNI authors, joined through P586. One Wikidata
-item without any name was not written and 3,808 relations to persons outside the registry were dropped. Of the
-60,299 rows of `authormap.txt` only 17 resolve to no person. The report counts 20,041 disagreements between sources,
-nearly all given names of different completeness (IPNI "Andriy V." against Wikidata "Andriy"), and 28 authority ids
-claimed by two persons, mostly two Wikidata items of one IPNI or ZooBank author. The cached answers make a rerun a
+**Phase 2, the registry** (2026-09-24). The harvest gave 87,141 persons with 283,309 name forms and 487 relations,
+20 MB of plain text: 76,603 Wikidata items and all 65,018 IPNI authors, joined through P586. One Wikidata item without
+any name was not written and 3,808 relations to persons outside the registry were dropped. Of the 60,299 rows of
+`authormap.txt` only 17 resolve to no person. The report counts 19,997 disagreements between sources, nearly all given
+names of different completeness (IPNI "Andriy V." against Wikidata "Andriy"), and 48 authority ids claimed by two
+persons, nearly all two Wikidata items of one IPNI or ZooBank author. These are the figures of the harvest repeated after
+phase 3's registry fixes, from the cache and with the one curated person, G. B. Sowerby III, whose Wikidata item has
+none of the four properties harvested. The first harvest had 87,300 persons: 159 of them were an item's second IPNI id. The cached answers make a rerun a
 matter of minutes; the requests themselves took about an hour and a half.
 
 Deviations from the plan, all found by the first harvest:
