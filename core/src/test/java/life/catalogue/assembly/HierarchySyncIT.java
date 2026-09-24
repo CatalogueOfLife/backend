@@ -241,6 +241,103 @@ public class HierarchySyncIT {
   }
 
   /**
+   * Two project usages carry the same source identifier: the Archis source gave the synonym Acanthocardia echinatum
+   * the id of its accepted name. Only the usage with the source's own name may follow the source - promoting the
+   * synonym as well left both names accepted.
+   * https://github.com/CatalogueOfLife/backend/issues/1593
+   */
+  @Test
+  public void sharedIdentifierRealignsOnlyTheSameName() throws Exception {
+    final String T_Acanthocardia = "T_Acanthocardia";
+    final String T_echinata = "T_echinata";
+    final String P_echinata = "p_echinata";
+    final String P_echinatum = "p_echinatum";
+    insertTaxon(targetKey, T_Acanthocardia, T_Animalia, Rank.GENUS, "Acanthocardia");
+    insertTaxon(targetKey, T_echinata, T_Acanthocardia, Rank.SPECIES, "Acanthocardia echinata");
+
+    // the synonym first, so it is not merely the order of the project usages that decides
+    insertTaxonWithIdentifier(PROJECT_KEY, P_echinata, null, Rank.SPECIES, "Acanthocardia echinata", T_echinata);
+    insertSynonymWithIdentifier(PROJECT_KEY, P_echinatum, P_echinata, Rank.SPECIES, "Acanthocardia echinatum", T_echinata);
+
+    HierarchySync sync = runHierarchySync();
+
+    NameUsageBase echinata = getByID(PROJECT_KEY, P_echinata);
+    NameUsageBase echinatum = getByID(PROJECT_KEY, P_echinatum);
+    NameUsageBase genus = getByName(PROJECT_KEY, Rank.GENUS, "Acanthocardia");
+    assertNotNull("the genus should have been imported", genus);
+    assertTrue(echinata.getStatus().isTaxon());
+    assertEquals("the usage with the source name follows the source", genus.getId(), echinata.getParentId());
+    assertTrue("the synonym sharing the identifier must not be promoted", echinatum.getStatus().isSynonym());
+    assertEquals(P_echinata, echinatum.getParentId());
+    assertTrue("the sync should warn about the shared identifier: " + sync.getState().getWarnings(),
+      sync.getState().getWarnings().stream().anyMatch(w -> w.startsWith("1 project usages share a " + SCOPE + " identifier")));
+  }
+
+  /**
+   * Inverted synonymy where the demoted project name has the same name as another synonym of the source accepted:
+   * the project matches Chlamys opercularis to the source synonym Chlamys (Aequipecten) opercularis, and the source
+   * also has a synonym Chlamys opercularis. Copying that one next to the demoted project name duplicated it.
+   * https://github.com/CatalogueOfLife/backend/issues/1594
+   */
+  @Test
+  public void invertedSynonymyDoesNotDuplicateSynonym() throws Exception {
+    final String T_Aequipecten = "T_Aequipecten";
+    final String T_acc = "T_Aequipecten_opercularis";
+    final String T_s1 = "T_Chlamys_Aequipecten_opercularis";
+    final String T_s2 = "T_Chlamys_opercularis";
+    final String P_chlamys = "p_Chlamys_opercularis";
+    final String P_aequipecten = "p_Aequipecten_opercularis";
+    insertTaxon(targetKey, T_Aequipecten, T_Animalia, Rank.GENUS, "Aequipecten");
+    insertTaxonWithAuthorship(targetKey, T_acc, T_Aequipecten, Rank.SPECIES, "Aequipecten opercularis", auth("Linnaeus", "1758"), null);
+    insertSynonymWithAuthorship(targetKey, T_s1, T_acc, Rank.SPECIES, "Chlamys (Aequipecten) opercularis", auth("Linnaeus", "1758"));
+    insertSynonymWithAuthorship(targetKey, T_s2, T_acc, Rank.SPECIES, "Chlamys opercularis", auth("Linnaeus", "1758"));
+
+    // project: inverted, and without any authorship
+    insertTaxonWithIdentifier(PROJECT_KEY, P_chlamys, null, Rank.SPECIES, "Chlamys opercularis", T_s1);
+    insertSynonymWithIdentifier(PROJECT_KEY, P_aequipecten, P_chlamys, Rank.SPECIES, "Aequipecten opercularis", T_acc);
+
+    runHierarchySync();
+    assertChlamysOpercularisOnce(P_chlamys, P_aequipecten);
+
+    runHierarchySync();
+    assertChlamysOpercularisOnce(P_chlamys, P_aequipecten);
+  }
+
+  private static void assertChlamysOpercularisOnce(String chlamysId, String aequipectenId) {
+    NameUsageBase aequipecten = getByID(PROJECT_KEY, aequipectenId);
+    NameUsageBase chlamys = getByID(PROJECT_KEY, chlamysId);
+    assertTrue("Aequipecten opercularis is accepted in the source and must be promoted", aequipecten.getStatus().isTaxon());
+    assertTrue("Chlamys opercularis is a synonym in the source and must be demoted", chlamys.getStatus().isSynonym());
+    assertEquals(aequipectenId, chlamys.getParentId());
+    List<NameUsageBase> chlamyses = listByName(PROJECT_KEY, Rank.SPECIES, "Chlamys opercularis");
+    assertEquals("Chlamys opercularis must exist only once: " + chlamyses, 1, chlamyses.size());
+  }
+
+  /**
+   * The name dedup of copied synonyms must not swallow a homonym: the same name by a different author is a
+   * different name and still copied.
+   */
+  @Test
+  public void sameNameSynonymWithConflictingAuthorIsCopied() throws Exception {
+    final String T_Aequipecten = "T_Aequipecten";
+    final String T_acc = "T_Aequipecten_opercularis";
+    final String T_syn = "T_Chlamys_opercularis";
+    final String P_aequipecten = "p_Aequipecten_opercularis";
+    final String P_syn = "p_Chlamys_opercularis";
+    insertTaxon(targetKey, T_Aequipecten, T_Animalia, Rank.GENUS, "Aequipecten");
+    insertTaxon(targetKey, T_acc, T_Aequipecten, Rank.SPECIES, "Aequipecten opercularis");
+    insertSynonymWithAuthorship(targetKey, T_syn, T_acc, Rank.SPECIES, "Chlamys opercularis", auth("Smith", "1901"));
+
+    insertTaxonWithIdentifier(PROJECT_KEY, P_aequipecten, null, Rank.SPECIES, "Aequipecten opercularis", T_acc);
+    insertSynonymWithAuthorship(PROJECT_KEY, P_syn, P_aequipecten, Rank.SPECIES, "Chlamys opercularis", auth("Linnaeus", "1758"));
+
+    runHierarchySync();
+
+    List<NameUsageBase> chlamyses = listByName(PROJECT_KEY, Rank.SPECIES, "Chlamys opercularis");
+    assertEquals("a different author is a different name: " + chlamyses, 2, chlamyses.size());
+  }
+
+  /**
    * Regression for the 2026-09-02 OOM. The source has a parent cycle between two accepted species,
    * so phase 4 walks a chain for each that resolves to the other. Rewiring both would close the very
    * A ↔ B loop that made the following ES reindex build a 95 million entry classification and take the

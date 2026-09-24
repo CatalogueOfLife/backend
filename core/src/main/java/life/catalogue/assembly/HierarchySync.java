@@ -23,6 +23,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.cache.UsageCache;
+import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorDao;
@@ -38,14 +39,17 @@ import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
+import life.catalogue.matching.Equality;
 import life.catalogue.matching.IdentifierScopeResolver;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
+import life.catalogue.matching.authorship.AuthorComparator;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -205,6 +209,7 @@ public class HierarchySync extends SectorRunnable {
 
   /** Cap on how many hops we walk to reach an accepted from a matched synonym, or to detect a cycle. */
   private static final int MAX_WALK_DEPTH = 20;
+  private final AuthorComparator authComp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
 
   HierarchySync(DSID<Integer> sectorKey,
                 SqlSessionFactory factory,
@@ -384,9 +389,8 @@ public class HierarchySync extends SectorRunnable {
 
   /**
    * Builds the {@code source id -> project id} reverse lookup once, eagerly, so it is available to
-   * both phase 1 rewiring and phase 2. Last write wins on duplicates — if two project usages map
-   * to the same source id we keep the most-recently-seen one (deterministic via the LinkedHashMap
-   * iteration order of {@link #projectMatches}).
+   * both phase 1 rewiring and phase 2. It is unambiguous: {@link #resolveSharedIds} lets only one
+   * project usage claim a source id, and the name match only claims unclaimed ones.
    */
   private void buildMatchReverse() {
     matchReverse = new HashMap<>(projectMatches.size());
@@ -427,6 +431,8 @@ public class HierarchySync extends SectorRunnable {
     // ids to name match, in stream order so placements stay deterministic
     final List<String> floating = new ArrayList<>();
     final Set<String> sectorTargets = loadSectorTargets(projectKey);
+    // identifier matches by source id. Sources hand the same id to more than one name, see resolveSharedIds
+    final Map<String, List<SimpleName>> idClaims = new LinkedHashMap<>();
     int staleIds = 0;
 
     // autoCommit=false on the streaming session: the Postgres JDBC driver needs an explicit transaction
@@ -453,15 +459,11 @@ public class HierarchySync extends SectorRunnable {
           }
         }
         if (tid != null) {
-          projectMatches.put(u.getId(), tid);
-          if (u.getStatus() != null) {
-            projectStatuses.put(u.getId(), u.getStatus());
-          }
-          projectParents.put(u.getId(), u.getParentId());
+          idClaims.computeIfAbsent(tid, k -> new ArrayList<>()).add(projectUsages.get(u.getId()));
           continue;
         }
         // 2) name-match fallback for accepted taxa without a usable source identifier (placement only)
-        if (nameMatchCandidate(u, sectorTargets)) {
+        if (nameMatchCandidate(projectUsages.get(u.getId()), sectorTargets)) {
           floating.add(u.getId());
         }
       }
@@ -472,6 +474,7 @@ public class HierarchySync extends SectorRunnable {
       LOG.warn("Hierarchy sector {}: {} project usages carry a {} identifier that no longer exists in source dataset {}. Placing them by name instead",
         sectorKey, staleIds, sourceScope, sourceDatasetKey);
     }
+    resolveSharedIds(idClaims, sourceScope, sectorTargets, floating);
 
     // now that the project tree is in memory, name match the floating usages with their own classification.
     // A source usage that is already matched by id, or by an earlier name, is only good for placement.
@@ -504,6 +507,56 @@ public class HierarchySync extends SectorRunnable {
         projectParents.put(usageId, sn.getParent());                      // for cycle guard + skip-if-unchanged
       }
     }
+  }
+
+  /**
+   * Turns the identifier claims into {@link #projectMatches}, allowing only one project usage per source id. Sources
+   * hand the same id to several names - the Archis source gave the synonym Acanthocardia echinatum the id of its
+   * accepted name - and letting both follow the source promoted the synonym, leaving two accepted names, see
+   * https://github.com/CatalogueOfLife/backend/issues/1593
+   *
+   * <p>The winner is the usage carrying the source's own name, then the one agreeing with its status, then an accepted
+   * one, then the smallest id so the outcome does not depend on the order of the stream. The others are left as they
+   * are: they are not rewired, realigned or enriched, and an accepted one is name matched like a usage without an id.
+   */
+  private void resolveSharedIds(Map<String, List<SimpleName>> idClaims, String sourceScope, Set<String> sectorTargets,
+                                List<String> floating) {
+    final List<String> losers = new ArrayList<>();
+    for (Map.Entry<String, List<SimpleName>> e : idClaims.entrySet()) {
+      List<SimpleName> claims = e.getValue();
+      SimpleName winner = claims.get(0);
+      if (claims.size() > 1) {
+        final SimpleNameCached source = sourceCache.getOrLoad(e.getKey(), sourceLoader);
+        winner = claims.stream().min(Comparator
+          .comparing((SimpleName sn) -> source == null || !Objects.equals(source.getName(), sn.getName()))
+          .thenComparing(sn -> source == null || !sameStatusClass(source.getStatus(), sn.getStatus()))
+          .thenComparing(sn -> sn.getStatus() == null || !sn.getStatus().isTaxon())
+          .thenComparing(SimpleName::getId)
+        ).orElseThrow();
+        for (SimpleName sn : claims) {
+          if (sn == winner) continue;
+          losers.add(sn.getLabel());
+          if (nameMatchCandidate(sn, sectorTargets)) {
+            floating.add(sn.getId());
+          }
+        }
+      }
+      projectMatches.put(winner.getId(), e.getKey());
+      if (winner.getStatus() != null) {
+        projectStatuses.put(winner.getId(), winner.getStatus());
+      }
+      projectParents.put(winner.getId(), winner.getParent());
+    }
+    if (!losers.isEmpty()) {
+      LOG.warn("Hierarchy sector {}: {} project usages share a {} identifier with another project usage and were left untouched, e.g. {}",
+        sectorKey, losers.size(), sourceScope, losers.subList(0, Math.min(5, losers.size())));
+      state.addWarning(String.format("%d project usages share a %s identifier with another project usage and were left untouched, e.g. %s",
+        losers.size(), sourceScope, String.join("; ", losers.subList(0, Math.min(5, losers.size())))));
+    }
+  }
+
+  private static boolean sameStatusClass(@Nullable TaxonomicStatus s1, @Nullable TaxonomicStatus s2) {
+    return s1 != null && s2 != null && s1.isTaxon() == s2.isTaxon();
   }
 
   /**
@@ -543,10 +596,10 @@ public class HierarchySync extends SectorRunnable {
    * via the botanical genus synonym Biota D.Don ex Endl.
    * See https://github.com/CatalogueOfLife/backend/issues/1575
    */
-  private static boolean nameMatchCandidate(NameUsageBase u, Set<String> sectorTargets) {
+  private static boolean nameMatchCandidate(SimpleName u, Set<String> sectorTargets) {
     if (u.getStatus() == null || !u.getStatus().isTaxon()) return false;
     if (u.getName() == null) return false;
-    Rank rank = u.getName().getRank();
+    Rank rank = u.getRank();
     if (rank == null || !rank.notOtherOrUnranked()) return false;
     return !sectorTargets.contains(u.getId());
   }
@@ -1325,9 +1378,11 @@ public class HierarchySync extends SectorRunnable {
 
     int copied = 0;
     int skipped = 0;
+    int sameName = 0;
     try (SqlSession readSession = factory.openSession(true);
          SqlSession batch = factory.openSession(ExecutorType.BATCH, false)) {
       SynonymMapper readSyn = readSession.getMapper(SynonymMapper.class);
+      NameUsageMapper readNum = readSession.getMapper(NameUsageMapper.class);
       NameUsageMapper writeNum = batch.getMapper(NameUsageMapper.class);
       VerbatimSourceMapper vsm = batch.getMapper(VerbatimSourceMapper.class);
 
@@ -1336,9 +1391,19 @@ public class HierarchySync extends SectorRunnable {
         final String sourceAcceptedId = pair.getValue();
 
         List<Synonym> synonyms = readSyn.listByTaxon(DSID.of(sourceDatasetKey, sourceAcceptedId));
+        List<NameUsageBase> projectNames = null; // the project accepted and its synonyms, loaded on demand
         for (Synonym syn : synonyms) {
           if (alreadyMappedSourceIds.contains(syn.getId())) {
             skipped++;
+            continue;
+          }
+          if (projectNames == null) {
+            projectNames = new ArrayList<>(readSyn.listByTaxon(DSID.of(projectKey, projectAcceptedId)));
+            NameUsageBase acc = readNum.get(DSID.of(projectKey, projectAcceptedId));
+            if (acc != null) projectNames.add(acc);
+          }
+          if (projectNames.stream().anyMatch(pu -> sameName(pu, syn))) {
+            sameName++;
             continue;
           }
           final String origSourceId = syn.getId();
@@ -1370,8 +1435,28 @@ public class HierarchySync extends SectorRunnable {
       }
       batch.commit();
     }
-    LOG.info("Hierarchy sector {}: phase 3 done — copied {} synonyms across {} accepted taxa (skipped {} already represented in the project)",
-      sectorKey, copied, acceptedPairs.size(), skipped);
+    LOG.info("Hierarchy sector {}: phase 3 done — copied {} synonyms across {} accepted taxa (skipped {} already represented in the project, {} by the same name)",
+      sectorKey, copied, acceptedPairs.size(), skipped, sameName);
+  }
+
+  /**
+   * Is a source synonym the same name as a project usage it would be copied next to? The source id alone does not tell:
+   * a project name demoted by phase 2 is matched to one source synonym and can share its name with another one, like
+   * Chlamys opercularis next to Chlamys (Aequipecten) opercularis, see https://github.com/CatalogueOfLife/backend/issues/1594
+   * Only a contradicting authorship keeps two names apart - a missing one does not, the project name usually only gains
+   * its authorship in phase 4.
+   */
+  private boolean sameName(NameUsageBase pu, Synonym syn) {
+    Name pn = pu.getName();
+    Name sn = syn.getName();
+    if (pn == null || sn == null || !Objects.equals(pn.getScientificName(), sn.getScientificName())) return false;
+    if (pn.getRank() != sn.getRank() && ranked(pn.getRank()) && ranked(sn.getRank())) return false;
+    if ((pu.getStatus() == TaxonomicStatus.MISAPPLIED) != (syn.getStatus() == TaxonomicStatus.MISAPPLIED)) return false;
+    return authComp.compare(pn, sn) != Equality.DIFFERENT;
+  }
+
+  private static boolean ranked(@Nullable Rank rank) {
+    return rank != null && rank.notOtherOrUnranked();
   }
 
   /**

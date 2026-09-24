@@ -103,6 +103,20 @@ still resolves in the source. Matches populate the in-memory maps used by phases
 
 Usages already tagged with this sector's key are skipped defensively.
 
+A source id is matched by **one** project usage only. Sources hand the same id to more than one name: Archis gave
+the synonym *Acanthocardia echinatum* the id of its accepted *A. echinata*, and letting both follow the source
+promoted the synonym, leaving two accepted names
+([backend#1593](https://github.com/CatalogueOfLife/backend/issues/1593)). Among several claimants, the winner is,
+in this order:
+
+1. the usage carrying the source usage's own name;
+2. the one whose status agrees with the source;
+3. an accepted one;
+4. the smallest id.
+
+The others are left as they are: they are not rewired, realigned or enriched. An accepted one falls through to the
+name match below, like a usage without an id. The sync reports them in a single warning.
+
 > Identifiers on `Name` are intentionally **not** consulted — only `NameUsageBase.identifier`.
 
 Accepted usages without a usable identifier are then matched by name (see
@@ -204,7 +218,13 @@ post-realignment status without a re-query.
 For each accepted pair, `SynonymMapper.listByTaxon(DSID(sourceDatasetKey, targetAcceptedId))`
 returns every synonym of the target's accepted taxon. Synonyms whose target id is already
 represented in the project (`projectMatches.values()` ∪ `targetToProject.keySet()`) are skipped to
-avoid creating duplicates of usages we already account for. Each remaining synonym is copied via
+avoid creating duplicates of usages we already account for. A synonym is also skipped when it has the same name as
+the project accepted or one of its current project synonyms. That means the same scientific name, the same rank
+(or an unranked one), the same misapplied-ness and no contradicting authorship; a missing authorship does not
+contradict, since the project name usually only gains one in phase 4. The id alone does not tell: a project name
+demoted in phase 2 is matched to one source synonym and can share its name with another one. The demoted *Chlamys
+opercularis*, for example, is matched to *Chlamys (Aequipecten) opercularis*, while the source also lists *Chlamys
+opercularis* ([backend#1594](https://github.com/CatalogueOfLife/backend/issues/1594)). Each remaining synonym is copied via
 `CopyUtil.copyUsage(...)` with `parent = (projectKey, projectAcceptedId)`, tagged with the sector,
 and identified back to the source.
 
@@ -330,6 +350,9 @@ What is still open, mirroring the javadoc on `HierarchySync`:
 - **Dropped source taxa lose more than their children's parent.** The repair only covers `parent_id`.
   An attach sector targeting a taxon the source dropped is left with a broken target and estimates with
   a broken reference - both are flagged as such and can be rematched.
+- **Shared source ids are not repaired.** When several project usages carry the same source id, all but one
+  are left untouched and reported in a warning. The wrong identifier stays on the others and has to be fixed in
+  their source.
 - **Wrong full name matches stick.** A promoted name match gains the source identifier, which
   `deleteBySector` does not remove from untagged usages, so later runs follow that identifier.
 - **Snapped matches stay placement only.** When a name matches several source synonyms of the same
