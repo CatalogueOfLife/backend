@@ -39,6 +39,11 @@ public class TaxGroupParserTest extends ParserTestBase<TaxGroup> {
     assertParse(TaxGroup.Fungi, "Blablamycota");
     assertParse(TaxGroup.Fungi, "Blablamycotina");
     assertParse(TaxGroup.Plants, "Blablaphytina");
+    // APG families and clades
+    assertParse(TaxGroup.Angiosperms, "Lactoridaceae");
+    assertParse(TaxGroup.Angiosperms, "rosids");
+    assertParse(TaxGroup.Angiosperms, "core eudicots");
+    assertParse(TaxGroup.Angiosperms, "Pentapetalae");
     // bacteria listed in the dicts win over suffix rules
     assertParse(TaxGroup.Bacteria, "Actinomycetes");
     assertParse(TaxGroup.Bacteria, "Chroococcophyceae");

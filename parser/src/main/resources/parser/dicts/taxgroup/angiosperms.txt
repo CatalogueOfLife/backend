@@ -1,3 +1,4 @@
+Abolbodaceae
 Acalyphoideae # euphorb subfamily (Euphorbiaceae)
 Acanthaceae
 Acanthogilioideae
@@ -13,6 +14,7 @@ Actinidioideae
 Adoxaceae
 Adoxoideae
 Aextoxicaceae
+Agapanthaceae
 Agavaceae # agave family (now Asparagaceae)
 Agdestidaceae
 Aizoaceae
@@ -39,14 +41,17 @@ Anacampserotaceae
 Anacardiaceae
 Anarthriaceae
 Ancistrocladaceae
+Anemarrhenaceae
 Angiospermae
 Angiosperms
 Anisophylleaceae
 Annonaceae
+Anthericaceae
 Anthophyta
 Antirrhinoideae
 Aphanopetalaceae
 Aphloiaceae
+Aphyllanthaceae
 Apiaceae
 Apiales
 Apioideae
@@ -59,12 +64,14 @@ Aquifoliaceae
 Aquifoliales
 Araceae
 Araliaceae
+Aralidiaceae
 Arbutoideae
 Arecaceae
 Arecales
 Argophyllaceae
 Aristolochiaceae
 Aristolochioideae
+Asaraceae
 Asaroideae
 Asclepiadaceae # milkweed family (now Apocynaceae)
 Asclepiadoideae
@@ -75,13 +82,16 @@ Asteliaceae
 Asteraceae
 Asterales
 Asteranae
+Asterids # APG informal clade
 Asteroideae
 Asteropeiaceae
 Atherospermataceae
+Aucubaceae
 Aurantioideae
 Austrobaileyaceae
 Austrobaileyales
 Austrobaileyanae
+Avicenniaceae
 Avicennioideae
 Azorelloideae
 Balanitoideae
@@ -96,12 +106,14 @@ Barnadesioideae
 Basellaceae
 Bataceae
 Begoniaceae
+Behniaceae
 Bellendenoideae
 Berberidaceae
 Berberidanae
 Berberidoideae
 Berberidopsidaceae
 Berberidopsidales
+Bersamaceae
 Betoideae
 Betulaceae
 Biebersteiniaceae
@@ -118,12 +130,14 @@ Borthwickiaceae
 Boryaceae
 Brassicaceae
 Brassicales
+Bretschneideraceae
 Bromeliaceae
 Brownlowioideae
 Brunelliaceae
 Bruniaceae
 Bruniales
 Brunonioideae
+Buddlejaceae
 Buddlejoideae
 Burmanniaceae
 Burseraceae
@@ -150,6 +164,7 @@ Calyceraceae
 Calyptrothecoideae
 Campanulaceae
 Campanulales
+Campanulids # APG informal clade
 Campynemataceae
 Canellaceae
 Canellales
@@ -157,6 +172,7 @@ Cannabaceae
 Cannaceae
 Capparaceae
 Capparales
+Capparidaceae
 Caprifoliaceae
 Caprifolioideae
 Cardiopteridaceae
@@ -164,6 +180,7 @@ Cardiopteridales
 Carduoideae
 Caricaceae
 Carlemanniaceae
+Carpodetaceae
 Carpodetoideae
 Caryocaraceae
 Caryophyllaceae
@@ -171,11 +188,13 @@ Caryophyllales
 Caryophyllanae
 Cassiopoideae
 Casuarinaceae
+Cecropiaceae
 Cecropioideae
 Cedreloideae
 Celastraceae
 Celastrales
 Celastroideae
+Celtidaceae
 Centrolepidaceae
 Centroplacaceae
 Cephalotaceae
@@ -212,6 +231,7 @@ Combretaceae
 Combretoideae
 Commelinaceae
 Commelinales
+Commelinids # APG informal clade
 Compositae
 Connaraceae
 Connaroideae
@@ -221,6 +241,7 @@ Convolvuloideae
 Coptidoideae
 Corbichoniaceae
 Cordiaceae
+Core eudicots # APG informal clade
 Coriariaceae
 Corispermoideae
 Cornaceae
@@ -242,6 +263,7 @@ Cucurbitales
 Cunoniaceae
 Curtisiaceae
 Cyclanthaceae
+Cyclocheilaceae
 Cymodoceaceae
 Cynoglossoideae
 Cynomoriaceae
@@ -255,6 +277,7 @@ Daphniphyllaceae
 Dasypogonaceae
 Datiscaceae
 Degeneriaceae
+Desfontainiaceae
 Diapensiaceae
 Dichapetalaceae
 Dicomoideae
@@ -286,6 +309,7 @@ Dirachmaceae
 Disanthoideae
 Dodonaeoideae
 Dombeyoideae
+Donatiaceae
 Donatioideae
 Doryanthaceae
 Droseraceae
@@ -304,6 +328,7 @@ Emblingiaceae
 Engelhardioideae
 Enkianthoideae
 Epidendroideae # orchid subfamily (Orchidaceae)
+Eremosynaceae
 Eremosynoideae
 Ericaceae
 Ericales
@@ -318,6 +343,7 @@ Escallonioideae
 Eucnidoideae
 Eucommiaceae
 Eudicots
+Eudicotyledons # clade name used by NCBI, Cantino et al. 2007
 Euphorbiaceae
 Euphorbiales # euphorbs (now in Malpighiales)
 Euphroniaceae
@@ -326,6 +352,7 @@ Eupteleaceae
 Exbucklandioideae
 Fabaceae
 Fabales
+Fabids # APG informal clade
 Fagaceae
 Fagales
 Famatinanthoideae
@@ -365,6 +392,7 @@ Gramineae
 Gratioloideae
 Grevilleoideae
 Grewioideae
+Greyiaceae
 Griseliniaceae
 Gronovioideae
 Grossulariaceae
@@ -372,16 +400,19 @@ Grubbiaceae
 Guamatelaceae
 Gunneraceae
 Gunnerales
+Gunneridae # clade name used by NCBI, Cantino et al. 2007
 Gymnarrhenoideae
 Gyrocarpoideae
 Gyrostemonaceae
 Haemodoraceae
+Halesiaceae
 Halophytaceae
 Haloragaceae
 Hamamelidaceae
 Hamamelidoideae
 Hanguanaceae
 Haplophylloideae
+Haptanthaceae
 Harrimanelloideae
 Hecastocleidoideae
 Heliconiaceae
@@ -394,6 +425,9 @@ Hemimeridoideae
 Hermas
 Hernandiaceae
 Hernandioideae
+Herreriaceae
+Hesperocallidaceae
+Heteropyxidaceae
 Himantandraceae
 Hippocastanaceae # horse-chestnut family (now Sapindaceae)
 Hippocastanoideae
@@ -402,6 +436,7 @@ Hoplestigmataceae
 Hortonioideae
 Huaceae
 Huerteales
+Hugoniaceae
 Humbertioideae
 Humiriaceae
 Hyacinthaceae # hyacinth family (now Asparagaceae)
@@ -422,13 +457,16 @@ Icacinaceae
 Icacinales
 Icanilales
 Idiospermoideae
+Illiciaceae
 Iridaceae
 Irvingiaceae
 Iteaceae
 Ixerbaceae
 Ixioliriaceae
+Ixiolirionaceae
 Ixonanthaceae
 Jamesioideae
+Japonoliriaceae
 Joinvilleaceae
 Jollydoroideae
 Juglandaceae
@@ -437,24 +475,30 @@ Juglandoideae
 Juncaceae
 Juncaginaceae
 Kalanchoideae
+Kaliphoraceae
 Kewaceae
 Kibessioideae
+Kingdoniaceae
 Kingdonioideae
 Kirkiaceae
 Klotzschia
 Koeberliniaceae
 Krameriaceae
 Labiatae
+Lacistemaceae
 Lacistemataceae
+Lactoridaceae
 Lactoridoideae
 Lamiaceae
 Lamiales
+Lamiids # APG informal clade
 Lanariaceae
 Lardizabalaceae
 Lardizabaloideae
 Larreoideae
 Lauraceae
 Laurales
+Laxmanniaceae
 Lecythidaceae
 Ledocarpaceae
 Leeoideae
@@ -463,6 +507,8 @@ Lemnaceae # duckweed family (now Araceae)
 Lennoaceae
 Lentibulariaceae
 Lepidobotryaceae
+Leptaulaceae
+Lepuropetalaceae
 Lepuropetaloideae
 Leuenbergerioideae
 Liliaceae
@@ -471,12 +517,16 @@ Lilianae
 Liliopsida
 Limeaceae
 Limnanthaceae
+Limnocharitaceae
 Linaceae
+Lindenbergiaceae
 Linderniaceae
 Linnaeaceae
 Linnaeoideae
+Lissocarpaceae
 Loasaceae
 Loasoideae
+Lobeliaceae
 Loganiaceae
 Lophiocarpaceae
 Lophophytoideae
@@ -485,10 +535,13 @@ Loranthaceae
 Loranthoideae
 Lowiaceae
 Ludwigioideae
+Luzuriagaceae
 Lythraceae
 Lythroideae
 Macarthuriaceae
+Mackinlayaceae
 Mackinlayoideae
+Maesaceae
 Maesoideae
 Magnoliaceae
 Magnoliales
@@ -505,6 +558,7 @@ Malpighiales
 Malpighioideae
 Malvaceae
 Malvales
+Malvids # APG informal clade
 Malvoideae
 Marantaceae
 Marcgraviaceae
@@ -514,6 +568,8 @@ Maundiaceae
 Mayacaceae
 Mazaceae
 Medusagynaceae
+Medusandraceae
+Melanophyllaceae
 Melanthiaceae
 Melastomataceae
 Melastomatoideae
@@ -521,10 +577,12 @@ Meliaceae
 Melianthaceae
 Melioideae
 Meliosmoideae
+Memecylaceae
 Menispermaceae
 Menispermoideae
 Mentzelioideae
 Menyanthaceae
+Mesangiospermae # clade name used by NCBI, Cantino et al. 2007
 Mesembryanthemoideae
 Metteniusaceae
 Metteniusales
@@ -553,6 +611,7 @@ Muntingioideae
 Musaceae
 Mutisioideae
 Myodocarpaceae
+Myoporaceae
 Myoporoideae
 Myricaceae
 Myristicaceae
@@ -591,6 +650,7 @@ Octoknemaceae
 Octonemaceae
 Olacaceae
 Oleaceae
+Oliniaceae
 Olisbeoideae
 Onagraceae
 Onagroideae
@@ -620,10 +680,13 @@ Passifloraceae
 Passifloroideae
 Paulowniaceae
 Pedaliaceae
+Peganaceae
+Pellicieraceae
 Peltantheraceae
 Penaeaceae
 Pennantiaceae
 Pentadiplandraceae
+Pentapetalae # clade name used by NCBI, Cantino et al. 2007
 Pentaphragmataceae
 Pentaphylacaceae
 Penthoraceae
@@ -640,6 +703,7 @@ Petermanniaceae
 Petiveriaceae # pokeweed-relative family (Caryophyllales)
 Petrosaviaceae
 Petrosaviales
+Petrosaviidae # clade name used by NCBI, Cantino et al. 2007
 Phellinaceae
 Philesiaceae
 Philydraceae
@@ -658,6 +722,7 @@ Piperaceae
 Piperales
 Piperoideae
 Pittosporaceae
+Plagiopteraceae
 Plantaginaceae
 Platanaceae
 Platycaryoideae
@@ -677,26 +742,33 @@ Polygalaceae
 Polygonaceae
 Polygonales # buckwheat family (now in Caryophyllales)
 Polygonoideae
+Polyosmaceae
 Polyosmoideae
 Pontederiaceae
 Portulacaceae
 Portulacarioideae
 Posidoniaceae
 Potamogetonaceae
+Pottingeriaceae
 Pottingerioideae
 Primulaceae
 Primulales # primrose family (now in Ericales)
 Primuloideae
+Prioniaceae
 Proteaceae
 Proteales
 Proteanae
 Proteoideae
+Psiloxylaceae
 Psiloxyloideae
+Pteleocarpaceae
 Pteridophyllaceae
+Pterostemonaceae
 Punicoideae
 Putranjivaceae
 Quiinaceae
 Quillajaceae
+Quintiniaceae
 Rafflesiaceae
 Ranunculaceae
 Ranunculales
@@ -713,12 +785,16 @@ Rhamnales # buckthorn family (now in Rosales)
 Rhipogonaceae
 Rhizophoraceae
 Rhoipteleaceae
+Rhynchocalycaceae
+Rhynchothecaceae
 Ripogonaceae
+Rivinaceae
 Rivinoideae
 Roridulaceae
 Rosaceae
 Rosales
 Rosanae
+Rosids # APG informal clade
 Rosoideae
 Rousseaceae
 Rousseoideae
@@ -767,6 +843,7 @@ Scrophulariaceae
 Scrophulariales # figwort family (now in Lamiales)
 Scrophularioideae
 Scybalioideae
+Scyphostegiaceae
 Secamonoideae
 Seetzenioideae
 Sempervivoideae
@@ -782,10 +859,13 @@ Solanaceae
 Solanales
 Solanoideae
 Sparattanthelioideae
+Sparganiaceae
 Sphaerosepalaceae
 Sphalmioideae
 Sphenocleaceae
+Sphenostemonaceae
 Stachyuraceae
+Stackhousiaceae
 Stackhousioideae
 Staphyleaceae
 Staticoideae
@@ -797,6 +877,7 @@ Sterculioideae
 Stifftioideae
 Stilbaceae
 Stixaceae
+Stixidaceae
 Strasburgeriaceae
 Strelitziaceae
 Strephonematoideae
@@ -805,6 +886,10 @@ Stylidiaceae
 Stylidioideae
 Styphelioideae
 Styracaceae
+Superasteridae # clade name used by NCBI, Cantino et al. 2007
+Superasterids # APG informal clade
+Superrosidae # clade name used by NCBI, Cantino et al. 2007
+Superrosids # APG informal clade
 Surianaceae
 Symmerioideae
 Symphionematoideae
@@ -815,8 +900,11 @@ Tamaricaceae
 Tapisciaceae
 Tarchonanthoideae
 Tecophilaeaceae
+Tepuianthaceae
 Tepuianthoideae
+Ternstroemiaceae
 Tetracarpaeaceae
+Tetracentraceae
 Tetracentroideae
 Tetrachondraceae
 Tetradiclidaceae
@@ -825,6 +913,7 @@ Tetrameristaceae
 Thalictroideae
 Theaceae
 Theales # tea family and relatives (now in Malpighiales/Ericales)
+Themidaceae
 Theophrastaceae # theophrastia family (Ericales)
 Theophrastoideae
 Thesiaceae
@@ -841,9 +930,13 @@ Tilioideae
 Tofieldiaceae
 Torricelliaceae
 Tovariaceae
+Tremandraceae
+Tribelaceae
 Tribuloideae # tribulus-relative subfamily (Zygophyllaceae)
+Trichopodaceae
 Trigoniaceae
 Trimeniaceae
+Tristichaceae
 Tristichoideae
 Triuridaceae
 Trochodendraceae
@@ -883,6 +976,8 @@ Wellstediaceae
 Wightiaceae
 Winteraceae
 Wunderlichioideae
+Xanthoceraceae
+Xanthocerataceae
 Xanthoceratoideae
 Xanthorrhoeaceae
 Xeronemataceae
