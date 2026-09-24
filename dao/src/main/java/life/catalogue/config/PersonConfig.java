@@ -22,11 +22,14 @@ public class PersonConfig {
   @Min(1)
   public int cacheExpireMinutes = 60;
 
-  /** where a harvest caches the answers of its sources: kept after a failed run for the next to resume from */
+  /**
+   * where a harvest caches the answers of its sources, in a cache folder: a run that fails reading them leaves it for the
+   * next to resume from, it is deleted once every source has been read
+   */
   @NotNull
   public File harvestDir = new File("/tmp/col/person-harvest");
 
-  /** days between harvests the cron executor starts, 0 for none */
+  /** days after the last successful harvest that the cron executor starts the next, 0 for none */
   @Min(0)
   public int harvestIntervalDays = 0;
 }

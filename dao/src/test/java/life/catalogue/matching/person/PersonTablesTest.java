@@ -146,6 +146,42 @@ public class PersonTablesTest {
     assertEquals(3, read().persons().size());
   }
 
+  /**
+   * An Error halfway through the write, heap exhaustion above all, leaves the registry as it was. The names are read once
+   * by the check and fail the second time, when the writer has deleted every row and copied the persons already.
+   */
+  @Test
+  public void anErrorWritesNothing() throws Exception {
+    PersonTables.replace(factory(), content());
+    List<PersonName> names = content().names();
+    List<PersonName> failing = new AbstractList<>() {
+      int reads;
+
+      @Override
+      public PersonName get(int i) {
+        return names.get(i);
+      }
+
+      @Override
+      public int size() {
+        return names.size();
+      }
+
+      @Override
+      public Iterator<PersonName> iterator() {
+        if (++reads > 1) {
+          throw new OutOfMemoryError("test");
+        }
+        return names.iterator();
+      }
+    };
+    var c = new PersonFiles.Content(content().persons(), failing, content().relations());
+    assertThrows(OutOfMemoryError.class, () -> PersonTables.replace(factory(), c));
+    assertEquals(Set.of(SOWERBY1, SOWERBY2, DOE), Set.copyOf(read().persons()));
+    assertEquals(3, read().names().size());
+    assertEquals(1, read().relations().size());
+  }
+
   /** quotes, commas, apostrophes and backslashes survive the copy and its array literals */
   @Test
   public void quoting() throws Exception {

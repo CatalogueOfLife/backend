@@ -127,6 +127,11 @@ public class PersonMerger {
       drafts.add(d);
       d.authorityIds().forEach(id -> index.put(id, d));
     }
+    // a former id still finds its person, so a record under it joins that person instead of making a second one holding
+    // the same id. Authority ids come first
+    for (Draft d : drafts) {
+      d.formerIds.forEach(id -> index.putIfAbsent(id, d));
+    }
     report.existing = drafts.size();
     // a redirect onto an item another person of the files holds makes the two one person
     for (Draft d : List.copyOf(drafts)) {
@@ -310,6 +315,8 @@ public class PersonMerger {
     drafts.remove(other);
     other.authorityIds().forEach(id -> index.put(id, keep));
     keep.authorityIds().forEach(id -> index.put(id, keep));
+    // the former ids of the other lead to keep now
+    index.replaceAll((id, x) -> x == other ? keep : x);
     report.merged++;
     return keep;
   }

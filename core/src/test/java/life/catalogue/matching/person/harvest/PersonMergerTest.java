@@ -376,6 +376,35 @@ public class PersonMergerTest {
     assertEquals(List.of(), r.report().conflicts);
   }
 
+  /**
+   * A second IPNI id became a former id; Wikidata then stops listing it while IPNI still serves its record. The record
+   * joins the person holding it as a former id instead of making a second person with that id, which would fail the
+   * consistency check of every harvest to come.
+   */
+  @Test
+  public void aFormerIdStillJoins() {
+    var w = wd("Q1");
+    w.ipni = "1-1";
+    w.otherId(Person.IPNI + "2-2");
+    w.label("Anna Smith");
+    var i1 = ipni("1-1");
+    i1.name("A.Sm.", PersonNameKind.STANDARD, PersonFormCode.BOT);
+    var i2 = ipni("2-2");
+    i2.name("A.Smith", PersonNameKind.STANDARD, PersonFormCode.BOT);
+    var first = merge(PersonFiles.Content.empty(), w.build(), i1.build(), i2.build());
+    assertEquals(List.of("ipni:2-2"), first.content().persons().get(0).formerIds());
+
+    var w2 = wd("Q1");
+    w2.ipni = "1-1";
+    w2.label("Anna Smith");
+    var r = merge(first.content(), w2.build(), i1.build(), i2.build());
+    assertEquals(1, r.content().persons().size());
+    Person p = r.content().persons().get(0);
+    assertEquals("wd:Q1", p.id());
+    assertEquals(List.of("ipni:2-2"), p.formerIds());
+    assertTrue(r.content().names().contains(new PersonName("wd:Q1", "A.Smith", PersonNameKind.STANDARD, PersonFormCode.BOT, PersonSource.IPNI)));
+  }
+
   /** a second id another item holds as its own stays with that item: reported, never a former id of two persons */
   @Test
   public void secondIdOfAnotherItemIsReported() {

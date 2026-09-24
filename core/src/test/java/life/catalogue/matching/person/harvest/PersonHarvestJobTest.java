@@ -8,6 +8,8 @@ import life.catalogue.api.vocab.PersonFormCode;
 import life.catalogue.api.vocab.PersonNameKind;
 import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.dao.JobDao;
+import life.catalogue.db.mapper.JobMapper;
 import life.catalogue.event.EventBroker;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
@@ -19,6 +21,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -121,8 +125,23 @@ public class PersonHarvestJobTest {
     assertEquals(JobStatus.FAILED, job.getStatus());
     assertEquals(List.of("clb:1"), ids());
     verifyNoInteractions(broker);
-    assertTrue("a failed run keeps its cache for the next", Files.exists(run.resolve("cached.json")));
+    // every source was read: the next run reads them anew rather than replaying answers that led here
+    assertFalse("a run that read its sources leaves no cache behind", Files.exists(run));
     assertTrue(report(job), report(job).contains("clb:1 is local but has authority ids"));
+  }
+
+  /** the cron asks when the last harvest finished that succeeded */
+  @Test
+  public void lastFinished() throws Exception {
+    assertNull(PersonHarvestJob.lastFinished(factory()));
+    var info = JobDao.buildInfo(job(source()));
+    info.setStatus(JobStatus.FINISHED);
+    LocalDateTime finished = LocalDateTime.now().minusDays(3).truncatedTo(ChronoUnit.MILLIS);
+    info.setFinished(finished);
+    try (SqlSession session = factory().openSession(true)) {
+      session.getMapper(JobMapper.class).create(info);
+    }
+    assertEquals(finished, PersonHarvestJob.lastFinished(factory()));
   }
 
   @Test
@@ -141,6 +160,6 @@ public class PersonHarvestJobTest {
     assertEquals(JobStatus.FAILED, job.getStatus());
     assertEquals(List.of(), ids());
     verifyNoInteractions(broker);
-    assertTrue(Files.exists(run.resolve("cached.json")));
+    assertTrue("a run that failed reading keeps its cache for the next to resume from", Files.exists(run.resolve("cached.json")));
   }
 }

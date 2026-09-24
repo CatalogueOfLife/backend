@@ -136,15 +136,17 @@ Read only, on both servers:
 
 ## Harvesting
 
-`POST /admin/persons/harvest` starts a `PersonHarvestJob`; with `persons.harvestIntervalDays` set, the cron executor
-starts one every so many days. It runs in the default lane, one at a time.
+`POST /admin/persons/harvest` starts a `PersonHarvestJob`. With `persons.harvestIntervalDays` set, the cron executor
+checks once a day and starts one when the last successful harvest finished that many days ago: a deploy restarts every
+schedule, so the job history decides, not the time the server started. It runs in the default lane, one at a time.
 
 1. **Fetch.** It reads Wikidata and IPNI with no database session open, serially, pausing 1 s between Wikidata and
    250 ms between IPNI requests and retrying with a growing pause. An answer that is no complete JSON object, or that
    is an API error, counts as a failed request: the query service sometimes answers 200 with a body cut off. Such an
-   answer is retried and never cached. Every other answer is cached in `persons.harvestDir`: a run that fails leaves
-   the cache for the next to resume from, a successful run deletes it, so a later harvest never reads an earlier one's
-   answers. Items of the registry that no record carries any more are asked the query service for a redirect.
+   answer is retried and never cached. Every other answer is cached in the `cache` folder of `persons.harvestDir`: a
+   run that fails while reading leaves it for the next to resume from, and once every source has been read it is
+   deleted, so no later harvest replays an earlier one's answers, even one that failed afterwards. Items of the registry
+   that no record carries any more are asked the query service for a redirect.
 2. **Rebuild.** In one short transaction that keeps other writers out - readers see the old registry until it
    commits - it reads the registry, merges the harvest into it and checks the result.
 3. **Write.** A consistent result replaces every row by COPY, derived forms and the any id index included, and

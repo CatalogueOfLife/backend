@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.PersonNameKind;
 import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.mapper.PersonMapper;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -58,24 +59,44 @@ public final class PersonTables {
    *
    * @throws IllegalArgumentException for an inconsistent registry, nothing written
    */
-  public static void replace(SqlSessionFactory factory, PersonFiles.Content c) throws SQLException {
+  public static void replace(SqlSessionFactory factory, PersonFiles.Content c) throws SQLException, IOException {
     List<String> problems = new MemoryPersonStore(c).problems();
     if (!problems.isEmpty()) {
       throw new IllegalArgumentException("The person registry is inconsistent, nothing written: "
         + String.join("; ", problems.subList(0, Math.min(20, problems.size()))));
     }
+    transaction(factory, session -> write(session, c));
+  }
+
+  /**
+   * Work on the registry within the transaction of {@link #transaction}.
+   */
+  @FunctionalInterface
+  public interface Work {
+    void run(SqlSession session) throws SQLException, IOException;
+  }
+
+  /**
+   * Runs the work in one transaction that keeps other writers out, committed only if the work completes. Anything it
+   * throws, an Error included, rolls it back: the writes go past MyBatis, whose session would otherwise commit them when
+   * it closes and resets autocommit.
+   */
+  public static void transaction(SqlSessionFactory factory, Work work) throws SQLException, IOException {
     try (SqlSession session = factory.openSession(false)) {
+      boolean committed = false;
       try {
         lock(session);
-        write(session, c);
-        // forced: the writes went past MyBatis, which would otherwise neither commit nor roll back
+        work.run(session);
         session.commit(true);
-      } catch (SQLException | RuntimeException e) {
-        session.rollback(true);
-        throw e;
+        committed = true;
+      } finally {
+        if (!committed) {
+          session.rollback(true);
+        }
       }
     }
   }
+
 
   /**
    * Replaces every row by the registry, its derived forms and every id of its persons. The caller holds the lock and

@@ -236,5 +236,5 @@ Implemented as designed, with these decisions the design left open:
   changed.
 - The TSVs moved to `core/src/test/resources/authorship/persons/`, read by tests and the corpus tools only; removing
   them from the repository waits for the prod import.
-- The harvest caches in `persons.harvestDir`, kept after a failed run and deleted after a successful one. The import
-  writes synchronously in its request.
+- The harvest caches in the `cache` folder of `persons.harvestDir`, kept when a run fails reading the sources and deleted
+  as soon as every source has been read. The import writes synchronously in its request.

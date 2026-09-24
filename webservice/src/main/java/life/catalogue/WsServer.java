@@ -398,7 +398,7 @@ public class WsServer extends Application<WsServerConfig> {
       new MatcherReconcile(matcherFactory)
     ));
     if (cfg.persons.harvestIntervalDays > 0) {
-      cronJobs.add(new PersonHarvestCron(executor,
+      cronJobs.add(new PersonHarvestCron(executor, () -> PersonHarvestJob.lastFinished(getSqlSessionFactory()),
         () -> PersonHarvestJob.live(Users.IMPORTER, getSqlSessionFactory(), broker, cfg.persons), cfg.persons.harvestIntervalDays));
     }
     var cron = CronExecutor.startWith(cronJobs.toArray(CronJob[]::new));

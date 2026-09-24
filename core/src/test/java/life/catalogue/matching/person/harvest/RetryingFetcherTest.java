@@ -37,6 +37,20 @@ public class RetryingFetcherTest {
     assertEquals(3, calls[0]);
   }
 
+  /** a cancelled harvest is interrupted while it waits for an answer: that ends the fetch, it is no failure to retry */
+  @Test
+  public void anInterruptIsNoRetry() {
+    int[] calls = {0};
+    var f = new RetryingFetcher(url -> {
+      calls[0]++;
+      throw new InterruptedException("cancelled");
+    }, Duration.ZERO, Json::complete, 3);
+    assertThrows(InterruptedException.class, () -> f.get("u"));
+    assertEquals(1, calls[0]);
+    // the interrupt is not lost for whoever checks the flag
+    assertTrue(Thread.interrupted());
+  }
+
   /** an incomplete answer cached by an earlier version must not poison every rerun */
   @Test
   public void anIncompleteCachedAnswerIsFetchedAgain() throws Exception {

@@ -41,6 +41,10 @@ public class RetryingFetcher implements Fetcher {
           return body;
         }
         last = new IllegalStateException("incomplete answer for " + StringUtils.abbreviate(url, 200));
+      } catch (InterruptedException e) {
+        // a cancelled job: stop fetching, and keep the flag for whoever checks it
+        Thread.currentThread().interrupt();
+        throw e;
       } catch (Exception e) {
         last = e;
       }
