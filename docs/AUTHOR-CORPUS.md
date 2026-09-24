@@ -43,16 +43,20 @@ for these: it runs inside maven's 512 MB JVM and fails on the SAX provider of th
     psql -X -q -v ON_ERROR_STOP=1 -v keys='2006,2004,2232' \
       -f dao/src/test/resources/author-corpus/author-corpus-export.sql "<conninfo>" | gzip > author-corpus.tsv.gz
 
-The corpus of September 2026 was exported from prod with
+The corpus was exported from prod with
 `2006,2004,2232,310868,1141,1028,2073,304756,2003,2015,2037,2011,2007,2144,2026,1174,2008,2041,2030,312616`:
-12.4 million names of 3.1 million names index ids. `AuthorCorpusExportIT` runs the statement against the test
+12.4 million names of 3.1 million names index ids in September 2026, and 12.5 million with their classification on
+2026-09-24. `AuthorCorpusExportIT` runs the statement against the test
 schema, so a renamed column fails there and not on prod.
 
 The taxonomic group of a name is persisted nowhere, so the export carries what it is derived from instead: the names
 of the higher taxa of the name's taxon, or of the accepted taxon of a synonym, from `taxon_metrics`, which imports fill
 for external datasets. Only ranks down to a suprageneric name are kept, the ones `TaxGroupAnalyzer` reads, and
-`ExportRow.group()` derives the group with `TaxGroupAnalyzer.analyzeNames`. An export from before that column still
-reads, without a classification and so with a group from the code at best.
+`ExportRow.group()` derives the group with `TaxGroupAnalyzer.analyzeNames`. The nomenclators hold bare names without a
+taxon and so without a classification: a name without one gets the group of its dataset where the dataset has one -
+algae for Index Nominum Algarum (2003), fungi for Species Fungorum Plus (2073) and eukaryotes for ZooBank (2037), which
+registers protists besides animals - and else what the analyzer makes of the name and its code. An export from before
+the column still reads, without a classification.
 
 **2. Re-parse.** The export holds the parse each dataset got when it was imported, including parser defects fixed
 since. `CorpusReparser` runs every name through the import's parse again, name and authorship separately, and rewrites

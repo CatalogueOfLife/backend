@@ -101,6 +101,26 @@ public class CorpusIOTest {
   }
 
   /**
+   * Nomenclators hold bare names without a taxon, so without a classification. A dataset of one group gives its names
+   * that group then, but never overrides a classification.
+   */
+  @Test
+  public void datasetDefaultGroup() throws Exception {
+    File f = export("e.tsv",
+      "7\t2003\tn1\tSPECIES\tBOTANICAL\t\tAus bus\tL.\tL.\t\t\t\t\t\t\t",
+      "7\t2073\tn2\tSPECIES\tBOTANICAL\t\tAus bus\tL.\tL.\t\t\t\t\t\t\t",
+      "7\t2073\tn3\tSPECIES\tBOTANICAL\t\tAus bus\tL.\tL.\t\t\t\t\t\t\tAnimalia|Mollusca|Gastropoda",
+      "7\t2037\tn4\tSPECIES\t\t\tAus bus\tL.\tL.\t\t\t\t\t\t\t",
+      "7\t2006\tn5\tSPECIES\tBOTANICAL\t\tAus bus\tL.\tL.\t\t\t\t\t\t\t");
+    var rows = groups(f).get(0);
+    assertEquals(TaxGroup.Algae, rows.get(0).group());
+    assertEquals(TaxGroup.Fungi, rows.get(1).group());
+    assertEquals(TaxGroup.Gastropods, rows.get(2).group());
+    assertEquals(TaxGroup.Eukaryotes, rows.get(3).group());
+    assertEquals(TaxGroup.Eukaryotes, rows.get(4).group());
+  }
+
+  /**
    * The last column, the sanctioning author, is empty in nearly every row.
    * A reader that drops trailing empty columns must not make such a row unreadable.
    */

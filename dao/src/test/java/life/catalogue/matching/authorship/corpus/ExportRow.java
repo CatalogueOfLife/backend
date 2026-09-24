@@ -8,6 +8,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -48,6 +49,15 @@ public record ExportRow(
   /** separates the authors of a team, the export script drops every name that holds one */
   public static final char TEAM_SEPARATOR = '|';
   private static final TaxGroupAnalyzer GROUP_ANALYZER = new TaxGroupAnalyzer();
+  /**
+   * The group of every name of a dataset of one group, for its names without a classification: nomenclators hold bare
+   * names that have no taxon. ZooBank registers protists besides animals, so it only tells eukaryotes.
+   */
+  static final Map<Integer, TaxGroup> DATASET_GROUPS = Map.of(
+    2003, TaxGroup.Algae,       // Index Nominum Algarum
+    2037, TaxGroup.Eukaryotes,  // ZooBank
+    2073, TaxGroup.Fungi        // Species Fungorum Plus
+  );
 
   /**
    * @param row the columns of one line, trailing empty ones may be missing
@@ -87,10 +97,14 @@ public record ExportRow(
 
   /**
    * @return the taxonomic group of the name as the matching derives it, from the classification, the name itself and
-   *         its code; null if none can be told
+   *         its code, or for a name without a classification the group of its dataset if it has one; null if none can
+   *         be told
    */
   @Nullable
   public TaxGroup group() {
+    if (classification.isEmpty() && DATASET_GROUPS.containsKey(datasetKey)) {
+      return DATASET_GROUPS.get(datasetKey);
+    }
     Rank r;
     try {
       r = Rank.valueOf(rank);
