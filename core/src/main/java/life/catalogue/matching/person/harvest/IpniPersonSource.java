@@ -11,6 +11,8 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * prefixes. Authors whose surname starts with no letter A to Z are what the total of all authors shows missing.
  */
 public class IpniPersonSource implements HarvestSource {
+  private static final Logger LOG = LoggerFactory.getLogger(IpniPersonSource.class);
   static final String ENDPOINT = "https://www.ipni.org/api/1/search";
   static final int PAGE = 500;
   static final int MAX_RECORDS = 10000;
@@ -61,7 +64,7 @@ public class IpniPersonSource implements HarvestSource {
       }
       return;
     }
-    System.out.printf("  ipni %s: %d authors%n", prefix, page.path("totalResults").asInt());
+    LOG.info("ipni {}: {} authors", prefix, page.path("totalResults").asInt());
     while (true) {
       JsonNode results = page.path("results");
       for (JsonNode a : results) {

@@ -4,12 +4,15 @@ import java.time.Duration;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Fetches politely and patiently: a pause before every request, growing with each retry, and an answer that fails
  * the check counts as a failure. A rate limit, a timeout or a body cut off costs a wait, not the run.
  */
 public class RetryingFetcher implements Fetcher {
+  private static final Logger LOG = LoggerFactory.getLogger(RetryingFetcher.class);
   private static final int MAX_RETRIES = 6;
   private final Fetcher delegate;
   private final Duration pause;
@@ -41,7 +44,7 @@ public class RetryingFetcher implements Fetcher {
       } catch (Exception e) {
         last = e;
       }
-      System.err.println("  fetch attempt " + attempt + "/" + retries + " failed: " + StringUtils.abbreviate(last.getMessage(), 300));
+      LOG.warn("Fetch attempt {}/{} failed: {}", attempt, retries, StringUtils.abbreviate(last.getMessage(), 300));
     }
     throw last;
   }

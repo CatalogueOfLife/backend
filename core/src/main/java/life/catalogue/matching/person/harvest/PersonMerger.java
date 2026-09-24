@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.matching.person.*;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -33,6 +34,18 @@ import static life.catalogue.api.vocab.PersonSource.*;
 public class PersonMerger {
   private static final int YEAR_TOLERANCE = 2;
   private final MergeReport report = new MergeReport();
+  private final LocalDate today;
+
+  public PersonMerger() {
+    this(LocalDate.now());
+  }
+
+  /**
+   * @param today the day a person no source has any more is retired on
+   */
+  public PersonMerger(LocalDate today) {
+    this.today = today;
+  }
 
   public record Result(PersonFiles.Content content, MergeReport report) {
   }

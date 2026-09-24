@@ -11,6 +11,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
@@ -22,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * follow. The query service took half a minute to a minute for the statements or labels of a hundred persons.
  */
 public class WikidataPersonSource implements HarvestSource {
+  private static final Logger LOG = LoggerFactory.getLogger(WikidataPersonSource.class);
   static final String SPARQL = "https://query.wikidata.org/sparql";
   static final String API = "https://www.wikidata.org/w/api.php";
   static final String ENTITY = "http://www.wikidata.org/entity/";
@@ -72,7 +76,7 @@ public class WikidataPersonSource implements HarvestSource {
       for (int offset = 0; ; offset += PAGE) {
         int rows = addIds(query("SELECT ?person ?v WHERE { ?person wdt:" + p + " ?v } ORDER BY ?person ?v LIMIT " + PAGE
           + " OFFSET " + offset), p, builders);
-        System.out.printf("  wikidata %s offset %d: %d rows%n", p, offset, rows);
+        LOG.info("wikidata {} offset {}: {} rows", p, offset, rows);
         if (rows < PAGE) break;
       }
     }
@@ -104,7 +108,7 @@ public class WikidataPersonSource implements HarvestSource {
 
   private static void progress(String what, int i, int batch, int total) {
     if ((i / batch) % 100 == 0) {
-      System.out.printf("  wikidata %s %d of %d%n", what, i, total);
+      LOG.info("wikidata {} {} of {}", what, i, total);
     }
   }
 
