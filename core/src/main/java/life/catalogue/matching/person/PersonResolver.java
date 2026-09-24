@@ -5,11 +5,8 @@ import life.catalogue.api.vocab.TaxGroup;
 
 import org.gbif.nameparser.api.NomCode;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,7 +16,7 @@ import javax.annotation.Nullable;
 /**
  * Resolves an author citation to the persons of the registry it may name under the code of the name, and narrows them by
  * what is known about the name: its year and its taxonomic group. A person without years or groups is never ruled out.
- * The candidates of a citation are cached per code, the narrowing runs on every call.
+ * Nothing is cached here: the store caches what is worth it.
  */
 public class PersonResolver {
   private static final Pattern YEAR = Pattern.compile("(?<!\\d)(1[5-9]\\d\\d|20\\d\\d)(?!\\d)");
@@ -33,12 +30,11 @@ public class PersonResolver {
     public static final Margins DEFAULT = new Margins(10, 20, 15);
   }
 
-  private final MemoryPersonStore registry;
+  private final PersonStore store;
   private final Margins margins;
-  private final Map<String, Set<Person>> candidates = new ConcurrentHashMap<>();
 
-  public PersonResolver(MemoryPersonStore registry, Margins margins) {
-    this.registry = registry;
+  public PersonResolver(PersonStore store, Margins margins) {
+    this.store = store;
     this.margins = margins;
   }
 
@@ -48,12 +44,24 @@ public class PersonResolver {
    * @return the persons the citation may name, empty for none or if every one was ruled out
    */
   public Set<Person> resolve(String citation, @Nullable NomCode code, @Nullable Integer year, @Nullable TaxGroup group) {
-    Set<Person> all = candidates.computeIfAbsent((code == null ? "" : code.name()) + '|' + citation,
-      k -> Collections.unmodifiableSet(registry.candidates(citation, code)));
-    if (all.isEmpty() || (year == null && group == null)) {
-      return all;
+    return narrow(candidates(citation, code), year, group);
+  }
+
+  /**
+   * @return every person with a form under the citation's key whose code applies, before any narrowing
+   */
+  public Set<Person> candidates(String citation, @Nullable NomCode code) {
+    return store.candidates(citation, code);
+  }
+
+  /**
+   * @return the persons the year and group of a name leave possible, the very set if neither is known
+   */
+  public Set<Person> narrow(Set<Person> persons, @Nullable Integer year, @Nullable TaxGroup group) {
+    if (persons.isEmpty() || (year == null && group == null)) {
+      return persons;
     }
-    return all.stream().filter(p -> possible(p, year, group)).collect(Collectors.toCollection(LinkedHashSet::new));
+    return persons.stream().filter(p -> possible(p, year, group)).collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
   private boolean possible(Person p, @Nullable Integer year, @Nullable TaxGroup group) {

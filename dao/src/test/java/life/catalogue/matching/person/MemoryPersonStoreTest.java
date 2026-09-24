@@ -1,6 +1,7 @@
 package life.catalogue.matching.person;
 
 import life.catalogue.api.model.Person;
+import life.catalogue.api.model.PersonInfo;
 import life.catalogue.api.model.PersonName;
 import life.catalogue.api.model.PersonRelation;
 import life.catalogue.api.vocab.PersonFormCode;
@@ -165,7 +166,7 @@ public class MemoryPersonStoreTest {
   /** IPNI lists alternative forenames in brackets, and a variant ending with the family name gives initials too */
   @Test
   public void initialsOfVariantsWithoutBracketedAlternatives() {
-    assertEquals("C. B. ", MemoryPersonStore.initials("Carl (Karl, Carel, Carolus) Bořivoj (Boriwog, Boriwag)"));
+    assertEquals("C. B. ", PersonForms.initials("Carl (Karl, Carel, Carolus) Bořivoj (Boriwog, Boriwag)"));
     var presl = new Person("wd:Q5", "Q5", null, null, List.of(), "Presl", "Carl (Karl, Carel, Carolus) Bořivoj (Boriwog, Boriwag)",
       null, 1794, 1852, null, null, Set.of(), PersonSource.IPNI);
     var reg = new MemoryPersonStore(new PersonFiles.Content(List.of(presl),
@@ -187,7 +188,7 @@ public class MemoryPersonStoreTest {
   /** a variant written with initials, "J.C. Sowerby", gives both initials, not his father's bare "J. Sowerby" */
   @Test
   public void initialsOfDottedNames() {
-    assertEquals("J. C. ", MemoryPersonStore.initials("J.C."));
+    assertEquals("J. C. ", PersonForms.initials("J.C."));
     var jdc = new Person("wd:Q7", "Q7", null, null, List.of(), "Sowerby", "James de Carle", null, 1787, 1871, null, null, Set.of(),
       PersonSource.WIKIDATA);
     var reg = new MemoryPersonStore(new PersonFiles.Content(List.of(jdc),
@@ -214,5 +215,27 @@ public class MemoryPersonStoreTest {
       assertEquals(e.getKey(), Set.of(e.getValue()), reg.candidates(e.getKey(), NomCode.ZOOLOGICAL));
       assertEquals(e.getKey(), Set.of(e.getValue()), reg.candidates(AuthorshipNormalizer.normalize(e.getKey()), NomCode.ZOOLOGICAL));
     }
+  }
+
+  /** many keys at once, a key without persons left out */
+  @Test
+  public void byKeys() {
+    var reg = registry();
+    assertEquals(Map.of("sw", Set.of(SWARTZ), "sowerby", Set.of(SOWERBY1, SOWERBY2)),
+      reg.byKeys(List.of("sw", "sowerby", "nobody"), NomCode.BOTANICAL));
+    assertEquals(Map.of(), reg.byKeys(List.of(), NomCode.BOTANICAL));
+  }
+
+  /** a person with the forms and relations it has, the relation seen from both ends */
+  @Test
+  public void info() {
+    var reg = registry();
+    PersonInfo info = reg.info("wd:Q2");
+    assertSame(SOWERBY2, info.person());
+    assertEquals(List.of(new PersonName("wd:Q2", "G.B.Sowerby II", PersonNameKind.CITATION, PersonFormCode.ZOO, PersonSource.WIKIDATA)),
+      info.names());
+    assertEquals(List.of(new PersonRelation("wd:Q2", PersonRelationType.PARENT, "wd:Q1", PersonSource.WIKIDATA)), info.relations());
+    assertEquals(info.relations(), reg.info("wd:Q1").relations());
+    assertNull(reg.info("wd:Q404"));
   }
 }

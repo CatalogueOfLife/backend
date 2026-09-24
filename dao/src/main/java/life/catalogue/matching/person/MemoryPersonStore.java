@@ -1,11 +1,10 @@
 package life.catalogue.matching.person;
 
 import life.catalogue.api.model.Person;
+import life.catalogue.api.model.PersonInfo;
 import life.catalogue.api.model.PersonName;
 import life.catalogue.api.model.PersonRelation;
 import life.catalogue.api.vocab.PersonFormCode;
-import life.catalogue.api.vocab.PersonNameKind;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 
 import org.gbif.nameparser.api.NomCode;
 
@@ -16,18 +15,12 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 /**
- * The persons of the registry with every name form they are cited by, looked up the way citations are compared:
- * under their {@link AuthorshipNormalizer#normalize(String)} key. Next to the forms of the files, forms are derived
- * per person with a family name: the initials of the given names with family name and suffix ("G. B. Sowerby II"),
- * the same of every full name or variant that ends with the family name, as a source often lists fewer given names
- * than its label holds, the family name with its suffix ("Hooker f.") and the bare family name ("Sowerby"). Nobiliary
- * particles stay words ("A. P. de Candolle"), bracketed alternatives of a forename give no initials. A key may name
- * several persons; that is intended, a bare surname proposes candidates only.
- * <p>
- * Loaded once and only by what asks for it, so the string comparison pays nothing.
+ * The person registry in memory, built from its files: the store of the tests and the corpus tools, and the check of
+ * every registry before it is written. Persons are looked up by the {@link PersonKeys#key(String)} of their forms and of
+ * the forms {@link PersonForms} derives.
  */
-public class MemoryPersonStore {
-  private static MemoryPersonStore instance;
+public class MemoryPersonStore implements PersonStore {
+  private static MemoryPersonStore resources;
 
   private record Form(Person person, PersonFormCode code) {
   }
@@ -38,20 +31,25 @@ public class MemoryPersonStore {
   private final int size;
   private final Map<String, Person> byId = new HashMap<>();
   private final Map<String, List<Form>> byKey = new HashMap<>();
-  // identity: the persons the registry hands out are its own instances, and records hash all their fields
+  // identity: the persons the store hands out are its own instances, and records hash all their fields
   private final Map<Person, List<Keyed>> keysByPerson = new IdentityHashMap<>();
   private final Map<String, Set<Person>> relatives = new HashMap<>();
+  private final Map<String, List<PersonName>> names = new HashMap<>();
+  private final Map<String, List<PersonRelation>> relations = new HashMap<>();
   private final List<String> problems = new ArrayList<>();
 
+  /**
+   * @return the registry of the files on the classpath, loaded once: the corpus tools and their tests read it
+   */
   public static synchronized MemoryPersonStore resources() {
-    if (instance == null) {
+    if (resources == null) {
       try {
-        instance = new MemoryPersonStore(PersonFiles.readResources());
+        resources = new MemoryPersonStore(PersonFiles.readResources());
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }
     }
-    return instance;
+    return resources;
   }
 
   public MemoryPersonStore(PersonFiles.Content c) {
@@ -80,13 +78,8 @@ public class MemoryPersonStore {
       if (p.born() != null && p.activeFrom() != null && p.activeFrom() < p.born()) {
         problems.add(p.id() + " was active before it was born");
       }
-      if (p.family() != null) {
-        add(p.family(), p, PersonFormCode.ANY);
-        add(initials(p.given()) + p.family() + suffix(p), p, PersonFormCode.ANY);
-        if (p.suffix() != null) {
-          // relatives are cited by the family name and suffix alone: "Hooker f.", "Sowerby II"
-          add(p.family() + suffix(p), p, PersonFormCode.ANY);
-        }
+      for (String form : PersonForms.of(p)) {
+        add(form, p, PersonFormCode.ANY);
       }
     }
     Set<Person> named = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -97,12 +90,11 @@ public class MemoryPersonStore {
         continue;
       }
       named.add(p);
+      names.computeIfAbsent(p.id(), k -> new ArrayList<>()).add(n);
       add(n.form(), p, n.code());
-      if ((n.kind() == PersonNameKind.FULL || n.kind() == PersonNameKind.VARIANT) && p.family() != null) {
-        String given = givenOf(n.form(), p);
-        if (given != null) {
-          add(initials(given) + p.family() + suffix(p), p, PersonFormCode.ANY);
-        }
+      String derived = PersonForms.of(p, n);
+      if (derived != null) {
+        add(derived, p, PersonFormCode.ANY);
       }
     }
     for (Person p : c.persons()) {
@@ -120,11 +112,15 @@ public class MemoryPersonStore {
       }
       relatives.computeIfAbsent(a.id(), k -> new LinkedHashSet<>()).add(b);
       relatives.computeIfAbsent(b.id(), k -> new LinkedHashSet<>()).add(a);
+      relations.computeIfAbsent(a.id(), k -> new ArrayList<>()).add(r);
+      if (b != a) {
+        relations.computeIfAbsent(b.id(), k -> new ArrayList<>()).add(r);
+      }
     }
   }
 
   private void add(String form, Person p, PersonFormCode code) {
-    String key = key(form);
+    String key = PersonKeys.key(form);
     if (key != null) {
       List<Form> forms = byKey.computeIfAbsent(key, k -> new ArrayList<>(1));
       Form f = new Form(p, code);
@@ -139,55 +135,8 @@ public class MemoryPersonStore {
     }
   }
 
-  private static String suffix(Person p) {
-    return p.suffix() == null ? "" : " " + p.suffix();
-  }
-
-  /**
-   * @return the words of a full name before the family name, "George Brettingham" of "George Brettingham Sowerby II",
-   *         null for a name that does not end with the person's family name and suffix
-   */
-  @Nullable
-  private static String givenOf(String full, Person p) {
-    String name = full.strip();
-    String suffix = suffix(p);
-    if (!suffix.isEmpty() && name.endsWith(suffix)) {
-      name = name.substring(0, name.length() - suffix.length());
-    }
-    String family = " " + p.family();
-    if (!name.endsWith(family)) return null;
-    String given = name.substring(0, name.length() - family.length()).strip();
-    return given.isEmpty() ? null : given;
-  }
-
-  /**
-   * @return "G. B. " for "George Brettingham", "J. B. " for "Jean-Baptiste", "J. C. " for "J.C.", "A. P. de " for
-   *         "Augustin Pyramus de", empty for none
-   */
-  static String initials(@Nullable String given) {
-    if (given == null) return "";
-    StringBuilder sb = new StringBuilder();
-    // IPNI lists alternative forenames in brackets: "Carl (Karl, Carel, Carolus) Bořivoj"; a variant may be dotted: "J.C."
-    for (String part : given.replaceAll("\\([^)]*\\)", " ").split("[\\s.-]+")) {
-      if (AuthorshipNormalizer.PARTICLES.contains(part)) {
-        sb.append(part).append(' ');
-        continue;
-      }
-      String letters = part.replaceAll("^[^\\p{L}]+", "");
-      if (!letters.isEmpty()) {
-        sb.append(letters.charAt(0)).append(". ");
-      }
-    }
-    return sb.toString();
-  }
-
-  /**
-   * @return the persons a citation may name under the code of the name: several for an ambiguous citation such as a
-   *         bare surname, none for an author the registry does not know
-   */
-  public Set<Person> candidates(String citation, @Nullable NomCode code) {
-    String key = key(citation);
-    if (key == null) return Set.of();
+  @Override
+  public Set<Person> byKey(String key, @Nullable NomCode code) {
     Set<Person> persons = new LinkedHashSet<>();
     for (Form f : byKey.getOrDefault(key, List.of())) {
       if (f.code().appliesTo(code)) {
@@ -197,26 +146,19 @@ public class MemoryPersonStore {
     return persons;
   }
 
-  /**
-   * The key of a form or citation: {@link AuthorshipNormalizer#normalize(String)} until it no longer changes. The
-   * comparator hands over authors normalized already, and normalizing is not always idempotent - a capital Đ is only
-   * folded once lower cased, and removing an e can make a new "ae", "oe" or "ue" - so a key normalized once would miss
-   * them.
-   */
-  @Nullable
-  static String key(@Nullable String form) {
-    String key = AuthorshipNormalizer.normalize(form);
-    for (int i = 0; key != null && i < 5; i++) {
-      String next = AuthorshipNormalizer.normalize(key);
-      if (key.equals(next)) break;
-      key = next;
+  @Override
+  public Map<String, Set<Person>> byKeys(Collection<String> keys, @Nullable NomCode code) {
+    Map<String, Set<Person>> map = new HashMap<>();
+    for (String key : keys) {
+      Set<Person> persons = byKey(key, code);
+      if (!persons.isEmpty()) {
+        map.put(key, persons);
+      }
     }
-    return key;
+    return map;
   }
 
-  /**
-   * @return the keys of every form of the person whose code applies, derived ones included, as citations are normalized
-   */
+  @Override
   public Set<String> keys(Person p, @Nullable NomCode code) {
     Set<String> keys = new LinkedHashSet<>();
     for (Keyed k : keysByPerson.getOrDefault(p, List.of())) {
@@ -227,23 +169,28 @@ public class MemoryPersonStore {
     return keys;
   }
 
-  /**
-   * @param anyId an id, a former id or a prefixed authority id
-   */
+  @Override
   @Nullable
   public Person get(String anyId) {
     return byId.get(anyId);
   }
 
-  /**
-   * @return parents, children and siblings
-   */
+  @Override
   public Set<Person> relatives(Person p) {
     return relatives.getOrDefault(p.id(), Set.of());
   }
 
+  @Override
+  @Nullable
+  public PersonInfo info(String anyId) {
+    Person p = byId.get(anyId);
+    if (p == null) return null;
+    return new PersonInfo(p, List.copyOf(names.getOrDefault(p.id(), List.of())),
+      List.copyOf(relations.getOrDefault(p.id(), List.of())));
+  }
+
   /**
-   * @return what is wrong with the files, empty for a consistent registry
+   * @return what is wrong with the registry, empty for a consistent one
    */
   public List<String> problems() {
     return Collections.unmodifiableList(problems);

@@ -56,7 +56,7 @@ public class PersonAuthorMatcher implements AuthorMatcher {
   public record Explanation(AuthorTeam team1, AuthorTeam team2, AuthorContext context, Equality verdict, List<Decision> decisions) {
   }
 
-  private final MemoryPersonStore registry;
+  private final PersonStore store;
   private final PersonResolver resolver;
   private final AuthorMatcher fallback;
   private final RelativesPolicy policy;
@@ -67,9 +67,9 @@ public class PersonAuthorMatcher implements AuthorMatcher {
    * @param fallback compares the authors no person is known for: the string matcher
    * @param listener sees the explanation of every comparison, for a report; null for none
    */
-  public PersonAuthorMatcher(MemoryPersonStore registry, PersonResolver resolver, AuthorMatcher fallback, RelativesPolicy policy,
+  public PersonAuthorMatcher(PersonStore store, PersonResolver resolver, AuthorMatcher fallback, RelativesPolicy policy,
                              @Nullable Consumer<Explanation> listener) {
-    this.registry = registry;
+    this.store = store;
     this.resolver = resolver;
     this.fallback = fallback;
     this.policy = policy;
@@ -137,7 +137,7 @@ public class PersonAuthorMatcher implements AuthorMatcher {
 
   private boolean related(Set<Person> p1, Set<Person> p2) {
     for (Person a : p1) {
-      Set<Person> relatives = registry.relatives(a);
+      Set<Person> relatives = store.relatives(a);
       for (Person b : p2) {
         if (relatives.contains(b)) {
           return true;
@@ -154,7 +154,7 @@ public class PersonAuthorMatcher implements AuthorMatcher {
     }
     Set<String> forms = new LinkedHashSet<>();
     forms.add(author);
-    persons.forEach(p -> registry.keys(p, ctx.code()).stream().filter(PersonAuthorMatcher::readable).forEach(forms::add));
+    persons.forEach(p -> store.keys(p, ctx.code()).stream().filter(PersonAuthorMatcher::readable).forEach(forms::add));
     return forms;
   }
 

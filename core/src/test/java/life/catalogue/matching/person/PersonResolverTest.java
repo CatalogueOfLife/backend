@@ -88,4 +88,14 @@ public class PersonResolverTest {
     assertNull(PersonResolver.year(null));
     assertEquals(Set.of(JAMES1, JAMES2), resolver.resolve("J. Sowerby", ZOO, PersonResolver.year("184?"), null));
   }
+
+  /** the candidates of a citation before any narrowing, and the narrowing on its own */
+  @Test
+  public void candidatesThenNarrow() {
+    Set<Person> both = resolver.candidates("J. Sowerby", ZOO);
+    assertEquals(Set.of(JAMES1, JAMES2), both);
+    assertEquals(Set.of(JAMES2), resolver.narrow(both, 1850, null));
+    assertEquals(Set.of(), resolver.narrow(both, 1860, null));
+    assertSame(both, resolver.narrow(both, null, null));
+  }
 }
