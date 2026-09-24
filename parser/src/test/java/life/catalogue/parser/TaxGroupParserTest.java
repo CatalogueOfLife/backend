@@ -51,6 +51,13 @@ public class TaxGroupParserTest extends ParserTestBase<TaxGroup> {
     assertParse(TaxGroup.Bacteria, "Nostocophycidae");
     assertParse(TaxGroup.Bacteria, "Oscillatoriophycidae");
     assertParse(TaxGroup.Bacteria, "Synechococcophycidae");
+    assertParse(TaxGroup.Bacteria, "Myxophyceae");
+    assertParse(TaxGroup.Bacteria, "Vampirovibrionophyceae");
+    // cyanobacteria from LPSN, AlgaeBase and WoRMS
+    assertParse(TaxGroup.Bacteria, "Cyanophyta");
+    assertParse(TaxGroup.Bacteria, "Leptolyngbyales");
+    assertParse(TaxGroup.Bacteria, "Oculatellaceae");
+    assertParse(TaxGroup.Bacteria, "Spirulinoideae");
     assertParse(TaxGroup.Viruses, "Blablaviridae");
     // but not for binomials
     assertParse(null, "Blabla blamycetes");
