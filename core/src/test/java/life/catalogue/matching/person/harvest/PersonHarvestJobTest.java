@@ -65,7 +65,12 @@ public class PersonHarvestJobTest {
   }
 
   private PersonHarvestJob job(HarvestSource... sources) {
-    return new PersonHarvestJob(Users.TESTER, factory(), broker, run, new PersonHarvestJob.Sources(List.of(sources), qids -> Map.of()));
+    return job(null, sources);
+  }
+
+  private PersonHarvestJob job(Integer maxRetired, HarvestSource... sources) {
+    return new PersonHarvestJob(Users.TESTER, factory(), broker, run, new PersonHarvestJob.Sources(List.of(sources), qids -> Map.of()),
+      maxRetired);
   }
 
   private static HarvestSource source(PersonRecord... records) {
@@ -128,6 +133,22 @@ public class PersonHarvestJobTest {
     // every source was read: the next run reads them anew rather than replaying answers that led here
     assertFalse("a run that read its sources leaves no cache behind", Files.exists(run));
     assertTrue(report(job), report(job).contains("clb:1 is local but has authority ids"));
+  }
+
+  /** a harvest that would retire more persons than its limit writes nothing */
+  @Test
+  public void tooManyRetiredWritesNothing() throws Exception {
+    var job = job(source(wd("Q1", "Carl Linnaeus")));
+    job.run();
+    assertEquals(List.of("wd:Q1"), ids());
+
+    job = job(0, source());
+    job.run();
+    assertEquals(JobStatus.FAILED, job.getStatus());
+    try (SqlSession session = factory().openSession(true)) {
+      assertNull(PersonTables.read(session).persons().get(0).retired());
+    }
+    assertTrue(report(job), report(job).contains("1 persons would be retired, more than the limit of 0"));
   }
 
   /** the cron asks when the last harvest finished that succeeded */

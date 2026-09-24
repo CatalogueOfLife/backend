@@ -399,7 +399,7 @@ public class WsServer extends Application<WsServerConfig> {
     ));
     if (cfg.persons.harvestIntervalDays > 0) {
       cronJobs.add(new PersonHarvestCron(executor, () -> PersonHarvestJob.lastFinished(getSqlSessionFactory()),
-        () -> PersonHarvestJob.live(Users.IMPORTER, getSqlSessionFactory(), broker, cfg.persons), cfg.persons.harvestIntervalDays));
+        () -> PersonHarvestJob.live(Users.IMPORTER, getSqlSessionFactory(), broker, cfg.persons, false), cfg.persons.harvestIntervalDays));
     }
     var cron = CronExecutor.startWith(cronJobs.toArray(CronJob[]::new));
     managedService.manage(Component.CronExecutor, cron);

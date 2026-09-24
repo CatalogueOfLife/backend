@@ -150,7 +150,9 @@ schedule, so the job history decides, not the time the server started. It runs i
 2. **Rebuild.** In one short transaction that keeps other writers out - readers see the old registry until it
    commits - it reads the registry, merges the harvest into it and checks the result.
 3. **Write.** A consistent result replaces every row by COPY, derived forms and the any id index included, and
-   `PersonsChanged` is published. An inconsistent one writes nothing and fails the job.
+   `PersonsChanged` is published. An inconsistent one writes nothing and fails the job. So does a harvest that would
+   retire more persons than `persons.maxRetired` (1000): a source may have answered too little. For a real cleanup of a
+   source, `POST /admin/persons/harvest?force=true` writes it anyway.
 4. **Report.** Either way the job's download is a zip holding `report.md`.
 
 **Wikidata** gives everyone with a botanist author abbreviation (P428, `STANDARD`/`BOT`), a zoologist author citation

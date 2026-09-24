@@ -50,6 +50,8 @@ public class PersonHarvestJob extends BackgroundJob {
   private final EventBroker broker;
   private final Path cacheDir;
   private final Sources sources;
+  @Nullable
+  private final Integer maxRetired;
   private final JobResult result;
 
   @FunctionalInterface
@@ -78,23 +80,39 @@ public class PersonHarvestJob extends BackgroundJob {
   }
 
   /**
-   * @param cacheDir the directory the sources cache their answers in, deleted once every source has been read
+   * @param cacheDir   the directory the sources cache their answers in, deleted once every source has been read
+   * @param maxRetired the most persons one harvest may retire before it writes nothing, null for no limit
    */
-  public PersonHarvestJob(int userKey, SqlSessionFactory factory, EventBroker broker, Path cacheDir, Sources sources) {
+  public PersonHarvestJob(int userKey, SqlSessionFactory factory, EventBroker broker, Path cacheDir, Sources sources,
+                          @Nullable Integer maxRetired) {
     super(JobPriority.LOW, userKey);
     this.factory = factory;
     this.broker = broker;
     this.cacheDir = cacheDir;
     this.sources = sources;
+    this.maxRetired = maxRetired;
     this.result = new JobResult(getKey());
   }
 
   /**
+   * @param force whether to write however many persons the harvest retires
    * @return the harvest of Wikidata and IPNI, cached in the harvest directory of the config
    */
-  public static PersonHarvestJob live(int userKey, SqlSessionFactory factory, EventBroker broker, PersonConfig cfg) {
+  public static PersonHarvestJob live(int userKey, SqlSessionFactory factory, EventBroker broker, PersonConfig cfg,
+                                      boolean force) {
     Path cache = cfg.harvestDir.toPath().resolve("cache");
-    return new PersonHarvestJob(userKey, factory, broker, cache, Sources.live(cache));
+    return new PersonHarvestJob(userKey, factory, broker, cache, Sources.live(cache), force ? null : cfg.maxRetired);
+  }
+
+  /**
+   * @param maxRetired the limit of retired persons the harvest runs with, null for none: a forced harvest
+   */
+  public record Params(Integer maxRetired) {
+  }
+
+  @Override
+  public Object getParams() {
+    return new Params(maxRetired);
   }
 
   /**
@@ -143,7 +161,7 @@ public class PersonHarvestJob extends BackgroundJob {
     checkIfCancelled();
     setStep("rebuilding the registry");
     PersonTables.transaction(factory, session -> {
-      var outcome = PersonRebuild.rebuild(PersonTables.read(session), harvest, redirects, LocalDate.now());
+      var outcome = PersonRebuild.rebuild(PersonTables.read(session), harvest, redirects, LocalDate.now(), maxRetired);
       writeReport(outcome.report());
       if (!outcome.problems().isEmpty()) {
         throw new IllegalStateException("The harvested registry is inconsistent, nothing written: "

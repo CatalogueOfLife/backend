@@ -12,6 +12,8 @@ import org.gbif.nameparser.api.NomCode;
 import java.time.LocalDate;
 import java.util.*;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,22 +74,31 @@ public final class PersonRebuild {
   /**
    * Merges the harvest into the registry and checks the result, which is only fit to be written without problems.
    *
-   * @param redirects Wikidata items of the registry that became a redirect, old Q-id to new Q-id
-   * @param today     the day a person no source has any more is retired on
+   * @param redirects  Wikidata items of the registry that became a redirect, old Q-id to new Q-id
+   * @param today      the day a person no source has any more is retired on
+   * @param maxRetired  a harvest retiring more persons than this is a problem - a source may have answered too little -
+   *                    null for no limit
    */
-  public static Outcome rebuild(PersonFiles.Content existing, Harvest harvest, Map<String, String> redirects, LocalDate today) {
+  public static Outcome rebuild(PersonFiles.Content existing, Harvest harvest, Map<String, String> redirects, LocalDate today,
+                                @Nullable Integer maxRetired) {
     var result = new PersonMerger(today).merge(existing, harvest.records(), redirects);
     var store = new MemoryPersonStore(result.content());
+    List<String> problems = new ArrayList<>(store.problems());
+    int retired = result.report().retired.size();
+    if (maxRetired != null && retired > maxRetired) {
+      problems.add(retired + " persons would be retired, more than the limit of " + maxRetired
+        + ": a source may have answered too little");
+    }
     StringBuilder sb = new StringBuilder("# Person harvest\n\n");
     sb.append(String.format("persons %,d, names %,d, relations %,d%n", result.content().persons().size(),
       result.content().names().size(), result.content().relations().size()));
-    if (!store.problems().isEmpty()) {
-      sb.append(String.format("%n## Inconsistent, nothing written: %,d%n", store.problems().size()));
-      store.problems().stream().limit(LIST_LIMIT).forEach(p -> sb.append("  ").append(p).append('\n'));
+    if (!problems.isEmpty()) {
+      sb.append(String.format("%n## Inconsistent, nothing written: %,d%n", problems.size()));
+      problems.stream().limit(LIST_LIMIT).forEach(p -> sb.append("  ").append(p).append('\n'));
     }
     sb.append(result.report().render()).append('\n').append(harvest.stats());
     unresolvedAuthorMapRows(store, sb);
-    return new Outcome(result.content(), store.problems(), sb.toString());
+    return new Outcome(result.content(), problems, sb.toString());
   }
 
   /**

@@ -29,6 +29,13 @@ public class PersonConfig {
   @NotNull
   public File harvestDir = new File("/tmp/col/person-harvest");
 
+  /**
+   * the most persons one harvest may retire: a source answering far too little would retire them by the thousand. Above
+   * it the harvest writes nothing unless it is forced
+   */
+  @Min(0)
+  public int maxRetired = 1000;
+
   /** days after the last successful harvest that the cron executor starts the next, 0 for none */
   @Min(0)
   public int harvestIntervalDays = 0;

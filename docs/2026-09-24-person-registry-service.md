@@ -238,3 +238,6 @@ Implemented as designed, with these decisions the design left open:
   them from the repository waits for the prod import.
 - The harvest caches in the `cache` folder of `persons.harvestDir`, kept when a run fails reading the sources and deleted
   as soon as every source has been read. The import writes synchronously in its request.
+- A harvest that would retire more than `persons.maxRetired` persons (1000) writes nothing and fails, as a source may
+  have answered too little; `?force=true` writes it anyway. The spec rejected a reviewed changeset for every run, this
+  only stops the implausible ones.

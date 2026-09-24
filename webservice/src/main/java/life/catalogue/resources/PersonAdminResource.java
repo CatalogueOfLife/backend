@@ -48,10 +48,13 @@ public class PersonAdminResource {
     this.cfg = cfg;
   }
 
+  /**
+   * @param force write the harvest however many persons it retires, for a real cleanup of a source
+   */
   @POST
   @Path("harvest")
-  public JobInfo harvest(@Auth User user) {
-    var job = PersonHarvestJob.live(user.getKey(), factory, broker, cfg);
+  public JobInfo harvest(@QueryParam("force") boolean force, @Auth User user) {
+    var job = PersonHarvestJob.live(user.getKey(), factory, broker, cfg, force);
     exec.submit(job);
     return JobDao.buildInfo(job);
   }

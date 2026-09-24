@@ -45,7 +45,7 @@ public class PersonRebuildTest {
     i.name("L.", PersonNameKind.STANDARD, PersonFormCode.BOT);
 
     var harvest = PersonRebuild.fetch(List.of(source("wikidata", w.build()), source("ipni", i.build())));
-    var outcome = PersonRebuild.rebuild(PersonFiles.Content.empty(), harvest, Map.of(), DAY);
+    var outcome = PersonRebuild.rebuild(PersonFiles.Content.empty(), harvest, Map.of(), DAY, null);
     assertEquals(List.of(), outcome.problems());
     assertEquals(1, outcome.content().persons().size());
     String report = outcome.report();
@@ -75,9 +75,30 @@ public class PersonRebuildTest {
       List.of(new Person("clb:1", "Q9", null, null, List.of(), "Doe", null, null, null, null, null, null, Set.of(), PersonSource.CURATED)),
       List.of(new PersonName("clb:1", "Ann Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.CURATED)),
       List.of());
-    var outcome = PersonRebuild.rebuild(existing, PersonRebuild.fetch(List.of()), Map.of(), DAY);
+    var outcome = PersonRebuild.rebuild(existing, PersonRebuild.fetch(List.of()), Map.of(), DAY, null);
     assertEquals(List.of("clb:1 is local but has authority ids"), outcome.problems());
     assertTrue(outcome.report(), outcome.report().contains("## Inconsistent, nothing written: 1"));
+  }
+
+  /**
+   * A source that answers far too little would retire persons by the thousand: above the limit that is a problem, so
+   * nothing is written unless the harvest is forced, without a limit.
+   */
+  @Test
+  public void tooManyRetired() throws Exception {
+    var existing = new PersonFiles.Content(List.of(
+      new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, null, null, null, null, Set.of(), PersonSource.WIKIDATA),
+      new Person("wd:Q2", "Q2", null, null, List.of(), null, null, null, null, null, null, null, Set.of(), PersonSource.WIKIDATA)),
+      List.of(new PersonName("wd:Q1", "A. Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA),
+        new PersonName("wd:Q2", "B. Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA)),
+      List.of());
+    var nothing = PersonRebuild.fetch(List.of());
+    var limited = PersonRebuild.rebuild(existing, nothing, Map.of(), DAY, 1);
+    assertEquals(List.of("2 persons would be retired, more than the limit of 1: a source may have answered too little"),
+      limited.problems());
+    assertTrue(limited.report(), limited.report().contains("## Inconsistent, nothing written: 1"));
+    assertEquals(List.of(), PersonRebuild.rebuild(existing, nothing, Map.of(), DAY, 2).problems());
+    assertEquals(List.of(), PersonRebuild.rebuild(existing, nothing, Map.of(), DAY, null).problems());
   }
 
   /** without a reader for its format a dump must stop the harvest before anything is merged */
