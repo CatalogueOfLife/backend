@@ -108,6 +108,16 @@ public class PersonTablesTest {
       column("SELECT form FROM person_name WHERE person_id = 'wd:Q2' AND kind = 'DERIVED' ORDER BY form"));
   }
 
+  /** the export reads the registry in one read only snapshot, all three tables of one moment */
+  @Test
+  public void snapshot() throws Exception {
+    PersonTables.replace(factory(), content());
+    var c = PersonTables.read(factory());
+    assertEquals(read().persons(), c.persons());
+    assertEquals(read().names(), c.names());
+    assertEquals(read().relations(), c.relations());
+  }
+
   /** reads come sorted, so two harvests of the same sources merge the registry in the same order */
   @Test
   public void readsAreSorted() throws Exception {

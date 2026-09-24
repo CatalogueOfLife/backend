@@ -55,6 +55,23 @@ public final class PersonTables {
   }
 
   /**
+   * @return the registry as {@link #read(SqlSession)} gives it, of one moment: the three tables are read in one read only
+   *         transaction on a single snapshot, so a harvest committing meanwhile cannot give persons of one registry and
+   *         names of the next
+   */
+  public static PersonFiles.Content read(SqlSessionFactory factory) throws SQLException {
+    try (SqlSession session = factory.openSession(false)) {
+      try (Statement st = session.getConnection().createStatement()) {
+        // transaction scoped, so the pooled connection keeps its own settings
+        st.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY");
+      }
+      var c = read(session);
+      session.rollback(true);
+      return c;
+    }
+  }
+
+  /**
    * Checks the registry as {@link MemoryPersonStore#problems()} does and replaces the tables by it in one transaction.
    *
    * @throws IllegalArgumentException for an inconsistent registry, nothing written

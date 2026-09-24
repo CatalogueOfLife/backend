@@ -18,10 +18,11 @@ import life.catalogue.parser.UnparsableException;
 
 import org.gbif.nameparser.api.NomCode;
 
+import java.sql.SQLException;
+
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import jakarta.ws.rs.*;
@@ -71,14 +72,10 @@ public class PersonResource {
   @GET
   @Path("export")
   @Produces(MoreMediaTypes.APP_ZIP)
-  public Response export() {
-    StreamingOutput stream = os -> {
-      PersonFiles.Content c;
-      try (SqlSession session = factory.openSession(true)) {
-        c = PersonTables.read(session);
-      }
-      PersonFiles.writeZip(os, c);
-    };
+  public Response export() throws SQLException {
+    // read before anything is streamed, so a failing database is an error response and not a broken download
+    PersonFiles.Content c = PersonTables.read(factory);
+    StreamingOutput stream = os -> PersonFiles.writeZip(os, c);
     return Response.ok(stream).header("Content-Disposition", "attachment; filename=\"persons.zip\"").build();
   }
 
