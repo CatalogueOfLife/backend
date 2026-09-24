@@ -108,7 +108,8 @@ public class TaxGroupAnalyzerTest {
     assertEquals(TaxGroup.Angiosperms, analyzer.analyze(sn(Rank.SUPERORDER, "Asteranae"), List.of(
       sn(Rank.CLASS, "Equisetopsida"), sn(Rank.SUBCLASS, "Magnoliidae")
     )));
-    assertEquals(TaxGroup.Plants, analyzer.analyze(sn(Rank.SUBCLASS, "Magnoliidae"), List.of(sn(Rank.CLASS, "Equisetopsida"))));
+    // Equisetopsida is listed as plants for that reason
+    assertEquals(TaxGroup.Angiosperms, analyzer.analyze(sn(Rank.SUBCLASS, "Magnoliidae"), List.of(sn(Rank.CLASS, "Equisetopsida"))));
     assertEquals(TaxGroup.Gymnosperms, analyzer.analyze(sn(Rank.GENUS, NomCode.BOTANICAL, "Pinus", null), List.of(
       sn(Rank.CLASS, "Equisetopsida"), sn(Rank.SUBCLASS, "Pinidae"), sn(Rank.ORDER, "Pinales"), sn(Rank.FAMILY, "Pinaceae")
     )));

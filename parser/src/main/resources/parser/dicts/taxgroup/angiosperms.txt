@@ -1,993 +1,990 @@
-Abolbodaceae
-Acalyphoideae # euphorb subfamily (Euphorbiaceae)
-Acanthaceae
-Acanthogilioideae
-Acanthoideae
-Aceraceae # maple family (now Sapindaceae)
-Achariaceae
-Achatocarpaceae
-Acoraceae
-Acorales
-Acrosanthoideae
-Actinidiaceae
-Actinidioideae
-Adoxaceae
-Adoxoideae
-Aextoxicaceae
-Agapanthaceae
-Agavaceae # agave family (now Asparagaceae)
-Agdestidaceae
-Aizoaceae
-Aizooideae
-Akaniaceae
-Alismataceae
-Alismatales
-Alliaceae # onion family (now Amaryllidaceae)
-Alseuosmiaceae
-Alstroemeriaceae
-Altingiaceae
-Alvaradooideae
-Alzateaceae
-Amaranthaceae
-Amaranthoideae
-Amaryllidaceae
-Amborellaceae
-Amborellales
-Amborellanae
-Amphorogynaceae
-Amygdaloideae
-Amyridoideae
-Anacampserotaceae
-Anacardiaceae
-Anarthriaceae
-Ancistrocladaceae
-Anemarrhenaceae
-Angiospermae
-Angiosperms
-Anisophylleaceae
-Annonaceae
-Anthericaceae
-Anthophyta
-Antirrhinoideae
-Aphanopetalaceae
-Aphloiaceae
-Aphyllanthaceae
-Apiaceae
-Apiales
-Apioideae
-Apocynaceae
-Apocynoideae
-Apodanthaceae
-Aponogetonaceae
-Aptandraceae
-Aquifoliaceae
-Aquifoliales
-Araceae
-Araliaceae
-Aralidiaceae
-Arbutoideae
-Arecaceae
-Arecales
-Argophyllaceae
-Aristolochiaceae
-Aristolochioideae
-Asaraceae
-Asaroideae
-Asclepiadaceae # milkweed family (now Apocynaceae)
-Asclepiadoideae
-Asparagaceae
-Asparagales
-Asphodelaceae
-Asteliaceae
-Asteraceae
-Asterales
-Asteranae
-Asterids # APG informal clade
-Asteroideae
-Asteropeiaceae
-Atherospermataceae
-Aucubaceae
-Aurantioideae
-Austrobaileyaceae
-Austrobaileyales
-Austrobaileyanae
-Avicenniaceae
-Avicennioideae
-Azorelloideae
-Balanitoideae
-Balanopaceae
-Balanophoraceae
-Balanophoroideae
-Balsaminaceae
-Bambusoideae # bamboo subfamily (Poaceae)
-Barbeuiaceae
-Barbeyaceae
-Barnadesioideae
-Basellaceae
-Bataceae
-Begoniaceae
-Behniaceae
-Bellendenoideae
-Berberidaceae
-Berberidanae
-Berberidoideae
-Berberidopsidaceae
-Berberidopsidales
-Bersamaceae
-Betoideae
-Betulaceae
-Biebersteiniaceae
-Bignoniaceae
-Bixaceae
-Blandfordiaceae
-Bombacaceae # kapok/balsa family (now Malvaceae)
-Bombacoideae
-Bonnetiaceae
-Boraginaceae
-Boraginales
-Boraginoideae
-Borthwickiaceae
-Boryaceae
-Brassicaceae
-Brassicales
-Bretschneideraceae
-Bromeliaceae
-Brownlowioideae
-Brunelliaceae
-Bruniaceae
-Bruniales
-Brunonioideae
-Buddlejaceae
-Buddlejoideae
-Burmanniaceae
-Burseraceae
-Butomaceae
-Buxaceae
-Buxales
-Buxanae
-Buxoideae
-Byblidaceae
-Byrsonimoideae
-Byttnerioideae
-Cabombaceae
-Cabomboideae
-Cactaceae
-Cactoideae
-Caesalpiniaceae # caesalpinia subfamily/family (now Fabaceae)
-Calceolariaceae
-Callitrichaceae # water-starwort family (now Plantaginaceae)
-Callitrichoideae
-Calophyllaceae
-Calycanthaceae
-Calycanthoideae
-Calyceraceae
-Calyptrothecoideae
-Campanulaceae
-Campanulales
-Campanulids # APG informal clade
-Campynemataceae
-Canellaceae
-Canellales
-Cannabaceae
-Cannaceae
-Capparaceae
-Capparales
-Capparidaceae
-Caprifoliaceae
-Caprifolioideae
-Cardiopteridaceae
-Cardiopteridales
-Carduoideae
-Caricaceae
-Carlemanniaceae
-Carpodetaceae
-Carpodetoideae
-Caryocaraceae
-Caryophyllaceae
-Caryophyllales
-Caryophyllanae
-Cassiopoideae
-Casuarinaceae
-Cecropiaceae
-Cecropioideae
-Cedreloideae
-Celastraceae
-Celastrales
-Celastroideae
-Celtidaceae
-Centrolepidaceae
-Centroplacaceae
-Cephalotaceae
-Ceratophyllaceae
-Ceratophyllales
-Ceratophyllanae
-Cercidiphyllaceae
-Cervantesiaceae
-Cestroideae
-Chasmantheroideae
-Chelonoideae
-Chenopodiaceae # goosefoot family (now Amaranthaceae)
-Chenopodioideae
-Chloranthaceae
-Chloranthales
-Chrysobalanaceae
-Cichorioideae
-Circaeasteraceae
-Circaeasteroideae
-Cistaceae
-Clematoclethroideae
-Cleomaceae
-Clethraceae
-Clusiaceae
-Cneoroideae
-Cobaeoideae
-Cochlospermaceae
-Codonaceae
-Colchicaceae
-Coldeniaceae
-Columelliaceae
-Comandraceae
-Combretaceae
-Combretoideae
-Commelinaceae
-Commelinales
-Commelinids # APG informal clade
-Compositae
-Connaraceae
-Connaroideae
-Convallariaceae # lily-of-the-valley family (now Asparagaceae)
-Convolvulaceae
-Convolvuloideae
-Coptidoideae
-Corbichoniaceae
-Cordiaceae
-Core eudicots # APG informal clade
-Coriariaceae
-Corispermoideae
-Cornaceae
-Cornales
-Corsiaceae
-Corymbioideae
-Corynocarpaceae
-Costaceae
-Coulaceae
-Crassulaceae
-Crassuloideae
-Crossosomataceae
-Crossosomatales
-Cruciferae
-Crypteroniaceae
-Ctenolophonaceae
-Cucurbitaceae
-Cucurbitales
-Cunoniaceae
-Curtisiaceae
-Cyclanthaceae
-Cyclocheilaceae
-Cymodoceaceae
-Cynoglossoideae
-Cynomoriaceae
-Cyperaceae
-Cyperales # sedges and grasses (now in Poales)
-Cyrillaceae
-Cytinaceae
-Dampieroideae
-Danthonioideae # oatgrass subfamily (Poaceae)
-Daphniphyllaceae
-Dasypogonaceae
-Datiscaceae
-Degeneriaceae
-Desfontainiaceae
-Diapensiaceae
-Dichapetalaceae
-Dicomoideae
-Dicot
-Dicots
-Dicotyl
-Dicotyledoneae
-Didiereaceae
-Didiereoideae
-Didymelaceae
-Didymocarpoideae
-Diegodendraceae
-Diervillaceae
-Diervilloideae
-Digitalidoideae
-Dilleniaceae
-Dilleniales
-Dillenianae
-Dioncophyllaceae
-Dioscoreaceae
-Dioscoreales
-Dipentodontaceae
-Dipsacaceae
-Dipsacales
-Dipsacoideae
-Dipterocarpaceae
-Dipterocarpoideae
-Dirachmaceae
-Disanthoideae
-Dodonaeoideae
-Dombeyoideae
-Donatiaceae
-Donatioideae
-Doryanthaceae
-Droseraceae
-Drosophyllaceae
-Dryadoideae
-Duckeodendroideae
-Ebenaceae
-Ebenales # ebony and relatives (now in Ericales)
-Ecdeiocoleaceae
-Echiochiloideae
-Ehretiaceae
-Elaeagnaceae
-Elaeocarpaceae
-Elatinaceae
-Emblingiaceae
-Engelhardioideae
-Enkianthoideae
-Epidendroideae # orchid subfamily (Orchidaceae)
-Eremosynaceae
-Eremosynoideae
-Ericaceae
-Ericales
-Ericoideae
-Eriocaulaceae
-Eriogonoideae
-Erythropalaceae
-Erythroxylaceae
-Escalloniaceae
-Escalloniales
-Escallonioideae
-Eucnidoideae
-Eucommiaceae
-Eudicots
-Eudicotyledons # clade name used by NCBI, Cantino et al. 2007
-Euphorbiaceae
-Euphorbiales # euphorbs (now in Malpighiales)
-Euphroniaceae
-Eupomatiaceae
-Eupteleaceae
-Exbucklandioideae
-Fabaceae
-Fabales
-Fabids # APG informal clade
-Fagaceae
-Fagales
-Famatinanthoideae
-Flacourtiaceae # flacourtia family (now Salicaceae)
-Flagellariaceae
-Fouquieriaceae
-Francoaceae
-Frankeniaceae
-Fumariaceae # fumitory family (now Papaveraceae)
-Fumarioideae
-Fusispermoideae
-Garryaceae
-Garryales
-Geissolomataceae
-Gelsemiaceae
-Genliseoideae
-Gentianaceae
-Gentianales
-Geraniaceae
-Geraniales
-Gerrardinaceae
-Gesneriaceae
-Gesnerioideae
-Gisekiaceae
-Glaucidioideae
-Globularioideae
-Glossocalycoideae
-Gochnatioideae
-Goetzeoideae
-Gomortegaceae
-Gomphogynoideae
-Gonystyloideae
-Goodeniaceae
-Goodenioideae
-Goupiaceae
-Gramineae
-Gratioloideae
-Grevilleoideae
-Grewioideae
-Greyiaceae
-Griseliniaceae
-Gronovioideae
-Grossulariaceae
-Grubbiaceae
-Guamatelaceae
-Gunneraceae
-Gunnerales
-Gunneridae # clade name used by NCBI, Cantino et al. 2007
-Gymnarrhenoideae
-Gyrocarpoideae
-Gyrostemonaceae
-Haemodoraceae
-Halesiaceae
-Halophytaceae
-Haloragaceae
-Hamamelidaceae
-Hamamelidoideae
-Hanguanaceae
-Haplophylloideae
-Haptanthaceae
-Harrimanelloideae
-Hecastocleidoideae
-Heliconiaceae
-Helicteroideae
-Heliotropiaceae
-Helosoideae
-Helwingiaceae
-Hemerocallidaceae # daylily family (now Asphodelaceae)
-Hemimeridoideae
-Hermas
-Hernandiaceae
-Hernandioideae
-Herreriaceae
-Hesperocallidaceae
-Heteropyxidaceae
-Himantandraceae
-Hippocastanaceae # horse-chestnut family (now Sapindaceae)
-Hippocastanoideae
-Hippocrateoideae
-Hoplestigmataceae
-Hortonioideae
-Huaceae
-Huerteales
-Hugoniaceae
-Humbertioideae
-Humiriaceae
-Hyacinthaceae # hyacinth family (now Asparagaceae)
-Hydatellaceae
-Hydnoraceae
-Hydrangeaceae
-Hydrangeoideae
-Hydrastidoideae
-Hydrocharitaceae
-Hydroleaceae
-Hydropeltoideae
-Hydrophyllaceae
-Hydrostachyaceae
-Hypericaceae
-Hypoxidaceae
-Hypseocharitaceae
-Icacinaceae
-Icacinales
-Icanilales
-Idiospermoideae
-Illiciaceae
-Iridaceae
-Irvingiaceae
-Iteaceae
-Ixerbaceae
-Ixioliriaceae
-Ixiolirionaceae
-Ixonanthaceae
-Jamesioideae
-Japonoliriaceae
-Joinvilleaceae
-Jollydoroideae
-Juglandaceae
-Juglandales # walnuts, hickories (now in Fagales)
-Juglandoideae
-Juncaceae
-Juncaginaceae
-Kalanchoideae
-Kaliphoraceae
-Kewaceae
-Kibessioideae
-Kingdoniaceae
-Kingdonioideae
-Kirkiaceae
-Klotzschia
-Koeberliniaceae
-Krameriaceae
-Labiatae
-Lacistemaceae
-Lacistemataceae
-Lactoridaceae
-Lactoridoideae
-Lamiaceae
-Lamiales
-Lamiids # APG informal clade
-Lanariaceae
-Lardizabalaceae
-Lardizabaloideae
-Larreoideae
-Lauraceae
-Laurales
-Laxmanniaceae
-Lecythidaceae
-Ledocarpaceae
-Leeoideae
-Leguminosae
-Lemnaceae # duckweed family (now Araceae)
-Lennoaceae
-Lentibulariaceae
-Lepidobotryaceae
-Leptaulaceae
-Lepuropetalaceae
-Lepuropetaloideae
-Leuenbergerioideae
-Liliaceae
-Liliales
-Lilianae
-Liliopsida
-Limeaceae
-Limnanthaceae
-Limnocharitaceae
-Linaceae
-Lindenbergiaceae
-Linderniaceae
-Linnaeaceae
-Linnaeoideae
-Lissocarpaceae
-Loasaceae
-Loasoideae
-Lobeliaceae
-Loganiaceae
-Lophiocarpaceae
-Lophophytoideae
-Lophopyxidaceae
-Loranthaceae
-Loranthoideae
-Lowiaceae
-Ludwigioideae
-Luzuriagaceae
-Lythraceae
-Lythroideae
-Macarthuriaceae
-Mackinlayaceae
-Mackinlayoideae
-Maesaceae
-Maesoideae
-Magnoliaceae
-Magnoliales
-Magnolianae
-Magnolicae
-Magnoliidae # subclass of all angiosperms in Chase & Reveal 2009, of Magnoliopsida in Cronquist
-Magnoliids
-Magnoliophyta
-Magnoliopsida
-Maihuenioideae
-Malesherbiaceae
-Malpighiaceae
-Malpighiales
-Malpighioideae
-Malvaceae
-Malvales
-Malvids # APG informal clade
-Malvoideae
-Marantaceae
-Marcgraviaceae
-Marcgravioideae
-Martyniaceae
-Maundiaceae
-Mayacaceae
-Mazaceae
-Medusagynaceae
-Medusandraceae
-Melanophyllaceae
-Melanthiaceae
-Melastomataceae
-Melastomatoideae
-Meliaceae
-Melianthaceae
-Melioideae
-Meliosmoideae
-Memecylaceae
-Menispermaceae
-Menispermoideae
-Mentzelioideae
-Menyanthaceae
-Mesangiospermae # clade name used by NCBI, Cantino et al. 2007
-Mesembryanthemoideae
-Metteniusaceae
-Metteniusales
-Microteaceae
-Misodendraceae
-Mitrastemonaceae
-Mollinedioideae
-Molluginaceae
-Monimiaceae
-Monimioideae
-Monocot
-Monocots
-Monocotyl
-Monocotyledoneae
-Monotoideae
-Monotropoideae
-Montiaceae
-Montiniaceae
-Moraceae
-Morinaceae
-Moringaceae
-Morinoideae
-Morkillioideae
-Muntingiaceae
-Muntingioideae
-Musaceae
-Mutisioideae
-Myodocarpaceae
-Myoporaceae
-Myoporoideae
-Myricaceae
-Myristicaceae
-Myrothamnaceae
-Myrothamnanae
-Myrsinaceae # myrsine family (now Primulaceae)
-Myrsinoideae
-Myrtaceae
-Myrtales
-Myrtoideae
-Mystropetalaceae
-Namaceae
-Nandinoideae
-Nanodeaceae
-Nartheciaceae
-Nelsonioideae
-Nelumbonaceae
-Neotessmannioideae
-Nepenthaceae
-Neuradaceae
-Nicotianoideae
-Nitrariaceae
-Norantioideae
-Nothofagaceae
-Nupharoideae
-Nuytsioideae
-Nyctaginaceae
-Nymphaeaceae
-Nymphaeales
-Nymphaeanae
-Nymphaeles
-Nymphaeoideae
-Nyssaceae
-Ochnaceae
-Octoknemaceae
-Octonemaceae
-Olacaceae
-Oleaceae
-Oliniaceae
-Olisbeoideae
-Onagraceae
-Onagroideae
-Oncothecaceae
-Opiliaceae
-Opuloideae
-Opuntioideae
-Orchidaceae
-Orchidoideae # orchid subfamily (Orchidaceae)
-Orobanchaceae
-Oxalidaceae
-Oxalidales
-Pachysandroideae
-Paeoniaceae
-Pakaramaeoideae
-Pandaceae
-Pandanaceae
-Pandanales
-Papaveraceae
-Papaveroideae
-Paracryphiaceae
-Paracryphiales
-Parnassiaceae
-Parnassioideae
-Paropsioideae
-Passifloraceae
-Passifloroideae
-Paulowniaceae
-Pedaliaceae
-Peganaceae
-Pellicieraceae
-Peltantheraceae
-Penaeaceae
-Pennantiaceae
-Pentadiplandraceae
-Pentapetalae # clade name used by NCBI, Cantino et al. 2007
-Pentaphragmataceae
-Pentaphylacaceae
-Penthoraceae
-Peperomioideae
-Peraceae
-Pereskioideae
-Peridiscaceae
-Periplocoideae
-Persoonioideae
-Pertyoideae
-Petalonychoideae
-Petenaeaceae
-Petermanniaceae
-Petiveriaceae # pokeweed-relative family (Caryophyllales)
-Petrosaviaceae
-Petrosaviales
-Petrosaviidae # clade name used by NCBI, Cantino et al. 2007
-Phellinaceae
-Philesiaceae
-Philydraceae
-Phrymaceae
-Phyllanthaceae
-Phyllonomaceae
-Physenaceae
-Phytolaccaceae
-Phytolaccoideae
-Picramniaceae
-Picramniales
-Picramnioideae
-Picrodendraceae
-Pinguiculoideae
-Piperaceae
-Piperales
-Piperoideae
-Pittosporaceae
-Plagiopteraceae
-Plantaginaceae
-Platanaceae
-Platycaryoideae
-Platysace
-Plocospermataceae
-Plumbaginaceae
-Plumbaginoideae
-Poaceae
-Poales
-Podophylloideae
-Podostemaceae
-Podostemoideae
-Polemoniaceae
-Polemonioideae
-Polycnemoideae
-Polygalaceae
-Polygonaceae
-Polygonales # buckwheat family (now in Caryophyllales)
-Polygonoideae
-Polyosmaceae
-Polyosmoideae
-Pontederiaceae
-Portulacaceae
-Portulacarioideae
-Posidoniaceae
-Potamogetonaceae
-Pottingeriaceae
-Pottingerioideae
-Primulaceae
-Primulales # primrose family (now in Ericales)
-Primuloideae
-Prioniaceae
-Proteaceae
-Proteales
-Proteanae
-Proteoideae
-Psiloxylaceae
-Psiloxyloideae
-Pteleocarpaceae
-Pteridophyllaceae
-Pterostemonaceae
-Punicoideae
-Putranjivaceae
-Quiinaceae
-Quillajaceae
-Quintiniaceae
-Rafflesiaceae
-Ranunculaceae
-Ranunculales
-Ranunculanae
-Ranunculoideae
-Rapateaceae
-Rauvolfioideae
-Rehmanniaceae
-Resedaceae
-Restionaceae
-Rhabdodendraceae
-Rhamnaceae
-Rhamnales # buckthorn family (now in Rosales)
-Rhipogonaceae
-Rhizophoraceae
-Rhoipteleaceae
-Rhynchocalycaceae
-Rhynchothecaceae
-Ripogonaceae
-Rivinaceae
-Rivinoideae
-Roridulaceae
-Rosaceae
-Rosales
-Rosanae
-Rosids # APG informal clade
-Rosoideae
-Rousseaceae
-Rousseoideae
-Rubiaceae
-Rubiales # coffee/madder family (now in Gentianales)
-Rubioideae # rubiaceae subfamily
-Ruppiaceae
-Ruscaceae # ruscus family (now Asparagaceae)
-Ruschioideae
-Rutaceae
-Rutoideae
-Sabiaceae
-Sabioideae
-Salacioideae
-Salicaceae
-Salicornioideae
-Salsoloideae
-Salvadoraceae
-Sanangoideae
-Saniculoideae
-Santalaceae
-Santalales
-Santalanae
-Sapindaceae
-Sapindales
-Sapindoideae
-Sapotaceae
-Sarawakodendroideae
-Sarcobataceae
-Sarcolaenaceae
-Sarcophytoideae
-Sargentodoxoideae
-Sarraceniaceae
-Saurauioideae
-Saururaceae
-Saxifragaceae
-Saxifragales
-Saxifraganae
-Scheuchzeriaceae
-Schisandraceae
-Schismocarpoideae
-Schizanthoideae
-Schlegeliaceae
-Schoepfiaceae
-Scrophulariaceae
-Scrophulariales # figwort family (now in Lamiales)
-Scrophularioideae
-Scybalioideae
-Scyphostegiaceae
-Secamonoideae
-Seetzenioideae
-Sempervivoideae
-Sesuvioideae
-Setchellanthaceae
-Simaroubaceae
-Simmondsiaceae
-Siparunaceae
-Siparunoideae
-Sladeniaceae
-Smilacaceae
-Solanaceae
-Solanales
-Solanoideae
-Sparattanthelioideae
-Sparganiaceae
-Sphaerosepalaceae
-Sphalmioideae
-Sphenocleaceae
-Sphenostemonaceae
-Stachyuraceae
-Stackhousiaceae
-Stackhousioideae
-Staphyleaceae
-Staticoideae
-Stegnospermataceae
-Stemonaceae
-Stemonuraceae
-Sterculiaceae # cacao-relative family (now Malvaceae)
-Sterculioideae
-Stifftioideae
-Stilbaceae
-Stixaceae
-Stixidaceae
-Strasburgeriaceae
-Strelitziaceae
-Strephonematoideae
-Strombosiaceae
-Stylidiaceae
-Stylidioideae
-Styphelioideae
-Styracaceae
-Superasteridae # clade name used by NCBI, Cantino et al. 2007
-Superasterids # APG informal clade
-Superrosidae # clade name used by NCBI, Cantino et al. 2007
-Superrosids # APG informal clade
-Surianaceae
-Symmerioideae
-Symphionematoideae
-Symplocaceae
-Taccaceae
-Talinaceae
-Tamaricaceae
-Tapisciaceae
-Tarchonanthoideae
-Tecophilaeaceae
-Tepuianthaceae
-Tepuianthoideae
-Ternstroemiaceae
-Tetracarpaeaceae
-Tetracentraceae
-Tetracentroideae
-Tetrachondraceae
-Tetradiclidaceae
-Tetramelaceae
-Tetrameristaceae
-Thalictroideae
-Theaceae
-Theales # tea family and relatives (now in Malpighiales/Ericales)
-Themidaceae
-Theophrastaceae # theophrastia family (Ericales)
-Theophrastoideae
-Thesiaceae
-Thismiaceae
-Thomandersiaceae
-Thunbergioideae
-Thurniaceae
-Thymelaeaceae
-Thymelaeoideae
-Ticodendraceae
-Tiganophytaceae
-Tiliaceae # lime/linden family (now Malvaceae)
-Tilioideae
-Tofieldiaceae
-Torricelliaceae
-Tovariaceae
-Tremandraceae
-Tribelaceae
-Tribuloideae # tribulus-relative subfamily (Zygophyllaceae)
-Trichopodaceae
-Trigoniaceae
-Trimeniaceae
-Tristichaceae
-Tristichoideae
-Triuridaceae
-Trochodendraceae
-Trochodendrales
-Trochodendranae
-Trochodendroideae
-Tropaeolaceae
-Turneraceae
-Typhaceae
-Ulmaceae
-Umbelliferae
-Urticaceae
-Urticales # nettle/hemp family (now in Rosales)
-Urticoideae
-Utricularioideae
-Vaccinioideae
-Vahliaceae
-Vahliales
-Valerianaceae
-Valerianoideae
-Velloziaceae
-Verbenaceae
-Verhuellioideae
-Vernonioideae
-Viburnaceae
-Violaceae
-Violales # violet family (now in Malpighiales)
-Violoideae
-Viscaceae
-Vitaceae
-Vitales
-Vitoideae
-Vivianiaceae
-Vochysiaceae
-Weddellinoideae
-Wellstediaceae
-Wightiaceae
-Winteraceae
-Wunderlichioideae
-Xanthoceraceae
-Xanthocerataceae
-Xanthoceratoideae
-Xanthorrhoeaceae
-Xeronemataceae
-Ximeniaceae
-Xyridaceae
-Zanthoxyloideae
-Zingiberaceae
-Zingiberales
-Zippelioideae
-Zosteraceae
-Zygophyllaceae
-Zygophyllales
-Zygophylloideae
+Abolbodaceae # GBIF: synonym of Xyridaceae (Poales)
+Acalyphoideae # euphorb subfamily (Euphorbiaceae); COL: Malpighiales > Euphorbiaceae
+Acanthaceae # COL: Magnoliopsida > Lamiales
+Acanthogilioideae # COL: Ericales > Polemoniaceae
+Acanthoideae # COL: Lamiales > Acanthaceae
+Aceraceae # maple family (now Sapindaceae); COL: synonym of Sapindaceae (Sapindales)
+Achariaceae # COL: Magnoliopsida > Malpighiales
+Achatocarpaceae # COL: Magnoliopsida > Caryophyllales
+Acoraceae # COL: Liliopsida > Acorales
+Acorales # COL: Tracheophyta > Liliopsida
+Acrosanthoideae # COL: Caryophyllales > Aizoaceae
+Actinidiaceae # COL: Magnoliopsida > Ericales
+Actinidioideae # COL: Ericales > Actinidiaceae
+Adoxaceae # COL: synonym of Viburnaceae (Dipsacales)
+Adoxoideae # COL: Dipsacales > Viburnaceae
+Aextoxicaceae # COL: Magnoliopsida > Berberidopsidales
+Agapanthaceae # ITIS: synonym of Amaryllidaceae (Asparagales)
+Agavaceae # agave family (now Asparagaceae); ITIS: synonym of Asparagaceae (Asparagales)
+Agdestidaceae # COL: synonym of Phytolaccaceae (Caryophyllales)
+Aizoaceae # COL: Magnoliopsida > Caryophyllales
+Aizooideae # COL: Caryophyllales > Aizoaceae
+Akaniaceae # COL: Magnoliopsida > Capparales
+Alismataceae # COL: Liliopsida > Alismatales
+Alismatales # COL: Tracheophyta > Liliopsida
+Alliaceae # onion family (now Amaryllidaceae); ITIS: synonym of Amaryllidaceae (Asparagales)
+Alseuosmiaceae # COL: Magnoliopsida > Asterales
+Alstroemeriaceae # COL: Liliopsida > Liliales
+Altingiaceae # COL: Magnoliopsida > Saxifragales
+Alvaradooideae # COL: Picramniales > Picramniaceae
+Alzateaceae # COL: Magnoliopsida > Myrtales
+Amaranthaceae # COL: Magnoliopsida > Caryophyllales
+Amaranthoideae # COL: Caryophyllales > Amaranthaceae
+Amaryllidaceae # COL: Liliopsida > Asparagales
+Amborellaceae # COL: Magnoliopsida > Amborellales
+Amborellales # COL: Tracheophyta > Magnoliopsida
+Amborellanae # COL: synonym of Amborellales (Magnoliopsida)
+Amphorogynaceae # COL: Magnoliopsida > Santalales
+Amygdaloideae # COL: Rosales > Rosaceae
+Amyridoideae # COL: Sapindales > Rutaceae
+Anacampserotaceae # COL: Magnoliopsida > Caryophyllales
+Anacardiaceae # COL: Magnoliopsida > Sapindales
+Anarthriaceae # ITIS: Magnoliopsida > Poales
+Ancistrocladaceae # COL: Magnoliopsida > Caryophyllales
+Anemarrhenaceae # ITIS: synonym of Asparagaceae (Asparagales)
+Angiospermae # ITIS: synonym of Magnoliopsida (Tracheophyta)
+Angiosperms # WFO Plant List 2026-06: Plantae
+Anisophylleaceae # COL: Magnoliopsida > Cucurbitales
+Annonaceae # COL: Magnoliopsida > Magnoliales
+Anthericaceae # ITIS: synonym of Asparagaceae (Asparagales)
+Anthophyta # PBDB: synonym of Anthophyta (Tracheophyta)
+Antirrhinoideae # COL: Lamiales > Plantaginaceae
+Aphanopetalaceae # COL: Magnoliopsida > Saxifragales
+Aphloiaceae # COL: Magnoliopsida > Crossosomatales
+Aphyllanthaceae # ITIS: synonym of Asparagaceae (Asparagales)
+Apiaceae # COL: Magnoliopsida > Apiales
+Apiales # COL: Tracheophyta > Magnoliopsida
+Apioideae # COL: Apiales > Apiaceae
+Apocynaceae # COL: Magnoliopsida > Gentianales
+Apocynoideae # COL: Gentianales > Apocynaceae
+Apodanthaceae # COL: Magnoliopsida > Apodanthales
+Aponogetonaceae # COL: Liliopsida > Alismatales
+Aptandraceae # COL: Magnoliopsida > Santalales
+Aquifoliaceae # COL: Magnoliopsida > Aquifoliales
+Aquifoliales # COL: Tracheophyta > Magnoliopsida
+Araceae # COL: Liliopsida > Alismatales
+Araliaceae # COL: Magnoliopsida > Apiales
+Aralidiaceae # COL: synonym of Torricelliaceae (Apiales)
+Arbutoideae # COL: Ericales > Ericaceae
+Arecaceae # COL: Liliopsida > Arecales
+Arecales # COL: Tracheophyta > Liliopsida
+Argophyllaceae # COL: Magnoliopsida > Asterales
+Aristolochiaceae # COL: Magnoliopsida > Piperales
+Aristolochioideae # COL: synonym of Aristolochiaceae (Piperales)
+Asaraceae # COL: Magnoliopsida > Piperales
+Asaroideae # COL: synonym of Asareae (Piperales)
+Asclepiadaceae # milkweed family (now Apocynaceae); COL: synonym of Apocynaceae (Gentianales)
+Asclepiadoideae # COL: Gentianales > Apocynaceae
+Asparagaceae # COL: Liliopsida > Asparagales
+Asparagales # COL: Tracheophyta > Liliopsida
+Asphodelaceae # COL: Liliopsida > Asparagales
+Asteliaceae # COL: Liliopsida > Asparagales
+Asteraceae # COL: Magnoliopsida > Asterales
+Asterales # COL: Tracheophyta > Magnoliopsida
+Asteranae # COL: synonym of Asterales (Magnoliopsida)
+Asterids # APG informal clade; PBDB: Spermatophyta > Angiospermae
+Asteroideae # COL: Asterales > Asteraceae
+Asteropeiaceae # COL: Magnoliopsida > Caryophyllales
+Atherospermataceae # COL: Magnoliopsida > Laurales
+Aucubaceae # COL: synonym of Garryaceae (Garryales)
+Aurantioideae # COL: Sapindales > Rutaceae
+Austrobaileyaceae # COL: Magnoliopsida > Austrobaileyales
+Austrobaileyales # COL: Tracheophyta > Magnoliopsida
+Austrobaileyanae # COL: synonym of Austrobaileyales (Magnoliopsida)
+Avicenniaceae # COL: synonym of Acanthaceae (Lamiales)
+Avicennioideae # COL: Lamiales > Acanthaceae
+Azorelloideae # COL: Apiales > Apiaceae
+Balanitoideae # COL: Zygophyllales > Zygophyllaceae
+Balanopaceae # COL: Magnoliopsida > Malpighiales
+Balanophoraceae # COL: Magnoliopsida > Santalales
+Balanophoroideae # COL: Santalales > Balanophoraceae
+Balsaminaceae # COL: Magnoliopsida > Ericales
+Bambusoideae # bamboo subfamily (Poaceae); PBDB: Poales > Poaceae
+Barbeuiaceae # COL: Magnoliopsida > Caryophyllales
+Barbeyaceae # COL: Magnoliopsida > Rosales
+Barnadesioideae # COL: Asterales > Asteraceae
+Basellaceae # COL: Magnoliopsida > Caryophyllales
+Bataceae # COL: Magnoliopsida > Capparales
+Begoniaceae # COL: Magnoliopsida > Cucurbitales
+Behniaceae # ITIS: synonym of Asparagaceae (Asparagales)
+Bellendenoideae # COL: Proteales > Proteaceae
+Berberidaceae # COL: Magnoliopsida > Ranunculales
+Berberidanae # COL: synonym of Ranunculales (Magnoliopsida)
+Berberidoideae # COL: Ranunculales > Berberidaceae
+Berberidopsidaceae # COL: Magnoliopsida > Berberidopsidales
+Berberidopsidales # COL: Tracheophyta > Magnoliopsida
+Bersamaceae # COL: synonym of Francoaceae (Geraniales)
+Betoideae # COL: Caryophyllales > Amaranthaceae
+Betulaceae # COL: Magnoliopsida > Fagales
+Biebersteiniaceae # COL: Magnoliopsida > Sapindales
+Bignoniaceae # COL: Magnoliopsida > Lamiales
+Bixaceae # COL: Magnoliopsida > Malvales
+Blandfordiaceae # COL: Liliopsida > Asparagales
+Bombacaceae # kapok/balsa family (now Malvaceae); COL: synonym of Malvaceae (Malvales)
+Bombacoideae # COL: Malvales > Malvaceae
+Bonnetiaceae # COL: Magnoliopsida > Malpighiales
+Boraginaceae # COL: Magnoliopsida > Boraginales
+Boraginales # COL: Tracheophyta > Magnoliopsida
+Boraginoideae # COL: Boraginales > Boraginaceae
+Borthwickiaceae # COL: Magnoliopsida > Capparales
+Boryaceae # COL: Liliopsida > Asparagales
+Brassicaceae # COL: Magnoliopsida > Capparales
+Brassicales # COL: synonym of Capparales (Magnoliopsida)
+Bretschneideraceae # COL: synonym of Akaniaceae (Capparales)
+Bromeliaceae # COL: Liliopsida > Poales
+Brownlowioideae # COL: Malvales > Malvaceae
+Brunelliaceae # COL: Magnoliopsida > Oxalidales
+Bruniaceae # COL: Magnoliopsida > Bruniales
+Bruniales # COL: Tracheophyta > Magnoliopsida
+Brunonioideae # COL: Asterales > Goodeniaceae
+Buddlejaceae # COL: synonym of Scrophulariaceae (Lamiales)
+Buddlejoideae # COL: synonym of Buddlejeae (Lamiales)
+Burmanniaceae # COL: Liliopsida > Dioscoreales
+Burseraceae # COL: Magnoliopsida > Sapindales
+Butomaceae # COL: Liliopsida > Alismatales
+Buxaceae # COL: Magnoliopsida > Buxales
+Buxales # COL: Tracheophyta > Magnoliopsida
+Buxanae # COL: synonym of Buxales (Magnoliopsida)
+Buxoideae # COL: Buxales > Buxaceae
+Byblidaceae # COL: Magnoliopsida > Lamiales
+Byrsonimoideae # COL: Malpighiales > Malpighiaceae
+Byttnerioideae # COL: Malvales > Malvaceae
+Cabombaceae # COL: Magnoliopsida > Nymphaeales
+Cabomboideae # COL: Nymphaeales > Cabombaceae
+Cactaceae # COL: Magnoliopsida > Caryophyllales
+Cactoideae # COL: Caryophyllales > Cactaceae
+Caesalpiniaceae # caesalpinia subfamily/family (now Fabaceae); ITIS: synonym of Fabaceae (Fabales)
+Calceolariaceae # COL: Magnoliopsida > Lamiales
+Callitrichaceae # water-starwort family (now Plantaginaceae); COL: synonym of Plantaginaceae (Lamiales)
+Callitrichoideae # COL: Lamiales > Plantaginaceae
+Calophyllaceae # COL: Magnoliopsida > Malpighiales
+Calycanthaceae # COL: Magnoliopsida > Laurales
+Calycanthoideae # COL: Laurales > Calycanthaceae
+Calyceraceae # COL: Magnoliopsida > Asterales
+Calyptrothecoideae # COL: Caryophyllales > Didiereaceae
+Campanulaceae # COL: Magnoliopsida > Asterales
+Campanulales # COL: synonym of Asterales (Magnoliopsida)
+Campanulids # APG informal clade; OTT: Tracheophyta > Magnoliopsida
+Campynemataceae # COL: Liliopsida > Liliales
+Canellaceae # COL: Magnoliopsida > Canellales
+Canellales # COL: Tracheophyta > Magnoliopsida
+Cannabaceae # COL: Magnoliopsida > Rosales
+Cannaceae # COL: Liliopsida > Zingiberales
+Capparaceae # COL: Magnoliopsida > Capparales
+Capparales # COL: Tracheophyta > Magnoliopsida
+Capparidaceae # ITIS: synonym of Capparaceae (Brassicales)
+Caprifoliaceae # COL: Magnoliopsida > Dipsacales
+Caprifolioideae # COL: Dipsacales > Caprifoliaceae
+Cardiopteridaceae # COL: Magnoliopsida > Cardiopteridales
+Cardiopteridales # COL: Tracheophyta > Magnoliopsida
+Carduoideae # COL: Asterales > Asteraceae
+Caricaceae # COL: Magnoliopsida > Capparales
+Carlemanniaceae # COL: Magnoliopsida > Lamiales
+Carpodetaceae # COL: synonym of Rousseaceae (Asterales)
+Carpodetoideae # COL: Asterales > Rousseaceae
+Caryocaraceae # COL: Magnoliopsida > Malpighiales
+Caryophyllaceae # COL: Magnoliopsida > Caryophyllales
+Caryophyllales # COL: Tracheophyta > Magnoliopsida
+Caryophyllanae # ITIS: Tracheophyta > Magnoliopsida
+Cassiopoideae # COL: Ericales > Ericaceae
+Casuarinaceae # COL: Magnoliopsida > Fagales
+Cecropiaceae # COL: synonym of Urticaceae (Rosales)
+Cecropioideae # COL: synonym of Urticaceae (Rosales)
+Cedreloideae # COL: Sapindales > Meliaceae
+Celastraceae # COL: Magnoliopsida > Celastrales
+Celastrales # COL: Tracheophyta > Magnoliopsida
+Celastroideae # COL: Celastrales > Celastraceae
+Celtidaceae # COL: synonym of Cannabaceae (Rosales)
+Centrolepidaceae # ITIS: Magnoliopsida > Poales
+Centroplacaceae # COL: Magnoliopsida > Malpighiales
+Cephalotaceae # COL: Magnoliopsida > Oxalidales
+Ceratophyllaceae # COL: Magnoliopsida > Ceratophyllales
+Ceratophyllales # COL: Tracheophyta > Magnoliopsida
+Ceratophyllanae # COL: synonym of Ceratophyllales (Magnoliopsida)
+Cercidiphyllaceae # COL: Magnoliopsida > Saxifragales
+Cervantesiaceae # COL: Magnoliopsida > Santalales
+Cestroideae # COL: Solanales > Solanaceae
+Chasmantheroideae # COL: Ranunculales > Menispermaceae
+Chelonoideae # COL: Lamiales > Plantaginaceae
+Chenopodiaceae # goosefoot family (now Amaranthaceae); COL: synonym of Amaranthaceae (Caryophyllales)
+Chenopodioideae # COL: Caryophyllales > Amaranthaceae
+Chloranthaceae # COL: Magnoliopsida > Chloranthales
+Chloranthales # COL: Tracheophyta > Magnoliopsida
+Chrysobalanaceae # COL: Magnoliopsida > Malpighiales
+Cichorioideae # COL: Asterales > Asteraceae
+Circaeasteraceae # COL: Magnoliopsida > Ranunculales
+Circaeasteroideae # COL: Ranunculales > Circaeasteraceae
+Cistaceae # COL: Magnoliopsida > Malvales
+Clematoclethroideae # COL: Ericales > Actinidiaceae
+Cleomaceae # COL: Magnoliopsida > Capparales
+Clethraceae # COL: Magnoliopsida > Ericales
+Clusiaceae # COL: Magnoliopsida > Malpighiales
+Cneoroideae # COL: Sapindales > Rutaceae
+Cobaeoideae # COL: Ericales > Polemoniaceae
+Cochlospermaceae # COL: synonym of Bixaceae (Malvales)
+Codonaceae # COL: Magnoliopsida > Boraginales
+Colchicaceae # COL: Liliopsida > Liliales
+Coldeniaceae # COL: Magnoliopsida > Boraginales
+Columelliaceae # COL: Magnoliopsida > Columelliales
+Comandraceae # COL: Magnoliopsida > Santalales
+Combretaceae # COL: Magnoliopsida > Myrtales
+Combretoideae # COL: Myrtales > Combretaceae
+Commelinaceae # COL: Liliopsida > Commelinales
+Commelinales # COL: Tracheophyta > Liliopsida
+Commelinids # APG informal clade; PBDB: Spermatophyta > Angiospermae
+Compositae # COL: synonym of Asteraceae (Asterales)
+Connaraceae # COL: Magnoliopsida > Oxalidales
+Connaroideae # COL: Oxalidales > Connaraceae
+Convallariaceae # lily-of-the-valley family (now Asparagaceae); ITIS: synonym of Asparagaceae (Asparagales)
+Convolvulaceae # COL: Magnoliopsida > Solanales
+Convolvuloideae # COL: Solanales > Convolvulaceae
+Coptidoideae # COL: Ranunculales > Ranunculaceae
+Corbichoniaceae # COL: synonym of Lophiocarpaceae (Caryophyllales)
+Cordiaceae # COL: Magnoliopsida > Boraginales
+Core eudicots # APG informal clade; NCBI: synonym of Gunneridae (Streptophyta)
+Coriariaceae # COL: Magnoliopsida > Cucurbitales
+Corispermoideae # COL: Caryophyllales > Amaranthaceae
+Cornaceae # COL: Magnoliopsida > Cornales
+Cornales # COL: Tracheophyta > Magnoliopsida
+Corsiaceae # COL: Liliopsida > Liliales
+Corymbioideae # COL: Asterales > Asteraceae
+Corynocarpaceae # COL: Magnoliopsida > Cucurbitales
+Costaceae # COL: Liliopsida > Zingiberales
+Coulaceae # COL: Magnoliopsida > Santalales
+Crassulaceae # COL: Magnoliopsida > Saxifragales
+Crassuloideae # COL: Saxifragales > Crassulaceae
+Crossosomataceae # COL: Magnoliopsida > Crossosomatales
+Crossosomatales # COL: Tracheophyta > Magnoliopsida
+Cruciferae # COL: synonym of Brassicaceae (Capparales)
+Crypteroniaceae # COL: Magnoliopsida > Myrtales
+Ctenolophonaceae # COL: Magnoliopsida > Malpighiales
+Cucurbitaceae # COL: Magnoliopsida > Cucurbitales
+Cucurbitales # COL: Tracheophyta > Magnoliopsida
+Cunoniaceae # COL: Magnoliopsida > Oxalidales
+Curtisiaceae # COL: Magnoliopsida > Cornales
+Cyclanthaceae # COL: Liliopsida > Pandanales
+Cyclocheilaceae # COL: synonym of Orobanchaceae (Lamiales)
+Cymodoceaceae # COL: Liliopsida > Alismatales
+Cynoglossoideae # COL: Boraginales > Boraginaceae
+Cynomoriaceae # COL: Magnoliopsida > Saxifragales
+Cyperaceae # COL: Liliopsida > Poales
+Cyperales # sedges and grasses (now in Poales); ITIS: synonym of Poales (Magnoliopsida)
+Cyrillaceae # COL: Magnoliopsida > Ericales
+Cytinaceae # COL: Magnoliopsida > Malvales
+Dampieroideae # COL: Asterales > Goodeniaceae
+Danthonioideae # oatgrass subfamily (Poaceae); TAXREF: Poales > Poaceae
+Daphniphyllaceae # COL: Magnoliopsida > Saxifragales
+Dasypogonaceae # COL: Magnoliopsida > Dasypogonales
+Datiscaceae # COL: Magnoliopsida > Cucurbitales
+Degeneriaceae # COL: Magnoliopsida > Magnoliales
+Desfontainiaceae # COL: synonym of Columelliaceae (Columelliales)
+Diapensiaceae # COL: Magnoliopsida > Ericales
+Dichapetalaceae # COL: Magnoliopsida > Malpighiales
+Dicomoideae # COL: Asterales > Asteraceae
+Dicot # not found in ChecklistBank
+Dicots # not found in ChecklistBank
+Dicotyl # not found in ChecklistBank
+Dicotyledoneae # ITIS: synonym of Magnoliopsida (Tracheophyta)
+Didiereaceae # COL: Magnoliopsida > Caryophyllales
+Didiereoideae # COL: Caryophyllales > Didiereaceae
+Didymelaceae # COL: Magnoliopsida > Buxales
+Didymocarpoideae # COL: Lamiales > Gesneriaceae
+Diegodendraceae # COL: synonym of Bixaceae (Malvales)
+Diervillaceae # COL: synonym of Caprifoliaceae (Dipsacales)
+Diervilloideae # COL: Dipsacales > Caprifoliaceae
+Digitalidoideae # COL: Lamiales > Plantaginaceae
+Dilleniaceae # COL: Magnoliopsida > Dilleniales
+Dilleniales # COL: Tracheophyta > Magnoliopsida
+Dillenianae # COL: synonym of Dilleniales (Magnoliopsida)
+Dioncophyllaceae # COL: Magnoliopsida > Caryophyllales
+Dioscoreaceae # COL: Liliopsida > Dioscoreales
+Dioscoreales # COL: Tracheophyta > Liliopsida
+Dipentodontaceae # COL: Magnoliopsida > Huerteales
+Dipsacaceae # COL: synonym of Caprifoliaceae (Dipsacales)
+Dipsacales # COL: Tracheophyta > Magnoliopsida
+Dipsacoideae # COL: Dipsacales > Caprifoliaceae
+Dipterocarpaceae # COL: Magnoliopsida > Malvales
+Dipterocarpoideae # COL: Malvales > Dipterocarpaceae
+Dirachmaceae # COL: Magnoliopsida > Rosales
+Disanthoideae # COL: Saxifragales > Hamamelidaceae
+Dodonaeoideae # COL: Sapindales > Sapindaceae
+Dombeyoideae # COL: Malvales > Malvaceae
+Donatiaceae # COL: Magnoliopsida > Asterales
+Donatioideae # COL: synonym of Donatiaceae (Asterales)
+Doryanthaceae # COL: Liliopsida > Asparagales
+Droseraceae # COL: Magnoliopsida > Caryophyllales
+Drosophyllaceae # COL: Magnoliopsida > Caryophyllales
+Dryadoideae # COL: Rosales > Rosaceae
+Duckeodendroideae # COL: Solanales > Solanaceae
+Ebenaceae # COL: Magnoliopsida > Ericales
+Ebenales # ebony and relatives (now in Ericales); COL: synonym of Ericales (Magnoliopsida)
+Ecdeiocoleaceae # COL: Liliopsida > Poales
+Echiochiloideae # COL: Boraginales > Boraginaceae
+Ehretiaceae # COL: Magnoliopsida > Boraginales
+Elaeagnaceae # COL: Magnoliopsida > Rosales
+Elaeocarpaceae # COL: Magnoliopsida > Oxalidales
+Elatinaceae # COL: Magnoliopsida > Malpighiales
+Emblingiaceae # COL: Magnoliopsida > Capparales
+Engelhardioideae # COL: Fagales > Juglandaceae
+Enkianthoideae # COL: Ericales > Ericaceae
+Epidendroideae # orchid subfamily (Orchidaceae); PBDB: Asparagales > Orchidaceae
+Eremosynaceae # COL: Magnoliopsida > Escalloniales
+Eremosynoideae # COL: synonym of Eremosynaceae (Escalloniales)
+Ericaceae # COL: Magnoliopsida > Ericales
+Ericales # COL: Tracheophyta > Magnoliopsida
+Ericoideae # COL: Ericales > Ericaceae
+Eriocaulaceae # COL: Liliopsida > Poales
+Eriogonoideae # COL: Caryophyllales > Polygonaceae
+Erythropalaceae # COL: Magnoliopsida > Santalales
+Erythroxylaceae # COL: Magnoliopsida > Malpighiales
+Escalloniaceae # COL: Magnoliopsida > Escalloniales
+Escalloniales # COL: Tracheophyta > Magnoliopsida
+Escallonioideae # COL: Escalloniales > Escalloniaceae
+Eucnidoideae # COL: Cornales > Loasaceae
+Eucommiaceae # COL: Magnoliopsida > Garryales
+Eudicots # Artsnavnebasen: Plantae > Magnoliophyta
+Eudicotyledons # clade name used by NCBI, Cantino et al. 2007; GBIF: synonym of Magnoliopsida (Tracheophyta)
+Euphorbiaceae # COL: Magnoliopsida > Malpighiales
+Euphorbiales # euphorbs (now in Malpighiales); COL: synonym of Malpighiales (Magnoliopsida)
+Euphroniaceae # COL: Magnoliopsida > Malpighiales
+Eupomatiaceae # COL: Magnoliopsida > Magnoliales
+Eupteleaceae # COL: Magnoliopsida > Ranunculales
+Exbucklandioideae # COL: Saxifragales > Hamamelidaceae
+Fabaceae # COL: Magnoliopsida > Fabales
+Fabales # COL: Tracheophyta > Magnoliopsida
+Fabids # APG informal clade; OTT: Tracheophyta > Magnoliopsida
+Fagaceae # COL: Magnoliopsida > Fagales
+Fagales # COL: Tracheophyta > Magnoliopsida
+Famatinanthoideae # COL: Asterales > Asteraceae
+Flacourtiaceae # flacourtia family (now Salicaceae); COL: synonym of Salicaceae (Malpighiales)
+Flagellariaceae # COL: Liliopsida > Poales
+Fouquieriaceae # COL: Magnoliopsida > Ericales
+Francoaceae # COL: Magnoliopsida > Geraniales
+Frankeniaceae # COL: Magnoliopsida > Caryophyllales
+Fumariaceae # fumitory family (now Papaveraceae); COL: synonym of Papaveraceae (Ranunculales)
+Fumarioideae # COL: Ranunculales > Papaveraceae
+Fusispermoideae # COL: Malpighiales > Violaceae
+Garryaceae # COL: Magnoliopsida > Garryales
+Garryales # COL: Tracheophyta > Magnoliopsida
+Geissolomataceae # COL: Magnoliopsida > Crossosomatales
+Gelsemiaceae # COL: Magnoliopsida > Gentianales
+Genliseoideae # COL: Lamiales > Lentibulariaceae
+Gentianaceae # COL: Magnoliopsida > Gentianales
+Gentianales # COL: Tracheophyta > Magnoliopsida
+Geraniaceae # COL: Magnoliopsida > Geraniales
+Geraniales # COL: Tracheophyta > Magnoliopsida
+Gerrardinaceae # COL: Magnoliopsida > Huerteales
+Gesneriaceae # COL: Magnoliopsida > Lamiales
+Gesnerioideae # COL: Lamiales > Gesneriaceae
+Gisekiaceae # COL: Magnoliopsida > Caryophyllales
+Glaucidioideae # COL: Ranunculales > Ranunculaceae
+Globularioideae # COL: Lamiales > Plantaginaceae
+Glossocalycoideae # COL: synonym of Siparunaceae (Laurales)
+Gochnatioideae # COL: Asterales > Asteraceae
+Goetzeoideae # COL: Solanales > Solanaceae
+Gomortegaceae # COL: Magnoliopsida > Laurales
+Gomphogynoideae # COL: synonym of Gomphogyneae (Cucurbitales)
+Gonystyloideae # COL: Malvales > Thymelaeaceae
+Goodeniaceae # COL: Magnoliopsida > Asterales
+Goodenioideae # COL: Asterales > Goodeniaceae
+Goupiaceae # COL: Magnoliopsida > Malpighiales
+Gramineae # ITIS: synonym of Poaceae (Poales)
+Gratioloideae # COL: Lamiales > Plantaginaceae
+Grevilleoideae # COL: Proteales > Proteaceae
+Grewioideae # COL: Malvales > Malvaceae
+Greyiaceae # COL: synonym of Francoaceae (Geraniales)
+Griseliniaceae # COL: Magnoliopsida > Apiales
+Gronovioideae # COL: Cornales > Loasaceae
+Grossulariaceae # COL: Magnoliopsida > Saxifragales
+Grubbiaceae # COL: Magnoliopsida > Cornales
+Guamatelaceae # COL: Magnoliopsida > Crossosomatales
+Gunneraceae # COL: Magnoliopsida > Gunnerales
+Gunnerales # COL: Tracheophyta > Magnoliopsida
+Gunneridae # clade name used by NCBI, Cantino et al. 2007; NCBI: Streptophyta > Magnoliopsida
+Gymnarrhenoideae # COL: Asterales > Asteraceae
+Gyrocarpoideae # COL: Laurales > Hernandiaceae
+Gyrostemonaceae # COL: Magnoliopsida > Capparales
+Haemodoraceae # COL: Liliopsida > Commelinales
+Halesiaceae # COL: synonym of Styracaceae (Ericales)
+Halophytaceae # COL: Magnoliopsida > Caryophyllales
+Haloragaceae # COL: Magnoliopsida > Saxifragales
+Hamamelidaceae # COL: Magnoliopsida > Saxifragales
+Hamamelidoideae # COL: Saxifragales > Hamamelidaceae
+Hanguanaceae # COL: Liliopsida > Commelinales
+Haplophylloideae # COL: Sapindales > Rutaceae
+Haptanthaceae # COL: synonym of Pachysandroideae (Buxales)
+Harrimanelloideae # COL: Ericales > Ericaceae
+Hecastocleidoideae # COL: Asterales > Asteraceae
+Heliconiaceae # COL: Liliopsida > Zingiberales
+Helicteroideae # COL: Malvales > Malvaceae
+Heliotropiaceae # COL: Magnoliopsida > Boraginales
+Helosoideae # not found in ChecklistBank
+Helwingiaceae # COL: Magnoliopsida > Aquifoliales
+Hemerocallidaceae # daylily family (now Asphodelaceae); ITIS: synonym of Asphodelaceae (Asparagales)
+Hemimeridoideae # COL: synonym of Hemimerideae (Lamiales)
+Hermas # BHL: Apiales > Apiaceae
+Hernandiaceae # COL: Magnoliopsida > Laurales
+Hernandioideae # COL: Laurales > Hernandiaceae
+Herreriaceae # ITIS: synonym of Asparagaceae (Asparagales)
+Hesperocallidaceae # ITIS: synonym of Asparagaceae (Asparagales)
+Heteropyxidaceae # COL: synonym of Myrtaceae (Myrtales)
+Himantandraceae # COL: Magnoliopsida > Magnoliales
+Hippocastanaceae # horse-chestnut family (now Sapindaceae); COL: synonym of Sapindaceae (Sapindales)
+Hippocastanoideae # COL: Sapindales > Sapindaceae
+Hippocrateoideae # COL: Celastrales > Celastraceae
+Hoplestigmataceae # COL: Magnoliopsida > Boraginales
+Hortonioideae # COL: Laurales > Monimiaceae
+Huaceae # COL: Magnoliopsida > Huales
+Huerteales # COL: Tracheophyta > Magnoliopsida
+Hugoniaceae # COL: synonym of Linaceae (Malpighiales)
+Humbertioideae # COL: Solanales > Convolvulaceae
+Humiriaceae # COL: Magnoliopsida > Malpighiales
+Hyacinthaceae # hyacinth family (now Asparagaceae); ITIS: synonym of Asparagaceae (Asparagales)
+Hydatellaceae # COL: Magnoliopsida > Nymphaeales
+Hydnoraceae # COL: Magnoliopsida > Piperales
+Hydrangeaceae # COL: Magnoliopsida > Cornales
+Hydrangeoideae # COL: Cornales > Hydrangeaceae
+Hydrastidoideae # COL: Ranunculales > Ranunculaceae
+Hydrocharitaceae # COL: Liliopsida > Alismatales
+Hydroleaceae # COL: Magnoliopsida > Solanales
+Hydropeltoideae # COL: Nymphaeales > Cabombaceae
+Hydrophyllaceae # COL: Magnoliopsida > Boraginales
+Hydrostachyaceae # COL: Magnoliopsida > Cornales
+Hypericaceae # COL: Magnoliopsida > Malpighiales
+Hypoxidaceae # COL: Liliopsida > Asparagales
+Hypseocharitaceae # COL: synonym of Geraniaceae (Geraniales)
+Icacinaceae # COL: Magnoliopsida > Icacinales
+Icacinales # COL: Tracheophyta > Magnoliopsida
+Icanilales # ALF: Tracheophyta > Magnoliopsida
+Idiospermoideae # COL: Laurales > Calycanthaceae
+Illiciaceae # ITIS: synonym of Schisandraceae (Austrobaileyales)
+Iridaceae # COL: Liliopsida > Asparagales
+Irvingiaceae # COL: Magnoliopsida > Malpighiales
+Iteaceae # COL: Magnoliopsida > Saxifragales
+Ixerbaceae # COL: Magnoliopsida > Crossosomatales
+Ixioliriaceae # COL: Liliopsida > Asparagales
+Ixiolirionaceae # Wikidata: Magnoliopsida > Iridales
+Ixonanthaceae # COL: Magnoliopsida > Malpighiales
+Jamesioideae # COL: Cornales > Hydrangeaceae
+Japonoliriaceae # IRMNG: synonym of Petrosaviaceae (Petrosaviales)
+Joinvilleaceae # COL: Liliopsida > Poales
+Jollydoroideae # COL: synonym of Connaroideae (Oxalidales)
+Juglandaceae # COL: Magnoliopsida > Fagales
+Juglandales # walnuts, hickories (now in Fagales); COL: synonym of Fagales (Magnoliopsida)
+Juglandoideae # COL: Fagales > Juglandaceae
+Juncaceae # COL: Liliopsida > Poales
+Juncaginaceae # COL: Liliopsida > Alismatales
+Kalanchoideae # COL: synonym of Cotyledonoideae (Saxifragales)
+Kaliphoraceae # COL: synonym of Montiniaceae (Solanales)
+Kewaceae # COL: Magnoliopsida > Caryophyllales
+Kibessioideae # COL: Myrtales > Melastomataceae
+Kingdoniaceae # COL: synonym of Kingdonioideae (Ranunculales)
+Kingdonioideae # COL: Ranunculales > Circaeasteraceae
+Kirkiaceae # COL: Magnoliopsida > Sapindales
+Klotzschia # BHL: Apiales > Apiaceae
+Koeberliniaceae # COL: Magnoliopsida > Capparales
+Krameriaceae # COL: Magnoliopsida > Zygophyllales
+Labiatae # COL: synonym of Lamiaceae (Lamiales)
+Lacistemaceae # not found in ChecklistBank
+Lacistemataceae # COL: Magnoliopsida > Malpighiales
+Lactoridaceae # COL: Magnoliopsida > Piperales
+Lactoridoideae # Wikidata: Piperales > Aristolochiaceae
+Lamiaceae # COL: Magnoliopsida > Lamiales
+Lamiales # COL: Tracheophyta > Magnoliopsida
+Lamiids # APG informal clade; PBDB: Spermatophyta > Angiospermae
+Lanariaceae # COL: Liliopsida > Asparagales
+Lardizabalaceae # COL: Magnoliopsida > Ranunculales
+Lardizabaloideae # COL: Ranunculales > Lardizabalaceae
+Larreoideae # COL: Zygophyllales > Zygophyllaceae
+Lauraceae # COL: Magnoliopsida > Laurales
+Laurales # COL: Tracheophyta > Magnoliopsida
+Laxmanniaceae # ITIS: synonym of Asparagaceae (Asparagales)
+Lecythidaceae # COL: Magnoliopsida > Ericales
+Ledocarpaceae # COL: synonym of Francoaceae (Geraniales)
+Leeoideae # COL: Vitales > Vitaceae
+Leguminosae # ITIS: synonym of Fabaceae (Fabales)
+Lemnaceae # duckweed family (now Araceae); ITIS: synonym of Araceae (Alismatales)
+Lennoaceae # COL: Magnoliopsida > Boraginales
+Lentibulariaceae # COL: Magnoliopsida > Lamiales
+Lepidobotryaceae # COL: Magnoliopsida > Celastrales
+Leptaulaceae # COL: synonym of Cardiopteridaceae (Cardiopteridales)
+Lepuropetalaceae # COL: synonym of Celastraceae (Celastrales)
+Lepuropetaloideae # COL: Celastrales > Celastraceae
+Leuenbergerioideae # TAXREF: Caryophyllales > Cactaceae
+Liliaceae # COL: Liliopsida > Liliales
+Liliales # COL: Tracheophyta > Liliopsida
+Lilianae # ITIS: Tracheophyta > Magnoliopsida
+Liliopsida # COL: Plantae > Tracheophyta
+Limeaceae # COL: Magnoliopsida > Caryophyllales
+Limnanthaceae # COL: Magnoliopsida > Capparales
+Limnocharitaceae # ITIS: synonym of Alismataceae (Alismatales)
+Linaceae # COL: Magnoliopsida > Malpighiales
+Lindenbergiaceae # COL: synonym of Orobanchaceae (Lamiales)
+Linderniaceae # COL: Magnoliopsida > Lamiales
+Linnaeaceae # COL: synonym of Caprifoliaceae (Dipsacales)
+Linnaeoideae # COL: Dipsacales > Caprifoliaceae
+Lissocarpaceae # COL: synonym of Ebenaceae (Ericales)
+Loasaceae # COL: Magnoliopsida > Cornales
+Loasoideae # COL: Cornales > Loasaceae
+Lobeliaceae # COL: synonym of Campanulaceae (Asterales)
+Loganiaceae # COL: Magnoliopsida > Gentianales
+Lophiocarpaceae # COL: Magnoliopsida > Caryophyllales
+Lophophytoideae # COL: Santalales > Balanophoraceae
+Lophopyxidaceae # COL: Magnoliopsida > Malpighiales
+Loranthaceae # COL: Magnoliopsida > Santalales
+Loranthoideae # COL: Santalales > Loranthaceae
+Lowiaceae # COL: Liliopsida > Zingiberales
+Ludwigioideae # COL: Myrtales > Onagraceae
+Luzuriagaceae # IRMNG: synonym of Alstroemeriaceae (Liliales)
+Lythraceae # COL: Magnoliopsida > Myrtales
+Lythroideae # COL: Myrtales > Lythraceae
+Macarthuriaceae # COL: Magnoliopsida > Caryophyllales
+Mackinlayaceae # COL: synonym of Apiaceae (Apiales)
+Mackinlayoideae # COL: Apiales > Apiaceae
+Maesaceae # COL: synonym of Primulaceae (Ericales)
+Maesoideae # COL: Ericales > Primulaceae
+Magnoliaceae # COL: Magnoliopsida > Magnoliales
+Magnoliales # COL: Tracheophyta > Magnoliopsida
+Magnolianae # COL: synonym of Magnoliales (Magnoliopsida)
+Magnolicae # not found in ChecklistBank
+Magnoliidae # subclass of all angiosperms in Chase & Reveal 2009, of Magnoliopsida in Cronquist; COL: synonym of Magnoliales (Magnoliopsida)
+Magnoliids # Artsnavnebasen: Plantae > Magnoliophyta
+Magnoliophyta # COL: synonym of Magnoliales (Magnoliopsida)
+Magnoliopsida # COL: Plantae > Tracheophyta
+Maihuenioideae # COL: Caryophyllales > Cactaceae
+Malesherbiaceae # COL: synonym of Passifloraceae (Malpighiales)
+Malpighiaceae # COL: Magnoliopsida > Malpighiales
+Malpighiales # COL: Tracheophyta > Magnoliopsida
+Malpighioideae # COL: Malpighiales > Malpighiaceae
+Malvaceae # COL: Magnoliopsida > Malvales
+Malvales # COL: Tracheophyta > Magnoliopsida
+Malvids # APG informal clade; PBDB: Spermatophyta > Angiospermae
+Malvoideae # COL: Malvales > Malvaceae
+Marantaceae # COL: Liliopsida > Zingiberales
+Marcgraviaceae # COL: Magnoliopsida > Ericales
+Marcgravioideae # COL: Ericales > Marcgraviaceae
+Martyniaceae # COL: Magnoliopsida > Lamiales
+Maundiaceae # COL: Liliopsida > Alismatales
+Mayacaceae # COL: Liliopsida > Poales
+Mazaceae # COL: Magnoliopsida > Lamiales
+Medusagynaceae # COL: synonym of Ochnaceae (Malpighiales)
+Medusandraceae # COL: synonym of Peridiscaceae (Saxifragales)
+Melanophyllaceae # COL: synonym of Torricelliaceae (Apiales)
+Melanthiaceae # COL: Liliopsida > Liliales
+Melastomataceae # COL: Magnoliopsida > Myrtales
+Melastomatoideae # COL: Myrtales > Melastomataceae
+Meliaceae # COL: Magnoliopsida > Sapindales
+Melianthaceae # COL: synonym of Melianthoideae (Geraniales)
+Melioideae # COL: Sapindales > Meliaceae
+Meliosmoideae # COL: Proteales > Sabiaceae
+Memecylaceae # COL: synonym of Melastomataceae (Myrtales)
+Menispermaceae # COL: Magnoliopsida > Ranunculales
+Menispermoideae # COL: Ranunculales > Menispermaceae
+Mentzelioideae # COL: Cornales > Loasaceae
+Menyanthaceae # COL: Magnoliopsida > Asterales
+Mesangiospermae # clade name used by NCBI, Cantino et al. 2007; NCBI: Streptophyta > Magnoliopsida
+Mesembryanthemoideae # COL: Caryophyllales > Aizoaceae
+Metteniusaceae # COL: Magnoliopsida > Metteniusales
+Metteniusales # COL: Tracheophyta > Magnoliopsida
+Microteaceae # COL: Magnoliopsida > Caryophyllales
+Misodendraceae # COL: Magnoliopsida > Santalales
+Mitrastemonaceae # COL: Magnoliopsida > Ericales
+Mollinedioideae # COL: Laurales > Monimiaceae
+Molluginaceae # COL: Magnoliopsida > Caryophyllales
+Monimiaceae # COL: Magnoliopsida > Laurales
+Monimioideae # COL: Laurales > Monimiaceae
+Monocot # not found in ChecklistBank
+Monocots # Artsnavnebasen: Plantae > Magnoliophyta
+Monocotyl # not found in ChecklistBank
+Monocotyledoneae # ITIS: synonym of Lilianae (Tracheophyta)
+Monotoideae # COL: Malvales > Dipterocarpaceae
+Monotropoideae # COL: Ericales > Ericaceae
+Montiaceae # COL: Magnoliopsida > Caryophyllales
+Montiniaceae # COL: Magnoliopsida > Solanales
+Moraceae # COL: Magnoliopsida > Rosales
+Morinaceae # COL: synonym of Caprifoliaceae (Dipsacales)
+Moringaceae # COL: Magnoliopsida > Capparales
+Morinoideae # COL: Dipsacales > Caprifoliaceae
+Morkillioideae # COL: Zygophyllales > Zygophyllaceae
+Muntingiaceae # COL: Magnoliopsida > Malvales
+Muntingioideae # COL: Malvales > Muntingiaceae
+Musaceae # COL: Liliopsida > Zingiberales
+Mutisioideae # COL: Asterales > Asteraceae
+Myodocarpaceae # COL: Magnoliopsida > Apiales
+Myoporaceae # COL: synonym of Scrophulariaceae (Lamiales)
+Myoporoideae # COL: synonym of Myoporeae (Lamiales)
+Myricaceae # COL: Magnoliopsida > Fagales
+Myristicaceae # COL: Magnoliopsida > Magnoliales
+Myrothamnaceae # COL: Magnoliopsida > Gunnerales
+Myrothamnanae # COL: synonym of Gunnerales (Magnoliopsida)
+Myrsinaceae # myrsine family (now Primulaceae); COL: synonym of Primulaceae (Ericales)
+Myrsinoideae # COL: Ericales > Primulaceae
+Myrtaceae # COL: Magnoliopsida > Myrtales
+Myrtales # COL: Tracheophyta > Magnoliopsida
+Myrtoideae # COL: Myrtales > Myrtaceae
+Mystropetalaceae # COL: Magnoliopsida > Santalales
+Namaceae # COL: Magnoliopsida > Boraginales
+Nandinoideae # COL: Ranunculales > Berberidaceae
+Nanodeaceae # COL: Magnoliopsida > Santalales
+Nartheciaceae # COL: Liliopsida > Dioscoreales
+Nelsonioideae # COL: Lamiales > Acanthaceae
+Nelumbonaceae # COL: Magnoliopsida > Proteales
+Neotessmannioideae # COL: Malvales > Muntingiaceae
+Nepenthaceae # COL: Magnoliopsida > Caryophyllales
+Neuradaceae # COL: Magnoliopsida > Malvales
+Nicotianoideae # COL: Solanales > Solanaceae
+Nitrariaceae # COL: Magnoliopsida > Sapindales
+Norantioideae # COL: Ericales > Marcgraviaceae
+Nothofagaceae # COL: Magnoliopsida > Fagales
+Nupharoideae # COL: Nymphaeales > Nymphaeaceae
+Nuytsioideae # COL: Santalales > Loranthaceae
+Nyctaginaceae # COL: Magnoliopsida > Caryophyllales
+Nymphaeaceae # COL: Magnoliopsida > Nymphaeales
+Nymphaeales # COL: Tracheophyta > Magnoliopsida
+Nymphaeanae # COL: synonym of Nymphaeales (Magnoliopsida)
+Nymphaeles # ALF: Tracheophyta > Magnoliopsida
+Nymphaeoideae # COL: Nymphaeales > Nymphaeaceae
+Nyssaceae # COL: Magnoliopsida > Cornales
+Ochnaceae # COL: Magnoliopsida > Malpighiales
+Octoknemaceae # COL: Magnoliopsida > Santalales
+Octonemaceae # ITIS: synonym of Octoknemaceae (Santalales)
+Olacaceae # COL: Magnoliopsida > Santalales
+Oleaceae # COL: Magnoliopsida > Lamiales
+Oliniaceae # COL: synonym of Penaeaceae (Myrtales)
+Olisbeoideae # COL: Myrtales > Melastomataceae
+Onagraceae # COL: Magnoliopsida > Myrtales
+Onagroideae # COL: Myrtales > Onagraceae
+Oncothecaceae # COL: Magnoliopsida > Oncothecales
+Opiliaceae # COL: Magnoliopsida > Santalales
+Opuloideae # COL: Dipsacales > Viburnaceae
+Opuntioideae # COL: Caryophyllales > Cactaceae
+Orchidaceae # COL: Liliopsida > Asparagales
+Orchidoideae # orchid subfamily (Orchidaceae); PBDB: Asparagales > Orchidaceae
+Orobanchaceae # COL: Magnoliopsida > Lamiales
+Oxalidaceae # COL: Magnoliopsida > Oxalidales
+Oxalidales # COL: Tracheophyta > Magnoliopsida
+Pachysandroideae # COL: Buxales > Buxaceae
+Paeoniaceae # COL: Magnoliopsida > Saxifragales
+Pakaramaeoideae # Wikidata: Theales > Dipterocarpaceae
+Pandaceae # COL: Magnoliopsida > Malpighiales
+Pandanaceae # COL: Liliopsida > Pandanales
+Pandanales # COL: Tracheophyta > Liliopsida
+Papaveraceae # COL: Magnoliopsida > Ranunculales
+Papaveroideae # COL: Ranunculales > Papaveraceae
+Paracryphiaceae # COL: Magnoliopsida > Paracryphiales
+Paracryphiales # COL: Tracheophyta > Magnoliopsida
+Parnassiaceae # COL: synonym of Celastraceae (Celastrales)
+Parnassioideae # COL: Celastrales > Celastraceae
+Paropsioideae # COL: synonym of Paropsieae (Malpighiales)
+Passifloraceae # COL: Magnoliopsida > Malpighiales
+Passifloroideae # COL: Malpighiales > Passifloraceae
+Paulowniaceae # COL: Magnoliopsida > Lamiales
+Pedaliaceae # COL: Magnoliopsida > Lamiales
+Peganaceae # COL: synonym of Nitrariaceae (Sapindales)
+Pellicieraceae # COL: synonym of Tetrameristaceae (Ericales)
+Peltantheraceae # COL: Magnoliopsida > Lamiales
+Penaeaceae # COL: Magnoliopsida > Myrtales
+Pennantiaceae # COL: Magnoliopsida > Apiales
+Pentadiplandraceae # COL: Magnoliopsida > Capparales
+Pentapetalae # clade name used by NCBI, Cantino et al. 2007; NCBI: Streptophyta > Magnoliopsida
+Pentaphragmataceae # COL: Magnoliopsida > Asterales
+Pentaphylacaceae # COL: Magnoliopsida > Ericales
+Penthoraceae # COL: Magnoliopsida > Saxifragales
+Peperomioideae # COL: synonym of Piperoideae (Piperales)
+Peraceae # COL: Magnoliopsida > Malpighiales
+Pereskioideae # COL: Caryophyllales > Cactaceae
+Peridiscaceae # COL: Magnoliopsida > Saxifragales
+Periplocoideae # COL: Gentianales > Apocynaceae
+Persoonioideae # COL: Proteales > Proteaceae
+Pertyoideae # COL: Asterales > Asteraceae
+Petalonychoideae # COL: Cornales > Loasaceae
+Petenaeaceae # COL: Magnoliopsida > Huerteales
+Petermanniaceae # COL: Liliopsida > Liliales
+Petiveriaceae # pokeweed-relative family (Caryophyllales); COL: Magnoliopsida > Caryophyllales
+Petrosaviaceae # COL: Liliopsida > Petrosaviales
+Petrosaviales # COL: Tracheophyta > Liliopsida
+Petrosaviidae # clade name used by NCBI, Cantino et al. 2007; NCBI: Streptophyta > Magnoliopsida
+Philesiaceae # COL: Liliopsida > Liliales
+Philydraceae # COL: Liliopsida > Commelinales
+Phrymaceae # COL: Magnoliopsida > Lamiales
+Phyllanthaceae # COL: Magnoliopsida > Malpighiales
+Phyllonomaceae # COL: Magnoliopsida > Aquifoliales
+Physenaceae # COL: Magnoliopsida > Caryophyllales
+Phytolaccaceae # COL: Magnoliopsida > Caryophyllales
+Phytolaccoideae # COL: Caryophyllales > Phytolaccaceae
+Picramniaceae # COL: Magnoliopsida > Picramniales
+Picramniales # COL: Tracheophyta > Magnoliopsida
+Picramnioideae # COL: Picramniales > Picramniaceae
+Picrodendraceae # COL: Magnoliopsida > Malpighiales
+Pinguiculoideae # COL: Lamiales > Lentibulariaceae
+Piperaceae # COL: Magnoliopsida > Piperales
+Piperales # COL: Tracheophyta > Magnoliopsida
+Piperoideae # COL: Piperales > Piperaceae
+Pittosporaceae # COL: Magnoliopsida > Apiales
+Plagiopteraceae # COL: synonym of Celastraceae (Celastrales)
+Plantaginaceae # COL: Magnoliopsida > Lamiales
+Platanaceae # COL: Magnoliopsida > Proteales
+Platycaryoideae # COL: Fagales > Juglandaceae
+Platysace # BHL: Apiales > Apiaceae
+Plocospermataceae # COL: Magnoliopsida > Lamiales
+Plumbaginaceae # COL: Magnoliopsida > Caryophyllales
+Plumbaginoideae # COL: synonym of Plumbaginaceae (Caryophyllales)
+Poaceae # COL: Liliopsida > Poales
+Poales # COL: Tracheophyta > Liliopsida
+Podophylloideae # COL: Ranunculales > Berberidaceae
+Podostemaceae # COL: Magnoliopsida > Malpighiales
+Podostemoideae # COL: Malpighiales > Podostemaceae
+Polemoniaceae # COL: Magnoliopsida > Ericales
+Polemonioideae # COL: Ericales > Polemoniaceae
+Polycnemoideae # COL: Caryophyllales > Amaranthaceae
+Polygalaceae # COL: Magnoliopsida > Fabales
+Polygonaceae # COL: Magnoliopsida > Caryophyllales
+Polygonales # buckwheat family (now in Caryophyllales); COL: synonym of Caryophyllales (Magnoliopsida)
+Polygonoideae # COL: Caryophyllales > Polygonaceae
+Polyosmaceae # COL: synonym of Escalloniaceae (Escalloniales)
+Polyosmoideae # COL: Escalloniales > Escalloniaceae
+Pontederiaceae # COL: Liliopsida > Commelinales
+Portulacaceae # COL: Magnoliopsida > Caryophyllales
+Portulacarioideae # COL: Caryophyllales > Didiereaceae
+Posidoniaceae # COL: Liliopsida > Alismatales
+Potamogetonaceae # COL: Liliopsida > Alismatales
+Pottingeriaceae # COL: synonym of Celastraceae (Celastrales)
+Pottingerioideae # COL: Celastrales > Celastraceae
+Primulaceae # COL: Magnoliopsida > Ericales
+Primulales # primrose family (now in Ericales); COL: synonym of Ericales (Magnoliopsida)
+Primuloideae # COL: Ericales > Primulaceae
+Prioniaceae # ITIS: synonym of Thurniaceae (Poales)
+Proteaceae # COL: Magnoliopsida > Proteales
+Proteales # COL: Tracheophyta > Magnoliopsida
+Proteanae # COL: synonym of Proteales (Magnoliopsida)
+Proteoideae # COL: Proteales > Proteaceae
+Psiloxylaceae # COL: synonym of Myrtaceae (Myrtales)
+Psiloxyloideae # COL: Myrtales > Myrtaceae
+Pteleocarpaceae # COL: synonym of Gelsemiaceae (Gentianales)
+Pteridophyllaceae # COL: synonym of Pteridophylloideae (Ranunculales)
+Pterostemonaceae # COL: synonym of Iteaceae (Saxifragales)
+Punicoideae # COL: Myrtales > Lythraceae
+Putranjivaceae # COL: Magnoliopsida > Malpighiales
+Quiinaceae # COL: synonym of Ochnaceae (Malpighiales)
+Quillajaceae # COL: Magnoliopsida > Fabales
+Quintiniaceae # COL: synonym of Paracryphiaceae (Paracryphiales)
+Rafflesiaceae # COL: Magnoliopsida > Malpighiales
+Ranunculaceae # COL: Magnoliopsida > Ranunculales
+Ranunculales # COL: Tracheophyta > Magnoliopsida
+Ranunculanae # COL: synonym of Ranunculales (Magnoliopsida)
+Ranunculoideae # COL: Ranunculales > Ranunculaceae
+Rapateaceae # COL: Liliopsida > Poales
+Rauvolfioideae # COL: Gentianales > Apocynaceae
+Rehmanniaceae # COL: synonym of Rehmannieae (Lamiales)
+Resedaceae # COL: Magnoliopsida > Capparales
+Restionaceae # COL: Liliopsida > Poales
+Rhabdodendraceae # COL: Magnoliopsida > Caryophyllales
+Rhamnaceae # COL: Magnoliopsida > Rosales
+Rhamnales # buckthorn family (now in Rosales); COL: synonym of Rosales (Magnoliopsida)
+Rhipogonaceae # ITIS: synonym of Ripogonaceae (Liliales)
+Rhizophoraceae # COL: Magnoliopsida > Malpighiales
+Rhoipteleaceae # COL: synonym of Juglandaceae (Fagales)
+Rhynchocalycaceae # COL: synonym of Penaeaceae (Myrtales)
+Rhynchothecaceae # COL: synonym of Vivianioideae (Geraniales)
+Ripogonaceae # COL: Liliopsida > Liliales
+Rivinaceae # COL: synonym of Petiveriaceae (Caryophyllales)
+Rivinoideae # COL: synonym of Petiveriaceae (Caryophyllales)
+Roridulaceae # COL: Magnoliopsida > Ericales
+Rosaceae # COL: Magnoliopsida > Rosales
+Rosales # COL: Tracheophyta > Magnoliopsida
+Rosanae # COL: synonym of Rosales (Magnoliopsida)
+Rosids # APG informal clade; PBDB: Spermatophyta > Angiospermae
+Rosoideae # COL: Rosales > Rosaceae
+Rousseaceae # COL: Magnoliopsida > Asterales
+Rousseoideae # COL: Asterales > Rousseaceae
+Rubiaceae # COL: Magnoliopsida > Gentianales
+Rubiales # coffee/madder family (now in Gentianales); COL: synonym of Gentianales (Magnoliopsida)
+Rubioideae # rubiaceae subfamily; COL: Gentianales > Rubiaceae
+Ruppiaceae # COL: Liliopsida > Alismatales
+Ruscaceae # ruscus family (now Asparagaceae); ITIS: synonym of Asparagaceae (Asparagales)
+Ruschioideae # COL: Caryophyllales > Aizoaceae
+Rutaceae # COL: Magnoliopsida > Sapindales
+Rutoideae # COL: Sapindales > Rutaceae
+Sabiaceae # COL: Magnoliopsida > Proteales
+Sabioideae # COL: Proteales > Sabiaceae
+Salacioideae # COL: Celastrales > Celastraceae
+Salicaceae # COL: Magnoliopsida > Malpighiales
+Salicornioideae # COL: Caryophyllales > Amaranthaceae
+Salsoloideae # COL: Caryophyllales > Amaranthaceae
+Salvadoraceae # COL: Magnoliopsida > Capparales
+Sanangoideae # COL: Lamiales > Gesneriaceae
+Saniculoideae # COL: Apiales > Apiaceae
+Santalaceae # COL: Magnoliopsida > Santalales
+Santalales # COL: Tracheophyta > Magnoliopsida
+Santalanae # COL: synonym of Santalales (Magnoliopsida)
+Sapindaceae # COL: Magnoliopsida > Sapindales
+Sapindales # COL: Tracheophyta > Magnoliopsida
+Sapindoideae # COL: Sapindales > Sapindaceae
+Sapotaceae # COL: Magnoliopsida > Ericales
+Sarawakodendroideae # COL: synonym of Salacioideae (Celastrales)
+Sarcobataceae # COL: Magnoliopsida > Caryophyllales
+Sarcolaenaceae # COL: Magnoliopsida > Malvales
+Sarcophytoideae # COL: Santalales > Balanophoraceae
+Sargentodoxoideae # COL: Ranunculales > Lardizabalaceae
+Sarraceniaceae # COL: Magnoliopsida > Ericales
+Saurauioideae # COL: Ericales > Actinidiaceae
+Saururaceae # COL: Magnoliopsida > Piperales
+Saxifragaceae # COL: Magnoliopsida > Saxifragales
+Saxifragales # COL: Tracheophyta > Magnoliopsida
+Saxifraganae # COL: synonym of Saxifragales (Magnoliopsida)
+Scheuchzeriaceae # COL: Liliopsida > Alismatales
+Schisandraceae # COL: Magnoliopsida > Austrobaileyales
+Schismocarpoideae # COL: Cornales > Loasaceae
+Schizanthoideae # COL: Solanales > Solanaceae
+Schlegeliaceae # COL: Magnoliopsida > Lamiales
+Schoepfiaceae # COL: Magnoliopsida > Santalales
+Scrophulariaceae # COL: Magnoliopsida > Lamiales
+Scrophulariales # figwort family (now in Lamiales); COL: synonym of Lamiales (Magnoliopsida)
+Scrophularioideae # COL: synonym of Scrophularieae (Lamiales)
+Scybalioideae # COL: Santalales > Balanophoraceae
+Scyphostegiaceae # COL: synonym of Salicaceae (Malpighiales)
+Secamonoideae # COL: Gentianales > Apocynaceae
+Seetzenioideae # COL: Zygophyllales > Zygophyllaceae
+Sempervivoideae # COL: Saxifragales > Crassulaceae
+Sesuvioideae # COL: Caryophyllales > Aizoaceae
+Setchellanthaceae # COL: Magnoliopsida > Capparales
+Simaroubaceae # COL: Magnoliopsida > Sapindales
+Simmondsiaceae # COL: Magnoliopsida > Caryophyllales
+Siparunaceae # COL: Magnoliopsida > Laurales
+Siparunoideae # COL: synonym of Siparunaceae (Laurales)
+Sladeniaceae # COL: Magnoliopsida > Ericales
+Smilacaceae # COL: Liliopsida > Liliales
+Solanaceae # COL: Magnoliopsida > Solanales
+Solanales # COL: Tracheophyta > Magnoliopsida
+Solanoideae # COL: Solanales > Solanaceae
+Sparattanthelioideae # COL: synonym of Gyrocarpoideae (Laurales)
+Sparganiaceae # ITIS: synonym of Typhaceae (Poales)
+Sphaerosepalaceae # COL: Magnoliopsida > Malvales
+Sphalmioideae # COL: synonym of Grevilleoideae (Proteales)
+Sphenocleaceae # COL: Magnoliopsida > Solanales
+Sphenostemonaceae # COL: synonym of Paracryphiaceae (Paracryphiales)
+Stachyuraceae # COL: Magnoliopsida > Crossosomatales
+Stackhousiaceae # COL: synonym of Celastraceae (Celastrales)
+Stackhousioideae # COL: Celastrales > Celastraceae
+Staphyleaceae # COL: Magnoliopsida > Crossosomatales
+Staticoideae # COL: synonym of Plumbaginaceae (Caryophyllales)
+Stegnospermataceae # COL: Magnoliopsida > Caryophyllales
+Stemonaceae # COL: Liliopsida > Pandanales
+Stemonuraceae # COL: Magnoliopsida > Cardiopteridales
+Sterculiaceae # cacao-relative family (now Malvaceae); COL: synonym of Malvaceae (Malvales)
+Sterculioideae # COL: Malvales > Malvaceae
+Stifftioideae # COL: Asterales > Asteraceae
+Stixaceae # COL: Magnoliopsida > Capparales
+Stixidaceae # GBIF: synonym of Resedaceae (Brassicales)
+Strasburgeriaceae # COL: Magnoliopsida > Crossosomatales
+Strelitziaceae # COL: Liliopsida > Zingiberales
+Strephonematoideae # COL: Myrtales > Combretaceae
+Strombosiaceae # COL: Magnoliopsida > Santalales
+Stylidiaceae # COL: Magnoliopsida > Asterales
+Stylidioideae # COL: synonym of Stylidiaceae (Asterales)
+Styphelioideae # COL: Ericales > Ericaceae
+Styracaceae # COL: Magnoliopsida > Ericales
+Superasteridae # clade name used by NCBI, Cantino et al. 2007; not found in ChecklistBank
+Superasterids # APG informal clade; PBDB: Spermatophyta > Angiospermae
+Superrosidae # clade name used by NCBI, Cantino et al. 2007; not found in ChecklistBank
+Superrosids # APG informal clade; PBDB: Spermatophyta > Angiospermae
+Surianaceae # COL: Magnoliopsida > Fabales
+Symmerioideae # COL: Caryophyllales > Polygonaceae
+Symphionematoideae # COL: Proteales > Proteaceae
+Symplocaceae # COL: Magnoliopsida > Ericales
+Taccaceae # ITIS: Magnoliopsida > Dioscoreales
+Talinaceae # COL: Magnoliopsida > Caryophyllales
+Tamaricaceae # COL: Magnoliopsida > Caryophyllales
+Tapisciaceae # COL: Magnoliopsida > Huerteales
+Tarchonanthoideae # COL: Asterales > Asteraceae
+Tecophilaeaceae # COL: Liliopsida > Asparagales
+Tepuianthaceae # COL: synonym of Thymelaeaceae (Malvales)
+Tepuianthoideae # COL: Malvales > Thymelaeaceae
+Ternstroemiaceae # COL: synonym of Pentaphylacaceae (Ericales)
+Tetracarpaeaceae # COL: Magnoliopsida > Saxifragales
+Tetracentraceae # COL: synonym of Trochodendraceae (Trochodendrales)
+Tetracentroideae # COL: Trochodendrales > Trochodendraceae
+Tetrachondraceae # COL: Magnoliopsida > Lamiales
+Tetradiclidaceae # COL: synonym of Nitrariaceae (Sapindales)
+Tetramelaceae # COL: Magnoliopsida > Cucurbitales
+Tetrameristaceae # COL: Magnoliopsida > Ericales
+Thalictroideae # COL: Ranunculales > Ranunculaceae
+Theaceae # COL: Magnoliopsida > Ericales
+Theales # tea family and relatives (now in Malpighiales/Ericales); COL: synonym of Ericales (Magnoliopsida)
+Themidaceae # ITIS: synonym of Asparagaceae (Asparagales)
+Theophrastaceae # theophrastia family (Ericales); COL: synonym of Primulaceae (Ericales)
+Theophrastoideae # COL: Ericales > Primulaceae
+Thesiaceae # COL: Magnoliopsida > Santalales
+Thismiaceae # COL: Liliopsida > Dioscoreales
+Thomandersiaceae # COL: Magnoliopsida > Lamiales
+Thunbergioideae # COL: Lamiales > Acanthaceae
+Thurniaceae # COL: Liliopsida > Poales
+Thymelaeaceae # COL: Magnoliopsida > Malvales
+Thymelaeoideae # COL: Malvales > Thymelaeaceae
+Ticodendraceae # COL: Magnoliopsida > Fagales
+Tiganophytaceae # COL: Magnoliopsida > Capparales
+Tiliaceae # lime/linden family (now Malvaceae); COL: synonym of Malvaceae (Malvales)
+Tilioideae # COL: Malvales > Malvaceae
+Tofieldiaceae # COL: Liliopsida > Alismatales
+Torricelliaceae # COL: Magnoliopsida > Apiales
+Tovariaceae # COL: Magnoliopsida > Capparales
+Tremandraceae # COL: synonym of Elaeocarpaceae (Oxalidales)
+Tribelaceae # COL: synonym of Escalloniaceae (Escalloniales)
+Tribuloideae # tribulus-relative subfamily (Zygophyllaceae); COL: synonym of Balanitoideae (Zygophyllales)
+Trichopodaceae # IRMNG: synonym of Dioscoreaceae (Dioscoreales)
+Trimeniaceae # COL: Magnoliopsida > Austrobaileyales
+Tristichaceae # COL: synonym of Podostemaceae (Malpighiales)
+Tristichoideae # COL: Malpighiales > Podostemaceae
+Triuridaceae # COL: Liliopsida > Pandanales
+Trochodendraceae # COL: Magnoliopsida > Trochodendrales
+Trochodendrales # COL: Tracheophyta > Magnoliopsida
+Trochodendranae # COL: synonym of Proteales (Magnoliopsida)
+Trochodendroideae # COL: Trochodendrales > Trochodendraceae
+Tropaeolaceae # COL: Magnoliopsida > Capparales
+Turneraceae # COL: synonym of Passifloraceae (Malpighiales)
+Typhaceae # COL: Liliopsida > Poales
+Ulmaceae # COL: Magnoliopsida > Rosales
+Umbelliferae # COL: synonym of Apiaceae (Apiales)
+Urticaceae # COL: Magnoliopsida > Rosales
+Urticales # nettle/hemp family (now in Rosales); COL: synonym of Rosales (Magnoliopsida)
+Urticoideae # COL: synonym of Urticaceae (Rosales)
+Utricularioideae # COL: Lamiales > Lentibulariaceae
+Vaccinioideae # COL: Ericales > Ericaceae
+Vahliaceae # COL: Magnoliopsida > Vahliales
+Vahliales # COL: Tracheophyta > Magnoliopsida
+Valerianaceae # COL: synonym of Caprifoliaceae (Dipsacales)
+Valerianoideae # COL: Dipsacales > Caprifoliaceae
+Velloziaceae # COL: Liliopsida > Pandanales
+Verbenaceae # COL: Magnoliopsida > Lamiales
+Verhuellioideae # COL: Piperales > Piperaceae
+Vernonioideae # COL: Asterales > Asteraceae
+Viburnaceae # COL: Magnoliopsida > Dipsacales
+Violaceae # COL: Magnoliopsida > Malpighiales
+Violales # violet family (now in Malpighiales); COL: synonym of Malpighiales (Magnoliopsida)
+Violoideae # COL: Malpighiales > Violaceae
+Viscaceae # COL: Magnoliopsida > Santalales
+Vitaceae # COL: Magnoliopsida > Vitales
+Vitales # COL: Tracheophyta > Magnoliopsida
+Vitoideae # COL: Vitales > Vitaceae
+Vivianiaceae # COL: synonym of Francoaceae (Geraniales)
+Vochysiaceae # COL: Magnoliopsida > Myrtales
+Weddellinoideae # COL: Malpighiales > Podostemaceae
+Wellstediaceae # COL: Magnoliopsida > Boraginales
+Wightiaceae # COL: Magnoliopsida > Lamiales
+Winteraceae # COL: Magnoliopsida > Canellales
+Wunderlichioideae # COL: Asterales > Asteraceae
+Xanthoceraceae # IRMNG: synonym of Sapindaceae (Sapindales)
+Xanthocerataceae # COL: synonym of Sapindaceae (Sapindales)
+Xanthoceratoideae # COL: Sapindales > Sapindaceae
+Xanthorrhoeaceae # ITIS: synonym of Asphodelaceae (Asparagales)
+Xeronemataceae # COL: Liliopsida > Asparagales
+Ximeniaceae # COL: Magnoliopsida > Santalales
+Xyridaceae # COL: Liliopsida > Poales
+Zanthoxyloideae # COL: Sapindales > Rutaceae
+Zingiberaceae # COL: Liliopsida > Zingiberales
+Zingiberales # COL: Tracheophyta > Liliopsida
+Zippelioideae # COL: Piperales > Piperaceae
+Zosteraceae # COL: Liliopsida > Alismatales
+Zygophyllaceae # COL: Magnoliopsida > Zygophyllales
+Zygophyllales # COL: Tracheophyta > Magnoliopsida
+Zygophylloideae # COL: Zygophyllales > Zygophyllaceae

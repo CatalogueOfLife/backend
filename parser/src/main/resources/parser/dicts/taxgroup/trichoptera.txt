@@ -1,142 +1,142 @@
-Achoropsychini
-Agapetinae
-Anagapetini
-Anisocentropodinae
-Annulipalpia
-Anomalopsychidae
-Antipodoeciidae
-Apataniidae
-Apataniinae
-Apataniini
-Apsilochoreminae
-Arctopsychidae
-Arctopsychinae
-Athripsodini
-Atriplectididae
-Baicalinini
-Barbarochthonidae
-Beraeidae
-Brachycentridae
-Brevitentoria
-Calamoceratidae
-Calamoceratinae
-Calocidae
-Chaetopterygini
-Chathamiidae
-Chilostigmini
-Chimarrinae
-Conoesucidae
-Dicosmoecinae
-Diplectroninae
-Dipseudopsidae
-Dipseudopsinae
-Drusinae
-Ecnomidae
-Glossosomatidae
-Glossosomatinae
-Glossosomatini
-Glossosomatoidea
-Goeridae
-Goerinae
-Grumichellini
-Helicophidae
-Helicopsychidae
-Hudsonemini
-Hyalopsychinae
-Hydrobiosidae
-Hydrobiosinae
-Hydrobiosini
-Hydropsychidae
-Hydropsychinae
-Hydropsychoidea
-Hydroptilidae
-Hydroptilinae
-Hydroptilini
-Hydroptiloidea
-Hydrosalpingidae
-Integripalpia
-Kambaitipsychinae
-Kokiriidae
-Larcasinae
-Lepaniinae
-Lepidostomatidae
-Lepidostomatinae
-Leptocerini
-Leptoceroidea
-Leptorussini
-Leucotrichiini
-Limnephilidae
-Limnephilinae
-Limnephilini
-Limnephiloidea
-Limnocentropodidae
-Macronematinae
-Macronematini
-Molannidae
-Moropsychinae
-Mystacidini
-Necrotauliidae # extinct caddisfly family (Triassic)
-Nectopsychini
-Neotrichiini
-Ochrotrichiini
-Odontoceridae
-Odontocerinae
-Oecetini
-Oeconesidae
-Oestropsinae
-Oestropsini
-Orthotrichiini
-Paduniellinae
-Paulianodinae
-Petrothrincidae
-Philopotamidae
-Philopotaminae
-Philopotamoidea
-Philorheithridae
-Phryganeidae
-Phryganeinae
-Phryganeoidea
-Phryganopsychidae
-Pisuliidae
-Plectrotarsidae
-Plenitentoria
-Polycentropodidae
-Polycentropodinae
-Protoptilinae
-Proxiphocentroninae
-Pseudogoerinae
-Pseudoneureclipsinae
-Pseudostenophylacinae
-Psychomyiidae
-Psychomyiinae
-Psyllobetini
-Ptilocolepidae
-Ptilocolepinae
-Rhyacophilidae
-Rhyacophiloidea
-Rossianidae
-Sericostomatidae
-Sericostomatoidea
-Setodini
-Smicrideinae
-Spicipalpia
-Stactobiini
-Stenophylacini
-Stenopsychidae
-Stenopsychinae
-Stenopsychodinae
-Tasimiidae
-Tasimioidea
-Thamastini
-Theliopsychinae
-Thremmatinae
-Tinodinae
-Triaenodini
-Trichoptera
-Triplectidinae
-Triplectidini
-Uenoidae
-Uenoinae
-Xiphocentronidae
-Xiphocentroninae
-Yphriinae
+Achoropsychini # COL: Trichoptera > Leptoceridae
+Agapetinae # COL: Trichoptera > Glossosomatidae
+Anagapetini # COL: Trichoptera > Glossosomatidae
+Anisocentropodinae # COL: Trichoptera > Calamoceratidae
+Annulipalpia # PBDB: Insecta > Trichoptera
+Anomalopsychidae # COL: Insecta > Trichoptera
+Antipodoeciidae # COL: Insecta > Trichoptera
+Apataniidae # COL: Insecta > Trichoptera
+Apataniinae # COL: Trichoptera > Apataniidae
+Apataniini # COL: Trichoptera > Apataniidae
+Apsilochoreminae # COL: Trichoptera > Hydrobiosidae
+Arctopsychidae # IRMNG: Insecta > Trichoptera
+Arctopsychinae # COL: Trichoptera > Hydropsychidae
+Athripsodini # COL: Trichoptera > Leptoceridae
+Atriplectididae # COL: Insecta > Trichoptera
+Baicalinini # COL: Trichoptera > Apataniidae
+Barbarochthonidae # COL: Insecta > Trichoptera
+Beraeidae # COL: Insecta > Trichoptera
+Brachycentridae # COL: Insecta > Trichoptera
+Brevitentoria # PBDB: synonym of Brevitentoria (Insecta)
+Calamoceratidae # COL: Insecta > Trichoptera
+Calamoceratinae # COL: Trichoptera > Calamoceratidae
+Calocidae # COL: Insecta > Trichoptera
+Chaetopterygini # COL: Trichoptera > Limnephilidae
+Chathamiidae # COL: Insecta > Trichoptera
+Chilostigmini # COL: Trichoptera > Limnephilidae
+Chimarrinae # COL: Trichoptera > Philopotamidae
+Conoesucidae # COL: Insecta > Trichoptera
+Dicosmoecinae # COL: Trichoptera > Limnephilidae
+Diplectroninae # COL: Trichoptera > Hydropsychidae
+Dipseudopsidae # COL: Insecta > Trichoptera
+Dipseudopsinae # COL: Trichoptera > Dipseudopsidae
+Drusinae # COL: Trichoptera > Limnephilidae
+Ecnomidae # COL: Insecta > Trichoptera
+Glossosomatidae # COL: Insecta > Trichoptera
+Glossosomatinae # COL: Trichoptera > Glossosomatidae
+Glossosomatini # COL: Trichoptera > Glossosomatidae
+Glossosomatoidea # COL: Insecta > Trichoptera
+Goeridae # COL: Insecta > Trichoptera
+Goerinae # COL: Trichoptera > Goeridae
+Grumichellini # COL: Trichoptera > Leptoceridae
+Helicophidae # COL: Insecta > Trichoptera
+Helicopsychidae # COL: Insecta > Trichoptera
+Hudsonemini # COL: Trichoptera > Leptoceridae
+Hyalopsychinae # COL: Trichoptera > Dipseudopsidae
+Hydrobiosidae # COL: Insecta > Trichoptera
+Hydrobiosinae # COL: Trichoptera > Hydrobiosidae
+Hydrobiosini # COL: Trichoptera > Hydrobiosidae
+Hydropsychidae # COL: Insecta > Trichoptera
+Hydropsychinae # COL: Trichoptera > Hydropsychidae
+Hydropsychoidea # COL: Insecta > Trichoptera
+Hydroptilidae # COL: Insecta > Trichoptera
+Hydroptilinae # COL: Trichoptera > Hydroptilidae
+Hydroptilini # COL: Trichoptera > Hydroptilidae
+Hydroptiloidea # COL: Insecta > Trichoptera
+Hydrosalpingidae # COL: Insecta > Trichoptera
+Integripalpia # PBDB: Insecta > Trichoptera
+Kambaitipsychinae # COL: Trichoptera > Polycentropodidae
+Kokiriidae # COL: Insecta > Trichoptera
+Larcasinae # COL: Trichoptera > Goeridae
+Lepaniinae # COL: Trichoptera > Goeridae
+Lepidostomatidae # COL: Insecta > Trichoptera
+Lepidostomatinae # COL: Trichoptera > Lepidostomatidae
+Leptocerini # COL: Trichoptera > Leptoceridae
+Leptoceroidea # COL: Insecta > Trichoptera
+Leptorussini # COL: Trichoptera > Leptoceridae
+Leucotrichiini # COL: Trichoptera > Hydroptilidae
+Limnephilidae # COL: Insecta > Trichoptera
+Limnephilinae # COL: Trichoptera > Limnephilidae
+Limnephilini # COL: Trichoptera > Limnephilidae
+Limnephiloidea # COL: Insecta > Trichoptera
+Limnocentropodidae # COL: Insecta > Trichoptera
+Macronematinae # COL: Trichoptera > Hydropsychidae
+Macronematini # COL: Trichoptera > Hydropsychidae
+Molannidae # COL: Insecta > Trichoptera
+Moropsychinae # COL: Trichoptera > Apataniidae
+Mystacidini # COL: Trichoptera > Leptoceridae
+Necrotauliidae # extinct caddisfly family (Triassic); IRMNG: Insecta > Trichoptera
+Nectopsychini # COL: Trichoptera > Leptoceridae
+Neotrichiini # COL: Trichoptera > Hydroptilidae
+Ochrotrichiini # COL: Trichoptera > Hydroptilidae
+Odontoceridae # COL: Insecta > Trichoptera
+Odontocerinae # COL: Trichoptera > Odontoceridae
+Oecetini # COL: Trichoptera > Leptoceridae
+Oeconesidae # COL: Insecta > Trichoptera
+Oestropsinae # COL: synonym of Macronematinae (Trichoptera)
+Oestropsini # COL: Trichoptera > Hydropsychidae
+Orthotrichiini # COL: Trichoptera > Hydroptilidae
+Paduniellinae # COL: synonym of Psychomyiinae (Trichoptera)
+Paulianodinae # COL: Trichoptera > Philopotamidae
+Petrothrincidae # COL: Insecta > Trichoptera
+Philopotamidae # COL: Insecta > Trichoptera
+Philopotaminae # COL: Trichoptera > Philopotamidae
+Philopotamoidea # COL: Insecta > Trichoptera
+Philorheithridae # COL: Insecta > Trichoptera
+Phryganeidae # COL: Insecta > Trichoptera
+Phryganeinae # COL: Trichoptera > Phryganeidae
+Phryganeoidea # COL: Insecta > Trichoptera
+Phryganopsychidae # COL: Insecta > Trichoptera
+Pisuliidae # COL: Insecta > Trichoptera
+Plectrotarsidae # COL: Insecta > Trichoptera
+Plenitentoria # PBDB: synonym of Plenitentoria (Insecta)
+Polycentropodidae # COL: Insecta > Trichoptera
+Polycentropodinae # COL: Trichoptera > Polycentropodidae
+Protoptilinae # COL: Trichoptera > Glossosomatidae
+Proxiphocentroninae # COL: Trichoptera > Xiphocentronidae
+Pseudogoerinae # COL: Trichoptera > Odontoceridae
+Pseudoneureclipsinae # COL: Trichoptera > Polycentropodidae
+Pseudostenophylacinae # COL: Trichoptera > Limnephilidae
+Psychomyiidae # COL: Insecta > Trichoptera
+Psychomyiinae # COL: Trichoptera > Psychomyiidae
+Psyllobetini # COL: Trichoptera > Hydrobiosidae
+Ptilocolepidae # IRMNG: Insecta > Trichoptera
+Ptilocolepinae # COL: Trichoptera > Hydroptilidae
+Rhyacophilidae # COL: Insecta > Trichoptera
+Rhyacophiloidea # COL: Insecta > Trichoptera
+Rossianidae # COL: Insecta > Trichoptera
+Sericostomatidae # COL: Insecta > Trichoptera
+Sericostomatoidea # COL: Insecta > Trichoptera
+Setodini # COL: Trichoptera > Leptoceridae
+Smicrideinae # COL: Trichoptera > Hydropsychidae
+Spicipalpia # PBDB: synonym of Trichoptera (Insecta)
+Stactobiini # COL: Trichoptera > Hydroptilidae
+Stenophylacini # COL: Trichoptera > Limnephilidae
+Stenopsychidae # COL: Insecta > Trichoptera
+Stenopsychinae # COL: Trichoptera > Stenopsychidae
+Stenopsychodinae # COL: Trichoptera > Stenopsychidae
+Tasimiidae # COL: Insecta > Trichoptera
+Tasimioidea # COL: Insecta > Trichoptera
+Thamastini # COL: Trichoptera > Apataniidae
+Theliopsychinae # COL: Trichoptera > Lepidostomatidae
+Thremmatinae # COL: Trichoptera > Uenoidae
+Tinodinae # COL: Trichoptera > Psychomyiidae
+Triaenodini # COL: Trichoptera > Leptoceridae
+Trichoptera # COL: Arthropoda > Insecta
+Triplectidinae # COL: Trichoptera > Leptoceridae
+Triplectidini # COL: Trichoptera > Leptoceridae
+Uenoidae # COL: Insecta > Trichoptera
+Uenoinae # COL: Trichoptera > Uenoidae
+Xiphocentronidae # COL: Insecta > Trichoptera
+Xiphocentroninae # COL: Trichoptera > Xiphocentronidae
+Yphriinae # COL: Trichoptera > Phryganeidae

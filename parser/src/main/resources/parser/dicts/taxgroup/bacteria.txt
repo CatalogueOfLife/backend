@@ -1,1003 +1,997 @@
-Abditibacteria
-Abditibacteriaceae
-Abditibacteriales
-Abditibacteriota
-Acanthopleuribacteraceae
-Acanthopleuribacterales
-Acaryochloridaceae
-Acaryochloridales
-Acetobacteraceae
-Acholeplasmataceae
-Acholeplasmatales
-Acidaminococcaceae
-Acidiferrobacteraceae
-Acidiferrobacterales
-Acidimicrobiaceae
-Acidimicrobiales
-Acidimicrobidae
-Acidimicrobiia
-Acidimicrobineae
-Acidithiobacillaceae
-Acidithiobacillales
-Acidithiobacillia
-Acidobacteria
-Acidobacteriaceae
-Acidobacteriales
-Acidobacteriia
-Acidothermaceae
-Acidothermales
-Actinobacteria
-Actinobacteridae
-Actinomycetaceae
-Actinomycetales
-Actinomycetes # actinobacterial class, not fungi despite -mycetes
-Actinomycineae
-Actinophycaceae
-Actinopolymorphaceae
-Actinopolysporaceae
-Actinopolysporales
-Actinopolysporiaceae
-Actinopolysporineae
-Actinospicaceae
-Actinosynnemataceae
-Acuticoccaceae
-Aegeococcaceae
-Aegeococcales
-Aerococcaceae
-Aeromonadaceae
-Aeromonadales
-Aerosakkonemataceae
-Aerosakkonematales
-Aestuariivirgaceae
-Akkermansiaceae
-Alcaligenaceae
-Alcanivoracaceae
-Algiphilaceae
-Alicyclobacillaceae
-Aliterellaceae
-Alphaproteobacteria
-Alsobacteraceae
-Alternantiaceae
-Alteromonadaceae
-Alteromonadales
-Ammatoideaceae
-Ammatoideoideae
-Anabaenaceae
-Anaerolineaceae
-Anaerolineae
-Anaerolineales
-Anaeromyxobacteraceae
-Anaeroplasmataceae
-Anaeroplasmatales
-Anaplasmataceae
-Ancalomicrobiaceae
-Anthocerotibacteraceae
-Antricoccaceae
-Aphanizomenaceae
-Aphanizomenonaceae
-Aphanothecaceae
-Aphanothecoideae
-Aquificaceae
-Aquificae
-Aquificales
-Arenicellaceae
-Arenicellales
-Arenimicrobiaceae
-Armatimonadaceae
-Armatimonadales
-Armatimonadetes
-Armatimonadia
-Aulosiraceae
-Aurantimonadaceae
-Azonexaceae
-Bacillaceae
-Bacillales
-Bacilli
-Bacteria
-Bacteriovoracaceae
-Bacteriovoracales
-Bacteroidaceae
-Bacteroidales
-Bacteroidetes
-Bacteroidia
-Baekduiaceae
-Balneatrichaceae
-Balneicellaceae
-Balneolaceae
-Balneolales
-Balneolia
-Bartonellaceae
-Bdellovibrionaceae
-Bdellovibrionales
-Beijerinckiaceae
-Bernardetiaceae
-Betaproteobacteria
-Beutenbergiaceae
-Bifidobacteriaceae
-Bifidobacteriales
-Blastocatellaceae
-Blastocatellales
-Blastocatellia
-Blattabacteriaceae
-Bogoriellaceae
-Borreliaceae
-Borziaceae
-Borzinemataceae
-Botomaellaceae
-Brachyspiraceae
-Brachyspiriales
-Bradymonadaceae
-Bradymonadales
-Bradyrhizobiaceae
-Brevibacteriaceae
-Brevinemataceae
-Brevinematales
-Brucellaceae
-Bryobacteraceae
-Bryobacterales
-Budviciaceae
-Burkholderiaceae
-Burkholderiales
-Caldicoprobacteraceae
-Caldilineaceae
-Caldilineae
-Caldilineales
-Caldiserica
-Caldisericaceae
-Caldisericales
-Caldisericia
-Calothricaceae
-Calotrichaceae
-Calotricheae
-Camptothricaceae
-Camptylonemopsidaceae
-Campylobacteraceae
-Campylobacterales
-Capsosiraceae
-Capsulimonadaceae
-Capsulimonadales
-Cardiobacteriaceae
-Cardiobacteriales
-Carnobacteriaceae
-Catalimonadaceae
-Catenulisporaceae
-Catenulisporales
-Catenulisporineae
-Caulobacteraceae
-Caulobacterales
-Celerinatantimonadaceae
-Cellulomonadaceae
-Cellvibrionaceae
-Cellvibrionales
-Chabakoviaceae
-Chamaesiphonaceae
-Chamaesiphonales
-Chamaesiphoneae
-Chamaesiphonophyceae # cyanobacterial class, not algae despite -phyceae
-Chelatococcaceae
-Chitinispirillaceae
-Chitinispirillales
-Chitinispirillia
-Chitinivibrionaceae
-Chitinivibrionales
-Chitinivibrionia
-Chitinophagaceae
-Chitinophagales
-Chitinophagia
-Chlamydiaceae
-Chlamydiae
-Chlamydiales
-Chlorobea
-Chlorobi
-Chlorobiaceae
-Chlorobiales
-Chloroflexaceae
-Chloroflexales
-Chloroflexi
-Chloroflexia
-Chlorogloeaceae
-Chlorogloeopsidaceae
-Christensenellaceae
-Chromatiaceae
-Chromatiales
-Chromitiales
-Chromobacteriaceae
-Chroobacteria
-Chroococcaceae
-Chroococcales
-Chroococcidiaceae
-Chroococcidiopsidaceae
-Chroococcidiopsidales
-Chroococcoideae
-Chroococcophyceae # cyanobacterial class, not algae despite -phyceae
-Chrysiogenaceae
-Chrysiogenales
-Chrysiogenetes
-Chthonomonadaceae
-Chthonomonadales
-Chthonomonadetes
-Clastidiaceae
-Clostridia
-Clostridiaceae
-Clostridiales
-Coelosphaeriaceae
-Cohaesibacteraceae
-Coleofasciculaceae
-Coleofasciculales
-Colwelliaceae
-Comamonadaceae
-Conexibacteraceae
-Conophytaceae
-Conophytonidae
-Coprothermobacteraceae
-Coprothermobacterales
-Coprothermobacteria
-Coprothermobacterota
-Coriobacteriaceae
-Coriobacteriales
-Coriobacteridae
-Coriobacterineae
-Corynebacteriaceae
-Corynebacterineae
-Coxiellaceae
-Crenotrichaceae
-Crinaliaceae
-Crocinitomicaceae
-Crustophycaceae
-Cryomorphaceae
-Cryptosporangiaceae
-Cryptosporangiales
-Cyanobacteria
-Cyanobacteriaceae
-Cyanobacteriales
-Cyanobacteriophyta
-Cyanobacteriota
-Cyanobiaceae
-Cyanocytaceae
-Cyanomargaritaceae
-Cyanophanaceae
-Cyanophyceae
-Cyanophycoidea
-Cyanophycota
-Cyanophyta
-Cyanophytes
-Cyanoprokaryota
-Cyanothecaceae
-Cyanothrichaceae
-Cyanotrichaceae
-Cyclobacteriaceae
-Cymatolegaceae
-Cystobacteraceae
-Cystobacterineae
-Cytophagaceae
-Cytophagales
-Cytophagia
-Dapisostemonaceae
-Deferribacteraceae
-Deferribacterales
-Deferribacteres
-Defluviitaleaceae
-Dehalococcoidetes
-Deinococcaceae
-Deinococcales
-Deinococci
-Deinococcus
-Deinococcus-Thermus
-Deltaproteobacteria
-Demequinaceae
-Dermabacteraceae
-Dermacoccaceae
-Dermatophilaceae
-Dermocarpaceae
-Dermocarpales
-Dermocarpellaceae
-Desertifilaceae
-Desertifilales
-Desulfarculaceae
-Desulfarculales
-Desulfobacteraceae
-Desulfobacterales
-Desulfobulbaceae
-Desulfohalobiaceae
-Desulfomicrobiaceae
-Desulfonatronaceae
-Desulfovibrionaceae
-Desulfovibrionales
-Desulfurellaceae
-Desulfurellales
-Desulfurobacteriaceae
-Desulfurobacteriales
-Desulfuromonadaceae
-Desulfuromonadales
-Dictyoglomaceae
-Dictyoglomales
-Dictyoglomi
-Dictyoglomia
-Dietziaceae
-Diplonemataceae
-Ectothiorhodospiraceae
-Elainellaceae
-Elainellales
-Elusimicrobia
-Elusimicrobiaceae
-Elusimicrobiales
-Emcibacteraceae
-Emcibacterales
-Endomicrobia
-Endomicrobiaceae
-Endomicrobiales
-Endonemataceae
-Endonemataceen
-Endozoicomonaceae
-Enterobacteriaceae
-Enterobacteriales
-Enterococcaceae
-Entomoplasmataceae
-Entomoplasmatales
-Entophysalidaceae
-Entophysalidoideae
-Epiphytaceae
-Epiphytales
-Epsilonproteobacteria
-Erwiniaceae
-Erysipelotrichaceae
-Erysipelotrichales
-Erysipelotrichia
-Erythrobacteraceae
-Eubacteria
-Eubacteriaceae
-Euzebyaceae
-Euzebyales
-Fastidiosibacteraceae
-Ferrimonadaceae
-Fervidobacteriaceae
-Fibrobacteraceae
-Fibrobacterales
-Fibrobacteres
-Fibrobacteria
-Filobacteriaceae
-Fimbriimonadaceae
-Fimbriimonadales
-Fimbriimonadia
-Firmicutes
-Fischerellaceae
-Fistulellaceae
-Flammeovirgaceae
-Flavobacteria
-Flavobacteriaceae
-Flavobacteriales
-Flavobacteriia
-Foniniaceae
-Fortieaceae
-Francisellaceae
-Frankiaceae
-Frankiales
-Frankineae
-Fusobacteria
-Fusobacteriaceae
-Fusobacteriales
-Fusobacteriia
-Gaiellaceae
-Gaiellales
-Gallionellaceae
-Gammaproteobacteria
-Garwoodiaceae
-Geitleriaceae
-Geitlerinemataceae
-Geitlerinematales
-Geminicoccaceae
-Geminocystaceae
-Gemmataceae
-Gemmatimonadaceae
-Gemmatimonadales
-Gemmatimonadetes
-Geobacteraceae
-Geodermatophilaceae
-Geodermatophilales
-Girvanellaceae
-Gloeobacteraceae
-Gloeobacterales
-Gloeobacteria
-Gloeobacterophycidae # cyanobacterial subclass, not algae despite -phycidae
-Gloeocapsaceae
-Gloeomargaritaceae
-Gloeomargaritales
-Gloeotrichiaceae
-Glycomycetaceae
-Glycomycetales
-Glycomycineae
-Godleyaceae
-Gomontiellaceae
-Gomontiellales
-Gomphosphaeriaceae
-Gomphosphaerioideae
-Gordoniaceae
-Gracilibacteraceae
-Graniferaceae
-Graniferales
-Granulosicoccaceae
-Hafniaceae
-Hahellaceae
-Halanaerobiaceae
-Halanaerobiales
-Haliangiaceae
-Halieaceae
-Haliscomenobacteraceae
-Halobacteriovoraceae
-Halobacteroidaceae
-Halomonadaceae
-Haloplasmataceae
-Haloplasmatales
-Halothecaceae
-Halothiobacillaceae
-Hapalosiphonaceae
-Heleochloridaceae
-Helicobacteraceae
-Heliobacteriaceae
-Herpetosiphonaceae
-Herpetosiphonales
-Heteroleibleiniaceae
-Heteroleibleinioideae
-Heteroscytonemataceae
-Holopediaceae
-Holophagaceae
-Holophagae
-Holophagales
-Holosporaceae
-Homoeotrichaceae
-Hormogoneae
-Hydrococcaceae
-Hydrocorynaceae
-Hydrogenimonaceae
-Hydrogenophilaceae
-Hydrogenophilales
-Hydrogenophilalia
-Hydrogenothermaceae
-Hyellaceae
-Hyelloideae
-Hymenobacteraceae
-Hyphomicrobiaceae
-Hyphomonadaceae
-Iamiaceae
-Ichthyobacteriaceae
-Idiomarinaceae
-Ignavibacteria
-Ignavibacteriaceae
-Ignavibacteriae
-Ignavibacteriales
-Ilumatobacteraceae
-Immundisolibacteraceae
-Immundisolibacterales
-Intrasporangiaceae
-Iodidimonadaceae
-Iodidimonadales
-Isocystaceae
-Isosphaeraceae
-Janisjarviaceae
-Janisjarviales
-Janisjarviida
-Janisjarviidae
-Jatrophihabitantaceae
-Jiangellaceae
-Jiangellales
-Jiangellineae
-Jonesiaceae
-Kangiellaceae
-Kenellaceae
-Kenellales
-Kiloniellaceae
-Kiloniellales
-Kineosporiaceae
-Kineosporiales
-Kineosporiineae
-Kiritimatiellaceae
-Kiritimatiellae
-Kiritimatiellaeota
-Kiritimatiellales
-Kofleriaceae
-Konicacronemataceae
-Kordiimonadaceae
-Kordiimonadales
-Kosmotogaceae
-Kosmotogales
-Kribbellaceae
-Ktedonobacteraceae
-Ktedonobacterales
-Ktedonobacteria
-Kytococcaceae
-Labilitrichaceae
-Lachnospiraceae
-Lactobacillaceae
-Lactobacillales
-Lamellostromataceae
-Laspinemaceae
-Laspinemataceae
-Lawsonellaceae
-Legionellaceae
-Legionellales
-Lentimicrobiaceae
-Lentisphaeraceae
-Lentisphaerae
-Lentisphaerales
-Lentisphaeria
-Leptobasaceae
-Leptococcaceae
-Leptolyngbyaceae
-Leptolyngbyales
-Leptolyngbyoideae
-Leptospiraceae
-Leptospiriales
-Leptotrichiaceae
-Lermontovaephycaceae
-Leuconemataceae
-Leuconostocaceae
-Lewinellaceae
-Limnotrichaceae
-Limnotrichales
-Listeriaceae
-Lithonemataceae
-Litoricolaceae
-Loefgreniaceae
-Longimicrobia
-Longimicrobiaceae
-Longimicrobiales
-Lopatinellaceae
-Loriellaceae
-Lusitaniellaceae
-Lyngbyaceae
-Lysobacterales
-Mabikibacteraceae
-Magnetcoccaceae
-Magnetococcales
-Marinifilaceae
-Marinilabiliaceae
-Marinilabiliales
-Mariprofundaceae
-Mariprofundales
-Marpoliaceae
-Mastigocladaceae
-Mastigocladopsidaceae
-Meganemaceae
-Melioribacteraceae
-Merismopediaceae
-Merismopedioideae
-Mesoaciditogaceae
-Mesoaciditogales
-Methylobacteriaceae
-Methylococcaceae
-Methylococcales
-Methylocystaceae
-Methylophilaceae
-Methylophilales
-Microbacteriaceae
-Microbulbiferaceae
-Microchaetaceae
-Microchaetoideae
-Micrococcaceae
-Micrococcales
-Micrococcineae
-Microcoleaceae
-Microcoleoideae
-Microcystaceae
-Micromonosporaceae
-Micromonosporales
-Micromonosporineae
-Micropepsaceae
-Micropepsales
-Microscillaceae
-Midichloriaceae
-Minwuiaceae
-Minwuiales
-Mollicutes
-Mooreiaceae
-Moraxellaceae
-Morganellaceae
-Moritellaceae
-Motilibacteraceae
-Muribaculaceae
-Mycobacteriaceae
-Mycobacteriales
-Mycoplasmataceae
-Mycoplasmatales
-Myxococcaceae
-Myxococcales
-Myxophyceae # cyanobacterial class, not algae despite -phyceae
-Mzabimycetaceae
-Nakamurellaceae
-Nakamurellales
-Nannocystaceae
-Nannocystineae
-Natranaerobiaceae
-Natranaerobiales
-Nautiliaceae
-Nautiliales
-Negativicutes
-Negibacteria
-Neisseriaceae
-Neisseriales
-Neosynechococcaceae
-Neosynechococcales
-Nevskiaceae
-Nevskiales
-Nitriliruptoraceae
-Nitriliruptorales
-Nitriliruptoridae
-Nitrosomonadaceae
-Nitrosomonadales
-Nitrospinaceae
-Nitrospira
-Nitrospiraceae
-Nitrospirales
-Nocardiaceae
-Nocardioidaceae
-Nocardiopsaceae
-Nodosilineaceae
-Nodosilineales
-Nodulariaceae
-Nostocaceae
-Nostocales
-Nostochaceae
-Nostochinae
-Nostochopsaceae
-Nostochopsidaceae
-Nostocidea
-Nostocophyceae # cyanobacterial class, not algae despite -phyceae
-Nostocophycidae # cyanobacterial subclass, not algae despite -phycidae
-Notoacmeibacteraceae
-Oceanospirillaceae
-Oceanospirillales
-Oculatellaceae
-Oculatellales
-Odoribacteraceae
-Oleiphilaceae
-Oligoflexales
-Oligoflexia
-Oligosphaeraceae
-Oligosphaerales
-Oligosphaeria
-Omachteniaceae
-Omachteniales
-Omachtenida
-Omachtenidae
-Opitutaceae
-Opitutae
-Opitutales
-Orbaceae
-Orbales
-Ornithinimicrobiaceae
-Oscillariaceae
-Oscillatoriaceae
-Oscillatoriales
-Oscillatoriophycidae # cyanobacterial subclass, not algae despite -phycidae
-Oscillatoriophycideae
-Oscillochloridaceae
-Oscillospiraceae
-Oxalobacteraceae
-Oxyphotobacteria
-Paenibacillaceae
-Parachlamydiaceae
-Parachlamydiales
-Parenchymorphaceae
-Parenchymorphataceae
-Parilichlamydiaceae
-Parvularculaceae
-Parvularculales
-Pascherinemataceae
-Pasteurellaceae
-Pasteurellales
-Pasteuriaceae
-Patulibacteraceae
-Pectobacteriaceae
-Pelonemataceae
-Pelonematales
-Peloplocaceae
-Peptococcaceae
-Peptostreptococcaceae
-Peredibacteraceae
-Persicobacteraceae
-Persinemataceae
-Petrachloraceae
-Petrachlorosaceae
-Petrotogaceae
-Petrotogales
-Phaselicystidaceae
-Phormidesmaceae
-Phormidesmales
-Phormidesmiaceae
-Phormidesmiales
-Phormidesmidaceae
-Phormidesmidales
-Phormidiaceae # cyanobacteria family (filamentous)
-Phormidioideae
-Phycisphaeraceae
-Phycisphaerae
-Phycisphaerales
-Phycobacteria
-Phyllobacteriaceae
-Piscirickettsiaceae
-Planctomycetaceae
-Planctomycetacia
-Planctomycetales
-Planctomycetes
-Planococcaceae
-Plectonemataceae
-Pleurocapsaceae
-Pleurocapsales
-Plexostromataceae
-Podocapsaceae
-Podocapsoideae
-Polyangiaceae
-Porostromata
-Porostromataceae
-Porphyromonadaceae
-Porticoccaceae
-Posibacteria
-Prevotellaceae
-Proauloporaceae
-Procabacteriaceae
-Procabacteriales
-Prochloraceae
-Prochlorales
-Prochlorococcaceae
-Prochlorophyceae # cyanobacterial class, not algae despite -phyceae
-Prochlorotrichaceae
-Prochlorotrichales
-Prolixibacteraceae
-Promicromonosporaceae
-Propionibacteriaceae
-Propionibacteriales
-Propionibacterineae
-Proteobacteria
-Protophytaria
-Pseudanabaenaceae
-Pseudanabaenales # filamentous cyanobacteria
-Pseudanabaenoideae
-Pseudoalteromonadaceae
-Pseudoanabaenaceae
-Pseudobacteriovoracaceae
-Pseudomonadaceae
-Pseudomonadales
-Pseudonocardiaceae
-Pseudonocardineae
-Pseudonostocaceae
-Pseudoscytonemataceae
-Psittacicellaceae
-Psychromonadaceae
-Pulvinulariaceae
-Puniceicoccaceae
-Puniceicoccales
-Pyrinomonadaceae
-Raineyaceae
-Rarobacteraceae
-Rhizobiaceae
-Rhizobiales
-Rhizonemataceae
-Rhodanobacteraceae
-Rhodobacteraceae
-Rhodobacterales
-Rhodobiaceae
-Rhodocyclaceae
-Rhodocyclales
-Rhodospirillaceae
-Rhodospirillales
-Rhodothalassiaceae
-Rhodothalassiales
-Rhodothermaceae
-Rhodothermaeota
-Rhodothermales
-Rhodothermia
-Rickettsiaceae
-Rickettsiales
-Rikenellaceae
-Rivulariaceae
-Romeriaceae
-Roseiarcaceae
-Ruaniaceae
-Rubidibacteraceae
-Rubricoccaceae
-Rubritaleaceae
-Rubrobacteraceae
-Rubrobacterales
-Rubrobacteridae
-Rubrobacterineae
-Ruminococcaceae
-Saccharospirillaceae
-Salinarimonadaceae
-Salinibacteraceae
-Salinisphaeraceae
-Salinisphaerales
-Salinivirgaceae
-Salisaetaceae
-Sandaracinaceae
-Sanguibacteraceae
-Saprospiraceae
-Saprospirales
-Saprospiria
-Sarmaellaceae
-Sarmaellales
-Scandophycaceae
-Schizotrichaceae
-Schleiferiaceae
-Scopulonemataceae
-Scytonemaceae
-Scytonemataceae
-Scytonematidae
-Sedimentisphaeraceae
-Sedimentisphaerales
-Segniliparaceae
-Selenomonadales
-Setchelliellaceae
-Shewanellaceae
-Silvanigrellaceae
-Silvanigrellales
-Simkaniaceae
-Sinobacteraceae
-Sinocapsaceae
-Siphononemataceae
-Siphononematales
-Siphononematidea
-Siphononematoideae
-Sirenicapillariaceae
-Sirosiphonaceae
-Sirosiphoniaceae
-Skujapeltaceae
-Sneathiellaceae
-Sneathiellales
-Sokoloviaceae
-Solibacteraceae
-Solibacterales
-Solibacteres
-Solirubrobacteraceae
-Solirubrobacterales
-Soortiaceae
-Sorangiineae
-Spartobacteria
-Sphaerobacteraceae
-Sphaerobacterales
-Sphaerobacterineae
-Sphingobacteriaceae
-Sphingobacteriales
-Sphingobacteriia
-Sphingomonadaceae
-Sphingomonadales
-Spirillaceae
-Spirochaetaceae
-Spirochaetae
-Spirochaetales
-Spirochaetes
-Spiroplasmataceae
-Spirulinaceae
-Spirulinales
-Spirulinoideae
-Spongiibacteraceae
-Sporichthyaceae
-Sporolactobacillaceae
-Staphylococcaceae
-Steroidobacteraceae
-Sterolibacteriaceae
-Stichosiphonaceae
-Stigonemaceae
-Stigonemataceae
-Stigonematales
-Stigonematidea
-Streptococcaceae
-Streptomycetaceae
-Streptomycineae
-Streptosporangiaceae
-Streptosporangineae
-Succinivibrionaceae
-Sulfuricellaceae
-Sutterellaceae
-Symphyonemataceae
-Synechococcaceae
-Synechococcales
-Synechococcoideae
-Synechococcophycidae # cyanobacterial subclass, not algae despite -phycidae
-Synergistaceae
-Synergistales
-Synergistetes
-Synergistia
-Syntrophaceae
-Syntrophobacteraceae
-Syntrophobacterales
-Syntrophomonadaceae
-Syntrophorhabdaceae
-Telastromataceae
-Temperatibacteraceae
-Tenericutes
-Tepidisphaeraceae
-Tepidisphaerales
-Thalassoporaceae
-Thermaceae
-Thermales
-Thermithiobacillaceae
-Thermoactinomycetaceae
-Thermoanaerobacteraceae
-Thermoanaerobacterales
-Thermoanaerobaculaceae
-Thermoanaerobaculales
-Thermoanaerobaculia
-Thermodesulfobacteria
-Thermodesulfobacteriaceae
-Thermodesulfobacteriales
-Thermodesulfobiaceae
-Thermogemmatisporaceae
-Thermogemmatisporales
-Thermoleophilaceae
-Thermoleophilales
-Thermolithobacteraceae
-Thermolithobacterales
-Thermolithobacteria
-Thermomicrobia
-Thermomicrobiaceae
-Thermomicrobiales
-Thermomonosporaceae
-Thermonemataceae
-Thermosporotrichaceae
-Thermostichaceae
-Thermostichales
-Thermosynechococcaceae
-Thermosynechococcales
-Thermotogaceae
-Thermotogae
-Thermotogales
-Thermotomaculaceae
-Thermotomaculales
-Thioalkalibacteraceae
-Thioalkalispiraceae
-Thiobacillaceae
-Thiofilaceae
-Thiolineaceae
-Thioprofundaceae
-Thiotrichaceae
-Thiotrichales
-Thorselliaceae
-Thysanoplantaceae
-Tildeniaceae
-Tolypothrichaceae
-Tolypotrichaceae
-Tolypotrichoideae
-Trichocoleusaceae
-Trichostromataceae
-Tropherymataceae
-Trueperaceae
-Tsukamurellaceae
-Tubiellaceae
-Tumidophytaceae
-Vampirovibrionaceae
-Vampirovibrionales
-Vampirovibrionia
-Vampirovibrionophyceae # cyanobacterial class, not algae despite -phyceae
-Vampirovibriophyceae # cyanobacterial class, not algae despite -phyceae
-Veillonellaceae
-Ventosimonadaceae
-Vermifilaceae
-Verrucomicrobia
-Verrucomicrobiaceae
-Verrucomicrobiae
-Verrucomicrobiales
-Vesiculariaceae
-Vibrionaceae
-Vibrionales
-Vicinamibacteraceae
-Vicinamibacterales
-Vicinamibacteria
-Victivallaceae
-Victivallales
-Vulgatibacteraceae
-Waddliaceae
-Wenzhouxiangellaceae
-Williamsiaceae
-Williamwhitmaniaceae
-Wilmottiaceae
-Woeseiaceae
-Woronichiniaceae
-Xanthobacteraceae
-Xanthomonadaceae
-Xanthomonadales
-Xenococcaceae
-Yaniellaceae
-Yersiniaceae
-Zetaproteobacteria
-Zheleznayaceae
-Zoogloeaceae
+Abditibacteria # COL: synonym of Abditibacteriia (Abditibacteriota)
+Abditibacteriaceae # COL: Abditibacteriia > Abditibacteriales
+Abditibacteriales # COL: Abditibacteriota > Abditibacteriia
+Abditibacteriota # COL: Bacteria > Pseudomonadati
+Acanthopleuribacteraceae # COL: Holophagae > Acanthopleuribacterales
+Acanthopleuribacterales # COL: Acidobacteriota > Holophagae
+Acaryochloridaceae # COL: Cyanophyceae > Acaryochloridales
+Acaryochloridales # COL: Cyanobacteriota > Cyanophyceae
+Acetobacteraceae # COL: Alphaproteobacteria > Rhodospirillales
+Acholeplasmataceae # COL: Mollicutes > Acholeplasmatales
+Acholeplasmatales # COL: Mycoplasmatota > Mollicutes
+Acidaminococcaceae # COL: Negativicutes > Acidaminococcales
+Acidiferrobacteraceae # COL: Gammaproteobacteria > Acidiferrobacterales
+Acidiferrobacterales # COL: Pseudomonadota > Gammaproteobacteria
+Acidimicrobiaceae # COL: Acidimicrobiia > Acidimicrobiales
+Acidimicrobiales # COL: Actinomycetota > Acidimicrobiia
+Acidimicrobidae # ITIS: Actinobacteria > Actinobacteria
+Acidimicrobiia # COL: Bacillati > Actinomycetota
+Acidimicrobineae # ITIS: Actinobacteria > Acidimicrobiales
+Acidithiobacillaceae # COL: Acidithiobacillia > Acidithiobacillales
+Acidithiobacillales # COL: Pseudomonadota > Acidithiobacillia
+Acidithiobacillia # COL: Pseudomonadati > Pseudomonadota
+Acidobacteria # COL: synonym of Terriglobia (Acidobacteriota)
+Acidobacteriaceae # COL: Terriglobia > Terriglobales
+Acidobacteriales # COL: synonym of Terriglobales (Terriglobia)
+Acidobacteriia # GBIF: synonym of Acidobacteriae (Acidobacteriota)
+Acidothermaceae # COL: Actinomycetes > Acidothermales
+Acidothermales # COL: Actinomycetota > Actinomycetes
+Actinobacteria # COL: synonym of Actinomycetes (Actinomycetota)
+Actinobacteridae # ITIS: Bacteria > Actinobacteria
+Actinomycetaceae # COL: Actinomycetes > Actinomycetales
+Actinomycetales # COL: Actinomycetota > Actinomycetes
+Actinomycetes # actinobacterial class, not fungi despite -mycetes; COL: Bacillati > Actinomycetota
+Actinomycineae # ITIS: Actinobacteria > Actinomycetales
+Actinophycaceae # IRMNG: Cyanobacteriota > Cyanophyceae
+Actinopolymorphaceae # COL: Actinomycetes > Propionibacteriales
+Actinopolysporaceae # COL: synonym of Pseudonocardiaceae (Pseudonocardiales)
+Actinopolysporales # COL: synonym of Pseudonocardiales (Actinomycetes)
+Actinopolysporiaceae # ALF: Actinobacteria > Actinopolysporales
+Actinopolysporineae # ITIS: Actinobacteria > Actinomycetales
+Actinospicaceae # COL: Actinomycetes > Catenulisporales
+Actinosynnemataceae # COL: synonym of Pseudonocardiaceae (Pseudonocardiales)
+Acuticoccaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Aegeococcaceae # COL: Cyanophyceae > Aegeococcales
+Aegeococcales # COL: Cyanobacteriota > Cyanophyceae
+Aerococcaceae # COL: Bacilli > Lactobacillales
+Aeromonadaceae # COL: Gammaproteobacteria > Aeromonadales
+Aeromonadales # COL: Pseudomonadota > Gammaproteobacteria
+Aerosakkonemataceae # COL: Cyanophyceae > Oscillatoriales
+Aerosakkonematales # IRMNG: Cyanobacteriota > Cyanophyceae
+Aestuariivirgaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Akkermansiaceae # COL: Verrucomicrobiia > Verrucomicrobiales
+Alcaligenaceae # COL: Betaproteobacteria > Burkholderiales
+Alcanivoracaceae # COL: Gammaproteobacteria > Oceanospirillales
+Algiphilaceae # COL: Gammaproteobacteria > Nevskiales
+Alicyclobacillaceae # COL: Bacilli > Caryophanales
+Aliterellaceae # COL: synonym of Chroococcidiopsidaceae (Chroococcidiopsidales)
+Alphaproteobacteria # COL: Pseudomonadati > Pseudomonadota
+Alsobacteraceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Alternantiaceae # COL: synonym of Cymatolegaceae (Nodosilineales)
+Alteromonadaceae # COL: Gammaproteobacteria > Alteromonadales
+Alteromonadales # COL: Pseudomonadota > Gammaproteobacteria
+Ammatoideaceae # WoRMS: Cyanophyceae > Oscillatoriales
+Ammatoideoideae # WoRMS: Oscillatoriales > Phormidiaceae
+Anabaenaceae # IRMNG: synonym of Nostocaceae (Nostocales)
+Anaerolineaceae # COL: Anaerolineae > Anaerolineales
+Anaerolineae # COL: Bacillati > Chloroflexota
+Anaerolineales # COL: Chloroflexota > Anaerolineae
+Anaeromyxobacteraceae # COL: Deltaproteobacteria > Myxococcales
+Anaeroplasmataceae # COL: Mollicutes > Anaeroplasmatales
+Anaeroplasmatales # COL: Mycoplasmatota > Mollicutes
+Anaplasmataceae # COL: synonym of Ehrlichiaceae (Rickettsiales)
+Ancalomicrobiaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Anthocerotibacteraceae # COL: Cyanophyceae > Gloeobacterales
+Antricoccaceae # COL: Actinomycetes > Geodermatophilales
+Aphanizomenaceae # LPSN: Chroococcophyceae > Nostocales
+Aphanizomenonaceae # COL: Cyanophyceae > Nostocales
+Aphanothecaceae # WoRMS: Cyanophyceae > Chroococcales
+Aphanothecoideae # WoRMS: Synechococcales > Synechococcaceae
+Aquificaceae # COL: Aquificia > Aquificales
+Aquificae # COL: synonym of Aquificia (Aquificota)
+Aquificales # COL: Aquificota > Aquificia
+Arenicellaceae # COL: Gammaproteobacteria > Arenicellales
+Arenicellales # COL: Pseudomonadota > Gammaproteobacteria
+Arenimicrobiaceae # COL: Blastocatellia > Blastocatellales
+Armatimonadaceae # COL: Armatimonadia > Armatimonadales
+Armatimonadales # COL: Armatimonadota > Armatimonadia
+Armatimonadetes # ITIS: Bacteria
+Armatimonadia # COL: Bacillati > Armatimonadota
+Aulosiraceae # LPSN: synonym of Nodulariaceae (Nostocales)
+Aurantimonadaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Azonexaceae # COL: Betaproteobacteria > Rhodocyclales
+Bacillaceae # COL: Bacilli > Caryophanales
+Bacillales # COL: synonym of Caryophanales (Bacilli)
+Bacilli # COL: Bacillati > Bacillota
+Bacteria # COL: domain
+Bacteriovoracaceae # COL: Oligoflexia > Bacteriovoracales
+Bacteriovoracales # COL: Pseudomonadota > Oligoflexia
+Bacteroidaceae # COL: Bacteroidia > Bacteroidales
+Bacteroidales # COL: Bacteroidota > Bacteroidia
+Bacteroidetes # ITIS: Bacteria
+Bacteroidia # COL: Pseudomonadati > Bacteroidota
+Baekduiaceae # COL: Thermoleophilia > Solirubrobacterales
+Balneatrichaceae # COL: synonym of Balneatricaceae (Oceanospirillales)
+Balneicellaceae # COL: Bacteroidia > Bacteroidales
+Balneolaceae # COL: Balneolia > Balneolales
+Balneolales # COL: Balneolota > Balneolia
+Balneolia # COL: Pseudomonadati > Balneolota
+Bartonellaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Bdellovibrionaceae # COL: synonym of Pseudobdellovibrionaceae (Bdellovibrionales)
+Bdellovibrionales # COL: Pseudomonadota > Oligoflexia
+Beijerinckiaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Bernardetiaceae # COL: Cytophagia > Cytophagales
+Betaproteobacteria # COL: Pseudomonadati > Pseudomonadota
+Beutenbergiaceae # COL: Actinomycetes > Micrococcales
+Bifidobacteriaceae # COL: Actinomycetes > Bifidobacteriales
+Bifidobacteriales # COL: Actinomycetota > Actinomycetes
+Blastocatellaceae # COL: Blastocatellia > Blastocatellales
+Blastocatellales # COL: Acidobacteriota > Blastocatellia
+Blastocatellia # COL: Pseudomonadati > Acidobacteriota
+Blattabacteriaceae # COL: Flavobacteriia > Flavobacteriales
+Bogoriellaceae # COL: synonym of Allobogoriellaceae (Micrococcales)
+Borreliaceae # COL: Spirochaetia > Spirochaetales
+Borziaceae # WoRMS: Cyanophyceae > Oscillatoriales
+Borzinemataceae # COL: synonym of Tolypothrichaceae (Nostocales)
+Botomaellaceae # WoRMS: Cyanophyceae > Nostocales
+Brachyspiraceae # COL: Spirochaetia > Brachyspirales
+Brachyspiriales # ALF: Spirochaetae > Spirochaetes
+Bradymonadaceae # COL: Deltaproteobacteria > Bradymonadales
+Bradymonadales # COL: Pseudomonadota > Deltaproteobacteria
+Bradyrhizobiaceae # COL: synonym of Nitrobacteraceae (Hyphomicrobiales)
+Brevibacteriaceae # COL: Actinomycetes > Micrococcales
+Brevinemataceae # COL: Spirochaetia > Brevinematales
+Brevinematales # COL: Spirochaetota > Spirochaetia
+Brucellaceae # COL: synonym of Bartonellaceae (Hyphomicrobiales)
+Bryobacteraceae # COL: Terriglobia > Bryobacterales
+Bryobacterales # COL: Acidobacteriota > Terriglobia
+Budviciaceae # COL: Gammaproteobacteria > Enterobacterales
+Burkholderiaceae # COL: Betaproteobacteria > Burkholderiales
+Burkholderiales # COL: Pseudomonadota > Betaproteobacteria
+Caldicoprobacteraceae # COL: Clostridia > Eubacteriales
+Caldilineaceae # COL: Caldilineae > Caldilineales
+Caldilineae # COL: Bacillati > Chloroflexota
+Caldilineales # COL: Chloroflexota > Caldilineae
+Caldiserica # ITIS: Bacteria
+Caldisericaceae # COL: Caldisericia > Caldisericales
+Caldisericales # COL: Caldisericota > Caldisericia
+Caldisericia # COL: Pseudomonadati > Caldisericota
+Calothricaceae # AlgaeGNA: Cyanophyceae > Nostocales
+Calotrichaceae # COL: synonym of Rivulariaceae (Nostocales)
+Calotricheae # LPSN: synonym of Calotrichaceae (Nostocales)
+Camptothricaceae # WoRMS: Cyanophyceae > Oscillatoriales
+Camptylonemopsidaceae # LPSN: synonym of Nostocaceae (Nostocales)
+Campylobacteraceae # COL: Epsilonproteobacteria > Campylobacterales
+Campylobacterales # COL: Pseudomonadota > Epsilonproteobacteria
+Capsosiraceae # COL: Cyanophyceae > Nostocales
+Capsulimonadaceae # COL: Armatimonadia > Capsulimonadales
+Capsulimonadales # COL: Armatimonadota > Armatimonadia
+Cardiobacteriaceae # COL: Gammaproteobacteria > Cardiobacteriales
+Cardiobacteriales # COL: Pseudomonadota > Gammaproteobacteria
+Carnobacteriaceae # COL: Bacilli > Lactobacillales
+Catalimonadaceae # COL: synonym of Catalinimonadaceae (Cytophagales)
+Catenulisporaceae # COL: Actinomycetes > Catenulisporales
+Catenulisporales # COL: Actinomycetota > Actinomycetes
+Catenulisporineae # ITIS: Actinobacteria > Actinomycetales
+Caulobacteraceae # COL: Alphaproteobacteria > Caulobacterales
+Caulobacterales # COL: Pseudomonadota > Alphaproteobacteria
+Celerinatantimonadaceae # COL: Gammaproteobacteria > Alteromonadales
+Cellulomonadaceae # COL: Actinomycetes > Micrococcales
+Cellvibrionaceae # COL: Gammaproteobacteria > Cellvibrionales
+Cellvibrionales # COL: Pseudomonadota > Gammaproteobacteria
+Chamaesiphonaceae # COL: Cyanophyceae > Gomontiellales
+Chamaesiphonales # COL: synonym of Gomontiellales (Cyanophyceae)
+Chamaesiphoneae # LPSN: synonym of Chamaesiphonaceae (Gomontiellales)
+Chamaesiphonophyceae # cyanobacterial class, not algae despite -phyceae; LPSN: synonym of Chroococcophyceae (Cyanobacteriota)
+Chelatococcaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Chitinispirillaceae # COL: Chitinispirillia > Chitinispirillales
+Chitinispirillales # COL: Fibrobacterota > Chitinispirillia
+Chitinispirillia # COL: Pseudomonadati > Fibrobacterota
+Chitinivibrionaceae # COL: Chitinivibrionia > Chitinivibrionales
+Chitinivibrionales # COL: Fibrobacterota > Chitinivibrionia
+Chitinivibrionia # COL: Pseudomonadati > Fibrobacterota
+Chitinophagaceae # COL: Chitinophagia > Chitinophagales
+Chitinophagales # COL: Bacteroidota > Chitinophagia
+Chitinophagia # COL: Pseudomonadati > Bacteroidota
+Chlamydiaceae # COL: Chlamydiia > Chlamydiales
+Chlamydiae # COL: synonym of Chlamydiia (Chlamydiota)
+Chlamydiales # COL: Chlamydiota > Chlamydiia
+Chlorobea # COL: synonym of Chlorobiia (Chlorobiota)
+Chlorobi # ITIS: Bacteria
+Chlorobiaceae # COL: Chlorobiia > Chlorobiales
+Chlorobiales # COL: Chlorobiota > Chlorobiia
+Chloroflexaceae # COL: Chloroflexia > Chloroflexales
+Chloroflexales # COL: Chloroflexota > Chloroflexia
+Chloroflexi # COL: synonym of Chloroflexia (Chloroflexota)
+Chloroflexia # COL: Bacillati > Chloroflexota
+Chlorogloeaceae # LPSN: synonym of Chroococcidiopsidaceae (Chroococcidiopsidales)
+Chlorogloeopsidaceae # WoRMS: Cyanophyceae > Nostocales
+Christensenellaceae # COL: Clostridia > Eubacteriales
+Chromatiaceae # COL: Gammaproteobacteria > Chromatiales
+Chromatiales # COL: Pseudomonadota > Gammaproteobacteria
+Chromitiales # ALF: Proteobacteria > Gammaproteobacteria
+Chromobacteriaceae # COL: Betaproteobacteria > Neisseriales
+Chroobacteria # LPSN: synonym of Chroococcophyceae (Cyanobacteriota)
+Chroococcaceae # COL: Cyanophyceae > Chroococcales
+Chroococcales # COL: Cyanobacteriota > Cyanophyceae
+Chroococcidiaceae # LPSN: synonym of Hydrococcaceae (Chroococcales)
+Chroococcidiopsidaceae # COL: Cyanophyceae > Chroococcidiopsidales
+Chroococcidiopsidales # COL: Cyanobacteriota > Cyanophyceae
+Chroococcoideae # LPSN: synonym of Chroococcales (Chroococcophyceae)
+Chroococcophyceae # cyanobacterial class, not algae despite -phyceae; LPSN: Bacillati > Cyanobacteriota
+Chrysiogenaceae # COL: Chrysiogenia > Chrysiogenales
+Chrysiogenales # COL: Chrysiogenota > Chrysiogenia
+Chrysiogenetes # COL: synonym of Chrysiogenia (Chrysiogenota)
+Chthonomonadaceae # COL: Chthonomonadia > Chthonomonadales
+Chthonomonadales # COL: Armatimonadota > Chthonomonadia
+Chthonomonadetes # COL: synonym of Chthonomonadia (Armatimonadota)
+Clastidiaceae # COL: synonym of Chamaesiphonaceae (Gomontiellales)
+Clostridia # COL: Bacillati > Bacillota
+Clostridiaceae # COL: Clostridia > Eubacteriales
+Clostridiales # COL: synonym of Eubacteriales (Clostridia)
+Coelosphaeriaceae # WoRMS: Cyanophyceae > Synechococcales
+Cohaesibacteraceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Coleofasciculaceae # COL: Cyanophyceae > Coleofasciculales
+Coleofasciculales # COL: Cyanobacteriota > Cyanophyceae
+Colwelliaceae # COL: Gammaproteobacteria > Alteromonadales
+Comamonadaceae # COL: Betaproteobacteria > Burkholderiales
+Conexibacteraceae # COL: Thermoleophilia > Solirubrobacterales
+Conophytaceae # LPSN: synonym of Lopatinellaceae (Graniferales)
+Conophytonidae # LPSN: synonym of Lopatinellaceae (Graniferales)
+Coprothermobacteraceae # COL: Coprothermobacteria > Coprothermobacterales
+Coprothermobacterales # COL: Coprothermobacterota > Coprothermobacteria
+Coprothermobacteria # COL: Pseudomonadati > Coprothermobacterota
+Coprothermobacterota # COL: Bacteria > Pseudomonadati
+Coriobacteriaceae # COL: Coriobacteriia > Coriobacteriales
+Coriobacteriales # COL: Actinomycetota > Coriobacteriia
+Coriobacteridae # ITIS: Bacteria > Actinobacteria
+Coriobacterineae # ITIS: Actinobacteria > Coriobacteriales
+Corynebacteriaceae # COL: Actinomycetes > Mycobacteriales
+Corynebacterineae # ITIS: Actinobacteria > Actinomycetales
+Coxiellaceae # COL: Gammaproteobacteria > Legionellales
+Crenotrichaceae # COL: Gammaproteobacteria > Methylococcales
+Crinaliaceae # LPSN: synonym of Gomontiellaceae (Gomontiellales)
+Crocinitomicaceae # COL: Flavobacteriia > Flavobacteriales
+Crustophycaceae # WoRMS: Cyanophyceae > Graniferales
+Cryomorphaceae # COL: Flavobacteriia > Flavobacteriales
+Cryptosporangiaceae # COL: Actinomycetes > Cryptosporangiales
+Cryptosporangiales # COL: Actinomycetota > Actinomycetes
+Cyanobacteria # COL: synonym of Cyanobacteriota (Bacillati)
+Cyanobacteriaceae # WoRMS: Cyanophyceae > Chroococcales
+Cyanobacteriales # GBIF: Cyanobacteria > Cyanobacteriia
+Cyanobacteriophyta # LPSN: synonym of Cyanobacteriota (Bacillati)
+Cyanobacteriota # COL: Bacteria > Bacillati
+Cyanobiaceae # GBIF: Cyanobacteria > Cyanobacteriia
+Cyanocytaceae # GBIF: Cyanobacteriia > Cyanobacteriales
+Cyanomargaritaceae # COL: synonym of Aphanizomenonaceae (Nostocales)
+Cyanophanaceae # IRMNG: synonym of Chamaesiphonaceae (Synechococcales)
+Cyanophyceae # COL: Bacillati > Cyanobacteriota
+Cyanophycoidea # LPSN: synonym of Chroococcophyceae (Cyanobacteriota)
+Cyanophycota # COL: synonym of Cyanobacteriota (Bacillati)
+Cyanophyta # COL: synonym of Cyanobacteriota (Bacillati)
+Cyanophytes # not found in ChecklistBank
+Cyanoprokaryota # not found in ChecklistBank
+Cyanothecaceae # COL: Cyanophyceae > Gomontiellales
+Cyanothrichaceae # COL: Cyanophyceae > Chroococcales
+Cyanotrichaceae # LPSN: synonym of Hapalosiphonaceae (Nostocales)
+Cyclobacteriaceae # COL: Cytophagia > Cytophagales
+Cymatolegaceae # COL: Cyanophyceae > Nodosilineales
+Cystobacteraceae # COL: synonym of Archangiaceae (Myxococcales)
+Cystobacterineae # ITIS: Deltaproteobacteria > Myxococcales
+Cytophagaceae # COL: Cytophagia > Cytophagales
+Cytophagales # COL: Bacteroidota > Cytophagia
+Cytophagia # COL: Pseudomonadati > Bacteroidota
+Dapisostemonaceae # COL: synonym of Tolypothrichaceae (Nostocales)
+Deferribacteraceae # COL: Deferribacteres > Deferribacterales
+Deferribacterales # COL: Deferribacterota > Deferribacteres
+Deferribacteres # COL: Pseudomonadati > Deferribacterota
+Defluviitaleaceae # COL: Clostridia > Eubacteriales
+Dehalococcoidetes # ITIS: Bacteria > Chloroflexi
+Deinococcaceae # COL: Deinococci > Deinococcales
+Deinococcales # COL: Deinococcota > Deinococci
+Deinococci # COL: Thermotogati > Deinococcota
+Deinococcus # PBDB: phylum
+Deinococcus-Thermus # ITIS: Bacteria
+Deltaproteobacteria # COL: Pseudomonadati > Pseudomonadota
+Demequinaceae # COL: Actinomycetes > Micrococcales
+Dermabacteraceae # COL: Actinomycetes > Micrococcales
+Dermacoccaceae # COL: Actinomycetes > Micrococcales
+Dermatophilaceae # COL: Actinomycetes > Micrococcales
+Dermocarpaceae # COL: synonym of Pleurocapsaceae (Chroococcales)
+Dermocarpales # IRMNG: synonym of Pleurocapsales (Cyanophyceae)
+Dermocarpellaceae # COL: synonym of Pleurocapsaceae (Chroococcales)
+Desertifilaceae # COL: Cyanophyceae > Desertifilales
+Desertifilales # COL: Cyanobacteriota > Cyanophyceae
+Desulfarculaceae # COL: Desulfarculia > Desulfarculales
+Desulfarculales # COL: Thermodesulfobacteriota > Desulfarculia
+Desulfobacteraceae # COL: Desulfobacteria > Desulfobacterales
+Desulfobacterales # COL: Thermodesulfobacteriota > Desulfobacteria
+Desulfobulbaceae # COL: Desulfobulbia > Desulfobulbales
+Desulfohalobiaceae # COL: Desulfovibrionia > Desulfovibrionales
+Desulfomicrobiaceae # COL: Desulfovibrionia > Desulfovibrionales
+Desulfonatronaceae # COL: Desulfovibrionia > Desulfovibrionales
+Desulfovibrionaceae # COL: Desulfovibrionia > Desulfovibrionales
+Desulfovibrionales # COL: Thermodesulfobacteriota > Desulfovibrionia
+Desulfurellaceae # COL: Deltaproteobacteria > Desulfurellales
+Desulfurellales # COL: Pseudomonadota > Deltaproteobacteria
+Desulfurobacteriaceae # COL: Aquificia > Desulfurobacteriales
+Desulfurobacteriales # COL: Aquificota > Aquificia
+Desulfuromonadaceae # COL: Desulfuromonadia > Desulfuromonadales
+Desulfuromonadales # COL: Thermodesulfobacteriota > Desulfuromonadia
+Dictyoglomaceae # COL: synonym of Dictyoglomeraceae (Dictyoglomerales)
+Dictyoglomales # COL: synonym of Dictyoglomerales (Dictyoglomeria)
+Dictyoglomi # ITIS: Bacteria
+Dictyoglomia # COL: synonym of Dictyoglomeria (Dictyoglomerota)
+Dietziaceae # COL: Actinomycetes > Mycobacteriales
+Diplonemataceae # LPSN: synonym of Borzinemataceae (Nostocales)
+Ectothiorhodospiraceae # COL: Gammaproteobacteria > Chromatiales
+Elainellaceae # GBIF: Cyanobacteriia > Elainellales
+Elainellales # GBIF: Cyanobacteria > Cyanobacteriia
+Elusimicrobia # COL: Pseudomonadati > Elusimicrobiota
+Elusimicrobiaceae # COL: Elusimicrobia > Elusimicrobiales
+Elusimicrobiales # COL: Elusimicrobiota > Elusimicrobia
+Emcibacteraceae # COL: Alphaproteobacteria > Emcibacterales
+Emcibacterales # COL: Pseudomonadota > Alphaproteobacteria
+Endomicrobia # COL: synonym of Endomicrobiia (Elusimicrobiota)
+Endomicrobiaceae # COL: Endomicrobiia > Endomicrobiales
+Endomicrobiales # COL: Elusimicrobiota > Endomicrobiia
+Endonemataceae # LPSN: synonym of Hydrococcaceae (Chroococcales)
+Endonemataceen # not found in ChecklistBank
+Endozoicomonaceae # ALF: Gammaproteobacteria > Oceanospirillales
+Enterobacteriaceae # COL: Gammaproteobacteria > Enterobacterales
+Enterobacteriales # ITIS: Proteobacteria > Gammaproteobacteria
+Enterococcaceae # COL: Bacilli > Lactobacillales
+Entomoplasmataceae # COL: synonym of Mycoplasmataceae (Mycoplasmatales)
+Entomoplasmatales # COL: synonym of Mycoplasmatales (Mollicutes)
+Entophysalidaceae # COL: synonym of Chroococcaceae (Chroococcales)
+Entophysalidoideae # TAXREF: Chroococcales > Entophysalidaceae
+Epiphytaceae # WoRMS: Cyanobacteria > Cyanophyceae
+Epiphytales # LPSN: Cyanobacteriota > Chroococcophyceae
+Epsilonproteobacteria # COL: Pseudomonadati > Pseudomonadota
+Erwiniaceae # COL: Gammaproteobacteria > Enterobacterales
+Erysipelotrichaceae # COL: Erysipelotrichia > Erysipelotrichales
+Erysipelotrichales # COL: Bacillota > Erysipelotrichia
+Erysipelotrichia # COL: Bacillati > Bacillota
+Erythrobacteraceae # COL: Alphaproteobacteria > Sphingomonadales
+Eubacteria # PBDB: synonym of Bacteria
+Eubacteriaceae # COL: Clostridia > Eubacteriales
+Euzebyaceae # COL: Nitriliruptoria > Euzebyales
+Euzebyales # COL: Actinomycetota > Nitriliruptoria
+Fastidiosibacteraceae # COL: Gammaproteobacteria > Beggiatoales
+Ferrimonadaceae # COL: Gammaproteobacteria > Alteromonadales
+Fervidobacteriaceae # COL: Thermotogae > Thermotogales
+Fibrobacteraceae # COL: Fibrobacteria > Fibrobacterales
+Fibrobacterales # COL: Fibrobacterota > Fibrobacteria
+Fibrobacteres # ITIS: Bacteria
+Fibrobacteria # COL: Pseudomonadati > Fibrobacterota
+Filobacteriaceae # COL: Sphingobacteriia > Sphingobacteriales
+Fimbriimonadaceae # COL: Fimbriimonadia > Fimbriimonadales
+Fimbriimonadales # COL: Armatimonadota > Fimbriimonadia
+Fimbriimonadia # COL: Bacillati > Armatimonadota
+Firmicutes # ITIS: Bacteria
+Fischerellaceae # IRMNG: synonym of Hapalosiphonaceae (Nostocales)
+Flammeovirgaceae # COL: Cytophagia > Cytophagales
+Flavobacteria # COL: synonym of Cytophagia (Bacteroidota)
+Flavobacteriaceae # COL: Flavobacteriia > Flavobacteriales
+Flavobacteriales # COL: Bacteroidota > Flavobacteriia
+Flavobacteriia # COL: Pseudomonadati > Bacteroidota
+Foniniaceae # IRMNG: Cyanobacteriota > Cyanophyceae
+Fortieaceae # COL: synonym of Leptobasaceae (Nostocales)
+Francisellaceae # COL: Gammaproteobacteria > Beggiatoales
+Frankiaceae # COL: Actinomycetes > Frankiales
+Frankiales # COL: Actinomycetota > Actinomycetes
+Frankineae # ITIS: Actinobacteria > Actinomycetales
+Fusobacteria # ITIS: Bacteria
+Fusobacteriaceae # COL: Fusobacteriia > Fusobacteriales
+Fusobacteriales # COL: Fusobacteriota > Fusobacteriia
+Fusobacteriia # COL: Fusobacteriati > Fusobacteriota
+Gaiellaceae # COL: Thermoleophilia > Gaiellales
+Gaiellales # COL: Actinomycetota > Thermoleophilia
+Gallionellaceae # COL: Betaproteobacteria > Spirillales
+Gammaproteobacteria # COL: Pseudomonadati > Pseudomonadota
+Garwoodiaceae # WoRMS: Cyanophyceae > Nostocales
+Geitleriaceae # COL: Cyanophyceae > Nostocales
+Geitlerinemataceae # COL: Cyanophyceae > Geitlerinematales
+Geitlerinematales # COL: Cyanobacteriota > Cyanophyceae
+Geminicoccaceae # COL: Alphaproteobacteria > Rhodospirillales
+Geminocystaceae # COL: Cyanophyceae > Chroococcales
+Gemmataceae # COL: Planctomycetia > Gemmatales
+Gemmatimonadaceae # COL: Gemmatimonadia > Gemmatimonadales
+Gemmatimonadales # COL: Gemmatimonadota > Gemmatimonadia
+Gemmatimonadetes # COL: synonym of Gemmatimonadia (Gemmatimonadota)
+Geobacteraceae # COL: Desulfuromonadia > Geobacterales
+Geodermatophilaceae # COL: Actinomycetes > Geodermatophilales
+Geodermatophilales # COL: Actinomycetota > Actinomycetes
+Girvanellaceae # WoRMS: Cyanophyceae > Nostocales
+Gloeobacteraceae # COL: Cyanophyceae > Gloeobacterales
+Gloeobacterales # COL: Cyanobacteriota > Cyanophyceae
+Gloeobacteria # GBIF: synonym of Cyanobacteriia (Cyanobacteria)
+Gloeobacterophycidae # cyanobacterial subclass, not algae despite -phycidae; WoRMS: Cyanobacteria > Cyanophyceae
+Gloeocapsaceae # IRMNG: Cyanophyceae > Chroococcidiopsidales
+Gloeomargaritaceae # COL: Cyanophyceae > Gloeomargaritales
+Gloeomargaritales # COL: Cyanobacteriota > Cyanophyceae
+Gloeotrichiaceae # COL: synonym of Aphanizomenonaceae (Nostocales)
+Glycomycetaceae # COL: Actinomycetes > Glycomycetales
+Glycomycetales # COL: Actinomycetota > Actinomycetes
+Glycomycineae # ITIS: Actinobacteria > Actinomycetales
+Godleyaceae # COL: synonym of Tolypothrichaceae (Nostocales)
+Gomontiellaceae # COL: Cyanophyceae > Gomontiellales
+Gomontiellales # COL: Cyanobacteriota > Cyanophyceae
+Gomphosphaeriaceae # COL: Cyanophyceae > Chroococcales
+Gomphosphaerioideae # WoRMS: Chroococcales > Gomphosphaeriaceae
+Gracilibacteraceae # COL: Clostridia > Eubacteriales
+Graniferaceae # WoRMS: Cyanophyceae > Graniferales
+Graniferales # WoRMS: Cyanobacteria > Cyanophyceae
+Granulosicoccaceae # COL: Gammaproteobacteria > Chromatiales
+Hafniaceae # COL: Gammaproteobacteria > Enterobacterales
+Hahellaceae # COL: Gammaproteobacteria > Oceanospirillales
+Halanaerobiaceae # COL: Clostridia > Halanaerobiales
+Halanaerobiales # COL: Bacillota > Clostridia
+Haliangiaceae # COL: synonym of Kofleriaceae (Myxococcales)
+Halieaceae # COL: Gammaproteobacteria > Cellvibrionales
+Haliscomenobacteraceae # COL: synonym of Lewinellaceae (Saprospirales)
+Halobacteriovoraceae # COL: synonym of Halobacteriovoracaceae (Bacteriovoracales)
+Halobacteroidaceae # COL: Clostridia > Halanaerobiales
+Halomonadaceae # COL: Gammaproteobacteria > Oceanospirillales
+Haloplasmataceae # COL: Mollicutes > Haloplasmatales
+Haloplasmatales # COL: Mycoplasmatota > Mollicutes
+Halothecaceae # COL: Cyanophyceae > Chroococcales
+Halothiobacillaceae # COL: Gammaproteobacteria > Chromatiales
+Hapalosiphonaceae # COL: Cyanophyceae > Nostocales
+Helicobacteraceae # COL: Epsilonproteobacteria > Campylobacterales
+Heliobacteriaceae # COL: Clostridia > Eubacteriales
+Herpetosiphonaceae # COL: Chloroflexia > Herpetosiphonales
+Herpetosiphonales # COL: Chloroflexota > Chloroflexia
+Heteroleibleiniaceae # IRMNG: Cyanophyceae > Synechococcales
+Heteroleibleinioideae # WoRMS: Pseudanabaenales > Pseudanabaenaceae
+Heteroscytonemataceae # COL: Cyanophyceae > Nostocales
+Holopediaceae # LPSN: synonym of Microcystaceae (Chroococcales)
+Holophagaceae # COL: Holophagae > Holophagales
+Holophagae # COL: Pseudomonadati > Acidobacteriota
+Holophagales # COL: Acidobacteriota > Holophagae
+Holosporaceae # COL: Alphaproteobacteria > Holosporales
+Homoeotrichaceae # WoRMS: Cyanophyceae > Oscillatoriales
+Hormogoneae # PBDB: Cyanobacteria
+Hydrococcaceae # COL: synonym of Pleurocapsaceae (Chroococcales)
+Hydrocorynaceae # LPSN: synonym of Aphanizomenaceae (Nostocales)
+Hydrogenimonaceae # ITIS: Epsilonproteobacteria > Campylobacterales
+Hydrogenophilaceae # COL: Hydrogenophilia > Hydrogenophilales
+Hydrogenophilales # COL: Pseudomonadota > Hydrogenophilia
+Hydrogenophilalia # COL: synonym of Hydrogenophilia (Pseudomonadota)
+Hydrogenothermaceae # COL: Aquificia > Aquificales
+Hyellaceae # COL: synonym of Pleurocapsaceae (Chroococcales)
+Hyelloideae # WoRMS: Pleurocapsales > Hyellaceae
+Hymenobacteraceae # COL: Cytophagia > Cytophagales
+Hyphomicrobiaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Hyphomonadaceae # COL: Alphaproteobacteria > Caulobacterales
+Iamiaceae # COL: Acidimicrobiia > Acidimicrobiales
+Ichthyobacteriaceae # COL: Flavobacteriia > Flavobacteriales
+Idiomarinaceae # COL: Gammaproteobacteria > Alteromonadales
+Ignavibacteria # COL: Pseudomonadati > Chlorobiota
+Ignavibacteriaceae # COL: Ignavibacteria > Ignavibacteriales
+Ignavibacteriae # GBIF: synonym of Bacteroidota (Bacteria)
+Ignavibacteriales # COL: Chlorobiota > Ignavibacteria
+Ilumatobacteraceae # COL: Acidimicrobiia > Acidimicrobiales
+Immundisolibacteraceae # COL: Gammaproteobacteria > Immundisolibacterales
+Immundisolibacterales # COL: Pseudomonadota > Gammaproteobacteria
+Intrasporangiaceae # COL: Actinomycetes > Micrococcales
+Iodidimonadaceae # COL: Alphaproteobacteria > Iodidimonadales
+Iodidimonadales # COL: Pseudomonadota > Alphaproteobacteria
+Isocystaceae # LPSN: synonym of Nostocaceae (Nostocales)
+Isosphaeraceae # COL: Planctomycetia > Isosphaerales
+Janisjarviaceae # LPSN: Chroococcophyceae > Janisjarviales
+Janisjarviales # LPSN: Cyanobacteriota > Chroococcophyceae
+Janisjarviida # LPSN: synonym of Janisjarviales (Chroococcophyceae)
+Janisjarviidae # LPSN: synonym of Janisjarviaceae (Janisjarviales)
+Jatrophihabitantaceae # COL: Actinomycetes > Jatrophihabitantales
+Jiangellaceae # COL: Actinomycetes > Jiangellales
+Jiangellales # COL: Actinomycetota > Actinomycetes
+Jiangellineae # ITIS: Actinobacteria > Actinomycetales
+Jonesiaceae # COL: Actinomycetes > Micrococcales
+Kangiellaceae # COL: Gammaproteobacteria > Oceanospirillales
+Kenellaceae # IRMNG: synonym of Zheleznayaceae (Nostocales)
+Kenellales # LPSN: synonym of Nostocales (Chroococcophyceae)
+Kiloniellaceae # COL: Alphaproteobacteria > Rhodospirillales
+Kiloniellales # COL: synonym of Rhodospirillales (Alphaproteobacteria)
+Kineosporiaceae # COL: Actinomycetes > Kineosporiales
+Kineosporiales # COL: Actinomycetota > Actinomycetes
+Kineosporiineae # ITIS: Actinobacteria > Actinomycetales
+Kiritimatiellaceae # COL: Kiritimatiellia > Kiritimatiellales
+Kiritimatiellae # COL: synonym of Kiritimatiellia (Kiritimatiellota)
+Kiritimatiellaeota # IRMNG: synonym of Kiritimatiellota (Bacteria)
+Kiritimatiellales # COL: Kiritimatiellota > Kiritimatiellia
+Kofleriaceae # COL: Deltaproteobacteria > Myxococcales
+Konicacronemataceae # COL: Cyanophyceae > Gomontiellales
+Kordiimonadaceae # COL: synonym of Temperatibacteraceae (Kordiimonadales)
+Kordiimonadales # COL: Pseudomonadota > Alphaproteobacteria
+Kosmotogaceae # COL: Thermotogae > Kosmotogales
+Kosmotogales # COL: Thermotogota > Thermotogae
+Kribbellaceae # COL: Actinomycetes > Propionibacteriales
+Ktedonobacteraceae # COL: Ktedonobacteria > Ktedonobacterales
+Ktedonobacterales # COL: Chloroflexota > Ktedonobacteria
+Ktedonobacteria # COL: Bacillati > Chloroflexota
+Kytococcaceae # COL: Actinomycetes > Micrococcales
+Labilitrichaceae # COL: synonym of Polyangiaceae (Polyangiales)
+Lachnospiraceae # COL: Clostridia > Eubacteriales
+Lactobacillaceae # COL: Bacilli > Lactobacillales
+Lactobacillales # COL: Bacillota > Bacilli
+Lamellostromataceae # WoRMS: Cyanophyceae > Nostocales
+Laspinemaceae # COL: synonym of Oscillatoriaceae (Oscillatoriales)
+Laspinemataceae # WoRMS: Cyanophyceae > Oscillatoriales
+Lawsonellaceae # COL: Actinomycetes > Mycobacteriales
+Legionellaceae # COL: Gammaproteobacteria > Legionellales
+Legionellales # COL: Pseudomonadota > Gammaproteobacteria
+Lentimicrobiaceae # COL: Bacteroidia > Bacteroidales
+Lentisphaeraceae # COL: Lentisphaeria > Lentisphaerales
+Lentisphaerae # ITIS: Bacteria
+Lentisphaerales # COL: Lentisphaerota > Lentisphaeria
+Lentisphaeria # COL: Pseudomonadati > Lentisphaerota
+Leptobasaceae # COL: Cyanophyceae > Nostocales
+Leptococcaceae # SILVA-LSU: Cyanobacteriia > Eurycoccales
+Leptolyngbyaceae # COL: Cyanophyceae > Leptolyngbyales
+Leptolyngbyales # COL: Cyanobacteriota > Cyanophyceae
+Leptolyngbyoideae # GBIF: synonym of Leptolyngbyaceae (Leptolyngbyales)
+Leptospiraceae # COL: Spirochaetia > Leptospirales
+Leptospiriales # ALF: Spirochaetae > Spirochaetes
+Leptotrichiaceae # COL: Fusobacteriia > Fusobacteriales
+Lermontovaephycaceae # WoRMS: Cyanophyceae > Chroococcales
+Leuconemataceae # IRMNG: synonym of Bacteria (awaitingallocation) (Bacteria)
+Leuconostocaceae # COL: synonym of Lactobacillaceae (Lactobacillales)
+Lewinellaceae # COL: Saprospiria > Saprospirales
+Limnotrichaceae # SILVA-LSU: Cyanobacteriia > Limnotrichales
+Limnotrichales # SILVA-LSU: Cyanobacteria > Cyanobacteriia
+Listeriaceae # COL: Bacilli > Caryophanales
+Lithonemataceae # LPSN: synonym of Hapalosiphonaceae (Nostocales)
+Litoricolaceae # COL: synonym of Litorivicinaceae (Oceanospirillales)
+Loefgreniaceae # IRMNG: synonym of Hapalosiphonaceae (Nostocales)
+Longimicrobia # COL: synonym of Gemmatimonadia (Gemmatimonadota)
+Longimicrobiaceae # COL: Gemmatimonadia > Longimicrobiales
+Longimicrobiales # COL: Gemmatimonadota > Gemmatimonadia
+Lopatinellaceae # WoRMS: Cyanophyceae > Graniferales
+Loriellaceae # WoRMS: Cyanophyceae > Stigonematales
+Lusitaniellaceae # COL: Cyanophyceae > Spirulinales
+Lyngbyaceae # LPSN: synonym of Microcoleaceae (Oscillatoriales)
+Lysobacterales # COL: Pseudomonadota > Gammaproteobacteria
+Mabikibacteraceae # COL: synonym of Bartonellaceae (Hyphomicrobiales)
+Magnetcoccaceae # ALF: Alphaproteobacteria > Magnetococcales
+Magnetococcales # COL: Pseudomonadota > Alphaproteobacteria
+Marinifilaceae # COL: Bacteroidia > Bacteroidales
+Marinilabiliaceae # COL: Bacteroidia > Bacteroidales
+Marinilabiliales # COL: synonym of Bacteroidales (Bacteroidia)
+Mariprofundaceae # COL: Alphaproteobacteria > Mariprofundales
+Mariprofundales # COL: Pseudomonadota > Alphaproteobacteria
+Marpoliaceae # WoRMS: Cyanobacteria > Cyanophyceae
+Mastigocladaceae # COL: synonym of Hapalosiphonaceae (Nostocales)
+Mastigocladopsidaceae # COL: synonym of Scytonemataceae (Nostocales)
+Meganemaceae # ALF: Alphaproteobacteria > Rhizobiales
+Melioribacteraceae # COL: Ignavibacteria > Ignavibacteriales
+Merismopediaceae # COL: synonym of Microcystaceae (Chroococcales)
+Merismopedioideae # WoRMS: Synechococcales > Merismopediaceae
+Mesoaciditogaceae # COL: Thermotogae > Mesoaciditogales
+Mesoaciditogales # COL: Thermotogota > Thermotogae
+Methylobacteriaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Methylococcaceae # COL: Gammaproteobacteria > Methylococcales
+Methylococcales # COL: Pseudomonadota > Gammaproteobacteria
+Methylocystaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Methylophilaceae # COL: Betaproteobacteria > Spirillales
+Methylophilales # COL: synonym of Spirillales (Betaproteobacteria)
+Microbacteriaceae # COL: Actinomycetes > Micrococcales
+Microbulbiferaceae # COL: Gammaproteobacteria > Cellvibrionales
+Microchaetaceae # COL: synonym of Rivulariaceae (Nostocales)
+Microchaetoideae # WoRMS: Nostocales > Microchaetaceae
+Micrococcaceae # COL: Actinomycetes > Micrococcales
+Micrococcales # COL: Actinomycetota > Actinomycetes
+Micrococcineae # ITIS: Actinobacteria > Actinomycetales
+Microcoleaceae # COL: Cyanophyceae > Oscillatoriales
+Microcoleoideae # WoRMS: Oscillatoriales > Phormidiaceae
+Microcystaceae # COL: Cyanophyceae > Chroococcales
+Micromonosporaceae # COL: Actinomycetes > Micromonosporales
+Micromonosporales # COL: Actinomycetota > Actinomycetes
+Micromonosporineae # ITIS: Actinobacteria > Actinomycetales
+Micropepsaceae # COL: Alphaproteobacteria > Micropepsales
+Micropepsales # COL: Pseudomonadota > Alphaproteobacteria
+Microscillaceae # COL: Cytophagia > Cytophagales
+Midichloriaceae # GBIF: Alphaproteobacteria > Rickettsiales
+Minwuiaceae # COL: Alphaproteobacteria > Minwuiales
+Minwuiales # COL: Pseudomonadota > Alphaproteobacteria
+Mollicutes # COL: Bacillati > Mycoplasmatota
+Mooreiaceae # COL: Cytophagia > Cytophagales
+Moraxellaceae # COL: Gammaproteobacteria > Pseudomonadales
+Morganellaceae # COL: Gammaproteobacteria > Enterobacterales
+Moritellaceae # COL: Gammaproteobacteria > Alteromonadales
+Motilibacteraceae # COL: Actinomycetes > Motilibacterales
+Muribaculaceae # COL: Bacteroidia > Bacteroidales
+Mycobacteriaceae # COL: Actinomycetes > Mycobacteriales
+Mycobacteriales # COL: Actinomycetota > Actinomycetes
+Mycoplasmataceae # COL: Mollicutes > Mycoplasmatales
+Mycoplasmatales # COL: Mycoplasmatota > Mollicutes
+Myxococcaceae # COL: Deltaproteobacteria > Myxococcales
+Myxococcales # COL: Pseudomonadota > Deltaproteobacteria
+Myxophyceae # cyanobacterial class, not algae despite -phyceae; WoRMS: synonym of Cyanophyceae (Cyanobacteria)
+Mzabimycetaceae # COL: synonym of Pseudonocardiaceae (Pseudonocardiales)
+Nakamurellaceae # COL: Actinomycetes > Nakamurellales
+Nakamurellales # COL: Actinomycetota > Actinomycetes
+Nannocystaceae # COL: Deltaproteobacteria > Myxococcales
+Nannocystineae # ITIS: Deltaproteobacteria > Myxococcales
+Natranaerobiaceae # COL: Clostridia > Natranaerobiales
+Natranaerobiales # COL: Bacillota > Clostridia
+Nautiliaceae # COL: Epsilonproteobacteria > Nautiliales
+Nautiliales # COL: Pseudomonadota > Epsilonproteobacteria
+Negativicutes # COL: Bacillati > Bacillota
+Negibacteria # ITIS: Bacteria
+Neisseriaceae # COL: Betaproteobacteria > Neisseriales
+Neisseriales # COL: Pseudomonadota > Betaproteobacteria
+Neosynechococcaceae # COL: Cyanophyceae > Leptolyngbyales
+Neosynechococcales # GBIF: Cyanobacteria > Cyanobacteriia
+Nevskiaceae # COL: Gammaproteobacteria > Nevskiales
+Nevskiales # COL: Pseudomonadota > Gammaproteobacteria
+Nitriliruptoraceae # COL: Nitriliruptoria > Nitriliruptorales
+Nitriliruptorales # COL: Actinomycetota > Nitriliruptoria
+Nitriliruptoridae # ITIS: Bacteria > Actinobacteria
+Nitrosomonadaceae # COL: Betaproteobacteria > Spirillales
+Nitrosomonadales # COL: synonym of Spirillales (Betaproteobacteria)
+Nitrospinaceae # COL: Nitrospinia > Nitrospinales
+Nitrospira # ITIS: Bacteria
+Nitrospiraceae # COL: Nitrospiria > Nitrospirales
+Nitrospirales # COL: Nitrospirota > Nitrospiria
+Nocardiaceae # COL: Actinomycetes > Mycobacteriales
+Nocardioidaceae # COL: Actinomycetes > Propionibacteriales
+Nocardiopsaceae # COL: synonym of Nocardiopsidaceae (Streptosporangiales)
+Nodosilineaceae # COL: Cyanophyceae > Nodosilineales
+Nodosilineales # COL: Cyanobacteriota > Cyanophyceae
+Nodulariaceae # COL: Cyanophyceae > Nostocales
+Nostocaceae # COL: Cyanophyceae > Nostocales
+Nostocales # COL: Cyanobacteriota > Cyanophyceae
+Nostochaceae # LPSN: synonym of Nostocaceae (Nostocales)
+Nostochinae # LPSN: synonym of Nostocales (Chroococcophyceae)
+Nostochopsaceae # WoRMS: Cyanophyceae > Stigonematales
+Nostochopsidaceae # COL: synonym of Hapalosiphonaceae (Nostocales)
+Nostocidea # LPSN: synonym of Nostocales (Chroococcophyceae)
+Nostocophyceae # cyanobacterial class, not algae despite -phyceae; LPSN: synonym of Chroococcophyceae (Cyanobacteriota)
+Nostocophycidae # cyanobacterial subclass, not algae despite -phycidae; WoRMS: Cyanobacteria > Cyanophyceae
+Notoacmeibacteraceae # COL: synonym of Bartonellaceae (Hyphomicrobiales)
+Oceanospirillaceae # COL: Gammaproteobacteria > Oceanospirillales
+Oceanospirillales # COL: Pseudomonadota > Gammaproteobacteria
+Oculatellaceae # COL: Cyanophyceae > Oculatellales
+Oculatellales # COL: Cyanobacteriota > Cyanophyceae
+Odoribacteraceae # COL: Bacteroidia > Bacteroidales
+Oleiphilaceae # COL: Gammaproteobacteria > Oceanospirillales
+Oligoflexales # COL: Pseudomonadota > Oligoflexia
+Oligoflexia # COL: Pseudomonadati > Pseudomonadota
+Oligosphaeraceae # COL: Oligosphaeria > Oligosphaerales
+Oligosphaerales # COL: Lentisphaerota > Oligosphaeria
+Oligosphaeria # COL: Pseudomonadati > Lentisphaerota
+Omachteniaceae # LPSN: Chroococcophyceae > Omachteniales
+Omachteniales # LPSN: Cyanobacteriota > Chroococcophyceae
+Omachtenida # LPSN: synonym of Omachteniales (Chroococcophyceae)
+Omachtenidae # IRMNG: Cyanophyceae > Kussiellida
+Opitutaceae # COL: Opitutia > Opitutales
+Opitutae # COL: synonym of Opitutia (Verrucomicrobiota)
+Opitutales # COL: Verrucomicrobiota > Opitutia
+Orbaceae # COL: Gammaproteobacteria > Orbales
+Orbales # COL: Pseudomonadota > Gammaproteobacteria
+Ornithinimicrobiaceae # COL: Actinomycetes > Micrococcales
+Oscillariaceae # LPSN: synonym of Oscillatoriaceae (Oscillatoriales)
+Oscillatoriaceae # COL: Cyanophyceae > Oscillatoriales
+Oscillatoriales # COL: Cyanobacteriota > Cyanophyceae
+Oscillatoriophycidae # cyanobacterial subclass, not algae despite -phycidae; WoRMS: Cyanobacteria > Cyanophyceae
+Oscillatoriophycideae # TAXREF: Cyanobacteria > Cyanophyceae
+Oscillochloridaceae # COL: Chloroflexia > Chloroflexales
+Oscillospiraceae # COL: Clostridia > Eubacteriales
+Oxalobacteraceae # COL: Betaproteobacteria > Burkholderiales
+Oxyphotobacteria # LPSN: synonym of Chroococcophyceae (Cyanobacteriota)
+Paenibacillaceae # COL: Bacilli > Caryophanales
+Parachlamydiaceae # COL: Chlamydiia > Chlamydiales
+Parachlamydiales # COL: synonym of Chlamydiales (Chlamydiia)
+Parenchymorphaceae # LPSN: synonym of Scytonemataceae (Nostocales)
+Parenchymorphataceae # LPSN: synonym of Scytonemataceae (Nostocales)
+Parilichlamydiaceae # GBIF: Chlamydiia > Hat2
+Parvularculaceae # COL: Alphaproteobacteria > Parvularculales
+Parvularculales # COL: Pseudomonadota > Alphaproteobacteria
+Pascherinemataceae # IRMNG: synonym of Pleurocapsaceae (Pleurocapsales)
+Pasteurellaceae # COL: Gammaproteobacteria > Pasteurellales
+Pasteurellales # COL: Pseudomonadota > Gammaproteobacteria
+Pasteuriaceae # COL: Bacilli > Caryophanales
+Patulibacteraceae # COL: Thermoleophilia > Solirubrobacterales
+Pectobacteriaceae # COL: Gammaproteobacteria > Enterobacterales
+Pelonemataceae # COL: Cyanophyceae > Pelonematales
+Pelonematales # COL: Cyanobacteriota > Cyanophyceae
+Peloplocaceae # LPSN: synonym of Pelonemataceae (Pelonematales)
+Peptococcaceae # COL: Clostridia > Eubacteriales
+Peptostreptococcaceae # COL: Clostridia > Peptostreptococcales
+Peredibacteraceae # COL: Oligoflexia > Bacteriovoracales
+Persicobacteraceae # COL: Cytophagia > Cytophagales
+Persinemataceae # COL: Cyanophyceae > Nodosilineales
+Petrachloraceae # COL: Cyanophyceae > Synechococcales
+Petrachlorosaceae # COL: synonym of Petrachloraceae (Synechococcales)
+Petrotogaceae # COL: Thermotogae > Petrotogales
+Petrotogales # COL: Thermotogota > Thermotogae
+Phaselicystidaceae # COL: synonym of Polyangiaceae (Polyangiales)
+Phormidesmaceae # LPSN: synonym of Leptolyngbyaceae (Leptolyngbyales)
+Phormidesmales # LPSN: synonym of Leptolyngbyales (Chroococcophyceae)
+Phormidesmiaceae # GBIF: Cyanobacteriia > Phormidesmiales
+Phormidesmiales # GBIF: Cyanobacteria > Cyanobacteriia
+Phormidesmidaceae # LPSN: synonym of Leptolyngbyaceae (Leptolyngbyales)
+Phormidesmidales # LPSN: synonym of Leptolyngbyales (Chroococcophyceae)
+Phormidiaceae # cyanobacteria family (filamentous); WoRMS: Cyanophyceae > Oscillatoriales
+Phormidioideae # WoRMS: Oscillatoriales > Phormidiaceae
+Phycisphaeraceae # COL: Phycisphaerae > Phycisphaerales
+Phycisphaerae # COL: Pseudomonadati > Planctomycetota
+Phycisphaerales # COL: Planctomycetota > Phycisphaerae
+Phycobacteria # COL: synonym of Cyanophyceae (Cyanobacteriota)
+Phyllobacteriaceae # COL: synonym of Bartonellaceae (Hyphomicrobiales)
+Piscirickettsiaceae # COL: Gammaproteobacteria > Beggiatoales
+Planctomycetaceae # COL: Planctomycetia > Planctomycetales
+Planctomycetacia # ITIS: Bacteria > Planctomycetes
+Planctomycetales # COL: Planctomycetota > Planctomycetia
+Planctomycetes # ITIS: Bacteria
+Planococcaceae # COL: synonym of Caryophanaceae (Caryophanales)
+Plectonemataceae # LPSN: synonym of Microcoleaceae (Oscillatoriales)
+Pleurocapsaceae # COL: Cyanophyceae > Chroococcales
+Pleurocapsales # COL: synonym of Pleurocapsaceae (Chroococcales)
+Plexostromataceae # WoRMS: Cyanophyceae > Nostocales
+Podocapsaceae # LPSN: synonym of Hydrococcaceae (Chroococcales)
+Podocapsoideae # WoRMS: Pleurocapsales > Hyellaceae
+Polyangiaceae # COL: Deltaproteobacteria > Polyangiales
+Porostromata # IRMNG: synonym of Oscillatoriales (Cyanophyceae)
+Porostromataceae # IRMNG: synonym of Oscillatoriales (Cyanophyceae)
+Porphyromonadaceae # COL: Bacteroidia > Bacteroidales
+Porticoccaceae # COL: Gammaproteobacteria > Cellvibrionales
+Posibacteria # ITIS: Bacteria
+Prevotellaceae # COL: Bacteroidia > Bacteroidales
+Procabacteriaceae # ITIS: Betaproteobacteria > Procabacteriales
+Procabacteriales # ITIS: Proteobacteria > Betaproteobacteria
+Prochloraceae # COL: Cyanophyceae > Chroococcales
+Prochlorales # IRMNG: synonym of Synechococcales (Cyanophyceae)
+Prochlorococcaceae # COL: Cyanophyceae > Synechococcales
+Prochlorophyceae # cyanobacterial class, not algae despite -phyceae; IRMNG: synonym of Cyanophyceae (Cyanobacteriota)
+Prochlorotrichaceae # COL: Cyanophyceae > Prochlorotrichales
+Prochlorotrichales # COL: Cyanobacteriota > Cyanophyceae
+Prolixibacteraceae # COL: Bacteroidia > Bacteroidales
+Promicromonosporaceae # COL: Actinomycetes > Micrococcales
+Propionibacteriaceae # COL: Actinomycetes > Propionibacteriales
+Propionibacteriales # COL: Actinomycetota > Actinomycetes
+Propionibacterineae # ITIS: Actinobacteria > Actinomycetales
+Proteobacteria # ITIS: Bacteria
+Protophytaria # LPSN: synonym of Cyanobacteriota (Bacillati)
+Pseudanabaenaceae # COL: Cyanophyceae > Pseudanabaenales
+Pseudanabaenales # filamentous cyanobacteria; COL: Cyanobacteriota > Cyanophyceae
+Pseudanabaenoideae # WoRMS: Pseudanabaenales > Pseudanabaenaceae
+Pseudoalteromonadaceae # COL: Gammaproteobacteria > Alteromonadales
+Pseudoanabaenaceae # WoRMS: synonym of Pseudanabaenaceae (Pseudanabaenales)
+Pseudobacteriovoracaceae # COL: Oligoflexia > Oligoflexales
+Pseudomonadaceae # COL: Gammaproteobacteria > Pseudomonadales
+Pseudomonadales # COL: Pseudomonadota > Gammaproteobacteria
+Pseudonocardiaceae # COL: Actinomycetes > Pseudonocardiales
+Pseudonocardineae # ITIS: Actinobacteria > Actinomycetales
+Pseudonostocaceae # LPSN: synonym of Nostocaceae (Nostocales)
+Pseudoscytonemataceae # LPSN: synonym of Microcoleaceae (Oscillatoriales)
+Psittacicellaceae # COL: Gammaproteobacteria > Pasteurellales
+Psychromonadaceae # COL: Gammaproteobacteria > Alteromonadales
+Pulvinulariaceae # IRMNG: synonym of Stigonemataceae (Nostocales)
+Puniceicoccaceae # COL: Opitutia > Puniceicoccales
+Puniceicoccales # COL: Verrucomicrobiota > Opitutia
+Pyrinomonadaceae # COL: Blastocatellia > Blastocatellales
+Raineyaceae # COL: Cytophagia > Cytophagales
+Rarobacteraceae # COL: Actinomycetes > Micrococcales
+Rhizobiaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Rhizobiales # COL: synonym of Hyphomicrobiales (Alphaproteobacteria)
+Rhizonemataceae # COL: Cyanophyceae > Nostocales
+Rhodanobacteraceae # COL: Gammaproteobacteria > Lysobacterales
+Rhodobacteraceae # COL: synonym of Paracoccaceae (Rhodobacterales)
+Rhodobacterales # COL: Pseudomonadota > Alphaproteobacteria
+Rhodobiaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Rhodocyclaceae # COL: Betaproteobacteria > Rhodocyclales
+Rhodocyclales # COL: Pseudomonadota > Betaproteobacteria
+Rhodospirillaceae # COL: Alphaproteobacteria > Rhodospirillales
+Rhodospirillales # COL: Pseudomonadota > Alphaproteobacteria
+Rhodothalassiaceae # COL: Alphaproteobacteria > Rhodothalassiales
+Rhodothalassiales # COL: Pseudomonadota > Alphaproteobacteria
+Rhodothermaceae # COL: Rhodothermia > Rhodothermales
+Rhodothermaeota # IRMNG: synonym of Rhodothermota (Bacteria)
+Rhodothermales # COL: Rhodothermota > Rhodothermia
+Rhodothermia # COL: Pseudomonadati > Rhodothermota
+Rickettsiaceae # COL: Alphaproteobacteria > Rickettsiales
+Rickettsiales # COL: Pseudomonadota > Alphaproteobacteria
+Rikenellaceae # COL: Bacteroidia > Bacteroidales
+Rivulariaceae # COL: Cyanophyceae > Nostocales
+Romeriaceae # WoRMS: Cyanophyceae > Synechococcales
+Roseiarcaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Ruaniaceae # COL: Actinomycetes > Micrococcales
+Rubidibacteraceae # GBIF: Cyanobacteriia > Cyanobacteriales
+Rubricoccaceae # COL: Rhodothermia > Rhodothermales
+Rubritaleaceae # COL: Verrucomicrobiia > Verrucomicrobiales
+Rubrobacteraceae # COL: Rubrobacteria > Rubrobacterales
+Rubrobacterales # COL: Actinomycetota > Rubrobacteria
+Rubrobacteridae # ITIS: Bacteria > Actinobacteria
+Rubrobacterineae # ITIS: Actinobacteria > Rubrobacterales
+Ruminococcaceae # COL: synonym of Oscillospiraceae (Eubacteriales)
+Saccharospirillaceae # COL: Gammaproteobacteria > Oceanospirillales
+Salinarimonadaceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Salinibacteraceae # COL: Rhodothermia > Rhodothermales
+Salinisphaeraceae # COL: Gammaproteobacteria > Nevskiales
+Salinisphaerales # ITIS: Proteobacteria > Gammaproteobacteria
+Salinivirgaceae # COL: Bacteroidia > Bacteroidales
+Salisaetaceae # COL: Rhodothermia > Rhodothermales
+Sandaracinaceae # COL: Deltaproteobacteria > Polyangiales
+Sanguibacteraceae # COL: synonym of Jonesiaceae (Micrococcales)
+Saprospiraceae # COL: Saprospiria > Saprospirales
+Saprospirales # COL: Bacteroidota > Saprospiria
+Saprospiria # COL: Pseudomonadati > Bacteroidota
+Sarmaellaceae # WoRMS: Cyanophyceae > Nostocales
+Sarmaellales # IRMNG: Cyanobacteriota > Cyanophyceae
+Scandophycaceae # WoRMS: Cyanophyceae > Nostocales
+Schizotrichaceae # IRMNG: Cyanophyceae > Synechococcales
+Schleiferiaceae # COL: Flavobacteriia > Flavobacteriales
+Scopulonemataceae # IRMNG: synonym of Pleurocapsaceae (Pleurocapsales)
+Scytonemaceae # GBIF: Cyanobacteriia > Cyanobacteriales
+Scytonemataceae # COL: Cyanophyceae > Nostocales
+Scytonematidae # LPSN: synonym of Scytonemataceae (Nostocales)
+Sedimentisphaeraceae # COL: Phycisphaerae > Sedimentisphaerales
+Sedimentisphaerales # COL: Planctomycetota > Phycisphaerae
+Segniliparaceae # COL: Actinomycetes > Mycobacteriales
+Selenomonadales # COL: Bacillota > Negativicutes
+Setchelliellaceae # LPSN: synonym of Scytonemataceae (Nostocales)
+Shewanellaceae # COL: Gammaproteobacteria > Alteromonadales
+Silvanigrellaceae # COL: Oligoflexia > Silvanigrellales
+Silvanigrellales # COL: Pseudomonadota > Oligoflexia
+Simkaniaceae # COL: Chlamydiia > Chlamydiales
+Sinobacteraceae # COL: synonym of Nevskiaceae (Nevskiales)
+Sinocapsaceae # NCBI: Cyanophyceae > Chroococcidiopsidales
+Siphononemataceae # IRMNG: synonym of Entophysalidaceae (Chroococcales)
+Siphononematales # LPSN: synonym of Chroococcales (Chroococcophyceae)
+Siphononematidea # LPSN: synonym of Chroococcales (Chroococcophyceae)
+Siphononematoideae # Wikidata: Chroococcales > Entophysalidaceae
+Sirenicapillariaceae # COL: synonym of Microcoleaceae (Oscillatoriales)
+Sirosiphonaceae # LPSN: synonym of Stigonemataceae (Nostocales)
+Sirosiphoniaceae # IRMNG: synonym of Stigonemataceae (Nostocales)
+Sneathiellaceae # COL: Alphaproteobacteria > Sneathiellales
+Sneathiellales # COL: Pseudomonadota > Alphaproteobacteria
+Sokoloviaceae # LPSN: synonym of Pseudanabaenaceae (Pseudanabaenales)
+Solibacteraceae # iNat: Acidobacteria > Solibacteres
+Solibacterales # Wikidata: Acidobacteriota > Solibacteres
+Solibacteres # iNat: Bacteria > Acidobacteria
+Solirubrobacteraceae # COL: Thermoleophilia > Solirubrobacterales
+Solirubrobacterales # COL: Actinomycetota > Thermoleophilia
+Soortiaceae # COL: Balneolia > Balneolales
+Sorangiineae # ITIS: Deltaproteobacteria > Myxococcales
+Spartobacteria # IRMNG: Bacteria > Verrucomicrobiota
+Sphaerobacteraceae # COL: Thermomicrobia > Sphaerobacterales
+Sphaerobacterales # COL: Thermomicrobiota > Thermomicrobia
+Sphaerobacterineae # ITIS: Thermomicrobia > Sphaerobacterales
+Sphingobacteriaceae # COL: Sphingobacteriia > Sphingobacteriales
+Sphingobacteriales # COL: Bacteroidota > Sphingobacteriia
+Sphingobacteriia # COL: Pseudomonadati > Bacteroidota
+Sphingomonadaceae # COL: Alphaproteobacteria > Sphingomonadales
+Sphingomonadales # COL: Pseudomonadota > Alphaproteobacteria
+Spirillaceae # COL: Betaproteobacteria > Spirillales
+Spirochaetaceae # COL: Spirochaetia > Spirochaetales
+Spirochaetae # ITIS: Bacteria
+Spirochaetales # COL: Spirochaetota > Spirochaetia
+Spirochaetes # COL: synonym of Spirochaetia (Spirochaetota)
+Spiroplasmataceae # COL: Mollicutes > Mycoplasmatales
+Spirulinaceae # COL: Cyanophyceae > Spirulinales
+Spirulinales # COL: Cyanobacteriota > Cyanophyceae
+Spirulinoideae # WoRMS: Pseudanabaenales > Pseudanabaenaceae
+Spongiibacteraceae # COL: Gammaproteobacteria > Cellvibrionales
+Sporichthyaceae # COL: Actinomycetes > Sporichthyales
+Sporolactobacillaceae # COL: Bacilli > Caryophanales
+Staphylococcaceae # COL: Bacilli > Caryophanales
+Steroidobacteraceae # COL: Gammaproteobacteria > Nevskiales
+Sterolibacteriaceae # COL: Betaproteobacteria > Spirillales
+Stichosiphonaceae # WoRMS: Cyanophyceae > Chroococcales
+Stigonemaceae # LPSN: synonym of Stigonemataceae (Nostocales)
+Stigonemataceae # COL: Cyanophyceae > Nostocales
+Stigonematales # COL: synonym of Nostocales (Cyanophyceae)
+Stigonematidea # LPSN: synonym of Nostocales (Chroococcophyceae)
+Streptococcaceae # COL: Bacilli > Lactobacillales
+Streptomycetaceae # COL: Actinomycetes > Kitasatosporales
+Streptomycineae # ITIS: Actinobacteria > Actinomycetales
+Streptosporangiaceae # COL: Actinomycetes > Streptosporangiales
+Streptosporangineae # ITIS: Actinobacteria > Actinomycetales
+Succinivibrionaceae # COL: Gammaproteobacteria > Aeromonadales
+Sulfuricellaceae # COL: Betaproteobacteria > Spirillales
+Sutterellaceae # COL: Betaproteobacteria > Burkholderiales
+Symphyonemataceae # COL: synonym of Scytonemataceae (Nostocales)
+Synechococcaceae # COL: Cyanophyceae > Synechococcales
+Synechococcales # COL: Cyanobacteriota > Cyanophyceae
+Synechococcoideae # WoRMS: Synechococcales > Synechococcaceae
+Synechococcophycidae # cyanobacterial subclass, not algae despite -phycidae; WoRMS: Cyanobacteria > Cyanophyceae
+Synergistaceae # COL: Synergistia > Synergistales
+Synergistales # COL: Synergistota > Synergistia
+Synergistetes # ITIS: Bacteria
+Synergistia # COL: Thermotogati > Synergistota
+Syntrophaceae # COL: Syntrophia > Syntrophales
+Syntrophobacteraceae # COL: Syntrophobacteria > Syntrophobacterales
+Syntrophobacterales # COL: Thermodesulfobacteriota > Syntrophobacteria
+Syntrophomonadaceae # COL: Syntrophomonadia > Syntrophomonadales
+Syntrophorhabdaceae # COL: Syntrophorhabdia > Syntrophorhabdales
+Telastromataceae # WoRMS: Cyanophyceae > Nostocales
+Temperatibacteraceae # COL: Alphaproteobacteria > Kordiimonadales
+Tenericutes # ITIS: Bacteria
+Tepidisphaeraceae # COL: Phycisphaerae > Tepidisphaerales
+Tepidisphaerales # COL: Planctomycetota > Phycisphaerae
+Thalassoporaceae # COL: Cyanophyceae > Pseudanabaenales
+Thermaceae # COL: Deinococci > Thermales
+Thermales # COL: Deinococcota > Deinococci
+Thermithiobacillaceae # COL: Acidithiobacillia > Acidithiobacillales
+Thermoactinomycetaceae # COL: Bacilli > Caryophanales
+Thermoanaerobacteraceae # COL: Clostridia > Thermoanaerobacterales
+Thermoanaerobacterales # COL: Bacillota > Clostridia
+Thermoanaerobaculaceae # COL: Thermoanaerobaculia > Thermoanaerobaculales
+Thermoanaerobaculales # COL: Acidobacteriota > Thermoanaerobaculia
+Thermoanaerobaculia # COL: Pseudomonadati > Acidobacteriota
+Thermodesulfobacteria # COL: Pseudomonadati > Thermodesulfobacteriota
+Thermodesulfobacteriaceae # COL: Thermodesulfobacteria > Thermodesulfobacteriales
+Thermodesulfobacteriales # COL: Thermodesulfobacteriota > Thermodesulfobacteria
+Thermodesulfobiaceae # COL: Clostridia > Thermoanaerobacterales
+Thermogemmatisporaceae # COL: Ktedonobacteria > Thermogemmatisporales
+Thermogemmatisporales # COL: Chloroflexota > Ktedonobacteria
+Thermoleophilaceae # COL: Thermoleophilia > Thermoleophilales
+Thermoleophilales # COL: Actinomycetota > Thermoleophilia
+Thermolithobacteraceae # COL: Thermolithobacteria > Thermolithobacterales
+Thermolithobacterales # COL: Bacillota > Thermolithobacteria
+Thermolithobacteria # COL: Bacillati > Bacillota
+Thermomicrobia # COL: Pseudomonadati > Thermomicrobiota
+Thermomicrobiaceae # COL: Thermomicrobia > Thermomicrobiales
+Thermomicrobiales # COL: Thermomicrobiota > Thermomicrobia
+Thermomonosporaceae # COL: Actinomycetes > Streptosporangiales
+Thermonemataceae # COL: Cytophagia > Cytophagales
+Thermosporotrichaceae # COL: Ktedonobacteria > Ktedonobacterales
+Thermostichaceae # COL: Cyanophyceae > Thermostichales
+Thermostichales # COL: Cyanobacteriota > Cyanophyceae
+Thermosynechococcaceae # COL: Cyanophyceae > Acaryochloridales
+Thermosynechococcales # GBIF: Cyanobacteria > Cyanobacteriia
+Thermotogaceae # COL: Thermotogae > Thermotogales
+Thermotogae # COL: Thermotogati > Thermotogota
+Thermotogales # COL: Thermotogota > Thermotogae
+Thermotomaculaceae # COL: Holophagae > Thermotomaculales
+Thermotomaculales # COL: Acidobacteriota > Holophagae
+Thioalkalibacteraceae # COL: Gammaproteobacteria > Chromatiales
+Thioalkalispiraceae # COL: Gammaproteobacteria > Chromatiales
+Thiobacillaceae # COL: Betaproteobacteria > Spirillales
+Thiofilaceae # COL: synonym of Leucotrichaceae (Beggiatoales)
+Thiolineaceae # COL: synonym of Leucotrichaceae (Beggiatoales)
+Thioprofundaceae # COL: Gammaproteobacteria > Chromatiales
+Thiotrichaceae # COL: synonym of Leucotrichaceae (Beggiatoales)
+Thiotrichales # COL: synonym of Beggiatoales (Gammaproteobacteria)
+Thorselliaceae # IRMNG: Gammaproteobacteria > Enterobacterales
+Thysanoplantaceae # WoRMS: Cyanophyceae > Graniferales
+Tildeniaceae # LPSN: synonym of Scytonemataceae (Nostocales)
+Tolypothrichaceae # COL: Cyanophyceae > Nostocales
+Tolypotrichaceae # LPSN: Chroococcophyceae > Nostocales
+Tolypotrichoideae # WoRMS: Nostocales > Microchaetaceae
+Trichocoleusaceae # COL: Cyanophyceae > Leptolyngbyales
+Trichostromataceae # WoRMS: Cyanophyceae > Nostocales
+Tropherymataceae # TAXREF: Actinomycetes > Microbacteriales
+Trueperaceae # COL: Deinococci > Trueperales
+Tsukamurellaceae # COL: Actinomycetes > Mycobacteriales
+Tubiellaceae # IRMNG: synonym of Romeriaceae (Synechococcales)
+Tumidophytaceae # WoRMS: Cyanophyceae > Nostocales
+Vampirovibrionaceae # IRMNG: Vampirovibrionophyceae > Vampirovibrionales
+Vampirovibrionales # IRMNG: Cyanobacteriota > Vampirovibrionophyceae
+Vampirovibrionia # GBIF: Bacteria > Cyanobacteria
+Vampirovibrionophyceae # cyanobacterial class, not algae despite -phyceae; COL: Bacillati > Cyanobacteriota
+Vampirovibriophyceae # cyanobacterial class, not algae despite -phyceae; COL: synonym of Vampirovibrionophyceae (Cyanobacteriota)
+Veillonellaceae # COL: Negativicutes > Veillonellales
+Ventosimonadaceae # COL: Gammaproteobacteria > Pseudomonadales
+Vermifilaceae # COL: synonym of Microcoleaceae (Oscillatoriales)
+Verrucomicrobia # ITIS: Bacteria
+Verrucomicrobiaceae # COL: Verrucomicrobiia > Verrucomicrobiales
+Verrucomicrobiae # COL: synonym of Verrucomicrobiia (Verrucomicrobiota)
+Verrucomicrobiales # COL: Verrucomicrobiota > Verrucomicrobiia
+Vesiculariaceae # WoRMS: Cyanophyceae > Chroococcales
+Vibrionaceae # COL: Gammaproteobacteria > Vibrionales
+Vibrionales # COL: Pseudomonadota > Gammaproteobacteria
+Vicinamibacteraceae # COL: Vicinamibacteria > Vicinamibacterales
+Vicinamibacterales # COL: Acidobacteriota > Vicinamibacteria
+Vicinamibacteria # COL: Pseudomonadati > Acidobacteriota
+Victivallaceae # COL: Lentisphaeria > Victivallales
+Victivallales # COL: Lentisphaerota > Lentisphaeria
+Vulgatibacteraceae # COL: Deltaproteobacteria > Myxococcales
+Waddliaceae # COL: Chlamydiia > Chlamydiales
+Wenzhouxiangellaceae # COL: Gammaproteobacteria > Chromatiales
+Williamsiaceae # WoRMS: Actinobacteria > Actinomycetales
+Williamwhitmaniaceae # COL: Bacteroidia > Bacteroidales
+Wilmottiaceae # COL: Cyanophyceae > Coleofasciculales
+Woeseiaceae # COL: Gammaproteobacteria > Chromatiales
+Woronichiniaceae # IRMNG: Cyanobacteriota > Cyanophyceae
+Xanthobacteraceae # COL: Alphaproteobacteria > Hyphomicrobiales
+Xanthomonadaceae # COL: synonym of Lysobacteraceae (Lysobacterales)
+Xanthomonadales # COL: synonym of Lysobacterales (Gammaproteobacteria)
+Xenococcaceae # COL: synonym of Pleurocapsaceae (Chroococcales)
+Yaniellaceae # COL: synonym of Micrococcaceae (Micrococcales)
+Yersiniaceae # COL: Gammaproteobacteria > Enterobacterales
+Zetaproteobacteria # ITIS: Bacteria > Proteobacteria
+Zheleznayaceae # WoRMS: Cyanophyceae > Nostocales
+Zoogloeaceae # COL: Betaproteobacteria > Rhodocyclales

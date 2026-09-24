@@ -1,2014 +1,2008 @@
-Aberoptinae
-Abrolophinae
-Aburistinae
-Acacinae
-Acalyptonotidae
-Acanthoctenidae
-Acanthocteninae
-Acanthopelminae
-Acari
-Acaricalini
-Acaridae
-Acaridei
-Acariformes
-Acarina
-Acaroidea
-Acaronychidae
-Acaronychoidea
-Acarophenacidae
-Acaropsellini
-Aceodrominae
-Aceriini
-Achaemenothrombiidae
-Acherontacaridae
-Achipteriidae
-Achipterioidea
-Acrobuninae
-Acropsopilionidae
-Acropsopilionoidea
-Actinopodidae
-Acucapitidae
-Adaeidae
-Adaeinae
-Adamystidae
-Adamystinae
-Adamystoidea
-Adelphacaridae
-Adhaesozetidae
-Aelurillina
-Aelurillini
-Aenictequidae
-Aenictequoidea
-Aeroglyphidae
-Africoseiinae
-Aganippini
-Agelenidae
-Ageleninae
-Agoriini
-Agoristenidae
-Agoristeninae
-Akravidae
-Alacraninae
-Aleurodamaeidae
-Algophagidae
-Algophaginae
-Alicorhagiida
-Alicorhagiidae
-Alicorhagioidea
-Allochaetophoridae
-Allocosinae
-Alloptidae
-Alloptinae
-Allotanaupodidae
-Allotanaupodoidea
-Allothrombiinae
-Allothyridae
-Altellopsinae
-Alycidae
-Alycinae
-Alycoidea
-Amaurobiidae
-Amaurobiinae
-Amaurobioidinae
-Amaurobioidini
-Amblyolpiidae
-Amblypigi
-Amblypygi
-Amblyseiinae # predatory mite subfamily (Phytoseiidae)
-Ameridae
-Amerobelbidae
-Amerobelboidea
-Ameroidea
-Ameronothridae
-Ameronothroidea
-Ameroseiidae
-Ametroproctidae
-Ammotrechidae
-Ammotrechinae
-Ammoxenidae
-Amoenacaridae
-Amphinectidae
-Amphinectinae
-Amphotrombiidae
-Amphotrombioidea
-Ampycidae
-Ampycinae
-Amycini
-Anagraphidinae
-Analgidae
-Analginae
-Analgoidea
-Anamidae
-Ananteridae
-Anapidae
-Anapinae
-Ancylometidae
-Anderemaeidae
-Anelosiminae
-Angelinae
-Angelininae
-Anisitsiellidae
-Anoeteae
-Anoetidae
-Anoetinae
-Antennochelidae
-Antennophoridae
-Antennophorina
-Antennophoroidea
-Anthocoptini
-Anthracoscorpionidae
-Antilloppiinae
-Antrodiaetidae
-Anuroctonidae
-Anyphaenidae
-Anyphaeninae
-Anystidae
-Anystina
-Anystinae
-Anystoidea
-Apembolephaeninae
-Aphantochilinae
-Aphantochilini
-Aphelacaridae
-Apheviderulicidae
-Apionacaridae
-Apoloniinae
-Arachnida
-Araneae
-Araneidae
-Araneinae
-Araneoidea
-Araneomorphae
-Arbanitinae
-Arborichthoniidae
-Arcanobisiinae
-Arceremaeidae
-Archaeidae
-Archaeobuthidae
-Archaeometidae
-Archaeorchestidae
-Archaeoscorpiopinae
-Archeonothridae
-Archoleptonetidae
-Arcoppiinae
-Arctacaridae
-Arctacaroidea
-Arctobiinae
-Ardeialginae
-Arenohydracaridae
-Argasidae
-Argasinae
-Argiopinae
-Argyrasterinae
-Argyrodinae
-Argyronetidae
-Ariadninae
-Aribatidae
-Arkyidae
-Arrenuridae
-Arrenuroidea
-Artoriinae
-Ascidae
-Ascoidea
-Ascouracaridae
-Ascouracarinae
-Asemoneinae
-Askawachidae
-Assamiidae
-Assamiinae
-Assamioidea
-Astacocrotonidae
-Astegistidae
-Asternoseiidae
-Astigmata
-Astigmatina
-Astiini
-Atemnidae
-Atemninae
-Athienemanniidae
-Athyreacaridae
-Atopochthoniidae
-Atopochthonioidea
-Atopomelidae
-Atoposphyronida
-Atracidae
-Aturidae
-Atypidae
-Atypoidea
-Audyanidae
-Auraninae
-Austrachipteriidae
-Australothelinae
-Austrochilidae
-Austrochiloidea
-Autognetidae
-Avenzoariidae
-Avenzoariinae
-Aviculariinae
-Avicularioidea
-Axonopsidae
-Axonopsinae
-Ayyaloniini
-Bakini
-Balaustiinae
-Ballarrinae
-Ballini
-Baloghjkaszabiidae
-Bandakiopsidae
-Barbutiidae
-Barychelidae
-Barychelinae
-Basilobelbidae
-Baviini
-Bdellidae
-Bdellinae
-Bdellonyssinae
-Belisariidae
-Belisariinae
-Belisarinae
-Beloniscidae
-Beloniscinae
-Bemmeridae
-Biantidae
-Biantinae
-Biantoidae
-Bimichaeliida
-Bimichaeliinae
-Bimichaliida
-Blattisociidae
-Blattisociinae
-Blossiinae
-Bochicidae
-Bochicinae
-Bogatiidae
-Bominae
-Bonnetellinae
-Bonziinae
-Boreophthalmi
-Borralinae
-Bothriuridae
-Bothriurinae
-Bothriuroidea
-Bourguyiinae
-Bourguyinae
-Boydaiini
-Brachioppiinae
-Brachistosterninae
-Brachychthoniidae
-Brachychthonioidea
-Brachypylina
-Brasiluropodidae
-Brazilobatidae
-Bredini
-Briggsidae
-Briggsinae
-Bryobiinae
-Buemarinoidae
-Buemarinoini
-Buparinae
-Burhinacarinae
-Buthida
-Buthidae
-Buthoidea
-Caccodemoniini
-Cacodemoniini
-Caddidae
-Caddoidea
-Caeculidae
-Caeculoidea
-Caelopyginae
-Caipirinae
-Calacarini
-Calathotarsinae
-Calchinae
-Calcitronidae
-Caleremaeidae
-Caligonellidae
-Callidosomatinae
-Caloppiidae
-Calyptostomatidae
-Calyptostomatoidea
-Calyptostomidae
-Camaricini
-Camerobiidae
-Camisiidae
-Campbellobatidae
-Canestriniidae
-Canestrinioidea
-Caponiidae
-Caponiinae
-Caraboacaridae
-Carabocepheidae
-Caraboctonidae
-Caraboctonoidea
-Carabodidae
-Carabodoidea
-Carpoglyphidae
-Castianeirinae
-Caudiferidae
-Cearininae
-Cecidophyinae
-Cecidophyini
-Celaenopsidae
-Celaenopsoidea
-Centrothelinae
-Cepheoidea
-Cepheusidae
-Cepheusoidea
-Ceraarachnini
-Ceratokalummidae
-Ceratolasmatidae
-Ceratolasmatinae
-Ceratoppiidae
-Ceratozetidae
-Ceratozetoidea
-Cercomegistidae
-Cercomegistina
-Cercomegistoidea
-Cerocepheidae
-Chactidae
-Chactoidea
-Chaerilidae
-Chaerilinae
-Chaerilobuthidae
-Chaeriloidea
-Chaetodactylidae
-Chamobatidae
-Chappuisididae
-Charassobatidae
-Charassobatoidea
-Charinina
-Charinoidea
-Charontidae
-Charontoidea
-Chaviniidae
-Chaviniinae
-Chediminae
-Cheiracanthiidae
-Cheiridiidae
-Cheiridiinae
-Cheiridioidea
-Cheliferidae
-Cheliferinae
-Cheliferini
-Cheliferoidea
-Chelonotinae
-Chernetidae
-Chernetinae
-Chernetini
-Chetochelacaridae
-Cheylabididae
-Cheyletidae
-Cheyletiellidae
-Cheyletiellinae
-Cheyletinae
-Cheyletini
-Cheyletoidea
-Chirodiscidae
-Chirorhynchobiidae
-Chitrellinae
-Chortoglyphidae
-Chrosiodermatinae
-Chrysillini
-Chthonidae
-Chthoniidae
-Chthoniinae
-Chthoniini
-Chthonioidea
-Chulacaridae
-Chummidae
-Chyzeriidae
-Chyzerioidea
-Chyzeroidea
-Cicurinidae
-Cillibidae
-Cithaeronidae
-Cladomomoniidae
-Cladonychiidae
-Cladonychiinae
-Clastinae
-Clathrosperchonidae
-Clausiadinychidae
-Cloacaridae
-Cloacarinae
-Cloacaroidea
-Clubionidae
-Cobaniinae
-Cocalodini
-Cocceupodidae
-Coelotinae
-Coleoscirinae
-Collohmanniidae
-Collohmannioidea
-Colomerini
-Colopodacini
-Compactozetidae
-Coprozerconidae
-Coriarachnini
-Corinnidae
-Corinninae
-Cosmetidae
-Cosmetinae
-Cosmochthonidae
-Cosmochthoniidae
-Cosmochthonioidea
-Costacaridae
-Coxequesomidae
-Cranaidae
-Cranainae
-Cranaini
-Criokerontinae
-Crotalomorphidae
-Crotoniidae
-Crotonioidea
-Cryptogeobiidae
-Cryptognathidae
-Cryptomastridae
-Cryptothelidae
-Cryptothelinae
-Crypturoptidae
-Ctenacaridae
-Ctenacaroidea
-Ctenidae
-Cteninae
-Ctenizidae
-Ctenobelbidae
-Ctenothyadidae
-Ctenothyadinae
-Cunaxidae
-Cunaxinae
-Cunaxoidinae
-Cuneoppiidae
-Curculioididae
-Cyatholipidae
-Cyatholipoidea
-Cybaeidae
-Cybellinae
-Cyclocosmiinae
-Cycloctenidae
-Cydrelinae
-Cyllibulidae
-Cymbachini
-Cymbaeremaeidae
-Cymbaeremaeoidea
-Cynortinae
-Cyphophthalmi
-Cyriocteinae
-Cyrtarachninae
-Cyrtaucheniidae
-Cyrtophorinae
-Cytinae
-Cytoditidae
-Dactylocheliferini
-Daesiidae
-Daesiinae
-Damaeidae
-Damaeoidea
-Damaeolidae
-Damoninae
-Dampetrinae
-Dampetroidae
-Dampfiellidae
-Dasypoleptinae
-Dasyponyssidae
-Dasythyreidae
-Davacaridae
-Decoroppiidae
-Deinopidae
-Deleninae
-Demodecidae
-Demodicidae
-Dendrochaetidae
-Dendroeremaeidae
-Dendryphantina
-Dendryphantini
-Dentizacheinae
-Deraiophoridae
-Dermanyssiae
-Dermanyssidae
-Dermanyssoidea
-Dermationidae
-Dermoglyphidae
-Desidae
-Desinae
-Desmonomata
-Diaeini
-Diaprograptinae
-Diarthrophallidae
-Diarthrophalloidea
-Dibuninae
-Dichosomata
-Dicranolasmatidae
-Dictynidae
-Dietinae
-Digalistini
-Digamasellidae
-Diguetidae
-Dinorhaxidae
-Dinorhaxinae
-Dinychidae
-Diplocentridae
-Diplocentrinae
-Diplogyniidae
-Diplosphyronida
-Diplothelopsinae
-Dipluridae
-Diplurinae
-Diptilomiopidae
-Diptilomiopinae
-Discosomaticinae
-Discosomaticini
-Discosominae
-Discourellidae
-Discozerconidae
-Disparipedidae
-Dolichocybidae
-Dolichocyboidea
-Dolichothrombiinae
-Dolomedidae
-Dracochelidae
-Drassodinae
-Drymobatidae
-Drymusidae
-Dubiaraneinae
-Dwigubskyiidae
-Dysderidae
-Dysderinae
-Dysderoidea
-Dyspnoi
-Dytiscacaridae
-Echeminae
-Echimyopodidae
-Ecribellatae
-Elassommatina
-Electrochaerilinae
-Electrophrynidae
-Eleutherengona
-Elliptochthoniidae
-Enantiobuninae
-Enantioppiidae
-Enarthronota
-Endeostigmata
-Eniochthonidae
-Eniochthoniidae
-Enoplocteninae
-Ensliniellinae
-Entelegynae
-Entonyssidae
-Entonyssinae
-Entypesidae
-Eoctonoidea
-Eotrogulidae
-Epactozetidae
-Epedanidae
-Epedaninae
-Epedanoidea
-Epeirotypinae
-Epicriiae
-Epicriidae
-Epicrioidea
-Epidermoptidae
-Epilohmannidae
-Epilohmanniidae
-Epilohmannioidea
-Epimerellidae
-Epimyodicidae
-Epimyodicinae
-Epiocheirata
-Erebomastridae
-Erecananinae
-Erecinae
-Eremaeidae
-Eremaeoidea
-Eremaeozeteidae
-Eremaeozetidae
-Eremaeozetoidea
-Eremellidae
-Eremelloidea
-Eremobatidae
-Eremobatinae
-Eremobelbidae
-Eremulidae
-Eresidae
-Ereynetidae
-Ereynetinae
-Erigoninae
-Eriophyidae
-Eriophyinae
-Eriophyini
-Eriophyoidea
-Eriorhynchidae
-Erythracaridae
-Erythracarinae
-Erythraeidae
-Erythraeinae
-Erythraeoidea
-Escadabiidae
-Euagridae
-Euagrinae
-Euamblypygi
-Euctenizidae
-Euglycyphagidae
-Eukoeneniidae
-Eukoenenioidea
-Eulohmanniidae
-Eulohmannioidea
-Eumenophorinae
-Euophryini
-Eupalopsellidae
-Euphthiracaridae
-Euphthiracaroidea
-Euphysalozerconidae
-Eupnoi
-Eupodaucheniinae
-Eupodidae
-Eupodides
-Eupodina
-Eupodoidea
-Eupoinae
-Euptyctima
-Euscorpiidae
-Euscorpiinae
-Eusparassinae
-Eustathiidae
-Eutegaeidae
-Eutegaeoidea
-Euthyadinae
-Eutrachytidae
-Eutrombidiidae
-Eutrombidiinae
-Euzerconidae
-Euzetidae
-Eviphididae
-Eviphidoidea
-Evippinae
-Eylaidae
-Eylaoidea
-Falculiferidae
-Fangensinae
-Feaellidae
-Feaellinae
-Feaelloidea
-Fedrizziidae
-Fedrizzioidea
-Feltriidae
-Fenicheliidae
-Ferkeriinae
-Ferradasiidae
-Ferrandiinae
-Filistatidae
-Filistatinae
-Filopalpinae
-Fissiphalliidae
-Flirteinae
-Fonteferreidae
-Fortuyniidae
-Freyanidae
-Freyina
-Frontipodopsidae
-Gabucinidae
-Gabuciniidae
-Gagrellinae
-Gahrliepiinae
-Gahrliepiini
-Gallieniellidae
-Galumnellidae
-Galumnidae
-Galumnoidea
-Gamaselidae
-Gamasina
-Garypidae
-Garypinae
-Garypinidae
-Garypininae
-Garypinoidea
-Garypoidea
-Gasteracanthinae
-Gastronyssidae
-Gaudiellidae
-Gaudoglyphidae
-Gayennini
-Gehypochthoniidae
-Genysinae
-Geogarypidae
-Gerdesiidae
-Giljaroviinae
-Glabropelmatidae
-Globibuninae
-Globipedidae
-Gluviinae
-Gluviopsinae
-Glycacaridae
-Glycyphagidae
-Glycyphagoidea
-Gnaphosidae
-Gnaphosinae
-Gnoriminae
-Gnosippinae
-Goniochernetinae
-Goniosomatinae
-Gonoleptides
-Gonyassamiinae
-Gonyleptidae
-Gonyleptinae
-Gonyleptoidea
-Gophoini
-Gradungulidae
-Gradungulinae
-Grammostolini
-Grandjeanicidae
-Granuloppiidae
-Grassatores
-Gretacaridae
-Guanolichidae
-Guasiniidae
-Gustaviidae
-Gustavioidea
-Gyinae
-Gylippidae
-Gymnobisiidae
-Gymnodamaeidae
-Gymnodamaeoidea
-Hadogenidae
-Hadrotarsinae
-Hadruridae
-Hadruroidea
-Haemogamasidae
-Hahniidae
-Hahniinae
-Halacaridae
-Halacaroidea
-Halarachnidae
-Halarachninae
-Halidae
-Halinae
-Halithersidae
-Halithersoidea
-Halolaelapidae
-Halonoproctidae
-Hapalopini
-Haplochthoniidae
-Haplogynae
-Haplozetidae
-Harmochirina
-Harpacteinae
-Harpactirinae
-Harpagopalpidae
-Harpirhynchidae
-Harpirhynchinae
-Harpirhynchini
-Harpypalpinae
-Harsadiinae
-Hasariini
-Hastocularidae
-Heatherellidae
-Heatherelloidea
-Hemictenata
-Hemileiidae # oribatid mite family
-Hemisarcoptidae
-Hemisarcoptoidea
-Hemiscorpiidae
-Hemiscorpiinae
-Heptathelidae
-Heptathelinae
-Heriaecini
-Hericiinae
-Hermanniellidae
-Hermannielloidea
-Hermanniidae
-Hermannioidea
-Hernandariinae
-Herpyllinae
-Hersiliinae
-Hersiliolinae
-Hesperolpiidae
-Heterobelbidae
-Heterocheylidae
-Heterocheyloidea
-Heterochthoniidae
-Heterochthonioidea
-Heterocoptidae
-Heterocranainae
-Heterocranaini
-Heterometrinae
-Heteropachylinae
-Heterophryninae
-Heteropodinae # huntsman spider subfamily (Sparassidae)
-Heteropsoridae
-Heteroscorpionidae
-Heterosphyronida
-Heterostigmatina
-Heterostygninae
-Heterozerconidae
-Heterozerconoidea
-Heterozetidae
-Hexathelidae
-Hexathrombiini
-Hexisopodidae
-Hexoppiidae
-Hexurellidae
-Hinzuanidae
-Hippasinae
-Hirstionyssidae
-Hirstiosomatinae
-Hirsutisomidae
-Hirtiosomatinae
-Hisponinae
-Histiostomatidae
-Histiostomatoidea
-Histiostomina
-Holarchaeidae
-Holarchaeiinae
-Holcolaetina
-Holocranaini
-Holosomata
-Holosternina
-Holothyrida
-Holothyridae
-Holothyroidea
-Homalonychidae
-Homocaligidae
-Hoplomegistidae
-Hormuridae
-Hormurinae
-Hubbardiidae
-Hubbardiinae
-Hubbardioidea
-Humerobatidae
-Hungarobelbidae
-Hungarohydracaridae
-Huriini
-Huttoniidae
-Hutufeideriidae
-Hyadesidae
-Hyadesiidae
-Hybalicidae
-Hydrachnidae
-Hydrachnidia
-Hydrachnoidea
-Hydrodromidae
-Hydrovolziidae
-Hydrovolzioidea
-Hydrozetidae
-Hydrozetoidea
-Hydryphantidae
-Hydryphantoidea
-Hygrobatidae
-Hygrobatoidea
-Hyidae
-Hypochilidae
-Hypochiloidea
-Hypochthonidae
-Hypochthoniidae
-Hypochthonioidea
-Hypoctoninae
-Hypoderatidae
-Hypoderatoidea
-Hypoxestinae
-Hystrichonyssidae
-Ibaloniinae
-Icaleptidae
-Ichthyostomatogasteridae
-Ideobisiinae
-Ideoroncidae
-Ideostygninae
-Idioctinae
-Idiopidae
-Idiopinae
-Idiozetidae
-Ingrassiinae
-Insidiatores
-Intermedialiini
-Iocheirata
-Iolinidae
-Ipainae
-Iphiopsididae
-Irumuinae
-Ischaleinae
-Ischnocolinae
-Ischnothelidae
-Ischnuridae
-Ischyropsalidae
-Ischyropsalididae
-Ischyropsalidinae
-Ischyropsalidoidea
-Itatina
-Iurida
-Iuridae
-Iurinae
-Iuroidea
-Ixamatinae
-Ixodida
-Ixodidae
-Ixodides
-Ixodoidea
-Ixodorhynchidae
-Johnstonianidae
-Juxtacheliferini
-Kababinae
-Kantacaridae
-Kaolinonychinae
-Karosinae
-Karschiidae
-Kaszabjbaloghiidae
-Kimulidae
-Kiwilichidae
-Klinckowstroemiidae
-Knemidokoptidae # sarcoptiform mite family (scaly-leg mites)
-Kodiakellidae
-Kramerellidae
-Krendowskiidae
-Kustarachnidae
-Kytoditidae
-Labidognatha
-Labidostomatidae
-Labidostomatoidea
-Labidostommatidae
-Labidostommatina
-Labidostommatoidea
-Labidostommidae # water mite family (Trombidiformes)
-Lachesaninae
-Lacurbsinae
-Laelapidae
-Laelaptidae
-Laelaptonyssidae
-Lamellareidae
-Laminosioptidae
-Lamponidae
-Lamponinae
-Lamprochernetinae
-Lanceoppiinae
-Laniatores
-Lapsiini
-Larcidae
-Lardoglyphidae
-Larvamimidae
-Lathyidae
-Latrodectinae
-Laversiidae
-Lawrencarinae
-Lebertiidae
-Lebertioidea
-Lechytiidae
-Lechytiinae
-Leeuwenhoekiidae
-Leeuwenhoekiinae
-Leiobunidae
-Leiobuninae
-Leiosteninae
-Lemanniellidae
-Lemurnyssidae
-Leptinae
-Leptobuninae
-Leptodrassinae
-Leptolaelapidae
-Leptonetidae
-Leptonetoidea
-Leptopsalidinae
-Leptorchestini
-Lethaxonidae
-Leucauginae
-Leucohyinae
-Levieina
-Liacaridae
-Libitiinae
-Licneremaeidae
-Licneremaeoidea
-Licnobelbidae
-Licnodamaeidae
-Liebstadiidae
-Ligonipedina
-Limnesiidae
-Limnocharidae
-Limnozetidae
-Limnozetoidea
-Linotetranidae
-Linyphiidae
-Linyphiinae
-Linyphioidea
-Liochelidae
-Liocranidae
-Liphistiidae
-Liphistiinae
-Lipophagidae
-Lisposominae
-Listrophoridae
-Listropsoralgidae
-Listropsoralginae
-Lobalgidae
-Lohmanniidae
-Lohmannioidea
-Lolinae
-Lomanellidae
-Lophonotacaridae
-Lordalychidae
-Lordalychoidea
-Lordalycidae
-Lordalycoidea
-Loxoscelinae
-Luxtoniidae
-Lycosidae
-Lycosinae
-Lyroppiidae
-Lyssomaninae
-Machadobelbidae
-Machuellidae
-Mackiellini
-Macrobunidae
-Macrochelidae
-Macrodinychidae
-Macronyssidae
-Macronyssinae
-Macrothelidae
-Magimeliinae
-Malaconothridae
-Malgasacaridae
-Malkaridae
-Malkarinae
-Manaosbiidae
-Manaosbiinae
-Manitherionyssidae
-Marpissina
-Maruinae
-Masteriinae
-Mastigoproctinae
-Matachiinae
-Maudheimiidae
-Mecicobothriidae
-Mecognathidae
-Mecysmaucheniidae
-Mecysmaucheniinae
-Medioppiinae
-Megacelaenopsidae
-Megacorminae
-Megadictynidae
-Megahexuridae
-Megalolaelapidae
-Megalopsalinae
-Megaschizominae
-Megeremaeidae
-Megisthanidae
-Megisthanoidea
-Megniniinae
-Melanoblossiidae
-Melanoblossiinae
-Melicharidae
-Melicharinae
-Meliponocoptidae
-Melloinidae
-Menthidae
-Mesokanidae
-Mesoplophoridae
-Mesoplophoroidea
-Mesosomatinae
-Mesostigmata
-Mesothelae
-Messoracaridae
-Mestommatina
-Metacheyletiinae
-Metagynuridae
-Metainae
-Metaltellinae
-Metasarcidae
-Metergininae
-Metharpyrhynchini
-Metrioppiidae
-Micariinae
-Micratheninae
-Micreremaeidae
-Micreremidae
-Microcharmidae
-Microcharminae
-Microcreagrinae
-Microdispidae
-Microdispini
-Microgyniidae
-Microgynioidea
-Microhexuridae
-Micronetinae
-Micropholcommatidae
-Micropholcommatinae
-Micropsammidae
-Microspalacinae
-Microstigmatidae
-Microtegeidae
-Microtrombidiidae
-Microzetidae
-Microzetoidea
-Mideidae
-Mideopsidae
-Migidae
-Miginae
-Mimetidae
-Minuidae
-Minuidinae
-Miratemninae
-Misumenini
-Mitobatinae
-Mitostomatinae
-Miturgidae
-Miturginae
-Mixonomata
-Mochlozetidae
-Modisiminae
-Molycriinae
-Momoniidae
-Monogynaspida
-Monoscutinae
-Monosphyronida
-Mopsini
-Mortolinae
-Multioppiinae
-Multoribulidae
-Mummuciidae
-Mycobatidae
-Mygalomorphae
-Mynogleninae
-Myobiidae
-Myobioidea
-Myocoptidae
-Myrmarachnina
-Myrmarachnini
-Myrmecicultoridae
-Myrmicotrombiinae
-Myrmochernetini
-Myroinae
-Mysmenidae
-Mysmeninae
-Mysoreinae
-Mystroppiinae
-Nalepellinae
-Nalepellini
-Namibesiidae
-Namibesiinae
-Nanhermanniidae
-Nanhermannioidea
-Nannenini
-Nanohystricidae
-Nanometainae
-Nanorchestidae
-Nasobatidae
-Nautarachnidae
-Nebinae
-Nehypochthoniidae
-Nehypochthonioidea
-Nemastomatidae
-Nemastomatinae
-Nemastomoididae
-Nematalycidae
-Nematalycina
-Nematalycoidea
-Nemesiidae
-Nenteriidae
-Neoacaridae
-Neoamblypygi
-Neobalkanellini
-Neobisiidae
-Neobisiinae
-Neobisioidea
-Neocribellatae
-Neogoveidae
-Neolanidae
-Neoliodidae
-Neoliodoidea
-Neonini
-Neopachylinae
-Neophyllobiidae
-Neopilionidae
-Neopilioninae
-Neopygmephoridae
-Neopygmephorini
-Neoricinulei
-Neoscorpionina
-Neotenogyniidae
-Neothrombiidae
-Neothyridae
-Neotrichozetidae
-Neotrombidiidae
-Nephilidae
-Nesozetidae
-Nesticidae
-Nicodamidae
-Nicodaminae
-Nicodamoidea
-Ninetinae
-Niphocepheidae
-Niphocepheoidea
-Nippobodidae
-Nipponacaridae
-Nippononychidae
-Nippononychinae
-Nipponopsalididae
-Nodocepheidae
-Nomoclastidae
-Nomoclastinae
-Nopinae
-Nosybeidae
-Nosybelbidae
-Nosybelbinae
-Nothogynidae
-Nothopodinae
-Nothopodini
-Nothopuginae
-Nothridae
-Nothrina
-Notoaturinae
-Notostigmata
-Novophytoptinae
-Nudomideopsidae
-Nuttalliellidae
-Oarcinae
-Ochrolichidae
-Ochyroceratidae
-Oconnoriidae
-Odontobuninae
-Odontoscirinae
-Oecobiidae
-Oecobiinae
-Oecobioidea
-Oedignathinae
-Oehserchestidae
-Oehserchestoidea
-Ogoveidae
-Ogoveoidea
-Ogulniinae
-Oligolophinae
-Oligolophini
-Ologamasidae
-Ologamasinae
-Olpiidae
-Olpiinae
-Olpioidea
-Oltacolinae
-Omartacaridae
-Omentolaelapidae
-Onchodellini
-Oncopodidae
-Oncopodoidea
-Onomastinae
-Onychobatidae
-Onychopalpida
-Oonopidae
-Oonopinae
-Opcochininae
-Ophioptidae
-Ophioptinae
-Opilioacarida
-Opilioacaridae
-Opilioacariformes
-Opiliones
-Opilionidae
-Opilionides
-Opilioninae
-Opilionini
-Opisthothelae
-Opistophthalminae
-Oplitidae
-Oppiellinae
-Oppiidae
-Oppiinae
-Oppioidea
-Orangescirulinae
-Orchestininae
-Oribatei
-Oribatellidae
-Oribatelloidea
-Oribatida
-Oribatulidae
-Oribellidae
-Oribotritiidae
-Oripodidae
-Oripodoidea
-Ornithocheyletiinae
-Ornithocheyletiini
-Ornithoctoninae
-Ornithodorinae
-Ornithonyssinae
-Orsolobidae
-Orthognata
-Ortholasmatinae
-Orthosterni
-Otilioleptidae
-Otiothopinae
-Otocepheidae
-Otocepheoidea
-Otopheidomenidae
-Oulenziinae
-Ovtchinnikoviinae
-Oxidae
-Oxyalginae
-Oxyameridae
-Oxyopidae
-Oxyoppiinae
-Pachylaelapidae
-Pachylaelapinae
-Pachylaelapini
-Pachylinae
-Pachyloidae
-Pachylospeleinae
-Pachyseiinae
-Pachyseiulinae
-Pacullidae
-Pagidini
-Palaeacaridae
-Palaeacaroidea
-Palaeoburmesebuthidae
-Palaeoeuscorpiidae
-Palaeoricinulei
-Palaeosomata
-Palaeotrilineatidae
-Paleoamblypygi
-Palpigradi
-Palpimanidae
-Palpimaninae
-Palpimanoidea
-Palpipedinae
-Palpipedoidae
-Palystinae
-Panctenata
-Pandininae
-Pandionacarinae
-Papillonotidae
-Paracharontidae
-Paracharontoidea
-Paragoniochernetinae
-Paragoniosomatinae
-Parahyidae
-Parakalummidae
-Paralaelapini
-Paralolidae
-Paramegistidae
-Paramegistoidea
-Paramiginae
-Paranonychidae
-Paranonychinae
-Parantennulidae
-Parantennuloidea
-Parapirnodidae
-Paraplectanoididae
-Pararchaeidae
-Pararchaeinae
-Parasironidae
-Parasitengona
-Parasitidae
-Parasitiformes
-Parasitinae
-Parasitoidea
-Paraspeleognathopsini
-Paratrombiinae
-Paratropididae
-Paratydeidae
-Paratydeoidea
-Pardosinae
-Parholaspidae
-Parholaspididae
-Parholaspinae
-Parhypochthoniidae
-Parhypochthonioidea
-Parhyposomata
-Passalozetidae
-Paternoppiinae
-Pedetopodidae
-Pediculochelidae
-Pedrocortesellidae
-Peloppiidae
-Penestomidae
-Pentanychidae
-Pentapalpidae
-Pentasetacidae
-Pentasetacini
-Penthaleidae
-Penthalodidae
-Pergamasinae
-Perharpyrhynchini
-Periegopidae
-Perlohmaniidae
-Perlohmanniidae
-Perlohmannioidea
-Petrobunidae
-Pettalidae
-Pezidae
-Phalangiidae
-Phalangiinae
-Phalangioidea
-Phalangodidae
-Phalangodinae
-Phalangodoidea
-Phanolophinae
-Phareicranainae
-Phareinae
-Phenopelopidae
-Phenopelopoidea
-Pheroliodidae
-Philodanidae
-Philodromidae
-Philodrominae
-Philomaoriinae
-Pholcidae
-Pholcinae # cellar spider subfamily (Pholcidae)
-Pholcoidea
-Pholcommatinae
-Phonognathidae
-Phrurolithidae
-Phrynichidae
-Phrynichinae
-Phryninae
-Phrynoidea
-Phthiracaridae
-Phthiracaroidea
-Phyllochthoniidae
-Phyllocoptinae # eriophyid mite subfamily (Eriophyidae)
-Phyllocoptini
-Phymatodiscidae
-Physoglenidae
-Phytocoptellinae
-Phytoptidae
-Phytoptinae
-Phytoseidae
-Phytoseiidae
-Phytoseioidea
-Phyxelididae
-Picobiinae
-Piersigiidae
-Pimoidae
-Pionidae
-Pionothelinae
-Pirnodidae
-Pisauridae
-Pisaurinae
-Plasmobatidae
-Plateremaeidae
-Plateremaeoidea
-Platoninae
-Platyameridae
-Platyarachnini
-Platybuninae
-Platythomisini
-Plectreuridae
-Plexippina
-Plexippini
-Pneumocoptidae
-Pneumophaginae
-Pneumophionyssinae
-Podacaridae
-Podapolipidae
-Podocinidae
-Podocininae
-Podocinini
-Podoctidae
-Podoctinae
-Podopterotegaeidae
-Podothrombidiidae
-Poecilotheriinae
-Poliocheridae
-Poliocheroidea
-Poltyini
-Polyaspididae
-Polybetinae
-Polycoryphinae
-Polypterozetidae
-Polypterozetoidea
-Polytrichinae
-Pomerantziidae
-Pomerantzioidea
-Pontarachnidae
-Poronoticae
-Porrhopini
-Porrhothelidae
-Porteriinae
-Primoricinulei
-Primoricinuleidae
-Prithinae
-Proctophyllodidae
-Proctophyllodinae
-Procydrelinae
-Prodidomidae
-Prodinychidae
-Progonyleptoidellinae
-Prokoeneniidae
-Promegistidae
-Prorachiinae
-Prostigmata
-Prostygnidae
-Prostygninae
-Protalginae
-Proteonematalycidae
-Proterorhagiidae
-Prothoplophoridae
-Prothricinae
-Protodinychidae
-Protogarypininae
-Protoischnuridae
-Protolophidae
-Protoplophoridae
-Protoplophoroidea
-Protoribatidae # oribatid mite family (Sarcoptiformes)
-Protoschizomidae
-Protosolpugidae
-Protowithiini
-Protziidae
-Protziinae
-Psalmopoeinae
-Psammochthoniidae
-Psechridae
-Pselligminae
-Pseudochactidae
-Pseudochactinae
-Pseudochactoidea
-Pseudocheylidae
-Pseudochiridiidae
-Pseudogarypidae
-Pseudohydryphantidae
-Pseudohydryphantinae
-Pseudolamponinae
-Pseudoppiidae
-Pseudoscorpiones
-Pseudoscorpionida
-Pseudotyrannochthoniidae
-Pseudotyrannochthoniinae
-Psilodercidae
-Psorergatidae
-Psoroptidae
-Psoroptoididae
-Pterobatidae
-Pterochthoniidae
-Pterodectinae
-Pterolichidae
-Pterolichinae
-Pterolichoidea
-Pteronyssidae
-Pterygosomatidae
-Pterygosomatoidea
-Ptilonyssidae
-Ptilonyssinae
-Ptiloxenidae
-Ptochacaridae
-Ptyssalgidae
-Pulchroppiinae
-Punctoribatidae # oribatid mite family (Sarcoptiformes)
-Pungoicinae
-Pycnocheiridiinae
-Pycnonoticae
-Pycnothelidae
-Pycnothelinae
-Pyemotidae
-Pyemotoidea
-Pygmephoridae
-Pygmephorinae
-Pygmephoroidea
-Pyramidopidae
-Pyroglyphidae
-Pyrosejidae
-Quadroppiidae
-Raillietiidae
-Ramsayellidae
-Raphignathae
-Raphignathidae
-Raphignathoidea
-Rectijanuidae
-Reginacharlottiidae
-Resinacaridae
-Rhagidiidae
-Rhagodidae
-Rhinoeciinae
-Rhinonyssidae
-Rhinonyssinae
-Rhodacaridae
-Rhodacarinae
-Rhodacaroidea
-Rhodinae
-Rhyncaphytoptinae
-Rhynchohydracaridae
-Rhynchoribatidae
-Rhyncoptidae
-Rhytidicolidae
-Riccardoellinae
-Ricinoididae
-Ricinoidoidea
-Ricinulei
-Rioppiidae
-Roeweriinae
-Roquetteini
-Rosensteiniidae
-Rotundabaloghiidae
-Rugodentidae
-Rugodentinae
-Rutripalpidae
-Sabaconidae
-Salticidae
-Salticinae # jumping spider subfamily (Salticidae)
-Salticini
-Salticoidea
-Saltiseiidae
-Salvidae
-Samoidae
-Samooidea
-Sandokanidae
-Sandokanoidea
-Saproglyphidae
-Saproglyphinae
-Sarasinellinae
-Sarasinicinae
-Sarcoptidae
-Sarcoptiformes
-Sarcoptoidea
-Sarindini
-Saronominae
-Sasoninae
-Saxidrominae
-Scatoglyphidae
-Scheloribatidae
-Schismatothelinae
-Schizoglyphidae
-Schizoglyphoidea
-Schizogyniidae
-Schizomida
-Schizomidae
-Schizomina
-Schizonotidae
-Schoengastiellini
-Schoengastiini
-Scirulinae
-Sclerobuninae
-Scleropilionini
-Sclerosomatidae
-Sclerosomatinae
-Scopocirini
-Scopulophthalmi
-Scorpiones
-Scorpionidae
-Scorpioninae
-Scorpionoidea
-Scorpiopidae
-Scorpiopinae
-Scutacaridae
-Scutacaroidea
-Scutoverticidae
-Scyloxinae
-Scytodidae
-Scytodinae
-Scytodoidea
-Segestriidae
-Segestriinae
-Seiodidae
-Sejida
-Sejidae
-Sejoidea
-Selencinae
-Selenocosmiinae
-Selenogyrinae
-Selenopidae
-Selenoribatidae
-Sellnickiidae
-Selnickidae
-Senoculidae
-Sicariidae
-Sicariinae
-Sidaminae
-Sierraphytoptinae
-Sierraphytoptini
-Sigillaricinuleidae
-Simaethina
-Simonellini
-Sinopimoidae
-Sironidae
-Sironides
-Sironinae
-Siteroptidae # astigmatan mite family
-Sitticini
-Smarididae
-Smaridiidae # harvest mite family (Trombidiformes)
-Smaridinae
-Smeringopinae
-Smeringurinae
-Smodicinini
-Sodreaninae
-Soerensenellinae
-Solifugae
-Solitudinae
-Solpugida
-Solpugidae
-Solpuginae
-Sorensenellinae
-Sosippinae
-Sparassidae
-Sparassinae
-Sparianthinae
-Spartaeina
-Spartaeinae
-Spartaeini
-Spelaeorhynchidae
-Speleochirini
-Speleognathinae
-Speleognathini
-Sperchonidae
-Sperchontidae
-Sphaerochthoniidae
-Sphaerolichida
-Sphaerolichidae
-Sphaerolichoidea
-Spinibdellinae
-Spinozetidae
-Spintharinae
-Spinturnicidae
-Spinturnicinae
-Stahnkeninae
-Staianinae
-Stasimopidae
-Staurobatidae
-Stelechobatidae
-Stemonyphantinae
-Stenochilidae
-Stenostygninae
-Stephanopinae
-Sternoidinae
-Sternophoridae
-Sternophoroidea
-Sternophthalmi
-Sternoppiidae
-Stigmaeidae
-Stigmocheylidae
-Stiphidiidae
-Stiphidiinae
-Stiphropodinae
-Storeninae
-Storenomorphinae
-Strandtmanniidae
-Stromatopelminae
-Strophiini
-Stygnicranainae
-Stygnicranaini
-Stygninae
-Stygnoleptinae
-Stygnommatidae
-Stygnommatinae
-Stygnopsidae
-Stygnopsinae
-Stygothrombidiidae
-Stygothrombidioidea
-Stygothrombiidae
-Stygothrombiinae
-Stygothrombioidea
-Stygotoniidae
-Stylocellidae
-Stylocellinae
-Stylocellini
-Sucinlourencoidae
-Suctobelbidae
-Suidasiidae
-Sulsulinae
-Superstitioniidae
-Superstitioniinae
-Suthepiidae
-Syarinidae
-Syarininae
-Symbioribatidae
-Symphytognathidae
-Symphytognathoidea
-Synagelina
-Synaphridae
-Synichotritiidae
-Synotaxidae
-Synspermiata
-Synsphyroninae
-Synthetonychiidae
-Syntropinae
-Syringobiidae
-Syringobiinae
-Syringophilidae
-Syringophilinae
-Systariidae
-Taitoinae
-Talaini
-Tanaupodidae
-Tanaupodoidea
-Taracidae
-Tarsocheylidae
-Tarsocheyloidea
-Tarsonemidae
-Tarsonemoidea
-Tectocepheidae
-Tectocepheoidea
-Tegeocranellidae
-Tegonotini
-Tegoribatidae
-Teinocheylini
-Telemidae
-Teneriffiidae
-Teneriffiinae
-Teneriffiolidae
-Tengellidae
-Tengellinae
-Tenuialidae
-Tenuipalpidae
-Teranyssidae
-Teratoppiidae
-Teratothyadidae
-Terpnacarida
-Terpnacaridae
-Terpnacaroidea
-Testudacarinae
-Tetrablemmidae
-Tetracondylidae
-Tetragnathidae
-Tetragnathinae
-Tetranychidae
-Tetranychoidea
-Tetrasejaspidae
-Tetrophthalmi
-Teutonidae
-Thanatinae
-Thaumasiinae
-Thelyphonidae
-Thelyphoninae
-Thelyphonoidea
-Theraphosidae
-Theraphosinae
-Theraphosini
-Theridiidae
-Theridiinae
-Theridiosomatidae
-Theridiosomatinae
-Thermacaridae
-Therobatinae
-Thinozerconidae
-Thinozerconoidea
-Thiodinini
-Thiratoscirtina
-Thomisidae
-Thomisinae
-Thomisini
-Thomisoidea
-Thoracosathesidae
-Thrigmopoeinae
-Thyasidae
-Thyrisomidae
-Thysanocercidae
-Tibellomatinae
-Tikizetidae
-Tingotinginae
-Tisanibini
-Titanoecidae
-Titanoecoidea
-Tithaeidae
-Tmarini
-Tokunocepheidae
-Torrenticolidae
-Torrenticolinae
-Toxopidae
-Toxopinae
-Trachelidae
-Trachycosmidae
-Trachytidae
-Trachyuropodidae
-Travuniidae
-Travuniinae
-Travunioidea
-Travunoidea
-Trechaleidae
-Trematuridae
-Trhypochthoniidae
-Triaenobunidae
-Triaenobuninae
-Triaenonychidae
-Triaenonychinae
-Triaenonychini
-Triaenonychoidea
-Tricassinae
-Trichocyllibidae
-Trichouropodellidae
-Trichthoniidae
-Tricommatidae
-Tricommatinae
-Tridenchthoniidae
-Tridenchthoniinae
-Tridenchthoniini
-Triditarsinae
-Trigonuropodidae
-Trigynapsida
-Trigynaspida
-Trionyxellidae
-Trionyxellinae
-Triophtydeidae
-Triplogyniidae
-Trisetacini
-Trispeleognathini
-Trizetidae
-Trizetoidea
-Trochanteriidae
-Trochometridiidae
-Trochometridioidea
-Troglokhammouaninae
-Trogloraptoridae
-Troglosironidae
-Troglotayosicidae
-Trogulidae
-Trogulides
-Troguloidea
-Trombellidae
-Trombiculidae
-Trombiculinae
-Trombiculini
-Trombiculoidea
-Trombidia
-Trombidiformes
-Trombidiidae
-Trombidiinae
-Trombidioidea
-Trouessartiidae
-Tsadseinae
-Tubulozetidae
-Tuckerellidae
-Tumerozetidae
-Tuparezetidae
-Turbinoptidae
-Tydeidae
-Tydeoidea
-Typhlochactidae
-Typhlochactinae
-Typopeltinae
-Tyrannochthoniini
-Uchidastygacaridae
-Udubidae
-Uloboridae
-Uloborinae
-Ummidiinae
-Unduloribatidae
-Unduloribatoidea
-Unguicheylidae
-Unionicolidae
-Uroactiniidae
-Urocteinae
-Urodacidae
-Urodacinae
-Urodiaspididae
-Urodinychidae
-Uroecobiinae
-Uropodellidae
-Uropodidae
-Uropodina
-Uropodinae
-Uropodoidea
-Uropygi
-Vachoniidae
-Vaejovidae
-Vaejovinae
-Vaejovoidea
-Varroidae
-Varroinae
-Veigaiidae
-Veigaioidea
-Venoniinae
-Ventrivomerini
-Verrucadithinae
-Verrucadithini
-Vexillariidae
-Viciriini
-Vietbocapinae
-Viridasiidae
-Vitzthumegistidae
-Walchiidae
-Walchiinae
-Walchiini
-Wettinidae
-Winterschmidtiidae
-Winterschmidtiinae
-Withiidae
-Withiinae
-Withiini
-Xenillidae # oribatid mite family (Sarcoptiformes)
-Xenocaligonellidae
-Xenocaligonellididae
-Xenoctenidae
-Xolalgidae
-Xolalginae
-Xoloptoidinae
-Xylobatidae
-Yurebillidae
-Yurebilloidea
-Zairebiantinae
-Zaleptinae
-Zalmoxidae
-Zalmoxoidea
-Zamorinae
-Zearchaeinae
-Zelandothyadidae
-Zelotinae
-Zerconidae
-Zerconoidea
-Zetomimidae
-Zetomotrichidae
-Zetomotrichoidea
-Zetorchestidae
-Zetorchestoidea
-Zodariidae
-Zodariinae
-Zodarioidea
-Zoicinae
-Zoridae
-Zorinae
-Zorocratidae
-Zoropsidae
-Zoropsinae
-Zumptiellinae
-Zumptiinae
+Aberoptinae # iNat: Sarcoptiformes > Eriophyidae
+Abrolophinae # COL: Trombidiformes > Erythraeidae
+Aburistinae # COL: Opiliones > Assamiidae
+Acacinae # COL: Opiliones > Assamiidae
+Acalyptonotidae # COL: Arachnida > Trombidiformes
+Acanthoctenidae # COL: synonym of Ctenidae (Araneae)
+Acanthocteninae # iNat: Araneae > Ctenidae
+Acanthopelminae # iNat: Araneae > Theraphosidae
+Acari # ITIS: synonym of Arachnida (Arthropoda)
+Acaricalini # FaEu: Prostigmata > Eriophyidae
+Acaridae # COL: Arachnida > Sarcoptiformes
+Acaridei # ITIS: synonym of Astigmata (Arachnida)
+Acariformes # COL: Arthropoda > Arachnida
+Acarina # ITIS: synonym of Arachnida (Arthropoda)
+Acaroidea # COL: Arachnida > Sarcoptiformes
+Acaronychidae # COL: Arachnida > Sarcoptiformes
+Acaronychoidea # COL: Arachnida > Sarcoptiformes
+Acarophenacidae # COL: Arachnida > Trombidiformes
+Acaropsellini # COL: Trombidiformes > Cheyletidae
+Aceodrominae # COL: synonym of Blattisociidae (Mesostigmata)
+Aceriini # FaEu: Prostigmata > Eriophyidae
+Achaemenothrombiidae # COL: Arachnida > Trombidiformes
+Acherontacaridae # COL: Arachnida > Trombidiformes
+Achipteriidae # COL: Arachnida > Sarcoptiformes
+Achipterioidea # COL: Arachnida > Sarcoptiformes
+Acrobuninae # COL: Opiliones > Epedanidae
+Acropsopilionidae # COL: Arachnida > Opiliones
+Acropsopilionoidea # COL: Arachnida > Opiliones
+Actinopodidae # COL: Arachnida > Araneae
+Acucapitidae # COL: Arachnida > Trombidiformes
+Adaeidae # COL: synonym of Adaeinae (Opiliones)
+Adaeinae # COL: Opiliones > Triaenonychidae
+Adamystidae # COL: Arachnida > Trombidiformes
+Adamystinae # COL: Trombidiformes > Adamystidae
+Adamystoidea # COL: Arachnida > Trombidiformes
+Adelphacaridae # COL: Arachnida > Sarcoptiformes
+Adhaesozetidae # COL: Arachnida > Sarcoptiformes
+Aelurillina # iNat: Araneae > Salticidae
+Aelurillini # PBDB: Araneae > Salticidae
+Aenictequidae # COL: Arachnida > Mesostigmata
+Aenictequoidea # COL: Arachnida > Mesostigmata
+Aeroglyphidae # COL: Arachnida > Sarcoptiformes
+Africoseiinae # COL: Mesostigmata > Podocinidae
+Aganippini # iNat: Araneae > Idiopidae
+Agelenidae # COL: Arachnida > Araneae
+Ageleninae # iNat: Araneae > Agelenidae
+Agoriini # iNat: Araneae > Salticidae
+Agoristenidae # COL: Arachnida > Opiliones
+Agoristeninae # COL: Opiliones > Agoristenidae
+Akravidae # COL: Arachnida > Scorpiones
+Alacraninae # ITIS: Scorpiones > Superstitioniidae
+Aleurodamaeidae # COL: Arachnida > Sarcoptiformes
+Algophagidae # COL: Arachnida > Sarcoptiformes
+Algophaginae # COL: Sarcoptiformes > Algophagidae
+Alicorhagiida # COL: Arachnida > Sarcoptiformes
+Alicorhagiidae # COL: Arachnida > Sarcoptiformes
+Alicorhagioidea # COL: Arachnida > Sarcoptiformes
+Allochaetophoridae # COL: Arachnida > Trombidiformes
+Allocosinae # iNat: Araneae > Lycosidae
+Alloptidae # COL: Arachnida > Sarcoptiformes
+Alloptinae # FaEu: Astigmata > Alloptidae
+Allotanaupodidae # COL: Arachnida > Trombidiformes
+Allotanaupodoidea # COL: Arachnida > Trombidiformes
+Allothrombiinae # iNat: Trombidiformes > Trombidiidae
+Allothyridae # COL: Arachnida > Holothyrida
+Altellopsinae # iNat: Araneae > Amaurobiidae
+Alycidae # COL: Arachnida > Sarcoptiformes
+Alycinae # COL: Sarcoptiformes > Alycidae
+Alycoidea # COL: Arachnida > Sarcoptiformes
+Amaurobiidae # COL: Arachnida > Araneae
+Amaurobiinae # iNat: Araneae > Amaurobiidae
+Amaurobioidinae # iNat: Araneae > Anyphaenidae
+Amaurobioidini # iNat: Araneae > Anyphaenidae
+Amblyolpiidae # IRMNG: Arachnida > Pseudoscorpionida
+Amblypigi # COL: synonym of Amblypygi (Arachnida)
+Amblypygi # COL: Arthropoda > Arachnida
+Amblyseiinae # predatory mite subfamily (Phytoseiidae); TAXREF: Mesostigmata > Phytoseiidae
+Ameridae # COL: Arachnida > Sarcoptiformes
+Amerobelbidae # COL: Arachnida > Sarcoptiformes
+Amerobelboidea # COL: Arachnida > Sarcoptiformes
+Ameroidea # COL: synonym of Amerobelboidea (Arachnida)
+Ameronothridae # COL: Arachnida > Sarcoptiformes
+Ameronothroidea # COL: Arachnida > Sarcoptiformes
+Ameroseiidae # COL: Arachnida > Mesostigmata
+Ametroproctidae # COL: Arachnida > Sarcoptiformes
+Ammotrechidae # COL: Arachnida > Solifugae
+Ammotrechinae # COL: Solifugae > Ammotrechidae
+Ammoxenidae # ITIS: Arachnida > Araneae
+Amoenacaridae # COL: Arachnida > Trombidiformes
+Amphinectidae # ITIS: Arachnida > Araneae
+Amphinectinae # iNat: Araneae > Desidae
+Amphotrombiidae # COL: Arachnida > Trombidiformes
+Amphotrombioidea # COL: Arachnida > Trombidiformes
+Ampycidae # COL: Arachnida > Opiliones
+Ampycinae # COL: synonym of Ampycidae (Opiliones)
+Amycini # TAXREF: Araneae > Salticidae
+Anagraphidinae # iNat: Araneae > Gnaphosidae
+Analgidae # COL: Arachnida > Sarcoptiformes
+Analginae # FaEu: Astigmata > Analgidae
+Analgoidea # COL: Arachnida > Sarcoptiformes
+Anamidae # COL: Arachnida > Araneae
+Ananteridae # COL: Arachnida > Scorpiones
+Anapidae # COL: Arachnida > Araneae
+Anapinae # iNat: Araneae > Anapidae
+Ancylometidae # COL: Arachnida > Araneae
+Anderemaeidae # COL: Arachnida > Sarcoptiformes
+Anelosiminae # iNat: Araneae > Theridiidae
+Angelininae # COL: synonym of Leiosteninae (Opiliones)
+Anisitsiellidae # COL: Arachnida > Trombidiformes
+Anoeteae # COL: synonym of Histiostomatidae (Sarcoptiformes)
+Anoetidae # COL: synonym of Histiostomatidae (Sarcoptiformes)
+Anoetinae # COL: synonym of Histiostomatidae (Sarcoptiformes)
+Antennochelidae # COL: Arachnida > Mesostigmata
+Antennophoridae # COL: Arachnida > Mesostigmata
+Antennophorina # COL: Arachnida > Mesostigmata
+Antennophoroidea # COL: Arachnida > Mesostigmata
+Anthocoptini # FaEu: Prostigmata > Eriophyidae
+Anthracoscorpionidae # IRMNG: Arachnida > Scorpiones
+Antilloppiinae # COL: Sarcoptiformes > Oppiidae
+Antrodiaetidae # COL: Arachnida > Araneae
+Anuroctonidae # COL: Arachnida > Scorpiones
+Anyphaenidae # COL: Arachnida > Araneae
+Anyphaeninae # PBDB: Araneae > Anyphaenidae
+Anystidae # COL: Arachnida > Trombidiformes
+Anystina # COL: Arachnida > Trombidiformes
+Anystinae # iNat: Trombidiformes > Anystidae
+Anystoidea # COL: Arachnida > Trombidiformes
+Apembolephaeninae # COL: synonym of Hernandariinae (Opiliones)
+Aphantochilinae # iNat: Araneae > Thomisidae
+Aphantochilini # iNat: Araneae > Thomisidae
+Aphelacaridae # COL: synonym of Adelphacaridae (Sarcoptiformes)
+Apheviderulicidae # COL: Arachnida > Trombidiformes
+Apionacaridae # COL: Arachnida > Sarcoptiformes
+Apoloniinae # COL: Trombidiformes > Leeuwenhoekiidae
+Arachnida # COL: Animalia > Arthropoda
+Araneae # COL: Arthropoda > Arachnida
+Araneidae # COL: Arachnida > Araneae
+Araneinae # PBDB: Araneae > Araneidae
+Araneoidea # PBDB: Arachnida > Araneae
+Araneomorphae # PBDB: Arachnida > Araneae
+Arbanitinae # iNat: Araneae > Idiopidae
+Arborichthoniidae # COL: Arachnida > Sarcoptiformes
+Arcanobisiinae # COL: Pseudoscorpiones > Syarinidae
+Arceremaeidae # COL: Arachnida > Sarcoptiformes
+Archaeidae # COL: Arachnida > Araneae
+Archaeobuthidae # ITIS: Arachnida > Scorpiones
+Archaeometidae # COL: Arachnida > Opiliones
+Archaeorchestidae # IRMNG: Arachnida > Oribatida
+Archaeoscorpiopinae # ITIS: Scorpiones > Palaeoeuscorpiidae
+Archeonothridae # COL: synonym of Acaronychidae (Sarcoptiformes)
+Archoleptonetidae # COL: Arachnida > Araneae
+Arcoppiinae # COL: Sarcoptiformes > Oppiidae
+Arctacaridae # COL: Arachnida > Mesostigmata
+Arctacaroidea # COL: Arachnida > Mesostigmata
+Arctobiinae # iNat: Araneae > Amaurobiidae
+Ardeialginae # FaEu: Astigmata > Pterolichidae
+Arenohydracaridae # COL: Arachnida > Trombidiformes
+Argasidae # COL: Arachnida > Ixodida
+Argasinae # FaEu: Ixodida > Argasidae
+Argiopinae # iNat: Araneae > Araneidae
+Argyrasterinae # COL: synonym of Gagrellinae (Opiliones)
+Argyrodinae # iNat: Araneae > Theridiidae
+Argyronetidae # COL: Arachnida > Araneae
+Ariadninae # PBDB: Araneae > Segestriidae
+Aribatidae # COL: Arachnida > Sarcoptiformes
+Arkyidae # COL: Arachnida > Araneae
+Arrenuridae # COL: Arachnida > Trombidiformes
+Arrenuroidea # COL: Arachnida > Trombidiformes
+Artoriinae # iNat: Araneae > Lycosidae
+Ascidae # COL: Arachnida > Mesostigmata
+Ascoidea # COL: Arachnida > Mesostigmata
+Ascouracaridae # COL: Arachnida > Sarcoptiformes
+Ascouracarinae # iNat: Sarcoptiformes > Syringobiidae
+Asemoneinae # iNat: Araneae > Salticidae
+Askawachidae # COL: Arachnida > Opiliones
+Assamiidae # COL: Arachnida > Opiliones
+Assamiinae # COL: Opiliones > Assamiidae
+Assamioidea # COL: Arachnida > Opiliones
+Astacocrotonidae # COL: Arachnida > Trombidiformes
+Astegistidae # COL: Arachnida > Sarcoptiformes
+Asternoseiidae # COL: Arachnida > Mesostigmata
+Astigmata # COL: Arachnida > Sarcoptiformes
+Astigmatina # ITIS: synonym of Astigmata (Arachnida)
+Astiini # iNat: Araneae > Salticidae
+Atemnidae # COL: Arachnida > Pseudoscorpiones
+Atemninae # COL: Pseudoscorpiones > Atemnidae
+Athienemanniidae # COL: Arachnida > Trombidiformes
+Athyreacaridae # COL: Arachnida > Trombidiformes
+Atopochthoniidae # COL: Arachnida > Sarcoptiformes
+Atopochthonioidea # COL: Arachnida > Sarcoptiformes
+Atopomelidae # COL: Arachnida > Sarcoptiformes
+Atoposphyronida # COL: Arachnida > Pseudoscorpiones
+Atracidae # COL: Arachnida > Araneae
+Atypidae # COL: Arachnida > Araneae
+Atypoidea # PBDB: Arachnida > Araneae
+Audyanidae # COL: Arachnida > Trombidiformes
+Auraninae # COL: Opiliones > Stygnidae
+Austrachipteriidae # COL: synonym of Achipteriidae (Sarcoptiformes)
+Australothelinae # iNat: Araneae > Euagridae
+Austrochilidae # COL: Arachnida > Araneae
+Austrochiloidea # iNat: Arachnida > Araneae
+Autognetidae # COL: Arachnida > Sarcoptiformes
+Avenzoariidae # COL: Arachnida > Sarcoptiformes
+Avenzoariinae # FaEu: Astigmata > Avenzoariidae
+Aviculariinae # PBDB: synonym of Theraphosidae (Araneae)
+Avicularioidea # PBDB: Arachnida > Araneae
+Axonopsidae # ITIS: synonym of Aturidae (Trombidiformes)
+Axonopsinae # FaEu: Prostigmata > Aturidae
+Ayyaloniini # COL: Pseudoscorpiones > Chthoniidae
+Bakini # COL: Trombidiformes > Cheyletidae
+Balaustiinae # COL: Trombidiformes > Erythraeidae
+Ballarrinae # COL: Opiliones > Neopilionidae
+Ballini # iNat: Araneae > Salticidae
+Baloghjkaszabiidae # COL: Arachnida > Mesostigmata
+Bandakiopsidae # COL: Arachnida > Trombidiformes
+Barbutiidae # COL: Arachnida > Trombidiformes
+Barychelidae # COL: Arachnida > Araneae
+Barychelinae # iNat: Araneae > Barychelidae
+Basilobelbidae # COL: Arachnida > Sarcoptiformes
+Baviini # iNat: Araneae > Salticidae
+Bdellidae # COL: Arachnida > Trombidiformes
+Bdellinae # iNat: Trombidiformes > Bdellidae
+Bdellonyssinae # COL: synonym of Macronyssidae (Mesostigmata)
+Belisariidae # COL: Arachnida > Scorpiones
+Belisariinae # ITIS: synonym of Belisariidae (Scorpiones)
+Belisarinae # ITIS: synonym of Belisariidae (Scorpiones)
+Beloniscidae # COL: Arachnida > Opiliones
+Beloniscinae # COL: Opiliones > Beloniscidae
+Bemmeridae # COL: Arachnida > Araneae
+Biantidae # COL: Arachnida > Opiliones
+Biantinae # COL: Opiliones > Biantidae
+Biantoidae # COL: synonym of Biantinae (Opiliones)
+Bimichaeliida # COL: Arachnida > Sarcoptiformes
+Bimichaeliinae # COL: Sarcoptiformes > Alycidae
+Bimichaliida # Wikidata: Arachnida > Sarcoptiformes
+Blattisociidae # COL: Arachnida > Mesostigmata
+Blattisociinae # COL: synonym of Blattisociidae (Mesostigmata)
+Blossiinae # COL: Solifugae > Daesiidae
+Bochicidae # COL: Arachnida > Pseudoscorpiones
+Bochicinae # COL: Pseudoscorpiones > Bochicidae
+Bogatiidae # COL: Arachnida > Trombidiformes
+Bominae # iNat: Araneae > Thomisidae
+Bonnetellinae # FaEu: Astigmata > Avenzoariidae
+Bonziinae # iNat: Trombidiformes > Cunaxidae
+Boreophthalmi # COL: Arachnida > Opiliones
+Borralinae # iNat: Araneae > Stiphidiidae
+Bothriuridae # COL: Arachnida > Scorpiones
+Bothriurinae # ITIS: Scorpiones > Bothriuridae
+Bothriuroidea # iNat: Arachnida > Scorpiones
+Bourguyiinae # COL: Opiliones > Gonyleptidae
+Bourguyinae # COL: synonym of Bourguyiinae (Opiliones)
+Boydaiini # iNat: Trombidiformes > Ereynetidae
+Brachioppiinae # COL: Sarcoptiformes > Oppiidae
+Brachistosterninae # ITIS: synonym of Bothriurinae (Scorpiones)
+Brachychthoniidae # COL: Arachnida > Sarcoptiformes
+Brachychthonioidea # COL: Arachnida > Sarcoptiformes
+Brachypylina # COL: Arachnida > Sarcoptiformes
+Brasiluropodidae # COL: Arachnida > Mesostigmata
+Brazilobatidae # IRMNG: Arachnida > Oribatida
+Bredini # TAXREF: Araneae > Salticidae
+Briggsidae # COL: synonym of Cladonychiidae (Opiliones)
+Briggsinae # ITIS: Opiliones > Travuniidae
+Bryobiinae # FaEu: Prostigmata > Tetranychidae
+Buemarinoidae # COL: synonym of Triaenonychoidea (Arachnida)
+Buemarinoini # COL: synonym of Triaenonychoidea (Arachnida)
+Buparinae # COL: Opiliones > Beloniscidae
+Burhinacarinae # FaEu: Astigmata > Freyanidae
+Buthida # iNat: Arachnida > Scorpiones
+Buthidae # COL: Arachnida > Scorpiones
+Buthoidea # ITIS: Arachnida > Scorpiones
+Caccodemoniini # COL: Pseudoscorpiones > Withiidae
+Cacodemoniini # iNat: Pseudoscorpiones > Withiidae
+Caddidae # COL: Arachnida > Opiliones
+Caddoidea # COL: Arachnida > Opiliones
+Caeculidae # COL: Arachnida > Trombidiformes
+Caeculoidea # COL: Arachnida > Trombidiformes
+Caelopyginae # COL: Opiliones > Gonyleptidae
+Caipirinae # iNat: Araneae > Pholcidae
+Calacarini # FaEu: Prostigmata > Eriophyidae
+Calathotarsinae # iNat: Araneae > Migidae
+Calchinae # ITIS: Scorpiones > Iuridae
+Calcitronidae # COL: Arachnida > Schizomida
+Caleremaeidae # COL: Arachnida > Sarcoptiformes
+Caligonellidae # COL: Arachnida > Trombidiformes
+Callidosomatinae # COL: Trombidiformes > Erythraeidae
+Caloppiidae # COL: Arachnida > Sarcoptiformes
+Calyptostomatidae # COL: Arachnida > Trombidiformes
+Calyptostomatoidea # COL: Arachnida > Trombidiformes
+Calyptostomidae # COL: synonym of Calyptostomatidae (Trombidiformes)
+Camaricini # iNat: Araneae > Thomisidae
+Camerobiidae # COL: Arachnida > Trombidiformes
+Camisiidae # COL: synonym of Crotoniidae (Sarcoptiformes)
+Campbellobatidae # COL: synonym of Oripodidae (Sarcoptiformes)
+Canestriniidae # COL: Arachnida > Sarcoptiformes
+Canestrinioidea # COL: Arachnida > Sarcoptiformes
+Caponiidae # COL: Arachnida > Araneae
+Caponiinae # iNat: Araneae > Caponiidae
+Caraboacaridae # COL: Arachnida > Trombidiformes
+Carabocepheidae # COL: synonym of Tetracondylidae (Sarcoptiformes)
+Caraboctonidae # COL: Arachnida > Scorpiones
+Caraboctonoidea # ITIS: Arachnida > Scorpiones
+Carabodidae # COL: Arachnida > Sarcoptiformes
+Carabodoidea # COL: Arachnida > Sarcoptiformes
+Carpoglyphidae # COL: Arachnida > Sarcoptiformes
+Castianeirinae # PBDB: Araneae > Corinnidae
+Caudiferidae # COL: Arachnida > Sarcoptiformes
+Cearininae # COL: Opiliones > Gonyleptidae
+Cecidophyinae # FaEu: Prostigmata > Eriophyidae
+Cecidophyini # FaEu: Prostigmata > Eriophyidae
+Celaenopsidae # COL: Arachnida > Mesostigmata
+Celaenopsoidea # COL: Arachnida > Mesostigmata
+Centrothelinae # iNat: Araneae > Lamponidae
+Cepheoidea # COL: synonym of Cepheusoidea (Arachnida)
+Cepheusidae # COL: Arachnida > Sarcoptiformes
+Cepheusoidea # COL: Arachnida > Sarcoptiformes
+Ceraarachnini # iNat: Araneae > Thomisidae
+Ceratokalummidae # COL: Arachnida > Sarcoptiformes
+Ceratolasmatidae # ITIS: synonym of Ceratolasmatinae (Opiliones)
+Ceratolasmatinae # COL: Opiliones > Ischyropsalididae
+Ceratoppiidae # COL: Arachnida > Sarcoptiformes
+Ceratozetidae # COL: Arachnida > Sarcoptiformes
+Ceratozetoidea # COL: Arachnida > Sarcoptiformes
+Cercomegistidae # COL: Arachnida > Mesostigmata
+Cercomegistina # COL: Arachnida > Mesostigmata
+Cercomegistoidea # COL: Arachnida > Mesostigmata
+Cerocepheidae # COL: Arachnida > Sarcoptiformes
+Chactidae # COL: Arachnida > Scorpiones
+Chactoidea # ITIS: Arachnida > Scorpiones
+Chaerilidae # COL: Arachnida > Scorpiones
+Chaerilinae # ITIS: Scorpiones > Chaerilidae
+Chaerilobuthidae # ITIS: Arachnida > Scorpiones
+Chaeriloidea # ITIS: Arachnida > Scorpiones
+Chaetodactylidae # COL: Arachnida > Sarcoptiformes
+Chamobatidae # COL: Arachnida > Sarcoptiformes
+Chappuisididae # COL: Arachnida > Trombidiformes
+Charassobatidae # COL: Arachnida > Sarcoptiformes
+Charassobatoidea # COL: Arachnida > Sarcoptiformes
+Charinina # Wikidata: Arachnida > Amblypygi
+Charinoidea # COL: synonym of Charontoidea (Arachnida)
+Charontidae # COL: Arachnida > Amblypygi
+Charontoidea # COL: Arachnida > Amblypygi
+Chaviniidae # COL: synonym of Oppiidae (Sarcoptiformes)
+Chaviniinae # COL: synonym of Lanceoppiinae (Sarcoptiformes)
+Chediminae # iNat: Araneae > Palpimanidae
+Cheiracanthiidae # COL: Arachnida > Araneae
+Cheiridiidae # COL: Arachnida > Pseudoscorpiones
+Cheiridiinae # COL: Pseudoscorpiones > Cheiridiidae
+Cheiridioidea # COL: Arachnida > Pseudoscorpiones
+Cheliferidae # COL: Arachnida > Pseudoscorpiones
+Cheliferinae # COL: Pseudoscorpiones > Cheliferidae
+Cheliferini # COL: Pseudoscorpiones > Cheliferidae
+Cheliferoidea # COL: Arachnida > Pseudoscorpiones
+Chelonotinae # COL: Trombidiformes > Cheyletidae
+Chernetidae # COL: Arachnida > Pseudoscorpiones
+Chernetinae # COL: Pseudoscorpiones > Chernetidae
+Chernetini # COL: Pseudoscorpiones > Chernetidae
+Chetochelacaridae # COL: Arachnida > Sarcoptiformes
+Cheylabididae # COL: Arachnida > Sarcoptiformes
+Cheyletidae # COL: Arachnida > Trombidiformes
+Cheyletiellidae # GBIF: Arachnida > Trombidiformes
+Cheyletiellinae # COL: Trombidiformes > Cheyletidae
+Cheyletinae # COL: Trombidiformes > Cheyletidae
+Cheyletini # COL: Trombidiformes > Cheyletidae
+Cheyletoidea # COL: Arachnida > Trombidiformes
+Chirodiscidae # COL: Arachnida > Sarcoptiformes
+Chirorhynchobiidae # COL: Arachnida > Sarcoptiformes
+Chitrellinae # COL: Pseudoscorpiones > Syarinidae
+Chortoglyphidae # COL: Arachnida > Sarcoptiformes
+Chrosiodermatinae # iNat: Araneae > Sparassidae
+Chrysillini # PBDB: Araneae > Salticidae
+Chthonidae # COL: synonym of Chthoniidae (Pseudoscorpiones)
+Chthoniidae # COL: Arachnida > Pseudoscorpiones
+Chthoniinae # COL: Pseudoscorpiones > Chthoniidae
+Chthoniini # COL: Pseudoscorpiones > Chthoniidae
+Chthonioidea # COL: Arachnida > Pseudoscorpiones
+Chulacaridae # COL: Arachnida > Trombidiformes
+Chummidae # ITIS: Arachnida > Araneae
+Chyzeriidae # COL: Arachnida > Trombidiformes
+Chyzerioidea # COL: Arachnida > Trombidiformes
+Chyzeroidea # ITIS: synonym of Chyzerioidea (Arachnida)
+Cicurinidae # COL: Arachnida > Araneae
+Cillibidae # COL: Arachnida > Mesostigmata
+Cithaeronidae # COL: Arachnida > Araneae
+Cladomomoniidae # iNat: Arachnida > Trombidiformes
+Cladonychiidae # COL: Arachnida > Opiliones
+Cladonychiinae # COL: synonym of Cladonychiidae (Opiliones)
+Clastinae # iNat: Araneae > Sparassidae
+Clathrosperchonidae # ITIS: synonym of Rhynchohydracaridae (Trombidiformes)
+Clausiadinychidae # COL: Arachnida > Mesostigmata
+Cloacaridae # COL: Arachnida > Trombidiformes
+Cloacarinae # COL: Trombidiformes > Cloacaridae
+Cloacaroidea # COL: Arachnida > Trombidiformes
+Clubionidae # COL: Arachnida > Araneae
+Cobaniinae # COL: Opiliones > Gonyleptidae
+Cocalodini # iNat: Araneae > Salticidae
+Cocceupodidae # COL: Arachnida > Trombidiformes
+Coelotinae # TAXREF: Araneae > Agelenidae
+Coleoscirinae # iNat: Trombidiformes > Cunaxidae
+Collohmanniidae # COL: Arachnida > Sarcoptiformes
+Collohmannioidea # COL: synonym of Perlohmannioidea (Arachnida)
+Colomerini # FaEu: Prostigmata > Eriophyidae
+Colopodacini # iNat: Sarcoptiformes > Eriophyidae
+Compactozetidae # COL: synonym of Cepheusidae (Sarcoptiformes)
+Coprozerconidae # COL: Arachnida > Mesostigmata
+Coriarachnini # iNat: Araneae > Thomisidae
+Corinnidae # COL: Arachnida > Araneae
+Corinninae # PBDB: Araneae > Corinnidae
+Cosmetidae # COL: Arachnida > Opiliones
+Cosmetinae # COL: Opiliones > Cosmetidae
+Cosmochthonidae # iNat: Arachnida > Sarcoptiformes
+Cosmochthoniidae # COL: Arachnida > Sarcoptiformes
+Cosmochthonioidea # COL: Arachnida > Sarcoptiformes
+Costacaridae # COL: Arachnida > Mesostigmata
+Coxequesomidae # iNat: Arachnida > Mesostigmata
+Cranaidae # COL: Arachnida > Opiliones
+Cranainae # COL: Opiliones > Cranaidae
+Cranaini # Wikidata: Opiliones > Cranaidae
+Criokerontinae # COL: Trombidiformes > Cheyletidae
+Crotalomorphidae # COL: Arachnida > Trombidiformes
+Crotoniidae # COL: Arachnida > Sarcoptiformes
+Crotonioidea # COL: Arachnida > Sarcoptiformes
+Cryptogeobiidae # COL: Arachnida > Opiliones
+Cryptognathidae # COL: Arachnida > Trombidiformes
+Cryptomastridae # COL: Arachnida > Opiliones
+Cryptothelidae # ITIS: synonym of Zodariidae (Araneae)
+Cryptothelinae # iNat: Araneae > Zodariidae
+Crypturoptidae # COL: Arachnida > Sarcoptiformes
+Ctenacaridae # COL: Arachnida > Sarcoptiformes
+Ctenacaroidea # COL: synonym of Palaeacaroidea (Arachnida)
+Ctenidae # COL: Arachnida > Araneae
+Cteninae # iNat: Araneae > Ctenidae
+Ctenizidae # COL: Arachnida > Araneae
+Ctenobelbidae # COL: Arachnida > Sarcoptiformes
+Ctenothyadidae # COL: Arachnida > Trombidiformes
+Ctenothyadinae # iNat: Trombidiformes > Hydryphantidae
+Cunaxidae # COL: Arachnida > Trombidiformes
+Cunaxinae # iNat: Trombidiformes > Cunaxidae
+Cunaxoidinae # iNat: Trombidiformes > Cunaxidae
+Cuneoppiidae # COL: Arachnida > Sarcoptiformes
+Curculioididae # COL: Arachnida > Ricinulei
+Cyatholipidae # COL: Arachnida > Araneae
+Cyatholipoidea # iNat: Arachnida > Araneae
+Cybaeidae # COL: Arachnida > Araneae
+Cybellinae # COL: Pseudoscorpiones > Feaellidae
+Cyclocosmiinae # iNat: Araneae > Halonoproctidae
+Cycloctenidae # COL: Arachnida > Araneae
+Cydrelinae # iNat: Araneae > Zodariidae
+Cyllibulidae # COL: Arachnida > Mesostigmata
+Cymbachini # iNat: Araneae > Thomisidae
+Cymbaeremaeidae # COL: Arachnida > Sarcoptiformes
+Cymbaeremaeoidea # COL: Arachnida > Sarcoptiformes
+Cynortinae # COL: Opiliones > Cosmetidae
+Cyphophthalmi # COL: Arachnida > Opiliones
+Cyriocteinae # iNat: Araneae > Zodariidae
+Cyrtarachninae # iNat: Araneae > Araneidae
+Cyrtaucheniidae # COL: Arachnida > Araneae
+Cyrtophorinae # iNat: Araneae > Araneidae
+Cytinae # TAXREF: Trombidiformes > Bdellidae
+Cytoditidae # COL: Arachnida > Sarcoptiformes
+Dactylocheliferini # COL: Pseudoscorpiones > Cheliferidae
+Daesiidae # COL: Arachnida > Solifugae
+Daesiinae # COL: Solifugae > Daesiidae
+Damaeidae # COL: Arachnida > Sarcoptiformes
+Damaeoidea # COL: Arachnida > Sarcoptiformes
+Damaeolidae # COL: Arachnida > Sarcoptiformes
+Damoninae # COL: Amblypygi > Phrynichidae
+Dampetrinae # COL: Opiliones > Assamiidae
+Dampetroidae # COL: synonym of Dampetrinae (Opiliones)
+Dampfiellidae # COL: Arachnida > Sarcoptiformes
+Dasypoleptinae # COL: synonym of Caelopyginae (Opiliones)
+Dasyponyssidae # COL: Arachnida > Mesostigmata
+Dasythyreidae # COL: Arachnida > Trombidiformes
+Davacaridae # COL: Arachnida > Mesostigmata
+Decoroppiidae # COL: Arachnida > Sarcoptiformes
+Deinopidae # COL: Arachnida > Araneae
+Deleninae # iNat: Araneae > Sparassidae
+Demodecidae # COL: Arachnida > Trombidiformes
+Demodicidae # COL: synonym of Demodecidae (Trombidiformes)
+Dendrochaetidae # COL: Arachnida > Trombidiformes
+Dendroeremaeidae # COL: Arachnida > Sarcoptiformes
+Dendryphantina # PBDB: Araneae > Salticidae
+Dendryphantini # PBDB: Araneae > Salticidae
+Dentizacheinae # COL: synonym of Phalangiinae (Opiliones)
+Deraiophoridae # COL: Arachnida > Mesostigmata
+Dermanyssiae # UKSI: Arachnida > Mesostigmata
+Dermanyssidae # COL: Arachnida > Mesostigmata
+Dermanyssoidea # COL: Arachnida > Mesostigmata
+Dermationidae # COL: Arachnida > Sarcoptiformes
+Dermoglyphidae # COL: Arachnida > Sarcoptiformes
+Desidae # COL: Arachnida > Araneae
+Desinae # iNat: Araneae > Desidae
+Desmonomata # COL: synonym of Brachypylina (Arachnida)
+Diaeini # iNat: Araneae > Thomisidae
+Diaprograptinae # iNat: Araneae > Miturgidae
+Diarthrophallidae # COL: Arachnida > Mesostigmata
+Diarthrophalloidea # COL: Arachnida > Mesostigmata
+Dibuninae # COL: Opiliones > Epedanidae
+Dichosomata # COL: Arachnida > Sarcoptiformes
+Dicranolasmatidae # COL: Arachnida > Opiliones
+Dictynidae # COL: Arachnida > Araneae
+Dietinae # iNat: Araneae > Thomisidae
+Digalistini # Wikidata: Opiliones > Cranaidae
+Digamasellidae # COL: Arachnida > Mesostigmata
+Diguetidae # COL: Arachnida > Araneae
+Dinorhaxidae # COL: Arachnida > Solifugae
+Dinorhaxinae # COL: synonym of Dinorhaxidae (Solifugae)
+Dinychidae # COL: Arachnida > Mesostigmata
+Diplocentridae # COL: Arachnida > Scorpiones
+Diplocentrinae # ITIS: synonym of Diplocentridae (Scorpiones)
+Diplogyniidae # COL: Arachnida > Mesostigmata
+Diplosphyronida # COL: synonym of Pseudoscorpiones (Arachnida)
+Diplothelopsinae # iNat: Araneae > Pycnothelidae
+Diplurinae # iNat: Araneae > Dipluridae
+Diptilomiopidae # COL: Arachnida > Trombidiformes
+Diptilomiopinae # FaEu: Prostigmata > Diptilomiopidae
+Discosomaticinae # COL: Opiliones > Cosmetidae
+Discosomaticini # COL: Opiliones > Cosmetidae
+Discosominae # COL: synonym of Discosomaticinae (Opiliones)
+Discourellidae # COL: Arachnida > Mesostigmata
+Discozerconidae # COL: Arachnida > Mesostigmata
+Disparipedidae # ITIS: synonym of Scutacaridae (Trombidiformes)
+Dolichocybidae # COL: Arachnida > Trombidiformes
+Dolichocyboidea # COL: Arachnida > Trombidiformes
+Dolichothrombiinae # iNat: Trombidiformes > Trombidiidae
+Dolomedidae # COL: Arachnida > Araneae
+Dracochelidae # IRMNG: Arachnida > Pseudoscorpionida
+Drassodinae # iNat: Araneae > Gnaphosidae
+Drymobatidae # COL: Arachnida > Sarcoptiformes
+Drymusidae # COL: Arachnida > Araneae
+Dubiaraneinae # iNat: Araneae > Linyphiidae
+Dwigubskyiidae # IRMNG: Arachnida > Mesostigmata
+Dysderidae # COL: Arachnida > Araneae
+Dysderinae # iNat: Araneae > Dysderidae
+Dysderoidea # PBDB: Arachnida > Araneae
+Dyspnoi # COL: Arachnida > Opiliones
+Dytiscacaridae # COL: Arachnida > Trombidiformes
+Echeminae # iNat: Araneae > Gnaphosidae
+Echimyopodidae # COL: Arachnida > Sarcoptiformes
+Ecribellatae # ITIS: synonym of Araneae (Arachnida)
+Elassommatina # iNat: Arachnida > Pseudoscorpiones
+Electrochaerilinae # ITIS: Scorpiones > Chaerilidae
+Electrophrynidae # COL: synonym of Phrynidae (Amblypygi)
+Eleutherengona # COL: Arachnida > Trombidiformes
+Elliptochthoniidae # COL: Arachnida > Sarcoptiformes
+Enantiobuninae # COL: Opiliones > Neopilionidae
+Enantioppiidae # COL: synonym of Granuloppiidae (Sarcoptiformes)
+Enarthronota # COL: Arachnida > Sarcoptiformes
+Endeostigmata # COL: Arachnida > Sarcoptiformes
+Eniochthonidae # iNat: Arachnida > Sarcoptiformes
+Eniochthoniidae # COL: Arachnida > Sarcoptiformes
+Enoplocteninae # iNat: Araneae > Ctenidae
+Ensliniellinae # COL: Sarcoptiformes > Winterschmidtiidae
+Entelegynae # iNat: Arachnida > Araneae
+Entonyssidae # COL: Arachnida > Mesostigmata
+Entonyssinae # COL: Mesostigmata > Entonyssidae
+Entypesidae # COL: Arachnida > Araneae
+Eoctonoidea # PBDB: Arachnida > Scorpiones
+Eotrogulidae # COL: Arachnida > Opiliones
+Epactozetidae # COL: Arachnida > Sarcoptiformes
+Epedanidae # COL: Arachnida > Opiliones
+Epedaninae # COL: Opiliones > Epedanidae
+Epedanoidea # COL: Arachnida > Opiliones
+Epeirotypinae # iNat: Araneae > Theridiosomatidae
+Epicriiae # UKSI: Arachnida > Mesostigmata
+Epicriidae # COL: Arachnida > Mesostigmata
+Epicrioidea # COL: Arachnida > Mesostigmata
+Epidermoptidae # COL: Arachnida > Sarcoptiformes
+Epilohmannidae # iNat: Arachnida > Sarcoptiformes
+Epilohmanniidae # COL: Arachnida > Sarcoptiformes
+Epilohmannioidea # COL: Arachnida > Sarcoptiformes
+Epimerellidae # COL: Arachnida > Sarcoptiformes
+Epimyodicidae # COL: Arachnida > Trombidiformes
+Epimyodicinae # COL: synonym of Epimyodicidae (Trombidiformes)
+Epiocheirata # COL: synonym of Heterosphyronida (Arachnida)
+Erebomastridae # COL: synonym of Cladonychiidae (Opiliones)
+Erecananinae # COL: Opiliones > Podoctidae
+Erecinae # COL: Opiliones > Assamiidae
+Eremaeidae # COL: Arachnida > Sarcoptiformes
+Eremaeoidea # COL: Arachnida > Sarcoptiformes
+Eremaeozeteidae # iNat: Arachnida > Sarcoptiformes
+Eremaeozetidae # COL: Arachnida > Sarcoptiformes
+Eremaeozetoidea # COL: synonym of Unduloribatoidea (Arachnida)
+Eremellidae # COL: Arachnida > Sarcoptiformes
+Eremelloidea # COL: synonym of Cymbaeremaeoidea (Arachnida)
+Eremobatidae # COL: Arachnida > Solifugae
+Eremobatinae # COL: Solifugae > Eremobatidae
+Eremobelbidae # COL: Arachnida > Sarcoptiformes
+Eremulidae # COL: Arachnida > Sarcoptiformes
+Eresidae # COL: Arachnida > Araneae
+Ereynetidae # COL: Arachnida > Trombidiformes
+Ereynetinae # FaEu: Prostigmata > Ereynetidae
+Erigoninae # iNat: Araneae > Linyphiidae
+Eriophyidae # COL: Arachnida > Trombidiformes
+Eriophyinae # FaEu: Prostigmata > Eriophyidae
+Eriophyini # FaEu: Prostigmata > Eriophyidae
+Eriophyoidea # COL: Arachnida > Trombidiformes
+Eriorhynchidae # COL: Arachnida > Trombidiformes
+Erythracaridae # COL: Arachnida > Trombidiformes
+Erythracarinae # COL: synonym of Erythracaridae (Trombidiformes)
+Erythraeidae # COL: Arachnida > Trombidiformes
+Erythraeoidea # COL: Arachnida > Trombidiformes
+Escadabiidae # COL: Arachnida > Opiliones
+Euagridae # COL: Arachnida > Araneae
+Euagrinae # PBDB: Araneae > Dipluridae
+Euamblypygi # COL: Arachnida > Amblypygi
+Euctenizidae # COL: Arachnida > Araneae
+Euglycyphagidae # COL: Arachnida > Sarcoptiformes
+Eukoeneniidae # COL: Arachnida > Palpigradi
+Eukoenenioidea # COL: Arachnida > Palpigradi
+Eulohmanniidae # COL: Arachnida > Sarcoptiformes
+Eulohmannioidea # COL: Arachnida > Sarcoptiformes
+Eumenophorinae # iNat: Araneae > Theraphosidae
+Euophryini # PBDB: Araneae > Salticidae
+Eupalopsellidae # COL: Arachnida > Trombidiformes
+Euphthiracaridae # COL: Arachnida > Sarcoptiformes
+Euphthiracaroidea # COL: Arachnida > Sarcoptiformes
+Euphysalozerconidae # COL: Arachnida > Mesostigmata
+Eupnoi # COL: Arachnida > Opiliones
+Eupodaucheniinae # COL: Opiliones > Assamiidae
+Eupodidae # COL: Arachnida > Trombidiformes
+Eupodides # COL: synonym of Eupodidae (Trombidiformes)
+Eupodina # COL: Arachnida > Trombidiformes
+Eupodoidea # COL: Arachnida > Trombidiformes
+Eupoinae # iNat: Araneae > Salticidae
+Euptyctima # COL: Arachnida > Sarcoptiformes
+Euscorpiidae # COL: Arachnida > Scorpiones
+Euscorpiinae # ITIS: Scorpiones > Euscorpiidae
+Eusparassinae # PBDB: synonym of Sparassidae (Araneae)
+Eustathiidae # COL: Arachnida > Sarcoptiformes
+Eutegaeidae # COL: Arachnida > Sarcoptiformes
+Eutegaeoidea # COL: synonym of Cepheusoidea (Arachnida)
+Euthyadinae # iNat: Trombidiformes > Hydryphantidae
+Eutrachytidae # COL: Arachnida > Mesostigmata
+Eutrombidiidae # ITIS: synonym of Microtrombidiidae (Trombidiformes)
+Eutrombidiinae # FaEu: Prostigmata > Microtrombidiidae
+Euzerconidae # COL: Arachnida > Mesostigmata
+Euzetidae # COL: synonym of Ceratozetidae (Sarcoptiformes)
+Eviphididae # COL: Arachnida > Mesostigmata
+Eviphidoidea # COL: Arachnida > Mesostigmata
+Evippinae # iNat: Araneae > Lycosidae
+Eylaidae # COL: Arachnida > Trombidiformes
+Eylaoidea # COL: Arachnida > Trombidiformes
+Falculiferidae # COL: Arachnida > Sarcoptiformes
+Fangensinae # COL: Opiliones > Stylocellidae
+Feaellidae # COL: Arachnida > Pseudoscorpiones
+Feaellinae # COL: Pseudoscorpiones > Feaellidae
+Feaelloidea # COL: Arachnida > Pseudoscorpiones
+Fedrizziidae # COL: Arachnida > Mesostigmata
+Fedrizzioidea # COL: Arachnida > Mesostigmata
+Feltriidae # COL: Arachnida > Trombidiformes
+Fenicheliidae # IRMNG: Arachnida > Oribatida
+Ferkeriinae # COL: Opiliones > Cosmetidae
+Ferradasiidae # COL: Arachnida > Trombidiformes
+Ferrandiinae # COL: Solifugae > Solpugidae
+Filistatidae # COL: Arachnida > Araneae
+Filistatinae # iNat: Araneae > Filistatidae
+Filopalpinae # COL: Opiliones > Assamiidae
+Fissiphalliidae # COL: Arachnida > Opiliones
+Flirteinae # COL: Opiliones > Cosmetidae
+Fonteferreidae # IRMNG: Arachnida > Araneae
+Fortuyniidae # COL: Arachnida > Sarcoptiformes
+Freyanidae # COL: Arachnida > Sarcoptiformes
+Freyina # PBDB: Araneae > Salticidae
+Frontipodopsidae # COL: Arachnida > Trombidiformes
+Gabucinidae # iNat: Arachnida > Sarcoptiformes
+Gabuciniidae # COL: Arachnida > Sarcoptiformes
+Gagrellinae # COL: Opiliones > Sclerosomatidae
+Gahrliepiinae # COL: Trombidiformes > Trombiculidae
+Gahrliepiini # COL: Trombidiformes > Trombiculidae
+Gallieniellidae # COL: Arachnida > Araneae
+Galumnellidae # COL: Arachnida > Sarcoptiformes
+Galumnidae # COL: Arachnida > Sarcoptiformes
+Galumnoidea # COL: Arachnida > Sarcoptiformes
+Gamaselidae # iNat: Arachnida > Mesostigmata
+Gamasina # COL: Arachnida > Mesostigmata
+Garypidae # COL: Arachnida > Pseudoscorpiones
+Garypinae # COL: Pseudoscorpiones > Garypidae
+Garypinidae # COL: Arachnida > Pseudoscorpiones
+Garypininae # PBDB: Pseudoscorpiones > Garypinidae
+Garypinoidea # COL: Arachnida > Pseudoscorpiones
+Garypoidea # COL: Arachnida > Pseudoscorpiones
+Gasteracanthinae # iNat: Araneae > Araneidae
+Gastronyssidae # COL: Arachnida > Sarcoptiformes
+Gaudiellidae # COL: Arachnida > Sarcoptiformes
+Gaudoglyphidae # COL: Arachnida > Sarcoptiformes
+Gayennini # iNat: Araneae > Anyphaenidae
+Gehypochthoniidae # COL: Arachnida > Sarcoptiformes
+Genysinae # iNat: Araneae > Idiopidae
+Geogarypidae # COL: Arachnida > Pseudoscorpiones
+Gerdesiidae # COL: Arachnida > Opiliones
+Giljaroviinae # COL: synonym of Nemastomatinae (Opiliones)
+Glabropelmatidae # COL: Arachnida > Araneae
+Globibuninae # COL: Opiliones > Agoristenidae
+Globipedidae # COL: Arachnida > Opiliones
+Gluviinae # COL: Solifugae > Daesiidae
+Gluviopsinae # COL: Solifugae > Daesiidae
+Glycacaridae # COL: Arachnida > Sarcoptiformes
+Glycyphagidae # COL: Arachnida > Sarcoptiformes
+Glycyphagoidea # COL: Arachnida > Sarcoptiformes
+Gnaphosidae # COL: Arachnida > Araneae
+Gnaphosinae # iNat: Araneae > Gnaphosidae
+Gnoriminae # COL: synonym of Blattisociidae (Mesostigmata)
+Gnosippinae # COL: Solifugae > Daesiidae
+Goniochernetinae # COL: Pseudoscorpiones > Chernetidae
+Goniosomatinae # COL: Opiliones > Gonyleptidae
+Gonoleptides # COL: synonym of Gonyleptidae (Opiliones)
+Gonyassamiinae # COL: Opiliones > Gonyleptidae
+Gonyleptidae # COL: Arachnida > Opiliones
+Gonyleptinae # COL: Opiliones > Gonyleptidae
+Gonyleptoidea # COL: Arachnida > Opiliones
+Gophoini # PBDB: Araneae > Salticidae
+Gradungulidae # COL: Arachnida > Araneae
+Gradungulinae # iNat: Araneae > Gradungulidae
+Grammostolini # iNat: Araneae > Theraphosidae
+Grandjeanicidae # COL: Arachnida > Sarcoptiformes
+Granuloppiidae # COL: Arachnida > Sarcoptiformes
+Grassatores # COL: Arachnida > Opiliones
+Gretacaridae # COL: Arachnida > Trombidiformes
+Guanolichidae # COL: Arachnida > Sarcoptiformes
+Guasiniidae # COL: Arachnida > Opiliones
+Gustaviidae # COL: Arachnida > Sarcoptiformes
+Gustavioidea # COL: Arachnida > Sarcoptiformes
+Gyinae # COL: Opiliones > Phalangiidae
+Gylippidae # COL: Arachnida > Solifugae
+Gymnobisiidae # COL: Arachnida > Pseudoscorpiones
+Gymnodamaeidae # COL: Arachnida > Sarcoptiformes
+Gymnodamaeoidea # COL: Arachnida > Sarcoptiformes
+Hadogenidae # ITIS: synonym of Hemiscorpiidae (Scorpiones)
+Hadrotarsinae # iNat: Araneae > Theridiidae
+Hadruridae # COL: Arachnida > Scorpiones
+Hadruroidea # ITIS: Arachnida > Scorpiones
+Haemogamasidae # COL: Arachnida > Mesostigmata
+Hahniidae # COL: Arachnida > Araneae
+Hahniinae # iNat: Araneae > Hahniidae
+Halacaridae # COL: Arachnida > Trombidiformes
+Halacaroidea # COL: Arachnida > Trombidiformes
+Halarachnidae # COL: Arachnida > Mesostigmata
+Halarachninae # COL: Mesostigmata > Halarachnidae
+Halidae # ITIS: synonym of Pisauridae (Araneae)
+Halithersidae # COL: Arachnida > Opiliones
+Halithersoidea # COL: Arachnida > Opiliones
+Halolaelapidae # COL: Arachnida > Mesostigmata
+Halonoproctidae # COL: Arachnida > Araneae
+Hapalopini # iNat: Araneae > Theraphosidae
+Haplochthoniidae # COL: Arachnida > Sarcoptiformes
+Haplogynae # ITIS: synonym of Araneae (Arachnida)
+Haplozetidae # COL: Arachnida > Sarcoptiformes
+Harmochirina # iNat: Araneae > Salticidae
+Harpacteinae # PBDB: Araneae > Dysderidae
+Harpactirinae # iNat: Araneae > Theraphosidae
+Harpagopalpidae # COL: Arachnida > Trombidiformes
+Harpirhynchidae # COL: Arachnida > Trombidiformes
+Harpirhynchinae # COL: Trombidiformes > Harpirhynchidae
+Harpirhynchini # COL: Trombidiformes > Harpirhynchidae
+Harpypalpinae # COL: Trombidiformes > Harpirhynchidae
+Harsadiinae # COL: synonym of Sidaminae (Opiliones)
+Hasariini # iNat: Araneae > Salticidae
+Hastocularidae # COL: Arachnida > Opiliones
+Heatherellidae # COL: Arachnida > Mesostigmata
+Heatherelloidea # COL: Arachnida > Mesostigmata
+Hemictenata # PBDB: Arachnida > Pseudoscorpiones
+Hemileiidae # oribatid mite family; COL: Arachnida > Sarcoptiformes
+Hemisarcoptidae # COL: Arachnida > Sarcoptiformes
+Hemisarcoptoidea # COL: Arachnida > Sarcoptiformes
+Hemiscorpiidae # COL: Arachnida > Scorpiones
+Hemiscorpiinae # ITIS: Scorpiones > Hemiscorpiidae
+Heptathelidae # IRMNG: Arachnida > Araneae
+Heptathelinae # iNat: Araneae > Liphistiidae
+Heriaecini # iNat: Araneae > Thomisidae
+Hericiinae # COL: Sarcoptiformes > Algophagidae
+Hermanniellidae # COL: Arachnida > Sarcoptiformes
+Hermannielloidea # COL: Arachnida > Sarcoptiformes
+Hermanniidae # COL: Arachnida > Sarcoptiformes
+Hermannioidea # COL: Arachnida > Sarcoptiformes
+Hernandariinae # COL: Opiliones > Gonyleptidae
+Herpyllinae # iNat: Araneae > Gnaphosidae
+Hersiliinae # iNat: Araneae > Hersiliidae
+Hersiliolinae # iNat: Araneae > Hersiliidae
+Hesperolpiidae # COL: Arachnida > Pseudoscorpiones
+Heterobelbidae # COL: Arachnida > Sarcoptiformes
+Heterocheylidae # COL: Arachnida > Trombidiformes
+Heterocheyloidea # COL: Arachnida > Trombidiformes
+Heterochthoniidae # COL: Arachnida > Sarcoptiformes
+Heterochthonioidea # COL: Arachnida > Sarcoptiformes
+Heterocoptidae # COL: Arachnida > Sarcoptiformes
+Heterocranainae # COL: Opiliones > Cranaidae
+Heterocranaini # Wikidata: Opiliones > Cranaidae
+Heterometrinae # ITIS: Scorpiones > Scorpionidae
+Heteropachylinae # COL: Opiliones > Gonyleptidae
+Heterophryninae # COL: Amblypygi > Phrynidae
+Heteropodinae # huntsman spider subfamily (Sparassidae); PBDB: Araneae > Sparassidae
+Heteropsoridae # IRMNG: Arachnida > Astigmata
+Heteroscorpionidae # COL: Arachnida > Scorpiones
+Heterosphyronida # COL: Arachnida > Pseudoscorpiones
+Heterostigmatina # UKSI: Arachnida > Trombidiformes
+Heterostygninae # COL: Opiliones > Stygnidae
+Heterozerconidae # COL: Arachnida > Mesostigmata
+Heterozerconoidea # COL: Arachnida > Mesostigmata
+Heterozetidae # COL: synonym of Ceratozetidae (Sarcoptiformes)
+Hexathelidae # COL: Arachnida > Araneae
+Hexathrombiini # iNat: Trombidiformes > Microtrombidiidae
+Hexisopodidae # COL: Arachnida > Solifugae
+Hexoppiidae # COL: synonym of Quadroppiidae (Sarcoptiformes)
+Hexurellidae # COL: Arachnida > Araneae
+Hinzuanidae # COL: synonym of Biantinae (Opiliones)
+Hippasinae # iNat: Araneae > Lycosidae
+Hirstionyssidae # IRMNG: Arachnida > Mesostigmata
+Hirstiosomatinae # FaEu: Prostigmata > Smarididae
+Hirsutisomidae # COL: Arachnida > Ricinulei
+Hirtiosomatinae # COL: Trombidiformes > Smarididae
+Hisponinae # PBDB: Araneae > Salticidae
+Histiostomatidae # COL: Arachnida > Sarcoptiformes
+Histiostomatoidea # COL: Arachnida > Sarcoptiformes
+Histiostomina # COL: synonym of Histiostomatidae (Sarcoptiformes)
+Holarchaeidae # ITIS: Arachnida > Araneae
+Holarchaeiinae # iNat: Araneae > Anapidae
+Holcolaetina # iNat: Araneae > Salticidae
+Holocranaini # Wikidata: Opiliones > Cranaidae
+Holosomata # COL: Arachnida > Sarcoptiformes
+Holosternina # PBDB: Arachnida > Scorpiones
+Holothyrida # COL: Arthropoda > Arachnida
+Holothyridae # COL: Arachnida > Holothyrida
+Holothyroidea # WoRMS: Arachnida > Holothyrida
+Homalonychidae # COL: Arachnida > Araneae
+Homocaligidae # COL: Arachnida > Trombidiformes
+Hoplomegistidae # COL: Arachnida > Mesostigmata
+Hormuridae # COL: Arachnida > Scorpiones
+Hormurinae # ITIS: Scorpiones > Hormuridae
+Hubbardiidae # COL: Arachnida > Schizomida
+Hubbardiinae # COL: Schizomida > Hubbardiidae
+Hubbardioidea # COL: Arachnida > Schizomida
+Humerobatidae # COL: Arachnida > Sarcoptiformes
+Hungarobelbidae # COL: Arachnida > Sarcoptiformes
+Hungarohydracaridae # COL: Arachnida > Trombidiformes
+Huriini # iNat: Araneae > Salticidae
+Huttoniidae # COL: Arachnida > Araneae
+Hutufeideriidae # COL: Arachnida > Mesostigmata
+Hyadesidae # COL: synonym of Hyadesiidae (Sarcoptiformes)
+Hyadesiidae # COL: Arachnida > Sarcoptiformes
+Hybalicidae # COL: synonym of Oehserchestidae (Sarcoptiformes)
+Hydrachnidae # COL: Arachnida > Trombidiformes
+Hydrachnidia # WoRMS: Arachnida > Trombidiformes
+Hydrachnoidea # COL: Arachnida > Trombidiformes
+Hydrodromidae # COL: Arachnida > Trombidiformes
+Hydrovolziidae # COL: Arachnida > Trombidiformes
+Hydrovolzioidea # COL: Arachnida > Trombidiformes
+Hydrozetidae # COL: Arachnida > Sarcoptiformes
+Hydrozetoidea # COL: Arachnida > Sarcoptiformes
+Hydryphantidae # COL: Arachnida > Trombidiformes
+Hydryphantoidea # COL: Arachnida > Trombidiformes
+Hygrobatidae # COL: Arachnida > Trombidiformes
+Hygrobatoidea # COL: Arachnida > Trombidiformes
+Hyidae # COL: Arachnida > Pseudoscorpiones
+Hypochilidae # COL: Arachnida > Araneae
+Hypochiloidea # ITIS: synonym of Araneae (Arachnida)
+Hypochthonidae # iNat: Arachnida > Sarcoptiformes
+Hypochthoniidae # COL: Arachnida > Sarcoptiformes
+Hypochthonioidea # COL: Arachnida > Sarcoptiformes
+Hypoctoninae # COL: Uropygi > Thelyphonidae
+Hypoderatidae # COL: Arachnida > Sarcoptiformes
+Hypoderatoidea # COL: Arachnida > Sarcoptiformes
+Hypoxestinae # COL: Opiliones > Assamiidae
+Hystrichonyssidae # COL: Arachnida > Mesostigmata
+Ibaloniinae # COL: Opiliones > Podoctidae
+Icaleptidae # COL: Arachnida > Opiliones
+Ichthyostomatogasteridae # COL: Arachnida > Mesostigmata
+Ideobisiinae # COL: Pseudoscorpiones > Syarinidae
+Ideoroncidae # COL: Arachnida > Pseudoscorpiones
+Ideostygninae # COL: synonym of Stygninae (Opiliones)
+Idioctinae # iNat: Araneae > Barychelidae
+Idiopidae # COL: Arachnida > Araneae
+Idiopinae # iNat: Araneae > Idiopidae
+Idiozetidae # COL: synonym of Eremaeozetidae (Sarcoptiformes)
+Ingrassiinae # FaEu: Astigmata > Xolalgidae
+Insidiatores # COL: Arachnida > Opiliones
+Intermedialiini # COL: Trombidiformes > Trombiculidae
+Iocheirata # COL: Arachnida > Pseudoscorpiones
+Iolinidae # COL: Arachnida > Trombidiformes
+Ipainae # iNat: Araneae > Linyphiidae
+Iphiopsididae # COL: Arachnida > Mesostigmata
+Irumuinae # COL: Opiliones > Assamiidae
+Ischaleinae # iNat: Araneae > Desidae
+Ischnocolinae # iNat: Araneae > Theraphosidae
+Ischnothelidae # COL: Arachnida > Araneae
+Ischnuridae # ITIS: synonym of Hemiscorpiidae (Scorpiones)
+Ischyropsalidae # COL: synonym of Ischyropsalidinae (Opiliones)
+Ischyropsalididae # COL: Arachnida > Opiliones
+Ischyropsalidinae # COL: Opiliones > Ischyropsalididae
+Ischyropsalidoidea # COL: Arachnida > Opiliones
+Itatina # iNat: Araneae > Salticidae
+Iurida # iNat: Arachnida > Scorpiones
+Iuridae # COL: Arachnida > Scorpiones
+Iurinae # ITIS: Scorpiones > Iuridae
+Iuroidea # ITIS: Arachnida > Scorpiones
+Ixamatinae # iNat: Araneae > Microstigmatidae
+Ixodida # COL: Arthropoda > Arachnida
+Ixodidae # COL: Arachnida > Ixodida
+Ixodides # ITIS: synonym of Ixodoidea (Arachnida)
+Ixodoidea # ITIS: Arachnida > Ixodida
+Ixodorhynchidae # COL: Arachnida > Mesostigmata
+Johnstonianidae # COL: Arachnida > Trombidiformes
+Juxtacheliferini # COL: Pseudoscorpiones > Withiidae
+Kababinae # iNat: Araneae > Stiphidiidae
+Kantacaridae # COL: Arachnida > Trombidiformes
+Kaolinonychinae # COL: synonym of Paranonychidae (Opiliones)
+Karosinae # COL: Opiliones > Stygnopsidae
+Karschiidae # COL: Arachnida > Solifugae
+Kaszabjbaloghiidae # COL: Arachnida > Mesostigmata
+Kimulidae # COL: Arachnida > Opiliones
+Kiwilichidae # COL: Arachnida > Sarcoptiformes
+Klinckowstroemiidae # COL: Arachnida > Mesostigmata
+Knemidokoptidae # sarcoptiform mite family (scaly-leg mites); IRMNG: Arachnida > Astigmata
+Kodiakellidae # COL: Arachnida > Sarcoptiformes
+Kramerellidae # COL: Arachnida > Sarcoptiformes
+Krendowskiidae # COL: Arachnida > Trombidiformes
+Kustarachnidae # COL: Arachnida > Opiliones
+Kytoditidae # IRMNG: Arachnida > Astigmata
+Labidognatha # ITIS: synonym of Araneae (Arachnida)
+Labidostomatidae # COL: synonym of Labidostommatidae (Trombidiformes)
+Labidostomatoidea # COL: synonym of Labidostommatoidea (Arachnida)
+Labidostommatidae # COL: Arachnida > Trombidiformes
+Labidostommatina # COL: Arachnida > Trombidiformes
+Labidostommatoidea # COL: Arachnida > Trombidiformes
+Labidostommidae # water mite family (Trombidiformes); IRMNG: synonym of Labidostommatidae (Actinedida)
+Lachesaninae # iNat: Araneae > Zodariidae
+Lacurbsinae # COL: Opiliones > Biantidae
+Laelapidae # COL: Arachnida > Mesostigmata
+Laelaptidae # ITIS: synonym of Laelapidae (Mesostigmata)
+Laelaptonyssidae # COL: Arachnida > Mesostigmata
+Lamellareidae # COL: Arachnida > Sarcoptiformes
+Laminosioptidae # COL: Arachnida > Sarcoptiformes
+Lamponidae # COL: Arachnida > Araneae
+Lamponinae # iNat: Araneae > Lamponidae
+Lamprochernetinae # COL: Pseudoscorpiones > Chernetidae
+Lanceoppiinae # COL: Sarcoptiformes > Oppiidae
+Laniatores # COL: Arachnida > Opiliones
+Lapsiini # PBDB: Araneae > Salticidae
+Larcidae # COL: Arachnida > Pseudoscorpiones
+Lardoglyphidae # COL: Arachnida > Sarcoptiformes
+Larvamimidae # COL: Arachnida > Mesostigmata
+Lathyidae # COL: Arachnida > Araneae
+Latrodectinae # iNat: Araneae > Theridiidae
+Laversiidae # COL: Arachnida > Trombidiformes
+Lawrencarinae # iNat: Trombidiformes > Ereynetidae
+Lebertiidae # COL: Arachnida > Trombidiformes
+Lebertioidea # COL: Arachnida > Trombidiformes
+Lechytiidae # COL: synonym of Lechytiinae (Pseudoscorpiones)
+Lechytiinae # COL: Pseudoscorpiones > Chthoniidae
+Leeuwenhoekiidae # COL: Arachnida > Trombidiformes
+Leeuwenhoekiinae # COL: Trombidiformes > Leeuwenhoekiidae
+Leiobunidae # COL: synonym of Leiobuninae (Opiliones)
+Leiobuninae # COL: Opiliones > Sclerosomatidae
+Leiosteninae # COL: Opiliones > Agoristenidae
+Lemanniellidae # ITIS: Arachnida > Sarcoptiformes
+Lemurnyssidae # COL: Arachnida > Sarcoptiformes
+Leptinae # COL: Trombidiformes > Erythraeidae
+Leptobuninae # COL: synonym of Phalangiinae (Opiliones)
+Leptodrassinae # iNat: Araneae > Gnaphosidae
+Leptolaelapidae # COL: Arachnida > Mesostigmata
+Leptonetidae # COL: Arachnida > Araneae
+Leptonetoidea # PBDB: Arachnida > Araneae
+Leptopsalidinae # COL: Opiliones > Stylocellidae
+Leptorchestini # iNat: Araneae > Salticidae
+Lethaxonidae # COL: Arachnida > Trombidiformes
+Leucauginae # PBDB: Araneae > Tetragnathidae
+Leucohyinae # COL: Pseudoscorpiones > Bochicidae
+Levieina # iNat: Araneae > Salticidae
+Liacaridae # COL: Arachnida > Sarcoptiformes
+Libitiinae # COL: Opiliones > Cosmetidae
+Licneremaeidae # COL: Arachnida > Sarcoptiformes
+Licneremaeoidea # COL: Arachnida > Sarcoptiformes
+Licnobelbidae # COL: Arachnida > Sarcoptiformes
+Licnodamaeidae # COL: Arachnida > Sarcoptiformes
+Liebstadiidae # COL: Arachnida > Sarcoptiformes
+Ligonipedina # iNat: Araneae > Salticidae
+Limnesiidae # COL: Arachnida > Trombidiformes
+Limnocharidae # COL: Arachnida > Trombidiformes
+Limnozetidae # COL: Arachnida > Sarcoptiformes
+Limnozetoidea # COL: synonym of Ceratozetoidea (Arachnida)
+Linotetranidae # COL: Arachnida > Trombidiformes
+Linyphiidae # COL: Arachnida > Araneae
+Linyphiinae # PBDB: Araneae > Linyphiidae
+Linyphioidea # iNat: Arachnida > Araneae
+Liochelidae # ITIS: synonym of Hemiscorpiidae (Scorpiones)
+Liocranidae # COL: Arachnida > Araneae
+Liphistiidae # COL: Arachnida > Araneae
+Liphistiinae # iNat: Araneae > Liphistiidae
+Lipophagidae # COL: Arachnida > Solifugae
+Lisposominae # ITIS: Scorpiones > Bothriuridae
+Listrophoridae # COL: Arachnida > Sarcoptiformes
+Listropsoralgidae # COL: Arachnida > Sarcoptiformes
+Listropsoralginae # COL: synonym of Listropsoralgidae (Sarcoptiformes)
+Lobalgidae # COL: Arachnida > Sarcoptiformes
+Lohmanniidae # COL: Arachnida > Sarcoptiformes
+Lohmannioidea # COL: Arachnida > Sarcoptiformes
+Lolinae # COL: synonym of Phalangodidae (Opiliones)
+Lomanellidae # COL: Arachnida > Opiliones
+Lophonotacaridae # COL: Arachnida > Sarcoptiformes
+Lordalychidae # COL: synonym of Lordalycidae (Trombidiformes)
+Lordalychoidea # COL: synonym of Lordalycoidea (Arachnida)
+Lordalycidae # COL: Arachnida > Trombidiformes
+Lordalycoidea # COL: Arachnida > Trombidiformes
+Loxoscelinae # iNat: Araneae > Sicariidae
+Luxtoniidae # COL: synonym of Epimerellidae (Sarcoptiformes)
+Lycosidae # COL: Arachnida > Araneae
+Lycosinae # iNat: Araneae > Lycosidae
+Lyroppiidae # COL: Arachnida > Sarcoptiformes
+Lyssomaninae # PBDB: Araneae > Salticidae
+Machadobelbidae # COL: Arachnida > Sarcoptiformes
+Machuellidae # COL: Arachnida > Sarcoptiformes
+Mackiellini # iNat: Sarcoptiformes > Phytoptidae
+Macrobunidae # COL: Arachnida > Araneae
+Macrochelidae # COL: Arachnida > Mesostigmata
+Macrodinychidae # COL: Arachnida > Mesostigmata
+Macronyssidae # COL: Arachnida > Mesostigmata
+Macronyssinae # COL: synonym of Macronyssidae (Mesostigmata)
+Macrothelidae # COL: Arachnida > Araneae
+Magimeliinae # FaEu: Astigmata > Pterolichidae
+Malaconothridae # COL: Arachnida > Sarcoptiformes
+Malgasacaridae # COL: Arachnida > Trombidiformes
+Malkaridae # COL: Arachnida > Araneae
+Malkarinae # iNat: Araneae > Malkaridae
+Manaosbiidae # COL: Arachnida > Opiliones
+Manaosbiinae # ITIS: Opiliones > Gonyleptidae
+Manitherionyssidae # COL: Arachnida > Mesostigmata
+Marpissina # PBDB: Araneae > Salticidae
+Maruinae # COL: Opiliones > Assamiidae
+Masteriinae # PBDB: Araneae > Dipluridae
+Mastigoproctinae # COL: Uropygi > Thelyphonidae
+Matachiinae # iNat: Araneae > Desidae
+Maudheimiidae # COL: Arachnida > Sarcoptiformes
+Mecicobothriidae # COL: Arachnida > Araneae
+Mecognathidae # COL: Arachnida > Trombidiformes
+Mecysmaucheniidae # COL: Arachnida > Araneae
+Mecysmaucheniinae # iNat: Araneae > Mecysmaucheniidae
+Medioppiinae # COL: Sarcoptiformes > Oppiidae
+Megacelaenopsidae # COL: Arachnida > Mesostigmata
+Megacorminae # ITIS: Scorpiones > Euscorpiidae
+Megadictynidae # COL: Arachnida > Araneae
+Megahexuridae # COL: Arachnida > Araneae
+Megalolaelapidae # IRMNG: Arachnida > Mesostigmata
+Megalopsalinae # COL: synonym of Enantiobuninae (Opiliones)
+Megaschizominae # COL: Schizomida > Hubbardiidae
+Megeremaeidae # COL: synonym of Caleremaeidae (Sarcoptiformes)
+Megisthanidae # COL: Arachnida > Mesostigmata
+Megisthanoidea # COL: Arachnida > Mesostigmata
+Megniniinae # FaEu: Astigmata > Analgidae
+Melanoblossiidae # COL: Arachnida > Solifugae
+Melanoblossiinae # COL: Solifugae > Melanoblossiidae
+Melicharidae # COL: Arachnida > Mesostigmata
+Melicharinae # COL: synonym of Melicharidae (Mesostigmata)
+Meliponocoptidae # COL: Arachnida > Sarcoptiformes
+Melloinidae # IRMNG: Arachnida > Araneae
+Menthidae # COL: Arachnida > Pseudoscorpiones
+Mesokanidae # COL: Arachnida > Opiliones
+Mesoplophoridae # COL: Arachnida > Sarcoptiformes
+Mesoplophoroidea # COL: Arachnida > Sarcoptiformes
+Mesosomatinae # COL: synonym of Leiobuninae (Opiliones)
+Mesostigmata # COL: Arthropoda > Arachnida
+Mesothelae # ITIS: synonym of Araneae (Arachnida)
+Messoracaridae # COL: Arachnida > Mesostigmata
+Mestommatina # iNat: Arachnida > Pseudoscorpiones
+Metacheyletiinae # COL: Trombidiformes > Cheyletidae
+Metagynuridae # COL: Arachnida > Mesostigmata
+Metainae # iNat: Araneae > Tetragnathidae
+Metaltellinae # iNat: Araneae > Desidae
+Metasarcidae # COL: Arachnida > Opiliones
+Metergininae # COL: Opiliones > Cosmetidae
+Metharpyrhynchini # COL: Trombidiformes > Harpirhynchidae
+Metrioppiidae # COL: synonym of Peloppiidae (Sarcoptiformes)
+Micariinae # iNat: Araneae > Gnaphosidae
+Micratheninae # iNat: Araneae > Araneidae
+Micreremaeidae # iNat: Arachnida > Sarcoptiformes
+Micreremidae # COL: Arachnida > Sarcoptiformes
+Microcharmidae # ITIS: synonym of Buthidae (Scorpiones)
+Microcharminae # ITIS: synonym of Buthidae (Scorpiones)
+Microcreagrinae # COL: Pseudoscorpiones > Neobisiidae
+Microdispidae # COL: Arachnida > Trombidiformes
+Microdispini # ITIS: synonym of Microdispidae (Trombidiformes)
+Microgyniidae # COL: Arachnida > Mesostigmata
+Microgynioidea # COL: Arachnida > Mesostigmata
+Microhexuridae # COL: Arachnida > Araneae
+Micronetinae # iNat: Araneae > Linyphiidae
+Micropholcommatidae # ITIS: Arachnida > Araneae
+Micropholcommatinae # PBDB: Araneae > Anapidae
+Micropsammidae # COL: Arachnida > Sarcoptiformes
+Microspalacinae # FaEu: Astigmata > Alloptidae
+Microstigmatidae # COL: Arachnida > Araneae
+Microtegeidae # COL: Arachnida > Sarcoptiformes
+Microtrombidiidae # COL: Arachnida > Trombidiformes
+Microzetidae # COL: Arachnida > Sarcoptiformes
+Microzetoidea # COL: Arachnida > Sarcoptiformes
+Mideidae # COL: Arachnida > Trombidiformes
+Mideopsidae # COL: Arachnida > Trombidiformes
+Migidae # COL: Arachnida > Araneae
+Miginae # iNat: Araneae > Migidae
+Mimetidae # COL: Arachnida > Araneae
+Minuidae # COL: synonym of Kimulidae (Opiliones)
+Minuidinae # COL: synonym of Zalmoxidae (Opiliones)
+Miratemninae # COL: Pseudoscorpiones > Atemnidae
+Misumenini # iNat: Araneae > Thomisidae
+Mitobatinae # COL: Opiliones > Gonyleptidae
+Mitostomatinae # COL: synonym of Nemastomatinae (Opiliones)
+Miturgidae # COL: Arachnida > Araneae
+Miturginae # iNat: Araneae > Miturgidae
+Mixonomata # COL: Arachnida > Sarcoptiformes
+Mochlozetidae # COL: Arachnida > Sarcoptiformes
+Modisiminae # PBDB: Araneae > Pholcidae
+Molycriinae # iNat: Araneae > Gnaphosidae
+Momoniidae # COL: Arachnida > Trombidiformes
+Monogynaspida # COL: Arachnida > Mesostigmata
+Monoscutinae # COL: synonym of Enantiobuninae (Opiliones)
+Monosphyronida # COL: synonym of Pseudoscorpiones (Arachnida)
+Mopsini # iNat: Araneae > Salticidae
+Mortolinae # COL: Solifugae > Ammotrechidae
+Multioppiinae # COL: Sarcoptiformes > Oppiidae
+Multoribulidae # COL: Arachnida > Sarcoptiformes
+Mummuciidae # COL: Arachnida > Solifugae
+Mycobatidae # COL: synonym of Punctoribatidae (Sarcoptiformes)
+Mygalomorphae # PBDB: Arachnida > Araneae
+Mynogleninae # iNat: Araneae > Linyphiidae
+Myobiidae # COL: Arachnida > Trombidiformes
+Myobioidea # COL: Arachnida > Trombidiformes
+Myocoptidae # COL: Arachnida > Sarcoptiformes
+Myrmarachnina # iNat: Araneae > Salticidae
+Myrmarachnini # PBDB: Araneae > Salticidae
+Myrmecicultoridae # COL: Arachnida > Araneae
+Myrmicotrombiinae # COL: Trombidiformes > Erythraeidae
+Myrmochernetini # COL: Pseudoscorpiones > Chernetidae
+Myroinae # PBDB: Araneae > Toxopidae
+Mysmenidae # COL: Arachnida > Araneae
+Mysmeninae # PBDB: synonym of Mysmenidae (Araneae)
+Mysoreinae # COL: Opiliones > Assamiidae
+Mystroppiinae # COL: Sarcoptiformes > Oppiidae
+Nalepellinae # FaEu: Prostigmata > Phytoptidae
+Nalepellini # FaEu: Prostigmata > Phytoptidae
+Namibesiidae # COL: Arachnida > Solifugae
+Namibesiinae # COL: synonym of Namibesiidae (Solifugae)
+Nanhermanniidae # COL: Arachnida > Sarcoptiformes
+Nanhermannioidea # COL: Arachnida > Sarcoptiformes
+Nannenini # iNat: Araneae > Salticidae
+Nanohystricidae # COL: Arachnida > Sarcoptiformes
+Nanometainae # iNat: Araneae > Tetragnathidae
+Nanorchestidae # COL: Arachnida > Sarcoptiformes
+Nasobatidae # COL: synonym of Haplozetidae (Sarcoptiformes)
+Nautarachnidae # ITIS: synonym of Pionidae (Trombidiformes)
+Nebinae # ITIS: synonym of Diplocentridae (Scorpiones)
+Nehypochthoniidae # COL: Arachnida > Sarcoptiformes
+Nehypochthonioidea # COL: Arachnida > Sarcoptiformes
+Nemastomatidae # COL: Arachnida > Opiliones
+Nemastomatinae # COL: Opiliones > Nemastomatidae
+Nemastomoididae # COL: Arachnida > Opiliones
+Nematalycidae # COL: Arachnida > Sarcoptiformes
+Nematalycina # COL: Arachnida > Sarcoptiformes
+Nematalycoidea # COL: Arachnida > Sarcoptiformes
+Nemesiidae # COL: Arachnida > Araneae
+Nenteriidae # COL: Arachnida > Mesostigmata
+Neoacaridae # COL: Arachnida > Trombidiformes
+Neoamblypygi # PBDB: Arachnida > Amblypygi
+Neobalkanellini # COL: Pseudoscorpiones > Chthoniidae
+Neobisiidae # COL: Arachnida > Pseudoscorpiones
+Neobisiinae # COL: Pseudoscorpiones > Neobisiidae
+Neobisioidea # COL: Arachnida > Pseudoscorpiones
+Neocribellatae # ITIS: synonym of Araneae (Arachnida)
+Neogoveidae # COL: Arachnida > Opiliones
+Neolanidae # ITIS: synonym of Amphinectidae (Araneae)
+Neoliodidae # COL: Arachnida > Sarcoptiformes
+Neoliodoidea # COL: Arachnida > Sarcoptiformes
+Neonini # PBDB: Araneae > Salticidae
+Neopachylinae # COL: Opiliones > Gonyleptidae
+Neophyllobiidae # COL: synonym of Camerobiidae (Trombidiformes)
+Neopilionidae # COL: Arachnida > Opiliones
+Neopilioninae # COL: Opiliones > Neopilionidae
+Neopygmephoridae # COL: Arachnida > Trombidiformes
+Neopygmephorini # ITIS: synonym of Neopygmephoridae (Trombidiformes)
+Neoricinulei # COL: Arachnida > Ricinulei
+Neoscorpionina # iNat: Arachnida > Scorpiones
+Neotenogyniidae # COL: Arachnida > Mesostigmata
+Neothrombiidae # COL: Arachnida > Trombidiformes
+Neothyridae # COL: Arachnida > Holothyrida
+Neotrichozetidae # COL: synonym of Caloppiidae (Sarcoptiformes)
+Neotrombidiidae # COL: Arachnida > Trombidiformes
+Nephilidae # ITIS: synonym of Araneidae (Araneae)
+Nesozetidae # COL: Arachnida > Sarcoptiformes
+Nesticidae # COL: Arachnida > Araneae
+Nicodamidae # COL: Arachnida > Araneae
+Nicodaminae # iNat: Araneae > Nicodamidae
+Nicodamoidea # PBDB: Arachnida > Araneae
+Ninetinae # PBDB: Araneae > Pholcidae
+Niphocepheidae # COL: Arachnida > Sarcoptiformes
+Niphocepheoidea # COL: Arachnida > Sarcoptiformes
+Nippobodidae # COL: Arachnida > Sarcoptiformes
+Nipponacaridae # COL: Arachnida > Trombidiformes
+Nippononychidae # COL: Arachnida > Opiliones
+Nippononychinae # COL: synonym of Paranonychidae (Opiliones)
+Nipponopsalididae # COL: Arachnida > Opiliones
+Nodocepheidae # COL: Arachnida > Sarcoptiformes
+Nomoclastidae # COL: Arachnida > Opiliones
+Nomoclastinae # COL: Opiliones > Nomoclastidae
+Nopinae # iNat: Araneae > Caponiidae
+Nosybeidae # COL: Arachnida > Sarcoptiformes
+Nosybelbidae # COL: synonym of Oppiidae (Sarcoptiformes)
+Nosybelbinae # COL: Sarcoptiformes > Oppiidae
+Nothogynidae # COL: Arachnida > Mesostigmata
+Nothopodinae # iNat: Sarcoptiformes > Eriophyidae
+Nothopodini # iNat: Sarcoptiformes > Eriophyidae
+Nothopuginae # COL: Solifugae > Ammotrechidae
+Nothridae # COL: Arachnida > Sarcoptiformes
+Nothrina # UKSI: Arachnida > Sarcoptiformes
+Notoaturinae # iNat: Trombidiformes > Aturidae
+Notostigmata # COL: synonym of Opilioacarida (Arachnida)
+Novophytoptinae # FaEu: Prostigmata > Phytoptidae
+Nudomideopsidae # COL: Arachnida > Trombidiformes
+Nuttalliellidae # COL: Arachnida > Ixodida
+Oarcinae # iNat: Araneae > Araneidae
+Ochrolichidae # COL: Arachnida > Sarcoptiformes
+Ochyroceratidae # COL: Arachnida > Araneae
+Oconnoriidae # COL: Arachnida > Sarcoptiformes
+Odontobuninae # COL: synonym of Phalangiinae (Opiliones)
+Odontoscirinae # TAXREF: Trombidiformes > Bdellidae
+Oecobiidae # COL: Arachnida > Araneae
+Oecobiinae # iNat: Araneae > Oecobiidae
+Oecobioidea # PBDB: Arachnida > Araneae
+Oedignathinae # iNat: Araneae > Liocranidae
+Oehserchestidae # COL: Arachnida > Sarcoptiformes
+Oehserchestoidea # COL: Arachnida > Sarcoptiformes
+Ogoveidae # COL: Arachnida > Opiliones
+Ogoveoidea # iNat: Arachnida > Opiliones
+Ogulniinae # iNat: Araneae > Theridiosomatidae
+Oligolophinae # COL: Opiliones > Phalangiidae
+Oligolophini # COL: synonym of Oligolophinae (Opiliones)
+Ologamasidae # COL: Arachnida > Mesostigmata
+Ologamasinae # COL: synonym of Ologamasidae (Mesostigmata)
+Olpiidae # COL: Arachnida > Pseudoscorpiones
+Olpiinae # COL: synonym of Olpiidae (Pseudoscorpiones)
+Olpioidea # COL: synonym of Garypoidea (Arachnida)
+Oltacolinae # COL: Solifugae > Ammotrechidae
+Omartacaridae # COL: Arachnida > Trombidiformes
+Omentolaelapidae # COL: Arachnida > Mesostigmata
+Onchodellini # COL: Mesostigmata > Pachylaelapidae
+Oncopodidae # COL: synonym of Sandokanidae (Opiliones)
+Oncopodoidea # COL: synonym of Sandokanoidea (Arachnida)
+Onomastinae # iNat: Araneae > Salticidae
+Onychobatidae # COL: synonym of Ceratozetidae (Sarcoptiformes)
+Onychopalpida # COL: synonym of Opilioacarida (Arachnida)
+Oonopidae # COL: Arachnida > Araneae
+Oonopinae # iNat: Araneae > Oonopidae
+Opcochininae # COL: Opiliones > Assamiidae
+Ophioptidae # IRMNG: Arachnida > Actinedida
+Ophioptinae # COL: Trombidiformes > Harpirhynchidae
+Opilioacarida # COL: Arthropoda > Arachnida
+Opilioacaridae # COL: Arachnida > Opilioacarida
+Opilioacariformes # COL: synonym of Opilioacarida (Arachnida)
+Opiliones # COL: Arthropoda > Arachnida
+Opilionidae # not found in ChecklistBank
+Opilionides # COL: synonym of Opilioninae (Opiliones)
+Opilioninae # COL: Opiliones > Phalangiidae
+Opilionini # COL: Opiliones > Phalangiidae
+Opisthothelae # ITIS: synonym of Araneae (Arachnida)
+Opistophthalminae # ITIS: Scorpiones > Scorpionidae
+Oplitidae # COL: Arachnida > Mesostigmata
+Oppiellinae # COL: Sarcoptiformes > Oppiidae
+Oppiidae # COL: Arachnida > Sarcoptiformes
+Oppiinae # COL: Sarcoptiformes > Oppiidae
+Oppioidea # COL: Arachnida > Sarcoptiformes
+Orangescirulinae # iNat: Trombidiformes > Cunaxidae
+Orchestininae # PBDB: Araneae > Oonopidae
+Oribatei # COL: synonym of Oribatida (Arachnida)
+Oribatellidae # COL: Arachnida > Sarcoptiformes
+Oribatelloidea # COL: Arachnida > Sarcoptiformes
+Oribatida # COL: Arachnida > Sarcoptiformes
+Oribatulidae # COL: Arachnida > Sarcoptiformes
+Oribellidae # COL: Arachnida > Sarcoptiformes
+Oribotritiidae # COL: Arachnida > Sarcoptiformes
+Oripodidae # COL: Arachnida > Sarcoptiformes
+Oripodoidea # COL: Arachnida > Sarcoptiformes
+Ornithocheyletiinae # COL: Trombidiformes > Cheyletidae
+Ornithocheyletiini # COL: Trombidiformes > Cheyletidae
+Ornithoctoninae # iNat: Araneae > Theraphosidae
+Ornithodorinae # FaEu: Ixodida > Argasidae
+Ornithonyssinae # COL: synonym of Macronyssidae (Mesostigmata)
+Orsolobidae # COL: Arachnida > Araneae
+Orthognata # ITIS: synonym of Araneae (Arachnida)
+Ortholasmatinae # COL: Opiliones > Nemastomatidae
+Orthosterni # PBDB: synonym of Orthosternina (Arachnida)
+Otilioleptidae # COL: Arachnida > Opiliones
+Otiothopinae # iNat: Araneae > Palpimanidae
+Otocepheidae # COL: Arachnida > Sarcoptiformes
+Otocepheoidea # COL: Arachnida > Sarcoptiformes
+Otopheidomenidae # COL: Arachnida > Mesostigmata
+Oulenziinae # COL: Sarcoptiformes > Winterschmidtiidae
+Ovtchinnikoviinae # iNat: Araneae > Amaurobiidae
+Oxidae # COL: Arachnida > Trombidiformes
+Oxyalginae # FaEu: Astigmata > Alloptidae
+Oxyameridae # COL: Arachnida > Sarcoptiformes
+Oxyopidae # COL: Arachnida > Araneae
+Oxyoppiinae # COL: Sarcoptiformes > Oppiidae
+Pachylaelapidae # COL: Arachnida > Mesostigmata
+Pachylaelapinae # COL: Mesostigmata > Pachylaelapidae
+Pachylaelapini # COL: Mesostigmata > Pachylaelapidae
+Pachylinae # COL: Opiliones > Gonyleptidae
+Pachyloidae # COL: synonym of Pachylinae (Opiliones)
+Pachylospeleinae # COL: Opiliones > Gonyleptidae
+Pachyseiinae # COL: Mesostigmata > Pachylaelapidae
+Pachyseiulinae # COL: Mesostigmata > Pachylaelapidae
+Pacullidae # COL: Arachnida > Araneae
+Pagidini # iNat: Araneae > Thomisidae
+Palaeacaridae # COL: Arachnida > Sarcoptiformes
+Palaeacaroidea # COL: Arachnida > Sarcoptiformes
+Palaeoburmesebuthidae # ITIS: Arachnida > Scorpiones
+Palaeoeuscorpiidae # ITIS: Arachnida > Scorpiones
+Palaeoricinulei # COL: Arachnida > Ricinulei
+Palaeosomata # COL: Arachnida > Sarcoptiformes
+Palaeotrilineatidae # ITIS: Arachnida > Scorpiones
+Paleoamblypygi # COL: Arachnida > Amblypygi
+Palpigradi # COL: Arthropoda > Arachnida
+Palpimanidae # COL: Arachnida > Araneae
+Palpimaninae # iNat: Araneae > Palpimanidae
+Palpimanoidea # PBDB: Arachnida > Araneae
+Palpipedinae # COL: synonym of Erecananinae (Opiliones)
+Palpipedoidae # COL: synonym of Erecananinae (Opiliones)
+Palystinae # iNat: Araneae > Sparassidae
+Panctenata # PBDB: Arachnida > Pseudoscorpiones
+Pandininae # ITIS: Scorpiones > Scorpionidae
+Pandionacarinae # iNat: Sarcoptiformes > Avenzoariidae
+Papillonotidae # COL: Arachnida > Sarcoptiformes
+Paracharontidae # COL: Arachnida > Amblypygi
+Paracharontoidea # PBDB: synonym of Paleoamblypygi (Arachnida)
+Paragoniochernetinae # COL: Pseudoscorpiones > Withiidae
+Paragoniosomatinae # COL: Opiliones > Gonyleptidae
+Parahyidae # COL: Arachnida > Pseudoscorpiones
+Parakalummidae # COL: Arachnida > Sarcoptiformes
+Paralaelapini # COL: Mesostigmata > Pachylaelapidae
+Paralolidae # COL: synonym of Phalangodidae (Opiliones)
+Paramegistidae # COL: Arachnida > Mesostigmata
+Paramegistoidea # COL: Arachnida > Mesostigmata
+Paramiginae # iNat: Araneae > Migidae
+Paranonychidae # COL: Arachnida > Opiliones
+Paranonychinae # COL: synonym of Paranonychidae (Opiliones)
+Parantennulidae # COL: Arachnida > Mesostigmata
+Parantennuloidea # COL: Arachnida > Mesostigmata
+Parapirnodidae # COL: synonym of Oripodidae (Sarcoptiformes)
+Paraplectanoididae # IRMNG: Arachnida > Araneae
+Pararchaeidae # ITIS: Arachnida > Araneae
+Pararchaeinae # iNat: Araneae > Malkaridae
+Parasironidae # COL: Arachnida > Opiliones
+Parasitengona # UKSI: Arachnida > Trombidiformes
+Parasitidae # COL: Arachnida > Mesostigmata
+Parasitiformes # COL: Arthropoda > Arachnida
+Parasitinae # TAXREF: Mesostigmata > Parasitidae
+Parasitoidea # COL: Arachnida > Mesostigmata
+Paraspeleognathopsini # iNat: Trombidiformes > Ereynetidae
+Paratrombiinae # iNat: Trombidiformes > Trombidiidae
+Paratropididae # COL: Arachnida > Araneae
+Paratydeidae # COL: Arachnida > Trombidiformes
+Paratydeoidea # COL: Arachnida > Trombidiformes
+Pardosinae # iNat: Araneae > Lycosidae
+Parholaspidae # COL: synonym of Parholaspididae (Mesostigmata)
+Parholaspididae # COL: Arachnida > Mesostigmata
+Parholaspinae # COL: synonym of Parholaspididae (Mesostigmata)
+Parhypochthoniidae # COL: Arachnida > Sarcoptiformes
+Parhypochthonioidea # COL: Arachnida > Sarcoptiformes
+Parhyposomata # COL: Arachnida > Sarcoptiformes
+Passalozetidae # COL: Arachnida > Sarcoptiformes
+Paternoppiinae # COL: Sarcoptiformes > Oppiidae
+Pedetopodidae # COL: Arachnida > Sarcoptiformes
+Pediculochelidae # COL: Arachnida > Sarcoptiformes
+Pedrocortesellidae # COL: synonym of Licnodamaeidae (Sarcoptiformes)
+Peloppiidae # COL: Arachnida > Sarcoptiformes
+Penestomidae # COL: Arachnida > Araneae
+Pentanychidae # COL: synonym of Cladonychiidae (Opiliones)
+Pentapalpidae # COL: Arachnida > Trombidiformes
+Pentasetacidae # iNat: Arachnida > Sarcoptiformes
+Pentasetacini # iNat: Sarcoptiformes > Phytoptidae
+Penthaleidae # COL: Arachnida > Trombidiformes
+Penthalodidae # COL: Arachnida > Trombidiformes
+Pergamasinae # TAXREF: Mesostigmata > Parasitidae
+Perharpyrhynchini # COL: Trombidiformes > Harpirhynchidae
+Periegopidae # COL: Arachnida > Araneae
+Perlohmaniidae # COL: synonym of Perlohmanniidae (Sarcoptiformes)
+Perlohmanniidae # COL: Arachnida > Sarcoptiformes
+Perlohmannioidea # COL: Arachnida > Sarcoptiformes
+Petrobunidae # COL: Arachnida > Opiliones
+Pettalidae # COL: Arachnida > Opiliones
+Pezidae # COL: Arachnida > Trombidiformes
+Phalangiidae # COL: Arachnida > Opiliones
+Phalangiinae # COL: Opiliones > Phalangiidae
+Phalangioidea # COL: Arachnida > Opiliones
+Phalangodidae # COL: Arachnida > Opiliones
+Phalangodinae # COL: synonym of Phalangodidae (Opiliones)
+Phalangodoidea # COL: Arachnida > Opiliones
+Phanolophinae # COL: Trombidiformes > Erythraeidae
+Phareicranainae # Wikidata: Opiliones > Cranaidae
+Phareinae # COL: synonym of Stygninae (Opiliones)
+Phenopelopidae # COL: Arachnida > Sarcoptiformes
+Phenopelopoidea # COL: Arachnida > Sarcoptiformes
+Pheroliodidae # COL: Arachnida > Sarcoptiformes
+Philodanidae # COL: Arachnida > Mesostigmata
+Philodromidae # COL: Arachnida > Araneae
+Philodrominae # iNat: Araneae > Philodromidae
+Philomaoriinae # COL: Pseudoscorpiones > Cheliferidae
+Pholcidae # COL: Arachnida > Araneae
+Pholcinae # cellar spider subfamily (Pholcidae); PBDB: Araneae > Pholcidae
+Pholcoidea # PBDB: Arachnida > Araneae
+Pholcommatinae # PBDB: Araneae > Theridiidae
+Phonognathidae # TAXREF: synonym of Phonognathinae (Araneae)
+Phrurolithidae # COL: Arachnida > Araneae
+Phrynichidae # COL: Arachnida > Amblypygi
+Phrynichinae # COL: Amblypygi > Phrynichidae
+Phryninae # COL: Amblypygi > Phrynidae
+Phrynoidea # COL: Arachnida > Amblypygi
+Phthiracaridae # COL: Arachnida > Sarcoptiformes
+Phthiracaroidea # COL: Arachnida > Sarcoptiformes
+Phyllochthoniidae # COL: synonym of Atopochthoniidae (Sarcoptiformes)
+Phyllocoptinae # eriophyid mite subfamily (Eriophyidae); FaEu: Prostigmata > Eriophyidae
+Phyllocoptini # FaEu: Prostigmata > Eriophyidae
+Phymatodiscidae # COL: Arachnida > Mesostigmata
+Physoglenidae # COL: Arachnida > Araneae
+Phytocoptellinae # iNat: Sarcoptiformes > Phytoptidae
+Phytoptidae # COL: Arachnida > Trombidiformes
+Phytoptinae # FaEu: Prostigmata > Phytoptidae
+Phytoseidae # WoRMS: Arachnida > Mesostigmata
+Phytoseiidae # COL: Arachnida > Mesostigmata
+Phytoseioidea # COL: Arachnida > Mesostigmata
+Phyxelididae # COL: Arachnida > Araneae
+Picobiinae # COL: Trombidiformes > Syringophilidae
+Piersigiidae # COL: Arachnida > Trombidiformes
+Pimoidae # COL: Arachnida > Araneae
+Pionidae # COL: Arachnida > Trombidiformes
+Pionothelinae # iNat: Araneae > Pycnothelidae
+Pirnodidae # COL: synonym of Oripodidae (Sarcoptiformes)
+Pisauridae # COL: Arachnida > Araneae
+Pisaurinae # iNat: Araneae > Pisauridae
+Plasmobatidae # COL: Arachnida > Sarcoptiformes
+Plateremaeidae # COL: Arachnida > Sarcoptiformes
+Plateremaeoidea # COL: Arachnida > Sarcoptiformes
+Platoninae # iNat: Araneae > Theridiosomatidae
+Platyameridae # COL: Arachnida > Sarcoptiformes
+Platyarachnini # iNat: Araneae > Thomisidae
+Platybuninae # COL: Opiliones > Phalangiidae
+Platythomisini # iNat: Araneae > Thomisidae
+Plectreuridae # COL: Arachnida > Araneae
+Plexippina # PBDB: Araneae > Salticidae
+Plexippini # PBDB: Araneae > Salticidae
+Pneumocoptidae # COL: Arachnida > Sarcoptiformes
+Pneumophaginae # COL: Trombidiformes > Cloacaridae
+Pneumophionyssinae # COL: Mesostigmata > Entonyssidae
+Podacaridae # IRMNG: Arachnida > Oribatida
+Podapolipidae # COL: Arachnida > Trombidiformes
+Podocinidae # COL: Arachnida > Mesostigmata
+Podocininae # COL: Mesostigmata > Podocinidae
+Podocinini # COL: synonym of Podocinidae (Mesostigmata)
+Podoctidae # COL: Arachnida > Opiliones
+Podoctinae # COL: Opiliones > Podoctidae
+Podopterotegaeidae # COL: Arachnida > Sarcoptiformes
+Podothrombidiidae # iNat: Arachnida > Trombidiformes
+Poecilotheriinae # iNat: Araneae > Theraphosidae
+Poliocheridae # COL: Arachnida > Ricinulei
+Poliocheroidea # COL: Arachnida > Ricinulei
+Poltyini # iNat: Araneae > Araneidae
+Polyaspididae # COL: Arachnida > Mesostigmata
+Polybetinae # iNat: Araneae > Sparassidae
+Polycoryphinae # COL: Opiliones > Assamiidae
+Polypterozetidae # COL: Arachnida > Sarcoptiformes
+Polypterozetoidea # COL: Arachnida > Sarcoptiformes
+Polytrichinae # iNat: Trombidiformes > Bdellidae
+Pomerantziidae # COL: Arachnida > Trombidiformes
+Pomerantzioidea # COL: Arachnida > Trombidiformes
+Pontarachnidae # COL: Arachnida > Trombidiformes
+Poronoticae # COL: Arachnida > Sarcoptiformes
+Porrhopini # iNat: Araneae > Thomisidae
+Porrhothelidae # COL: Arachnida > Araneae
+Primoricinulei # COL: Arachnida > Ricinulei
+Primoricinuleidae # COL: Arachnida > Ricinulei
+Prithinae # PBDB: Araneae > Filistatidae
+Proctophyllodidae # COL: Arachnida > Sarcoptiformes
+Proctophyllodinae # FaEu: Astigmata > Proctophyllodidae
+Procydrelinae # iNat: Araneae > Zodariidae
+Prodidomidae # COL: Arachnida > Araneae
+Prodinychidae # COL: Arachnida > Mesostigmata
+Progonyleptoidellinae # COL: Opiliones > Gonyleptidae
+Prokoeneniidae # COL: Arachnida > Palpigradi
+Promegistidae # COL: Arachnida > Mesostigmata
+Prorachiinae # iNat: Araneae > Pycnothelidae
+Prostigmata # COL: Arachnida > Trombidiformes
+Prostygnidae # COL: Arachnida > Opiliones
+Prostygninae # COL: synonym of Prostygnidae (Opiliones)
+Protalginae # FaEu: Astigmata > Analgidae
+Proteonematalycidae # COL: Arachnida > Sarcoptiformes
+Proterorhagiidae # COL: Arachnida > Sarcoptiformes
+Prothoplophoridae # IRMNG: Arachnida > Oribatida
+Prothricinae # iNat: Sarcoptiformes > Phytoptidae
+Protodinychidae # COL: Arachnida > Mesostigmata
+Protogarypininae # PBDB: Pseudoscorpiones > Garypinidae
+Protoischnuridae # ITIS: Arachnida > Scorpiones
+Protolophidae # COL: Arachnida > Opiliones
+Protoplophoridae # COL: Arachnida > Sarcoptiformes
+Protoplophoroidea # COL: Arachnida > Sarcoptiformes
+Protoribatidae # oribatid mite family (Sarcoptiformes); COL: Arachnida > Sarcoptiformes
+Protoschizomidae # COL: Arachnida > Schizomida
+Protosolpugidae # COL: Arachnida > Solifugae
+Protowithiini # COL: Pseudoscorpiones > Withiidae
+Protziidae # ITIS: synonym of Hydryphantidae (Trombidiformes)
+Protziinae # FaEu: Prostigmata > Hydryphantidae
+Psalmopoeinae # iNat: Araneae > Theraphosidae
+Psammochthoniidae # COL: Arachnida > Sarcoptiformes
+Psechridae # COL: Arachnida > Araneae
+Pselligminae # iNat: Araneae > Pycnothelidae
+Pseudochactidae # COL: Arachnida > Scorpiones
+Pseudochactinae # ITIS: Scorpiones > Pseudochactidae
+Pseudochactoidea # ITIS: Arachnida > Scorpiones
+Pseudocheylidae # COL: Arachnida > Trombidiformes
+Pseudochiridiidae # COL: Arachnida > Pseudoscorpiones
+Pseudogarypidae # COL: Arachnida > Pseudoscorpiones
+Pseudohydryphantidae # ITIS: synonym of Hydryphantidae (Trombidiformes)
+Pseudohydryphantinae # FaEu: Prostigmata > Hydryphantidae
+Pseudolamponinae # iNat: Araneae > Lamponidae
+Pseudoppiidae # COL: Arachnida > Sarcoptiformes
+Pseudoscorpiones # COL: Arthropoda > Arachnida
+Pseudoscorpionida # COL: synonym of Pseudoscorpiones (Arachnida)
+Pseudotyrannochthoniidae # COL: Arachnida > Pseudoscorpiones
+Pseudotyrannochthoniinae # COL: synonym of Pseudotyrannochthoniidae (Pseudoscorpiones)
+Psilodercidae # COL: Arachnida > Araneae
+Psorergatidae # COL: Arachnida > Trombidiformes
+Psoroptidae # COL: Arachnida > Sarcoptiformes
+Psoroptoididae # COL: Arachnida > Sarcoptiformes
+Pterobatidae # COL: synonym of Salvidae (Sarcoptiformes)
+Pterochthoniidae # COL: synonym of Atopochthoniidae (Sarcoptiformes)
+Pterodectinae # FaEu: Astigmata > Proctophyllodidae
+Pterolichidae # COL: Arachnida > Sarcoptiformes
+Pterolichinae # FaEu: Astigmata > Pterolichidae
+Pterolichoidea # COL: Arachnida > Sarcoptiformes
+Pteronyssidae # COL: Arachnida > Sarcoptiformes
+Pterygosomatidae # COL: Arachnida > Trombidiformes
+Pterygosomatoidea # COL: Arachnida > Trombidiformes
+Ptilonyssidae # COL: synonym of Ptilonyssinae (Mesostigmata)
+Ptilonyssinae # COL: Mesostigmata > Rhinonyssidae
+Ptiloxenidae # COL: Arachnida > Sarcoptiformes
+Ptochacaridae # COL: Arachnida > Mesostigmata
+Ptyssalgidae # COL: Arachnida > Sarcoptiformes
+Pulchroppiinae # COL: Sarcoptiformes > Oppiidae
+Punctoribatidae # oribatid mite family (Sarcoptiformes); COL: Arachnida > Sarcoptiformes
+Pungoicinae # COL: Opiliones > Assamiidae
+Pycnocheiridiinae # COL: Pseudoscorpiones > Cheiridiidae
+Pycnonoticae # COL: Arachnida > Sarcoptiformes
+Pycnothelidae # COL: Arachnida > Araneae
+Pycnothelinae # iNat: Araneae > Pycnothelidae
+Pyemotidae # COL: Arachnida > Trombidiformes
+Pyemotoidea # COL: Arachnida > Trombidiformes
+Pygmephoridae # COL: Arachnida > Trombidiformes
+Pygmephorinae # ITIS: synonym of Pygmephoridae (Trombidiformes)
+Pygmephoroidea # ITIS: synonym of Scutacaroidea (Arachnida)
+Pyramidopidae # COL: Arachnida > Opiliones
+Pyroglyphidae # COL: Arachnida > Sarcoptiformes
+Pyrosejidae # COL: Arachnida > Mesostigmata
+Quadroppiidae # COL: Arachnida > Sarcoptiformes
+Raillietiidae # COL: Arachnida > Mesostigmata
+Ramsayellidae # COL: synonym of Humerobatidae (Sarcoptiformes)
+Raphignathae # iNat: Arachnida > Trombidiformes
+Raphignathidae # COL: Arachnida > Trombidiformes
+Raphignathoidea # COL: Arachnida > Trombidiformes
+Rectijanuidae # COL: Arachnida > Sarcoptiformes
+Reginacharlottiidae # COL: Arachnida > Mesostigmata
+Resinacaridae # COL: Arachnida > Trombidiformes
+Rhagidiidae # COL: Arachnida > Trombidiformes
+Rhagodidae # COL: Arachnida > Solifugae
+Rhinoeciinae # COL: Mesostigmata > Rhinonyssidae
+Rhinonyssidae # COL: Arachnida > Mesostigmata
+Rhinonyssinae # COL: Mesostigmata > Rhinonyssidae
+Rhodacaridae # COL: Arachnida > Mesostigmata
+Rhodacarinae # COL: synonym of Rhodacaridae (Mesostigmata)
+Rhodacaroidea # COL: Arachnida > Mesostigmata
+Rhodinae # iNat: Araneae > Dysderidae
+Rhyncaphytoptinae # FaEu: Prostigmata > Diptilomiopidae
+Rhynchohydracaridae # COL: Arachnida > Trombidiformes
+Rhynchoribatidae # COL: Arachnida > Sarcoptiformes
+Rhyncoptidae # COL: Arachnida > Sarcoptiformes
+Rhytidicolidae # COL: Arachnida > Araneae
+Riccardoellinae # iNat: Trombidiformes > Ereynetidae
+Ricinoididae # COL: Arachnida > Ricinulei
+Ricinoidoidea # COL: Arachnida > Ricinulei
+Ricinulei # COL: Arthropoda > Arachnida
+Rioppiidae # COL: Arachnida > Sarcoptiformes
+Roeweriinae # COL: Opiliones > Gonyleptidae
+Roquetteini # COL: Opiliones > Cosmetidae
+Rosensteiniidae # COL: Arachnida > Sarcoptiformes
+Rotundabaloghiidae # COL: Arachnida > Mesostigmata
+Rugodentidae # COL: Arachnida > Scorpiones
+Rugodentinae # ITIS: Scorpiones > Rugodentidae
+Rutripalpidae # COL: Arachnida > Trombidiformes
+Sabaconidae # COL: Arachnida > Opiliones
+Salticidae # COL: Arachnida > Araneae
+Salticinae # jumping spider subfamily (Salticidae); PBDB: Araneae > Salticidae
+Salticini # iNat: Araneae > Salticidae
+Salticoidea # iNat: Arachnida > Araneae
+Saltiseiidae # COL: Arachnida > Mesostigmata
+Salvidae # COL: Arachnida > Sarcoptiformes
+Samoidae # COL: Arachnida > Opiliones
+Samooidea # COL: Arachnida > Opiliones
+Sandokanidae # COL: Arachnida > Opiliones
+Sandokanoidea # COL: Arachnida > Opiliones
+Saproglyphidae # IRMNG: Arachnida > Astigmata
+Saproglyphinae # COL: Sarcoptiformes > Winterschmidtiidae
+Sarasinellinae # COL: synonym of Sarasinicinae (Opiliones)
+Sarasinicinae # COL: Opiliones > Epedanidae
+Sarcoptidae # COL: Arachnida > Sarcoptiformes
+Sarcoptiformes # COL: Arthropoda > Arachnida
+Sarcoptoidea # COL: Arachnida > Sarcoptiformes
+Sarindini # PBDB: Araneae > Salticidae
+Saronominae # COL: Solifugae > Ammotrechidae
+Sasoninae # iNat: Araneae > Barychelidae
+Saxidrominae # COL: Trombidiformes > Adamystidae
+Scatoglyphidae # COL: Arachnida > Sarcoptiformes
+Scheloribatidae # COL: Arachnida > Sarcoptiformes
+Schismatothelinae # TAXREF: Araneae > Theraphosidae
+Schizoglyphidae # COL: Arachnida > Sarcoptiformes
+Schizoglyphoidea # COL: Arachnida > Sarcoptiformes
+Schizogyniidae # COL: Arachnida > Mesostigmata
+Schizomida # COL: Arthropoda > Arachnida
+Schizomidae # COL: synonym of Hubbardiidae (Schizomida)
+Schizomina # Wikidata: Arachnida > Schizomida
+Schizonotidae # COL: synonym of Hubbardiidae (Schizomida)
+Schoengastiellini # COL: Trombidiformes > Trombiculidae
+Schoengastiini # COL: Trombidiformes > Trombiculidae
+Scirulinae # iNat: Trombidiformes > Cunaxidae
+Sclerobuninae # COL: synonym of Paranonychidae (Opiliones)
+Scleropilionini # COL: Opiliones > Phalangiidae
+Sclerosomatidae # COL: Arachnida > Opiliones
+Sclerosomatinae # COL: Opiliones > Sclerosomatidae
+Scopocirini # TAXREF: Araneae > Salticidae
+Scopulophthalmi # COL: Arachnida > Opiliones
+Scorpiones # COL: Arthropoda > Arachnida
+Scorpionidae # COL: Arachnida > Scorpiones
+Scorpioninae # ITIS: Scorpiones > Scorpionidae
+Scorpionoidea # ITIS: Arachnida > Scorpiones
+Scorpiopidae # COL: Arachnida > Scorpiones
+Scorpiopinae # ITIS: Scorpiones > Euscorpiidae
+Scutacaridae # COL: Arachnida > Trombidiformes
+Scutacaroidea # COL: Arachnida > Trombidiformes
+Scutoverticidae # COL: Arachnida > Sarcoptiformes
+Scyloxinae # iNat: Araneae > Scytodidae
+Scytodidae # COL: Arachnida > Araneae
+Scytodinae # iNat: Araneae > Scytodidae
+Scytodoidea # PBDB: Arachnida > Araneae
+Segestriidae # COL: Arachnida > Araneae
+Segestriinae # PBDB: Araneae > Segestriidae
+Seiodidae # COL: Arachnida > Mesostigmata
+Sejida # COL: Arachnida > Mesostigmata
+Sejidae # COL: Arachnida > Mesostigmata
+Sejoidea # COL: Arachnida > Mesostigmata
+Selencinae # COL: Opiliones > Assamiidae
+Selenocosmiinae # PBDB: Araneae > Theraphosidae
+Selenogyrinae # iNat: Araneae > Theraphosidae
+Selenopidae # COL: Arachnida > Araneae
+Selenoribatidae # COL: Arachnida > Sarcoptiformes
+Sellnickiidae # COL: synonym of Oribatulidae (Sarcoptiformes)
+Selnickidae # iNat: Arachnida > Sarcoptiformes
+Senoculidae # COL: Arachnida > Araneae
+Sicariidae # COL: Arachnida > Araneae
+Sicariinae # iNat: Araneae > Sicariidae
+Sidaminae # COL: Opiliones > Assamiidae
+Sierraphytoptinae # FaEu: Prostigmata > Phytoptidae
+Sierraphytoptini # FaEu: Prostigmata > Phytoptidae
+Sigillaricinuleidae # COL: Arachnida > Ricinulei
+Simaethina # PBDB: Araneae > Salticidae
+Simonellini # PBDB: Araneae > Salticidae
+Sinopimoidae # ITIS: Arachnida > Araneae
+Sironidae # COL: Arachnida > Opiliones
+Sironides # COL: synonym of Sironidae (Opiliones)
+Sironinae # COL: synonym of Sironidae (Opiliones)
+Siteroptidae # astigmatan mite family; ITIS: synonym of Pygmephoridae (Trombidiformes)
+Sitticini # TAXREF: Araneae > Salticidae
+Smarididae # COL: Arachnida > Trombidiformes
+Smaridiidae # harvest mite family (Trombidiformes); GBIF: Arachnida > Trombidiformes
+Smaridinae # COL: Trombidiformes > Smarididae
+Smeringopinae # iNat: Araneae > Pholcidae
+Smeringurinae # ITIS: Scorpiones > Vaejovidae
+Smodicinini # iNat: Araneae > Thomisidae
+Sodreaninae # COL: Opiliones > Gonyleptidae
+Soerensenellinae # ITIS: Opiliones > Triaenonychidae
+Solifugae # COL: Arthropoda > Arachnida
+Solitudinae # iNat: Araneae > Gnaphosidae
+Solpugida # COL: synonym of Solifugae (Arachnida)
+Solpugidae # COL: Arachnida > Solifugae
+Solpuginae # COL: Solifugae > Solpugidae
+Sorensenellinae # COL: Opiliones > Triaenonychidae
+Sosippinae # iNat: Araneae > Lycosidae
+Sparassidae # COL: Arachnida > Araneae
+Sparassinae # iNat: Araneae > Sparassidae
+Sparianthinae # iNat: Araneae > Sparassidae
+Spartaeina # iNat: Araneae > Salticidae
+Spartaeinae # PBDB: Araneae > Salticidae
+Spartaeini # iNat: Araneae > Salticidae
+Spelaeorhynchidae # COL: Arachnida > Mesostigmata
+Speleochirini # iNat: Trombidiformes > Ereynetidae
+Speleognathinae # FaEu: Prostigmata > Ereynetidae
+Speleognathini # iNat: Trombidiformes > Ereynetidae
+Sperchonidae # ITIS: synonym of Sperchontidae (Trombidiformes)
+Sperchontidae # COL: Arachnida > Trombidiformes
+Sphaerochthoniidae # COL: Arachnida > Sarcoptiformes
+Sphaerolichida # COL: Arachnida > Trombidiformes
+Sphaerolichidae # COL: Arachnida > Trombidiformes
+Sphaerolichoidea # COL: Arachnida > Trombidiformes
+Spinibdellinae # iNat: Trombidiformes > Bdellidae
+Spinozetidae # COL: Arachnida > Sarcoptiformes
+Spintharinae # iNat: Araneae > Theridiidae
+Spinturnicidae # COL: Arachnida > Mesostigmata
+Spinturnicinae # COL: synonym of Spinturnicidae (Mesostigmata)
+Stahnkeninae # iNat: Scorpiones > Vaejovidae
+Staianinae # iNat: Araneae > Sparassidae
+Stasimopidae # COL: Arachnida > Araneae
+Staurobatidae # COL: Arachnida > Sarcoptiformes
+Stelechobatidae # COL: synonym of Caloppiidae (Sarcoptiformes)
+Stemonyphantinae # TAXREF: Araneae > Linyphiidae
+Stenochilidae # COL: Arachnida > Araneae
+Stenostygninae # COL: Opiliones > Biantidae
+Stephanopinae # PBDB: Araneae > Thomisidae
+Sternoidinae # iNat: Araneae > Malkaridae
+Sternophoridae # COL: Arachnida > Pseudoscorpiones
+Sternophoroidea # COL: Arachnida > Pseudoscorpiones
+Sternophthalmi # COL: Arachnida > Opiliones
+Sternoppiidae # COL: Arachnida > Sarcoptiformes
+Stigmaeidae # COL: Arachnida > Trombidiformes
+Stigmocheylidae # COL: Arachnida > Trombidiformes
+Stiphidiidae # COL: Arachnida > Araneae
+Stiphidiinae # iNat: Araneae > Stiphidiidae
+Stiphropodinae # iNat: Araneae > Thomisidae
+Storeninae # iNat: Araneae > Zodariidae
+Storenomorphinae # PBDB: Araneae > Zodariidae
+Strandtmanniidae # COL: Arachnida > Trombidiformes
+Stromatopelminae # iNat: Araneae > Theraphosidae
+Strophiini # iNat: Araneae > Thomisidae
+Stygnicranainae # COL: Opiliones > Cranaidae
+Stygnicranaini # Wikidata: Opiliones > Cranaidae
+Stygninae # COL: Opiliones > Stygnidae
+Stygnoleptinae # COL: synonym of Zalmoxidae (Opiliones)
+Stygnommatidae # COL: Arachnida > Opiliones
+Stygnommatinae # COL: synonym of Stygnommatidae (Opiliones)
+Stygnopsidae # COL: Arachnida > Opiliones
+Stygnopsinae # COL: Opiliones > Stygnopsidae
+Stygothrombidiidae # ITIS: synonym of Stygothrombiidae (Trombidiformes)
+Stygothrombidioidea # ITIS: synonym of Stygothrombioidea (Arachnida)
+Stygothrombiidae # COL: Arachnida > Trombidiformes
+Stygothrombiinae # ITIS: synonym of Stygothrombiidae (Trombidiformes)
+Stygothrombioidea # COL: Arachnida > Trombidiformes
+Stygotoniidae # COL: Arachnida > Trombidiformes
+Stylocellidae # COL: Arachnida > Opiliones
+Stylocellinae # COL: Opiliones > Stylocellidae
+Stylocellini # COL: synonym of Stylocellidae (Opiliones)
+Sucinlourencoidae # ITIS: Arachnida > Scorpiones
+Suctobelbidae # COL: Arachnida > Sarcoptiformes
+Suidasiidae # COL: Arachnida > Sarcoptiformes
+Sulsulinae # iNat: Araneae > Oonopidae
+Superstitioniidae # COL: Arachnida > Scorpiones
+Superstitioniinae # ITIS: Scorpiones > Superstitioniidae
+Suthepiidae # COL: Arachnida > Opiliones
+Syarinidae # COL: Arachnida > Pseudoscorpiones
+Syarininae # COL: Pseudoscorpiones > Syarinidae
+Symbioribatidae # COL: Arachnida > Sarcoptiformes
+Symphytognathidae # COL: Arachnida > Araneae
+Symphytognathoidea # iNat: Arachnida > Araneae
+Synagelina # PBDB: Araneae > Salticidae
+Synaphridae # COL: Arachnida > Araneae
+Synichotritiidae # COL: Arachnida > Sarcoptiformes
+Synotaxidae # COL: Arachnida > Araneae
+Synspermiata # iNat: Arachnida > Araneae
+Synsphyroninae # COL: Pseudoscorpiones > Garypidae
+Synthetonychiidae # COL: Arachnida > Opiliones
+Syntropinae # ITIS: Scorpiones > Vaejovidae
+Syringobiidae # COL: Arachnida > Sarcoptiformes
+Syringobiinae # iNat: Sarcoptiformes > Syringobiidae
+Syringophilidae # COL: Arachnida > Trombidiformes
+Syringophilinae # COL: Trombidiformes > Syringophilidae
+Systariidae # COL: Arachnida > Araneae
+Taitoinae # COL: Opiliones > Cosmetidae
+Talaini # iNat: Araneae > Thomisidae
+Tanaupodidae # COL: Arachnida > Trombidiformes
+Tanaupodoidea # COL: Arachnida > Trombidiformes
+Taracidae # COL: Arachnida > Opiliones
+Tarsocheylidae # COL: Arachnida > Trombidiformes
+Tarsocheyloidea # COL: Arachnida > Trombidiformes
+Tarsonemidae # COL: Arachnida > Trombidiformes
+Tarsonemoidea # COL: Arachnida > Trombidiformes
+Tectocepheidae # COL: Arachnida > Sarcoptiformes
+Tectocepheoidea # COL: Arachnida > Sarcoptiformes
+Tegeocranellidae # COL: Arachnida > Sarcoptiformes
+Tegonotini # FaEu: Prostigmata > Eriophyidae
+Tegoribatidae # COL: Arachnida > Sarcoptiformes
+Teinocheylini # COL: Trombidiformes > Cheyletidae
+Telemidae # COL: Arachnida > Araneae
+Teneriffiidae # COL: Arachnida > Trombidiformes
+Teneriffiinae # COL: synonym of Teneriffiidae (Trombidiformes)
+Teneriffiolidae # COL: synonym of Teneriffiidae (Trombidiformes)
+Tengellidae # ITIS: Arachnida > Araneae
+Tengellinae # PBDB: Araneae > Zoropsidae
+Tenuialidae # COL: Arachnida > Sarcoptiformes
+Tenuipalpidae # COL: Arachnida > Trombidiformes
+Teranyssidae # COL: Arachnida > Mesostigmata
+Teratoppiidae # COL: Arachnida > Sarcoptiformes
+Teratothyadidae # COL: Arachnida > Trombidiformes
+Terpnacarida # COL: Arachnida > Sarcoptiformes
+Terpnacaridae # COL: Arachnida > Sarcoptiformes
+Terpnacaroidea # COL: Arachnida > Sarcoptiformes
+Testudacarinae # iNat: Trombidiformes > Torrenticolidae
+Tetrablemmidae # COL: Arachnida > Araneae
+Tetracondylidae # COL: Arachnida > Sarcoptiformes
+Tetragnathidae # COL: Arachnida > Araneae
+Tetragnathinae # PBDB: synonym of Tetragnathidae (Araneae)
+Tetranychidae # COL: Arachnida > Trombidiformes
+Tetranychoidea # COL: Arachnida > Trombidiformes
+Tetrasejaspidae # COL: Arachnida > Mesostigmata
+Tetrophthalmi # COL: synonym of Eupnoi (Arachnida)
+Teutonidae # ITIS: synonym of Teutoniidae (Trombidiformes)
+Thanatinae # iNat: Araneae > Philodromidae
+Thaumasiinae # iNat: Araneae > Pisauridae
+Thelyphonidae # COL: Arachnida > Uropygi
+Thelyphoninae # COL: Uropygi > Thelyphonidae
+Thelyphonoidea # COL: Arachnida > Uropygi
+Theraphosidae # COL: Arachnida > Araneae
+Theraphosinae # iNat: Araneae > Theraphosidae
+Theraphosini # iNat: Araneae > Theraphosidae
+Theridiidae # COL: Arachnida > Araneae
+Theridiinae # iNat: Araneae > Theridiidae
+Theridiosomatidae # COL: Arachnida > Araneae
+Theridiosomatinae # iNat: Araneae > Theridiosomatidae
+Thermacaridae # COL: Arachnida > Trombidiformes
+Therobatinae # COL: Solifugae > Eremobatidae
+Thinozerconidae # COL: Arachnida > Mesostigmata
+Thinozerconoidea # COL: Arachnida > Mesostigmata
+Thiodinini # PBDB: Araneae > Salticidae
+Thiratoscirtina # iNat: Araneae > Salticidae
+Thomisidae # COL: Arachnida > Araneae
+Thomisinae # iNat: Araneae > Thomisidae
+Thomisini # iNat: Araneae > Thomisidae
+Thomisoidea # iNat: Arachnida > Araneae
+Thoracosathesidae # COL: Arachnida > Sarcoptiformes
+Thrigmopoeinae # iNat: Araneae > Theraphosidae
+Thyasidae # ITIS: synonym of Hydryphantidae (Trombidiformes)
+Thyrisomidae # COL: Arachnida > Sarcoptiformes
+Thysanocercidae # COL: Arachnida > Sarcoptiformes
+Tibellomatinae # iNat: Araneae > Sparassidae
+Tikizetidae # IRMNG: Arachnida > Oribatida
+Tingotinginae # iNat: Araneae > Malkaridae
+Tisanibini # iNat: Araneae > Salticidae
+Titanoecidae # COL: Arachnida > Araneae
+Titanoecoidea # iNat: Arachnida > Araneae
+Tithaeidae # COL: Arachnida > Opiliones
+Tmarini # iNat: Araneae > Thomisidae
+Tokunocepheidae # COL: Arachnida > Sarcoptiformes
+Torrenticolidae # COL: Arachnida > Trombidiformes
+Torrenticolinae # FaEu: Prostigmata > Torrenticolidae
+Toxopidae # COL: Arachnida > Araneae
+Toxopinae # iNat: Araneae > Toxopidae
+Trachelidae # COL: Arachnida > Araneae
+Trachycosmidae # COL: Arachnida > Araneae
+Trachytidae # COL: Arachnida > Mesostigmata
+Trachyuropodidae # COL: Arachnida > Mesostigmata
+Travuniidae # COL: Arachnida > Opiliones
+Travuniinae # ITIS: Opiliones > Travuniidae
+Travunioidea # COL: Arachnida > Opiliones
+Travunoidea # COL: synonym of Travunioidea (Arachnida)
+Trechaleidae # COL: Arachnida > Araneae
+Trematuridae # COL: Arachnida > Mesostigmata
+Trhypochthoniidae # COL: Arachnida > Sarcoptiformes
+Triaenobunidae # COL: synonym of Triaenobuninae (Opiliones)
+Triaenobuninae # COL: Opiliones > Triaenonychidae
+Triaenonychidae # COL: Arachnida > Opiliones
+Triaenonychinae # COL: Opiliones > Triaenonychidae
+Triaenonychini # COL: synonym of Triaenonychinae (Opiliones)
+Triaenonychoidea # COL: Arachnida > Opiliones
+Tricassinae # iNat: Araneae > Lycosidae
+Trichocyllibidae # COL: Arachnida > Mesostigmata
+Trichouropodellidae # COL: Arachnida > Mesostigmata
+Trichthoniidae # COL: Arachnida > Sarcoptiformes
+Tricommatidae # COL: synonym of Tricommatinae (Opiliones)
+Tricommatinae # COL: Opiliones > Gonyleptidae
+Tridenchthoniidae # COL: synonym of Tridenchthoniinae (Pseudoscorpiones)
+Tridenchthoniinae # COL: Pseudoscorpiones > Chthoniidae
+Tridenchthoniini # COL: Pseudoscorpiones > Chthoniidae
+Triditarsinae # COL: Solifugae > Daesiidae
+Trigonuropodidae # COL: Arachnida > Mesostigmata
+Trigynapsida # iNat: Arachnida > Mesostigmata
+Trigynaspida # COL: Arachnida > Mesostigmata
+Trionyxellidae # COL: synonym of Assamiidae (Opiliones)
+Trionyxellinae # COL: Opiliones > Assamiidae
+Triophtydeidae # COL: Arachnida > Trombidiformes
+Triplogyniidae # COL: Arachnida > Mesostigmata
+Trisetacini # FaEu: Prostigmata > Phytoptidae
+Trispeleognathini # iNat: Trombidiformes > Ereynetidae
+Trizetidae # COL: Arachnida > Sarcoptiformes
+Trizetoidea # COL: Arachnida > Sarcoptiformes
+Trochanteriidae # COL: Arachnida > Araneae
+Trochometridiidae # COL: Arachnida > Trombidiformes
+Trochometridioidea # COL: Arachnida > Trombidiformes
+Troglokhammouaninae # ITIS: Scorpiones > Pseudochactidae
+Trogloraptoridae # COL: Arachnida > Araneae
+Troglosironidae # COL: Arachnida > Opiliones
+Troglotayosicidae # COL: Arachnida > Scorpiones
+Trogulidae # COL: Arachnida > Opiliones
+Trogulides # COL: synonym of Trogulidae (Opiliones)
+Troguloidea # COL: Arachnida > Opiliones
+Trombellidae # COL: Arachnida > Trombidiformes
+Trombiculidae # COL: Arachnida > Trombidiformes
+Trombiculinae # COL: Trombidiformes > Trombiculidae
+Trombiculini # COL: Trombidiformes > Trombiculidae
+Trombiculoidea # COL: Arachnida > Trombidiformes
+Trombidia # iNat: Arachnida > Trombidiformes
+Trombidiformes # COL: Arthropoda > Arachnida
+Trombidiidae # COL: Arachnida > Trombidiformes
+Trombidiinae # iNat: Trombidiformes > Trombidiidae
+Trombidioidea # COL: Arachnida > Trombidiformes
+Trouessartiidae # COL: Arachnida > Sarcoptiformes
+Tsadseinae # COL: synonym of Erecinae (Opiliones)
+Tubulozetidae # COL: Arachnida > Sarcoptiformes
+Tuckerellidae # COL: Arachnida > Trombidiformes
+Tumerozetidae # COL: Arachnida > Sarcoptiformes
+Tuparezetidae # COL: Arachnida > Sarcoptiformes
+Turbinoptidae # COL: Arachnida > Sarcoptiformes
+Tydeidae # COL: Arachnida > Trombidiformes
+Tydeoidea # COL: Arachnida > Trombidiformes
+Typhlochactidae # COL: Arachnida > Scorpiones
+Typhlochactinae # ITIS: Scorpiones > Superstitioniidae
+Typopeltinae # COL: Uropygi > Thelyphonidae
+Tyrannochthoniini # COL: Pseudoscorpiones > Chthoniidae
+Uchidastygacaridae # COL: Arachnida > Trombidiformes
+Udubidae # COL: Arachnida > Araneae
+Uloboridae # COL: Arachnida > Araneae
+Uloborinae # iNat: Araneae > Uloboridae
+Ummidiinae # PBDB: Araneae > Halonoproctidae
+Unduloribatidae # COL: Arachnida > Sarcoptiformes
+Unduloribatoidea # COL: Arachnida > Sarcoptiformes
+Unguicheylidae # COL: Arachnida > Trombidiformes
+Unionicolidae # COL: Arachnida > Trombidiformes
+Uroactiniidae # COL: Arachnida > Mesostigmata
+Urocteinae # iNat: Araneae > Oecobiidae
+Urodacidae # IRMNG: Arachnida > Scorpiones
+Urodacinae # ITIS: Scorpiones > Scorpionidae
+Urodiaspididae # COL: Arachnida > Mesostigmata
+Urodinychidae # COL: Arachnida > Mesostigmata
+Uroecobiinae # iNat: Araneae > Oecobiidae
+Uropodellidae # COL: Arachnida > Mesostigmata
+Uropodidae # COL: Arachnida > Mesostigmata
+Uropodina # COL: Arachnida > Mesostigmata
+Uropodinae # iNat: Mesostigmata > Uropodidae
+Uropodoidea # COL: Arachnida > Mesostigmata
+Uropygi # COL: Arthropoda > Arachnida
+Vachoniidae # COL: synonym of Bochicidae (Pseudoscorpiones)
+Vaejovidae # COL: Arachnida > Scorpiones
+Vaejovinae # ITIS: Scorpiones > Vaejovidae
+Vaejovoidea # FaEu: Arachnida > Scorpiones
+Varroidae # COL: Arachnida > Mesostigmata
+Varroinae # iNat: Mesostigmata > Laelapidae
+Veigaiidae # COL: Arachnida > Mesostigmata
+Veigaioidea # COL: Arachnida > Mesostigmata
+Venoniinae # iNat: Araneae > Lycosidae
+Ventrivomerini # Wikidata: Opiliones > Cranaidae
+Verrucadithinae # COL: synonym of Verrucadithini (Pseudoscorpiones)
+Verrucadithini # COL: Pseudoscorpiones > Chthoniidae
+Vexillariidae # COL: Arachnida > Sarcoptiformes
+Viciriini # PBDB: Araneae > Salticidae
+Vietbocapinae # ITIS: Scorpiones > Pseudochactidae
+Viridasiidae # COL: Arachnida > Araneae
+Vitzthumegistidae # COL: Arachnida > Mesostigmata
+Walchiidae # COL: synonym of Trombiculidae (Trombidiformes)
+Walchiinae # COL: synonym of Gahrliepiinae (Trombidiformes)
+Walchiini # COL: Trombidiformes > Trombiculidae
+Wettinidae # COL: Arachnida > Trombidiformes
+Winterschmidtiidae # COL: Arachnida > Sarcoptiformes
+Winterschmidtiinae # COL: Sarcoptiformes > Winterschmidtiidae
+Withiidae # COL: Arachnida > Pseudoscorpiones
+Withiinae # COL: Pseudoscorpiones > Withiidae
+Withiini # COL: Pseudoscorpiones > Withiidae
+Xenillidae # oribatid mite family (Sarcoptiformes); COL: Arachnida > Sarcoptiformes
+Xenocaligonellidae # COL: synonym of Xenocaligonellididae (Trombidiformes)
+Xenocaligonellididae # COL: Arachnida > Trombidiformes
+Xenoctenidae # COL: Arachnida > Araneae
+Xolalgidae # COL: Arachnida > Sarcoptiformes
+Xolalginae # FaEu: Astigmata > Xolalgidae
+Xoloptoidinae # FaEu: Astigmata > Pterolichidae
+Xylobatidae # IRMNG: Arachnida > Oribatida
+Yurebillidae # COL: Arachnida > Trombidiformes
+Yurebilloidea # COL: Arachnida > Trombidiformes
+Zairebiantinae # COL: Opiliones > Biantidae
+Zaleptinae # COL: synonym of Gagrellinae (Opiliones)
+Zalmoxidae # COL: Arachnida > Opiliones
+Zalmoxoidea # COL: Arachnida > Opiliones
+Zamorinae # COL: Opiliones > Nomoclastidae
+Zearchaeinae # iNat: Araneae > Mecysmaucheniidae
+Zelandothyadidae # COL: Arachnida > Trombidiformes
+Zelotinae # iNat: Araneae > Gnaphosidae
+Zerconidae # COL: Arachnida > Mesostigmata
+Zerconoidea # COL: Arachnida > Mesostigmata
+Zetomimidae # COL: synonym of Ceratozetidae (Sarcoptiformes)
+Zetomotrichidae # COL: Arachnida > Sarcoptiformes
+Zetomotrichoidea # COL: Arachnida > Sarcoptiformes
+Zetorchestidae # COL: Arachnida > Sarcoptiformes
+Zetorchestoidea # COL: Arachnida > Sarcoptiformes
+Zodariidae # COL: Arachnida > Araneae
+Zodariinae # PBDB: Araneae > Zodariidae
+Zodarioidea # PBDB: Arachnida > Araneae
+Zoicinae # iNat: Araneae > Lycosidae
+Zoridae # ITIS: Arachnida > Araneae
+Zorinae # iNat: Araneae > Miturgidae
+Zorocratidae # ITIS: Arachnida > Araneae
+Zoropsidae # COL: Arachnida > Araneae
+Zoropsinae # iNat: Araneae > Zoropsidae
+Zumptiellinae # COL: Mesostigmata > Halarachnidae
+Zumptiinae # FaEu: Astigmata > Xolalgidae

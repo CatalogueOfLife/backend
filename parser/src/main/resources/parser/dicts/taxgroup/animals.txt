@@ -1,112 +1,207 @@
-Acontiinae
-Acridinae
-Acrocephalidae
-Amphinomidae
-Amphinominae
-Anaplectidae
-Anaplectinae
-Ancylini
-Angelidae
-Animal
-Animalia
-Anthiinae
-Apoda
-Argidae
-Arteminae
-Asaphidae
-Ascarididae
-Asteriidae
-Asteropidae
-Atyidae
-Bdelloidea
-Bilateria
-Bufonidae
-Cepheidae
-Cepolidae
-Charinidae
-Chilodontidae
-Chiromyidae
-Chlamydini
-Choristidae
-Chrysochlorinae
-Clavigerinae
-Clionidae
-Corystidae
-Ctenodesmini
-Cymatiinae
-Cythereinae
-Discidae
-Drepanidae
-Ellobiinae
-Erycinae
-Erycinidae
-Eucharidae
-Eumetazoa
-Galeodidae
-Georissidae
-Geryonidae
-Hedylidae
-Hemiarthridae
-Heterocheilidae
-Holozoa
-Hyalidae
-Janinae
-Koenenitidae
-Lepidopinae
-Leptosomatidae
-Leuconidae
-Licininae
-Liparidae
-Loricata
-Loriculinae
-Machaeridia
-Macroglossinae
-Macropodini
-Megalodontoidea
-Megalopidae
-Metazoa
-Metridiidae
-Microdontidae
-Nephrozoa
-Nereidae
-Niphoninae
-Niphonini
-Norellinae
-Nycteridae
-Ophthalmidae
-Otididae
-Panopeidae
-Panopeinae
-Peltidae
-Pentacerotidae
-Perichaetidae
-Personidae
-Phasianidae
-Phoridae
-Phycinae
-Phyllophoridae
-Phyllophorinae
-Plutoniinae
-Polydesmidae
-Protostomia
-Raphidae
-Raphinae
-Reticulariidae
-Rivulinae
-Saturniidae
-Scarini
-Scatophagidae
-Serendipidae
-Soleniscinae
-Sphaeriidae
-Sphaeriini
-Spondylinae
-Thaididae
-Tincidae
-Trachinidae
-Trapeziidae
-Trichiinae
-Varuninae
-Xylophagidae
-Xylophaginae
-Zygaenidae
+Acanthodidae # homonym in Chordates (IRMNG: Acanthodii > Acanthodiformes), Orthoptera (COL: synonym of Pleminiini (Orthoptera))
+Acontiinae # homonym in Chordates (COL: Squamata > Scincidae), Lepidoptera (ITIS: Lepidoptera > Noctuidae)
+Acridinae # homonym in Chordates (COL: synonym of Hylidae (Anura)), Orthoptera (COL: Orthoptera > Acrididae)
+Acrocephalidae # homonym in Chordates (COL: Aves > Passeriformes), Hemiptera (COL: synonym of Aphrodini (Hemiptera))
+Acrochordinae # homonym in Chordates (PBDB: synonym of Acrochordidae (Reptilia)), OtherArthropods (COL: Diplopoda > Trachygonidae)
+Actinodontidae # homonym in Bivalves (COL: Bivalvia > Actinodontida), Chordates (IRMNG: Amphibia > Temnospondyli)
+Aculeata # homonym in Chordates (GBIF: Chordata > Mammalia), Hymenoptera (COL: Insecta > Hymenoptera)
+Amphinomidae # homonym in Diptera (Systema Dipterorum: synonym of Limoniini (Diptera)), OtherAnimals (COL: Polychaeta > Amphinomida)
+Amphinominae # homonym in Diptera (Systema Dipterorum: synonym of Limoniini (Diptera)), OtherAnimals (COL: Amphinomida > Amphinomidae)
+Anacanthini # homonym in Chordates (PBDB: Chordata > Osteichthyes), Coleoptera (Coleoptera family-group names: synonym of Callipogonini (Coleoptera))
+Anaplectidae # homonym in OtherAnimals (COL: synonym of Plectidae (Plectida)), OtherInsects (COL: Insecta > Blattodea)
+Anaplectinae # homonym in OtherAnimals (COL: synonym of Pakirinae (Plectida)), OtherInsects (COL: Blattodea > Anaplectidae)
+Ancylini # homonym in Hymenoptera (COL: synonym of Ancylaini (Hymenoptera)), Lepidoptera (COL: synonym of Enarmoniini (Lepidoptera)), Molluscs (COL: Gastropoda > Planorbidae)
+Ancylocerina # homonym in Coleoptera (COL: Coleoptera > Cerambycidae), OtherMolluscs (PBDB: Cephalopoda > Ammonitida)
+Angelidae # homonym in OtherAnimals (COL: synonym of Rhodaliidae (Siphonophorae)), OtherInsects (COL: Insecta > Mantodea)
+Anguininae # homonym in Chordates (PBDB: synonym of Anguinae (Reptilia)), OtherAnimals (COL: Chromadorea > Rhabditida)
+Anguinoidea # homonym in Chordates (PBDB: synonym of Anguioidea (Osteichthyes)), OtherAnimals (COL: synonym of Tylenchomorpha (Chromadorea))
+Animal # not found in ChecklistBank
+Animalia # COL: Eukaryota
+Anthiinae # homonym in Chordates (COL: synonym of Anthiadidae (Perciformes)), Coleoptera (COL: Coleoptera > Carabidae)
+Aonychini # homonym in Chordates (PBDB: Carnivora > Mustelidae), Coleoptera (Wikidata: Coleoptera > Brachyceridae)
+Aplodontidae # homonym in Chordates (COL: synonym of Aplodontiidae (Rodentia)), Gastropods (COL: synonym of Modulidae (Gastropoda))
+Apoda # homonym in Crustacean (ITIS: synonym of Isopoda (Malacostraca)), OtherAnimals (COL: synonym of Apodida (Holothuroidea))
+Apodidae # homonym in Chordates (COL: Aves > Apodiformes), Crustacean (IRMNG: synonym of Triopsidae (Notostraca))
+Argidae # homonym in Chordates (ITIS: synonym of Astroblepidae (Siluriformes)), Hymenoptera (COL: Insecta > Hymenoptera)
+Arteminae # homonym in Arachnids (iNat: Araneae > Pholcidae), Molluscs (COL: synonym of Dosiniinae (Venerida))
+Asaphidae # homonym in Molluscs (COL: synonym of Psammobiidae (Cardiida)), OtherArthropods (COL: Trilobita > Asaphida)
+Ascarididae # homonym in Diptera (Systema Dipterorum: Diptera), OtherAnimals (ITIS: Chromadorea > Ascaridida)
+Asteriidae # homonym in Diptera (COL: synonym of Asteiidae (Diptera)), OtherAnimals (COL: Asteroidea > Forcipulatida)
+Asteropidae # homonym in Crustacean (ITIS: synonym of Cylindroleberididae (Myodocopida)), OtherAnimals (COL: synonym of Asteropseidae (Asteroidea))
+Athecata # homonym in Chordates (PBDB: synonym of Athecae (Osteichthyes)), OtherAnimals (COL: synonym of Anthoathecata (Hydrozoa))
+Aturidae # homonym in Arachnids (COL: Arachnida > Trombidiformes), OtherMolluscs (PBDB: synonym of Aturiidae (Nautilida))
+Atyidae # homonym in Crustacean (COL: Malacostraca > Decapoda), Molluscs (ITIS: synonym of Haminoeidae (Cephalaspidea))
+Bdelloidea # homonym in Arachnids (COL: Arachnida > Trombidiformes), OtherAnimals (COL: Rotifera > Eurotatoria)
+Bilateria # ITIS: Animalia
+Bradypodidae # homonym in Arachnids (IRMNG: synonym of Aturidae (Actinedida)), Chordates (COL: Mammalia > Pilosa)
+Bufonidae # homonym in Chordates (COL: Amphibia > Anura), Orthoptera (COL: synonym of Bufonidini (Orthoptera))
+Caeciliidae # homonym in Chordates (COL: Amphibia > Gymnophiona), OtherInsects (IRMNG: synonym of Caeciliusidae (Psocoptera))
+Caeciliinae # homonym in Chordates (COL: synonym of Caeciliidae (Gymnophiona)), OtherInsects (PBDB: synonym of Caeciliusinae (Psocodea))
+Caenoidea # homonym in Chordates (PBDB: synonym of Canoidea (Mammalia)), OtherInsects (COL: Insecta > Ephemeroptera)
+Cassidulidae # homonym in Gastropods (COL: synonym of Melongenidae (Neogastropoda)), OtherAnimals (COL: Echinodermata > Echinoidea)
+Cepheidae # homonym in Arachnids (COL: synonym of Cepheusidae (Sarcoptiformes)), OtherAnimals (COL: Scyphozoa > Rhizostomeae)
+Cepolidae # homonym in Chordates (COL: Chordata > Teleostei), Gastropods (COL: Mollusca > Gastropoda)
+Cerylidae # homonym in Chordates (COL: synonym of Cerylinae (Coraciiformes)), Coleoptera (IRMNG: synonym of Cerylonidae (Coleoptera))
+Chalcididae # homonym in Chordates (PBDB: synonym of Chalcidae (Reptilia)), Hymenoptera (COL: Insecta > Hymenoptera)
+Charinidae # homonym in Arachnids (COL: synonym of Charontidae (Amblypygi)), Chordates (ITIS: Reptilia > Squamata)
+Chilodontidae # homonym in Chordates (COL: synonym of Chilodidae (Characiformes)), Gastropods (COL: Gastropoda > Seguenziida)
+Chionidae # homonym in Bivalves (COL: synonym of Venerinae (Venerida)), Chordates (COL: Aves > Charadriiformes)
+Chiromyidae # homonym in Chordates (COL: synonym of Daubentoniidae (Primates)), Diptera (COL: synonym of Chyromyinae (Diptera))
+Chlamydini # homonym in Coleoptera (COL: synonym of Fulcidacini (Coleoptera)), Molluscs (COL: Pectinida > Pectinidae)
+Choristidae # homonym in Molluscs (ITIS: synonym of Naticidae (Littorinida)), OtherInsects (COL: Insecta > Mecoptera)
+Chrysochlorinae # homonym in Chordates (COL: Afrosoricida > Chrysochloridae), Diptera (COL: synonym of Chrysochlorininae (Diptera))
+Clavidae # homonym in Gastropods (COL: synonym of Drilliidae (Neogastropoda)), OtherAnimals (COL: synonym of Hydractiniidae (Anthoathecata))
+Clavigerinae # homonym in Coleoptera (ITIS: synonym of Pselaphinae (Coleoptera)), OtherAnimals (COL: Athyridida > Diplospirellidae)
+Clionidae # homonym in Gastropods (COL: Gastropoda > Pteropoda), OtherAnimals (COL: synonym of Clionaidae (Clionaida))
+Corystidae # homonym in Crustacean (COL: Malacostraca > Decapoda), OtherAnimals (COL: synonym of Corystusidae (Holasteroida))
+Craniata # homonym in Chordates (ITIS: synonym of Vertebrata (Animalia)), OtherAnimals (COL: Animalia > Brachiopoda)
+Ctenodactylinae # homonym in Chordates (PBDB: Rodentia > Ctenodactylidae), Coleoptera (COL: Coleoptera > Carabidae)
+Ctenodactylini # homonym in Chordates (PBDB: Rodentia > Ctenodactylidae), Coleoptera (COL: Coleoptera > Carabidae)
+Ctenodesmini # homonym in Molluscs (COL: Mollusca > Bivalvia), OtherArthropods (COL: Arthropoda > Diplopoda)
+Cyclopinae # homonym in Chordates (PBDB: synonym of Cyclopedidae (Mammalia)), Crustacean (COL: Copepoda > Cyclopidae)
+Cyclopteridae # homonym in Chordates (COL: Teleostei > Perciformes), OtherInsects (IRMNG: synonym of Cyclopterinidae (Mecoptera))
+Cyclostomata # homonym in Chordates (PBDB: Animalia > Chordata), OtherAnimals (ITIS: Bryozoa > Gymnolaemata)
+Cymatiinae # homonym in Hemiptera (COL: Hemiptera > Corixidae), Molluscs (COL: synonym of Cymatiidae (Littorinimorpha))
+Cynodontidae # homonym in Chordates (COL: Teleostei > Characiformes), Gastropods (COL: synonym of Vasidae (Neogastropoda))
+Cyprinidae # homonym in Bivalves (COL: synonym of Arcticidae (Venerida)), Chordates (COL: Teleostei > Cypriniformes)
+Cypselinae # homonym in Chordates (PBDB: Caprimulgiformes > Apodidae), Diptera (COL: synonym of Sphaerocerinae (Diptera))
+Cythereinae # homonym in Diptera (COL: Diptera > Bombyliidae), Molluscs (COL: synonym of Meretricinae (Venerida))
+Dacninae # homonym in Chordates (Brazilian Fauna: Passeriformes > Thraupidae), Coleoptera (ITIS: synonym of Erotylinae (Coleoptera))
+Dasypodinae # homonym in Chordates (COL: synonym of Dasypodidae (Cingulata)), Hymenoptera (PBDB: synonym of Dasypodainae (Hymenoptera))
+Decapoda # homonym in Crustacean (COL: Arthropoda > Malacostraca), OtherMolluscs (IRMNG: synonym of Teuthoidea (Cephalopoda))
+Dermoptera # homonym in Chordates (COL: Chordata > Mammalia), OtherInsects (GBIF: synonym of Dermaptera (Insecta))
+Diceratocephalidae # homonym in OtherAnimals (COL: synonym of Diceratocephalinae (Rhabdocoela)), OtherArthropods (IRMNG: Trilobita > Ptychopariida)
+Dipluridae # homonym in Arachnids (COL: Arachnida > Araneae), Chordates (PBDB: Osteichthyes > Coelacanthiformes)
+Discidae # homonym in Diptera (COL: synonym of Dixidae (Diptera)), Gastropods (COL: Mollusca > Gastropoda)
+Drepanidae # homonym in Chordates (COL: synonym of Drepaneidae (Acanthuriformes)), Lepidoptera (COL: Insecta > Lepidoptera)
+Echinomyidae # homonym in Chordates (GBIF: Mammalia > Rodentia), Diptera (COL: synonym of Brachymerini (Diptera))
+Ellobiinae # COL: Mollusca > Gastropoda
+Emeidae # homonym in Chordates (IRMNG: Aves > Dinornithiformes), OtherAnimals (COL: synonym of Prostomatidae (Monostilifera))
+Enhydrini # homonym in Chordates (PBDB: Carnivora > Mustelidae), Coleoptera (ITIS: Coleoptera > Gyrinidae)
+Erycinae # homonym in Chordates (COL: Squamata > Boidae), Diptera (COL: synonym of Brachymerini (Diptera))
+Erycinidae # homonym in Diptera (COL: synonym of Brachymerini (Diptera)), Molluscs (COL: synonym of Imparidentia (Mollusca))
+Eucharidae # homonym in Hymenoptera (COL: synonym of Eucharitini (Hymenoptera)), Molluscs (COL: synonym of Basterotiidae (Bivalvia)), OtherAnimals (COL: synonym of Leucotheidae (Lobata))
+Eumetazoa # TAXREF: Animalia
+Eurydesmidae # homonym in Bivalves (GBIF: Mollusca > Bivalvia), OtherArthropods (COL: synonym of Gomphodesminae (Diplopoda))
+Galeodidae # homonym in Arachnids (COL: Arachnida > Solifugae), Molluscs (COL: synonym of Melongenidae (Neogastropoda))
+Georissidae # homonym in Coleoptera (COL: Insecta > Coleoptera), Molluscs (COL: synonym of Hydrocenidae (Cycloneritida))
+Georissinae # homonym in Coleoptera (ITIS: synonym of Georyssidae (Coleoptera)), Gastropods (PBDB: synonym of Hydrocenidae (Cycloneritida))
+Geryonidae # homonym in Crustacean (COL: Malacostraca > Decapoda), OtherAnimals (COL: synonym of Geryoniidae (Limnomedusae))
+Halinae # homonym in Arachnids (iNat: Araneae > Pisauridae), Gastropods (PBDB: synonym of Haliinae (Neogastropoda))
+Harpidae # homonym in Gastropods (COL: Gastropoda > Neogastropoda), OtherArthropods (IRMNG: synonym of Harpididae (Ptychopariida))
+Hedylidae # homonym in Lepidoptera (COL: Insecta > Lepidoptera), Molluscs (COL: synonym of Hedylopsidae (Gastropoda))
+Hemiarthridae # homonym in Crustacean (Dyntaxa: synonym of Bopyridae (Isopoda)), Molluscs (COL: synonym of Hemiarthrumidae (Chitonida))
+Heterocheilidae # homonym in Diptera (COL: Insecta > Diptera), OtherAnimals (COL: Chromadorea > Rhabditida)
+Hippopodiidae # homonym in Bivalves (IRMNG: synonym of Hippopodiumidae (Venerida)), OtherAnimals (COL: Hydrozoa > Siphonophorae)
+Hoffmanniinae # homonym in Lepidoptera (COL: synonym of Yponomeutinae (Lepidoptera)), OtherMolluscs (PBDB: synonym of Palermoceratidae (Goniatitida))
+Holozoa # Wikidata: Eukaryota
+Hoplophoridae # homonym in Chordates (IRMNG: synonym of Glyptodontidae (Cingulata)), Hemiptera (COL: synonym of Hoplophorionini (Hemiptera))
+Hoplophorinae # homonym in Chordates (PBDB: Cingulata > Glyptodontidae), Hemiptera (COL: synonym of Hoplophorionini (Hemiptera))
+Hoplophorini # homonym in Chordates (PBDB: Cingulata > Glyptodontidae), Hemiptera (COL: synonym of Hoplophorionini (Hemiptera))
+Hyalidae # homonym in Crustacean (COL: Malacostraca > Amphipoda), Molluscs (COL: synonym of Iravadiidae (Littorinimorpha))
+Hylomidae # homonym in Chordates (PBDB: synonym of Echinosoricini (Mammalia)), OtherArthropods (COL: synonym of Hylomini (Arthropoda))
+Janinae # homonym in Lepidoptera (COL: Lepidoptera > Eupterotidae), Molluscs (COL: synonym of Janolidae (Nudibranchia))
+Koenenitidae # homonym in Arachnids, Molluscs (COL: Cephalopoda > Ammonoidea)
+Lepidopidae # homonym in Chordates (PBDB: Animalia > Chordata), Crustacean (COL: synonym of Lepidomysidae (Stygiomysida))
+Lepidopinae # homonym in Chordates (COL: Scombriformes > Trichiuridae), Crustacean (COL: Decapoda > Albuneidae)
+Leptoceratidae # homonym in Diptera (COL: synonym of Sphaerocerinae (Diptera)), OtherMolluscs (IRMNG: Cephalopoda > Perisphinctida)
+Leptosomatidae # homonym in Chordates (COL: synonym of Leptosomidae (Leptosomiformes)), OtherAnimals (COL: Enoplea > Enoplida)
+Leuconidae # homonym in Crustacean (COL: Malacostraca > Cumacea), OtherAnimals (COL: synonym of Baeriidae (Baeriida))
+Licininae # homonym in Coleoptera (COL: Coleoptera > Carabidae), Molluscs (COL: synonym of Tudorinae (Littorinimorpha))
+Limosinae # homonym in Chordates (PBDB: Charadriiformes > Scolopacidae), Diptera (COL: synonym of Sphaerocerinae (Diptera))
+Liparidae # homonym in Chordates (COL: Teleostei > Perciformes), Lepidoptera (ITIS: synonym of Lymantriinae (Lepidoptera))
+Lobodontina # homonym in Chordates (PBDB: synonym of Lobodontini (Carnivora)), Coleoptera (COL: synonym of Pericalina (Coleoptera))
+Loricata # COL: synonym of Polyplacophora (Mollusca)
+Loriculinae # homonym in Chordates (COL: synonym of Psittaculidae (Psittaciformes)), Crustacean (COL: Archaeolepadomorpha > Stramentidae)
+Luridae # homonym in Arachnids (Wikidata: Arachnida > Scorpiones), OtherAnimals (COL: Platyhelminthes > Rhabdocoela)
+Machaeridia # homonym in Orthoptera (WoRMS: Animalia > Annelida), OtherAnimals (IRMNG: Animalia > Annelida)
+Macroglossinae # homonym in Chordates (COL: synonym of Macroglossusinae (Chiroptera)), Lepidoptera (COL: Lepidoptera > Sphingidae)
+Macropodini # homonym in Chordates (iNat: Diprotodontia > Macropodidae), Coleoptera (COL: synonym of Adesmiini (Coleoptera))
+Megalodontidae # homonym in Bivalves (COL: Bivalvia > Megalodontida), Hymenoptera (IRMNG: synonym of Megalodontesidae (Hymenoptera))
+Megalodontoidea # homonym in Bivalves (COL: Bivalvia > Megalodontida), Hymenoptera (ITIS: synonym of Pamphilioidea (Insecta))
+Megalopidae # homonym in Chordates (COL: Teleostei > Elopiformes), Crustacean (COL: synonym of Carcininae (Decapoda))
+Metazoa # WoRMS: synonym of Animalia
+Metridiidae # homonym in Crustacean (COL: synonym of Metridinidae (Copepoda)), OtherAnimals (COL: Anthozoa > Actiniaria)
+Microdontidae # homonym in Diptera (COL: synonym of Microdontini (Diptera)), Molluscs (COL: synonym of Senderzoniellidae (Venerida))
+Micromyini # homonym in Chordates (TAXREF: Rodentia > Muridae), Diptera (COL: Diptera > Cecidomyiidae)
+Microstomidae # homonym in Chordates (PBDB: Osteichthyes > Isospondyli), OtherAnimals (COL: Platyhelminthes > Dolichomicrostomida)
+Monachina # homonym in Chordates (PBDB: Carnivora > Phocidae), Coleoptera (COL: synonym of Monachulina (Coleoptera))
+Myadina # homonym in Chordates (PBDB: Carnivora > Ursidae), Coleoptera (COL: synonym of Pterostichina (Coleoptera))
+Myoidea # homonym in Bivalves (ITIS: Bivalvia > Myida), Chordates (COL: synonym of Muroidea (Mammalia))
+Natantia # homonym in Chordates (PBDB: Osteichthyes > Reptilia), Crustacean (COL: synonym of Dendrobranchiata (Malacostraca))
+Nebriinae # homonym in Chordates (PBDB: Orectolobiformes > Orectolobidae), Coleoptera (COL: Coleoptera > Carabidae)
+Neomorphini # homonym in Chordates (PBDB: Cuculiformes > Cuculidae), Orthoptera (COL: synonym of Cearacesaini (Orthoptera))
+Nephrozoa # PBDB: Animalia
+Nereidae # homonym in Diptera (COL: synonym of Neriidae (Diptera)), OtherAnimals (COL: synonym of Nereididae (Phyllodocida))
+Niphoninae # homonym in Chordates (COL: synonym of Niphonidae (Perciformes)), Coleoptera (ITIS: synonym of Pteropliini (Coleoptera))
+Niphonini # homonym in Chordates (ITIS: Perciformes > Serranidae), Coleoptera (Coleoptera family-group names: synonym of Pteropliini (Coleoptera))
+Norellinae # homonym in Diptera (COL: synonym of Anthomyiidae (Diptera)), OtherAnimals (COL: Rhynchonellida > Norellidae)
+Nycteridae # homonym in Chordates (COL: Mammalia > Chiroptera), Diptera (COL: synonym of Nycteribiini (Diptera))
+Octopoda # homonym in Arachnids (IRMNG: synonym of Actinedida (Arachnida)), OtherMolluscs (ITIS: Mollusca > Cephalopoda)
+Ophthalmidae # homonym in Hemiptera (COL: synonym of Geocorinae (Hemiptera)), Molluscs (COL: synonym of Haminoeidae (Gastropoda))
+Otididae # homonym in Chordates (COL: Aves > Otidiformes), Diptera (COL: synonym of Ulidiini (Diptera))
+Oxyurinae # homonym in Chordates (PBDB: Anseriformes > Anatidae), OtherAnimals (COL: Rhabditida > Oxyuridae)
+Panopeidae # homonym in Crustacean (COL: Malacostraca > Decapoda), Molluscs (COL: synonym of Hiatellidae (Adapedonta))
+Panopeinae # homonym in Crustacean (COL: synonym of Panopeidae (Decapoda)), Molluscs (COL: synonym of Hiatellidae (Adapedonta))
+Peltidae # homonym in Coleoptera (COL: Insecta > Coleoptera), Molluscs (COL: synonym of Runcinidae (Runcinida))
+Pentacerotidae # COL: Teleostei > Acropomatiformes
+Perichaetidae # homonym in Diptera (COL: synonym of Brachymerini (Diptera)), OtherAnimals (COL: synonym of Megascolecidae (Crassiclitellata))
+Personidae # homonym in Gastropods (COL: Gastropoda > Littorinimorpha), OtherInsects (COL: Insecta > Notoptera)
+Phasianidae # homonym in Chordates (COL: Aves > Galliformes), Diptera (COL: synonym of Brachymerini (Diptera))
+Phoridae # homonym in Diptera (COL: Insecta > Diptera), Molluscs (COL: synonym of Xenophoridae (Littorinimorpha))
+Phycinae # homonym in Chordates (COL: synonym of Phycidae (Gadiformes)), Diptera (COL: synonym of Phycusinae (Diptera))
+Phyllophoridae # homonym in Orthoptera (IRMNG: synonym of Tettigoniidae (Orthoptera)), OtherAnimals (COL: Holothuroidea > Dendrochirotida)
+Phyllophorinae # homonym in Orthoptera (COL: Orthoptera > Tettigoniidae), OtherAnimals (COL: Dendrochirotida > Phyllophoridae)
+Physalidae # homonym in Chordates (PBDB: Mammalia > Cetacea), OtherAnimals (COL: synonym of Physaliidae (Siphonophorae))
+Pionini # homonym in Chordates (PBDB: Psittaciformes > Psittacidae), Hymenoptera (FaEu: Hymenoptera > Ichneumonidae)
+Plutoniinae # homonym in Molluscs (COL: Gastropoda > Vitrinidae), OtherArthropods (ITIS: synonym of Plutoniumidae (Scolopendromorpha))
+Polycotylinae # homonym in Chordates (PBDB: Plesiosauria > Polycotylidae), OtherAnimals (COL: synonym of Proterodiplostominae (Diplostomida))
+Polydesmidae # homonym in Molluscs (COL: synonym of Polydesmiidae (Actinoceratida)), OtherArthropods (ITIS: Diplopoda > Polydesmida)
+Porteriinae # homonym in Arachnids (iNat: Araneae > Desidae), Bivalves (PBDB: synonym of Arcinae (Arcida))
+Proboscidea # homonym in Chordates (COL: Chordata > Mammalia), Hemiptera (PBDB: synonym of Hemiptera (Insecta))
+Protolabinae # homonym in Chordates (PBDB: Mammalia > Camelidae), OtherInsects (COL: synonym of Prolabiscinae (Dermaptera))
+Protostomia # ITIS: Animalia
+Pygopidae # homonym in Chordates (PBDB: Osteichthyes > Reptilia), OtherAnimals (COL: Rhynchonellata > Terebratulida)
+Raphidae # homonym in Chordates (COL: synonym of Raphinae (Columbiformes)), Diptera (COL: synonym of Dolichopodini (Diptera))
+Raphinae # homonym in Chordates (COL: Columbiformes > Columbidae), Diptera (COL: synonym of Dolichopodini (Diptera))
+Reptantia # homonym in Crustacean (PBDB: synonym of Reptantia (Malacostraca)), OtherAnimals (COL: Hoplonemertea > Polystilifera)
+Reticulariidae # COL: Rhynchonellata > Spiriferida
+Rhodaliidae # homonym in OtherAnimals (COL: Hydrozoa > Siphonophorae), OtherArthropods (PBDB: Myriapoda > Siphonophorida)
+Rivulinae # homonym in Chordates (ITIS: Cyprinodontiformes > Aplocheilidae), Lepidoptera (COL: Lepidoptera > Erebidae)
+Robertiidae # homonym in Chordates (IRMNG: Reptilia > Therapsida), OtherAnimals (COL: synonym of Oxyuridomorpha (Chromadorea))
+Saturniidae # homonym in Lepidoptera (COL: Insecta > Lepidoptera), Molluscs (COL: synonym of Neilonellidae (Nuculanida))
+Scarini # homonym in Chordates (COL: Teleostei > Labridae), Hemiptera (Wikidata: Hemiptera > Cicadellidae)
+Scatophagidae # homonym in Chordates (COL: Teleostei > Acanthuriformes), Diptera (ITIS: synonym of Scathophagidae (Diptera))
+Schistosomatidae # homonym in Crustacean (IRMNG: synonym of Mictosomatidae (Isopoda)), OtherAnimals (COL: Trematoda > Diplostomida)
+Scutellidae # homonym in Gastropods (COL: synonym of Phenacolepadidae (Cycloneritida)), OtherAnimals (COL: Echinodermata > Echinoidea)
+Scutellinidae # homonym in Gastropods (COL: synonym of Phenacolepadidae (Cycloneritida)), OtherAnimals (COL: Echinodermata > Echinoidea)
+Sepsidae # homonym in Chordates (PBDB: Osteichthyes > Reptilia), Diptera (COL: Insecta > Diptera)
+Serendipidae # homonym in Diptera (COL: Insecta > Diptera), OtherAnimals (COL: synonym of Serendipeidae (Tetraphyllidea))
+Soleniscidae # homonym in Gastropods (COL: Mollusca > Gastropoda), OtherAnimals (COL: synonym of Dendyidae (Clathrinida))
+Soleniscinae # homonym in Coleoptera (COL: synonym of Thylacosterninae (Coleoptera)), Molluscs (COL: synonym of Soleniscidae (Gastropoda))
+Sphaeriidae # homonym in Bivalves (ITIS: Bivalvia > Sphaeriida), Coleoptera (ITIS: synonym of Sphaeriusidae (Coleoptera))
+Sphaeriini # homonym in Coleoptera (Coleoptera family-group names: synonym of Elaphidiini (Coleoptera)), Molluscs (COL: synonym of Imparidentia (Mollusca))
+Sphaerioidea # homonym in Bivalves (ITIS: Bivalvia > Sphaeriida), Coleoptera (PBDB: synonym of Sphaeriusoidea (Insecta))
+Spondylinae # homonym in Coleoptera (ITIS: synonym of Spondylidinae (Coleoptera)), Molluscs (COL: Pectinida > Spondylidae)
+Staurocephalidae # homonym in OtherAnimals (COL: synonym of Dorvilleidae (Eunicida)), OtherArthropods (IRMNG: Trilobita > Phacopida)
+Steninae # homonym in Chordates (PBDB: Cetacea > Delphinidae), Coleoptera (COL: Coleoptera > Staphylinidae)
+Stenorhynchinae # homonym in Chordates (PBDB: synonym of Stenorhynchina (Carnivora)), Crustacean (COL: Decapoda > Inachoididae)
+Stenostomidae # homonym in Chordates (PBDB: synonym of Leptotyphlopidae (Reptilia)), OtherAnimals (COL: Animalia > Platyhelminthes)
+Stylinidae # homonym in Gastropods (COL: synonym of Eulimidae (Littorinimorpha)), OtherAnimals (COL: Anthozoa > Scleractinia)
+Tardigrada # homonym in Chordates (PBDB: synonym of Folivora (Osteichthyes)), OtherAnimals (COL: Eukaryota > Animalia)
+Terebellidae # homonym in Gastropods (COL: synonym of Seraphsidae (Littorinimorpha)), OtherAnimals (COL: Annelida > Polychaeta)
+Tethyidae # homonym in Chordates (IRMNG: synonym of Styelidae (Stolidobranchia)), Gastropods (ITIS: synonym of Tethydidae (Nudibranchia)), OtherAnimals (COL: Demospongiae > Tethyida)
+Tetrapoda # homonym in Arachnids (IRMNG: synonym of Actinedida (Arachnida)), Chordates (COL: Animalia > Chordata)
+Thaididae # homonym in Arachnids (ITIS: synonym of Austrochilidae (Araneae)), Molluscs (COL: synonym of Rapaninae (Neogastropoda))
+Thamnophilini # homonym in Chordates (PBDB: Passeriformes > Thamnophilidae), Coleoptera (Coleoptera family-group names: synonym of Magdalidini (Coleoptera))
+Thyreophorina # homonym in Chordates (PBDB: synonym of Thyreophora (Osteichthyes)), Diptera (COL: Diptera > Piophilidae)
+Tincidae # homonym in Chordates (COL: Teleostei > Cypriniformes), Lepidoptera
+Trachinidae # homonym in Chordates (COL: Teleostei > Perciformes), Diptera (COL: synonym of Brachymerini (Diptera))
+Trapeziidae # homonym in Crustacean (COL: Malacostraca > Decapoda), Molluscs (ITIS: synonym of Trapezidae (Venerida))
+Trichiinae # homonym in Coleoptera (PBDB: synonym of Trichiini (Coleoptera)), Molluscs (COL: synonym of Trochulini (Gastropoda))
+Trichiini # homonym in Coleoptera (COL: Coleoptera > Scarabaeidae), Gastropods (FaEu: Stylommatophora > Hygromiidae)
+Varuninae # homonym in Crustacean (COL: Decapoda > Varunidae), OtherAnimals (COL: Spiriferida > Angiospiriferidae)
+Xylophagaidae # homonym in Bivalves (COL: Mollusca > Bivalvia), Diptera (OTT: Insecta > Diptera)
+Xylophagidae # homonym in Diptera (COL: Insecta > Diptera), Molluscs (COL: synonym of Xylophagaidae (Bivalvia))
+Xylophaginae # homonym in Diptera (ITIS: Diptera > Xylophagidae), Molluscs (COL: synonym of Xylophagaidae (Bivalvia))
+Zygaenidae # homonym in Chordates (ITIS: synonym of Sphyrnidae (Carcharhiniformes)), Lepidoptera (COL: Insecta > Lepidoptera)

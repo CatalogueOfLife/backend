@@ -1,333 +1,331 @@
-Agaricaceae
-Agaricales
-Agaricomycetes
-Agaricostilbaceae
-Agaricostilbales
-Agaricostilbomycetes
-Albatrellaceae
-Amanitaceae
-Amylocorticiaceae
-Amylocorticiales
-Amylostereaceae
-Anthracoideaceae
-Aphelariaceae
-Atheliaceae
-Atheliales
-Atractiellales
-Atractiellomycetes
-Atractogloeaceae
-Auriculariaceae
-Auriculariales
-Auriscalpiaceae
-Bankeraceae
-Bartheletiaceae
-Bartheletiales
-Bartheletiomycetes
-Basidiomycota
-Biannulariaceae
-Bolbitiaceae
-Boletaceae
-Boletales
-Boletinellaceae
-Bondarzewiaceae
-Botryobasidiaceae
-Brachybasidiaceae
-Broomeiaceae
-Buckleyzymaceae
-Buckleyzymales
-Bulleraceae
-Bulleribasidiaceae
-Calostomataceae
-Cantharellaceae
-Cantharellales
-Carcinomycetaceae
-Catathelasmataceae
-Ceraceosoraceae
-Ceraceosorales
-Ceratobasidiaceae
-Chaconiaceae
-Chionosphaeraceae
-Chromocyphellaceae
-Chrysozymaceae
-Cintractiaceae
-Cintractiellaceae
-Classiculaceae
-Classiculales
-Classiculomycetes
-Claustulaceae
-Clavariaceae
-Clavariadelphaceae
-Clavulinaceae # coral fungus family (Cantharellales)
-Clintamraceae
-Coleosporiaceae
-Coltriciaceae # polypore family (Hymenochaetales)
-Coniophoraceae
-Corticiaceae
-Corticiales
-Cortinariaceae
-Crassisporiaceae
-Crepidotaceae # mushroom family (Agaricales)
-Cronartiaceae
-Cryptobasidiaceae
-Cryptomycocolacaceae
-Cryptomycocolacales
-Cryptomycocolacomycetes
-Cuniculitremaceae
-Cyphellaceae
-Cyphobasidiaceae
-Cyphobasidiales
-Cystobasidiaceae
-Cystobasidiales
-Cystobasidiomycetes
-Cystofilobasidiaceae
-Cystofilobasidiales
-Cystostereaceae
-Dacrymycetaceae
-Dacrymycetales
-Dacrymycetes
-Dermatosoraceae
-Diplocystidiaceae
-Doassansiaceae
-Doassansiales
-Doassansiopsidaceae
-Eballistraceae
-Echinodontiaceae
-Entolomataceae
-Entorrhizaceae
-Entorrhizales
-Entylomataceae
-Entylomatales
-Eocronartiaceae
-Erratomycetaceae
-Erythrobasidiaceae
-Erythrobasidiales
-Exidiaceae # jelly fungus family (Auriculariales)
-Exobasidiaceae
-Exobasidiales
-Exobasidiomycetes
-Farysiaceae
-Fereydouniaceae
-Filobasidiaceae
-Filobasidiales
-Fistulinaceae
-Floromycetaceae
-Fomitopsidaceae
-Fragiliporiaceae
-Gallaceaceae
-Ganodermataceae
-Gasterellaceae
-Gastrosporiaceae
-Geastraceae
-Geastrales
-Gelatoporiaceae
-Geminaginaceae
-Geminibasidiaceae
-Geminibasidiales
-Geminibasidiomycetes
-Georgefischeriaceae
-Georgefischeriales
-Gjaerumiaceae
-Gloeodontiaceae
-Gloeophyllaceae
-Gloeophyllales
-Glomosporiaceae
-Gomphaceae
-Gomphales
-Gomphidiaceae
-Graphiolaceae
-Grifolaceae
-Gyroporaceae
-Helicobasidiaceae
-Helicobasidiales
-Hemigasteraceae
-Hericiaceae
-Heterogastridiaceae
-Heterogastridiales
-Holtermanniaceae
-Holtermanniales
-Hyaloriaceae
-Hybogasteraceae
-Hydnaceae # tooth fungus family (Cantharellales)
-Hydnangiaceae
-Hydnodontaceae
-Hygrophoraceae
-Hygrophoropsidaceae
-Hymenochaetaceae
-Hymenochaetales
-Hymenogastraceae
-Hyphodermataceae # crust fungus family (Polyporales)
-Hysterangiaceae
-Hysterangiales
-Incrustoporiaceae
-Inocybaceae
-Irpicaceae # bracket fungus family (Polyporales)
-Jaapiaceae
-Jaapiales
-Kondoaceae
-Kriegeriaceae
-Kriegeriales
-Lachnocladiaceae
-Lentariaceae
-Lepidostromataceae
-Lepidostromatales
-Leucosporidiaceae
-Leucosporidiales
-Lycoperdaceae # puffball family (Agaricales)
-Lyophyllaceae
-Malasseziaceae
-Malasseziales
-Malasseziomycetes
-Marasmiaceae
-Melampsoraceae
-Melaniellaceae
-Melanopsichiaceae
-Melanotaeniaceae
-Meripilaceae
-Meruliaceae
-Mesophelliaceae
-Microbotryaceae
-Microbotryales
-Microbotryomycetes
-Microsporomycetaceae
-Microstromataceae
-Microstromatales
-Mikronegeriaceae
-Mixiaceae
-Mixiales
-Mixiomycetes
-Moniliellaceae
-Moniliellales
-Mrakiaceae
-Mycenaceae
-Mycogelidiaceae
-Mycosyringaceae
-Naemateliaceae
-Naohideaceae
-Naohideales
-Neoantrodiellaceae
-Niaceae
-Oliveoniaceae
-Omphalotaceae
-Pachnocybaceae
-Pachnocybales
-Paxillaceae
-Peniophoraceae
-Pericladiaceae
-Phaeotremellaceae
-Phakopsoraceae
-Phallaceae
-Phallales
-Phallogastraceae
-Phanerochaetaceae
-Phelloriniaceae
-Phleogenaceae
-Phragmidiaceae
-Phragmoxenidiaceae
-Physalacriaceae
-Pileolariaceae
-Piskurozymaceae
-Platygloeaceae
-Platygloeales
-Pleurotaceae
-Pluteaceae
-Polyporaceae
-Polyporales
-Porotheleaceae
-Protogastraceae
-Psathyrellaceae
-Pseudoclitocybaceae
-Pterulaceae
-Pucciniaceae
-Pucciniales
-Pucciniastraceae
-Pucciniomycetes
-Pucciniosiraceae
-Quambalariaceae
-Raveneliaceae
-Rhamphosporaceae
-Rhizopogonaceae
-Rhynchogastremaceae
-Rickenellaceae # small mushroom family (Hymenochaetales)
-Robbaueraceae
-Robbauerales
-Ruineniaceae
-Russulaceae
-Russulales
-Saccoblastiaceae
-Sakaguchiaceae
-Sakaguchiales
-Schizophyllaceae
-Schizoporaceae
-Sclerodermataceae
-Sclerogastraceae
-Sebacinaceae
-Sebacinales
-Septobasidiaceae
-Septobasidiales
-Serpulaceae
-Sirobasidiaceae
-Sistotremataceae # crust fungus family (Cantharellales)
-Sparassidaceae
-Sphaerobolaceae # artillery fungus family (Agaricales)
-Sphaerophragmiaceae
-Spiculogloeaceae
-Spiculogloeales
-Sporidiobolaceae
-Sporidiobolales
-Sporobolomycetaceae
-Steccherinaceae
-Stephanosporaceae
-Stereaceae
-Stereopsidaceae
-Stereopsidales
-Strophariaceae
-Suillaceae
-Symmetrosporaceae
-Syzygosporaceae # jelly fungus family (Cantharellales)
-Talbotiomycetaceae
-Talbotiomycetales
-Tapinellaceae
-Tetragoniomycetaceae
-Thelephoraceae
-Thelephorales
-Tilletiaceae
-Tilletiales
-Tilletiariaceae
-Trappeaceae
-Trechisporales
-Tremellaceae
-Tremellales
-Tremellodendropsidaceae
-Tremellodendropsidales
-Tremellomycetes
-Tricholomataceae
-Trichosporonaceae
-Trichosporonales
-Trimorphomycetaceae
-Tritirachiaceae
-Tritirachiales
-Tritirachiomycetes
-Tubariaceae
-Tubulicrinaceae # crust fungus family (Trechisporales)
-Tulasnellaceae
-Typhulaceae
-Uleiellaceae
-Uleiellales
-Uncolaceae
-Unilacrymaceae
-Unilacrymales
-Urocystidaceae
-Urocystidales
-Uropyxidaceae
-Ustilaginaceae
-Ustilaginales
-Ustilaginomycetes
-Ustilentylomataceae
-Violaceomycetaceae
-Violaceomycetales
-Volvocisporiaceae
-Wallemiaceae
-Wallemiales
-Wallemiomycetes
-Websdaneaceae
-Xenasmataceae
+Agaricaceae # COL: Agaricomycetes > Agaricales
+Agaricales # COL: Basidiomycota > Agaricomycetes
+Agaricomycetes # COL: Fungi > Basidiomycota
+Agaricostilbaceae # COL: Agaricostilbomycetes > Agaricostilbales
+Agaricostilbales # COL: Basidiomycota > Agaricostilbomycetes
+Agaricostilbomycetes # COL: Fungi > Basidiomycota
+Albatrellaceae # COL: Agaricomycetes > Russulales
+Amanitaceae # COL: Agaricomycetes > Agaricales
+Amylocorticiaceae # COL: Agaricomycetes > Amylocorticiales
+Amylocorticiales # COL: Basidiomycota > Agaricomycetes
+Amylostereaceae # ITIS: Agaricomycetes > Russulales
+Anthracoideaceae # COL: Ustilaginomycetes > Ustilaginales
+Aphelariaceae # COL: Agaricomycetes > Cantharellales
+Atheliaceae # COL: Agaricomycetes > Atheliales
+Atheliales # COL: Basidiomycota > Agaricomycetes
+Atractiellales # COL: Basidiomycota > Atractiellomycetes
+Atractiellomycetes # COL: Fungi > Basidiomycota
+Atractogloeaceae # COL: Atractiellomycetes > Atractiellales
+Auriculariaceae # COL: Agaricomycetes > Auriculariales
+Auriculariales # COL: Basidiomycota > Agaricomycetes
+Auriscalpiaceae # COL: Agaricomycetes > Russulales
+Bankeraceae # COL: Agaricomycetes > Thelephorales
+Bartheletiaceae # ITIS: Fungi > Basidiomycota
+Bartheletiales # IRMNG: Basidiomycota > Bartheletiomycetes
+Bartheletiomycetes # IRMNG: Fungi > Basidiomycota
+Basidiomycota # COL: Eukaryota > Fungi
+Biannulariaceae # COL: Agaricomycetes > Agaricales
+Bolbitiaceae # COL: Agaricomycetes > Agaricales
+Boletaceae # COL: Agaricomycetes > Boletales
+Boletales # COL: Basidiomycota > Agaricomycetes
+Boletinellaceae # COL: Agaricomycetes > Boletales
+Bondarzewiaceae # COL: Agaricomycetes > Russulales
+Botryobasidiaceae # COL: Agaricomycetes > Cantharellales
+Brachybasidiaceae # COL: Exobasidiomycetes > Exobasidiales
+Broomeiaceae # COL: Agaricomycetes > Agaricales
+Buckleyzymaceae # COL: Cystobasidiomycetes > Buckleyzymales
+Buckleyzymales # COL: Basidiomycota > Cystobasidiomycetes
+Bulleraceae # COL: Tremellomycetes > Tremellales
+Bulleribasidiaceae # COL: Tremellomycetes > Tremellales
+Calostomataceae # COL: Agaricomycetes > Boletales
+Cantharellaceae # COL: Agaricomycetes > Cantharellales
+Cantharellales # COL: Basidiomycota > Agaricomycetes
+Carcinomycetaceae # ITIS: Tremellomycetes > Tremellales
+Catathelasmataceae # GBIF: synonym of Biannulariaceae (Agaricales)
+Ceraceosoraceae # COL: Exobasidiomycetes > Ceraceosorales
+Ceraceosorales # COL: Basidiomycota > Exobasidiomycetes
+Ceratobasidiaceae # COL: Agaricomycetes > Cantharellales
+Chaconiaceae # COL: Pucciniomycetes > Pucciniales
+Chionosphaeraceae # COL: Agaricostilbomycetes > Agaricostilbales
+Chromocyphellaceae # COL: Agaricomycetes > Agaricales
+Chrysozymaceae # COL: Basidiomycota > Microbotryomycetes
+Cintractiaceae # IRMNG: synonym of Anthracoideaceae (Ustilaginales)
+Cintractiellaceae # COL: Ustilaginomycetes > Ustilaginales
+Classiculaceae # COL: Classiculomycetes > Classiculales
+Classiculales # COL: Basidiomycota > Classiculomycetes
+Classiculomycetes # COL: Fungi > Basidiomycota
+Claustulaceae # COL: Agaricomycetes > Phallales
+Clavariaceae # COL: Agaricomycetes > Agaricales
+Clavariadelphaceae # COL: Agaricomycetes > Gomphales
+Clavulinaceae # coral fungus family (Cantharellales); ITIS: Agaricomycetes > Cantharellales
+Clintamraceae # COL: Ustilaginomycetes > Ustilaginales
+Coleosporiaceae # COL: Pucciniomycetes > Pucciniales
+Coltriciaceae # polypore family (Hymenochaetales); IRMNG: Agaricomycetes > Hymenochaetales
+Coniophoraceae # COL: Agaricomycetes > Boletales
+Corticiaceae # COL: Agaricomycetes > Corticiales
+Corticiales # COL: Basidiomycota > Agaricomycetes
+Cortinariaceae # COL: Agaricomycetes > Agaricales
+Crassisporiaceae # COL: Agaricomycetes > Agaricales
+Crepidotaceae # mushroom family (Agaricales); COL: Agaricomycetes > Agaricales
+Cronartiaceae # COL: Pucciniomycetes > Pucciniales
+Cryptobasidiaceae # COL: Exobasidiomycetes > Exobasidiales
+Cryptomycocolacaceae # COL: Cryptomycocolacomycetes > Cryptomycocolacales
+Cryptomycocolacales # COL: Basidiomycota > Cryptomycocolacomycetes
+Cryptomycocolacomycetes # COL: Fungi > Basidiomycota
+Cuniculitremaceae # COL: Tremellomycetes > Tremellales
+Cyphellaceae # COL: Agaricomycetes > Agaricales
+Cyphobasidiaceae # COL: Cystobasidiomycetes > Cyphobasidiales
+Cyphobasidiales # COL: Basidiomycota > Cystobasidiomycetes
+Cystobasidiaceae # COL: Cystobasidiomycetes > Cystobasidiales
+Cystobasidiales # COL: Basidiomycota > Cystobasidiomycetes
+Cystobasidiomycetes # COL: Fungi > Basidiomycota
+Cystofilobasidiaceae # COL: Tremellomycetes > Cystofilobasidiales
+Cystofilobasidiales # COL: Basidiomycota > Tremellomycetes
+Cystostereaceae # COL: Agaricomycetes > Agaricales
+Dacrymycetaceae # COL: Dacrymycetes > Dacrymycetales
+Dacrymycetales # COL: Basidiomycota > Dacrymycetes
+Dacrymycetes # COL: Fungi > Basidiomycota
+Dermatosoraceae # IRMNG: synonym of Anthracoideaceae (Ustilaginales)
+Diplocystidiaceae # COL: Agaricomycetes > Boletales
+Doassansiaceae # COL: Exobasidiomycetes > Doassansiales
+Doassansiales # COL: Basidiomycota > Exobasidiomycetes
+Doassansiopsidaceae # COL: Ustilaginomycetes > Urocystidales
+Eballistraceae # COL: Exobasidiomycetes > Georgefischeriales
+Echinodontiaceae # COL: Agaricomycetes > Russulales
+Entolomataceae # COL: Agaricomycetes > Agaricales
+Entylomataceae # COL: Exobasidiomycetes > Entylomatales
+Entylomatales # COL: Basidiomycota > Exobasidiomycetes
+Eocronartiaceae # COL: Pucciniomycetes > Platygloeales
+Erratomycetaceae # COL: Exobasidiomycetes > Tilletiales
+Erythrobasidiaceae # COL: Cystobasidiomycetes > Erythrobasidiales
+Erythrobasidiales # COL: Basidiomycota > Cystobasidiomycetes
+Exidiaceae # jelly fungus family (Auriculariales); IRMNG: synonym of Auriculariaceae (Auriculariales)
+Exobasidiaceae # COL: Exobasidiomycetes > Exobasidiales
+Exobasidiales # COL: Basidiomycota > Exobasidiomycetes
+Exobasidiomycetes # COL: Fungi > Basidiomycota
+Farysiaceae # IRMNG: synonym of Anthracoideaceae (Ustilaginales)
+Fereydouniaceae # COL: Ustilaginomycetes > Urocystidales
+Filobasidiaceae # COL: Tremellomycetes > Filobasidiales
+Filobasidiales # COL: Basidiomycota > Tremellomycetes
+Fistulinaceae # ITIS: Agaricomycetes > Agaricales
+Floromycetaceae # COL: Ustilaginomycetes > Urocystidales
+Fomitopsidaceae # COL: Agaricomycetes > Polyporales
+Fragiliporiaceae # COL: Agaricomycetes > Polyporales
+Gallaceaceae # COL: Agaricomycetes > Hysterangiales
+Ganodermataceae # COL: Agaricomycetes > Polyporales
+Gasterellaceae # COL: Agaricomycetes > Boletales
+Gastrosporiaceae # COL: Agaricomycetes > Phallales
+Geastraceae # COL: Agaricomycetes > Geastrales
+Geastrales # COL: Basidiomycota > Agaricomycetes
+Gelatoporiaceae # COL: Agaricomycetes > Polyporales
+Geminaginaceae # COL: Ustilaginomycetes > Ustilaginales
+Geminibasidiaceae # COL: Wallemiomycetes > Geminibasidiales
+Geminibasidiales # COL: Basidiomycota > Wallemiomycetes
+Geminibasidiomycetes # IRMNG: synonym of Wallemiomycetes (Basidiomycota)
+Georgefischeriaceae # COL: Exobasidiomycetes > Georgefischeriales
+Georgefischeriales # COL: Basidiomycota > Exobasidiomycetes
+Gjaerumiaceae # COL: Exobasidiomycetes > Georgefischeriales
+Gloeodontiaceae # IRMNG: Agaricomycetes > Russulales
+Gloeophyllaceae # COL: Agaricomycetes > Gloeophyllales
+Gloeophyllales # COL: Basidiomycota > Agaricomycetes
+Glomosporiaceae # COL: Ustilaginomycetes > Urocystidales
+Gomphaceae # COL: Agaricomycetes > Gomphales
+Gomphales # COL: Basidiomycota > Agaricomycetes
+Gomphidiaceae # COL: Agaricomycetes > Boletales
+Graphiolaceae # COL: Exobasidiomycetes > Exobasidiales
+Grifolaceae # COL: Agaricomycetes > Polyporales
+Gyroporaceae # COL: Agaricomycetes > Boletales
+Helicobasidiaceae # COL: Pucciniomycetes > Helicobasidiales
+Helicobasidiales # COL: Basidiomycota > Pucciniomycetes
+Hemigasteraceae # COL: Agaricomycetes > Agaricales
+Hericiaceae # COL: Agaricomycetes > Russulales
+Heterogastridiaceae # COL: Microbotryomycetes > Heterogastridiales
+Heterogastridiales # COL: Basidiomycota > Microbotryomycetes
+Holtermanniaceae # COL: Tremellomycetes > Holtermanniales
+Holtermanniales # COL: Basidiomycota > Tremellomycetes
+Hyaloriaceae # COL: Agaricomycetes > Auriculariales
+Hybogasteraceae # COL: Agaricomycetes > Russulales
+Hydnaceae # tooth fungus family (Cantharellales); COL: Agaricomycetes > Cantharellales
+Hydnangiaceae # COL: Agaricomycetes > Agaricales
+Hydnodontaceae # COL: Agaricomycetes > Trechisporales
+Hygrophoraceae # COL: Agaricomycetes > Agaricales
+Hygrophoropsidaceae # COL: Agaricomycetes > Boletales
+Hymenochaetaceae # COL: Agaricomycetes > Hymenochaetales
+Hymenochaetales # COL: Basidiomycota > Agaricomycetes
+Hymenogastraceae # COL: Agaricomycetes > Agaricales
+Hyphodermataceae # crust fungus family (Polyporales); COL: Agaricomycetes > Polyporales
+Hysterangiaceae # COL: Agaricomycetes > Hysterangiales
+Hysterangiales # COL: Basidiomycota > Agaricomycetes
+Incrustoporiaceae # COL: Agaricomycetes > Polyporales
+Inocybaceae # COL: Agaricomycetes > Agaricales
+Irpicaceae # bracket fungus family (Polyporales); COL: Agaricomycetes > Polyporales
+Jaapiaceae # COL: Agaricomycetes > Jaapiales
+Jaapiales # COL: Basidiomycota > Agaricomycetes
+Kondoaceae # COL: Agaricostilbomycetes > Agaricostilbales
+Kriegeriaceae # COL: Microbotryomycetes > Kriegeriales
+Kriegeriales # COL: Basidiomycota > Microbotryomycetes
+Lachnocladiaceae # COL: Agaricomycetes > Russulales
+Lentariaceae # COL: Agaricomycetes > Gomphales
+Lepidostromataceae # COL: Agaricomycetes > Lepidostromatales
+Lepidostromatales # COL: Basidiomycota > Agaricomycetes
+Leucosporidiaceae # COL: Microbotryomycetes > Leucosporidiales
+Leucosporidiales # COL: Basidiomycota > Microbotryomycetes
+Lycoperdaceae # puffball family (Agaricales); COL: Agaricomycetes > Agaricales
+Lyophyllaceae # COL: Agaricomycetes > Agaricales
+Malasseziaceae # COL: Malasseziomycetes > Malasseziales
+Malasseziales # COL: Basidiomycota > Malasseziomycetes
+Malasseziomycetes # COL: Fungi > Basidiomycota
+Marasmiaceae # COL: Agaricomycetes > Agaricales
+Melampsoraceae # COL: Pucciniomycetes > Pucciniales
+Melaniellaceae # COL: Exobasidiomycetes > Doassansiales
+Melanopsichiaceae # IRMNG: synonym of Ustilaginaceae (Ustilaginales)
+Melanotaeniaceae # COL: Ustilaginomycetes > Ustilaginales
+Meripilaceae # COL: Agaricomycetes > Polyporales
+Meruliaceae # COL: Agaricomycetes > Polyporales
+Mesophelliaceae # COL: Agaricomycetes > Hysterangiales
+Microbotryaceae # COL: Microbotryomycetes > Microbotryales
+Microbotryales # COL: Basidiomycota > Microbotryomycetes
+Microbotryomycetes # COL: Fungi > Basidiomycota
+Microsporomycetaceae # COL: Basidiomycota > Cystobasidiomycetes
+Microstromataceae # COL: Exobasidiomycetes > Microstromatales
+Microstromatales # COL: Basidiomycota > Exobasidiomycetes
+Mikronegeriaceae # COL: Pucciniomycetes > Pucciniales
+Mixiaceae # COL: Mixiomycetes > Mixiales
+Mixiales # COL: Basidiomycota > Mixiomycetes
+Mixiomycetes # COL: Fungi > Basidiomycota
+Moniliellaceae # COL: Moniliellomycetes > Moniliellales
+Moniliellales # COL: Basidiomycota > Moniliellomycetes
+Mrakiaceae # COL: Tremellomycetes > Cystofilobasidiales
+Mycenaceae # COL: Agaricomycetes > Agaricales
+Mycogelidiaceae # COL: Atractiellomycetes > Atractiellales
+Mycosyringaceae # COL: Ustilaginomycetes > Urocystidales
+Naemateliaceae # COL: Tremellomycetes > Tremellales
+Naohideaceae # COL: Cystobasidiomycetes > Naohideales
+Naohideales # COL: Basidiomycota > Cystobasidiomycetes
+Neoantrodiellaceae # COL: Agaricomycetes > Hymenochaetales
+Niaceae # COL: Agaricomycetes > Agaricales
+Oliveoniaceae # COL: Agaricomycetes > Cantharellales
+Omphalotaceae # COL: Agaricomycetes > Agaricales
+Pachnocybaceae # COL: Pucciniomycetes > Pachnocybales
+Pachnocybales # COL: Basidiomycota > Pucciniomycetes
+Paxillaceae # COL: Agaricomycetes > Boletales
+Peniophoraceae # COL: Agaricomycetes > Russulales
+Pericladiaceae # COL: Ustilaginomycetes > Ustilaginales
+Phaeotremellaceae # COL: Tremellomycetes > Tremellales
+Phakopsoraceae # COL: Pucciniomycetes > Pucciniales
+Phallaceae # COL: Agaricomycetes > Phallales
+Phallales # COL: Basidiomycota > Agaricomycetes
+Phallogastraceae # COL: Agaricomycetes > Hysterangiales
+Phanerochaetaceae # COL: Agaricomycetes > Polyporales
+Phelloriniaceae # ITIS: Agaricomycetes > Agaricales
+Phleogenaceae # COL: Atractiellomycetes > Atractiellales
+Phragmidiaceae # COL: Pucciniomycetes > Pucciniales
+Phragmoxenidiaceae # COL: Tremellomycetes > Tremellales
+Physalacriaceae # COL: Agaricomycetes > Agaricales
+Pileolariaceae # COL: Pucciniomycetes > Pucciniales
+Piskurozymaceae # COL: Tremellomycetes > Filobasidiales
+Platygloeaceae # COL: Pucciniomycetes > Platygloeales
+Platygloeales # COL: Basidiomycota > Pucciniomycetes
+Pleurotaceae # COL: Agaricomycetes > Agaricales
+Pluteaceae # COL: Agaricomycetes > Agaricales
+Polyporaceae # COL: Agaricomycetes > Polyporales
+Polyporales # COL: Basidiomycota > Agaricomycetes
+Porotheleaceae # COL: Agaricomycetes > Agaricales
+Protogastraceae # COL: Agaricomycetes > Boletales
+Psathyrellaceae # COL: Agaricomycetes > Agaricales
+Pseudoclitocybaceae # COL: Agaricomycetes > Agaricales
+Pterulaceae # COL: Agaricomycetes > Agaricales
+Pucciniaceae # COL: Pucciniomycetes > Pucciniales
+Pucciniales # COL: Basidiomycota > Pucciniomycetes
+Pucciniastraceae # COL: Pucciniomycetes > Pucciniales
+Pucciniomycetes # COL: Fungi > Basidiomycota
+Pucciniosiraceae # COL: Pucciniomycetes > Pucciniales
+Quambalariaceae # COL: Exobasidiomycetes > Microstromatales
+Raveneliaceae # COL: Pucciniomycetes > Pucciniales
+Rhamphosporaceae # COL: Exobasidiomycetes > Doassansiales
+Rhizopogonaceae # COL: Agaricomycetes > Boletales
+Rhynchogastremaceae # COL: Tremellomycetes > Tremellales
+Rickenellaceae # small mushroom family (Hymenochaetales); COL: Agaricomycetes > Hymenochaetales
+Robbaueraceae # COL: Exobasidiomycetes > Robbauerales
+Robbauerales # COL: Basidiomycota > Exobasidiomycetes
+Ruineniaceae # COL: Agaricostilbomycetes > Agaricostilbales
+Russulaceae # COL: Agaricomycetes > Russulales
+Russulales # COL: Basidiomycota > Agaricomycetes
+Saccoblastiaceae # ITIS: Atractiellomycetes > Atractiellales
+Sakaguchiaceae # COL: Cystobasidiomycetes > Sakaguchiales
+Sakaguchiales # COL: Basidiomycota > Cystobasidiomycetes
+Schizophyllaceae # COL: Agaricomycetes > Agaricales
+Schizoporaceae # COL: Agaricomycetes > Hymenochaetales
+Sclerodermataceae # COL: Agaricomycetes > Boletales
+Sclerogastraceae # COL: Agaricomycetes > Boletales
+Sebacinaceae # COL: Agaricomycetes > Sebacinales
+Sebacinales # COL: Basidiomycota > Agaricomycetes
+Septobasidiaceae # COL: Pucciniomycetes > Septobasidiales
+Septobasidiales # COL: Basidiomycota > Pucciniomycetes
+Serpulaceae # COL: Agaricomycetes > Boletales
+Sirobasidiaceae # COL: Tremellomycetes > Tremellales
+Sistotremataceae # crust fungus family (Cantharellales); IRMNG: synonym of Hydnaceae (Cantharellales)
+Sparassidaceae # COL: Agaricomycetes > Polyporales
+Sphaerobolaceae # artillery fungus family (Agaricales); IRMNG: Agaricomycetes > Geastrales
+Sphaerophragmiaceae # COL: Pucciniomycetes > Pucciniales
+Spiculogloeaceae # COL: Spiculogloeomycetes > Spiculogloeales
+Spiculogloeales # COL: Basidiomycota > Spiculogloeomycetes
+Sporidiobolaceae # COL: Microbotryomycetes > Sporidiobolales
+Sporidiobolales # COL: Basidiomycota > Microbotryomycetes
+Sporobolomycetaceae # IRMNG: synonym of Sporidiobolales incertae sedis (Microbotryomycetes)
+Steccherinaceae # COL: Agaricomycetes > Polyporales
+Stephanosporaceae # COL: Agaricomycetes > Agaricales
+Stereaceae # COL: Agaricomycetes > Russulales
+Stereopsidaceae # COL: Agaricomycetes > Stereopsidales
+Stereopsidales # COL: Basidiomycota > Agaricomycetes
+Strophariaceae # COL: Agaricomycetes > Agaricales
+Suillaceae # COL: Agaricomycetes > Boletales
+Symmetrosporaceae # COL: Basidiomycota > Cystobasidiomycetes
+Syzygosporaceae # jelly fungus family (Cantharellales); IRMNG: synonym of Carcinomycetaceae (Tremellales)
+Talbotiomycetaceae # COL: Basidiomycota > Talbotiomycetales
+Talbotiomycetales # COL: Fungi > Basidiomycota
+Tapinellaceae # COL: Agaricomycetes > Boletales
+Tetragoniomycetaceae # ITIS: Tremellomycetes > Tremellales
+Thelephoraceae # COL: Agaricomycetes > Thelephorales
+Thelephorales # COL: Basidiomycota > Agaricomycetes
+Tilletiaceae # COL: Exobasidiomycetes > Tilletiales
+Tilletiales # COL: Basidiomycota > Exobasidiomycetes
+Tilletiariaceae # COL: Exobasidiomycetes > Georgefischeriales
+Trappeaceae # COL: Agaricomycetes > Hysterangiales
+Trechisporales # COL: Basidiomycota > Agaricomycetes
+Tremellaceae # COL: Tremellomycetes > Tremellales
+Tremellales # COL: Basidiomycota > Tremellomycetes
+Tremellodendropsidaceae # COL: Agaricomycetes > Tremellodendropsidales
+Tremellodendropsidales # COL: Basidiomycota > Agaricomycetes
+Tremellomycetes # COL: Fungi > Basidiomycota
+Tricholomataceae # COL: Agaricomycetes > Agaricales
+Trichosporonaceae # COL: Tremellomycetes > Trichosporonales
+Trichosporonales # COL: Basidiomycota > Tremellomycetes
+Trimorphomycetaceae # COL: Tremellomycetes > Tremellales
+Tritirachiaceae # COL: Tritirachiomycetes > Tritirachiales
+Tritirachiales # COL: Basidiomycota > Tritirachiomycetes
+Tritirachiomycetes # COL: Fungi > Basidiomycota
+Tubariaceae # COL: Agaricomycetes > Agaricales
+Tubulicrinaceae # crust fungus family (Trechisporales); IRMNG: Agaricomycetes > Hymenochaetales
+Tulasnellaceae # COL: Agaricomycetes > Cantharellales
+Typhulaceae # COL: Agaricomycetes > Agaricales
+Uleiellaceae # COL: Ustilaginomycetes > Uleiellales
+Uleiellales # COL: Basidiomycota > Ustilaginomycetes
+Uncolaceae # COL: Pucciniomycetes > Pucciniales
+Unilacrymaceae # COL: Dacrymycetes > Unilacrymales
+Unilacrymales # COL: Basidiomycota > Dacrymycetes
+Urocystidaceae # COL: Ustilaginomycetes > Urocystidales
+Urocystidales # COL: Basidiomycota > Ustilaginomycetes
+Uropyxidaceae # COL: Pucciniomycetes > Pucciniales
+Ustilaginaceae # COL: Ustilaginomycetes > Ustilaginales
+Ustilaginales # COL: Basidiomycota > Ustilaginomycetes
+Ustilaginomycetes # COL: Fungi > Basidiomycota
+Ustilentylomataceae # COL: Microbotryomycetes > Microbotryales
+Violaceomycetaceae # COL: Ustilaginomycetes > Violaceomycetales
+Violaceomycetales # COL: Basidiomycota > Ustilaginomycetes
+Volvocisporiaceae # COL: Exobasidiomycetes > Microstromatales
+Wallemiaceae # COL: Wallemiomycetes > Wallemiales
+Wallemiales # COL: Basidiomycota > Wallemiomycetes
+Wallemiomycetes # COL: Fungi > Basidiomycota
+Websdaneaceae # COL: Ustilaginomycetes > Ustilaginales
+Xenasmataceae # COL: Agaricomycetes > Russulales

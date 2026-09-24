@@ -1,899 +1,898 @@
-Achnanthaceae
-Achnanthales
-Achnanthidiaceae
-Acinetosporaceae
-Aclistocharaceae
-Acontochrysophycidae
-Acrochaetiaceae
-Acrochaetiales
-Acrosymphytaceae
-Acrosymphytales
-Acrothesauraceae
-Acrotylaceae
-Actinochloridaceae
-Actinophryida
-Actinophyridae
-Adenocystaceae
-Agaraceae
-Ahnfeltiaceae
-Ahnfeltiales
-Akkesiphycaceae
-Alariaceae
-Amphipleuraceae
-Anadyomenaceae
-Anaulaceae
-Anaulales
-Ankistrodesmaceae
-Anomoeoneidaceae
-Aphanochaetaceae
-Arachnoidiscaceae
-Arachnoidiscales
-Arachnoidiscophytina
-Ardissoneaceae
-Ardissoneales
-Areschougiaceae
-Arthrocladiaceae
-Ascoseiraceae
-Ascoseirales
-Asterocladaceae
-Asterocladales
-Asterolampraceae
-Asterolamprales
-Asteromonadaceae
-Asteronemataceae
-Atopocharaceae
-Atractophoraceae
-Atractophorales
-Attheyaceae
-Aulacodiscaceae
-Aulacoseiraceae
-Aulacoseirales
-Aurearenaceae
-Aurearenales
-Aurearenophyceae
-Aureophycaceae
-Auriculaceae
-Bachelotiaceae
-Bacillariaceae
-Bacillariae
-Bacillariales
-Bacillariophyceae
-Bacillariophycidae
-Bacillariophyta
-Bacillariophytina
-Balbianiaceae
-Balbianiales
-Balliaceae
-Balliales
-Bangiaceae
-Bangiales
-Bangiophyceae
-Barrancaceae
-Bathycoccaceae
-Batrachospermaceae # red alga family (Rhodophyta, Batrachospermales)
-Batrachospermales
-Batrochospermaceae
-Bellerocheaceae
-Benetoraceae
-Berkeleyaceae
-Bicosoecales
-Biddulphiaceae
-Biddulphiales
-Biddulphiophyceae
-Bifurcariopsidaceae
-Blinksiaceae
-Bolbocoleonaceae
-Boldiaceae
-Bolidomonadaceae
-Bolidophyceae
-Bonnemaisoniaceae
-Bonnemaisoniales
-Boodleaceae
-Borodinellaceae
-Botrydiaceae
-Botrydiales
-Botrydiopsidaceae
-Botryochloridaceae
-Botryococcaceae
-Braarudosphaeraceae
-Brachysiraceae
-Bracteacoccaceae
-Bracteamorphaceae
-Bryopsidaceae
-Bryopsidales
-Calcidiscaceae
-Calciosoleniaceae
-Callithamniaceae # red alga family (Rhodophyta, Ceramiales)
-Calosiphoniaceae
-Calyptrosphaeraceae
-Campylomonadaceae
-Capsosiphonaceae
-Carteriaceae
-Catenellopsidaceae
-Catenellopsidales
-Catenulaceae
-Caulacanthaceae
-Caulerpaceae
-Cavinulaceae
-Centritactaceae
-Ceramiaceae
-Ceramiales
-Chaetocerales
-Chaetocerotaceae
-Chaetocerotales # centric diatoms (Bacillariophyta)
-Chaetopeltidaceae
-Chaetopeltidales
-Chaetophoraceae
-Chaetophorales
-Chaetosiphonaceae
-Chaetosphaeridiaceae
-Chaetosphaeridiales
-Champiaceae
-Characeae
-Characiaceae
-Characiochloridaceae
-Characiopsidaceae
-Characiosiphonaceae
-Charales
-Charophyceae
-Charophyta
-Charophytes
-Chattonella
-Chattonellaceae # raphidophyte family (heterokont algae)
-Chattonellales
-Chlamydomonadaceae
-Chlamydomonadales
-Chlamydomyxaceae
-Chloramoebaceae
-Chloramoebales
-Chlorangiellaceae
-Chlorangiopsidaceae
-Chlorarachnea
-Chlorarachniaceae
-Chlorarachniales
-Chlorarachniophyceae
-Chlorarachniophyta
-Chlorellaceae
-Chlorellales
-Chlorinimonas
-Chlorobothryaceae
-Chlorochytriaceae
-Chlorococcaceae
-Chlorocystidaceae
-Chlorodendraceae
-Chlorodendrales
-Chlorodendrophyceae
-Chlorokybaceae
-Chlorokybales
-Chlorokybophyceae
-Chloropediaceae
-Chlorophyceae
-Chlorophyta
-Chlorophytina
-Chloropicophyceae
-Chlorosarcinaceae
-Chordaceae
-Chordariaceae
-Chordariopsidaceae
-Choricystidaceae
-Choristocarpaceae
-Chromeridophyta
-Chromochloridaceae
-Chromulinaceae
-Chromulinales
-Chroomonadaceae
-Chrysamoebaceae
-Chrysamoebales
-Chrysamoebidales
-Chrysanthemodiscaceae
-Chrysanthemodiscales
-Chrysapionales
-Chrysarachniales
-Chrysista
-Chrysocapsaceae
-Chrysocapsales
-Chrysochromulinaceae
-Chrysococcaceae
-Chrysolepidomonadaceae
-Chrysomeridaceae
-Chrysomeridales
-Chrysomerophyceae
-Chrysomioridales
-Chrysomonadales
-Chrysoparadoxophyceae
-Chrysophyceae
-Chrysophyta
-Chrysosaccales
-Chrysosphaeraceae
-Chrysosphaerales
-Chrysothallaceae
-Chrysotilaceae
-Chrysotrichales
-Chuariophyceae
-Cladophoraceae
-Cladophorales
-Cladostephaceae
-Clavatoraceae
-Climacospheniaceae
-Climacospheniales
-Cloniophoraceae
-Closteriaceae
-Coccolithaceae
-Coccolithales
-Coccolithophyceae
-Coccomyxaceae
-Cocconeidaceae
-Coccosphaerales
-Codiaceae
-Colaconemataceae
-Colaconematales
-Coleochaetaceae
-Coleochaetales
-Coleochaetophyceae
-Collinsiellaceae
-Colpovorophyceae
-Commatiida
-Compsopogonaceae
-Compsopogonales
-Compsopogonophyceae
-Corallinaceae
-Corallinales
-Corethraceae
-Corethrales
-Corethrophyceae
-Corynocystaceae
-Corynodactylaceae
-Corynodactylales
-Coscinodiscaceae
-Coscinodiscales
-Coscinodiscophyceae
-Coscinodiscophycidae
-Coscinodiscophytina
-Cosmioneidaceae
-Costariaceae
-Craspedomonadales
-Craspedomonadophycidae
-Cromulinae
-Cruoriaceae
-Crustomastigaceae
-Cryptomonada
-Cryptomonadaceae
-Cryptomonadales
-Cryptophyceae
-Cryptophyta
-Ctenocladaceae
-Cubiculosporaceae
-Cutleriaceae
-Cutleriales # brown algae (Phaeophyceae)
-Cyanidiaceae
-Cyanidiales
-Cyanidiophyceae
-Cyanidiophytina
-Cyathomonadaceae
-Cyclophoraceae
-Cyclophorales
-Cylindrocapsaceae
-Cymatosiraceae
-Cymatosirales
-Cymbellaceae
-Cymbellales
-Cyrtophoraceae
-Cystocloniaceae
-Dangeardinellaceae
-Dasyaceae
-Dasycladaceae
-Dasycladales
-Deflandriaceae
-Delesseriaceae
-Derbesiaceae
-Desmarestiaceae
-Desmarestiales
-Desmidiaceae
-Desmidiales
-Desmids
-Developayellaceae # heterokont ochrophyte alga family
-Developayellales # heterokont ochrophyte algae
-Diadesmidaceae
-Diatomea
-Diatomeae
-Diatomista
-Diatomophyceae
-Dichotomosiphonaceae
-Dicranemataceae
-Dictophycidae
-Dictyochaceae
-Dictyochales
-Dictyochloridaceae
-Dictyochophyceae
-Dictyococcaceae
-Dictyoneidaceae
-Dictyoneidales
-Dictyopsidaceae
-Dictyosphaeriaceae
-Dictyotaceae
-Dictyotales
-Dictyotophycidae
-Dinobryaceae
-Dinophyceae
-Diploneidaceae
-Discosporangiaceae
-Discosporangiales
-Discosporangiophycidae
-Dixoniellaceae
-Dixoniellales
-Dolichomastigaceae
-Dolichomastigales
-Dumontiaceae
-Dunaliellaceae
-Durvillaeaceae
-Ectocarpaceae
-Ectocarpales
-Elakatotrichaceae
-Ellerbeckiophytina
-Ellobiophyceae
-Endictyaceae
-Endocladiaceae
-Endosphaeraceae
-Entomoneidaceae
-Entopylaceae
-Entwisleiaceae
-Entwisleiales
-Eremosphaeraceae
-Erythropeltidales
-Erythrotrichiaceae
-Etheliaceae
-Ethmodiscaceae
-Ethmodiscales
-Euglenophyceae
-Euglenophycidae
-Eunotiaceae
-Eunotiales
-Eurhodophytina
-Eustigmataceae
-Eustigmatales
-Eustigmatophyceae
-Faucheaceae
-Fibrocapsa
-Fibrocapsaceae
-Florideophyceae
-Fragilariaceae
-Fragilariales
-Fragilariophycidae
-Fryeellaceae
-Fucaceae
-Fucales
-Fucistia
-Fucophyceae
-Fucophycidae
-Furcellariaceae
-Gainiaceae
-Galaxauraceae
-Galdieriaceae
-Gayraliaceae
-Gelidiaceae
-Gelidiales
-Gelidiellaceae
-Geminigeraceae
-Gephyrocapsaceae
-Gigartinaceae
-Gigartinales
-Glaucocystaceae
-Glaucocystales
-Glaucophyta
-Glaucosphaeraceae
-Glaucosphaerales
-Gloeobotrydaceae
-Gloeocystaceae
-Gloeodendraceae
-Gloeopodiaceae
-Gloeotilaceae
-Gloiosiphoniaceae
-Golenkiniaceae
-Gomontiaceae
-Gomphonemataceae
-Gonatozygaceae
-Goniaceae
-Goniomonadaceae
-Goniomonadea
-Goniomonadida
-Goniotrichaceae
-Goniotrichales
-Gonyostomum
-Gossleriellaceae
-Gracilariaceae
-Gracilariales
-Grammatophoraceae
-Granufilaceae
-Haematococcaceae
-Haemeschariaceae
-Halimedaceae
-Halopappaceae
-Halosiphonaceae
-Halosphaeraceae
-Halymeniaceae
-Halymeniales
-Hapalidiaceae
-Hapalidiales
-Haptophyta
-Haptophytina
-Haramonadaceae
-Haramonas
-Helicosphaeraceae
-Heliopeltaceae
-Hemiarmida
-Hemiarmidae
-Hemiaulaceae
-Hemiaulales
-Hemidiscaceae
-Hemipeltaceae
-Hemiselmidaceae
-Heterochrysophycidae
-Heterodendraceae
-Heterogloeaceae
-Heterogloeales
-Heterokontae
-Heterokontophyta
-Heteropediaceae
-Heterosigma
-Hibberdiaceae
-Hibberdiales
-Hildebrandiales
-Hildenbrandiaceae
-Hildenbrandiales # crustose red algae (Rhodophyta)
-Hilleaceae
-Himanthaliaceae
-Hormosiraceae
-Hormotilaceae
-Hyalodiscaceae
-Hydrodictyaceae
-Hydruraceae
-Hydrurales
-Hymenocladiaceae
-Hymenomonadaceae
-Hypnomonadaceae
-Hypogyrista
-Ishigeaceae
-Ishigeales
-Ishigeophycidae
-Isochrysidaceae
-Isochrysidales
-Isochrysidineae
-Jaoaceae
-Kallymeniaceae
-Khakista
-Klebsormidiaceae
-Klebsormidiales
-Klebsormidiophyceae
-Koliellaceae
-Kornmanniaceae
-Laminariaceae
-Laminariales
-Lauderiaceae
-Lemaneaceae
-Lepidochromonadaceae
-Leptocylindraceae
-Leptocylindrales
-Leptocylindrophyceae
-Leptocylindrophytina
-Leptosiraceae
-Lessoniaceae
-Liagoraceae
-Liagoropsidaceae
-Licmophoraceae
-Licmophorales
-Limnistia
-Lithodermataceae
-Lithodesmiaceae
-Lithodesmiales
-Loboceae
-Lomentariaceae
-Lyrellaceae
-Lyrellales
-Mallomonadaceae
-Mallomonadales
-Mamiellaceae
-Mamiellales
-Mamiellophyceae
-Marsupiomonadaceae
-Marsupiomonadales
-Masonophycaceae
-Mastogloiaceae
-Mastogloiales
-Mediophyceae
-Melanophyceae
-Melosiraceae
-Melosirales
-Melosirophytina
-Merotricha
-Mesosporaceae
-Mesostigmataceae
-Mesostigmatales
-Mesostigmatophyceae
-Mesotaeniaceae
-Metarhodophytina
-Micractiniaceae
-Microsporaceae
-Mischococcaceae
-Mischococcales
-Monodopsidaceae
-Monomastigaceae
-Monomastigales
-Monosigales
-Monostromataceae
-Mychodeaceae
-Mychodeophyllaceae
-Mychonastaceae
-Myrionemataceae
-Myxochloridaceae
-Naccariaceae
-Nautococcaceae
-Naviculaceae
-Naviculales
-Neidiaceae
-Nemaliales
-Nemastomataceae
-Nemastomatales
-Nemodermataceae
-Nemodermatales
-Neochloridaceae
-Neonemataceae
-Neoralfsiaceae
-Nephroselmidaceae
-Nephroselmidales
-Nephroselmidophyceae
-Noctilucophyceae
-Noelaerhabdaceae
-Notheiaceae
-Ochromonadaceae
-Ochromonadales
-Ochromonadineae
-Ochrophyta
-Ochrophytina
-Oedogoniaceae
-Oedogoniales
-Okellyaceae
-Olisthodiscales
-Olisthodiscophyceae
-Oltmannsia
-Oltmannsiellopsidaceae
-Oltmansiellopsidales
-Onslowiaceae
-Onslowiales
-Oocystaceae
-Ophiocytiaceae
-Orthogonacladiaceae
-Orthoseiraceae
-Orthoseirales
-Ostreobiaceae
-Oxyrrhinophyceae
-Palmariaceae
-Palmariales
-Palmellaceae
-Palmellopsidaceae
-Palmophyllaceae
-Palmophyllales
-Paraliaceae
-Paraliales
-Paraphysomonadaceae
-Paraphysomonadida
-Parmales
-Pavlovaceae
-Pavlovales
-Pavlovophyceae
-Pedinellaceae
-Pedinellales
-Pedinellophyceae
-Pedinomonadaceae
-Pedinomonadales
-Pedinophyceae
-Pelagomonadaceae
-Pelagomonadales
-Pelagophyceae
-Peniaceae
-Pentalaminaceae
-Peridineae
-Peroniaceae
-Petrocelidaceae
-Petrodermataceae
-Petrospongiaceae
-Peyssonneliaceae
-Peyssonneliales
-Phacelocarpaceae
-Phacotaceae
-Phaeocystaceae
-Phaeocystales
-Phaeodactylaceae
-Phaeophilaceae
-Phaeophyceae
-Phaeophyta
-Phaeoplacales
-Phaeosaccionaceae
-Phaeosacciophyceae
-Phaeosiphoniellaceae
-Phaeosiphoniellales
-Phaeostrophiaceae
-Phaeothamniaceae
-Phaeothamniales
-Phaeothamniophyceae
-Phyllariaceae
-Phyllophoraceae
-Phyllosiphonales
-Picocystophyceae
-Picophagaceae
-Picophagales
-Picophagea
-Picophagophyceae
-Picophyta
-Picozoa
-Pihiellaceae
-Pihiellales
-Pilayellaceae
-Pinguiochrysidaceae
-Pinguiochrysidales
-Pinguiophyceae
-Pinguiophycidae
-Pinnulariaceae
-Pithophoraceae
-Plagiogrammaceae
-Plagiosporaceae
-Plagiotropidaceae
-Platysiphonaceae
-Pleurastraceae
-Pleurochloridaceae
-Pleurochrysidaceae
-Pleurosigmataceae
-Plocamiaceae
-Plocamiales
-Polyblepharidaceae
-Polyideaceae
-Polyphysaceae
-Pontosphaeraceae
-Porocharaceae
-Porphyridiaceae
-Porphyridiales
-Porphyridiophyceae
-Prasinococcaceae
-Prasinococcales
-Prasinodermatophyta
-Prasiolaceae
-Prasiolales
-Probosciophytina
-Proschkiniaceae
-Protoraphidaceae
-Protoraphidales
-Protosiphonaceae
-Prymnesiaceae
-Prymnesiales
-Pseudoanemoniaceae
-Pseudocharaciopsidaceae
-Pseudochordaceae
-Pseudocladophoraceae
-Pseudocodiaceae
-Pseudomuriellaceae
-Pseudoscourfieldiales
-Pseudoudoteaceae
-Psilosiphonaceae
-Pterocladiaceae
-Pterocladiophyllaceae
-Pterospermataceae
-Pterosphaeridiaceae
-Ptilocladiopsidaceae
-Pycnococcaceae
-Pylaiellaceae
-Pyramimonadaceae
-Pyramimonadales
-Pyramimonadophyceae
-Pyrenomonadaceae
-Pyrenomonadales
-Pyxillaceae
-Raciborskiellaceae
-Radiococcaceae
-Ralfsiaceae
-Ralfsiales
-Raphidoistia
-Raphidomonadales
-Raphidophyceae
-Raphidophycidae
-Rappephyceae
-Resultomonadaceae
-Reticulosphaeraceae
-Rhabdonemataceae
-Rhabdonematales
-Rhabdosphaeraceae
-Rhaphoneidaceae
-Rhaphoneidales
-Rhipiliaceae
-Rhizochloridaceae
-Rhizochloridales
-Rhizochromulinaceae
-Rhizochromulinales
-Rhizochrysidales
-Rhizogranulochloridaceae
-Rhizophyllidaceae
-Rhizosoleniaceae
-Rhizosoleniales
-Rhizosoleniophytina
-Rhizounochloridaceae
-Rhodachlyaceae
-Rhodachlyales
-Rhodellaceae
-Rhodellales
-Rhodellophyceae
-Rhodellophytina
-Rhodelphidia
-Rhodelphidophyta
-Rhodochaetaceae
-Rhodochaetales
-Rhodogorgonaceae
-Rhodogorgonales
-Rhodomelaceae
-Rhodophysemataceae
-Rhodophyta
-Rhodothamiellaceae
-Rhodymeniaceae
-Rhodymeniales
-Rhoicospheniaceae
-Rhopalodiaceae
-Rhopalodiales
-Rhopalosolenaceae
-Rissoellaceae
-Rocellaceae
-Rotundellaceae
-Rufusiaceae
-Rufusiales
-Rutilariaceae
-Sancinochrysidales
-Sarcinochrysidaceae
-Sarcinochrysidales
-Sarcodiaceae
-Sargassaceae
-Scenedesmaceae
-Schimmelmanniaceae
-Schizochlamydaceae
-Schizocladiaceae
-Schizocladiales
-Schizocladiophyceae
-Schizomeridaceae
-Schizymeniaceae
-Schmitziellaceae
-Schroederiaceae
-Scinaiaceae # red alga family (Rhodophyta, Nemaliales)
-Scolioneidaceae
-Scoliotropidaceae
-Scoresbyellaceae
-Scotiellocystoidaceae
-Scotinosphaeraceae
-Scotinosphaerales
-Scourfieldiaceae
-Scourfieldiales
-Scytosiphonaceae
-Scytosiphonales # brown algae (Phaeophyceae)
-Scytothamnaceae
-Scytothamnales
-Sebdeniaceae
-Sebdeniales
-Seirococcaceae
-Selenastraceae
-Sellaphoraceae
-Silicoflagellales
-Silicoflagellata
-Siphonocladaceae
-Skeletonemaceae
-Solieriaceae
-Sorastraceae
-Sorocarpaceae
-Sphacelariaceae
-Sphacelariales
-Sphacelodermaceae
-Sphaerococcaceae
-Sphaerocystidaceae
-Sphaerodictyaceae
-Sphaeropleaceae
-Sphaeropleales
-Spiromonadaceae
-Splachnidiaceae
-Spondylomoraceae
-Sporochnaceae
-Sporochnales
-Sporolithaceae
-Sporolithales
-Stauroneidaceae
-Stephanodiscaceae
-Stephanopyxidaceae
-Stichogloeaceae
-Stichogloeales
-Stictocyclaceae
-Stictocyclales
-Stictodiscaceae
-Stictodiscales
-Stipitococcaceae
-Streptothecaceae
-Striatellaceae
-Striatellales
-Stschapoviaceae
-Stschapoviales
-Stylococcaceae
-Stylococcales
-Stylonemataceae
-Stylonematales
-Stylonematophyceae
-Stypocaulaceae
-Surirellaceae
-Surirellales
-Swirenkoiamonas
-Synchromaceae
-Synchromales
-Synchromophyceae
-Syndiniophyceae
-Synuraceae
-Synurales
-Synurophyceae
-Syracosphaeraceae
-Syracosphaerales
-Syringodermataceae
-Syringodermatales
-Tabellariaceae
-Tabellariales
-Tetrabaenaceae
-Tetracystaceae
-Tetragonidiaceae
-Tetragonidiales
-Tetrasporaceae
-Tetrasporales # colonial green algae (Chlorophyta)
-Thalassionemataceae
-Thalassionematales
-Thalassiophysaceae
-Thalassiophysales
-Thalassiosiraceae
-Thalassiosirales
-Thalassiosiropsidaceae
-Thallochrysidaceae
-Thallochrysidales
-Thoreaceae
-Thoreales
-Tichocarpaceae
-Tilopteridaceae
-Tilopteridales
-Toxariaceae
-Toxariales
-Trebouxiaceae
-Trebouxiales
-Trebouxiophyceae
-Trentepohliaceae
-Trentepohliales
-Treubariaceae
-Tribonemataceae
-Tribonematales
-Triceratiaceae
-Triceratiales
-Triparmaceae
-Trypanochloridaceae
-Tsengiaceae
-Tumidellaceae
-Udoteaceae
-Ulotrichaceae
-Ulotrichales
-Ulvaceae
-Ulvales
-Ulvellaceae
-Ulvophyceae
-Uronemataceae
-Vacuolaria
-Vacuolariaceae
-Valoniaceae
-Vaucheriaceae
-Vaucheriales
-Viridilobus
-Volvocaceae
-Volvocales # volvocine green algae (Chlorophyta)
-Witrockiellaceae
-Wrangeliaceae
-Xanthonemataceae
-Xanthophyceae
-Xiphophoraceae
-Yamadaellaceae
-Zeacarpaceae
-Zygnemataceae
-Zygnematales
-Zygnematophyceae
-Zygodiscales
+Achnanthaceae # ITIS: Bacillariophyceae > Achnanthales
+Achnanthales # ITIS: Ochrophyta > Bacillariophyceae
+Achnanthidiaceae # ITIS: Bacillariophyceae > Achnanthales
+Acinetosporaceae # WoRMS: Phaeophyceae > Ectocarpales
+Aclistocharaceae # COL: Charophyceae > Charales
+Acontochrysophycidae # not found in ChecklistBank
+Acrochaetiaceae # COL: Florideophyceae > Acrochaetiales
+Acrochaetiales # COL: Rhodophyta > Florideophyceae
+Acrosymphytaceae # COL: Florideophyceae > Acrosymphytales
+Acrosymphytales # COL: Rhodophyta > Florideophyceae
+Acrothesauraceae # COL: Florideophyceae > Acrosymphytales
+Acrotylaceae # COL: Florideophyceae > Gigartinales
+Actinochloridaceae # COL: Chlorophyceae > Volvocales
+Actinophryida # WoRMS: Ochrophyta > Raphidophyceae
+Actinophyridae # GBIF: synonym of Actinophryidae (Actinophryida)
+Adenocystaceae # WoRMS: Phaeophyceae > Ectocarpales
+Agaraceae # WoRMS: Phaeophyceae > Laminariales
+Ahnfeltiaceae # COL: Florideophyceae > Ahnfeltiales
+Ahnfeltiales # COL: Rhodophyta > Florideophyceae
+Akkesiphycaceae # WoRMS: Phaeophyceae > Chordales
+Alariaceae # ITIS: Phaeophyceae > Laminariales
+Amphipleuraceae # ITIS: Bacillariophyceae > Naviculales
+Anadyomenaceae # COL: Ulvophyceae > Cladophorales
+Anaulaceae # ITIS: Bacillariophyceae > Anaulales
+Anaulales # ITIS: Ochrophyta > Bacillariophyceae
+Ankistrodesmaceae # WoRMS: Chlorophyceae > Sphaeropleales
+Anomoeoneidaceae # ITIS: Bacillariophyceae > Cymbellales
+Aphanochaetaceae # COL: Chlorophyceae > Chaetophorales
+Arachnoidiscaceae # ITIS: Bacillariophyceae > Arachnoidiscales
+Arachnoidiscales # ITIS: Ochrophyta > Bacillariophyceae
+Arachnoidiscophytina # not found in ChecklistBank
+Ardissoneaceae # ITIS: Bacillariophyceae > Ardissoneales
+Ardissoneales # ITIS: Ochrophyta > Bacillariophyceae
+Areschougiaceae # COL: Florideophyceae > Gigartinales
+Arthrocladiaceae # ITIS: Phaeophyceae > Desmarestiales
+Ascoseiraceae # WoRMS: Phaeophyceae > Ascoseirales
+Ascoseirales # WoRMS: Ochrophyta > Phaeophyceae
+Asterocladaceae # WoRMS: Phaeophyceae > Asterocladales
+Asterocladales # WoRMS: Ochrophyta > Phaeophyceae
+Asterolampraceae # ITIS: Bacillariophyceae > Asterolamprales
+Asterolamprales # ITIS: Ochrophyta > Bacillariophyceae
+Asteromonadaceae # COL: Chlorophyceae > Volvocales
+Asteronemataceae # WoRMS: Phaeophyceae > Scytothamnales
+Atopocharaceae # COL: Charophyceae > Charales
+Atractophoraceae # COL: Florideophyceae > Atractophorales
+Atractophorales # COL: Rhodophyta > Florideophyceae
+Attheyaceae # COL: Bacillariophyceae > Chaetocerotales
+Aulacodiscaceae # ITIS: Bacillariophyceae > Coscinodiscales
+Aulacoseiraceae # ITIS: Bacillariophyceae > Aulacoseirales
+Aulacoseirales # ITIS: Ochrophyta > Bacillariophyceae
+Aurearenaceae # WoRMS: Phaeothamniophyceae > Aurearenales
+Aurearenales # WoRMS: Ochrophyta > Phaeothamniophyceae
+Aurearenophyceae # WoRMS: Chromista > Ochrophyta
+Aureophycaceae # WoRMS: Phaeophyceae > Laminariales
+Auriculaceae # ITIS: Bacillariophyceae > Surirellales
+Bachelotiaceae # WoRMS: Phaeophyceae > Scytothamnales
+Bacillariaceae # ITIS: Bacillariophyceae > Bacillariales
+Bacillariae # not found in ChecklistBank
+Bacillariales # ITIS: Ochrophyta > Bacillariophyceae
+Bacillariophyceae # COL: Chromista > Ochrophyta
+Bacillariophycidae # ITIS: Ochrophyta > Bacillariophyceae
+Bacillariophyta # ITIS: synonym of Bacillariophyceae (Ochrophyta)
+Bacillariophytina # PBDB: Ochrophyta
+Balbianiaceae # COL: Florideophyceae > Balbianiales
+Balbianiales # COL: Rhodophyta > Florideophyceae
+Balliaceae # COL: Florideophyceae > Balliales
+Balliales # COL: Rhodophyta > Florideophyceae
+Bangiaceae # COL: Bangiophyceae > Bangiales
+Bangiales # COL: Rhodophyta > Bangiophyceae
+Bangiophyceae # COL: Plantae > Rhodophyta
+Barrancaceae # COL: Chlorophyceae > Chaetophorales
+Bathycoccaceae # COL: Mamiellophyceae > Mamiellales
+Batrachospermaceae # red alga family (Rhodophyta, Batrachospermales); COL: Florideophyceae > Batrachospermales
+Batrachospermales # COL: Rhodophyta > Florideophyceae
+Batrochospermaceae # ALF: Florideophyceae > Batrachospermales
+Bellerocheaceae # ITIS: Bacillariophyceae > Hemiaulales
+Benetoraceae # ITIS: Bacillariophyceae > Stictodiscales
+Berkeleyaceae # ITIS: Bacillariophyceae > Naviculales
+Bicosoecales # COL03: Chrysophyta > Bicosoecophyceae
+Biddulphiaceae # ITIS: Bacillariophyceae > Biddulphiales
+Biddulphiales # ITIS: Ochrophyta > Bacillariophyceae
+Biddulphiophyceae # CLB dataset 2014: Chromista > Bacillariophyta
+Bifurcariopsidaceae # WoRMS: Phaeophyceae > Fucales
+Blinksiaceae # COL: Florideophyceae > Gigartinales
+Bolbocoleonaceae # COL: Ulvophyceae > Ulvales
+Boldiaceae # COL: Compsopogonophyceae > Compsopogonales
+Bolidomonadaceae # GBIF: Bolidophyceae > Bolidomonadales
+Bolidophyceae # WoRMS: Chromista > Ochrophyta
+Bonnemaisoniaceae # COL: Florideophyceae > Bonnemaisoniales
+Bonnemaisoniales # COL: Rhodophyta > Florideophyceae
+Boodleaceae # COL: Ulvophyceae > Cladophorales
+Borodinellaceae # ITIS: synonym of Chlorosarcinaceae (Chlamydomonadales)
+Botrydiaceae # ITIS: Xanthophyceae > Vaucheriales
+Botrydiales # WoRMS: Ochrophyta > Xanthophyceae
+Botrydiopsidaceae # WoRMS: Xanthophyceae > Mischococcales
+Botryochloridaceae # WoRMS: Xanthophyceae > Mischococcales
+Botryococcaceae # COL: Trebouxiophyceae > Trebouxiales
+Braarudosphaeraceae # ITIS: Prymnesiophyceae > Prymnesiales
+Brachysiraceae # ITIS: Bacillariophyceae > Naviculales
+Bracteacoccaceae # COL: Chlorophyceae > Sphaeropleales
+Bracteamorphaceae # COL: Chlorophyceae > Sphaeropleales
+Bryopsidaceae # COL: Ulvophyceae > Bryopsidales
+Bryopsidales # COL: Chlorophyta > Ulvophyceae
+Calcidiscaceae # WoRMS: Coccolithophyceae > Coccolithales
+Calciosoleniaceae # WoRMS: Coccolithophyceae > Syracosphaerales
+Callithamniaceae # red alga family (Rhodophyta, Ceramiales); COL: Florideophyceae > Ceramiales
+Calosiphoniaceae # COL: Florideophyceae > Gigartinales
+Calyptrosphaeraceae # WoRMS: Coccolithophyceae > Coccolithales
+Campylomonadaceae # WoRMS: Cryptophyceae > Cryptomonadales
+Capsosiphonaceae # WoRMS: Ulvophyceae > Ulvales
+Carteriaceae # ITIS: Chlorophyceae > Chlamydomonadales
+Catenellopsidaceae # COL: Florideophyceae > Catenellopsidales
+Catenellopsidales # COL: Rhodophyta > Florideophyceae
+Catenulaceae # ITIS: Bacillariophyceae > Thalassiophysales
+Caulacanthaceae # COL: Florideophyceae > Gigartinales
+Caulerpaceae # COL: Ulvophyceae > Bryopsidales
+Cavinulaceae # ITIS: Bacillariophyceae > Naviculales
+Centritactaceae # GBIF: synonym of Centritractaceae (Mischococcales)
+Ceramiaceae # COL: Florideophyceae > Ceramiales
+Ceramiales # COL: Rhodophyta > Florideophyceae
+Chaetocerales # WoRMS: Heterokontophyta > Bacillariophyceae
+Chaetocerotaceae # COL: Bacillariophyceae > Chaetocerotales
+Chaetocerotales # centric diatoms (Bacillariophyta); COL: Ochrophyta > Bacillariophyceae
+Chaetopeltidaceae # COL: Chlorophyceae > Chaetopeltidales
+Chaetopeltidales # COL: Chlorophyta > Chlorophyceae
+Chaetophoraceae # COL: Chlorophyceae > Chaetophorales
+Chaetophorales # COL: Chlorophyta > Chlorophyceae
+Chaetosiphonaceae # COL: Ulvophyceae > Bryopsidales
+Chaetosphaeridiaceae # COL: Coleochaetophyceae > Chaetosphaeridiales
+Chaetosphaeridiales # COL: Charophyta > Coleochaetophyceae
+Champiaceae # COL: Florideophyceae > Rhodymeniales
+Characeae # COL: Charophyceae > Charales
+Characiaceae # COL: Chlorophyceae > Sphaeropleales
+Characiochloridaceae # COL: Chlorophyceae > Volvocales
+Characiopsidaceae # ITIS: Xanthophyceae > Mischococcales
+Characiosiphonaceae # COL: Chlorophyceae > Volvocales
+Charales # COL: Charophyta > Charophyceae
+Charophyceae # COL: Plantae > Charophyta
+Charophyta # COL: Eukaryota > Plantae
+Charophytes # not found in ChecklistBank
+Chattonella # not found in ChecklistBank
+Chattonellaceae # raphidophyte family (heterokont algae); WoRMS: Raphidophyceae > Chattonellales
+Chattonellales # WoRMS: Ochrophyta > Raphidophyceae
+Chlamydomonadaceae # COL: Chlorophyceae > Volvocales
+Chlamydomonadales # ITIS: Chlorophyta > Chlorophyceae
+Chlamydomyxaceae # WoRMS: Synchromophyceae > Chlamydomyxales
+Chloramoebaceae # WoRMS: Xanthophyceae > Chloramoebales
+Chloramoebales # ITIS: Xanthophyta > Xanthophyceae
+Chlorangiellaceae # COL: Chlorophyceae > Volvocales
+Chlorangiopsidaceae # ITIS: Chlorophyta > Chlorophyceae
+Chlorarachnea # GBIF: synonym of Chlorarachniophyceae (Cercozoa)
+Chlorarachniaceae # GBIF: Chlorarachniophyceae > Chlorarachniales
+Chlorarachniales # GBIF: Cercozoa > Chlorarachniophyceae
+Chlorarachniophyceae # WoRMS: Chromista > Cercozoa
+Chlorarachniophyta # Wikidata: Cercozoa > Chlorarachniophyceae
+Chlorellaceae # COL: Trebouxiophyceae > Chlorellales
+Chlorellales # COL: Chlorophyta > Trebouxiophyceae
+Chlorinimonas # not found in ChecklistBank
+Chlorobothryaceae # GBIF: Eustigmatophyceae > Eustigmatales
+Chlorochytriaceae # COL: Chlorophyceae > Volvocales
+Chlorococcaceae # COL: Chlorophyceae > Volvocales
+Chlorocystidaceae # COL: Ulvophyceae > Chlorocystidales
+Chlorodendraceae # COL: Chlorodendrophyceae > Chlorodendrales
+Chlorodendrales # COL: Chlorophyta > Chlorodendrophyceae
+Chlorodendrophyceae # COL: Plantae > Chlorophyta
+Chlorokybaceae # ITIS: Chlorokybophyceae > Chlorokybales
+Chlorokybales # COL: Charophyta > Chlorokybophyceae
+Chlorokybophyceae # COL: Plantae > Charophyta
+Chloropediaceae # ITIS: Xanthophyceae > Mischococcales
+Chlorophyceae # COL: Plantae > Chlorophyta
+Chlorophyta # COL: Eukaryota > Plantae
+Chlorophytina # COL: Plantae > Chlorophyta
+Chloropicophyceae # COL: Plantae > Chlorophyta
+Chlorosarcinaceae # COL: Chlorophyceae > Volvocales
+Chordaceae # ITIS: Phaeophyceae > Laminariales
+Chordariaceae # ITIS: Phaeophyceae > Ectocarpales
+Chordariopsidaceae # WoRMS: Phaeophyceae > Ectocarpales
+Choricystidaceae # ITIS: synonym of Coccomyxaceae (Chlamydomonadales)
+Choristocarpaceae # WoRMS: Phaeophyceae > Discosporangiales
+Chromeridophyta # WoRMS: Chromista
+Chromochloridaceae # COL: Chlorophyceae > Sphaeropleales
+Chromulinaceae # ITIS: Chrysophyceae > Chromalinales
+Chromulinales # WoRMS: Ochrophyta > Chrysophyceae
+Chroomonadaceae # WoRMS: Cryptophyceae > Pyrenomonadales
+Chrysamoebaceae # WoRMS: Chrysophyceae > Chromulinales
+Chrysamoebales # Tropicos: Ochrophyta > Chrysophyceae
+Chrysamoebidales # ITIS: Chrysophyta > Chrysophyceae
+Chrysanthemodiscaceae # ITIS: Bacillariophyceae > Chrysanthemodiscales
+Chrysanthemodiscales # ITIS: Ochrophyta > Bacillariophyceae
+Chrysapionales # not found in ChecklistBank
+Chrysarachniales # not found in ChecklistBank
+Chrysista # Wikidata: Eukaryota > Ochrophyta
+Chrysocapsaceae # ITIS: Chrysophyceae > Chrysocapsales
+Chrysocapsales # ITIS: Chrysophyta > Chrysophyceae
+Chrysochromulinaceae # WoRMS: Coccolithophyceae > Prymnesiales
+Chrysococcaceae # ITIS: Chrysophyceae > Chromalinales
+Chrysolepidomonadaceae # WoRMS: Chrysophyceae > Chromulinales
+Chrysomeridaceae # ITIS: Chrysophyceae > Thallochrysidales
+Chrysomeridales # WoRMS: Ochrophyta > Chrysomeridophyceae
+Chrysomerophyceae # WoRMS: Chromista > Ochrophyta
+Chrysomioridales # not found in ChecklistBank
+Chrysomonadales # Wikidata: Ochrophyta > Chrysophyceae
+Chrysoparadoxophyceae # WoRMS: Chromista > Ochrophyta
+Chrysophyceae # ITIS: Chromista > Chrysophyta
+Chrysophyta # ITIS: Chromista
+Chrysosaccales # WoRMS: Ochrophyta > Chrysophyceae
+Chrysosphaeraceae # WoRMS: Chrysophyceae > Chrysosphaerales
+Chrysosphaerales # ITIS: Chrysophyta > Chrysophyceae
+Chrysothallaceae # WoRMS: Chrysophyceae > Chromulinales
+Chrysotilaceae # ITIS: Prymnesiophyceae > Prymnesiales
+Chrysotrichales # not found in ChecklistBank
+Chuariophyceae # WoRMS: Plantae > Chlorophyta
+Cladophoraceae # COL: Ulvophyceae > Cladophorales
+Cladophorales # COL: Chlorophyta > Ulvophyceae
+Cladostephaceae # ITIS: Phaeophyceae > Sphacelariales
+Clavatoraceae # COL: Charophyceae > Charales
+Climacospheniaceae # ITIS: Bacillariophyceae > Climacospheniales
+Climacospheniales # ITIS: Ochrophyta > Bacillariophyceae
+Cloniophoraceae # COL: Ulvophyceae > Ulvales
+Closteriaceae # COL: Zygnematophyceae > Desmidiales
+Coccolithaceae # ITIS: Prymnesiophyceae > Coccosphaerales
+Coccolithales # WoRMS: Haptophyta > Coccolithophyceae
+Coccolithophyceae # WoRMS: Chromista > Haptophyta
+Coccomyxaceae # COL: Chlorophyta > Trebouxiophyceae
+Cocconeidaceae # ITIS: Bacillariophyceae > Achnanthales
+Coccosphaerales # ITIS: Haptophyta > Prymnesiophyceae
+Codiaceae # COL: Ulvophyceae > Bryopsidales
+Colaconemataceae # COL: Florideophyceae > Colaconematales
+Colaconematales # COL: Rhodophyta > Florideophyceae
+Coleochaetaceae # COL: Coleochaetophyceae > Coleochaetales
+Coleochaetales # COL: Charophyta > Coleochaetophyceae
+Coleochaetophyceae # COL: Plantae > Charophyta
+Collinsiellaceae # ITIS: synonym of Gomontiaceae (Ulotrichales)
+Colpovorophyceae # WoRMS: Chromista > Myzozoa
+Commatiida # WoRMS: Ochrophyta > Raphidophyceae
+Compsopogonaceae # COL: Compsopogonophyceae > Compsopogonales
+Compsopogonales # COL: Rhodophyta > Compsopogonophyceae
+Compsopogonophyceae # COL: Plantae > Rhodophyta
+Corallinaceae # COL: Florideophyceae > Corallinales
+Corallinales # COL: Rhodophyta > Florideophyceae
+Corethraceae # ITIS: Bacillariophyceae > Corethrales
+Corethrales # ITIS: Ochrophyta > Bacillariophyceae
+Corethrophyceae # CLB dataset 2014: Chromista > Bacillariophyta
+Corynocystaceae # COL: Florideophyceae > Gigartinales
+Corynodactylaceae # COL: Florideophyceae > Corynodactylales
+Corynodactylales # COL: Rhodophyta > Florideophyceae
+Coscinodiscaceae # ITIS: Bacillariophyceae > Coscinodiscales
+Coscinodiscales # ITIS: Ochrophyta > Bacillariophyceae
+Coscinodiscophyceae # ITIS: synonym of Coscinodiscophycidae (Ochrophyta)
+Coscinodiscophycidae # ITIS: Ochrophyta > Bacillariophyceae
+Coscinodiscophytina # SILVA-SSU: Stramenopiles > Diatomea
+Cosmioneidaceae # ITIS: Bacillariophyceae > Naviculales
+Costariaceae # WoRMS: Phaeophyceae > Laminariales
+Craspedomonadales # CLB dataset 316045: Ochrophyta > Craspedophyceae
+Craspedomonadophycidae # not found in ChecklistBank
+Cromulinae # not found in ChecklistBank
+Cruoriaceae # COL: Florideophyceae > Gigartinales
+Crustomastigaceae # COL: Mamiellophyceae > Dolichomastigales
+Cryptomonada # CLB dataset 2022: Chromista > Cryptophyta
+Cryptomonadaceae # ITIS: Cryptophyceae > Cryptomonadales
+Cryptomonadales # ITIS: Cryptophycophyta > Cryptophyceae
+Cryptophyceae # ITIS: Chromista > Cryptophycophyta
+Cryptophyta # WoRMS: Chromista
+Ctenocladaceae # COL: Ulvophyceae > Ulvales
+Cubiculosporaceae # COL: Florideophyceae > Gigartinales
+Cutleriaceae # ITIS: Phaeophyceae > Cutleriales
+Cutleriales # brown algae (Phaeophyceae); ITIS: Phaeophyta > Phaeophyceae
+Cyanidiaceae # COL: Cyanidiophyceae > Cyanidiales
+Cyanidiales # COL: Rhodophyta > Cyanidiophyceae
+Cyanidiophyceae # COL: Plantae > Rhodophyta
+Cyanidiophytina # ITIS: Plantae > Rhodophyta
+Cyathomonadaceae # ITIS: Cryptophyceae > Cryptomonadales
+Cyclophoraceae # ITIS: Bacillariophyceae > Cyclophorales
+Cyclophorales # ITIS: Ochrophyta > Bacillariophyceae
+Cylindrocapsaceae # COL: Chlorophyceae > Sphaeropleales
+Cymatosiraceae # ITIS: Bacillariophyceae > Cymatosirales
+Cymatosirales # ITIS: Ochrophyta > Bacillariophyceae
+Cymbellaceae # ITIS: Bacillariophyceae > Cymbellales
+Cymbellales # ITIS: Ochrophyta > Bacillariophyceae
+Cyrtophoraceae # WoRMS: Dictyochophyceae > Pedinellales
+Cystocloniaceae # COL: Florideophyceae > Gigartinales
+Dangeardinellaceae # COL: Chlorophyta > Chlorophyceae
+Dasyaceae # COL: Florideophyceae > Ceramiales
+Dasycladaceae # COL: Ulvophyceae > Dasycladales
+Dasycladales # COL: Chlorophyta > Ulvophyceae
+Deflandriaceae # WoRMS: Coccolithophyceae > Coccosphaerales
+Delesseriaceae # COL: Florideophyceae > Ceramiales
+Derbesiaceae # COL: Ulvophyceae > Bryopsidales
+Desmarestiaceae # ITIS: Phaeophyceae > Desmarestiales
+Desmarestiales # ITIS: Phaeophyta > Phaeophyceae
+Desmidiaceae # COL: Zygnematophyceae > Desmidiales
+Desmidiales # COL: Charophyta > Zygnematophyceae
+Desmids # not found in ChecklistBank
+Developayellaceae # heterokont ochrophyte alga family; COL: Bigyromonadea > Developayellales
+Developayellales # heterokont ochrophyte algae; COL: Oomycota > Bigyromonadea
+Diadesmidaceae # ITIS: Bacillariophyceae > Naviculales
+Diatomea # SILVA-SSU: Eukaryota > Stramenopiles
+Diatomeae # WoRMS: synonym of Bacillariophyceae (Heterokontophyta)
+Diatomista # Dyntaxa: Chromista > Gyrista
+Diatomophyceae # WoRMS: synonym of Bacillariophyceae (Heterokontophyta)
+Dichotomosiphonaceae # COL: Ulvophyceae > Bryopsidales
+Dicranemataceae # COL: Florideophyceae > Gigartinales
+Dictophycidae # ALF: Gyrista > Phaeophyceae
+Dictyochaceae # ITIS: Chrysophyceae > Dictyochales
+Dictyochales # ITIS: Chrysophyta > Chrysophyceae
+Dictyochloridaceae # COL: Chlorophyceae > Sphaeropleales
+Dictyochophyceae # WoRMS: Chromista > Ochrophyta
+Dictyococcaceae # COL: Chlorophyceae > Sphaeropleales
+Dictyoneidaceae # ITIS: Bacillariophyceae > Dictyoneidales
+Dictyoneidales # ITIS: Ochrophyta > Bacillariophyceae
+Dictyopsidaceae # ALF: Phaeophyceae > Dictyotales
+Dictyosphaeriaceae # ITIS: Chlorophyceae > Chlamydomonadales
+Dictyotaceae # ITIS: Phaeophyceae > Dictyotales
+Dictyotales # ITIS: Phaeophyta > Phaeophyceae
+Dictyotophycidae # WoRMS: Ochrophyta > Phaeophyceae
+Dinobryaceae # ITIS: Chrysophyceae > Ochromonadales
+Dinophyceae # COL: Chromista > Miozoa
+Diploneidaceae # ITIS: Bacillariophyceae > Naviculales
+Discosporangiaceae # WoRMS: Phaeophyceae > Discosporangiales
+Discosporangiales # WoRMS: Ochrophyta > Phaeophyceae
+Discosporangiophycidae # WoRMS: Ochrophyta > Phaeophyceae
+Dixoniellaceae # COL: Rhodellophyceae > Dixoniellales
+Dixoniellales # COL: Rhodophyta > Rhodellophyceae
+Dolichomastigaceae # COL: Mamiellophyceae > Dolichomastigales
+Dolichomastigales # COL: Chlorophyta > Mamiellophyceae
+Dumontiaceae # COL: Florideophyceae > Gigartinales
+Dunaliellaceae # COL: Chlorophyceae > Volvocales
+Durvillaeaceae # WoRMS: Phaeophyceae > Fucales
+Ectocarpaceae # ITIS: Phaeophyceae > Ectocarpales
+Ectocarpales # ITIS: Phaeophyta > Phaeophyceae
+Elakatotrichaceae # COL: Klebsormidiophyceae > Klebsormidiales
+Ellerbeckiophytina # not found in ChecklistBank
+Ellobiophyceae # PR²: Eukaryota > Alveolata
+Endictyaceae # ITIS: Bacillariophyceae > Melosirales
+Endocladiaceae # COL: Florideophyceae > Gigartinales
+Endosphaeraceae # ITIS: Chlorophyceae > Chlamydomonadales
+Entomoneidaceae # ITIS: Bacillariophyceae > Surirellales
+Entopylaceae # ITIS: Bacillariophyceae > Cyclophorales
+Entwisleiaceae # COL: Florideophyceae > Entwisleiales
+Entwisleiales # COL: Rhodophyta > Florideophyceae
+Eremosphaeraceae # ITIS: Trebouxiophyceae > Chlorellales
+Erythropeltidales # ITIS: Rhodophyta > Compsopogonophyceae
+Erythrotrichiaceae # COL: Compsopogonophyceae > Erythropeltales
+Etheliaceae # COL: Florideophyceae > Gigartinales
+Ethmodiscaceae # ITIS: Bacillariophyceae > Ethmodiscales
+Ethmodiscales # ITIS: Ochrophyta > Bacillariophyceae
+Euglenophyceae # COL: Protozoa > Euglenozoa
+Euglenophycidae # COL: Euglenozoa > Euglenophyceae
+Eunotiaceae # ITIS: Bacillariophyceae > Eunotiales
+Eunotiales # ITIS: Ochrophyta > Bacillariophyceae
+Eurhodophytina # COL: Plantae > Rhodophyta
+Eustigmataceae # WoRMS: Eustigmatophyceae > Eustigmatales
+Eustigmatales # WoRMS: Ochrophyta > Eustigmatophyceae
+Eustigmatophyceae # ITIS: Xanthophyta > Xanthophyceae
+Faucheaceae # COL: Florideophyceae > Rhodymeniales
+Fibrocapsa # not found in ChecklistBank
+Fibrocapsaceae # GBIF: Raphidophyceae > Chattonellales
+Florideophyceae # COL: Plantae > Rhodophyta
+Fragilariaceae # ITIS: Bacillariophyceae > Fragilariales
+Fragilariales # ITIS: Ochrophyta > Bacillariophyceae
+Fragilariophycidae # ITIS: Ochrophyta > Bacillariophyceae
+Fryeellaceae # COL: Florideophyceae > Rhodymeniales
+Fucaceae # ITIS: Phaeophyceae > Fucales
+Fucales # ITIS: Phaeophyta > Phaeophyceae
+Fucistia # WoRMS: Chromista > Ochrophyta
+Fucophyceae # NCBI: synonym of Phaeophyceae (Eukaryota)
+Fucophycidae # WoRMS: Ochrophyta > Phaeophyceae
+Furcellariaceae # COL: Florideophyceae > Gigartinales
+Gainiaceae # COL: Florideophyceae > Gigartinales
+Galaxauraceae # COL: Florideophyceae > Nemaliales
+Galdieriaceae # COL: Cyanidiophyceae > Galdieriales
+Gayraliaceae # COL: Ulvophyceae > Ulotrichales
+Gelidiaceae # COL: Florideophyceae > Gelidiales
+Gelidiales # COL: Rhodophyta > Florideophyceae
+Gelidiellaceae # COL: Florideophyceae > Gelidiales
+Geminigeraceae # WoRMS: Cryptophyceae > Pyrenomonadales
+Gephyrocapsaceae # ITIS: Prymnesiophyceae > Isochrysidales
+Gigartinaceae # COL: Florideophyceae > Gigartinales
+Gigartinales # COL: Rhodophyta > Florideophyceae
+Glaucocystaceae # COL: Glaucophyceae > Glaucocystales
+Glaucocystales # COL: Glaucophyta > Glaucophyceae
+Glaucophyta # COL: Eukaryota > Plantae
+Glaucosphaeraceae # COL: Rhodellophyceae > Glaucosphaerales
+Glaucosphaerales # COL: Rhodophyta > Rhodellophyceae
+Gloeobotrydaceae # ITIS: Xanthophyceae > Mischococcales
+Gloeocystaceae # ITIS: Chlorophyceae > Chlamydomonadales
+Gloeodendraceae # ITIS: Chlorophyceae > Chlamydomonadales
+Gloeopodiaceae # WoRMS: Xanthophyceae > Mischococcales
+Gloeotilaceae # ITIS: Ulvophyceae > Ulotrichales
+Gloiosiphoniaceae # COL: Florideophyceae > Gigartinales
+Golenkiniaceae # WoRMS: Chlorophyceae > Chlamydomonadales
+Gomontiaceae # COL: Ulvophyceae > Ulotrichales
+Gomphonemataceae # ITIS: Bacillariophyceae > Cymbellales
+Gonatozygaceae # COL: Zygnematophyceae > Desmidiales
+Goniaceae # COL: Chlorophyceae > Volvocales
+Goniomonadaceae # WoRMS: Goniomonadophyceae > Goniomonadales
+Goniomonadea # GBIF: Chromista > Cryptophyta
+Goniomonadida # IRMNG: Cryptista > Goniomonadea
+Goniotrichaceae # COL: Bangiophyceae > Goniotrichales
+Goniotrichales # COL: Rhodophyta > Bangiophyceae
+Gonyostomum # not found in ChecklistBank
+Gossleriellaceae # ITIS: Bacillariophyceae > Coscinodiscales
+Gracilariaceae # COL: Florideophyceae > Gracilariales
+Gracilariales # COL: Rhodophyta > Florideophyceae
+Grammatophoraceae # IRMNG: Bacillariophyceae > Rhabdonematales
+Granufilaceae # COL: Bangiophyceae > Bangiales
+Haematococcaceae # COL: Chlorophyceae > Volvocales
+Haemeschariaceae # COL: Florideophyceae > Gigartinales
+Halimedaceae # COL: Ulvophyceae > Bryopsidales
+Halopappaceae # WoRMS: Coccolithophyceae > Coccosphaerales
+Halosiphonaceae # WoRMS: Phaeophyceae > Tilopteridales
+Halosphaeraceae # COL: Pyramimonadophyceae > Pyramimonadales
+Halymeniaceae # COL: Florideophyceae > Halymeniales
+Halymeniales # COL: Rhodophyta > Florideophyceae
+Hapalidiaceae # COL: Florideophyceae > Hapalidiales
+Hapalidiales # COL: Rhodophyta > Florideophyceae
+Haptophyta # ITIS: Chromista
+Haptophytina # WoRMS: Chromista > Haptophyta
+Haramonadaceae # GBIF: Raphidophyceae > Chattonellales
+Haramonas # not found in ChecklistBank
+Helicosphaeraceae # WoRMS: Coccolithophyceae > Zygodiscales
+Heliopeltaceae # ITIS: Bacillariophyceae > Coscinodiscales
+Hemiarmida # IRMNG: Cryptista > Goniomonadea
+Hemiarmidae # IRMNG: Goniomonadea > Hemiarmida
+Hemiaulaceae # ITIS: Bacillariophyceae > Hemiaulales
+Hemiaulales # ITIS: Ochrophyta > Bacillariophyceae
+Hemidiscaceae # ITIS: Bacillariophyceae > Coscinodiscales
+Hemipeltaceae # WoRMS: Bacillariophyceae > Coscinodiscales
+Hemiselmidaceae # ITIS: Cryptophyceae > Cryptomonadales
+Heterochrysophycidae # not found in ChecklistBank
+Heterodendraceae # WoRMS: Xanthophyceae > Tribonematales
+Heterogloeaceae # ITIS: Xanthophyceae > Heterogloeales
+Heterogloeales # ITIS: Xanthophyta > Xanthophyceae
+Heterokontae # Dyntaxa: synonym of Xanthophyceae (Gyrista)
+Heterokontophyta # GBIF: synonym of Ochrophyta (Chromista)
+Heteropediaceae # ITIS: Xanthophyceae > Tribonematales
+Heterosigma # not found in ChecklistBank
+Hibberdiaceae # WoRMS: Chrysophyceae > Hibberdiales
+Hibberdiales # WoRMS: Ochrophyta > Chrysophyceae
+Hildebrandiales # ALF: Rhodophyta > Florideophyceae
+Hildenbrandiaceae # COL: Florideophyceae > Hildenbrandiales
+Hildenbrandiales # crustose red algae (Rhodophyta); COL: Rhodophyta > Florideophyceae
+Hilleaceae # ITIS: Cryptophyceae > Cryptomonadales
+Himanthaliaceae # ITIS: Phaeophyceae > Fucales
+Hormosiraceae # WoRMS: Phaeophyceae > Fucales
+Hormotilaceae # COL: Chlorophyceae > Volvocales
+Hyalodiscaceae # ITIS: Bacillariophyceae > Melosirales
+Hydrodictyaceae # COL: Chlorophyceae > Sphaeropleales
+Hydruraceae # ITIS: Chrysophyceae > Chrysocapsales
+Hydrurales # WoRMS: Ochrophyta > Chrysophyceae
+Hymenocladiaceae # COL: Florideophyceae > Rhodymeniales
+Hymenomonadaceae # WoRMS: Coccolithophyceae > Coccolithales
+Hypnomonadaceae # COL: Chlorophyceae > Volvocales
+Hypogyrista # Wikidata: Eukaryota > Ochrophyta
+Ishigeaceae # WoRMS: Phaeophyceae > Ishigeales
+Ishigeales # WoRMS: Ochrophyta > Phaeophyceae
+Ishigeophycidae # WoRMS: Ochrophyta > Phaeophyceae
+Isochrysidaceae # ITIS: Prymnesiophyceae > Isochrysidales
+Isochrysidales # ITIS: Haptophyta > Prymnesiophyceae
+Isochrysidineae # not found in ChecklistBank
+Jaoaceae # ITIS: Ulvophyceae > Ulvales
+Kallymeniaceae # COL: Florideophyceae > Gigartinales
+Khakista # Wikispecies: Ochrophyta
+Klebsormidiaceae # COL: Klebsormidiophyceae > Klebsormidiales
+Klebsormidiales # COL: Charophyta > Klebsormidiophyceae
+Klebsormidiophyceae # COL: Plantae > Charophyta
+Koliellaceae # COL: Trebouxiophyceae > Prasiolales
+Kornmanniaceae # COL: Ulvophyceae > Ulvales
+Laminariaceae # ITIS: Phaeophyceae > Laminariales
+Laminariales # ITIS: Phaeophyta > Phaeophyceae
+Lauderiaceae # ITIS: Bacillariophyceae > Thalassiosirales
+Lemaneaceae # COL: Florideophyceae > Batrachospermales
+Lepidochromonadaceae # WoRMS: Chrysophyceae > Paraphysomonadales
+Leptocylindraceae # ITIS: Bacillariophyceae > Leptocylindrales
+Leptocylindrales # ITIS: Ochrophyta > Bacillariophyceae
+Leptocylindrophyceae # CLB dataset 2014: Chromista > Bacillariophyta
+Leptocylindrophytina # not found in ChecklistBank
+Leptosiraceae # ITIS: Trebouxiophyceae > Chlorellales
+Lessoniaceae # ITIS: Phaeophyceae > Laminariales
+Liagoraceae # COL: Florideophyceae > Nemaliales
+Liagoropsidaceae # COL: Florideophyceae > Nemaliales
+Licmophoraceae # ITIS: Bacillariophyceae > Licmophorales
+Licmophorales # ITIS: Ochrophyta > Bacillariophyceae
+Limnistia # Wikidata: Eukaryota > Ochrophyta
+Lithodermataceae # WoRMS: Phaeophyceae > Sphacelariales
+Lithodesmiaceae # ITIS: Bacillariophyceae > Lithodesmiales
+Lithodesmiales # ITIS: Ochrophyta > Bacillariophyceae
+Loboceae # WoRMS: Eustigmatophyceae > Eustigmatales
+Lomentariaceae # COL: Florideophyceae > Rhodymeniales
+Lyrellaceae # ITIS: Bacillariophyceae > Lyrellales
+Lyrellales # ITIS: Ochrophyta > Bacillariophyceae
+Mallomonadaceae # WoRMS: Chrysophyceae > Synurales
+Mallomonadales # not found in ChecklistBank
+Mamiellaceae # COL: Mamiellophyceae > Mamiellales
+Mamiellales # COL: Chlorophyta > Mamiellophyceae
+Mamiellophyceae # COL: Plantae > Chlorophyta
+Marsupiomonadaceae # COL: Pedinophyceae > Marsupiomonadales
+Marsupiomonadales # COL: Chlorophyta > Pedinophyceae
+Masonophycaceae # WoRMS: Phaeophyceae > Tilopteridales
+Mastogloiaceae # ITIS: Bacillariophyceae > Mastogloiales
+Mastogloiales # ITIS: Ochrophyta > Bacillariophyceae
+Mediophyceae # GBIF: Chromista > Ochrophyta
+Melanophyceae # Wikispecies: synonym of Phaeophyceae (Ochrophyta)
+Melosiraceae # ITIS: Bacillariophyceae > Melosirales
+Melosirales # ITIS: Ochrophyta > Bacillariophyceae
+Melosirophytina # not found in ChecklistBank
+Merotricha # not found in ChecklistBank
+Mesosporaceae # WoRMS: Phaeophyceae > Ectocarpales
+Mesostigmataceae # COL: Mesostigmatophyceae > Mesostigmatales
+Mesostigmatales # COL: Charophyta > Mesostigmatophyceae
+Mesostigmatophyceae # COL: Plantae > Charophyta
+Mesotaeniaceae # COL: Zygnematophyceae > Zygnematales
+Metarhodophytina # COL: Plantae > Rhodophyta
+Micractiniaceae # ITIS: Chlorophyceae > Chlamydomonadales
+Microsporaceae # COL: Chlorophyceae > Sphaeropleales
+Mischococcaceae # ITIS: Xanthophyceae > Mischococcales
+Mischococcales # ITIS: Xanthophyta > Xanthophyceae
+Monodopsidaceae # WoRMS: Eustigmatophyceae > Eustigmatales
+Monomastigaceae # COL: Mamiellophyceae > Monomastigales
+Monomastigales # COL: Chlorophyta > Mamiellophyceae
+Monosigales # not found in ChecklistBank
+Monostromataceae # COL: Ulvophyceae > Ulotrichales
+Mychodeaceae # COL: Florideophyceae > Gigartinales
+Mychodeophyllaceae # COL: Florideophyceae > Gigartinales
+Mychonastaceae # COL: Chlorophyceae > Sphaeropleales
+Myrionemataceae # ITIS: Phaeophyceae > Ectocarpales
+Myxochloridaceae # WoRMS: Xanthophyceae > Rhizochloridales
+Naccariaceae # COL: Florideophyceae > Bonnemaisoniales
+Nautococcaceae # IRMNG: synonym of Chlorococcaceae (Volvocales)
+Naviculaceae # COL: Bacillariophyceae > Naviculales
+Naviculales # COL: Ochrophyta > Bacillariophyceae
+Neidiaceae # ITIS: Bacillariophyceae > Naviculales
+Nemaliales # COL: Rhodophyta > Florideophyceae
+Nemastomataceae # COL: Florideophyceae > Nemastomatales
+Nemastomatales # COL: Rhodophyta > Florideophyceae
+Nemodermataceae # WoRMS: Phaeophyceae > Nemodermatales
+Nemodermatales # WoRMS: Ochrophyta > Phaeophyceae
+Neochloridaceae # COL: Chlorophyceae > Sphaeropleales
+Neonemataceae # ITIS: Xanthophyceae > Tribonematales
+Neoralfsiaceae # WoRMS: Phaeophyceae > Ralfsiales
+Nephroselmidaceae # COL: Nephroselmidophyceae > Nephroselmidales
+Nephroselmidales # COL: Chlorophyta > Nephroselmidophyceae
+Nephroselmidophyceae # COL: Plantae > Chlorophyta
+Noctilucophyceae # iNat: Chromista > Miozoa
+Noelaerhabdaceae # WoRMS: Coccolithophyceae > Isochrysidales
+Notheiaceae # WoRMS: Phaeophyceae > Fucales
+Ochromonadaceae # ITIS: Chrysophyceae > Ochromonadales
+Ochromonadales # ITIS: Chrysophyta > Chrysophyceae
+Ochromonadineae # not found in ChecklistBank
+Ochrophyta # COL: Eukaryota > Chromista
+Ochrophytina # Dyntaxa: Chromista > Gyrista
+Oedogoniaceae # COL: Chlorophyceae > Oedogoniales
+Oedogoniales # COL: Chlorophyta > Chlorophyceae
+Okellyaceae # COL: Ulvophyceae > Cladophorales
+Olisthodiscales # WoRMS: Ochrophyta > Olisthodiscophyceae
+Olisthodiscophyceae # WoRMS: Chromista > Ochrophyta
+Oltmannsia # not found in ChecklistBank
+Oltmannsiellopsidaceae # COL: Ulvophyceae > Oltmannsiellopsidales
+Oltmansiellopsidales # ITIS: Chlorophyta > Ulvophyceae
+Onslowiaceae # WoRMS: Phaeophyceae > Onslowiales
+Onslowiales # WoRMS: Ochrophyta > Phaeophyceae
+Oocystaceae # COL: Trebouxiophyceae > Chlorellales
+Ophiocytiaceae # WoRMS: Xanthophyceae > Mischococcales
+Orthogonacladiaceae # COL: Florideophyceae > Gelidiales
+Orthoseiraceae # ITIS: Bacillariophyceae > Orthoseirales
+Orthoseirales # ITIS: Ochrophyta > Bacillariophyceae
+Ostreobiaceae # COL: Ulvophyceae > Bryopsidales
+Oxyrrhinophyceae # Guiry 2024: Chromista > Dinoflagellata
+Palmariaceae # COL: Florideophyceae > Palmariales
+Palmariales # COL: Rhodophyta > Florideophyceae
+Palmellaceae # COL: Chlorophyceae > Volvocales
+Palmellopsidaceae # COL: Chlorophyceae > Volvocales
+Palmophyllaceae # COL: Palmophyllophyceae > Palmophyllales
+Palmophyllales # COL: Prasinodermatophyta > Palmophyllophyceae
+Paraliaceae # ITIS: Bacillariophyceae > Paraliales
+Paraliales # ITIS: Ochrophyta > Bacillariophyceae
+Paraphysomonadaceae # WoRMS: Chrysophyceae > Chromulinales
+Paraphysomonadida # IRMNG: synonym of Paraphysomonadales (Chrysophyceae)
+Parmales # WoRMS: Ochrophyta > Bolidophyceae
+Pavlovaceae # WoRMS: Pavlovophyceae > Pavlovales
+Pavlovales # WoRMS: Haptophyta > Pavlovophyceae
+Pavlovophyceae # WoRMS: Chromista > Haptophyta
+Pedinellaceae # ITIS: Chrysophyceae > Chromalinales
+Pedinellales # WoRMS: Ochrophyta > Dictyochophyceae
+Pedinellophyceae # WoRMS: synonym of Pedinellales (Dictyochophyceae)
+Pedinomonadaceae # COL: Pedinophyceae > Pedinomonadales
+Pedinomonadales # COL: Chlorophyta > Pedinophyceae
+Pedinophyceae # COL: Plantae > Chlorophyta
+Pelagomonadaceae # WoRMS: Pelagophyceae > Pelagomonadales
+Pelagomonadales # WoRMS: Ochrophyta > Pelagophyceae
+Pelagophyceae # WoRMS: Chromista > Ochrophyta
+Peniaceae # COL: Zygnematophyceae > Desmidiales
+Pentalaminaceae # WoRMS: Bolidophyceae > Parmales
+Peridineae # not found in ChecklistBank
+Peroniaceae # ITIS: Bacillariophyceae > Eunotiales
+Petrocelidaceae # WoRMS: synonym of Phyllophoraceae (Gigartinales)
+Petrodermataceae # IRMNG: Phaeophyceae > Ishigeales
+Petrospongiaceae # WoRMS: Phaeophyceae > Ectocarpales
+Peyssonneliaceae # COL: Florideophyceae > Peyssonneliales
+Peyssonneliales # COL: Rhodophyta > Florideophyceae
+Phacelocarpaceae # COL: Florideophyceae > Gigartinales
+Phacotaceae # COL: Chlorophyceae > Volvocales
+Phaeocystaceae # ITIS: Prymnesiophyceae > Prymnesiales
+Phaeocystales # WoRMS: Haptophyta > Coccolithophyceae
+Phaeodactylaceae # ITIS: Bacillariophyceae > Naviculales
+Phaeophilaceae # COL: Ulvophyceae > Ulvales
+Phaeophyceae # ITIS: Chromista > Phaeophyta
+Phaeophyta # ITIS: Chromista
+Phaeoplacales # WoRMS: Ochrophyta > Chrysophyceae
+Phaeosaccionaceae # ITIS: Chrysophyceae > Phaeothamniales
+Phaeosacciophyceae # WoRMS: Chromista > Ochrophyta
+Phaeosiphoniellaceae # WoRMS: Ochrophyta > Phaeophyceae
+Phaeosiphoniellales # WoRMS: Ochrophyta > Phaeophyceae
+Phaeostrophiaceae # WoRMS: Ochrophyta > Phaeophyceae
+Phaeothamniaceae # ITIS: Chrysophyceae > Phaeothamniales
+Phaeothamniales # ITIS: Chrysophyta > Chrysophyceae
+Phaeothamniophyceae # WoRMS: Chromista > Ochrophyta
+Phyllariaceae # WoRMS: Phaeophyceae > Tilopteridales
+Phyllophoraceae # COL: Florideophyceae > Gigartinales
+Phyllosiphonales # COL: Chlorophyta > Trebouxiophyceae
+Picocystophyceae # COL: Plantae > Chlorophyta
+Picophagaceae # WoRMS: Picophagophyceae > Picophagales
+Picophagales # WoRMS: Ochrophyta > Picophagophyceae
+Picophagea # WoRMS: Chromista > Ochrophyta
+Picophagophyceae # WoRMS: Chromista > Ochrophyta
+Picophyta # Dyntaxa: Plantae
+Picozoa # COL: Eukaryota > Plantae
+Pihiellaceae # COL: Florideophyceae > Pihiellales
+Pihiellales # COL: Rhodophyta > Florideophyceae
+Pilayellaceae # WoRMS: Phaeophyceae > Ectocarpales
+Pinguiochrysidaceae # WoRMS: Pinguiophyceae > Pinguiochrysidales
+Pinguiochrysidales # WoRMS: Ochrophyta > Pinguiophyceae
+Pinguiophyceae # WoRMS: Chromista > Ochrophyta
+Pinguiophycidae # TAXREF: Ochrophyta > Dictyochophyceae
+Pinnulariaceae # ITIS: Bacillariophyceae > Naviculales
+Pithophoraceae # COL: Ulvophyceae > Cladophorales
+Plagiogrammaceae # ITIS: Bacillariophyceae > Triceratiales
+Plagiosporaceae # NCBI: Florideophyceae > Gigartinales
+Plagiotropidaceae # ITIS: Bacillariophyceae > Naviculales
+Platysiphonaceae # WoRMS: Phaeophyceae > Stschapoviales
+Pleurastraceae # COL: Chlorophyceae > Volvocales
+Pleurochloridaceae # ITIS: Xanthophyceae > Mischococcales
+Pleurochrysidaceae # WoRMS: Coccolithophyceae > Coccolithales
+Pleurosigmataceae # ITIS: Bacillariophyceae > Naviculales
+Plocamiaceae # COL: Florideophyceae > Plocamiales
+Plocamiales # COL: Rhodophyta > Florideophyceae
+Polyblepharidaceae # COL: Pyramimonadophyceae > Pyramimonadales
+Polyideaceae # ITIS: Florideophyceae > Gigartinales
+Polyphysaceae # COL: Ulvophyceae > Dasycladales
+Pontosphaeraceae # WoRMS: Coccolithophyceae > Zygodiscales
+Porocharaceae # COL: Charophyceae > Charales
+Porphyridiaceae # COL: Porphyridiophyceae > Porphyridiales
+Porphyridiales # COL: Rhodophyta > Porphyridiophyceae
+Porphyridiophyceae # COL: Plantae > Rhodophyta
+Prasinococcaceae # ITIS: Pyramimonadophyceae > Prasinococcales
+Prasinococcales # ITIS: Chlorophyta > Pyramimonadophyceae
+Prasinodermatophyta # COL: Eukaryota > Plantae
+Prasiolaceae # COL: Trebouxiophyceae > Prasiolales
+Prasiolales # COL: Chlorophyta > Trebouxiophyceae
+Probosciophytina # not found in ChecklistBank
+Proschkiniaceae # ITIS: Bacillariophyceae > Naviculales
+Protoraphidaceae # ITIS: Bacillariophyceae > Protoraphidales
+Protoraphidales # ITIS: Ochrophyta > Bacillariophyceae
+Protosiphonaceae # COL: Chlorophyceae > Volvocales
+Prymnesiaceae # ITIS: Prymnesiophyceae > Prymnesiales
+Prymnesiales # ITIS: Haptophyta > Prymnesiophyceae
+Pseudoanemoniaceae # COL: Florideophyceae > Plocamiales
+Pseudocharaciopsidaceae # WoRMS: Eustigmatophyceae > Eustigmatales
+Pseudochordaceae # WoRMS: Phaeophyceae > Chordales
+Pseudocladophoraceae # COL: Ulvophyceae > Cladophorales
+Pseudocodiaceae # COL: Ulvophyceae > Bryopsidales
+Pseudomuriellaceae # COL: Chlorophyceae > Sphaeropleales
+Pseudoscourfieldiales # COL: Chlorophyta > Pyramimonadophyceae
+Pseudoudoteaceae # COL: Ulvophyceae > Bryopsidales
+Psilosiphonaceae # COL: Florideophyceae > Batrachospermales
+Pterocladiaceae # COL: Florideophyceae > Gelidiales
+Pterocladiophyllaceae # GBIF: Florideophyceae > Gracilariales
+Pterospermataceae # COL: Pyramimonadophyceae > Pyramimonadales
+Pterosphaeridiaceae # COL: Pyramimonadophyceae > Pyramimonadales
+Ptilocladiopsidaceae # COL: Florideophyceae > Gigartinales
+Pycnococcaceae # COL: Pyramimonadophyceae > Pseudoscourfieldiales
+Pylaiellaceae # WoRMS: Phaeophyceae > Ectocarpales
+Pyramimonadaceae # COL: Pyramimonadophyceae > Pyramimonadales
+Pyramimonadales # COL: Chlorophyta > Pyramimonadophyceae
+Pyramimonadophyceae # COL: Plantae > Chlorophyta
+Pyrenomonadaceae # WoRMS: Cryptophyceae > Pyrenomonadales
+Pyrenomonadales # WoRMS: Cryptophyta > Cryptophyceae
+Pyxillaceae # ITIS: Bacillariophyceae > Rhizosoleniales
+Raciborskiellaceae # ITIS: Chlorophyceae > Chlamydomonadales
+Radiococcaceae # COL: Chlorophyceae > Sphaeropleales
+Ralfsiaceae # ITIS: Phaeophyceae > Ectocarpales
+Ralfsiales # WoRMS: Ochrophyta > Phaeophyceae
+Raphidoistia # WoRMS: Chromista > Ochrophyta
+Raphidomonadales # GBIF: Ochrophyta > Raphidophyceae
+Raphidophyceae # WoRMS: Chromista > Ochrophyta
+Raphidophycidae # WoRMS: Ochrophyta > Raphidophyceae
+Rappephyceae # WoRMS: Chromista > Haptophyta
+Resultomonadaceae # COL: Pedinophyceae > Marsupiomonadales
+Reticulosphaeraceae # WoRMS: Coccolithophyceae > Coccolithales
+Rhabdonemataceae # ITIS: Bacillariophyceae > Rhabdonematales
+Rhabdonematales # ITIS: Ochrophyta > Bacillariophyceae
+Rhabdosphaeraceae # WoRMS: Coccolithophyceae > Syracosphaerales
+Rhaphoneidaceae # ITIS: Bacillariophyceae > Rhaphoneidales
+Rhaphoneidales # ITIS: Ochrophyta > Bacillariophyceae
+Rhipiliaceae # COL: Ulvophyceae > Bryopsidales
+Rhizochloridaceae # ITIS: Xanthophyceae > Chloramoebales
+Rhizochloridales # ITIS: Xanthophyta > Xanthophyceae
+Rhizochromulinaceae # WoRMS: Dictyochophyceae > Rhizochromulinales
+Rhizochromulinales # WoRMS: Ochrophyta > Dictyochophyceae
+Rhizochrysidales # ITIS: Chrysophyta > Chrysophyceae
+Rhizogranulochloridaceae # WoRMS: Xanthophyceae > Rhizochloridales
+Rhizophyllidaceae # COL: Florideophyceae > Gigartinales
+Rhizosoleniaceae # ITIS: Bacillariophyceae > Rhizosoleniales
+Rhizosoleniales # ITIS: Ochrophyta > Bacillariophyceae
+Rhizosoleniophytina # not found in ChecklistBank
+Rhizounochloridaceae # WoRMS: Xanthophyceae > Rhizochloridales
+Rhodachlyaceae # COL: Florideophyceae > Rhodachlyales
+Rhodachlyales # COL: Rhodophyta > Florideophyceae
+Rhodellaceae # COL: Rhodellophyceae > Rhodellales
+Rhodellales # COL: Rhodophyta > Rhodellophyceae
+Rhodellophyceae # COL: Plantae > Rhodophyta
+Rhodellophytina # COL: Plantae > Rhodophyta
+Rhodelphidia # COL: Eukaryota > Plantae
+Rhodelphidophyta # Guiry 2024: Plantae
+Rhodochaetaceae # COL: Compsopogonophyceae > Rhodochaetales
+Rhodochaetales # COL: Rhodophyta > Compsopogonophyceae
+Rhodogorgonaceae # COL: Florideophyceae > Rhodogorgonales
+Rhodogorgonales # COL: Rhodophyta > Florideophyceae
+Rhodomelaceae # COL: Florideophyceae > Ceramiales
+Rhodophysemataceae # COL: Florideophyceae > Palmariales
+Rhodophyta # COL: Eukaryota > Plantae
+Rhodothamiellaceae # ALF: Florideophyceae > Palmariales
+Rhodymeniaceae # COL: Florideophyceae > Rhodymeniales
+Rhodymeniales # COL: Rhodophyta > Florideophyceae
+Rhoicospheniaceae # ITIS: Bacillariophyceae > Cymbellales
+Rhopalodiaceae # ITIS: Bacillariophyceae > Rhopalodiales
+Rhopalodiales # ITIS: Ochrophyta > Bacillariophyceae
+Rhopalosolenaceae # COL: Chlorophyta > Trebouxiophyceae
+Rissoellaceae # COL: Florideophyceae > Gigartinales
+Rotundellaceae # COL: Chlorophyceae > Sphaeropleales
+Rufusiaceae # COL: Stylonematophyceae > Rufusiales
+Rufusiales # COL: Rhodophyta > Stylonematophyceae
+Rutilariaceae # ITIS: Bacillariophyceae > Cymatosirales
+Sancinochrysidales # not found in ChecklistBank
+Sarcinochrysidaceae # ITIS: Chrysophyceae > Chrysapiales
+Sarcinochrysidales # WoRMS: Ochrophyta > Pelagophyceae
+Sarcodiaceae # COL: Florideophyceae > Plocamiales
+Sargassaceae # ITIS: Phaeophyceae > Fucales
+Scenedesmaceae # COL: Chlorophyceae > Sphaeropleales
+Schimmelmanniaceae # COL: Florideophyceae > Acrosymphytales
+Schizochlamydaceae # COL: Chlorophyceae > Sphaeropleales
+Schizocladiaceae # WoRMS: Schizocladiophyceae > Schizocladiales
+Schizocladiales # WoRMS: Ochrophyta > Schizocladiophyceae
+Schizocladiophyceae # WoRMS: Chromista > Ochrophyta
+Schizomeridaceae # COL: Chlorophyceae > Chaetophorales
+Schizymeniaceae # COL: Florideophyceae > Nemastomatales
+Schmitziellaceae # ITIS: Florideophyceae > Gigartinales
+Schroederiaceae # COL: Chlorophyceae > Sphaeropleales
+Scinaiaceae # red alga family (Rhodophyta, Nemaliales); COL: Florideophyceae > Nemaliales
+Scolioneidaceae # ITIS: Bacillariophyceae > Naviculales
+Scoliotropidaceae # ITIS: Bacillariophyceae > Naviculales
+Scoresbyellaceae # WoRMS: Phaeophyceae > Dictyotales
+Scotiellocystoidaceae # ITIS: Chlorophyceae > Chlamydomonadales
+Scotinosphaeraceae # COL: Ulvophyceae > Scotinosphaerales
+Scotinosphaerales # COL: Chlorophyta > Ulvophyceae
+Scourfieldiaceae # COL: Pedinophyceae > Scourfieldiales
+Scourfieldiales # COL: Chlorophyta > Pedinophyceae
+Scytosiphonaceae # ITIS: Phaeophyceae > Scytosiphonales
+Scytosiphonales # brown algae (Phaeophyceae); ITIS: Phaeophyta > Phaeophyceae
+Scytothamnaceae # WoRMS: Phaeophyceae > Scytothamnales
+Scytothamnales # WoRMS: Ochrophyta > Phaeophyceae
+Sebdeniaceae # COL: Florideophyceae > Sebdeniales
+Sebdeniales # COL: Rhodophyta > Florideophyceae
+Seirococcaceae # WoRMS: Phaeophyceae > Fucales
+Selenastraceae # COL: Chlorophyceae > Sphaeropleales
+Sellaphoraceae # ITIS: Bacillariophyceae > Naviculales
+Silicoflagellales # not found in ChecklistBank
+Silicoflagellata # GBIF: Ochrophyta > Dictyochophyceae
+Siphonocladaceae # COL: Ulvophyceae > Cladophorales
+Skeletonemaceae # WoRMS: Bacillariophyceae > Thalassiosirales
+Solieriaceae # COL: Florideophyceae > Gigartinales
+Sorastraceae # GBIF: Chlorophyceae > Chlamydomonadales
+Sorocarpaceae # WoRMS: Phaeophyceae > Ectocarpales
+Sphacelariaceae # ITIS: Phaeophyceae > Sphacelariales
+Sphacelariales # ITIS: Phaeophyta > Phaeophyceae
+Sphacelodermaceae # WoRMS: Phaeophyceae > Sphacelariales
+Sphaerococcaceae # COL: Florideophyceae > Gigartinales
+Sphaerocystidaceae # COL: Chlorophyceae > Volvocales
+Sphaerodictyaceae # COL: Chlorophyceae > Volvocales
+Sphaeropleaceae # COL: Chlorophyceae > Sphaeropleales
+Sphaeropleales # COL: Chlorophyta > Chlorophyceae
+Spiromonadaceae # WoRMS: Dinophyceae > Desmomastigales
+Splachnidiaceae # ITIS: Phaeophyceae > Chordariales
+Spondylomoraceae # COL: Chlorophyceae > Volvocales
+Sporochnaceae # ITIS: Phaeophyceae > Sporochnales
+Sporochnales # ITIS: Phaeophyta > Phaeophyceae
+Sporolithaceae # COL: Florideophyceae > Sporolithales
+Sporolithales # COL: Rhodophyta > Florideophyceae
+Stauroneidaceae # ITIS: Bacillariophyceae > Naviculales
+Stephanodiscaceae # ITIS: Bacillariophyceae > Thalassiosirales
+Stephanopyxidaceae # ITIS: Bacillariophyceae > Melosirales
+Stichogloeaceae # ITIS: Chrysophyceae > Chrysosphaerales
+Stichogloeales # not found in ChecklistBank
+Stictocyclaceae # ITIS: Bacillariophyceae > Stictocyclales
+Stictocyclales # ITIS: Ochrophyta > Bacillariophyceae
+Stictodiscaceae # ITIS: Bacillariophyceae > Stictodiscales
+Stictodiscales # ITIS: Ochrophyta > Bacillariophyceae
+Stipitococcaceae # ITIS: Xanthophyceae > Rhizochloridales
+Streptothecaceae # ITIS: Bacillariophyceae > Hemiaulales
+Striatellaceae # ITIS: Bacillariophyceae > Striatellales
+Striatellales # ITIS: Ochrophyta > Bacillariophyceae
+Stschapoviaceae # WoRMS: Phaeophyceae > Tilopteridales
+Stschapoviales # WoRMS: Ochrophyta > Phaeophyceae
+Stylococcaceae # ITIS: Chrysophyceae > Chrysamoebidales
+Stylococcales # not found in ChecklistBank
+Stylonemataceae # COL: Stylonematophyceae > Stylonematales
+Stylonematales # COL: Rhodophyta > Stylonematophyceae
+Stylonematophyceae # COL: Plantae > Rhodophyta
+Stypocaulaceae # ITIS: Phaeophyceae > Sphacelariales
+Surirellaceae # ITIS: Bacillariophyceae > Surirellales
+Surirellales # ITIS: Ochrophyta > Bacillariophyceae
+Swirenkoiamonas # not found in ChecklistBank
+Synchromaceae # WoRMS: Synchromophyceae > Synchromales
+Synchromales # WoRMS: Ochrophyta > Synchromophyceae
+Synchromophyceae # WoRMS: Chromista > Ochrophyta
+Syndiniophyceae # IRMNG: Chromista > Miozoa
+Synuraceae # ITIS: Chrysophyceae > Ochromonadales
+Synurales # WoRMS: Ochrophyta > Chrysophyceae
+Synurophyceae # GBIF: Chromista > Ochrophyta
+Syracosphaeraceae # ITIS: Prymnesiophyceae > Prymnesiales
+Syracosphaerales # WoRMS: Haptophyta > Coccolithophyceae
+Syringodermataceae # WoRMS: Phaeophyceae > Syringodermatales
+Syringodermatales # WoRMS: Ochrophyta > Phaeophyceae
+Tabellariaceae # ITIS: Bacillariophyceae > Tabellariales
+Tabellariales # ITIS: Ochrophyta > Bacillariophyceae
+Tetrabaenaceae # COL: Chlorophyceae > Volvocales
+Tetracystaceae # ITIS: Chlorophyta > Chlorophyceae
+Tetragonidiaceae # WoRMS: Cryptophyceae > Tetragonidiales
+Tetragonidiales # WoRMS: Cryptophyta > Cryptophyceae
+Tetrasporaceae # COL: Chlorophyceae > Volvocales
+Tetrasporales # colonial green algae (Chlorophyta); ITIS: synonym of Chlamydomonadales (Chlorophyceae)
+Thalassionemataceae # ITIS: Bacillariophyceae > Thalassionematales
+Thalassionematales # ITIS: Ochrophyta > Bacillariophyceae
+Thalassiophysaceae # ITIS: Bacillariophyceae > Thalassiophysales
+Thalassiophysales # ITIS: Ochrophyta > Bacillariophyceae
+Thalassiosiraceae # ITIS: Bacillariophyceae > Thalassiosirales
+Thalassiosirales # ITIS: Ochrophyta > Bacillariophyceae
+Thalassiosiropsidaceae # WoRMS: Bacillariophyceae > Thalassiosirales
+Thallochrysidaceae # ITIS: Chrysophyceae > Thallochrysidales
+Thallochrysidales # ITIS: Chrysophyta > Chrysophyceae
+Thoreaceae # COL: Florideophyceae > Thoreales
+Thoreales # COL: Rhodophyta > Florideophyceae
+Tichocarpaceae # COL: Florideophyceae > Gigartinales
+Tilopteridaceae # ITIS: Phaeophyceae > Tilopteridales
+Tilopteridales # ITIS: Phaeophyta > Phaeophyceae
+Toxariaceae # ITIS: Bacillariophyceae > Toxariales
+Toxariales # ITIS: Ochrophyta > Bacillariophyceae
+Trebouxiaceae # COL: Trebouxiophyceae > Trebouxiales
+Trebouxiales # COL: Chlorophyta > Trebouxiophyceae
+Trebouxiophyceae # COL: Plantae > Chlorophyta
+Trentepohliaceae # COL: Ulvophyceae > Trentepohliales
+Trentepohliales # COL: Chlorophyta > Ulvophyceae
+Treubariaceae # COL: Chlorophyceae > Sphaeropleales
+Tribonemataceae # ITIS: Xanthophyceae > Tribonematales
+Tribonematales # ITIS: Xanthophyta > Xanthophyceae
+Triceratiaceae # ITIS: Bacillariophyceae > Triceratiales
+Triceratiales # ITIS: Ochrophyta > Bacillariophyceae
+Triparmaceae # WoRMS: Bolidophyceae > Parmales
+Trypanochloridaceae # WoRMS: Xanthophyceae > Mischococcales
+Tsengiaceae # COL: Florideophyceae > Halymeniales
+Tumidellaceae # COL: Chlorophyceae > Sphaeropleales
+Udoteaceae # COL: Ulvophyceae > Bryopsidales
+Ulotrichaceae # COL: Ulvophyceae > Ulotrichales
+Ulotrichales # COL: Chlorophyta > Ulvophyceae
+Ulvaceae # COL: Ulvophyceae > Ulvales
+Ulvales # COL: Chlorophyta > Ulvophyceae
+Ulvellaceae # COL: Ulvophyceae > Ulvales
+Ulvophyceae # COL: Plantae > Chlorophyta
+Uronemataceae # COL: Chlorophyceae > Chaetophorales
+Vacuolaria # not found in ChecklistBank
+Vacuolariaceae # ITIS: Chloromonadophyceae > Chloromonadales
+Valoniaceae # COL: Ulvophyceae > Cladophorales
+Vaucheriaceae # ITIS: Xanthophyceae > Vaucheriales
+Vaucheriales # ITIS: Xanthophyta > Xanthophyceae
+Viridilobus # not found in ChecklistBank
+Volvocaceae # COL: Chlorophyceae > Volvocales
+Volvocales # volvocine green algae (Chlorophyta); COL: Chlorophyta > Chlorophyceae
+Witrockiellaceae # WoRMS: Ulvophyceae > Cladophorales
+Wrangeliaceae # COL: Florideophyceae > Ceramiales
+Xanthonemataceae # WoRMS: Xanthophyceae > Tribonematales
+Xanthophyceae # ITIS: Chromista > Xanthophyta
+Xiphophoraceae # WoRMS: Phaeophyceae > Fucales
+Yamadaellaceae # COL: Florideophyceae > Nemaliales
+Zeacarpaceae # WoRMS: Phaeophyceae > Nemodermatales
+Zygnemataceae # COL: Zygnematophyceae > Zygnematales
+Zygnematales # COL: Charophyta > Zygnematophyceae
+Zygnematophyceae # COL: Plantae > Charophyta
+Zygodiscales # WoRMS: Haptophyta > Coccolithophyceae

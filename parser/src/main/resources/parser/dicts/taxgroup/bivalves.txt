@@ -1,382 +1,378 @@
-Actinodontida
-Actinodontidae
-Adapedonta
-Aenigmoconchidae
-Amnigeniidae
-Amnigenioidea
-Anatinellidae
-Anodontopsidae
-Anodontopsoidea
-Anomalodesmata
-Anomiidae
-Anomioidea
-Anthracosiidae
-Anthracosioidea
-Antillocaprinidae
-Araripenaia
-Archaeocardiidae
-Archanodontidae
-Archanodontoidea
-Archiheterodonta
-Arcida
-Arcidae
-Arcoida
-Arcoidea
-Arcticidae
-Arcticoidea
-Arenigomyidae
-Astartidae
-Autobranchia
-Babinkoidea
-Baidiostracidae
-Basterotiidae
-Bathyspinulidae
-Beichuaniidae
-Beichuanioidea
-Bivalvia
-Buchotrigoniidae
-Burmesiidae
-Caprinidae
-Caprinoidea
-Caprinulidae
-Caprinuloideidae
-Caprotinidae
-Cardiida
-Cardiidae
-Cardiliidae
-Cardiniidae
-Cardioidea
-Carditida
-Carditidae
-Carditoidea
-Ceratomyidae
-Ceratomyopsidae
-Cetoconchidae
-Chamidae
-Chamoidea
-Clavagellidae
-Clavagelloidea
-Cleidothaeridae
-Clistoconchidae
-Condylocardiidae
-Congeriomorphidae
-Corbiculidae # freshwater clam family (Veneroidea)
-Corbulidae
-Crassatellidae
-Crassatelloidea
-Crassatellopsidae
-Cryptodonta
-Cucullaeidae
-Cuspidariidae
-Cuspidarioidea
-Cyamiidae
-Cyamioidea
-Cycloconchidae
-Cypricardiniidae
-Cyrenidae
-Cyrenoidea
-Cyrenoididae
-Cyrenoidoidea
-Cyrtodontida
-Cyrtodontoida
-Desmodonta
-Diceratidae
-Dicerocardiidae
-Dimyidae
-Dimyoidea
-Donacidae
-Dreissenidae
-Dreissenoidea
-Dysodonta
-Edmondiidae
-Edmondioidea
-Entoliidae
-Eodonidae
-Eoschizodidae
-Epidiceratidae
-Erodonidae
-Etheriidae
-Etherioidea
-Euciroidae
-Euheterodonta
-Euprotobranchia
-Eupteriomorphia
-Ferganoconchida
-Fordillida
-Gaimardiidae
-Gaimardioidea
-Galatheavalvidae
-Galeommatida
-Galeommatidae
-Galeommatoidea
-Gastrochaenida
-Gastrochaenidae
-Gastrochaenoidea
-Glauconomidae
-Glossidae
-Glossoidea
-Glycymerididae
-Grammysiidae
-Grammysioidea
-Groeberellidae
-Gryphaeidae
-Halonymphidae
-Hemidonacidae
-Hemidonacoidea
-Heteroconchia
-Heterodonta
-Hiatellidae
-Hiatelloidea
-Hippopodiumidae
-Hippuritida
-Hippuritidae
-Hippuritidina
-Hippuritoida
-Hyriidae
-Hyrioidea
-Icanotiidae
-Ichthyosarcolitidae
-Imparidentia
-Intihuarellidae
-Iotrigoniidae
-Iridinidae
-Isocyprinidae
-Isodonta
-Isognomonidae
-Jilinoconchidae
-Kalenteridae
-Kalenteroidea
-Kelliellidae
-Kelliidae # small bivalve family (Cyamiida)
-Laevitrigoniidae
-Lametilidae
-Lasaeidae
-Laternulidae
-Liaoningiidae
-Limida
-Limidae
-Limnopsoidea
-Limoida
-Limoidea
-Limopsidae
-Limopsoidea
-Lipanellidae
-Lucinida
-Lucinidae
-Lucinoidea
-Lutetiidae
-Lyonsiellidae
-Lyonsiidae
-Lyrodesmatidae
-Mactridae
-Mactroidea
-Mactromyidae
-Malleidae
-Malletiidae
-Manzanellidae
-Manzanelloidea
-Margaritariidae
-Margaritiferidae
-Mecynodontidae
-Mecynodontoidea
-Megalodontida
-Megalodontidae
-Megatrigoniidae
-Megatrigonioidea
-Mesodesmatidae
-Modiomorpha
-Modiomorphida
-Modiomorphidae
-Modiomorphoidea
-Monopleuridae
-Montacutidae # small bivalve family (Galeommatoidea)
-Montanariidae
-Mycetopodidae
-Myida
-Myidae
-Myochamidae
-Myochamoidea
-Myoida
-Myoidea
-Myophorellidae
-Myophorelloidea
-Myophoricardiidae
-Myophoriidae
-Mytilida
-Mytilidae
-Mytiloida
-Mytiloidea
-Nakamuranaiadidae
-Neilonellidae
-Neoleptonidae
-Neomiodontidae
-Noetiidae
-Nucinellidae
-Nuculanida
-Nuculanidae
-Nuculanoidea
-Nuculida
-Nuculidae
-Nuculoida
-Nuculoidea
-Nyassidae
-Nyassoidea
-Oriocrassatellidae
-Oriocrassatelloidea
-Orthonotoidea
-Ostreida
-Ostreidae
-Ostreoida
-Ostreoidea
-Pachycardiidae
-Pachydomidae
-Pachydonta
-Pachyrismatidae
-Palaeanodontidae
-Palaeanodontoidea
-Palaeocarditidae
-Palaeoheterodonta
-Palaeomutelidae
-Palaeomuteloidea
-Palaeopharidae
-Palaeotaxodonta
-Paleoconcha
-Paleoheterodonta
-Pandoridae
-Pandoroidea
-Paracyclidae
-Parallelodontidae
-Parilimyidae
-Pectinida
-Pectinidae
-Pectinoidea
-Penicillidae
-Periplomatidae
-Pharidae
-Phaseolidae
-Philobryidae
-Pholadidae
-Pholadoidea
-Pholadomyida
-Pholadomyidae
-Pholadomyoida
-Pholadomyoidea
-Pinnidae
-Pinnoidea
-Placunidae
-Plagioptychidae
-Plethocardiidae
-Pleurodesmatidae
-Pleuromyidae
-Pleuromyoidea
-Plicatounionidae
-Plicatulidae
-Plicatuloidea
-Pollicidae
-Polyconitidae
-Poromyidae
-Poromyoidea
-Praecardiida
-Praecardioida
-Prilukiellidae
-Prilukielloidea
-Prionodesmacea
-Propeamussiidae
-Prosocoelidae
-Prosogyrotrigoniidae
-Protobranchia
-Protocuspidariidae
-Psammobiidae
-Pseudarcidae
-Pseudocardinioidea
-Pseudohyriidae
-Pteriida
-Pteriidae
-Pterioida
-Pterioidea
-Pteriomorphia
-Pterocardiidae
-Pteroidea
-Pulvinitidae
-Quenstedtiidae
-Radiolitidae
-Radiolitoidea
-Raetomyidae
-Redoniidae
-Requieniidae
-Requieniidina
-Requienioidea
-Rutitrigoniidae
-Sainschandiidae
-Sancticarolitidae
-Sanguinolitidae
-Sareptidae
-Scaphellinidae
-Schizodidae
-Schizodonta
-Semelidae
-Senderzoniellidae
-Shaanxiconchidae
-Silesunionoidea
-Siliculidae
-Sinodoridae
-Solecurtidae
-Solemyida
-Solemyidae
-Solemyoida
-Solemyoidea
-Solenidae
-Solenoidea
-Sowerbyidae
-Sphaeriida
-Sphaerioidea
-Spheniopsidae
-Spondylidae
-Sportellidae
-Tamesnelloidea
-Tancrediidae
-Taxodonta
-Teleodesmacea
-Tellinidae
-Tellinoidea
-Teredinidae
-Thoraliidae
-Thraciidae
-Thracioidea
-Thyasiridae
-Thyasiroidea
-Tindariidae
-Trapezidae
-Trechmannellidae
-Trigoniida
-Trigoniidae
-Trigoniodea
-Trigonioida
-Trigonioidea
-Trigonioididae
-Trigonioidoidea
-Trigonodoidea
-Tuarangiida
-Tusayanidae
-Ucumariidae
-Ungulinidae
-Ungulinoidea
-Unicardiopsidae
-Unionida
-Unionidae
-Unionoida
-Unionoidea
-Vacunellidae
-Vaugoniidae
-Venerida
-Veneridae
-Veneroida
-Veneroidea
-Veniellidae
-Verticordiidae
-Verticordioidea
-Vesicomyidae
-Wallowaconchidae
-Xylophagaidae
-Yoldiidae
-Zadimerodiidae
+Actinodontida # COL: Mollusca > Bivalvia
+Adapedonta # COL: Mollusca > Bivalvia
+Aenigmoconchidae # COL: Mollusca > Bivalvia
+Amnigeniidae # COL: Bivalvia > Actinodontida
+Amnigenioidea # COL: Bivalvia > Actinodontida
+Anatinellidae # COL: Bivalvia > Venerida
+Anodontopsidae # COL: Bivalvia > Actinodontida
+Anodontopsoidea # COL: Bivalvia > Actinodontida
+Anomalodesmata # COL: Mollusca > Bivalvia
+Anomiidae # COL: Bivalvia > Pectinida
+Anomioidea # COL: Bivalvia > Pectinida
+Anthracosiidae # COL: Bivalvia > Cardiida
+Anthracosioidea # COL: Bivalvia > Cardiida
+Antillocaprinidae # COL: Bivalvia > Hippuritida
+Araripenaia # not found in ChecklistBank
+Archaeocardiidae # COL: Mollusca > Bivalvia
+Archanodontidae # COL: synonym of Amnigeniidae (Actinodontida)
+Archanodontoidea # PBDB: Bivalvia > Unionida
+Archiheterodonta # COL: Mollusca > Bivalvia
+Arcida # COL: Mollusca > Bivalvia
+Arcidae # COL: Bivalvia > Arcida
+Arcoida # ITIS: synonym of Arcida (Bivalvia)
+Arcoidea # COL: Bivalvia > Arcida
+Arcticidae # COL: Bivalvia > Venerida
+Arcticoidea # COL: Bivalvia > Venerida
+Arenigomyidae # COL: Mollusca > Bivalvia
+Astartidae # COL: Mollusca > Bivalvia
+Autobranchia # COL: Mollusca > Bivalvia
+Babinkoidea # COL: Mollusca > Bivalvia
+Baidiostracidae # COL: Bivalvia > Actinodontida
+Basterotiidae # COL: Mollusca > Bivalvia
+Bathyspinulidae # COL: Bivalvia > Nuculanida
+Beichuaniidae # COL: Bivalvia > Megalodontida
+Beichuanioidea # PBDB: Bivalvia > Trigoniida
+Bivalvia # COL: Animalia > Mollusca
+Buchotrigoniidae # COL: Bivalvia > Trigoniida
+Burmesiidae # COL: Mollusca > Bivalvia
+Caprinidae # COL: Bivalvia > Hippuritida
+Caprinoidea # COL: Bivalvia > Hippuritida
+Caprinulidae # COL: Bivalvia > Hippuritida
+Caprinuloideidae # COL: Bivalvia > Hippuritida
+Caprotinidae # COL: Bivalvia > Hippuritida
+Cardiida # COL: Mollusca > Bivalvia
+Cardiidae # COL: Bivalvia > Cardiida
+Cardiliidae # COL: Bivalvia > Venerida
+Cardiniidae # COL: Mollusca > Bivalvia
+Cardioidea # COL: Bivalvia > Cardiida
+Carditida # ITIS: Mollusca > Bivalvia
+Carditidae # ITIS: Bivalvia > Carditida
+Carditoidea # ITIS: synonym of Crassatelloidea (Bivalvia)
+Ceratomyidae # COL: Mollusca > Bivalvia
+Ceratomyopsidae # COL: Bivalvia > Megalodontida
+Cetoconchidae # COL: Mollusca > Bivalvia
+Chamidae # COL: Bivalvia > Venerida
+Chamoidea # COL: Bivalvia > Venerida
+Clavagellidae # COL: Mollusca > Bivalvia
+Clavagelloidea # COL: Mollusca > Bivalvia
+Cleidothaeridae # COL: Mollusca > Bivalvia
+Clistoconchidae # COL: Mollusca > Bivalvia
+Condylocardiidae # COL: Mollusca > Bivalvia
+Congeriomorphidae # COL: Bivalvia > Megalodontida
+Corbiculidae # freshwater clam family (Veneroidea); COL: synonym of Cyrenidae (Venerida)
+Corbulidae # ITIS: Bivalvia > Myida
+Crassatellidae # COL: Mollusca > Bivalvia
+Crassatelloidea # COL: Mollusca > Bivalvia
+Crassatellopsidae # COL: Bivalvia > Actinodontida
+Cryptodonta # COL: Mollusca > Bivalvia
+Cucullaeidae # COL: Bivalvia > Arcida
+Cuspidariidae # COL: Mollusca > Bivalvia
+Cuspidarioidea # COL: Mollusca > Bivalvia
+Cyamiidae # COL: Mollusca > Bivalvia
+Cyamioidea # COL: Mollusca > Bivalvia
+Cyclochlamydidae # COL: Bivalvia > Pectinida
+Cycloconchidae # COL: Bivalvia > Actinodontida
+Cypricardiniidae # COL: Bivalvia > Modiomorphida
+Cyrenidae # COL: Bivalvia > Venerida
+Cyrenoidea # COL: Bivalvia > Venerida
+Cyrenoididae # COL: Bivalvia > Venerida
+Cyrenoidoidea # COL: synonym of Cyrenoidea (Bivalvia)
+Cyrtodontida # COL: Mollusca > Bivalvia
+Cyrtodontoida # not found in ChecklistBank
+Desmodonta # not found in ChecklistBank
+Diceratidae # COL: Bivalvia > Hippuritida
+Dicerocardiidae # COL: Bivalvia > Megalodontida
+Dimyidae # COL: Bivalvia > Pectinida
+Dimyoidea # COL: Bivalvia > Pectinida
+Donacidae # COL: Bivalvia > Cardiida
+Dreissenidae # COL: Mollusca > Bivalvia
+Dreissenoidea # COL: Mollusca > Bivalvia
+Dysodonta # OTT: Bivalvia > Nuculida
+Edmondiidae # COL: Bivalvia > Adapedonta
+Edmondioidea # COL: Bivalvia > Adapedonta
+Entoliidae # COL: Bivalvia > Pectinida
+Eodonidae # COL: Mollusca > Bivalvia
+Eoschizodidae # COL: Bivalvia > Trigoniida
+Epidiceratidae # COL: Bivalvia > Hippuritida
+Erodonidae # COL: synonym of Imparidentia (Mollusca)
+Etheriidae # COL: Mollusca > Bivalvia
+Etherioidea # COL: Mollusca > Bivalvia
+Euciroidae # COL: Mollusca > Bivalvia
+Euheterodonta # COL: Mollusca > Bivalvia
+Euprotobranchia # PBDB: Mollusca > Bivalvia
+Eupteriomorphia # PBDB: synonym of Ostreiformii (Mollusca)
+Ferganoconchida # OTT: Bivalvia > Venerida
+Fordillida # COL: Mollusca > Bivalvia
+Gaimardiidae # COL: Mollusca > Bivalvia
+Gaimardioidea # COL: synonym of Cyamioidea (Mollusca)
+Galatheavalvidae # COL: Mollusca > Bivalvia
+Galeommatida # ITIS: Mollusca > Bivalvia
+Galeommatidae # COL: Mollusca > Bivalvia
+Galeommatoidea # ITIS: Bivalvia > Galeommatida
+Gastrochaenida # COL: Mollusca > Bivalvia
+Gastrochaenidae # COL: Bivalvia > Gastrochaenida
+Gastrochaenoidea # COL: Bivalvia > Gastrochaenida
+Glauconomidae # COL: Bivalvia > Venerida
+Glossidae # COL: Bivalvia > Venerida
+Glossoidea # COL: Bivalvia > Venerida
+Glycymerididae # COL: Bivalvia > Arcida
+Grammysiidae # COL: Mollusca > Bivalvia
+Grammysioidea # COL: Mollusca > Bivalvia
+Groeberellidae # COL: Bivalvia > Trigoniida
+Gryphaeidae # COL: Bivalvia > Ostreida
+Halonymphidae # COL: Mollusca > Bivalvia
+Hemidonacidae # COL: Bivalvia > Venerida
+Hemidonacoidea # COL: Bivalvia > Venerida
+Heteroconchia # COL: Mollusca > Bivalvia
+Heterodonta # COL: Mollusca > Bivalvia
+Hiatellidae # COL: Bivalvia > Adapedonta
+Hiatelloidea # COL: Bivalvia > Adapedonta
+Hippopodiumidae # COL: Bivalvia > Modiomorphida
+Hippuritida # COL: Mollusca > Bivalvia
+Hippuritidae # COL: Bivalvia > Hippuritida
+Hippuritidina # COL: Bivalvia > Hippuritida
+Hippuritoida # IRMNG: synonym of Hippuritida (Bivalvia)
+Hyriidae # COL: Mollusca > Bivalvia
+Hyrioidea # COL: synonym of Palaeoheterodonta (Mollusca)
+Icanotiidae # COL: Bivalvia > Cardiida
+Ichthyosarcolitidae # COL: Bivalvia > Hippuritida
+Imparidentia # COL: Mollusca > Bivalvia
+Intihuarellidae # COL: Bivalvia > Actinodontida
+Iotrigoniidae # COL: Bivalvia > Trigoniida
+Iridinidae # COL: Mollusca > Bivalvia
+Isocyprinidae # COL: Bivalvia > Venerida
+Isodonta # not found in ChecklistBank
+Isognomonidae # COL: Bivalvia > Ostreida
+Jilinoconchidae # COL: synonym of Palaeoheterodonta (Mollusca)
+Kalenteridae # COL: Mollusca > Bivalvia
+Kalenteroidea # COL: Mollusca > Bivalvia
+Kelliellidae # COL: Bivalvia > Venerida
+Kelliidae # small bivalve family (Cyamiida); COL: synonym of Imparidentia (Mollusca)
+Laevitrigoniidae # COL: Bivalvia > Trigoniida
+Lametilidae # COL: Bivalvia > Nuculanida
+Lasaeidae # ITIS: Bivalvia > Galeommatida
+Laternulidae # COL: Mollusca > Bivalvia
+Liaoningiidae # COL: synonym of Sibireconchidae (Bivalvia)
+Limida # COL: Mollusca > Bivalvia
+Limidae # COL: Bivalvia > Limida
+Limnopsoidea # ALF: Bivalvia > Arcida
+Limoida # ITIS: synonym of Limida (Bivalvia)
+Limoidea # COL: Bivalvia > Limida
+Limopsidae # COL: Bivalvia > Arcida
+Limopsoidea # COL: Bivalvia > Arcida
+Lipanellidae # COL: Mollusca > Bivalvia
+Lucinida # COL: Mollusca > Bivalvia
+Lucinidae # COL: Bivalvia > Lucinida
+Lucinoidea # COL: Bivalvia > Lucinida
+Lutetiidae # COL: Bivalvia > Venerida
+Lyonsiellidae # COL: Mollusca > Bivalvia
+Lyonsiidae # COL: Mollusca > Bivalvia
+Lyrodesmatidae # COL: Mollusca > Bivalvia
+Mactridae # COL: Bivalvia > Venerida
+Mactroidea # COL: Bivalvia > Venerida
+Mactromyidae # COL: synonym of Edmondiidae (Adapedonta)
+Malleidae # COL: Bivalvia > Ostreida
+Malletiidae # COL: Bivalvia > Nuculanida
+Manzanellidae # COL: Bivalvia > Manzanellida
+Manzanelloidea # COL: Bivalvia > Manzanellida
+Margaritariidae # COL: Mollusca > Bivalvia
+Margaritiferidae # COL: Mollusca > Bivalvia
+Mecynodontidae # COL: Bivalvia > Megalodontida
+Mecynodontoidea # COL: Bivalvia > Megalodontida
+Megalodontida # COL: Mollusca > Bivalvia
+Megatrigoniidae # COL: Bivalvia > Trigoniida
+Megatrigonioidea # COL: Bivalvia > Trigoniida
+Mesodesmatidae # COL: Bivalvia > Venerida
+Modiomorpha # OTT: Mollusca > Bivalvia
+Modiomorphida # COL: Mollusca > Bivalvia
+Modiomorphidae # COL: Bivalvia > Modiomorphida
+Modiomorphoidea # COL: Bivalvia > Modiomorphida
+Monopleuridae # COL: Bivalvia > Hippuritida
+Montacutidae # small bivalve family (Galeommatoidea); COL: synonym of Montacutinae (Mollusca)
+Montanariidae # COL: Bivalvia > Actinodontida
+Mycetopodidae # COL: Mollusca > Bivalvia
+Myida # ITIS: Mollusca > Bivalvia
+Myidae # COL: Mollusca > Bivalvia
+Myochamidae # COL: Mollusca > Bivalvia
+Myochamoidea # COL: Mollusca > Bivalvia
+Myoida # ITIS: synonym of Myida (Bivalvia)
+Myophorellidae # COL: Bivalvia > Trigoniida
+Myophorelloidea # COL: Bivalvia > Trigoniida
+Myophoricardiidae # COL: Mollusca > Bivalvia
+Myophoriidae # COL: Bivalvia > Trigoniida
+Mytilida # COL: Mollusca > Bivalvia
+Mytilidae # COL: Bivalvia > Mytilida
+Mytiloida # ITIS: synonym of Mytilida (Bivalvia)
+Mytiloidea # COL: Bivalvia > Mytilida
+Nakamuranaiadidae # COL: Bivalvia > Trigoniida
+Neilonellidae # COL: Bivalvia > Nuculanida
+Neoleptonidae # COL: Bivalvia > Venerida
+Neomiodontidae # COL: Mollusca > Bivalvia
+Noetiidae # COL: Bivalvia > Arcida
+Nucinellidae # COL: Bivalvia > Manzanellida
+Nuculanida # COL: Mollusca > Bivalvia
+Nuculanidae # COL: Bivalvia > Nuculanida
+Nuculanoidea # COL: Bivalvia > Nuculanida
+Nuculida # COL: Mollusca > Bivalvia
+Nuculidae # COL: Bivalvia > Nuculida
+Nuculoida # ITIS: synonym of Nuculida (Bivalvia)
+Nuculoidea # COL: Bivalvia > Nuculida
+Nyassidae # COL: Bivalvia > Actinodontida
+Nyassoidea # COL: Bivalvia > Actinodontida
+Oriocrassatellidae # COL: Bivalvia > Actinodontida
+Oriocrassatelloidea # COL: Bivalvia > Actinodontida
+Orthonotoidea # COL: Mollusca > Bivalvia
+Ostreida # COL: Mollusca > Bivalvia
+Ostreidae # COL: Bivalvia > Ostreida
+Ostreoida # ITIS: synonym of Ostreida (Bivalvia)
+Ostreoidea # COL: Bivalvia > Ostreida
+Pachycardiidae # COL: synonym of Trigonodidae (Trigoniida)
+Pachydomidae # COL: Bivalvia > Adapedonta
+Pachydonta # not found in ChecklistBank
+Pachyrismatidae # COL: Bivalvia > Megalodontida
+Palaeanodontidae # COL: synonym of Palaeomutelidae (Actinodontida)
+Palaeanodontoidea # COL: synonym of Palaeomuteloidea (Bivalvia)
+Palaeocarditidae # COL: synonym of Palaeocarditinae (Mollusca)
+Palaeoheterodonta # COL: Mollusca > Bivalvia
+Palaeomutelidae # COL: Bivalvia > Actinodontida
+Palaeomuteloidea # COL: Bivalvia > Actinodontida
+Palaeopharidae # COL: Bivalvia > Modiomorphida
+Palaeotaxodonta # COL: synonym of Nuculida (Bivalvia)
+Paleoconcha # not found in ChecklistBank
+Paleoheterodonta # COL: synonym of Palaeoheterodonta (Mollusca)
+Pandoridae # COL: Mollusca > Bivalvia
+Pandoroidea # COL: Mollusca > Bivalvia
+Paracyclidae # COL: Bivalvia > Lucinida
+Parallelodontidae # COL: Bivalvia > Arcida
+Parilimyidae # COL: Mollusca > Bivalvia
+Pectinida # COL: Mollusca > Bivalvia
+Pectinidae # COL: Bivalvia > Pectinida
+Pectinoidea # COL: Bivalvia > Pectinida
+Penicillidae # COL: Mollusca > Bivalvia
+Periplomatidae # COL: Mollusca > Bivalvia
+Pharidae # COL: Bivalvia > Adapedonta
+Phaseolidae # COL: Bivalvia > Nuculanida
+Philobryidae # COL: Bivalvia > Arcida
+Pholadidae # COL: Mollusca > Bivalvia
+Pholadoidea # COL: Mollusca > Bivalvia
+Pholadomyida # COL: synonym of Anomalodesmata (Mollusca)
+Pholadomyidae # COL: Mollusca > Bivalvia
+Pholadomyoida # ITIS: synonym of Pholadomyida (Bivalvia)
+Pholadomyoidea # COL: Mollusca > Bivalvia
+Pinnidae # COL: Bivalvia > Ostreida
+Pinnoidea # COL: Bivalvia > Ostreida
+Placunidae # COL: Bivalvia > Pectinida
+Plagioptychidae # COL: Bivalvia > Hippuritida
+Plethocardiidae # COL: Bivalvia > Megalodontida
+Pleurodesmatidae # COL: Mollusca > Bivalvia
+Pleuromyidae # COL: Mollusca > Bivalvia
+Pleuromyoidea # COL: Mollusca > Bivalvia
+Plicatounionidae # COL: Bivalvia > Trigoniida
+Plicatulidae # COL: Bivalvia > Pectinida
+Plicatuloidea # COL: Bivalvia > Pectinida
+Pollicidae # COL: Bivalvia > Venerida
+Polyconitidae # COL: Bivalvia > Hippuritida
+Poromyidae # COL: Mollusca > Bivalvia
+Poromyoidea # COL: Mollusca > Bivalvia
+Praecardiida # COL: Mollusca > Bivalvia
+Praecardioida # COL: synonym of Praecardiida (Bivalvia)
+Prilukiellidae # COL: Bivalvia > Venerida
+Prilukielloidea # COL: Bivalvia > Venerida
+Prionodesmacea # PBDB: Mollusca > Bivalvia
+Propeamussiidae # COL: Bivalvia > Pectinida
+Prosocoelidae # COL: Bivalvia > Megalodontida
+Prosogyrotrigoniidae # COL: Bivalvia > Trigoniida
+Protobranchia # COL: Mollusca > Bivalvia
+Protocuspidariidae # COL: Mollusca > Bivalvia
+Psammobiidae # COL: Bivalvia > Cardiida
+Pseudarcidae # COL: Mollusca > Bivalvia
+Pseudocardinioidea # COL: Bivalvia > Trigoniida
+Pseudohyriidae # COL: Bivalvia > Trigoniida
+Pteriida # COL: synonym of Ostreida (Bivalvia)
+Pteriidae # COL: Bivalvia > Ostreida
+Pterioida # ITIS: synonym of Pteriida (Bivalvia)
+Pterioidea # COL: Bivalvia > Ostreida
+Pteriomorphia # COL: Mollusca > Bivalvia
+Pterocardiidae # COL: Bivalvia > Cardiida
+Pteroidea # ALF: Bivalvia > Pteriida
+Pulvinitidae # COL: Bivalvia > Ostreida
+Quenstedtiidae # COL: Bivalvia > Cardiida
+Radiolitidae # COL: Bivalvia > Hippuritida
+Radiolitoidea # COL: Bivalvia > Hippuritida
+Raetomyidae # COL: Mollusca > Bivalvia
+Redoniidae # COL: Bivalvia > Actinodontida
+Requieniidae # COL: Bivalvia > Hippuritida
+Requieniidina # COL: Bivalvia > Hippuritida
+Requienioidea # COL: Bivalvia > Hippuritida
+Rutitrigoniidae # COL: Bivalvia > Trigoniida
+Sainschandiidae # COL: synonym of Pseudohyriidae (Trigoniida)
+Sancticarolitidae # COL: Mollusca > Bivalvia
+Sanguinolitidae # COL: Mollusca > Bivalvia
+Sareptidae # COL: Bivalvia > Nuculanida
+Scaphellinidae # COL: Bivalvia > Trigoniida
+Schizodidae # COL: Bivalvia > Trigoniida
+Schizodonta # PBDB: Bivalvia > Prionodesmacea
+Semelidae # COL: Bivalvia > Cardiida
+Senderzoniellidae # COL: Bivalvia > Venerida
+Shaanxiconchidae # COL: Bivalvia > Cardiida
+Silesunionoidea # COL: Mollusca > Bivalvia
+Siliculidae # COL: Bivalvia > Nuculanida
+Sinodoridae # COL: synonym of Sinodorinae (Trigoniida)
+Solecurtidae # COL: Bivalvia > Cardiida
+Solemyida # COL: Mollusca > Bivalvia
+Solemyidae # COL: Bivalvia > Solemyida
+Solemyoida # ITIS: synonym of Solemyida (Bivalvia)
+Solemyoidea # COL: Bivalvia > Solemyida
+Solenidae # COL: Bivalvia > Adapedonta
+Solenoidea # COL: Bivalvia > Adapedonta
+Sowerbyidae # COL: Bivalvia > Cardiida
+Sphaeriida # ITIS: Mollusca > Bivalvia
+Spheniopsidae # COL: Mollusca > Bivalvia
+Spondylidae # COL: Bivalvia > Pectinida
+Sportellidae # COL: Mollusca > Bivalvia
+Tamesnelloidea # COL: Mollusca > Bivalvia
+Tancrediidae # COL: Bivalvia > Cardiida
+Taxodonta # PBDB: Bivalvia > Prionodesmacea
+Teleodesmacea # PBDB: Mollusca > Bivalvia
+Tellinidae # COL: Bivalvia > Cardiida
+Tellinoidea # COL: Bivalvia > Cardiida
+Teredinidae # COL: Mollusca > Bivalvia
+Thoraliidae # COL: Mollusca > Bivalvia
+Thraciidae # COL: Mollusca > Bivalvia
+Thracioidea # COL: Mollusca > Bivalvia
+Thyasiridae # COL: Bivalvia > Lucinida
+Thyasiroidea # COL: Bivalvia > Lucinida
+Tindariidae # COL: Bivalvia > Nuculanida
+Trapezidae # COL: Bivalvia > Venerida
+Trechmannellidae # COL: Bivalvia > Hippuritida
+Trigoniida # COL: Mollusca > Bivalvia
+Trigoniidae # COL: Bivalvia > Trigoniida
+Trigoniodea # ALF: Bivalvia > Trigoniida
+Trigonioida # ITIS: synonym of Trigoniida (Bivalvia)
+Trigonioidea # COL: Bivalvia > Trigoniida
+Trigonioididae # COL: Bivalvia > Trigoniida
+Trigonioidoidea # COL: Bivalvia > Trigoniida
+Trigonodoidea # COL: Bivalvia > Trigoniida
+Tuarangiida # IRMNG: Mollusca > Bivalvia
+Tusayanidae # COL: Bivalvia > Modiomorphida
+Ucumariidae # COL: Mollusca > Bivalvia
+Ungulinidae # COL: Bivalvia > Venerida
+Ungulinoidea # COL: Bivalvia > Venerida
+Unicardiopsidae # COL: Bivalvia > Cardiida
+Unionida # ITIS: Mollusca > Bivalvia
+Unionidae # ITIS: Bivalvia > Unionida
+Unionoida # ITIS: synonym of Unionida (Bivalvia)
+Unionoidea # ITIS: Bivalvia > Unionida
+Vacunellidae # COL: Mollusca > Bivalvia
+Vaugoniidae # COL: Bivalvia > Trigoniida
+Venerida # COL: Mollusca > Bivalvia
+Veneridae # COL: Bivalvia > Venerida
+Veneroida # ITIS: synonym of Venerida (Bivalvia)
+Veneroidea # COL: Bivalvia > Venerida
+Veniellidae # COL: Bivalvia > Venerida
+Verticordiidae # COL: Mollusca > Bivalvia
+Verticordioidea # COL: Mollusca > Bivalvia
+Vesicomyidae # COL: Bivalvia > Venerida
+Wallowaconchidae # COL: Bivalvia > Megalodontida
+Yoldiidae # COL: Bivalvia > Nuculanida
+Zadimerodiidae # COL: Bivalvia > Actinodontida

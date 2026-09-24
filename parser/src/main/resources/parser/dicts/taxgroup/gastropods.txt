@@ -1,676 +1,676 @@
-Abyssochrysidae
-Abyssochrysoidea
-Acavidae
-Achatinellidae
-Achatinidae
-Achatinina
-Achatinoidea
-Aciculidae
-Acmaeidae
-Acochlidiidae
-Acochlidimorpha
-Acochlidioidea
-Acroloxidae
-Acteonidae
-Acteonoidea
-Actinocyclidae
-Addisoniidae
-Aegiridae
-Aeolidiidae
-Aeolidioidea
-Agardhiellidae
-Aglajidae
-Agriolimacidae
-Aillyiidae
-Aitengidae
-Akeridae
-Akeroidea
-Akiodorididae
-Alacuppidae
-Amastridae
-Amathinidae
-Amnicolidae
-Amphibolidae
-Amphiboloidea
-Amphibulimidae
-Ampullariidae
-Ampullarioidea
-Ampullinidae
-Anabathridae
-Anadenidae
-Anaspidea # sea hares (Opisthobranchia)
-Anatomidae
-Ancillariidae
-Angariidae
-Annulariidae
-Aplustridae
-Aplysiida
-Aplysiidae
-Aplysioidea
-Aporrhaidae
-Architaenioglossa # freshwater and land snails (Caenogastropoda)
-Architectonicidae
-Architectonicoidea
-Areneidae
-Argnidae
-Ariolimacidae
-Arionidae
-Arionoidea
-Arionoidei
-Ariophantidae
-Arminidae
-Arminoidea
-Asperspinidae
-Assimineidae
-Athoracophoridae
-Athoracophoroidea
-Atlantidae
-Azecidae
-Babakinidae
-Babyloniidae
-Barleeiidae
-Basommatophora # freshwater pulmonate snails
-Bathydorididae
-Bathydoridoidea
-Bathydoridoidei
-Bathyhedylidae
-Bathyphytophilidae
-Bathysciadiidae
-Batillariidae
-Bellolividae
-Belomitridae
-Benthobiidae
-Binneyidae
-Bithyniidae
-Boettgerillidae
-Bornellidae
-Borsoniidae
-Bothriembryontidae
-Bouchetispiridae
-Bradybaenidae # land snail family (Stylommatophora)
-Buccinidae
-Buccinoidea
-Bulimulidae
-Bullidae
-Bulloidea
-Burnupiidae
-Bursidae
-Bythinellidae
-Cadlinidae
-Caecidae
-Caenogastropoda
-Calliostomatidae
-Calliotropidae
-Calmidae
-Calopiidae
-Calycidorididae
-Calyptraeidae
-Calyptraeoidea
-Camaenidae
-Campanilidae
-Campaniloidea
-Canariellidae
-Cancellariidae
-Capulidae
-Capuloidea
-Carinariidae
-Caryodidae
-Cassidae
-Cataegidae
-Cavoliniidae
-Cavolinioidea
-Caymanabyssiidae
-Cephalaspidea
-Cerastidae
-Cerionidae
-Cerithiidae
-Cerithioidea
-Cerithiopsidae
-Charitodoronidae
-Charoniidae
-Charopidae
-Chilinidae
-Chilinoidea
-Chondrinidae
-Choristellidae
-Chromodorididae
-Chromodoridoidea
-Chronidae
-Cimidae
-Cimoidea
-Cingulopsidae
-Cingulopsoidea
-Cladobranchia
-Clathurellidae
-Clausiliidae
-Clausilioidea
-Clausilioidei
-Clavatoridae
-Clavatulidae
-Clenchiellidae
-Clionoidea
-Cliopsidae
-Cocculinellidae
-Cocculinida
-Cocculinidae
-Cocculinoidea
-Cochlespiridae
-Cochlicopidae
-Cochliopidae
-Coelociontidae
-Coelociontoidea
-Colinatydidae
-Colloniidae
-Colpodaspididae
-Colubrariidae
-Columbariidae
-Columbellidae
-Conidae
-Conoidea
-Conorbidae
-Conradiidae
-Corambidae
-Corillidae
-Cornirostridae
-Costasiellidae
-Costellariidae
-Craspedopomatidae
-Creseidae
-Curnonidae
-Cuthonellidae
-Cuthonidae
-Cycloneritida
-Cyclophoridae
-Cyclophoroidea
-Cylichnidae
-Cylichnoidea
-Cylindrobullidae
-Cymatiidae
-Cymbuliidae
-Cymbulioidea
-Cypraeidae
-Cypraeoidea
-Cystiscidae
-Cystopeltidae
-Dendrodorididae
-Dendronotidae
-Dendronotoidea
-Desmopteridae
-Dialidae
-Diaphanidae
-Diapheridae
-Diastomatidae
-Diplommatinidae
-Dironidae
-Discodorididae
-Dorcasiidae
-Dorididae
-Doridina
-Doridoidea
-Doridoidei
-Doridomorphidae
-Doridoxidae
-Doridoxoidea
-Dotidae
-Draparnaudiidae
-Drilliidae
-Dyakiidae
-Eatoniellidae
-Echinichidae
-Elachisinidae
-Ellobiida
-Ellobiidae
-Ellobioidea
-Elonidae
-Emblandidae
-Embletoniidae
-Emmericiidae
-Endodontidae
-Enidae
-Eoacmaeidae
-Eoacmaeoidea
-Eoscaphandridae
-Epigridae
-Epirobiidae
-Epitoniidae
-Epitonioidea
-Eratoidae
-Eubranchidae
-Eucalodiidae
-Euconulidae
-Eucyclidae
-Eudaroniidae
-Eulimidae
-Eupulmonata
-Euthecosomata
-Euthyneura
-Facelinidae
-Falsicingulidae
-Fasciolariidae
-Fauxulidae
-Ferrussaciidae
-Ferussaciidae # land snail family (Stylommatophora)
-Ficidae
-Ficoidea
-Fionidae
-Fionoidea
-Fissurellidae
-Fissurelloidea
-Flabellinidae
-Flabellinoidea
-Gastrocoptidae
-Gastrodontidae
-Gastrodontoidea
-Gastropoda
-Gastropteridae
-Geomitridae
-Glacidorbidae
-Glacidorboidea
-Glaucidae
-Globocornidae
-Goniaeolididae
-Goniodorididae
-Gymnodorididae
-Gymnosomata
-Haliotidae
-Haliotoidea
-Haloceratidae
-Haminoeidae
-Haminoeoidea
-Hancockiidae
-Haplotrematidae
-Haplotrematoidea
-Harpidae
-Hedylopsidae
-Helicarionidae
-Helicarionoidea
-Helicidae
-Helicina
-Helicinidae
-Helicinoidea
-Helicodiscidae
-Helicodontidae
-Helicoidea
-Helicoidei
-Helicostoidae
-Hemisinidae
-Hermaeidae
-Heroidae
-Heterobranchia
-Hexabranchidae
-Hipponicidae
-Hipponicoidea
-Holospiridae
-Horaiclavidae
-Hyalogyrinidae
-Hydrobiidae
-Hydrocenidae
-Hydrocenoidea
-Hydrococcidae
-Hydromylidae
-Hydromyloidea
-Hygromiidae
-Hygrophila
-Ilbiidae
-Iravadiidae
-Jenseneriidae
-Juliidae
-Labyrinthidae
-Laginiopsidae
-Laonidae
-Larocheidae
-Latiidae
-Latrogastropoda
-Laubierinidae
-Lauriidae
-Lemindidae
-Lepetellida
-Lepetellidae
-Lepetelloidea
-Lepetidae
-Lepetodrilidae
-Lepetodriloidea
-Limacidae
-Limacinidae
-Limacinoidea
-Limacoidea
-Limacoidei
-Limapontiidae
-Liotiidae
-Lironobidae
-Lithoglyphidae
-Litiopidae
-Littorinidae
-Littorinimorpha # periwinkles and relatives (Caenogastropoda)
-Littorinoidea
-Lomanotidae
-Lottiidae
-Lottioidea
-Lymnaeidae
-Lymnaeoidea
-Lyocyclidae
-Macrocyclidae
-Madrellidae
-Maizanidae
-Mandeliidae
-Mangeliidae
-Maningrididae
-Margaritidae
-Marginellidae
-Mathildidae
-Mathildoidea
-Megalomastomatidae
-Megaspiridae
-Megomphicidae
-Melanodrymiidae
-Melanopsidae
-Melongenidae
-Micractaeonidae
-Milacidae
-Mitridae
-Mitroidea
-Mitromorphidae
-Mnestiidae
-Modulidae
-Moitessieriidae
-Murchisonellidae
-Murchisonelloidea
-Muricidae
-Muricoidea
-Nacellidae
-Nassariidae
-Naticidae
-Naticoidea
-Neocyclotidae
-Neogastropoda
-Neolepetopsidae
-Neomphalida
-Neomphalidae
-Neomphaliones
-Neomphaloidea
-Neotaenioglossa # large caenogastropod order (cowries, periwinkles etc.)
-Neritidae
-Neritiliidae
-Neritimorpha
-Neritoidea
-Neritopsidae
-Neritopsoidea
-Newnesiidae
-Newnesioidea
-Newtoniellidae
-Notaeolidiidae
-Notobranchaeidae
-Notodiaphanidae
-Nudibranchia
-Odontocycladidae
-Odontostomidae
-Okadaiidae
-Oleacinidae
-Oleacinoidea
-Oleacinoidei
-Olividae
-Olivoidea
-Omalogyridae
-Omalogyroidea
-Onchidiidae
-Onchidioidea
-Onchidorididae
-Onchidoridoidea
-Oopeltidae
-Orbitestellidae
-Orbitestelloidea
-Orculidae
-Oreohelicidae
-Orthalicidae
-Orthalicoidea
-Orthalicoidei
-Osteopeltidae
-Otinidae
-Ovulidae
-Oxychilidae
-Oxynoidae
-Oxynooidea
-Pachychilidae
-Pagodulinidae
-Paludomidae
-Papillodermatidae
-Papillodermatoidea
-Parhedylidae
-Parhedyloidea
-Parmacellidae
-Parmacelloidea
-Partulidae
-Patellida
-Patellidae
-Patellogastropoda
-Patelloidea
-Pectinodontidae
-Peltospiridae
-Pendromidae
-Peraclidae
-Phasianellidae
-Phenacolepadidae
-Philinidae
-Philinoglossidae
-Philinoidea
-Philinorbidae
-Philomycidae
-Phyllidiidae
-Phyllidioidea
-Phylliroidae
-Physidae
-Pickworthiidae
-Pinufiidae
-Pisaniidae
-Piseinotecidae
-Plakobranchidae
-Plakobranchoidea
-Planaxidae
-Planorbidae
-Platyhedylidae
-Platyhedyloidea
-Plectopylidae
-Plectopyloidea
-Plesiotrochidae
-Pleurobranchaeidae
-Pleurobranchida
-Pleurobranchidae
-Pleurobranchoidea
-Pleuroceridae
-Pleurodiscidae
-Pleurodontidae
-Pleurolidiidae
-Pleurotomariida
-Pleurotomariidae
-Pleurotomarioidea
-Pliopholygidae
-Pneumodermatidae
-Polyceridae
-Polyceroidea
-Polygyridae
-Pomatiasidae # land snail family (Caenogastropoda)
-Pomatiidae
-Pomatiopsidae
-Potamididae
-Pristilomatidae
-Proctonotidae
-Proctonotoidea
-Proserpinellidae
-Proserpinidae
-Provannidae
-Pseudococculinidae
-Pseudolividae
-Pseudomelatomidae
-Pseudothecosomata
-Pseudovermidae
-Pseudunelidae
-Pteropoda
-Pterotracheidae
-Pterotracheoidea
-Ptychatractidae
-Pulmonata # pulmonate gastropods (land snails, slugs)
-Punctidae
-Punctoidea
-Pupillidae
-Pupilloidea
-Pupilloidei
-Pupinidae
-Pylopulmonata
-Pyramidellidae
-Pyramidelloidea
-Pyramidulidae
-Pyramimitridae
-Pyropeltidae
-Quijotidae
-Ranellidae
-Raphitomidae
-Rastodentidae
-Rathouisiidae
-Retusidae
-Rhizoridae
-Rhodopidae
-Rhodopoidea
-Rhytididae
-Rhytidoidea
-Rhytidoidei
-Ringiculida
-Ringiculidae
-Ringiculoidea
-Rissoellidae
-Rissoelloidea
-Rissoidae
-Rissoinidae
-Rissooidea
-Rostellariidae
-Runcinida
-Runcinidae
-Runcinoidea
-Sacoglossa
-Sagdidae
-Sagdoidea
-Scaliolidae
-Scaphandridae
-Scissurellidae
-Scissurelloidea
-Scolodontidae
-Scolodontina
-Scolodontoidea
-Sculptariidae
-Scyllaeidae
-Seguenziida
-Seguenziidae
-Seguenzioidea
-Semisulcospiridae
-Seraphidae
-Siliquariidae
-Simpulopsidae
-Siphonariida
-Siphonariidae
-Siphonarimorpha
-Siphonarioidea
-Skeneidae
-Skeneopsidae
-Solariellidae
-Solaropsidae
-Spelaeoconchidae
-Spelaeodiscidae
-Sphincterochilidae
-Spiraxidae
-Spirostyliferinidae
-Staffordiidae
-Stenothyridae
-Strepsiduridae
-Streptaxidae
-Streptaxoidea
-Strictispiridae
-Strobilopsidae
-Strombidae
-Stromboidea
-Strophocheilidae
-Struthiolariidae
-Stylommatophora
-Subulinidae # land snail family (Stylommatophora)
-Succineidae
-Succineoidea
-Succineoidei
-Sutilizonidae
-Systellommatophora
-Tantulidae
-Tateidae
-Tegulidae
-Terebridae
-Tergipedidae
-Testacellidae
-Testacelloidea
-Tethydidae
-Thalassocyonidae
-Thiaridae
-Thyrophorellidae
-Thysanophoridae
-Tjaernoeiidae
-Tomichiidae
-Tonnidae
-Tonnoidea
-Tornatinidae
-Tornidae
-Trichodiscinidae
-Trigonochlamydidae
-Trimusculidae
-Trinchesiidae
-Triphoridae
-Triphoroidea
-Trissexodontidae
-Tritoniidae
-Tritonioidea
-Triviidae
-Trochaclididae
-Trochida
-Trochidae
-Trochoidea
-Trochomorphidae
-Trochomorphoidea
-Truncatellidae
-Truncatellinidae
-Truncatelloidea
-Turbinellidae
-Turbinelloidea
-Turbinidae
-Turridae
-Turritellidae
-Tylodinidae
-Umbraculida
-Umbraculidae
-Umbraculoidea
-Unidentiidae
-Urocoptidae
-Urocoptoidea
-Urocyclidae
-Valloniidae
-Valvatidae
-Valvatoidea
-Vanikoridae
-Vanikoroidea
-Velutinidae
-Vermetidae
-Vermetoidea
-Veronicellidae
-Veronicelloidea
-Vertiginidae
-Vetigastropoda
-Vitrinellidae
-Vitrinidae
-Viviparidae
-Viviparoidea
-Volutidae
-Volutoidea
-Volutomitridae
-Volvatellidae
-Xanthonychidae
-Xenophoridae
-Xenophoroidea
-Xylodisculidae
-Zachrysiidae
-Zebinidae
-Zerotulidae
-Zonitidae
-Zonitoidea
+Abyssochrysidae # COL: Mollusca > Gastropoda
+Abyssochrysoidea # COL: Mollusca > Gastropoda
+Acavidae # COL: Mollusca > Gastropoda
+Achatinellidae # ITIS: Gastropoda > Helicida
+Achatinidae # COL: Mollusca > Gastropoda
+Achatinina # ITIS: Gastropoda > Helicida
+Achatinoidea # COL: Mollusca > Gastropoda
+Aciculidae # COL: Gastropoda > Architaenioglossa
+Acmaeidae # COL: Gastropoda > Nacellida
+Acochlidiidae # COL: Mollusca > Gastropoda
+Acochlidimorpha # PBDB: Gastropoda > Heterostropha
+Acochlidioidea # COL: Mollusca > Gastropoda
+Acroloxidae # COL: Mollusca > Gastropoda
+Acteonidae # COL: Mollusca > Gastropoda
+Acteonoidea # COL: Mollusca > Gastropoda
+Actinocyclidae # COL: Mollusca > Gastropoda
+Addisoniidae # COL: Gastropoda > Lepetellida
+Aegiridae # COL: Mollusca > Gastropoda
+Aeolidiidae # COL: Gastropoda > Nudibranchia
+Aeolidioidea # COL: Gastropoda > Nudibranchia
+Agardhiellidae # COL: Mollusca > Gastropoda
+Aglajidae # COL: Mollusca > Gastropoda
+Agriolimacidae # COL: Mollusca > Gastropoda
+Aillyiidae # ALF: Gastropoda > Stylommatophora
+Aitengidae # COL: Mollusca > Gastropoda
+Akeridae # COL: Gastropoda > Aplysiida
+Akeroidea # COL: Gastropoda > Aplysiida
+Akiodorididae # COL: Mollusca > Gastropoda
+Alacuppidae # COL: Mollusca > Gastropoda
+Amastridae # ITIS: Gastropoda > Helicida
+Amathinidae # COL: Mollusca > Gastropoda
+Amnicolidae # COL: Gastropoda > Littorinimorpha
+Amphibolidae # COL: Mollusca > Gastropoda
+Amphiboloidea # COL: Mollusca > Gastropoda
+Amphibulimidae # COL: Mollusca > Gastropoda
+Ampullariidae # COL: Gastropoda > Architaenioglossa
+Ampullarioidea # COL: Gastropoda > Architaenioglossa
+Ampullinidae # COL: Mollusca > Gastropoda
+Anabathridae # COL: Gastropoda > Littorinimorpha
+Anadenidae # COL: Mollusca > Gastropoda
+Anaspidea # sea hares (Opisthobranchia); COL: synonym of Aplysiida (Gastropoda)
+Anatomidae # COL: Gastropoda > Lepetellida
+Ancillariidae # COL: Gastropoda > Neogastropoda
+Angariidae # COL: Gastropoda > Trochida
+Annulariidae # COL: Gastropoda > Littorinimorpha
+Aplustridae # COL: Mollusca > Gastropoda
+Aplysiida # COL: Mollusca > Gastropoda
+Aplysiidae # COL: Gastropoda > Aplysiida
+Aplysioidea # COL: Gastropoda > Aplysiida
+Aporrhaidae # COL: Gastropoda > Littorinimorpha
+Architaenioglossa # freshwater and land snails (Caenogastropoda); COL: Mollusca > Gastropoda
+Architectonicidae # COL: Mollusca > Gastropoda
+Architectonicoidea # COL: Mollusca > Gastropoda
+Areneidae # COL: Gastropoda > Trochida
+Argnidae # COL: Mollusca > Gastropoda
+Ariolimacidae # COL: Mollusca > Gastropoda
+Arionidae # COL: Mollusca > Gastropoda
+Arionoidea # COL: Mollusca > Gastropoda
+Arionoidei # COL: Mollusca > Gastropoda
+Ariophantidae # ITIS: Gastropoda > Helicida
+Arminidae # COL: Gastropoda > Nudibranchia
+Arminoidea # COL: Gastropoda > Nudibranchia
+Asperspinidae # COL: Mollusca > Gastropoda
+Assimineidae # COL: Gastropoda > Littorinimorpha
+Athoracophoridae # COL: Mollusca > Gastropoda
+Athoracophoroidea # COL: Mollusca > Gastropoda
+Atlantidae # COL: Gastropoda > Littorinimorpha
+Azecidae # COL: Mollusca > Gastropoda
+Babakinidae # COL: Gastropoda > Nudibranchia
+Babyloniidae # COL: Gastropoda > Neogastropoda
+Barleeiidae # COL: Gastropoda > Littorinimorpha
+Basommatophora # freshwater pulmonate snails; COL: synonym of Hygrophila (Mollusca)
+Bathydorididae # COL: Mollusca > Gastropoda
+Bathydoridoidea # COL: Mollusca > Gastropoda
+Bathydoridoidei # COL: Mollusca > Gastropoda
+Bathyhedylidae # COL: Mollusca > Gastropoda
+Bathyphytophilidae # COL: Gastropoda > Lepetellida
+Bathysciadiidae # COL: Gastropoda > Cocculinida
+Batillariidae # COL: Mollusca > Gastropoda
+Bellolividae # COL: Gastropoda > Neogastropoda
+Belomitridae # COL: Gastropoda > Neogastropoda
+Benthobiidae # COL: Gastropoda > Neogastropoda
+Binneyidae # COL: Mollusca > Gastropoda
+Bithyniidae # COL: Gastropoda > Littorinimorpha
+Boettgerillidae # COL: Mollusca > Gastropoda
+Bornellidae # COL: Gastropoda > Nudibranchia
+Borsoniidae # COL: Gastropoda > Neogastropoda
+Bothriembryontidae # ITIS: Gastropoda > Helicida
+Bouchetispiridae # COL: Gastropoda > Neogastropoda
+Bradybaenidae # land snail family (Stylommatophora); COL: synonym of Helicoidei (Mollusca)
+Buccinidae # COL: Gastropoda > Neogastropoda
+Buccinoidea # COL: Gastropoda > Neogastropoda
+Bulimulidae # COL: Mollusca > Gastropoda
+Bullidae # COL: Mollusca > Gastropoda
+Bulloidea # COL: Mollusca > Gastropoda
+Burnupiidae # COL: Mollusca > Gastropoda
+Bursidae # COL: Gastropoda > Littorinimorpha
+Bythinellidae # COL: Gastropoda > Littorinimorpha
+Cadlinidae # COL: Mollusca > Gastropoda
+Caecidae # COL: Gastropoda > Littorinimorpha
+Caenogastropoda # COL: Mollusca > Gastropoda
+Calliostomatidae # COL: Gastropoda > Trochida
+Calliotropidae # COL: Gastropoda > Seguenziida
+Calmidae # COL: Gastropoda > Nudibranchia
+Calopiidae # COL: Gastropoda > Littorinimorpha
+Calycidorididae # COL: Mollusca > Gastropoda
+Calyptraeidae # COL: Gastropoda > Littorinimorpha
+Calyptraeoidea # COL: Gastropoda > Littorinimorpha
+Camaenidae # ITIS: Gastropoda > Helicida
+Campanilidae # COL: Mollusca > Gastropoda
+Campaniloidea # COL: Mollusca > Gastropoda
+Canariellidae # COL: Mollusca > Gastropoda
+Cancellariidae # COL: Gastropoda > Neogastropoda
+Capulidae # COL: Gastropoda > Littorinimorpha
+Capuloidea # COL: Gastropoda > Littorinimorpha
+Carinariidae # COL: Gastropoda > Littorinimorpha
+Caryodidae # COL: Mollusca > Gastropoda
+Cassidae # COL: Gastropoda > Littorinimorpha
+Cataegidae # COL: Gastropoda > Seguenziida
+Cavoliniidae # COL: Gastropoda > Pteropoda
+Cavolinioidea # COL: Gastropoda > Pteropoda
+Caymanabyssiidae # COL: Gastropoda > Lepetellida
+Cephalaspidea # ITIS: Mollusca > Gastropoda
+Cerastidae # ITIS: Gastropoda > Helicida
+Cerionidae # COL: Mollusca > Gastropoda
+Cerithiidae # COL: Mollusca > Gastropoda
+Cerithioidea # COL: Mollusca > Gastropoda
+Cerithiopsidae # COL: Mollusca > Gastropoda
+Charitodoronidae # COL: Gastropoda > Neogastropoda
+Charoniidae # COL: Gastropoda > Littorinimorpha
+Charopidae # COL: Mollusca > Gastropoda
+Chilinidae # COL: Mollusca > Gastropoda
+Chilinoidea # COL: Mollusca > Gastropoda
+Chondrinidae # COL: Mollusca > Gastropoda
+Choristellidae # COL: Gastropoda > Seguenziida
+Chromodorididae # COL: Mollusca > Gastropoda
+Chromodoridoidea # COL: Mollusca > Gastropoda
+Chronidae # COL: Mollusca > Gastropoda
+Cimidae # COL: Mollusca > Gastropoda
+Cimoidea # COL: Mollusca > Gastropoda
+Cingulopsidae # COL: Gastropoda > Littorinimorpha
+Cingulopsoidea # COL: Gastropoda > Littorinimorpha
+Cladobranchia # COL: Gastropoda > Nudibranchia
+Clathurellidae # COL: Gastropoda > Neogastropoda
+Clausiliidae # ITIS: Gastropoda > Helicida
+Clausilioidea # ITIS: Gastropoda > Helicida
+Clausilioidei # COL: Mollusca > Gastropoda
+Clavatoridae # COL: Mollusca > Gastropoda
+Clavatulidae # COL: Gastropoda > Neogastropoda
+Clenchiellidae # COL: Gastropoda > Littorinimorpha
+Clionoidea # COL: Gastropoda > Pteropoda
+Cliopsidae # COL: Gastropoda > Pteropoda
+Cocculinellidae # COL: Gastropoda > Lepetellida
+Cocculinida # COL: Mollusca > Gastropoda
+Cocculinidae # COL: Gastropoda > Cocculinida
+Cocculinoidea # COL: Gastropoda > Cocculinida
+Cochlespiridae # COL: Gastropoda > Neogastropoda
+Cochlicopidae # COL: Mollusca > Gastropoda
+Cochliopidae # COL: Gastropoda > Littorinimorpha
+Coelociontidae # COL: Mollusca > Gastropoda
+Coelociontoidea # COL: Mollusca > Gastropoda
+Colinatydidae # COL: Mollusca > Gastropoda
+Colloniidae # COL: Gastropoda > Trochida
+Colpodaspididae # COL: Mollusca > Gastropoda
+Colubrariidae # COL: Gastropoda > Neogastropoda
+Columbariidae # COL: Gastropoda > Neogastropoda
+Columbellidae # COL: Gastropoda > Neogastropoda
+Conidae # COL: Gastropoda > Neogastropoda
+Conoidea # COL: Gastropoda > Neogastropoda
+Conorbidae # COL: Gastropoda > Neogastropoda
+Conradiidae # COL: Gastropoda > Trochida
+Corambidae # COL: Mollusca > Gastropoda
+Corillidae # COL: synonym of Corillinae (Gastropoda)
+Cornirostridae # COL: Mollusca > Gastropoda
+Costasiellidae # COL: Mollusca > Gastropoda
+Costellariidae # COL: Gastropoda > Neogastropoda
+Craspedopomatidae # COL: Gastropoda > Architaenioglossa
+Creseidae # COL: Gastropoda > Pteropoda
+Curnonidae # COL: Gastropoda > Nudibranchia
+Cuthonellidae # COL: Gastropoda > Nudibranchia
+Cuthonidae # COL: Gastropoda > Nudibranchia
+Cycloneritida # COL: Mollusca > Gastropoda
+Cyclophoridae # COL: Gastropoda > Architaenioglossa
+Cyclophoroidea # COL: Gastropoda > Architaenioglossa
+Cylichnidae # COL: Mollusca > Gastropoda
+Cylichnoidea # ITIS: Gastropoda > Cephalaspidea
+Cylindrobullidae # COL: Mollusca > Gastropoda
+Cymatiidae # COL: Gastropoda > Littorinimorpha
+Cymbuliidae # COL: Gastropoda > Pteropoda
+Cymbulioidea # COL: Gastropoda > Pteropoda
+Cypraeidae # COL: Gastropoda > Littorinimorpha
+Cypraeoidea # COL: Gastropoda > Littorinimorpha
+Cystiscidae # COL: Gastropoda > Neogastropoda
+Cystopeltidae # COL: Mollusca > Gastropoda
+Dendrodorididae # COL: Mollusca > Gastropoda
+Dendronotidae # COL: Gastropoda > Nudibranchia
+Dendronotoidea # COL: Gastropoda > Nudibranchia
+Desmopteridae # COL: Gastropoda > Pteropoda
+Dialidae # COL: Mollusca > Gastropoda
+Diaphanidae # COL: Mollusca > Gastropoda
+Diapheridae # COL: Mollusca > Gastropoda
+Diastomatidae # COL: Mollusca > Gastropoda
+Diplommatinidae # COL: Gastropoda > Architaenioglossa
+Dironidae # COL: Gastropoda > Nudibranchia
+Discodorididae # COL: Mollusca > Gastropoda
+Dorcasiidae # COL: Mollusca > Gastropoda
+Dorididae # COL: Mollusca > Gastropoda
+Doridina # COL: synonym of Nudipleura (Mollusca)
+Doridoidea # COL: Mollusca > Gastropoda
+Doridoidei # COL: Mollusca > Gastropoda
+Doridomorphidae # COL: Gastropoda > Nudibranchia
+Doridoxidae # COL: Gastropoda > Nudibranchia
+Doridoxoidea # COL: Mollusca > Gastropoda
+Dotidae # COL: Gastropoda > Nudibranchia
+Draparnaudiidae # COL: Mollusca > Gastropoda
+Drilliidae # COL: Gastropoda > Neogastropoda
+Dyakiidae # COL: Mollusca > Gastropoda
+Eatoniellidae # COL: Gastropoda > Littorinimorpha
+Echinichidae # COL: synonym of Echinichinae (Gastropoda)
+Elachisinidae # COL: Gastropoda > Littorinimorpha
+Ellobiida # ITIS: Mollusca > Gastropoda
+Ellobiidae # ITIS: Gastropoda > Ellobiida
+Ellobioidea # ITIS: Gastropoda > Ellobiida
+Elonidae # COL: Mollusca > Gastropoda
+Emblandidae # COL: Gastropoda > Littorinimorpha
+Embletoniidae # COL: Gastropoda > Nudibranchia
+Emmericiidae # COL: Gastropoda > Littorinimorpha
+Endodontidae # COL: Mollusca > Gastropoda
+Enidae # ITIS: Gastropoda > Helicida
+Eoacmaeidae # COL: Gastropoda > Nacellida
+Eoacmaeoidea # COL: synonym of Lottioidea (Gastropoda)
+Eoscaphandridae # COL: Mollusca > Gastropoda
+Epigridae # COL: Gastropoda > Littorinimorpha
+Epirobiidae # COL: Mollusca > Gastropoda
+Epitoniidae # COL: Mollusca > Gastropoda
+Epitonioidea # COL: Mollusca > Gastropoda
+Eratoidae # COL: Gastropoda > Littorinimorpha
+Eubranchidae # COL: Gastropoda > Nudibranchia
+Eucalodiidae # COL: Mollusca > Gastropoda
+Euconulidae # COL: Mollusca > Gastropoda
+Eucyclidae # COL: Gastropoda > Seguenziida
+Eudaroniidae # COL: Gastropoda > Seguenziida
+Eulimidae # COL: Gastropoda > Littorinimorpha
+Eupulmonata # COL: Mollusca > Gastropoda
+Euthecosomata # COL: Gastropoda > Pteropoda
+Euthyneura # COL: Mollusca > Gastropoda
+Facelinidae # COL: Gastropoda > Nudibranchia
+Falsicingulidae # COL: Gastropoda > Littorinimorpha
+Fasciolariidae # COL: Gastropoda > Neogastropoda
+Fauxulidae # ITIS: Gastropoda > Helicida
+Ferrussaciidae # ITIS: synonym of Ferussaciidae (Helicida)
+Ferussaciidae # land snail family (Stylommatophora); COL: Mollusca > Gastropoda
+Ficidae # COL: Gastropoda > Littorinimorpha
+Ficoidea # COL: Gastropoda > Littorinimorpha
+Fionidae # COL: Gastropoda > Nudibranchia
+Fionoidea # COL: Gastropoda > Nudibranchia
+Fissurellidae # COL: Gastropoda > Lepetellida
+Fissurelloidea # COL: Gastropoda > Lepetellida
+Flabellinidae # COL: Gastropoda > Nudibranchia
+Flabellinoidea # COL: synonym of Fionoidea (Gastropoda)
+Gastrocoptidae # COL: Mollusca > Gastropoda
+Gastrodontidae # COL: Mollusca > Gastropoda
+Gastrodontoidea # COL: Mollusca > Gastropoda
+Gastropoda # COL: Animalia > Mollusca
+Gastropteridae # COL: Mollusca > Gastropoda
+Geomitridae # COL: Mollusca > Gastropoda
+Glacidorbidae # COL: Mollusca > Gastropoda
+Glacidorboidea # COL: Mollusca > Gastropoda
+Glaucidae # COL: Gastropoda > Nudibranchia
+Globocornidae # COL: Mollusca > Gastropoda
+Goniaeolididae # COL: Gastropoda > Nudibranchia
+Goniodorididae # COL: Mollusca > Gastropoda
+Gymnodorididae # COL: synonym of Polycerinae (Gastropoda)
+Gymnosomata # COL: Gastropoda > Pteropoda
+Haliotidae # COL: Gastropoda > Lepetellida
+Haliotoidea # COL: Gastropoda > Lepetellida
+Haloceratidae # COL: Gastropoda > Littorinimorpha
+Haminoeidae # COL: Mollusca > Gastropoda
+Haminoeoidea # COL: Mollusca > Gastropoda
+Hancockiidae # COL: Gastropoda > Nudibranchia
+Haplotrematidae # COL: Mollusca > Gastropoda
+Haplotrematoidea # COL: Mollusca > Gastropoda
+Hedylopsidae # COL: Mollusca > Gastropoda
+Helicarionidae # COL: Mollusca > Gastropoda
+Helicarionoidea # ITIS: Gastropoda > Helicida
+Helicidae # COL: Mollusca > Gastropoda
+Helicina # ITIS: Gastropoda > Helicida
+Helicinidae # COL: Gastropoda > Cycloneritida
+Helicinoidea # COL: Gastropoda > Cycloneritida
+Helicodiscidae # COL: Mollusca > Gastropoda
+Helicodontidae # COL: Mollusca > Gastropoda
+Helicoidea # WoRMS: Gastropoda > Stylommatophora
+Helicoidei # COL: Mollusca > Gastropoda
+Helicostoidae # COL: synonym of Helicostoinae (Littorinimorpha)
+Hemisinidae # COL: Mollusca > Gastropoda
+Hermaeidae # COL: Mollusca > Gastropoda
+Heroidae # COL: Gastropoda > Nudibranchia
+Heterobranchia # COL: Mollusca > Gastropoda
+Hexabranchidae # COL: Mollusca > Gastropoda
+Hipponicidae # COL: Gastropoda > Littorinimorpha
+Hipponicoidea # COL: Gastropoda > Littorinimorpha
+Holospiridae # COL: Mollusca > Gastropoda
+Horaiclavidae # COL: Gastropoda > Neogastropoda
+Hyalogyrinidae # COL: Mollusca > Gastropoda
+Hydrobiidae # COL: Gastropoda > Littorinimorpha
+Hydrocenidae # COL: Gastropoda > Cycloneritida
+Hydrocenoidea # COL: Gastropoda > Cycloneritida
+Hydrococcidae # COL: Gastropoda > Littorinimorpha
+Hydromylidae # COL: Gastropoda > Pteropoda
+Hydromyloidea # COL: Gastropoda > Pteropoda
+Hygromiidae # COL: Mollusca > Gastropoda
+Hygrophila # COL: Mollusca > Gastropoda
+Ilbiidae # COL: Gastropoda > Runcinida
+Iravadiidae # COL: Gastropoda > Littorinimorpha
+Jenseneriidae # COL: synonym of Caliphyllidae (Gastropoda)
+Juliidae # COL: Mollusca > Gastropoda
+Labyrinthidae # COL: Mollusca > Gastropoda
+Laginiopsidae # COL: Gastropoda > Pteropoda
+Laonidae # COL: Mollusca > Gastropoda
+Larocheidae # COL: Gastropoda > Lepetellida
+Latiidae # COL: Mollusca > Gastropoda
+Latrogastropoda # ITIS: Mollusca > Gastropoda
+Laubierinidae # COL: Gastropoda > Littorinimorpha
+Lauriidae # COL: Mollusca > Gastropoda
+Lemindidae # COL: Gastropoda > Nudibranchia
+Lepetellida # COL: Mollusca > Gastropoda
+Lepetellidae # COL: Gastropoda > Lepetellida
+Lepetelloidea # COL: Gastropoda > Lepetellida
+Lepetidae # COL: Gastropoda > Nacellida
+Lepetodrilidae # COL: Gastropoda > Lepetellida
+Lepetodriloidea # COL: Gastropoda > Lepetellida
+Limacidae # COL: Mollusca > Gastropoda
+Limacinidae # COL: Gastropoda > Pteropoda
+Limacinoidea # COL: Gastropoda > Pteropoda
+Limacoidea # COL: Mollusca > Gastropoda
+Limacoidei # COL: Mollusca > Gastropoda
+Limapontiidae # COL: Mollusca > Gastropoda
+Liotiidae # COL: Gastropoda > Trochida
+Lironobidae # COL: Gastropoda > Littorinimorpha
+Lithoglyphidae # COL: Gastropoda > Littorinimorpha
+Litiopidae # COL: Mollusca > Gastropoda
+Littorinidae # COL: Gastropoda > Littorinimorpha
+Littorinimorpha # periwinkles and relatives (Caenogastropoda); COL: Mollusca > Gastropoda
+Littorinoidea # COL: Gastropoda > Littorinimorpha
+Lomanotidae # COL: Gastropoda > Nudibranchia
+Lottiidae # COL: Gastropoda > Nacellida
+Lottioidea # COL: Gastropoda > Nacellida
+Lymnaeidae # ITIS: Gastropoda > Lymnaeida
+Lymnaeoidea # ITIS: Gastropoda > Lymnaeida
+Lyocyclidae # COL: Mollusca > Gastropoda
+Macrocyclidae # COL: Mollusca > Gastropoda
+Madrellidae # COL: Gastropoda > Nudibranchia
+Maizanidae # ALF: Gastropoda > N.N.
+Maizaniidae # COL: Gastropoda > Architaenioglossa
+Mandeliidae # COL: Mollusca > Gastropoda
+Mangeliidae # COL: Gastropoda > Neogastropoda
+Maningrididae # COL: Mollusca > Gastropoda
+Marginellidae # COL: Gastropoda > Neogastropoda
+Mathildidae # COL: Mollusca > Gastropoda
+Mathildoidea # COL: Mollusca > Gastropoda
+Megalomastomatidae # COL: Gastropoda > Architaenioglossa
+Megaspiridae # COL: Mollusca > Gastropoda
+Megomphicidae # COL: Mollusca > Gastropoda
+Melanodrymiidae # COL: Gastropoda > Neomphalida
+Melanopsidae # COL: Mollusca > Gastropoda
+Melongenidae # COL: Gastropoda > Neogastropoda
+Micractaeonidae # COL: Mollusca > Gastropoda
+Milacidae # COL: Mollusca > Gastropoda
+Mitridae # COL: Gastropoda > Neogastropoda
+Mitroidea # COL: Gastropoda > Neogastropoda
+Mitromorphidae # COL: Gastropoda > Neogastropoda
+Mnestiidae # COL: Mollusca > Gastropoda
+Modulidae # COL: Mollusca > Gastropoda
+Moitessieriidae # COL: Gastropoda > Littorinimorpha
+Murchisonellidae # COL: Mollusca > Gastropoda
+Murchisonelloidea # COL: Mollusca > Gastropoda
+Muricidae # COL: Gastropoda > Neogastropoda
+Muricoidea # COL: Gastropoda > Neogastropoda
+Nacellidae # COL: Gastropoda > Nacellida
+Nassariidae # COL: Gastropoda > Neogastropoda
+Naticidae # COL: Gastropoda > Littorinimorpha
+Naticoidea # COL: Gastropoda > Littorinimorpha
+Neocyclotidae # COL: Gastropoda > Architaenioglossa
+Neogastropoda # COL: Mollusca > Gastropoda
+Neolepetopsidae # COL: Gastropoda > Nacellida
+Neomphalida # COL: Mollusca > Gastropoda
+Neomphalidae # COL: Gastropoda > Neomphalida
+Neomphaliones # COL: synonym of Vetigastropoda (Mollusca)
+Neomphaloidea # COL: Gastropoda > Neomphalida
+Neotaenioglossa # large caenogastropod order (cowries, periwinkles etc.); ITIS: synonym of Littorinida (Gastropoda)
+Neritidae # COL: Gastropoda > Cycloneritida
+Neritiliidae # COL: Gastropoda > Cycloneritida
+Neritimorpha # COL: Mollusca > Gastropoda
+Neritoidea # COL: Gastropoda > Cycloneritida
+Neritopsidae # COL: Gastropoda > Cycloneritida
+Neritopsoidea # COL: Gastropoda > Cycloneritida
+Newnesiidae # COL: Mollusca > Gastropoda
+Newnesioidea # COL: Mollusca > Gastropoda
+Newtoniellidae # COL: Mollusca > Gastropoda
+Notaeolidiidae # COL: Gastropoda > Nudibranchia
+Notobranchaeidae # COL: Gastropoda > Pteropoda
+Notodiaphanidae # ITIS: synonym of Cylichnoidea (Gastropoda)
+Nudibranchia # COL: Mollusca > Gastropoda
+Odontocycladidae # COL: Mollusca > Gastropoda
+Odontostomidae # COL: Mollusca > Gastropoda
+Okadaiidae # COL: synonym of Okadaiinae (Gastropoda)
+Oleacinidae # COL: Mollusca > Gastropoda
+Oleacinoidea # COL: Mollusca > Gastropoda
+Oleacinoidei # COL: Mollusca > Gastropoda
+Olividae # COL: Gastropoda > Neogastropoda
+Olivoidea # COL: Gastropoda > Neogastropoda
+Omalogyridae # COL: Mollusca > Gastropoda
+Omalogyroidea # COL: Mollusca > Gastropoda
+Onchidiidae # COL: Gastropoda > Systellommatophora
+Onchidioidea # COL: Gastropoda > Systellommatophora
+Onchidorididae # ITIS: Gastropoda > Nudibranchia
+Onchidoridoidea # ITIS: Gastropoda > Nudibranchia
+Oopeltidae # COL: Mollusca > Gastropoda
+Orbitestellidae # COL: Mollusca > Gastropoda
+Orbitestelloidea # COL: Mollusca > Gastropoda
+Orculidae # COL: Mollusca > Gastropoda
+Oreohelicidae # COL: Mollusca > Gastropoda
+Orthalicidae # COL: Mollusca > Gastropoda
+Orthalicoidea # ITIS: Gastropoda > Helicida
+Orthalicoidei # COL: Mollusca > Gastropoda
+Osteopeltidae # COL: Gastropoda > Lepetellida
+Otinidae # COL: Mollusca > Gastropoda
+Ovulidae # COL: Gastropoda > Littorinimorpha
+Oxychilidae # COL: Mollusca > Gastropoda
+Oxynoidae # COL: Mollusca > Gastropoda
+Oxynooidea # COL: Mollusca > Gastropoda
+Pachychilidae # COL: Mollusca > Gastropoda
+Pagodulinidae # COL: Mollusca > Gastropoda
+Paludomidae # COL: Mollusca > Gastropoda
+Papillodermatidae # COL: Mollusca > Gastropoda
+Papillodermatoidea # COL: Mollusca > Gastropoda
+Parhedylidae # COL: Mollusca > Gastropoda
+Parhedyloidea # COL: Mollusca > Gastropoda
+Parmacellidae # COL: Mollusca > Gastropoda
+Parmacelloidea # ITIS: Gastropoda > Helicida
+Partulidae # COL: Mollusca > Gastropoda
+Patellida # COL: Mollusca > Gastropoda
+Patellidae # COL: Gastropoda > Patellida
+Patellogastropoda # COL: Mollusca > Gastropoda
+Patelloidea # COL: Gastropoda > Patellida
+Pectinodontidae # COL: Gastropoda > Nacellida
+Peltospiridae # COL: Gastropoda > Neomphalida
+Pendromidae # COL: Gastropoda > Seguenziida
+Peraclidae # COL: Gastropoda > Pteropoda
+Phasianellidae # COL: Gastropoda > Trochida
+Phenacolepadidae # COL: Gastropoda > Cycloneritida
+Philinidae # COL: Mollusca > Gastropoda
+Philinoglossidae # COL: Mollusca > Gastropoda
+Philinoidea # COL: Mollusca > Gastropoda
+Philinorbidae # COL: Mollusca > Gastropoda
+Philomycidae # COL: Mollusca > Gastropoda
+Phyllidiidae # COL: Mollusca > Gastropoda
+Phyllidioidea # COL: Mollusca > Gastropoda
+Phylliroidae # COL: Gastropoda > Nudibranchia
+Physidae # COL: Mollusca > Gastropoda
+Pickworthiidae # COL: Mollusca > Gastropoda
+Pinufiidae # COL: Gastropoda > Nudibranchia
+Pisanianuridae # IRMNG: Gastropoda > Littorinimorpha
+Pisaniidae # COL: Gastropoda > Neogastropoda
+Piseinotecidae # COL: Gastropoda > Nudibranchia
+Plakobranchidae # COL: Mollusca > Gastropoda
+Plakobranchoidea # COL: Mollusca > Gastropoda
+Planaxidae # COL: Mollusca > Gastropoda
+Planorbidae # COL: Mollusca > Gastropoda
+Platyhedylidae # COL: Mollusca > Gastropoda
+Platyhedyloidea # COL: Mollusca > Gastropoda
+Plectopylidae # COL: Mollusca > Gastropoda
+Plectopyloidea # COL: Mollusca > Gastropoda
+Plesiotrochidae # COL: Mollusca > Gastropoda
+Pleurobranchaeidae # COL: Gastropoda > Pleurobranchida
+Pleurobranchida # COL: Mollusca > Gastropoda
+Pleurobranchidae # COL: Gastropoda > Pleurobranchida
+Pleurobranchoidea # COL: Gastropoda > Pleurobranchida
+Pleuroceridae # COL: Mollusca > Gastropoda
+Pleurodiscidae # COL: Mollusca > Gastropoda
+Pleurodontidae # COL: Mollusca > Gastropoda
+Pleurolidiidae # COL: Gastropoda > Nudibranchia
+Pleurotomariida # COL: Mollusca > Gastropoda
+Pleurotomariidae # COL: Gastropoda > Pleurotomariida
+Pleurotomarioidea # COL: Gastropoda > Pleurotomariida
+Pliopholygidae # COL: Gastropoda > Architaenioglossa
+Pneumodermatidae # COL: Gastropoda > Pteropoda
+Polyceridae # COL: Mollusca > Gastropoda
+Polyceroidea # COL: Mollusca > Gastropoda
+Polygyridae # COL: Mollusca > Gastropoda
+Pomatiasidae # land snail family (Caenogastropoda); IRMNG: synonym of Pomatiidae (Littorinimorpha)
+Pomatiidae # COL: Gastropoda > Littorinimorpha
+Pomatiopsidae # COL: Gastropoda > Littorinimorpha
+Potamididae # COL: Mollusca > Gastropoda
+Pristilomatidae # COL: Mollusca > Gastropoda
+Proctonotidae # COL: Gastropoda > Nudibranchia
+Proctonotoidea # COL: Gastropoda > Nudibranchia
+Proserpinellidae # COL: Gastropoda > Cycloneritida
+Proserpinidae # COL: Gastropoda > Cycloneritida
+Provannidae # COL: Mollusca > Gastropoda
+Pseudococculinidae # COL: Gastropoda > Lepetellida
+Pseudolividae # COL: Gastropoda > Neogastropoda
+Pseudomelatomidae # COL: Gastropoda > Neogastropoda
+Pseudothecosomata # COL: Gastropoda > Pteropoda
+Pseudovermidae # COL: Gastropoda > Nudibranchia
+Pseudunelidae # COL: Mollusca > Gastropoda
+Pteropoda # COL: Mollusca > Gastropoda
+Pterotracheidae # COL: Gastropoda > Littorinimorpha
+Pterotracheoidea # COL: Gastropoda > Littorinimorpha
+Ptychatractidae # COL: Gastropoda > Neogastropoda
+Pulmonata # pulmonate gastropods (land snails, slugs); PBDB: Mollusca > Gastropoda
+Punctidae # COL: Mollusca > Gastropoda
+Punctoidea # COL: Mollusca > Gastropoda
+Pupillidae # COL: Mollusca > Gastropoda
+Pupilloidea # ITIS: Gastropoda > Helicida
+Pupilloidei # COL: Mollusca > Gastropoda
+Pupinidae # COL: Gastropoda > Architaenioglossa
+Pylopulmonata # COL: Mollusca > Gastropoda
+Pyramidellidae # COL: Mollusca > Gastropoda
+Pyramidelloidea # COL: Mollusca > Gastropoda
+Pyramidulidae # COL: Mollusca > Gastropoda
+Pyramimitridae # COL: Gastropoda > Neogastropoda
+Pyropeltidae # COL: Gastropoda > Lepetellida
+Quijotidae # COL: Gastropoda > Pleurobranchida
+Ranellidae # COL: Gastropoda > Littorinimorpha
+Raphitomidae # COL: Gastropoda > Neogastropoda
+Rastodentidae # COL: Gastropoda > Littorinimorpha
+Rathouisiidae # COL: Gastropoda > Systellommatophora
+Retusidae # COL: Mollusca > Gastropoda
+Rhizoridae # COL: Mollusca > Gastropoda
+Rhodopidae # COL: Mollusca > Gastropoda
+Rhodopoidea # COL: Mollusca > Gastropoda
+Rhytididae # COL: Mollusca > Gastropoda
+Rhytidoidea # COL: Mollusca > Gastropoda
+Rhytidoidei # COL: Mollusca > Gastropoda
+Ringiculida # ITIS: Mollusca > Gastropoda
+Ringiculidae # COL: Mollusca > Gastropoda
+Ringiculoidea # COL: Mollusca > Gastropoda
+Rissoellidae # COL: Mollusca > Gastropoda
+Rissoelloidea # COL: Mollusca > Gastropoda
+Rissoidae # COL: Gastropoda > Littorinimorpha
+Rissoinidae # COL: Gastropoda > Littorinimorpha
+Rissooidea # COL: Gastropoda > Littorinimorpha
+Rostellariidae # COL: Gastropoda > Littorinimorpha
+Runcinida # COL: Mollusca > Gastropoda
+Runcinidae # COL: Gastropoda > Runcinida
+Runcinoidea # COL: Gastropoda > Runcinida
+Sacoglossa # COL: Mollusca > Gastropoda
+Sagdidae # COL: Mollusca > Gastropoda
+Sagdoidea # COL: Mollusca > Gastropoda
+Scaliolidae # COL: Mollusca > Gastropoda
+Scaphandridae # COL: Mollusca > Gastropoda
+Scissurellidae # COL: Gastropoda > Lepetellida
+Scissurelloidea # COL: Gastropoda > Lepetellida
+Scolodontidae # COL: Mollusca > Gastropoda
+Scolodontina # COL: Mollusca > Gastropoda
+Scolodontoidea # COL: Mollusca > Gastropoda
+Sculptariidae # COL: Mollusca > Gastropoda
+Scyllaeidae # COL: Gastropoda > Nudibranchia
+Seguenziida # COL: Mollusca > Gastropoda
+Seguenziidae # COL: Gastropoda > Seguenziida
+Seguenzioidea # COL: Gastropoda > Seguenziida
+Semisulcospiridae # COL: Mollusca > Gastropoda
+Seraphidae # IRMNG: synonym of Seraphsidae (Littorinimorpha)
+Siliquariidae # COL: Mollusca > Gastropoda
+Simpulopsidae # COL: Mollusca > Gastropoda
+Siphonariida # COL: Mollusca > Gastropoda
+Siphonariidae # COL: Gastropoda > Siphonariida
+Siphonarimorpha # COL: Mollusca > Gastropoda
+Siphonarioidea # COL: Gastropoda > Siphonariida
+Skeneidae # COL: Gastropoda > Trochida
+Skeneopsidae # COL: Gastropoda > Littorinimorpha
+Solariellidae # COL: Gastropoda > Trochida
+Solaropsidae # COL: Mollusca > Gastropoda
+Spelaeoconchidae # COL: Mollusca > Gastropoda
+Spelaeodiscidae # COL: Mollusca > Gastropoda
+Sphincterochilidae # COL: Mollusca > Gastropoda
+Spiraxidae # COL: Mollusca > Gastropoda
+Spirostyliferinidae # COL: Gastropoda > Littorinimorpha
+Staffordiidae # COL: Mollusca > Gastropoda
+Stenothyridae # COL: Gastropoda > Littorinimorpha
+Strepsiduridae # COL: Gastropoda > Neogastropoda
+Streptaxidae # ITIS: Gastropoda > Helicida
+Streptaxoidea # ITIS: Gastropoda > Helicida
+Strictispiridae # COL: synonym of Pseudomelatomidae (Neogastropoda)
+Strobilopsidae # COL: Mollusca > Gastropoda
+Strombidae # COL: Gastropoda > Littorinimorpha
+Stromboidea # COL: Gastropoda > Littorinimorpha
+Strophocheilidae # COL: Mollusca > Gastropoda
+Struthiolariidae # COL: Gastropoda > Littorinimorpha
+Stylommatophora # ITIS: Mollusca > Gastropoda
+Subulinidae # land snail family (Stylommatophora); COL: synonym of Subulininae (Gastropoda)
+Succineidae # COL: Mollusca > Gastropoda
+Succineoidea # COL: Mollusca > Gastropoda
+Succineoidei # COL: Mollusca > Gastropoda
+Sutilizonidae # COL: Gastropoda > Lepetellida
+Systellommatophora # COL: Mollusca > Gastropoda
+Tantulidae # COL: Mollusca > Gastropoda
+Tateidae # COL: Gastropoda > Littorinimorpha
+Tegulidae # COL: Gastropoda > Trochida
+Terebridae # COL: Gastropoda > Neogastropoda
+Tergipedidae # COL: Gastropoda > Nudibranchia
+Testacellidae # COL: Mollusca > Gastropoda
+Testacelloidea # COL: Mollusca > Gastropoda
+Tethydidae # COL: Gastropoda > Nudibranchia
+Thalassocyonidae # COL: Gastropoda > Littorinimorpha
+Thiaridae # COL: Mollusca > Gastropoda
+Thyrophorellidae # COL: synonym of Thyrophorellinae (Gastropoda)
+Thysanophoridae # COL: Mollusca > Gastropoda
+Tjaernoeiidae # COL: Mollusca > Gastropoda
+Tomichiidae # COL: Gastropoda > Littorinimorpha
+Tonnidae # COL: Gastropoda > Littorinimorpha
+Tonnoidea # COL: Gastropoda > Littorinimorpha
+Tornatinidae # COL: Mollusca > Gastropoda
+Tornidae # COL: Gastropoda > Littorinimorpha
+Trichodiscinidae # COL: Mollusca > Gastropoda
+Trigonochlamydidae # COL: Mollusca > Gastropoda
+Trimusculidae # COL: Mollusca > Gastropoda
+Trinchesiidae # COL: Gastropoda > Nudibranchia
+Triphoridae # COL: Mollusca > Gastropoda
+Triphoroidea # COL: Mollusca > Gastropoda
+Trissexodontidae # COL: Mollusca > Gastropoda
+Tritoniidae # COL: Gastropoda > Nudibranchia
+Tritonioidea # COL: Gastropoda > Nudibranchia
+Triviidae # COL: Gastropoda > Littorinimorpha
+Trochaclididae # COL: Gastropoda > Seguenziida
+Trochida # COL: Mollusca > Gastropoda
+Trochidae # COL: Gastropoda > Trochida
+Trochoidea # COL: Gastropoda > Trochida
+Trochomorphidae # COL: Mollusca > Gastropoda
+Trochomorphoidea # COL: Mollusca > Gastropoda
+Truncatellidae # COL: Gastropoda > Littorinimorpha
+Truncatellinidae # COL: Mollusca > Gastropoda
+Truncatelloidea # COL: Gastropoda > Littorinimorpha
+Turbinellidae # COL: Gastropoda > Neogastropoda
+Turbinelloidea # COL: Gastropoda > Neogastropoda
+Turbinidae # COL: Gastropoda > Trochida
+Turridae # COL: Gastropoda > Neogastropoda
+Turritellidae # COL: Mollusca > Gastropoda
+Tylodinidae # COL: Gastropoda > Umbraculida
+Umbraculida # COL: Mollusca > Gastropoda
+Umbraculidae # COL: Gastropoda > Umbraculida
+Umbraculoidea # COL: Gastropoda > Umbraculida
+Unidentiidae # COL: synonym of Piseinotecidae (Nudibranchia)
+Urocoptidae # COL: Mollusca > Gastropoda
+Urocoptoidea # COL: Mollusca > Gastropoda
+Urocyclidae # COL: Mollusca > Gastropoda
+Valloniidae # COL: Mollusca > Gastropoda
+Valvatidae # COL: Mollusca > Gastropoda
+Valvatoidea # COL: Mollusca > Gastropoda
+Vanikoridae # COL: Gastropoda > Littorinimorpha
+Vanikoroidea # COL: Gastropoda > Littorinimorpha
+Velutinidae # COL: Gastropoda > Littorinimorpha
+Vermetidae # COL: Gastropoda > Littorinimorpha
+Vermetoidea # COL: Gastropoda > Littorinimorpha
+Veronicellidae # COL: Gastropoda > Systellommatophora
+Veronicelloidea # COL: Gastropoda > Systellommatophora
+Vertiginidae # ITIS: Gastropoda > Helicida
+Vetigastropoda # COL: Mollusca > Gastropoda
+Vitrinellidae # COL: Gastropoda > Littorinimorpha
+Vitrinidae # COL: Mollusca > Gastropoda
+Viviparidae # COL: Gastropoda > Architaenioglossa
+Viviparoidea # COL: Gastropoda > Architaenioglossa
+Volutidae # COL: Gastropoda > Neogastropoda
+Volutoidea # COL: Gastropoda > Neogastropoda
+Volutomitridae # COL: Gastropoda > Neogastropoda
+Volvatellidae # COL: Mollusca > Gastropoda
+Xanthonychidae # COL: Mollusca > Gastropoda
+Xenophoridae # COL: Gastropoda > Littorinimorpha
+Xenophoroidea # COL: synonym of Stromboidea (Gastropoda)
+Xylodisculidae # COL: Mollusca > Gastropoda
+Zachrysiidae # COL: Mollusca > Gastropoda
+Zebinidae # COL: Gastropoda > Littorinimorpha
+Zerotulidae # COL: Gastropoda > Littorinimorpha
+Zonitidae # COL: Mollusca > Gastropoda
+Zonitoidea # COL: Mollusca > Gastropoda

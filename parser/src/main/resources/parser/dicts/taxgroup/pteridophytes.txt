@@ -1,214 +1,211 @@
-Acrostichaceae
-Actiniopteridaceae
-Adiantaceae
-Alsophilaceae
-Anachoropteridaceae
-Anemiaceae
-Angiopteridaceae
-Anopteraceae
-Antrophyaceae
-Antrophyoideae
-Arthropteridaceae
-Aspidiaceae
-Aspleniaceae
-Aspleniales
-Athyriaceae
-Athyriales
-Athyrioideae
-Azollaceae
-Blechnaceae
-Blechnales
-Bolbitidaceae
-Bothriaceae
-Botrychiaceae
-Botryopteridaceae
-Cardiomanioideae
-Ceratopteridaceae
-Cheilanthaceae
-Cheilanthoideae # lip fern subfamily (Pteridaceae)
-Cheiropleuriaceae
-Christenseniaceae
-Christenseniales
-Cibotiaceae
-Cibotioideae
-Cryptogrammaceae
-Cryptogrammoideae
-Culcitaceae
-Cyatheaceae
-Cyatheales
-Cyatheoideae
-Cyatheopsida
-Cystodiaceae
-Cystopteridaceae
-Cystopteridinae
-Danaeaceae
-Davalliaceae
-Davallieae
-Dennstaedtiaceae
-Dennstaedtiales
-Desmophlebiaceae
-Dicksoniaceae
-Dicksoniales
-Dicranopteridaceae
-Dictyoxiphiaceae
-Didymochlaenaceae
-Diplazioideae
-Diplaziopsidaceae
-Dipteridaceae
-Dipteridales
-Dipteridinae
-Drynariaceae
-Dryopteridaceae
-Dryopteridales
-Elaphoglossaceae
-Equisetaceae
-Equisetales
-Equisetidae
-Equisetophyta
-Equisetopsida
-Filicaceae
-Filicales
-Filicopsida
-Gleicheneae
-Gleicheniaceae
-Gleicheniales
-Gleicheniopsida
-Grammitidaceae
-Guaireaceae
-Gymnogrammitidaceae
-Helminthostachyaceae
-Hemidictyaceae
-Hemionitidaceae
-Heterosporae
-Heterosporeae
-Huperziaceae
-Huperzioideae # clubmoss subfamily (Lycopodiaceae)
-Hymenophyllaceae
-Hymenophyllales
-Hymenophyllopsida
-Hymenophyllopsidaceae
-Hymenophyllopsidales
-Hypodematiaceae
-Hypodematioideae
-Hypolepidaceae
-Isoetaceae
-Isoetales
-Isoetariae
-Isoeteae
-Kaplanopteridaceae
-Kaulfussiaceae
-Kaulfussioideae
-Lindsaeaceae
-Lindsaeales
-Lindsaeoideae
-Lomariopsidaceae
-Lomariopsideae
-Lomariopsidoideae
-Lonchitidaceae
-Lonchitidales
-Lophosoriaceae
-Loxogrammaceae
-Loxogrammoideae # ribbon fern subfamily (Polypodiaceae)
-Loxsomataceae
-Loxsomatales
-Lycopodiaceae
-Lycopodiales
-Lycopodiellaceae
-Lycopodielloideae # clubmoss subfamily (Lycopodiaceae)
-Lycopodiidae
-Lycopodiophyta
-Lycopodiopsida
-Lygodiaceae
-Marattiaceae
-Marattiales
-Marattiidae
-Marattiopsida
-Marsileaceae
-Marsileales
-Marsileopsida
-Matoniaceae
-Matoniales
-Matoniopsida
-Metaxyaceae
-Metaxyales
-Mohriaceae
-Monachosoraceae
-Monachosorales
-Negripteridaceae
-Negripteridales
-Nephrolepidaceae
-Oleandraceae
-Oleandroideae
-Onocleaceae
-Ophioglossaceae
-Ophioglossales
-Ophioglosseae
-Ophioglossidae
-Ophioglossopsida
-Osmundaceae
-Osmundales
-Osmundineae
-Osmundopsida
-Parkeriaceae
-Parkeriales
-Peranematoideae
-Phylloglossaceae
-Pilulariaceae
-Pilulariales
-Plagiogyriaceae
-Plagiogyriales
-Platyceriaceae
-Platyzomataceae
-Platyzomatales
-Pleurosoriopsidaceae
-Polypodiaceae
-Polypodiales
-Polypodiidae
-Polypodiopsida
-Protowoodsioideae
-Psalixochlaenaceae
-Psilotaceae
-Psilotales
-Psilotopsida
-Pteridaceae
-Pteridales
-Pteridiaceae
-Pteridophyta
-Pteridopsida
-Pteridryaceae
-Rhachidosoraceae
-Rhachidosoroideae
-Saccolomataceae
-Saccolomatales
-Salviniaceae
-Salviniales
-Salviniopsida
-Schizaeaceae
-Schizaeales
-Selaginellaceae
-Selaginellales
-Selaginellidae
-Selaginellineae
-Selagines
-Sermayaceae
-Sinopteridaceae
-Skaaripteridaceae
-Stromatopteridaceae
-Stromatopteridales
-Stromatopteridoideae
-Taenitidaceae
-Tectariaceae
-Tectarioideae
-Tedeleaceae
-Tempskyaceae
-Thelypteridaceae
-Thelypteridales
-Thelypteridoideae
-Thyrsopteridaceae
-Tmesipteridaceae
-Trichomanaceae
-Urostachyaceae
-Vittariaceae
-Vittarioideae # ribbon fern subfamily (Pteridaceae)
-Woodsiaceae
-Woodsieae
+Acrostichaceae # COL: synonym of Parkerioideae (Polypodiales)
+Actiniopteridaceae # COL: synonym of Pteridaceae (Polypodiales)
+Adiantaceae # COL: synonym of Pteridaceae (Polypodiales)
+Alsophilaceae # COL: synonym of Cyatheaceae (Cyatheales)
+Anachoropteridaceae # IRMNG: synonym of Psalixochlaenaceae (Zygopteridales)
+Anemiaceae # COL: Polypodiopsida > Schizaeales
+Angiopteridaceae # COL: synonym of Marattiaceae (Marattiales)
+Antrophyaceae # COL: synonym of Pteridaceae (Polypodiales)
+Antrophyoideae # COL: synonym of Vittarioideae (Polypodiales)
+Arthropteridaceae # COL: Polypodiopsida > Polypodiales
+Aspidiaceae # COL: synonym of Dryopteridaceae (Polypodiales)
+Aspleniaceae # COL: Polypodiopsida > Polypodiales
+Aspleniales # COL: synonym of Polypodiales (Polypodiopsida)
+Athyriaceae # COL: Polypodiopsida > Polypodiales
+Athyriales # COL: synonym of Polypodiales (Polypodiopsida)
+Athyrioideae # COL: synonym of Athyriaceae (Polypodiales)
+Azollaceae # COL: synonym of Salviniaceae (Salviniales)
+Blechnaceae # COL: Polypodiopsida > Polypodiales
+Blechnales # COL: synonym of Polypodiales (Polypodiopsida)
+Bolbitidaceae # COL: synonym of Dryopteridaceae (Polypodiales)
+Bothriaceae # COL: synonym of Isoetaceae (Isoetales)
+Botrychiaceae # COL: synonym of Ophioglossaceae (Ophioglossales)
+Botryopteridaceae # IRMNG: synonym of Botryopteridiaceae (Stauropteridales)
+Cardiomanioideae # COL: synonym of Hymenophyllaceae (Hymenophyllales)
+Ceratopteridaceae # COL: synonym of Pteridaceae (Polypodiales)
+Cheilanthaceae # COL: synonym of Pteridaceae (Polypodiales)
+Cheilanthoideae # lip fern subfamily (Pteridaceae); COL: Polypodiales > Pteridaceae
+Cheiropleuriaceae # ITIS: synonym of Dipteridaceae (Gleicheniales)
+Christenseniaceae # COL: synonym of Marattiaceae (Marattiales)
+Christenseniales # COL: synonym of Marattiales (Polypodiopsida)
+Cibotiaceae # COL: Polypodiopsida > Cyatheales
+Cibotioideae # COL: synonym of Cibotiaceae (Cyatheales)
+Cryptogrammaceae # COL: synonym of Pteridaceae (Polypodiales)
+Cryptogrammoideae # COL: Polypodiales > Pteridaceae
+Culcitaceae # COL: Polypodiopsida > Cyatheales
+Cyatheaceae # COL: Polypodiopsida > Cyatheales
+Cyatheales # COL: Tracheophyta > Polypodiopsida
+Cyatheoideae # COL: synonym of Cyatheaceae (Cyatheales)
+Cyatheopsida # COL: synonym of Cyatheales (Polypodiopsida)
+Cystodiaceae # COL: Polypodiopsida > Polypodiales
+Cystopteridaceae # COL: Polypodiopsida > Polypodiales
+Cystopteridinae # COL: synonym of Cystopteridaceae (Polypodiales)
+Danaeaceae # COL: synonym of Marattiaceae (Marattiales)
+Davalliaceae # COL: Polypodiopsida > Polypodiales
+Davallieae # COL: synonym of Davalliaceae (Polypodiales)
+Dennstaedtiaceae # COL: Polypodiopsida > Polypodiales
+Dennstaedtiales # COL: synonym of Polypodiales (Polypodiopsida)
+Desmophlebiaceae # COL: Polypodiopsida > Polypodiales
+Dicksoniaceae # COL: Polypodiopsida > Cyatheales
+Dicksoniales # COL: synonym of Cyatheales (Polypodiopsida)
+Dicranopteridaceae # COL: synonym of Gleicheniaceae (Gleicheniales)
+Dictyoxiphiaceae # COL: synonym of Tectariaceae (Polypodiales)
+Didymochlaenaceae # COL: Polypodiopsida > Polypodiales
+Diplazioideae # COL: synonym of Athyriaceae (Polypodiales)
+Diplaziopsidaceae # COL: Polypodiopsida > Polypodiales
+Dipteridaceae # ITIS: Polypodiopsida > Gleicheniales
+Dipteridales # ITIS: synonym of Gleicheniales (Polypodiopsida)
+Dipteridinae # PBDB: Polypodiopsida > Polypodiaceae
+Drynariaceae # COL: synonym of Polypodiaceae (Polypodiales)
+Dryopteridaceae # COL: Polypodiopsida > Polypodiales
+Dryopteridales # COL: synonym of Polypodiales (Polypodiopsida)
+Elaphoglossaceae # COL: synonym of Dryopteridaceae (Polypodiales)
+Equisetaceae # COL: Polypodiopsida > Equisetales
+Equisetales # COL: Tracheophyta > Polypodiopsida
+Equisetidae # COL: synonym of Equisetales (Polypodiopsida)
+Equisetophyta # COL: synonym of Equisetales (Polypodiopsida)
+Filicaceae # COL: synonym of Dryopteridaceae (Polypodiales)
+Filicales # COL: synonym of Polypodiales (Polypodiopsida)
+Filicopsida # ITIS: synonym of Polypodiopsida (Tracheophyta)
+Gleicheneae # COL: synonym of Gleicheniaceae (Gleicheniales)
+Gleicheniaceae # COL: Polypodiopsida > Gleicheniales
+Gleicheniales # COL: Tracheophyta > Polypodiopsida
+Gleicheniopsida # COL: synonym of Gleicheniales (Polypodiopsida)
+Grammitidaceae # COL: synonym of Polypodiaceae (Polypodiales)
+Guaireaceae # IRMNG: Polypodiopsida > Osmundales
+Gymnogrammitidaceae # COL: synonym of Polypodiaceae (Polypodiales)
+Helminthostachyaceae # COL: synonym of Ophioglossaceae (Ophioglossales)
+Hemidictyaceae # COL: Polypodiopsida > Polypodiales
+Hemionitidaceae # COL: synonym of Pteridaceae (Polypodiales)
+Heterosporae # COL: synonym of Selaginellales (Lycopodiopsida)
+Heterosporeae # COL: synonym of Selaginellales (Lycopodiopsida)
+Huperziaceae # COL: synonym of Lycopodiaceae (Lycopodiales)
+Huperzioideae # clubmoss subfamily (Lycopodiaceae); COL: Lycopodiales > Lycopodiaceae
+Hymenophyllaceae # COL: Polypodiopsida > Hymenophyllales
+Hymenophyllales # COL: Tracheophyta > Polypodiopsida
+Hymenophyllopsida # COL: synonym of Cyatheales (Polypodiopsida)
+Hymenophyllopsidaceae # COL: synonym of Cyatheaceae (Cyatheales)
+Hymenophyllopsidales # COL: synonym of Cyatheales (Polypodiopsida)
+Hypodematiaceae # COL: Polypodiopsida > Polypodiales
+Hypodematioideae # COL: synonym of Hypodematiaceae (Polypodiales)
+Hypolepidaceae # COL: synonym of Dennstaedtiaceae (Polypodiales)
+Isoetaceae # COL: Lycopodiopsida > Isoetales
+Isoetales # COL: Tracheophyta > Lycopodiopsida
+Isoetariae # COL: synonym of Isoetales (Lycopodiopsida)
+Isoeteae # COL: synonym of Isoetales (Lycopodiopsida)
+Kaplanopteridaceae # IRMNG: Polypodiopsida > Zygopteridales
+Kaulfussiaceae # COL: synonym of Marattiaceae (Marattiales)
+Kaulfussioideae # COL: synonym of Marattiaceae (Marattiales)
+Lindsaeaceae # COL: Polypodiopsida > Polypodiales
+Lindsaeales # COL: synonym of Polypodiales (Polypodiopsida)
+Lindsaeoideae # COL: synonym of Lindsaeaceae (Polypodiales)
+Lomariopsidaceae # COL: Polypodiopsida > Polypodiales
+Lomariopsideae # COL: synonym of Lomariopsidaceae (Polypodiales)
+Lomariopsidoideae # COL: synonym of Lomariopsidaceae (Polypodiales)
+Lonchitidaceae # COL: Polypodiopsida > Polypodiales
+Lonchitidales # COL: synonym of Polypodiales (Polypodiopsida)
+Lophosoriaceae # COL: synonym of Dicksoniaceae (Cyatheales)
+Loxogrammaceae # COL: synonym of Polypodiaceae (Polypodiales)
+Loxogrammoideae # ribbon fern subfamily (Polypodiaceae); COL: Polypodiales > Polypodiaceae
+Loxsomataceae # COL: Polypodiopsida > Cyatheales
+Loxsomatales # COL: synonym of Cyatheales (Polypodiopsida)
+Lycopodiaceae # COL: Lycopodiopsida > Lycopodiales
+Lycopodiales # COL: Tracheophyta > Lycopodiopsida
+Lycopodiellaceae # COL: synonym of Lycopodiaceae (Lycopodiales)
+Lycopodielloideae # clubmoss subfamily (Lycopodiaceae); COL: Lycopodiales > Lycopodiaceae
+Lycopodiidae # COL: synonym of Lycopodiales (Lycopodiopsida)
+Lycopodiophyta # COL: synonym of Lycopodiales (Lycopodiopsida)
+Lycopodiopsida # COL: Plantae > Tracheophyta
+Lygodiaceae # COL: Polypodiopsida > Schizaeales
+Marattiaceae # COL: Polypodiopsida > Marattiales
+Marattiales # COL: Tracheophyta > Polypodiopsida
+Marattiidae # COL: synonym of Marattiales (Polypodiopsida)
+Marattiopsida # COL: synonym of Marattiales (Polypodiopsida)
+Marsileaceae # COL: Polypodiopsida > Salviniales
+Marsileales # COL: synonym of Salviniales (Polypodiopsida)
+Marsileopsida # COL: synonym of Salviniales (Polypodiopsida)
+Matoniaceae # ITIS: Polypodiopsida > Gleicheniales
+Matoniales # ITIS: synonym of Gleicheniales (Polypodiopsida)
+Matoniopsida # Wikidata: Tracheophytes
+Metaxyaceae # COL: Polypodiopsida > Cyatheales
+Metaxyales # COL: synonym of Cyatheales (Polypodiopsida)
+Mohriaceae # COL: synonym of Anemiaceae (Schizaeales)
+Monachosoraceae # COL: synonym of Dennstaedtiaceae (Polypodiales)
+Monachosorales # COL: synonym of Polypodiales (Polypodiopsida)
+Negripteridaceae # COL: synonym of Pteridaceae (Polypodiales)
+Negripteridales # COL: synonym of Polypodiales (Polypodiopsida)
+Nephrolepidaceae # COL: Polypodiopsida > Polypodiales
+Oleandraceae # COL: Polypodiopsida > Polypodiales
+Oleandroideae # COL: synonym of Oleandraceae (Polypodiales)
+Onocleaceae # COL: Polypodiopsida > Polypodiales
+Ophioglossaceae # COL: Polypodiopsida > Ophioglossales
+Ophioglossales # COL: Tracheophyta > Polypodiopsida
+Ophioglosseae # COL: synonym of Ophioglossoideae (Ophioglossales)
+Ophioglossidae # COL: synonym of Ophioglossales (Polypodiopsida)
+Ophioglossopsida # COL: synonym of Ophioglossales (Polypodiopsida)
+Osmundaceae # COL: Polypodiopsida > Osmundales
+Osmundales # COL: Tracheophyta > Polypodiopsida
+Osmundineae # COL: synonym of Osmundaceae (Osmundales)
+Osmundopsida # COL: synonym of Osmundales (Polypodiopsida)
+Parkeriaceae # COL: synonym of Pteridaceae (Polypodiales)
+Parkeriales # COL: synonym of Polypodiales (Polypodiopsida)
+Peranematoideae # COL: synonym of Dryopteridoideae (Polypodiales)
+Phylloglossaceae # COL: synonym of Lycopodiaceae (Lycopodiales)
+Pilulariaceae # COL: synonym of Marsileaceae (Salviniales)
+Pilulariales # COL: synonym of Salviniales (Polypodiopsida)
+Plagiogyriaceae # COL: Polypodiopsida > Cyatheales
+Plagiogyriales # COL: synonym of Cyatheales (Polypodiopsida)
+Platyceriaceae # COL: synonym of Polypodiaceae (Polypodiales)
+Platyzomataceae # COL: synonym of Pteridaceae (Polypodiales)
+Platyzomatales # COL: synonym of Polypodiales (Polypodiopsida)
+Pleurosoriopsidaceae # COL: synonym of Polypodiaceae (Polypodiales)
+Polypodiaceae # COL: Polypodiopsida > Polypodiales
+Polypodiales # COL: Tracheophyta > Polypodiopsida
+Polypodiopsida # COL: Plantae > Tracheophyta
+Protowoodsioideae # COL: synonym of Woodsiaceae (Polypodiales)
+Psalixochlaenaceae # IRMNG: Polypodiopsida > Zygopteridales
+Psilotaceae # COL: Polypodiopsida > Psilotales
+Psilotales # COL: Tracheophyta > Polypodiopsida
+Psilotopsida # COL: synonym of Psilotales (Polypodiopsida)
+Pteridaceae # COL: Polypodiopsida > Polypodiales
+Pteridales # COL: synonym of Polypodiales (Polypodiopsida)
+Pteridiaceae # COL: synonym of Dennstaedtiaceae (Polypodiales)
+Pteridophyta # ITIS: synonym of Tracheophyta (Plantae)
+Pteridopsida # COL: synonym of Polypodiales (Polypodiopsida)
+Pteridryaceae # COL: Polypodiopsida > Polypodiales
+Rhachidosoraceae # COL: Polypodiopsida > Polypodiales
+Rhachidosoroideae # COL: synonym of Rhachidosoraceae (Polypodiales)
+Saccolomataceae # COL: Polypodiopsida > Polypodiales
+Saccolomatales # COL: synonym of Polypodiales (Polypodiopsida)
+Salviniaceae # COL: Polypodiopsida > Salviniales
+Salviniales # COL: Tracheophyta > Polypodiopsida
+Salviniopsida # COL: synonym of Salviniales (Polypodiopsida)
+Schizaeaceae # COL: Polypodiopsida > Schizaeales
+Schizaeales # COL: Tracheophyta > Polypodiopsida
+Selaginellaceae # COL: Lycopodiopsida > Selaginellales
+Selaginellales # COL: Tracheophyta > Lycopodiopsida
+Selaginellidae # COL: synonym of Selaginellales (Lycopodiopsida)
+Selaginellineae # COL: synonym of Selaginellales (Lycopodiopsida)
+Selagines # COL: synonym of Selaginellales (Lycopodiopsida)
+Sermayaceae # IRMNG: Polypodiopsida > Zygopteridales
+Sinopteridaceae # COL: synonym of Pteridaceae (Polypodiales)
+Skaaripteridaceae # IRMNG: Tracheophyta > Polypodiopsida
+Stromatopteridaceae # COL: synonym of Gleicheniaceae (Gleicheniales)
+Stromatopteridales # Wikidata: Tracheophytes > Polypodiopsida
+Stromatopteridoideae # COL: synonym of Gleicheniaceae (Gleicheniales)
+Taenitidaceae # COL: synonym of Pteridaceae (Polypodiales)
+Tectariaceae # COL: Polypodiopsida > Polypodiales
+Tectarioideae # COL: synonym of Tectariaceae (Polypodiales)
+Tedeleaceae # IRMNG: Polypodiopsida > Zygopteridales
+Tempskyaceae # IRMNG: Polypodiopsida > Schizaeales
+Thelypteridaceae # COL: Polypodiopsida > Polypodiales
+Thelypteridales # COL: synonym of Polypodiales (Polypodiopsida)
+Thelypteridoideae # COL: Polypodiales > Thelypteridaceae
+Thyrsopteridaceae # COL: Polypodiopsida > Cyatheales
+Tmesipteridaceae # COL: synonym of Psilotaceae (Psilotales)
+Trichomanaceae # COL: synonym of Hymenophyllaceae (Hymenophyllales)
+Urostachyaceae # COL: synonym of Lycopodiaceae (Lycopodiales)
+Vittariaceae # COL: synonym of Pteridaceae (Polypodiales)
+Vittarioideae # ribbon fern subfamily (Pteridaceae); COL: Polypodiales > Pteridaceae
+Woodsiaceae # COL: Polypodiopsida > Polypodiales
+Woodsieae # COL: synonym of Woodsiaceae (Polypodiales)

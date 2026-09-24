@@ -1,51 +1,75 @@
-Achelidae
-Allotriocarida # pancrustacean clade including Hexapoda, Remipedia and Branchiopoda
-Altocrustacea # pancrustacean clade including Hexapoda
-Amplectobeluidae
-Anomalocarididae
-Apterygota
-Arachnomorpha
-Armadillinae
-Arthropoda
-Artiopoda
-Brachyscelidae
-Canuellidae
-Catiniidae
-Ceromidae
-Chelicerata
-Condylipoda
-Deuteropoda
-Dinocaridida
-Eriphidae
-Eriphiidae
-Euarthropoda
-Euchelicerata
-Euthycarcinida
-Euthycarcinoidea
-Gatuniidae
-Hersiliidae
-Hexapoda
-Hurdiidae
-Isoxyida
-Leptopodidae
-Longipediidae
-Mandibulata
-Megacheira
-Melaphini
-Miracinae
-Miracrustacea # Hexapoda with Remipedia and Cephalocarida
-Necronectinae
-Nektaspida
-Niponiinae
-Opabiniidae
-Pancrustacea # crustaceans including Hexapoda
-Phrynidae
-Radiodonta
-Scinidae
-Sphaeridiini
-Steropinae
-Stygnidae
-Tamisiocarididae
-Tetraconata # synonym of Pancrustacea
-Teutoniidae
-Titaniidae
+Acarinae # homonym in Arachnids (NCBI: Sarcoptiformes > Acaridae), Hemiptera (COL: synonym of Acarnini (Hemiptera))
+Acastinae # homonym in Crustacean (COL: Balanomorpha > Balanidae), OtherArthropods (PBDB: Phacopida > Dalmanitidae)
+Achelidae # homonym in Hemiptera (COL: synonym of Achilina (Hemiptera)), OtherArthropods (ITIS: synonym of Acheliidae (Pantopoda))
+Allotriocarida # pancrustacean clade including Hexapoda, Remipedia and Branchiopoda; WoRMS: Animalia > Arthropoda
+Altocrustacea # pancrustacean clade including Hexapoda; ITIS: Animalia > Arthropoda
+Amplectobeluidae # IRMNG: Dinocaridida > Radiodonta
+Anepsiini # homonym in Arachnids (Wikidata: Araneae > Araneidae), Coleoptera (COL: Coleoptera > Tenebrionidae)
+Angelinae # homonym in Arachnids (COL: synonym of Leiosteninae (Opiliones)), OtherInsects (NCBI: Mantodea > Mantidae)
+Anomalocarididae # IRMNG: Dinocaridida > Radiodonta
+Apterygota # ITIS: synonym of Hexapoda (Animalia)
+Arachnomorpha # PBDB: Animalia > Arthropoda
+Armadillinae # homonym in Crustacean (COL: synonym of Armadillidae (Isopoda)), OtherArthropods (COL: synonym of Oniscomorpha (Arthropoda))
+Arthropoda # COL: Eukaryota > Animalia
+Artiopoda # IRMNG: Animalia > Arthropoda
+Asaphina # homonym in Coleoptera (COL: synonym of Hemicrepidiina (Coleoptera)), OtherArthropods (PBDB: Trilobita > Asaphida)
+Asaphinae # homonym in Hymenoptera (COL: synonym of Asaphesinae (Insecta)), OtherArthropods (PBDB: Asaphida > Asaphidae)
+Ascinae # homonym in Arachnids (Wikidata: Mesostigmata > Ascidae), Diptera (COL: synonym of Spheginina (Diptera))
+Axiidae # homonym in Crustacean (COL: Malacostraca > Decapoda), Lepidoptera (IRMNG: synonym of Cimeliidae (Lepidoptera))
+Axioidea # homonym in Crustacean (COL: synonym of Axiidea (Malacostraca)), Lepidoptera (LepIndex: Insecta > Lepidoptera)
+Balaninae # homonym in Coleoptera (PBDB: synonym of Curculionina (Coleoptera)), Crustacean (COL: Balanomorpha > Balanidae)
+Brachyscelidae # homonym in Crustacean (COL: Malacostraca > Amphipoda), Hemiptera (ITIS: synonym of Eriococcidae (Hemiptera))
+Brotheini # homonym in Arachnids (NCBI: Scorpiones > Chactidae), Coleoptera (Coleoptera family-group names: synonym of Brachycerini (Coleoptera))
+Canuellidae # homonym in Crustacean (COL: Copepoda > Canuelloida), OtherArthropods (BHL: Arthropoda > Canuelloida)
+Carcinidae # homonym in Crustacean (COL: Malacostraca > Decapoda), Lepidoptera (IRMNG: synonym of Depressariidae (Lepidoptera))
+Carcininae # homonym in Crustacean (COL: Decapoda > Carcinidae), Lepidoptera (UKSI: synonym of Peleopodidae (Lepidoptera))
+Catiniidae # homonym in Coleoptera (COL: Insecta > Coleoptera), Crustacean (COL: Arthropoda > Copepoda)
+Ceromidae # homonym in Arachnids (COL: Arachnida > Solifugae), Diptera (COL: synonym of Brachymerini (Diptera))
+Chelicerata # COL: Animalia > Arthropoda
+Condylipoda # Wikispecies: synonym of Arthropoda
+Deuteropoda # PBDB: Animalia > Arthropoda
+Dinocaridida # IRMNG: Animalia > Arthropoda
+Diplocheta # homonym in Crustacean (COL: Malacostraca > Isopoda), OtherArthropods (Wikidata: Arthropoda > Diplopoda)
+Dromiidae # sponge crab family (Brachyura); homonym in Coleoptera (IRMNG: synonym of Carabidae (Coleoptera)), Crustacean (COL: Malacostraca > Decapoda)
+Erigonidae # homonym in Arachnids (IRMNG: synonym of Linyphiidae (Araneae)), Diptera (COL: synonym of Brachymerini (Diptera))
+Eriphidae # homonym in Crustacean (COL: synonym of Eriphiidae (Decapoda)), Diptera
+Eriphiidae # homonym in Crustacean (COL: Malacostraca > Decapoda), Diptera (COL: synonym of Azeliinae (Diptera))
+Euarthropoda # PBDB: synonym of Arthropoda (Animalia)
+Euchelicerata # homonym in Arachnids (ITIS: synonym of Arachnida (Arthropoda)), OtherArthropods (ITIS: synonym of Merostomata (Arthropoda))
+Euthycarcinida # COL: Arthropoda > Euthycarcinoidea
+Euthycarcinoidea # COL: Animalia > Arthropoda
+Gatuniidae # homonym in Coleoptera, Crustacean (COL: synonym of Necronectinae (Decapoda))
+Hersiliidae # homonym in Arachnids (COL: Arachnida > Araneae), Crustacean (COL: Arthropoda > Copepoda)
+Hexapoda # COL: Animalia > Arthropoda
+Hurdiidae # IRMNG: Dinocaridida > Radiodonta
+Isoxyida # IRMNG: Animalia > Arthropoda
+Jassidae # homonym in Crustacean (GBIF: synonym of Ischyroceridae (Amphipoda)), Hemiptera (COL: synonym of Iassini (Hemiptera))
+Leptopodidae # homonym in Crustacean (COL: synonym of Inachinae (Decapoda)), Hemiptera (COL: Insecta > Hemiptera)
+Lichadidae # homonym in Coleoptera (COL: synonym of Eulichadidae (Coleoptera)), OtherArthropods (PBDB: synonym of Lichidae (Lichida))
+Liodidae # round fungus beetle family (Staphylinoidea); homonym in Arachnids (IRMNG: synonym of Neoliodidae (Oribatida)), Coleoptera (PBDB: synonym of Leiodidae (Coleoptera))
+Longipediidae # homonym in Crustacean (COL: Copepoda > Canuelloida), OtherArthropods (BHL: Arthropoda > Canuelloida)
+Mandibulata # PBDB: synonym of Mandibulata (Animalia)
+Megacheira # IRMNG: Animalia > Arthropoda
+Melaphini # homonym in Hemiptera (COL: synonym of Fordini (Hemiptera)), OtherArthropods (iNat: Polydesmida > Xystodesmidae)
+Metidae # homonym in Arachnids (IRMNG: synonym of Tetragnathidae (Araneae)), Crustacean (COL: Arthropoda > Copepoda)
+Michaeliinae # homonym in Arachnids (FaEu: Astigmata > Freyanidae), Crustacean (COL: synonym of Goneplacidae (Decapoda))
+Miracinae # homonym in Crustacean (COL: synonym of Miraciinae (Arthropoda)), Hymenoptera (ITIS: Hymenoptera > Braconidae)
+Miracrustacea # Hexapoda with Remipedia and Cephalocarida; Wikidata: Animalia > Arthropoda
+Necronectinae # homonym in Coleoptera (COL: synonym of Timarchopsinae (Coleoptera)), Crustacean (COL: Decapoda > Portunidae)
+Nektaspida # IRMNG: Animalia > Arthropoda
+Niponiinae # homonym in Coleoptera (COL: Coleoptera > Histeridae), OtherArthropods (COL: Diplopoda > Cryptodesmidae)
+Opabiniidae # WoRMS: Animalia > Arthropoda
+Palicinae # homonym in Crustacean (Wikidata: Decapoda > Palicidae), OtherInsects (COL: synonym of Platylabiinae (Dermaptera))
+Pancrustacea # crustaceans including Hexapoda; WoRMS: synonym of Crustacea (Animalia)
+Phrynidae # homonym in Arachnids (COL: Arachnida > Amblypygi), Diptera (COL: synonym of Brachymerini (Diptera))
+Radiodonta # IRMNG: Arthropoda > Dinocaridida
+Scinidae # homonym in Crustacean (COL: Malacostraca > Amphipoda), Diptera (COL: synonym of Chloropini (Diptera))
+Sphaeridiini # COL: Coleoptera > Hydrophilidae
+Steropinae # homonym in Coleoptera (COL: Coleoptera > Anthicidae), Crustacean (COL: synonym of Peltidiidae (Copepoda))
+Stygnidae # homonym in Arachnids (COL: Arachnida > Opiliones), Insects (IRMNG: Insecta > Protorthoptera)
+Tamisiocarididae # IRMNG: Dinocaridida > Radiodonta
+Tetraconata # synonym of Pancrustacea; WoRMS: synonym of Crustacea (Animalia)
+Teutoniidae # homonym in Arachnids (COL: Arachnida > Trombidiformes), OtherInsects (COL: synonym of Machilidae (Archaeognatha))
+Titaniidae # homonym in Crustacean (COL: synonym of Titanidae (Isopoda)), Diptera (COL: synonym of Chloropini (Diptera))
+Tychiidae # homonym in Coleoptera (PBDB: synonym of Tychiini (Coleoptera)), Crustacean (COL: synonym of Epialtidae (Decapoda))
+Tylidae # homonym in Crustacean (COL: Malacostraca > Isopoda), Diptera (UKSI: synonym of Micropezidae (Diptera))

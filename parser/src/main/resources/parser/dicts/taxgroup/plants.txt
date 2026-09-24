@@ -1,24 +1,27 @@
-Archephyta
-Chlorobionta
-Chlorobiota
-Chloroplastida
-Cormobionta
-Cormophyta
-Embryobionta
-Embryophyta
-Euchlorophyta
-Euplanta
-Metaphyta
-Phyta
-Plant
-Plantae
-Plants
-Pteridobiotina
-Regnum Vegetabile
-Spermatophyta # seed plants sensu lato (spans both Angiosperms and Gymnosperms)
-Telomobionta
-Tracheophyta
-Vegetabile
-Vegetabilia
-Vegetable
-Viridiplantae
+Anopteraceae # homonym in Angiosperms (COL: synonym of Escalloniaceae (Escalloniales)), Pteridophytes (COL: synonym of Pteridaceae (Polypodiales))
+Archephyta # not found in ChecklistBank
+Chlorobionta # TAXREF: synonym of Viridaeplantae (Plantae)
+Chloroplastida # OTT: Eukaryota > Archaeplastida
+Cormobionta # not found in ChecklistBank
+Cormophyta # not found in ChecklistBank
+Embryobionta # not found in ChecklistBank
+Embryophyta # ITIS: Plantae
+Ephemeraceae # homonym in Angiosperms (IRMNG: synonym of Commelinaceae (Commelinales)), Bryophytes (COL: synonym of Pottiaceae (Pottiales))
+Equisetopsida # horsetails sensu stricto, but all land plants sensu Chase & Reveal 2009 as used by Tropicos; COL: synonym of Equisetales (Polypodiopsida)
+Euchlorophyta # not found in ChecklistBank
+Euplanta # not found in ChecklistBank
+Metaphyta # not found in ChecklistBank
+Phyta # not found in ChecklistBank
+Plant # not found in ChecklistBank
+Plantae # COL: Eukaryota
+Plants # not found in ChecklistBank
+Pteridobiotina # COL: Eukaryota > Plantae
+Regnum Vegetabile # not found in ChecklistBank
+Spermatophyta # seed plants sensu lato (spans both Angiosperms and Gymnosperms); PBDB: Plantae
+Telomobionta # not found in ChecklistBank
+Tracheophyta # COL: Eukaryota > Plantae
+Trigoniaceae # homonym in Algae (iNat: Bacillariophyceae > Stellarimales), Angiosperms (COL: Magnoliopsida > Malpighiales)
+Vegetabile # not found in ChecklistBank
+Vegetabilia # not found in ChecklistBank
+Vegetable # not found in ChecklistBank
+Viridiplantae # ITIS: Plantae

@@ -1,1757 +1,1752 @@
-Abiinae
-Abzariini
-Acaenitinae
-Acampsini
-Acampsohelconinae
-Acanthomyopsini
-Acanthostichinae
-Acanthostichini
-Achaiabraconini
-Acordulecerinae
-Acrisidini
-Acroaspidiini
-Acrolytina
-Aculeata
-Adamasini
-Adelencyrtii
-Adelognathinae
-Adelomyrmecini
-Adelphinae
-Adeshini
-Aenasiina
-Aenasiini
-Aenictinae
-Aenictini
-Aenictogitoninae
-Aenictogitonini
-Aethognathini
-Agaonidae
-Agaoninae
-Agaonoidea
-Agathidinae
-Agathidini
-Agathirsini
-Ageniaspidina
-Ageniaspidini
-Ageniellini
-Agriomyini
-Agriotypinae
-Agroecomyrmecinae
-Agroecomyrmecini
-Agrothereutina
-Akapalinae
-Alaptidae
-Alaptinae
-Alaptini
-Alaptoidea
-Alavarommatidae
-Aleiodini
-Allantinae
-Allantini
-Allocerellini
-Allocharini
-Allocoeliini
-Allodapini
-Alocandreninae
-Alomyini
-Alysiinae # braconid wasp subfamily (Braconidae)
-Alysiini
-Alyssontini
-Amblyoponinae
-Amblyoponini
-Ambositrinae
-Amerostenini
-Amicrocentrinae
-Aminellii
-Aminellina
-Amirini
-Amiseginae
-Ammobatini
-Ammobatoidini
-Ammophilinae
-Ammophilini
-Ammoplanina
-Ampulicidae
-Ampulicinae
-Ampulicini
-Anacharitidae
-Anacharitinae
-Anacrabronina
-Anagrinae
-Anagrini
-Anagyrii
-Anagyrina
-Anagyrini
-Anaphini
-Anaxyelidae
-Anaxyeloidea
-Ancylaini
-Ancyloscelidina
-Andinoencyrtii
-Andinoencyrtini
-Andrenidae
-Andreninae
-Andrenini
-Anergatidini
-Anergatini
-Aneugmenini
-Aneuretinae
-Aneuretini
-Angarosphecidae
-Ankylomyrmini
-Ankylophonini
-Anomalicorniini
-Anomalicornini
-Anomalomyrmini
-Anomaloninae
-Anomalonini
-Anonychomyrmini
-Anopliini
-Anselmellini
-Anteoninae
-Antheminae
-Anthemini
-Anthidiini
-Anthoboscinae
-Anthoglossini
-Anthophila
-Anthophoridae
-Anthophorini
-Anusii
-Anusiina
-Aphaenogastrini
-Aphelinidae
-Aphelinina
-Aphelininae
-Aphelinini
-Aphelinoidini
-Aphelopinae
-Aphelotomini
-Aphidiina
-Aphidiinae
-Aphidiini
-Aphilanthopini
-Aphrastobraconini
-Aphycii
-Aphycina
-Aphycini
-Aphycoideina
-Aphytinae
-Aphytini
-Apidae
-Apinae
-Apini
-Aplorhini
-Apoaphelopinae
-Apocrita
-Apocryptini
-Apodryininae
-Apoidea
-Apomyrminae
-Apomyrmini
-Aporina
-Aporini
-Apozyginae
-Apterogyninae
-Aptesini
-Archaeocynipidae
-Archaeomyrmecini
-Archaphidina
-Archiponerini
-Archirileyini
-Aresconini
-Argamaniini
-Arginae
-Arhopoideina
-Armaniinae
-Armaniini
-Arrhenophaginae
-Arrhenophagini
-Arrhenophaginos
-Asaphesinae
-Asaphinae
-Asaphini
-Asparagobiinae
-Aspicerinae
-Aspidosmiini
-Astatinae
-Astymachini
-Ateleutinae
-Athaliinae
-Athermantinae
-Atomacerinae
-Atrophini
-Attina
-Attinae
-Attini
-Augochlorina
-Augochlorini
-Aulacidae
-Aulacideini
-Aulosaphobraconini
-Australomymarini
-Austrocynipidae
-Austrohormiini
-Austromyzinini
-Austroniidae
-Austroserphinae
-Austrosystasinae
-Austroterobiinae
-Avgini
-Aximinae
-Aximini
-Axinidrini
-Aylacini
-Azotidae
-Azotinae
-Baeomorphidae
-Baeomorphinae
-Banchinae # ichneumon wasp subfamily (Ichneumonidae)
-Banchini
-Baryceratina
-Basicerotini
-Bathytrichina
-Belaspidiini
-Belytinae
-Belytini
-Bembicina
-Bembicinae
-Bembicini
-Bethylidae
-Bethylinae
-Bethyloidea
-Bethylonymidae
-Bethylonymoidea
-Betylobraconinae
-Betylobraconini
-Betyobraconinae
-Biastini
-Binareini
-Blacinae
-Blacini
-Blanchardiscini
-Blasticotomidae
-Blastophagidae
-Blastophaginae
-Blastophagini
-Blastothrichina
-Blennocampinae
-Blennocampini
-Blepharidattini
-Bocchinae
-Bombini
-Bothriomyrmecini
-Bothriothoracina
-Bothriothoracini
-Bothynostethina
-Bothynostethini
-Boucekelimini
-Boucekiellii
-Boucekiidae
-Boucekiini
-Boucekinini
-Bouceklytinae
-Brachistinae
-Brachistini
-Brachycistidinae
-Brachycyrtinae
-Brachymerariae
-Brachymeriinae
-Brachymeriini
-Brachymyrmecini
-Brachynomadini
-Brachyscelidiphaginae
-Brachyscelidiphagini
-Braconidae
-Braconinae # braconid wasp subfamily (Braconidae)
-Braconini
-Bradynobaenidae
-Bradynobaeninae
-Bregmatomyrmini
-Brethesiellii
-Brownimeciinae
-Brownimeciini
-Bruchomymarini
-Brulleiini
-Buresiinae
-Buresiini
-Buresiniini
-Caenohalictina
-Caenoprosopidini
-Calesidae
-Calesinae
-Caliroini
-Callimomidae
-Callimomoinae
-Calliopsini
-Callomelittinae
-Calosotinae
-Calyptomyrmecini
-Calytonotiscini
-Camponotinae
-Camponotini
-Campopleginae # ichneumon wasp subfamily (Ichneumonidae)
-Campoplegini
-Campsomerini
-Camptopoeina
-Camptopterinae
-Cardiochilinae
-Cardiocondylini
-Cataulacinae
-Cataulacini
-Caupolicanini
-Ceballosii
-Cecidellinae
-Cedriina
-Cedriini
-Ceidae
-Ceinae
-Ceini
-Celliformidae
-Cenocoeliinae
-Centistini
-Centridini
-Centrodorini
-Centromyrmecini
-Cephalciinae
-Cephalotini
-Cephidae
-Cephinae
-Cephini
-Cephoidea
-Ceranisinae
-Cerapachyinae
-Cerapachyini
-Ceraphronidae
-Ceraphronoidea
-Cerapterocerii
-Cerapterocerini
-Ceratinini
-Ceratocryptina
-Ceratoneurini
-Cercerini
-Cercobelini
-Cerealcini
-Cerocephalidae
-Cerocephalinae
-Ceropalinae
-Ceroptresini
-Chaetostrichinae
-Chaetostrichini
-Chalcedectidae
-Chalcedectinae
-Chalcedectini
-Chalcerinyini
-Chalcidiae
-Chalcididae
-Chalcidinae
-Chalcidini
-Chalcidites
-Chalcidoidea
-Chalcimerinae
-Chalcimerini
-Chalcitellini
-Charipidae
-Charipinae
-Charitopidini
-Charitopii
-Charmontinae
-Cheiloneurini
-Cheiropachinae
-Cheliomyrmecinae
-Cheliomyrmecini
-Cheloninae # braconid wasp subfamily (Braconidae)
-Chelonini
-Chilicolini
-Chiloneurina
-Chiroticina
-Chloriontinae
-Chremylina
-Chremylini
-Chrionotini
-Chromeurytominae
-Chrysididae
-Chrysidinae # cuckoo wasp subfamily (Chrysididae)
-Chrysidini
-Chrysidoidea
-Chrysochalcissini
-Chrysolampidae
-Chrysolampinae
-Chrysolampini
-Chrysoplatycerina
-Chrysoplatycerini
-Chyphotidae
-Chyphotinae
-Cimbicidae
-Cimbicinae
-Cimbicini
-Cirrospilinae
-Cirrospilini
-Cladiini
-Claseinae
-Claseini
-Clennyminae
-Cleonymidae
-Cleonymides
-Cleonyminae
-Cleonymini
-Cleonymoidae
-Cleptinae # cuckoo wasp subfamily (Chrysididae)
-Clinocentrini
-Coccophaginae
-Coccophagini
-Coccophagoidae
-Coelocybidae
-Coelocybinae
-Coeloidini
-Coelopencyrtina
-Coenocercina
-Coesulina
-Colletidae
-Colletinae
-Collyriinae
-Colotrechnides
-Colotrechninae
-Colotrechnini
-Comperiellina
-Comperiina
-Comperiini
-Compsobraconini
-Conganteoninae
-Copidosomatina
-Copidosomatini
-Copidosomina
-Copidosomini
-Corynidinae
-Corynurina
-Cosmophorini
-Crabronidae
-Crabronina
-Crabroninae
-Crabronini
-Cratocentrinae
-Cratocentrini
-Cratominae
-Cratomini
-Cremastinae # ichneumon wasp subfamily (Ichneumonidae)
-Crematogastrini
-Cremnodina
-Cremnomymarini
-Cremnoptini
-Critogastrini
-Cryptina
-Cryptinae # ichneumon wasp subfamily (Ichneumonidae)
-Cryptini
-Cryptoceridae
-Cryptocerini
-Ctenocerinae
-Ctenopelmatinae # ichneumon wasp subfamily (Ichneumonidae)
-Ctenopelmatini
-Ctenoplectrini
-Ctenotillini
-Cyclopleurinae
-Cylindromyrmecinae
-Cylindromyrmecini
-Cylloceriinae
-Cymodusini
-Cynipencyrtidae
-Cynipencyrtini
-Cynipidae
-Cynipinae
-Cynipini
-Cynipoidea
-Dacetini
-Dacetonini
-Dacnusini
-Dallatorrellinae
-Dasylabrinae
-Dasymutillini
-Dasypodainae
-Dasypodaini
-Decatominae
-Decatomini
-Delomeristini
-Derecyrtinae
-Desantisiellini
-Deuterageniini
-Diacritinae
-Diamminae
-Diapriidae
-Diapriinae
-Diapriini
-Diaprioidea
-Diastrophini
-Diconocarini
-Dielocerinae
-Dimorphomyrmecini
-Dimorphomyrmii
-Dinarminae
-Dineurini
-Dinocampini
-Dinocarsiini
-Dinocarsini
-Diospilini
-Diosplitinae
-Dioxyini
-Diparidae
-Diparides
-Diparinae
-Diparini
-Diphaglossinae
-Diphaglossini
-Diplazontinae
-Diplolepididae
-Diplolepidinae
-Diplolepidini
-Diprionidae
-Diprioninae
-Dirhininae
-Dirhinini
-Dirrhopidii
-Dirrhopinae
-Discodii
-Discodina
-Discodini
-Discothyrinae
-Discothyrini
-Disophrini
-Dissoglottini
-Distylopinae
-Ditropinotellinae
-Diversinitidae
-Divnini
-Dolerini
-Dolichoderinae
-Dolichoderini
-Dolichurinae
-Dolichurini
-Doryctinae # braconid wasp subfamily (Braconidae)
-Doryctini
-Doryctomorphini
-Dorylii
-Dorylinae
-Dorylini
-Dorylozelini
-Drepanognathini
-Dryinidae
-Dryininae
-Dryinoidea
-Dulophanini
-Dusmetii
-Dvaliniinae
-Dyscoletini
-Eadyini
-Earinini
-Echthrodapinae
-Echthroplexiellii
-Echthroplexiellina
-Echthroplexiellini
-Ecitoninae
-Ecitonini
-Eclytini
-Ecnomiinae
-Ecnomiini
-Ecphylini
-Ectatomminae
-Ectatommini
-Ectromatini
-Ectromii
-Ectromina
-Ectromini
-Eidopompilini
-Eileenellinae
-Elachertidae
-Elachertinae
-Elachertini
-Elachertoidini
-Elachistina
-Elachistoidae
-Elampini
-Elaphropterini
-Elasmidae
-Elasminae
-Elasmini
-Elasmoidae
-Elatoidinae
-Elektroepyrinae
-Emargininae
-Embolemidae
-Emphorina
-Emphorini
-Empriini
-Encarsini
-Encyrtidae
-Encyrtina
-Encyrtinae
-Encyrtini
-Encyrtoidae
-Endaseina
-Enicospilini
-Enoggerinae
-Entedonidae
-Entedoninae
-Entedonini
-Entedonoidae
-Entedontinae
-Entiidae
-Entiinae
-Entomoborini
-Entomosericidae
-Entomosericini
-Eoichneumonidae
-Epeolina
-Epeolini
-Ephedrini
-Ephialtini
-Epichrysomallidae
-Epichrysomallinae
-Epiencyrtina
-Epiponini
-Episyronini
-Epitraninae
-Epitranini
-Epopostrumini
-Epyrinae
-Eremiaspheciidae
-Eremiaspheciinae
-Eremiaspheciini
-Eretmocerinae
-Eretmocerini
-Eriaphytinae
-Eriaphytini
-Eriaporidae
-Eriaporinae
-Eriaporini
-Ericapeltini
-Ericrocidini
-Ericydnina
-Ericydnini
-Eridanomyrmini
-Erigleninae
-Erimerinae
-Eriocampini
-Erixestinae
-Erotolepsiinae
-Erythmelini
-Eschatocerini
-Eteroligositina
-Eteroligositini
-Ethelurgina
-Eubroncinae
-Eucerina
-Eucerini
-Eucerinodina
-Euceroptresinae
-Eucerotinae
-Eucharididae
-Eucharidinae
-Eucharinae
-Eucharissinae
-Eucharitidae
-Eucharitinae
-Eucharitini
-Eucharoidae
-Eucoilidae
-Eucoilinae
-Eucomini
-Eudecatominae
-Euderidae
-Euderomphalini
-Eudorinae
-Eugahaniina
-Eugahaniini
-Euglossini
-Euherbstiini
-Eulonchopriini
-Eulophidae
-Eulophides
-Eulophina
-Eulophinae
-Eulophini
-Eulophoidae
-Eumenidae
-Eumeninae # mason wasp subfamily (Vespidae)
-Eunotidae
-Eunotinae
-Eunotini
-Euparagiinae
-Eupelmidae
-Eupelmina
-Eupelminae
-Eupelmini
-Eupelmoidae
-Euphorinae
-Euphorini
-Euplectrinae
-Euplectrini
-Euponerinae
-Euponerini
-Euryglossinae
-Euryinae
-Euryischidae
-Euryischiinae
-Euryischinae
-Euryischini
-Eurylabini
-Euryproctini
-Eurytomidae
-Eurytomides
-Eurytomina
-Eurytominae
-Eurytomini
-Eurytomoidae
-Eusandalinae
-Eusemionii
-Eusphinctinae
-Eutanycorminae
-Eutrichosomatidae
-Eutrichosomatinae
-Eutrichosomellini
-Euxanthellini
-Evaniidae
-Evaniodini
-Evanioidea
-Examblyoponini
-Exeirina
-Exenterini
-Exodontiellini
-Exomalopsini
-Exothecinae
-Facitorini
-Falsiformicidae
-Fedtschenkiinae
-Fenusini
-Ferreolina
-Fideliini
-Figitidae
-Figitinae
-Foenatopodini
-Formicidae
-Formiciinae
-Formiciini
-Formicinae
-Formicini
-Formicoidea
-Formicoxenini
-Gabuniina
-Gallorommatidae
-Gasteruptiidae
-Gasteruptiinae
-Gastrosericina
-Gayellini
-Gelina
-Geoscelionidae
-Gesomyrmecinae
-Gesomyrmecini
-Ghilarovitini
-Gigantiopini
-Glodianina
-Glyphomerinae
-Gnamptodontinae
-Gnamptodontini
-Gollumiellinae
-Gonatocerinae
-Gonatocerini
-Gonatopodinae
-Gondwanocentrini
-Goryphina
-Gorytina
-Grandoriellini
-Gravenhorstiini
-Groteini
-Gyrolasomyiini
-Habrolepidina
-Habrolepidini
-Habrolepina
-Habrolepini
-Haidomyrmecinae
-Haidomyrmecini
-Halictidae
-Halictina
-Halictinae
-Halictini
-Haltichellinae
-Haltichellini
-Halticopterini
-Handlirschiina
-Harmolitinae
-Harpegnathini
-Hartigiini
-Hecabolini
-Heimbrinae
-Helconinae
-Helconini
-Heliocausina
-Heliocausini
-Hellwigiini
-Heloridae
-Helorimorphini
-Hemadinae
-Hemaenasiina
-Hemiptarseninae
-Hemiptarsenini
-Hemitelina
-Heptamelidae
-Herbertiidae
-Herbertiinae
-Hesperapini
-Heterarthrinae
-Heterarthrini
-Heterogynaidae
-Heteroponerinae
-Heteroponerini
-Heterospilini
-Hetreulophidae
-Hetreulophinae
-Hetreulophini
-Hexacladii
-Hexacladiina
-Hexencyrtini
-Hexepeolini
-Heydeniidae
-Heydeniinae
-Heydeniini
-Histeromerinae
-Histeromerini
-Hodiernocynipinae
-Holcobraconini
-Homalotylina
-Homalotylini
-Homolobinae
-Homonotina
-Hoplocampini
-Hormiinae
-Hormiini
-Hormoceridae
-Hovachalcidini
-Hybothoracini
-Hybrizontinae
-Hybrizontini
-Hydrangeocolini
-Hylaeinae
-Hymenoptera
-Hypoclineini
-Hypopomyrmecini
-Hypotrigonina
-Hyptiini
-Hyptiogastrinae
-Ibaliidae
-Ibaliinae
-Ichneumonidae
-Ichneumoninae # ichneumon wasp subfamily (Ichneumonidae)
-Ichneumonini
-Ichneumonoidea
-Ichneutinae
-Idarninae
-Idiogrammatini
-Idioporidae
-Idioporinae
-Idioporini
-Iridomyrmecini
-Isepeolini
-Ismaridae
-Isoplatini
-Isosominae
-Isosomini
-Iswaroidini
-Ixodiphagii
-Ixodiphagina
-Ixodiphagini
-Janzenellidae
-Jurapriidae
-Keiraninae
-Keryinae
-Keryini
-Khoikhoiinae
-Khutelchalcididae
-Kradibiinae
-Labaniini
-Labeninae
-Labenini
-Labenopimplinae
-Lagynodinae
-Laibaleini
-Lamennaisiina
-Lamoundellini
-Lamprotatinae
-Laphyragoginae
-Laphyragogini
-Larrina
-Larrini
-Lasiini
-Lathromerini
-Lelapinae
-Lenomyrmecini
-Leptaleinae
-Leptanillinae
-Leptanillini
-Leptanilloidinae
-Leptofoenidae
-Leptofoeninae
-Leptogenyini
-Leptogenysii
-Leptomastideii
-Leptomastideina
-Leptomastidina
-Leptomastidini
-Leptomyrmecini
-Leptoomidae
-Leptospathiini
-Leptothoracini
-Leucopsidae
-Leucospidae
-Leucospididae
-Leucospidinae
-Leucospinae
-Leucospoidae
-Leuriniini
-Lieparini
-Limneriini
-Liometopini
-Liomyrmecini
-Lioponerinae
-Lioponerini
-Liopteridae
-Liopterinae
-Lithurginae
-Lithurgini
-Litomasticini
-Loboceratinae
-Loboscelidiinae
-Loboscelidiini
-Lonchopriini
-Lophomyrmicini
-Louriciinae
-Louriciini
-Lycaotini
-Lyciscidae
-Lyciscinae
-Lyciscini
-Lycorininae
-Lykii
-Lymaenonidae
-Lymaenoninae
-Lymaenonini
-Lymeonina
-Lyrodini
-Lysiphlebina
-Lysiterminae
-Lysitermini
-Lytopylini
-Maamingidae
-Macrocentrinae
-Macromesidae
-Macromesinae
-Macrophyini
-Macropidini
-Macroxyelinae
-Macroxyelini
-Maimetshidae
-Manueliini
-Mariettini
-Martialinae
-Masaridae
-Masarina
-Masarinae
-Masarini
-Masiini
-Masoninae
-Masonini
-Mastrina
-Maxfischeriinae
-Mayrellinae
-Mayrencyrtina
-Mayridii
-Mayridiina
-Mayridiini
-Megachilidae
-Megachilinae
-Megachilini
-Megalodontesidae
-Megalomyrmecini
-Megalyrhyssalinae
-Megalyridae
-Megalyroidea
-Meganomiinae
-Megaphragmini
-Megaspilidae
-Megaspilinae
-Megastigmidae
-Megastigmides
-Megastigminae
-Megischini
-Melanocryptina
-Melanosomellidae
-Melanosomellinae
-Melanosomellini
-Melectini
-Meliponina
-Meliponini
-Melissotarsini
-Melittidae
-Melittina
-Melittinae
-Melittini
-Melitturgina
-Melitturgini
-Meliturgulina
-Mellininae
-Mellinini
-Melophorini
-Mendesellinae
-Meranoplini
-Meriini
-Merisina
-Merisinae
-Merisini
-Mermiglossina
-Mescocoelini
-Mesini
-Mesitiinae
-Mesochorinae
-Mesocoelini
-Mesoleiini
-Mesopalarini
-Mesoserphidae
-Mesostenina
-Mesostoinae
-Mesostoini
-Metallonoidii
-Metapelmatidae
-Metapelmatinae
-Metaphycina
-Metaponinae
-Metaponini
-Metaprionomitii
-Metaprionomitina
-Metasteninae
-Metastenini
-Meteorideinae
-Meteorideini
-Meteorinae
-Meteorini
-Methochinae
-Metoponini
-Micradelinae
-Micradelini
-Microdontomerinae
-Microdontomerini
-Microgastrinae # braconid wasp subfamily (Braconidae)
-Microleptinae
-Microteryi
-Microteryina
-Microteryini
-Microteryna
-Microteryni
-Microtypinae
-Mikeiinae
-Mimesini
-Minangini
-Miomyrmecini
-Miraini
-Mirii
-Mischocyttarini
-Miscogasteridae
-Miscogasterinae
-Miscogasterini
-Miscogasteroidae
-Miscogastrinae
-Miscogastrini
-Miscophini
-Mongolocampinae
-Monocteninae
-Monoctonina
-Monodiscodina
-Monodontomerinae
-Monodontomerini
-Monomachidae
-Monomoriini
-Mononeurini
-Moranilidae
-Moranilinae
-Moranilini
-Mutillidae
-Mutillinae
-Mutillini
-Myinidae
-Myinoidae
-Myiocephalini
-Myiocneminae
-Mymares
-Mymaridae
-Mymarides
-Mymarinae
-Mymarini
-Mymaroidae
-Mymaroidea
-Mymarommatidae
-Mymarommatinae
-Mymarommatoidea
-Mymarommidae
-Myrmeciinae
-Myrmeciini
-Myrmecinini
-Myrmecorhynchini
-Myrmelachistini
-Myrmicariini
-Myrmicinae
-Myrmicini
-Myrmillinae
-Myrmosidae
-Myrmoteratini
-Myzininae
-Myzinini
-Neanastatidae
-Neanastatinae
-Neapterolelapinae
-Neffapini
-Nefoeninae
-Nematinae
-Nematini
-Neocladiina
-Neocladiini
-Neodiparidae
-Neodiparinae
-Neodiparini
-Neodiscodini
-Neodusmetiini
-Neofideliini
-Neofoeninae
-Neolarrini
-Neoneurinae
-Neoneurini
-Neopasiphaeinae
-Neopasiphaeini
-Neorhacodinae
-Nesomesochorinae
-Neuroscelionidae
-Nitelini
-Nixoniidae
-Nolanomelissini
-Nomadinae
-Nomadini
-Nomiinae
-Nomioidinae
-Nomioidini
-Nonini
-Nonninae
-Notaspidiini
-Nothomyrmecii
-Nothomyrmeciinae
-Nothomyrmeciini
-Notocyphinae
-Notosemini
-Notostigmatini
-Nurseina
-Nyssonina
-Nyssonini
-Oberthuerellinae
-Ochetomyrmecini
-Ochreriadini
-Ocymyrmecini
-Odontomachidae
-Odontomachini
-Odontosphecini
-Odopoiini
-Odyneropsina
-Oecophyllini
-Oedemopsini
-Oligositina
-Oligositinae
-Oligositini
-Omphalinae
-Omphalini
-Onychomyrmecini
-Oobiina
-Oobiini
-Ooctoninae
-Ooctonini
-Ooderidae
-Ooderinae
-Ooderini
-Ooencyrtina
-Opamyrmini
-Opheliminae
-Ophelimini
-Ophelinini
-Ophioneurinae
-Ophioninae # ichneumon wasp subfamily (Ichneumonidae)
-Ophionini
-Opiinae
-Oraseminae
-Orectognathini
-Orgilinae
-Oriencyrtini
-Ormoceridae
-Ormocerinae
-Ormocerini
-Ormoceroidae
-Ormyridae
-Ormyrides
-Ormyrinae
-Ormyroidae
-Orthocentrinae # ichneumon wasp subfamily (Ichneumonidae)
-Orthocentrini
-Orthopelmatinae
-Orussidae
-Orussoidea
-Osirini
-Osmiini
-Osprynchotina
-Otitesellinae
-Otitesellini
-Oxaeidae
-Oxaeinae
-Oxybelini
-Oxylabini
-Oxytorinae
-Pachycephini
-Pachycondylinae
-Pachycondylini
-Pachylostictinae
-Pachyneurini
-Pachyneuronini
-Palachiini
-Palaeosminthuridae
-Palaeosminthurinae
-Palaeosminthurini
-Palarini
-Paleomelittidae
-Paleosminthurinae
-Pambolinae
-Pambolini
-Pamphiliidae
-Pamphiliinae
-Pamphilioidea
-Panstenoninae
-Pantolytini
-Panurgina
-Panurginae
-Panurgini
-Panurginina
-Parablastothrichina
-Paracentrobiini
-Paracolletinae
-Paragiina
-Paranyssontini
-Paraphycii
-Paraphycina
-Paraponerinae
-Paraponerini
-Pararhophitinae
-Pararhophitini
-Parasaphodinae
-Paratopulini
-Paraulacidae
-Parnipinae
-Parnopini
-Pauridiini
-Pauridini
-Pediaspidinae
-Pediaspidini
-Pediobiini
-Pedunculinae
-Pelecinellidae
-Pelecinellinae
-Pelecinidae
-Pelecinoidea
-Pemphredonina
-Pemphredoninae
-Pemphredonini
-Penapini
-Pentacnemii
-Pentacnemina
-Pentatermini
-Pepsinae
-Pepsini
-Peradeniidae
-Percnobraconini
-Perditina
-Perditini
-Pergidae
-Perginae
-Pergulinae
-Perilampidae
-Perilampina
-Perilampinae
-Perilampini
-Perilampoidae
-Perilissini
-Perilitini
-Perineurini
-Perreyiinae
-Phaeogenini
-Phalacromyrmecini
-Phanacidini
-Phanerotomini
-Phasganophorini
-Phasgonophorinae
-Phasgonophorini
-Pheidolini
-Pheidologetini
-Pheidologetonini
-Pherhombinae
-Philanthina
-Philanthinae
-Philanthini
-Philanthinina
-Philoleminae
-Philolemini
-Philomastiginae
-Philomidinae
-Philomidini
-Philotrypesini
-Phrudinae
-Phtuariinae
-Phygadeuontina
-Phygadeuontinae
-Phygadeuontini
-Phymatocerini
-Physcinae
-Physcini
-Phytodietini
-Pimplinae # ichneumon wasp subfamily (Ichneumonidae)
-Pimplini
-Pionini
-Pireniani
-Pirenidae
-Pirenina
-Pireninae
-Pirenoidae
-Pisini
-Pityomyrmecini
-Plagiolepidini
-Planitorini
-Platencyrtina
-Platygasteridae
-Platygastridae
-Platygastrinae
-Platygastroidea
-Platylabini
-Platynocheilinae
-Platytetracampini
-Platythyreini
-Plectroctenini
-Plumariidae
-Podagrionidae
-Podagrioninae
-Podagrionini
-Podiini
-Podomyrmini
-Poecilocryptini
-Poemeniinae
-Poemeniini
-Pogonomyrmecini
-Polistinae # paper wasp subfamily (Vespidae)
-Polistini
-Polynematini
-Polyrhachidini
-Pompilidae
-Pompilinae
-Pompilini
-Pompiloidea
-Ponerini
-Poropoeini
-Praeaulacidae
-Praeichneumonidae
-Praini
-Prenolepidii
-Prenolepidini
-Priochilini
-Priocnemini
-Prionomasticina
-Prionomasticini
-Prionomitina
-Prionomyrmecinae
-Prionomyrmecini
-Prionychini
-Priscomasarina
-Pristocerinae
-Proattini
-Probolomyrmecini
-Proceratiinae
-Proceratiini
-Prococcophagini
-Proctorenyxidae
-Proctotrupidae
-Proctotrupinae
-Proctotrupoidea
-Proctotrupomorpha
-Prodecatominae
-Proleurocerini
-Proleuroceroideini
-Proleuroceroidiini
-Promelittini
-Pronkiini
-Propalachiini
-Proscoliinae
-Prospaltellinae
-Prospaltellini
-Protandrenini
-Protaphidiina
-Protepeolini
-Proteropinae
-Protobraconinae
-Protoitidae
-Protomeliturgini
-Protorhyssaline
-Protyndarichoidini
-Psammoderini
-Pselaphanini
-Psenini
-Psenulini
-Pseudaphycii
-Pseudencyrtina
-Pseudodineurini
-Pseudoheriadini
-Pseudomethocini
-Pseudomyrmecinae
-Pseudomyrmecini
-Pseudomyrmidae
-Pseudomyrminae
-Pseudoneoponerini
-Pseudophotopsidinae
-Pseudopompilini
-Pseudorhopii
-Pseudorhopini
-Pseudorhyssini
-Pseudoscoliini
-Psilocharitini
-Psilophrydini
-Psoropempulini
-Psyllechthrini
-Pteromalidae
-Pteromalides
-Pteromalina
-Pteromalinae
-Pteromalini
-Pteromaloidae
-Pteroptricinae
-Pteroptricini
-Pterygophorinae
-Pteryperginae
-Ptilomymarini
-Pulvilligerinae
-Pulvilligerini
-Pycnostigminae
-Pygostolini
-Quadrencyrtini
-Qwaqwaiini
-Raphitelinae
-Raphitelini
-Rasnicynipidae
-Rasnicynipinae
-Redivivina
-Reedapini
-Reneini
-Rhaconotini
-Rhagigasterini
-Rhaphitelini
-Rhathymini
-Rhinoencyrtii
-Rhinoencyrtina
-Rhinoencyrtini
-Rhopalomutillinae
-Rhopalosomatidae
-Rhopina
-Rhysipolinae
-Rhysipolini
-Rhyssalinae
-Rhyssalini
-Rhyssinae
-Rileyidae
-Rileyinae
-Rileyini
-Rodrigamini
-Rogadinae
-Rogadini
-Ropalidiini
-Rophitinae
-Rophitini
-Roproniidae
-Roptrocerini
-Rothneyiina
-Rotoitidae
-Sambini
-Santschiellini
-Sapygidae
-Sapyginae
-Scapheutina
-Scelionidae
-Scelioninae
-Sceliotrachelinae
-Sceliphrinae
-Sceliphrini
-Schletteriinae
-Sciapterygini
-Scleroderminae
-Sclerogibbidae
-Scolebythidae
-Scoliidae
-Scoliini
-Scolioidea
-Scolobatini
-Scotaenini
-Scraptrinae
-Selandriinae
-Selandriini
-Seleucini
-Seneciobraconinae
-Sericobraconini
-Sericophorini
-Sericopompilini
-Serphitidae
-Serphitinae
-Serphitoidea
-Sicelomyrmecini
-Sicilomyrmecini
-Sierolomorphidae
-Sierolomorphoidea
-Sigalphinae
-Sigalphini
-Signiphoridae
-Signiphorinae
-Siobliini
-Siragrini
-Siricidae
-Siricinae
-Siricoidea
-Sisyrostolinae
-Smicrini
-Smicromorphinae
-Smicromorphini
-Smicromyrmini
-Solenomyrmini
-Solenopsidini
-Solenurinae
-Spalangiae
-Spalangidae
-Spalangiidae
-Spalangiides
-Spalangiina
-Spalangiinae
-Spalangoidae
-Sparasionidae
-Spathiini
-Sphaeropthalminae
-Sphaeropthalmini
-Sphecidae
-Spheciina
-Sphecinae
-Sphecini
-Sphecodina
-Sphecodini
-Sphecoidea
-Sphecomyrminae
-Sphecomyrmini
-Sphecophagina
-Sphegigasterinae
-Sphegigasterini
-Sphegigastrides
-Sphegigastrinae
-Sphegigastrini
-Sphinctini
-Spilomenina
-Spilomicrini
-Stangeellini
-Stauronematini
-Stegomyrmecini
-Stemmatosterii
-Stenammini
-Stenogastrinae
-Stenotritidae
-Stephanidae
-Stephaninae
-Stephanodini
-Stephanoidea
-Stereomyrmecini
-Sterictiphorinae
-Stethynini
-Stictiellina
-Stictoponerini
-Stigmaphronidae
-Stigmina
-Stilbopinae
-Stilpnina
-Stiropiini
-Stizina
-Storeyinae
-Strongylogastrini
-Strumigenini
-Stypiurini
-Styracotechyinae
-Susanini
-Sycoecinae
-Sycoecini
-Sycophagides
-Sycophaginae
-Sycophagini
-Sycophagoidae
-Sycoryctinae
-Sycoryctini
-Symphyta
-Synergini
-Syntexidae
-Syntretini
-Syrphophagina
-Systasidae
-Systasinae
-Systasini
-Tachynomyini
-Tachypompilini
-Tachytina
-Taftiina
-Tamdaonini
-Tanaostigmatidae
-Tanaostigmatinae
-Tanaostigmidae
-Tanaostigmini
-Tanaostigmodinae
-Taneostigminae
-Tanychorinae
-Tapinomini
-Tapinotaspidini
-Tarsaliini
-Tatogastrinae
-Teleasinae
-Telengaiinae
-Telengaiini
-Telenominae
-Teleutomyrmecini
-Teleutomyrmini
-Tenthredinidae
-Tenthredininae
-Tenthredinini
-Tenthredinoidea
-Tenthredopsini
-Teratognathini
-Terebrantes
-Termolampini
-Tersilochinae
-Tetracampidae
-Tetracampina
-Tetracampinae
-Tetracampini
-Tetracampoidae
-Tetracladii
-Tetracladiina
-Tetracnemii
-Tetracnemina
-Tetracneminae
-Tetracnemini
-Tetralophideina
-Tetramoriini
-Tetrapediini
-Tetrapusiinae
-Tetrapusinae
-Tetrastichidae
-Tetrastichina
-Tetrastichinae
-Tetrastichini
-Tetrastichoidae
-Tetratermini
-Thaumasurini
-Thaumatodryininae
-Thaumatomyrmecini
-Theroniini
-Thomsoniscii
-Thomsoniscini
-Thrasorinae
-Thrinchostomatina
-Thrinchostomina
-Thynnidae # flower wasp family (Apoidea)
-Thynninae
-Thynnini
-Thynnoidea
-Thyreodonini
-Thysanidae
-Ticoplinae
-Tiphiidae
-Tiphiinae
-Tiphioidea
-Tobiasitini
-Tomocerodinae
-Tomocerodini
-Tomostethini
-Torymidae
-Torymina
-Toryminae
-Torymini
-Torymoidae
-Torymoidini
-Townesilitini
-Townesitinae
-Townsendiellini
-Trachypetinae
-Trechnitina
-Trechnitini
-Tremicinae
-Triadomerinae
-Triadomerini
-Trichiosomini
-Trichocolletini
-Trichogrammatidae
-Trichogrammatinae
-Trichogrammatini
-Trichogrammatoidae
-Trichogrammidae
-Trichogramminae
-Trichogrammini
-Trichonoderinae
-Tricladii
-Tricladiina
-Tridymina
-Tridyminae
-Tridymini
-Trielidini
-Trigonalidae
-Trigonaloidea
-Trigonoderinae
-Trigonoderini
-Trigonoderopsini
-Trioxina
-Trisecodinae
-Trissevaniini
-Trogaspidiini
-Tropimeridini
-Tropobraconini
-Tryphoninae # ichneumon wasp subfamily (Ichneumonidae)
-Tryphonini
-Trypoxylini
-Tyndarichina
-Typhlomyrmecini
-Typhoctinae
-Ussurohelconini
-Uzkini
-Vaepellini
-Vagenathina
-Vanhorniidae
-Vervoortihelconini
-Vespidae
-Vespinae
-Vespoidea
-Virgulibraconini
-Waldheimiini
-Westwoodiini
-Xenapateini
-Xenosphecini
-Xenothyrini
-Xeromelissinae
-Xeromelissini
-Xiphozelinae
-Xiphydriidae
-Xiphydriinae
-Xiphydrioidea
-Xoridinae
-Xyelidae
-Xyeloidea
-Xylocopinae
-Xylocopini
-Yeliconini
-Ypsistocerini
-Zaeucoilini
-Zavoyini
-Zenargidae
-Zherichiniini
-Zigrasimeciinae
-Zigrasimeciini
+Abiinae # PBDB: Hymenoptera > Cimbicidae
+Abzariini # iNat: Hymenoptera > Ichneumonidae
+Acaenitinae # PBDB: Hymenoptera > Ichneumonidae
+Acampsini # ITIS: Hymenoptera > Braconidae
+Acampsohelconinae # ITIS: Hymenoptera > Braconidae
+Acanthomyopsini # COL: synonym of Lasiini (Hymenoptera)
+Acanthostichinae # COL: synonym of Dorylinae (Hymenoptera)
+Acanthostichini # COL: synonym of Dorylinae (Hymenoptera)
+Achaiabraconini # ITIS: Hymenoptera > Braconidae
+Acordulecerinae # iNat: Hymenoptera > Pergidae
+Acrisidini # ITIS: Hymenoptera > Braconidae
+Acroaspidiini # COL: synonym of Tetracneminae (Hymenoptera)
+Acrolytina # iNat: Hymenoptera > Ichneumonidae
+Adamasini # iNat: Hymenoptera > Tenthredinidae
+Adelencyrtii # COL: synonym of Encyrtinae (Hymenoptera)
+Adelognathinae # FaEu: Hymenoptera > Ichneumonidae
+Adelomyrmecini # COL: synonym of Solenopsidini (Hymenoptera)
+Adelphinae # COL: synonym of Amiseginae (Hymenoptera)
+Adeshini # iNat: Hymenoptera > Braconidae
+Aenasiina # COL: synonym of Tetracneminae (Hymenoptera)
+Aenasiini # COL: synonym of Tetracneminae (Hymenoptera)
+Aenictinae # COL: synonym of Dorylinae (Hymenoptera)
+Aenictini # COL: synonym of Dorylinae (Hymenoptera)
+Aenictogitoninae # COL: synonym of Dorylinae (Hymenoptera)
+Aenictogitonini # COL: synonym of Dorylinae (Hymenoptera)
+Aethognathini # COL: synonym of Encyrtinae (Hymenoptera)
+Agaonidae # COL: Insecta > Hymenoptera
+Agaoninae # COL: Hymenoptera > Agaonidae
+Agaonoidea # COL: synonym of Agaoninae (Hymenoptera)
+Agathidinae # ITIS: Hymenoptera > Braconidae
+Agathidini # ITIS: Hymenoptera > Braconidae
+Agathirsini # ITIS: Hymenoptera > Braconidae
+Ageniaspidina # COL: synonym of Encyrtinae (Hymenoptera)
+Ageniaspidini # COL: synonym of Encyrtinae (Hymenoptera)
+Ageniellini # FaEu: Hymenoptera > Pompilidae
+Agriomyini # iNat: Hymenoptera > Thynnidae
+Agriotypinae # FaEu: Hymenoptera > Ichneumonidae
+Agroecomyrmecinae # COL: Hymenoptera > Formicidae
+Agroecomyrmecini # COL: Hymenoptera > Formicidae
+Agrothereutina # PBDB: Hymenoptera > Ichneumonidae
+Akapalinae # COL: Hymenoptera > Eucharitidae
+Alaptidae # COL: synonym of Mymaridae (Hymenoptera)
+Alaptinae # COL: synonym of Mymaridae (Hymenoptera)
+Alaptini # COL: synonym of Mymaridae (Hymenoptera)
+Alaptoidea # COL: synonym of Chalcidini (Hymenoptera)
+Alavarommatidae # COL: Insecta > Hymenoptera
+Aleiodini # TAXREF: Hymenoptera > Braconidae
+Allantinae # PBDB: Hymenoptera > Tenthredinidae
+Allantini # PBDB: Hymenoptera > Tenthredinidae
+Allocerellini # COL: synonym of Tetracneminae (Hymenoptera)
+Allocharini # iNat: Hymenoptera > Pompilidae
+Allocoeliini # iNat: Hymenoptera > Chrysididae
+Allodapini # COL: Hymenoptera > Apidae
+Alocandreninae # COL: synonym of Andreninae (Hymenoptera)
+Alomyini # FaEu: Hymenoptera > Ichneumonidae
+Alysiinae # braconid wasp subfamily (Braconidae); ITIS: Hymenoptera > Braconidae
+Alysiini # PBDB: Hymenoptera > Braconidae
+Alyssontini # COL: Hymenoptera > Crabronidae
+Amblyoponinae # COL: Hymenoptera > Formicidae
+Amblyoponini # COL: Hymenoptera > Formicidae
+Ambositrinae # PBDB: Insecta > Hymenoptera
+Amerostenini # COL: Hymenoptera > Pteromalidae
+Amicrocentrinae # ITIS: Hymenoptera > Braconidae
+Aminellii # COL: synonym of Encyrtinae (Hymenoptera)
+Aminellina # COL: synonym of Encyrtinae (Hymenoptera)
+Amirini # COL: synonym of Encyrtinae (Hymenoptera)
+Amiseginae # COL: Hymenoptera > Chrysididae
+Ammobatini # COL: Hymenoptera > Apidae
+Ammobatoidini # COL: Hymenoptera > Apidae
+Ammophilinae # COL: Hymenoptera > Sphecidae
+Ammophilini # FaEu: Hymenoptera > Sphecidae
+Ammoplanina # COL: Hymenoptera > Crabronidae
+Ampulicidae # COL: Insecta > Hymenoptera
+Ampulicinae # COL: Hymenoptera > Ampulicidae
+Ampulicini # COL: Hymenoptera > Ampulicidae
+Anacharitidae # UCD: Hymenoptera
+Anacharitinae # FaEu: Hymenoptera > Figitidae
+Anacrabronina # COL: Hymenoptera > Crabronidae
+Anagrinae # COL: synonym of Mymaridae (Hymenoptera)
+Anagrini # COL: synonym of Mymaridae (Hymenoptera)
+Anagyrii # COL: synonym of Tetracneminae (Hymenoptera)
+Anagyrina # COL: synonym of Tetracneminae (Hymenoptera)
+Anagyrini # COL: synonym of Tetracneminae (Hymenoptera)
+Anaphini # COL: synonym of Mymaridae (Hymenoptera)
+Anaxyelidae # COL: Insecta > Hymenoptera
+Anaxyeloidea # PBDB: Insecta > Hymenoptera
+Ancylaini # COL: Hymenoptera > Apidae
+Ancyloscelidina # COL: Hymenoptera > Apidae
+Andinoencyrtii # COL: synonym of Encyrtinae (Hymenoptera)
+Andinoencyrtini # COL: synonym of Encyrtinae (Hymenoptera)
+Andrenidae # COL: Insecta > Hymenoptera
+Andreninae # COL: Hymenoptera > Andrenidae
+Andrenini # COL: Hymenoptera > Andrenidae
+Anergatidini # COL: synonym of Attini (Hymenoptera)
+Anergatini # COL: synonym of Crematogastrini (Hymenoptera)
+Aneugmenini # TAXREF: Hymenoptera > Tenthredinidae
+Aneuretinae # COL: Hymenoptera > Formicidae
+Aneuretini # COL: Hymenoptera > Formicidae
+Angarosphecidae # COL: Insecta > Hymenoptera
+Ankylomyrmini # COL: Hymenoptera > Formicidae
+Ankylophonini # iNat: Hymenoptera > Ichneumonidae
+Anomalicorniini # COL: synonym of Tetracneminae (Hymenoptera)
+Anomalicornini # COL: synonym of Tetracneminae (Hymenoptera)
+Anomalomyrmini # COL: synonym of Leptanillini (Hymenoptera)
+Anomaloninae # PBDB: Hymenoptera > Ichneumonidae
+Anomalonini # PBDB: Hymenoptera > Ichneumonidae
+Anonychomyrmini # COL: synonym of Leptomyrmecini (Hymenoptera)
+Anopliini # iNat: Hymenoptera > Pompilidae
+Anselmellini # COL: synonym of Eulophinae (Hymenoptera)
+Anteoninae # PBDB: Hymenoptera > Dryinidae
+Antheminae # COL: synonym of Encyrtinae (Hymenoptera)
+Anthemini # COL: synonym of Encyrtinae (Hymenoptera)
+Anthidiini # COL: Hymenoptera > Megachilidae
+Anthoboscinae # PBDB: Hymenoptera > Thynnidae
+Anthoglossini # iNat: Hymenoptera > Colletidae
+Anthophila # iNat: Insecta > Hymenoptera
+Anthophoridae # COL: synonym of Apinae (Hymenoptera)
+Anthophorini # COL: Hymenoptera > Apidae
+Anusii # COL: synonym of Tetracneminae (Hymenoptera)
+Anusiina # COL: synonym of Tetracneminae (Hymenoptera)
+Aphaenogastrini # COL: synonym of Stenammini (Hymenoptera)
+Aphelinidae # COL: Insecta > Hymenoptera
+Aphelinina # COL: synonym of Aphelinini (Hymenoptera)
+Aphelininae # COL: Hymenoptera > Aphelinidae
+Aphelinini # COL: Hymenoptera > Aphelinidae
+Aphelinoidini # COL: synonym of Chaetostrichini (Hymenoptera)
+Aphelopinae # PBDB: Hymenoptera > Dryinidae
+Aphelotomini # COL: Hymenoptera > Ampulicidae
+Aphidiina # ITIS: Hymenoptera > Braconidae
+Aphidiinae # ITIS: Hymenoptera > Braconidae
+Aphidiini # ITIS: Hymenoptera > Braconidae
+Aphilanthopini # COL: Hymenoptera > Crabronidae
+Aphrastobraconini # PBDB: Hymenoptera > Braconidae
+Aphycii # COL: synonym of Encyrtinae (Hymenoptera)
+Aphycina # COL: synonym of Encyrtinae (Hymenoptera)
+Aphycini # COL: synonym of Encyrtinae (Hymenoptera)
+Aphycoideina # COL: synonym of Encyrtinae (Hymenoptera)
+Aphytinae # COL: synonym of Aphelinini (Hymenoptera)
+Aphytini # COL: Hymenoptera > Aphelinidae
+Apidae # COL: Insecta > Hymenoptera
+Apinae # COL: Hymenoptera > Apidae
+Apini # COL: Hymenoptera > Apidae
+Aplorhini # COL: synonym of Chalcidini (Hymenoptera)
+Apoaphelopinae # iNat: Hymenoptera > Dryinidae
+Apocrita # COL: Insecta > Hymenoptera
+Apocryptini # COL: synonym of Otitesellini (Hymenoptera)
+Apodryininae # PBDB: Hymenoptera > Dryinidae
+Apoidea # COL: Insecta > Hymenoptera
+Apomyrminae # COL: Hymenoptera > Formicidae
+Apomyrmini # COL: Hymenoptera > Formicidae
+Aporina # iNat: Hymenoptera > Pompilidae
+Aporini # FaEu: Hymenoptera > Pompilidae
+Apozyginae # ITIS: Hymenoptera > Braconidae
+Apterogyninae # iNat: Hymenoptera > Bradynobaenidae
+Aptesini # PBDB: Hymenoptera > Ichneumonidae
+Archaeocynipidae # COL: Insecta > Hymenoptera
+Archaeomyrmecini # COL: synonym of Crematogastrini (Hymenoptera)
+Archaphidina # ITIS: Hymenoptera > Braconidae
+Archiponerini # COL: synonym of Ponerini (Hymenoptera)
+Archirileyini # COL: synonym of Rileyinae (Hymenoptera)
+Aresconini # COL: synonym of Mymaridae (Hymenoptera)
+Argamaniini # iNat: Hymenoptera > Braconidae
+Arginae # PBDB: Hymenoptera > Argidae
+Arhopoideina # COL: synonym of Tetracneminae (Hymenoptera)
+Armaniinae # ITIS: Hymenoptera > Formicidae
+Armaniini # not found in ChecklistBank
+Arrhenophaginae # COL: synonym of Encyrtinae (Hymenoptera)
+Arrhenophagini # COL: synonym of Encyrtinae (Hymenoptera)
+Arrhenophaginos # COL: synonym of Encyrtinae (Hymenoptera)
+Asaphesinae # COL: Insecta > Hymenoptera
+Asaphini # COL: synonym of Asaphesinae (Insecta)
+Asparagobiinae # COL: Hymenoptera > Ormyridae
+Aspicerinae # PBDB: Hymenoptera > Figitidae
+Aspidosmiini # COL: Hymenoptera > Megachilidae
+Astatinae # COL: Hymenoptera > Crabronidae
+Astymachini # COL: synonym of Encyrtinae (Hymenoptera)
+Ateleutinae # iNat: Hymenoptera > Ichneumonidae
+Athaliinae # PBDB: synonym of Athaliidae (Hymenoptera)
+Athermantinae # iNat: Hymenoptera > Argidae
+Atomacerinae # iNat: Hymenoptera > Argidae
+Atrophini # PBDB: Hymenoptera > Ichneumonidae
+Attina # PBDB: Hymenoptera > Formicidae
+Attinae # COL: synonym of Attini (Hymenoptera)
+Attini # COL: Hymenoptera > Formicidae
+Augochlorina # COL: Hymenoptera > Halictidae
+Augochlorini # COL: Hymenoptera > Halictidae
+Aulacidae # COL: Insecta > Hymenoptera
+Aulacideini # PBDB: Hymenoptera > Cynipidae
+Aulosaphobraconini # ITIS: Hymenoptera > Braconidae
+Australomymarini # COL: synonym of Mymaridae (Hymenoptera)
+Austrocynipidae # COL: Insecta > Hymenoptera
+Austrohormiini # iNat: Hymenoptera > Braconidae
+Austromyzinini # iNat: Hymenoptera > Thynnidae
+Austroniidae # COL: Insecta > Hymenoptera
+Austroserphinae # iNat: Hymenoptera > Proctotrupidae
+Austrosystasinae # COL: Insecta > Hymenoptera
+Austroterobiinae # COL: synonym of Pachyneurini (Hymenoptera)
+Avgini # iNat: Hymenoptera > Braconidae
+Aximinae # COL: synonym of Eurytominae (Hymenoptera)
+Aximini # COL: synonym of Eurytominae (Hymenoptera)
+Axinidrini # COL: synonym of Tapinomini (Hymenoptera)
+Aylacini # COL: Hymenoptera > Cynipidae
+Azotidae # COL: Insecta > Hymenoptera
+Azotinae # COL: synonym of Azotidae (Hymenoptera)
+Baeomorphidae # COL: Insecta > Hymenoptera
+Baeomorphinae # COL: Hymenoptera > Baeomorphidae
+Banchinae # ichneumon wasp subfamily (Ichneumonidae); PBDB: Hymenoptera > Ichneumonidae
+Banchini # PBDB: Hymenoptera > Ichneumonidae
+Baryceratina # iNat: Hymenoptera > Ichneumonidae
+Basicerotini # COL: synonym of Attini (Hymenoptera)
+Bathytrichina # iNat: Hymenoptera > Ichneumonidae
+Belaspidiini # COL: Hymenoptera > Chalcididae
+Belytinae # PBDB: Insecta > Hymenoptera
+Belytini # TAXREF: Hymenoptera > Diapriidae
+Bembicina # COL: Hymenoptera > Crabronidae
+Bembicinae # COL: Hymenoptera > Crabronidae
+Bembicini # COL: Hymenoptera > Crabronidae
+Bethylidae # COL: Insecta > Hymenoptera
+Bethylinae # PBDB: Hymenoptera > Bethylidae
+Bethyloidea # ITIS: synonym of Chrysidoidea (Insecta)
+Bethylonymidae # COL: Insecta > Hymenoptera
+Bethylonymoidea # COL: Insecta > Hymenoptera
+Betylobraconinae # ITIS: synonym of Rogadinae (Hymenoptera)
+Betylobraconini # ITIS: Hymenoptera > Braconidae
+Betyobraconinae # iNat: Hymenoptera > Braconidae
+Biastini # COL: Hymenoptera > Apidae
+Binareini # TAXREF: Hymenoptera > Braconidae
+Blacinae # ITIS: Hymenoptera > Braconidae
+Blacini # PBDB: Hymenoptera > Braconidae
+Blanchardiscini # COL: synonym of Encyrtinae (Hymenoptera)
+Blasticotomidae # COL: Insecta > Hymenoptera
+Blastophagidae # COL: synonym of Agaoninae (Hymenoptera)
+Blastophaginae # COL: Hymenoptera > Agaonidae
+Blastophagini # COL: synonym of Blastophaginae (Hymenoptera)
+Blastothrichina # COL: synonym of Encyrtinae (Hymenoptera)
+Blennocampinae # PBDB: Hymenoptera > Tenthredinidae
+Blennocampini # TAXREF: Hymenoptera > Tenthredinidae
+Blepharidattini # COL: synonym of Attini (Hymenoptera)
+Bocchinae # PBDB: Hymenoptera > Dryinidae
+Bombini # COL: Hymenoptera > Apidae
+Bothriomyrmecini # COL: Hymenoptera > Formicidae
+Bothriothoracina # COL: synonym of Encyrtinae (Hymenoptera)
+Bothriothoracini # COL: synonym of Encyrtinae (Hymenoptera)
+Bothynostethina # COL: Hymenoptera > Crabronidae
+Bothynostethini # COL: Hymenoptera > Crabronidae
+Boucekelimini # COL: synonym of Eulophinae (Hymenoptera)
+Boucekiellii # COL: synonym of Encyrtinae (Hymenoptera)
+Boucekiidae # COL: Insecta > Hymenoptera
+Boucekiini # COL: Hymenoptera > Boucekiidae
+Boucekinini # COL: Hymenoptera > Torymidae
+Bouceklytinae # COL: Hymenoptera > Tetracampidae
+Brachistinae # PBDB: Hymenoptera > Braconidae
+Brachistini # COL: synonym of Chaetostrichini (Hymenoptera)
+Brachycistidinae # iNat: Hymenoptera > Tiphiidae
+Brachycyrtinae # FaEu: Hymenoptera > Ichneumonidae
+Brachymerariae # COL: synonym of Chalcidini (Hymenoptera)
+Brachymeriinae # COL: Hymenoptera > Chalcididae
+Brachymeriini # COL: synonym of Chalcidini (Hymenoptera)
+Brachymyrmecini # COL: synonym of Myrmelachistini (Hymenoptera)
+Brachynomadini # COL: Hymenoptera > Apidae
+Brachyscelidiphaginae # COL: synonym of Ormocerinae (Hymenoptera)
+Brachyscelidiphagini # COL: synonym of Ormocerinae (Hymenoptera)
+Braconidae # COL: Insecta > Hymenoptera
+Braconinae # braconid wasp subfamily (Braconidae); ITIS: Hymenoptera > Braconidae
+Braconini # PBDB: Hymenoptera > Braconidae
+Bradynobaenidae # COL: Insecta > Hymenoptera
+Bradynobaeninae # iNat: Hymenoptera > Bradynobaenidae
+Bregmatomyrmini # COL: synonym of Plagiolepidini (Hymenoptera)
+Brethesiellii # COL: synonym of Encyrtinae (Hymenoptera)
+Brownimeciinae # COL: Hymenoptera > Formicidae
+Brownimeciini # COL: Hymenoptera > Formicidae
+Bruchomymarini # COL: synonym of Mymaridae (Hymenoptera)
+Brulleiini # iNat: Hymenoptera > Braconidae
+Buresiinae # COL: Hymenoptera > Eurytomidae
+Buresiini # COL: synonym of Eurytominae (Hymenoptera)
+Buresiniini # COL: synonym of Eurytominae (Hymenoptera)
+Caenohalictina # COL: Hymenoptera > Halictidae
+Caenoprosopidini # COL: Hymenoptera > Apidae
+Calesidae # COL: Insecta > Hymenoptera
+Calesinae # COL: Hymenoptera > Calesidae
+Caliroini # TAXREF: Hymenoptera > Tenthredinidae
+Callimomidae # COL: synonym of Torymini (Hymenoptera)
+Callimomoinae # COL: Insecta > Hymenoptera
+Calliopsini # COL: Hymenoptera > Andrenidae
+Callomelittinae # iNat: Hymenoptera > Colletidae
+Calosotinae # COL: Hymenoptera > Eupelmidae
+Calyptomyrmecini # COL: synonym of Crematogastrini (Hymenoptera)
+Calytonotiscini # COL: synonym of Eunotinae (Hymenoptera)
+Camponotinae # COL: synonym of Camponotini (Hymenoptera)
+Camponotini # COL: Hymenoptera > Formicidae
+Campopleginae # ichneumon wasp subfamily (Ichneumonidae); PBDB: Hymenoptera > Ichneumonidae
+Campoplegini # PBDB: synonym of Campopleginae (Hymenoptera)
+Campsomerini # PBDB: Hymenoptera > Scoliidae
+Camptopoeina # COL: Hymenoptera > Andrenidae
+Camptopterinae # COL: synonym of Mymaridae (Hymenoptera)
+Cardiochilinae # ITIS: Hymenoptera > Braconidae
+Cardiocondylini # COL: synonym of Crematogastrini (Hymenoptera)
+Cataulacinae # COL: synonym of Crematogastrini (Hymenoptera)
+Cataulacini # COL: synonym of Crematogastrini (Hymenoptera)
+Caupolicanini # COL: Hymenoptera > Colletidae
+Ceballosii # COL: synonym of Encyrtinae (Hymenoptera)
+Cecidellinae # COL: Hymenoptera > Pirenidae
+Cedriina # iNat: Hymenoptera > Braconidae
+Cedriini # ITIS: Hymenoptera > Braconidae
+Ceidae # COL: Insecta > Hymenoptera
+Ceinae # COL: Hymenoptera > Ceidae
+Ceini # COL: Hymenoptera > Ceidae
+Celliformidae # iNat: Insecta > Hymenoptera
+Cenocoeliinae # ITIS: Hymenoptera > Braconidae
+Centistini # PBDB: Hymenoptera > Braconidae
+Centridini # COL: Hymenoptera > Apidae
+Centrodorini # COL: synonym of Aphelinini (Hymenoptera)
+Centromyrmecini # COL: synonym of Ponerini (Hymenoptera)
+Cephalciinae # PBDB: Hymenoptera > Pamphiliidae
+Cephalotini # COL: synonym of Attini (Hymenoptera)
+Cephidae # COL: Insecta > Hymenoptera
+Cephinae # PBDB: Hymenoptera > Cephidae
+Cephini # UKSI: Hymenoptera > Cephidae
+Cephoidea # COL: Insecta > Hymenoptera
+Ceranisinae # COL: synonym of Entedoninae (Hymenoptera)
+Cerapachyinae # COL: synonym of Dorylinae (Hymenoptera)
+Cerapachyini # COL: synonym of Dorylinae (Hymenoptera)
+Ceraphronidae # COL: Insecta > Hymenoptera
+Ceraphronoidea # COL: Insecta > Hymenoptera
+Cerapterocerii # COL: synonym of Encyrtinae (Hymenoptera)
+Cerapterocerini # COL: synonym of Encyrtinae (Hymenoptera)
+Ceratinini # COL: Hymenoptera > Apidae
+Ceratocryptina # iNat: Hymenoptera > Ichneumonidae
+Ceratoneurini # COL: synonym of Tetrastichinae (Hymenoptera)
+Cercerini # COL: Hymenoptera > Crabronidae
+Cercobelini # COL: synonym of Encyrtinae (Hymenoptera)
+Cerealcini # PBDB: Hymenoptera > Pergidae
+Cerocephalidae # COL: Insecta > Hymenoptera
+Cerocephalinae # COL: Hymenoptera > Cerocephalidae
+Ceropalinae # FaEu: Hymenoptera > Pompilidae
+Ceroptresini # UKSI: Hymenoptera > Cynipidae
+Chaetostrichinae # COL: synonym of Oligositini (Hymenoptera)
+Chaetostrichini # COL: Hymenoptera > Trichogrammatidae
+Chalcedectidae # COL: Insecta > Hymenoptera
+Chalcedectinae # COL: Hymenoptera > Chalcedectidae
+Chalcedectini # COL: synonym of Chalcedectinae (Hymenoptera)
+Chalcerinyini # COL: synonym of Encyrtinae (Hymenoptera)
+Chalcidiae # COL: synonym of Chalcidini (Hymenoptera)
+Chalcidinae # COL: Hymenoptera > Chalcididae
+Chalcidini # COL: Hymenoptera > Chalcididae
+Chalcidites # COL: synonym of Chalcidini (Hymenoptera)
+Chalcidoidea # COL: Insecta > Hymenoptera
+Chalcimerinae # COL: Hymenoptera > Torymidae
+Chalcimerini # Wikidata: Hymenoptera > Torymidae
+Chalcitellini # COL: synonym of Epitraninae (Hymenoptera)
+Charipidae # IRMNG: Insecta > Hymenoptera
+Charipinae # PBDB: Hymenoptera > Figitidae
+Charitopidini # COL: synonym of Tetracneminae (Hymenoptera)
+Charitopii # COL: synonym of Tetracneminae (Hymenoptera)
+Charmontinae # ITIS: Hymenoptera > Braconidae
+Cheiloneurini # COL: synonym of Encyrtinae (Hymenoptera)
+Cheiropachinae # COL: synonym of Pteromalini (Hymenoptera)
+Cheliomyrmecinae # COL: synonym of Dorylinae (Hymenoptera)
+Cheliomyrmecini # COL: synonym of Dorylinae (Hymenoptera)
+Cheloninae # braconid wasp subfamily (Braconidae); ITIS: Hymenoptera > Braconidae
+Chelonini # TAXREF: Hymenoptera > Braconidae
+Chilicolini # COL: synonym of Xeromelissinae (Hymenoptera)
+Chiloneurina # COL: synonym of Encyrtinae (Hymenoptera)
+Chiroticina # iNat: Hymenoptera > Ichneumonidae
+Chloriontinae # COL: Hymenoptera > Sphecidae
+Chremylina # iNat: Hymenoptera > Braconidae
+Chremylini # PBDB: Hymenoptera > Braconidae
+Chrionotini # TAXREF: Hymenoptera > Ichneumonidae
+Chromeurytominae # COL: Hymenoptera > Megastigmidae
+Chrysididae # COL: Insecta > Hymenoptera
+Chrysidinae # cuckoo wasp subfamily (Chrysididae); COL: Hymenoptera > Chrysididae
+Chrysidini # PBDB: Hymenoptera > Chrysididae
+Chrysidoidea # COL: Insecta > Hymenoptera
+Chrysochalcissini # COL: synonym of Torymidae (Hymenoptera)
+Chrysolampidae # COL: Insecta > Hymenoptera
+Chrysolampinae # COL: Hymenoptera > Chrysolampidae
+Chrysolampini # COL: synonym of Chrysolampinae (Hymenoptera)
+Chrysoplatycerina # COL: synonym of Tetracneminae (Hymenoptera)
+Chrysoplatycerini # COL: synonym of Tetracneminae (Hymenoptera)
+Chyphotidae # GBIF: Insecta > Hymenoptera
+Chyphotinae # iNat: Hymenoptera > Chyphotidae
+Cimbicidae # COL: Insecta > Hymenoptera
+Cimbicinae # PBDB: Hymenoptera > Cimbicidae
+Cimbicini # UKSI: Hymenoptera > Cimbicidae
+Cirrospilinae # COL: synonym of Eulophinae (Hymenoptera)
+Cirrospilini # COL: synonym of Eulophinae (Hymenoptera)
+Cladiini # TAXREF: Hymenoptera > Tenthredinidae
+Claseinae # iNat: Hymenoptera > Ichneumonidae
+Claseini # iNat: Hymenoptera > Ichneumonidae
+Clennyminae # COL: synonym of Cleonyminae (Hymenoptera)
+Cleonymidae # COL: Insecta > Hymenoptera
+Cleonymides # COL: synonym of Cleonyminae (Hymenoptera)
+Cleonyminae # COL: Hymenoptera > Cleonymidae
+Cleonymini # COL: synonym of Cleonyminae (Hymenoptera)
+Cleonymoidae # COL: synonym of Cleonyminae (Hymenoptera)
+Cleptinae # cuckoo wasp subfamily (Chrysididae); PBDB: Hymenoptera > Chrysididae
+Clinocentrini # PBDB: Hymenoptera > Braconidae
+Coccophaginae # COL: Hymenoptera > Aphelinidae
+Coccophagini # COL: Hymenoptera > Aphelinidae
+Coccophagoidae # COL: synonym of Coccophagini (Hymenoptera)
+Coelocybidae # COL: Insecta > Hymenoptera
+Coelocybinae # COL: Hymenoptera > Coelocybidae
+Coeloidini # TAXREF: Hymenoptera > Braconidae
+Coelopencyrtina # COL: synonym of Encyrtinae (Hymenoptera)
+Coenocercina # COL: synonym of Encyrtinae (Hymenoptera)
+Coesulina # iNat: Hymenoptera > Ichneumonidae
+Colletidae # COL: Insecta > Hymenoptera
+Colletinae # COL: Hymenoptera > Colletidae
+Collyriinae # FaEu: Hymenoptera > Ichneumonidae
+Colotrechnides # COL: synonym of Colotrechnini (Hymenoptera)
+Colotrechninae # COL: Hymenoptera > Pteromalidae
+Colotrechnini # COL: Hymenoptera > Pteromalidae
+Comperiellina # COL: synonym of Encyrtinae (Hymenoptera)
+Comperiina # COL: synonym of Encyrtinae (Hymenoptera)
+Comperiini # COL: synonym of Encyrtinae (Hymenoptera)
+Compsobraconini # iNat: Hymenoptera > Braconidae
+Conganteoninae # iNat: Hymenoptera > Dryinidae
+Copidosomatina # COL: synonym of Encyrtinae (Hymenoptera)
+Copidosomatini # COL: synonym of Encyrtinae (Hymenoptera)
+Copidosomina # COL: synonym of Encyrtinae (Hymenoptera)
+Copidosomini # COL: synonym of Encyrtinae (Hymenoptera)
+Corynidinae # PBDB: Hymenoptera > Cimbicidae
+Corynurina # COL: Hymenoptera > Halictidae
+Cosmophorini # TAXREF: Hymenoptera > Braconidae
+Crabronidae # COL: Insecta > Hymenoptera
+Crabronina # COL: Hymenoptera > Crabronidae
+Crabroninae # COL: Hymenoptera > Crabronidae
+Crabronini # COL: Hymenoptera > Crabronidae
+Cratocentrinae # COL: Hymenoptera > Chalcididae
+Cratocentrini # COL: Hymenoptera > Chalcididae
+Cratominae # COL: synonym of Pteromalini (Hymenoptera)
+Cratomini # COL: synonym of Pteromalini (Hymenoptera)
+Cremastinae # ichneumon wasp subfamily (Ichneumonidae); PBDB: Hymenoptera > Ichneumonidae
+Crematogastrini # COL: Hymenoptera > Formicidae
+Cremnodina # iNat: Hymenoptera > Ichneumonidae
+Cremnomymarini # COL: synonym of Mymaridae (Hymenoptera)
+Cremnoptini # ITIS: Hymenoptera > Braconidae
+Critogastrini # COL: synonym of Otitesellini (Hymenoptera)
+Cryptina # PBDB: Hymenoptera > Ichneumonidae
+Cryptinae # ichneumon wasp subfamily (Ichneumonidae); PBDB: Hymenoptera > Ichneumonidae
+Cryptini # PBDB: Hymenoptera > Ichneumonidae
+Cryptoceridae # COL: synonym of Attini (Hymenoptera)
+Cryptocerini # COL: synonym of Attini (Hymenoptera)
+Ctenocerinae # iNat: Hymenoptera > Pompilidae
+Ctenopelmatinae # ichneumon wasp subfamily (Ichneumonidae); PBDB: Hymenoptera > Ichneumonidae
+Ctenopelmatini # FaEu: Hymenoptera > Ichneumonidae
+Ctenoplectrini # COL: Hymenoptera > Apidae
+Ctenotillini # iNat: Hymenoptera > Mutillidae
+Cyclopleurinae # COL: synonym of Eulophinae (Hymenoptera)
+Cylindromyrmecinae # COL: synonym of Dorylinae (Hymenoptera)
+Cylindromyrmecini # COL: synonym of Dorylinae (Hymenoptera)
+Cylloceriinae # PBDB: Hymenoptera > Ichneumonidae
+Cymodusini # iNat: Hymenoptera > Ichneumonidae
+Cynipencyrtidae # COL: Insecta > Hymenoptera
+Cynipencyrtini # COL: synonym of Cynipencyrtidae (Hymenoptera)
+Cynipidae # COL: Insecta > Hymenoptera
+Cynipinae # COL: Hymenoptera > Cynipidae
+Cynipini # COL: Hymenoptera > Cynipidae
+Cynipoidea # COL: Insecta > Hymenoptera
+Dacetini # COL: synonym of Attini (Hymenoptera)
+Dacetonini # ITIS: Hymenoptera > Formicidae
+Dacnusini # TAXREF: Hymenoptera > Braconidae
+Dallatorrellinae # iNat: Hymenoptera > Liopteridae
+Dasylabrinae # TAXREF: Hymenoptera > Mutillidae
+Dasymutillini # PBDB: Hymenoptera > Mutillidae
+Dasypodainae # COL: Hymenoptera > Melittidae
+Dasypodaini # COL: Hymenoptera > Melittidae
+Decatominae # COL: synonym of Eurytominae (Hymenoptera)
+Decatomini # COL: synonym of Eurytominae (Hymenoptera)
+Delomeristini # FaEu: Hymenoptera > Ichneumonidae
+Derecyrtinae # iNat: Hymenoptera > Xiphydriidae
+Desantisiellini # COL: synonym of Encyrtinae (Hymenoptera)
+Deuterageniini # TAXREF: Hymenoptera > Pompilidae
+Diacritinae # FaEu: Hymenoptera > Ichneumonidae
+Diamminae # iNat: Hymenoptera > Thynnidae
+Diapriidae # COL: Insecta > Hymenoptera
+Diapriinae # PBDB: Insecta > Hymenoptera
+Diapriini # PBDB: Insecta > Hymenoptera
+Diaprioidea # PBDB: Insecta > Hymenoptera
+Diastrophini # PBDB: Hymenoptera > Cynipidae
+Diconocarini # COL: Hymenoptera > Pteromalidae
+Dielocerinae # iNat: Hymenoptera > Argidae
+Dimorphomyrmecini # COL: synonym of Gesomyrmecini (Hymenoptera)
+Dimorphomyrmii # COL: synonym of Gesomyrmecini (Hymenoptera)
+Dinarminae # COL: synonym of Pteromalini (Hymenoptera)
+Dineurini # PBDB: Hymenoptera > Tenthredinidae
+Dinocampini # TAXREF: Hymenoptera > Braconidae
+Dinocarsiini # COL: synonym of Tetracneminae (Hymenoptera)
+Dinocarsini # COL: synonym of Tetracneminae (Hymenoptera)
+Diospilini # PBDB: Hymenoptera > Braconidae
+Diosplitinae # ITIS: synonym of Ephedrini (Hymenoptera)
+Dioxyini # COL: Hymenoptera > Megachilidae
+Diparidae # COL: Insecta > Hymenoptera
+Diparides # COL: synonym of Diparinae (Hymenoptera)
+Diparinae # COL: Hymenoptera > Diparidae
+Diparini # COL: synonym of Diparinae (Hymenoptera)
+Diphaglossinae # COL: Hymenoptera > Colletidae
+Diphaglossini # COL: Hymenoptera > Colletidae
+Diplazontinae # PBDB: Hymenoptera > Ichneumonidae
+Diplolepididae # PBDB: Insecta > Hymenoptera
+Diplolepidinae # iNat: Hymenoptera > Diplolepididae
+Diplolepidini # COL: Hymenoptera > Cynipidae
+Diprionidae # COL: Insecta > Hymenoptera
+Diprioninae # PBDB: Hymenoptera > Diprionidae
+Dirhininae # COL: Hymenoptera > Chalcididae
+Dirhinini # COL: synonym of Dirhininae (Hymenoptera)
+Dirrhopidii # ITIS: synonym of Dirrhopinae (Hymenoptera)
+Dirrhopinae # ITIS: Hymenoptera > Braconidae
+Discodii # COL: synonym of Encyrtinae (Hymenoptera)
+Discodina # COL: synonym of Encyrtinae (Hymenoptera)
+Discodini # COL: synonym of Encyrtinae (Hymenoptera)
+Discothyrinae # COL: synonym of Proceratiini (Hymenoptera)
+Discothyrini # COL: synonym of Proceratiini (Hymenoptera)
+Disophrini # ITIS: Hymenoptera > Braconidae
+Dissoglottini # COL: Hymenoptera > Colletidae
+Distylopinae # COL: Hymenoptera > Tetracampidae
+Ditropinotellinae # COL: Insecta > Hymenoptera
+Diversinitidae # COL: Insecta > Hymenoptera
+Divnini # PBDB: Hymenoptera > Pteromalidae
+Dolerini # PBDB: Hymenoptera > Tenthredinidae
+Dolichoderinae # COL: Hymenoptera > Formicidae
+Dolichoderini # COL: Hymenoptera > Formicidae
+Dolichurinae # COL: Hymenoptera > Ampulicidae
+Dolichurini # COL: Hymenoptera > Ampulicidae
+Doryctinae # braconid wasp subfamily (Braconidae); ITIS: Hymenoptera > Braconidae
+Doryctini # PBDB: synonym of Doryctinae (Hymenoptera)
+Doryctomorphini # iNat: Hymenoptera > Braconidae
+Dorylii # COL: synonym of Dorylinae (Hymenoptera)
+Dorylinae # COL: Hymenoptera > Formicidae
+Dorylini # COL: synonym of Dorylinae (Hymenoptera)
+Dorylozelini # COL: synonym of Ponerini (Hymenoptera)
+Drepanognathini # COL: synonym of Ponerini (Hymenoptera)
+Dryinidae # COL: Insecta > Hymenoptera
+Dryininae # PBDB: Hymenoptera > Dryinidae
+Dryinoidea # iNat: Insecta > Hymenoptera
+Dulophanini # TAXREF: Hymenoptera > Tenthredinidae
+Dusmetii # COL: synonym of Tetracneminae (Hymenoptera)
+Dvaliniinae # COL: synonym of Colotrechnini (Hymenoptera)
+Dyscoletini # TAXREF: synonym of Blacini (Hymenoptera)
+Eadyini # iNat: Hymenoptera > Braconidae
+Earinini # ITIS: Hymenoptera > Braconidae
+Echthrodapinae # COL: synonym of Torymini (Hymenoptera)
+Echthroplexiellii # COL: synonym of Encyrtinae (Hymenoptera)
+Echthroplexiellina # COL: synonym of Encyrtinae (Hymenoptera)
+Echthroplexiellini # COL: synonym of Encyrtinae (Hymenoptera)
+Ecitoninae # COL: synonym of Dorylinae (Hymenoptera)
+Ecitonini # COL: synonym of Dorylinae (Hymenoptera)
+Eclytini # PBDB: Hymenoptera > Ichneumonidae
+Ecnomiinae # ITIS: synonym of Euphorinae (Hymenoptera)
+Ecnomiini # ITIS: Hymenoptera > Braconidae
+Ecphylini # TAXREF: Hymenoptera > Braconidae
+Ectatomminae # COL: Hymenoptera > Formicidae
+Ectatommini # COL: Hymenoptera > Formicidae
+Ectromatini # COL: synonym of Encyrtinae (Hymenoptera)
+Ectromii # COL: synonym of Encyrtinae (Hymenoptera)
+Ectromina # COL: synonym of Encyrtinae (Hymenoptera)
+Ectromini # COL: synonym of Encyrtinae (Hymenoptera)
+Eidopompilini # iNat: Hymenoptera > Pompilidae
+Eileenellinae # COL: Hymenoptera > Ibaliidae
+Elachertidae # COL: synonym of Eulophinae (Hymenoptera)
+Elachertinae # COL: synonym of Eulophinae (Hymenoptera)
+Elachertini # COL: synonym of Eulophinae (Hymenoptera)
+Elachertoidini # COL: synonym of Pteromalini (Hymenoptera)
+Elachistina # COL: synonym of Eulophinae (Hymenoptera)
+Elachistoidae # COL: synonym of Eulophinae (Hymenoptera)
+Elampini # PBDB: Hymenoptera > Chrysididae
+Elaphropterini # iNat: Hymenoptera > Thynnidae
+Elasmidae # COL: synonym of Eulophinae (Hymenoptera)
+Elasminae # COL: synonym of Eulophinae (Hymenoptera)
+Elasmini # COL: synonym of Eulophinae (Hymenoptera)
+Elasmoidae # COL: synonym of Eulophinae (Hymenoptera)
+Elatoidinae # COL: Hymenoptera > Neodiparidae
+Elektroepyrinae # PBDB: Hymenoptera > Bethylidae
+Emargininae # iNat: Hymenoptera > Figitidae
+Embolemidae # COL: Insecta > Hymenoptera
+Emphorina # COL: Hymenoptera > Apidae
+Emphorini # COL: Hymenoptera > Apidae
+Empriini # PBDB: Hymenoptera > Tenthredinidae
+Encarsini # COL: synonym of Prospaltellini (Hymenoptera)
+Encyrtidae # COL: Insecta > Hymenoptera
+Encyrtina # COL: synonym of Encyrtinae (Hymenoptera)
+Encyrtinae # COL: Hymenoptera > Encyrtidae
+Encyrtini # COL: synonym of Encyrtinae (Hymenoptera)
+Encyrtoidae # COL: synonym of Encyrtinae (Hymenoptera)
+Endaseina # iNat: Hymenoptera > Ichneumonidae
+Enicospilini # TAXREF: Hymenoptera > Ichneumonidae
+Enoggerinae # COL: Insecta > Hymenoptera
+Entedonidae # COL: synonym of Entedoninae (Hymenoptera)
+Entedoninae # COL: Hymenoptera > Eulophidae
+Entedonini # COL: synonym of Entedoninae (Hymenoptera)
+Entedonoidae # COL: synonym of Entedoninae (Hymenoptera)
+Entedontinae # COL: synonym of Entedoninae (Hymenoptera)
+Entiidae # COL: synonym of Entiinae (Hymenoptera)
+Entiinae # COL: Hymenoptera > Eulophidae
+Entomoborini # TAXREF: Hymenoptera > Pompilidae
+Entomosericidae # iNat: Insecta > Hymenoptera
+Entomosericini # COL: Hymenoptera > Crabronidae
+Eoichneumonidae # COL: Insecta > Hymenoptera
+Epeolina # iNat: Hymenoptera > Apidae
+Epeolini # COL: Hymenoptera > Apidae
+Ephedrini # ITIS: Hymenoptera > Braconidae
+Ephialtini # PBDB: Hymenoptera > Ichneumonidae
+Epichrysomallidae # COL: Insecta > Hymenoptera
+Epichrysomallinae # COL: Hymenoptera > Epichrysomallidae
+Epiencyrtina # COL: synonym of Encyrtinae (Hymenoptera)
+Epiponini # TAXREF: Hymenoptera > Vespidae
+Episyronini # iNat: Hymenoptera > Pompilidae
+Epitraninae # COL: Hymenoptera > Chalcididae
+Epitranini # COL: synonym of Epitraninae (Hymenoptera)
+Epopostrumini # COL: synonym of Attini (Hymenoptera)
+Epyrinae # PBDB: Hymenoptera > Bethylidae
+Eremiaspheciidae # iNat: Insecta > Hymenoptera
+Eremiaspheciinae # COL: Hymenoptera > Crabronidae
+Eremiaspheciini # COL: Hymenoptera > Crabronidae
+Eretmocerinae # COL: Hymenoptera > Aphelinidae
+Eretmocerini # COL: synonym of Eretmocerinae (Hymenoptera)
+Eriaphytinae # iNat: Hymenoptera > Aphelinidae
+Eriaphytini # UCD: Hymenoptera > Aphelinidae
+Eriaporidae # COL: synonym of Pirenidae (Hymenoptera)
+Eriaporinae # COL: Hymenoptera > Pirenidae
+Eriaporini # COL: synonym of Eriaporinae (Hymenoptera)
+Ericapeltini # COL: synonym of Amblyoponini (Hymenoptera)
+Ericrocidini # COL: Hymenoptera > Apidae
+Ericydnina # COL: synonym of Tetracneminae (Hymenoptera)
+Ericydnini # COL: synonym of Tetracneminae (Hymenoptera)
+Eridanomyrmini # COL: Hymenoptera > Formicidae
+Erigleninae # iNat: Hymenoptera > Argidae
+Erimerinae # COL: Hymenoptera > Torymidae
+Eriocampini # PBDB: synonym of Eriocampinae (Hymenoptera)
+Erixestinae # COL: Hymenoptera > Pteromalidae
+Erotolepsiinae # COL: Hymenoptera > Spalangiidae
+Erythmelini # COL: synonym of Mymaridae (Hymenoptera)
+Eschatocerini # COL: Hymenoptera > Cynipidae
+Eteroligositina # COL: synonym of Oligositini (Hymenoptera)
+Eteroligositini # COL: synonym of Trichogrammatini (Hymenoptera)
+Ethelurgina # PBDB: Hymenoptera > Ichneumonidae
+Eubroncinae # COL: synonym of Mymaridae (Hymenoptera)
+Eucerina # COL: Hymenoptera > Apidae
+Eucerini # COL: Hymenoptera > Apidae
+Eucerinodina # COL: Hymenoptera > Apidae
+Euceroptresinae # iNat: Hymenoptera > Figitidae
+Eucerotinae # PBDB: Hymenoptera > Ichneumonidae
+Eucharididae # COL: synonym of Eucharitini (Hymenoptera)
+Eucharidinae # COL: synonym of Eucharitini (Hymenoptera)
+Eucharinae # COL: synonym of Eucharitini (Hymenoptera)
+Eucharissinae # COL: synonym of Eucharitini (Hymenoptera)
+Eucharitidae # COL: Insecta > Hymenoptera
+Eucharitinae # COL: Hymenoptera > Eucharitidae
+Eucharitini # COL: Hymenoptera > Eucharitidae
+Eucharoidae # COL: synonym of Eucharitini (Hymenoptera)
+Eucoilidae # WoRMS: Insecta > Hymenoptera
+Eucoilinae # PBDB: Hymenoptera > Figitidae
+Eucomini # COL: synonym of Encyrtinae (Hymenoptera)
+Eudecatominae # COL: synonym of Eurytominae (Hymenoptera)
+Euderidae # COL: synonym of Entiinae (Hymenoptera)
+Euderomphalini # COL: synonym of Entedoninae (Hymenoptera)
+Eudorinae # COL: synonym of Entiinae (Hymenoptera)
+Eugahaniina # COL: synonym of Encyrtinae (Hymenoptera)
+Eugahaniini # COL: synonym of Encyrtinae (Hymenoptera)
+Euglossini # COL: Hymenoptera > Apidae
+Euherbstiini # COL: Hymenoptera > Andrenidae
+Eulonchopriini # iNat: Hymenoptera > Colletidae
+Eulophidae # COL: Insecta > Hymenoptera
+Eulophides # COL: synonym of Eulophinae (Hymenoptera)
+Eulophina # COL: synonym of Eulophinae (Hymenoptera)
+Eulophinae # COL: Hymenoptera > Eulophidae
+Eulophini # COL: synonym of Eulophinae (Hymenoptera)
+Eulophoidae # COL: synonym of Eulophinae (Hymenoptera)
+Eumenidae # IRMNG: synonym of Vespidae (Hymenoptera)
+Eumeninae # mason wasp subfamily (Vespidae); COL: Hymenoptera > Vespidae
+Eunotidae # COL: Insecta > Hymenoptera
+Eunotinae # COL: Hymenoptera > Eunotidae
+Eunotini # COL: synonym of Eunotinae (Hymenoptera)
+Euparagiinae # COL: Hymenoptera > Vespidae
+Eupelmidae # COL: Insecta > Hymenoptera
+Eupelmina # COL: synonym of Eupelminae (Hymenoptera)
+Eupelminae # COL: Hymenoptera > Eupelmidae
+Eupelmini # COL: synonym of Eupelminae (Hymenoptera)
+Eupelmoidae # COL: synonym of Eupelminae (Hymenoptera)
+Euphorinae # ITIS: Hymenoptera > Braconidae
+Euphorini # PBDB: Hymenoptera > Braconidae
+Euplectrinae # COL: synonym of Eulophinae (Hymenoptera)
+Euplectrini # COL: synonym of Eulophinae (Hymenoptera)
+Euponerinae # COL: synonym of Ponerini (Hymenoptera)
+Euponerini # COL: synonym of Ponerini (Hymenoptera)
+Euryglossinae # COL: Hymenoptera > Colletidae
+Euryinae # PBDB: synonym of Perreyiinae (Hymenoptera)
+Euryischidae # COL: synonym of Eriaporinae (Hymenoptera)
+Euryischiinae # COL: synonym of Euryischinae (Hymenoptera)
+Euryischinae # COL: Hymenoptera > Pirenidae
+Euryischini # COL: synonym of Euryischinae (Hymenoptera)
+Eurylabini # FaEu: Hymenoptera > Ichneumonidae
+Euryproctini # FaEu: Hymenoptera > Ichneumonidae
+Eurytomidae # COL: Insecta > Hymenoptera
+Eurytomides # COL: synonym of Eurytominae (Hymenoptera)
+Eurytomina # COL: synonym of Eurytominae (Hymenoptera)
+Eurytominae # COL: Hymenoptera > Eurytomidae
+Eurytomini # COL: synonym of Eurytominae (Hymenoptera)
+Eurytomoidae # COL: synonym of Eurytominae (Hymenoptera)
+Eusandalinae # COL: Hymenoptera > Eupelmidae
+Eusemionii # COL: synonym of Encyrtinae (Hymenoptera)
+Eusphinctinae # COL: synonym of Dorylinae (Hymenoptera)
+Eutanycorminae # COL: synonym of Megastigminae (Hymenoptera)
+Eutrichosomatidae # COL: Insecta > Hymenoptera
+Eutrichosomatinae # COL: Hymenoptera > Eutrichosomatidae
+Eutrichosomellini # COL: Hymenoptera > Aphelinidae
+Euxanthellini # COL: Hymenoptera > Aphelinidae
+Evaniidae # COL: Insecta > Hymenoptera
+Evaniodini # TAXREF: Hymenoptera > Braconidae
+Evanioidea # COL: Insecta > Hymenoptera
+Examblyoponini # COL: synonym of Amblyoponini (Hymenoptera)
+Exeirina # COL: Hymenoptera > Crabronidae
+Exenterini # PBDB: Hymenoptera > Ichneumonidae
+Exodontiellini # ITIS: Hymenoptera > Braconidae
+Exomalopsini # COL: Hymenoptera > Apidae
+Exothecinae # ITIS: Hymenoptera > Braconidae
+Facitorini # iNat: Hymenoptera > Braconidae
+Falsiformicidae # COL: Insecta > Hymenoptera
+Fedtschenkiinae # PBDB: Hymenoptera > Sapygidae
+Fenusini # TAXREF: Hymenoptera > Tenthredinidae
+Ferreolina # iNat: Hymenoptera > Pompilidae
+Fideliini # COL: Hymenoptera > Megachilidae
+Figitidae # COL: Insecta > Hymenoptera
+Figitinae # PBDB: Hymenoptera > Figitidae
+Foenatopodini # TAXREF: Hymenoptera > Stephanidae
+Formicidae # COL: Insecta > Hymenoptera
+Formiciinae # COL: Hymenoptera > Formicidae
+Formiciini # COL: Hymenoptera > Formicidae
+Formicinae # COL: Hymenoptera > Formicidae
+Formicini # COL: Hymenoptera > Formicidae
+Formicoidea # COL: Insecta > Hymenoptera
+Formicoxenini # COL: synonym of Crematogastrini (Hymenoptera)
+Gabuniina # iNat: Hymenoptera > Ichneumonidae
+Gallorommatidae # COL: Insecta > Hymenoptera
+Gasteruptiidae # COL: Insecta > Hymenoptera
+Gasteruptiinae # FaEu: Hymenoptera > Gasteruptiidae
+Gastrosericina # COL: Hymenoptera > Crabronidae
+Gayellini # iNat: Hymenoptera > Vespidae
+Gelina # PBDB: Hymenoptera > Ichneumonidae
+Geoscelionidae # GBIF: Insecta > Hymenoptera
+Gesomyrmecinae # COL: synonym of Gesomyrmecini (Hymenoptera)
+Gesomyrmecini # COL: Hymenoptera > Formicidae
+Ghilarovitini # PBDB: synonym of Hybrizoninae (Hymenoptera)
+Gigantiopini # COL: Hymenoptera > Formicidae
+Glodianina # iNat: Hymenoptera > Ichneumonidae
+Glyphomerinae # COL: Hymenoptera > Torymidae
+Gnamptodontinae # ITIS: synonym of Telengaiinae (Hymenoptera)
+Gnamptodontini # ITIS: Hymenoptera > Braconidae
+Gollumiellinae # COL: Hymenoptera > Eucharitidae
+Gonatocerinae # COL: synonym of Mymaridae (Hymenoptera)
+Gonatocerini # COL: synonym of Mymaridae (Hymenoptera)
+Gonatopodinae # PBDB: Hymenoptera > Dryinidae
+Gondwanocentrini # iNat: Hymenoptera > Braconidae
+Goryphina # iNat: Hymenoptera > Ichneumonidae
+Gorytina # COL: Hymenoptera > Crabronidae
+Grandoriellini # COL: synonym of Tetracneminae (Hymenoptera)
+Gravenhorstiini # PBDB: Hymenoptera > Ichneumonidae
+Groteini # iNat: Hymenoptera > Ichneumonidae
+Gyrolasomyiini # COL: synonym of Tetrastichinae (Hymenoptera)
+Habrolepidina # COL: synonym of Encyrtinae (Hymenoptera)
+Habrolepidini # COL: synonym of Encyrtinae (Hymenoptera)
+Habrolepina # COL: synonym of Encyrtinae (Hymenoptera)
+Habrolepini # COL: synonym of Encyrtinae (Hymenoptera)
+Haidomyrmecinae # COL: Hymenoptera > Formicidae
+Haidomyrmecini # COL: synonym of Haidomyrmecinae (Hymenoptera)
+Halictidae # COL: Insecta > Hymenoptera
+Halictina # COL: Hymenoptera > Halictidae
+Halictinae # COL: Hymenoptera > Halictidae
+Halictini # COL: Hymenoptera > Halictidae
+Haltichellinae # COL: Hymenoptera > Chalcididae
+Haltichellini # COL: Hymenoptera > Chalcididae
+Halticopterini # UCD: synonym of Miscogasterinae (Hymenoptera)
+Handlirschiina # COL: Hymenoptera > Crabronidae
+Harmolitinae # COL: synonym of Eurytominae (Hymenoptera)
+Harpegnathini # COL: synonym of Ponerini (Hymenoptera)
+Hartigiini # UKSI: Hymenoptera > Cephidae
+Hecabolini # PBDB: Hymenoptera > Braconidae
+Heimbrinae # COL: Hymenoptera > Eurytomidae
+Helconinae # ITIS: Hymenoptera > Braconidae
+Helconini # PBDB: Hymenoptera > Braconidae
+Heliocausina # COL: synonym of Heliocausini (Hymenoptera)
+Heliocausini # COL: Hymenoptera > Crabronidae
+Hellwigiini # iNat: Hymenoptera > Ichneumonidae
+Heloridae # COL: Insecta > Hymenoptera
+Helorimorphini # TAXREF: Hymenoptera > Braconidae
+Hemadinae # COL: Hymenoptera > Ormyridae
+Hemaenasiina # COL: synonym of Encyrtinae (Hymenoptera)
+Hemiptarseninae # COL: synonym of Eulophinae (Hymenoptera)
+Hemiptarsenini # COL: synonym of Eulophinae (Hymenoptera)
+Hemitelina # PBDB: Hymenoptera > Ichneumonidae
+Heptamelidae # GBIF: Insecta > Hymenoptera
+Herbertiidae # COL: Insecta > Hymenoptera
+Herbertiinae # COL: Hymenoptera > Herbertiidae
+Hesperapini # COL: Hymenoptera > Melittidae
+Heterarthrinae # PBDB: Hymenoptera > Tenthredinidae
+Heterarthrini # TAXREF: Hymenoptera > Tenthredinidae
+Heterogynaidae # COL: Insecta > Hymenoptera
+Heteroponerinae # COL: synonym of Ectatomminae (Hymenoptera)
+Heteroponerini # COL: Hymenoptera > Formicidae
+Heterospilini # TAXREF: Hymenoptera > Braconidae
+Hetreulophidae # COL: Insecta > Hymenoptera
+Hetreulophinae # COL: Hymenoptera > Hetreulophidae
+Hetreulophini # COL: Hymenoptera > Hetreulophidae
+Hexacladii # COL: synonym of Encyrtinae (Hymenoptera)
+Hexacladiina # COL: synonym of Encyrtinae (Hymenoptera)
+Hexencyrtini # COL: synonym of Encyrtinae (Hymenoptera)
+Hexepeolini # COL: Hymenoptera > Apidae
+Heydeniidae # COL: Insecta > Hymenoptera
+Heydeniinae # COL: Hymenoptera > Heydeniidae
+Heydeniini # COL: Hymenoptera > Heydeniidae
+Histeromerinae # ITIS: synonym of Rhyssalinae (Hymenoptera)
+Histeromerini # ITIS: Hymenoptera > Braconidae
+Hodiernocynipinae # PBDB: Hymenoptera > Cynipidae
+Holcobraconini # TAXREF: Hymenoptera > Braconidae
+Homalotylina # COL: synonym of Encyrtinae (Hymenoptera)
+Homalotylini # COL: synonym of Encyrtinae (Hymenoptera)
+Homolobinae # ITIS: Hymenoptera > Braconidae
+Homonotina # iNat: Hymenoptera > Pompilidae
+Hoplocampini # PBDB: synonym of Nematinae (Hymenoptera)
+Hormiinae # ITIS: Hymenoptera > Braconidae
+Hormiini # ITIS: Hymenoptera > Braconidae
+Hormoceridae # COL: synonym of Ormocerinae (Hymenoptera)
+Hovachalcidini # COL: Hymenoptera > Chalcididae
+Hybothoracini # COL: Hymenoptera > Chalcididae
+Hybrizontinae # PBDB: synonym of Hybrizoninae (Hymenoptera)
+Hybrizontini # TAXREF: Hymenoptera > Ichneumonidae
+Hydrangeocolini # iNat: Hymenoptera > Braconidae
+Hylaeinae # COL: Hymenoptera > Colletidae
+Hymenoptera # COL: Arthropoda > Insecta
+Hypoclineini # COL: synonym of Dolichoderini (Hymenoptera)
+Hypopomyrmecini # COL: synonym of Crematogastrini (Hymenoptera)
+Hypotrigonina # PBDB: Hymenoptera > Apidae
+Hyptiini # iNat: Hymenoptera > Evaniidae
+Hyptiogastrinae # TAXREF: Hymenoptera > Gasteruptiidae
+Ibaliidae # COL: Insecta > Hymenoptera
+Ibaliinae # COL: Hymenoptera > Ibaliidae
+Ichneumonidae # COL: Insecta > Hymenoptera
+Ichneumoninae # ichneumon wasp subfamily (Ichneumonidae); PBDB: Hymenoptera > Ichneumonidae
+Ichneumonini # PBDB: Hymenoptera > Ichneumonidae
+Ichneumonoidea # COL: Insecta > Hymenoptera
+Ichneutinae # ITIS: Hymenoptera > Braconidae
+Idarninae # COL: synonym of Sycophaginae (Hymenoptera)
+Idiogrammatini # PBDB: Hymenoptera > Ichneumonidae
+Idioporidae # COL: Insecta > Hymenoptera
+Idioporinae # COL: Hymenoptera > Idioporidae
+Idioporini # COL: Hymenoptera > Idioporidae
+Iridomyrmecini # COL: synonym of Leptomyrmecini (Hymenoptera)
+Isepeolini # COL: Hymenoptera > Apidae
+Ismaridae # IRMNG: Insecta > Hymenoptera
+Isoplatini # UCD: synonym of Miscogasterinae (Hymenoptera)
+Isosominae # COL: synonym of Eurytominae (Hymenoptera)
+Isosomini # COL: synonym of Eurytominae (Hymenoptera)
+Iswaroidini # iNat: Hymenoptera > Thynnidae
+Ixodiphagii # COL: synonym of Encyrtinae (Hymenoptera)
+Ixodiphagina # COL: synonym of Encyrtinae (Hymenoptera)
+Ixodiphagini # COL: synonym of Encyrtinae (Hymenoptera)
+Janzenellidae # iNat: Insecta > Hymenoptera
+Jurapriidae # COL: Insecta > Hymenoptera
+Keiraninae # COL: Hymenoptera > Megastigmidae
+Keryinae # COL: Insecta > Hymenoptera
+Keryini # COL: Insecta > Hymenoptera
+Khoikhoiinae # ITIS: Hymenoptera > Braconidae
+Khutelchalcididae # GBIF: Insecta > Hymenoptera
+Kradibiinae # COL: Hymenoptera > Agaonidae
+Labaniini # iNat: Hymenoptera > Braconidae
+Labeninae # PBDB: Hymenoptera > Ichneumonidae
+Labenini # PBDB: Hymenoptera > Ichneumonidae
+Labenopimplinae # PBDB: Hymenoptera > Ichneumonidae
+Lagynodinae # COL: Hymenoptera > Megaspilidae
+Laibaleini # ITIS: Hymenoptera > Braconidae
+Lamennaisiina # COL: synonym of Encyrtinae (Hymenoptera)
+Lamoundellini # COL: synonym of Epitraninae (Hymenoptera)
+Lamprotatinae # UCD: synonym of Miscogasterinae (Hymenoptera)
+Laphyragoginae # iNat: Hymenoptera > Eremiaspheciidae
+Laphyragogini # COL: Hymenoptera > Crabronidae
+Larrina # COL: Hymenoptera > Crabronidae
+Larrini # COL: Hymenoptera > Crabronidae
+Lasiini # COL: Hymenoptera > Formicidae
+Lathromerini # COL: synonym of Chaetostrichini (Hymenoptera)
+Lelapinae # COL: synonym of Diparinae (Hymenoptera)
+Lenomyrmecini # COL: synonym of Attini (Hymenoptera)
+Leptaleinae # COL: synonym of Pseudomyrmecinae (Hymenoptera)
+Leptanillinae # COL: Hymenoptera > Formicidae
+Leptanillini # COL: Hymenoptera > Formicidae
+Leptanilloidinae # COL: synonym of Dorylinae (Hymenoptera)
+Leptofoenidae # COL: synonym of Pelecinellinae (Hymenoptera)
+Leptofoeninae # COL: synonym of Pelecinellinae (Hymenoptera)
+Leptogenyini # COL: synonym of Ponerini (Hymenoptera)
+Leptogenysii # COL: synonym of Ponerini (Hymenoptera)
+Leptomastideii # COL: synonym of Tetracneminae (Hymenoptera)
+Leptomastideina # COL: synonym of Tetracneminae (Hymenoptera)
+Leptomastidina # COL: synonym of Tetracneminae (Hymenoptera)
+Leptomastidini # COL: synonym of Tetracneminae (Hymenoptera)
+Leptomyrmecini # COL: Hymenoptera > Formicidae
+Leptoomidae # COL: Insecta > Hymenoptera
+Leptospathiini # iNat: Hymenoptera > Braconidae
+Leptothoracini # COL: synonym of Crematogastrini (Hymenoptera)
+Leucopsidae # ITIS: synonym of Leucospidae (Hymenoptera)
+Leucospidae # COL: Insecta > Hymenoptera
+Leucospididae # ITIS: synonym of Leucospidae (Hymenoptera)
+Leucospidinae # COL: synonym of Leucospidae (Hymenoptera)
+Leucospinae # COL: synonym of Leucospidae (Hymenoptera)
+Leucospoidae # COL: synonym of Leucospidae (Hymenoptera)
+Leuriniini # ITIS: Hymenoptera > Braconidae
+Lieparini # COL: synonym of Pteromalini (Hymenoptera)
+Limneriini # UKSI: synonym of Campopleginae (Hymenoptera)
+Liometopini # COL: synonym of Tapinomini (Hymenoptera)
+Liomyrmecini # COL: synonym of Crematogastrini (Hymenoptera)
+Lioponerinae # COL: synonym of Dorylinae (Hymenoptera)
+Lioponerini # COL: synonym of Dorylinae (Hymenoptera)
+Liopteridae # COL: Insecta > Hymenoptera
+Liopterinae # PBDB: synonym of Liopteridae (Hymenoptera)
+Lithurginae # COL: Hymenoptera > Megachilidae
+Lithurgini # COL: Hymenoptera > Megachilidae
+Litomasticini # COL: synonym of Encyrtinae (Hymenoptera)
+Loboceratinae # TAXREF: Hymenoptera > Pergidae
+Loboscelidiinae # COL: Hymenoptera > Chrysididae
+Loboscelidiini # COL: synonym of Loboscelidiinae (Hymenoptera)
+Lonchopriini # iNat: Hymenoptera > Colletidae
+Lophomyrmicini # COL: synonym of Crematogastrini (Hymenoptera)
+Louriciinae # COL: synonym of Callimomoinae (Insecta)
+Louriciini # PBDB: synonym of Louriciinae (Insecta)
+Lycaotini # TAXREF: Hymenoptera > Tenthredinidae
+Lyciscidae # COL: Insecta > Hymenoptera
+Lyciscinae # COL: Hymenoptera > Lyciscidae
+Lyciscini # COL: Hymenoptera > Lyciscidae
+Lycorininae # PBDB: Hymenoptera > Ichneumonidae
+Lykii # COL: synonym of Tetracneminae (Hymenoptera)
+Lymaenonidae # COL: synonym of Mymaridae (Hymenoptera)
+Lymaenoninae # COL: synonym of Mymaridae (Hymenoptera)
+Lymaenonini # COL: synonym of Mymaridae (Hymenoptera)
+Lymeonina # iNat: Hymenoptera > Ichneumonidae
+Lyrodini # COL: synonym of Miscophini (Hymenoptera)
+Lysiphlebina # ITIS: Hymenoptera > Braconidae
+Lysiterminae # ITIS: synonym of Hormiinae (Hymenoptera)
+Lysitermini # ITIS: Hymenoptera > Braconidae
+Lytopylini # ITIS: Hymenoptera > Braconidae
+Maamingidae # COL: Insecta > Hymenoptera
+Macrocentrinae # ITIS: Hymenoptera > Braconidae
+Macromesidae # COL: Insecta > Hymenoptera
+Macromesinae # COL: Hymenoptera > Macromesidae
+Macrophyini # TAXREF: Hymenoptera > Tenthredinidae
+Macropidini # COL: Hymenoptera > Melittidae
+Macroxyelinae # PBDB: Hymenoptera > Xyelidae
+Macroxyelini # PBDB: Hymenoptera > Xyelidae
+Maimetshidae # COL: Insecta > Hymenoptera
+Manueliini # COL: Hymenoptera > Apidae
+Mariettini # COL: synonym of Aphelinini (Hymenoptera)
+Martialinae # COL: Hymenoptera > Formicidae
+Masaridae # IRMNG: synonym of Vespidae (Hymenoptera)
+Masarina # iNat: Hymenoptera > Vespidae
+Masarinae # COL: Hymenoptera > Vespidae
+Masarini # iNat: Hymenoptera > Vespidae
+Masiini # COL: synonym of Tetracneminae (Hymenoptera)
+Masoninae # ITIS: Hymenoptera > Braconidae
+Masonini # ITIS: Hymenoptera > Braconidae
+Mastrina # PBDB: Hymenoptera > Ichneumonidae
+Maxfischeriinae # ITIS: Hymenoptera > Braconidae
+Mayrellinae # iNat: Hymenoptera > Liopteridae
+Mayrencyrtina # COL: synonym of Encyrtinae (Hymenoptera)
+Mayridii # COL: synonym of Encyrtinae (Hymenoptera)
+Mayridiina # COL: synonym of Encyrtinae (Hymenoptera)
+Mayridiini # COL: synonym of Encyrtinae (Hymenoptera)
+Megachilidae # COL: Insecta > Hymenoptera
+Megachilinae # COL: Hymenoptera > Megachilidae
+Megachilini # COL: Hymenoptera > Megachilidae
+Megalodontesidae # COL: Insecta > Hymenoptera
+Megalomyrmecini # COL: synonym of Solenopsidini (Hymenoptera)
+Megalyrhyssalinae # ITIS: Hymenoptera > Braconidae
+Megalyridae # COL: Insecta > Hymenoptera
+Megalyroidea # COL: Insecta > Hymenoptera
+Meganomiinae # COL: Hymenoptera > Melittidae
+Megaphragmini # COL: synonym of Oligositini (Hymenoptera)
+Megaspilidae # COL: Insecta > Hymenoptera
+Megaspilinae # COL: Hymenoptera > Megaspilidae
+Megastigmidae # COL: Insecta > Hymenoptera
+Megastigmides # COL: synonym of Megastigminae (Hymenoptera)
+Megastigminae # COL: Hymenoptera > Megastigmidae
+Megischini # TAXREF: Hymenoptera > Stephanidae
+Melanocryptina # iNat: Hymenoptera > Ichneumonidae
+Melanosomellidae # COL: Insecta > Hymenoptera
+Melanosomellinae # COL: Hymenoptera > Melanosomellidae
+Melanosomellini # COL: Hymenoptera > Melanosomellidae
+Melectini # COL: Hymenoptera > Apidae
+Meliponina # PBDB: Hymenoptera > Apidae
+Meliponini # COL: Hymenoptera > Apidae
+Melissotarsini # COL: synonym of Crematogastrini (Hymenoptera)
+Melittidae # COL: Insecta > Hymenoptera
+Melittina # COL: Hymenoptera > Melittidae
+Melittinae # COL: Hymenoptera > Melittidae
+Melitturgina # COL: Hymenoptera > Andrenidae
+Melitturgini # COL: synonym of Panurgini (Hymenoptera)
+Meliturgulina # COL: Hymenoptera > Andrenidae
+Mellininae # COL: Hymenoptera > Crabronidae
+Mellinini # COL: Hymenoptera > Crabronidae
+Melophorini # COL: Hymenoptera > Formicidae
+Mendesellinae # ITIS: Hymenoptera > Braconidae
+Meranoplini # COL: synonym of Crematogastrini (Hymenoptera)
+Meriini # iNat: Hymenoptera > Thynnidae
+Merisina # COL: synonym of Pteromalini (Hymenoptera)
+Merisinae # COL: synonym of Pteromalini (Hymenoptera)
+Merisini # COL: synonym of Pteromalini (Hymenoptera)
+Mermiglossina # COL: Hymenoptera > Andrenidae
+Mescocoelini # ITIS: Hymenoptera > Braconidae
+Mesini # iNat: Hymenoptera > Thynnidae
+Mesitiinae # PBDB: Hymenoptera > Bethylidae
+Mesochorinae # PBDB: Hymenoptera > Ichneumonidae
+Mesocoelini # iNat: Hymenoptera > Braconidae
+Mesoleiini # PBDB: Hymenoptera > Ichneumonidae
+Mesopalarini # COL: synonym of Palarini (Hymenoptera)
+Mesoserphidae # COL: Insecta > Hymenoptera
+Mesostenina # PBDB: Hymenoptera > Ichneumonidae
+Mesostoinae # ITIS: Hymenoptera > Braconidae
+Mesostoini # iNat: Hymenoptera > Braconidae
+Metallonoidii # COL: synonym of Encyrtinae (Hymenoptera)
+Metapelmatidae # COL: Insecta > Hymenoptera
+Metapelmatinae # COL: Hymenoptera > Metapelmatidae
+Metaphycina # COL: synonym of Encyrtinae (Hymenoptera)
+Metaponinae # COL: synonym of Pteromalini (Hymenoptera)
+Metaponini # COL: synonym of Crematogastrini (Hymenoptera)
+Metaprionomitii # COL: synonym of Encyrtinae (Hymenoptera)
+Metaprionomitina # COL: synonym of Encyrtinae (Hymenoptera)
+Metasteninae # iNat: Hymenoptera > Pteromalidae
+Metastenini # COL: synonym of Pteromalini (Hymenoptera)
+Meteorideinae # ITIS: Hymenoptera > Braconidae
+Meteorideini # ITIS: Hymenoptera > Braconidae
+Meteorinae # ITIS: synonym of Euphorinae (Hymenoptera)
+Meteorini # ITIS: Hymenoptera > Braconidae
+Methochinae # PBDB: Hymenoptera > Thynnidae
+Metoponini # COL: synonym of Pteromalini (Hymenoptera)
+Micradelinae # COL: Insecta > Hymenoptera
+Micradelini # COL: Insecta > Hymenoptera
+Microdontomerinae # COL: synonym of Torymidae (Hymenoptera)
+Microdontomerini # PBDB: synonym of Microdontomerinae (Hymenoptera)
+Microgastrinae # braconid wasp subfamily (Braconidae); ITIS: Hymenoptera > Braconidae
+Microleptinae # PBDB: Hymenoptera > Ichneumonidae
+Microteryi # COL: synonym of Encyrtinae (Hymenoptera)
+Microteryina # COL: synonym of Encyrtinae (Hymenoptera)
+Microteryini # COL: synonym of Encyrtinae (Hymenoptera)
+Microteryna # COL: synonym of Encyrtinae (Hymenoptera)
+Microteryni # COL: synonym of Encyrtinae (Hymenoptera)
+Microtypinae # ITIS: Hymenoptera > Braconidae
+Mikeiinae # iNat: Hymenoptera > Figitidae
+Mimesini # COL: synonym of Psenini (Hymenoptera)
+Minangini # ITIS: Hymenoptera > Braconidae
+Miomyrmecini # COL: Hymenoptera > Formicidae
+Miraini # COL: synonym of Tetracneminae (Hymenoptera)
+Mirii # COL: synonym of Tetracneminae (Hymenoptera)
+Mischocyttarini # TAXREF: Hymenoptera > Vespidae
+Miscogasteridae # COL: synonym of Miscogastrini (Hymenoptera)
+Miscogasterinae # COL: synonym of Miscogastrini (Hymenoptera)
+Miscogasterini # COL: synonym of Miscogastrini (Hymenoptera)
+Miscogasteroidae # COL: synonym of Miscogastrini (Hymenoptera)
+Miscogastrinae # COL: Hymenoptera > Pteromalidae
+Miscogastrini # COL: Hymenoptera > Pteromalidae
+Miscophini # COL: Hymenoptera > Crabronidae
+Mongolocampinae # COL: Hymenoptera > Tetracampidae
+Monocteninae # PBDB: Hymenoptera > Diprionidae
+Monoctonina # ITIS: Hymenoptera > Braconidae
+Monodiscodina # COL: synonym of Tetracneminae (Hymenoptera)
+Monodontomerinae # COL: synonym of Torymini (Hymenoptera)
+Monodontomerini # PBDB: Hymenoptera > Torymidae
+Monomachidae # COL: Insecta > Hymenoptera
+Monomoriini # COL: synonym of Solenopsidini (Hymenoptera)
+Mononeurini # TAXREF: Hymenoptera > Braconidae
+Moranilidae # COL: Insecta > Hymenoptera
+Moranilinae # COL: Hymenoptera > Moranilidae
+Moranilini # COL: Hymenoptera > Moranilidae
+Mutillidae # COL: Insecta > Hymenoptera
+Mutillinae # PBDB: Hymenoptera > Mutillidae
+Mutillini # PBDB: Hymenoptera > Mutillidae
+Myinidae # COL: synonym of Aphelinini (Hymenoptera)
+Myinoidae # COL: synonym of Aphelinini (Hymenoptera)
+Myiocephalini # TAXREF: Hymenoptera > Braconidae
+Myiocneminae # COL: synonym of Euryischinae (Hymenoptera)
+Mymares # COL: synonym of Mymaridae (Hymenoptera)
+Mymaridae # COL: Insecta > Hymenoptera
+Mymarides # COL: synonym of Mymaridae (Hymenoptera)
+Mymarinae # COL: synonym of Mymaridae (Hymenoptera)
+Mymarini # COL: synonym of Mymaridae (Hymenoptera)
+Mymaroidae # COL: synonym of Mymaridae (Hymenoptera)
+Mymaroidea # COL: synonym of Chalcidini (Hymenoptera)
+Mymarommatidae # COL: synonym of Serphitidae (Hymenoptera)
+Mymarommatinae # COL: synonym of Serphitidae (Hymenoptera)
+Mymarommatoidea # COL: Insecta > Hymenoptera
+Mymarommidae # COL: synonym of Serphitidae (Hymenoptera)
+Myrmeciinae # COL: Hymenoptera > Formicidae
+Myrmeciini # COL: Hymenoptera > Formicidae
+Myrmecinini # COL: synonym of Crematogastrini (Hymenoptera)
+Myrmecorhynchini # COL: synonym of Melophorini (Hymenoptera)
+Myrmelachistini # COL: Hymenoptera > Formicidae
+Myrmicariini # COL: synonym of Solenopsidini (Hymenoptera)
+Myrmicinae # COL: Hymenoptera > Formicidae
+Myrmicini # COL: Hymenoptera > Formicidae
+Myrmillinae # FaEu: Hymenoptera > Mutillidae
+Myrmosidae # GBIF: Insecta > Hymenoptera
+Myrmoteratini # COL: Hymenoptera > Formicidae
+Myzininae # PBDB: Hymenoptera > Thynnidae
+Myzinini # iNat: Hymenoptera > Thynnidae
+Neanastatidae # COL: Insecta > Hymenoptera
+Neanastatinae # COL: Hymenoptera > Neanastatidae
+Neapterolelapinae # COL: Insecta > Hymenoptera
+Neffapini # COL: Hymenoptera > Andrenidae
+Nefoeninae # COL: Hymenoptera > Pelecinellidae
+Nematinae # PBDB: Hymenoptera > Tenthredinidae
+Nematini # TAXREF: Hymenoptera > Tenthredinidae
+Neocladiina # COL: synonym of Encyrtinae (Hymenoptera)
+Neocladiini # COL: synonym of Encyrtinae (Hymenoptera)
+Neodiparidae # COL: Insecta > Hymenoptera
+Neodiparinae # COL: Hymenoptera > Neodiparidae
+Neodiparini # COL: Hymenoptera > Neodiparidae
+Neodiscodini # COL: synonym of Tetracneminae (Hymenoptera)
+Neodusmetiini # COL: synonym of Tetracneminae (Hymenoptera)
+Neofideliini # COL: Hymenoptera > Megachilidae
+Neofoeninae # COL: synonym of Nefoeninae (Hymenoptera)
+Neolarrini # COL: Hymenoptera > Apidae
+Neoneurinae # ITIS: synonym of Euphorinae (Hymenoptera)
+Neoneurini # ITIS: Hymenoptera > Braconidae
+Neopasiphaeinae # PBDB: synonym of Neopasiphaeini (Hymenoptera)
+Neopasiphaeini # PBDB: Hymenoptera > Colletidae
+Neorhacodinae # FaEu: Hymenoptera > Ichneumonidae
+Nesomesochorinae # iNat: Hymenoptera > Ichneumonidae
+Neuroscelionidae # GBIF: Insecta > Hymenoptera
+Nitelini # COL: synonym of Miscophini (Hymenoptera)
+Nixoniidae # GBIF: Insecta > Hymenoptera
+Nolanomelissini # COL: Hymenoptera > Andrenidae
+Nomadinae # COL: Hymenoptera > Apidae
+Nomadini # COL: Hymenoptera > Apidae
+Nomiinae # COL: Hymenoptera > Halictidae
+Nomioidinae # COL: Hymenoptera > Halictidae
+Nomioidini # COL: Hymenoptera > Halictidae
+Nonini # iNat: Hymenoptera > Ichneumonidae
+Nonninae # iNat: Hymenoptera > Ichneumonidae
+Notaspidiini # COL: Hymenoptera > Chalcididae
+Nothomyrmecii # COL: synonym of Prionomyrmecini (Hymenoptera)
+Nothomyrmeciinae # COL: synonym of Prionomyrmecini (Hymenoptera)
+Nothomyrmeciini # COL: synonym of Prionomyrmecini (Hymenoptera)
+Notocyphinae # iNat: Hymenoptera > Pompilidae
+Notosemini # TAXREF: Hymenoptera > Ichneumonidae
+Notostigmatini # COL: synonym of Melophorini (Hymenoptera)
+Nurseina # COL: Hymenoptera > Crabronidae
+Nyssonina # COL: Hymenoptera > Crabronidae
+Nyssonini # COL: Hymenoptera > Crabronidae
+Oberthuerellinae # iNat: Hymenoptera > Liopteridae
+Ochetomyrmecini # COL: synonym of Attini (Hymenoptera)
+Ochreriadini # COL: synonym of Osmiini (Hymenoptera)
+Ocymyrmecini # COL: synonym of Crematogastrini (Hymenoptera)
+Odontomachidae # COL: synonym of Ponerini (Hymenoptera)
+Odontomachini # COL: synonym of Ponerini (Hymenoptera)
+Odontosphecini # COL: Hymenoptera > Crabronidae
+Odopoiini # COL: synonym of Torymini (Hymenoptera)
+Odyneropsina # iNat: Hymenoptera > Apidae
+Oecophyllini # COL: Hymenoptera > Formicidae
+Oedemopsini # PBDB: Hymenoptera > Ichneumonidae
+Oligositina # COL: synonym of Oligositini (Hymenoptera)
+Oligositinae # COL: Hymenoptera > Trichogrammatidae
+Oligositini # COL: Hymenoptera > Trichogrammatidae
+Omphalinae # COL: synonym of Entedoninae (Hymenoptera)
+Omphalini # COL: synonym of Entedoninae (Hymenoptera)
+Onychomyrmecini # COL: synonym of Amblyoponini (Hymenoptera)
+Oobiina # COL: synonym of Encyrtinae (Hymenoptera)
+Oobiini # COL: synonym of Encyrtinae (Hymenoptera)
+Ooctoninae # COL: synonym of Mymaridae (Hymenoptera)
+Ooctonini # COL: synonym of Mymaridae (Hymenoptera)
+Ooderidae # COL: Insecta > Hymenoptera
+Ooderinae # COL: Hymenoptera > Ooderidae
+Ooderini # COL: Hymenoptera > Ooderidae
+Ooencyrtina # COL: synonym of Encyrtinae (Hymenoptera)
+Opamyrmini # COL: Hymenoptera > Formicidae
+Opheliminae # COL: Hymenoptera > Eulophidae
+Ophelimini # COL: synonym of Eulophinae (Hymenoptera)
+Ophelinini # COL: synonym of Eulophinae (Hymenoptera)
+Ophioneurinae # COL: synonym of Trichogrammatini (Hymenoptera)
+Ophioninae # ichneumon wasp subfamily (Ichneumonidae); PBDB: Hymenoptera > Ichneumonidae
+Ophionini # TAXREF: Hymenoptera > Ichneumonidae
+Opiinae # ITIS: Hymenoptera > Braconidae
+Oraseminae # COL: Hymenoptera > Eucharitidae
+Orectognathini # COL: synonym of Attini (Hymenoptera)
+Orgilinae # ITIS: Hymenoptera > Braconidae
+Oriencyrtini # COL: synonym of Encyrtinae (Hymenoptera)
+Ormoceridae # COL: synonym of Ormocerinae (Hymenoptera)
+Ormocerinae # COL: Hymenoptera > Pteromalidae
+Ormocerini # COL: synonym of Ormocerinae (Hymenoptera)
+Ormoceroidae # COL: synonym of Ormocerinae (Hymenoptera)
+Ormyridae # COL: Insecta > Hymenoptera
+Ormyrides # COL: synonym of Ormyrinae (Hymenoptera)
+Ormyrinae # COL: Hymenoptera > Ormyridae
+Ormyroidae # COL: synonym of Ormyrinae (Hymenoptera)
+Orthocentrinae # ichneumon wasp subfamily (Ichneumonidae); PBDB: Hymenoptera > Ichneumonidae
+Orthocentrini # PBDB: Hymenoptera > Ichneumonidae
+Orthopelmatinae # PBDB: Hymenoptera > Ichneumonidae
+Orussidae # COL: Insecta > Hymenoptera
+Orussoidea # COL: Insecta > Hymenoptera
+Osirini # COL: Hymenoptera > Apidae
+Osmiini # COL: Hymenoptera > Megachilidae
+Osprynchotina # iNat: Hymenoptera > Ichneumonidae
+Otitesellinae # COL: synonym of Otitesellini (Hymenoptera)
+Otitesellini # COL: Hymenoptera > Pteromalidae
+Oxaeidae # COL: synonym of Oxaeinae (Hymenoptera)
+Oxaeinae # COL: Hymenoptera > Andrenidae
+Oxybelini # COL: Hymenoptera > Crabronidae
+Oxylabini # iNat: Hymenoptera > Diapriidae
+Oxytorinae # PBDB: Hymenoptera > Ichneumonidae
+Pachycephini # iNat: Hymenoptera > Cephidae
+Pachycondylinae # COL: synonym of Ponerini (Hymenoptera)
+Pachycondylini # COL: synonym of Ponerini (Hymenoptera)
+Pachylostictinae # PBDB: Hymenoptera > Cimbicidae
+Pachyneurini # COL: Hymenoptera > Pteromalidae
+Pachyneuronini # COL: synonym of Pteromalini (Hymenoptera)
+Palachiini # COL: Hymenoptera > Torymidae
+Palaeosminthuridae # COL: synonym of Formicinae (Hymenoptera)
+Palaeosminthurinae # COL: synonym of Formicinae (Hymenoptera)
+Palaeosminthurini # COL: synonym of Formicinae (Hymenoptera)
+Palarini # COL: Hymenoptera > Crabronidae
+Paleomelittidae # COL: Insecta > Hymenoptera
+Paleosminthurinae # ITIS: Hymenoptera > Formicidae
+Pambolinae # ITIS: Hymenoptera > Braconidae
+Pambolini # TAXREF: Hymenoptera > Braconidae
+Pamphiliidae # COL: Insecta > Hymenoptera
+Pamphiliinae # PBDB: Hymenoptera > Pamphiliidae
+Pamphilioidea # COL: Insecta > Hymenoptera
+Panstenoninae # COL: synonym of Pteromalini (Hymenoptera)
+Pantolytini # TAXREF: Hymenoptera > Diapriidae
+Panurgina # COL: Hymenoptera > Andrenidae
+Panurginae # COL: Hymenoptera > Andrenidae
+Panurgini # COL: Hymenoptera > Andrenidae
+Panurginina # COL: Hymenoptera > Andrenidae
+Parablastothrichina # COL: synonym of Encyrtinae (Hymenoptera)
+Paracentrobiini # COL: synonym of Trichogrammatini (Hymenoptera)
+Paracolletinae # iNat: Hymenoptera > Colletidae
+Paragiina # iNat: Hymenoptera > Vespidae
+Paranyssontini # COL: synonym of Miscophini (Hymenoptera)
+Paraphycii # COL: synonym of Encyrtinae (Hymenoptera)
+Paraphycina # COL: synonym of Encyrtinae (Hymenoptera)
+Paraponerinae # COL: Hymenoptera > Formicidae
+Paraponerini # COL: Hymenoptera > Formicidae
+Pararhophitinae # COL: Hymenoptera > Megachilidae
+Pararhophitini # COL: Hymenoptera > Megachilidae
+Parasaphodinae # COL: Insecta > Hymenoptera
+Paratopulini # COL: synonym of Crematogastrini (Hymenoptera)
+Paraulacidae # iNat: Insecta > Hymenoptera
+Parnipinae # FaEu: Hymenoptera > Figitidae
+Parnopini # FaEu: Hymenoptera > Chrysididae
+Pauridiini # COL: synonym of Tetracneminae (Hymenoptera)
+Pauridini # COL: synonym of Tetracneminae (Hymenoptera)
+Pediaspidinae # iNat: Hymenoptera > Diplolepididae
+Pediaspidini # COL: Hymenoptera > Cynipidae
+Pediobiini # COL: synonym of Entedoninae (Hymenoptera)
+Pedunculinae # iNat: Hymenoptera > Ichneumonidae
+Pelecinellidae # COL: Insecta > Hymenoptera
+Pelecinellinae # COL: Hymenoptera > Pelecinellidae
+Pelecinidae # COL: Insecta > Hymenoptera
+Pelecinoidea # ITIS: synonym of Proctotrupoidea (Insecta)
+Pemphredonina # COL: Hymenoptera > Crabronidae
+Pemphredoninae # COL: Hymenoptera > Crabronidae
+Pemphredonini # COL: Hymenoptera > Crabronidae
+Penapini # COL: Hymenoptera > Halictidae
+Pentacnemii # COL: synonym of Encyrtinae (Hymenoptera)
+Pentacnemina # COL: synonym of Encyrtinae (Hymenoptera)
+Pentatermini # ITIS: Hymenoptera > Braconidae
+Pepsinae # PBDB: Hymenoptera > Pompilidae
+Pepsini # PBDB: Hymenoptera > Pompilidae
+Peradeniidae # COL: Insecta > Hymenoptera
+Percnobraconini # iNat: Hymenoptera > Braconidae
+Perditina # COL: Hymenoptera > Andrenidae
+Perditini # COL: synonym of Panurgini (Hymenoptera)
+Pergidae # COL: Insecta > Hymenoptera
+Perginae # PBDB: Hymenoptera > Pergidae
+Pergulinae # iNat: Hymenoptera > Pergidae
+Perilampidae # COL: Insecta > Hymenoptera
+Perilampina # COL: synonym of Perilampinae (Hymenoptera)
+Perilampinae # COL: Hymenoptera > Perilampidae
+Perilampini # COL: synonym of Perilampinae (Hymenoptera)
+Perilampoidae # COL: synonym of Perilampinae (Hymenoptera)
+Perilissini # PBDB: Hymenoptera > Ichneumonidae
+Perilitini # PBDB: Hymenoptera > Braconidae
+Perineurini # PBDB: Hymenoptera > Tenthredinidae
+Perreyiinae # PBDB: Hymenoptera > Pergidae
+Phaeogenini # FaEu: Hymenoptera > Ichneumonidae
+Phalacromyrmecini # COL: synonym of Attini (Hymenoptera)
+Phanacidini # TAXREF: Hymenoptera > Cynipidae
+Phanerotomini # PBDB: Hymenoptera > Braconidae
+Phasganophorini # COL: synonym of Chalcidini (Hymenoptera)
+Phasgonophorinae # COL: Hymenoptera > Chalcididae
+Phasgonophorini # COL: Hymenoptera > Chalcididae
+Pheidolini # COL: synonym of Attini (Hymenoptera)
+Pheidologetini # COL: synonym of Crematogastrini (Hymenoptera)
+Pheidologetonini # ITIS: Hymenoptera > Formicidae
+Pherhombinae # PBDB: Hymenoptera > Ichneumonidae
+Philanthina # COL: Hymenoptera > Crabronidae
+Philanthinae # COL: Hymenoptera > Crabronidae
+Philanthini # COL: Hymenoptera > Crabronidae
+Philanthinina # COL: Hymenoptera > Crabronidae
+Philoleminae # COL: synonym of Eurytominae (Hymenoptera)
+Philolemini # COL: synonym of Eurytominae (Hymenoptera)
+Philomastiginae # iNat: Hymenoptera > Pergidae
+Philomidinae # COL: Hymenoptera > Chrysolampidae
+Philomidini # COL: synonym of Philomidinae (Hymenoptera)
+Philotrypesini # COL: synonym of Otitesellini (Hymenoptera)
+Phrudinae # FaEu: Hymenoptera > Ichneumonidae
+Phtuariinae # COL: Insecta > Hymenoptera
+Phygadeuontina # PBDB: Hymenoptera > Ichneumonidae
+Phygadeuontinae # PBDB: Hymenoptera > Ichneumonidae
+Phygadeuontini # PBDB: synonym of Phygadeuontinae (Hymenoptera)
+Phymatocerini # TAXREF: Hymenoptera > Tenthredinidae
+Physcinae # COL: synonym of Coccophagini (Hymenoptera)
+Physcini # COL: Hymenoptera > Aphelinidae
+Phytodietini # PBDB: Hymenoptera > Ichneumonidae
+Pimplinae # ichneumon wasp subfamily (Ichneumonidae); PBDB: Hymenoptera > Ichneumonidae
+Pimplini # PBDB: Hymenoptera > Ichneumonidae
+Pireniani # COL: synonym of Pireninae (Hymenoptera)
+Pirenidae # COL: Insecta > Hymenoptera
+Pirenina # COL: synonym of Pireninae (Hymenoptera)
+Pireninae # COL: Hymenoptera > Pirenidae
+Pirenoidae # COL: synonym of Pireninae (Hymenoptera)
+Pisini # COL: synonym of Trypoxylini (Hymenoptera)
+Pityomyrmecini # COL: Hymenoptera > Formicidae
+Plagiolepidini # COL: Hymenoptera > Formicidae
+Planitorini # iNat: Hymenoptera > Braconidae
+Platencyrtina # COL: synonym of Encyrtinae (Hymenoptera)
+Platygasteridae # COL: synonym of Platygastridae (Hymenoptera)
+Platygastridae # COL: Insecta > Hymenoptera
+Platygastrinae # COL: Hymenoptera > Platygastridae
+Platygastroidea # COL: Insecta > Hymenoptera
+Platylabini # FaEu: Hymenoptera > Ichneumonidae
+Platynocheilinae # COL: Hymenoptera > Tetracampidae
+Platytetracampini # COL: synonym of Eulophinae (Hymenoptera)
+Platythyreini # COL: Hymenoptera > Formicidae
+Plectroctenini # COL: synonym of Ponerini (Hymenoptera)
+Plumariidae # COL: Insecta > Hymenoptera
+Podagrionidae # OTT: Insecta > Hymenoptera
+Podagrioninae # COL: synonym of Torymini (Hymenoptera)
+Podagrionini # COL: Hymenoptera > Torymidae
+Podiini # COL: Hymenoptera > Sphecidae
+Podomyrmini # COL: synonym of Crematogastrini (Hymenoptera)
+Poecilocryptini # PBDB: Hymenoptera > Ichneumonidae
+Poemeniinae # PBDB: Hymenoptera > Ichneumonidae
+Poemeniini # PBDB: Hymenoptera > Ichneumonidae
+Pogonomyrmecini # COL: Hymenoptera > Formicidae
+Polistinae # paper wasp subfamily (Vespidae); COL: Hymenoptera > Vespidae
+Polistini # PBDB: Hymenoptera > Vespidae
+Polynematini # COL: synonym of Mymaridae (Hymenoptera)
+Polyrhachidini # COL: synonym of Camponotini (Hymenoptera)
+Pompilidae # COL: Insecta > Hymenoptera
+Pompilinae # PBDB: Hymenoptera > Pompilidae
+Pompilini # PBDB: Hymenoptera > Pompilidae
+Pompiloidea # PBDB: Insecta > Hymenoptera
+Ponerini # COL: Hymenoptera > Formicidae
+Poropoeini # COL: synonym of Trichogrammatini (Hymenoptera)
+Praeaulacidae # COL: Insecta > Hymenoptera
+Praeichneumonidae # COL: Insecta > Hymenoptera
+Praini # ITIS: Hymenoptera > Braconidae
+Prenolepidii # COL: synonym of Lasiini (Hymenoptera)
+Prenolepidini # COL: synonym of Lasiini (Hymenoptera)
+Priochilini # TAXREF: Hymenoptera > Pompilidae
+Priocnemini # iNat: Hymenoptera > Pompilidae
+Prionomasticina # COL: synonym of Encyrtinae (Hymenoptera)
+Prionomasticini # COL: synonym of Encyrtinae (Hymenoptera)
+Prionomitina # COL: synonym of Encyrtinae (Hymenoptera)
+Prionomyrmecinae # COL: synonym of Prionomyrmecini (Hymenoptera)
+Prionomyrmecini # COL: Hymenoptera > Formicidae
+Prionychini # COL: Hymenoptera > Sphecidae
+Priscomasarina # iNat: Hymenoptera > Vespidae
+Pristocerinae # PBDB: Hymenoptera > Bethylidae
+Proattini # COL: synonym of Crematogastrini (Hymenoptera)
+Probolomyrmecini # COL: Hymenoptera > Formicidae
+Proceratiinae # COL: Hymenoptera > Formicidae
+Proceratiini # COL: Hymenoptera > Formicidae
+Prococcophagini # COL: Hymenoptera > Aphelinidae
+Proctorenyxidae # COL: Insecta > Hymenoptera
+Proctotrupidae # COL: Insecta > Hymenoptera
+Proctotrupinae # PBDB: Hymenoptera > Proctotrupidae
+Proctotrupoidea # COL: Insecta > Hymenoptera
+Proctotrupomorpha # PBDB: Insecta > Hymenoptera
+Prodecatominae # COL: synonym of Eurytominae (Hymenoptera)
+Proleurocerini # COL: synonym of Encyrtinae (Hymenoptera)
+Proleuroceroideini # COL: synonym of Encyrtinae (Hymenoptera)
+Proleuroceroidiini # COL: synonym of Encyrtinae (Hymenoptera)
+Promelittini # COL: synonym of Macropidini (Hymenoptera)
+Pronkiini # ITIS: Hymenoptera > Braconidae
+Propalachiini # COL: Hymenoptera > Torymidae
+Proscoliinae # PBDB: Hymenoptera > Scoliidae
+Prospaltellinae # COL: synonym of Pteroptricini (Hymenoptera)
+Prospaltellini # COL: Hymenoptera > Aphelinidae
+Protandrenini # COL: Hymenoptera > Andrenidae
+Protaphidiina # ITIS: Hymenoptera > Braconidae
+Protepeolini # COL: Hymenoptera > Apidae
+Proteropinae # ITIS: Hymenoptera > Braconidae
+Protobraconinae # ITIS: Hymenoptera > Braconidae
+Protoitidae # COL: Insecta > Hymenoptera
+Protomeliturgini # COL: Hymenoptera > Andrenidae
+Protorhyssaline # ITIS: Hymenoptera > Braconidae
+Protyndarichoidini # COL: synonym of Encyrtinae (Hymenoptera)
+Psammoderini # FaEu: Hymenoptera > Pompilidae
+Pselaphanini # ITIS: Hymenoptera > Braconidae
+Psenini # COL: Hymenoptera > Crabronidae
+Psenulini # COL: synonym of Psenini (Hymenoptera)
+Pseudaphycii # COL: synonym of Encyrtinae (Hymenoptera)
+Pseudencyrtina # COL: synonym of Encyrtinae (Hymenoptera)
+Pseudodineurini # TAXREF: Hymenoptera > Tenthredinidae
+Pseudoheriadini # COL: synonym of Osmiini (Hymenoptera)
+Pseudomethocini # TAXREF: Hymenoptera > Mutillidae
+Pseudomyrmecinae # COL: Hymenoptera > Formicidae
+Pseudomyrmecini # COL: Hymenoptera > Formicidae
+Pseudomyrmidae # COL: synonym of Pseudomyrmecinae (Hymenoptera)
+Pseudomyrminae # COL: synonym of Pseudomyrmecinae (Hymenoptera)
+Pseudoneoponerini # COL: synonym of Ponerini (Hymenoptera)
+Pseudophotopsidinae # FaEu: Hymenoptera > Mutillidae
+Pseudopompilini # iNat: Hymenoptera > Pompilidae
+Pseudorhopii # COL: synonym of Encyrtinae (Hymenoptera)
+Pseudorhopini # COL: synonym of Encyrtinae (Hymenoptera)
+Pseudorhyssini # FaEu: Hymenoptera > Ichneumonidae
+Pseudoscoliini # COL: Hymenoptera > Crabronidae
+Psilocharitini # COL: Hymenoptera > Eucharitidae
+Psilophrydini # COL: synonym of Encyrtinae (Hymenoptera)
+Psoropempulini # iNat: Hymenoptera > Pompilidae
+Psyllechthrini # COL: synonym of Encyrtinae (Hymenoptera)
+Pteromalidae # COL: Insecta > Hymenoptera
+Pteromalides # COL: synonym of Pteromalini (Hymenoptera)
+Pteromalina # COL: synonym of Pteromalini (Hymenoptera)
+Pteromalinae # COL: Hymenoptera > Pteromalidae
+Pteromalini # COL: Hymenoptera > Pteromalidae
+Pteromaloidae # COL: synonym of Pteromalini (Hymenoptera)
+Pteroptricinae # COL: synonym of Pteroptricini (Hymenoptera)
+Pteroptricini # COL: Hymenoptera > Aphelinidae
+Pterygophorinae # iNat: Hymenoptera > Pergidae
+Pteryperginae # iNat: Hymenoptera > Pergidae
+Ptilomymarini # COL: synonym of Mymaridae (Hymenoptera)
+Pulvilligerinae # COL: synonym of Megastigminae (Hymenoptera)
+Pulvilligerini # COL: synonym of Megastigminae (Hymenoptera)
+Pycnostigminae # iNat: Hymenoptera > Figitidae
+Pygostolini # UKSI: Hymenoptera > Braconidae
+Quadrencyrtini # COL: synonym of Encyrtinae (Hymenoptera)
+Qwaqwaiini # iNat: Hymenoptera > Cynipidae
+Raphitelinae # COL: synonym of Pteromalini (Hymenoptera)
+Raphitelini # COL: synonym of Pteromalini (Hymenoptera)
+Rasnicynipidae # COL: Insecta > Hymenoptera
+Rasnicynipinae # PBDB: Hymenoptera > Figitidae
+Redivivina # COL: Hymenoptera > Melittidae
+Reedapini # iNat: Hymenoptera > Colletidae
+Reneini # COL: synonym of Amblyoponini (Hymenoptera)
+Rhaconotini # TAXREF: Hymenoptera > Braconidae
+Rhagigasterini # iNat: Hymenoptera > Thynnidae
+Rhaphitelini # COL: synonym of Pteromalini (Hymenoptera)
+Rhathymini # COL: Hymenoptera > Apidae
+Rhinoencyrtii # COL: synonym of Encyrtinae (Hymenoptera)
+Rhinoencyrtina # COL: synonym of Encyrtinae (Hymenoptera)
+Rhinoencyrtini # COL: synonym of Encyrtinae (Hymenoptera)
+Rhopalomutillinae # iNat: Hymenoptera > Mutillidae
+Rhopalosomatidae # COL: Insecta > Hymenoptera
+Rhopina # COL: synonym of Tetracneminae (Hymenoptera)
+Rhysipolinae # ITIS: Hymenoptera > Braconidae
+Rhysipolini # PBDB: Hymenoptera > Braconidae
+Rhyssalinae # ITIS: Hymenoptera > Braconidae
+Rhyssalini # ITIS: Hymenoptera > Braconidae
+Rhyssinae # PBDB: Hymenoptera > Ichneumonidae
+Rileyidae # COL: synonym of Rileyinae (Hymenoptera)
+Rileyinae # COL: Hymenoptera > Eurytomidae
+Rileyini # COL: synonym of Rileyinae (Hymenoptera)
+Rodrigamini # iNat: Hymenoptera > Ichneumonidae
+Rogadinae # ITIS: Hymenoptera > Braconidae
+Rogadini # PBDB: Hymenoptera > Braconidae
+Ropalidiini # TAXREF: Hymenoptera > Vespidae
+Rophitinae # COL: Hymenoptera > Halictidae
+Rophitini # COL: Hymenoptera > Halictidae
+Roproniidae # COL: Insecta > Hymenoptera
+Roptrocerini # COL: synonym of Pteromalini (Hymenoptera)
+Rothneyiina # iNat: Hymenoptera > Ichneumonidae
+Rotoitidae # COL: synonym of Baeomorphinae (Hymenoptera)
+Sambini # COL: synonym of Dasypodaini (Hymenoptera)
+Santschiellini # COL: Hymenoptera > Formicidae
+Sapygidae # COL: Insecta > Hymenoptera
+Sapyginae # TAXREF: Hymenoptera > Sapygidae
+Scapheutina # COL: Hymenoptera > Crabronidae
+Scelionidae # COL: Insecta > Hymenoptera
+Scelioninae # COL: Hymenoptera > Scelionidae
+Sceliotrachelinae # COL: Hymenoptera > Platygastridae
+Sceliphrinae # COL: Hymenoptera > Sphecidae
+Sceliphrini # COL: Hymenoptera > Sphecidae
+Schletteriinae # iNat: Hymenoptera > Stephanidae
+Sciapterygini # TAXREF: Hymenoptera > Tenthredinidae
+Scleroderminae # PBDB: Hymenoptera > Bethylidae
+Sclerogibbidae # COL: Insecta > Hymenoptera
+Scolebythidae # COL: Insecta > Hymenoptera
+Scoliidae # COL: Insecta > Hymenoptera
+Scoliini # PBDB: Hymenoptera > Scoliidae
+Scolioidea # ITIS: synonym of Vespoidea (Insecta)
+Scolobatini # PBDB: Hymenoptera > Ichneumonidae
+Scotaenini # iNat: Hymenoptera > Thynnidae
+Scraptrinae # iNat: Hymenoptera > Colletidae
+Selandriinae # PBDB: Hymenoptera > Tenthredinidae
+Selandriini # PBDB: Hymenoptera > Tenthredinidae
+Seleucini # iNat: Hymenoptera > Ichneumonidae
+Seneciobraconinae # ITIS: synonym of Protorhyssaline (Hymenoptera)
+Sericobraconini # iNat: Hymenoptera > Braconidae
+Sericophorini # COL: synonym of Miscophini (Hymenoptera)
+Sericopompilini # iNat: Hymenoptera > Pompilidae
+Serphitidae # COL: Insecta > Hymenoptera
+Serphitinae # COL: synonym of Serphitidae (Hymenoptera)
+Serphitoidea # COL: Insecta > Hymenoptera
+Sicelomyrmecini # COL: synonym of Gesomyrmecini (Hymenoptera)
+Sicilomyrmecini # ITIS: Hymenoptera > Formicidae
+Sierolomorphidae # COL: Insecta > Hymenoptera
+Sierolomorphoidea # iNat: Insecta > Hymenoptera
+Sigalphinae # ITIS: Hymenoptera > Braconidae
+Sigalphini # ITIS: Hymenoptera > Braconidae
+Signiphoridae # COL: Insecta > Hymenoptera
+Signiphorinae # COL: synonym of Signiphoridae (Hymenoptera)
+Siobliini # TAXREF: Hymenoptera > Tenthredinidae
+Siragrini # iNat: Hymenoptera > Braconidae
+Siricidae # COL: Insecta > Hymenoptera
+Siricinae # PBDB: Hymenoptera > Siricidae
+Siricoidea # COL: Insecta > Hymenoptera
+Sisyrostolinae # iNat: Hymenoptera > Ichneumonidae
+Smicrini # COL: synonym of Chalcidini (Hymenoptera)
+Smicromorphinae # COL: Hymenoptera > Chalcididae
+Smicromorphini # COL: Hymenoptera > Chalcididae
+Smicromyrmini # TAXREF: Hymenoptera > Mutillidae
+Solenomyrmini # COL: synonym of Crematogastrini (Hymenoptera)
+Solenopsidini # COL: Hymenoptera > Formicidae
+Solenurinae # COL: Hymenoptera > Lyciscidae
+Spalangiae # COL: synonym of Spalangiinae (Hymenoptera)
+Spalangidae # COL: synonym of Spalangiinae (Hymenoptera)
+Spalangiidae # COL: Insecta > Hymenoptera
+Spalangiides # COL: synonym of Spalangiinae (Hymenoptera)
+Spalangiina # COL: synonym of Spalangiinae (Hymenoptera)
+Spalangiinae # COL: Hymenoptera > Spalangiidae
+Spalangoidae # COL: synonym of Spalangiinae (Hymenoptera)
+Sparasionidae # GBIF: Insecta > Hymenoptera
+Spathiini # PBDB: Hymenoptera > Braconidae
+Sphaeropthalminae # PBDB: Hymenoptera > Mutillidae
+Sphaeropthalmini # PBDB: Hymenoptera > Mutillidae
+Sphecidae # COL: Insecta > Hymenoptera
+Spheciina # COL: Hymenoptera > Crabronidae
+Sphecinae # COL: Hymenoptera > Sphecidae
+Sphecini # COL: Hymenoptera > Sphecidae
+Sphecodina # PBDB: Hymenoptera > Halictidae
+Sphecodini # COL: Hymenoptera > Halictidae
+Sphecoidea # COL: synonym of Apoidea (Insecta)
+Sphecomyrminae # COL: Hymenoptera > Formicidae
+Sphecomyrmini # COL: Hymenoptera > Formicidae
+Sphecophagina # iNat: Hymenoptera > Ichneumonidae
+Sphegigasterinae # COL: synonym of Pteromalini (Hymenoptera)
+Sphegigasterini # COL: synonym of Pteromalini (Hymenoptera)
+Sphegigastrides # COL: synonym of Pteromalini (Hymenoptera)
+Sphegigastrinae # COL: synonym of Pteromalini (Hymenoptera)
+Sphegigastrini # COL: Hymenoptera > Pteromalidae
+Sphinctini # FaEu: Hymenoptera > Ichneumonidae
+Spilomenina # COL: Hymenoptera > Crabronidae
+Spilomicrini # PBDB: Insecta > Hymenoptera
+Stangeellini # COL: Hymenoptera > Sphecidae
+Stauronematini # TAXREF: Hymenoptera > Tenthredinidae
+Stegomyrmecini # COL: synonym of Solenopsidini (Hymenoptera)
+Stemmatosterii # COL: synonym of Encyrtinae (Hymenoptera)
+Stenammini # COL: Hymenoptera > Formicidae
+Stenogastrinae # COL: Hymenoptera > Vespidae
+Stenotritidae # COL: Insecta > Hymenoptera
+Stephanidae # COL: Insecta > Hymenoptera
+Stephaninae # PBDB: Hymenoptera > Stephanidae
+Stephanodini # COL: synonym of Mymaridae (Hymenoptera)
+Stephanoidea # COL: Insecta > Hymenoptera
+Stereomyrmecini # COL: synonym of Crematogastrini (Hymenoptera)
+Sterictiphorinae # PBDB: Hymenoptera > Argidae
+Stethynini # COL: synonym of Mymaridae (Hymenoptera)
+Stictiellina # COL: Hymenoptera > Crabronidae
+Stictoponerini # COL: synonym of Ectatommini (Hymenoptera)
+Stigmaphronidae # COL: Insecta > Hymenoptera
+Stigmina # COL: Hymenoptera > Crabronidae
+Stilbopinae # PBDB: Hymenoptera > Ichneumonidae
+Stilpnina # PBDB: Hymenoptera > Ichneumonidae
+Stiropiini # iNat: Hymenoptera > Braconidae
+Stizina # COL: Hymenoptera > Crabronidae
+Storeyinae # COL: Insecta > Hymenoptera
+Strongylogastrini # UKSI: Hymenoptera > Tenthredinidae
+Strumigenini # COL: synonym of Attini (Hymenoptera)
+Stypiurini # COL: Hymenoptera > Chalcididae
+Styracotechyinae # iNat: Hymenoptera > Pergidae
+Susanini # iNat: Hymenoptera > Tenthredinidae
+Sycoecinae # COL: synonym of Otitesellini (Hymenoptera)
+Sycoecini # COL: synonym of Otitesellini (Hymenoptera)
+Sycophagides # COL: synonym of Sycophaginae (Hymenoptera)
+Sycophaginae # COL: Hymenoptera > Pteromalidae
+Sycophagini # COL: synonym of Sycophaginae (Hymenoptera)
+Sycophagoidae # COL: synonym of Sycophaginae (Hymenoptera)
+Sycoryctinae # COL: synonym of Otitesellini (Hymenoptera)
+Sycoryctini # COL: synonym of Otitesellini (Hymenoptera)
+Symphyta # COL: Insecta > Hymenoptera
+Synergini # COL: Hymenoptera > Cynipidae
+Syntexidae # ITIS: synonym of Anaxyelidae (Hymenoptera)
+Syntretini # TAXREF: Hymenoptera > Braconidae
+Syrphophagina # COL: synonym of Encyrtinae (Hymenoptera)
+Systasidae # COL: Insecta > Hymenoptera
+Systasinae # COL: Hymenoptera > Systasidae
+Systasini # COL: synonym of Systasinae (Hymenoptera)
+Tachynomyini # iNat: Hymenoptera > Thynnidae
+Tachypompilini # TAXREF: Hymenoptera > Pompilidae
+Tachytina # COL: synonym of Gastrosericina (Hymenoptera)
+Taftiina # COL: synonym of Tetracneminae (Hymenoptera)
+Tamdaonini # ITIS: Hymenoptera > Braconidae
+Tanaostigmatidae # COL: Insecta > Hymenoptera
+Tanaostigmatinae # COL: synonym of Tanaostigmatidae (Hymenoptera)
+Tanaostigmidae # COL: synonym of Tanaostigmatidae (Hymenoptera)
+Tanaostigmini # COL: synonym of Tanaostigmatidae (Hymenoptera)
+Tanaostigmodinae # COL: synonym of Tanaostigmatidae (Hymenoptera)
+Taneostigminae # COL: synonym of Tanaostigmatidae (Hymenoptera)
+Tanychorinae # PBDB: Hymenoptera > Ichneumonidae
+Tapinomini # COL: Hymenoptera > Formicidae
+Tapinotaspidini # COL: Hymenoptera > Apidae
+Tarsaliini # COL: Hymenoptera > Apidae
+Tatogastrinae # iNat: Hymenoptera > Ichneumonidae
+Teleasinae # COL: Hymenoptera > Scelionidae
+Telengaiinae # ITIS: Hymenoptera > Braconidae
+Telengaiini # ITIS: Hymenoptera > Braconidae
+Telenominae # COL: Hymenoptera > Scelionidae
+Teleutomyrmecini # COL: synonym of Crematogastrini (Hymenoptera)
+Teleutomyrmini # COL: synonym of Crematogastrini (Hymenoptera)
+Tenthredinidae # COL: Insecta > Hymenoptera
+Tenthredininae # PBDB: Hymenoptera > Tenthredinidae
+Tenthredinini # PBDB: Hymenoptera > Tenthredinidae
+Tenthredinoidea # COL: Insecta > Hymenoptera
+Tenthredopsini # TAXREF: Hymenoptera > Tenthredinidae
+Teratognathini # COL: Hymenoptera > Apidae
+Terebrantes # COL: Insecta > Hymenoptera
+Termolampini # COL: synonym of Pteromalini (Hymenoptera)
+Tersilochinae # PBDB: Hymenoptera > Ichneumonidae
+Tetracampidae # COL: Insecta > Hymenoptera
+Tetracampina # COL: synonym of Tetracampinae (Hymenoptera)
+Tetracampinae # COL: Hymenoptera > Tetracampidae
+Tetracampini # COL: synonym of Tetracampinae (Hymenoptera)
+Tetracampoidae # COL: synonym of Tetracampinae (Hymenoptera)
+Tetracladii # COL: synonym of Tetracneminae (Hymenoptera)
+Tetracladiina # COL: synonym of Tetracneminae (Hymenoptera)
+Tetracnemii # COL: synonym of Tetracneminae (Hymenoptera)
+Tetracnemina # COL: synonym of Tetracneminae (Hymenoptera)
+Tetracneminae # COL: Hymenoptera > Encyrtidae
+Tetracnemini # COL: synonym of Tetracneminae (Hymenoptera)
+Tetralophideina # COL: synonym of Tetracneminae (Hymenoptera)
+Tetramoriini # COL: synonym of Crematogastrini (Hymenoptera)
+Tetrapediini # COL: Hymenoptera > Apidae
+Tetrapusiinae # COL: synonym of Tetrapusinae (Hymenoptera)
+Tetrapusinae # COL: Hymenoptera > Agaonidae
+Tetrastichidae # COL: synonym of Tetrastichinae (Hymenoptera)
+Tetrastichina # COL: synonym of Tetrastichinae (Hymenoptera)
+Tetrastichinae # COL: Hymenoptera > Eulophidae
+Tetrastichini # COL: synonym of Tetrastichinae (Hymenoptera)
+Tetrastichoidae # COL: synonym of Tetrastichinae (Hymenoptera)
+Tetratermini # ITIS: Hymenoptera > Braconidae
+Thaumasurini # COL: synonym of Lyciscini (Hymenoptera)
+Thaumatodryininae # PBDB: Hymenoptera > Dryinidae
+Thaumatomyrmecini # COL: synonym of Ponerini (Hymenoptera)
+Theroniini # PBDB: Hymenoptera > Ichneumonidae
+Thomsoniscii # COL: synonym of Encyrtinae (Hymenoptera)
+Thomsoniscini # COL: synonym of Encyrtinae (Hymenoptera)
+Thrasorinae # TAXREF: Hymenoptera > Figitidae
+Thrinchostomatina # COL: Hymenoptera > Halictidae
+Thrinchostomina # iNat: Hymenoptera > Halictidae
+Thynnidae # flower wasp family (Apoidea); IRMNG: Insecta > Hymenoptera
+Thynninae # TAXREF: Hymenoptera > Tiphiidae
+Thynnini # iNat: Hymenoptera > Thynnidae
+Thynnoidea # PBDB: Insecta > Hymenoptera
+Thyreodonini # TAXREF: Hymenoptera > Ichneumonidae
+Thysanidae # COL: synonym of Signiphoridae (Hymenoptera)
+Ticoplinae # FaEu: Hymenoptera > Mutillidae
+Tiphiidae # COL: Insecta > Hymenoptera
+Tiphiinae # PBDB: Hymenoptera > Tiphiidae
+Tiphioidea # PBDB: Insecta > Hymenoptera
+Tobiasitini # PBDB: Hymenoptera > Ichneumonidae
+Tomocerodinae # COL: Hymenoptera > Moranilidae
+Tomocerodini # COL: Hymenoptera > Moranilidae
+Tomostethini # PBDB: Hymenoptera > Tenthredinidae
+Torymidae # COL: Insecta > Hymenoptera
+Torymina # COL: synonym of Torymini (Hymenoptera)
+Toryminae # COL: Hymenoptera > Torymidae
+Torymini # COL: Hymenoptera > Torymidae
+Torymoidae # COL: synonym of Torymini (Hymenoptera)
+Torymoidini # COL: Hymenoptera > Torymidae
+Townesilitini # UKSI: Hymenoptera > Braconidae
+Townesitinae # PBDB: Hymenoptera > Ichneumonidae
+Townsendiellini # COL: Hymenoptera > Apidae
+Trachypetinae # ITIS: Hymenoptera > Braconidae
+Trechnitina # COL: synonym of Encyrtinae (Hymenoptera)
+Trechnitini # COL: synonym of Encyrtinae (Hymenoptera)
+Tremicinae # PBDB: synonym of Tremecinae (Hymenoptera)
+Triadomerinae # COL: synonym of Mymaridae (Hymenoptera)
+Triadomerini # COL: synonym of Mymaridae (Hymenoptera)
+Trichiosomini # UKSI: Hymenoptera > Cimbicidae
+Trichocolletini # iNat: Hymenoptera > Colletidae
+Trichogrammatidae # COL: Insecta > Hymenoptera
+Trichogrammatinae # COL: Hymenoptera > Trichogrammatidae
+Trichogrammatini # COL: Hymenoptera > Trichogrammatidae
+Trichogrammatoidae # COL: synonym of Trichogrammatini (Hymenoptera)
+Trichogrammidae # COL: synonym of Trichogrammatini (Hymenoptera)
+Trichogramminae # COL: synonym of Trichogrammatini (Hymenoptera)
+Trichogrammini # COL: synonym of Trichogrammatini (Hymenoptera)
+Trichonoderinae # COL: synonym of Trigonoderini (Hymenoptera)
+Tricladii # COL: synonym of Tetracneminae (Hymenoptera)
+Tricladiina # COL: synonym of Tetracneminae (Hymenoptera)
+Tridymina # COL: synonym of Pireninae (Hymenoptera)
+Tridyminae # COL: Hymenoptera > Pirenidae
+Tridymini # COL: synonym of Pireninae (Hymenoptera)
+Trielidini # iNat: Hymenoptera > Scoliidae
+Trigonalidae # COL: Insecta > Hymenoptera
+Trigonaloidea # COL: Insecta > Hymenoptera
+Trigonoderinae # COL: Hymenoptera > Pteromalidae
+Trigonoderini # COL: Hymenoptera > Pteromalidae
+Trigonoderopsini # COL: Hymenoptera > Pteromalidae
+Trioxina # ITIS: Hymenoptera > Braconidae
+Trisecodinae # COL: Hymenoptera > Systasidae
+Trissevaniini # iNat: Hymenoptera > Evaniidae
+Trogaspidiini # TAXREF: Hymenoptera > Mutillidae
+Tropimeridini # COL: Hymenoptera > Chalcididae
+Tropobraconini # iNat: Hymenoptera > Braconidae
+Tryphoninae # ichneumon wasp subfamily (Ichneumonidae); PBDB: Hymenoptera > Ichneumonidae
+Tryphonini # PBDB: Hymenoptera > Ichneumonidae
+Trypoxylini # COL: Hymenoptera > Crabronidae
+Tyndarichina # COL: synonym of Encyrtinae (Hymenoptera)
+Typhlomyrmecini # COL: synonym of Ectatommini (Hymenoptera)
+Typhoctinae # iNat: Hymenoptera > Chyphotidae
+Ussurohelconini # iNat: Hymenoptera > Braconidae
+Uzkini # COL: synonym of Colotrechnini (Hymenoptera)
+Vaepellini # iNat: Hymenoptera > Braconidae
+Vagenathina # iNat: Hymenoptera > Ichneumonidae
+Vanhorniidae # COL: Insecta > Hymenoptera
+Vervoortihelconini # iNat: Hymenoptera > Braconidae
+Vespidae # COL: Insecta > Hymenoptera
+Vespinae # COL: Hymenoptera > Vespidae
+Vespoidea # COL: Insecta > Hymenoptera
+Virgulibraconini # iNat: Hymenoptera > Braconidae
+Waldheimiini # TAXREF: Hymenoptera > Tenthredinidae
+Westwoodiini # iNat: Hymenoptera > Ichneumonidae
+Xenapateini # iNat: Hymenoptera > Tenthredinidae
+Xenosphecini # COL: Hymenoptera > Crabronidae
+Xenothyrini # iNat: Hymenoptera > Ichneumonidae
+Xeromelissinae # COL: Hymenoptera > Colletidae
+Xeromelissini # COL: synonym of Xeromelissinae (Hymenoptera)
+Xiphozelinae # ITIS: Hymenoptera > Braconidae
+Xiphydriidae # COL: Insecta > Hymenoptera
+Xiphydriinae # TAXREF: Hymenoptera > Xiphydriidae
+Xiphydrioidea # COL: Insecta > Hymenoptera
+Xoridinae # PBDB: Hymenoptera > Ichneumonidae
+Xyelidae # COL: Insecta > Hymenoptera
+Xyeloidea # COL: Insecta > Hymenoptera
+Xylocopinae # COL: Hymenoptera > Apidae
+Xylocopini # COL: Hymenoptera > Apidae
+Yeliconini # iNat: Hymenoptera > Braconidae
+Ypsistocerini # iNat: Hymenoptera > Braconidae
+Zaeucoilini # iNat: Hymenoptera > Figitidae
+Zavoyini # COL: Hymenoptera > Chalcididae
+Zenargidae # IRMNG: Insecta > Hymenoptera
+Zherichiniini # COL: Hymenoptera > Formicidae
+Zigrasimeciinae # COL: Hymenoptera > Formicidae
+Zigrasimeciini # COL: synonym of Zigrasimeciinae (Hymenoptera)

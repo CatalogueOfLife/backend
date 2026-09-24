@@ -1,55 +1,88 @@
-Acanthocerataceae
-Acritarcha
-Actaeinae
-Alsophilinae
-Amaryllidinae
-Amorphea
-Amphicominae
-Antoniinae
-Arctiinae
-Belliinae
-Calcitarcha
-Carinae
-Cephalina
-Ceratophyllidae
-Chromista
-Conocephalinae
-Corydalinae
-Crambinae
-Crocidiinae
-Crocinae
-Dinetinae
-Eucaryota
-Euglenidae
-Eukaryota
-Eukaryote
-Fideliinae
-Heleoperidae
-Hyperbionycidae
-Lamiinae
-Lauridae
-Ledinae
-Limoniinae
-Lomatiinae
-Ludioidae
-Metopidae
-Metopiidae
-Milleriinae
-Neriinae
-Nesaeinae
-Obazoa
-Opisthokonta
-Peranemataceae
-Petrobiinae
-Phenacinae
-Ponerinae
-Pteroniinae
-Pyrinae
-Saginae
-Sagittariidae
-Schizopetalinae
-Siinae
-Streblinae
-Trichosidae
-Trochiliidae
-Urostylidae
+Acanthocerataceae # homonym in Molluscs (COL: Cephalopoda > Ammonoidea), Protists (COL: Bacillariophyceae > Chaetocerotales)
+Acritarcha # WoRMS: Protozoa
+Actaeinae # homonym in Crustacean (COL: Decapoda > Xanthidae), Plants (COL: synonym of Helleboreae (Ranunculales))
+Alsophilinae # homonym in Lepidoptera (ITIS: synonym of Alsophilini (Lepidoptera)), Plants (COL: synonym of Cyatheaceae (Cyatheales))
+Amaryllidinae # homonym in Crustacean (COL: Amphipoda > Amaryllididae), Plants (iNat: Asparagales > Amaryllidaceae)
+Amorphea # Wikidata: Eukaryota
+Amphicominae # homonym in Coleoptera (COL: Coleoptera > Glaphyridae), Plants (COL: synonym of Tecomeae (Lamiales))
+Antoniinae # homonym in Diptera (COL: Diptera > Bombyliidae), Plants (COL: synonym of Antonieae (Gentianales))
+Arctiinae # homonym in Lepidoptera (COL: Lepidoptera > Erebidae), Plants (COL: Asterales > Asteraceae)
+Beckmanniinae # homonym in Angiosperms (TAXREF: Poales > Poaceae), OtherAnimals (COL: Rhynchonellida > Hebetoechiidae)
+Belliinae # homonym in Crustacean (COL: Decapoda > Belliidae), Plants (COL: synonym of Bellidinae (Asterales))
+Blastocystidae # homonym in OtherAnimals (IRMNG: synonym of Astroblastocystidae (Edrioblastoidea)), Protists (WoRMS: Blastocystea > Blastocystida)
+Bonetocardiellidae # GBIF: synonym of Pithonellidae (Calcitarcha)
+Buliminidae # homonym in Gastropods (IRMNG: synonym of Enidae (Stylommatophora)), Protists (COL: Globothalamea > Rotaliida)
+Calcitarcha # GBIF: Protozoa
+Carinae # homonym in Coleoptera (ITIS: Coleoptera > Caridae), Plants (COL: synonym of Careae (Apiales))
+Cephalina # homonym in Diptera (COL: synonym of Ulidiini (Diptera)), Protists (ITIS: Sporozoa > Eugregarinida)
+Ceratiidae # homonym in Algae (IRMNG: synonym of Ceratiaceae (Gonyaulacales)), Chordates (COL: Teleostei > Lophiiformes)
+Ceratophyllidae # homonym in OtherInsects (COL: Insecta > Siphonaptera), Plants (COL: synonym of Ceratophyllales (Magnoliopsida))
+Chromista # COL: Eukaryota
+Cochleariinae # homonym in Angiosperms (COL: synonym of Cochlearieae (Capparales)), Chordates (COL: synonym of Ardeidae (Pelecaniformes))
+Conocephalinae # homonym in Orthoptera (COL: Orthoptera > Tettigoniidae), Plants (COL: synonym of Urticeae (Rosales))
+Corydalinae # homonym in OtherInsects (ITIS: Megaloptera > Corydalidae), Plants (COL: synonym of Corydaleae (Ranunculales))
+Crambinae # homonym in Lepidoptera (COL: Lepidoptera > Crambidae), Plants (COL: Capparales > Brassicaceae)
+Crocidiinae # homonym in Diptera (COL: Diptera > Bombyliidae), Plants (COL: synonym of Tussilagininae (Asterales))
+Crocinae # homonym in OtherInsects (ITIS: Neuroptera > Nemopteridae), Plants (iNat: Asparagales > Iridaceae)
+Cyclidiidae # homonym in Lepidoptera (CLB dataset 2025: Insecta > Lepidoptera), Protists (COL: Oligohymenophorea > Scuticociliatida)
+Dinetinae # homonym in Hymenoptera (COL: Hymenoptera > Crabronidae), Plants (COL: synonym of Cardiochlamydoideae (Solanales))
+Discocephalidae # homonym in Hemiptera (PBDB: synonym of Discocephalinae (Hemiptera)), Protists (WoRMS: Spirotrichea > Euplotida)
+Erythraeinae # homonym in Angiosperms (Tropicos: Gentianales > Gentianaceae), Arachnids (COL: Trombidiformes > Erythraeidae)
+Eucaryota # Wikispecies: synonym of Eukaryota
+Euglenidae # homonym in Coleoptera (ITIS: synonym of Aderidae (Coleoptera)), Protists (COL: synonym of Euglenaceae (Euglenales))
+Eukaryota # COL: domain
+Eukaryote # not found in ChecklistBank
+Euryalinae # homonym in Angiosperms (COL: synonym of Nymphaeales (Magnoliopsida)), OtherAnimals (COL: synonym of Euryalidae (Euryalida))
+Fideliinae # homonym in Hymenoptera (COL: Hymenoptera > Megachilidae), Plants (COL: synonym of Hypochaeridinae (Asterales))
+Gigaspermaceae # homonym in Basidiomycetes (Species Fungorum: synonym of Cortinariaceae (Agaricales)), Bryophytes (COL: Bryopsida > Gigaspermales)
+Glomerinae # homonym in Angiosperms (Wikidata: Asparagales > Orchidaceae), OtherArthropods (COL: Arthropoda > Diplopoda)
+Heleoperidae # homonym in Coleoptera (NCBI: Elardia > Arcellinida), Protists (COL: Tubulinea > Arcellinida)
+Heliconiinae # homonym in Angiosperms (Wikidata: Liliales > Cannales), Lepidoptera (COL: Lepidoptera > Nymphalidae)
+Heliodiscidae # homonym in Gastropods (Dyntaxa: synonym of Helicodiscidae (Stylommatophora)), Protists (COL: Polycystina > Spumellaria)
+Hyperbionycidae # homonym in Arachnids (COL18: Amoebozoa > Amoebida), Protists (GBIF: Protozoa)
+Hypnidae # homonym in Bryophytes (OTT: Bryophyta > Bryopsida), Chordates (COL: Elasmobranchii > Torpediniformes)
+Janacekiidae # homonym in Bivalves (PBDB: synonym of Solemyinae (Solemyida)), OtherFungi (COL: Microsporea > Meiodihaplophasida)
+Lamiinae # homonym in Coleoptera (COL: Coleoptera > Cerambycidae), Plants (COL: synonym of Lamieae (Lamiales))
+Lauridae # homonym in Crustacean (COL: Thecostraca > Laurida), Plants (COL: synonym of Laurales (Magnoliopsida))
+Ledinae # homonym in Hemiptera (COL: synonym of Ledrini (Hemiptera)), Plants (COL: synonym of Rhodoreae (Ericales))
+Leriinae # homonym in Angiosperms (Tropicos: Asterales > Asteraceae), Diptera (COL: synonym of Heleomyzini (Diptera))
+Limoniinae # homonym in Diptera (COL: Diptera > Limoniidae), Plants (COL: synonym of Aurantioideae (Sapindales))
+Lomatiinae # homonym in Diptera (COL: Diptera > Bombyliidae), Plants (COL: Proteales > Proteaceae)
+Ludioidae # homonym in Coleoptera (Wikidata: Armophorea > Armophorida), Protists (COL: Heterotrichea > Armophorida)
+Lycastinae # homonym in Angiosperms (Wikidata: Asparagales > Orchidaceae), OtherAnimals (COL: synonym of Namanereidinae (Phyllodocida))
+Lycoridae # homonym in Angiosperms (Wikidata: Liliiflorae > Amaryllidaceae), OtherAnimals (COL: synonym of Nereididae (Phyllodocida))
+Metopidae # homonym in Diptera (COL: synonym of Miltogramminae (Diptera)), Protists (COL: Heterotrichea > Heterotrichida)
+Metopiidae # homonym in Diptera (COL: synonym of Miltogramminae (Diptera)), Protists (IRMNG: Sarcomonadea > Metopiida)
+Milleriinae # homonym in Lepidoptera (COL: synonym of Millieriidae (Lepidoptera)), Plants (COL: Asterales > Asteraceae)
+Neriinae # homonym in Diptera (COL: synonym of Neriidae (Diptera)), Plants (COL: Gentianales > Apocynaceae)
+Nesaeinae # homonym in Crustacean (COL: synonym of Sphaeromatidae (Isopoda)), Plants (COL: synonym of Lythroideae (Myrtales))
+Obazoa # PR²: Eukaryota
+Opisthokonta # PR²: Eukaryota
+Peranemataceae # homonym in Protists (COL: synonym of Peranemidae (Peranemida)), Pteridophytes (COL: synonym of Dryopteridaceae (Polypodiales))
+Petrobiinae # homonym in OtherInsects (COL: Archaeognatha > Machilidae), Plants (COL: Asterales > Asteraceae)
+Phellinaceae # homonym in Angiosperms (COL: Magnoliopsida > Asterales), Basidiomycetes (Dyntaxa: synonym of Hymenochaetaceae (Hymenochaetales))
+Phenacinae # homonym in Hemiptera (COL: Hemiptera > Fulgoridae), Plants (COL: synonym of Boehmerieae (Rosales))
+Pilocarpaceae # homonym in Angiosperms (COL: synonym of Rutaceae (Sapindales)), Ascomycetes (COL: Lecanoromycetes > Lecanorales)
+Polypodiidae # homonym in OtherAnimals (ITIS: Cnidaria > Polypodiozoa), Pteridophytes (COL: synonym of Polypodioideae (Polypodiales))
+Ponerinae # homonym in Hymenoptera (COL: Hymenoptera > Formicidae), Plants (WFO Plant List 2026-06: Asparagales > Orchidaceae)
+Procridinae # homonym in Angiosperms (Wikidata: Urticales > Urticaceae), Lepidoptera (COL: Lepidoptera > Zygaenidae)
+Protaspidae # homonym in Chordates (PBDB: Pteraspidomorpha > Pteraspidiformes), Protists (WoRMS: Thecofilosea > Cryomonadida)
+Psamminidae # homonym in OtherAnimals (ITIS: Demospongiae > Dendroceratida), Protists (COL: Foraminifera > Monothalamea)
+Pteroniinae # homonym in Coleoptera (COL: synonym of Proteinini (Coleoptera)), Plants (COL: Asterales > Asteraceae)
+Pyrinae # homonym in Crustacean (COL: synonym of Pisinae (Decapoda)), Plants (COL: synonym of Malinae (Rosales))
+Raphiinae # homonym in Angiosperms (TAXREF: Arecales > Arecaceae), Diptera (COL: synonym of Dolichopodini (Diptera)), Lepidoptera (ITIS: synonym of Dilobinae (Lepidoptera))
+Rocellaceae # homonym in Algae (WoRMS: Bacillariophyceae > Coscinodiscales), Ascomycetes (Dyntaxa: synonym of Roccellaceae (Arthoniales))
+Saginae # homonym in Orthoptera (COL: Orthoptera > Tettigoniidae), Plants (COL: synonym of Sagineae (Caryophyllales))
+Sagittariidae # homonym in Chordates (COL: Aves > Accipitriformes), Protists (COL: Colpodea > Cyrtolophosidida)
+Schizopetalinae # homonym in OtherArthropods (COL: Arthropoda > Diplopoda), Plants (COL: synonym of Schizopetaleae (Capparales))
+Setariinae # homonym in Angiosperms (Wikidata: Cyperales > Poaceae), Coleoptera (COL: synonym of Pharaxonothinae (Coleoptera))
+Siinae # homonym in Orthoptera (COL: synonym of Siini (Orthoptera)), Plants (COL: synonym of Oenantheae (Apiales))
+Spiromastigaceae # homonym in Algae (WoRMS: Ochrophyta > Chrysophyceae), Ascomycetes (COL: Eurotiomycetes > Onygenales)
+Stilbaceae # homonym in Angiosperms (COL: Magnoliopsida > Lamiales), Ascomycetes (UKSI: synonym of Ascomycota (Fungi))
+Streblinae # homonym in Diptera (COL: Diptera > Hippoboscidae), Plants (COL: synonym of Antiarideae (Rosales))
+Suctoria # homonym in OtherInsects (UKSI: synonym of Siphonaptera (Insecta)), Protists (ITIS: Ciliophora > Ciliatea)
+Trichiidae # homonym in Coleoptera (IRMNG: synonym of Scarabaeidae (Coleoptera)), Protists (WoRMS: Myxogastrea > Trichiida)
+Trichosidae # homonym in Arachnids (NCBI: Discosea > Flabellinia), Protists (COL: synonym of Trichosphaeriidae (Trichosida))
+Trochiliidae # homonym in Chordates (Wikidata: Phyllopharyngea > Cyrtophorida), Lepidoptera (COL: synonym of Sesiidae (Lepidoptera)), Protists (COL: Cyrtophoria > Cyrtophorida)
+Tubulariidae # homonym in Algae (PBDB: Ochrophyta > Bacillariophyceae), OtherAnimals (COL: Hydrozoa > Anthoathecata)
+Urostylidae # homonym in Hemiptera (IRMNG: synonym of Urostylididae (Hemiptera)), Protists (COL: Hypotrichea > Urostylida)

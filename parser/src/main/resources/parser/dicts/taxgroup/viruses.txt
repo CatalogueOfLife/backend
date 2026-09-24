@@ -1,468 +1,468 @@
-Abnidovirineae
-Abyssoviridae
-Ackermannviridae
-Actantavirinae
-Adenoviridae
-Adintoviridae
-Adnaviria
-Agantavirinae
-Aglimvirinae
-Algavirales
-Aliusviridae
-Alloherpesviridae
-Alphaflexiviridae
-Alphaherpesvirinae
-Alphairidovirinae
-Alpharhabdovirinae
-Alphasatellitidae
-Alphatetraviridae
-Alsuviricetes
-Alvernaviridae
-Amabiliviricetes
-Amalgaviridae
-Amarillovirales
-Amnoonviridae
-Ampullaviridae
-Anelloviridae
-Arenaviridae
-Arfiviricetes
-Arnidovirineae
-Arquatrovirinae
-Arteriviridae
-Articulavirales
-Artoviridae
-Artverviricota
-Ascoviridae
-Asfarviridae
-Asfuvirales
-Aspiviridae
-Astroviridae
-Atkinsviridae
-Autographiviridae
-Autolykiviridae
-Avsunviroidae
-Avulavirinae
-Azeredovirinae
-Bacilladnaviridae
-Baculoviridae
-Bamfordvirae
-Baphyvirales
-Barnaviridae
-Bastillevirinae
-Bclasvirinae
-Beephvirinae
-Beijerinckvirinae
-Belfryvirales
-Belpaoviridae
-Benyviridae
-Betaflexiviridae
-Betaherpesvirinae
-Betairidovirinae
-Betarhabdovirinae
-Bicaudaviridae
-Bidnaviridae
-Birnaviridae
-Blubervirales
-Blumeviridae
-Bornaviridae
-Botourmiaviridae
-Braunvirinae
-Brockvirinae
-Bromoviridae
-Bronfenbrennervirinae
-Bullavirinae
-Bunyavirales
-Caliciviridae
-Calvusvirinae
-Carmotetraviridae
-Caudovirales
-Caudoviricetes
-Caulimoviridae
-Ceronivirinae
-Chaseviridae
-Chebruvirinae
-Chimanivirinae
-Chitovirales
-Chordopoxvirinae
-Chrymotiviricetes
-Chrysoviridae
-Chunqiuviricetes
-Chuviridae
-Circoviridae
-Cirlivirales
-Clavaviridae
-Cleopatravirinae
-Closteroviridae
-Cobavirinae
-Colwellvirinae
-Comovirinae
-Corkvirinae
-Cornidovirineae
-Coronaviridae
-Corticoviridae
-Cossaviricota
-Cremegaviridae
-Cremevirales
-Crepuscuviridae
-Cressdnaviricota
-Crocarterivirinae
-Cruliviridae
-Crustonivirinae
-Cryppavirales
-Curvulaviridae
-Cvivirinae
-Cystoviridae
-Dclasvirinae
-Deejayvirinae
-Deltaflexiviridae
-Demerecviridae
-Denniswatsonvirinae
-Densovirinae
-Dicistroviridae
-Dividoviricota
-Dolichocephalovirinae
-Drexlerviridae
-Duinviridae
-Duplodnaviria
-Duplopiviricetes
-Duplornaviricota
-Durnavirales
-Eekayvirinae
-Ellioviricetes
-Emmerichvirinae
-Endornaviridae
-Enquatrovirinae
-Entomopoxvirinae
-Equarterivirinae
-Ermolyevavirinae
-Erskinevirinae
-Eucampyvirinae
-Euroniviridae
-Faserviricetes
-Fiersviridae
-Filoviridae
-Fimoviridae
-Finnlakeviridae
-Firstpapillomavirinae
-Flasuviricetes
-Flaviviridae
-Fuhrmanvirinae
-Fuselloviridae
-Gammaflexiviridae
-Gammaherpesvirinae
-Gammarhabdovirinae
-Geminialphasatellitinae
-Geminiviridae
-Genomoviridae
-Geplafuvirales
-Ghabrivirales
-Globuloviridae
-Gochnauervirinae
-Gofosavirinae
-Gokushovirinae
-Gorgonvirinae
-Goujianvirales
-Gresnaviridae
-Guelinviridae
-Guernseyvirinae
-Gutmannvirinae
-Guttaviridae
-Halopanivirales
-Haloruvirales
-Halspiviridae
-Hamaparvovirinae
-Hantaviridae
-Haploviricotina
-Helvetiavirae
-Hendrixvirinae
-Hepadnaviridae
-Hepelivirales
-Hepeviridae
-Herelleviridae
-Heroarterivirinae
-Herpesvirales
-Herpesviridae
-Herviviricetes
-Heunggongvirae
-Hexponivirinae
-Hofneiviricota
-Howeltoviricetes
-Humphriesvirinae
-Huolimaviricetes
-Hyporhamsavirinae
-Hypoviridae
-Hytrosaviridae
-Iflaviridae
-Imitervirales
-Inoviridae
-Insthoviricetes
-Iridoviridae
-Jasinkavirinae
-Jingchuvirales
-Kalamavirales
-Kitaviridae
-Kitrinoviricota
-Kolmioviridae
-Krylovirinae
-Langleyhallvirinae
-Laserviricetes
-Lavidaviridae
-Lefavirales
-Leishbuviridae
-Lenarviricota
-Letovirinae
-Leviviricetes
-Ligamenvirales
-Lipothrixviridae
-Lispiviridae
-Loebvirae
-Magsaviricetes
-Malacoherpesviridae
-Malgrandaviricetes
-Mammantavirinae
-Markadamsvirinae
-Marnaviridae
-Marseilleviridae
-Martellivirales
-Matonaviridae
-Matshushitaviridae
-Maveriviricetes
-Mayoviridae
-Mccleskeyvirinae
-Mccorquodalevirinae
-Mclasvirinae
-Medioniviridae
-Medionivirinae
-Megabirnaviridae
-Megaviricetes
-Melnykvirinae
-Mesnidovirineae
-Mesoniviridae
-Metaparamyxovirinae
-Metaviridae
-Metaxyviridae
-Miaviricetes
-Microviridae
-Migulavirinae
-Milneviricetes
-Mimiviridae
-Mindivirales
-Mitoviridae
-Molineuxvirinae
-Monidovirineae
-Monjiviricetes
-Monodnaviria
-Mononegavirales
-Mononiviridae
-Mononivirinae
-Mouviricetes
-Mulpavirales
-Muvirales
-Mymonaviridae
-Myoviridae
-Mypoviridae
-Myriaviridae
-Nairoviridae
-Naldaviricetes
-Nanghoshaviridae
-Nanhypoviridae
-Nanidovirineae
-Nanoalphasatellitinae
-Nanoviridae
-Narnaviridae
-Natareviridae
-Nclasvirinae
-Nefertitivirinae
-Negarnaviricota
-Nidovirales
-Nimaviridae
-Nodamuvirales
-Nodaviridae
-Northropvirinae
-Norzivirales
-Nucleocytoviricota
-Nudiviridae
-Nyamiviridae
-Nymbaxtervirinae
-Okabevirinae
-Okanivirinae
-Olifoviridae
-Ortervirales
-Orthocoronavirinae
-Orthomyxoviridae
-Orthoparamyxovirinae
-Orthopolintovirales
-Orthoretrovirinae
-Orthornavirae
-Ounavirinae
-Ourlivirales
-Ovaliviridae
-Papillomaviridae
-Papovaviricetes
-Paramyxoviridae
-Pararnavirae
-Partitiviridae
-Parvoviridae
-Parvovirinae
-Patatavirales
-Paulinoviridae
-Pclasvirinae
-Peduovirinae
-Peploviricota
-Peribunyaviridae
-Permutotetraviridae
-Petitvirales
-Petromoalphasatellitinae
-Phasmaviridae
-Phenuiviridae
-Phixviricota
-Phycodnaviridae
-Piccovirales
-Picobirnaviridae
-Picornavirales
-Picornaviridae
-Picovirinae
-Pimascovirales
-Piscanivirinae
-Pisoniviricetes
-Pisuviricota
-Plasmaviridae
-Plectroviridae
-Pleolipoviridae
-Pneumoviridae
-Podoviridae
-Pokkesviricetes
-Polintoviricetes
-Polivirales
-Polycipiviridae
-Polydnaviridae
-Polymycoviridae
-Polyomaviridae
-Polyploviricotina
-Pontosvirinae
-Portogloboviridae
-Pospiviroidae
-Potyviridae
-Poxviridae
-Preplasmiviricota
-Priklausovirales
-Primavirales
-Procedovirinae
-Pseudoviridae
-Qinviridae
-Quadriviridae
-Queuovirinae
-Quintoviricetes
-Quinvirinae
-Rakietenvirinae
-Recrevirales
-Redondoviridae
-Regressovirinae
-Remotovirinae
-Reovirales
-Reoviridae
-Repantavirinae
-Repensiviricetes
-Resentoviricetes
-Reternivirinae
-Retroviridae
-Revtraviricetes
-Rhabdoviridae
-Rhodovirinae
-Riboviria
-Ribozyviria
-Rodepovirinae
-Rogunavirinae
-Ronidovirineae
-Roniviridae
-Rothmandenesvirinae
-Rountreeviridae
-Rowavirales
-Rubulavirinae
-Rudiviridae
-Salasmaviridae
-Saleviricota
-Sangervirae
-Sarlesvirinae
-Sarthroviridae
-Schitoviridae
-Secondpapillomavirinae
-Secoviridae
-Sedoreovirinae
-Sepolyvirales
-Sepvirinae
-Serpentovirales
-Serpentovirinae
-Shotokuvirae
-Simarterivirinae
-Simuloviridae
-Sinhaliviridae
-Siphoviridae
-Skryabinvirinae
-Slopekvirinae
-Smacoviridae
-Sobelivirales
-Solemoviridae
-Solinviviridae
-Solspiviridae
-Sphaerolipoviridae
-Spinareovirinae
-Spiraviridae
-Spounavirinae
-Spumaretrovirinae
-Steitzviridae
-Stellavirales
-Stelpaviricetes
-Studiervirinae
-Sunviridae
-Taleaviricota
-Tatarstanvirinae
-Tectiliviricetes
-Tectiviridae
-Tempevirinae
-Tevenvirinae
-Thaspiviridae
-Tiamatvirinae
-Timlovirales
-Tobaniviridae
-Togaviridae
-Tokiviricetes
-Tolecusatellitidae
-Tolivirales
-Tolucaviricetes
-Tombusviridae
-Tornidovirineae
-Torovirinae
-Tospoviridae
-Totiviridae
-Trabyvirinae
-Trapavirae
-Tristromaviridae
-Trivirinae
-Tubulavirales
-Tunavirinae
-Tunicanivirinae
-Turriviridae
-Twarogvirinae
-Twortvirinae
-Tybeckvirinae
-Tymovirales
-Tymoviridae
-Uroviricota
-Variarterivirinae
-Varidnaviria
-Vequintavirinae
-Vidaverviricetes
-Vinavirales
-Virgaviridae
-Viroids
-Virus
-Wolframvirales
-Wupedeviridae
-Xinmoviridae
-Yueviridae
-Yunchangviricetes
-Zealarterivirinae
-Zilligvirae
-Zobellviridae
-Zurhausenvirales
+Abnidovirineae # COL: Pisoniviricetes > Nidovirales
+Abyssoviridae # COL: Pisoniviricetes > Nidovirales
+Ackermannviridae # COL: Caudoviricetes > Pantevenvirales
+Actantavirinae # COL: Elliovirales > Hantaviridae
+Adenoviridae # COL: Pharingeaviricetes > Rowavirales
+Adintoviridae # IRMNG: Polintoviricetes > Orthopolintovirales
+Adnaviria # COL: realm
+Agantavirinae # COL: Elliovirales > Hantaviridae
+Aglimvirinae # COL: Pantevenvirales > Ackermannviridae
+Algavirales # COL: Nucleocytoviricota > Megaviricetes
+Aliusviridae # COL: Monjiviricetes > Jingchuvirales
+Alloherpesviridae # COL: Herviviricetes > Herpesvirales
+Alphaflexiviridae # COL: Alsuviricetes > Tymovirales
+Alphaherpesvirinae # COL: Herpesvirales > Orthoherpesviridae
+Alphairidovirinae # COL: Pimascovirales > Iridoviridae
+Alpharhabdovirinae # COL: Mononegavirales > Rhabdoviridae
+Alphasatellitidae # COL: family
+Alphatetraviridae # COL: Alsuviricetes > Hepelivirales
+Alsuviricetes # COL: Orthornavirae > Kitrinoviricota
+Alvernaviridae # COL: Pisoniviricetes > Sobelivirales
+Amabiliviricetes # COL: Orthornavirae > Lenarviricota
+Amalgaviridae # COL: Duplopiviricetes > Durnavirales
+Amarillovirales # COL: Kitrinoviricota > Flasuviricetes
+Amnoonviridae # COL: Insthoviricetes > Articulavirales
+Ampullaviridae # COL: family
+Anelloviridae # COL: Cardeaviricetes > Sanitavirales
+Arenaviridae # COL: Bunyaviricetes > Hareavirales
+Arfiviricetes # COL: Shotokuvirae > Cressdnaviricota
+Arnidovirineae # COL: Pisoniviricetes > Nidovirales
+Arquatrovirinae # COL: Uroviricota > Caudoviricetes
+Arteriviridae # COL: Pisoniviricetes > Nidovirales
+Articulavirales # COL: Negarnaviricota > Insthoviricetes
+Artoviridae # COL: Monjiviricetes > Mononegavirales
+Artverviricota # COL: Riboviria > Pararnavirae
+Ascoviridae # COL: Megaviricetes > Pimascovirales
+Asfarviridae # COL: Pokkesviricetes > Asfuvirales
+Asfuvirales # COL: Nucleocytoviricota > Pokkesviricetes
+Aspiviridae # COL: Milneviricetes > Naedrevirales
+Astroviridae # COL: Stelpaviricetes > Stellavirales
+Atkinsviridae # COL: Leviviricetes > Norzivirales
+Autographiviridae # IRMNG: Uroviricota > Caudoviricetes
+Autolykiviridae # COL: Belvinaviricetes > Vinavirales
+Avsunviroidae # COL: family
+Avulavirinae # COL: Mononegavirales > Paramyxoviridae
+Azeredovirinae # COL: Uroviricota > Caudoviricetes
+Bacilladnaviridae # COL: Arfiviricetes > Baphyvirales
+Baculoviridae # COL: Naldaviricetes > Lefavirales
+Bamfordvirae # COL: Varidnaviria
+Baphyvirales # COL: Cressdnaviricota > Arfiviricetes
+Barnaviridae # COL: Pisoniviricetes > Sobelivirales
+Bastillevirinae # COL: Caudoviricetes > Herelleviridae
+Bclasvirinae # COL: Uroviricota > Caudoviricetes
+Beephvirinae # COL: Uroviricota > Caudoviricetes
+Beijerinckvirinae # COL: Autographivirales > Autoscriptoviridae
+Belfryvirales # COL: Produgelaviricota > Belvinaviricetes
+Belpaoviridae # COL: Revtraviricetes > Ortervirales
+Benyviridae # COL: Alsuviricetes > Hepelivirales
+Betaflexiviridae # COL: Alsuviricetes > Tymovirales
+Betaherpesvirinae # COL: Herpesvirales > Orthoherpesviridae
+Betairidovirinae # COL: Pimascovirales > Iridoviridae
+Betarhabdovirinae # COL: Mononegavirales > Rhabdoviridae
+Bicaudaviridae # COL: family
+Bidnaviridae # COL: Mouviricetes > Polivirales
+Birnaviridae # COL: Riboviria > Orthornavirae
+Blubervirales # COL: Artverviricota > Revtraviricetes
+Blumeviridae # COL: Leviviricetes > Timlovirales
+Bornaviridae # COL: Monjiviricetes > Mononegavirales
+Botourmiaviridae # COL: Miaviricetes > Ourlivirales
+Braunvirinae # COL: Caudoviricetes > Drexlerviridae
+Brockvirinae # COL: Caudoviricetes > Herelleviridae
+Bromoviridae # COL: Alsuviricetes > Martellivirales
+Bronfenbrennervirinae # COL: Uroviricota > Caudoviricetes
+Bullavirinae # Wikidata: Petitvirales > Microviridae
+Bunyavirales # IRMNG: synonym of Elliovirales (Bunyaviricetes)
+Caliciviridae # COL: Pisoniviricetes > Picornavirales
+Calvusvirinae # COL: Tolivirales > Tombusviridae
+Carmotetraviridae # COL: Tolucaviricetes > Tolivirales
+Caudovirales # WoRMS: Viruses
+Caudoviricetes # COL: Heunggongvirae > Uroviricota
+Caulimoviridae # COL: Revtraviricetes > Ortervirales
+Ceronivirinae # COL: Nidovirales > Euroniviridae
+Chaseviridae # COL: Uroviricota > Caudoviricetes
+Chebruvirinae # COL: Uroviricota > Caudoviricetes
+Chimanivirinae # COL: Nidovirales > Nanghoshaviridae
+Chitovirales # COL: Nucleocytoviricota > Pokkesviricetes
+Chordopoxvirinae # COL: Chitovirales > Poxviridae
+Chrymotiviricetes # COL: Orthornavirae > Duplornaviricota
+Chrysoviridae # COL: Chrymotiviricetes > Ghabrivirales
+Chunqiuviricetes # COL: Orthornavirae > Negarnaviricota
+Chuviridae # COL: Monjiviricetes > Jingchuvirales
+Circoviridae # COL: Arfiviricetes > Cirlivirales
+Cirlivirales # COL: Cressdnaviricota > Arfiviricetes
+Clavaviridae # COL: family
+Cleopatravirinae # COL: Caudoviricetes > Chaseviridae
+Closteroviridae # COL: Alsuviricetes > Martellivirales
+Cobavirinae # COL: Caudoviricetes > Zobellviridae
+Colwellvirinae # COL: Autographivirales > Autosignataviridae
+Comovirinae # COL: Picornavirales > Secoviridae
+Corkvirinae # COL: Autographivirales > Autoscriptoviridae
+Cornidovirineae # COL: Pisoniviricetes > Nidovirales
+Coronaviridae # COL: Pisoniviricetes > Nidovirales
+Corticoviridae # COL: Belvinaviricetes > Vinavirales
+Cossaviricota # COL: Floreoviria > Shotokuvirae
+Cremegaviridae # COL: Pisoniviricetes > Nidovirales
+Cremevirales # COL: Cressdnaviricota > Arfiviricetes
+Crepuscuviridae # COL: Monjiviricetes > Jingchuvirales
+Cressdnaviricota # COL: Floreoviria > Shotokuvirae
+Crocarterivirinae # COL: Nidovirales > Arteriviridae
+Cruliviridae # COL: Bunyaviricetes > Elliovirales
+Crustonivirinae # Wikidata: Nidovirales > Euroniviridae
+Cryppavirales # COL: Lenarviricota > Howeltoviricetes
+Curvulaviridae # COL: Duplopiviricetes > Durnavirales
+Cvivirinae # COL: Pantevenvirales > Ackermannviridae
+Cystoviridae # COL: Vidaverviricetes > Mindivirales
+Dclasvirinae # COL: Uroviricota > Caudoviricetes
+Deejayvirinae # COL: Uroviricota > Caudoviricetes
+Deltaflexiviridae # COL: Alsuviricetes > Tymovirales
+Demerecviridae # COL: Uroviricota > Caudoviricetes
+Denniswatsonvirinae # COL: Caudoviricetes > Guelinviridae
+Densovirinae # COL: Piccovirales > Parvoviridae
+Dicistroviridae # COL: Pisoniviricetes > Picornavirales
+Dividoviricota # COL: Singelaviria > Helvetiavirae
+Dolichocephalovirinae # Wikidata: Caudovirales > Siphoviridae
+Drexlerviridae # COL: Uroviricota > Caudoviricetes
+Duinviridae # COL: Leviviricetes > Norzivirales
+Duplodnaviria # COL: realm
+Duplopiviricetes # COL: Orthornavirae > Pisuviricota
+Duplornaviricota # COL: Riboviria > Orthornavirae
+Durnavirales # COL: Pisuviricota > Duplopiviricetes
+Eekayvirinae # COL: Uroviricota > Caudoviricetes
+Ellioviricetes # GBIF: Viruses > Negarnaviricota
+Emmerichvirinae # COL: Pantevenvirales > Straboviridae
+Endornaviridae # COL: Alsuviricetes > Martellivirales
+Enquatrovirinae # COL: Caudoviricetes > Schitoviridae
+Entomopoxvirinae # COL: Chitovirales > Poxviridae
+Equarterivirinae # COL: Nidovirales > Arteriviridae
+Ermolyevavirinae # COL: Caudoviricetes > Demerecviridae
+Erskinevirinae # COL: Caudoviricetes > Schitoviridae
+Eucampyvirinae # Wikidata: Caudovirales > Myoviridae
+Euroniviridae # COL: Pisoniviricetes > Nidovirales
+Faserviricetes # COL: Loebvirae > Hofneiviricota
+Fiersviridae # COL: Leviviricetes > Norzivirales
+Filoviridae # COL: Monjiviricetes > Mononegavirales
+Fimoviridae # COL: Bunyaviricetes > Elliovirales
+Finnlakeviridae # COL: Ainoaviricetes > Lautamovirales
+Firstpapillomavirinae # COL: Zurhausenvirales > Papillomaviridae
+Flasuviricetes # COL: Orthornavirae > Kitrinoviricota
+Flaviviridae # COL: Flasuviricetes > Amarillovirales
+Fuhrmanvirinae # COL: Caudoviricetes > Schitoviridae
+Fuselloviridae # COL: family
+Gammaflexiviridae # COL: Alsuviricetes > Tymovirales
+Gammaherpesvirinae # COL: Herpesvirales > Orthoherpesviridae
+Gammarhabdovirinae # COL: Mononegavirales > Rhabdoviridae
+Geminialphasatellitinae # COL: Alphasatellitidae
+Geminiviridae # COL: Repensiviricetes > Geplafuvirales
+Genomoviridae # COL: Repensiviricetes > Geplafuvirales
+Geplafuvirales # COL: Cressdnaviricota > Repensiviricetes
+Ghabrivirales # COL: Duplornaviricota > Chrymotiviricetes
+Globuloviridae # COL: family
+Gochnauervirinae # COL: Uroviricota > Caudoviricetes
+Gofosavirinae # COL: Nidovirales > Olifoviridae
+Gokushovirinae # WoRMS: Viruses > Microviridae
+Gorgonvirinae # COL: Caudoviricetes > Chimalliviridae
+Goujianvirales # COL: Negarnaviricota > Yunchangviricetes
+Gresnaviridae # COL: Pisoniviricetes > Nidovirales
+Guelinviridae # COL: Uroviricota > Caudoviricetes
+Guernseyvirinae # COL: Caudoviricetes > Sarkviridae
+Gutmannvirinae # COL: Uroviricota > Caudoviricetes
+Guttaviridae # COL: family
+Halopanivirales # COL: Dividoviricota > Laserviricetes
+Haloruvirales # COL: Saleviricota > Huolimaviricetes
+Halspiviridae # COL: family
+Hamaparvovirinae # Wikidata: Piccovirales > Parvoviridae
+Hantaviridae # COL: Bunyaviricetes > Elliovirales
+Haploviricotina # COL: Orthornavirae > Negarnaviricota
+Helvetiavirae # COL: Singelaviria
+Hendrixvirinae # COL: Uroviricota > Caudoviricetes
+Hepadnaviridae # COL: Revtraviricetes > Blubervirales
+Hepelivirales # COL: Kitrinoviricota > Alsuviricetes
+Hepeviridae # COL: Alsuviricetes > Hepelivirales
+Herelleviridae # COL: Uroviricota > Caudoviricetes
+Heroarterivirinae # COL: Nidovirales > Arteriviridae
+Herpesvirales # COL: Peploviricota > Herviviricetes
+Herpesviridae # WoRMS: Viruses > Herpesvirales
+Herviviricetes # COL: Heunggongvirae > Peploviricota
+Heunggongvirae # COL: Duplodnaviria
+Hexponivirinae # COL: Nidovirales > Mesoniviridae
+Hofneiviricota # COL: Efunaviria > Loebvirae
+Howeltoviricetes # COL: Orthornavirae > Lenarviricota
+Humphriesvirinae # COL: Caudoviricetes > Schitoviridae
+Huolimaviricetes # COL: Trapavirae > Saleviricota
+Hyporhamsavirinae # COL: Nidovirales > Nanhypoviridae
+Hypoviridae # COL: Stelpaviricetes > Hypofuvirales
+Hytrosaviridae # COL: Naldaviricetes > Lefavirales
+Iflaviridae # COL: Pisoniviricetes > Picornavirales
+Imitervirales # COL: Nucleocytoviricota > Megaviricetes
+Inoviridae # COL: Faserviricetes > Tubulavirales
+Insthoviricetes # COL: Orthornavirae > Negarnaviricota
+Iridoviridae # COL: Megaviricetes > Pimascovirales
+Jasinkavirinae # Wikidata: Caudovirales > Herelleviridae
+Jingchuvirales # COL: Negarnaviricota > Monjiviricetes
+Kalamavirales # COL: Preplasmiviricota > Tectiliviricetes
+Kitaviridae # COL: Alsuviricetes > Martellivirales
+Kitrinoviricota # COL: Riboviria > Orthornavirae
+Kolmioviridae # COL: Ribozyviria
+Krylovirinae # COL: Autographivirales > Autoscriptoviridae
+Langleyhallvirinae # COL: Uroviricota > Caudoviricetes
+Laserviricetes # COL: Helvetiavirae > Dividoviricota
+Lavidaviridae # IRMNG: synonym of Maviroviridae (Lavidavirales)
+Lefavirales # COL: Naldaviricetes
+Leishbuviridae # COL: Bunyaviricetes > Hareavirales
+Lenarviricota # COL: Riboviria > Orthornavirae
+Letovirinae # COL: Nidovirales > Coronaviridae
+Leviviricetes # COL: Orthornavirae > Lenarviricota
+Ligamenvirales # COL: Taleaviricota > Tokiviricetes
+Lipothrixviridae # COL: Tokiviricetes > Ligamenvirales
+Lispiviridae # COL: Monjiviricetes > Mononegavirales
+Loebvirae # COL: Efunaviria
+Magsaviricetes # COL: Orthornavirae > Kitrinoviricota
+Malacoherpesviridae # COL: Herviviricetes > Herpesvirales
+Malgrandaviricetes # IRMNG: Viruses > Phixviricota
+Mammantavirinae # COL: Elliovirales > Hantaviridae
+Markadamsvirinae # COL: Caudoviricetes > Demerecviridae
+Marnaviridae # COL: Pisoniviricetes > Picornavirales
+Marseilleviridae # COL: Megaviricetes > Pimascovirales
+Martellivirales # COL: Kitrinoviricota > Alsuviricetes
+Matonaviridae # COL: Alsuviricetes > Hepelivirales
+Matshushitaviridae # GBIF: Laserviricetes > Halopanivirales
+Maveriviricetes # IRMNG: Viruses > Preplasmiviricota
+Mayoviridae # COL: Alsuviricetes > Martellivirales
+Mccleskeyvirinae # COL: Uroviricota > Caudoviricetes
+Mccorquodalevirinae # COL: Caudoviricetes > Demerecviridae
+Mclasvirinae # COL: Caudoviricetes > Vilmaviridae
+Medioniviridae # COL: Pisoniviricetes > Nidovirales
+Medionivirinae # COL: Nidovirales > Medioniviridae
+Megabirnaviridae # COL: Chrymotiviricetes > Ghabrivirales
+Megaviricetes # COL: Bamfordvirae > Nucleocytoviricota
+Melnykvirinae # COL: Autographivirales > Autonotataviridae
+Mesnidovirineae # COL: Pisoniviricetes > Nidovirales
+Mesoniviridae # COL: Pisoniviricetes > Nidovirales
+Metaparamyxovirinae # COL: Mononegavirales > Paramyxoviridae
+Metaviridae # COL: Revtraviricetes > Ortervirales
+Metaxyviridae # COL: Arfiviricetes > Mulpavirales
+Miaviricetes # COL: Orthornavirae > Lenarviricota
+Microviridae # WoRMS: Viruses
+Migulavirinae # COL: Caudoviricetes > Schitoviridae
+Milneviricetes # COL: Orthornavirae > Negarnaviricota
+Mimiviridae # COL: Megaviricetes > Imitervirales
+Mindivirales # COL: Duplornaviricota > Vidaverviricetes
+Mitoviridae # COL: Howeltoviricetes > Cryppavirales
+Molineuxvirinae # COL: Autographivirales > Autosignataviridae
+Monidovirineae # COL: Pisoniviricetes > Nidovirales
+Monjiviricetes # COL: Orthornavirae > Negarnaviricota
+Monodnaviria # Wikidata: Virus
+Mononegavirales # COL: Negarnaviricota > Monjiviricetes
+Mononiviridae # COL: Pisoniviricetes > Nidovirales
+Mononivirinae # COL: Nidovirales > Mononiviridae
+Mouviricetes # COL: Shotokuvirae > Cossaviricota
+Mulpavirales # COL: Cressdnaviricota > Arfiviricetes
+Muvirales # COL: Negarnaviricota > Chunqiuviricetes
+Mymonaviridae # COL: Monjiviricetes > Mononegavirales
+Myoviridae # WoRMS: Viruses > Caudovirales
+Mypoviridae # COL: Bunyaviricetes > Hareavirales
+Myriaviridae # COL: Monjiviricetes > Jingchuvirales
+Nairoviridae # COL: Bunyaviricetes > Hareavirales
+Naldaviricetes # COL: class
+Nanghoshaviridae # COL: Pisoniviricetes > Nidovirales
+Nanhypoviridae # COL: Pisoniviricetes > Nidovirales
+Nanidovirineae # COL: Pisoniviricetes > Nidovirales
+Nanoalphasatellitinae # COL: Alphasatellitidae
+Nanoviridae # COL: Arfiviricetes > Mulpavirales
+Narnaviridae # COL: Amabiliviricetes > Wolframvirales
+Natareviridae # COL: Monjiviricetes > Jingchuvirales
+Nclasvirinae # COL: Uroviricota > Caudoviricetes
+Nefertitivirinae # COL: Caudoviricetes > Chaseviridae
+Negarnaviricota # COL: Riboviria > Orthornavirae
+Nidovirales # COL: Pisuviricota > Pisoniviricetes
+Nimaviridae # COL: Naldaviricetes
+Nodamuvirales # COL: Kitrinoviricota > Magsaviricetes
+Nodaviridae # COL: Magsaviricetes > Nodamuvirales
+Northropvirinae # COL: Caudoviricetes > Salasmaviridae
+Norzivirales # COL: Lenarviricota > Leviviricetes
+Nucleocytoviricota # COL: Varidnaviria > Bamfordvirae
+Nudiviridae # COL: Naldaviricetes > Lefavirales
+Nyamiviridae # COL: Monjiviricetes > Mononegavirales
+Nymbaxtervirinae # COL: Uroviricota > Caudoviricetes
+Okabevirinae # COL: Autographivirales > Autonotataviridae
+Okanivirinae # COL: Nidovirales > Roniviridae
+Olifoviridae # COL: Pisoniviricetes > Nidovirales
+Ortervirales # COL: Artverviricota > Revtraviricetes
+Orthocoronavirinae # COL: Nidovirales > Coronaviridae
+Orthomyxoviridae # COL: Insthoviricetes > Articulavirales
+Orthoparamyxovirinae # COL: Mononegavirales > Paramyxoviridae
+Orthopolintovirales # IRMNG: Preplasmiviricota > Polintoviricetes
+Orthoretrovirinae # COL: Ortervirales > Retroviridae
+Orthornavirae # COL: Riboviria
+Ounavirinae # COL: Caudoviricetes > Andersonviridae
+Ourlivirales # COL: Lenarviricota > Miaviricetes
+Ovaliviridae # COL: family
+Papillomaviridae # COL: Papovaviricetes > Zurhausenvirales
+Papovaviricetes # COL: Shotokuvirae > Cossaviricota
+Paramyxoviridae # COL: Monjiviricetes > Mononegavirales
+Pararnavirae # COL: Riboviria
+Partitiviridae # COL: Duplopiviricetes > Durnavirales
+Parvoviridae # COL: Quintoviricetes > Piccovirales
+Parvovirinae # COL: Piccovirales > Parvoviridae
+Patatavirales # COL: Pisuviricota > Stelpaviricetes
+Paulinoviridae # COL: Faserviricetes > Tubulavirales
+Pclasvirinae # COL: Uroviricota > Caudoviricetes
+Peduovirinae # WoRMS: Caudovirales > Myoviridae
+Peploviricota # COL: Duplodnaviria > Heunggongvirae
+Peribunyaviridae # COL: Bunyaviricetes > Elliovirales
+Permutotetraviridae # COL: Riboviria > Orthornavirae
+Petitvirales # IRMNG: Phixviricota > Malgrandaviricetes
+Petromoalphasatellitinae # COL: Alphasatellitidae
+Phasmaviridae # COL: Bunyaviricetes > Elliovirales
+Phenuiviridae # COL: Bunyaviricetes > Hareavirales
+Phixviricota # COL: Volvereviria > Sangervirae
+Phycodnaviridae # COL: Megaviricetes > Algavirales
+Piccovirales # COL: Cossaviricota > Quintoviricetes
+Picobirnaviridae # COL: Duplopiviricetes > Durnavirales
+Picornavirales # COL: Pisuviricota > Pisoniviricetes
+Picornaviridae # COL: Pisoniviricetes > Picornavirales
+Picovirinae # COL: Caudoviricetes > Salasmaviridae
+Pimascovirales # COL: Nucleocytoviricota > Megaviricetes
+Piscanivirinae # COL: Nidovirales > Tobaniviridae
+Pisoniviricetes # COL: Orthornavirae > Pisuviricota
+Pisuviricota # COL: Riboviria > Orthornavirae
+Plasmaviridae # COL: family
+Plectroviridae # COL: Faserviricetes > Tubulavirales
+Pleolipoviridae # COL: Huolimaviricetes > Haloruvirales
+Pneumoviridae # COL: Monjiviricetes > Mononegavirales
+Podoviridae # WoRMS: Viruses > Caudovirales
+Pokkesviricetes # COL: Bamfordvirae > Nucleocytoviricota
+Polintoviricetes # COL: Bamfordvirae > Preplasmiviricota
+Polivirales # COL: Cossaviricota > Mouviricetes
+Polycipiviridae # COL: Pisoniviricetes > Picornavirales
+Polydnaviridae # WoRMS: Viruses
+Polymycoviridae # COL: Mycopleornaviricetes > Xenadelphovirales
+Polyomaviridae # COL: Papovaviricetes > Sepolyvirales
+Polyploviricotina # COL: Orthornavirae > Negarnaviricota
+Pontosvirinae # COL: Caudoviricetes > Schitoviridae
+Portogloboviridae # COL: family
+Pospiviroidae # COL: family
+Potyviridae # COL: Stelpaviricetes > Patatavirales
+Poxviridae # COL: Pokkesviricetes > Chitovirales
+Preplasmiviricota # COL: Varidnaviria > Bamfordvirae
+Priklausovirales # COL: Preplasmiviricota > Virophaviricetes
+Primavirales # COL: Taleaviricota > Tokiviricetes
+Procedovirinae # COL: Tolivirales > Tombusviridae
+Pseudoviridae # COL: Revtraviricetes > Ortervirales
+Qinviridae # COL: Chunqiuviricetes > Muvirales
+Quadriviridae # COL: Chrymotiviricetes > Ghabrivirales
+Queuovirinae # COL: Uroviricota > Caudoviricetes
+Quintoviricetes # COL: Shotokuvirae > Cossaviricota
+Quinvirinae # COL: Tymovirales > Betaflexiviridae
+Rakietenvirinae # COL: Caudoviricetes > Rountreeviridae
+Recrevirales # COL: Cressdnaviricota > Arfiviricetes
+Redondoviridae # COL: Arfiviricetes > Recrevirales
+Regressovirinae # COL: Tolivirales > Tombusviridae
+Remotovirinae # COL: Nidovirales > Tobaniviridae
+Reovirales # COL: Duplornaviricota > Resentoviricetes
+Reoviridae # WoRMS: Viruses
+Repantavirinae # COL: Elliovirales > Hantaviridae
+Repensiviricetes # COL: Shotokuvirae > Cressdnaviricota
+Resentoviricetes # COL: Orthornavirae > Duplornaviricota
+Reternivirinae # COL: Nidovirales > Gresnaviridae
+Retroviridae # COL: Revtraviricetes > Ortervirales
+Revtraviricetes # COL: Pararnavirae > Artverviricota
+Rhabdoviridae # COL: Monjiviricetes > Mononegavirales
+Rhodovirinae # COL: Caudoviricetes > Schitoviridae
+Riboviria # COL: realm
+Ribozyviria # COL: realm
+Rodepovirinae # COL: Nidovirales > Cremegaviridae
+Rogunavirinae # COL: Caudoviricetes > Drexlerviridae
+Ronidovirineae # COL: Pisoniviricetes > Nidovirales
+Roniviridae # COL: Pisoniviricetes > Nidovirales
+Rothmandenesvirinae # COL: Caudoviricetes > Schitoviridae
+Rountreeviridae # COL: Uroviricota > Caudoviricetes
+Rowavirales # COL: Preplasmiviricota > Pharingeaviricetes
+Rubulavirinae # COL: Mononegavirales > Paramyxoviridae
+Rudiviridae # COL: Tokiviricetes > Ligamenvirales
+Salasmaviridae # COL: Uroviricota > Caudoviricetes
+Saleviricota # COL: Pleomoviria > Trapavirae
+Sangervirae # COL: Volvereviria
+Sarlesvirinae # COL: Caudoviricetes > Rountreeviridae
+Sarthroviridae # COL: Riboviria > Tombendovirales
+Schitoviridae # COL: Uroviricota > Caudoviricetes
+Secondpapillomavirinae # COL: Zurhausenvirales > Papillomaviridae
+Secoviridae # COL: Pisoniviricetes > Picornavirales
+Sedoreovirinae # WoRMS: Viruses > Reoviridae
+Sepolyvirales # COL: Cossaviricota > Papovaviricetes
+Sepvirinae # COL: Uroviricota > Caudoviricetes
+Serpentovirales # GBIF: Negarnaviricota > Milneviricetes
+Serpentovirinae # COL: Nidovirales > Tobaniviridae
+Shotokuvirae # COL: Floreoviria
+Simarterivirinae # COL: Nidovirales > Arteriviridae
+Simuloviridae # COL: Laserviricetes > Halopanivirales
+Sinhaliviridae # COL: Magsaviricetes > Nodamuvirales
+Siphoviridae # WoRMS: Viruses > Caudovirales
+Skryabinvirinae # COL: Uroviricota > Caudoviricetes
+Slopekvirinae # COL: Autographivirales > Autoscriptoviridae
+Smacoviridae # COL: Arfiviricetes > Cremevirales
+Sobelivirales # COL: Pisuviricota > Pisoniviricetes
+Solemoviridae # COL: Pisoniviricetes > Sobelivirales
+Solinviviridae # COL: Pisoniviricetes > Picornavirales
+Solspiviridae # COL: Leviviricetes > Norzivirales
+Sphaerolipoviridae # COL: Laserviricetes > Halopanivirales
+Spinareovirinae # WoRMS: Viruses > Reoviridae
+Spiraviridae # COL: family
+Spounavirinae # COL: Caudoviricetes > Herelleviridae
+Spumaretrovirinae # COL: Ortervirales > Retroviridae
+Steitzviridae # COL: Leviviricetes > Timlovirales
+Stellavirales # COL: Pisuviricota > Stelpaviricetes
+Stelpaviricetes # COL: Orthornavirae > Pisuviricota
+Studiervirinae # COL: Autographivirales > Autotranscriptaviridae
+Sunviridae # COL: Monjiviricetes > Mononegavirales
+Taleaviricota # COL: Adnaviria > Zilligvirae
+Tatarstanvirinae # COL: Caudoviricetes > Salasmaviridae
+Tectiliviricetes # COL: Bamfordvirae > Preplasmiviricota
+Tectiviridae # COL: Tectiliviricetes > Kalamavirales
+Tempevirinae # COL: Caudoviricetes > Drexlerviridae
+Tevenvirinae # COL: Pantevenvirales > Straboviridae
+Thaspiviridae # COL: family
+Tiamatvirinae # COL: Nidovirales > Abyssoviridae
+Timlovirales # COL: Lenarviricota > Leviviricetes
+Tobaniviridae # COL: Pisoniviricetes > Nidovirales
+Togaviridae # COL: Alsuviricetes > Martellivirales
+Tokiviricetes # COL: Zilligvirae > Taleaviricota
+Tolecusatellitidae # COL: family
+Tolivirales # COL: Kitrinoviricota > Tolucaviricetes
+Tolucaviricetes # COL: Orthornavirae > Kitrinoviricota
+Tombusviridae # COL: Tolucaviricetes > Tolivirales
+Tornidovirineae # COL: Pisoniviricetes > Nidovirales
+Torovirinae # COL: Nidovirales > Tobaniviridae
+Tospoviridae # COL: Bunyaviricetes > Elliovirales
+Totiviridae # WoRMS: Viruses
+Trabyvirinae # COL: Uroviricota > Caudoviricetes
+Trapavirae # COL: Pleomoviria
+Tristromaviridae # COL: Tokiviricetes > Primavirales
+Trivirinae # COL: Tymovirales > Betaflexiviridae
+Tubulavirales # COL: Hofneiviricota > Faserviricetes
+Tunavirinae # COL: Caudoviricetes > Drexlerviridae
+Tunicanivirinae # Wikidata: Nidovirales > Medioniviridae
+Turriviridae # COL: Belvinaviricetes > Belfryvirales
+Twarogvirinae # COL: Pantevenvirales > Straboviridae
+Twortvirinae # COL: Caudoviricetes > Herelleviridae
+Tybeckvirinae # COL: Uroviricota > Caudoviricetes
+Tymovirales # COL: Kitrinoviricota > Alsuviricetes
+Tymoviridae # COL: Alsuviricetes > Tymovirales
+Uroviricota # COL: Duplodnaviria > Heunggongvirae
+Variarterivirinae # COL: Nidovirales > Arteriviridae
+Varidnaviria # COL: realm
+Vequintavirinae # COL: Uroviricota > Caudoviricetes
+Vidaverviricetes # COL: Orthornavirae > Duplornaviricota
+Vinavirales # COL: Produgelaviricota > Belvinaviricetes
+Virgaviridae # COL: Alsuviricetes > Martellivirales
+Viroids # IRMNG: synonym of Viruses
+Virus # TAXREF: domain
+Wolframvirales # COL: Lenarviricota > Amabiliviricetes
+Wupedeviridae # COL: Bunyaviricetes > Hareavirales
+Xinmoviridae # COL: Monjiviricetes > Mononegavirales
+Yueviridae # COL: Yunchangviricetes > Goujianvirales
+Yunchangviricetes # COL: Orthornavirae > Negarnaviricota
+Zealarterivirinae # COL: Nidovirales > Arteriviridae
+Zilligvirae # COL: Adnaviria
+Zobellviridae # COL: Uroviricota > Caudoviricetes
+Zurhausenvirales # COL: Cossaviricota > Papovaviricetes

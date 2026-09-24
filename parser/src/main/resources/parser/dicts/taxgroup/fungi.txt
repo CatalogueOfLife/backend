@@ -1,8 +1,8 @@
-Amastigomycota
-Dikarya
-Eumycota
-Fungi
-Holomycota
-Pilze
-Symbiomycota
-Yeast
+Amastigomycota # Wikidata: Eukaryota > Fungi
+Dikarya # ITIS: Fungi
+Eumycota # WoRMS: synonym of Fungi
+Fungi # COL: Eukaryota
+Holomycota # not found in ChecklistBank
+Pilze # not found in ChecklistBank
+Symbiomycota # Wikidata: Eukaryota > Fungi
+Yeast # not found in ChecklistBank

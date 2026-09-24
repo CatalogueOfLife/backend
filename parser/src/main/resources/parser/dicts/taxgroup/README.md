@@ -33,6 +33,13 @@ Use the following to query for "Acanthoecaceae":
  - https://www.opentreeoflife.org
  - https://www.gbif.org
 
+## Evidence comments
+Every entry carries a comment after `#` with the source that places it in its group, as found by an exact name search
+across all ChecklistBank datasets: the dataset alias followed by the higher classification it gives, or the accepted
+name for a synonym, e.g. `Abacina # COL: synonym of Pterostichina (Coleoptera)`. COL is preferred, then ITIS, WoRMS,
+IRMNG, GBIF and PBDB. An entry of an ambiguous name gives one source per group it is used in, and names no dataset knows,
+mostly vernacular names and misspellings, say `not found in ChecklistBank`. Any older explanation stays in front.
+
 ## Ambiguous names
 A dictionary entry must point to one group for certain. A name used for taxa in several disparate groups,
 a homonym across kingdoms, phyla or orders above all, is therefore listed only in the dictionary of the lowest group

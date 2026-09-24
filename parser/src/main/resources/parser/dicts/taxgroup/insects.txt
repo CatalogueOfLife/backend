@@ -1,99 +1,125 @@
-Acanthoceraria
-Acanthocerini
-Acercaria
-Adeliini
-Anthracina
-Anthracini
-Aprionini
-Archaeorthoptera
-Bombycidae
-Brachycerinae
-Brachycolini
-Brachypterinae
-Callicerini
-Camptocerini
-Cercyonina
-Chresmodidae
-Chrysopinae
-Clytini
-Colotini
-Conophorini
-Dicondylia
-Dictyophorinae
-Dictyophorini
-Dolichopodae
-Dolichopodinae
-Dolichopodini
-Drapetini
-Ectognatha
-Elachistinae
-Endopterygota
-Entomida
-Epimastacidae
-Euderinae
-Euderini
-Eutelini
-Euxestidae
-Euxestinae
-Exopterygota
-Glyptini
-Heterogynidae
-Holometabola
-Homalophlebiidae
-Insecta
-Insects
-Lachnina
-Leptoceridae
-Leptocerinae
-Leptopodinae
-Lithinini
-Lyctidae
-Meconemini
-Merodontini
-Metopiinae
-Metoponiinae
-Microcentrini
-Mirini
-Monocondylia
-Montanuraliidae
-Myorhinini
-Mystroptera
-Neoptera
-Neuropterida
-Omaliidae
-Ommatinae
-Ommatolampina
-Ommatolampini
-Pachymerina
-Pachymerini
-Pachyneurinae
-Palaeoptera
-Paleoptera
-Paraneoptera
-Peltonotini
-Perlidea
-Permarrhaphidae
-Phymatidae
-Plecopterida
-Plecopteroidea
-Pleisiogrammatidae
-Polyneoptera
-Polyplecoptera
-Psilini
-Pterygota
-Raphiinae
-Syntomiini
-Syntomini
-Systenini
-Tachinidae
-Tachinides
-Tachinini
-Teneopteridae
-Tettigoniae
-Tettigoniidae
-Toxoderini
-Triarthriina
-Triassomachilidae
-Triassomachiloidea
-Trichopterygini
-Tropidiina
+Acanthoceraria # homonym in Diptera, Hemiptera (COL: synonym of Acanthocerini (Hemiptera))
+Acanthocerini # homonym in Coleoptera (PBDB: synonym of Ceratocanthini (Coleoptera)), Diptera (COL: synonym of Diachlorini (Diptera)), Hemiptera (COL: Hemiptera > Coreidae)
+Acanthocneminae # homonym in Coleoptera (BOLDINSECT: synonym of Acanthocnemidae (Coleoptera)), Diptera (Systema Dipterorum: synonym of Dasypogonini (Diptera))
+Acercaria # ITIS: Arthropoda > Insecta
+Adeliini # homonym in Coleoptera (COL: Coleoptera > Tenebrionidae), Hymenoptera (TAXREF: Hymenoptera > Braconidae)
+Anomalini # homonym in Coleoptera (COL: Coleoptera > Scarabaeidae), Hymenoptera (UKSI: synonym of Anomalonini (Hymenoptera))
+Anthracina # homonym in Coleoptera (Coleoptera family-group names: synonym of Stenolophina (Coleoptera)), Diptera (COL: synonym of Anthracini (Diptera))
+Anthracini # homonym in Coleoptera (COL: synonym of Stenolophini (Coleoptera)), Diptera (COL: Diptera > Bombyliidae)
+Aphidini # homonym in Hemiptera (COL: Hemiptera > Aphididae), Hymenoptera (PBDB: synonym of Aphidiinae (Hymenoptera))
+Aprionini # homonym in Diptera (COL: Diptera > Cecidomyiidae), Orthoptera (COL: synonym of Phyllomimini (Orthoptera))
+Archaeorthoptera # COL: Arthropoda > Insecta
+Athetina # homonym in Coleoptera (COL: Coleoptera > Staphylinidae), Lepidoptera (Dyntaxa: synonym of Athetiina (Lepidoptera))
+Boletobiinae # homonym in Coleoptera (PBDB: synonym of Mycetoporinae (Coleoptera)), Lepidoptera (COL: Lepidoptera > Erebidae)
+Bombycidae # homonym in Diptera (COL: synonym of Bombyliini (Diptera)), Lepidoptera (COL: Insecta > Lepidoptera)
+Brachycerinae # homonym in Coleoptera (ITIS: Coleoptera > Curculionidae), OtherInsects (iNat: Ephemeroptera > Caenidae)
+Brachycolini # homonym in Hemiptera (COL: synonym of Macrosiphini (Hemiptera)), OtherInsects (iNat: Blattodea > Blaberidae)
+Brachypterinae # homonym in Coleoptera (COL: synonym of Kateretinae (Coleoptera)), OtherInsects (COL: synonym of Brachypterainae (Plecoptera))
+Callicerini # homonym in Coleoptera (COL: synonym of Geostibini (Coleoptera)), Diptera (COL: Diptera > Syrphidae)
+Camptocerini # homonym in Coleoptera (Coleoptera family-group names: synonym of Scolytini (Coleoptera)), Hemiptera (COL: synonym of Lethaeini (Hemiptera))
+Cercyonina # homonym in Coleoptera (Coleoptera family-group names: synonym of Megasternina (Coleoptera)), Lepidoptera (iNat: Lepidoptera > Nymphalidae)
+Chresmodidae # ITIS: Arthropoda > Insecta
+Chrysopinae # homonym in Diptera (COL: synonym of Chrysopsini (Diptera)), OtherInsects (ITIS: Neuroptera > Chrysopidae)
+Clytini # homonym in Coleoptera (COL: Coleoptera > Cerambycidae), Diptera (COL: synonym of Brachymerini (Diptera))
+Colotini # homonym in Coleoptera (COL: synonym of Malachiini (Coleoptera)), Lepidoptera (iNat: Lepidoptera > Pieridae)
+Conophorini # homonym in Coleoptera (Coleoptera family-group names: synonym of Conoderini (Coleoptera)), Diptera (COL: Diptera > Bombyliidae)
+Ctenophorini # homonym in Coleoptera (PBDB: synonym of Hexacolini (Coleoptera)), Diptera (BOLDINSECT: synonym of Ctenophorinae (Diptera))
+Dicondylia # ITIS: synonym of Zygentoma (Insecta)
+Dictyophorinae # homonym in Hemiptera (COL: synonym of Dictyopharini (Hemiptera)), Orthoptera (COL: synonym of Dictyophorini (Orthoptera))
+Dictyophorini # homonym in Hemiptera (COL: synonym of Dictyopharini (Hemiptera)), Orthoptera (COL: Orthoptera > Pyrgomorphidae)
+Dolichopodae # homonym in Diptera (COL: synonym of Dolichopodini (Diptera)), Orthoptera (COL: synonym of Dolichopodainae (Orthoptera))
+Dolichopodinae # homonym in Diptera (COL: Diptera > Dolichopodidae), Orthoptera (COL: synonym of Dolichopodainae (Orthoptera))
+Dolichopodini # homonym in Diptera (COL: Diptera > Dolichopodidae), Orthoptera (COL: synonym of Dolichopodainae (Orthoptera))
+Drapetini # homonym in Coleoptera (COL: synonym of Lissomini (Coleoptera)), Diptera (COL: Diptera > Hybotidae)
+Ectognatha # Wikidata: Arthropoda > Hexapoda
+Elachistinae # homonym in Hymenoptera (COL: synonym of Eulophinae (Hymenoptera)), Lepidoptera (COL: Lepidoptera > Elachistidae)
+Endopterygota # ITIS: synonym of Neoptera (Arthropoda)
+Entomida # not found in ChecklistBank
+Epimastacidae # GBIF: synonym of Permosialidae (Miomoptera)
+Euderinae # homonym in Coleoptera (COL: synonym of Euderiinae (Coleoptera)), Hymenoptera (COL: synonym of Entiinae (Hymenoptera))
+Euderini # homonym in Coleoptera (iNat: Coleoptera > Curculionidae), Hymenoptera (COL: synonym of Entiinae (Hymenoptera))
+Euscelini # homonym in Coleoptera (PBDB: Coleoptera > Attelabidae), Hemiptera (COL: synonym of Athysanina (Hemiptera))
+Eutelini # homonym in Coleoptera (COL: synonym of Cnodalonini (Coleoptera)), Hymenoptera (COL: synonym of Pteromalini (Hymenoptera))
+Euxestidae # homonym in Coleoptera (COL: Insecta > Coleoptera), Diptera (COL: synonym of Ulidiini (Diptera))
+Euxestinae # homonym in Coleoptera (ITIS: synonym of Euxestidae (Coleoptera)), Diptera (COL: synonym of Ulidiini (Diptera))
+Exopterygota # ITIS: synonym of Neoptera (Arthropoda)
+Glyptini # homonym in Coleoptera (ITIS: Coleoptera > Carabidae), Hymenoptera (PBDB: Hymenoptera > Ichneumonidae)
+Gnathotrichina # homonym in Coleoptera (Coleoptera family-group names: synonym of Corthylina (Coleoptera)), Lepidoptera (NCBI: Lepidoptera > Nymphalidae)
+Heterogynidae # homonym in Hymenoptera (COL: synonym of Heterogynaidae (Hymenoptera)), Lepidoptera (COL: Insecta > Lepidoptera)
+Holometabola # ITIS: Arthropoda > Insecta
+Homalophlebiidae # COL: Arthropoda > Insecta
+Insecta # COL: Animalia > Arthropoda
+Insects # not found in ChecklistBank
+Lachnina # homonym in Coleoptera (COL: synonym of Lagriina (Coleoptera)), Hemiptera (COL: synonym of Lachnini (Hemiptera))
+Leptideini # homonym in Coleoptera (Coleoptera family-group names: synonym of Psebiini (Coleoptera)), Lepidoptera (FaEu: Lepidoptera > Pieridae)
+Leptoceridae # homonym in Diptera (COL: synonym of Sphaerocerinae (Diptera)), Trichoptera (COL: Insecta > Trichoptera)
+Leptocerinae # homonym in Diptera (COL: synonym of Sphaerocerinae (Diptera)), Trichoptera (COL: Trichoptera > Leptoceridae)
+Leptopodinae # homonym in Diptera (COL: synonym of Dolichopodini (Diptera)), Hemiptera (COL: Hemiptera > Leptopodidae)
+Liparini # homonym in Coleoptera (Dyntaxa: synonym of Molytini (Coleoptera)), Diptera (COL: synonym of Chloropini (Diptera))
+Lissonotini # homonym in Coleoptera (COL: Coleoptera > Cerambycidae), Hymenoptera (UKSI: synonym of Atrophini (Hymenoptera))
+Lithentomidae # homonym in Hemiptera (PBDB: synonym of Liadopsyllidae (Hemiptera)), OtherInsects (COL: Insecta > Psocodea)
+Lithinini # homonym in Coleoptera (TAXREF: Coleoptera > Curculionidae), Lepidoptera (ITIS: Lepidoptera > Geometridae)
+Lyctidae # homonym in Coleoptera (COL: synonym of Lyctinae (Coleoptera)), Diptera (COL: synonym of Pelecorhynchinae (Diptera))
+Meconemini # homonym in Coleoptera (Coleoptera family-group names: synonym of Mecocerini (Coleoptera)), Orthoptera (COL: synonym of Meconematini (Orthoptera))
+Melittini # homonym in Hymenoptera (COL: Hymenoptera > Melittidae), Lepidoptera (Wikidata: Lepidoptera > Sesiidae)
+Merodontini # homonym in Coleoptera (Coleoptera family-group names: synonym of Lordopini (Coleoptera)), Diptera (COL: Diptera > Syrphidae)
+Metopiinae # homonym in Diptera (COL: synonym of Miltogramminae (Diptera)), Hymenoptera (PBDB: Hymenoptera > Ichneumonidae)
+Metopiini # homonym in Coleoptera (PBDB: synonym of Metopiasini (Coleoptera)), Diptera (COL: synonym of Miltogramminae (Diptera))
+Metoponiinae # homonym in Diptera (COL: synonym of Chiromyzinae (Diptera)), Lepidoptera (ITIS: Lepidoptera > Noctuidae)
+Metoponinae # homonym in Diptera, Lepidoptera (TAXREF: synonym of Metoponiinae (Lepidoptera))
+Microcentrini # homonym in Hemiptera (iNat: Hemiptera > Membracidae), Orthoptera (COL: synonym of Microcentrina (Orthoptera))
+Mirini # homonym in Coleoptera (COL: synonym of Imirini (Coleoptera)), Hemiptera (ITIS: Hemiptera > Miridae), Hymenoptera (COL: synonym of Tetracneminae (Hymenoptera))
+Monocondylia # NCBI: Arthropoda > Insecta
+Montanuraliidae # GBIF: Arthropoda > Insecta
+Myorhinini # homonym in Coleoptera (COL: Coleoptera > Curculionidae), Diptera (COL: synonym of Phoridae (Diptera))
+Mystroptera # Wikidata: Arthropoda > Hexapoda
+Neoptera # ITIS: Arthropoda > Insecta
+Neuropterida # ITIS: synonym of Holometabola (Arthropoda)
+Omaliidae # COL: Arthropoda > Insecta
+Ommatinae # COL: Coleoptera > Ommatidae
+Ommatini # homonym in Coleoptera (PBDB: Coleoptera > Ommatidae), Diptera (COL: synonym of Dioctriinae (Diptera))
+Ommatolampina # homonym in Coleoptera (iNat: Coleoptera > Curculionidae), Orthoptera (COL: synonym of Ommatolampidina (Orthoptera))
+Ommatolampini # homonym in Coleoptera (Wikidata: Coleoptera > Dryophthoridae), Orthoptera (COL: synonym of Ommatolampidini (Orthoptera))
+Orophiini # homonym in Coleoptera (COL: Coleoptera > Ciidae), Lepidoptera (Wikidata: Lepidoptera > Oecophoridae)
+Pachymerina # homonym in Coleoptera (COL: Coleoptera > Chrysomelidae), Hemiptera (COL: synonym of Rhyparochrominae (Hemiptera))
+Pachymerinae # homonym in Coleoptera (PBDB: synonym of Pachymerini (Coleoptera)), Hemiptera (COL: synonym of Rhyparochrominae (Hemiptera))
+Pachymerini # homonym in Coleoptera (COL: Coleoptera > Chrysomelidae), Hemiptera (COL: synonym of Rhyparochrominae (Hemiptera))
+Pachyneurinae # homonym in Diptera (COL: Diptera > Pachyneuridae), Hymenoptera (COL: Hymenoptera > Pteromalidae)
+Palaeoptera # ITIS: Arthropoda > Insecta
+Paleoptera # ITIS: synonym of Palaeoptera (Arthropoda)
+Paraneoptera # ITIS: synonym of Acercaria (Arthropoda)
+Peltonotini # homonym in Coleoptera (Coleoptera family-group names: synonym of Cyclocephalini (Coleoptera)), Hemiptera (COL: synonym of Peltonotellini (Hemiptera))
+Perlidea # SF Miscellaneous Insecta: Insecta
+Permarrhaphidae # IRMNG: Insecta > Blattodea
+Permofulgoridae # homonym in Hemiptera (PBDB: Insecta > Hemiptera), OtherInsects (COL: Insecta > Dermaptera)
+Phymatidae # homonym in Hemiptera (COL: synonym of Phymatinae (Hemiptera)), Orthoptera (COL: synonym of Phymateini (Orthoptera))
+Plecopterida # PBDB: synonym of Polyneoptera (Arthropoda)
+Plecopteroidea # PBDB: Arthropoda > Insecta
+Pleisiogrammatidae # COL: Arthropoda > Insecta
+Polyneoptera # ITIS: Arthropoda > Insecta
+Polyplecoptera # Wikidata: Arthropoda > Hexapoda
+Prionocerini # homonym in Coleoptera (Wikidata: Coleoptera > Prionoceridae), Diptera (Systema Dipterorum: synonym of Tipulinae (Diptera))
+Prosepididontidae # homonym in OtherInsects (COL: synonym of Geinitziidae (Reculida)), Trichoptera (IRMNG: Insecta > Trichoptera)
+Protocoleoptera # homonym in Coleoptera (PBDB: Insecta > Coleoptera), OtherInsects (COL: synonym of Protelytroptera (Insecta))
+Psilini # homonym in Diptera (COL: Diptera > Psilidae), Hymenoptera (PBDB: Insecta > Hymenoptera)
+Pterygota # ITIS: Arthropoda > Insecta
+Spheginae # homonym in Diptera (COL: synonym of Spheginina (Diptera)), Hymenoptera (PBDB: Hymenoptera > Sphecidae)
+Syntomiini # COL: Coleoptera > Staphylinidae
+Syntomini # homonym in Coleoptera (COL: synonym of Lionychina (Coleoptera)), Lepidoptera (COL: Lepidoptera > Erebidae)
+Systenini # homonym in Coleoptera (COL: synonym of Alticini (Coleoptera)), Diptera (iNat: Diptera > Dolichopodidae)
+Tachinidae # homonym in Coleoptera (COL: synonym of Tachinusini (Coleoptera)), Diptera (COL: Insecta > Diptera)
+Tachinides # homonym in Coleoptera (COL: synonym of Tachinusini (Coleoptera)), Diptera (COL: synonym of Brachymerini (Diptera))
+Tachinini # homonym in Coleoptera (COL: synonym of Tachinusini (Coleoptera)), Diptera (COL: Diptera > Tachinidae)
+Taldycupidae # homonym in Coleoptera (IRMNG: synonym of Taldycupedidae (Coleoptera)), OtherInsects (GBIF: Insecta > Protocoleoptera)
+Teneopteridae # COL: synonym of Eucaenidae (Insecta)
+Tettigoniae # homonym in Hemiptera (COL: synonym of Cicadellini (Hemiptera)), Orthoptera (COL: synonym of Tettigoniidae (Orthoptera))
+Tettigoniidae # homonym in Hemiptera (COL: synonym of Cicadellini (Hemiptera)), Orthoptera (COL: Insecta > Orthoptera)
+Toxoderini # homonym in Coleoptera (Coleoptera family-group names: synonym of Coprophilini (Coleoptera)), OtherInsects (COL: Mantodea > Toxoderidae)
+Triarthriina # homonym in Coleoptera (COL: synonym of Sogdini (Coleoptera)), Diptera (COL: Diptera > Tachinidae)
+Triassomachilidae # IRMNG: Insecta > Archaeognatha
+Triassomachiloidea # SF Miscellaneous Insecta: Insecta
+Trichopterygini # homonym in Coleoptera (Coleoptera family-group names: synonym of Acrotrichini (Coleoptera)), Lepidoptera (ITIS: Lepidoptera > Geometridae)
+Tropidiina # homonym in Coleoptera (COL: Coleoptera > Cerambycidae), Diptera (PBDB: Diptera > Syrphidae)
+Tropidini # homonym in Coleoptera (COL: Coleoptera > Cerambycidae), Diptera (PBDB: synonym of Tropidiina (Diptera))
+Tshekardocoleoidea # homonym in Coleoptera (PBDB: synonym of Permocupedoidea (Insecta)), OtherInsects (MGMT: Insecta > Protocoleoptera)
+Zethini # homonym in Coleoptera (COL: synonym of Bythinoplectina (Coleoptera)), Hymenoptera (TAXREF: Hymenoptera > Vespidae)

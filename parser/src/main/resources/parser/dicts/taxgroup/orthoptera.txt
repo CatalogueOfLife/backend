@@ -1,1826 +1,1824 @@
-Abilae
-Aboilidae
-Aboilinae
-Aboilodea
-Abracrini
-Acanthodes
-Acanthodidae
-Acanthoplina
-Acanthoplini
-Acanthoplistidae
-Acanthoplistii
-Achuri
-Achurumini
-Acilacridina
-Aclodae
-Aclodini
-Acmophyllini
-Acridia
-Acrididae
-Acrididea
-Acridiidae
-Acridiinae
-Acridiini
-Acridina
-Acridini
-Acridiodea
-Acridioidea
-Acridoidea
-Acridomorpha
-Acridopezae
-Acridoxenidae
-Acridoxeninae
-Acridoxenini
-Acripezini
-Acrolophiti
-Acrolophitini
-Acrometopae
-Acrometopini
-Acrostegastes
-Acrotyli
-Acrotylina
-Acrotylini
-Acrydii
-Acrydiidae
-Acrydiinae
-Acrydiini
-Acrydiodea
-Adelosgryllina
-Ademirsoyinae
-Adephagi
-Adephagini
-Adumbratomorphidae
-Aegimiae
-Aegimiini
-Aemodogryllinae
-Aemodogryllini
-Afromastacinae
-Afromastacini
-Afrophlaeoba
-Agraeciina
-Agraeciinae
-Agraeciini
-Agraecinae
-Agroeciidae
-Agroeciini
-Aiolopini
-Akicerae
-Akicerinae
-Akicerini
-Akridiodea
-Alectorolophi
-Aleuae
-Aleuasini
-Allagae
-Allagini
-Amblycoryphini
-Amblytropidiae
-Amblytropidiini
-Amblytropidini
-Ametrae
-Ametrini
-Ametroidini
-Amorphopi
-Amorphopinae
-Amorphopini
-Amphiacustae
-Amphiacustina
-Anabropsinae
-Anabropsini
-Anancistrogerae
-Anastostomatae
-Anaulacomerae
-Anaulacomerina
-Anaulacomerini
-Anaulacomerites
-Anconiae
-Anconiini
-Ancylechini
-Anelcanidae
-Anepisceptina
-Anepisceptini
-Anepitactina
-Angarina
-Angarohaglinae
-Anhomalophlebiidae
-Aniarae
-Aniarellina
-Aniarellini
-Anisophyina
-Anisophyini
-Annicerini
-Anoplophilinae
-Anoplophilini
-Anostostomatidae
-Anostostomatinae
-Anostostomatini
-Anostostomidae
-Anostostomii
-Anostostominae
-Anurogryllina
-Aphemogryllinae
-Aphemogryllini
-Aphidniae
-Aphonoides
-Aphonoidini
-Aphonomorphina
-Aphonomorphini
-Aphracti
-Aphractini
-Apobolei
-Apoboleini
-Apotrechae
-Apotropina
-Aprosphylini
-Apteronemobiini
-Apteronomae
-Apteropedetinae
-Apteropedetini
-Apteropeoedi
-Apteropeoedini
-Aracambiae
-Arachnocephalina
-Arachnocephalini
-Arachnoscelidina
-Arantiae
-Arantiini
-Araripelocustidae
-Araripelocustinae
-Arbusculina
-Archaboilinae
-Archelcaninae
-Arcypterae
-Arcypteridae
-Arcypterinae
-Arcypterini
-Aretzina
-Argyrtini
-Armadillagraeciini
-Arphiini
-Arytropterees
-Arytropteres
-Arytropteridini
-Asarcogryllacridini
-Asoninae
-Aspidonoti
-Aspidonotini
-Aspidophymae
-Aspidophymini
-Atacamacridinae
-Atacamacridini
-Atractomorphae
-Atractomorphina
-Atractomorphinae
-Atractomorphini
-Atsigryllae
-Aucacres
-Aucacridinae
-Aucacridini
-Aucacrinae
-Aucacrini
-Aularchina
-Aulocarini
-Australiagraeciina
-Austrosaginae
-Axenopterinae
-Axylus
-Babitistinae
-Bachariinae
-Bactrophorinae
-Bactrophorini
-Baisselcaninae
-Baissogryllidae
-Baissogryllinae
-Barbistini
-Barbitistini
-Barythericleinae
-Barythericleini
-Batrachacrini
-Batrachideae
-Batrachideidae
-Batrachideinae
-Batrachideini
-Batrachididae
-Batrachidiini
-Batrachidinae
-Batrachinae
-Batrachotetriginae
-Beiericolyina
-Benoistellae
-Benoistellini
-Bergiolini
-Bienkoini
-Bintoniellidae
-Bintoniellinae
-Biroellidae
-Biroellinae
-Biroellini
-Bontzaganiinae
-Borneacrididae
-Borneacridinae
-Borneacridini
-Bothriophylacinae
-Bothriophylacini
-Bothromogoplistina
-Bouretidae
-Brachyporini
-Brachystolini
-Brachytrupina
-Brachytrupinae
-Brachytrypites
-Bradynotae
-Bradyporidae
-Bradyporinae
-Bradyporini
-Bradyporites
-Brauckmanniidae
-Brevizaclina
-Brunniellini
-Bryodemae
-Bryodemellinae
-Bryodemellini
-Bryodemina
-Bryodeminae
-Bryodemini
-Bufonidinae
-Bufonidini
-Buforaniina
-Bunkeyini
-Burcini
-Burmecaelidae
-Cachoplistidae
-Cachoplistinae
-Cachoplistini
-Cachoplistites
-Cacoplistidae
-Cacoplistinae
-Cacoplistini
-Caelifera
-Calephori
-Calephorinae
-Calephorini
-Callimenellini
-Callimenidae
-Calliptami
-Calliptaminae
-Calliptamini
-Callitalini
-Calopteni
-Caloptenidae
-Calopteninae
-Caloscirtae
-Caloscirtina
-Capnogryllacridini
-Caprorhinina
-Capsigerini
-Carcinomastacini
-Cardiodactylina
-Carsulae
-Caryandinae
-Cassitettiginae
-Cassitettigini
-Cassitettinae
-Cassitettinini
-Catantopes
-Catantopidae
-Catantopina
-Catantopinae
-Catantopini
-Catoptropterigini
-Cearacesaina
-Cearacesaini
-Cearagryllinae
-Centroferini
-Cephalogryllini
-Ceracrinae
-Ceracrini
-Cestrophorini
-Ceutephili
-Ceuthophili
-Ceuthophilinae
-Ceuthophilini
-Ceutophilinae
-Chapmanacridini
-Chariacrini
-Charilaidae
-Charilainae
-Chifengiinae
-Chifenginae
-Chilacridinae
-Chilacrinae
-Chinae
-Chininae
-Chinini
-Chlorizeinina
-Chlorizeinini
-Chloropseustini
-Choriphyllini
-Choroetypi
-Choroetypidae
-Choroetypinae
-Chorotypidae
-Chorotypinae
-Chorotypini
-Chorthipini
-Chorthippini
-Chortophagini
-Chromacrini
-Chromothericleinae
-Chromothericleini
-Chrotogonae
-Chrotogoni
-Chrotogonidae
-Chrotogoninae
-Chrotogonini
-Chrysochraontes
-Chrysochraontinae
-Chrysochraontini
-Cibolacrini
-Cirphulina
-Cladonotae
-Cladonotidae
-Cladonotinae
-Cladonotini
-Clathrotitanidae
-Clematodini
-Clematodinini
-Cleostratae
-Cleostratinae
-Cleostratini
-Clerithesini
-Clinophaestini
-Cocconoti
-Cocconotini
-Coelopternidae
-Colpolophini
-Comicinae
-Compsacrini
-Conalcaeini
-Coniungopterini
-Conocephalidae
-Conocephalidi
-Conocephalina
-Conocephalini
-Conocephalomimi
-Conocephalomimini
-Conometopini
-Conophymatini
-Conophyminae
-Conophymini
-Cooloolidae
-Cooloolinae
-Cooloolini
-Cophogryllina
-Cophusini
-Copiocerae
-Copiocerinae
-Copiocerini
-Copiphoridae
-Copiphorinae
-Copiphorini
-Coptacrae
-Coptacridinae
-Coptacrinae
-Coptacrini
-Coryacrini
-Corycinae
-Coryphistina
-Coryphistini
-Coscineutae
-Coscineutini
-Cosmophyllae
-Cosmophyllini
-Cranaeae
-Cranaeini
-Cratilopina
-Cratomeli
-Cratomelinae
-Cratomelini
-Criotettiginae
-Criotettigini
-Cristobalina
-Cryptomastacini
-Ctenodectees
-Ctenodecticini
-Ctenophlebiae
-Curtillidae
-Curtillinae
-Cylindrachetidae
-Cylindrachetidea
-Cylindrachetinae
-Cylindrodidae
-Cylindrodites
-Cymatomerae
-Cymatomerini
-Cyphoderrinae
-Cyrtacanthacres
-Cyrtacanthacridinae
-Cyrtacanthacridini
-Cyrtacanthacrinae
-Cyrtacanthacrini
-Cyrtophylli
-Cyrtophyllites
-Cyrtophyllitinae
-Dactyloti
-Dactylotina
-Dactylotini
-Daguerreacridini
-Daihiniinae
-Daihiniini
-Dectici
-Decticidae
-Decticinae
-Decticini
-Deinacridinae
-Deinacridini
-Deinotitanidae
-Deinotitaninae
-Deinutona
-Delliini
-Dendromastacini
-Dentridactylinae
-Deracanthidae
-Deracanthinae
-Deracanthini
-Dericorythes
-Dericorythidae
-Dericorythinae
-Dericorythini
-Dericorytinae
-Derocorythini
-Desmopterae
-Desmopterinae
-Desmopterini
-Diatrypidi
-Diatrypina
-Diatrypini
-Dichopetalini
-Dichropli
-Dichroplini
-Dictyophori
-Diestramimini
-Diexiini
-Diexini
-Dinotettigini
-Diponthi
-Diponthini
-Dipontii
-Dirshacrini
-Disaneminae
-Discotettigiae
-Discotettigidae
-Discotettiginae
-Discotettigini
-Discotettinae
-Dociostaurini
-Dolichogryllus
-Dolichopodainae
-Dolichopodaini
-Dracotettigini
-Drymadusae
-Drymadusini
-Ducetiae
-Ducetiini
-Duronia
-Dysaneminae
-Dysanemini
-Dysmorphini
-Dysoniae
-Dysoniina
-Dysoniini
-Dysoniita
-Dzhajloutshellidae
-Dzhajloutshelloidea
-Echinotropinae
-Echopraxiini
-Ecphantina
-Ectemnini
-Ecuanedubini
-Egnatiinae
-Egnatiini
-Elaeochlorini
-Elasmoderini
-Elcanidae
-Elcanidea
-Elcaninae
-Elcanoedischiinae
-Elcanoidea
-Elimaeae
-Elimaeini
-Endacustini
-Eneopteridae
-Eneopteriens
-Eneopterii
-Eneopterinae
-Eneopterini
-Eneopterites
-Ensifera
-Enyaliopsina
-Enyaliopsini
-Eolocustopsidae
-Eospilopteronidae
-Epacromiae
-Epacromii
-Epacromiini
-Epacromini
-Epeisactinae
-Ephippigeridae
-Ephippigerinae
-Ephippigerini
-Ephippithytae
-Ephippitythini
-Episacti
-Episactidae
-Episactinae
-Episactini
-Epitettigini
-Eremidii
-Eremini
-Eremobidae
-Eremobiidae
-Eremobiini
-Eremobiites
-Eremogryllinae
-Erianthina
-Erianthinae
-Erianthini
-Eritettigini
-Erucii
-Eruciidae
-Eruciinae
-Eruciini
-Espagnolae
-Espagnolinae
-Espagnolini
-Eucatoptae
-Eucephalacrae
-Eucephalacrina
-Euclydesinae
-Eucocconotini
-Euconchophorini
-Eucopiocerae
-Eucopiocerini
-Eugastrina
-Eugastrinae
-Eugastrini
-Eumastaces
-Eumastacidae
-Eumastacides
-Eumastacinae
-Eumastacini
-Eumastacoidea
-Eumastacopinae
-Eumastacopini
-Eumecistina
-Eumegalodonidae
-Eumegalodontina
-Eumegalodontinae
-Euprepocnemes
-Euprepocnemidini
-Euprepocnemini
-Eurepini
-Eurostacrini
-Eurygryllodina
-Eurygryllodini
-Eurypalpini
-Euryparyphini
-Euryphymi
-Euryphyminae
-Euschmidtiidae
-Euschmidtiinae
-Euschmidtiini
-Euscyrtinae
-Euthymiae
-Exanimini
-Eyprepocnemes
-Eyprepocnemidinae
-Eyprepocnemidini
-Falsispeculinae
-Ferganiinae
-Ferganopterinae
-Fijipyrgini
-Fijitettigini
-Finotiae
-Finotiini
-Frontifissiae
-Galeicleini
-Gammarotettiginae
-Gammarotettigini
-Gampsoclees
-Gampsocleidini
-Garciaitettigini
-Geloii
-Geloiinae
-Geloiini
-Geloiodina
-Genimenini
-Gereniae
-Gereniini
-Gergisini
-Gesonulini
-Gigagryllae
-Gigatitanidae
-Glaphyraspidini
-Glaphyrosomatinae
-Glaphyrosomatini
-Glaphyrosomini
-Glyphonotinae
-Glyphonotini
-Glyphontini
-Gomphoceri
-Gomphoceridae
-Gomphocerinae
-Gomphocerini
-Gomphomastaces
-Gomphomastacidae
-Gomphomastacinae
-Gomphomastacini
-Goniaeina
-Gryllacrae
-Gryllacridae
-Gryllacrididae
-Gryllacridinae
-Gryllacridini
-Gryllacridoidea
-Gryllacrinae
-Gryllacrites
-Gryllarcidinae
-Gryllavidae
-Gryllavinae
-Gryllavoidea
-Gryllidae
-Gryllidea
-Gryllides
-Grylliens
-Gryllina
-Gryllinae
-Gryllini
-Grylliscini
-Gryllodea
-Grylloidea
-Grylloides
-Gryllomiminae
-Gryllomorphinae
-Gryllomorphini
-Gryllomorphites
-Grylloptera
-Gryllospeculinae
-Gryllotalpellini
-Gryllotalpida
-Gryllotalpidae
-Gryllotalpides
-Gryllotalpiens
-Gryllotalpina
-Gryllotalpinae
-Gryllotalpini
-Gryllotalpites
-Gryllotalpoidea
-Gryllulidae
-Gryllulinae
-Guntheritettiginae
-Guntheritettigini
-Gymnobothri
-Gymnobothrinae
-Gymnobothrini
-Gymnogryllina
-Gymnogryllini
-Gymnohippini
-Habrocneminae
-Hadenoecinae
-Hadenoecini
-Haglidae
-Haglinae
-Hagloedischiidae
-Hagloedischiinae
-Hagloidea
-Haglopterinae
-Haglotettigoniidae
-Hamayulini
-Hammatoferina
-Hapithidi
-Hapithina
-Hapithinae
-Hapithini
-Haplotropidini
-Haplotropiidini
-Haplotropini
-Helicopacrae
-Helicopacrina
-Hemiacridinae
-Hemiacridini
-Hemigryllinae
-Hemigryllini
-Hemiphonus
-Henicidae
-Henicinae
-Henicini
-Hepalicina
-Heterapterninae
-Heterodidae
-Heterogrylli
-Heterogryllina
-Heterogryllinae
-Heterogryllini
-Heteromastacini
-Hetrodidae
-Hetrodidi
-Hetrodina
-Hetrodinae
-Hetrodini
-Hexacentrinae
-Hexacentrini
-Hieroglyphi
-Hieroglyphinae
-Hieroglyphini
-Hildegardiinae
-Hildegardiini
-Himertulini
-Hippacrae
-Hippacres
-Hippisci
-Hippiscini
-Histrioacridina
-Histrioacridini
-Hisychiini
-Holochlorae
-Holochlorini
-Homalaspidiini
-Homalogrylli
-Homalogryllini
-Homeogryllinae
-Homoeogryllinae
-Homoeogryllini
-Hormiliae
-Humpatellina
-Hyalopteriges
-Hyalopterygini
-Hybusinae
-Hyperbaeninae
-Hyperbaenini
-Hypernephiini
-Hyperophorina
-Hyperyboellini
-Ichthiacridini
-Ichthyotettigini
-Illapeliinae
-Illapelinae
-Illapelliinae
-Incolacri
-Incolacridinae
-Incolacridini
-Indioscaptorini
-Indozaclina
-Insarae
-Insarini
-Iranellinae
-Iranellini
-Ischnomelini
-Isfaropteridae
-Isfaropterinae
-Isopserini
-Itarinae
-Itarini
-Ixalidiidae
-Jivari
-Jivarini
-Jubilaeinae
-Kakaduacridini
-Kamiidae
-Kamiinae
-Kapaoria
-Karataogryllinae
-Kargalariinae
-Karniellina
-Karschiae
-Kashgarlimahmutiinae
-Kevaniellini
-Keyacridini
-Kolymopterinae
-Lagarolampae
-Lagarolampina
-Landrevinae
-Landrevini
-Landrevites
-Lathiceridae
-Lathicerinae
-Lavanonini
-Lebinthina
-Lebinthini
-Legendreiidae
-Leguini
-Leiomelinae
-Leiomelini
-Lentulidae
-Lentulinae
-Leproscirtini
-Leptacres
-Leptacrini
-Leptoderini
-Leptotettigini
-Leptysmae
-Leptysmi
-Leptysminae
-Leptysmini
-Lernecae
-Lernecina
-Lesinina
-Letanini
-Lezinidae
-Lezininae
-Liarina
-Ligypterina
-Lipotactinae
-Lipotactini
-Lissotracheli
-Lissotrachelinae
-Lissotrachelini
-Listroscelidae
-Listroscelidinae
-Listroscelidini
-Listroscelinae
-Listroscelini
-Lithidiidae
-Lithidiinae
-Lithoscirtae
-Lithoscirtina
-Lobomastacini
-Locustae
-Locustariae
-Locustavidae
-Locustavinae
-Locustidae
-Locustina
-Locustinae
-Locustini
-Locustodea
-Locustoidea
-Locustopseidae
-Locustopsidae
-Locustopsinae
-Locustopsoidea
-Loiteriina
-Lophotettigiae
-Lophotettiginae
-Lophothericleini
-Lorymaini
-Loxicephalinae
-Loxicephalini
-Lutosinae
-Lutosini
-Luzarae
-Luzarina
-Luzarinae
-Luzarini
-Luzaropsini
-Lygothericleini
-Machaerocerini
-Macherocerini
-Maclystriina
-Macrazelotina
-Macropathidae
-Macropathinae
-Macropathini
-Macrotonina
-Maculoedischiinae
-Madasumma
-Madygeniinae
-Malagasphenini
-Malagassinae
-Malagassini
-Malgasiidae
-Malgasiinae
-Maraginae
-Marchandiinae
-Marelliinae
-Marinemobiini
-Markiina
-Marsabitacridina
-Mastaces
-Mastacidae
-Mastacideidae
-Mastacideinae
-Mastacideini
-Mastacinae
-Masynteinae
-Masynteini
-Maxentiini
-Mazaeae
-Meconematidae
-Meconematina
-Meconematinae
-Meconematini
-Meconemidae
-Meconeminae
-Mecopodae
-Mecopodi
-Mecopodidae
-Mecopodidi
-Mecopodinae
-Mecopodini
-Mecostethi
-Mecostethini
-Megalogryllae
-Mekongianina
-Mekongiellinae
-Melanopli
-Melanoplinae
-Melanoplini
-Melanotettigini
-Merehanini
-Mermiriae
-Mermiriini
-Meroncidii
-Mesambriae
-Mesambriinae
-Mesambriini
-Meselcaninae
-Mesoedischiidae
-Mesopes
-Mesopserini
-Mesotettiginae
-Mesotitanida
-Mesotitanidae
-Mesotitaninae
-Mesotitanini
-Metopomystrini
-Metriogryllacrae
-Metrioptera
-Metrodorae
-Metrodoridae
-Metrodorina
-Metrodorinae
-Metrodorini
-Meubeliina
-Mexiaclina
-Mezenoedischiinae
-Mezentiae
-Micreolina
-Microbothriophylacini
-Microcentra
-Microcentrina
-Micromastacini
-Microtettigoniinae
-Microtettigoniini
-Microthericleini
-Mimnermi
-Mimnermidae
-Mimnerminae
-Miogryllae
-Miraculidae
-Miraculinae
-Miraculini
-Miramellae
-Miramellina
-Miriatrina
-Miriatrini
-Mirolliae
-Mirolliini
-Mistshenkoana
-Mitricephalini
-Mnesicleinae
-Mnesicleini
-Modestozarina
-Modicogryllini
-Mogisoplistidae
-Mogisoplistinae
-Mogisoplistini
-Mogisoplistites
-Mogoplistidae
-Mogoplistii
-Mogoplistinae
-Mogoplistini
-Mogoplistoidea
-Mohavacrinae
-Monachidia
-Mongoloxyinae
-Monistriini
-Monticolariini
-Morabidae
-Morabinae
-Morabini
-Morgeniini
-Moristini
-Morseinae
-Morseini
-Mossulina
-Mucrotettigina
-Mucrotettigini
-Myllocentrini
-Myrmecophilidae
-Myrmecophiliens
-Myrmecophilinae
-Myrmecophilini
-Myrmecophiloidea
-Nautiae
-Nautiina
-Nedubinae
-Nedubini
-Nemobiidae
-Nemobiinae
-Nemobiini
-Nemobiites
-Nemobiopses
-Nemobiopsini
-Nemozarina
-Neoaclidae
-Neoaclina
-Neoaclini
-Neocurtillini
-Neometrypina
-Neometrypini
-Neomorphini
-Nereniini
-Nicarchae
-Nicarchi
-Nisitrini
-Nocarodeini
-Nocarodes
-Nocarodesinae
-Nophthini
-Nubimystrigini
-Occidentosphenina
-Occidentosphenini
-Ochrilidiae
-Ochrilidiini
-Ochrilidini
-Ocicatini
-Ocneridiini
-Ocnocerus
-Odontogryllini
-Odonturae
-Odonturinae
-Odonturini
-Oecanthidae
-Oecanthidi
-Oecanthiens
-Oecanthinae
-Oecanthini
-Oecanthites
-Oedipodacrinae
-Oedipodae
-Oedipodidae
-Oedipodinae
-Oedipodini
-Oedischiidae
-Oedischiidea
-Oedischiinae
-Oedischimiminae
-Oedischioidea
-Olindagryllinae
-Ommatolampae
-Ommatolampides
-Ommatolampidina
-Ommatolampidinae
-Ommatolampidini
-Ommatolampinae
-Ommexechae
-Ommexechidae
-Ommexechinae
-Ommexechini
-Omocestina
-Omurini
-Onconotinae
-Onconotini
-Ophiotettigini
-Ophthalmolampae
-Ophthalmolampina
-Ophthalmolampinae
-Ophthalmolampini
-Opomalae
-Orchaminae
-Orinhippinae
-Orinhippini
-Orphulellini
-Ortacrinae
-Orthacres
-Orthacridinae
-Orthacridini
-Orthacris
-Orthoptera
-Orthoxiphae
-Oryctopinae
-Oryctopini
-Oryctopterini
-Oshiellinae
-Otiaphysae
-Otiaphysini
-Otteiini
-Otteini
-Otumbini
-Oulenotacrae
-Oulenotacrina
-Oxyae
-Oxybleptae
-Oxyecoini
-Oxyinae
-Oxyini
-Oxylakina
-Oxyrrhepes
-Oxyrrhepini
-Pacrinae
-Pacrini
-Palaeorehniidae
-Palaeorehniinae
-Pamphagi
-Pamphagidae
-Pamphaginae
-Pamphagini
-Pamphagodae
-Pamphagodes
-Pamphagodidae
-Pamphagodinae
-Pamphagoidea
-Pamphagopsidae
-Pantecphyli
-Pantecphylini
-Paraconophymatini
-Paracyrtophyllitinae
-Paragryllacridini
-Paragryllae
-Paragryllidae
-Paragryllina
-Paragryllinae
-Paragryllini
-Paragryllodina
-Paragryllodini
-Paramastacinae
-Paramastacini
-Paraphidniae
-Paraphidniita
-Parapleuri
-Parapleurini
-Parapodisminae
-Parapterochrozae
-Parasphenina
-Parasymbellini
-Paratarbaleus
-Parathericleini
-Paratitanidae
-Pardalotae
-Pardalotini
-Parelcanidae
-Parendacustina
-Parepisactinae
-Parepisactini
-Pargae
-Pargainae
-Pargaini
-Paroecanthidi
-Paroecanthina
-Paroecanthini
-Paropomala
-Pauliniae
-Pauliniidae
-Pauliniinae
-Paulininae
-Pauracrini
-Paurae
-Peakesiina
-Pelecynotina
-Penichroti
-Penichrotini
-Pentacentri
-Pentacentridae
-Pentacentrinae
-Pentacentrini
-Pentacentrites
-Perbelliina
-Percynini
-Permelcanidae
-Permelcaninae
-Permoraphidiidae
-Permoraphidioidea
-Permorhaphidioidea
-Permotettigoniidae
-Peruviae
-Petaloptilae
-Petaloptilini
-Petasidini
-Pezotettiges
-Pezotettiginae
-Pezotettigini
-Phaeopariae
-Phaeopariini
-Phaeoparini
-Phaeophilacridina
-Phalangopsidae
-Phalangopsina
-Phalangopsinae
-Phalangopsini
-Phalangopsites
-Phalangopsitidae
-Phaloriinae
-Phaloriini
-Phaneropterae
-Phaneropterinae
-Phaneropterini
-Phasgonuridae
-Phasgonurinae
-Phasmodidae
-Phasmodinae
-Phasmomimidae
-Phasmomiminae
-Phasmomimoidea
-Phasmomimoidinae
-Phaulotypini
-Pherodactylina
-Philobothriinae
-Phisidina
-Phisidini
-Phisiini
-Phlaeobae
-Phlaeobinae
-Phlaeobini
-Phlaurocentra
-Phlaurocentrini
-Phloeonotini
-Phlugidini
-Phlugini
-Phoberopodes
-Pholidopterini
-Phormincterites
-Phrictae
-Phrictini
-Phrixita
-Phryganogryllacridini
-Phrynotettigini
-Phyllogryllini
-Phyllomimi
-Phyllomimini
-Phyllophorae
-Phyllophori
-Phyllopterina
-Phyllopterini
-Phyllopterita
-Phyllopterites
-Phylloscirtinae
-Phylloscyrtini
-Phymatae
-Phymatei
-Phymateina
-Phymateini
-Pieltainidini
-Plagiopleurae
-Plagiopleurini
-Plagiostirini
-Plagiotripti
-Plagiotriptinae
-Plagiotriptini
-Plangiae
-Plangiina
-Plangiini
-Plangiopsidini
-Plangiopsiini
-Plangiopsini
-Platyblemmites
-Platyclees
-Platycleidini
-Platycleis
-Platydactylidae
-Platyphylla
-Platyphyllini
-Platyphymata
-Pleminiae
-Pleminiinae
-Pleminiini
-Pleminiiti
-Plotnikovini
-Pneumorae
-Pneumoridae
-Pneumoridea
-Pneumorinae
-Pneumorites
-Pneumoroidea
-Podismae
-Podismina
-Podisminae
-Podismini
-Podoscirtidae
-Podoscirtidi
-Podoscirtina
-Podoscirtinae
-Podoscirtini
-Podoscirtites
-Poecilocerae
-Poeciloceridae
-Poecilocerinae
-Poekiloceri
-Poekilocerini
-Polyancistri
-Polyancistrinae
-Polyancistrini
-Pomatonotae
-Pomatonotini
-Popoviina
-Popoviini
-Porenomenae
-Poreuomenae
-Poreuomenini
-Portheti
-Porthetinae
-Porthetini
-Porthetis
-Potua
-Praelocustopsinae
-Praxibulini
-Preussiae
-Preussiini
-Prezottophlebiidae
-Primnoae
-Prionacanthinae
-Prionacanthini
-Prionolophina
-Prionolophini
-Prionotropisinae
-Pristoceuthophilini
-Prochilidae
-Prochilites
-Procolpiae
-Procolpina
-Procolpini
-Proctolabae
-Proctolabina
-Proctolabinae
-Proctolabini
-Prognathogryllides
-Prognathogryllinae
-Prognathogryllini
-Prognathogryllus
-Progryllacridini
-Prohaglinae
-Prolandrevini
-Promastacidae
-Proparagryllacrididae
-Proparagryllacridinae
-Prophalangopseinae
-Prophalangopsidae
-Prophalangopsiidae
-Prophalangopsinae
-Prosarthriina
-Prosarthrina
-Proscopidae
-Proscopides
-Proscopiidae
-Proscopiina
-Proscopiinae
-Proscopiini
-Proscopioidea
-Proscopoidea
-Proshiellinae
-Protaboilinae
-Protogryllidae
-Protogryllinae
-Protomogoplistinae
-Protomunda
-Prototitaninae
-Protroglophilinae
-Prumnini
-Pruvostitidae
-Pruvostitinae
-Psednurinae
-Psednurini
-Pseudelcanidae
-Pseudoacridinae
-Pseudogeloiini
-Pseudogryllotalpidae
-Pseudomastacinae
-Pseudomastacini
-Pseudomogoplistina
-Pseudomorphacridini
-Pseudophaneropterae
-Pseudophaneropterini
-Pseudophylli
-Pseudophyllidae
-Pseudophyllidi
-Pseudophyllinae
-Pseudophyllini
-Pseudophylliti
-Pseudoschmidtiae
-Pseudoschmidtiinae
-Pseudoschmidtiini
-Pseudotettigoniinae
-Pseudothericleini
-Psinidiae
-Psinidiini
-Psychomastacini
-Psyrae
-Pterochrozae
-Pterochrozidae
-Pterochrozinae
-Pterochrozini
-Pterochrozites
-Pteronemobiini
-Pterophyllae
-Pterophyllinae
-Pterophyllini
-Pteroplistidae
-Pteroplistinae
-Pteroplistini
-Pterotettigini
-Pycnogastrinae
-Pycnopalpina
-Pycnopalpini
-Pycnosarcini
-Pyrgacrididae
-Pyrgacridinae
-Pyrgomorphae
-Pyrgomorphidae
-Pyrgomorphiden
-Pyrgomorphina
-Pyrgomorphinae
-Pyrgomorphini
-Pyrgomorphoidea
-Pyrgophistina
-Pyrrhiciae
-Quasimodini
-Ramburiellini
-Rammeinae
-Ranacridinae
-Raphidophorae
-Raphidophoridae
-Raphidophorinae
-Raphithericleini
-Raphoglidae
-Rashidinae
-Regiatidae
-Requenini
-Rhacoclees
-Rhacocleidini
-Rhaphidophorae
-Rhaphidophoridae
-Rhaphidophorinae
-Rhaphidophorini
-Rhaphidophoroidea
-Rhicnoderma
-Rhipipterigidae
-Rhipipterygidae
-Rhipipteryginae
-Rhomaleae
-Rhomalii
-Rhomaliini
-Rhytidochrotae
-Rhytidochrotinae
-Ripipterygidae
-Ripipteryginae
-Romaleidae
-Romaleinae
-Romaleini
-Romali
-Rubelliina
-Rubelliini
-Rumeae
-Rumeinae
-Rumeini
-Rusmithini
-Russalpiina
-Sagidae
-Sagini
-Sagittacridini
-Sagittacrini
-Salomonina
-Salomoninae
-Salomonini
-Salomonitae
-Saltatoria
-Saltonacrae
-Saltonacrina
-Scambophyllinae
-Scambophyllini
-Scaphurae
-Scaphuridae
-Scaphurini
-Scaphurites
-Scapteriscinae
-Scapteriscini
-Scelimenae
-Scelimenidae
-Scelimeninae
-Scelimenini
-Schinziae
-Schinziini
-Schizodactylidae
-Schizodactylidea
-Schizodactylinae
-Schizodactylini
-Schizodactylites
-Schizodactyloidea
-Schulthessiellini
-Schulthessiina
-Schulthessiini
-Sciobiina
-Sciobiini
-Sclerogryllina
-Sclerogryllinae
-Sclerogryllini
-Scleropteridae
-Scleropterinae
-Scleropterites
-Scotussae
-Scudderiini
-Scurrina
-Scyllinae
-Scyllini
-Scyllinini
-Segestini
-Serpusiae
-Seselini
-Sexavaini
-Sexavina
-Sexavinae
-Sexavini
-Sharategiinae
-Shelforditinae
-Siini
-Simoderae
-Simoderinae
-Simoderini
-Socotrellinae
-Socotrellini
-Spaniacrini
-Spathosterninae
-Spathosternini
-Sphaerophallini
-Sphenariae
-Sphenarii
-Sphenariina
-Sphenariini
-Sphenexiina
-Sphingonoti
-Sphingonotina
-Sphingonotini
-Steirodontia
-Steirodontiites
-Steirodontina
-Steirodontini
-Stenobothrina
-Stenobothrini
-Stenogryllinae
-Stenopelmatidae
-Stenopelmatidea
-Stenopelmatinae
-Stenopelmatini
-Stenopelmatoidea
-Stenoschmidtiinae
-Stenoschmidtiini
-Stilpnochlorina
-Strogulomorphina
-Strogulomorphini
-Stropes
-Stropina
-Stropini
-Subtiloriini
-Sulcatini
-Susumaniinae
-Sygri
-Sylvoedischiinae
-Symbellini
-Syntomacrae
-Syntomacrina
-Syntomacrini
-Tabariini
-Taeniomenini
-Taeniophorae
-Taeniophorini
-Taeniopodae
-Tafaliscidi
-Tafaliscina
-Tafaliscinae
-Tafaliscini
-Tagastae
-Tagastinae
-Tagastini
-Talitropsidae
-Talitropsinae
-Talitropsini
-Tanaoceridae
-Tanaocerinae
-Tanaoceroidea
-Tanaocerotinae
-Taphronotae
-Taphronotina
-Taphronotinae
-Taphronotini
-Tauchirae
-Tauchirini
-Tcholmanvissiellini
-Tcholmanvissiidae
-Tcholmanvissiinae
-Tcholmanvissioidea
-Teicophryes
-Teicophryinae
-Teicophryini
-Teleutiini
-Temnomastacinae
-Temnomastacini
-Teratodes
-Teratodinae
-Teratodini
-Termitidiinae
-Terpandrini
-Terpnistrini
-Tetanina
-Tetanorhynchini
-Tetiginos
-Tetrataeniae
-Tetrataeniini
-Tetricidae
-Tetricidites
-Tetricinae
-Tetridides
-Tetrigiae
-Tetrigidae
-Tetrigidea
-Tetriginae
-Tetrigini
-Tetrigoidea
-Tettavidae
-Tettavinae
-Tettigiae
-Tettigidae
-Tettiginae
-Tettigini
-Tettigoidinae
-Tettigoniidea
-Tettigoniinae
-Tettigoniini
-Tettigoniodea
-Tettigonioidea
-Tettigonoidea
-Tettoedischiidae
-Tettoedischiinae
-Tettoedischioidea
-Tettohaglinae
-Thaumastaces
-Thaumastacinae
-Theiatitanidae
-Theiina
-Thericleidae
-Thericleinae
-Thericleini
-Thericleis
-Thericlesiellini
-Thetellini
-Thoradonotini
-Thoradontini
-Thorandotini
-Thrasyderini
-Thrinchinae
-Thrinchini
-Thrincotropini
-Thueringoedischiidae
-Titanoptera
-Tonkinacridina
-Trachypetrellini
-Trachyzulphini
-Trauliae
-Trauliini
-Triaenogryllacrae
-Triamescaptorini
-Triassaginae
-Triassomanteidae
-Triassomantidae
-Triassomantoidea
-Tridactyinae
-Tridactyles
-Tridactylidae
-Tridactylidea
-Tridactyliens
-Tridactylinae
-Tridactylini
-Tridactylites
-Tridactylodea
-Tridactyloidea
-Tridactyloides
-Trigonidia
-Trigonididae
-Trigonidiens
-Trigonidiidae
-Trigonidiinae
-Trigonidiini
-Trigonidini
-Trigonocoryphini
-Trigonopteriginos
-Trigonopterygidae
-Trigonopterygidea
-Trigonopteryginae
-Trigonopterygoidea
-Trilophidiae
-Trilophidiini
-Trimerotropi
-Trimerotropini
-Trinchidae
-Trinchinae
-Trinchini
-Trincidae
-Tripetalocerae
-Tripetaloceridae
-Tripetalocerinae
-Tripetalocerini
-Tristiri
-Tristiridae
-Tristirinae
-Tristirini
-Tristriini
-Tristrini
-Troglophilinae
-Troglophilini
-Tropidacres
-Tropidacrini
-Tropidaucheninae
-Tropidauchenini
-Tropidischiae
-Tropidischiinae
-Tropidischiini
-Tropidischini
-Tropidolophini
-Tropidonoti
-Tropidonotii
-Tropidopolinae
-Tropidopolini
-Tropidostethi
-Tropidostethini
-Truljaliina
-Truljaliini
-Trusmaditetrigini
-Truxales
-Truxalidae
-Truxalides
-Truxalinae
-Truxalini
-Trybliophori
-Trybliophorinae
-Trybliophorini
-Tryxalidae
-Tryxalinae
-Tryxalini
-Tshorkuphlebiidae
-Tshorkuphlebiinae
-Tumbrinckitettigini
-Tuphellidae
-Tuphellinae
-Turanogryllini
-Turpiliini
-Turpiliites
-Tylopsiae
-Tylopsidae
-Tylopsidini
-Tylopsini
-Tympanophoridae
-Tympanophorinae
-Uberabina
-Unka
-Urnisiellini
-Urnisina
-Uvaroviini
-Valalyllini
-Vavallini
-Verduliina
-Verduliini
-Viadanae
-Viadaniini
-Viadanina
-Viadanini
-Vichetini
-Vilernae
-Vilernina
-Vingselinini
-Vitimidae
-Vitimiidae
-Voliopinae
-Vossiina
-Vossiini
-Warramungini
-Wiltshirellini
-Wintrebertini
-Xabea
-Xabeinae
-Xabeini
-Xabini
-Xantiina
-Xenacanthippini
-Xeniinae
-Xenogryllini
-Xenopteridae
-Xenopterinae
-Xenopteroidea
-Xerophyllini
-Xiphicerini
-Xiphidiinae
-Xiphidiini
-Xiphidiopsini
-Xistrellini
-Xyronoti
-Xyronotidae
-Xyronotinae
-Xyronotini
-Zaprochilinae
-Zeuneriini
-Zeuneropterinae
-Zichyinae
-Zichyini
-Zoniopodae
-Zoniopodini
-Zonipodae
-Zonocerina
-Zychiinae
-Zychiini
+Abilae # COL: synonym of Phaeopariini (Orthoptera)
+Aboilidae # COL: synonym of Aboilinae (Orthoptera)
+Aboilinae # COL: Orthoptera > Prophalangopsidae
+Aboilodea # COL: synonym of Aboilinae (Orthoptera)
+Abracrini # COL: Orthoptera > Acrididae
+Acanthodes # COL: synonym of Pleminiini (Orthoptera)
+Acanthoplina # COL: synonym of Acanthoplini (Orthoptera)
+Acanthoplini # COL: Orthoptera > Tettigoniidae
+Acanthoplistidae # COL: synonym of Gryllini (Orthoptera)
+Acanthoplistii # COL: synonym of Gryllini (Orthoptera)
+Achuri # COL: synonym of Mermiriini (Orthoptera)
+Achurumini # COL: synonym of Mermiriini (Orthoptera)
+Acilacridina # COL: Orthoptera > Tettigoniidae
+Aclodae # COL: synonym of Aclodini (Orthoptera)
+Aclodini # COL: Orthoptera > Phalangopsidae
+Acmophyllini # COL: synonym of Xerophyllini (Orthoptera)
+Acridia # COL: synonym of Acridini (Orthoptera)
+Acrididae # COL: Insecta > Orthoptera
+Acrididea # COL: Insecta > Orthoptera
+Acridiidae # COL: synonym of Acrididae (Orthoptera)
+Acridiinae # COL: synonym of Acridinae (Orthoptera)
+Acridiini # COL: synonym of Cyrtacanthacridinae (Orthoptera)
+Acridina # COL: synonym of Acridini (Orthoptera)
+Acridini # COL: Orthoptera > Acrididae
+Acridiodea # COL: synonym of Acridoidea (Insecta)
+Acridioidea # COL: synonym of Acridoidea (Insecta)
+Acridoidea # COL: Insecta > Orthoptera
+Acridomorpha # ITIS: synonym of Acrididea (Insecta)
+Acridopezae # COL: synonym of Acripezini (Orthoptera)
+Acridoxenidae # COL: synonym of Acridoxenini (Orthoptera)
+Acridoxeninae # COL: synonym of Acridoxenini (Orthoptera)
+Acridoxenini # COL: Orthoptera > Tettigoniidae
+Acripezini # COL: Orthoptera > Tettigoniidae
+Acrolophiti # COL: synonym of Acrolophitini (Orthoptera)
+Acrolophitini # COL: Orthoptera > Acrididae
+Acrometopae # COL: synonym of Acrometopini (Orthoptera)
+Acrometopini # COL: Orthoptera > Tettigoniidae
+Acrostegastes # COL: synonym of Teratodinae (Orthoptera)
+Acrotyli # COL: synonym of Acrotylini (Orthoptera)
+Acrotylina # COL: synonym of Acrotylini (Orthoptera)
+Acrotylini # COL: Orthoptera > Acrididae
+Acrydii # COL: synonym of Acrididea (Insecta)
+Acrydiidae # COL: synonym of Acrididea (Insecta)
+Acrydiinae # COL: synonym of Tetrigini (Orthoptera)
+Acrydiini # COL: synonym of Tetrigini (Orthoptera)
+Acrydiodea # COL: synonym of Acrididea (Insecta)
+Adelosgryllina # COL: Orthoptera > Phalangopsidae
+Ademirsoyinae # COL: Orthoptera > Proparagryllacrididae
+Adephagi # COL: synonym of Akicerinae (Orthoptera)
+Adephagini # COL: synonym of Akicerinae (Orthoptera)
+Adumbratomorphidae # COL: Insecta > Orthoptera
+Aegimiae # COL: synonym of Aegimiini (Orthoptera)
+Aegimiini # COL: Orthoptera > Tettigoniidae
+Aemodogryllinae # COL: Orthoptera > Rhaphidophoridae
+Aemodogryllini # COL: Orthoptera > Rhaphidophoridae
+Afromastacinae # COL: Orthoptera > Thericleidae
+Afromastacini # COL: Orthoptera > Thericleidae
+Afrophlaeoba # COL: Orthoptera > Acrididae
+Agraeciina # COL: Orthoptera > Tettigoniidae
+Agraeciinae # COL: synonym of Agraeciini (Orthoptera)
+Agraeciini # COL: Orthoptera > Tettigoniidae
+Agraecinae # COL: synonym of Agraeciini (Orthoptera)
+Agroeciidae # COL: synonym of Agraeciini (Orthoptera)
+Agroeciini # COL: synonym of Agraeciini (Orthoptera)
+Aiolopini # COL: synonym of Epacromiini (Orthoptera)
+Akicerae # COL: synonym of Akicerinae (Orthoptera)
+Akicerinae # COL: Orthoptera > Pamphagidae
+Akicerini # COL: Orthoptera > Pamphagidae
+Akridiodea # COL: synonym of Acridoidea (Insecta)
+Alectorolophi # COL: synonym of Ecphantina (Orthoptera)
+Aleuae # COL: synonym of Aleuasini (Orthoptera)
+Aleuasini # COL: Orthoptera > Acrididae
+Allagae # COL: synonym of Allagini (Orthoptera)
+Allagini # COL: Orthoptera > Acrididae
+Amblycoryphini # COL: Orthoptera > Tettigoniidae
+Amblytropidiae # COL: synonym of Amblytropidiini (Orthoptera)
+Amblytropidiini # COL: Orthoptera > Acrididae
+Amblytropidini # COL: synonym of Amblytropidiini (Orthoptera)
+Ametrae # COL: Orthoptera > Gryllacrididae
+Ametrini # COL: Orthoptera > Gryllacrididae
+Ametroidini # COL: Orthoptera > Gryllacrididae
+Amorphopi # COL: synonym of Amorphopini (Orthoptera)
+Amorphopinae # COL: synonym of Amorphopini (Orthoptera)
+Amorphopini # COL: Orthoptera > Tetrigidae
+Amphiacustae # COL: synonym of Amphiacustina (Orthoptera)
+Amphiacustina # COL: Orthoptera > Phalangopsidae
+Anabropsinae # COL: synonym of Anabropsini (Orthoptera)
+Anabropsini # COL: Orthoptera > Anostostomatidae
+Anancistrogerae # COL: Orthoptera > Gryllacrididae
+Anastostomatae # COL: synonym of Anostostomatidae (Orthoptera)
+Anaulacomerae # COL: synonym of Anaulacomerini (Orthoptera)
+Anaulacomerina # COL: synonym of Anaulacomerini (Orthoptera)
+Anaulacomerini # COL: Orthoptera > Tettigoniidae
+Anaulacomerites # COL: synonym of Anaulacomerini (Orthoptera)
+Anconiae # COL: synonym of Anconiini (Orthoptera)
+Anconiini # COL: Orthoptera > Acrididae
+Ancylechini # COL: synonym of Holochlorini (Orthoptera)
+Anelcanidae # COL: Insecta > Orthoptera
+Anepisceptina # COL: synonym of Anepisceptini (Orthoptera)
+Anepisceptini # COL: Orthoptera > Tettigoniidae
+Anepitactina # COL: Orthoptera > Tettigoniidae
+Angarina # COL: Orthoptera > Tettigoniidae
+Angarohaglinae # COL: Orthoptera > Haglidae
+Anhomalophlebiidae # COL: synonym of Oedischiinae (Orthoptera)
+Aniarae # COL: synonym of Aniarellini (Orthoptera)
+Aniarellina # COL: Orthoptera > Tettigoniidae
+Aniarellini # COL: Orthoptera > Tettigoniidae
+Anisophyina # COL: Orthoptera > Tettigoniidae
+Anisophyini # COL: Orthoptera > Tettigoniidae
+Annicerini # COL: synonym of Syntomacrini (Orthoptera)
+Anoplophilinae # COL: Orthoptera > Rhaphidophoridae
+Anoplophilini # COL: synonym of Anoplophilinae (Orthoptera)
+Anostostomatidae # COL: Insecta > Orthoptera
+Anostostomatinae # COL: Orthoptera > Anostostomatidae
+Anostostomatini # COL: Orthoptera > Anostostomatidae
+Anostostomidae # COL: synonym of Anostostomatidae (Orthoptera)
+Anostostomii # COL: synonym of Anostostomatinae (Orthoptera)
+Anostostominae # COL: synonym of Anostostomatinae (Orthoptera)
+Anurogryllina # COL: Orthoptera > Gryllidae
+Aphemogryllinae # COL: synonym of Aphemogryllini (Orthoptera)
+Aphemogryllini # COL: Orthoptera > Gryllidae
+Aphidniae # COL: synonym of Dysoniini (Orthoptera)
+Aphonoides # COL: Orthoptera > Oecanthidae
+Aphonoidini # COL: Orthoptera > Oecanthidae
+Aphonomorphina # COL: synonym of Aphonomorphini (Orthoptera)
+Aphonomorphini # COL: Orthoptera > Oecanthidae
+Aphracti # COL: synonym of Aphractini (Orthoptera)
+Aphractini # COL: Orthoptera > Tettigoniidae
+Apobolei # COL: synonym of Apoboleini (Orthoptera)
+Apoboleini # COL: Orthoptera > Acrididae
+Apotrechae # COL: Orthoptera > Gryllacrididae
+Apotropina # COL: Orthoptera > Acrididae
+Aprosphylini # COL: Orthoptera > Tettigoniidae
+Apteronemobiini # COL: synonym of Marinemobiini (Orthoptera)
+Apteronomae # COL: Orthoptera > Gryllacrididae
+Apteropedetinae # not found in ChecklistBank
+Apteropedetini # COL: Orthoptera > Tettigoniidae
+Apteropeoedi # COL: synonym of Apteropeoedini (Orthoptera)
+Apteropeoedini # COL: Orthoptera > Euschmidtiidae
+Aracambiae # COL: Orthoptera > Phalangopsidae
+Arachnocephalina # COL: Orthoptera > Mogoplistidae
+Arachnocephalini # COL: Orthoptera > Mogoplistidae
+Arachnoscelidina # COL: Orthoptera > Tettigoniidae
+Arantiae # COL: synonym of Holochlorini (Orthoptera)
+Arantiini # COL: synonym of Holochlorini (Orthoptera)
+Araripelocustidae # COL: synonym of Araripelocustinae (Orthoptera)
+Araripelocustinae # COL: Orthoptera > Locustopsidae
+Arbusculina # COL: Orthoptera > Pyrgomorphidae
+Archaboilinae # COL: Orthoptera > Haglidae
+Archelcaninae # COL: Orthoptera > Elcanidae
+Arcypterae # COL: synonym of Arcypterini (Orthoptera)
+Arcypteridae # COL: synonym of Arcypterini (Orthoptera)
+Arcypterinae # COL: synonym of Arcypterini (Orthoptera)
+Arcypterini # COL: Orthoptera > Acrididae
+Aretzina # COL: Orthoptera > Acrididae
+Argyrtini # COL: Orthoptera > Rhaphidophoridae
+Armadillagraeciini # COL: Orthoptera > Tettigoniidae
+Arphiini # COL: Orthoptera > Acrididae
+Arytropterees # COL: synonym of Arytropteridini (Orthoptera)
+Arytropteres # COL: synonym of Arytropteridini (Orthoptera)
+Arytropteridini # COL: Orthoptera > Tettigoniidae
+Asarcogryllacridini # COL: Orthoptera > Gryllacrididae
+Asoninae # COL: synonym of Hypernephiini (Orthoptera)
+Aspidonoti # COL: synonym of Aspidonotini (Orthoptera)
+Aspidonotini # COL: Orthoptera > Tettigoniidae
+Aspidophymae # COL: synonym of Aspidophymini (Orthoptera)
+Aspidophymini # COL: Orthoptera > Acrididae
+Atacamacridinae # COL: Orthoptera > Tristiridae
+Atacamacridini # COL: synonym of Atacamacridinae (Orthoptera)
+Atractomorphae # COL: synonym of Atractomorphini (Orthoptera)
+Atractomorphina # COL: synonym of Atractomorphini (Orthoptera)
+Atractomorphinae # COL: synonym of Atractomorphini (Orthoptera)
+Atractomorphini # COL: Orthoptera > Pyrgomorphidae
+Atsigryllae # COL: synonym of Anurogryllina (Orthoptera)
+Aucacres # COL: synonym of Aucacridinae (Orthoptera)
+Aucacridinae # COL: Orthoptera > Ommexechidae
+Aucacridini # COL: Orthoptera > Ommexechidae
+Aucacrinae # COL: synonym of Aucacridinae (Orthoptera)
+Aucacrini # COL: synonym of Aucacridini (Orthoptera)
+Aularchina # COL: Orthoptera > Pyrgomorphidae
+Aulocarini # COL: Orthoptera > Acrididae
+Australiagraeciina # COL: Orthoptera > Tettigoniidae
+Austrosaginae # COL: Orthoptera > Tettigoniidae
+Axenopterinae # COL: Orthoptera > Xenopteridae
+Axylus # COL: Orthoptera > Tettigoniidae
+Babitistinae # COL: synonym of Barbitistini (Orthoptera)
+Bachariinae # COL: Orthoptera > Haglidae
+Bactrophorinae # COL: Orthoptera > Romaleidae
+Bactrophorini # COL: Orthoptera > Romaleidae
+Baisselcaninae # COL: synonym of Elcaninae (Orthoptera)
+Baissogryllidae # COL: Insecta > Orthoptera
+Baissogryllinae # COL: Orthoptera > Baissogryllidae
+Barbistini # COL: synonym of Barbitistini (Orthoptera)
+Barbitistini # COL: Orthoptera > Tettigoniidae
+Barythericleinae # COL: Orthoptera > Thericleidae
+Barythericleini # COL: synonym of Barythericleinae (Orthoptera)
+Batrachacrini # COL: synonym of Romaleini (Orthoptera)
+Batrachideae # COL: synonym of Batrachideinae (Orthoptera)
+Batrachideidae # COL: synonym of Batrachideinae (Orthoptera)
+Batrachideinae # COL: Orthoptera > Tetrigidae
+Batrachideini # COL: Orthoptera > Tetrigidae
+Batrachididae # COL: synonym of Batrachideinae (Orthoptera)
+Batrachidiini # COL: synonym of Batrachideinae (Orthoptera)
+Batrachidinae # COL: synonym of Batrachideinae (Orthoptera)
+Batrachinae # COL: synonym of Batrachideinae (Orthoptera)
+Batrachotetriginae # COL: synonym of Akicerinae (Orthoptera)
+Beiericolyina # COL: Orthoptera > Tettigoniidae
+Benoistellae # COL: Orthoptera > Phalangopsidae
+Benoistellini # Wikidata: Orthoptera > Paragryllidae
+Bergiolini # COL: synonym of Drymadusini (Orthoptera)
+Bienkoini # COL: synonym of Conophyminae (Orthoptera)
+Bintoniellidae # COL: Insecta > Orthoptera
+Bintoniellinae # COL: Orthoptera > Bintoniellidae
+Biroellidae # COL: synonym of Biroellinae (Orthoptera)
+Biroellinae # COL: Orthoptera > Morabidae
+Biroellini # COL: synonym of Biroellinae (Orthoptera)
+Bontzaganiinae # COL: Orthoptera > Baissogryllidae
+Borneacrididae # COL: synonym of Borneacridinae (Orthoptera)
+Borneacridinae # COL: Orthoptera > Trigonopterygidae
+Borneacridini # COL: Orthoptera > Trigonopterygidae
+Bothriophylacinae # COL: Orthoptera > Myrmecophilidae
+Bothriophylacini # COL: Orthoptera > Myrmecophilidae
+Bothromogoplistina # COL: Orthoptera > Mogoplistidae
+Bouretidae # COL: Insecta > Orthoptera
+Brachyporini # COL: Orthoptera > Anostostomatidae
+Brachystolini # COL: synonym of Romaleini (Orthoptera)
+Brachytrupina # COL: Orthoptera > Gryllidae
+Brachytrupinae # COL: synonym of Brachytrupina (Orthoptera)
+Brachytrypites # COL: synonym of Brachytrupina (Orthoptera)
+Bradynotae # COL: Orthoptera > Acrididae
+Bradyporidae # COL: synonym of Bradyporinae (Orthoptera)
+Bradyporinae # COL: Orthoptera > Tettigoniidae
+Bradyporini # COL: Orthoptera > Tettigoniidae
+Bradyporites # COL: synonym of Bradyporinae (Orthoptera)
+Brauckmanniidae # COL: synonym of Schizodactylinae (Orthoptera)
+Brevizaclina # COL: Orthoptera > Phalangopsidae
+Brunniellini # COL: Orthoptera > Pyrgomorphidae
+Bryodemae # COL: synonym of Bryodemini (Orthoptera)
+Bryodemellinae # COL: synonym of Bryodemini (Orthoptera)
+Bryodemellini # COL: synonym of Bryodemini (Orthoptera)
+Bryodemina # COL: synonym of Bryodemini (Orthoptera)
+Bryodeminae # COL: synonym of Bryodemini (Orthoptera)
+Bryodemini # COL: Orthoptera > Acrididae
+Bufonidinae # COL: synonym of Bufonidini (Orthoptera)
+Bufonidini # COL: Orthoptera > Tetrigidae
+Buforaniina # COL: Orthoptera > Acrididae
+Bunkeyini # COL: Orthoptera > Thericleidae
+Burcini # COL: Orthoptera > Trigonidiidae
+Burmecaelidae # COL: Insecta > Orthoptera
+Cachoplistidae # COL: synonym of Cacoplistinae (Orthoptera)
+Cachoplistinae # COL: synonym of Cacoplistinae (Orthoptera)
+Cachoplistini # COL: synonym of Cacoplistini (Orthoptera)
+Cachoplistites # COL: synonym of Cacoplistinae (Orthoptera)
+Cacoplistidae # COL: synonym of Cacoplistinae (Orthoptera)
+Cacoplistinae # COL: Orthoptera > Phalangopsidae
+Cacoplistini # COL: Orthoptera > Phalangopsidae
+Caelifera # COL: Insecta > Orthoptera
+Calephori # COL: synonym of Calephorini (Orthoptera)
+Calephorinae # COL: synonym of Calephorini (Orthoptera)
+Calephorini # COL: Orthoptera > Acrididae
+Callimenellini # COL: Orthoptera > Tettigoniidae
+Callimenidae # COL: synonym of Bradyporinae (Orthoptera)
+Calliptami # COL: synonym of Calliptaminae (Orthoptera)
+Calliptaminae # COL: Orthoptera > Acrididae
+Calliptamini # COL: synonym of Calliptaminae (Orthoptera)
+Callitalini # COL: Orthoptera > Morabidae
+Calopteni # COL: synonym of Calliptaminae (Orthoptera)
+Caloptenidae # COL: synonym of Calliptaminae (Orthoptera)
+Calopteninae # COL: synonym of Calliptaminae (Orthoptera)
+Caloscirtae # Wikidata: Orthoptera > Acrididae
+Caloscirtina # COL: Orthoptera > Acrididae
+Capnogryllacridini # COL: Orthoptera > Gryllacrididae
+Caprorhinina # COL: Orthoptera > Pyrgomorphidae
+Capsigerini # COL: Orthoptera > Morabidae
+Carcinomastacini # COL: Orthoptera > Euschmidtiidae
+Cardiodactylina # COL: Orthoptera > Gryllidae
+Carsulae # COL: synonym of Catantopinae (Orthoptera)
+Caryandinae # COL: Orthoptera > Acrididae
+Cassitettiginae # COL: synonym of Cassitettigini (Orthoptera)
+Cassitettigini # COL: Orthoptera > Tetrigidae
+Cassitettinae # COL: synonym of Cassitettigini (Orthoptera)
+Cassitettinini # COL: synonym of Cassitettigini (Orthoptera)
+Catantopes # COL: synonym of Catantopinae (Orthoptera)
+Catantopidae # COL: synonym of Catantopinae (Orthoptera)
+Catantopina # COL: Orthoptera > Acrididae
+Catantopinae # COL: Orthoptera > Acrididae
+Catantopini # COL: Orthoptera > Acrididae
+Catoptropterigini # COL: Orthoptera > Tettigoniidae
+Cearacesaina # COL: synonym of Cearacesaini (Orthoptera)
+Cearacesaini # COL: Orthoptera > Oecanthidae
+Cearagryllinae # COL: Orthoptera > Baissogryllidae
+Centroferini # COL: Orthoptera > Tettigoniidae
+Cephalogryllini # COL: synonym of Brachytrupina (Orthoptera)
+Ceracrinae # COL: synonym of Parapleurini (Orthoptera)
+Ceracrini # COL: synonym of Parapleurini (Orthoptera)
+Cestrophorini # COL: Orthoptera > Tettigoniidae
+Ceutephili # COL: synonym of Ceuthophilini (Orthoptera)
+Ceuthophili # COL: synonym of Ceuthophilini (Orthoptera)
+Ceuthophilinae # COL: Orthoptera > Rhaphidophoridae
+Ceuthophilini # COL: Orthoptera > Rhaphidophoridae
+Ceutophilinae # COL: synonym of Ceuthophilinae (Orthoptera)
+Chapmanacridini # COL: Orthoptera > Pyrgomorphidae
+Chariacrini # COL: Orthoptera > Romaleidae
+Charilaidae # COL: synonym of Pamphagodidae (Orthoptera)
+Charilainae # COL: synonym of Pamphagodidae (Orthoptera)
+Chifengiinae # COL: Orthoptera > Prophalangopsidae
+Chifenginae # COL: synonym of Chifengiinae (Orthoptera)
+Chilacridinae # COL: synonym of Tristirinae (Orthoptera)
+Chilacrinae # COL: synonym of Tristirinae (Orthoptera)
+Chinae # COL: synonym of Chininae (Orthoptera)
+Chininae # COL: Orthoptera > Chorotypidae
+Chinini # COL: synonym of Chininae (Orthoptera)
+Chlorizeinina # COL: Orthoptera > Pyrgomorphidae
+Chlorizeinini # COL: Orthoptera > Pyrgomorphidae
+Chloropseustini # COL: Orthoptera > Acrididae
+Choriphyllini # COL: Orthoptera > Tetrigidae
+Choroetypi # COL: synonym of Chorotypinae (Orthoptera)
+Choroetypidae # COL: synonym of Chorotypidae (Orthoptera)
+Choroetypinae # COL: synonym of Chorotypinae (Orthoptera)
+Chorotypidae # COL: Insecta > Orthoptera
+Chorotypinae # COL: Orthoptera > Chorotypidae
+Chorotypini # COL: Orthoptera > Chorotypidae
+Chorthipini # COL: synonym of Gomphocerini (Orthoptera)
+Chorthippini # COL: synonym of Gomphocerini (Orthoptera)
+Chortophagini # COL: Orthoptera > Acrididae
+Chromacrini # COL: synonym of Romaleini (Orthoptera)
+Chromothericleinae # COL: Orthoptera > Thericleidae
+Chromothericleini # COL: synonym of Chromothericleinae (Orthoptera)
+Chrotogonae # COL: synonym of Chrotogonini (Orthoptera)
+Chrotogoni # COL: synonym of Chrotogonini (Orthoptera)
+Chrotogonidae # COL: synonym of Chrotogonini (Orthoptera)
+Chrotogoninae # COL: synonym of Chrotogonini (Orthoptera)
+Chrotogonini # COL: Orthoptera > Pyrgomorphidae
+Chrysochraontes # COL: synonym of Chrysochraontini (Orthoptera)
+Chrysochraontinae # COL: synonym of Chrysochraontini (Orthoptera)
+Chrysochraontini # COL: Orthoptera > Acrididae
+Cibolacrini # COL: Orthoptera > Acrididae
+Cirphulina # COL: Orthoptera > Acrididae
+Cladonotae # COL: synonym of Cladonotinae (Orthoptera)
+Cladonotidae # COL: synonym of Cladonotinae (Orthoptera)
+Cladonotinae # COL: Orthoptera > Tetrigidae
+Cladonotini # COL: Orthoptera > Tetrigidae
+Clathrotitanidae # COL: synonym of Mesotitanidae (Orthoptera)
+Clematodini # COL: Orthoptera > Acrididae
+Clematodinini # COL: Orthoptera > Acrididae
+Cleostratae # COL: synonym of Cleostratini (Orthoptera)
+Cleostratinae # COL: synonym of Cleostratini (Orthoptera)
+Cleostratini # COL: Orthoptera > Tetrigidae
+Clerithesini # COL: Orthoptera > Thericleidae
+Clinophaestini # COL: Orthoptera > Tetrigidae
+Cocconoti # COL: synonym of Cocconotini (Orthoptera)
+Cocconotini # COL: Orthoptera > Tettigoniidae
+Coelopternidae # COL: synonym of Pauliniinae (Orthoptera)
+Colpolophini # COL: synonym of Prionolophina (Orthoptera)
+Comicinae # COL: synonym of Schizodactylinae (Orthoptera)
+Compsacrini # COL: Orthoptera > Acrididae
+Conalcaeini # COL: Orthoptera > Acrididae
+Coniungopterini # COL: Orthoptera > Tettigoniidae
+Conocephalidae # COL: synonym of Conocephalinae (Orthoptera)
+Conocephalidi # COL: synonym of Conocephalinae (Orthoptera)
+Conocephalina # SF Orthoptera: Orthoptera > Tettigoniidae
+Conocephalini # COL: Orthoptera > Tettigoniidae
+Conocephalomimi # COL: synonym of Conocephalomimini (Orthoptera)
+Conocephalomimini # COL: Orthoptera > Tettigoniidae
+Conometopini # COL: synonym of Aucacridini (Orthoptera)
+Conophymatini # COL: synonym of Conophyminae (Orthoptera)
+Conophyminae # COL: Orthoptera > Dericorythidae
+Conophymini # COL: Orthoptera > Dericorythidae
+Cooloolidae # COL: synonym of Cooloolini (Orthoptera)
+Cooloolinae # COL: synonym of Cooloolini (Orthoptera)
+Cooloolini # COL: Orthoptera > Anostostomatidae
+Cophogryllina # COL: Orthoptera > Gryllidae
+Cophusini # COL: synonym of Otteiini (Orthoptera)
+Copiocerae # COL: synonym of Copiocerini (Orthoptera)
+Copiocerinae # COL: Orthoptera > Acrididae
+Copiocerini # COL: Orthoptera > Acrididae
+Copiphoridae # COL: synonym of Copiphorini (Orthoptera)
+Copiphorinae # COL: synonym of Copiphorini (Orthoptera)
+Copiphorini # COL: Orthoptera > Tettigoniidae
+Coptacrae # COL: synonym of Coptacrinae (Orthoptera)
+Coptacridinae # COL: synonym of Coptacrinae (Orthoptera)
+Coptacrinae # COL: Orthoptera > Acrididae
+Coptacrini # COL: synonym of Coptacrinae (Orthoptera)
+Coryacrini # COL: synonym of Romaleini (Orthoptera)
+Corycinae # COL: Orthoptera > Tettigoniidae
+Coryphistina # COL: Orthoptera > Acrididae
+Coryphistini # COL: synonym of Coryphistina (Orthoptera)
+Coscineutae # COL: synonym of Coscineutini (Orthoptera)
+Coscineutini # COL: Orthoptera > Acrididae
+Cosmophyllae # COL: synonym of Cosmophyllini (Orthoptera)
+Cosmophyllini # COL: Orthoptera > Tettigoniidae
+Cranaeae # COL: synonym of Cranaeini (Orthoptera)
+Cranaeini # COL: Orthoptera > Acrididae
+Cratilopina # COL: Orthoptera > Acrididae
+Cratomeli # COL: synonym of Cratomelini (Orthoptera)
+Cratomelinae # COL: synonym of Cratomelini (Orthoptera)
+Cratomelini # COL: Orthoptera > Anostostomatidae
+Criotettiginae # COL: Orthoptera > Tetrigidae
+Criotettigini # COL: Orthoptera > Tetrigidae
+Cristobalina # COL: Orthoptera > Romaleidae
+Cryptomastacini # COL: Orthoptera > Euschmidtiidae
+Ctenodectees # COL: synonym of Ctenodecticini (Orthoptera)
+Ctenodecticini # COL: Orthoptera > Tettigoniidae
+Ctenophlebiae # COL: synonym of Microcentrina (Orthoptera)
+Curtillidae # COL: synonym of Gryllotalpidae (Orthoptera)
+Curtillinae # COL: synonym of Gryllotalpinae (Orthoptera)
+Cylindrachetidae # COL: Insecta > Orthoptera
+Cylindrachetidea # COL: synonym of Cylindrachetidae (Orthoptera)
+Cylindrachetinae # COL: synonym of Cylindrachetidae (Orthoptera)
+Cylindrodidae # COL: synonym of Cylindrachetidae (Orthoptera)
+Cylindrodites # COL: synonym of Cylindrachetidae (Orthoptera)
+Cymatomerae # COL: synonym of Cymatomerini (Orthoptera)
+Cymatomerini # COL: Orthoptera > Tettigoniidae
+Cyphoderrinae # COL: Orthoptera > Prophalangopsidae
+Cyrtacanthacres # COL: synonym of Cyrtacanthacridinae (Orthoptera)
+Cyrtacanthacridinae # COL: Orthoptera > Acrididae
+Cyrtacanthacridini # COL: Orthoptera > Acrididae
+Cyrtacanthacrinae # COL: synonym of Cyrtacanthacridinae (Orthoptera)
+Cyrtacanthacrini # COL: synonym of Cyrtacanthacridini (Orthoptera)
+Cyrtophylli # COL: synonym of Pterophyllini (Orthoptera)
+Cyrtophyllites # COL: synonym of Pterophyllini (Orthoptera)
+Cyrtophyllitinae # COL: Orthoptera > Haglidae
+Dactyloti # COL: synonym of Dactylotini (Orthoptera)
+Dactylotina # COL: synonym of Dactylotini (Orthoptera)
+Dactylotini # COL: Orthoptera > Acrididae
+Daguerreacridini # COL: Orthoptera > Eumastacidae
+Daihiniinae # COL: synonym of Daihiniini (Orthoptera)
+Daihiniini # COL: Orthoptera > Rhaphidophoridae
+Dectici # COL: synonym of Decticini (Orthoptera)
+Decticidae # COL: synonym of Decticini (Orthoptera)
+Decticinae # PBDB: synonym of Tettigoniinae (Orthoptera)
+Decticini # COL: Orthoptera > Tettigoniidae
+Deinacridinae # COL: synonym of Deinacridini (Orthoptera)
+Deinacridini # COL: Orthoptera > Anostostomatidae
+Deinotitanidae # COL: Insecta > Orthoptera
+Deinotitaninae # COL: synonym of Deinotitanidae (Orthoptera)
+Deinutona # COL: Orthoptera > Oecanthidae
+Delliini # COL: synonym of Clematodini (Orthoptera)
+Dendromastacini # COL: Orthoptera > Euschmidtiidae
+Dentridactylinae # COL: Orthoptera > Tridactylidae
+Deracanthidae # COL: synonym of Zichyini (Orthoptera)
+Deracanthinae # COL: synonym of Zichyini (Orthoptera)
+Deracanthini # COL: synonym of Zichyini (Orthoptera)
+Dericorythes # COL: synonym of Dericorythinae (Orthoptera)
+Dericorythidae # COL: Insecta > Orthoptera
+Dericorythinae # COL: Orthoptera > Dericorythidae
+Dericorythini # COL: synonym of Dericorythinae (Orthoptera)
+Dericorytinae # COL: synonym of Dericorythinae (Orthoptera)
+Derocorythini # COL: synonym of Dericorythinae (Orthoptera)
+Desmopterae # COL: synonym of Desmopterini (Orthoptera)
+Desmopterinae # COL: synonym of Desmopterini (Orthoptera)
+Desmopterini # COL: Orthoptera > Pyrgomorphidae
+Diatrypidi # COL: Orthoptera > Oecanthidae
+Diatrypina # COL: synonym of Diatrypidi (Orthoptera)
+Diatrypini # COL: synonym of Diatrypidi (Orthoptera)
+Dichopetalini # COL: Orthoptera > Tettigoniidae
+Dichropli # COL: synonym of Dichroplini (Orthoptera)
+Dichroplini # COL: Orthoptera > Acrididae
+Dictyophori # COL: synonym of Dictyophorini (Orthoptera)
+Diestramimini # COL: Orthoptera > Rhaphidophoridae
+Diexiini # COL: Orthoptera > Acrididae
+Diexini # COL: synonym of Diexiini (Orthoptera)
+Dinotettigini # COL: Orthoptera > Tetrigidae
+Diponthi # COL: synonym of Romaleini (Orthoptera)
+Diponthini # COL: synonym of Romaleini (Orthoptera)
+Dipontii # COL: synonym of Romaleini (Orthoptera)
+Dirshacrini # COL: Orthoptera > Acrididae
+Disaneminae # COL: synonym of Hypernephiini (Orthoptera)
+Discotettigiae # COL: synonym of Discotettigini (Orthoptera)
+Discotettigidae # COL: synonym of Discotettigini (Orthoptera)
+Discotettiginae # COL: synonym of Discotettigini (Orthoptera)
+Discotettigini # COL: Orthoptera > Tetrigidae
+Discotettinae # COL: synonym of Discotettigini (Orthoptera)
+Dociostaurini # COL: Orthoptera > Acrididae
+Dolichogryllus # Wikispecies: Orthoptera
+Dolichopodainae # COL: Orthoptera > Rhaphidophoridae
+Dolichopodaini # COL: Orthoptera > Rhaphidophoridae
+Dracotettigini # COL: synonym of Romaleini (Orthoptera)
+Drymadusae # COL: synonym of Drymadusini (Orthoptera)
+Drymadusini # COL: Orthoptera > Tettigoniidae
+Ducetiae # COL: synonym of Ducetiini (Orthoptera)
+Ducetiini # COL: Orthoptera > Tettigoniidae
+Duronia # COL: Orthoptera > Acrididae
+Dysaneminae # COL: synonym of Hypernephiini (Orthoptera)
+Dysanemini # COL: synonym of Hypernephiini (Orthoptera)
+Dysmorphini # COL: Orthoptera > Tettigoniidae
+Dysoniae # not found in ChecklistBank
+Dysoniina # COL: Orthoptera > Tettigoniidae
+Dysoniini # COL: Orthoptera > Tettigoniidae
+Dysoniita # COL: Orthoptera > Tettigoniidae
+Dzhajloutshellidae # COL: Insecta > Orthoptera
+Dzhajloutshelloidea # COL: Insecta > Orthoptera
+Echinotropinae # COL: Orthoptera > Pamphagidae
+Echopraxiini # COL: Orthoptera > Tetrigidae
+Ecphantina # COL: Orthoptera > Acrididae
+Ectemnini # COL: Orthoptera > Tettigoniidae
+Ecuanedubini # COL: Orthoptera > Tettigoniidae
+Egnatiinae # COL: Orthoptera > Acrididae
+Egnatiini # COL: Orthoptera > Acrididae
+Elaeochlorini # COL: Orthoptera > Romaleidae
+Elasmoderini # COL: Orthoptera > Tristiridae
+Elcanidae # COL: Insecta > Orthoptera
+Elcanidea # COL: Insecta > Orthoptera
+Elcaninae # COL: Orthoptera > Elcanidae
+Elcanoedischiinae # COL: Orthoptera > Oedischiidae
+Elcanoidea # COL: Insecta > Orthoptera
+Elimaeae # COL: synonym of Ducetiini (Orthoptera)
+Elimaeini # COL: synonym of Ducetiini (Orthoptera)
+Endacustini # COL: Orthoptera > Phalangopsidae
+Eneopteridae # COL: synonym of Eneopterinae (Orthoptera)
+Eneopteriens # COL: synonym of Eneopterinae (Orthoptera)
+Eneopterii # COL: synonym of Eneopterini (Orthoptera)
+Eneopterinae # COL: Orthoptera > Gryllidae
+Eneopterini # COL: Orthoptera > Gryllidae
+Eneopterites # COL: synonym of Eneopterinae (Orthoptera)
+Ensifera # COL: Insecta > Orthoptera
+Enyaliopsina # COL: synonym of Enyaliopsini (Orthoptera)
+Enyaliopsini # COL: Orthoptera > Tettigoniidae
+Eolocustopsidae # COL: Insecta > Orthoptera
+Eospilopteronidae # COL: Insecta > Orthoptera
+Epacromiae # COL: synonym of Epacromiini (Orthoptera)
+Epacromii # COL: synonym of Epacromiini (Orthoptera)
+Epacromiini # COL: Orthoptera > Acrididae
+Epacromini # COL: synonym of Epacromiini (Orthoptera)
+Epeisactinae # COL: synonym of Episactinae (Orthoptera)
+Ephippigeridae # COL: synonym of Ephippigerini (Orthoptera)
+Ephippigerinae # COL: synonym of Ephippigerini (Orthoptera)
+Ephippigerini # COL: Orthoptera > Tettigoniidae
+Ephippithytae # COL: synonym of Ephippitythini (Orthoptera)
+Ephippitythini # COL: Orthoptera > Tettigoniidae
+Episacti # COL: synonym of Episactinae (Orthoptera)
+Episactidae # COL: Insecta > Orthoptera
+Episactinae # COL: Orthoptera > Episactidae
+Episactini # COL: synonym of Episactinae (Orthoptera)
+Epitettigini # COL: Orthoptera > Tetrigidae
+Eremidii # COL: synonym of Lentulinae (Orthoptera)
+Eremini # COL: Orthoptera > Gryllacrididae
+Eremobidae # COL: synonym of Thrinchinae (Orthoptera)
+Eremobiidae # COL: synonym of Thrinchinae (Orthoptera)
+Eremobiini # COL: synonym of Thrinchinae (Orthoptera)
+Eremobiites # COL: synonym of Thrinchinae (Orthoptera)
+Eremogryllinae # COL: Orthoptera > Acrididae
+Erianthina # COL: synonym of Erianthinae (Orthoptera)
+Erianthinae # COL: Orthoptera > Chorotypidae
+Erianthini # SF Orthoptera: Orthoptera > Chorotypidae
+Eritettigini # COL: Orthoptera > Acrididae
+Erucii # COL: synonym of Eruciinae (Orthoptera)
+Eruciidae # COL: synonym of Eruciinae (Orthoptera)
+Eruciinae # COL: Orthoptera > Chorotypidae
+Eruciini # COL: synonym of Eruciinae (Orthoptera)
+Espagnolae # COL: synonym of Espagnolinae (Orthoptera)
+Espagnolinae # COL: Orthoptera > Episactidae
+Espagnolini # COL: synonym of Espagnolinae (Orthoptera)
+Eucatoptae # COL: synonym of Phaneropterini (Orthoptera)
+Eucephalacrae # Wikidata: Orthoptera > Acrididae
+Eucephalacrina # COL: Orthoptera > Acrididae
+Euclydesinae # COL: Orthoptera > Anostostomatidae
+Eucocconotini # COL: Orthoptera > Tettigoniidae
+Euconchophorini # COL: Orthoptera > Tettigoniidae
+Eucopiocerae # COL: synonym of Eucopiocerini (Orthoptera)
+Eucopiocerini # COL: Orthoptera > Acrididae
+Eugastrina # COL: synonym of Eugastrini (Orthoptera)
+Eugastrinae # COL: synonym of Eugastrini (Orthoptera)
+Eugastrini # COL: Orthoptera > Tettigoniidae
+Eumastaces # COL: synonym of Eumastacinae (Orthoptera)
+Eumastacidae # COL: Insecta > Orthoptera
+Eumastacides # COL: synonym of Eumastacoidea (Insecta)
+Eumastacinae # COL: Orthoptera > Eumastacidae
+Eumastacini # COL: synonym of Eumastacinae (Orthoptera)
+Eumastacoidea # COL: Insecta > Orthoptera
+Eumastacopinae # COL: synonym of Temnomastacinae (Orthoptera)
+Eumastacopini # COL: Orthoptera > Eumastacidae
+Eumecistina # COL: Orthoptera > Acrididae
+Eumegalodonidae # COL: synonym of Lesinina (Orthoptera)
+Eumegalodontina # COL: synonym of Lesinina (Orthoptera)
+Eumegalodontinae # COL: synonym of Lesinina (Orthoptera)
+Euprepocnemes # COL: synonym of Eyprepocnemidinae (Orthoptera)
+Euprepocnemidini # COL: synonym of Eyprepocnemidini (Orthoptera)
+Euprepocnemini # COL: synonym of Eyprepocnemidini (Orthoptera)
+Eurepini # COL: Orthoptera > Gryllidae
+Eurostacrini # COL: Orthoptera > Romaleidae
+Eurygryllodina # COL: synonym of Eurygryllodini (Orthoptera)
+Eurygryllodini # COL: Orthoptera > Gryllidae
+Eurypalpini # COL: Orthoptera > Tettigoniidae
+Euryparyphini # COL: Orthoptera > Pamphagidae
+Euryphymi # COL: synonym of Euryphyminae (Orthoptera)
+Euryphyminae # COL: Orthoptera > Acrididae
+Euschmidtiidae # COL: Insecta > Orthoptera
+Euschmidtiinae # COL: Orthoptera > Euschmidtiidae
+Euschmidtiini # COL: synonym of Euschmidtiinae (Orthoptera)
+Euscyrtinae # COL: Orthoptera > Oecanthidae
+Euthymiae # COL: synonym of Hemiacridinae (Orthoptera)
+Exanimini # COL: Orthoptera > Tetrigidae
+Eyprepocnemes # COL: synonym of Eyprepocnemidinae (Orthoptera)
+Eyprepocnemidinae # COL: Orthoptera > Acrididae
+Eyprepocnemidini # COL: Orthoptera > Acrididae
+Falsispeculinae # COL: Orthoptera > Protogryllidae
+Ferganiinae # COL: synonym of Ademirsoyinae (Orthoptera)
+Ferganopterinae # COL: Orthoptera > Xenopteridae
+Fijipyrgini # COL: Orthoptera > Pyrgomorphidae
+Fijitettigini # COL: Orthoptera > Tetrigidae
+Finotiae # COL: synonym of Finotiini (Orthoptera)
+Finotiini # COL: Orthoptera > Pamphagidae
+Frontifissiae # COL: synonym of Catantopinae (Orthoptera)
+Galeicleini # COL: Orthoptera > Thericleidae
+Gammarotettiginae # COL: Orthoptera > Rhaphidophoridae
+Gammarotettigini # COL: Orthoptera > Rhaphidophoridae
+Gampsoclees # COL: synonym of Gampsocleidini (Orthoptera)
+Gampsocleidini # COL: Orthoptera > Tettigoniidae
+Garciaitettigini # COL: Orthoptera > Tetrigidae
+Geloii # COL: synonym of Geloiini (Orthoptera)
+Geloiinae # COL: synonym of Geloiini (Orthoptera)
+Geloiini # COL: Orthoptera > Pyrgomorphidae
+Geloiodina # COL: Orthoptera > Pyrgomorphidae
+Genimenini # COL: synonym of Podismini (Orthoptera)
+Gereniae # COL: synonym of Gereniini (Orthoptera)
+Gereniini # COL: Orthoptera > Acrididae
+Gergisini # COL: Orthoptera > Acrididae
+Gesonulini # COL: synonym of Oxyini (Orthoptera)
+Gigagryllae # COL: Orthoptera > Gryllidae
+Gigatitanidae # COL: synonym of Mesotitanini (Orthoptera)
+Glaphyraspidini # COL: synonym of Homalaspidiini (Orthoptera)
+Glaphyrosomatinae # COL: synonym of Glaphyrosomatini (Orthoptera)
+Glaphyrosomatini # COL: Orthoptera > Anostostomatidae
+Glaphyrosomini # COL: synonym of Glaphyrosomatini (Orthoptera)
+Glyphonotinae # COL: synonym of Glyphonotini (Orthoptera)
+Glyphonotini # COL: Orthoptera > Tettigoniidae
+Glyphontini # COL: synonym of Glyphonotini (Orthoptera)
+Gomphoceri # COL: synonym of Gomphocerinae (Orthoptera)
+Gomphoceridae # COL: synonym of Gomphocerinae (Orthoptera)
+Gomphocerinae # COL: Orthoptera > Acrididae
+Gomphocerini # COL: Orthoptera > Acrididae
+Gomphomastaces # COL: synonym of Gomphomastacinae (Orthoptera)
+Gomphomastacidae # COL: synonym of Gomphomastacinae (Orthoptera)
+Gomphomastacinae # COL: Orthoptera > Eumastacidae
+Gomphomastacini # COL: synonym of Gomphomastacinae (Orthoptera)
+Goniaeina # COL: Orthoptera > Acrididae
+Gryllacrae # COL: Orthoptera > Gryllacrididae
+Gryllacridae # COL: synonym of Gryllacrididae (Orthoptera)
+Gryllacrididae # COL: Insecta > Orthoptera
+Gryllacridinae # COL: Orthoptera > Gryllacrididae
+Gryllacridini # COL: Orthoptera > Gryllacrididae
+Gryllacridoidea # COL: synonym of Gryllacrididae (Orthoptera)
+Gryllacrinae # COL: synonym of Gryllacridinae (Orthoptera)
+Gryllacrites # COL: synonym of Gryllacrididae (Orthoptera)
+Gryllarcidinae # COL: synonym of Gryllacridinae (Orthoptera)
+Gryllavidae # COL: Insecta > Orthoptera
+Gryllavinae # COL: Orthoptera > Gryllavidae
+Gryllavoidea # COL: Insecta > Orthoptera
+Gryllidae # COL: Insecta > Orthoptera
+Gryllidea # COL: Insecta > Orthoptera
+Gryllides # COL: synonym of Gryllidae (Orthoptera)
+Grylliens # COL: synonym of Gryllinae (Orthoptera)
+Gryllina # COL: Orthoptera > Gryllidae
+Gryllinae # COL: Orthoptera > Gryllidae
+Gryllini # COL: Orthoptera > Gryllidae
+Grylliscini # COL: Orthoptera > Trigonidiidae
+Gryllodea # COL: synonym of Grylloidea (Insecta)
+Grylloidea # COL: Insecta > Orthoptera
+Grylloides # COL: synonym of Grylloidea (Insecta)
+Gryllomiminae # COL: Orthoptera > Gryllidae
+Gryllomorphinae # COL: Orthoptera > Gryllidae
+Gryllomorphini # COL: Orthoptera > Gryllidae
+Gryllomorphites # COL: synonym of Gryllomorphini (Orthoptera)
+Grylloptera # COL: synonym of Ensifera (Insecta)
+Gryllospeculinae # COL: Orthoptera > Gryllidae
+Gryllotalpellini # COL: Orthoptera > Gryllotalpidae
+Gryllotalpida # COL: synonym of Gryllotalpidae (Orthoptera)
+Gryllotalpidae # COL: Insecta > Orthoptera
+Gryllotalpides # COL: synonym of Gryllotalpidae (Orthoptera)
+Gryllotalpiens # COL: synonym of Gryllotalpinae (Orthoptera)
+Gryllotalpina # COL: synonym of Gryllotalpidae (Orthoptera)
+Gryllotalpinae # COL: Orthoptera > Gryllotalpidae
+Gryllotalpini # COL: Orthoptera > Gryllotalpidae
+Gryllotalpites # COL: synonym of Gryllotalpinae (Orthoptera)
+Gryllotalpoidea # COL: Insecta > Orthoptera
+Gryllulidae # COL: synonym of Gryllinae (Orthoptera)
+Gryllulinae # COL: synonym of Gryllinae (Orthoptera)
+Guntheritettiginae # COL: Orthoptera > Tetrigidae
+Guntheritettigini # COL: Orthoptera > Tetrigidae
+Gymnobothri # COL: synonym of Gymnobothrini (Orthoptera)
+Gymnobothrinae # COL: synonym of Gymnobothrini (Orthoptera)
+Gymnobothrini # COL: Orthoptera > Acrididae
+Gymnogryllina # COL: synonym of Gryllini (Orthoptera)
+Gymnogryllini # COL: synonym of Gryllini (Orthoptera)
+Gymnohippini # COL: Orthoptera > Pyrgomorphidae
+Habrocneminae # COL: Orthoptera > Acrididae
+Hadenoecinae # COL: synonym of Ceuthophilinae (Orthoptera)
+Hadenoecini # COL: Orthoptera > Rhaphidophoridae
+Haglidae # COL: Insecta > Orthoptera
+Haglinae # COL: Orthoptera > Haglidae
+Hagloedischiidae # COL: Insecta > Orthoptera
+Hagloedischiinae # COL: synonym of Hagloedischiidae (Orthoptera)
+Hagloidea # COL: Insecta > Orthoptera
+Haglopterinae # COL: Orthoptera > Haglidae
+Haglotettigoniidae # COL: Insecta > Orthoptera
+Hamayulini # COL: Orthoptera > Tettigoniidae
+Hammatoferina # COL: Orthoptera > Tettigoniidae
+Hapithidi # COL: Orthoptera > Oecanthidae
+Hapithina # COL: Orthoptera > Oecanthidae
+Hapithinae # COL: synonym of Hapithidi (Orthoptera)
+Hapithini # COL: Orthoptera > Oecanthidae
+Haplotropidini # COL: Orthoptera > Pamphagidae
+Haplotropiidini # COL: synonym of Haplotropidini (Orthoptera)
+Haplotropini # COL: synonym of Haplotropidini (Orthoptera)
+Helicopacrae # COL: synonym of Helicopacrina (Orthoptera)
+Helicopacrina # COL: Orthoptera > Romaleidae
+Hemiacridinae # COL: Orthoptera > Acrididae
+Hemiacridini # COL: Orthoptera > Acrididae
+Hemigryllinae # COL: Orthoptera > Gryllidae
+Hemigryllini # COL: synonym of Hemigryllinae (Orthoptera)
+Hemiphonus # COL: Orthoptera > Oecanthidae
+Henicidae # COL: synonym of Anostostomatidae (Orthoptera)
+Henicinae # COL: synonym of Anostostomatinae (Orthoptera)
+Henicini # COL: synonym of Anostostomatinae (Orthoptera)
+Hepalicina # COL: Orthoptera > Acrididae
+Heterapterninae # COL: synonym of Oedipodinae (Orthoptera)
+Heterodidae # COL: synonym of Hetrodinae (Orthoptera)
+Heterogrylli # COL: synonym of Heterogryllina (Orthoptera)
+Heterogryllina # COL: Orthoptera > Phalangopsidae
+Heterogryllinae # COL: synonym of Heterogryllina (Orthoptera)
+Heterogryllini # COL: synonym of Heterogryllina (Orthoptera)
+Heteromastacini # COL: Orthoptera > Episactidae
+Hetrodidae # COL: synonym of Hetrodinae (Orthoptera)
+Hetrodidi # COL: synonym of Hetrodinae (Orthoptera)
+Hetrodina # COL: synonym of Hetrodini (Orthoptera)
+Hetrodinae # COL: Orthoptera > Tettigoniidae
+Hetrodini # COL: Orthoptera > Tettigoniidae
+Hexacentrinae # COL: Orthoptera > Tettigoniidae
+Hexacentrini # COL: synonym of Hexacentrinae (Orthoptera)
+Hieroglyphi # COL: synonym of Hieroglyphini (Orthoptera)
+Hieroglyphinae # COL: synonym of Hieroglyphini (Orthoptera)
+Hieroglyphini # COL: Orthoptera > Acrididae
+Hildegardiinae # COL: Orthoptera > Tetrigidae
+Hildegardiini # COL: Orthoptera > Tetrigidae
+Himertulini # not found in ChecklistBank
+Hippacrae # COL: Orthoptera > Acrididae
+Hippacres # COL: synonym of Hippacrae (Orthoptera)
+Hippisci # COL: synonym of Hippiscini (Orthoptera)
+Hippiscini # COL: Orthoptera > Acrididae
+Histrioacridina # COL: Orthoptera > Acrididae
+Histrioacridini # COL: Orthoptera > Acrididae
+Hisychiini # COL: Orthoptera > Romaleidae
+Holochlorae # COL: synonym of Holochlorini (Orthoptera)
+Holochlorini # COL: Orthoptera > Tettigoniidae
+Homalaspidiini # COL: Orthoptera > Tettigoniidae
+Homalogrylli # COL: synonym of Homalogryllini (Orthoptera)
+Homalogryllini # COL: Orthoptera > Gryllidae
+Homeogryllinae # ITIS: Orthoptera > Phalangopsidae
+Homoeogryllinae # COL: synonym of Cacoplistinae (Orthoptera)
+Homoeogryllini # COL: Orthoptera > Phalangopsidae
+Hormiliae # COL: synonym of Insarini (Orthoptera)
+Humpatellina # COL: Orthoptera > Pyrgomorphidae
+Hyalopteriges # COL: synonym of Hyalopterygini (Orthoptera)
+Hyalopterygini # COL: Orthoptera > Acrididae
+Hybusinae # COL: Orthoptera > Proscopiidae
+Hyperbaeninae # COL: Orthoptera > Gryllacrididae
+Hyperbaenini # COL: Orthoptera > Gryllacrididae
+Hypernephiini # COL: Orthoptera > Acrididae
+Hyperophorina # COL: Orthoptera > Tettigoniidae
+Hyperyboellini # COL: Orthoptera > Tetrigidae
+Ichthiacridini # COL: Orthoptera > Pyrgomorphidae
+Ichthyotettigini # COL: Orthoptera > Pyrgomorphidae
+Illapeliinae # COL: Orthoptera > Ommexechidae
+Illapelinae # COL: synonym of Illapeliinae (Orthoptera)
+Illapelliinae # ITIS: Orthoptera > Ommexechidae
+Incolacri # COL: synonym of Incolacridinae (Orthoptera)
+Incolacridinae # COL: Orthoptera > Acrididae
+Incolacridini # BOLDINSECT: Orthoptera > Acrididae
+Indioscaptorini # COL: Orthoptera > Gryllotalpidae
+Indozaclina # COL: Orthoptera > Phalangopsidae
+Insarae # COL: synonym of Insarini (Orthoptera)
+Insarini # COL: Orthoptera > Tettigoniidae
+Iranellinae # COL: Orthoptera > Dericorythidae
+Iranellini # COL: synonym of Iranellinae (Orthoptera)
+Ischnomelini # COL: Orthoptera > Tettigoniidae
+Isfaropteridae # COL: synonym of Isfaropterinae (Orthoptera)
+Isfaropterinae # COL: Orthoptera > Haglidae
+Isopserini # COL: Orthoptera > Tettigoniidae
+Itarinae # COL: Orthoptera > Gryllidae
+Itarini # COL: synonym of Itarinae (Orthoptera)
+Ixalidiidae # COL: Insecta > Orthoptera
+Jivari # COL: synonym of Jivarini (Orthoptera)
+Jivarini # COL: Orthoptera > Acrididae
+Jubilaeinae # COL: Orthoptera > Mesotitanidae
+Kakaduacridini # COL: Orthoptera > Acrididae
+Kamiidae # COL: synonym of Kamiinae (Orthoptera)
+Kamiinae # COL: Orthoptera > Pruvostitidae
+Kapaoria # Wikispecies: Orthoptera > Pyrgomorphidae
+Karataogryllinae # COL: Orthoptera > Protogryllidae
+Kargalariinae # COL: Orthoptera > Pruvostitidae
+Karniellina # COL: Orthoptera > Tettigoniidae
+Karschiae # COL: synonym of Otiaphysini (Orthoptera)
+Kashgarlimahmutiinae # COL: synonym of Ademirsoyinae (Orthoptera)
+Kevaniellini # COL: Orthoptera > Tettigoniidae
+Keyacridini # COL: Orthoptera > Morabidae
+Kolymopterinae # COL: Orthoptera > Phasmomimidae
+Lagarolampae # COL: synonym of Lagarolampina (Orthoptera)
+Lagarolampina # COL: Orthoptera > Romaleidae
+Landrevinae # COL: Orthoptera > Gryllidae
+Landrevini # COL: Orthoptera > Gryllidae
+Landrevites # COL: synonym of Landrevinae (Orthoptera)
+Lathiceridae # COL: Insecta > Orthoptera
+Lathicerinae # COL: synonym of Lathiceridae (Orthoptera)
+Lavanonini # COL: Orthoptera > Euschmidtiidae
+Lebinthina # COL: Orthoptera > Gryllidae
+Lebinthini # COL: Orthoptera > Gryllidae
+Legendreiidae # COL: Insecta > Orthoptera
+Leguini # COL: Orthoptera > Romaleidae
+Leiomelinae # COL: synonym of Leiomelini (Orthoptera)
+Leiomelini # COL: Orthoptera > Anostostomatidae
+Lentulidae # COL: Insecta > Orthoptera
+Lentulinae # COL: Orthoptera > Lentulidae
+Leproscirtini # COL: Orthoptera > Tettigoniidae
+Leptacres # COL: synonym of Leptacrini (Orthoptera)
+Leptacrini # COL: Orthoptera > Acrididae
+Leptoderini # COL: Orthoptera > Tettigoniidae
+Leptotettigini # COL: Orthoptera > Tettigoniidae
+Leptysmae # COL: synonym of Leptysmini (Orthoptera)
+Leptysmi # COL: synonym of Leptysmini (Orthoptera)
+Leptysminae # COL: Orthoptera > Acrididae
+Leptysmini # COL: Orthoptera > Acrididae
+Lernecae # COL: synonym of Lernecina (Orthoptera)
+Lernecina # COL: Orthoptera > Phalangopsidae
+Lesinina # COL: Orthoptera > Tettigoniidae
+Letanini # COL: Orthoptera > Tettigoniidae
+Lezinidae # COL: synonym of Lezininae (Orthoptera)
+Lezininae # COL: Orthoptera > Anostostomatidae
+Liarina # COL: Orthoptera > Tettigoniidae
+Ligypterina # COL: Orthoptera > Gryllidae
+Lipotactinae # COL: Orthoptera > Tettigoniidae
+Lipotactini # COL: synonym of Lipotactinae (Orthoptera)
+Lissotracheli # COL: synonym of Lissotrachelini (Orthoptera)
+Lissotrachelinae # COL: synonym of Lissotrachelini (Orthoptera)
+Lissotrachelini # COL: Orthoptera > Trigonidiidae
+Listroscelidae # COL: synonym of Listroscelidinae (Orthoptera)
+Listroscelidinae # COL: Orthoptera > Tettigoniidae
+Listroscelidini # COL: Orthoptera > Tettigoniidae
+Listroscelinae # COL: synonym of Listroscelidinae (Orthoptera)
+Listroscelini # COL: synonym of Listroscelidinae (Orthoptera)
+Lithidiidae # COL: synonym of Lentulidae (Orthoptera)
+Lithidiinae # COL: synonym of Lentulidae (Orthoptera)
+Lithoscirtae # Wikidata: Orthoptera > Acrididae
+Lithoscirtina # COL: Orthoptera > Acrididae
+Lobomastacini # COL: Orthoptera > Euschmidtiidae
+Locustae # COL: synonym of Locustini (Orthoptera)
+Locustariae # COL: synonym of Tettigoniidae (Orthoptera)
+Locustavidae # COL: Insecta > Orthoptera
+Locustavinae # COL: Orthoptera > Locustavidae
+Locustidae # COL: synonym of Oedipodinae (Orthoptera)
+Locustina # COL: Orthoptera > Acrididae
+Locustinae # COL: synonym of Oedipodinae (Orthoptera)
+Locustini # COL: Orthoptera > Acrididae
+Locustodea # COL: synonym of Tettigoniidae (Orthoptera)
+Locustoidea # COL: synonym of Ensifera (Insecta)
+Locustopseidae # COL: synonym of Locustopsidae (Orthoptera)
+Locustopsidae # COL: Insecta > Orthoptera
+Locustopsinae # COL: Orthoptera > Locustopsidae
+Locustopsoidea # COL: Insecta > Orthoptera
+Loiteriina # COL: Orthoptera > Acrididae
+Lophotettigiae # COL: synonym of Lophotettiginae (Orthoptera)
+Lophotettiginae # COL: Orthoptera > Tetrigidae
+Lophothericleini # COL: Orthoptera > Thericleidae
+Lorymaini # COL: synonym of Dirshacrini (Orthoptera)
+Loxicephalinae # COL: Orthoptera > Thericleidae
+Loxicephalini # COL: synonym of Loxicephalinae (Orthoptera)
+Lutosinae # COL: synonym of Lutosini (Orthoptera)
+Lutosini # COL: Orthoptera > Anostostomatidae
+Luzarae # COL: synonym of Luzarina (Orthoptera)
+Luzarina # COL: Orthoptera > Phalangopsidae
+Luzarinae # COL: synonym of Luzarina (Orthoptera)
+Luzarini # COL: synonym of Luzarina (Orthoptera)
+Luzaropsini # COL: Orthoptera > Phalangopsidae
+Lygothericleini # COL: Orthoptera > Thericleidae
+Machaerocerini # COL: Orthoptera > Acrididae
+Macherocerini # COL: synonym of Machaerocerini (Orthoptera)
+Maclystriina # COL: Orthoptera > Acrididae
+Macrazelotina # COL: Orthoptera > Acrididae
+Macropathidae # COL: synonym of Macropathinae (Orthoptera)
+Macropathinae # COL: Orthoptera > Rhaphidophoridae
+Macropathini # COL: Orthoptera > Rhaphidophoridae
+Macrotonina # COL: Orthoptera > Acrididae
+Maculoedischiinae # COL: Orthoptera > Pruvostitidae
+Madasumma # COL: Orthoptera > Oecanthidae
+Madygeniinae # COL: Orthoptera > Proparagryllacrididae
+Malagasphenini # COL: Orthoptera > Pyrgomorphidae
+Malagassinae # COL: synonym of Malagassini (Orthoptera)
+Malagassini # COL: Orthoptera > Episactidae
+Malgasiidae # COL: synonym of Mogoplistidae (Orthoptera)
+Malgasiinae # COL: Orthoptera > Mogoplistidae
+Maraginae # COL: synonym of Triassaginae (Orthoptera)
+Marchandiinae # COL: Orthoptera > Gryllotalpidae
+Marelliinae # COL: Orthoptera > Acrididae
+Marinemobiini # COL: Orthoptera > Trigonidiidae
+Markiina # COL: Orthoptera > Tettigoniidae
+Marsabitacridina # COL: Orthoptera > Pyrgomorphidae
+Mastaces # COL: synonym of Eumastacidae (Orthoptera)
+Mastacidae # COL: synonym of Eumastacidae (Orthoptera)
+Mastacideidae # COL: Insecta > Orthoptera
+Mastacideinae # COL: Orthoptera > Mastacideidae
+Mastacideini # COL: synonym of Mastacideinae (Orthoptera)
+Mastacinae # COL: synonym of Eumastacidae (Orthoptera)
+Masynteinae # COL: Orthoptera > Eumastacidae
+Masynteini # COL: synonym of Masynteinae (Orthoptera)
+Maxentiini # COL: Orthoptera > Stenopelmatidae
+Mazaeae # COL: synonym of Ixalidiidae (Orthoptera)
+Meconematidae # COL: synonym of Meconematina (Orthoptera)
+Meconematina # COL: Orthoptera > Tettigoniidae
+Meconematinae # COL: Orthoptera > Tettigoniidae
+Meconematini # COL: Orthoptera > Tettigoniidae
+Meconemidae # COL: synonym of Meconematina (Orthoptera)
+Meconeminae # COL: synonym of Meconematina (Orthoptera)
+Mecopodae # COL: synonym of Mecopodini (Orthoptera)
+Mecopodi # COL: synonym of Mecopodini (Orthoptera)
+Mecopodidae # COL: synonym of Mecopodinae (Orthoptera)
+Mecopodidi # COL: synonym of Mecopodinae (Orthoptera)
+Mecopodinae # COL: Orthoptera > Tettigoniidae
+Mecopodini # COL: Orthoptera > Tettigoniidae
+Mecostethi # COL: synonym of Parapleurini (Orthoptera)
+Mecostethini # COL: synonym of Parapleurini (Orthoptera)
+Megalogryllae # COL: Orthoptera > Gryllidae
+Mekongianina # COL: Orthoptera > Pyrgomorphidae
+Mekongiellinae # COL: synonym of Mekongianina (Orthoptera)
+Melanopli # COL: synonym of Melanoplinae (Orthoptera)
+Melanoplinae # COL: Orthoptera > Acrididae
+Melanoplini # COL: Orthoptera > Acrididae
+Melanotettigini # COL: Orthoptera > Acrididae
+Merehanini # COL: Orthoptera > Acrididae
+Mermiriae # COL: synonym of Mermiriini (Orthoptera)
+Mermiriini # COL: Orthoptera > Acrididae
+Meroncidii # COL: synonym of Cocconotini (Orthoptera)
+Mesambriae # COL: synonym of Mesambriini (Orthoptera)
+Mesambriinae # COL: synonym of Mesambriini (Orthoptera)
+Mesambriini # COL: Orthoptera > Acrididae
+Meselcaninae # COL: Orthoptera > Permelcanidae
+Mesoedischiidae # COL: Insecta > Orthoptera
+Mesopes # COL: synonym of Gomphocerinae (Orthoptera)
+Mesopserini # COL: Orthoptera > Acrididae
+Mesotettiginae # COL: synonym of Tetriginae (Orthoptera)
+Mesotitanida # COL: synonym of Titanoptera (Insecta)
+Mesotitanidae # COL: Insecta > Orthoptera
+Mesotitaninae # COL: Orthoptera > Mesotitanidae
+Mesotitanini # COL: Orthoptera > Mesotitanidae
+Metopomystrini # COL: Orthoptera > Tetrigidae
+Metriogryllacrae # COL: Orthoptera > Gryllacrididae
+Metrioptera # COL: Orthoptera > Tettigoniidae
+Metrodorae # COL: synonym of Metrodorinae (Orthoptera)
+Metrodoridae # COL: synonym of Metrodorinae (Orthoptera)
+Metrodorina # COL: Orthoptera > Tetrigidae
+Metrodorinae # COL: Orthoptera > Tetrigidae
+Metrodorini # COL: Orthoptera > Tetrigidae
+Meubeliina # COL: Orthoptera > Pyrgomorphidae
+Mexiaclina # COL: Orthoptera > Phalangopsidae
+Mezenoedischiinae # COL: Orthoptera > Oedischiidae
+Mezentiae # COL: Orthoptera > Romaleidae
+Micreolina # COL: Orthoptera > Acrididae
+Microbothriophylacini # COL: Orthoptera > Myrmecophilidae
+Microcentra # COL: synonym of Microcentrina (Orthoptera)
+Microcentrina # COL: Orthoptera > Tettigoniidae
+Micromastacini # COL: Orthoptera > Euschmidtiidae
+Microtettigoniinae # COL: Orthoptera > Tettigoniidae
+Microtettigoniini # COL: synonym of Microtettigoniinae (Orthoptera)
+Microthericleini # COL: Orthoptera > Thericleidae
+Mimnermi # COL: synonym of Anostostomatinae (Orthoptera)
+Mimnermidae # COL: synonym of Anostostomatidae (Orthoptera)
+Mimnerminae # COL: synonym of Anostostomatinae (Orthoptera)
+Miogryllae # COL: Orthoptera > Gryllidae
+Miraculidae # COL: synonym of Miraculinae (Orthoptera)
+Miraculinae # COL: Orthoptera > Episactidae
+Miraculini # COL: Orthoptera > Episactidae
+Miramellae # PBDB: synonym of Miramellina (Orthoptera)
+Miramellina # COL: Orthoptera > Acrididae
+Miriatrina # COL: Orthoptera > Tetrigidae
+Miriatrini # COL: synonym of Miriatrina (Orthoptera)
+Mirolliae # COL: synonym of Mirolliini (Orthoptera)
+Mirolliini # COL: Orthoptera > Tettigoniidae
+Mistshenkoana # COL: Orthoptera > Oecanthidae
+Mitricephalini # COL: Orthoptera > Pyrgomorphidae
+Mnesicleinae # COL: Orthoptera > Chorotypidae
+Mnesicleini # COL: Orthoptera > Chorotypidae
+Modestozarina # COL: Orthoptera > Phalangopsidae
+Modicogryllini # COL: Orthoptera > Gryllidae
+Mogisoplistidae # COL: synonym of Mogoplistidae (Orthoptera)
+Mogisoplistinae # COL: synonym of Mogoplistidae (Orthoptera)
+Mogisoplistini # COL: synonym of Mogoplistidae (Orthoptera)
+Mogisoplistites # COL: synonym of Mogoplistidae (Orthoptera)
+Mogoplistidae # COL: Insecta > Orthoptera
+Mogoplistii # COL: synonym of Mogoplistidae (Orthoptera)
+Mogoplistinae # COL: Orthoptera > Mogoplistidae
+Mogoplistini # COL: Orthoptera > Mogoplistidae
+Mogoplistoidea # COL: synonym of Mogoplistidae (Orthoptera)
+Mohavacrinae # COL: synonym of Tanaocerinae (Orthoptera)
+Monachidia # COL: synonym of Copiocerini (Orthoptera)
+Mongoloxyinae # COL: Orthoptera > Tridactylidae
+Monistriini # COL: Orthoptera > Pyrgomorphidae
+Monticolariini # COL: Orthoptera > Tettigoniidae
+Morabidae # COL: Insecta > Orthoptera
+Morabinae # COL: Orthoptera > Morabidae
+Morabini # COL: Orthoptera > Morabidae
+Morgeniini # COL: Orthoptera > Tettigoniidae
+Moristini # COL: synonym of Sexavina (Orthoptera)
+Morseinae # COL: Orthoptera > Eumastacidae
+Morseini # COL: Orthoptera > Eumastacidae
+Mossulina # COL: Orthoptera > Tettigoniidae
+Mucrotettigina # COL: Orthoptera > Tetrigidae
+Mucrotettigini # COL: synonym of Mucrotettigina (Orthoptera)
+Myllocentrini # COL: Orthoptera > Tettigoniidae
+Myrmecophilidae # COL: Insecta > Orthoptera
+Myrmecophiliens # COL: synonym of Myrmecophilidae (Orthoptera)
+Myrmecophilinae # COL: Orthoptera > Myrmecophilidae
+Myrmecophilini # COL: Orthoptera > Myrmecophilidae
+Myrmecophiloidea # COL: synonym of Myrmecophilidae (Orthoptera)
+Nautiae # COL: synonym of Nautiina (Orthoptera)
+Nautiina # COL: Orthoptera > Romaleidae
+Nedubinae # COL: Orthoptera > Tettigoniidae
+Nedubini # COL: synonym of Nedubinae (Orthoptera)
+Nemobiidae # COL: synonym of Nemobiinae (Orthoptera)
+Nemobiinae # COL: Orthoptera > Trigonidiidae
+Nemobiini # COL: Orthoptera > Trigonidiidae
+Nemobiites # COL: synonym of Nemobiinae (Orthoptera)
+Nemobiopses # COL: synonym of Nemobiopsini (Orthoptera)
+Nemobiopsini # COL: Orthoptera > Gryllidae
+Nemozarina # COL: Orthoptera > Phalangopsidae
+Neoaclidae # COL: synonym of Neoaclina (Orthoptera)
+Neoaclina # COL: Orthoptera > Phalangopsidae
+Neoaclini # COL: synonym of Neoaclina (Orthoptera)
+Neocurtillini # COL: Orthoptera > Gryllotalpidae
+Neometrypina # COL: synonym of Neometrypini (Orthoptera)
+Neometrypini # COL: Orthoptera > Oecanthidae
+Nereniini # COL: Orthoptera > Pyrgomorphidae
+Nicarchae # COL: Orthoptera > Acrididae
+Nicarchi # COL: synonym of Nicarchae (Orthoptera)
+Nisitrini # COL: Orthoptera > Gryllidae
+Nocarodeini # COL: Orthoptera > Pamphagidae
+Nocarodes # COL: synonym of Nocarodeini (Orthoptera)
+Nocarodesinae # COL: synonym of Nocarodeini (Orthoptera)
+Nophthini # COL: Orthoptera > Tetrigidae
+Nubimystrigini # COL: Orthoptera > Tettigoniidae
+Occidentosphenina # COL: Orthoptera > Pyrgomorphidae
+Occidentosphenini # COL: synonym of Atractomorphini (Orthoptera)
+Ochrilidiae # COL: synonym of Ochrilidiini (Orthoptera)
+Ochrilidiini # COL: Orthoptera > Acrididae
+Ochrilidini # COL: synonym of Ochrilidiini (Orthoptera)
+Ocicatini # COL: synonym of Mossulina (Orthoptera)
+Ocneridiini # COL: Orthoptera > Pamphagidae
+Ocnocerus # COL: Orthoptera > Acrididae
+Odontogryllini # COL: Orthoptera > Gryllidae
+Odonturae # COL: synonym of Odonturini (Orthoptera)
+Odonturinae # COL: synonym of Odonturini (Orthoptera)
+Odonturini # COL: Orthoptera > Tettigoniidae
+Oecanthidae # COL: Insecta > Orthoptera
+Oecanthidi # COL: Orthoptera > Oecanthidae
+Oecanthiens # COL: synonym of Oecanthinae (Orthoptera)
+Oecanthinae # COL: Orthoptera > Oecanthidae
+Oecanthini # COL: Orthoptera > Oecanthidae
+Oecanthites # COL: synonym of Oecanthinae (Orthoptera)
+Oedipodacrinae # COL: synonym of Oedipodinae (Orthoptera)
+Oedipodae # COL: synonym of Oedipodini (Orthoptera)
+Oedipodidae # COL: synonym of Oedipodinae (Orthoptera)
+Oedipodinae # COL: Orthoptera > Acrididae
+Oedipodini # COL: Orthoptera > Acrididae
+Oedischiidae # COL: Insecta > Orthoptera
+Oedischiidea # COL: Insecta > Orthoptera
+Oedischiinae # COL: Orthoptera > Oedischiidae
+Oedischimiminae # COL: Orthoptera > Proparagryllacrididae
+Oedischioidea # COL: Insecta > Orthoptera
+Olindagryllinae # COL: Orthoptera > Baissogryllidae
+Ommatolampae # COL: synonym of Ommatolampidina (Orthoptera)
+Ommatolampides # COL: synonym of Ommatolampidina (Orthoptera)
+Ommatolampidina # COL: Orthoptera > Acrididae
+Ommatolampidinae # COL: Orthoptera > Acrididae
+Ommatolampidini # COL: Orthoptera > Acrididae
+Ommatolampinae # COL: synonym of Ommatolampidinae (Orthoptera)
+Ommexechae # COL: synonym of Ommexechidae (Orthoptera)
+Ommexechidae # COL: Insecta > Orthoptera
+Ommexechinae # COL: Orthoptera > Ommexechidae
+Ommexechini # COL: Orthoptera > Ommexechidae
+Omocestina # COL: synonym of Gomphocerini (Orthoptera)
+Omurini # COL: Orthoptera > Pyrgomorphidae
+Onconotinae # COL: synonym of Onconotini (Orthoptera)
+Onconotini # COL: Orthoptera > Tettigoniidae
+Ophiotettigini # COL: Orthoptera > Tetrigidae
+Ophthalmolampae # COL: synonym of Ophthalmolampina (Orthoptera)
+Ophthalmolampina # COL: Orthoptera > Romaleidae
+Ophthalmolampinae # COL: synonym of Ophthalmolampini (Orthoptera)
+Ophthalmolampini # COL: Orthoptera > Romaleidae
+Opomalae # COL: synonym of Copiocerini (Orthoptera)
+Orchaminae # COL: synonym of Pamphagini (Orthoptera)
+Orinhippinae # COL: synonym of Orinhippini (Orthoptera)
+Orinhippini # COL: Orthoptera > Acrididae
+Orphulellini # COL: Orthoptera > Acrididae
+Ortacrinae # COL: synonym of Orthacridinae (Orthoptera)
+Orthacres # COL: synonym of Orthacridini (Orthoptera)
+Orthacridinae # COL: Orthoptera > Pyrgomorphidae
+Orthacridini # COL: Orthoptera > Pyrgomorphidae
+Orthacris # Wikispecies: Orthoptera
+Orthoptera # COL: Arthropoda > Insecta
+Orthoxiphae # COL: synonym of Tettigoniidae (Orthoptera)
+Oryctopinae # COL: synonym of Oryctopini (Orthoptera)
+Oryctopini # COL: Orthoptera > Stenopelmatidae
+Oryctopterini # COL: Orthoptera > Stenopelmatidae
+Oshiellinae # COL: Orthoptera > Bintoniellidae
+Otiaphysae # COL: synonym of Otiaphysini (Orthoptera)
+Otiaphysini # COL: Orthoptera > Tettigoniidae
+Otteiini # COL: Orthoptera > Phalangopsidae
+Otteini # COL: synonym of Otteiini (Orthoptera)
+Otumbini # COL: Orthoptera > Tetrigidae
+Oulenotacrae # COL: synonym of Oulenotacrina (Orthoptera)
+Oulenotacrina # COL: Orthoptera > Acrididae
+Oxyae # COL: synonym of Oxyinae (Orthoptera)
+Oxybleptae # COL: Orthoptera > Acrididae
+Oxyecoini # COL: Orthoptera > Tettigoniidae
+Oxyinae # COL: Orthoptera > Acrididae
+Oxyini # COL: Orthoptera > Acrididae
+Oxylakina # COL: Orthoptera > Tettigoniidae
+Oxyrrhepes # COL: synonym of Oxyrrhepini (Orthoptera)
+Oxyrrhepini # COL: Orthoptera > Acrididae
+Pacrinae # NCBI: Orthoptera > Acrididae
+Pacrini # not found in ChecklistBank
+Palaeorehniidae # COL: Insecta > Orthoptera
+Palaeorehniinae # COL: synonym of Palaeorehniidae (Orthoptera)
+Pamphagi # COL: synonym of Pamphaginae (Orthoptera)
+Pamphagidae # COL: Insecta > Orthoptera
+Pamphaginae # COL: Orthoptera > Pamphagidae
+Pamphagini # COL: Orthoptera > Pamphagidae
+Pamphagodae # COL: synonym of Pamphagodidae (Orthoptera)
+Pamphagodes # COL: synonym of Pamphagodidae (Orthoptera)
+Pamphagodidae # COL: Insecta > Orthoptera
+Pamphagodinae # COL: synonym of Pamphagodidae (Orthoptera)
+Pamphagoidea # COL: synonym of Pamphagidae (Orthoptera)
+Pamphagopsidae # COL: synonym of Aboilinae (Orthoptera)
+Pantecphyli # COL: synonym of Pantecphylini (Orthoptera)
+Pantecphylini # COL: Orthoptera > Tettigoniidae
+Paraconophymatini # COL: Orthoptera > Acrididae
+Paracyrtophyllitinae # COL: Orthoptera > Tuphellidae
+Paragryllacridini # COL: Orthoptera > Gryllacrididae
+Paragryllae # COL: Orthoptera > Phalangopsidae
+Paragryllidae # COL: synonym of Paragryllinae (Orthoptera)
+Paragryllina # COL: Orthoptera > Phalangopsidae
+Paragryllinae # COL: Orthoptera > Phalangopsidae
+Paragryllini # COL: Orthoptera > Phalangopsidae
+Paragryllodina # COL: Orthoptera > Phalangopsidae
+Paragryllodini # COL: synonym of Paragryllodina (Orthoptera)
+Paramastacinae # COL: Orthoptera > Eumastacidae
+Paramastacini # COL: synonym of Paramastacinae (Orthoptera)
+Paraphidniae # COL: synonym of Paraphidniita (Orthoptera)
+Paraphidniita # COL: Orthoptera > Tettigoniidae
+Parapleuri # COL: synonym of Parapleurini (Orthoptera)
+Parapleurini # COL: Orthoptera > Acrididae
+Parapodisminae # COL: synonym of Podismini (Orthoptera)
+Parapterochrozae # COL: synonym of Pterochrozinae (Orthoptera)
+Parasphenina # COL: Orthoptera > Pyrgomorphidae
+Parasymbellini # COL: Orthoptera > Euschmidtiidae
+Paratarbaleus # Wikispecies: Orthoptera > Pyrgomorphidae
+Parathericleini # COL: Orthoptera > Thericleidae
+Paratitanidae # COL: Insecta > Orthoptera
+Pardalotae # COL: synonym of Pardalotini (Orthoptera)
+Pardalotini # COL: Orthoptera > Tettigoniidae
+Parelcanidae # COL: synonym of Anelcanidae (Orthoptera)
+Parendacustina # COL: Orthoptera > Phalangopsidae
+Parepisactinae # COL: Orthoptera > Eumastacidae
+Parepisactini # COL: synonym of Parepisactinae (Orthoptera)
+Pargae # COL: synonym of Pargaini (Orthoptera)
+Pargainae # COL: synonym of Pargaini (Orthoptera)
+Pargaini # COL: Orthoptera > Acrididae
+Paroecanthidi # COL: Orthoptera > Oecanthidae
+Paroecanthina # COL: synonym of Paroecanthini (Orthoptera)
+Paroecanthini # COL: Orthoptera > Oecanthidae
+Paropomala # COL: Orthoptera > Acrididae
+Pauliniae # COL: synonym of Pauliniinae (Orthoptera)
+Pauliniidae # COL: synonym of Pauliniinae (Orthoptera)
+Pauliniinae # COL: Orthoptera > Acrididae
+Paulininae # COL: synonym of Pauliniinae (Orthoptera)
+Pauracrini # COL: Orthoptera > Acrididae
+Paurae # COL: synonym of Ducetiini (Orthoptera)
+Peakesiina # COL: Orthoptera > Acrididae
+Pelecynotina # COL: synonym of Anaulacomerini (Orthoptera)
+Penichroti # COL: synonym of Penichrotini (Orthoptera)
+Penichrotini # COL: Orthoptera > Euschmidtiidae
+Pentacentri # COL: synonym of Pentacentrini (Orthoptera)
+Pentacentridae # COL: synonym of Pentacentrinae (Orthoptera)
+Pentacentrinae # COL: Orthoptera > Gryllidae
+Pentacentrini # COL: Orthoptera > Gryllidae
+Pentacentrites # COL: synonym of Pentacentrinae (Orthoptera)
+Perbelliina # COL: Orthoptera > Acrididae
+Percynini # COL: Orthoptera > Tettigoniidae
+Permelcanidae # COL: Insecta > Orthoptera
+Permelcaninae # COL: Orthoptera > Permelcanidae
+Permoraphidiidae # COL: Insecta > Orthoptera
+Permoraphidioidea # COL: Insecta > Orthoptera
+Permorhaphidioidea # COL: synonym of Permoraphidioidea (Insecta)
+Permotettigoniidae # COL: Insecta > Orthoptera
+Peruviae # COL: Orthoptera > Acrididae
+Petaloptilae # COL: synonym of Petaloptilini (Orthoptera)
+Petaloptilini # COL: Orthoptera > Gryllidae
+Petasidini # COL: Orthoptera > Pyrgomorphidae
+Pezotettiges # COL: synonym of Pezotettiginae (Orthoptera)
+Pezotettiginae # COL: Orthoptera > Acrididae
+Pezotettigini # COL: synonym of Pezotettiginae (Orthoptera)
+Phaeopariae # COL: synonym of Phaeopariini (Orthoptera)
+Phaeopariini # COL: Orthoptera > Romaleidae
+Phaeoparini # COL: synonym of Phaeopariini (Orthoptera)
+Phaeophilacridina # COL: Orthoptera > Phalangopsidae
+Phalangopsidae # COL: Insecta > Orthoptera
+Phalangopsina # COL: Orthoptera > Phalangopsidae
+Phalangopsinae # COL: Orthoptera > Phalangopsidae
+Phalangopsini # COL: Orthoptera > Phalangopsidae
+Phalangopsites # COL: synonym of Phalangopsidae (Orthoptera)
+Phalangopsitidae # COL: synonym of Phalangopsidae (Orthoptera)
+Phaloriinae # COL: Orthoptera > Phalangopsidae
+Phaloriini # COL: Orthoptera > Phalangopsidae
+Phaneropterae # COL: synonym of Phaneropterini (Orthoptera)
+Phaneropterinae # COL: Orthoptera > Tettigoniidae
+Phaneropterini # COL: Orthoptera > Tettigoniidae
+Phasgonuridae # COL: synonym of Tettigoniidae (Orthoptera)
+Phasgonurinae # PBDB: Orthoptera > Phasgonuridae
+Phasmodidae # IRMNG: Insecta > Orthoptera
+Phasmodinae # COL: Orthoptera > Tettigoniidae
+Phasmomimidae # COL: Insecta > Orthoptera
+Phasmomiminae # COL: Orthoptera > Phasmomimidae
+Phasmomimoidea # COL: Insecta > Orthoptera
+Phasmomimoidinae # COL: Orthoptera > Phasmomimidae
+Phaulotypini # COL: Orthoptera > Thericleidae
+Pherodactylina # COL: Orthoptera > Gryllidae
+Philobothriinae # COL: synonym of Bothriophylacinae (Orthoptera)
+Phisidina # COL: Orthoptera > Tettigoniidae
+Phisidini # COL: Orthoptera > Tettigoniidae
+Phisiini # COL: synonym of Phisidini (Orthoptera)
+Phlaeobae # COL: synonym of Phlaeobini (Orthoptera)
+Phlaeobinae # COL: synonym of Phlaeobini (Orthoptera)
+Phlaeobini # COL: Orthoptera > Acrididae
+Phlaurocentra # COL: synonym of Phlaurocentrini (Orthoptera)
+Phlaurocentrini # COL: Orthoptera > Tettigoniidae
+Phloeonotini # COL: Orthoptera > Tetrigidae
+Phlugidini # COL: Orthoptera > Tettigoniidae
+Phlugini # COL: synonym of Phlugidini (Orthoptera)
+Phoberopodes # COL: Orthoptera > Rhaphidophoridae
+Pholidopterini # COL: Orthoptera > Tettigoniidae
+Phormincterites # COL: synonym of Itarinae (Orthoptera)
+Phrictae # COL: synonym of Phrictini (Orthoptera)
+Phrictini # COL: Orthoptera > Tettigoniidae
+Phrixita # COL: Orthoptera > Tettigoniidae
+Phryganogryllacridini # COL: Orthoptera > Gryllacrididae
+Phrynotettigini # COL: synonym of Romaleini (Orthoptera)
+Phyllogryllini # COL: Orthoptera > Oecanthidae
+Phyllomimi # COL: synonym of Phyllomimini (Orthoptera)
+Phyllomimini # COL: Orthoptera > Tettigoniidae
+Phyllophorae # not found in ChecklistBank
+Phyllophori # not found in ChecklistBank
+Phyllopterina # COL: Orthoptera > Tettigoniidae
+Phyllopterini # COL: Orthoptera > Tettigoniidae
+Phyllopterita # COL: Orthoptera > Tettigoniidae
+Phyllopterites # COL: synonym of Phyllopterita (Orthoptera)
+Phylloscirtinae # COL: synonym of Phylloscyrtini (Orthoptera)
+Phylloscyrtini # COL: Orthoptera > Trigonidiidae
+Phymatae # COL: synonym of Phymateini (Orthoptera)
+Phymatei # COL: synonym of Phymateini (Orthoptera)
+Phymateina # COL: Orthoptera > Pyrgomorphidae
+Phymateini # COL: Orthoptera > Pyrgomorphidae
+Pieltainidini # COL: Orthoptera > Thericleidae
+Plagiopleurae # not found in ChecklistBank
+Plagiopleurini # COL: Orthoptera > Tettigoniidae
+Plagiostirini # COL: Orthoptera > Tettigoniidae
+Plagiotripti # COL: synonym of Plagiotriptinae (Orthoptera)
+Plagiotriptinae # COL: Orthoptera > Thericleidae
+Plagiotriptini # COL: Orthoptera > Thericleidae
+Plangiae # COL: synonym of Plangiini (Orthoptera)
+Plangiina # COL: synonym of Plangiini (Orthoptera)
+Plangiini # COL: Orthoptera > Tettigoniidae
+Plangiopsidini # COL: Orthoptera > Tettigoniidae
+Plangiopsiini # COL: synonym of Plangiopsidini (Orthoptera)
+Plangiopsini # COL: synonym of Plangiopsidini (Orthoptera)
+Platyblemmites # COL: synonym of Brachytrupina (Orthoptera)
+Platyclees # COL: synonym of Platycleidini (Orthoptera)
+Platycleidini # COL: Orthoptera > Tettigoniidae
+Platycleis # COL: Orthoptera > Tettigoniidae
+Platydactylidae # COL: synonym of Eneopterinae (Orthoptera)
+Platyphylla # COL: synonym of Platyphyllini (Orthoptera)
+Platyphyllini # COL: Orthoptera > Tettigoniidae
+Platyphymata # COL: synonym of Pezotettiginae (Orthoptera)
+Pleminiae # COL: synonym of Pleminiini (Orthoptera)
+Pleminiinae # COL: synonym of Pleminiiti (Orthoptera)
+Pleminiini # COL: Orthoptera > Tettigoniidae
+Pleminiiti # COL: Orthoptera > Tettigoniidae
+Plotnikovini # COL: synonym of Conophyminae (Orthoptera)
+Pneumorae # COL: synonym of Pneumoridae (Orthoptera)
+Pneumoridae # COL: Insecta > Orthoptera
+Pneumoridea # COL: synonym of Pneumoroidea (Insecta)
+Pneumorinae # COL: synonym of Pneumoridae (Orthoptera)
+Pneumorites # COL: synonym of Pneumoridae (Orthoptera)
+Pneumoroidea # COL: Insecta > Orthoptera
+Podismae # COL: synonym of Podismina (Orthoptera)
+Podismina # COL: Orthoptera > Acrididae
+Podisminae # COL: synonym of Podismini (Orthoptera)
+Podismini # COL: Orthoptera > Acrididae
+Podoscirtidae # COL: synonym of Podoscirtinae (Orthoptera)
+Podoscirtidi # COL: Orthoptera > Oecanthidae
+Podoscirtina # COL: Orthoptera > Oecanthidae
+Podoscirtinae # COL: Orthoptera > Oecanthidae
+Podoscirtini # COL: Orthoptera > Oecanthidae
+Podoscirtites # COL: synonym of Podoscirtinae (Orthoptera)
+Poecilocerae # COL: synonym of Poekilocerini (Orthoptera)
+Poeciloceridae # COL: synonym of Poekilocerini (Orthoptera)
+Poecilocerinae # COL: synonym of Poekilocerini (Orthoptera)
+Poekiloceri # COL: synonym of Poekilocerini (Orthoptera)
+Poekilocerini # COL: Orthoptera > Pyrgomorphidae
+Polyancistri # COL: synonym of Polyancistrini (Orthoptera)
+Polyancistrinae # COL: synonym of Polyancistrini (Orthoptera)
+Polyancistrini # COL: Orthoptera > Tettigoniidae
+Pomatonotae # COL: synonym of Pomatonotini (Orthoptera)
+Pomatonotini # COL: Orthoptera > Tettigoniidae
+Popoviina # COL: synonym of Popoviini (Orthoptera)
+Popoviini # COL: Orthoptera > Pyrgomorphidae
+Porenomenae # COL: synonym of Poreuomenini (Orthoptera)
+Poreuomenae # COL: synonym of Poreuomenini (Orthoptera)
+Poreuomenini # COL: Orthoptera > Tettigoniidae
+Portheti # COL: synonym of Porthetinae (Orthoptera)
+Porthetinae # COL: Orthoptera > Pamphagidae
+Porthetini # COL: synonym of Porthetinae (Orthoptera)
+Porthetis # COL: synonym of Porthetinae (Orthoptera)
+Potua # COL: Orthoptera > Tetrigidae
+Praelocustopsinae # COL: Orthoptera > Locustavidae
+Praxibulini # COL: Orthoptera > Acrididae
+Preussiae # COL: synonym of Preussiini (Orthoptera)
+Preussiini # COL: Orthoptera > Tettigoniidae
+Prezottophlebiidae # COL: Insecta > Orthoptera
+Primnoae # COL: synonym of Podismini (Orthoptera)
+Prionacanthinae # COL: Orthoptera > Chorotypidae
+Prionacanthini # COL: Orthoptera > Chorotypidae
+Prionolophina # COL: Orthoptera > Romaleidae
+Prionolophini # COL: synonym of Prionolophina (Orthoptera)
+Prionotropisinae # COL: synonym of Thrinchinae (Orthoptera)
+Pristoceuthophilini # COL: Orthoptera > Rhaphidophoridae
+Prochilidae # COL: synonym of Zaprochilinae (Orthoptera)
+Prochilites # COL: synonym of Zaprochilinae (Orthoptera)
+Procolpiae # COL: synonym of Procolpini (Orthoptera)
+Procolpina # COL: Orthoptera > Romaleidae
+Procolpini # COL: Orthoptera > Romaleidae
+Proctolabae # Wikidata: Orthoptera > Acrididae
+Proctolabina # COL: Orthoptera > Acrididae
+Proctolabinae # COL: Orthoptera > Acrididae
+Proctolabini # COL: Orthoptera > Acrididae
+Prognathogryllides # COL: synonym of Prognathogryllus (Orthoptera)
+Prognathogryllinae # COL: synonym of Prognathogryllus (Orthoptera)
+Prognathogryllini # COL: synonym of Prognathogryllus (Orthoptera)
+Prognathogryllus # COL: Orthoptera > Oecanthidae
+Progryllacridini # COL: Orthoptera > Gryllacrididae
+Prohaglinae # COL: synonym of Haglinae (Orthoptera)
+Prolandrevini # COL: Orthoptera > Gryllidae
+Promastacidae # COL: Insecta > Orthoptera
+Proparagryllacrididae # COL: Insecta > Orthoptera
+Proparagryllacridinae # COL: Orthoptera > Proparagryllacrididae
+Prophalangopseinae # COL: synonym of Prophalangopsinae (Orthoptera)
+Prophalangopsidae # COL: Insecta > Orthoptera
+Prophalangopsiidae # COL: synonym of Prophalangopsinae (Orthoptera)
+Prophalangopsinae # COL: Orthoptera > Prophalangopsidae
+Prosarthriina # COL: Orthoptera > Proscopiidae
+Prosarthrina # COL: synonym of Prosarthriina (Orthoptera)
+Proscopidae # COL: synonym of Proscopiina (Orthoptera)
+Proscopides # COL: synonym of Proscopiina (Orthoptera)
+Proscopiidae # COL: Insecta > Orthoptera
+Proscopiina # COL: Orthoptera > Proscopiidae
+Proscopiinae # COL: Orthoptera > Proscopiidae
+Proscopiini # COL: Orthoptera > Proscopiidae
+Proscopioidea # COL: Insecta > Orthoptera
+Proscopoidea # COL: synonym of Proscopioidea (Insecta)
+Proshiellinae # COL: Orthoptera > Bintoniellidae
+Protaboilinae # COL: Orthoptera > Prophalangopsidae
+Protogryllidae # COL: Insecta > Orthoptera
+Protogryllinae # COL: Orthoptera > Protogryllidae
+Protomogoplistinae # COL: Orthoptera > Mogoplistidae
+Protomunda # COL: Orthoptera > Oecanthidae
+Prototitaninae # COL: Orthoptera > Mesotitanidae
+Protroglophilinae # COL: Orthoptera > Rhaphidophoridae
+Prumnini # COL: synonym of Podismini (Orthoptera)
+Pruvostitidae # COL: Insecta > Orthoptera
+Pruvostitinae # COL: Orthoptera > Pruvostitidae
+Psednurinae # COL: synonym of Psednurini (Orthoptera)
+Psednurini # COL: Orthoptera > Pyrgomorphidae
+Pseudelcanidae # COL: Insecta > Orthoptera
+Pseudoacridinae # COL: Orthoptera > Locustopsidae
+Pseudogeloiini # COL: synonym of Geloiini (Orthoptera)
+Pseudogryllotalpidae # COL: synonym of Pherodactylina (Orthoptera)
+Pseudomastacinae # COL: Orthoptera > Eumastacidae
+Pseudomastacini # COL: synonym of Pseudomastacinae (Orthoptera)
+Pseudomogoplistina # COL: Orthoptera > Mogoplistidae
+Pseudomorphacridini # COL: Orthoptera > Pyrgomorphidae
+Pseudophaneropterae # COL: synonym of Pseudophaneropterini (Orthoptera)
+Pseudophaneropterini # COL: Orthoptera > Tettigoniidae
+Pseudophylli # COL: synonym of Pseudophyllini (Orthoptera)
+Pseudophyllidae # IRMNG: Insecta > Orthoptera
+Pseudophyllidi # COL: synonym of Pseudophyllini (Orthoptera)
+Pseudophyllinae # COL: Orthoptera > Tettigoniidae
+Pseudophyllini # COL: Orthoptera > Tettigoniidae
+Pseudophylliti # COL: Orthoptera > Tettigoniidae
+Pseudoschmidtiae # COL: synonym of Pseudoschmidtiini (Orthoptera)
+Pseudoschmidtiinae # COL: Orthoptera > Euschmidtiidae
+Pseudoschmidtiini # COL: Orthoptera > Euschmidtiidae
+Pseudotettigoniinae # COL: Orthoptera > Tettigoniidae
+Pseudothericleini # COL: Orthoptera > Thericleidae
+Psinidiae # COL: synonym of Psinidiini (Orthoptera)
+Psinidiini # COL: Orthoptera > Acrididae
+Psychomastacini # COL: Orthoptera > Eumastacidae
+Psyrae # COL: synonym of Holochlorini (Orthoptera)
+Pterochrozae # COL: synonym of Pterochrozinae (Orthoptera)
+Pterochrozidae # COL: synonym of Pterochrozinae (Orthoptera)
+Pterochrozinae # COL: Orthoptera > Tettigoniidae
+Pterochrozini # COL: synonym of Pterochrozinae (Orthoptera)
+Pterochrozites # COL: synonym of Pterochrozinae (Orthoptera)
+Pteronemobiini # COL: Orthoptera > Trigonidiidae
+Pterophyllae # COL: synonym of Pterophyllini (Orthoptera)
+Pterophyllinae # COL: synonym of Pterophyllini (Orthoptera)
+Pterophyllini # COL: Orthoptera > Tettigoniidae
+Pteroplistidae # COL: Insecta > Orthoptera
+Pteroplistinae # COL: Orthoptera > Pteroplistidae
+Pteroplistini # COL: synonym of Pteroplistinae (Orthoptera)
+Pterotettigini # COL: Orthoptera > Tetrigidae
+Pycnogastrinae # COL: synonym of Bradyporini (Orthoptera)
+Pycnopalpina # COL: Orthoptera > Tettigoniidae
+Pycnopalpini # COL: Orthoptera > Tettigoniidae
+Pycnosarcini # COL: Orthoptera > Acrididae
+Pyrgacrididae # COL: Insecta > Orthoptera
+Pyrgacridinae # COL: synonym of Pyrgacrididae (Orthoptera)
+Pyrgomorphae # COL: synonym of Pyrgomorphini (Orthoptera)
+Pyrgomorphidae # COL: Insecta > Orthoptera
+Pyrgomorphiden # COL: synonym of Pyrgomorphidae (Orthoptera)
+Pyrgomorphina # COL: Orthoptera > Pyrgomorphidae
+Pyrgomorphinae # COL: Orthoptera > Pyrgomorphidae
+Pyrgomorphini # COL: Orthoptera > Pyrgomorphidae
+Pyrgomorphoidea # COL: Insecta > Orthoptera
+Pyrgophistina # COL: synonym of Mesambriini (Orthoptera)
+Pyrrhiciae # COL: synonym of Letanini (Orthoptera)
+Quasimodini # COL: Orthoptera > Tetrigidae
+Ramburiellini # COL: Orthoptera > Acrididae
+Rammeinae # COL: Orthoptera > Tettigoniidae
+Ranacridinae # COL: synonym of Mesambriini (Orthoptera)
+Raphidophorae # COL: synonym of Rhaphidophoridae (Orthoptera)
+Raphidophoridae # COL: synonym of Rhaphidophoridae (Orthoptera)
+Raphidophorinae # COL: synonym of Rhaphidophorinae (Orthoptera)
+Raphithericleini # COL: Orthoptera > Thericleidae
+Raphoglidae # COL: synonym of Kamiinae (Orthoptera)
+Rashidinae # COL: synonym of Oedipodinae (Orthoptera)
+Regiatidae # COL: Insecta > Orthoptera
+Requenini # COL: Orthoptera > Tettigoniidae
+Rhacoclees # COL: synonym of Platycleidini (Orthoptera)
+Rhacocleidini # COL: synonym of Platycleidini (Orthoptera)
+Rhaphidophorae # COL: synonym of Rhaphidophoridae (Orthoptera)
+Rhaphidophoridae # COL: Insecta > Orthoptera
+Rhaphidophorinae # COL: Orthoptera > Rhaphidophoridae
+Rhaphidophorini # COL: Orthoptera > Rhaphidophoridae
+Rhaphidophoroidea # COL: Insecta > Orthoptera
+Rhicnoderma # COL: Orthoptera > Romaleidae
+Rhipipterigidae # COL: synonym of Ripipterygidae (Orthoptera)
+Rhipipterygidae # COL: synonym of Ripipterygidae (Orthoptera)
+Rhipipteryginae # COL: synonym of Ripipteryginae (Orthoptera)
+Rhomaleae # COL: synonym of Romaleini (Orthoptera)
+Rhomalii # COL: synonym of Romaleini (Orthoptera)
+Rhomaliini # COL: synonym of Romaleini (Orthoptera)
+Rhytidochrotae # COL: synonym of Rhytidochrotinae (Orthoptera)
+Rhytidochrotinae # COL: Orthoptera > Acrididae
+Ripipterygidae # COL: Insecta > Orthoptera
+Ripipteryginae # COL: Orthoptera > Ripipterygidae
+Romaleidae # COL: Insecta > Orthoptera
+Romaleinae # COL: Orthoptera > Romaleidae
+Romaleini # COL: Orthoptera > Romaleidae
+Romali # COL: synonym of Romaleini (Orthoptera)
+Rubelliina # COL: Orthoptera > Pyrgomorphidae
+Rubelliini # COL: synonym of Rubelliina (Orthoptera)
+Rumeae # COL: Orthoptera > Phalangopsidae
+Rumeinae # ITIS: Orthoptera > Paragryllidae
+Rumeini # COL: synonym of Rumeae (Orthoptera)
+Rusmithini # COL: Orthoptera > Tetrigidae
+Russalpiina # COL: Orthoptera > Acrididae
+Sagidae # not found in ChecklistBank
+Sagini # TAXREF: Orthoptera > Tettigoniidae
+Sagittacridini # COL: Orthoptera > Pyrgomorphidae
+Sagittacrini # COL: synonym of Sagittacridini (Orthoptera)
+Salomonina # COL: Orthoptera > Tettigoniidae
+Salomoninae # COL: synonym of Salomonina (Orthoptera)
+Salomonini # COL: synonym of Salomonina (Orthoptera)
+Salomonitae # COL: synonym of Salomonina (Orthoptera)
+Saltatoria # GBIF: synonym of Orthoptera (Insecta)
+Saltonacrae # Wikidata: Orthoptera > Acrididae
+Saltonacrina # COL: Orthoptera > Acrididae
+Scambophyllinae # COL: synonym of Scambophyllini (Orthoptera)
+Scambophyllini # COL: Orthoptera > Tettigoniidae
+Scaphurae # COL: synonym of Scaphurini (Orthoptera)
+Scaphuridae # COL: synonym of Scaphurini (Orthoptera)
+Scaphurini # COL: Orthoptera > Tettigoniidae
+Scaphurites # COL: synonym of Scaphurini (Orthoptera)
+Scapteriscinae # COL: Orthoptera > Gryllotalpidae
+Scapteriscini # COL: Orthoptera > Gryllotalpidae
+Scelimenae # COL: synonym of Scelimeninae (Orthoptera)
+Scelimenidae # COL: synonym of Scelimeninae (Orthoptera)
+Scelimeninae # COL: Orthoptera > Tetrigidae
+Scelimenini # COL: Orthoptera > Tetrigidae
+Schinziae # COL: synonym of Echinotropinae (Orthoptera)
+Schinziini # COL: synonym of Echinotropinae (Orthoptera)
+Schizodactylidae # COL: Insecta > Orthoptera
+Schizodactylidea # COL: synonym of Schizodactyloidea (Insecta)
+Schizodactylinae # COL: Orthoptera > Schizodactylidae
+Schizodactylini # COL: synonym of Schizodactylinae (Orthoptera)
+Schizodactylites # COL: synonym of Schizodactyloidea (Insecta)
+Schizodactyloidea # COL: Insecta > Orthoptera
+Schulthessiellini # COL: Orthoptera > Thericleidae
+Schulthessiina # COL: synonym of Schulthessiini (Orthoptera)
+Schulthessiini # COL: Orthoptera > Pyrgomorphidae
+Sciobiina # COL: synonym of Brachytrupina (Orthoptera)
+Sciobiini # COL: synonym of Brachytrupina (Orthoptera)
+Sclerogryllina # COL: Orthoptera > Gryllidae
+Sclerogryllinae # COL: synonym of Sclerogryllini (Orthoptera)
+Sclerogryllini # COL: Orthoptera > Gryllidae
+Scleropteridae # COL: synonym of Sclerogryllini (Orthoptera)
+Scleropterinae # COL: synonym of Sclerogryllini (Orthoptera)
+Scleropterites # COL: synonym of Sclerogryllini (Orthoptera)
+Scotussae # COL: Orthoptera > Acrididae
+Scudderiini # COL: Orthoptera > Tettigoniidae
+Scurrina # COL: Orthoptera > Acrididae
+Scyllinae # COL: synonym of Scyllinini (Orthoptera)
+Scyllini # COL: synonym of Scyllinini (Orthoptera)
+Scyllinini # COL: Orthoptera > Acrididae
+Segestini # COL: synonym of Sexavina (Orthoptera)
+Serpusiae # COL: Orthoptera > Acrididae
+Seselini # COL: Orthoptera > Phalangopsidae
+Sexavaini # COL: synonym of Sexavina (Orthoptera)
+Sexavina # COL: Orthoptera > Tettigoniidae
+Sexavinae # COL: synonym of Sexavina (Orthoptera)
+Sexavini # COL: Orthoptera > Tettigoniidae
+Sharategiinae # COL: Orthoptera > Baissogryllidae
+Shelforditinae # COL: Orthoptera > Lentulidae
+Siini # COL: Orthoptera > Stenopelmatidae
+Simoderae # COL: synonym of Simoderini (Orthoptera)
+Simoderinae # COL: synonym of Simoderini (Orthoptera)
+Simoderini # COL: Orthoptera > Tettigoniidae
+Socotrellinae # COL: synonym of Socotrellini (Orthoptera)
+Socotrellini # COL: Orthoptera > Thericleidae
+Spaniacrini # COL: synonym of Romaleini (Orthoptera)
+Spathosterninae # COL: Orthoptera > Acrididae
+Spathosternini # COL: Orthoptera > Acrididae
+Sphaerophallini # COL: Orthoptera > Euschmidtiidae
+Sphenariae # COL: synonym of Sphenariina (Orthoptera)
+Sphenarii # COL: synonym of Sphenariina (Orthoptera)
+Sphenariina # COL: Orthoptera > Pyrgomorphidae
+Sphenariini # COL: Orthoptera > Pyrgomorphidae
+Sphenexiina # COL: Orthoptera > Pyrgomorphidae
+Sphingonoti # COL: synonym of Sphingonotini (Orthoptera)
+Sphingonotina # COL: synonym of Sphingonotini (Orthoptera)
+Sphingonotini # COL: Orthoptera > Acrididae
+Steirodontia # COL: synonym of Steirodontini (Orthoptera)
+Steirodontiites # COL: synonym of Steirodontini (Orthoptera)
+Steirodontina # COL: Orthoptera > Tettigoniidae
+Steirodontini # COL: Orthoptera > Tettigoniidae
+Stenobothrina # COL: synonym of Stenobothrini (Orthoptera)
+Stenobothrini # COL: Orthoptera > Acrididae
+Stenogryllinae # COL: synonym of Hapithini (Orthoptera)
+Stenopelmatidae # COL: Insecta > Orthoptera
+Stenopelmatidea # COL: synonym of Stenopelmatoidea (Insecta)
+Stenopelmatinae # COL: Orthoptera > Stenopelmatidae
+Stenopelmatini # COL: Orthoptera > Stenopelmatidae
+Stenopelmatoidea # COL: Insecta > Orthoptera
+Stenoschmidtiinae # COL: Orthoptera > Euschmidtiidae
+Stenoschmidtiini # COL: synonym of Stenoschmidtiinae (Orthoptera)
+Stilpnochlorina # COL: Orthoptera > Tettigoniidae
+Strogulomorphina # COL: Orthoptera > Phalangopsidae
+Strogulomorphini # COL: synonym of Strogulomorphina (Orthoptera)
+Stropes # COL: synonym of Stropina (Orthoptera)
+Stropina # COL: Orthoptera > Acrididae
+Stropini # COL: synonym of Stropina (Orthoptera)
+Subtiloriini # COL: Orthoptera > Phalangopsidae
+Sulcatini # COL: synonym of Nocarodeini (Orthoptera)
+Susumaniinae # COL: Orthoptera > Phasmomimidae
+Sygri # COL: synonym of Lentulinae (Orthoptera)
+Sylvoedischiinae # COL: Orthoptera > Pruvostitidae
+Symbellini # COL: Orthoptera > Euschmidtiidae
+Syntomacrae # Wikidata: Orthoptera > Acrididae
+Syntomacrina # COL: Orthoptera > Acrididae
+Syntomacrini # COL: Orthoptera > Acrididae
+Tabariini # COL: Orthoptera > Tettigoniidae
+Taeniomenini # COL: Orthoptera > Tettigoniidae
+Taeniophorae # COL: synonym of Taeniophorini (Orthoptera)
+Taeniophorini # COL: Orthoptera > Romaleidae
+Taeniopodae # COL: synonym of Romaleini (Orthoptera)
+Tafaliscidi # COL: Orthoptera > Oecanthidae
+Tafaliscina # COL: synonym of Tafaliscini (Orthoptera)
+Tafaliscinae # COL: Orthoptera > Oecanthidae
+Tafaliscini # COL: Orthoptera > Oecanthidae
+Tagastae # COL: synonym of Tagastini (Orthoptera)
+Tagastinae # COL: synonym of Tagastini (Orthoptera)
+Tagastini # COL: Orthoptera > Pyrgomorphidae
+Talitropsidae # COL: synonym of Macropathinae (Orthoptera)
+Talitropsinae # COL: synonym of Macropathinae (Orthoptera)
+Talitropsini # COL: Orthoptera > Rhaphidophoridae
+Tanaoceridae # COL: Insecta > Orthoptera
+Tanaocerinae # COL: Orthoptera > Tanaoceridae
+Tanaoceroidea # COL: Insecta > Orthoptera
+Tanaocerotinae # COL: synonym of Tanaocerinae (Orthoptera)
+Taphronotae # COL: synonym of Taphronotini (Orthoptera)
+Taphronotina # COL: Orthoptera > Pyrgomorphidae
+Taphronotinae # COL: synonym of Taphronotini (Orthoptera)
+Taphronotini # COL: Orthoptera > Pyrgomorphidae
+Tauchirae # COL: synonym of Tauchirini (Orthoptera)
+Tauchirini # COL: Orthoptera > Acrididae
+Tcholmanvissiellini # COL: Orthoptera > Mesotitanidae
+Tcholmanvissiidae # COL: Insecta > Orthoptera
+Tcholmanvissiinae # COL: Orthoptera > Tcholmanvissiidae
+Tcholmanvissioidea # COL: Insecta > Orthoptera
+Teicophryes # COL: synonym of Teicophryinae (Orthoptera)
+Teicophryinae # COL: Orthoptera > Episactidae
+Teicophryini # COL: synonym of Teicophryinae (Orthoptera)
+Teleutiini # COL: Orthoptera > Tettigoniidae
+Temnomastacinae # COL: Orthoptera > Eumastacidae
+Temnomastacini # COL: Orthoptera > Eumastacidae
+Teratodes # COL: synonym of Teratodinae (Orthoptera)
+Teratodinae # COL: Orthoptera > Acrididae
+Teratodini # COL: synonym of Teratodinae (Orthoptera)
+Termitidiinae # COL: Orthoptera > Prophalangopsidae
+Terpandrini # COL: Orthoptera > Tettigoniidae
+Terpnistrini # COL: Orthoptera > Tettigoniidae
+Tetanina # COL: Orthoptera > Tettigoniidae
+Tetanorhynchini # COL: Orthoptera > Proscopiidae
+Tetiginos # COL: synonym of Tetrigini (Orthoptera)
+Tetrataeniae # COL: Orthoptera > Acrididae
+Tetrataeniini # COL: Orthoptera > Acrididae
+Tetricidae # COL: synonym of Tetrigini (Orthoptera)
+Tetricidites # COL: synonym of Tetrigini (Orthoptera)
+Tetricinae # COL: synonym of Tetriginae (Orthoptera)
+Tetridides # COL: synonym of Tetrigini (Orthoptera)
+Tetrigiae # COL: synonym of Tetriginae (Orthoptera)
+Tetrigidae # COL: Insecta > Orthoptera
+Tetrigidea # COL: synonym of Tetrigini (Orthoptera)
+Tetriginae # COL: Orthoptera > Tetrigidae
+Tetrigini # COL: Orthoptera > Tetrigidae
+Tetrigoidea # COL: Insecta > Orthoptera
+Tettavidae # COL: synonym of Tettavinae (Orthoptera)
+Tettavinae # COL: Orthoptera > Pruvostitidae
+Tettigiae # COL: synonym of Tetrigini (Orthoptera)
+Tettigidae # COL: synonym of Tetrigini (Orthoptera)
+Tettiginae # COL: synonym of Tetrigini (Orthoptera)
+Tettigini # COL: synonym of Tetriginae (Orthoptera)
+Tettigoidinae # COL: Orthoptera > Tettigoniidae
+Tettigoniidea # COL: Insecta > Orthoptera
+Tettigoniinae # COL: Orthoptera > Tettigoniidae
+Tettigoniini # COL: Orthoptera > Tettigoniidae
+Tettigoniodea # COL: synonym of Tettigoniidea (Insecta)
+Tettigonioidea # COL: Insecta > Orthoptera
+Tettigonoidea # COL: synonym of Tettigonioidea (Insecta)
+Tettoedischiidae # COL: Insecta > Orthoptera
+Tettoedischiinae # COL: Orthoptera > Tettoedischiidae
+Tettoedischioidea # COL: Insecta > Orthoptera
+Tettohaglinae # COL: Orthoptera > Prophalangopsidae
+Thaumastaces # COL: synonym of Taeniophorini (Orthoptera)
+Thaumastacinae # COL: synonym of Taeniophorini (Orthoptera)
+Theiatitanidae # COL: Insecta > Orthoptera
+Theiina # COL: Orthoptera > Tettigoniidae
+Thericleidae # COL: Insecta > Orthoptera
+Thericleinae # COL: Orthoptera > Thericleidae
+Thericleini # COL: Orthoptera > Thericleidae
+Thericleis # COL: synonym of Thericleinae (Orthoptera)
+Thericlesiellini # COL: Orthoptera > Thericleidae
+Thetellini # COL: synonym of Nemobiini (Orthoptera)
+Thoradonotini # COL: synonym of Thoradontini (Orthoptera)
+Thoradontini # COL: Orthoptera > Tetrigidae
+Thorandotini # COL: synonym of Thoradontini (Orthoptera)
+Thrasyderini # COL: synonym of Romaleini (Orthoptera)
+Thrinchinae # COL: Orthoptera > Pamphagidae
+Thrinchini # COL: Orthoptera > Pamphagidae
+Thrincotropini # COL: synonym of Echinotropinae (Orthoptera)
+Thueringoedischiidae # COL: Insecta > Orthoptera
+Titanoptera # COL: Insecta > Orthoptera
+Tonkinacridina # COL: Orthoptera > Acrididae
+Trachypetrellini # COL: Orthoptera > Pamphagidae
+Trachyzulphini # COL: Orthoptera > Tettigoniidae
+Trauliae # COL: synonym of Mesambriini (Orthoptera)
+Trauliini # COL: synonym of Mesambriini (Orthoptera)
+Triaenogryllacrae # COL: Orthoptera > Gryllacrididae
+Triamescaptorini # COL: Orthoptera > Gryllotalpidae
+Triassaginae # COL: Orthoptera > Haglidae
+Triassomanteidae # COL: synonym of Triassomantidae (Orthoptera)
+Triassomantidae # COL: Insecta > Orthoptera
+Triassomantoidea # COL: Insecta > Orthoptera
+Tridactyinae # COL: synonym of Tridactylinae (Orthoptera)
+Tridactyles # COL: synonym of Tridactylidae (Orthoptera)
+Tridactylidae # COL: Insecta > Orthoptera
+Tridactylidea # COL: Insecta > Orthoptera
+Tridactyliens # COL: synonym of Tridactyloidea (Insecta)
+Tridactylinae # COL: Orthoptera > Tridactylidae
+Tridactylini # COL: synonym of Tridactylinae (Orthoptera)
+Tridactylites # COL: synonym of Tridactylidae (Orthoptera)
+Tridactylodea # COL: synonym of Tridactylidea (Insecta)
+Tridactyloidea # COL: Insecta > Orthoptera
+Tridactyloides # COL: synonym of Tridactyloidea (Insecta)
+Trigonidia # COL: synonym of Trigonidiini (Orthoptera)
+Trigonididae # COL: synonym of Trigonidiinae (Orthoptera)
+Trigonidiens # COL: synonym of Trigonidiinae (Orthoptera)
+Trigonidiidae # COL: Insecta > Orthoptera
+Trigonidiinae # COL: Orthoptera > Trigonidiidae
+Trigonidiini # COL: Orthoptera > Trigonidiidae
+Trigonidini # COL: synonym of Trigonidiinae (Orthoptera)
+Trigonocoryphini # COL: Orthoptera > Tettigoniidae
+Trigonopteriginos # COL: synonym of Trigonopteryginae (Orthoptera)
+Trigonopterygidae # COL: Insecta > Orthoptera
+Trigonopterygidea # COL: synonym of Trigonopterygidae (Orthoptera)
+Trigonopteryginae # COL: Orthoptera > Trigonopterygidae
+Trigonopterygoidea # COL: Insecta > Orthoptera
+Trilophidiae # COL: synonym of Trilophidiini (Orthoptera)
+Trilophidiini # COL: Orthoptera > Acrididae
+Trimerotropi # COL: synonym of Trimerotropini (Orthoptera)
+Trimerotropini # COL: Orthoptera > Acrididae
+Trinchidae # COL: synonym of Thrinchinae (Orthoptera)
+Trinchinae # COL: synonym of Thrinchinae (Orthoptera)
+Trinchini # COL: synonym of Thrinchini (Orthoptera)
+Trincidae # COL: synonym of Thrinchinae (Orthoptera)
+Tripetalocerae # COL: synonym of Tripetalocerinae (Orthoptera)
+Tripetaloceridae # COL: synonym of Tripetalocerinae (Orthoptera)
+Tripetalocerinae # COL: Orthoptera > Tetrigidae
+Tripetalocerini # COL: Orthoptera > Tetrigidae
+Tristiri # COL: synonym of Tristiridae (Orthoptera)
+Tristiridae # COL: Insecta > Orthoptera
+Tristirinae # COL: Orthoptera > Tristiridae
+Tristirini # COL: Orthoptera > Tristiridae
+Tristriini # COL: Orthoptera > Acrididae
+Tristrini # COL: synonym of Tristriini (Orthoptera)
+Troglophilinae # COL: Orthoptera > Rhaphidophoridae
+Troglophilini # COL: synonym of Troglophilinae (Orthoptera)
+Tropidacres # COL: synonym of Tropidacrini (Orthoptera)
+Tropidacrini # COL: Orthoptera > Romaleidae
+Tropidaucheninae # COL: synonym of Tropidauchenini (Orthoptera)
+Tropidauchenini # COL: Orthoptera > Pamphagidae
+Tropidischiae # COL: synonym of Tropidischiinae (Orthoptera)
+Tropidischiinae # COL: Orthoptera > Rhaphidophoridae
+Tropidischiini # COL: synonym of Tropidischiinae (Orthoptera)
+Tropidischini # COL: synonym of Tropidischiinae (Orthoptera)
+Tropidolophini # COL: Orthoptera > Acrididae
+Tropidonoti # COL: synonym of Procolpini (Orthoptera)
+Tropidonotii # COL: synonym of Procolpini (Orthoptera)
+Tropidopolinae # COL: Orthoptera > Acrididae
+Tropidopolini # COL: Orthoptera > Acrididae
+Tropidostethi # COL: synonym of Tropidostethini (Orthoptera)
+Tropidostethini # COL: Orthoptera > Tristiridae
+Truljaliina # COL: synonym of Truljaliini (Orthoptera)
+Truljaliini # COL: Orthoptera > Oecanthidae
+Trusmaditetrigini # COL: Orthoptera > Tetrigidae
+Truxales # COL: synonym of Truxalini (Orthoptera)
+Truxalidae # COL: synonym of Acridinae (Orthoptera)
+Truxalides # COL: synonym of Acridinae (Orthoptera)
+Truxalinae # COL: synonym of Acridinae (Orthoptera)
+Truxalini # COL: Orthoptera > Acrididae
+Trybliophori # COL: synonym of Trybliophorini (Orthoptera)
+Trybliophorinae # COL: synonym of Trybliophorini (Orthoptera)
+Trybliophorini # COL: Orthoptera > Romaleidae
+Tryxalidae # COL: synonym of Acridinae (Orthoptera)
+Tryxalinae # COL: synonym of Acridinae (Orthoptera)
+Tryxalini # COL: synonym of Acridinae (Orthoptera)
+Tshorkuphlebiidae # COL: synonym of Tshorkuphlebiinae (Orthoptera)
+Tshorkuphlebiinae # COL: Orthoptera > Haglidae
+Tumbrinckitettigini # COL: Orthoptera > Tetrigidae
+Tuphellidae # COL: Insecta > Orthoptera
+Tuphellinae # COL: Orthoptera > Tuphellidae
+Turanogryllini # COL: Orthoptera > Gryllidae
+Turpiliini # COL: Orthoptera > Tettigoniidae
+Turpiliites # COL: synonym of Turpiliini (Orthoptera)
+Tylopsiae # COL: synonym of Tylopsidini (Orthoptera)
+Tylopsidae # COL: synonym of Tylopsidini (Orthoptera)
+Tylopsidini # COL: Orthoptera > Tettigoniidae
+Tylopsini # COL: synonym of Tylopsidini (Orthoptera)
+Tympanophoridae # COL: synonym of Tympanophorinae (Orthoptera)
+Tympanophorinae # COL: Orthoptera > Tettigoniidae
+Uberabina # COL: synonym of Anaulacomerini (Orthoptera)
+Unka # COL: Orthoptera > Oecanthidae
+Urnisiellini # COL: Orthoptera > Acrididae
+Urnisina # COL: Orthoptera > Acrididae
+Uvaroviini # COL: Orthoptera > Acrididae
+Valalyllini # COL: Orthoptera > Tetrigidae
+Vavallini # COL: synonym of Valalyllini (Orthoptera)
+Verduliina # COL: Orthoptera > Pyrgomorphidae
+Verduliini # COL: Orthoptera > Pyrgomorphidae
+Viadanae # COL: synonym of Anaulacomerini (Orthoptera)
+Viadaniini # COL: synonym of Anaulacomerini (Orthoptera)
+Viadanina # COL: synonym of Anaulacomerini (Orthoptera)
+Viadanini # COL: synonym of Anaulacomerini (Orthoptera)
+Vichetini # COL: synonym of Epacromiini (Orthoptera)
+Vilernae # COL: synonym of Vilernina (Orthoptera)
+Vilernina # COL: Orthoptera > Acrididae
+Vingselinini # COL: Orthoptera > Tetrigidae
+Vitimidae # COL: synonym of Vitimiidae (Orthoptera)
+Vitimiidae # COL: Insecta > Orthoptera
+Voliopinae # COL: Orthoptera > Haglidae
+Vossiina # COL: Orthoptera > Tettigoniidae
+Vossiini # COL: Orthoptera > Tettigoniidae
+Warramungini # COL: Orthoptera > Morabidae
+Wiltshirellini # COL: Orthoptera > Acrididae
+Wintrebertini # COL: Orthoptera > Euschmidtiidae
+Xabea # COL: Orthoptera > Oecanthidae
+Xabeinae # COL: synonym of Xabeini (Orthoptera)
+Xabeini # COL: Orthoptera > Oecanthidae
+Xabini # COL: synonym of Xabeini (Orthoptera)
+Xantiina # COL: Orthoptera > Tettigoniidae
+Xenacanthippini # COL: Orthoptera > Acrididae
+Xeniinae # COL: Orthoptera > Proscopiidae
+Xenogryllini # COL: Orthoptera > Gryllidae
+Xenopteridae # COL: Insecta > Orthoptera
+Xenopterinae # COL: Orthoptera > Xenopteridae
+Xenopteroidea # COL: Insecta > Orthoptera
+Xerophyllini # COL: Orthoptera > Tetrigidae
+Xiphicerini # COL: synonym of Chorotypinae (Orthoptera)
+Xiphidiinae # COL: synonym of Conocephalini (Orthoptera)
+Xiphidiini # COL: synonym of Conocephalini (Orthoptera)
+Xiphidiopsini # COL: synonym of Meconematini (Orthoptera)
+Xistrellini # COL: Orthoptera > Tetrigidae
+Xyronoti # COL: synonym of Xyronotini (Orthoptera)
+Xyronotidae # COL: Insecta > Orthoptera
+Xyronotinae # COL: Orthoptera > Xyronotidae
+Xyronotini # COL: Orthoptera > Xyronotidae
+Zaprochilinae # COL: Orthoptera > Tettigoniidae
+Zeuneriini # COL: Orthoptera > Tettigoniidae
+Zeuneropterinae # COL: synonym of Palaeorehniidae (Orthoptera)
+Zichyinae # COL: synonym of Zichyini (Orthoptera)
+Zichyini # COL: Orthoptera > Tettigoniidae
+Zoniopodae # COL: synonym of Romaleini (Orthoptera)
+Zoniopodini # COL: synonym of Romaleini (Orthoptera)
+Zonipodae # COL: synonym of Romaleini (Orthoptera)
+Zonocerina # COL: Orthoptera > Pyrgomorphidae
+Zychiinae # COL: synonym of Zichyini (Orthoptera)
+Zychiini # COL: synonym of Zichyini (Orthoptera)

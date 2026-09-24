@@ -1,1591 +1,1587 @@
-Abisarina
-Abraxini
-Abrostolini
-Acanthoctesia
-Acantholipini
-Acanthopsychini
-Acanthopteroctetidae
-Acanthopteroctetoidea
-Acentropinae
-Acentropini
-Acherontiina
-Acherontiini
-Achlyodidini
-Achlyodina
-Achlyodini
-Acontiini
-Acosmerygina
-Acosmetiina
-Acraeini
-Acragini
-Acriinae
-Acrocercopinae
-Acrolepiidae
-Acrolepiinae
-Acrolophidae
-Acrolophinae
-Acronictinae
-Acronictini
-Acropentiini
-Acsalina
-Acsalini
-Actinotiini
-Adelidae
-Adelinae
-Adeloidea
-Adelomomphinae
-Adoliadini
-Aediinae
-Aegeriidae
-Aegeriinae
-Aegeriini
-Aegialini
-Aenigmatineidae
-Aeolanthinae
-Aeromachini
-Aetheinae
-Afridinae
-Afrokonini
-Agalopini
-Aganainae
-Agapetidae
-Agaristidae
-Agaristinae
-Agathiini
-Agathiphagidae
-Agathiphagoidea
-Agdistinae
-Ageroniini
-Agliinae
-Aglossata
-Agonoxenidae # moth family (Gelechioidea)
-Agonoxeninae
-Agonoxininae
-Agroterini
-Agrotina
-Agrotini
-Aididae
-Alheitini
-Almeidaiini
-Aloeidina
-Alsophilini
-Alucitidae
-Alucitoidea
-Amathusiini
-Amatidae
-Amaurina
-Ambiini
-Amblypodiini
-Ambulycini
-Amerilini
-Amphigoniiini
-Amphipyridis
-Amphipyrinae
-Amphipyrini
-Amphisbatidae
-Anacampsidae
-Anacampsinae
-Anacampsini
-Anaeini
-Anaemorphini
-Anagogini
-Anapahidae
-Anaphinae
-Anchyloperidae
-Ancylolomiini
-Andesianidae
-Andesianoidea
-Andracini
-Anerastiini
-Angeronini
-Annaphilina
-Annaphilini
-Anobinae
-Anobini
-Anomini
-Anomoeotidae
-Anomoeotinae
-Anomoeotini
-Anomologinae
-Anomologini
-Anomosetidae
-Anopinini
-Antequerinae
-Anthelidae
-Anthelinae
-Anthocharidini
-Anthocharinae
-Anthocharini
-Anthoptina
-Anthoptini
-Antirrheina
-Antitypina
-Apameina
-Apameini
-Apamidae
-Apatelodidae
-Apatelodinae
-Apatetrinae
-Apatetrini
-Apaturinae
-Apaustina
-Apheliinae
-Aphnaeina
-Aphnaeinae
-Aphnaeini
-Apoprogoninae
-Aporiina
-Appiadina
-Apteronini
-Apyrrothrixina
-Aracimini
-Araeopteronini
-Archaeolepidae
-Archiearinae
-Archipini
-Arctiidae # tiger/lichen moth family (now Erebidae)
-Arctiina
-Arctiini
-Arctornithiina
-Arctornithini
-Argynnina
-Argynnini
-Argyractini
-Argyresthiidae
-Argyresthiinae
-Argyriini
-Argyrogrammatini
-Argyrotypini
-Arhopalini
-Ariolicini
-Aristoteliinae
-Armadini
-Arrhenophaninae
-Arsenurinae
-Arsenurini
-Artonini
-Arytrurini
-Arzamini
-Asciodini
-Ashinagidae
-Asthenini
-Astictopterini
-Athetiina
-Atkinsoniinae
-Atlidina
-Attacini
-Atteriini
-Attevidae
-Attevinae
-Audeini
-Aurorianinae
-Automeriina
-Autoplusiina
-Autostichidae
-Autostichinae
-Auzeinae
-Aventiinae
-Aventiini
-Axiocersini
-Axyliina
-Azanina
-Azelinini
-Azeniina
-Bactrini
-Bagisarinae
-Balsinae
-Baorini
-Baptini
-Barcinae
-Baroniinae
-Bathyphlebiini
-Batrachedridae
-Batrachedrinae
-Battina
-Beaninae
-Bebearina
-Bedelliidae
-Bedosiini
-Befrostiini
-Bembeciini
-Biblidinae
-Biblidini
-Biretinae
-Bistonini
-Blastobasidae
-Blastobasinae
-Blastobasini
-Blastodacnidae
-Blastodacnini
-Bleninae
-Bleninina
-Boarmiini
-Boletobiinae
-Boletobiini
-Boloriina
-Bombycinae
-Bombycini
-Bombycoidea
-Brabirodini
-Brachmiinae
-Brachodidae
-Brachodinae
-Brahmaeidae
-Brassolini
-Brenthiinae
-Brephidiina
-Bryophilinae
-Bryophilini
-Bucculatricidae
-Bunaeini
-Butleriini
-Caberini
-Cabniini
-Cacochroinae
-Cacochroini
-Cacoeciinae
-Cacotherapiini
-Cacyreina
-Calamotrophini
-Calinaginae
-Callerebiina
-Callicercopini
-Callicorini
-Callidryina
-Callidulidae
-Callidulinae
-Calliduloidea
-Callimorphina
-Callimorphini
-Callizygaeninae
-Callophryidina
-Calopierini
-Caloptiliidae
-Calpinae
-Calpini
-Calpodina
-Calpodini
-Calycopidina
-Campaeini
-Camptolomini
-Candalidini
-Caradrinina
-Caradrinini
-Carcharodina
-Carcharodini
-Careini
-Carpocapsidae
-Carposinidae
-Carposinoidea
-Carthaeidae
-Carystina
-Cassymini
-Castaliina
-Castniidae
-Castniinae
-Castniini
-Cataclysmini
-Catapaecilmatini
-Catapterigidae
-Catephiini
-Catocalinae
-Catocalini
-Catochrysopsina
-Catonephelini
-Catoptinae
-Cecidosidae
-Cedestinae
-Ceirinae
-Celaenorrhinini
-Celastrinina
-Cemiostominae
-Cephisina
-Ceracini
-Ceranemotini
-Ceratocampinae
-Ceratocampini
-Ceratrichiini
-Cercophaninae
-Cercophanini
-Ceruridae
-Cerurinae
-Ceuthomadarinae
-Chadisrinae
-Chalcosiinae
-Chalcosiini
-Chamaecleini
-Chamundinae
-Charaxinae
-Charaxini
-Charideinae
-Cheimopteni
-Chelariinae
-Chelariini
-Cheritrina
-Cheritrini
-Chesiadini
-Chilecomadiinae
-Chiloini
-Chilonini
-Chimabacchinae
-Chimabachidae
-Chimabachinae
-Chimatophilidae
-Chionopsychinae
-Chlidanotinae
-Chlidanotini
-Chloephorinae
-Chloephorini
-Chlosynina
-Choerocampina
-Chondrosteginae
-Choreutidae
-Choreutinae
-Choreutoidea
-Chresmarchinae
-Chrismopterygini
-Chrysauginae
-Chrysopeleiinae
-Chrysopolominae
-Chrysopolomini
-Cicinnidae
-Cicinninae
-Cicinnini
-Cidariini
-Cigaritina
-Cigaritini
-Cimeliidae
-Cissuvorini
-Cisthenina
-Clarinina
-Cleleini
-Clemensiina
-Cnephasiini
-Cobubathinae
-Cochylina
-Cochylini
-Cocytiini
-Coeini
-Coeliadinae
-Coelopoetidae
-Coelopoetinae
-Coelopoetini
-Coenonymphina
-Coleophoridae
-Coleophorinae
-Coliadina
-Coliadinae # sulphur butterfly subfamily (Pieridae)
-Coliadini
-Collomeninae
-Collomenini
-Coloburini
-Colotoini
-Comibaenini
-Commophilidae
-Compsocteninae
-Conchylinae
-Condicinae
-Condicini
-Cooksoniina
-Cophoceratini
-Cophocerotini
-Copromorphidae
-Copromorphoidea
-Corrachiini
-Cosmiina
-Cosmopterigidae
-Cosmopteriginae
-Cosmopterygidae
-Cossidae
-Cossinae
-Cossini
-Cossoidea
-Cossulinae
-Cosymbiini
-Crambidae
-Crambini
-Crinopterygidae
-Crinopteryginae
-Crocanthinae
-Cropiinae
-Crothaeminae
-Cryptoblabini
-Cryptolechiinae
-Ctenuchidae
-Ctenuchina
-Ctenuchini
-Cuculliinae
-Cuculliini
-Cupatheclina
-Cupidopsina
-Cuprininae
-Curetinae
-Cybalomiinae
-Cybalomiini
-Cyclidiinae
-Cyclosiini
-Cyclotornidae
-Cycnodioidea
-Cydosiinae
-Cydosiini
-Cyllopodini
-Cymothoina
-Cymothoini
-Cyrestidini
-Cyrestinae
-Cyrestini
-Dacnonypha
-Dahlicini
-Dalceridae
-Dalcerinae
-Dalcerini
-Danaidae
-Danaina
-Danainae
-Danaini
-Danina
-Daplasini
-Demopsestini
-Deoclonidae
-Deocloninae
-Depressariidae
-Depressariinae
-Depressariini
-Desertobiini
-Desmobathrinae
-Desmobathrini
-Desmolomini
-Deudorigini
-Deuterocopinae
-Deuterogoniinae
-Dianeurini
-Dichogaminae
-Dichogamini
-Dichomeridae
-Dichomeridinae
-Dichordophorini
-Dicranuridae
-Dicranurinae
-Dicranurini
-Dilobinae
-Dilophonotina
-Dilophonotini
-Dioptidae
-Dioptinae
-Dioptini
-Diphtherinae
-Diptychini
-Diptychophorini
-Dircennina
-Dircennini
-Dirini
-Dismorphiinae
-Dissoctenioidini
-Dissoctenoidini
-Doidae
-Doleschalliaini
-Douglasiidae
-Douglasioidea
-Drepaninae
-Drepanini
-Drepanogynini
-Drepanoidea
-Drinini
-Druenticinae
-Druenticini
-Dryadaulidae
-Dryadaulinae
-Dryocampini
-Dudgeoneidae
-Dudusiinae
-Dudusinae
-Dudusini
-Durbaniina
-Dyopsinae
-Dyopsini
-Dypterygiini
-Dysphaniini
-Dyspteridini
-Eariadinae
-Eariadini
-Ectropini
-Elachistidae
-Elachistini
-Elaphriini
-Eligminae
-Elodinini
-Elymniina
-Elymniini
-Emesidini
-Emesiini
-Enarmoniini
-Endagriini
-Endotheniini
-Endotrichinae
-Endotrichini
-Endromidae
-Endrominae
-Ennadini
-Ennominae
-Ennomini
-Entheini
-Eotaleporiini
-Epermeniidae
-Epermeniinae
-Epermenioidea
-Ephippiphorini
-Epialidae
-Epialoidae
-Epiblemidae
-Epicaliini
-Epichnopteriginae
-Epichnopterigini
-Epicopeiidae
-Epidesmiinae
-Epiinae
-Epimarptidae
-Epionini
-Epipaschiinae
-Epiphelini
-Epiplemidae
-Epipleminae
-Epipyropidae
-Epirranthini
-Epirrhoini
-Episemini
-Epitolini
-Epitymbiini
-Erateinini
-Ercheiini
-Erebida
-Erebidae
-Erebiina
-Erebinae
-Erebini
-Erebochlorini
-Erechthiinae
-Eriocottidae
-Eriocottinae
-Eriocraniidae
-Eriocranioidea
-Erionotini
-Eriopinae
-Eriopini
-Eriopygini
-Eritina
-Erupinae
-Erynnini
-Ethmiidae # moth family (Gelechioidea)
-Ethmiinae
-Euangeronini
-Eubagini
-Eublemminae
-Eublemmini
-Eucestidae
-Euchalciina
-Euchroini
-Euchromiidae
-Euchromiina
-Euchromiusini
-Euclastini
-Eucleini
-Euclidiini
-Eucocytiinae
-Eucosmini
-Eudamina
-Eudaminae
-Eudamini
-Eudemini
-Eudesmiina
-Eudulini
-Eulepidotinae
-Eulepidotini
-Euliina
-Euliini
-Eumaeina
-Eumaeini
-Eumasiinae
-Eumeleinae
-Euphydryina
-Euphyiini
-Eupitheciini
-Euplocaminae
-Euploeina
-Euploeini
-Eupterotidae
-Eupterotinae
-Euptoietina
-Euptychiina
-Euremina
-Euremini
-Eurrhypini
-Eurybiina
-Eurybiini
-Eurytelini
-Eusalesiinae
-Eusalesiini
-Euschemoninae
-Euselasiinae
-Euselasiini
-Eustrotiinae
-Eustrotiini
-Euteliidae
-Euteliinae
-Euthrenini
-Eutoeini
-Euxanthini
-Evenaina
-Evenina
-Evergestinae
-Everina
-Exapatidae
-Exelastini
-Exoporia
-Falgina
-Fameganina
-Feraliina
-Feraliini
-Frenatae
-Galacticidae
-Galacticoidea
-Galleriinae
-Galleriini
-Gandacina
-Gastropachini
-Gatesclarkeanini
-Gazerini
-Gelastocerini
-Gelechidae
-Gelechiidae
-Gelechiinae
-Gelechiini
-Gelechioidea
-Geometridae
-Geometrinae
-Geometrini
-Geometroidea
-Glaphyriinae
-Glaphyriini
-Glossata
-Glottulinae
-Glottulini
-Gluphisiinae
-Gluphisinae
-Glyphidoceridae
-Glyphidocerinae
-Glyphipterigidae
-Glyphipteriginae
-Glyphipterygidae
-Gnophini
-Gnorimoschemini
-Godyridina
-Godyridini
-Gonepterygina
-Gonodontini
-Gonopterini
-Gracilariidae
-Gracillariidae
-Gracillariinae
-Gracillariini
-Gracillarioidea
-Graphiini
-Grapholitini
-Gretnini
-Griveaudiinae
-Groenendaelini
-Grotellina
-Grotellinae
-Grotellini
-Gyrocheilina
-Habrosynini
-Hadeninae
-Hadenini
-Haemaleini
-Haeterini
-Haimbachiini
-Hapigiinae
-Hapigiini
-Hapsiferinae
-Harmacloninae
-Heliconiidae
-Heliconiina
-Heliconiinae
-Heliconiini
-Helicopini
-Heliocosmidae
-Heliocosmoidea
-Heliodinidae
-Heliophorini
-Heliotheini
-Heliothelinae
-Heliothinae
-Heliozelidae
-Hemarina
-Hemiceratinae
-Hemiceratini
-Hemiceridae
-Hemileucina
-Hemileucinae
-Hemileucini
-Hemiolaina
-Hemitheina
-Hemitheini
-Hepialidae
-Hepialoidea
-Hepiolidae
-Heraculinae
-Herminiinae
-Herpetogrammatini
-Hesperiidae
-Hesperiina
-Hesperiinae
-Hesperiini
-Hesperioidea
-Heterobathmiidae
-Heterobathmiina
-Heterobathmioidea
-Heterocampinae
-Heterocampini
-Heteroneura
-Heteropanini
-Heterophlebini
-Heteropterinae
-Heteropterini
-Heterusiini
-Hibrildinae
-Hieroxestinae
-Hilarographini
-Himantopteridae
-Himantopterinae
-Hipparchiinae
-Hirpidinae
-Hoffmanniinae
-Holcocerinae
-Holcocerini
-Holcopogoninae
-Hoploscopinae
-Horagina
-Horagini
-Hulodini
-Hyblaeidae
-Hyblaeoidea
-Hydriomenini
-Hydririni
-Hymeniini
-Hypeninae
-Hypenodinae
-Hypenodini
-Hypercalliinae
-Hypertrophidae
-Hypertrophinae
-Hypocalinae
-Hypochrosini
-Hypochrysopini
-Hypocystina
-Hypolycaenini
-Hyponomeutinae
-Hypoptinae
-Hypopyrini
-Hypotheclina
-Hypotheclini
-Hypotiini
-Hysterosiinae
-Ichthyurinae
-Immidae
-Immoidea
-Incurvariidae
-Incurvariinae
-Incurvarioidea
-Inouelinae
-Iolaini
-Ionolycina
-Ipideclina
-Iridanina
-Ismini
-Ithomiinae
-Ithomiini
-Itunina
-Jalmenini
-Jamidina
-Janiodini
-Jantheclina
-Jerini
-Joelminetiini
-Josiidae
-Josiini
-Jugatae
-Junoniini
-Kallimini
-Kallimoidini
-Katreinae
-Kricogonina
-Kumothalina
-Lachnocnemini
-Lacosomidae
-Lacosominae
-Lacosomini
-Lacturidae
-Lampidina
-Lamproniinae
-Lampropterygini
-Langiinae
-Larentiinae
-Larentiini
-Lasiocampidae
-Lasiocampinae
-Lasiocampini
-Lasiocampoidea
-Laspeyresiini
-Lathrotelidae
-Lathrotelinae
-Lathrotelini
-Lecithoceridae
-Lecithocerinae
-Lemoniadina
-Lemoniidae # moth family (Zygaenoidea)
-Lepidoptera
-Leptocircini
-Leptosiaini
-Leptotina
-Lethina
-Leucaniini
-Leucomini
-Leuconyctini
-Leucophlebiini
-Libytheidae
-Libytheinae
-Limacodidae
-Limacodinae
-Limacodini
-Limenitidina
-Limenitidinae
-Limenitidini
-Lineodini
-Linostinae
-Liphyrinae
-Liphyrini
-Lipoptychini
-Liptenina
-Lipteninae
-Liptenini
-Lissoblemmini
-Lithocolletinae
-Lithosiina
-Lithosiinae
-Lithosiini
-Litini
-Litoprosopini
-Lobesiini
-Loboclina
-Lobophorini
-Locharnini
-Lonomiini
-Lophochoristina
-Lophochoristini
-Lophocoronidae
-Lophocoronina
-Lophocoronoidea
-Loxurina
-Loxurini
-Lozoperidae
-Luciini
-Luehdorfiini
-Luffiini
-Luramini
-Lusurinae
-Lusurini
-Lycaenesthini
-Lycaenidae
-Lycaeninae
-Lycaenini
-Lycaenopsina
-Lymantriidae # tussock moth family (now Erebidae)
-Lymantriinae
-Lymantriini
-Lyonetiidae
-Lyonetiinae
-Lypusidae
-Lypusinae
-Macariini
-Macroglossina
-Macroglossini
-Macrolepidoptera
-Macromphaliinae
-Macromphaliini
-Macropiratidae
-Macropiratinae
-Macrothyatirini
-Malacosominae
-Malazinae
-Manidiidae
-Maniolina
-Marasmarchini
-Margaroniini
-Marmarinae
-Marmarini
-Mecoceratini
-Meessiidae
-Meessiinae
-Megalopalpina
-Megalopygidae
-Megalopyginae
-Megarthridiini
-Megathymidae
-Megathyminae
-Megathymini
-Mehariinae
-Melalophidae
-Melanargiina
-Melanitini
-Melanolophiini
-Melanthiini
-Meleonomini
-Melipotini
-Melitaeina
-Melitaeini
-Melittiinae
-Melittiini
-Meneviinae
-Mesosemiina
-Mesosemiini
-Metachandini
-Metarbelidae
-Metisinae
-Metisini
-Micragoniini
-Micragonini
-Microcorsini
-Microlepidoptera
-Microniinae
-Micronoctuini
-Micropterigidae
-Micropterigoidea
-Micropterygidae
-Midilinae
-Miletina
-Miletinae
-Miletini
-Milleriidae
-Millieriidae
-Millieriinae
-Mimacraeina
-Mimallonidae
-Mimalloninae
-Mimallonoidea
-Mimatini
-Mirininae
-Mirlatiini
-Mnesarchaeidae
-Mnesarchaeoidea
-Momini
-Momphidae
-Momphinae
-Monardini
-Moncina
-Moncini
-Mondeguina
-Morphina
-Morphinae
-Morphini
-Munychryiinae
-Musotiminae
-Mustiliini
-Mycalesina
-Myrinini
-Myrmecozelinae
-Mythinmini
-Nacophorini
-Napaeina
-Naryciinae
-Naryciini
-Nathalina
-Nemapogoninae
-Nematopogoninae
-Nemeobiina
-Nemeobiinae
-Nemeobiini
-Nemoriini
-Neodrymoniaini
-Neohipparchini
-Neopotamiina
-Neopseustidae
-Neopseustina
-Neopseustoidea
-Neotheoridae
-Nepheroniini
-Nephodiini
-Nepticulidae
-Nepticulinae
-Nepticulini
-Nepticuloidea
-Neptini
-Netrocorynini
-Niasomini
-Niphandina
-Niphandini
-Niphonymphini
-Nocloina
-Nocloini
-Noctuidae
-Noctuina
-Noctuinae
-Noctuini
-Noctuoidea
-Nolidae
-Nolina
-Nolinae
-Nolini
-Nomophilini
-Noordinae
-Notodontidae
-Notodontinae
-Notodontini
-Nudariina
-Nyctemerina
-Nygmiini
-Nymphalidae
-Nymphalinae
-Nymphalini
-Nymphidiina
-Nymphidiini
-Nymphulinae
-Nymphulini
-Nystaleinae
-Nystaleini
-Obeidiini
-Oberthueriinae
-Oberthueriini
-Oboroniina
-Ochromolopinae
-Ochsenheimeriinae
-Ochyroticinae
-Oditinae
-Odonestini
-Odontiinae
-Odontiini
-Odontodini
-Odontoperini
-Oeciinae
-Oecophoridae
-Oecophorinae
-Oecophorini
-Oecophyllembiinae
-Oecophyllembiini
-Oegoconiinae
-Oenochrominae
-Oenoptilini
-Oenosandridae
-Oidaematophorini
-Oiketicinae
-Oiketicini
-Oileidina
-Oileidini
-Oinophilidae
-Olethreutidae
-Olethreutinae
-Olethreutini
-Ommatophorini
-Omopterini
-Omorphinini
-Oncocnemidinae
-Oncocnemidini
-Operophterini
-Ophiderini
-Ophiusini
-Opostegidae
-Oposteginae
-Oreopsychini
-Oretinae
-Oretini
-Orgyiini
-Ornichidae
-Ornithospilini
-Ornixolinae
-Orthosiini
-Orthostixinae
-Orthoteliinae
-Osminiini
-Ourapterygini
-Oxychirotidae
-Oxylidina
-Oxylidini
-Oxynetrina
-Oxynetrini
-Oxyptilini
-Oxyteninae
-Oxytripiina
-Pachythonina
-Paiwarriina
-Palaeosetidae
-Palaephatidae
-Palaephatoidea
-Pallini
-Palyadini
-Panacelinae
-Pandemina
-Pandesmini
-Pangraptinae
-Panopodini
-Pantheinae
-Papilionidae
-Papilioninae
-Papilionini
-Papilionoidea
-Paraglosseciini
-Parametriotinae
-Paranthreninae
-Paranthrenini
-Parargina
-Parnassiidae
-Parnassiinae
-Parnassiini
-Parornichinae
-Parornichini
-Parrhasiina
-Parthenini
-Passovini
-Pectinivalvinae
-Peleopodidae
-Peleopodinae
-Peleopodini
-Peloponnesiini
-Pelurgini
-Penestoglossini
-Pennisetiini
-Pentateuchini
-Penthininae
-Pentilina
-Pentilini
-Peoriini
-Peratodontinae
-Percopini
-Periacminae
-Periacmini
-Pericharina
-Pericharini
-Pericopidae
-Pericopina
-Pericymini
-Periergosinae
-Perissomasticinae
-Perizomini
-Peroneidae
-Pexicopiinae
-Pexicopiini
-Phaegopterina
-Phaegopterini
-Phalacropterigini
-Phalerinae
-Phaloniidae
-Pharcidopsychinae
-Phaselini
-Phasisina
-Phaudidae
-Phaudinae
-Phiditiidae
-Philampelina
-Philampelini
-Phileremini
-Phlogophorini
-Phocidini
-Pholisorina
-Phosphilini
-Phricanthini
-Phyciodina
-Phycitinae
-Phycitini
-Phycodinae
-Phyllocnistinae
-Phyllocnistini
-Phyllodini
-Phyllorycteridae
-Physoptilinae
-Phytometrinae
-Phytometrini
-Pieridae
-Pierina
-Pierinae
-Pierini
-Pilodeudorigina
-Pinarini
-Pithecopina
-Placodominae
-Placodomini
-Platychasmatinae
-Platyptiliinae
-Platyptiliini
-Pleurotinae
-Pleurotini
-Plusiina
-Plusiinae
-Plusiini
-Plutellidae
-Plutellinae
-Plutodini
-Poaphilini
-Poecilocampiini
-Poecilocampinae
-Poeciloptilinae
-Poliini
-Politzariellinae
-Pollanisini
-Polyommatina
-Polyommatinae
-Polyommatini
-Polyorthini
-Polyplocinae
-Polyplocini
-Polythysanini
-Poritiinae
-Poritiini
-Portentomorphini
-Praepapilioninae
-Praydidae
-Praydinae
-Preponini
-Prionapterygini
-Prismostictinae
-Procridinae
-Procridini
-Prodeniini
-Prodidactidae
-Prodoxidae
-Prodoxinae
-Pronophilina
-Prosopolophini
-Prothoini
-Prototheoridae
-Psaliodini
-Psaphidina
-Psaphidinae
-Psaphidini
-Pseudacraeini
-Pseudaletidina
-Pseudalmenini
-Pseudarbelinae
-Pseudergolini
-Pseudeustrotiini
-Pseudobistonidae
-Pseudobistoninae
-Pseudocossinae
-Pseudoergolinae
-Pseudoneptini
-Pseudopontiinae
-Pseudoterpnini
-Psolosini
-Psychidae
-Psychinae
-Psychini
-Psychocampini
-Pterocyphini
-Pterolonchidae
-Pterolonchinae
-Pterophoridae
-Pterophorinae
-Pterophorini
-Pterophoroidea
-Pterothysaninae
-Ptilodontinae
-Pydninae
-Pygaerinae
-Pyralidae
-Pyralinae
-Pyralini
-Pyraloidea
-Pyraustinae
-Pyraustini
-Pyrginae
-Pyrgini
-Pyriniini
-Pyromorphidae
-Pyrrhopygina
-Pyrrhopyginae
-Pyrrhopygini
-Pythonidina
-Ragadiina
-Ragadina
-Ramapesiini
-Rapalina
-Rapalini
-Ratardidae
-Remelanini
-Rhammina
-Rheumapterini
-Rhinopalpini
-Rhinurini
-Rhodocosmariina
-Rhodometrini
-Rhodoneurini
-Rhomboristini
-Ridiaschinidae
-Riodinidae
-Riodininae
-Riodinini
-Risobinae
-Risobini
-Roelofinae
-Roeseliidina
-Roeslerstammiidae
-Rumiini
-Salassinae
-Saridoscelinae
-Sarrothripinae
-Sarrothripini
-Sataspedini
-Saturniinae
-Saturniini
-Satyridae
-Satyrina
-Satyrinae
-Satyrini
-Scaeosophinae
-Scardamiini
-Scardiinae
-Schistonoeidae
-Schistonoeinae
-Schoenobiinae
-Schoenotenini
-Schreckensteiniidae
-Schreckensteinioidea
-Sciaphilinae
-Scolecocampinae
-Scoliopteryginae
-Scoliopterygini
-Scolitantidina
-Scopariinae
-Scopulini
-Scoriodytinae
-Scotopterygini
-Scranciidae
-Scranciinae
-Scranciini
-Scythridae
-Scythrididae
-Scythridinae
-Scythropiidae
-Scythropiinae
-Selenepherini
-Sematuridae
-Sematurinae
-Semiothisini
-Sesamiina
-Sesiariae
-Sesiidae
-Sesiina
-Sesiinae
-Sesiini
-Sesioidea
-Setomorphinae
-Shachiinae
-Sichiini
-Siculodinae
-Siculodini
-Siloscinae
-Simaethistidae
-Simaethistoidea
-Similipepsini
-Smerinthinae
-Smerinthini
-Solini
-Solitaneini
-Somabrachyidae
-Sorolophina
-Spalgina
-Spalgini
-Sparganothidini
-Sparganothini
-Spataliinae
-Spataliini
-Sphacelodini
-Sphingidae
-Sphingina
-Sphinginae
-Sphingini
-Sphingoidea
-Sphingulini
-Spilomelinae
-Spilomelini
-Spilonotinae
-Spilosomina
-Sranciinae
-Stalachtina
-Stamnodini
-Statherotina
-Stathmopodidae
-Stathmopodinae
-Stathmopolitinae
-Stauropinae
-Stauropini
-Steniini
-Stenomatinae
-Stenomidae
-Sterrhinae
-Sterrhini
-Stichobasini
-Stictopterinae
-Stictopterini
-Stigmonotidae
-Stiriina
-Stiriinae
-Stiriini
-Strathmopodinae
-Strephonotina
-Strepsimaninae
-Striglininae
-Striphnopteryginae
-Strymonina
-Stygiinae
-Stygiini
-Stygini
-Surendrini
-Sycacanthina
-Symmachiini
-Symmocidae # moth family (Gelechioidea)
-Symmocinae
-Synanthedoninae
-Synanthedonini
-Synchlorini
-Syntomidae
-Sypnini
-Syricorinae
-Syringopaidae
-Syringopainae
-Tachosini
-Tagiadinae
-Tagiadini
-Taleporiinae
-Taleporiini
-Taractrocerini
-Tarakina
-Tarakini
-Tarsolepidinae
-Tascininae
-Teichobiinae
-Teinopalpini
-Teleclitinae
-Telegonini
-Telemiadina
-Tellervini
-Teracolini
-Tetraschalini
-Thamnospheciini
-Thaumetopoeinae
-Theclinae
-Theclinesthina
-Theclini
-Theopina
-Theriini
-Thermesiini
-Thiacidinae
-Thiacidini
-Thinopterygini
-Thiotrichinae
-Tholerina
-Tholerini
-Thyatiridae
-Thyatirinae
-Thyatirini
-Thymelicina
-Thymelicini
-Thyrassiini
-Thyretina
-Thyrididae
-Thyridinae
-Thyridoidea
-Timaetina
-Timandrini
-Timandromorphini
-Tinaegeriinae
-Tineidae
-Tineinae
-Tineodidae
-Tineoidea
-Tinoliinae
-Tinthiinae
-Tinthiini
-Tirathabini
-Tischeriidae
-Tischerioidea
-Tomarini
-Tonzidae
-Torodorinae
-Tortricidae
-Tortricinae
-Tortricini
-Tortricodidae
-Tortricoidea
-Toxocampinae
-Trabalini
-Trapezitinae
-Trichaeini
-Trichonidina
-Tridentaformidae
-Trifurculini
-Triocnemidina
-Triphosini
-Trisatelini
-Trogopterini
-Troidina
-Troidini
-Trosiinae
-Typhedanina
-Typhoniinae
-Typhoniini
-Udeini
-Ufeina
-Ufeinae
-Ufeini
-Undopterigidae
-Unina
-Uraniidae
-Uraniinae
-Uranioidea
-Uranothaumatina
-Urodidae
-Urodoidea
-Urotini
-Ustyurtiidae
-Vagrantini
-Vanessulini
-Victorinini
-Walshiidae
-Westermanniinae
-Whalleyanidae
-Whalleyanoidea
-Wurthiinae
-Wurthiini
-Xanthorhoini
-Xylenina
-Xylenini
-Xyleutini
-Xyloryctidae
-Xyloryctinae
-Yponomeutidae
-Yponomeutinae
-Yponomeutini
-Yponomeutoidea
-Ypsolophidae
-Ypsolophinae
-Ypthimina
-Zabuellina
-Zacoriscinae
-Zanolidae
-Zaphantinae
-Zelleriinae
-Zenodoxinae
-Zenodoxini
-Zerynthiini
-Zesiini
-Zesiusini
-Zetherini
-Zeugloptera
-Zeuzerinae
-Zeuzerini
-Zeuzerocossini
-Zizeeriina
-Zizulina
-Zomariina
-Zoniina
-Zoniini
-Zygaeninae
-Zygaenoidea
+Abisarina # iNat: Lepidoptera > Riodinidae
+Abraxini # ITIS: Lepidoptera > Geometridae
+Abrostolini # COL: Lepidoptera > Noctuidae
+Acanthoctesia # TAXREF: Insecta > Lepidoptera
+Acantholipini # FaEu: Lepidoptera > Erebidae
+Acanthopsychini # COL: Lepidoptera > Psychidae
+Acanthopteroctetidae # COL: Insecta > Lepidoptera
+Acanthopteroctetoidea # ITIS: Insecta > Lepidoptera
+Acentropinae # COL: Lepidoptera > Crambidae
+Acentropini # ITIS: Lepidoptera > Crambidae
+Acherontiina # TAXREF: Lepidoptera > Sphingidae
+Acherontiini # COL: Lepidoptera > Sphingidae
+Achlyodidini # ITIS: Lepidoptera > Hesperiidae
+Achlyodina # TAXREF: Lepidoptera > Hesperiidae
+Achlyodini # TAXREF: Lepidoptera > Hesperiidae
+Acontiini # COL: Lepidoptera > Noctuidae
+Acosmerygina # iNat: Lepidoptera > Sphingidae
+Acosmetiina # COL: synonym of Condicinae (Lepidoptera)
+Acraeini # COL: Lepidoptera > Nymphalidae
+Acragini # iNat: Lepidoptera > Limacodidae
+Acriinae # COL: Lepidoptera > Peleopodidae
+Acrocercopinae # COL: Lepidoptera > Gracillariidae
+Acrolepiidae # ITIS: Insecta > Lepidoptera
+Acrolepiinae # COL: Lepidoptera > Glyphipterigidae
+Acrolophidae # ITIS: Insecta > Lepidoptera
+Acrolophinae # PBDB: Lepidoptera > Tineidae
+Acronictinae # COL: Lepidoptera > Noctuidae
+Acronictini # ITIS: synonym of Acronictinae (Lepidoptera)
+Acropentiini # iNat: Lepidoptera > Crambidae
+Acsalina # ITIS: Lepidoptera > Erebidae
+Acsalini # ITIS: synonym of Acsalina (Lepidoptera)
+Actinotiini # ITIS: Lepidoptera > Noctuidae
+Adelidae # COL: Insecta > Lepidoptera
+Adelinae # COL: Lepidoptera > Adelidae
+Adeloidea # COL: Insecta > Lepidoptera
+Adelomomphinae # COL: Lepidoptera > Momphidae
+Adoliadini # iNat: Lepidoptera > Nymphalidae
+Aediinae # COL: Lepidoptera > Noctuidae
+Aegeriidae # COL: synonym of Sesiidae (Lepidoptera)
+Aegeriinae # COL: synonym of Sesiinae (Lepidoptera)
+Aegeriini # COL: synonym of Sesiini (Lepidoptera)
+Aegialini # ITIS: synonym of Hesperiinae (Lepidoptera)
+Aenigmatineidae # COL: Insecta > Lepidoptera
+Aeolanthinae # COL: Lepidoptera > Depressariidae
+Aeromachini # iNat: Lepidoptera > Hesperiidae
+Aetheinae # COL: synonym of Grapholitini (Lepidoptera)
+Afridinae # COL: Lepidoptera > Nolidae
+Afrokonini # COL: synonym of Sesiini (Lepidoptera)
+Agalopini # COL: Lepidoptera > Zygaenidae
+Aganainae # COL: Lepidoptera > Erebidae
+Agapetidae # COL: synonym of Grapholitini (Lepidoptera)
+Agaristidae # ITIS: synonym of Agaristinae (Lepidoptera)
+Agaristinae # COL: Lepidoptera > Noctuidae
+Agathiini # iNat: Lepidoptera > Geometridae
+Agathiphagidae # COL: Insecta > Lepidoptera
+Agathiphagoidea # COL: Insecta > Lepidoptera
+Agdistinae # COL: Lepidoptera > Pterophoridae
+Ageroniini # ITIS: Lepidoptera > Nymphalidae
+Agliinae # COL: Lepidoptera > Saturniidae
+Aglossata # PBDB: synonym of Lepidoptera (Insecta)
+Agonoxenidae # moth family (Gelechioidea); IRMNG: synonym of Elachistidae (Lepidoptera)
+Agonoxeninae # COL: Lepidoptera > Elachistidae
+Agonoxininae # not found in ChecklistBank
+Agroterini # TAXREF: Lepidoptera > Crambidae
+Agrotina # ITIS: Lepidoptera > Noctuidae
+Agrotini # ITIS: synonym of Noctuini (Lepidoptera)
+Aididae # COL: Insecta > Lepidoptera
+Alheitini # COL: Lepidoptera > Mimallonidae
+Almeidaiini # iNat: Lepidoptera > Saturniidae
+Aloeidina # iNat: Lepidoptera > Lycaenidae
+Alsophilini # ITIS: Lepidoptera > Geometridae
+Alucitidae # COL: Insecta > Lepidoptera
+Alucitoidea # COL: Insecta > Lepidoptera
+Amathusiini # COL: Lepidoptera > Nymphalidae
+Amatidae # ITIS: synonym of Arctiinae (Lepidoptera)
+Amaurina # iNat: Lepidoptera > Nymphalidae
+Ambiini # ITIS: Lepidoptera > Crambidae
+Amblypodiini # COL: Lepidoptera > Lycaenidae
+Ambulycini # COL: Lepidoptera > Sphingidae
+Amerilini # iNat: Lepidoptera > Erebidae
+Amphigoniiini # iNat: Lepidoptera > Erebidae
+Amphipyridis # COL: synonym of Amphipyrinae (Lepidoptera)
+Amphipyrinae # COL: Lepidoptera > Noctuidae
+Amphipyrini # COL: Lepidoptera > Noctuidae
+Amphisbatidae # ITIS: Insecta > Lepidoptera
+Anacampsidae # GLI: synonym of Gelechiidae (Lepidoptera)
+Anacampsinae # COL: Lepidoptera > Gelechiidae
+Anacampsini # ITIS: Lepidoptera > Gelechiidae
+Anaeini # COL: Lepidoptera > Nymphalidae
+Anaemorphini # iNat: Lepidoptera > Nymphalidae
+Anagogini # ITIS: synonym of Hypochrosini (Lepidoptera)
+Anapahidae # COL: synonym of Anaphinae (Lepidoptera)
+Anaphinae # COL: Lepidoptera > Notodontidae
+Anchyloperidae # COL: synonym of Enarmoniini (Lepidoptera)
+Ancylolomiini # TAXREF: Lepidoptera > Crambidae
+Andesianidae # COL: Insecta > Lepidoptera
+Andesianoidea # COL: Insecta > Lepidoptera
+Andracini # iNat: Lepidoptera > Endromidae
+Anerastiini # ITIS: Lepidoptera > Pyralidae
+Angeronini # ITIS: Lepidoptera > Geometridae
+Annaphilina # ITIS: Lepidoptera > Noctuidae
+Annaphilini # COL: Lepidoptera > Noctuidae
+Anobinae # COL: Lepidoptera > Erebidae
+Anobini # COL: synonym of Anobinae (Lepidoptera)
+Anomini # ITIS: Lepidoptera > Erebidae
+Anomoeotidae # COL: synonym of Himantopteridae (Lepidoptera)
+Anomoeotinae # COL: Lepidoptera > Himantopteridae
+Anomoeotini # iNat: Lepidoptera > Himantopteridae
+Anomologinae # COL: Lepidoptera > Gelechiidae
+Anomologini # COL: Lepidoptera > Gelechiidae
+Anomosetidae # COL: Insecta > Lepidoptera
+Anopinini # ITIS: Lepidoptera > Tortricidae
+Antequerinae # COL: Lepidoptera > Cosmopterigidae
+Anthelidae # COL: Insecta > Lepidoptera
+Anthelinae # COL: Lepidoptera > Anthelidae
+Anthocharidini # ITIS: Lepidoptera > Pieridae
+Anthocharinae # ITIS: synonym of Anthocharidini (Lepidoptera)
+Anthocharini # FaEu: Lepidoptera > Pieridae
+Anthoptina # TAXREF: Lepidoptera > Hesperiidae
+Anthoptini # ITIS: Lepidoptera > Hesperiidae
+Antirrheina # iNat: Lepidoptera > Nymphalidae
+Antitypina # ITIS: Lepidoptera > Noctuidae
+Apameina # TAXREF: Lepidoptera > Noctuidae
+Apameini # COL: Lepidoptera > Noctuidae
+Apamidae # COL: synonym of Apameini (Lepidoptera)
+Apatelodidae # COL: Insecta > Lepidoptera
+Apatelodinae # COL: synonym of Apatelodidae (Lepidoptera)
+Apatetrinae # COL: synonym of Anomologinae (Lepidoptera)
+Apatetrini # FaEu: Lepidoptera > Gelechiidae
+Apaturinae # COL: Lepidoptera > Nymphalidae
+Apaustina # iNat: Lepidoptera > Hesperiidae
+Apheliinae # COL: synonym of Archipini (Lepidoptera)
+Aphnaeina # iNat: Lepidoptera > Lycaenidae
+Aphnaeinae # FaEu: Lepidoptera > Lycaenidae
+Aphnaeini # COL: Lepidoptera > Lycaenidae
+Apoprogoninae # COL: Lepidoptera > Sematuridae
+Aporiina # ITIS: Lepidoptera > Pieridae
+Appiadina # ITIS: Lepidoptera > Pieridae
+Apteronini # COL: Lepidoptera > Psychidae
+Apyrrothrixina # iNat: Lepidoptera > Hesperiidae
+Aracimini # iNat: Lepidoptera > Geometridae
+Araeopteronini # COL: Lepidoptera > Erebidae
+Archaeolepidae # IRMNG: Insecta > Lepidoptera
+Archiearinae # COL: Lepidoptera > Geometridae
+Archipini # COL: Lepidoptera > Tortricidae
+Arctiidae # tiger/lichen moth family (now Erebidae); ITIS: synonym of Arctiinae (Lepidoptera)
+Arctiina # ITIS: Lepidoptera > Erebidae
+Arctiini # COL: Lepidoptera > Erebidae
+Arctornithiina # COL: synonym of Lymantriini (Lepidoptera)
+Arctornithini # COL: synonym of Lymantriini (Lepidoptera)
+Argynnina # ITIS: Lepidoptera > Nymphalidae
+Argynnini # ITIS: Lepidoptera > Nymphalidae
+Argyractini # ITIS: Lepidoptera > Crambidae
+Argyresthiidae # COL: Insecta > Lepidoptera
+Argyresthiinae # ITIS: Lepidoptera > Yponomeutidae
+Argyriini # ITIS: Lepidoptera > Crambidae
+Argyrogrammatini # COL: Lepidoptera > Noctuidae
+Argyrotypini # iNat: Lepidoptera > Thyrididae
+Arhopalini # COL: Lepidoptera > Lycaenidae
+Ariolicini # TAXREF: Lepidoptera > Nolidae
+Aristoteliinae # COL: Lepidoptera > Gelechiidae
+Armadini # FaEu: Lepidoptera > Noctuidae
+Arrhenophaninae # COL: Lepidoptera > Psychidae
+Arsenurinae # COL: Lepidoptera > Saturniidae
+Arsenurini # iNat: Lepidoptera > Saturniidae
+Artonini # COL: Lepidoptera > Zygaenidae
+Arytrurini # FaEu: Lepidoptera > Erebidae
+Arzamini # ITIS: Lepidoptera > Noctuidae
+Asciodini # TAXREF: Lepidoptera > Crambidae
+Ashinagidae # COL: Insecta > Lepidoptera
+Asthenini # ITIS: Lepidoptera > Geometridae
+Astictopterini # iNat: Lepidoptera > Hesperiidae
+Athetiina # ITIS: Lepidoptera > Noctuidae
+Atkinsoniinae # COL: Lepidoptera > Stathmopodidae
+Atlidina # iNat: Lepidoptera > Lycaenidae
+Attacini # ITIS: Lepidoptera > Saturniidae
+Atteriini # COL: Lepidoptera > Tortricidae
+Attevidae # COL: Insecta > Lepidoptera
+Attevinae # ITIS: Lepidoptera > Yponomeutidae
+Audeini # iNat: Lepidoptera > Erebidae
+Aurorianinae # COL: Lepidoptera > Mimallonidae
+Automeriina # iNat: Lepidoptera > Saturniidae
+Autoplusiina # ITIS: Lepidoptera > Noctuidae
+Autostichidae # COL: Insecta > Lepidoptera
+Autostichinae # COL: Lepidoptera > Autostichidae
+Auzeinae # COL: Lepidoptera > Uraniidae
+Aventiinae # ITIS: synonym of Boletobiinae (Lepidoptera)
+Aventiini # COL: Lepidoptera > Erebidae
+Axiocersini # iNat: Lepidoptera > Lycaenidae
+Axyliina # TAXREF: Lepidoptera > Noctuidae
+Azanina # TAXREF: Lepidoptera > Lycaenidae
+Azelinini # ITIS: Lepidoptera > Geometridae
+Azeniina # ITIS: Lepidoptera > Noctuidae
+Bactrini # COL: synonym of Gatesclarkeanini (Lepidoptera)
+Bagisarinae # COL: Lepidoptera > Noctuidae
+Balsinae # ITIS: Lepidoptera > Noctuidae
+Baorini # TAXREF: Lepidoptera > Hesperiidae
+Baptini # ITIS: Lepidoptera > Geometridae
+Barcinae # iNat: Lepidoptera > Hesperiidae
+Baroniinae # iNat: Lepidoptera > Papilionidae
+Bathyphlebiini # iNat: Lepidoptera > Saturniidae
+Batrachedridae # COL: Insecta > Lepidoptera
+Batrachedrinae # ITIS: Lepidoptera > Batrachedridae
+Battina # ITIS: Lepidoptera > Papilionidae
+Beaninae # COL: Lepidoptera > Nolidae
+Bebearina # iNat: Lepidoptera > Nymphalidae
+Bedelliidae # COL: Insecta > Lepidoptera
+Bedosiini # COL: Lepidoptera > Mimallonidae
+Befrostiini # TAXREF: Lepidoptera > Riodinidae
+Bembeciini # COL: synonym of Pennisetiini (Lepidoptera)
+Biblidinae # COL: Lepidoptera > Nymphalidae
+Biblidini # COL: Lepidoptera > Nymphalidae
+Biretinae # NCBI: Lepidoptera > Notodontidae
+Bistonini # ITIS: synonym of Boarmiini (Lepidoptera)
+Blastobasidae # COL: Insecta > Lepidoptera
+Blastobasinae # COL: Lepidoptera > Blastobasidae
+Blastobasini # ITIS: Lepidoptera > Coleophoridae
+Blastodacnidae # COL: synonym of Parametriotinae (Lepidoptera)
+Blastodacnini # ITIS: Lepidoptera > Elachistidae
+Bleninae # COL: Lepidoptera > Nolidae
+Bleninina # iNat: Lepidoptera > Nolidae
+Boarmiini # ITIS: Lepidoptera > Geometridae
+Boletobiini # COL: Lepidoptera > Erebidae
+Boloriina # ITIS: Lepidoptera > Nymphalidae
+Bombycinae # COL: Lepidoptera > Bombycidae
+Bombycini # ITIS: Lepidoptera > Bombycidae
+Bombycoidea # COL: Insecta > Lepidoptera
+Brabirodini # iNat: Lepidoptera > Geometridae
+Brachmiinae # OTT: Lepidoptera > Gelechiidae
+Brachodidae # COL: Insecta > Lepidoptera
+Brachodinae # COL: Lepidoptera > Brachodidae
+Brahmaeidae # COL: Insecta > Lepidoptera
+Brassolini # COL: Lepidoptera > Nymphalidae
+Brenthiinae # COL: Lepidoptera > Choreutidae
+Brephidiina # iNat: Lepidoptera > Lycaenidae
+Bryophilinae # COL: Lepidoptera > Noctuidae
+Bryophilini # ITIS: synonym of Bryophilinae (Lepidoptera)
+Bucculatricidae # COL: Insecta > Lepidoptera
+Bunaeini # PBDB: Lepidoptera > Saturniidae
+Butleriini # iNat: Lepidoptera > Hesperiidae
+Caberini # ITIS: Lepidoptera > Geometridae
+Cabniini # TAXREF: Lepidoptera > Pyralidae
+Cacochroinae # COL: Lepidoptera > Depressariidae
+Cacochroini # COL: synonym of Cacochroinae (Lepidoptera)
+Cacoeciinae # COL: synonym of Archipini (Lepidoptera)
+Cacotherapiini # iNat: Lepidoptera > Pyralidae
+Cacyreina # iNat: Lepidoptera > Lycaenidae
+Calamotrophini # TAXREF: Lepidoptera > Crambidae
+Calinaginae # COL: Lepidoptera > Nymphalidae
+Callerebiina # iNat: Lepidoptera > Nymphalidae
+Callicercopini # COL: Lepidoptera > Gracillariidae
+Callicorini # TAXREF: Lepidoptera > Nymphalidae
+Callidryina # TAXREF: Lepidoptera > Pieridae
+Callidulidae # COL: Insecta > Lepidoptera
+Callidulinae # COL: Lepidoptera > Callidulidae
+Calliduloidea # COL: Insecta > Lepidoptera
+Callimorphina # ITIS: Lepidoptera > Erebidae
+Callimorphini # ITIS: synonym of Callimorphina (Lepidoptera)
+Callizygaeninae # COL: Lepidoptera > Zygaenidae
+Callophryidina # iNat: Lepidoptera > Lycaenidae
+Calopierini # iNat: Lepidoptera > Pieridae
+Caloptiliidae # COL: synonym of Gracillariinae (Lepidoptera)
+Calpinae # COL: Lepidoptera > Erebidae
+Calpini # ITIS: Lepidoptera > Erebidae
+Calpodina # TAXREF: Lepidoptera > Hesperiidae
+Calpodini # ITIS: Lepidoptera > Hesperiidae
+Calycopidina # iNat: Lepidoptera > Lycaenidae
+Campaeini # ITIS: Lepidoptera > Geometridae
+Camptolomini # iNat: Lepidoptera > Nolidae
+Candalidini # COL: Lepidoptera > Lycaenidae
+Caradrinina # ITIS: Lepidoptera > Noctuidae
+Caradrinini # ITIS: Lepidoptera > Noctuidae
+Carcharodina # TAXREF: synonym of Carcharodina ,19460 (Lepidoptera)
+Carcharodini # ITIS: Lepidoptera > Hesperiidae
+Careini # TAXREF: Lepidoptera > Nolidae
+Carpocapsidae # COL: synonym of Archipini (Lepidoptera)
+Carposinidae # COL: Insecta > Lepidoptera
+Carposinoidea # COL: Insecta > Lepidoptera
+Carthaeidae # COL: Insecta > Lepidoptera
+Carystina # TAXREF: Lepidoptera > Hesperiidae
+Cassymini # ITIS: Lepidoptera > Geometridae
+Castaliina # TAXREF: Lepidoptera > Lycaenidae
+Castniidae # COL: Insecta > Lepidoptera
+Castniinae # COL: Lepidoptera > Castniidae
+Castniini # TAXREF: Lepidoptera > Castniidae
+Cataclysmini # FaEu: Lepidoptera > Geometridae
+Catapaecilmatini # iNat: Lepidoptera > Lycaenidae
+Catapterigidae # COL: synonym of Acanthopteroctetidae (Lepidoptera)
+Catephiini # TAXREF: Lepidoptera > Erebidae
+Catocalinae # ITIS: synonym of Catocalini (Lepidoptera)
+Catocalini # ITIS: Lepidoptera > Erebidae
+Catochrysopsina # iNat: Lepidoptera > Lycaenidae
+Catonephelini # ITIS: Lepidoptera > Nymphalidae
+Catoptinae # COL: Lepidoptera > Cossidae
+Cecidosidae # COL: Insecta > Lepidoptera
+Cedestinae # COL: synonym of Yponomeutinae (Lepidoptera)
+Ceirinae # COL: synonym of Spataliinae (Lepidoptera)
+Celaenorrhinini # ITIS: Lepidoptera > Hesperiidae
+Celastrinina # TAXREF: Lepidoptera > Lycaenidae
+Cemiostominae # COL: Lepidoptera > Lyonetiidae
+Cephisina # TAXREF: Lepidoptera > Hesperiidae
+Ceracini # COL: Lepidoptera > Tortricidae
+Ceranemotini # ITIS: Lepidoptera > Drepanidae
+Ceratocampinae # COL: Lepidoptera > Saturniidae
+Ceratocampini # iNat: Lepidoptera > Saturniidae
+Ceratrichiini # iNat: Lepidoptera > Hesperiidae
+Cercophaninae # COL: Lepidoptera > Saturniidae
+Cercophanini # iNat: Lepidoptera > Saturniidae
+Ceruridae # COL: synonym of Cerurinae (Lepidoptera)
+Cerurinae # COL: Lepidoptera > Notodontidae
+Ceuthomadarinae # COL: Lepidoptera > Lecithoceridae
+Chadisrinae # COL: Lepidoptera > Notodontidae
+Chalcosiinae # COL: Lepidoptera > Zygaenidae
+Chalcosiini # COL: Lepidoptera > Zygaenidae
+Chamaecleini # COL: Lepidoptera > Noctuidae
+Chamundinae # iNat: Lepidoptera > Hesperiidae
+Charaxinae # COL: Lepidoptera > Nymphalidae
+Charaxini # COL: Lepidoptera > Nymphalidae
+Charideinae # COL: Lepidoptera > Thyrididae
+Cheimopteni # iNat: Lepidoptera > Geometridae
+Chelariinae # TAXREF: synonym of Chelariini (Lepidoptera)
+Chelariini # ITIS: Lepidoptera > Gelechiidae
+Cheritrina # iNat: Lepidoptera > Lycaenidae
+Cheritrini # COL: Lepidoptera > Lycaenidae
+Chesiadini # ITIS: Lepidoptera > Geometridae
+Chilecomadiinae # iNat: Lepidoptera > Cossidae
+Chiloini # TAXREF: Lepidoptera > Crambidae
+Chilonini # ITIS: Lepidoptera > Crambidae
+Chimabacchinae # iNat: Lepidoptera > Lypusidae
+Chimabachidae # ITIS: Insecta > Lepidoptera
+Chimabachinae # COL: Lepidoptera > Lypusidae
+Chimatophilidae # COL: synonym of Tortricini (Lepidoptera)
+Chionopsychinae # COL: Lepidoptera > Lasiocampidae
+Chlidanotinae # COL: Lepidoptera > Tortricidae
+Chlidanotini # COL: Lepidoptera > Tortricidae
+Chloephorinae # COL: Lepidoptera > Nolidae
+Chloephorini # COL: Lepidoptera > Nolidae
+Chlosynina # ITIS: Lepidoptera > Nymphalidae
+Choerocampina # TAXREF: Lepidoptera > Sphingidae
+Chondrosteginae # COL: Lepidoptera > Lasiocampidae
+Choreutidae # COL: Insecta > Lepidoptera
+Choreutinae # COL: Lepidoptera > Choreutidae
+Choreutoidea # COL: Insecta > Lepidoptera
+Chresmarchinae # COL: synonym of Archipini (Lepidoptera)
+Chrismopterygini # iNat: Lepidoptera > Geometridae
+Chrysauginae # COL: Lepidoptera > Pyralidae
+Chrysopeleiinae # COL: Lepidoptera > Cosmopterigidae
+Chrysopolominae # COL: Lepidoptera > Limacodidae
+Chrysopolomini # iNat: Lepidoptera > Limacodidae
+Cicinnidae # COL: synonym of Cicinninae (Lepidoptera)
+Cicinninae # COL: Lepidoptera > Mimallonidae
+Cicinnini # COL: Lepidoptera > Mimallonidae
+Cidariini # ITIS: Lepidoptera > Geometridae
+Cigaritina # iNat: Lepidoptera > Lycaenidae
+Cigaritini # iNat: Lepidoptera > Lycaenidae
+Cimeliidae # COL: Insecta > Lepidoptera
+Cissuvorini # COL: Lepidoptera > Sesiidae
+Cisthenina # ITIS: Lepidoptera > Erebidae
+Clarinina # iNat: Lepidoptera > Sphingidae
+Cleleini # COL: Lepidoptera > Zygaenidae
+Clemensiina # iNat: Lepidoptera > Erebidae
+Cnephasiini # COL: Lepidoptera > Tortricidae
+Cobubathinae # TAXREF: Lepidoptera > Noctuidae
+Cochylina # TAXREF: Lepidoptera > Tortricidae
+Cochylini # COL: Lepidoptera > Tortricidae
+Cocytiini # TAXREF: Lepidoptera > Erebidae
+Coeini # COL: Lepidoptera > Nymphalidae
+Coeliadinae # COL: Lepidoptera > Hesperiidae
+Coelopoetidae # IRMNG: synonym of Pterolonchidae (Lepidoptera)
+Coelopoetinae # COL: Lepidoptera > Pterolonchidae
+Coelopoetini # ITIS: Lepidoptera > Elachistidae
+Coenonymphina # ITIS: Lepidoptera > Nymphalidae
+Coleophoridae # COL: Insecta > Lepidoptera
+Coleophorinae # ITIS: Lepidoptera > Coleophoridae
+Coliadina # TAXREF: Lepidoptera > Pieridae
+Coliadinae # sulphur butterfly subfamily (Pieridae); ITIS: Lepidoptera > Pieridae
+Coliadini # FaEu: Lepidoptera > Pieridae
+Collomeninae # COL: Lepidoptera > Nolidae
+Collomenini # ITIS: synonym of Collomeninae (Lepidoptera)
+Coloburini # ITIS: synonym of Nymphalini (Lepidoptera)
+Colotoini # ITIS: Lepidoptera > Geometridae
+Comibaenini # ITIS: Lepidoptera > Geometridae
+Commophilidae # COL: synonym of Grapholitini (Lepidoptera)
+Compsocteninae # COL: Lepidoptera > Eriocottidae
+Conchylinae # COL: synonym of Cochylini (Lepidoptera)
+Condicinae # COL: Lepidoptera > Noctuidae
+Condicini # COL: synonym of Condicinae (Lepidoptera)
+Cooksoniina # iNat: Lepidoptera > Lycaenidae
+Cophoceratini # iNat: Lepidoptera > Geometridae
+Cophocerotini # iNat: Lepidoptera > Geometridae
+Copromorphidae # COL: Insecta > Lepidoptera
+Copromorphoidea # ITIS: Insecta > Lepidoptera
+Corrachiini # COL: Lepidoptera > Riodinidae
+Cosmiina # COL: Lepidoptera > Noctuidae
+Cosmopterigidae # COL: Insecta > Lepidoptera
+Cosmopteriginae # COL: Lepidoptera > Cosmopterigidae
+Cosmopterygidae # ITIS: synonym of Cosmopterigidae (Lepidoptera)
+Cossidae # COL: Insecta > Lepidoptera
+Cossinae # COL: Lepidoptera > Cossidae
+Cossini # COL: Lepidoptera > Cossidae
+Cossoidea # COL: Insecta > Lepidoptera
+Cossulinae # COL: Lepidoptera > Cossidae
+Cosymbiini # ITIS: Lepidoptera > Geometridae
+Crambidae # COL: Insecta > Lepidoptera
+Crambini # ITIS: Lepidoptera > Crambidae
+Crinopterygidae # IRMNG: synonym of Incurvariidae (Lepidoptera)
+Crinopteryginae # COL: Lepidoptera > Incurvariidae
+Crocanthinae # COL: Lepidoptera > Lecithoceridae
+Cropiinae # TAXREF: Lepidoptera > Noctuidae
+Crothaeminae # iNat: Lepidoptera > Limacodidae
+Cryptoblabini # FaEu: Lepidoptera > Pyralidae
+Cryptolechiinae # COL: Lepidoptera > Depressariidae
+Ctenuchidae # ITIS: synonym of Arctiinae (Lepidoptera)
+Ctenuchina # ITIS: Lepidoptera > Erebidae
+Ctenuchini # ITIS: synonym of Ctenuchina (Lepidoptera)
+Cuculliinae # COL: Lepidoptera > Noctuidae
+Cuculliini # ITIS: synonym of Cuculliinae (Lepidoptera)
+Cupatheclina # iNat: Lepidoptera > Lycaenidae
+Cupidopsina # iNat: Lepidoptera > Lycaenidae
+Cuprininae # COL: Lepidoptera > Stathmopodidae
+Curetinae # COL: Lepidoptera > Lycaenidae
+Cybalomiinae # COL: Lepidoptera > Crambidae
+Cybalomiini # iNat: Lepidoptera > Crambidae
+Cyclidiinae # COL: Lepidoptera > Drepanidae
+Cyclosiini # COL: Lepidoptera > Zygaenidae
+Cyclotornidae # COL: Insecta > Lepidoptera
+Cycnodioidea # ITIS: synonym of Gelechioidea (Insecta)
+Cydosiinae # ITIS: Lepidoptera > Noctuidae
+Cydosiini # ITIS: synonym of Cydosiinae (Lepidoptera)
+Cyllopodini # TAXREF: Lepidoptera > Geometridae
+Cymothoina # iNat: Lepidoptera > Nymphalidae
+Cymothoini # iNat: Lepidoptera > Nymphalidae
+Cyrestidini # ITIS: synonym of Cyrestinae (Lepidoptera)
+Cyrestinae # COL: Lepidoptera > Nymphalidae
+Cyrestini # COL: Lepidoptera > Nymphalidae
+Dacnonypha # PBDB: synonym of Glossata (Insecta)
+Dahlicini # COL: Lepidoptera > Psychidae
+Dalceridae # COL: Insecta > Lepidoptera
+Dalcerinae # TAXREF: Lepidoptera > Dalceridae
+Dalcerini # iNat: Lepidoptera > Limacodidae
+Danaidae # ITIS: synonym of Danainae (Lepidoptera)
+Danaina # ITIS: Lepidoptera > Nymphalidae
+Danainae # COL: Lepidoptera > Nymphalidae
+Danaini # COL: Lepidoptera > Nymphalidae
+Danina # TAXREF: Lepidoptera > Lycaenidae
+Daplasini # COL: Lepidoptera > Erebidae
+Demopsestini # COL: Lepidoptera > Thyatiridae
+Deoclonidae # ITIS: Insecta > Lepidoptera
+Deocloninae # COL: Lepidoptera > Autostichidae
+Depressariidae # COL: Insecta > Lepidoptera
+Depressariinae # COL: Lepidoptera > Depressariidae
+Depressariini # ITIS: Lepidoptera > Elachistidae
+Desertobiini # iNat: Lepidoptera > Geometridae
+Desmobathrinae # COL: Lepidoptera > Geometridae
+Desmobathrini # ITIS: Lepidoptera > Geometridae
+Desmolomini # iNat: Lepidoptera > Noctuidae
+Deudorigini # COL: Lepidoptera > Lycaenidae
+Deuterocopinae # COL: Lepidoptera > Pterophoridae
+Deuterogoniinae # FaEu: Lepidoptera > Oecophoridae
+Dianeurini # iNat: Lepidoptera > Himantopteridae
+Dichogaminae # COL: Lepidoptera > Crambidae
+Dichogamini # ITIS: Lepidoptera > Crambidae
+Dichomeridae # GLI: synonym of Gelechiidae (Lepidoptera)
+Dichomeridinae # COL: Lepidoptera > Gelechiidae
+Dichordophorini # ITIS: Lepidoptera > Geometridae
+Dicranuridae # COL: synonym of Dicranurinae (Lepidoptera)
+Dicranurinae # COL: Lepidoptera > Notodontidae
+Dicranurini # ITIS: Lepidoptera > Notodontidae
+Dilobinae # COL: Lepidoptera > Noctuidae
+Dilophonotina # TAXREF: Lepidoptera > Sphingidae
+Dilophonotini # COL: Lepidoptera > Sphingidae
+Dioptidae # ITIS: synonym of Notodontidae (Lepidoptera)
+Dioptinae # COL: synonym of Nystaleinae (Lepidoptera)
+Dioptini # COL: synonym of Nystaleinae (Lepidoptera)
+Diphtherinae # ITIS: Lepidoptera > Nolidae
+Diptychini # iNat: Lepidoptera > Geometridae
+Diptychophorini # ITIS: Lepidoptera > Crambidae
+Dircennina # ITIS: Lepidoptera > Nymphalidae
+Dircennini # ITIS: synonym of Dircennina (Lepidoptera)
+Dirini # iNat: Lepidoptera > Nymphalidae
+Dismorphiinae # ITIS: Lepidoptera > Pieridae
+Dissoctenioidini # iNat: Lepidoptera > Psychidae
+Dissoctenoidini # COL: synonym of Luffiini (Lepidoptera)
+Doidae # COL: Insecta > Lepidoptera
+Doleschalliaini # iNat: Lepidoptera > Nymphalidae
+Douglasiidae # COL: Insecta > Lepidoptera
+Douglasioidea # TAXREF: Insecta > Lepidoptera
+Drepaninae # COL: Lepidoptera > Drepanidae
+Drepanini # iNat: Lepidoptera > Drepanidae
+Drepanogynini # iNat: Lepidoptera > Geometridae
+Drepanoidea # COL: Insecta > Lepidoptera
+Drinini # iNat: Lepidoptera > Lycaenidae
+Druenticinae # COL: Lepidoptera > Mimallonidae
+Druenticini # COL: Lepidoptera > Mimallonidae
+Dryadaulidae # COL: Insecta > Lepidoptera
+Dryadaulinae # ITIS: Lepidoptera > Tineidae
+Dryocampini # iNat: Lepidoptera > Saturniidae
+Dudgeoneidae # COL: Insecta > Lepidoptera
+Dudusiinae # Wikidata: Lepidoptera > Notodontidae
+Dudusinae # COL: Lepidoptera > Notodontidae
+Dudusini # ITIS: Lepidoptera > Notodontidae
+Durbaniina # iNat: Lepidoptera > Lycaenidae
+Dyopsinae # COL: Lepidoptera > Noctuidae
+Dyopsini # iNat: Lepidoptera > Noctuidae
+Dypterygiini # COL: Lepidoptera > Noctuidae
+Dysphaniini # iNat: Lepidoptera > Geometridae
+Dyspteridini # TAXREF: Lepidoptera > Geometridae
+Eariadinae # NCBI: Lepidoptera > Nolidae
+Eariadini # COL: Lepidoptera > Nolidae
+Ectropini # iNat: Lepidoptera > Limacodidae
+Elachistidae # COL: Insecta > Lepidoptera
+Elachistini # ITIS: Lepidoptera > Elachistidae
+Elaphriini # COL: Lepidoptera > Noctuidae
+Eligminae # COL: Lepidoptera > Nolidae
+Elodinini # iNat: Lepidoptera > Pieridae
+Elymniina # iNat: Lepidoptera > Nymphalidae
+Elymniini # COL: Lepidoptera > Nymphalidae
+Emesidini # TAXREF: Lepidoptera > Riodinidae
+Emesiini # ITIS: Lepidoptera > Riodinidae
+Enarmoniini # COL: Lepidoptera > Tortricidae
+Endagriini # COL: Lepidoptera > Cossidae
+Endotheniini # COL: synonym of Gatesclarkeanini (Lepidoptera)
+Endotrichinae # COL: Lepidoptera > Pyralidae
+Endotrichini # FaEu: Lepidoptera > Pyralidae
+Endromidae # COL: Insecta > Lepidoptera
+Endrominae # iNat: Lepidoptera > Endromidae
+Ennadini # iNat: Lepidoptera > Geometridae
+Ennominae # COL: Lepidoptera > Geometridae
+Ennomini # ITIS: Lepidoptera > Geometridae
+Entheini # TAXREF: Lepidoptera > Hesperiidae
+Eotaleporiini # COL: Lepidoptera > Psychidae
+Epermeniidae # COL: Insecta > Lepidoptera
+Epermeniinae # COL: Lepidoptera > Epermeniidae
+Epermenioidea # COL: Insecta > Lepidoptera
+Ephippiphorini # COL: synonym of Grapholitini (Lepidoptera)
+Epialidae # COL: synonym of Hepialidae (Lepidoptera)
+Epialoidae # COL: synonym of Hepialidae (Lepidoptera)
+Epiblemidae # COL: synonym of Eucosmini (Lepidoptera)
+Epicaliini # TAXREF: Lepidoptera > Nymphalidae
+Epichnopteriginae # COL: Lepidoptera > Psychidae
+Epichnopterigini # COL: Lepidoptera > Psychidae
+Epicopeiidae # COL: Insecta > Lepidoptera
+Epidesmiinae # COL: Lepidoptera > Geometridae
+Epiinae # COL: Lepidoptera > Bombycidae
+Epimarptidae # COL: Insecta > Lepidoptera
+Epionini # FaEu: Lepidoptera > Geometridae
+Epipaschiinae # COL: Lepidoptera > Pyralidae
+Epiphelini # ITIS: Lepidoptera > Nymphalidae
+Epiplemidae # ITIS: synonym of Epipleminae (Lepidoptera)
+Epipleminae # COL: Lepidoptera > Uraniidae
+Epipyropidae # COL: Insecta > Lepidoptera
+Epirranthini # ITIS: synonym of Desmobathrini (Lepidoptera)
+Epirrhoini # iNat: Lepidoptera > Geometridae
+Episemini # COL: Lepidoptera > Noctuidae
+Epitolini # iNat: Lepidoptera > Lycaenidae
+Epitymbiini # COL: Lepidoptera > Tortricidae
+Erateinini # iNat: Lepidoptera > Geometridae
+Ercheiini # iNat: Lepidoptera > Erebidae
+Erebida # COL: synonym of Erebidae (Lepidoptera)
+Erebidae # COL: Insecta > Lepidoptera
+Erebiina # ITIS: Lepidoptera > Nymphalidae
+Erebinae # COL: Lepidoptera > Erebidae
+Erebini # ITIS: Lepidoptera > Erebidae
+Erebochlorini # iNat: Lepidoptera > Geometridae
+Erechthiinae # ITIS: Lepidoptera > Tineidae
+Eriocottidae # COL: Insecta > Lepidoptera
+Eriocottinae # COL: Lepidoptera > Eriocottidae
+Eriocraniidae # COL: Insecta > Lepidoptera
+Eriocranioidea # COL: Insecta > Lepidoptera
+Erionotini # TAXREF: Lepidoptera > Hesperiidae
+Eriopinae # COL: Lepidoptera > Noctuidae
+Eriopini # iNat: Lepidoptera > Noctuidae
+Eriopygini # COL: Lepidoptera > Noctuidae
+Eritina # COL: Lepidoptera > Nymphalidae
+Erupinae # iNat: Lepidoptera > Crambidae
+Erynnini # ITIS: Lepidoptera > Hesperiidae
+Ethmiidae # moth family (Gelechioidea); COL: Insecta > Lepidoptera
+Ethmiinae # ITIS: Lepidoptera > Elachistidae
+Euangeronini # iNat: Lepidoptera > Geometridae
+Eubagini # ITIS: Lepidoptera > Nymphalidae
+Eublemminae # COL: synonym of Eublemmini (Lepidoptera)
+Eublemmini # COL: Lepidoptera > Erebidae
+Eucestidae # COL: synonym of Lithocolletinae (Lepidoptera)
+Euchalciina # ITIS: Lepidoptera > Noctuidae
+Euchroini # iNat: Lepidoptera > Saturniidae
+Euchromiidae # ITIS: synonym of Arctiinae (Lepidoptera)
+Euchromiina # ITIS: Lepidoptera > Erebidae
+Euchromiusini # iNat: Lepidoptera > Crambidae
+Euclastini # TAXREF: Lepidoptera > Crambidae
+Eucleini # iNat: Lepidoptera > Limacodidae
+Euclidiini # ITIS: Lepidoptera > Erebidae
+Eucocytiinae # iNat: Lepidoptera > Noctuidae
+Eucosmini # COL: Lepidoptera > Tortricidae
+Eudamina # TAXREF: Lepidoptera > Hesperiidae
+Eudaminae # ITIS: Lepidoptera > Hesperiidae
+Eudamini # TAXREF: Lepidoptera > Hesperiidae
+Eudemini # COL: synonym of Olethreutini (Lepidoptera)
+Eudesmiina # ITIS: Lepidoptera > Erebidae
+Eudulini # ITIS: Lepidoptera > Geometridae
+Eulepidotinae # COL: Lepidoptera > Erebidae
+Eulepidotini # iNat: Lepidoptera > Erebidae
+Euliina # TAXREF: Lepidoptera > Tortricidae
+Euliini # COL: synonym of Atteriini (Lepidoptera)
+Eumaeina # ITIS: Lepidoptera > Lycaenidae
+Eumaeini # COL: Lepidoptera > Lycaenidae
+Eumasiinae # COL: Lepidoptera > Psychidae
+Eumeleinae # iNat: Lepidoptera > Geometridae
+Euphydryina # ITIS: Lepidoptera > Nymphalidae
+Euphyiini # ITIS: Lepidoptera > Geometridae
+Eupitheciini # ITIS: Lepidoptera > Geometridae
+Euplocaminae # FaEu: Lepidoptera > Tineidae
+Euploeina # iNat: Lepidoptera > Nymphalidae
+Euploeini # ITIS: Lepidoptera > Nymphalidae
+Eupterotidae # COL: Insecta > Lepidoptera
+Eupterotinae # COL: Lepidoptera > Eupterotidae
+Euptoietina # ITIS: Lepidoptera > Nymphalidae
+Euptychiina # ITIS: Lepidoptera > Nymphalidae
+Euremina # TAXREF: Lepidoptera > Pieridae
+Euremini # TAXREF: Lepidoptera > Pieridae
+Eurrhypini # ITIS: Lepidoptera > Crambidae
+Eurybiina # TAXREF: Lepidoptera > Riodinidae
+Eurybiini # COL: Lepidoptera > Riodinidae
+Eurytelini # ITIS: Lepidoptera > Nymphalidae
+Eusalesiinae # GLI: Lepidoptera > Riodinidae
+Eusalesiini # GLI: Lepidoptera > Riodinidae
+Euschemoninae # iNat: Lepidoptera > Hesperiidae
+Euselasiinae # COL: Lepidoptera > Riodinidae
+Euselasiini # COL: Lepidoptera > Riodinidae
+Eustrotiinae # COL: Lepidoptera > Noctuidae
+Eustrotiini # ITIS: synonym of Eustrotiinae (Lepidoptera)
+Euteliidae # COL: Insecta > Lepidoptera
+Euteliinae # COL: Lepidoptera > Euteliidae
+Euthrenini # COL: synonym of Sesiini (Lepidoptera)
+Eutoeini # iNat: Lepidoptera > Geometridae
+Euxanthini # COL: Lepidoptera > Nymphalidae
+Evenaina # iNat: Lepidoptera > Nymphalidae
+Evenina # iNat: Lepidoptera > Lycaenidae
+Evergestinae # COL: Lepidoptera > Crambidae
+Everina # TAXREF: Lepidoptera > Lycaenidae
+Exapatidae # COL: synonym of Cnephasiini (Lepidoptera)
+Exelastini # COL: synonym of Marasmarchini (Lepidoptera)
+Exoporia # PBDB: Insecta > Lepidoptera
+Falgina # iNat: Lepidoptera > Hesperiidae
+Fameganina # TAXREF: Lepidoptera > Lycaenidae
+Feraliina # ITIS: Lepidoptera > Noctuidae
+Feraliini # ITIS: synonym of Feraliina (Lepidoptera)
+Frenatae # ITIS: synonym of Lepidoptera (Insecta)
+Galacticidae # COL: Insecta > Lepidoptera
+Galacticoidea # COL: Insecta > Lepidoptera
+Galleriinae # COL: Lepidoptera > Pyralidae
+Galleriini # ITIS: Lepidoptera > Pyralidae
+Gandacina # iNat: Lepidoptera > Pieridae
+Gastropachini # ITIS: Lepidoptera > Lasiocampidae
+Gatesclarkeanini # COL: Lepidoptera > Tortricidae
+Gazerini # TAXREF: Lepidoptera > Castniidae
+Gelastocerini # iNat: Lepidoptera > Nolidae
+Gelechidae # GLI: synonym of Gelechiidae (Lepidoptera)
+Gelechiidae # COL: Insecta > Lepidoptera
+Gelechiinae # COL: Lepidoptera > Gelechiidae
+Gelechiini # COL: Lepidoptera > Gelechiidae
+Gelechioidea # COL: Insecta > Lepidoptera
+Geometridae # COL: Insecta > Lepidoptera
+Geometrinae # COL: Lepidoptera > Geometridae
+Geometrini # FaEu: Lepidoptera > Geometridae
+Geometroidea # COL: Insecta > Lepidoptera
+Glaphyriinae # COL: Lepidoptera > Crambidae
+Glaphyriini # TAXREF: Lepidoptera > Crambidae
+Glossata # PBDB: Insecta > Lepidoptera
+Glottulinae # ITIS: synonym of Glottulini (Lepidoptera)
+Glottulini # COL: Lepidoptera > Noctuidae
+Gluphisiinae # COL: synonym of Pygaerinae (Lepidoptera)
+Gluphisinae # COL: synonym of Pygaerinae (Lepidoptera)
+Glyphidoceridae # ITIS: Insecta > Lepidoptera
+Glyphidocerinae # iNat: Lepidoptera > Autostichidae
+Glyphipterigidae # COL: Insecta > Lepidoptera
+Glyphipteriginae # COL: Lepidoptera > Glyphipterigidae
+Glyphipterygidae # ITIS: synonym of Glyphipterigidae (Lepidoptera)
+Gnophini # ITIS: Lepidoptera > Geometridae
+Gnorimoschemini # COL: Lepidoptera > Gelechiidae
+Godyridina # TAXREF: Lepidoptera > Nymphalidae
+Godyridini # ITIS: Lepidoptera > Nymphalidae
+Gonepterygina # TAXREF: Lepidoptera > Pieridae
+Gonodontini # ITIS: Lepidoptera > Geometridae
+Gonopterini # ITIS: synonym of Scoliopterygini (Lepidoptera)
+Gracilariidae # ITIS: synonym of Gracillariidae (Lepidoptera)
+Gracillariidae # COL: Insecta > Lepidoptera
+Gracillariinae # COL: Lepidoptera > Gracillariidae
+Gracillariini # COL: Lepidoptera > Gracillariidae
+Gracillarioidea # COL: Insecta > Lepidoptera
+Graphiini # ITIS: Lepidoptera > Papilionidae
+Grapholitini # COL: Lepidoptera > Tortricidae
+Gretnini # iNat: Lepidoptera > Hesperiidae
+Griveaudiinae # COL: Lepidoptera > Callidulidae
+Groenendaelini # iNat: Lepidoptera > Cossidae
+Grotellina # ITIS: Lepidoptera > Noctuidae
+Grotellinae # COL: Lepidoptera > Noctuidae
+Grotellini # ITIS: synonym of Grotellina (Lepidoptera)
+Gyrocheilina # iNat: Lepidoptera > Nymphalidae
+Habrosynini # ITIS: Lepidoptera > Drepanidae
+Hadeninae # ITIS: synonym of Hadenini (Lepidoptera)
+Hadenini # COL: Lepidoptera > Noctuidae
+Haemaleini # iNat: Lepidoptera > Geometridae
+Haeterini # COL: Lepidoptera > Nymphalidae
+Haimbachiini # ITIS: Lepidoptera > Crambidae
+Hapigiinae # COL: Lepidoptera > Notodontidae
+Hapigiini # COL: synonym of Hapigiinae (Lepidoptera)
+Hapsiferinae # ITIS: Lepidoptera > Tineidae
+Harmacloninae # TAXREF: Lepidoptera > Tineidae
+Heliconiidae # ITIS: synonym of Nymphalidae (Lepidoptera)
+Heliconiina # ITIS: Lepidoptera > Nymphalidae
+Heliconiini # COL: Lepidoptera > Nymphalidae
+Helicopini # COL: Lepidoptera > Riodinidae
+Heliocosmidae # iNat: Insecta > Lepidoptera
+Heliocosmoidea # iNat: Insecta > Lepidoptera
+Heliodinidae # COL: Insecta > Lepidoptera
+Heliophorini # iNat: Lepidoptera > Lycaenidae
+Heliotheini # FaEu: Lepidoptera > Geometridae
+Heliothelinae # TAXREF: Lepidoptera > Crambidae
+Heliothinae # COL: Lepidoptera > Noctuidae
+Heliozelidae # COL: Insecta > Lepidoptera
+Hemarina # iNat: Lepidoptera > Sphingidae
+Hemiceratinae # COL: Lepidoptera > Notodontidae
+Hemiceratini # ITIS: synonym of Hemiceratinae (Lepidoptera)
+Hemiceridae # COL: synonym of Hemiceratinae (Lepidoptera)
+Hemileucina # iNat: Lepidoptera > Saturniidae
+Hemileucinae # COL: Lepidoptera > Saturniidae
+Hemileucini # ITIS: Lepidoptera > Saturniidae
+Hemiolaina # iNat: Lepidoptera > Lycaenidae
+Hemitheina # iNat: Lepidoptera > Geometridae
+Hemitheini # ITIS: Lepidoptera > Geometridae
+Hepialidae # COL: Insecta > Lepidoptera
+Hepialoidea # COL: Insecta > Lepidoptera
+Hepiolidae # COL: synonym of Hepialidae (Lepidoptera)
+Heraculinae # COL: Lepidoptera > Pseudobistonidae
+Herminiinae # COL: Lepidoptera > Erebidae
+Herpetogrammatini # TAXREF: Lepidoptera > Crambidae
+Hesperiidae # COL: Insecta > Lepidoptera
+Hesperiina # TAXREF: Lepidoptera > Hesperiidae
+Hesperiinae # COL: Lepidoptera > Hesperiidae
+Hesperiini # ITIS: Lepidoptera > Hesperiidae
+Hesperioidea # ITIS: Insecta > Lepidoptera
+Heterobathmiidae # COL: Insecta > Lepidoptera
+Heterobathmiina # PBDB: Insecta > Lepidoptera
+Heterobathmioidea # COL: Insecta > Lepidoptera
+Heterocampinae # COL: Lepidoptera > Notodontidae
+Heterocampini # ITIS: synonym of Heterocampinae (Lepidoptera)
+Heteroneura # PBDB: Insecta > Lepidoptera
+Heteropanini # COL: Lepidoptera > Zygaenidae
+Heterophlebini # iNat: Lepidoptera > Geometridae
+Heteropterinae # COL: Lepidoptera > Hesperiidae
+Heteropterini # ITIS: synonym of Heteropterinae (Lepidoptera)
+Heterusiini # ITIS: Lepidoptera > Geometridae
+Hibrildinae # iNat: Lepidoptera > Eupterotidae
+Hieroxestinae # ITIS: Lepidoptera > Tineidae
+Hilarographini # COL: Lepidoptera > Tortricidae
+Himantopteridae # COL: Insecta > Lepidoptera
+Himantopterinae # iNat: Lepidoptera > Himantopteridae
+Hipparchiinae # ITIS: synonym of Satyrinae (Lepidoptera)
+Hirpidinae # iNat: Lepidoptera > Saturniidae
+Holcocerinae # COL: Lepidoptera > Blastobasidae
+Holcocerini # COL: Lepidoptera > Cossidae
+Holcopogoninae # COL: Lepidoptera > Autostichidae
+Hoploscopinae # iNat: Lepidoptera > Crambidae
+Horagina # iNat: Lepidoptera > Lycaenidae
+Horagini # COL: Lepidoptera > Lycaenidae
+Hulodini # iNat: Lepidoptera > Erebidae
+Hyblaeidae # COL: Insecta > Lepidoptera
+Hyblaeoidea # COL: Insecta > Lepidoptera
+Hydriomenini # ITIS: Lepidoptera > Geometridae
+Hydririni # TAXREF: Lepidoptera > Crambidae
+Hymeniini # TAXREF: Lepidoptera > Crambidae
+Hypeninae # COL: Lepidoptera > Erebidae
+Hypenodinae # COL: Lepidoptera > Erebidae
+Hypenodini # TAXREF: Lepidoptera > Erebidae
+Hypercalliinae # COL: Lepidoptera > Depressariidae
+Hypertrophidae # GBIF: synonym of Depressariidae (Lepidoptera)
+Hypertrophinae # COL: Lepidoptera > Depressariidae
+Hypocalinae # ITIS: Lepidoptera > Erebidae
+Hypochrosini # ITIS: Lepidoptera > Geometridae
+Hypochrysopini # iNat: Lepidoptera > Lycaenidae
+Hypocystina # TAXREF: Lepidoptera > Nymphalidae
+Hypolycaenini # COL: Lepidoptera > Lycaenidae
+Hyponomeutinae # COL: synonym of Yponomeutinae (Lepidoptera)
+Hypoptinae # COL: Lepidoptera > Cossidae
+Hypopyrini # iNat: Lepidoptera > Erebidae
+Hypotheclina # iNat: Lepidoptera > Lycaenidae
+Hypotheclini # COL: Lepidoptera > Lycaenidae
+Hypotiini # FaEu: Lepidoptera > Pyralidae
+Hysterosiinae # COL: synonym of Cochylini (Lepidoptera)
+Ichthyurinae # COL: synonym of Pygaerinae (Lepidoptera)
+Immidae # COL: Insecta > Lepidoptera
+Immoidea # COL: Insecta > Lepidoptera
+Incurvariidae # COL: Insecta > Lepidoptera
+Incurvariinae # COL: Lepidoptera > Incurvariidae
+Incurvarioidea # ITIS: Insecta > Lepidoptera
+Inouelinae # COL: Lepidoptera > Zygaenidae
+Iolaini # COL: Lepidoptera > Lycaenidae
+Ionolycina # iNat: Lepidoptera > Lycaenidae
+Ipideclina # iNat: Lepidoptera > Lycaenidae
+Iridanina # iNat: Lepidoptera > Lycaenidae
+Ismini # iNat: Lepidoptera > Hesperiidae
+Ithomiinae # ITIS: synonym of Danainae (Lepidoptera)
+Ithomiini # COL: Lepidoptera > Nymphalidae
+Itunina # ITIS: Lepidoptera > Nymphalidae
+Jalmenini # iNat: Lepidoptera > Lycaenidae
+Jamidina # TAXREF: Lepidoptera > Lycaenidae
+Janiodini # iNat: Lepidoptera > Saturniidae
+Jantheclina # iNat: Lepidoptera > Lycaenidae
+Jerini # iNat: Lepidoptera > Hesperiidae
+Joelminetiini # iNat: Lepidoptera > Pyralidae
+Josiidae # COL: synonym of Nystaleinae (Lepidoptera)
+Josiini # COL: synonym of Nystaleinae (Lepidoptera)
+Jugatae # ITIS: synonym of Lepidoptera (Insecta)
+Junoniini # ITIS: Lepidoptera > Nymphalidae
+Kallimini # COL: Lepidoptera > Nymphalidae
+Kallimoidini # iNat: Lepidoptera > Nymphalidae
+Katreinae # iNat: Lepidoptera > Hesperiidae
+Kricogonina # iNat: Lepidoptera > Pieridae
+Kumothalina # iNat: Lepidoptera > Nymphalidae
+Lachnocnemini # COL: Lepidoptera > Lycaenidae
+Lacosomidae # COL: synonym of Lacosominae (Lepidoptera)
+Lacosominae # COL: Lepidoptera > Mimallonidae
+Lacosomini # COL: Lepidoptera > Mimallonidae
+Lacturidae # COL: Insecta > Lepidoptera
+Lampidina # TAXREF: Lepidoptera > Lycaenidae
+Lamproniinae # COL: synonym of Prodoxidae (Lepidoptera)
+Lampropterygini # iNat: Lepidoptera > Geometridae
+Langiinae # iNat: Lepidoptera > Sphingidae
+Larentiinae # COL: Lepidoptera > Geometridae
+Larentiini # ITIS: Lepidoptera > Geometridae
+Lasiocampidae # COL: Insecta > Lepidoptera
+Lasiocampinae # COL: Lepidoptera > Lasiocampidae
+Lasiocampini # ITIS: Lepidoptera > Lasiocampidae
+Lasiocampoidea # COL: Insecta > Lepidoptera
+Laspeyresiini # COL: synonym of Grapholitini (Lepidoptera)
+Lathrotelidae # COL: synonym of Lathrotelinae (Lepidoptera)
+Lathrotelinae # COL: Lepidoptera > Crambidae
+Lathrotelini # iNat: Lepidoptera > Crambidae
+Lecithoceridae # COL: Insecta > Lepidoptera
+Lecithocerinae # COL: Lepidoptera > Lecithoceridae
+Lemoniadina # TAXREF: Lepidoptera > Riodinidae
+Lemoniidae # moth family (Zygaenoidea); IRMNG: synonym of Brahmaeidae (Lepidoptera)
+Lepidoptera # COL: Arthropoda > Insecta
+Leptocircini # ITIS: Lepidoptera > Papilionidae
+Leptosiaini # iNat: Lepidoptera > Pieridae
+Leptotina # TAXREF: Lepidoptera > Lycaenidae
+Lethina # ITIS: Lepidoptera > Nymphalidae
+Leucaniini # COL: Lepidoptera > Noctuidae
+Leucomini # COL: Lepidoptera > Erebidae
+Leuconyctini # COL: synonym of Condicinae (Lepidoptera)
+Leucophlebiini # iNat: Lepidoptera > Sphingidae
+Libytheidae # ITIS: synonym of Libytheinae (Lepidoptera)
+Libytheinae # COL: Lepidoptera > Nymphalidae
+Limacodidae # COL: Insecta > Lepidoptera
+Limacodinae # COL: synonym of Limacodidae (Lepidoptera)
+Limacodini # iNat: Lepidoptera > Limacodidae
+Limenitidina # ITIS: Lepidoptera > Nymphalidae
+Limenitidinae # COL: Lepidoptera > Nymphalidae
+Limenitidini # COL: Lepidoptera > Nymphalidae
+Lineodini # TAXREF: Lepidoptera > Crambidae
+Linostinae # COL: Lepidoptera > Crambidae
+Liphyrinae # iNat: Lepidoptera > Lycaenidae
+Liphyrini # COL: Lepidoptera > Lycaenidae
+Lipoptychini # COL: synonym of Grapholitini (Lepidoptera)
+Liptenina # iNat: Lepidoptera > Lycaenidae
+Lipteninae # COL: Lepidoptera > Lycaenidae
+Liptenini # COL: Lepidoptera > Lycaenidae
+Lissoblemmini # iNat: Lepidoptera > Geometridae
+Lithocolletinae # COL: Lepidoptera > Gracillariidae
+Lithosiina # ITIS: Lepidoptera > Erebidae
+Lithosiinae # ITIS: synonym of Lithosiini (Lepidoptera)
+Lithosiini # COL: Lepidoptera > Erebidae
+Litini # COL: Lepidoptera > Gelechiidae
+Litoprosopini # iNat: Lepidoptera > Noctuidae
+Lobesiini # COL: synonym of Olethreutini (Lepidoptera)
+Loboclina # TAXREF: Lepidoptera > Hesperiidae
+Lobophorini # ITIS: synonym of Trichopterygini (Lepidoptera)
+Locharnini # TAXREF: Lepidoptera > Erebidae
+Lonomiini # iNat: Lepidoptera > Saturniidae
+Lophochoristina # iNat: Lepidoptera > Geometridae
+Lophochoristini # ITIS: Lepidoptera > Geometridae
+Lophocoronidae # COL: Insecta > Lepidoptera
+Lophocoronina # PBDB: synonym of Coelolepida (Insecta)
+Lophocoronoidea # COL: Insecta > Lepidoptera
+Loxurina # iNat: Lepidoptera > Lycaenidae
+Loxurini # COL: Lepidoptera > Lycaenidae
+Lozoperidae # COL: synonym of Grapholitini (Lepidoptera)
+Luciini # COL: Lepidoptera > Lycaenidae
+Luehdorfiini # PBDB: Lepidoptera > Papilionidae
+Luffiini # COL: Lepidoptera > Psychidae
+Luramini # COL: Lepidoptera > Mimallonidae
+Lusurinae # COL: Lepidoptera > Notodontidae
+Lusurini # COL: synonym of Lusurinae (Lepidoptera)
+Lycaenesthini # COL: Lepidoptera > Lycaenidae
+Lycaenidae # COL: Insecta > Lepidoptera
+Lycaeninae # COL: Lepidoptera > Lycaenidae
+Lycaenini # COL: Lepidoptera > Lycaenidae
+Lycaenopsina # iNat: Lepidoptera > Lycaenidae
+Lymantriidae # tussock moth family (now Erebidae); ITIS: synonym of Lymantriinae (Lepidoptera)
+Lymantriinae # COL: Lepidoptera > Erebidae
+Lymantriini # COL: Lepidoptera > Erebidae
+Lyonetiidae # COL: Insecta > Lepidoptera
+Lyonetiinae # COL: Lepidoptera > Lyonetiidae
+Lypusidae # COL: Insecta > Lepidoptera
+Lypusinae # COL: Lepidoptera > Lypusidae
+Macariini # ITIS: Lepidoptera > Geometridae
+Macroglossina # TAXREF: Lepidoptera > Sphingidae
+Macroglossini # COL: Lepidoptera > Sphingidae
+Macrolepidoptera # ITIS: synonym of Lepidoptera (Insecta)
+Macromphaliinae # ITIS: Lepidoptera > Lasiocampidae
+Macromphaliini # iNat: Lepidoptera > Lasiocampidae
+Macropiratidae # COL: Insecta > Lepidoptera
+Macropiratinae # NCBI: Lepidoptera > Pterophoridae
+Macrothyatirini # ITIS: Lepidoptera > Drepanidae
+Malacosominae # COL: Lepidoptera > Lasiocampidae
+Malazinae # iNat: Lepidoptera > Hesperiidae
+Manidiidae # ITIS: synonym of Sematuridae (Lepidoptera)
+Maniolina # ITIS: Lepidoptera > Nymphalidae
+Marasmarchini # COL: Lepidoptera > Pterophoridae
+Margaroniini # TAXREF: Lepidoptera > Crambidae
+Marmarinae # iNat: Lepidoptera > Gracillariidae
+Marmarini # COL: Lepidoptera > Gracillariidae
+Mecoceratini # TAXREF: Lepidoptera > Geometridae
+Meessiidae # COL: Insecta > Lepidoptera
+Meessiinae # ITIS: Lepidoptera > Tineidae
+Megalopalpina # iNat: Lepidoptera > Lycaenidae
+Megalopygidae # COL: Insecta > Lepidoptera
+Megalopyginae # COL: Lepidoptera > Megalopygidae
+Megarthridiini # ITIS: Lepidoptera > Pyralidae
+Megathymidae # ITIS: synonym of Hesperiinae (Lepidoptera)
+Megathyminae # ITIS: synonym of Hesperiinae (Lepidoptera)
+Megathymini # ITIS: synonym of Hesperiinae (Lepidoptera)
+Mehariinae # COL: Lepidoptera > Cossidae
+Melalophidae # COL: synonym of Pygaerinae (Lepidoptera)
+Melanargiina # TAXREF: Lepidoptera > Nymphalidae
+Melanitini # COL: Lepidoptera > Nymphalidae
+Melanolophiini # ITIS: synonym of Boarmiini (Lepidoptera)
+Melanthiini # ITIS: Lepidoptera > Geometridae
+Meleonomini # iNat: Lepidoptera > Autostichidae
+Melipotini # ITIS: Lepidoptera > Erebidae
+Melitaeina # ITIS: Lepidoptera > Nymphalidae
+Melitaeini # COL: Lepidoptera > Nymphalidae
+Melittiinae # COL: synonym of Sesiinae (Lepidoptera)
+Melittiini # COL: Lepidoptera > Sesiidae
+Meneviinae # COL: Lepidoptera > Mimallonidae
+Mesosemiina # TAXREF: Lepidoptera > Riodinidae
+Mesosemiini # COL: Lepidoptera > Riodinidae
+Metachandini # COL: Lepidoptera > Oecophoridae
+Metarbelidae # COL: Insecta > Lepidoptera
+Metisinae # COL: Lepidoptera > Psychidae
+Metisini # COL: Lepidoptera > Psychidae
+Micragoniini # COL: Lepidoptera > Saturniidae
+Micragonini # COL: Lepidoptera > Saturniidae
+Microcorsini # COL: Lepidoptera > Tortricidae
+Microlepidoptera # ITIS: synonym of Lepidoptera (Insecta)
+Microniinae # COL: Lepidoptera > Uraniidae
+Micronoctuini # COL: Lepidoptera > Erebidae
+Micropterigidae # COL: Insecta > Lepidoptera
+Micropterigoidea # COL: Insecta > Lepidoptera
+Micropterygidae # ITIS: synonym of Micropterigidae (Lepidoptera)
+Midilinae # COL: Lepidoptera > Crambidae
+Miletina # iNat: Lepidoptera > Lycaenidae
+Miletinae # COL: Lepidoptera > Lycaenidae
+Miletini # COL: Lepidoptera > Lycaenidae
+Milleriidae # not found in ChecklistBank
+Millieriidae # COL: Insecta > Lepidoptera
+Millieriinae # ITIS: Lepidoptera > Choreutidae
+Mimacraeina # iNat: Lepidoptera > Lycaenidae
+Mimallonidae # COL: Insecta > Lepidoptera
+Mimalloninae # COL: Lepidoptera > Mimallonidae
+Mimallonoidea # COL: Insecta > Lepidoptera
+Mimatini # TAXREF: Lepidoptera > Sphingidae
+Mirininae # iNat: Lepidoptera > Endromidae
+Mirlatiini # iNat: Lepidoptera > Geometridae
+Mnesarchaeidae # COL: Insecta > Lepidoptera
+Mnesarchaeoidea # COL: synonym of Hepialoidea (Insecta)
+Momini # iNat: Lepidoptera > Noctuidae
+Momphidae # COL: Insecta > Lepidoptera
+Momphinae # ITIS: Lepidoptera > Coleophoridae
+Monardini # iNat: Lepidoptera > Sphingidae
+Moncina # TAXREF: Lepidoptera > Hesperiidae
+Moncini # ITIS: Lepidoptera > Hesperiidae
+Mondeguina # GLI: Lepidoptera > Gelechiidae
+Morphina # ITIS: Lepidoptera > Nymphalidae
+Morphinae # ITIS: Lepidoptera > Nymphalidae
+Morphini # COL: Lepidoptera > Nymphalidae
+Munychryiinae # COL: Lepidoptera > Anthelidae
+Musotiminae # COL: Lepidoptera > Pyralidae
+Mustiliini # iNat: Lepidoptera > Endromidae
+Mycalesina # TAXREF: Lepidoptera > Nymphalidae
+Myrinini # iNat: Lepidoptera > Lycaenidae
+Myrmecozelinae # ITIS: Lepidoptera > Tineidae
+Mythinmini # COL: synonym of Leucaniini (Lepidoptera)
+Nacophorini # ITIS: Lepidoptera > Geometridae
+Napaeina # PBDB: Lepidoptera > Riodinidae
+Naryciinae # COL: Lepidoptera > Psychidae
+Naryciini # COL: Lepidoptera > Psychidae
+Nathalina # iNat: Lepidoptera > Pieridae
+Nemapogoninae # ITIS: Lepidoptera > Tineidae
+Nematopogoninae # COL: Lepidoptera > Adelidae
+Nemeobiina # iNat: Lepidoptera > Riodinidae
+Nemeobiinae # COL: Lepidoptera > Riodinidae
+Nemeobiini # TAXREF: Lepidoptera > Riodinidae
+Nemoriini # ITIS: Lepidoptera > Geometridae
+Neodrymoniaini # COL: synonym of Heterocampinae (Lepidoptera)
+Neohipparchini # iNat: Lepidoptera > Geometridae
+Neopotamiina # COL: synonym of Olethreutini (Lepidoptera)
+Neopseustidae # COL: Insecta > Lepidoptera
+Neopseustina # Wikidata: Hexapoda > Lepidoptera
+Neopseustoidea # COL: Insecta > Lepidoptera
+Neotheoridae # COL: Insecta > Lepidoptera
+Nepheroniini # iNat: Lepidoptera > Pieridae
+Nephodiini # ITIS: Lepidoptera > Geometridae
+Nepticulidae # COL: Insecta > Lepidoptera
+Nepticulinae # ITIS: Lepidoptera > Nepticulidae
+Nepticulini # ITIS: Lepidoptera > Nepticulidae
+Nepticuloidea # COL: Insecta > Lepidoptera
+Neptini # COL: Lepidoptera > Nymphalidae
+Netrocorynini # iNat: Lepidoptera > Hesperiidae
+Niasomini # COL: synonym of Sparganothini (Lepidoptera)
+Niphandina # iNat: Lepidoptera > Lycaenidae
+Niphandini # COL: Lepidoptera > Lycaenidae
+Niphonymphini # TAXREF: Lepidoptera > Yponomeutidae
+Nocloina # COL: Lepidoptera > Noctuidae
+Nocloini # ITIS: synonym of Nocloina (Lepidoptera)
+Noctuidae # COL: Insecta > Lepidoptera
+Noctuina # ITIS: Lepidoptera > Noctuidae
+Noctuinae # COL: Lepidoptera > Noctuidae
+Noctuini # ITIS: Lepidoptera > Noctuidae
+Noctuoidea # COL: Insecta > Lepidoptera
+Nolidae # COL: Insecta > Lepidoptera
+Nolina # TAXREF: Lepidoptera > Nolidae
+Nolinae # COL: Lepidoptera > Nolidae
+Nolini # ITIS: synonym of Nolinae (Lepidoptera)
+Nomophilini # TAXREF: Lepidoptera > Crambidae
+Noordinae # COL: Lepidoptera > Crambidae
+Notodontidae # COL: Insecta > Lepidoptera
+Notodontinae # COL: Lepidoptera > Notodontidae
+Notodontini # COL: synonym of Notodontinae (Lepidoptera)
+Nudariina # TAXREF: Lepidoptera > Erebidae
+Nyctemerina # TAXREF: Lepidoptera > Erebidae
+Nygmiini # COL: Lepidoptera > Erebidae
+Nymphalidae # COL: Insecta > Lepidoptera
+Nymphalinae # COL: Lepidoptera > Nymphalidae
+Nymphalini # COL: Lepidoptera > Nymphalidae
+Nymphidiina # TAXREF: Lepidoptera > Riodinidae
+Nymphidiini # COL: Lepidoptera > Riodinidae
+Nymphulinae # ITIS: Lepidoptera > Crambidae
+Nymphulini # ITIS: Lepidoptera > Crambidae
+Nystaleinae # COL: Lepidoptera > Notodontidae
+Nystaleini # COL: synonym of Nystaleinae (Lepidoptera)
+Obeidiini # iNat: Lepidoptera > Geometridae
+Oberthueriinae # iNat: Lepidoptera > Endromidae
+Oberthueriini # iNat: Lepidoptera > Endromidae
+Oboroniina # iNat: Lepidoptera > Lycaenidae
+Ochromolopinae # COL: Lepidoptera > Epermeniidae
+Ochsenheimeriinae # COL: Lepidoptera > Ypsolophidae
+Ochyroticinae # COL: Lepidoptera > Pterophoridae
+Oditinae # COL: Lepidoptera > Peleopodidae
+Odonestini # FaEu: Lepidoptera > Lasiocampidae
+Odontiinae # COL: Lepidoptera > Crambidae
+Odontiini # ITIS: Lepidoptera > Crambidae
+Odontodini # iNat: Lepidoptera > Euteliidae
+Odontoperini # iNat: Lepidoptera > Geometridae
+Oeciinae # COL: synonym of Holcopogoninae (Lepidoptera)
+Oecophoridae # COL: Insecta > Lepidoptera
+Oecophorinae # COL: Lepidoptera > Oecophoridae
+Oecophorini # ITIS: Lepidoptera > Oecophoridae
+Oecophyllembiinae # TAXREF: Lepidoptera > Gracillariidae
+Oecophyllembiini # COL: Lepidoptera > Gracillariidae
+Oegoconiinae # COL: Lepidoptera > Autostichidae
+Oenochrominae # COL: Lepidoptera > Geometridae
+Oenoptilini # iNat: Lepidoptera > Geometridae
+Oenosandridae # COL: Insecta > Lepidoptera
+Oidaematophorini # COL: Lepidoptera > Pterophoridae
+Oiketicinae # COL: Lepidoptera > Psychidae
+Oiketicini # iNat: Lepidoptera > Psychidae
+Oileidina # TAXREF: Lepidoptera > Hesperiidae
+Oileidini # TAXREF: Lepidoptera > Hesperiidae
+Oinophilidae # ITIS: synonym of Tineidae (Lepidoptera)
+Olethreutidae # ITIS: synonym of Tortricidae (Lepidoptera)
+Olethreutinae # COL: Lepidoptera > Tortricidae
+Olethreutini # COL: Lepidoptera > Tortricidae
+Ommatophorini # iNat: Lepidoptera > Erebidae
+Omopterini # ITIS: Lepidoptera > Erebidae
+Omorphinini # COL: Lepidoptera > Noctuidae
+Oncocnemidinae # COL: Lepidoptera > Noctuidae
+Oncocnemidini # ITIS: synonym of Oncocnemidinae (Lepidoptera)
+Operophterini # ITIS: Lepidoptera > Geometridae
+Ophiderini # ITIS: Lepidoptera > Erebidae
+Ophiusini # ITIS: Lepidoptera > Erebidae
+Opostegidae # COL: Insecta > Lepidoptera
+Oposteginae # ITIS: Lepidoptera > Opostegidae
+Oreopsychini # COL: Lepidoptera > Psychidae
+Oretinae # COL: Lepidoptera > Drepanidae
+Oretini # iNat: Lepidoptera > Drepanidae
+Orgyiini # COL: Lepidoptera > Erebidae
+Ornichidae # COL: synonym of Gracillariinae (Lepidoptera)
+Ornithospilini # iNat: Lepidoptera > Geometridae
+Ornixolinae # COL: Lepidoptera > Gracillariidae
+Orthosiini # COL: Lepidoptera > Noctuidae
+Orthostixinae # COL: Lepidoptera > Geometridae
+Orthoteliinae # COL: Lepidoptera > Glyphipterigidae
+Osminiini # COL: Lepidoptera > Sesiidae
+Ourapterygini # ITIS: Lepidoptera > Geometridae
+Oxychirotidae # COL: synonym of Alucitidae (Lepidoptera)
+Oxylidina # iNat: Lepidoptera > Lycaenidae
+Oxylidini # COL: Lepidoptera > Lycaenidae
+Oxynetrina # iNat: Lepidoptera > Hesperiidae
+Oxynetrini # COL: Lepidoptera > Hesperiidae
+Oxyptilini # COL: Lepidoptera > Pterophoridae
+Oxyteninae # COL: Lepidoptera > Saturniidae
+Oxytripiina # TAXREF: Lepidoptera > Noctuidae
+Pachythonina # TAXREF: Lepidoptera > Riodinidae
+Paiwarriina # iNat: Lepidoptera > Lycaenidae
+Palaeosetidae # COL: Insecta > Lepidoptera
+Palaephatidae # COL: Insecta > Lepidoptera
+Palaephatoidea # COL: Insecta > Lepidoptera
+Pallini # COL: Lepidoptera > Nymphalidae
+Palyadini # ITIS: Lepidoptera > Geometridae
+Panacelinae # COL: Lepidoptera > Eupterotidae
+Pandemina # TAXREF: Lepidoptera > Riodinidae
+Pandesmini # ITIS: Lepidoptera > Erebidae
+Pangraptinae # COL: Lepidoptera > Erebidae
+Panopodini # COL: Lepidoptera > Erebidae
+Pantheinae # COL: Lepidoptera > Noctuidae
+Papilionidae # COL: Insecta > Lepidoptera
+Papilioninae # ITIS: Lepidoptera > Papilionidae
+Papilionini # ITIS: Lepidoptera > Papilionidae
+Papilionoidea # COL: Insecta > Lepidoptera
+Paraglosseciini # COL: Lepidoptera > Sesiidae
+Parametriotinae # COL: Lepidoptera > Elachistidae
+Paranthreninae # COL: synonym of Sesiinae (Lepidoptera)
+Paranthrenini # COL: Lepidoptera > Sesiidae
+Parargina # TAXREF: Lepidoptera > Nymphalidae
+Parnassiidae # ITIS: synonym of Parnassiinae (Lepidoptera)
+Parnassiinae # ITIS: Lepidoptera > Papilionidae
+Parnassiini # ITIS: Lepidoptera > Papilionidae
+Parornichinae # TAXREF: Lepidoptera > Gracillariidae
+Parornichini # COL: Lepidoptera > Gracillariidae
+Parrhasiina # iNat: Lepidoptera > Lycaenidae
+Parthenini # COL: Lepidoptera > Nymphalidae
+Passovini # COL: Lepidoptera > Hesperiidae
+Pectinivalvinae # NCBI: Lepidoptera > Nepticulidae
+Peleopodidae # COL: Insecta > Lepidoptera
+Peleopodinae # COL: Lepidoptera > Peleopodidae
+Peleopodini # ITIS: Lepidoptera > Peleopodidae
+Peloponnesiini # COL: Lepidoptera > Psychidae
+Pelurgini # iNat: Lepidoptera > Geometridae
+Penestoglossini # COL: Lepidoptera > Psychidae
+Pennisetiini # COL: Lepidoptera > Sesiidae
+Pentateuchini # iNat: Lepidoptera > Sphingidae
+Penthininae # COL: synonym of Eucosmini (Lepidoptera)
+Pentilina # iNat: Lepidoptera > Lycaenidae
+Pentilini # COL: Lepidoptera > Lycaenidae
+Peoriini # ITIS: Lepidoptera > Pyralidae
+Peratodontinae # COL: Lepidoptera > Notodontidae
+Percopini # ITIS: synonym of Pericopina (Lepidoptera)
+Periacminae # COL: Lepidoptera > Autostichidae
+Periacmini # iNat: Lepidoptera > Autostichidae
+Pericharina # iNat: Lepidoptera > Hesperiidae
+Pericharini # TAXREF: Lepidoptera > Hesperiidae
+Pericopidae # ITIS: synonym of Arctiinae (Lepidoptera)
+Pericopina # ITIS: Lepidoptera > Erebidae
+Pericymini # ITIS: Lepidoptera > Erebidae
+Periergosinae # COL: Lepidoptera > Notodontidae
+Perissomasticinae # FaEu: Lepidoptera > Tineidae
+Perizomini # ITIS: Lepidoptera > Geometridae
+Peroneidae # COL: synonym of Tortricini (Lepidoptera)
+Pexicopiinae # COL: synonym of Pexicopiini (Lepidoptera)
+Pexicopiini # COL: Lepidoptera > Gelechiidae
+Phaegopterina # ITIS: Lepidoptera > Erebidae
+Phaegopterini # ITIS: synonym of Phaegopterina (Lepidoptera)
+Phalacropterigini # COL: Lepidoptera > Psychidae
+Phalerinae # COL: Lepidoptera > Notodontidae
+Phaloniidae # COL: synonym of Cochylini (Lepidoptera)
+Pharcidopsychinae # COL: Lepidoptera > Psychidae
+Phaselini # iNat: Lepidoptera > Geometridae
+Phasisina # iNat: Lepidoptera > Lycaenidae
+Phaudidae # COL: Insecta > Lepidoptera
+Phaudinae # COL: Lepidoptera > Phaudidae
+Phiditiidae # COL: Insecta > Lepidoptera
+Philampelina # TAXREF: Lepidoptera > Sphingidae
+Philampelini # COL: Lepidoptera > Sphingidae
+Phileremini # FaEu: Lepidoptera > Geometridae
+Phlogophorini # ITIS: Lepidoptera > Noctuidae
+Phocidini # TAXREF: Lepidoptera > Hesperiidae
+Pholisorina # iNat: Lepidoptera > Hesperiidae
+Phosphilini # ITIS: Lepidoptera > Noctuidae
+Phricanthini # COL: Lepidoptera > Tortricidae
+Phyciodina # ITIS: Lepidoptera > Nymphalidae
+Phycitinae # COL: Lepidoptera > Pyralidae
+Phycitini # ITIS: Lepidoptera > Pyralidae
+Phycodinae # COL: Lepidoptera > Brachodidae
+Phyllocnistinae # COL: Lepidoptera > Gracillariidae
+Phyllocnistini # COL: Lepidoptera > Gracillariidae
+Phyllodini # iNat: Lepidoptera > Erebidae
+Phyllorycteridae # COL: synonym of Lithocolletinae (Lepidoptera)
+Physoptilinae # COL: Lepidoptera > Gelechiidae
+Phytometrinae # COL: synonym of Phytometrini (Lepidoptera)
+Phytometrini # COL: Lepidoptera > Erebidae
+Pieridae # COL: Insecta > Lepidoptera
+Pierina # ITIS: Lepidoptera > Pieridae
+Pierinae # ITIS: Lepidoptera > Pieridae
+Pierini # ITIS: Lepidoptera > Pieridae
+Pilodeudorigina # iNat: Lepidoptera > Lycaenidae
+Pinarini # FaEu: Lepidoptera > Lasiocampidae
+Pithecopina # iNat: Lepidoptera > Lycaenidae
+Placodominae # COL: Lepidoptera > Psychidae
+Placodomini # COL: Lepidoptera > Psychidae
+Platychasmatinae # COL: Lepidoptera > Notodontidae
+Platyptiliinae # COL: synonym of Pterophorinae (Lepidoptera)
+Platyptiliini # COL: Lepidoptera > Pterophoridae
+Pleurotinae # COL: Lepidoptera > Oecophoridae
+Pleurotini # ITIS: Lepidoptera > Oecophoridae
+Plusiina # ITIS: Lepidoptera > Noctuidae
+Plusiinae # COL: Lepidoptera > Noctuidae
+Plusiini # COL: Lepidoptera > Noctuidae
+Plutellidae # COL: Insecta > Lepidoptera
+Plutellinae # COL: Lepidoptera > Plutellidae
+Plutodini # TAXREF: Lepidoptera > Geometridae
+Poaphilini # ITIS: Lepidoptera > Erebidae
+Poecilocampiini # iNat: Lepidoptera > Lasiocampidae
+Poecilocampinae # COL: Lepidoptera > Lasiocampidae
+Poeciloptilinae # COL: synonym of Gracillariinae (Lepidoptera)
+Poliini # iNat: Lepidoptera > Noctuidae
+Politzariellinae # COL: Lepidoptera > Cossidae
+Pollanisini # COL: Lepidoptera > Zygaenidae
+Polyommatina # TAXREF: Lepidoptera > Lycaenidae
+Polyommatinae # COL: Lepidoptera > Lycaenidae
+Polyommatini # COL: Lepidoptera > Lycaenidae
+Polyorthini # COL: Lepidoptera > Tortricidae
+Polyplocinae # COL: Lepidoptera > Thyatiridae
+Polyplocini # COL: Lepidoptera > Thyatiridae
+Polythysanini # iNat: Lepidoptera > Saturniidae
+Poritiinae # COL: Lepidoptera > Lycaenidae
+Poritiini # COL: Lepidoptera > Lycaenidae
+Portentomorphini # TAXREF: synonym of Pyraustinae (Lepidoptera)
+Praepapilioninae # PBDB: Lepidoptera > Papilionidae
+Praydidae # COL: Insecta > Lepidoptera
+Praydinae # ITIS: Lepidoptera > Yponomeutidae
+Preponini # COL: Lepidoptera > Nymphalidae
+Prionapterygini # ITIS: Lepidoptera > Crambidae
+Prismostictinae # iNat: Lepidoptera > Endromidae
+Procridini # COL: Lepidoptera > Zygaenidae
+Prodeniini # ITIS: Lepidoptera > Noctuidae
+Prodidactidae # COL: Insecta > Lepidoptera
+Prodoxidae # COL: Insecta > Lepidoptera
+Prodoxinae # COL: synonym of Prodoxidae (Lepidoptera)
+Pronophilina # ITIS: Lepidoptera > Nymphalidae
+Prosopolophini # FaEu: Lepidoptera > Geometridae
+Prothoini # COL: Lepidoptera > Nymphalidae
+Prototheoridae # COL: Insecta > Lepidoptera
+Psaliodini # TAXREF: Lepidoptera > Geometridae
+Psaphidina # ITIS: Lepidoptera > Noctuidae
+Psaphidinae # ITIS: synonym of Psaphidini (Lepidoptera)
+Psaphidini # COL: Lepidoptera > Noctuidae
+Pseudacraeini # iNat: Lepidoptera > Nymphalidae
+Pseudaletidina # iNat: Lepidoptera > Lycaenidae
+Pseudalmenini # iNat: Lepidoptera > Lycaenidae
+Pseudarbelinae # COL: Lepidoptera > Psychidae
+Pseudergolini # COL: Lepidoptera > Nymphalidae
+Pseudeustrotiini # COL: Lepidoptera > Noctuidae
+Pseudobistonidae # COL: Insecta > Lepidoptera
+Pseudobistoninae # COL: Lepidoptera > Pseudobistonidae
+Pseudocossinae # COL: Lepidoptera > Brachodidae
+Pseudoergolinae # COL: Lepidoptera > Nymphalidae
+Pseudoneptini # iNat: Lepidoptera > Nymphalidae
+Pseudopontiinae # iNat: Lepidoptera > Pieridae
+Pseudoterpnini # FaEu: Lepidoptera > Geometridae
+Psolosini # iNat: Lepidoptera > Hesperiidae
+Psychidae # COL: Insecta > Lepidoptera
+Psychinae # COL: Lepidoptera > Psychidae
+Psychini # COL: Lepidoptera > Psychidae
+Psychocampini # COL: Lepidoptera > Mimallonidae
+Pterocyphini # TAXREF: Lepidoptera > Geometridae
+Pterolonchidae # COL: Insecta > Lepidoptera
+Pterolonchinae # COL: Lepidoptera > Pterolonchidae
+Pterophoridae # COL: Insecta > Lepidoptera
+Pterophorinae # COL: Lepidoptera > Pterophoridae
+Pterophorini # COL: Lepidoptera > Pterophoridae
+Pterophoroidea # COL: Insecta > Lepidoptera
+Pterothysaninae # COL: Lepidoptera > Callidulidae
+Ptilodontinae # NCBI: Lepidoptera > Notodontidae
+Pydninae # COL: synonym of Periergosinae (Lepidoptera)
+Pygaerinae # COL: Lepidoptera > Notodontidae
+Pyralidae # COL: Insecta > Lepidoptera
+Pyralinae # COL: Lepidoptera > Pyralidae
+Pyralini # ITIS: Lepidoptera > Pyralidae
+Pyraloidea # COL: Insecta > Lepidoptera
+Pyraustinae # COL: Lepidoptera > Crambidae
+Pyraustini # ITIS: Lepidoptera > Crambidae
+Pyrginae # COL: Lepidoptera > Hesperiidae
+Pyrgini # ITIS: Lepidoptera > Hesperiidae
+Pyriniini # TAXREF: Lepidoptera > Geometridae
+Pyromorphidae # ITIS: synonym of Zygaenidae (Lepidoptera)
+Pyrrhopygina # ITIS: Lepidoptera > Hesperiidae
+Pyrrhopyginae # COL: Lepidoptera > Hesperiidae
+Pyrrhopygini # COL: Lepidoptera > Hesperiidae
+Pythonidina # TAXREF: Lepidoptera > Hesperiidae
+Ragadiina # COL: Lepidoptera > Nymphalidae
+Ragadina # iNat: Lepidoptera > Nymphalidae
+Ramapesiini # COL: synonym of Archipini (Lepidoptera)
+Rapalina # iNat: Lepidoptera > Lycaenidae
+Rapalini # iNat: Lepidoptera > Lycaenidae
+Ratardidae # COL: Insecta > Lepidoptera
+Remelanini # iNat: Lepidoptera > Lycaenidae
+Rhammina # iNat: Lepidoptera > Lycaenidae
+Rheumapterini # ITIS: Lepidoptera > Geometridae
+Rhinopalpini # iNat: Lepidoptera > Nymphalidae
+Rhinurini # iNat: Lepidoptera > Geometridae
+Rhodocosmariina # COL: synonym of Olethreutini (Lepidoptera)
+Rhodometrini # FaEu: Lepidoptera > Geometridae
+Rhodoneurini # COL: Lepidoptera > Thyrididae
+Rhomboristini # iNat: Lepidoptera > Geometridae
+Ridiaschinidae # COL: synonym of Cecidosidae (Lepidoptera)
+Riodinidae # COL: Insecta > Lepidoptera
+Riodininae # COL: Lepidoptera > Riodinidae
+Riodinini # COL: Lepidoptera > Riodinidae
+Risobinae # COL: Lepidoptera > Nolidae
+Risobini # ITIS: synonym of Risobinae (Lepidoptera)
+Roelofinae # COL: Lepidoptera > Mimallonidae
+Roeseliidina # TAXREF: Lepidoptera > Nolidae
+Roeslerstammiidae # COL: Insecta > Lepidoptera
+Rumiini # iNat: Lepidoptera > Geometridae
+Salassinae # COL: Lepidoptera > Saturniidae
+Saridoscelinae # COL: Lepidoptera > Yponomeutidae
+Sarrothripinae # BOLDINSECT: synonym of Nolidae (Lepidoptera)
+Sarrothripini # COL: Lepidoptera > Nolidae
+Sataspedini # iNat: Lepidoptera > Sphingidae
+Saturniinae # COL: Lepidoptera > Saturniidae
+Saturniini # ITIS: Lepidoptera > Saturniidae
+Satyridae # ITIS: synonym of Satyrinae (Lepidoptera)
+Satyrina # ITIS: Lepidoptera > Nymphalidae
+Satyrinae # COL: Lepidoptera > Nymphalidae
+Satyrini # COL: Lepidoptera > Nymphalidae
+Scaeosophinae # COL: Lepidoptera > Cosmopterigidae
+Scardamiini # TAXREF: Lepidoptera > Geometridae
+Scardiinae # ITIS: Lepidoptera > Tineidae
+Schistonoeidae # COL: Insecta > Lepidoptera
+Schistonoeinae # COL: Lepidoptera > Schistonoeidae
+Schoenobiinae # COL: Lepidoptera > Crambidae
+Schoenotenini # COL: Lepidoptera > Tortricidae
+Schreckensteiniidae # COL: Insecta > Lepidoptera
+Schreckensteinioidea # COL: Insecta > Lepidoptera
+Sciaphilinae # COL: synonym of Cnephasiini (Lepidoptera)
+Scolecocampinae # COL: Lepidoptera > Erebidae
+Scoliopteryginae # COL: Lepidoptera > Erebidae
+Scoliopterygini # ITIS: Lepidoptera > Erebidae
+Scolitantidina # TAXREF: Lepidoptera > Lycaenidae
+Scopariinae # COL: Lepidoptera > Crambidae
+Scopulini # ITIS: Lepidoptera > Geometridae
+Scoriodytinae # COL: Lepidoptera > Psychidae
+Scotopterygini # TAXREF: Lepidoptera > Geometridae
+Scranciidae # COL: Insecta > Lepidoptera
+Scranciinae # COL: synonym of Scranciidae (Lepidoptera)
+Scranciini # COL: synonym of Scranciidae (Lepidoptera)
+Scythridae # ITIS: synonym of Xyloryctidae (Lepidoptera)
+Scythrididae # COL: Insecta > Lepidoptera
+Scythridinae # ITIS: Lepidoptera > Xyloryctidae
+Scythropiidae # COL: Insecta > Lepidoptera
+Scythropiinae # COL: synonym of Scythropiidae (Lepidoptera)
+Selenepherini # FaEu: Lepidoptera > Lasiocampidae
+Sematuridae # COL: Insecta > Lepidoptera
+Sematurinae # COL: Lepidoptera > Sematuridae
+Semiothisini # ITIS: synonym of Macariini (Lepidoptera)
+Sesamiina # TAXREF: Lepidoptera > Noctuidae
+Sesiariae # COL: synonym of Sesiidae (Lepidoptera)
+Sesiidae # COL: Insecta > Lepidoptera
+Sesiina # GLI: Lepidoptera > Sesiidae
+Sesiinae # COL: Lepidoptera > Sesiidae
+Sesiini # COL: Lepidoptera > Sesiidae
+Sesioidea # ITIS: Insecta > Lepidoptera
+Setomorphinae # ITIS: Lepidoptera > Tineidae
+Shachiinae # COL: Lepidoptera > Notodontidae
+Sichiini # TAXREF: Lepidoptera > Sphingidae
+Siculodinae # COL: Lepidoptera > Thyrididae
+Siculodini # COL: Lepidoptera > Thyrididae
+Siloscinae # iNat: Lepidoptera > Tineidae
+Simaethistidae # COL: Insecta > Lepidoptera
+Simaethistoidea # COL: Insecta > Lepidoptera
+Similipepsini # COL: Lepidoptera > Sesiidae
+Smerinthinae # COL: Lepidoptera > Sphingidae
+Smerinthini # COL: Lepidoptera > Sphingidae
+Solini # iNat: Lepidoptera > Saturniidae
+Solitaneini # FaEu: Lepidoptera > Geometridae
+Somabrachyidae # COL: Insecta > Lepidoptera
+Sorolophina # COL: synonym of Olethreutini (Lepidoptera)
+Spalgina # ITIS: Lepidoptera > Lycaenidae
+Spalgini # COL: Lepidoptera > Lycaenidae
+Sparganothidini # ITIS: Lepidoptera > Tortricidae
+Sparganothini # COL: Lepidoptera > Tortricidae
+Spataliinae # COL: Lepidoptera > Notodontidae
+Spataliini # COL: synonym of Spataliinae (Lepidoptera)
+Sphacelodini # ITIS: synonym of Caberini (Lepidoptera)
+Sphingidae # COL: Insecta > Lepidoptera
+Sphingina # TAXREF: Lepidoptera > Sphingidae
+Sphinginae # COL: Lepidoptera > Sphingidae
+Sphingini # COL: Lepidoptera > Sphingidae
+Sphingoidea # ITIS: synonym of Bombycoidea (Insecta)
+Sphingulini # COL: Lepidoptera > Sphingidae
+Spilomelinae # COL: Lepidoptera > Crambidae
+Spilomelini # ITIS: Lepidoptera > Crambidae
+Spilonotinae # COL: synonym of Eucosmini (Lepidoptera)
+Spilosomina # ITIS: Lepidoptera > Erebidae
+Sranciinae # not found in ChecklistBank
+Stalachtina # TAXREF: Lepidoptera > Riodinidae
+Stamnodini # ITIS: Lepidoptera > Geometridae
+Statherotina # COL: synonym of Olethreutini (Lepidoptera)
+Stathmopodidae # COL: Insecta > Lepidoptera
+Stathmopodinae # COL: Lepidoptera > Stathmopodidae
+Stathmopolitinae # FaEu: Lepidoptera > Tineidae
+Stauropinae # COL: Lepidoptera > Notodontidae
+Stauropini # TAXREF: Lepidoptera > Notodontidae
+Steniini # PBDB: Lepidoptera > Crambidae
+Stenomatinae # COL: Lepidoptera > Depressariidae
+Stenomidae # ITIS: synonym of Elachistidae (Lepidoptera)
+Sterrhinae # COL: Lepidoptera > Geometridae
+Sterrhini # ITIS: Lepidoptera > Geometridae
+Stichobasini # COL: Lepidoptera > Psychidae
+Stictopterinae # COL: Lepidoptera > Euteliidae
+Stictopterini # iNat: Lepidoptera > Euteliidae
+Stigmonotidae # COL: synonym of Eucosmini (Lepidoptera)
+Stiriina # ITIS: Lepidoptera > Noctuidae
+Stiriinae # COL: Lepidoptera > Noctuidae
+Stiriini # COL: Lepidoptera > Noctuidae
+Strathmopodinae # ITIS: Lepidoptera > Oecophoridae
+Strephonotina # iNat: Lepidoptera > Lycaenidae
+Strepsimaninae # COL: Lepidoptera > Erebidae
+Striglininae # COL: Lepidoptera > Thyrididae
+Striphnopteryginae # COL: Lepidoptera > Eupterotidae
+Strymonina # iNat: Lepidoptera > Lycaenidae
+Stygiinae # COL: Lepidoptera > Cossidae
+Stygiini # COL: Lepidoptera > Cossidae
+Stygini # COL: Lepidoptera > Riodinidae
+Surendrini # iNat: Lepidoptera > Lycaenidae
+Sycacanthina # COL: synonym of Olethreutini (Lepidoptera)
+Symmachiini # COL: Lepidoptera > Riodinidae
+Symmocidae # moth family (Gelechioidea); IRMNG: synonym of Autostichidae (Lepidoptera)
+Symmocinae # COL: Lepidoptera > Autostichidae
+Synanthedoninae # COL: synonym of Sesiinae (Lepidoptera)
+Synanthedonini # COL: Lepidoptera > Sesiidae
+Synchlorini # ITIS: synonym of Comibaenini (Lepidoptera)
+Syntomidae # ITIS: synonym of Arctiinae (Lepidoptera)
+Sypnini # iNat: Lepidoptera > Erebidae
+Syricorinae # COL: synonym of Olethreutini (Lepidoptera)
+Syringopaidae # IRMNG: synonym of Pterolonchidae (Lepidoptera)
+Syringopainae # COL: Lepidoptera > Pterolonchidae
+Tachosini # iNat: Lepidoptera > Erebidae
+Tagiadinae # TAXREF: Lepidoptera > Hesperiidae
+Tagiadini # ITIS: Lepidoptera > Hesperiidae
+Taleporiinae # COL: Lepidoptera > Psychidae
+Taleporiini # COL: Lepidoptera > Psychidae
+Taractrocerini # ITIS: Lepidoptera > Hesperiidae
+Tarakina # iNat: Lepidoptera > Lycaenidae
+Tarakini # COL: Lepidoptera > Lycaenidae
+Tarsolepidinae # COL: synonym of Dudusinae (Lepidoptera)
+Tascininae # COL: Lepidoptera > Castniidae
+Teichobiinae # FaEu: Lepidoptera > Tineidae
+Teinopalpini # iNat: Lepidoptera > Papilionidae
+Teleclitinae # COL: Lepidoptera > Notodontidae
+Telegonini # ITIS: synonym of Eudaminae (Lepidoptera)
+Telemiadina # TAXREF: Lepidoptera > Hesperiidae
+Tellervini # COL: Lepidoptera > Nymphalidae
+Teracolini # iNat: Lepidoptera > Pieridae
+Tetraschalini # COL: Lepidoptera > Pterophoridae
+Thamnospheciini # COL: synonym of Synanthedonini (Lepidoptera)
+Thaumetopoeinae # COL: Lepidoptera > Notodontidae
+Theclinae # COL: Lepidoptera > Lycaenidae
+Theclinesthina # TAXREF: Lepidoptera > Lycaenidae
+Theclini # COL: Lepidoptera > Lycaenidae
+Theopina # TAXREF: Lepidoptera > Riodinidae
+Theriini # FaEu: Lepidoptera > Geometridae
+Thermesiini # ITIS: Lepidoptera > Erebidae
+Thiacidinae # COL: Lepidoptera > Noctuidae
+Thiacidini # iNat: Lepidoptera > Noctuidae
+Thinopterygini # iNat: Lepidoptera > Geometridae
+Thiotrichinae # COL: Lepidoptera > Gelechiidae
+Tholerina # COL: synonym of Tholerini (Lepidoptera)
+Tholerini # COL: Lepidoptera > Noctuidae
+Thyatiridae # COL: Insecta > Lepidoptera
+Thyatirinae # COL: Lepidoptera > Thyatiridae
+Thyatirini # ITIS: Lepidoptera > Drepanidae
+Thymelicina # TAXREF: Lepidoptera > Hesperiidae
+Thymelicini # ITIS: Lepidoptera > Hesperiidae
+Thyrassiini # COL: Lepidoptera > Zygaenidae
+Thyretina # iNat: Lepidoptera > Erebidae
+Thyrididae # COL: Insecta > Lepidoptera
+Thyridinae # COL: Lepidoptera > Thyrididae
+Thyridoidea # COL: Insecta > Lepidoptera
+Timaetina # iNat: Lepidoptera > Lycaenidae
+Timandrini # ITIS: Lepidoptera > Geometridae
+Timandromorphini # iNat: Lepidoptera > Geometridae
+Tinaegeriinae # iNat: Lepidoptera > Depressariidae
+Tineidae # COL: Insecta > Lepidoptera
+Tineinae # ITIS: Lepidoptera > Tineidae
+Tineodidae # COL: synonym of Alucitidae (Lepidoptera)
+Tineoidea # COL: Insecta > Lepidoptera
+Tinoliinae # iNat: Lepidoptera > Erebidae
+Tinthiinae # COL: Lepidoptera > Sesiidae
+Tinthiini # COL: Lepidoptera > Sesiidae
+Tirathabini # ITIS: Lepidoptera > Pyralidae
+Tischeriidae # COL: Insecta > Lepidoptera
+Tischerioidea # COL: Insecta > Lepidoptera
+Tomarini # COL: Lepidoptera > Lycaenidae
+Tonzidae # COL: Insecta > Lepidoptera
+Torodorinae # COL: Lepidoptera > Lecithoceridae
+Tortricidae # COL: Insecta > Lepidoptera
+Tortricinae # COL: Lepidoptera > Tortricidae
+Tortricini # COL: Lepidoptera > Tortricidae
+Tortricodidae # COL: synonym of Cnephasiini (Lepidoptera)
+Tortricoidea # COL: Insecta > Lepidoptera
+Toxocampinae # COL: Lepidoptera > Erebidae
+Trabalini # iNat: Lepidoptera > Lasiocampidae
+Trapezitinae # COL: Lepidoptera > Hesperiidae
+Trichaeini # TAXREF: Lepidoptera > Crambidae
+Trichonidina # iNat: Lepidoptera > Lycaenidae
+Tridentaformidae # COL: Insecta > Lepidoptera
+Trifurculini # ITIS: Lepidoptera > Nepticulidae
+Triocnemidina # ITIS: Lepidoptera > Noctuidae
+Triphosini # TAXREF: Lepidoptera > Geometridae
+Trisatelini # COL: Lepidoptera > Erebidae
+Trogopterini # COL: Lepidoptera > Mimallonidae
+Troidina # ITIS: Lepidoptera > Papilionidae
+Troidini # ITIS: Lepidoptera > Papilionidae
+Trosiinae # COL: Lepidoptera > Megalopygidae
+Typhedanina # TAXREF: Lepidoptera > Hesperiidae
+Typhoniinae # COL: Lepidoptera > Psychidae
+Typhoniini # COL: Lepidoptera > Psychidae
+Udeini # TAXREF: Lepidoptera > Crambidae
+Ufeina # COL: Lepidoptera > Noctuidae
+Ufeinae # ITIS: synonym of Xylenini (Lepidoptera)
+Ufeini # ITIS: synonym of Xylenini (Lepidoptera)
+Undopterigidae # IRMNG: Insecta > Lepidoptera
+Unina # iNat: Lepidoptera > Lycaenidae
+Uraniidae # COL: Insecta > Lepidoptera
+Uraniinae # COL: Lepidoptera > Uraniidae
+Uranioidea # ITIS: synonym of Geometroidea (Insecta)
+Uranothaumatina # iNat: Lepidoptera > Lycaenidae
+Urodidae # COL: Insecta > Lepidoptera
+Urodoidea # COL: Insecta > Lepidoptera
+Urotini # iNat: Lepidoptera > Saturniidae
+Ustyurtiidae # COL: Insecta > Lepidoptera
+Vagrantini # COL: Lepidoptera > Nymphalidae
+Vanessulini # iNat: Lepidoptera > Nymphalidae
+Victorinini # ITIS: Lepidoptera > Nymphalidae
+Walshiidae # ITIS: synonym of Cosmopterigidae (Lepidoptera)
+Westermanniinae # COL: Lepidoptera > Nolidae
+Whalleyanidae # COL: Insecta > Lepidoptera
+Whalleyanoidea # COL: Insecta > Lepidoptera
+Wurthiinae # COL: Lepidoptera > Crambidae
+Wurthiini # iNat: Lepidoptera > Crambidae
+Xanthorhoini # ITIS: Lepidoptera > Geometridae
+Xylenina # COL: Lepidoptera > Noctuidae
+Xylenini # COL: Lepidoptera > Noctuidae
+Xyleutini # COL: Lepidoptera > Cossidae
+Xyloryctidae # COL: Insecta > Lepidoptera
+Xyloryctinae # iNat: Lepidoptera > Xyloryctidae
+Yponomeutidae # COL: Insecta > Lepidoptera
+Yponomeutinae # COL: Lepidoptera > Yponomeutidae
+Yponomeutini # TAXREF: Lepidoptera > Yponomeutidae
+Yponomeutoidea # COL: Insecta > Lepidoptera
+Ypsolophidae # COL: Insecta > Lepidoptera
+Ypsolophinae # COL: Lepidoptera > Ypsolophidae
+Ypthimina # iNat: Lepidoptera > Nymphalidae
+Zabuellina # TAXREF: Lepidoptera > Riodinidae
+Zacoriscinae # COL: synonym of Archipini (Lepidoptera)
+Zanolidae # COL: synonym of Apatelodidae (Lepidoptera)
+Zaphantinae # COL: Lepidoptera > Mimallonidae
+Zelleriinae # COL: synonym of Yponomeutinae (Lepidoptera)
+Zenodoxinae # COL: synonym of Tinthiinae (Lepidoptera)
+Zenodoxini # COL: synonym of Tinthiini (Lepidoptera)
+Zerynthiini # TAXREF: Lepidoptera > Papilionidae
+Zesiini # iNat: Lepidoptera > Lycaenidae
+Zesiusini # COL: Lepidoptera > Lycaenidae
+Zetherini # iNat: Lepidoptera > Nymphalidae
+Zeugloptera # PBDB: Insecta > Lepidoptera
+Zeuzerinae # COL: Lepidoptera > Cossidae
+Zeuzerini # COL: Lepidoptera > Cossidae
+Zeuzerocossini # COL: Lepidoptera > Cossidae
+Zizeeriina # TAXREF: Lepidoptera > Lycaenidae
+Zizulina # TAXREF: Lepidoptera > Lycaenidae
+Zomariina # COL: synonym of Olethreutini (Lepidoptera)
+Zoniina # iNat: Lepidoptera > Hesperiidae
+Zoniini # COL: Lepidoptera > Hesperiidae
+Zygaeninae # COL: Lepidoptera > Zygaenidae
+Zygaenoidea # COL: Insecta > Lepidoptera

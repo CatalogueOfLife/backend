@@ -1,337 +1,335 @@
-Acrobolbaceae
-Adelanthaceae
-Allisoniaceae
-Amblystegiaceae
-Ambuchananiaceae
-Ambuchananiales
-Anastrophyllaceae
-Andreaeaceae
-Andreaeales
-Andreaeobryaceae
-Andreaeobryales
-Andreaeobryopsida
-Andreaeophytina
-Andreaeopsida
-Aneuraceae
-Anomodontaceae
-Antheliaceae
-Anthocerophytina
-Anthocerotaceae
-Anthocerotales
-Anthocerotidae
-Anthocerotophyta
-Anthocerotopsida
-Appianaceae
-Archidiaceae
-Archidiales
-Arnelliaceae
-Aulacomniaceae
-Aytoniaceae
-Balantiopsidaceae
-Bartramiaceae
-Bartramiales
-Blasiaceae
-Blasiales
-Blasiidae
-Blepharidophyllaceae
-Blepharostomataceae
-Brachytheciaceae
-Brevianthaceae
-Bruchiaceae
-Bryaceae
-Bryales
-Bryidae
-Bryobartramiaceae
-Bryophyta
-Bryophytina
-Bryopsida
-Bryoxiphiaceae
-Bryoxiphiales
-Buxbaumiaceae
-Buxbaumiales
-Buxbaumiidae
-Calliergonaceae
-Calobryales
-Calomniaceae
-Calyculariaceae
-Calyculariineae
-Calymperaceae
-Calypogeiaceae
-Catagoniaceae
-Catoscopiaceae
-Cephaloziaceae
-Cephaloziellaceae
-Cephaloziineae
-Chonecoleaceae
-Cinclidotaceae
-Cleveaceae
-Climaciaceae
-Conocephalaceae
-Corsiniaceae
-Cryphaeaceae
-Cyathodiaceae
-Cyrtopodaceae
-Daltoniaceae
-Delavayellaceae
-Dendrocerotaceae
-Dendrocerotales
-Dendrocerotidae
-Dicnemonaceae
-Dicranaceae
-Dicranales
-Dicranidae
-Diettertiaceae
-Diphysciaceae
-Diphysciales # mosses (Bryophyta)
-Dipsychiales
-Dipsychiidae
-Disceliaceae
-Distichiaceae # moss family (Bryophyta)
-Ditrichaceae
-Drummondiaceae
-Dumortieraceae
-Echinodiaceae
-Encalyptaceae
-Encalyptales
-Endogemmataceae
-Entodontaceae
-Ephemeraceae
-Erpodiaceae
-Eustichiaceae
-Exormothecaceae
-Fabroniaceae
-Fissidentaceae
-Fissidentales
-Fontinalaceae
-Fossombroniaceae
-Fossombroniales
-Fossombroniineae
-Frullaniaceae
-Funariaceae
-Funariales
-Funariidae
-Geocalycaceae
-Gigaspermaceae
-Gigaspermales
-Goebeliellaceae
-Grimmiaceae
-Grimmiales
-Grolleaceae
-Gymnomitriaceae
-Gyrothyraceae
-Haplomitriaceae
-Haplomitriidae
-Haplomitriopsida
-Harpanthaceae
-Hedwigiaceae
-Hedwigiales
-Helicophyllaceae
-Helodiaceae
-Herbertaceae
-Herzogianthaceae
-Heterocladiellaceae
-Hookeriaceae
-Hookeriales
-Hydropogonaceae
-Hydropogonellaceae
-Hygrobiellaceae
-Hylocomiaceae
-Hymenophytaceae
-Hypnaceae
-Hypnales
-Hypnobryales
-Hypnodendraceae
-Hypnodendrales
-Hypodontiaceae
-Hypopterygiaceae
-Isobryales
-Jackiellaceae
-Jamesoniellaceae
-Jubulaceae
-Jubulineae
-Jungermanniaceae
-Jungermanniales
-Jungermanniidae
-Jungermanniineae
-Jungermanniopsida
-Leiosporocerotaceae
-Leiosporocerotales
-Leiosporocerotopsida
-Lejeuneaceae
-Lembophyllaceae
-Lepicoleaceae
-Lepidolaenaceae
-Lepidoziaceae
-Leptodontaceae
-Leptostomataceae
-Lepyrodontaceae
-Leskeaceae
-Leucobryaceae
-Leucodontaceae
-Leucodontales
-Leucomiaceae
-Lophocoleaceae
-Lophocoleineae
-Lophoziaceae
-Lunulariaceae
-Lunulariales
-Makinoaceae
-Makinoineae
-Marchantiaceae
-Marchantiales
-Marchantiidae
-Marchantiophyta
-Marchantiopsida
-Mastigophoraceae
-Meesiaceae
-Meteoriaceae
-Metzgeriaceae
-Metzgeriales
-Metzgeriidae
-Microtheciellaceae
-Mielichhoferioideae # moss subfamily (Bartramiaceae)
-Mitteniaceae
-Mizutaniaceae
-Mniaceae
-Moerckiaceae
-Monocarpaceae
-Monocleaceae
-Monosoleniaceae
-Myliaceae
-Myriniaceae
-Myuriaceae
-Naiaditaceae
-Naiaditales
-Neckeraceae
-Neohodgsoniaceae
-Neohodgsoniales
-Neotrichocoleaceae
-Noterocladaceae
-Notoscyphaceae
-Notothyladaceae
-Notothyladales
-Notothylatidae
-Oedipodiaceae
-Oedipodiales
-Oedipodiopsida
-Orthodontiaceae
-Orthorrhynchiaceae
-Orthotrichaceae
-Orthotrichales
-Oxymitraceae
-Pallaviciniaceae
-Pallaviciniales
-Pallaviciniineae
-Pelliaceae
-Pelliales
-Pelliidae
-Perssoniellaceae
-Perssoniellineae
-Petalophyllaceae
-Phycolepidoziaceae
-Phyllodrepaniaceae
-Phyllogoniaceae
-Phyllothalliaceae
-Phyllothalliineae
-Phymatocerales
-Phymatocerotaceae
-Phymatocerotales
-Pilotrichaceae
-Plagiochilaceae
-Plagiotheciaceae
-Pleurophascaceae
-Pleuroziaceae
-Pleuroziales
-Pleuroziopsaceae
-Polytrichaceae
-Polytrichales
-Polytrichopsida
-Porellaceae
-Porellales
-Porellineae
-Pottiaceae
-Pottiales
-Prionodontaceae
-Pseudoditrichaceae
-Pseudolepicoleaceae
-Pterigynandraceae
-Pterobryaceae
-Pterobryellaceae
-Ptilidiaceae
-Ptilidiales
-Ptychomitriaceae
-Ptychomniaceae
-Ptychomniales
-Pulchrinodaceae
-Pylaisiadelphaceae
-Racopilaceae
-Radulaceae
-Radulineae
-Regmatodontaceae
-Rhabdoweisiaceae
-Rhachitheciaceae
-Rhacocarpaceae
-Rhizogoniaceae
-Rhizogoniales
-Rhytidiaceae
-Ricciaceae
-Riellaceae
-Rigodiaceae
-Rutenbergiaceae
-Saccogynaceae
-Saelaniaceae # moss family (Bryophyta)
-Sandeothallaceae
-Saulomataceae
-Scapaniaceae
-Schimperobryaceae
-Schistochilaceae
-Schistostegaceae
-Schistostegiales
-Scouleriaceae
-Scouleriales
-Seligerales
-Seligeriaceae
-Sematophyllaceae
-Serpotortellaceae
-Solenostomataceae
-Sorapillaceae
-Southbyaceae
-Sphaerocarpaceae
-Sphaerocarpales
-Sphagnaceae
-Sphagnales
-Sphagnophytina
-Sphagnopsida
-Spiridentaceae
-Splachnaceae
-Splachnales
-Splachnobryaceae
-Stephaniellaceae
-Stereophyllaceae
-Symphyodontaceae
-Takakiaceae
-Takakiales
-Takakiophytina
-Takakiopsida
-Targioniaceae
-Tetraphidaceae
-Tetraphidales
-Tetraphidopsida
-Thamnobryaceae
-Theliaceae
-Thuidiaceae
-Timmiaceae
-Timmiales
-Timmidae
-Timmiellaceae # moss family (Bryophyta)
-Trachylomataceae
-Trachypodaceae
-Treubiaceae
-Treubiales
-Treubiidae
-Trichocoleaceae
-Trichotemnomataceae
-Vetaformataceae
-Viridivelleraceae
-Wardiaceae
-Wiesnerellaceae
+Acrobolbaceae # COL: Jungermanniopsida > Jungermanniales
+Adelanthaceae # COL: Jungermanniopsida > Lophoziales
+Allisoniaceae # COL: Jungermanniopsida > Fossombroniales
+Amblystegiaceae # COL: Bryopsida > Hypnales
+Ambuchananiaceae # COL: Sphagnopsida > Sphagnales
+Ambuchananiales # ITIS: Bryophyta > Sphagnopsida
+Anastrophyllaceae # COL: Jungermanniopsida > Lophoziales
+Andreaeaceae # COL: Andreaeopsida > Andreaeales
+Andreaeales # COL: Bryophyta > Andreaeopsida
+Andreaeobryaceae # COL: Andreaeobryopsida > Andreaeobryales
+Andreaeobryales # COL: Bryophyta > Andreaeobryopsida
+Andreaeobryopsida # COL: Plantae > Bryophyta
+Andreaeophytina # Wikidata: Bryophyta
+Andreaeopsida # COL: Plantae > Bryophyta
+Aneuraceae # COL: Jungermanniopsida > Metzgeriales
+Anomodontaceae # COL: Bryopsida > Hypnales
+Antheliaceae # COL: Jungermanniopsida > Jungermanniales
+Anthocerophytina # ITIS: synonym of Anthocerotophyta (Plantae)
+Anthocerotaceae # COL: Anthocerotopsida > Anthocerotales
+Anthocerotales # COL: Anthocerotophyta > Anthocerotopsida
+Anthocerotidae # COL: Anthocerotophyta > Anthocerotopsida
+Anthocerotophyta # COL: Eukaryota > Plantae
+Anthocerotopsida # COL: Plantae > Anthocerotophyta
+Appianaceae # ITIS: Marchantiophyta > Jungermanniopsida
+Archidiaceae # COL: Bryopsida > Archidiales
+Archidiales # COL: Bryophyta > Bryopsida
+Arnelliaceae # COL: Jungermanniopsida > Jungermanniales
+Aulacomniaceae # COL: Bryopsida > Aulacomniales
+Aytoniaceae # COL: Marchantiopsida > Marchantiales
+Balantiopsidaceae # COL: Jungermanniopsida > Jungermanniales
+Bartramiaceae # COL: Bryopsida > Bartramiales
+Bartramiales # COL: Bryophyta > Bryopsida
+Blasiaceae # COL: Marchantiopsida > Blasiales
+Blasiales # COL: Marchantiophyta > Marchantiopsida
+Blasiidae # COL: Marchantiophyta > Marchantiopsida
+Blepharidophyllaceae # COL: Jungermanniopsida > Jungermanniales
+Blepharostomataceae # COL: Jungermanniopsida > Lepidoziales
+Brachytheciaceae # COL: Bryopsida > Hypnales
+Brevianthaceae # COL: Jungermanniopsida > Lepidoziales
+Bruchiaceae # COL: Bryopsida > Bruchiales
+Bryaceae # COL: Bryopsida > Bryales
+Bryales # COL: Bryophyta > Bryopsida
+Bryidae # COL: Bryophyta > Bryopsida
+Bryobartramiaceae # COL: synonym of Encalyptaceae (Encalyptales)
+Bryophyta # COL: Eukaryota > Plantae
+Bryophytina # ITIS: synonym of Bryophyta (Plantae)
+Bryopsida # COL: Plantae > Bryophyta
+Bryoxiphiaceae # COL: Bryopsida > Bryoxiphiales
+Bryoxiphiales # COL: Bryophyta > Bryopsida
+Buxbaumiaceae # COL: Bryopsida > Buxbaumiales
+Buxbaumiales # COL: Bryophyta > Bryopsida
+Buxbaumiidae # COL: Bryophyta > Bryopsida
+Calliergonaceae # COL: Bryopsida > Hypnales
+Calobryales # COL: Marchantiophyta > Haplomitriopsida
+Calomniaceae # COL: Bryopsida > Rhizogoniales
+Calyculariaceae # COL: Jungermanniopsida > Fossombroniales
+Calyculariineae # ITIS: Jungermanniopsida > Fossombroniales
+Calymperaceae # COL: Bryopsida > Dicranales
+Calypogeiaceae # COL: Jungermanniopsida > Jungermanniales
+Catagoniaceae # COL: Bryopsida > Hypnales
+Catoscopiaceae # COL: Bryopsida > Catoscopiales
+Cephaloziaceae # COL: Jungermanniopsida > Lophoziales
+Cephaloziellaceae # COL: Jungermanniopsida > Lophoziales
+Cephaloziineae # ITIS: Jungermanniopsida > Jungermanniales
+Chonecoleaceae # COL: synonym of Cephaloziellaceae (Lophoziales)
+Cinclidotaceae # COL: synonym of Pottiaceae (Pottiales)
+Cleveaceae # COL: Marchantiopsida > Marchantiales
+Climaciaceae # COL: Bryopsida > Hypnales
+Conocephalaceae # COL: Marchantiopsida > Marchantiales
+Corsiniaceae # COL: Marchantiopsida > Marchantiales
+Cryphaeaceae # COL: Bryopsida > Hypnales
+Cyathodiaceae # COL: Marchantiopsida > Marchantiales
+Cyrtopodaceae # COL: synonym of Spiridentaceae (Hypnodendrales)
+Daltoniaceae # COL: Bryopsida > Hookeriales
+Delavayellaceae # COL: synonym of Jungermanniaceae (Jungermanniales)
+Dendrocerotaceae # COL: Anthocerotopsida > Dendrocerotales
+Dendrocerotales # COL: Anthocerotophyta > Anthocerotopsida
+Dendrocerotidae # COL: Anthocerotophyta > Anthocerotopsida
+Dicnemonaceae # COL: synonym of Dicranaceae (Dicranales)
+Dicranaceae # COL: Bryopsida > Dicranales
+Dicranales # COL: Bryophyta > Bryopsida
+Dicranidae # COL: Bryophyta > Bryopsida
+Diettertiaceae # ITIS: Jungermanniopsida > Jungermanniales
+Diphysciaceae # COL: Bryopsida > Diphysciales
+Diphysciales # mosses (Bryophyta); COL: Bryophyta > Bryopsida
+Dipsychiales # ALF: Bryophyta > Bryopsida
+Dipsychiidae # ALF: Bryophyta > Bryopsida
+Disceliaceae # COL: Bryopsida > Disceliales
+Distichiaceae # moss family (Bryophyta); COL: Bryopsida > Distichiales
+Ditrichaceae # COL: Bryopsida > Pottiales
+Drummondiaceae # COL: Bryopsida > Scouleriales
+Dumortieraceae # COL: Marchantiopsida > Marchantiales
+Echinodiaceae # COL: Bryopsida > Hypnales
+Encalyptaceae # COL: Bryopsida > Encalyptales
+Encalyptales # COL: Bryophyta > Bryopsida
+Endogemmataceae # ITIS: Jungermanniopsida > Jungermanniales
+Entodontaceae # COL: Bryopsida > Hypnales
+Erpodiaceae # COL: Bryopsida > Erpodiales
+Eustichiaceae # COL: Bryopsida > Eustichiales
+Exormothecaceae # COL: synonym of Corsiniaceae (Marchantiales)
+Fabroniaceae # COL: Bryopsida > Hypnales
+Fissidentaceae # COL: Bryopsida > Dicranales
+Fissidentales # ITIS: synonym of Dicranales (Bryopsida)
+Fontinalaceae # COL: Bryopsida > Hypnales
+Fossombroniaceae # COL: Jungermanniopsida > Fossombroniales
+Fossombroniales # COL: Marchantiophyta > Jungermanniopsida
+Fossombroniineae # ITIS: Jungermanniopsida > Fossombroniales
+Frullaniaceae # COL: Jungermanniopsida > Frullaniales
+Funariaceae # COL: Bryopsida > Funariales
+Funariales # COL: Bryophyta > Bryopsida
+Funariidae # COL: Bryophyta > Bryopsida
+Geocalycaceae # COL: Jungermanniopsida > Jungermanniales
+Gigaspermales # COL: Bryophyta > Bryopsida
+Goebeliellaceae # COL: Jungermanniopsida > Lepidolaenales
+Grimmiaceae # COL: Bryopsida > Grimmiales
+Grimmiales # COL: Bryophyta > Bryopsida
+Grolleaceae # COL: Jungermanniopsida > Lepidoziales
+Gymnomitriaceae # COL: Jungermanniopsida > Jungermanniales
+Gyrothyraceae # COL: Jungermanniopsida > Jungermanniales
+Haplomitriaceae # COL: Haplomitriopsida > Calobryales
+Haplomitriidae # COL: Marchantiophyta > Haplomitriopsida
+Haplomitriopsida # COL: Plantae > Marchantiophyta
+Harpanthaceae # COL: Jungermanniopsida > Jungermanniales
+Hedwigiaceae # COL: Bryopsida > Hedwigiales
+Hedwigiales # COL: Bryophyta > Bryopsida
+Helicophyllaceae # COL: Bryopsida > Bartramiales
+Helodiaceae # COL: Bryopsida > Hypnales
+Herbertaceae # COL: Jungermanniopsida > Lepidoziales
+Herzogianthaceae # COL: Jungermanniopsida > Herzogianthales
+Heterocladiellaceae # COL: Bryopsida > Hypnales
+Hookeriaceae # COL: Bryopsida > Hookeriales
+Hookeriales # COL: Bryophyta > Bryopsida
+Hydropogonaceae # COL: synonym of Sematophyllaceae (Hypnales)
+Hydropogonellaceae # COL: Bryopsida > Hypnales
+Hygrobiellaceae # COL: Jungermanniopsida > Jungermanniales
+Hylocomiaceae # COL: Bryopsida > Hypnales
+Hymenophytaceae # COL: Jungermanniopsida > Pallaviciniales
+Hypnaceae # COL: Bryopsida > Hypnales
+Hypnales # COL: Bryophyta > Bryopsida
+Hypnobryales # ITIS: synonym of Hypnales (Bryopsida)
+Hypnodendraceae # COL: synonym of Spiridentaceae (Hypnodendrales)
+Hypnodendrales # COL: Bryophyta > Bryopsida
+Hypodontiaceae # COL: Bryopsida > Dicranales
+Hypopterygiaceae # COL: Bryopsida > Hypopterygiales
+Isobryales # ITIS: synonym of Hypnales (Bryopsida)
+Jackiellaceae # COL: Jungermanniopsida > Jungermanniales
+Jamesoniellaceae # COL: synonym of Adelanthaceae (Lophoziales)
+Jubulaceae # COL: Jungermanniopsida > Jubulales
+Jubulineae # ITIS: Jungermanniopsida > Porellales
+Jungermanniaceae # COL: Jungermanniopsida > Jungermanniales
+Jungermanniales # COL: Marchantiophyta > Jungermanniopsida
+Jungermanniidae # COL: Marchantiophyta > Jungermanniopsida
+Jungermanniineae # ITIS: Jungermanniopsida > Jungermanniales
+Jungermanniopsida # COL: Plantae > Marchantiophyta
+Leiosporocerotaceae # COL: Leiosporocerotopsida > Leiosporocerotales
+Leiosporocerotales # COL: Anthocerotophyta > Leiosporocerotopsida
+Leiosporocerotopsida # COL: Plantae > Anthocerotophyta
+Lejeuneaceae # COL: Jungermanniopsida > Lejeuneales
+Lembophyllaceae # COL: Bryopsida > Hypnales
+Lepicoleaceae # COL: Jungermanniopsida > Lepidoziales
+Lepidolaenaceae # COL: Jungermanniopsida > Lepidolaenales
+Lepidoziaceae # COL: Jungermanniopsida > Lepidoziales
+Leptodontaceae # COL: synonym of Neckeraceae (Hypnales)
+Leptostomataceae # COL: Bryopsida > Bryales
+Lepyrodontaceae # COL: Bryopsida > Hypnales
+Leskeaceae # COL: Bryopsida > Hypnales
+Leucobryaceae # COL: Bryopsida > Archidiales
+Leucodontaceae # COL: Bryopsida > Hypnales
+Leucodontales # ITIS: synonym of Hypnales (Bryopsida)
+Leucomiaceae # COL: Bryopsida > Hookeriales
+Lophocoleaceae # COL: Jungermanniopsida > Lepidoziales
+Lophocoleineae # ITIS: Jungermanniopsida > Jungermanniales
+Lophoziaceae # COL: Jungermanniopsida > Lophoziales
+Lunulariaceae # COL: Marchantiopsida > Lunulariales
+Lunulariales # COL: Marchantiophyta > Marchantiopsida
+Makinoaceae # COL: Jungermanniopsida > Fossombroniales
+Makinoineae # ITIS: synonym of Makinoiineae (Jungermanniopsida)
+Marchantiaceae # COL: Marchantiopsida > Marchantiales
+Marchantiales # COL: Marchantiophyta > Marchantiopsida
+Marchantiidae # COL: Marchantiophyta > Marchantiopsida
+Marchantiophyta # COL: Eukaryota > Plantae
+Marchantiopsida # COL: Plantae > Marchantiophyta
+Mastigophoraceae # COL: Jungermanniopsida > Lepidoziales
+Meesiaceae # COL: Bryopsida > Splachnales
+Meteoriaceae # COL: Bryopsida > Hypnales
+Metzgeriaceae # COL: Jungermanniopsida > Metzgeriales
+Metzgeriales # COL: Marchantiophyta > Jungermanniopsida
+Metzgeriidae # COL: Marchantiophyta > Jungermanniopsida
+Micromitriaceae # COL: Bryopsida > Archidiales
+Microtheciellaceae # COL: Bryopsida > Hypnales
+Mielichhoferioideae # moss subfamily (Bartramiaceae); GBIF: synonym of Mniaceae (Bryales)
+Mitteniaceae # COL: Bryopsida > Mitteniales
+Mizutaniaceae # COL: synonym of Calypogeiaceae (Jungermanniales)
+Mniaceae # COL: Bryopsida > Bryales
+Moerckiaceae # COL: Jungermanniopsida > Pallaviciniales
+Monocarpaceae # COL: Marchantiopsida > Sphaerocarpales
+Monocleaceae # COL: Marchantiopsida > Marchantiales
+Monosoleniaceae # COL: Marchantiopsida > Marchantiales
+Myliaceae # COL: Jungermanniopsida > Myliales
+Myriniaceae # COL: Bryopsida > Hypnales
+Myuriaceae # COL: Bryopsida > Hypnales
+Naiaditaceae # COL: Marchantiopsida > Naiaditales
+Naiaditales # COL: Marchantiophyta > Marchantiopsida
+Neckeraceae # COL: Bryopsida > Hypnales
+Neohodgsoniaceae # COL: Marchantiopsida > Neohodgsoniales
+Neohodgsoniales # COL: Marchantiophyta > Marchantiopsida
+Neotrichocoleaceae # COL: Jungermanniopsida > Ptilidiales
+Noterocladaceae # COL: Jungermanniopsida > Pelliales
+Notoscyphaceae # COL: Jungermanniopsida > Jungermanniales
+Notothyladaceae # COL: Anthocerotopsida > Notothyladales
+Notothyladales # COL: Anthocerotophyta > Anthocerotopsida
+Notothylatidae # ITIS: Anthocerotophyta > Anthocerotopsida
+Oedipodiaceae # COL: Polytrichopsida > Oedipodiales
+Oedipodiales # COL: Bryophyta > Polytrichopsida
+Oedipodiopsida # ITIS: Plantae > Bryophyta
+Orthodontiaceae # COL: Bryopsida > Orthodontiales
+Orthorrhynchiaceae # COL: Bryopsida > Ptychomniales
+Orthotrichaceae # COL: Bryopsida > Orthotrichales
+Orthotrichales # COL: Bryophyta > Bryopsida
+Oxymitraceae # COL: synonym of Ricciaceae (Marchantiales)
+Pallaviciniaceae # COL: Jungermanniopsida > Pallaviciniales
+Pallaviciniales # COL: Marchantiophyta > Jungermanniopsida
+Pallaviciniineae # COL: synonym of Pallaviciniales (Jungermanniopsida)
+Pelliaceae # COL: Jungermanniopsida > Pelliales
+Pelliales # COL: Marchantiophyta > Jungermanniopsida
+Pelliidae # COL: Marchantiophyta > Jungermanniopsida
+Perssoniellaceae # COL: synonym of Schistochilaceae (Perssoniellales)
+Perssoniellineae # COL: synonym of Perssoniellales (Jungermanniopsida)
+Petalophyllaceae # COL: Jungermanniopsida > Fossombroniales
+Phycolepidoziaceae # COL: synonym of Cephaloziellaceae (Lophoziales)
+Phyllodrepaniaceae # COL: Bryopsida > Bryales
+Phyllogoniaceae # COL: Bryopsida > Hypnales
+Phyllothalliaceae # COL: Jungermanniopsida > Pallaviciniales
+Phyllothalliineae # COL: synonym of Pallaviciniales (Jungermanniopsida)
+Phymatocerales # ITIS: synonym of Phymatocerotales (Anthocerotopsida)
+Phymatocerotaceae # COL: Anthocerotopsida > Phymatocerotales
+Phymatocerotales # COL: Anthocerotophyta > Anthocerotopsida
+Pilotrichaceae # COL: synonym of Neckeraceae (Hypnales)
+Plagiochilaceae # COL: Jungermanniopsida > Lepidoziales
+Plagiotheciaceae # COL: Bryopsida > Hypnales
+Pleurophascaceae # COL: Bryopsida > Pleurophascales
+Pleuroziaceae # COL: Jungermanniopsida > Pleuroziales
+Pleuroziales # COL: Marchantiophyta > Jungermanniopsida
+Pleuroziopsaceae # ITIS: Bryopsida > Hypnales
+Polytrichaceae # COL: Polytrichopsida > Polytrichales
+Polytrichales # COL: Bryophyta > Polytrichopsida
+Polytrichopsida # COL: Plantae > Bryophyta
+Porellaceae # COL: Jungermanniopsida > Porellales
+Porellales # COL: Marchantiophyta > Jungermanniopsida
+Porellineae # ITIS: Jungermanniopsida > Porellales
+Pottiaceae # COL: Bryopsida > Pottiales
+Pottiales # COL: Bryophyta > Bryopsida
+Prionodontaceae # COL: Bryopsida > Hypnales
+Pseudoditrichaceae # COL: Bryopsida > Pseudoditrichales
+Pseudolepicoleaceae # COL: Jungermanniopsida > Lepidoziales
+Pterigynandraceae # COL: Bryopsida > Hypnales
+Pterobryaceae # COL: Bryopsida > Hypnales
+Pterobryellaceae # COL: Bryopsida > Hypnodendrales
+Ptilidiaceae # COL: Jungermanniopsida > Ptilidiales
+Ptilidiales # COL: Marchantiophyta > Jungermanniopsida
+Ptychomitriaceae # COL: Bryopsida > Grimmiales
+Ptychomniaceae # COL: Bryopsida > Ptychomniales
+Ptychomniales # COL: Bryophyta > Bryopsida
+Pulchrinodaceae # COL: Bryopsida > Bryales
+Pylaisiadelphaceae # COL: Bryopsida > Hypnales
+Racopilaceae # COL: Bryopsida > Hypnodendrales
+Radulaceae # COL: Jungermanniopsida > Radulales
+Radulineae # COL: synonym of Radulales (Jungermanniopsida)
+Regmatodontaceae # COL: Bryopsida > Hypnales
+Rhabdoweisiaceae # COL: Bryopsida > Rhabdoweisiales
+Rhachitheciaceae # COL: Bryopsida > Rhabdoweisiales
+Rhacocarpaceae # COL: synonym of Hedwigiaceae (Hedwigiales)
+Rhizogoniaceae # COL: Bryopsida > Rhizogoniales
+Rhizogoniales # COL: Bryophyta > Bryopsida
+Rhytidiaceae # COL: Bryopsida > Hypnales
+Ricciaceae # COL: Marchantiopsida > Marchantiales
+Riellaceae # COL: Marchantiopsida > Sphaerocarpales
+Rigodiaceae # COL: synonym of Lembophyllaceae (Hypnales)
+Rutenbergiaceae # COL: Bryopsida > Hypnales
+Saccogynaceae # COL: Jungermanniopsida > Jungermanniales
+Saelaniaceae # moss family (Bryophyta); COL: Bryopsida > Grimmiales
+Sandeothallaceae # COL: Jungermanniopsida > Pallaviciniales
+Saulomataceae # COL: Bryopsida > Hookeriales
+Scapaniaceae # COL: Jungermanniopsida > Lophoziales
+Schimperobryaceae # COL: Bryopsida > Hookeriales
+Schistochilaceae # COL: Jungermanniopsida > Perssoniellales
+Schistostegaceae # COL: Bryopsida > Dicranales
+Schistostegiales # ITIS: synonym of Dicranales (Bryopsida)
+Scouleriaceae # COL: Bryopsida > Scouleriales
+Scouleriales # COL: Bryophyta > Bryopsida
+Seligerales # ITIS: synonym of Grimmiales (Bryopsida)
+Seligeriaceae # COL: Bryopsida > Grimmiales
+Sematophyllaceae # COL: Bryopsida > Hypnales
+Serpotortellaceae # COL: Bryopsida > Dicranales
+Solenostomataceae # COL: Jungermanniopsida > Jungermanniales
+Sorapillaceae # COL: Bryopsida > Sorapillales
+Southbyaceae # COL: Jungermanniopsida > Jungermanniales
+Sphaerocarpaceae # COL: Marchantiopsida > Sphaerocarpales
+Sphaerocarpales # COL: Marchantiophyta > Marchantiopsida
+Sphagnaceae # COL: Sphagnopsida > Sphagnales
+Sphagnales # COL: Bryophyta > Sphagnopsida
+Sphagnophytina # Tropicos: Bryophyta
+Sphagnopsida # COL: Plantae > Bryophyta
+Spiridentaceae # COL: Bryopsida > Hypnodendrales
+Splachnaceae # COL: Bryopsida > Splachnales
+Splachnales # COL: Bryophyta > Bryopsida
+Splachnobryaceae # COL: synonym of Pottiaceae (Pottiales)
+Stephaniellaceae # COL: Jungermanniopsida > Jungermanniales
+Stereophyllaceae # COL: Bryopsida > Hypnales
+Symphyodontaceae # COL: Bryopsida > Hypnales
+Takakiaceae # COL: Takakiopsida > Takakiales
+Takakiales # COL: Bryophyta > Takakiopsida
+Takakiophytina # Tropicos: Bryophyta
+Takakiopsida # COL: Plantae > Bryophyta
+Targioniaceae # COL: Marchantiopsida > Marchantiales
+Tetraphidaceae # COL: Polytrichopsida > Tetraphidales
+Tetraphidales # COL: Bryophyta > Polytrichopsida
+Tetraphidopsida # ITIS: Plantae > Bryophyta
+Thamnobryaceae # COL: synonym of Neckeraceae (Hypnales)
+Theliaceae # COL: Bryopsida > Hypnales
+Thuidiaceae # COL: Bryopsida > Hypnales
+Timmiaceae # COL: Bryopsida > Timmiales
+Timmiales # COL: Bryophyta > Bryopsida
+Timmidae # ITIS: synonym of Timmiidae (Bryophyta)
+Timmiellaceae # moss family (Bryophyta); COL: Bryopsida > Distichiales
+Trachylomataceae # COL: Bryopsida > Hypnales
+Trachypodaceae # COL: synonym of Meteoriaceae (Hypnales)
+Treubiaceae # COL: Haplomitriopsida > Treubiales
+Treubiales # COL: Marchantiophyta > Haplomitriopsida
+Treubiidae # COL: Marchantiophyta > Haplomitriopsida
+Trichotemnomataceae # COL: Jungermanniopsida > Jungermanniales
+Vetaformataceae # ITIS: synonym of Lepicoleaceae (Jungermanniales)
+Viridivelleraceae # COL: Bryopsida > Dicranales
+Wardiaceae # COL: synonym of Dicranaceae (Dicranales)
+Wiesnerellaceae # COL: Marchantiopsida > Marchantiales

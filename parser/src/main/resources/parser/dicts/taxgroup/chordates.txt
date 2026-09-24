@@ -1,2471 +1,2454 @@
-Abelisauridae
-Abrocomidae
-Abyssocottidae
-Acanthisittidae
-Acanthizidae
-Acanthodiformes
-Acanthodii
-Acanthopterygii
-Acanthothoraci
-Acanthuridae
-Acanthuriformes # surgeonfish, tangs (Perciformes)
-Accipitridae
-Accipitriformes
-Accipitrinae
-Acestrorhynchidae
-Achiridae
-Achiropsettidae
-Acinonychinae
-Acipenseridae
-Acipenseriformes
-Acomyinae
-Acontidae
-Acontinae
-Acontoidea
-Acraniata
-Acrobatidae
-Acrochordidae
-Acrochordoidea
-Acropomatidae
-Actinopteri
-Actinopterygii
-Adelastinae
-Adrianichthyidae
-Aegithalidae
-Aegithinidae
-Aegothelidae
-Aepycerotinae
-Afrosoricida
-Agamidae
-Agaminae
-Agnatha
-Agneziidae
-Agonidae
-Agoutidae
-Ahaetuliinae
-Ailuridae
-Ailurinae
-Ailuropinae
-Akodontini
-Akysidae
-Alabiata
-Alaudidae
-Albanerpetontidae
-Albulidae
-Albuliformes
-Alcae
-Alcalinae
-Alcedines
-Alcedinidae
-Alcedininae
-Alcelaphinae
-Alcidae
-Alepisauridae
-Alepocephalidae
-Alestidae
-Allactaginae
-Allactodipodini
-Alligatoridae
-Allobatinae
-Allophrynidae
-Allophryninae
-Allosauridae
-Allosauroidea
-Alopiidae
-Alopoglossidae
-Alouattinae
-Alsodidae
-Alsodinae
-Alvarezsauridae
-Alytidae
-Amarsipidae
-Ambassidae
-Amblycipitidae
-Amblyopsidae
-Amblypteridae
-Amblyrhizinae
-Amblysominae
-Ambystomatidae
-Amiidae
-Amiiformes
-Ammodillini
-Ammodorcini
-Ammodytidae
-Amniota
-Amphibamidae
-Amphibia
-Amphibolurinae
-Amphicentridae
-Amphiliidae
-Amphisbaenia
-Amphisbaenidae
-Amphiumidae
-Anabantidae
-Anablepidae
-Anacanthobatidae
-Anapsida
-Anarhichadidae
-Anatidae
-Anatinae
-Anchariidae
-Anguidae
-Anguillidae
-Anguilliformes
-Anguimorpha
-Anguinae
-Anhimidae
-Anhingidae
-Aniliidae
-Ankylosauria
-Ankylosauridae
-Anniellidae
-Anniellinae
-Anomalepididae
-Anomaloglossinae
-Anomalopidae
-Anomaluridae
-Anomalurinae
-Anomaluromorpha
-Anomochilidae
-Anoplogastridae
-Anoplopomatidae
-Anostomidae
-Anotopteridae
-Anourosoricini
-Anseranatidae
-Anseriformes
-Anserinae
-Antennariidae
-Antiarchi
-Antilocapridae
-Antilopinae
-Antrozoinae
-Antrozoini
-Anura
-Aotidae
-Aotinae
-Aparallactinae
-Aphanosauria
-Aphredoderidae
-Aphyonidae
-Apistidae
-Aploactinidae
-Aplocheilidae
-Aplodactylidae
-Aplodontidae
-Aplodontiidae
-Aplondontiidae
-Aplousobranchia
-Apodi
-Apodidae
-Apodiformes
-Apodinae
-Apogonidae
-Appendicularia
-Appendiculariinae
-Apsidospondyli
-Apteronotidae
-Apterygidae
-Apterygiformes
-Aracanidae
-Araeoscelidia
-Aramidae
-Arapaimidae
-Arcanatoridae
-Archaeopterygidae
-Archegosauridae
-Archosauria
-Archosauriformes
-Archosauromorpha
-Arctocephalinae
-Ardeidae
-Ardeinae
-Argentinidae
-Argentiniformes # smelts and relatives (Teleostei)
-Arhynchobatidae
-Ariidae
-Ariommatidae
-Aromobatidae
-Aromobatinae
-Arripidae
-Artamidae
-Artedidraconidae
-Arthrodira
-Arthroleptidae
-Arthroleptinae
-Artiodactyla
-Arvicanthini
-Arvicolidae
-Arvicolinae
-Ascaphidae
-Ascidiacea
-Ascidiidae
-Asioninae
-Aspidorhynchidae
-Aspredinidae
-Asterophryinae
-Astrobatrachinae
-Astroblepidae
-Astylosternidae
-Astylosterninae
-Ateleopodidae
-Ateleopodiformes
-Atelidae
-Atelinae
-Ateuchosauridae
-Atherinidae
-Atheriniformes
-Atherinomorpha
-Atherinopsidae
-Atractaspididae
-Atractaspidinae
-Atrichornithidae
-Auchenipteridae
-Aulopidae
-Aulopiformes
-Aulorhynchidae
-Aulostomidae
-Australochelidae
-Austroglanididae
-Avemetatarsalia
-Aves
-Azemiopinae
-Babyrousinae
-Babyrousini
-Badidae
-Baenoidea
-Bagridae
-Baiomyini
-Balaenicipitidae
-Balaenidae
-Balaenopteridae
-Balearicinae
-Balionycterini
-Balistidae
-Balitoridae
-Banjosidae
-Barbourisiidae
-Barbuccidae
-Bathochordaeinae
-Bathyclupeidae
-Bathydraconidae
-Bathyergidae
-Bathyerginae
-Bathylagidae
-Bathylutichthyidae
-Bathymasteridae
-Bathysauridae
-Bathysauroididae
-Bathysauropsidae # deep-sea lizardfish family (Aulopiformes)
-Batoidea
-Batrachoididae
-Batrachoidiformes
-Batrachomorpha
-Batrachostomidae
-Batrachostominae
-Batrachylidae
-Batrachylinae
-Bedotiidae
-Belonidae
-Beloniformes
-Bembridae
-Bernieridae
-Berycidae
-Beryciformes
-Bipedidae
-Birgeriidae
-Blanidae
-Blarinellini
-Blarinini
-Blenniidae
-Blenniiformes # blennies
-Boidae
-Boinae
-Bolitoglossinae
-Bolosauridae
-Bolyeriidae
-Bombinatoridae
-Bombycillidae
-Booidea
-Boophinae
-Botaurinae
-Bothidae
-Bovichtidae
-Bovidae
-Bovinae
-Brachaeluridae
-Brachionichthyidae
-Brachiosauridae
-Brachycephalidae
-Brachycephaloidea
-Brachyopidae
-Brachyphyllinae
-Brachyphyllini
-Brachypteraciidae
-Bradypodidae
-Bramidae
-Braminae
-Branchiosauridae
-Branchiostomatidae
-Branchiostomidae # lancelet family (Cephalochordata)
-Bregmacerotidae
-Brevicipitidae
-Brevicipitinae
-Bryconidae
-Bubalidinae
-Bubalinae
-Bucconidae
-Bucerotes
-Bucerotidae
-Bucerotiformes
-Bucorvidae
-Buergeriinae
-Buphagidae
-Burhinidae
-Burramyidae
-Bythitidae
-Cacatuidae
-Cacatuinae
-Cacosterninae
-Cadeidae
-Caeciliaidae
-Caeciliidae
-Caeciliinae
-Caenolestidae
-Caesionidae
-Calabariidae
-Calabariinae
-Calamariinae
-Calcariidae
-Callaeatidae
-Callaeidae
-Callanthiidae
-Callicebinae
-Callichthyidae
-Callionymidae
-Callitrichidae
-Callitrichinae
-Callorhinchidae
-Callosciurinae
-Calomyscidae
-Calomyscinae
-Caluromyinae
-Calyptocephalellidae
-Calyptomenidae # African broadbill family (Aves)
-Calyptomeninae
-Camarasauridae
-Camelidae
-Campephagidae
-Candoiinae
-Canidae
-Caniformia
-Capitonidae
-Capitoninae
-Capitosauria
-Capitosauridae
-Capreolinae
-Caprimulgi
-Caprimulgidae
-Caprimulgiformes
-Caprimulginae
-Caprinae
-Caproidae
-Capromyidae
-Capromyinae
-Captorhinidae
-Caracanthidae # velvetfish family (Scorpaeniformes)
-Carangidae
-Carangiformes # jacks, pompanos
-Carapidae
-Carcharhinidae
-Carcharhiniformes
-Carcharodontosauridae
-Cardinalidae
-Cardiocraniinae
-Carduelinae
-Carettochelyidae
-Cariamae
-Cariamidae
-Cariamiformes
-Carinatae
-Caristiidae
-Carnivora
-Carnosauria
-Carolliinae
-Carphodactylidae
-Castoridae
-Castorimorpha
-Casuariidae
-Casuariiformes
-Cathartidae
-Cathartiformes # New World vultures (Aves)
-Catostomidae
-Caudata
-Caulophrynidae
-Caviidae
-Caviinae
-Cebidae
-Cebinae
-Centracanthidae # picarel family (Spariformes)
-Centrarchidae
-Centriscidae
-Centrogenyidae
-Centrolenidae
-Centroleninae
-Centrolophidae
-Centrophoridae
-Centrophrynidae
-Centropodidae
-Centropodinae
-Centropomidae
-Cephalaspidomorphi # class of jawless vertebrates: lampreys and extinct relatives
-Cephalochordata
-Cephalochordates
-Cephalophinae
-Cephalorhynchinae
-Cerapoda
-Ceratiidae
-Ceratobatrachidae
-Ceratobatrachinae
-Ceratodontiformes
-Ceratophryidae
-Ceratophryinae
-Ceratopsia
-Ceratopsidae
-Ceratosauria
-Ceratosauridae
-Cercocebini
-Cercolabidae
-Cercopithecidae
-Cercopithecinae
-Cercopithecini
-Cercopithecoidea
-Certhiidae
-Cervidae
-Cervinae
-Cerylidae
-Cerylinae
-Cetacea
-Cetartiodactyla # whales + even-toed ungulates (Mammalia)
-Cetiosauridae
-Cetomimidae
-Cetomimiformes
-Cetopsidae
-Cetorhinidae
-Cettiidae
-Ceuthomantidae
-Ceuthomantinae
-Chacidae
-Chaenopsidae
-Chaeropodidae
-Chaetodontidae
-Chaetomyinae
-Chaetopidae
-Chamaeidae
-Chamaeleonidae
-Champsodontidae
-Chanidae
-Channichthyidae
-Channidae
-Chaperininae
-Characidae
-Characiformes
-Charadrii
-Charadriidae
-Charadriiformes
-Charininae
-Chaudhuriidae
-Chaunacidae
-Cheilodactylidae
-Cheimarrichthyidae
-Cheirogaleidae
-Cheirogaleinae
-Cheirogaleoidea
-Cheirolepididae
-Cheiromyidae
-Chelidae
-Cheloniidae
-Chelonioidea
-Chelydridae
-Chelydroidea
-Chiasmodontidae
-Chigutisauridae
-Chikilidae
-Chimaeridae
-Chimaeriformes
-Chinchillidae
-Chionidae
-Chionididae
-Chirocentridae
-Chiromyiformes
-Chironemidae
-Chiroptera
-Chlamydoselachidae
-Chlamyphorinae
-Chlopsidae
-Chlorophthalmidae
-Chloropseidae
-Choeronycterini
-Choeropsinae
-Chondrenchelyiformes
-Chondrichthyes
-Chondrostei
-Chondrosteidae
-Chordata
-Chordeilinae
-Chrysochloridae
-Chrysochloridea
-Chrysotrichinae
-Cichlidae
-Cichliformes # cichlids
-Ciconiidae
-Ciconiiformes
-Cimoliasauridae
-Cinclidae
-Cingulata
-Cionidae
-Cirrhitidae
-Cisticolidae
-Cistugidae
-Citharidae
-Citharinidae
-Cladistia
-Cladoselachidae
-Clariidae
-Claroteidae
-Clavelinidae
-Clethrionomyini
-Clidomyinae
-Climacteridae
-Clinidae
-Clupeidae
-Clupeiformes
-Clupeocephala
-Clupeomorpha
-Cnemophilidae
-Cobitidae
-Coccyzidae
-Cochleariidae
-Cochleariinae
-Coelacanthi
-Coelacanthiformes
-Coelognathosuchia
-Coelophysoidea
-Coeluridae
-Coelurosauria
-Coerebidae
-Coliidae
-Coliiformes
-Colobinae
-Colobini
-Colocongridae
-Colodactylidae
-Colostethinae
-Colubridae
-Colubrinae
-Colubroidea
-Columbae
-Columbidae
-Columbiformes
-Columbiiformes
-Columbinae
-Comephoridae
-Condylurini
-Confuciusornithidae
-Congiopodidae
-Congridae
-Coniluridae
-Connochetidae
-Conopophagidae
-Conrauidae
-Copelata
-Cophomantinae
-Cophylinae
-Coracii
-Coraciidae
-Coraciiformes
-Corcoracidae
-Cordylidae
-Corellidae
-Corvidae
-Coryphaenidae
-Corythaeolinae
-Corytophanidae
-Cotingidae
-Cotinginae
-Cottidae
-Cottocomephoridae
-Cracidae
-Craciformes
-Cracinae
-Cracticidae
-Cranoglanididae
-Craseonycteridae
-Craugastoridae
-Craugastorinae
-Creediidae
-Crenuchidae
-Cricetidae
-Cricetinae
-Cricetini
-Cricetomyinae
-Cricosaurinae
-Criniferinae
-Crocidurinae
-Crocodylia
-Crocodylidae
-Crocodyliformes
-Crocodylomorpha
-Crocopoda
-Crotalinae
-Crotaphytidae
-Crotophagidae
-Crotophaginae
-Crurotarsi
-Cryptacanthodidae
-Cryptobatrachinae
-Cryptobranchidae
-Cryptoclididae
-Cryptodira
-Cryptoproctinae
-Ctenacanthiformes
-Ctenodactylidae
-Ctenodactylomorphi
-Ctenoluciidae
-Ctenomyidae
-Ctenomyini
-Ctenosquamata
-Cuculi
-Cuculidae
-Cuculiformes
-Cuculinae
-Cuniculidae
-Curimatidae
-Cyclocoridae
-Cyclopedidae
-Cyclopteridae
-Cycloramphidae
-Cycloramphinae
-Cyclosalpinae
-Cyclostomi
-Cyematidae
-Cylindrophiidae
-Cynocephalidae
-Cynodontidae
-Cynoglossidae
-Cynopithecinae
-Cynopterinae
-Cynopterini
-Cyprinidae
-Cypriniformes
-Cyprinodontidae
-Cyprinodontiformes
-Cypseloidinae
-Cyttidae
-Dacelonidae
-Dactylethrinae
-Dactyloidae
-Dactylomyinae
-Dactylopteridae
-Dactylopteriformes
-Dactyloscopidae
-Dalatiidae
-Damalidae
-Danionidae # danio/minnow family (Cypriniformes)
-Dapedidae
-Dasyatidae
-Dasyornithidae
-Dasypodidae
-Dasypodinae
-Dasyproctidae
-Dasyproctinae
-Dasyuridae
-Dasyurinae
-Dasyurini
-Dasyuromorphia
-Datnioididae
-Daubentoniidae
-Deinonychosauria
-Delanomyinae
-Delanymyinae
-Delphinidae
-Dendrerpetontidae
-Dendrobatidae
-Dendrobatinae
-Dendrobatoidea
-Dendrocolaptidae
-Dendrocygnidae
-Dendrocygninae
-Dendromurinae
-Dendropsophinae
-Dentatherinidae
-Denticipitidae
-Deomyes
-Deomyinae
-Derichthyidae
-Dermatemydidae
-Dermochelyidae
-Dermophiidae
-Dermoptera
-Desmaninae
-Desmanini
-Desmodontinae
-Desmodontini
-Desmognathinae
-Diapsida
-Diatomyidae
-Diazonidae
-Dibamia
-Dibamidae
-Dicaeidae
-Dicamptodontidae
-Diceratiidae
-Dichistiidae
-Diclidurini
-Dicotylidae
-Dicroglossidae
-Dicroglossinae
-Dicrostonychini
-Dicrostonyxini
-Dicruridae
-Didelphidae
-Didelphimorphia
-Didelphinae
-Didemnidae
-Didunculinae
-Dimeatidae
-Dinolestidae
-Dinomyidae
-Dinopercidae
-Dinosauria
-Dinosauriformes
-Diodontidae
-Diomedeidae
-Diphyllini
-Diplodactylidae
-Diplodocoidea
-Diploglossa
-Diploglossidae
-Diplomystidae
-Dipneusti
-Dipodes
-Dipodidae
-Dipodinae
-Dipodoidea
-Dipodomyinae
-Diprotodontia
-Dipsadidae # rear-fanged snake family (Squamata)
-Dipsadinae
-Dipsidae
-Diretmidae
-Discoglossidae
-Dissorophidae
-Distichodontidae
-Dobsoniini
-Dolichotinae
-Doliolida
-Doliolidae
-Doliolidina
-Doliolunidae
-Doliopsidae
-Doliopsidina
-Doliopsoididae
-Dolomyinae
-Donacobiidae
-Doradidae
-Dorypteridae
-Dracohors
-Dracones
-Draconettidae
-Draconinae
-Drepaneidae
-Drepanididae
-Drepanidinae
-Dromadidae
-Dromaeosauridae
-Dromaiidae
-Dugongidae
-Dugonginae
-Dulidae
-Dussumieriidae
-Dvinosauria
-Dyrosauridae
-Dyrosauroidea
-Dyscophinae
-Echeneidae
-Echimyidae
-Echimyinae
-Echinorhinidae
-Echinorhiniformes
-Echinosoricinae
-Echymiperinae
-Ectophyllini
-Edentata
-Egerniidae
-Egerniinae
-Eidolinae
-Elachuridae
-Elaeniinae
-Elapidae
-Elapinae
-Elapoidea
-Elasmobranchii
-Elasmodontomyinae
-Elasmosauridae
-Elassomatidae
-Eleginopsidae
-Eleotridae
-Elephantidae
-Eleutherodactylidae
-Eleutherodactylinae
-Ellimmichthyiformes
-Ellobiusini
-Ellopostomatidae
-Elopidae
-Elopiformes
-Elopocephala
-Elopomorpha
-Emballonuridae
-Emballonurina
-Emballonurinae
-Emballonurini
-Emballonuroidea
-Emberizidae
-Embiotocidae
-Emmelichthyidae
-Emydidae
-Enantiornithes
-Engraulidae
-Enoplosidae
-Enterogona # tunicates (Ascidiacea, Urochordata)
-Eonycterini
-Ephippidae
-Epictinae
-Epigonidae
-Epomophorini
-Eptesicini
-Equidae
-Erethistidae
-Erethizontidae
-Erethizontinae
-Ereuniidae
-Erinaceidae
-Erinaceinae
-Erinaceomorpha
-Erithizontidae
-Eryopidae
-Erythrinidae
-Erythrocercidae
-Erythrosuchidae
-Eschmeyeridae
-Eschrichtiidae
-Esocidae
-Esociformes
-Estrildidae
-Estrildinae
-Etmopteridae
-Eublepharidae
-Euchoreutinae
-Euclichthyidae
-Eucrocopoda
-Eugeneodontiformes
-Eugnathostomata
-Eugongylidae
-Eugongylinae
-Euhelopodidae
-Euherdmaniidae
-Eulipotyphla # hedgehogs, shrews, moles (Mammalia)
-Eumysopinae
-Euparkeriidae
-Eupelycosauria
-Eupetidae
-Euphractinae
-Eupleridae
-Euplerinae
-Eureptilia
-Eurostopodidae
-Eurostopodinae
-Eurylaimidae
-Eurylaiminae
-Eurylami
-Eurypharyngidae
-Eurypterygii
-Eurypygae
-Eurypygidae
-Eurypygiformes
-Euselachii
-Eusuchia
-Euteleostei
-Eutheria
-Evermannellidae
-Exocoetidae
-Fabrosauridae
-Falcatidae
-Falconidae
-Falconiformes
-Falconinae
-Felidae
-Feliformia
-Felinae
-Fibrini
-Fistulariidae
-Fluvicolinae
-Folivora
-Formicariidae
-Fregatidae
-Fringillidae
-Fringillinae
-Fritillariidae
-Fritillariinae
-Fundulidae
-Furipteridae
-Furnariidae
-Gacellidae
-Gadidae
-Gadiformes
-Galagidae
-Galagonidae
-Galaxiidae
-Galbulae
-Galbulidae
-Galbuliformes
-Galeomorphii
-Galericinae
-Galidiinae
-Galli
-Galliformes
-Gasteropelecidae
-Gasterosteidae
-Gasterosteiformes
-Gastrophryninae
-Gavialidae
-Gaviidae
-Gaviiformes
-Gekkonidae
-Gekkota
-Gempylidae
-Genyophryninae
-Geoemydidae
-Geogalinae
-Geomyidae
-Georychinae
-Geotriidae
-Gerbillinae
-Gerboidae
-Gerreidae
-Gerrhonotinae
-Gerrhopilidae
-Gerrhosauridae
-Gibberichthyidae
-Gigantactinidae
-Giganturidae
-Ginglymodi
-Ginglymostomatidae
-Giraffidae
-Glareolidae
-Glaucosomatidae
-Glaucostegidae
-Gliridae
-Glirinae
-Glirini
-Glirulinae
-Globicephalidae
-Glossophaginae
-Glossophagini
-Glyphonycterinae
-Gnathanacanthidae
-Gnathostomata
-Gobiesocidae
-Gobiesociformes
-Gobiidae
-Gobiiformes # gobies
-Goniopholididae
-Gonorhynchiformes
-Gonorynchidae
-Gonorynchiformes
-Gonostomatidae
-Goodeidae
-Gourinae
-Grallariidae
-Grallinidae
-Grammatidae
-Grammicolepididae
-Graphiurinae
-Grayiinae
-Grues
-Gruidae
-Gruiformes
-Gruinae
-Guildayichthyidae
-Guloninae
-Gymnarchidae
-Gymnophiona
-Gymnophthalmidae
-Gymnotidae
-Gymnotiformes
-Gymnuridae
-Gymnuromyinae
-Gyrinocheilidae
-Hadrosauridae
-Haematopodidae
-Haemulidae
-Halcyoninae
-Halecomorphi
-Halecostomi
-Halosauridae
-Hapalogenyidae
-Haplodontidae
-Haploodontidae
-Haploodontini
-Haplorrhini
-Harpagiferidae
-Harpyionycterini
-Harpyionyterinae
-Heleophrynidae
-Helictidinae
-Helictidini
-Heliornithes
-Heliornithidae
-Helodermatidae
-Helostomatidae
-Hemibelideinae
-Hemidactyliinae
-Hemigaleidae
-Hemigalinae
-Hemiodontidae
-Hemiphractidae
-Hemiphractinae
-Hemiprocnidae
-Hemiramphidae
-Hemiscylliidae
-Hemisotidae
-Hemitripteridae
-Hepsetidae
-Heptapteridae
-Heptaxodontidae
-Heptaxodontinae
-Herpelidae
-Herpestidae
-Herpestinae
-Herrerasauridae
-Hesperomyinae
-Heterenchelyidae
-Heterocephalinae
-Heterodontidae
-Heterodontiformes
-Heterodontosauridae
-Heteromyidae
-Heteromyinae
-Heteropneustidae
-Heteropsomyinae
-Hexagrammidae
-Hexanchidae
-Hexanchiformes
-Hexatrygonidae
-Hexolobodontinae
-Himantolophidae
-Hiodontidae
-Hippopotamidae
-Hipposideridae
-Hipposiderinae
-Hippotraginae
-Hirundinidae
-Hispidoberycidae
-Holoadeninae
-Holocentridae
-Holocephali
-Holozoidae
-Homalopsidae
-Hominidae
-Homininae
-Hominoidea
-Hoplichthyidae
-Hoplocercidae
-Hoplophryninae
-Howellidae
-Hsunycterini
-Hyaenidae
-Hyaeninae
-Hyalinobatrachinae
-Hybodontiformes
-Hydrobatidae
-Hydrobatinae
-Hydrochaeridae
-Hydrochoerinae
-Hydrodamalinae
-Hydromyinae
-Hydrophiinae
-Hydropotinae
-Hydrosaurinae
-Hylidae
-Hylinae
-Hyliotidae
-Hylobatidae
-Hylocitreidae
-Hylodidae
-Hylomyinae
-Hyloxalinae
-Hynobiidae
-Hynobiinae
-Hyperoliidae
-Hyperoliinae
-Hyperoodontidae
-Hyperoodontina
-Hypnidae
-Hypnosqualea
-Hypobythiidae
-Hypocolidae
-Hypocoliidae
-Hypopomidae
-Hypoptychidae
-Hyposaurinae
-Hypsilophodontidae
-Hypsiprymnodontidae
-Hyracoidea
-Hystricidae
-Hystricognatha
-Hystricognathi
-Hystricomorpha
-Ibidorhynchidae
-Ichthyodectidae
-Ichthyomyini
-Ichthyophiidae
-Ichthyornithiformes
-Ichthyosauria
-Icosteidae
-Ictaluridae
-Icteridae
-Ictonychinae
-Idiurinae
-Iguania
-Iguanidae
-Iguanodectidae
-Iguanodontidae
-Incertovenator
-Indicatoridae
-Indostomidae
-Indotyphlidae
-Indridae
-Indriidae
-Iniidae
-Iniopterygiformes
-Insectivora
-Ipnopidae
-Irenidae
-Ischymomyini
-Isolobodontinae
-Isonidae
-Istiophoridae
-Jacanidae
-Jeholornis
-Jynginae
-Kalophryninae
-Kerivoulinae
-Kinosternidae
-Kneriidae
-Kogiidae
-Kowalevskiidae
-Kraemeriidae
-Kryptoglanidae
-Kuhliidae
-Kurtidae
-Kyphosidae
-Labiata
-Labridae
-Labrisomidae
-Lacantuniidae
-Lacertidae
-Lacertilia
-Lacertoidea
-Lactariidae
-Lagerpeton
-Lagomorpha
-Lagurini
-Laliostominae
-Lamnidae
-Lamniformes
-Lampridae
-Lampridiformes
-Lampriformes
-Lamprophiidae
-Lamprophilidae
-Laniidae
-Lankanectinae
-Lanthanotidae
-Laonastidae
-Lari
-Laridae
-Larinae
-Lasiurini
-Lateolabracidae
-Latidae
-Latimeriidae
-Latridae
-Lebiasinidae
-Leimacomyinae
-Leiocephalidae
-Leiognathidae
-Leiolepidinae
-Leiopelmatidae
-Leiosauridae
-Leiothrichidae
-Leiotrichidae
-Leithiidae
-Leithiinae
-Leiuperidae
-Leiuperinae
-Lemuridae
-Lemuriformes
-Lemuroidea
-Lepidogalaxiidae
-Lepidophyminae
-Lepidosauria
-Lepidosauromorpha
-Lepidosirenidae
-Lepilemuridae
-Lepisosteidae
-Lepisosteiformes
-Leporidae
-Lepospondyli
-Leptobramidae
-Leptocardii
-Leptochariidae
-Leptochilichthyidae
-Leptodactylidae
-Leptodactylinae
-Leptolepididae
-Leptopelinae
-Leptoscopidae
-Leptosomidae
-Leptosomiformes
-Leptosominae
-Leptotyphlopidae
-Leptotyphlopinae
-Lethrinidae
-Limnodynastidae
-Linophrynidae
-Liolaemidae
-Lipotidae
-Lissamphibia
-Lissodelphinae
-Lithornithiformes
-Litoriinae
-Liuraninae
-Lobotidae
-Locustellidae
-Lonchophyllinae
-Lonchophyllini
-Lonchorhininae
-Lophichthyidae
-Lophiidae
-Lophiiformes
-Lophiomyinae
-Lophotidae
-Lophyohylinae
-Loricariidae
-Loridae
-Loriinae
-Lorisidae
-Lorisiformes
-Lorisinae
-Lotidae
-Loxocemidae
-Lutjanidae
-Lutrinae
-Luvaridae
-Lybiidae
-Lybiinae
-Lygosomidae
-Lygosominae
-Lygosomoidea
-Mabuyidae
-Mabuyinae
-Macacidae
-Machaerirhynchidae
-Macroglossusinae
-Macronaria
-Macrophyllini
-Macropodidae
-Macropodiformes
-Macropodinae
-Macroscelidea
-Macroscelididae
-Macrosemiidae
-Macrosphenidae
-Macrotinae
-Macrouridae
-Malacanthidae
-Malaconotidae
-Malapteruridae
-Maluridae
-Mambachiton
-Mammalia
-Manidae
-Maniraptora
-Maniraptoriformes
-Mantellidae
-Mantellinae
-Marasuchus
-Marmotini
-Marsupialia
-Massospondylidae
-Mastacembelidae
-Mastodonsauridae
-Megachasmidae
-Megachiroptera
-Megadermatidae
-Megaladapidae
-Megalaimidae
-Megalaiminae
-Megalonychidae
-Megalosauridae
-Megaluridae
-Megapodiidae
-Megophryidae
-Meiolaniidae
-Melamphaidae
-Melanobatrachinae
-Melanocetidae
-Melanocharitidae
-Melanonidae
-Melanopareiidae
-Melanotaeniidae
-Meleagrididae
-Meleagridinae
-Melinae
-Meliphagidae
-Mellivorinae
-Mellivorini
-Melonycterini
-Menidae
-Menurae
-Menuridae
-Mephitidae
-Mephitinae
-Merioninae
-Merlucciidae
-Meropes
-Meropidae
-Mesitornithes
-Mesitornithidae
-Mesitornithiformes
-Mesoenatidae
-Mesoenatides
-Mesoeucrocodylia
-Mesosauridae
-Mesosiphneinae
-Metasuchia
-Metatheria
-Metopophora
-Metoposauridae
-Metriorhynchidae
-Micrixalidae
-Micrixilidae
-Microbiotheria
-Microbiotheriidae
-Microchiroptera
-Microdesmidae
-Microhylidae
-Microhylinae
-Micronycterinae
-Micropsittinae
-Microstomatidae
-Microtidae
-Millerettidae
-Mimidae
-Mimiidae
-Miniopteridae
-Miniopterinae
-Mitsukurinidae
-Mochokidae
-Mohoidae
-Mohouidae
-Molgulidae
-Molidae
-Molossidae
-Molossinae
-Momotidae
-Monacanthidae
-Monarchidae
-Monocentridae
-Monodactylidae
-Monodontidae
-Monognathidae
-Monotremata
-Mordaciidae
-Moridae
-Moringuidae
-Mormoopidae
-Mormyridae
-Moronidae
-Moschidae
-Motacillidae
-Mugilidae
-Mugiliformes
-Mullidae
-Muntiacinae
-Muraenesocidae
-Muraenidae
-Muraenolepididae
-Muridae
-Muriformes
-Murinae
-Murininae
-Muroidea
-Muscardinidae
-Muscicapidae
-Musophagi
-Musophagidae
-Musophagiformes
-Musophaginae
-Mustelidae
-Mustelinae
-Mustilidae
-Mycetinae
-Myctophidae
-Myctophiformes
-Myliobatidae
-Myliobatiformes
-Myobatrachidae
-Myobatrachoidea
-Myocastoridae
-Myocastorinae
-Myodini
-Myomorpha
-Myonycterini
-Myosidae
-Myosoricinae
-Myospalacinae
-Myotalpinae
-Myotinae
-Myoxidae
-Myoxinae
-Myrmecobiidae
-Myrmecophagidae
-Myrocongridae
-Mystacinidae
-Mysticeti
-Mystromyinae
-Myxini
-Myxinidae
-Myxiniformes
-Myzopodidae
-Nandidae
-Nandiniidae
-Nandiniinae
-Narcinidae
-Narkidae
-Nasikabatrachidae
-Natalidae
-Natricidae # water snake family (Squamata)
-Natricinae
-Nectariniidae
-Nectogalini
-Nemacheilidae
-Nematistiidae
-Nematogenyidae
-Nemichthyidae
-Nemipteridae
-Neoaves
-Neobalaenidae
-Neoceratiidae
-Neoceratodontidae
-Neofibrini
-Neognathae
-Neognathi
-Neomorphidae
-Neomorphinae
-Neopterygii
-Neornithes
-Neosauropoda
-Neoscopelidae
-Neosebastidae
-Neoselachii
-Neosittidae
-Neosuchia
-Neoteleostei
-Neotominae
-Nesomyidae
-Nesomyinae
-Nesophontidae
-Nestorinae
-Nettastomatidae
-Neurotrichini
-Nicatoridae
-Noctilionidae
-Noctilionoidea
-Nodosauridae
-Nomeidae
-Normanichthyidae
-Notacanthidae
-Notacanthiformes
-Nothobranchiidae
-Nothosauria
-Nothosauroidea
-Notiomystidae
-Notiosoricini
-Notocheiridae
-Notopteridae
-Notopterisinae
-Notoryctemorphia
-Notoryctidae
-Notosuchidae
-Notosudidae
-Nototheniidae
-Numididae
-Numidinae
-Nyctibatrachidae
-Nyctibatrachinae
-Nyctibiidae
-Nyctibiiformes
-Nycticeiini
-Nyctimeninae
-Nyctophilini
-Occidozyginae
-Oceanitidae # austral storm petrel family (Aves)
-Oceanitinae
-Ochotonidae
-Ochrotomyini
-Octacnemidae
-Octodontidae
-Odacidae
-Odobenidae
-Odocoileinae
-Odontaspididae
-Odontobatrachidae
-Odontobutidae
-Odontoceti
-Odontophoridae
-Odontophrynidae
-Ogcocephalidae
-Oikopleuridae
-Oikopleurinae
-Olfactores
-Olyridae
-Omeisauridae
-Omosudidae
-Ondatrinae
-Ondatrini
-Oneirodidae
-Onychodactylinae
-Onychomyini
-Ophichthidae
-Ophidiidae
-Ophidiiformes
-Opisthocomi
-Opisthocomidae
-Opisthocomiformes
-Opisthoproctidae
-Opistognathidae
-Oplegnathidae
-Opluridae
-Orcinae
-Orectolobidae
-Orectolobiformes
-Oreoicidae
-Oreosomatidae
-Oriolidae
-Ornithischia
-Ornithodira
-Ornithomimidae
-Ornithomorpha
-Ornithopoda
-Ornithorhynchidae
-Ornithosuchia
-Ornithosuchidae
-Ornithotarsi
-Ornithothoraces
-Ornithurae
-Orthonychidae
-Orycteropodidae
-Oryginae
-Oryzomyini
-Oryzorictinae
-Oscines
-Osmeridae
-Osmeriformes
-Osphronemidae
-Ostariophysi
-Osteichthyes
-Osteoglossidae
-Osteoglossiformes
-Osteoglossomorpha
-Ostraciidae
-Ostracoberycidae
-Otariidae
-Otariinae
-Otides
-Otidiformes
-Otidiphabinae
-Otocephala
-Otomyinae
-Otophryninae
-Oviraptorosauria
-Oxynotidae
-Oxyruncidae
-Pachycephalidae
-Pachycephalosauria
-Pachycormidae
-Pachypleurosauria
-Palaeognathae
-Palaeonisciformes
-Paleognathae
-Pandionidae
-Pandioninae
-Pangasiidae
-Pantherinae
-Pantodontidae
-Panuridae
-Papinae
-Papioninae
-Papionini
-Parabembridae
-Parabrotulidae
-Paracanthopterygii
-Paracrocodylomorpha
-Paradipodinae
-Paradipodini
-Paradisaeidae
-Paradoliopsidae
-Paradoxurinae
-Paralepididae
-Paralichthyidae
-Paramythiidae
-Parascorpididae
-Parascylliidae
-Parasemionotidae
-Paratelmatobiinae
-Paraulopidae
-Parazenidae
-Pardalotidae
-Pareatidae
-Pareiasauridae
-Pareidae
-Paridae
-Parodontidae
-Parulidae
-Passerellidae # New World sparrow family (Aves)
-Passeridae
-Passeriformes
-Pataecidae
-Patagopteryx
-Paucituberculata
-Pedetidae
-Pedionomidae
-Pegasidae
-Pelecanidae
-Pelecaniformes
-Pelecanoididae
-Peleinae
-Pellorneidae
-Pelobatidae
-Pelodryadidae
-Pelodryadinae
-Pelodytidae
-Pelomedusidae
-Pelomedusoidea
-Peltopleuriformes
-Pempheridae
-Penelopinae
-Pentanchidae # finback catshark family (Carcharhiniformes)
-Peramelemorphia
-Peramelidae
-Peramelinae
-Percichthyidae
-Percidae
-Perciformes
-Perciliidae
-Percomorpha
-Percophidae
-Percopsidae
-Percopsiformes
-Perdicinae
-Perimyotini
-Perissodactyla
-Peristediidae
-Perleidiformes
-Perodicticinae
-Perognathidinae
-Perognathinae
-Peromyscini
-Perophoridae
-Peroryctidae
-Peroryctinae
-Perryenidae
-Petalichthyida
-Petalodontiformes
-Petauridae
-Petauristinae
-Petauroidea
-Petroicidae
-Petromuridae
-Petromyidae
-Petromyscinae
-Petromyzonti
-Petromyzontidae
-Petromyzontiformes
-Petropedetidae
-Peucedramidae
-Phacochoerinae
-Phacochoerini
-Phaenicophaeinae
-Phaethontidae
-Phaethontiformes
-Phaethornithinae
-Phalacrocoracidae
-Phalangeridae
-Phalangeriformes
-Phalangerinae
-Phalangerini
-Phalangeroidea
-Phalaropodidae
-Phalaropodinae
-Phallostethidae
-Phanerinae
-Phascogalini
-Phascolarctidae
-Phasianinae
-Phenacomyini
-Philepittidae
-Phlebobranchia
-Phloeomyinae
-Phocidae
-Phocoenidae
-Phodilinae
-Phoenicopteridae
-Phoenicopteriformes
-Phoeniculidae
-Pholidae
-Pholidichthyidae
-Pholidophoridae
-Pholidopleuriformes
-Pholidota
-Phosichthyidae
-Phractolaemidae
-Phrynobatrachidae
-Phrynomerinae
-Phrynosomatidae
-Phycidae
-Phyllodactylidae
-Phyllomedusidae
-Phyllomedusinae
-Phyllonycterinae
-Phylloscopidae
-Phyllostomidae
-Phyllostominae
-Phyllostomini
-Phyllotiini
-Physeteridae
-Phytosauridae
-Phytotomidae
-Phytotominae
-Phyzelaphryninae
-Picathartidae
-Pici
-Picidae
-Piciformes
-Picinae
-Picumninae
-Pilosa
-Pimelodidae
-Pinguipedidae
-Pinnipedia
-Pipidae
-Pipinae
-Pipistrellini
-Pipridae
-Pisanosauridae
-Pitheciidae
-Pitheciinae
-Pittidae
-Pitymyini
-Pityriaseidae
-Placentelidae
-Placodermi
-Placodontia
-Plagiodontinae
-Plagiosauridae
-Planigalini
-Platacanthomyidae
-Platacanthomyinae
-Plataleinae
-Platanistidae
-Plateosauridae
-Platycephalidae
-Platynota
-Platyrhinidae
-Platyrinchinae
-Platysteiridae
-Platysternidae
-Platytroctidae
-Plecoglossidae
-Plecotini
-Plectrogeniidae
-Plerotini
-Plesiobatidae
-Plesiopidae
-Plesiosauria
-Plesiosauroidea
-Plethodontidae
-Plethodontinae
-Pleurodelinae
-Pleurodira
-Pleuronectidae
-Pleuronectiformes
-Pleurosauridae
-Pliomyini
-Pliophenacomyini
-Pliosauridae
-Pliosauroidea
-Ploceidae
-Plotosidae
-Plurellidae
-Pluvianellidae
-Pluvianidae
-Pnoepygidae
-Podargidae
-Podarginae
-Podicepidiformes
-Podicipedidae
-Podicipediformes
-Podocnemididae
-Poeciliidae
-Polioptilidae
-Polyborinae
-Polycentridae
-Polychrotidae
-Polycitoridae
-Polyclinidae
-Polycotylidae
-Polymixiidae
-Polymixiiformes
-Polynemidae
-Polyodontidae
-Polyprionidae
-Polypteridae
-Polypteriformes
-Pomacanthidae
-Pomacentridae
-Pomatomidae
-Pomatostomidae
-Pongidae
-Ponginae
-Pontoporiidae
-Poposauridae
-Potamochoerini
-Potamogalinae
-Potamotrygonidae
-Potoroidae
-Potosinae
-Presbytinae
-Presbytini
-Prestosuchidae
-Priacanthidae
-Primates
-Prionodontidae
-Prionodontinae
-Prionopidae
-Pristidae
-Pristiformes # sawfish (Elasmobranchii)
-Pristigasteridae
-Pristiophoridae
-Pristiophoriformes
-Pristolepididae
-Proboscidea
-Procaviidae
-Procellariidae
-Procellariiformes
-Prochilodontidae
-Procolophonidae
-Procyonidae
-Procyoninae
-Profundulidae
-Proganochelyidae
-Prolacertiformes
-Prolagidae
-Promeropidae
-Prometheomyinae
-Proscylliidae
-Prosiphneinae
-Prosymnidae
-Protanguillidae
-Proteidae
-Protelinae
-Proterosuchidae
-Protoceratopsidae
-Protohynobiinae
-Protopolyclinidae
-Protopteridae
-Protorothyrididae
-Protosuchidae
-Prototheria
-Protoxerini
-Prunellidae
-Psammophiidae
-Psettodidae
-Pseudaphritidae
-Pseudaspididae
-Pseudidae
-Pseudinae
-Pseudocalyptomeninae
-Pseudocarchariidae
-Pseudocheiridae
-Pseudocheirinae
-Pseudochiropsinae
-Pseudochromidae
-Pseudodistomidae
-Pseudomugilidae
-Pseudomyinae
-Pseudopimelodidae
-Pseudosuchia
-Pseudotriakidae
-Pseudotrichonotidae
-Pseudoxenodontinae
-Pseudoxyrhophiidae
-Psilorhynchidae
-Psittacidae
-Psittaciformes
-Psittacinae
-Psittacosauridae
-Psittaculidae # Old World parrot family (Aves)
-Psittrichadinae
-Psophiidae
-Psophodidae
-Psychrolutidae
-Pteralopini
-Ptereleotridae # fire goby family (Gobiiformes)
-Pterocletes
-Pteroclidae
-Pteroclididae
-Pteroclidiformes
-Pterocliformes
-Pterodactyloidea
-Pteromyinae
-Pteromyini
-Pteropodidae
-Pteropodinae
-Pteropodini
-Pterosauria
-Pterosauromorpha
-Ptilichthyidae
-Ptilocercidae
-Ptilocercinae
-Ptilogonatidae
-Ptilonorhynchidae
-Ptychadenidae
-Ptycholepididae
-Ptyctodontida
-Pycnodontiformes
-Pycnonotidae
-Pygopodidae
-Pygostylia
-Pyrosomatida
-Pyrosomatidae
-Pyrosomatinae
-Pyrosomida
-Pyrostremmatinae
-Pythonidae
-Pythonoidea
-Pyuridae
-Pyxicephalidae
-Pyxicephalinae
-Rachycentridae
-Radiicephalidae
-Rahonavis
-Rajidae
-Rajiformes
-Rallidae
-Ramphastidae
-Ramphastinae
-Ranidae
-Ranixalidae
-Ratites
-Rattidae
-Ratufinae
-Recurvirostridae
-Redfieldiidae
-Reduncinae
-Regalecidae
-Regulidae
-Reithrodontini
-Reithrodontomyini
-Remizidae
-Reptilia
-Retropinnidae
-Rhabdornithidae
-Rhachianectidae
-Rhacophoridae
-Rhacophorinae
-Rhamphichthyidae
-Rhamphocottidae
-Rhamphorhynchoidea
-Rheidae
-Rheiformes
-Rhenanida
-Rheobatrachidae
-Rhinatrematidae
-Rhincodontidae
-Rhinesuchidae
-Rhineuridae
-Rhinidae
-Rhinobatidae
-Rhinocerotidae
-Rhinochimaeridae
-Rhinocryptidae
-Rhinodermatidae
-Rhinolophidae
-Rhinolophinae
-Rhinolophoidea
-Rhinonycteridae
-Rhinophrynidae
-Rhinophyllinae
-Rhinopomastidae
-Rhinopomatidae
-Rhinopomatoidea
-Rhinopristiformes
-Rhipiduridae
-Rhizomyinae
-Rhomaleosauridae
-Rhombomyinae
-Rhyacichthyidae
-Rhyacotritonidae
-Rhynchobatidae # wedgefish family (Elasmobranchii)
-Rhynchocephalia
-Rhynchomyinae
-Rhynchosauridae
-Rhynchotinae
-Rhynocheti
-Rhynochetidae
-Rhytidosteidae
-Riojasaurus
-Ristellidae
-Ritterellidae
-Rivulidae
-Rodentia
-Romeriida
-Rondeletiidae
-Rostratulidae
-Rousettinae
-Rousettini
-Rupicolinae
-Rynchopidae
-Rynchopinae
-Saccopharyngidae
-Saccopharyngiformes
-Saccostomurinae
-Saimiriinae
-Salamandridae
-Salamandrinae
-Salamandrininae
-Salangidae
-Salientia
-Salmonidae
-Salmoniformes
-Salpida
-Salpidae
-Salpinae
-Salpingotinae
-Saltoposuchidae
-Samaridae
-Sanziniinae
-Sapayoaidae
-Sarcopterygii # lobe-finned fishes and tetrapods
-Sarothruridae # flufftail family (Aves)
-Saurichthyiformes
-Saurischia
-Sauropoda
-Sauropodomorpha
-Sauropsida
-Sauropterygia
-Scalopinae
-Scalopini
-Scandentia
-Scaphiophryninae
-Scaphiopodidae
-Scapteromyini
-Scaptonychini
-Scaridae
-Scelidosauridae
-Schilbeidae
-Schindleriidae
-Sciaenidae
-Scinaxinae
-Scincidae
-Scinciformata
-Scincinae
-Scincoidea
-Scincomorpha
-Sciuravida
-Sciuridae
-Sciurillinae
-Sciurinae
-Sciurini
-Sciurognathi
-Sciuromorpha
-Scleromochlus
-Scolecomorphidae
-Scolecomorphinae
-Scolopacidae
-Scolopacinae
-Scoloplacidae
-Scomberesocidae
-Scombridae
-Scombrolabracidae
-Scombropidae
-Scopelarchidae
-Scophthalmidae
-Scopidae
-Scorpaenidae
-Scorpaeniformes
-Scotocercidae
-Scotonycterini
-Scotophilini
-Scutisoricinae
-Scyliorhinidae
-Scytalinidae
-Sebastidae
-Sebecidae
-Seleviniidae
-Semionotidae
-Semnopithecinae
-Semnornithidae
-Serpentes
-Serpenticobitidae
-Serranidae
-Serrasalmidae
-Serrivomeridae
-Setarchidae
-Shinisauridae
-Shinisauroidea
-Sibynophiinae
-Sicistidae
-Sicistinae
-Siganidae
-Sigmodontes
-Sigmodontinae
-Sillaginidae
-Siluridae
-Siluriformes
-Simiiformes
-Siphneinae
-Siphonopidae
-Sirenia
-Sirenidae
-Sisoridae
-Sittidae
-Sminthopsinae
-Sminthopsini
-Smithornithinae
-Soleidae
-Solenodontidae
-Solenostomidae
-Solidocrania
-Somniosidae
-Sooglossidae
-Soricidae
-Soricinae
-Soricini
-Soricomorpha
-Spalacidae
-Spalacinae
-Sparidae
-Spelerpinae
-Sphaerodactylidae
-Sphenacomorpha
-Spheniscidae
-Sphenisciformes
-Sphenodontia
-Sphenodontida
-Sphenodontidae
-Sphenomorphidae
-Sphenomorphinae
-Sphenosuchidae
-Sphyraenidae
-Sphyrnidae
-Spinosauridae
-Spinosauroidea
-Squalea
-Squalidae
-Squaliformes
-Squamata
-Squatinidae
-Squatiniformes
-Stagonolepididae
-Staurotypidae
-Steatornithes
-Steatornithidae
-Steatornithiformes
-Stegosauria
-Stegostomatidae
-Stegotrachelidae
-Stenidae
-Stenodelphinidae
-Stenodermatinae
-Stenodermatini
-Stenonycterini
-Stenostiridae
-Stephanoberycidae
-Stephanoberyciformes
-Stercorariidae
-Stercorariinae
-Sterninae
-Sternoptychidae
-Sternopygidae
-Stethacanthidae
-Sthenurinae
-Stichaeidae
-Stictonettinae
-Stolidobranchia
-Stomiidae
-Stomiiformes
-Stomozoidae
-Strabomantidae
-Strabomantinae
-Strepsirrhini
-Strigidae
-Strigiformes
-Striginae
-Strigopidae
-Strigopinae
-Stromateidae
-Struthionidae
-Struthioniformes
-Sturnidae
-Sturninae
-Sturnirini
-Styelidae
-Stylephoridae
-Stylodipodina
-Subterbranchialia
-Suchia
-Suidae
-Suinae
-Suini
-Sulidae
-Suliformes
-Surniinae
-Susuidae
-Sylviidae
-Symmoriida
-Symmoriidae
-Symphysanodontidae
-Synanceiidae
-Synaphobranchidae
-Synapsida
-Synaptomyini
-Synbranchidae
-Synbranchiformes
-Syngnathidae
-Syngnathiformes
-Synodontidae
-Tachyglossidae
-Tachyoryctinae
-Tadorninae
-Talpidae
-Talpinae
-Talpini
-Taphozoinae
-Tapiridae
-Tarsiidae
-Tarsiiformes
-Tarsipedidae
-Taterillinae
-Taurotragidae
-Taxidiinae
-Tayassuidae
-Teiidae
-Teleosauridae
-Teleostei
-Telmatherinidae
-Telmatobiidae
-Telmatobiinae
-Temnospondyli
-Tenrecidae
-Tenrecinae
-Tenrecomorpha
-Tephrodornithidae
-Terapontidae
-Testudinata
-Testudines
-Testudinidae
-Testudinoidea
-Tetanurae
-Tethysuchia
-Tetrabrachiidae
-Tetracerotidae
-Tetragonuridae
-Tetraodontidae
-Tetraodontiformes
-Tetraonidae
-Tetraoninae
-Tetrapoda
-Tetrarogidae
-Thalasseleotrididae
-Thaliacea
-Thamnophilidae
-Thaumatichthyidae
-Thecodontosaurus
-Theria
-Therizinosauridae
-Theropithecini
-Theropoda
-Thinocoridae
-Thomasomyini
-Thraupidae
-Threskiornithidae
-Threskiornithinae
-Thryonomyidae
-Thylacinidae
-Thylacomyidae
-Thyreophora
-Thyropteridae
-Tichodromidae
-Tigrisomatinae
-Timaliidae
-Tinamidae
-Tinamiformes
-Tinaminae
-Titanosauridae
-Titanosauriformes
-Tityridae
-Tityrinae
-Todidae
-Tolypeutinae
-Tomopeatinae
-Torpedinidae
-Torpediniformes
-Toxotidae
-Trachichthyidae
-Trachipteridae
-Tragulidae
-Trematosauria
-Trematosauridae
-Treroninae
-Triacanthidae
-Triacanthodidae
-Triakidae
-Trichechidae
-Trichiuridae
-Trichodontidae
-Trichomycteridae
-Trichonotidae
-Trichosurini
-Triglidae
-Trilophosauridae
-Trimerorhachidae
-Triodontidae
-Trionychidae
-Trionychoidea
-Triportheidae
-Tripterygiidae
-Trochili
-Trochilidae
-Trochiliformes
-Trochilinae
-Troglodytidae
-Trogonidae
-Trogoniformes
-Trogonophidae
-Trogonophiidae
-Troodontidae
-Tropidophiidae
-Tropiduridae
-Tubulidentata
-Tunicata
-Tupaiidae
-Tupaiinae
-Turdidae
-Turnices
-Turnicidae
-Turniciformes
-Tylomyinae
-Tylomyini
-Typhlomyinae
-Typhlonectidae
-Typhlonectinae
-Typhlopidae
-Typhlopoidea
-Tyranni
-Tyrannidae
-Tyranninae
-Tyrannosauridae
-Tytonidae
-Tytoninae
-Umbridae
-Ungaliophiinae
-Upupidae
-Upupiformes
-Uraeotyphlidae
-Uranoscopidae
-Urocynchramidae
-Urodela
-Urolophidae
-Uromastycinae
-Uromyini
-Uropeltidae
-Uropeltoidea
-Uropsilinae
-Urotrichini
-Urotrygonidae
-Ursidae
-Ursinae
-Vaillantellidae
-Valenciidae
-Vampyrini
-Vanellidae # lapwing family (Aves)
-Vangidae
-Varanidae
-Veliferidae
-Vermilingua
-Vertebrata
-Vespertilionidae
-Vespertilioninae
-Vespertilionini
-Vespertilionoidea
-Viduidae
-Viduinae
-Viperidae
-Viperinae
-Vireonidae
-Vitrumidae
-Viverridae
-Viverrinae
-Vombatidae
-Vombatiformes
-Vorona
-Vulcanodontidae
-Weigeltisauridae
-Wiedomyini
-Xantusiidae
-Xantusiinae
-Xenacanthiformes
-Xenarthra
-Xenicidae
-Xenisthmidae
-Xenocyprididae # Asian cyprinid family (Cypriniformes)
-Xenodermatidae
-Xenodermidae
-Xenopeltidae
-Xenophidiidae
-Xenosauridae
-Xenotyphlopidae
-Xerinae
-Xerini
-Xiphiidae
-Yangochiroptera
-Yinpterochiroptera
-Younginiformes
-Zanclidae
-Zapodidae
-Zapodinae
-Zaproridae
-Zeidae
-Zeiformes
-Zenarchopteridae
-Zenionidae # zeiform-relative family (Teleostei)
-Zeniontidae
-Zenkerellinae
-Ziphiidae
-Zoarcidae
-Zosteropidae
-Zygodontomyini
+Abelisauridae # IRMNG: Reptilia > Saurischia
+Abrocomidae # COL: Mammalia > Rodentia
+Abyssocottidae # COL: Teleostei > Perciformes
+Acanthisittidae # COL: Aves > Passeriformes
+Acanthizidae # COL: Aves > Passeriformes
+Acanthodiformes # IRMNG: Chordata > Acanthodii
+Acanthodii # IRMNG: Animalia > Chordata
+Acanthopterygii # ITIS: Chordata > Teleostei
+Acanthothoraci # PBDB: Chordata > Placodermi
+Acanthuridae # COL: Teleostei > Acanthuriformes
+Acanthuriformes # surgeonfish, tangs (Perciformes); COL: Chordata > Teleostei
+Accipitridae # COL: Aves > Accipitriformes
+Accipitriformes # COL: Chordata > Aves
+Accipitrinae # COL: synonym of Accipitridae (Accipitriformes)
+Acestrorhynchidae # COL: Teleostei > Characiformes
+Achiridae # COL: Teleostei > Pleuronectiformes
+Achiropsettidae # COL: Teleostei > Pleuronectiformes
+Acinonychinae # COL: synonym of Felinae (Carnivora)
+Acipenseridae # COL: Chondrostei > Acipenseriformes
+Acipenseriformes # COL: Chordata > Chondrostei
+Acomyinae # COL: synonym of Deomyinae (Rodentia)
+Acontidae # ALF: Reptilia > Scincoidea
+Acontinae # NCBI: Squamata > Scincidae
+Acontoidea # ALF: Reptilia > Scincoidea
+Acraniata # Benton: synonym of Cephalochordata (Chordata)
+Acrobatidae # COL: Mammalia > Diprotodontia
+Acrochordidae # COL: Reptilia > Squamata
+Acrochordoidea # PBDB: Osteichthyes > Reptilia
+Acropomatidae # COL: Teleostei > Acropomatiformes
+Actinopteri # COL: Animalia > Chordata
+Actinopterygii # COL: Animalia > Chordata
+Adelastinae # COL: Anura > Microhylidae
+Adrianichthyidae # COL: Teleostei > Beloniformes
+Aegithalidae # COL: Aves > Passeriformes
+Aegithinidae # COL: Aves > Passeriformes
+Aegothelidae # COL: Aves > Apodiformes
+Aepycerotinae # COL: synonym of Aepycerotini (Artiodactyla)
+Afrosoricida # COL: Chordata > Mammalia
+Agamidae # COL: Reptilia > Squamata
+Agaminae # COL: Squamata > Agamidae
+Agnatha # COL: Animalia > Chordata
+Agneziidae # COL: Ascidiacea > Phlebobranchia
+Agonidae # COL: Teleostei > Perciformes
+Agoutidae # COL: synonym of Cuniculidae (Rodentia)
+Ahaetuliinae # COL: Squamata > Colubridae
+Ailuridae # COL: Mammalia > Carnivora
+Ailurinae # COL: synonym of Ailuridae (Carnivora)
+Ailuropinae # COL: Diprotodontia > Phalangeridae
+Akodontini # COL: synonym of Sigmodontinae (Rodentia)
+Akysidae # COL: Teleostei > Siluriformes
+Alabiata # COL: Copelata > Oikopleuridae
+Alaudidae # COL: Aves > Passeriformes
+Albanerpetontidae # IRMNG: Amphibia > Gymnophiona
+Albulidae # COL: Teleostei > Albuliformes
+Albuliformes # COL: Chordata > Teleostei
+Alcae # COL: synonym of Charadriiformes (Aves)
+Alcalinae # COL: Anura > Ceratobatrachidae
+Alcedines # COL: synonym of Coraciiformes (Aves)
+Alcedinidae # COL: Aves > Coraciiformes
+Alcedininae # COL: Coraciiformes > Alcedinidae
+Alcelaphinae # COL: synonym of Alcelaphini (Artiodactyla)
+Alcidae # COL: Aves > Charadriiformes
+Alepisauridae # COL: Teleostei > Aulopiformes
+Alepocephalidae # COL: Teleostei > Alepocephaliformes
+Alestidae # COL: Teleostei > Characiformes
+Allactaginae # COL: Rodentia > Dipodidae
+Allactodipodini # COL: synonym of Allactaginae (Rodentia)
+Alligatoridae # COL: Reptilia > Crocodylia
+Allobatinae # COL: Anura > Aromobatidae
+Allophrynidae # COL: Amphibia > Anura
+Allophryninae # COL: synonym of Allophrynidae (Anura)
+Allosauridae # IRMNG: Reptilia > Saurischia
+Allosauroidea # PBDB: Osteichthyes > Reptilia
+Alopiidae # COL: Elasmobranchii > Lamniformes
+Alopoglossidae # COL: Reptilia > Squamata
+Alouattinae # COL: Primates > Atelidae
+Alsodidae # COL: Amphibia > Anura
+Alsodinae # COL: synonym of Alsodidae (Anura)
+Alvarezsauridae # IRMNG: Reptilia > Saurischia
+Alytidae # COL: Amphibia > Anura
+Amarsipidae # COL: Teleostei > Scombriformes
+Ambassidae # COL: Chordata > Teleostei
+Amblycipitidae # COL: Teleostei > Siluriformes
+Amblyopsidae # COL: Teleostei > Percopsiformes
+Amblypteridae # IRMNG: Actinopterygii > Palaeonisciformes
+Amblyrhizinae # COL: synonym of Heptaxodontidae (Rodentia)
+Amblysominae # COL: Afrosoricida > Chrysochloridae
+Ambystomatidae # COL: Amphibia > Caudata
+Amiidae # COL: Holostei > Amiiformes
+Amiiformes # COL: Chordata > Holostei
+Ammodillini # COL: synonym of Gerbillinae (Rodentia)
+Ammodorcini # COL: synonym of Antilopini (Artiodactyla)
+Ammodytidae # COL: Teleostei > Perciformes
+Amniota # PBDB: synonym of Amniota (Chordata)
+Amphibamidae # IRMNG: Amphibia > Temnospondyli
+Amphibia # COL: Animalia > Chordata
+Amphibolurinae # COL: Squamata > Agamidae
+Amphicentridae # IRMNG: Chordata > Actinopterygii
+Amphiliidae # COL: Teleostei > Siluriformes
+Amphisbaenia # COL: Reptilia > Squamata
+Amphisbaenidae # COL: Reptilia > Squamata
+Amphiumidae # COL: Amphibia > Caudata
+Anabantidae # COL: Teleostei > Anabantiformes
+Anablepidae # COL: Teleostei > Cyprinodontiformes
+Anacanthobatidae # COL: Elasmobranchii > Rajiformes
+Anapsida # ITIS: synonym of Reptilia (Chordata)
+Anarhichadidae # COL: Teleostei > Perciformes
+Anatidae # COL: Aves > Anseriformes
+Anatinae # COL: synonym of Anatidae (Anseriformes)
+Anchariidae # COL: Teleostei > Siluriformes
+Anguidae # COL: Reptilia > Squamata
+Anguillidae # COL: Teleostei > Anguilliformes
+Anguilliformes # COL: Chordata > Teleostei
+Anguimorpha # PBDB: synonym of Anguimorpha (Osteichthyes)
+Anguinae # COL: Squamata > Anguidae
+Anhimidae # COL: Aves > Anseriformes
+Anhingidae # COL: Aves > Suliformes
+Aniliidae # COL: Reptilia > Squamata
+Ankylosauria # PBDB: synonym of Ankylosauria (Osteichthyes)
+Ankylosauridae # IRMNG: Reptilia > Ornithischia
+Anniellidae # ITIS: synonym of Anniellinae (Squamata)
+Anniellinae # COL: Squamata > Anguidae
+Anomalepididae # COL: Reptilia > Squamata
+Anomaloglossinae # COL: Anura > Aromobatidae
+Anomalopidae # COL: Teleostei > Trachichthyiformes
+Anomaluridae # COL: Mammalia > Rodentia
+Anomalurinae # COL: Rodentia > Anomaluridae
+Anomaluromorpha # COL: Mammalia > Rodentia
+Anomochilidae # COL: Reptilia > Squamata
+Anoplogastridae # COL: Teleostei > Trachichthyiformes
+Anoplopomatidae # COL: Teleostei > Perciformes
+Anostomidae # COL: Teleostei > Characiformes
+Anotopteridae # COL: Teleostei > Aulopiformes
+Anourosoricini # COL: Eulipotyphla > Soricidae
+Anseranatidae # COL: Aves > Anseriformes
+Anseriformes # COL: Chordata > Aves
+Anserinae # COL: synonym of Anatidae (Anseriformes)
+Antennariidae # COL: Teleostei > Lophiiformes
+Antiarchi # PBDB: synonym of Antiarchi (Chordata)
+Antilocapridae # COL: Mammalia > Artiodactyla
+Antilopinae # COL: Artiodactyla > Bovidae
+Antrozoinae # COL: synonym of Antrozoini (Chiroptera)
+Antrozoini # COL: Chiroptera > Vespertilionidae
+Anura # COL: Chordata > Amphibia
+Aotidae # COL: Mammalia > Primates
+Aotinae # COL: synonym of Aotidae (Primates)
+Aparallactinae # COL: Squamata > Atractaspididae
+Aphanosauria # PBDB: Osteichthyes > Reptilia
+Aphredoderidae # COL: Teleostei > Percopsiformes
+Aphyonidae # COL: synonym of Bythitidae (Ophidiiformes)
+Apistidae # COL: Teleostei > Perciformes
+Aploactinidae # COL: Teleostei > Perciformes
+Aplocheilidae # COL: Teleostei > Cyprinodontiformes
+Aplodactylidae # COL: Teleostei > Centrarchiformes
+Aplodontiidae # COL: Mammalia > Rodentia
+Aplondontiidae # ALF: Mammalia > Rodentia
+Aplousobranchia # COL: Chordata > Ascidiacea
+Apodi # COL: synonym of Apodiformes (Aves)
+Apodiformes # COL: Chordata > Aves
+Apodinae # COL: Apodiformes > Apodidae
+Apogonidae # COL: Teleostei > Apogoniformes
+Appendicularia # COL: Animalia > Chordata
+Appendiculariinae # COL: Copelata > Fritillariidae
+Apsidospondyli # COL: synonym of Amphibia (Chordata)
+Apteronotidae # COL: Teleostei > Gymnotiformes
+Apterygidae # COL: Aves > Apterygiformes
+Apterygiformes # COL: Chordata > Aves
+Aracanidae # COL: Teleostei > Tetraodontiformes
+Araeoscelidia # IRMNG: Chordata > Reptilia
+Aramidae # COL: Aves > Gruiformes
+Arapaimidae # COL: Teleostei > Osteoglossiformes
+Arcanatoridae # COL: Aves > Passeriformes
+Archaeopterygidae # IRMNG: Aves > Archaeopterygiformes
+Archegosauridae # IRMNG: Amphibia > Temnospondyli
+Archosauria # ITIS: synonym of Reptilia (Chordata)
+Archosauriformes # PBDB: Osteichthyes > Reptilia
+Archosauromorpha # PBDB: synonym of Archosauromorpha (Osteichthyes)
+Arctocephalinae # COL: synonym of Otariidae (Carnivora)
+Ardeidae # COL: Aves > Pelecaniformes
+Ardeinae # COL: synonym of Ardeidae (Pelecaniformes)
+Argentinidae # COL: Teleostei > Argentiniformes
+Argentiniformes # smelts and relatives (Teleostei); COL: Chordata > Teleostei
+Arhynchobatidae # COL: Elasmobranchii > Rajiformes
+Ariidae # COL: Teleostei > Siluriformes
+Ariommatidae # COL: Teleostei > Scombriformes
+Aromobatidae # COL: Amphibia > Anura
+Aromobatinae # COL: Anura > Aromobatidae
+Arripidae # COL: Teleostei > Scombriformes
+Artamidae # COL: Aves > Passeriformes
+Artedidraconidae # COL: synonym of Artedidraconinae (Perciformes)
+Arthrodira # IRMNG: Chordata > Placodermi
+Arthroleptidae # COL: Amphibia > Anura
+Arthroleptinae # COL: Anura > Arthroleptidae
+Artiodactyla # COL: Chordata > Mammalia
+Arvicanthini # COL: synonym of Murinae (Rodentia)
+Arvicolidae # COL: synonym of Arvicolinae (Rodentia)
+Arvicolinae # COL: Rodentia > Cricetidae
+Ascaphidae # COL: Amphibia > Anura
+Ascidiacea # COL: Animalia > Chordata
+Ascidiidae # COL: Ascidiacea > Phlebobranchia
+Asioninae # COL: synonym of Striginae (Strigiformes)
+Aspidorhynchidae # IRMNG: Actinopterygii > Aspidorhynchiformes
+Aspredinidae # COL: Teleostei > Siluriformes
+Asterophryinae # COL: Anura > Microhylidae
+Astrobatrachinae # COL: Anura > Nyctibatrachidae
+Astroblepidae # COL: Teleostei > Siluriformes
+Astylosternidae # COL: synonym of Astylosterninae (Anura)
+Astylosterninae # COL: Anura > Arthroleptidae
+Ateleopodidae # COL: Teleostei > Ateleopodiformes
+Ateleopodiformes # COL: Chordata > Teleostei
+Atelidae # COL: Mammalia > Primates
+Atelinae # COL: Primates > Atelidae
+Ateuchosauridae # COL: Squamata > Scincidae
+Atherinidae # COL: Teleostei > Atheriniformes
+Atheriniformes # COL: Chordata > Teleostei
+Atherinomorpha # ITIS: synonym of Atheriniformes (Teleostei)
+Atherinopsidae # COL: Teleostei > Atheriniformes
+Atractaspididae # COL: Reptilia > Squamata
+Atractaspidinae # COL: Squamata > Atractaspididae
+Atrichornithidae # COL: Aves > Passeriformes
+Auchenipteridae # COL: Teleostei > Siluriformes
+Aulopidae # COL: Teleostei > Aulopiformes
+Aulopiformes # COL: Chordata > Teleostei
+Aulorhynchidae # COL: Teleostei > Perciformes
+Aulostomidae # COL: Teleostei > Syngnathiformes
+Australochelidae # Benton: Sauropsida > Testudines (Chelonia)
+Austroglanididae # COL: Teleostei > Siluriformes
+Avemetatarsalia # Benton: Unnamed > Sauropsida
+Aves # COL: Animalia > Chordata
+Azemiopinae # COL: Squamata > Viperidae
+Babyrousinae # COL: synonym of Suidae (Artiodactyla)
+Babyrousini # COL: synonym of Suidae (Artiodactyla)
+Badidae # COL: Teleostei > Anabantiformes
+Baenoidea # PBDB: Osteichthyes > Reptilia
+Bagridae # COL: Teleostei > Siluriformes
+Baiomyini # COL: synonym of Neotominae (Rodentia)
+Balaenicipitidae # COL: Aves > Pelecaniformes
+Balaenidae # COL: Mammalia > Cetacea
+Balaenopteridae # COL: Mammalia > Cetacea
+Balearicinae # COL: Gruiformes > Gruidae
+Balionycterini # COL: Chiroptera > Pteropodidae
+Balistidae # COL: Teleostei > Tetraodontiformes
+Balitoridae # COL: Teleostei > Cypriniformes
+Banjosidae # COL: Teleostei > Acropomatiformes
+Barbourisiidae # COL: Teleostei > Beryciformes
+Barbuccidae # COL: Teleostei > Cypriniformes
+Bathochordaeinae # COL: Copelata > Oikopleuridae
+Bathyclupeidae # COL: Teleostei > Acropomatiformes
+Bathydraconidae # COL: Teleostei > Perciformes
+Bathyergidae # COL: Mammalia > Rodentia
+Bathyerginae # COL: synonym of Bathyergidae (Rodentia)
+Bathylagidae # COL: Teleostei > Argentiniformes
+Bathylutichthyidae # COL: Teleostei > Perciformes
+Bathymasteridae # COL: Teleostei > Perciformes
+Bathysauridae # COL: Teleostei > Aulopiformes
+Bathysauroididae # COL: Teleostei > Aulopiformes
+Bathysauropsidae # deep-sea lizardfish family (Aulopiformes); COL: synonym of Ipnopidae (Aulopiformes)
+Batoidea # COL: Chordata > Elasmobranchii
+Batrachoididae # COL: Teleostei > Batrachoidiformes
+Batrachoidiformes # COL: Chordata > Teleostei
+Batrachomorpha # Benton: Chordata > Osteichthyes
+Batrachostomidae # COL: synonym of Podargidae (Caprimulgiformes)
+Batrachostominae # COL: Caprimulgiformes > Podargidae
+Batrachylidae # COL: Amphibia > Anura
+Batrachylinae # COL: synonym of Batrachylidae (Anura)
+Bedotiidae # COL: Teleostei > Atheriniformes
+Belonidae # COL: Teleostei > Beloniformes
+Beloniformes # COL: Chordata > Teleostei
+Bembridae # COL: Teleostei > Perciformes
+Bernieridae # COL: Aves > Passeriformes
+Berycidae # COL: Teleostei > Beryciformes
+Beryciformes # COL: Chordata > Teleostei
+Bipedidae # COL: Reptilia > Squamata
+Birgeriidae # IRMNG: Actinopterygii > Ophisthomi
+Blanidae # COL: Reptilia > Squamata
+Blarinellini # COL: Eulipotyphla > Soricidae
+Blarinini # COL: Eulipotyphla > Soricidae
+Blenniidae # COL: Teleostei > Blenniiformes
+Blenniiformes # blennies; COL: Chordata > Teleostei
+Boidae # COL: Reptilia > Squamata
+Boinae # COL: Squamata > Boidae
+Bolitoglossinae # COL: synonym of Hemidactyliinae (Caudata)
+Bolosauridae # IRMNG: Reptilia > Captorhinida
+Bolyeriidae # COL: Reptilia > Squamata
+Bombinatoridae # COL: Amphibia > Anura
+Bombycillidae # COL: Aves > Passeriformes
+Booidea # PBDB: Osteichthyes > Mammalia
+Boophinae # COL: Anura > Mantellidae
+Botaurinae # COL: synonym of Ardeidae (Pelecaniformes)
+Bothidae # COL: Teleostei > Pleuronectiformes
+Bovichtidae # COL: Teleostei > Perciformes
+Bovidae # COL: Mammalia > Artiodactyla
+Bovinae # COL: Artiodactyla > Bovidae
+Brachaeluridae # COL: Elasmobranchii > Orectolobiformes
+Brachionichthyidae # COL: Teleostei > Lophiiformes
+Brachiosauridae # IRMNG: Reptilia > Saurischia
+Brachycephalidae # COL: Amphibia > Anura
+Brachycephaloidea # COL: Amphibia > Anura
+Brachyopidae # IRMNG: Amphibia > Temnospondyli
+Brachyphyllinae # COL: synonym of Glossophaginae (Chiroptera)
+Brachyphyllini # COL: Chiroptera > Phyllostomidae
+Brachypteraciidae # COL: Aves > Coraciiformes
+Bramidae # COL: Teleostei > Scombriformes
+Braminae # COL: synonym of Arvicolinae (Rodentia)
+Branchiosauridae # IRMNG: Amphibia > Temnospondyli
+Branchiostomatidae # COL: Chordata > Leptocardii
+Branchiostomidae # lancelet family (Cephalochordata); COL: synonym of Branchiostomatidae (Leptocardii)
+Bregmacerotidae # COL: Teleostei > Gadiformes
+Brevicipitidae # COL: Amphibia > Anura
+Brevicipitinae # COL: synonym of Brevicipitidae (Anura)
+Bryconidae # COL: Teleostei > Characiformes
+Bubalidinae # COL: synonym of Alcelaphini (Artiodactyla)
+Bubalinae # COL: synonym of Alcelaphini (Artiodactyla)
+Bucconidae # COL: Aves > Piciformes
+Bucerotes # COL: synonym of Bucerotiformes (Aves)
+Bucerotidae # COL: Aves > Bucerotiformes
+Bucerotiformes # COL: Chordata > Aves
+Bucorvidae # COL: Aves > Bucerotiformes
+Buergeriinae # COL: Anura > Rhacophoridae
+Buphagidae # COL: Aves > Passeriformes
+Burhinidae # COL: Aves > Charadriiformes
+Burramyidae # COL: Mammalia > Diprotodontia
+Bythitidae # COL: Teleostei > Ophidiiformes
+Cacatuidae # COL: Aves > Psittaciformes
+Cacatuinae # COL: synonym of Cacatuidae (Psittaciformes)
+Cacosterninae # COL: Anura > Pyxicephalidae
+Cadeidae # COL: Reptilia > Squamata
+Caeciliaidae # COL: synonym of Caeciliidae (Gymnophiona)
+Caenolestidae # COL: Mammalia > Paucituberculata
+Caesionidae # COL: Chordata > Teleostei
+Calabariidae # ITIS: Reptilia > Squamata
+Calabariinae # COL: Squamata > Boidae
+Calamariinae # COL: Squamata > Colubridae
+Calcariidae # COL: Aves > Passeriformes
+Callaeatidae # COL: synonym of Callaeidae (Passeriformes)
+Callaeidae # COL: Aves > Passeriformes
+Callanthiidae # COL: Chordata > Teleostei
+Callicebinae # COL: Primates > Pitheciidae
+Callichthyidae # COL: Teleostei > Siluriformes
+Callionymidae # COL: Teleostei > Callionymiformes
+Callitrichidae # COL: Mammalia > Primates
+Callitrichinae # COL: synonym of Callitrichidae (Primates)
+Callorhinchidae # COL: Holocephali > Chimaeriformes
+Callosciurinae # COL: Rodentia > Sciuridae
+Calomyscidae # COL: Mammalia > Rodentia
+Calomyscinae # COL: synonym of Calomyscidae (Rodentia)
+Caluromyinae # COL: Didelphimorphia > Didelphidae
+Calyptocephalellidae # COL: Amphibia > Anura
+Calyptomenidae # African broadbill family (Aves); COL: Aves > Passeriformes
+Calyptomeninae # COL: synonym of Calyptomenidae (Passeriformes)
+Camarasauridae # IRMNG: Reptilia > Saurischia
+Camelidae # COL: Mammalia > Artiodactyla
+Campephagidae # COL: Aves > Passeriformes
+Candoiinae # COL: Squamata > Boidae
+Canidae # COL: Mammalia > Carnivora
+Caniformia # COL: Mammalia > Carnivora
+Capitonidae # COL: Aves > Piciformes
+Capitoninae # COL: synonym of Capitonidae (Piciformes)
+Capitosauria # Benton: Batrachomorpha > Temnospondyli
+Capitosauridae # IRMNG: Amphibia > Temnospondyli
+Capreolinae # COL: Artiodactyla > Cervidae
+Caprimulgi # COL: synonym of Caprimulgiformes (Aves)
+Caprimulgidae # COL: Aves > Caprimulgiformes
+Caprimulgiformes # COL: Chordata > Aves
+Caprimulginae # COL: synonym of Caprimulgidae (Caprimulgiformes)
+Caprinae # COL: synonym of Caprini (Artiodactyla)
+Caproidae # COL: Teleostei > Acanthuriformes
+Capromyidae # COL: synonym of Echimyidae (Rodentia)
+Capromyinae # COL: Rodentia > Echimyidae
+Captorhinidae # IRMNG: Chordata > Reptilia
+Caracanthidae # velvetfish family (Scorpaeniformes); COL: synonym of Caracanthinae (Perciformes)
+Carangidae # COL: Teleostei > Carangiformes
+Carangiformes # jacks, pompanos; COL: Chordata > Teleostei
+Carapidae # COL: Teleostei > Ophidiiformes
+Carcharhinidae # COL: Elasmobranchii > Carcharhiniformes
+Carcharhiniformes # COL: Chordata > Elasmobranchii
+Carcharodontosauridae # IRMNG: Reptilia > Saurischia
+Cardinalidae # COL: Aves > Passeriformes
+Cardiocraniinae # COL: Rodentia > Dipodidae
+Carduelinae # COL: synonym of Fringillidae (Passeriformes)
+Carettochelyidae # COL: Reptilia > Testudines
+Cariamae # COL: synonym of Cariamiformes (Aves)
+Cariamidae # COL: Aves > Cariamiformes
+Cariamiformes # COL: Chordata > Aves
+Carinatae # PBDB: synonym of Carinatae (Osteichthyes)
+Caristiidae # COL: Teleostei > Scombriformes
+Carnivora # COL: Chordata > Mammalia
+Carnosauria # PBDB: Reptilia > Avetheropoda
+Carolliinae # COL: Chiroptera > Phyllostomidae
+Carphodactylidae # COL: Reptilia > Squamata
+Castoridae # COL: Mammalia > Rodentia
+Castorimorpha # COL: Mammalia > Rodentia
+Casuariidae # COL: Aves > Casuariiformes
+Casuariiformes # COL: Chordata > Aves
+Cathartidae # COL: Aves > Accipitriformes
+Cathartiformes # New World vultures (Aves); IRMNG: synonym of Accipitriformes (Aves)
+Catostomidae # COL: Teleostei > Cypriniformes
+Caudata # COL: Chordata > Amphibia
+Caulophrynidae # COL: Teleostei > Lophiiformes
+Caviidae # COL: Mammalia > Rodentia
+Caviinae # COL: Rodentia > Caviidae
+Cebidae # COL: Mammalia > Primates
+Cebinae # COL: Primates > Cebidae
+Centracanthidae # picarel family (Spariformes); COL: synonym of Sparidae (Teleostei)
+Centrarchidae # COL: Teleostei > Centrarchiformes
+Centriscidae # COL: Teleostei > Syngnathiformes
+Centrogenyidae # COL: Chordata > Teleostei
+Centrolenidae # COL: Amphibia > Anura
+Centroleninae # COL: Anura > Centrolenidae
+Centrolophidae # COL: Teleostei > Scombriformes
+Centrophoridae # COL: Elasmobranchii > Squaliformes
+Centrophrynidae # COL: Teleostei > Lophiiformes
+Centropodidae # COL: synonym of Cuculidae (Cuculiformes)
+Centropodinae # COL: synonym of Cuculidae (Cuculiformes)
+Centropomidae # COL: Chordata > Teleostei
+Cephalaspidomorphi # class of jawless vertebrates: lampreys and extinct relatives; COL: Animalia > Chordata
+Cephalochordata # COL: Animalia > Chordata
+Cephalochordates # not found in ChecklistBank
+Cephalophinae # COL: synonym of Cephalophini (Artiodactyla)
+Cephalorhynchinae # COL: synonym of Delphinidae (Cetacea)
+Cerapoda # iNat: Chordata > Dinosauria
+Ceratobatrachidae # COL: Amphibia > Anura
+Ceratobatrachinae # COL: Anura > Ceratobatrachidae
+Ceratodontiformes # COL: Animalia > Chordata
+Ceratophryidae # COL: Amphibia > Anura
+Ceratophryinae # COL: synonym of Ceratophryidae (Anura)
+Ceratopsia # PBDB: synonym of Ceratopsia (Osteichthyes)
+Ceratopsidae # IRMNG: Reptilia > Ornithischia
+Ceratosauria # PBDB: Osteichthyes > Reptilia
+Ceratosauridae # IRMNG: Reptilia > Saurischia
+Cercocebini # COL: synonym of Papionini (Primates)
+Cercolabidae # COL: synonym of Chaetomyinae (Rodentia)
+Cercopithecidae # COL: Mammalia > Primates
+Cercopithecinae # COL: Primates > Cercopithecidae
+Cercopithecini # COL: Primates > Cercopithecidae
+Cercopithecoidea # COL: Mammalia > Primates
+Certhiidae # COL: Aves > Passeriformes
+Cervidae # COL: Mammalia > Artiodactyla
+Cervinae # COL: Artiodactyla > Cervidae
+Cerylinae # COL: Coraciiformes > Alcedinidae
+Cetacea # COL: Chordata > Mammalia
+Cetartiodactyla # whales + even-toed ungulates (Mammalia); COL: synonym of Artiodactyla (Mammalia)
+Cetiosauridae # IRMNG: Reptilia > Saurischia
+Cetomimidae # COL: Teleostei > Beryciformes
+Cetomimiformes # COL: synonym of Cetomimidae (Beryciformes)
+Cetopsidae # COL: Teleostei > Siluriformes
+Cetorhinidae # COL: Elasmobranchii > Lamniformes
+Cettiidae # COL: Aves > Passeriformes
+Ceuthomantidae # COL: Amphibia > Anura
+Ceuthomantinae # COL: synonym of Ceuthomantidae (Anura)
+Chacidae # COL: Teleostei > Siluriformes
+Chaenopsidae # COL: Teleostei > Blenniiformes
+Chaeropodidae # COL: Mammalia > Peramelemorphia
+Chaetodontidae # COL: Teleostei > Acanthuriformes
+Chaetomyinae # COL: Rodentia > Erethizontidae
+Chaetopidae # COL: Aves > Passeriformes
+Chamaeidae # COL: synonym of Paradoxornithidae (Passeriformes)
+Chamaeleonidae # COL: Reptilia > Squamata
+Champsodontidae # COL: Teleostei > Acropomatiformes
+Chanidae # COL: Teleostei > Gonorynchiformes
+Channichthyidae # COL: Teleostei > Perciformes
+Channidae # COL: Teleostei > Anabantiformes
+Chaperininae # COL: synonym of Microhylinae (Anura)
+Characidae # COL: Teleostei > Characiformes
+Characiformes # COL: Chordata > Teleostei
+Charadrii # COL: synonym of Charadriiformes (Aves)
+Charadriidae # COL: Aves > Charadriiformes
+Charadriiformes # COL: Chordata > Aves
+Charininae # COL: Squamata > Boidae
+Chaudhuriidae # COL: Teleostei > Synbranchiformes
+Chaunacidae # COL: Teleostei > Lophiiformes
+Cheilodactylidae # COL: Teleostei > Centrarchiformes
+Cheimarrichthyidae # COL: Teleostei > Perciformes
+Cheirogaleidae # COL: Mammalia > Primates
+Cheirogaleinae # COL: synonym of Cheirogaleidae (Primates)
+Cheirogaleoidea # COL: Mammalia > Primates
+Cheirolepididae # IRMNG: Chordata > Actinopterygii
+Cheiromyidae # COL: synonym of Daubentoniidae (Primates)
+Chelidae # COL: Reptilia > Testudines
+Cheloniidae # COL: Reptilia > Testudines
+Chelonioidea # COL: Reptilia > Testudines
+Chelydridae # COL: Reptilia > Testudines
+Chelydroidea # COL: Reptilia > Testudines
+Chiasmodontidae # COL: Teleostei > Scombriformes
+Chigutisauridae # IRMNG: Amphibia > Temnospondyli
+Chikilidae # COL: Amphibia > Gymnophiona
+Chimaeridae # COL: Holocephali > Chimaeriformes
+Chimaeriformes # COL: Chordata > Holocephali
+Chinchillidae # COL: Mammalia > Rodentia
+Chionididae # COL: synonym of Chionidae (Charadriiformes)
+Chirocentridae # COL: Teleostei > Clupeiformes
+Chiromyiformes # COL: Mammalia > Primates
+Chironemidae # COL: Teleostei > Centrarchiformes
+Chiroptera # COL: Chordata > Mammalia
+Chlamydoselachidae # COL: Elasmobranchii > Hexanchiformes
+Chlamyphorinae # COL: Cingulata > Chlamyphoridae
+Chlopsidae # COL: Teleostei > Anguilliformes
+Chlorophthalmidae # COL: Teleostei > Aulopiformes
+Chloropseidae # COL: Aves > Passeriformes
+Choeronycterini # COL: Chiroptera > Phyllostomidae
+Choeropsinae # COL: synonym of Hippopotamidae (Artiodactyla)
+Chondrenchelyiformes # IRMNG: Chordata > Chondrichthyes
+Chondrichthyes # COL: Animalia > Chordata
+Chondrostei # COL: Animalia > Chordata
+Chondrosteidae # IRMNG: Actinopterygii > Acipenseriformes
+Chordata # COL: Eukaryota > Animalia
+Chordeilinae # COL: synonym of Caprimulgidae (Caprimulgiformes)
+Chrysochloridae # COL: Mammalia > Afrosoricida
+Chrysochloridea # COL: Mammalia > Afrosoricida
+Chrysotrichinae # COL: synonym of Saimiriinae (Primates)
+Cichlidae # COL: Teleostei > Cichliformes
+Cichliformes # cichlids; COL: Chordata > Teleostei
+Ciconiidae # COL: Aves > Ciconiiformes
+Ciconiiformes # COL: Chordata > Aves
+Cimoliasauridae # IRMNG: Reptilia > Plesiosauria
+Cinclidae # COL: Aves > Passeriformes
+Cingulata # COL: Chordata > Mammalia
+Cionidae # COL: Ascidiacea > Phlebobranchia
+Cirrhitidae # COL: Teleostei > Centrarchiformes
+Cisticolidae # COL: Aves > Passeriformes
+Cistugidae # COL: Mammalia > Chiroptera
+Citharidae # COL: Teleostei > Pleuronectiformes
+Citharinidae # COL: Teleostei > Characiformes
+Cladistia # COL: Animalia > Chordata
+Cladoselachidae # IRMNG: Chondrichthyes > Cladoselachiformes
+Clariidae # COL: Teleostei > Siluriformes
+Claroteidae # COL: Teleostei > Siluriformes
+Clavelinidae # COL: Ascidiacea > Aplousobranchia
+Clethrionomyini # COL: synonym of Arvicolinae (Rodentia)
+Clidomyinae # COL: Rodentia > Heptaxodontidae
+Climacteridae # COL: Aves > Passeriformes
+Clinidae # COL: Teleostei > Blenniiformes
+Clupeidae # COL: Teleostei > Clupeiformes
+Clupeiformes # COL: Chordata > Teleostei
+Clupeocephala # SNSB51870: Chordata > Actinopterygii
+Clupeomorpha # ITIS: Chordata > Teleostei
+Cnemophilidae # COL: Aves > Passeriformes
+Cobitidae # COL: Teleostei > Cypriniformes
+Coccyzidae # COL: synonym of Cuculidae (Cuculiformes)
+Cochleariidae # COL: synonym of Ardeidae (Pelecaniformes)
+Coelacanthi # COL: synonym of Actinistia (Animalia)
+Coelacanthiformes # COL: Animalia > Chordata
+Coelognathosuchia # PBDB: synonym of Coelognathosuchia (Osteichthyes)
+Coelophysoidea # PBDB: Osteichthyes > Reptilia
+Coeluridae # IRMNG: Reptilia > Saurischia
+Coelurosauria # PBDB: synonym of Coelurosauria (Osteichthyes)
+Coerebidae # COL: synonym of Thraupidae (Passeriformes)
+Coliidae # COL: Aves > Coliiformes
+Coliiformes # COL: Chordata > Aves
+Colobinae # COL: Primates > Cercopithecidae
+Colobini # COL: Primates > Cercopithecidae
+Colocongridae # COL: Teleostei > Anguilliformes
+Colodactylidae # COL: synonym of Alytidae (Anura)
+Colostethinae # COL: Anura > Dendrobatidae
+Colubridae # COL: Reptilia > Squamata
+Colubrinae # COL: Squamata > Colubridae
+Colubroidea # PBDB: Osteichthyes > Reptilia
+Columbae # COL: synonym of Columbiformes (Aves)
+Columbidae # COL: Aves > Columbiformes
+Columbiformes # COL: Chordata > Aves
+Columbiiformes # IRMNG: synonym of Columbiformes (Aves)
+Columbinae # COL: Columbiformes > Columbidae
+Comephoridae # COL: Teleostei > Perciformes
+Condylurini # COL: Eulipotyphla > Talpidae
+Confuciusornithidae # IRMNG: Aves > Confuciusornithiformes
+Congiopodidae # COL: Teleostei > Perciformes
+Congridae # COL: Teleostei > Anguilliformes
+Coniluridae # COL: synonym of Murinae (Rodentia)
+Connochetidae # COL: synonym of Alcelaphini (Artiodactyla)
+Conopophagidae # COL: Aves > Passeriformes
+Conrauidae # COL: Amphibia > Anura
+Copelata # COL: Chordata > Appendicularia
+Cophomantinae # COL: synonym of Hylidae (Anura)
+Cophylinae # COL: Anura > Microhylidae
+Coracii # COL: synonym of Coraciiformes (Aves)
+Coraciidae # COL: Aves > Coraciiformes
+Coraciiformes # COL: Chordata > Aves
+Corcoracidae # COL: Aves > Passeriformes
+Cordylidae # COL: Reptilia > Squamata
+Corellidae # COL: Ascidiacea > Phlebobranchia
+Corvidae # COL: Aves > Passeriformes
+Coryphaenidae # COL: Teleostei > Carangiformes
+Corythaeolinae # COL: synonym of Musophagidae (Musophagiformes)
+Corytophanidae # COL: Reptilia > Squamata
+Cotingidae # COL: Aves > Passeriformes
+Cotinginae # COL: synonym of Cotingidae (Passeriformes)
+Cottidae # COL: Teleostei > Perciformes
+Cottocomephoridae # COL: Teleostei > Perciformes
+Cracidae # COL: Aves > Galliformes
+Craciformes # COL: synonym of Galliformes (Aves)
+Cracinae # COL: Galliformes > Cracidae
+Cracticidae # COL: Aves > Passeriformes
+Cranoglanididae # COL: Teleostei > Siluriformes
+Craseonycteridae # COL: Mammalia > Chiroptera
+Craugastoridae # COL: Amphibia > Anura
+Craugastorinae # COL: synonym of Craugastoridae (Anura)
+Creediidae # COL: Teleostei > Acropomatiformes
+Crenuchidae # COL: Teleostei > Characiformes
+Cricetidae # COL: Mammalia > Rodentia
+Cricetinae # COL: Rodentia > Cricetidae
+Cricetini # COL: synonym of Cricetinae (Rodentia)
+Cricetomyinae # COL: Rodentia > Nesomyidae
+Cricosaurinae # COL: Squamata > Xantusiidae
+Criniferinae # COL: synonym of Musophagidae (Musophagiformes)
+Crocidurinae # COL: Eulipotyphla > Soricidae
+Crocodylia # COL: Chordata > Reptilia
+Crocodylidae # COL: Reptilia > Crocodylia
+Crocodyliformes # PBDB: Osteichthyes > Reptilia
+Crocodylomorpha # PBDB: synonym of Crocodylomorpha (Osteichthyes)
+Crocopoda # PBDB: Osteichthyes > Reptilia
+Crotalinae # COL: Squamata > Viperidae
+Crotaphytidae # COL: Reptilia > Squamata
+Crotophagidae # COL: synonym of Cuculidae (Cuculiformes)
+Crotophaginae # COL: synonym of Cuculidae (Cuculiformes)
+Crurotarsi # Benton: Sauropsida > Archosauria
+Cryptacanthodidae # COL: Teleostei > Perciformes
+Cryptobatrachinae # COL: synonym of Hemiphractidae (Anura)
+Cryptobranchidae # COL: Amphibia > Caudata
+Cryptoclididae # IRMNG: Chordata > Reptilia
+Cryptodira # COL: Reptilia > Testudines
+Cryptoproctinae # COL: synonym of Euplerinae (Carnivora)
+Ctenacanthiformes # IRMNG: Chordata > Chondrichthyes
+Ctenodactylidae # COL: Mammalia > Rodentia
+Ctenodactylomorphi # COL: Mammalia > Rodentia
+Ctenoluciidae # COL: Teleostei > Characiformes
+Ctenomyidae # COL: Mammalia > Rodentia
+Ctenomyini # COL: synonym of Ctenomyidae (Rodentia)
+Ctenosquamata # Benton: Osteichthyes > Halecostomi
+Cuculi # COL: synonym of Cuculiformes (Aves)
+Cuculidae # COL: Aves > Cuculiformes
+Cuculiformes # COL: Chordata > Aves
+Cuculinae # COL: synonym of Cuculidae (Cuculiformes)
+Cuniculidae # COL: Mammalia > Rodentia
+Curimatidae # COL: Teleostei > Characiformes
+Cyclocoridae # COL: Reptilia > Squamata
+Cyclopedidae # COL: Mammalia > Pilosa
+Cycloramphidae # COL: Amphibia > Anura
+Cycloramphinae # COL: synonym of Cycloramphidae (Anura)
+Cyclosalpinae # COL: Salpida > Salpidae
+Cyclostomi # COL: Animalia > Chordata
+Cyematidae # COL: Teleostei > Anguilliformes
+Cylindrophiidae # COL: Reptilia > Squamata
+Cynocephalidae # COL: Mammalia > Dermoptera
+Cynoglossidae # COL: Teleostei > Pleuronectiformes
+Cynopithecinae # COL: synonym of Cercopithecinae (Primates)
+Cynopterinae # COL: Chiroptera > Pteropodidae
+Cynopterini # COL: Chiroptera > Pteropodidae
+Cypriniformes # COL: Chordata > Teleostei
+Cyprinodontidae # COL: Teleostei > Cyprinodontiformes
+Cyprinodontiformes # COL: Chordata > Teleostei
+Cypseloidinae # COL: Apodiformes > Apodidae
+Cyttidae # COL: Teleostei > Zeiformes
+Dacelonidae # COL: synonym of Halcyoninae (Coraciiformes)
+Dactylethrinae # COL: Anura > Pipidae
+Dactyloidae # ITIS: Reptilia > Squamata
+Dactylomyinae # COL: synonym of Echimyinae (Rodentia)
+Dactylopteridae # COL: Teleostei > Dactylopteriformes
+Dactylopteriformes # COL: Chordata > Teleostei
+Dactyloscopidae # COL: Teleostei > Blenniiformes
+Dalatiidae # COL: Elasmobranchii > Squaliformes
+Damalidae # COL: synonym of Alcelaphini (Artiodactyla)
+Danionidae # danio/minnow family (Cypriniformes); COL: Teleostei > Cypriniformes
+Dapedidae # Benton: Osteichthyes > unnamed
+Dasyatidae # COL: Elasmobranchii > Myliobatiformes
+Dasyornithidae # COL: Aves > Passeriformes
+Dasypodidae # COL: Mammalia > Cingulata
+Dasyproctidae # COL: Mammalia > Rodentia
+Dasyproctinae # COL: synonym of Dasyproctidae (Rodentia)
+Dasyuridae # COL: Mammalia > Dasyuromorphia
+Dasyurinae # COL: Dasyuromorphia > Dasyuridae
+Dasyurini # COL: Dasyuromorphia > Dasyuridae
+Dasyuromorphia # COL: Chordata > Mammalia
+Datnioididae # COL: Teleostei > Perciformes
+Daubentoniidae # COL: Mammalia > Primates
+Deinonychosauria # PBDB: Osteichthyes > Reptilia
+Delanomyinae # COL: synonym of Delanymyinae (Rodentia)
+Delanymyinae # COL: Rodentia > Nesomyidae
+Delphinidae # COL: Mammalia > Cetacea
+Dendrerpetontidae # IRMNG: Amphibia > Temnospondyli
+Dendrobatidae # COL: Amphibia > Anura
+Dendrobatinae # COL: Anura > Dendrobatidae
+Dendrobatoidea # COL: Amphibia > Anura
+Dendrocolaptidae # COL: synonym of Furnariidae (Passeriformes)
+Dendrocygnidae # COL: synonym of Anatidae (Anseriformes)
+Dendrocygninae # COL: synonym of Anatidae (Anseriformes)
+Dendromurinae # COL: Rodentia > Nesomyidae
+Dendropsophinae # COL: synonym of Hylidae (Anura)
+Dentatherinidae # COL: Teleostei > Atheriniformes
+Denticipitidae # COL: Teleostei > Clupeiformes
+Deomyes # COL: synonym of Deomyinae (Rodentia)
+Deomyinae # COL: Rodentia > Muridae
+Derichthyidae # COL: Teleostei > Anguilliformes
+Dermatemydidae # COL: Reptilia > Testudines
+Dermochelyidae # COL: Reptilia > Testudines
+Dermophiidae # COL: Amphibia > Gymnophiona
+Desmaninae # COL: synonym of Desmanini (Eulipotyphla)
+Desmanini # COL: Eulipotyphla > Talpidae
+Desmodontinae # COL: Chiroptera > Phyllostomidae
+Desmodontini # COL: Chiroptera > Phyllostomidae
+Desmognathinae # COL: synonym of Plethodontinae (Caudata)
+Diapsida # ITIS: synonym of Reptilia (Chordata)
+Diatomyidae # COL: Mammalia > Rodentia
+Diazonidae # COL: Ascidiacea > Aplousobranchia
+Dibamia # iNat: Reptilia > Squamata
+Dibamidae # COL: Reptilia > Squamata
+Dicaeidae # COL: Aves > Passeriformes
+Dicamptodontidae # COL: synonym of Ambystomatidae (Caudata)
+Diceratiidae # COL: Teleostei > Lophiiformes
+Dichistiidae # COL: Teleostei > Centrarchiformes
+Diclidurini # COL: Chiroptera > Emballonuridae
+Dicotylidae # COL: synonym of Tayassuidae (Artiodactyla)
+Dicroglossidae # COL: Amphibia > Anura
+Dicroglossinae # COL: Anura > Dicroglossidae
+Dicrostonychini # COL: synonym of Arvicolinae (Rodentia)
+Dicrostonyxini # COL: synonym of Arvicolinae (Rodentia)
+Dicruridae # COL: Aves > Passeriformes
+Didelphidae # COL: Mammalia > Didelphimorphia
+Didelphimorphia # COL: Chordata > Mammalia
+Didelphinae # COL: Didelphimorphia > Didelphidae
+Didemnidae # COL: Ascidiacea > Aplousobranchia
+Didunculinae # COL: synonym of Raphinae (Columbiformes)
+Dimeatidae # COL: Ascidiacea > Phlebobranchia
+Dinolestidae # COL: Teleostei > Acropomatiformes
+Dinomyidae # COL: Mammalia > Rodentia
+Dinopercidae # COL: Chordata > Teleostei
+Dinosauria # PBDB: synonym of Dinosauria (Osteichthyes)
+Dinosauriformes # PBDB: Osteichthyes > Reptilia
+Diodontidae # COL: Teleostei > Tetraodontiformes
+Diomedeidae # COL: Aves > Procellariiformes
+Diphyllini # COL: Chiroptera > Phyllostomidae
+Diplodactylidae # COL: Reptilia > Squamata
+Diplodocoidea # PBDB: synonym of Diplodocoidea (Osteichthyes)
+Diploglossa # PBDB: synonym of Anguioidea (Osteichthyes)
+Diploglossidae # COL: Reptilia > Squamata
+Diplomystidae # COL: Teleostei > Siluriformes
+Dipneusti # COL: synonym of Dipnoi (Animalia)
+Dipodes # COL: synonym of Dipodidae (Rodentia)
+Dipodidae # COL: Mammalia > Rodentia
+Dipodinae # COL: Rodentia > Dipodidae
+Dipodoidea # COL: Mammalia > Rodentia
+Dipodomyinae # COL: Rodentia > Heteromyidae
+Diprotodontia # COL: Chordata > Mammalia
+Dipsadidae # rear-fanged snake family (Squamata); ITIS: synonym of Dipsadinae (Squamata)
+Dipsadinae # COL: Squamata > Colubridae
+Dipsidae # COL: synonym of Dipodinae (Rodentia)
+Diretmidae # COL: Teleostei > Trachichthyiformes
+Discoglossidae # COL: synonym of Alytidae (Anura)
+Dissorophidae # IRMNG: Amphibia > Temnospondyli
+Distichodontidae # COL: Teleostei > Characiformes
+Dobsoniini # COL: Chiroptera > Pteropodidae
+Dolichotinae # COL: Rodentia > Caviidae
+Doliolida # COL: Chordata > Thaliacea
+Doliolidae # COL: Thaliacea > Doliolida
+Doliolidina # COL: Thaliacea > Doliolida
+Doliolunidae # COL: Thaliacea > Doliolida
+Doliopsidae # COL: Thaliacea > Doliolida
+Doliopsidina # COL: Thaliacea > Doliolida
+Doliopsoididae # COL: Thaliacea > Doliolida
+Dolomyinae # COL: synonym of Arvicolinae (Rodentia)
+Donacobiidae # COL: Aves > Passeriformes
+Doradidae # COL: Teleostei > Siluriformes
+Dorypteridae # IRMNG: Actinopterygii > Dorypteriformes
+Dracohors # not found in ChecklistBank
+Dracones # not found in ChecklistBank
+Draconettidae # COL: Teleostei > Callionymiformes
+Draconinae # COL: Squamata > Agamidae
+Drepaneidae # COL: Teleostei > Acanthuriformes
+Drepanididae # COL: synonym of Fringillidae (Passeriformes)
+Drepanidinae # COL: synonym of Fringillidae (Passeriformes)
+Dromadidae # COL: Aves > Charadriiformes
+Dromaeosauridae # IRMNG: Reptilia > Saurischia
+Dromaiidae # COL: Aves > Casuariiformes
+Dugongidae # COL: Mammalia > Sirenia
+Dugonginae # COL: synonym of Dugongidae (Sirenia)
+Dulidae # COL: Aves > Passeriformes
+Dussumieriidae # COL: Teleostei > Clupeiformes
+Dvinosauria # Benton: Batrachomorpha > Temnospondyli
+Dyrosauridae # IRMNG: Reptilia > Crocodylia
+Dyrosauroidea # PBDB: Osteichthyes > Reptilia
+Dyscophinae # COL: Anura > Microhylidae
+Echeneidae # COL: Teleostei > Carangiformes
+Echimyidae # COL: Mammalia > Rodentia
+Echimyinae # COL: Rodentia > Echimyidae
+Echinorhinidae # COL: Elasmobranchii > Echinorhiniformes
+Echinorhiniformes # COL: Chordata > Elasmobranchii
+Echinosoricinae # COL: synonym of Galericinae (Eulipotyphla)
+Echymiperinae # COL: Peramelemorphia > Peramelidae
+Ectophyllini # COL: synonym of Stenodermatini (Chiroptera)
+Edentata # COL: synonym of Pilosa (Mammalia)
+Egerniidae # ALF: Reptilia > Scincoidea
+Egerniinae # COL: Squamata > Scincidae
+Eidolinae # COL: Chiroptera > Pteropodidae
+Elachuridae # COL: Aves > Passeriformes
+Elaeniinae # COL: synonym of Tyrannidae (Passeriformes)
+Elapidae # COL: Reptilia > Squamata
+Elapinae # ITIS: Squamata > Elapidae
+Elapoidea # BHL: Chordata > Squamata
+Elasmobranchii # COL: Animalia > Chordata
+Elasmodontomyinae # COL: synonym of Heptaxodontidae (Rodentia)
+Elasmosauridae # WoRMS: Chordata > Plesiosauria
+Elassomatidae # COL: Teleostei > Centrarchiformes
+Eleginopsidae # COL: synonym of Eleginopidae (Perciformes)
+Eleotridae # COL: Teleostei > Gobiiformes
+Elephantidae # COL: Mammalia > Proboscidea
+Eleutherodactylidae # COL: Amphibia > Anura
+Eleutherodactylinae # COL: Anura > Eleutherodactylidae
+Ellimmichthyiformes # IRMNG: Chordata > Actinopterygii
+Ellobiusini # COL: synonym of Arvicolinae (Rodentia)
+Ellopostomatidae # COL: Teleostei > Cypriniformes
+Elopidae # COL: Teleostei > Elopiformes
+Elopiformes # COL: Chordata > Teleostei
+Elopocephala # Benton: Osteichthyes > Halecostomi
+Elopomorpha # ITIS: Chordata > Teleostei
+Emballonuridae # COL: Mammalia > Chiroptera
+Emballonurina # COL: synonym of Emballonurini (Chiroptera)
+Emballonurinae # COL: Chiroptera > Emballonuridae
+Emballonurini # COL: Chiroptera > Emballonuridae
+Emballonuroidea # COL: Mammalia > Chiroptera
+Emberizidae # COL: Aves > Passeriformes
+Embiotocidae # COL: Chordata > Teleostei
+Emmelichthyidae # COL: Chordata > Teleostei
+Emydidae # COL: Reptilia > Testudines
+Enantiornithes # PBDB: Osteichthyes > Reptilia
+Engraulidae # COL: Teleostei > Clupeiformes
+Enoplosidae # COL: Teleostei > Centrarchiformes
+Enterogona # tunicates (Ascidiacea, Urochordata); ITIS: Chordata > Ascidiacea
+Eonycterini # COL: Chiroptera > Pteropodidae
+Ephippidae # COL: Teleostei > Acanthuriformes
+Epictinae # COL: Squamata > Leptotyphlopidae
+Epigonidae # COL: Teleostei > Acropomatiformes
+Epomophorini # COL: Chiroptera > Pteropodidae
+Eptesicini # COL: Chiroptera > Vespertilionidae
+Equidae # COL: Mammalia > Perissodactyla
+Erethistidae # COL: Teleostei > Siluriformes
+Erethizontidae # COL: Mammalia > Rodentia
+Erethizontinae # COL: Rodentia > Erethizontidae
+Ereuniidae # COL: Teleostei > Perciformes
+Erinaceidae # COL: Mammalia > Eulipotyphla
+Erinaceinae # COL: Eulipotyphla > Erinaceidae
+Erinaceomorpha # COL: synonym of Eulipotyphla (Mammalia)
+Erithizontidae # COL: synonym of Erethizontidae (Rodentia)
+Eryopidae # IRMNG: Amphibia > Temnospondyli
+Erythrinidae # COL: Teleostei > Characiformes
+Erythrocercidae # COL: Aves > Passeriformes
+Erythrosuchidae # IRMNG: Reptilia > Prolacertiformes
+Eschmeyeridae # COL: Teleostei > Perciformes
+Eschrichtiidae # COL: Mammalia > Cetacea
+Esocidae # COL: Teleostei > Esociformes
+Esociformes # COL: Chordata > Teleostei
+Estrildidae # COL: Aves > Passeriformes
+Estrildinae # COL: synonym of Estrildidae (Passeriformes)
+Etmopteridae # COL: Elasmobranchii > Squaliformes
+Eublepharidae # COL: Reptilia > Squamata
+Euchoreutinae # COL: Rodentia > Dipodidae
+Euclichthyidae # COL: Teleostei > Gadiformes
+Eucrocopoda # PBDB: Osteichthyes > Reptilia
+Eugeneodontiformes # IRMNG: Chordata > Chondrichthyes
+Eugnathostomata # PBDB: Animalia > Chordata
+Eugongylidae # ALF: Reptilia > Scincoidea
+Eugongylinae # COL: Squamata > Scincidae
+Euhelopodidae # IRMNG: Reptilia > Saurischia
+Euherdmaniidae # COL: Ascidiacea > Aplousobranchia
+Eulipotyphla # hedgehogs, shrews, moles (Mammalia); COL: Chordata > Mammalia
+Eumysopinae # COL: synonym of Echimyinae (Rodentia)
+Euparkeriidae # IRMNG: Reptilia > Prolacertiformes
+Eupelycosauria # PBDB: Chordata > Osteichthyes
+Eupetidae # COL: Aves > Passeriformes
+Euphractinae # COL: Cingulata > Chlamyphoridae
+Eupleridae # COL: Mammalia > Carnivora
+Euplerinae # COL: Carnivora > Eupleridae
+Eureptilia # PBDB: Osteichthyes > Reptilia
+Eurostopodidae # COL: synonym of Caprimulgidae (Caprimulgiformes)
+Eurostopodinae # COL: synonym of Caprimulgidae (Caprimulgiformes)
+Eurylaimidae # COL: Aves > Passeriformes
+Eurylaiminae # COL: synonym of Eurylaimidae (Passeriformes)
+Eurylami # COL: synonym of Passeriformes (Aves)
+Eurypharyngidae # COL: Teleostei > Anguilliformes
+Eurypterygii # Benton: Osteichthyes > Halecostomi
+Eurypygae # COL: synonym of Eurypygiformes (Aves)
+Eurypygidae # COL: Aves > Eurypygiformes
+Eurypygiformes # COL: Chordata > Aves
+Euselachii # ITIS: Chordata > Chondrichthyes
+Eusuchia # PBDB: Osteichthyes > Reptilia
+Euteleostei # Dyntaxa: Actinopterygii > Teleostei
+Eutheria # COL: Chordata > Mammalia
+Evermannellidae # COL: Teleostei > Aulopiformes
+Exocoetidae # COL: Teleostei > Beloniformes
+Fabrosauridae # IRMNG: Reptilia > Ornithischia
+Falcatidae # IRMNG: Chondrichthyes > Symmoriiformes
+Falconidae # COL: Aves > Falconiformes
+Falconiformes # COL: Chordata > Aves
+Falconinae # COL: Falconiformes > Falconidae
+Felidae # COL: Mammalia > Carnivora
+Feliformia # COL: Mammalia > Carnivora
+Felinae # COL: Carnivora > Felidae
+Fibrini # COL: synonym of Arvicolinae (Rodentia)
+Fistulariidae # COL: Teleostei > Syngnathiformes
+Fluvicolinae # COL: synonym of Tyrannidae (Passeriformes)
+Folivora # COL: Mammalia > Pilosa
+Formicariidae # COL: Aves > Passeriformes
+Fregatidae # COL: Aves > Suliformes
+Fringillidae # COL: Aves > Passeriformes
+Fringillinae # COL: synonym of Fringillidae (Passeriformes)
+Fritillariidae # COL: Appendicularia > Copelata
+Fritillariinae # COL: Copelata > Fritillariidae
+Fundulidae # COL: Teleostei > Cyprinodontiformes
+Furipteridae # COL: Mammalia > Chiroptera
+Furnariidae # COL: Aves > Passeriformes
+Gacellidae # COL: synonym of Antilopinae (Artiodactyla)
+Gadidae # COL: Teleostei > Gadiformes
+Gadiformes # COL: Chordata > Teleostei
+Galagidae # COL: Mammalia > Primates
+Galagonidae # COL: synonym of Galagidae (Primates)
+Galaxiidae # COL: Teleostei > Galaxiiformes
+Galbulae # COL: synonym of Piciformes (Aves)
+Galbulidae # COL: Aves > Piciformes
+Galbuliformes # COL: synonym of Piciformes (Aves)
+Galeomorphii # PBDB: Chordata > Chondrichthyes
+Galericinae # COL: Eulipotyphla > Erinaceidae
+Galidiinae # COL: Carnivora > Eupleridae
+Galli # COL: synonym of Galliformes (Aves)
+Galliformes # COL: Chordata > Aves
+Gasteropelecidae # COL: Teleostei > Characiformes
+Gasterosteidae # COL: Teleostei > Perciformes
+Gasterosteiformes # COL: synonym of Gasterosteoidei (Teleostei)
+Gastrophryninae # COL: Anura > Microhylidae
+Gavialidae # COL: Reptilia > Crocodylia
+Gaviidae # COL: Aves > Gaviiformes
+Gaviiformes # COL: Chordata > Aves
+Gekkonidae # COL: Reptilia > Squamata
+Gekkota # COL: Reptilia > Squamata
+Gempylidae # COL: Teleostei > Scombriformes
+Genyophryninae # COL: synonym of Asterophryinae (Anura)
+Geoemydidae # COL: Reptilia > Testudines
+Geogalinae # COL: Afrosoricida > Tenrecidae
+Geomyidae # COL: Mammalia > Rodentia
+Georychinae # COL: synonym of Bathyergidae (Rodentia)
+Geotriidae # COL: Petromyzonti > Petromyzontiformes
+Gerbillinae # COL: Rodentia > Muridae
+Gerboidae # COL: synonym of Dipodinae (Rodentia)
+Gerreidae # COL: Chordata > Teleostei
+Gerrhonotinae # COL: Squamata > Anguidae
+Gerrhopilidae # COL: Reptilia > Squamata
+Gerrhosauridae # COL: Reptilia > Squamata
+Gibberichthyidae # COL: Teleostei > Beryciformes
+Gigantactinidae # COL: Teleostei > Lophiiformes
+Giganturidae # COL: Teleostei > Aulopiformes
+Ginglymodi # PBDB: synonym of Ginglymodi (Chordata)
+Ginglymostomatidae # COL: Elasmobranchii > Orectolobiformes
+Giraffidae # COL: Mammalia > Artiodactyla
+Glareolidae # COL: Aves > Charadriiformes
+Glaucosomatidae # COL: Teleostei > Acropomatiformes
+Glaucostegidae # COL: Elasmobranchii > Rhinopristiformes
+Gliridae # COL: Mammalia > Rodentia
+Glirinae # COL: Rodentia > Gliridae
+Glirini # COL: synonym of Gliridae (Rodentia)
+Glirulinae # COL: synonym of Glirinae (Rodentia)
+Globicephalidae # COL: synonym of Delphinidae (Cetacea)
+Glossophaginae # COL: Chiroptera > Phyllostomidae
+Glossophagini # COL: Chiroptera > Phyllostomidae
+Glyphonycterinae # COL: Chiroptera > Phyllostomidae
+Gnathanacanthidae # COL: Teleostei > Perciformes
+Gnathostomata # COL: Animalia > Chordata
+Gobiesocidae # COL: Teleostei > Gobiesociformes
+Gobiesociformes # COL: Chordata > Teleostei
+Gobiidae # COL: Teleostei > Gobiiformes
+Gobiiformes # gobies; COL: Chordata > Teleostei
+Goniopholididae # IRMNG: Reptilia > Crocodylia
+Gonorhynchiformes # ITIS: synonym of Gonorynchiformes (Teleostei)
+Gonorynchidae # COL: Teleostei > Gonorynchiformes
+Gonorynchiformes # COL: Chordata > Teleostei
+Gonostomatidae # COL: Teleostei > Stomiiformes
+Goodeidae # COL: Teleostei > Cyprinodontiformes
+Gourinae # COL: synonym of Raphinae (Columbiformes)
+Grallariidae # COL: Aves > Passeriformes
+Grallinidae # COL: synonym of Monarchidae (Passeriformes)
+Grammatidae # COL: Chordata > Teleostei
+Grammicolepididae # COL: Teleostei > Zeiformes
+Graphiurinae # COL: Rodentia > Gliridae
+Grayiinae # COL: Squamata > Colubridae
+Grues # COL: synonym of Gruiformes (Aves)
+Gruidae # COL: Aves > Gruiformes
+Gruiformes # COL: Chordata > Aves
+Gruinae # COL: Gruiformes > Gruidae
+Guildayichthyidae # IRMNG: Actinopterygii > Guildayichthyiformes
+Guloninae # COL: Carnivora > Mustelidae
+Gymnarchidae # COL: Teleostei > Osteoglossiformes
+Gymnophiona # COL: Chordata > Amphibia
+Gymnophthalmidae # COL: Reptilia > Squamata
+Gymnotidae # COL: Teleostei > Gymnotiformes
+Gymnotiformes # COL: Chordata > Teleostei
+Gymnuridae # COL: Elasmobranchii > Myliobatiformes
+Gymnuromyinae # COL: synonym of Nesomyinae (Rodentia)
+Gyrinocheilidae # COL: Teleostei > Cypriniformes
+Hadrosauridae # IRMNG: Reptilia > Ornithischia
+Haematopodidae # COL: Aves > Charadriiformes
+Haemulidae # COL: Chordata > Teleostei
+Halcyoninae # COL: Coraciiformes > Alcedinidae
+Halecomorphi # PBDB: synonym of Halecomorphi (Chordata)
+Halecostomi # Benton: Chordata > Osteichthyes
+Halosauridae # COL: Teleostei > Notacanthiformes
+Hapalogenyidae # COL: synonym of Lobotidae (Acanthuriformes)
+Haplodontidae # COL: synonym of Aplodontiidae (Rodentia)
+Haploodontidae # COL: synonym of Aplodontiidae (Rodentia)
+Haploodontini # COL: synonym of Aplodontiidae (Rodentia)
+Haplorrhini # COL: Mammalia > Primates
+Harpagiferidae # COL: Teleostei > Perciformes
+Harpyionycterini # COL: Chiroptera > Pteropodidae
+Harpyionyterinae # COL: Chiroptera > Pteropodidae
+Heleophrynidae # COL: Amphibia > Anura
+Helictidinae # COL: Carnivora > Mustelidae
+Helictidini # COL: synonym of Helictidinae (Carnivora)
+Heliornithes # COL: synonym of Gruiformes (Aves)
+Heliornithidae # COL: Aves > Gruiformes
+Helodermatidae # COL: Reptilia > Squamata
+Helostomatidae # COL: Teleostei > Anabantiformes
+Hemibelideinae # COL: Diprotodontia > Pseudocheiridae
+Hemidactyliinae # COL: Caudata > Plethodontidae
+Hemigaleidae # COL: Elasmobranchii > Carcharhiniformes
+Hemigalinae # COL: Carnivora > Viverridae
+Hemiodontidae # COL: Teleostei > Characiformes
+Hemiphractidae # COL: Amphibia > Anura
+Hemiphractinae # COL: synonym of Hemiphractidae (Anura)
+Hemiprocnidae # COL: Aves > Apodiformes
+Hemiramphidae # COL: Teleostei > Beloniformes
+Hemiscylliidae # COL: Elasmobranchii > Orectolobiformes
+Hemisotidae # COL: Amphibia > Anura
+Hemitripteridae # COL: Teleostei > Perciformes
+Hepsetidae # COL: Teleostei > Characiformes
+Heptapteridae # COL: Teleostei > Siluriformes
+Heptaxodontidae # COL: Mammalia > Rodentia
+Heptaxodontinae # COL: Rodentia > Heptaxodontidae
+Herpelidae # COL: Amphibia > Gymnophiona
+Herpestidae # COL: Mammalia > Carnivora
+Herpestinae # COL: Carnivora > Herpestidae
+Herrerasauridae # IRMNG: Reptilia > Saurischia
+Hesperomyinae # COL: synonym of Sigmodontinae (Rodentia)
+Heterenchelyidae # COL: Teleostei > Anguilliformes
+Heterocephalinae # COL: synonym of Heterocephalidae (Rodentia)
+Heterodontidae # COL: Elasmobranchii > Heterodontiformes
+Heterodontiformes # COL: Chordata > Elasmobranchii
+Heterodontosauridae # IRMNG: Reptilia > Ornithischia
+Heteromyidae # COL: Mammalia > Rodentia
+Heteromyinae # COL: Rodentia > Heteromyidae
+Heteropneustidae # COL: Teleostei > Siluriformes
+Heteropsomyinae # COL: Rodentia > Echimyidae
+Hexagrammidae # COL: Teleostei > Perciformes
+Hexanchidae # COL: Elasmobranchii > Hexanchiformes
+Hexanchiformes # COL: Chordata > Elasmobranchii
+Hexatrygonidae # COL: Elasmobranchii > Myliobatiformes
+Hexolobodontinae # COL: Rodentia > Echimyidae
+Himantolophidae # COL: Teleostei > Lophiiformes
+Hiodontidae # COL: Teleostei > Hiodontiformes
+Hippopotamidae # COL: Mammalia > Artiodactyla
+Hipposideridae # COL: Mammalia > Chiroptera
+Hipposiderinae # COL: synonym of Hipposideridae (Chiroptera)
+Hippotraginae # COL: synonym of Hippotragini (Artiodactyla)
+Hirundinidae # COL: Aves > Passeriformes
+Hispidoberycidae # COL: Teleostei > Beryciformes
+Holoadeninae # COL: Anura > Strabomantidae
+Holocentridae # COL: Teleostei > Holocentriformes
+Holocephali # COL: Animalia > Chordata
+Holozoidae # COL: Ascidiacea > Aplousobranchia
+Homalopsidae # COL: Reptilia > Squamata
+Hominidae # COL: Mammalia > Primates
+Homininae # COL: Primates > Hominidae
+Hominoidea # COL: Mammalia > Primates
+Hoplichthyidae # COL: Teleostei > Perciformes
+Hoplocercidae # COL: Reptilia > Squamata
+Hoplophryninae # COL: Anura > Microhylidae
+Howellidae # COL: Teleostei > Acropomatiformes
+Hsunycterini # COL: Chiroptera > Phyllostomidae
+Hyaenidae # COL: Mammalia > Carnivora
+Hyaeninae # COL: Carnivora > Hyaenidae
+Hyalinobatrachinae # COL: Anura > Centrolenidae
+Hybodontiformes # IRMNG: Chordata > Chondrichthyes
+Hydrobatidae # COL: Aves > Procellariiformes
+Hydrobatinae # COL: synonym of Hydrobatidae (Procellariiformes)
+Hydrochaeridae # COL: synonym of Hydrochoerinae (Rodentia)
+Hydrochoerinae # COL: Rodentia > Caviidae
+Hydrodamalinae # COL: synonym of Dugongidae (Sirenia)
+Hydromyinae # COL: synonym of Murinae (Rodentia)
+Hydrophiinae # COL: Squamata > Elapidae
+Hydropotinae # COL: synonym of Capreolinae (Artiodactyla)
+Hydrosaurinae # COL: Squamata > Agamidae
+Hylidae # COL: Amphibia > Anura
+Hylinae # COL: synonym of Hylidae (Anura)
+Hyliotidae # COL: Aves > Passeriformes
+Hylobatidae # COL: Mammalia > Primates
+Hylocitreidae # COL: Aves > Passeriformes
+Hylodidae # COL: Amphibia > Anura
+Hylomyinae # COL: synonym of Galericinae (Eulipotyphla)
+Hyloxalinae # COL: Anura > Dendrobatidae
+Hynobiidae # COL: Amphibia > Caudata
+Hynobiinae # COL: Caudata > Hynobiidae
+Hyperoliidae # COL: Amphibia > Anura
+Hyperoliinae # COL: Anura > Hyperoliidae
+Hyperoodontidae # COL: Mammalia > Cetacea
+Hyperoodontina # COL: synonym of Hyperoodontidae (Cetacea)
+Hypnosqualea # PBDB: Chordata > Chondrichthyes
+Hypobythiidae # COL: Ascidiacea > Phlebobranchia
+Hypocolidae # COL: synonym of Hypocoliidae (Passeriformes)
+Hypocoliidae # COL: Aves > Passeriformes
+Hypopomidae # COL: Teleostei > Gymnotiformes
+Hypoptychidae # COL: Teleostei > Perciformes
+Hyposaurinae # PBDB: synonym of Hyposaurinae (Osteichthyes)
+Hypsilophodontidae # IRMNG: Reptilia > Ornithischia
+Hypsiprymnodontidae # COL: Mammalia > Diprotodontia
+Hyracoidea # COL: Chordata > Mammalia
+Hystricidae # COL: Mammalia > Rodentia
+Hystricognatha # COL: synonym of Hystricomorpha (Mammalia)
+Hystricognathi # COL: Mammalia > Rodentia
+Hystricomorpha # COL: Mammalia > Rodentia
+Ibidorhynchidae # COL: Aves > Charadriiformes
+Ichthyodectidae # IRMNG: Actinopterygii > Ichthyodectiformes
+Ichthyomyini # COL: synonym of Sigmodontinae (Rodentia)
+Ichthyophiidae # COL: Amphibia > Gymnophiona
+Ichthyornithiformes # IRMNG: Chordata > Aves
+Ichthyosauria # IRMNG: Chordata > Reptilia
+Icosteidae # COL: Teleostei > Scombriformes
+Ictaluridae # COL: Teleostei > Siluriformes
+Icteridae # COL: Aves > Passeriformes
+Ictonychinae # COL: Carnivora > Mustelidae
+Idiurinae # COL: Rodentia > Anomaluridae
+Iguania # COL: Reptilia > Squamata
+Iguanidae # COL: Reptilia > Squamata
+Iguanodectidae # COL: Teleostei > Characiformes
+Iguanodontidae # IRMNG: Reptilia > Ornithischia
+Incertovenator # not found in ChecklistBank
+Indicatoridae # COL: Aves > Piciformes
+Indostomidae # COL: Teleostei > Synbranchiformes
+Indotyphlidae # COL: synonym of Grandisoniidae (Gymnophiona)
+Indridae # COL: synonym of Indriidae (Primates)
+Indriidae # COL: Mammalia > Primates
+Iniidae # COL: Mammalia > Cetacea
+Iniopterygiformes # IRMNG: Chordata > Chondrichthyes
+Insectivora # COL: synonym of Afrosoricida (Mammalia)
+Ipnopidae # COL: Teleostei > Aulopiformes
+Irenidae # COL: Aves > Passeriformes
+Ischymomyini # COL: synonym of Cricetinae (Rodentia)
+Isolobodontinae # COL: Rodentia > Echimyidae
+Isonidae # COL: Teleostei > Atheriniformes
+Istiophoridae # COL: Teleostei > Carangiformes
+Jacanidae # COL: Aves > Charadriiformes
+Jeholornis # OTT: Saurischia > Aves
+Jynginae # COL: Piciformes > Picidae
+Kalophryninae # COL: Anura > Microhylidae
+Kerivoulinae # COL: Chiroptera > Vespertilionidae
+Kinosternidae # COL: Reptilia > Testudines
+Kneriidae # COL: Teleostei > Gonorynchiformes
+Kogiidae # COL: Mammalia > Cetacea
+Kowalevskiidae # COL: Appendicularia > Copelata
+Kraemeriidae # COL: Teleostei > Gobiiformes
+Kryptoglanidae # COL: Teleostei > Siluriformes
+Kuhliidae # COL: Teleostei > Centrarchiformes
+Kurtidae # COL: Teleostei > Apogoniformes
+Kyphosidae # COL: Teleostei > Centrarchiformes
+Labiata # COL: Copelata > Oikopleuridae
+Labridae # COL: Chordata > Teleostei
+Labrisomidae # COL: Teleostei > Blenniiformes
+Lacantuniidae # COL: Teleostei > Siluriformes
+Lacertidae # COL: Reptilia > Squamata
+Lacertilia # ITIS: synonym of Squamata (Reptilia)
+Lacertoidea # PBDB: Osteichthyes > Reptilia
+Lactariidae # COL: Chordata > Teleostei
+Lagerpeton # OTT: Sauria > Dinosauria
+Lagomorpha # COL: Chordata > Mammalia
+Lagurini # COL: synonym of Arvicolinae (Rodentia)
+Laliostominae # COL: Anura > Mantellidae
+Lamnidae # COL: Elasmobranchii > Lamniformes
+Lamniformes # COL: Chordata > Elasmobranchii
+Lampridae # COL: Teleostei > Lampriformes
+Lampridiformes # ITIS: synonym of Lampriformes (Teleostei)
+Lampriformes # COL: Chordata > Teleostei
+Lamprophiidae # COL: Reptilia > Squamata
+Lamprophilidae # ALF: Reptilia > Serpentes
+Laniidae # COL: Aves > Passeriformes
+Lankanectinae # COL: Anura > Nyctibatrachidae
+Lanthanotidae # COL: Reptilia > Squamata
+Laonastidae # COL: synonym of Diatomyidae (Rodentia)
+Lari # COL: synonym of Charadriiformes (Aves)
+Laridae # COL: Aves > Charadriiformes
+Larinae # COL: synonym of Laridae (Charadriiformes)
+Lasiurini # COL: Chiroptera > Vespertilionidae
+Lateolabracidae # COL: Teleostei > Acropomatiformes
+Latidae # COL: Chordata > Teleostei
+Latimeriidae # COL: Chordata > Coelacanthiformes
+Latridae # COL: Teleostei > Centrarchiformes
+Lebiasinidae # COL: Teleostei > Characiformes
+Leimacomyinae # COL: Rodentia > Muridae
+Leiocephalidae # COL: Reptilia > Squamata
+Leiognathidae # COL: Teleostei > Acanthuriformes
+Leiolepidinae # ITIS: Squamata > Agamidae
+Leiopelmatidae # COL: Amphibia > Anura
+Leiosauridae # COL: Reptilia > Squamata
+Leiothrichidae # COL: Aves > Passeriformes
+Leiotrichidae # COL: synonym of Leiothrichidae (Passeriformes)
+Leithiidae # COL: synonym of Gliridae (Rodentia)
+Leithiinae # COL: Rodentia > Gliridae
+Leiuperidae # COL: synonym of Leiuperinae (Anura)
+Leiuperinae # COL: Anura > Leptodactylidae
+Lemuridae # COL: Mammalia > Primates
+Lemuriformes # COL: Mammalia > Primates
+Lemuroidea # COL: Mammalia > Primates
+Lepidogalaxiidae # COL: Teleostei > Lepidogalaxiiformes
+Lepidophyminae # COL: Squamata > Xantusiidae
+Lepidosauria # ITIS: synonym of Reptilia (Chordata)
+Lepidosauromorpha # PBDB: synonym of Lepidosauromorpha (Osteichthyes)
+Lepidosirenidae # COL: Chordata > Ceratodontiformes
+Lepilemuridae # COL: Mammalia > Primates
+Lepisosteidae # COL: Holostei > Lepisosteiformes
+Lepisosteiformes # COL: Chordata > Holostei
+Leporidae # COL: Mammalia > Lagomorpha
+Lepospondyli # COL: synonym of Amphibia (Chordata)
+Leptobramidae # COL: Chordata > Teleostei
+Leptocardii # COL: Animalia > Chordata
+Leptochariidae # COL: Elasmobranchii > Carcharhiniformes
+Leptochilichthyidae # COL: synonym of Alepocephalidae (Alepocephaliformes)
+Leptodactylidae # COL: Amphibia > Anura
+Leptodactylinae # COL: Anura > Leptodactylidae
+Leptolepididae # IRMNG: Actinopterygii > Leptolepidiformes
+Leptopelinae # COL: Anura > Arthroleptidae
+Leptoscopidae # COL: Teleostei > Acropomatiformes
+Leptosomidae # COL: Aves > Leptosomiformes
+Leptosomiformes # COL: Chordata > Aves
+Leptosominae # COL: synonym of Leptosomidae (Leptosomiformes)
+Leptotyphlopidae # COL: Reptilia > Squamata
+Leptotyphlopinae # COL: Squamata > Leptotyphlopidae
+Lethrinidae # COL: Chordata > Teleostei
+Limnodynastidae # COL: Amphibia > Anura
+Linophrynidae # COL: Teleostei > Lophiiformes
+Liolaemidae # COL: Reptilia > Squamata
+Lipotidae # COL: Mammalia > Cetacea
+Lissamphibia # COL: synonym of Amphibia (Chordata)
+Lissodelphinae # COL: synonym of Delphinidae (Cetacea)
+Lithornithiformes # IRMNG: Chordata > Aves
+Litoriinae # COL: synonym of Pelodryadidae (Anura)
+Liuraninae # COL: Anura > Ceratobatrachidae
+Lobotidae # COL: Teleostei > Acanthuriformes
+Locustellidae # COL: Aves > Passeriformes
+Lonchophyllinae # COL: Chiroptera > Phyllostomidae
+Lonchophyllini # COL: Chiroptera > Phyllostomidae
+Lonchorhininae # COL: Chiroptera > Phyllostomidae
+Lophichthyidae # COL: Teleostei > Lophiiformes
+Lophiidae # COL: Teleostei > Lophiiformes
+Lophiiformes # COL: Chordata > Teleostei
+Lophiomyinae # COL: Rodentia > Cricetidae
+Lophotidae # COL: Teleostei > Lampriformes
+Lophyohylinae # COL: synonym of Hylidae (Anura)
+Loricariidae # COL: Teleostei > Siluriformes
+Loridae # COL: synonym of Lorisidae (Primates)
+Loriinae # COL: synonym of Psittaculidae (Psittaciformes)
+Lorisidae # COL: Mammalia > Primates
+Lorisiformes # COL: Mammalia > Primates
+Lorisinae # COL: Primates > Lorisidae
+Lotidae # COL: Teleostei > Gadiformes
+Loxocemidae # COL: Reptilia > Squamata
+Lutjanidae # COL: Chordata > Teleostei
+Lutrinae # COL: Carnivora > Mustelidae
+Luvaridae # COL: Teleostei > Acanthuriformes
+Lybiidae # COL: Aves > Piciformes
+Lybiinae # COL: synonym of Lybiidae (Piciformes)
+Lygosomidae # ALF: Reptilia > Scincoidea
+Lygosominae # COL: Squamata > Scincidae
+Lygosomoidea # ALF: Reptilia > Scincoidea
+Mabuyidae # CLB dataset 316045: Reptilia > Squamata
+Mabuyinae # COL: Squamata > Scincidae
+Macacidae # COL: synonym of Cercopithecinae (Primates)
+Machaerirhynchidae # COL: Aves > Passeriformes
+Macroglossusinae # COL: Chiroptera > Pteropodidae
+Macronaria # iNat: Dinosauria > Sauropodomorpha
+Macrophyllini # COL: Chiroptera > Phyllostomidae
+Macropodidae # COL: Mammalia > Diprotodontia
+Macropodiformes # COL: Mammalia > Diprotodontia
+Macropodinae # COL: Diprotodontia > Macropodidae
+Macroscelidea # COL: Chordata > Mammalia
+Macroscelididae # COL: Mammalia > Macroscelidea
+Macrosemiidae # IRMNG: Actinopterygii > Semionotiformes
+Macrosphenidae # COL: Aves > Passeriformes
+Macrotinae # COL: Chiroptera > Phyllostomidae
+Macrouridae # COL: Teleostei > Gadiformes
+Malacanthidae # COL: Chordata > Teleostei
+Malaconotidae # COL: Aves > Passeriformes
+Malapteruridae # COL: Teleostei > Siluriformes
+Maluridae # COL: Aves > Passeriformes
+Mambachiton # not found in ChecklistBank
+Mammalia # COL: Animalia > Chordata
+Manidae # COL: Mammalia > Pholidota
+Maniraptora # Benton: Saurischia > Coelurosauria
+Maniraptoriformes # iNat: Dinosauria > Theropoda
+Mantellidae # COL: Amphibia > Anura
+Mantellinae # COL: Anura > Mantellidae
+Marasuchus # OTT: Metazoa > Chordata
+Marmotini # COL: Rodentia > Sciuridae
+Marsupialia # COL: synonym of Metatheria (Chordata)
+Massospondylidae # IRMNG: Reptilia > Saurischia
+Mastacembelidae # COL: Teleostei > Synbranchiformes
+Mastodonsauridae # IRMNG: Amphibia > Temnospondyli
+Megachasmidae # COL: Elasmobranchii > Lamniformes
+Megachiroptera # COL: synonym of Chiroptera (Mammalia)
+Megadermatidae # COL: Mammalia > Chiroptera
+Megaladapidae # COL: synonym of Lepilemuridae (Primates)
+Megalaimidae # COL: Aves > Piciformes
+Megalaiminae # COL: synonym of Megalaimidae (Piciformes)
+Megalonychidae # COL: Mammalia > Pilosa
+Megalosauridae # IRMNG: Reptilia > Saurischia
+Megaluridae # COL: synonym of Locustellidae (Passeriformes)
+Megapodiidae # COL: Aves > Galliformes
+Megophryidae # COL: Amphibia > Anura
+Meiolaniidae # IRMNG: Reptilia > Testudines
+Melamphaidae # COL: Teleostei > Beryciformes
+Melanobatrachinae # COL: Anura > Microhylidae
+Melanocetidae # COL: Teleostei > Lophiiformes
+Melanocharitidae # COL: Aves > Passeriformes
+Melanonidae # COL: Teleostei > Gadiformes
+Melanopareiidae # COL: Aves > Passeriformes
+Melanotaeniidae # COL: Teleostei > Atheriniformes
+Meleagrididae # COL: synonym of Phasianidae (Galliformes)
+Meleagridinae # COL: synonym of Phasianidae (Galliformes)
+Melinae # COL: Carnivora > Mustelidae
+Meliphagidae # COL: Aves > Passeriformes
+Mellivorinae # COL: Carnivora > Mustelidae
+Mellivorini # COL: synonym of Mellivorinae (Carnivora)
+Melonycterini # COL: Chiroptera > Pteropodidae
+Menidae # COL: Chordata > Teleostei
+Menurae # COL: synonym of Passeriformes (Aves)
+Menuridae # COL: Aves > Passeriformes
+Mephitidae # COL: Mammalia > Carnivora
+Mephitinae # COL: synonym of Mephitidae (Carnivora)
+Merioninae # COL: synonym of Gerbillinae (Rodentia)
+Merlucciidae # COL: Teleostei > Gadiformes
+Meropes # COL: synonym of Coraciiformes (Aves)
+Meropidae # COL: Aves > Coraciiformes
+Mesitornithes # COL: synonym of Mesitornithiformes (Aves)
+Mesitornithidae # COL: Aves > Mesitornithiformes
+Mesitornithiformes # COL: Chordata > Aves
+Mesoenatidae # COL: synonym of Mesitornithidae (Mesitornithiformes)
+Mesoenatides # COL: synonym of Mesitornithiformes (Aves)
+Mesoeucrocodylia # Benton: Archosauria > Crocodylia
+Mesosauridae # IRMNG: Reptilia > Mesosauria
+Mesosiphneinae # COL: synonym of Myospalacinae (Rodentia)
+Metasuchia # PBDB: Osteichthyes > Reptilia
+Metatheria # COL: Chordata > Mammalia
+Metopophora # not found in ChecklistBank
+Metoposauridae # IRMNG: Amphibia > Temnospondyli
+Metriorhynchidae # IRMNG: Reptilia > Thalattosuchia
+Micrixalidae # COL: Amphibia > Anura
+Micrixilidae # ALF: Amphibia > Anura
+Microbiotheria # COL: Chordata > Mammalia
+Microbiotheriidae # COL: Mammalia > Microbiotheria
+Microchiroptera # COL: synonym of Chiroptera (Mammalia)
+Microdesmidae # COL: Teleostei > Gobiiformes
+Microhylidae # COL: Amphibia > Anura
+Microhylinae # COL: Anura > Microhylidae
+Micronycterinae # COL: Chiroptera > Phyllostomidae
+Micropsittinae # COL: synonym of Psittaculidae (Psittaciformes)
+Microstomatidae # COL: Teleostei > Argentiniformes
+Microtidae # COL: synonym of Arvicolinae (Rodentia)
+Millerettidae # IRMNG: Chordata > Reptilia
+Mimidae # COL: Aves > Passeriformes
+Mimiidae # IRMNG: Chordata > Actinopterygii
+Miniopteridae # COL: Mammalia > Chiroptera
+Miniopterinae # COL: synonym of Miniopteridae (Chiroptera)
+Mitsukurinidae # COL: Elasmobranchii > Lamniformes
+Mochokidae # COL: Teleostei > Siluriformes
+Mohoidae # COL: Aves > Passeriformes
+Mohouidae # COL: Aves > Passeriformes
+Molgulidae # COL: Ascidiacea > Stolidobranchia
+Molidae # COL: Teleostei > Tetraodontiformes
+Molossidae # COL: Mammalia > Chiroptera
+Molossinae # COL: Chiroptera > Molossidae
+Momotidae # COL: Aves > Coraciiformes
+Monacanthidae # COL: Teleostei > Tetraodontiformes
+Monarchidae # COL: Aves > Passeriformes
+Monocentridae # COL: Teleostei > Trachichthyiformes
+Monodactylidae # COL: Chordata > Teleostei
+Monodontidae # COL: Mammalia > Cetacea
+Monognathidae # COL: Teleostei > Anguilliformes
+Monotremata # COL: Chordata > Mammalia
+Mordaciidae # COL: Petromyzonti > Petromyzontiformes
+Moridae # COL: Teleostei > Gadiformes
+Moringuidae # COL: Teleostei > Anguilliformes
+Mormoopidae # COL: Mammalia > Chiroptera
+Mormyridae # COL: Teleostei > Osteoglossiformes
+Moronidae # COL: Chordata > Teleostei
+Moschidae # COL: Mammalia > Artiodactyla
+Motacillidae # COL: Aves > Passeriformes
+Mugilidae # COL: Teleostei > Mugiliformes
+Mugiliformes # COL: Chordata > Teleostei
+Mullidae # COL: Teleostei > Mulliformes
+Muntiacinae # COL: synonym of Cervinae (Artiodactyla)
+Muraenesocidae # COL: Teleostei > Anguilliformes
+Muraenidae # COL: Teleostei > Anguilliformes
+Muraenolepididae # COL: Teleostei > Gadiformes
+Muridae # COL: Mammalia > Rodentia
+Muriformes # COL: synonym of Muroidea (Mammalia)
+Murinae # COL: Rodentia > Muridae
+Murininae # COL: Chiroptera > Vespertilionidae
+Muroidea # COL: Mammalia > Rodentia
+Muscardinidae # COL: synonym of Gliridae (Rodentia)
+Muscicapidae # COL: Aves > Passeriformes
+Musophagi # COL: synonym of Musophagiformes (Aves)
+Musophagidae # COL: Aves > Musophagiformes
+Musophagiformes # COL: Chordata > Aves
+Musophaginae # COL: synonym of Musophagidae (Musophagiformes)
+Mustelidae # COL: Mammalia > Carnivora
+Mustelinae # COL: Carnivora > Mustelidae
+Mustilidae # COL: synonym of Mustelidae (Carnivora)
+Mycetinae # COL: synonym of Alouattinae (Primates)
+Myctophidae # COL: Teleostei > Myctophiformes
+Myctophiformes # COL: Chordata > Teleostei
+Myliobatidae # COL: Elasmobranchii > Myliobatiformes
+Myliobatiformes # COL: Chordata > Elasmobranchii
+Myobatrachidae # COL: Amphibia > Anura
+Myobatrachoidea # COL: Amphibia > Anura
+Myocastoridae # COL: synonym of Echimyidae (Rodentia)
+Myocastorinae # COL: synonym of Echimyinae (Rodentia)
+Myodini # COL: synonym of Arvicolinae (Rodentia)
+Myomorpha # COL: Mammalia > Rodentia
+Myonycterini # COL: Chiroptera > Pteropodidae
+Myosidae # COL: synonym of Gliridae (Rodentia)
+Myosoricinae # COL: Eulipotyphla > Soricidae
+Myospalacinae # COL: Rodentia > Spalacidae
+Myotalpinae # COL: synonym of Myospalacinae (Rodentia)
+Myotinae # COL: Chiroptera > Vespertilionidae
+Myoxidae # COL: synonym of Gliridae (Rodentia)
+Myoxinae # COL: synonym of Glirinae (Rodentia)
+Myrmecobiidae # COL: Mammalia > Dasyuromorphia
+Myrmecophagidae # COL: Mammalia > Pilosa
+Myrocongridae # COL: Teleostei > Anguilliformes
+Mystacinidae # COL: Mammalia > Chiroptera
+Mysticeti # COL: Mammalia > Cetacea
+Mystromyinae # COL: Rodentia > Nesomyidae
+Myxini # COL: Animalia > Chordata
+Myxinidae # COL: Myxini > Myxiniformes
+Myxiniformes # COL: Chordata > Myxini
+Myzopodidae # COL: Mammalia > Chiroptera
+Nandidae # COL: Teleostei > Anabantiformes
+Nandiniidae # COL: Mammalia > Carnivora
+Nandiniinae # COL: synonym of Nandiniidae (Carnivora)
+Narcinidae # COL: Elasmobranchii > Torpediniformes
+Narkidae # COL: Elasmobranchii > Torpediniformes
+Nasikabatrachidae # COL: Amphibia > Anura
+Natalidae # COL: Mammalia > Chiroptera
+Natricidae # water snake family (Squamata); GBIF: Animalia > Chordata
+Natricinae # COL: Squamata > Colubridae
+Nectariniidae # COL: Aves > Passeriformes
+Nectogalini # COL: Eulipotyphla > Soricidae
+Nemacheilidae # COL: Teleostei > Cypriniformes
+Nematistiidae # COL: Teleostei > Carangiformes
+Nematogenyidae # COL: Teleostei > Siluriformes
+Nemichthyidae # COL: Teleostei > Anguilliformes
+Nemipteridae # COL: Chordata > Teleostei
+Neoaves # TAXREF: Chordata > Aves
+Neobalaenidae # COL: Mammalia > Cetacea
+Neoceratiidae # COL: Teleostei > Lophiiformes
+Neoceratodontidae # COL: Chordata > Ceratodontiformes
+Neofibrini # COL: synonym of Arvicolinae (Rodentia)
+Neognathae # PBDB: synonym of Neognathae (Reptilia)
+Neognathi # Benton: Osteichthyes > Halecostomi
+Neomorphidae # COL: synonym of Cuculidae (Cuculiformes)
+Neomorphinae # COL: synonym of Cuculidae (Cuculiformes)
+Neopterygii # ITIS: synonym of Actinopterygii (Animalia)
+Neornithes # PBDB: Reptilia > Aves
+Neosauropoda # iNat: Dinosauria > Sauropodomorpha
+Neoscopelidae # COL: Teleostei > Myctophiformes
+Neosebastidae # COL: Teleostei > Perciformes
+Neoselachii # COL: Chordata > Elasmobranchii
+Neosittidae # COL: Aves > Passeriformes
+Neosuchia # Benton: Crocodylia > Mesoeucrocodylia
+Neoteleostei # Benton: Osteichthyes > Halecostomi
+Neotominae # COL: Rodentia > Cricetidae
+Nesomyidae # COL: Mammalia > Rodentia
+Nesomyinae # COL: Rodentia > Nesomyidae
+Nesophontidae # COL: Mammalia > Eulipotyphla
+Nestorinae # COL: synonym of Strigopidae (Psittaciformes)
+Nettastomatidae # COL: Teleostei > Anguilliformes
+Neurotrichini # COL: synonym of Urotrichini (Eulipotyphla)
+Nicatoridae # COL: Aves > Passeriformes
+Noctilionidae # COL: Mammalia > Chiroptera
+Noctilionoidea # COL: Mammalia > Chiroptera
+Nodosauridae # IRMNG: Reptilia > Ornithischia
+Nomeidae # COL: Teleostei > Scombriformes
+Normanichthyidae # COL: Teleostei > Perciformes
+Notacanthidae # COL: Teleostei > Notacanthiformes
+Notacanthiformes # COL: Chordata > Teleostei
+Nothobranchiidae # COL: Teleostei > Cyprinodontiformes
+Nothosauria # IRMNG: Chordata > Reptilia
+Nothosauroidea # PBDB: Reptilia > Eosauropterygia
+Notiomystidae # COL: Aves > Passeriformes
+Notiosoricini # COL: Eulipotyphla > Soricidae
+Notocheiridae # COL: synonym of Notocheirinae (Atheriniformes)
+Notopteridae # COL: Teleostei > Osteoglossiformes
+Notopterisinae # COL: Chiroptera > Pteropodidae
+Notoryctemorphia # COL: Chordata > Mammalia
+Notoryctidae # COL: Mammalia > Notoryctemorphia
+Notosuchidae # IRMNG: Reptilia > Crocodylia
+Notosudidae # COL: Teleostei > Aulopiformes
+Nototheniidae # COL: Teleostei > Perciformes
+Numididae # COL: Aves > Galliformes
+Numidinae # COL: synonym of Numididae (Galliformes)
+Nyctibatrachidae # COL: Amphibia > Anura
+Nyctibatrachinae # COL: Anura > Nyctibatrachidae
+Nyctibiidae # COL: Aves > Nyctibiiformes
+Nyctibiiformes # COL: Chordata > Aves
+Nycticeiini # COL: Chiroptera > Vespertilionidae
+Nyctimeninae # COL: Chiroptera > Pteropodidae
+Nyctophilini # COL: synonym of Vespertilionini (Chiroptera)
+Occidozyginae # COL: Anura > Dicroglossidae
+Oceanitidae # austral storm petrel family (Aves); COL: Aves > Procellariiformes
+Oceanitinae # COL: synonym of Oceanitidae (Procellariiformes)
+Ochotonidae # COL: Mammalia > Lagomorpha
+Ochrotomyini # COL: synonym of Neotominae (Rodentia)
+Octacnemidae # COL: Ascidiacea > Phlebobranchia
+Octodontidae # COL: Mammalia > Rodentia
+Odacidae # COL: synonym of Odacini (Teleostei)
+Odobenidae # COL: Mammalia > Carnivora
+Odocoileinae # COL: synonym of Capreolinae (Artiodactyla)
+Odontaspididae # COL: Elasmobranchii > Lamniformes
+Odontobatrachidae # COL: Amphibia > Anura
+Odontobutidae # COL: Teleostei > Gobiiformes
+Odontoceti # COL: Mammalia > Cetacea
+Odontophoridae # COL: Aves > Galliformes
+Odontophrynidae # COL: Amphibia > Anura
+Ogcocephalidae # COL: Teleostei > Lophiiformes
+Oikopleuridae # COL: Appendicularia > Copelata
+Oikopleurinae # COL: Copelata > Oikopleuridae
+Olfactores # PBDB: Animalia > Chordata
+Olyridae # COL: Teleostei > Siluriformes
+Omeisauridae # GBIF: synonym of Mamenchisauridae (Chordata)
+Omosudidae # COL: Teleostei > Aulopiformes
+Ondatrinae # COL: synonym of Arvicolinae (Rodentia)
+Ondatrini # COL: synonym of Arvicolinae (Rodentia)
+Oneirodidae # COL: Teleostei > Lophiiformes
+Onychodactylinae # COL: Caudata > Hynobiidae
+Onychomyini # COL: synonym of Neotominae (Rodentia)
+Ophichthidae # COL: Teleostei > Anguilliformes
+Ophidiidae # COL: Teleostei > Ophidiiformes
+Ophidiiformes # COL: Chordata > Teleostei
+Opisthocomi # COL: synonym of Galliformes (Aves)
+Opisthocomidae # COL: Aves > Opisthocomiformes
+Opisthocomiformes # COL: Chordata > Aves
+Opisthoproctidae # COL: Teleostei > Argentiniformes
+Opistognathidae # COL: Chordata > Teleostei
+Oplegnathidae # COL: Teleostei > Centrarchiformes
+Opluridae # COL: Reptilia > Squamata
+Orcinae # COL: synonym of Delphinidae (Cetacea)
+Orectolobidae # COL: Elasmobranchii > Orectolobiformes
+Orectolobiformes # COL: Chordata > Elasmobranchii
+Oreoicidae # COL: Aves > Passeriformes
+Oreosomatidae # COL: Teleostei > Zeiformes
+Oriolidae # COL: Aves > Passeriformes
+Ornithischia # IRMNG: Chordata > Reptilia
+Ornithodira # Benton: Unnamed > Sauropsida
+Ornithomimidae # IRMNG: Reptilia > Saurischia
+Ornithomorpha # Benton: Coelurosauria > Aves
+Ornithopoda # PBDB: synonym of Ornithopoda (Osteichthyes)
+Ornithorhynchidae # COL: Mammalia > Monotremata
+Ornithosuchia # PBDB: synonym of Ornithischia (Osteichthyes)
+Ornithosuchidae # IRMNG: Reptilia > Prolacertiformes
+Ornithotarsi # not found in ChecklistBank
+Ornithothoraces # Benton: Coelurosauria > Aves
+Ornithurae # PBDB: Osteichthyes > Reptilia
+Orthonychidae # COL: Aves > Passeriformes
+Orycteropodidae # COL: Mammalia > Tubulidentata
+Oryginae # COL: synonym of Hippotragini (Artiodactyla)
+Oryzomyini # COL: synonym of Sigmodontinae (Rodentia)
+Oryzorictinae # COL: Afrosoricida > Tenrecidae
+Oscines # COL: synonym of Passeriformes (Aves)
+Osmeridae # COL: Teleostei > Osmeriformes
+Osmeriformes # COL: Chordata > Teleostei
+Osphronemidae # COL: Teleostei > Anabantiformes
+Ostariophysi # ITIS: Chordata > Teleostei
+Osteichthyes # COL: Animalia > Chordata
+Osteoglossidae # COL: Teleostei > Osteoglossiformes
+Osteoglossiformes # COL: Chordata > Teleostei
+Osteoglossomorpha # ITIS: Chordata > Teleostei
+Ostraciidae # COL: Teleostei > Tetraodontiformes
+Ostracoberycidae # COL: Teleostei > Acropomatiformes
+Otariidae # COL: Mammalia > Carnivora
+Otariinae # COL: synonym of Otariidae (Carnivora)
+Otides # COL: synonym of Otidiformes (Aves)
+Otidiformes # COL: Chordata > Aves
+Otidiphabinae # COL: synonym of Raphinae (Columbiformes)
+Otocephala # Dyntaxa: Actinopterygii > Teleostei
+Otomyinae # COL: Rodentia > Muridae
+Otophryninae # COL: Anura > Microhylidae
+Oviraptorosauria # PBDB: Osteichthyes > Reptilia
+Oxynotidae # COL: Elasmobranchii > Squaliformes
+Oxyruncidae # COL: Aves > Passeriformes
+Pachycephalidae # COL: Aves > Passeriformes
+Pachycephalosauria # PBDB: synonym of Pachycephalosauria (Osteichthyes)
+Pachycormidae # IRMNG: Actinopterygii > Pachycormiformes
+Pachypleurosauria # PBDB: Reptilia > Eosauropterygia
+Palaeognathae # PBDB: Reptilia > Aves
+Palaeonisciformes # IRMNG: Chordata > Actinopterygii
+Paleognathae # ALF: Chordata > Aves
+Pandionidae # COL: Aves > Accipitriformes
+Pandioninae # COL: synonym of Pandionidae (Accipitriformes)
+Pangasiidae # COL: Teleostei > Siluriformes
+Pantherinae # COL: Carnivora > Felidae
+Pantodontidae # COL: Teleostei > Osteoglossiformes
+Panuridae # COL: Aves > Passeriformes
+Papinae # COL: synonym of Cercopithecinae (Primates)
+Papioninae # COL: synonym of Cercopithecinae (Primates)
+Papionini # COL: Primates > Cercopithecidae
+Parabembridae # COL: synonym of Bembridae (Perciformes)
+Parabrotulidae # COL: synonym of Bythitidae (Ophidiiformes)
+Paracanthopterygii # ITIS: Chordata > Teleostei
+Paracrocodylomorpha # PBDB: Osteichthyes > Reptilia
+Paradipodinae # COL: synonym of Dipodinae (Rodentia)
+Paradipodini # COL: synonym of Dipodinae (Rodentia)
+Paradisaeidae # COL: Aves > Passeriformes
+Paradoliopsidae # COL: Thaliacea > Doliolida
+Paradoxurinae # COL: Carnivora > Viverridae
+Paralepididae # COL: Teleostei > Aulopiformes
+Paralichthyidae # COL: Teleostei > Pleuronectiformes
+Paramythiidae # COL: Aves > Passeriformes
+Parascorpididae # COL: Teleostei > Centrarchiformes
+Parascylliidae # COL: Elasmobranchii > Orectolobiformes
+Parasemionotidae # IRMNG: Actinopterygii > Parasemionotiformes
+Paratelmatobiinae # COL: Anura > Leptodactylidae
+Paraulopidae # COL: Teleostei > Aulopiformes
+Parazenidae # COL: Teleostei > Zeiformes
+Pardalotidae # COL: Aves > Passeriformes
+Pareatidae # ITIS: synonym of Pareidae (Squamata)
+Pareiasauridae # IRMNG: Reptilia > Pareiasauria
+Pareidae # COL: Reptilia > Squamata
+Paridae # COL: Aves > Passeriformes
+Parodontidae # COL: Teleostei > Characiformes
+Parulidae # COL: Aves > Passeriformes
+Passerellidae # New World sparrow family (Aves); COL: Aves > Passeriformes
+Passeridae # COL: Aves > Passeriformes
+Passeriformes # COL: Chordata > Aves
+Pataecidae # COL: Teleostei > Perciformes
+Patagopteryx # OTT: Saurischia > Aves
+Paucituberculata # COL: Chordata > Mammalia
+Pedetidae # COL: Mammalia > Rodentia
+Pedionomidae # COL: Aves > Charadriiformes
+Pegasidae # COL: Teleostei > Dactylopteriformes
+Pelecanidae # COL: Aves > Pelecaniformes
+Pelecaniformes # COL: Chordata > Aves
+Pelecanoididae # COL: synonym of Procellariidae (Procellariiformes)
+Peleinae # COL: synonym of Reduncini (Artiodactyla)
+Pellorneidae # COL: Aves > Passeriformes
+Pelobatidae # COL: Amphibia > Anura
+Pelodryadidae # COL: Amphibia > Anura
+Pelodryadinae # COL: synonym of Pelodryadidae (Anura)
+Pelodytidae # COL: Amphibia > Anura
+Pelomedusidae # COL: Reptilia > Testudines
+Pelomedusoidea # COL: Reptilia > Testudines
+Peltopleuriformes # IRMNG: Chordata > Actinopterygii
+Pempheridae # COL: Teleostei > Acropomatiformes
+Penelopinae # COL: Galliformes > Cracidae
+Pentanchidae # finback catshark family (Carcharhiniformes); COL: Elasmobranchii > Carcharhiniformes
+Peramelemorphia # COL: Chordata > Mammalia
+Peramelidae # COL: Mammalia > Peramelemorphia
+Peramelinae # COL: Peramelemorphia > Peramelidae
+Percichthyidae # COL: Teleostei > Centrarchiformes
+Percidae # COL: Teleostei > Perciformes
+Perciformes # COL: Chordata > Teleostei
+Perciliidae # COL: Teleostei > Centrarchiformes
+Percomorpha # Benton: Osteichthyes > Halecostomi
+Percophidae # COL: Teleostei > Perciformes
+Percopsidae # COL: Teleostei > Percopsiformes
+Percopsiformes # COL: Chordata > Teleostei
+Perdicinae # COL: synonym of Phasianidae (Galliformes)
+Perimyotini # COL: Chiroptera > Vespertilionidae
+Perissodactyla # COL: Chordata > Mammalia
+Peristediidae # COL: Teleostei > Perciformes
+Perleidiformes # IRMNG: Chordata > Actinopterygii
+Perodicticinae # COL: Primates > Lorisidae
+Perognathidinae # COL: synonym of Perognathinae (Rodentia)
+Perognathinae # COL: Rodentia > Heteromyidae
+Peromyscini # COL: synonym of Neotominae (Rodentia)
+Perophoridae # COL: Ascidiacea > Phlebobranchia
+Peroryctidae # COL: synonym of Peramelidae (Peramelemorphia)
+Peroryctinae # COL: Peramelemorphia > Peramelidae
+Perryenidae # COL: Teleostei > Perciformes
+Petalichthyida # IRMNG: Chordata > Placodermi
+Petalodontiformes # IRMNG: Chordata > Chondrichthyes
+Petauridae # COL: Mammalia > Diprotodontia
+Petauristinae # COL: synonym of Pteromyini (Rodentia)
+Petauroidea # COL: Mammalia > Diprotodontia
+Petroicidae # COL: Aves > Passeriformes
+Petromuridae # COL: Mammalia > Rodentia
+Petromyidae # COL: synonym of Petromuridae (Rodentia)
+Petromyscinae # COL: Rodentia > Nesomyidae
+Petromyzonti # COL: Animalia > Chordata
+Petromyzontidae # COL: Petromyzonti > Petromyzontiformes
+Petromyzontiformes # COL: Chordata > Petromyzonti
+Petropedetidae # COL: Amphibia > Anura
+Peucedramidae # COL: Aves > Passeriformes
+Phacochoerinae # COL: synonym of Suidae (Artiodactyla)
+Phacochoerini # COL: synonym of Suidae (Artiodactyla)
+Phaenicophaeinae # COL: synonym of Cuculidae (Cuculiformes)
+Phaethontidae # COL: Aves > Phaethontiformes
+Phaethontiformes # COL: Chordata > Aves
+Phaethornithinae # COL: Apodiformes > Trochilidae
+Phalacrocoracidae # COL: Aves > Suliformes
+Phalangeridae # COL: Mammalia > Diprotodontia
+Phalangeriformes # COL: Mammalia > Diprotodontia
+Phalangerinae # COL: Diprotodontia > Phalangeridae
+Phalangerini # COL: synonym of Phalangerinae (Diprotodontia)
+Phalangeroidea # COL: Mammalia > Diprotodontia
+Phalaropodidae # COL: synonym of Scolopacidae (Charadriiformes)
+Phalaropodinae # COL: synonym of Scolopacidae (Charadriiformes)
+Phallostethidae # COL: Teleostei > Atheriniformes
+Phanerinae # COL: synonym of Cheirogaleidae (Primates)
+Phascogalini # COL: Dasyuromorphia > Dasyuridae
+Phascolarctidae # COL: Mammalia > Diprotodontia
+Phasianinae # COL: synonym of Phasianidae (Galliformes)
+Phenacomyini # COL: synonym of Arvicolinae (Rodentia)
+Philepittidae # COL: Aves > Passeriformes
+Phlebobranchia # COL: Chordata > Ascidiacea
+Phloeomyinae # COL: synonym of Murinae (Rodentia)
+Phocidae # COL: Mammalia > Carnivora
+Phocoenidae # COL: Mammalia > Cetacea
+Phodilinae # COL: Strigiformes > Tytonidae
+Phoenicopteridae # COL: Aves > Phoenicopteriformes
+Phoenicopteriformes # COL: Chordata > Aves
+Phoeniculidae # COL: Aves > Bucerotiformes
+Pholidae # COL: Teleostei > Perciformes
+Pholidichthyidae # COL: Teleostei > Cichliformes
+Pholidophoridae # IRMNG: Actinopterygii > Pholidophoriformes
+Pholidopleuriformes # IRMNG: Chordata > Actinopterygii
+Pholidota # COL: Chordata > Mammalia
+Phosichthyidae # COL: Teleostei > Stomiiformes
+Phractolaemidae # COL: Teleostei > Gonorynchiformes
+Phrynobatrachidae # COL: Amphibia > Anura
+Phrynomerinae # COL: Anura > Microhylidae
+Phrynosomatidae # COL: Reptilia > Squamata
+Phycidae # COL: Teleostei > Gadiformes
+Phyllodactylidae # COL: Reptilia > Squamata
+Phyllomedusidae # COL: Amphibia > Anura
+Phyllomedusinae # COL: synonym of Phyllomedusidae (Anura)
+Phyllonycterinae # COL: synonym of Glossophaginae (Chiroptera)
+Phylloscopidae # COL: Aves > Passeriformes
+Phyllostomidae # COL: Mammalia > Chiroptera
+Phyllostominae # COL: Chiroptera > Phyllostomidae
+Phyllostomini # COL: Chiroptera > Phyllostomidae
+Phyllotiini # COL: synonym of Sigmodontinae (Rodentia)
+Physeteridae # COL: Mammalia > Cetacea
+Phytosauridae # IRMNG: Reptilia > Prolacertiformes
+Phytotomidae # COL: synonym of Cotingidae (Passeriformes)
+Phytotominae # COL: synonym of Cotingidae (Passeriformes)
+Phyzelaphryninae # COL: Anura > Eleutherodactylidae
+Picathartidae # COL: Aves > Passeriformes
+Pici # COL: synonym of Piciformes (Aves)
+Picidae # COL: Aves > Piciformes
+Piciformes # COL: Chordata > Aves
+Picinae # COL: Piciformes > Picidae
+Picumninae # COL: Piciformes > Picidae
+Pilosa # COL: Chordata > Mammalia
+Pimelodidae # COL: Teleostei > Siluriformes
+Pinguipedidae # COL: Teleostei > Perciformes
+Pinnipedia # COL: synonym of Caniformia (Mammalia)
+Pipidae # COL: Amphibia > Anura
+Pipinae # COL: Anura > Pipidae
+Pipistrellini # COL: Chiroptera > Vespertilionidae
+Pipridae # COL: Aves > Passeriformes
+Pisanosauridae # IRMNG: Reptilia > Ornithischia
+Pitheciidae # COL: Mammalia > Primates
+Pitheciinae # COL: Primates > Pitheciidae
+Pittidae # COL: Aves > Passeriformes
+Pitymyini # COL: synonym of Arvicolinae (Rodentia)
+Pityriaseidae # COL: Aves > Passeriformes
+Placentelidae # COL: Ascidiacea > Aplousobranchia
+Placodermi # IRMNG: Animalia > Chordata
+Placodontia # IRMNG: Chordata > Reptilia
+Plagiodontinae # COL: synonym of Capromyinae (Rodentia)
+Plagiosauridae # IRMNG: Amphibia > Temnospondyli
+Planigalini # COL: synonym of Sminthopsinae (Dasyuromorphia)
+Platacanthomyidae # COL: Mammalia > Rodentia
+Platacanthomyinae # COL: synonym of Platacanthomyidae (Rodentia)
+Plataleinae # COL: synonym of Threskiornithidae (Pelecaniformes)
+Platanistidae # COL: Mammalia > Cetacea
+Plateosauridae # IRMNG: Reptilia > Saurischia
+Platycephalidae # COL: Teleostei > Perciformes
+Platynota # PBDB: Osteichthyes > Reptilia
+Platyrhinidae # COL: Elasmobranchii > Torpediniformes
+Platyrinchinae # COL: synonym of Tyrannidae (Passeriformes)
+Platysteiridae # COL: Aves > Passeriformes
+Platysternidae # COL: Reptilia > Testudines
+Platytroctidae # COL: Teleostei > Alepocephaliformes
+Plecoglossidae # COL: Teleostei > Osmeriformes
+Plecotini # COL: Chiroptera > Vespertilionidae
+Plectrogeniidae # COL: Teleostei > Perciformes
+Plerotini # COL: Chiroptera > Pteropodidae
+Plesiobatidae # COL: Elasmobranchii > Myliobatiformes
+Plesiopidae # COL: Chordata > Teleostei
+Plesiosauria # WoRMS: Animalia > Chordata
+Plesiosauroidea # WoRMS: Chordata > Plesiosauria
+Plethodontidae # COL: Amphibia > Caudata
+Plethodontinae # COL: Caudata > Plethodontidae
+Pleurodelinae # COL: Caudata > Salamandridae
+Pleurodira # COL: Reptilia > Testudines
+Pleuronectidae # COL: Teleostei > Pleuronectiformes
+Pleuronectiformes # COL: Chordata > Teleostei
+Pleurosauridae # IRMNG: Reptilia > Sphenodontida
+Pliomyini # COL: synonym of Arvicolinae (Rodentia)
+Pliophenacomyini # COL: synonym of Arvicolinae (Rodentia)
+Pliosauridae # IRMNG: Reptilia > Plesiosauria
+Pliosauroidea # PBDB: Reptilia > Plesiosauria
+Ploceidae # COL: Aves > Passeriformes
+Plotosidae # COL: Teleostei > Siluriformes
+Plurellidae # COL: Ascidiacea > Phlebobranchia
+Pluvianellidae # COL: Aves > Charadriiformes
+Pluvianidae # COL: Aves > Charadriiformes
+Pnoepygidae # COL: Aves > Passeriformes
+Podargidae # COL: Aves > Caprimulgiformes
+Podarginae # COL: Caprimulgiformes > Podargidae
+Podicepidiformes # Benton: Aves > Neognathae
+Podicipedidae # COL: Aves > Podicipediformes
+Podicipediformes # COL: Chordata > Aves
+Podocnemididae # COL: Reptilia > Testudines
+Poeciliidae # COL: Teleostei > Cyprinodontiformes
+Polioptilidae # COL: Aves > Passeriformes
+Polyborinae # COL: Falconiformes > Falconidae
+Polycentridae # COL: Chordata > Teleostei
+Polychrotidae # COL: Reptilia > Squamata
+Polycitoridae # COL: Ascidiacea > Aplousobranchia
+Polyclinidae # COL: Ascidiacea > Aplousobranchia
+Polycotylidae # IRMNG: Reptilia > Plesiosauria
+Polymixiidae # COL: Teleostei > Polymixiiformes
+Polymixiiformes # COL: Chordata > Teleostei
+Polynemidae # COL: Chordata > Teleostei
+Polyodontidae # COL: Chondrostei > Acipenseriformes
+Polyprionidae # COL: Teleostei > Acropomatiformes
+Polypteridae # COL: Cladistii > Polypteriformes
+Polypteriformes # COL: Chordata > Cladistii
+Pomacanthidae # COL: Teleostei > Acanthuriformes
+Pomacentridae # COL: Chordata > Teleostei
+Pomatomidae # COL: Teleostei > Scombriformes
+Pomatostomidae # COL: Aves > Passeriformes
+Pongidae # COL: synonym of Hominidae (Primates)
+Ponginae # COL: Primates > Hominidae
+Pontoporiidae # COL: Mammalia > Cetacea
+Poposauridae # IRMNG: Reptilia > Rauisuchiformes
+Potamochoerini # COL: synonym of Suidae (Artiodactyla)
+Potamogalinae # COL: synonym of Potamogalidae (Afrosoricida)
+Potamotrygonidae # COL: Elasmobranchii > Myliobatiformes
+Potoroidae # COL: Mammalia > Diprotodontia
+Potosinae # COL: synonym of Procyonidae (Carnivora)
+Presbytinae # COL: synonym of Colobinae (Primates)
+Presbytini # COL: Primates > Cercopithecidae
+Prestosuchidae # IRMNG: Reptilia > Crocodylia
+Priacanthidae # COL: Chordata > Teleostei
+Primates # COL: Chordata > Mammalia
+Prionodontidae # COL: Mammalia > Carnivora
+Prionodontinae # COL: synonym of Prionodontidae (Carnivora)
+Prionopidae # COL: synonym of Vangidae (Passeriformes)
+Pristidae # COL: Elasmobranchii > Rhinopristiformes
+Pristiformes # sawfish (Elasmobranchii); COL: synonym of Rhinopristiformes (Elasmobranchii)
+Pristigasteridae # COL: Teleostei > Clupeiformes
+Pristiophoridae # COL: Elasmobranchii > Pristiophoriformes
+Pristiophoriformes # COL: Chordata > Elasmobranchii
+Pristolepididae # COL: Teleostei > Anabantiformes
+Procaviidae # COL: Mammalia > Hyracoidea
+Procellariidae # COL: Aves > Procellariiformes
+Procellariiformes # COL: Chordata > Aves
+Prochilodontidae # COL: Teleostei > Characiformes
+Procolophonidae # IRMNG: Reptilia > Procolophonomorpha
+Procyonidae # COL: Mammalia > Carnivora
+Procyoninae # COL: synonym of Procyonidae (Carnivora)
+Profundulidae # COL: Teleostei > Cyprinodontiformes
+Proganochelyidae # IRMNG: Reptilia > Testudines
+Prolacertiformes # IRMNG: Chordata > Reptilia
+Prolagidae # COL: Mammalia > Lagomorpha
+Promeropidae # COL: Aves > Passeriformes
+Prometheomyinae # COL: synonym of Arvicolinae (Rodentia)
+Proscylliidae # COL: Elasmobranchii > Carcharhiniformes
+Prosiphneinae # COL: synonym of Myospalacinae (Rodentia)
+Prosymnidae # COL: Reptilia > Squamata
+Protanguillidae # COL: Teleostei > Anguilliformes
+Proteidae # COL: Amphibia > Caudata
+Protelinae # COL: Carnivora > Hyaenidae
+Proterosuchidae # IRMNG: Reptilia > Prolacertiformes
+Protoceratopsidae # IRMNG: Reptilia > Ornithischia
+Protohynobiinae # COL: synonym of Hynobiidae (Caudata)
+Protopolyclinidae # COL: Ascidiacea > Aplousobranchia
+Protopteridae # COL: Chordata > Ceratodontiformes
+Protorothyrididae # IRMNG: Chordata > Reptilia
+Protosuchidae # IRMNG: Reptilia > Crocodylia
+Prototheria # COL: Chordata > Mammalia
+Protoxerini # COL: Rodentia > Sciuridae
+Prunellidae # COL: Aves > Passeriformes
+Psammophiidae # COL: Reptilia > Squamata
+Psettodidae # COL: Teleostei > Pleuronectiformes
+Pseudaphritidae # COL: Teleostei > Perciformes
+Pseudaspididae # COL: Reptilia > Squamata
+Pseudidae # COL: synonym of Hylidae (Anura)
+Pseudinae # COL: synonym of Hylidae (Anura)
+Pseudocalyptomeninae # COL: synonym of Eurylaimidae (Passeriformes)
+Pseudocarchariidae # COL: Elasmobranchii > Lamniformes
+Pseudocheiridae # COL: Mammalia > Diprotodontia
+Pseudocheirinae # COL: Diprotodontia > Pseudocheiridae
+Pseudochiropsinae # COL: Diprotodontia > Pseudocheiridae
+Pseudochromidae # COL: Chordata > Teleostei
+Pseudodistomidae # COL: Ascidiacea > Aplousobranchia
+Pseudomugilidae # COL: Teleostei > Atheriniformes
+Pseudomyinae # COL: synonym of Murinae (Rodentia)
+Pseudopimelodidae # COL: Teleostei > Siluriformes
+Pseudosuchia # PBDB: synonym of Pseudosuchia (Osteichthyes)
+Pseudotriakidae # COL: Elasmobranchii > Carcharhiniformes
+Pseudotrichonotidae # COL: Teleostei > Aulopiformes
+Pseudoxenodontinae # COL: Squamata > Colubridae
+Pseudoxyrhophiidae # COL: Reptilia > Squamata
+Psilorhynchidae # COL: Teleostei > Cypriniformes
+Psittacidae # COL: Aves > Psittaciformes
+Psittaciformes # COL: Chordata > Aves
+Psittacinae # COL: synonym of Psittacidae (Psittaciformes)
+Psittacosauridae # IRMNG: Reptilia > Ornithischia
+Psittaculidae # Old World parrot family (Aves); COL: Aves > Psittaciformes
+Psittrichadinae # COL: synonym of Psittaculidae (Psittaciformes)
+Psophiidae # COL: Aves > Gruiformes
+Psophodidae # COL: Aves > Passeriformes
+Psychrolutidae # COL: Teleostei > Perciformes
+Pteralopini # COL: Chiroptera > Pteropodidae
+Ptereleotridae # fire goby family (Gobiiformes); COL: synonym of Ptereleotrinae (Gobiiformes)
+Pterocletes # COL: synonym of Ciconiiformes (Aves)
+Pteroclidae # COL: Aves > Pterocliformes
+Pteroclididae # COL: synonym of Pteroclidae (Pterocliformes)
+Pteroclidiformes # COL: synonym of Pterocliformes (Aves)
+Pterocliformes # COL: Chordata > Aves
+Pterodactyloidea # PBDB: Reptilia > Pterosauria
+Pteromyinae # COL: synonym of Pteromyini (Rodentia)
+Pteromyini # COL: Rodentia > Sciuridae
+Pteropodidae # COL: Mammalia > Chiroptera
+Pteropodinae # COL: Chiroptera > Pteropodidae
+Pteropodini # COL: Chiroptera > Pteropodidae
+Pterosauria # IRMNG: Chordata > Reptilia
+Pterosauromorpha # PBDB: Osteichthyes > Reptilia
+Ptilichthyidae # COL: Teleostei > Perciformes
+Ptilocercidae # COL: Mammalia > Scandentia
+Ptilocercinae # COL: synonym of Ptilocercidae (Scandentia)
+Ptilogonatidae # COL: synonym of Ptiliogonatidae (Passeriformes)
+Ptilonorhynchidae # COL: Aves > Passeriformes
+Ptychadenidae # COL: Amphibia > Anura
+Ptycholepididae # IRMNG: Actinopterygii > Ptycholepiformes
+Ptyctodontida # IRMNG: Chordata > Placodermi
+Pycnodontiformes # IRMNG: Chordata > Actinopterygii
+Pycnonotidae # COL: Aves > Passeriformes
+Pygopodidae # COL: Reptilia > Squamata
+Pygostylia # Benton: Coelurosauria > Aves
+Pyrosomatida # COL: Chordata > Thaliacea
+Pyrosomatidae # COL: Thaliacea > Pyrosomatida
+Pyrosomatinae # COL: Pyrosomatida > Pyrosomatidae
+Pyrosomida # ITIS: Chordata > Thaliacea
+Pyrostremmatinae # COL: Pyrosomatida > Pyrosomatidae
+Pythonidae # COL: Reptilia > Squamata
+Pythonoidea # PBDB: Osteichthyes > Reptilia
+Pyuridae # COL: Ascidiacea > Stolidobranchia
+Pyxicephalidae # COL: Amphibia > Anura
+Pyxicephalinae # COL: Anura > Pyxicephalidae
+Rachycentridae # COL: Teleostei > Carangiformes
+Radiicephalidae # COL: Teleostei > Lampriformes
+Rahonavis # OTT: Sauria > Dinosauria
+Rajidae # COL: Elasmobranchii > Rajiformes
+Rajiformes # COL: Chordata > Elasmobranchii
+Rallidae # COL: Aves > Gruiformes
+Ramphastidae # COL: Aves > Piciformes
+Ramphastinae # COL: synonym of Ramphastidae (Piciformes)
+Ranidae # COL: Amphibia > Anura
+Ranixalidae # COL: Amphibia > Anura
+Ratites # Benton: Aves > Palaeognathae
+Rattidae # COL: synonym of Murinae (Rodentia)
+Ratufinae # COL: Rodentia > Sciuridae
+Recurvirostridae # COL: Aves > Charadriiformes
+Redfieldiidae # IRMNG: Actinopterygii > Redfieldiiformes
+Reduncinae # COL: synonym of Reduncini (Artiodactyla)
+Regalecidae # COL: Teleostei > Lampriformes
+Regulidae # COL: Aves > Passeriformes
+Reithrodontini # COL: synonym of Sigmodontinae (Rodentia)
+Reithrodontomyini # COL: synonym of Neotominae (Rodentia)
+Remizidae # COL: Aves > Passeriformes
+Reptilia # COL: Animalia > Chordata
+Retropinnidae # COL: Teleostei > Osmeriformes
+Rhabdornithidae # COL: synonym of Sturnidae (Passeriformes)
+Rhachianectidae # COL: synonym of Eschrichtiidae (Cetacea)
+Rhacophoridae # COL: Amphibia > Anura
+Rhacophorinae # COL: Anura > Rhacophoridae
+Rhamphichthyidae # COL: Teleostei > Gymnotiformes
+Rhamphocottidae # COL: Teleostei > Perciformes
+Rhamphorhynchoidea # PBDB: Reptilia > Pterosauria
+Rheidae # COL: Aves > Rheiformes
+Rheiformes # COL: Chordata > Aves
+Rhenanida # PBDB: Chordata > Placodermi
+Rheobatrachidae # COL: synonym of Myobatrachidae (Anura)
+Rhinatrematidae # COL: Amphibia > Gymnophiona
+Rhincodontidae # COL: Elasmobranchii > Orectolobiformes
+Rhinesuchidae # IRMNG: Amphibia > Temnospondyli
+Rhineuridae # COL: Reptilia > Squamata
+Rhinidae # COL: Elasmobranchii > Rhinopristiformes
+Rhinobatidae # COL: Elasmobranchii > Rhinopristiformes
+Rhinocerotidae # COL: Mammalia > Perissodactyla
+Rhinochimaeridae # COL: Holocephali > Chimaeriformes
+Rhinocryptidae # COL: Aves > Passeriformes
+Rhinodermatidae # COL: Amphibia > Anura
+Rhinolophidae # COL: Mammalia > Chiroptera
+Rhinolophinae # COL: synonym of Rhinolophidae (Chiroptera)
+Rhinolophoidea # COL: Mammalia > Chiroptera
+Rhinonycteridae # COL: Mammalia > Chiroptera
+Rhinophrynidae # COL: Amphibia > Anura
+Rhinophyllinae # COL: Chiroptera > Phyllostomidae
+Rhinopomastidae # COL: synonym of Phoeniculidae (Bucerotiformes)
+Rhinopomatidae # COL: Mammalia > Chiroptera
+Rhinopomatoidea # COL: synonym of Rhinolophoidea (Mammalia)
+Rhinopristiformes # COL: Chordata > Elasmobranchii
+Rhipiduridae # COL: Aves > Passeriformes
+Rhizomyinae # COL: Rodentia > Spalacidae
+Rhomaleosauridae # IRMNG: Reptilia > Plesiosauria
+Rhombomyinae # COL: synonym of Gerbillinae (Rodentia)
+Rhyacichthyidae # COL: Teleostei > Gobiiformes
+Rhyacotritonidae # COL: Amphibia > Caudata
+Rhynchobatidae # wedgefish family (Elasmobranchii); IRMNG: synonym of Rhinobatidae (Rajiformes)
+Rhynchocephalia # ITIS: Chordata > Reptilia
+Rhynchomyinae # COL: synonym of Murinae (Rodentia)
+Rhynchosauridae # IRMNG: Reptilia > Rhynchosauria
+Rhynchotinae # COL: synonym of Tinamidae (Tinamiformes)
+Rhynocheti # COL: synonym of Eurypygiformes (Aves)
+Rhynochetidae # COL: Aves > Eurypygiformes
+Rhytidosteidae # IRMNG: Amphibia > Temnospondyli
+Riojasaurus # OTT: Sauria > Dinosauria
+Ristellidae # ALF: Reptilia > Scincoidea
+Ritterellidae # COL: Ascidiacea > Aplousobranchia
+Rivulidae # COL: Teleostei > Cyprinodontiformes
+Rodentia # COL: Chordata > Mammalia
+Romeriida # PBDB: Osteichthyes > Reptilia
+Rondeletiidae # COL: Teleostei > Beryciformes
+Rostratulidae # COL: Aves > Charadriiformes
+Rousettinae # COL: Chiroptera > Pteropodidae
+Rousettini # COL: Chiroptera > Pteropodidae
+Rupicolinae # COL: synonym of Cotingidae (Passeriformes)
+Rynchopidae # COL: synonym of Laridae (Charadriiformes)
+Rynchopinae # COL: synonym of Laridae (Charadriiformes)
+Saccopharyngidae # COL: Teleostei > Anguilliformes
+Saccopharyngiformes # COL: synonym of Anguilliformes (Teleostei)
+Saccostomurinae # COL: synonym of Cricetomyinae (Rodentia)
+Saimiriinae # COL: Primates > Cebidae
+Salamandridae # COL: Amphibia > Caudata
+Salamandrinae # COL: Caudata > Salamandridae
+Salamandrininae # COL: Caudata > Salamandridae
+Salangidae # COL: Teleostei > Osmeriformes
+Salientia # COL: synonym of Amphibia (Chordata)
+Salmonidae # COL: Teleostei > Salmoniformes
+Salmoniformes # COL: Chordata > Teleostei
+Salpida # COL: Chordata > Thaliacea
+Salpidae # COL: Thaliacea > Salpida
+Salpinae # COL: Salpida > Salpidae
+Salpingotinae # COL: synonym of Cardiocraniinae (Rodentia)
+Saltoposuchidae # IRMNG: Reptilia > Prolacertiformes
+Samaridae # COL: Teleostei > Pleuronectiformes
+Sanziniinae # COL: Squamata > Boidae
+Sapayoaidae # COL: synonym of Sapayoidae (Passeriformes)
+Sarcopterygii # lobe-finned fishes and tetrapods; COL: Animalia > Chordata
+Sarothruridae # flufftail family (Aves); COL: Aves > Gruiformes
+Saurichthyiformes # IRMNG: Chordata > Actinopterygii
+Saurischia # IRMNG: Chordata > Reptilia
+Sauropoda # PBDB: synonym of Sauropoda (Osteichthyes)
+Sauropodomorpha # PBDB: synonym of Sauropodomorpha (Osteichthyes)
+Sauropsida # PBDB: synonym of Sauropsida (Chordata)
+Sauropterygia # IRMNG: synonym of Sauropterygia incertae sedis (Chordata)
+Scalopinae # COL: synonym of Talpinae (Eulipotyphla)
+Scalopini # COL: Eulipotyphla > Talpidae
+Scandentia # COL: Chordata > Mammalia
+Scaphiophryninae # COL: Anura > Microhylidae
+Scaphiopodidae # COL: Amphibia > Anura
+Scapteromyini # COL: synonym of Sigmodontinae (Rodentia)
+Scaptonychini # COL: synonym of Urotrichini (Eulipotyphla)
+Scaridae # COL: synonym of Scarinae (Teleostei)
+Scelidosauridae # IRMNG: Reptilia > Ornithischia
+Schilbeidae # COL: Teleostei > Siluriformes
+Schindleriidae # COL: Teleostei > Gobiiformes
+Sciaenidae # COL: Chordata > Teleostei
+Scinaxinae # COL: synonym of Hylidae (Anura)
+Scincidae # COL: Reptilia > Squamata
+Scinciformata # NCBI: Lepidosauria > Squamata
+Scincinae # COL: Squamata > Scincidae
+Scincoidea # PBDB: Osteichthyes > Reptilia
+Scincomorpha # PBDB: synonym of Scincomorpha (Osteichthyes)
+Sciuravida # COL: synonym of Hystricomorpha (Mammalia)
+Sciuridae # COL: Mammalia > Rodentia
+Sciurillinae # COL: Rodentia > Sciuridae
+Sciurinae # COL: Rodentia > Sciuridae
+Sciurini # COL: Rodentia > Sciuridae
+Sciurognathi # COL: synonym of Sciuromorpha (Mammalia)
+Sciuromorpha # COL: Mammalia > Rodentia
+Scleromochlus # OTT: Metazoa > Chordata
+Scolecomorphidae # COL: Amphibia > Gymnophiona
+Scolecomorphinae # COL: synonym of Scolecomorphidae (Gymnophiona)
+Scolopacidae # COL: Aves > Charadriiformes
+Scolopacinae # COL: synonym of Scolopacidae (Charadriiformes)
+Scoloplacidae # COL: Teleostei > Siluriformes
+Scomberesocidae # COL: Teleostei > Beloniformes
+Scombridae # COL: Teleostei > Scombriformes
+Scombrolabracidae # COL: Teleostei > Scombriformes
+Scombropidae # COL: Teleostei > Acropomatiformes
+Scopelarchidae # COL: Teleostei > Aulopiformes
+Scophthalmidae # COL: Teleostei > Pleuronectiformes
+Scopidae # COL: Aves > Pelecaniformes
+Scorpaenidae # COL: Teleostei > Perciformes
+Scorpaeniformes # COL: synonym of Scorpaenoidei (Teleostei)
+Scotocercidae # COL: Aves > Passeriformes
+Scotonycterini # COL: Chiroptera > Pteropodidae
+Scotophilini # COL: Chiroptera > Vespertilionidae
+Scutisoricinae # COL: synonym of Crocidurinae (Eulipotyphla)
+Scyliorhinidae # COL: Elasmobranchii > Carcharhiniformes
+Scytalinidae # COL: Teleostei > Perciformes
+Sebastidae # COL: Teleostei > Perciformes
+Sebecidae # IRMNG: Reptilia > Crocodylia
+Seleviniidae # COL: synonym of Gliridae (Rodentia)
+Semionotidae # IRMNG: Actinopterygii > Semionotiformes
+Semnopithecinae # COL: synonym of Colobinae (Primates)
+Semnornithidae # COL: Aves > Piciformes
+Serpentes # COL: Reptilia > Squamata
+Serpenticobitidae # COL: Teleostei > Cypriniformes
+Serranidae # COL: Teleostei > Perciformes
+Serrasalmidae # COL: Teleostei > Characiformes
+Serrivomeridae # COL: Teleostei > Anguilliformes
+Setarchidae # COL: Teleostei > Perciformes
+Shinisauridae # COL: Reptilia > Squamata
+Shinisauroidea # MGMT: Chordata > Squamata
+Sibynophiinae # COL: Squamata > Colubridae
+Sicistidae # COL: synonym of Sicistinae (Rodentia)
+Sicistinae # COL: Rodentia > Dipodidae
+Siganidae # COL: Teleostei > Acanthuriformes
+Sigmodontes # COL: synonym of Sigmodontinae (Rodentia)
+Sigmodontinae # COL: Rodentia > Cricetidae
+Sillaginidae # COL: Chordata > Teleostei
+Siluridae # COL: Teleostei > Siluriformes
+Siluriformes # COL: Chordata > Teleostei
+Simiiformes # COL: Mammalia > Primates
+Siphneinae # COL: synonym of Myospalacinae (Rodentia)
+Siphonopidae # COL: Amphibia > Gymnophiona
+Sirenia # COL: Chordata > Mammalia
+Sirenidae # COL: Amphibia > Caudata
+Sisoridae # COL: Teleostei > Siluriformes
+Sittidae # COL: Aves > Passeriformes
+Sminthopsinae # COL: Dasyuromorphia > Dasyuridae
+Sminthopsini # COL: synonym of Sminthopsinae (Dasyuromorphia)
+Smithornithinae # COL: synonym of Calyptomenidae (Passeriformes)
+Soleidae # COL: Teleostei > Pleuronectiformes
+Solenodontidae # COL: Mammalia > Eulipotyphla
+Solenostomidae # COL: Teleostei > Syngnathiformes
+Solidocrania # PBDB: Osteichthyes > Reptilia
+Somniosidae # COL: Elasmobranchii > Squaliformes
+Sooglossidae # COL: Amphibia > Anura
+Soricidae # COL: Mammalia > Eulipotyphla
+Soricinae # COL: Eulipotyphla > Soricidae
+Soricini # COL: Eulipotyphla > Soricidae
+Soricomorpha # COL: synonym of Eulipotyphla (Mammalia)
+Spalacidae # COL: Mammalia > Rodentia
+Spalacinae # COL: Rodentia > Spalacidae
+Sparidae # COL: Chordata > Teleostei
+Spelerpinae # COL: synonym of Hemidactyliinae (Caudata)
+Sphaerodactylidae # COL: Reptilia > Squamata
+Sphenacomorpha # PBDB: Chordata > Osteichthyes
+Spheniscidae # COL: Aves > Sphenisciformes
+Sphenisciformes # COL: Chordata > Aves
+Sphenodontia # WoRMS: Animalia > Chordata
+Sphenodontida # COL: Chordata > Reptilia
+Sphenodontidae # COL: Chordata > Reptilia
+Sphenomorphidae # ALF: Reptilia > Scincoidea
+Sphenomorphinae # COL: Squamata > Scincidae
+Sphenosuchidae # IRMNG: Reptilia > Prolacertiformes
+Sphyraenidae # COL: Chordata > Teleostei
+Sphyrnidae # COL: Elasmobranchii > Carcharhiniformes
+Spinosauridae # IRMNG: Reptilia > Saurischia
+Spinosauroidea # PBDB: Osteichthyes > Reptilia
+Squalea # PBDB: Chordata > Chondrichthyes
+Squalidae # COL: Elasmobranchii > Squaliformes
+Squaliformes # COL: Chordata > Elasmobranchii
+Squamata # COL: Chordata > Reptilia
+Squatinidae # COL: Elasmobranchii > Squatiniformes
+Squatiniformes # COL: Chordata > Elasmobranchii
+Stagonolepididae # IRMNG: Reptilia > Aetosauria
+Staurotypidae # ITIS: synonym of Staurotypinae (Testudines)
+Steatornithes # COL: synonym of Caprimulgiformes (Aves)
+Steatornithidae # COL: Aves > Steatornithiformes
+Steatornithiformes # COL: Chordata > Aves
+Stegosauria # PBDB: synonym of Stegosauria (Osteichthyes)
+Stegostomatidae # COL: Elasmobranchii > Orectolobiformes
+Stegotrachelidae # IRMNG: Chordata > Actinopterygii
+Stenidae # COL: synonym of Delphinidae (Cetacea)
+Stenodelphinidae # COL: synonym of Pontoporiidae (Cetacea)
+Stenodermatinae # COL: Chiroptera > Phyllostomidae
+Stenodermatini # COL: Chiroptera > Phyllostomidae
+Stenonycterini # COL: Chiroptera > Pteropodidae
+Stenostiridae # COL: Aves > Passeriformes
+Stephanoberycidae # COL: Teleostei > Beryciformes
+Stephanoberyciformes # COL: synonym of Stephanoberycoidei (Teleostei)
+Stercorariidae # COL: Aves > Charadriiformes
+Stercorariinae # COL: synonym of Stercorariidae (Charadriiformes)
+Sterninae # COL: synonym of Laridae (Charadriiformes)
+Sternoptychidae # COL: Teleostei > Stomiiformes
+Sternopygidae # COL: Teleostei > Gymnotiformes
+Stethacanthidae # IRMNG: Chondrichthyes > Symmoriiformes
+Sthenurinae # COL: Diprotodontia > Macropodidae
+Stichaeidae # COL: Teleostei > Perciformes
+Stictonettinae # COL: synonym of Anatidae (Anseriformes)
+Stolidobranchia # COL: Chordata > Ascidiacea
+Stomiidae # COL: Teleostei > Stomiiformes
+Stomiiformes # COL: Chordata > Teleostei
+Stomozoidae # COL: Ascidiacea > Aplousobranchia
+Strabomantidae # COL: Amphibia > Anura
+Strabomantinae # COL: Anura > Strabomantidae
+Strepsirrhini # COL: Mammalia > Primates
+Strigidae # COL: Aves > Strigiformes
+Strigiformes # COL: Chordata > Aves
+Striginae # COL: Strigiformes > Strigidae
+Strigopidae # COL: Aves > Psittaciformes
+Strigopinae # COL: synonym of Strigopidae (Psittaciformes)
+Stromateidae # COL: Teleostei > Scombriformes
+Struthionidae # COL: Aves > Struthioniformes
+Struthioniformes # COL: Chordata > Aves
+Sturnidae # COL: Aves > Passeriformes
+Sturninae # COL: synonym of Sturnidae (Passeriformes)
+Sturnirini # COL: Chiroptera > Phyllostomidae
+Styelidae # COL: Ascidiacea > Stolidobranchia
+Stylephoridae # COL: Teleostei > Stylephoriformes
+Stylodipodina # COL: synonym of Dipodinae (Rodentia)
+Subterbranchialia # PBDB: Chordata > Chondrichthyes
+Suchia # PBDB: Osteichthyes > Reptilia
+Suidae # COL: Mammalia > Artiodactyla
+Suinae # COL: synonym of Suidae (Artiodactyla)
+Suini # COL: synonym of Suidae (Artiodactyla)
+Sulidae # COL: Aves > Suliformes
+Suliformes # COL: Chordata > Aves
+Surniinae # COL: Strigiformes > Strigidae
+Susuidae # COL: synonym of Platanistidae (Cetacea)
+Sylviidae # COL: Aves > Passeriformes
+Symmoriida # PBDB: synonym of Symmoriiformes (Chondrichthyes)
+Symmoriidae # IRMNG: Chondrichthyes > Symmoriiformes
+Symphysanodontidae # COL: Teleostei > Acropomatiformes
+Synanceiidae # COL: Teleostei > Perciformes
+Synaphobranchidae # COL: Teleostei > Anguilliformes
+Synapsida # PBDB: Chordata > Osteichthyes
+Synaptomyini # COL: synonym of Arvicolinae (Rodentia)
+Synbranchidae # COL: Teleostei > Synbranchiformes
+Synbranchiformes # COL: Chordata > Teleostei
+Syngnathidae # COL: Teleostei > Syngnathiformes
+Syngnathiformes # COL: Chordata > Teleostei
+Synodontidae # COL: Teleostei > Aulopiformes
+Tachyglossidae # COL: Mammalia > Monotremata
+Tachyoryctinae # COL: Rodentia > Spalacidae
+Tadorninae # COL: synonym of Anatidae (Anseriformes)
+Talpidae # COL: Mammalia > Eulipotyphla
+Talpinae # COL: Eulipotyphla > Talpidae
+Talpini # COL: Eulipotyphla > Talpidae
+Taphozoinae # COL: Chiroptera > Emballonuridae
+Tapiridae # COL: Mammalia > Perissodactyla
+Tarsiidae # COL: Mammalia > Primates
+Tarsiiformes # COL: Mammalia > Primates
+Tarsipedidae # COL: Mammalia > Diprotodontia
+Taterillinae # COL: synonym of Gerbillinae (Rodentia)
+Taurotragidae # COL: synonym of Bovinae (Artiodactyla)
+Taxidiinae # COL: Carnivora > Mustelidae
+Tayassuidae # COL: Mammalia > Artiodactyla
+Teiidae # COL: Reptilia > Squamata
+Teleosauridae # IRMNG: Reptilia > Thalattosuchia
+Teleostei # COL: Animalia > Chordata
+Telmatherinidae # COL: Teleostei > Atheriniformes
+Telmatobiidae # COL: Amphibia > Anura
+Telmatobiinae # COL: synonym of Telmatobiidae (Anura)
+Temnospondyli # IRMNG: Chordata > Amphibia
+Tenrecidae # COL: Mammalia > Afrosoricida
+Tenrecinae # COL: Afrosoricida > Tenrecidae
+Tenrecomorpha # COL: Mammalia > Afrosoricida
+Tephrodornithidae # COL: synonym of Vangidae (Passeriformes)
+Terapontidae # COL: Teleostei > Centrarchiformes
+Testudinata # PBDB: synonym of Testudinata (Osteichthyes)
+Testudines # COL: Chordata > Reptilia
+Testudinidae # COL: Reptilia > Testudines
+Testudinoidea # COL: Reptilia > Testudines
+Tetanurae # iNat: Dinosauria > Theropoda
+Tethysuchia # PBDB: synonym of Tethysuchia (Osteichthyes)
+Tetrabrachiidae # COL: Teleostei > Lophiiformes
+Tetracerotidae # COL: synonym of Bovinae (Artiodactyla)
+Tetragonuridae # COL: Teleostei > Scombriformes
+Tetraodontidae # COL: Teleostei > Tetraodontiformes
+Tetraodontiformes # COL: Chordata > Teleostei
+Tetraonidae # COL: synonym of Phasianidae (Galliformes)
+Tetraoninae # COL: synonym of Phasianidae (Galliformes)
+Tetrarogidae # COL: Teleostei > Perciformes
+Thalasseleotrididae # COL: Teleostei > Gobiiformes
+Thaliacea # COL: Animalia > Chordata
+Thamnophilidae # COL: Aves > Passeriformes
+Thaumatichthyidae # COL: Teleostei > Lophiiformes
+Thecodontosaurus # OTT: Sauria > Dinosauria
+Theria # COL: Chordata > Mammalia
+Therizinosauridae # IRMNG: Reptilia > Saurischia
+Theropithecini # COL: synonym of Papionini (Primates)
+Theropoda # PBDB: synonym of Theropoda (Osteichthyes)
+Thinocoridae # COL: Aves > Charadriiformes
+Thomasomyini # COL: synonym of Sigmodontinae (Rodentia)
+Thraupidae # COL: Aves > Passeriformes
+Threskiornithidae # COL: Aves > Pelecaniformes
+Threskiornithinae # COL: synonym of Threskiornithidae (Pelecaniformes)
+Thryonomyidae # COL: Mammalia > Rodentia
+Thylacinidae # COL: Mammalia > Dasyuromorphia
+Thylacomyidae # COL: Mammalia > Peramelemorphia
+Thyreophora # PBDB: synonym of Thyreophora (Osteichthyes)
+Thyropteridae # COL: Mammalia > Chiroptera
+Tichodromidae # COL: Aves > Passeriformes
+Tigrisomatinae # COL: synonym of Ardeidae (Pelecaniformes)
+Timaliidae # COL: Aves > Passeriformes
+Tinamidae # COL: Aves > Tinamiformes
+Tinamiformes # COL: Chordata > Aves
+Tinaminae # COL: synonym of Tinamidae (Tinamiformes)
+Titanosauridae # IRMNG: Reptilia > Saurischia
+Titanosauriformes # Benton: Saurischia > Neosauropoda
+Tityridae # COL: Aves > Passeriformes
+Tityrinae # COL: synonym of Tityridae (Passeriformes)
+Todidae # COL: Aves > Coraciiformes
+Tolypeutinae # COL: Cingulata > Chlamyphoridae
+Tomopeatinae # COL: Chiroptera > Molossidae
+Torpedinidae # COL: Elasmobranchii > Torpediniformes
+Torpediniformes # COL: Chordata > Elasmobranchii
+Toxotidae # COL: Chordata > Teleostei
+Trachichthyidae # COL: Teleostei > Trachichthyiformes
+Trachipteridae # COL: Teleostei > Lampriformes
+Tragulidae # COL: Mammalia > Artiodactyla
+Trematosauria # Benton: Batrachomorpha > Temnospondyli
+Trematosauridae # IRMNG: Amphibia > Temnospondyli
+Treroninae # COL: Columbiformes > Columbidae
+Triacanthidae # COL: Teleostei > Tetraodontiformes
+Triacanthodidae # COL: Teleostei > Tetraodontiformes
+Triakidae # COL: Elasmobranchii > Carcharhiniformes
+Trichechidae # COL: Mammalia > Sirenia
+Trichiuridae # COL: Teleostei > Scombriformes
+Trichodontidae # COL: Teleostei > Perciformes
+Trichomycteridae # COL: Teleostei > Siluriformes
+Trichonotidae # COL: Teleostei > Gobiiformes
+Trichosurini # COL: synonym of Trichosurinae (Diprotodontia)
+Triglidae # COL: Teleostei > Perciformes
+Trilophosauridae # IRMNG: Reptilia > Trilophosauria
+Trimerorhachidae # IRMNG: Amphibia > Temnospondyli
+Triodontidae # COL: Teleostei > Tetraodontiformes
+Trionychidae # COL: Reptilia > Testudines
+Trionychoidea # COL: Reptilia > Testudines
+Triportheidae # COL: Teleostei > Characiformes
+Tripterygiidae # COL: Teleostei > Blenniiformes
+Trochili # COL: synonym of Apodiformes (Aves)
+Trochilidae # COL: Aves > Apodiformes
+Trochiliformes # COL: synonym of Apodiformes (Aves)
+Trochilinae # COL: Apodiformes > Trochilidae
+Troglodytidae # COL: Aves > Passeriformes
+Trogonidae # COL: Aves > Trogoniformes
+Trogoniformes # COL: Chordata > Aves
+Trogonophidae # COL: Reptilia > Squamata
+Trogonophiidae # IRMNG: synonym of Trogonophidae (Squamata)
+Troodontidae # IRMNG: Reptilia > Saurischia
+Tropidophiidae # COL: Reptilia > Squamata
+Tropiduridae # COL: Reptilia > Squamata
+Tubulidentata # COL: Chordata > Mammalia
+Tunicata # COL: Animalia > Chordata
+Tupaiidae # COL: Mammalia > Scandentia
+Tupaiinae # COL: synonym of Tupaiidae (Scandentia)
+Turdidae # COL: Aves > Passeriformes
+Turnices # COL: synonym of Charadriiformes (Aves)
+Turnicidae # COL: Aves > Charadriiformes
+Turniciformes # COL: synonym of Charadriiformes (Aves)
+Tylomyinae # COL: Rodentia > Cricetidae
+Tylomyini # COL: synonym of Tylomyinae (Rodentia)
+Typhlomyinae # COL: synonym of Platacanthomyidae (Rodentia)
+Typhlonectidae # COL: Amphibia > Gymnophiona
+Typhlonectinae # COL: synonym of Typhlonectidae (Gymnophiona)
+Typhlopidae # COL: Reptilia > Squamata
+Typhlopoidea # PBDB: Osteichthyes > Reptilia
+Tyranni # COL: synonym of Passeriformes (Aves)
+Tyrannidae # COL: Aves > Passeriformes
+Tyranninae # COL: synonym of Tyrannidae (Passeriformes)
+Tyrannosauridae # IRMNG: Reptilia > Saurischia
+Tytonidae # COL: Aves > Strigiformes
+Tytoninae # COL: Strigiformes > Tytonidae
+Umbridae # COL: Teleostei > Esociformes
+Ungaliophiinae # COL: Squamata > Boidae
+Upupidae # COL: Aves > Bucerotiformes
+Upupiformes # COL: synonym of Bucerotiformes (Aves)
+Uraeotyphlidae # COL: synonym of Ichthyophiidae (Gymnophiona)
+Uranoscopidae # COL: Teleostei > Perciformes
+Urocynchramidae # COL: Aves > Passeriformes
+Urodela # COL: synonym of Caudata (Amphibia)
+Urolophidae # COL: Elasmobranchii > Myliobatiformes
+Uromastycinae # COL: Squamata > Agamidae
+Uromyini # COL: synonym of Murinae (Rodentia)
+Uropeltidae # COL: Reptilia > Squamata
+Uropeltoidea # BHL: Chordata > Squamata
+Uropsilinae # COL: Eulipotyphla > Talpidae
+Urotrichini # COL: Eulipotyphla > Talpidae
+Urotrygonidae # COL: Elasmobranchii > Myliobatiformes
+Ursidae # COL: Mammalia > Carnivora
+Ursinae # COL: synonym of Ursidae (Carnivora)
+Vaillantellidae # COL: Teleostei > Cypriniformes
+Valenciidae # COL: Teleostei > Cyprinodontiformes
+Vampyrini # COL: Chiroptera > Phyllostomidae
+Vanellidae # lapwing family (Aves); IRMNG: synonym of Charadriidae (Charadriiformes)
+Vangidae # COL: Aves > Passeriformes
+Varanidae # COL: Reptilia > Squamata
+Veliferidae # COL: Teleostei > Lampriformes
+Vermilingua # COL: Mammalia > Pilosa
+Vertebrata # COL: Animalia > Chordata
+Vespertilionidae # COL: Mammalia > Chiroptera
+Vespertilioninae # COL: Chiroptera > Vespertilionidae
+Vespertilionini # COL: Chiroptera > Vespertilionidae
+Vespertilionoidea # COL: Mammalia > Chiroptera
+Viduidae # COL: Aves > Passeriformes
+Viduinae # COL: synonym of Viduidae (Passeriformes)
+Viperidae # COL: Reptilia > Squamata
+Viperinae # COL: Squamata > Viperidae
+Vireonidae # COL: Aves > Passeriformes
+Vitrumidae # COL: Ascidiacea > Aplousobranchia
+Viverridae # COL: Mammalia > Carnivora
+Viverrinae # COL: Carnivora > Viverridae
+Vombatidae # COL: Mammalia > Diprotodontia
+Vombatiformes # COL: Mammalia > Diprotodontia
+Vorona # OTT: Saurischia > Aves
+Vulcanodontidae # IRMNG: Reptilia > Saurischia
+Weigeltisauridae # IRMNG: Reptilia > Araeoscelidia
+Wiedomyini # COL: synonym of Sigmodontinae (Rodentia)
+Xantusiidae # COL: Reptilia > Squamata
+Xantusiinae # COL: Squamata > Xantusiidae
+Xenacanthiformes # IRMNG: Chordata > Chondrichthyes
+Xenarthra # COL: synonym of Cingulata (Mammalia)
+Xenicidae # COL: synonym of Acanthisittidae (Passeriformes)
+Xenisthmidae # COL: Teleostei > Gobiiformes
+Xenocyprididae # Asian cyprinid family (Cypriniformes); COL: Teleostei > Cypriniformes
+Xenodermatidae # ITIS: synonym of Xenodermidae (Squamata)
+Xenodermidae # COL: Reptilia > Squamata
+Xenopeltidae # COL: Reptilia > Squamata
+Xenophidiidae # COL: Reptilia > Squamata
+Xenosauridae # COL: Reptilia > Squamata
+Xenotyphlopidae # COL: Reptilia > Squamata
+Xerinae # COL: Rodentia > Sciuridae
+Xerini # COL: Rodentia > Sciuridae
+Xiphiidae # COL: Teleostei > Carangiformes
+Yangochiroptera # COL: Mammalia > Chiroptera
+Yinpterochiroptera # COL: Mammalia > Chiroptera
+Younginiformes # IRMNG: Chordata > Reptilia
+Zanclidae # COL: Teleostei > Acanthuriformes
+Zapodidae # COL: synonym of Dipodidae (Rodentia)
+Zapodinae # COL: Rodentia > Dipodidae
+Zaproridae # COL: Teleostei > Perciformes
+Zeidae # COL: Teleostei > Zeiformes
+Zeiformes # COL: Chordata > Teleostei
+Zenarchopteridae # COL: Teleostei > Beloniformes
+Zenionidae # zeiform-relative family (Teleostei); COL: synonym of Zeniontidae (Zeiformes)
+Zeniontidae # COL: Teleostei > Zeiformes
+Zenkerellinae # COL: synonym of Zenkerellidae (Rodentia)
+Ziphiidae # COL: synonym of Hyperoodontidae (Cetacea)
+Zoarcidae # COL: Teleostei > Perciformes
+Zosteropidae # COL: Aves > Passeriformes
+Zygodontomyini # COL: synonym of Sigmodontinae (Rodentia)

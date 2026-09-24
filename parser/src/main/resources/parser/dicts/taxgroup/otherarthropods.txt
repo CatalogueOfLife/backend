@@ -1,1490 +1,1485 @@
-Abacionidae
-Abacioninae
-Abacionini
-Abadiellidae
-Acanthanurinae
-Acanthodesmini
-Acanthopetalinae
-Acanthopetalini
-Acastidae
-Acastoidea
-Aceratophallinae
-Acerellinae
-Acerentomata
-Acerentomidae
-Acerentominae
-Acerentomoidea
-Acheliidae
-Achelinae
-Acherosomatidae
-Acherosomatinae
-Acipini
-Acrocephalitidae
-Acrochordinae
-Actaletidae
-Actaletoidea
-Adenomerinae
-Adesmata
-Adiaphorostreptidae
-Adiaphorostreptinae
-Adritylidae
-Afrauropodidae
-Agastrophinae
-Agnostida
-Agnostidae
-Agnostoidea
-Agraulidae
-Allopocockiidae
-Alogolykinae
-Alogolykini
-Alokistocaridae
-Alsataspididae
-Altajellidae
-Amblybolini
-Ameractini
-Amgaspididae
-Ammodesmidae
-Ammotheidae
-Ammotheinae
-Ammothellidae
-Ammotheoidea
-Amphipauropodidae
-Amplininae
-Amplinini
-Anajapygidae
-Anardini
-Ancestreumatinae
-Andrarinidae
-Andrognathidae
-Andrognathinae
-Anisentominae
-Aniulina
-Aniulini
-Anomocarellidae
-Anomocaridae
-Anoplodactylidae
-Anoplodesmidae
-Anoplodesminae
-Anopsobiidae
-Anopsobiinae
-Ansiulinae
-Antagmidae
-Antelientomidae
-Antelientominae
-Anthogonidae
-Anthogoninae
-Anthroherposomatini
-Anthroleucosomatidae
-Anthroleucosomatinae
-Anthroleucosomatini
-Anthroleucosomatoidea
-Antichiropodini
-Antichtopauropodidae
-Antrokoreaninae
-Anuridinae
-Anurophorinae
-Apfelbeckiellini
-Apfelbeckiini
-Aphelaspididae
-Aphelidesmidae
-Aphelidesminae
-Aphelidesmini
-Apheloriini
-Aphelorini
-Apheromerini
-Aphilodontidae # geophilomorph centipede family
-Aphilodontinae
-Apoctenophorini
-Apodigoninae
-Aporodesminae
-Appendiciphora
-Aprosphylosomatidae
-Aprosphylosomatinae
-Apterouridae
-Archaeaspididae
-Archepyginae
-Archepygini
-Archileucogeorgiini
-Archiulinae
-Archiulini
-Arinolinae
-Arrhopalitidae
-Arrupinae
-Arthropleona
-Arthrosolaenomeridini
-Arthrosphaeridae
-Arthrosphaerinae
-Arthrosphaerini
-Asaphida
-Asaphiscidae
-Asaphoidea
-Aschistodesmini
-Ascorhynchidae
-Ascorhynchoidea
-Aspidiophoninae
-Aspidiophonini
-Astrodesmini
-Atopetholidae
-Atopetholinae
-Atopochetidae
-Atopogestidae
-Atopogonidae
-Atractosomatinae
-Attemsiidae
-Attemsiinae
-Attemsiini
-Aulacopleurida
-Aulacopleuridae
-Aulacopleuroidea
-Aulodesmini
-Australiosomatidae
-Australiosomatinae
-Australiosomatini
-Australiosomini
-Austraphorurinae
-Austrodecidae
-Austrodecoridae
-Austrotylinae
-Aztecolini
-Bacillidesminae
-Bactropidae
-Bactropodellidae
-Bactropodidae
-Ballophilidae # geophilomorph centipede family (Myriapoda)
-Ballophilinae
-Barydesminae
-Barydesmini
-Bathynotidae
-Bathyuridae
-Batodesmini
-Bazillozoniinae
-Bdellozoniini
-Berberentulinae
-Bessoniellinae
-Beticosomatidae
-Bigotinidae
-Bilingulidae
-Bilselibatinae
-Bilselibatini
-Biokoviellidae
-Biokoviellinae
-Biporodesminae
-Blaniulidae
-Blaniulinae
-Blaniulini
-Blaniuloidea
-Bolaspididae
-Bollmaniulini
-Bonetesminae
-Boreoiulini
-Bourletiellidae
-Bourletiellinae
-Brachychaeteumatidae
-Brachychaeteumatinae
-Brachyiulini
-Brachymetopidae
-Brachypauropodidae
-Brachypauropodoidea
-Brachystomellidae
-Brachystomellinae
-Branneriidae
-Brannerioidea
-Broelemanneumatidae
-Bromacanthini
-Buchneriinae
-Bucovinosomatinae
-Bucovinosominae
-Buotidae
-Bureniidae
-Burlingiidae
-Buzoniinae
-Buzoniini
-Californiulidae
-Californizoniinae
-Callipallenidae
-Callipodellini
-Callipodida
-Callipodidae
-Callipodidea
-Callyntrurini
-Calodiscidae
-Calymenidae
-Calyptophyllinae
-Calyptophyllini
-Cambalida
-Cambalidae
-Cambalidea
-Cambalinae
-Cambaloidea
-Cambalomminae
-Cambalopsidae
-Cambalopsinae
-Campodeidae
-Campodeinae
-Campodeoidea
-Campodesmidae
-Campodinae
-Campodini
-Capbryini
-Caputanurininae
-Caraibodesmini
-Caseyidae
-Caseyinae
-Caseyoidea
-Caspiopetalidae
-Caspiopetalinae
-Castanotheriinae
-Castanotheriini
-Catamicrophyllini
-Catharosomatinae
-Catharosomatini
-Catillicephalidae
-Cedariidae
-Centrobolinae
-Centrodesmini
-Ceratesmidae
-Ceratopygidae
-Ceratosphyinae
-Chamaesomatidae
-Chamaesomatinae
-Chamberliniinae
-Chamberliniini
-Changshaniidae
-Chatelaineidae
-Cheilocephalidae
-Cheilopallenidae
-Cheiruridae
-Chelodesmidae
-Chelodesmidea
-Chelodesminae
-Chelodesmini
-Chelodesmoidea
-Chelojulidae
-Chengkouaspidae
-Chengkouiidae
-Chilognatha
-Chilophoxidae
-Chilopoda # class of centipedes (Myriapoda)
-Choctellidae
-Chonaphinae
-Chonaphini
-Chondrodesmini
-Choneiulinae
-Choneiulini
-Chordeumatida
-Chordeumatidae
-Chordeumatidea
-Chordeumatinae
-Chordeumatoidea
-Chordeumoidea
-Chytodesmidae
-Clavagnostidae
-Clavaphorurinae
-Clavigeropallenidae
-Cleidogonidae
-Cleidogonoidea
-Cletodinae
-Cnemodesmini
-Coenaletidae
-Coenaletoidea
-Colactidinae
-Colactidini
-Colinauropodidae
-Collembola
-Collophoridae
-Colobodesmini
-Colobognatha
-Colossendeidae
-Colossendeidoidea
-Colossendeinae
-Colossendeoidea
-Columbiozoniinae
-Comodesmidae
-Condeellinae
-Conocoryphidae
-Conokephalinidae
-Conotylidae
-Conotylinae
-Conotyloidea
-Cordyloporidae
-Cordyloporinae
-Cornalatinae
-Cornalatini
-Corynexochida
-Corynexochidae
-Corynothrichini
-Cottodesminae
-Craspedosomatidae
-Craspedosomatidea
-Craspedosomatinae
-Craspedosomatoidea
-Craterostigmidae # craterostigmomorph centipede family (Myriapoda)
-Craterostigmomorpha # single-species centipede order (Myriapoda)
-Cremastocephalini
-Crepicephalidae
-Cribrochiurini
-Cryptodesmidae
-Cryptodesminae
-Cryptodesmini
-Cryptopidae # scolopendromorph centipede family (Myriapoda)
-Crypturodesmidae
-Ctenoiulini
-Cyclodesmidae
-Cyclopygidae
-Cyclopygoidea
-Cylichnogastrinae
-Cylindrodesmidae
-Cylindroiulinae
-Cylindroiulini
-Cyliosomatidae
-Cyliosomatini
-Cyphocallipodidae
-Cyphocallipodinae
-Cyphoderidae
-Cyphoderini
-Cyrnosomatidae
-Cyrtodesmidae
-Dalmanitidae
-Dalmatosomatidae
-Dalodesmidae
-Dalodesmidea
-Damesellidae
-Decalopodidae
-Decaporodesmidae
-Delophoninae
-Delophonini
-Desmonidae
-Desmoninae
-Desmonini
-Deuteroiulinae
-Devilleidae
-Devilleini
-Diactidinae
-Diactidini
-Diallagmogonini
-Dibolostethini
-Dicellophilinae
-Dicellurata
-Dicyrtomidae
-Dicyrtominae
-Dicyrtomoidea
-Dignathodontidae # geophilomorph centipede family (Myriapoda)
-Dignathodontinae
-Dikelocephalidae
-Dimastosterninae
-Dimerogonidae
-Dimerogoninae
-Dimeropygidae
-Dinesidae
-Dinjapygidae
-Diodontodesminae
-Diodontodesmini
-Dionididae
-Diplagnostidae
-Diplomaragnidae
-Diplomaragninae
-Diplomaragnoidea
-Diplopauropodidae
-Diplopoda
-Diplura
-Dischizopetalini
-Dobrodesmidae
-Dobrodesmidea
-Doderiidae
-Doderiinae
-Doderiini
-Doderoini
-Dokimocephalidae
-Dolerolenidae
-Dolichoglyphiinae
-Dolichoglyphiulinae
-Dolichometopidae
-Dolisteninae
-Dolistenini
-Doratodesmidae
-Dorsoporidae
-Dorypetalidae
-Dorypetalinae
-Dorypetalini
-Dorypygidae
-Drepanopodinae
-Dyakryptini
-Dybasiidae
-Ectonocryptopinae
-Eirmopauropodidae
-Elaphogonini
-Electrocambalidae
-Ellipsocephalidae
-Ellipsocephaloidea
-Ellipsocephaloididae
-Elviniidae
-Emuellidae
-Emuelloidea
-Encrinuridae
-Endeidae
-Endeididae
-Endeinae
-Endymioniidae
-Eneilisominae
-Entognatha
-Entomaspididae
-Entomobielziidae
-Entomobielziinae
-Entomobryidae
-Entomobryinae
-Entomobryini
-Entomobryoidea
-Entomobryomorpha
-Eodiscidae
-Eodiscina
-Eodiscoidea
-Eoromidae
-Eosentomata
-Eosentomidae
-Eosentominae
-Eosentomoidea
-Epinannolenidae
-Epinannolenidea
-Epinannolenoidea
-Ergethidae
-Eriphantidae # geophilomorph centipede family
-Eroonsomatini
-Eroonsomidae
-Erythranassini
-Erythrhacinae
-Erythrhacini
-Estaingiidae
-Eucordyloporinae
-Eucratonychidae
-Eucylopinae
-Eudigonidae
-Eudigoninae
-Eugnatha
-Eulomidae
-Eupantopodida
-Eurekiidae
-Eurelinae
-Eurycydidae
-Eurydesmidae
-Eurydesminae
-Eurymerodesmidae
-Eurymerodesmini
-Eurypauropodidae
-Eurypauropodoidea
-Euryuridae
-Euryurinae
-Euryurini
-Eustrongylosomatini
-Eutynellidae
-Euxinopetalinae
-Euxinopetalini
-Evalljapygidae
-Evalljapyginae
-Eviulisomatinae
-Eviulisomatini
-Faginidae
-Faginini
-Falcigonopodini
-Fallotaspididae
-Floridobolidae
-Floridobolinae
-Floridobolini
-Fontariidae
-Frieseinae
-Fuhrmannodesmidae
-Fuhrmannodesmini
-Fujientomidae
-Galliobatidae
-Galliobatini
-Gaspestriidae
-Geoglomerinae
-Geophilidae # geophilomorph centipede family (Myriapoda)
-Geophiloidea
-Geophilomorpha # soil centipedes (Myriapoda)
-Gervaisiidae
-Ghilaroviidae
-Gigantopygidae
-Glomerellininae
-Glomerida
-Glomeridae
-Glomeridellidae
-Glomeridellinae
-Glomeridelloidea
-Glomeridesmida
-Glomeridesmidae
-Glomeridesminae
-Glomerididae
-Glomerinae
-Glomerini
-Glomeroidea
-Glyphiulidae
-Glyphiulinae
-Golovatchiidae
-Gomphodesmidae
-Gomphodesminae
-Gomphodesmini
-Gonibregmatidae # geophilomorph centipede family
-Gonomastinae
-Gonoplectini
-Gonorygmatini
-Gosiulini
-Graphisterninae
-Graphisternini
-Graphisternnini
-Grassografiinae
-Guipuzcosomatidae
-Guizhousomatidae
-Gulgastruridae
-Gulgastruroidea
-Haaseidae
-Haaseinae
-Haaseoidea
-Haasiidae
-Haasiinae
-Haasoidea
-Haliestidae
-Hansenauropodidae
-Haplobainosomatidae
-Haplobainosomatini
-Haplobainosomini
-Haplodesmidae
-Haplodesminae
-Haplodesmoidea
-Haploglomerinae
-Haploglomerini
-Haplogonidae
-Haplogonopodinae
-Haplosomidae
-Hapsidodesmini
-Harpagophoridae
-Harpagophorinae
-Harpagophorini
-Harpaphini
-Harpetida
-Harpetidae
-Harpididae
-Harpurostreptini
-Hebediscidae
-Hedgpethiinae
-Helicopodosomatinae
-Helminthomorpha
-Helodesmidae
-Helodesminae
-Hemicampinae
-Henicopidae # lithobiomorph centipede family (Myriapoda)
-Henicopinae
-Henicopini
-Hercodesmidae
-Hesperentomidae
-Hesperentominae
-Heterochordeumatidae
-Heterochordeumatidea
-Heterochordeumatinae
-Heterochordeumatoidea
-Heteroiulinae
-Heterojapygidae
-Heterojapyginae
-Heterolatzeliidae
-Heterolatzeliini
-Heteromurinae
-Heteromurini
-Heteroporatiinae
-Heterostreptinae
-Heterozoniini
-Hexamerocerata
-Hexecontasomatidae
-Hexodontiinae
-Himantariidae # geophilomorph centipede family (Myriapoda)
-Himantarioidea
-Himatiopodinae
-Hinomotentominae
-Hirudisomatidae
-Hirudisomatinae
-Hirudisomatini
-Hispaniosomatidae
-Hispaniosomidae
-Hoffmaneumatidae
-Hoffmanobolidae
-Holistophallidae
-Holmiidae
-Holotrachelidae
-Homalonotidae
-Homalonotinae
-Homidiini
-Hoplurorhachinae
-Hoplurorhachini
-Huhentominae
-Hungaiidae
-Hungarosomatidae
-Hungarosomidae
-Hybocestini
-Hylebainosomatinae
-Hylebainosominae
-Hylomidae
-Hylomini
-Hymenaphorurini
-Hynidesmidae
-Hypagnostoidae
-Hypogastruridae
-Hypogastruroidea
-Hypogexenidae
-Hypogexeninae
-Hystricuridae
-Icosidesmidae
-Idagonidae
-Idagoninae
-Idahoiidae
-Idiurodesmini
-Illaenidae
-Illaenoidea
-Illaenuridae
-Indiozoniinae
-Indosphaerini
-Ingurtidorgiinae
-Inouyiidae
-Ionidesmini
-Isobatidae
-Isobatinae
-Isocolidae
-Isoentominae
-Isogastruroidea
-Isotelinae
-Isotogastruridae
-Isotogastruroidea
-Isotomidae
-Isotominae
-Isotomoidea
-Ityophoridae
-Iulogoninae
-Iulomorphidae
-Jakutidae
-Japanosomatinae
-Japygidae
-Japyginae
-Japygoidea
-Julida
-Julidae
-Juliformia
-Julinae
-Julini
-Juloidea
-Junceostreptinae
-Junceustreptinae
-Kaolishaniidae
-Karschopisthini
-Karteroiulini
-Kashmireumatidae
-Katiannidae
-Katianniformia
-Katiannini
-Katiannoidea
-Kethopinae
-Kingstoniidae
-Kirkayakidae
-Kiusiozoniidae
-Kiusiozoniinae
-Kiusiunidae
-Klimakodesminae
-Kopidoiulinae
-Ktenostreptini
-Lampodesmini
-Lankasomatidae
-Lankasomatinae
-Leioderidae
-Leiostegiidae
-Leiotelinae
-Leiotelini
-Lepidocampinae
-Lepidocyrtinae
-Lepidocyrtini
-Lepidophorellinae
-Lepidophorellini
-Lepidosirini
-Leptodesmidae
-Leptodesmidea
-Leptodesminae
-Leptodesmini
-Leptoiulinae
-Leptoiulini
-Leptophyllini
-Lepturodesmini
-Leucogeorgiidae
-Leucogeorgiini
-Libanaphinae
-Lichakephalidae
-Lichida
-Lichidae
-Limacomorpha
-Limulidae
-Limulina
-Limulinae
-Linotaeniidae # geophilomorph centipede family (Myriapoda)
-Liostracinidae
-Lisaniidae
-Lissopyginae
-Lissopygini
-Lithobiida
-Lithobiidae # lithobiomorph centipede family (Myriapoda)
-Lithobiomorpha # stone centipedes (Myriapoda)
-Llanoaspididae
-Lobellini
-Lombokniinae
-Lonchocephalidae
-Lophognathellinae
-Lophominae
-Lophoproctidae
-Lophoscytinae
-Lorenzellidae
-Luaspididae
-Lusitaniosomatidae
-Lusitaniosomidae
-Lysiopetalinae
-Macellolophidae
-Macellolophini
-Macheiriophorinae
-Mackenziellidae
-Macrochaeteumatidae
-Macrochaeteumatinae
-Macrochaetosomatinae
-Macrocoxodesmini
-Macrolenostreptini
-Macromastinae
-Macronicophilidae # millipede family (Diplopoda)
-Macrosternodesmidae
-Macrosternodesminae
-Macrosternodesmini
-Macroxeninae
-Malayomerini
-Mapaniidae
-Marjumiidae
-Marptodesminae
-Marptodesmini
-Mastigocerini
-Mastigoninae
-Mastigonodesmidae
-Mastigophorophyllidae
-Mastigophorophyllinae
-Mastigophorophyllini
-Mauriesiinae
-Mecistocephalidae # geophilomorph centipede family (Myriapoda)
-Mecistocephalinae
-Megalotylidae
-Megapharanaspidae
-Melaphinae
-Menomoniidae
-Merocheta
-Merodesmini
-Merostomata # horseshoe crabs + extinct eurypterids (Chelicerata, not Arachnida)
-Mesaphorurinae
-Mesoblaniulinae
-Mesoblaniulini
-Messicobolidae
-Metadoxididae
-Metagnostidae
-Metaiulini
-Metapallenidae
-Metopidiotrichidae
-Metopidiotrichinae
-Metriostreptini
-Mexiceumatidae
-Mexiceumidae
-Mexiterpetinae
-Microbrachysomatinae
-Microbrachysomatini
-Microchordeumatinae
-Microfalculidae
-Microlympiidae
-Millotauropodidae
-Mimodesmini
-Mimopidae
-Missisquoiidae
-Mitocybeini
-Mongoliulidae
-Mongoliulinae
-Monkaspididae
-Monographinae
-Monorakidae
-Morulininae
-Morulodini
-Mulaikiulini
-Myriapoda # centipedes, millipedes, pauropods and symphylans
-Myrmecomerinae
-Namanoiidae
-Nannariini
-Nannarini
-Nannolenidae
-Neanuridae
-Neanurinae
-Neanurini
-Neanuroidea
-Nearctodesmidae
-Nearctodesminae
-Nectopantopoda
-Nedyopodini
-Neelidae
-Neelidinae
-Neelinae
-Neelipleona
-Nemasomatidae
-Nemasomatinae
-Nemasomatini
-Nemasomatoidea
-Nemasomidae
-Nematophora
-Nematozoniidae
-Neoatractosomatidae
-Neoatractosomatinae
-Neoatractosomatini
-Neoatractosomatoidea
-Neoatractosominae
-Neoatractosomini
-Neocambrisomatidae
-Neodesmini
-Neogeophilidae # geophilomorph centipede family (Myriapoda)
-Neophorellini
-Nepalellinae
-Nesoressini
-Nevadiidae
-Newportiinae
-Nileidae
-Niponiellidae
-Niponiini
-Niponiosomatidae
-Nipponentominae
-Nopoiulinae
-Nopoiulini
-Norwoodiidae
-Nothobryinae
-Nothobryini
-Notostigmophora
-Novacerini
-Nymphonidae
-Nymphonides
-Nymphonoidea
-Ochrogrammatinae
-Ochthocelatini
-Octostigmatidae
-Odontellidae
-Odontokrepidinae
-Odontopleurida
-Odontopleuridae
-Odontopygidae
-Odontopyginae
-Odontopygini
-Odontopygoidea
-Okeanobatidae
-Okeanobatinae
-Okeanobatini
-Oklahomasomatidae
-Olenellida
-Olenellidae
-Olenellina
-Olenelloidea
-Olenidae
-Oligaphorurini
-Oligaspidinae
-Ommatoiulini
-Omopyginae
-Oncobryidae
-Oncoiulinae
-Oncoiulini
-Oncopoduridae
-Oniscodesmidae
-Oniscodesmoidea
-Oniscodesmoides
-Oniscomorpha
-Onomatoplanidae
-Onomeridae
-Onomerididae
-Onychelidae
-Onychelinae
-Onychiuridae
-Onychiurinae
-Onychiurini
-Onychiuroidea
-Onychoglomerini
-Oorhynchidae
-Ophrydesmini
-Opisostretoidea
-Opisotretidae
-Opisotretoidea
-Opisthocheiridae
-Orchesellidae
-Orchesellinae
-Orchesellini
-Ordosiidae
-Origmatogonidae
-Origmatogoninae
-Origmatogonini
-Orobainosomatinae
-Orodesminae
-Orodesmini
-Orophini
-Orphanoiulini
-Orsiboinae
-Orthochordeumatinae
-Orthochordeumatini
-Orthogoneptinae
-Orthogoneptini
-Orthogonoptini
-Orthomorphini
-Oryctocephalidae
-Oryidae # geophilomorph centipede family (Myriapoda)
-Osellasomatini
-Otarionidae
-Otodesmidae
-Otodesminae
-Otodesmini
-Otostigminae
-Ovoidesminae
-Oxydactylini
-Oxydesmidae
-Oxydesminae
-Oxydesmini
-Oxypyginae
-Pachybolidae
-Pachybolidea
-Pachybolinae
-Pachybolini
-Pachybrachyiulini
-Pachydesmini
-Pachyiulidae
-Pachyiulinae
-Pachyiulini
-Pachyotominae
-Pachytullbergiidae
-Paectophyllinae
-Paectophyllini
-Paeromopidae
-Paeromopodidae
-Paeromopodoidea
-Paeromopoidea
-Pagodiidae
-Palaeoendeinae
-Palaeoisopoda
-Palaeoisopodidae
-Palaeolenidae
-Palaeopantopoda
-Palaeopantopodidae
-Palaeopycnogonididae
-Paleo_Diceratocephalidae
-Paleonurini
-Paleotullbergiidae
-Pallenidae
-Pallenopsidae
-Panderiidae
-Pandirodesmidae
-Pandirodesminae
-Pandirodesmini
-Pantopoda
-Papyriaspididae
-Parabolinoididae
-Parabourletiellinae
-Paracortinidae
-Paradoxididae
-Paradoxidoidea
-Paradoxosomatidae
-Paradoxosomatidea
-Paradoxosomatinae
-Paradoxosomatini
-Parafontariinae
-Parafontariini
-Paraiulidae
-Parajapygidae
-Parajulidae
-Parajulinae
-Parajulini
-Parajuloidea
-Paranurini
-Paranymphonidae
-Paronellidae
-Paronellidini
-Paronellinae
-Paronellini
-Pauropoda
-Pauropodidae
-Pauropodina
-Pauropodinae
-Pauropodoidea
-Penicillata
-Pentazonia
-Peocilocricinae
-Pericambalidae
-Pericambalinae
-Peridontodesmidae
-Peridontodesmini
-Peridontopyginae
-Peridontopygini
-Peronopsidae
-Perustreptinae
-Perustreptini
-Petaserpetini
-Peterjohnsiidae
-Phacopida
-Phacopidae
-Phacopina
-Phacopinae
-Phacopoidea
-Phalacromidae
-Phallorthidae
-Pharostomatidae
-Phillipsiidae
-Phoxichilides
-Phoxichilidiidae
-Phoxichilidioidea
-Phoxichilidoidea
-Phoxiphilyridae
-Phryssonotidae
-Phylacteridae
-Phyodesminae
-Phyodesmini
-Physiostreptidae
-Physiostreptinae
-Physobolinae
-Pilekiidae
-Placodesmata
-Plagiodesminae
-Platinodesmini
-Platydesmida
-Platydesmidae
-Platydesmini
-Platyrhacidae
-Platyrhacinae
-Platyrhacini
-Platyrhacoidea
-Pleistosphaeromatinae
-Plethopeltidae
-Pleurostigmophora
-Pliomeridae
-Plusiocampinae
-Plutoniumidae
-Plutoniuminae
-Pocodesmini
-Poduridae
-Poduroidea
-Poduromorpha
-Podykipodinae
-Poecilocricinae
-Pollyxenidae
-Polycyrtaspididae
-Polydesmida
-Polydesmidea
-Polydesmoidea
-Polydesmoides
-Polydesmorhachinae
-Polydesmorhachini
-Polydrepanini
-Polypauropinae
-Polypauropodidae
-Polyphematiini
-Polyphematinae
-Polyxenida
-Polyxenidae
-Polyxeninae
-Polyxenoidea
-Polyzoniida
-Polyzoniidae
-Polyzoniinae
-Polyzoniini
-Praentomobryidae
-Pratinidae
-Prepodesmidae
-Prepodesminae
-Priodesmini
-Prionobelini
-Prionopeltidae
-Prionopeltinae
-Prionopetalini
-Proasaphiscidae
-Procampodeidae
-Procyliosomatidae
-Proetida
-Proetidae
-Proetoidea
-Proisotominae
-Projapygidae
-Projapygoidea
-Prolysiopetalini
-Proparia
-Prosopiscidae
-Prosopodesminae
-Protaphorurini
-Protentomidae
-Protentominae
-Protentomobryidae
-Protoglomeridae
-Protoiulidae
-Protolenidae
-Protura
-Provalljapyginae
-Psammodesminae
-Psammodesmini
-Psaphodesminae
-Psaphodesmini
-Pselaphognatha
-Pselliodidae
-Pseudachorutinae
-Pseudagnostidae
-Pseudoannolenidae
-Pseudoannolenninae
-Pseudoclidinae
-Pseudojulina
-Pseudonannolenidae
-Pseudonannoleninae
-Pseudonemasomatidae
-Pseudospirobolellidae
-Ptenothricinae
-Pteridoiulinae
-Pterocephaliidae
-Pterodesmidae
-Pterodesminae
-Pterodesmini
-Pterygometopidae
-Ptychagnostidae
-Ptychaspididae
-Ptychopariida
-Ptychopariidae
-Ptychoparioidea
-Ptyoiulinae
-Ptyoiulini
-Pycnogonida
-Pycnogonidae
-Pycnogonides
-Pycnogonoidea
-Pygmaeosomatidae
-Pygmaeosomatiodea
-Pygmaeosomatoidea
-Pygmaesomatidae
-Pyrgodesmidae
-Pyrgodesmoidea
-Rajasphaerinae
-Raphiophoridae
-Redlichiida
-Redlichiidae
-Redlichiina
-Reginaterreumatidae
-Remopleurididae
-Rhabdura
-Rhachodesmidae
-Rhachodesminae
-Rhachodesmoidea
-Rhinocricidae
-Rhinocricidea
-Rhinocricinae
-Rhinotini
-Rhiscosomatinae
-Rhiscosomidae
-Rhiscosomididae
-Rhopaloiulidae
-Rhopaloiulini
-Rhopalomerinae
-Rhopalorhynchidae
-Rhymogoninae
-Rhynchoproctinae
-Rhynchothoracidae
-Rhynchothoracoidea
-Rhysodesminae
-Rhysodesmini
-Rhyssometopidae
-Rorringtoniidae
-Rothenbuehleriinae
-Rothenbuehleriini
-Sakhalineumatidae
-Salininae
-Samichinae
-Sandalodesmini
-Sardoblaniulini
-Saukiidae
-Scharyiidae
-Schedotrigonidae
-Schendylidae # geophilomorph centipede family (Myriapoda)
-Schindalomonotinae
-Schizogomphodesmini
-Schizopetalidae
-Schizopetalidea
-Schizopetalini
-Schizophyllini
-Scleropauropinae
-Scleropauropodidae
-Scolopendrellidae
-Scolopendrellinae
-Scolopendrida
-Scolopendridae # scolopendromorph centipede family (Myriapoda)
-Scolopendrinae
-Scolopendromorpha # tropical centipedes (Myriapoda)
-Scolopocryptopidae # scolopendromorph centipede family (Myriapoda)
-Scolopocryptopinae
-Scoterpetini
-Scutelluidae
-Scutigerellidae
-Scutigerellinae
-Scutigerida
-Scutigeridae # scutigeromorph centipede family (Myriapoda)
-Scutigerinae
-Scutigerinidae # scutigeromorph centipede family (Myriapoda)
-Scutigeromorpha # house centipedes (Myriapoda)
-Scutogoninae
-Scutogonini
-Scytonotidae
-Seirinae
-Semnosomatidae
-Sensillanurini
-Sericosuridae
-Shirakiellidae
-Shumardiidae
-Sigmocheiridae
-Sigmocheirini
-Sigodesmini
-Simiulini
-Sinellini
-Sinentomata
-Sinentomidae
-Sinentomoidea
-Sinocallipodidae
-Sinocallipodidea
-Siphoniulida
-Siphoniulidae
-Siphonocryptida
-Siphonocryptidae
-Siphonocryptini
-Siphonophorida
-Siphonophoridae
-Siphonorhinidae
-Siphonotidae
-Siphonotinae
-Siphonotini
-Skleroprotopini
-Skleroprotopodinae
-Skleroprotopodini
-Sminthuridae
-Sminthuridida
-Sminthurididae
-Sminthurididoidea
-Sminthuridinae
-Sminthuridini
-Sminthuridoidea
-Sminthuriformia
-Sminthurinae
-Sminthuroidea
-Smynthuridae
-Solenopleuracea
-Solenopleuridae
-Songhaicinae
-Spathiulini
-Spelaeoglomerini
-Speophilosomatidae
-Sphaeragnostidae
-Sphaeridinae
-Sphaeridini
-Sphaeriodesmidae
-Sphaeriodesminae
-Sphaeriodesmini
-Sphaeriodesmoidea
-Sphaerodesmini
-Sphaeropauropodidae
-Sphaeropoeidae
-Sphaeropoeinae
-Sphaeropoeini
-Sphaerotheriida
-Sphaerotheriidae
-Sphaerotheriinae
-Sphaerotheriini
-Sphaerotrichopodidae
-Sphyrothecinae
-Spinagnostidae
-Spinothecidae
-Spirobolellidae
-Spirobolellinae
-Spirobolida
-Spirobolidae
-Spirobolidea
-Spirobolinae
-Spirobolini
-Spiroboloidea
-Spiromimidae
-Spiromiminae
-Spirostreptida
-Spirostreptidae
-Spirostreptidea
-Spirostreptinae
-Spirostreptini
-Spirostreptoidea
-Stemmatoiulidae
-Stemmiulida
-Stemmiulidae
-Stiodesmidae
-Stiripasterida
-Strasseriinae
-Striariidae
-Striariidea
-Striariinae
-Striarioidea
-Strongylomorphini
-Strongylosomatidae
-Strongylosomatidea
-Strongylosomatini
-Sturmiidae
-Sturmioidea
-Styginidae
-Stylodesmidae
-Stylodesmoidea
-Stylopallenidae
-Sulciferinae
-Sulciferini
-Sumatroniinae
-Sunaspididae
-Sundaninini
-Symphyla
-Symphyoiulini
-Symphypleona
-Symphysurinidae
-Syncampinae
-Syntelopodeumatidae
-Synxenidae
-Synxeninae
-Synxenoidea
-Tachypleinae
-Taihungshaniidae
-Tampiyidae # geophilomorph centipede family
-Tanystylidae
-Taphodesminae
-Taphodesmini
-Tectoporini
-Telephinidae
-Telonychopidae
-Telonychopodidae
-Telonychopodini
-Telsonemasomatidae
-Tengfengiidae
-Teratognathidae
-Termitodesmidae
-Termitodesminae
-Termitopteryginae
-Tetramerocerata
-Tetrodontophorinae
-Texophoninae
-Texophonini
-Thalassaphorurini
-Thanatomimini
-Theatopinae
-Thelydesmidae
-Thelydesminae
-Thereuoneminae
-Thyropyginae
-Thyropygini
-Tingupidae
-Tokyosomatinae
-Tomoceridae
-Tomocerinae
-Tomocerini
-Tomoceroidea
-Tonkinosomatini
-Trachelodesminae
-Trachelodesmini
-Trachelorhachidae
-Trachygonidae
-Trachyjulidae
-Trachysomatidae
-Trachysphaeridae
-Trachysphaerini
-Trachystreptidae
-Trachystreptinae
-Trachystreptini
-Triaenostreptinae
-Triaenostreptini
-Trichoblaniulidae
-Trichoblaniulinae
-Trichoblaniulini
-Trichomorphini
-Trichonemasomatidae
-Trichopeltini
-Trichopetalidae
-Trichopetalinae
-Trichopolydesmidae
-Trichopolydesminae
-Trichopolydesmoidea
-Tricrepicephalidae
-Tridontomidae
-Trigoniulidae
-Trigoniulidea
-Trigoniulinae
-Trilobita
-Trilobitomorpha
-Trimerophorellini
-Trimerophorinae
-Trimerophorini
-Trinucleidae
-Trisariinae
-Troglopedetinae
-Tropidocoryphidae
-Trygaeidae
-Tsinaniidae
-Tsunyidiscidae
-Tuberculariini
-Tullbergiidae
-Tullbergiinae
-Tycodesmini
-Tylobolinae
-Tylobolini
-Tylodesminae
-Tynommatidae
-Tynommatinae
-Tynommatini
-Typhlobolellidae
-Typhloglomeridae
-Typhloglomerinae
-Typhloiulini
-Uchidanurinae
-Ulodesmini
-Uncigerinae
-Uncigerini
-Underwoodiidae
-Uroblaniulinae
-Uroblaniulini
-Urochordeumatidae
-Urochordeumidae
-Utiidae
-Vaalogonopodidae
-Vandeleumatidae
-Vandeleumatinae
-Vanhoeffeniidae
-Venezuelodesmini
-Verhoeffiidae
-Verhoeffiinae
-Verhoeffioidea
-Verrucoentominae
-Vesicephalini
-Vicissicaudata
-Vieteumatidae
-Weymouthiidae
-Willowsiinae
-Willowsiini
-Wuaniidae
-Xandarellida
-Xanthodesmini
-Xiphosura
-Xiphosurida
-Xiphosuridae
-Xyloiulidae
-Xyloiuloidea
-Xyodesmidae
-Xystocheirini
-Xystodesmidae
-Xystodesminae
-Xystodesmini
-Xystodesmoidea
-Xystrosomatidae
-Yunnanocephalidae
-Zacanthoididae
-Zelanophilidae
-Zephroniidae
-Zephroniinae
-Zephroniini
-Zephroniodesmidae
-Zoosphaeriini
-Zosteractiidae
-Zosteractinidae
-Zosteractininae
-Zosterogrammida
-Zosterogrammidae
-Zygethobiini
+Abacionidae # COL: Arthropoda > Diplopoda
+Abacioninae # COL: Diplopoda > Abacionidae
+Abacionini # COL: synonym of Abacioninae (Diplopoda)
+Abadiellidae # COL: Trilobita > Redlichiida
+Acanthanurinae # iNat: Poduromorpha > Brachystomellidae
+Acanthodesmini # COL: synonym of Platyrhacini (Diplopoda)
+Acanthopetalinae # WoRMS: Callipodida > Schizopetalidae
+Acanthopetalini # WoRMS: Callipodida > Schizopetalidae
+Acastidae # COL: Trilobita > Phacopida
+Acastoidea # PBDB: Trilobita > Phacopida
+Aceratophallinae # COL: Diplopoda > Rhachodesmidae
+Acerellinae # COL: Acerentomata > Acerentomidae
+Acerentomata # COL: Arthropoda > Protura
+Acerentomidae # COL: Protura > Acerentomata
+Acerentominae # COL: Acerentomata > Acerentomidae
+Acerentomoidea # COL: synonym of Acerentomata (Protura)
+Acheliidae # COL: synonym of Ammotheidae (Pantopoda)
+Achelinae # COL: Pantopoda > Ammotheidae
+Acherosomatidae # COL: Arthropoda > Diplopoda
+Acherosomatinae # COL: Diplopoda > Anthogonidae
+Acipini # COL: Arthropoda > Diplopoda
+Acrocephalitidae # COL: Trilobita > Ptychopariida
+Actaletidae # COL: Collembola > Entomobryomorpha
+Actaletoidea # ITIS: Collembola > Entomobryomorpha
+Adenomerinae # COL: Diplopoda > Trachysphaeridae
+Adesmata # ITIS: Chilopoda > Geophilomorpha
+Adiaphorostreptidae # COL: Arthropoda > Diplopoda
+Adiaphorostreptinae # COL: synonym of Adiaphorostreptidae (Diplopoda)
+Adritylidae # COL: Arthropoda > Diplopoda
+Afrauropodidae # COL: synonym of Pauropodidae (Tetramerocerata)
+Agastrophinae # COL: synonym of Glyphiulinae (Diplopoda)
+Agnostida # COL: Arthropoda > Trilobita
+Agnostidae # COL: Trilobita > Agnostida
+Agnostoidea # COL: Trilobita > Agnostida
+Agraulidae # COL: Trilobita > Ptychopariida
+Allopocockiidae # COL: Arthropoda > Diplopoda
+Alogolykinae # COL: Arthropoda > Diplopoda
+Alogolykini # COL: Arthropoda > Diplopoda
+Alokistocaridae # COL: Trilobita > Ptychopariida
+Alsataspididae # COL: Trilobita > Asaphida
+Altajellidae # COL: synonym of Kirkayakidae (Diplopoda)
+Amblybolini # COL: Diplopoda > Pachybolidae
+Ameractini # COL: synonym of Zosteractinidae (Diplopoda)
+Amgaspididae # COL: Trilobita > Corynexochida
+Ammodesmidae # COL: Arthropoda > Diplopoda
+Ammotheidae # COL: Pycnogonida > Pantopoda
+Ammotheinae # COL: Pantopoda > Ammotheidae
+Ammothellidae # ITIS: synonym of Acheliidae (Pantopoda)
+Ammotheoidea # COL: Pycnogonida > Pantopoda
+Amphipauropodidae # COL: Pauropoda > Tetramerocerata
+Amplininae # COL: Diplopoda > Aphelidesmidae
+Amplinini # COL: synonym of Amplininae (Diplopoda)
+Anajapygidae # COL: Arthropoda > Diplura
+Anardini # COL: Arthropoda > Diplopoda
+Ancestreumatinae # COL: Diplopoda > Diplomaragnidae
+Andrarinidae # COL: Trilobita > Asaphida
+Andrognathidae # COL: Diplopoda > Platydesmida
+Andrognathinae # COL: Platydesmida > Andrognathidae
+Anisentominae # COL: Eosentomata > Eosentomidae
+Aniulina # COL: Diplopoda > Parajulidae
+Aniulini # COL: Diplopoda > Parajulidae
+Anomocarellidae # COL: Trilobita > Asaphida
+Anomocaridae # COL: Trilobita > Agnostida
+Anoplodactylidae # COL: synonym of Phoxichilidiidae (Pantopoda)
+Anoplodesmidae # COL: synonym of Merocheta (Arthropoda)
+Anoplodesminae # COL: Arthropoda > Diplopoda
+Anopsobiidae # ITIS: synonym of Anopsobiinae (Lithobiomorpha)
+Anopsobiinae # ITIS: Lithobiomorpha > Henicopidae
+Ansiulinae # COL: synonym of Skleroprotopodinae (Diplopoda)
+Antagmidae # COL: Trilobita > Ptychopariida
+Antelientomidae # COL: Protura > Eosentomata
+Antelientominae # COL: synonym of Antelientomidae (Eosentomata)
+Anthogonidae # COL: Arthropoda > Diplopoda
+Anthogoninae # COL: Diplopoda > Anthogonidae
+Anthroherposomatini # COL: Arthropoda > Diplopoda
+Anthroleucosomatidae # COL: Arthropoda > Diplopoda
+Anthroleucosomatinae # COL: Diplopoda > Anthroleucosomatidae
+Anthroleucosomatini # COL: Diplopoda > Anthroleucosomatidae
+Anthroleucosomatoidea # COL: Arthropoda > Diplopoda
+Antichiropodini # COL: Arthropoda > Diplopoda
+Antichtopauropodidae # COL: Pauropoda > Tetramerocerata
+Antrokoreaninae # COL: synonym of Juliformia (Arthropoda)
+Anuridinae # iNat: Poduromorpha > Neanuridae
+Anurophorinae # COL: Entomobryomorpha > Isotomidae
+Apfelbeckiellini # COL: synonym of Pachyiulini (Arthropoda)
+Apfelbeckiini # COL: Arthropoda > Diplopoda
+Aphelaspididae # COL: Trilobita > Asaphida
+Aphelidesmidae # COL: Arthropoda > Diplopoda
+Aphelidesminae # COL: Diplopoda > Aphelidesmidae
+Aphelidesmini # COL: synonym of Aphelidesminae (Diplopoda)
+Apheloriini # COL: Arthropoda > Diplopoda
+Aphelorini # ITIS: Polydesmida > Xystodesmidae
+Apheromerini # COL: Arthropoda > Diplopoda
+Aphilodontidae # geophilomorph centipede family; COL: Chilopoda > Geophilomorpha
+Aphilodontinae # iNat: Geophilomorpha > Geophilidae
+Apoctenophorini # COL: Diplopoda > Harpagophoridae
+Apodigoninae # COL: synonym of Eudigonidae (Diplopoda)
+Aporodesminae # COL: Diplopoda > Cryptodesmidae
+Appendiciphora # COL: Collembola > Symphypleona
+Aprosphylosomatidae # COL: Arthropoda > Diplopoda
+Aprosphylosomatinae # COL: synonym of Aprosphylosomatidae (Diplopoda)
+Apterouridae # COL: Arthropoda > Diplopoda
+Archaeaspididae # COL: Trilobita > Redlichiida
+Archepyginae # COL: Diplopoda > Odontopygidae
+Archepygini # COL: Diplopoda > Odontopygidae
+Archileucogeorgiini # COL: Arthropoda > Diplopoda
+Archiulinae # COL: synonym of Schizophyllini (Arthropoda)
+Archiulini # COL: synonym of Schizophyllini (Arthropoda)
+Arinolinae # COL: Diplopoda > Atopetholidae
+Arrhopalitidae # COL: Collembola > Symphypleona
+Arrupinae # ITIS: Geophilomorpha > Mecistocephalidae
+Arthropleona # ITIS: synonym of Poduromorpha (Collembola)
+Arthrosolaenomeridini # COL: Arthropoda > Diplopoda
+Arthrosphaeridae # COL: Arthropoda > Diplopoda
+Arthrosphaerinae # COL: Diplopoda > Arthrosphaeridae
+Arthrosphaerini # COL: synonym of Arthrosphaeridae (Diplopoda)
+Asaphida # COL: Arthropoda > Trilobita
+Asaphiscidae # COL: Trilobita > Ptychopariida
+Asaphoidea # COL: Trilobita > Asaphida
+Aschistodesmini # COL: Arthropoda > Diplopoda
+Ascorhynchidae # COL: Pycnogonida > Pantopoda
+Ascorhynchoidea # COL: Pycnogonida > Pantopoda
+Aspidiophoninae # COL: Diplopoda > Tynommatidae
+Aspidiophonini # COL: synonym of Aspidiophoninae (Diplopoda)
+Astrodesmini # COL: Diplopoda > Gomphodesmidae
+Atopetholidae # COL: Arthropoda > Diplopoda
+Atopetholinae # COL: Diplopoda > Atopetholidae
+Atopochetidae # COL: synonym of Pachybolidae (Diplopoda)
+Atopogestidae # COL: Arthropoda > Diplopoda
+Atopogonidae # COL: Arthropoda > Diplopoda
+Atractosomatinae # WoRMS: Chordeumatida > Craspedosomatidae
+Attemsiidae # COL: Arthropoda > Diplopoda
+Attemsiinae # COL: Diplopoda > Attemsiidae
+Attemsiini # COL: Diplopoda > Attemsiidae
+Aulacopleurida # COL: Arthropoda > Trilobita
+Aulacopleuridae # COL: Trilobita > Proetida
+Aulacopleuroidea # COL: Trilobita > Proetida
+Aulodesmini # COL: Diplopoda > Gomphodesmidae
+Australiosomatidae # COL: Arthropoda > Diplopoda
+Australiosomatinae # COL: Arthropoda > Diplopoda
+Australiosomatini # COL: Arthropoda > Diplopoda
+Australiosomini # ITIS: Polydesmida > Paradoxosomatidae
+Austraphorurinae # COL: Poduromorpha > Tullbergiidae
+Austrodecidae # COL: Pycnogonida > Pantopoda
+Austrodecoridae # ITIS: synonym of Austrodecidae (Pantopoda)
+Austrotylinae # COL: Diplopoda > Conotylidae
+Aztecolini # COL: Diplopoda > Spirobolidae
+Bacillidesminae # COL: Diplopoda > Trichopolydesmidae
+Bactropidae # COL: synonym of Cleidogonidae (Diplopoda)
+Bactropodellidae # COL: synonym of Cleidogonidae (Diplopoda)
+Bactropodidae # COL: synonym of Cleidogonidae (Diplopoda)
+Ballophilidae # geophilomorph centipede family (Myriapoda); COL: Chilopoda > Geophilomorpha
+Ballophilinae # iNat: Geophilomorpha > Schendylidae
+Barydesminae # COL: Diplopoda > Platyrhacidae
+Barydesmini # COL: synonym of Barydesminae (Diplopoda)
+Bathynotidae # COL: Arthropoda > Trilobita
+Bathyuridae # COL: Trilobita > Proetida
+Batodesmini # COL: Arthropoda > Diplopoda
+Bazillozoniinae # COL: Platydesmida > Andrognathidae
+Bdellozoniini # COL: Polyzoniida > Polyzoniidae
+Berberentulinae # COL: Acerentomata > Acerentomidae
+Bessoniellinae # COL: Entomobryomorpha > Orchesellidae
+Beticosomatidae # COL: Arthropoda > Diplopoda
+Bigotinidae # COL: Trilobita > Ptychopariida
+Bilingulidae # COL: synonym of Pericambalidae (Diplopoda)
+Bilselibatinae # COL: Arthropoda > Diplopoda
+Bilselibatini # COL: Arthropoda > Diplopoda
+Biokoviellidae # COL: synonym of Anthogonidae (Diplopoda)
+Biokoviellinae # COL: Diplopoda > Anthogonidae
+Biporodesminae # COL: synonym of Batodesmini (Arthropoda)
+Blaniulidae # ITIS: Diplopoda > Julida
+Blaniulinae # ITIS: Julida > Blaniulidae
+Blaniulini # WoRMS: Julida > Blaniulidae
+Blaniuloidea # ITIS: Diplopoda > Julida
+Bolaspididae # COL: Trilobita > Ptychopariida
+Bollmaniulini # COL: Diplopoda > Parajulidae
+Bonetesminae # COL: Diplopoda > Sphaeriodesmidae
+Boreoiulini # COL: Arthropoda > Diplopoda
+Bourletiellidae # COL: Collembola > Symphypleona
+Bourletiellinae # COL: Symphypleona > Bourletiellidae
+Brachychaeteumatidae # COL: Arthropoda > Diplopoda
+Brachychaeteumatinae # COL: Diplopoda > Brachychaeteumatidae
+Brachyiulini # WoRMS: Julida > Julidae
+Brachymetopidae # COL: Trilobita > Proetida
+Brachypauropodidae # COL: Pauropoda > Tetramerocerata
+Brachypauropodoidea # COL: Pauropoda > Tetramerocerata
+Brachystomellidae # COL: Collembola > Poduromorpha
+Brachystomellinae # iNat: Poduromorpha > Brachystomellidae
+Branneriidae # COL: Arthropoda > Diplopoda
+Brannerioidea # COL: Arthropoda > Diplopoda
+Broelemanneumatidae # COL: synonym of Nematophora (Arthropoda)
+Bromacanthini # COL: Entomobryomorpha > Paronellidae
+Buchneriinae # COL: synonym of Juliformia (Arthropoda)
+Bucovinosomatinae # COL: Arthropoda > Diplopoda
+Bucovinosominae # COL: synonym of Bucovinosomatinae (Arthropoda)
+Buotidae # COL: Arthropoda > Diplopoda
+Bureniidae # COL: synonym of Siphonotidae (Polyzoniida)
+Burlingiidae # COL: Trilobita > Proparia
+Buzoniinae # COL: Polyzoniida > Polyzoniidae
+Buzoniini # COL: Polyzoniida > Polyzoniidae
+Californiulidae # COL: Arthropoda > Diplopoda
+Californizoniinae # COL: synonym of Colobognatha (Arthropoda)
+Callipallenidae # COL: Pycnogonida > Pantopoda
+Callipodellini # COL: Arthropoda > Diplopoda
+Callipodida # ITIS: Arthropoda > Diplopoda
+Callipodidae # COL: Arthropoda > Diplopoda
+Callipodidea # COL: Arthropoda > Diplopoda
+Callyntrurini # COL: Entomobryomorpha > Entomobryidae
+Calodiscidae # COL: Trilobita > Agnostida
+Calymenidae # COL: Trilobita > Phacopida
+Calyptophyllinae # COL: synonym of Calyptophyllini (Arthropoda)
+Calyptophyllini # COL: Arthropoda > Diplopoda
+Cambalida # ITIS: synonym of Cambalidea (Diplopoda)
+Cambalidae # COL: Arthropoda > Diplopoda
+Cambalidea # COL: Arthropoda > Diplopoda
+Cambalinae # COL: synonym of Cambalidae (Diplopoda)
+Cambaloidea # COL: synonym of Cambalidea (Arthropoda)
+Cambalomminae # COL: Diplopoda > Pseudonannolenidae
+Cambalopsidae # COL: Arthropoda > Diplopoda
+Cambalopsinae # COL: Diplopoda > Cambalopsidae
+Campodeidae # COL: Arthropoda > Diplura
+Campodeinae # COL: Diplura > Campodeidae
+Campodeoidea # COL: Arthropoda > Diplura
+Campodesmidae # COL: Arthropoda > Diplopoda
+Campodinae # COL: synonym of Juliformia (Arthropoda)
+Campodini # COL: synonym of Juliformia (Arthropoda)
+Capbryini # COL: Entomobryomorpha > Orchesellidae
+Caputanurininae # COL: Poduromorpha > Neanuridae
+Caraibodesmini # COL: Arthropoda > Diplopoda
+Caseyidae # COL: Arthropoda > Diplopoda
+Caseyinae # COL: Diplopoda > Caseyidae
+Caseyoidea # COL: Arthropoda > Diplopoda
+Caspiopetalidae # COL: Arthropoda > Diplopoda
+Caspiopetalinae # COL: Diplopoda > Caspiopetalidae
+Castanotheriinae # COL: Diplopoda > Zephroniidae
+Castanotheriini # COL: Diplopoda > Zephroniidae
+Catamicrophyllini # COL: Arthropoda > Diplopoda
+Catharosomatinae # COL: Arthropoda > Diplopoda
+Catharosomatini # COL: Arthropoda > Diplopoda
+Catillicephalidae # COL: Trilobita > Ptychopariida
+Cedariidae # COL: Trilobita > Ptychopariida
+Centrobolinae # COL: Diplopoda > Pachybolidae
+Centrodesmini # COL: Arthropoda > Diplopoda
+Ceratesmidae # COL: synonym of Pyrgodesmidae (Diplopoda)
+Ceratopygidae # COL: Trilobita > Asaphida
+Ceratosphyinae # COL: Diplopoda > Opisthocheiridae
+Chamaesomatidae # COL: Arthropoda > Diplopoda
+Chamaesomatinae # COL: Diplopoda > Chamaesomatidae
+Chamberliniinae # COL: synonym of Chamberliniini (Arthropoda)
+Chamberliniini # COL: Arthropoda > Diplopoda
+Changshaniidae # COL: Trilobita > Ptychopariida
+Chatelaineidae # COL: synonym of Pyrgodesmidae (Diplopoda)
+Cheilocephalidae # COL: Trilobita > Corynexochida
+Cheilopallenidae # ITIS: synonym of Callipallenidae (Pantopoda)
+Cheiruridae # COL: Trilobita > Phacopida
+Chelodesmidae # ITIS: Diplopoda > Polydesmida
+Chelodesmidea # ITIS: Diplopoda > Polydesmida
+Chelodesminae # ITIS: Polydesmida > Chelodesmidae
+Chelodesmini # COL: Arthropoda > Diplopoda
+Chelodesmoidea # WoRMS: Diplopoda > Polydesmida
+Chelojulidae # COL: Arthropoda > Diplopoda
+Chengkouaspidae # COL: Trilobita > Redlichiida
+Chengkouiidae # COL: Trilobita > Corynexochida
+Chilognatha # COL: Arthropoda > Diplopoda
+Chilophoxidae # COL: synonym of Endeidae (Pantopoda)
+Chilopoda # class of centipedes (Myriapoda); COL: Animalia > Arthropoda
+Choctellidae # COL: Arthropoda > Diplopoda
+Chonaphinae # COL: synonym of Xystodesmini (Arthropoda)
+Chonaphini # COL: synonym of Xystodesmini (Arthropoda)
+Chondrodesmini # COL: Arthropoda > Diplopoda
+Choneiulinae # COL: Arthropoda > Diplopoda
+Choneiulini # COL: Arthropoda > Diplopoda
+Chordeumatida # ITIS: Arthropoda > Diplopoda
+Chordeumatidae # WoRMS: Diplopoda > Chordeumatida
+Chordeumatidea # ITIS: Diplopoda > Chordeumatida
+Chordeumatinae # WoRMS: Chordeumatida > Chordeumatidae
+Chordeumatoidea # WoRMS: Diplopoda > Chordeumatida
+Chordeumoidea # COL: synonym of Nematophora (Arthropoda)
+Chytodesmidae # COL: synonym of Pyrgodesmidae (Diplopoda)
+Clavagnostidae # COL: Trilobita > Agnostida
+Clavaphorurinae # COL: Poduromorpha > Tullbergiidae
+Clavigeropallenidae # ITIS: synonym of Pallenopsidae (Pantopoda)
+Cleidogonidae # COL: Arthropoda > Diplopoda
+Cleidogonoidea # COL: Arthropoda > Diplopoda
+Cnemodesmini # COL: Arthropoda > Diplopoda
+Coenaletidae # COL: Collembola > Entomobryomorpha
+Coenaletoidea # COL: Collembola > Entomobryomorpha
+Colactidinae # COL: Diplopoda > Tynommatidae
+Colactidini # COL: synonym of Colactidinae (Diplopoda)
+Colinauropodidae # COL: Pauropoda > Tetramerocerata
+Collembola # COL: Animalia > Arthropoda
+Collophoridae # COL: Collembola > Symphypleona
+Colobodesmini # COL: synonym of Sphaeriodesmini (Diplopoda)
+Colobognatha # COL: Arthropoda > Diplopoda
+Colossendeidae # COL: Pycnogonida > Pantopoda
+Colossendeidoidea # COL: synonym of Colossendeoidea (Pycnogonida)
+Colossendeinae # COL: Pantopoda > Colossendeidae
+Colossendeoidea # COL: Pycnogonida > Pantopoda
+Columbiozoniinae # COL: synonym of Colobognatha (Arthropoda)
+Comodesmidae # COL: Arthropoda > Diplopoda
+Condeellinae # COL: Acerentomata > Protentomidae
+Conocoryphidae # COL: Trilobita > Ptychopariida
+Conokephalinidae # COL: Trilobita > Ptychopariida
+Conotylidae # COL: Arthropoda > Diplopoda
+Conotylinae # COL: Diplopoda > Conotylidae
+Conotyloidea # COL: Arthropoda > Diplopoda
+Cordyloporidae # COL: synonym of Prepodesminae (Arthropoda)
+Cordyloporinae # COL: synonym of Prepodesminae (Arthropoda)
+Cornalatinae # COL: Diplopoda > Rhachodesmidae
+Cornalatini # COL: Arthropoda > Diplopoda
+Corynexochida # COL: Arthropoda > Trilobita
+Corynexochidae # COL: Trilobita > Corynexochida
+Corynothrichini # COL: Entomobryomorpha > Orchesellidae
+Cottodesminae # COL: Arthropoda > Diplopoda
+Craspedosomatidae # ITIS: Diplopoda > Chordeumatida
+Craspedosomatidea # WoRMS: Diplopoda > Chordeumatida
+Craspedosomatinae # WoRMS: Chordeumatida > Craspedosomatidae
+Craspedosomatoidea # ITIS: Diplopoda > Chordeumatida
+Craterostigmidae # craterostigmomorph centipede family (Myriapoda); COL: Chilopoda > Craterostigmomorpha
+Craterostigmomorpha # single-species centipede order (Myriapoda); COL: Arthropoda > Chilopoda
+Cremastocephalini # COL: Entomobryomorpha > Entomobryidae
+Crepicephalidae # COL: Trilobita > Ptychopariida
+Cribrochiurini # COL: Poduromorpha > Onychiuridae
+Cryptodesmidae # COL: Arthropoda > Diplopoda
+Cryptodesminae # COL: Diplopoda > Cryptodesmidae
+Cryptodesmini # COL: Diplopoda > Cryptodesmidae
+Cryptopidae # scolopendromorph centipede family (Myriapoda); COL: Chilopoda > Scolopendromorpha
+Crypturodesmidae # COL: synonym of Oniscodesmidae (Diplopoda)
+Ctenoiulini # COL: Diplopoda > Odontopygidae
+Cyclodesmidae # COL: synonym of Sphaeriodesminae (Diplopoda)
+Cyclopygidae # COL: Trilobita > Asaphida
+Cyclopygoidea # COL: Trilobita > Asaphida
+Cylichnogastrinae # COL: Polyzoniida > Siphonotidae
+Cylindrodesmidae # COL: Arthropoda > Diplopoda
+Cylindroiulinae # COL: Arthropoda > Diplopoda
+Cylindroiulini # WoRMS: Julida > Julidae
+Cyliosomatidae # COL: Arthropoda > Diplopoda
+Cyliosomatini # COL: Diplopoda > Cyliosomatidae
+Cyphocallipodidae # COL: Arthropoda > Diplopoda
+Cyphocallipodinae # COL: Diplopoda > Cyphocallipodidae
+Cyphoderidae # ITIS: Collembola > Entomobryomorpha
+Cyphoderini # COL: Entomobryomorpha > Paronellidae
+Cyrnosomatidae # COL: Arthropoda > Diplopoda
+Cyrtodesmidae # COL: Arthropoda > Diplopoda
+Dalmanitidae # COL: Trilobita > Phacopida
+Dalmatosomatidae # COL: Arthropoda > Diplopoda
+Dalodesmidae # COL: Arthropoda > Diplopoda
+Dalodesmidea # COL: Arthropoda > Diplopoda
+Damesellidae # COL: Trilobita > Lichida
+Decalopodidae # ITIS: synonym of Colossendeidae (Pantopoda)
+Decaporodesmidae # COL: synonym of Pyrgodesmidae (Diplopoda)
+Delophoninae # COL: Diplopoda > Abacionidae
+Delophonini # COL: synonym of Delophoninae (Diplopoda)
+Desmonidae # COL: synonym of Desmonini (Diplopoda)
+Desmoninae # COL: Diplopoda > Sphaeriodesmidae
+Desmonini # COL: Diplopoda > Sphaeriodesmidae
+Deuteroiulinae # COL: synonym of Juliformia (Arthropoda)
+Devilleidae # WoRMS: synonym of Devilleini (Diplopoda)
+Devilleini # COL: Arthropoda > Diplopoda
+Diactidinae # COL: Diplopoda > Tynommatidae
+Diactidini # COL: synonym of Diactidinae (Diplopoda)
+Diallagmogonini # COL: Diplopoda > Gomphodesmidae
+Dibolostethini # COL: Arthropoda > Diplopoda
+Dicellophilinae # ITIS: Geophilomorpha > Mecistocephalidae
+Dicellurata # COL: Arthropoda > Diplura
+Dicyrtomidae # COL: Collembola > Symphypleona
+Dicyrtominae # COL: Symphypleona > Dicyrtomidae
+Dicyrtomoidea # COL: Collembola > Symphypleona
+Dignathodontidae # geophilomorph centipede family (Myriapoda); COL: Chilopoda > Geophilomorpha
+Dignathodontinae # iNat: Geophilomorpha > Geophilidae
+Dikelocephalidae # COL: Trilobita > Asaphida
+Dimastosterninae # COL: Diplopoda > Attemsiidae
+Dimerogonidae # COL: synonym of Cambalidae (Diplopoda)
+Dimerogoninae # COL: synonym of Cambalidae (Diplopoda)
+Dimeropygidae # COL: Trilobita > Proetida
+Dinesidae # COL: Trilobita > Corynexochida
+Dinjapygidae # COL: Arthropoda > Diplura
+Diodontodesminae # COL: Diplopoda > Platyrhacidae
+Diodontodesmini # COL: synonym of Diodontodesminae (Diplopoda)
+Dionididae # COL: Trilobita > Asaphida
+Diplagnostidae # COL: Trilobita > Agnostida
+Diplomaragnidae # COL: Arthropoda > Diplopoda
+Diplomaragninae # COL: Diplopoda > Diplomaragnidae
+Diplomaragnoidea # COL: Arthropoda > Diplopoda
+Diplopauropodidae # COL: Pauropoda > Tetramerocerata
+Diplopoda # COL: Animalia > Arthropoda
+Diplura # COL: Animalia > Arthropoda
+Dischizopetalini # COL: Arthropoda > Diplopoda
+Dobrodesmidae # COL: Arthropoda > Diplopoda
+Dobrodesmidea # COL: Arthropoda > Diplopoda
+Doderiidae # COL: synonym of Oniscomorpha (Arthropoda)
+Doderiinae # WoRMS: Glomerida > Glomeridae
+Doderiini # COL: synonym of Oniscomorpha (Arthropoda)
+Doderoini # COL: Diplopoda > Trachysphaeridae
+Dokimocephalidae # COL: Trilobita > Ptychopariida
+Dolerolenidae # COL: Trilobita > Redlichiida
+Dolichoglyphiinae # COL: synonym of Glyphiulinae (Diplopoda)
+Dolichoglyphiulinae # COL: synonym of Glyphiulinae (Diplopoda)
+Dolichometopidae # COL: Trilobita > Corynexochida
+Dolisteninae # COL: Platydesmida > Andrognathidae
+Dolistenini # COL: Platydesmida > Andrognathidae
+Doratodesmidae # COL: synonym of Haplodesmidae (Diplopoda)
+Dorsoporidae # COL: Arthropoda > Diplopoda
+Dorypetalidae # COL: Arthropoda > Diplopoda
+Dorypetalinae # COL: Diplopoda > Dorypetalidae
+Dorypetalini # COL: Diplopoda > Dorypetalidae
+Dorypygidae # COL: Trilobita > Corynexochida
+Drepanopodinae # COL: synonym of Harpagophorinae (Diplopoda)
+Dyakryptini # COL: Diplopoda > Cryptodesmidae
+Dybasiidae # COL: synonym of Cleidogonidae (Diplopoda)
+Ectonocryptopinae # ITIS: synonym of Newportiinae (Scolopendromorpha)
+Eirmopauropodidae # COL: Pauropoda > Tetramerocerata
+Elaphogonini # COL: Diplopoda > Gomphodesmidae
+Electrocambalidae # COL: Arthropoda > Diplopoda
+Ellipsocephalidae # COL: Trilobita > Ptychopariida
+Ellipsocephaloidea # PBDB: Trilobita > Redlichiida
+Ellipsocephaloididae # COL: Trilobita > Ptychopariida
+Elviniidae # COL: Trilobita > Ptychopariida
+Emuellidae # COL: Trilobita > Redlichiida
+Emuelloidea # COL: Trilobita > Redlichiida
+Encrinuridae # COL: Trilobita > Phacopida
+Endeidae # COL: Pycnogonida > Pantopoda
+Endeididae # COL: synonym of Endeidae (Pantopoda)
+Endeinae # COL: Pantopoda > Endeidae
+Endymioniidae # COL: Trilobita > Asaphida
+Eneilisominae # COL: Arthropoda > Diplopoda
+Entognatha # COL: synonym of Protura (Arthropoda)
+Entomaspididae # COL: Trilobita > Harpetida
+Entomobielziidae # COL: Arthropoda > Diplopoda
+Entomobielziinae # COL: Diplopoda > Entomobielziidae
+Entomobryidae # COL: Collembola > Entomobryomorpha
+Entomobryinae # COL: Entomobryomorpha > Entomobryidae
+Entomobryini # COL: Entomobryomorpha > Entomobryidae
+Entomobryoidea # COL: Collembola > Entomobryomorpha
+Entomobryomorpha # COL: Arthropoda > Collembola
+Eodiscidae # COL: Trilobita > Agnostida
+Eodiscina # PBDB: Artiopoda > Agnostida
+Eodiscoidea # iNat: Trilobita > Agnostida
+Eoromidae # COL: synonym of Pyrgodesmidae (Diplopoda)
+Eosentomata # COL: Arthropoda > Protura
+Eosentomidae # COL: Protura > Eosentomata
+Eosentominae # COL: Eosentomata > Eosentomidae
+Eosentomoidea # COL: synonym of Eosentomata (Protura)
+Epinannolenidae # COL: synonym of Pseudonannolenidae (Diplopoda)
+Epinannolenidea # COL: synonym of Cambalidea (Arthropoda)
+Epinannolenoidea # ITIS: Diplopoda > Spirostreptida
+Ergethidae # COL: synonym of Merocheta (Arthropoda)
+Eriphantidae # geophilomorph centipede family; COL: Chilopoda > Geophilomorpha
+Eroonsomatini # COL: Arthropoda > Diplopoda
+Eroonsomidae # COL: synonym of Eroonsomatini (Arthropoda)
+Erythranassini # COL: Diplopoda > Gomphodesmidae
+Erythrhacinae # COL: Diplopoda > Platyrhacidae
+Erythrhacini # COL: synonym of Erythrhacinae (Diplopoda)
+Estaingiidae # COL: Trilobita > Ptychopariida
+Eucordyloporinae # COL: synonym of Prepodesminae (Arthropoda)
+Eucratonychidae # COL: Chilopoda > Geophilomorpha
+Eudigonidae # COL: Arthropoda > Diplopoda
+Eudigoninae # COL: Diplopoda > Eudigonidae
+Eugnatha # COL: Arthropoda > Diplopoda
+Eulomidae # COL: Trilobita > Ptychopariida
+Eupantopodida # COL: Pycnogonida > Pantopoda
+Eurekiidae # COL: Trilobita > Asaphida
+Eurelinae # COL: Diplopoda > Atopetholidae
+Eurycydidae # COL: synonym of Ascorhynchidae (Pantopoda)
+Eurydesminae # COL: synonym of Gomphodesminae (Diplopoda)
+Eurymerodesmidae # COL: synonym of Eurymerodesmini (Arthropoda)
+Eurymerodesmini # COL: Arthropoda > Diplopoda
+Eurypauropodidae # COL: Pauropoda > Tetramerocerata
+Eurypauropodoidea # COL: Pauropoda > Tetramerocerata
+Euryuridae # COL: synonym of Euryurini (Arthropoda)
+Euryurinae # COL: Diplopoda > Platyrhacidae
+Euryurini # COL: Arthropoda > Diplopoda
+Eustrongylosomatini # COL: Arthropoda > Diplopoda
+Eutynellidae # COL: Arthropoda > Diplopoda
+Euxinopetalinae # COL: Arthropoda > Diplopoda
+Euxinopetalini # COL: Arthropoda > Diplopoda
+Evalljapygidae # IRMNG: synonym of Japygidae (Diplura)
+Evalljapyginae # COL: Diplura > Japygidae
+Eviulisomatinae # COL: Arthropoda > Diplopoda
+Eviulisomatini # WoRMS: Polydesmida > Paradoxosomatidae
+Faginidae # COL: synonym of Nematophora (Arthropoda)
+Faginini # COL: Arthropoda > Diplopoda
+Falcigonopodini # COL: Diplopoda > Harpagophoridae
+Fallotaspididae # COL: Trilobita > Redlichiida
+Floridobolidae # COL: synonym of Spirobolidae (Diplopoda)
+Floridobolinae # COL: Diplopoda > Spirobolidae
+Floridobolini # COL: Diplopoda > Spirobolidae
+Fontariidae # COL: synonym of Merocheta (Arthropoda)
+Frieseinae # COL: Poduromorpha > Neanuridae
+Fuhrmannodesmidae # COL: Arthropoda > Diplopoda
+Fuhrmannodesmini # COL: Diplopoda > Fuhrmannodesmidae
+Fujientomidae # COL: Protura > Sinentomata
+Galliobatidae # COL: Arthropoda > Diplopoda
+Galliobatini # COL: Diplopoda > Galliobatidae
+Gaspestriidae # COL: Arthropoda > Diplopoda
+Geoglomerinae # COL: synonym of Oniscomorpha (Arthropoda)
+Geophilidae # geophilomorph centipede family (Myriapoda); COL: Chilopoda > Geophilomorpha
+Geophiloidea # ITIS: Chilopoda > Geophilomorpha
+Geophilomorpha # soil centipedes (Myriapoda); COL: Arthropoda > Chilopoda
+Gervaisiidae # COL: synonym of Oniscomorpha (Arthropoda)
+Ghilaroviidae # COL: synonym of Anthroleucosomatidae (Diplopoda)
+Gigantopygidae # COL: Trilobita > Redlichiida
+Glomerellininae # COL: synonym of Oniscomorpha (Arthropoda)
+Glomerida # ITIS: Arthropoda > Diplopoda
+Glomeridae # ITIS: Diplopoda > Glomerida
+Glomeridellidae # COL: Arthropoda > Diplopoda
+Glomeridellinae # COL: Diplopoda > Glomeridellidae
+Glomeridelloidea # COL: Arthropoda > Diplopoda
+Glomeridesmida # COL: Arthropoda > Diplopoda
+Glomeridesmidae # COL: Diplopoda > Glomeridesmida
+Glomeridesminae # COL: Glomeridesmida > Glomeridesmidae
+Glomerididae # COL: synonym of Oniscomorpha (Arthropoda)
+Glomerini # COL: Arthropoda > Diplopoda
+Glomeroidea # WoRMS: Diplopoda > Glomerida
+Glyphiulidae # COL: synonym of Glyphiulinae (Diplopoda)
+Glyphiulinae # COL: Diplopoda > Cambalopsidae
+Golovatchiidae # COL: Arthropoda > Diplopoda
+Gomphodesmidae # COL: Arthropoda > Diplopoda
+Gomphodesminae # COL: Diplopoda > Gomphodesmidae
+Gomphodesmini # COL: Diplopoda > Gomphodesmidae
+Gonibregmatidae # geophilomorph centipede family; COL: Chilopoda > Geophilomorpha
+Gonomastinae # COL: Diplopoda > Haplodesmidae
+Gonoplectini # COL: Diplopoda > Harpagophoridae
+Gonorygmatini # COL: Arthropoda > Diplopoda
+Gosiulini # COL: Diplopoda > Parajulidae
+Graphisterninae # COL: Arthropoda > Diplopoda
+Graphisternini # COL: Arthropoda > Diplopoda
+Graphisternnini # COL: Arthropoda > Diplopoda
+Grassografiinae # COL: Diplopoda > Attemsiidae
+Guipuzcosomatidae # COL: Arthropoda > Diplopoda
+Guizhousomatidae # COL: Arthropoda > Diplopoda
+Gulgastruridae # COL: Collembola > Poduromorpha
+Gulgastruroidea # COL: Collembola > Poduromorpha
+Haaseidae # WoRMS: Diplopoda > Chordeumatida
+Haaseinae # WoRMS: Chordeumatida > Haaseidae
+Haaseoidea # WoRMS: Diplopoda > Chordeumatida
+Haasiidae # COL: Arthropoda > Diplopoda
+Haasiinae # COL: synonym of Anthogonidae (Diplopoda)
+Haasoidea # COL: synonym of Nematophora (Arthropoda)
+Haliestidae # COL: Pycnogonida > Nectopantopoda
+Hansenauropodidae # COL: Pauropoda > Tetramerocerata
+Haplobainosomatidae # COL: Arthropoda > Diplopoda
+Haplobainosomatini # COL: synonym of Haplobainosomatidae (Diplopoda)
+Haplobainosomini # COL: synonym of Haplobainosomatidae (Diplopoda)
+Haplodesmidae # COL: Arthropoda > Diplopoda
+Haplodesminae # COL: Diplopoda > Haplodesmidae
+Haplodesmoidea # COL: Arthropoda > Diplopoda
+Haploglomerinae # COL: Arthropoda > Diplopoda
+Haploglomerini # COL: Arthropoda > Diplopoda
+Haplogonidae # COL: synonym of Nematophora (Arthropoda)
+Haplogonopodinae # COL: synonym of Juliformia (Arthropoda)
+Haplosomidae # COL: synonym of Haplodesmidae (Diplopoda)
+Hapsidodesmini # COL: Diplopoda > Gomphodesmidae
+Harpagophoridae # COL: Arthropoda > Diplopoda
+Harpagophorinae # COL: Diplopoda > Harpagophoridae
+Harpagophorini # COL: Diplopoda > Harpagophoridae
+Harpaphini # COL: Arthropoda > Diplopoda
+Harpetida # COL: Arthropoda > Trilobita
+Harpetidae # COL: Trilobita > Harpetida
+Harpididae # COL: Trilobita > Harpetida
+Harpurostreptini # COL: Diplopoda > Harpagophoridae
+Hebediscidae # COL: Trilobita > Agnostida
+Hedgpethiinae # COL: Pantopoda > Colossendeidae
+Helicopodosomatinae # COL: Arthropoda > Diplopoda
+Helminthomorpha # COL: Arthropoda > Diplopoda
+Helodesmidae # COL: synonym of Helodesminae (Diplopoda)
+Helodesminae # COL: Diplopoda > Haplodesmidae
+Hemicampinae # COL: Diplura > Campodeidae
+Henicopidae # lithobiomorph centipede family (Myriapoda); COL: Chilopoda > Lithobiomorpha
+Henicopinae # ITIS: Lithobiomorpha > Henicopidae
+Henicopini # ITIS: Lithobiomorpha > Henicopidae
+Hercodesmidae # COL: synonym of Pyrgodesmidae (Diplopoda)
+Hesperentomidae # COL: Protura > Acerentomata
+Hesperentominae # COL: Acerentomata > Hesperentomidae
+Heterochordeumatidae # COL: Arthropoda > Diplopoda
+Heterochordeumatidea # COL: Arthropoda > Diplopoda
+Heterochordeumatinae # COL: Diplopoda > Heterochordeumatidae
+Heterochordeumatoidea # COL: Arthropoda > Diplopoda
+Heteroiulinae # COL: Arthropoda > Diplopoda
+Heterojapygidae # IRMNG: Arthropoda > Diplura
+Heterojapyginae # COL: Diplura > Japygidae
+Heterolatzeliidae # COL: Arthropoda > Diplopoda
+Heterolatzeliini # COL: synonym of Heterolatzeliidae (Diplopoda)
+Heteromurinae # COL: Entomobryomorpha > Orchesellidae
+Heteromurini # COL: Entomobryomorpha > Orchesellidae
+Heteroporatiinae # COL: Arthropoda > Diplopoda
+Heterostreptinae # COL: synonym of Orthogoneptini (Arthropoda)
+Heterozoniini # COL: Polyzoniida > Hirudisomatidae
+Hexamerocerata # COL: Arthropoda > Pauropoda
+Hexecontasomatidae # COL: Arthropoda > Diplopoda
+Hexodontiinae # COL: Diplopoda > Cryptodesmidae
+Himantariidae # geophilomorph centipede family (Myriapoda); COL: Chilopoda > Geophilomorpha
+Himantarioidea # ITIS: Chilopoda > Geophilomorpha
+Himatiopodinae # COL: Arthropoda > Diplopoda
+Hinomotentominae # COL: Acerentomata > Protentomidae
+Hirudisomatidae # COL: Diplopoda > Polyzoniida
+Hirudisomatinae # COL: Polyzoniida > Hirudisomatidae
+Hirudisomatini # COL: Polyzoniida > Hirudisomatidae
+Hispaniosomatidae # COL: synonym of Opisthocheiridae (Diplopoda)
+Hispaniosomidae # COL: synonym of Opisthocheiridae (Diplopoda)
+Hoffmaneumatidae # COL: Arthropoda > Diplopoda
+Hoffmanobolidae # COL: Arthropoda > Diplopoda
+Holistophallidae # COL: Arthropoda > Diplopoda
+Holmiidae # COL: Trilobita > Redlichiida
+Holotrachelidae # COL: Trilobita > Proetida
+Homalonotidae # COL: Trilobita > Phacopida
+Homalonotinae # COL: Trilobita > Phacopida
+Homidiini # COL: Entomobryomorpha > Entomobryidae
+Hoplurorhachinae # COL: Diplopoda > Platyrhacidae
+Hoplurorhachini # COL: synonym of Hoplurorhachinae (Diplopoda)
+Huhentominae # COL: Acerentomata > Hesperentomidae
+Hungaiidae # COL: Trilobita > Asaphida
+Hungarosomatidae # COL: Arthropoda > Diplopoda
+Hungarosomidae # COL: synonym of Hungarosomatidae (Diplopoda)
+Hybocestini # COL: Diplopoda > Sphaeriodesmidae
+Hylebainosomatinae # COL: Arthropoda > Diplopoda
+Hylebainosominae # COL: synonym of Hylebainosomatinae (Arthropoda)
+Hylomini # COL: Arthropoda > Diplopoda
+Hymenaphorurini # COL: Poduromorpha > Onychiuridae
+Hynidesmidae # COL: Arthropoda > Diplopoda
+Hypagnostoidae # COL: Trilobita > Agnostida
+Hypogastruridae # COL: Collembola > Poduromorpha
+Hypogastruroidea # COL: Collembola > Poduromorpha
+Hypogasturidae # GBIF: synonym of Hypogastruridae (Poduromorpha)
+Hypogexenidae # COL: synonym of Hypogexeninae (Polyxenida)
+Hypogexeninae # COL: Polyxenida > Polyxenidae
+Hystricuridae # COL: Trilobita > Aulacopleurida
+Icosidesmidae # COL: synonym of Dalodesmidae (Diplopoda)
+Idagonidae # COL: synonym of Conotylidae (Diplopoda)
+Idagoninae # COL: Diplopoda > Conotylidae
+Idahoiidae # COL: Trilobita > Asaphida
+Idiurodesmini # COL: Diplopoda > Pyrgodesmidae
+Illaenidae # COL: Trilobita > Corynexochida
+Illaenoidea # COL: Trilobita > Corynexochida
+Illaenuridae # COL: Trilobita > Corynexochida
+Indiozoniinae # COL: synonym of Siphonorhinidae (Diplopoda)
+Indosphaerini # COL: Diplopoda > Zephroniidae
+Ingurtidorgiinae # COL: Diplopoda > Trichopolydesmidae
+Inouyiidae # COL: Trilobita > Ptychopariida
+Ionidesmini # COL: Diplopoda > Gomphodesmidae
+Isobatidae # COL: synonym of Juliformia (Arthropoda)
+Isobatinae # COL: synonym of Juliformia (Arthropoda)
+Isocolidae # COL: Trilobita > Ptychopariida
+Isoentominae # COL: Eosentomata > Eosentomidae
+Isogastruroidea # ALF: Collembola > Poduromorpha
+Isotelinae # PBDB: Asaphida > Asaphidae
+Isotogastruridae # COL: Collembola > Poduromorpha
+Isotogastruroidea # ITIS: synonym of Onychiuroidea (Collembola)
+Isotomidae # COL: Collembola > Entomobryomorpha
+Isotominae # COL: Entomobryomorpha > Isotomidae
+Isotomoidea # COL: Collembola > Entomobryomorpha
+Ityophoridae # COL: Trilobita > Ptychopariida
+Iulogoninae # COL: Arthropoda > Diplopoda
+Iulomorphidae # COL: Arthropoda > Diplopoda
+Jakutidae # COL: Trilobita > Corynexochida
+Japanosomatinae # COL: synonym of Conotylinae (Diplopoda)
+Japygidae # COL: Arthropoda > Diplura
+Japyginae # COL: Diplura > Japygidae
+Japygoidea # COL: Arthropoda > Diplura
+Julida # ITIS: Arthropoda > Diplopoda
+Julidae # ITIS: Diplopoda > Julida
+Juliformia # COL: Arthropoda > Diplopoda
+Julinae # WoRMS: Julida > Julidae
+Julini # COL: Arthropoda > Diplopoda
+Juloidea # WoRMS: Diplopoda > Julida
+Junceostreptinae # COL: synonym of Rhynchoproctinae (Diplopoda)
+Junceustreptinae # COL: synonym of Rhynchoproctinae (Diplopoda)
+Kaolishaniidae # COL: Trilobita > Corynexochida
+Karschopisthini # COL: Diplopoda > Harpagophoridae
+Karteroiulini # COL: Diplopoda > Parajulidae
+Kashmireumatidae # COL: Arthropoda > Diplopoda
+Katiannidae # COL: Collembola > Symphypleona
+Katianniformia # COL: Collembola > Symphypleona
+Katiannini # COL: Symphypleona > Katiannidae
+Katiannoidea # COL: Collembola > Symphypleona
+Kethopinae # ITIS: Scolopendromorpha > Scolopocryptopidae
+Kingstoniidae # COL: Trilobita > Ptychopariida
+Kirkayakidae # COL: Arthropoda > Diplopoda
+Kiusiozoniidae # COL: synonym of Kiusiozoniinae (Polyzoniida)
+Kiusiozoniinae # COL: Polyzoniida > Hirudisomatidae
+Kiusiunidae # COL: Arthropoda > Diplopoda
+Klimakodesminae # COL: Diplopoda > Pyrgodesmidae
+Kopidoiulinae # COL: Diplopoda > Mongoliulidae
+Ktenostreptini # COL: Diplopoda > Harpagophoridae
+Lampodesmini # COL: Diplopoda > Cryptodesmidae
+Lankasomatidae # COL: Arthropoda > Diplopoda
+Lankasomatinae # COL: Diplopoda > Lankasomatidae
+Leioderidae # COL: synonym of Cambalidae (Diplopoda)
+Leiostegiidae # COL: Trilobita > Corynexochida
+Leiotelinae # COL: synonym of Leiotelini (Diplopoda)
+Leiotelini # COL: Diplopoda > Harpagophoridae
+Lepidocampinae # COL: Diplura > Campodeidae
+Lepidocyrtinae # COL: Entomobryomorpha > Paronellidae
+Lepidocyrtini # COL: Entomobryomorpha > Paronellidae
+Lepidophorellinae # COL: Entomobryomorpha > Tomoceridae
+Lepidophorellini # COL: Entomobryomorpha > Tomoceridae
+Lepidosirini # COL: Entomobryomorpha > Entomobryidae
+Leptodesmidae # COL: synonym of Merocheta (Arthropoda)
+Leptodesmidea # WoRMS: Diplopoda > Polydesmida
+Leptodesminae # COL: synonym of Merocheta (Arthropoda)
+Leptodesmini # COL: Arthropoda > Diplopoda
+Leptoiulinae # COL: Arthropoda > Diplopoda
+Leptoiulini # WoRMS: Julida > Julidae
+Leptophyllini # COL: synonym of Juliformia (Arthropoda)
+Lepturodesmini # ITIS: Polydesmida > Chelodesmidae
+Leucogeorgiidae # COL: Arthropoda > Diplopoda
+Leucogeorgiini # COL: Arthropoda > Diplopoda
+Libanaphinae # COL: Arthropoda > Diplopoda
+Lichakephalidae # COL: Trilobita > Lichida
+Lichida # COL: Arthropoda > Trilobita
+Lichidae # COL: Trilobita > Lichida
+Limacomorpha # COL: Arthropoda > Diplopoda
+Limulidae # COL: Merostomata > Xiphosurida
+Limulina # ITIS: Merostomata > Xiphosura
+Limulinae # COL: Xiphosurida > Limulidae
+Linotaeniidae # geophilomorph centipede family (Myriapoda); COL: Chilopoda > Geophilomorpha
+Liostracinidae # COL: Trilobita > Asaphida
+Lisaniidae # COL: Trilobita > Ptychopariida
+Lissopyginae # COL: Diplopoda > Odontopygidae
+Lissopygini # COL: Diplopoda > Odontopygidae
+Lithobiida # ITIS: synonym of Lithobiomorpha (Chilopoda)
+Lithobiidae # lithobiomorph centipede family (Myriapoda); COL: Chilopoda > Lithobiomorpha
+Lithobiomorpha # stone centipedes (Myriapoda); COL: Arthropoda > Chilopoda
+Llanoaspididae # COL: Trilobita > Ptychopariida
+Lobellini # COL: Poduromorpha > Neanuridae
+Lombokniinae # COL: synonym of Colobognatha (Arthropoda)
+Lonchocephalidae # COL: Trilobita > Ptychopariida
+Lophognathellinae # COL: Poduromorpha > Onychiuridae
+Lophominae # COL: Diplopoda > Conotylidae
+Lophoproctidae # COL: Diplopoda > Polyxenida
+Lophoscytinae # COL: Diplopoda > Pyrgodesmidae
+Lorenzellidae # COL: Trilobita > Ptychopariida
+Luaspididae # COL: Trilobita > Ptychopariida
+Lusitaniosomatidae # COL: Arthropoda > Diplopoda
+Lusitaniosomidae # COL: synonym of Lusitaniosomatidae (Diplopoda)
+Lysiopetalinae # COL: synonym of Callipodidae (Diplopoda)
+Macellolophidae # COL: synonym of Merocheta (Arthropoda)
+Macellolophini # COL: Arthropoda > Diplopoda
+Macheiriophorinae # COL: Arthropoda > Diplopoda
+Mackenziellidae # ITIS: Collembola > Symphypleona
+Macrochaeteumatidae # COL: Arthropoda > Diplopoda
+Macrochaeteumatinae # COL: Diplopoda > Macrochaeteumatidae
+Macrochaetosomatinae # COL: Diplopoda > Anthogonidae
+Macrocoxodesmini # COL: Arthropoda > Diplopoda
+Macrolenostreptini # COL: Arthropoda > Diplopoda
+Macromastinae # COL: Diplopoda > Conotylidae
+Macronicophilidae # millipede family (Diplopoda); COL: Chilopoda > Geophilomorpha
+Macrosternodesmidae # COL: Arthropoda > Diplopoda
+Macrosternodesminae # COL: Diplopoda > Macrosternodesmidae
+Macrosternodesmini # COL: synonym of Macrosternodesmidae (Diplopoda)
+Macroxeninae # COL: Polyxenida > Polyxenidae
+Malayomerini # COL: Arthropoda > Diplopoda
+Mapaniidae # COL: Trilobita > Ptychopariida
+Marjumiidae # COL: Trilobita > Agnostida
+Marptodesminae # COL: Diplopoda > Gomphodesmidae
+Marptodesmini # COL: Diplopoda > Gomphodesmidae
+Mastigocerini # COL: Entomobryomorpha > Orchesellidae
+Mastigoninae # WoRMS: Chordeumatida > Mastigophorophyllidae
+Mastigonodesmidae # COL: synonym of Trichopolydesmidae (Diplopoda)
+Mastigophorophyllidae # WoRMS: Diplopoda > Chordeumatida
+Mastigophorophyllinae # COL: Arthropoda > Diplopoda
+Mastigophorophyllini # COL: Arthropoda > Diplopoda
+Mauriesiinae # COL: Arthropoda > Diplopoda
+Mecistocephalidae # geophilomorph centipede family (Myriapoda); COL: Chilopoda > Geophilomorpha
+Mecistocephalinae # ITIS: Geophilomorpha > Mecistocephalidae
+Megalotylidae # COL: Arthropoda > Diplopoda
+Megapharanaspidae # COL: Trilobita > Redlichiida
+Melaphinae # iNat: Polydesmida > Xystodesmidae
+Menomoniidae # COL: Trilobita > Ptychopariida
+Merocheta # COL: Arthropoda > Diplopoda
+Merodesmini # COL: Diplopoda > Gomphodesmidae
+Merostomata # horseshoe crabs + extinct eurypterids (Chelicerata, not Arachnida); COL: Animalia > Arthropoda
+Mesaphorurinae # COL: Poduromorpha > Tullbergiidae
+Mesoblaniulinae # COL: Arthropoda > Diplopoda
+Mesoblaniulini # COL: Arthropoda > Diplopoda
+Messicobolidae # COL: Arthropoda > Diplopoda
+Metadoxididae # COL: Trilobita > Redlichiida
+Metagnostidae # COL: Trilobita > Agnostida
+Metaiulini # COL: Arthropoda > Diplopoda
+Metapallenidae # ITIS: synonym of Callipallenidae (Pantopoda)
+Metopidiotrichidae # COL: Arthropoda > Diplopoda
+Metopidiotrichinae # COL: Diplopoda > Metopidiotrichidae
+Metriostreptini # COL: Arthropoda > Diplopoda
+Mexiceumatidae # COL: synonym of Cleidogonidae (Diplopoda)
+Mexiceumidae # COL: synonym of Cleidogonidae (Diplopoda)
+Mexiterpetinae # COL: Diplopoda > Trichopetalidae
+Microbrachysomatinae # COL: Arthropoda > Diplopoda
+Microbrachysomatini # COL: Arthropoda > Diplopoda
+Microchordeumatinae # COL: synonym of Nematophora (Arthropoda)
+Microfalculidae # ITIS: Collembola > Entomobryomorpha
+Microlympiidae # COL: Arthropoda > Diplopoda
+Millotauropodidae # COL: Pauropoda > Hexamerocerata
+Mimodesmini # COL: Arthropoda > Diplopoda
+Mimopidae # ITIS: Chilopoda > Scolopendromorpha
+Missisquoiidae # COL: Arthropoda > Trilobita
+Mitocybeini # COL: Platydesmida > Andrognathidae
+Mongoliulidae # COL: Arthropoda > Diplopoda
+Mongoliulinae # COL: Diplopoda > Mongoliulidae
+Monkaspididae # COL: Trilobita > Asaphida
+Monographinae # COL: Polyxenida > Polyxenidae
+Monorakidae # COL: Trilobita > Phacopida
+Morulininae # COL: Poduromorpha > Neanuridae
+Morulodini # COL: Poduromorpha > Neanuridae
+Mulaikiulini # COL: Diplopoda > Parajulidae
+Myriapoda # centipedes, millipedes, pauropods and symphylans; COL: Animalia > Arthropoda
+Myrmecomerinae # COL: synonym of Oniscomorpha (Arthropoda)
+Namanoiidae # COL: Arthropoda > Trilobita
+Nannariini # COL: Arthropoda > Diplopoda
+Nannarini # ITIS: Polydesmida > Xystodesmidae
+Nannolenidae # COL: synonym of Cambalidae (Diplopoda)
+Neanuridae # COL: Collembola > Poduromorpha
+Neanurinae # COL: Poduromorpha > Neanuridae
+Neanurini # COL: Poduromorpha > Neanuridae
+Neanuroidea # COL: Collembola > Poduromorpha
+Nearctodesmidae # COL: synonym of Nearctodesminae (Diplopoda)
+Nearctodesminae # COL: Diplopoda > Macrosternodesmidae
+Nectopantopoda # COL: Arthropoda > Pycnogonida
+Nedyopodini # COL: Arthropoda > Diplopoda
+Neelidae # COL: Collembola > Neelipleona
+Neelidinae # COL: Neelipleona > Neelidae
+Neelinae # COL: Neelipleona > Neelidae
+Neelipleona # COL: Arthropoda > Collembola
+Nemasomatidae # ITIS: Diplopoda > Julida
+Nemasomatinae # COL: synonym of Juliformia (Arthropoda)
+Nemasomatini # COL: synonym of Juliformia (Arthropoda)
+Nemasomatoidea # ITIS: Diplopoda > Julida
+Nemasomidae # COL: synonym of Juliformia (Arthropoda)
+Nematophora # COL: Arthropoda > Diplopoda
+Nematozoniidae # COL: synonym of Siphonorhinidae (Diplopoda)
+Neoatractosomatidae # WoRMS: Diplopoda > Chordeumatida
+Neoatractosomatinae # COL: Arthropoda > Diplopoda
+Neoatractosomatini # COL: Arthropoda > Diplopoda
+Neoatractosomatoidea # WoRMS: Diplopoda > Chordeumatida
+Neoatractosominae # COL: synonym of Neoatractosomatinae (Arthropoda)
+Neoatractosomini # COL: synonym of Neoatractosomatini (Arthropoda)
+Neocambrisomatidae # COL: synonym of Metopidiotrichidae (Diplopoda)
+Neodesmini # COL: Diplopoda > Gomphodesmidae
+Neogeophilidae # geophilomorph centipede family (Myriapoda); COL: Chilopoda > Geophilomorpha
+Neophorellini # COL: Entomobryomorpha > Tomoceridae
+Nepalellinae # COL: Diplopoda > Megalotylidae
+Nesoressini # COL: Diplopoda > Parajulidae
+Nevadiidae # COL: Trilobita > Redlichiida
+Newportiinae # ITIS: Scolopendromorpha > Scolopocryptopidae
+Nileidae # COL: Trilobita > Asaphida
+Niponiellidae # COL: synonym of Niponiini (Diplopoda)
+Niponiini # COL: Diplopoda > Cryptodesmidae
+Niponiosomatidae # COL: Arthropoda > Diplopoda
+Nipponentominae # COL: Acerentomata > Acerentomidae
+Nopoiulinae # COL: Arthropoda > Diplopoda
+Nopoiulini # COL: Arthropoda > Diplopoda
+Norwoodiidae # COL: Trilobita > Ptychopariida
+Nothobryinae # COL: Entomobryomorpha > Orchesellidae
+Nothobryini # COL: Entomobryomorpha > Orchesellidae
+Notostigmophora # ITIS: Arthropoda > Chilopoda
+Novacerini # COL: Entomobryomorpha > Tomoceridae
+Nymphonidae # COL: Pycnogonida > Pantopoda
+Nymphonides # ITIS: synonym of Nymphonidae (Pantopoda)
+Nymphonoidea # COL: Pycnogonida > Pantopoda
+Ochrogrammatinae # COL: Diplopoda > Caseyidae
+Ochthocelatini # COL: Arthropoda > Diplopoda
+Octostigmatidae # COL: Arthropoda > Diplura
+Odontellidae # COL: Collembola > Poduromorpha
+Odontokrepidinae # COL: synonym of Prepodesminae (Arthropoda)
+Odontopleurida # COL: Arthropoda > Trilobita
+Odontopleuridae # COL: Trilobita > Lichida
+Odontopygidae # COL: Arthropoda > Diplopoda
+Odontopyginae # COL: Diplopoda > Odontopygidae
+Odontopygini # COL: Diplopoda > Odontopygidae
+Odontopygoidea # COL: Arthropoda > Diplopoda
+Okeanobatidae # COL: Arthropoda > Diplopoda
+Okeanobatinae # COL: synonym of Okeanobatidae (Diplopoda)
+Okeanobatini # COL: synonym of Okeanobatidae (Diplopoda)
+Oklahomasomatidae # COL: Arthropoda > Diplopoda
+Olenellida # COL: Arthropoda > Trilobita
+Olenellidae # COL: Trilobita > Redlichiida
+Olenellina # PBDB: Trilobita > Redlichiida
+Olenelloidea # PBDB: Trilobita > Redlichiida
+Olenidae # COL: Trilobita > Ptychopariida
+Oligaphorurini # COL: Poduromorpha > Onychiuridae
+Oligaspidinae # COL: synonym of Sphaerotheriini (Diplopoda)
+Ommatoiulini # COL: Arthropoda > Diplopoda
+Omopyginae # COL: Diplopoda > Odontopygidae
+Oncobryidae # COL: Collembola > Entomobryomorpha
+Oncoiulinae # COL: Arthropoda > Diplopoda
+Oncoiulini # COL: Arthropoda > Diplopoda
+Oncopoduridae # COL: Collembola > Entomobryomorpha
+Oniscodesmidae # COL: Arthropoda > Diplopoda
+Oniscodesmoidea # COL: Arthropoda > Diplopoda
+Oniscodesmoides # COL: Arthropoda > Diplopoda
+Oniscomorpha # COL: Arthropoda > Diplopoda
+Onomatoplanidae # COL: synonym of Niponiini (Diplopoda)
+Onomeridae # COL: synonym of Oniscomorpha (Arthropoda)
+Onomerididae # COL: synonym of Oniscomorpha (Arthropoda)
+Onychelidae # COL: synonym of Atopetholidae (Diplopoda)
+Onychelinae # COL: Diplopoda > Atopetholidae
+Onychiuridae # COL: Collembola > Poduromorpha
+Onychiurinae # COL: Poduromorpha > Onychiuridae
+Onychiurini # COL: Poduromorpha > Onychiuridae
+Onychiuroidea # COL: Collembola > Poduromorpha
+Onychoglomerini # COL: Arthropoda > Diplopoda
+Oorhynchidae # ITIS: synonym of Acheliidae (Pantopoda)
+Ophrydesmini # COL: Diplopoda > Cryptodesmidae
+Opisostretoidea # COL: Arthropoda > Diplopoda
+Opisotretidae # COL: Arthropoda > Diplopoda
+Opisotretoidea # COL: Arthropoda > Diplopoda
+Opisthocheiridae # COL: Arthropoda > Diplopoda
+Orchesellidae # COL: Collembola > Entomobryomorpha
+Orchesellinae # COL: Entomobryomorpha > Orchesellidae
+Orchesellini # COL: Entomobryomorpha > Orchesellidae
+Ordosiidae # COL: Arthropoda > Trilobita
+Origmatogonidae # COL: Arthropoda > Diplopoda
+Origmatogoninae # COL: Diplopoda > Origmatogonidae
+Origmatogonini # COL: Diplopoda > Origmatogonidae
+Orobainosomatinae # COL: synonym of Nematophora (Arthropoda)
+Orodesminae # COL: Arthropoda > Diplopoda
+Orodesmini # COL: Arthropoda > Diplopoda
+Orophini # COL: synonym of Xystodesmini (Arthropoda)
+Orphanoiulini # COL: Arthropoda > Diplopoda
+Orsiboinae # COL: synonym of Kiusiozoniinae (Polyzoniida)
+Orthochordeumatinae # COL: Arthropoda > Diplopoda
+Orthochordeumatini # COL: Arthropoda > Diplopoda
+Orthogoneptinae # COL: synonym of Orthogoneptini (Arthropoda)
+Orthogoneptini # COL: Arthropoda > Diplopoda
+Orthogonoptini # COL: synonym of Orthogoneptini (Arthropoda)
+Orthomorphini # COL: Arthropoda > Diplopoda
+Oryctocephalidae # COL: Trilobita > Corynexochida
+Oryidae # geophilomorph centipede family (Myriapoda); COL: Chilopoda > Geophilomorpha
+Osellasomatini # COL: Arthropoda > Diplopoda
+Otarionidae # COL: Trilobita > Proetida
+Otodesmidae # COL: synonym of Otodesminae (Diplopoda)
+Otodesminae # COL: Diplopoda > Cryptodesmidae
+Otodesmini # COL: Diplopoda > Cryptodesmidae
+Otostigminae # ITIS: Scolopendromorpha > Scolopendridae
+Ovoidesminae # COL: Diplopoda > Gomphodesmidae
+Oxydactylini # COL: Arthropoda > Diplopoda
+Oxydesmidae # WoRMS: Diplopoda > Polydesmida
+Oxydesminae # WoRMS: Polydesmida > Oxydesmidae
+Oxydesmini # WoRMS: Polydesmida > Oxydesmidae
+Oxypyginae # COL: Diplopoda > Rhinocricidae
+Pachybolidae # COL: Arthropoda > Diplopoda
+Pachybolidea # COL: synonym of Juliformia (Arthropoda)
+Pachybolinae # COL: Diplopoda > Pachybolidae
+Pachybolini # COL: Diplopoda > Pachybolidae
+Pachybrachyiulini # COL: synonym of Juliformia (Arthropoda)
+Pachydesmini # COL: synonym of Rhysodesmini (Arthropoda)
+Pachyiulidae # COL: Arthropoda > Diplopoda
+Pachyiulinae # WoRMS: Julida > Julidae
+Pachyiulini # COL: Arthropoda > Diplopoda
+Pachyotominae # COL: Entomobryomorpha > Isotomidae
+Pachytullbergiidae # COL: Collembola > Poduromorpha
+Paectophyllinae # COL: Arthropoda > Diplopoda
+Paectophyllini # COL: Arthropoda > Diplopoda
+Paeromopidae # COL: Arthropoda > Diplopoda
+Paeromopodidae # COL: Arthropoda > Diplopoda
+Paeromopodoidea # COL: Arthropoda > Diplopoda
+Paeromopoidea # COL: Arthropoda > Diplopoda
+Pagodiidae # COL: Trilobita > Corynexochida
+Palaeoendeinae # COL: Pantopoda > Endeidae
+Palaeoisopoda # COL: Arthropoda > Pycnogonida
+Palaeoisopodidae # COL: Pycnogonida > Palaeoisopoda
+Palaeolenidae # COL: Trilobita > Ptychopariida
+Palaeopantopoda # COL: Arthropoda > Pycnogonida
+Palaeopantopodidae # COL: Pycnogonida > Palaeopantopoda
+Palaeopycnogonididae # COL: Pycnogonida > Pantopoda
+Paleo_Diceratocephalidae # PaleoBioDB: Trilobita > Ptychopariida
+Paleonurini # COL: Poduromorpha > Neanuridae
+Paleotullbergiidae # COL: Collembola > Poduromorpha
+Pallenidae # COL: synonym of Callipallenidae (Pantopoda)
+Pallenopsidae # COL: Pycnogonida > Pantopoda
+Panderiidae # COL: Trilobita > Corynexochida
+Pandirodesmidae # COL: synonym of Pandirodesmini (Arthropoda)
+Pandirodesminae # COL: synonym of Pandirodesmini (Arthropoda)
+Pandirodesmini # COL: Arthropoda > Diplopoda
+Pantopoda # COL: Arthropoda > Pycnogonida
+Papyriaspididae # COL: Trilobita > Ptychopariida
+Parabolinoididae # COL: Trilobita > Asaphida
+Parabourletiellinae # COL: Symphypleona > Bourletiellidae
+Paracortinidae # COL: Arthropoda > Diplopoda
+Paradoxididae # COL: Trilobita > Redlichiida
+Paradoxidoidea # COL: Trilobita > Redlichiida
+Paradoxosomatidae # ITIS: Diplopoda > Polydesmida
+Paradoxosomatidea # COL: Arthropoda > Diplopoda
+Paradoxosomatinae # WoRMS: Polydesmida > Paradoxosomatidae
+Paradoxosomatini # COL: Arthropoda > Diplopoda
+Parafontariinae # COL: synonym of Parafontariini (Arthropoda)
+Parafontariini # COL: Arthropoda > Diplopoda
+Paraiulidae # COL: Arthropoda > Diplopoda
+Parajapygidae # COL: Arthropoda > Diplura
+Parajulidae # COL: Arthropoda > Diplopoda
+Parajulinae # COL: Diplopoda > Parajulidae
+Parajulini # COL: Diplopoda > Parajulidae
+Parajuloidea # COL: Arthropoda > Diplopoda
+Paranurini # ITIS: Poduromorpha > Neanuridae
+Paranymphonidae # ITIS: synonym of Acheliidae (Pantopoda)
+Paronellidae # COL: Collembola > Entomobryomorpha
+Paronellidini # COL: Entomobryomorpha > Entomobryidae
+Paronellinae # COL: Entomobryomorpha > Paronellidae
+Paronellini # COL: Entomobryomorpha > Paronellidae
+Pauropoda # COL: Animalia > Arthropoda
+Pauropodidae # COL: Pauropoda > Tetramerocerata
+Pauropodina # COL: synonym of Tetramerocerata (Pauropoda)
+Pauropodinae # COL: synonym of Pauropodidae (Tetramerocerata)
+Pauropodoidea # COL: Pauropoda > Tetramerocerata
+Penicillata # COL: Arthropoda > Diplopoda
+Pentazonia # COL: Arthropoda > Diplopoda
+Peocilocricinae # COL: Diplopoda > Rhinocricidae
+Pericambalidae # COL: Arthropoda > Diplopoda
+Pericambalinae # COL: synonym of Pericambalidae (Diplopoda)
+Peridontodesmidae # COL: synonym of Peridontodesmini (Diplopoda)
+Peridontodesmini # COL: Diplopoda > Cryptodesmidae
+Peridontopyginae # COL: Diplopoda > Odontopygidae
+Peridontopygini # COL: Diplopoda > Odontopygidae
+Peronopsidae # COL: Trilobita > Agnostida
+Perustreptinae # COL: synonym of Perustreptini (Arthropoda)
+Perustreptini # COL: Arthropoda > Diplopoda
+Petaserpetini # COL: Polyzoniida > Polyzoniidae
+Peterjohnsiidae # COL: Arthropoda > Diplopoda
+Phacopida # COL: Arthropoda > Trilobita
+Phacopidae # COL: Trilobita > Phacopida
+Phacopina # PBDB: Trilobita > Phacopida
+Phacopinae # PBDB: Phacopida > Phacopidae
+Phacopoidea # PBDB: Trilobita > Phacopida
+Phalacromidae # COL: Trilobita > Agnostida
+Phallorthidae # COL: synonym of Pseudonannolenidae (Diplopoda)
+Pharostomatidae # COL: Trilobita > Phacopida
+Phillipsiidae # COL: Trilobita > Proetida
+Phoxichilides # ITIS: synonym of Callipallenidae (Pantopoda)
+Phoxichilidiidae # COL: Pycnogonida > Pantopoda
+Phoxichilidioidea # COL: Pycnogonida > Pantopoda
+Phoxichilidoidea # COL: synonym of Phoxichilidioidea (Pycnogonida)
+Phoxiphilyridae # ITIS: synonym of Phoxichilidiidae (Pantopoda)
+Phryssonotidae # GBIF: Diplopoda > Polyxenida
+Phylacteridae # COL: Trilobita > Ptychopariida
+Phyodesminae # COL: Diplopoda > Platyrhacidae
+Phyodesmini # COL: synonym of Phyodesminae (Diplopoda)
+Physiostreptidae # COL: synonym of Physiostreptinae (Diplopoda)
+Physiostreptinae # COL: Diplopoda > Pseudonannolenidae
+Physobolinae # COL: Arthropoda > Diplopoda
+Pilekiidae # COL: Trilobita > Phacopida
+Placodesmata # ITIS: Chilopoda > Geophilomorpha
+Plagiodesminae # COL: Arthropoda > Diplopoda
+Platinodesmini # COL: Arthropoda > Diplopoda
+Platydesmida # COL: Arthropoda > Diplopoda
+Platydesmidae # COL: Diplopoda > Platydesmida
+Platydesmini # COL: Platydesmida > Platydesmidae
+Platyrhacidae # COL: Arthropoda > Diplopoda
+Platyrhacinae # COL: Diplopoda > Platyrhacidae
+Platyrhacini # COL: Diplopoda > Platyrhacidae
+Platyrhacoidea # COL: Arthropoda > Diplopoda
+Pleistosphaeromatinae # COL: synonym of Oniscomorpha (Arthropoda)
+Plethopeltidae # COL: Trilobita > Ptychopariida
+Pleurostigmophora # ITIS: Arthropoda > Chilopoda
+Pliomeridae # COL: Trilobita > Phacopida
+Plusiocampinae # COL: Diplura > Campodeidae
+Plutoniumidae # ITIS: Chilopoda > Scolopendromorpha
+Plutoniuminae # ITIS: synonym of Plutoniumidae (Scolopendromorpha)
+Pocodesmini # COL: Diplopoda > Cryptodesmidae
+Poduridae # COL: Collembola > Poduromorpha
+Poduroidea # COL: Collembola > Poduromorpha
+Poduromorpha # COL: Arthropoda > Collembola
+Podykipodinae # COL: Diplopoda > Iulomorphidae
+Poecilocricinae # COL: Diplopoda > Rhinocricidae
+Pollyxenidae # COL: synonym of Polyxenidae (Polyxenida)
+Polycyrtaspididae # COL: Arthropoda > Trilobita
+Polydesmida # ITIS: Arthropoda > Diplopoda
+Polydesmidea # ITIS: Diplopoda > Polydesmida
+Polydesmoidea # WoRMS: Diplopoda > Polydesmida
+Polydesmoides # COL: Arthropoda > Diplopoda
+Polydesmorhachinae # COL: Diplopoda > Platyrhacidae
+Polydesmorhachini # COL: synonym of Polydesmorhachinae (Diplopoda)
+Polydrepanini # COL: Arthropoda > Diplopoda
+Polypauropinae # WoRMS: Tetramerocerata > Polypauropodidae
+Polypauropodidae # COL: Pauropoda > Tetramerocerata
+Polyphematiini # COL: Diplopoda > Attemsiidae
+Polyphematinae # COL: Diplopoda > Attemsiidae
+Polyxenida # COL: Arthropoda > Diplopoda
+Polyxenidae # COL: Diplopoda > Polyxenida
+Polyxeninae # COL: Polyxenida > Polyxenidae
+Polyxenoidea # COL: Diplopoda > Polyxenida
+Polyzoniida # COL: Arthropoda > Diplopoda
+Polyzoniidae # COL: Diplopoda > Polyzoniida
+Polyzoniinae # COL: Polyzoniida > Polyzoniidae
+Polyzoniini # COL: Polyzoniida > Polyzoniidae
+Praentomobryidae # COL: Collembola > Entomobryomorpha
+Pratinidae # COL: synonym of Hylomini (Arthropoda)
+Prepodesmidae # COL: synonym of Prepodesminae (Arthropoda)
+Prepodesminae # COL: Arthropoda > Diplopoda
+Priodesmini # COL: Arthropoda > Diplopoda
+Prionobelini # COL: Diplopoda > Zephroniidae
+Prionopeltidae # COL: synonym of Hylomini (Arthropoda)
+Prionopeltinae # COL: synonym of Hylomini (Arthropoda)
+Prionopetalini # COL: Diplopoda > Odontopygidae
+Proasaphiscidae # COL: Trilobita > Ptychopariida
+Procampodeidae # COL: Arthropoda > Diplura
+Procyliosomatidae # COL: Arthropoda > Diplopoda
+Proetida # COL: Arthropoda > Trilobita
+Proetidae # COL: Trilobita > Proetida
+Proetoidea # COL: Trilobita > Proetida
+Proisotominae # COL: Entomobryomorpha > Isotomidae
+Projapygidae # COL: Arthropoda > Diplura
+Projapygoidea # COL: Arthropoda > Diplura
+Prolysiopetalini # COL: Arthropoda > Diplopoda
+Proparia # COL: Arthropoda > Trilobita
+Prosopiscidae # COL: Trilobita > Phacopida
+Prosopodesminae # COL: Diplopoda > Haplodesmidae
+Protaphorurini # COL: Poduromorpha > Onychiuridae
+Protentomidae # COL: Protura > Acerentomata
+Protentominae # COL: Acerentomata > Protentomidae
+Protentomobryidae # COL: Collembola > Entomobryomorpha
+Protoglomeridae # COL: Arthropoda > Diplopoda
+Protoiulidae # COL: Arthropoda > Diplopoda
+Protolenidae # COL: Trilobita > Redlichiida
+Protura # COL: Animalia > Arthropoda
+Provalljapyginae # COL: Diplura > Japygidae
+Psammodesminae # COL: Diplopoda > Platyrhacidae
+Psammodesmini # COL: synonym of Psammodesminae (Diplopoda)
+Psaphodesminae # COL: Diplopoda > Platyrhacidae
+Psaphodesmini # COL: synonym of Psaphodesminae (Diplopoda)
+Pselaphognatha # ITIS: synonym of Penicillata (Arthropoda)
+Pselliodidae # COL: Chilopoda > Scutigeromorpha
+Pseudachorutinae # COL: Poduromorpha > Neanuridae
+Pseudagnostidae # COL: Trilobita > Agnostida
+Pseudoannolenidae # GBIF: Diplopoda > Spirostreptida
+Pseudoannolenninae # COL: synonym of Pseudonannoleninae (Diplopoda)
+Pseudoclidinae # COL: Diplopoda > Entomobielziidae
+Pseudojulina # COL: Diplopoda > Parajulidae
+Pseudonannolenidae # COL: Arthropoda > Diplopoda
+Pseudonannoleninae # COL: Diplopoda > Pseudonannolenidae
+Pseudonemasomatidae # COL: Arthropoda > Diplopoda
+Pseudospirobolellidae # COL: Arthropoda > Diplopoda
+Ptenothricinae # COL: Symphypleona > Dicyrtomidae
+Pteridoiulinae # COL: Arthropoda > Diplopoda
+Pterocephaliidae # COL: Trilobita > Asaphida
+Pterodesmidae # COL: synonym of Pterodesminae (Diplopoda)
+Pterodesminae # COL: Diplopoda > Cryptodesmidae
+Pterodesmini # COL: Diplopoda > Cryptodesmidae
+Pterygometopidae # COL: Trilobita > Phacopida
+Ptychagnostidae # COL: Trilobita > Agnostida
+Ptychaspididae # COL: Trilobita > Asaphida
+Ptychopariida # COL: Arthropoda > Trilobita
+Ptychopariidae # COL: Trilobita > Ptychopariida
+Ptychoparioidea # COL: Trilobita > Ptychopariida
+Ptyoiulinae # COL: Diplopoda > Parajulidae
+Ptyoiulini # COL: synonym of Ptyoiulinae (Diplopoda)
+Pycnogonida # COL: Animalia > Arthropoda
+Pycnogonidae # COL: Pycnogonida > Pantopoda
+Pycnogonides # ITIS: synonym of Pycnogonidae (Pantopoda)
+Pycnogonoidea # COL: synonym of Colossendeoidea (Pycnogonida)
+Pygmaeosomatidae # COL: Arthropoda > Diplopoda
+Pygmaeosomatiodea # COL: synonym of Pygmaeosomatoidea (Arthropoda)
+Pygmaeosomatoidea # COL: Arthropoda > Diplopoda
+Pygmaesomatidae # COL: synonym of Pygmaeosomatidae (Diplopoda)
+Pyrgodesmidae # COL: Arthropoda > Diplopoda
+Pyrgodesmoidea # COL: Arthropoda > Diplopoda
+Rajasphaerinae # COL: Diplopoda > Zephroniidae
+Raphiophoridae # COL: Trilobita > Asaphida
+Redlichiida # COL: Arthropoda > Trilobita
+Redlichiidae # COL: Trilobita > Redlichiida
+Redlichiina # PBDB: Trilobita > Redlichiida
+Reginaterreumatidae # COL: synonym of Metopidiotrichidae (Diplopoda)
+Remopleurididae # COL: Trilobita > Asaphida
+Rhabdura # COL: Arthropoda > Diplura
+Rhachodesmidae # COL: Arthropoda > Diplopoda
+Rhachodesminae # COL: Diplopoda > Rhachodesmidae
+Rhachodesmoidea # COL: Arthropoda > Diplopoda
+Rhinocricidae # COL: Arthropoda > Diplopoda
+Rhinocricidea # COL: Arthropoda > Diplopoda
+Rhinocricinae # COL: Diplopoda > Rhinocricidae
+Rhinotini # COL: Polyzoniida > Siphonotidae
+Rhiscosomatinae # COL: Diplopoda > Attemsiidae
+Rhiscosomidae # COL: synonym of Attemsiidae (Diplopoda)
+Rhiscosomididae # COL: Arthropoda > Diplopoda
+Rhopaloiulidae # COL: Arthropoda > Diplopoda
+Rhopaloiulini # COL: Diplopoda > Rhopaloiulidae
+Rhopalomerinae # COL: synonym of Oniscomorpha (Arthropoda)
+Rhopalorhynchidae # ITIS: synonym of Colossendeidae (Pantopoda)
+Rhymogoninae # WoRMS: Chordeumatida > Craspedosomatidae
+Rhynchoproctinae # COL: Diplopoda > Harpagophoridae
+Rhynchothoracidae # COL: Pycnogonida > Pantopoda
+Rhynchothoracoidea # COL: synonym of Colossendeoidea (Pycnogonida)
+Rhysodesminae # COL: Arthropoda > Diplopoda
+Rhysodesmini # COL: Arthropoda > Diplopoda
+Rhyssometopidae # COL: Trilobita > Asaphida
+Rorringtoniidae # COL: Trilobita > Proetida
+Rothenbuehleriinae # COL: Arthropoda > Diplopoda
+Rothenbuehleriini # COL: Arthropoda > Diplopoda
+Sakhalineumatidae # COL: synonym of Diplomaragnidae (Diplopoda)
+Salininae # COL: Entomobryomorpha > Entomobryidae
+Samichinae # COL: Diplopoda > Iulomorphidae
+Sandalodesmini # COL: Arthropoda > Diplopoda
+Sardoblaniulini # COL: Arthropoda > Diplopoda
+Saukiidae # COL: Trilobita > Asaphida
+Scharyiidae # COL: Trilobita > Proetida
+Schedotrigonidae # COL: synonym of Metopidiotrichidae (Diplopoda)
+Schendylidae # geophilomorph centipede family (Myriapoda); COL: Chilopoda > Geophilomorpha
+Schindalomonotinae # COL: synonym of Synxenidae (Polyxenida)
+Schizogomphodesmini # COL: Diplopoda > Gomphodesmidae
+Schizopetalidae # ITIS: Diplopoda > Callipodida
+Schizopetalidea # WoRMS: Diplopoda > Callipodida
+Schizopetalini # COL: Arthropoda > Diplopoda
+Schizophyllini # COL: Arthropoda > Diplopoda
+Scleropauropinae # WoRMS: Tetramerocerata > Pauropodidae
+Scleropauropodidae # COL: synonym of Pauropodidae (Tetramerocerata)
+Scolopendrellidae # COL: Arthropoda > Symphyla
+Scolopendrellinae # COL: synonym of Scolopendrellidae (Symphyla)
+Scolopendrida # ITIS: synonym of Scolopendromorpha (Chilopoda)
+Scolopendridae # scolopendromorph centipede family (Myriapoda); COL: Chilopoda > Scolopendromorpha
+Scolopendrinae # ITIS: Scolopendromorpha > Scolopendridae
+Scolopendromorpha # tropical centipedes (Myriapoda); COL: Arthropoda > Chilopoda
+Scolopocryptopidae # scolopendromorph centipede family (Myriapoda); COL: Chilopoda > Scolopendromorpha
+Scolopocryptopinae # ITIS: Scolopendromorpha > Scolopocryptopidae
+Scoterpetini # COL: synonym of Trichopetalinae (Diplopoda)
+Scutelluidae # COL: Arthropoda > Trilobita
+Scutigerellidae # COL: Arthropoda > Symphyla
+Scutigerellinae # COL: synonym of Scutigerellidae (Symphyla)
+Scutigerida # ITIS: synonym of Scutigeromorpha (Chilopoda)
+Scutigeridae # scutigeromorph centipede family (Myriapoda); COL: Chilopoda > Scutigeromorpha
+Scutigerinae # ITIS: Scutigeromorpha > Scutigeridae
+Scutigerinidae # scutigeromorph centipede family (Myriapoda); COL: Chilopoda > Scutigeromorpha
+Scutigeromorpha # house centipedes (Myriapoda); COL: Arthropoda > Chilopoda
+Scutogoninae # COL: Diplopoda > Chamaesomatidae
+Scutogonini # COL: Diplopoda > Chamaesomatidae
+Scytonotidae # COL: synonym of Polydesmoides (Arthropoda)
+Seirinae # COL: Entomobryomorpha > Paronellidae
+Semnosomatidae # COL: synonym of Dalodesmidae (Diplopoda)
+Sensillanurini # ITIS: Poduromorpha > Neanuridae
+Sericosuridae # ITIS: synonym of Acheliidae (Pantopoda)
+Shirakiellidae # COL: Trilobita > Corynexochida
+Shumardiidae # COL: Trilobita > Ptychopariida
+Sigmocheiridae # COL: synonym of Sigmocheirini (Arthropoda)
+Sigmocheirini # COL: Arthropoda > Diplopoda
+Sigodesmini # COL: Diplopoda > Gomphodesmidae
+Simiulini # COL: Diplopoda > Parajulidae
+Sinellini # COL: Entomobryomorpha > Entomobryidae
+Sinentomata # COL: Arthropoda > Protura
+Sinentomidae # COL: Protura > Sinentomata
+Sinentomoidea # COL: synonym of Sinentomata (Protura)
+Sinocallipodidae # COL: Arthropoda > Diplopoda
+Sinocallipodidea # COL: Arthropoda > Diplopoda
+Siphoniulida # COL: Arthropoda > Diplopoda
+Siphoniulidae # COL: Diplopoda > Siphoniulida
+Siphonocryptida # COL: Arthropoda > Diplopoda
+Siphonocryptidae # COL: Diplopoda > Siphonocryptida
+Siphonocryptini # COL: Siphonocryptida > Siphonocryptidae
+Siphonophorida # ITIS: Arthropoda > Diplopoda
+Siphonophoridae # ITIS: Diplopoda > Siphonophorida
+Siphonorhinidae # COL: Arthropoda > Diplopoda
+Siphonotidae # COL: Diplopoda > Polyzoniida
+Siphonotinae # COL: Polyzoniida > Siphonotidae
+Siphonotini # COL: Polyzoniida > Siphonotidae
+Skleroprotopini # COL: synonym of Skleroprotopodinae (Diplopoda)
+Skleroprotopodinae # COL: Diplopoda > Mongoliulidae
+Skleroprotopodini # COL: synonym of Skleroprotopodinae (Diplopoda)
+Sminthuridae # COL: Collembola > Symphypleona
+Sminthuridida # COL: Collembola > Symphypleona
+Sminthurididae # COL: Collembola > Symphypleona
+Sminthurididoidea # ITIS: Collembola > Symphypleona
+Sminthuridinae # COL: Symphypleona > Sminthurididae
+Sminthuridini # COL: Symphypleona > Sminthurididae
+Sminthuridoidea # COL: Collembola > Symphypleona
+Sminthuriformia # COL: Collembola > Symphypleona
+Sminthurinae # COL: Symphypleona > Sminthuridae
+Sminthuroidea # COL: Collembola > Symphypleona
+Smynthuridae # ITIS: synonym of Sminthuridae (Symphypleona)
+Solenopleuracea # COL: Trilobita > Ptychopariida
+Solenopleuridae # COL: Trilobita > Agnostida
+Songhaicinae # COL: Symphypleona > Sminthuridae
+Spathiulini # COL: Diplopoda > Parajulidae
+Spelaeoglomerini # COL: synonym of Oniscomorpha (Arthropoda)
+Speophilosomatidae # COL: Arthropoda > Diplopoda
+Sphaeragnostidae # COL: Trilobita > Agnostida
+Sphaeridinae # COL: Symphypleona > Sminthurididae
+Sphaeridini # COL: Symphypleona > Sminthurididae
+Sphaeriodesmidae # COL: Arthropoda > Diplopoda
+Sphaeriodesminae # COL: Diplopoda > Sphaeriodesmidae
+Sphaeriodesmini # COL: Diplopoda > Sphaeriodesmidae
+Sphaeriodesmoidea # COL: Arthropoda > Diplopoda
+Sphaerodesmini # not found in ChecklistBank
+Sphaeropauropodidae # COL: Pauropoda > Tetramerocerata
+Sphaeropoeidae # COL: synonym of Zephroniidae (Diplopoda)
+Sphaeropoeinae # COL: Diplopoda > Zephroniidae
+Sphaeropoeini # COL: Diplopoda > Zephroniidae
+Sphaerotheriida # WoRMS: Arthropoda > Diplopoda
+Sphaerotheriidae # COL: Arthropoda > Diplopoda
+Sphaerotheriinae # COL: Diplopoda > Sphaerotheriidae
+Sphaerotheriini # COL: Diplopoda > Sphaerotheriidae
+Sphaerotrichopodidae # COL: synonym of Dalodesmidae (Diplopoda)
+Sphyrothecinae # COL: Symphypleona > Sminthuridae
+Spinagnostidae # COL: Trilobita > Agnostida
+Spinothecidae # COL: Collembola > Symphypleona
+Spirobolellidae # ITIS: Diplopoda > Spirobolida
+Spirobolellinae # WoRMS: Spirobolida > Spirobolellidae
+Spirobolida # ITIS: Arthropoda > Diplopoda
+Spirobolidae # COL: Arthropoda > Diplopoda
+Spirobolidea # WoRMS: Diplopoda > Spirobolida
+Spirobolinae # COL: Diplopoda > Spirobolidae
+Spirobolini # COL: Diplopoda > Spirobolidae
+Spiroboloidea # COL: synonym of Juliformia (Arthropoda)
+Spiromimidae # COL: synonym of Spiromiminae (Diplopoda)
+Spiromiminae # COL: Diplopoda > Pachybolidae
+Spirostreptida # ITIS: Arthropoda > Diplopoda
+Spirostreptidae # ITIS: Diplopoda > Spirostreptida
+Spirostreptidea # ITIS: Diplopoda > Spirostreptida
+Spirostreptinae # WoRMS: Spirostreptida > Spirostreptidae
+Spirostreptini # WoRMS: Spirostreptida > Spirostreptidae
+Spirostreptoidea # WoRMS: Diplopoda > Spirostreptida
+Stemmatoiulidae # COL: synonym of Stemmiulidae (Stemmiulida)
+Stemmiulida # COL: Arthropoda > Diplopoda
+Stemmiulidae # COL: Diplopoda > Stemmiulida
+Stiodesmidae # COL: synonym of Pyrgodesmidae (Diplopoda)
+Stiripasterida # COL: Pycnogonida > Pantopoda
+Strasseriinae # COL: synonym of Oniscomorpha (Arthropoda)
+Striariidae # COL: Arthropoda > Diplopoda
+Striariidea # COL: Arthropoda > Diplopoda
+Striariinae # COL: Diplopoda > Striariidae
+Striarioidea # COL: Arthropoda > Diplopoda
+Strongylomorphini # COL: Arthropoda > Diplopoda
+Strongylosomatidae # COL: synonym of Merocheta (Arthropoda)
+Strongylosomatidea # WoRMS: Diplopoda > Polydesmida
+Strongylosomatini # COL: Arthropoda > Diplopoda
+Sturmiidae # COL: Collembola > Symphypleona
+Sturmioidea # COL: Collembola > Symphypleona
+Styginidae # COL: Trilobita > Corynexochida
+Stylodesmidae # COL: synonym of Pyrgodesmidae (Diplopoda)
+Stylodesmoidea # COL: Arthropoda > Diplopoda
+Stylopallenidae # ITIS: synonym of Callipallenidae (Pantopoda)
+Sulciferinae # COL: Arthropoda > Diplopoda
+Sulciferini # ITIS: Polydesmida > Paradoxosomatidae
+Sumatroniinae # COL: Platydesmida > Andrognathidae
+Sunaspididae # COL: Arthropoda > Trilobita
+Sundaninini # COL: Arthropoda > Diplopoda
+Symphyla # COL: Animalia > Arthropoda
+Symphyoiulini # COL: Arthropoda > Diplopoda
+Symphypleona # COL: Arthropoda > Collembola
+Symphysurinidae # COL: Trilobita > Asaphida
+Syncampinae # COL: Diplura > Campodeidae
+Syntelopodeumatidae # COL: synonym of Diplomaragnidae (Diplopoda)
+Synxenidae # COL: Diplopoda > Polyxenida
+Synxeninae # COL: synonym of Synxenidae (Polyxenida)
+Synxenoidea # COL: Diplopoda > Polyxenida
+Tachypleinae # COL: Xiphosurida > Limulidae
+Taihungshaniidae # COL: Trilobita > Asaphida
+Tampiyidae # geophilomorph centipede family; COL: Chilopoda > Geophilomorpha
+Tanystylidae # ITIS: synonym of Acheliidae (Pantopoda)
+Taphodesminae # COL: Diplopoda > Platyrhacidae
+Taphodesmini # COL: synonym of Taphodesminae (Diplopoda)
+Tectoporini # COL: Arthropoda > Diplopoda
+Telephinidae # COL: Trilobita > Proetida
+Telonychopidae # COL: synonym of Telonychopodini (Arthropoda)
+Telonychopodidae # COL: Arthropoda > Diplopoda
+Telonychopodini # COL: Arthropoda > Diplopoda
+Telsonemasomatidae # COL: Arthropoda > Diplopoda
+Tengfengiidae # COL: Trilobita > Ptychopariida
+Teratognathidae # COL: synonym of Siphonorhinidae (Diplopoda)
+Termitodesmidae # COL: Diplopoda > Glomeridesmida
+Termitodesminae # COL: Glomeridesmida > Termitodesmidae
+Termitopteryginae # COL: Diplopoda > Pyrgodesmidae
+Tetramerocerata # COL: Arthropoda > Pauropoda
+Tetrodontophorinae # COL: Poduromorpha > Onychiuridae
+Texophoninae # COL: Diplopoda > Tynommatidae
+Texophonini # COL: synonym of Texophoninae (Diplopoda)
+Thalassaphorurini # COL: Poduromorpha > Onychiuridae
+Thanatomimini # COL: Arthropoda > Diplopoda
+Theatopinae # ITIS: synonym of Plutoniumidae (Scolopendromorpha)
+Thelydesmidae # COL: synonym of Thelydesminae (Diplopoda)
+Thelydesminae # COL: Diplopoda > Cryptodesmidae
+Thereuoneminae # ITIS: Scutigeromorpha > Scutigeridae
+Thyropyginae # COL: synonym of Thyropygini (Diplopoda)
+Thyropygini # COL: Diplopoda > Harpagophoridae
+Tingupidae # COL: Arthropoda > Diplopoda
+Tokyosomatinae # COL: Diplopoda > Diplomaragnidae
+Tomoceridae # COL: Collembola > Entomobryomorpha
+Tomocerinae # COL: Entomobryomorpha > Tomoceridae
+Tomocerini # COL: Entomobryomorpha > Tomoceridae
+Tomoceroidea # COL: Collembola > Entomobryomorpha
+Tonkinosomatini # COL: Arthropoda > Diplopoda
+Trachelodesminae # COL: synonym of Trachelodesmini (Arthropoda)
+Trachelodesmini # COL: Arthropoda > Diplopoda
+Trachelorhachidae # COL: synonym of Aphelidesminae (Diplopoda)
+Trachygonidae # COL: Arthropoda > Diplopoda
+Trachyjulidae # COL: synonym of Cambalopsidae (Diplopoda)
+Trachysomatidae # COL: synonym of Trachygonidae (Diplopoda)
+Trachysphaeridae # COL: Arthropoda > Diplopoda
+Trachysphaerini # COL: Arthropoda > Diplopoda
+Trachystreptidae # COL: synonym of Trachystreptini (Arthropoda)
+Trachystreptinae # COL: synonym of Trachystreptini (Arthropoda)
+Trachystreptini # COL: Arthropoda > Diplopoda
+Triaenostreptinae # COL: synonym of Juliformia (Arthropoda)
+Triaenostreptini # COL: synonym of Juliformia (Arthropoda)
+Trichoblaniulidae # COL: Arthropoda > Diplopoda
+Trichoblaniulinae # COL: Diplopoda > Trichoblaniulidae
+Trichoblaniulini # COL: Diplopoda > Trichoblaniulidae
+Trichomorphini # COL: Arthropoda > Diplopoda
+Trichonemasomatidae # COL: Arthropoda > Diplopoda
+Trichopeltini # COL: Diplopoda > Cryptodesmidae
+Trichopetalidae # COL: Arthropoda > Diplopoda
+Trichopetalinae # COL: Diplopoda > Trichopetalidae
+Trichopolydesmidae # COL: Arthropoda > Diplopoda
+Trichopolydesminae # COL: Diplopoda > Trichopolydesmidae
+Trichopolydesmoidea # COL: Arthropoda > Diplopoda
+Tricrepicephalidae # COL: Trilobita > Ptychopariida
+Tridontomidae # COL: Arthropoda > Diplopoda
+Trigoniulidae # COL: synonym of Pachybolidae (Diplopoda)
+Trigoniulidea # WoRMS: Diplopoda > Spirobolida
+Trigoniulinae # COL: Diplopoda > Pachybolidae
+Trilobita # COL: Animalia > Arthropoda
+Trilobitomorpha # WoRMS: Animalia > Arthropoda
+Trimerophorellini # COL: synonym of Trimerophorini (Arthropoda)
+Trimerophorinae # WoRMS: Chordeumatida > Neoatractosomatidae
+Trimerophorini # COL: Arthropoda > Diplopoda
+Trinucleidae # COL: Trilobita > Asaphida
+Trisariinae # COL: Diplopoda > Striariidae
+Troglopedetinae # COL: Entomobryomorpha > Paronellidae
+Tropidocoryphidae # COL: Trilobita > Proetida
+Trygaeidae # ITIS: synonym of Acheliidae (Pantopoda)
+Tsinaniidae # COL: Trilobita > Corynexochida
+Tsunyidiscidae # COL: Trilobita > Agnostida
+Tuberculariini # COL: synonym of Dalodesmidae (Diplopoda)
+Tullbergiidae # COL: Collembola > Poduromorpha
+Tullbergiinae # COL: Poduromorpha > Tullbergiidae
+Tycodesmini # COL: Diplopoda > Gomphodesmidae
+Tylobolinae # COL: synonym of Tylobolini (Diplopoda)
+Tylobolini # COL: Diplopoda > Spirobolidae
+Tylodesminae # COL: synonym of Prepodesminae (Arthropoda)
+Tynommatidae # COL: Arthropoda > Diplopoda
+Tynommatinae # COL: Diplopoda > Tynommatidae
+Tynommatini # COL: synonym of Tynommatinae (Diplopoda)
+Typhlobolellidae # COL: Arthropoda > Diplopoda
+Typhloglomeridae # COL: synonym of Typhloglomerinae (Diplopoda)
+Typhloglomerinae # COL: Diplopoda > Glomeridellidae
+Typhloiulini # WoRMS: Julida > Julidae
+Uchidanurinae # COL: Poduromorpha > Neanuridae
+Ulodesmini # COL: Diplopoda > Gomphodesmidae
+Uncigerinae # COL: synonym of Oncoiulinae (Arthropoda)
+Uncigerini # COL: synonym of Oncoiulini (Arthropoda)
+Underwoodiidae # COL: synonym of Caseyidae (Diplopoda)
+Uroblaniulinae # COL: synonym of Parajulidae (Diplopoda)
+Uroblaniulini # COL: Diplopoda > Parajulidae
+Urochordeumatidae # COL: Arthropoda > Diplopoda
+Urochordeumidae # COL: synonym of Urochordeumatidae (Diplopoda)
+Utiidae # COL: Trilobita > Ptychopariida
+Vaalogonopodidae # COL: Arthropoda > Diplopoda
+Vandeleumatidae # COL: Arthropoda > Diplopoda
+Vandeleumatinae # COL: Diplopoda > Vandeleumatidae
+Vanhoeffeniidae # COL: synonym of Dalodesmidae (Diplopoda)
+Venezuelodesmini # COL: Diplopoda > Fuhrmannodesmidae
+Verhoeffiidae # WoRMS: Diplopoda > Chordeumatida
+Verhoeffiinae # COL: Arthropoda > Diplopoda
+Verhoeffioidea # WoRMS: Diplopoda > Chordeumatida
+Verrucoentominae # COL: synonym of Nipponentominae (Acerentomata)
+Vesicephalini # COL: Symphypleona > Katiannidae
+Vicissicaudata # IRMNG: Animalia > Arthropoda
+Vieteumatidae # COL: synonym of Kashmireumatidae (Diplopoda)
+Weymouthiidae # COL: Trilobita > Agnostida
+Willowsiinae # COL: Entomobryomorpha > Entomobryidae
+Willowsiini # COL: Entomobryomorpha > Entomobryidae
+Wuaniidae # COL: Trilobita > Ptychopariida
+Xandarellida # IRMNG: Animalia > Arthropoda
+Xanthodesmini # COL: Arthropoda > Diplopoda
+Xiphosura # COL: Arthropoda > Merostomata
+Xiphosurida # COL: Arthropoda > Merostomata
+Xiphosuridae # COL: synonym of Limulidae (Xiphosurida)
+Xyloiulidae # COL: Arthropoda > Diplopoda
+Xyloiuloidea # COL: Arthropoda > Diplopoda
+Xyodesmidae # COL: synonym of Prepodesminae (Arthropoda)
+Xystocheirini # COL: Arthropoda > Diplopoda
+Xystodesmidae # ITIS: Diplopoda > Polydesmida
+Xystodesminae # COL: Arthropoda > Diplopoda
+Xystodesmini # COL: Arthropoda > Diplopoda
+Xystodesmoidea # WoRMS: Diplopoda > Polydesmida
+Xystrosomatidae # COL: synonym of Chamaesomatidae (Diplopoda)
+Yunnanocephalidae # COL: Trilobita > Ptychopariida
+Zacanthoididae # COL: Trilobita > Corynexochida
+Zelanophilidae # ITIS: Chilopoda > Geophilomorpha
+Zephroniidae # COL: Arthropoda > Diplopoda
+Zephroniinae # COL: Diplopoda > Zephroniidae
+Zephroniini # COL: Diplopoda > Zephroniidae
+Zephroniodesmidae # COL: synonym of Glomeridesmidae (Glomeridesmida)
+Zoosphaeriini # COL: Diplopoda > Arthrosphaeridae
+Zosteractiidae # COL: Arthropoda > Diplopoda
+Zosteractinidae # COL: Arthropoda > Diplopoda
+Zosteractininae # COL: synonym of Zosteractinidae (Diplopoda)
+Zosterogrammida # COL: Arthropoda > Diplopoda
+Zosterogrammidae # COL: Diplopoda > Zosterogrammida
+Zygethobiini # ITIS: Lithobiomorpha > Henicopidae

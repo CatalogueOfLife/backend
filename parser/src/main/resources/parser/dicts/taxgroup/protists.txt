@@ -1,1812 +1,1767 @@
-Abelsporidae
-Abolliferidae
-Acanthamoebidae
-Acantharea
-Acantharia # alternate spelling of Acantharea (radiolarians, Rhizaria)
-Acanthochiasmidae
-Acanthocollidae
-Acanthocystida
-Acanthocystidae
-Acanthoecaceae # loricate choanoflagellate family
-Acanthoeccidae
-Acanthoecida
-Acanthoecidae # loricate choanoflagellate family
-Acanthometridae
-Acanthoperlidae
-Acanthoplegmida
-Acanthoplegmidae
-Acanthopodida # acanthopodid amoebae (Amoebozoa)
-Acanthopodina # class of lobose amoebae (Amoebozoa)
-Acarpomyxa # class of myxomycete-like amoebozoans (Myxogastria)
-Acavomonea
-Acavomonida
-Acervulinidae
-Acinetactidae
-Acinetidae
-Acinetopsidae
-Aconchulinida # naked filose amoebae (Cercozoa)
-Aconoidia
-Acramoebidae
-Acrasiaceae # cellular slime mould family (Heterolobosea/Acrasida)
-Acrasida
-Acrocoelida
-Acroglissia
-Acroglissida
-Acropisthiidae
-Actinichonidae
-Actiniscaceae
-Actiniscales
-Actinobolinidae
-Actinocephalidae
-Actinocephaloidea
-Actinommidae
-Acytosteliaceae # dictyostelid cellular slime mould family (Amoebozoa)
-Acytosteliales
-Acytosteliidae
-Adeleida
-Adeleidae
-Adnatosphaeridiaceae
-Aeroligeraceae
-Agglomeratidae
-Aggregatidae
-Agitatidae
-Akashiwidae
-Alabaminidae
-Alfredinidae
-Algivorida
-Algovorida
-Allantosomatidae
-Allapsidae
-Allapsina
-Allobodonidae
-Allogromiida
-Allogromiidae
-Almaenidae
-Althorniidae
-Alveolata
-Alveolinidae
-Amblyosporidae
-Ammobaculinidae
-Ammodiscidae
-Ammolagenidae
-Ammosphaeroidinidae
-Amoebida # lobose amoebae (Amoebozoa)
-Amoebidae
-Amoebidiidae
-Amoebina
-Amoeboaphelidiidae
-Amoebophryaceae
-Amoebozoa
-Amphiacanthidae
-Amphidinida
-Amphidiniopsidaceae
-Amphidomataceae
-Amphifilidae
-Amphileptidae
-Amphilithidae
-Amphilothaceae
-Amphilothales
-Amphimonadidae # choanoflagellate family
-Amphisiellidae
-Amphisoleniaceae
-Amphisteginidae
-Amphitremidae
-Amylovoracidae
-Anaeromonada
-Anaeromonadea
-Ancistridae
-Ancistrocomidae
-Ancoridae
-Ancyromonadidae
-Andaluciidae
-Angeiocystidae
-Angulamoebidae
-Anisonemia
-Anisonemida
-Anisonemidae
-Annulopatellinidae
-Anoecida
-Anophryidae # scuticociliate family (Ciliophora)
-Anoplophryidae
-Anthemosomatidae
-Anurosporiidae
-Apertospathulidae
-Aphelida
-Aphelidea
-Aphelidida
-Aphelidiidae
-Apicomonada
-Apicomonadea
-Apicomplexa
-Aplanochytriidae
-Apodinidae
-Apostomatia
-Apostomatida
-Apsiktratidae
-Apusomonadida
-Apusomonadidae
-Apusozoa
-Aquavolonida
-Arachnulidae
-Arboramminidae
-Arboramoebidae
-Arcellidae
-Arcellinida
-Archamoebae
-Archamoebea
-Archezoa
-Archigregarinida
-Archiphormididae
-Archistomatina
-Arcuospathidiidae # litostome ciliate family
-Arcyriaceae # myxomycete family (Amoebozoa)
-Arcyriidae
-Areosporiidae
-Armophorea
-Armophorida
-Arthracanthida
-Arthrogregarida
-Artodiscida
-Artodiscidae
-Artostrobiidae
-Ascampbelliellidae
-Ascetosporea
-Aschemocellidae
-Aspidiscidae
-Assulinidae
-Astasiidae
-Asterigerinatidae
-Asterigerinidae
-Astomatia
-Astomatida
-Astomatophorida
-Astracanthidae
-Astrolithidae
-Astrorhizida
-Astrorhizidae
-Astylozoidae
-Atlanticellidae
-Aulacanthidae
-Aulosphaeridae
-Auranticordidae
-Aurigamonadidae
-Axomonadida
-Axostylea
-Azeridae
-Babesiidae
-Baculellidae
-Bagginidae
-Balamuthiidae
-Balanionidae
-Balantidiidae
-Bardeliellidae
-Bathysiphonidae
-Berwaldiidae
-Bicoecida
-Bicosidia
-Bicosoecidae
-Bigyra
-Bigyromonadea # class of heterokont protists (Bigyra/Stramenopiles)
-Bihospitida
-Bihospitidae
-Bikosea
-Bikosia
-Biomyxidae
-Bisacciidae
-Blabericolidae
-Blastocystea
-Blastocystida
-Blastocystidae
-Blastodinales
-Blastodinidae
-Blastogregarinida
-Blepharismidae
-Blepharocorythidae
-Blepharocorythina
-Bodomorphidae
-Bodonida
-Bodonidae
-Bolivinellidae
-Bolivinidae
-Bolivinitidae
-Borghiellaceae
-Borokida
-Borokidae
-Brachidiniaceae
-Brachidiniales
-Breviatea
-Breviatida
-Breviatidae
-Brevispinidae
-Bronnimanniidae
-Bryometopida
-Bryometopidae
-Bryophryida
-Bryophryidae
-Bueningiidae
-Buetschliellidae
-Buetschliidae
-Buliminellidae
-Buliminidae
-Buliminoididae
-Burenellidae
-Burkeidae
-Burmanymphidae # hypermastigote flagellate family (Parabasalia)
-Bursaridiidae
-Bursariidae
-Bursariomorphida
-Buxtehudeidae
-Caecitellidae
-Caenomorphidae
-Cafeteriidae
-Calcarinidae
-Calciodinellaceae
-Calkinsiidae
-Calonymphidae
-Calpionellidae # Jurassic-Cretaceous tintinnid ciliate family
-Calpionellopsidae # Jurassic-Cretaceous tintinnid ciliate family
-Calyptosporidae
-Calyptotrichidae
-Candeinidae
-Cannobotryidae
-Cannosphaeridae
-Capsasporidae
-Carpediemonadea # class of excavate flagellates (Metamonada)
-Carpediemonadia
-Carpediemonadida
-Carpediemonadidae
-Carpocaniidae
-Carpomonadea
-Carterinida
-Carterinidae
-Cassidulinidae
-Castanellidae
-Caucasinidae
-Caudosporidae
-Cavenderiaceae
-Caviomonadidae
-Cavosteliidae
-Centramoebida
-Centrodiniaceae
-Centrohelea
-Centrohelida # centrohelid heliozoans
-Centropixidae
-Centroplasthelida
-Centropyxidae # testate amoeba family (Arcellinida)
-Cephaloidophoridae
-Ceratiaceae
-Ceratiomixidae
-Ceratiomyxaceae # myxomycete family (Amoebozoa)
-Ceratiomyxida
-Ceratobuliminidae
-Ceratocoryaceae
-Ceratoperidiniaceae
-Cercomonadida
-Cercomonadidae
-Cercozoa
-Cerelasmidae
-Certesiidae
-Chaeneidae
-Chaetospiridae # oligotrich ciliate family
-Challengeridae
-Chattonidiidae
-Chaunacanthida
-Cheilochanidae
-Chilodochonidae
-Chilodonellida # cyrtophorid ciliates
-Chilodonellidae
-Chiloguembelinidae
-Chilomastigida
-Chilomastigidae
-Chilostomellidae
-Chitinoidellidae # Jurassic tintinnid family
-Chitonellidae
-Chlamydodontida
-Chlamydodontidae
-Chlamydophryidae
-Chlorarachniida
-Choanocystidae
-Choanofila
-Choanoflagellatea
-Choanoflagellida # choanoflagellates (closest protist relatives of animals)
-Choanophryidae
-Choanozoa
-Chonotrichia
-Choreotrichia
-Choreotrichida
-Chromovoridia
-Chytridiopsidae
-Chytridopsida
-Chytriodiniaceae
-Cibicididae
-Ciliofaureidae # tintinnid ciliate family
-Ciliophora
-Cinetochilidae
-Circoporidae
-Citharistaceae
-Cladopyxidaceae
-Clastodermataceae # myxomycete family (Amoebozoa)
-Clastodermidae
-Clathrellidae
-Clathrostomatidae
-Clathrulinidae
-Clausilocolidae
-Claustrosporida
-Clautriaviidae
-Clevelandellida
-Clevelandellidae
-Climacostomidae
-Coccidia
-Coccidinales
-Coccidiniaceae
-Coccidiomorphea
-Coccodiscidae
-Cochliopodiidae
-Cochlosomatidae # diplomonad/hexamitid flagellate family (bird parasites)
-Cochlosomidae # diplomonad/hexamitid flagellate family (alternate spelling)
-Codonellidae
-Codonellopsidae
-Codonosigaceae # choanoflagellate family
-Codonosigidae # choanoflagellate family
-Codosigaceae # choanoflagellate family
-Codosigidae # choanoflagellate family
-Coelodendridae
-Coelosomidiidae
-Coelosporidiidae # microsporidian-like intracellular parasite family
-Coelotrophia
-Coelotrophiida
-Cohnilembidae
-Colepidae
-Colliniidae
-Collodarida
-Collodictyonidae # collodictyonid protist family (Collodictyonida)
-Collophidae
-Collosphaeridae
-Collozoidae
-Colpodea
-Colpodellida
-Colpodellidae
-Colpodida
-Colpodidae
-Colpodidiida
-Colpodidiidae
-Colponemida
-Colponemidae
-Colpovoridae
-Columellidia
-Cometodendridae
-Conaconidae
-Concharidae
-Conchophthiridae
-Condylostomatidae
-Conidophryidae
-Conoidasida # class of apicomplexan parasites (Apicomplexa)
-Conosa
-Conosea # informal group of Amoebozoa incl. Archamoebae and Mycetozoa
-Contophryidae
-Corallochytrea
-Corallochytrida
-Corallochytriidae
-Corallomyxidae # myxomycete-like amoeba family
-Cornuspiridae
-Corynophryidae
-Coscinophragmatidae
-Cougourdellidae
-Craspedida
-Craspedomonadidae # choanoflagellate family
-Crassicollariidae # Cretaceous tintinnid ciliate family
-Creolimacidae
-Cribrariaceae # myxomycete family (Amoebozoa)
-Cribrariidae
-Cribrolinoididae
-Cristamonadida
-Cristidiscoidea
-Cryomonadida
-Crypthecodiniaceae
-Cryptobiidae
-Cryptochilidae
-Cryptodifflugiidae
-Cryptofilida
-Cryptogemmida
-Cryptogregaria
-Cryptogregarida
-Cryptopharyngidae
-Ctedectomatidae # hypermastigote flagellate family (Parabasalia)
-Ctedoctematidae
-Culicosporellidae
-Curimostomatidae
-Cutosa
-Cutosea
-Cyathodiniidae
-Cyclamminidae
-Cyclidiidae
-Cycloposthiidae
-Cyclotrichida # karyorelict ciliates
-Cyclotrichiida
-Cylindrosporidae
-Cymbaloporidae
-Cyphoderiidae
-Cyranomonadidae
-Cyrtocaryidae
-Cyrtolophosidida
-Cyrtolophosididae
-Cyrtophoria
-Cyrtophorida # cyrtophorid ciliates
-Cyttarocylidae # tintinnid ciliate family
-Cyttarocylididae
-Dactylophoridae
-Dactylopodida # dactylopodid amoebae (Amoebozoa)
-Dactylopodina
-Dactylostomatidae
-Decastavida
-Decastavidae
-Deflandreaceae
-Delosinidae
-Deltopyluidae # tintinnid ciliate family
-Dendrocometidae
-Dendrosomatidae
-Dendrosomididae
-Dentacinetidae
-Dermamoebida
-Dermamoebidae
-Dermocystida
-Desmomastigaceae
-Desmomastigales
-Desmothoracida
-Devescovinidae
-Dianemataceae # myxomycete family (Amoebozoa)
-Dianemidae
-Dicroerismataceae
-Dictyacanthidae
-Dictyamoebidae
-Dictydiaethaliaceae # myxomycete family (Amoebozoa)
-Dictydiaethaliidae
-Dictyocystidae
-Dictyostelea
-Dictyosteliaceae # dictyostelid slime mould family (Amoebozoa)
-Dictyosteliales
-Dictyosteliidae
-Didiniida
-Didiniidae
-Didymiaceae # myxomycete family (Amoebozoa)
-Didymiidae
-Dientamoebidae
-Difflugiidae # testate amoeba family (Arcellinida)
-Dileptida
-Dileptidae # litostome ciliate family
-Dimacrocaryonidae # hypermastigote flagellate family (Parabasalia)
-Dinamoebaceae
-Dinamoebales
-Dinenymphaceae # oxymonad flagellate family (Preaxostyla)
-Dinoflagellata
-Dinokaryota
-Dinomonadidae
-Dinophysaceae # dinoflagellate family (Dinophyceae)
-Dinophysiaceae # dinoflagellate family (Dinophyceae; alternate family name)
-Dinophysiales # dinoflagellates (Dinophyceae), mostly photosynthetic
-Dinophysoidia
-Dinophyta
-Dinosphaeraceae
-Dinotrichaceae
-Dinotrichales
-Dinozoa
-Diphyllatea
-Diphylleida
-Diphylleidae
-Dipilida
-Diploconidae
-Diplomonadida
-Diplonemea
-Diplonemida
-Diplonemidae
-Diplophryidae
-Diplopsaliaceae
-Discamminidae
-Discoba
-Discocelida
-Discoceliidae
-Discocephalidae
-Discocephalina
-Discomonada
-Discomonadida
-Discomonadidae
-Discomorphellidae
-Discophryidae
-Discorbidae
-Discorbinellidae
-Discosea
-Discospirinidae
-Discotrichidae
-Distigmidae
-Distomatopyxidae
-Dorataspidae
-Dragescoidae
-Dryorhizopsidae
-Duboscqiidae
-Duquepsammiidae
-Dusenburyinidae
-Dysnectida
-Dysnectidae
-Dysteriida
-Dysteriidae
-Ebriida
-Eccrinida
-Eccrinidae
-Echinamoebia
-Echinamoebida
-Echinamoebidae
-Echinichonidae
-Echinosteliaceae # myxomycete family (Amoebozoa)
-Echinosteliales # myxomycetes (Amoebozoa)
-Echinosteliida
-Echinosteliidae
-Ectoreta
-Eggerellidae
-Eimeriida
-Eimeriidae
-Elaeomyxaceae # myxomycete family (Amoebozoa)
-Eleutheroschizonidae
-Elleipsisomatidae
-Ellipsolagenidae
-Ellobiophryidae
-Ellobiopsea
-Ellobiopsida
-Elphidiidae
-Encephalitozoonidae
-Enchelyidae
-Enchelyomorphidae
-Endemosarcaceae
-Endemosarcidae # myxomycete-like amoeba family
-Endodinea
-Endodiniaceae
-Endogenida
-Endolimacidae
-Endomyxa
-Endosphaeridae
-Endosphaeriidae # apostome ciliate family (epibionts on crustaceans)
-Entamoebida
-Entamoebidae
-Enteridiidae
-Enterocytozoonidae
-Enteromonadidae
-Entodiniomorphida
-Entodiniomorphina
-Entodiscidae
-Entorhipidiidae
-Entosiphona
-Entosiphonea
-Entosiphonida
-Entosiphonidae
-Eodarida
-Eodina
-Eoglissa
-Eogyrea
-Eogyrida
-Eolouka
-Eopharyngea
-Eopharyngia
-Eothecia
-Eozoa
-Epalxellidae
-Ephelotidae
-Epiclintidae
-Epidinia
-Epiphyllidae
-Epiplocylididae
-Epistomariidae
-Epistomidae
-Epistylididae
-Eponididae
-Erastophryidae
-Euamoebida
-Eubodonida
-Eubodonidina
-Eucomonymphidae # hypermastigote flagellate family (Parabasalia)
-Euduboscquellidae
-Euglenaceae # euglenid flagellate family
-Euglenales # euglenid flagellates
-Euglenamorphidae
-Euglenida
-Euglenoida
-Euglenophyta
-Euglenophytes
-Euglenozoa
-Euglyphia
-Euglyphida
-Euglyphidae
-Eulobosia
-Eupelagonemidae
-Euplotida
-Euplotidae
-Euplotina
-Eutintinnidae
-Eutreptiaceae
-Eutreptiida
-Eutreptiidae
-Evaginogenida
-Excavata
-Exocolpodidae # ciliate family (Exocolpoda)
-Exogemmiida
-Exogenida
-Exoschizonidae
-Exosporeae
-Facilisporidae
-Filamoebidae
-Filasterea
-Filichonidae
-Filidae
-Filosia # filose amoebae (Cercozoa + Foraminifera)
-Fischerinidae
-Fiscullidae
-Fiscullina
-Flabellinea # flabellate lobose amoebae (Amoebozoa)
-Flabellulidae
-Flamellidae
-Foettingeriidae
-Folliculinidae
-Fonticulaceae # Fonticula slime mould family (Opisthokonta incertae sedis)
-Fonticulida
-Fonticulidae
-Foraminifera
-Fornicata
-Frontonidae # ciliate family (Prostomatea)
-Frontoniidae
-Furgasoniidae
-Fursenkoinidae
-Fuscheriidae # colpodean ciliate family (Fuscheria)
-Fuscisporida
-Ganymedidae
-Gastrocirrhidae
-Gastronautidae
-Gavelinellidae
-Geleiidae
-Gemmocystidae
-Gephyramoebidae
-Giardiida # diplomonad flagellates incl. Giardia
-Gigarticonidae
-Gilchristidae
-Glabratellidae
-Glandulinidae
-Glaucomidae
-Glenodiniaceae
-Glenodiniopsidaceae
-Glissodiscea
-Glissomonadida
-Globanomalinidae
-Globeriginida
-Globigerinidae
-Globigerinitidae
-Globorotallidae
-Globotextulariidae
-Globothalamea
-Gloeodiniaceae
-Glugeidae
-Glycomonada
-Glycopoda
-Glycostylida
-Goceviidae
-Golbergiidae
-Goniodomataceae
-Gonyaulacaceae
-Gonyaulacales
-Gonyaulacoidia
-Gracilipodida # gracilipodid amoebae (Amoebozoa)
-Grandoriidae
-Granofilosea
-Gregarinidae
-Gregarinoidea
-Gregarinomorphea
-Grelliidae
-Gromiida
-Gromiidae
-Gromiidea
-Grossglockneriida # grossglocknerid ciliates (Colpodea)
-Grossglockneriidae
-Gruberellidae # litostome ciliate family
-Guembelitriidae
-Gurleyidae
-Guttulinopsidae
-Gymnochloridae
-Gymnodiniaceae
-Gymnodiniales
-Gymnosphaeridae # centrohelid heliozoan family
-Gymnostomatea # primitive gymnostome ciliates
-Gyrodinida
-Haddoniidae
-Haemohormidiidae
-Haemosporida
-Haemosporidia
-Halteriida # oligotrich ciliates
-Halteriidae
-Halyphysemidae
-Haplodiniaceae
-Haplophragmoididae
-Haplosporea # haplosporidian parasites (Rhizaria/Cercozoa)
-Haplosporida
-Haplosporidiidae # haplosporidian parasite family (Rhizaria/Cercozoa)
-Haplosporiidae
-Haplozoonales
-Haplozoonidae
-Haptophryidae
-Haptoria
-Haptorida
-Hartmannellidae
-Hartmannulidae
-Hastatellidae # suctorian ciliate family
-Hastigerinidae
-Hauerinidae
-Hausmanniellidae
-Heleninidae
-Helicoprorodontida
-Helicoprorodontidae
-Helicoprorodontiidae
-Helicoprorodontina
-Heliochonidae
-Heliodiscidae
-Heliophryidae
-Heliozoa
-Helkesea
-Helkesida
-Helkesimastigidae
-Helkesimastigoidea
-Hematozoa
-Hemicycliostylidae
-Hemidiniaceae
-Hemigordiopsidae
-Hemispeiridae
-Hemisphaeramminidae
-Hemistasiidae
-Heronalleniidae
-Hesseidae
-Heterocapsaceae
-Heterodiniaceae
-Heterolepidae
-Heterolobosea
-Heterophryidae
-Heterostavia
-Heterostavida
-Heterotrichea
-Heterotrichida
-Heterovesiculidae
-Hexalaspidae
-Hexamastigidae
-Hexamitaceae # diplomonad flagellate family (Hexamita)
-Hexamitidae
-Hilomonadea
-Himatismenida
-Hippocrepinellidae
-Histiobalantiidae
-Histionidae
-Histogregaria
-Histogregarida
-Holacanthida
-Holomastigea # hypermastigote flagellates (Parabasalia), gut symbionts of termites
-Holomastigida
-Holomastigotidae # hypermastigote flagellate family
-Holomastigotoididae
-Holophryidae
-Holostichidae # hypotrich ciliate family
-Homalozoonidae
-Homostavia
-Homotrematidae
-Honigbergiellidae
-Hooperellidae
-Hoplitophryidae
-Hoplonymphidae
-Hormosinellidae
-Hormosinidae
-Hyalodiscidae
-Hyalospheniidae
-Hymenostomatia
-Hymenostomatida # hymenostome ciliates (incl. Paramecium)
-Hypermastigia # hypermastigote flagellates (Parabasalia)
-Hypermastigida # hypermastigote flagellates (Parabasalia)
-Hypermastigidae # hypermastigote flagellate family
-Hypocomatida
-Hypocomidae
-Hypotrichea # hypotrich ciliates
-Hypotrichia
-Hypotrichidiidae # hypotrich ciliate family (Hypotrichidium)
-Hypotrichomonadidae
-Hysterocinetidae
-Hystrichosphaeridiaceae
-Ichthyobodonidae
-Ichthyodinida
-Ichthyodiniidae
-Ichthyophonidae
-Ichthyophthiriidae
-Ichthyosporea
-Ichthyosporidiidae
-Imbricatea
-Incisomonadidae
-Inferostomatidae
-Intoshellinidae
-Intramacronucleata
-Inversochonidae
-Ischnamoebidae
-Isochonidae
-Isochonopsidae
-Isotrichidae
-Ixorheida
-Ixorheidae
-Jakobea
-Jakobida
-Jakobidae
-Janacekiidae
-Jaroschiidae
-Joeniidae # oxymonad flagellate family
-Jugimuramminidae
-Kahliellidae
-Kamburophryidae # suctorian ciliate family
-Kapelodiniaceae
-Kareniaceae
-Karlodinia
-Karotomorphidae
-Karreriidae
-Karyorelictea
-Karyorelictida # karyorelict ciliates (primitive, marine interstitial)
-Keelungiidae
-Kentrophoridae
-Kentrophyllidae
-Keramosphaeridae
-Keronidae
-Kiitoksiidae
-Kiitrichida
-Kiitrichidae
-Kinetofragminophora # older polyphyletic ciliate class, now split
-Kinetoplastea
-Kipferliidae
-Kofoidiidae # parabasalid flagellate family
-Kofoidiniaceae
-Kolkwitziellaceae
-Komokiidae
-Krakenia
-Krakenida
-Krakenidae
-Kreyellidae
-Kryoprorodontidae
-Kyaroikeidae
-Labromonadidae
-Labyrinthulaceae # labyrinthulean stramenopile family
-Labyrinthulea
-Labyrinthulida
-Labyrinthulidae
-Lacrymariida
-Lacrymariidae
-Lagenaceae # foraminifera family (Lagenida)
-Lagenida
-Lagenidae
-Lagenophryidae
-Lagynidae
-Lagynophryidae # suctorian ciliate family
-Lamprodermidae
-Lamptopixidae
-Lamtopyxidae # testate amoeba family (Arcellinida)
-Lecanophryidae
-Lecudinidae
-Leegaardiellidae
-Leegaardiellina
-Leiotrochidae
-Lembadionidae
-Lentomonadidae
-Leptodiscaceae
-Leptomixidae
-Leptomyxia
-Leptomyxida
-Leptomyxidae # lobose amoeba family (Amoebozoa)
-Leptopharyngidae
-Leptopharynidae # ciliate family
-Leptophryidae
-Lesquereusiidae # testate amoeba family (Arcellinida)
-Lessardiaceae
-Leucodictyida
-Leucodictyidae
-Liceaceae # myxomycete family (Amoebozoa)
-Liceales # myxomycetes (Amoebozoa)
-Liceida
-Liceidae
-Licnophoria
-Licnophorida
-Licnophoridae
-Limnofilida
-Limnofilidae
-Lipotrophidae
-Lirellidae
-Listerellidae
-Litheliidae
-Lithocollidae
-Lithopteridae
-Litonotidae
-Litostomatea
-Lituolida
-Lituolidae
-Lituotubidae
-Lobochonidae
-Lobosa
-Loftusiida
-Lohmanniellidae
-Lohmanniellina
-Lophodinales
-Lophodiniaceae
-Lophomonadaceae # hypermastigote flagellate family (Parabasalia)
-Lophomonadida
-Lophomonadidae
-Loricophryidae # suctorian ciliate family
-Lotharellidae
-Loukozoa
-Loxocephalidae
-Loxodida
-Loxodidae
-Loxophyllidae # litostome ciliate family
-Lucisporidia
-Lynchellidae
-Lyromonadea
-Lyromonadida
-Macropodiniida
-Macropodiniidae
-Malacophryidae
-Malawimonadea
-Malawimonadida
-Malawimonadidae
-Mantamonadida
-Mantamonadidae
-Manuelophryidae
-Marimonadida
-Marimyxia
-Maristentoridae
-Maritujidae
-Marophryidae
-Marteiliidae
-Marynidae
-Massisteriidae
-Mastigamoebida
-Mastigamoebidae
-Mastigophora
-Matazida
-Matazidae
-Maupasellidae
-Mayorellidae
-Medusettidae
-Merogregarinidae
-Mesodiniidae
-Mesofilidae
-Metacinetidae
-Metacyclididae # oligotrich ciliate family
-Metacylididae
-Metacystidae
-Metakinetoplastina
-Metamonada
-Metanemina
-Metchnikovellea
-Metchnikovellida
-Metchnikovellidae
-Metopiida
-Metromonadea
-Metromonadida
-Metromonadidae
-Microchlamyiidae
-Microcoryciidae
-Microfilidae
-Microhelida # microhelid amoebae (Variosea/Amoebozoa)
-Microheliellidae # centrohelid heliozoan family
-Microjoeniidae # oxymonad flagellate family
-Micromitriaceae # myxomycete family (Amoebozoa)
-Micronucleariidae
-Microspora
-Microsporea
-Microsporida
-Microthoracida
-Microthoracidae
-Microvoracidae
-Mikrocytida
-Mikrocytiidae
-Miliolida
-Miliolidae
-Millettiidae
-Minakatellidae
-Ministeriida
-Ministeriidae
-Minorisida
-Minorisidae
-Miozoa
-Mississipinidae
-Mobilida
-Monadofilosa
-Monocercomonadidae
-Monocystidae
-Monosigaceae # choanoflagellate family
-Monothalamea
-Mrazekiidae
-Multiciliaceae # apusomonad flagellate family (Multicilia)
-Multiciliidae
-Multifasciculatidae # hypermastigote flagellate family (Parabasalia)
-Mycetozoa
-Mylestomatidae
-Myriosporidae
-Myxogastrea
-Myxogastria
-Myzodinea
-Myzodinida
-Myzomonadia
-Myzozoa
-Nadelsporidae
-Nanidae
-Nannoceratopsales
-Nanofilidae
-Nanomonadea
-Nassellaria
-Nassophorea
-Nassulida
-Nassulidae
-Nassulopsida # nassulid ciliates (used at order or class rank in different sources)
-Nassulopsidae
-Natomonadida
-Nebelidae # testate amoeba family (Arcellinida)
-Neobodonida
-Neobodonidae
-Neobodonina
-Neobursaridiidae
-Neokeronopsidae # hypotrich ciliate family
-Neolobosia
-Neolouka
-Neometanemidae
-Neonosemoidiidae
-Neonyctotheridae
-Neovahlkampfiidae
-Nephromycida
-Neradidae
-Netzeliidae
-Noctilucaceae
-Noctilucales # mostly heterotrophic dinoflagellates (Noctiluca etc.)
-Noctilucea
-Noctilucida
-Nodosariidae
-Nolaclusiliidae
-Nolandellidae
-Nolandina
-Nonionidae
-Nosematidae
-Notodendrodidae
-Notorotaliidae
-Nouriidae
-Nubeculariidae
-Nucleariida
-Nucleariidae
-Nucleocorbulidae
-Nudifilidae
-Nudisarca
-Nummulitidae
-Nyctotheridae
-Oblongichytriidae
-Odontostomatida
-Olgiidae
-Oligohymenophorea
-Oligotrichea # oligotrich ciliates
-Oligotrichia
-Oligotrichida # oligotrich ciliates
-Onychodromusidae # hypotrich ciliate family
-Oodiniaceae
-Opalinata
-Opalinea
-Opalinida
-Opalinidae
-Opalinopsidae
-Opaloconchida
-Opalozoa
-Operculariidae
-Ophrydiidae
-Ophryocystidae
-Ophryodendridae
-Ophryoglenidae
-Ophryoscolcidae # entodiniomorphid ciliate family (rumen ciliates)
-Ophryoscolecidae
-Opisthonectidae
-Opthalimidiidae
-Orbitolinidae
-Orbulinidae
-Orchitorphryidae
-Ordosporidae
-Oridorsalidae
-Orosphaeridae
-Orthoamphisiellidae # hypotrich ciliate family
-Orthodonellidae
-Orthogregarinia
-Osangulariidae
-Ostreopsidaceae
-Ovavesiculidae
-Oxnerellidae
-Oxymonadaceae # oxymonad flagellate family (Preaxostyla)
-Oxymonadea
-Oxymonadida
-Oxymonadidae
-Oxyphysaceae
-Oxyrrhea
-Oxyrrhida
-Oxyrrhinaceae
-Oxytoxaceae
-Oxytrichida # oxytrichid hypotrich ciliates
-Oxytrichidae
-Padaungiellidae
-Palustrimonadida
-Palustrimonadidae
-Panacanthocystida
-Pannellainidae
-Pansomonadina
-Parabasalia
-Parabodonida
-Parabodonidae
-Parabodonidina
-Paracercomonada
-Paracercomonadida
-Paracinetida # suctorian ciliates (Ciliophora)
-Paracinetidae
-Paraconoidia
-Paradinida
-Paragregarea
-Paraisotrichidae
-Parakahliellidae # ciliate family
-Paralembidae
-Paramastigaceae # parabasalid flagellate family
-Parameciidae
-Paramoebidae
-Paramonadidae
-Paramycia
-Paramyxida
-Paranassulidae
-Paranophryidae # scuticociliate family
-Parapodophryidae # suctorian ciliate family
-Paraptychostomidae
-Paraquadrulidae
-Parataeniellaceae # dinoflagellate family
-Paratrimastigidae
-Parauronematidae
-Parentodiniidae
-Parrelloididae
-Parvamoebidae
-Parvamoebina
-Patellinidae
-Paulinellidae
-Pavonidae
-Pediglissa
-Pegidiidae
-Pelagostrombidiidae # oligotrich ciliate family
-Pellitidae
-Pellitina
-Pelobiontida
-Pelomixidae
-Pelomyxidae # lobose amoeba family (Amoebozoa; Pelomyxa)
-Peneroplidae
-Peniculia
-Peniculida
-Peniculistomatidae
-Peniculostomatidae # ciliate family
-Peranematidae
-Peranemea
-Peranemia
-Peranemida
-Peranemidae
-Percolatea
-Percolomonadida
-Percolozoa
-Pereziidae
-Periacinetidae
-Peridinea
-Peridiniaceae
-Peridiniales
-Peridiniopsidaceae
-Peridinoidia
-Perigriniidae
-Peritrichia
-Peritrichida # peritrich ciliates (incl. Vorticella)
-Peritromidae
-Perkinsea
-Perkinsida
-Perkinsidae
-Perkinsozoa
-Perlatia
-Perlofilida
-Petalomonadida
-Petalomonadidae
-Petalotrichidae
-Pfiesteriaceae
-Phacidae
-Phacodiniida
-Phacodiniidae
-Phacodiniidia
-Phacodiscidae
-Phaeodarea
-Phaeodinidae
-Phaeosphaeridae
-Phagodinida
-Phagomyxida
-Phalacrocleptidae
-Phalansteriaceae # choanoflagellate-relative flagellate family (Phalansterium)
-Phalansteriida
-Phalansteriidae
-Pharyngomonada
-Pharyngomonadea
-Pharyngomonadida
-Philasterida
-Philasteridae
-Phractopeltidae
-Phryganellidae
-Phthanotrochidae
-Phyllochonidae
-Phyllopharyngea
-Phyllostauridae
-Physaraceae # myxomycete family (Amoebozoa)
-Physarales # myxomycetes (Physarum etc., Amoebozoa)
-Physaridae
-Phytodiniaceae
-Phytodiniales
-Phytomastigophora # obsolete class for plant-like flagellates (heterogeneous)
-Phytomyxea
-Pilisuctorida
-Pinaciophoridae
-Piridae
-Piroplasmida
-Pithonellidae # Cretaceous calcified tintinnid family
-Placentulinidae
-Placidae
-Placididea
-Placidiida
-Placidiidae
-Placidozoa
-Placofila
-Placonuda
-Placoperla
-Placopsilinidae
-Plagiacanthidae
-Plagiocampidae
-Plagiopylea
-Plagiopylida
-Plagiopylidae
-Plagiopyxidae
-Plagiotomida # plagiotomid ciliates
-Plagiotomidae
-Planispirillinidae
-Planomonadida
-Planomonadidae
-Planorbulinidae
-Planulinidae
-Planuloididae
-Plasmodiidae
-Plasmodiophoraceae
-Plasmodiophorida
-Plasmodiophoridae # plasmodiophorid family (Phytomyxea/Rhizaria)
-Platyophryidae
-Pleistophoridae
-Pleistosporidiidae
-Plesiotrichopidae
-Pleuronematida
-Pleuronematidae
-Pleuroplitidae
-Pleurostomatida
-Plicomonada
-Ploeotarea
-Ploeotiida
-Ploeotiidae
-Podolampadaceae
-Podophryidae
-Polycostidae
-Polycyclidae
-Polycystinea
-Polydiniellidae
-Polykrikaceae
-Polymastigaceae # diplomonad flagellate family
-Polymastigidae
-Polymorphinidae
-Polyplicariidae
-Polypyramidae
-Polysaccamminidae
-Pompholyxophryidae
-Porospathidae
-Porosporidae
-Porosporina
-Porosporoidea
-Postciliodesmatophora
-Postgaardea
-Postgaardia
-Postgaardida
-Postgaardidae
-Praethecacinetidae
-Preaxostyla
-Prodiscophryidae
-Prokinetoplastida
-Prokinetoplastina
-Proleptomonadidae
-Prolixoplectidae
-Pronoctilucaceae
-Prorocentraceae
-Prorocentrales
-Prorodontida
-Prorodontidae
-Prostomatea
-Prostomatida
-Protalveolata
-Protanoplophryidae
-Protaspidaceae
-Protaspidae
-Proteomyxia
-Proteromonadida
-Proteromonadidae
-Protista
-Protocaviellidae
-Protoceratiaceae
-Protocruzea
-Protocruzia
-Protocruziida
-Protocruziidae
-Protocruziidia
-Protodiniferaceae
-Protohalliidae
-Protoheterotrichida
-Protolitonotidae
-Protoperidiniaceae
-Protosporangida
-Protosporangiidae
-Protosteliales # protostelid myxomycetes (Amoebozoa)
-Protostelida
-Protosteliidae
-Protostomatida
-Prototrachelocercidae # karyorelict ciliate family
-Protozoa
-Psammettidae
-Psamminida
-Psamminidae
-Psammonobiotidae
-Psammosidae
-Psammosphaeridae
-Pseudobolivinidae
-Pseudochlamydonellidae
-Pseudociliatida
-Pseudocohnilembidae
-Pseudodendromonadidae
-Pseudodendromonida
-Pseudodifflugiidae
-Pseudoentodiniidae
-Pseudogaudryinidae
-Pseudogemmidae
-Pseudoholophryida # prostome ciliates
-Pseudoholophryidae
-Pseudokeronopsidae
-Pseudolithidae
-Pseudomicrothoracidae # ciliate family
-Pseudonosematidae
-Pseudoparrellidae
-Pseudophyllomitidae
-Pseudopirsoniidae
-Pseudopleistophoridae
-Pseudotrachelocercidae
-Pseudourostylidae
-Psilotrichidae
-Psorospermidae
-Pterocorythidae
-Pterocystida
-Pterocystidae
-Ptychocylidae # tintinnid ciliate family (Ptychocylus)
-Ptychocylididae
-Ptychodiscaceae
-Pulleniatinidae
-Pycnotrichidae
-Pyloniidae
-Pyrocystaceae
-Pyrocystales
-Pyrophacaceae
-Pyrsonympha
-Pyrsonymphaceae # oxymonad flagellate family (Preaxostyla)
-Pyrsonymphidae
-Quadriciliidae
-Quadrimorphinidae
-Rabdiasteridae
-Rabdiophryidae
-Radiophryidae
-Radiozoa
-Ramamoebida
-Rapazia
-Rapazida
-Rapazidae
-Raperosteliaceae
-Raphidiophryidae
-Rastrimonadida
-Reichenowellidae
-Remaneicidae
-Reophacellidae
-Retaria
-Reticulofilosa
-Reticulosida
-Reticulowoodruffiidae # hypotrich ciliate family
-Retortamonadaceae # retortamonad flagellate family
-Retortamonadida
-Retortamonadidae
-Reussellidae
-Rhabdamminidae
-Rhabdomonadina
-Rhabdonellidae
-Rhabdophryidae
-Rhapydioninidae
-Rhinosporidiidae
-Rhinozetidae
-Rhizamminidae
-Rhizaria
-Rhizaspididae
-Rhizomastigida
-Rhizomastigidae
-Rhizomonadidae
-Rhizonymphidae # hypermastigote flagellate family (Parabasalia)
-Rhizoplasmidae
-Rhogostomidae
-Rhynchetidae
-Rhynchodia
-Rhynchodida
-Rhynchomonadidae
-Rhynchophryidae
-Rhynchostomatia
-Rhytidocystidae
-Rictida
-Rictidae
-Rigidomastigidae
-Rigidothrichidae # ciliate family
-Rigifilida
-Rigifilidae
-Rigimonada
-Riveroinidae
-Robertinida
-Robertinidae
-Rosalinidae
-Rotaliellidae
-Rotaliida
-Rotaliidae # foraminifera family (Rotaliida)
-Rotallidae
-Rotosphaerida
-Rovinjellidae
-Rozellida
-Rozellidae
-Rozellidea
-Rzehakinidae
-Saccamminidae
-Saccinobaculidae
-Sagenista
-Sagosphaeridae
-Sainouridae
-Sainouroidea
-Salpingoecaceae # choanoflagellate family
-Salpingoecidae
-Sandonidae
-Sandonina
-Sapocribridae
-Sarcocystidae
-Sarcodina
-Sarcomastigophora
-Sarcomastigota
-Sarcomonadea
-Scaphidiodontidae
-Schizamminidae
-Schizocaryidae
-Schizoplasmodiidae
-Schizopyrenida
-Scuticociliatia
-Scuticociliatida # scuticociliate ciliates
-Scyphidiidae
-Scytomonadidae
-Selenaionida
-Selenaionidae
-Selenidiidae
-Semiconosia
-Serpenomonadidae
-Sessilida
-Severonidae
-Shepheardellidae
-Sicuophoridae
-Siedleckiidae
-Siluaniidae
-Simplicimonadidae
-Siphogenerinoididae
-Siphonididae
-Skiomonadea
-Solenicolidae
-Solenophryidae
-Soliformovidae
-Sonderiidae
-Soritidae
-Sorodiplophryidae
-Sorogenida
-Sorogenidae
-Spathidiida
-Spathidiidae
-Spelaeophryidae
-Sphaeramminidae
-Sphaeriparaceae
-Sphaerocystidae
-Sphaeroidinellidae
-Sphaeroidinidae
-Sphenoderiidae
-Sphenomonadidae
-Sphenophryidae
-Spirillinida
-Spirillinidae
-Spirochonidae
-Spirocuta
-Spirodinida
-Spirodiniidae
-Spirofilidae
-Spiroloculinidae
-Spironucleidae
-Spiroplectamminidae
-Spirostomidae
-Spirotectinidae
-Spirotrichea
-Spirotrichia
-Spirotrichonymphida
-Spirotrichonymphidae # hypermastigote flagellate family (Parabasalia)
-Spirotrichosomidae
-Spirozonidae
-Spongodiscidae
-Spongomonadida
-Spongomonadidae
-Sporadotrichida
-Sporozoa
-Spragueidae
-Spumellaria
-Squamamoebidae
-Squamocutida
-Squamulinidae
-Squirmida
-Squirmidea
-Stainforthiidae
-Stannomida
-Stannomidae
-Stauracanthidae
-Stauraconidae
-Staurojoeninidae
-Stavomonadea
-Stelamoeba
-Stemonitales # myxomycetes (Amoebozoa)
-Stemonitidaceae # myxomycete family (Amoebozoa)
-Stemonitidae
-Stenamoebidae
-Stenophorida
-Stenophoridae
-Stentoridae
-Stephanoecidae
-Stephanomonadaceae # flagellate family
-Stephanopogonidae
-Stereomyxida # stereomyxid amoebae (Endomyxa/Rhizaria)
-Stereomyxidae
-Sticholonchea
-Stichotrichia
-Stichotrichida
-Stokesiidae
-Streblomastigidae
-Striatosporidae
-Strobilidiidae
-Strobilidiina
-Strombidiida
-Strombidiidae
-Strombidinopsidae
-Strombidinopsina
-Stygamoebidae
-Stygamoebina
-Stygiellidae
-Stylocephalidae
-Stylocephaloidea
-Stylochonidae
-Stylocometidae
-Suctoria
-Suctorida # suctorian ciliates
-Suessiaceae
-Suessiales
-Suessioidia
-Sulcodinea
-Sulcomonadidae
-Sulcozoa
-Sultanophryidae # suctorian ciliate family
-Symbiontida
-Symphyacanthida
-Syncystidae
-Syndina
-Syndinea
-Syndiniaceae
-Syndinida
-Syndinidae
-Synhymeniida
-Synhymeniidae
-Syringamminidae
-Tachyblastonidae
-Taxopodida
-Tectiferina
-Tectofilosida
-Tectohymenidae
-Tectosia
-Telamminidae
-Telamodiniidae
-Telomyxidae
-Teloproctidae
-Teranymphidae
-Termitophryidae
-Terragregarina
-Testulariida
-Tetradimorphidae
-Tetrahymenida
-Tetrahymenidae
-Tetramicridae
-Tetramitaceae
-Tetramitia
-Textulariellidae
-Textulariidae
-Textulariopsidae
-Thalassicollidae
-Thalassomycetaceae
-Thallassicollidae
-Thaumatomonadida
-Thaumatomonadidae
-Thecacinetidae
-Thecadiniaceae
-Thecamoebida
-Thecamoebidae
-Thecofilosea
-Thecomonadea
-Theileriidae
-Thelohaniidae
-Theoperidae
-Thigmocomidae
-Thigmophryidae
-Thigmotrichida
-Tholoniidae
-Thoracosphaeraceae
-Thraustochytriaceae # thraustochytrid stramenopile family (Labyrinthulea)
-Thraustochytrida # thraustochytrids (Labyrinthulea, Stramenopiles)
-Thraustochytriida
-Thraustochytriidae
-Thyrophylacidae
-Tintinnida
-Tintinnidae
-Tintinnidiidae
-Tokophryidae
-Tontoniidae
-Torodiniaceae
-Torodiniales
-Torodinida
-Tortoplectellidae
-Tosaidae
-Tovelliaceae
-Toxoglugeidae
-Tracheliida
-Tracheliidae
-Trachelocercida # karyorelict ciliates
-Trachelocercidae
-Trachelophyllidae
-Trachelostylidae
-Tremulida
-Tremulidae
-Trepomonadea # diplomonad flagellates (relatives of Giardia)
-Triadiniaceae
-Tricercomitidae
-Trichiales # myxomycetes (Amoebozoa)
-Trichiida
-Trichiidae
-Trichodinidae
-Trichodinopsidae
-Trichohyalidae
-Tricholimacidae
-Trichomonadaceae # trichomonad flagellate family (Parabasalia)
-Trichomonadea
-Trichomonadida
-Trichomonadidae
-Trichonemidae
-Trichonymphea
-Trichonymphida
-Trichonymphidae
-Trichophryidae
-Trichosia
-Trichosida
-Trichosphaeriidae
-Trichospiridae
-Trichostomatia
-Trichostomatida # trichostome ciliates
-Trichotokaridae
-Trichozoa
-Trigonopixidae
-Trigonopyxidae # testate amoeba family (Arcellinida)
-Trihymenidae
-Trilocularenidae
-Trimastigaceae # oxymonad flagellate family (Preaxostyla)
-Trimastigida
-Trimastigidae
-Trimosinidae
-Trimyemidae
-Trinematidae
-Trissocyclidae
-Tritaxiidae
-Tritrichomonadida
-Tritrichomonadidae
-Trochamminida
-Trochamminidae
-Trochamminoidae
-Troglodytellidae
-Tropidoatractidae
-Trypanococcidae
-Trypanosomatida
-Trypanosomatidae
-Tsukubamonadida
-Tsukubamonadidae
-Tsukubea
-Tubiferaceae # myxomycete family (Amoebozoa)
-Tubothalamea
-Tubulinea
-Tubulinosematidae
-Tulamoebidae
-Turaniellidae
-Turborotalitidae
-Turrilinidae
-Tuscaroridae
-Tuzetiidae
-Undellidae
-Ungalatellidae
-Uniciliatida
-Unikaryonidae
-Uradiophoridae
-Urceolariidae
-Urnulidae # foraminifera family (Rhizaria)
-Urocentrida
-Urocentridae
-Uronematidae
-Uronychiidae
-Urosporidae
-Urosporoidea
-Urostylida
-Urotrichidae
-Urozonidae
-Usconophryidae
-Uvigerinidae
-Vaginicolidae
-Vaginulinidae
-Vahlkampfidae # heterolobosean amoeba family (Excavata)
-Vahlkampfiidae
-Valvulinidae
-Vampyrellida
-Vampyrellidae
-Vampyrellidea
-Vannellida # vannellid amoebae (Amoebozoa)
-Vannellidae
-Vannellina
-Variglissida
-Variosea
-Variosia
-Varipodida
-Varisulca
-Velocida
-Veloxidiidae
-Veloxidioidea
-Ventrata
-Ventricleftia
-Ventricleftida
-Ventrifilosa
-Ventrifissuridae
-Vermamoebidae
-Vermigregarida
-Verneuilinidae
-Verrucomonadidae
-Vestibuliferida
-Vexilliferidae
-Victoriellidae
-Virgulinellidae
-Viridiraptoridae
-Vitrellida
-Vitrelloidia
-Volutellidae
-Voracida
-Voromonadida
-Vorticellidae
-Warnowiaceae
-Wilbertomorphidae
-Wobblata
-Woloszynskiaceae
-Woodruffiidae
-Xystonellidae
-Yogsothothidae
-Zoelucasida
-Zoelucasidae
-Zoomastigophora # obsolete class for animal-like flagellates (heterogeneous)
-Zoothamniidae
-Zoyaellidae
+Abolliferidae # IRMNG: Imbricatea > Marimonadida
+Acanthamoebidae # COL: Discosea > Centramoebida
+Acantharea # WoRMS: synonym of Acantharia (Radiozoa)
+Acantharia # alternate spelling of Acantharea (radiolarians, Rhizaria); ITIS: Protozoa > Protozoa
+Acanthochiasmidae # WoRMS: Acantharia > Holacanthida
+Acanthocollidae # WoRMS: Acantharia > Holacanthida
+Acanthocystida # WoRMS: Heliozoa > Centrohelea
+Acanthocystidae # COL: Heliozoa > Centrohelida
+Acanthoecaceae # loricate choanoflagellate family; COL: synonym of Acanthoecidae (Acanthoecida)
+Acanthoeccidae # ALF: Choanoflagellatea > Acanthoecida
+Acanthoecida # COL: Choanozoa > Choanoflagellatea
+Acanthoecidae # loricate choanoflagellate family; COL: Choanoflagellatea > Acanthoecida
+Acanthometridae # ITIS: Acantharia > Arthracanthida
+Acanthoperlidae # IRMNG: Imbricatea > Perlofilida
+Acanthoplegmida # ALF: Retaria > Acantharea
+Acanthoplegmidae # WoRMS: Acantharia > Holacanthida
+Acanthopodida # acanthopodid amoebae (Amoebozoa); COL: Amoebozoa > Variosea
+Acanthopodina # class of lobose amoebae (Amoebozoa); COL: synonym of Discosea (Amoebozoa)
+Acarpomyxa # class of myxomycete-like amoebozoans (Myxogastria); COL: synonym of Tubulinea (Amoebozoa)
+Acavomonea # WoRMS: Chromista > Myzozoa
+Acavomonida # IRMNG: Acavomonidia > Acavomonea
+Acervulinidae # COL: Globothalamea > Rotaliida
+Acinetactidae # CLB dataset 2014: Granofilosea > Heliomonadida
+Acinetidae # COL: Kinetofragminophora > Suctorida
+Acinetopsidae # COL: Kinetofragminophora > Suctorida
+Aconchulinida # naked filose amoebae (Cercozoa); ITIS: Protozoa > Filosia
+Aconoidia # ALF: Miozoa > Coccidiomorphea
+Acramoebidae # COL: Variosea > Protostelida
+Acrasiaceae # cellular slime mould family (Heterolobosea/Acrasida); COL: synonym of Acrasidae (Acrasida)
+Acrasida # COL: Percolozoa > Heterolobosea
+Acrocoelida # WoRMS: Myzozoa > Apicomonadea
+Acroglissia # COL: Euglenozoa > Peranemea
+Acroglissida # COL: Euglenozoa > Peranemea
+Acropisthiidae # COL: Gymnostomatea > Haptorida
+Actinichonidae # WoRMS: Phyllopharyngea > Cryptogemmida
+Actiniscaceae # ITIS: Dinophyceae > Actiniscales
+Actiniscales # ITIS: Pyrrophycophyta > Dinophyceae
+Actinobolinidae # COL: Gymnostomatea > Spathidiida
+Actinocephalidae # ITIS: Sporozoa > Eugregarinida
+Actinocephaloidea # TAXREF: Gregarinomorpha > Eugregarinida
+Actinommidae # COL: Polycystina > Spumellaria
+Acytosteliaceae # dictyostelid cellular slime mould family (Amoebozoa); COL: Dictyosteliomycetes > Acytosteliales
+Acytosteliales # COL: Amoebozoa > Dictyosteliomycetes
+Acytosteliidae # IRMNG: synonym of Acytosteliaceae (Acytosteliales)
+Adeleida # IRMNG: Miozoa > Coccidiomorphea
+Adeleidae # WoRMS: Conoidasida > Eucoccidiorida
+Adnatosphaeridiaceae # WoRMS: Chromista > Myzozoa
+Aegyrianidae # COL: Cyrtophoria > Dysteriida
+Aeroligeraceae # GBIF: Chromista > Myzozoa
+Agglomeratidae # ALF: Microsporea > Microsporida
+Aggregatidae # WoRMS: Conoidasida > Eucoccidiorida
+Agitatidae # WoRMS: Sarcomonadea > Cercomonadida
+Akashiwidae # ALF: Peridinea > Spirodinida
+Alabaminidae # COL: Globothalamea > Rotaliida
+Alfredinidae # COL: synonym of Anomalinidae (Rotaliida)
+Algivorida # ALF: Miozoa > N.N.
+Algovorida # WoRMS: Myzozoa > Colponemea
+Allantosomatidae # COL: Kinetofragminophora > Suctorida
+Allapsidae # WoRMS: Sarcomonadea > Glissomonadida
+Allapsina # ALF: Sarcomonadea > Glissomonadida
+Allobodonidae # COL: Euglenozoa > Kinetoplastea
+Allogromiida # COL: Foraminifera > Monothalamea
+Allogromiidae # COL: Monothalamea > Allogromiida
+Almaenidae # COL: Globothalamea > Rotaliida
+Althorniidae # IRMNG: Labyrinthulea > Thraustochytriida
+Alveolata # ITIS: Chromista
+Alveolinidae # COL: Tubothalamea > Miliolida
+Ammobaculinidae # COL: Globothalamea > Lituolida
+Ammodiscidae # COL: Tubothalamea > Spirillinida
+Ammolagenidae # COL: Foraminifera > Nodosariata
+Ammosphaeroidinidae # COL: Globothalamea > Lituolida
+Amoebida # lobose amoebae (Amoebozoa); COL: synonym of Amoebozoa (Protozoa)
+Amoebidae # COL: Tubulinea > Euamoebida
+Amoebidiidae # COL: Ichthyosporea > Eccrinida
+Amoebina # Wikidata: Protozoa > Sarcomastigophora
+Amoeboaphelidiidae # ALF: Aphelida > Aphelidida
+Amoebophryaceae # WoRMS: Dinophyceae > Syndiniales
+Amoebozoa # COL: Eukaryota > Protozoa
+Amphibothrellidae # COL: Prostomatea > Prostomatida
+Amphidinida # ALF: Miozoa > Sulcodinea
+Amphidiniopsidaceae # GBIF: Dinophyceae > Peridiniales
+Amphidomataceae # WoRMS: Myzozoa > Dinophyceae
+Amphifilidae # COL: Labyrinthulea > Thraustochytrida
+Amphileptidae # COL: Gymnostomatea > Pleurostomatida
+Amphilithidae # WoRMS: Acantharia > Symphyacanthida
+Amphilothaceae # ITIS: Dinophyceae > Peridiniales
+Amphilothales # WoRMS: Myzozoa > Dinophyceae
+Amphimonadidae # choanoflagellate family; COL: Eukaryota > Protozoa
+Amphisiellidae # COL: Hypotrichea > Stichotrichida
+Amphisoleniaceae # ITIS: Dinophyceae > Dinophysiales
+Amphisteginidae # COL: Globothalamea > Rotaliida
+Amphitremidae # IRMNG: Labyrinthulea > Amphitremida
+Amylovoracidae # IRMNG: Litostomatea > Vestibuliferida
+Anaeromonada # WoRMS: Protozoa > Metamonada
+Anaeromonadea # COL: Protozoa > Metamonada
+Ancistridae # WoRMS: Oligohymenophorea > Thigmotrichida
+Ancistrocomidae # WoRMS: Phyllopharyngea > Rhynchodida
+Ancoridae # IRMNG: Miozoa > Eugregarinida
+Ancyromonadidae # COL: Glissodiscea > Planomonadida
+Andaluciidae # COL: Jakobea > Jakobida
+Angeiocystidae # IRMNG: Coccidiomorphea > Coelotrophiida
+Angulamoebidae # COL: Variosea > Ramamoebida
+Anisonemia # COL: Euglenozoa > Peranemea
+Anisonemida # COL: Euglenozoa > Peranemea
+Anisonemidae # COL: Peranemea > Anisonemida
+Annulopatellinidae # COL: Globothalamea > Rotaliida
+Anoecida # WoRMS: Bigyra > Bicoecea
+Anophryidae # scuticociliate family (Ciliophora); COL: Oligohymenophorea > Scuticociliatida
+Anoplophryidae # COL: Oligohymenophorea > Astomatida
+Anthemosomatidae # IRMNG: Coccidiomorphea > Piroplasmida
+Anurosporiidae # WoRMS: Ascetosporea > Haplosporida
+Apertospathulidae # COL: Gymnostomatea > Spathidiida
+Aphelida # ALF: Protozoa
+Aphelidea # ALF: Protozoa > Aphelida
+Aphelidida # WoRMS: Choanozoa > Ichthyosporea
+Aphelidiidae # ALF: Aphelida > Aphelidida
+Apicomonada # IRMNG: Chromista > Miozoa
+Apicomonadea # WoRMS: Chromista > Myzozoa
+Apicomplexa # ITIS: Protozoa
+Aplanochytriidae # COL: Labyrinthulea > Thraustochytrida
+Apodinidae # WoRMS: Dinophyceae > Blastodiniales
+Apostomatia # WoRMS: Ciliophora > Oligohymenophorea
+Apostomatida # COL: Ciliophora > Kinetofragminophora
+Apsiktratidae # COL: Prostomatea > Prostomatida
+Apusomonadida # COL: Sulcozoa > Thecomonadea
+Apusomonadidae # COL: Thecomonadea > Apusomonadida
+Apusozoa # COL: Protozoa > Sulcozoa
+Aquavolonida # IRMNG: Cercozoa > Skiomonadea
+Arachnulidae # ALF: Vampyrellidea > Vampyrellida
+Arboramminidae # COL: Monothalamea > Astrorhizida
+Arboramoebidae # COL: Variosea > Phalansteriida
+Arcellidae # COL: Tubulinea > Arcellinida
+Arcellinida # COL: Amoebozoa > Tubulinea
+Archamoebae # WoRMS: Protozoa > Amoebozoa
+Archamoebea # COL: Protozoa > Amoebozoa
+Archezoa # IRMNG: Protozoa
+Archigregarinida # ITIS: Protozoa > Sporozoa
+Archiphormididae # COL: Polycystina > Nassellaria
+Archistomatina # ALF: Litostomatea > Entodiniomorphida
+Arcuospathidiidae # litostome ciliate family; COL: Gymnostomatea > Spathidiida
+Arcyriaceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Trichiales
+Arcyriidae # IRMNG: synonym of Arcyriaceae (Trichiales)
+Armophorea # IRMNG: Chromista > Ciliophora
+Armophorida # COL: Ciliophora > Heterotrichea
+Arthracanthida # ITIS: Protozoa > Acantharia
+Arthrogregarida # WoRMS: Myzozoa > Conoidasida
+Artodiscida # COL: Amoebozoa > Variosea
+Artodiscidae # COL: Variosea > Artodiscida
+Artostrobiidae # COL: Polycystina > Nassellaria
+Ascampbelliellidae # ITIS: Ciliatea > Oligotrichida
+Ascetosporea # WoRMS: Chromista > Cercozoa
+Aschemocellidae # COL: Foraminifera > Nodosariata
+Aspidiscidae # COL: Hypotrichea > Euplotida
+Asplanchnoidae # GBIF: Lobosa > Amoebida
+Assulinidae # IRMNG: Imbricatea > Euglyphida
+Astasiidae # COL: Peranemea > Natomonadida
+Asterigerinatidae # COL: Globothalamea > Rotaliida
+Asterigerinidae # COL: Globothalamea > Rotaliida
+Astomatia # WoRMS: Ciliophora > Oligohymenophorea
+Astomatida # COL: Ciliophora > Oligohymenophorea
+Astomatophorida # WoRMS: Ciliophora > Oligohymenophorea
+Astracanthidae # WoRMS: Thecofilosea > Phaeocystida
+Astrolithidae # WoRMS: Acantharia > Symphyacanthida
+Astrorhizida # COL: Foraminifera > Monothalamea
+Astrorhizidae # COL: Monothalamea > Astrorhizida
+Astylozoidae # COL: Oligohymenophorea > Peritrichida
+Atlanticellidae # WoRMS: Thecofilosea > Phaeogymnocellida
+Aulacanthidae # ITIS: Labyrinthulea > Phaeodaria
+Aulosphaeridae # WoRMS: Thecofilosea > Phaeosphaerida
+Auranticordidae # IRMNG: Imbricatea > Marimonadida
+Aurigamonadidae # GBIF: Chromista > Cercozoa
+Aveliidae # COL: Karyorelictea > Protoheterotrichida
+Axomonadida # IRMNG: Heliozoa > Endohelea
+Axostylea # not found in ChecklistBank
+Azeridae # ALF: Oligohymenophorea > Thigmotrichida
+Babesiidae # IRMNG: Coccidiomorphea > Piroplasmida
+Baculellidae # COL: Monothalamea > Astrorhizida
+Bagginidae # COL: Globothalamea > Rotaliida
+Bakuellidae # COL: Hypotrichea > Urostylida
+Balamuthiidae # COL: Discosea > Centramoebida
+Balanionidae # COL: Prostomatea > Prostomatida
+Balantidiidae # COL: Heterotrichea > Heterotrichida
+Bardeliellidae # IRMNG: Colpodea > Colpodida
+Bathysiphonidae # COL: synonym of Bathysiphoninae (Astrorhizida)
+Bicoecida # WoRMS: Bigyra > Bicoecea
+Bicosidia # WoRMS: Bigyra > Bicoecea
+Bicosoecidae # ITIS: synonym of Salpingoecaceae (Craspedomonadales)
+Bigyra # COL: Eukaryota > Chromista
+Bigyromonadea # class of heterokont protists (Bigyra/Stramenopiles); COL: Chromista > Oomycota
+Bihospitida # COL: Euglenozoa > Postgaardea
+Bihospitidae # COL: Postgaardea > Bihospitida
+Bikosea # IRMNG: Chromista > Bigyra
+Bikosia # ALF: Chromista > Bigyra
+Biomyxidae # WoRMS: Vampyrellidea > Athalamida
+Bisacciidae # COL: Globothalamea > Rotaliida
+Blabericolidae # IRMNG: Gregarinomorphea > Arthrogregarida
+Blastocystea # WoRMS: Chromista > Bigyra
+Blastocystida # WoRMS: Bigyra > Blastocystea
+Blastodinales # ALF: Miozoa > Dinophyceae
+Blastodinidae # WoRMS: Dinophyceae > Blastodiniales
+Blastogregarinida # IRMNG: Miozoa > Blastogregarinea
+Blepharismidae # COL: Heterotrichea > Heterotrichida
+Blepharocorythidae # COL: Kinetofragminophora > Trichostomatida
+Blepharocorythina # ALF: Litostomatea > Entodiniomorphida
+Bodomorphidae # WoRMS: Sarcomonadea > Glissomonadida
+Bodonida # COL: Euglenozoa > Kinetoplastea
+Bodonidae # COL: Kinetoplastea > Bodonida
+Bolivinellidae # COL: Globothalamea > Rotaliida
+Bolivinidae # COL: synonym of Bolivinitidae (Rotaliida)
+Bolivinitidae # COL: Globothalamea > Rotaliida
+Borghiellaceae # WoRMS: Dinophyceae > Suessiales
+Borokida # WoRMS: Bigyra > Bicoecea
+Borokidae # IRMNG: Bikosea > Borokida
+Boveriidae # COL: Oligohymenophorea > Scuticociliatida
+Brachidiniaceae # WoRMS: Dinophyceae > Gymnodiniales
+Brachidiniales # WoRMS: Myzozoa > Dinophyceae
+Breviatea # COL: Protozoa > Sulcozoa
+Breviatida # COL: Sulcozoa > Breviatea
+Breviatidae # COL: Breviatea > Breviatida
+Brevispinidae # IRMNG: Paragregarea > Stenophorida
+Bronnimanniidae # COL: Globothalamea > Rotaliida
+Bryometopida # COL: Ciliophora > Colpodea
+Bryometopidae # COL: Colpodea > Bryometopida
+Bryophryida # COL: Ciliophora > Colpodea
+Bryophryidae # COL: Colpodea > Bryophryida
+Bueningiidae # COL: Globothalamea > Rotaliida
+Buetschliellidae # COL: Oligohymenophorea > Astomatida
+Buetschliidae # COL: Prostomatea > Prostomatida
+Buliminellidae # COL: Globothalamea > Rotaliida
+Buliminoididae # COL: Globothalamea > Rotaliida
+Burmanymphidae # hypermastigote flagellate family (Parabasalia); COL: Trichonymphea > Trichonymphida
+Bursaridiidae # COL: Colpodea > Bursariomorphida
+Bursariidae # COL: Colpodea > Bursariomorphida
+Bursariomorphida # COL: Ciliophora > Colpodea
+Caecitellidae # WoRMS: Bicoecea > Anoecida
+Caenomorphidae # COL: Heterotrichea > Heterotrichida
+Cafeteriidae # IRMNG: Bikosea > Anoecida
+Calcarinidae # COL: Globothalamea > Rotaliida
+Calciodinellaceae # ITIS: Dinophyceae > Gonyaulacales
+Calkinsiidae # COL: Postgaardea > Postgaardida
+Calonymphidae # COL: Trichomonadea > Cristamonadida
+Calpionellidae # Jurassic-Cretaceous tintinnid ciliate family; COL: Oligotrichea > Oligotrichida
+Calpionellopsidae # Jurassic-Cretaceous tintinnid ciliate family; COL: Oligotrichea > Oligotrichida
+Calyptosporidae # WoRMS: Conoidasida > Eucoccidiorida
+Calyptotrichidae # COL: Oligohymenophorea > Pleuronematida
+Candeinidae # COL: Globothalamea > Rotaliida
+Cannobotryidae # COL: Polycystina > Nassellaria
+Cannosphaeridae # WoRMS: Thecofilosea > Phaeosphaerida
+Capsasporidae # COL: Filasterea > Ministeriida
+Carpediemonadea # class of excavate flagellates (Metamonada); COL: synonym of Carpomonadea (Metamonada)
+Carpediemonadia # WoRMS: Protozoa > Metamonada
+Carpediemonadida # COL: Metamonada > Carpomonadea
+Carpediemonadidae # COL: Carpomonadea > Carpediemonadida
+Carpocaniidae # COL: Polycystina > Nassellaria
+Carpomonadea # COL: Protozoa > Metamonada
+Carterinida # COL: Foraminifera > Globothalamea
+Carterinidae # COL: Globothalamea > Carterinida
+Cassidulinidae # COL: Globothalamea > Rotaliida
+Castanellidae # WoRMS: Thecofilosea > Phaeocalpida
+Caucasinidae # COL: Nodosariata > Delosinida
+Cavenderiaceae # COL: Dictyosteliomycetes > Acytosteliales
+Caviomonadidae # COL: Metamonada > Eopharyngea
+Cavosteliidae # COL: Variosea > Cavosteliida
+Centramoebida # COL: Amoebozoa > Discosea
+Centrodiniaceae # WoRMS: Dinophyceae > Peridiniales
+Centrohelea # WoRMS: Chromista > Heliozoa
+Centrohelida # centrohelid heliozoans; COL: Chromista > Heliozoa
+Centropixidae # ALF: Tubulinea > Arcellinida
+Centroplasthelida # CLB dataset 2014: Chromista > Heliozoa
+Centropyxidae # testate amoeba family (Arcellinida); COL: Tubulinea > Arcellinida
+Cephaloidophoridae # WoRMS: Conoidasida > Eugregarinorida
+Ceratiaceae # ITIS: Dinophyceae > Gonyaulacales
+Ceratiomixidae # ALF: Stelamoeba > Ceratiomyxida
+Ceratiomyxaceae # myxomycete family (Amoebozoa); COL: Protosteliomycetes > Ceratiomyxales
+Ceratiomyxida # IRMNG: synonym of Ceratiomyxales (Ceratiomyxomycetes)
+Ceratobuliminidae # COL: Globothalamea > Robertinida
+Ceratocoryaceae # ITIS: Dinophyceae > Gonyaulacales
+Ceratoperidiniaceae # WoRMS: Dinophyceae > Peridiniales
+Cercomonadida # WoRMS: Cercozoa > Sarcomonadea
+Cercomonadidae # ITIS: Phytomastigophora > Ebriida
+Cercozoa # COL: Eukaryota > Chromista
+Cerelasmidae # COL: synonym of Cerelasminae (Monothalamea)
+Certesiidae # WoRMS: Spirotrichea > Euplotida
+Chaeneidae # ALF: Litostomatea > Lacrymariida
+Chaetospiridae # oligotrich ciliate family; COL: Hypotrichea > Stichotrichida
+Challengeridae # WoRMS: Thecofilosea > Phaeogromida
+Chattonidiidae # COL: Heterotrichea > Heterotrichida
+Chaunacanthida # WoRMS: Radiozoa > Acantharia
+Cheilochanidae # COL: Globothalamea > Rotaliida
+Chilodochonidae # WoRMS: Phyllopharyngea > Exogemmida
+Chilodonellida # cyrtophorid ciliates; COL: Ciliophora > Cyrtophoria
+Chilodonellidae # COL: Cyrtophoria > Cyrtophorida
+Chiloguembelinidae # COL: Globothalamea > Rotaliida
+Chilomastigida # COL: Metamonada > Carpomonadea
+Chilomastigidae # COL: Carpomonadea > Chilomastigida
+Chilostomellidae # COL: Globothalamea > Rotaliida
+Chitinoidellidae # Jurassic tintinnid family; COL: Cyrtophoria > Cyrtophorida
+Chitonellidae # WoRMS: Phyllopharyngea > Chlamydodontida
+Chlamydodontida # COL: Ciliophora > Cyrtophoria
+Chlamydodontidae # COL: Cyrtophoria > Chlamydodontida
+Chlamydophryidae # IRMNG: Thecofilosea > Tectofilosida
+Chlorarachniida # Dyntaxa: synonym of Chlorarachniales (Chlorarachniophyceae)
+Choanocystidae # IRMNG: Centrohelea > Pterocystida
+Choanofila # COL: Protozoa > Choanozoa
+Choanoflagellatea # COL: Protozoa > Choanozoa
+Choanoflagellida # choanoflagellates (closest protist relatives of animals); COL: synonym of Craspedida (Choanoflagellatea)
+Choanophryidae # COL: Kinetofragminophora > Suctorida
+Choanozoa # COL: Eukaryota > Protozoa
+Chonotrichia # WoRMS: Ciliophora > Phyllopharyngea
+Choreotrichia # WoRMS: Ciliophora > Spirotrichea
+Choreotrichida # COL: Ciliophora > Oligotrichea
+Chromovoridia # ALF: Miozoa > Apicomonadea
+Chytridopsida # ALF: Microspora > Microsporea
+Chytriodiniaceae # WoRMS: Dinophyceae > Coccidiniales
+Cibicididae # COL: Globothalamea > Rotaliida
+Ciliofaureidae # tintinnid ciliate family; COL: Karyorelictea > Karyorelictida
+Ciliophora # COL: Eukaryota > Chromista
+Cinetochilidae # COL: Oligohymenophorea > Hymenostomatida
+Circoporidae # WoRMS: Thecofilosea > Phaeocalpida
+Citharistaceae # WoRMS: Dinophyceae > Dinophysales
+Cladopyxidaceae # ITIS: Dinophyceae > Gonyaulacales
+Clastodermataceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Echinosteliales
+Clastodermidae # IRMNG: synonym of Clastodermataceae (Clastodermatales)
+Clathrellidae # ITIS: Heliozoa > Desmothoracida
+Clathrostomatidae # COL: Oligohymenophorea > Peniculida
+Clathrulinidae # COL: Heliozoa > Desmothoracida
+Clausilocolidae # IRMNG: Oligohymenophorea > Astomatida
+Claustrosporida # WoRMS: Cercozoa > Ascetosporea
+Clautriaviidae # IRMNG: Imbricatea > Variglissida
+Clevelandellida # IRMNG: Ciliophora > Spirotrichea
+Clevelandellidae # IRMNG: Spirotrichea > Clevelandellida
+Climacostomidae # COL: Heterotrichea > Heterotrichida
+Coccidia # ITIS: Protozoa > Sporozoa
+Coccidinales # ALF: Miozoa > Dinophyceae
+Coccidiniaceae # IRMNG: Syndiniophyceae > Coccidiniales
+Coccidiomorphea # IRMNG: Chromista > Miozoa
+Coccodiscidae # COL: Polycystina > Spumellaria
+Cochliopodiidae # COL: Discosea > Himatismenida
+Cochlosomatidae # diplomonad/hexamitid flagellate family (bird parasites); COL: synonym of Trichomonadidae (Trichomonadida)
+Cochlosomidae # diplomonad/hexamitid flagellate family (alternate spelling); COL: synonym of Trichomonadidae (Trichomonadida)
+Codonellidae # COL: Oligotrichea > Tintinnida
+Codonellopsidae # COL: Oligotrichea > Tintinnida
+Codonosigaceae # choanoflagellate family; COL: synonym of Salpingoecidae (Craspedida)
+Codonosigidae # choanoflagellate family; COL: synonym of Salpingoecidae (Craspedida)
+Codosigaceae # choanoflagellate family; COL: synonym of Salpingoecidae (Craspedida)
+Codosigidae # choanoflagellate family; COL: synonym of Salpingoecidae (Craspedida)
+Coelodendridae # WoRMS: Thecofilosea > Phaeodendrida
+Coelosomidiidae # WoRMS: Oligohymenophorea > Astomatida
+Coelosporidiidae # microsporidian-like intracellular parasite family; GBIF: synonym of Nephridiophagidae (Protozoa)
+Coelotrophia # IRMNG: Miozoa > Coccidiomorphea
+Coelotrophiida # IRMNG: Miozoa > Coccidiomorphea
+Cohnilembidae # COL: Oligohymenophorea > Hymenostomatida
+Colepidae # COL: Prostomatea > Prostomatida
+Colliniidae # WoRMS: Oligohymenophorea > Apostomatida
+Collodarida # ALF: Retaria > Polycystinea
+Collodictyonidae # collodictyonid protist family (Collodictyonida); COL: synonym of Diphylleidae (Diphylleida)
+Collophidae # ALF: Polycystinea > Collodarida
+Collosphaeridae # COL: Nassellaria > Collozoidae
+Collozoidae # COL: Polycystina > Nassellaria
+Colpodea # COL: Chromista > Ciliophora
+Colpodellida # WoRMS: Myzozoa > Apicomonadea
+Colpodellidae # IRMNG: Colpodellophyceae > Colpodellida
+Colpodida # COL: Ciliophora > Colpodea
+Colpodidae # COL: Colpodea > Colpodida
+Colpodidiida # IRMNG: Ciliophora > Nassophorea
+Colpodidiidae # COL: Nassophorea > Nassulida
+Colponemida # WoRMS: Myzozoa > Colponemea
+Colponemidae # IRMNG: Colponemea > Colponemida
+Colpovoridae # IRMNG: Myzodinea > Myzodinida
+Columellidia # ALF: Amoebozoa > Myxogastrea (= Myxomycetes)
+Cometodendridae # COL: Kinetofragminophora > Suctorida
+Conaconidae # WoRMS: Acantharia > Chaunacanthida
+Concharidae # WoRMS: Thecofilosea > Phaeoconchida
+Conchophthiridae # COL: Heterotrichea > Heterotrichida
+Conchophyllidae # COL: Heterotrichea > Heterotrichida
+Condylostomatidae # COL: Heterotrichea > Heterotrichida
+Conidophryidae # COL: Kinetofragminophora > Apostomatida
+Conoidasida # class of apicomplexan parasites (Apicomplexa); COL: Chromista > Miozoa
+Conosa # COL: Protozoa > Amoebozoa
+Conosea # informal group of Amoebozoa incl. Archamoebae and Mycetozoa; COL: synonym of Variosea (Amoebozoa)
+Contophryidae # IRMNG: Oligohymenophorea > Astomatida
+Corallochytrea # COL: Protozoa > Choanozoa
+Corallochytrida # COL: Choanozoa > Corallochytrea
+Corallochytriidae # COL: Corallochytrea > Corallochytrida
+Corallomyxidae # myxomycete-like amoeba family; COL: Variosea > Acanthopodida
+Cornuspiridae # COL: Tubothalamea > Miliolida
+Corynophryidae # COL: Kinetofragminophora > Suctorida
+Coscinophragmatidae # COL: Globothalamea > Loftusiida
+Craspedida # COL: Choanozoa > Choanoflagellatea
+Craspedomonadidae # choanoflagellate family; COL: synonym of Salpingoecidae (Craspedida)
+Crassicollariidae # Cretaceous tintinnid ciliate family; COL: Oligotrichea > Tintinnida
+Creolimacidae # IRMNG: Ichthyosporea > Eccrinida
+Cribrariaceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Cribrariales
+Cribrariidae # IRMNG: synonym of Cribrariaceae (Cribrariales)
+Cribrolinoididae # COL: Tubothalamea > Miliolida
+Cristamonadida # COL: Metamonada > Trichomonadea
+Cristidiscoidea # COL: Protozoa > Choanozoa
+Cryomonadida # WoRMS: Cercozoa > Thecofilosea
+Crypthecodiniaceae # ITIS: Dinophyceae > Gonyaulacales
+Cryptobiidae # COL: Kinetoplastea > Bodonida
+Cryptochilidae # COL: Oligohymenophorea > Peniculida
+Cryptodifflugiidae # COL: Tubulinea > Arcellinida
+Cryptofilida # WoRMS: Cercozoa > Granofilosea
+Cryptogemmida # WoRMS: Ciliophora > Phyllopharyngea
+Cryptogregaria # IRMNG: Miozoa > Gregarinomorphea
+Cryptogregarida # IRMNG: Miozoa > Gregarinomorphea
+Cryptopharyngidae # COL: Karyorelictea > Loxodida
+Ctedectomatidae # hypermastigote flagellate family (Parabasalia); COL: Oligohymenophorea > Pleuronematida
+Ctedoctematidae # WoRMS: Oligohymenophorea > Pleuronematida
+Curimostomatidae # IRMNG: Oligohymenophorea > Hymenostomatida
+Cutosa # ALF: Protozoa > Amoebozoa
+Cutosea # COL: Protozoa > Amoebozoa
+Cyathodiniidae # IRMNG: Phyllopharyngea > Suctorida
+Cyclamminidae # COL: Globothalamea > Loftusiida
+Cyclogrammidae # COL: Nassophorea > Nassulida
+Cycloposthiidae # IRMNG: Litostomatea > Entodiniomorphida
+Cyclotrichida # karyorelict ciliates; COL: Ciliophora > Gymnostomatea
+Cyclotrichiida # WoRMS: Ciliophora > Litostomatea
+Cymbaloporidae # COL: Globothalamea > Rotaliida
+Cyphoderiidae # ITIS: Filosia > Aconchulinida
+Cyranomonadidae # WoRMS: Imbricatea > Marimonadida
+Cyrtocaryidae # WoRMS: Oligohymenophorea > Apostomatida
+Cyrtolophosidida # COL: Ciliophora > Colpodea
+Cyrtolophosididae # COL: Colpodea > Cyrtolophosidida
+Cyrtophoria # COL: Chromista > Ciliophora
+Cyrtophorida # cyrtophorid ciliates; COL: Ciliophora > Cyrtophoria
+Cyttarocylidae # tintinnid ciliate family; COL: Oligotrichea > Oligotrichida
+Cyttarocylididae # WoRMS: Oligotrichea > Choreotrichida
+Dactylophoridae # WoRMS: Conoidasida > Arthrogregarida
+Dactylopodida # dactylopodid amoebae (Amoebozoa); COL: synonym of Glycostylida (Discosea)
+Dactylopodina # ALF: Discosea > Glycostylida
+Dactylostomatidae # COL: Kinetofragminophora > Suctorida
+Decastavida # COL: Euglenozoa > Stavomonadea
+Decastavidae # COL: Stavomonadea > Decastavida
+Deflandreaceae # WoRMS: Dinophyceae > Peridiniales
+Delosinidae # COL: Nodosariata > Delosinida
+Deltopyluidae # tintinnid ciliate family; COL: Oligohymenophorea > Hymenostomatida
+Dendrocometidae # COL: Kinetofragminophora > Suctorida
+Dendrosomatidae # COL: Kinetofragminophora > Suctorida
+Dendrosomididae # COL: Kinetofragminophora > Suctorida
+Dentacinetidae # COL: Kinetofragminophora > Suctorida
+Dermamoebida # COL: Amoebozoa > Discosea
+Dermamoebidae # COL: Discosea > Dermamoebida
+Dermocystida # IRMNG: Choanozoa > Ichthyosporea
+Desmomastigaceae # WoRMS: Dinophyceae > Desmomastigales
+Desmomastigales # WoRMS: Myzozoa > Dinophyceae
+Desmothoracida # COL: Chromista > Heliozoa
+Devescovinidae # COL: Trichomonadea > Cristamonadida
+Dianemataceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Trichiales
+Dianemidae # IRMNG: synonym of Dianemataceae (Trichiales)
+Dicroerismataceae # IRMNG: Dinophyceae > Gymnodiniales
+Dictyacanthidae # WoRMS: Acantharia > Arthracanthida
+Dictyamoebidae # COL: Variosea > Phalansteriida
+Dictydiaethaliaceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Trichiales
+Dictydiaethaliidae # IRMNG: synonym of Dictydiaethaliaceae (Trichiales)
+Dictyocystidae # COL: Oligotrichea > Oligotrichida
+Dictyostelea # COL: synonym of Stelamoebea (Amoebozoa)
+Dictyosteliaceae # dictyostelid slime mould family (Amoebozoa); COL: Dictyosteliomycetes > Dictyosteliales
+Dictyosteliales # COL: Amoebozoa > Dictyosteliomycetes
+Dictyosteliidae # IRMNG: synonym of Dictyosteliaceae (Dictyosteliales)
+Didiniida # ALF: Ciliophora > Litostomatea
+Didiniidae # COL: Gymnostomatea > Haptorida
+Didymiaceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Physarales
+Didymiidae # WoRMS: Myxogastrea > Stemonitida
+Dientamoebidae # COL: Trichomonadea > Trichomonadida
+Difflugiidae # testate amoeba family (Arcellinida); COL: Tubulinea > Arcellinida
+Dileptida # COL: Ciliophora > Litostomatea
+Dileptidae # litostome ciliate family; COL: Litostomatea > Dileptida
+Dimacrocaryonidae # hypermastigote flagellate family (Parabasalia); COL: Litostomatea > Dileptida
+Dinamoebaceae # WoRMS: Peridinea > Dinamoebida
+Dinamoebales # ITIS: Pyrrophycophyta > Dinophyceae
+Dinenymphaceae # oxymonad flagellate family (Preaxostyla); COL: synonym of Pyrsonymphidae (Oxymonadida)
+Dinoflagellata # WoRMS: Chromista > Myzozoa
+Dinokaryota # Wikidata: Eukaryota > Dinoflagellata
+Dinomonadidae # IRMNG: Apicomonadea > Voracida
+Dinophysaceae # dinoflagellate family (Dinophyceae); WoRMS: Dinophyceae > Dinophysales
+Dinophysiaceae # dinoflagellate family (Dinophyceae; alternate family name); ITIS: Dinophyceae > Dinophysiales
+Dinophysiales # dinoflagellates (Dinophyceae), mostly photosynthetic; ITIS: Pyrrophycophyta > Dinophyceae
+Dinophysoidia # WoRMS: Myzozoa > Peridinea
+Dinophyta # WoRMS: synonym of Dinophyceae (Myzozoa)
+Dinosphaeraceae # ITIS: Dinophyceae > Peridiniales
+Dinotrichaceae # ITIS: Dinophyceae > Dinotrichales
+Dinotrichales # ITIS: Pyrrophycophyta > Dinophyceae
+Dinozoa # WoRMS: Chromista > Myzozoa
+Diphyllatea # COL: Protozoa > Sulcozoa
+Diphylleida # COL: Sulcozoa > Diphyllatea
+Diphylleidae # COL: Diphyllatea > Diphylleida
+Dipilida # COL: Protozoa > Euglenozoa
+Diploconidae # WoRMS: Acantharia > Arthracanthida
+Diplomonadida # COL: Metamonada > Eopharyngea
+Diplonemea # COL: Protozoa > Euglenozoa
+Diplonemida # COL: Euglenozoa > Diplonemea
+Diplonemidae # COL: Diplonemea > Diplonemida
+Diplophryidae # COL: Labyrinthulea > Thraustochytrida
+Diplopsaliaceae # WoRMS: synonym of Protoperidiniaceae (Peridiniales)
+Discamminidae # COL: Globothalamea > Lituolida
+Discoba # WoRMS: Protozoa
+Discocelida # IRMNG: Chromista > Cercozoa
+Discoceliidae # IRMNG: Cercozoa > Discocelida
+Discocephalina # WoRMS: Spirotrichea > Euplotida
+Discomonada # ALF: Cercozoa > Imbricatea
+Discomonadida # IRMNG: Cercozoa > Imbricatea
+Discomonadidae # WoRMS: Cercozoa > Imbricatea
+Discomorphellidae # IRMNG: Plagiopylea > Odontostomatida
+Discophryidae # COL: Oligohymenophorea > Astomatida
+Discorbidae # COL: Globothalamea > Rotaliida
+Discorbinellidae # COL: Globothalamea > Rotaliida
+Discosea # COL: Protozoa > Amoebozoa
+Discospirinidae # COL: Tubothalamea > Miliolida
+Discotrichidae # COL: Nassophorea > Nassulida
+Distigmidae # COL: Peranemea > Natomonadida
+Distomatopyxidae # COL: Tubulinea > Arcellinida
+Dorataspidae # WoRMS: Acantharia > Arthracanthida
+Dragescoidae # WoRMS: Oligohymenophorea > Pleuronematida
+Dryorhizopsidae # COL: Monothalamea > Astrorhizida
+Duquepsammiidae # COL: Globothalamea > Lituolida
+Dusenburyinidae # COL: Foraminifera > Nodosariata
+Dysnectida # COL: Metamonada > Carpomonadea
+Dysnectidae # COL: Carpomonadea > Dysnectida
+Dysteriida # COL: Ciliophora > Cyrtophoria
+Dysteriidae # COL: Cyrtophoria > Dysteriida
+Ebriida # ITIS: Sarcomastigophora > Phytomastigophora
+Eccrinaceae # WoRMS: synonym of Eccriniidae (Eccrinida)
+Eccrinida # COL: Choanozoa > Ichthyosporea
+Eccrinidae # IRMNG: Ichthyosporea > Eccrinida
+Eccriniidae # COL: Ichthyosporea > Eccrinida
+Echinamoebia # COL: Amoebozoa > Tubulinea
+Echinamoebida # COL: Amoebozoa > Tubulinea
+Echinamoebidae # COL: Tubulinea > Echinamoebida
+Echinichonidae # WoRMS: Phyllopharyngea > Cryptogemmida
+Echinosteliaceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Echinosteliales
+Echinosteliales # myxomycetes (Amoebozoa); COL: Amoebozoa > Myxomycetes
+Echinosteliida # WoRMS: Amoebozoa > Myxogastrea
+Echinosteliidae # IRMNG: synonym of Echinosteliaceae (Echinosteliales)
+Ectoreta # ALF: Chromista > Retaria
+Eggerellidae # COL: Globothalamea > Textulariida
+Eimeriida # IRMNG: Miozoa > Coccidiomorphea
+Eimeriidae # WoRMS: Conoidasida > Eucoccidiorida
+Elaeomyxaceae # myxomycete family (Amoebozoa); IRMNG: synonym of Lamprodermataceae (Physarales)
+Eleutheroschizonidae # WoRMS: Conoidasida > Protococcidiorida
+Elleipsisomatidae # IRMNG: Coccidiomorphea > Eimeriida
+Ellipsolagenidae # COL: Nodosariata > Polymorphinida
+Ellobiophryidae # COL: Oligohymenophorea > Peritrichida
+Ellobiopsea # WoRMS: Chromista > Myzozoa
+Ellobiopsida # WoRMS: Myzozoa > Ellobiopsea
+Elphidiidae # COL: Globothalamea > Rotaliida
+Enchelyidae # COL: Gymnostomatea > Haptorida
+Enchelyomorphidae # COL: Kinetofragminophora > Suctorida
+Endemosarcaceae # IRMNG: synonym of Endemosarcidae (Plasmodiophorida)
+Endemosarcidae # myxomycete-like amoeba family; COL: Phytomyxea > Plasmodiophorida
+Endodinea # ALF: Chromista > Miozoa
+Endodiniaceae # ITIS: Dinophyceae > Peridiniales
+Endogenida # WoRMS: Ciliophora > Phyllopharyngea
+Endolimacidae # COL: Archamoebea > Mastigamoebida
+Endomyxa # WoRMS: Chromista > Cercozoa
+Endosphaeridae # WoRMS: Phyllopharyngea > Endogenida
+Endosphaeriidae # apostome ciliate family (epibionts on crustaceans); COL: Kinetofragminophora > Suctorida
+Entamoebida # COL: Amoebozoa > Archamoebea
+Entamoebidae # COL: Archamoebea > Entamoebida
+Enteridiidae # IRMNG: synonym of Reticulariaceae (Reticulariales)
+Enteromonadidae # COL: Eopharyngea > Diplomonadida
+Entodiniomorphida # ITIS: Ciliophora > Ciliatea
+Entodiniomorphina # iNat: Litostomatea > Entodiniomorphida
+Entodiscidae # WoRMS: Oligohymenophorea > Philasterida
+Entorhipidiidae # COL: Oligohymenophorea > Scuticociliatida
+Entosiphona # COL: Protozoa > Euglenozoa
+Entosiphonea # COL: Protozoa > Euglenozoa
+Entosiphonida # COL: Euglenozoa > Entosiphonea
+Entosiphonidae # COL: Entosiphonea > Entosiphonida
+Eodarida # IRMNG: Cercozoa > Thecofilosea
+Eodina # ALF: Chromista > Miozoa
+Eoglissa # ALF: Chromista > Cercozoa
+Eogyrea # WoRMS: Chromista > Bigyra
+Eogyrida # WoRMS: Bigyra > Eogyrea
+Eolouka # COL: Protozoa > Loukozoa
+Eopharyngea # COL: Protozoa > Metamonada
+Eopharyngia # WoRMS: Protozoa > Metamonada
+Eothecia # WoRMS: Cercozoa > Thecofilosea
+Eozoa # COL: Eukaryota > Protozoa
+Epalxellidae # COL: Spirotrichea > Odontostomatida
+Ephelotidae # ITIS: Ciliatea > Suctorida
+Epiclintidae # COL: Hypotrichea > Stichotrichida
+Epidinia # ALF: Miozoa > Peridinea
+Epiphyllidae # IRMNG: synonym of Kentrophyllidae (Pleurostomatida)
+Epiplocylididae # ITIS: Ciliatea > Oligotrichida
+Epistomariidae # COL: Globothalamea > Rotaliida
+Epistomidae # ALF: Globothalamea > Robertinida
+Epistylididae # COL: Oligohymenophorea > Peritrichida
+Eponididae # COL: Globothalamea > Rotaliida
+Erastophryidae # ALF: Phyllopharyngea > Endogenida
+Euamoebida # COL: Amoebozoa > Tubulinea
+Eubodonida # WoRMS: Euglenozoa > Kinetoplastea
+Eubodonidina # COL: Kinetoplastea > Bodonida
+Eucomonymphidae # hypermastigote flagellate family (Parabasalia); COL: synonym of Teranymphidae (Trichonymphida)
+Euduboscquellidae # IRMNG: Syndiniophyceae > Syndiniales
+Euglenaceae # euglenid flagellate family; COL: Euglenophyceae > Euglenales
+Euglenales # euglenid flagellates; COL: Euglenozoa > Euglenophyceae
+Euglenamorphidae # COL: synonym of Euglenamorphaceae (Euglenales)
+Euglenida # COL: synonym of Euglenales (Euglenophyceae)
+Euglenoida # COL: Protozoa > Euglenozoa
+Euglenophyta # COL: synonym of Euglenozoa (Protozoa)
+Euglenophytes # not found in ChecklistBank
+Euglenozoa # COL: Eukaryota > Protozoa
+Euglyphia # ALF: Cercozoa > Imbricatea
+Euglyphida # WoRMS: Cercozoa > Imbricatea
+Euglyphidae # ITIS: Filosia > Aconchulinida
+Eulobosia # IRMNG: Amoebozoa > Tubulinea
+Eupelagonemidae # COL: Diplonemea > Diplonemida
+Euplotida # COL: Ciliophora > Hypotrichea
+Euplotidae # COL: Hypotrichea > Euplotida
+Euplotina # WoRMS: Spirotrichea > Euplotida
+Eutintinnidae # WoRMS: Oligotrichea > Choreotrichida
+Eutreptiaceae # COL: Euglenophyceae > Eutreptiales
+Eutreptiida # COL: synonym of Eutreptiales (Euglenophyceae)
+Eutreptiidae # COL: synonym of Eutreptiaceae (Eutreptiales)
+Evaginogenida # WoRMS: Ciliophora > Phyllopharyngea
+Excavata # COL: Eukaryota > Protozoa
+Exocolpodidae # ciliate family (Exocolpoda); COL: Colpodea > Colpodida
+Exogemmiida # ALF: Ciliophora > Phyllopharyngea
+Exogenida # WoRMS: Ciliophora > Phyllopharyngea
+Exoschizonidae # WoRMS: Conoidasida > Archigregarinorida
+Exosporeae # COL: Amoebozoa > Stelamoebea
+Filamoebidae # COL: Variosea > Varipodida
+Filasterea # COL: Protozoa > Choanozoa
+Filichonidae # WoRMS: Phyllopharyngea > Exogemmida
+Filidae # IRMNG: Bikosea > Pseudodendromonadida
+Filosia # filose amoebae (Cercozoa + Foraminifera); ITIS: Protozoa > Protozoa
+Fischerinidae # COL: Tubothalamea > Miliolida
+Fiscullidae # IRMNG: Thecofilosea > Tectofilosida
+Fiscullina # ALF: Thecofilosea > Tectofilosida
+Flabellinea # flabellate lobose amoebae (Amoebozoa); COL: synonym of Discosea (Amoebozoa)
+Flabellulidae # COL: Tubulinea > Leptomyxida
+Flamellidae # COL: Variosea > Varipodida
+Foettingeriidae # COL: Kinetofragminophora > Apostomatida
+Folliculinidae # COL: Heterotrichea > Heterotrichida
+Fonticulaceae # Fonticula slime mould family (Opisthokonta incertae sedis); COL: synonym of Fonticulidae (Fonticulida)
+Fonticulida # COL: Choanozoa > Cristidiscoidea
+Fonticulidae # COL: Cristidiscoidea > Fonticulida
+Foraminifera # COL: Eukaryota > Chromista
+Fornicata # iNat: Protozoa > Metamonada
+Frontonidae # ciliate family (Prostomatea); COL: Oligohymenophorea > Hymenostomatida
+Frontoniidae # COL: Oligohymenophorea > Hymenostomatida
+Furgasoniidae # COL: Nassophorea > Nassulida
+Fursenkoinidae # IRMNG: Globothalamea > Rotaliida
+Fuscheriidae # colpodean ciliate family (Fuscheria); COL: Gymnostomatea > Haptorida
+Fuscisporida # IRMNG: synonym of Myxomycetes (Amoebozoa)
+Ganymedidae # WoRMS: Conoidasida > Eugregarinorida
+Gastrocirrhidae # COL: Hypotrichea > Euplotida
+Gastronautidae # COL: Cyrtophoria > Chilodonellida
+Gavelinellidae # COL: Globothalamea > Rotaliida
+Geleiidae # COL: Karyorelictea > Protoheterotrichida
+Gemmocystidae # WoRMS: Conoidasida > Agamococcidiorida
+Gephyramoebidae # COL: Tubulinea > Leptomyxida
+Giardiida # diplomonad flagellates incl. Giardia; COL: synonym of Diplomonadida (Eopharyngea)
+Gigarticonidae # ALF: Acantharea > Chaunacanthida
+Gilchristidae # IRMNG: synonym of Gilchristinidae (Entodiniomorphida)
+Glabratellidae # COL: Globothalamea > Rotaliida
+Glandulinidae # COL: Nodosariata > Polymorphinida
+Glaucomidae # COL: Oligohymenophorea > Hymenostomatida
+Glenodiniaceae # ITIS: Dinophyceae > Peridiniales
+Glenodiniopsidaceae # ITIS: Dinophyceae > Peridiniales
+Glissodiscea # COL: Protozoa > Sulcozoa
+Glissomonadida # WoRMS: Cercozoa > Sarcomonadea
+Globanomalinidae # COL: Globothalamea > Rotaliida
+Globeriginida # ALF: Retaria > Globothalamea
+Globigerinidae # COL: Globothalamea > Rotaliida
+Globigerinitidae # COL: Globothalamea > Rotaliida
+Globorotallidae # ALF: Globothalamea > Globeriginida
+Globotextulariidae # COL: Globothalamea > Loftusiida
+Globothalamea # COL: Chromista > Foraminifera
+Gloeodiniaceae # ITIS: Dinophyceae > Gloeodiniales
+Glycomonada # COL: Protozoa > Euglenozoa
+Glycopoda # ALF: Protozoa > Amoebozoa
+Glycostylida # COL: Amoebozoa > Discosea
+Goceviidae # COL: Discosea > Centramoebida
+Goniodomataceae # ITIS: Dinophyceae > Gonyaulacales
+Gonyaulacaceae # ITIS: Dinophyceae > Gonyaulacales
+Gonyaulacales # ITIS: Pyrrophycophyta > Dinophyceae
+Gonyaulacoidia # WoRMS: Myzozoa > Peridinea
+Gracilipodida # gracilipodid amoebae (Amoebozoa); COL: synonym of Varipodida (Variosea)
+Grandoriidae # COL: Colpodea > Colpodida
+Granofilosea # WoRMS: Chromista > Cercozoa
+Gregarinidae # WoRMS: Conoidasida > Eugregarinorida
+Gregarinoidea # TAXREF: Gregarinomorpha > Eugregarinida
+Gregarinomorphea # IRMNG: Chromista > Miozoa
+Grelliidae # WoRMS: Conoidasida > Protococcidiorida
+Gromiida # WoRMS: Cercozoa > Gromiidea
+Gromiidae # ITIS: Filosia > Aconchulinida
+Gromiidea # WoRMS: Chromista > Cercozoa
+Grossglockneriida # grossglocknerid ciliates (Colpodea); COL: Ciliophora > Colpodea
+Grossglockneriidae # COL: Colpodea > Grossglockneriida
+Gruberellidae # litostome ciliate family; COL: synonym of Orodruinidae (Schizopyrenida)
+Guembelitriidae # COL: Globothalamea > Rotaliida
+Gullmarellidae # COL: Heterotrichea > Heterotrichida
+Guttulinopsidae # WoRMS: Heterolobosea > Acrasida
+Gymnochloridae # ALF: Chlorarachnea > Chlorarachniida
+Gymnodiniaceae # COL: Dinophyceae > Gymnodiniales
+Gymnodiniales # COL: Miozoa > Dinophyceae
+Gymnosphaeridae # centrohelid heliozoan family; COL: Heliozoa > Centrohelida
+Gymnostomatea # primitive gymnostome ciliates; COL: Chromista > Ciliophora
+Gyrodinida # ALF: Miozoa > Sulcodinea
+Haddoniidae # COL: Globothalamea > Loftusiida
+Haemohormidiidae # WoRMS: Aconoidasida > Piroplasmorida
+Haemosporida # IRMNG: Miozoa > Coccidiomorphea
+Haemosporidia # ALF: Miozoa > Coccidiomorphea
+Halteriida # oligotrich ciliates; COL: Ciliophora > Oligotrichea
+Halteriidae # COL: Oligotrichea > Halteriida
+Halyphysemidae # COL: Monothalamea > Astrorhizida
+Haplodiniaceae # WoRMS: Dinophyceae > Prorocentrales
+Haplophragmoididae # COL: Globothalamea > Lituolida
+Haplosporea # haplosporidian parasites (Rhizaria/Cercozoa); ITIS: Protozoa > Protozoa
+Haplosporida # ITIS: Protozoa > Haplosporea
+Haplosporidiidae # haplosporidian parasite family (Rhizaria/Cercozoa); ITIS: Haplosporea > Haplosporida
+Haplosporiidae # WoRMS: synonym of Haplosporidiidae (Haplosporida)
+Haplozoonales # IRMNG: Miozoa > Dinophyceae
+Haplozoonidae # WoRMS: Dinophyceae > Blastodiniales
+Haptophryidae # COL: Oligohymenophorea > Astomatida
+Haptoria # WoRMS: Ciliophora > Litostomatea
+Haptorida # COL: Ciliophora > Gymnostomatea
+Hartmannellidae # COL: Tubulinea > Euamoebida
+Hartmannulidae # COL: Cyrtophoria > Cyrtophorida
+Hastatellidae # suctorian ciliate family; COL: Oligohymenophorea > Peritrichida
+Hastigerinidae # COL: Globothalamea > Rotaliida
+Hauerinidae # COL: Tubothalamea > Miliolida
+Hausmanniellidae # COL: Colpodea > Colpodida
+Heleninidae # COL: synonym of Ammoniidae (Rotaliida)
+Helicoprorodontida # ALF: Ciliophora > Litostomatea
+Helicoprorodontidae # WoRMS: Litostomatea > Haptorida
+Helicoprorodontiidae # ALF: Litostomatea > Helicoprorodontida
+Helicoprorodontina # ALF: Litostomatea > Helicoprorodontida
+Heliochonidae # COL: Oligohymenophorea > Peritrichida
+Heliophryidae # COL: Kinetofragminophora > Suctorida
+Heliozoa # COL: Eukaryota > Chromista
+Helkesea # ALF: Chromista > Cercozoa
+Helkesida # ALF: Cercozoa > Helkesea
+Helkesimastigidae # WoRMS: Sarcomonadea > Pansomonadida
+Helkesimastigoidea # ALF: Helkesea > Helkesida
+Hematozoa # IRMNG: Miozoa > Coccidiomorphea
+Hemicycliostylidae # IRMNG: Spirotrichea > Urostylida
+Hemidiniaceae # WoRMS: Dinophyceae > Suessiales
+Hemigordiopsidae # COL: Tubothalamea > Miliolida
+Hemispeiridae # COL: Oligohymenophorea > Scuticociliatida
+Hemisphaeramminidae # COL: synonym of Stegnamminidae (Astrorhizida)
+Hemistasiidae # COL: Diplonemea > Diplonemida
+Heronalleniidae # COL: Globothalamea > Rotaliida
+Heterocapsaceae # WoRMS: Dinophyceae > Peridiniales
+Heterodiniaceae # ITIS: Dinophyceae > Gonyaulacales
+Heterolepidae # COL: Globothalamea > Rotaliida
+Heterolobosea # COL: Protozoa > Percolozoa
+Heterophryidae # COL: Heliozoa > Centrohelida
+Heterostavia # COL: Euglenozoa > Stavomonadea
+Heterostavida # COL: Euglenozoa > Stavomonadea
+Heterotrichea # COL: Chromista > Ciliophora
+Heterotrichida # COL: Ciliophora > Heterotrichea
+Hexalaspidae # WoRMS: Acantharia > Arthracanthida
+Hexamastigidae # COL: Trichomonadea > Trichomonadida
+Hexamitaceae # diplomonad flagellate family (Hexamita); COL: synonym of Hexamitidae (Diplomonadida)
+Hexamitidae # COL: Eopharyngea > Diplomonadida
+Hilomonadea # COL: Protozoa > Sulcozoa
+Himatismenida # COL: Amoebozoa > Discosea
+Hippocrepinellidae # COL: Monothalamea > Astrorhizida
+Histiobalantiidae # COL: Oligohymenophorea > Scuticociliatida
+Histionidae # COL: Jakobea > Jakobida
+Histogregaria # IRMNG: Miozoa > Gregarinomorphea
+Histogregarida # IRMNG: Miozoa > Gregarinomorphea
+Holacanthida # WoRMS: Radiozoa > Acantharia
+Holomastigea # hypermastigote flagellates (Parabasalia), gut symbionts of termites; COL: synonym of Variosea (Amoebozoa)
+Holomastigida # COL: Amoebozoa > Variosea
+Holomastigotidae # hypermastigote flagellate family; COL: Trichomonadea > Spirotrichonymphida
+Holomastigotoididae # COL: Trichomonadea > Spirotrichonymphida
+Holophryidae # COL: Prostomatea > Prostomatida
+Holostichidae # hypotrich ciliate family; COL: Hypotrichea > Urostylida
+Homalozoidae # COL: Gymnostomatea > Spathidiida
+Homalozoonidae # WoRMS: Litostomatea > Haptorida
+Homostavia # COL: Euglenozoa > Stavomonadea
+Homotrematidae # COL: Globothalamea > Rotaliida
+Honigbergiellidae # COL: Trichomonadea > Trichomonadida
+Hooperellidae # COL: Globothalamea > Rotaliida
+Hoplitophryidae # IRMNG: Oligohymenophorea > Astomatida
+Hoplonymphidae # COL: Trichonymphea > Trichonymphida
+Hormosinellidae # COL: Foraminifera > Nodosariata
+Hormosinidae # COL: Foraminifera > Nodosariata
+Hyalodiscidae # IRMNG: Vampyrellidea > Vampyrellida
+Hyalospheniidae # COL: Tubulinea > Arcellinida
+Hymenostomatia # WoRMS: Ciliophora > Oligohymenophorea
+Hymenostomatida # hymenostome ciliates (incl. Paramecium); COL: Ciliophora > Oligohymenophorea
+Hypermastigia # hypermastigote flagellates (Parabasalia); COL: synonym of Trichomonadea (Metamonada)
+Hypermastigida # hypermastigote flagellates (Parabasalia); COL: synonym of Trichonymphida (Trichonymphea)
+Hypermastigidae # hypermastigote flagellate family; COL: synonym of Metamonada (Protozoa)
+Hypocomatida # WoRMS: Ciliophora > Phyllopharyngea
+Hypocomidae # COL: Cyrtophoria > Cyrtophorida
+Hypotrichea # hypotrich ciliates; COL: Chromista > Ciliophora
+Hypotrichia # WoRMS: Ciliophora > Spirotrichea
+Hypotrichidiidae # hypotrich ciliate family (Hypotrichidium); COL: Hypotrichea > Stichotrichida
+Hypotrichomonadidae # COL: Trichomonadea > Trichomonadida
+Hysterocinetidae # COL: Oligohymenophorea > Scuticociliatida
+Hystrichosphaeridiaceae # WoRMS: Dinophyceae > Gonyaulacales
+Ichthyobodonidae # COL: Kinetoplastea > Prokinetoplastida
+Ichthyodinida # IRMNG: Miozoa > Syndiniophyceae
+Ichthyodiniidae # IRMNG: Syndiniophyceae > Ichthyodinida
+Ichthyophonidae # IRMNG: Ichthyosporea > Eccrinida
+Ichthyophthiriidae # COL: Oligohymenophorea > Hymenostomatida
+Ichthyosporea # COL: Protozoa > Choanozoa
+Imbricatea # WoRMS: Chromista > Cercozoa
+Incisomonadidae # WoRMS: Nanomonadea > Uniciliatida
+Inferostomatidae # IRMNG: Heterotrichea > Heterotrichida
+Intoshellinidae # IRMNG: Oligohymenophorea > Astomatida
+Intramacronucleata # WoRMS: Chromista > Ciliophora
+Inversochonidae # WoRMS: Phyllopharyngea > Cryptogemmida
+Ischnamoebidae # COL: Variosea > Ramamoebida
+Isochonidae # WoRMS: Phyllopharyngea > Cryptogemmida
+Isochonopsidae # WoRMS: Phyllopharyngea > Cryptogemmida
+Isotrichidae # IRMNG: Litostomatea > Trichostomatida
+Ixorheida # IRMNG: Miozoa > Coccidiomorphea
+Ixorheidae # IRMNG: Coccidiomorphea > Ixorheida
+Jakobea # COL: Protozoa > Loukozoa
+Jakobida # COL: Loukozoa > Jakobea
+Jakobidae # COL: Jakobea > Jakobida
+Jaroschiidae # COL: Colpodea > Bryometopida
+Joeniidae # oxymonad flagellate family; COL: synonym of Devescovinidae (Cristamonadida)
+Jugimuramminidae # COL: Monothalamea > Astrorhizida
+Kahliellidae # COL: Hypotrichea > Urostylida
+Kamburophryidae # suctorian ciliate family; COL: Gymnostomatea > Haptorida
+Kapelodiniaceae # WoRMS: Dinophyceae > Torodiniales
+Kareniaceae # WoRMS: Dinophyceae > Gymnodiniales
+Karlodinia # ALF: Miozoa > Peridinea
+Karotomorphidae # IRMNG: synonym of Proteromonadidae (Proteromonadida)
+Karreriidae # COL: Globothalamea > Rotaliida
+Karyorelictea # COL: Chromista > Ciliophora
+Karyorelictida # karyorelict ciliates (primitive, marine interstitial); COL: Ciliophora > Karyorelictea
+Keelungiidae # COL: Stavomonadea > Decastavida
+Kentrophoridae # COL: Karyorelictea > Loxodida
+Kentrophyllidae # IRMNG: Litostomatea > Pleurostomatida
+Keramosphaeridae # COL: Tubothalamea > Miliolida
+Keronidae # COL: Hypotrichea > Stichotrichida
+Kiitoksiidae # ALF: Metromonadea > Metromonadida
+Kiitrichida # COL: Ciliophora > Spirotrichea
+Kiitrichidae # COL: Spirotrichea > Kiitrichida
+Kinetofragminophora # older polyphyletic ciliate class, now split; COL: Chromista > Ciliophora
+Kinetoplastea # COL: Protozoa > Euglenozoa
+Kipferliidae # COL: Carpomonadea > Carpediemonadida
+Kofoidiidae # parabasalid flagellate family; COL: Metamonada > Trichomonadea
+Kofoidiniaceae # ITIS: Dinophyceae > Noctilucales
+Kolkwitziellaceae # ITIS: Dinophyceae > Peridiniales
+Komokiidae # COL: Monothalamea > Astrorhizida
+Krakenia # IRMNG: Cercozoa > Imbricatea
+Krakenida # IRMNG: Cercozoa > Imbricatea
+Krakenidae # IRMNG: Imbricatea > Krakenida
+Kreyellidae # COL: Colpodea > Bryometopida
+Kryoprorodontidae # COL: Cyrtophoria > Chlamydodontida
+Kyaroikeidae # WoRMS: Phyllopharyngea > Dysteriida
+Labromonadidae # IRMNG: Bikosea > Bicoecida
+Labyrinthulaceae # labyrinthulean stramenopile family; COL: Labyrinthulea > Labyrinthulida
+Labyrinthulea # COL: Chromista > Bigyra
+Labyrinthulida # COL: Bigyra > Labyrinthulea
+Labyrinthulidae # IRMNG: Labyrinthulea > Labyrinthulida
+Lacrymariida # ALF: Ciliophora > Litostomatea
+Lacrymariidae # COL: Gymnostomatea > Spathidiida
+Lagenaceae # foraminifera family (Lagenida); COL: Chromista > Oomycota
+Lagenida # COL: Foraminifera > Nodosariata
+Lagenidae # COL: Nodosariata > Nodosariida
+Lagenophryidae # COL: Oligohymenophorea > Peritrichida
+Lagynidae # COL: Monothalamea > Allogromiida
+Lagynophryidae # suctorian ciliate family; COL: Gymnostomatea > Haptorida
+Lamprodermidae # IRMNG: synonym of Lamprodermataceae (Physarales)
+Lamptopixidae # ALF: Tubulinea > Arcellinida
+Lamtopyxidae # testate amoeba family (Arcellinida); COL: Tubulinea > Arcellinida
+Lecanophryidae # COL: Gymnostomatea > Haptorida
+Lecudinidae # WoRMS: Conoidasida > Eugregarinorida
+Leegaardiellidae # COL: Oligotrichea > Choreotrichida
+Leegaardiellina # WoRMS: Oligotrichea > Choreotrichida
+Leiotrochidae # WoRMS: Oligohymenophorea > Mobilida
+Lembadionidae # COL: Oligohymenophorea > Peniculida
+Lentomonadidae # COL: Ploeotarea > Ploeotiida
+Leptodiscaceae # ITIS: Dinophyceae > Noctilucales
+Leptomixidae # ALF: Tubulinea > Leptomyxida
+Leptomyxia # COL: Amoebozoa > Tubulinea
+Leptomyxida # COL: Amoebozoa > Tubulinea
+Leptomyxidae # lobose amoeba family (Amoebozoa); COL: Tubulinea > Leptomyxida
+Leptopharyngidae # ITIS: Ciliophora > Ciliatea
+Leptopharynidae # ciliate family; COL: Nassophorea > Nassulida
+Leptophryidae # IRMNG: Vampyrellidea > Vampyrellida
+Lesquereusiidae # testate amoeba family (Arcellinida); COL: Tubulinea > Arcellinida
+Lessardiaceae # WoRMS: Dinophyceae > Peridiniales
+Leucodictyida # WoRMS: Cercozoa > Granofilosea
+Leucodictyidae # WoRMS: Granofilosea > Leucodictyida
+Liceaceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Cribrariales
+Liceales # myxomycetes (Amoebozoa); IRMNG: Amoebozoa > Liceomycetes
+Liceida # WoRMS: Amoebozoa > Myxogastrea
+Liceidae # IRMNG: synonym of Liceaceae (Liceales)
+Licnophoria # WoRMS: Ciliophora > Spirotrichea
+Licnophorida # COL: Ciliophora > Spirotrichea
+Licnophoridae # COL: Spirotrichea > Licnophorida
+Limnofilida # WoRMS: Cercozoa > Granofilosea
+Limnofilidae # WoRMS: Granofilosea > Limnofilida
+Lipotrophidae # IRMNG: Gregarinomorphea > Arthrogregarida
+Lirellidae # WoRMS: Thecofilosea > Phaeogromida
+Listerellidae # IRMNG: synonym of Liceaceae (Liceales)
+Litheliidae # COL: Polycystina > Spumellaria
+Lithocollidae # ALF: Thecofilosea > Tectofilosida
+Lithopteridae # WoRMS: Acantharia > Arthracanthida
+Litonotidae # COL: Gymnostomatea > Pleurostomatida
+Litostomatea # COL: Chromista > Ciliophora
+Lituolida # COL: Foraminifera > Globothalamea
+Lituolidae # COL: Globothalamea > Lituolida
+Lituotubidae # COL: Globothalamea > Lituolida
+Lobochonidae # WoRMS: Phyllopharyngea > Exogemmida
+Lobosa # COL: Protozoa > Amoebozoa
+Loftusiida # COL: Foraminifera > Globothalamea
+Lohmanniellidae # COL: Oligotrichea > Choreotrichida
+Lohmanniellina # WoRMS: Oligotrichea > Choreotrichida
+Lophodinales # ALF: Miozoa > Dinophyceae
+Lophodiniaceae # ITIS: Dinophyceae > Lophodiniales
+Lophomonadaceae # hypermastigote flagellate family (Parabasalia); COL: synonym of Lophomonadidae (Lophomonadida)
+Lophomonadida # COL: Metamonada > Trichonymphea
+Lophomonadidae # COL: Trichonymphea > Lophomonadida
+Loricophryidae # suctorian ciliate family; COL: Phyllopharyngea > Paracinetida
+Lotharellidae # ALF: Chlorarachnea > Chlorarachniida
+Loukozoa # COL: Eukaryota > Protozoa
+Loxocephalidae # COL: Oligohymenophorea > Scuticociliatida
+Loxodida # COL: Ciliophora > Karyorelictea
+Loxodidae # COL: Karyorelictea > Loxodida
+Loxophyllidae # litostome ciliate family; COL: Gymnostomatea > Pleurostomatida
+Lucisporidia # ALF: Amoebozoa > Myxogastrea (= Myxomycetes)
+Lynchellidae # COL: Cyrtophoria > Cyrtophorida
+Lyromonadea # COL: Protozoa > Percolozoa
+Lyromonadida # COL: Percolozoa > Heterolobosea
+Macropodiniida # ALF: Ciliophora > Litostomatea
+Macropodiniidae # IRMNG: Litostomatea > Entodiniomorphida
+Malacophryidae # COL: Oligohymenophorea > Hymenostomatida
+Malawimonadea # COL: Protozoa > Loukozoa
+Malawimonadida # COL: Loukozoa > Malawimonadea
+Malawimonadidae # COL: Malawimonadea > Malawimonadida
+Mantamonadida # COL: Sulcozoa > Glissodiscea
+Mantamonadidae # COL: Glissodiscea > Mantamonadida
+Manuelophryidae # COL: Kinetofragminophora > Suctorida
+Marimonadida # WoRMS: Cercozoa > Imbricatea
+Marimyxia # ALF: Chromista > Retaria
+Maristentoridae # COL: Heterotrichea > Heterotrichida
+Maritujidae # IRMNG: Oligohymenophorea > Peniculida
+Marophryidae # COL: Heliozoa > Centrohelida
+Marteiliidae # WoRMS: Ascetosporea > Paramyxida
+Marynidae # COL: Colpodea > Colpodida
+Massisteriidae # WoRMS: Granofilosea > Leucodictyida
+Mastigamoebida # COL: Amoebozoa > Archamoebea
+Mastigamoebidae # COL: Archamoebea > Mastigamoebida
+Mastigophora # COL: synonym of Sarcomastigota (Eukaryota)
+Matazida # IRMNG: Cercozoa > Thecofilosea
+Matazidae # IRMNG: Thecofilosea > Matazida
+Maupasellidae # COL: Oligohymenophorea > Astomatida
+Mayorellidae # COL: Discosea > Dermamoebida
+Medusettidae # WoRMS: Thecofilosea > Phaeogromida
+Merogregarinidae # IRMNG: Paragregarea > Archigregarinida
+Mesnilellidae # COL: Oligohymenophorea > Astomatida
+Mesodiniidae # COL: Gymnostomatea > Cyclotrichida
+Mesofilidae # WoRMS: Granofilosea > Cryptofilida
+Metacinetidae # WoRMS: Phyllopharyngea > Exogenida
+Metacyclididae # oligotrich ciliate family; COL: Oligotrichea > Oligotrichida
+Metacylididae # ITIS: Ciliatea > Oligotrichida
+Metacystidae # COL: Prostomatea > Prostomatida
+Metakinetoplastina # COL: Euglenozoa > Kinetoplastea
+Metamonada # COL: Eukaryota > Protozoa
+Metanemina # COL: Peranemea > Natomonadida
+Metopiida # WoRMS: Cercozoa > Metromonadea
+Metromonadea # WoRMS: Chromista > Cercozoa
+Metromonadida # WoRMS: Cercozoa > Metromonadea
+Metromonadidae # ALF: Metromonadea > Metromonadida
+Microchlamyiidae # COL: Tubulinea > Arcellinida
+Microcoryciidae # COL: Tubulinea > Arcellinida
+Microhelida # microhelid amoebae (Variosea/Amoebozoa); COL: Chromista > Heliozoa
+Microheliellidae # centrohelid heliozoan family; COL: Heliozoa > Microhelida
+Microjoeniidae # oxymonad flagellate family; COL: Trichonymphea > Lophomonadida
+Micronucleariidae # COL: Hilomonadea > Rigifilida
+Microthoracida # WoRMS: Ciliophora > Nassophorea
+Microthoracidae # COL: Nassophorea > Nassulida
+Microvoracidae # IRMNG: Apicomonadea > Voracida
+Mikrocytida # WoRMS: Cercozoa > Ascetosporea
+Mikrocytiidae # WoRMS: Ascetosporea > Mikrocytida
+Miliolida # COL: Foraminifera > Tubothalamea
+Miliolidae # COL: Tubothalamea > Miliolida
+Millettiidae # COL: Globothalamea > Rotaliida
+Minakatellidae # IRMNG: synonym of Myxomycetes (Amoebozoa)
+Ministeriida # COL: Choanozoa > Filasterea
+Ministeriidae # COL: Filasterea > Ministeriida
+Minorisida # IRMNG: Cercozoa > Chlorarachnea
+Minorisidae # IRMNG: Chlorarachnea > Minorisida
+Miozoa # COL: Eukaryota > Chromista
+Mississipinidae # ALF: Globothalamea > Rotaliida
+Mobilida # ITIS: synonym of Mobilina (Ciliatea)
+Monadofilosa # WoRMS: Chromista > Cercozoa
+Monocercomonadidae # COL: Trichomonadea > Trichomonadida
+Monocystidae # WoRMS: Conoidasida > Eugregarinorida
+Monosigaceae # choanoflagellate family; COL: synonym of Salpingoecidae (Craspedida)
+Monothalamea # COL: Chromista > Foraminifera
+Multiciliaceae # apusomonad flagellate family (Multicilia); COL: synonym of Multiciliidae (Holomastigida)
+Multiciliidae # COL: Variosea > Holomastigida
+Multifasciculatidae # hypermastigote flagellate family (Parabasalia); COL: Kinetofragminophora > Suctorida
+Mycetozoa # ITIS: Protozoa > Protozoa
+Mylestomatidae # COL: Spirotrichea > Odontostomatida
+Myriosporidae # IRMNG: Coccidiomorphea > Coelotrophiida
+Myxogastrea # WoRMS: Protozoa > Amoebozoa
+Myxogastria # IRMNG: synonym of Myxomycetes (Amoebozoa)
+Myzodinea # IRMNG: Chromista > Miozoa
+Myzodinida # IRMNG: Miozoa > Myzodinea
+Myzomonadia # ALF: Miozoa > Apicomonadea
+Myzozoa # WoRMS: Chromista
+Nanidae # IRMNG: Bikosea > Pseudodendromonadida
+Nannoceratopsales # ALF: Miozoa > Peridinea
+Nanofilidae # WoRMS: Granofilosea > Cryptofilida
+Nanomonadea # WoRMS: Chromista > Bigyra
+Nassellaria # COL: Radiozoa > Polycystina
+Nassophorea # COL: Chromista > Ciliophora
+Nassulida # COL: Ciliophora > Nassophorea
+Nassulidae # COL: Nassophorea > Nassulida
+Nassulopsida # nassulid ciliates (used at order or class rank in different sources); COL: Ciliophora > Nassophorea
+Nassulopsidae # COL: Nassophorea > Nassulopsida
+Natomonadida # COL: Euglenozoa > Peranemea
+Nebelidae # testate amoeba family (Arcellinida); COL: Tubulinea > Arcellinida
+Neobodonida # COL: synonym of Bodonida (Kinetoplastea)
+Neobodonidae # COL: Kinetoplastea > Bodonida
+Neobodonina # COL: Kinetoplastea > Bodonida
+Neobursaridiidae # COL: Oligohymenophorea > Peniculida
+Neokeronopsidae # hypotrich ciliate family; COL: Hypotrichea > Oxytrichida
+Neolobosia # COL: Amoebozoa > Tubulinea
+Neolouka # COL: Protozoa > Loukozoa
+Neometanemidae # COL: Peranemea > Natomonadida
+Neonyctotheridae # IRMNG: Spirotrichea > Clevelandellida
+Neovahlkampfiidae # IRMNG: Selenaionea > Neovahlkampfiida
+Nephromycida # IRMNG: Miozoa > Coccidiomorphea
+Neradidae # IRMNG: Bikosea > Pseudodendromonadida
+Netzeliidae # COL: Tubulinea > Arcellinida
+Noctilucaceae # ITIS: Dinophyceae > Noctilucales
+Noctilucales # mostly heterotrophic dinoflagellates (Noctiluca etc.); ITIS: Pyrrophycophyta > Dinophyceae
+Noctilucea # WoRMS: Chromista > Myzozoa
+Noctilucida # WoRMS: synonym of Noctilucales (Dinophyceae)
+Nodosariidae # COL: Nodosariata > Nodosariida
+Nolaclusiliidae # WoRMS: Oligotrichea > Choreotrichida
+Nolandellidae # COL: Tubulinea > Euamoebida
+Nolandina # ALF: Tubulinea > Euamoebida
+Nonionidae # COL: Globothalamea > Rotaliida
+Notodendrodidae # COL: Monothalamea > Astrorhizida
+Notorotaliidae # COL: Globothalamea > Rotaliida
+Nouriidae # COL: Globothalamea > Lituolida
+Nubeculariidae # COL: Tubothalamea > Miliolida
+Nucleariida # COL: Choanozoa > Cristidiscoidea
+Nucleariidae # COL: Cristidiscoidea > Nucleariida
+Nucleocorbulidae # WoRMS: Oligohymenophorea > Thigmotrichida
+Nudifilidae # IRMNG: Imbricatea > Variglissida
+Nudisarca # ALF: Cercozoa > Imbricatea
+Nummulitidae # COL: Globothalamea > Rotaliida
+Nyctotheridae # COL: Heterotrichea > Heterotrichida
+Oblongichytriidae # COL: Labyrinthulea > Thraustochytrida
+Odontostomatida # COL: Ciliophora > Spirotrichea
+Olgiidae # COL: Globothalamea > Textulariida
+Oligohymenophorea # COL: Chromista > Ciliophora
+Oligotrichea # oligotrich ciliates; COL: Chromista > Ciliophora
+Oligotrichia # WoRMS: Ciliophora > Oligotrichea
+Oligotrichida # oligotrich ciliates; COL: Ciliophora > Oligotrichea
+Onychodromusidae # hypotrich ciliate family; COL: Hypotrichea > Oxytrichida
+Oodiniaceae # ITIS: Dinophyceae > Peridiniales
+Opalinata # ITIS: Protozoa > Sarcomastigophora
+Opalinea # WoRMS: Chromista > Bigyra
+Opalinida # ITIS: Sarcomastigophora > Opalinata
+Opalinidae # IRMNG: Opalinea > Opalinida
+Opalinopsidae # WoRMS: Oligohymenophorea > Astomatophorida
+Opaloconchida # IRMNG: Cercozoa > Thecofilosea
+Opalozoa # WoRMS: Chromista > Bigyra
+Operculariidae # COL: Oligohymenophorea > Peritrichida
+Ophrydiidae # COL: Oligohymenophorea > Peritrichida
+Ophryocystidae # IRMNG: Gregarinomorphea > Arthrogregarida
+Ophryodendridae # WoRMS: Phyllopharyngea > Exogenida
+Ophryoglenidae # COL: Oligohymenophorea > Hymenostomatida
+Ophryoscolcidae # entodiniomorphid ciliate family (rumen ciliates); COL: Hypotrichea > Oxytrichida
+Ophryoscolecidae # IRMNG: Litostomatea > Entodiniomorphida
+Opisthonectidae # COL: Oligohymenophorea > Peritrichida
+Opthalimidiidae # ALF: Tubothalamea > Miliolida
+Orbitolinidae # COL: Globothalamea > Loftusiida
+Orbulinidae # IRMNG: Globothalamea > Globigerinida
+Orchitorphryidae # ALF: Oligohymenophorea > Philasterida
+Oridorsalidae # COL: synonym of Anomalinidae (Rotaliida)
+Orosphaeridae # COL: Polycystina > Spumellaria
+Orthoamphisiellidae # hypotrich ciliate family; COL: Hypotrichea > Stichotrichida
+Orthodonellidae # COL: Nassophorea > Synhymeniida
+Orthogregarinia # IRMNG: Miozoa > Gregarinomorphea
+Osangulariidae # COL: synonym of Alabaminidae (Rotaliida)
+Ostreopsidaceae # ITIS: Dinophyceae > Gonyaulacales
+Oxnerellidae # ALF: Centrohelea > Pterocystida
+Oxymonadaceae # oxymonad flagellate family (Preaxostyla); COL: synonym of Oxymonadidae (Oxymonadida)
+Oxymonadea # not found in ChecklistBank
+Oxymonadida # COL: Metamonada > Anaeromonadea
+Oxymonadidae # COL: Anaeromonadea > Oxymonadida
+Oxyphysaceae # ITIS: Dinophyceae > Prorocentrales
+Oxyrrhea # IRMNG: Chromista > Miozoa
+Oxyrrhida # WoRMS: synonym of Oxyrrhinales (Dinophyceae)
+Oxyrrhinaceae # WoRMS: Dinophyceae > Oxyrrhinales
+Oxytoxaceae # ITIS: Dinophyceae > Gonyaulacales
+Oxytrichida # oxytrichid hypotrich ciliates; COL: Ciliophora > Hypotrichea
+Oxytrichidae # COL: Hypotrichea > Oxytrichida
+Ozdikmenellidae # COL: Heliozoa > Desmothoracida
+Padaungiellidae # ALF: Tubulinea > Arcellinida
+Palustrimonadida # WoRMS: Myzozoa > Colponemea
+Palustrimonadidae # WoRMS: Colponemea > Palustrimonadida
+Panacanthocystida # CLB dataset 2014: Heliozoa > Centroplasthelida
+Pannellainidae # COL: Globothalamea > Rotaliida
+Pansomonadina # TAXREF: Sarcomonadea > Glissomonadida
+Parabasalia # COL: synonym of Trichomonadea (Metamonada)
+Parabodonida # WoRMS: Euglenozoa > Kinetoplastea
+Parabodonidae # COL: Kinetoplastea > Bodonida
+Parabodonidina # COL: Kinetoplastea > Bodonida
+Paracercomonada # ALF: Cercozoa > Sarcomonadea
+Paracercomonadida # IRMNG: Cercozoa > Sarcomonadea
+Paracinetida # suctorian ciliates (Ciliophora); COL: Ciliophora > Phyllopharyngea
+Paracinetidae # COL: Kinetofragminophora > Suctorida
+Paraconoidia # ALF: Miozoa > Apicomonadea
+Paradinida # WoRMS: Cercozoa > Ascetosporea
+Paragregarea # IRMNG: Chromista > Miozoa
+Paraisotrichidae # IRMNG: Litostomatea > Trichostomatida
+Parakahliellidae # ciliate family; COL: Hypotrichea > Stichotrichida
+Paralembidae # WoRMS: Oligohymenophorea > Philasterida
+Paramastigaceae # parabasalid flagellate family; COL: Eukaryota > Protozoa
+Parameciidae # COL: Oligohymenophorea > Peniculida
+Paramoebidae # COL: Discosea > Glycostylida
+Paramonadidae # IRMNG: Bikosea > Pseudodendromonadida
+Paramycia # COL: Protozoa > Choanozoa
+Paramyxida # WoRMS: Cercozoa > Ascetosporea
+Paranassulidae # WoRMS: Nassophorea > Nassulida
+Paranophryidae # scuticociliate family; COL: Oligohymenophorea > Scuticociliatida
+Parapodophryidae # suctorian ciliate family; COL: Kinetofragminophora > Suctorida
+Paraptychostomidae # IRMNG: Oligohymenophorea > Thigmotrichida
+Paraquadrulidae # COL: Tubulinea > Arcellinida
+Parataeniellaceae # COL: Ichthyosporea > Eccrinida
+Paratrimastigidae # COL: Metamonada > Anaeromonadea
+Parauronematidae # COL: Oligohymenophorea > Hymenostomatida
+Parentodiniidae # ALF: Litostomatea > Entodiniomorphida
+Parrelloididae # COL: Globothalamea > Rotaliida
+Parvamoebidae # COL: synonym of Cochliopodiidae (Himatismenida)
+Parvamoebina # ALF: Discosea > Himatismenida
+Patellinidae # COL: Tubothalamea > Spirillinida
+Paulinellidae # ITIS: Filosia > Aconchulinida
+Pavonidae # ALF: Tubothalamea > Miliolida
+Pediglissa # TAXREF: Cercozoa > Sarcomonadea
+Pegidiidae # COL: Globothalamea > Rotaliida
+Pelagostrombidiidae # oligotrich ciliate family; COL: Oligotrichea > Oligotrichida
+Pellitidae # COL: Discosea > Centramoebida
+Pellitina # ALF: Discosea > Himatismenida
+Pelobiontida # COL: Amoebozoa > Archamoebea
+Pelomixidae # ALF: Archamoebea > Pelobiontida
+Pelomyxidae # lobose amoeba family (Amoebozoa; Pelomyxa); COL: Archamoebea > Pelobiontida
+Peneroplidae # COL: Tubothalamea > Miliolida
+Peniculia # WoRMS: Ciliophora > Oligohymenophorea
+Peniculida # COL: Ciliophora > Oligohymenophorea
+Peniculistomatidae # COL: Heterotrichea > Heterotrichida
+Peniculostomatidae # ciliate family; COL: Oligohymenophorea > Scuticociliatida
+Peranematidae # not found in ChecklistBank
+Peranemea # COL: Protozoa > Euglenozoa
+Peranemia # COL: Euglenozoa > Peranemea
+Peranemida # COL: Euglenozoa > Peranemea
+Peranemidae # COL: Peranemea > Peranemida
+Percolatea # COL: Protozoa > Percolozoa
+Percolomonadida # COL: Percolozoa > Percolatea
+Percolozoa # COL: Eukaryota > Protozoa
+Periacinetidae # COL: Kinetofragminophora > Suctorida
+Peridinea # WoRMS: Chromista > Myzozoa
+Peridiniaceae # ITIS: Dinophyceae > Peridiniales
+Peridiniales # ITIS: Pyrrophycophyta > Dinophyceae
+Peridiniopsidaceae # WoRMS: Dinophyceae > Peridiniales
+Peridinoidia # WoRMS: Myzozoa > Peridinea
+Perigriniidae # ALF: Imbricatea > Thaumatomonadida
+Peritrichia # WoRMS: Ciliophora > Oligohymenophorea
+Peritrichida # peritrich ciliates (incl. Vorticella); COL: Ciliophora > Oligohymenophorea
+Peritromidae # COL: Hypotrichea > Oxytrichida
+Perkinsea # WoRMS: Chromista > Myzozoa
+Perkinsida # WoRMS: Myzozoa > Perkinsea
+Perkinsidae # WoRMS: Perkinsea > Perkinsida
+Perkinsozoa # IRMNG: Chromista > Miozoa
+Perlatia # ALF: Cercozoa > Imbricatea
+Perlofilida # IRMNG: Cercozoa > Imbricatea
+Petalomonadida # COL: Euglenozoa > Stavomonadea
+Petalomonadidae # Wikidata: Stavomonadea > Petalomonadida
+Petalotrichidae # ITIS: Ciliatea > Oligotrichida
+Pfiesteriaceae # ITIS: Dinophyceae > Dinamoebales
+Phacidae # COL: synonym of Phacaceae (Euglenales)
+Phacodiniida # COL: Ciliophora > Spirotrichea
+Phacodiniidae # COL: Spirotrichea > Phacodiniida
+Phacodiniidia # iNat: Ciliophora > Spirotrichea
+Phacodiscidae # COL: Spumellaria > Heliodiscidae
+Phaeodarea # ALF: Cercozoa > Thecofilosea
+Phaeodinidae # WoRMS: Thecofilosea > Phaeogymnocellida
+Phaeosphaeridae # WoRMS: Thecofilosea > Phaeogymnocellida
+Phagodinida # ALF: Miozoa > Perkinsea
+Phagomyxida # WoRMS: Cercozoa > Phytomyxea
+Phalacrocleptidae # WoRMS: Phyllopharyngea > Exogenida
+Phalansteriaceae # choanoflagellate-relative flagellate family (Phalansterium); COL: synonym of Phalansteriidae (Phalansteriida)
+Phalansteriida # COL: Amoebozoa > Variosea
+Phalansteriidae # COL: Variosea > Phalansteriida
+Pharyngomonada # COL: Protozoa > Percolozoa
+Pharyngomonadea # COL: Protozoa > Percolozoa
+Pharyngomonadida # COL: Percolozoa > Pharyngomonadea
+Philasterida # COL: Ciliophora > Oligohymenophorea
+Philasteridae # COL: Oligohymenophorea > Philasterida
+Phractopeltidae # WoRMS: Acantharia > Arthracanthida
+Phryganellidae # COL: Tubulinea > Arcellinida
+Phthanotrochidae # COL: Monothalamea > Allogromiida
+Phyllochonidae # WoRMS: Phyllopharyngea > Exogemmida
+Phyllopharyngea # COL: Chromista > Ciliophora
+Phyllostauridae # WoRMS: Acantharia > Arthracanthida
+Physaraceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Physarales
+Physarales # myxomycetes (Physarum etc., Amoebozoa); COL: Amoebozoa > Myxomycetes
+Physaridae # WoRMS: Myxogastrea > Physarida
+Phytodiniaceae # ITIS: Dinophyceae > Phytodiniales
+Phytodiniales # ITIS: Pyrrophycophyta > Dinophyceae
+Phytomastigophora # obsolete class for plant-like flagellates (heterogeneous); ITIS: Protozoa > Sarcomastigophora
+Phytomyxea # COL: Chromista > Cercozoa
+Pilisuctorida # WoRMS: Ciliophora > Oligohymenophorea
+Pinaciophoridae # ALF: Amoebozoa > Rotosphaerida
+Piridae # IRMNG: Ichthyosporea > Eccrinida
+Piroplasmida # ITIS: Protozoa > Labyrinthulea
+Pithonellidae # Cretaceous calcified tintinnid family; GBIF: Protozoa > Calcitarcha
+Placentulinidae # COL: Globothalamea > Rotaliida
+Placidae # COL: Prostomatea > Prostomatida
+Placididea # IRMNG: Chromista > Bigyra
+Placidiida # WoRMS: Bigyra > Bicoecea
+Placidiidae # IRMNG: Placididea > Placidiida
+Placidozoa # ALF: Chromista > Bigyra
+Placofila # ALF: Cercozoa > Imbricatea
+Placonuda # IRMNG: Cercozoa > Imbricatea
+Placoperla # IRMNG: Cercozoa > Imbricatea
+Placopsilinidae # COL: Globothalamea > Lituolida
+Plagiacanthidae # COL: Polycystina > Nassellaria
+Plagiocampidae # COL: Prostomatea > Prostomatida
+Plagiopylea # WoRMS: Chromista > Ciliophora
+Plagiopylida # COL: Ciliophora > Kinetofragminophora
+Plagiopylidae # COL: Kinetofragminophora > Plagiopylida
+Plagiopyxidae # COL: Tubulinea > Arcellinida
+Plagiotomida # plagiotomid ciliates; COL: Ciliophora > Heterotrichea
+Plagiotomidae # COL: Heterotrichea > Plagiotomida
+Planispirillinidae # COL: Tubothalamea > Spirillinida
+Planomonadida # COL: Sulcozoa > Glissodiscea
+Planomonadidae # COL: Glissodiscea > Planomonadida
+Planorbulinidae # COL: Globothalamea > Rotaliida
+Planulinidae # COL: Globothalamea > Rotaliida
+Planuloididae # ALF: Globothalamea > Rotaliida
+Plasmodiidae # WoRMS: Aconoidasida > Haemospororida
+Plasmodiophoraceae # IRMNG: synonym of Plasmodiophoridae (Plasmodiophorida)
+Plasmodiophorida # COL: Cercozoa > Phytomyxea
+Plasmodiophoridae # plasmodiophorid family (Phytomyxea/Rhizaria); COL: Phytomyxea > Plasmodiophorida
+Platyophryidae # COL: Colpodea > Cyrtolophosidida
+Plesiotrichopidae # WoRMS: Phyllopharyngea > Dysteriida
+Pleuronematida # COL: Ciliophora > Oligohymenophorea
+Pleuronematidae # COL: Oligohymenophorea > Pleuronematida
+Pleuroplitidae # COL: Prostomatea > Prostomatida
+Pleurostomatida # COL: Ciliophora > Gymnostomatea
+Plicomonada # not found in ChecklistBank
+Ploeotarea # COL: Protozoa > Euglenozoa
+Ploeotiida # COL: Euglenozoa > Ploeotarea
+Ploeotiidae # COL: Ploeotarea > Ploeotiida
+Podolampadaceae # ITIS: Dinophyceae > Peridiniales
+Podophryidae # COL: Kinetofragminophora > Suctorida
+Polycostidae # IRMNG: Litostomatea > Vestibuliferida
+Polycyclidae # WoRMS: Oligohymenophorea > Mobilida
+Polycystinea # IRMNG: Chromista > Retaria
+Polydiniellidae # IRMNG: Litostomatea > Entodiniomorphida
+Polykrikaceae # ITIS: Dinophyceae > Peridiniales
+Polymastigaceae # diplomonad flagellate family; COL: synonym of Polymastigidae (Oxymonadida)
+Polymastigidae # COL: Anaeromonadea > Oxymonadida
+Polymorphinidae # COL: Nodosariata > Polymorphinida
+Polyplicariidae # IRMNG: Gregarinomorphea > Vermigregarida
+Polypyramidae # WoRMS: Thecofilosea > Phaeocalpida
+Polysaccamminidae # COL: Monothalamea > Astrorhizida
+Pompholyxophryidae # IRMNG: Imbricatea > Perlofilida
+Porospathidae # WoRMS: Thecofilosea > Phaeocalpida
+Porosporidae # ITIS: Sporozoa > Eugregarinida
+Porosporina # IRMNG: Gregarinomorphea > Arthrogregarida
+Porosporoidea # TAXREF: Gregarinomorpha > Eugregarinida
+Postciliodesmatophora # WoRMS: Chromista > Ciliophora
+Postgaardea # COL: Protozoa > Euglenozoa
+Postgaardia # COL: Protozoa > Euglenozoa
+Postgaardida # COL: Euglenozoa > Postgaardea
+Postgaardidae # COL: Postgaardea > Postgaardida
+Praethecacinetidae # WoRMS: Phyllopharyngea > Exogenida
+Preaxostyla # Wikidata: Eukaryota > Protozoa
+Prodiscophryidae # ALF: Phyllopharyngea > Evaginogenida
+Prokinetoplastida # COL: Euglenozoa > Kinetoplastea
+Prokinetoplastina # COL: Euglenozoa > Kinetoplastea
+Proleptomonadidae # WoRMS: Sarcomonadea > Glissomonadida
+Prolixoplectidae # COL: Globothalamea > Lituolida
+Pronoctilucaceae # ITIS: Dinophyceae > Peridiniales
+Prorocentraceae # ITIS: Dinophyceae > Prorocentrales
+Prorocentrales # ITIS: Pyrrophycophyta > Dinophyceae
+Prorodontida # COL: Ciliophora > Gymnostomatea
+Prorodontidae # COL: Prostomatea > Prostomatida
+Prostomatea # COL: Chromista > Ciliophora
+Prostomatida # COL: Ciliophora > Prostomatea
+Protalveolata # WoRMS: Chromista > Myzozoa
+Protanoplophryidae # IRMNG: Oligohymenophorea > Scuticociliatida
+Protaspidaceae # WoRMS: Dinophyceae > Desmomastigales
+Proteomyxia # ALF: Chromista > Retaria
+Proteromonadida # WoRMS: Bigyra > Proteromonadea
+Proteromonadidae # WoRMS: Proteromonadea > Proteromonadida
+Protista # COL: synonym of Protozoa (Eukaryota)
+Protocaviellidae # IRMNG: Litostomatea > Trichostomatida
+Protoceratiaceae # ITIS: Dinophyceae > Peridiniales
+Protocruzea # ALF: Chromista > Ciliophora
+Protocruzia # ALF: Chromista > Ciliophora
+Protocruziida # COL: Ciliophora > Spirotrichea
+Protocruziidae # COL: Spirotrichea > Protocruziida
+Protocruziidia # WoRMS: Ciliophora > Spirotrichea
+Protodiniferaceae # WoRMS: Dinophyceae > Noctilucales
+Protohalliidae # ALF: Litostomatea > Vestibuliferida
+Protoheterotrichida # COL: Ciliophora > Karyorelictea
+Protolitonotidae # COL: Gymnostomatea > Pleurostomatida
+Protoperidiniaceae # ITIS: Dinophyceae > Peridiniales
+Protosporangida # IRMNG: synonym of Ceratiomyxales (Ceratiomyxomycetes)
+Protosporangiidae # IRMNG: synonym of Protosporangiaceae (Ceratiomyxales)
+Protosteliales # protostelid myxomycetes (Amoebozoa); COL: Amoebozoa > Protosteliomycetes
+Protostelida # COL: Amoebozoa > Variosea
+Protosteliidae # COL: Variosea > Protostelida
+Protostomatida # WoRMS: Ciliophora > Karyorelictea
+Prototrachelocercidae # karyorelict ciliate family; COL: Karyorelictea > Trachelocercida
+Protozoa # COL: Eukaryota
+Psammettidae # COL: synonym of Psammettinae (Monothalamea)
+Psamminida # COL: synonym of Xenophyophoroidea (Foraminifera)
+Psammonobiotidae # WoRMS: Gromiidea > Gromiida
+Psammosidae # IRMNG: Myzodinea > Myzodinida
+Psammosphaeridae # COL: Monothalamea > Astrorhizida
+Pseudobolivinidae # COL: Globothalamea > Lituolida
+Pseudochlamydonellidae # COL: Cyrtophoria > Cyrtophorida
+Pseudociliatida # COL: Percolozoa > Percolatea
+Pseudocohnilembidae # COL: Oligohymenophorea > Hymenostomatida
+Pseudodendromonadidae # IRMNG: Bikosea > Pseudodendromonadida
+Pseudodendromonida # WoRMS: Bigyra > Bicoecea
+Pseudodifflugiidae # ITIS: Lobosa > Arcellinida
+Pseudoentodiniidae # ALF: Litostomatea > Entodiniomorphida
+Pseudogaudryinidae # COL: Globothalamea > Textulariida
+Pseudogemmidae # WoRMS: Phyllopharyngea > Endogenida
+Pseudoholophryida # prostome ciliates; COL: Ciliophora > Gymnostomatea
+Pseudoholophryidae # COL: Gymnostomatea > Pseudoholophryida
+Pseudokeronopsidae # COL: Hypotrichea > Urostylida
+Pseudolithidae # WoRMS: Acantharia > Symphyacanthida
+Pseudomicrothoracidae # ciliate family; COL: Nassophorea > Nassulida
+Pseudoparrellidae # COL: Globothalamea > Rotaliida
+Pseudophyllomitidae # IRMNG: Eogyrea > Eogyrida
+Pseudopirsoniidae # IRMNG: Imbricatea > Marimonadida
+Pseudotrachelocercidae # COL: Nassophorea > Nassulida
+Pseudourostylidae # COL: Hypotrichea > Urostylida
+Psilotrichidae # COL: Hypotrichea > Urostylida
+Psorospermidae # IRMNG: Ichthyosporea > Eccrinida
+Pterocorythidae # COL: Polycystina > Nassellaria
+Pterocystida # WoRMS: Heliozoa > Centrohelea
+Pterocystidae # WoRMS: Centrohelea > Pterocystida
+Ptychocylidae # tintinnid ciliate family (Ptychocylus); COL: Oligotrichea > Tintinnida
+Ptychocylididae # COL: Oligotrichea > Tintinnida
+Ptychodiscaceae # ITIS: Dinophyceae > Ptychodiscales
+Pulleniatinidae # COL: Globothalamea > Rotaliida
+Pycnotrichidae # IRMNG: Litostomatea > Trichostomatida
+Pyloniidae # COL: Polycystina > Spumellaria
+Pyrocystaceae # ITIS: Dinophyceae > Gonyaulacales
+Pyrocystales # WoRMS: Myzozoa > Dinophyceae
+Pyrophacaceae # ITIS: Dinophyceae > Gonyaulacales
+Pyrsonympha # not found in ChecklistBank
+Pyrsonymphaceae # oxymonad flagellate family (Preaxostyla); COL: synonym of Pyrsonymphidae (Oxymonadida)
+Pyrsonymphidae # COL: Anaeromonadea > Oxymonadida
+Quadriciliidae # IRMNG: Imbricatea > Variglissida
+Quadrimorphinidae # COL: Globothalamea > Rotaliida
+Rabdiasteridae # ALF: Amoebozoa > Rotosphaerida
+Rabdiophryidae # ALF: Amoebozoa > Rotosphaerida
+Radiophryidae # COL: Oligohymenophorea > Astomatida
+Radiozoa # COL: Eukaryota > Chromista
+Ramamoebida # COL: Amoebozoa > Variosea
+Rapazia # COL: Euglenozoa > Euglenophyceae
+Rapazida # COL: Euglenozoa > Euglenophyceae
+Rapazidae # COL: Euglenophyceae > Rapazida
+Raperosteliaceae # COL: Dictyosteliomycetes > Dictyosteliales
+Raphidiophryidae # COL: Heliozoa > Centrohelida
+Rastrimonadida # IRMNG: Miozoa > Syndiniophyceae
+Reichenowellidae # COL: Chromista > Ciliophora
+Remaneicidae # COL: Globothalamea > Lituolida
+Reophacellidae # COL: Globothalamea > Lituolida
+Retaria # ITIS: Chromista
+Reticulofilosa # IRMNG: Chromista > Cercozoa
+Reticulosida # WoRMS: Cercozoa > Granofilosea
+Reticulowoodruffiidae # hypotrich ciliate family; COL: Colpodea > Cyrtolophosidida
+Retortamonadaceae # retortamonad flagellate family; COL: synonym of Retortamonadidae (Retortamonadida)
+Retortamonadida # COL: Metamonada > Eopharyngea
+Retortamonadidae # COL: Eopharyngea > Retortamonadida
+Reussellidae # COL: Globothalamea > Rotaliida
+Rhabdamminidae # COL: Monothalamea > Astrorhizida
+Rhabdomonadina # COL: Peranemea > Natomonadida
+Rhabdonellidae # ITIS: Ciliatea > Oligotrichida
+Rhabdophryidae # COL: Kinetofragminophora > Suctorida
+Rhapydioninidae # COL: Tubothalamea > Miliolida
+Rhinosporidiidae # IRMNG: Ichthyosporea > Dermocystida
+Rhinozetidae # IRMNG: Litostomatea > Entodiniomorphida
+Rhizamminidae # WoRMS: Monothalamea > Astrorhizida
+Rhizaria # Artsnavnebasen: Protozoa
+Rhizaspididae # WoRMS: Thecofilosea > Tectofilosida
+Rhizomastigida # COL: Amoebozoa > Archamoebea
+Rhizomastigidae # COL: synonym of Rhizomastixidae (Rhizomastigida)
+Rhizomonadidae # COL: Variosea > Phalansteriida
+Rhizonymphidae # hypermastigote flagellate family (Parabasalia); COL: Trichonymphea > Lophomonadida
+Rhizoplasmidae # ALF: Gromiidea > Reticulosida
+Rhogostomidae # WoRMS: Thecofilosea > Cryomonadida
+Rhynchetidae # ALF: Phyllopharyngea > Endogenida
+Rhynchodia # WoRMS: Ciliophora > Phyllopharyngea
+Rhynchodida # ITIS: Ciliophora > Ciliatea
+Rhynchomonadidae # COL: Kinetoplastea > Bodonida
+Rhynchophryidae # WoRMS: Phyllopharyngea > Evaginogenida
+Rhynchostomatia # iNat: Ciliophora > Litostomatea
+Rhytidocystidae # WoRMS: Conoidasida > Agamococcidiorida
+Rictida # IRMNG: Bigyra > Bikosea
+Rictidae # IRMNG: Bikosea > Rictida
+Rigidomastigidae # COL: Variosea > Phalansteriida
+Rigidothrichidae # ciliate family; COL: Hypotrichea > Urostylida
+Rigifilida # COL: Sulcozoa > Hilomonadea
+Rigifilidae # COL: Hilomonadea > Rigifilida
+Rigimonada # COL: Protozoa > Euglenozoa
+Riveroinidae # COL: Tubothalamea > Miliolida
+Robertinida # COL: Foraminifera > Globothalamea
+Robertinidae # COL: Globothalamea > Robertinida
+Rosalinidae # COL: Globothalamea > Rotaliida
+Rotaliellidae # COL: Globothalamea > Rotaliida
+Rotaliida # COL: Foraminifera > Globothalamea
+Rotaliidae # foraminifera family (Rotaliida); COL: Globothalamea > Rotaliida
+Rotallidae # ALF: Globothalamea > Rotaliida
+Rotosphaerida # WoRMS: Chromista > Heliozoa
+Rovinjellidae # WoRMS: Oligohymenophorea > Sessilida
+Rozellida # WoRMS: Choanozoa > Cristidiscoidea
+Rozellidae # WoRMS: Cristidiscoidea > Rozellida
+Rozellidea # GBIF: Protozoa > Choanozoa
+Rzehakinidae # COL: Globothalamea > Lituolida
+Saccamminidae # COL: Monothalamea > Astrorhizida
+Saccinobaculidae # COL: Anaeromonadea > Oxymonadida
+Sagenista # WoRMS: Chromista > Bigyra
+Sagosphaeridae # WoRMS: Thecofilosea > Phaeosphaerida
+Sainouridae # WoRMS: Sarcomonadea > Pansomonadida
+Sainouroidea # ALF: Helkesea > Helkesida
+Salpingoecaceae # choanoflagellate family; COL: synonym of Salpingoecidae (Craspedida)
+Salpingoecidae # COL: Choanoflagellatea > Craspedida
+Sandonidae # WoRMS: Sarcomonadea > Glissomonadida
+Sandonina # ALF: Sarcomonadea > Glissomonadida
+Sapocribridae # COL: Cutosea > Squamocutida
+Sarcocystidae # WoRMS: Conoidasida > Eucoccidiorida
+Sarcodina # ITIS: Protozoa > Protozoa
+Sarcomastigophora # COL: synonym of Sarcomastigota (Eukaryota)
+Sarcomastigota # COL: Eukaryota > Protozoa
+Sarcomonadea # WoRMS: Chromista > Cercozoa
+Scaphidiodontidae # COL: Cyrtophoria > Cyrtophorida
+Schizamminidae # COL: Monothalamea > Astrorhizida
+Schizocaryidae # WoRMS: Oligohymenophorea > Philasterida
+Schizoplasmodiidae # COL: Variosea > Fractovitellida
+Schizopyrenida # COL: Protozoa > Amoebozoa
+Scuticociliatia # WoRMS: Ciliophora > Oligohymenophorea
+Scuticociliatida # scuticociliate ciliates; COL: Ciliophora > Oligohymenophorea
+Scyphidiidae # COL: Oligohymenophorea > Peritrichida
+Scytomonadidae # COL: Stavomonadea > Petalomonadida
+Selenaionida # COL: Percolozoa > Heterolobosea
+Selenaionidae # COL: Heterolobosea > Selenaionida
+Selenidiidae # WoRMS: Conoidasida > Eugregarinorida
+Semiconosia # ALF: Protozoa > Amoebozoa
+Serpenomonadidae # COL: Stavomonadea > Heterostavida
+Sessilida # WoRMS: Ciliophora > Oligohymenophorea
+Severonidae # WoRMS: Phyllopharyngea > Exogenida
+Shepheardellidae # IRMNG: Monothalamea > Allogromiida
+Sicuophoridae # COL: Heterotrichea > Heterotrichida
+Siedleckiidae # WoRMS: Conoidasida > Eugregarinorida
+Siluaniidae # IRMNG: Bikosea > Pseudodendromonadida
+Simplicimonadidae # COL: Trichomonadea > Trichomonadida
+Siphogenerinoididae # COL: Globothalamea > Rotaliida
+Siphonididae # ALF: Globothalamea > Rotaliida
+Skiomonadea # WoRMS: Chromista > Cercozoa
+Solenicolidae # WoRMS: Nanomonadea > Uniciliatida
+Solenophryidae # iNat: Phyllopharyngea > Endogenida
+Soliformovidae # COL: Variosea > Fractovitellida
+Sonderiidae # WoRMS: Plagiopylea > Plagiopylida
+Soritidae # COL: Tubothalamea > Miliolida
+Sorodiplophryidae # COL: Labyrinthulea > Thraustochytrida
+Sorogenida # COL: Ciliophora > Colpodea
+Sorogenidae # COL: Colpodea > Sorogenida
+Spathidiida # COL: Ciliophora > Gymnostomatea
+Spathidiidae # COL: Gymnostomatea > Spathidiida
+Spelaeophryidae # WoRMS: Phyllopharyngea > Exogenida
+Sphaeramminidae # COL: Globothalamea > Lituolida
+Sphaeriparaceae # IRMNG: Syndiniophyceae > Syndiniales
+Sphaerocystidae # IRMNG: Gregarinomorphea > Arthrogregarida
+Sphaeroidinellidae # IRMNG: Globothalamea > Globigerinida
+Sphaeroidinidae # COL: Globothalamea > Rotaliida
+Sphenoderiidae # IRMNG: Imbricatea > Euglyphida
+Sphenomonadidae # COL: Stavomonadea > Petalomonadida
+Sphenophryidae # COL: Kinetofragminophora > Suctorida
+Spirillinida # COL: Foraminifera > Tubothalamea
+Spirillinidae # COL: Tubothalamea > Spirillinida
+Spirochonidae # COL: Oligohymenophorea > Peritrichida
+Spirocuta # COL: Protozoa > Euglenozoa
+Spirodinida # ALF: Miozoa > Peridinea
+Spirodiniidae # IRMNG: Litostomatea > Entodiniomorphida
+Spirofilidae # COL: Hypotrichea > Stichotrichida
+Spiroloculinidae # COL: Tubothalamea > Miliolida
+Spironucleidae # COL: Eopharyngea > Diplomonadida
+Spiroplectamminidae # COL: Globothalamea > Lituolida
+Spirostomidae # COL: Heterotrichea > Heterotrichida
+Spirotectinidae # COL: Globothalamea > Rotaliida
+Spirotrichea # COL: Chromista > Ciliophora
+Spirotrichia # WoRMS: Chromista > Ciliophora
+Spirotrichonymphida # COL: Metamonada > Trichomonadea
+Spirotrichonymphidae # hypermastigote flagellate family (Parabasalia); COL: synonym of Holomastigotoididae (Spirotrichonymphida)
+Spirotrichosomidae # COL: Trichonymphea > Trichonymphida
+Spirozonidae # COL: Kinetofragminophora > Trichostomatida
+Spongodiscidae # COL: Polycystina > Spumellaria
+Spongomonadida # WoRMS: Cercozoa > Imbricatea
+Spongomonadidae # WoRMS: Imbricatea > Spongomonadida
+Sporadotrichida # WoRMS: Ciliophora > Spirotrichea
+Sporozoa # ITIS: Protozoa > Protozoa
+Spumellaria # COL: Radiozoa > Polycystina
+Squamamoebidae # COL: Cutosea > Squamocutida
+Squamocutida # COL: Amoebozoa > Cutosea
+Squamulinidae # COL: Tubothalamea > Miliolida
+Squirmida # WoRMS: Myzozoa > Conoidasida
+Squirmidea # IRMNG: Chromista > Miozoa
+Stainforthiidae # COL: Globothalamea > Rotaliida
+Stannomida # COL: synonym of Xenophyophoroidea (Foraminifera)
+Stannomidae # COL: Foraminifera > Monothalamea
+Stauracanthidae # WoRMS: Acantharia > Arthracanthida
+Stauraconidae # WoRMS: Acantharia > Chaunacanthida
+Staurojoeninidae # COL: Trichonymphea > Trichonymphida
+Stavomonadea # COL: Protozoa > Euglenozoa
+Stelamoeba # WoRMS: Protozoa > Amoebozoa
+Stemonitales # myxomycetes (Amoebozoa); IRMNG: synonym of Stemonitidales (Myxomycetes)
+Stemonitidaceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Stemonitidales
+Stemonitidae # WoRMS: Myxogastrea > Stemonitida
+Stenamoebidae # COL: Discosea > Thecamoebida
+Stenophorida # IRMNG: Miozoa > Paragregarea
+Stenophoridae # IRMNG: Paragregarea > Stenophorida
+Stentoridae # COL: Heterotrichea > Heterotrichida
+Stephanoecidae # COL: Choanoflagellatea > Acanthoecida
+Stephanomonadaceae # flagellate family; COL: Eukaryota > Protozoa
+Stephanopogonidae # COL: Percolatea > Pseudociliatida
+Stereomyxida # stereomyxid amoebae (Endomyxa/Rhizaria); WoRMS: Amoebozoa > Variosea
+Stereomyxidae # COL: Protozoa > Amoebozoa
+Sticholonchea # WoRMS: Chromista > Radiozoa
+Stichotrichia # WoRMS: Ciliophora > Spirotrichea
+Stichotrichida # COL: Ciliophora > Hypotrichea
+Stokesiidae # COL: Oligohymenophorea > Peniculida
+Streblomastigidae # COL: Anaeromonadea > Oxymonadida
+Strobilidiidae # COL: Oligotrichea > Choreotrichida
+Strobilidiina # WoRMS: Oligotrichea > Choreotrichida
+Strombidiida # COL: Ciliophora > Oligotrichea
+Strombidiidae # COL: Oligotrichea > Strombidiida
+Strombidinopsidae # COL: Oligotrichea > Choreotrichida
+Strombidinopsina # WoRMS: Oligotrichea > Choreotrichida
+Strongylidiidae # COL: Hypotrichea > Stichotrichida
+Stygamoebidae # COL: Discosea > Glycostylida
+Stygamoebina # ALF: Discosea > Glycostylida
+Stygiellidae # COL: Jakobea > Jakobida
+Stylocephalidae # IRMNG: Gregarinomorphea > Arthrogregarida
+Stylocephaloidea # TAXREF: Gregarinomorpha > Eugregarinida
+Stylochonidae # WoRMS: Phyllopharyngea > Cryptogemmida
+Stylocometidae # COL: Kinetofragminophora > Suctorida
+Suctorida # suctorian ciliates; COL: Ciliophora > Kinetofragminophora
+Suessiaceae # WoRMS: Dinophyceae > Suessiales
+Suessiales # ITIS: Pyrrophycophyta > Dinophyceae
+Suessioidia # WoRMS: Myzozoa > Peridinea
+Sulcodinea # ALF: Chromista > Miozoa
+Sulcomonadidae # COL: Diphyllatea > Diphylleida
+Sulcozoa # COL: Eukaryota > Protozoa
+Sultanophryidae # suctorian ciliate family; COL: Karyorelictea > Trachelocercida
+Symbiontida # COL: synonym of Postgaardea (Euglenozoa)
+Symphyacanthida # WoRMS: Radiozoa > Acantharia
+Syncystidae # IRMNG: Gregarinomorphea > Arthrogregarida
+Syndina # Wikidata: Eukaryota > Dinoflagellata
+Syndinea # WoRMS: Chromista > Myzozoa
+Syndiniaceae # ITIS: Dinophyceae > Peridiniales
+Syndinida # WoRMS: synonym of Syndiniales (Dinophyceae)
+Syndinidae # WoRMS: Dinophyceae > Syndiniales
+Synhymeniida # COL: Ciliophora > Nassophorea
+Synhymeniidae # COL: Nassophorea > Nassulida
+Syringamminidae # COL: synonym of Syringammininae (Monothalamea)
+Tachyblastonidae # WoRMS: Phyllopharyngea > Exogenida
+Taxopodida # WoRMS: Radiozoa > Sticholonchea
+Tectiferina # ALF: Discosea > Himatismenida
+Tectofilosida # WoRMS: Cercozoa > Thecofilosea
+Tectohymenidae # COL: Colpodea > Bryometopida
+Tectosia # WoRMS: Cercozoa > Thecofilosea
+Telamminidae # COL: Monothalamea > Astrorhizida
+Telamodiniidae # ALF: Litostomatea > Entodiniomorphida
+Teloproctidae # COL: Peranemea > Acroglissida
+Teranymphidae # COL: Trichonymphea > Trichonymphida
+Termitophryidae # IRMNG: Oligohymenophorea > Peritrichida
+Terragregarina # IRMNG: Gregarinomorphea > Arthrogregarida
+Testulariida # Dyntaxa: synonym of Textulariida (Globothalamea)
+Tetradimorphidae # CLB dataset 2014: Granofilosea > Heliomonadida
+Tetrahymenida # WoRMS: Ciliophora > Oligohymenophorea
+Tetrahymenidae # COL: Oligohymenophorea > Hymenostomatida
+Tetramitaceae # COL: synonym of Vahlkampfiidae (Schizopyrenida)
+Tetramitia # COL: Protozoa > Percolozoa
+Textulariellidae # COL: Globothalamea > Loftusiida
+Textulariidae # COL: Globothalamea > Textulariida
+Textulariopsidae # COL: Globothalamea > Lituolida
+Thalassicollidae # COL: Nassellaria > Collozoidae
+Thalassomycetaceae # WoRMS: Myzozoa > Dinophyceae
+Thallassicollidae # ALF: Polycystinea > Collodarida
+Thaumatomonadida # WoRMS: Cercozoa > Imbricatea
+Thaumatomonadidae # WoRMS: Imbricatea > Thaumatomonadida
+Thecacinetidae # WoRMS: Phyllopharyngea > Exogenida
+Thecadiniaceae # ITIS: Dinophyceae > Gonyaulacales
+Thecamoebida # COL: Amoebozoa > Discosea
+Thecamoebidae # COL: Discosea > Thecamoebida
+Thecofilosea # WoRMS: Chromista > Cercozoa
+Thecomonadea # COL: Protozoa > Sulcozoa
+Theileriidae # IRMNG: Coccidiomorphea > Piroplasmida
+Theoperidae # COL: Polycystina > Nassellaria
+Thigmocomidae # IRMNG: Oligohymenophorea > Scuticociliatida
+Thigmophryidae # COL: Oligohymenophorea > Scuticociliatida
+Thigmotrichida # WoRMS: Ciliophora > Oligohymenophorea
+Tholoniidae # COL: Polycystina > Spumellaria
+Thoracosphaeraceae # ITIS: Dinophyceae > Thoracosphaerales
+Thraustochytriaceae # thraustochytrid stramenopile family (Labyrinthulea); WoRMS: Labyrinthulea > Thraustochytrida
+Thraustochytrida # thraustochytrids (Labyrinthulea, Stramenopiles); COL: Bigyra > Labyrinthulea
+Thraustochytriida # IRMNG: Bigyra > Labyrinthulea
+Thraustochytriidae # COL: Labyrinthulea > Thraustochytrida
+Thyrophylacidae # WoRMS: Oligohymenophorea > Philasterida
+Tintinnida # COL: Ciliophora > Oligotrichea
+Tintinnidae # COL: Oligotrichea > Oligotrichida
+Tintinnidiidae # ITIS: Ciliatea > Oligotrichida
+Tokophryidae # COL: Kinetofragminophora > Suctorida
+Tontoniidae # COL: Oligotrichea > Oligotrichida
+Torodiniaceae # IRMNG: Dinophyceae > Torodiniales
+Torodiniales # WoRMS: Myzozoa > Dinophyceae
+Torodinida # ALF: Miozoa > Peridinea
+Tortoplectellidae # COL: Globothalamea > Rotaliida
+Tosaidae # IRMNG: Globothalamea > Rotaliida
+Tovelliaceae # WoRMS: Dinophyceae > Tovelliales
+Tracheliida # COL: Ciliophora > Litostomatea
+Tracheliidae # COL: Litostomatea > Tracheliida
+Trachelocercida # karyorelict ciliates; COL: Ciliophora > Karyorelictea
+Trachelocercidae # COL: Karyorelictea > Trachelocercida
+Trachelophyllidae # COL: Gymnostomatea > Spathidiida
+Trachelostylidae # COL: Hypotrichea > Urostylida
+Tremulida # WoRMS: Cercozoa > Skiomonadea
+Tremulidae # WoRMS: Skiomonadea > Tremulida
+Trepomonadea # diplomonad flagellates (relatives of Giardia); COL: synonym of Eopharyngea (Metamonada)
+Triadiniaceae # ITIS: Dinophyceae > Peridiniales
+Tricercomitidae # COL: Trichomonadea > Trichomonadida
+Trichiales # myxomycetes (Amoebozoa); COL: Amoebozoa > Myxomycetes
+Trichiida # WoRMS: Amoebozoa > Myxogastrea
+Trichodinidae # COL: Oligohymenophorea > Peritrichida
+Trichodinopsidae # IRMNG: Oligohymenophorea > Peritrichida
+Trichohyalidae # COL: Globothalamea > Rotaliida
+Tricholimacidae # COL: Archamoebea > Pelobiontida
+Trichomonadaceae # trichomonad flagellate family (Parabasalia); COL: synonym of Trichomonadidae (Trichomonadida)
+Trichomonadea # COL: Protozoa > Metamonada
+Trichomonadida # COL: Metamonada > Trichomonadea
+Trichomonadidae # COL: Trichomonadea > Trichomonadida
+Trichonemidae # COL: Variosea > Phalansteriida
+Trichonymphea # COL: Protozoa > Metamonada
+Trichonymphida # COL: Metamonada > Trichonymphea
+Trichonymphidae # COL: Trichonymphea > Trichonymphida
+Trichophryidae # COL: Kinetofragminophora > Suctorida
+Trichosia # ALF: Amoebozoa > Tubulinea
+Trichosida # COL: Amoebozoa > Tubulinea
+Trichosphaeriidae # COL: Tubulinea > Trichosida
+Trichospiridae # COL: Kinetofragminophora > Trichostomatida
+Trichostomatia # WoRMS: Ciliophora > Litostomatea
+Trichostomatida # trichostome ciliates; COL: Ciliophora > Kinetofragminophora
+Trichotokaridae # IRMNG: Gregarinomorphea > Vermigregarida
+Trichozoa # WoRMS: Protozoa > Metamonada
+Trigonopixidae # ALF: Tubulinea > Arcellinida
+Trigonopyxidae # testate amoeba family (Arcellinida); COL: Tubulinea > Arcellinida
+Trihymenidae # COL: Colpodea > Bryometopida
+Trilocularenidae # COL: Globothalamea > Lituolida
+Trimastigaceae # oxymonad flagellate family (Preaxostyla); COL: synonym of Trimastigidae (Trimastigida)
+Trimastigida # COL: Metamonada > Anaeromonadea
+Trimastigidae # COL: Anaeromonadea > Trimastigida
+Trimosinidae # COL: Globothalamea > Rotaliida
+Trimyemidae # COL: Kinetofragminophora > Trichostomatida
+Trinematidae # WoRMS: Imbricatea > Euglyphida
+Trissocyclidae # COL: Polycystina > Nassellaria
+Tritaxiidae # COL: Globothalamea > Lituolida
+Tritrichomonadida # WoRMS: Metamonada > Trichomonadophyceae
+Tritrichomonadidae # COL: Trichomonadea > Trichomonadida
+Trochamminida # COL: synonym of Trochamminina (Globothalamea)
+Trochamminidae # COL: Globothalamea > Lituolida
+Trochamminoidae # COL: Globothalamea > Lituolida
+Troglodytellidae # IRMNG: Litostomatea > Entodiniomorphida
+Tropidoatractidae # IRMNG: Heterotrichea > Metopida
+Trypanococcidae # ALF: Phyllopharyngea > Evaginogenida
+Trypanosomatida # COL: Euglenozoa > Kinetoplastea
+Trypanosomatidae # COL: Kinetoplastea > Trypanosomatida
+Tsukubamonadida # COL: Loukozoa > Tsukubea
+Tsukubamonadidae # COL: Tsukubea > Tsukubamonadida
+Tsukubea # COL: Protozoa > Loukozoa
+Tubiferaceae # myxomycete family (Amoebozoa); COL: Myxomycetes > Cribrariales
+Tubothalamea # COL: Chromista > Foraminifera
+Tubulinea # COL: Protozoa > Amoebozoa
+Tulamoebidae # COL: Percolozoa > Heterolobosea
+Turaniellidae # COL: Oligohymenophorea > Hymenostomatida
+Turborotalitidae # IRMNG: Globothalamea > Globigerinida
+Turrilinidae # COL: Globothalamea > Rotaliida
+Tuscaroridae # WoRMS: Thecofilosea > Phaeocalpida
+Undellidae # ITIS: Ciliatea > Oligotrichida
+Ungalatellidae # ALF: Globothalamea > Rotaliida
+Uniciliatida # WoRMS: Bigyra > Nanomonadea
+Uradiophoridae # WoRMS: Conoidasida > Eugregarinorida
+Urceolariidae # COL: Oligohymenophorea > Peritrichida
+Urnulidae # foraminifera family (Rhizaria); COL: Kinetofragminophora > Suctorida
+Urocentrida # UKSI: Ciliophora > Oligohymenophorea
+Urocentridae # COL: Oligohymenophorea > Hymenostomatida
+Uronematidae # COL: Oligohymenophorea > Hymenostomatida
+Uronychiidae # COL: Hypotrichea > Euplotida
+Urosporidae # WoRMS: Conoidasida > Eugregarinorida
+Urosporoidea # TAXREF: Gregarinomorpha > Eugregarinida
+Urostylida # COL: Ciliophora > Hypotrichea
+Urotrichidae # COL: Prostomatea > Prostomatida
+Urozonatidae # COL: Prostomatea > Prostomatida
+Urozonidae # IRMNG: Oligohymenophorea > Scuticociliatida
+Usconophryidae # COL: Oligohymenophorea > Peritrichida
+Uvigerinidae # COL: Globothalamea > Rotaliida
+Vaginicolidae # COL: Oligohymenophorea > Peritrichida
+Vaginulinidae # COL: Nodosariata > Vaginulinida
+Vahlkampfidae # heterolobosean amoeba family (Excavata); COL: synonym of Vahlkampfiidae (Schizopyrenida)
+Vahlkampfiidae # COL: Amoebozoa > Schizopyrenida
+Valvulinidae # COL: Globothalamea > Textulariida
+Vampyrellida # WoRMS: Cercozoa > Vampyrellidea
+Vampyrellidae # ITIS: Filosia > Aconchulinida
+Vampyrellidea # WoRMS: Chromista > Cercozoa
+Vannellida # vannellid amoebae (Amoebozoa); COL: synonym of Glycostylida (Discosea)
+Vannellidae # COL: Discosea > Glycostylida
+Vannellina # ALF: Discosea > Glycostylida
+Variglissida # IRMNG: Cercozoa > Imbricatea
+Variosea # COL: Protozoa > Amoebozoa
+Variosia # ALF: Protozoa > Amoebozoa
+Varipodida # COL: Amoebozoa > Variosea
+Varisulca # COL: Protozoa > Sulcozoa
+Velocida # IRMNG: Miozoa > Paragregarea
+Veloxidiidae # IRMNG: Paragregarea > Velocida
+Veloxidioidea # ALF: Paragregarea > Velocida
+Ventrata # WoRMS: Chromista > Ciliophora
+Ventricleftia # IRMNG: Cercozoa > Thecofilosea
+Ventricleftida # WoRMS: Cercozoa > Thecofilosea
+Ventrifilosa # WoRMS: Chromista > Cercozoa
+Ventrifissuridae # WoRMS: Thecofilosea > Ventricleftida
+Vermamoebidae # COL: Tubulinea > Echinamoebida
+Vermigregarida # IRMNG: Miozoa > Gregarinomorphea
+Verneuilinidae # COL: Globothalamea > Lituolida
+Verrucomonadidae # WoRMS: Thecofilosea > Ventricleftida
+Vestibuliferida # WoRMS: Ciliophora > Litostomatea
+Vexilliferidae # COL: Discosea > Glycostylida
+Victoriellidae # COL: Globothalamea > Rotaliida
+Virgulinellidae # COL: Globothalamea > Rotaliida
+Viridiraptoridae # IRMNG: Sarcomonadea > Glissomonadida
+Vitrellida # ALF: Miozoa > Apicomonadea
+Vitrelloidia # ALF: Miozoa > Apicomonadea
+Volutellidae # IRMNG: Thecofilosea > Tectofilosida
+Voracida # IRMNG: Miozoa > Apicomonadea
+Voromonadida # WoRMS: Myzozoa > Myzomonadea
+Vorticellidae # COL: Oligohymenophorea > Peritrichida
+Warnowiaceae # ITIS: Dinophyceae > Gymnodiniales
+Wilbertomorphidae # IRMNG: Karyorelictea > Loxodida
+Wobblata # ALF: Chromista > Bigyra
+Woloszynskiaceae # IRMNG: Dinophyceae > Gymnodiniales
+Woodruffiidae # COL: Colpodea > Cyrtolophosidida
+Xystonellidae # ITIS: Ciliatea > Oligotrichida
+Yogsothothidae # IRMNG: Heliozoa > Centrohelea
+Zoelucasida # IRMNG: Cercozoa > Imbricatea
+Zoelucasidae # IRMNG: Imbricatea > Zoelucasida
+Zoomastigophora # obsolete class for animal-like flagellates (heterogeneous); ITIS: Protozoa > Sarcomastigophora
+Zoothamniidae # COL: Oligohymenophorea > Peritrichida
+Zoyaellidae # COL: Tubothalamea > Miliolida

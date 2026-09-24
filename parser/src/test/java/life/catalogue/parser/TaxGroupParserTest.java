@@ -60,6 +60,22 @@ public class TaxGroupParserTest extends ParserTestBase<TaxGroup> {
     assertParse(TaxGroup.Insects, "Tachinidae");
     assertParse(TaxGroup.Animals, "Cepheidae");
     assertParse(TaxGroup.Eukaryotes, "Carinae");
+    assertParse(TaxGroup.Animals, "Decapoda");
+    assertParse(TaxGroup.Animals, "Cyprinidae");
+    assertParse(TaxGroup.Arthropods, "Axiidae");
+    assertParse(null, "Chlorobiota");
+    assertParse(null, "Gordoniaceae");
+    // misplaced names moved to the group all sources agree on
+    assertParse(TaxGroup.Bryophytes, "Micromitriaceae");
+    assertParse(TaxGroup.Gastropods, "Maizaniidae");
+    assertParse(TaxGroup.Bivalves, "Cyclochlamydidae");
+    assertParse(TaxGroup.Protists, "Aveliidae");
+    assertParse(TaxGroup.Protists, "Eccriniidae");
+    assertParse(TaxGroup.Ascomycetes, "Periconiaceae");
+    // microsporidia follow COL and Microsporidia itself into the fungi
+    assertParse(TaxGroup.OtherFungi, "Microsporidia");
+    assertParse(TaxGroup.OtherFungi, "Nosematidae");
+    assertParse(TaxGroup.Plants, "Equisetopsida");
     // bacteria listed in the dicts win over suffix rules
     assertParse(TaxGroup.Bacteria, "Actinomycetes");
     assertParse(TaxGroup.Bacteria, "Chroococcophyceae");

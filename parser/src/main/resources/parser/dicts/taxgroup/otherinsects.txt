@@ -1,2293 +1,2283 @@
-Aaroniellinae
-Abranchioperlidae
-Abrocomophagidae
-Acanthaclisini
-Acanthametropodidae
-Acanthomimini
-Acanthopidae
-Acanthopinae
-Acanthoplectrina
-Acanthoplectrini
-Acanthopoidea
-Acanthotermitinae
-Acanthoxylini
-Achriopterini
-Acmonotini
-Acontistina
-Acontistini
-Acosmelytridae
-Acromantinae
-Acromantini
-Acroneuriinae
-Acroneuriini
-Acroperlini
-Acrophyllini
-Acrotelsatinae
-Adeloneuridae
-Adelphohemerobiinae
-Adiheterothripidae
-Adiphlebiidae
-Aenigmatidiidae
-Aeolothripidae # thrips family (Thysanoptera)
-Aeolothripinae
-Aeolothripoidea
-Aeschnosomatidae
-Aeshnidae
-Aeshnoidea
-Aethalochroini
-Aetheogrammatidae
-Aetophlebiidae
-Afropsocina
-Agastopsyllini
-Agathemeridae
-Agathemerinae
-Agathemerini
-Agathemerodea
-Aglyptodermatinae
-Agriidae
-Agrionidae
-Agullini
-Albardiinae
-Alectoneuridae
-Alenini
-Aleuropteryginae
-Aleuropterygini
-Alexarasniidae
-Alexarasniinae
-Alexarasnioidea
-Alexrasnitsyniidae
-Aliculidae
-Alienopteridae
-Allocnemidinae
-Allodahliinae
-Allomachilinae
-Alloperlini
-Allostethidae
-Allostethinae
-Allostethoidea
-Allosthetidae
-Amanipodagrionidae
-Amantini
-Amblycera
-Ameletidae
-Ameletopsidae
-Amelidae
-Amelini
-Amerimantodea
-Ametropodidae
-Amitermitinae
-Amorphoscelidae
-Amorphoscelinae
-Amphecostephanina
-Amphientometae
-Amphientomidae
-Amphientominae
-Amphientomoidea
-Amphigerontiinae
-Amphigerontiini
-Amphinemurinae
-Amphipsocidae
-Amphipsocina
-Amphipsocinae
-Amphipsocini
-Amphipsyllinae
-Amphipsyllini
-Amphipterygidae
-Amphipterygoidea
-Anacroneuriini
-Anacroneurini
-Anallactinae
-Anaplectoideini
-Anaplectoidinae
-Anareolatae
-Anataeliidae
-Anataeliinae
-Anataelinae
-Anaxarchini
-Anchineuridae
-Ancistopsylloidea
-Ancistrogastrinae
-Ancistronidae
-Ancistropsyllidae
-Ancistropsylloidea
-Ancopteridae
-Andesembiidae
-Anechurinae
-Anisacanthidae
-Anisacanthinae
-Anisacanthini
-Anisembiidae
-Anisembiinae
-Anisembiini
-Anisolabidae
-Anisolabididae
-Anisolabidinae
-Anisolabidoidea
-Anisomorphini
-Anisoptera
-Anisozygoptera
-Ankylopterygini
-Anomiopsyllinae
-Anomiopsyllini
-Anophthalmolabidinae
-Anophthalmolabiinae
-Anophthalmolabinae
-Anoplura
-Antarctoperlaria
-Antarctoperlinae
-Antemnini
-Anthraconeuridae
-Anthracoptilidae
-Anthracothremmidae
-Antisolabidinae
-Antisolabiinae
-Antisolabinae
-Antistiina
-Antongiliinae
-Antongiliini
-Apachelytridae
-Apachyidae
-Apachyinae
-Apachyoidea
-Aphyopsocinae
-Apicotermitinae # termite subfamily (Blattodea: Isoptera)
-Apithanidae
-Apochrysinae
-Aporembiinae
-Appertiidae
-Apteropanorpidae
-Apteroperlidae
-Apterygidinae
-Arcantipsocidae
-Arceotermitidae
-Arceotermitinae
-Archaeatropidae
-Archaemegaptilidae
-Archaeognatha
-Archaeopsyllinae
-Archaeopsyllini
-Archelytridae
-Archelytroidea
-Archembiidae
-Archembiinae
-Archeorhinotermitidae
-Archeorhinotermitinae
-Archeosmylidae
-Archephemeridae
-Archiblattinae
-Archidermaptera
-Archimantina
-Archimantini
-Archimenoponidae
-Archimetabola
-Archimylacridae
-Archiperlaria
-Archiprobnidae
-Archiprobnisidae
-Archipsocetae
-Archipsocidae
-Archipsocinae
-Archipsyllidae
-Archoblattinidae
-Archoglossopteridae
-Archotermopsidae
-Archotermopsinae
-Arcioneuridae
-Arctoperlaria
-Arcynopteryginae
-Arcynopterygini
-Areolatae
-Argiolestidae
-Argiolestinae
-Aristoviidae
-Arixeniidae
-Arixeniina
-Arixenina
-Armenini
-Arrhinotermitinae
-Arriini
-Arthropleidae
-Artimantodea
-Ascalaphidae
-Ascalaphinae
-Ascalaphini
-Ascalochrysidae
-Aschipasmidae
-Aschiphasmatidae
-Aschiphasmatinae
-Aschiphasmatini
-Aschiphasmatoidea
-Asienthomidae
-Asiopompidae
-Asiopsocidae
-Asiopsocoidea
-Aspidohymenidae
-Aspidothoracidae
-Asthenohymenidae
-Asthenopodinae
-Astreptolabidinae
-Asyncritidae
-Atacaminae
-Atactophlebiidae
-Atalophlebiinae
-Atelurinae
-Atmetoclothodinae
-Atopopsyllini
-Atrichadenotecnini
-Atropetae
-Attaphilinae
-Auchenomini
-Aulacothripidae
-Aulertupidae
-Australembiidae
-Australembiinae
-Austremerellidae
-Austrocaeciliina
-Austrocaeciliini
-Austrocorduliidae
-Austroperlidae
-Austropetaliidae
-Austrophasmatidae
-Austrophasmatini
-Austrostylopyginae
-Aykhalidae
-Babalidae
-Babinskaiidae
-Bacalini
-Bacillidae
-Bacillinae
-Bacillini
-Bacilloidea
-Bacteriinae
-Bacterinae
-Baculini
-Bacunculidae
-Baetidae
-Baetinae
-Baetiscidae
-Baetoidea
-Bahiaxenidae
-Baissomantidae
-Baissopteridae
-Bajanzhargalanidae
-Baleyopterigidae
-Baleyopterygidae
-Baltini
-Bantiinae
-Bardacoleidae
-Bardapteridae
-Bardocoleidae
-Bardohymenidae
-Barreropsyllini
-Bassocaeciliini
-Batkentakidae
-Behningiidae
-Bellodermatidae
-Belonopterygini
-Berothidae
-Berothinae
-Biarmohymenidae
-Bisanthina
-Bittacidae
-Blaberidae
-Blaberiens
-Blaberinae
-Blaberini
-Blaberoidea
-Blandicinae
-Blastini
-Blattaria
-Blattariae
-Blattellidae
-Blattellinae
-Blattellini
-Blattelytridae
-Blattelytrina
-Blattidae
-Blattinae
-Blattinopsidae
-Blattocoleidae
-Blattodea
-Blattodeaphaginae
-Blattogryllidae
-Blattogryllopterida
-Blattoidae
-Blattoidea
-Blattulidae
-Blepharodinae
-Blissoxeninae
-Bohartillidae
-Bolbellini
-Bolbina
-Bonomiellinae
-Boopiidae
-Boopiinae
-Boreidae
-Boreinae
-Borisoperlinae
-Bovicolidae
-Bovicoliidae # chewing louse family (Phthiraptera)
-Brachycercinae
-Brachycercini
-Brachyctenonotini
-Brachydermaptera
-Brachylabidae
-Brachylabididae
-Brachylabidinae
-Brachylabinae
-Brachynemurini
-Brachyphyllophagidae
-Brachyphyllophagidea
-Brachypterainae
-Brachypteryinae
-Bradiopsyllini
-Brancsikiinae
-Breyeriidae
-Breyerioidea
-Brindlensiinae
-Brodiidae
-Brodiopteridae
-Brongniartiellidae
-Brucheiserinae
-Bryopsocidae
-Burmapygiinae
-Burmitembiinae
-Caatingatermitinae
-Cacurgidae
-Cacurgonarkemidae
-Caeciliusetae
-Caeciliusidae
-Caeciliusinae
-Caeciliusini
-Caeciliusoidea
-Caecolabiinae
-Caecolbaiinae
-Caenidae
-Caeninae
-Caenoculini
-Caenoidea
-Calamothespina
-Calamothespini
-Calicnemiinae
-Caliothripidae
-Caliridinae
-Callibiina
-Callimantini
-Calliperlinae
-Callipharixenidae
-Callipharixeninae
-Callistopterinae
-Caloblattinidae
-Caloblattinoidea
-Calocaeciliinae
-Calolamprodinae
-Calomantispinae
-Caloneuridae
-Caloneurodea
-Calopsocidae
-Calopsocinae
-Calopterygidae
-Calopteryginae
-Calopterygoidea
-Calotermitinae
-Calvertiellidae
-Calvertielloidea
-Campsurinae
-Camptoneuritidae
-Candaulae
-Canuleiini
-Capillopsocini
-Capniidae
-Capniinae
-Capnini
-Capritermitini
-Carapacea
-Carbotripluridae
-Carcinophoridae # earwig family (Dermaptera)
-Carcinophorinae
-Cardiopterinae
-Carinatermitidae
-Carinatermitinae
-Carobiinae
-Carpenteropteridae
-Carterettini
-Catadermaptera
-Caulopteridae
-Caurininae
-Cavoperlidae
-Celatoblattini
-Cerastipsocini
-Ceratophyllinae
-Ceratophylloidea
-Ceratophyllomorpha
-Cercobrachini
-Cercopodata
-Cernomantodea
-Chaeteessidae
-Chaeteessoidea
-Chaetospaniini
-Chaetospanini
-Challiinae
-Challinae
-Chauliodinae
-Chaulioditidae
-Cheleutoptera
-Chelicercinae
-Chelidurinae
-Cheliphlebiidae
-Chelisochellinae
-Chelisochidae
-Chelisochinae
-Chelopistinae
-Chelopteridae
-Chiastopsyllinae
-Chimaeropsyllidae
-Chimaeropsyllinae
-Chiropteropsyllini
-Chlorocyphidae
-Chlorogomphidae
-Chloroperlidae
-Chloroperlinae
-Chloroperlini
-Choeradodinae
-Chorisembiinae
-Choristopsyllini
-Chroicopteridae
-Chroicopterina
-Chroicopterinae
-Chroicopterini
-Chroicopteroidea
-Chromarcyidae
-Chromarcyinae
-Chrysopidae
-Chrysopini
-Chrysoraphidiidae
-Claasseniini
-Cladiopsocidae
-Cladomorphi
-Cladomorphidae
-Cladomorphinae
-Cladomorphini
-Cladoxerinae
-Cladoxerini
-Clituminae
-Clitumini
-Clitumnidae
-Clitumninae
-Clitumnini
-Cloeoninae
-Clothodidae
-Clothodinae
-Clothododea
-Clothodomorpha
-Cnemidolestida
-Cnemidolestidae
-Cnemidolestodea
-Coenagrionidae
-Coenagrionoidea
-Colapteroblattini
-Coletiinae
-Coletiniinae
-Coloburiscidae
-Colpocephalidae
-Colpocephalinae
-Compsocidae
-Compsodini
-Compsomantina
-Compsothespinae
-Coniocompsini
-Coniopterygidae
-Coniopteryginae
-Coniopterygini
-Coniopterygoidea
-Conwentziini
-Copeognatha
-Coptopsyllidae
-Coptopsylloidea
-Coptopterygidae
-Coptotermitinae
-Cordulegastridae
-Cordulegastroidea
-Corduliidae
-Corduliinae
-Corioxenidae
-Corioxeninae
-Cormopsocidae
-Corrodentia
-Corydalidae
-Corydaloididae
-Corydasialidae
-Corydiens
-Corydiidae
-Corydiinae
-Corydiini
-Corydinae
-Corydioidea
-Coryphacini
-Coryphoridae
-Corypsyllini
-Cosmiellinae
-Cosmogeracinae
-Cosmotermitinae
-Cotigaonopsini
-Craneopsyllinae
-Craneopsyllini
-Cranidiini
-Craspedoniini
-Cratoblattidae
-Cratomastotermitidae
-Cratovitismidae
-Cratovitismioidea
-Cratyniini
-Crepititermitinae
-Cretatermitinae
-Cretolabiinae
-Cretomantidae
-Cretostylopidae
-Crocini
-Crossoperlidae
-Cryptembiinae
-Cryptocercidae
-Cryptocercinae
-Cryptocercoidae
-Cryptovenidae
-Ctenolepismatinae
-Ctenoneurinae
-Ctenopariini
-Ctenophtalmidae # flea family (Siphonaptera)
-Ctenophthalmidae
-Ctenophthalminae
-Ctenophthalmini
-Ctenoptilidae
-Cubacubaninae
-Cubitermitinae
-Cycadothripidae
-Cycetini
-Cyclolachesillinae
-Cylindrogastrinae
-Cylindrotermitinae
-Cymbopsidae
-Cymenophlebidae
-Cymenophlebiidae
-Cyrenoberothinae
-Dactuliothripidae
-Dactylopsyllinae
-Dactylopterygidae
-Dajacini
-Daldubidae
-Damasippoididae
-Damasippoidinae
-Damasippoidini
-Danuriellini
-Dasydemellidae
-Dasydemellinae
-Dasyleptidae
-Dasyonygidae
-Dasyonyginae
-Dasypsocini
-Dataminae
-Datamini
-Degeeriellinae
-Deinelenchinae
-Deiphobinae
-Deiphobini
-Demopteridae
-Dendroleontina
-Dendroleontinae
-Dendroleontini
-Dendrothripinae
-Dermaptera
-Dermapteridae
-Dermapterinae
-Dermapteroida
-Dermatoptera
-Dermelytridae
-Dermodermaptera
-Dermopteridae
-Deromantinae
-Deroplatyidae
-Deroplatyina
-Deroplatyinae
-Deroplatyini
-Devadattidae
-Diamphipnoidae
-Diamphipnoinae
-Diaperasticinae
-Diaphanopteridae
-Diaphanopterodea
-Diapheromeridae
-Diapheromerinae
-Diapheromerini
-Diathemidae
-Dicercomyzidae
-Dichentomidae
-Dicteriadidae
-Dictyomylacridae
-Dictyoneurellidae
-Dictyoneuridae
-Dictyoneuroidea
-Dictyoptera
-Didymocoryphini
-Diechoblattinidae
-Dilaridae
-Dilarinae
-Dimarellina
-Dimarini
-Dinopsocidae
-Dinopsyllinae
-Dinotoperlinae
-Dioxoceridae
-Diphlebiinae
-Diplatyidae
-Diplatyinae
-Diplatymorphinae
-Diploglossata
-Diploglossida
-Diploperlini
-Diplopterinae
-Dipteromantispidae
-Dipteromimidae
-Dipterophagidae
-Dipterophaginae
-Disparoneurinae
-Dolabellopsocidae
-Dolichopsyllini
-Doratinae
-Doratopsyllinae
-Doratopsyllini
-Doubraviidae
-Drepanacrinae
-Drepanepteryginae
-Drepanicinae
-Duchailluiinae
-Dysaulini
-Dystactina
-Eadiidae
-Ecdyonurinae
-Echinophthiriidae
-Echinoponidae
-Echinopsocinae
-Echinosomatinae
-Ectobiidae
-Ectobiinae
-Ectognathen
-Ectooviinae
-Ectopsocidae
-Ectotrophi
-Ectotrophica
-Edgariekiidae
-Elassoneuriini
-Electrentomidae
-Electrentominae
-Electrentomoidea
-Electropsocinae
-Electrotermitinae
-Elenchidae
-Elenchinae
-Elenchoidea
-Elipsocidae
-Elipsocinae
-Elmoboriidae
-Elmoidae
-Elytroneuridae
-Elytroptera
-Embidae
-Embides
-Embidina
-Embidopsocidae
-Embidopsocinae
-Embiida
-Embiidae
-Embiidea
-Embiidina
-Embiinae
-Embiodea
-Embioidea
-Embiomorpha
-Embioptera
-Embonychidae
-Empheriidae
-Emphylopteridae
-Empusidae
-Empusina
-Empusinae
-Empusini
-Enderleinellidae
-Engelitermitinae
-Engisopteridae
-Ensiferoblattidae
-Ensiferophasmatidae
-Eoblattida
-Eoblattidae
-Eoblattodea
-Eodermaptera
-Eolachesillinae
-Eolachesillini
-Eomeropidae
-Epaphroditidae
-Epaphroditinae
-Epaphroditini
-Epaphroditoidea
-Eparchinae
-Ephemerellidae
-Ephemerelloidea
-Ephemeridae
-Ephemeroidea
-Ephemeroptera
-Ephemerythidae
-Epicaeciliini
-Epideigmatidae
-Epidermaptera
-Epigambriidae
-Epilampridae
-Epilamprinae
-Epilamprini
-Epiophlebiidae
-Epiophlebioidea
-Epipsocetae
-Epipsocidae
-Epirimiinae
-Epsomantini
-Eremiaphilidae
-Eremiaphilinae
-Eremiaphiloidea
-Erotidothripidae
-Erotidothripinae
-Esphalmenidae
-Esphalmeninae
-Eteodermaptera
-Eubleptidae
-Eubulidini
-Eucaenidae
-Euceratothripidae
-Euchomenellini
-Euchomenina
-Eudermaptera
-Eudohrniinae
-Eudohrninae
-Euembiodea
-Eugereonidae
-Eugereonoidea
-Euholognatha
-Euisoptera
-Eukulojidae
-Eumantodea
-Euphaeidae
-Euphaeoidea
-Euphasmatodea
-Euplectoptera
-Euplekoptera
-Euplexoptera
-Eupsocida
-Euremiscidae
-Eurycanthae
-Eurycanthinae
-Eurycanthini
-Eurycotiinae
-Eurycotinae
-Euryptilonidae
-Eusermyleformia
-Eustheniidae
-Eustheniinae
-Eusthenini
-Eusthenioidea
-Eutermitinae
-Euthyplociidae
-Euthyplociinae
-Euthyplocioidea
-Euthyrrhaphinae
-Euthyrrhaphini
-Euthysanura
-Eutrichophilinae
-Euxenoperlidae
-Euxenoperlinae
-Evenkidae
-Exeuthyplociinae
-Extatosomatinae
-Extatosomatini
-Fauriellidae # thrips family (Thysanoptera)
-Felicolinae
-Filipalpia
-Fontenelleini
-Foraminitermitinae
-Forbicinidae
-Forbicininae
-Forficulariae
-Forficulidae
-Forficulina
-Forficulinae
-Forficulini
-Forficulitermitinae
-Forficuloidea
-Foririidae
-Fouqueidae
-Fractaliidae
-Fuelleborniellinae
-Fulciniinae
-Fulciniini
-Furcatergalia
-Galinthiadidae
-Galinthiadoidea
-Gallophasmatidae
-Gastrotheida
-Gastrotheoidea
-Geinitziidae
-Geinitziinae
-Genitalatinae
-Geoisoptera
-Geoscapheinae
-Geracinae
-Gerapompidae
-Geraridae
-Gigantophasmatini
-Glenurini
-Gliricolidae
-Glosselytridae
-Glosselytrodea
-Glossotermitinae
-Glyptotermitinae
-Gnethodinae
-Gnopholeontini
-Gomphidae
-Gomphoidea
-Gomphomacromiidae
-Gonatistinae
-Gondwanoperlaria
-Goniocotinae
-Goniodidae
-Goniodinae
-Gonolabidae
-Gonolabididae
-Gonolabidinae
-Gonolabiinae
-Gonolabinae
-Gonolabinidae
-Gonolabininae
-Gonypetellini
-Gonypetidae
-Gonypetina
-Gonypetinae
-Gonypetini
-Gonypetoidea
-Gonypetyllina
-Gorochoviidae
-Grammolingiidae
-Graphiptilidae
-Graphocaeciliini
-Gratidiini
-Gripopterygidae
-Gripopteryginae
-Gripopterygoidea
-Gromphadorhini
-Grylloblattaria
-Grylloblattida
-Grylloblattidae
-Grylloblattina
-Grylloblattodea
-Grylloblattoidea
-Grylloplattidae
-Gulouidae
-Gumillinae
-Gymnothrici
-Gyninae
-Gyroblattidae
-Gyropidae
-Gyropinae
-Gyropoidea
-Haaniidae
-Haaniinae
-Haaniini
-Haanioidea
-Hadentomidae
-Hadrobrachypoda
-Haematomyzidae
-Haematopinidae
-Hagiomantini
-Halictophagidae
-Halictophaginae
-Halictophagoidea
-Halomachilinae
-Hamophthiriidae
-Hanidae
-Hapalomantinae
-Hapalomantini
-Hapalopteridae
-Haplodiplatyidae
-Haplogleniinae
-Haplogleniini
-Haplopodinae
-Haplopodini
-Harmoptera
-Havlatiidae
-Hebardininae
-Heliothripidae
-Hemeristina
-Hemerobiidae
-Hemerobiiformia
-Hemerobiinae
-Hemiclidoptera
-Hemimeridae
-Hemimerina
-Hemimeroidea
-Hemimylacridae
-Hemipachymorphini
-Hemiphlebiidae
-Hemipsocidae
-Hemithripidae
-Hemithripoidea
-Hemithysocerini
-Heptageniidae
-Heptagenioidea
-Heptapsogastridae
-Heptapsogastrinae
-Herbstialidae
-Herdinidae
-Hesperophasmatini
-Hestiasulini
-Hetaerininae
-Heteragrionidae
-Heterochaetinae
-Heterochaetulini
-Heterolepismatinae
-Heteronemiidae
-Heteronemiinae
-Heteronemiini
-Heteropterygidae
-Heteropteryginae
-Heteropterygini
-Heteroptilidae
-Heterotermitidae
-Heterotermitinae
-Heterothripidae
-Heterothripoidea
-Heterovatina
-Hexageniinae
-Hierodulinae
-Hierodulini
-Hodotermitidae
-Hodotermitinae
-Hodotermitini
-Hodotermopsellinae
-Hodotermopsidae
-Hodotermopsinae
-Holocompsidae
-Holocompsinae
-Holocompsini
-Holognatha
-Homalophlebidae
-Homataginae
-Homilopsocidea
-Homoeodictyidae
-Homoeoneuriini
-Homoiopteridae
-Homotaginae
-Homothetidae
-Hoplocloniini
-Hoplocoryphidae
-Hoplocoryphoidea
-Hoplopleuridae
-Humbertiellina
-Hybophthiridae
-Hybopthiridae
-Hybrisini
-Hylechthridae
-Hylecthridae
-Hymenopodidae
-Hymenopodina
-Hymenopodinae
-Hymenopodini
-Hymenopoidea
-Hypogasturidae # springtail family (Collembola)
-Hypolestidae
-Hypoperlida
-Hypoperlidae
-Hyrtanellini
-Hystrichopsyllidae
-Hystrichopsyllinae
-Hystrichopsyllini
-Hystrichopsylloidea
-Hystrichopsyllomorpha
-Ichthybotidae
-Idanotermitinae
-Ideliidae
-Idelinellidae
-Idiocnemidinae
-Idiomylacridae
-Idionychidae
-Idolomantini
-Idolomorphina
-Idolopsalidinae
-Idolopsalinae
-Idolothripinae # thrips subfamily (Thysanoptera: Phlaeothripidae)
-Idomacromiidae
-Idonychidae
-Indotermitidae
-Indothripidae
-Inocelliidae
-Inocelliinae
-Inocelliini
-Insulibrachini
-Irdexinae
-Irdexinaea
-Irdexinea
-Irdicinae
-Iridinae
-Iridini
-Iridopterygidae # mantis family (Mantodea)
-Iridopterygina
-Iridopteryginae
-Iridopterygini
-Ischnocera
-Ischnomantini
-Ischnoneuridae
-Ischnopsyllidae
-Ischnopsyllinae
-Ischnopsyllini
-Ischnopterini
-Ischnoptilidae
-Isogeninae
-Isolabellinae
-Isolabidae
-Isolabididae
-Isolabidinae
-Isolabinae
-Isolaboidinae
-Isonychiidae
-Isoperlidae
-Isoperlinae
-Isoperlini
-Isoptera
-Isopyginae
-Isostictidae
-Issatermidae
-Ithonidae
-Ithonoidea
-Ivapteridae
-Jabloniidae
-Jongmansiidae
-Jordanopsyllini
-Juraperlidae
-Jurinidae
-Juroraphidiidae
-Kachinoperlidae
-Kaindipsocinae
-Kalligrammatidae
-Kallihemerobiinae
-Kalotermitidae
-Kalotermitinae
-Karataothripidae
-Kargalellinae
-Kargaliinae
-Kargalopteridae
-Karschiellidae
-Karschiellinae
-Karschielloidea
-Katerinkidae
-Kathroperlidae
-Kathroperlinae
-Kempyninae
-Khatamamammalophagidae
-Kinellinae
-Kinesinae
-Kinzelbachillidae
-Kiotinini
-Kittrickea
-Kodamaiinae
-Kohlwaldiidae
-Kolbeini
-Kolbiini
-Korinninae
-Korinnini
-Kortshakoliidae
-Krausichnidae
-Krishnatermitidae
-Labidelytridae
-Labidoura
-Labiduriales
-Labiduridae
-Labidurinae
-Labiduroidea
-Labiidae
-Labiinae
-Lachesillidae
-Lachesillinae
-Laemobothriidae
-Lamproblattidae
-Lamproblattinae
-Lanceocercata
-Lanceolata
-Landicinae
-Largusoperlini
-Latindiinae
-Latindiini
-Latineosini
-Latinozorinae
-Lauromacromiidae
-Leiophasmatinae
-Lemmatophoridae
-Lemmatophorina
-Lemmatophorinae
-Lemolemini
-Lepidopsocidae
-Lepidopsocinae
-Lepidothricidae
-Lepidotrichidae
-Lepiidae
-Lepismaedes
-Lepismatida
-Lepismatidae
-Lepismatinae
-Lepismatoidea
-Lepismatoides
-Lepismenae
-Lepismida
-Lepismidae
-Lepismoidea
-Lepolepidinae
-Leprodini
-Leptocolina
-Leptocolini
-Leptohyphidae
-Leptomantellidae
-Leptomiopterygini
-Leptoperlidae
-Leptoperlinae
-Leptoperlini
-Leptoperloidea
-Leptophlebiidae
-Leptophlebioidea
-Leptopsyllidae
-Leptopsyllinae
-Leptopsyllini
-Lesneiidae
-Lestidae
-Lestoidea
-Lestoideidae
-Letopalopterinae
-Leucochrysini
-Leucotermitinae
-Leuctridae
-Leuctrinae
-Liassothripidae
-Libaneuphoridae
-Libaneuphorinae
-Libellulidae
-Libelluloidea
-Liberiblattinidae
-Libethrini
-Lienhardiellina
-Linognathidae
-Liomopteridae
-Lipeuridae
-Lipeurinae
-Liposcelidae
-Liposcelidetae
-Liposcelididae
-Liposcelidinae
-Listropsyllinae
-Litaneutriini
-Lithentomidae
-Lithomantidae
-Liturgusidae
-Liturgusini
-Liuopsyllinae
-Lonchodidae
-Lonchodinae
-Lonchodini
-Longicerciatidae
-Lutetiatermitinae
-Lychnocolacidae
-Lycocercidae
-Lycopsyllidae
-Lycopsyllini
-Machadorythidae
-Machilida
-Machilidae
-Machilinae
-Machiloidea
-Macrocercinae
-Macromantinae
-Macromidiidae
-Macromiidae
-Macromiinae
-Macropsyllidae
-Macropsyllinae
-Macropsylloidea
-Macrotermitidae
-Macrotermitinae
-Macyniinae
-Macyniini
-Madygenophlebiidae
-Maindronidae
-Maindroniidae
-Maindroniinae
-Majangidae
-Majanginae
-Majangini
-Malacopsyllidae
-Malacopsylloidea
-Mallophaga
-Mammalophagidae
-Manicapsocidae
-Manipulatoridae
-Mantidae
-Mantinae
-Mantispidae
-Mantispinae
-Mantodea
-Mantoidea
-Mantoididae
-Mantoidoidea
-Mantophasmatidae
-Mantophasmatinae
-Mantophasmatini
-Mantophasmatodea
-Maoripsocini
-Martynopsocidae
-Martynoviidae
-Mastotermitidae
-Mastotermitinae
-Mastotermitoidea
-Maulini
-Mecoptera
-Mecynostomatidae
-Medaurini
-Megacraniinae
-Megagininae
-Megagnathidae
-Megakhosaridae
-Megaleptoperlini
-Megaleuctrinae
-Megalominae
-Megaloptera
-Meganeuridae
-Meganisoptera
-Megapodagrionidae
-Megaptilidae
-Megasecoptera
-Megelytridae
-Megistopini
-Meinertellidae
-Meinertellinae
-Melanemerellidae
-Melanthripidae # thrips family (Thysanoptera)
-Melanthripoidea
-Mellierinae
-Mellierini
-Melqartitermitidae
-Menexenini
-Mengeidae
-Mengenillidae
-Mengenillidia
-Mengeoidea
-Menoponidae
-Menoponinae
-Menoponoidea
-Meropeidae
-Merothripidae # thrips family (Thysanoptera)
-Merothripoidea
-Mesagrionidae
-Mesembiinae
-Mesembiini
-Mesoberothidae
-Mesoblattinidae
-Mesochrysopidae
-Mesodermaptera
-Mesoleuctridae
-Mesoleuctrinae
-Mesomantispinae
-Mesopodagrionidae
-Mesopodagrionoidea
-Mesopolystoechotidae
-Mesopsocidae
-Mesopsyllini
-Mesoraphidiidae
-Mesorthopteridae
-Mesotermitidae
-Metadermaptera
-Metallyticidae
-Metallyticoidea
-Metaraphidiidae
-Metatermitidae
-Metaxylabidinae
-Methanini
-Metretopodidae
-Metylophorini
-Microcerotermitinae
-Microcoryphia
-Microembiinae
-Microminae
-Microperlinae
-Microperlini
-Microphotinaini
-Microthoraciidae
-Miobantiinae
-Miomantidae
-Miomantinae
-Miomantoidea
-Miomoptera
-Miotermitinae
-Mirocapritermitinae
-Miroceramiini
-Mirolepismatinae
-Mirophthiridae
-Mirotermitini
-Mischopteridae
-Monandropterae
-Monandropterinae
-Monandropterini
-Monastriini
-Mongoloraphidiina
-Monura
-Moravohymenidae
-Morphnini
-Moundthripidae
-Musapsocidae
-Musoniellinae
-Musoniellini
-Myiodactylinae
-Mylacridae
-Mylacrotermitidae
-Mymarothripidae
-Myopsocidae
-Myrmecaelurini
-Myrmecolacidae
-Myrmeleontidae
-Myrmeleontiformia
-Myrmeleontina
-Myrmeleontinae
-Myrmeleontini
-Myrmeleontoidea
-Nalinae
-Nallachiinae
-Namurodiaphidae
-Namuroningxiidae
-Namurotypidae
-Nannochoristidae
-Nannomecoptera
-Nanomantidae
-Nanomantinae
-Nanomantoidea
-Nanophylliini
-Nanopsocetae
-Nanosialidae
-Narkemidae
-Narkeminidae
-Narkemocacurgidae
-Nasutitermitinae # termite subfamily (Blattodea: Isoptera)
-Nauphoetini
-Necrophasmidae
-Necrophylini
-Necroscidae
-Necrosciinae
-Necrosciini
-Necymylacridae
-Neghini
-Neleidae
-Nemoleontina
-Nemoleontinae
-Nemoleontini
-Nemopteridae
-Nemopterinae
-Nemoura
-Nemouridae
-Nemourinae
-Nemourini
-Nemouroidea
-Nemuraedes
-Nemuridae
-Nemuropsidae
-Neoblattellini
-Neocapritermitinae
-Neodermaptera
-Neoembiodea
-Neoephemeridae
-Neohiraseini
-Neoisoptera
-Neolinognathidae
-Neolobophorinae
-Neomantini
-Neomylacridae
-Neopanorpinae
-Neoperlinae
-Neoperlini
-Neopetaliidae
-Neophyidae
-Neopsyllinae
-Neopsyllini
-Neorthroblattinidae
-Neotyphloceratini
-Nepiomorphinae
-Neraphidiidae
-Nesameletidae
-Nesogastrinae
-Nesoleontini
-Nestorembiinae
-Neuroleontina
-Neuroptera
-Neurosemidae
-Neurostigmatidae
-Nevorthidae
-Nevorthiformia
-Nevrorthidae
-Nevrorthiformia
-Nicoletiadae
-Nicoletiidae
-Nicoletiinae
-Nilomantini
-Nocticolidae
-Nocticolinae
-Nosybinae
-Nothancylini
-Nothochrysinae
-Notiobiellinae
-Notolamprini
-Notoligotomidae
-Notoligotominae
-Notonemouridae
-Notonemourinae
-Notoptera
-Nuglerina
-Nugonioneuridae
-Nycteridopsyllini
-Nyctiboridae
-Nyctiborinae
-Nyctoborinae
-Nymphidae
-Nymphinae
-Obina
-Obrimi
-Obriminae
-Obrimini
-Ocelliidae
-Ocnophilini
-Odonata
-Odontotermitini
-Oecanthoperlidae
-Ohmellina
-Olidae
-Oligembiidae
-Oligoneuriellini
-Oligoneuriidae
-Oligoneuriinae
-Oligoneuriini
-Oligonychina
-Oligonychini
-Oligotomidae
-Oligotomorpha
-Omomantinae
-Oniscigastridae
-Onychargiinae
-Opisthocosmiinae
-Oreophoetini
-Oreopsocini
-Orkrasomeria
-Ornicholacinae
-Ornithophagini
-Orothripidae
-Orthoderellina
-Orthoderinae
-Oryctoblattinidae
-Osculotinae
-Osmylidae
-Osmylinae
-Osmylitidae
-Osmylopsychopidae
-Otomantini
-Oulopterygidae
-Oxyelaeini
-Oxyhaloinae
-Oxyhaloini
-Oxyopsidini
-Oxyothespinae
-Oxyothespini
-Oxypilinae
-Oxypilini
-Pabuonqedidae
-Pachylembiinae
-Pachymorphae
-Pachymorphinae
-Pachymorphini
-Pachytroctetae
-Pachytroctidae
-Pachytroctinae
-Pachytylopsidae
-Paedembiamorpha
-Paedembiidae
-Palaemnematinae
-Palaeocixiidae
-Palaeodictyoptera
-Palaeoleontidae
-Palaeomanteida
-Palaeomantidae
-Palaeonemouridae
-Palaeoperlidae
-Palaeopterina
-Palembiodea
-Palicinae
-Palingeniidae
-Palophinae
-Palophini
-Palparidiini
-Palparinae
-Palparini
-Palpotarsa
-Panchaetothripinae # thrips subfamily (Thysanoptera)
-Panchlorinae
-Pandermaptera
-Panesthiinae
-Panfiloviidae
-Pannota
-Panorpidae
-Panorpinae
-Panorpodidae
-Panorpoidea
-Panorthoptera
-Panthysanura
-Paoliida
-Paoliidae
-Parablepharini
-Parabrodiidae
-Paracaeciliidae
-Paracaeciliinae
-Paradermaptera
-Paragripopteryginae
-Parakseneuridae
-Paraleptyniini
-Paralogidae
-Paramantina
-Paramantini
-Paramesopsocidae
-Paranauphoetinae
-Paranauphoetini
-Paraneopsyllini
-Paranotonemourinae
-Paraoxypilina
-Paraoxypilini
-Paraperlinae
-Paraperlini
-Paraphenopteridae
-Parapriscinae
-Paraprisopodini
-Parapsocida
-Parapsyllinae
-Parapsyllini
-Pararchipsocinae
-Parasialidae
-Parasoinae
-Parathespinae
-Paraxeninae
-Parcoblattini
-Parelmoidae
-Parisolabidae
-Parisolabidinae
-Parisolabinae
-Parmapteridae
-Parmapterina
-Paruraliidae
-Pastranaiini
-Pecaroecidae
-Pedicinidae
-Pediculidae
-Peltoperlidae
-Peltoperlinae
-Pentaphlebiidae
-Penturoperlidae
-Pericaeciliina
-Periclystina
-Pericominae
-Perientominae
-Perilestidae
-Periplanetinae
-Peripsocidae
-Perisphaeridae
-Perisphaeriinae
-Perisphaerinae
-Perlamantinae
-Perlapsocidae
-Perlaria
-Perlariae
-Perlarides
-Perlariopseidae
-Perlestinae
-Perlida
-Perlidae
-Perlides
-Perlina
-Perlinae
-Perlini
-Perlites
-Perlodidae
-Perlodinae
-Perlodini
-Perloidea
-Perlopseidae
-Perlopsididae
-Permelytridae
-Permembiidae
-Permembiinae
-Permithonidae
-Permoberothidae
-Permoblattininae
-Permocapniidae
-Permofulgoridae
-Permofulgorinae
-Permopectinidae
-Permophilidae
-Permopsocida
-Permopsocidae
-Permosialidae
-Permotermopsidae
-Permothemidae
-Permulidae
-Perspicuusoperlidae
-Petaluridae
-Petaluroidea
-Petrobiellinae
-Petroperlidae
-Petroperlinae
-Phalacropsyllini
-Phalcini
-Phanerognatha
-Pharnaciini
-Phasmatidae
-Phasmatinae
-Phasmatini
-Phasmatodea
-Phasmatoptera
-Phasmida
-Phasmidae
-Phasminae
-Phenopteridae
-Phibalosomini
-Philobasominae
-Philogangidae
-Philogangoidea
-Philogeniidae
-Philopteridae
-Philopterina
-Philopterinae
-Philopteroidea
-Philosinidae
-Philotarsetae
-Philotarsidae
-Philotarsinae
-Phlaeothripidae # thrips family (Thysanoptera: Phlaeothripidae)
-Phlaeothripinae # thrips subfamily (Thysanoptera: Phlaeothripidae)
-Phoberoblattidae
-Phoraspidini
-Photinaidae
-Photinaina
-Photinainae
-Photinaini
-Photiomantinae
-Phthanoxenidae
-Phthiraptera
-Phylliidae
-Phylliinae
-Phylliini
-Phyllioidea
-Phyllocraniinae
-Phyllodromiiidae
-Phyllothelyinae
-Phyllothelyini
-Phyloblattidae
-Phyloblattoidea
-Physconellinae
-Physconelloidinae
-Physogastrinae
-Physostomidae
-Pinaconotini
-Pinideliidae
-Pisciforma
-Placoda
-Placolabidinae
-Planelytridae
-Planipennia
-Platycnemididae
-Platycnemidinae
-Platycraninae
-Platycranini
-Platyembiinae
-Platylabiinae
-Platyperlidae
-Platystictidae
-Platystictinae
-Platystictoidea
-Plecoptera
-Plectopterini
-Plesioblattogryllidae
-Plesiodermaptera
-Pliotermitidae
-Pliotermitinae
-Podolestinae
-Poeciloderrhini
-Pogonogasterina
-Poinarembiini
-Polycreagridae
-Polygenini
-Polymitarcyidae
-Polymitarcyinae
-Polypagiens
-Polyphagidae
-Polyphaginae
-Polyphagini
-Polyphagoidea
-Polyplacidae
-Polypsocidae
-Polypsocini
-Polyspilotina
-Polystoechotidae
-Polythoridae
-Polythoroidea
-Polyzosteriinae
-Polyzosteriini
-Ponopterixidae
-Popinae
-Popini
-Poribiini
-Porisminae
-Poroblattini
-Poroblattinidae
-Porotermitinae
-Porrerina
-Potamanthidae
-Potamanthoidea
-Praemachilidae
-Praemachilinae
-Prexaspini
-Prionoglaridetae
-Prionoglarididae
-Prionoglaridinae
-Prionoglaridini
-Priscaenigmatidae
-Priscagrionidae
-Priscagrionoidea
-Prisomerinae
-Prisopodidae
-Prisopodinae
-Prisopodini
-Probnidae
-Probnisidae
-Prochoropteridae
-Prodacnodinae
-Proedischiidae
-Prohemerobiidae
-Projectothripidae
-Prolabisciinae
-Prolabiscinae
-Promirotermitinae
-Pronemouridae
-Propsocinae
-Prorhinotermitinae
-Prosepididontidae
-Prosopistomatidae
-Prosopistomatoidea
-Protagrionidae
-Protanoplura
-Protelencholacidae
-Protelytridae
-Protelytrina
-Protelytroidea
-Protelytroptera
-Protembiidae
-Protobiellinae
-Protoblattinae
-Protoblattinidae
-Protoblattoidea
-Protocoleidae
-Protocoleoptera
-Protodermaptera
-Protodiplateidae
-Protodiplatidae
-Protodiplatyidae
-Protodiplatyoidea
-Protogyropinae
-Protohamitermitinae
-Protohymenidae
-Protolabidinae
-Protolabinae
-Protolestidae
-Protolindeniidae
-Protoneuridae
-Protoperlidae
-Protoperlina
-Protophasmatidae
-Protophasmida
-Protophasmidae
-Protoplectrini
-Protorthoptera
-Protosmylinae
-Protostictinae
-Protothysanura
-Protoxenidae
-Protrinemuridae
-Protrinemurinae
-Protroctopsocidae
-Prygidae
-Psalinae
-Psammotermitidae
-Psammotermitinae
-Pseudempusina
-Pseudimarini
-Pseudironidae
-Pseudocaeciliidae
-Pseudocaeciliinae
-Pseudocorduliidae
-Pseudocreobotrina
-Pseudodatamini
-Pseudolestidae
-Pseudomantina
-Pseudomenoponidae
-Pseudomicrotermitinae
-Pseudomiopteryginae
-Pseudomopinae
-Pseudomopini
-Pseudophasmatidae
-Pseudophasmatinae
-Pseudophasmatini
-Pseudophasmatoidea
-Pseudophasminae
-Pseudophyllodromiidae
-Pseudophyllodromiinae
-Pseudophyllodromiini
-Pseudopogonogastrinae
-Pseudopsocinae
-Pseudopulicidae
-Pseudostigmatidae
-Pseudoxyopsidini
-Psilopsocidae
-Psocathropetae
-Psocetae
-Psocidae
-Psocidiidae
-Psocina
-Psocinae
-Psocini
-Psocodea
-Psocomorpha
-Psocoptera
-Psoquillidae
-Psoropteridae
-Psychopsidae
-Psychopsinae
-Psychopsoidea
-Psychroptilidae
-Psyllipsocetae
-Psyllipsocidae
-Ptenopsilinae
-Pteridomylacridae
-Pterinoxylini
-Pteronarcellini
-Pteronarcidae
-Pteronarcinae
-Pteronarcini
-Pteronarcoidea
-Pteronarcyidae
-Pteronarcyinae
-Pteronarcyini
-Pteronarcyoidea
-Pthiridae
-Ptilocerembiidae
-Ptiloneuridae
-Ptilothici
-Ptyctini
-Pulicidae
-Pulicinae
-Pulicini
-Pulicoidea
-Pulicomorpha
-Pycnoscelinae
-Pygidicranidae
-Pygidicraninae
-Pygidicranoidea
-Pygiopsyllidae
-Pygiopsylloidea
-Pygiopsyllomorpha
-Pygirhynchini
-Pyragrinae
-Raaschiidae
-Rachementomidae
-Rafaelidae
-Rallidentidae
-Ramamurthiinae
-Ramulini
-Raphidiidae
-Raphidiina
-Raphidiinae
-Raphidiini
-Raphidillina
-Raphidiodea
-Raphidiomimidae
-Raphidiomimoidea
-Raphidioptera
-Raptophasmatinae
-Rasnalexiidae
-Ratemiidae
-Reculida
-Reculidae
-Reculoidea
-Rhabdoblattellinae
-Rhachiberothidae
-Rhachiberothinae
-Rhadinopsyllinae
-Rhadinopsyllini
-Rhaphidiopsidae
-Rhaphidioptera
-Rhinotermitidae
-Rhinotermitinae
-Rhipidoblattinidae
-Rhipidolestidae
-Rhipiphorothripidae
-Rhipiphorothripoidea
-Rhodomantini
-Rhopalopsyllidae
-Rhopalopsyllinae
-Rhopalopsyllini
-Rhyacolabidinae
-Rhyacolabinae
-Rhynchophthirina
-Ricinidae
-Ricinoidea
-Rigattopteridae
-Rimanellidae
-Rivetinidae
-Rivetininae
-Rivetinini
-Rohrthripidae
-Rothisilphini
-Rudracinae
-Rudraxinae
-Sabulopsocidae
-Santanmantidae
-Sarcinatricinae
-Saucrosmylidae
-Saurodectidae
-Saurophthiridae
-Saurophthiroidea
-Scapphodonta
-Scelembiidae
-Scelembiinae
-Schizocephalini
-Schizomantodea
-Schizopechini
-Scolembiinae
-Scopuridae
-Scopuroidea
-Scytohymenidae
-Semenoviolidae
-Semenoviolinae
-Semenovioloidea
-Sensitibillini
-Senzillidae
-Sericothripinae
-Serritermitidae
-Serritermitinae
-Setipalpia
-Setisura
-Setosini
-Sharasialinae
-Sheimiinae
-Sialidae
-Sialinae
-Siamoglaridini
-Siberioperlidae
-Sibyllidae # mantis family (Mantodea)
-Sibyllinae
-Sigmatoneurini
-Silveirainae
-Silvestrellatinae
-Sinembiidae
-Sinopalaeodermatidae
-Sinostictinae
-Siphlaenigmatidae
-Siphlonuridae
-Siphluridae
-Siphluriscidae
-Siphonaptera
-Sisyridae
-Skaliciidae
-Skendylinae
-Socialidae
-Sojanoperidae
-Sojanoraphidiidae
-Solenoptilidae
-Solumblattodea
-Solygiinae
-Somaphantidae
-Somaphantinae
-Sophogrammatinae
-Sorellembiidae
-Sorellembiinae
-Soyanopteridae
-Spanioderidae
-Sparattidae
-Sparattinae
-Sparattini
-Sparbarini
-Speleketorinae
-Speleketorini
-Spermozorinae
-Sphaeropsocetae
-Sphaeropsocidae
-Sphaerotermitinae
-Sphecopteridae
-Sphecorydaloididae
-Spilapteridae
-Spilapteridea
-Spiloblattinidae
-Spiloblattininae
-Spilopsyllinae
-Spilopsyllini
-Spilosmylinae
-Spinomantodea
-Spiralizoridae
-Spiralizorinae
-Spongiphoridae
-Spongiphorinae
-Spurostigmatidae
-Stagmatopterinae
-Stagmatopterini
-Stagmomantinae
-Stagmomantini
-Stegopterinae
-Stenelytridae
-Stenomantini
-Stenoneuridae
-Stenoneuritidae
-Stenoperlinae
-Stenophyllinae
-Stenophyllini
-Stenoponiinae
-Stenopsocidae
-Stenosmylinae
-Stenurothripidae
-Stenurothripoidea
-Stephanacridini
-Stephanocircidae
-Stephanocircidoidea
-Stephanocircinae
-Stephanocircoidea
-Stereopteridae
-Sternopsyllini
-Stilbopteryginae
-Stilbopterygini
-Stivaliidae
-Stolotermitidae
-Stolotermitinae
-Stonychopygiinae
-Straeleniellidae
-Stratocleinae
-Stratocleini
-Strephocladidae
-Strephoneuridae
-Strepsiptera
-Strongylocotinae
-Strongylopsalinae
-Stylatopsocini
-Styloperlidae
-Styloperlinae
-Stylopidae
-Stylopidia
-Stylopinae
-Stylotermitidae
-Stylotermitinae
-Subioblattidae
-Subnicoletiinae
-Subulipalpia
-Suhpalacsini
-Supellini
-Suwalliini
-Sylvabestiidae
-Sylvaphlebiidae
-Sylvardembiidae
-Sylviodidae
-Sympherobiinae
-Symphrasinae
-Symplocini
-Synarmogidae
-Synlestidae
-Syntermitinae
-Synthemistidae
-Systellognatha
-Taeniopterygidae
-Taeniopteryginae
-Taeniostigmina
-Tagalopsocina
-Taiophlebiidae
-Taldycupidae
-Tanytermitidae
-Tanzaniophasmatidae
-Tanzaniophasmatinae
-Tapinellinae
-Tarachininae
-Tarachinini
-Tarachodidae # mantis family (Mantodea)
-Tarachodina
-Tarachodinae
-Tarachodini
-Tarachomantina
-Tarwiniidae
-Tatocnemididae
-Tatocnemidoidea
-Tchirkovaeidae
-Telactinopterygidae
-Teletisoptera
-Teloganellidae
-Teloganodidae
-Tenoderina
-Tenoderinae
-Tenoderini
-Teratembiidae
-Terebrantia
-Termitidae
-Termitinae # termite subfamily (Blattodea: Isoptera)
-Termitogetonidae
-Termitogetoninae
-Termitoidae
-Termopsidae
-Termopsinae
-Teruelphasmini
-Thaumapsyllinae
-Thaumatoneuridae
-Thaumatoperlinae
-Therameninae
-Thespidae
-Thespinae
-Thespini
-Thespoidea
-Thoracini
-Thoracotroctidae
-Thoracotroctinae
-Thorntoniellina
-Thoronysididae
-Thripidae # thrips family (Thysanoptera)
-Thripinae # thrips subfamily (Thysanoptera: Thripidae)
-Thripoidea
-Thylacellinae
-Thyrsophorinae
-Thyrsophorini
-Thysanoptera # thrips
-Thysanoures
-Thysanura
-Thysanuradelphia
-Tillyardembiidae
-Timematidae
-Timematinae
-Timematini
-Timematodea
-Timemidae
-Timeminae
-Tineomorphinae
-Tisamenini
-Titanolabidinae
-Titanolabinae
-Tiviinae
-Tiviini
-Tococladidae
-Tologopteridae
-Tomiidae
-Toxoderidae
-Toxoderinae
-Toxoderopsini
-Toxomantina
-Trachymantina
-Triassothripidae
-Trichadenotecnini
-Trichodectidae
-Trichodectinae
-Trichodectoidea
-Tricholepidiidae
-Trichomatinae
-Trichophilopteridae
-Trichopsocidae
-Tricondylomimina
-Tricorythidae
-Tridactylophaginae
-Trimenoponidae
-Trimenoponinae
-Trimera
-Trinemura
-Trinotonidae
-Triozocerinae
-Triplura
-Tritopsyllini
-Troctomorpha
-Troctopsocidae
-Trogiidae
-Trogiomorpha
-Tropidoderi
-Tropidoderinae
-Tropidoderini
-Tropidomantinae
-Tropidomantini
-Tryonicidae
-Tryonicinae
-Tshekardocoleoidea
-Tshekardominidae
-Tshekardoperlidae
-Tuberculatocharacini
-Tubulifera
-Tungidae
-Tunguskapteridae
-Turanodermatidae
-Turanodermidae
-Turanoviidae
-Turanoviinae
-Tutricablattae
-Tyrannophasmatini
-Ululodini
-Umenocoleidae
-Umenocoleoidea
-Uniclavinae
-Uralopriscinae
-Uralotermitidae
-Uropsyllini
-Uzelothripidae
-Uzelothripoidea
-Vandicinae
-Vatina
-Vatinae
-Vatini
-Velisopteridae
-Vermipsyllidae
-Vermipsylloidea
-Verophasmatodea
-Verticillicerini
-Vietnamellidae
-Visheriferidae
-Voltorina
-Vorkutiidae
-Wagnerinini
-Waoraniellini
-Wenzellini
-Westwoodembiidae
-Xenidae
-Xeninae
-Xenoidea
-Xenopsyllinae
-Xenopsyllini
-Xerantherinae
-Xeroderinae
-Xeroderini
-Xerosomatinae
-Xerosomatini
-Xiphiopsyllidae
-Xylicini
-Xylobistinae
-Xylobistini
-Xylophagodea
-Yuntapsocinae
-Zachobiellinae
-Zelandoperlinae
-Zelandoperlini
-Zelandopsocinae
-Zetoborinae
-Zigrasolabidinae
-Zoraptera
-Zorotypidae
-Zorotypinae
-Zygentoma
-Zygogrylloblattidae
-Zygophlebiinae
-Zygoptera
+Aaroniellinae # COL: Psocodea > Philotarsidae
+Abranchioperlidae # COL: synonym of Leptoperlinae (Plecoptera)
+Abrocomophagidae # COL: synonym of Protogyropinae (Psocodea)
+Acanthaclisini # ITIS: Neuroptera > Myrmeleontidae
+Acanthametropodidae # COL: Insecta > Ephemeroptera
+Acanthomimini # COL: Phasmida > Phasmatidae
+Acanthopidae # COL: Insecta > Mantodea
+Acanthopinae # COL: Mantodea > Acanthopidae
+Acanthoplectrina # ITIS: Neuroptera > Myrmeleontidae
+Acanthoplectrini # iNat: Neuroptera > Myrmeleontidae
+Acanthopoidea # TAXREF: Insecta > Mantodea
+Acanthotermitinae # COL: synonym of Macrotermitinae (Blattodea)
+Acanthoxylini # COL: Phasmida > Phasmatidae
+Achriopterini # COL: Phasmida > Phasmatidae
+Acmonotini # ITIS: Neuroptera > Ascalaphidae
+Acontistina # COL: Mantodea > Acanthopidae
+Acontistini # COL: Mantodea > Acanthopidae
+Acosmelytridae # COL: synonym of Permelytridae (Dermaptera)
+Acromantinae # COL: Mantodea > Hymenopodidae
+Acromantini # COL: Mantodea > Hymenopodidae
+Acroneuriinae # COL: Plecoptera > Perlidae
+Acroneuriini # COL: Plecoptera > Perlidae
+Acroperlini # COL: Plecoptera > Gripopterygidae
+Acrophyllini # COL: synonym of Phasmatinae (Phasmida)
+Acrotelsatinae # COL: Zygentoma > Lepismatidae
+Adeloneuridae # COL: Arthropoda > Insecta
+Adelphohemerobiinae # iNat: Neuroptera > Hemerobiidae
+Adiheterothripidae # ITIS: Insecta > Thysanoptera
+Adiphlebiidae # GBIF: synonym of Ischnoneuridae (Cnemidolestodea)
+Aenigmatidiidae # IRMNG: Insecta > Diaphanopterodea
+Aeolothripidae # thrips family (Thysanoptera); COL: Insecta > Thysanoptera
+Aeolothripinae # ITIS: Thysanoptera > Aeolothripidae
+Aeolothripoidea # iNat: Insecta > Thysanoptera
+Aeschnosomatidae # COL: Insecta > Odonata
+Aeshnidae # COL: Insecta > Odonata
+Aeshnoidea # COL: Insecta > Odonata
+Aethalochroini # COL: Mantodea > Toxoderidae
+Aetheogrammatidae # COL: Insecta > Neuroptera
+Aetophlebiidae # COL: synonym of Cnemidolestidae (Cnemidolestida)
+Afropsocina # COL: Psocodea > Amphipsocidae
+Agastopsyllini # COL: Siphonaptera > Ctenophthalmidae
+Agathemeridae # COL: Insecta > Phasmida
+Agathemerinae # iNat: Phasmida > Agathemeridae
+Agathemerini # iNat: Phasmida > Agathemeridae
+Agathemerodea # NCBI: Insecta > Phasmatodea
+Aglyptodermatinae # COL: Dermaptera > Semenoviolidae
+Agriidae # ITIS: synonym of Calopterygidae (Odonata)
+Agrionidae # ITIS: synonym of Calopterygidae (Odonata)
+Agullini # iNat: Raphidioptera > Raphidiidae
+Albardiinae # ITIS: Neuroptera > Ascalaphidae
+Alectoneuridae # COL: Insecta > Megasecoptera
+Alenini # iNat: Raphidioptera > Raphidiidae
+Aleuropteryginae # ITIS: Neuroptera > Coniopterygidae
+Aleuropterygini # ITIS: Neuroptera > Coniopterygidae
+Alexarasniidae # COL: Insecta > Embioptera
+Alexarasniinae # COL: Embioptera > Alexarasniidae
+Alexarasnioidea # COL: Insecta > Embioptera
+Alexrasnitsyniidae # IRMNG: Insecta > Diaphanopterodea
+Aliculidae # COL: synonym of Permotermopsidae (Eoblattida)
+Alienopteridae # ITIS: Insecta > Blattodea
+Allocnemidinae # COL: Odonata > Platycnemididae
+Allodahliinae # COL: Dermaptera > Forficulidae
+Allomachilinae # COL: synonym of Meinertellidae (Archaeognatha)
+Alloperlini # COL: Plecoptera > Chloroperlidae
+Allostethidae # COL: Insecta > Dermaptera
+Allostethinae # COL: synonym of Allostethidae (Dermaptera)
+Allostethoidea # COL: Insecta > Dermaptera
+Allosthetidae # COL: synonym of Allostethidae (Dermaptera)
+Amanipodagrionidae # COL: Insecta > Odonata
+Amantini # COL: Mantodea > Gonypetidae
+Amblycera # COL: Insecta > Psocodea
+Ameletidae # COL: Insecta > Ephemeroptera
+Ameletopsidae # COL: Insecta > Ephemeroptera
+Amelidae # COL: Insecta > Mantodea
+Amelini # COL: Mantodea > Amelidae
+Amerimantodea # COL: Insecta > Mantodea
+Ametropodidae # COL: Insecta > Ephemeroptera
+Amitermitinae # COL: Blattodea > Termitidae
+Amorphoscelidae # COL: Insecta > Mantodea
+Amorphoscelinae # COL: Mantodea > Amorphoscelidae
+Amphecostephanina # COL: Mantodea > Chroicopteridae
+Amphientometae # COL: Insecta > Psocodea
+Amphientomidae # COL: Insecta > Psocodea
+Amphientominae # COL: Psocodea > Amphientomidae
+Amphientomoidea # COL: Insecta > Psocodea
+Amphigerontiinae # COL: Psocodea > Psocidae
+Amphigerontiini # COL: Psocodea > Psocidae
+Amphinemurinae # COL: Plecoptera > Nemouridae
+Amphipsocidae # COL: Insecta > Psocodea
+Amphipsocina # COL: Psocodea > Amphipsocidae
+Amphipsocinae # COL: Psocodea > Amphipsocidae
+Amphipsocini # COL: Psocodea > Amphipsocidae
+Amphipsyllinae # COL: Siphonaptera > Leptopsyllidae
+Amphipsyllini # COL: Siphonaptera > Leptopsyllidae
+Amphipterygidae # COL: Insecta > Odonata
+Amphipterygoidea # COL: Insecta > Odonata
+Anacroneuriini # COL: Plecoptera > Perlidae
+Anacroneurini # COL: synonym of Anacroneuriini (Plecoptera)
+Anallactinae # COL: Blattodea > Pseudophyllodromiidae
+Anaplectoideini # COL: synonym of Anaplectoidinae (Blattodea)
+Anaplectoidinae # COL: Blattodea > Pseudophyllodromiidae
+Anareolatae # PBDB: synonym of Euphasmatodea (Insecta)
+Anataeliidae # COL: synonym of Anataeliinae (Dermaptera)
+Anataeliinae # COL: Dermaptera > Pygidicranidae
+Anataelinae # COL: synonym of Anataeliinae (Dermaptera)
+Anaxarchini # COL: Mantodea > Hymenopodidae
+Anchineuridae # COL: Insecta > Megasecoptera
+Ancistopsylloidea # COL: Insecta > Siphonaptera
+Ancistrogastrinae # COL: Dermaptera > Forficulidae
+Ancistronidae # COL: Insecta > Psocodea
+Ancistropsyllidae # COL: Insecta > Siphonaptera
+Ancistropsylloidea # iNat: Insecta > Siphonaptera
+Ancopteridae # COL: Insecta > Megasecoptera
+Andesembiidae # COL: Insecta > Embioptera
+Anechurinae # COL: Dermaptera > Forficulidae
+Anisacanthidae # COL: Insecta > Phasmida
+Anisacanthinae # COL: Phasmida > Anisacanthidae
+Anisacanthini # COL: Phasmida > Anisacanthidae
+Anisembiidae # COL: Insecta > Embioptera
+Anisembiinae # COL: Embioptera > Anisembiidae
+Anisembiini # COL: Embioptera > Anisembiidae
+Anisolabidae # COL: synonym of Anisolabididae (Dermaptera)
+Anisolabididae # COL: Insecta > Dermaptera
+Anisolabidinae # COL: Dermaptera > Anisolabididae
+Anisolabidoidea # COL: Insecta > Dermaptera
+Anisomorphini # COL: Phasmida > Pseudophasmatidae
+Anisoptera # COL: Insecta > Odonata
+Anisozygoptera # COL: Insecta > Odonata
+Ankylopterygini # TAXREF: Neuroptera > Chrysopidae
+Anomiopsyllinae # COL: Siphonaptera > Ctenophthalmidae
+Anomiopsyllini # COL: Siphonaptera > Ctenophthalmidae
+Anophthalmolabidinae # COL: Dermaptera > Anisolabididae
+Anophthalmolabiinae # COL: synonym of Anophthalmolabidinae (Dermaptera)
+Anophthalmolabinae # COL: synonym of Anophthalmolabidinae (Dermaptera)
+Anoplura # COL: Insecta > Psocodea
+Antarctoperlaria # COL: Insecta > Plecoptera
+Antarctoperlinae # COL: Plecoptera > Gripopterygidae
+Antemnini # COL: Mantodea > Mantidae
+Anthraconeuridae # COL: synonym of Spanioderidae (Cnemidolestida)
+Anthracoptilidae # IRMNG: Insecta > Protorthoptera
+Anthracothremmidae # COL: Arthropoda > Insecta
+Antisolabidinae # COL: Dermaptera > Anisolabididae
+Antisolabiinae # COL: synonym of Antisolabidinae (Dermaptera)
+Antisolabinae # COL: synonym of Antisolabidinae (Dermaptera)
+Antistiina # COL: Mantodea > Eremiaphilidae
+Antongiliinae # COL: Phasmida > Bacillidae
+Antongiliini # COL: Phasmida > Bacillidae
+Apachelytridae # COL: Insecta > Dermaptera
+Apachyidae # COL: Insecta > Dermaptera
+Apachyinae # COL: Dermaptera > Apachyidae
+Apachyoidea # COL: Insecta > Dermaptera
+Aphyopsocinae # COL: Psocodea > Caeciliusidae
+Apicotermitinae # termite subfamily (Blattodea: Isoptera); COL: Blattodea > Termitidae
+Apithanidae # COL: Arthropoda > Insecta
+Apochrysinae # ITIS: Neuroptera > Chrysopidae
+Aporembiinae # COL: Embioptera > Anisembiidae
+Appertiidae # GBIF: Insecta > Protorthoptera
+Apteropanorpidae # COL: Insecta > Mecoptera
+Apteroperlidae # COL: synonym of Capniidae (Plecoptera)
+Apterygidinae # COL: synonym of Forficulinae (Dermaptera)
+Arcantipsocidae # COL: synonym of Amphientomidae (Psocodea)
+Arceotermitidae # COL: Insecta > Blattodea
+Arceotermitinae # COL: Blattodea > Arceotermitidae
+Archaeatropidae # COL: Insecta > Psocodea
+Archaemegaptilidae # COL: Insecta > Palaeodictyoptera
+Archaeognatha # COL: Arthropoda > Insecta
+Archaeopsyllinae # COL: Siphonaptera > Pulicidae
+Archaeopsyllini # COL: Siphonaptera > Pulicidae
+Archelytridae # COL: Insecta > Dermaptera
+Archelytroidea # COL: Insecta > Dermaptera
+Archembiidae # COL: Insecta > Embioptera
+Archembiinae # COL: Embioptera > Archembiidae
+Archeorhinotermitidae # COL: Insecta > Blattodea
+Archeorhinotermitinae # COL: synonym of Archeorhinotermitidae (Blattodea)
+Archeosmylidae # COL: Insecta > Neuroptera
+Archephemeridae # COL: synonym of Chaeteessidae (Mantodea)
+Archiblattinae # COL: synonym of Blattinae (Blattodea)
+Archidermaptera # COL: Insecta > Dermaptera
+Archimantina # COL: Mantodea > Mantidae
+Archimantini # COL: Mantodea > Mantidae
+Archimenoponidae # COL: Insecta > Psocodea
+Archimetabola # COL: synonym of Zygentoma (Insecta)
+Archimylacridae # COL: Insecta > Blattodea
+Archiperlaria # COL: synonym of Eusthenioidea (Insecta)
+Archiprobnidae # COL: synonym of Archiprobnisidae (Notoptera)
+Archiprobnisidae # COL: Insecta > Notoptera
+Archipsocetae # COL: Insecta > Psocodea
+Archipsocidae # COL: Insecta > Psocodea
+Archipsocinae # COL: Psocodea > Archipsocidae
+Archipsyllidae # COL: Insecta > Permopsocida
+Archoblattinidae # COL: synonym of Gyroblattidae (Blattodea)
+Archoglossopteridae # COL: Insecta > Glosselytrodea
+Archotermopsidae # COL: Insecta > Blattodea
+Archotermopsinae # PBDB: Blattodea > Archotermopsidae
+Arcioneuridae # COL: Insecta > Megasecoptera
+Arctoperlaria # COL: Insecta > Plecoptera
+Arcynopteryginae # COL: Plecoptera > Perlodidae
+Arcynopterygini # COL: Plecoptera > Perlodidae
+Areolatae # PBDB: synonym of Phasmatodea (Insecta)
+Argiolestidae # COL: Insecta > Odonata
+Argiolestinae # COL: Odonata > Argiolestidae
+Aristoviidae # COL: Insecta > Notoptera
+Arixeniidae # COL: Insecta > Dermaptera
+Arixeniina # COL: synonym of Arixeniidae (Dermaptera)
+Arixenina # COL: synonym of Arixeniidae (Dermaptera)
+Armenini # COL: Mantodea > Gonypetidae
+Arrhinotermitinae # COL: synonym of Heterotermitidae (Blattodea)
+Arriini # COL: Mantodea > Haaniidae
+Arthropleidae # ITIS: Insecta > Ephemeroptera
+Artimantodea # COL: Insecta > Mantodea
+Ascalaphidae # COL: Insecta > Neuroptera
+Ascalaphinae # ITIS: Neuroptera > Ascalaphidae
+Ascalaphini # PBDB: Neuroptera > Myrmeleontidae
+Ascalochrysidae # COL: Insecta > Neuroptera
+Aschipasmidae # COL: synonym of Aschiphasmatidae (Phasmida)
+Aschiphasmatidae # COL: Insecta > Phasmida
+Aschiphasmatinae # COL: Phasmida > Aschiphasmatidae
+Aschiphasmatini # COL: Phasmida > Aschiphasmatidae
+Aschiphasmatoidea # COL: Insecta > Phasmida
+Asienthomidae # COL: Insecta > Psocodea
+Asiopompidae # COL: Insecta > Notoptera
+Asiopsocidae # COL: Insecta > Psocodea
+Asiopsocoidea # ITIS: Insecta > Psocodea
+Aspidohymenidae # COL: Insecta > Megasecoptera
+Aspidothoracidae # COL: Insecta > Megasecoptera
+Asthenohymenidae # IRMNG: Insecta > Diaphanopterodea
+Asthenopodinae # iNat: Ephemeroptera > Polymitarcyidae
+Astreptolabidinae # COL: Dermaptera > Pygidicranidae
+Asyncritidae # COL: Insecta > Eoblattida
+Atacaminae # iNat: Zygentoma > Maindroniidae
+Atactophlebiidae # COL: Insecta > Eoblattida
+Atalophlebiinae # PBDB: Ephemeroptera > Leptophlebiidae
+Atelurinae # COL: Zygentoma > Nicoletiidae
+Atmetoclothodinae # COL: Embioptera > Clothodidae
+Atopopsyllini # COL: Siphonaptera > Pulicidae
+Atrichadenotecnini # COL: Psocodea > Psocidae
+Atropetae # COL: Insecta > Psocodea
+Attaphilinae # COL: synonym of Blattellidae (Blattodea)
+Auchenomini # COL: Dermaptera > Spongiphoridae
+Aulacothripidae # iNat: Insecta > Thysanoptera
+Aulertupidae # COL: Insecta > Meganisoptera
+Australembiidae # COL: Insecta > Embioptera
+Australembiinae # COL: synonym of Australembiidae (Embioptera)
+Austremerellidae # COL: Insecta > Ephemeroptera
+Austrocaeciliina # COL: Psocodea > Caeciliusidae
+Austrocaeciliini # COL: Psocodea > Caeciliusidae
+Austrocorduliidae # COL: Insecta > Odonata
+Austroperlidae # COL: Insecta > Plecoptera
+Austropetaliidae # COL: Insecta > Odonata
+Austrophasmatidae # COL: synonym of Austrophasmatini (Notoptera)
+Austrophasmatini # COL: Notoptera > Mantophasmatidae
+Austrostylopyginae # COL: Blattodea > Blattidae
+Aykhalidae # COL: Insecta > Megasecoptera
+Babalidae # COL: Insecta > Eoblattida
+Babinskaiidae # COL: Insecta > Neuroptera
+Bacalini # COL: synonym of Cladoxerini (Phasmida)
+Bacillidae # COL: Insecta > Phasmida
+Bacillinae # COL: Phasmida > Bacillidae
+Bacillini # COL: Phasmida > Bacillidae
+Bacilloidea # COL: Insecta > Phasmida
+Bacteriinae # COL: synonym of Diapheromerinae (Phasmida)
+Bacterinae # COL: synonym of Diapheromerinae (Phasmida)
+Baculini # COL: synonym of Cladoxerini (Phasmida)
+Bacunculidae # IRMNG: Insecta > Phasmatodea
+Baetidae # COL: Insecta > Ephemeroptera
+Baetinae # PBDB: Ephemeroptera > Baetidae
+Baetiscidae # COL: Insecta > Ephemeroptera
+Baetoidea # COL: Insecta > Ephemeroptera
+Bahiaxenidae # COL: Insecta > Strepsiptera
+Baissomantidae # COL: Insecta > Mantodea
+Baissopteridae # COL: Insecta > Raphidioptera
+Bajanzhargalanidae # COL: Insecta > Notoptera
+Baleyopterigidae # COL: synonym of Baleyopterygidae (Plecoptera)
+Baleyopterygidae # COL: Insecta > Plecoptera
+Baltini # COL: Blattodea > Pseudophyllodromiidae
+Bantiinae # COL: Mantodea > Thespidae
+Bardacoleidae # COL: synonym of Bardocoleidae (Dermaptera)
+Bardapteridae # COL: Insecta > Eoblattida
+Bardocoleidae # COL: Insecta > Dermaptera
+Bardohymenidae # COL: Insecta > Megasecoptera
+Barreropsyllini # COL: Siphonaptera > Stephanocircidae
+Bassocaeciliini # COL: Psocodea > Caeciliusidae
+Batkentakidae # COL: Insecta > Eoblattida
+Behningiidae # COL: Insecta > Ephemeroptera
+Bellodermatidae # COL: Insecta > Dermaptera
+Belonopterygini # ITIS: Neuroptera > Chrysopidae
+Berothidae # COL: Insecta > Neuroptera
+Berothinae # ITIS: Neuroptera > Berothidae
+Biarmohymenidae # IRMNG: Insecta > Diaphanopterodea
+Bisanthina # COL: Mantodea > Chroicopteridae
+Bittacidae # COL: Insecta > Mecoptera
+Blaberidae # COL: Insecta > Blattodea
+Blaberiens # COL: synonym of Blaberidae (Blattodea)
+Blaberinae # COL: Blattodea > Blaberidae
+Blaberini # iNat: Blattodea > Blaberidae
+Blaberoidea # COL: Insecta > Blattodea
+Blandicinae # COL: Dermaptera > Pygidicranidae
+Blastini # COL: Psocodea > Psocidae
+Blattaria # ITIS: synonym of Blattodea (Insecta)
+Blattariae # COL: synonym of Blattoidea (Insecta)
+Blattellidae # COL: Insecta > Blattodea
+Blattellinae # COL: Blattodea > Blattellidae
+Blattellini # COL: Blattodea > Blattellidae
+Blattelytridae # COL: synonym of Permelytridae (Dermaptera)
+Blattelytrina # COL: synonym of Protelytroptera (Insecta)
+Blattidae # COL: Insecta > Blattodea
+Blattinae # COL: Blattodea > Blattidae
+Blattinopsidae # COL: Insecta > Blattodea
+Blattocoleidae # COL: synonym of Elytroneuridae (Dermaptera)
+Blattodea # COL: Arthropoda > Insecta
+Blattodeaphaginae # ITIS: Strepsiptera > Halictophagidae
+Blattogryllidae # COL: Insecta > Eoblattida
+Blattogryllopterida # COL: Insecta > Notoptera
+Blattoidae # COL: Insecta > Blattodea
+Blattoidea # COL: Insecta > Blattodea
+Blattulidae # COL: Insecta > Blattodea
+Blepharodinae # COL: Mantodea > Empusidae
+Blissoxeninae # ITIS: Strepsiptera > Corioxenidae
+Bohartillidae # COL: Insecta > Strepsiptera
+Bolbellini # COL: Mantodea > Chroicopteridae
+Bolbina # COL: Mantodea > Nanomantidae
+Bonomiellinae # COL: Psocodea > Somaphantidae
+Boopiidae # COL: Insecta > Psocodea
+Boopiinae # COL: Psocodea > Boopiidae
+Boreidae # COL: Insecta > Mecoptera
+Boreinae # PBDB: Mecoptera > Boreidae
+Borisoperlinae # COL: synonym of Petroperlidae (Plecoptera)
+Bovicolidae # COL: Insecta > Psocodea
+Bovicoliidae # chewing louse family (Phthiraptera); GBIF: Insecta > Psocodea
+Brachycercinae # ITIS: Ephemeroptera > Caenidae
+Brachycercini # ITIS: Ephemeroptera > Caenidae
+Brachyctenonotini # COL: Siphonaptera > Leptopsyllidae
+Brachydermaptera # GBIF: synonym of Dermaptera (Insecta)
+Brachylabidae # COL: synonym of Brachylabidinae (Dermaptera)
+Brachylabididae # not found in ChecklistBank
+Brachylabidinae # COL: Dermaptera > Anisolabididae
+Brachylabinae # COL: synonym of Brachylabidinae (Dermaptera)
+Brachynemurini # ITIS: Neuroptera > Myrmeleontidae
+Brachyphyllophagidae # COL: Insecta > Embioptera
+Brachyphyllophagidea # COL: Insecta > Embioptera
+Brachypterainae # COL: Plecoptera > Taeniopterygidae
+Brachypteryinae # ITIS: Plecoptera > Taeniopterygidae
+Bradiopsyllini # COL: Siphonaptera > Lycopsyllidae
+Brancsikiinae # COL: Mantodea > Majangidae
+Breyeriidae # COL: Insecta > Palaeodictyoptera
+Breyerioidea # COL: Insecta > Palaeodictyoptera
+Brindlensiinae # COL: Dermaptera > Pygidicranidae
+Brodiidae # COL: Insecta > Megasecoptera
+Brodiopteridae # COL: Insecta > Megasecoptera
+Brongniartiellidae # COL: Insecta > Neuroptera
+Brucheiserinae # ITIS: Neuroptera > Coniopterygidae
+Bryopsocidae # COL: synonym of Zelandopsocinae (Psocodea)
+Burmapygiinae # COL: Dermaptera > Pygidicranidae
+Burmitembiinae # COL: Embioptera > Notoligotomidae
+Caatingatermitinae # COL: Blattodea > Hodotermitidae
+Cacurgidae # COL: Insecta > Eoblattida
+Cacurgonarkemidae # COL: synonym of Spanioderidae (Cnemidolestida)
+Caeciliusetae # COL: Insecta > Psocodea
+Caeciliusidae # COL: Insecta > Psocodea
+Caeciliusinae # COL: Psocodea > Caeciliusidae
+Caeciliusini # COL: Psocodea > Caeciliusidae
+Caeciliusoidea # ITIS: Insecta > Psocodea
+Caecolabiinae # COL: Dermaptera > Spongiphoridae
+Caecolbaiinae # BOLDINSECT: Dermaptera > Spongiphoridae
+Caenidae # COL: Insecta > Ephemeroptera
+Caeninae # ITIS: Ephemeroptera > Caenidae
+Caenoculini # ITIS: Ephemeroptera > Caenidae
+Calamothespina # COL: Mantodea > Toxoderidae
+Calamothespini # COL: Mantodea > Toxoderidae
+Calicnemiinae # COL: Odonata > Platycnemididae
+Caliothripidae # iNat: Insecta > Thysanoptera
+Caliridinae # COL: Mantodea > Haaniidae
+Callibiina # COL: Mantodea > Acanthopidae
+Callimantini # COL: Mantodea > Epaphroditidae
+Calliperlinae # COL: synonym of Isoperlinae (Plecoptera)
+Callipharixenidae # ITIS: synonym of Halictophagidae (Strepsiptera)
+Callipharixeninae # ITIS: Strepsiptera > Halictophagidae
+Callistopterinae # COL: Psocodea > Pseudocaeciliidae
+Caloblattinidae # COL: Insecta > Blattodea
+Caloblattinoidea # COL: Insecta > Blattodea
+Calocaeciliinae # COL: Psocodea > Amphipsocidae
+Calolamprodinae # COL: Blattodea > Blaberidae
+Calomantispinae # ITIS: Neuroptera > Mantispidae
+Caloneuridae # IRMNG: Insecta > Caloneurodea
+Caloneurodea # IRMNG: Arthropoda > Insecta
+Calopsocidae # COL: synonym of Pseudocaeciliidae (Psocodea)
+Calopsocinae # COL: Psocodea > Pseudocaeciliidae
+Calopterygidae # COL: Insecta > Odonata
+Calopteryginae # COL: Odonata > Calopterygidae
+Calopterygoidea # COL: Insecta > Odonata
+Calotermitinae # COL: synonym of Kalotermitidae (Blattodea)
+Calvertiellidae # COL: Insecta > Palaeodictyoptera
+Calvertielloidea # COL: Insecta > Palaeodictyoptera
+Campsurinae # TAXREF: Ephemeroptera > Polymitarcyidae
+Camptoneuritidae # COL: Insecta > Notoptera
+Candaulae # COL: synonym of Necrosciinae (Phasmida)
+Canuleiini # COL: synonym of Pygirhynchini (Phasmida)
+Capillopsocini # COL: Psocodea > Amphipsocidae
+Capniidae # COL: Insecta > Plecoptera
+Capniinae # COL: synonym of Capniidae (Plecoptera)
+Capnini # COL: synonym of Capniidae (Plecoptera)
+Capritermitini # COL: synonym of Termitinae (Blattodea)
+Carapacea # ITIS: Insecta > Ephemeroptera
+Carbotripluridae # COL: Insecta > Zygentoma
+Carcinophoridae # earwig family (Dermaptera); COL: synonym of Anisolabididae (Dermaptera)
+Carcinophorinae # COL: synonym of Anisolabidinae (Dermaptera)
+Cardiopterinae # COL: Mantodea > Photinaidae
+Carinatermitidae # COL: Insecta > Blattodea
+Carinatermitinae # COL: synonym of Carinatermitidae (Blattodea)
+Carobiinae # PBDB: Neuroptera > Hemerobiidae
+Carpenteropteridae # COL: synonym of Spanioderidae (Cnemidolestida)
+Carterettini # COL: Siphonaptera > Ctenophthalmidae
+Catadermaptera # COL: synonym of Neodermaptera (Insecta)
+Caulopteridae # COL: Insecta > Megasecoptera
+Caurininae # iNat: Mecoptera > Boreidae
+Cavoperlidae # COL: Insecta > Plecoptera
+Celatoblattini # COL: Blattodea > Blattidae
+Cerastipsocini # COL: synonym of Thyrsophorini (Psocodea)
+Ceratophyllinae # COL: Siphonaptera > Ceratophyllidae
+Ceratophylloidea # COL: Insecta > Siphonaptera
+Ceratophyllomorpha # COL: Insecta > Siphonaptera
+Cercobrachini # ITIS: Ephemeroptera > Caenidae
+Cercopodata # COL: Insecta > Archaeognatha
+Cernomantodea # COL: Insecta > Mantodea
+Chaeteessidae # COL: Insecta > Mantodea
+Chaeteessoidea # PBDB: Insecta > Mantodea
+Chaetospaniini # COL: Dermaptera > Spongiphoridae
+Chaetospanini # COL: synonym of Chaetospaniini (Dermaptera)
+Challiinae # COL: synonym of Anataeliinae (Dermaptera)
+Challinae # COL: synonym of Anataeliinae (Dermaptera)
+Chauliodinae # ITIS: Megaloptera > Corydalidae
+Chaulioditidae # COL: Insecta > Reculida
+Cheleutoptera # ITIS: synonym of Phasmida (Insecta)
+Chelicercinae # COL: Embioptera > Anisembiidae
+Chelidurinae # COL: synonym of Anechurinae (Dermaptera)
+Cheliphlebiidae # COL: Insecta > Eoblattida
+Chelisochellinae # COL: synonym of Chelisochinae (Dermaptera)
+Chelisochidae # COL: Insecta > Dermaptera
+Chelisochinae # COL: Dermaptera > Chelisochidae
+Chelopistinae # COL: Psocodea > Goniodidae
+Chelopteridae # COL: Insecta > Notoptera
+Chiastopsyllinae # COL: Siphonaptera > Chimaeropsyllidae
+Chimaeropsyllidae # COL: Insecta > Siphonaptera
+Chimaeropsyllinae # COL: Siphonaptera > Chimaeropsyllidae
+Chiropteropsyllini # COL: Siphonaptera > Ischnopsyllidae
+Chlorocyphidae # COL: Insecta > Odonata
+Chlorogomphidae # COL: Insecta > Odonata
+Chloroperlidae # COL: Insecta > Plecoptera
+Chloroperlinae # COL: Plecoptera > Chloroperlidae
+Chloroperlini # COL: Plecoptera > Chloroperlidae
+Choeradodinae # COL: Mantodea > Mantidae
+Chorisembiinae # COL: Embioptera > Anisembiidae
+Choristopsyllini # COL: Siphonaptera > Lycopsyllidae
+Chroicopteridae # COL: Insecta > Mantodea
+Chroicopterina # COL: Mantodea > Chroicopteridae
+Chroicopterinae # COL: Mantodea > Chroicopteridae
+Chroicopterini # COL: Mantodea > Chroicopteridae
+Chroicopteroidea # iNat: Insecta > Mantodea
+Chromarcyidae # COL: Insecta > Ephemeroptera
+Chromarcyinae # iNat: Ephemeroptera > Oligoneuriidae
+Chrysopidae # COL: Insecta > Neuroptera
+Chrysopini # ITIS: Neuroptera > Chrysopidae
+Chrysoraphidiidae # COL: Insecta > Raphidioptera
+Claasseniini # COL: Plecoptera > Perlidae
+Cladiopsocidae # COL: Insecta > Psocodea
+Cladomorphi # COL: synonym of Diapheromerinae (Phasmida)
+Cladomorphidae # COL: synonym of Diapheromerinae (Phasmida)
+Cladomorphinae # COL: synonym of Diapheromerinae (Phasmida)
+Cladomorphini # COL: synonym of Diapheromerinae (Phasmida)
+Cladoxerinae # COL: synonym of Cladoxerini (Phasmida)
+Cladoxerini # COL: Phasmida > Phasmatidae
+Clituminae # COL: synonym of Clitumninae (Phasmida)
+Clitumini # COL: synonym of Clitumnini (Phasmida)
+Clitumnidae # COL: synonym of Clitumnini (Phasmida)
+Clitumninae # COL: Phasmida > Phasmatidae
+Clitumnini # COL: Phasmida > Phasmatidae
+Cloeoninae # PBDB: Ephemeroptera > Baetidae
+Clothodidae # COL: Insecta > Embioptera
+Clothodinae # COL: Embioptera > Clothodidae
+Clothododea # COL: synonym of Embioidea (Insecta)
+Clothodomorpha # PBDB: Insecta > Embioptera
+Cnemidolestida # COL: Arthropoda > Insecta
+Cnemidolestidae # COL: Insecta > Cnemidolestida
+Cnemidolestodea # COL: synonym of Cnemidolestida (Insecta)
+Coenagrionidae # COL: Insecta > Odonata
+Coenagrionoidea # COL: Insecta > Odonata
+Colapteroblattini # COL: synonym of Poroblattini (Blattodea)
+Coletiinae # FaEu: Zygentoma > Nicoletiidae
+Coletiniinae # COL: Zygentoma > Nicoletiidae
+Coloburiscidae # COL: Insecta > Ephemeroptera
+Colpocephalidae # COL: Insecta > Psocodea
+Colpocephalinae # COL: Psocodea > Menoponidae
+Compsocidae # COL: Insecta > Psocodea
+Compsodini # COL: Blattodea > Nocticolidae
+Compsomantina # COL: Mantodea > Gonypetidae
+Compsothespinae # COL: Mantodea > Toxoderidae
+Coniocompsini # ITIS: Neuroptera > Coniopterygidae
+Coniopterygidae # COL: Insecta > Neuroptera
+Coniopteryginae # ITIS: Neuroptera > Coniopterygidae
+Coniopterygini # ITIS: Neuroptera > Coniopterygidae
+Coniopterygoidea # ITIS: synonym of Hemerobiiformia (Insecta)
+Conwentziini # ITIS: Neuroptera > Coniopterygidae
+Copeognatha # GBIF: synonym of Psocodea (Insecta)
+Coptopsyllidae # COL: Insecta > Siphonaptera
+Coptopsylloidea # COL: Insecta > Siphonaptera
+Coptopterygidae # COL: Insecta > Mantodea
+Coptotermitinae # COL: synonym of Heterotermitidae (Blattodea)
+Cordulegastridae # COL: Insecta > Odonata
+Cordulegastroidea # COL: Insecta > Odonata
+Corduliidae # COL: Insecta > Odonata
+Corduliinae # ITIS: Odonata > Corduliidae
+Corioxenidae # COL: Insecta > Strepsiptera
+Corioxeninae # ITIS: Strepsiptera > Corioxenidae
+Cormopsocidae # COL: Insecta > Psocodea
+Corrodentia # GBIF: synonym of Psocodea (Insecta)
+Corydalidae # COL: Insecta > Megaloptera
+Corydaloididae # COL: Insecta > Megasecoptera
+Corydasialidae # COL: Insecta > Neuroptera
+Corydiens # COL: synonym of Corydiidae (Blattodea)
+Corydiidae # COL: Insecta > Blattodea
+Corydiinae # COL: Blattodea > Corydiidae
+Corydiini # COL: Blattodea > Corydiidae
+Corydinae # not found in ChecklistBank
+Corydioidea # COL: Insecta > Blattodea
+Coryphacini # COL: Psocodea > Caeciliusidae
+Coryphoridae # COL: Insecta > Ephemeroptera
+Corypsyllini # COL: Siphonaptera > Ctenophthalmidae
+Cosmiellinae # COL: synonym of Skendylinae (Dermaptera)
+Cosmogeracinae # COL: Dermaptera > Spongiphoridae
+Cosmotermitinae # COL: Blattodea > Arceotermitidae
+Cotigaonopsini # COL: Mantodea > Rivetinidae
+Craneopsyllinae # COL: Siphonaptera > Stephanocircidae
+Craneopsyllini # COL: Siphonaptera > Stephanocircidae
+Cranidiini # COL: synonym of Diapheromerinae (Phasmida)
+Craspedoniini # COL: synonym of Diapheromerinae (Phasmida)
+Cratoblattidae # COL: Insecta > Blattodea
+Cratomastotermitidae # COL: Insecta > Blattodea
+Cratovitismidae # COL: Insecta > Blattodea
+Cratovitismioidea # COL: Insecta > Blattodea
+Cratyniini # COL: Siphonaptera > Leptopsyllidae
+Crepititermitinae # COL: Blattodea > Termitidae
+Cretatermitinae # COL: Insecta > Blattodea
+Cretolabiinae # COL: Dermaptera > Anisolabididae
+Cretomantidae # COL: Insecta > Mantodea
+Cretostylopidae # COL: Insecta > Strepsiptera
+Crocini # PBDB: synonym of Crocinae (Neuroptera)
+Crossoperlidae # COL: Insecta > Plecoptera
+Cryptembiinae # COL: synonym of Chelicercinae (Embioptera)
+Cryptocercidae # COL: Insecta > Blattodea
+Cryptocercinae # COL: Blattodea > Cryptocercidae
+Cryptocercoidae # COL: Insecta > Blattodea
+Cryptovenidae # COL: Insecta > Palaeodictyoptera
+Ctenolepismatinae # COL: Zygentoma > Lepismatidae
+Ctenoneurinae # COL: Blattodea > Nocticolidae
+Ctenopariini # COL: Siphonaptera > Hystrichopsyllidae
+Ctenophtalmidae # flea family (Siphonaptera); not found in ChecklistBank
+Ctenophthalmidae # COL: Insecta > Siphonaptera
+Ctenophthalminae # COL: Siphonaptera > Ctenophthalmidae
+Ctenophthalmini # COL: Siphonaptera > Ctenophthalmidae
+Ctenoptilidae # COL: Insecta > Cnemidolestida
+Cubacubaninae # COL: Zygentoma > Nicoletiidae
+Cubitermitinae # COL: Blattodea > Termitidae
+Cycadothripidae # iNat: Insecta > Thysanoptera
+Cycetini # COL: Psocodea > Psocidae
+Cyclolachesillinae # COL: Psocodea > Lachesillidae
+Cylindrogastrinae # COL: Dermaptera > Diplatyidae
+Cylindrotermitinae # COL: Blattodea > Termitidae
+Cymbopsidae # COL: Insecta > Notoptera
+Cymenophlebidae # GBIF: Insecta > Cnemidolestodea
+Cymenophlebiidae # COL: Insecta > Cnemidolestida
+Cyrenoberothinae # ITIS: Neuroptera > Berothidae
+Dactuliothripidae # iNat: Insecta > Thysanoptera
+Dactylopsyllinae # COL: Siphonaptera > Ceratophyllidae
+Dactylopterygidae # COL: Insecta > Mantodea
+Dajacini # COL: Phasmida > Aschiphasmatidae
+Daldubidae # COL: Insecta > Eoblattida
+Damasippoididae # COL: Insecta > Phasmida
+Damasippoidinae # COL: Phasmida > Damasippoididae
+Damasippoidini # COL: Phasmida > Damasippoididae
+Danuriellini # COL: Mantodea > Majangidae
+Dasydemellidae # COL: Insecta > Psocodea
+Dasydemellinae # ITIS: Psocodea > Dasydemellidae
+Dasyleptidae # COL: Insecta > Archaeognatha
+Dasyonygidae # COL: Insecta > Psocodea
+Dasyonyginae # COL: synonym of Dasyonygidae (Psocodea)
+Dasypsocini # COL: Psocodea > Amphipsocidae
+Dataminae # COL: Phasmida > Heteropterygidae
+Datamini # COL: Phasmida > Heteropterygidae
+Degeeriellinae # COL: Insecta > Psocodea
+Deinelenchinae # ITIS: synonym of Elenchidae (Strepsiptera)
+Deiphobinae # COL: Mantodea > Rivetinidae
+Deiphobini # COL: Mantodea > Rivetinidae
+Demopteridae # COL: synonym of Camptoneuritidae (Notoptera)
+Dendroleontina # ITIS: Neuroptera > Myrmeleontidae
+Dendroleontinae # PBDB: Neuroptera > Myrmeleontidae
+Dendroleontini # ITIS: Neuroptera > Myrmeleontidae
+Dendrothripinae # COL: Thysanoptera > Thripidae
+Dermaptera # COL: Arthropoda > Insecta
+Dermapteridae # COL: Insecta > Dermaptera
+Dermapterinae # COL: synonym of Dermapteridae (Dermaptera)
+Dermapteroida # GBIF: synonym of Dermaptera (Insecta)
+Dermatoptera # GBIF: synonym of Dermaptera (Insecta)
+Dermelytridae # COL: Insecta > Dermaptera
+Dermodermaptera # COL: synonym of Hemimeridae (Dermaptera)
+Dermopteridae # GBIF: Insecta > Grylloblattodea
+Deromantinae # COL: Mantodea > Mantidae
+Deroplatyidae # COL: Insecta > Mantodea
+Deroplatyina # COL: Mantodea > Deroplatyidae
+Deroplatyinae # COL: Mantodea > Deroplatyidae
+Deroplatyini # COL: Mantodea > Deroplatyidae
+Devadattidae # COL: Insecta > Odonata
+Diamphipnoidae # COL: Insecta > Plecoptera
+Diamphipnoinae # COL: synonym of Diamphipnoidae (Plecoptera)
+Diaperasticinae # COL: Dermaptera > Forficulidae
+Diaphanopteridae # IRMNG: Insecta > Diaphanopterodea
+Diaphanopterodea # IRMNG: Arthropoda > Insecta
+Diapheromeridae # COL: Insecta > Phasmida
+Diapheromerinae # COL: Phasmida > Diapheromeridae
+Diapheromerini # COL: Phasmida > Diapheromeridae
+Diathemidae # COL: Insecta > Palaeodictyoptera
+Dicercomyzidae # COL: Insecta > Ephemeroptera
+Dichentomidae # COL: Insecta > Permopsocida
+Dicteriadidae # COL: Insecta > Odonata
+Dictyomylacridae # COL: Insecta > Blattodea
+Dictyoneurellidae # COL: Insecta > Megasecoptera
+Dictyoneuridae # COL: Insecta > Palaeodictyoptera
+Dictyoneuroidea # COL: Insecta > Palaeodictyoptera
+Dictyoptera # ITIS: synonym of Mantodea (Insecta)
+Didymocoryphini # COL: Mantodea > Eremiaphilidae
+Diechoblattinidae # COL: Insecta > Blattodea
+Dilaridae # COL: Insecta > Neuroptera
+Dilarinae # ITIS: Neuroptera > Dilaridae
+Dimarellina # ITIS: Neuroptera > Myrmeleontidae
+Dimarini # ITIS: Neuroptera > Myrmeleontidae
+Dinopsocidae # COL: synonym of Martynopsocidae (Permopsocida)
+Dinopsyllinae # COL: Siphonaptera > Ctenophthalmidae
+Dinotoperlinae # COL: Plecoptera > Gripopterygidae
+Dioxoceridae # COL: Insecta > Strepsiptera
+Diphlebiinae # COL: Odonata > Lestoideidae
+Diplatyidae # COL: Insecta > Dermaptera
+Diplatyinae # COL: Dermaptera > Diplatyidae
+Diplatymorphinae # COL: Dermaptera > Diplatyidae
+Diploglossata # COL: synonym of Hemimeridae (Dermaptera)
+Diploglossida # COL: synonym of Hemimeridae (Dermaptera)
+Diploperlini # COL: Plecoptera > Perlodidae
+Diplopterinae # COL: Blattodea > Blaberidae
+Dipteromantispidae # COL: Insecta > Neuroptera
+Dipteromimidae # COL: Insecta > Ephemeroptera
+Dipterophagidae # ITIS: synonym of Dipterophaginae (Strepsiptera)
+Dipterophaginae # ITIS: Strepsiptera > Halictophagidae
+Disparoneurinae # COL: Odonata > Platycnemididae
+Dolabellopsocidae # COL: Insecta > Psocodea
+Dolichopsyllini # COL: Siphonaptera > Leptopsyllidae
+Doratinae # COL: synonym of Forficulinae (Dermaptera)
+Doratopsyllinae # COL: Siphonaptera > Ctenophthalmidae
+Doratopsyllini # COL: Siphonaptera > Ctenophthalmidae
+Doubraviidae # COL: Insecta > Eoblattida
+Drepanacrinae # ITIS: Neuroptera > Hemerobiidae
+Drepanepteryginae # ITIS: Neuroptera > Hemerobiidae
+Drepanicinae # ITIS: Neuroptera > Mantispidae
+Duchailluiinae # COL: Blattodea > Blattidae
+Dysaulini # COL: Mantodea > Eremiaphilidae
+Dystactina # COL: Mantodea > Chroicopteridae
+Eadiidae # ITIS: Insecta > Blattodea
+Ecdyonurinae # PBDB: Ephemeroptera > Heptageniidae
+Echinophthiriidae # COL: Insecta > Psocodea
+Echinoponidae # COL: Insecta > Psocodea
+Echinopsocinae # COL: Psocodea > Lepidopsocidae
+Echinosomatinae # COL: Dermaptera > Pygidicranidae
+Ectobiidae # COL: Insecta > Blattodea
+Ectobiinae # COL: Blattodea > Ectobiidae
+Ectognathen # COL: synonym of Zygentoma (Insecta)
+Ectooviinae # COL: Blattodea > Ectobiidae
+Ectopsocidae # COL: Insecta > Psocodea
+Ectotrophi # COL: synonym of Zygentoma (Insecta)
+Ectotrophica # COL: synonym of Zygentoma (Insecta)
+Edgariekiidae # COL: Insecta > Permopsocida
+Elassoneuriini # iNat: Ephemeroptera > Oligoneuriidae
+Electrentomidae # COL: Insecta > Psocodea
+Electrentominae # COL: synonym of Electrentomidae (Psocodea)
+Electrentomoidea # COL: Insecta > Psocodea
+Electropsocinae # COL: Psocodea > Pseudocaeciliidae
+Electrotermitinae # COL: synonym of Kalotermitidae (Blattodea)
+Elenchidae # COL: Insecta > Strepsiptera
+Elenchinae # ITIS: synonym of Elenchidae (Strepsiptera)
+Elenchoidea # COL: synonym of Elenchidae (Strepsiptera)
+Elipsocidae # COL: Insecta > Psocodea
+Elipsocinae # COL: Psocodea > Elipsocidae
+Elmoboriidae # COL: Insecta > Palaeodictyoptera
+Elmoidae # IRMNG: Insecta > Diaphanopterodea
+Elytroneuridae # COL: Insecta > Dermaptera
+Elytroptera # COL: synonym of Protelytroptera (Insecta)
+Embidae # COL: synonym of Embiidae (Embioptera)
+Embides # COL: synonym of Embioptera (Insecta)
+Embidina # COL: synonym of Embioptera (Insecta)
+Embidopsocidae # COL: Insecta > Psocodea
+Embidopsocinae # ITIS: Psocodea > Liposcelididae
+Embiida # COL: synonym of Embioptera (Insecta)
+Embiidae # COL: Insecta > Embioptera
+Embiidea # COL: Insecta > Embioptera
+Embiidina # COL: synonym of Embioptera (Insecta)
+Embiinae # COL: synonym of Embiidae (Embioptera)
+Embiodea # COL: synonym of Embioptera (Insecta)
+Embioidea # COL: Insecta > Embioptera
+Embiomorpha # iNat: Insecta > Embioptera
+Embioptera # COL: Arthropoda > Insecta
+Embonychidae # COL: Insecta > Embioptera
+Empheriidae # COL: Insecta > Psocodea
+Emphylopteridae # COL: Insecta > Cnemidolestida
+Empusidae # COL: Insecta > Mantodea
+Empusina # COL: Mantodea > Empusidae
+Empusinae # COL: Mantodea > Empusidae
+Empusini # COL: Mantodea > Empusidae
+Enderleinellidae # COL: Insecta > Psocodea
+Engelitermitinae # COL: Blattodea > Termitidae
+Engisopteridae # COL: Insecta > Megasecoptera
+Ensiferoblattidae # ITIS: Insecta > Blattodea
+Ensiferophasmatidae # COL: synonym of Mantophasmatidae (Notoptera)
+Eoblattida # COL: Arthropoda > Insecta
+Eoblattidae # COL: Insecta > Eoblattida
+Eoblattodea # COL: synonym of Eoblattida (Insecta)
+Eodermaptera # COL: Insecta > Dermaptera
+Eolachesillinae # COL: Psocodea > Lachesillidae
+Eolachesillini # COL: Psocodea > Lachesillidae
+Eomeropidae # COL: Insecta > Mecoptera
+Epaphroditidae # COL: Insecta > Mantodea
+Epaphroditinae # COL: Mantodea > Epaphroditidae
+Epaphroditini # COL: Mantodea > Epaphroditidae
+Epaphroditoidea # TAXREF: Insecta > Mantodea
+Eparchinae # COL: synonym of Opisthocosmiinae (Dermaptera)
+Ephemerellidae # COL: Insecta > Ephemeroptera
+Ephemerelloidea # COL: Insecta > Ephemeroptera
+Ephemeridae # COL: Insecta > Ephemeroptera
+Ephemeroidea # COL: Insecta > Ephemeroptera
+Ephemeroptera # COL: Arthropoda > Insecta
+Ephemerythidae # COL: Insecta > Ephemeroptera
+Epicaeciliini # COL: Psocodea > Caeciliusidae
+Epideigmatidae # COL: Insecta > Notoptera
+Epidermaptera # COL: Insecta > Dermaptera
+Epigambriidae # COL: Insecta > Neuroptera
+Epilampridae # COL: synonym of Epilamprinae (Blattodea)
+Epilamprinae # COL: Blattodea > Blaberidae
+Epilamprini # COL: Blattodea > Blaberidae
+Epiophlebiidae # COL: Insecta > Odonata
+Epiophlebioidea # COL: Insecta > Odonata
+Epipsocetae # COL: Insecta > Psocodea
+Epipsocidae # COL: Insecta > Psocodea
+Epirimiinae # COL: Siphonaptera > Chimaeropsyllidae
+Epsomantini # COL: Mantodea > Nanomantidae
+Eremiaphilidae # COL: Insecta > Mantodea
+Eremiaphilinae # COL: Mantodea > Eremiaphilidae
+Eremiaphiloidea # PBDB: Insecta > Mantodea
+Erotidothripidae # iNat: Insecta > Thysanoptera
+Erotidothripinae # ITIS: Thysanoptera > Merothripidae
+Esphalmenidae # COL: synonym of Esphalmeninae (Dermaptera)
+Esphalmeninae # COL: Dermaptera > Pygidicranidae
+Eteodermaptera # COL: synonym of Epidermaptera (Insecta)
+Eubleptidae # COL: Insecta > Palaeodictyoptera
+Eubulidini # COL: synonym of Obrimini (Phasmida)
+Eucaenidae # COL: Arthropoda > Insecta
+Euceratothripidae # iNat: Insecta > Thysanoptera
+Euchomenellini # COL: Mantodea > Deroplatyidae
+Euchomenina # COL: Mantodea > Deroplatyidae
+Eudermaptera # COL: Insecta > Dermaptera
+Eudohrniinae # COL: synonym of Neolobophorinae (Dermaptera)
+Eudohrninae # COL: synonym of Neolobophorinae (Dermaptera)
+Euembiodea # COL: synonym of Embioidea (Insecta)
+Eugereonidae # COL: Insecta > Palaeodictyoptera
+Eugereonoidea # COL: Insecta > Palaeodictyoptera
+Euholognatha # COL: Insecta > Plecoptera
+Euisoptera # COL: Insecta > Blattodea
+Eukulojidae # COL: Insecta > Palaeodictyoptera
+Eumantodea # COL: Insecta > Mantodea
+Euphaeidae # COL: Insecta > Odonata
+Euphaeoidea # COL: Insecta > Odonata
+Euphasmatodea # COL: Insecta > Phasmida
+Euplectoptera # GBIF: synonym of Dermaptera (Insecta)
+Euplekoptera # GBIF: synonym of Dermaptera (Insecta)
+Euplexoptera # GBIF: synonym of Dermaptera (Insecta)
+Eupsocida # ITIS: synonym of Psocomorpha (Insecta)
+Euremiscidae # COL: Insecta > Notoptera
+Eurycanthae # COL: synonym of Lonchodinae (Phasmida)
+Eurycanthinae # COL: synonym of Lonchodinae (Phasmida)
+Eurycanthini # COL: Phasmida > Lonchodidae
+Eurycotiinae # ITIS: Blattodea > Blattidae
+Eurycotinae # COL: Blattodea > Blattidae
+Euryptilonidae # COL: Insecta > Eoblattida
+Eusermyleformia # COL: synonym of Diapheromerini (Phasmida)
+Eustheniidae # COL: Insecta > Plecoptera
+Eustheniinae # COL: Plecoptera > Eustheniidae
+Eusthenini # COL: synonym of Eustheniinae (Plecoptera)
+Eusthenioidea # COL: Insecta > Plecoptera
+Eutermitinae # COL: Blattodea > Metatermitidae
+Euthyplociidae # COL: Insecta > Ephemeroptera
+Euthyplociinae # iNat: Ephemeroptera > Euthyplociidae
+Euthyplocioidea # ITIS: Insecta > Ephemeroptera
+Euthyrrhaphinae # COL: Blattodea > Corydiidae
+Euthyrrhaphini # COL: Blattodea > Corydiidae
+Euthysanura # COL: synonym of Zygentoma (Insecta)
+Eutrichophilinae # COL: Psocodea > Trichodectidae
+Euxenoperlidae # COL: Insecta > Plecoptera
+Euxenoperlinae # COL: synonym of Euxenoperlidae (Plecoptera)
+Evenkidae # IRMNG: Insecta > Protorthoptera
+Exeuthyplociinae # iNat: Ephemeroptera > Euthyplociidae
+Extatosomatinae # COL: Phasmida > Phasmatidae
+Extatosomatini # COL: Phasmida > Phasmatidae
+Fauriellidae # thrips family (Thysanoptera); COL: Insecta > Thysanoptera
+Felicolinae # COL: Psocodea > Trichodectidae
+Filipalpia # COL: synonym of Arctoperlaria (Insecta)
+Fontenelleini # ITIS: Neuroptera > Coniopterygidae
+Foraminitermitinae # COL: Blattodea > Termitidae
+Forbicinidae # COL: synonym of Machilidae (Archaeognatha)
+Forbicininae # COL: synonym of Machilidae (Archaeognatha)
+Forficulariae # COL: synonym of Forficulidae (Dermaptera)
+Forficulidae # COL: Insecta > Dermaptera
+Forficulina # COL: synonym of Neodermaptera (Insecta)
+Forficulinae # COL: Dermaptera > Forficulidae
+Forficulini # COL: synonym of Forficulinae (Dermaptera)
+Forficulitermitinae # COL: Blattodea > Termitidae
+Forficuloidea # COL: Insecta > Dermaptera
+Foririidae # COL: Insecta > Megasecoptera
+Fouqueidae # COL: Insecta > Palaeodictyoptera
+Fractaliidae # ITIS: Insecta > Blattodea
+Fuelleborniellinae # COL: Psocodea > Caeciliusidae
+Fulciniinae # COL: Mantodea > Nanomantidae
+Fulciniini # COL: Mantodea > Nanomantidae
+Furcatergalia # ITIS: Insecta > Ephemeroptera
+Galinthiadidae # COL: Insecta > Mantodea
+Galinthiadoidea # iNat: Insecta > Mantodea
+Gallophasmatidae # COL: Insecta > Embioptera
+Gastrotheida # COL: synonym of Lepismatoidea (Insecta)
+Gastrotheoidea # COL: synonym of Lepismatoidea (Insecta)
+Geinitziidae # COL: Insecta > Reculida
+Geinitziinae # COL: Reculida > Geinitziidae
+Genitalatinae # COL: Dermaptera > Chelisochidae
+Geoisoptera # COL: Insecta > Blattodea
+Geoscapheinae # COL: Blattodea > Blaberidae
+Geracinae # COL: Dermaptera > Spongiphoridae
+Gerapompidae # COL: Insecta > Cnemidolestida
+Geraridae # IRMNG: Insecta > Geraroptera
+Gigantophasmatini # COL: Phasmida > Phasmatidae
+Glenurini # FaEu: Neuroptera > Myrmeleontidae
+Gliricolidae # COL: Insecta > Psocodea
+Glosselytridae # COL: Insecta > Glosselytrodea
+Glosselytrodea # COL: Arthropoda > Insecta
+Glossotermitinae # COL: synonym of Serritermitidae (Blattodea)
+Glyptotermitinae # COL: synonym of Kalotermitidae (Blattodea)
+Gnethodinae # COL: Embioptera > Clothodidae
+Gnopholeontini # ITIS: Neuroptera > Myrmeleontidae
+Gomphidae # COL: Insecta > Odonata
+Gomphoidea # COL: Insecta > Odonata
+Gomphomacromiidae # COL: Insecta > Odonata
+Gonatistinae # COL: Mantodea > Epaphroditidae
+Gondwanoperlaria # COL: synonym of Antarctoperlaria (Insecta)
+Goniocotinae # COL: Psocodea > Goniodidae
+Goniodidae # COL: Insecta > Psocodea
+Goniodinae # COL: Psocodea > Goniodidae
+Gonolabidae # COL: synonym of Anisolabidinae (Dermaptera)
+Gonolabididae # COL: synonym of Anisolabidinae (Dermaptera)
+Gonolabidinae # not found in ChecklistBank
+Gonolabiinae # COL: synonym of Gonolabinidae (Dermaptera)
+Gonolabinae # COL: synonym of Gonolabinidae (Dermaptera)
+Gonolabinidae # COL: Insecta > Dermaptera
+Gonolabininae # COL: synonym of Gonolabinidae (Dermaptera)
+Gonypetellini # COL: Mantodea > Chroicopteridae
+Gonypetidae # COL: Insecta > Mantodea
+Gonypetina # COL: Mantodea > Gonypetidae
+Gonypetinae # COL: Mantodea > Gonypetidae
+Gonypetini # COL: Mantodea > Gonypetidae
+Gonypetoidea # iNat: Insecta > Mantodea
+Gonypetyllina # COL: Mantodea > Gonypetidae
+Gorochoviidae # COL: Insecta > Reculida
+Grammolingiidae # COL: Insecta > Neuroptera
+Graphiptilidae # COL: Insecta > Palaeodictyoptera
+Graphocaeciliini # COL: Psocodea > Lachesillidae
+Gratidiini # COL: Phasmida > Bacillidae
+Gripopterygidae # COL: Insecta > Plecoptera
+Gripopteryginae # COL: Plecoptera > Gripopterygidae
+Gripopterygoidea # COL: Insecta > Plecoptera
+Gromphadorhini # COL: Blattodea > Blaberidae
+Grylloblattaria # COL: synonym of Grylloblattodea (Insecta)
+Grylloblattida # COL: synonym of Grylloblattodea (Insecta)
+Grylloblattidae # COL: Insecta > Notoptera
+Grylloblattina # COL: Insecta > Notoptera
+Grylloblattodea # COL: Insecta > Notoptera
+Grylloblattoidea # COL: synonym of Grylloblattodea (Insecta)
+Grylloplattidae # COL: synonym of Grylloblattidae (Notoptera)
+Gulouidae # COL: Insecta > Plecoptera
+Gumillinae # ITIS: Neuroptera > Osmylidae
+Gymnothrici # COL: synonym of Lepismatinae (Zygentoma)
+Gyninae # COL: Blattodea > Blaberidae
+Gyroblattidae # COL: Insecta > Blattodea
+Gyropidae # COL: Insecta > Psocodea
+Gyropinae # COL: Psocodea > Gyropidae
+Gyropoidea # COL: Insecta > Psocodea
+Haaniidae # COL: Insecta > Mantodea
+Haaniinae # COL: Mantodea > Haaniidae
+Haaniini # COL: Mantodea > Haaniidae
+Haanioidea # iNat: Insecta > Mantodea
+Hadentomidae # COL: Arthropoda > Insecta
+Hadrobrachypoda # SF Miscellaneous Insecta: Insecta
+Haematomyzidae # COL: Insecta > Psocodea
+Haematopinidae # COL: Insecta > Psocodea
+Hagiomantini # COL: Mantodea > Liturgusidae
+Halictophagidae # COL: Insecta > Strepsiptera
+Halictophaginae # ITIS: Strepsiptera > Halictophagidae
+Halictophagoidea # COL: synonym of Halictophagidae (Strepsiptera)
+Halomachilinae # COL: synonym of Machilidae (Archaeognatha)
+Hamophthiriidae # COL: Insecta > Psocodea
+Hanidae # COL: Insecta > Palaeodictyoptera
+Hapalomantinae # COL: Mantodea > Nanomantidae
+Hapalomantini # COL: Mantodea > Nanomantidae
+Hapalopteridae # COL: Arthropoda > Insecta
+Haplodiplatyidae # COL: Insecta > Dermaptera
+Haplogleniinae # ITIS: Neuroptera > Ascalaphidae
+Haplogleniini # ITIS: Neuroptera > Ascalaphidae
+Haplopodinae # COL: Phasmida > Phasmatidae
+Haplopodini # COL: Phasmida > Phasmatidae
+Harmoptera # GBIF: synonym of Dermaptera (Insecta)
+Havlatiidae # COL: Insecta > Notoptera
+Hebardininae # COL: Blattodea > Blattidae
+Heliothripidae # iNat: Insecta > Thysanoptera
+Hemeristina # SF Miscellaneous Insecta: Insecta
+Hemerobiidae # COL: Insecta > Neuroptera
+Hemerobiiformia # ITIS: Insecta > Neuroptera
+Hemerobiinae # ITIS: Neuroptera > Hemerobiidae
+Hemiclidoptera # not found in ChecklistBank
+Hemimeridae # COL: Insecta > Dermaptera
+Hemimerina # COL: synonym of Hemimeridae (Dermaptera)
+Hemimeroidea # COL: synonym of Hemimeridae (Dermaptera)
+Hemimylacridae # COL: Insecta > Blattodea
+Hemipachymorphini # COL: Phasmida > Phasmatidae
+Hemiphlebiidae # COL: Insecta > Odonata
+Hemipsocidae # COL: Insecta > Psocodea
+Hemithripidae # COL: Insecta > Thysanoptera
+Hemithripoidea # iNat: Insecta > Thysanoptera
+Hemithysocerini # COL: Blattodea > Blattellidae
+Heptageniidae # COL: Insecta > Ephemeroptera
+Heptagenioidea # COL: Insecta > Ephemeroptera
+Heptapsogastridae # COL: Insecta > Psocodea
+Heptapsogastrinae # COL: Psocodea > Heptapsogastridae
+Herbstialidae # COL: Insecta > Cnemidolestida
+Herdinidae # IRMNG: Insecta > Blattodea
+Hesperophasmatini # COL: Phasmida > Phasmatidae
+Hestiasulini # COL: Mantodea > Hymenopodidae
+Hetaerininae # COL: Odonata > Calopterygidae
+Heteragrionidae # COL: Insecta > Odonata
+Heterochaetinae # COL: Mantodea > Toxoderidae
+Heterochaetulini # COL: Mantodea > Toxoderidae
+Heterolepismatinae # COL: Zygentoma > Lepismatidae
+Heteronemiidae # COL: Insecta > Phasmida
+Heteronemiinae # COL: Phasmida > Heteronemiidae
+Heteronemiini # COL: Phasmida > Heteronemiidae
+Heteropterygidae # COL: Insecta > Phasmida
+Heteropteryginae # COL: Phasmida > Heteropterygidae
+Heteropterygini # COL: Phasmida > Heteropterygidae
+Heteroptilidae # COL: Insecta > Cnemidolestida
+Heterotermitidae # COL: Insecta > Blattodea
+Heterotermitinae # COL: synonym of Heterotermitidae (Blattodea)
+Heterothripidae # COL: Insecta > Thysanoptera
+Heterothripoidea # iNat: Insecta > Thysanoptera
+Heterovatina # COL: Mantodea > Mantidae
+Hexageniinae # PBDB: Ephemeroptera > Ephemeridae
+Hierodulinae # COL: Mantodea > Mantidae
+Hierodulini # COL: Mantodea > Mantidae
+Hodotermitidae # COL: Insecta > Blattodea
+Hodotermitinae # COL: Blattodea > Hodotermitidae
+Hodotermitini # COL: synonym of Hodotermitidae (Blattodea)
+Hodotermopsellinae # COL: Blattodea > Hodotermopsidae
+Hodotermopsidae # COL: Insecta > Blattodea
+Hodotermopsinae # COL: Blattodea > Hodotermopsidae
+Holocompsidae # COL: synonym of Holocompsini (Blattodea)
+Holocompsinae # ITIS: synonym of Euthyrrhaphinae (Blattodea)
+Holocompsini # COL: Blattodea > Corydiidae
+Holognatha # ITIS: synonym of Plecoptera (Insecta)
+Homalophlebidae # GBIF: Insecta > Protorthoptera
+Homataginae # not found in ChecklistBank
+Homilopsocidea # COL: Insecta > Psocodea
+Homoeodictyidae # COL: Insecta > Notoptera
+Homoeoneuriini # iNat: Ephemeroptera > Oligoneuriidae
+Homoiopteridae # COL: Insecta > Palaeodictyoptera
+Homotaginae # COL: synonym of Spongiphorinae (Dermaptera)
+Homothetidae # COL: Insecta > Palaeodictyoptera
+Hoplocloniini # COL: Phasmida > Heteropterygidae
+Hoplocoryphidae # COL: Insecta > Mantodea
+Hoplocoryphoidea # iNat: Insecta > Mantodea
+Hoplopleuridae # COL: Insecta > Psocodea
+Humbertiellina # COL: Mantodea > Gonypetidae
+Hybophthiridae # COL: Insecta > Psocodea
+Hybopthiridae # GBIF: Insecta > Psocodea
+Hybrisini # ITIS: Neuroptera > Ascalaphidae
+Hylechthridae # COL: Insecta > Strepsiptera
+Hylecthridae # ITIS: synonym of Stylopidae (Strepsiptera)
+Hymenopodidae # COL: Insecta > Mantodea
+Hymenopodina # COL: Mantodea > Hymenopodidae
+Hymenopodinae # COL: Mantodea > Hymenopodidae
+Hymenopodini # COL: Mantodea > Hymenopodidae
+Hymenopoidea # PBDB: Insecta > Mantodea
+Hypolestidae # COL: Insecta > Odonata
+Hypoperlida # COL: Arthropoda > Insecta
+Hypoperlidae # COL: Insecta > Hypoperlida
+Hyrtanellini # iNat: Ephemeroptera > Ephemerellidae
+Hystrichopsyllidae # COL: Insecta > Siphonaptera
+Hystrichopsyllinae # COL: Siphonaptera > Hystrichopsyllidae
+Hystrichopsyllini # COL: Siphonaptera > Hystrichopsyllidae
+Hystrichopsylloidea # COL: Insecta > Siphonaptera
+Hystrichopsyllomorpha # COL: Insecta > Siphonaptera
+Ichthybotidae # COL: Insecta > Ephemeroptera
+Idanotermitinae # COL: Blattodea > Mastotermitidae
+Ideliidae # COL: Insecta > Eoblattida
+Idelinellidae # COL: Insecta > Eoblattida
+Idiocnemidinae # COL: Odonata > Platycnemididae
+Idiomylacridae # COL: Insecta > Blattodea
+Idionychidae # COL: Insecta > Odonata
+Idolomantini # COL: Mantodea > Empusidae
+Idolomorphina # COL: Mantodea > Empusidae
+Idolopsalidinae # BOLDINSECT: Dermaptera > Anisolabididae
+Idolopsalinae # COL: Dermaptera > Anisolabididae
+Idolothripinae # thrips subfamily (Thysanoptera: Phlaeothripidae); COL: Thysanoptera > Phlaeothripidae
+Idomacromiidae # COL: Insecta > Odonata
+Idonychidae # COL: Insecta > Odonata
+Indotermitidae # COL: synonym of Apicotermitinae (Blattodea)
+Indothripidae # iNat: Insecta > Thysanoptera
+Inocelliidae # COL: Insecta > Raphidioptera
+Inocelliinae # iNat: Raphidioptera > Inocelliidae
+Inocelliini # iNat: Raphidioptera > Inocelliidae
+Insulibrachini # ITIS: Ephemeroptera > Caenidae
+Irdexinae # COL: synonym of Spongiphorinae (Dermaptera)
+Irdexinaea # not found in ChecklistBank
+Irdexinea # COL: synonym of Spongiphorinae (Dermaptera)
+Irdicinae # COL: synonym of Spongiphorinae (Dermaptera)
+Iridinae # COL: Mantodea > Eremiaphilidae
+Iridini # COL: Mantodea > Eremiaphilidae
+Iridopterygidae # mantis family (Mantodea); IRMNG: synonym of Gonypetidae (Mantodea)
+Iridopterygina # COL: Mantodea > Gonypetidae
+Iridopteryginae # COL: Mantodea > Gonypetidae
+Iridopterygini # COL: Mantodea > Gonypetidae
+Ischnocera # COL: Insecta > Psocodea
+Ischnomantini # COL: Mantodea > Rivetinidae
+Ischnoneuridae # IRMNG: Insecta > Cnemidolestodea
+Ischnopsyllidae # COL: Insecta > Siphonaptera
+Ischnopsyllinae # COL: Siphonaptera > Ischnopsyllidae
+Ischnopsyllini # COL: Siphonaptera > Ischnopsyllidae
+Ischnopterini # COL: Blattodea > Blattellidae
+Ischnoptilidae # COL: Insecta > Megasecoptera
+Isogeninae # COL: synonym of Perlodinae (Plecoptera)
+Isolabellinae # COL: synonym of Labiinae (Dermaptera)
+Isolabidae # COL: synonym of Isolabidinae (Dermaptera)
+Isolabididae # COL: synonym of Isolabidinae (Dermaptera)
+Isolabidinae # COL: Dermaptera > Anisolabididae
+Isolabinae # COL: synonym of Isolabidinae (Dermaptera)
+Isolaboidinae # COL: Dermaptera > Anisolabididae
+Isonychiidae # COL: Insecta > Ephemeroptera
+Isoperlidae # COL: synonym of Perlodidae (Plecoptera)
+Isoperlinae # COL: Plecoptera > Perlodidae
+Isoperlini # COL: synonym of Isoperlinae (Plecoptera)
+Isoptera # COL: synonym of Termitoidae (Insecta)
+Isopyginae # COL: Dermaptera > Spongiphoridae
+Isostictidae # COL: Insecta > Odonata
+Issatermidae # COL: Insecta > Cnemidolestida
+Ithonidae # COL: Insecta > Neuroptera
+Ithonoidea # ITIS: synonym of Hemerobiiformia (Insecta)
+Ivapteridae # COL: Insecta > Notoptera
+Jabloniidae # COL: synonym of Camptoneuritidae (Notoptera)
+Jongmansiidae # COL: Insecta > Palaeodictyoptera
+Jordanopsyllini # COL: Siphonaptera > Ctenophthalmidae
+Juraperlidae # COL: synonym of Necrophasmidae (Cnemidolestida)
+Jurinidae # COL: Insecta > Glosselytrodea
+Juroraphidiidae # COL: Insecta > Raphidioptera
+Kachinoperlidae # COL: Insecta > Plecoptera
+Kaindipsocinae # COL: Psocodea > Psocidae
+Kalligrammatidae # COL: Insecta > Neuroptera
+Kallihemerobiinae # PBDB: Neuroptera > Kalligrammatidae
+Kalotermitidae # COL: Insecta > Blattodea
+Kalotermitinae # COL: synonym of Kalotermitidae (Blattodea)
+Karataothripidae # COL: Insecta > Thysanoptera
+Kargalellinae # COL: synonym of Liomopteridae (Reculida)
+Kargaliinae # COL: Blattodea > Spiloblattinidae
+Kargalopteridae # COL: Insecta > Reculida
+Karschiellidae # COL: synonym of Karschiellinae (Dermaptera)
+Karschiellinae # COL: Dermaptera > Pygidicranidae
+Karschielloidea # COL: synonym of Karschiellinae (Dermaptera)
+Katerinkidae # IRMNG: Insecta > Paoliida
+Kathroperlidae # COL: Insecta > Plecoptera
+Kathroperlinae # COL: synonym of Kathroperlidae (Plecoptera)
+Kempyninae # ITIS: Neuroptera > Osmylidae
+Khatamamammalophagidae # COL: Insecta > Psocodea
+Kinellinae # COL: synonym of Kinesinae (Dermaptera)
+Kinesinae # COL: Dermaptera > Chelisochidae
+Kinzelbachillidae # COL: Insecta > Strepsiptera
+Kiotinini # COL: Plecoptera > Perlidae
+Kittrickea # COL: Insecta > Blattodea
+Kodamaiinae # COL: Psocodea > Amphipsocidae
+Kohlwaldiidae # COL: Insecta > Meganisoptera
+Kolbeini # COL: Psocodea > Amphipsocidae
+Kolbiini # PBDB: Psocodea > Amphipsocidae
+Korinninae # COL: synonym of Necrosciinae (Phasmida)
+Korinnini # COL: Phasmida > Lonchodidae
+Kortshakoliidae # COL: synonym of Permotermopsidae (Eoblattida)
+Krausichnidae # COL: Insecta > Blattodea
+Krishnatermitidae # COL: Insecta > Blattodea
+Labidelytridae # COL: Insecta > Dermaptera
+Labidoura # GBIF: synonym of Dermaptera (Insecta)
+Labiduriales # COL: synonym of Labiduroidea (Insecta)
+Labiduridae # COL: Insecta > Dermaptera
+Labidurinae # COL: Dermaptera > Labiduridae
+Labiduroidea # COL: Insecta > Dermaptera
+Labiidae # COL: synonym of Spongiphoridae (Dermaptera)
+Labiinae # COL: Dermaptera > Spongiphoridae
+Lachesillidae # COL: Insecta > Psocodea
+Lachesillinae # COL: Psocodea > Lachesillidae
+Laemobothriidae # COL: Insecta > Psocodea
+Lamproblattidae # COL: Insecta > Blattodea
+Lamproblattinae # COL: Blattodea > Lamproblattidae
+Lanceocercata # COL: synonym of Phasmatidae (Phasmida)
+Lanceolata # ITIS: Insecta > Ephemeroptera
+Landicinae # COL: synonym of Anisolabidinae (Dermaptera)
+Largusoperlini # COL: Plecoptera > Perlidae
+Latindiinae # COL: Blattodea > Nocticolidae
+Latindiini # COL: Blattodea > Nocticolidae
+Latineosini # ITIS: Ephemeroptera > Caenidae
+Latinozorinae # COL: Zoraptera > Spiralizoridae
+Lauromacromiidae # COL: Insecta > Odonata
+Leiophasmatinae # COL: Phasmida > Anisacanthidae
+Lemmatophoridae # COL: Insecta > Notoptera
+Lemmatophorina # COL: Insecta > Notoptera
+Lemmatophorinae # COL: Notoptera > Lemmatophoridae
+Lemolemini # ITIS: Neuroptera > Myrmeleontidae
+Lepidopsocidae # COL: Insecta > Psocodea
+Lepidopsocinae # COL: Psocodea > Lepidopsocidae
+Lepidothricidae # COL: synonym of Lepidotrichidae (Zygentoma)
+Lepidotrichidae # COL: Insecta > Zygentoma
+Lepiidae # COL: synonym of Epideigmatidae (Notoptera)
+Lepismaedes # COL: synonym of Lepismatidae (Zygentoma)
+Lepismatida # COL: synonym of Lepismatoidea (Insecta)
+Lepismatidae # COL: Insecta > Zygentoma
+Lepismatinae # COL: Zygentoma > Lepismatidae
+Lepismatoidea # COL: Insecta > Zygentoma
+Lepismatoides # COL: synonym of Lepismatoidea (Insecta)
+Lepismenae # COL: synonym of Lepismatidae (Zygentoma)
+Lepismida # COL: synonym of Lepismatidae (Zygentoma)
+Lepismidae # COL: synonym of Lepismatidae (Zygentoma)
+Lepismoidea # COL: synonym of Lepismatoidea (Insecta)
+Lepolepidinae # COL: Psocodea > Lepidopsocidae
+Leprodini # COL: Phasmida > Bacillidae
+Leptocolina # COL: Mantodea > Deroplatyidae
+Leptocolini # COL: Mantodea > Deroplatyidae
+Leptohyphidae # COL: Insecta > Ephemeroptera
+Leptomantellidae # COL: Insecta > Mantodea
+Leptomiopterygini # COL: Mantodea > Thespidae
+Leptoperlidae # COL: synonym of Gripopterygidae (Plecoptera)
+Leptoperlinae # COL: Plecoptera > Gripopterygidae
+Leptoperlini # COL: synonym of Leptoperlinae (Plecoptera)
+Leptoperloidea # COL: synonym of Gripopterygoidea (Insecta)
+Leptophlebiidae # COL: Insecta > Ephemeroptera
+Leptophlebioidea # COL: Insecta > Ephemeroptera
+Leptopsyllidae # COL: Insecta > Siphonaptera
+Leptopsyllinae # COL: Siphonaptera > Leptopsyllidae
+Leptopsyllini # COL: Siphonaptera > Leptopsyllidae
+Lesneiidae # COL: Insecta > Psocodea
+Lestidae # COL: Insecta > Odonata
+Lestoidea # COL: Insecta > Odonata
+Lestoideidae # COL: Insecta > Odonata
+Letopalopterinae # COL: Notoptera > Permembiidae
+Leucochrysini # ITIS: Neuroptera > Chrysopidae
+Leucotermitinae # COL: synonym of Heterotermitidae (Blattodea)
+Leuctridae # COL: Insecta > Plecoptera
+Leuctrinae # COL: Plecoptera > Leuctridae
+Liassothripidae # COL: Insecta > Thysanoptera
+Libaneuphoridae # COL: Insecta > Psocodea
+Libaneuphorinae # PBDB: Psocodea > Pachytroctidae
+Libellulidae # COL: Insecta > Odonata
+Libelluloidea # COL: Insecta > Odonata
+Liberiblattinidae # COL: Insecta > Blattodea
+Libethrini # COL: synonym of Oreophoetini (Phasmida)
+Lienhardiellina # COL: Psocodea > Caeciliusidae
+Linognathidae # COL: Insecta > Psocodea
+Liomopteridae # COL: Insecta > Reculida
+Lipeuridae # COL: Insecta > Psocodea
+Lipeurinae # COL: Insecta > Psocodea
+Liposcelidae # ITIS: synonym of Liposcelididae (Psocodea)
+Liposcelidetae # COL: Insecta > Psocodea
+Liposcelididae # COL: Insecta > Psocodea
+Liposcelidinae # ITIS: Psocodea > Liposcelididae
+Listropsyllinae # COL: Siphonaptera > Ctenophthalmidae
+Litaneutriini # COL: Mantodea > Amelidae
+Lithomantidae # COL: Insecta > Palaeodictyoptera
+Liturgusidae # COL: Insecta > Mantodea
+Liturgusini # COL: Mantodea > Liturgusidae
+Liuopsyllinae # COL: Siphonaptera > Ctenophthalmidae
+Lonchodidae # COL: Insecta > Phasmida
+Lonchodinae # COL: Phasmida > Lonchodidae
+Lonchodini # COL: Phasmida > Lonchodidae
+Longicerciatidae # COL: synonym of Protodiplatyidae (Dermaptera)
+Lutetiatermitinae # COL: Insecta > Blattodea
+Lychnocolacidae # COL: Insecta > Strepsiptera
+Lycocercidae # COL: Insecta > Palaeodictyoptera
+Lycopsyllidae # COL: Insecta > Siphonaptera
+Lycopsyllini # COL: Siphonaptera > Lycopsyllidae
+Machadorythidae # COL: Insecta > Ephemeroptera
+Machilida # COL: Insecta > Archaeognatha
+Machilidae # COL: Insecta > Archaeognatha
+Machilinae # COL: Archaeognatha > Machilidae
+Machiloidea # COL: Insecta > Archaeognatha
+Macrocercinae # COL: synonym of Polyzosteriinae (Blattodea)
+Macromantinae # COL: Mantodea > Photinaidae
+Macromidiidae # COL: Insecta > Odonata
+Macromiidae # COL: Insecta > Odonata
+Macromiinae # ITIS: Odonata > Corduliidae
+Macropsyllidae # IRMNG: Insecta > Siphonaptera
+Macropsyllinae # COL: Siphonaptera > Hystrichopsyllidae
+Macropsylloidea # iNat: Insecta > Siphonaptera
+Macrotermitidae # NCBI: synonym of Macrotermitinae (Blattodea)
+Macrotermitinae # COL: Blattodea > Termitidae
+Macyniinae # COL: Phasmida > Bacillidae
+Macyniini # COL: Phasmida > Bacillidae
+Madygenophlebiidae # COL: Insecta > Reculida
+Maindronidae # ALF: Insecta > Zygentoma
+Maindroniidae # IRMNG: Insecta > Zygentoma
+Maindroniinae # COL: Zygentoma > Lepismatidae
+Majangidae # COL: Insecta > Mantodea
+Majanginae # COL: Mantodea > Majangidae
+Majangini # COL: Mantodea > Majangidae
+Malacopsyllidae # COL: Insecta > Siphonaptera
+Malacopsylloidea # COL: Insecta > Siphonaptera
+Mallophaga # ITIS: synonym of Ischnocera (Insecta)
+Mammalophagidae # COL: Insecta > Psocodea
+Manicapsocidae # COL: Insecta > Psocodea
+Manipulatoridae # COL: Insecta > Blattodea
+Mantidae # COL: Insecta > Mantodea
+Mantinae # COL: Mantodea > Mantidae
+Mantispidae # COL: Insecta > Neuroptera
+Mantispinae # ITIS: Neuroptera > Mantispidae
+Mantodea # COL: Arthropoda > Insecta
+Mantoidea # PBDB: Insecta > Mantodea
+Mantoididae # COL: Insecta > Mantodea
+Mantoidoidea # PBDB: Insecta > Mantodea
+Mantophasmatidae # COL: Insecta > Notoptera
+Mantophasmatinae # COL: Notoptera > Mantophasmatidae
+Mantophasmatini # COL: Notoptera > Mantophasmatidae
+Mantophasmatodea # COL: Insecta > Notoptera
+Maoripsocini # COL: Psocodea > Caeciliusidae
+Martynopsocidae # COL: Insecta > Permopsocida
+Martynoviidae # IRMNG: Insecta > Diaphanopterodea
+Mastotermitidae # COL: Insecta > Blattodea
+Mastotermitinae # COL: Blattodea > Mastotermitidae
+Mastotermitoidea # ITIS: Insecta > Blattodea
+Maulini # ITIS: Neuroptera > Myrmeleontidae
+Mecoptera # COL: Arthropoda > Insecta
+Mecynostomatidae # COL: Insecta > Palaeodictyoptera
+Medaurini # COL: Phasmida > Phasmatidae
+Megacraniinae # COL: Phasmida > Phasmatidae
+Megagininae # COL: Psocodea > Heptapsogastridae
+Megagnathidae # GBIF: Insecta > Protorthoptera
+Megakhosaridae # COL: Insecta > Eoblattida
+Megaleptoperlini # COL: Plecoptera > Gripopterygidae
+Megaleuctrinae # COL: Plecoptera > Leuctridae
+Megalominae # ITIS: Neuroptera > Hemerobiidae
+Megaloptera # COL: Arthropoda > Insecta
+Meganeuridae # COL: Insecta > Meganisoptera
+Meganisoptera # COL: Arthropoda > Insecta
+Megapodagrionidae # COL: Insecta > Odonata
+Megaptilidae # COL: Insecta > Palaeodictyoptera
+Megasecoptera # COL: Arthropoda > Insecta
+Megelytridae # COL: Insecta > Dermaptera
+Megistopini # iNat: Neuroptera > Myrmeleontidae
+Meinertellidae # COL: Insecta > Archaeognatha
+Meinertellinae # COL: Archaeognatha > Meinertellidae
+Melanemerellidae # COL: Insecta > Ephemeroptera
+Melanthripidae # thrips family (Thysanoptera); COL: Insecta > Thysanoptera
+Melanthripoidea # iNat: Insecta > Thysanoptera
+Mellierinae # COL: Mantodea > Mantidae
+Mellierini # COL: Mantodea > Mantidae
+Melqartitermitidae # COL: Insecta > Blattodea
+Menexenini # COL: synonym of Lonchodini (Phasmida)
+Mengeidae # COL: Insecta > Strepsiptera
+Mengenillidae # COL: Insecta > Strepsiptera
+Mengenillidia # ITIS: Insecta > Strepsiptera
+Mengeoidea # COL: synonym of Mengeidae (Strepsiptera)
+Menoponidae # COL: Insecta > Psocodea
+Menoponinae # COL: Psocodea > Menoponidae
+Menoponoidea # COL: Insecta > Psocodea
+Meropeidae # COL: Insecta > Mecoptera
+Merothripidae # thrips family (Thysanoptera); COL: Insecta > Thysanoptera
+Merothripoidea # iNat: Insecta > Thysanoptera
+Mesagrionidae # COL: Insecta > Odonata
+Mesembiinae # COL: synonym of Anisembiinae (Embioptera)
+Mesembiini # COL: Embioptera > Anisembiidae
+Mesoberothidae # COL: Insecta > Neuroptera
+Mesoblattinidae # COL: Insecta > Blattodea
+Mesochrysopidae # COL: Insecta > Neuroptera
+Mesodermaptera # COL: Insecta > Dermaptera
+Mesoleuctridae # COL: Insecta > Plecoptera
+Mesoleuctrinae # COL: synonym of Mesoleuctridae (Plecoptera)
+Mesomantispinae # PBDB: Neuroptera > Mantispidae
+Mesopodagrionidae # COL: Insecta > Odonata
+Mesopodagrionoidea # COL: Insecta > Odonata
+Mesopolystoechotidae # COL: Insecta > Neuroptera
+Mesopsocidae # COL: Insecta > Psocodea
+Mesopsyllini # COL: Siphonaptera > Leptopsyllidae
+Mesoraphidiidae # COL: Insecta > Raphidioptera
+Mesorthopteridae # COL: Insecta > Eoblattida
+Mesotermitidae # not found in ChecklistBank
+Metadermaptera # COL: synonym of Anisolabidoidea (Insecta)
+Metallyticidae # COL: Insecta > Mantodea
+Metallyticoidea # PBDB: Insecta > Mantodea
+Metaraphidiidae # COL: Insecta > Raphidioptera
+Metatermitidae # COL: Insecta > Blattodea
+Metaxylabidinae # COL: Dermaptera > Labiduridae
+Methanini # COL: Blattodea > Blattidae
+Metretopodidae # COL: Insecta > Ephemeroptera
+Metylophorini # COL: Psocodea > Psocidae
+Microcerotermitinae # COL: Blattodea > Termitidae
+Microcoryphia # COL: synonym of Archaeognatha (Insecta)
+Microembiinae # COL: synonym of Anisembiidae (Embioptera)
+Microminae # ITIS: Neuroptera > Hemerobiidae
+Microperlinae # COL: Plecoptera > Peltoperlidae
+Microperlini # COL: synonym of Microperlinae (Plecoptera)
+Microphotinaini # COL: Mantodea > Photinaidae
+Microthoraciidae # COL: Insecta > Psocodea
+Miobantiinae # COL: Mantodea > Thespidae
+Miomantidae # COL: Insecta > Mantodea
+Miomantinae # COL: Mantodea > Miomantidae
+Miomantoidea # iNat: Insecta > Mantodea
+Miomoptera # COL: Arthropoda > Insecta
+Miotermitinae # COL: synonym of Mastotermitidae (Blattodea)
+Mirocapritermitinae # COL: Blattodea > Termitidae
+Miroceramiini # COL: synonym of Obrimini (Phasmida)
+Mirolepismatinae # COL: Zygentoma > Lepismatidae
+Mirophthiridae # COL: Insecta > Psocodea
+Mirotermitini # COL: synonym of Termitinae (Blattodea)
+Mischopteridae # COL: Insecta > Megasecoptera
+Monandropterae # COL: synonym of Monandropterini (Phasmida)
+Monandropterinae # COL: Phasmida > Phasmatidae
+Monandropterini # COL: Phasmida > Phasmatidae
+Monastriini # iNat: Blattodea > Blaberidae
+Mongoloraphidiina # iNat: Raphidioptera > Raphidiidae
+Monura # COL: Insecta > Archaeognatha
+Moravohymenidae # COL: Insecta > Megasecoptera
+Morphnini # COL: Blattodea > Blaberidae
+Moundthripidae # COL: Insecta > Thysanoptera
+Musapsocidae # COL: Insecta > Psocodea
+Musoniellinae # COL: Mantodea > Thespidae
+Musoniellini # COL: Mantodea > Thespidae
+Myiodactylinae # PBDB: Neuroptera > Nymphidae
+Mylacridae # COL: Insecta > Blattodea
+Mylacrotermitidae # COL: Insecta > Blattodea
+Mymarothripidae # iNat: Insecta > Thysanoptera
+Myopsocidae # COL: Insecta > Psocodea
+Myrmecaelurini # ITIS: Neuroptera > Myrmeleontidae
+Myrmecolacidae # COL: Insecta > Strepsiptera
+Myrmeleontidae # COL: Insecta > Neuroptera
+Myrmeleontiformia # ITIS: Insecta > Neuroptera
+Myrmeleontina # ITIS: Neuroptera > Myrmeleontidae
+Myrmeleontinae # ITIS: Neuroptera > Myrmeleontidae
+Myrmeleontini # ITIS: Neuroptera > Myrmeleontidae
+Myrmeleontoidea # ITIS: Insecta > Neuroptera
+Nalinae # COL: Dermaptera > Labiduridae
+Nallachiinae # ITIS: Neuroptera > Dilaridae
+Namurodiaphidae # IRMNG: Insecta > Megasecoptera
+Namuroningxiidae # COL: Insecta > Palaeodictyoptera
+Namurotypidae # COL: Insecta > Meganisoptera
+Nannochoristidae # COL: Insecta > Mecoptera
+Nannomecoptera # PBDB: Insecta > Mecoptera
+Nanomantidae # COL: Insecta > Mantodea
+Nanomantinae # COL: Mantodea > Nanomantidae
+Nanomantoidea # PBDB: Insecta > Mantodea
+Nanophylliini # COL: Phasmida > Phylliidae
+Nanopsocetae # COL: Insecta > Psocodea
+Nanosialidae # COL: Insecta > Megaloptera
+Narkemidae # COL: synonym of Cnemidolestidae (Cnemidolestida)
+Narkeminidae # COL: synonym of Cnemidolestidae (Cnemidolestida)
+Narkemocacurgidae # COL: synonym of Cnemidolestidae (Cnemidolestida)
+Nasutitermitinae # termite subfamily (Blattodea: Isoptera); COL: Blattodea > Termitidae
+Nauphoetini # COL: Blattodea > Blaberidae
+Necrophasmidae # COL: Insecta > Cnemidolestida
+Necrophylini # iNat: Neuroptera > Nemopteridae
+Necroscidae # COL: synonym of Necrosciinae (Phasmida)
+Necrosciinae # COL: Phasmida > Lonchodidae
+Necrosciini # COL: Phasmida > Lonchodidae
+Necymylacridae # COL: Insecta > Eoblattida
+Neghini # iNat: Raphidioptera > Inocelliidae
+Neleidae # COL: synonym of Bajanzhargalanidae (Notoptera)
+Nemoleontina # ITIS: Neuroptera > Myrmeleontidae
+Nemoleontinae # iNat: Neuroptera > Myrmeleontidae
+Nemoleontini # ITIS: Neuroptera > Myrmeleontidae
+Nemopteridae # COL: Insecta > Neuroptera
+Nemopterinae # ITIS: Neuroptera > Nemopteridae
+Nemoura # not found in ChecklistBank
+Nemouridae # COL: Insecta > Plecoptera
+Nemourinae # COL: Plecoptera > Nemouridae
+Nemourini # COL: synonym of Nemouridae (Plecoptera)
+Nemouroidea # COL: Insecta > Plecoptera
+Nemuraedes # COL: synonym of Nemouridae (Plecoptera)
+Nemuridae # COL: synonym of Nemouridae (Plecoptera)
+Nemuropsidae # GBIF: Insecta > Eoblattida
+Neoblattellini # COL: Blattodea > Pseudophyllodromiidae
+Neocapritermitinae # COL: Blattodea > Termitidae
+Neodermaptera # COL: Insecta > Dermaptera
+Neoembiodea # COL: synonym of Embioidea (Insecta)
+Neoephemeridae # COL: Insecta > Ephemeroptera
+Neohiraseini # COL: synonym of Necrosciinae (Phasmida)
+Neoisoptera # COL: Insecta > Blattodea
+Neolinognathidae # COL: Insecta > Psocodea
+Neolobophorinae # COL: Dermaptera > Forficulidae
+Neomantini # COL: Mantodea > Nanomantidae
+Neomylacridae # COL: Insecta > Blattodea
+Neopanorpinae # iNat: Mecoptera > Panorpidae
+Neoperlinae # COL: synonym of Perlidae (Plecoptera)
+Neoperlini # COL: Plecoptera > Perlidae
+Neopetaliidae # COL: Insecta > Odonata
+Neophyidae # COL: Insecta > Odonata
+Neopsyllinae # COL: Siphonaptera > Ctenophthalmidae
+Neopsyllini # COL: Siphonaptera > Ctenophthalmidae
+Neorthroblattinidae # COL: Insecta > Blattodea
+Neotyphloceratini # COL: Siphonaptera > Ctenophthalmidae
+Nepiomorphinae # COL: Psocodea > Elipsocidae
+Neraphidiidae # COL: Insecta > Cnemidolestida
+Nesameletidae # COL: Insecta > Ephemeroptera
+Nesogastrinae # COL: Dermaptera > Spongiphoridae
+Nesoleontini # ITIS: Neuroptera > Myrmeleontidae
+Nestorembiinae # COL: Embioptera > Alexarasniidae
+Neuroleontina # ITIS: Neuroptera > Myrmeleontidae
+Neuroptera # COL: Arthropoda > Insecta
+Neurosemidae # COL: Insecta > Permopsocida
+Neurostigmatidae # COL: synonym of Epipsocidae (Psocodea)
+Nevorthidae # ALF: Insecta > Neuroptera
+Nevorthiformia # ALF: Insecta > Neuroptera
+Nevrorthidae # COL: Insecta > Neuroptera
+Nevrorthiformia # ITIS: Insecta > Neuroptera
+Nicoletiadae # COL: synonym of Nicoletiidae (Zygentoma)
+Nicoletiidae # COL: Insecta > Zygentoma
+Nicoletiinae # COL: Zygentoma > Nicoletiidae
+Nilomantini # COL: Mantodea > Nanomantidae
+Nocticolidae # COL: Insecta > Blattodea
+Nocticolinae # COL: Blattodea > Nocticolidae
+Nosybinae # ITIS: Neuroptera > Berothidae
+Nothancylini # iNat: Neuroptera > Chrysopidae
+Nothochrysinae # ITIS: Neuroptera > Chrysopidae
+Notiobiellinae # ITIS: Neuroptera > Hemerobiidae
+Notolamprini # COL: synonym of Poroblattini (Blattodea)
+Notoligotomidae # COL: Insecta > Embioptera
+Notoligotominae # COL: Embioptera > Notoligotomidae
+Notonemouridae # COL: Insecta > Plecoptera
+Notonemourinae # COL: Plecoptera > Notonemouridae
+Notoptera # COL: Arthropoda > Insecta
+Nuglerina # ITIS: Neuroptera > Myrmeleontidae
+Nugonioneuridae # IRMNG: Insecta > Protorthoptera
+Nycteridopsyllini # COL: Siphonaptera > Ischnopsyllidae
+Nyctiboridae # COL: Insecta > Blattodea
+Nyctiborinae # ITIS: synonym of Nyctiboridae (Blattodea)
+Nyctoborinae # not found in ChecklistBank
+Nymphidae # COL: Insecta > Neuroptera
+Nymphinae # PBDB: Neuroptera > Nymphidae
+Obina # ITIS: Neuroptera > Myrmeleontidae
+Obrimi # COL: synonym of Obrimini (Phasmida)
+Obriminae # COL: Phasmida > Heteropterygidae
+Obrimini # COL: Phasmida > Heteropterygidae
+Ocelliidae # COL: Insecta > Dermaptera
+Ocnophilini # COL: synonym of Oreophoetini (Phasmida)
+Odonata # COL: Arthropoda > Insecta
+Odontotermitini # COL: synonym of Macrotermitinae (Blattodea)
+Oecanthoperlidae # COL: Insecta > Notoptera
+Ohmellina # iNat: Raphidioptera > Raphidiidae
+Olidae # COL: Insecta > Blattodea
+Oligembiidae # COL: synonym of Teratembiidae (Embioptera)
+Oligoneuriellini # iNat: Ephemeroptera > Oligoneuriidae
+Oligoneuriidae # COL: Insecta > Ephemeroptera
+Oligoneuriinae # PBDB: Ephemeroptera > Oligoneuriidae
+Oligoneuriini # iNat: Ephemeroptera > Oligoneuriidae
+Oligonychina # COL: Mantodea > Thespidae
+Oligonychini # COL: Mantodea > Thespidae
+Oligotomidae # COL: Insecta > Embioptera
+Oligotomorpha # PBDB: Insecta > Embioptera
+Omomantinae # COL: Mantodea > Mantidae
+Oniscigastridae # COL: Insecta > Ephemeroptera
+Onychargiinae # COL: Odonata > Platycnemididae
+Opisthocosmiinae # COL: Dermaptera > Forficulidae
+Oreophoetini # COL: Phasmida > Diapheromeridae
+Oreopsocini # COL: synonym of Ptyctini (Psocodea)
+Orkrasomeria # COL: Insecta > Blattodea
+Ornicholacinae # COL: Psocodea > Heptapsogastridae
+Ornithophagini # COL: Siphonaptera > Leptopsyllidae
+Orothripidae # iNat: Insecta > Thysanoptera
+Orthoderellina # COL: Mantodea > Photinaidae
+Orthoderinae # COL: Mantodea > Mantidae
+Oryctoblattinidae # GBIF: synonym of Blattinopsidae (Paoliida)
+Osculotinae # COL: Psocodea > Goniodidae
+Osmylidae # COL: Insecta > Neuroptera
+Osmylinae # ITIS: Neuroptera > Osmylidae
+Osmylitidae # COL: Insecta > Neuroptera
+Osmylopsychopidae # COL: Insecta > Neuroptera
+Otomantini # COL: Mantodea > Hymenopodidae
+Oulopterygidae # COL: Insecta > Blattodea
+Oxyelaeini # COL: Mantodea > Eremiaphilidae
+Oxyhaloinae # COL: Blattodea > Blaberidae
+Oxyhaloini # COL: Blattodea > Blaberidae
+Oxyopsidini # COL: Mantodea > Mantidae
+Oxyothespinae # COL: Mantodea > Toxoderidae
+Oxyothespini # COL: Mantodea > Toxoderidae
+Oxypilinae # COL: Mantodea > Hymenopodidae
+Oxypilini # COL: Mantodea > Hymenopodidae
+Pabuonqedidae # COL: Insecta > Blattodea
+Pachylembiinae # COL: Embioptera > Archembiidae
+Pachymorphae # COL: synonym of Pachymorphinae (Phasmida)
+Pachymorphinae # COL: Phasmida > Phasmatidae
+Pachymorphini # COL: Phasmida > Phasmatidae
+Pachytroctetae # COL: Insecta > Psocodea
+Pachytroctidae # COL: Insecta > Psocodea
+Pachytroctinae # COL: Psocodea > Pachytroctidae
+Pachytylopsidae # COL: Arthropoda > Insecta
+Paedembiamorpha # iNat: Insecta > Embioptera
+Paedembiidae # COL: Insecta > Embioptera
+Palaemnematinae # COL: Odonata > Platystictidae
+Palaeocixiidae # COL: Insecta > Notoptera
+Palaeodictyoptera # COL: Arthropoda > Insecta
+Palaeoleontidae # COL: Insecta > Neuroptera
+Palaeomanteida # SF Miscellaneous Insecta: Insecta
+Palaeomantidae # COL: Insecta > Miomoptera
+Palaeonemouridae # COL: Insecta > Plecoptera
+Palaeoperlidae # COL: Insecta > Plecoptera
+Palaeopterina # SF Miscellaneous Insecta: Insecta
+Palembiodea # COL: synonym of Alexarasniinae (Embioptera)
+Palingeniidae # COL: Insecta > Ephemeroptera
+Palophinae # COL: Phasmida > Diapheromeridae
+Palophini # COL: Phasmida > Diapheromeridae
+Palparidiini # ITIS: Neuroptera > Myrmeleontidae
+Palparinae # ITIS: Neuroptera > Myrmeleontidae
+Palparini # ITIS: Neuroptera > Myrmeleontidae
+Palpotarsa # ITIS: Insecta > Ephemeroptera
+Panchaetothripinae # thrips subfamily (Thysanoptera); COL: Thysanoptera > Thripidae
+Panchlorinae # COL: Blattodea > Blaberidae
+Pandermaptera # COL: synonym of Dermaptera (Insecta)
+Panesthiinae # COL: Blattodea > Blaberidae
+Panfiloviidae # COL: Insecta > Neuroptera
+Pannota # ITIS: Insecta > Ephemeroptera
+Panorpidae # COL: Insecta > Mecoptera
+Panorpinae # PBDB: Mecoptera > Panorpidae
+Panorpodidae # COL: Insecta > Mecoptera
+Panorpoidea # PBDB: Insecta > Mecoptera
+Panorthoptera # COL: Arthropoda > Insecta
+Panthysanura # COL: synonym of Zygentoma (Insecta)
+Paoliida # IRMNG: Arthropoda > Insecta
+Paoliidae # IRMNG: Insecta > Paoliida
+Parablepharini # COL: Mantodea > Hymenopodidae
+Parabrodiidae # IRMNG: Insecta > Diaphanopterodea
+Paracaeciliidae # COL: Insecta > Psocodea
+Paracaeciliinae # ITIS: Psocodea > Caeciliusidae
+Paradermaptera # COL: synonym of Apachyidae (Dermaptera)
+Paragripopteryginae # COL: synonym of Gripopteryginae (Plecoptera)
+Parakseneuridae # COL: Insecta > Neuroptera
+Paraleptyniini # COL: Phasmida > Heteronemiidae
+Paralogidae # COL: Insecta > Meganisoptera
+Paramantina # COL: Mantodea > Mantidae
+Paramantini # COL: Mantodea > Mantidae
+Paramesopsocidae # COL: synonym of Electrentomidae (Psocodea)
+Paranauphoetinae # COL: Blattodea > Blaberidae
+Paranauphoetini # COL: synonym of Paranauphoetinae (Blattodea)
+Paraneopsyllini # COL: Siphonaptera > Ctenophthalmidae
+Paranotonemourinae # COL: Plecoptera > Notonemouridae
+Paraoxypilina # COL: Mantodea > Nanomantidae
+Paraoxypilini # COL: Mantodea > Nanomantidae
+Paraperlinae # COL: Plecoptera > Chloroperlidae
+Paraperlini # COL: synonym of Paraperlinae (Plecoptera)
+Paraphenopteridae # COL: synonym of Epideigmatidae (Notoptera)
+Parapriscinae # COL: Notoptera > Lemmatophoridae
+Paraprisopodini # COL: Phasmida > Pseudophasmatidae
+Parapsocida # COL: Insecta > Psocodea
+Parapsyllinae # COL: Siphonaptera > Rhopalopsyllidae
+Parapsyllini # COL: Siphonaptera > Rhopalopsyllidae
+Pararchipsocinae # COL: Psocodea > Archipsocidae
+Parasialidae # COL: Insecta > Megaloptera
+Parasoinae # COL: Psocodea > Lepidopsocidae
+Parathespinae # COL: Mantodea > Eremiaphilidae
+Paraxeninae # ITIS: Strepsiptera > Stylopidae
+Parcoblattini # COL: Blattodea > Blattellidae
+Parelmoidae # IRMNG: Insecta > Diaphanopterodea
+Parisolabidae # COL: synonym of Parisolabidinae (Dermaptera)
+Parisolabidinae # COL: Dermaptera > Anisolabididae
+Parisolabinae # COL: synonym of Parisolabidinae (Dermaptera)
+Parmapteridae # COL: Insecta > Cnemidolestida
+Parmapterina # COL: Insecta > Cnemidolestida
+Paruraliidae # GBIF: Insecta > Diaphanopterodea
+Pastranaiini # iNat: Neuroptera > Nemopteridae
+Pecaroecidae # COL: Insecta > Psocodea
+Pedicinidae # COL: Insecta > Psocodea
+Pediculidae # COL: Insecta > Psocodea
+Peltoperlidae # COL: Insecta > Plecoptera
+Peltoperlinae # COL: Plecoptera > Peltoperlidae
+Pentaphlebiidae # COL: Insecta > Odonata
+Penturoperlidae # COL: synonym of Austroperlidae (Plecoptera)
+Pericaeciliina # COL: Psocodea > Caeciliusidae
+Periclystina # ITIS: Neuroptera > Myrmeleontidae
+Pericominae # COL: Dermaptera > Spongiphoridae
+Perientominae # COL: Psocodea > Lepidopsocidae
+Perilestidae # COL: Insecta > Odonata
+Periplanetinae # NCBI: synonym of Blattinae (Blattodea)
+Peripsocidae # COL: Insecta > Psocodea
+Perisphaeridae # COL: synonym of Blaberidae (Blattodea)
+Perisphaeriinae # ITIS: synonym of Perisphaerinae (Blattodea)
+Perisphaerinae # COL: Blattodea > Blaberidae
+Perlamantinae # COL: Mantodea > Amorphoscelidae
+Perlapsocidae # COL: Insecta > Plecoptera
+Perlaria # GBIF: synonym of Plecoptera (Insecta)
+Perlariae # COL: synonym of Perloidea (Insecta)
+Perlarides # GBIF: synonym of Plecoptera (Insecta)
+Perlariopseidae # COL: Insecta > Plecoptera
+Perlestinae # COL: synonym of Acroneuriinae (Plecoptera)
+Perlida # GBIF: synonym of Plecoptera (Insecta)
+Perlidae # COL: Insecta > Plecoptera
+Perlides # GBIF: synonym of Plecoptera (Insecta)
+Perlina # GBIF: synonym of Plecoptera (Insecta)
+Perlinae # COL: Plecoptera > Perlidae
+Perlini # COL: Plecoptera > Perlidae
+Perlites # GBIF: synonym of Plecoptera (Insecta)
+Perlodidae # COL: Insecta > Plecoptera
+Perlodinae # COL: Plecoptera > Perlodidae
+Perlodini # COL: Plecoptera > Perlodidae
+Perloidea # COL: Insecta > Plecoptera
+Perlopseidae # COL: Insecta > Plecoptera
+Perlopsididae # COL: synonym of Perlopseidae (Plecoptera)
+Permelytridae # COL: Insecta > Dermaptera
+Permembiidae # COL: Insecta > Notoptera
+Permembiinae # COL: Notoptera > Permembiidae
+Permithonidae # COL: Insecta > Neuroptera
+Permoberothidae # COL: Insecta > Glosselytrodea
+Permoblattininae # COL: Blattodea > Spiloblattinidae
+Permocapniidae # COL: synonym of Tillyardembiidae (Cnemidolestida)
+Permofulgorinae # COL: synonym of Permofulgoridae (Dermaptera)
+Permopectinidae # COL: Insecta > Eoblattida
+Permophilidae # COL: Insecta > Dermaptera
+Permopsocida # COL: Arthropoda > Insecta
+Permopsocidae # COL: Insecta > Permopsocida
+Permosialidae # IRMNG: Insecta > Miomoptera
+Permotermopsidae # COL: Insecta > Eoblattida
+Permothemidae # COL: Insecta > Palaeodictyoptera
+Permulidae # COL: synonym of Permotermopsidae (Eoblattida)
+Perspicuusoperlidae # COL: Insecta > Plecoptera
+Petaluridae # COL: Insecta > Odonata
+Petaluroidea # COL: Insecta > Odonata
+Petrobiellinae # COL: Archaeognatha > Machilidae
+Petroperlidae # COL: Insecta > Plecoptera
+Petroperlinae # COL: synonym of Petroperlidae (Plecoptera)
+Phalacropsyllini # COL: Siphonaptera > Ctenophthalmidae
+Phalcini # COL: Phasmida > Bacillidae
+Phanerognatha # COL: synonym of Zygentoma (Insecta)
+Pharnaciini # COL: Phasmida > Phasmatidae
+Phasmatidae # COL: Insecta > Phasmida
+Phasmatinae # COL: Phasmida > Phasmatidae
+Phasmatini # COL: Phasmida > Phasmatidae
+Phasmatodea # ITIS: synonym of Phasmida (Insecta)
+Phasmatoptera # ITIS: synonym of Phasmida (Insecta)
+Phasmida # COL: Arthropoda > Insecta
+Phasmidae # COL: synonym of Phasmatidae (Phasmida)
+Phasminae # COL: synonym of Phasmatinae (Phasmida)
+Phenopteridae # COL: synonym of Epideigmatidae (Notoptera)
+Phibalosomini # COL: synonym of Diapheromerinae (Phasmida)
+Philobasominae # COL: synonym of Diapheromerinae (Phasmida)
+Philogangidae # COL: Insecta > Odonata
+Philogangoidea # COL: Insecta > Odonata
+Philogeniidae # COL: Insecta > Odonata
+Philopteridae # COL: Insecta > Psocodea
+Philopterina # COL: Psocodea > Philopteridae
+Philopterinae # COL: Psocodea > Philopteridae
+Philopteroidea # COL: Insecta > Psocodea
+Philosinidae # COL: Insecta > Odonata
+Philotarsetae # COL: Insecta > Psocodea
+Philotarsidae # COL: Insecta > Psocodea
+Philotarsinae # COL: Psocodea > Philotarsidae
+Phlaeothripidae # thrips family (Thysanoptera: Phlaeothripidae); COL: Insecta > Thysanoptera
+Phlaeothripinae # thrips subfamily (Thysanoptera: Phlaeothripidae); COL: Thysanoptera > Phlaeothripidae
+Phoberoblattidae # COL: synonym of Gyroblattidae (Blattodea)
+Phoraspidini # COL: Blattodea > Blaberidae
+Photinaidae # COL: Insecta > Mantodea
+Photinaina # COL: Mantodea > Photinaidae
+Photinainae # COL: Mantodea > Photinaidae
+Photinaini # COL: Mantodea > Photinaidae
+Photiomantinae # COL: Mantodea > Photinaidae
+Phthanoxenidae # COL: Insecta > Strepsiptera
+Phthiraptera # COL: Insecta > Psocodea
+Phylliidae # COL: Insecta > Phasmida
+Phylliinae # COL: Phasmida > Phylliidae
+Phylliini # COL: Phasmida > Phylliidae
+Phyllioidea # COL: Insecta > Phasmida
+Phyllocraniinae # COL: Mantodea > Hymenopodidae
+Phyllodromiiidae # COL: synonym of Blattellidae (Blattodea)
+Phyllothelyinae # COL: Mantodea > Hymenopodidae
+Phyllothelyini # COL: Mantodea > Hymenopodidae
+Phyloblattidae # COL: Insecta > Blattodea
+Phyloblattoidea # COL: Insecta > Blattodea
+Physconellinae # COL: Psocodea > Heptapsogastridae
+Physconelloidinae # COL: Psocodea > Goniodidae
+Physogastrinae # COL: synonym of Ramamurthiinae (Dermaptera)
+Physostomidae # COL: synonym of Ricinidae (Psocodea)
+Pinaconotini # COL: Blattodea > Blaberidae
+Pinideliidae # COL: Insecta > Cnemidolestida
+Pisciforma # ITIS: Insecta > Ephemeroptera
+Placoda # GBIF: synonym of Dermaptera (Insecta)
+Placolabidinae # COL: synonym of Anisolabidinae (Dermaptera)
+Planelytridae # COL: Insecta > Dermaptera
+Planipennia # ITIS: synonym of Neuroptera (Insecta)
+Platycnemididae # COL: Insecta > Odonata
+Platycnemidinae # COL: Odonata > Platycnemididae
+Platycraninae # COL: Phasmida > Phasmatidae
+Platycranini # COL: Phasmida > Phasmatidae
+Platyembiinae # COL: Embioptera > Anisembiidae
+Platylabiinae # COL: Dermaptera > Anisolabididae
+Platyperlidae # COL: Insecta > Plecoptera
+Platystictidae # COL: Insecta > Odonata
+Platystictinae # COL: Odonata > Platystictidae
+Platystictoidea # COL: Insecta > Odonata
+Plecoptera # COL: Arthropoda > Insecta
+Plectopterini # COL: Blattodea > Pseudophyllodromiidae
+Plesioblattogryllidae # COL: synonym of Blattogryllidae (Eoblattida)
+Plesiodermaptera # COL: synonym of Labiduroidea (Insecta)
+Pliotermitidae # GBIF: Insecta > Blattodea
+Pliotermitinae # COL: synonym of Mastotermitidae (Blattodea)
+Podolestinae # COL: Odonata > Argiolestidae
+Poeciloderrhini # COL: Blattodea > Blaberidae
+Pogonogasterina # COL: Mantodea > Thespidae
+Poinarembiini # COL: Embioptera > Anisembiidae
+Polycreagridae # COL: Insecta > Palaeodictyoptera
+Polygenini # COL: Siphonaptera > Rhopalopsyllidae
+Polymitarcyidae # COL: Insecta > Ephemeroptera
+Polymitarcyinae # iNat: Ephemeroptera > Polymitarcyidae
+Polypagiens # COL: synonym of Corydiidae (Blattodea)
+Polyphagidae # COL: synonym of Corydiidae (Blattodea)
+Polyphaginae # COL: synonym of Corydiinae (Blattodea)
+Polyphagini # COL: Blattodea > Corydiidae
+Polyphagoidea # COL: synonym of Corydioidea (Insecta)
+Polyplacidae # COL: Insecta > Psocodea
+Polypsocidae # ITIS: synonym of Amphipsocidae (Psocodea)
+Polypsocini # COL: Psocodea > Amphipsocidae
+Polyspilotina # COL: Mantodea > Mantidae
+Polystoechotidae # ITIS: synonym of Ithonidae (Neuroptera)
+Polythoridae # COL: Insecta > Odonata
+Polythoroidea # COL: Insecta > Odonata
+Polyzosteriinae # COL: Blattodea > Blattidae
+Polyzosteriini # COL: Blattodea > Blattidae
+Ponopterixidae # COL: Insecta > Blattodea
+Popinae # COL: Mantodea > Deroplatyidae
+Popini # COL: Mantodea > Deroplatyidae
+Poribiini # COL: Siphonaptera > Ischnopsyllidae
+Porisminae # iNat: Neuroptera > Osmylidae
+Poroblattini # COL: Blattodea > Blaberidae
+Poroblattinidae # COL: Insecta > Blattodea
+Porotermitinae # COL: Blattodea > Stolotermitidae
+Porrerina # ITIS: Neuroptera > Myrmeleontidae
+Potamanthidae # COL: Insecta > Ephemeroptera
+Potamanthoidea # ITIS: Insecta > Ephemeroptera
+Praemachilidae # COL: synonym of Machilidae (Archaeognatha)
+Praemachilinae # COL: synonym of Machilidae (Archaeognatha)
+Prexaspini # COL: Phasmida > Pseudophasmatidae
+Prionoglaridetae # COL: Insecta > Psocodea
+Prionoglarididae # COL: Insecta > Psocodea
+Prionoglaridinae # COL: Psocodea > Prionoglarididae
+Prionoglaridini # COL: Psocodea > Prionoglarididae
+Priscaenigmatidae # COL: Insecta > Raphidioptera
+Priscagrionidae # COL: Insecta > Odonata
+Priscagrionoidea # COL: Insecta > Odonata
+Prisomerinae # COL: synonym of Lonchodinae (Phasmida)
+Prisopodidae # COL: Insecta > Phasmida
+Prisopodinae # COL: Phasmida > Prisopodidae
+Prisopodini # COL: Phasmida > Prisopodidae
+Probnidae # COL: Insecta > Notoptera
+Probnisidae # COL: synonym of Probnidae (Notoptera)
+Prochoropteridae # IRMNG: Insecta > Diaphanopterodea
+Prodacnodinae # COL: Dermaptera > Pygidicranidae
+Proedischiidae # COL: synonym of Cnemidolestidae (Cnemidolestida)
+Prohemerobiidae # COL: Insecta > Neuroptera
+Projectothripidae # iNat: Insecta > Thysanoptera
+Prolabisciinae # COL: synonym of Prolabiscinae (Dermaptera)
+Prolabiscinae # COL: Dermaptera > Pygidicranidae
+Promirotermitinae # COL: Blattodea > Termitidae
+Pronemouridae # COL: Insecta > Plecoptera
+Propsocinae # COL: Psocodea > Elipsocidae
+Prorhinotermitinae # COL: Blattodea > Psammotermitidae
+Prosopistomatidae # COL: Insecta > Ephemeroptera
+Prosopistomatoidea # ITIS: synonym of Baetiscidae (Ephemeroptera)
+Protagrionidae # COL: Insecta > Palaeodictyoptera
+Protanoplura # COL: Insecta > Psocodea
+Protelencholacidae # ITIS: synonym of Elenchidae (Strepsiptera)
+Protelytridae # COL: Insecta > Dermaptera
+Protelytrina # COL: synonym of Protelytroptera (Insecta)
+Protelytroidea # COL: Insecta > Dermaptera
+Protelytroptera # COL: Insecta > Dermaptera
+Protembiidae # COL: Insecta > Cnemidolestida
+Protobiellinae # iNat: Neuroptera > Berothidae
+Protoblattinae # COL: synonym of Protoblattinidae (Reculida)
+Protoblattinidae # COL: Insecta > Reculida
+Protoblattoidea # COL: Insecta > Blattodea
+Protocoleidae # COL: Insecta > Dermaptera
+Protodermaptera # COL: Insecta > Dermaptera
+Protodiplateidae # COL: synonym of Protodiplatyidae (Dermaptera)
+Protodiplatidae # COL: synonym of Protodiplatyidae (Dermaptera)
+Protodiplatyidae # COL: Insecta > Dermaptera
+Protodiplatyoidea # COL: Insecta > Dermaptera
+Protogyropinae # COL: Psocodea > Gyropidae
+Protohamitermitinae # COL: Blattodea > Termitidae
+Protohymenidae # COL: Insecta > Megasecoptera
+Protolabidinae # COL: synonym of Prolabiscinae (Dermaptera)
+Protolestidae # COL: Insecta > Odonata
+Protolindeniidae # PBDB: Insecta > Odonata
+Protoneuridae # COL: Insecta > Odonata
+Protoperlidae # COL: Insecta > Notoptera
+Protoperlina # COL: Insecta > Notoptera
+Protophasmatidae # COL: Insecta > Eoblattida
+Protophasmida # COL: synonym of Protophasmatidae (Eoblattida)
+Protophasmidae # COL: synonym of Protophasmatidae (Eoblattida)
+Protoplectrini # iNat: Neuroptera > Myrmeleontidae
+Protorthoptera # IRMNG: Arthropoda > Insecta
+Protosmylinae # PBDB: Neuroptera > Osmylidae
+Protostictinae # COL: Odonata > Platystictidae
+Protothysanura # COL: synonym of Archaeognatha (Insecta)
+Protoxenidae # COL: Insecta > Strepsiptera
+Protrinemuridae # COL: Insecta > Zygentoma
+Protrinemurinae # COL: synonym of Protrinemuridae (Zygentoma)
+Protroctopsocidae # COL: Insecta > Psocodea
+Prygidae # COL: Insecta > Cnemidolestida
+Psalinae # COL: synonym of Anisolabidinae (Dermaptera)
+Psammotermitidae # COL: Insecta > Blattodea
+Psammotermitinae # COL: Blattodea > Psammotermitidae
+Pseudempusina # COL: Mantodea > Deroplatyidae
+Pseudimarini # ITIS: Neuroptera > Myrmeleontidae
+Pseudironidae # ITIS: Insecta > Ephemeroptera
+Pseudocaeciliidae # COL: Insecta > Psocodea
+Pseudocaeciliinae # COL: Psocodea > Pseudocaeciliidae
+Pseudocorduliidae # COL: Insecta > Odonata
+Pseudocreobotrina # COL: Mantodea > Hymenopodidae
+Pseudodatamini # COL: Phasmida > Bacillidae
+Pseudolestidae # COL: Insecta > Odonata
+Pseudomantina # COL: Mantodea > Mantidae
+Pseudomenoponidae # COL: Insecta > Psocodea
+Pseudomicrotermitinae # COL: synonym of Foraminitermitinae (Blattodea)
+Pseudomiopteryginae # COL: Mantodea > Thespidae
+Pseudomopinae # COL: Blattodea > Blattellidae
+Pseudomopini # COL: Blattodea > Blattellidae
+Pseudophasmatidae # COL: Insecta > Phasmida
+Pseudophasmatinae # COL: Phasmida > Pseudophasmatidae
+Pseudophasmatini # COL: Phasmida > Pseudophasmatidae
+Pseudophasmatoidea # COL: Insecta > Phasmida
+Pseudophasminae # COL: synonym of Pseudophasmatinae (Phasmida)
+Pseudophyllodromiidae # COL: Insecta > Blattodea
+Pseudophyllodromiinae # COL: Blattodea > Pseudophyllodromiidae
+Pseudophyllodromiini # COL: Blattodea > Pseudophyllodromiidae
+Pseudopogonogastrinae # COL: Mantodea > Thespidae
+Pseudopsocinae # COL: Psocodea > Elipsocidae
+Pseudopulicidae # COL: Insecta > Siphonaptera
+Pseudostigmatidae # ITIS: Insecta > Odonata
+Pseudoxyopsidini # COL: Mantodea > Mantidae
+Psilopsocidae # COL: Insecta > Psocodea
+Psocathropetae # ITIS: Insecta > Psocodea
+Psocetae # COL: Insecta > Psocodea
+Psocidae # COL: Insecta > Psocodea
+Psocidiidae # COL: Insecta > Permopsocida
+Psocina # GBIF: synonym of Psocodea (Insecta)
+Psocinae # COL: Psocodea > Psocidae
+Psocini # COL: Psocodea > Psocidae
+Psocodea # COL: Arthropoda > Insecta
+Psocomorpha # COL: Insecta > Psocodea
+Psocoptera # ITIS: synonym of Psocodea (Insecta)
+Psoquillidae # COL: Insecta > Psocodea
+Psoropteridae # COL: Insecta > Cnemidolestida
+Psychopsidae # COL: Insecta > Neuroptera
+Psychopsinae # PBDB: synonym of Psychopsidae (Neuroptera)
+Psychopsoidea # PBDB: Insecta > Neuroptera
+Psychroptilidae # COL: Insecta > Palaeodictyoptera
+Psyllipsocetae # COL: Insecta > Psocodea
+Psyllipsocidae # COL: Insecta > Psocodea
+Ptenopsilinae # COL: Psocodea > Amphipsocidae
+Pteridomylacridae # COL: Insecta > Blattodea
+Pterinoxylini # COL: Phasmida > Phasmatidae
+Pteronarcellini # ITIS: Plecoptera > Pteronarcyidae
+Pteronarcidae # COL: synonym of Pteronarcyidae (Plecoptera)
+Pteronarcinae # COL: synonym of Pteronarcyidae (Plecoptera)
+Pteronarcini # COL: synonym of Pteronarcyidae (Plecoptera)
+Pteronarcoidea # COL: synonym of Pteronarcyoidea (Insecta)
+Pteronarcyidae # COL: Insecta > Plecoptera
+Pteronarcyinae # ITIS: Plecoptera > Pteronarcyidae
+Pteronarcyini # ITIS: Plecoptera > Pteronarcyidae
+Pteronarcyoidea # COL: Insecta > Plecoptera
+Pthiridae # COL: Insecta > Psocodea
+Ptilocerembiidae # COL: Insecta > Embioptera
+Ptiloneuridae # COL: Insecta > Psocodea
+Ptilothici # COL: synonym of Lepismatinae (Zygentoma)
+Ptyctini # COL: Psocodea > Psocidae
+Pulicidae # COL: Insecta > Siphonaptera
+Pulicinae # COL: Siphonaptera > Pulicidae
+Pulicini # COL: Siphonaptera > Pulicidae
+Pulicoidea # COL: Insecta > Siphonaptera
+Pulicomorpha # COL: Insecta > Siphonaptera
+Pycnoscelinae # COL: Blattodea > Blaberidae
+Pygidicranidae # COL: Insecta > Dermaptera
+Pygidicraninae # COL: Dermaptera > Pygidicranidae
+Pygidicranoidea # COL: Insecta > Dermaptera
+Pygiopsyllidae # COL: Insecta > Siphonaptera
+Pygiopsylloidea # COL: Insecta > Siphonaptera
+Pygiopsyllomorpha # COL: Insecta > Siphonaptera
+Pygirhynchini # COL: Phasmida > Heteronemiidae
+Pyragrinae # COL: Dermaptera > Pygidicranidae
+Raaschiidae # COL: Insecta > Notoptera
+Rachementomidae # COL: synonym of Ideliidae (Eoblattida)
+Rafaelidae # COL: Arthropoda > Insecta
+Rallidentidae # COL: Insecta > Ephemeroptera
+Ramamurthiinae # COL: Dermaptera > Spongiphoridae
+Ramulini # COL: synonym of Clitumnini (Phasmida)
+Raphidiidae # COL: Insecta > Raphidioptera
+Raphidiina # iNat: Raphidioptera > Raphidiidae
+Raphidiinae # PBDB: Raphidioptera > Raphidiidae
+Raphidiini # iNat: Raphidioptera > Raphidiidae
+Raphidillina # iNat: Raphidioptera > Raphidiidae
+Raphidiodea # ITIS: synonym of Raphidioptera (Insecta)
+Raphidiomimidae # COL: Insecta > Blattodea
+Raphidiomimoidea # COL: Insecta > Blattodea
+Raphidioptera # COL: Arthropoda > Insecta
+Raptophasmatinae # COL: Notoptera > Mantophasmatidae
+Rasnalexiidae # COL: Insecta > Embioptera
+Ratemiidae # COL: Insecta > Psocodea
+Reculida # COL: Arthropoda > Insecta
+Reculidae # GBIF: Insecta > Reculoidea
+Reculoidea # GBIF: Arthropoda > Insecta
+Rhabdoblattellinae # COL: Blattodea > Blaberidae
+Rhachiberothidae # IRMNG: Insecta > Neuroptera
+Rhachiberothinae # PBDB: Neuroptera > Berothidae
+Rhadinopsyllinae # COL: Siphonaptera > Ctenophthalmidae
+Rhadinopsyllini # COL: Siphonaptera > Ctenophthalmidae
+Rhaphidiopsidae # IRMNG: Insecta > Diaphanopterodea
+Rhaphidioptera # ITIS: synonym of Raphidioptera (Insecta)
+Rhinotermitidae # COL: Insecta > Blattodea
+Rhinotermitinae # COL: synonym of Rhinotermitidae (Blattodea)
+Rhipidoblattinidae # COL: Insecta > Blattodea
+Rhipidolestidae # COL: Insecta > Odonata
+Rhipiphorothripidae # iNat: Insecta > Thysanoptera
+Rhipiphorothripoidea # iNat: Insecta > Thysanoptera
+Rhodomantini # COL: Mantodea > Mantidae
+Rhopalopsyllidae # COL: Insecta > Siphonaptera
+Rhopalopsyllinae # COL: Siphonaptera > Rhopalopsyllidae
+Rhopalopsyllini # COL: Siphonaptera > Rhopalopsyllidae
+Rhyacolabidinae # COL: synonym of Ancistrogastrinae (Dermaptera)
+Rhyacolabinae # COL: synonym of Ancistrogastrinae (Dermaptera)
+Rhynchophthirina # COL: Insecta > Psocodea
+Ricinidae # COL: Insecta > Psocodea
+Ricinoidea # COL: Insecta > Psocodea
+Rigattopteridae # GBIF: Insecta > Protorthoptera
+Rimanellidae # COL: Insecta > Odonata
+Rivetinidae # COL: Insecta > Mantodea
+Rivetininae # COL: Mantodea > Rivetinidae
+Rivetinini # COL: Mantodea > Rivetinidae
+Rohrthripidae # COL: Insecta > Thysanoptera
+Rothisilphini # COL: Blattodea > Blattidae
+Rudracinae # COL: synonym of Nesogastrinae (Dermaptera)
+Rudraxinae # COL: synonym of Nesogastrinae (Dermaptera)
+Sabulopsocidae # COL: Insecta > Psocodea
+Santanmantidae # COL: Insecta > Mantodea
+Sarcinatricinae # COL: synonym of Ancistrogastrinae (Dermaptera)
+Saucrosmylidae # COL: Insecta > Neuroptera
+Saurodectidae # COL: Insecta > Psocodea
+Saurophthiridae # COL: Insecta > Siphonaptera
+Saurophthiroidea # COL: Insecta > Siphonaptera
+Scapphodonta # ITIS: Insecta > Ephemeroptera
+Scelembiidae # COL: Insecta > Embioptera
+Scelembiinae # COL: Embioptera > Scelembiidae
+Schizocephalini # COL: Mantodea > Eremiaphilidae
+Schizomantodea # COL: Insecta > Mantodea
+Schizopechini # COL: Psocodea > Amphipsocidae
+Scolembiinae # COL: Embioptera > Anisembiidae
+Scopuridae # COL: Insecta > Plecoptera
+Scopuroidea # COL: synonym of Scopuridae (Plecoptera)
+Scytohymenidae # COL: Insecta > Megasecoptera
+Semenoviolidae # COL: Insecta > Dermaptera
+Semenoviolinae # COL: synonym of Semenoviolidae (Dermaptera)
+Semenovioloidea # COL: Insecta > Dermaptera
+Sensitibillini # COL: Psocodea > Prionoglarididae
+Senzillidae # COL: synonym of Leptoperlinae (Plecoptera)
+Sericothripinae # COL: Thysanoptera > Thripidae
+Serritermitidae # COL: Insecta > Blattodea
+Serritermitinae # COL: synonym of Serritermitidae (Blattodea)
+Setipalpia # COL: synonym of Perloidea (Insecta)
+Setisura # ITIS: synonym of Heptagenioidea (Insecta)
+Setosini # COL: Phasmida > Pseudophasmatidae
+Sharasialinae # PBDB: Megaloptera > Sialidae
+Sheimiinae # COL: Notoptera > Permembiidae
+Sialidae # COL: Insecta > Megaloptera
+Sialinae # PBDB: Megaloptera > Sialidae
+Siamoglaridini # COL: Psocodea > Prionoglarididae
+Siberioperlidae # COL: Insecta > Plecoptera
+Sibyllidae # mantis family (Mantodea); IRMNG: synonym of Hymenopodidae (Mantodea)
+Sibyllinae # COL: Mantodea > Hymenopodidae
+Sigmatoneurini # COL: Psocodea > Psocidae
+Silveirainae # iNat: Neuroptera > Psychopsidae
+Silvestrellatinae # COL: Zygentoma > Lepismatidae
+Sinembiidae # COL: Insecta > Embioptera
+Sinopalaeodermatidae # COL: synonym of Dermapteridae (Dermaptera)
+Sinostictinae # COL: Odonata > Platystictidae
+Siphlaenigmatidae # COL: Insecta > Ephemeroptera
+Siphlonuridae # COL: Insecta > Ephemeroptera
+Siphluridae # ITIS: synonym of Siphlonuridae (Ephemeroptera)
+Siphluriscidae # COL: Insecta > Ephemeroptera
+Siphonaptera # COL: Arthropoda > Insecta
+Sisyridae # COL: Insecta > Neuroptera
+Skaliciidae # COL: Insecta > Reculida
+Skendylinae # COL: Dermaptera > Forficulidae
+Socialidae # COL: Insecta > Blattodea
+Sojanoperidae # COL: Insecta > Hypoperlida
+Sojanoraphidiidae # COL: synonym of Protembiidae (Cnemidolestida)
+Solenoptilidae # COL: Insecta > Neuroptera
+Solumblattodea # COL: Insecta > Blattodea
+Solygiinae # COL: Mantodea > Miomantidae
+Somaphantidae # COL: Insecta > Psocodea
+Somaphantinae # COL: Psocodea > Somaphantidae
+Sophogrammatinae # PBDB: Neuroptera > Kalligrammatidae
+Sorellembiidae # COL: Insecta > Embioptera
+Sorellembiinae # COL: Embioptera > Scelembiidae
+Soyanopteridae # COL: Insecta > Eoblattida
+Spanioderidae # COL: Insecta > Cnemidolestida
+Sparattidae # COL: synonym of Sparattinae (Dermaptera)
+Sparattinae # COL: Dermaptera > Spongiphoridae
+Sparattini # COL: Dermaptera > Spongiphoridae
+Sparbarini # ITIS: Ephemeroptera > Caenidae
+Speleketorinae # COL: Psocodea > Prionoglarididae
+Speleketorini # COL: Psocodea > Prionoglarididae
+Spermozorinae # COL: Zoraptera > Zorotypidae
+Sphaeropsocetae # COL: Insecta > Psocodea
+Sphaeropsocidae # ITIS: Insecta > Psocodea
+Sphaerotermitinae # COL: Blattodea > Termitidae
+Sphecopteridae # COL: Insecta > Megasecoptera
+Sphecorydaloididae # COL: Insecta > Megasecoptera
+Spilapteridae # COL: Insecta > Palaeodictyoptera
+Spilapteridea # COL: Insecta > Palaeodictyoptera
+Spiloblattinidae # COL: Insecta > Blattodea
+Spiloblattininae # COL: Blattodea > Spiloblattinidae
+Spilopsyllinae # COL: Siphonaptera > Pulicidae
+Spilopsyllini # COL: Siphonaptera > Pulicidae
+Spilosmylinae # PBDB: Neuroptera > Osmylidae
+Spinomantodea # COL: Insecta > Mantodea
+Spiralizoridae # COL: Insecta > Zoraptera
+Spiralizorinae # COL: Zoraptera > Spiralizoridae
+Spongiphoridae # COL: Insecta > Dermaptera
+Spongiphorinae # COL: Dermaptera > Spongiphoridae
+Spurostigmatidae # COL: Insecta > Psocodea
+Stagmatopterinae # TAXREF: synonym of Stagmatopterini (Mantodea)
+Stagmatopterini # COL: Mantodea > Mantidae
+Stagmomantinae # COL: Mantodea > Mantidae
+Stagmomantini # COL: Mantodea > Mantidae
+Stegopterinae # COL: synonym of Geinitziinae (Reculida)
+Stenelytridae # COL: synonym of Labidelytridae (Dermaptera)
+Stenomantini # COL: Mantodea > Nanomantidae
+Stenoneuridae # COL: Insecta > Eoblattida
+Stenoneuritidae # COL: synonym of Epideigmatidae (Notoptera)
+Stenoperlinae # COL: Plecoptera > Eustheniidae
+Stenophyllinae # COL: Mantodea > Acanthopidae
+Stenophyllini # COL: Mantodea > Acanthopidae
+Stenoponiinae # COL: Siphonaptera > Ctenophthalmidae
+Stenopsocidae # COL: Insecta > Psocodea
+Stenosmylinae # ITIS: Neuroptera > Osmylidae
+Stenurothripidae # COL: Insecta > Thysanoptera
+Stenurothripoidea # iNat: Insecta > Thysanoptera
+Stephanacridini # COL: Phasmida > Phasmatidae
+Stephanocircidae # COL: Insecta > Siphonaptera
+Stephanocircidoidea # iNat: Insecta > Siphonaptera
+Stephanocircinae # COL: Siphonaptera > Stephanocircidae
+Stephanocircoidea # COL: Insecta > Siphonaptera
+Stereopteridae # COL: synonym of Euryptilonidae (Eoblattida)
+Sternopsyllini # COL: Siphonaptera > Ischnopsyllidae
+Stilbopteryginae # ITIS: Neuroptera > Myrmeleontidae
+Stilbopterygini # iNat: Neuroptera > Myrmeleontidae
+Stivaliidae # COL: Insecta > Siphonaptera
+Stolotermitidae # COL: Insecta > Blattodea
+Stolotermitinae # COL: Blattodea > Stolotermitidae
+Stonychopygiinae # COL: Dermaptera > Pygidicranidae
+Straeleniellidae # COL: Insecta > Palaeodictyoptera
+Stratocleinae # COL: Phasmida > Pseudophasmatidae
+Stratocleini # COL: Phasmida > Pseudophasmatidae
+Strephocladidae # IRMNG: Insecta > Protorthoptera
+Strephoneuridae # IRMNG: Insecta > Protorthoptera
+Strepsiptera # COL: Arthropoda > Insecta
+Strongylocotinae # COL: Psocodea > Heptapsogastridae
+Strongylopsalinae # COL: Dermaptera > Spongiphoridae
+Stylatopsocini # COL: Psocodea > Psocidae
+Styloperlidae # COL: Insecta > Plecoptera
+Styloperlinae # COL: synonym of Styloperlidae (Plecoptera)
+Stylopidae # COL: Insecta > Strepsiptera
+Stylopidia # ITIS: Insecta > Strepsiptera
+Stylopinae # ITIS: Strepsiptera > Stylopidae
+Stylotermitidae # COL: Insecta > Blattodea
+Stylotermitinae # COL: synonym of Stylotermitidae (Blattodea)
+Subioblattidae # COL: Insecta > Eoblattida
+Subnicoletiinae # COL: Zygentoma > Nicoletiidae
+Subulipalpia # COL: synonym of Perloidea (Insecta)
+Suhpalacsini # ITIS: Neuroptera > Ascalaphidae
+Supellini # COL: Blattodea > Pseudophyllodromiidae
+Suwalliini # COL: Plecoptera > Chloroperlidae
+Sylvabestiidae # COL: Insecta > Cnemidolestida
+Sylvaphlebiidae # COL: Insecta > Reculida
+Sylvardembiidae # COL: synonym of Protembiidae (Cnemidolestida)
+Sylviodidae # COL: synonym of Mesorthopteridae (Eoblattida)
+Sympherobiinae # ITIS: Neuroptera > Hemerobiidae
+Symphrasinae # ITIS: Neuroptera > Mantispidae
+Symplocini # COL: Blattodea > Blattellidae
+Synarmogidae # COL: Insecta > Palaeodictyoptera
+Synlestidae # COL: Insecta > Odonata
+Syntermitinae # COL: Blattodea > Termitidae
+Synthemistidae # COL: Insecta > Odonata
+Systellognatha # COL: Insecta > Plecoptera
+Taeniopterygidae # COL: Insecta > Plecoptera
+Taeniopteryginae # COL: Plecoptera > Taeniopterygidae
+Taeniostigmina # COL: Psocodea > Amphipsocidae
+Tagalopsocina # COL: Psocodea > Amphipsocidae
+Taiophlebiidae # COL: synonym of Protophasmatidae (Eoblattida)
+Tanytermitidae # COL: Insecta > Blattodea
+Tanzaniophasmatidae # COL: synonym of Tanzaniophasmatinae (Notoptera)
+Tanzaniophasmatinae # COL: Notoptera > Mantophasmatidae
+Tapinellinae # COL: Psocodea > Pachytroctidae
+Tarachininae # COL: Mantodea > Chroicopteridae
+Tarachinini # COL: Mantodea > Chroicopteridae
+Tarachodidae # mantis family (Mantodea); IRMNG: synonym of Eremiaphilidae (Mantodea)
+Tarachodina # COL: Mantodea > Eremiaphilidae
+Tarachodinae # COL: Mantodea > Eremiaphilidae
+Tarachodini # COL: Mantodea > Eremiaphilidae
+Tarachomantina # COL: Mantodea > Mantidae
+Tarwiniidae # COL: Insecta > Siphonaptera
+Tatocnemididae # COL: Insecta > Odonata
+Tatocnemidoidea # COL: Insecta > Odonata
+Tchirkovaeidae # COL: Insecta > Palaeodictyoptera
+Telactinopterygidae # COL: Insecta > Notoptera
+Teletisoptera # COL: Insecta > Blattodea
+Teloganellidae # COL: Insecta > Ephemeroptera
+Teloganodidae # COL: Insecta > Ephemeroptera
+Tenoderina # COL: Mantodea > Mantidae
+Tenoderinae # COL: Mantodea > Mantidae
+Tenoderini # COL: Mantodea > Mantidae
+Teratembiidae # COL: Insecta > Embioptera
+Terebrantia # ITIS: Insecta > Thysanoptera
+Termitidae # COL: Insecta > Blattodea
+Termitinae # termite subfamily (Blattodea: Isoptera); COL: Blattodea > Termitidae
+Termitogetonidae # IRMNG: Insecta > Blattodea
+Termitogetoninae # COL: Blattodea > Rhinotermitidae
+Termitoidae # COL: Insecta > Blattodea
+Termopsidae # COL: Insecta > Blattodea
+Termopsinae # COL: Blattodea > Termopsidae
+Teruelphasmini # COL: Phasmida > Phasmatidae
+Thaumapsyllinae # COL: Siphonaptera > Ischnopsyllidae
+Thaumatoneuridae # COL: Insecta > Odonata
+Thaumatoperlinae # COL: synonym of Eustheniinae (Plecoptera)
+Therameninae # COL: synonym of Obriminae (Phasmida)
+Thespidae # COL: Insecta > Mantodea
+Thespinae # COL: Mantodea > Thespidae
+Thespini # COL: Mantodea > Thespidae
+Thespoidea # PBDB: Insecta > Mantodea
+Thoracini # COL: Blattodea > Blaberidae
+Thoracotroctidae # COL: Insecta > Psocodea
+Thoracotroctinae # Wikidata: Psocoptera > Pachytroctidae
+Thorntoniellina # COL: Psocodea > Caeciliusidae
+Thoronysididae # IRMNG: Insecta > Protorthoptera
+Thripidae # thrips family (Thysanoptera); COL: Insecta > Thysanoptera
+Thripinae # thrips subfamily (Thysanoptera: Thripidae); COL: Thysanoptera > Thripidae
+Thripoidea # iNat: Insecta > Thysanoptera
+Thylacellinae # COL: Psocodea > Lepidopsocidae
+Thyrsophorinae # COL: Psocodea > Psocidae
+Thyrsophorini # COL: Psocodea > Psocidae
+Thysanoptera # thrips; COL: Arthropoda > Insecta
+Thysanoures # COL: synonym of Zygentoma (Insecta)
+Thysanura # COL: synonym of Zygentoma (Insecta)
+Thysanuradelphia # COL: synonym of Zygentoma (Insecta)
+Tillyardembiidae # COL: Insecta > Cnemidolestida
+Timematidae # COL: Insecta > Phasmida
+Timematinae # COL: Phasmida > Timematidae
+Timematini # COL: Phasmida > Timematidae
+Timematodea # COL: Insecta > Phasmida
+Timemidae # ITIS: synonym of Timematidae (Phasmida)
+Timeminae # COL: synonym of Timematinae (Phasmida)
+Tineomorphinae # COL: Psocodea > Amphientomidae
+Tisamenini # COL: synonym of Obrimini (Phasmida)
+Titanolabidinae # COL: Dermaptera > Anisolabididae
+Titanolabinae # COL: synonym of Titanolabidinae (Dermaptera)
+Tiviinae # TAXREF: Blattodea > Corydiidae
+Tiviini # COL: Blattodea > Corydiidae
+Tococladidae # COL: Insecta > Cnemidolestida
+Tologopteridae # COL: Insecta > Notoptera
+Tomiidae # COL: synonym of Chaulioditidae (Reculida)
+Toxoderidae # COL: Insecta > Mantodea
+Toxoderinae # COL: Mantodea > Toxoderidae
+Toxoderopsini # COL: Mantodea > Toxoderidae
+Toxomantina # COL: Mantodea > Toxoderidae
+Trachymantina # COL: Mantodea > Mantidae
+Triassothripidae # COL: Insecta > Thysanoptera
+Trichadenotecnini # COL: synonym of Ptyctini (Psocodea)
+Trichodectidae # COL: Insecta > Psocodea
+Trichodectinae # COL: Psocodea > Trichodectidae
+Trichodectoidea # COL: Insecta > Psocodea
+Tricholepidiidae # COL: Insecta > Zygentoma
+Trichomatinae # iNat: Neuroptera > Berothidae
+Trichophilopteridae # COL: Insecta > Psocodea
+Trichopsocidae # COL: Insecta > Psocodea
+Tricondylomimina # COL: Mantodea > Gonypetidae
+Tricorythidae # COL: Insecta > Ephemeroptera
+Tridactylophaginae # ITIS: Strepsiptera > Halictophagidae
+Trimenoponidae # COL: synonym of Gyropidae (Psocodea)
+Trimenoponinae # COL: Psocodea > Boopiidae
+Trimera # GBIF: synonym of Dermaptera (Insecta)
+Trinemura # COL: synonym of Archaeognatha (Insecta)
+Trinotonidae # COL: Insecta > Psocodea
+Triozocerinae # ITIS: Strepsiptera > Corioxenidae
+Triplura # COL: synonym of Zygentoma (Insecta)
+Tritopsyllini # COL: Siphonaptera > Ctenophthalmidae
+Troctomorpha # COL: Insecta > Psocodea
+Troctopsocidae # COL: Insecta > Psocodea
+Trogiidae # COL: Insecta > Psocodea
+Trogiomorpha # COL: Insecta > Psocodea
+Tropidoderi # COL: synonym of Tropidoderinae (Phasmida)
+Tropidoderinae # COL: Phasmida > Phasmatidae
+Tropidoderini # COL: Phasmida > Phasmatidae
+Tropidomantinae # COL: Mantodea > Nanomantidae
+Tropidomantini # COL: Mantodea > Nanomantidae
+Tryonicidae # COL: Insecta > Blattodea
+Tryonicinae # COL: Blattodea > Tryonicidae
+Tshekardominidae # COL: synonym of Protembiidae (Cnemidolestida)
+Tshekardoperlidae # COL: Insecta > Plecoptera
+Tuberculatocharacini # COL: Phasmida > Bacillidae
+Tubulifera # ITIS: Insecta > Thysanoptera
+Tungidae # COL: Insecta > Siphonaptera
+Tunguskapteridae # COL: Insecta > Reculida
+Turanodermatidae # COL: Insecta > Dermaptera
+Turanodermidae # COL: synonym of Turanodermatidae (Dermaptera)
+Turanoviidae # COL: Insecta > Dermaptera
+Turanoviinae # COL: synonym of Turanoviidae (Dermaptera)
+Tutricablattae # COL: synonym of Xylophagodea (Insecta)
+Tyrannophasmatini # COL: Notoptera > Mantophasmatidae
+Ululodini # ITIS: Neuroptera > Ascalaphidae
+Umenocoleidae # ITIS: Insecta > Blattodea
+Umenocoleoidea # ITIS: Insecta > Blattodea
+Uniclavinae # ITIS: Strepsiptera > Corioxenidae
+Uralopriscinae # COL: Notoptera > Lemmatophoridae
+Uralotermitidae # COL: Insecta > Notoptera
+Uropsyllini # COL: Siphonaptera > Lycopsyllidae
+Uzelothripidae # COL: Insecta > Thysanoptera
+Uzelothripoidea # iNat: Insecta > Thysanoptera
+Vandicinae # COL: Dermaptera > Spongiphoridae
+Vatina # COL: Mantodea > Mantidae
+Vatinae # COL: Mantodea > Mantidae
+Vatini # COL: Mantodea > Mantidae
+Velisopteridae # GBIF: Insecta > Diaphanopterodea
+Vermipsyllidae # COL: Insecta > Siphonaptera
+Vermipsylloidea # COL: Insecta > Siphonaptera
+Verophasmatodea # COL: synonym of Euphasmatodea (Insecta)
+Verticillicerini # ITIS: Neuroptera > Ascalaphidae
+Vietnamellidae # COL: Insecta > Ephemeroptera
+Visheriferidae # COL: synonym of Sheimiinae (Notoptera)
+Voltorina # ITIS: Neuroptera > Myrmeleontidae
+Vorkutiidae # COL: Insecta > Megasecoptera
+Wagnerinini # COL: Siphonaptera > Ctenophthalmidae
+Waoraniellini # COL: Psocodea > Lachesillidae
+Wenzellini # COL: Siphonaptera > Ctenophthalmidae
+Westwoodembiidae # COL: Insecta > Embioptera
+Xenidae # COL: Insecta > Strepsiptera
+Xeninae # COL: Strepsiptera > Stylopidae
+Xenoidea # COL: synonym of Xenidae (Strepsiptera)
+Xenopsyllinae # COL: Siphonaptera > Pulicidae
+Xenopsyllini # COL: Siphonaptera > Pulicidae
+Xerantherinae # COL: Phasmida > Anisacanthidae
+Xeroderinae # COL: Phasmida > Phasmatidae
+Xeroderini # COL: Phasmida > Phasmatidae
+Xerosomatinae # COL: Phasmida > Pseudophasmatidae
+Xerosomatini # COL: Phasmida > Pseudophasmatidae
+Xiphiopsyllidae # COL: Insecta > Siphonaptera
+Xylicini # COL: Phasmida > Bacillidae
+Xylobistinae # COL: synonym of Aschiphasmatinae (Phasmida)
+Xylobistini # COL: synonym of Aschiphasmatini (Phasmida)
+Xylophagodea # COL: Insecta > Blattodea
+Yuntapsocinae # COL: Psocodea > Elipsocidae
+Zachobiellinae # iNat: Neuroptera > Hemerobiidae
+Zelandoperlinae # COL: Plecoptera > Gripopterygidae
+Zelandoperlini # COL: Plecoptera > Gripopterygidae
+Zelandopsocinae # COL: Psocodea > Pseudocaeciliidae
+Zetoborinae # COL: Blattodea > Blaberidae
+Zigrasolabidinae # COL: Dermaptera > Labiduridae
+Zoraptera # COL: Arthropoda > Insecta
+Zorotypidae # COL: Insecta > Zoraptera
+Zorotypinae # COL: Zoraptera > Zorotypidae
+Zygentoma # COL: Arthropoda > Insecta
+Zygogrylloblattidae # COL: Insecta > Notoptera
+Zygophlebiinae # iNat: Neuroptera > Psychopsidae
+Zygoptera # COL: Insecta > Odonata

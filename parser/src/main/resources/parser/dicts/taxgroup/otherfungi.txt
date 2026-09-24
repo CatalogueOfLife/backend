@@ -1,174 +1,223 @@
-Acaulosporaceae
-Alphamycetaceae
-Ambisporaceae
-Ancylistaceae # entomophthoralean fungus family (Entomophthoromycota)
-Angulomycetaceae
-Aquamycetaceae
-Archaeosporaceae
-Archaeosporales
-Archaeosporomycetes
-Arizonaphlyctidaceae
-Asellariaceae
-Asellariales
-Asterophlyctaceae
-Backusellaceae
-Basidiobolaceae
-Basidiobolales
-Basidiobolomycetes
-Basidiobolomycota
-Blastocladiaceae
-Blastocladiales
-Blastocladiomyceta
-Blastocladiomycetes
-Blastocladiomycota
-Borealophlyctidaceae
-Calcarisporiellaceae
-Calcarisporiellales
-Calcarisporiellomycetes
-Calcarisporiellomycota
-Catenariaceae
-Caulochytriaceae
-Choanephoraceae
-Chytridiaceae
-Chytridiales
-Chytridiomyceta
-Chytridiomycetes
-Chytridiomycota
-Chytridiomycotina
-Chytriomycetaceae
-Cladochytriaceae
-Cladochytriales
-Claroideoglomeraceae
-Cochlonemataceae
-Coelomomycetaceae
-Collimycetaceae
-Cunninghamellaceae
-Dimargaritaceae
-Dimargaritales
-Dimargaritomycetes
-Dinomycetaceae
-Diversisporaceae
-Diversisporales
-Eccrinaceae # trichomycete family (Kickxellomycotina: Eccrinales)
-Eccriniidae # trichomycete family (alternate spelling of Eccrinaceae)
-Endochytriaceae
-Endogonaceae
-Endogonales
-Entomophthoraceae # entomophthoralean fungus family (insect pathogens)
-Entomophthorales # insect-pathogenic fungi (Entomophthoromycota)
-Entomophthoromycetes
-Entomophthoromycota
-Entomophthoromycotina
-Entorrhizomycetes
-Entorrhizomycota
-Geosiphonaceae
-Gigasporaceae
-Globomycetaceae
-Glomeraceae
-Glomerales
-Glomeromycetes
-Glomeromycota
-Gonapodyaceae
-Gorgonomycetaceae
-Gromochytriaceae
-Gromochytriales
-Harpellaceae
-Harpellales
-Harpochytriaceae
-Helicocephalidaceae
-Hyaloraphidiomycetes
-Kappamycetaceae
-Kickxellaceae
-Kickxellales
-Kickxellomycetes
-Kickxellomycota
-Kickxellomycotina
-Legeriomycetaceae
-Lentamycetaceae
-Lichtheimiaceae
-Lobulomycetaceae
-Lobulomycetales
-Mesochytriomycetes
-Microsporidia
-Monoblepharidaceae
-Monoblepharidales
-Monoblepharidomycetes
-Monoblepharomycotina
-Mortierellaceae
-Mortierellales
-Mortierellomycetes
-Mucoraceae
-Mucorales
-Mucoromyceta
-Mucoromycetes
-Mucoromycota
-Mucoromycotina
-Mycocladaceae
-Mycotyphaceae
-Neocallimastigaceae
-Neocallimastigales
-Neocallimastigomycetes
-Neocallimastigomycota
-Neozygitaceae # entomophthoralean fungus family (Entomophthoromycota)
-Neozygitomycetes
-Nephridiophagales
-Nowakowskiellaceae
-Oedogoniomycetaceae
-Olpidiaceae
-Olpidiales
-Olpidiomycetes
-Orphellaceae
-Orphellales
-Pacisporaceae
-Paraglomeraceae
-Paraglomerales
-Paraglomeromycetes
-Pateramycetaceae
-Periconiaceae # hyphomycete family (conidial fungi, Fungi incertae sedis)
-Pervetustaceae
-Phycomycetaceae
-Physodermataceae
-Physodermatales
-Physodermatomycetes
-Pilobolaceae
-Piptocephalidaceae
-Polychytriaceae
-Polychytriales
-Powellomycetaceae
-Priscadvenaceae
-Priscadvenales
-Protrudomycetaceae
-Radiomycetaceae
-Rhizophlyctidaceae
-Rhizophlyctidales
-Rhizophydiaceae
-Rhizophydiales
-Rhizophydiomycetes
-Rhizopodaceae
-Saksenaeaceae
-Sanchytriaceae
-Sanchytriales
-Sanchytriomycetes
-Scutellosporaceae
-Septochytriaceae
-Sigmoideomycetaceae
-Sonoraphlyctidaceae
-Sorochytriaceae
-Spizellomycetaceae
-Spizellomycetales
-Staurastromycetaceae
-Syncephalastraceae
-Synchytriaceae
-Telasphaerulaceae
-Terramycetaceae
-Uebelmesseromycetaceae
-Umbelopsidaceae
-Umbelopsidales
-Umbelopsidomycetes
-Zoopagaceae
-Zoopagales
-Zoopagomyceta
-Zoopagomycetes
-Zoopagomycotina
-Zygomycetes
-Zygomycota
+Abelsporidae # COL: Microsporea > Glugeida
+Acaulosporaceae # COL: Glomeromycetes > Diversisporales
+Alphamycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Ambisporaceae # COL: Glomeromycetes > Archaeosporales
+Amblyosporidae # COL: Microsporea > Meiodihaplophasida
+Amphiacanthidae # COL: Rudimicrosporea > Metchnikovellida
+Ancylistaceae # entomophthoralean fungus family (Entomophthoromycota); COL: Entomophthoromycetes > Entomophthorales
+Angulomycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Aquamycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Archaeosporaceae # COL: Glomeromycetes > Archaeosporales
+Archaeosporales # COL: Glomeromycota > Glomeromycetes
+Archaeosporomycetes # IRMNG: Fungi > Glomeromycota
+Areosporiidae # COL: Rozellomycota > Microsporea
+Arizonaphlyctidaceae # COL: Chytridiomycetes > Rhizophlyctidales
+Asellariaceae # COL: Mucoromycota > Asellariales
+Asellariales # COL: Fungi > Mucoromycota
+Asterophlyctaceae # COL: Chytridiomycetes > Chytridiales
+Backusellaceae # COL: Mucoromycetes > Mucorales
+Basidiobolaceae # COL: Zygomycota > Basidiobolales
+Basidiobolales # COL: Fungi > Zygomycota
+Basidiobolomycetes # IRMNG: Fungi > Basidiobolomycota
+Basidiobolomycota # IRMNG: Fungi
+Berwaldiidae # IRMNG: Microsporidea > Neopereziida
+Blastocladiaceae # COL: Blastocladiomycetes > Blastocladiales
+Blastocladiales # COL: Blastocladiomycota > Blastocladiomycetes
+Blastocladiomyceta # PBDB: Fungi
+Blastocladiomycetes # COL: Fungi > Blastocladiomycota
+Blastocladiomycota # COL: Eukaryota > Fungi
+Borealophlyctidaceae # COL: Chytridiomycetes > Rhizophlyctidales
+Burenellidae # COL: Microsporea > Meiodihaplophasida
+Burkeidae # COL: Microsporea > Chytridiopsida
+Buxtehudeidae # IRMNG: Chytridiopsidea > Chytridiopsida
+Calcarisporiellaceae # COL: Mucoromycetes > Calcarisporiellales
+Calcarisporiellales # COL: Mucoromycota > Mucoromycetes
+Calcarisporiellomycetes # IRMNG: Fungi > Calcarisporiellomycota
+Calcarisporiellomycota # IRMNG: Fungi
+Catenariaceae # COL: Blastocladiomycetes > Blastocladiales
+Caudosporidae # COL: Microsporea > Dissociodihaplophasida
+Caulochytriaceae # COL: Chytridiomycetes > Spizellomycetales
+Choanephoraceae # COL: Mucoromycetes > Mucorales
+Chytridiaceae # COL: Chytridiomycetes > Chytridiales
+Chytridiales # COL: Chytridiomycota > Chytridiomycetes
+Chytridiomyceta # PBDB: Fungi
+Chytridiomycetes # COL: Fungi > Chytridiomycota
+Chytridiomycota # COL: Eukaryota > Fungi
+Chytridiomycotina # PBDB: Fungi > Chytridiomycota
+Chytridiopsidae # COL: Microsporea > Chytridiopsida
+Chytriomycetaceae # COL: Chytridiomycetes > Chytridiales
+Cladochytriaceae # COL: Chytridiomycetes > Cladochytriales
+Cladochytriales # COL: Chytridiomycota > Chytridiomycetes
+Claroideoglomeraceae # ITIS: Glomeromycetes > Glomerales
+Cochlonemataceae # COL: Zoopagomycetes > Zoopagales
+Coelomomycetaceae # COL: Blastocladiomycetes > Blastocladiales
+Collimycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Cougourdellidae # COL: Rozellomycota > Microsporea
+Culicosporellidae # IRMNG: synonym of Amblyosporidae (Amblyosporida)
+Cunninghamellaceae # COL: Mucoromycetes > Mucorales
+Cylindrosporidae # COL: Microsporea > Meiodihaplophasida
+Dimargaritaceae # COL: Mucoromycota > Dimargaritales
+Dimargaritales # COL: Fungi > Mucoromycota
+Dimargaritomycetes # IRMNG: Fungi > Kickxellomycota
+Dinomycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Diversisporaceae # COL: Glomeromycetes > Diversisporales
+Diversisporales # COL: Glomeromycota > Glomeromycetes
+Duboscqiidae # COL: Microsporea > Meiodihaplophasida
+Encephalitozoonidae # COL: Microsporea > Glugeida
+Endochytriaceae # COL: Chytridiomycetes > Chytridiales
+Endogonaceae # COL: Endogonomycetes > Endogonales
+Endogonales # COL: Mucoromycota > Endogonomycetes
+Enterocytozoonidae # COL: Microsporea > Chytridiopsida
+Entomophthoraceae # entomophthoralean fungus family (insect pathogens); COL: Entomophthoromycetes > Entomophthorales
+Entomophthorales # insect-pathogenic fungi (Entomophthoromycota); COL: Entomophthoromycota > Entomophthoromycetes
+Entomophthoromycetes # COL: Fungi > Entomophthoromycota
+Entomophthoromycota # COL: Eukaryota > Fungi
+Entomophthoromycotina # ITIS: Fungi > Zygomycota
+Entorrhizaceae # COL: Entorrhizomycetes > Entorrhizales
+Entorrhizales # COL: Entorrhizomycota > Entorrhizomycetes
+Entorrhizomycetes # COL: Fungi > Entorrhizomycota
+Entorrhizomycota # COL: Eukaryota > Fungi
+Facilisporidae # COL: Rozellomycota > Microsporea
+Geosiphonaceae # COL: Glomeromycetes > Archaeosporales
+Gigasporaceae # COL: Glomeromycetes > Diversisporales
+Globomycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Glomeraceae # COL: Glomeromycetes > Glomerales
+Glomerales # COL: Glomeromycota > Glomeromycetes
+Glomeromycetes # COL: Fungi > Glomeromycota
+Glomeromycota # COL: Eukaryota > Fungi
+Glugeidae # COL: Microsporea > Glugeida
+Golbergiidae # COL: Microsporea > Dissociodihaplophasida
+Gonapodyaceae # COL: Monoblepharidomycetes > Monoblepharidales
+Gorgonomycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Gromochytriaceae # COL: Mesochytriomycetes > Gromochytriales
+Gromochytriales # COL: Chytridiomycota > Mesochytriomycetes
+Gurleyidae # COL: Microsporea > Glugeida
+Harpellaceae # COL: Kickxellomycetes > Harpellales
+Harpellales # COL: Mucoromycota > Kickxellomycetes
+Harpochytriaceae # COL: Monoblepharidomycetes > Monoblepharidales
+Helicocephalidaceae # COL: Zoopagomycetes > Zoopagales
+Hesseidae # COL: Microsporea > Chytridiopsida
+Heterovesiculidae # COL: Rozellomycota > Microsporea
+Hyaloraphidiomycetes # IRMNG: Fungi > Monoblepharomycota
+Ichthyosporidiidae # COL: Microsporea > Dissociodihaplophasida
+Kappamycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Kickxellaceae # COL: Kickxellomycetes > Kickxellales
+Kickxellales # COL: Mucoromycota > Kickxellomycetes
+Kickxellomycetes # COL: Fungi > Mucoromycota
+Kickxellomycota # IRMNG: Fungi
+Kickxellomycotina # ITIS: Fungi > Zygomycota
+Legeriomycetaceae # COL: Kickxellomycetes > Harpellales
+Lentamycetaceae # COL: Mucoromycetes > Mucorales
+Lichtheimiaceae # COL: Mucoromycetes > Mucorales
+Lobulomycetaceae # COL: Lobulomycetes > Lobulomycetales
+Lobulomycetales # COL: Chytridiomycota > Lobulomycetes
+Mesochytriomycetes # COL: Fungi > Chytridiomycota
+Metchnikovellea # IRMNG: synonym of Rudimicrosporea (Rozellomycota)
+Metchnikovellida # COL: Rozellomycota > Rudimicrosporea
+Metchnikovellidae # COL: Rudimicrosporea > Metchnikovellida
+Microfilidae # COL: Microsporea > Glugeida
+Microspora # WoRMS: synonym of Microsporidia (Fungi)
+Microsporea # COL: Fungi > Rozellomycota
+Microsporida # WoRMS: Microsporidia > Microsporea
+Microsporidia # COL: Fungi > Rozellomycota
+Monoblepharidaceae # COL: Monoblepharidomycetes > Monoblepharidales
+Monoblepharidales # COL: Chytridiomycota > Monoblepharidomycetes
+Monoblepharidomycetes # COL: Fungi > Chytridiomycota
+Monoblepharomycotina # PBDB: Fungi > Monoblepharomycota
+Mortierellaceae # COL: Mortierellomycetes > Mortierellales
+Mortierellales # COL: Mucoromycota > Mortierellomycetes
+Mortierellomycetes # COL: Fungi > Mucoromycota
+Mrazekiidae # COL: Microsporea > Dissociodihaplophasida
+Mucoraceae # COL: Mucoromycetes > Mucorales
+Mucorales # COL: Mucoromycota > Mucoromycetes
+Mucoromyceta # PBDB: Fungi
+Mucoromycetes # COL: Fungi > Mucoromycota
+Mucoromycota # COL: Eukaryota > Fungi
+Mucoromycotina # ITIS: Fungi > Zygomycota
+Mycocladaceae # COL: Mucoromycetes > Mucorales
+Mycotyphaceae # COL: Mucoromycetes > Mucorales
+Nadelsporidae # WoRMS: Microsporea > Microsporida
+Neocallimastigaceae # COL: Neocallimastigomycetes > Neocallimastigales
+Neocallimastigales # COL: Neocallimastigomycota > Neocallimastigomycetes
+Neocallimastigomycetes # COL: Fungi > Neocallimastigomycota
+Neocallimastigomycota # COL: Eukaryota > Fungi
+Neonosemoidiidae # COL: Rozellomycota > Microsporea
+Neozygitaceae # entomophthoralean fungus family (Entomophthoromycota); COL: Entomophthoromycetes > Entomophthorales
+Neozygitomycetes # IRMNG: Fungi > Entomophthoromycota
+Nephridiophagales # COL: Fungi > Chytridiomycota
+Nosematidae # COL: Microsporea > Dissociodihaplophasida
+Nowakowskiellaceae # COL: Chytridiomycetes > Chytridiales
+Oedogoniomycetaceae # COL: Monoblepharidomycetes > Monoblepharidales
+Olpidiaceae # COL: Chytridiomycetes > Olpidiales
+Olpidiales # COL: Chytridiomycota > Chytridiomycetes
+Olpidiomycetes # IRMNG: Fungi > Olpidiomycota
+Ordosporidae # COL: Rozellomycota > Microsporea
+Orphellaceae # COL: Kickxellomycetes > Orphellales
+Orphellales # COL: Mucoromycota > Kickxellomycetes
+Ovavesiculidae # COL: Microsporea > Dissociodihaplophasida
+Pacisporaceae # COL: Glomeromycetes > Diversisporales
+Paraglomeraceae # COL: Glomeromycetes > Paraglomerales
+Paraglomerales # COL: Glomeromycota > Glomeromycetes
+Paraglomeromycetes # IRMNG: Fungi > Glomeromycota
+Pateramycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Pereziidae # COL: Microsporea > Meiodihaplophasida
+Pervetustaceae # COL: Glomeromycetes > Paraglomerales
+Phycomycetaceae # COL: Mucoromycetes > Mucorales
+Physodermataceae # COL: Blastocladiomycetes > Physodermatales
+Physodermatales # COL: Blastocladiomycota > Blastocladiomycetes
+Physodermatomycetes # IRMNG: Fungi > Blastocladiomycota
+Pilobolaceae # COL: Mucoromycetes > Mucorales
+Piptocephalidaceae # COL: Zoopagomycetes > Zoopagales
+Pleistophoridae # COL: Microsporea > Glugeida
+Pleistosporidiidae # COL: Rozellomycota > Microsporea
+Polychytriaceae # COL: Chytridiomycetes > Polychytriales
+Polychytriales # COL: Chytridiomycota > Chytridiomycetes
+Powellomycetaceae # COL: Chytridiomycetes > Spizellomycetales
+Priscadvenaceae # IRMNG: Kickxellomycota > Priscadvenales
+Priscadvenales # IRMNG: Fungi > Kickxellomycota
+Protrudomycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Pseudonosematidae # COL: Rozellomycota > Microsporea
+Pseudopleistophoridae # COL: Microsporea > Dissociodihaplophasida
+Radiomycetaceae # COL: Mucoromycetes > Mucorales
+Rhizophlyctidaceae # COL: Chytridiomycetes > Rhizophlyctidales
+Rhizophlyctidales # COL: Chytridiomycota > Chytridiomycetes
+Rhizophydiaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Rhizophydiales # COL: Chytridiomycota > Rhizophydiomycetes
+Rhizophydiomycetes # COL: Fungi > Chytridiomycota
+Rhizopodaceae # COL: Mucoromycetes > Mucorales
+Saksenaeaceae # COL: Mucoromycetes > Mucorales
+Sanchytriaceae # COL: Sanchytriomycetes > Sanchytriales
+Sanchytriales # COL: Sanchytriomycota > Sanchytriomycetes
+Sanchytriomycetes # COL: Fungi > Sanchytriomycota
+Scutellosporaceae # COL: Glomeromycetes > Diversisporales
+Septochytriaceae # IRMNG: Cladochytriomycetes > Cladochytriales
+Sigmoideomycetaceae # COL: Zoopagomycetes > Zoopagales
+Sonoraphlyctidaceae # COL: Chytridiomycetes > Rhizophlyctidales
+Sorochytriaceae # COL: Blastocladiomycetes > Blastocladiales
+Spizellomycetaceae # COL: Chytridiomycetes > Spizellomycetales
+Spizellomycetales # COL: Chytridiomycota > Chytridiomycetes
+Spragueidae # COL: Microsporea > Dissociodihaplophasida
+Staurastromycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Striatosporidae # COL: Microsporea > Meiodihaplophasida
+Syncephalastraceae # COL: Mucoromycetes > Mucorales
+Synchytriaceae # COL: Chytridiomycetes > Chytridiales
+Telasphaerulaceae # COL: Monoblepharidomycetes > Monoblepharidales
+Telomyxidae # COL: Rozellomycota > Microsporea
+Terramycetaceae # COL: Rhizophydiomycetes > Rhizophydiales
+Tetramicridae # COL: Microsporea > Dissociodihaplophasida
+Thelohaniidae # COL: Microsporea > Meiodihaplophasida
+Toxoglugeidae # COL: Rozellomycota > Microsporea
+Tubulinosematidae # COL: Rozellomycota > Microsporea
+Tuzetiidae # COL: Microsporea > Glugeida
+Uebelmesseromycetaceae # COL: Chytridiomycetes > Rhizophlyctidales
+Umbelopsidaceae # COL: Umbelopsidomycetes > Umbelopsidales
+Umbelopsidales # COL: Mucoromycota > Umbelopsidomycetes
+Umbelopsidomycetes # COL: Fungi > Mucoromycota
+Unikaryonidae # COL: Microsporea > Glugeida
+Zoopagaceae # COL: Zoopagomycetes > Zoopagales
+Zoopagales # COL: Zoopagomycota > Zoopagomycetes
+Zoopagomyceta # PBDB: Fungi
+Zoopagomycetes # COL: Fungi > Zoopagomycota
+Zoopagomycotina # ITIS: Fungi > Zygomycota
+Zygomycetes # COL: Fungi > Zygomycota
+Zygomycota # COL: Eukaryota > Fungi
