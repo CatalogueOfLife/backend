@@ -23,6 +23,9 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.TreeMap;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 /**
  * Runs the author comparison over a mined corpus and writes what it got right and wrong: confusion matrices,
@@ -37,8 +40,8 @@ import java.util.function.Predicate;
  * </pre>
  */
 public class AuthorCorpusReport {
-  static final String REPORT = "report.txt";
-  static final String VERDICTS = "verdicts.tsv.gz";
+  public static final String REPORT = "report.txt";
+  public static final String VERDICTS = "verdicts.tsv.gz";
   private static final String AUTHOR_MAP = "authorship/authormap.txt";
   private static final String NO_AUTHOR_MAP = "nomap";
   private static final int TOP = 200;
@@ -93,15 +96,44 @@ public class AuthorCorpusReport {
   }
 
   /**
+   * What a report on a particular comparator adds. It sees every pair before and after it is judged and appends its own
+   * sections: the person matcher tells from it which rule decided a verdict.
+   */
+  public interface Extension {
+    default void before(AuthorPair pair) {
+    }
+
+    default void after(Verdict verdict) {
+    }
+
+    default void render(StringBuilder sb) {
+    }
+  }
+
+  private static final Extension NONE = new Extension() {
+  };
+
+  /**
    * @param withAuthorMap false to compare without the author map. Diffed against a report with it, that shows
    *                      which pairs the map gets right and which it breaks
    */
   public static void report(File pairs, File outDir, boolean withAuthorMap) throws IOException {
-    final AuthorshipNormalizer normalizer = withAuthorMap ? AuthorshipNormalizer.INSTANCE : AuthorshipNormalizer.createWithoutAuthormap();
-    final CorpusEvaluator evaluator = new CorpusEvaluator(new AuthorComparator(normalizer));
+    AuthorshipNormalizer normalizer = withAuthorMap ? AuthorshipNormalizer.INSTANCE : AuthorshipNormalizer.createWithoutAuthormap();
+    // says which author map the verdicts come from: -pl dao takes it from the api jar in ~/.m2, not from the checkout
+    String map = withAuthorMap ? String.format("author map: %,d rows", Resources.lines(AUTHOR_MAP).count()) : "author map: none";
+    report(pairs, outDir, new AuthorComparator(normalizer), List.of(map), withAuthorMap ? normalizer : null, NONE);
+  }
+
+  /**
+   * @param header     what was measured, one line each, printed below the input
+   * @param aliasCheck the normalizer whose author map the alias worklist checks, null to leave that list out
+   */
+  public static void report(File pairs, File outDir, AuthorComparator comparator, List<String> header,
+                            @Nullable AuthorshipNormalizer aliasCheck, Extension extension) throws IOException {
+    final CorpusEvaluator evaluator = new CorpusEvaluator(comparator);
     final CorpusEvaluator.Result result = new CorpusEvaluator.Result(false);
 
-    List<Top> tops = List.of(
+    List<Top> tops = Stream.of(
       new Top("Same act judged DIFFERENT by its authors", "The verdict is DIFFERENT even with the years taken out.",
         v -> v.pair().label() == Label.SAME && v.verdictNoYear() == Equality.DIFFERENT),
       new Top("Same act judged DIFFERENT by its years only", "The authors alone are not judged DIFFERENT, the years make it so.",
@@ -113,8 +145,9 @@ public class AuthorCorpusReport {
         v -> v.pair().label() == Label.DIFF && v.verdict() != Equality.EQUAL && v.verdictNoYear() == Equality.EQUAL),
       new Top("Same act judged UNKNOWN", "Mostly a basionym author on one side against a combination author on the other.",
         v -> v.pair().label() == Label.SAME && v.verdict() == Equality.UNKNOWN),
-      new Top("Alias candidates the author map lacks", "Same act, one author differs, and the map does not bring the two to one canonical.",
-        v -> withAuthorMap && v.pair().label() == Label.SAME && v.pair().weight() >= MIN_ALIAS_WEIGHT && lacksAlias(normalizer, v.pair())),
+      aliasCheck == null ? null
+        : new Top("Alias candidates the author map lacks", "Same act, one author differs, and the map does not bring the two to one canonical.",
+          v -> v.pair().label() == Label.SAME && v.pair().weight() >= MIN_ALIAS_WEIGHT && lacksAlias(aliasCheck, v.pair())),
       new Top("Dubious pairs judged EQUAL",
         "Kept apart by one dataset with nothing to tell a homonym from a duplicate. Judged EQUAL it is most "
         + "likely a second record of the name in that dataset. Not part of any matrix.",
@@ -123,7 +156,7 @@ public class AuthorCorpusReport {
         "The same, judged DIFFERENT: homonyms, or duplicates the comparison does not see. INTRA_CROSS is the one "
         + "to read, those are also cited alike across datasets. Not part of any matrix.",
         v -> v.pair().label() == Label.DUBIOUS && v.verdict() == Equality.DIFFERENT)
-    );
+    ).filter(Objects::nonNull).toList();
     // pairs a dataset keeps apart, and how many of them the comparator takes for one: a high share points at duplicate records
     Map<Integer, long[]> diffByDataset = new TreeMap<>();
     Map<Source, long[]> dubiousBySource = new EnumMap<>(Source.class);
@@ -133,7 +166,9 @@ public class AuthorCorpusReport {
     outDir.mkdirs();
     try (TabWriter verdicts = CorpusIO.writer(new File(outDir, VERDICTS), AuthorVerdictDiff.COLUMNS)) {
       CorpusIO.readPairs(pairs, p -> {
+        extension.before(p);
         Verdict v = evaluator.evaluate(p);
+        extension.after(v);
         result.add(v);
         tops.forEach(t -> t.offer(v));
         total[0]++;
@@ -158,8 +193,7 @@ public class AuthorCorpusReport {
     sb.append("# Author comparison against the corpus\n\n");
     sb.append("input: ").append(pairs).append('\n');
     sb.append(String.format("pairs: %,d %s%n", total[0], labels));
-    // says which author map the verdicts come from: -pl dao takes it from the api jar in ~/.m2, not from the checkout
-    sb.append(withAuthorMap ? String.format("author map: %,d rows%n", Resources.lines(AUTHOR_MAP).count()) : "author map: none\n");
+    header.forEach(l -> sb.append(l).append('\n'));
     String parser = CorpusIO.readParser(pairs);
     sb.append("corpus parsed by: ").append(parser == null ? "the imports, not re-parsed" : parser).append('\n');
     sb.append(String.format("max heap: %,d MB%n", Runtime.getRuntime().maxMemory() >> 20));
@@ -178,6 +212,7 @@ public class AuthorCorpusReport {
       sb.append(String.format("  %-16s %,9d pairs, %5.1f%% judged EQUAL%n", source, n[0], 100d * n[1] / n[0])));
 
     tops.forEach(t -> t.render(sb));
+    extension.render(sb);
     Files.writeString(new File(outDir, REPORT).toPath(), sb.toString(), StandardCharsets.UTF_8);
   }
 

@@ -1,9 +1,12 @@
 package life.catalogue.matching.authorship.corpus;
 
 import life.catalogue.common.io.Resources;
+import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.matching.authorship.AuthorComparator;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
@@ -111,8 +114,8 @@ public class AuthorCorpusReportTest {
     report = Files.readString(new File(dir, AuthorCorpusReport.REPORT).toPath());
     assertFalse(section("Different names judged EQUAL").contains("J.E. Gray"));
     assertTrue(report.substring(0, report.indexOf("## ")).contains("author map: none"));
-    // without a map there is nothing a pair could be missing in it
-    assertTrue(section("Alias candidates the author map lacks").contains("\n0 pairs"));
+    // without a map there is nothing a pair could be missing in it, so the list is left out
+    assertFalse(report.contains("Alias candidates"));
   }
 
   @Test
@@ -129,5 +132,37 @@ public class AuthorCorpusReportTest {
     String s = report.substring(0, report.indexOf("## "));
     assertTrue(s, s.contains("pairs: 9"));
     assertTrue(s, s.contains("author map"));
+  }
+
+  /** a report on another comparator: its own header lines and sections, every pair shown to its extension, no alias list */
+  @Test
+  public void reportOnAnotherComparator() throws Exception {
+    File dir = tmp.newFolder("other");
+    List<String> seen = new ArrayList<>();
+    var ext = new AuthorCorpusReport.Extension() {
+      @Override
+      public void before(AuthorPair p) {
+        seen.add("before " + p.keyA());
+      }
+
+      @Override
+      public void after(CorpusEvaluator.Verdict v) {
+        seen.add("after " + v.pair().keyA());
+      }
+
+      @Override
+      public void render(StringBuilder sb) {
+        sb.append("\n## Extension\nrendered\n");
+      }
+    };
+    AuthorCorpusReport.report(Resources.toFile(CorpusEvaluatorTest.KNOWN_MISJUDGEMENTS), dir,
+      new AuthorComparator(AuthorshipNormalizer.INSTANCE), List.of("comparator: test"), null, ext);
+    String r = Files.readString(new File(dir, AuthorCorpusReport.REPORT).toPath());
+    assertTrue(r, r.lines().limit(8).anyMatch(l -> l.equals("comparator: test")));
+    assertFalse(r, r.contains("Alias candidates"));
+    assertTrue(r, r.contains("## Extension\nrendered"));
+    assertEquals(18, seen.size());
+    assertEquals("before ;;;martin", seen.get(0));
+    assertEquals("after ;;;martin", seen.get(1));
   }
 }
