@@ -707,13 +707,21 @@ public class IdProvider {
       final int batchSize = 10000;
 
       for (var canonId : uStore.allCanonicalIds()) {
-        var names = uStore.simpleNamesByCanonicalId(canonId);
-        if (tempOnly && !names.isEmpty()) {
-          names = names.stream()
-            .filter(n -> !isStableId(n.getId()))
-            .collect(Collectors.toList());
+        var all = uStore.simpleNamesByCanonicalId(canonId);
+        var names = all;
+        List<SimpleNameWithNidx> kept = List.of();
+        if (tempOnly && !all.isEmpty()) {
+          names = new ArrayList<>();
+          kept = new ArrayList<>();
+          for (var n : all) {
+            if (isStableId(n.getId())) {
+              kept.add(n);
+            } else {
+              names.add(n);
+            }
+          }
         }
-        issueIDs(canonId, names, acceptedNames(names, uStore), nomatchWriter);
+        issueIDs(canonId, names, kept, acceptedNames(all, uStore), nomatchWriter);
         int before = counter.get() / batchSize;
         int after = counter.addAndGet(names.size()) / batchSize;
         if (before != after) {
@@ -819,10 +827,12 @@ public class IdProvider {
   /**
    * Maps every name, OTU names excluded, to either an existing or new int based ID
    * @param canonId the canonical names index id that all names are mapped to
+   * @param kept usages of the same group that already have a stable id and keep it - the base release usages of an
+   *             extended release. They get no id here, but a dropped id can be redirected to them, see #recordSuperseded
    * @param acceptedNames resolves the scientific name of a synonyms accepted name, see #acceptedNames
    */
-  void issueIDs(final Integer canonId, List<? extends SimpleNameWithNidx> allNames, Function<SimpleNameWithNidx, String> acceptedNames,
-                Writer nomatchWriter) throws IOException {
+  void issueIDs(final Integer canonId, List<? extends SimpleNameWithNidx> allNames, List<? extends SimpleNameWithNidx> kept,
+                Function<SimpleNameWithNidx, String> acceptedNames, Writer nomatchWriter) throws IOException {
     // OTU names (UNITE/BOLD) use their code verbatim as the stable id, regardless of names-index matching.
     // Handle them up front and exclude them from the id minting/matching below.
     final List<SimpleNameWithNidx> names = new ArrayList<>(allNames.size());
@@ -834,10 +844,10 @@ public class IdProvider {
         names.add(n);
       }
     }
-    if (names.isEmpty()) {
-      return;
-    }
     if (canonId == null) {
+      if (names.isEmpty()) {
+        return;
+      }
       LOG.warn("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
       for (var n : names) {
         nomatchWriter.write(n.toStringBuilder().toString());
@@ -850,7 +860,7 @@ public class IdProvider {
       // which released ids do exist for this canonical names index id?
       ReleasedId[] rids = ids.byCanonId(canonId);
       if (rids != null) {
-        assign(names, rids, acceptedNames, issued);
+        assign(names, kept, rids, acceptedNames, issued);
       }
       // persist mappings and issue new ids for missing ones
       for (var sn : names) {
@@ -869,8 +879,8 @@ public class IdProvider {
    * in first and never moved off its best partner to improve some total. {@link IdCandidate} defines what "best"
    * means and is a total order, so the outcome does not depend on the order the store happens to return usages in.
    */
-  private void assign(List<SimpleNameWithNidx> names, ReleasedId[] rids, Function<SimpleNameWithNidx, String> acceptedNames,
-                      Map<SimpleNameWithNidx, Integer> issued) {
+  private void assign(List<SimpleNameWithNidx> names, List<? extends SimpleNameWithNidx> kept, ReleasedId[] rids,
+                      Function<SimpleNameWithNidx, String> acceptedNames, Map<SimpleNameWithNidx, Integer> issued) {
     // the facts are built once per side and dropped again with this group: they cache the parsed authorship, which
     // is worth having across the pairings of one group but must not be kept for every archived id of the project
     final NameIdentity.Facts[] relFacts = new NameIdentity.Facts[rids.length];
@@ -903,7 +913,33 @@ public class IdProvider {
         taken.add(c.rid.id);
       }
     }
-    recordSuperseded(candidates, issued);
+    boolean dropping = false; // does the last release lose an id of this group at all?
+    for (var r : rids) {
+      dropping |= r.isCurrent && ids.containsId(r.id);
+    }
+    if (kept.isEmpty() || !dropping) {
+      recordSuperseded(candidates, issued);
+    } else {
+      // usages keeping their stable id compete as the survivor of a dropped id on the same evidence as the others:
+      // an extended release duplicate that is gone again because the base release carries the name now
+      final Map<SimpleNameWithNidx, Integer> survivors = new IdentityHashMap<>(issued);
+      final List<IdCandidate> redirects = new ArrayList<>(candidates);
+      for (var n : kept) {
+        final int keptId = IdConverter.LATIN29.decode(n.getId());
+        survivors.put(n, keptId);
+        var facts = new NameIdentity.Facts(n, acceptedNames.apply(n));
+        for (int i = 0; i < rids.length; i++) {
+          if (rids[i].isCurrent && rids[i].id != keptId && ids.containsId(rids[i].id)) {
+            var verdict = identity.compare(facts, relFacts[i]);
+            if (!verdict.isContradicted()) {
+              redirects.add(new IdCandidate(n, rids[i], verdict));
+            }
+          }
+        }
+      }
+      Collections.sort(redirects);
+      recordSuperseded(redirects, survivors);
+    }
   }
 
   /**
@@ -913,7 +949,8 @@ public class IdProvider {
    *
    * Deliberately narrow. A pair is only recorded when the dying id was in the last release, was not taken by anything
    * in this one, and some usage of its own canonical group did get an id - and then it is the usage whose evidence
-   * against it ranked highest, never just any usage of the group. An id whose every pairing was contradicted records
+   * against it ranked highest, never just any usage of the group. In an extended release the base release usages of
+   * the group count as well, with the stable id they keep. An id whose every pairing was contradicted records
    * nothing: it is not the same name as what is left, so there is nothing to redirect to. A whole group disappearing
    * records nothing either.
    *

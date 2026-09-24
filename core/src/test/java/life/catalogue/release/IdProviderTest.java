@@ -471,6 +471,33 @@ public class IdProviderTest {
   }
 
   @Test
+  public void xrDuplicateRedirectsToTheBaseUsage() throws Exception {
+    // COL XR attempt 632: Mirococcus sera was in the base release and, from another source, in the extended release
+    // as well. The merge no longer adds the duplicate, so only the base usage is left, keeping its stable id - and the
+    // extended release id of the duplicate has to point at it although no usage of the group gets an id in this run
+    prevIdsByAttempt.put(1, List.of(
+      sn(50, 7, SPECIES, "Mirococcus sera", "(Borchsenius, 1958)", SYNONYM)
+    ));
+    prevIdsByAttempt.put(2, List.of(
+      sn(50, 7, SPECIES, "Mirococcus sera", "(Borchsenius, 1958)", SYNONYM),
+      sn(51, 7, SPECIES, "Mirococcus sera", "(Borchsenius, 1958)", SYNONYM)
+    ));
+    originByAttempt.put(2, DatasetOrigin.XRELEASE);
+
+    testNames = new ArrayList<>(List.of(
+      sn(IdProvider.encode(50), 7, SPECIES, "Mirococcus sera", "(Borchsenius, 1958)", SYNONYM, null)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapTempIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(0, report.resurrected.size());
+    assertEquals(1, report.superseded.size());
+    assertEquals(50, report.superseded.get(51));
+  }
+
+  @Test
   public void synonymsScoredByTheirAcceptedName() throws Exception {
     // two archived synonyms of the very same canonical name that differ only in their accepted name.
     // The archive keeps the accepted names scientific name, the matcher store keys the parent by usage id,
