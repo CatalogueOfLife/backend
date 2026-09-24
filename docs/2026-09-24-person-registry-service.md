@@ -1,7 +1,8 @@
 # Author matching as a service: the person registry in Postgres
 
 Date: 2026-09-24
-Status: design agreed on 2026-09-24, not implemented. First of several sub-projects, see "Scope".
+Status: implemented on branch feat/person-author-comparison on 2026-09-24, not merged or deployed. First of several
+sub-projects, see "Scope".
 
 The person registry of [2026-09-23-person-author-comparison.md](2026-09-23-person-author-comparison.md) resolves
 author citations to persons with Wikidata, IPNI and ZooBank ids. Phase 3 there measured it as a comparator: on the
@@ -215,3 +216,25 @@ current registry back as the same three files, for review, backups and the in-me
 - **Fill-only updates**: the registry would freeze at its first harvest.
 - **A reviewed changeset before applying a harvest**: a curator step for every run, before any tooling exists for it.
 - **A batch endpoint now**: bulk linking belongs to the name matching jobs.
+
+## Outcome
+
+Implemented as designed, with these decisions the design left open:
+
+- Joins keep working through former ids: a person a harvest joins into another disappears into it and its id becomes a
+  former id of the survivor, so the old id answers the survivor directly. `successor` is carried by files, tables and
+  import and checked to resolve, but only curator tooling will set it.
+- A curated person wins as a whole line: its empty cells are no longer filled from the sources, what they say
+  otherwise is reported.
+- A person a source still lists but no source names is retired too, or a single odd record would fail the
+  consistency check of a whole harvest.
+- Impossible years chosen from the sources leave all four years out.
+- `/person/{id}` shows the forms sources and curators gave, not the derived ones; `RULED_OUT` lists the candidates the
+  year or group excluded.
+- The lookups select with `IN (...)` lists rather than `= ANY(?)`, as the other mappers do.
+- `created` and `modified` survive the delete-and-copy rewrite: a person keeps `created`, and `modified` unless its row
+  changed.
+- The TSVs moved to `core/src/test/resources/authorship/persons/`, read by tests and the corpus tools only; removing
+  them from the repository waits for the prod import.
+- The harvest caches in `persons.harvestDir`, kept after a failed run and deleted after a successful one. The import
+  writes synchronously in its request.

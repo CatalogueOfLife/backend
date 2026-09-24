@@ -272,6 +272,16 @@ Afterwards `add()` throws; changed data means a rebuild into a temp dir that is 
 without walking their parents and only the survivors of the cheap filters resolve a classification
 (`LazyClassifiedUsage`).
 
+**Person registry:**
+Authors of names as persons with Wikidata, IPNI and ZooBank ids, in the global tables `person`, `person_id`,
+`person_name` and `person_relation`. Everything resolves through a `PersonStore` - `PgPersonStore` with two bounded
+Caffeine caches that every server clears on a `PersonsChanged` event, `MemoryPersonStore` from TSV files in tests and the
+corpus tools - by the key `PersonKeys.key` folds a form or citation to, computed in Java and never in SQL. `PersonTables`
+rewrites the whole registry in one transaction by delete and COPY, storing derived forms as `DERIVED` rows.
+`PersonHarvestJob` (`POST /admin/persons/harvest`) reads Wikidata and IPNI with no database session open, then rebuilds
+under a table lock following the sources, curated lines winning; a person no source has any more is retired, never
+deleted. See [`docs/AUTHOR-PERSONS.md`](docs/AUTHOR-PERSONS.md).
+
 **Extended Release (XRelease):**
 The most complex pipeline in the codebase. Builds an extended release by merging external datasets (via sectors) into a base public release. 
 Uses a two-phase copy: base release → temporary project (for merging) → final release (with stable ID mapping). Key classes in `core/release/` and `core/assembly/`. 

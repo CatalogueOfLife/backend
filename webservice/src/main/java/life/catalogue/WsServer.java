@@ -3,6 +3,7 @@ package life.catalogue;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncScheduler;
@@ -58,8 +59,10 @@ import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.jobs.cron.CronExecutor;
+import life.catalogue.jobs.cron.CronJob;
 import life.catalogue.jobs.cron.JobCleanup;
 import life.catalogue.jobs.cron.MatcherReconcile;
+import life.catalogue.jobs.cron.PersonHarvestCron;
 import life.catalogue.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.jobs.cron.TempDatasetCleanup;
 import life.catalogue.matching.IdentifierScopeResolver;
@@ -67,6 +70,7 @@ import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.person.PgPersonStore;
+import life.catalogue.matching.person.harvest.PersonHarvestJob;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.AreaLabelLookup;
 import life.catalogue.parser.AreaParser;
@@ -88,6 +92,8 @@ import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -385,12 +391,17 @@ public class WsServer extends Application<WsServerConfig> {
     final var identifierScopeResolver = new IdentifierScopeResolver(cfg.identifierScopes);
 
     // cron jobs
-    var cron = CronExecutor.startWith(
+    List<CronJob> cronJobs = new ArrayList<>(List.of(
       new TempDatasetCleanup(ddao),
       new ProjectCounterUpdate(getSqlSessionFactory()),
       new JobCleanup(getSqlSessionFactory(), cfg.job),
       new MatcherReconcile(matcherFactory)
-    );
+    ));
+    if (cfg.persons.harvestIntervalDays > 0) {
+      cronJobs.add(new PersonHarvestCron(executor,
+        () -> PersonHarvestJob.live(Users.IMPORTER, getSqlSessionFactory(), broker, cfg.persons), cfg.persons.harvestIntervalDays));
+    }
+    var cron = CronExecutor.startWith(cronJobs.toArray(CronJob[]::new));
     managedService.manage(Component.CronExecutor, cron);
 
     // DOI
@@ -488,6 +499,7 @@ public class WsServer extends Application<WsServerConfig> {
       imgService, ni, indexService, searchService,
       importManager, ddao, siDao, gbifSync, executor, broker, encryption, doiChangeListener)
     );
+    j.register(new PersonAdminResource(getSqlSessionFactory(), executor, broker, cfg.persons));
 
     // dataset scoped
     j.register(new DatasetDiffResource(dDiff));
