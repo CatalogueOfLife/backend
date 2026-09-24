@@ -1,5 +1,6 @@
 package life.catalogue.matching.person;
 
+import life.catalogue.api.model.Person;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
 import life.catalogue.matching.authorship.AuthorContext;
@@ -55,7 +56,7 @@ public class PersonAuthorMatcher implements AuthorMatcher {
   public record Explanation(AuthorTeam team1, AuthorTeam team2, AuthorContext context, Equality verdict, List<Decision> decisions) {
   }
 
-  private final PersonRegistry registry;
+  private final MemoryPersonStore registry;
   private final PersonResolver resolver;
   private final AuthorMatcher fallback;
   private final RelativesPolicy policy;
@@ -66,7 +67,7 @@ public class PersonAuthorMatcher implements AuthorMatcher {
    * @param fallback compares the authors no person is known for: the string matcher
    * @param listener sees the explanation of every comparison, for a report; null for none
    */
-  public PersonAuthorMatcher(PersonRegistry registry, PersonResolver resolver, AuthorMatcher fallback, RelativesPolicy policy,
+  public PersonAuthorMatcher(MemoryPersonStore registry, PersonResolver resolver, AuthorMatcher fallback, RelativesPolicy policy,
                              @Nullable Consumer<Explanation> listener) {
     this.registry = registry;
     this.resolver = resolver;

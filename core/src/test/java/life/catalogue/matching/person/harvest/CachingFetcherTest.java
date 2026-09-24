@@ -1,5 +1,7 @@
 package life.catalogue.matching.person.harvest;
 
+import life.catalogue.api.vocab.PersonSource;
+
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +45,7 @@ public class CachingFetcherTest {
   /** sources hand over years they could not read as null: they must neither fail nor erase a known year */
   @Test
   public void builderYearsIgnoreNull() {
-    var b = new PersonRecord.Builder(life.catalogue.matching.person.Provenance.IPNI);
+    var b = new PersonRecord.Builder(life.catalogue.api.vocab.PersonSource.IPNI);
     b.ipni = "1-1";
     b.born(null);
     b.died(null);
@@ -60,7 +62,7 @@ public class CachingFetcherTest {
 
   @Test
   public void recordIdsOwnFirst() {
-    var b = new PersonRecord.Builder(life.catalogue.matching.person.Provenance.IPNI);
+    var b = new PersonRecord.Builder(life.catalogue.api.vocab.PersonSource.IPNI);
     b.wikidata = "Q1";
     b.ipni = "1-1";
     assertEquals(List.of("ipni:1-1", "wd:Q1"), List.copyOf(b.build().ids()));

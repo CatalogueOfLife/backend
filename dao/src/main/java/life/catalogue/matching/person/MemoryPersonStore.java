@@ -1,5 +1,10 @@
 package life.catalogue.matching.person;
 
+import life.catalogue.api.model.Person;
+import life.catalogue.api.model.PersonName;
+import life.catalogue.api.model.PersonRelation;
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 
 import org.gbif.nameparser.api.NomCode;
@@ -21,13 +26,13 @@ import javax.annotation.Nullable;
  * <p>
  * Loaded once and only by what asks for it, so the string comparison pays nothing.
  */
-public class PersonRegistry {
-  private static PersonRegistry instance;
+public class MemoryPersonStore {
+  private static MemoryPersonStore instance;
 
-  private record Form(Person person, FormCode code) {
+  private record Form(Person person, PersonFormCode code) {
   }
 
-  private record Keyed(String key, FormCode code) {
+  private record Keyed(String key, PersonFormCode code) {
   }
 
   private final int size;
@@ -38,10 +43,10 @@ public class PersonRegistry {
   private final Map<String, Set<Person>> relatives = new HashMap<>();
   private final List<String> problems = new ArrayList<>();
 
-  public static synchronized PersonRegistry get() {
+  public static synchronized MemoryPersonStore resources() {
     if (instance == null) {
       try {
-        instance = new PersonRegistry(PersonFiles.readResources());
+        instance = new MemoryPersonStore(PersonFiles.readResources());
       } catch (IOException e) {
         throw new UncheckedIOException(e);
       }
@@ -49,7 +54,7 @@ public class PersonRegistry {
     return instance;
   }
 
-  public PersonRegistry(PersonFiles.Content c) {
+  public MemoryPersonStore(PersonFiles.Content c) {
     size = c.persons().size();
     for (Person p : c.persons()) {
       if (p.id() == null) {
@@ -76,11 +81,11 @@ public class PersonRegistry {
         problems.add(p.id() + " was active before it was born");
       }
       if (p.family() != null) {
-        add(p.family(), p, FormCode.ANY);
-        add(initials(p.given()) + p.family() + suffix(p), p, FormCode.ANY);
+        add(p.family(), p, PersonFormCode.ANY);
+        add(initials(p.given()) + p.family() + suffix(p), p, PersonFormCode.ANY);
         if (p.suffix() != null) {
           // relatives are cited by the family name and suffix alone: "Hooker f.", "Sowerby II"
-          add(p.family() + suffix(p), p, FormCode.ANY);
+          add(p.family() + suffix(p), p, PersonFormCode.ANY);
         }
       }
     }
@@ -93,10 +98,10 @@ public class PersonRegistry {
       }
       named.add(p);
       add(n.form(), p, n.code());
-      if ((n.kind() == NameKind.FULL || n.kind() == NameKind.VARIANT) && p.family() != null) {
+      if ((n.kind() == PersonNameKind.FULL || n.kind() == PersonNameKind.VARIANT) && p.family() != null) {
         String given = givenOf(n.form(), p);
         if (given != null) {
-          add(initials(given) + p.family() + suffix(p), p, FormCode.ANY);
+          add(initials(given) + p.family() + suffix(p), p, PersonFormCode.ANY);
         }
       }
     }
@@ -118,7 +123,7 @@ public class PersonRegistry {
     }
   }
 
-  private void add(String form, Person p, FormCode code) {
+  private void add(String form, Person p, PersonFormCode code) {
     String key = key(form);
     if (key != null) {
       List<Form> forms = byKey.computeIfAbsent(key, k -> new ArrayList<>(1));

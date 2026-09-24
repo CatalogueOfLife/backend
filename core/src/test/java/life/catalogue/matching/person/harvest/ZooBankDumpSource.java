@@ -1,5 +1,7 @@
 package life.catalogue.matching.person.harvest;
 
+
+
 import java.nio.file.Path;
 import java.util.List;
 
@@ -10,7 +12,7 @@ import java.util.List;
  * zoological CITATION forms and other name records of the author VARIANT forms; the lifespan becomes born and died;
  * a Wikidata, IPNI or ORCID link the dump carries is a join key. The merge side is tested with hand made records.
  */
-public class ZooBankDumpSource implements PersonSource {
+public class ZooBankDumpSource implements HarvestSource {
   private final Path dump;
 
   public ZooBankDumpSource(Path dump) {

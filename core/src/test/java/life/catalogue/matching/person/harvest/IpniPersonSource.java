@@ -1,8 +1,8 @@
 package life.catalogue.matching.person.harvest;
 
-import life.catalogue.matching.person.FormCode;
-import life.catalogue.matching.person.NameKind;
-import life.catalogue.matching.person.Provenance;
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
+import life.catalogue.api.vocab.PersonSource;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * records per query. So it is asked by surname prefix, A to Z, and a prefix with more authors is split into longer
  * prefixes. Authors whose surname starts with no letter A to Z are what the total of all authors shows missing.
  */
-public class IpniPersonSource implements PersonSource {
+public class IpniPersonSource implements HarvestSource {
   static final String ENDPOINT = "https://www.ipni.org/api/1/search";
   static final int PAGE = 500;
   static final int MAX_RECORDS = 10000;
@@ -93,17 +93,17 @@ public class IpniPersonSource implements PersonSource {
       suppressed++;
       return null;
     }
-    var b = new PersonRecord.Builder(Provenance.IPNI);
+    var b = new PersonRecord.Builder(PersonSource.IPNI);
     b.ipni = id;
     String std = StringUtils.trimToNull(a.path("standardForm").asText(null));
     String forename = StringUtils.trimToNull(a.path("forename").asText(null));
     String surname = StringUtils.trimToNull(a.path("surname").asText(null));
-    b.name(std, NameKind.STANDARD, FormCode.BOT);
+    b.name(std, PersonNameKind.STANDARD, PersonFormCode.BOT);
     if (surname != null) {
-      b.name(forename == null ? surname : forename + " " + surname, NameKind.FULL, FormCode.ANY);
+      b.name(forename == null ? surname : forename + " " + surname, PersonNameKind.FULL, PersonFormCode.ANY);
     }
     for (String alt : a.path("alternativeNames").asText("").split(";")) {
-      b.name(Names.surnameFirst(alt), NameKind.VARIANT, FormCode.ANY);
+      b.name(Names.surnameFirst(alt), PersonNameKind.VARIANT, PersonFormCode.ANY);
     }
     b.family(surname);
     b.given(forename);

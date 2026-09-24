@@ -11,6 +11,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-09-24 the person registry
+```sql
+CREATE TYPE PERSONFORMCODE AS ENUM ('BOT', 'ZOO', 'ANY');
+CREATE TYPE PERSONNAMEKIND AS ENUM ('STANDARD', 'CITATION', 'FULL', 'VARIANT', 'DERIVED');
+CREATE TYPE PERSONRELATIONTYPE AS ENUM ('PARENT', 'SIBLING');
+CREATE TYPE PERSONSOURCE AS ENUM ('CURATED', 'IPNI', 'ZOOBANK', 'WIKIDATA');
+```
+The person registry of author matching moves from files in the code into the database, see
+`docs/2026-09-24-person-registry-service.md`.
+
 #### 2026-09-15 record which id superseded a deleted one
 ```sql
 ALTER TABLE name_usage_archive ADD COLUMN superseded_by TEXT;

@@ -1,10 +1,10 @@
 package life.catalogue.matching.person.harvest;
 
-import life.catalogue.matching.person.FormCode;
-import life.catalogue.matching.person.NameKind;
-import life.catalogue.matching.person.Person;
-import life.catalogue.matching.person.Provenance;
-import life.catalogue.matching.person.RelationType;
+import life.catalogue.api.model.Person;
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
+import life.catalogue.api.vocab.PersonRelationType;
+import life.catalogue.api.vocab.PersonSource;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * (P101), parents (P22, P25) and siblings (P3373), deprecated ones left out. The labels of the name and field items
  * follow. The query service took half a minute to a minute for the statements or labels of a hundred persons.
  */
-public class WikidataPersonSource implements PersonSource {
+public class WikidataPersonSource implements HarvestSource {
   static final String SPARQL = "https://query.wikidata.org/sparql";
   static final String API = "https://www.wikidata.org/w/api.php";
   static final String ENTITY = "http://www.wikidata.org/entity/";
@@ -119,13 +119,13 @@ public class WikidataPersonSource implements PersonSource {
       String v = text(b, "v");
       if (q == null || v == null) continue;
       PersonRecord.Builder pb = builders.computeIfAbsent(q, k -> {
-        var x = new PersonRecord.Builder(Provenance.WIKIDATA);
+        var x = new PersonRecord.Builder(PersonSource.WIKIDATA);
         x.wikidata = k;
         return x;
       });
       switch (p) {
-        case P428 -> pb.name(v, NameKind.STANDARD, FormCode.BOT);
-        case P835 -> pb.name(v, NameKind.CITATION, FormCode.ZOO);
+        case P428 -> pb.name(v, PersonNameKind.STANDARD, PersonFormCode.BOT);
+        case P835 -> pb.name(v, PersonNameKind.CITATION, PersonFormCode.ZOO);
         // an item with several IPNI or ZooBank ids keeps the first as its own, the others are the same person
         case P586 -> {
           if (pb.ipni == null) pb.ipni = v;
@@ -150,7 +150,7 @@ public class WikidataPersonSource implements PersonSource {
     }
   }
 
-  private static void link(PersonRecord.Builder pb, RelationType type, String q) {
+  private static void link(PersonRecord.Builder pb, PersonRelationType type, String q) {
     if (q != null) {
       pb.link(type, Person.WIKIDATA + q);
     }
@@ -170,7 +170,7 @@ public class WikidataPersonSource implements PersonSource {
       }
       for (String lang : List.of("en", "mul")) {
         for (JsonNode a : e.path("aliases").path(lang)) {
-          pb.name(a.path("value").asText(null), NameKind.VARIANT, FormCode.ANY);
+          pb.name(a.path("value").asText(null), PersonNameKind.VARIANT, PersonFormCode.ANY);
         }
       }
       JsonNode claims = e.path("claims");
@@ -183,9 +183,9 @@ public class WikidataPersonSource implements PersonSource {
         pb.activeTo(year(v));
       });
       for (String p : List.of("P22", "P25")) {
-        values(claims, p).forEach(v -> link(pb, RelationType.PARENT, v.path("id").asText(null)));
+        values(claims, p).forEach(v -> link(pb, PersonRelationType.PARENT, v.path("id").asText(null)));
       }
-      values(claims, "P3373").forEach(v -> link(pb, RelationType.SIBLING, v.path("id").asText(null)));
+      values(claims, "P3373").forEach(v -> link(pb, PersonRelationType.SIBLING, v.path("id").asText(null)));
       values(claims, "P734").forEach(v -> pend(pending.family(), pb.wikidata, v.path("id").asText(null)));
       values(claims, "P735").forEach(v -> pend(pending.given(), pb.wikidata, v.path("id").asText(null)));
       values(claims, "P101").forEach(v -> pend(pending.field(), pb.wikidata, v.path("id").asText(null)));

@@ -1,8 +1,8 @@
 package life.catalogue.matching.person.harvest;
 
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
 import life.catalogue.api.vocab.TaxGroup;
-import life.catalogue.matching.person.FormCode;
-import life.catalogue.matching.person.NameKind;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -40,9 +40,9 @@ public class IpniPersonSourceTest {
     assertEquals(Integer.valueOf(1787), r.born());
     assertEquals(Integer.valueOf(1871), r.died());
     assertEquals(Set.of(TaxGroup.Fungi, TaxGroup.Algae), r.groups());
-    assertEquals(List.of(new PersonRecord.Form("J.C.Sowerby", NameKind.STANDARD, FormCode.BOT),
-      new PersonRecord.Form("James de Carle Sowerby", NameKind.FULL, FormCode.ANY),
-      new PersonRecord.Form("James DeCarle Sowerby", NameKind.VARIANT, FormCode.ANY)), r.names());
+    assertEquals(List.of(new PersonRecord.Form("J.C.Sowerby", PersonNameKind.STANDARD, PersonFormCode.BOT),
+      new PersonRecord.Form("James de Carle Sowerby", PersonNameKind.FULL, PersonFormCode.ANY),
+      new PersonRecord.Form("James DeCarle Sowerby", PersonNameKind.VARIANT, PersonFormCode.ANY)), r.names());
     assertEquals("f.", source.parse(MAPPER.readTree(author("4084-1", "Hook.f.", "Joseph Dalton", "Hooker", "1817-1911", "", ""))).suffix());
     assertNull(source.parse(MAPPER.readTree("{\"id\":\"1-1\",\"suppressed\":true,\"standardForm\":\"X\"}")));
   }

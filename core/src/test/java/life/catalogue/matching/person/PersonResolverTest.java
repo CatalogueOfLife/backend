@@ -1,5 +1,10 @@
 package life.catalogue.matching.person;
 
+import life.catalogue.api.model.Person;
+import life.catalogue.api.model.PersonName;
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
+import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 
@@ -18,7 +23,7 @@ public class PersonResolverTest {
   static Person person(String q, String given, String suffix, Integer born, Integer died, Integer activeFrom, Integer activeTo,
                        Set<TaxGroup> groups) {
     return new Person("wd:" + q, q, null, null, List.of(), "Sowerby", given, suffix, born, died, activeFrom, activeTo, groups,
-      Provenance.WIKIDATA);
+      PersonSource.WIKIDATA);
   }
 
   static final Person JAMES1 = person("Q1", "James", null, 1757, 1822, null, null, Set.of());
@@ -28,13 +33,13 @@ public class PersonResolverTest {
   static final Person BOTANIST = person("Q5", "Bartholomew", null, null, null, null, null, Set.of(TaxGroup.Angiosperms));
 
   // explicit margins: the tests must not move when the defaults are set on the corpus
-  private final PersonResolver resolver = new PersonResolver(new PersonRegistry(new PersonFiles.Content(
+  private final PersonResolver resolver = new PersonResolver(new MemoryPersonStore(new PersonFiles.Content(
     List.of(JAMES1, JAMES2, GBS2, FLORA, BOTANIST),
-    List.of(new PersonName("wd:Q1", "James Sowerby", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA),
-      new PersonName("wd:Q2", "James Sowerby", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA),
-      new PersonName("wd:Q3", "G.B. Sowerby II", NameKind.CITATION, FormCode.ZOO, Provenance.WIKIDATA),
-      new PersonName("wd:Q4", "Flora Sowerby", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA),
-      new PersonName("wd:Q5", "Bartholomew Sowerby", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA)),
+    List.of(new PersonName("wd:Q1", "James Sowerby", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA),
+      new PersonName("wd:Q2", "James Sowerby", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA),
+      new PersonName("wd:Q3", "G.B. Sowerby II", PersonNameKind.CITATION, PersonFormCode.ZOO, PersonSource.WIKIDATA),
+      new PersonName("wd:Q4", "Flora Sowerby", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA),
+      new PersonName("wd:Q5", "Bartholomew Sowerby", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA)),
     List.of())), new PersonResolver.Margins(10, 20, 15));
 
   /** "J. Sowerby" of 1821 is the elder James, the younger was six; after 1822 + 20 only the younger is left */

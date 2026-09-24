@@ -1,9 +1,11 @@
-package life.catalogue.matching.person;
+package life.catalogue.api.vocab;
+
+
 
 /**
  * Who a line of the registry came from. A harvest never removes or overwrites a curated line.
  */
-public enum Provenance {
+public enum PersonSource {
   CURATED, IPNI, ZOOBANK, WIKIDATA;
 
   /** the lower case form the files hold */
@@ -11,7 +13,7 @@ public enum Provenance {
     return name().toLowerCase();
   }
 
-  public static Provenance of(String value) {
+  public static PersonSource of(String value) {
     return valueOf(value.toUpperCase());
   }
 }

@@ -1,5 +1,8 @@
 package life.catalogue.matching.person.harvest;
 
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
+import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.matching.person.*;
 
 import java.nio.file.Path;
@@ -17,8 +20,8 @@ public class PersonHarvestTest {
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
 
-  static PersonSource source(String name, PersonRecord... records) {
-    return new PersonSource() {
+  static HarvestSource source(String name, PersonRecord... records) {
+    return new HarvestSource() {
       public String name() {
         return name;
       }
@@ -33,20 +36,20 @@ public class PersonHarvestTest {
   public void run() throws Exception {
     Path dir = tmp.newFolder().toPath();
     PersonFiles.write(dir, PersonFiles.Content.empty());
-    var w = new PersonRecord.Builder(Provenance.WIKIDATA);
+    var w = new PersonRecord.Builder(PersonSource.WIKIDATA);
     w.wikidata = "Q1";
     w.label("Carl Linnaeus");
     w.family("Linnaeus");
     w.given("Carl");
-    var i = new PersonRecord.Builder(Provenance.IPNI);
+    var i = new PersonRecord.Builder(PersonSource.IPNI);
     i.ipni = "12653-1";
-    i.name("L.", NameKind.STANDARD, FormCode.BOT);
+    i.name("L.", PersonNameKind.STANDARD, PersonFormCode.BOT);
     w.ipni = "12653-1";
 
     String report = PersonHarvest.run(dir, List.of(source("wikidata", w.build()), source("ipni", i.build())), q -> Map.of());
     var c = PersonFiles.read(dir);
     assertEquals(1, c.persons().size());
-    assertEquals(List.of(), new PersonRegistry(c).problems());
+    assertEquals(List.of(), new MemoryPersonStore(c).problems());
     assertTrue(report, report.contains("added 1"));
     // the author map rows no person resolves
     assertTrue(report, report.contains("## Author map rows no person resolves"));

@@ -1,11 +1,11 @@
 package life.catalogue.matching.person.harvest;
 
+import life.catalogue.api.model.Person;
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
+import life.catalogue.api.vocab.PersonRelationType;
+import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.api.vocab.TaxGroup;
-import life.catalogue.matching.person.FormCode;
-import life.catalogue.matching.person.NameKind;
-import life.catalogue.matching.person.Person;
-import life.catalogue.matching.person.Provenance;
-import life.catalogue.matching.person.RelationType;
 
 import java.util.*;
 
@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
  * @param relations to other persons by a prefixed authority id of the same source, e.g. wd:Q42
  */
 public record PersonRecord(
-  Provenance source,
+  PersonSource source,
   @Nullable String wikidata,
   @Nullable String ipni,
   @Nullable String zoobank,
@@ -35,10 +35,10 @@ public record PersonRecord(
   List<Form> names,
   List<Link> relations
 ) {
-  public record Form(String form, NameKind kind, FormCode code) {
+  public record Form(String form, PersonNameKind kind, PersonFormCode code) {
   }
 
-  public record Link(RelationType relation, String other) {
+  public record Link(PersonRelationType relation, String other) {
   }
 
   /**
@@ -63,7 +63,7 @@ public record PersonRecord(
    * Collects a person across several answers of a source.
    */
   public static final class Builder {
-    final Provenance source;
+    final PersonSource source;
     public String wikidata;
     public String ipni;
     public String zoobank;
@@ -80,17 +80,17 @@ public record PersonRecord(
     final List<Form> names = new ArrayList<>();
     final List<Link> relations = new ArrayList<>();
 
-    public Builder(Provenance source) {
+    public Builder(PersonSource source) {
       this.source = source;
     }
 
     /** the full name the person is known by, which also orders family and given names */
     void label(String label) {
       this.label = label;
-      name(label, NameKind.FULL, FormCode.ANY);
+      name(label, PersonNameKind.FULL, PersonFormCode.ANY);
     }
 
-    void name(@Nullable String form, NameKind kind, FormCode code) {
+    void name(@Nullable String form, PersonNameKind kind, PersonFormCode code) {
       if (form == null || form.isBlank()) return;
       Form f = new Form(form.trim(), kind, code);
       if (!names.contains(f)) {
@@ -127,7 +127,7 @@ public record PersonRecord(
       activeTo = max(activeTo, y);
     }
 
-    void link(RelationType type, String other) {
+    void link(PersonRelationType type, String other) {
       Link l = new Link(type, other);
       if (!relations.contains(l)) {
         relations.add(l);

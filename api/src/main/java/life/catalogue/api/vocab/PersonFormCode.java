@@ -1,4 +1,6 @@
-package life.catalogue.matching.person;
+package life.catalogue.api.vocab;
+
+
 
 import org.gbif.nameparser.api.NomCode;
 
@@ -8,7 +10,7 @@ import javax.annotation.Nullable;
  * The names a form is used in, with the meaning the codes have in authormap.txt: a botanical standard form such as
  * "Sw." (Swartz) is no citation of anybody in zoology.
  */
-public enum FormCode {
+public enum PersonFormCode {
   BOT, ZOO, ANY;
 
   /**

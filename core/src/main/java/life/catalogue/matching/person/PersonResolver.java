@@ -1,5 +1,6 @@
 package life.catalogue.matching.person;
 
+import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.TaxGroup;
 
 import org.gbif.nameparser.api.NomCode;
@@ -32,11 +33,11 @@ public class PersonResolver {
     public static final Margins DEFAULT = new Margins(10, 20, 15);
   }
 
-  private final PersonRegistry registry;
+  private final MemoryPersonStore registry;
   private final Margins margins;
   private final Map<String, Set<Person>> candidates = new ConcurrentHashMap<>();
 
-  public PersonResolver(PersonRegistry registry, Margins margins) {
+  public PersonResolver(MemoryPersonStore registry, Margins margins) {
     this.registry = registry;
     this.margins = margins;
   }

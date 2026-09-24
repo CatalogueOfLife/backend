@@ -1,5 +1,10 @@
 package life.catalogue.matching.person.harvest;
 
+import life.catalogue.api.model.Person;
+import life.catalogue.api.model.PersonName;
+import life.catalogue.api.model.PersonRelation;
+import life.catalogue.api.vocab.PersonRelationType;
+import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.matching.person.*;
 
@@ -9,7 +14,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import static life.catalogue.matching.person.Provenance.*;
+import static life.catalogue.api.vocab.PersonSource.*;
 
 /**
  * Merges the records of a harvest into the registry files.
@@ -46,7 +51,7 @@ public class PersonMerger {
     Integer activeFrom;
     Integer activeTo;
     final Set<TaxGroup> groups = EnumSet.noneOf(TaxGroup.class);
-    Provenance source;
+    PersonSource source;
     boolean existing;
     final List<PersonRecord> records = new ArrayList<>();
 
@@ -332,8 +337,8 @@ public class PersonMerger {
     return rekeyed;
   }
 
-  private static int rank(Draft d, Provenance p) {
-    List<Provenance> order = d.ipni != null && d.zoobank == null ? List.of(IPNI, WIKIDATA, ZOOBANK)
+  private static int rank(Draft d, PersonSource p) {
+    List<PersonSource> order = d.ipni != null && d.zoobank == null ? List.of(IPNI, WIKIDATA, ZOOBANK)
       : d.zoobank != null && d.ipni == null ? List.of(ZOOBANK, WIKIDATA, IPNI)
       : List.of(WIKIDATA, IPNI, ZOOBANK);
     int i = order.indexOf(p);
@@ -381,7 +386,7 @@ public class PersonMerger {
   private <T> T fill(Draft d, String field, @Nullable T current, List<PersonRecord> recs, Function<PersonRecord, T> getter,
                      BiPredicate<T, T> same) {
     T chosen = null;
-    Provenance from = null;
+    PersonSource from = null;
     for (PersonRecord r : recs) {
       T v = getter.apply(r);
       if (v == null) continue;
@@ -445,7 +450,7 @@ public class PersonMerger {
             continue;
           }
           boolean fresh = seen.add(key(d.id, l.relation(), other.id));
-          if (l.relation() == RelationType.SIBLING) {
+          if (l.relation() == PersonRelationType.SIBLING) {
             fresh &= seen.add(key(other.id, l.relation(), d.id));
           }
           if (fresh) {
@@ -457,7 +462,7 @@ public class PersonMerger {
     return relations;
   }
 
-  private static List<Object> key(String a, RelationType t, String b) {
+  private static List<Object> key(String a, PersonRelationType t, String b) {
     return List.of(a, t, b);
   }
 }

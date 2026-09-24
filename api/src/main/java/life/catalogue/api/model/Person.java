@@ -1,5 +1,6 @@
-package life.catalogue.matching.person;
+package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.api.vocab.TaxGroup;
 
 import java.util.LinkedHashSet;
@@ -31,7 +32,7 @@ public record Person(
   @Nullable Integer activeFrom,
   @Nullable Integer activeTo,
   Set<TaxGroup> groups,
-  Provenance source
+  PersonSource source
 ) {
   public static final String WIKIDATA = "wd:";
   public static final String IPNI = "ipni:";

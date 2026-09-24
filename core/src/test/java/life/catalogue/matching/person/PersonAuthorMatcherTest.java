@@ -1,5 +1,12 @@
 package life.catalogue.matching.person;
 
+import life.catalogue.api.model.Person;
+import life.catalogue.api.model.PersonName;
+import life.catalogue.api.model.PersonRelation;
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
+import life.catalogue.api.vocab.PersonRelationType;
+import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
@@ -26,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 public class PersonAuthorMatcherTest {
 
   static Person person(String q, String family, String given, String suffix, Integer born, Integer died, Set<TaxGroup> groups) {
-    return new Person("wd:" + q, q, null, null, List.of(), family, given, suffix, born, died, null, null, groups, Provenance.WIKIDATA);
+    return new Person("wd:" + q, q, null, null, List.of(), family, given, suffix, born, died, null, null, groups, PersonSource.WIKIDATA);
   }
 
   static final Person WJ_HOOKER = person("Q11", "Hooker", "William Jackson", null, 1785, 1865, Set.of(TaxGroup.Plants));
@@ -39,20 +46,20 @@ public class PersonAuthorMatcherTest {
   static final Person SOWERBY1 = person("Q18", "Sowerby", "George Brettingham", "I", 1788, 1854, Set.of(TaxGroup.Molluscs));
   static final Person SOWERBY2 = person("Q19", "Sowerby", "George Brettingham", "II", 1812, 1884, Set.of(TaxGroup.Molluscs));
 
-  static PersonName name(Person p, String form, NameKind kind, FormCode code) {
-    return new PersonName(p.id(), form, kind, code, Provenance.WIKIDATA);
+  static PersonName name(Person p, String form, PersonNameKind kind, PersonFormCode code) {
+    return new PersonName(p.id(), form, kind, code, PersonSource.WIKIDATA);
   }
 
-  private final PersonRegistry registry = new PersonRegistry(new PersonFiles.Content(
+  private final MemoryPersonStore registry = new MemoryPersonStore(new PersonFiles.Content(
     List.of(WJ_HOOKER, JD_HOOKER, C_HOOK, MILLER, LINNAEUS, ARNOTT, COX, SOWERBY1, SOWERBY2),
-    List.of(name(WJ_HOOKER, "Hook.", NameKind.STANDARD, FormCode.BOT), name(WJ_HOOKER, "William Jackson Hooker", NameKind.FULL, FormCode.ANY),
-      name(JD_HOOKER, "Hook.f.", NameKind.STANDARD, FormCode.BOT), name(JD_HOOKER, "Joseph Dalton Hooker", NameKind.FULL, FormCode.ANY),
-      name(C_HOOK, "Cathy J. Hook", NameKind.FULL, FormCode.ANY),
-      name(MILLER, "Mill.", NameKind.STANDARD, FormCode.BOT), name(LINNAEUS, "L.", NameKind.STANDARD, FormCode.BOT),
-      name(ARNOTT, "Arn.", NameKind.STANDARD, FormCode.BOT), name(COX, "Leslie Reginald Cox", NameKind.FULL, FormCode.ANY),
-      name(SOWERBY1, "G.B. Sowerby I", NameKind.CITATION, FormCode.ZOO), name(SOWERBY2, "G.B. Sowerby II", NameKind.CITATION, FormCode.ZOO)),
-    List.of(new PersonRelation(JD_HOOKER.id(), RelationType.PARENT, WJ_HOOKER.id(), Provenance.WIKIDATA),
-      new PersonRelation(SOWERBY2.id(), RelationType.PARENT, SOWERBY1.id(), Provenance.WIKIDATA))));
+    List.of(name(WJ_HOOKER, "Hook.", PersonNameKind.STANDARD, PersonFormCode.BOT), name(WJ_HOOKER, "William Jackson Hooker", PersonNameKind.FULL, PersonFormCode.ANY),
+      name(JD_HOOKER, "Hook.f.", PersonNameKind.STANDARD, PersonFormCode.BOT), name(JD_HOOKER, "Joseph Dalton Hooker", PersonNameKind.FULL, PersonFormCode.ANY),
+      name(C_HOOK, "Cathy J. Hook", PersonNameKind.FULL, PersonFormCode.ANY),
+      name(MILLER, "Mill.", PersonNameKind.STANDARD, PersonFormCode.BOT), name(LINNAEUS, "L.", PersonNameKind.STANDARD, PersonFormCode.BOT),
+      name(ARNOTT, "Arn.", PersonNameKind.STANDARD, PersonFormCode.BOT), name(COX, "Leslie Reginald Cox", PersonNameKind.FULL, PersonFormCode.ANY),
+      name(SOWERBY1, "G.B. Sowerby I", PersonNameKind.CITATION, PersonFormCode.ZOO), name(SOWERBY2, "G.B. Sowerby II", PersonNameKind.CITATION, PersonFormCode.ZOO)),
+    List.of(new PersonRelation(JD_HOOKER.id(), PersonRelationType.PARENT, WJ_HOOKER.id(), PersonSource.WIKIDATA),
+      new PersonRelation(SOWERBY2.id(), PersonRelationType.PARENT, SOWERBY1.id(), PersonSource.WIKIDATA))));
   private final StringAuthorMatcher strings = new StringAuthorMatcher(AuthorshipNormalizer.INSTANCE);
   private final List<Explanation> seen = new ArrayList<>();
 
@@ -178,9 +185,9 @@ public class PersonAuthorMatcherTest {
   @Test
   public void fallbackSkipsUnreadableForms() {
     var gaimard = person("Q31", "Gaimard", "Joseph Paul", null, 1793, 1858, Set.of());
-    var reg = new PersonRegistry(new PersonFiles.Content(List.of(gaimard),
-      List.of(name(gaimard, "Joseph Paul Gaimard", NameKind.FULL, FormCode.ANY), name(gaimard, "Gaimard, J.P.", NameKind.VARIANT, FormCode.ANY),
-        name(gaimard, "J.P.G.", NameKind.VARIANT, FormCode.ANY)),
+    var reg = new MemoryPersonStore(new PersonFiles.Content(List.of(gaimard),
+      List.of(name(gaimard, "Joseph Paul Gaimard", PersonNameKind.FULL, PersonFormCode.ANY), name(gaimard, "Gaimard, J.P.", PersonNameKind.VARIANT, PersonFormCode.ANY),
+        name(gaimard, "J.P.G.", PersonNameKind.VARIANT, PersonFormCode.ANY)),
       List.of()));
     var m = new PersonAuthorMatcher(reg, new PersonResolver(reg, new PersonResolver.Margins(10, 20, 15)), strings, RelativesPolicy.UNKNOWN,
       null);

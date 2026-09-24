@@ -34,7 +34,7 @@ public class RelativesFixtureTest {
   }
 
   static AuthorComparator persons(RelativesPolicy policy) {
-    PersonRegistry reg = PersonRegistry.get();
+    MemoryPersonStore reg = MemoryPersonStore.resources();
     return new AuthorComparator(new PersonAuthorMatcher(reg, new PersonResolver(reg, PersonResolver.Margins.DEFAULT),
       new StringAuthorMatcher(AuthorshipNormalizer.INSTANCE), policy, null));
   }

@@ -1,5 +1,12 @@
 package life.catalogue.matching.person;
 
+import life.catalogue.api.model.Person;
+import life.catalogue.api.model.PersonName;
+import life.catalogue.api.model.PersonRelation;
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
+import life.catalogue.api.vocab.PersonRelationType;
+import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.api.vocab.TaxGroup;
 
 import org.gbif.nameparser.api.NomCode;
@@ -23,17 +30,17 @@ public class PersonFilesTest {
 
   static Person sowerby2() {
     return new Person("wd:Q2", "Q2", "9936-1", null, List.of("ipni:9936-1"), "Sowerby", "George Brettingham", "II",
-      1812, 1884, null, null, Set.of(TaxGroup.Molluscs, TaxGroup.Angiosperms), Provenance.WIKIDATA);
+      1812, 1884, null, null, Set.of(TaxGroup.Molluscs, TaxGroup.Angiosperms), PersonSource.WIKIDATA);
   }
 
   @Test
   public void roundTrip() throws Exception {
     var c = new PersonFiles.Content(
       List.of(sowerby2(), new Person("clb:1", null, null, null, List.of(), "Smith", null, null, null, null, 1850, 1870,
-        Set.of(), Provenance.CURATED)),
-      List.of(new PersonName("wd:Q2", "G.B.Sowerby II", NameKind.CITATION, FormCode.ZOO, Provenance.WIKIDATA),
-        new PersonName("clb:1", "Smith", NameKind.FULL, FormCode.ANY, Provenance.CURATED)),
-      List.of(new PersonRelation("wd:Q2", RelationType.PARENT, "wd:Q1", Provenance.WIKIDATA))
+        Set.of(), PersonSource.CURATED)),
+      List.of(new PersonName("wd:Q2", "G.B.Sowerby II", PersonNameKind.CITATION, PersonFormCode.ZOO, PersonSource.WIKIDATA),
+        new PersonName("clb:1", "Smith", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.CURATED)),
+      List.of(new PersonRelation("wd:Q2", PersonRelationType.PARENT, "wd:Q1", PersonSource.WIKIDATA))
     );
     Path dir = tmp.newFolder().toPath();
     PersonFiles.write(dir, c);
@@ -50,7 +57,7 @@ public class PersonFilesTest {
   @Test
   public void tabsAndNewlinesBecomeSpaces() throws Exception {
     var c = new PersonFiles.Content(List.of(sowerby2()),
-      List.of(new PersonName("wd:Q2", "George\tBrettingham\nSowerby", NameKind.FULL, FormCode.ANY, Provenance.WIKIDATA)),
+      List.of(new PersonName("wd:Q2", "George\tBrettingham\nSowerby", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA)),
       List.of());
     Path dir = tmp.newFolder().toPath();
     PersonFiles.write(dir, c);
@@ -67,11 +74,6 @@ public class PersonFilesTest {
   }
 
   @Test
-  public void committedFilesRead() throws Exception {
-    assertNotNull(PersonFiles.readResources());
-  }
-
-  @Test
   public void ids() {
     assertEquals("wd:Q2", Person.idFor("Q2", "9936-1", null));
     assertEquals("ipni:9936-1", Person.idFor(null, "9936-1", "ABC"));
@@ -82,11 +84,11 @@ public class PersonFilesTest {
 
   @Test
   public void formCodes() {
-    assertTrue(FormCode.BOT.appliesTo(null));
-    assertTrue(FormCode.BOT.appliesTo(NomCode.BOTANICAL));
-    assertFalse(FormCode.BOT.appliesTo(NomCode.ZOOLOGICAL));
-    assertTrue(FormCode.ZOO.appliesTo(NomCode.ZOOLOGICAL));
-    assertFalse(FormCode.ZOO.appliesTo(null));
-    assertTrue(FormCode.ANY.appliesTo(NomCode.ZOOLOGICAL));
+    assertTrue(PersonFormCode.BOT.appliesTo(null));
+    assertTrue(PersonFormCode.BOT.appliesTo(NomCode.BOTANICAL));
+    assertFalse(PersonFormCode.BOT.appliesTo(NomCode.ZOOLOGICAL));
+    assertTrue(PersonFormCode.ZOO.appliesTo(NomCode.ZOOLOGICAL));
+    assertFalse(PersonFormCode.ZOO.appliesTo(null));
+    assertTrue(PersonFormCode.ANY.appliesTo(NomCode.ZOOLOGICAL));
   }
 }

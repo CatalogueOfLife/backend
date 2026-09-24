@@ -1,9 +1,9 @@
 package life.catalogue.matching.person.harvest;
 
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
+import life.catalogue.api.vocab.PersonRelationType;
 import life.catalogue.api.vocab.TaxGroup;
-import life.catalogue.matching.person.FormCode;
-import life.catalogue.matching.person.NameKind;
-import life.catalogue.matching.person.RelationType;
 
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -123,10 +123,10 @@ public class WikidataPersonSourceTest {
     assertEquals(Integer.valueOf(1812), r.born());
     assertEquals(Integer.valueOf(1884), r.died());
     assertEquals(Set.of(TaxGroup.Molluscs), r.groups());
-    assertTrue(r.names().contains(new PersonRecord.Form("G.B.Sowerby II", NameKind.CITATION, FormCode.ZOO)));
-    assertTrue(r.names().contains(new PersonRecord.Form("George Brettingham Sowerby II", NameKind.FULL, FormCode.ANY)));
-    assertTrue(r.names().contains(new PersonRecord.Form("G. B. Sowerby", NameKind.VARIANT, FormCode.ANY)));
-    assertEquals(List.of(new PersonRecord.Link(RelationType.PARENT, "wd:Q1"), new PersonRecord.Link(RelationType.SIBLING, "wd:Q3")),
+    assertTrue(r.names().contains(new PersonRecord.Form("G.B.Sowerby II", PersonNameKind.CITATION, PersonFormCode.ZOO)));
+    assertTrue(r.names().contains(new PersonRecord.Form("George Brettingham Sowerby II", PersonNameKind.FULL, PersonFormCode.ANY)));
+    assertTrue(r.names().contains(new PersonRecord.Form("G. B. Sowerby", PersonNameKind.VARIANT, PersonFormCode.ANY)));
+    assertEquals(List.of(new PersonRecord.Link(PersonRelationType.PARENT, "wd:Q1"), new PersonRecord.Link(PersonRelationType.SIBLING, "wd:Q3")),
       r.relations());
     assertTrue(source.stats(), source.stats().contains("politics"));
   }
@@ -144,7 +144,7 @@ public class WikidataPersonSourceTest {
   public void standardFormIsBotanical() throws Exception {
     Map<String, PersonRecord.Builder> persons = new TreeMap<>();
     WikidataPersonSource.addIds(rows(id("Q5", "Sw.")), WikidataPersonSource.IdProperty.P428, persons);
-    assertEquals(List.of(new PersonRecord.Form("Sw.", NameKind.STANDARD, FormCode.BOT)), persons.get("Q5").build().names());
+    assertEquals(List.of(new PersonRecord.Form("Sw.", PersonNameKind.STANDARD, PersonFormCode.BOT)), persons.get("Q5").build().names());
   }
 
   /** read() pages the ids through the query service, then asks the API for the persons and their name items */
@@ -179,7 +179,7 @@ public class WikidataPersonSourceTest {
       return sparql();
     });
     PersonRecord r = source.read().get(0);
-    assertTrue(r.names().contains(new PersonRecord.Form("Kurt M. Neubig", NameKind.FULL, FormCode.ANY)));
+    assertTrue(r.names().contains(new PersonRecord.Form("Kurt M. Neubig", PersonNameKind.FULL, PersonFormCode.ANY)));
     assertEquals("Neubig", r.family());
   }
 

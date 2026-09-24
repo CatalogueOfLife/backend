@@ -1,9 +1,10 @@
 package life.catalogue.matching.person.harvest;
 
+import life.catalogue.api.model.Person;
+import life.catalogue.api.vocab.PersonFormCode;
 import life.catalogue.common.io.Resources;
-import life.catalogue.matching.person.FormCode;
+import life.catalogue.matching.person.MemoryPersonStore;
 import life.catalogue.matching.person.PersonFiles;
-import life.catalogue.matching.person.PersonRegistry;
 
 import org.gbif.nameparser.api.NomCode;
 
@@ -40,7 +41,7 @@ public class PersonHarvest {
       new RetryingFetcher(new HttpFetcher("application/json"), Duration.ofSeconds(1), Json::complete), Json::complete));
     var ipni = new IpniPersonSource(new CachingFetcher(work.resolve("cache/ipni"),
       new RetryingFetcher(new HttpFetcher("application/json"), Duration.ofMillis(250), Json::complete), Json::complete));
-    List<PersonSource> sources = new ArrayList<>(List.of(wikidata, ipni));
+    List<HarvestSource> sources = new ArrayList<>(List.of(wikidata, ipni));
     if (args.length == 4) {
       sources.add(new ZooBankDumpSource(Path.of(args[3])));
     }
@@ -60,11 +61,11 @@ public class PersonHarvest {
   /**
    * @return the review report
    */
-  static String run(Path dir, List<PersonSource> sources, Function<Collection<String>, Map<String, String>> redirects) throws Exception {
+  static String run(Path dir, List<HarvestSource> sources, Function<Collection<String>, Map<String, String>> redirects) throws Exception {
     PersonFiles.Content existing = PersonFiles.read(dir);
     List<PersonRecord> records = new ArrayList<>();
     StringBuilder stats = new StringBuilder();
-    for (PersonSource s : sources) {
+    for (HarvestSource s : sources) {
       List<PersonRecord> read = s.read();
       System.out.printf("%s: %,d records%n", s.name(), read.size());
       records.addAll(read);
@@ -79,7 +80,7 @@ public class PersonHarvest {
       .filter(q -> q != null && !seen.contains(q))
       .toList();
     var result = new PersonMerger().merge(existing, records, gone.isEmpty() ? Map.of() : redirects.apply(gone));
-    var registry = new PersonRegistry(result.content());
+    var registry = new MemoryPersonStore(result.content());
     if (!registry.problems().isEmpty()) {
       throw new IllegalStateException("The merge is inconsistent, nothing written: " + registry.problems().subList(0,
         Math.min(20, registry.problems().size())));
@@ -97,13 +98,13 @@ public class PersonHarvest {
   /**
    * Author map rows none of whose forms name a person: hand edits worth keeping become curated lines.
    */
-  private static void unresolvedAuthorMapRows(PersonRegistry registry, StringBuilder sb) {
+  private static void unresolvedAuthorMapRows(MemoryPersonStore registry, StringBuilder sb) {
     List<String> unresolved = new ArrayList<>();
     int rows = 0;
     for (String[] row : (Iterable<String[]>) Resources.tabRows(AUTHOR_MAP)::iterator) {
       if (row.length < 3) continue;
       rows++;
-      FormCode code = FormCode.valueOf(row[1].trim().toUpperCase());
+      PersonFormCode code = PersonFormCode.valueOf(row[1].trim().toUpperCase());
       List<NomCode> codes = switch (code) {
         case BOT -> List.of(NomCode.BOTANICAL);
         case ZOO -> List.of(NomCode.ZOOLOGICAL);

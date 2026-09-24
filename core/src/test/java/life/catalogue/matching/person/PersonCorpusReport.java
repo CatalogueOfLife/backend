@@ -1,5 +1,6 @@
 package life.catalogue.matching.person;
 
+import life.catalogue.api.model.Person;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.StringAuthorMatcher;
@@ -123,7 +124,7 @@ public class PersonCorpusReport {
 
   public static void report(File pairs, @Nullable File stringVerdicts, File outDir, Margins margins) throws IOException {
     long t0 = System.nanoTime();
-    PersonRegistry registry = PersonRegistry.get();
+    MemoryPersonStore registry = MemoryPersonStore.resources();
     long loadMs = (System.nanoTime() - t0) / 1_000_000;
     System.gc();
     long heapMb = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) >> 20;

@@ -1,5 +1,12 @@
 package life.catalogue.matching.person;
 
+import life.catalogue.api.model.Person;
+import life.catalogue.api.model.PersonName;
+import life.catalogue.api.model.PersonRelation;
+import life.catalogue.api.vocab.PersonFormCode;
+import life.catalogue.api.vocab.PersonNameKind;
+import life.catalogue.api.vocab.PersonRelationType;
+import life.catalogue.api.vocab.PersonSource;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.common.io.Resources;
 
@@ -64,8 +71,8 @@ public class PersonFiles {
   private static Content read(Opener opener) throws IOException {
     return new Content(
       rows(opener, PERSONS, PERSON_COLUMNS, PersonFiles::person),
-      rows(opener, NAMES, NAME_COLUMNS, r -> new PersonName(r[0], r[1], NameKind.valueOf(r[2]), FormCode.valueOf(r[3]), Provenance.of(r[4]))),
-      rows(opener, RELATIONS, RELATION_COLUMNS, r -> new PersonRelation(r[0], RelationType.valueOf(r[1]), r[2], Provenance.of(r[3])))
+      rows(opener, NAMES, NAME_COLUMNS, r -> new PersonName(r[0], r[1], PersonNameKind.valueOf(r[2]), PersonFormCode.valueOf(r[3]), PersonSource.of(r[4]))),
+      rows(opener, RELATIONS, RELATION_COLUMNS, r -> new PersonRelation(r[0], PersonRelationType.valueOf(r[1]), r[2], PersonSource.of(r[3])))
     );
   }
 
@@ -97,7 +104,7 @@ public class PersonFiles {
 
   private static Person person(String[] r) {
     return new Person(r[0], str(r[1]), str(r[2]), str(r[3]), list(r[4]), str(r[5]), str(r[6]), str(r[7]),
-      num(r[8]), num(r[9]), num(r[10]), num(r[11]), groups(r[12]), Provenance.of(r[13]));
+      num(r[8]), num(r[9]), num(r[10]), num(r[11]), groups(r[12]), PersonSource.of(r[13]));
   }
 
   @Nullable

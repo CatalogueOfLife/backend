@@ -1,9 +1,11 @@
-package life.catalogue.matching.person;
+package life.catalogue.api.vocab;
+
+
 
 /**
  * How two persons are related. Relatives working in one field are what author strings cannot tell apart.
  */
-public enum RelationType {
+public enum PersonRelationType {
   /** the other person is a parent of the person */
   PARENT,
   SIBLING
