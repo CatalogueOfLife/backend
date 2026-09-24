@@ -29,6 +29,7 @@ Actinobacteria
 Actinobacteridae
 Actinomycetaceae
 Actinomycetales
+Actinomycetes # actinobacterial class, not fungi despite -mycetes
 Actinomycineae
 Actinopolymorphaceae
 Actinopolysporaceae
@@ -179,6 +180,7 @@ Chroococcaceae
 Chroococcales
 Chroococcidiopsidaceae
 Chroococcidiopsidales
+Chroococcophyceae # cyanobacterial class, not algae despite -phyceae
 Chrysiogenaceae
 Chrysiogenales
 Chrysiogenetes
@@ -330,6 +332,7 @@ Geodermatophilales
 Gloeobacteraceae
 Gloeobacterales
 Gloeobacteria
+Gloeobacterophycidae # cyanobacterial subclass, not algae despite -phycidae
 Gloeotrichiaceae
 Glycomycetaceae
 Glycomycetales
@@ -518,6 +521,7 @@ Nocardiopsaceae
 Nostocaceae
 Nostocales
 Nostochopsidaceae
+Nostocophycidae # cyanobacterial subclass, not algae despite -phycidae
 Notoacmeibacteraceae
 Oceanospirillaceae
 Oceanospirillales
@@ -536,6 +540,7 @@ Orbales
 Ornithinimicrobiaceae
 Oscillatoriaceae
 Oscillatoriales
+Oscillatoriophycidae # cyanobacterial subclass, not algae despite -phycidae
 Oscillatoriophycideae
 Oscillochloridaceae
 Oscillospiraceae
@@ -700,6 +705,7 @@ Sutterellaceae
 Symphyonemataceae
 Synechococcaceae
 Synechococcales
+Synechococcophycidae # cyanobacterial subclass, not algae despite -phycidae
 Synergistaceae
 Synergistales
 Synergistetes

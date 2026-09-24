@@ -36,7 +36,16 @@ public class TaxGroupParserTest extends ParserTestBase<TaxGroup> {
     // recognize suffix
     assertParse(TaxGroup.Algae, "Blablaphyceae");
     assertParse(TaxGroup.Fungi, "Blablamycetes");
+    assertParse(TaxGroup.Fungi, "Blablamycota");
+    assertParse(TaxGroup.Fungi, "Blablamycotina");
     assertParse(TaxGroup.Plants, "Blablaphytina");
+    // bacteria listed in the dicts win over suffix rules
+    assertParse(TaxGroup.Bacteria, "Actinomycetes");
+    assertParse(TaxGroup.Bacteria, "Chroococcophyceae");
+    assertParse(TaxGroup.Bacteria, "Gloeobacterophycidae");
+    assertParse(TaxGroup.Bacteria, "Nostocophycidae");
+    assertParse(TaxGroup.Bacteria, "Oscillatoriophycidae");
+    assertParse(TaxGroup.Bacteria, "Synechococcophycidae");
     assertParse(TaxGroup.Viruses, "Blablaviridae");
     // but not for binomials
     assertParse(null, "Blabla blamycetes");

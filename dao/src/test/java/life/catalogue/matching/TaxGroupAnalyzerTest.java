@@ -95,6 +95,45 @@ public class TaxGroupAnalyzerTest {
   }
 
   /**
+   * A group backed by more names wins over a disparate one, a real tie gives the lowest common group.
+   * https://github.com/CatalogueOfLife/backend/issues/1607
+   */
+  @Test
+  public void weighConflicts() {
+    // Tropicos uses Equisetopsida sensu lato for all land plants
+    assertEquals(TaxGroup.Angiosperms, analyzer.analyze(sn(Rank.GENUS, NomCode.BOTANICAL, "Baumannia", null), List.of(
+      sn(Rank.CLASS, "Equisetopsida"), sn(Rank.SUBCLASS, "Magnoliidae"), sn(Rank.SUPERORDER, "Asteranae"),
+      sn(Rank.ORDER, "Gentianales"), sn(Rank.FAMILY, "Rubiaceae")
+    )));
+    assertEquals(TaxGroup.Gymnosperms, analyzer.analyze(sn(Rank.GENUS, NomCode.BOTANICAL, "Pinus", null), List.of(
+      sn(Rank.CLASS, "Equisetopsida"), sn(Rank.SUBCLASS, "Pinidae"), sn(Rank.ORDER, "Pinales"), sn(Rank.FAMILY, "Pinaceae")
+    )));
+    // tie within one kingdom
+    assertEquals(TaxGroup.Plants, analyzer.analyze(sn(Rank.GENUS, "Foo"), List.of(sn("Polypodiopsida"), sn("Magnoliopsida"))));
+    // tie across kingdoms
+    assertEquals(TaxGroup.Eukaryotes, analyzer.analyze(sn(Rank.GENUS, "Foo"), List.of(sn("Animalia"), sn("Plantae"))));
+    // tie without any common group
+    assertNull(analyzer.analyze(sn(Rank.GENUS, "Foo"), List.of(sn("Bacteria"), sn("Rhodophyta"))));
+  }
+
+  /**
+   * Bacterial classifications the suffix rules misread as algae or fungi.
+   * https://github.com/CatalogueOfLife/backend/issues/1607
+   */
+  @Test
+  public void bacteria() {
+    assertEquals(TaxGroup.Bacteria, analyzer.analyze(sn(Rank.GENUS, "Microbacterium"), List.of(
+      sn("Biota"), sn("Bacteria"), sn("Actinomycetota"), sn("Actinomycetes"), sn("Micrococcales"), sn("Microbacteriaceae")
+    )));
+    assertEquals(TaxGroup.Bacteria, analyzer.analyze(sn(Rank.GENUS, "Oscillatoria"), List.of(
+      sn("Bacteria"), sn("Cyanobacteriota"), sn("Cyanophyceae"), sn("Oscillatoriophycidae"), sn("Oscillatoriales"), sn("Oscillatoriaceae")
+    )));
+    assertEquals(TaxGroup.Bacteria, analyzer.analyze(sn(Rank.CLASS, "Actinomycetes")));
+    assertEquals(TaxGroup.Bacteria, analyzer.analyze(sn(Rank.CLASS, "Chroococcophyceae")));
+    assertEquals(TaxGroup.Bacteria, analyzer.analyze(sn(Rank.SUBCLASS, "Nostocophycidae")));
+  }
+
+  /**
    * https://github.com/CatalogueOfLife/data/issues/913
    */
   @Test

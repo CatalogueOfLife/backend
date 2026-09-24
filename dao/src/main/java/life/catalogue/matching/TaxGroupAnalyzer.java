@@ -141,28 +141,30 @@ public class TaxGroupAnalyzer {
       if (result != null) {
         return result;
       }
-      // compare all groups with each other
-      // and remove the group which contradicts most
+      // compare all groups with each other, weighted by the number of names behind them,
+      // and remove the groups which contradict most
       CountEnumMap<TaxGroup> grpMatches = new CountEnumMap<>(TaxGroup.class);
       for (var g : groups.keySet()) {
-        for (var g2 : groups.keySet()) {
-          if (!g.isDisparateTo(g2)) {
-            grpMatches.inc(g);
+        for (var g2 : groups.entrySet()) {
+          if (!g.isDisparateTo(g2.getKey())) {
+            grpMatches.inc(g, g2.getValue());
           }
         }
       }
       final int highest = grpMatches.highestCount().get();
       if (!groups.removeIf(g -> grpMatches.get(g) < highest)) {
-        // we could not reduce the groups any more, pick root
-        // if we have more than 1 group still we have a contradiction... count by root group and select the lowest group of the largest set
+        // we could not reduce the groups any more, we have a tie between contradicting groups.
+        // count names by group and all its parents and select the lowest group of the largest set
         CountEnumMap<TaxGroup> counts = new CountEnumMap<>(TaxGroup.class);
-        for (var g : groups.keySet()) {
-          counts.inc(g);
-          for (var p : g.classification()) {
-            counts.inc(p);
+        for (var g : groups.entrySet()) {
+          counts.inc(g.getKey(), g.getValue());
+          for (var p : g.getKey().classification()) {
+            counts.inc(p, g.getValue());
           }
         }
-        return counts.highest();
+        final int largest = counts.highestCount().get();
+        counts.removeIf(g -> counts.get(g) < largest);
+        return filterCandidates(counts);
       }
     }
     return null;
