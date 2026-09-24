@@ -179,7 +179,40 @@ public class PersonMerger {
       }
     }
     link(d, r, index);
+    linkOtherIds(d, r, drafts, index);
     return d;
+  }
+
+  /**
+   * An authority may give a person a second id of another authority - Wikidata lists two IPNI ids for IPNI's duplicate
+   * records of one author. It becomes a former id, and a person holding it is joined. One another item holds as its own
+   * stays with that item and is reported.
+   */
+  private void linkOtherIds(Draft d, PersonRecord r, List<Draft> drafts, Map<String, Draft> index) {
+    for (String id : r.otherIds()) {
+      Draft o = index.get(id);
+      if (o != null && o != d) {
+        if (differs(o.wikidata, d.wikidata)) {
+          report.ambiguous.add(describe(o) + " holds " + id + ", which a " + r.source().value() + " record gives "
+            + describe(d) + " as a second id");
+          continue;
+        }
+        addFormer(d, id);
+        if (join(d, o, drafts, index, "the second id " + id) == null) {
+          d.formerIds.remove(id);
+          continue;
+        }
+      } else {
+        addFormer(d, id);
+      }
+      index.put(id, d);
+    }
+  }
+
+  private static void addFormer(Draft d, @Nullable String id) {
+    if (id != null && !id.equals(d.id) && !d.formerIds.contains(id)) {
+      d.formerIds.add(id);
+    }
   }
 
   private static boolean compatible(Draft a, Draft b) {
@@ -212,12 +245,13 @@ public class PersonMerger {
         + ", but a curated person is never joined");
       return null;
     }
-    // a redirect joins without asking whether the ids agree: a dropped id is reported and still finds keep
-    keep.wikidata = keep(keep, other, "wikidata", keep.wikidata, other.wikidata);
-    keep.ipni = keep(keep, other, "ipni", keep.ipni, other.ipni);
-    keep.zoobank = keep(keep, other, "zoobank", keep.zoobank, other.zoobank);
-    if (other.id != null) keep.formerIds.add(other.id);
-    keep.formerIds.addAll(other.formerIds);
+    // a redirect or a second id of an authority joins without asking whether the ids agree: a dropped id becomes a
+    // former id, so it still finds keep, and is reported unless an authority gave it as a second id of the person
+    keep.wikidata = keepId(keep, other, "wikidata", Person.WIKIDATA, keep.wikidata, other.wikidata);
+    keep.ipni = keepId(keep, other, "ipni", Person.IPNI, keep.ipni, other.ipni);
+    keep.zoobank = keepId(keep, other, "zoobank", Person.ZOOBANK, keep.zoobank, other.zoobank);
+    addFormer(keep, other.id);
+    other.formerIds.forEach(id -> addFormer(keep, id));
     keep.family = keep(keep, other, "family", keep.family, other.family);
     keep.given = keep(keep, other, "given", keep.given, other.given);
     keep.suffix = keep(keep, other, "suffix", keep.suffix, other.suffix);
@@ -234,6 +268,17 @@ public class PersonMerger {
     keep.authorityIds().forEach(id -> index.put(id, keep));
     report.merged++;
     return keep;
+  }
+
+  private String keepId(Draft keep, Draft other, String field, String prefix, @Nullable String kept, @Nullable String dropped) {
+    if (kept == null) return dropped;
+    if (dropped != null && !kept.equals(dropped)) {
+      if (!keep.formerIds.contains(prefix + dropped)) {
+        report.conflicts.add(describe(keep) + " " + field + ": kept " + kept + ", dropped " + dropped + " of " + describe(other));
+      }
+      addFormer(keep, prefix + dropped);
+    }
+    return kept;
   }
 
   private <T> T keep(Draft keep, Draft other, String field, @Nullable T kept, @Nullable T dropped) {
@@ -254,7 +299,7 @@ public class PersonMerger {
   private String linkId(Draft d, @Nullable String current, @Nullable String value, String prefix, Map<String, Draft> index) {
     if (value == null) return current;
     if (current != null) {
-      if (!current.equals(value)) {
+      if (!current.equals(value) && !d.formerIds.contains(prefix + value)) {
         report.ambiguous.add(describe(d) + " has " + prefix + current + " while a record gives " + prefix + value);
       }
       return current;

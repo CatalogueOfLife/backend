@@ -190,4 +190,17 @@ public class WikidataPersonSourceTest {
     assertEquals(Map.of("Q1", "Q2"), source.redirects(List.of("Q1")));
     assertEquals(Map.of(), source.redirects(List.of()));
   }
+
+  /** an item with two IPNI or ZooBank ids: the first is the person's, the others are the same person recorded twice */
+  @Test
+  public void severalIdsOfOneAuthority() throws Exception {
+    Map<String, PersonRecord.Builder> persons = new TreeMap<>();
+    WikidataPersonSource.addIds(rows(id("Q2", "1-1"), id("Q2", "2-2")), WikidataPersonSource.IdProperty.P586, persons);
+    WikidataPersonSource.addIds(rows(id("Q2", "abc"), id("Q2", "def")), WikidataPersonSource.IdProperty.P2006, persons);
+    persons.get("Q2").label("Anna Smith");
+    PersonRecord r = persons.get("Q2").build();
+    assertEquals("1-1", r.ipni());
+    assertEquals("ABC", r.zoobank());
+    assertEquals(Set.of("ipni:2-2", "zb:DEF"), r.otherIds());
+  }
 }

@@ -14,6 +14,8 @@ import javax.annotation.Nullable;
 /**
  * One person as one authority knows them.
  *
+ * @param otherIds  further prefixed ids the source gives the person, e.g. a second IPNI id of one Wikidata item: IPNI's
+ *                  duplicate records of one author
  * @param relations to other persons by a prefixed authority id of the same source, e.g. wd:Q42
  */
 public record PersonRecord(
@@ -21,6 +23,7 @@ public record PersonRecord(
   @Nullable String wikidata,
   @Nullable String ipni,
   @Nullable String zoobank,
+  Set<String> otherIds,
   @Nullable String family,
   @Nullable String given,
   @Nullable String suffix,
@@ -65,6 +68,7 @@ public record PersonRecord(
     public String ipni;
     public String zoobank;
     public String suffix;
+    final Set<String> otherIds = new LinkedHashSet<>();
     String label;
     final List<String> family = new ArrayList<>();
     final List<String> given = new ArrayList<>();
@@ -92,6 +96,11 @@ public record PersonRecord(
       if (!names.contains(f)) {
         names.add(f);
       }
+    }
+
+    /** a second id of an authority for the same person, prefixed */
+    public void otherId(String prefixedId) {
+      otherIds.add(prefixedId);
     }
 
     void family(@Nullable String x) {
@@ -139,7 +148,9 @@ public record PersonRecord(
     }
 
     public PersonRecord build() {
-      return new PersonRecord(source, wikidata, ipni, zoobank, Names.ordered(family, label), Names.ordered(given, label),
+      // insertion ordered: the merger joins in this order, and Set.copyOf iterates in an order that changes between runs
+      return new PersonRecord(source, wikidata, ipni, zoobank, Collections.unmodifiableSet(new LinkedHashSet<>(otherIds)),
+        Names.ordered(family, label), Names.ordered(given, label),
         suffix != null ? suffix : Names.suffix(label), born, died, activeFrom, activeTo, Set.copyOf(groups),
         List.copyOf(names), List.copyOf(relations));
     }

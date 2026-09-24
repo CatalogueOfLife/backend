@@ -361,4 +361,62 @@ public class PersonMergerTest {
     assertEquals(1, r.content().persons().size());
     assertEquals(List.of("wd:Q1"), r.report().notSeen);
   }
+
+  /** a second IPNI id of an item is a former id of its person, and the IPNI author of that id joins it */
+  @Test
+  public void secondIpniIdOfAnItem() {
+    var w = wd("Q1");
+    w.ipni = "1-1";
+    w.otherId(Person.IPNI + "2-2");
+    w.label("Anna Smith");
+    var i1 = ipni("1-1");
+    i1.name("A.Sm.", NameKind.STANDARD, FormCode.BOT);
+    var i2 = ipni("2-2");
+    i2.name("A.Smith", NameKind.STANDARD, FormCode.BOT);
+    var r = merge(PersonFiles.Content.empty(), w.build(), i1.build(), i2.build());
+    assertEquals(1, r.content().persons().size());
+    Person p = r.content().persons().get(0);
+    assertEquals("wd:Q1", p.id());
+    assertEquals("1-1", p.ipni());
+    assertEquals(List.of("ipni:2-2"), p.formerIds());
+    assertTrue(r.content().names().contains(new PersonName("wd:Q1", "A.Smith", NameKind.STANDARD, FormCode.BOT, Provenance.IPNI)));
+    assertEquals(List.of(), r.report().ambiguous);
+    assertEquals(List.of(), r.report().conflicts);
+  }
+
+  /** the files hold the second IPNI id as a person of its own, as the first harvest wrote 160 of them: the item joins it */
+  @Test
+  public void secondIpniIdJoinsAPersonOfTheFiles() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("ipni:2-2", null, "2-2", null, List.of(), "Smith", "Anna", null, null, null, null, null, Set.of(), Provenance.IPNI)),
+      List.of(new PersonName("ipni:2-2", "A.Smith", NameKind.STANDARD, FormCode.BOT, Provenance.IPNI)),
+      List.of());
+    var w = wd("Q1");
+    w.ipni = "1-1";
+    w.otherId(Person.IPNI + "2-2");
+    w.label("Anna Smith");
+    var r = merge(existing, w.build());
+    assertEquals(1, r.content().persons().size());
+    Person p = r.content().persons().get(0);
+    assertEquals("wd:Q1", p.id());
+    assertEquals(List.of("ipni:2-2"), p.formerIds());
+    assertEquals("Smith", p.family());
+    assertEquals(List.of(), r.report().conflicts);
+  }
+
+  /** a second id another item holds as its own stays with that item: reported, never a former id of two persons */
+  @Test
+  public void secondIdOfAnotherItemIsReported() {
+    var a = wd("Q1");
+    a.ipni = "2-2";
+    a.label("Anna Smith");
+    var b = wd("Q2");
+    b.ipni = "1-1";
+    b.otherId(Person.IPNI + "2-2");
+    b.label("Anne Smith");
+    var r = merge(PersonFiles.Content.empty(), a.build(), b.build());
+    assertEquals(2, r.content().persons().size());
+    assertEquals(List.of(), person(r.content(), "wd:Q2").formerIds());
+    assertEquals(1, r.report().ambiguous.size());
+  }
 }

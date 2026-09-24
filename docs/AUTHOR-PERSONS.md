@@ -21,8 +21,9 @@ and every file is written sorted so a harvest diffs line by line.
 
 - **`id`** is the best identifier a person has, prefixed: `wd:Q…` with a Wikidata id, else `ipni:…`, else `zb:…`, else a
   curated `clb:N`. A person that gains a better id - an IPNI author Wikidata links later - keeps the old one in
-  `formerIds`, so every line that refers to it keeps resolving. Lines may refer to a person by any of its ids, its former
-  ids or a prefixed authority id.
+  `formerIds`, so every line that refers to it keeps resolving. A second id an authority gives the person is a former id
+  too: Wikidata lists two IPNI ids for IPNI's duplicate records of one author, and the IPNI records of both make one
+  person. Lines may refer to a person by any of its ids, its former ids or a prefixed authority id.
 - **`family`, `given`, `suffix`** are the structured name as an authority records it: IPNI's surname and forename (the
   filius `f.` from the standard form), or Wikidata's family and given names (P734, P735) put in the order of the
   label, with a trailing `I` to `IV`, `Jr.` or `Sr.` of the label as suffix. They are never split off a full name: the

@@ -126,9 +126,16 @@ public class WikidataPersonSource implements PersonSource {
       switch (p) {
         case P428 -> pb.name(v, NameKind.STANDARD, FormCode.BOT);
         case P835 -> pb.name(v, NameKind.CITATION, FormCode.ZOO);
-        // an item with several IPNI or ZooBank ids keeps the first in id order, deterministically
-        case P586 -> pb.ipni = pb.ipni == null ? v : pb.ipni;
-        case P2006 -> pb.zoobank = pb.zoobank == null ? v.toUpperCase() : pb.zoobank;
+        // an item with several IPNI or ZooBank ids keeps the first as its own, the others are the same person
+        case P586 -> {
+          if (pb.ipni == null) pb.ipni = v;
+          else if (!pb.ipni.equals(v)) pb.otherId(Person.IPNI + v);
+        }
+        case P2006 -> {
+          String z = v.toUpperCase(Locale.ROOT);
+          if (pb.zoobank == null) pb.zoobank = z;
+          else if (!pb.zoobank.equals(z)) pb.otherId(Person.ZOOBANK + z);
+        }
       }
     }
     return rows;
