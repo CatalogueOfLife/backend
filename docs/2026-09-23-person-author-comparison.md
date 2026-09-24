@@ -1,8 +1,8 @@
 # Comparing authors as persons
 
 Date: 2026-09-23
-Status: design agreed on 2026-09-23. Phases 0, 1 and 2 are implemented on branch `feat/person-author-comparison`, not merged;
-phase 3 is not implemented. Four phases, each with its own implementation plan.
+Status: design agreed on 2026-09-23. Phases 0 to 3 are implemented on branch `feat/person-author-comparison`, not
+merged; the person matcher is measured, not used in production. Four phases, each with its own implementation plan.
 
 This is step 2 of "Next" in [2026-09-19-author-comparison-corpus.md](2026-09-19-author-comparison-corpus.md): compare
 people, not rewritten strings. It is built as an experiment next to the current comparison, which stays in production
@@ -307,11 +307,91 @@ regenerated from the cache, from empty files, since a harvest never overwrites a
   now come from every full name ending with the family name as well, and particles stay words: `G.B. Sowerby II`,
   `A. P. de Candolle` and `C.F.P. von Martius` resolve.
 
-Left for later, from the same review: several family names of one person are joined into one (Carl Linnaeus has
-`Linné von Linné`); one id per authority is kept although 179 items carry several IPNI ids; authority ids are not
-checked for their format; `Hooker f.` resolves to nobody, as family plus suffix is not derived; and the author map
-check counts a row resolved when any of its strings is.
+Left for later, from the same review: authority ids are not checked for their format, and the author map check counts
+a row resolved when any of its strings is. Joined family names, one id per authority and the missing `Hooker f.` were
+fixed at the start of phase 3.
 
 Left for the next harvest: disagreements that only differ in completeness, one name a prefix of the other, should not
 count; fields of work such as "systematic botany", "paleobotany", "algae" and "beetle", and IPNI's "Cryptogamic",
 map to no group yet; IPNI dates with an em dash, a shortened end year (`fl. 1867-68`) or a single year are not read.
+
+**Phase 3, the person matcher** (2026-09-24). `PersonResolver` and `PersonAuthorMatcher` as designed, measured with
+`PersonCorpusReport` on the corpus re-exported with its classification (12.5M names, 419,868 labelled pairs, the string
+baseline unchanged by it: 0 flips). Before measuring, the registry got what the phase 2 review had deferred and the
+evaluation needed: an item's second IPNI or ZooBank id is a former id of its person (159 persons fewer, 179 with such
+an id), the family name with its suffix is a form (`Hooker f.`), variants ending with the family name give initials
+(`K. B. Presl`), bracketed alternatives of an IPNI forename give none, a dotted given name gives all its initials
+(`J.C.` had given `J.`, making J. de C. Sowerby his father's `J. Sowerby`), and Wikidata's alternative family names are
+no longer joined. G. B. Sowerby III is the first curated person: his Wikidata item has none of the harvested properties.
+The corpus pairs carry the group of their names, from their classification and three dataset defaults for nomenclators
+without one (Index Nominum Algarum algae, Species Fungorum Plus fungi, ZooBank eukaryotes); 87.9% of the names get a
+specific group. `TaxGroupAnalyzer` misreads Tropicos' `Equisetopsida` and some bacterial classes, which leaves 6.1%
+without one (#1607).
+
+Weighted by names, with years, against the string matcher:
+
+| | SAME judged EQUAL | DIFF judged DIFFERENT | DIFF judged EQUAL |
+|---|---|---|---|
+| string | 96.44% | 92.62% | 1.24% |
+| persons, relatives UNKNOWN | 96.59% | 92.60% | 1.27% |
+| persons, relatives DIFFERENT | 96.56% | 92.60% | 1.27% |
+| persons UNKNOWN, no group narrowing | 96.43% | 92.61% | 1.26% |
+
+Botany: `SAME` 95.99% → 96.03%, `DIFF` 97.52% → 97.51%; zoology: `SAME` 97.21% → 97.58%, `DIFF` 88.37% → 88.34%. Per pair
+rather than per name the persons judge fewer `SAME` pairs `EQUAL` (95.4% against 95.8%): the gains are few pairs backed
+by many names, the losses many small ones. Under the `UNKNOWN` policy 2,757 of 419,868 verdicts change, 307 of them
+right and 518 wrong by their label, most of them dubious pairs, which no matrix counts.
+
+On the relatives fixture the string matcher takes 15 of the 30 pairs of relatives for one person and splits 4 of the 21
+alias pairs. The persons take 1 pair of relatives for one under `UNKNOWN` - G. B. Sowerby II and III, both cited 1874 -
+and none under `DIFFERENT`, and join all 21 alias pairs. Relatives are the comparator's years business under `UNKNOWN`:
+it combines the author verdict with `Equality.and`, so relatives citing the same year are `EQUAL`, a few years apart
+`DIFFERENT`, and only without years `UNKNOWN` (14 botanical pairs); this was not spelled out in the design.
+
+89.5% of the 880,694 citations of the pairs resolve to a person, 88.5% weighted by names. 304,139 pairs were decided by
+identity alone, 73,697 needed the string fallback, 653 met relatives. The registry loads in 1.6 s and leaves 139 MB of
+heap in use; a policy runs the whole corpus in about 7 s. The margins hardly matter: a posthumous margin of 5 or 50
+years or an active slack of 5 or 30 moves at most four verdicts, so `Margins.DEFAULT` (10, 20, 15) stays. Group
+narrowing pays despite its errors: without it 675 verdicts regress instead of 518.
+
+**Is it better by the spec's measure? No, narrowly.** It is better on `SAME` judged `EQUAL` (+0.15 points, +712 names
+net) and on the relatives fixture, but not "no worse" on `DIFF` judged `DIFFERENT`: 25 pairs (33 names) lost, 8 (10)
+won. Of the 25, four are one person under two spellings - `Guerin-Meneville` / `Guérin`, `Cleve-Euler` / `A. Cleve` -
+whom the label calls different only because the names are; 15 come from the string fallback, when a bare, very
+ambiguous surname (Smith, Wang, Li with hundreds of candidates) meets an unresolved citation and one of its hundreds
+of forms matches by string; six from group narrowing ruling out a zoologist whose groups are IPNI's, which then leads to
+that fallback (`Quoy` and `R. A. Philippi` for a snail, where Gaimard's form `gaimard, j p` parses to the surname `p`).
+
+Every regressed pair backed by 10 or more names was reviewed by hand: 99 pairs, all `SAME` ones.
+- 15 (894 names) are relatives the `UNKNOWN` policy leaves open without years, the recurrence the design expected:
+  `A.DC.` / `DC.` (350 names), `G.Lodd.` / `Lodd.`, `(Almq.) Almq.` / `(E.B.Almq.) E.B.Almq.`, `C.Ehrenb.` / `Ehrenb.`.
+- 39 (887 names) are two different persons with standard forms of their own, which one source cites for the other's
+  act: `Coult.` / `J.M.Coult.`, `Beauverd` / `P.Beauv.`, `I.Verd.` / `Verdc.`, `H.Koidz.` / `Koidz.`. The persons are
+  right; whether the act is the same is a matter of the sources.
+- 23 (630 names) resolve wrongly because of the registry:
+  - a family name holding part of the cited surname or none: Octavius Pickard-Cambridge has `Pickard`, Trevisan
+    `Trevisan de Saint-Léon`, R. B. Manning none;
+  - a standard form missing for a citation used for the person: `Kern.`, `Vell.`, `Lund.`, `Gill.`, `Serv.`;
+  - the `oe` folding turning `Boeck.` into Bock;
+  - initials of a partial citation naming another person: `P.Lima` is Patricia Lima, `R.Fernandes` Ronaldo
+    Fernandes, `W. Turner` Wilhelm Turner.
+- 12 (190 names) are spelling variants of a bare surname resolving to disjoint persons: `Hoffman` / `Hoffmann`,
+  `Thompson` / `Thomson`, `Gnilovskaja` / `Gnilovskaya`.
+- 10 (275 names) are relatives the registry does not relate - father and son Desvaux, Uechtritz, Vierhapper, Martius,
+  Suringar and the Verlot brothers - or relate only through a grandparent: `A.DC.` / `Aug.DC.`.
+
+The unresolved worklist is led by `skvortzow`, `i lea`, `linnaus`, `o f muller`, `o g sars` (gbif/name-parser-rust#24:
+`Sars G.O.` parses as `O.G.Sars`), `a cleve euler` and `r a philippi`. `linnaus`, `r a philippi` and `c g d nees` there
+are the group narrowing again: the groups of these persons come from IPNI or botanical fields of work, which say what a
+person worked on, not what they did not.
+
+What would make it better, from the review: groups as evidence only within the scope of their source (IPNI's
+say nothing about animals); a disjoint verdict only between resolved citations that are no bare surnames, else the
+string comparison; the fallback against the forms of at most a few candidates; registry forms without a comma and
+family names holding every cited part; more relations. None of these is built.
+
+Deviations from the plan: the registry needed the dotted-initials fix above before the fixture could be pinned; the
+no-map string report leaves its alias worklist out rather than listing 0 pairs; the regenerated harvest reports 48 ids
+claimed by two persons, up from 28, all pairs of Wikidata items listing the same ZooBank ids. From the spec: `explain`
+takes the mode, which the fallback needs; the Crouan brothers are not in the fixture, IPNI and WoRMS cite them together
+only; the fixture's alias pairs come from all corpus datasets, not IPNI and WoRMS alone.

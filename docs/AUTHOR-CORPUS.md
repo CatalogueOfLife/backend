@@ -97,6 +97,29 @@ the author map had and which parser the corpus was parsed by.
   lacks, and the dubious pairs - judged `EQUAL` those are mostly duplicate records in the dataset they come from;
 - different names per dataset. A dataset far above the others holds duplicates rather than homonyms.
 
+**The person matcher** is measured with `PersonCorpusReport` in `core` test scope, on the same pairs and against the
+string verdicts of step 4. It writes the report of step 4 twice, once per relatives policy, into `unknown/` and
+`different/` of its output directory, each with a `diff.txt` against the string verdicts. The report adds these
+sections:
+- what decided the verdicts: the rules every name pair needed and the verdict;
+- the share of citations resolved to a person;
+- the citations no person resolves, ranked by names: the worklist of missing persons and forms;
+- every pair the relatives policy decided;
+- the run time.
+
+Its header names the registry size, its load time and the heap in use after loading, and the margins. Install dao
+first, as `core` takes its test classes from `~/.m2`:
+
+    mvn -q -pl dao -am install -DskipTests
+    cd core
+    mvn -q test-compile exec:exec -Dexec.executable=java -Dexec.classpathScope=test \
+      -Dexec.args="-Xmx6g -cp %classpath life.catalogue.matching.person.PersonCorpusReport ../dao/target/author-corpus/pairs.tsv.gz ../dao/target/author-corpus/verdicts.tsv.gz target/person-corpus [--min-age N] [--posthumous N] [--active-slack N]"
+
+`RelativesFixtureTest` pins both matchers on `core/src/test/resources/author-corpus/relatives-pairs.tsv`, 51 hand
+curated pairs: 30 pairs of relatives - Hookers, Reichenbachs, de Candolles, Linnaei, Presl, Nees, Sowerbys, Adams,
+Sars and Geoffroys - each a name of one against a name of the other, from IPNI, WoRMS and ITIS, and 21 pairs citing one
+of them two ways, from the corpus. Its `main` prints every verdict of all three.
+
 **What the author map is worth** shows in a second report without it, diffed against the first. `fixed` is then
 what the map gets right and `regressed` what it breaks:
 

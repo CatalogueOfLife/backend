@@ -62,6 +62,29 @@ Alternatives IPNI lists in brackets, `Carl (Karl, Carel, Carolus) Bořivoj`, giv
 that name; the registry only ever proposes candidates, it decides nothing.
 `get(anyId)` resolves any id of a person and `relatives(person)` gives parents, children and siblings.
 
+## Comparing authors as persons
+
+`PersonAuthorMatcher` is an `AuthorMatcher`, the part of `AuthorComparator` that decides whether two author teams name
+the same authors; the comparator keeps the years and the name structure. It is measured on the author corpus and not
+used in production ([AUTHOR-CORPUS.md](AUTHOR-CORPUS.md)).
+
+- `PersonResolver` resolves each author of a team, normalized as the comparator hands it over, to the registry's
+  candidates under the name's code, cached per citation and code. It then narrows them. The name's year rules out a
+  person when it lies before `born + minAge` or after `died + posthumous`; without life dates the active years do the
+  same with `activeSlack` on either side. `Margins.DEFAULT` is 10, 20 and 15 years. An imprecise year such as `184?`
+  narrows nothing. The name's group rules out a person whose groups are all disparate to it. A person without years
+  or groups is never ruled out, and a citation whose candidates are all ruled out is unresolved.
+- Two resolved authors are `EQUAL` when they share a person and `DIFFERENT` when they name unrelated persons. Relatives
+  - a parent, a child, a sibling - get the relatives policy, `UNKNOWN` or `DIFFERENT`. The comparator combines that
+  with the years: under `UNKNOWN`, relatives citing the same year end `EQUAL`, a few years apart `DIFFERENT`, and without
+  years `UNKNOWN`.
+- An author that resolves to nobody goes to the string comparison, against itself or, if the other side resolved,
+  against every form of the other side's persons. `L. Cox` thus meets the `L. R. Cox` derived for the person `Cox`
+  names. Only this fallback depends on the comparator's mode.
+- Teams keep the rule of the string comparison: any author of one that is any author of the other makes them `EQUAL`.
+- `explain` returns what every author pair resolved to and which rule decided it: `IDENTICAL` teams, `IDENTITY`,
+  `RELATIVES` or `FALLBACK`. A listener given to the matcher sees every explanation.
+
 ## Harvesting
 
     mvn -q -pl dao -am install -DskipTests
