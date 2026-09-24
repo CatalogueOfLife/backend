@@ -76,9 +76,15 @@ try to recover one.
 
 **ID reports.** Tab separated, no header, with the columns `ID`, `rank`, `status`, `name`, `authorship`:
 
-- `created.tsv` - identifiers the release issued for the first time.
-- `deleted.tsv` - identifiers of the release before it that it no longer uses.
-- `resurrected.tsv` - identifiers of an older release, not used by the release before it, that are used again.
+- `created.tsv` - identifiers the release issued for the first time, with the name they now carry.
+- `deleted.tsv` - identifiers of the release before it that it no longer uses, with the name they had there.
+- `base-deleted.tsv` - extended releases only: identifiers the release before it had, but the base release it
+  extends dropped already. An extended release keeps every identifier of its base release, so these are the base
+  release's changes, not its own, and are left out of `deleted.tsv`.
+- `resurrected.tsv` - identifiers of an older release, not used by the release before it, that are used again, with
+  the name they now carry.
+- `superseded.tsv` - deleted identifiers and the identifier that took over from them, with the columns `ID`,
+  `newID`, `rank`, `status`, `name`, `authorship` of the name now carrying `newID`.
 
 and `unstable.txt`, the names whose identifier changed: the name on a line of its own, followed by one line per
 usage, `-` for an identifier that went away and `+` for the one that replaced it, e.g.

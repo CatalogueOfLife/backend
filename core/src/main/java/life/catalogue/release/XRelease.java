@@ -188,13 +188,18 @@ public class XRelease extends ProjectRelease {
 
     // prev release of the same origin. Resolved before the ids are mapped: the id provider needs it to keep name ids
     // sticky, and newDatasetKey points at the temp project from here until the final copy
+    // The base release before ours tells the id reports which deletions the base release made, not this one
+    final Integer prevBaseReleaseKey;
     try (SqlSession session = factory.openSession(true)) {
-      prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(xreleaseDatasetKey);
+      var dm = session.getMapper(DatasetMapper.class);
+      prevReleaseKey = dm.previousRelease(xreleaseDatasetKey);
+      prevBaseReleaseKey = dm.previousRelease(baseReleaseKey);
     }
 
     // setup id generator
     usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, factory);
     usageIdGen.setPrevReleaseKey(prevReleaseKey);
+    usageIdGen.setPrevBaseReleaseKey(prevBaseReleaseKey);
     usageIdGen.removeIdsFromDataset(tmpProjectKey);
 
     mergeSectors();

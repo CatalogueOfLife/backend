@@ -87,6 +87,8 @@ public class IdProvider {
   private final int releaseDatasetKey; // to
   private final @Nullable Integer lastReleaseKey;
   private @Nullable Integer prevReleaseKey;
+  // extended releases only: the base release before the one this release extends, see #setPrevBaseReleaseKey
+  private @Nullable Integer prevBaseReleaseKey;
   private final SqlSessionFactory factory;
   private final TaxGroupAnalyzer groupAnalyzer;
   private final NameIdentity identity = new NameIdentity();
@@ -165,6 +167,17 @@ public class IdProvider {
    */
   public void setPrevReleaseKey(@Nullable Integer prevReleaseKey) {
     this.prevReleaseKey = prevReleaseKey;
+  }
+
+  /**
+   * Extended releases carry every id of their base release, so an id the new base release dropped is also gone from
+   * the extended release, although the extended release had no say in it. Knowing the base release before the one
+   * being extended lets the reports tell those deletions apart from the extended release's own.
+   *
+   * @param prevBaseReleaseKey the base release preceding the one this extended release is built on. Optional.
+   */
+  public void setPrevBaseReleaseKey(@Nullable Integer prevBaseReleaseKey) {
+    this.prevBaseReleaseKey = prevBaseReleaseKey;
   }
 
   /**
@@ -262,11 +275,18 @@ public class IdProvider {
 
   protected void report() {
     try (var tmp = TempFile.directory()){
-      // read the following IDs from previous releases
-      reportFile(tmp.file,"deleted.tsv", deleted.keySet(), deleted, true);
-      reportFile(tmp.file,"resurrected.tsv", resurrected.keySet(), resurrected, false);
-      // read ID from this release & ID mapping
-      reportFile(tmp.file,"created.tsv", created, id -> -1, false);
+      // a deleted id is by definition in the last release, which also still exists - unlike the release it first
+      // appeared in, which is often deleted by now and would leave the report without a name
+      final IntSet baseDeleted = baseDeletions();
+      final IntSet ownDeleted = new IntOpenHashSet(deleted.keySet());
+      ownDeleted.removeAll(baseDeleted);
+      reportFile(tmp.file,"deleted.tsv", ownDeleted, id -> deletedIn(id), true);
+      if (prevBaseReleaseKey != null) {
+        reportFile(tmp.file,"base-deleted.tsv", baseDeleted, id -> prevBaseReleaseKey, true);
+      }
+      // resurrected and created ids are shown with the usage of this release that carries them
+      reportFile(tmp.file,"resurrected.tsv", resurrected.keySet(), id -> releaseDatasetKey, false);
+      reportFile(tmp.file,"created.tsv", created, id -> releaseDatasetKey, false);
       reportSuperseded(tmp.file);
       // clear instable names, removing the ones with just deletions
       unstable.entrySet().removeIf(entry -> entry.getValue().parallelStream().allMatch(n -> n.del));
@@ -369,7 +389,39 @@ public class IdProvider {
     }
   }
 
-  private void reportFile(File dir, String filename, IntSet ids, Int2IntFunction attemptLookup, boolean deletion) throws IOException {
+  /**
+   * @return the ids of the last release this release no longer has because the new base release dropped them.
+   *   Always empty unless this is an extended release that knows its previous base release.
+   */
+  private IntSet baseDeletions() {
+    final IntSet ids = new IntOpenHashSet();
+    if (prevBaseReleaseKey != null && !deleted.isEmpty()) {
+      try (SqlSession session = factory.openSession(true)) {
+        var mapper = session.getMapper(NameUsageMapper.class);
+        final DSIDValue<String> key = DSID.root(prevBaseReleaseKey);
+        for (int id : deleted.keySet()) {
+          if (mapper.exists(key.id(encode(id)))) {
+            ids.add(id);
+          }
+        }
+      }
+      LOG.info("{} of {} deleted ids were dropped by the base release already, as release {} had them", ids.size(), deleted.size(), prevBaseReleaseKey);
+    }
+    return ids;
+  }
+
+  /**
+   * @return the dataset to show a deleted id from: the last release, or if there is none the release it first appeared in
+   */
+  private int deletedIn(int id) {
+    if (lastReleaseKey != null) {
+      return lastReleaseKey;
+    }
+    int attempt = deleted.get(id);
+    return dataset2attempt.containsValue(attempt) ? dataset2attempt.getKey(attempt) : releaseDatasetKey;
+  }
+
+  private void reportFile(File dir, String filename, IntSet ids, Int2IntFunction datasetLookup, boolean deletion) throws IOException {
     File f = new File(dir, filename);
     try(TabWriter tsv = TabWriter.fromFile(f);
         SqlSession session = factory.openSession(true)
@@ -378,34 +430,24 @@ public class IdProvider {
       LOG.info("Writing ID report for project release {}-{} of {} IDs to {}", projectKey, attempt, ids.size(), f);
       ids.intStream()
         .sorted()
-        .forEach(id -> reportId(id, attemptLookup.get(id), tsv, deletion));
+        .forEach(id -> reportId(id, datasetLookup.get(id), tsv, deletion));
     }
   }
 
   /**
-   * @param attempt if larger than 0 it was issued in an older release before, otherwise it is new and look it up in the project using the id map table
-   * @param deletion
+   * @param datasetKey the release to show the id's usage from
+   * @param deletion true for an id this release drops
    */
-  private void reportId(int id, int attempt, TabWriter tsv, boolean deletion){
+  private void reportId(int id, int datasetKey, TabWriter tsv, boolean deletion){
     String ID = IdConverter.LATIN29.encode(id);
     SimpleName sn = null;
     DSID<String> key = null;
     try {
-      int datasetKey = -1;
-      if (attempt>0 && dataset2attempt.containsValue(attempt)) {
-        datasetKey = dataset2attempt.getKey(attempt);
-      } else {
-        datasetKey = releaseDatasetKey;
-      }
       key = DSID.of(datasetKey, ID);
       sn = num.getSimple(key);
 
       if (sn == null) {
-        if (attempt>0) {
-          LOG.warn("Old ID {}-{} [{}] reported without name usage from attempt {}", datasetKey, ID, id, attempt);
-        } else {
-          LOG.warn("ID {} [{}] reported without name usage in release", ID, id);
-        }
+        LOG.warn("ID {} [{}] reported without name usage in dataset {}", ID, id, datasetKey);
         tsv.write(new String[]{
           ID,
           null,
@@ -435,7 +477,7 @@ public class IdProvider {
       }
 
     } catch (IOException | RuntimeException e) {
-      LOG.error("Failed to report {}ID {}: {} [key={}, sn={}]", attempt>0 ? "old ":"", id, ID, key, sn, e);
+      LOG.error("Failed to report ID {}: {} [key={}, sn={}]", id, ID, key, sn, e);
     }
   }
 
