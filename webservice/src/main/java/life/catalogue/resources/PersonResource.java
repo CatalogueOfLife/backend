@@ -99,8 +99,8 @@ public class PersonResource {
     return q;
   }
 
-  // parameters are parsed here and not by a converter: Jersey answers a value it fails to convert with a 404,
-  // an IllegalArgumentException of the resource is a 400
+  // parameters are parsed here rather than by the param converters, so the resource methods can be called and tested
+  // directly; an IllegalArgumentException is a 400, as QueryParam400Mapper makes a failed conversion
   @Nullable
   static NomCode code(@Nullable String code) {
     if (StringUtils.isBlank(code)) return null;
