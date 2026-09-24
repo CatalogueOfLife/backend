@@ -5,6 +5,7 @@ import life.catalogue.api.model.PersonName;
 import life.catalogue.api.vocab.PersonFormCode;
 import life.catalogue.api.vocab.PersonNameKind;
 import life.catalogue.api.vocab.PersonSource;
+import life.catalogue.matching.person.MemoryPersonStore;
 import life.catalogue.matching.person.PersonFiles;
 
 import java.nio.file.Path;
@@ -99,6 +100,19 @@ public class PersonRebuildTest {
     assertTrue(limited.report(), limited.report().contains("## Inconsistent, nothing written: 1"));
     assertEquals(List.of(), PersonRebuild.rebuild(existing, nothing, Map.of(), DAY, 2).problems());
     assertEquals(List.of(), PersonRebuild.rebuild(existing, nothing, Map.of(), DAY, null).problems());
+  }
+
+  /** an author map row with a code nobody knows is reported and skipped, it does not fail the harvest */
+  @Test
+  public void malformedAuthorMapRow() {
+    var store = new MemoryPersonStore(PersonFiles.Content.empty());
+    StringBuilder sb = new StringBuilder();
+    PersonRebuild.unresolvedAuthorMapRows(store, List.of(new String[]{"Linnaeus", "XYZ", "L."}, new String[]{"Nobody", "BOT", "Nob."}),
+      sb);
+    String report = sb.toString();
+    assertTrue(report, report.contains("## Malformed author map rows: 1"));
+    assertTrue(report, report.contains("  Linnaeus\tXYZ\tL."));
+    assertTrue(report, report.contains("## Author map rows no person resolves: 1 of 1"));
   }
 
   /** without a reader for its format a dump must stop the harvest before anything is merged */

@@ -97,20 +97,28 @@ public final class PersonRebuild {
       problems.stream().limit(LIST_LIMIT).forEach(p -> sb.append("  ").append(p).append('\n'));
     }
     sb.append(result.report().render()).append('\n').append(harvest.stats());
-    unresolvedAuthorMapRows(store, sb);
+    unresolvedAuthorMapRows(store, (Iterable<String[]>) Resources.tabRows(AUTHOR_MAP)::iterator, sb);
     return new Outcome(result.content(), problems, sb.toString());
   }
 
   /**
-   * Author map rows none of whose forms name a person: hand edits worth keeping become curated lines.
+   * Author map rows none of whose forms name a person: hand edits worth keeping become curated lines. A row with a code
+   * other than BOT, ZOO or ANY is listed as malformed and skipped.
    */
-  private static void unresolvedAuthorMapRows(PersonStore store, StringBuilder sb) {
+  static void unresolvedAuthorMapRows(PersonStore store, Iterable<String[]> rows, StringBuilder sb) {
     List<String> unresolved = new ArrayList<>();
-    int rows = 0;
-    for (String[] row : (Iterable<String[]>) Resources.tabRows(AUTHOR_MAP)::iterator) {
+    List<String> malformed = new ArrayList<>();
+    int n = 0;
+    for (String[] row : rows) {
       if (row.length < 3) continue;
-      rows++;
-      PersonFormCode code = PersonFormCode.valueOf(row[1].trim().toUpperCase());
+      PersonFormCode code;
+      try {
+        code = PersonFormCode.valueOf(row[1].trim().toUpperCase());
+      } catch (IllegalArgumentException e) {
+        malformed.add(String.join("\t", row));
+        continue;
+      }
+      n++;
       List<NomCode> codes = switch (code) {
         case BOT -> List.of(NomCode.BOTANICAL);
         case ZOO -> List.of(NomCode.ZOOLOGICAL);
@@ -130,7 +138,12 @@ public final class PersonRebuild {
         unresolved.add(String.join("\t", row));
       }
     }
-    sb.append(String.format("%n## Author map rows no person resolves: %,d of %,d%n", unresolved.size(), rows));
+    if (!malformed.isEmpty()) {
+      sb.append(String.format("%n## Malformed author map rows: %,d%n", malformed.size()));
+      malformed.stream().limit(LIST_LIMIT).forEach(r -> sb.append("  ").append(r).append('\n'));
+    }
+    sb.append(String.format("%n## Author map rows no person resolves: %,d of %,d%n", unresolved.size(), n));
     unresolved.stream().limit(LIST_LIMIT).forEach(r -> sb.append("  ").append(r).append('\n'));
   }
+
 }
