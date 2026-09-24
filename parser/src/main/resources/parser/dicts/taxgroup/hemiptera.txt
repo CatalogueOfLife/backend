@@ -169,7 +169,6 @@ Anhomoeini
 Anipoina
 Anisopinae
 Anisopini
-Anisosc?lides
 Anisoscelidida
 Anisoscelidini
 Anisoscelini
@@ -242,7 +241,6 @@ Aphidinae
 Aphidinea
 Aphidinen
 Aphidini
-Aphido?dae
 Aphidodea
 Aphidoida
 Aphidoidea
@@ -1309,7 +1307,6 @@ Goniagnathini
 Gonianotaria
 Gonianotina
 Gonianotini
-Gonoc?rates
 Gonocerina
 Gonocerini
 Goondnomdanepini
@@ -1762,7 +1759,6 @@ Leucodiaspidina
 Leucophoropterina
 Leucophoropterini
 Liadonaucorini
-Liadopsyllidae?
 Ligavenidae
 Ligavenoidea
 Lilliputocorini
@@ -1896,7 +1892,6 @@ Malagasiini
 Malcidae
 Malcinae
 Malmaemichungiini
-Malmopsyllidae?
 Manangocorinae
 Manocoreini
 Maoristolinae
@@ -2111,10 +2106,8 @@ Myzocallidinae
 Myzocallidini
 Myzocallinae
 Myzolecaniinae
-Myzoxylid?s
 Myzoxylides
 Myzoxylinae
-N?matopides
 Nabidae
 Nabidoidea
 Nabinae
@@ -2162,7 +2155,6 @@ Neophyllaphidini
 Neophyllurinae
 Neopsinae
 Neopsini
-Neopsylloididae?
 Neopunanini
 Neotangiina
 Neotrephinae
@@ -3008,9 +3000,7 @@ Smilini
 Sojanoneuridae
 Sonatini
 Sophianini
-Spartoc?rides
 Spartocerini
-Spathoc?riens
 Spathoceraria
 Spathocerini
 Spathophorini

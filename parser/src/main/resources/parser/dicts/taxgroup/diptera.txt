@@ -2501,7 +2501,6 @@ Paratrixini
 Paraxymiidae
 Paraxymyiidae
 Pardelphomyaria
-Parerigonin
 Parerigonina
 Parerigonini
 Parhadrestiinae
@@ -3079,7 +3078,6 @@ Sciomyzini
 Sciomyzoidea
 Sciomyzomorphae
 Scionini
-Sciop
 Sciophilidae
 Sciophilina
 Sciophilinae
