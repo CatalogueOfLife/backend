@@ -140,7 +140,6 @@ Gyroporaceae
 Helicobasidiaceae
 Helicobasidiales
 Hemigasteraceae
-Hemileiidae # rust fungus family (Pucciniales; coffee leaf rust)
 Hericiaceae
 Heterogastridiaceae
 Heterogastridiales

@@ -330,8 +330,6 @@ Amphimermithini
 Amphinemidae
 Amphineminae
 Amphinomida
-Amphinomidae
-Amphinominae
 Amphipellidae
 Amphiporidae
 Amphiporina
@@ -520,7 +518,6 @@ Apocreadiata
 Apocreadiidae
 Apocreadiinae
 Apocreadioidea
-Apoda
 Apodadrilida
 Apodida
 Apolemiadae
@@ -613,7 +610,6 @@ Arulidae
 Arzonellinidae
 Ascaridae
 Ascaridida
-Ascarididae
 Ascaridiidae
 Ascaridina
 Ascaridinae
@@ -650,7 +646,6 @@ Aspidosiphoniformes
 Aspidostomatidae
 Asplanchnidae
 Asplanchnoidae # rotifer family (Monogononta; Asplanchna)
-Asteriidae
 Asterinidae
 Asterininae
 Asteriomyzostomidae
@@ -659,7 +654,6 @@ Asteroidea
 Asterometridae
 Asteromyzostomidae
 Asteronychidae
-Asteropidae
 Asteropinae
 Asteropseidae
 Asteroschematidae
@@ -1501,7 +1495,6 @@ Clausophyidae
 Clausophyinae
 Claviasteridae
 Clavidae
-Clavigerinae
 Claviporidae
 Clavoporidae
 Clavopsellidae
@@ -2492,7 +2485,6 @@ Euaxosida
 Eucalathinae
 Eucamerata
 Eucestoda
-Eucharidae
 Eucheilotidae
 Euchlanidae
 Euchloridae
@@ -4086,7 +4078,6 @@ Methanoariciinae
 Metophiurida
 Metorchiinae
 Metrarabdotosidae
-Metridiidae
 Metridioidea
 Metrodiridae
 Metrodirinae
@@ -4452,7 +4443,6 @@ Nephrotrematinae
 Nephtheidae
 Nephthyigorgiidae
 Nephtyidae
-Nereidae
 Nereididae
 Nereidiformia
 Nereidinae
@@ -4481,7 +4471,6 @@ Nootkadrilinae
 Nordiidae
 Nordiinae
 Norellidae
-Norellinae
 Norelloidea
 Notanopliidae
 Notanoplioidea
@@ -5106,7 +5095,6 @@ Peresianidae
 Periasteridae
 Pericelidae
 Periceloidea
-Perichaetidae
 Pericosmidae
 Perionycidae
 Peripatidae

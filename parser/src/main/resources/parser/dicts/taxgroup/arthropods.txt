@@ -1,19 +1,51 @@
+Achelidae
+Allotriocarida # pancrustacean clade including Hexapoda, Remipedia and Branchiopoda
+Altocrustacea # pancrustacean clade including Hexapoda
 Amplectobeluidae
 Anomalocarididae
+Apterygota
 Arachnomorpha
+Armadillinae
 Arthropoda
 Artiopoda
+Brachyscelidae
+Canuellidae
+Catiniidae
+Ceromidae
 Chelicerata
 Condylipoda
 Deuteropoda
 Dinocaridida
+Eriphidae
+Eriphiidae
+Euarthropoda
+Euchelicerata
+Euthycarcinida
+Euthycarcinoidea
+Gatuniidae
+Hersiliidae
 Hexapoda
 Hurdiidae
 Isoxyida
+Leptopodidae
+Longipediidae
 Mandibulata
 Megacheira
 Melaphini
+Miracinae
+Miracrustacea # Hexapoda with Remipedia and Cephalocarida
+Necronectinae
 Nektaspida
+Niponiinae
+Opabiniidae
+Pancrustacea # crustaceans including Hexapoda
+Phrynidae
 Radiodonta
+Scinidae
 Sphaeridiini
+Steropinae
+Stygnidae
 Tamisiocarididae
+Tetraconata # synonym of Pancrustacea
+Teutoniidae
+Titaniidae

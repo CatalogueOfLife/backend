@@ -163,9 +163,7 @@ Eosagenitidae # ammonoid family
 Eoshumarditidae # ammonoid family
 Epimeniidae
 Episculitidae # ammonoid family
-Eriphantidae # ammonoid family (Triassic)
 Eupleuroceratidae # ammonoid family
-Fauriellidae # ammonoid family
 Ferganoceratidae # ammonoid family
 Flemingitidae # ammonoid family (Triassic)
 Flickiidae # ammonoid family
@@ -187,7 +185,6 @@ Glatziellidae # ammonoid family (Devonian)
 Gonatidae
 Goniatitaceae # ammonoid superfamily (Carboniferous)
 Goniatitidae # ammonoid family (Carboniferous)
-Gonibregmatidae # ammonoid family
 Gonioclymeniaceae # ammonoid superfamily (Devonian)
 Goniolobocerataceae # ammonoid superfamily
 Gonioloboceratidae # ammonoid family
@@ -489,7 +486,6 @@ Strophomeniidae
 Sturiidae # ammonoid family
 Syngenoherpiidae
 Tamaritidae # ammonoid family
-Tampiyidae # ammonoid family (Cretaceous)
 Taouzitidae # ammonoid family
 Tapashanitidae # ammonoid family
 Teicherticeratidae # ammonoid family

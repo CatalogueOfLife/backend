@@ -115,7 +115,6 @@ Aphelida
 Aphelidea
 Aphelidida
 Aphelidiidae
-Aphilodontidae # oligotrich ciliate family
 Apicomonada
 Apicomonadea
 Apicomplexa
@@ -608,7 +607,6 @@ Euglenaceae # euglenid flagellate family
 Euglenales # euglenid flagellates
 Euglenamorphidae
 Euglenida
-Euglenidae
 Euglenoida
 Euglenophyta
 Euglenophytes
@@ -982,9 +980,7 @@ Metanemina
 Metchnikovellea
 Metchnikovellida
 Metchnikovellidae
-Metopidae
 Metopiida
-Metopiidae
 Metromonadea
 Metromonadida
 Metromonadidae

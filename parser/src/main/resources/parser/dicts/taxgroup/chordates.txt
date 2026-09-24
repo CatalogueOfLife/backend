@@ -24,7 +24,6 @@ Acontinae
 Acontoidea
 Acraniata
 Acrobatidae
-Acrocephalidae
 Acrochordidae
 Acrochordoidea
 Acropomatidae
@@ -321,7 +320,6 @@ Bucerotidae
 Bucerotiformes
 Bucorvidae
 Buergeriinae
-Bufonidae
 Buphagidae
 Burhinidae
 Burramyidae
@@ -499,7 +497,6 @@ Chinchillidae
 Chionidae
 Chionididae
 Chirocentridae
-Chiromyidae
 Chiromyiformes
 Chironemidae
 Chiroptera
@@ -518,7 +515,6 @@ Chordata
 Chordeilinae
 Chrysochloridae
 Chrysochloridea
-Chrysochlorinae
 Chrysotrichinae
 Cichlidae
 Cichliformes # cichlids
@@ -857,7 +853,6 @@ Erinaceidae
 Erinaceinae
 Erinaceomorpha
 Erithizontidae
-Erycinae
 Eryopidae
 Erythrinidae
 Erythrocercidae
@@ -1250,7 +1245,6 @@ Lethrinidae
 Limnodynastidae
 Linophrynidae
 Liolaemidae
-Liparidae
 Lipotidae
 Lissamphibia
 Lissodelphinae
@@ -1269,7 +1263,6 @@ Lophiomyinae
 Lophotidae
 Lophyohylinae
 Loricariidae
-Loriculinae
 Loridae
 Loriinae
 Lorisidae
@@ -1325,7 +1318,6 @@ Megaladapidae
 Megalaimidae
 Megalaiminae
 Megalonychidae
-Megalopidae
 Megalosauridae
 Megaluridae
 Megapodiidae
@@ -1522,7 +1514,6 @@ Notosudidae
 Nototheniidae
 Numididae
 Numidinae
-Nycteridae
 Nyctibatrachidae
 Nyctibatrachinae
 Nyctibiidae
@@ -1604,7 +1595,6 @@ Ostracoberycidae
 Otariidae
 Otariinae
 Otides
-Otididae
 Otidiformes
 Otidiphabinae
 Otocephala
@@ -1734,7 +1724,6 @@ Phallostethidae
 Phanerinae
 Phascogalini
 Phascolarctidae
-Phasianidae
 Phasianinae
 Phenacomyini
 Philepittidae
@@ -1990,7 +1979,6 @@ Ramphastidae
 Ramphastinae
 Ranidae
 Ranixalidae
-Raphidae
 Ratites
 Rattidae
 Ratufinae
@@ -2097,7 +2085,6 @@ Scaphiopodidae
 Scapteromyini
 Scaptonychini
 Scaridae
-Scatophagidae
 Scelidosauridae
 Schilbeidae
 Schindleriidae
@@ -2349,7 +2336,6 @@ Torpedinidae
 Torpediniformes
 Toxotidae
 Trachichthyidae
-Trachinidae
 Trachipteridae
 Tragulidae
 Trematosauria
@@ -2375,7 +2361,6 @@ Tripterygiidae
 Trochili
 Trochilidae
 Trochiliformes
-Trochiliidae # hummingbird family (Aves)
 Trochilinae
 Troglodytidae
 Trogonidae

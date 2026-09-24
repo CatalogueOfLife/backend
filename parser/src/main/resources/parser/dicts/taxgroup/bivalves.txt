@@ -181,7 +181,6 @@ Mecynodontidae
 Mecynodontoidea
 Megalodontida
 Megalodontidae
-Megalodontoidea
 Megatrigoniidae
 Megatrigonioidea
 Mesodesmatidae
@@ -330,7 +329,6 @@ Solenidae
 Solenoidea
 Sowerbyidae
 Sphaeriida
-Sphaeriidae
 Sphaerioidea
 Spheniopsidae
 Spondylidae

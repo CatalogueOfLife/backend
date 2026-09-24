@@ -2,12 +2,14 @@ Achoropsychini
 Agapetinae
 Anagapetini
 Anisocentropodinae
+Annulipalpia
 Anomalopsychidae
 Antipodoeciidae
 Apataniidae
 Apataniinae
 Apataniini
 Apsilochoreminae
+Arctopsychidae
 Arctopsychinae
 Athripsodini
 Atriplectididae
@@ -15,6 +17,7 @@ Baicalinini
 Barbarochthonidae
 Beraeidae
 Brachycentridae
+Brevitentoria
 Calamoceratidae
 Calamoceratinae
 Calocidae
@@ -51,14 +54,13 @@ Hydroptilinae
 Hydroptilini
 Hydroptiloidea
 Hydrosalpingidae
+Integripalpia
 Kambaitipsychinae
 Kokiriidae
 Larcasinae
 Lepaniinae
 Lepidostomatidae
 Lepidostomatinae
-Leptoceridae
-Leptocerinae
 Leptocerini
 Leptoceroidea
 Leptorussini
@@ -97,6 +99,7 @@ Phryganeoidea
 Phryganopsychidae
 Pisuliidae
 Plectrotarsidae
+Plenitentoria
 Polycentropodidae
 Polycentropodinae
 Protoptilinae
@@ -116,6 +119,7 @@ Sericostomatidae
 Sericostomatoidea
 Setodini
 Smicrideinae
+Spicipalpia
 Stactobiini
 Stenophylacini
 Stenopsychidae

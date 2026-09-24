@@ -34,27 +34,17 @@ Use the following to query for "Acanthoecaceae":
  - https://www.gbif.org
 
 ## Ambiguous names
-The following taxon names are found as suprageneric names across different kingdoms and are therefore not indicative for any clear taxonomic group:
+A dictionary entry must point to one group for certain. A name used for taxa in several disparate groups,
+a homonym across kingdoms, phyla or orders above all, is therefore listed only in the dictionary of the lowest group
+common to all its uses, e.g. `Tachinidae` (Diptera and Coleoptera) as insects, `Cepheidae` (Cnidaria and mites) as animals
+and `Carinae` (beetles and sedges) as eukaryotes. A name without any common group is not listed at all.
+Taxonomic status does not matter: a junior homonym or any other synonym is just as likely to turn up in a classification
+as an accepted name.
 
-- Acanthocerataceae: Protists & Molluscs
-- Bdelloidea: Rotifera & Arachnid -> Animals
-- Cepheidae: Cnidaria & Arachnid -> Animals
-- Chilodontidae: Gastropod & Chordate -> Animals
-- Clionidae: Gastropod & Porifera -> Animals
-- Heterocheilidae: Diptera & Nematodes -> Animals
-- Heterogynidae: Lepidoptera & Hymenoptera -> Insects
-- Hyperbionycidae: Protists & Arthropods
-- Peranemataceae: Protists & Pteridophytes
-- Personidae: Gastropod & Insetcs -> Animals
-- Phyllophoridae: Echinodermata & Orthoptera -> Animals
-- Sagittariidae: Protists & Chordate
-- Tachinidae: Diptera & Coleoptera -> Insects
-- Urostylidae: Protist & Hemiptera -> Eukaryote
-- Cepolidae: Gastropod & Chordate -> Animals
-- Leptosomatidae: Nematod & Bird -> Animals
-- Machaeridia: Orthoptera & Annelidae -> Animals
-
-
+All names known to be ambiguous are recorded in [`ambiguous.txt`](ambiguous.txt) with the groups they are used in,
+e.g. `Tachinidae # Coleoptera, Diptera`. The parser does not read that file, but `TaxGroupParserTest` checks that each of
+its names is listed in exactly its lowest common group. Before adding a name to a dictionary, check it is not
+recorded there, and record newly found homonyms in it.
 
 ## UNIX tools for managing dictionaries
 The ```clean.sh``` script goes through all dictionary files, sorts them and makes them unique ignoring potential comments.
