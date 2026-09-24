@@ -1,8 +1,8 @@
 # Comparing authors as persons
 
 Date: 2026-09-23
-Status: design agreed on 2026-09-23. Phases 0, 1 and 2 are implemented on branch `feat/person-author-comparison` (stacked on
-`feat/author-corpus`, not merged); phase 3 is not implemented. Four phases, each with its own implementation plan.
+Status: design agreed on 2026-09-23. Phases 0, 1 and 2 are implemented on branch `feat/person-author-comparison`, not merged;
+phase 3 is not implemented. Four phases, each with its own implementation plan.
 
 This is step 2 of "Next" in [2026-09-19-author-comparison-corpus.md](2026-09-19-author-comparison-corpus.md): compare
 people, not rewritten strings. It is built as an experiment next to the current comparison, which stays in production

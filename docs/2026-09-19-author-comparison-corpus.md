@@ -1,9 +1,9 @@
 # A corpus to measure author comparison
 
 Date: 2026-09-19
-Status: implemented on branch `feat/author-corpus`, not merged. A first corpus was mined from prod on the same
-day and its sample is committed with the guard test. The labels had a first audit of 60 pairs each by the
-author of the tools only, the audit of 100 by a taxonomist is outstanding (see Outcome).
+Status: implemented on branch `feat/person-author-comparison` (first as `feat/author-corpus`), not merged. A first
+corpus was mined from prod on the same day and its sample is committed with the guard test. The labels had a first
+audit of 60 pairs each by the author of the tools only, the audit of 100 by a taxonomist is outstanding (see Outcome).
 Nothing in here changes how authorships are compared.
 
 How to run the tools is in [AUTHOR-CORPUS.md](AUTHOR-CORPUS.md).
