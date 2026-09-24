@@ -105,6 +105,10 @@ public class TaxGroupAnalyzerTest {
       sn(Rank.CLASS, "Equisetopsida"), sn(Rank.SUBCLASS, "Magnoliidae"), sn(Rank.SUPERORDER, "Asteranae"),
       sn(Rank.ORDER, "Gentianales"), sn(Rank.FAMILY, "Rubiaceae")
     )));
+    assertEquals(TaxGroup.Angiosperms, analyzer.analyze(sn(Rank.SUPERORDER, "Asteranae"), List.of(
+      sn(Rank.CLASS, "Equisetopsida"), sn(Rank.SUBCLASS, "Magnoliidae")
+    )));
+    assertEquals(TaxGroup.Plants, analyzer.analyze(sn(Rank.SUBCLASS, "Magnoliidae"), List.of(sn(Rank.CLASS, "Equisetopsida"))));
     assertEquals(TaxGroup.Gymnosperms, analyzer.analyze(sn(Rank.GENUS, NomCode.BOTANICAL, "Pinus", null), List.of(
       sn(Rank.CLASS, "Equisetopsida"), sn(Rank.SUBCLASS, "Pinidae"), sn(Rank.ORDER, "Pinales"), sn(Rank.FAMILY, "Pinaceae")
     )));

@@ -494,6 +494,7 @@ Magnoliaceae
 Magnoliales
 Magnolianae
 Magnolicae
+Magnoliidae # subclass of all angiosperms in Chase & Reveal 2009, of Magnoliopsida in Cronquist
 Magnoliids
 Magnoliophyta
 Magnoliopsida
