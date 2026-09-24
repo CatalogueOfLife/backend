@@ -29,4 +29,47 @@
     SELECT person_id, relation, other_id, source
     FROM person_relation
   </select>
+  <sql id="CODES">
+    code IN ('ANY', <choose><when test="zoo">'ZOO'</when><otherwise>'BOT'</otherwise></choose>)
+  </sql>
+
+  <select id="getByAnyIds" resultMap="personResultMap">
+    SELECT i.any_id, <include refid="PERSON_COLS"/>
+    FROM person_id i JOIN person p ON p.id = i.person_id
+    WHERE i.any_id IN <foreach collection="ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+  </select>
+
+  <select id="idsByKeys" resultType="life.catalogue.db.mapper.PersonMapper$KeyId">
+    SELECT DISTINCT key, person_id
+    FROM person_name
+    WHERE key IN <foreach collection="keys" item="k" open="(" separator="," close=")">#{k}</foreach>
+      AND <include refid="CODES"/>
+    ORDER BY key, person_id
+  </select>
+
+  <select id="keys" resultType="string">
+    SELECT DISTINCT key
+    FROM person_name
+    WHERE person_id = #{id} AND key IS NOT NULL AND <include refid="CODES"/>
+  </select>
+
+  <select id="relatives" resultType="string">
+    SELECT other_id FROM person_relation WHERE person_id = #{id}
+    UNION
+    SELECT person_id FROM person_relation WHERE other_id = #{id}
+  </select>
+
+  <select id="names" resultType="life.catalogue.db.mapper.PersonMapper$NameRow">
+    SELECT person_id, form, kind, code, source
+    FROM person_name
+    WHERE person_id = #{id} AND kind != 'DERIVED'
+    ORDER BY kind, code, form
+  </select>
+
+  <select id="relations" resultType="life.catalogue.db.mapper.PersonMapper$RelationRow">
+    SELECT person_id, relation, other_id, source
+    FROM person_relation
+    WHERE person_id = #{id} OR other_id = #{id}
+    ORDER BY person_id, relation, other_id
+  </select>
 </mapper>

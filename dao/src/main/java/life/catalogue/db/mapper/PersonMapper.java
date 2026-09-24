@@ -11,8 +11,11 @@ import life.catalogue.api.vocab.TaxGroup;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
 
 /**
  * The person registry tables. Rows are plain classes as MyBatis maps no records; they are written by
@@ -87,4 +90,33 @@ public interface PersonMapper {
   List<NameRow> listNames();
 
   List<RelationRow> listRelations();
+
+  /**
+   * @param ids any ids, never empty
+   * @return the persons with the id each was asked for by in {@link PersonRow#anyId}
+   */
+  List<PersonRow> getByAnyIds(@Param("ids") Collection<String> ids);
+
+  /**
+   * @param keys never empty
+   * @param zoo  true for zoological names, which ZOO and ANY forms cite; BOT and ANY forms cite all others
+   */
+  List<KeyId> idsByKeys(@Param("keys") Collection<String> keys, @Param("zoo") boolean zoo);
+
+  List<String> keys(@Param("id") String id, @Param("zoo") boolean zoo);
+
+  /**
+   * @return the ids of parents, children and siblings
+   */
+  List<String> relatives(@Param("id") String id);
+
+  /**
+   * @return the forms of a person, derived ones excluded
+   */
+  List<NameRow> names(@Param("id") String id);
+
+  /**
+   * @return the relations with the person on either end
+   */
+  List<RelationRow> relations(@Param("id") String id);
 }

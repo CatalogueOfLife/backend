@@ -24,6 +24,7 @@ public class EventKryoPoolTest {
     assertSerde(kryo, new UserPermissionChanged("markus"));
     assertSerde(kryo, new DatasetLogoChanged(8));
     assertSerde(kryo, new DeleteSector(DSID.of(123, 1234), 18));
+    assertSerde(kryo, new PersonsChanged(18));
 
     User u = new User();
     u.setKey(123);

@@ -34,6 +34,7 @@ public class EventBroker implements AutoCloseable {
   private final List<UserListener> userListeners = new ArrayList<>();
   private final List<SectorListener> sectorListeners = new ArrayList<>();
   private final List<DatasetListener> datasetListeners = new ArrayList<>();
+  private final List<PersonListener> personListeners = new ArrayList<>();
   private final KryoHelper io;
   private final Thread polling;
   private final SingleChronicleQueue queue;
@@ -63,6 +64,9 @@ public class EventBroker implements AutoCloseable {
     }
     if (listener instanceof SectorListener) {
       sectorListeners.add((SectorListener) listener);
+    }
+    if (listener instanceof PersonListener) {
+      personListeners.add((PersonListener) listener);
     }
   }
 
@@ -213,6 +217,15 @@ public class EventBroker implements AutoCloseable {
           }
         }
 
+      } else if (obj instanceof PersonsChanged) {
+        PersonsChanged event = (PersonsChanged) obj;
+        for (PersonListener l : personListeners) {
+          try {
+            l.personsChanged(event);
+          } catch (Exception e) {
+            LOG.error("Failed to broker persons change event: {}", event, e);
+          }
+        }
       } else {
         LOG.error("Unknown event type: " + obj.getClass().getSimpleName());
       }
