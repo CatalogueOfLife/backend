@@ -17,17 +17,20 @@
   <select id="list" resultMap="personResultMap">
     SELECT <include refid="PERSON_COLS"/>
     FROM person p
+    ORDER BY p.id
   </select>
 
   <select id="listNames" resultType="life.catalogue.db.mapper.PersonMapper$NameRow">
     SELECT person_id, form, kind, code, source
     FROM person_name
     WHERE kind != 'DERIVED'
+    ORDER BY person_id, kind, code, form
   </select>
 
   <select id="listRelations" resultType="life.catalogue.db.mapper.PersonMapper$RelationRow">
     SELECT person_id, relation, other_id, source
     FROM person_relation
+    ORDER BY person_id, relation, other_id
   </select>
   <sql id="CODES">
     code IN ('ANY', <choose><when test="zoo">'ZOO'</when><otherwise>'BOT'</otherwise></choose>)

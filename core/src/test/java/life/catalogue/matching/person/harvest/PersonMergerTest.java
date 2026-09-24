@@ -522,6 +522,29 @@ public class PersonMergerTest {
     assertEquals(List.of(), r.report().formsAdded);
   }
 
+  /** a sibling pair is one relation whichever of the two persons lists it */
+  @Test
+  public void siblingDirectionIsNoChange() {
+    var existing = new PersonFiles.Content(
+      List.of(new Person("wd:Q1", "Q1", null, null, List.of(), null, null, null, null, null, null, null, Set.of(),
+          PersonSource.WIKIDATA),
+        new Person("wd:Q2", "Q2", null, null, List.of(), null, null, null, null, null, null, null, Set.of(),
+          PersonSource.WIKIDATA)),
+      List.of(new PersonName("wd:Q1", "A. Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA),
+        new PersonName("wd:Q2", "B. Doe", PersonNameKind.FULL, PersonFormCode.ANY, PersonSource.WIKIDATA)),
+      List.of(new PersonRelation("wd:Q1", PersonRelationType.SIBLING, "wd:Q2", PersonSource.WIKIDATA)));
+    var a = wd("Q1");
+    a.label("A. Doe");
+    var b = wd("Q2");
+    b.label("B. Doe");
+    b.link(PersonRelationType.SIBLING, "wd:Q1");
+    var r = merge(existing, a.build(), b.build());
+    assertEquals(List.of(new PersonRelation("wd:Q2", PersonRelationType.SIBLING, "wd:Q1", PersonSource.WIKIDATA)),
+      r.content().relations());
+    assertEquals(List.of(), r.report().relationsAdded);
+    assertEquals(List.of(), r.report().relationsRemoved);
+  }
+
   /** a relation a source no longer gives goes, a curated one stays */
   @Test
   public void relationDropped() {

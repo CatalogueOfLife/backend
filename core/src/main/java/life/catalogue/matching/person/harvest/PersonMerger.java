@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -530,7 +531,7 @@ public class PersonMerger {
         }
       }
     }
-    diff(old, harvested, seen, before, report.formsAdded, report.formsRemoved);
+    diff(old, harvested, seen, k -> before.contains((String) k.get(0)), report.formsAdded, report.formsRemoved);
     return names;
   }
 
@@ -579,18 +580,19 @@ public class PersonMerger {
         }
       }
     }
-    diff(old, harvested, seen, before, report.relationsAdded, report.relationsRemoved);
+    diff(undirected(old), undirected(harvested), undirected(seen),
+      k -> before.contains((String) k.get(0)) || before.contains((String) k.get(2)), report.relationsAdded, report.relationsRemoved);
     return relations;
   }
 
   /**
    * Reports the harvested lines of persons of before that are new, and the old harvested lines no source and no curated
-   * line gives any more. A line is its key, whose first element is the person.
+   * line gives any more. A line is its key.
    */
-  private static void diff(Set<List<Object>> old, Set<List<Object>> harvested, Set<List<Object>> seen, Set<String> before,
-                           List<String> added, List<String> removed) {
+  private static void diff(Set<List<Object>> old, Set<List<Object>> harvested, Set<List<Object>> seen,
+                           Predicate<List<Object>> ofBefore, List<String> added, List<String> removed) {
     for (List<Object> k : harvested) {
-      if (before.contains((String) k.get(0)) && !old.contains(k)) {
+      if (ofBefore.test(k) && !old.contains(k)) {
         added.add(line(k));
       }
     }
@@ -599,6 +601,19 @@ public class PersonMerger {
         removed.add(line(k));
       }
     }
+  }
+
+  /**
+   * @return the relation keys with every sibling pair in one direction: whichever of the two lists the other, it is one
+   *         relation
+   */
+  private static Set<List<Object>> undirected(Set<List<Object>> keys) {
+    Set<List<Object>> set = new LinkedHashSet<>();
+    for (List<Object> k : keys) {
+      boolean flip = k.get(1) == PersonRelationType.SIBLING && ((String) k.get(0)).compareTo((String) k.get(2)) > 0;
+      set.add(flip ? key((String) k.get(2), PersonRelationType.SIBLING, (String) k.get(0)) : k);
+    }
+    return set;
   }
 
   private static String line(List<Object> k) {

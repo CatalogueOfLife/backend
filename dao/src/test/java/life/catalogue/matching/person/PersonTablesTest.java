@@ -108,6 +108,15 @@ public class PersonTablesTest {
       column("SELECT form FROM person_name WHERE person_id = 'wd:Q2' AND kind = 'DERIVED' ORDER BY form"));
   }
 
+  /** reads come sorted, so two harvests of the same sources merge the registry in the same order */
+  @Test
+  public void readsAreSorted() throws Exception {
+    PersonTables.replace(factory(), content());
+    var c = read();
+    assertEquals(List.of("clb:1", "wd:Q1", "wd:Q2"), c.persons().stream().map(Person::id).toList());
+    assertEquals(List.of("clb:1", "wd:Q1", "wd:Q2"), c.names().stream().map(PersonName::person).toList());
+  }
+
   /** a rewrite keeps when a person was created, and when it was modified unless it changed */
   @Test
   public void timestamps() throws Exception {
