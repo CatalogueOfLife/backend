@@ -871,6 +871,12 @@
     WHERE u.dataset_key = #{key.datasetKey} AND u.sector_key = #{key.id}
   </select>
 
+  <select id="processSectorSimple" parameterType="map" resultMap="simpleVerbatimResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT_SIMPLE_VERBATIM"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.dataset_key = #{key.datasetKey} AND u.sector_key = #{key.id}
+  </select>
+
   <delete id="deleteBySector" parameterType="map">
     DELETE FROM name_usage
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}

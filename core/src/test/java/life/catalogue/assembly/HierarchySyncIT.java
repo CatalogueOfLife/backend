@@ -1128,6 +1128,26 @@ public class HierarchySyncIT {
   }
 
   /**
+   * The accepted taxon a copied synonym hangs off becomes a synonym itself, by a curator or an older sync. Reading the
+   * previous imports must not map that synonym's parent as a taxon - it failed the whole re-sync of Archis sector 5,
+   * whose copied synonyms of the fern genus Pteridium ended up under a demoted Pteridium.
+   */
+  @Test
+  public void resyncSurvivesCopiedSynonymOfASynonym() throws Exception {
+    runHierarchySync();
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      s.getMapper(NameUsageMapper.class).updateParentAndStatus(DSID.of(PROJECT_KEY, P_Felis_catus), P_Felis, TaxonomicStatus.SYNONYM, USER);
+    }
+
+    runHierarchySync();
+
+    NameUsageBase silvestris = getByName(PROJECT_KEY, Rank.SPECIES, "Felis silvestris");
+    assertNotNull(silvestris);
+    NameUsageBase accepted = getByID(PROJECT_KEY, silvestris.getParentId());
+    assertTrue("the copied synonym must hang off an accepted taxon", accepted.getStatus().isTaxon());
+  }
+
+  /**
    * A curator places a taxon under an imported ancestor. The next sync must not leave it pointing at a deleted row.
    */
   @Test
