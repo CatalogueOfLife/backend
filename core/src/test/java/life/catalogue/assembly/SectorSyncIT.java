@@ -191,6 +191,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     assertNull("family 0 must not be merged", getByName(Datasets.COL, Rank.FAMILY, "0"));
     assertEquals("Culex stays directly below Diptera", "diptera", culex.getParentId());
     assertNotNull("virus names are OTHER and must still merge", getByName(Datasets.COL, Rank.SPECIES, "Culex zero virus 1"));
+    assertNull("unranked junk must not be merged", getByName(Datasets.COL, Rank.UNRANKED, "R ogas eurinus"));
   }
 
   /**
@@ -202,11 +203,13 @@ public class SectorSyncIT extends SectorSyncTestBase {
     var zero = getByName(Datasets.COL, Rank.FAMILY, "0");
     assertNotNull("family 0 is merged when the sector asks for OTHER names", zero);
     assertEquals(zero.getId(), culex.getParentId());
+    // unranked names have to be OTU style identifiers, an OTHER name filter does not change that
+    assertNull("unranked junk must not be merged", getByName(Datasets.COL, Rank.UNRANKED, "R ogas eurinus"));
   }
 
   /**
-   * Places a family "0" between Diptera and Culex in the source, merges it into a project that has Culex directly below
-   * Diptera and returns the project's Culex afterwards. All source changes are reverted, the source persists for all tests.
+   * Places a family "0" between Diptera and Culex in the source, plus an unranked OTHER name below Culex,
+   * merges it into a project that has Culex directly below Diptera and returns the project's Culex afterwards. All source changes are reverted, the source persists for all tests.
    */
   private NameUsageBase mergeFamilyZero(Set<NameType> nameTypes) throws Exception {
     final int srcKey = dataRule.mapKey(DataFormat.COLDP, 14);
@@ -215,6 +218,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     final String culexParentID = srcCulex.getParentId();
     final DSID<String> zeroID = DSID.of(srcKey, "zero");
     final DSID<String> virusID = DSID.of(srcKey, "zero-virus");
+    final DSID<String> junkID = DSID.of(srcKey, "zero-junk");
 
     var zero = life.catalogue.api.TestEntityGenerator.newMinimalName(srcKey, zeroID.getId(), "Zero", Rank.FAMILY);
     zero.setUninomial(null);
@@ -228,6 +232,12 @@ public class SectorSyncIT extends SectorSyncTestBase {
     virus.setScientificName("Culex zero virus 1");
     virus.setType(NameType.OTHER);
     virus.setCode(NomCode.VIRUS);
+    // unparsable garbage as sector 63980 has it. It used to pass as an OTU, which name-parser v4 typed OTHER
+    var junk = life.catalogue.api.TestEntityGenerator.newMinimalName(srcKey, junkID.getId(), "Junk", Rank.UNRANKED);
+    junk.setUninomial(null);
+    junk.setScientificName("R ogas eurinus");
+    junk.setType(NameType.OTHER);
+    junk.setCode(NomCode.ZOOLOGICAL);
     // the project already has Culex, directly below the order
     var diptera = life.catalogue.api.TestEntityGenerator.newMinimalName(Datasets.COL, "diptera", "Diptera", Rank.ORDER);
     var culex = life.catalogue.api.TestEntityGenerator.newMinimalName(Datasets.COL, "culex", "Culex", Rank.GENUS);
@@ -238,6 +248,8 @@ public class SectorSyncIT extends SectorSyncTestBase {
       tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(zero, zeroID.getId(), srcDiptera.getId()));
       nm.create(virus);
       tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(virus, virusID.getId(), srcCulex.getId()));
+      nm.create(junk);
+      tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(junk, junkID.getId(), srcCulex.getId()));
       session.getMapper(NameUsageMapper.class).updateParentId(srcCulex, zeroID.getId(), Users.TESTER);
       nm.create(diptera);
       tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(diptera, diptera.getId(), getByName(Datasets.COL, Rank.CLASS, "Insecta").getId()));
@@ -248,7 +260,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     try {
       createSector(Sector.Mode.MERGE, srcKey, srcDiptera, getByID("diptera"), s -> {
         s.setNameTypes(nameTypes);
-        s.setRanks(Set.of(Rank.ORDER, Rank.FAMILY, Rank.GENUS, Rank.SPECIES));
+        s.setRanks(Set.of(Rank.ORDER, Rank.FAMILY, Rank.GENUS, Rank.SPECIES, Rank.UNRANKED));
         disableAutoBlocking(s);
       });
       syncMergesOnly();
@@ -260,7 +272,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
         session.getMapper(NameUsageMapper.class).updateParentId(srcCulex, culexParentID, Users.TESTER);
         var nm = session.getMapper(NameMapper.class);
         var tm = session.getMapper(TaxonMapper.class);
-        for (var id : List.of(virusID, zeroID)) {
+        for (var id : List.of(junkID, virusID, zeroID)) {
           tm.delete(id);
           nm.delete(id);
         }

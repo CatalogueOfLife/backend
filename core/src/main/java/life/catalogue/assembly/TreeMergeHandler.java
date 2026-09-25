@@ -42,11 +42,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
   public static final char ID_PREFIX = '~';
   private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
-  /**
-   * Name types that carry an OTU style code (BOLD BINs, UNITE SH codes) and are therefore allowed to be unranked.
-   * IDENTIFIER exists since name-parser v5; OTHER is kept for names stored by older versions.
-   */
-  private static final Set<NameType> OTU_TYPES = Set.of(NameType.OTHER, NameType.IDENTIFIER);
   private final MatchedParentStack parents;
   private final UsageMatcher matcher;
   private final MatchingUtils utils;
@@ -575,17 +570,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
     var ignore =  super.ignoreUsage(u, decision, issues, true);
     if (!ignore) {
-      // additional checks - we dont want any unranked unless they are OTU style codes, i.e. BOLD BINs and UNITE SH codes.
-      // the name parser typed those OTU up to v3, folded them into OTHER in v4 and split them back out as IDENTIFIER in v5,
-      // so accept both - dropping them silently loses every BOLD and UNITE name of a merge sector.
-      if (u.getRank() == Rank.UNRANKED && !OTU_TYPES.contains(u.getName().getType())) {
+      // additional checks - we dont want any unranked unless they are OTU style codes, i.e. BOLD BINs and UNITE SH codes,
+      // which the name parser types IDENTIFIER since v5. It folded them into OTHER in v4, but every source merged today
+      // stores them as IDENTIFIER, and all an OTHER exemption still let through was unparsable junk like "R ogas eurinus".
+      if (u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.IDENTIFIER) {
         // count it, otherwise the loss is invisible in the sector import metrics
         return incIgnored(IgnoreReason.RANK, u);
       }
       // a ranked name the parser could not make sense of is no name to merge, e.g. a family "0" that became the parent of
       // existing base genera. Viruses are OTHER too, but carry the virus code. An explicit sector name type filter or a
       // reviewed decision has the final say. See https://github.com/CatalogueOfLife/data/issues/1730
-      if (u.getName().getType() == NameType.OTHER && u.getName().getCode() != NomCode.VIRUS && u.getRank() != Rank.UNRANKED
+      if (u.getName().getType() == NameType.OTHER && u.getName().getCode() != NomCode.VIRUS
           && (sector.getNameTypes() == null || sector.getNameTypes().isEmpty())
           && (decision == null || decision.getMode() != EditorialDecision.Mode.REVIEWED)) {
         return incIgnored(IgnoreReason.NAME_OTHER, u);
