@@ -9,6 +9,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.api.model.SimpleNameVerbatim;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimSource;
@@ -1587,8 +1588,9 @@ public class HierarchySync extends SectorRunnable {
           }
         }
       }
-      try (Cursor<NameUsageBase> cursor = session.getMapper(NameUsageMapper.class).processSector(sector)) {
-        for (NameUsageBase u : cursor) {
+      // simple usages: a full synonym maps its parent as a taxon, and that parent may have become a synonym since
+      try (Cursor<SimpleNameVerbatim> cursor = session.getMapper(NameUsageMapper.class).processSectorSimple(sector)) {
+        for (SimpleNameVerbatim u : cursor) {
           String sourceId = u.getVerbatimSourceKey() == null ? null : sourceIdsByVSKey.get(u.getVerbatimSourceKey());
           if (sourceId != null) {
             previousIds.putIfAbsent(sourceId, u.getId());

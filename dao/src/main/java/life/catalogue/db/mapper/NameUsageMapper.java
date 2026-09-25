@@ -121,6 +121,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   SimpleNameVerbatim getSimpleParent(@Param("key") DSID<String> key);
 
   /**
+   * Streams the usages of a sector without their accepted name, so a synonym whose parent is not an accepted taxon
+   * can still be read.
+   */
+  Cursor<SimpleNameVerbatim> processSectorSimple(@Param("key") DSID<Integer> sectorKey);
+
+  /**
    * Lists all accepted, direct children of a taxon
    */
   List<SimpleName> listSimpleChildren(@Param("key") DSID<String> key);

@@ -445,6 +445,9 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     mapper().processSector(s1).forEach(n -> count.incrementAndGet());
     int left = 468;
     assertEquals(left, count.get());
+    count.set(0);
+    mapper().processSectorSimple(s1).forEach(n -> count.incrementAndGet());
+    assertEquals(left, count.get());
 
     // delete
     mapper().createTempTable();
