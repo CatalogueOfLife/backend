@@ -493,10 +493,10 @@ public class IdProvider {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       lrkey = dm.latestRelease(projectKey, true, prCfg.ignoredReleases, origin);
-      // the archive can contain ids of any release the project ever had, so we load them all - a deleted or private
-      // release keeps its dataset row and with it its attempt, and without them an archived id of such a release
-      // resolves to attempt 0, the oldest possible, which makes it the most senior candidate of its canonical group
-      dm.listReleasesQuick(projectKey, true, true).forEach(d -> {
+      // the archive holds the ids of every public release the project ever had, deleted ones included - a deleted
+      // release keeps its dataset row and with it its attempt, and without it an archived id of such a release would
+      // rank last on seniority. Private releases never reach the archive and have no business here at all
+      dm.listReleasesQuick(projectKey, true, false).forEach(d -> {
         dataset2release.put(d.getKey(), new Release(d.getKey(), d.getOrigin(), d.getAttempt()));
         if (d.getKey() != releaseDatasetKey) {
           if (prCfg.ignoredReleases.contains(d.getKey())) {
@@ -506,7 +506,7 @@ public class IdProvider {
           }
         }
       });
-      LOG.info("Found {} relevant past releases, deleted and private ones included", dataset2attempt.size());
+      LOG.info("Found {} relevant past releases, deleted ones included", dataset2attempt.size());
     }
     return lrkey;
   }
@@ -602,7 +602,7 @@ public class IdProvider {
   /**
    * The attempt of the release an archived id first appeared in, which is how senior that id is.
    *
-   * Deleted and private releases are loaded like any other, so only a release whose dataset row is gone for good is
+   * Deleted releases are loaded like any other, so only a release whose dataset row is gone for good is
    * unknown here. Such an id must not pass for the oldest one: an unknown key resolves to attempt 0 through the
    * primitive map, which is older than every real attempt and made ids of vanished releases outrank ids in
    * continuous use. They rank last on seniority instead and can still win on evidence alone.

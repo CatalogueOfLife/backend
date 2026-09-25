@@ -292,7 +292,7 @@ or rank on top of that. `IdCandidate` then orders what is left: an id the last r
 already cites it, and a better corroborated resurrection must not take it away - then the evidence, then seniority,
 which is longevity based rather than currency based (base-release-seen before xr-only, then more releases, then earlier
 first release), which is what makes a removed erroneous duplicate lose to the id it duplicated. An id's attempt comes
-from the release it first appeared in, deleted and private releases included: their `dataset` row survives and carries
+from the release it first appeared in, deleted releases included: their `dataset` row survives and carries
 the attempt, and a release whose row is gone for good ranks last on seniority instead of first (attempt 0 used to make
 it the most senior id of its group). Ids are handed out greedily, best pairing first.
 The archive is the memory all of this reads: one row per id ever issued, holding the version of the highest ranked

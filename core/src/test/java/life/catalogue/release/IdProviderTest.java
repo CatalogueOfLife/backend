@@ -227,7 +227,7 @@ public class IdProviderTest {
 
   @Test
   public void idOfAVanishedReleaseIsNotTheOldest() throws Exception {
-    // deleted and private releases are loaded like any other, so their ids keep their real attempt. A release whose
+    // deleted releases are loaded like any other, so their ids keep their real attempt. A release whose
     // dataset row is gone for good used to resolve to attempt 0 through the primitive map - older than every real
     // attempt, which made such an id the most senior candidate of its canonical group. It ranks last instead.
     IdTestProvider provider = new IdTestProvider();
