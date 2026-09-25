@@ -258,6 +258,21 @@ a sanity check. That check used to adopt the parsed name only when its type was 
 type the atoms assumed, which lets both the `SECTOR_NAME_TYPES` filter and the `INDETERMINED` filter
 above do their job. See [data#1568](https://github.com/CatalogueOfLife/data/issues/1568).
 
+Merge sectors drop two more things in `TreeMergeHandler.ignoreUsage`:
+
+| Filter | IgnoreReason |
+|--------|--------------|
+| Unranked names, unless they are OTU style codes (`IDENTIFIER`, or `OTHER` from older parser versions) | `RANK` |
+| Ranked names of type `OTHER`, unless they carry the `VIRUS` code | `NAME_OTHER` |
+
+The second applies only to sectors without their own `nameTypes` filter, and a `REVIEWED` decision
+overrides it. Viruses are exempt because the parser types every virus name `OTHER` and sets the
+`VIRUS` code. Everything else of type `OTHER` is a string the parser could not understand, like
+`0` or `=Papilio dorylas Denis & Schiffermüller, 1775`. Creating one does harm beyond the junk name:
+a merged match below it patches the classification of the existing base usage, so TaiCOL's family
+`0` pulled the Species Fungorum genus *Yamadazyma* below itself. The children of a dropped name attach
+to its closest matched ancestor instead. See [data#1730](https://github.com/CatalogueOfLife/data/issues/1730).
+
 ### Genus homonyms
 
 Two genus usages sharing a canonical name but carrying **different authorship** are decided by lineage
