@@ -180,6 +180,95 @@ public class SectorSyncIT extends SectorSyncTestBase {
   }
 
   /**
+   * A merge must not create a ranked name the parser could not make sense of, like the TaiCOL family "0".
+   * Once created, the merge patched the classification of the project genus below it and moved it under "0".
+   * Virus names are OTHER too and must still merge.
+   * https://github.com/CatalogueOfLife/data/issues/1730
+   */
+  @Test
+  public void mergeIgnoresOtherNames() throws Exception {
+    var culex = mergeFamilyZero(null);
+    assertNull("family 0 must not be merged", getByName(Datasets.COL, Rank.FAMILY, "0"));
+    assertEquals("Culex stays directly below Diptera", "diptera", culex.getParentId());
+    assertNotNull("virus names are OTHER and must still merge", getByName(Datasets.COL, Rank.SPECIES, "Culex zero virus 1"));
+  }
+
+  /**
+   * An explicit sector name type filter has the final say and can still merge OTHER names.
+   */
+  @Test
+  public void mergeOtherNamesIfConfigured() throws Exception {
+    var culex = mergeFamilyZero(Set.of(NameType.SCIENTIFIC, NameType.OTHER));
+    var zero = getByName(Datasets.COL, Rank.FAMILY, "0");
+    assertNotNull("family 0 is merged when the sector asks for OTHER names", zero);
+    assertEquals(zero.getId(), culex.getParentId());
+  }
+
+  /**
+   * Places a family "0" between Diptera and Culex in the source, merges it into a project that has Culex directly below
+   * Diptera and returns the project's Culex afterwards. All source changes are reverted, the source persists for all tests.
+   */
+  private NameUsageBase mergeFamilyZero(Set<NameType> nameTypes) throws Exception {
+    final int srcKey = dataRule.mapKey(DataFormat.COLDP, 14);
+    final var srcDiptera = getByName(srcKey, Rank.ORDER, "Diptera");
+    final var srcCulex = getByName(srcKey, Rank.GENUS, "Culex");
+    final String culexParentID = srcCulex.getParentId();
+    final DSID<String> zeroID = DSID.of(srcKey, "zero");
+    final DSID<String> virusID = DSID.of(srcKey, "zero-virus");
+
+    var zero = life.catalogue.api.TestEntityGenerator.newMinimalName(srcKey, zeroID.getId(), "Zero", Rank.FAMILY);
+    zero.setUninomial(null);
+    zero.setScientificName("0");
+    zero.setType(NameType.OTHER);
+    zero.setCode(null);
+    var virus = life.catalogue.api.TestEntityGenerator.newMinimalName(srcKey, virusID.getId(), "Culex zero virus 1", Rank.SPECIES);
+    virus.setGenus(null);
+    virus.setSpecificEpithet(null);
+    virus.setInfraspecificEpithet(null);
+    virus.setScientificName("Culex zero virus 1");
+    virus.setType(NameType.OTHER);
+    virus.setCode(NomCode.VIRUS);
+    // the project already has Culex, directly below the order
+    var diptera = life.catalogue.api.TestEntityGenerator.newMinimalName(Datasets.COL, "diptera", "Diptera", Rank.ORDER);
+    var culex = life.catalogue.api.TestEntityGenerator.newMinimalName(Datasets.COL, "culex", "Culex", Rank.GENUS);
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var nm = session.getMapper(NameMapper.class);
+      var tm = session.getMapper(TaxonMapper.class);
+      nm.create(zero);
+      tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(zero, zeroID.getId(), srcDiptera.getId()));
+      nm.create(virus);
+      tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(virus, virusID.getId(), srcCulex.getId()));
+      session.getMapper(NameUsageMapper.class).updateParentId(srcCulex, zeroID.getId(), Users.TESTER);
+      nm.create(diptera);
+      tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(diptera, diptera.getId(), getByName(Datasets.COL, Rank.CLASS, "Insecta").getId()));
+      nm.create(culex);
+      tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(culex, culex.getId(), diptera.getId()));
+    }
+    matchingRule.rematch(Datasets.COL);
+    try {
+      createSector(Sector.Mode.MERGE, srcKey, srcDiptera, getByID("diptera"), s -> {
+        s.setNameTypes(nameTypes);
+        s.setRanks(Set.of(Rank.ORDER, Rank.FAMILY, Rank.GENUS, Rank.SPECIES));
+        disableAutoBlocking(s);
+      });
+      syncMergesOnly();
+      print(Datasets.COL);
+      return getByID("culex");
+
+    } finally {
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+        session.getMapper(NameUsageMapper.class).updateParentId(srcCulex, culexParentID, Users.TESTER);
+        var nm = session.getMapper(NameMapper.class);
+        var tm = session.getMapper(TaxonMapper.class);
+        for (var id : List.of(virusID, zeroID)) {
+          tm.delete(id);
+          nm.delete(id);
+        }
+      }
+    }
+  }
+
+  /**
    * https://github.com/gbif/checklistbank/issues/187
    */
   @Test

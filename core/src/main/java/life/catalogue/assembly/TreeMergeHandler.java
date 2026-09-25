@@ -16,6 +16,7 @@ import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -580,6 +581,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
       if (u.getRank() == Rank.UNRANKED && !OTU_TYPES.contains(u.getName().getType())) {
         // count it, otherwise the loss is invisible in the sector import metrics
         return incIgnored(IgnoreReason.RANK, u);
+      }
+      // a ranked name the parser could not make sense of is no name to merge, e.g. a family "0" that became the parent of
+      // existing base genera. Viruses are OTHER too, but carry the virus code. An explicit sector name type filter or a
+      // reviewed decision has the final say. See https://github.com/CatalogueOfLife/data/issues/1730
+      if (u.getName().getType() == NameType.OTHER && u.getName().getCode() != NomCode.VIRUS && u.getRank() != Rank.UNRANKED
+          && (sector.getNameTypes() == null || sector.getNameTypes().isEmpty())
+          && (decision == null || decision.getMode() != EditorialDecision.Mode.REVIEWED)) {
+        return incIgnored(IgnoreReason.NAME_OTHER, u);
       }
       ignore = cfg != null && cfg.isBlocked(u.getName());
       // check the dynamically generated name validation issues without loading
