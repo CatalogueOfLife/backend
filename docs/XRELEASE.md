@@ -262,8 +262,13 @@ Merge sectors drop two more things in `TreeMergeHandler.ignoreUsage`:
 
 | Filter | IgnoreReason |
 |--------|--------------|
-| Unranked names, unless they are OTU style codes (`IDENTIFIER`, or `OTHER` from older parser versions) | `RANK` |
+| Unranked names, unless they are OTU style codes like BOLD BINs or UNITE SH codes (`IDENTIFIER`) | `RANK` |
 | Ranked names of type `OTHER`, unless they carry the `VIRUS` code | `NAME_OTHER` |
+
+The first used to exempt `OTHER` too, which is how name-parser v4 typed OTU codes. Every source merged
+today stores them as `IDENTIFIER`, and all the exemption still let through were unparsable synonyms
+like `R ogas eurinus` or `A[mpelis] rufaxilla`, 246 of them in the September 2026 COL XR. It holds
+whatever the sector's `nameTypes` say.
 
 The second applies only to sectors without their own `nameTypes` filter, and a `REVIEWED` decision
 overrides it. Viruses are exempt because the parser types every virus name `OTHER` and sets the
