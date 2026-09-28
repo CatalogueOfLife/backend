@@ -232,9 +232,12 @@
 - scope: tpl
   wikidataProperty: P1070
   title: The Plant List
-  link: http://www.theplantlist.org
-  resolver: http://www.theplantlist.org/tpl1.1/record/{id}
+  link: https://wfoplantlist.org/background
   example: kew-435194
+  description: | 
+    The Plant List (TPL) was published in December 2010 as a direct response to Target 1 of the Global Strategy for Plant Conservation (GSPC) 2002–2010.
+    The last edition of TPL, Version 1.1, was released in September 2013.
+    It has been superseded by the WFO Plant List and is no longer maintained or online.
 
 - scope: tropicos
   wikidataProperty: P960
@@ -275,9 +278,9 @@
 
 - scope: wfo
   wikidataProperty: P7715
-  title: World Flora Online
-  link: https://www.worldfloraonline.org
-  resolver: https://www.worldfloraonline.org/taxon/{id}
+  title: WFO Plant List
+  link: https://wfoplantlist.org/
+  resolver: https://wfoplantlist.org/taxon/{id}
   example: wfo-0000891536
 
 - scope: worms
