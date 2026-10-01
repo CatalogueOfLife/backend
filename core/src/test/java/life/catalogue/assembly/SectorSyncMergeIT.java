@@ -116,7 +116,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       {"saccolomataceae", List.of("orthiopteris")},
       {"protected", List.of("src")}, // XReleaseConfig.protectedGroups shields the Carabus subtree from merges
       {"bareauthorship", List.of("src")}, // bare-name merge candidates must be filtered by authorship, see readme.md
-      {"genushomonyms", List.of("src")} // genus homonyms decided by the lowest shared rank, see readme.md
+      {"genushomonyms", List.of("src")}, // genus homonyms decided by the lowest shared rank, see readme.md
+      {"environment", List.of("src")} // merges fill in missing environments & temporal ranges, never extinct, see readme.md
     });
   }
 
@@ -570,6 +571,61 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
    * all three verdicts, including the two things the tree diff alone cannot show: that the surviving
    * genus kept its own authorship, and that the undecided genus was skipped rather than duplicated.
    */
+  public void environmentValidate() {
+    final int srcKey = info.sectors.get(0).getSubjectDatasetKey();
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+
+      // missing environments are taken from the source, also for higher taxa
+      var abra = taxonInfo(num, Rank.GENUS, "Abra");
+      assertEquals(EnumSet.of(Environment.MARINE), abra.getEnvironments());
+
+      // both environments and temporal range taken over, each recorded as a secondary source
+      var albaKey = getByName(Datasets.COL, Rank.SPECIES, "Abra alba");
+      var alba = taxonInfo(num, Rank.SPECIES, "Abra alba");
+      assertEquals(EnumSet.of(Environment.MARINE, Environment.BRACKISH), alba.getEnvironments());
+      assertEquals("Pliocene", alba.getTemporalRangeStart());
+      assertEquals("Holocene", alba.getTemporalRangeEnd());
+      var sources = vsm.getSources(DSID.of(Datasets.COL, albaKey.getVerbatimSourceKey()));
+      assertEquals(srcKey, (int) sources.get(InfoGroup.ENVIRONMENT).getDatasetKey());
+      assertEquals(srcKey, (int) sources.get(InfoGroup.TEMPORAL_RANGE).getDatasetKey());
+
+      // an existing temporal range is kept, only the missing environment is added
+      var nitida = taxonInfo(num, Rank.SPECIES, "Abra nitida");
+      assertEquals(EnumSet.of(Environment.MARINE), nitida.getEnvironments());
+      assertEquals("Miocene", nitida.getTemporalRangeStart());
+      assertEquals("Miocene", nitida.getTemporalRangeEnd());
+
+      // existing environments are never overridden
+      var prismatica = taxonInfo(num, Rank.SPECIES, "Abra prismatica");
+      assertEquals(EnumSet.of(Environment.FRESHWATER), prismatica.getEnvironments());
+
+      // new taxa are created with their environments
+      var segmentum = taxonInfo(num, Rank.SPECIES, "Abra segmentum");
+      assertEquals(EnumSet.of(Environment.MARINE), segmentum.getEnvironments());
+
+      // the extinct flag is never merged, only flagged for review
+      var tenuisKey = getByName(Datasets.COL, Rank.SPECIES, "Abra tenuis");
+      var tenuis = taxonInfo(num, Rank.SPECIES, "Abra tenuis");
+      assertNotEquals(Boolean.TRUE, tenuis.isExtinct());
+      var vs = vsm.getIssues(DSID.of(Datasets.COL, tenuisKey.getVerbatimSourceKey()));
+      assertTrue(vs.getIssues().contains(Issue.POTENTIALLY_EXTINCT));
+      // ... and only there
+      for (var name : List.of("Abra alba", "Abra nitida", "Abra prismatica", "Abra segmentum")) {
+        var u = getByName(Datasets.COL, Rank.SPECIES, name);
+        var vs2 = vsm.getIssues(DSID.of(Datasets.COL, u.getVerbatimSourceKey()));
+        assertFalse(name, vs2 != null && vs2.getIssues().contains(Issue.POTENTIALLY_EXTINCT));
+      }
+    }
+  }
+
+  private static Taxon taxonInfo(NameUsageMapper num, Rank rank, String name) {
+    var u = getByName(Datasets.COL, rank, name);
+    assertNotNull(name, u);
+    return num.getTaxonInfo(DSID.of(Datasets.COL, u.getId()));
+  }
+
   public void genushomonymsValidate() {
     // SAME: the source Amanita has no family at all, but both agree at ORDER (Agaricales), so the
     // target genus is reused. It must stay single, and must NOT adopt the incoming "Pers." - the keep

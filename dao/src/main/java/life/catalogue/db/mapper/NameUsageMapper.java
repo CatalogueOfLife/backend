@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
@@ -17,6 +18,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -433,6 +435,21 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("parentId") String parentId,
                       @Param("status") TaxonomicStatus status,
                       @Param("userKey") int userKey);
+
+  /**
+   * Reads only the extinct flag, environments and temporal range of a taxon, the taxon properties a merge can enrich.
+   * @return a taxon with only those properties set, or null if the usage does not exist
+   */
+  Taxon getTaxonInfo(@Param("key") DSID<String> key);
+
+  /**
+   * Updates the environments and temporal range of a taxon, never its extinct flag.
+   */
+  void updateTaxonInfo(@Param("key") DSID<String> key,
+                       @Param("environments") Set<Environment> environments,
+                       @Param("temporalRangeStart") @Nullable String temporalRangeStart,
+                       @Param("temporalRangeEnd") @Nullable String temporalRangeEnd,
+                       @Param("userKey") int userKey);
 
   /**
    * Updates only the verbatimSourceKey of the usage

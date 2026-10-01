@@ -706,6 +706,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
       // set targetKey to the existing usage
       final var existingUsageKey = DSID.of(targetDatasetKey, existing.usage.getId());
+      boolean potentiallyExtinct = false;
       if (existing.usage.getStatus().isTaxon()) {
         // patch classification of accepted names if direct parent adds to it
         if (syncTaxa) {
@@ -764,14 +765,21 @@ public class TreeMergeHandler extends TreeBaseHandler {
             trackUpdated(existingUsageKey.getId());
           }
         }
+        // environments, temporal range & extinct flag
+        if (syncTaxa && nu.isTaxon()) {
+          potentiallyExtinct = updateTaxonInfo((Taxon) nu, existingUsageKey, upd);
+        }
       }
 
       // try to also update the name - conditional checks within the subroutine
       // this can change the existing usage ID if the authorship changes !!!
+      // null if names are not synced and nothing loaded the name
       Name pn = updateName(null, nu.getName(), vs, upd, existing);
 
-      if (!upd.isEmpty()) {
-        this.updated++;
+      if (!upd.isEmpty() || potentiallyExtinct) {
+        if (!upd.isEmpty()) {
+          this.updated++;
+        }
         trackUpdated(existingUsageKey.getId());
         // update name & usage vsKey
         // both name and usage can have a key to a verbatim source. Ideally they are the same
@@ -779,16 +787,23 @@ public class TreeMergeHandler extends TreeBaseHandler {
         DSID<Integer> vsKey;
         if (uvsKey != null) {
           vsKey = DSID.of(targetDatasetKey, uvsKey);
-        } else if (pn.getVerbatimSourceKey() != null) {
+        } else if (pn != null && pn.getVerbatimSourceKey() != null) {
           vsKey = DSID.of(targetDatasetKey, pn.getVerbatimSourceKey());
         } else {
           vsKey = createSecondaryVS();
         }
-        vsm.insertSources(vsKey, nu, upd);
-        if (pn.getVerbatimSourceKey() == null) {
-          pn.setVerbatimSourceKey(vsKey.getId());
+        if (!upd.isEmpty()) {
+          vsm.insertSources(vsKey, nu, upd);
         }
-        nm.update(pn);
+        if (potentiallyExtinct) {
+          vsm.addIssue(vsKey, Issue.POTENTIALLY_EXTINCT);
+        }
+        if (pn != null) {
+          if (pn.getVerbatimSourceKey() == null) {
+            pn.setVerbatimSourceKey(vsKey.getId());
+          }
+          nm.update(pn);
+        }
         if (uvsKey == null) {
           num.updateVerbatimSourceKey(existingUsageKey, vsKey.getId());
         }
@@ -802,6 +817,44 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (usageIdScope != null) {
       num.addIdentifier(existing, List.of(wellKnownId(usageIdScope, nu.getId())));
     }
+  }
+
+  /**
+   * Gives an existing taxon the environments and temporal range of the source taxon if it has none.
+   * The extinct flag is never changed: a source that alone claims a taxon to be extinct is reported for review instead.
+   * The existing values are read through the autocommit session, which does not block on the batch session's locks.
+   *
+   * @param src the source taxon
+   * @param key the existing taxon to update
+   * @param upd set of info groups updated from the source, the ones updated here are added to it
+   * @return true if the source flags the existing taxon as extinct while it is not
+   */
+  private boolean updateTaxonInfo(Taxon src, DSID<String> key, Set<InfoGroup> upd) {
+    final boolean srcEnv = src.getEnvironments() != null && !src.getEnvironments().isEmpty();
+    final boolean srcRange = src.getTemporalRangeStart() != null || src.getTemporalRangeEnd() != null;
+    final boolean srcExtinct = Boolean.TRUE.equals(src.isExtinct());
+    if (!srcEnv && !srcRange && !srcExtinct) return false;
+
+    var t = numRO.getTaxonInfo(key);
+    if (t == null) return false;
+    boolean changed = false;
+    if (srcEnv && (t.getEnvironments() == null || t.getEnvironments().isEmpty())) {
+      t.setEnvironments(EnumSet.copyOf(src.getEnvironments()));
+      upd.add(InfoGroup.ENVIRONMENT);
+      changed = true;
+      LOG.debug("Updated {} with environments {}", key, t.getEnvironments());
+    }
+    if (srcRange && t.getTemporalRangeStart() == null && t.getTemporalRangeEnd() == null) {
+      t.setTemporalRangeStart(src.getTemporalRangeStart());
+      t.setTemporalRangeEnd(src.getTemporalRangeEnd());
+      upd.add(InfoGroup.TEMPORAL_RANGE);
+      changed = true;
+      LOG.debug("Updated {} with temporal range {} - {}", key, t.getTemporalRangeStart(), t.getTemporalRangeEnd());
+    }
+    if (changed) {
+      num.updateTaxonInfo(key, t.getEnvironments(), t.getTemporalRangeStart(), t.getTemporalRangeEnd(), user);
+    }
+    return srcExtinct && !Boolean.TRUE.equals(t.isExtinct());
   }
 
   /**

@@ -534,7 +534,11 @@ public enum Issue {
   DERIVED_NOMENCLATURAL_STATUS(NAME, Level.INFO,
       "The nomenclatural status was not given explicitly, but derived from the taxonomic status. "
       + "Sources often squeeze a nomenclatural statement into their single status column, "
-      + "e.g. dwc:taxonomicStatus=\"nomen nudum\" or \"junior homonym\".")
+      + "e.g. dwc:taxonomicStatus=\"nomen nudum\" or \"junior homonym\"."),
+
+  POTENTIALLY_EXTINCT(NAME_USAGE, Level.WARNING,
+      "A merged source flags this taxon as extinct, while the taxon itself is not flagged as extinct. "
+      + "The extinct flag has not been changed, so it might be extinct and should be reviewed.")
   ;
 
   /**
