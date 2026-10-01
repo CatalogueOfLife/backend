@@ -10,6 +10,7 @@ import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.TaxonMetricsBuilder;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.db.mapper.*;
+import life.catalogue.parser.EnvironmentParser;
 import life.catalogue.parser.NameParser;
 import life.catalogue.parser.NomCodeParser;
 import life.catalogue.parser.RankParser;
@@ -285,6 +286,20 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     } else {
       Taxon t = new Taxon();
       t.setExtinct(tn.extinct);
+      // ENV & CHRONO as read by the production TxtTreeInterpreter
+      if (tn.infos.containsKey(TxtTreeTerm.ENV.name())) {
+        for (var x : tn.infos.get(TxtTreeTerm.ENV.name())) {
+          var env = EnvironmentParser.PARSER.parseOrNull(x);
+          if (env != null) {
+            t.getEnvironments().add(env);
+          }
+        }
+      }
+      if (tn.infos.containsKey(TxtTreeTerm.CHRONO.name())) {
+        var range = tn.infos.get(TxtTreeTerm.CHRONO.name())[0].split("-");
+        t.setTemporalRangeStart(range[0]);
+        t.setTemporalRangeEnd(range[range.length - 1]);
+      }
       if (keepOrder) {
         t.setOrdinal(ordinal);
       }

@@ -701,7 +701,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
           }
           if (u.isTaxon()) {
             Taxon t = (Taxon) u;
-            if (ed.getEnvironments() != null) {
+            // a decision always carries an environment set, empty when it does not change environments.
+            // The db cannot tell null from empty, so an empty set must not wipe the taxon's environments
+            if (ed.getEnvironments() != null && !ed.getEnvironments().isEmpty()) {
               t.setEnvironments(ed.getEnvironments());
             }
             if (ed.isExtinct() != null) {

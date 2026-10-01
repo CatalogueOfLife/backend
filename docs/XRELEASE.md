@@ -60,6 +60,10 @@ reference when both share title and year. An author & year stub like `Benth. (18
 reference for that name alone. Any contradiction merges nothing, see
 [2026-09-23-merge-published-in-links.md](2026-09-23-merge-published-in-links.md).
 
+An existing taxon likewise only takes over the environments or the temporal range of a source taxon if it has none,
+recorded as an `ENVIRONMENT` or `TEMPORAL_RANGE` secondary source. The extinct flag is never merged: a source that
+flags a taxon as extinct while the existing taxon is not marks it with the `POTENTIALLY_EXTINCT` issue for review.
+
 #### 2f. `homotypicGrouping()` — Post-Merge Consolidation
 Runs on the temporary project once all sectors are merged. Wherever sources compete, `SectorPriority` ranks them:
 data managed in the project first, then the sectors of the base release, then the merge sectors by their `priority`

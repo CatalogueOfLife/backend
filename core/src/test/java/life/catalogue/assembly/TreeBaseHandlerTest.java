@@ -2,6 +2,7 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
+import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -13,6 +14,7 @@ import life.catalogue.release.UsageIdGen;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,6 +71,29 @@ public class TreeBaseHandlerTest {
     assertNotEquals(orig, updtd);
     assertTrue(updtd.usage instanceof Taxon);
     assertEquals(TaxonomicStatus.ACCEPTED, updtd.usage.getStatus());
+  }
+
+  /**
+   * A decision always carries an environment set, empty unless it changes environments.
+   * Changing only the status must keep the environments of the taxon.
+   */
+  @Test
+  public void applyDecisionEnvironments() {
+    TreeBaseHandler h = new UselessHandler();
+    Taxon t = new Taxon(Name.newBuilder().build());
+    t.setStatus(TaxonomicStatus.ACCEPTED);
+    t.setEnvironments(EnumSet.of(Environment.MARINE));
+
+    EditorialDecision d = new EditorialDecision();
+    d.setMode(EditorialDecision.Mode.UPDATE);
+    d.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    var updtd = (Taxon) h.applyDecision(t, d).usage;
+    assertEquals(TaxonomicStatus.PROVISIONALLY_ACCEPTED, updtd.getStatus());
+    assertEquals(EnumSet.of(Environment.MARINE), updtd.getEnvironments());
+
+    d.setEnvironments(EnumSet.of(Environment.FRESHWATER));
+    updtd = (Taxon) h.applyDecision(t, d).usage;
+    assertEquals(EnumSet.of(Environment.FRESHWATER), updtd.getEnvironments());
   }
 
   private static final Sector SECTOR = Sector.newBuilder()

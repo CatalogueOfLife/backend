@@ -11,6 +11,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-01 merges fill in missing environments, flag potentially extinct taxa
+```sql
+ALTER TYPE INFOGROUP ADD VALUE 'ENVIRONMENT';
+ALTER TYPE ISSUE ADD VALUE 'POTENTIALLY_EXTINCT';
+```
+A merge sector now gives an existing taxon the environments and temporal range of a source if it has none,
+recorded as an `ENVIRONMENT` or `TEMPORAL_RANGE` secondary source. It never changes the extinct flag, but marks a
+taxon a source claims to be extinct with `POTENTIALLY_EXTINCT` for review. Run before the deploy; no backfill,
+the next sync or release fills them in.
+
 #### 2026-09-15 record which id superseded a deleted one
 ```sql
 ALTER TABLE name_usage_archive ADD COLUMN superseded_by TEXT;
