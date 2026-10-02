@@ -133,7 +133,7 @@ public class AdminResource {
   @POST
   @Path("/maintenance")
   public Map<String, Object> setMaintenance(@QueryParam("on") Boolean on,
-                                            @QueryParam("message") String message) throws IOException {
+                                            @QueryParam("message") String message) {
     return maintenance.set(on, message);
   }
 
