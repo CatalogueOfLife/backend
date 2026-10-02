@@ -50,6 +50,33 @@ public class SortByTranslatorTest {
     assertFalse(isDocSort(new SortByTranslator(req).translate()));
   }
 
+  private static String exactTierScript(NameUsageSearchRequest req) {
+    var sorts = new SortByTranslator(req).translate();
+    assertTrue(sorts.get(0).isScript());
+    return sorts.get(0).script().script().source().scriptString();
+  }
+
+  /**
+   * Exact vernacular name matches only join the exact match sort tier when vernacular names are searched.
+   * See https://github.com/gbif/taxon-ws/issues/71
+   */
+  @Test
+  public void exactTierIncludesVernacularOnlyIfSearched() {
+    var req = new NameUsageSearchRequest();
+    req.setQ("oak");
+    req.setSingleContent(NameUsageRequest.SearchContent.SCIENTIFIC_NAME);
+    assertFalse(exactTierScript(req).contains(QTranslator.FLD_VERNACULAR_EXACT));
+
+    req = new NameUsageSearchRequest();
+    req.setQ("oak");
+    req.setSingleContent(NameUsageRequest.SearchContent.VERNACULAR_NAME);
+    assertTrue(exactTierScript(req).contains(QTranslator.FLD_VERNACULAR_EXACT));
+
+    var sort = SortByTranslator.exactMatchSort(" Chêne ", true);
+    assertEquals("chene", sort.script().script().params().get("vq").to(String.class));
+    assertEquals(" chêne ", sort.script().script().params().get("q").to(String.class));
+  }
+
   @Test
   public void filteredSortsByConfiguredOrderNotDoc() {
     var req = new NameUsageSearchRequest();
