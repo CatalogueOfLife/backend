@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Image tag to publish, e.g. 1.5.2'
+        description: 'Release version to rebuild, e.g. 1.5.2 - builds the git tag v<version>'
         required: true
       latest:
         description: 'Also move the latest tag'
@@ -30,11 +30,15 @@ permissions:
 
 jobs:
   # Resolved once so the app image and the portal image can never be tagged differently.
+  # Image names must be lowercase, the owner is CatalogueOfLife.
+  # A manual run builds the release tag, not the branch it was dispatched from.
   tags:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.tags.outputs.version }}
       latest: ${{ steps.tags.outputs.latest }}
+      owner: ${{ steps.tags.outputs.owner }}
+      ref: ${{ steps.tags.outputs.ref }}
     steps:
       - name: Resolve tags
         id: tags
@@ -42,20 +46,26 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             VERSION="${{ inputs.tag }}"
             LATEST="${{ inputs.latest }}"
+            REF="refs/tags/v$VERSION"
           else
             VERSION="${GITHUB_REF_NAME#v}"
             LATEST=true
+            REF="$GITHUB_REF"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "latest=$LATEST" >> $GITHUB_OUTPUT
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+          echo "ref=$REF" >> $GITHUB_OUTPUT
 
   image:
     needs: tags
     runs-on: ubuntu-latest
     env:
-      IMAGE: ghcr.io/${{ github.repository_owner }}/clb-bundle
+      IMAGE: ghcr.io/${{ needs.tags.outputs.owner }}/clb-bundle
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.tags.outputs.ref }}
 
       - uses: actions/setup-java@v4
         with:
@@ -98,9 +108,11 @@ jobs:
     needs: tags
     runs-on: ubuntu-latest
     env:
-      IMAGE: ghcr.io/${{ github.repository_owner }}/clb-bundle-portal
+      IMAGE: ghcr.io/${{ needs.tags.outputs.owner }}/clb-bundle-portal
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.tags.outputs.ref }}
 
       - name: Image tags
         id: t
@@ -135,7 +147,7 @@ jobs:
       - name: Summary
         run: |
           V="${{ needs.tags.outputs.version }}"
-          OWNER="${{ github.repository_owner }}"
+          OWNER="${{ needs.tags.outputs.owner }}"
           {
             echo "Pushed \`ghcr.io/$OWNER/clb-bundle:$V\` and \`ghcr.io/$OWNER/clb-bundle-portal:$V\`"
             echo ""
