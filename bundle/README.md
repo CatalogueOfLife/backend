@@ -17,24 +17,17 @@ This directory holds only what is needed to **build and publish the images**. Ev
 
 ## Publish the images
 
-Neither image carries a release key, so one build of each serves any release — tag both with the
-**backend version**, never the release, and keep the two tags identical.
+Neither image carries a release key, so one build of each serves any release — both are tagged with
+the **backend version**, never the release, and the two tags are always identical.
+
+[`.github/workflows/bundle-image.yml`](../.github/workflows/bundle-image.yml) publishes both to
+`ghcr.io/catalogueoflife/` on every `v*` tag and moves `:latest`, so a backend release needs nothing
+by hand. To rebuild an existing release, run the workflow from master with its version — it builds the
+git tag `v<version>`, not master:
 
 ```bash
-mvn -DskipTests clean install
-
-docker build -f bundle/Dockerfile        -t ghcr.io/catalogueoflife/clb-bundle:1.5.2 .
-docker build -f bundle/Dockerfile.portal -t ghcr.io/catalogueoflife/clb-bundle-portal:1.5.2 .
-
-for i in clb-bundle clb-bundle-portal; do
-  docker tag  ghcr.io/catalogueoflife/$i:1.5.2 ghcr.io/catalogueoflife/$i:latest
-  docker push ghcr.io/catalogueoflife/$i:1.5.2
-  docker push ghcr.io/catalogueoflife/$i:latest
-done
+gh workflow run bundle-image.yml --ref master -f tag=1.5.3 -f latest=false
 ```
-
-The portal image is static files only, so it needs no maven build — but `mvn install` is still
-required for the app image's shaded jar.
 
 ## Build a data artifact
 
@@ -54,8 +47,7 @@ Publish both files next to the other downloads of that release.
 
 ## Automate it
 
-- `.github/workflows/bundle-image.yml` publishes both images on every `v*` tag, from one resolved
-  version so they cannot drift apart.
+- `.github/workflows/bundle-image.yml` publishes both images, see [above](#publish-the-images).
 - `Jenkinsfile` builds a data artifact from a single `RELEASE_KEY` parameter by driving
   `deploy/bundle.sh` on the apps VM.
 - A `publishActions` entry in the project release config triggers that job when a release is
