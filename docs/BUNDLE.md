@@ -89,7 +89,7 @@ java -cp webservice/target/webservice-*.jar life.catalogue.WsServer \
 ```bash
 java -cp webservice/target/webservice-*.jar life.catalogue.WsServer \
   bundleBuild --key 3287 --dir /srv/col-3287-bundle --delete \
-  --image ghcr.io/catalogueoflife/clb-bundle:1.5.2 config-prod.yml
+  --image ghcr.io/catalogueoflife/clb-bundle:1.5.3 config-prod.yml
 ```
 
 What it produces — a directory that is runnable exactly as downloaded:
