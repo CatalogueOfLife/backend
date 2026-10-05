@@ -43,7 +43,9 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
       emailNotification = new EmailNotification(mailer, cfg);
       // health tests
       if (env != null) {
-        env.healthChecks().register("mail-connection", new MailServerConnectionCheck(mailer));
+        var check = new MailServerConnectionCheck(mailer);
+        env.healthChecks().register("mail-connection", check);
+        env.lifecycle().manage(check);
         env.lifecycle().manage(new ManagedMailer(mailer));
       }
     } else {
