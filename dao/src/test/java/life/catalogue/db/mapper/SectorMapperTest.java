@@ -9,6 +9,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.model.SectorProfile;
+import life.catalogue.api.model.SectorSelector;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.model.VernacularName;
@@ -408,6 +409,44 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertEquals(2, mapper().countSearch(req));
 
     req.setProfileKey(-1);
+    assertEquals(0, mapper().countSearch(req));
+  }
+
+  @Test
+  public void searchBySelector() {
+    add2Sectors();
+    var req = SectorSearchRequest.byProject(targetDatasetKey);
+
+    // an empty selector selects every sector of the project
+    var sel = new SectorSelector();
+    req.setSelector(sel);
+    assertEquals(2, mapper().countSearch(req));
+
+    sel.setSectorKeys(Set.of(s2.getId()));
+    assertEquals(List.of(s2.getId()), keys(mapper().search(req, new Page())));
+    assertEquals(1, mapper().countSearch(req));
+
+    // both test sectors are ATTACH
+    sel = new SectorSelector();
+    sel.setModes(Set.of(Sector.Mode.MERGE));
+    req.setSelector(sel);
+    assertEquals(0, mapper().countSearch(req));
+    sel.setModes(Set.of(Sector.Mode.ATTACH, Sector.Mode.MERGE));
+    assertEquals(2, mapper().countSearch(req));
+
+    // exercises the enum, integer and uuid array casts
+    sel = new SectorSelector();
+    sel.setDatasetTypes(EnumSet.allOf(DatasetType.class));
+    sel.setSubjectDatasetKeys(Set.of(subjectDatasetKey));
+    req.setSelector(sel);
+    assertEquals(2, mapper().countSearch(req));
+    sel.setPublisherKeys(Set.of(UUID.randomUUID()));
+    assertEquals(0, mapper().countSearch(req));
+
+    // the project has no sector publishers
+    sel = new SectorSelector();
+    sel.setAnySectorPublisher(true);
+    req.setSelector(sel);
     assertEquals(0, mapper().countSearch(req));
   }
 

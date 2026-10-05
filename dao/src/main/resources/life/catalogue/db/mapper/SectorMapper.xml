@@ -185,6 +185,19 @@
               AND <include refid="life.catalogue.db.mapper.SectorProfileMapper.MATCHES"/>
           )
         </if>
+        <if test="req.selector != null">
+          AND EXISTS (
+            SELECT TRUE FROM (SELECT
+                #{req.selector.modes, typeHandler=life.catalogue.db.type2.SectorModeSetTypeHandler}::SECTOR_MODE[] AS modes,
+                #{req.selector.datasetTypes, typeHandler=life.catalogue.db.type2.DatasetTypeSetTypeHandler}::DATASETTYPE[] AS dataset_types,
+                #{req.selector.publisherKeys, typeHandler=life.catalogue.db.type2.UuidSetTypeHandler}::UUID[] AS publisher_keys,
+                #{req.selector.anySectorPublisher}::BOOLEAN AS any_sector_publisher,
+                #{req.selector.subjectDatasetKeys, typeHandler=life.catalogue.db.type2.IntegerSetTypeHandler}::INTEGER[] AS subject_dataset_keys,
+                #{req.selector.sectorKeys, typeHandler=life.catalogue.db.type2.IntegerSetTypeHandler}::INTEGER[] AS sector_keys
+              ) p LEFT JOIN dataset d ON d.key = s.subject_dataset_key
+            WHERE <include refid="life.catalogue.db.mapper.SectorProfileMapper.MATCHES"/>
+          )
+        </if>
         <if test="req.stale">
           AND (<include refid="SUBJECT_STALE"/> OR <include refid="TARGET_STALE"/>)
         </if>

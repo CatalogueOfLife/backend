@@ -36,4 +36,15 @@ public class SectorProfileResource extends AbstractDatasetScopedResource<Integer
     req.setProfileKey(id);
     return sdao.search(req, page);
   }
+
+  /**
+   * The sectors a profile with the given selector would select right now, to preview a selector before saving it.
+   */
+  @POST
+  @Path("preview")
+  public ResultPage<Sector> preview(@PathParam("key") int datasetKey, SectorSelector selector, @Valid @BeanParam Page page) {
+    var req = SectorSearchRequest.byProject(datasetKey);
+    req.setSelector(selector == null ? new SectorSelector() : selector);
+    return sdao.search(req, page);
+  }
 }

@@ -1,6 +1,7 @@
 package life.catalogue.api.search;
 
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SectorSelector;
 
 import java.time.LocalDate;
 import java.util.Objects;
@@ -50,6 +51,11 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
    */
   @QueryParam("profileKey")
   private Integer profileKey;
+
+  /**
+   * Only sectors a profile with this selector would select. No query parameter, the profile preview sets it.
+   */
+  private SectorSelector selector;
 
   // restrict to sectors that share their subject with another sector matching all other filters.
   // Subject less sectors from the same source share their missing subject.
@@ -156,6 +162,14 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     this.profileKey = profileKey;
   }
 
+  public SectorSelector getSelector() {
+    return selector;
+  }
+
+  public void setSelector(SectorSelector selector) {
+    this.selector = selector;
+  }
+
   public boolean isDuplicates() {
     return duplicates;
   }
@@ -169,11 +183,11 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
-    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && stale == that.stale && duplicates == that.duplicates && Objects.equals(key, that.key) && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(profileKey, that.profileKey);
+    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && stale == that.stale && duplicates == that.duplicates && Objects.equals(key, that.key) && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(profileKey, that.profileKey) && Objects.equals(selector, that.selector);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, stale, duplicates, publisherKey, profileKey);
+    return Objects.hash(super.hashCode(), key, subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, stale, duplicates, publisherKey, profileKey, selector);
   }
 }

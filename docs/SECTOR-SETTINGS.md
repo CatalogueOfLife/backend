@@ -79,6 +79,7 @@ a sector publisher, joins every profile it matches. Publisher and type are read 
 | `GET`, `PUT`, `DELETE /dataset/{key}/sector/profile/{id}` | Read, update, delete one profile |
 | `GET /dataset/{key}/sector/profile/{id}/sector` | The sectors the profile selects right now |
 | `GET /dataset/{key}/sector?profileKey={id}` | The same, combined with any other sector search filter |
+| `POST /dataset/{key}/sector/profile/preview` | The sectors a profile with the posted selector would select right now, to preview a selector before saving it |
 | `GET /dataset/{key}/sector/{id}/settings` | The settings a sync of the sector uses, and where each comes from |
 
 The publisher sectors profile:
