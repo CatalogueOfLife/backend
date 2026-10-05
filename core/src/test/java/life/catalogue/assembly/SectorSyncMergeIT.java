@@ -52,6 +52,7 @@ import static org.junit.Assert.*;
 public class SectorSyncMergeIT extends SectorSyncTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSyncMergeIT.class);
   private static final TypeReference<List<EditorialDecision>> decisionListTypeRef = new TypeReference<>() {};
+  private static final TypeReference<List<SectorProfile>> profileListTypeRef = new TypeReference<>() {};
 
   final static SqlSessionFactoryRule pg = new PgSetupRule(); //PgConnectionRule("col", "postgres", "postgres");
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -117,7 +118,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       {"protected", List.of("src")}, // XReleaseConfig.protectedGroups shields the Carabus subtree from merges
       {"bareauthorship", List.of("src")}, // bare-name merge candidates must be filtered by authorship, see readme.md
       {"genushomonyms", List.of("src")}, // genus homonyms decided by the lowest shared rank, see readme.md
-      {"environment", List.of("src")} // merges fill in missing environments & temporal ranges, never extinct, see readme.md
+      {"environment", List.of("src")}, // merges fill in missing environments & temporal ranges, never extinct, see readme.md
+      {"profiles", List.of("src")} // sector profiles cascade and their blocklists reach the merge, see readme.md
     });
   }
 
@@ -135,6 +137,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     public final List<String> sources;
     public final List<Sector> sectors = new ArrayList<>();
     public final List<EditorialDecision> decisions = new ArrayList<>();
+    public final List<SectorProfile> profiles = new ArrayList<>();
     public final List<TxtTreeDataRule.TreeDataset> rules = new ArrayList<>();
     public boolean rematchSectors = false; // do we need to rematch sectors?
     public XReleaseConfig cfg;
@@ -201,6 +204,13 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       treeRule.before();
     }
 
+    // do we have a sector profiles file?
+    try {
+      info.profiles.addAll(YamlUtils.read(profileListTypeRef, Resources.getResourceAsStream("txtree/" + project + "/profiles.yaml")));
+    } catch (IOException e) {
+      // only the project defaults then
+    }
+
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       // project defaults
       var defaults = new SectorProfile();
@@ -209,6 +219,11 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       defaults.getSettings().setRemoveOrdinals(true);
       defaults.applyUser(Users.TESTER);
       session.getMapper(SectorProfileMapper.class).create(defaults);
+      for (var p : info.profiles) {
+        p.setDatasetKey(Datasets.COL);
+        p.applyUser(Users.TESTER);
+        session.getMapper(SectorProfileMapper.class).create(p);
+      }
 
       SectorMapper sm = session.getMapper(SectorMapper.class);
       for (var s : info.sectors) {

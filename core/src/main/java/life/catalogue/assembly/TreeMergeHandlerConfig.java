@@ -14,7 +14,6 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -31,8 +30,7 @@ public class TreeMergeHandlerConfig {
   public final @Nullable Taxon incertae;
   public final int datasetKey;
   public final int user;
-  private final Set<String> blockedNames = new HashSet<>();
-  private final List<Pattern> blockedNamePatterns = new ArrayList<>();
+  private final NameBlocklist blocklist;
   // resolved usage ids of the protected group root taxa in the sync target dataset
   private final Set<String> protectedUsageIds = new HashSet<>();
 
@@ -41,25 +39,8 @@ public class TreeMergeHandlerConfig {
     this.xCfg = rcfg == null ? new XReleaseConfig() : rcfg;
     this.datasetKey = datasetKey;
     this.user = user;
+    blocklist = new NameBlocklist(xCfg.blockedNames, xCfg.blockedNamePatterns);
     incertae = createIncertaeSedisRoot();
-    // upper case blocked names
-    if (xCfg.blockedNames != null) {
-      for (var bn : xCfg.blockedNames) {
-        blockedNames.add(norm(bn));
-      }
-    }
-    if (xCfg.blockedNamePatterns != null) {
-      for (var bnp : xCfg.blockedNamePatterns) {
-        if (!StringUtils.isBlank(bnp)){
-          try {
-            var p = Pattern.compile(bnp.trim(), Pattern.CASE_INSENSITIVE);
-            blockedNamePatterns.add(p);
-          } catch (IllegalArgumentException e) {
-            LOG.warn("Invalid name pattern: " + bnp, e);
-          }
-        }
-      }
-    }
     resolveProtectedGroups();
   }
 
@@ -115,10 +96,6 @@ public class TreeMergeHandlerConfig {
    */
   public boolean isProtectedRoot(String usageId) {
     return protectedUsageIds.contains(usageId);
-  }
-
-  private static String norm(String x) {
-    return x == null ? null : x.trim().toUpperCase();
   }
 
   private @Nullable Taxon createIncertaeSedisRoot() {
@@ -179,30 +156,10 @@ public class TreeMergeHandlerConfig {
    * @param n name to test for. Case insensitive!
    */
   public boolean isBlocked(FormattableName n) {
-    var blocked = blockedNames.contains(norm(n.getLabel()))
-           || blockedNames.contains(norm(n.getScientificName()));
-    if (!blocked && !blockedNamePatterns.isEmpty()) {
-      for (var p : blockedNamePatterns) {
-        var m = p.matcher(n.getLabel());
-        if (m.find()) {
-          return true;
-        }
-      }
-    }
-    return blocked;
+    return blocklist.isBlocked(n);
   }
 
   public boolean hasIncertae() {
     return incertae != null;
-  }
-
-  public static void main(String[] args){
-    try {
-      var p = Pattern.compile("bnp.trim()", Pattern.CASE_INSENSITIVE);
-      p = Pattern.compile("bnp(gh+$$", Pattern.CASE_INSENSITIVE);
-    } catch (IllegalArgumentException e) {
-      System.out.println(e);
-    }
-
   }
 }

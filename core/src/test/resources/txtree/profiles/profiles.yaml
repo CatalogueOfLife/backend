@@ -1,0 +1,15 @@
+# profiles cascade in position order; source datasets are numbered from 100 in SectorSyncMergeIT
+- title: all merges
+  position: 1
+  selector:
+    modes: [MERGE]
+  settings:
+    ranks: [GENUS, SPECIES, SUBSPECIES]
+- title: this source
+  position: 2
+  selector:
+    subjectDatasetKeys: [100]
+  settings:
+    ranks: [GENUS, SPECIES]
+    blockedNames:
+      - Amara aenea
