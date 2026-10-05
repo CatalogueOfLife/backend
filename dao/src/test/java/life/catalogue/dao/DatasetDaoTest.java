@@ -16,6 +16,7 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapperTest;
+import life.catalogue.db.mapper.SectorProfileMapper;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageService;
@@ -247,6 +248,57 @@ public class DatasetDaoTest extends DaoTestBase {
     for (int key : releaseKeys) {
       assertDeleted(key);
     }
+  }
+
+  /**
+   * Profiles go with the sectors: removed with a project or a private release, kept for a deleted public release.
+   */
+  @Test
+  public void deleteRemovesProfiles() {
+    Dataset proj = DatasetMapperTest.create();
+    proj.setOrigin(DatasetOrigin.PROJECT);
+    dao.create(proj, Users.TESTER);
+    int privRelease = createRelease(proj.getKey(), true);
+    int pubRelease = createRelease(proj.getKey(), false);
+    for (int key : List.of(proj.getKey(), privRelease, pubRelease)) {
+      createProfile(key);
+    }
+
+    dao.delete(privRelease, Users.TESTER);
+    assertEquals(0, countProfiles(privRelease));
+
+    dao.delete(pubRelease, Users.TESTER);
+    assertEquals(1, countProfiles(pubRelease));
+
+    // a project takes all its releases with it, public ones entirely, exactly like their sectors
+    dao.delete(proj.getKey(), Users.TESTER);
+    assertEquals(0, countProfiles(proj.getKey()));
+    assertEquals(0, countProfiles(pubRelease));
+  }
+
+  private void createProfile(int datasetKey) {
+    try (SqlSession session = factory().openSession(true)) {
+      var p = new SectorProfile();
+      p.setDatasetKey(datasetKey);
+      p.setTitle("profile of " + datasetKey);
+      p.applyUser(Users.TESTER);
+      session.getMapper(SectorProfileMapper.class).create(p);
+    }
+  }
+
+  private int countProfiles(int datasetKey) {
+    try (SqlSession session = factory().openSession(true)) {
+      return session.getMapper(SectorProfileMapper.class).count(datasetKey);
+    }
+  }
+
+  int createRelease(int projectKey, boolean privat) {
+    Dataset d = DatasetMapperTest.create();
+    d.setSourceKey(projectKey);
+    d.setOrigin(DatasetOrigin.RELEASE);
+    d.setPrivat(privat);
+    dao.create(d, Users.TESTER);
+    return d.getKey();
   }
 
   void assertDeleted(int key){

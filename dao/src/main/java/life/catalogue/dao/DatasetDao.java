@@ -453,7 +453,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     var cm = session.getMapper(CitationMapper.class);
     cm.delete(key);
     // remove decisions, estimates, dataset patches, archived usages, name matches,
-    // but NOT sectors or sector_publisher which are referenced from data tables and which we want to keep for public release
+    // but NOT sectors, sector_publisher or sector_profile which we want to keep for public release
     for (Class<DatasetProcessable<?>> mClass : new Class[]{
       DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class, ArchivedNameUsageMapper.class, NameMatchMapper.class
     }) {
@@ -479,10 +479,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     deleteData(key, session);
     session.commit();
     // now also remove sectors, unless it was a published release.
-    // We want to keep the sector and sector_publisher entries for deleted, public release !!!
+    // We want to keep the sector, sector_publisher and sector_profile entries for deleted, public release !!!
     if (old == null || old.isPrivat() || old.getOrigin() == DatasetOrigin.PROJECT) {
       session.getMapper(SectorMapper.class).deleteByDataset(key);
       session.getMapper(SectorPublisherMapper.class).deleteByDataset(key);
+      session.getMapper(SectorProfileMapper.class).deleteByDataset(key);
     }
     // now also clear filesystem - again release metrics are stored with the project so this is safe
     diDao.removeMetrics(key);
