@@ -63,6 +63,10 @@ settings above. The selector decides which sectors of the project it applies to:
 Fields combine with AND, the values within one field with OR. An empty field places no restriction, so an empty
 selector matches every sector, which is how the project-wide defaults are kept.
 
+When an XRelease creates merge sectors for the datasets of the sector publishers and no profile of the project selects
+`anySectorPublisher` yet, it first creates a "Publisher sectors" profile with the ranks GENUS to FORM. Curators may
+change that profile; it is only recreated if no publisher profile is left.
+
 Membership is evaluated whenever a sector is synced. A sector created later, e.g. by an XRelease for a new dataset of
 a sector publisher, joins every profile it matches. Publisher and type are read from the source dataset as it is now.
 
@@ -100,5 +104,14 @@ The effective settings of one sector, abbreviated:
 
 ## Releases
 
-A release copies its project's profiles along with the sectors. A release sector's effective settings are resolved
-against the profiles of its own release, i.e. as they were when the release was made.
+A release copies the profiles along with its sectors, and a release sector's effective settings are resolved against
+the profiles of its own release:
+
+- **A base release** copies the project's profiles as they are when it is made.
+- **An extended release** takes the project's profiles as well, not those of its base release. Its merge sectors are
+  synced with the project's profiles at the time of the XRelease.
+
+The effective settings of a release sector are a close reconstruction, not a record. Publisher and type are read
+live from the source dataset. A hierarchy sector in a release points to the release it read, so a
+`subjectDatasetKeys` selector naming the project misses it. Releases made before profiles existed carry only the
+profiles the migration created, and their sectors keep the settings stored on them.

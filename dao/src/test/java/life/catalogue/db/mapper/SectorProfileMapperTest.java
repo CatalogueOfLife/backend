@@ -154,6 +154,21 @@ public class SectorProfileMapperTest extends CRUDPageableTestBase<Integer, Secto
     assertEquals(p.getSettings(), mapper().get(p.getKey()).getSettings());
   }
 
+  /**
+   * Nulls in stored integer or uuid arrays must not make every read of the profile throw.
+   */
+  @Test
+  public void nullSelectorValuesAreSkipped() {
+    var p = createTestEntity(Datasets.COL);
+    p.getSelector().setSectorKeys(new java.util.HashSet<>(java.util.Arrays.asList(7, null)));
+    p.getSelector().setPublisherKeys(new java.util.HashSet<>(java.util.Arrays.asList(UUID.randomUUID(), null)));
+    mapper().create(p);
+    commit();
+    var p2 = mapper().get(p.getKey());
+    assertEquals(Set.of(7), p2.getSelector().getSectorKeys());
+    assertEquals(1, p2.getSelector().getPublisherKeys().size());
+  }
+
   @Test
   public void copyDataset() {
     var p = createTestEntity(Datasets.COL);

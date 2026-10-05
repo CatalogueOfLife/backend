@@ -12,9 +12,12 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 #### 2026-10-05 sector profiles
-Sector settings for large groups of sectors, see `docs/2026-10-05-sector-profiles.md`. Run the whole section right
-before the deploy, with no sync or release running in between: the new app reads the settings from profiles only.
+Sector settings for large groups of sectors, see `docs/SECTOR-SETTINGS.md` and `docs/2026-10-05-sector-profiles.md`.
+The new app reads its sector settings from profiles only; the old one keeps reading the dataset settings and the
+sector columns. Hence two steps, so that both apps behave the same while they run side by side and a rollback to the
+old app stays possible until the second step.
 
+**1. Before the deploy.** Changes nothing for the running app: it ignores the new table and columns.
 ```sql
 ALTER TABLE sector
   ALTER COLUMN authorship_update DROP NOT NULL,
@@ -76,13 +79,29 @@ SELECT key, 'Project ranks', 'Migrated from the former SECTOR_RANKS dataset sett
 FROM dataset
 WHERE settings ? 'sector ranks';
 
--- one profile supplies the ranks every publisher sector used to carry a copy of
+-- hand curated merge sectors without ranks of their own on a sector publisher's dataset merged from family down.
+-- The publisher sectors profile below would narrow them to genus and below, so pin what they had (expected: none or few)
+UPDATE sector s SET ranks = '{FAMILY,GENUS,SPECIES,SUBSPECIES,VARIETY,FORM}'
+FROM dataset src, sector_publisher sp, dataset prj
+WHERE src.key = s.subject_dataset_key
+  AND sp.dataset_key = s.dataset_key AND sp.id = src.gbif_publisher_key
+  AND prj.key = s.dataset_key AND prj.origin = 'PROJECT'
+  AND s.mode = 'MERGE' AND coalesce(cardinality(s.ranks), 0) = 0;
+
+-- one profile supplies the ranks every publisher sector carries a copy of
 INSERT INTO sector_profile (dataset_key, title, description, position, modes, any_sector_publisher, settings, created_by, modified_by)
 SELECT DISTINCT dataset_key, 'Publisher sectors', 'Merge sectors of the datasets of all sector publishers', 2,
   '{MERGE}'::SECTOR_MODE[], TRUE, '{"ranks": ["genus", "species", "subspecies", "variety", "form"]}'::JSONB, 0, 0
 FROM sector_publisher;
+```
+Verify: `SELECT dataset_key, title, settings FROM sector_profile ORDER BY 1, position` lists the migrated profiles.
+COL (3) gets "Project defaults" (entities, name types, `createImplicitNames=false`) and "Publisher sectors".
 
--- ... so they can drop their copies. Projects only, releases are immutable records.
+**2. After the switch**, once the new app owns the components (`stop-all` ran on the old one) and no rollback is
+planned. The new app does not need this step: it ignores stale settings keys with a warning, and an explicit
+GENUS..FORM equals the profile. It only removes what is now duplicated, which makes a rollback to the old app lossy.
+```sql
+-- the publisher sectors drop their copies of the profile's ranks. Projects only, releases are immutable records.
 UPDATE sector s SET ranks = '{}'
 FROM dataset src, sector_publisher sp, dataset prj
 WHERE src.key = s.subject_dataset_key
@@ -91,18 +110,15 @@ WHERE src.key = s.subject_dataset_key
   AND s.mode = 'MERGE'
   AND s.ranks @> '{GENUS,SPECIES,SUBSPECIES,VARIETY,FORM}' AND s.ranks <@ '{GENUS,SPECIES,SUBSPECIES,VARIETY,FORM}';
 
--- the settings are profiles now. Stale keys are only logged by the new app, but clean them up.
-UPDATE dataset SET settings = settings - ARRAY['sector entities', 'sector ranks', 'sector name types',
-  'sector name status exclusion', 'sector copy according to', 'sector remove ordinals', 'sector create implicit names']
-WHERE settings ?| ARRAY['sector entities', 'sector ranks', 'sector name types',
-  'sector name status exclusion', 'sector copy according to', 'sector remove ordinals', 'sector create implicit names'];
+-- the settings are profiles now
+UPDATE dataset SET settings = settings - ARRAY['sector entities', 'sector ranks', 'sector name types', 'sector name status exclusion',
+  'sector copy according to', 'sector remove ordinals', 'sector create implicit names']
+WHERE settings ?| ARRAY['sector entities', 'sector ranks', 'sector name types', 'sector name status exclusion',
+  'sector copy according to', 'sector remove ordinals', 'sector create implicit names'];
 ```
-Verify: `SELECT count(*) FROM dataset WHERE settings ?| ARRAY['sector entities', 'sector ranks', ...]` returns 0, and
-`SELECT dataset_key, title, settings FROM sector_profile ORDER BY 1, position` lists the migrated profiles.
-COL (3) gets "Project defaults" (entities, name types, `createImplicitNames=false`) and "Publisher sectors"; about
-62,332 of its sectors drop their ranks, the 17 whose publisher is no sector publisher anymore keep theirs.
+Verify: `SELECT count(*) FROM dataset WHERE settings ?| ARRAY[...]` returns 0. About 62,332 COL sectors drop their
+ranks; the 17 whose publisher is no sector publisher anymore keep theirs.
 The extension-only sources (TPL, BHL, IPNI Literature, BioNames) can be grouped in a profile by hand through the API.
-The three flag columns start NULL. That loses nothing: their sector values were never stored.
 
 #### 2026-10-01 merges fill in missing environments, flag potentially extinct taxa
 ```sql

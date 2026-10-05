@@ -636,6 +636,18 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   }
   
   /**
+   * A null in a stored text array must not make every read of the sector throw.
+   */
+  @Test
+  public void nullBlockedNameIsSkipped() {
+    Sector s = create();
+    s.setBlockedNames(new java.util.HashSet<>(java.util.Arrays.asList("Aus", null)));
+    mapper().create(s);
+    commit();
+    assertEquals(Set.of("Aus"), mapper().get(s.getKey()).getBlockedNames());
+  }
+
+  /**
    * A setting the sector does not set must come back unset, so it can be inherited from a profile.
    */
   @Test

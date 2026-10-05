@@ -37,6 +37,11 @@ public class StringSetTypeHandler extends AbstractArrayTypeHandler<Set<String>> 
     if (pgArray == null) return new HashSet<>();
 
     String[] strings = (String[]) pgArray.getArray();
-    return Set.of(strings);
+    // a stored array can hold nulls and duplicates, neither of which Set.of accepts
+    Set<String> set = new HashSet<>();
+    for (String v : strings) {
+      if (v != null) set.add(v);
+    }
+    return set;
   }
 }

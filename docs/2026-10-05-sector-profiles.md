@@ -206,8 +206,17 @@ Implemented as designed. These are the deviations, and what the implementation f
   settings map right afterwards. The dead lines were removed without any change in behaviour.
 - **Blocklists from profiles and sectors also apply to merges inside a project.** Before, the release config
   blocklists only applied during an XRelease.
-- **The prod migration** (`dbschema.md`, 2026-10-05) turns the `SECTOR_*` settings into a "Project defaults"
-  profile. `SECTOR_RANKS` goes into a separate profile limited to non-merge modes. It also creates a "Publisher
-  sectors" profile per project with sector publishers, and lets the publisher sectors of projects drop their copied
-  ranks.
-
+- **The prod migration runs in two steps** (`dbschema.md`, 2026-10-05).
+  - **Before the deploy:** it turns the `SECTOR_*` settings into a "Project defaults" profile, with `SECTOR_RANKS`
+    in a separate profile limited to non-merge modes. It creates a "Publisher sectors" profile per project with
+    sector publishers. Hand-curated merge sectors on a publisher's dataset get their FAMILY..FORM pinned.
+  - **After the switch:** the publisher sectors drop their copied ranks and the old settings keys go.
+  - Until step 2, both apps of a blue-green deploy behave the same and a rollback loses nothing. This came out of the
+    final review.
+- **The "Publisher sectors" profile is ensured, not just migrated.** XRelease creates it when it adds publisher
+  sectors and no profile selects `anySectorPublisher`, e.g. on a freshly built dev database or for a new project.
+  Otherwise those sectors would quietly merge from family down.
+- **An XRelease carries the project's profiles, not its base release's**, because its merge syncs resolve against the
+  project's.
+- **A sector's own regexes are validated on save**, like a profile's. The set type handlers skip nulls instead of
+  failing every read.

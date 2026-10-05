@@ -468,8 +468,9 @@ public class XRelease extends ProjectRelease {
       map = true;
     } else {
       map = false;
-      if (entity.equals(SectorPublisher.class)) {
-        // we copy publisher entities from the project and all the rest from the base release with the new ids already
+      if (entity.equals(SectorPublisher.class) || entity.equals(SectorProfile.class)) {
+        // we copy publisher entities from the project and all the rest from the base release with the new ids already.
+        // Profiles come from the project, too: the merge syncs of this release are resolved against the project's
         from = projectKey;
       } else {
         // copy all data from the base release

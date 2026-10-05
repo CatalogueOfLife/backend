@@ -37,6 +37,11 @@ public class IntegerSetTypeHandler extends AbstractArrayTypeHandler<Set<Integer>
     if (pgArray == null) return new HashSet<>();
 
     Integer[] values = (Integer[]) pgArray.getArray();
-    return Set.of(values);
+    // a stored array can hold nulls and duplicates, neither of which Set.of accepts
+    Set<Integer> set = new HashSet<>();
+    for (Integer v : values) {
+      if (v != null) set.add(v);
+    }
+    return set;
   }
 }

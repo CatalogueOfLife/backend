@@ -3,6 +3,7 @@ package life.catalogue.release;
 import life.catalogue.TestConfigs;
 import life.catalogue.TestUtils;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.SectorProfile;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncMergeIT;
 import life.catalogue.assembly.SectorSyncTestBase;
@@ -13,6 +14,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorProfileMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
@@ -202,6 +204,17 @@ public class XReleaseIT extends SectorSyncTestBase {
     var again = archiver.archiveRelease(releaseKey);
     assertTrue("second archiving wrote " + again, again.isUnchanged());
 
+    // a profile added after the base release: the merge syncs of the XR resolve against the project's profiles,
+    // so the XR must carry those, not the ones of its base release
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var p = new SectorProfile();
+      p.setDatasetKey(Datasets.COL);
+      p.setTitle("added after the base release");
+      p.setPosition(99);
+      p.applyUser(Users.TESTER);
+      session.getMapper(SectorProfileMapper.class).create(p);
+    }
+
     // extended release
     XRelease xrel = projectCopyFactory.buildExtendedRelease(releaseKey, Users.RELEASER);
     xrel.setCfg(info.cfg);
@@ -209,6 +222,13 @@ public class XReleaseIT extends SectorSyncTestBase {
     job.run();
     final int xreleaseKey = xrel.getNewDatasetKey();
     System.out.println("\n*** XRELEASED " + xreleaseKey + " ***");
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var pm = session.getMapper(SectorProfileMapper.class);
+      var projectProfiles = pm.listAll(Datasets.COL).stream().map(SectorProfile::getTitle).toList();
+      assertEquals(projectProfiles, pm.listAll(xreleaseKey).stream().map(SectorProfile::getTitle).toList());
+      assertEquals(projectProfiles.size() - 1, pm.listAll(releaseKey).size());
+    }
 
     System.out.println("\n*** COMPARISON ***");
     // compare with expected tree
