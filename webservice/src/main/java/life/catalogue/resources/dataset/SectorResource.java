@@ -51,12 +51,24 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   private final SectorDao dao;
   private final FileMetricsSectorDao fmsDao;
   private final SyncManager assembly;
+  private final SectorProfileDao profileDao;
 
-  public SectorResource(SectorDao dao, FileMetricsSectorDao fmsDao, SyncManager assembly) {
+  public SectorResource(SectorDao dao, FileMetricsSectorDao fmsDao, SyncManager assembly, SectorProfileDao profileDao) {
     super(Sector.class, dao);
     this.dao = dao;
     this.fmsDao = fmsDao;
     this.assembly = assembly;
+    this.profileDao = profileDao;
+  }
+
+  /**
+   * The settings a sync of this sector uses, resolved from built-in defaults, the matching sector profiles and the
+   * sector itself, with the level every value comes from.
+   */
+  @GET
+  @Path("{id}/settings")
+  public EffectiveSectorSettings settings(@PathParam("key") int datasetKey, @PathParam("id") int id) {
+    return profileDao.effectiveSettings(DSID.of(datasetKey, id));
   }
 
   @Override

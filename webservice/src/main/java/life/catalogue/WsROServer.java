@@ -264,6 +264,7 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
     var nudao = new NameUsageDao(getSqlSessionFactory(), indexService);
     PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), validator);
     SectorPublisherDao spdao = new SectorPublisherDao(getSqlSessionFactory(), broker, validator);
+    SectorProfileDao sprdao = new SectorProfileDao(getSqlSessionFactory(), validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
@@ -276,7 +277,7 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
     // shared read only resources
     registerReadOnlyResources(j, cfg, getSqlSessionFactory(), jobExecutor,
       ddao, dsdao, new AtomicBoolean(),
-      diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
+      diDao, dupeDao, edao, exdao, ndao, pdao, spdao, sprdao, secdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, imgService, thumborService,
       FeedbackService.passThru(), doiResolver, areaLookup
     );
@@ -339,7 +340,7 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
   static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory,
                                         @Nullable JobExecutor exec, DatasetDao ddao, DatasetSourceDao dsdao, AtomicBoolean exportBlocker,
                                         DatasetImportDao diDao, DuplicateDao dupeDao, EstimateDao edao, DatasetExportDao exdao,
-                                        NameDao ndao, PublisherDao pdao, SectorPublisherDao spdao, ReferenceDao rdao,
+                                        NameDao ndao, PublisherDao pdao, SectorPublisherDao spdao, SectorProfileDao sprdao, SectorDao secdao, ReferenceDao rdao,
                                         NameUsageDao nudao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService,
                                         ImageService imgService, ThumborService thumborService, FeedbackService feedbackService, DoiResolver doiResolver, AreaLabelLookup areaLookup) {
@@ -357,6 +358,7 @@ public class WsROServer<C extends WsServerConfig> extends Application<C> {
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService, nudao, feedbackService));
     j.register(new SectorPublisherResource(spdao));
+    j.register(new SectorProfileResource(sprdao, secdao));
     j.register(new ReferenceResource(rdao));
     j.register(new SynonymResource(sdao));
     j.register(new TaxonResource(factory, tdao, txtrDao));
