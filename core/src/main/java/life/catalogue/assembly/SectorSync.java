@@ -206,7 +206,7 @@ public class SectorSync extends SectorRunnable {
   private static boolean insertsUsages(Sector s) {
     if (s.getMode() != Sector.Mode.MERGE) return true;
     var entities = s.getEntities();
-    // entities are defaulted to all in SectorRunnable.loadSectorAndUpdateDatasetImport, but stay defensive
+    // SectorSettingsResolver defaults entities to all when the sector is loaded, but stay defensive
     return entities == null || entities.isEmpty()
       || entities.contains(EntityType.NAME_USAGE)
       || entities.contains(EntityType.TAXON)

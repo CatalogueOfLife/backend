@@ -25,7 +25,6 @@ import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NameIndexImpl;
 
-import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Arrays;
@@ -170,15 +169,6 @@ public class XReleaseIT extends SectorSyncTestBase {
       SqlSessionFactoryRule.getSqlSessionFactory(), validator,
       cfg.release, cfg.apiURI, cfg.clbURI, null
     );
-
-    // set project default settings
-    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var dm = session.getMapper(DatasetMapper.class);
-      var settings = dm.getSettings(Datasets.COL);
-      settings.put(Setting.SECTOR_NAME_TYPES, List.of(NameType.SCIENTIFIC, NameType.OTHER, NameType.FORMULA));
-      settings.put(Setting.SECTOR_ENTITIES, List.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.REFERENCE));
-      dm.updateSettings(Datasets.COL, settings, Users.TESTER);
-    }
 
     // load text trees & create sectors
     info = SectorSyncMergeIT.setupProject(project, sources);

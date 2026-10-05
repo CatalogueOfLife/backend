@@ -4,7 +4,6 @@ import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.BackgroundJob;
@@ -13,17 +12,14 @@ import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.JobDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
+import life.catalogue.dao.SectorSettingsResolver;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 
-import org.gbif.nameparser.api.Rank;
-
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
@@ -36,10 +32,6 @@ import org.slf4j.LoggerFactory;
 
 abstract class SectorRunnable extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
-  private final static Set<Rank> MERGE_RANKS_DEFAULT = Set.of(
-    Rank.FAMILY, Rank.GENUS, Rank.SPECIES,
-    Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM
-  );
 
   protected final DSID<Integer> sectorKey;
   protected final int subjectDatasetKey;
@@ -337,42 +329,12 @@ abstract class SectorRunnable extends BackgroundJob {
       if (dsInfo.origin != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + dsInfo.origin + " dataset");
       }
-      // apply dataset defaults if needed
-      DatasetSettings ds = ObjectUtils.coalesce(
-        session.getMapper(DatasetMapper.class).getSettings(dsInfo.keyOrProjectKey()),
-        new DatasetSettings()
-      );
+      // the settings a sync uses: built-in defaults, the matching profiles of the project, then the sector itself
+      var profiles = session.getMapper(SectorProfileMapper.class).listMatching(sectorKey);
+      var effective = SectorSettingsResolver.resolve(s, profiles);
+      SyncSettings.copy(effective.getSettings(), s);
+      LOG.info("Sector {} uses {} matching profiles. Setting sources: {}", sectorKey, profiles.size(), effective.getSources());
 
-      if (ds.has(Setting.SECTOR_CREATE_IMPLICIT_NAMES)) {
-        s.setCreateImplicitNames(ds.getBoolDefault(Setting.SECTOR_CREATE_IMPLICIT_NAMES, true));
-      }
-      if (ds.has(Setting.SECTOR_COPY_ACCORDING_TO)) {
-        s.setCopyAccordingTo(ds.getBool(Setting.SECTOR_COPY_ACCORDING_TO));
-      }
-      if (ds.has(Setting.SECTOR_REMOVE_ORDINALS)) {
-        s.setRemoveOrdinals(ds.getBool(Setting.SECTOR_REMOVE_ORDINALS));
-      }
-      addProjectSettings(ds, Setting.SECTOR_ENTITIES, s::getEntities, s::setEntities);
-      if (s.getEntities() == null || s.getEntities().isEmpty()) {
-        // as a default sync everything
-        s.setEntities(new HashSet<>(Arrays.asList(EntityType.values())));
-      }
-      addProjectSettings(ds, Setting.SECTOR_NAME_TYPES, s::getNameTypes, s::setNameTypes);
-      addProjectSettings(ds, Setting.SECTOR_NAME_STATUS_EXCLUSION, s::getNameStatusExclusion, s::setNameStatusExclusion);
-
-      if (s.getRanks() == null || s.getRanks().isEmpty()) {
-        if(s.getMode() == Sector.Mode.MERGE) {
-          // in merge mode we dont want any higher ranks than family by default!
-          s.setRanks(MERGE_RANKS_DEFAULT);
-
-        } else if (ds.has(Setting.SECTOR_RANKS)) {
-          s.setRanks(Set.copyOf(ds.getEnumList(Setting.SECTOR_RANKS)));
-
-        } else {
-          // all
-          s.setRanks(Set.of(Rank.values()));
-        }
-      }
       if (validate) {
         // assert that target & subject actually exist
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
@@ -387,18 +349,6 @@ abstract class SectorRunnable extends BackgroundJob {
       }
 
       return s;
-    }
-  }
-
-  private <T extends Enum> void addProjectSettings(DatasetSettings ds, Setting setting, Supplier<Set<T>> getter, Consumer<Set<T>> setter) {
-    var val = getter.get();
-    if (val == null || val.isEmpty()) {
-      if (ds.has(setting)) {
-        val = Set.copyOf(ds.getEnumList(setting));
-      } else {
-        val = Collections.emptySet();
-      }
-      setter.accept(val);
     }
   }
 

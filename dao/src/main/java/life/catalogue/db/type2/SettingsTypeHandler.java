@@ -1,9 +1,11 @@
 package life.catalogue.db.type2;
 
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SettingsDeserializer;
 import life.catalogue.api.vocab.Frequency;
 import life.catalogue.api.vocab.Setting;
 
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -13,11 +15,14 @@ import java.util.Map;
 import org.apache.ibatis.type.JdbcType;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.base.Strings;
 
 /**
  * Postgres type handler converting an map of object values into a postgres JSONB data type.
  */
 public class SettingsTypeHandler extends JsonAbstractHandler<Map<Setting, Object>> {
+  private static final ObjectReader RAW_READER = ApiModule.MAPPER.readerFor(new TypeReference<Map<String, Object>>() {});
 
   public SettingsTypeHandler() {
     super("map", new TypeReference<Map<Setting, Object>>() {});
@@ -38,9 +43,14 @@ public class SettingsTypeHandler extends JsonAbstractHandler<Map<Setting, Object
 
   @Override
   protected Map<Setting, Object> fromJson(String json) throws SQLException {
-    Map<Setting, Object> map = super.fromJson(json);
-    if (map == null) return Collections.emptyMap();
-
+    if (Strings.isNullOrEmpty(json)) return Collections.emptyMap();
+    Map<Setting, Object> map;
+    try {
+      // skips keys that are no setting (anymore) instead of failing every reader of the dataset
+      map = SettingsDeserializer.keysFromJson(RAW_READER.readValue(json));
+    } catch (IOException e) {
+      throw new SQLException("Unable to convert JSONB to dataset settings", e);
+    }
     // we treat frequency special and store its days to allow simpler calculations in SQL
     Integer days = (Integer) map.remove(Setting.IMPORT_FREQUENCY);
     SettingsDeserializer.convertFromJSON(map);

@@ -202,11 +202,13 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     }
 
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      // project dataset settings
-      var dsm = session.getMapper(DatasetMapper.class);
-      var settings = new DatasetSettings();
-      settings.enable(Setting.SECTOR_REMOVE_ORDINALS);
-      dsm.updateSettings(Datasets.COL, settings, Users.TESTER);
+      // project defaults
+      var defaults = new SectorProfile();
+      defaults.setDatasetKey(Datasets.COL);
+      defaults.setTitle("Project defaults");
+      defaults.getSettings().setRemoveOrdinals(true);
+      defaults.applyUser(Users.TESTER);
+      session.getMapper(SectorProfileMapper.class).create(defaults);
 
       SectorMapper sm = session.getMapper(SectorMapper.class);
       for (var s : info.sectors) {

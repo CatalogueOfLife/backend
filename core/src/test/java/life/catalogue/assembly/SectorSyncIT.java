@@ -53,6 +53,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
   TaxonDao tdao;
   TestDataRule draftRule;
+  SectorProfile projectDefaults;
 
 
   @Before
@@ -66,12 +67,16 @@ public class SectorSyncIT extends SectorSyncTestBase {
     matchingRule.rematch(draftRule.testData.key);
     tdao = syncFactoryRule.getTdao();
 
-    // make sure accordingTo syncs are off by default for the project
+    // accordingTo syncs are off by default for the project
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var dm = session.getMapper(DatasetMapper.class);
-      var ds = dm.getSettings(Datasets.COL);
-      ds.put(Setting.SECTOR_COPY_ACCORDING_TO, false);
-      dm.updateSettings(Datasets.COL, ds, Users.TESTER);
+      var pm = session.getMapper(SectorProfileMapper.class);
+      pm.deleteByDataset(Datasets.COL);
+      projectDefaults = new SectorProfile();
+      projectDefaults.setDatasetKey(Datasets.COL);
+      projectDefaults.setTitle("Project defaults");
+      projectDefaults.getSettings().setCopyAccordingTo(false);
+      projectDefaults.applyUser(Users.TESTER);
+      pm.create(projectDefaults);
     }
   }
 
@@ -109,8 +114,8 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
     NameUsageBase src = getByName(srcKey, Rank.ORDER, "Diptera");
     NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    // the sector leaves copyAccordingTo unset, so the project defaults profile decides
     final var sid = createSector(Sector.Mode.ATTACH, src, trg, s -> {
-      s.setCopyAccordingTo(false);
       s.setRemoveOrdinals(true);
     });
 
@@ -122,10 +127,8 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
     // sync again but this time allow accordingTo
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var dm = session.getMapper(DatasetMapper.class);
-      var ds = dm.getSettings(Datasets.COL);
-      ds.put(Setting.SECTOR_COPY_ACCORDING_TO, true);
-      dm.updateSettings(Datasets.COL, ds, Users.TESTER);
+      projectDefaults.getSettings().setCopyAccordingTo(true);
+      session.getMapper(SectorProfileMapper.class).update(projectDefaults);
     }
     syncAll();
     assertTree("cat14b2.txt");
