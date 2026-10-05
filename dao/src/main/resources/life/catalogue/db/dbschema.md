@@ -11,6 +11,29 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-05 sector profiles
+Sector settings for large groups of sectors, see `docs/2026-10-05-sector-profiles.md`. Run the whole section right
+before the deploy, with no sync or release running in between: the new app reads the settings from profiles only.
+
+```sql
+ALTER TABLE sector
+  ALTER COLUMN authorship_update DROP NOT NULL,
+  ALTER COLUMN authorship_update DROP DEFAULT,
+  ADD COLUMN copy_according_to BOOLEAN,
+  ADD COLUMN remove_ordinals BOOLEAN,
+  ADD COLUMN create_implicit_names BOOLEAN,
+  ADD COLUMN issue_exclusion ISSUE[],
+  ADD COLUMN blocked_names TEXT[],
+  ADD COLUMN blocked_name_patterns TEXT[];
+
+-- NONE was only ever the column default. NULL inherits it, and lets a profile set something else.
+-- Releases are immutable copies and keep theirs.
+UPDATE sector s SET authorship_update = NULL
+FROM dataset d
+WHERE d.key = s.dataset_key AND d.origin = 'PROJECT' AND s.authorship_update = 'NONE';
+```
+The three flag columns start NULL. That loses nothing: their sector values were never stored.
+
 #### 2026-10-01 merges fill in missing environments, flag potentially extinct taxa
 ```sql
 ALTER TYPE INFOGROUP ADD VALUE 'ENVIRONMENT';

@@ -21,6 +21,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -575,6 +576,13 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     d.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.OTHER));
     d.setNameStatusExclusion(Set.of(NomStatus.CHRESONYM));
     d.setNameFilter("BOLD:.*");
+    d.setCopyAccordingTo(true);
+    d.setRemoveOrdinals(false);
+    d.setCreateImplicitNames(false);
+    d.setAuthorshipUpdate(Sector.AuthorshipUpdate.MISSING);
+    d.setIssueExclusion(EnumSet.of(Issue.DOUBTFUL_NAME, Issue.UNPARSABLE_NAME));
+    d.setBlockedNames(Set.of("Aus bus", "Cus"));
+    d.setBlockedNamePatterns(Set.of("^Incertae"));
     d.setNote(RandomUtils.randomUnicodeString(1024));
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
@@ -597,6 +605,26 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     s.setNote("not my thing");
   }
   
+  /**
+   * A setting the sector does not set must come back unset, so it can be inherited from a profile.
+   */
+  @Test
+  public void unsetSettingsRoundTripAsNull() {
+    Sector s = create();
+    s.setCopyAccordingTo(null);
+    s.setRemoveOrdinals(null);
+    s.setCreateImplicitNames(null);
+    s.setAuthorshipUpdate(null);
+    mapper().create(s);
+    commit();
+
+    Sector s2 = mapper().get(s.getKey());
+    assertNull(s2.getCopyAccordingTo());
+    assertNull(s2.getRemoveOrdinals());
+    assertNull(s2.getCreateImplicitNames());
+    assertNull(s2.getAuthorshipUpdate());
+  }
+
   /**
    * Sectors may share a subject, see https://github.com/CatalogueOfLife/backend/issues/1581
    */

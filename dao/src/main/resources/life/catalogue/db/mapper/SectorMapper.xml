@@ -44,6 +44,12 @@
     s.name_status_exclusion,
     s.extinct_filter,
     s.name_filter,
+    s.copy_according_to,
+    s.remove_ordinals,
+    s.create_implicit_names,
+    s.issue_exclusion,
+    s.blocked_names,
+    s.blocked_name_patterns,
     s.note,
     s.modified,
     s.modified_by,
@@ -101,6 +107,12 @@
     name_status_exclusion,
     extinct_filter,
     name_filter,
+    copy_according_to,
+    remove_ordinals,
+    create_implicit_names,
+    issue_exclusion,
+    blocked_names,
+    blocked_name_patterns,
     note,
     modified,
     modified_by
@@ -133,6 +145,12 @@
     #{nameStatusExclusion, typeHandler=life.catalogue.db.type2.NomStatusSetTypeHandler},
     #{extinctFilter},
     #{nameFilter},
+    #{copyAccordingTo},
+    #{removeOrdinals},
+    #{createImplicitNames},
+    #{issueExclusion, typeHandler=life.catalogue.db.type.IssueSetTypeHandler},
+    #{blockedNames, typeHandler=life.catalogue.db.type2.StringSetTypeHandler},
+    #{blockedNamePatterns, typeHandler=life.catalogue.db.type2.StringSetTypeHandler},
     #{note},
     now(),
     #{modifiedBy}
@@ -209,6 +227,9 @@
     <result property="entities" column="entities" typeHandler="life.catalogue.db.type2.EntitySetTypeHandler"/>
     <result property="nameTypes" column="name_types" typeHandler="life.catalogue.db.type2.NameTypeSetTypeHandler"/>
     <result property="nameStatusExclusion" column="name_status_exclusion" typeHandler="life.catalogue.db.type2.NomStatusSetTypeHandler"/>
+    <result property="issueExclusion" column="issue_exclusion" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
+    <result property="blockedNames" column="blocked_names" typeHandler="life.catalogue.db.type2.StringSetTypeHandler"/>
+    <result property="blockedNamePatterns" column="blocked_name_patterns" typeHandler="life.catalogue.db.type2.StringSetTypeHandler"/>
     <association property="subject" javaType="SimpleNameLink" autoMapping="true" columnPrefix="subject_"/>
     <association property="target" javaType="SimpleNameLink" autoMapping="true" columnPrefix="target_"/>
   </resultMap>

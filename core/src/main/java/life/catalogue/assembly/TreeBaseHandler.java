@@ -127,7 +127,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       LOG.info("Consider only ranks: {}", Joiner.on(", ").join(ranks));
     }
 
-    if (sector.isCreateImplicitNames()) {
+    if (!Boolean.FALSE.equals(sector.getCreateImplicitNames())) {
       for (Rank r : IMPLICITS) {
         if (!ranks.isEmpty() && ranks.contains(r)) {
           implicitRanks.add(r);
@@ -179,11 +179,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
       nu.getName().rebuildScientificName();
     }
     // remove accordingTo?
-    if (!sector.isCopyAccordingTo()) {
+    if (!Boolean.TRUE.equals(sector.getCopyAccordingTo())) {
       nu.setAccordingToId(null);
       nu.setAccordingTo(null);
     }
-    if (sector.isRemoveOrdinals() && nu.isTaxon()) {
+    if (Boolean.TRUE.equals(sector.getRemoveOrdinals()) && nu.isTaxon()) {
       ((Taxon)nu).setOrdinal(null);
     }
     // inherited updates
@@ -356,7 +356,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected boolean allowImplicitName(Usage parent, Taxon u) {
     // do only create implicit names if the name is not provisional
     // see https://github.com/CatalogueOfLife/coldp/issues/45
-    return sector.isCreateImplicitNames() && !u.isProvisional();
+    return !Boolean.FALSE.equals(sector.getCreateImplicitNames()) && !u.isProvisional();
   }
 
   static String idOrNull(Usage u) {

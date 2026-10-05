@@ -394,7 +394,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   @Override
   protected boolean allowImplicitName(Usage parent, Taxon u) {
-    return sector.isCreateImplicitNames()
+    return !Boolean.FALSE.equals(sector.getCreateImplicitNames())
       && (!u.isProvisional() || source.getType() == DatasetType.NOMENCLATURAL) // we allow implicit names for nomenclatural records
       && !isAmbiguousGenus(u);
   }
