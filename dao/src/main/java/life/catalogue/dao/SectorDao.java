@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import jakarta.validation.Validator;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
-  private final static Set<Rank> PUBLISHER_SECTOR_RANKS = Set.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM);
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
   private final NameUsageIndexService indexService;
@@ -416,8 +415,12 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
+  /**
+   * Creates missing merge sectors for the datasets of a publisher. They carry no settings of their own:
+   * the "Publisher sectors" profile of the project provides them, see docs/SECTOR-SETTINGS.md.
+   */
   public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, UUID publisherKey, @Nullable Set<Integer> datasetExclusion) {
-    return createMissingMergeSectorsFromPublisher(projectKey, userKey, PUBLISHER_SECTOR_RANKS, publisherKey, datasetExclusion);
+    return createMissingMergeSectorsFromPublisher(projectKey, userKey, null, publisherKey, datasetExclusion);
   }
 
   /**

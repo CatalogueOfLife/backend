@@ -1,7 +1,8 @@
 # Sector profiles
 
 Date: 2026-10-05
-Status: designed, not yet implemented. Branch `feat/sector-profiles`.
+Status: implemented on branch `feat/sector-profiles`, not yet merged or deployed. Current behaviour is described in
+[SECTOR-SETTINGS.md](SECTOR-SETTINGS.md).
 
 ## Why
 
@@ -183,3 +184,30 @@ code before migrating, compare them with the new endpoint afterwards, and expect
   shared settings.
 - **Nearest wins for blocklists too**: one rule for everything, but a profile setting `issueExclusion` would
   silently lift the project's exclusions.
+
+## Outcome
+
+Implemented as designed. These are the deviations, and what the implementation found.
+
+- **No `@JsonUnwrapped`.** `Sector` and `SectorSettings` share the `SyncSettings` interface instead. Jackson drops an
+  incoming property that the parent marks `@JsonIgnore` before an unwrapped child sees it, and `Sector`'s delegating
+  getters would have needed exactly that. The JSON stays flat either way.
+- **The `ranks` column default stays `'{}'`.** The array type handlers write an empty array for null anyway, and an
+  empty list already means inherit.
+- **Unknown dataset settings keys are ignored with a warning.** Before, a single stale key made a dataset's settings
+  unreadable for every reader. Removing the `SECTOR_*` settings would have turned that into a hard ordering
+  constraint between the migration and the deploy.
+- **The migration SQL needs explicit `::SECTOR_MODE[]` and `::JSONB` casts.** Untyped literals in an
+  `INSERT … SELECT` list resolve to text. This was found by running the logged SQL against the real schema before
+  writing it down for prod.
+- **No resource tests.** The repo has no Jersey resource tests, so the DAOs carry them.
+  `docs/SECTOR-SETTINGS.md` takes the place of an `API.md` section, because `API.md` is a three-line stub.
+- **`XReleaseIT` never applied the `SECTOR_*` settings it set.** `SectorSyncMergeIT.setupProject` replaced the whole
+  settings map right afterwards. The dead lines were removed without any change in behaviour.
+- **Blocklists from profiles and sectors also apply to merges inside a project.** Before, the release config
+  blocklists only applied during an XRelease.
+- **The prod migration** (`dbschema.md`, 2026-10-05) turns the `SECTOR_*` settings into a "Project defaults"
+  profile. `SECTOR_RANKS` goes into a separate profile limited to non-merge modes. It also creates a "Publisher
+  sectors" profile per project with sector publishers, and lets the publisher sectors of projects drop their copied
+  ranks.
+

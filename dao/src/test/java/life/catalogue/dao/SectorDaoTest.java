@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ThumborConfig;
@@ -20,6 +21,7 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -29,6 +31,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class SectorDaoTest extends DaoTestBase {
@@ -43,6 +46,24 @@ public class SectorDaoTest extends DaoTestBase {
     NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
     TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
     dao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao, validator);
+  }
+
+  /**
+   * The "Publisher sectors" profile supplies the ranks, so a new publisher sector must not freeze a copy of them.
+   */
+  @Test
+  public void publisherSectorsCarryNoRanks() throws Exception {
+    final UUID publisher = UUID.randomUUID();
+    try (SqlSession session = factory().openSession(true); var st = session.getConnection().createStatement()) {
+      st.execute("UPDATE dataset SET gbif_publisher_key='" + publisher + "', attempt=1,"
+        + " license=(SELECT license FROM dataset WHERE key=" + Datasets.COL + ") WHERE key=" + subjectDatasetKey);
+    }
+    assertEquals(1, dao.createMissingMergeSectorsFromPublisher(Datasets.COL, user, publisher, null));
+    try (SqlSession session = factory().openSession()) {
+      var sectors = session.getMapper(SectorMapper.class).listByDataset(Datasets.COL, subjectDatasetKey, Sector.Mode.MERGE);
+      assertEquals(1, sectors.size());
+      assertTrue(sectors.get(0).getRanks().isEmpty());
+    }
   }
 
   @Test

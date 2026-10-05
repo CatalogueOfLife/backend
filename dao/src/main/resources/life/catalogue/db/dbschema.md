@@ -53,7 +53,55 @@ CREATE TABLE sector_profile (
   PRIMARY KEY (dataset_key, id)
 );
 CREATE INDEX ON sector_profile (dataset_key);
+
+-- the former SECTOR_* settings become a "Project defaults" profile, in every dataset holding them
+INSERT INTO sector_profile (dataset_key, title, description, position, settings, created_by, modified_by)
+SELECT key, 'Project defaults', 'Migrated from the former SECTOR_* dataset settings', 0,
+  jsonb_strip_nulls(jsonb_build_object(
+    'entities', settings -> 'sector entities',
+    'nameTypes', settings -> 'sector name types',
+    'nameStatusExclusion', settings -> 'sector name status exclusion',
+    'copyAccordingTo', settings -> 'sector copy according to',
+    'removeOrdinals', settings -> 'sector remove ordinals',
+    'createImplicitNames', settings -> 'sector create implicit names'
+  )), 0, 0
+FROM dataset
+WHERE settings ?| ARRAY['sector entities', 'sector name types', 'sector name status exclusion',
+                        'sector copy according to', 'sector remove ordinals', 'sector create implicit names'];
+
+-- merge sectors always ignored SECTOR_RANKS, so it only ever applied to the other modes
+INSERT INTO sector_profile (dataset_key, title, description, position, modes, settings, created_by, modified_by)
+SELECT key, 'Project ranks', 'Migrated from the former SECTOR_RANKS dataset setting', 1,
+  '{ATTACH,UNION,HIERARCHY}'::SECTOR_MODE[], jsonb_build_object('ranks', settings -> 'sector ranks'), 0, 0
+FROM dataset
+WHERE settings ? 'sector ranks';
+
+-- one profile supplies the ranks every publisher sector used to carry a copy of
+INSERT INTO sector_profile (dataset_key, title, description, position, modes, any_sector_publisher, settings, created_by, modified_by)
+SELECT DISTINCT dataset_key, 'Publisher sectors', 'Merge sectors of the datasets of all sector publishers', 2,
+  '{MERGE}'::SECTOR_MODE[], TRUE, '{"ranks": ["genus", "species", "subspecies", "variety", "form"]}'::JSONB, 0, 0
+FROM sector_publisher;
+
+-- ... so they can drop their copies. Projects only, releases are immutable records.
+UPDATE sector s SET ranks = '{}'
+FROM dataset src, sector_publisher sp, dataset prj
+WHERE src.key = s.subject_dataset_key
+  AND sp.dataset_key = s.dataset_key AND sp.id = src.gbif_publisher_key
+  AND prj.key = s.dataset_key AND prj.origin = 'PROJECT'
+  AND s.mode = 'MERGE'
+  AND s.ranks @> '{GENUS,SPECIES,SUBSPECIES,VARIETY,FORM}' AND s.ranks <@ '{GENUS,SPECIES,SUBSPECIES,VARIETY,FORM}';
+
+-- the settings are profiles now. Stale keys are only logged by the new app, but clean them up.
+UPDATE dataset SET settings = settings - ARRAY['sector entities', 'sector ranks', 'sector name types',
+  'sector name status exclusion', 'sector copy according to', 'sector remove ordinals', 'sector create implicit names']
+WHERE settings ?| ARRAY['sector entities', 'sector ranks', 'sector name types',
+  'sector name status exclusion', 'sector copy according to', 'sector remove ordinals', 'sector create implicit names'];
 ```
+Verify: `SELECT count(*) FROM dataset WHERE settings ?| ARRAY['sector entities', 'sector ranks', ...]` returns 0, and
+`SELECT dataset_key, title, settings FROM sector_profile ORDER BY 1, position` lists the migrated profiles.
+COL (3) gets "Project defaults" (entities, name types, `createImplicitNames=false`) and "Publisher sectors"; about
+62,332 of its sectors drop their ranks, the 17 whose publisher is no sector publisher anymore keep theirs.
+The extension-only sources (TPL, BHL, IPNI Literature, BioNames) can be grouped in a profile by hand through the API.
 The three flag columns start NULL. That loses nothing: their sector values were never stored.
 
 #### 2026-10-01 merges fill in missing environments, flag potentially extinct taxa

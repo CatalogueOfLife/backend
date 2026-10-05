@@ -219,9 +219,9 @@ Key options loaded from the project's `XRELEASE_CONFIG` setting URI:
 | `flagDuplicatesAsProvisional` | true | Mark lower-priority homonyms as provisional |
 | `removeEmptyGenera` | true | Remove genera with no species after merge |
 | `sourceDatasetExclusion` | null | Dataset keys to exclude from publisher sectors |
-| `blockedNames` / `blockedNamePatterns` | empty | Names/patterns to exclude globally |
+| `blockedNames` / `blockedNamePatterns` | empty | Names/patterns to exclude from every merge; profiles and sectors can add more, see [SECTOR-SETTINGS.md](SECTOR-SETTINGS.md) |
 | `basionymExclusions` | empty | Per-family epithet exclusions for basionym grouping |
-| `issueExclusion` | empty | Issues that trigger usage exclusion during merge |
+| `issueExclusion` | empty | Issues that trigger usage exclusion during every merge; profiles and sectors can add more |
 
 Note that `blockedNamePatterns` is matched with an unanchored `find()` against `Name.getLabel()`,
 which includes the authorship. A pattern therefore cannot be restricted to the name portion, and one
