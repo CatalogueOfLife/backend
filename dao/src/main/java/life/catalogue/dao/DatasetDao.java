@@ -404,6 +404,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private void deleteKeptReleaseData(int key, SqlSession session) {
     session.getMapper(SectorMapper.class).deleteByDataset(key);
     session.getMapper(SectorPublisherMapper.class).deleteByDataset(key);
+    session.getMapper(SectorProfileMapper.class).deleteByDataset(key);
     session.getMapper(CitationMapper.class).deleteByRelease(key);
     session.getMapper(DatasetSourceMapper.class).deleteByRelease(key);
   }
