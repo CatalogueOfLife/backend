@@ -1274,6 +1274,27 @@ CREATE TABLE sector_publisher (
 );
 CREATE INDEX ON sector_publisher (dataset_key);
 
+CREATE TABLE sector_profile (
+  id SERIAL,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  title TEXT NOT NULL,
+  description TEXT,
+  position INTEGER NOT NULL DEFAULT 0,
+  modes SECTOR_MODE[] NOT NULL DEFAULT '{}',
+  dataset_types DATASETTYPE[] NOT NULL DEFAULT '{}',
+  publisher_keys UUID[] NOT NULL DEFAULT '{}',
+  any_sector_publisher BOOLEAN NOT NULL DEFAULT FALSE,
+  subject_dataset_keys INTEGER[] NOT NULL DEFAULT '{}',
+  sector_keys INTEGER[] NOT NULL DEFAULT '{}',
+  settings JSONB NOT NULL DEFAULT '{}',
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (dataset_key, id)
+);
+CREATE INDEX ON sector_profile (dataset_key);
+
 
 CREATE TABLE decision (
   id INTEGER NOT NULL,

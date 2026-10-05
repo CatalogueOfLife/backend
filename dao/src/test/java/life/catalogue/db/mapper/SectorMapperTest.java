@@ -8,6 +8,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.model.SectorProfile;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.model.VernacularName;
@@ -379,6 +380,35 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
 
     req.setKey(-1);
     assertEquals(0, mapper().search(req, new Page()).size());
+  }
+
+  @Test
+  public void searchByProfile() {
+    add2Sectors();
+    var pm = mapper(SectorProfileMapper.class);
+    var onlyS2 = new SectorProfile();
+    onlyS2.setDatasetKey(targetDatasetKey);
+    onlyS2.setTitle("only s2");
+    onlyS2.getSelector().setSectorKeys(Set.of(s2.getId()));
+    onlyS2.applyUser(Users.TESTER);
+    pm.create(onlyS2);
+    var all = new SectorProfile();
+    all.setDatasetKey(targetDatasetKey);
+    all.setTitle("all");
+    all.applyUser(Users.TESTER);
+    pm.create(all);
+    commit();
+
+    var req = SectorSearchRequest.byProject(targetDatasetKey);
+    req.setProfileKey(onlyS2.getId());
+    assertEquals(List.of(s2.getId()), keys(mapper().search(req, new Page())));
+    assertEquals(1, mapper().countSearch(req));
+
+    req.setProfileKey(all.getId());
+    assertEquals(2, mapper().countSearch(req));
+
+    req.setProfileKey(-1);
+    assertEquals(0, mapper().countSearch(req));
   }
 
   /**

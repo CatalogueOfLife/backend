@@ -178,6 +178,13 @@
         <if test="req.publisherKey != null">
           d.gbif_publisher_key=#{req.publisherKey}
         </if>
+        <if test="req.profileKey != null">
+          AND EXISTS (
+            SELECT TRUE FROM sector_profile p LEFT JOIN dataset d ON d.key = s.subject_dataset_key
+            WHERE p.dataset_key = s.dataset_key AND p.id = #{req.profileKey}
+              AND <include refid="life.catalogue.db.mapper.SectorProfileMapper.MATCHES"/>
+          )
+        </if>
         <if test="req.stale">
           AND (<include refid="SUBJECT_STALE"/> OR <include refid="TARGET_STALE"/>)
         </if>
