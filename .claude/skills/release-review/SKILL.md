@@ -122,15 +122,21 @@ are not served over the API at all.
 
 ```bash
 R=https://download.checklistbank.org/releases/$PROJECT/$ATTEMPT
-curl -sSf -o id-reports.zip "$R/id-reports.gz"     # a zip archive despite its name
+DL=(-sSfL -c jar.txt -b jar.txt -A Mozilla/5.0)    # the download host's cookie challenge, see below
+curl "${DL[@]}" -o id-reports.zip "$R/id-reports.gz"     # a zip archive despite its name
 unzip -q -o id-reports.zip -d id-reports
-curl -sSf -o job.log.gz "$R/job.log.gz"            # keep the full log for drilling down, see step 4
+curl "${DL[@]}" -o job.log.gz "$R/job.log.gz"            # keep the full log for drilling down, see step 4
 python3 -I "$SKILL_DIR/digest_log.py" job.log.gz > job-log-digest.md
 ```
 
 Repeat with the previous release's attempt into `previous-id-reports/`, `previous-job.log.gz` and
 `previous-job-log-digest.md`.
 `$SKILL_DIR` is the directory of this file, `.claude/skills/release-review/`.
+
+The download host sits behind an anti-bot cookie challenge. A plain `curl -sSf` does not fail on it: it saves a
+140 byte `Temporary Redirect` page under the requested name with exit code 0, and `unzip` then calls the "zip"
+broken. The cookie jar plus `-L` passes the challenge; no credentials are needed. `curl "${DL[@]}" "$R/"` lists the
+directory, which is the quickest way to see which reports exist before downloading several GB.
 
 - **Never read a raw job log whole** - not with `zcat`, not in chunks. It runs to several GB unpacked, far beyond
   any context, nearly all of it one line per identifier. Read the digest instead; the full log is only ever
@@ -194,20 +200,25 @@ example ids) - that is how most `fix(release)` commits in this repo started.
 
 A review becomes the release's official one by putting it where the server review job would have written it:
 `review.html` in the release report directory `{release.reportDir}/{projectKey}/{attempt}/`, next to `job.log.gz`
-and `id-reports.gz`. There is no API for this; copy it over sftp. `GET /dataset/{key}/review` treats an existing
+and `id-reports.gz`. There is no API for this; copy it over ssh. `GET /dataset/{key}/review` treats an existing
 `review.html` as the truth, so the UI shows it as finished and links it at
 `https://download.checklistbank.org/releases/{projectKey}/{attempt}/review.html` straight away.
 
-Only do this when the user asks for it, and only after showing them the verdict. It needs the GBIF VPN and ssh access
-to the server, configured by the user, never by you:
+Only do this when the user asks for it, and only after showing them the verdict. It needs the GBIF VPN - without it
+port 22 answers `Connection refused` - and an ssh login on the server that may run `sudo -u col` without a password,
+configured by the user, never by you:
 
 | variable | meaning |
 |---|---|
-| `CLB_SFTP` | the sftp target, e.g. `user@host` or an `~/.ssh/config` alias |
+| `CLB_SFTP` | the ssh/sftp target, e.g. `user@host` or an `~/.ssh/config` alias |
 | `CLB_REPORT_DIR` | the server's `release.reportDir`, the directory holding `{projectKey}/{attempt}/` |
 
 If either is unset or the host does not answer, say the upload needs the VPN and those two variables, and stop -
 do not guess hosts or paths. The project key and attempt are the ones from step 1, of the release under review.
+
+The report directories belong to `col` (`drwxrwxr-x col:col`) and live on NFS: a `put` straight into one is refused
+with `Permission denied`, even for a login that is a member of the `col` group. So the files are staged in the login's
+home directory first and then written into place as `col`.
 
 1. **Check the file is safe to publish.** The download host serves it as is, on a public domain. Refuse to upload
    while `grep -niE '<script|<iframe|<object|<embed|<link|javascript:|[[:space:]]on[a-z]+=|src=.?https?:' FILE`
@@ -217,26 +228,50 @@ do not guess hosts or paths. The project key and attempt are the ones from step 
    be linked. Do not overwrite it unless the user explicitly says so for this release.
    ```bash
    D="$CLB_REPORT_DIR/$PROJECT/$ATTEMPT"
-   sftp -b - "$CLB_SFTP" <<< "ls -l $D" | grep -E 'job.log.gz|id-reports.gz|review'
+   ssh "$CLB_SFTP" ls -l "$D"
    ```
-3. **Upload** the report and a `review.json` sidecar, so `GET /dataset/{key}/review` can tell a local review from
-   a server one. Write the sidecar from the step 1 values; `jobKey` and `sessionId` stay unset:
+3. **Stage** the report and a `review.json` sidecar in the home directory. The sidecar lets
+   `GET /dataset/{key}/review` tell a local review from a server one. Write it from the step 1 values; `jobKey` and
+   `sessionId` stay unset:
    ```bash
    jq -n --argjson r $KEY --argjson p $PROJECT --arg o $ORIGIN --argjson a $ATTEMPT --argjson prev $PREV \
      --arg f "$(date +%Y-%m-%dT%H:%M:%S)" \
      '{releaseKey:$r, projectKey:$p, origin:$o, attempt:$a, previousReleaseKey:$prev, status:"FINISHED",
        model:"claude-code (local release-review skill)", finished:$f}' > review.json
    sftp -b - "$CLB_SFTP" <<EOF
-   put release-review-$KEY.html $D/review.html.tmp
-   put review.json $D/review.json
-   rename $D/review.html.tmp $D/review.html
-   chmod 644 $D/review.html
-   chmod 644 $D/review.json
+   put release-review-$KEY.html review-$KEY.html
+   put review.json review-$KEY.json
    EOF
    ```
-   The temp file plus `rename` only keeps the download host from ever serving a half written report: OpenSSH's sftp
-   renames with posix-rename, which **replaces** an existing `review.html` without asking, and `put` overwrites
-   `review.json` the same way. Step 2 is therefore the only guard - never skip it.
-4. **Verify** with `GET /dataset/$KEY/review` (status `FINISHED`, a `reportURI`) and a `curl -sSI` of that URI,
-   then give the user the link. A private candidate's review is publicly readable there too - point that out once
-   when the release is private.
+4. **Move them into place as `col`.** The remote script repeats the checks of step 2 itself, so nothing is written
+   when the directory is missing, a review exists already or `sudo` would ask for a password:
+   ```bash
+   ssh "$CLB_SFTP" bash -s -- "$D" "$KEY" <<'EOF'
+   set -eu
+   D=$1; K=$2
+   test -d "$D" || { echo "no report dir $D"; exit 2; }
+   test ! -e "$D/review.html" || { echo "review.html exists - not overwriting"; exit 3; }
+   sudo -n -u col true || { echo "sudo -u col needs a password or is not allowed"; exit 4; }
+   sudo -n -u col tee "$D/review.html.tmp" < ~/review-$K.html > /dev/null
+   sudo -n -u col tee "$D/review.json" < ~/review-$K.json > /dev/null
+   sudo -n -u col chmod 644 "$D/review.html.tmp" "$D/review.json"
+   sudo -n -u col mv "$D/review.html.tmp" "$D/review.html"
+   cmp ~/review-$K.html "$D/review.html" && cmp ~/review-$K.json "$D/review.json"
+   rm ~/review-$K.html ~/review-$K.json
+   ls -l "$D"
+   EOF
+   ```
+   `tee` rather than `cp`: the login reads the staged file and `col` only writes, so `col` never needs access to the
+   home directory. `-n` makes `sudo` fail at once instead of hanging on a password prompt nobody can answer. The temp
+   file plus `mv` keeps the download host from ever serving a half written report. `mv` replaces an existing
+   `review.html` and `tee` an existing `review.json` without asking, so the `test ! -e` line is the only guard -
+   drop it only when the user explicitly asked to replace this release's review.
+5. **Verify** with `GET /dataset/$KEY/review` (status `finished`, a `reportURI`) and a request for that URI. The
+   download host sits behind a cookie challenge, so a plain `curl -sSI` only sees the challenge - keep a cookie jar:
+   ```bash
+   curl -sS "${AUTH[@]}" "$API/dataset/$KEY/review" | jq '{status, reportURI}'
+   curl -sS -L -c jar.txt -b jar.txt -A Mozilla/5.0 -o /dev/null -w '%{http_code} %{size_download}\n' \
+     "https://download.checklistbank.org/releases/$PROJECT/$ATTEMPT/review.html"
+   ```
+   Expect `200` and the byte size of the local file. Then give the user the link. A private candidate's review is
+   publicly readable there too - point that out once when the release is private.
