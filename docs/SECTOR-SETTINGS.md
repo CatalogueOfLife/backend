@@ -8,22 +8,32 @@ for any number of sectors at once, in a **sector profile** of the project. The d
 
 | Setting | Type | What it does | Combines | Modes |
 |---|---|---|---|---|
-| `ranks` | ranks | Only accepted names of these ranks are synced (synonyms below species always) | nearest | all |
-| `entities` | entity types | Which entities are synced | nearest | all |
-| `nameTypes` | name types | Only names of these types are synced | nearest | all |
-| `nameFilter` | regex | Only names whose scientific name fully matches are synced | nearest | all |
-| `extinctFilter` | boolean | `true` syncs extinct taxa only, `false` extant ones only | nearest | all |
-| `copyAccordingTo` | boolean | Keep the accordingTo of synced usages | nearest | all |
-| `removeOrdinals` | boolean | Remove the ordinals of synced taxa | nearest | all |
-| `createImplicitNames` | boolean | Create implicit genera and species | nearest | all |
-| `code` | nom. code | Force this code onto every synced name | nearest | all |
+| `ranks` | ranks | Only accepted names of these ranks are synced (synonyms below species always) | nearest | tree syncs |
+| `entities` | entity types | Which entities are synced | nearest | tree syncs |
+| `nameTypes` | name types | Only names of these types are synced | nearest | tree syncs |
+| `nameFilter` | regex | Only names whose scientific name fully matches are synced | nearest | tree syncs |
+| `extinctFilter` | boolean | `true` syncs extinct taxa only, `false` extant ones only | nearest | tree syncs |
+| `copyAccordingTo` | boolean | Keep the accordingTo of synced usages | nearest | tree syncs |
+| `removeOrdinals` | boolean | Remove the ordinals of synced taxa | nearest | tree syncs |
+| `createImplicitNames` | boolean | Create implicit genera and species | nearest | tree syncs |
+| `code` | nom. code | Force this code onto every synced name | nearest | tree syncs |
 | `authorshipUpdate` | NONE, MISSING, ALWAYS | Copy the source authorship onto matched names | nearest | HIERARCHY |
-| `nameStatusExclusion` | nom. status | Names with these statuses are not synced | union | all |
-| `issueExclusion` | issues | Names flagged with these issues are not merged | union | MERGE |
-| `blockedNames` | names | Names never merged, with or without authorship, case insensitive | union | MERGE |
-| `blockedNamePatterns` | regex | Case insensitive patterns searched in the name label, never merged | union | MERGE |
+| `nameStatusExclusion` | nom. status | Names with these statuses are not synced | union | tree syncs |
+| `issueExclusion` | issues | Names whose source record carries one of these issues are not synced | union | tree syncs |
+| `blockedNames` | names | Names never synced, matched with or without authorship, case insensitive | union | tree syncs |
+| `blockedNamePatterns` | regex | Case insensitive patterns searched in the name label; a match is never synced | union | tree syncs |
 
-The three MERGE-only blocklists add to those of the XRelease config, which apply to every merge of a release.
+**Tree syncs** are ATTACH, UNION and MERGE sectors. A HIERARCHY sector applies none of the filters; it only reads
+`authorshipUpdate`. A filtered taxon is skipped together with its synonyms, while its children attach to the next kept
+parent. An editorial decision of mode REVIEWED keeps a usage whatever the filters say. The sector import counts every
+skipped usage by reason, e.g. `BLOCKED_NAME` or `ISSUE_EXCLUSION`.
+
+`blockedNamePatterns` are matched with an unanchored `find()` against the name label, which includes the authorship.
+A pattern therefore cannot be restricted to the name portion, and one broad enough to catch a rank marker also hits
+real authors and book citations - `Willd., Sp. Pl.` or `Sp. Bate, 1856` for a `sp.` pattern.
+
+Name and issue exclusions used to be part of the XRelease config as well. They are sector profile settings only now:
+a merge only profile does what the release config did.
 
 Settings that only make sense for one sector stay on the sector: `mode`, `subject`, `target`, `placeholderRank`,
 `useXRelease`, `priority` and `note`.

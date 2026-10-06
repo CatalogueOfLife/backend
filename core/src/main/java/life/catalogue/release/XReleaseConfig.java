@@ -4,7 +4,6 @@ import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
-import life.catalogue.api.vocab.Issue;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -12,10 +11,18 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
+/**
+ * The name and issue exclusions issueExclusion, blockedNames and blockedNamePatterns moved into sector profiles,
+ * see docs/SECTOR-SETTINGS.md. Config files written before still carry them, so they are explicitly ignored
+ * rather than failing a strict read.
+ */
+@JsonIgnoreProperties({"issueExclusion", "blockedNames", "blockedNamePatterns"})
 public class XReleaseConfig extends ProjectReleaseConfig {
 
   /**
@@ -63,29 +70,6 @@ public class XReleaseConfig extends ProjectReleaseConfig {
 
   @Min(1)
   public int homotypicConsolidationThreads = 4;
-
-  /**
-   * An optional set of issues that if found on the usage or name will trigger the exclusion of the usage in the merge syncs.
-   */
-  @Valid
-  @NotNull
-  public Set<Issue> issueExclusion = new HashSet<>();
-
-  /**
-   * List of scientific names that are globally blocked from any source.
-   * Names are case insensitive and are allowed to be canonical to match all authorships or with a single specific authorship!
-   */
-  @NotNull
-  @Valid
-  public Set<String> blockedNames = new HashSet<>();
-
-  /**
-   * List of regular expression patterns for scientific names that are globally blocked from any source.
-   * Patterns are case insensitive and must not be anchored at the front. Any match will block the name.
-   */
-  @NotNull
-  @Valid
-  public Set<String> blockedNamePatterns = new HashSet<>();
 
   /**
    * List of uninomial taxa known to be unique and for which there should never be more than 1 accepted version.

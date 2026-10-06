@@ -62,15 +62,15 @@ public interface SyncSettings {
   Sector.AuthorshipUpdate getAuthorshipUpdate();
   void setAuthorshipUpdate(Sector.AuthorshipUpdate authorshipUpdate);
 
-  /** MERGE sectors only. A blocklist: unioned over all levels and with the XRelease config. */
+  /** ATTACH, UNION and MERGE sectors, not HIERARCHY. A blocklist: unioned over all levels. */
   Set<Issue> getIssueExclusion();
   void setIssueExclusion(Set<Issue> issueExclusion);
 
-  /** MERGE sectors only. A blocklist: unioned over all levels and with the XRelease config. */
+  /** ATTACH, UNION and MERGE sectors, not HIERARCHY. A blocklist: unioned over all levels. */
   Set<String> getBlockedNames();
   void setBlockedNames(Set<String> blockedNames);
 
-  /** MERGE sectors only. A blocklist: unioned over all levels and with the XRelease config. */
+  /** ATTACH, UNION and MERGE sectors, not HIERARCHY. A blocklist: unioned over all levels. */
   Set<String> getBlockedNamePatterns();
   void setBlockedNamePatterns(Set<String> blockedNamePatterns);
 

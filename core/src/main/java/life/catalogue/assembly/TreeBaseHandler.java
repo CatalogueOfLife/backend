@@ -2,6 +2,7 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.ReferenceDao;
@@ -42,6 +43,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final boolean syncReferences;
   protected final Set<Rank> ranks;
   protected final Pattern nameFilter; // compiled sector.nameFilter regex, or null
+  // names and source issues the sector or its profiles exclude
+  private final NameBlocklist blocklist;
+  private final Set<Issue> issueExclusion;
   protected static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS, Rank.SUBGENUS, Rank.SPECIES);
   protected final List<Rank> implicitRanks = new ArrayList<>();
 
@@ -121,6 +125,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
       LOG.info("Include only names matching regex: {}", sector.getNameFilter());
     }
     this.nameFilter = filter;
+
+    this.blocklist = new NameBlocklist(sector.getBlockedNames(), sector.getBlockedNamePatterns());
+    this.issueExclusion = sector.getIssueExclusion() == null ? Set.of() : Set.copyOf(sector.getIssueExclusion());
+    if (!blocklist.isEmpty() || !issueExclusion.isEmpty()) {
+      LOG.info("Exclude blocked names {} {} and names with issues {}", sector.getBlockedNames(), sector.getBlockedNamePatterns(), issueExclusion);
+    }
 
     this.ranks = Preconditions.checkNotNull(sector.getRanks(), "Sector ranks required");
     if (ranks.size() < Rank.values().length) {
@@ -573,6 +583,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (n.getNomStatus() != null && sector.getNameStatusExclusion() != null && sector.getNameStatusExclusion().contains(n.getNomStatus())) {
       return incIgnored(IgnoreReason.NOMENCLATURAL_STATUS, u);
     }
+    if (blocklist.isBlocked(n)) {
+      return incIgnored(IgnoreReason.BLOCKED_NAME, u);
+    }
+    if (hasExcludedIssue(n)) {
+      return incIgnored(IgnoreReason.ISSUE_EXCLUSION, u);
+    }
 
     if (n.getCultivarEpithet() != null || n.getCode() == NomCode.CULTIVARS || n.getRank().isCultivarRank()) {
       return incIgnored(IgnoreReason.INCONSISTENT_NAME, u);
@@ -590,6 +606,18 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     return false;
+  }
+
+  /**
+   * Looks up the issues of the source name record. They are only read here, never added to the issues of the usage:
+   * a usage that is kept would persist them on its project record.
+   */
+  private boolean hasExcludedIssue(Name n) {
+    if (issueExclusion.isEmpty() || n.getVerbatimKey() == null) {
+      return false;
+    }
+    var srcIssues = vrmRO.getIssues(DSID.of(sector.getSubjectDatasetKey(), n.getVerbatimKey()));
+    return srcIssues != null && CollectionUtils.overlaps(srcIssues.getIssues(), issueExclusion);
   }
 
   public static class ModifiedUsage extends IssueContainer.Simple {

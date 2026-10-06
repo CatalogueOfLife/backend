@@ -7,9 +7,3 @@ incertaeSedis:
     - 
       name: Biota
       rank: unranked
-
-blockedNames:
-  - Dictymia serbia
-  - Dictymia braunii
-  - Dictymia brownii Döring
-

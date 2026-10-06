@@ -148,6 +148,38 @@ public class SectorSyncIT extends SectorSyncTestBase {
   }
 
   /**
+   * Blocked names apply to attach sectors, too. A blocked taxon is skipped like any other filtered one:
+   * its children attach to its parent, and the sector import counts it.
+   */
+  @Test
+  public void attachBlockedNames() throws Exception {
+    final int srcKey = dataRule.mapKey(DataFormat.COLDP, 14);
+    NameUsageBase src = getByName(srcKey, Rank.ORDER, "Diptera");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    final var sid = createSector(Sector.Mode.ATTACH, src, trg, s -> {
+      s.setBlockedNames(Set.of("Culiciomyia"));
+      s.setBlockedNamePatterns(Set.of("Tinolestes\\)"));
+      // implicit names would recreate the blocked subgenus as Culex (Culiciomyia) from its species' epithet,
+      // as they do for a subgenus dropped by the rank filter
+      s.setCreateImplicitNames(false);
+    });
+
+    var imports = syncAll(null, null);
+    var si = imports.stream().filter(i -> sid.getId().equals(i.getSectorKey())).findFirst().orElseThrow();
+    assertEquals(2, (int) si.getIgnoredByReasonCount().get(IgnoreReason.BLOCKED_NAME));
+
+    assertTrue(listByName(Datasets.COL, Rank.SUBGENUS, "Culiciomyia").isEmpty());
+    assertTrue(listByName(Datasets.COL, Rank.SPECIES, "Culex (Tinolestes) latisquama").isEmpty());
+    // the species of the blocked subgenus attach to its parent, the genus
+    NameUsageBase azurini = getByName(Datasets.COL, Rank.SPECIES, "Culex (Culiciomyia) azurini");
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var parent = session.getMapper(NameUsageMapper.class).get(DSID.of(Datasets.COL, azurini.getParentId()));
+      assertEquals(Rank.GENUS, parent.getRank());
+      assertEquals("Culex", parent.getName().getScientificName());
+    }
+  }
+
+  /**
    * A synced name without a names index match must not leave an empty match record in the project.
    */
   @Test

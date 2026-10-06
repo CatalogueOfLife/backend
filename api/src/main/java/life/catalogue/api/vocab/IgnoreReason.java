@@ -25,6 +25,14 @@ public enum IgnoreReason {
    * @see <a href="https://github.com/CatalogueOfLife/data/issues/1718">data#1718</a>
    */
   AMBIGUOUS_HOMONYM(u -> u.getName().getAuthorship()),
+  /**
+   * The name is on the blockedNames list or matches one of the blockedNamePatterns of the sector or its profiles.
+   */
+  BLOCKED_NAME(u -> u.getName().getLabel()),
+  /**
+   * The source name record carries an issue listed in the issueExclusion of the sector or its profiles.
+   */
+  ISSUE_EXCLUSION(),
   // ignored name types - one reason per NameType, named to match the NameType value
   NAME_SCIENTIFIC(),
   NAME_FORMULA(),

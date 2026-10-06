@@ -30,7 +30,6 @@ public class TreeMergeHandlerConfig {
   public final @Nullable Taxon incertae;
   public final int datasetKey;
   public final int user;
-  private final NameBlocklist blocklist;
   // resolved usage ids of the protected group root taxa in the sync target dataset
   private final Set<String> protectedUsageIds = new HashSet<>();
 
@@ -39,7 +38,6 @@ public class TreeMergeHandlerConfig {
     this.xCfg = rcfg == null ? new XReleaseConfig() : rcfg;
     this.datasetKey = datasetKey;
     this.user = user;
-    blocklist = new NameBlocklist(xCfg.blockedNames, xCfg.blockedNamePatterns);
     incertae = createIncertaeSedisRoot();
     resolveProtectedGroups();
   }
@@ -148,15 +146,6 @@ public class TreeMergeHandlerConfig {
         return t;
       }
     }
-  }
-
-  /**
-   * Tests configured entire names to be excluded.
-   * The full scientificName with authorship as well as just the canonical name without authors is queried during backbone builds.
-   * @param n name to test for. Case insensitive!
-   */
-  public boolean isBlocked(FormattableName n) {
-    return blocklist.isBlocked(n);
   }
 
   public boolean hasIncertae() {

@@ -2,7 +2,6 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -57,10 +56,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private @Nullable Set<String> updatedUsageIds;
   private Throwable exception;
   private final @Nullable TreeMergeHandlerConfig cfg;
-  // the release config blocklists every merge shares, plus whatever the sector's resolved settings add to them
-  private final NameBlocklist blocklist;
-  private final Set<Issue> issueExclusion;
-  private final DSID<Integer> vKey;
   private final String nameIdScope;
   private final String usageIdScope;
   SqlSessionFactory factory;
@@ -75,12 +70,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, typeMaterialIdGen, usageIdGen);
     this.factory=factory;
     this.cfg = cfg;
-    this.blocklist = new NameBlocklist(
-      union(cfg == null ? null : cfg.xCfg.blockedNames, sector.getBlockedNames()),
-      union(cfg == null ? null : cfg.xCfg.blockedNamePatterns, sector.getBlockedNamePatterns())
-    );
-    this.issueExclusion = union(cfg == null ? null : cfg.xCfg.issueExclusion, sector.getIssueExclusion());
-    this.vKey = DSID.root(sourceDatasetKey);
     this.matcher = matcherSupplier.apply(batchSession);
     groupAnalyzer = new TaxGroupAnalyzer();
     utils = new MatchingUtils(nameIndex);
@@ -574,13 +563,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return false;
   }
 
-  private static <T> Set<T> union(@Nullable Collection<T> a, @Nullable Collection<T> b) {
-    Set<T> all = new HashSet<>();
-    if (a != null) all.addAll(a);
-    if (b != null) all.addAll(b);
-    return all;
-  }
-
   @Override
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
     var ignore =  super.ignoreUsage(u, decision, issues, true);
@@ -600,20 +582,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
           && (decision == null || decision.getMode() != EditorialDecision.Mode.REVIEWED)) {
         return incIgnored(IgnoreReason.NAME_OTHER, u);
       }
-      ignore = blocklist.isBlocked(u.getName());
       // check the dynamically generated name validation issues without loading
       if (issues.contains(Issue.INCONSISTENT_NAME)) {
-        LOG.debug("Ignore {} because it is an inconsistent name", u.getLabel());
-        return true;
-      }
-      // if custom issues are to be excluded we need to load the verbatim records
-      if (!issueExclusion.isEmpty() && u.getName().getVerbatimKey() != null) {
-        var issues2 = vrmRO.getIssues(vKey.id(u.getName().getVerbatimKey()));
-        issues.add(issues2);
-        if (issues != null && CollectionUtils.overlaps(issues.getIssues(), issueExclusion)) {
-          LOG.debug("Ignore {} because of excluded issues: {}", u.getLabel(), StringUtils.join(issues, ","));
-          return true;
-        }
+        return incIgnored(IgnoreReason.INCONSISTENT_NAME, u);
       }
     }
     return ignore;

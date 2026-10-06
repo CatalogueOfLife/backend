@@ -223,3 +223,11 @@ Implemented as designed. These are the deviations, and what the implementation f
   project's.
 - **A sector's own regexes are validated on save**, like a profile's. The set type handlers skip nulls instead of
   failing every read.
+- **2026-10-06: blocklists apply to every tree sync and live in profiles only.**
+  - `issueExclusion`, `blockedNames` and `blockedNamePatterns` moved from `TreeMergeHandler` into `TreeBaseHandler`,
+    so ATTACH and UNION sectors apply them as well. HIERARCHY applies none of the filter settings.
+  - They were removed from `XReleaseConfig`. Each project's lists became a merge only "Merge exclusions" profile.
+  - Blocked names are now counted (`BLOCKED_NAME`, `ISSUE_EXCLUSION`) and take their synonyms with them.
+  - Source issues no longer leak into the issues of kept usages.
+  - A REVIEWED decision now keeps a usage these lists would drop, as it does for every other filter.
+

@@ -96,6 +96,17 @@ SELECT DISTINCT dataset_key, 'Publisher sectors', 'Merge sectors of the datasets
   '{MERGE}'::SECTOR_MODE[], TRUE, '{"ranks": ["genus", "species", "subspecies", "variety", "form"]}'::JSONB, 0, 0
 FROM sector_publisher;
 ```
+The name and issue exclusions of the xrelease config (`issueExclusion`, `blockedNames`, `blockedNamePatterns`) moved
+into sector profiles too, so they now also apply to attach and union sectors. Before the deploy, turn them into a merge
+only "Merge exclusions" profile for every project with an xrelease config. List the projects with
+`SELECT key, settings->>'xrelease config' FROM dataset WHERE origin='PROJECT' AND settings ? 'xrelease config'`, then
+generate and run the INSERT from each live config. Dollar quoting keeps the backslashes of the patterns intact:
+```bash
+KEY=3; URL=https://catalogueoflife.github.io/data/xrelease/xrelease-config.yaml
+curl -s "$URL" | python3 -c 'import sys,yaml,json; d=yaml.safe_load(sys.stdin); s={k:d[k] for k in ("issueExclusion","blockedNames","blockedNamePatterns") if d.get(k)}; print("INSERT INTO sector_profile (dataset_key,title,description,position,modes,settings,created_by,modified_by) VALUES (%s,$t$Merge exclusions$t$,$t$Moved from the xrelease config$t$,3,$m${MERGE}$m$::SECTOR_MODE[],$json$%s$json$::JSONB,0,0);" % (sys.argv[1], json.dumps(s)) if s else "-- nothing to move")' $KEY
+```
+The new app ignores the three keys in the config files, so they can be removed there at any time afterwards.
+
 Verify: `SELECT dataset_key, title, settings FROM sector_profile ORDER BY 1, position` lists the migrated profiles.
 COL (3) gets "Project defaults" (entities, name types, `createImplicitNames=false`) and "Publisher sectors".
 

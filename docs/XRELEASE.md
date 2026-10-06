@@ -219,15 +219,12 @@ Key options loaded from the project's `XRELEASE_CONFIG` setting URI:
 | `flagDuplicatesAsProvisional` | true | Mark lower-priority homonyms as provisional |
 | `removeEmptyGenera` | true | Remove genera with no species after merge |
 | `sourceDatasetExclusion` | null | Dataset keys to exclude from publisher sectors |
-| `blockedNames` / `blockedNamePatterns` | empty | Names/patterns to exclude from every merge; profiles and sectors can add more, see [SECTOR-SETTINGS.md](SECTOR-SETTINGS.md) |
 | `basionymExclusions` | empty | Per-family epithet exclusions for basionym grouping |
-| `issueExclusion` | empty | Issues that trigger usage exclusion during every merge; profiles and sectors can add more |
 
-Note that `blockedNamePatterns` is matched with an unanchored `find()` against `Name.getLabel()`,
-which includes the authorship. A pattern therefore cannot be restricted to the name portion, and one
-broad enough to catch a rank marker will also hit real authors and book citations - `Willd., Sp. Pl.`
-or `Sp. Bate, 1856` for a `sp.` pattern. Prefer a typed check in code over a pattern for anything
-that has to distinguish an author from a marker.
+Names and issues to exclude from the merges are not part of this config: they are sector profile settings
+(`blockedNames`, `blockedNamePatterns`, `issueExclusion`), usually in a merge only profile, see
+[SECTOR-SETTINGS.md](SECTOR-SETTINGS.md). For anything that has to tell an author from a rank marker, prefer a typed
+check in code over a pattern.
 
 ### Always-on filters
 
