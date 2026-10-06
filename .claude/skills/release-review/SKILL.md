@@ -85,14 +85,17 @@ are not served over the API at all.
 R=https://download.checklistbank.org/releases/$PROJECT/$ATTEMPT
 curl -sSf -o id-reports.zip "$R/id-reports.gz"     # a zip archive despite its name
 unzip -q -o id-reports.zip -d id-reports
-curl -sSf "$R/job.log.gz" | python3 -I "$SKILL_DIR/digest_log.py" - > job-log-digest.md
+curl -sSf -o job.log.gz "$R/job.log.gz"            # keep the full log for drilling down, see step 4
+python3 -I "$SKILL_DIR/digest_log.py" job.log.gz > job-log-digest.md
 ```
 
-Repeat with the previous release's attempt into `previous-id-reports/` and `previous-job-log-digest.md`.
+Repeat with the previous release's attempt into `previous-id-reports/`, `previous-job.log.gz` and
+`previous-job-log-digest.md`.
 `$SKILL_DIR` is the directory of this file, `.claude/skills/release-review/`.
 
-- **Never read a raw job log.** It runs to several GB, nearly all of it one line per identifier.
-  `digest_log.py` is a port of `ReleaseLogDigest` and produces the same digest the job mounts: lines per level and
+- **Never read a raw job log whole** - not with `zcat`, not in chunks. It runs to several GB unpacked, far beyond
+  any context, nearly all of it one line per identifier. Read the digest instead; the full log is only ever
+  searched, see step 4. `digest_log.py` is a port of `ReleaseLogDigest` and produces the same digest the job mounts: lines per level and
   logger, a timeline of the low volume loggers and the rare messages of the noisy ones, and a pattern summary of
   each flooding logger. Streaming a big log takes a few minutes; run both digests in the background meanwhile.
 - The ID reports (`created.tsv`, `deleted.tsv`, `base-deleted.tsv` for an XR, `resurrected.tsv`,
@@ -100,12 +103,45 @@ Repeat with the previous release's attempt into `previous-id-reports/` and `prev
   `grep`, never read them whole.
 - A report that 404s is *not available*: list it as such, as the job does, and do not work around it.
 
-## 4. Review and report
+## 4. Drill down in the full log
+
+The digest is the overview and answers most of checklist step 9. When a finding needs more than it holds, search
+the full `job.log.gz` - something the sandboxed job cannot do. Every search streams the compressed file and takes
+a minute or two for a big release, so make each one count, run independent ones in parallel, and **always bound the
+output** with `grep -m`, `head`, `wc -l` or `-c`. Never let a search print an unbounded number of lines.
+
+Lines look like `2026-09-16 10:00:03,123 INFO  IdProvider   3 message` (`%d %-5level %logger{0} %X{source} %msg`,
+see `JobAppender`); stack traces and multi line messages follow on lines without a timestamp.
+
+```bash
+L=job.log.gz
+# the full stack trace and surroundings of an error the digest cut at 20 lines
+zgrep -n -m1 'terminating connection' $L            # find it, then take a window around that line number
+zcat $L | sed -n '1234500,1234600p'
+
+# everything the log says about one identifier or name from unstable.txt, deleted.tsv, superseded.tsv
+zgrep -w -m50 'C98' $L
+zgrep -F -m50 'Lycaenidae' $L
+
+# one step or logger between two points in time (timestamps sort lexically)
+zcat $L | awk '$1" "$2 >= "2026-09-16 10:00" && $1" "$2 < "2026-09-16 10:30"' | grep -v ' DEBUG ' | head -200
+zgrep -c ' WARN  SectorSync ' $L
+
+# lines of one sector or source, where the logger puts its key in the source column or the message
+zgrep -m100 'sector 64441\b' $L
+```
+
+Compare with the previous release's log the same way when a count or a step's duration looks off. Quote the log
+lines you base a finding on in the report, redacting any credential they carry exactly as the digest does.
+
+## 5. Review and report
 
 Now follow `review-prompt.md` from **The checklist** on, with these differences from the sandboxed job:
 
-- You may also reach the download host directly, but the checklist does not change because of it.
-- If you have the backend checked out, use it to *explain* a finding (e.g. why `IdProvider` minted new ids),
+- You may also reach the download host directly and search the full logs, but the checklist does not change
+  because of it.
+- If you have the backend checked out, use it to *explain* a finding (e.g. why `IdProvider` minted new ids,
+  read together with the log lines for those ids),
   but the numbers in the report still come only from requests you made and files you built. Never estimate.
 - Write the single self-contained HTML file to `{{outputPath}}`, check it parses
   (`python3 -c "import html.parser,sys; html.parser.HTMLParser().feed(open(sys.argv[1]).read())" FILE`), and
