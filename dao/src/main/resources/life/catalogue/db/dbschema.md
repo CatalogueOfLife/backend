@@ -11,7 +11,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2026-09-24 the person registry
+#### 2026-10-06 the person registry
 ```sql
 CREATE TYPE PERSONFORMCODE AS ENUM ('BOT', 'ZOO', 'ANY');
 CREATE TYPE PERSONNAMEKIND AS ENUM ('STANDARD', 'CITATION', 'FULL', 'VARIANT', 'DERIVED');
@@ -69,6 +69,138 @@ The person registry of author matching moves from files in the code into the dat
 `docs/2026-09-24-person-registry-service.md`. The tables start empty: after the deploy an admin imports the registry
 of the branch with `POST /admin/persons/import` (the zip of `core/src/test/resources/authorship/persons/`), then starts
 a first `POST /admin/persons/harvest` and reads its report against the imported state.
+
+#### 2026-10-05 sector profiles
+Sector settings for large groups of sectors, see `docs/SECTOR-SETTINGS.md` and `docs/2026-10-05-sector-profiles.md`.
+The new app reads its sector settings from profiles only; the old one keeps reading the dataset settings and the
+sector columns. Hence two steps, so that both apps behave the same while they run side by side and a rollback to the
+old app stays possible until the second step.
+
+**1. Before the deploy.** Changes nothing for the running app: it ignores the new table and columns.
+```sql
+ALTER TABLE sector
+  ALTER COLUMN authorship_update DROP NOT NULL,
+  ALTER COLUMN authorship_update DROP DEFAULT,
+  ADD COLUMN copy_according_to BOOLEAN,
+  ADD COLUMN remove_ordinals BOOLEAN,
+  ADD COLUMN create_implicit_names BOOLEAN,
+  ADD COLUMN issue_exclusion ISSUE[],
+  ADD COLUMN blocked_names TEXT[],
+  ADD COLUMN blocked_name_patterns TEXT[];
+
+-- NONE was only ever the column default. NULL inherits it, and lets a profile set something else.
+-- Releases are immutable copies and keep theirs.
+UPDATE sector s SET authorship_update = NULL
+FROM dataset d
+WHERE d.key = s.dataset_key AND d.origin = 'PROJECT' AND s.authorship_update = 'NONE';
+
+-- a release copies its projects profiles with their ids, so an id is only unique together with the dataset key
+CREATE TABLE sector_profile (
+  id SERIAL,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  title TEXT NOT NULL,
+  description TEXT,
+  position INTEGER NOT NULL DEFAULT 0,
+  modes SECTOR_MODE[] NOT NULL DEFAULT '{}',
+  dataset_types DATASETTYPE[] NOT NULL DEFAULT '{}',
+  publisher_keys UUID[] NOT NULL DEFAULT '{}',
+  any_sector_publisher BOOLEAN NOT NULL DEFAULT FALSE,
+  subject_dataset_keys INTEGER[] NOT NULL DEFAULT '{}',
+  sector_keys INTEGER[] NOT NULL DEFAULT '{}',
+  settings JSONB NOT NULL DEFAULT '{}',
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (dataset_key, id)
+);
+CREATE INDEX ON sector_profile (dataset_key);
+
+-- the former SECTOR_* settings become a "Project defaults" profile, in every dataset holding them
+INSERT INTO sector_profile (dataset_key, title, description, position, settings, created_by, modified_by)
+SELECT key, 'Project defaults', 'Migrated from the former SECTOR_* dataset settings', 0,
+  jsonb_strip_nulls(jsonb_build_object(
+    'ranks', settings -> 'sector ranks',
+    'entities', settings -> 'sector entities',
+    'nameTypes', settings -> 'sector name types',
+    'nameStatusExclusion', settings -> 'sector name status exclusion',
+    'copyAccordingTo', settings -> 'sector copy according to',
+    'removeOrdinals', settings -> 'sector remove ordinals',
+    'createImplicitNames', settings -> 'sector create implicit names'
+  )), 0, 0
+FROM dataset
+WHERE settings ?| ARRAY['sector ranks', 'sector entities', 'sector name types', 'sector name status exclusion',
+                        'sector copy according to', 'sector remove ordinals', 'sector create implicit names'];
+
+-- merge sectors always ignored SECTOR_RANKS and merged from family down. Where the project defaults now carry ranks,
+-- a merge only profile above them restores that. Without SECTOR_RANKS the built-in merge default does the same already
+INSERT INTO sector_profile (dataset_key, title, description, position, modes, settings, created_by, modified_by)
+SELECT key, 'Merge ranks', 'Merge sectors ignored the former SECTOR_RANKS dataset setting', 1,
+  '{MERGE}'::SECTOR_MODE[], '{"ranks": ["family", "genus", "species", "subspecies", "variety", "form"]}'::JSONB, 0, 0
+FROM dataset
+WHERE settings ? 'sector ranks';
+
+-- hand curated merge sectors without ranks of their own on a sector publisher's dataset merged from family down.
+-- The publisher sectors profile below would narrow them to genus and below, so pin what they had (expected: none or few)
+UPDATE sector s SET ranks = '{FAMILY,GENUS,SPECIES,SUBSPECIES,VARIETY,FORM}'
+FROM dataset src, sector_publisher sp, dataset prj
+WHERE src.key = s.subject_dataset_key
+  AND sp.dataset_key = s.dataset_key AND sp.id = src.gbif_publisher_key
+  AND prj.key = s.dataset_key AND prj.origin = 'PROJECT'
+  AND s.mode = 'MERGE' AND coalesce(cardinality(s.ranks), 0) = 0;
+
+-- one profile supplies the ranks every publisher sector carries a copy of
+INSERT INTO sector_profile (dataset_key, title, description, position, modes, any_sector_publisher, settings, created_by, modified_by)
+SELECT DISTINCT dataset_key, 'Publisher sectors', 'Merge sectors of the datasets of all sector publishers', 2,
+  '{MERGE}'::SECTOR_MODE[], TRUE, '{"ranks": ["genus", "species", "subspecies", "variety", "form"]}'::JSONB, 0, 0
+FROM sector_publisher;
+```
+The name and issue exclusions of the xrelease config (`issueExclusion`, `blockedNames`, `blockedNamePatterns`) moved
+into sector profiles too, so they now also apply to attach and union sectors. Before the deploy, turn them into a merge
+only "Merge exclusions" profile for every project with an xrelease config. List the projects with
+`SELECT key, settings->>'xrelease config' FROM dataset WHERE origin='PROJECT' AND settings ? 'xrelease config'`, then
+generate and run the INSERT from each live config. Dollar quoting keeps the backslashes of the patterns intact:
+```bash
+KEY=3; URL=https://catalogueoflife.github.io/data/xrelease/xrelease-config.yaml
+curl -s "$URL" | python3 -c 'import sys,yaml,json; d=yaml.safe_load(sys.stdin); s={k:d[k] for k in ("issueExclusion","blockedNames","blockedNamePatterns") if d.get(k)}; print("INSERT INTO sector_profile (dataset_key,title,description,position,modes,settings,created_by,modified_by) VALUES (%s,$t$Merge exclusions$t$,$t$Moved from the xrelease config$t$,3,$m${MERGE}$m$::SECTOR_MODE[],$json$%s$json$::JSONB,0,0);" % (sys.argv[1], json.dumps(s)) if s else "-- nothing to move")' $KEY
+```
+The new app ignores the three keys in the config files, so they can be removed there at any time afterwards.
+
+Verify: `SELECT dataset_key, title, settings FROM sector_profile ORDER BY 1, position` lists the migrated profiles.
+COL (3) gets "Project defaults" (entities, name types, `createImplicitNames=false`) and "Publisher sectors".
+
+**2. After the switch**, once the new app owns the components (`stop-all` ran on the old one) and no rollback is
+planned. The new app does not need this step: it ignores stale settings keys with a warning, and an explicit
+GENUS..FORM equals the profile. It only removes what is now duplicated, which makes a rollback to the old app lossy.
+```sql
+-- the publisher sectors drop their copies of the profile's ranks. Projects only, releases are immutable records.
+UPDATE sector s SET ranks = '{}'
+FROM dataset src, sector_publisher sp, dataset prj
+WHERE src.key = s.subject_dataset_key
+  AND sp.dataset_key = s.dataset_key AND sp.id = src.gbif_publisher_key
+  AND prj.key = s.dataset_key AND prj.origin = 'PROJECT'
+  AND s.mode = 'MERGE'
+  AND s.ranks @> '{GENUS,SPECIES,SUBSPECIES,VARIETY,FORM}' AND s.ranks <@ '{GENUS,SPECIES,SUBSPECIES,VARIETY,FORM}';
+
+-- the settings are profiles now
+UPDATE dataset SET settings = settings - ARRAY['sector entities', 'sector ranks', 'sector name types', 'sector name status exclusion',
+  'sector copy according to', 'sector remove ordinals', 'sector create implicit names']
+WHERE settings ?| ARRAY['sector entities', 'sector ranks', 'sector name types', 'sector name status exclusion',
+  'sector copy according to', 'sector remove ordinals', 'sector create implicit names'];
+```
+Verify: `SELECT count(*) FROM dataset WHERE settings ?| ARRAY[...]` returns 0. About 62,332 COL sectors drop their
+ranks; the 17 whose publisher is no sector publisher anymore keep theirs.
+The extension-only sources (TPL, BHL, IPNI Literature, BioNames) can be grouped in a profile by hand through the API.
+
+#### 2026-10-01 merges fill in missing environments, flag potentially extinct taxa
+```sql
+ALTER TYPE INFOGROUP ADD VALUE 'ENVIRONMENT';
+ALTER TYPE ISSUE ADD VALUE 'POTENTIALLY_EXTINCT';
+```
+A merge sector now gives an existing taxon the environments and temporal range of a source if it has none,
+recorded as an `ENVIRONMENT` or `TEMPORAL_RANGE` secondary source. It never changes the extinct flag, but marks a
+taxon a source claims to be extinct with `POTENTIALLY_EXTINCT` for review. Run before the deploy; no backfill,
+the next sync or release fills them in.
 
 #### 2026-09-15 record which id superseded a deleted one
 ```sql

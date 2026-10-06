@@ -1,13 +1,11 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.jackson.SerdeTestBase;
-import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Frequency;
 import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.Setting;
 
 import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.util.List;
@@ -42,8 +40,7 @@ public class DatasetSettingsTest extends SerdeTestBase<DatasetSettings> {
       Map.entry(Setting.NOMENCLATURAL_CODE, NomCode.BOTANICAL),
       Map.entry(Setting.IMPORT_FREQUENCY, Frequency.MONTHLY),
       Map.entry(Setting.DATA_ACCESS, URI.create("www.gbif.org")),
-      Map.entry(Setting.SECTOR_ENTITIES, List.of(EntityType.VERNACULAR)),
-      Map.entry(Setting.SECTOR_RANKS, List.of(Rank.GENUS, Rank.SPECIES, Rank.SUBGENUS, Rank.TRIBE))
+      Map.entry(Setting.SYNC_SCHEDULER_SOURCES, List.of(1000, 1001))
     ));
     return ds;
   }

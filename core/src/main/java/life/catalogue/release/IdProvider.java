@@ -65,9 +65,9 @@ import it.unimi.dsi.fastutil.ints.*;
  *
  * 3) Within a group, compare every usage against every released id of that group with {@link NameIdentity}, which
  *    answers three valued per attribute: a contradiction (a genuinely different authorship, an incompatible rank, a
- *    disparate tax group, a misapplied name against a non misapplied one, two different nomenclatural codes) rules a
- *    pairing out altogether, while missing information - an authorship that was added or removed, an unranked name -
- *    never does. See <a href="https://github.com/CatalogueOfLife/backend/issues/1326">#1326</a>.
+ *    misapplied name against a non misapplied one, and unless the authorship agrees a disparate tax group or two
+ *    different nomenclatural codes) rules a pairing out altogether, while missing information - an authorship that
+ *    was added or removed, an unranked name - never does. See <a href="https://github.com/CatalogueOfLife/backend/issues/1326">#1326</a>.
  *    Resurrecting an id the last release no longer had needs more than the absence of contradictions.
  *
  * 4) Hand the ids out greedily, best pairing first, see {@link IdCandidate} for the ordering. Usages left without an
@@ -87,6 +87,8 @@ public class IdProvider {
   private final int releaseDatasetKey; // to
   private final @Nullable Integer lastReleaseKey;
   private @Nullable Integer prevReleaseKey;
+  // extended releases only: the base release before the one this release extends, see #setPrevBaseReleaseKey
+  private @Nullable Integer prevBaseReleaseKey;
   private final SqlSessionFactory factory;
   private final TaxGroupAnalyzer groupAnalyzer;
   private final NameIdentity identity = new NameIdentity();
@@ -165,6 +167,17 @@ public class IdProvider {
    */
   public void setPrevReleaseKey(@Nullable Integer prevReleaseKey) {
     this.prevReleaseKey = prevReleaseKey;
+  }
+
+  /**
+   * Extended releases carry every id of their base release, so an id the new base release dropped is also gone from
+   * the extended release, although the extended release had no say in it. Knowing the base release before the one
+   * being extended lets the reports tell those deletions apart from the extended release's own.
+   *
+   * @param prevBaseReleaseKey the base release preceding the one this extended release is built on. Optional.
+   */
+  public void setPrevBaseReleaseKey(@Nullable Integer prevBaseReleaseKey) {
+    this.prevBaseReleaseKey = prevBaseReleaseKey;
   }
 
   /**
@@ -262,11 +275,18 @@ public class IdProvider {
 
   protected void report() {
     try (var tmp = TempFile.directory()){
-      // read the following IDs from previous releases
-      reportFile(tmp.file,"deleted.tsv", deleted.keySet(), deleted, true);
-      reportFile(tmp.file,"resurrected.tsv", resurrected.keySet(), resurrected, false);
-      // read ID from this release & ID mapping
-      reportFile(tmp.file,"created.tsv", created, id -> -1, false);
+      // a deleted id is by definition in the last release, which also still exists - unlike the release it first
+      // appeared in, which is often deleted by now and would leave the report without a name
+      final IntSet baseDeleted = baseDeletions();
+      final IntSet ownDeleted = new IntOpenHashSet(deleted.keySet());
+      ownDeleted.removeAll(baseDeleted);
+      reportFile(tmp.file,"deleted.tsv", ownDeleted, id -> deletedIn(id), true);
+      if (prevBaseReleaseKey != null) {
+        reportFile(tmp.file,"base-deleted.tsv", baseDeleted, id -> prevBaseReleaseKey, true);
+      }
+      // resurrected and created ids are shown with the usage of this release that carries them
+      reportFile(tmp.file,"resurrected.tsv", resurrected.keySet(), id -> releaseDatasetKey, false);
+      reportFile(tmp.file,"created.tsv", created, id -> releaseDatasetKey, false);
       reportSuperseded(tmp.file);
       // clear instable names, removing the ones with just deletions
       unstable.entrySet().removeIf(entry -> entry.getValue().parallelStream().allMatch(n -> n.del));
@@ -369,7 +389,39 @@ public class IdProvider {
     }
   }
 
-  private void reportFile(File dir, String filename, IntSet ids, Int2IntFunction attemptLookup, boolean deletion) throws IOException {
+  /**
+   * @return the ids of the last release this release no longer has because the new base release dropped them.
+   *   Always empty unless this is an extended release that knows its previous base release.
+   */
+  private IntSet baseDeletions() {
+    final IntSet ids = new IntOpenHashSet();
+    if (prevBaseReleaseKey != null && !deleted.isEmpty()) {
+      try (SqlSession session = factory.openSession(true)) {
+        var mapper = session.getMapper(NameUsageMapper.class);
+        final DSIDValue<String> key = DSID.root(prevBaseReleaseKey);
+        for (int id : deleted.keySet()) {
+          if (mapper.exists(key.id(encode(id)))) {
+            ids.add(id);
+          }
+        }
+      }
+      LOG.info("{} of {} deleted ids were dropped by the base release already, as release {} had them", ids.size(), deleted.size(), prevBaseReleaseKey);
+    }
+    return ids;
+  }
+
+  /**
+   * @return the dataset to show a deleted id from: the last release, or if there is none the release it first appeared in
+   */
+  private int deletedIn(int id) {
+    if (lastReleaseKey != null) {
+      return lastReleaseKey;
+    }
+    int attempt = deleted.get(id);
+    return dataset2attempt.containsValue(attempt) ? dataset2attempt.getKey(attempt) : releaseDatasetKey;
+  }
+
+  private void reportFile(File dir, String filename, IntSet ids, Int2IntFunction datasetLookup, boolean deletion) throws IOException {
     File f = new File(dir, filename);
     try(TabWriter tsv = TabWriter.fromFile(f);
         SqlSession session = factory.openSession(true)
@@ -378,34 +430,24 @@ public class IdProvider {
       LOG.info("Writing ID report for project release {}-{} of {} IDs to {}", projectKey, attempt, ids.size(), f);
       ids.intStream()
         .sorted()
-        .forEach(id -> reportId(id, attemptLookup.get(id), tsv, deletion));
+        .forEach(id -> reportId(id, datasetLookup.get(id), tsv, deletion));
     }
   }
 
   /**
-   * @param attempt if larger than 0 it was issued in an older release before, otherwise it is new and look it up in the project using the id map table
-   * @param deletion
+   * @param datasetKey the release to show the id's usage from
+   * @param deletion true for an id this release drops
    */
-  private void reportId(int id, int attempt, TabWriter tsv, boolean deletion){
+  private void reportId(int id, int datasetKey, TabWriter tsv, boolean deletion){
     String ID = IdConverter.LATIN29.encode(id);
     SimpleName sn = null;
     DSID<String> key = null;
     try {
-      int datasetKey = -1;
-      if (attempt>0 && dataset2attempt.containsValue(attempt)) {
-        datasetKey = dataset2attempt.getKey(attempt);
-      } else {
-        datasetKey = releaseDatasetKey;
-      }
       key = DSID.of(datasetKey, ID);
       sn = num.getSimple(key);
 
       if (sn == null) {
-        if (attempt>0) {
-          LOG.warn("Old ID {}-{} [{}] reported without name usage from attempt {}", datasetKey, ID, id, attempt);
-        } else {
-          LOG.warn("ID {} [{}] reported without name usage in release", ID, id);
-        }
+        LOG.warn("ID {} [{}] reported without name usage in dataset {}", ID, id, datasetKey);
         tsv.write(new String[]{
           ID,
           null,
@@ -435,7 +477,7 @@ public class IdProvider {
       }
 
     } catch (IOException | RuntimeException e) {
-      LOG.error("Failed to report {}ID {}: {} [key={}, sn={}]", attempt>0 ? "old ":"", id, ID, key, sn, e);
+      LOG.error("Failed to report ID {}: {} [key={}, sn={}]", id, ID, key, sn, e);
     }
   }
 
@@ -451,10 +493,10 @@ public class IdProvider {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       lrkey = dm.latestRelease(projectKey, true, prCfg.ignoredReleases, origin);
-      // the archive can contain ids of any release the project ever had, so we load them all - a deleted or private
-      // release keeps its dataset row and with it its attempt, and without them an archived id of such a release
-      // resolves to attempt 0, the oldest possible, which makes it the most senior candidate of its canonical group
-      dm.listReleasesQuick(projectKey, true, true).forEach(d -> {
+      // the archive holds the ids of every public release the project ever had, deleted ones included - a deleted
+      // release keeps its dataset row and with it its attempt, and without it an archived id of such a release would
+      // rank last on seniority. Private releases never reach the archive and have no business here at all
+      dm.listReleasesQuick(projectKey, true, false).forEach(d -> {
         dataset2release.put(d.getKey(), new Release(d.getKey(), d.getOrigin(), d.getAttempt()));
         if (d.getKey() != releaseDatasetKey) {
           if (prCfg.ignoredReleases.contains(d.getKey())) {
@@ -464,7 +506,7 @@ public class IdProvider {
           }
         }
       });
-      LOG.info("Found {} relevant past releases, deleted and private ones included", dataset2attempt.size());
+      LOG.info("Found {} relevant past releases, deleted ones included", dataset2attempt.size());
     }
     return lrkey;
   }
@@ -560,7 +602,7 @@ public class IdProvider {
   /**
    * The attempt of the release an archived id first appeared in, which is how senior that id is.
    *
-   * Deleted and private releases are loaded like any other, so only a release whose dataset row is gone for good is
+   * Deleted releases are loaded like any other, so only a release whose dataset row is gone for good is
    * unknown here. Such an id must not pass for the oldest one: an unknown key resolves to attempt 0 through the
    * primitive map, which is older than every real attempt and made ids of vanished releases outrank ids in
    * continuous use. They rank last on seniority instead and can still win on evidence alone.
@@ -665,13 +707,21 @@ public class IdProvider {
       final int batchSize = 10000;
 
       for (var canonId : uStore.allCanonicalIds()) {
-        var names = uStore.simpleNamesByCanonicalId(canonId);
-        if (tempOnly && !names.isEmpty()) {
-          names = names.stream()
-            .filter(n -> !isStableId(n.getId()))
-            .collect(Collectors.toList());
+        var all = uStore.simpleNamesByCanonicalId(canonId);
+        var names = all;
+        List<SimpleNameWithNidx> kept = List.of();
+        if (tempOnly && !all.isEmpty()) {
+          names = new ArrayList<>();
+          kept = new ArrayList<>();
+          for (var n : all) {
+            if (isStableId(n.getId())) {
+              kept.add(n);
+            } else {
+              names.add(n);
+            }
+          }
         }
-        issueIDs(canonId, names, acceptedNames(names, uStore), nomatchWriter);
+        issueIDs(canonId, names, kept, acceptedNames(all, uStore), nomatchWriter);
         int before = counter.get() / batchSize;
         int after = counter.addAndGet(names.size()) / batchSize;
         if (before != after) {
@@ -777,10 +827,12 @@ public class IdProvider {
   /**
    * Maps every name, OTU names excluded, to either an existing or new int based ID
    * @param canonId the canonical names index id that all names are mapped to
+   * @param kept usages of the same group that already have a stable id and keep it - the base release usages of an
+   *             extended release. They get no id here, but a dropped id can be redirected to them, see #recordSuperseded
    * @param acceptedNames resolves the scientific name of a synonyms accepted name, see #acceptedNames
    */
-  void issueIDs(final Integer canonId, List<? extends SimpleNameWithNidx> allNames, Function<SimpleNameWithNidx, String> acceptedNames,
-                Writer nomatchWriter) throws IOException {
+  void issueIDs(final Integer canonId, List<? extends SimpleNameWithNidx> allNames, List<? extends SimpleNameWithNidx> kept,
+                Function<SimpleNameWithNidx, String> acceptedNames, Writer nomatchWriter) throws IOException {
     // OTU names (UNITE/BOLD) use their code verbatim as the stable id, regardless of names-index matching.
     // Handle them up front and exclude them from the id minting/matching below.
     final List<SimpleNameWithNidx> names = new ArrayList<>(allNames.size());
@@ -792,10 +844,10 @@ public class IdProvider {
         names.add(n);
       }
     }
-    if (names.isEmpty()) {
-      return;
-    }
     if (canonId == null) {
+      if (names.isEmpty()) {
+        return;
+      }
       LOG.warn("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
       for (var n : names) {
         nomatchWriter.write(n.toStringBuilder().toString());
@@ -808,7 +860,7 @@ public class IdProvider {
       // which released ids do exist for this canonical names index id?
       ReleasedId[] rids = ids.byCanonId(canonId);
       if (rids != null) {
-        assign(names, rids, acceptedNames, issued);
+        assign(names, kept, rids, acceptedNames, issued);
       }
       // persist mappings and issue new ids for missing ones
       for (var sn : names) {
@@ -827,8 +879,8 @@ public class IdProvider {
    * in first and never moved off its best partner to improve some total. {@link IdCandidate} defines what "best"
    * means and is a total order, so the outcome does not depend on the order the store happens to return usages in.
    */
-  private void assign(List<SimpleNameWithNidx> names, ReleasedId[] rids, Function<SimpleNameWithNidx, String> acceptedNames,
-                      Map<SimpleNameWithNidx, Integer> issued) {
+  private void assign(List<SimpleNameWithNidx> names, List<? extends SimpleNameWithNidx> kept, ReleasedId[] rids,
+                      Function<SimpleNameWithNidx, String> acceptedNames, Map<SimpleNameWithNidx, Integer> issued) {
     // the facts are built once per side and dropped again with this group: they cache the parsed authorship, which
     // is worth having across the pairings of one group but must not be kept for every archived id of the project
     final NameIdentity.Facts[] relFacts = new NameIdentity.Facts[rids.length];
@@ -861,7 +913,33 @@ public class IdProvider {
         taken.add(c.rid.id);
       }
     }
-    recordSuperseded(candidates, issued);
+    boolean dropping = false; // does the last release lose an id of this group at all?
+    for (var r : rids) {
+      dropping |= r.isCurrent && ids.containsId(r.id);
+    }
+    if (kept.isEmpty() || !dropping) {
+      recordSuperseded(candidates, issued);
+    } else {
+      // usages keeping their stable id compete as the survivor of a dropped id on the same evidence as the others:
+      // an extended release duplicate that is gone again because the base release carries the name now
+      final Map<SimpleNameWithNidx, Integer> survivors = new IdentityHashMap<>(issued);
+      final List<IdCandidate> redirects = new ArrayList<>(candidates);
+      for (var n : kept) {
+        final int keptId = IdConverter.LATIN29.decode(n.getId());
+        survivors.put(n, keptId);
+        var facts = new NameIdentity.Facts(n, acceptedNames.apply(n));
+        for (int i = 0; i < rids.length; i++) {
+          if (rids[i].isCurrent && rids[i].id != keptId && ids.containsId(rids[i].id)) {
+            var verdict = identity.compare(facts, relFacts[i]);
+            if (!verdict.isContradicted()) {
+              redirects.add(new IdCandidate(n, rids[i], verdict));
+            }
+          }
+        }
+      }
+      Collections.sort(redirects);
+      recordSuperseded(redirects, survivors);
+    }
   }
 
   /**
@@ -871,7 +949,8 @@ public class IdProvider {
    *
    * Deliberately narrow. A pair is only recorded when the dying id was in the last release, was not taken by anything
    * in this one, and some usage of its own canonical group did get an id - and then it is the usage whose evidence
-   * against it ranked highest, never just any usage of the group. An id whose every pairing was contradicted records
+   * against it ranked highest, never just any usage of the group. In an extended release the base release usages of
+   * the group count as well, with the stable id they keep. An id whose every pairing was contradicted records
    * nothing: it is not the same name as what is left, so there is nothing to redirect to. A whole group disappearing
    * records nothing either.
    *

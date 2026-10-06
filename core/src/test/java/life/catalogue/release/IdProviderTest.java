@@ -227,7 +227,7 @@ public class IdProviderTest {
 
   @Test
   public void idOfAVanishedReleaseIsNotTheOldest() throws Exception {
-    // deleted and private releases are loaded like any other, so their ids keep their real attempt. A release whose
+    // deleted releases are loaded like any other, so their ids keep their real attempt. A release whose
     // dataset row is gone for good used to resolve to attempt 0 through the primitive map - older than every real
     // attempt, which made such an id the most senior candidate of its canonical group. It ranks last instead.
     IdTestProvider provider = new IdTestProvider();
@@ -468,6 +468,33 @@ public class IdProviderTest {
     // and the dead duplicate points at the survivor, so an old link still resolves
     assertEquals(1, report.superseded.size());
     assertEquals(70, report.superseded.get(71));
+  }
+
+  @Test
+  public void xrDuplicateRedirectsToTheBaseUsage() throws Exception {
+    // COL XR attempt 632: Mirococcus sera was in the base release and, from another source, in the extended release
+    // as well. The merge no longer adds the duplicate, so only the base usage is left, keeping its stable id - and the
+    // extended release id of the duplicate has to point at it although no usage of the group gets an id in this run
+    prevIdsByAttempt.put(1, List.of(
+      sn(50, 7, SPECIES, "Mirococcus sera", "(Borchsenius, 1958)", SYNONYM)
+    ));
+    prevIdsByAttempt.put(2, List.of(
+      sn(50, 7, SPECIES, "Mirococcus sera", "(Borchsenius, 1958)", SYNONYM),
+      sn(51, 7, SPECIES, "Mirococcus sera", "(Borchsenius, 1958)", SYNONYM)
+    ));
+    originByAttempt.put(2, DatasetOrigin.XRELEASE);
+
+    testNames = new ArrayList<>(List.of(
+      sn(IdProvider.encode(50), 7, SPECIES, "Mirococcus sera", "(Borchsenius, 1958)", SYNONYM, null)
+    ));
+
+    IdTestProvider provider = new IdTestProvider();
+    provider.mapTempIds();
+    IdProvider.IdReport report = provider.getReport();
+    assertEquals(0, report.created.size());
+    assertEquals(0, report.resurrected.size());
+    assertEquals(1, report.superseded.size());
+    assertEquals(50, report.superseded.get(51));
   }
 
   @Test

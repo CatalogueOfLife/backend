@@ -4,12 +4,16 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SectorPublisher;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.SectorProfileMapper;
+import life.catalogue.db.mapper.SectorPublisherMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ThumborConfig;
@@ -18,8 +22,12 @@ import life.catalogue.junit.MybatisTestUtils;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
+import org.gbif.nameparser.api.Rank;
+
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -29,6 +37,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class SectorDaoTest extends DaoTestBase {
@@ -43,6 +53,72 @@ public class SectorDaoTest extends DaoTestBase {
     NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
     TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
     dao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao, validator);
+  }
+
+  /**
+   * The "Publisher sectors" profile supplies the ranks, so a new publisher sector must not freeze a copy of them.
+   */
+  @Test
+  public void publisherSectorsCarryNoRanks() throws Exception {
+    final UUID publisher = UUID.randomUUID();
+    try (SqlSession session = factory().openSession(true); var st = session.getConnection().createStatement()) {
+      st.execute("UPDATE dataset SET gbif_publisher_key='" + publisher + "', attempt=1,"
+        + " license=(SELECT license FROM dataset WHERE key=" + Datasets.COL + ") WHERE key=" + subjectDatasetKey);
+      // XRelease only ever creates sectors for the sector publishers of the project
+      var sp = new SectorPublisher();
+      sp.setId(publisher);
+      sp.setDatasetKey(Datasets.COL);
+      sp.setAlias("P");
+      sp.setTitle("Publisher");
+      sp.applyUser(Users.TESTER);
+      session.getMapper(SectorPublisherMapper.class).create(sp);
+    }
+    assertEquals(1, dao.createMissingMergeSectorsFromPublisher(Datasets.COL, user, publisher, null));
+    Sector s;
+    try (SqlSession session = factory().openSession()) {
+      var sectors = session.getMapper(SectorMapper.class).listByDataset(Datasets.COL, subjectDatasetKey, Sector.Mode.MERGE);
+      assertEquals(1, sectors.size());
+      s = sectors.get(0);
+      assertTrue(s.getRanks().isEmpty());
+    }
+    // a project without the migrated profile gets one, so its publisher sectors keep merging genera and below
+    var pdao = new SectorProfileDao(factory(), validator);
+    var eff = pdao.effectiveSettings(s.getKey());
+    assertEquals(EnumSet.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM), eff.getSettings().getRanks());
+    assertTrue(eff.getSources().get("ranks").startsWith("profile:"));
+    // ... once only
+    dao.createMissingMergeSectorsFromPublisher(Datasets.COL, user, publisher, null);
+    try (SqlSession session = factory().openSession()) {
+      assertEquals(1, session.getMapper(SectorProfileMapper.class).listAll(Datasets.COL).size());
+    }
+  }
+
+  /**
+   * A sector with a broken regex must be rejected when saved, not silently skip the pattern at every sync.
+   */
+  @Test
+  public void invalidPatternsAreRejected() {
+    try (SqlSession session = factory().openSession(true)) {
+      MybatisTestUtils.populateDraftTree(session);
+      MybatisTestUtils.populateTestTree(12, session);
+    }
+    Sector ok = SectorMapperTest.create();
+    ok.getSubject().setId("root-1");
+    ok.getTarget().setId("t4");
+    ok.setBlockedNamePatterns(Set.of("^Incertae"));
+    dao.create(ok, user);
+
+    Sector badPattern = SectorMapperTest.create();
+    badPattern.getSubject().setId("root-1");
+    badPattern.getTarget().setId("t4");
+    badPattern.setBlockedNamePatterns(Set.of("Aus (bus"));
+    assertThrows(IllegalArgumentException.class, () -> dao.create(badPattern, user));
+
+    Sector badFilter = SectorMapperTest.create();
+    badFilter.getSubject().setId("root-1");
+    badFilter.getTarget().setId("t4");
+    badFilter.setNameFilter("[A-Z");
+    assertThrows(IllegalArgumentException.class, () -> dao.create(badFilter, user));
   }
 
   @Test

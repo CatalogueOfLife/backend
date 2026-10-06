@@ -44,6 +44,12 @@
     s.name_status_exclusion,
     s.extinct_filter,
     s.name_filter,
+    s.copy_according_to,
+    s.remove_ordinals,
+    s.create_implicit_names,
+    s.issue_exclusion,
+    s.blocked_names,
+    s.blocked_name_patterns,
     s.note,
     s.modified,
     s.modified_by,
@@ -101,6 +107,12 @@
     name_status_exclusion,
     extinct_filter,
     name_filter,
+    copy_according_to,
+    remove_ordinals,
+    create_implicit_names,
+    issue_exclusion,
+    blocked_names,
+    blocked_name_patterns,
     note,
     modified,
     modified_by
@@ -133,6 +145,12 @@
     #{nameStatusExclusion, typeHandler=life.catalogue.db.type2.NomStatusSetTypeHandler},
     #{extinctFilter},
     #{nameFilter},
+    #{copyAccordingTo},
+    #{removeOrdinals},
+    #{createImplicitNames},
+    #{issueExclusion, typeHandler=life.catalogue.db.type.IssueSetTypeHandler},
+    #{blockedNames, typeHandler=life.catalogue.db.type2.StringSetTypeHandler},
+    #{blockedNamePatterns, typeHandler=life.catalogue.db.type2.StringSetTypeHandler},
     #{note},
     now(),
     #{modifiedBy}
@@ -159,6 +177,26 @@
       <where>
         <if test="req.publisherKey != null">
           d.gbif_publisher_key=#{req.publisherKey}
+        </if>
+        <if test="req.profileKey != null">
+          AND EXISTS (
+            SELECT TRUE FROM sector_profile p LEFT JOIN dataset d ON d.key = s.subject_dataset_key
+            WHERE p.dataset_key = s.dataset_key AND p.id = #{req.profileKey}
+              AND <include refid="life.catalogue.db.mapper.SectorProfileMapper.MATCHES"/>
+          )
+        </if>
+        <if test="req.selector != null">
+          AND EXISTS (
+            SELECT TRUE FROM (SELECT
+                #{req.selector.modes, typeHandler=life.catalogue.db.type2.SectorModeSetTypeHandler}::SECTOR_MODE[] AS modes,
+                #{req.selector.datasetTypes, typeHandler=life.catalogue.db.type2.DatasetTypeSetTypeHandler}::DATASETTYPE[] AS dataset_types,
+                #{req.selector.publisherKeys, typeHandler=life.catalogue.db.type2.UuidSetTypeHandler}::UUID[] AS publisher_keys,
+                #{req.selector.anySectorPublisher}::BOOLEAN AS any_sector_publisher,
+                #{req.selector.subjectDatasetKeys, typeHandler=life.catalogue.db.type2.IntegerSetTypeHandler}::INTEGER[] AS subject_dataset_keys,
+                #{req.selector.sectorKeys, typeHandler=life.catalogue.db.type2.IntegerSetTypeHandler}::INTEGER[] AS sector_keys
+              ) p LEFT JOIN dataset d ON d.key = s.subject_dataset_key
+            WHERE <include refid="life.catalogue.db.mapper.SectorProfileMapper.MATCHES"/>
+          )
         </if>
         <if test="req.stale">
           AND (<include refid="SUBJECT_STALE"/> OR <include refid="TARGET_STALE"/>)
@@ -209,6 +247,9 @@
     <result property="entities" column="entities" typeHandler="life.catalogue.db.type2.EntitySetTypeHandler"/>
     <result property="nameTypes" column="name_types" typeHandler="life.catalogue.db.type2.NameTypeSetTypeHandler"/>
     <result property="nameStatusExclusion" column="name_status_exclusion" typeHandler="life.catalogue.db.type2.NomStatusSetTypeHandler"/>
+    <result property="issueExclusion" column="issue_exclusion" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
+    <result property="blockedNames" column="blocked_names" typeHandler="life.catalogue.db.type2.StringSetTypeHandler"/>
+    <result property="blockedNamePatterns" column="blocked_name_patterns" typeHandler="life.catalogue.db.type2.StringSetTypeHandler"/>
     <association property="subject" javaType="SimpleNameLink" autoMapping="true" columnPrefix="subject_"/>
     <association property="target" javaType="SimpleNameLink" autoMapping="true" columnPrefix="target_"/>
   </resultMap>

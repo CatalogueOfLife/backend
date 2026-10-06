@@ -1,73 +1,73 @@
-Achlyaceae
-Albuginaceae
-Albuginales
-Anisolpidiaceae
-Anisolpidiales
-Apodachlyellaceae
-Atkinisellaceae
-Atkinsiellales
-Crypticolaceae
-Diatomophthoraceae
-Ducellieriaceae
-Ectrogellaceae
-Ectrogellales
-Eogamia
-Eurychasmales
-Eurychasmataceae
-Haliphthoraceae
-Haliphthorales
-Haptoglossaceae
-Haptoglossales
-Hyphochytrea
-Hyphochytriaceae
-Hyphochytriales
-Hyphochytridae
-Hyphochytridiomycetes
-Hyphochytridiomycota
-Hyphochytriida
-Hyphochytriomycetes
-Hyphochytriomycetidae
-Hyphochytriomycota
-Lagenidiaceae
-Lagenidiales
-Lagenismataceae
-Lagenismatales
-Leptolegniaceae
-Leptolegniellaceae
-Leptomitaceae
-Leptomitales
-Mastigomycotina
-Miraculaceae
-Myzocytiopsidaceae
-Olpidiopsidaceae
-Olpidiopsidales
-Olpidiosidaceae
-Oomycetes
-Oomycota
-Peronosporaceae
-Peronosporales
-Peronosporea # oomycetes (water moulds, Peronosporales)
-Peronosporidae
-Peronosporomycetes
-Pontismaceae # oomycete family (Oomycota; parasites of red algae)
-Pontismataceae
-Pontismatales # parasitic oomycetes on red algae (Oomycota)
-Pseudofungi
-Pseudosphaeritaceae
-Pythiaceae
-Pythiales
-Pythiogetonaceae
-Rhipidaceae
-Rhipidiaceae
-Rhipidiales
-Rhizidiomycetaceae
-Rozellopsidaceae
-Rozellopsidales
-Salilagenidiaceae
-Salilagenidiales
-Salisapiliaceae
-Saprolegniaceae
-Saprolegniales
-Saprolegniidae
-Sirolpidiaceae
-Verrucalvaceae
+Achlyaceae # IRMNG: Saprolegniomycetes > Saprolegniales
+Albuginaceae # COL: Peronosporea > Albuginales
+Albuginales # COL: Oomycota > Peronosporea
+Anisolpidiaceae # COL: Peronosporea > Anisolpidiales
+Anisolpidiales # COL: Oomycota > Peronosporea
+Apodachlyellaceae # COL: Peronosporea > Leptomitales
+Atkinisellaceae # not found in ChecklistBank
+Atkinsiellales # PR²: Stramenopiles > Peronosporomycetes
+Crypticolaceae # COL: Peronosporea > Peronosporales
+Diatomophthoraceae # COL: Peronosporea > Pontismatales
+Ducellieriaceae # COL: Peronosporea > Leptomitales
+Ectrogellaceae # COL: Peronosporea > Peronosporales
+Ectrogellales # not found in ChecklistBank
+Eogamia # Dyntaxa: Gyrista > Oomycetes
+Eurychasmales # IRMNG: synonym of Eurychasmatales (Oomycota)
+Eurychasmataceae # COL: Oomycota > Peronosporea
+Haliphthoraceae # COL: Peronosporea > Saprolegniales
+Haliphthorales # IRMNG: Chromista > Oomycota
+Haptoglossaceae # COL: Peronosporea > Haptoglossales
+Haptoglossales # COL: Oomycota > Peronosporea
+Hyphochytrea # COL: Chromista > Oomycota
+Hyphochytriaceae # COL: Hyphochytrea > Hyphochytriales
+Hyphochytriales # COL: Oomycota > Hyphochytrea
+Hyphochytridae # not found in ChecklistBank
+Hyphochytridiomycetes # NCBI: synonym of Hyphochytriomycetes (Eukaryota)
+Hyphochytridiomycota # Dyntaxa: synonym of Oomycota (Chromista)
+Hyphochytriida # Dyntaxa: synonym of Hyphochytriales (Hyphochytriomycetes)
+Hyphochytriomycetes # IRMNG: Chromista > Hyphochytriomycota
+Hyphochytriomycetidae # Wikispecies: synonym of Hyphochytrea (Oomycota)
+Hyphochytriomycota # IRMNG: Chromista
+Lagenidiaceae # IRMNG: synonym of Pythiaceae (Peronosporales)
+Lagenidiales # OTT: Eukaryota > Peronosporomycetes
+Lagenismataceae # COL: Peronosporea > Lagenismatales
+Lagenismatales # COL: Oomycota > Peronosporea
+Leptolegniaceae # COL: Peronosporea > Saprolegniales
+Leptolegniellaceae # COL: Peronosporea > Leptomitales
+Leptomitaceae # COL: Peronosporea > Leptomitales
+Leptomitales # COL: Oomycota > Peronosporea
+Mastigomycotina # Dyntaxa: synonym of Oomycota (Chromista)
+Miraculaceae # COL: Oomycota > Peronosporea
+Myzocytiopsidaceae # COL: Peronosporea > Peronosporales
+Olpidiopsidaceae # COL: Peronosporea > Olpidiopsidales
+Olpidiopsidales # COL: Oomycota > Peronosporea
+Olpidiosidaceae # not found in ChecklistBank
+Oomycetes # WoRMS: synonym of Oomycota (Chromista)
+Oomycota # COL: Eukaryota > Chromista
+Peronosporaceae # COL: Peronosporea > Peronosporales
+Peronosporales # COL: Oomycota > Peronosporea
+Peronosporea # oomycetes (water moulds, Peronosporales); COL: Chromista > Oomycota
+Peronosporidae # WoRMS: Oomycota > Peronosporea
+Peronosporomycetes # IRMNG: Chromista > Oomycota
+Pontismaceae # oomycete family (Oomycota; parasites of red algae); GBIF: synonym of Pontismataceae (Peronosporales)
+Pontismataceae # COL: Peronosporea > Peronosporales
+Pontismatales # parasitic oomycetes on red algae (Oomycota); COL: Oomycota > Peronosporea
+Pseudofungi # ITIS: Chromista
+Pseudosphaeritaceae # COL: Peronosporea > Rozellopsidales
+Pythiaceae # COL: Peronosporea > Peronosporales
+Pythiales # WoRMS: Oomycota > Peronosporea
+Pythiogetonaceae # COL: Peronosporea > Peronosporales
+Rhipidaceae # not found in ChecklistBank
+Rhipidiaceae # COL: Peronosporea > Rhipidiales
+Rhipidiales # COL: Oomycota > Peronosporea
+Rhizidiomycetaceae # COL: Hyphochytrea > Hyphochytriales
+Rozellopsidaceae # COL: Peronosporea > Rozellopsidales
+Rozellopsidales # COL: Oomycota > Peronosporea
+Salilagenidiaceae # IRMNG: synonym of Pythiaceae (Peronosporales)
+Salilagenidiales # WoRMS: Oomycota > Peronosporea
+Salisapiliaceae # COL: Peronosporea > Peronosporales
+Saprolegniaceae # COL: Peronosporea > Saprolegniales
+Saprolegniales # COL: Oomycota > Peronosporea
+Saprolegniidae # WoRMS: Oomycota > Peronosporea
+Sirolpidiaceae # COL: Peronosporea > Peronosporales
+Verrucalvaceae # IRMNG: Saprolegniomycetes > Saprolegniales

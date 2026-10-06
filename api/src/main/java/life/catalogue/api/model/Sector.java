@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.EntityType;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 
 import org.gbif.nameparser.api.NameType;
@@ -8,7 +9,6 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
-import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * A sector can be really small and the subject even be a species, but usually it is some higher taxon.
  */
-public class Sector extends DatasetScopedEntity<Integer> {
+public class Sector extends DatasetScopedEntity<Integer> implements SyncSettings {
   private SimpleNameLink target;
   private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
   private SimpleNameLink subject;
@@ -48,11 +48,16 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private Set<NomStatus> nameStatusExclusion;
   private String nameFilter; // optional regex; if set only usages whose scientificName fully matches are synced
   private Boolean extinctFilter = null; // true only syncs extinct, false only extant, null all
-  private boolean copyAccordingTo = false;
-  private boolean removeOrdinals = false;
-  private boolean createImplicitNames = true;
+  // null inherits from the matching sector profiles or the built-in default, see SyncSettings
+  private Boolean copyAccordingTo;
+  private Boolean removeOrdinals;
+  private Boolean createImplicitNames;
   // for HIERARCHY mode only: whether to copy the source (subject) authorship onto matched existing names
-  private AuthorshipUpdate authorshipUpdate = AuthorshipUpdate.NONE;
+  private AuthorshipUpdate authorshipUpdate;
+  // for MERGE mode only: blocklists added to those of the profiles and the XRelease config
+  private Set<Issue> issueExclusion;
+  private Set<String> blockedNames;
+  private Set<String> blockedNamePatterns;
   // other
   private String note;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -119,18 +124,10 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.priority = other.priority;
     this.syncAttempt = other.syncAttempt;
     this.datasetAttempt = other.datasetAttempt;
-    this.code = other.code;
     this.placeholderRank = other.placeholderRank;
-    this.ranks = other.ranks == null ? null : EnumSet.copyOf(other.ranks);
-    this.entities = other.entities == null ? null : EnumSet.copyOf(other.entities);
-    this.nameTypes = other.nameTypes == null ? null : EnumSet.copyOf(other.nameTypes);
-    this.nameStatusExclusion = other.nameStatusExclusion == null ? null : EnumSet.copyOf(other.nameStatusExclusion);
-    this.nameFilter = other.nameFilter;
-    this.extinctFilter = other.extinctFilter;
-    this.createImplicitNames = other.createImplicitNames;
-    this.authorshipUpdate = other.authorshipUpdate;
     this.note = other.note;
     this.size = other.size;
+    SyncSettings.copy(other, this);
   }
 
   public Integer getSubjectDatasetKey() {
@@ -236,10 +233,12 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.datasetAttempt = datasetAttempt;
   }
 
+  @Override
   public NomCode getCode() {
     return code;
   }
   
+  @Override
   public void setCode(NomCode code) {
     this.code = code;
   }
@@ -271,34 +270,42 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.placeholderRank = placeholderRank;
   }
 
+  @Override
   public Set<Rank> getRanks() {
     return ranks;
   }
 
+  @Override
   public void setRanks(Set<Rank> ranks) {
     this.ranks = ranks;
   }
 
+  @Override
   public Set<EntityType> getEntities() {
     return entities;
   }
 
+  @Override
   public void setEntities(Set<EntityType> entities) {
     this.entities = entities;
   }
 
+  @Override
   public Set<NameType> getNameTypes() {
     return nameTypes;
   }
 
+  @Override
   public void setNameTypes(Set<NameType> nameTypes) {
     this.nameTypes = nameTypes;
   }
 
+  @Override
   public Set<NomStatus> getNameStatusExclusion() {
     return nameStatusExclusion;
   }
 
+  @Override
   public void setNameStatusExclusion(Set<NomStatus> nameStatusExclusion) {
     this.nameStatusExclusion = nameStatusExclusion;
   }
@@ -308,52 +315,94 @@ public class Sector extends DatasetScopedEntity<Integer> {
    * the pattern are included in a sync. Useful to sync only a subset of OTU/OTHER type names such as
    * BOLD or UNITE SH names that can no longer be isolated by name type alone.
    */
+  @Override
   public String getNameFilter() {
     return nameFilter;
   }
 
+  @Override
   public void setNameFilter(String nameFilter) {
     this.nameFilter = nameFilter;
   }
 
+  @Override
   public Boolean getExtinctFilter() {
     return extinctFilter;
   }
 
+  @Override
   public void setExtinctFilter(Boolean extinctFilter) {
     this.extinctFilter = extinctFilter;
   }
 
-  public boolean isCreateImplicitNames() {
+  @Override
+  public Boolean getCreateImplicitNames() {
     return createImplicitNames;
   }
 
-  public void setCreateImplicitNames(boolean createImplicitNames) {
+  @Override
+  public void setCreateImplicitNames(Boolean createImplicitNames) {
     this.createImplicitNames = createImplicitNames;
   }
 
+  @Override
   public AuthorshipUpdate getAuthorshipUpdate() {
     return authorshipUpdate;
   }
 
+  @Override
   public void setAuthorshipUpdate(AuthorshipUpdate authorshipUpdate) {
     this.authorshipUpdate = authorshipUpdate;
   }
 
-  public boolean isCopyAccordingTo() {
+  @Override
+  public Boolean getCopyAccordingTo() {
     return copyAccordingTo;
   }
 
-  public void setCopyAccordingTo(boolean copyAccordingTo) {
+  @Override
+  public void setCopyAccordingTo(Boolean copyAccordingTo) {
     this.copyAccordingTo = copyAccordingTo;
   }
 
-  public boolean isRemoveOrdinals() {
+  @Override
+  public Boolean getRemoveOrdinals() {
     return removeOrdinals;
   }
 
-  public void setRemoveOrdinals(boolean removeOrdinals) {
+  @Override
+  public void setRemoveOrdinals(Boolean removeOrdinals) {
     this.removeOrdinals = removeOrdinals;
+  }
+
+  @Override
+  public Set<Issue> getIssueExclusion() {
+    return issueExclusion;
+  }
+
+  @Override
+  public void setIssueExclusion(Set<Issue> issueExclusion) {
+    this.issueExclusion = issueExclusion;
+  }
+
+  @Override
+  public Set<String> getBlockedNames() {
+    return blockedNames;
+  }
+
+  @Override
+  public void setBlockedNames(Set<String> blockedNames) {
+    this.blockedNames = blockedNames;
+  }
+
+  @Override
+  public Set<String> getBlockedNamePatterns() {
+    return blockedNamePatterns;
+  }
+
+  @Override
+  public void setBlockedNamePatterns(Set<String> blockedNamePatterns) {
+    this.blockedNamePatterns = blockedNamePatterns;
   }
 
   public Integer getSize() {
@@ -377,7 +426,9 @@ public class Sector extends DatasetScopedEntity<Integer> {
            && Objects.equals(syncAttempt, sector.syncAttempt)
            && Objects.equals(datasetAttempt, sector.datasetAttempt)
            && code == sector.code
-           && createImplicitNames == sector.createImplicitNames
+           && Objects.equals(copyAccordingTo, sector.copyAccordingTo)
+           && Objects.equals(removeOrdinals, sector.removeOrdinals)
+           && Objects.equals(createImplicitNames, sector.createImplicitNames)
            && authorshipUpdate == sector.authorshipUpdate
            && Objects.equals(ranks, sector.ranks)
            && Objects.equals(entities, sector.entities)
@@ -385,12 +436,18 @@ public class Sector extends DatasetScopedEntity<Integer> {
            && Objects.equals(nameStatusExclusion, sector.nameStatusExclusion)
            && Objects.equals(nameFilter, sector.nameFilter)
            && Objects.equals(extinctFilter, sector.extinctFilter)
+           && Objects.equals(issueExclusion, sector.issueExclusion)
+           && Objects.equals(blockedNames, sector.blockedNames)
+           && Objects.equals(blockedNamePatterns, sector.blockedNamePatterns)
            && Objects.equals(note, sector.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, useXRelease, priority, syncAttempt, datasetAttempt, code, createImplicitNames, authorshipUpdate, ranks, entities, nameTypes, nameStatusExclusion, nameFilter, extinctFilter, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode,
+      useXRelease, priority, syncAttempt, datasetAttempt, code, copyAccordingTo, removeOrdinals, createImplicitNames,
+      authorshipUpdate, ranks, entities, nameTypes, nameStatusExclusion, nameFilter, extinctFilter, issueExclusion,
+      blockedNames, blockedNamePatterns, note);
   }
 
   @Override
@@ -430,10 +487,10 @@ public class Sector extends DatasetScopedEntity<Integer> {
     private Set<NameType> nameTypes;
     private Set<NomStatus> nameStatusExclusion;
     private String nameFilter;
-    private boolean copyAccordingTo;
-    private boolean removeOrdinals;
-    private boolean createImplicitNames;
-    private AuthorshipUpdate authorshipUpdate = AuthorshipUpdate.NONE;
+    private Boolean copyAccordingTo;
+    private Boolean removeOrdinals;
+    private Boolean createImplicitNames;
+    private AuthorshipUpdate authorshipUpdate;
     private String note;
     private Integer size;
 
@@ -550,17 +607,17 @@ public class Sector extends DatasetScopedEntity<Integer> {
       return this;
     }
 
-    public Builder copyAccordingTo(boolean copyAccordingTo) {
+    public Builder copyAccordingTo(Boolean copyAccordingTo) {
       this.copyAccordingTo = copyAccordingTo;
       return this;
     }
 
-    public Builder removeOrdinals(boolean removeOrdinals) {
+    public Builder removeOrdinals(Boolean removeOrdinals) {
       this.removeOrdinals = removeOrdinals;
       return this;
     }
 
-    public Builder createImplicitNames(boolean createImplicitNames) {
+    public Builder createImplicitNames(Boolean createImplicitNames) {
       this.createImplicitNames = createImplicitNames;
       return this;
     }

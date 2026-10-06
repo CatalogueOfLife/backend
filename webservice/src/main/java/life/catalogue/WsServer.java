@@ -372,6 +372,7 @@ public class WsServer extends Application<WsServerConfig> {
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
     PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), validator);
     SectorPublisherDao spdao = new SectorPublisherDao(getSqlSessionFactory(), broker, validator);
+    SectorProfileDao sprdao = new SectorProfileDao(getSqlSessionFactory(), validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
     NameUsageDao nudao = new NameUsageDao(getSqlSessionFactory(), indexService);
@@ -516,11 +517,11 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DefaultReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, coljersey.getCache(), cfg.getApiUri(), cfg.clbURI));
     j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
-    j.register(new SectorResource(secdao, fmsDao, syncManager));
+    j.register(new SectorResource(secdao, fmsDao, syncManager, sprdao));
 
     // shared read only resources
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
-      ddao, dsdao, exportManager.blocked(), diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
+      ddao, dsdao, exportManager.blocked(), diDao, dupeDao, edao, exdao, ndao, pdao, spdao, sprdao, secdao, rdao, nudao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService,
       imgService, thumborService, feedback, doiResolver, areaLookup, persons
     );

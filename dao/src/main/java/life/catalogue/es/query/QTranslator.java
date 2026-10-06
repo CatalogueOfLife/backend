@@ -23,6 +23,7 @@ public class QTranslator {
   protected static final String FLD_SCINAME = "usage.name.scientificName";
   static final String FLD_AUTHORSHIP = "usage.name.authorship";
   static final String FLD_VERNACULAR = "vernacularNames.name";
+  static final String FLD_VERNACULAR_EXACT = FLD_VERNACULAR + ".exact";
   static final String FLD_LABEL = "usage.label";
   /**
    * The extra boost to give to exact scientific name or authorship matches.
@@ -52,6 +53,7 @@ public class QTranslator {
       queries.add(buildAuthorshipQuery());
     }
     if (request.getContent().contains(VERNACULAR_NAME)) {
+      // exact matches are ranked first by the SortByTranslator
       queries.add(buildVernacularQuery());
     }
 

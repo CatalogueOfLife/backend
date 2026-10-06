@@ -28,6 +28,8 @@ import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
  * rank, is missing information and must not cost a name its identifier - see
  * <a href="https://github.com/CatalogueOfLife/backend/issues/1326">#1326</a>. A genuinely changed authorship
  * (<code>Mill.</code> to <code>DC.</code>) on the other hand is a different name and must not keep the old one.
+ * Disparate taxonomic groups or nomenclatural codes separate two names only unless their authorship positively agrees:
+ * both follow the placement and the source metadata, which change for one and the same usage from release to release.
  *
  * Authorship therefore goes through {@link AuthorComparator}, which knows that <code>Mill.</code> and
  * <code>Miller</code>, or <code>L.</code> and <code>Linné</code>, are the same person, and ranks through
@@ -175,20 +177,23 @@ public class NameIdentity {
     if (misA && phrase == Equality.DIFFERENT) {
       return CONTRADICTED;
     }
-    // a name cannot move between disparate parts of the tree of life
-    if (a.group != null && b.group != null && a.group.isDisparateTo(b.group)) {
-      return CONTRADICTED;
-    }
-    // two different nomenclatural codes are two different names - the classic Oenanthe bird versus plant homonym
-    if (a.code != null && b.code != null && a.code != b.code) {
-      return CONTRADICTED;
-    }
     final Equality rank = RankComparator.compare(a.rank, b.rank);
     if (rank == Equality.DIFFERENT) {
       return CONTRADICTED;
     }
     final Equality authorship = compareAuthorship(a, b);
     if (authorship == Equality.DIFFERENT) {
+      return CONTRADICTED;
+    }
+    // a name cannot move between disparate parts of the tree of life, and two different nomenclatural codes are two
+    // different names - the classic Oenanthe bird versus plant homonym. But both are properties of the placement and of
+    // the source metadata rather than of the name, and both change for one and the same usage: a species attached to a
+    // homonym genus in another kingdom, a fungus published with the zoological code and fixed in the next import.
+    // A positively agreeing authorship overrules them - true cross code homonyms have different authors - and only
+    // leaves the pairing plausible, never confirmed.
+    final boolean placementConflict = (a.group != null && b.group != null && a.group.isDisparateTo(b.group))
+                                      || (a.code != null && b.code != null && a.code != b.code);
+    if (placementConflict && authorship != Equality.EQUAL) {
       return CONTRADICTED;
     }
 
@@ -206,7 +211,7 @@ public class NameIdentity {
     }
 
     final Evidence evidence;
-    if (authorship == Equality.EQUAL && rank == Equality.EQUAL) {
+    if (authorship == Equality.EQUAL && rank == Equality.EQUAL && !placementConflict) {
       evidence = Evidence.CONFIRMED;
     } else if (authorship == Equality.EQUAL || rank == Equality.EQUAL) {
       evidence = Evidence.PLAUSIBLE;

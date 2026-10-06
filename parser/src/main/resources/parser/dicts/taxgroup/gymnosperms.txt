@@ -1,37 +1,37 @@
-Araucariaceae
-Araucariales # Araucaria, Agathis and relatives (Pinophyta)
-Cephalotaxaceae
-Coniferopsida
-Cupressaceae
-Cupressales
-Cycadaceae
-Cycadales
-Cycadidae
-Cycadopsida
-Ephedraceae
-Ephedrales
-Ginkgoaceae
-Ginkgoales
-Ginkgooidae
-Ginkgoopsida
-Ginkoopsida
-Gnetaceae
-Gnetales
-Gnetidae
-Gnetopsida
-Karkeniaceae
-Phyllocladaceae
-Pinaceae
-Pinales
-Pinidae
-Pinophyta
-Pinopsida
-Podocarpaceae
-Schmeissneriaceae
-Sciadopityaceae
-Taxaceae
-Umaltolepidaceae
-Welwitschiaceae
-Welwitschiales
-Yimaiaceae
-Zamiaceae
+Araucariaceae # COL: Pinopsida > Araucariales
+Araucariales # Araucaria, Agathis and relatives (Pinophyta); COL: Tracheophyta > Pinopsida
+Cephalotaxaceae # COL: Pinopsida > Cupressales
+Coniferopsida # ITIS: synonym of Pinopsida (Tracheophyta)
+Cupressaceae # COL: Pinopsida > Cupressales
+Cupressales # COL: Tracheophyta > Pinopsida
+Cycadaceae # COL: Cycadopsida > Cycadales
+Cycadales # COL: Tracheophyta > Cycadopsida
+Cycadidae # ITIS: Tracheophyta > Cycadopsida
+Cycadopsida # COL: Plantae > Tracheophyta
+Ephedraceae # COL: Pinopsida > Ephedrales
+Ephedrales # COL: Tracheophyta > Pinopsida
+Ginkgoaceae # COL: Ginkgoopsida > Ginkgoales
+Ginkgoales # COL: Tracheophyta > Ginkgoopsida
+Ginkgooidae # ITIS: Tracheophyta > Ginkgoopsida
+Ginkgoopsida # COL: Plantae > Tracheophyta
+Ginkoopsida # ITIS: synonym of Ginkgoopsida (Tracheophyta)
+Gnetaceae # COL: Pinopsida > Gnetales
+Gnetales # COL: Tracheophyta > Pinopsida
+Gnetidae # COL: Tracheophyta > Pinopsida
+Gnetopsida # ITIS: Plantae > Tracheophyta
+Karkeniaceae # COL: Ginkgoopsida > Ginkgoales
+Phyllocladaceae # COL: synonym of Podocarpaceae (Araucariales)
+Pinaceae # COL: Pinopsida > Pinales
+Pinales # COL: Tracheophyta > Pinopsida
+Pinidae # COL: Tracheophyta > Pinopsida
+Pinophyta # PBDB: Plantae > Spermatophyta
+Pinopsida # COL: Plantae > Tracheophyta
+Podocarpaceae # COL: Pinopsida > Araucariales
+Schmeissneriaceae # COL: Ginkgoopsida > Ginkgoales
+Sciadopityaceae # COL: Pinopsida > Cupressales
+Taxaceae # COL: Pinopsida > Cupressales
+Umaltolepidaceae # COL: Ginkgoopsida > Ginkgoales
+Welwitschiaceae # COL: Pinopsida > Welwitschiales
+Welwitschiales # COL: Tracheophyta > Pinopsida
+Yimaiaceae # COL: Ginkgoopsida > Ginkgoales
+Zamiaceae # COL: Cycadopsida > Cycadales

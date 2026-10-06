@@ -1,2 +1,4 @@
-Mollusca
-Molluscs
+Amaltheidae # ammonoid family (Jurassic); homonym in Gastropods (COL: synonym of Hipponicidae (Littorinimorpha)), OtherMolluscs (COL: Cephalopoda > Ammonoidea)
+Margaritidae # homonym in Bivalves (COL: Bivalvia > Ostreida), Gastropods (COL: synonym of Margaritesidae (Trochida))
+Mollusca # COL: Eukaryota > Animalia
+Molluscs # not found in ChecklistBank

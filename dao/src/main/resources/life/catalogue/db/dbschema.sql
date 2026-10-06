@@ -172,7 +172,8 @@ CREATE TYPE INFOGROUP AS ENUM (
   'TEMPORAL_RANGE',
   'RANK',
   'ETYMOLOGY',
-  'GENDER'
+  'GENDER',
+  'ENVIRONMENT'
 );
 
 CREATE TYPE ISSUE AS ENUM (
@@ -329,7 +330,8 @@ CREATE TYPE ISSUE AS ENUM (
   'SUPERFLUOUS_AUTHORSHIP',
   'RELATION_SYNONYM',
   'AUTHORSHIP_INDET_MARKER',
-  'DERIVED_NOMENCLATURAL_STATUS'
+  'DERIVED_NOMENCLATURAL_STATUS',
+  'POTENTIALLY_EXTINCT'
 );
 
 CREATE TYPE JOBLANE AS ENUM (
@@ -1194,7 +1196,7 @@ CREATE TABLE sector (
   target_code NOMCODE,
   mode SECTOR_MODE NOT NULL,
   use_x_release BOOLEAN NOT NULL DEFAULT TRUE,
-  authorship_update SECTOR_AUTHORSHIP_UPDATE NOT NULL DEFAULT 'NONE',
+  authorship_update SECTOR_AUTHORSHIP_UPDATE,
   code NOMCODE,
   sync_attempt INTEGER,
   dataset_attempt INTEGER,
@@ -1218,6 +1220,12 @@ CREATE TABLE sector (
   name_status_exclusion NOMSTATUS[] DEFAULT NULL,
   extinct_filter BOOLEAN,
   name_filter TEXT,
+  copy_according_to BOOLEAN,
+  remove_ordinals BOOLEAN,
+  create_implicit_names BOOLEAN,
+  issue_exclusion ISSUE[],
+  blocked_names TEXT[],
+  blocked_name_patterns TEXT[],
   note TEXT,
   -- several sectors may share a subject, e.g. an attach and a vernacular only merge sector. See SectorSearchRequest.duplicates
   PRIMARY KEY (dataset_key, id)
@@ -1291,6 +1299,27 @@ CREATE TABLE sector_publisher (
   PRIMARY KEY (dataset_key, id)
 );
 CREATE INDEX ON sector_publisher (dataset_key);
+
+CREATE TABLE sector_profile (
+  id SERIAL,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  title TEXT NOT NULL,
+  description TEXT,
+  position INTEGER NOT NULL DEFAULT 0,
+  modes SECTOR_MODE[] NOT NULL DEFAULT '{}',
+  dataset_types DATASETTYPE[] NOT NULL DEFAULT '{}',
+  publisher_keys UUID[] NOT NULL DEFAULT '{}',
+  any_sector_publisher BOOLEAN NOT NULL DEFAULT FALSE,
+  subject_dataset_keys INTEGER[] NOT NULL DEFAULT '{}',
+  sector_keys INTEGER[] NOT NULL DEFAULT '{}',
+  settings JSONB NOT NULL DEFAULT '{}',
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (dataset_key, id)
+);
+CREATE INDEX ON sector_profile (dataset_key);
 
 
 CREATE TABLE decision (

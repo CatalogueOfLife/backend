@@ -5,6 +5,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
@@ -17,6 +18,7 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +30,7 @@ import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
@@ -113,6 +116,25 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void getSimpleInDataset() throws Exception {
     mapper().getSimpleInDataset(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
+  }
+
+  @Test
+  public void taxonInfo() throws Exception {
+    var key = DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId());
+    assertNull(mapper().getTaxonInfo(DSID.of(key.getDatasetKey(), "nonExisting")));
+
+    mapper().updateTaxonInfo(key, EnumSet.of(Environment.MARINE, Environment.BRACKISH), "Cambrian", null, Users.TESTER);
+    var t = mapper().getTaxonInfo(key);
+    assertEquals(EnumSet.of(Environment.MARINE, Environment.BRACKISH), t.getEnvironments());
+    assertEquals("Cambrian", t.getTemporalRangeStart());
+    assertNull(t.getTemporalRangeEnd());
+    // the update never touches the extinct flag
+    assertEquals(tm.get(key).isExtinct(), t.isExtinct());
+
+    mapper().updateTaxonInfo(key, EnumSet.noneOf(Environment.class), null, null, Users.TESTER);
+    t = mapper().getTaxonInfo(key);
+    assertTrue(t.getEnvironments().isEmpty());
+    assertNull(t.getTemporalRangeStart());
   }
 
   /**
@@ -444,6 +466,9 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     final AtomicInteger count = new AtomicInteger(0);
     mapper().processSector(s1).forEach(n -> count.incrementAndGet());
     int left = 468;
+    assertEquals(left, count.get());
+    count.set(0);
+    mapper().processSectorSimple(s1).forEach(n -> count.incrementAndGet());
     assertEquals(left, count.get());
 
     // delete

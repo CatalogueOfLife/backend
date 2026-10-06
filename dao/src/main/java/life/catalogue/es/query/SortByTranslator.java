@@ -2,6 +2,8 @@ package life.catalogue.es.query;
 
 import life.catalogue.api.search.NameUsageRequest;
 
+import org.gbif.nameparser.util.UnicodeUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +13,7 @@ import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.json.JsonData;
 
+import static life.catalogue.api.search.NameUsageRequest.SearchContent.VERNACULAR_NAME;
 import static life.catalogue.api.search.NameUsageRequest.SortBy.RELEVANCE;
 import static life.catalogue.api.search.NameUsageRequest.SortBy.TAXONOMIC;
 
@@ -59,7 +62,8 @@ public class SortByTranslator {
         // 3. relevance score within each group
         List<SortOptions> sorts = new ArrayList<>(3);
         if (request.hasQ()) {
-          sorts.add(exactMatchSort(request.getQ()));
+          boolean vernacular = request.getContent() != null && request.getContent().contains(VERNACULAR_NAME);
+          sorts.add(exactMatchSort(request.getQ(), vernacular));
         }
         sorts.add(statusOrderSort());
         sorts.add(SortOptions.of(s -> s.score(sc -> sc.order(SortOrder.Desc))));
@@ -70,18 +74,28 @@ public class SortByTranslator {
   /**
    * Primary sort tier for relevance searches that lifts documents whose scientific name or label
    * equals the query string to the very top, regardless of their taxonomic status and rank.
+   * If vernacular names are searched, a vernacular name equal to the query also counts as exact.
    * Returns 0 for an exact match and 1 otherwise, sorted ascending. Relies on the {@code keyword}
-   * doc values of {@code usage.name.scientificName} and {@code usage.label}, so no schema change
-   * or extra indexed field is needed.
+   * doc values of {@code usage.name.scientificName}, {@code usage.label} and {@code vernacularNames.name.exact}.
    */
-  private static SortOptions exactMatchSort(String q) {
+  static SortOptions exactMatchSort(String q, boolean vernacular) {
     // compare case insensitively: params.q is lower cased here, the doc values are lower cased in the script
-    Script script = Script.of(s -> s
-      .source(src -> src.scriptString(
-        "(doc['usage.name.scientificName'].size() > 0 && doc['usage.name.scientificName'].value.toLowerCase() == params.q) || "
-          + "(doc['usage.label'].size() > 0 && doc['usage.label'].value.toLowerCase() == params.q) ? 0 : 1"))
-      .params("q", JsonData.of(q.toLowerCase(java.util.Locale.ROOT)))
-    );
+    String src = "(doc['usage.name.scientificName'].size() > 0 && doc['usage.name.scientificName'].value.toLowerCase() == params.q) || "
+      + "(doc['usage.label'].size() > 0 && doc['usage.label'].value.toLowerCase() == params.q)";
+    if (vernacular) {
+      // the vernacular doc values are already normalized by the index, see vernacular_exact normalizer in schema.json.
+      // The containsKey guard keeps the script working on older indices without the exact sub-field.
+      src += " || (doc.containsKey('" + QTranslator.FLD_VERNACULAR_EXACT + "') && doc['" + QTranslator.FLD_VERNACULAR_EXACT + "'].contains(params.vq))";
+    }
+    final String source = src + " ? 0 : 1";
+    Script script = Script.of(s -> {
+      s.source(ss -> ss.scriptString(source))
+       .params("q", JsonData.of(q.toLowerCase(java.util.Locale.ROOT)));
+      if (vernacular) {
+        s.params("vq", JsonData.of(UnicodeUtils.foldToAscii(q).trim().toLowerCase(java.util.Locale.ROOT)));
+      }
+      return s;
+    });
     return SortOptions.of(s -> s.script(ss -> ss
       .type(ScriptSortType.Number)
       .script(script)

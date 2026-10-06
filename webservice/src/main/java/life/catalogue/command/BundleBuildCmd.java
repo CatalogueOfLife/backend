@@ -285,6 +285,7 @@ public class BundleBuildCmd extends AbstractMybatisCmd {
     tables.add(new String[]{"sector", "SELECT %s FROM sector WHERE dataset_key = " + key});
     tables.add(new String[]{"sector_import", "SELECT %s FROM sector_import WHERE dataset_key = " + key});
     tables.add(new String[]{"sector_publisher", "SELECT %s FROM sector_publisher WHERE dataset_key = " + key});
+    tables.add(new String[]{"sector_profile", "SELECT %s FROM sector_profile WHERE dataset_key = " + key});
     tables.add(new String[]{"decision", "SELECT %s FROM decision WHERE dataset_key = " + key});
     // only the canonical names this release actually matched to - name_match has a foreign key onto them
     tables.add(new String[]{"names_index", "SELECT %s FROM names_index WHERE id IN"

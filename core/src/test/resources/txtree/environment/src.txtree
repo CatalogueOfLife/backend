@@ -1,0 +1,10 @@
+Biota [unranked]
+  Animalia [kingdom]
+    Mollusca [phylum]
+      Bivalvia [class]
+        Abra Lamarck, 1818 [genus] {ENV=marine}
+          Abra alba (W.Wood, 1802) [species] {ENV=marine,brackish CHRONO=Pliocene-Holocene}
+          Abra nitida (O.F.Müller, 1776) [species] {ENV=marine CHRONO=Pleistocene}
+          Abra prismatica (Montagu, 1808) [species] {ENV=marine}
+          Abra segmentum (Récluz, 1843) [species] {ENV=marine}
+          †Abra tenuis (Montagu, 1803) [species]

@@ -12,10 +12,14 @@ import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.junit.*;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
@@ -28,6 +32,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Parameterized.class)
 public class IdProviderReleaseIT {
@@ -139,6 +145,30 @@ public class IdProviderReleaseIT {
     }
   }
 
+  /**
+   * Every id of the tsv reports must show a name. Deleted ids come from the last release and all others from the new
+   * one - the release an id first appeared in is often deleted and used to leave most rows blank.
+   */
+  private void assertReportsNamed() throws IOException {
+    File zip = new File(cfg.reportDir(Datasets.COL, attempt), "id-reports.gz");
+    assertTrue(zip.exists());
+    int rows = 0;
+    try (var zin = new ZipInputStream(new FileInputStream(zip))) {
+      ZipEntry e;
+      while ((e = zin.getNextEntry()) != null) {
+        if (!e.getName().endsWith(".tsv") || e.getName().endsWith("superseded.tsv")) continue;
+        var reader = new BufferedReader(new InputStreamReader(zin, StandardCharsets.UTF_8));
+        String line;
+        while ((line = reader.readLine()) != null) {
+          String[] cols = line.split("\t", -1);
+          assertTrue(e.getName() + " row without a name: " + line, cols.length > 3 && !cols[3].isBlank());
+          rows++;
+        }
+      }
+    }
+    LOG.info("{} id report rows all carry a name", rows);
+  }
+
   @Test
   public void mapIDs() throws Throwable {
     LOG.info("Match project {} using attempt {} and dataset key {}", project, attempt, newDatasetKey);
@@ -153,7 +183,6 @@ public class IdProviderReleaseIT {
     IdProvider idp = new IdProvider(Datasets.COL, Datasets.COL, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, prCfg, SqlSessionFactoryRule.getSqlSessionFactory());
     final int nextKey = idp.peek();
     idp.mapAllIds();
-    idp.report();
     LOG.info("{} new IDs have been issued", idp.peek()-nextKey);
 
     // copy usages to new dataset
@@ -164,6 +193,9 @@ public class IdProviderReleaseIT {
       nm.copyDataset(Datasets.COL, newDatasetKey, true);
       num.copyDataset(Datasets.COL, newDatasetKey, true);
     }
+    // reports are written once the release holds its data, as ProjectRelease.finalWork does
+    idp.report();
+    assertReportsNamed();
     // verify result tree
     System.out.println("\n*** COMPARISON ***");
     // compare with expected tree

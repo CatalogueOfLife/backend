@@ -80,6 +80,20 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     return d;
   }
 
+  /**
+   * A setting removed from the enum, e.g. the former "sector ranks", must not make the settings unreadable.
+   */
+  @Test
+  public void settingsIgnoreUnknownKeys() throws Exception {
+    try (var st = connection().createStatement()) {
+      st.execute("UPDATE dataset SET settings = '{\"sector ranks\": [\"genus\"], \"nomenclatural code\": \"botanical\"}' WHERE key=" + appleKey);
+    }
+    commit();
+    var ds = mapper().getSettings(appleKey);
+    assertEquals(NomCode.BOTANICAL, ds.getEnum(Setting.NOMENCLATURAL_CODE));
+    assertEquals(1, ds.size());
+  }
+
   @Test
   public void settings() throws Exception {
     Dataset d1 = create();

@@ -53,6 +53,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
   TaxonDao tdao;
   TestDataRule draftRule;
+  SectorProfile projectDefaults;
 
 
   @Before
@@ -66,12 +67,16 @@ public class SectorSyncIT extends SectorSyncTestBase {
     matchingRule.rematch(draftRule.testData.key);
     tdao = syncFactoryRule.getTdao();
 
-    // make sure accordingTo syncs are off by default for the project
+    // accordingTo syncs are off by default for the project
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var dm = session.getMapper(DatasetMapper.class);
-      var ds = dm.getSettings(Datasets.COL);
-      ds.put(Setting.SECTOR_COPY_ACCORDING_TO, false);
-      dm.updateSettings(Datasets.COL, ds, Users.TESTER);
+      var pm = session.getMapper(SectorProfileMapper.class);
+      pm.deleteByDataset(Datasets.COL);
+      projectDefaults = new SectorProfile();
+      projectDefaults.setDatasetKey(Datasets.COL);
+      projectDefaults.setTitle("Project defaults");
+      projectDefaults.getSettings().setCopyAccordingTo(false);
+      projectDefaults.applyUser(Users.TESTER);
+      pm.create(projectDefaults);
     }
   }
 
@@ -109,8 +114,8 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
     NameUsageBase src = getByName(srcKey, Rank.ORDER, "Diptera");
     NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    // the sector leaves copyAccordingTo unset, so the project defaults profile decides
     final var sid = createSector(Sector.Mode.ATTACH, src, trg, s -> {
-      s.setCopyAccordingTo(false);
       s.setRemoveOrdinals(true);
     });
 
@@ -122,10 +127,8 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
     // sync again but this time allow accordingTo
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var dm = session.getMapper(DatasetMapper.class);
-      var ds = dm.getSettings(Datasets.COL);
-      ds.put(Setting.SECTOR_COPY_ACCORDING_TO, true);
-      dm.updateSettings(Datasets.COL, ds, Users.TESTER);
+      projectDefaults.getSettings().setCopyAccordingTo(true);
+      session.getMapper(SectorProfileMapper.class).update(projectDefaults);
     }
     syncAll();
     assertTree("cat14b2.txt");
@@ -141,6 +144,38 @@ public class SectorSyncIT extends SectorSyncTestBase {
       tm.update(nu);
 
       session.getMapper(ReferenceMapper.class).delete(key.id(rKey));
+    }
+  }
+
+  /**
+   * Blocked names apply to attach sectors, too. A blocked taxon is skipped like any other filtered one:
+   * its children attach to its parent, and the sector import counts it.
+   */
+  @Test
+  public void attachBlockedNames() throws Exception {
+    final int srcKey = dataRule.mapKey(DataFormat.COLDP, 14);
+    NameUsageBase src = getByName(srcKey, Rank.ORDER, "Diptera");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    final var sid = createSector(Sector.Mode.ATTACH, src, trg, s -> {
+      s.setBlockedNames(Set.of("Culiciomyia"));
+      s.setBlockedNamePatterns(Set.of("Tinolestes\\)"));
+      // implicit names would recreate the blocked subgenus as Culex (Culiciomyia) from its species' epithet,
+      // as they do for a subgenus dropped by the rank filter
+      s.setCreateImplicitNames(false);
+    });
+
+    var imports = syncAll(null, null);
+    var si = imports.stream().filter(i -> sid.getId().equals(i.getSectorKey())).findFirst().orElseThrow();
+    assertEquals(2, (int) si.getIgnoredByReasonCount().get(IgnoreReason.BLOCKED_NAME));
+
+    assertTrue(listByName(Datasets.COL, Rank.SUBGENUS, "Culiciomyia").isEmpty());
+    assertTrue(listByName(Datasets.COL, Rank.SPECIES, "Culex (Tinolestes) latisquama").isEmpty());
+    // the species of the blocked subgenus attach to its parent, the genus
+    NameUsageBase azurini = getByName(Datasets.COL, Rank.SPECIES, "Culex (Culiciomyia) azurini");
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var parent = session.getMapper(NameUsageMapper.class).get(DSID.of(Datasets.COL, azurini.getParentId()));
+      assertEquals(Rank.GENUS, parent.getRank());
+      assertEquals("Culex", parent.getName().getScientificName());
     }
   }
 
@@ -175,6 +210,107 @@ public class SectorSyncIT extends SectorSyncTestBase {
       try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
         session.getMapper(life.catalogue.db.mapper.TaxonMapper.class).delete(id);
         session.getMapper(life.catalogue.db.mapper.NameMapper.class).delete(id);
+      }
+    }
+  }
+
+  /**
+   * A merge must not create a ranked name the parser could not make sense of, like the TaiCOL family "0".
+   * Once created, the merge patched the classification of the project genus below it and moved it under "0".
+   * Virus names are OTHER too and must still merge.
+   * https://github.com/CatalogueOfLife/data/issues/1730
+   */
+  @Test
+  public void mergeIgnoresOtherNames() throws Exception {
+    var culex = mergeFamilyZero(null);
+    assertNull("family 0 must not be merged", getByName(Datasets.COL, Rank.FAMILY, "0"));
+    assertEquals("Culex stays directly below Diptera", "diptera", culex.getParentId());
+    assertNotNull("virus names are OTHER and must still merge", getByName(Datasets.COL, Rank.SPECIES, "Culex zero virus 1"));
+    assertNull("unranked junk must not be merged", getByName(Datasets.COL, Rank.UNRANKED, "R ogas eurinus"));
+  }
+
+  /**
+   * An explicit sector name type filter has the final say and can still merge OTHER names.
+   */
+  @Test
+  public void mergeOtherNamesIfConfigured() throws Exception {
+    var culex = mergeFamilyZero(Set.of(NameType.SCIENTIFIC, NameType.OTHER));
+    var zero = getByName(Datasets.COL, Rank.FAMILY, "0");
+    assertNotNull("family 0 is merged when the sector asks for OTHER names", zero);
+    assertEquals(zero.getId(), culex.getParentId());
+    // unranked names have to be OTU style identifiers, an OTHER name filter does not change that
+    assertNull("unranked junk must not be merged", getByName(Datasets.COL, Rank.UNRANKED, "R ogas eurinus"));
+  }
+
+  /**
+   * Places a family "0" between Diptera and Culex in the source, plus an unranked OTHER name below Culex,
+   * merges it into a project that has Culex directly below Diptera and returns the project's Culex afterwards. All source changes are reverted, the source persists for all tests.
+   */
+  private NameUsageBase mergeFamilyZero(Set<NameType> nameTypes) throws Exception {
+    final int srcKey = dataRule.mapKey(DataFormat.COLDP, 14);
+    final var srcDiptera = getByName(srcKey, Rank.ORDER, "Diptera");
+    final var srcCulex = getByName(srcKey, Rank.GENUS, "Culex");
+    final String culexParentID = srcCulex.getParentId();
+    final DSID<String> zeroID = DSID.of(srcKey, "zero");
+    final DSID<String> virusID = DSID.of(srcKey, "zero-virus");
+    final DSID<String> junkID = DSID.of(srcKey, "zero-junk");
+
+    var zero = life.catalogue.api.TestEntityGenerator.newMinimalName(srcKey, zeroID.getId(), "Zero", Rank.FAMILY);
+    zero.setUninomial(null);
+    zero.setScientificName("0");
+    zero.setType(NameType.OTHER);
+    zero.setCode(null);
+    var virus = life.catalogue.api.TestEntityGenerator.newMinimalName(srcKey, virusID.getId(), "Culex zero virus 1", Rank.SPECIES);
+    virus.setGenus(null);
+    virus.setSpecificEpithet(null);
+    virus.setInfraspecificEpithet(null);
+    virus.setScientificName("Culex zero virus 1");
+    virus.setType(NameType.OTHER);
+    virus.setCode(NomCode.VIRUS);
+    // unparsable garbage as sector 63980 has it. It used to pass as an OTU, which name-parser v4 typed OTHER
+    var junk = life.catalogue.api.TestEntityGenerator.newMinimalName(srcKey, junkID.getId(), "Junk", Rank.UNRANKED);
+    junk.setUninomial(null);
+    junk.setScientificName("R ogas eurinus");
+    junk.setType(NameType.OTHER);
+    junk.setCode(NomCode.ZOOLOGICAL);
+    // the project already has Culex, directly below the order
+    var diptera = life.catalogue.api.TestEntityGenerator.newMinimalName(Datasets.COL, "diptera", "Diptera", Rank.ORDER);
+    var culex = life.catalogue.api.TestEntityGenerator.newMinimalName(Datasets.COL, "culex", "Culex", Rank.GENUS);
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var nm = session.getMapper(NameMapper.class);
+      var tm = session.getMapper(TaxonMapper.class);
+      nm.create(zero);
+      tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(zero, zeroID.getId(), srcDiptera.getId()));
+      nm.create(virus);
+      tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(virus, virusID.getId(), srcCulex.getId()));
+      nm.create(junk);
+      tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(junk, junkID.getId(), srcCulex.getId()));
+      session.getMapper(NameUsageMapper.class).updateParentId(srcCulex, zeroID.getId(), Users.TESTER);
+      nm.create(diptera);
+      tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(diptera, diptera.getId(), getByName(Datasets.COL, Rank.CLASS, "Insecta").getId()));
+      nm.create(culex);
+      tm.create(life.catalogue.api.TestEntityGenerator.newTaxon(culex, culex.getId(), diptera.getId()));
+    }
+    matchingRule.rematch(Datasets.COL);
+    try {
+      createSector(Sector.Mode.MERGE, srcKey, srcDiptera, getByID("diptera"), s -> {
+        s.setNameTypes(nameTypes);
+        s.setRanks(Set.of(Rank.ORDER, Rank.FAMILY, Rank.GENUS, Rank.SPECIES, Rank.UNRANKED));
+        disableAutoBlocking(s);
+      });
+      syncMergesOnly();
+      print(Datasets.COL);
+      return getByID("culex");
+
+    } finally {
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+        session.getMapper(NameUsageMapper.class).updateParentId(srcCulex, culexParentID, Users.TESTER);
+        var nm = session.getMapper(NameMapper.class);
+        var tm = session.getMapper(TaxonMapper.class);
+        for (var id : List.of(junkID, virusID, zeroID)) {
+          tm.delete(id);
+          nm.delete(id);
+        }
       }
     }
   }

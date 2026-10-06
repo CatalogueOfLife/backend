@@ -156,8 +156,12 @@ its row still running and empty; the `Error` is then rethrown once the final sta
 whether the JVM can carry on is not a single job's call. An exception with an `InterruptedException` (or
 `InterruptedRuntimeException`) anywhere in its cause chain is a cancel, not a failure: libraries wrap the interrupt
 of a cancelled job, the elasticsearch client as a `RuntimeException` "thread waiting for the response was
-interrupted". Fine grained progress is a free text `step`, not a
-status - the old `ImportState` enum column is gone from the db (`IMPORTSTATE` dropped).
+interrupted". A job can also run on another job's thread - the XRelease merges its sectors through
+`SectorRunnable.runEmbedded()`, `ColReleaseExportJob` runs its exports - so `run()` hands the caller its MDC back
+instead of clearing it: the `JobAppender` drops every line without a `job` key, and a release that lost it after its
+first merged sector never closed or copied its job log (XR 622-632). `logToCallerJob`, set by `runEmbedded`, makes
+the nested job log into the caller's job log and emit no START/END markers of its own. Fine grained progress is
+a free text `step`, not a status - the old `ImportState` enum column is gone from the db (`IMPORTSTATE` dropped).
 The executor has three lanes (`JobLane`: DEFAULT, IMPORT, SYNC - a vocab enum, so it is served at
 `/vocab/joblane` and persisted as the `job.lane` column), each with its own worker pool and priority
 queue so a long import cannot starve an export; `getSerialBy()` serializes jobs sharing a key within a lane
@@ -292,15 +296,17 @@ A release maps every usage to a stable LATIN29 int id (`IdProvider` → `idmap_n
 `coalesce(mu.id2, u.id)`). Candidates are the ids of `name_usage_archive` sharing the usage's canonical names index
 id - which, the index being canonical-only, is the entire name based grouping, so authorship, rank and status carry
 all the discriminating power. `NameIdentity` compares them three valued on `AuthorComparator` and `RankComparator`:
-a contradiction (changed authorship, incompatible rank, disparate `TaxGroup`, misapplied against non misapplied, two
-concrete nomenclatural codes) rules a pairing out, while missing information - an authorship added or removed, an
-unranked name - never does. Evidence gates a pairing rather than ranking it: a contradicted pairing is dropped before
+a contradiction (changed authorship, incompatible rank, misapplied against non misapplied) rules a pairing out, while
+missing information - an authorship added or removed, an unranked name - never does. A disparate `TaxGroup` or two
+concrete nomenclatural codes contradict too, unless the authorship positively agrees: both follow placement and source
+metadata, which flip for one and the same usage (a species under a homonym genus of another kingdom, a fungus coded
+zoological until the next import), so equal authorship keeps such a pairing, capped at PLAUSIBLE. Evidence gates a pairing rather than ranking it: a contradicted pairing is dropped before
 it is a candidate at all, and resurrecting an id the last release no longer had needs positive agreement on authorship
 or rank on top of that. `IdCandidate` then orders what is left: an id the last release still had first - the world
 already cites it, and a better corroborated resurrection must not take it away - then the evidence, then seniority,
 which is longevity based rather than currency based (base-release-seen before xr-only, then more releases, then earlier
 first release), which is what makes a removed erroneous duplicate lose to the id it duplicated. An id's attempt comes
-from the release it first appeared in, deleted and private releases included: their `dataset` row survives and carries
+from the release it first appeared in, deleted releases included: their `dataset` row survives and carries
 the attempt, and a release whose row is gone for good ranks last on seniority instead of first (attempt 0 used to make
 it the most senior id of its group). Ids are handed out greedily, best pairing first.
 The archive is the memory all of this reads: one row per id ever issued, holding the version of the highest ranked

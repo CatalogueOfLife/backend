@@ -1,7 +1,6 @@
 package life.catalogue.api.vocab;
 
 import life.catalogue.api.vocab.area.Gazetteer;
-import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -104,32 +103,6 @@ public enum Setting {
   DATA_FORMAT(DataFormat.class, DatasetOrigin.EXTERNAL, DatasetOrigin.PROJECT),
 
   /**
-   * Project defaults to be used for the sector.entities property
-   */
-  SECTOR_ENTITIES(EntityType.class, true, DatasetOrigin.PROJECT),
-
-  /**
-   * Project defaults to be used for the sector.ranks property
-   */
-  SECTOR_RANKS(Rank.class, true, DatasetOrigin.PROJECT),
-
-  /**
-   * Project defaults to be used for the sector.nameTypes property
-   */
-  SECTOR_NAME_TYPES(NameType.class, true, DatasetOrigin.PROJECT),
-
-  /**
-   * Project defaults to be used for the sector.nameStatusExclusion property
-   */
-  SECTOR_NAME_STATUS_EXCLUSION(NomStatus.class, true, DatasetOrigin.PROJECT),
-
-  /**
-   * Project defaults to be used for the sector.copyAccordingTo property.
-   * Defaults to false.
-   */
-  SECTOR_COPY_ACCORDING_TO(Boolean.class, false, DatasetOrigin.PROJECT),
-
-  /**
    * Flag to turn on/off the sync scheduling for a project.
    * Which sectors are being scheduled can be influenced by the SYNC_SCHEDULER_SOURCES setting.
    */
@@ -140,12 +113,6 @@ public enum Setting {
    * If empty, all sources are considered.
    */
   SYNC_SCHEDULER_SOURCES(Integer.class, true, DatasetOrigin.PROJECT),
-
-  /**
-   * Project defaults to be used for the sector.removeOrdinals property
-   * Defaults to false.
-   */
-  SECTOR_REMOVE_ORDINALS(Boolean.class, false, DatasetOrigin.PROJECT),
 
   /**
    * If set to true the dataset metadata is locked and the gbif registry sync will not be applied to the dataset.
@@ -180,11 +147,6 @@ public enum Setting {
    * If true no merge syncs into the project will be allowed.
    */
   BLOCK_MERGE_SYNCS(Boolean.class, false, DatasetOrigin.PROJECT),
-
-  /**
-   * If null or true creates implicit names during syncs.
-   */
-  SECTOR_CREATE_IMPLICIT_NAMES(Boolean.class, false, DatasetOrigin.PROJECT),
 
   /**
    * If set, every imported usage is matched against the specified dataset and the matched usageID

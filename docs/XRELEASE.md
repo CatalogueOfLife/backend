@@ -60,6 +60,10 @@ reference when both share title and year. An author & year stub like `Benth. (18
 reference for that name alone. Any contradiction merges nothing, see
 [2026-09-23-merge-published-in-links.md](2026-09-23-merge-published-in-links.md).
 
+An existing taxon likewise only takes over the environments or the temporal range of a source taxon if it has none,
+recorded as an `ENVIRONMENT` or `TEMPORAL_RANGE` secondary source. The extinct flag is never merged: a source that
+flags a taxon as extinct while the existing taxon is not marks it with the `POTENTIALLY_EXTINCT` issue for review.
+
 #### 2f. `homotypicGrouping()` — Post-Merge Consolidation
 Runs on the temporary project once all sectors are merged. Wherever sources compete, `SectorPriority` ranks them:
 data managed in the project first, then the sectors of the base release, then the merge sectors by their `priority`
@@ -215,15 +219,12 @@ Key options loaded from the project's `XRELEASE_CONFIG` setting URI:
 | `flagDuplicatesAsProvisional` | true | Mark lower-priority homonyms as provisional |
 | `removeEmptyGenera` | true | Remove genera with no species after merge |
 | `sourceDatasetExclusion` | null | Dataset keys to exclude from publisher sectors |
-| `blockedNames` / `blockedNamePatterns` | empty | Names/patterns to exclude globally |
 | `basionymExclusions` | empty | Per-family epithet exclusions for basionym grouping |
-| `issueExclusion` | empty | Issues that trigger usage exclusion during merge |
 
-Note that `blockedNamePatterns` is matched with an unanchored `find()` against `Name.getLabel()`,
-which includes the authorship. A pattern therefore cannot be restricted to the name portion, and one
-broad enough to catch a rank marker will also hit real authors and book citations - `Willd., Sp. Pl.`
-or `Sp. Bate, 1856` for a `sp.` pattern. Prefer a typed check in code over a pattern for anything
-that has to distinguish an author from a marker.
+Names and issues to exclude from the merges are not part of this config: they are sector profile settings
+(`blockedNames`, `blockedNamePatterns`, `issueExclusion`), usually in a merge only profile, see
+[SECTOR-SETTINGS.md](SECTOR-SETTINGS.md). For anything that has to tell an author from a rank marker, prefer a typed
+check in code over a pattern.
 
 ### Always-on filters
 
@@ -257,6 +258,26 @@ a sanity check. That check used to adopt the parsed name only when its type was 
 `specificEpithet = "sp. 1"`. It now adopts the parsed name whenever the parser disagrees with the
 type the atoms assumed, which lets both the `SECTOR_NAME_TYPES` filter and the `INDETERMINED` filter
 above do their job. See [data#1568](https://github.com/CatalogueOfLife/data/issues/1568).
+
+Merge sectors drop two more things in `TreeMergeHandler.ignoreUsage`:
+
+| Filter | IgnoreReason |
+|--------|--------------|
+| Unranked names, unless they are OTU style codes like BOLD BINs or UNITE SH codes (`IDENTIFIER`) | `RANK` |
+| Ranked names of type `OTHER`, unless they carry the `VIRUS` code | `NAME_OTHER` |
+
+The first used to exempt `OTHER` too, which is how name-parser v4 typed OTU codes. Every source merged
+today stores them as `IDENTIFIER`, and all the exemption still let through were unparsable synonyms
+like `R ogas eurinus` or `A[mpelis] rufaxilla`, 246 of them in the September 2026 COL XR. It holds
+whatever the sector's `nameTypes` say.
+
+The second applies only to sectors without their own `nameTypes` filter, and a `REVIEWED` decision
+overrides it. Viruses are exempt because the parser types every virus name `OTHER` and sets the
+`VIRUS` code. Everything else of type `OTHER` is a string the parser could not understand, like
+`0` or `=Papilio dorylas Denis & Schiffermüller, 1775`. Creating one does harm beyond the junk name:
+a merged match below it patches the classification of the existing base usage, so TaiCOL's family
+`0` pulled the Species Fungorum genus *Yamadazyma* below itself. The children of a dropped name attach
+to its closest matched ancestor instead. See [data#1730](https://github.com/CatalogueOfLife/data/issues/1730).
 
 ### Genus homonyms
 

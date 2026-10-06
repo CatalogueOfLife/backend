@@ -8,6 +8,8 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.model.SectorProfile;
+import life.catalogue.api.model.SectorSelector;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.model.VernacularName;
@@ -21,6 +23,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -380,6 +383,73 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertEquals(0, mapper().search(req, new Page()).size());
   }
 
+  @Test
+  public void searchByProfile() {
+    add2Sectors();
+    var pm = mapper(SectorProfileMapper.class);
+    var onlyS2 = new SectorProfile();
+    onlyS2.setDatasetKey(targetDatasetKey);
+    onlyS2.setTitle("only s2");
+    onlyS2.getSelector().setSectorKeys(Set.of(s2.getId()));
+    onlyS2.applyUser(Users.TESTER);
+    pm.create(onlyS2);
+    var all = new SectorProfile();
+    all.setDatasetKey(targetDatasetKey);
+    all.setTitle("all");
+    all.applyUser(Users.TESTER);
+    pm.create(all);
+    commit();
+
+    var req = SectorSearchRequest.byProject(targetDatasetKey);
+    req.setProfileKey(onlyS2.getId());
+    assertEquals(List.of(s2.getId()), keys(mapper().search(req, new Page())));
+    assertEquals(1, mapper().countSearch(req));
+
+    req.setProfileKey(all.getId());
+    assertEquals(2, mapper().countSearch(req));
+
+    req.setProfileKey(-1);
+    assertEquals(0, mapper().countSearch(req));
+  }
+
+  @Test
+  public void searchBySelector() {
+    add2Sectors();
+    var req = SectorSearchRequest.byProject(targetDatasetKey);
+
+    // an empty selector selects every sector of the project
+    var sel = new SectorSelector();
+    req.setSelector(sel);
+    assertEquals(2, mapper().countSearch(req));
+
+    sel.setSectorKeys(Set.of(s2.getId()));
+    assertEquals(List.of(s2.getId()), keys(mapper().search(req, new Page())));
+    assertEquals(1, mapper().countSearch(req));
+
+    // both test sectors are ATTACH
+    sel = new SectorSelector();
+    sel.setModes(Set.of(Sector.Mode.MERGE));
+    req.setSelector(sel);
+    assertEquals(0, mapper().countSearch(req));
+    sel.setModes(Set.of(Sector.Mode.ATTACH, Sector.Mode.MERGE));
+    assertEquals(2, mapper().countSearch(req));
+
+    // exercises the enum, integer and uuid array casts
+    sel = new SectorSelector();
+    sel.setDatasetTypes(EnumSet.allOf(DatasetType.class));
+    sel.setSubjectDatasetKeys(Set.of(subjectDatasetKey));
+    req.setSelector(sel);
+    assertEquals(2, mapper().countSearch(req));
+    sel.setPublisherKeys(Set.of(UUID.randomUUID()));
+    assertEquals(0, mapper().countSearch(req));
+
+    // the project has no sector publishers
+    sel = new SectorSelector();
+    sel.setAnySectorPublisher(true);
+    req.setSelector(sel);
+    assertEquals(0, mapper().countSearch(req));
+  }
+
   /**
    * A hierarchy sector is configured against a project but synced from one of that projects releases.
    * The project keeps the project as its subject - that is the configuration - but the copy in the release
@@ -575,6 +645,13 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     d.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.OTHER));
     d.setNameStatusExclusion(Set.of(NomStatus.CHRESONYM));
     d.setNameFilter("BOLD:.*");
+    d.setCopyAccordingTo(true);
+    d.setRemoveOrdinals(false);
+    d.setCreateImplicitNames(false);
+    d.setAuthorshipUpdate(Sector.AuthorshipUpdate.MISSING);
+    d.setIssueExclusion(EnumSet.of(Issue.DOUBTFUL_NAME, Issue.UNPARSABLE_NAME));
+    d.setBlockedNames(Set.of("Aus bus", "Cus"));
+    d.setBlockedNamePatterns(Set.of("^Incertae"));
     d.setNote(RandomUtils.randomUnicodeString(1024));
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
@@ -597,6 +674,38 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     s.setNote("not my thing");
   }
   
+  /**
+   * A null in a stored text array must not make every read of the sector throw.
+   */
+  @Test
+  public void nullBlockedNameIsSkipped() {
+    Sector s = create();
+    s.setBlockedNames(new java.util.HashSet<>(java.util.Arrays.asList("Aus", null)));
+    mapper().create(s);
+    commit();
+    assertEquals(Set.of("Aus"), mapper().get(s.getKey()).getBlockedNames());
+  }
+
+  /**
+   * A setting the sector does not set must come back unset, so it can be inherited from a profile.
+   */
+  @Test
+  public void unsetSettingsRoundTripAsNull() {
+    Sector s = create();
+    s.setCopyAccordingTo(null);
+    s.setRemoveOrdinals(null);
+    s.setCreateImplicitNames(null);
+    s.setAuthorshipUpdate(null);
+    mapper().create(s);
+    commit();
+
+    Sector s2 = mapper().get(s.getKey());
+    assertNull(s2.getCopyAccordingTo());
+    assertNull(s2.getRemoveOrdinals());
+    assertNull(s2.getCreateImplicitNames());
+    assertNull(s2.getAuthorshipUpdate());
+  }
+
   /**
    * Sectors may share a subject, see https://github.com/CatalogueOfLife/backend/issues/1581
    */

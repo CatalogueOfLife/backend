@@ -63,6 +63,14 @@
             "trim",
             "lowercase"
           ]
+        },
+        "vernacular_exact": {
+          "type": "custom",
+          "filter": [
+            "trim",
+            "lowercase",
+            "asciifolding"
+          ]
         }
       }
     }
@@ -274,7 +282,14 @@
         "properties": {
           "name": {
             "type": "text",
-            "analyzer": "vernacular_name_analyzer"
+            "analyzer": "vernacular_name_analyzer",
+            "fields": {
+              "exact": {
+                "type": "keyword",
+                "normalizer": "vernacular_exact",
+                "ignore_above": 256
+              }
+            }
           }
         }
       }

@@ -88,10 +88,17 @@ the information got better, the name did not change.
 | authorship | a different author: `Mill.` → `DC.`; the same author with publication years more than 11 apart | the same author cited differently: `Mill.` = `Miller`, `L.` = `Linné`, publication years up to 11 apart; the same combination author, whatever the basionym author in brackets: `(Lamb.) G.Don` = `(Roxb. ex D.Don) G.Don`; one side's basionym author matching the other side's combination author: `(Bryk, 1949)` = `Bryk, 1948` | authorship added or removed; an authorship that cannot be parsed; one side's basionym author not matching the other side's combination author |
 | rank | two different concrete ranks: species against genus; the catch-all rank "other" against any other rank | the same rank | unranked against any rank but "other"; a vague rank against a rank it covers: "suprageneric name" against family |
 | taxonomic status | a misapplied name against anything that is not one | the same kind of status: accepted ↔ provisionally accepted, synonym ↔ ambiguous synonym | a taxon sunk into synonymy, or a synonym raised to accepted |
-| nomenclatural code | two different codes: zoological against botanical — the *Oenanthe* case | the same code | one side not stated |
-| taxonomic group | groups on separate branches: an animal against a plant | the same group | one side unplaced; one group within the other: insects against arthropods |
+| nomenclatural code | two different codes: zoological against botanical — the *Oenanthe* case — unless the authorship agrees | the same code | one side not stated |
+| taxonomic group | groups on separate branches: an animal against a plant — unless the authorship agrees | the same group | one side unplaced; one group within the other: insects against arthropods |
 | name phrase (`sensu …`) | a different phrase on two misapplied names | the same phrase | one side missing; a different phrase on names that are not misapplied |
 | accepted name | never on its own | the same accepted name for two synonyms — this is what keeps pro parte synonyms of one and the same name apart | |
+
+**Placement does not outweigh the author.** The code and the taxonomic group describe where a name sits and what
+its source says about it, not the name itself, and both change for one and the same name from one release to the
+next: a fungus published under the zoological code until its source is corrected, a species attached to a genus of
+the same spelling in another kingdom. So they only separate two names whose authorship does not agree. With the same
+author a name keeps its identifier across such a change, although the match then counts as plausible rather than
+confirmed. Genuine homonyms across the codes, like *Oenanthe* the bird and the plant, have different authors.
 
 Two rules follow from the table.
 

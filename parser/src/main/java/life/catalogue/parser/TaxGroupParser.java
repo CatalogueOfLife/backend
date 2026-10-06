@@ -62,7 +62,7 @@ public class TaxGroupParser extends EnumParser<TaxGroup> {
     if (val == null && !upperCaseValue.contains(" ")) {
       if (upperCaseValue.endsWith("PHYCEAE") || upperCaseValue.endsWith("PHYCIDAE")) {
         return TaxGroup.Algae;
-      } else if (upperCaseValue.endsWith("MYCETES") || upperCaseValue.endsWith("MYCETIDAE") || upperCaseValue.endsWith("mycota") || upperCaseValue.endsWith("mycotina")) {
+      } else if (upperCaseValue.endsWith("MYCETES") || upperCaseValue.endsWith("MYCETIDAE") || upperCaseValue.endsWith("MYCOTA") || upperCaseValue.endsWith("MYCOTINA")) {
         return TaxGroup.Fungi;
       } else if (upperCaseValue.endsWith("PHYTINA")) {
         // -opsida and -ophyta match zoological genera

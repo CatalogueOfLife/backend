@@ -11,7 +11,6 @@ import java.net.URI;
  */
 public enum ClbTerm implements Term, AlternativeNames {
   taxGroup,
-  taxGroupFromName,
   merged;
 
   private static final String PREFIX = "clb";

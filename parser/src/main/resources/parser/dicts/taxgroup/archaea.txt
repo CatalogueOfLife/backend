@@ -1,77 +1,77 @@
-Acidilobaceae
-Acidilobales
-Aigarchaeota
-Archaea
-Archaebacteria
-Archaeoglobaceae
-Archaeoglobales
-Archaeoglobi
-Caldisphaeraceae
-Cenarchaeaceae
-Cenarchaeales
-Crenarchaeota
-Cuniculiplasmataceae
-Desulfurococcaceae
-Desulfurococcales
-Euryarchaeota
-Ferroplasmaceae
-Fervidicoccaceae
-Fervidicoccales
-Haloarculaceae
-Halobacteria
-Halobacteriaceae
-Halobacteriales
-Halococcaceae
-Haloferacaceae
-Haloferacales
-Korarchaeota
-Methanobacteria
-Methanobacteriaceae
-Methanobacteriales
-Methanocalculaceae
-Methanocaldococcaceae
-Methanocellaceae
-Methanocellales
-Methanococcaceae
-Methanococcales
-Methanococci
-Methanocorpusculaceae
-Methanomassiliicoccaceae
-Methanomassiliicoccales
-Methanomicrobia
-Methanomicrobiaceae
-Methanomicrobiales
-Methanonatronarchaeaceae
-Methanonatronarchaeales
-Methanonatronarchaeia
-Methanopyraceae
-Methanopyrales
-Methanopyri
-Methanoregulaceae
-Methanosaetaceae
-Methanosarcinaceae
-Methanosarcinales
-Methanospirillaceae
-Methanothermaceae
-Methermicoccaceae
-Nanohaloarchaea
-Natrialbaceae
-Natrialbales
-Nitrososphaeraceae
-Nitrososphaerales
-Nitrososphaeria
-Picrophilaceae
-Pyrodictiaceae
-Sulfolobaceae
-Sulfolobales
-Thaumarchaeota
-Thermococcaceae
-Thermococcales
-Thermococci
-Thermofilaceae
-Thermoplasmata
-Thermoplasmataceae
-Thermoplasmatales
-Thermoproteaceae
-Thermoproteales
-Thermoprotei
+Acidilobaceae # COL: Thermoprotei > Acidilobales
+Acidilobales # COL: Thermoproteota > Thermoprotei
+Aigarchaeota # ITIS: Archaea > Crenarchaeota
+Archaea # COL: domain
+Archaebacteria # COLH: synonym of Archaea
+Archaeoglobaceae # COL: Archaeoglobi > Archaeoglobales
+Archaeoglobales # COL: Methanobacteriota > Archaeoglobi
+Archaeoglobi # COL: Methanobacteriati > Methanobacteriota
+Caldisphaeraceae # COL: synonym of Acidilobaceae (Acidilobales)
+Cenarchaeaceae # ITIS: Thaumarchaeota > Cenarchaeales
+Cenarchaeales # ITIS: Crenarchaeota > Thaumarchaeota
+Crenarchaeota # COL: synonym of Thermoprotei (Thermoproteota)
+Cuniculiplasmataceae # COL: Thermoplasmata > Thermoplasmatales
+Desulfurococcaceae # COL: Thermoprotei > Desulfurococcales
+Desulfurococcales # COL: Thermoproteota > Thermoprotei
+Euryarchaeota # ITIS: Archaea
+Ferroplasmaceae # COL: synonym of Ferroplasmataceae (Thermoplasmatales)
+Fervidicoccaceae # COL: Thermoprotei > Fervidicoccales
+Fervidicoccales # COL: Thermoproteota > Thermoprotei
+Haloarculaceae # COL: Halobacteria > Halobacteriales
+Halobacteria # COL: Methanobacteriati > Methanobacteriota
+Halobacteriaceae # COL: Halobacteria > Halobacteriales
+Halobacteriales # COL: Methanobacteriota > Halobacteria
+Halococcaceae # COL: Halobacteria > Halobacteriales
+Haloferacaceae # COL: Halobacteria > Halobacteriales
+Haloferacales # COL: synonym of Halobacteriales (Halobacteria)
+Korarchaeota # ITIS: Archaea > Crenarchaeota
+Methanobacteria # COL: Methanobacteriati > Methanobacteriota
+Methanobacteriaceae # COL: Methanobacteria > Methanobacteriales
+Methanobacteriales # COL: Methanobacteriota > Methanobacteria
+Methanocalculaceae # COL: Methanomicrobia > Methanomicrobiales
+Methanocaldococcaceae # COL: Methanococci > Methanococcales
+Methanocellaceae # COL: Methanosarcinia > Methanocellales
+Methanocellales # COL: Methanobacteriota > Methanosarcinia
+Methanococcaceae # COL: Methanococci > Methanococcales
+Methanococcales # COL: Methanobacteriota > Methanococci
+Methanococci # COL: Methanobacteriati > Methanobacteriota
+Methanocorpusculaceae # COL: Methanomicrobia > Methanomicrobiales
+Methanomassiliicoccaceae # COL: Thermoplasmata > Methanomassiliicoccales
+Methanomassiliicoccales # COL: Methanobacteriota > Thermoplasmata
+Methanomicrobia # COL: Methanobacteriati > Methanobacteriota
+Methanomicrobiaceae # COL: Methanomicrobia > Methanomicrobiales
+Methanomicrobiales # COL: Methanobacteriota > Methanomicrobia
+Methanonatronarchaeaceae # COL: Methanonatronarchaeia > Methanonatronarchaeales
+Methanonatronarchaeales # COL: Methanobacteriota > Methanonatronarchaeia
+Methanonatronarchaeia # COL: Methanobacteriati > Methanobacteriota
+Methanopyraceae # COL: Methanopyri > Methanopyrales
+Methanopyrales # COL: Methanobacteriota > Methanopyri
+Methanopyri # COL: Methanobacteriati > Methanobacteriota
+Methanoregulaceae # COL: Methanomicrobia > Methanomicrobiales
+Methanosaetaceae # COL: synonym of Methanotrichaceae (Methanosarcinales)
+Methanosarcinaceae # COL: Methanosarcinia > Methanosarcinales
+Methanosarcinales # COL: Methanobacteriota > Methanosarcinia
+Methanospirillaceae # COL: Methanomicrobia > Methanomicrobiales
+Methanothermaceae # COL: Methanobacteria > Methanobacteriales
+Methermicoccaceae # COL: Methanosarcinia > Methanosarcinales
+Nanohaloarchaea # ITIS: Archaea > Euryarchaeota
+Natrialbaceae # COL: Halobacteria > Halobacteriales
+Natrialbales # COL: synonym of Halobacteriales (Halobacteria)
+Nitrososphaeraceae # COL: Nitrososphaeria > Nitrososphaerales
+Nitrososphaerales # COL: Thermoproteota > Nitrososphaeria
+Nitrososphaeria # COL: Thermoproteati > Thermoproteota
+Picrophilaceae # COL: Thermoplasmata > Thermoplasmatales
+Pyrodictiaceae # COL: Thermoprotei > Desulfurococcales
+Sulfolobaceae # COL: Thermoprotei > Sulfolobales
+Sulfolobales # COL: Thermoproteota > Thermoprotei
+Thaumarchaeota # ITIS: Archaea > Crenarchaeota
+Thermococcaceae # COL: Thermococci > Thermococcales
+Thermococcales # COL: Methanobacteriota > Thermococci
+Thermococci # COL: Methanobacteriati > Methanobacteriota
+Thermofilaceae # COL: Thermoprotei > Thermoproteales
+Thermoplasmata # COL: Methanobacteriati > Methanobacteriota
+Thermoplasmataceae # COL: Thermoplasmata > Thermoplasmatales
+Thermoplasmatales # COL: Methanobacteriota > Thermoplasmata
+Thermoproteaceae # COL: Thermoprotei > Thermoproteales
+Thermoproteales # COL: Thermoproteota > Thermoprotei
+Thermoprotei # COL: Thermoproteati > Thermoproteota

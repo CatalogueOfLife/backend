@@ -1,2 +1,2 @@
-monera
-Prokaryota
+Prokaryota # not found in ChecklistBank
+monera # ITIS: synonym of Bacteria

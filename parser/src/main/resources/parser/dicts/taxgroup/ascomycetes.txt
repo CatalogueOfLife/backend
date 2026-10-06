@@ -1,794 +1,793 @@
-Abrothallaceae
-Abrothallales
-Acarosporaceae
-Acarosporales
-Acarosporomycetidae
-Acrocalymmaceae
-Acrospermaceae
-Acrospermales
-Adelococcaceae
-Aeminiaceae
-Agyriaceae
-Agyriales
-Aigialaceae
-Ajellomycetaceae
-Aliquandostipitaceae
-Alloascoideaceae
-Amicodiscaceae
-Amniculicolaceae
-Amorosiaceae
-Amorphothecaceae
-Amphisphaeriaceae
-Amphisphaeriales
-Amplistromataceae
-Amplistromatales
-Anamylopsoraceae
-Andreiomycetaceae
-Annulatascaceae
-Annulatascales
-Anteagloniaceae
-Antennulariellaceae
-Anungitiomycetaceae
-Aphanopsidaceae
-Apiosporaceae
-Aplosporellaceae
-Aquasubmersaceae
-Arachnomycetaceae
-Arachnomycetales
-Arachnopezizaceae
-Archaeorhizomycetaceae
-Archaeorhizomycetales
-Archaeorhizomycetes
-Arctomiaceae
-Arctomiales
-Argynnaceae
-Armatellaceae
-Arthoniaceae
-Arthoniales
-Arthoniomycetes
-Arthoniomycetidae
-Arthopyreniaceae
-Arthrodermataceae
-Arthrorhaphidaceae
-Ascobolaceae
-Ascocorticiaceae
-Ascocylindricaceae
-Ascodesmidaceae
-Ascodichaenaceae
-Ascoideaceae
-Ascomycota
-Ascoporiaceae
-Ascosphaeraceae
-Ascosphaerales
-Aspergillaceae
-Aspidotheliaceae
-Asterinaceae
-Asterinales
-Asterotexaceae
-Asterotexales
-Asterothyriaceae
-Astrosphaeriellaceae
-Atractosporaceae
-Atractosporales
-Aulographaceae
-Australiascaceae
-Baeomycetaceae
-Baeomycetales
-Bambusicolaceae
-Barbatosphaeriaceae
-Bartaliniaceae
-Batistiaceae
-Batistiales
-Beltraniaceae
-Bertiaceae
-Bezerromycetaceae
-Bezerromycetales
-Biatorellaceae
-Biatriosporaceae
-Bionectriaceae
-Bloxamiaceae
-Boliniaceae
-Boliniales
-Botryosphaeriaceae
-Botryosphaeriales
-Brefeldiellaceae
-Brigantiaeaceae
-Brigantieaceae
-Bruceomycetaceae
-Bryoglossaceae
-Bulgariaceae
-Byssolomataceae
-Cainiaceae
-Calcarisporiaceae
-Caliciaceae
-Caliciales
-Calloriaceae
-Caloscyphaceae
-Calosphaeriaceae
-Calosphaeriales
-Calycidiaceae
-Camarosporidiellaceae
-Cameroniaceae
-Candelariaceae
-Candelariales
-Candelariomycetes
-Candelariomycetidae
-Capnodiaceae
-Capnodiales
-Carbomycetaceae
-Carbonicolaceae
-Caryosporaceae
-Catabotryaceae
-Catabotrydaceae
-Catillariaceae
-Celotheliaceae
-Cenangiaceae
-Cephaloascaceae
-Cephalothecaceae
-Cephalothecales
-Ceratocystidaceae
-Ceratomycetaceae
-Ceratosphaeriaceae
-Ceratostomataceae
-Chadefaudiellaceae
-Chaetomellaceae
-Chaetomellales
-Chaetomiaceae
-Chaetosphaerellaceae
-Chaetosphaeriaceae
-Chaetosphaeriales
-Chaetothyriaceae
-Chaetothyriales
-Chaetothyriomycetidae
-Chlorociboriaceae
-Chlorospleniaceae
-Chorioactidaceae
-Chrysodiscaceae
-Chrysothricaceae
-Chrysotrichaceae
-Cirrosporiaceae
-Cladoniaceae
-Cladoriellaceae
-Cladoriellales
-Cladosporiaceae
-Clavicipitaceae
-Clypeosphaeriaceae
-Coccocarpiaceae
-Coccodiniaceae
-Coccoideaceae
-Coccotremataceae
-Cochlearomycetaceae
-Cocoonihabitaceae
-Coenogoniaceae
-Collemataceae
-Collemopsidiales
-Coniocessiaceae
-Coniochaetaceae
-Coniochaetales
-Coniocybaceae
-Coniocybales
-Coniocybomycetes
-Conioscyphales
-Coniothyriaceae
-Conlariaceae
-Cookellaceae
-Cordanaceae
-Cordanales
-Cordieritidaceae
-Cordycipitaceae
-Coronophoraceae
-Coronophorales
-Coryneliaceae
-Coryneliales
-Corynesporascaceae
-Crocyniaceae
-Cryphonectriaceae
-Cryptocoryneaceae
-Cucurbitariaceae
-Cudoniaceae
-Cyclothyriellaceae
-Cyphellophoraceae
-Cystocoleaceae
-Cyttariaceae
-Cyttariales
-Dacampiaceae
-Dactylosporaceae
-Davidiellaceae
-Debaryomycetaceae
-Delitschiaceae
-Delonicicolaceae
-Delonicicolales
-Deltopyxidaceae
-Dermateaceae
-Diademaceae
-Diaporthaceae
-Diaporthales
-Diaporthomycetidae
-Diaporthosporellaceae
-Diaporthostomataceae
-Diatrypaceae
-Dictyosporiaceae
-Didymellaceae
-Didymosphaeriaceae
-Dipodascaceae
-Diporothecaceae
-Discinaceae
-Discinellaceae
-Discosiaceae
-Dissoconiaceae
-Distoseptisporaceae
-Distoseptisporales
-Dothideaceae
-Dothideales
-Dothideomycetes
-Dothideomycetidae
-Dothidotthiaceae
-Dothioraceae
-Drepanopezizaceae
-Dubujianaceae
-Dyfrolomycetaceae
-Dyfrolomycetales
-Ectolechiaceae
-Elaphomycetaceae
-Elixiaceae
-Elsinoaceae
-Endomycetaceae
-Endosporiaceae
-Englerulaceae
-Eoterfeziaceae
-Epibryaceae
-Epigloeaceae
-Eremascaceae
-Eremithallales
-Eremomycetaceae
-Eremotheciaceae
-Erysiphaceae
-Erysiphales
-Etheirophoraceae
-Euantennariaceae
-Euceratomycetaceae
-Eurotiales
-Eurotiomycetes
-Eurotiomycetidae
-Extremaceae
-Falcocladiaceae
-Falcocladiales
-Fenestellaceae
-Fissurinaceae
-Flammocladiaceae
-Flammocladiellaceae
-Floricolaceae
-Fuscideaceae
-Fuscosporellales
-Fusculinaceae
-Gelatinodiscaceae
-Geoglossaceae
-Geoglossales
-Geoglossomycetes
-Glaziellaceae
-Gloeoheppiaceae
-Glomerellaceae
-Glomerellales
-Gloniaceae
-Gnomoniaceae
-Godroniaceae
-Gomphillaceae
-Gondwanamycetaceae
-Graphiaceae
-Graphidaceae
-Graphidales
-Graphostromataceae
-Gyalectaceae
-Gymnoascaceae
-Gypsoplacaceae
-Haematommataceae
-Halojulellaceae
-Halosphaeriaceae
-Halosphaeriales
-Halotthiaceae
-Hamatocanthoscyphaceae
-Harknessiaceae
-Helicogoniaceae
-Helminthosphaeriaceae
-Helocarpaceae
-Helotiaceae
-Helotiales
-Helvellaceae
-Hemiphacidiaceae
-Heppiaceae # cyanolichen family (Lichinales)
-Hermatomycetaceae
-Herpomycetaceae
-Herpomycetales
-Herpotrichiellaceae
-Heterosphaeriaceae
-Hispidicarpomycetaceae
-Hyaloscyphaceae
-Hydrocinaceae
-Hymeneliaceae
-Hymeneliales
-Hyphodiscaceae
-Hypocreaceae
-Hypocreales
-Hypocreomycetidae
-Hyponectriaceae
-Hypoxylaceae
-Hypsostromataceae
-Hysteriaceae
-Hysteriales
-Icmadophilaceae
-Iodosphaeriaceae
-Jahnulales
-Jobellisiaceae
-Jobellisiales
-Juncigenaceae
-Karstenellaceae
-Kathistaceae
-Kirschsteiniotheliaceae
-Kirschsteiniotheliales
-Koerberiaceae
-Koralionastetaceae
-Koralionastetales
-Laboulbeniaceae
-Laboulbeniales
-Laboulbeniomycetes
-Laboulbeniomycetidae
-Lachnaceae
-Lahmiaceae
-Lahmiales
-Lamproconiaceae
-Lasiosphaeriaceae
-Latoruaceae
-Lauriomycetaceae
-Lauriomycetales
-Lautosporaceae
-Lecanographaceae
-Lecanoraceae
-Lecanorales
-Lecanoromycetes
-Lecanoromycetidae
-Lecideaceae
-Lecideales
-Lentimurisporaceae
-Lentitheciaceae
-Lentomitellaceae
-Leotiaceae
-Leotiales
-Leotiomycetes
-Leotiomycetidae
-Leprocaulaceae
-Leprocaulales
-Leptodontidiaceae
-Leptopeltidaceae
-Leptosilliaceae
-Leptosphaeriaceae
-Leptosporellaceae
-Letrouitiaceae
-Libertasomycetaceae
-Lichenoconiaceae
-Lichenoconiales
-Lichenostigmatales
-Lichenotheliaceae
-Lichenotheliales
-Lichinaceae
-Lichinales
-Lichinodiaceae
-Lichinodiales
-Lichinomycetes
-Lichinomycetidae
-Lindgomycetaceae
-Linocarpaceae
-Lipomycetaceae
-Lobariaceae
-Lopadiaceae
-Lopadostomataceae
-Lophiostomataceae
-Lophiotremataceae
-Loramycetaceae
-Lulworthiaceae
-Lulworthiales
-Lulworthiomycetidae
-Lyrommataceae
-Macrodiplodiopsidaceae
-Macrohilaceae
-Macrovalsariaceae
-Magnaporthaceae
-Magnaporthales
-Malmideaceae
-Manglicolaceae
-Marthamycetaceae
-Massalongiaceae
-Massariaceae
-Massarinaceae
-Mastodiaceae
-Medeolariaceae
-Medeolariales
-Megalariaceae
-Megalosporaceae
-Megasporaceae
-Melanconidaceae
-Melanconiellaceae
-Melanommataceae
-Melanopsaceae
-Melanosporales
-Melanosporellaceae
-Melansporellaceae
-Melaspileaceae
-Meliolaceae
-Meliolales
-Meliolinaceae
-Meliolomycetidae
-Melogrammataceae
-Mesnieraceae
-Metacapnodiaceae
-Metschnikowiaceae
-Microascaceae
-Microascales
-Microcaliciaceae
-Micropeltidaceae
-Microtheliopsidaceae
-Microthyriaceae
-Microthyriales
-Miltideaceae
-Minutisphaeraceae
-Minutisphaerales
-Mitrulaceae
-Mollisiaceae
-Monascaceae
-Monoblastiaceae
-Monoblastiales
-Montagnulaceae
-Morchellaceae
-Moriolaceae
-Morosphaeriaceae
-Mucomassariaceae
-Murramarangomycetaceae
-Murramarangomycetales
-Muyocopronaceae
-Muyocopronales
-Mycoblastaceae
-Mycocaliciaceae
-Mycocaliciales
-Mycocaliciomycetidae
-Mycoporaceae
-Mycosphaerellaceae
-Mycosphaerellales
-Myeloconidiaceae
-Myriangiaceae
-Myriangiales
-Myrmecridiaceae
-Myrmecridiales
-Myrotheciomycetaceae
-Mytilinidiaceae
-Mytilinidiales
-Myxotrichaceae
-Naetrocymbaceae
-Nannizziopsidaceae
-Natipusillaceae
-Natipusillales
-Nectriaceae
-Neocelosporiaceae
-Neocelosporiales
-Neocrinulaceae
-Neodevriesiaceae
-Neohendersoniaceae
-Neolauriomycetaceae
-Neolectaceae
-Neolectales
-Neolectomycetes
-Neomelanconiellaceae
-Nephromataceae
-Niessliaceae
-Nitschkiaceae
-Nothodactylariaceae
-Nowamycetaceae
-Obryzaceae
-Occultibambusaceae
-Ochrolechiaceae
-Odontotremataceae
-Onygenaceae
-Onygenales
-Opegraphaceae
-Ophioceraceae
-Ophiocordycipitaceae
-Ophioparmaceae
-Ophiostomataceae
-Ophiostomatales
-Orbiliaceae
-Orbiliales
-Orbiliomycetes
-Orbiliomycetidae
-Ostropales
-Ostropomycetidae
-Oxydothidaceae
-Pachyascaceae
-Pannariaceae
-Papulosaceae
-Parabambusicolaceae
-Paracladophialophoraceae
-Paradevriesiaceae
-Paradictyoarthriniaceae
-Paranectriellaceae
-Parapyrenochaetaceae
-Pararamichloridiaceae
-Pararamichloridiales
-Parasympodiellaceae
-Parasympodiellales
-Parmeliaceae
-Parmulariaceae
-Parodiellaceae
-Parodiopsidaceae
-Patellariaceae
-Patellariales
-Peltigeraceae
-Peltigerales
-Peltulaceae
-Perisporiopsidaceae
-Pertusariaceae
-Pertusariales
-Pestalotiopsidaceae
-Pezizaceae
-Pezizales
-Pezizellaceae
-Pezizomycetes
-Pezizomycetidae
-Pezizomycotina
-Phacidiaceae
-Phacidiales
-Phaeoappendicosporaceae
-Phaeochoraceae
-Phaeococcomycetaceae
-Phaeomoniellaceae
-Phaeomoniellales
-Phaeosphaeriaceae
-Phaeothecaceae
-Phaeothecoidiellaceae
-Phaeotrichaceae
-Phaeotrichales
-Phaneromycetaceae
-Phillipsiellaceae
-Phlogicylindriaceae
-Phlyctidaceae
-Phomatosporaceae
-Phomatosporales
-Phyllachoraceae
-Phyllachorales
-Phyllobatheliaceae
-Phyllostictaceae
-Physciaceae
-Pichiaceae
-Piedraiaceae
-Pilocarpaceae
-Pisorisporiaceae
-Pisorisporiales
-Placynthiaceae
-Planistromellaceae
-Plectosphaerellaceae
-Pleomassariaceae
-Pleomonodictydaceae
-Pleosporaceae
-Pleosporales
-Pleosporomycetidae
-Pleuroascaceae
-Pleurostomataceae
-Pleurotheciaceae
-Pleurotheciales
-Pleurotremataceae
-Ploettnerulaceae
-Pneumocystaceae
-Pneumocystales
-Pneumocystomycetes
-Polycoccaceae
-Polystomellaceae
-Porinaceae
-Porodiplodiaceae
-Porpidiaceae
-Protomycetaceae
-Protoscyphaceae
-Protothelenellaceae
-Pseudeurotiaceae
-Pseudoastrosphaeriellaceae
-Pseudoberkleasmiaceae
-Pseudocoleodictyosporaceae
-Pseudodactylariaceae
-Pseudodactylariales
-Pseudomassariaceae
-Pseudomelanconidaceae
-Pseudoperisporiaceae
-Pseudoplagiostomataceae
-Pseudoproboscisporaceae
-Pseudopyrenochaetaceae
-Pseudovalsaceae
-Psilolechiaceae
-Psoraceae
-Pycnoraceae
-Pyrenidiaceae
-Pyrenochaetopsidaceae
-Pyrenothricaceae
-Pyrenotrichaceae
-Pyrenulaceae
-Pyrenulales
-Pyriculariaceae
-Pyronemataceae
-Pyxidiophoraceae
-Pyxidiophorales
-Racodiaceae
-Ramalinaceae
-Ramboldiaceae
-Requienellaceae
-Reticulascaceae
-Rhamphoriaceae
-Rhizinaceae
-Rhizocarpaceae
-Rhizocarpales
-Rhynchostomataceae
-Rhytismataceae
-Rhytismatales
-Roccellaceae
-Roccellographaceae
-Roesleriaceae
-Ropalosporaceae
-Roussoellaceae
-Rutstroemiaceae
-Saccardiaceae
-Saccharataceae
-Saccharomycetaceae
-Saccharomycetales
-Saccharomycetes
-Saccharomycodaceae
-Saccharomycopsidaceae
-Saccotheciaceae
-Sagiolechiaceae
-Salsugineaceae
-Sarcoscyphaceae
-Sarcosomataceae
-Sarocladiaceae
-Sarrameanaceae
-Sarrameanales
-Savoryellaceae
-Savoryellales
-Schaereriaceae
-Schaereriales
-Schizoparmaceae
-Schizosaccharomycetaceae
-Schizosaccharomycetales
-Schizosaccharomycetes
-Schizothyriaceae
-Sclerococcaceae
-Sclerococcales
-Sclerococcomycetidae
-Sclerotiniaceae
-Scoliciosporaceae
-Scortechiniaceae
-Septorioideaceae
-Seuratiaceae
-Seynesiopeltidaceae
-Shiraiaceae
-Solenopeziaceae
-Sordariaceae
-Sordariales
-Sordariomycetes
-Sordariomycetidae
-Spathulosporaceae
-Spathulosporales
-Sphaerophoraceae
-Spheciophilaceae
-Sphinctrinaceae
-Spiromastigaceae
-Sporastatiaceae
-Sporidesmiaceae
-Sporocadaceae
-Sporormiaceae
-Stachybotriaceae
-Stachybotryaceae
-Stereocaulaceae
-Stictidaceae
-Stigmatodiscaceae
-Stigmatodiscales
-Stilbosporaceae
-Strangosporaceae
-Striatiguttulaceae
-Strigulaceae
-Strigulales
-Sulcatisporaceae
-Superstratomycetaceae
-Superstratomycetales
-Sydowiellaceae
-Sympoventuriaceae
-Synnemasporellaceae
-Taphrinaceae
-Taphrinales
-Taphrinomycetes
-Teichosporaceae
-Teloschistaceae
-Teloschistales
-Tephromelataceae
-Teratosphaeriaceae
-Testudinaceae
-Tetraplosphaeriaceae
-Thelebolaceae
-Thelebolales
-Thelenellaceae
-Thelocarpaceae
-Thelocarpales
-Thelotremataceae
-Thermoascaceae
-Thrombiaceae
-Thyridariaceae
-Thyridiaceae
-Tilachlidiaceae
-Tirisporellaceae
-Tirisporellales
-Togniniaceae
-Togniniales
-Torpedosporaceae
-Torpedosporales
-Torulaceae
-Tracyllaceae
-Tracyllalales
-Tracyllales
-Trapeliaceae
-Trapeliales
-Trematosphaeriaceae
-Triadelphiaceae
-Triblidiaceae
-Triblidiales
-Trichocomaceae
-Trichomeriaceae
-Trichomonascaceae
-Trichopeltinaceae
-Trichosphaeriaceae
-Trichosphaeriales
-Trichothyriaceae
-Trigonopsidaceae
-Trypetheliaceae
-Trypetheliales
-Tubakiaceae
-Tuberaceae
-Tubeufiaceae
-Tubeufiales
-Turquoiseomycetaceae
-Turquoiseomycetales
-Tympanidaceae
-Tzeananiaceae
-Umbilicariaceae
-Umbilicariales
-Umbilicariomycetidae
-Vahliellaceae
-Valsaceae
-Valsariaceae
-Valsariales
-Vandijckellaceae
-Venturiaceae
-Venturiales
-Vermiculariopsiellaceae
-Vermiculariopsiellales
-Verrucariaceae
-Verrucariales
-Vezdaeaceae
-Vezdaeales
-Vialaeaceae
-Vibrisseaceae
-Vizellaceae
-Wickerhamomycetaceae
-Wicklowiaceae
-Wiesneriomycetaceae
-Wiesneriomycetales
-Woswasiaceae
-Xanthopyreniaceae
-Xenodactylariaceae
-Xenodevriesiaceae
-Xenospadicoidaceae
-Xenospadicoidales
-Xylariaceae
-Xylariales
-Xylobotryaceae
-Xylobotryales
-Xylobotryomycetes
-Xylographaceae
-Xylonaceae
-Xylonales
-Xylonomycetes
-Zalariaceae
-Zeloasperisporiaceae
-Zeloasperisporiales
-Zopfiaceae
+Abrothallaceae # COL: Dothideomycetes > Abrothallales
+Abrothallales # COL: Ascomycota > Dothideomycetes
+Acarosporaceae # COL: Lecanoromycetes > Acarosporales
+Acarosporales # COL: Ascomycota > Lecanoromycetes
+Acarosporomycetidae # ITIS: Ascomycota > Lecanoromycetes
+Acrocalymmaceae # COL: Dothideomycetes > Pleosporales
+Acrospermaceae # COL: Dothideomycetes > Acrospermales
+Acrospermales # COL: Ascomycota > Dothideomycetes
+Adelococcaceae # COL: Eurotiomycetes > Verrucariales
+Aeminiaceae # COL: Dothideomycetes > Capnodiales
+Agyriaceae # COL: Lecanoromycetes > Pertusariales
+Agyriales # ITIS: Ascomycota > Lecanoromycetes
+Aigialaceae # COL: Dothideomycetes > Pleosporales
+Ajellomycetaceae # COL: Eurotiomycetes > Onygenales
+Aliquandostipitaceae # COL: Dothideomycetes > Jahnulales
+Alloascoideaceae # COL: Saccharomycetes > Saccharomycetales
+Amicodiscaceae # COL: Leotiomycetes > Helotiales
+Amniculicolaceae # COL: Dothideomycetes > Pleosporales
+Amorosiaceae # COL: Dothideomycetes > Pleosporales
+Amorphothecaceae # COL: Leotiomycetes > Helotiales
+Amphisphaeriaceae # COL: Sordariomycetes > Amphisphaeriales
+Amphisphaeriales # COL: Ascomycota > Sordariomycetes
+Amplistromataceae # COL: Sordariomycetes > Amplistromatales
+Amplistromatales # COL: Ascomycota > Sordariomycetes
+Anamylopsoraceae # ITIS: Lecanoromycetes > Agyriales
+Andreiomycetaceae # COL: Arthoniomycetes > Arthoniales
+Annulatascaceae # COL: Sordariomycetes > Annulatascales
+Annulatascales # COL: Ascomycota > Sordariomycetes
+Anteagloniaceae # COL: Dothideomycetes > Pleosporales
+Antennulariellaceae # COL: Dothideomycetes > Capnodiales
+Anungitiomycetaceae # COL: Sordariomycetes > Xylariales
+Aphanopsidaceae # COL: Lecanoromycetes > Lecanorales
+Apiosporaceae # COL: Sordariomycetes > Xylariales
+Aplosporellaceae # COL: Dothideomycetes > Botryosphaeriales
+Aquasubmersaceae # COL: Dothideomycetes > Pleosporales
+Arachnomycetaceae # COL: Eurotiomycetes > Arachnomycetales
+Arachnomycetales # COL: Ascomycota > Eurotiomycetes
+Arachnopezizaceae # COL: Leotiomycetes > Helotiales
+Archaeorhizomycetaceae # COL: Archaeorhizomycetes > Archaeorhizomycetales
+Archaeorhizomycetales # COL: Ascomycota > Archaeorhizomycetes
+Archaeorhizomycetes # COL: Fungi > Ascomycota
+Arctomiaceae # COL: Lecanoromycetes > Arctomiales
+Arctomiales # COL: Ascomycota > Lecanoromycetes
+Argynnaceae # COL: Ascomycota > Dothideomycetes
+Armatellaceae # COL: Sordariomycetes > Meliolales
+Arthoniaceae # COL: Arthoniomycetes > Arthoniales
+Arthoniales # COL: Ascomycota > Arthoniomycetes
+Arthoniomycetes # COL: Fungi > Ascomycota
+Arthoniomycetidae # ITIS: Ascomycota > Arthoniomycetes
+Arthopyreniaceae # ITIS: Dothideomycetes > Pleosporales
+Arthrodermataceae # COL: Eurotiomycetes > Onygenales
+Arthrorhaphidaceae # COL: Ascomycota > Lecanoromycetes
+Ascobolaceae # COL: Pezizomycetes > Pezizales
+Ascocorticiaceae # COL: Leotiomycetes > Helotiales
+Ascocylindricaceae # COL: Dothideomycetes > Pleosporales
+Ascodesmidaceae # COL: Pezizomycetes > Pezizales
+Ascodichaenaceae # COL: Leotiomycetes > Rhytismatales
+Ascoideaceae # COL: Saccharomycetes > Saccharomycetales
+Ascomycota # COL: Eukaryota > Fungi
+Ascoporiaceae # ITIS: Ascomycota > Dothideomycetes
+Ascosphaeraceae # COL: Eurotiomycetes > Ascosphaerales
+Ascosphaerales # COL: Ascomycota > Eurotiomycetes
+Aspergillaceae # COL: Eurotiomycetes > Eurotiales
+Aspidotheliaceae # ITIS: Ascomycota > Dothideomycetes
+Asterinaceae # COL: Dothideomycetes > Asterinales
+Asterinales # COL: Ascomycota > Dothideomycetes
+Asterotexaceae # COL: Dothideomycetes > Asterotexales
+Asterotexales # COL: Ascomycota > Dothideomycetes
+Asterothyriaceae # ITIS: Lecanoromycetes > Ostropales
+Astrosphaeriellaceae # COL: Dothideomycetes > Pleosporales
+Atractosporaceae # COL: Sordariomycetes > Atractosporales
+Atractosporales # COL: Ascomycota > Sordariomycetes
+Aulographaceae # COL: Dothideomycetes > Asterinales
+Australiascaceae # COL: Sordariomycetes > Chaetosphaeriales
+Baeomycetaceae # COL: Lecanoromycetes > Baeomycetales
+Baeomycetales # COL: Ascomycota > Lecanoromycetes
+Bambusicolaceae # COL: Dothideomycetes > Pleosporales
+Barbatosphaeriaceae # COL: Ascomycota > Sordariomycetes
+Bartaliniaceae # COL: Sordariomycetes > Amphisphaeriales
+Batistiaceae # COL: Sordariomycetes > Batistiales
+Batistiales # COL: Ascomycota > Sordariomycetes
+Beltraniaceae # COL: Sordariomycetes > Sordariales
+Bertiaceae # COL: Sordariomycetes > Coronophorales
+Bezerromycetaceae # COL: Dothideomycetes > Bezerromycetales
+Bezerromycetales # COL: Ascomycota > Dothideomycetes
+Biatorellaceae # COL: Lecanoromycetes > Lecanorales
+Biatriosporaceae # COL: Dothideomycetes > Pleosporales
+Bionectriaceae # COL: Ascomycota > Sordariomycetes
+Bloxamiaceae # COL: Leotiomycetes > Helotiales
+Boliniaceae # COL: Sordariomycetes > Boliniales
+Boliniales # COL: Ascomycota > Sordariomycetes
+Botryosphaeriaceae # COL: Dothideomycetes > Botryosphaeriales
+Botryosphaeriales # COL: Ascomycota > Dothideomycetes
+Brefeldiellaceae # ITIS: Ascomycota > Dothideomycetes
+Brigantiaeaceae # COL: Lecanoromycetes > Teloschistales
+Brigantieaceae # ALF: Lecanoromycetes > Teloschistales
+Bruceomycetaceae # COL: Lecanoromycetes > Lecanorales
+Bryoglossaceae # COL: Leotiomycetes > Helotiales
+Bulgariaceae # ITIS: Leotiomycetes > Leotiales
+Byssolomataceae # COL: Lecanoromycetes > Lecanorales
+Cainiaceae # COL: Sordariomycetes > Xylariales
+Calcarisporiaceae # COL: Ascomycota > Sordariomycetes
+Caliciaceae # COL: Lecanoromycetes > Caliciales
+Caliciales # COL: Ascomycota > Lecanoromycetes
+Calloriaceae # COL: Leotiomycetes > Helotiales
+Caloscyphaceae # COL: Pezizomycetes > Pezizales
+Calosphaeriaceae # COL: Sordariomycetes > Calosphaeriales
+Calosphaeriales # COL: Ascomycota > Sordariomycetes
+Calycidiaceae # ITIS: Lecanoromycetes > Lecanorales
+Camarosporidiellaceae # COL: Dothideomycetes > Pleosporales
+Cameroniaceae # COL: Lecanoromycetes > Baeomycetales
+Candelariaceae # COL: Candelariomycetes > Candelariales
+Candelariales # COL: Ascomycota > Candelariomycetes
+Candelariomycetes # COL: Fungi > Ascomycota
+Candelariomycetidae # Species Fungorum: Ascomycota > Candelariomycetes
+Capnodiaceae # COL: Dothideomycetes > Capnodiales
+Capnodiales # COL: Ascomycota > Dothideomycetes
+Carbomycetaceae # COL: Pezizomycetes > Pezizales
+Carbonicolaceae # COL: Lecanoromycetes > Lecanorales
+Caryosporaceae # COL: Dothideomycetes > Pleosporales
+Catabotryaceae # COL: Ascomycota > Sordariomycetes
+Catabotrydaceae # ITIS: Sordariomycetes > Boliniales
+Catillariaceae # COL: Lecanoromycetes > Lecanorales
+Celotheliaceae # COL: Eurotiomycetes > Phaeomoniellales
+Cenangiaceae # COL: Leotiomycetes > Helotiales
+Cephaloascaceae # COL: Saccharomycetes > Saccharomycetales
+Cephalothecaceae # COL: Sordariomycetes > Cephalothecales
+Cephalothecales # COL: Ascomycota > Sordariomycetes
+Ceratocystidaceae # COL: Sordariomycetes > Microascales
+Ceratomycetaceae # COL: Laboulbeniomycetes > Laboulbeniales
+Ceratosphaeriaceae # COL: Sordariomycetes > Magnaporthales
+Ceratostomataceae # COL: Sordariomycetes > Melanosporales
+Chadefaudiellaceae # COL: Sordariomycetes > Microascales
+Chaetomellaceae # COL: Leotiomycetes > Chaetomellales
+Chaetomellales # COL: Ascomycota > Leotiomycetes
+Chaetomiaceae # COL: Sordariomycetes > Sordariales
+Chaetosphaerellaceae # COL: Sordariomycetes > Coronophorales
+Chaetosphaeriaceae # COL: Sordariomycetes > Chaetosphaeriales
+Chaetosphaeriales # COL: Ascomycota > Sordariomycetes
+Chaetothyriaceae # COL: Eurotiomycetes > Chaetothyriales
+Chaetothyriales # COL: Ascomycota > Eurotiomycetes
+Chaetothyriomycetidae # ITIS: Ascomycota > Eurotiomycetes
+Chlorociboriaceae # COL: Leotiomycetes > Helotiales
+Chlorospleniaceae # COL: Leotiomycetes > Helotiales
+Chorioactidaceae # COL: Pezizomycetes > Pezizales
+Chrysodiscaceae # COL: Leotiomycetes > Helotiales
+Chrysothricaceae # ITIS: Arthoniomycetes > Arthoniales
+Chrysotrichaceae # COL: Arthoniomycetes > Arthoniales
+Cirrosporiaceae # COL: Xylobotryomycetes > Xylobotryales
+Cladoniaceae # COL: Lecanoromycetes > Lecanorales
+Cladoriellaceae # COL: Dothideomycetes > Cladoriellales
+Cladoriellales # COL: Ascomycota > Dothideomycetes
+Cladosporiaceae # COL: Dothideomycetes > Cladosporiales
+Clavicipitaceae # COL: Ascomycota > Sordariomycetes
+Clypeosphaeriaceae # COL: Sordariomycetes > Amphisphaeriales
+Coccocarpiaceae # COL: Lecanoromycetes > Peltigerales
+Coccodiniaceae # COL: Eurotiomycetes > Chaetothyriales
+Coccoideaceae # COL: Dothideomycetes > Capnodiales
+Coccotremataceae # COL: Lecanoromycetes > Pertusariales
+Cochlearomycetaceae # COL: Leotiomycetes > Leotiales
+Cocoonihabitaceae # COL: Ascomycota > Sordariomycetes
+Coenogoniaceae # COL: Lecanoromycetes > Ostropales
+Collemataceae # COL: Lecanoromycetes > Peltigerales
+Collemopsidiales # COL: Ascomycota > Dothideomycetes
+Coniocessiaceae # COL: Sordariomycetes > Xylariales
+Coniochaetaceae # COL: Sordariomycetes > Coniochaetales
+Coniochaetales # COL: Ascomycota > Sordariomycetes
+Coniocybaceae # COL: Coniocybomycetes > Coniocybales
+Coniocybales # COL: Ascomycota > Coniocybomycetes
+Coniocybomycetes # COL: Fungi > Ascomycota
+Conioscyphales # COL: Ascomycota > Sordariomycetes
+Coniothyriaceae # COL: Dothideomycetes > Pleosporales
+Conlariaceae # COL: Sordariomycetes > Atractosporales
+Cookellaceae # COL: Ascomycota > Dothideomycetes
+Cordanaceae # COL: Sordariomycetes > Cordanales
+Cordanales # COL: Ascomycota > Sordariomycetes
+Cordieritidaceae # COL: Leotiomycetes > Helotiales
+Cordycipitaceae # COL: Ascomycota > Sordariomycetes
+Coronophoraceae # COL: Sordariomycetes > Coronophorales
+Coronophorales # COL: Ascomycota > Sordariomycetes
+Coryneliaceae # COL: Eurotiomycetes > Coryneliales
+Coryneliales # COL: Ascomycota > Eurotiomycetes
+Corynesporascaceae # COL: Dothideomycetes > Pleosporales
+Crocyniaceae # ITIS: Lecanoromycetes > Lecanorales
+Cryphonectriaceae # COL: Sordariomycetes > Diaporthales
+Cryptocoryneaceae # COL: Dothideomycetes > Pleosporales
+Cucurbitariaceae # COL: Dothideomycetes > Pleosporales
+Cudoniaceae # COL: Leotiomycetes > Rhytismatales
+Cyclothyriellaceae # COL: Dothideomycetes > Pleosporales
+Cyphellophoraceae # COL: Eurotiomycetes > Chaetothyriales
+Cystocoleaceae # COL: Dothideomycetes > Capnodiales
+Cyttariaceae # COL: Leotiomycetes > Cyttariales
+Cyttariales # COL: Ascomycota > Leotiomycetes
+Dacampiaceae # COL: Dothideomycetes > Pleosporales
+Dactylosporaceae # COL: Lecanoromycetes > Lecanorales
+Davidiellaceae # COL: Dothideomycetes > Capnodiales
+Debaryomycetaceae # COL: Saccharomycetes > Saccharomycetales
+Delitschiaceae # COL: Dothideomycetes > Pleosporales
+Delonicicolaceae # COL: Sordariomycetes > Delonicicolales
+Delonicicolales # COL: Ascomycota > Sordariomycetes
+Deltopyxidaceae # COL: Leotiomycetes > Cyttariales
+Dermateaceae # COL: Leotiomycetes > Helotiales
+Diademaceae # COL: Dothideomycetes > Pleosporales
+Diaporthaceae # COL: Sordariomycetes > Diaporthales
+Diaporthales # COL: Ascomycota > Sordariomycetes
+Diaporthomycetidae # WoRMS: Ascomycota > Sordariomycetes
+Diaporthosporellaceae # COL: Sordariomycetes > Diaporthales
+Diaporthostomataceae # COL: Sordariomycetes > Diaporthales
+Diatrypaceae # COL: Sordariomycetes > Xylariales
+Dictyosporiaceae # COL: Dothideomycetes > Pleosporales
+Didymellaceae # COL: Dothideomycetes > Pleosporales
+Didymosphaeriaceae # COL: Dothideomycetes > Pleosporales
+Dipodascaceae # COL: Saccharomycetes > Saccharomycetales
+Diporothecaceae # COL: Fungi > Ascomycota
+Discinaceae # COL: Pezizomycetes > Pezizales
+Discinellaceae # COL: Leotiomycetes > Helotiales
+Discosiaceae # COL: Sordariomycetes > Amphisphaeriales
+Dissoconiaceae # IRMNG: Dothideomycetes > Mycosphaerellales
+Distoseptisporaceae # COL: Sordariomycetes > Distoseptisporales
+Distoseptisporales # COL: Ascomycota > Sordariomycetes
+Dothideaceae # COL: Dothideomycetes > Dothideales
+Dothideales # COL: Ascomycota > Dothideomycetes
+Dothideomycetes # COL: Fungi > Ascomycota
+Dothideomycetidae # ITIS: Ascomycota > Dothideomycetes
+Dothidotthiaceae # COL: Dothideomycetes > Pleosporales
+Dothioraceae # COL: Dothideomycetes > Dothideales
+Drepanopezizaceae # COL: Leotiomycetes > Helotiales
+Dubujianaceae # COL: Dothideomycetes > Microthyriales
+Dyfrolomycetaceae # COL: Dothideomycetes > Dyfrolomycetales
+Dyfrolomycetales # COL: Ascomycota > Dothideomycetes
+Ectolechiaceae # COL: Lecanoromycetes > Lecanorales
+Elaphomycetaceae # COL: Eurotiomycetes > Eurotiales
+Elixiaceae # COL: Lecanoromycetes > Umbilicariales
+Elsinoaceae # COL: Dothideomycetes > Myriangiales
+Endomycetaceae # COL: Saccharomycetes > Saccharomycetales
+Endosporiaceae # COL: Dothideomycetes > Myriangiales
+Englerulaceae # COL: Ascomycota > Dothideomycetes
+Eoterfeziaceae # COL: Fungi > Ascomycota
+Epibryaceae # COL: Eurotiomycetes > Chaetothyriales
+Epigloeaceae # COL: Fungi > Ascomycota
+Eremascaceae # COL: Ascomycota > Eurotiomycetes
+Eremithallales # COL: Ascomycota > Dothideomycetes
+Eremomycetaceae # COL: Ascomycota > Dothideomycetes
+Eremotheciaceae # COL: Saccharomycetes > Saccharomycetales
+Erysiphaceae # COL: Leotiomycetes > Helotiales
+Erysiphales # ITIS: Ascomycota > Leotiomycetes
+Etheirophoraceae # COL: Ascomycota > Sordariomycetes
+Euantennariaceae # COL: Ascomycota > Dothideomycetes
+Euceratomycetaceae # COL: Laboulbeniomycetes > Laboulbeniales
+Eurotiales # COL: Ascomycota > Eurotiomycetes
+Eurotiomycetes # COL: Fungi > Ascomycota
+Eurotiomycetidae # ITIS: Ascomycota > Eurotiomycetes
+Extremaceae # COL: Dothideomycetes > Mycosphaerellales
+Falcocladiaceae # COL: Sordariomycetes > Falcocladiales
+Falcocladiales # COL: Ascomycota > Sordariomycetes
+Fenestellaceae # COL: Ascomycota > Dothideomycetes
+Fissurinaceae # COL: Lecanoromycetes > Graphidales
+Flammocladiaceae # Wikidata: Sordariomycetes > Hypocreales
+Flammocladiellaceae # COL: Ascomycota > Sordariomycetes
+Floricolaceae # COL: Dothideomycetes > Capnodiales
+Fuscideaceae # COL: Lecanoromycetes > Umbilicariales
+Fuscosporellales # COL: Ascomycota > Sordariomycetes
+Fusculinaceae # COL: Dothideomycetes > Pleosporales
+Gelatinodiscaceae # COL: Leotiomycetes > Helotiales
+Geoglossaceae # COL: Geoglossomycetes > Geoglossales
+Geoglossales # COL: Ascomycota > Geoglossomycetes
+Geoglossomycetes # COL: Fungi > Ascomycota
+Glaziellaceae # COL: Pezizomycetes > Pezizales
+Gloeoheppiaceae # COL: Lichinomycetes > Lichinales
+Glomerellaceae # COL: Sordariomycetes > Glomerellales
+Glomerellales # COL: Ascomycota > Sordariomycetes
+Gloniaceae # COL: Dothideomycetes > Mytilinidiales
+Gnomoniaceae # COL: Sordariomycetes > Diaporthales
+Godroniaceae # COL: Leotiomycetes > Helotiales
+Gomphillaceae # COL: Lecanoromycetes > Graphidales
+Gondwanamycetaceae # IRMNG: Sordariomycetes > Microascales
+Graphiaceae # IRMNG: Sordariomycetes > Microascales
+Graphidaceae # COL: Lecanoromycetes > Ostropales
+Graphidales # COL: Ascomycota > Lecanoromycetes
+Graphostromataceae # COL: Sordariomycetes > Xylariales
+Gyalectaceae # COL: Lecanoromycetes > Gyalectales
+Gymnoascaceae # COL: Eurotiomycetes > Onygenales
+Gypsoplacaceae # COL: Lecanoromycetes > Lecanorales
+Haematommataceae # COL: Lecanoromycetes > Lecanorales
+Halojulellaceae # COL: Dothideomycetes > Pleosporales
+Halosphaeriaceae # COL: Sordariomycetes > Microascales
+Halosphaeriales # COL: Ascomycota > Sordariomycetes
+Halotthiaceae # COL: Dothideomycetes > Pleosporales
+Hamatocanthoscyphaceae # COL: Leotiomycetes > Helotiales
+Harknessiaceae # COL: Sordariomycetes > Diaporthales
+Helicogoniaceae # COL: Leotiomycetes > Phacidiales
+Helminthosphaeriaceae # COL: Sordariomycetes > Sordariales
+Helocarpaceae # COL: Ascomycota > Lecanoromycetes
+Helotiaceae # COL: Leotiomycetes > Helotiales
+Helotiales # COL: Ascomycota > Leotiomycetes
+Helvellaceae # COL: Pezizomycetes > Pezizales
+Hemiphacidiaceae # COL: Leotiomycetes > Helotiales
+Heppiaceae # cyanolichen family (Lichinales); ITIS: Lichinomycetes > Lichinales
+Hermatomycetaceae # COL: Dothideomycetes > Pleosporales
+Herpomycetaceae # COL: Laboulbeniomycetes > Herpomycetales
+Herpomycetales # COL: Ascomycota > Laboulbeniomycetes
+Herpotrichiellaceae # COL: Eurotiomycetes > Chaetothyriales
+Heterosphaeriaceae # COL: Leotiomycetes > Helotiales
+Hispidicarpomycetaceae # COL: Fungi > Ascomycota
+Hyaloscyphaceae # COL: Leotiomycetes > Helotiales
+Hydrocinaceae # COL: Leotiomycetes > Helotiales
+Hymeneliaceae # COL: Lecanoromycetes > Hymeneliales
+Hymeneliales # COL: Ascomycota > Lecanoromycetes
+Hyphodiscaceae # COL: Leotiomycetes > Helotiales
+Hypocreaceae # COL: Ascomycota > Sordariomycetes
+Hypocreales # ITIS: Ascomycota > Sordariomycetes
+Hypocreomycetidae # ITIS: Ascomycota > Sordariomycetes
+Hyponectriaceae # COL: Sordariomycetes > Xylariales
+Hypoxylaceae # COL: Sordariomycetes > Xylariales
+Hypsostromataceae # COL: Dothideomycetes > Pleosporales
+Hysteriaceae # COL: Dothideomycetes > Hysteriales
+Hysteriales # COL: Ascomycota > Dothideomycetes
+Icmadophilaceae # COL: Lecanoromycetes > Pertusariales
+Iodosphaeriaceae # COL: Sordariomycetes > Xylariales
+Jahnulales # COL: Ascomycota > Dothideomycetes
+Jobellisiaceae # COL: Sordariomycetes > Jobellisiales
+Jobellisiales # COL: Ascomycota > Sordariomycetes
+Juncigenaceae # COL: Ascomycota > Sordariomycetes
+Karstenellaceae # COL: Pezizomycetes > Pezizales
+Kathistaceae # COL: Sordariomycetes > Ophiostomatales
+Kirschsteiniotheliaceae # WoRMS: Ascomycota > Dothideomycetes
+Kirschsteiniotheliales # IRMNG: Ascomycota > Dothideomycetes
+Koerberiaceae # COL: Lecanoromycetes > Peltigerales
+Koralionastetaceae # COL: Sordariomycetes > Koralionastetales
+Koralionastetales # COL: Ascomycota > Sordariomycetes
+Laboulbeniaceae # COL: Laboulbeniomycetes > Laboulbeniales
+Laboulbeniales # COL: Ascomycota > Laboulbeniomycetes
+Laboulbeniomycetes # COL: Fungi > Ascomycota
+Laboulbeniomycetidae # ITIS: Ascomycota > Laboulbeniomycetes
+Lachnaceae # COL: Leotiomycetes > Helotiales
+Lahmiaceae # COL: Ascomycota > Lahmiales
+Lahmiales # COL: Fungi > Ascomycota
+Lamproconiaceae # COL: Sordariomycetes > Diaporthales
+Lasiosphaeriaceae # COL: Sordariomycetes > Sordariales
+Latoruaceae # COL: Dothideomycetes > Pleosporales
+Lauriomycetaceae # COL: Ascomycota > Lauriomycetales
+Lauriomycetales # COL: Fungi > Ascomycota
+Lautosporaceae # COL: Fungi > Ascomycota
+Lecanographaceae # COL: Arthoniomycetes > Arthoniales
+Lecanoraceae # COL: Lecanoromycetes > Lecanorales
+Lecanorales # COL: Ascomycota > Lecanoromycetes
+Lecanoromycetes # COL: Fungi > Ascomycota
+Lecanoromycetidae # ITIS: Ascomycota > Lecanoromycetes
+Lecideaceae # COL: Lecanoromycetes > Lecideales
+Lecideales # COL: Ascomycota > Lecanoromycetes
+Lentimurisporaceae # COL: Dothideomycetes > Pleosporales
+Lentitheciaceae # COL: Dothideomycetes > Pleosporales
+Lentomitellaceae # COL: Ascomycota > Sordariomycetes
+Leotiaceae # COL: Leotiomycetes > Leotiales
+Leotiales # COL: Ascomycota > Leotiomycetes
+Leotiomycetes # COL: Fungi > Ascomycota
+Leotiomycetidae # ITIS: Ascomycota > Leotiomycetes
+Leprocaulaceae # COL: Ascomycota > Lecanoromycetes
+Leprocaulales # IRMNG: Ascomycota > Lecanoromycetes
+Leptodontidiaceae # COL: Leotiomycetes > Helotiales
+Leptopeltidaceae # COL: Ascomycota > Dothideomycetes
+Leptosilliaceae # COL: Sordariomycetes > Xylariales
+Leptosphaeriaceae # COL: Dothideomycetes > Pleosporales
+Leptosporellaceae # COL: Sordariomycetes > Sordariales
+Letrouitiaceae # COL: Lecanoromycetes > Teloschistales
+Libertasomycetaceae # COL: Dothideomycetes > Pleosporales
+Lichenoconiaceae # COL: Dothideomycetes > Lichenoconiales
+Lichenoconiales # COL: Ascomycota > Dothideomycetes
+Lichenostigmatales # COL: Ascomycota > Arthoniomycetes
+Lichenotheliaceae # COL: Dothideomycetes > Lichenotheliales
+Lichenotheliales # COL: Ascomycota > Dothideomycetes
+Lichinaceae # COL: Lichinomycetes > Lichinales
+Lichinales # COL: Ascomycota > Lichinomycetes
+Lichinodiaceae # COL: Leotiomycetes > Lichinodiales
+Lichinodiales # COL: Ascomycota > Leotiomycetes
+Lichinomycetes # COL: Fungi > Ascomycota
+Lichinomycetidae # ITIS: Ascomycota > Lichinomycetes
+Lindgomycetaceae # COL: Dothideomycetes > Pleosporales
+Linocarpaceae # COL: Sordariomycetes > Chaetosphaeriales
+Lipomycetaceae # COL: Saccharomycetes > Saccharomycetales
+Lobariaceae # COL: Lecanoromycetes > Peltigerales
+Lopadiaceae # COL: Lecanoromycetes > Lecideales
+Lopadostomataceae # COL: Sordariomycetes > Xylariales
+Lophiostomataceae # COL: Dothideomycetes > Pleosporales
+Lophiotremataceae # COL: Dothideomycetes > Pleosporales
+Loramycetaceae # COL: Leotiomycetes > Helotiales
+Lulworthiaceae # COL: Sordariomycetes > Lulworthiales
+Lulworthiales # COL: Ascomycota > Sordariomycetes
+Lulworthiomycetidae # Species Fungorum: Ascomycota > Sordariomycetes
+Lyrommataceae # COL: Eurotiomycetes > Chaetothyriales
+Macrodiplodiopsidaceae # COL: Dothideomycetes > Pleosporales
+Macrohilaceae # COL: Sordariomycetes > Diaporthales
+Macrovalsariaceae # COL: Dothideomycetes > Pleosporales
+Magnaporthaceae # COL: Sordariomycetes > Magnaporthales
+Magnaporthales # COL: Ascomycota > Sordariomycetes
+Malmideaceae # COL: Lecanoromycetes > Lecanorales
+Manglicolaceae # COL: Dothideomycetes > Jahnulales
+Marthamycetaceae # COL: Leotiomycetes > Marthamycetales
+Massalongiaceae # COL: Lecanoromycetes > Peltigerales
+Massariaceae # COL: Dothideomycetes > Pleosporales
+Massarinaceae # COL: Dothideomycetes > Pleosporales
+Mastodiaceae # COL: Fungi > Ascomycota
+Medeolariaceae # COL: Leotiomycetes > Medeolariales
+Medeolariales # COL: Ascomycota > Leotiomycetes
+Megalariaceae # ITIS: Lecanoromycetes > Lecanorales
+Megalosporaceae # COL: Lecanoromycetes > Teloschistales
+Megasporaceae # COL: Lecanoromycetes > Pertusariales
+Melanconidaceae # COL: Sordariomycetes > Diaporthales
+Melanconiellaceae # COL: Sordariomycetes > Diaporthales
+Melanommataceae # COL: Dothideomycetes > Pleosporales
+Melanopsaceae # IRMNG: Dothideomycetes > Botryosphaeriales
+Melanosporales # COL: Ascomycota > Sordariomycetes
+Melanosporellaceae # COL: Sordariomycetes > Diaporthales
+Melansporellaceae # NCBI: Sordariomycetes > Diaporthales
+Melaspileaceae # COL: Dothideomycetes > Eremithallales
+Meliolaceae # COL: Sordariomycetes > Meliolales
+Meliolales # COL: Ascomycota > Sordariomycetes
+Meliolinaceae # COL: Ascomycota > Dothideomycetes
+Meliolomycetidae # ITIS: Ascomycota > Dothideomycetes
+Melogrammataceae # COL: Sordariomycetes > Xylariales
+Mesnieraceae # COL: Ascomycota > Dothideomycetes
+Metacapnodiaceae # COL: Dothideomycetes > Capnodiales
+Metschnikowiaceae # COL: Saccharomycetes > Saccharomycetales
+Microascaceae # COL: Sordariomycetes > Microascales
+Microascales # COL: Ascomycota > Sordariomycetes
+Microcaliciaceae # COL: Lecanoromycetes > Pertusariales
+Micropeltidaceae # COL: Dothideomycetes > Microthyriales
+Microtheliopsidaceae # COL: Eurotiomycetes > Chaetothyriales
+Microthyriaceae # COL: Dothideomycetes > Microthyriales
+Microthyriales # COL: Ascomycota > Dothideomycetes
+Miltideaceae # COL: Lecanoromycetes > Pertusariales
+Minutisphaeraceae # COL: Dothideomycetes > Minutisphaerales
+Minutisphaerales # COL: Ascomycota > Dothideomycetes
+Mitrulaceae # IRMNG: Leotiomycetes > Helotiales
+Mollisiaceae # COL: Leotiomycetes > Helotiales
+Monascaceae # COL: Eurotiomycetes > Eurotiales
+Monoblastiaceae # COL: Dothideomycetes > Monoblastiales
+Monoblastiales # COL: Ascomycota > Dothideomycetes
+Montagnulaceae # COL: Dothideomycetes > Pleosporales
+Morchellaceae # COL: Pezizomycetes > Pezizales
+Moriolaceae # ITIS: Ascomycota > Dothideomycetes
+Morosphaeriaceae # COL: Dothideomycetes > Pleosporales
+Mucomassariaceae # IRMNG: Fungi > Ascomycota
+Murramarangomycetaceae # IRMNG: Dothideomycetes > Murramarangomycetales
+Murramarangomycetales # IRMNG: Ascomycota > Dothideomycetes
+Muyocopronaceae # COL: Dothideomycetes > Muyocopronales
+Muyocopronales # COL: Ascomycota > Dothideomycetes
+Mycoblastaceae # ITIS: Lecanoromycetes > Lecanorales
+Mycocaliciaceae # COL: Eurotiomycetes > Mycocaliciales
+Mycocaliciales # COL: Ascomycota > Eurotiomycetes
+Mycocaliciomycetidae # ITIS: Ascomycota > Eurotiomycetes
+Mycoporaceae # COL: Dothideomycetes > Pleosporales
+Mycosphaerellaceae # COL: Dothideomycetes > Mycosphaerellales
+Mycosphaerellales # COL: Ascomycota > Dothideomycetes
+Myeloconidiaceae # ITIS: Lecanoromycetes > Ostropales
+Myriangiaceae # COL: Dothideomycetes > Myriangiales
+Myriangiales # COL: Ascomycota > Dothideomycetes
+Myrmecridiaceae # COL: Sordariomycetes > Myrmecridiales
+Myrmecridiales # COL: Ascomycota > Sordariomycetes
+Myrotheciomycetaceae # COL: Ascomycota > Sordariomycetes
+Mytilinidiaceae # COL: Dothideomycetes > Mytilinidiales
+Mytilinidiales # COL: Ascomycota > Dothideomycetes
+Myxotrichaceae # COL: Leotiomycetes > Helotiales
+Naetrocymbaceae # COL: Ascomycota > Dothideomycetes
+Nannizziopsidaceae # COL: Eurotiomycetes > Onygenales
+Natipusillaceae # COL: Dothideomycetes > Natipusillales
+Natipusillales # COL: Ascomycota > Dothideomycetes
+Nectriaceae # COL: Ascomycota > Sordariomycetes
+Neocelosporiaceae # COL: Ascomycota > Dothideomycetes
+Neocelosporiales # IRMNG: synonym of Dothideales (Dothideomycetes)
+Neocrinulaceae # COL: Leotiomycetes > Helotiales
+Neodevriesiaceae # COL: Dothideomycetes > Capnodiales
+Neohendersoniaceae # COL: Dothideomycetes > Pleosporales
+Neolauriomycetaceae # COL: Leotiomycetes > Helotiales
+Neolectaceae # COL: Neolectomycetes > Neolectales
+Neolectales # COL: Ascomycota > Neolectomycetes
+Neolectomycetes # COL: Fungi > Ascomycota
+Neomelanconiellaceae # IRMNG: Sordariomycetes > Diaporthales
+Nephromataceae # COL: Lecanoromycetes > Peltigerales
+Niessliaceae # COL: Ascomycota > Sordariomycetes
+Nitschkiaceae # COL: Sordariomycetes > Coronophorales
+Nothodactylariaceae # COL: Sordariomycetes > Xylariales
+Nowamycetaceae # COL: Ascomycota > Dothideomycetes
+Obryzaceae # COL: Ascomycota > Sordariomycetes
+Occultibambusaceae # COL: Dothideomycetes > Pleosporales
+Ochrolechiaceae # COL: Lecanoromycetes > Pertusariales
+Odontotremataceae # COL: Lecanoromycetes > Ostropales
+Onygenaceae # COL: Eurotiomycetes > Onygenales
+Onygenales # COL: Ascomycota > Eurotiomycetes
+Opegraphaceae # COL: Arthoniomycetes > Arthoniales
+Ophioceraceae # COL: Sordariomycetes > Magnaporthales
+Ophiocordycipitaceae # COL: Ascomycota > Sordariomycetes
+Ophioparmaceae # COL: Lecanoromycetes > Umbilicariales
+Ophiostomataceae # COL: Sordariomycetes > Ophiostomatales
+Ophiostomatales # COL: Ascomycota > Sordariomycetes
+Orbiliaceae # COL: Orbiliomycetes > Orbiliales
+Orbiliales # COL: Ascomycota > Orbiliomycetes
+Orbiliomycetes # COL: Fungi > Ascomycota
+Orbiliomycetidae # ITIS: Ascomycota > Orbiliomycetes
+Ostropales # COL: Ascomycota > Lecanoromycetes
+Ostropomycetidae # ITIS: Ascomycota > Lecanoromycetes
+Oxydothidaceae # COL: Sordariomycetes > Xylariales
+Pachyascaceae # COL: Lecanoromycetes > Lecanorales
+Pannariaceae # COL: Lecanoromycetes > Peltigerales
+Papulosaceae # COL: Ascomycota > Sordariomycetes
+Parabambusicolaceae # COL: Dothideomycetes > Pleosporales
+Paracladophialophoraceae # COL: Eurotiomycetes > Chaetothyriales
+Paradevriesiaceae # COL: Dothideomycetes > Capnodiales
+Paradictyoarthriniaceae # COL: Dothideomycetes > Pleosporales
+Paranectriellaceae # COL: Ascomycota > Dothideomycetes
+Parapyrenochaetaceae # COL: Dothideomycetes > Pleosporales
+Pararamichloridiaceae # COL: Sordariomycetes > Pararamichloridiales
+Pararamichloridiales # COL: Ascomycota > Sordariomycetes
+Parasympodiellaceae # COL: Sordariomycetes > Parasympodiellales
+Parasympodiellales # COL: Ascomycota > Sordariomycetes
+Parmeliaceae # COL: Lecanoromycetes > Lecanorales
+Parmulariaceae # COL: Dothideomycetes > Asterinales
+Parodiellaceae # COL: Ascomycota > Dothideomycetes
+Parodiopsidaceae # COL: Ascomycota > Dothideomycetes
+Patellariaceae # COL: Dothideomycetes > Patellariales
+Patellariales # COL: Ascomycota > Dothideomycetes
+Peltigeraceae # COL: Lecanoromycetes > Peltigerales
+Peltigerales # COL: Ascomycota > Lecanoromycetes
+Peltulaceae # COL: Lichinomycetes > Lichinales
+Periconiaceae # IRMNG: Dothideomycetes > Pleosporales
+Perisporiopsidaceae # COL: Ascomycota > Dothideomycetes
+Pertusariaceae # COL: Lecanoromycetes > Pertusariales
+Pertusariales # COL: Ascomycota > Lecanoromycetes
+Pestalotiopsidaceae # COL: Sordariomycetes > Amphisphaeriales
+Pezizaceae # COL: Pezizomycetes > Pezizales
+Pezizales # COL: Ascomycota > Pezizomycetes
+Pezizellaceae # COL: Leotiomycetes > Helotiales
+Pezizomycetes # COL: Fungi > Ascomycota
+Pezizomycetidae # ITIS: Ascomycota > Pezizomycetes
+Pezizomycotina # ITIS: Fungi > Ascomycota
+Phacidiaceae # COL: Leotiomycetes > Phacidiales
+Phacidiales # COL: Ascomycota > Leotiomycetes
+Phaeoappendicosporaceae # COL: Sordariomycetes > Diaporthales
+Phaeochoraceae # COL: Sordariomycetes > Phyllachorales
+Phaeococcomycetaceae # COL: Arthoniomycetes > Lichenostigmatales
+Phaeomoniellaceae # COL: Eurotiomycetes > Phaeomoniellales
+Phaeomoniellales # COL: Ascomycota > Eurotiomycetes
+Phaeosphaeriaceae # COL: Dothideomycetes > Pleosporales
+Phaeothecaceae # COL: Dothideomycetes > Phaeothecales
+Phaeothecoidiellaceae # COL: Dothideomycetes > Mycosphaerellales
+Phaeotrichaceae # COL: Dothideomycetes > Phaeotrichales
+Phaeotrichales # COL: Ascomycota > Dothideomycetes
+Phaneromycetaceae # COL: Lecanoromycetes > Ostropales
+Phillipsiellaceae # COL: Dothideomycetes > Mycosphaerellales
+Phlogicylindriaceae # COL: Sordariomycetes > Amphisphaeriales
+Phlyctidaceae # COL: Lecanoromycetes > Ostropales
+Phomatosporaceae # COL: Sordariomycetes > Phomatosporales
+Phomatosporales # COL: Ascomycota > Sordariomycetes
+Phyllachoraceae # COL: Sordariomycetes > Phyllachorales
+Phyllachorales # COL: Ascomycota > Sordariomycetes
+Phyllobatheliaceae # ITIS: Ascomycota > Dothideomycetes
+Phyllostictaceae # COL: Dothideomycetes > Botryosphaeriales
+Physciaceae # COL: Lecanoromycetes > Caliciales
+Pichiaceae # ITIS: Saccharomycetes > Saccharomycetales
+Piedraiaceae # COL: Dothideomycetes > Capnodiales
+Pisorisporiaceae # COL: Sordariomycetes > Pisorisporiales
+Pisorisporiales # COL: Ascomycota > Sordariomycetes
+Placynthiaceae # COL: Lecanoromycetes > Peltigerales
+Planistromellaceae # COL: Dothideomycetes > Botryosphaeriales
+Plectosphaerellaceae # COL: Sordariomycetes > Glomerellales
+Pleomassariaceae # COL: Dothideomycetes > Pleosporales
+Pleomonodictydaceae # COL: Ascomycota > Dothideomycetes
+Pleosporaceae # COL: Dothideomycetes > Pleosporales
+Pleosporales # COL: Ascomycota > Dothideomycetes
+Pleosporomycetidae # ITIS: Ascomycota > Dothideomycetes
+Pleuroascaceae # COL: Leotiomycetes > Helotiales
+Pleurostomataceae # COL: Sordariomycetes > Calosphaeriales
+Pleurotheciaceae # COL: Sordariomycetes > Pleurotheciales
+Pleurotheciales # COL: Ascomycota > Sordariomycetes
+Pleurotremataceae # ITIS: synonym of Pyrenulaceae (Pyrenulales)
+Ploettnerulaceae # COL: Leotiomycetes > Helotiales
+Pneumocystaceae # COL: Pneumocystomycetes > Pneumocystales
+Pneumocystales # COL: Ascomycota > Pneumocystomycetes
+Pneumocystomycetes # COL: Fungi > Ascomycota
+Polycoccaceae # COL: Dothideomycetes > Trypetheliales
+Polystomellaceae # COL: Ascomycota > Dothideomycetes
+Porinaceae # COL: Lecanoromycetes > Ostropales
+Porodiplodiaceae # COL: Leotiomycetes > Helotiales
+Porpidiaceae # COL: Lecanoromycetes > Lecideales
+Protomycetaceae # COL: Taphrinomycetes > Taphrinales
+Protoscyphaceae # COL: Ascomycota > Dothideomycetes
+Protothelenellaceae # COL: Lecanoromycetes > Ostropales
+Pseudeurotiaceae # COL: Leotiomycetes > Thelebolales
+Pseudoastrosphaeriellaceae # COL: Dothideomycetes > Pleosporales
+Pseudoberkleasmiaceae # COL: Dothideomycetes > Pleosporales
+Pseudocoleodictyosporaceae # COL: Dothideomycetes > Pleosporales
+Pseudodactylariaceae # COL: Sordariomycetes > Pseudodactylariales
+Pseudodactylariales # COL: Ascomycota > Sordariomycetes
+Pseudomassariaceae # COL: Sordariomycetes > Xylariales
+Pseudomelanconidaceae # COL: Sordariomycetes > Diaporthales
+Pseudoperisporiaceae # COL: Ascomycota > Dothideomycetes
+Pseudoplagiostomataceae # COL: Sordariomycetes > Diaporthales
+Pseudoproboscisporaceae # COL: Sordariomycetes > Atractosporales
+Pseudopyrenochaetaceae # COL: Dothideomycetes > Pleosporales
+Pseudovalsaceae # ITIS: Sordariomycetes > Diaporthales
+Psilolechiaceae # COL: Lecanoromycetes > Lecanorales
+Psoraceae # COL: Lecanoromycetes > Lecanorales
+Pycnoraceae # COL: Candelariomycetes > Candelariales
+Pyrenidiaceae # COL: Dothideomycetes > Pleosporales
+Pyrenochaetopsidaceae # COL: Dothideomycetes > Pleosporales
+Pyrenothricaceae # ITIS: Ascomycota > Dothideomycetes
+Pyrenotrichaceae # COL: Eurotiomycetes > Chaetothyriales
+Pyrenulaceae # COL: Eurotiomycetes > Pyrenulales
+Pyrenulales # COL: Ascomycota > Eurotiomycetes
+Pyriculariaceae # COL: Sordariomycetes > Magnaporthales
+Pyronemataceae # COL: Pezizomycetes > Pezizales
+Pyxidiophoraceae # COL: Laboulbeniomycetes > Pyxidiophorales
+Pyxidiophorales # COL: Ascomycota > Laboulbeniomycetes
+Racodiaceae # IRMNG: Dothideomycetes > Racodiales
+Ramalinaceae # COL: Lecanoromycetes > Lecanorales
+Ramboldiaceae # COL: Lecanoromycetes > Lecanorales
+Requienellaceae # COL: Eurotiomycetes > Pyrenulales
+Reticulascaceae # ITIS: Ascomycota > Sordariomycetes
+Rhamphoriaceae # COL: Ascomycota > Sordariomycetes
+Rhizinaceae # COL: Pezizomycetes > Pezizales
+Rhizocarpaceae # COL: Lecanoromycetes > Rhizocarpales
+Rhizocarpales # COL: Ascomycota > Lecanoromycetes
+Rhynchostomataceae # COL: Ascomycota > Eurotiomycetes
+Rhytismataceae # COL: Leotiomycetes > Rhytismatales
+Rhytismatales # COL: Ascomycota > Leotiomycetes
+Roccellaceae # COL: Arthoniomycetes > Arthoniales
+Roccellographaceae # COL: Arthoniomycetes > Arthoniales
+Roesleriaceae # ITIS: Ascomycota > Dothideomycetes
+Ropalosporaceae # ITIS: Lecanoromycetes > Teloschistales
+Roussoellaceae # COL: Dothideomycetes > Pleosporales
+Rutstroemiaceae # COL: Leotiomycetes > Helotiales
+Saccardiaceae # COL: Fungi > Ascomycota
+Saccharataceae # COL: Dothideomycetes > Botryosphaeriales
+Saccharomycetaceae # COL: Saccharomycetes > Saccharomycetales
+Saccharomycetales # COL: Ascomycota > Saccharomycetes
+Saccharomycetes # COL: Fungi > Ascomycota
+Saccharomycodaceae # COL: Saccharomycetes > Saccharomycetales
+Saccharomycopsidaceae # COL: Saccharomycetes > Saccharomycetales
+Saccotheciaceae # COL: Dothideomycetes > Dothideales
+Sagiolechiaceae # COL: Lecanoromycetes > Ostropales
+Salsugineaceae # COL: Dothideomycetes > Pleosporales
+Sarcoscyphaceae # COL: Pezizomycetes > Pezizales
+Sarcosomataceae # COL: Pezizomycetes > Pezizales
+Sarocladiaceae # COL: Ascomycota > Sordariomycetes
+Sarrameanaceae # COL: Lecanoromycetes > Sarrameanales
+Sarrameanales # COL: Ascomycota > Lecanoromycetes
+Savoryellaceae # COL: Sordariomycetes > Savoryellales
+Savoryellales # COL: Ascomycota > Sordariomycetes
+Schaereriaceae # COL: Lecanoromycetes > Schaereriales
+Schaereriales # COL: Ascomycota > Lecanoromycetes
+Schizoparmaceae # COL: Sordariomycetes > Diaporthales
+Schizosaccharomycetaceae # COL: Schizosaccharomycetes > Schizosaccharomycetales
+Schizosaccharomycetales # COL: Ascomycota > Schizosaccharomycetes
+Schizosaccharomycetes # COL: Fungi > Ascomycota
+Schizothyriaceae # COL: Ascomycota > Dothideomycetes
+Sclerococcaceae # COL: Eurotiomycetes > Sclerococcales
+Sclerococcales # COL: Ascomycota > Eurotiomycetes
+Sclerococcomycetidae # Species Fungorum: Ascomycota > Eurotiomycetes
+Sclerotiniaceae # COL: Leotiomycetes > Helotiales
+Scoliciosporaceae # COL: Lecanoromycetes > Lecanorales
+Scortechiniaceae # COL: Sordariomycetes > Coronophorales
+Septorioideaceae # COL: Dothideomycetes > Botryosphaeriales
+Seuratiaceae # COL: Ascomycota > Dothideomycetes
+Seynesiopeltidaceae # COL: Ascomycota > Dothideomycetes
+Shiraiaceae # COL: Dothideomycetes > Pleosporales
+Solenopeziaceae # COL: Leotiomycetes > Helotiales
+Sordariaceae # COL: Sordariomycetes > Sordariales
+Sordariales # COL: Ascomycota > Sordariomycetes
+Sordariomycetes # COL: Fungi > Ascomycota
+Sordariomycetidae # ITIS: Ascomycota > Sordariomycetes
+Spathulosporaceae # COL: Sordariomycetes > Spathulosporales
+Spathulosporales # COL: Ascomycota > Sordariomycetes
+Sphaerophoraceae # COL: Lecanoromycetes > Lecanorales
+Spheciophilaceae # COL: Ascomycota > Laboulbeniomycetes
+Sphinctrinaceae # COL: Eurotiomycetes > Mycocaliciales
+Sporastatiaceae # COL: Lecanoromycetes > Rhizocarpales
+Sporidesmiaceae # IRMNG: Sordariomycetes > Sporidesmiales
+Sporocadaceae # COL: Sordariomycetes > Amphisphaeriales
+Sporormiaceae # COL: Dothideomycetes > Pleosporales
+Stachybotriaceae # GBIF: synonym of Stachybotryaceae (Hypocreales)
+Stachybotryaceae # COL: Ascomycota > Sordariomycetes
+Stereocaulaceae # COL: Lecanoromycetes > Lecanorales
+Stictidaceae # COL: Lecanoromycetes > Ostropales
+Stigmatodiscaceae # COL: Dothideomycetes > Stigmatodiscales
+Stigmatodiscales # COL: Ascomycota > Dothideomycetes
+Stilbosporaceae # IRMNG: Sordariomycetes > Diaporthales
+Strangosporaceae # COL: Fungi > Ascomycota
+Striatiguttulaceae # COL: Dothideomycetes > Pleosporales
+Strigulaceae # COL: Dothideomycetes > Strigulales
+Strigulales # COL: Ascomycota > Dothideomycetes
+Sulcatisporaceae # COL: Dothideomycetes > Pleosporales
+Superstratomycetaceae # COL: Dothideomycetes > Superstratomycetales
+Superstratomycetales # COL: Ascomycota > Dothideomycetes
+Sydowiellaceae # COL: Sordariomycetes > Diaporthales
+Sympoventuriaceae # COL: Dothideomycetes > Venturiales
+Synnemasporellaceae # COL: Sordariomycetes > Diaporthales
+Taphrinaceae # COL: Taphrinomycetes > Taphrinales
+Taphrinales # COL: Ascomycota > Taphrinomycetes
+Taphrinomycetes # COL: Fungi > Ascomycota
+Teichosporaceae # COL: Dothideomycetes > Pleosporales
+Teloschistaceae # COL: Lecanoromycetes > Teloschistales
+Teloschistales # COL: Ascomycota > Lecanoromycetes
+Tephromelataceae # COL: Lecanoromycetes > Lecanorales
+Teratosphaeriaceae # COL: Dothideomycetes > Mycosphaerellales
+Testudinaceae # COL: Ascomycota > Dothideomycetes
+Tetraplosphaeriaceae # COL: Dothideomycetes > Pleosporales
+Thelebolaceae # COL: Leotiomycetes > Thelebolales
+Thelebolales # COL: Ascomycota > Leotiomycetes
+Thelenellaceae # COL: Lecanoromycetes > Ostropales
+Thelocarpaceae # COL: Ascomycota > Thelocarpales
+Thelocarpales # COL: Fungi > Ascomycota
+Thelotremataceae # ITIS: Lecanoromycetes > Ostropales
+Thermoascaceae # ITIS: Eurotiomycetes > Eurotiales
+Thrombiaceae # COL: Lecanoromycetes > Ostropales
+Thyridariaceae # COL: Dothideomycetes > Pleosporales
+Thyridiaceae # COL: Ascomycota > Sordariomycetes
+Tilachlidiaceae # COL: Ascomycota > Sordariomycetes
+Tirisporellaceae # COL: Dothideomycetes > Tirisporellales
+Tirisporellales # COL: Ascomycota > Dothideomycetes
+Togniniaceae # COL: Sordariomycetes > Togniniales
+Togniniales # COL: Ascomycota > Sordariomycetes
+Torpedosporaceae # COL: Sordariomycetes > Torpedosporales
+Torpedosporales # COL: Ascomycota > Sordariomycetes
+Torulaceae # COL: Dothideomycetes > Pleosporales
+Tracyllaceae # COL: Sordariomycetes > Tracyllales
+Tracyllalales # IRMNG: synonym of Tracyllales (Sordariomycetes)
+Tracyllales # COL: Ascomycota > Sordariomycetes
+Trapeliaceae # COL: Lecanoromycetes > Baeomycetales
+Trapeliales # iNat: Ascomycota > Lecanoromycetes
+Trematosphaeriaceae # COL: Dothideomycetes > Pleosporales
+Triadelphiaceae # COL: Sordariomycetes > Microascales
+Triblidiaceae # COL: Ascomycota > Triblidiales
+Triblidiales # COL: Fungi > Ascomycota
+Trichocomaceae # COL: Eurotiomycetes > Eurotiales
+Trichomeriaceae # COL: Eurotiomycetes > Chaetothyriales
+Trichomonascaceae # COL: Saccharomycetes > Saccharomycetales
+Trichopeltinaceae # COL: Ascomycota > Dothideomycetes
+Trichosphaeriaceae # COL: Sordariomycetes > Trichosphaeriales
+Trichosphaeriales # COL: Ascomycota > Sordariomycetes
+Trichothyriaceae # COL: Dothideomycetes > Microthyriales
+Trigonopsidaceae # COL: Saccharomycetes > Saccharomycetales
+Trypetheliaceae # COL: Dothideomycetes > Trypetheliales
+Trypetheliales # COL: Ascomycota > Dothideomycetes
+Tubakiaceae # COL: Sordariomycetes > Diaporthales
+Tuberaceae # COL: Pezizomycetes > Pezizales
+Tubeufiaceae # COL: Dothideomycetes > Tubeufiales
+Tubeufiales # COL: Ascomycota > Dothideomycetes
+Turquoiseomycetaceae # COL: Lecanoromycetes > Turquoiseomycetales
+Turquoiseomycetales # COL: Ascomycota > Lecanoromycetes
+Tympanidaceae # COL: Leotiomycetes > Leotiales
+Tzeananiaceae # COL: Dothideomycetes > Pleosporales
+Umbilicariaceae # COL: Lecanoromycetes > Umbilicariales
+Umbilicariales # COL: Ascomycota > Lecanoromycetes
+Umbilicariomycetidae # WoRMS: Ascomycota > Lecanoromycetes
+Vahliellaceae # COL: Lecanoromycetes > Peltigerales
+Valsaceae # COL: Sordariomycetes > Diaporthales
+Valsariaceae # COL: Dothideomycetes > Valsariales
+Valsariales # COL: Ascomycota > Dothideomycetes
+Vandijckellaceae # COL: Leotiomycetes > Helotiales
+Venturiaceae # COL: Dothideomycetes > Venturiales
+Venturiales # COL: Ascomycota > Dothideomycetes
+Vermiculariopsiellaceae # COL: Sordariomycetes > Vermiculariopsiellales
+Vermiculariopsiellales # COL: Ascomycota > Sordariomycetes
+Verrucariaceae # COL: Eurotiomycetes > Verrucariales
+Verrucariales # COL: Ascomycota > Eurotiomycetes
+Vezdaeaceae # COL: Ascomycota > Vezdaeales
+Vezdaeales # COL: Fungi > Ascomycota
+Vialaeaceae # COL: Sordariomycetes > Xylariales
+Vibrisseaceae # COL: Leotiomycetes > Helotiales
+Vizellaceae # COL: Ascomycota > Dothideomycetes
+Wickerhamomycetaceae # COL: Saccharomycetes > Saccharomycetales
+Wicklowiaceae # COL: Dothideomycetes > Pleosporales
+Wiesneriomycetaceae # COL: Dothideomycetes > Wiesneriomycetales
+Wiesneriomycetales # COL: Ascomycota > Dothideomycetes
+Woswasiaceae # COL: Ascomycota > Sordariomycetes
+Xanthopyreniaceae # COL: Dothideomycetes > Collemopsidiales
+Xenodactylariaceae # COL: Sordariomycetes > Xenodactylariales
+Xenodevriesiaceae # COL: Dothideomycetes > Capnodiales
+Xenospadicoidaceae # COL: Sordariomycetes > Xenospadicoidales
+Xenospadicoidales # COL: Ascomycota > Sordariomycetes
+Xylariaceae # COL: Sordariomycetes > Xylariales
+Xylariales # COL: Ascomycota > Sordariomycetes
+Xylobotryaceae # COL: Xylobotryomycetes > Xylobotryales
+Xylobotryales # COL: Ascomycota > Xylobotryomycetes
+Xylobotryomycetes # COL: Fungi > Ascomycota
+Xylographaceae # COL: Lecanoromycetes > Baeomycetales
+Xylonaceae # COL: Xylonomycetes > Xylonales
+Xylonales # COL: Ascomycota > Xylonomycetes
+Xylonomycetes # COL: Fungi > Ascomycota
+Zalariaceae # COL: Dothideomycetes > Dothideales
+Zeloasperisporiaceae # COL: Dothideomycetes > Zeloasperisporiales
+Zeloasperisporiales # COL: Ascomycota > Dothideomycetes
+Zopfiaceae # COL: Dothideomycetes > Pleosporales

@@ -12,5 +12,6 @@ public enum InfoGroup {
   TEMPORAL_RANGE,
   RANK,
   ETYMOLOGY,
-  GENDER;
+  GENDER,
+  ENVIRONMENT;
 }

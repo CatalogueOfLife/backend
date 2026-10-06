@@ -1,0 +1,12 @@
+# name exclusions for all merge sectors, formerly the blockedNames & blockedNamePatterns of the xrelease config
+- title: Merge exclusions
+  position: 1
+  selector:
+    modes: [MERGE]
+  settings:
+    blockedNames:
+      - Abies alba
+      - Picea nigra DC.
+    blockedNamePatterns:
+      - ^Homularia
+      - chaos\b

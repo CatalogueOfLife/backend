@@ -2,7 +2,6 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -16,6 +15,7 @@ import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -41,11 +41,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
   public static final char ID_PREFIX = '~';
   private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
-  /**
-   * Name types that carry an OTU style code (BOLD BINs, UNITE SH codes) and are therefore allowed to be unranked.
-   * IDENTIFIER exists since name-parser v5; OTHER is kept for names stored by older versions.
-   */
-  private static final Set<NameType> OTU_TYPES = Set.of(NameType.OTHER, NameType.IDENTIFIER);
   private final MatchedParentStack parents;
   private final UsageMatcher matcher;
   private final MatchingUtils utils;
@@ -61,7 +56,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private @Nullable Set<String> updatedUsageIds;
   private Throwable exception;
   private final @Nullable TreeMergeHandlerConfig cfg;
-  private final DSID<Integer> vKey;
   private final String nameIdScope;
   private final String usageIdScope;
   SqlSessionFactory factory;
@@ -76,7 +70,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, typeMaterialIdGen, usageIdGen);
     this.factory=factory;
     this.cfg = cfg;
-    this.vKey = DSID.root(sourceDatasetKey);
     this.matcher = matcherSupplier.apply(batchSession);
     groupAnalyzer = new TaxGroupAnalyzer();
     utils = new MatchingUtils(nameIndex);
@@ -398,7 +391,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   @Override
   protected boolean allowImplicitName(Usage parent, Taxon u) {
-    return sector.isCreateImplicitNames()
+    return !Boolean.FALSE.equals(sector.getCreateImplicitNames())
       && (!u.isProvisional() || source.getType() == DatasetType.NOMENCLATURAL) // we allow implicit names for nomenclatural records
       && !isAmbiguousGenus(u);
   }
@@ -574,27 +567,24 @@ public class TreeMergeHandler extends TreeBaseHandler {
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
     var ignore =  super.ignoreUsage(u, decision, issues, true);
     if (!ignore) {
-      // additional checks - we dont want any unranked unless they are OTU style codes, i.e. BOLD BINs and UNITE SH codes.
-      // the name parser typed those OTU up to v3, folded them into OTHER in v4 and split them back out as IDENTIFIER in v5,
-      // so accept both - dropping them silently loses every BOLD and UNITE name of a merge sector.
-      if (u.getRank() == Rank.UNRANKED && !OTU_TYPES.contains(u.getName().getType())) {
+      // additional checks - we dont want any unranked unless they are OTU style codes, i.e. BOLD BINs and UNITE SH codes,
+      // which the name parser types IDENTIFIER since v5. It folded them into OTHER in v4, but every source merged today
+      // stores them as IDENTIFIER, and all an OTHER exemption still let through was unparsable junk like "R ogas eurinus".
+      if (u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.IDENTIFIER) {
         // count it, otherwise the loss is invisible in the sector import metrics
         return incIgnored(IgnoreReason.RANK, u);
       }
-      ignore = cfg != null && cfg.isBlocked(u.getName());
+      // a ranked name the parser could not make sense of is no name to merge, e.g. a family "0" that became the parent of
+      // existing base genera. Viruses are OTHER too, but carry the virus code. An explicit sector name type filter or a
+      // reviewed decision has the final say. See https://github.com/CatalogueOfLife/data/issues/1730
+      if (u.getName().getType() == NameType.OTHER && u.getName().getCode() != NomCode.VIRUS
+          && (sector.getNameTypes() == null || sector.getNameTypes().isEmpty())
+          && (decision == null || decision.getMode() != EditorialDecision.Mode.REVIEWED)) {
+        return incIgnored(IgnoreReason.NAME_OTHER, u);
+      }
       // check the dynamically generated name validation issues without loading
       if (issues.contains(Issue.INCONSISTENT_NAME)) {
-        LOG.debug("Ignore {} because it is an inconsistent name", u.getLabel());
-        return true;
-      }
-      // if custom issues are to be excluded we need to load the verbatim records
-      if (cfg != null && !cfg.xCfg.issueExclusion.isEmpty() && u.getName().getVerbatimKey() != null) {
-        var issues2 = vrmRO.getIssues(vKey.id(u.getName().getVerbatimKey()));
-        issues.add(issues2);
-        if (issues != null && CollectionUtils.overlaps(issues.getIssues(), cfg.xCfg.issueExclusion)) {
-          LOG.debug("Ignore {} because of excluded issues: {}", u.getLabel(), StringUtils.join(issues, ","));
-          return true;
-        }
+        return incIgnored(IgnoreReason.INCONSISTENT_NAME, u);
       }
     }
     return ignore;
@@ -702,6 +692,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
       // set targetKey to the existing usage
       final var existingUsageKey = DSID.of(targetDatasetKey, existing.usage.getId());
+      boolean potentiallyExtinct = false;
       if (existing.usage.getStatus().isTaxon()) {
         // patch classification of accepted names if direct parent adds to it
         if (syncTaxa) {
@@ -760,14 +751,21 @@ public class TreeMergeHandler extends TreeBaseHandler {
             trackUpdated(existingUsageKey.getId());
           }
         }
+        // environments, temporal range & extinct flag
+        if (syncTaxa && nu.isTaxon()) {
+          potentiallyExtinct = updateTaxonInfo((Taxon) nu, existingUsageKey, upd);
+        }
       }
 
       // try to also update the name - conditional checks within the subroutine
       // this can change the existing usage ID if the authorship changes !!!
+      // null if names are not synced and nothing loaded the name
       Name pn = updateName(null, nu.getName(), vs, upd, existing);
 
-      if (!upd.isEmpty()) {
-        this.updated++;
+      if (!upd.isEmpty() || potentiallyExtinct) {
+        if (!upd.isEmpty()) {
+          this.updated++;
+        }
         trackUpdated(existingUsageKey.getId());
         // update name & usage vsKey
         // both name and usage can have a key to a verbatim source. Ideally they are the same
@@ -775,16 +773,23 @@ public class TreeMergeHandler extends TreeBaseHandler {
         DSID<Integer> vsKey;
         if (uvsKey != null) {
           vsKey = DSID.of(targetDatasetKey, uvsKey);
-        } else if (pn.getVerbatimSourceKey() != null) {
+        } else if (pn != null && pn.getVerbatimSourceKey() != null) {
           vsKey = DSID.of(targetDatasetKey, pn.getVerbatimSourceKey());
         } else {
           vsKey = createSecondaryVS();
         }
-        vsm.insertSources(vsKey, nu, upd);
-        if (pn.getVerbatimSourceKey() == null) {
-          pn.setVerbatimSourceKey(vsKey.getId());
+        if (!upd.isEmpty()) {
+          vsm.insertSources(vsKey, nu, upd);
         }
-        nm.update(pn);
+        if (potentiallyExtinct) {
+          vsm.addIssue(vsKey, Issue.POTENTIALLY_EXTINCT);
+        }
+        if (pn != null) {
+          if (pn.getVerbatimSourceKey() == null) {
+            pn.setVerbatimSourceKey(vsKey.getId());
+          }
+          nm.update(pn);
+        }
         if (uvsKey == null) {
           num.updateVerbatimSourceKey(existingUsageKey, vsKey.getId());
         }
@@ -798,6 +803,44 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (usageIdScope != null) {
       num.addIdentifier(existing, List.of(wellKnownId(usageIdScope, nu.getId())));
     }
+  }
+
+  /**
+   * Gives an existing taxon the environments and temporal range of the source taxon if it has none.
+   * The extinct flag is never changed: a source that alone claims a taxon to be extinct is reported for review instead.
+   * The existing values are read through the autocommit session, which does not block on the batch session's locks.
+   *
+   * @param src the source taxon
+   * @param key the existing taxon to update
+   * @param upd set of info groups updated from the source, the ones updated here are added to it
+   * @return true if the source flags the existing taxon as extinct while it is not
+   */
+  private boolean updateTaxonInfo(Taxon src, DSID<String> key, Set<InfoGroup> upd) {
+    final boolean srcEnv = src.getEnvironments() != null && !src.getEnvironments().isEmpty();
+    final boolean srcRange = src.getTemporalRangeStart() != null || src.getTemporalRangeEnd() != null;
+    final boolean srcExtinct = Boolean.TRUE.equals(src.isExtinct());
+    if (!srcEnv && !srcRange && !srcExtinct) return false;
+
+    var t = numRO.getTaxonInfo(key);
+    if (t == null) return false;
+    boolean changed = false;
+    if (srcEnv && (t.getEnvironments() == null || t.getEnvironments().isEmpty())) {
+      t.setEnvironments(EnumSet.copyOf(src.getEnvironments()));
+      upd.add(InfoGroup.ENVIRONMENT);
+      changed = true;
+      LOG.debug("Updated {} with environments {}", key, t.getEnvironments());
+    }
+    if (srcRange && t.getTemporalRangeStart() == null && t.getTemporalRangeEnd() == null) {
+      t.setTemporalRangeStart(src.getTemporalRangeStart());
+      t.setTemporalRangeEnd(src.getTemporalRangeEnd());
+      upd.add(InfoGroup.TEMPORAL_RANGE);
+      changed = true;
+      LOG.debug("Updated {} with temporal range {} - {}", key, t.getTemporalRangeStart(), t.getTemporalRangeEnd());
+    }
+    if (changed) {
+      num.updateTaxonInfo(key, t.getEnvironments(), t.getTemporalRangeStart(), t.getTemporalRangeEnd(), user);
+    }
+    return srcExtinct && !Boolean.TRUE.equals(t.isExtinct());
   }
 
   /**

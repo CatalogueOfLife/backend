@@ -1,0 +1,10 @@
+# name exclusions for all merge sectors, formerly the blockedNames of the xrelease config
+- title: Merge exclusions
+  position: 1
+  selector:
+    modes: [MERGE]
+  settings:
+    blockedNames:
+      - Dictymia serbia
+      - Dictymia braunii
+      - Dictymia brownii Döring

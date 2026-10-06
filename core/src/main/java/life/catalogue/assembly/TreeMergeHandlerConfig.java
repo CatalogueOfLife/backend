@@ -14,7 +14,6 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -31,8 +30,6 @@ public class TreeMergeHandlerConfig {
   public final @Nullable Taxon incertae;
   public final int datasetKey;
   public final int user;
-  private final Set<String> blockedNames = new HashSet<>();
-  private final List<Pattern> blockedNamePatterns = new ArrayList<>();
   // resolved usage ids of the protected group root taxa in the sync target dataset
   private final Set<String> protectedUsageIds = new HashSet<>();
 
@@ -42,24 +39,6 @@ public class TreeMergeHandlerConfig {
     this.datasetKey = datasetKey;
     this.user = user;
     incertae = createIncertaeSedisRoot();
-    // upper case blocked names
-    if (xCfg.blockedNames != null) {
-      for (var bn : xCfg.blockedNames) {
-        blockedNames.add(norm(bn));
-      }
-    }
-    if (xCfg.blockedNamePatterns != null) {
-      for (var bnp : xCfg.blockedNamePatterns) {
-        if (!StringUtils.isBlank(bnp)){
-          try {
-            var p = Pattern.compile(bnp.trim(), Pattern.CASE_INSENSITIVE);
-            blockedNamePatterns.add(p);
-          } catch (IllegalArgumentException e) {
-            LOG.warn("Invalid name pattern: " + bnp, e);
-          }
-        }
-      }
-    }
     resolveProtectedGroups();
   }
 
@@ -117,10 +96,6 @@ public class TreeMergeHandlerConfig {
     return protectedUsageIds.contains(usageId);
   }
 
-  private static String norm(String x) {
-    return x == null ? null : x.trim().toUpperCase();
-  }
-
   private @Nullable Taxon createIncertaeSedisRoot() {
     // cached taxon existing? The same config will be reused many times in an XRelease
     if (xCfg.incertaeSedis != null) {
@@ -173,36 +148,7 @@ public class TreeMergeHandlerConfig {
     }
   }
 
-  /**
-   * Tests configured entire names to be excluded.
-   * The full scientificName with authorship as well as just the canonical name without authors is queried during backbone builds.
-   * @param n name to test for. Case insensitive!
-   */
-  public boolean isBlocked(FormattableName n) {
-    var blocked = blockedNames.contains(norm(n.getLabel()))
-           || blockedNames.contains(norm(n.getScientificName()));
-    if (!blocked && !blockedNamePatterns.isEmpty()) {
-      for (var p : blockedNamePatterns) {
-        var m = p.matcher(n.getLabel());
-        if (m.find()) {
-          return true;
-        }
-      }
-    }
-    return blocked;
-  }
-
   public boolean hasIncertae() {
     return incertae != null;
-  }
-
-  public static void main(String[] args){
-    try {
-      var p = Pattern.compile("bnp.trim()", Pattern.CASE_INSENSITIVE);
-      p = Pattern.compile("bnp(gh+$$", Pattern.CASE_INSENSITIVE);
-    } catch (IllegalArgumentException e) {
-      System.out.println(e);
-    }
-
   }
 }

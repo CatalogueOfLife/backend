@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.SectorProfileMapper">
+
+  <sql id="SELECT">
+    p.id,
+    p.dataset_key,
+    p.title,
+    p.description,
+    p.position,
+    p.modes,
+    p.dataset_types,
+    p.publisher_keys,
+    p.any_sector_publisher,
+    p.subject_dataset_keys,
+    p.sector_keys,
+    p.settings,
+    p.modified,
+    p.modified_by,
+    p.created,
+    p.created_by
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    <include refid="COLS_NO_DATASETKEY"/>
+  </sql>
+
+  <sql id="COLS_NO_DATASETKEY">
+    title,
+    description,
+    position,
+    modes,
+    dataset_types,
+    publisher_keys,
+    any_sector_publisher,
+    subject_dataset_keys,
+    sector_keys,
+    settings,
+    modified,
+    modified_by
+  </sql>
+
+  <sql id="PROPS">
+    #{datasetKey},
+    #{title},
+    #{description},
+    #{position},
+    #{selector.modes, typeHandler=life.catalogue.db.type2.SectorModeSetTypeHandler},
+    #{selector.datasetTypes, typeHandler=life.catalogue.db.type2.DatasetTypeSetTypeHandler},
+    #{selector.publisherKeys, typeHandler=life.catalogue.db.type2.UuidSetTypeHandler},
+    #{selector.anySectorPublisher},
+    #{selector.subjectDatasetKeys, typeHandler=life.catalogue.db.type2.IntegerSetTypeHandler},
+    #{selector.sectorKeys, typeHandler=life.catalogue.db.type2.IntegerSetTypeHandler},
+    #{settings, typeHandler=life.catalogue.db.type2.SectorSettingsTypeHandler}::JSONB,
+    now(),
+    #{modifiedBy}
+  </sql>
+
+  <!--
+    True if profile p selects sector s, whose subject dataset is d. An empty array places no restriction.
+    Shared with the profileKey filter of SectorMapper, so the members of a profile and the profiles of a sector
+    are drawn by one and the same rule.
+  -->
+  <sql id="MATCHES">
+    (cardinality(p.modes) = 0 OR s.mode = ANY(p.modes))
+    AND (cardinality(p.dataset_types) = 0 OR d.type = ANY(p.dataset_types))
+    AND (cardinality(p.publisher_keys) = 0 OR d.gbif_publisher_key = ANY(p.publisher_keys))
+    AND (NOT p.any_sector_publisher OR EXISTS (
+      SELECT TRUE FROM sector_publisher sp WHERE sp.dataset_key = s.dataset_key AND sp.id = d.gbif_publisher_key
+    ))
+    AND (cardinality(p.subject_dataset_keys) = 0 OR s.subject_dataset_key = ANY(p.subject_dataset_keys))
+    AND (cardinality(p.sector_keys) = 0 OR s.id = ANY(p.sector_keys))
+  </sql>
+
+  <sql id="ORDER">
+    ORDER BY p.position, p.id
+  </sql>
+
+  <resultMap id="profileResultMap" type="SectorProfile" autoMapping="true">
+    <id property="id" column="id"/>
+    <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.SectorSettingsTypeHandler"/>
+    <association property="selector" javaType="SectorSelector">
+      <result property="modes" column="modes" typeHandler="life.catalogue.db.type2.SectorModeSetTypeHandler"/>
+      <result property="datasetTypes" column="dataset_types" typeHandler="life.catalogue.db.type2.DatasetTypeSetTypeHandler"/>
+      <result property="publisherKeys" column="publisher_keys" typeHandler="life.catalogue.db.type2.UuidSetTypeHandler"/>
+      <result property="anySectorPublisher" column="any_sector_publisher"/>
+      <result property="subjectDatasetKeys" column="subject_dataset_keys" typeHandler="life.catalogue.db.type2.IntegerSetTypeHandler"/>
+      <result property="sectorKeys" column="sector_keys" typeHandler="life.catalogue.db.type2.IntegerSetTypeHandler"/>
+    </association>
+  </resultMap>
+
+  <select id="get" resultMap="profileResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM sector_profile p
+    WHERE p.id = #{key.id} AND p.dataset_key = #{key.datasetKey}
+  </select>
+
+  <select id="exists" resultType="boolean">
+    SELECT EXISTS (SELECT TRUE FROM sector_profile WHERE id = #{key.id} AND dataset_key = #{key.datasetKey})
+  </select>
+
+  <select id="list" resultMap="profileResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM sector_profile p
+    WHERE p.dataset_key = #{datasetKey}
+    <include refid="ORDER"/>
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="listAll" resultMap="profileResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM sector_profile p
+    WHERE p.dataset_key = #{datasetKey}
+    <include refid="ORDER"/>
+  </select>
+
+  <select id="listMatching" resultMap="profileResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM sector s
+      JOIN sector_profile p ON p.dataset_key = s.dataset_key
+      LEFT JOIN dataset d ON d.key = s.subject_dataset_key
+    WHERE s.dataset_key = #{key.datasetKey} AND s.id = #{key.id}
+      AND <include refid="MATCHES"/>
+    <include refid="ORDER"/>
+  </select>
+
+  <select id="count" resultType="integer">
+    SELECT count(*) FROM sector_profile WHERE dataset_key = #{datasetKey}
+  </select>
+
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM sector_profile WHERE dataset_key = #{datasetKey}
+  </delete>
+
+  <insert id="create" parameterType="SectorProfile" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+    INSERT INTO sector_profile (<include refid="COLS"/>, created_by)
+    VALUES (<include refid="PROPS"/>, #{createdBy})
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO sector_profile (id, dataset_key, <include refid="COLS_NO_DATASETKEY"/>, created, created_by)
+    SELECT p.id, #{newDatasetKey}, <include refid="COLS_NO_DATASETKEY"/>, created, created_by
+    FROM sector_profile p
+    WHERE p.dataset_key = #{datasetKey}
+  </insert>
+
+  <update id="update" parameterType="SectorProfile">
+    UPDATE sector_profile
+    SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
+    WHERE id = #{id} AND dataset_key = #{datasetKey}
+  </update>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM sector_profile WHERE id = #{key.id} AND dataset_key = #{key.datasetKey}
+  </delete>
+
+  <select id="processDataset" parameterType="map" resultMap="profileResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT"/>
+    FROM sector_profile p
+    WHERE p.dataset_key = #{datasetKey}
+  </select>
+
+</mapper>

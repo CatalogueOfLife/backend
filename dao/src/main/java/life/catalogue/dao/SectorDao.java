@@ -24,10 +24,11 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
-  private final static Set<Rank> PUBLISHER_SECTOR_RANKS = Set.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM);
+  public final static Set<Rank> PUBLISHER_SECTOR_RANKS = Set.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM);
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
   private final NameUsageIndexService indexService;
@@ -180,6 +181,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
 
   @Override
   public DSID<Integer> create(Sector s, int user) {
+    validate(s);
     s.applyUser(user);
     try (SqlSession session = factory.openSession(ExecutorType.SIMPLE, false)) {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
@@ -289,6 +291,13 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       setter.accept(null);
     }
     return tax;
+  }
+
+  @Override
+  protected void validate(Sector s) throws ConstraintViolationException {
+    super.validate(s);
+    // reject a broken regex on save: a merge would only log and skip a blocked name pattern
+    SectorProfileDao.validatePatterns(s);
   }
 
   @Override
@@ -416,8 +425,38 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
+  /**
+   * Creates missing merge sectors for the datasets of a publisher. They carry no settings of their own:
+   * the "Publisher sectors" profile of the project provides them, see docs/SECTOR-SETTINGS.md.
+   */
   public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, UUID publisherKey, @Nullable Set<Integer> datasetExclusion) {
-    return createMissingMergeSectorsFromPublisher(projectKey, userKey, PUBLISHER_SECTOR_RANKS, publisherKey, datasetExclusion);
+    ensurePublisherProfile(projectKey, userKey);
+    return createMissingMergeSectorsFromPublisher(projectKey, userKey, null, publisherKey, datasetExclusion);
+  }
+
+  /**
+   * Makes sure the project has a profile for its publisher sectors, i.e. one selecting any sector publisher.
+   * Without one they would merge everything from family down, see SectorSettingsResolver.MERGE_RANKS_DEFAULT.
+   * An existing one is left alone, whatever it says, so curators can change it.
+   */
+  public void ensurePublisherProfile(int projectKey, int userKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      var pm = session.getMapper(SectorProfileMapper.class);
+      var profiles = pm.listAll(projectKey);
+      if (profiles.stream().noneMatch(p -> p.getSelector().isAnySectorPublisher())) {
+        var p = new SectorProfile();
+        p.setDatasetKey(projectKey);
+        p.setTitle("Publisher sectors");
+        p.setDescription("Merge sectors of the datasets of all sector publishers");
+        p.setPosition(profiles.stream().mapToInt(SectorProfile::getPosition).max().orElse(-1) + 1);
+        p.getSelector().setModes(EnumSet.of(Sector.Mode.MERGE));
+        p.getSelector().setAnySectorPublisher(true);
+        p.getSettings().setRanks(EnumSet.copyOf(PUBLISHER_SECTOR_RANKS));
+        p.applyUser(userKey);
+        pm.create(p);
+        LOG.info("Created the publisher sectors profile {} in project {}", p.getId(), projectKey);
+      }
+    }
   }
 
   /**
