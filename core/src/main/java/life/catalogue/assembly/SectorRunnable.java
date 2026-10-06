@@ -176,8 +176,10 @@ abstract class SectorRunnable extends BackgroundJob {
    * If a job dao is given a job record is persisted as usual, so the sector_import metrics can join their status.
    * Exceptions are not propagated - inspect getStatus() or getState() for the outcome.
    * Used by the XRelease to merge sectors inside the running release job itself.
+   * The sync logs into the job log of the calling job, so the release log keeps its merges.
    */
   public void runEmbedded(@Nullable JobDao jobDao) {
+    logToCallerJob = true;
     if (jobDao != null) {
       jobDao.create(this);
       setPersister(jobDao::update);

@@ -156,8 +156,12 @@ its row still running and empty; the `Error` is then rethrown once the final sta
 whether the JVM can carry on is not a single job's call. An exception with an `InterruptedException` (or
 `InterruptedRuntimeException`) anywhere in its cause chain is a cancel, not a failure: libraries wrap the interrupt
 of a cancelled job, the elasticsearch client as a `RuntimeException` "thread waiting for the response was
-interrupted". Fine grained progress is a free text `step`, not a
-status - the old `ImportState` enum column is gone from the db (`IMPORTSTATE` dropped).
+interrupted". A job can also run on another job's thread - the XRelease merges its sectors through
+`SectorRunnable.runEmbedded()`, `ColReleaseExportJob` runs its exports - so `run()` hands the caller its MDC back
+instead of clearing it: the `JobAppender` drops every line without a `job` key, and a release that lost it after its
+first merged sector never closed or copied its job log (XR 622-632). `logToCallerJob`, set by `runEmbedded`, makes
+the nested job log into the caller's job log and emit no START/END markers of its own. Fine grained progress is
+a free text `step`, not a status - the old `ImportState` enum column is gone from the db (`IMPORTSTATE` dropped).
 The executor has three lanes (`JobLane`: DEFAULT, IMPORT, SYNC - a vocab enum, so it is served at
 `/vocab/joblane` and persisted as the `job.lane` column), each with its own worker pool and priority
 queue so a long import cannot starve an export; `getSerialBy()` serializes jobs sharing a key within a lane
