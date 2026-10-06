@@ -13,6 +13,7 @@ import life.catalogue.config.MailConfig;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -49,6 +50,9 @@ public abstract class BackgroundJob implements Runnable {
   private Timer timer;
   // if true copies job logs into the results directory
   protected boolean logToFile;
+  // if true and run on the thread of another job, this job logs into the callers job log instead of its own
+  // and never opens or closes a job log itself
+  protected boolean logToCallerJob;
 
   protected BackgroundJob(int userKey) {
     this(JobPriority.MEDIUM, userKey);
@@ -248,13 +252,19 @@ public abstract class BackgroundJob implements Runnable {
   @Override
   public final void run() {
     final Timer.Context ctxt = timer==null ? null : timer.time();
+    // a job can run on the thread of another one, e.g. the sector syncs an XRelease merges.
+    // It must hand that caller its MDC back, or the callers log lines lose their job key and with it the job log
+    final Map<String, String> callerMdc = MDC.getCopyOfContextMap();
+    final boolean ownLog = !logToCallerJob || callerMdc == null || !callerMdc.containsKey(LoggingUtils.MDC_KEY_JOB);
     try {
-      LoggingUtils.setJobMDC(key, getClass());
+      if (ownLog) {
+        LoggingUtils.setJobMDC(key, getClass());
+      }
       status = JobStatus.RUNNING;
       started = LocalDateTime.now();
       finished = null; // blocked jobs run several times
       persist();
-      var marker = logToFile ? LoggingUtils.START_JOB_LOG_MARKER : null;
+      var marker = logToFile && ownLog ? LoggingUtils.START_JOB_LOG_MARKER : null;
       LOG.info(marker, "Started {} job {}", getClass().getSimpleName(), key);
       execute();
       status = JobStatus.FINISHED;
@@ -323,17 +333,20 @@ public abstract class BackgroundJob implements Runnable {
         persist();
       }
       // will cause the dataset sifting appender reach end-of-life. It will linger for a few seconds.
-      var marker = logToFile ? LoggingUtils.END_JOB_LOG_MARKER : null;
+      var marker = logToFile && ownLog ? LoggingUtils.END_JOB_LOG_MARKER : null;
       LOG.info(marker, "About to end {} {}", getJobName(), key);
       onLogAppenderClose();
-      LoggingUtils.removeJobMDC();
-      MDC.clear();
+      if (callerMdc == null) {
+        MDC.clear();
+      } else {
+        MDC.setContextMap(callerMdc);
+      }
     }
   }
 
   /**
    * Override to clear any MDC log values or copy log files just after the log appender has been closed
-   * and before all MDC properties are cleared.
+   * and before the MDC is reset to what the thread carried before this job ran.
    * The job was marked as finished already, so logs should be on the filesystem.
    */
   protected void onLogAppenderClose() {
