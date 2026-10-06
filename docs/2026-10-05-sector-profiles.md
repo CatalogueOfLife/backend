@@ -207,9 +207,12 @@ Implemented as designed. These are the deviations, and what the implementation f
 - **Blocklists from profiles and sectors also apply to merges inside a project.** Before, the release config
   blocklists only applied during an XRelease.
 - **The prod migration runs in two steps** (`dbschema.md`, 2026-10-05).
-  - **Before the deploy:** it turns the `SECTOR_*` settings into a "Project defaults" profile, with `SECTOR_RANKS`
-    in a separate profile limited to non-merge modes. It creates a "Publisher sectors" profile per project with
-    sector publishers. Hand-curated merge sectors on a publisher's dataset get their FAMILY..FORM pinned.
+  - **Before the deploy:** it turns all `SECTOR_*` settings, ranks included, into a "Project defaults" profile.
+    Where `SECTOR_RANKS` was set, a "Merge ranks" profile limited to MERGE puts back the FAMILY..FORM that merge
+    sectors always used instead. That replaces the planned separate ranks profile for the other modes: one profile
+    then holds every migrated project setting, and the merge rule becomes visible and editable. It creates a
+    "Publisher sectors" profile per project with sector publishers. Hand-curated merge sectors on a publisher's
+    dataset get their FAMILY..FORM pinned.
   - **After the switch:** the publisher sectors drop their copied ranks and the old settings keys go.
   - Until step 2, both apps of a blue-green deploy behave the same and a rollback loses nothing. This came out of the
     final review.

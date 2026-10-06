@@ -61,6 +61,7 @@ CREATE INDEX ON sector_profile (dataset_key);
 INSERT INTO sector_profile (dataset_key, title, description, position, settings, created_by, modified_by)
 SELECT key, 'Project defaults', 'Migrated from the former SECTOR_* dataset settings', 0,
   jsonb_strip_nulls(jsonb_build_object(
+    'ranks', settings -> 'sector ranks',
     'entities', settings -> 'sector entities',
     'nameTypes', settings -> 'sector name types',
     'nameStatusExclusion', settings -> 'sector name status exclusion',
@@ -69,13 +70,14 @@ SELECT key, 'Project defaults', 'Migrated from the former SECTOR_* dataset setti
     'createImplicitNames', settings -> 'sector create implicit names'
   )), 0, 0
 FROM dataset
-WHERE settings ?| ARRAY['sector entities', 'sector name types', 'sector name status exclusion',
+WHERE settings ?| ARRAY['sector ranks', 'sector entities', 'sector name types', 'sector name status exclusion',
                         'sector copy according to', 'sector remove ordinals', 'sector create implicit names'];
 
--- merge sectors always ignored SECTOR_RANKS, so it only ever applied to the other modes
+-- merge sectors always ignored SECTOR_RANKS and merged from family down. Where the project defaults now carry ranks,
+-- a merge only profile above them restores that. Without SECTOR_RANKS the built-in merge default does the same already
 INSERT INTO sector_profile (dataset_key, title, description, position, modes, settings, created_by, modified_by)
-SELECT key, 'Project ranks', 'Migrated from the former SECTOR_RANKS dataset setting', 1,
-  '{ATTACH,UNION,HIERARCHY}'::SECTOR_MODE[], jsonb_build_object('ranks', settings -> 'sector ranks'), 0, 0
+SELECT key, 'Merge ranks', 'Merge sectors ignored the former SECTOR_RANKS dataset setting', 1,
+  '{MERGE}'::SECTOR_MODE[], '{"ranks": ["family", "genus", "species", "subspecies", "variety", "form"]}'::JSONB, 0, 0
 FROM dataset
 WHERE settings ? 'sector ranks';
 
