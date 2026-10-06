@@ -188,7 +188,9 @@ Now follow `review-prompt.md` from **The checklist** on, with these differences 
 - If you have the backend checked out, use it to *explain* a finding (e.g. why `IdProvider` minted new ids,
   read together with the log lines for those ids),
   but the numbers in the report still come only from requests you made and files you built. Never estimate.
-- Write the single self-contained HTML file to `{{outputPath}}`, check it parses
+- Write the single self-contained HTML file to `{{outputPath}}` with a line break after every block and table row -
+  a generator that joins its output without newlines produces one line of a megabyte or more, which the download
+  host cannot serve (step 6). Check it parses
   (`python3 -c "import html.parser,sys; html.parser.HTMLParser().feed(open(sys.argv[1]).read())" FILE`), and
   give the user the verdict line plus the path. If the Artifact tool is available, offer to publish it as well.
   Publish nothing unasked - neither as an artifact nor to the server, see step 6.
@@ -222,7 +224,11 @@ home directory first and then written into place as `col`.
 
 1. **Check the file is safe to publish.** The download host serves it as is, on a public domain. Refuse to upload
    while `grep -niE '<script|<iframe|<object|<embed|<link|javascript:|[[:space:]]on[a-z]+=|src=.?https?:' FILE`
-   finds anything - fix the report instead.
+   finds anything - fix the report instead. Refuse as well while
+   `awk 'length > 100000 { print NR": "length; bad=1 } END { exit bad }' FILE` prints a line: an HTML output filter
+   on the host answers `500 Internal Server Error` for a line around a megabyte long, while `.json` files and
+   short-lined HTML next to it serve fine. A 1.49 MB single-line report failed that way on 2026-10-06; the same
+   content with its longest line at 1,978 bytes served. The server reviews keep their lines under a few kB.
 2. **Check the target.** The report directory must exist already (the release job created it); never create one.
    An existing `review.html` there is someone's review - a server review or an earlier upload - that may already
    be linked. Do not overwrite it unless the user explicitly says so for this release.
@@ -265,13 +271,25 @@ home directory first and then written into place as `col`.
    home directory. `-n` makes `sudo` fail at once instead of hanging on a password prompt nobody can answer. The temp
    file plus `mv` keeps the download host from ever serving a half written report. `mv` replaces an existing
    `review.html` and `tee` an existing `review.json` without asking, so the `test ! -e` line is the only guard -
-   drop it only when the user explicitly asked to replace this release's review.
+   drop it only when the user explicitly asked to replace this release's review, or swap it for the checksum guard of
+   step 5 when you replace your own broken upload.
 5. **Verify** with `GET /dataset/$KEY/review` (status `finished`, a `reportURI`) and a request for that URI. The
    download host sits behind a cookie challenge, so a plain `curl -sSI` only sees the challenge - keep a cookie jar:
    ```bash
    curl -sS "${AUTH[@]}" "$API/dataset/$KEY/review" | jq '{status, reportURI}'
-   curl -sS -L -c jar.txt -b jar.txt -A Mozilla/5.0 -o /dev/null -w '%{http_code} %{size_download}\n' \
+   curl -sS -L -c jar.txt -b jar.txt -A Mozilla/5.0 -o served.html -w '%{http_code} %{size_download}\n' \
      "https://download.checklistbank.org/releases/$PROJECT/$ATTEMPT/review.html"
+   cmp served.html release-review-$KEY.html
    ```
-   Expect `200` and the byte size of the local file. Then give the user the link. A private candidate's review is
+   Expect `200` and a served copy identical to the local file. The API only checks that `review.html` exists, so it
+   reports `finished` even while the host answers 500 - neither it nor an `ls` on the server proves the page works.
+   Then give the user the link.
+   If the served copy is broken, fix the report and replace it. That is the one overwrite you may do without asking,
+   because the file is your own upload of this session: in the step 4 script, swap the `test ! -e` guard for a check
+   that the file on the server still has the checksum of what you uploaded, so a review someone else put there
+   in between is never replaced:
+   ```bash
+   OLD=$(shasum -a 256 the-copy-you-uploaded.html | cut -d' ' -f1)   # passed to the remote script as $3
+   test "$(sha256sum "$D/review.html" | cut -d' ' -f1)" = "$3" || { echo "not our upload - not overwriting"; exit 3; }
+   ``` A private candidate's review is
    publicly readable there too - point that out once when the release is private.
