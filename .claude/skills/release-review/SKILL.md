@@ -66,8 +66,11 @@ curl -sS "${AUTH[@]}" "$API/dataset/$KEY" | jq '{key, alias, origin, attempt, pr
 Then ask the backend for the pair - this is exactly what the job uses:
 
 ```bash
-curl -sS "${AUTH[@]}" "$API/dataset/$KEY/review" | jq
+curl -sS "${AUTH[@]}" "$API/dataset/$KEY/review" > review-info.json
+read PROJECT ATTEMPT ORIGIN PREV < <(jq -r '"\(.projectKey) \(.attempt) \(.origin) \(.previousReleaseKey)"' review-info.json)
 ```
+
+`PROJECT`, `ATTEMPT`, `ORIGIN` and `PREV` are used by every later step.
 
 It answers `projectKey`, `origin`, `attempt`, `previousReleaseKey` (the previous **public** release of the same
 kind: RELEASE against RELEASE, XRELEASE against XRELEASE), the `status` of a server side review and, if one
@@ -181,8 +184,59 @@ Now follow `review-prompt.md` from **The checklist** on, with these differences 
   but the numbers in the report still come only from requests you made and files you built. Never estimate.
 - Write the single self-contained HTML file to `{{outputPath}}`, check it parses
   (`python3 -c "import html.parser,sys; html.parser.HTMLParser().feed(open(sys.argv[1]).read())" FILE`), and
-  give the user the verdict line plus the path. If the Artifact tool is available, offer to publish it; do not
-  publish unasked, and never upload it to the download host - that is the server review's place.
+  give the user the verdict line plus the path. If the Artifact tool is available, offer to publish it as well.
+  Publish nothing unasked - neither as an artifact nor to the server, see step 6.
 
 When the review surfaces a backend bug, say so as a separate finding with the evidence (counts, job log lines,
 example ids) - that is how most `fix(release)` commits in this repo started.
+
+## 6. Upload to the server (only when asked)
+
+A review becomes the release's official one by putting it where the server review job would have written it:
+`review.html` in the release report directory `{release.reportDir}/{projectKey}/{attempt}/`, next to `job.log.gz`
+and `id-reports.gz`. There is no API for this; copy it over sftp. `GET /dataset/{key}/review` treats an existing
+`review.html` as the truth, so the UI shows it as finished and links it at
+`https://download.checklistbank.org/releases/{projectKey}/{attempt}/review.html` straight away.
+
+Only do this when the user asks for it, and only after showing them the verdict. It needs the GBIF VPN and ssh access
+to the server, configured by the user, never by you:
+
+| variable | meaning |
+|---|---|
+| `CLB_SFTP` | the sftp target, e.g. `user@host` or an `~/.ssh/config` alias |
+| `CLB_REPORT_DIR` | the server's `release.reportDir`, the directory holding `{projectKey}/{attempt}/` |
+
+If either is unset or the host does not answer, say the upload needs the VPN and those two variables, and stop -
+do not guess hosts or paths. The project key and attempt are the ones from step 1, of the release under review.
+
+1. **Check the file is safe to publish.** The download host serves it as is, on a public domain. Refuse to upload
+   while `grep -niE '<script|<iframe|<object|<embed|<link|javascript:|[[:space:]]on[a-z]+=|src=.?https?:' FILE`
+   finds anything - fix the report instead.
+2. **Check the target.** The report directory must exist already (the release job created it); never create one.
+   An existing `review.html` there is someone's review - a server review or an earlier upload - that may already
+   be linked. Do not overwrite it unless the user explicitly says so for this release.
+   ```bash
+   D="$CLB_REPORT_DIR/$PROJECT/$ATTEMPT"
+   sftp -b - "$CLB_SFTP" <<< "ls -l $D" | grep -E 'job.log.gz|id-reports.gz|review'
+   ```
+3. **Upload** the report and a `review.json` sidecar, so `GET /dataset/{key}/review` can tell a local review from
+   a server one. Write the sidecar from the step 1 values; `jobKey` and `sessionId` stay unset:
+   ```bash
+   jq -n --argjson r $KEY --argjson p $PROJECT --arg o $ORIGIN --argjson a $ATTEMPT --argjson prev $PREV \
+     --arg f "$(date +%Y-%m-%dT%H:%M:%S)" \
+     '{releaseKey:$r, projectKey:$p, origin:$o, attempt:$a, previousReleaseKey:$prev, status:"FINISHED",
+       model:"claude-code (local release-review skill)", finished:$f}' > review.json
+   sftp -b - "$CLB_SFTP" <<EOF
+   put release-review-$KEY.html $D/review.html.tmp
+   put review.json $D/review.json
+   rename $D/review.html.tmp $D/review.html
+   chmod 644 $D/review.html
+   chmod 644 $D/review.json
+   EOF
+   ```
+   The temp file plus `rename` only keeps the download host from ever serving a half written report: OpenSSH's sftp
+   renames with posix-rename, which **replaces** an existing `review.html` without asking, and `put` overwrites
+   `review.json` the same way. Step 2 is therefore the only guard - never skip it.
+4. **Verify** with `GET /dataset/$KEY/review` (status `FINISHED`, a `reportURI`) and a `curl -sSI` of that URI,
+   then give the user the link. A private candidate's review is publicly readable there too - point that out once
+   when the release is private.
