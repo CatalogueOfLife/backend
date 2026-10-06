@@ -1,7 +1,7 @@
 ---
 name: release-review
-description: Review a Catalogue of Life / ChecklistBank release or extended release (XR) before it is announced, following the same checklist as the backend's on-demand AI release review (ReleaseReviewJob). Use when asked to review, check or sanity check a COL release, an XR, a release attempt or "the latest release" of a project, or to compare a release with the previous one.
-argument-hint: <releaseKey> [previousReleaseKey]
+description: Review a Catalogue of Life / ChecklistBank release or extended release (XR) before it is announced, following the same checklist as the backend's on-demand AI release review (ReleaseReviewJob). Use when asked to review, check or sanity check a COL release, an XR, a release attempt or "the latest release" of a project (by default the latest release candidate, e.g. 3LXRC for COL XR), or to compare a release with the previous one.
+argument-hint: "[release, default 3LXRC = latest COL XR candidate] [compare-to key]"
 ---
 
 # Catalogue of Life release review
@@ -17,20 +17,56 @@ in this skill - the two would drift apart. This file only says how to fill in wh
 
 ## 1. Resolve the release pair
 
-Set `API=${CLB_API:-https://api.checklistbank.org}` first (see step 2 for the other hosts).
-
-Arguments: a release key (required) and optionally the key to compare against. If the user names a release by
-alias ("COL26.9 XR") or asks for "the latest", list the project's releases (3 is COL) and pick by key - check the order
-the API answers in rather than assuming it:
+Set the host and, if there is a token, the auth header first (see step 2 for the other hosts and credentials):
 
 ```bash
-curl -sS "$API/dataset?releasedFrom=3&sortBy=KEY&limit=10" | jq '.result[] | {key, alias, origin, attempt, private}'
+API=${CLB_API:-https://api.checklistbank.org}
+AUTH=(); [ -n "$CLB_TOKEN" ] && AUTH=(-H "Authorization: Bearer $CLB_TOKEN")
 ```
 
-Then ask the backend for the pair - this is exactly what the job uses, and a public endpoint:
+Pass `"${AUTH[@]}"` to every API request - an empty bearer header is a failed login, not an anonymous one.
+
+Arguments: a release (required) and optionally the key to compare against. A release can be given in any form
+the API's `DatasetKeyRewriteFilter` understands, so pass these straight through as `$KEY` instead of resolving them
+yourself:
+
+| request | `$KEY` | resolves to |
+|---|---|---|
+| "review the latest COL XR" - **the default** | `3LXRC` | the newest extended release candidate of COL |
+| "the latest COL release" (base, not XR) | `3LRC` | the newest base release candidate |
+| "the latest *published* COL XR" | `3LXR` | the newest public XR (`3LR` for a base release) |
+| "COL XR attempt 632" | `3R632` | that attempt, public or private |
+| "COL26.9 XR" | `COL26.9XR` | that published COL release by its alias |
+| a plain key | `316263` | itself |
+
+Any other project works the same with its own key in place of `3`.
+
+**"Latest" means the latest candidate.** A review happens before a release is announced, so "review the latest COL
+XR" asks for `3LXRC`: the newest non-deleted XR of the project by creation date, **private or public**, the one a
+release manager is deciding about. Every release starts out as a private candidate. Only take the published one
+(`3LXR`) when the user explicitly says published, public or announced.
+
+Resolve the alias once and from then on work with the numeric key it answers, so that every later request and
+link refers to the same release even if a newer candidate appears mid review:
 
 ```bash
-curl -sS "$API/dataset/$KEY/review" | jq
+KEY=$(curl -sS "${AUTH[@]}" "$API/dataset/3LXRC" | jq -r .key)
+curl -sS "${AUTH[@]}" "$API/dataset/$KEY" | jq '{key, alias, origin, attempt, private, created}'
+```
+
+- A candidate is normally **private**: without a token with at least reviewer rights on the project the API
+  answers 401/403/404 for it. Ask for credentials then - do not silently fall back to the published release.
+- If the candidate turns out to be **public** already, it is the latest published release too - there is no
+  unpublished candidate right now. Say so in one line and review it anyway, since that is still what was asked.
+- The server keeps the latest keys cached for up to an hour, so a candidate created minutes ago may not be
+  resolved yet. If the user mentions a newer attempt than the one you got, use `3R{attempt}` or check
+  `GET /dataset?releasedFrom=3&origin=XRELEASE&sortBy=CREATED&limit=5` with the token.
+- Report the release by its alias **and** `attempt`; candidates of one month often share an alias.
+
+Then ask the backend for the pair - this is exactly what the job uses:
+
+```bash
+curl -sS "${AUTH[@]}" "$API/dataset/$KEY/review" | jq
 ```
 
 It answers `projectKey`, `origin`, `attempt`, `previousReleaseKey` (the previous **public** release of the same
@@ -70,7 +106,7 @@ Work in a fresh directory, e.g. `$SCRATCH/review-$KEY/`. Everything downloaded i
 **Sector comparison** - the job calls `SectorMetricsComparator` in process; the same code backs an editor endpoint:
 
 ```bash
-curl -sS -H "Authorization: Bearer $CLB_TOKEN" \
+curl -sS "${AUTH[@]}" \
   "$API/dataset/$KEY/sector/sync/compare?to=$PREV&minChange=0.1" > sector-metrics.json
 ```
 
