@@ -800,11 +800,14 @@
     </where>
   </select>
 
+  <!-- synonyms have no taxon_metrics row, so a synonyms only cursor does not join it -->
   <select id="processDatasetWithClassification" parameterType="map" resultMap="usageClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT_BASE"/>, tm.classification, <include refid="BASIONYM_COLS"/>
+    SELECT <include refid="SELECT_BASE"/>, <if test="synonym != true">tm.classification,</if> <include refid="BASIONYM_COLS"/>
     <if test="inclCitations">, rpub.citation AS n_published_in_citation, racc.citation AS according_to</if>
     FROM <include refid="FROM_BASE"/>
-      LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
+      <if test="synonym != true">
+        LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
+      </if>
       <include refid="BASIONYM_JOIN">
         <property name="dk" value="#{datasetKey}"/>
         <property name="nameIdCol" value="u.name_id"/>
@@ -826,6 +829,9 @@
       </if>
       <if test="minRank != null">
         AND n.rank &lt;= #{minRank}::rank
+      </if>
+      <if test="synonym != null">
+        AND <if test="!synonym">NOT</if> is_synonym(u.status)
       </if>
     </where>
   </select>
@@ -1045,6 +1051,9 @@
         <property name="dk" value="#{param.datasetKey}"/>
         <property name="idCol" value="x.according_to_id"/>
       </include>
+    </if>
+    <if test="synonym != null">
+      WHERE <if test="!synonym">NOT</if> x.is_synonym
     </if>
     <if test="depthFirst">ORDER BY x.path</if>
   </select>

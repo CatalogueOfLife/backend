@@ -70,7 +70,14 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, Rank.SUBGENUS, Rank.GENUS), 0);
     assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, Rank.VARIETY, Rank.SPECIES), 4);
     // the archive exporters ask for the joined in reference citations - a different SQL shape
-    assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, null, null, true), 4);
+    assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, null, null, null, true), 4);
+    // accepted names and synonyms on their own, the synonyms one without the taxon_metrics join
+    assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, null, null, false, true), 2);
+    assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, null, null, true, true), 2);
+    mapper().processDatasetWithClassification(testDataRule.testData.key, null, null, true, false)
+      .forEach(u -> assertTrue(u.isSynonym()));
+    mapper().processDatasetWithClassification(testDataRule.testData.key, null, null, false, false)
+      .forEach(u -> assertTrue(u.isTaxon()));
   }
 
   @Test

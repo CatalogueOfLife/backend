@@ -59,6 +59,17 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
     mapper().processTree(ttp, false, true)
             .forEach(countHandler);
     Assert.assertEquals(10, countHandler.counter.get());
+
+    // the synonym filter splits the very same traversal
+    ttp.setExclusion(Sets.newHashSet("skipID"));
+    CollectIdHandler<NameUsageBase> acc = new CollectIdHandler<>();
+    mapper().processTree(ttp, false, false, true, false, false).forEach(acc);
+    CollectIdHandler<NameUsageBase> syn = new CollectIdHandler<>();
+    mapper().processTree(ttp, false, false, true, false, true).forEach(syn);
+    Assert.assertEquals(23, acc.list.size() + syn.list.size());
+    Assert.assertFalse(syn.list.isEmpty());
+    Assert.assertTrue(syn.list.stream().allMatch(id -> id.startsWith("s")));
+    Assert.assertTrue(acc.list.stream().allMatch(id -> id.startsWith("t")));
   }
 
   @Test

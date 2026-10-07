@@ -280,19 +280,17 @@ public abstract class ArchiveExport extends DatasetExportJob {
     checkIfCancelled();
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      final Cursor<NameUsageBase> cursor;
+      // all accepted names strictly before any synonym, so a synonym can rely on what its accepted taxon told us:
+      // the extinct filter below and the taxGroup ColDP takes from it. Neither query has any order of its own.
       if (fullDataset) {
-        cursor = num.processDatasetWithClassification(datasetKey, null, null, inclCitations());
+        consumeUsages(num.processDatasetWithClassification(datasetKey, null, null, false, inclCitations()));
+        consumeUsages(num.processDatasetWithClassification(datasetKey, null, null, true, inclCitations()));
       } else {
-        var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms());
-        cursor = num.processTree(ttp, false, false, true, inclCitations());
-      }
-      checkIfCancelled();
-      // iterate manually (not PgUtils.consume) so the per-record consumeUsage
-      // can propagate its checked InterruptedException for responsive cancellation
-      try (cursor) {
-        for (NameUsageBase u : cursor) {
-          consumeUsage(u);
+        var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), false);
+        consumeUsages(num.processTree(ttp, false, false, true, inclCitations(), false));
+        if (req.isSynonyms()) {
+          ttp.setSynonyms(true);
+          consumeUsages(num.processTree(ttp, false, false, true, inclCitations(), true));
         }
       }
 
@@ -311,6 +309,17 @@ public abstract class ArchiveExport extends DatasetExportJob {
     } finally {
       taxonIDs.remove(null); // can happen
       nameIDs.remove(null); // can happen
+    }
+  }
+
+  private void consumeUsages(Cursor<NameUsageBase> cursor) throws IOException, InterruptedException {
+    checkIfCancelled();
+    // iterate manually (not PgUtils.consume) so the per-record consumeUsage
+    // can propagate its checked InterruptedException for responsive cancellation
+    try (cursor) {
+      for (NameUsageBase u : cursor) {
+        consumeUsage(u);
+      }
     }
   }
 
