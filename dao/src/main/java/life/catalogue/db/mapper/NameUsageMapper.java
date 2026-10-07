@@ -536,6 +536,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
    * @param ordered if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
+   * @param inclBasionym if true also resolves Name.basionymNameId/basionymUsageId. Only the archive exporters
+   *                     need it and it costs a scan of the dataset's BASIONYM relations, so it is opt in.
    * @param synonym if given only returns synonyms (true) or accepted names (false) of the traversed tree.
    *                Accepted names alone are cheaper to get with params.synonyms=false, which does not traverse synonyms at all.
    */
@@ -546,10 +548,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                                     @Param("inclCitations") boolean inclCitations,
                                     @Nullable @Param("synonym") Boolean synonym);
 
-  /**
-   * @param inclBasionym if true also resolves Name.basionymNameId/basionymUsageId. Only the archive exporters
-   *                     need it and it costs a scan of the dataset's BASIONYM relations, so it is opt in.
-   */
   default Cursor<NameUsageBase> processTree(TreeTraversalParameter params, boolean depthFirst, boolean ordered) {
     return processTree(params, depthFirst, ordered, false, false, null);
   }
@@ -572,7 +570,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Processed SimpleName instances have the parentID as their parent property, not a scientificName!
    *
    * @param params various tree traversal request parameters
-   * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
    * @param ordered if true the children of a depth first traversal are ordered by their ordinal and name with all synonyms coming first. Only applies to depthFirst traversals!
    */
