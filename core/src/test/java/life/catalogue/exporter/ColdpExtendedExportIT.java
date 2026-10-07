@@ -1,5 +1,6 @@
 package life.catalogue.exporter;
 
+import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
 import life.catalogue.api.model.CslName;
@@ -9,10 +10,13 @@ import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.Identifier;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Reference;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.MediaType;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.terms.ClbTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.NomRelType;
@@ -31,6 +35,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -100,6 +105,44 @@ public class ColdpExtendedExportIT extends ExportTest {
     assertNotNull("root-1 usage missing from export", row);
     assertEquals("tsn:12345,col:ABC", row.get(ColdpTerm.alternativeID));
     assertEquals("ipni:77-1", row.get(ColdpTerm.nameAlternativeID));
+  }
+
+  /**
+   * Every accepted taxon gets the group of its own name and classification, every synonym that of its accepted
+   * taxon, whatever order the usages come out of the database in. In the apple data root-1 is classified in
+   * Animalia/Arthropoda and root-2 in Animalia alone, with s1 and s2 as its synonyms.
+   */
+  @Test
+  public void taxGroup() throws Exception {
+    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertExportExists(exp.getArchive());
+
+    final String file = ColdpTerm.NameUsage.simpleName() + ".tsv";
+    assertTrue(readArchiveHeader(exp.getArchive(), file).contains(ClbTerm.taxGroup.prefixedName()));
+    Map<String, String> groups = new HashMap<>();
+    for (var row : readArchiveRows(exp.getArchive(), file)) {
+      groups.put(row.get(ColdpTerm.ID.prefixedName()), row.get(ClbTerm.taxGroup.prefixedName()));
+    }
+    assertEquals(4, groups.size());
+    assertEquals(PermissiveEnumSerde.enumValueName(TaxGroup.Arthropods), groups.get("root-1"));
+    assertEquals(PermissiveEnumSerde.enumValueName(TaxGroup.Animals), groups.get("root-2"));
+    assertEquals(groups.get("root-2"), groups.get("s1"));
+    assertEquals(groups.get("root-2"), groups.get("s2"));
+
+    // a subtree export traverses the tree instead, its synonyms in a pass of their own
+    req.setRoot(new SimpleName("root-2"));
+    exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertExportExists(exp.getArchive());
+    groups.clear();
+    for (var row : readArchiveRows(exp.getArchive(), file)) {
+      groups.put(row.get(ColdpTerm.ID.prefixedName()), row.get(ClbTerm.taxGroup.prefixedName()));
+    }
+    assertEquals(Set.of("root-2", "s1", "s2"), groups.keySet());
+    assertEquals(PermissiveEnumSerde.enumValueName(TaxGroup.Animals), groups.get("root-2"));
+    assertEquals(groups.get("root-2"), groups.get("s1"));
+    assertEquals(groups.get("root-2"), groups.get("s2"));
   }
 
   /**

@@ -13,6 +13,7 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorAtoms;
 import life.catalogue.img.ImageService;
+import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
 import org.gbif.dwc.terms.Term;
@@ -21,11 +22,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.LinkedList;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 /**
  * ColDP exporter using a merged NameUsage entity and usageIDs instead of nameIDs for linking.
@@ -33,12 +37,19 @@ import org.slf4j.LoggerFactory;
 public class ColdpExtendedExport extends ArchiveExport {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpExtendedExport.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
+  private static final TaxGroupAnalyzer TAX_GROUP_ANALYZER = new TaxGroupAnalyzer();
   private Writer cslWriter;
   private Writer cslWriterJSONL;
   private Writer bibWriter;
   private boolean cslFirst = true;
   private NameUsageKeyMap nameUsageKeyMap;
   private final File treatmentDir;
+  /**
+   * The group of every accepted taxon with one, for its synonyms to take over by their parentID.
+   * The core pass writes all accepted names before any synonym. The keys are the very id instances
+   * nameUsageKeyMap holds already, so this costs little more than the fastutil arrays.
+   */
+  private final Map<String, TaxGroup> taxGroups = new Object2ObjectOpenHashMap<>();
 
   public ColdpExtendedExport(ExportRequest req, int userKey, SqlSessionFactory factory, ExporterConfig cfg, ImageService imageService) {
     super(DataFormat.COLDP, userKey, req, factory, cfg, imageService);
@@ -62,6 +73,9 @@ public class ColdpExtendedExport extends ArchiveExport {
     if (ColdpTerm.RESOURCES.containsKey(entity.coldp)) {
       LinkedList<Term> terms = new LinkedList<>(ColdpTerm.RESOURCES.get(entity.coldp));
       terms.add(ClbTerm.merged);
+      if (entity == EntityType.NAME_USAGE) {
+        terms.add(ClbTerm.taxGroup);
+      }
       terms.push(entity.coldp);
       return terms.toArray(Term[]::new);
     }
@@ -89,8 +103,17 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.remarks, u.getRemarks());
     writer.set(ClbTerm.merged, u.isMerged());
 
-    if (!u.isSynonym()) {
+    if (u.isSynonym()) {
+      writer.set(ClbTerm.taxGroup, taxGroups.get(u.getParentId()));
+
+    } else {
       TaxonWithClassification t = (TaxonWithClassification) u;
+      // the classification never holds the taxon itself, the analyzer weighs its name separately
+      var group = TAX_GROUP_ANALYZER.analyze(new SimpleName(u), t.getClassification());
+      if (group != null) {
+        taxGroups.put(u.getId(), group);
+      }
+      writer.set(ClbTerm.taxGroup, group);
       writer.set(ColdpTerm.scrutinizer, t.getScrutinizer());
       writer.set(ColdpTerm.scrutinizerID, t.getScrutinizerID());
       writer.set(ColdpTerm.scrutinizerDate, t.getScrutinizerDate());
