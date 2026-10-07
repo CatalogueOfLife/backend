@@ -281,7 +281,10 @@ public abstract class ArchiveExport extends DatasetExportJob {
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       // all accepted names strictly before any synonym, so a synonym can rely on what its accepted taxon told us:
-      // the extinct filter below and the taxGroup ColDP takes from it. Neither query has any order of its own.
+      // the extinct filter below and the taxGroup ColDP takes from it. Neither query has any order of its own -
+      // the full one scans, and the tree traversal is breadth first only inside its CTE, an order the basionym and
+      // citation joins of its final select need not keep. Hence two passes each. The second tree pass walks the taxa
+      // again to reach their synonyms, but only returns the synonyms.
       if (fullDataset) {
         consumeUsages(num.processDatasetWithClassification(datasetKey, null, null, false, inclCitations()));
         consumeUsages(num.processDatasetWithClassification(datasetKey, null, null, true, inclCitations()));
