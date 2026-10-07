@@ -118,11 +118,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
   private Authorship basionymAuthorship = new Authorship();
   
-  /**
-   * The sanctioning author for sanctioned fungal names. Fr. or Pers.
-   */
-  private String sanctioningAuthor;
-  
   private NomCode code;
   
   /**
@@ -271,7 +266,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.notho = n.notho.isEmpty() ? EnumSet.noneOf(NamePart.class) : EnumSet.copyOf(n.notho);
     this.combinationAuthorship = n.combinationAuthorship;
     this.basionymAuthorship = n.basionymAuthorship;
-    this.sanctioningAuthor = n.sanctioningAuthor;
     this.code = n.code;
     this.nomStatus = n.nomStatus;
     this.originalSpelling = n.originalSpelling;
@@ -320,7 +314,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.notho = builder.notho == null || builder.notho.isEmpty() ? EnumSet.noneOf(NamePart.class) : EnumSet.copyOf(builder.notho);
     setCombinationAuthorship(builder.combinationAuthorship);
     setBasionymAuthorship(builder.basionymAuthorship);
-    setSanctioningAuthor(builder.sanctioningAuthor);
     setCode(builder.code);
     setNomStatus(builder.nomStatus);
     setOriginalSpelling(builder.originalSpelling);
@@ -349,7 +342,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       .authorship(null)
       .combinationAuthorship(null)
       .basionymAuthorship(null)
-      .sanctioningAuthor(null)
       .namesIndexId(null)
       .build();
   }
@@ -383,7 +375,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.notho = copy.getNotho();
     builder.combinationAuthorship = copy.getCombinationAuthorship();
     builder.basionymAuthorship = copy.getBasionymAuthorship();
-    builder.sanctioningAuthor = copy.getSanctioningAuthor();
     builder.code = copy.getCode();
     builder.nomStatus = copy.getNomStatus();
     builder.originalSpelling = copy.isOriginalSpelling();
@@ -638,13 +629,18 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.basionymAuthorship = basionymAuthorship;
   }
   
-  @Override
-  public String getSanctioningAuthor() {
-    return sanctioningAuthor;
-  }
-  
-  public void setSanctioningAuthor(String sanctioningAuthor) {
-    this.sanctioningAuthor = sanctioningAuthor;
+  /**
+   * Reads the sanctioning author of JSON written before it moved onto the combination authorship
+   * with name-parser-api 5.2, e.g. the names of stored decisions.
+   */
+  @JsonProperty(value = "sanctioningAuthor", access = JsonProperty.Access.WRITE_ONLY)
+  private void setLegacySanctioningAuthor(String sanctioningAuthor) {
+    if (sanctioningAuthor != null) {
+      if (combinationAuthorship == null) {
+        combinationAuthorship = new Authorship();
+      }
+      combinationAuthorship.setSanctioningAuthor(sanctioningAuthor);
+    }
   }
 
   @Override
@@ -939,7 +935,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       Objects.equals(notho, name.notho) &&
       Objects.equals(combinationAuthorship, name.combinationAuthorship) &&
       Objects.equals(basionymAuthorship, name.basionymAuthorship) &&
-      Objects.equals(sanctioningAuthor, name.sanctioningAuthor) &&
       code == name.code &&
       nomStatus == name.nomStatus &&
       Objects.equals(originalSpelling, name.originalSpelling) &&
@@ -961,7 +956,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, namesIndexId, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, imprintYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, namesIndexId, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, imprintYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
   }
 
   @Override
@@ -1036,7 +1031,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private Set<NamePart> notho = EnumSet.noneOf(NamePart.class);
     private Authorship combinationAuthorship;
     private Authorship basionymAuthorship;
-    private String sanctioningAuthor;
     private NomCode code;
     private NomStatus nomStatus;
     private Boolean originalSpelling;
@@ -1176,11 +1170,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder basionymAuthorship(Authorship val) {
       basionymAuthorship = val;
-      return this;
-    }
-
-    public Builder sanctioningAuthor(String val) {
-      sanctioningAuthor = val;
       return this;
     }
 

@@ -21,6 +21,7 @@
     ${alias}.basionym_ex_authors AS ${prefix}basionym_ex_authors,
     ${alias}.basionym_year AS ${prefix}basionym_year,
     ${alias}.basionym_anonymous AS ${prefix}basionym_anonymous,
+    ${alias}.basionym_sanctioning_author AS ${prefix}basionym_sanctioning_author,
     ${alias}.combination_authors AS ${prefix}combination_authors,
     ${alias}.combination_ex_authors AS ${prefix}combination_ex_authors,
     ${alias}.combination_year AS ${prefix}combination_year,
@@ -106,6 +107,7 @@
     ${alias}basionym_ex_authors,
     ${alias}basionym_year,
     ${alias}basionym_anonymous,
+    ${alias}basionym_sanctioning_author,
     ${alias}combination_authors,
     ${alias}combination_ex_authors,
     ${alias}combination_year,
@@ -155,11 +157,12 @@
     #{basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.year},
     COALESCE(#{basionymAuthorship.anonymous}, FALSE),
+    #{basionymAuthorship.sanctioningAuthor},
     #{combinationAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{combinationAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{combinationAuthorship.year},
     COALESCE(#{combinationAuthorship.anonymous}, FALSE),
-    #{sanctioningAuthor},
+    #{combinationAuthorship.sanctioningAuthor},
     #{publishedInId},
     #{publishedInPage},
     #{publishedInPageLink},
@@ -193,12 +196,14 @@
       <result property="exAuthors" column="combination_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="year" column="combination_year"/>
       <result property="anonymous" column="combination_anonymous"/>
+      <result property="sanctioningAuthor" column="sanctioning_author"/>
     </association>
     <association property="basionymAuthorship" javaType="Authorship">
       <result property="authors" column="basionym_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="exAuthors" column="basionym_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="year" column="basionym_year"/>
       <result property="anonymous" column="basionym_anonymous"/>
+      <result property="sanctioningAuthor" column="basionym_sanctioning_author"/>
     </association>
   </resultMap>
 

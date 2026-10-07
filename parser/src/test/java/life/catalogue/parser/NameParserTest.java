@@ -208,6 +208,22 @@ public class NameParserTest {
     assertEquals("anon.", n.getAuthorship());
   }
 
+  /**
+   * name-parser-api 5.2 keeps the sanctioning author on each authorship, so a sanctioned basionym has one too.
+   */
+  @Test
+  public void sanctioningAuthor() throws Exception {
+    Name n = parse("Boletus edulis Bull. : Fr.", null, Rank.SPECIES, NomCode.BOTANICAL);
+    assertEquals("Fr.", n.getCombinationAuthorship().getSanctioningAuthor());
+    assertEquals(List.of("Bull."), n.getCombinationAuthorship().getAuthors());
+    assertEquals("Bull. : Fr.", n.getAuthorship());
+
+    n = parse("Merulius lacrimans (Wulfen : Fr.) Schum.", null, Rank.SPECIES, NomCode.BOTANICAL);
+    assertEquals("Fr.", n.getBasionymAuthorship().getSanctioningAuthor());
+    assertNull(n.getCombinationAuthorship().getSanctioningAuthor());
+    assertEquals("(Wulfen : Fr.) Schum.", n.getAuthorship());
+  }
+
   static Name parse(String name, String authorship, Rank rank, NomCode code) {
     return NameParser.PARSER.parse(name, authorship, rank, code, new IssueContainer.Simple()).get().getName();
   }
@@ -497,12 +513,12 @@ public class NameParserTest {
   
   @Test
   public void parseSanctioned() throws Exception {
-    // sanctioning authors not supported
-    // https://github.com/GlobalNamesArchitecture/gnparser/issues/409
+    // since name-parser-api 5.2 a sanctioned basionym keeps its own sanctioning author
     assertName("Agaricus compactus sarcocephalus (Fr. : Fr.) Fr. ", "Agaricus compactus sarcocephalus")
         .infraSpecies("Agaricus", "compactus", Rank.INFRASPECIFIC_NAME, "sarcocephalus")
         .combAuthors(null, "Fr.")
         .basAuthors(null, "Fr.")
+        .basSanctAuthor("Fr.")
         .nothingElse();
     
     assertName("Boletus versicolor L. : Fr.", "Boletus versicolor")
@@ -587,6 +603,7 @@ public class NameParserTest {
       BAS,
       EXBAS,
       SANCT,
+      BASSANCT,
       RANK,
       TYPE,
       STATUS,
@@ -630,7 +647,10 @@ public class NameParserTest {
               assertTrue(n.getBasionymAuthorship().getExAuthors().isEmpty());
               break;
             case SANCT:
-              assertNull(n.getSanctioningAuthor());
+              assertNull(n.getCombinationAuthorship().getSanctioningAuthor());
+              break;
+            case BASSANCT:
+              assertNull(n.getBasionymAuthorship().getSanctioningAuthor());
               break;
             case RANK:
               assertEquals(Rank.UNRANKED, n.getRank());
@@ -726,8 +746,13 @@ public class NameParserTest {
     }
     
     NameAssertion sanctAuthor(String author) {
-      assertEquals(author, n.getSanctioningAuthor());
+      assertEquals(author, n.getCombinationAuthorship().getSanctioningAuthor());
       return add(NP.SANCT);
+    }
+
+    NameAssertion basSanctAuthor(String author) {
+      assertEquals(author, n.getBasionymAuthorship().getSanctioningAuthor());
+      return add(NP.BASSANCT);
     }
     
     NameAssertion combExAuthors(String... authors) {

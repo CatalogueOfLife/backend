@@ -144,12 +144,15 @@ public class NameUsageArchiverIT {
     try (SqlSession session = factory.openSession(true);
          Statement st = session.getConnection().createStatement()
     ) {
-      st.execute("UPDATE name SET basionym_anonymous=true, combination_anonymous=true WHERE dataset_key=13 AND id='nd'");
+      st.execute("UPDATE name SET basionym_anonymous=true, combination_anonymous=true," +
+        " basionym_sanctioning_author='Fr.', sanctioning_author='Pers.' WHERE dataset_key=13 AND id='nd'");
     }
     archiver.archiveProject(archiver.ranking(PROJECT), true, false);
     var d = get("D").getName();
     assertTrue(d.getBasionymAuthorship().isAnonymous());
     assertTrue(d.getCombinationAuthorship().isAnonymous());
+    assertEquals("Fr.", d.getBasionymAuthorship().getSanctioningAuthor());
+    assertEquals("Pers.", d.getCombinationAuthorship().getSanctioningAuthor());
     assertFalse(get("E").getName().getCombinationAuthorship().isAnonymous());
 
     try (SqlSession session = factory.openSession(true)) {

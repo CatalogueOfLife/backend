@@ -279,7 +279,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    */
   private static void copyToPNU(ParsedAuthorship pn, ParsedNameUsage pnu, IssueContainer issues){
     pnu.getName().setCombinationAuthorship(pn.getCombinationAuthorship());
-    pnu.getName().setSanctioningAuthor(pn.getSanctioningAuthor());
     pnu.getName().setBasionymAuthorship(pn.getBasionymAuthorship());
     // propagate notes and unparsed bits found in authorship if not already existing
     setIfNull(pn.getNomenclaturalNote(), pnu.getName()::getNomenclaturalNote, pnu.getName()::setNomenclaturalNote);

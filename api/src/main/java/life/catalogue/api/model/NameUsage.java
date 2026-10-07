@@ -4,6 +4,7 @@ import life.catalogue.api.vocab.NameField;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collection;
@@ -157,7 +158,9 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, VerbatimSourceE
       addIfSet(fields, COMBINATION_EX_AUTHORS, name.getCombinationAuthorship().getExAuthors());
       addIfSet(fields, COMBINATION_YEAR, name.getCombinationAuthorship().getYear());
     }
-    addIfSet(fields, SANCTIONING_AUTHOR, name.getSanctioningAuthor());
+    if (sanctioned(name.getCombinationAuthorship()) || sanctioned(name.getBasionymAuthorship())) {
+      fields.add(SANCTIONING_AUTHOR);
+    }
     addIfSet(fields, CODE, name.getCode());
     addIfSet(fields, NOM_STATUS, name.getNomStatus());
     addIfSet(fields, PUBLISHED_IN, name.getPublishedInId());
@@ -181,6 +184,10 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, VerbatimSourceE
     if (val != null) {
       fields.add(nf);
     }
+  }
+
+  private static boolean sanctioned(Authorship a) {
+    return a != null && a.hasSanctioningAuthor();
   }
 
   /**

@@ -91,6 +91,9 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     n.getBasionymAuthorship().setYear("1798");
     n.getBasionymAuthorship().setAnonymous(true);
     n.getCombinationAuthorship().setAuthors(List.of("Denis", "Schiffermüller"));
+    // name-parser-api 5.2 keeps a sanctioning author per authorship
+    n.getCombinationAuthorship().setSanctioningAuthor("Fr.");
+    n.getBasionymAuthorship().setSanctioningAuthor("Pers.");
     return n;
   }
   

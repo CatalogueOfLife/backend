@@ -11,16 +11,20 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2026-10-06 anonymous authorship
+#### 2026-10-07 anonymous authorship, basionym sanctioning author
 name-parser-api 5.1 flags a name or act published anonymously (`Authorship.anonymous`) instead of keeping an `anon.`
-author string, see #1611. Run before the deploy: the old app's column lists ignore the new columns, and a constant
-default only touches the catalog. No backfill - rows get the flag when their dataset is re-imported or re-synced.
+author string, see #1611. name-parser-api 5.2 moves the sanctioning author onto `Authorship`, so a sanctioned
+basionym keeps one too: "Merulius lacrimans (Wulfen : Fr.) Schum.". The existing `sanctioning_author` column stays
+the combination's. Run before the deploy: the old app's column lists ignore the new columns, and a constant default
+only touches the catalog. No backfill - rows get the new values when their dataset is re-imported or re-synced.
 ```sql
 ALTER TABLE name
   ADD COLUMN basionym_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN basionym_sanctioning_author TEXT,
   ADD COLUMN combination_anonymous BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE name_usage_archive
   ADD COLUMN n_basionym_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN n_basionym_sanctioning_author TEXT,
   ADD COLUMN n_combination_anonymous BOOLEAN NOT NULL DEFAULT FALSE;
 ```
 

@@ -243,8 +243,8 @@ sector's `authorshipUpdate` setting (`Sector.AuthorshipUpdate`):
 | `MISSING` | the source authorship is applied only when the project name has none yet |
 | `ALWAYS` | the source authorship overwrites the project name's whenever the source has one |
 
-Parsed authorship is copied as the structured combination/basionym/sanctioning parts and the cached
-string rebuilt via `Name.rebuildAuthorship()`; an unparsed source only contributes its raw
+Parsed authorship is copied as the structured combination and basionym authorships, each with its own
+sanctioning author and anonymous flag, and the cached string rebuilt via `Name.rebuildAuthorship()`; an unparsed source only contributes its raw
 authorship string. The provenance is recorded as an `InfoGroup.AUTHORSHIP` **secondary source** on
 the project name's verbatim source (`VerbatimSourceMapper.insertSources(...)`), pointing back to the
 source usage. Because the matched names are pre-existing project data **not** tagged with this

@@ -508,7 +508,7 @@ public class TestEntityGenerator {
       n.setBasionymAuthorship(createAuthorship());
     }
     if (RND.nextInt(10) == 1) {
-      n.setSanctioningAuthor("Fr.");
+      n.getCombinationAuthorship().setSanctioningAuthor("Fr.");
     }
     if (n.getSpecificEpithet() != null) {
       n.setInfragenericEpithet("Igen");

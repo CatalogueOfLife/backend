@@ -31,7 +31,6 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
   private String cultivarEpithet;
   private Authorship combinationAuthorship = new Authorship();
   private Authorship basionymAuthorship = new Authorship();
-  private String sanctioningAuthor;
 
   public LinneanNameUsage() {
   }
@@ -57,7 +56,6 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     this.cultivarEpithet = other.cultivarEpithet;
     this.combinationAuthorship = other.combinationAuthorship;
     this.basionymAuthorship = other.basionymAuthorship;
-    this.sanctioningAuthor = other.sanctioningAuthor;
   }
 
   public LinneanNameUsage(NameUsageBase nu) {
@@ -81,7 +79,6 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     cultivarEpithet = nu.getName().getCultivarEpithet();
     combinationAuthorship = nu.getName().getCombinationAuthorship();
     basionymAuthorship = nu.getName().getBasionymAuthorship();
-    sanctioningAuthor = nu.getName().getSanctioningAuthor();
   }
 
   public String getId() {
@@ -290,14 +287,6 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     this.basionymAuthorship = basionymAuthorship;
   }
 
-  public String getSanctioningAuthor() {
-    return sanctioningAuthor;
-  }
-
-  public void setSanctioningAuthor(String sanctioningAuthor) {
-    this.sanctioningAuthor = sanctioningAuthor;
-  }
-
   @Override
   public boolean isCandidatus() {
     return false;
@@ -337,13 +326,12 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
       Objects.equals(infraspecificEpithet, that.infraspecificEpithet) &&
       Objects.equals(cultivarEpithet, that.cultivarEpithet) &&
       Objects.equals(combinationAuthorship, that.combinationAuthorship) &&
-      Objects.equals(basionymAuthorship, that.basionymAuthorship) &&
-      Objects.equals(sanctioningAuthor, that.sanctioningAuthor);
+      Objects.equals(basionymAuthorship, that.basionymAuthorship);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, parentId, sectorKey, verbatimSourceKey, status, extinct, nameId, type, code, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
+    return Objects.hash(id, parentId, sectorKey, verbatimSourceKey, status, extinct, nameId, type, code, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship);
   }
 
   @Override

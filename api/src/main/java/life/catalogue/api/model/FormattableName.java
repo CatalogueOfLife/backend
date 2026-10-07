@@ -20,8 +20,6 @@ import com.google.common.collect.Lists;
  */
 public interface FormattableName extends LinneanName, ScientificName, CombinedAuthorshipIF {
 
-  String getSanctioningAuthor();
-
   // resolve the default methods shared by ScientificName and CombinedAuthorshipIF towards
   // ScientificName - its hasAuthorship() also considers the cached authorship string
   @Override default boolean hasAuthorship() {
