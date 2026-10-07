@@ -1,7 +1,7 @@
 ---
 name: species-descriptions
-description: Use when asked how many species (or names) were described per year in a ChecklistBank or Catalogue of Life dataset or release - description rates, discovery or description curves, new species per year or decade - for a dataset key or magic key like 3LXR, 3LR or COL26.9XR, overall or per taxGroup, for a year range, or including infraspecific names.
-argument-hint: "<dataset key, e.g. 3LXR> [year range, e.g. 2000-2025] [infraspecific] [accepted only]"
+description: Use when asked how many species, genera or other names were described per year in a ChecklistBank or Catalogue of Life dataset or release - description rates, discovery or description curves, new species or genera per year or decade - for a dataset key or magic key like 3LXR, 3LR or COL26.9XR, overall or per taxGroup, for a year range, or for genera, infrageneric or infraspecific names.
+argument-hint: "<dataset key, e.g. 3LXR> [year range, e.g. 2000-2025] [ranks: genus, infrageneric, species, infraspecific] [accepted only]"
 ---
 
 # Original species descriptions per year and taxGroup
@@ -22,7 +22,7 @@ python3 -I "$SKILL_DIR/species_descriptions.py" 3LXR --out "$OUT"
 |---|---|
 | latest published COL XR / base release | `3LXR` / `3LR` (any magic key the API resolves: `COL26.9XR`, `3R633`, a plain key) |
 | a year range | `--years 2000-2025` (also `2000-`, `-1900`). It replaces the default window. |
-| subspecies, varieties, forms too | `--infraspecific` |
+| which ranks | `--rank` with any of `genus`, `infrageneric`, `species`, `infraspecific`, comma separated or repeated; default `species`. E.g. "species incl. subspecies and varieties" is `--rank species,infraspecific`, "new genera" is `--rank genus`. Several classes are counted together. |
 | accepted names only | `--accepted-only` (default: accepted names and synonyms) |
 | another environment | `--api https://api.dev.checklistbank.org` or `$CLB_API` |
 
@@ -56,7 +56,8 @@ If it stops with "was built just now and predates the clb:taxGroup column", the 
 
 | rule | detail |
 |---|---|
-| ranks | `species`; with `--infraspecific` every infraspecific rank of `/vocab/rank` except cultivar ranks and strain |
+| ranks | per `--rank` class, from `/vocab/rank`: `genus`; infrageneric = the genus group ranks below genus (subgenus, sections, series); `species`; infraspecific = every infraspecific rank except cultivar ranks and strain |
+| no autonyms | autonyms and nominotypical names (`Carabus (Carabus)`, `Xus alba alba`) repeat their parent's description and are left out |
 | status | accepted, provisionally accepted, synonym, ambiguous synonym. Never misapplied or bare names |
 | original combination only | no basionym authorship, no authorship starting with `(`, no basionym relation (`basionymID`, `NameRelation.tsv`) to another name |
 | new species only | replacement names (nomina nova) are left out, and so are names without any authorship: they cannot be told from a recombination |
@@ -78,7 +79,7 @@ names all fall into one subgroup.
 Lead with the numbers from the script's summary, not your own reading of the files:
 
 1. Total original descriptions, the year range, ranks and statuses used, and the split by rank the script prints
-   with `--infraspecific`.
+   when more than one rank was counted.
 2. The largest groups and the peak years worth mentioning.
 3. **What was left out and why** - always the number of recombinations, and `no year` when it is large. These
    counts cover every name of the requested ranks in any year, not just the requested range: say so. A

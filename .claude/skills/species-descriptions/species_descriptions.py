@@ -7,7 +7,7 @@ assigns to every usage - and writes a wide TSV (year x taxGroup), an HTML report
 the same charts as SVG files.
 
   python3 -I species_descriptions.py 3LXR
-  python3 -I species_descriptions.py 1027 --years 2000-2025 --infraspecific --out ./scarabs
+  python3 -I species_descriptions.py 1027 --years 2000-2025 --rank species,infraspecific --out ./scarabs
 
 Credentials come from $CLB_TOKEN, or $CLB_USER + $CLB_PASSWORD. They are needed to request a missing export,
 to read private releases and - as an admin - to force a new export when the existing one predates the
@@ -80,6 +80,8 @@ class Api:
         return json.load(r)
     except urllib.error.HTTPError as e:
       detail = e.read().decode("utf-8", "replace")[:300]
+      if e.code == 401 and self.token and "JWT" in detail:
+        raise SystemExit(f"The token is not valid on {self.base}: tokens are per environment (prod, test, dev). {detail}")
       raise SystemExit(f"{req.get_method()} {req.full_url} failed with HTTP {e.code}: {detail}")
 
   def download(self, url, dest):
@@ -326,10 +328,61 @@ def citation_year(s):
   return int(years[-1]) if years else None
 
 
-def infraspecific_ranks(api):
-  # cultivated plant ranks and strains are no nomenclatural descriptions
-  return {r["name"] for r in api.json("/vocab/rank")
-          if r.get("infraspecific") and r.get("code") != "cultivars" and r["name"] != "strain"}
+# rank classes in taxonomic order, with the words the report uses for them
+RANK_CLASSES = {"genus": "genera", "infrageneric": "infrageneric names", "species": "species",
+                "infraspecific": "infraspecific names"}
+RANK_ALIASES = {"genera": "genus", "infragenerics": "infrageneric", "infraspecifics": "infraspecific"}
+
+
+def parse_ranks(values):
+  wanted = []
+  for value in values or ["species"]:
+    for c in value.replace(" ", "").lower().split(","):
+      c = RANK_ALIASES.get(c, c)
+      if c and c not in RANK_CLASSES:
+        raise SystemExit(f"--rank takes {', '.join(RANK_CLASSES)}, not {c}")
+      if c and c not in wanted:
+        wanted.append(c)
+  return [c for c in RANK_CLASSES if c in wanted]
+
+
+def rank_classes(api, wanted):
+  """
+  Maps every rank name of the wanted classes to its class. Infrageneric ranks are the genus group ranks below
+  genus (subgenus, sections, series ...). Cultivated plant ranks and strains are no nomenclatural descriptions.
+  """
+  out, below_genus = {}, False
+  for r in api.json("/vocab/rank"):
+    name, cls = r["name"], None
+    if name in ("genus", "species"):
+      cls = name
+    elif r.get("genusGroup") and below_genus:
+      cls = "infrageneric"
+    elif r.get("infraspecific") and r.get("code") != "cultivars" and name != "strain":
+      cls = "infraspecific"
+    below_genus = below_genus or name == "genus"
+    if cls in wanted:
+      out[name] = cls
+  return out
+
+
+def rank_text(classes):
+  words = [RANK_CLASSES[c] for c in classes]
+  return words[0] if len(words) == 1 else ", ".join(words[:-1]) + " and " + words[-1]
+
+
+def rank_breakdown(by_rank, ranks):
+  """Counts per rank class, with the single ranks of a class in brackets when there are several."""
+  per_class = defaultdict(Counter)
+  for rank, n in by_rank.items():
+    per_class[ranks[rank]][rank] += n
+  parts = []
+  for c in RANK_CLASSES:
+    if c in per_class:
+      single = per_class[c]
+      detail = " (" + ", ".join(f"{r} {n:,}" for r, n in single.most_common()) + ")" if len(single) > 1 else ""
+      parts.append(f"{RANK_CLASSES[c]} {sum(single.values()):,}{detail}")
+  return "; ".join(parts)
 
 
 # --------------------------------------------------------------------------------------------------
@@ -378,6 +431,11 @@ def read_names(zf, ranks, statuses, skipped, considered):
       continue
     if g(row, "nameStatus") in BAD_NOM_STATUS:
       skipped[f"nomenclatural status {g(row, 'nameStatus')}"] += 1
+      continue
+    cls = ranks[rank]
+    if (cls == "infraspecific" and g(row, "infraspecificEpithet") and g(row, "infraspecificEpithet") == g(row, "specificEpithet")
+        or cls == "infrageneric" and g(row, "infragenericEpithet") and g(row, "infragenericEpithet") == g(row, "genericName")):
+      skipped["autonym or nominotypical name (repeats its parent)"] += 1
       continue
     uid, authorship = g(row, "ID"), g(row, "authorship")
     if g(row, "basionymAuthorship") or g(row, "basionymExAuthorship") or g(row, "basionymAuthorshipYear"):
@@ -607,7 +665,7 @@ HTML_HEAD = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Species description rates</title>
+<title>Description rates</title>
 <style>
 :root{color-scheme:light;--page:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink-2:#52514e;--muted:#898781;
 --grid:#e1e0d9;--axis:#c3c2b7;--series:#2a78d6;--ring:rgba(11,11,11,.10)}
@@ -733,7 +791,7 @@ def write_outputs(out, ds, meta, years, columns, series, vocab, skipped, sources
 
   e = html.escape
   parts = [HTML_HEAD]
-  parts.append(f"<h1>Original species descriptions per year</h1>")
+  parts.append(f"<h1>Original descriptions of {e(meta['ranks'])} per year</h1>")
   parts.append(f'<p class="sub">{e(name)} · {e(ds.get("title") or "")} · dataset {key}'
                f'{" attempt " + str(ds["attempt"]) if ds.get("attempt") else ""} · {e(data_version(ds))}</p>')
   total = sum(series["total"])
@@ -743,6 +801,8 @@ def write_outputs(out, ds, meta, years, columns, series, vocab, skipped, sources
   parts.append(f"<li><b>{e(meta['ranks'])}</b></li>")
   parts.append(f"<li><b>{e(meta['statuses'])}</b></li>")
   parts.append("</ul>")
+  if meta["breakdown"]:
+    parts.append(f'<p class="sub">By rank: {e(meta["breakdown"])}</p>')
   parts.append('<p class="sub">Each panel has its own y scale. A group includes all its subgroups, so the panels '
                "do not add up to the total. Algae count under plants and pseudofungi under fungi, their primary "
                "parent groups. A group whose names all fall into one subgroup gets no panel of its own. "
@@ -809,7 +869,9 @@ def main():
   ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
   ap.add_argument("dataset", help="dataset key or magic key, e.g. 3LXR, 3LR, COL26.9XR, 1027")
   ap.add_argument("--years", help=f"year range, e.g. 2000-2025 (default: all years found within {MIN_YEAR}-{THIS_YEAR})")
-  ap.add_argument("--infraspecific", action="store_true", help="also count infraspecific names (subspecies, varieties, forms ...)")
+  ap.add_argument("--rank", action="append", metavar="CLASSES",
+                  help="rank classes to count, comma separated or repeated: genus, infrageneric, species, infraspecific "
+                       "(default species)")
   ap.add_argument("--accepted-only", action="store_true", help="count accepted names only, not synonyms")
   ap.add_argument("--out", help="output directory (default ./species-descriptions-<key>)")
   ap.add_argument("--work", default=os.path.expanduser("~/.cache/clb-exports"), help="download cache for export archives")
@@ -832,7 +894,8 @@ def main():
     coldp, coldp_desc = obtain_export(api, ds, args.work)
 
   vocab = {g["name"]: g for g in api.json("/vocab/taxgroup")}
-  ranks = {"species"} | (infraspecific_ranks(api) if args.infraspecific else set())
+  classes = parse_ranks(args.rank)
+  ranks = rank_classes(api, classes)
   statuses = STATUSES_ACCEPTED if args.accepted_only else STATUSES_ALL
   skipped, sources, considered = Counter(), Counter(), [0]
 
@@ -850,9 +913,10 @@ def main():
   columns = ["total"] + ordered + (["unknown"] if "unknown" in counts else [])
   series = {c: [counts[c][y] for y in years] for c in columns}
 
-  rank_txt = "species and infraspecific names" if args.infraspecific else "species"
+  rank_txt = rank_text(classes)
   meta = {
     "ranks": rank_txt,
+    "breakdown": rank_breakdown(by_rank, ranks) if len(by_rank) > 1 else "",
     "considered": considered[0],
     "statuses": "accepted names only" if args.accepted_only else "accepted names and synonyms",
     "exports": f"extended ColDP export {coldp_desc}",
@@ -863,6 +927,8 @@ def main():
     ) if n],
     "method": [
       f"Ranks: {', '.join(sorted(ranks))}.",
+      "Autonyms and nominotypical names such as Carabus (Carabus) or Xus alba alba repeat the description of their "
+      "parent and are left out.",
       f"Taxonomic status: {', '.join(sorted(statuses))}. Misapplied and bare names are never counted.",
       "Only names in their original combination: no basionym authorship, no bracketed authorship and no basionym "
       "relation to another name. Replacement names (nomina nova) and names without any authorship are left out.",
@@ -881,7 +947,7 @@ def main():
   print(f"Dataset {ds['key']} {ds.get('alias') or ''} - {ds.get('title')} ({data_version(ds)})")
   print(f"{sum(series['total']):,} original descriptions of {rank_txt}, {lo}-{hi}, {meta['statuses']}")
   if len(by_rank) > 1:
-    print("By rank: " + ", ".join(f"{r} {n:,}" for r, n in by_rank.most_common()))
+    print("By rank: " + rank_breakdown(by_rank, ranks))
   print("\nLargest groups as assigned (the TSV and charts include subgroups in their parents):")
   for g, n in assigned.most_common(12):
     print(f"  {label(g):<20} {n:>10,}")
