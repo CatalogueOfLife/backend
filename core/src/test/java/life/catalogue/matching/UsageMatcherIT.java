@@ -311,6 +311,31 @@ public class UsageMatcherIT {
   }
 
   /**
+   * Names published anonymously carry no author, only the anonymous flag.
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void anonymous() throws InterruptedException {
+    loadDataset(9);
+
+    // two anonymous works are the same
+    var m = match(Rank.VARIETY, "Abies alba var. aurea", "anon.", cl().family("Pinaceae"));
+    assertMatch(m, "Aurea");
+    // a year does not make it a year-only authorship that needs a year on the candidate too
+    m = match(Rank.VARIETY, "Abies alba var. aurea", "Anon., 1850", cl().family("Pinaceae"));
+    assertMatch(m, "Aurea");
+    // a named author cannot be told apart from an anonymous work without a year, so it is no match
+    m = match(Rank.VARIETY, "Abies alba var. aurea", "Mast.", cl().family("Pinaceae"));
+    assertNoMatch(m);
+
+    // with the same year the attributed author is the same act
+    m = match(Rank.GENUS, "Aodon", "Lacepède, 1798", cl().family("Balistidae"));
+    assertMatch(m, "Aodon");
+    m = match(Rank.GENUS, "Aodon", "Anonymous [Lacepède], 1798", cl().family("Balistidae"));
+    assertMatch(m, "Aodon");
+  }
+
+  /**
    * Monomial homonyms & suprageneric_rank filter
    */
   @Test

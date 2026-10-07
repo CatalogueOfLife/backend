@@ -41,6 +41,10 @@ public class AuthorshipNormalizer {
   private static final Pattern AUTHOR = Pattern.compile("^((?:[a-z]\\s)*).*?([a-z]+)( (?:filius|fil|fl|f|bis|ter)\\.?)?$");
   private static final String AUTHOR_MAP_FILENAME = "authorship/authormap.txt";
   private static final Pattern PUNCTUATION = Pattern.compile("[\\p{Punct}&&[^,]]+");
+  /**
+   * The normalized author of an anonymous work without attributed authors, see {@link #normalizeName(Name)}.
+   */
+  public static final String ANONYMOUS = "anon";
   /** nobiliary particles joining the parts of a compound surname, e.g. "Bory de Saint-Vincent" */
   private static final Set<String> PARTICLES = Set.of(
     "de", "del", "della", "den", "der", "des", "di", "do", "dos", "du", "da", "das",
@@ -151,6 +155,10 @@ public class AuthorshipNormalizer {
         authors = n.getBasionymAuthorship();
       } else {
         authors = n.getCombinationAuthorship();
+      }
+      // keep anonymous works apart from names without any authorship
+      if (authors.isAnonymous() && !authors.hasAuthors()) {
+        return List.of(ANONYMOUS);
       }
       return lookup(normalize(authors, null)).stream()
           .map(Author::new)

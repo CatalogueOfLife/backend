@@ -165,6 +165,51 @@ public class NameParserTest {
 
     assertNull(normalizeAuthorship("[sic]", ""));
     assertNull(normalizeAuthorship("[sic!]", ""));
+
+    // anonymous authors are kept as given, https://github.com/CatalogueOfLife/backend/issues/1611
+    assertEquals("anon., 1830", normalizeAuthorship("anon., 1830", null));
+    assertEquals("(anon.) Baker", normalizeAuthorship("(anon.) Baker", null));
+    assertEquals("anon. ex Baker", normalizeAuthorship("anon. ex Baker", null));
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void anonymous() throws Exception {
+    // a separate authorship string is kept as given
+    Name n = parse("Aodon", "Anonymous, 1798", Rank.GENUS, NomCode.ZOOLOGICAL);
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertTrue(n.getCombinationAuthorship().getAuthors().isEmpty());
+    assertEquals("1798", n.getCombinationAuthorship().getYear());
+    assertEquals("Anonymous, 1798", n.getAuthorship());
+
+    // attributed authors keep their names
+    n = parse("Lycaena virgaureae", "[Denis & Schiffermüller], 1775", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertEquals(List.of("Denis", "Schiffermüller"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("1775", n.getCombinationAuthorship().getYear());
+    assertEquals("[Denis & Schiffermüller], 1775", n.getAuthorship());
+
+    // an anonymous basionym
+    n = parse("Agaricus muscarius", "(anon.) Baker", Rank.SPECIES, null);
+    assertTrue(n.getBasionymAuthorship().isAnonymous());
+    assertTrue(n.getBasionymAuthorship().getAuthors().isEmpty());
+    assertFalse(n.getCombinationAuthorship().isAnonymous());
+    assertEquals(List.of("Baker"), n.getCombinationAuthorship().getAuthors());
+
+    // an authorship built from the parsed parts is rendered per code
+    n = parse("Aodon Anonymous, 1798", null, Rank.GENUS, NomCode.ZOOLOGICAL);
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertEquals("Anon., 1798", n.getAuthorship());
+
+    n = parse("Abies alba var. aurea Anon.", null, Rank.VARIETY, NomCode.BOTANICAL);
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertEquals("anon.", n.getAuthorship());
+  }
+
+  static Name parse(String name, String authorship, Rank rank, NomCode code) {
+    return NameParser.PARSER.parse(name, authorship, rank, code, new IssueContainer.Simple()).get().getName();
   }
 
   @Test

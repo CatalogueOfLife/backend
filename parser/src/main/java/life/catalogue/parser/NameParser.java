@@ -42,7 +42,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[]+)\\s*");
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
   private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?");
-  private static final Pattern NORM_ANON = Pattern.compile("\\b(anon\\.?)(\\b|\\s|$)");
   private static final Pattern LEADING_PUNCT = Pattern.compile("^\\s*[.;,]\\s*");
   private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*\\b(sic|corrig)\\b[.!\\s]*[\\])]?\\s*");
 
@@ -251,12 +250,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     Matcher m = COMMA_BEFORE_YEAR.matcher(name);
     if (m.find()) {
       name = m.replaceFirst(", $1");
-    }
-
-    // capitalize Anonymous author
-    m = NORM_ANON.matcher(name);
-    if (m.find()) {
-      name = m.replaceFirst("Anon.");
     }
 
     // remove leading punctuations and normalize subsequent ones

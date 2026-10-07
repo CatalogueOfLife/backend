@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.common.tax.AuthorAtoms;
 import life.catalogue.parser.*;
 import life.catalogue.parser.NameParser;
 
@@ -402,7 +403,7 @@ public class NameInterpreter {
 
   private static Authorship buildAuthorship(String author, String ex, String year) {
     Authorship a = new Authorship();
-    a.setAuthors(parseAuthors(author));
+    AuthorAtoms.decode(parseAuthors(author), a);
     a.setExAuthors(parseAuthors(ex));
     a.setYear(year);
     return a;

@@ -650,7 +650,8 @@ public class UsageMatcher implements AutoCloseable {
   /**
    * @return true if the name has a publication year in its authorship but no author name at all,
    *         e.g. a bare "1816". Such authorship cannot be compared to author surnames and is handled
-   *         by a dedicated year comparison instead.
+   *         by a dedicated year comparison instead. An anonymous work counts as authored, as two of them
+   *         compare equal while the year comparison would drop an anonymous candidate without a year.
    */
   private boolean isYearOnlyAuthorship(SimpleNameCached sn) {
     if (!sn.hasAuthorship()) {
@@ -664,7 +665,8 @@ public class UsageMatcher implements AutoCloseable {
     var ca = a.getCombinationAuthorship();
     var ba = a.getBasionymAuthorship();
     boolean hasYear = (ca != null && ca.getYear() != null) || (ba != null && ba.getYear() != null);
-    boolean hasAuthors = (ca != null && !ca.getAuthors().isEmpty()) || (ba != null && !ba.getAuthors().isEmpty());
+    boolean hasAuthors = (ca != null && (ca.isAnonymous() || !ca.getAuthors().isEmpty()))
+                         || (ba != null && (ba.isAnonymous() || !ba.getAuthors().isEmpty()));
     return hasYear && !hasAuthors;
   }
 

@@ -156,6 +156,10 @@ public class ApiModule extends SimpleModule {
     @JsonIgnore
     abstract boolean isEmpty();
 
+    // only written for the few names published anonymously
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    abstract boolean isAnonymous();
+
   }
 
   @JsonSerialize(using = TermSerde.Serializer.class, keyUsing = TermSerde.KeySerializer.class)

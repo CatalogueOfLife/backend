@@ -11,6 +11,19 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-06 anonymous authorship
+name-parser-api 5.1 flags a name or act published anonymously (`Authorship.anonymous`) instead of keeping an `anon.`
+author string, see #1611. Run before the deploy: the old app's column lists ignore the new columns, and a constant
+default only touches the catalog. No backfill - rows get the flag when their dataset is re-imported or re-synced.
+```sql
+ALTER TABLE name
+  ADD COLUMN basionym_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN combination_anonymous BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE name_usage_archive
+  ADD COLUMN n_basionym_anonymous BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN n_combination_anonymous BOOLEAN NOT NULL DEFAULT FALSE;
+```
+
 #### 2026-10-05 sector profiles
 Sector settings for large groups of sectors, see `docs/SECTOR-SETTINGS.md` and `docs/2026-10-05-sector-profiles.md`.
 The new app reads its sector settings from profiles only; the old one keeps reading the dataset settings and the

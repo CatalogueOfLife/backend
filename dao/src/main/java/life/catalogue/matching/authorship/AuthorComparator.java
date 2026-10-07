@@ -219,6 +219,10 @@ public class AuthorComparator {
       }
       return equality;
     }
+    // two anonymous works: only authors attributed on both sides could tell them apart, compared above
+    if (a1 != null && a2 != null && a1.isAnonymous() && a2.isAnonymous()) {
+      return Equality.EQUAL;
+    }
     return Equality.UNKNOWN;
   }
 

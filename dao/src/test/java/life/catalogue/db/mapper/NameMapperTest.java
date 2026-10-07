@@ -88,12 +88,32 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     n.setPublishedInPageLink("http://bhl.org/pub/1234567");
     n.setNomenclaturalNote("nom. illeg.");
     n.setUnparsed("bla bli blub");
+    n.getBasionymAuthorship().setYear("1798");
+    n.getBasionymAuthorship().setAnonymous(true);
+    n.getCombinationAuthorship().setAuthors(List.of("Denis", "Schiffermüller"));
     return n;
   }
   
   @Override
   void updateTestObj(Name n) {
     n.setAuthorship("Berta & Tomate");
+    n.getCombinationAuthorship().setAnonymous(true);
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void nullAuthorship() throws Exception {
+    Name n = TestEntityGenerator.newName("sk3");
+    n.setCombinationAuthorship(null);
+    n.setBasionymAuthorship(null);
+    nameMapper.create(n);
+    commit();
+
+    Name n2 = nameMapper.get(n.getKey());
+    assertFalse(n2.getCombinationAuthorship().isAnonymous());
+    assertFalse(n2.getBasionymAuthorship().isAnonymous());
   }
   
   @Test

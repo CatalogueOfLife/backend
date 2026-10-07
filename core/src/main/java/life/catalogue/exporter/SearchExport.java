@@ -11,6 +11,7 @@ import life.catalogue.api.vocab.terms.ClbTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.TermWriter;
+import life.catalogue.common.tax.AuthorAtoms;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetJob;
@@ -194,13 +195,13 @@ public class SearchExport extends DatasetJob {
       tw.set(ColdpTerm.cultivarEpithet, n.getCultivarEpithet());
       var ca = n.getCombinationAuthorship();
       if (ca != null) {
-        tw.set(ColdpTerm.combinationAuthorship, ca.getAuthors(), "|");
+        tw.set(ColdpTerm.combinationAuthorship, AuthorAtoms.encode(ca, n.getCode()), "|");
         tw.set(ColdpTerm.combinationExAuthorship, ca.getExAuthors(), "|");
         tw.set(ColdpTerm.combinationAuthorshipYear, ca.getYear());
       }
       var ba = n.getBasionymAuthorship();
       if (ba != null) {
-        tw.set(ColdpTerm.basionymAuthorship, ba.getAuthors(), "|");
+        tw.set(ColdpTerm.basionymAuthorship, AuthorAtoms.encode(ba, n.getCode()), "|");
         tw.set(ColdpTerm.basionymExAuthorship, ba.getExAuthors(), "|");
         tw.set(ColdpTerm.basionymAuthorshipYear, ba.getYear());
       }

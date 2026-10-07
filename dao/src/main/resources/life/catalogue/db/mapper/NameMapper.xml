@@ -20,9 +20,11 @@
     ${alias}.basionym_authors AS ${prefix}basionym_authors,
     ${alias}.basionym_ex_authors AS ${prefix}basionym_ex_authors,
     ${alias}.basionym_year AS ${prefix}basionym_year,
+    ${alias}.basionym_anonymous AS ${prefix}basionym_anonymous,
     ${alias}.combination_authors AS ${prefix}combination_authors,
     ${alias}.combination_ex_authors AS ${prefix}combination_ex_authors,
     ${alias}.combination_year AS ${prefix}combination_year,
+    ${alias}.combination_anonymous AS ${prefix}combination_anonymous,
     ${alias}.sanctioning_author AS ${prefix}sanctioning_author,
     ${alias}.code AS ${prefix}code,
     ${alias}.nomenclatural_note AS ${prefix}nomenclatural_note,
@@ -103,9 +105,11 @@
     ${alias}basionym_authors,
     ${alias}basionym_ex_authors,
     ${alias}basionym_year,
+    ${alias}basionym_anonymous,
     ${alias}combination_authors,
     ${alias}combination_ex_authors,
     ${alias}combination_year,
+    ${alias}combination_anonymous,
     ${alias}sanctioning_author,
     ${alias}published_in_id,
     ${alias}published_in_page,
@@ -150,9 +154,11 @@
     #{basionymAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.year},
+    COALESCE(#{basionymAuthorship.anonymous}, FALSE),
     #{combinationAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{combinationAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{combinationAuthorship.year},
+    COALESCE(#{combinationAuthorship.anonymous}, FALSE),
     #{sanctioningAuthor},
     #{publishedInId},
     #{publishedInPage},
@@ -186,11 +192,13 @@
       <result property="authors" column="combination_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="exAuthors" column="combination_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="year" column="combination_year"/>
+      <result property="anonymous" column="combination_anonymous"/>
     </association>
     <association property="basionymAuthorship" javaType="Authorship">
       <result property="authors" column="basionym_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="exAuthors" column="basionym_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="year" column="basionym_year"/>
+      <result property="anonymous" column="basionym_anonymous"/>
     </association>
   </resultMap>
 
