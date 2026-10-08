@@ -50,7 +50,8 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     store.debug();
     UsageData u = usageByID("14");
     assertTrue(u.isSynonym());
-    assertEquals("? californicum Torr. & A.Gray", u.usage.getName().getLabel());
+    // text-tree strips the leading "?" as its provisional marker, so the parser only sees the bare epithet
+    assertEquals("californicum Torr. & A.Gray", u.usage.getName().getLabel());
     assertNull(u.usage.getName().getNamesIndexId());
   }
 

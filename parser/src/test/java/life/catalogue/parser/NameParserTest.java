@@ -256,8 +256,8 @@ public class NameParserTest {
   public void parseBracketYear() throws Exception {
     assertName("Toleria aegerides (Strand, [1916])", "Toleria aegerides")
       .species("Toleria", "aegerides")
-      .basAuthors(null, "Strand")
-      .imprintYear("1916")
+      // a bracketed year alone is the actual year, known from evidence outside the work (ICZN Rec. 22A.2.3)
+      .basAuthors("1916", "Strand")
       .nothingElse();
   }
 

@@ -104,8 +104,10 @@ public class NamesIndexCmdIT extends CmdTestBase {
       // It was 133 under 5.0.0 (rust 0.1.0): an informal phrase now swallows its whole verbatim
       // tail including a trailing author citation, so "Balanus sp. Hoek, 1913" and "Balanus sp.
       // Kolosvary, 1947" canonicalise to themselves instead of both collapsing onto "Balanus sp.".
+      // It dropped to 133 with rust 0.3.0: given the fixture's [genus] rank and no code, "Tubella (Luer) Archila" is the
+      // genus Tubella with basionym author Luer, no longer a subgenus "Luer" (a zoological code would still make it one).
       // Expect this to shift again if the parser's canonicalization or type classification changes.
-      assertEquals(134, cnt);
+      assertEquals(133, cnt);
 
       // names without a match, e.g. the placeholders, have no match record at all
       try (java.sql.Statement st = session.getConnection().createStatement();
