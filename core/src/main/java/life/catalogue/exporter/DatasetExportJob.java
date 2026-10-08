@@ -80,12 +80,9 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
     LOG.info("Created {} job {} by user {} for dataset {} to {}", getClass().getSimpleName(), getUserKey(), getKey(), datasetKey, archive);
   }
 
-  DatasetExportJob(ExportRequest req, int userKey, DataFormat requiredFormat, boolean allowExcel, SqlSessionFactory factory,
+  DatasetExportJob(ExportRequest req, int userKey, DataFormat requiredFormat, SqlSessionFactory factory,
                    ExporterConfig cfg, ImageService imageService) {
     this(req, userKey, requiredFormat, loadClassification(factory, req), factory, cfg, imageService);
-    if (req.isExcel() && !allowExcel) {
-      throw new IllegalArgumentException(requiredFormat.getName() + " cannot be exported in Excel");
-    }
   }
 
   private static List<SimpleName> loadClassification(SqlSessionFactory factory, ExportRequest req){

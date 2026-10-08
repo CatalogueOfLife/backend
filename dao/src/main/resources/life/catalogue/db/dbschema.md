@@ -11,6 +11,33 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-08 exports drop excel, tax groups and truncation
+Excel exports are gone, and a classification export always comes with taxonomic groups, so `dataset_export` loses
+`excel`, `add_tax_group` and `truncated`, which only the Excel row limit ever filled. Two steps, as the old and the
+new app run side by side during a deploy.
+
+**1. Before the deploy.** The new app no longer writes the two NOT NULL flags.
+```sql
+ALTER TABLE dataset_export
+  ALTER COLUMN excel SET DEFAULT FALSE,
+  ALTER COLUMN add_tax_group SET DEFAULT FALSE;
+```
+
+**2. After the deploy, once the old app is gone.** Without the column the export lookup would hand out an Excel
+archive for a TSV request, so the remaining Excel exports are deleted. Remove the zips of the listed keys from the
+download directory first, at `<downloadDir>/<first 2 characters of key>/<key>.zip`.
+```sql
+SELECT de.key FROM dataset_export de JOIN job j ON j.key = de.key WHERE de.excel AND j.result_deleted IS NULL;
+UPDATE job SET result_deleted = now()
+WHERE result_deleted IS NULL AND key IN (SELECT key FROM dataset_export WHERE excel);
+-- also drops the index on (dataset_key, attempt, format, excel, synonyms, min_rank)
+ALTER TABLE dataset_export
+  DROP COLUMN excel,
+  DROP COLUMN add_tax_group,
+  DROP COLUMN truncated;
+CREATE INDEX ON dataset_export (dataset_key, attempt, format, synonyms, min_rank);
+```
+
 #### 2026-10-07 anonymous authorship, basionym sanctioning author
 name-parser-api 5.1 flags a name or act published anonymously (`Authorship.anonymous`) instead of keeping an `anon.`
 author string, see #1611. name-parser-api 5.2 moves the sanctioning author onto `Authorship`, so a sanctioned

@@ -56,7 +56,6 @@ public class ColReleaseExportJob extends DatasetBlockingJob {
 
     for (DataFormat format : formats) {
       ExportRequest req = new ExportRequest(datasetKey, format);
-      req.setExcel(false);
       req.setExtended(format != DataFormat.TEXT_TREE);
 
       exportJobs.put(format, switch (format) {
