@@ -98,9 +98,12 @@
     n.basionym_authors,
     n.basionym_ex_authors,
     n.basionym_year,
+    n.basionym_anonymous,
+    n.basionym_sanctioning_author,
     n.combination_authors,
     n.combination_ex_authors,
     n.combination_year,
+    n.combination_anonymous,
     n.sanctioning_author
     <!-- MISSING:
     u.name_phrase,
@@ -293,11 +296,15 @@
       <result property="authors" column="combination_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="exAuthors" column="combination_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="year" column="combination_year"/>
+      <result property="anonymous" column="combination_anonymous"/>
+      <result property="sanctioningAuthor" column="sanctioning_author"/>
     </association>
     <association property="basionymAuthorship" javaType="Authorship">
       <result property="authors" column="basionym_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="exAuthors" column="basionym_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="year" column="basionym_year"/>
+      <result property="anonymous" column="basionym_anonymous"/>
+      <result property="sanctioningAuthor" column="basionym_sanctioning_author"/>
     </association>
   </resultMap>
 

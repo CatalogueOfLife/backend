@@ -907,7 +907,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
       if (src.hasParsedAuthorship() && !n.hasAuthorship()) {
         upd.add(InfoGroup.AUTHORSHIP);
         n.setCombinationAuthorship(src.getCombinationAuthorship());
-        n.setSanctioningAuthor(src.getSanctioningAuthor());
         n.setBasionymAuthorship(src.getBasionymAuthorship());
         n.rebuildAuthorship();
         if (existingUsage != null) {

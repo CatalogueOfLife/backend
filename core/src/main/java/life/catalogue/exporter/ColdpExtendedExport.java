@@ -11,6 +11,7 @@ import life.catalogue.api.vocab.terms.ClbTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.tax.AuthorAtoms;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.metadata.coldp.DatasetYamlWriter;
@@ -175,13 +176,13 @@ public class ColdpExtendedExport extends ArchiveExport {
     // parsed authorship
     var a = n.getCombinationAuthorship();
     if (a != null) {
-      writer.set(ColdpTerm.combinationAuthorship, a.getAuthors(), "|");
+      writer.set(ColdpTerm.combinationAuthorship, AuthorAtoms.encode(a, n.getCode()), "|");
       writer.set(ColdpTerm.combinationExAuthorship, a.getExAuthors(), "|");
       writer.set(ColdpTerm.combinationAuthorshipYear, a.getYear());
     }
     a = n.getBasionymAuthorship();
     if (a != null) {
-      writer.set(ColdpTerm.basionymAuthorship, a.getAuthors(), "|");
+      writer.set(ColdpTerm.basionymAuthorship, AuthorAtoms.encode(a, n.getCode()), "|");
       writer.set(ColdpTerm.basionymExAuthorship, a.getExAuthors(), "|");
       writer.set(ColdpTerm.basionymAuthorshipYear, a.getYear());
     }

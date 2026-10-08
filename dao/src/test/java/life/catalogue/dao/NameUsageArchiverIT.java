@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.ArchivedNameUsage;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
@@ -133,6 +134,38 @@ public class NameUsageArchiverIT {
 
     var again = archiver.archiveProject(archiver.ranking(PROJECT), true, false);
     assertTrue("a rerun wrote " + again, again.isUnchanged());
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void archiveAnonymousAuthorship() throws Exception {
+    try (SqlSession session = factory.openSession(true);
+         Statement st = session.getConnection().createStatement()
+    ) {
+      st.execute("UPDATE name SET basionym_anonymous=true, combination_anonymous=true," +
+        " basionym_sanctioning_author='Fr.', sanctioning_author='Pers.' WHERE dataset_key=13 AND id='nd'");
+    }
+    archiver.archiveProject(archiver.ranking(PROJECT), true, false);
+    var d = get("D").getName();
+    assertTrue(d.getBasionymAuthorship().isAnonymous());
+    assertTrue(d.getCombinationAuthorship().isAnonymous());
+    assertEquals("Fr.", d.getBasionymAuthorship().getSanctioningAuthor());
+    assertEquals("Pers.", d.getCombinationAuthorship().getSanctioningAuthor());
+    assertFalse(get("E").getName().getCombinationAuthorship().isAnonymous());
+
+    try (SqlSession session = factory.openSession(true)) {
+      var names = session.getMapper(ArchivedNameUsageMapper.class).processArchivedNames(PROJECT, false);
+      int anonymous = 0;
+      for (Name n : names) {
+        if (n.getCombinationAuthorship().isAnonymous()) {
+          assertEquals("D", n.getId());
+          anonymous++;
+        }
+      }
+      assertEquals(1, anonymous);
+    }
   }
 
   @Test

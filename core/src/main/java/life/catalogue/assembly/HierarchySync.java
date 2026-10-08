@@ -1515,8 +1515,7 @@ public class HierarchySync extends SectorRunnable {
         // nothing to do if the authorship is already identical
         if (Objects.equals(pn.getAuthorship(), src.getAuthorship())
             && Objects.equals(pn.getCombinationAuthorship(), src.getCombinationAuthorship())
-            && Objects.equals(pn.getBasionymAuthorship(), src.getBasionymAuthorship())
-            && Objects.equals(pn.getSanctioningAuthor(), src.getSanctioningAuthor())) {
+            && Objects.equals(pn.getBasionymAuthorship(), src.getBasionymAuthorship())) {
           skipped++;
           continue;
         }
@@ -1524,7 +1523,6 @@ public class HierarchySync extends SectorRunnable {
         if (src.hasParsedAuthorship()) {
           pn.setCombinationAuthorship(src.getCombinationAuthorship());
           pn.setBasionymAuthorship(src.getBasionymAuthorship());
-          pn.setSanctioningAuthor(src.getSanctioningAuthor());
           pn.rebuildAuthorship(); // rebuilds the cached authorship string from the parsed parts (parsed names only)
         } else {
           // source only carries an unparsed authorship string - copy it verbatim

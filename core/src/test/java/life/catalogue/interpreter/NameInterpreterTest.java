@@ -183,6 +183,37 @@ public class NameInterpreterTest {
     assertEquals("armiger", n.getSpecificEpithet());
   }
 
+  /**
+   * ColDP author columns carry an anonymous work as the lone anon author or as bracketed attributed authors.
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void anonymousAuthorAtoms() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("genus", "Aodon", null, null, "Aodon", null, null, null, null, null,
+      "Anon.", null, "1798", null, null, null,
+      null, null, "zoological", null, v).getName();
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertTrue(n.getCombinationAuthorship().getAuthors().isEmpty());
+    assertEquals("1798", n.getCombinationAuthorship().getYear());
+    assertEquals("Anon., 1798", n.getAuthorship());
+
+    v = new VerbatimRecord();
+    n = interpret("species", "Lycaena virgaureae", null, null, null, "Lycaena", null, "virgaureae", null, null,
+      "[Denis]|[Schiffermüller]", null, "1775", null, null, null,
+      null, null, "zoological", null, v).getName();
+    assertTrue(n.getCombinationAuthorship().isAnonymous());
+    assertEquals(List.of("Denis", "Schiffermüller"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("[Denis & Schiffermüller], 1775", n.getAuthorship());
+
+    v = new VerbatimRecord();
+    n = interpret("species", "Abies parsonii", null, null, null, "Abies", null, "parsonii", null, null,
+      "Bailly", null, null, null, null, null,
+      null, null, "botanical", null, v).getName();
+    assertFalse(n.getCombinationAuthorship().isAnonymous());
+    assertEquals("Bailly", n.getAuthorship());
+  }
+
   @Test
   public void inlineRankMarkerIsAdopted() {
     // an explicit rank marker in the name string is the user stating the rank, not an inference

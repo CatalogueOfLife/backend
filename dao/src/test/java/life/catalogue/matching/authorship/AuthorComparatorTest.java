@@ -721,6 +721,35 @@ public class AuthorComparatorTest {
     assertEquals(a1 + " VS " + a2, eq, comp.compare(parse(a1, y1), parse(a2, y2)));
   }
   
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void anonymous() throws Exception {
+    Authorship anon = parse("Anon.");
+    assertTrue(anon.isAnonymous());
+    assertTrue(anon.getAuthors().isEmpty());
+
+    // two anonymous works are the same, unless both attribute their authors
+    assertAuth("Anon.", Equality.EQUAL, "anon.");
+    assertAuth("Anonymous, 1798", Equality.EQUAL, "Anonymous [Lacepède], 1798");
+    assertAuth("Anon.", Equality.EQUAL, "[Lacepède]");
+    assertAuth("[Denis & Schiffermüller]", Equality.DIFFERENT, "[Smith]");
+    assertAuth("[Denis & Schiffermüller], 1775", Equality.EQUAL, "Denis & Schiffermüller, 1775");
+    assertAuth("Anonymous, 1798", Equality.DIFFERENT, "Anonymous, 1830");
+    assertTrue(comp.compareStrict(anon, parse("Anonymous"), NomCode.BOTANICAL, 0));
+    assertEquals(Equality.EQUAL, comp.compareAuthorsFirst(anon, parse("Anonymous")));
+
+    // an anonymous work against named authors: only the year can tell
+    assertAuth("Anon.", Equality.UNKNOWN, "Thunb.");
+    assertAuth("Anonymous, 1798", Equality.EQUAL, "Lacepède, 1798");
+    assertAuth("Anonymous, 1798", Equality.DIFFERENT, "Lacepède, 1830");
+    assertFalse(comp.compareStrict(anon, parse("Thunb."), NomCode.BOTANICAL, 0));
+
+    // an anonymous basionym against the original combination
+    assertAuth(null, null, "Anonymous", "1798", Equality.EQUAL, "Anonymous", "1798", null, null);
+  }
+
   private void assertAuth(String a1, Equality eq, String a2) throws InterruptedException {
     assertEquals(eq, comp.compare(parse(a1), parse(a2)));
   }

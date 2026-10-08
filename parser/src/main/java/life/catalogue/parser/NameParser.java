@@ -42,7 +42,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[]+)\\s*");
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
   private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?");
-  private static final Pattern NORM_ANON = Pattern.compile("\\b(anon\\.?)(\\b|\\s|$)");
   private static final Pattern LEADING_PUNCT = Pattern.compile("^\\s*[.;,]\\s*");
   private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*\\b(sic|corrig)\\b[.!\\s]*[\\])]?\\s*");
 
@@ -253,12 +252,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       name = m.replaceFirst(", $1");
     }
 
-    // capitalize Anonymous author
-    m = NORM_ANON.matcher(name);
-    if (m.find()) {
-      name = m.replaceFirst("Anon.");
-    }
-
     // remove leading punctuations and normalize subsequent ones
     name = LEADING_PUNCT.matcher(name).replaceAll("");
     name = NORM_WS_PUNCT.matcher(name).replaceAll(" $1");
@@ -286,7 +279,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    */
   private static void copyToPNU(ParsedAuthorship pn, ParsedNameUsage pnu, IssueContainer issues){
     pnu.getName().setCombinationAuthorship(pn.getCombinationAuthorship());
-    pnu.getName().setSanctioningAuthor(pn.getSanctioningAuthor());
     pnu.getName().setBasionymAuthorship(pn.getBasionymAuthorship());
     // propagate notes and unparsed bits found in authorship if not already existing
     setIfNull(pn.getNomenclaturalNote(), pnu.getName()::getNomenclaturalNote, pnu.getName()::setNomenclaturalNote);

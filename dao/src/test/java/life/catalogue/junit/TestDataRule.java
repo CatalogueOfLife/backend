@@ -592,6 +592,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       data.put("combination_authors", str(pn.getCombinationAuthorship().getAuthors()));
       data.put("combination_ex_authors", str(pn.getCombinationAuthorship().getAuthors()));
       data.put("combination_year", pn.getCombinationAuthorship().getYear());
+      // after the 6 author columns PgAuthorshipNormalizer reads in a row
+      data.put("basionym_anonymous", str(pn.getBasionymAuthorship().isAnonymous()));
+      data.put("combination_anonymous", str(pn.getCombinationAuthorship().isAnonymous()));
       data.put("notho", str(pn.getNotho()));
       data.put("candidatus", str(pn.isCandidatus()));
       data.put("unparsed", pn.getUnparsed());

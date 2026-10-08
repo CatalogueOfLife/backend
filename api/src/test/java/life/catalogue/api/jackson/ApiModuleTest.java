@@ -2,6 +2,7 @@ package life.catalogue.api.jackson;
 
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.FacetValue;
 import life.catalogue.api.search.NameUsageSearchParameter;
@@ -31,6 +32,54 @@ public class ApiModuleTest {
   @Test
   public void testInit() throws IOException {
     assertNotNull( ApiModule.MAPPER );
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1611
+   */
+  @Test
+  public void anonymousAuthorship() throws IOException {
+    Name n = new Name();
+    n.setScientificName("Aodon");
+    n.getCombinationAuthorship().setYear("1798");
+    String json = ApiModule.MAPPER.writeValueAsString(n);
+    assertFalse(json, json.contains("anonymous"));
+
+    n.getCombinationAuthorship().setAnonymous(true);
+    json = ApiModule.MAPPER.writeValueAsString(n);
+    assertTrue(json, json.contains("\"anonymous\":true"));
+    Name n2 = ApiModule.MAPPER.readValue(json, Name.class);
+    assertTrue(n2.getCombinationAuthorship().isAnonymous());
+    assertFalse(n2.getBasionymAuthorship().isAnonymous());
+
+    // an anonymous authorship without authors or year is not empty
+    n = new Name();
+    n.getBasionymAuthorship().setAnonymous(true);
+    json = ApiModule.MAPPER.writeValueAsString(n);
+    assertTrue(json, json.contains("\"basionymAuthorship\":{\"anonymous\":true}"));
+    assertFalse(json, json.contains("combinationAuthorship"));
+  }
+
+  /**
+   * name-parser-api 5.2 moved the sanctioning author onto the authorship.
+   * JSON written before, e.g. the names of stored decisions, keeps it on the name.
+   */
+  @Test
+  public void sanctioningAuthor() throws IOException {
+    Name n = ApiModule.MAPPER.readValue("{\"scientificName\":\"Boletus edulis\",\"sanctioningAuthor\":\"Fr.\"}", Name.class);
+    assertEquals("Fr.", n.getCombinationAuthorship().getSanctioningAuthor());
+
+    n.getCombinationAuthorship().setAuthors(List.of("Bull."));
+    n.getBasionymAuthorship().setAuthors(List.of("Wulfen"));
+    n.getBasionymAuthorship().setSanctioningAuthor("Pers.");
+    String json = ApiModule.MAPPER.writeValueAsString(n);
+    var tree = ApiModule.MAPPER.readTree(json);
+    assertFalse(json, tree.has("sanctioningAuthor"));
+    assertEquals("Fr.", tree.get("combinationAuthorship").get("sanctioningAuthor").asText());
+    assertEquals("Pers.", tree.get("basionymAuthorship").get("sanctioningAuthor").asText());
+    Name n2 = ApiModule.MAPPER.readValue(json, Name.class);
+    assertEquals(n.getCombinationAuthorship(), n2.getCombinationAuthorship());
+    assertEquals(n.getBasionymAuthorship(), n2.getBasionymAuthorship());
   }
 
   @Test

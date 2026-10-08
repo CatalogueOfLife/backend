@@ -1,0 +1,8 @@
+Plantae [kingdom] {ID=Plantae}
+  Pinaceae [family] {ID=Pinaceae}
+    Abies Mill. [genus] {ID=Abies}
+      Abies alba Mill. [species] {ID=AbiesAlba}
+        Abies alba var. aurea Anon. [variety] {ID=Aurea}
+Animalia [kingdom] {ID=Animalia}
+  Balistidae [family] {ID=Balistidae}
+    Aodon Anonymous, 1798 [genus] {ID=Aodon}

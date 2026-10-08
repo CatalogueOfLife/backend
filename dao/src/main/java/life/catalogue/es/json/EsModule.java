@@ -8,6 +8,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.es.EsException;
 
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -60,6 +61,7 @@ public class EsModule extends SimpleModule {
     ctxt.setMixInAnnotations(Name.class, NameMixIn.class);
     ctxt.setMixInAnnotations(SectorScoped.class, SectorScopedMixIn.class);
     ctxt.setMixInAnnotations(SimpleName.class, SimpleNameMixIn.class);
+    ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);
   }
 
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "@")
@@ -88,6 +90,11 @@ public class EsModule extends SimpleModule {
   abstract static class SimpleNameMixIn {
     @JsonIgnore abstract String getLabel();
     @JsonIgnore abstract String getLabelHtml();
+  }
+
+  // Nearly no name is published anonymously: keep the flag out of the _source unless it is set
+  abstract static class AuthorshipMixIn {
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT) abstract boolean isAnonymous();
   }
 
   // Override @JsonIgnore from SectorScoped so sectorMode is serialized into ES documents.

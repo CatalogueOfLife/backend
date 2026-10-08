@@ -680,7 +680,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
               n.setNotho(nn.getNotho());
               n.setCombinationAuthorship(nn.getCombinationAuthorship());
               n.setBasionymAuthorship(nn.getBasionymAuthorship());
-              n.setSanctioningAuthor(nn.getSanctioningAuthor());
             }
 
             if (n2.getAuthorship() != null) {
@@ -694,7 +693,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
                 return pn2;
               });
               n.setCombinationAuthorship(an.getCombinationAuthorship());
-              n.setSanctioningAuthor(an.getSanctioningAuthor());
               n.setBasionymAuthorship(an.getBasionymAuthorship());
             }
             // any other changes
