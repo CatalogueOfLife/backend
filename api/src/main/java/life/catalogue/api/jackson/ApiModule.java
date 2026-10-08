@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
@@ -169,6 +170,7 @@ public class ApiModule extends SimpleModule {
   /**
    * The sealed name parser result has no property of its own telling its variants apart,
    * and its "name" is a parsed name object in one and the verbatim string in another.
+   * All variants share a "label" rendered from their complete canonical name.
    */
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "result")
   @JsonSubTypes({
@@ -177,7 +179,8 @@ public class ApiModule extends SimpleModule {
     @JsonSubTypes.Type(value = ParseResult.Unparsable.class, name = "unparsable")
   })
   abstract static class ParseResultMixIn {
-
+    @JsonProperty(value = "label", access = JsonProperty.Access.READ_ONLY)
+    abstract String canonicalNameComplete();
   }
 
   @JsonSerialize(using = TermSerde.Serializer.class, keyUsing = TermSerde.KeySerializer.class)

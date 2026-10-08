@@ -32,7 +32,7 @@ public class NameParserResourceTest {
 
   @Test
   public void nativePlainTextSkipsBlankLines() {
-    List<ParseResult> results = resource.parseNativePlainText(null, null, text("Abies alba\n\nPicea abies\n"));
+    List<ParseResult> results = resource.parsePlainTextNative(null, null, text("Abies alba\n\nPicea abies\n"));
     assertEquals(2, results.size());
     assertTrue(results.stream().allMatch(r -> r instanceof ParseResult.Parsed));
   }
@@ -50,8 +50,10 @@ public class NameParserResourceTest {
   }
 
   void assertResult(String expected, String name) throws Exception {
-    JsonNode json = ApiModule.MAPPER.valueToTree(resource.parseNative(null, null, name, null));
+    ParseResult result = resource.parseNative(null, null, name, null);
+    JsonNode json = ApiModule.MAPPER.valueToTree(result);
     assertEquals(name, expected, json.path("result").asText());
+    assertEquals(name, result.canonicalNameComplete(), json.path("label").asText());
   }
 
   @Test

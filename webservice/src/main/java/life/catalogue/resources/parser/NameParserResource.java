@@ -7,9 +7,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.parser.NameParser;
 
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.ParseResult;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -24,6 +22,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -193,6 +192,18 @@ public class NameParserResource {
   }
 
   /**
+   * Parsing names natively as a json array.
+   */
+  @POST
+  @Path("native")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public List<ParseResult> parseJsonNative(List<CRName> names) {
+    return names.stream()
+        .map(this::parseNative)
+        .collect(Collectors.toList());
+  }
+
+  /**
    * Raw GBIF name parser results for plain text content using one line per scientific name, see {@link #parseNative}.
    * Blank lines are skipped. Make sure to preserve new lines (\n) in the posted data, for example use --data-binary with curl:
    * <pre>
@@ -202,7 +213,7 @@ public class NameParserResource {
   @POST
   @Path("native")
   @Consumes(MediaType.TEXT_PLAIN)
-  public List<ParseResult> parseNativePlainText(@QueryParam("code") NomCode code, @QueryParam("rank") Rank rank, InputStream names) {
+  public List<ParseResult> parsePlainTextNative(@QueryParam("code") NomCode code, @QueryParam("rank") Rank rank, InputStream names) {
     return lines(code, rank, names)
         .map(this::parseNative)
         .collect(Collectors.toList());
