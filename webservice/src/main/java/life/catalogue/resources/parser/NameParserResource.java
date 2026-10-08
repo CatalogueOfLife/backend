@@ -8,12 +8,12 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.ParseResult;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.List;
@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +33,7 @@ import jakarta.ws.rs.core.MediaType;
 @Path("/parser/name")
 @Produces(MediaType.APPLICATION_JSON)
 public class NameParserResource {
-  
-  @SuppressWarnings("unused")
+
   private static final Logger LOG = LoggerFactory.getLogger(NameParserResource.class);
   private static final NameParser parser = NameParser.PARSER;
 
@@ -112,11 +112,11 @@ public class NameParserResource {
    * We flatten results here to just a single json object without a usage with a nested name.
    * And add issues.
    */
-  static class PNIssue extends Name {
-    private boolean extinct;
-    private String taxonomicNote;
-    private String publishedIn;
-    private Set<Issue> issues;
+  public static class PNIssue extends Name {
+    public final boolean extinct;
+    public final String taxonomicNote;
+    public final String publishedIn;
+    public final Set<Issue> issues;
 
     public PNIssue(ParsedNameUsage pnu, Set<Issue> issues) {
       super(pnu.getName());
@@ -124,10 +124,6 @@ public class NameParserResource {
       this.taxonomicNote = pnu.getTaxonomicNote();
       this.publishedIn = pnu.getPublishedIn();
       this.issues = issues;
-    }
-
-    public Set<Issue> getIssues() {
-      return issues;
     }
   }
 
@@ -143,7 +139,7 @@ public class NameParserResource {
                                     @QueryParam("authorship") String authorship) {
     return parse(new CRName(code, rank, ObjectUtils.coalesce(name, name2), authorship));
   }
-  
+
   /**
    * Parsing names as a json array.
    */
@@ -163,15 +159,10 @@ public class NameParserResource {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   public List<PNIssue> parseFile(@FormDataParam("code") NomCode code,
                                  @FormDataParam("rank") Rank rank,
-                                 @FormDataParam("names") InputStream file) throws UnsupportedEncodingException {
-    if (file == null) {
-      throw new IllegalArgumentException("No names file uploaded");
-    }
-    BufferedReader reader = new BufferedReader(new InputStreamReader(file, StandardCharsets.UTF_8));
-    return parse(code, rank, reader.lines());
+                                 @FormDataParam("names") InputStream file) {
+    return parse(lines(code, rank, file));
   }
-  
-  
+
   /**
    * Parsing names by posting plain text content using one line per scientific name.
    * Make sure to preserve new lines (\n) in the posted data, for example use --data-binary with curl:
@@ -181,14 +172,55 @@ public class NameParserResource {
    */
   @POST
   @Consumes(MediaType.TEXT_PLAIN)
-  public List<PNIssue> parsePlainText(@QueryParam("code") NomCode code, @QueryParam("rank") Rank rank, InputStream names) throws UnsupportedEncodingException {
+  public List<PNIssue> parsePlainText(@QueryParam("code") NomCode code, @QueryParam("rank") Rank rank, InputStream names) {
     return parseFile(code, rank, names);
   }
-  
-  private List<PNIssue> parse(final NomCode code, final Rank rank, Stream<String> names) {
-    return parse(names.map(n -> new CRName(code, rank, n, null)));
+
+  /**
+   * Parses a single name with the GBIF name parser and returns its raw result without any CLB interpretation:
+   * no issues, no {@link Name} built. The "result" property tells a parsed, informal and unparsable name apart.
+   */
+  @GET
+  @Path("native")
+  public ParseResult parseNative(@QueryParam("code") NomCode code,
+                                 @QueryParam("rank") Rank rank,
+                                 @QueryParam("q") String name,
+                                 @QueryParam("authorship") String authorship) {
+    if (StringUtils.isBlank(name)) {
+      throw new IllegalArgumentException("Name parameter q required");
+    }
+    return parseNative(new CRName(code, rank, name, authorship));
   }
-  
+
+  /**
+   * Raw GBIF name parser results for plain text content using one line per scientific name, see {@link #parseNative}.
+   * Blank lines are skipped. Make sure to preserve new lines (\n) in the posted data, for example use --data-binary with curl:
+   * <pre>
+   * curl POST -H "Content-Type:text/plain" --data-binary @scientific_names.txt http://api.checklistbank.org/parser/name/native
+   * </pre>
+   */
+  @POST
+  @Path("native")
+  @Consumes(MediaType.TEXT_PLAIN)
+  public List<ParseResult> parseNativePlainText(@QueryParam("code") NomCode code, @QueryParam("rank") Rank rank, InputStream names) {
+    return lines(code, rank, names)
+        .map(this::parseNative)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * @return the non blank lines of a UTF-8 text stream as names to parse
+   */
+  private static Stream<CRName> lines(NomCode code, Rank rank, InputStream data) {
+    if (data == null) {
+      throw new IllegalArgumentException("No names file uploaded");
+    }
+    BufferedReader reader = new BufferedReader(new InputStreamReader(data, StandardCharsets.UTF_8));
+    return reader.lines()
+        .filter(StringUtils::isNotBlank)
+        .map(n -> new CRName(code, rank, n, null));
+  }
+
   private List<PNIssue> parse(Stream<CRName> names) {
     return names
         .map(this::parse)
@@ -201,5 +233,9 @@ public class NameParserResource {
     LOG.debug("Parse: {}", n);
     Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.authorship, n.rank, n.code, n);
     return parsed.map(nat -> new PNIssue(nat, n.issues));
+  }
+
+  private ParseResult parseNative(CRName n) {
+    return parser.gbif().parse(n.name, n.authorship, n.rank, n.code);
   }
 }

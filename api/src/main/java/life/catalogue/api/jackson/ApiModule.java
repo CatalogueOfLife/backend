@@ -9,6 +9,7 @@ import org.gbif.dwc.terms.AlternativeNames;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.ParseResult;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.*;
@@ -150,11 +153,26 @@ public class ApiModule extends SimpleModule {
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);
     ctxt.setMixInAnnotations(Term.class, TermMixIn.class);
+    ctxt.setMixInAnnotations(ParseResult.class, ParseResultMixIn.class);
   }
 
   abstract static class AuthorshipMixIn {
     @JsonIgnore
     abstract boolean isEmpty();
+
+  }
+
+  /**
+   * The sealed name parser result has no property of its own telling its variants apart,
+   * and its "name" is a parsed name object in one and the verbatim string in another.
+   */
+  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "result")
+  @JsonSubTypes({
+    @JsonSubTypes.Type(value = ParseResult.Parsed.class, name = "parsed"),
+    @JsonSubTypes.Type(value = ParseResult.Informal.class, name = "informal"),
+    @JsonSubTypes.Type(value = ParseResult.Unparsable.class, name = "unparsable")
+  })
+  abstract static class ParseResultMixIn {
 
   }
 
