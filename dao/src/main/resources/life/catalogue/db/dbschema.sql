@@ -1105,22 +1105,19 @@ CREATE TABLE dataset_export (
   min_rank RANK,
   synonyms BOOLEAN NOT NULL,
   bare_names BOOLEAN NOT NULL,
-  excel BOOLEAN NOT NULL,
   extended BOOLEAN NOT NULL,
   add_classification BOOLEAN NOT NULL,
-  add_tax_group BOOLEAN NOT NULL,
   extinct BOOLEAN,
 
   -- results
   attempt INTEGER,
   classification SIMPLE_NAME[],
-  truncated TEXT[],
   synonym_count INTEGER,
   taxon_count INTEGER,
   taxa_by_rank_count HSTORE
 );
 
-CREATE INDEX ON dataset_export (dataset_key, attempt, format, excel, synonyms, min_rank);
+CREATE INDEX ON dataset_export (dataset_key, attempt, format, synonyms, min_rank);
 
 -- generic background job, one row per job of any kind ever submitted to the JobExecutor
 CREATE TABLE job (

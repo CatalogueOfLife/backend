@@ -403,7 +403,7 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.DoiUpdater, doiChangeListener);
 
     // exporter
-    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao, searchService, cfg.clbURI);
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, searchService, cfg.clbURI);
 
     // syncs and releases
     final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker, identifierScopeResolver, coljersey.getCache());

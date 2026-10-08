@@ -45,9 +45,6 @@ public class ExportSearchRequest {
   @QueryParam("bareNames")
   private Boolean bareNames;
 
-  @QueryParam("excel")
-  private Boolean excel;
-
   @QueryParam("extended")
   private Boolean extended;
 
@@ -57,11 +54,8 @@ public class ExportSearchRequest {
   @QueryParam("classification")
   private Boolean classification;
 
-  @QueryParam("taxGroups")
-  private Boolean taxGroups;
-
   /**
-   * Matches complete exports of a dataset not in Excel which have finished successfully and regardless of their format
+   * Matches complete exports of a dataset which have finished successfully and regardless of their format
    * @param datasetKey
    */
   public static ExportSearchRequest fullDataset(int datasetKey){
@@ -70,7 +64,6 @@ public class ExportSearchRequest {
     req.setSynonyms(true);
 
     req.setExtinct(null);
-    req.setExcel(false);
     req.setMinRank(null);
     req.setTaxonID(null);
     req.setCreatedBy(null);
@@ -90,13 +83,11 @@ public class ExportSearchRequest {
       taxonID = req.getRoot().getId();
     }
     minRank = req.getMinRank();
-    excel = req.isExcel();
     bareNames = req.isBareNames();
     extended = req.isExtended();
     synonyms = req.isSynonyms();
     extinct = req.getExtinct();
     classification = req.isClassification();
-    taxGroups = req.isTaxGroups();
   }
 
   public Integer getDatasetKey() {
@@ -183,22 +174,6 @@ public class ExportSearchRequest {
     this.classification = classification;
   }
 
-  public Boolean getTaxGroups() {
-    return taxGroups;
-  }
-
-  public void setTaxGroups(Boolean taxGroups) {
-    this.taxGroups = taxGroups;
-  }
-
-  public Boolean getExcel() {
-    return excel;
-  }
-
-  public void setExcel(Boolean excel) {
-    this.excel = excel;
-  }
-
   public Boolean getSynonyms() {
     return synonyms;
   }
@@ -229,15 +204,13 @@ public class ExportSearchRequest {
       minRank == that.minRank &&
       Objects.equals(synonyms, that.synonyms) &&
       Objects.equals(bareNames, that.bareNames) &&
-      Objects.equals(excel, that.excel) &&
       Objects.equals(extended, that.extended) &&
       Objects.equals(extinct, that.extinct) &&
-      Objects.equals(classification, that.classification) &&
-      Objects.equals(taxGroups, that.taxGroups);
+      Objects.equals(classification, that.classification);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, createdBy, status, format, tabFormat, taxonID, minRank, synonyms, bareNames, excel, extended, extinct, classification, taxGroups);
+    return Objects.hash(datasetKey, createdBy, status, format, tabFormat, taxonID, minRank, synonyms, bareNames, extended, extinct, classification);
   }
 }

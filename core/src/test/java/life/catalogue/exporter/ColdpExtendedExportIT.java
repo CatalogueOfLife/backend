@@ -340,15 +340,6 @@ public class ColdpExtendedExportIT extends ExportTest {
     assertExportExists(exp.getArchive());
   }
 
-  @Test
-  public void excel() {
-    req.setExcel(true);
-    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
-    exp.run();
-
-    assertExportExists(exp.getArchive());
-  }
-
   /**
    * Cancelling a running export (here simulated by interrupting the thread mid-iteration)
    * must abort the export via checkIfCancelled(), end as CANCELED and not leave an archive.
