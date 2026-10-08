@@ -39,7 +39,6 @@ public class ColdpExtendedExport extends ArchiveExport {
   private static final String METADATA_FILENAME = "metadata.yaml";
   private static final TaxGroupAnalyzer TAX_GROUP_ANALYZER = new TaxGroupAnalyzer();
   private Writer cslWriter;
-  private Writer cslWriterJSONL;
   private Writer bibWriter;
   private boolean cslFirst = true;
   private NameUsageKeyMap nameUsageKeyMap;
@@ -242,9 +241,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   public void exportReferences() throws IOException, InterruptedException {
     super.exportReferences();
     if (cslWriter != null) {
-      cslWriter.write("\n]\n");
       cslWriter.close();
-      cslWriterJSONL.close();
       bibWriter.close();
     }
   }
@@ -252,11 +249,9 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   protected void openAdditionalWriters(Term rowType) throws IOException {
     if (rowType == ColdpTerm.Reference) {
-      LOG.info("Export references also as CSL-JSON and BibTex");
+      LOG.info("Export references also as CSL-JSON lines and BibTex");
       bibWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.bib"));
-      cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.json"));
-      cslWriter.write("[\n");
-      cslWriterJSONL = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.jsonl"));
+      cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.jsonl"));
     }
   }
 
@@ -265,7 +260,6 @@ public class ColdpExtendedExport extends ArchiveExport {
     if (rowType == ColdpTerm.Reference && bibWriter != null) {
       bibWriter.close();
       cslWriter.close();
-      cslWriterJSONL.close();
     }
   }
 
@@ -280,17 +274,15 @@ public class ColdpExtendedExport extends ArchiveExport {
     // BibTex
     bibWriter.write( CslUtil.toBibTexString(r) );
     bibWriter.write("\n");
-    // CSL-JSON + lines file
+    // CSL-JSON lines file
     if (cslFirst) {
       cslFirst = false;
     } else {
-      cslWriter.write(",\n");
-      cslWriterJSONL.write("\n");
+      cslWriter.write("\n");
     }
     // serialising to the writer directly will close the stream!
     String json = ApiModule.MAPPER.writeValueAsString(CslUtil.toCSL(r));
-    cslWriter.write(json);
-    cslWriterJSONL.write(json.replaceAll("[\n\r]+", " "));
+    cslWriter.write(json.replaceAll("[\n\r]+", " "));
     // tabular, atomised
     if (r.getCsl() != null) {
       var csl = r.getCsl();
