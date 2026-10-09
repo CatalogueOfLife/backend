@@ -1,0 +1,33 @@
+dataset_key	type	terms	n
+1001	dataset	{"nomenclatural code": "botanical", "title": "ignored"}	0
+1002	dataset	{"prefer name atoms": false, "epithet add hyphen": true}	0
+1003	dataset	{"dont infer ranks": true}	0
+1001	dwc:Taxon	{"dwc:scientificName": "Abies alba", "dwc:scientificNameAuthorship": "Mill.", "dwc:taxonRank": "species"}	3
+1001	dwc:Taxon	{"dwc:scientificName": "Abies alba Mill.", "dwc:taxonRank": "species"}	1
+1001	dwc:Taxon	{"dwc:genus": "Abies", "dwc:specificEpithet": "alba", "dwc:scientificNameAuthorship": "Mill.", "dwc:taxonRank": "species"}	1
+1001	dwc:Taxon	{"dwc:scientificName": "Cerastium ligusticum subsp. granulatum", "dwc:scientificNameAuthorship": "(Huter et al.) P. D. Sell & Whitehead", "dwc:taxonRank": "subspecies"}	1
+1001	dwc:Taxon	{"dwc:scientificName": "Aus bus Smith, 1900", "dwc:scientificNameAuthorship": "(L.) Mill."}	1
+1001	dwc:Taxon	{"dwc:scientificName": "Aus bus (L.) Smith", "dwc:scientificNameAuthorship": "Mill."}	1
+1001	dwc:Taxon	{"dwc:scientificName": "Abies alba", "dwc:scientificNameAuthorship": "Mill. sensu Smith 1999"}	1
+1001	dwc:Taxon	{"dwc:scientificName": "Abies alba Mill. foo 1234 bar", "dwc:scientificNameAuthorship": "Mill."}	1
+\N	dwc:Taxon	{"dwc:scientificName": "Cantuaria sp.", "dwc:scientificNameAuthorship": "Forster, 1968"}	1
+\N	dwc:Taxon	{"dwc:scientificName": "BOLD:AAA1234"}	1
+\N	dwc:Taxon	{"dwc:scientificName": "Tobacco mosaic virus", "dwc:nomenclaturalCode": "ICVCN"}	1
+\N	dwc:Taxon	{"dwc:scientificName": "cellular organisms"}	1
+\N	dwc:Taxon	{"dwc:scientificName": "Boyeria vinosa [sic] (Say, 1840)", "dwc:taxonRank": "species"}	1
+\N	dwc:Taxon	{"dwc:scientificName": "Acranthera virescens", "dwc:scientificNameAuthorship": "(Ridl.) ined."}	1
+1001	col:Name	{"col:scientificName": "Abies alba", "col:authorship": "Mill.", "col:rank": "species", "col:genus": "Abies", "col:specificEpithet": "alba"}	2
+1002	col:Name	{"col:scientificName": "Abies alba", "col:authorship": "Mill.", "col:rank": "species", "col:genus": "Abies", "col:specificEpithet": "alba"}	1
+\N	col:Name	{"col:rank": "species", "col:genus": "Scoloplos", "col:specificEpithet": "sp. 1"}	1
+\N	col:Name	{"col:rank": "species", "col:genus": "[Cambarus]", "col:specificEpithet": "bartonii", "col:authorship": "(Fabricius, 1798)"}	1
+\N	col:Name	{"col:rank": "genus", "col:uninomial": "× Agropogon", "col:authorship": "P.Fourn."}	1
+\N	col:Name	{"col:rank": "species", "col:genus": "Abies", "col:specificEpithet": "†"}	1
+1002	col:Name	{"col:rank": "species", "col:genus": "Cosmopterix", "col:specificEpithet": "sancti vincentii"}	1
+1002	col:Name	{"col:rank": "species", "col:genus": "Cosmopterix", "col:specificEpithet": "pulchrimella"}	1
+\N	col:Name	{"col:scientificName": "Abies alba", "col:authorship": "Miller", "col:rank": "species", "col:combinationAuthorship": "Mill.", "col:combinationAuthorshipYear": "1768"}	1
+\N	col:Name	{"col:scientificName": "Abies alba", "col:rank": "species", "col:basionymAuthorship": "L.|Smith", "col:combinationAuthorship": "Mill.", "col:code": "botanical", "col:status": "nom. illeg."}	1
+\N	col:Name	{"col:scientificName": "Barleeia", "col:authorship": "Clark, 1853", "col:rank": "genus", "col:originalSpelling": "true", "col:notho": "generic"}	1
+1003	col:NameUsage	{"col:scientificName": "Abies sp.", "col:nameStatus": "manuscript"}	1
+1003	col:NameUsage	{"col:scientificName": "Festuca rubra subsp. pruinosa", "col:authorship": "(Hack.) Piper"}	1
+\N	col:NameUsage	{"col:scientificName": "Bacteroides corrig. Castellani & Chalmers, 1919", "col:rank": "genus", "col:genericName": "Bacteroides"}	1
+\N	col:NameUsage	{"col:rank": "species", "col:genericName": "Picea", "col:specificEpithet": "abies", "col:authorship": "(L.) H.Karst.", "col:namePublishedInYear": "1881"}	1
