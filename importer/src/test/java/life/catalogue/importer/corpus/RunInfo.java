@@ -22,9 +22,14 @@ class RunInfo {
   }
 
   /**
-   * @return the commit of the working directory, marked dirty if tracked files differ from it
+   * @return the system property corpus.code if given, for a run built from a copy of the sources, otherwise
+   *         the commit of the working directory, marked dirty if tracked files differ from it
    */
   static String git() {
+    String code = System.getProperty("corpus.code");
+    if (code != null) {
+      return code;
+    }
     try {
       String sha = exec("git", "rev-parse", "--short", "HEAD").trim();
       String branch = exec("git", "rev-parse", "--abbrev-ref", "HEAD").trim();
@@ -70,7 +75,7 @@ class RunInfo {
           }
         }
       }
-      return version + " (" + (newest == null ? "no jar" : newest.getFileName() + " of " + newestTime) + ")";
+      return version + " (" + (newest == null ? "no jar" : newest + " of " + newestTime) + ")";
     } catch (Exception e) {
       return "unknown (" + e.getMessage() + ")";
     }

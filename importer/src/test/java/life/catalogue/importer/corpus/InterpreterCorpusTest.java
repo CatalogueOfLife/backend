@@ -58,12 +58,12 @@ public class InterpreterCorpusTest {
     File four = tmp.newFolder("four");
     String meta = new InterpreterCorpusRunner().run(EXPORT_FIXTURE, one, 1, 42, 1, 0);
     new InterpreterCorpusRunner().run(EXPORT_FIXTURE, four, 1, 42, 4, 0);
-    assertTrue(meta, meta.contains("records: 29 interpreted (32 weighted)"));
+    assertTrue(meta, meta.contains("records: 30 interpreted (33 weighted)"));
     // the order and content of the output do not depend on the number of threads
     assertEquals(lines(one), lines(four));
 
     var rows = rows(one);
-    assertEquals(29, rows.size());
+    assertEquals(30, rows.size());
     // the settings rows of the export are no records: the first record is in line 5
     assertEquals(5L, (long) rows.keySet().iterator().next());
 
@@ -104,6 +104,10 @@ public class InterpreterCorpusTest {
     assertEquals("VIRUS", get(rows, 15, Field.CODE));
     // the name status column of a NameUsage
     assertEquals("MANUSCRIPT", get(rows, 30, Field.NOM_STATUS));
+    // author atoms with a year but no author
+    assertEquals(InterpreterCorpusRunner.OK, get(rows, 34, Field.STATUS));
+    assertEquals("(Hendel, 1902) 1902", get(rows, 34, Field.AUTHORSHIP));
+    assertEquals("Hendel, 1902", get(rows, 34, Field.BASIONYM_AUTHORSHIP));
     // a hybrid uninomial atom, its code inferred from the authorship
     assertEquals("GENERIC", get(rows, 23, Field.NOTHO));
     assertEquals("BOTANICAL", get(rows, 23, Field.CODE));
@@ -151,7 +155,7 @@ public class InterpreterCorpusTest {
 
     // the same run compared to itself
     String report = new InterpreterCorpusDiff(3).diff(before, before, tmp.newFolder("same"));
-    assertTrue(report, report.contains("rows compared: 29 (32 records)"));
+    assertTrue(report, report.contains("rows compared: 30 (33 records)"));
     assertTrue(report, report.contains("rows changed: 0 (0 records)"));
 
     // a copy with a few deliberate changes

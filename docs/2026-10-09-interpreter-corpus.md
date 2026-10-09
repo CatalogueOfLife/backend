@@ -1,8 +1,8 @@
 # Simplifying name interpretation, measured on the ChecklistBank corpus
 
 Date: 2026-10-09
-Status: phases 0 (the corpus harness) and 1 (one parse, bug fixes) implemented on `feat/interpreter-corpus`.
-Phase 2 not yet decided.
+Status: phases 0 (the corpus harness) and 1 (one parse, bug fixes) implemented on `feat/interpreter-corpus`, PR #1615,
+measured on both corpora and with name-parser-rust 0.3.1-SNAPSHOT build 5. Phase 2 not yet decided.
 
 ## Why
 
@@ -58,7 +58,7 @@ The goal is to rely on the parsed data and rebuild name and authorship from it. 
 
 ## Findings of the code review
 
-All confirmed in the code, 5, 6, 7 and 9 also in the fixture run of the harness, 1, 3, 4 and 10 in the corpus.
+All confirmed in the code, 5, 6, 7 and 9 also in the fixture run of the harness, 1, 3, 4 and 10 to 13 in the corpus.
 
 1. `INCONSISTENT_AUTHORSHIP` is dead since 026d4849d: it compares the combined parse, in which the separate
    authorship already won, with a parse of that same authorship. `"Aus bus Smith, 1900"` + `"(L.) Mill."` raises
@@ -76,10 +76,22 @@ All confirmed in the code, 5, 6, 7 and 9 also in the fixture run of the harness,
    (`Bacteroides corrig. Castellani & Chalmers, 1919` with genericName `Bacteroides` keeps neither).
 10. The regular expression that removes a taxonomic note from the authorship string was built from the note without
     quoting it: `Auctorum ({non} Linnaeus, 1767), 1767` threw a `PatternSyntaxException` out of the interpreter, the
-    only 3 exceptions of the 67.5 million records of the parser corpus.
+    only 3 exceptions of the 67.5 million records of the parser corpus. In the prod export it is 15 records of 15
+    datasets, and an exception of the interpreter is not caught per record: `DataCsvInserter.processVerbatim` lets it
+    fail the whole import, so none of these datasets could be imported again.
+11. Author atoms with a year but no author (`combinationAuthorshipYear` without `combinationAuthorship`) left the
+    author list null, where a parse always gives an empty one. Nothing in the interpreter trips over it, the corpus
+    harness did for 90,564 ColDP records of the prod export; empty lists since 1e874e1dd.
+12. `ExtinctName` took the X of the bacterial genus atom `XBB1006` for a hybrid sign and kept `BB1006`; a letter x in
+    a field of its own is a hybrid sign only when a space follows since 98e6a63b8. The shared
+    `SciNameNormalizer.removeHybridSignGenus` builds names index keys and stays as it is.
+13. Not fixed: `sanitizeEpithet` lower cases an epithet atom of several words as a whole, so
+    `sp. Groote Eylandt (D.J.Dixon 1365 & I.D.Cowie)` becomes `sp. groote eylandt (d.j.dixon 1365 & i.d.cowie)`.
+    876k export records have such an epithet, but DwC uses its atoms only without a scientific name; 18.6k ColDP
+    `Name` records, mostly Australian phrase names, are affected.
 
-Upstream defects, filed on gbif/name-parser-rust on 2026-10-09 (#62-#73) rather than worked around, with the corpus
-rows they affect where measured (phase 1 and the phase 2 experiment below):
+Upstream defects, filed on gbif/name-parser-rust on 2026-10-09 (#62-#73, #76, #77) rather than worked around, with the
+corpus rows they affect where measured (phase 1, the phase 2 experiment and parser build 5 below):
 
 | defect | rows |
 |---|---:|
@@ -91,11 +103,13 @@ rows they affect where measured (phase 1 and the phase 2 experiment below):
 | #66 a leading `ex` is dropped (`(ex Winogradsky, 1929) Blackall et al., 1986`), a second `ex` author too (`Degen ex Nyár. ex Csürös`) | 5,657 |
 | #67 `MS` (manuscript) is read as the initials `M.S.` (`Stephens (ex Kirby MS) 1828` → `ex M.S.Kirby`) | 2,673 |
 | #68 a capitalised `Et Al.` is read as an author `Al.` | 2,508 |
-| #70 a malformed sic in a separate authorship is not recognised: `(sic) Leichmann 1896`, `X, 1881 sic.`, `(X, 1883) [sic.]`, `corrig.Yoon et al.`; also `Smith corrig., 1900` | 92 |
+| #70 a sic with a dot or a corrig. before a comma in a separate authorship is not recognised: `X, 1881 sic.`, `(X, 1883) [sic.]` (read as an author), `corrig.Yoon et al.`, `Smith corrig., 1900` | 92 |
 | #72 case normalisation of all capital authors: `MCCORD` → `Mccord`, `DE SAUSSURE` → `DE Saussure` | |
 | #73 a soft hyphen splits an epithet (`novae­zelandiae Hirn` → epithet `novae`, author `zelandiae Hirn`) | |
 | #71 a partial separate authorship replaces the name's unparsed rest instead of adding to it | |
 | #67 `MS` inside basionym brackets makes no manuscript name (`(Kuroda MS in Kira, 1959)`) | |
+| #77 since #74 an organism label phrase gets a synthetic `sp.`: `Holophagaceae sp. bacterium UBA692` | 123,129 |
+| #76 an informal result loses Candidatus, since #74 also for NCBI placeholders | 11,452 |
 | not filed: `und` is no author separator (mostly in references) | 50 |
 | not filed: (api) `parseAuthorship` returns a `ParsedAuthorship`, which cannot carry `originalSpelling`; CLB no longer needs it | |
 
@@ -104,8 +118,11 @@ rows they affect where measured (phase 1 and the phase 2 experiment below):
 ### Phase 0
 
 The parser corpus of 67,471,137 rows runs in 13 to 16 minutes on 14 threads; 278,867 rows have no name (ColDP records
-without a scientific name, the parser corpus has no atoms). The export script and its IT are in place, the export has
-not been run on prod yet.
+without a scientific name, the parser corpus has no atoms). Markus ran the export on prod on 2026-10-09: 121,928,123
+rows for 122,977,682 verbatim records (66.7M `dwc:Taxon`, 13.4M `col:Name`, 41.8M `col:NameUsage`) and the name
+settings of 263 datasets, 4.2 GB gzipped; a run takes 28 to 52 minutes. A run built from a copy of the sources names
+its code with `-Dcorpus.code`, and comparing parser builds means pinning their jars on the classpath, as `~/.m2`
+holds one build only.
 
 ### Phase 1
 
@@ -152,6 +169,46 @@ Two consequences matter for phase 2:
 Regressions accepted for upstream fixes: 92 rows lose a malformed sic marker of a separate authorship the old regex
 recovered and the parser does not (`(sic) Henneberg 1903`, `sic) Audureau 1940`, `(…) sic.`, `[sic[`); a manuscript
 `MS` inside basionym brackets is no longer seen (`(Kuroda MS in Kira, 1959)`).
+
+### Phase 1 on the prod export
+
+The export exercises what the parser corpus cannot: atomised ColDP names, author atoms and dataset settings. Diff of
+phase 1 against master (both with the parser build of 2026-10-09 03:43), 122,977,682 records: 852,548 rows change
+(0.70%), 845,447 significantly.
+
+| change | rows |
+|---|---:|
+| code inferred for an atomised name that had none: BOTANICAL 514,943 (510,832 of them LCVP), ZOOLOGICAL 146,633, CULTIVARS 468, VIRUS 23 | 660,909 |
+| `INCONSISTENT_AUTHORSHIP` no longer raised | 167,433 |
+| combination authorship atoms changed / removed / added | 127,123 / 43,360 / 3,453 |
+| basionym authorship atoms added | 40,190 |
+| zoological trinomials without `subsp.` now that their code is inferred: `Trichordestra liquida subsp. liquida` → `Trichordestra liquida liquida` | 14,324 |
+| exceptions (finding 10) | 15 → 0 |
+
+The inferred codes agree with the datasets: only 3,247 records get a code that is not the most common inferred code of
+their dataset, the cases gbif/name-parser-rust#60 is about. Datasets with a code setting are not affected at all.
+
+### name-parser-rust 0.3.1-SNAPSHOT build 5
+
+Build 5 (2026-10-09 10:25) holds the fixes of gbif/name-parser-rust#61 (#74) and of the import diffs (#58, #59). The
+version stays 0.3.1-SNAPSHOT, so the backend pom does not change; every parser, core, importer and dao test passes with
+it, apart from `ReferenceMapperTest.listOrphans`, which fails in the full dao suite on master too. Diff of phase 1 with
+the build of 03:43 against phase 1 with build 5:
+
+| corpus | rows changed | significantly |
+|---|---:|---:|
+| parser corpus, 67.5M rows | 139,936 (0.21%) | 137,435 |
+| prod export, 122M rows | 152,073 (0.12%) | 148,371 |
+
+Most of it is #61 item 1: an NCBI placeholder no longer takes its organism label for the species epithet
+(`Holophagaceae bacterium UBA692`, `Wolbachia endosymbiont of Aprostocetus sp.`, 123k parser corpus rows), which makes
+it an informal name. Two regressions come with it, filed as #77 - the canonical form gets a synthetic `sp.`,
+`Holophagaceae sp. bacterium UBA692`, rendered so by the parser's own `NameFormatter` as well - and #76 - the informal
+result has no candidatus flag, 11,452 parser corpus rows (13,867 export rows) lose Candidatus. The rest is
+improvements: the Turkish dotless ı stays in surnames (`Arabacı`, `Yıld.`), `m.` is a rank marker
+(`Phlaeoba pharaonis m. aterrima`), an unmarked infraspecific epithet after the species author parses
+(`Lithospermum arvense L. arvense L.`), a lone lower case epithet is a placeholder (`brachiariae`), and a bracketed
+`[non Hampson 1906]` is a taxonomic note.
 
 ### Phase 2, measured but not decided
 

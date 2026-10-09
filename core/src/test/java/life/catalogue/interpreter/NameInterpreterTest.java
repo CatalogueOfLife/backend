@@ -746,6 +746,34 @@ public class NameInterpreterTest {
   }
 
   /**
+   * Author atoms with a year but no author: ColDP records with a combinationAuthorshipYear and no
+   * combinationAuthorship. Rendering them threw a NullPointerException, which fails the entire import -
+   * found for 90k ColDP records of ChecklistBank by the interpreter corpus.
+   */
+  @Test
+  public void authorAtomsWithYearOnly() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("species", "Colobaea beckeri", "(Hendel 1902) 1902", null,
+      null, "Colobaea", null, "beckeri", null, null,
+      null, null, "1902", "Hendel", null, "1902",
+      null, null, "zoological", null, v).getName();
+    assertEquals("Colobaea beckeri", n.getScientificName());
+    assertEquals(List.of(), n.getCombinationAuthorship().getAuthors());
+    assertEquals(List.of(), n.getCombinationAuthorship().getExAuthors());
+    assertEquals("1902", n.getCombinationAuthorship().getYear());
+    assertEquals(List.of("Hendel"), n.getBasionymAuthorship().getAuthors());
+    assertEquals("(Hendel, 1902) 1902", n.getAuthorship());
+
+    // no basionym atoms at all
+    n = interpret("species", "Colobaea beckeri", null, null,
+      null, "Colobaea", null, "beckeri", null, null,
+      "Hendel", null, null, null, null, null,
+      null, null, "zoological", null, v).getName();
+    assertEquals(List.of(), n.getBasionymAuthorship().getAuthors());
+    assertEquals("Hendel", n.getAuthorship());
+  }
+
+  /**
    * A hybrid marker on a uninomial atom marks the generic name part as the hybrid, as it does on a genus atom.
    */
   @Test

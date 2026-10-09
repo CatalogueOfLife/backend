@@ -31,3 +31,4 @@ dataset_key	type	terms	n
 1003	col:NameUsage	{"col:scientificName": "Festuca rubra subsp. pruinosa", "col:authorship": "(Hack.) Piper"}	1
 \N	col:NameUsage	{"col:scientificName": "Bacteroides corrig. Castellani & Chalmers, 1919", "col:rank": "genus", "col:genericName": "Bacteroides"}	1
 \N	col:NameUsage	{"col:rank": "species", "col:genericName": "Picea", "col:specificEpithet": "abies", "col:authorship": "(L.) H.Karst.", "col:namePublishedInYear": "1881"}	1
+\N	col:NameUsage	{"col:scientificName": "Colobaea beckeri", "col:authorship": "(Hendel 1902) 1902", "col:rank": "species", "col:genericName": "Colobaea", "col:specificEpithet": "beckeri", "col:basionymAuthorship": "Hendel", "col:basionymAuthorshipYear": "1902", "col:combinationAuthorshipYear": "1902", "col:code": "zoological"}	1
