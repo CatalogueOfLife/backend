@@ -310,42 +310,51 @@ public class ColdpInterpreter extends InterpreterBase {
     return Optional.empty();
   }
 
-  Optional<NameData> interpretName(VerbatimRecord v) {
-    Term nomStatusTerm = ColdpTerm.status;
-    Term genusNameTerm = ColdpTerm.genus;
-    Term remarksTerm = ColdpTerm.remarks;
-    Term refIdTerm = ColdpTerm.referenceID;
-    Term altIdTerm = ColdpTerm.alternativeID;
-    final Term pubInYearTerm;
-    final Term pubInPageTerm;
-    final Term pubInPageLinkTerm;
-    if (ColdpTerm.NameUsage.equals(v.getType())) {
-      nomStatusTerm = ColdpTerm.nameStatus;
-      genusNameTerm = ColdpTerm.genericName;
-      remarksTerm = ColdpTerm.nameRemarks;
-      refIdTerm = ColdpTerm.nameReferenceID;
-      altIdTerm = ColdpTerm.nameAlternativeID;
-      pubInYearTerm = ColdpTerm.namePublishedInYear;
-      pubInPageTerm = ColdpTerm.namePublishedInPage;
-      pubInPageLinkTerm = ColdpTerm.namePublishedInPageLink;
-    } else {
-      pubInYearTerm = ColdpTerm.publishedInYear;
-      pubInPageTerm = ColdpTerm.publishedInPage;
-      pubInPageLinkTerm = ColdpTerm.publishedInPageLink;
-      if(v.hasTerm(ColdpTerm.genericName)) {
-        // against COolDP specs, but people do sometimes use genericName also in Name files and we dont wanna break these
-        genusNameTerm = ColdpTerm.genericName;
+  /**
+   * The terms a Name record and a NameUsage record keep their name properties in.
+   */
+  private record NameTerms(Term nomStatus, Term genusName, Term remarks, Term refId, Term altId,
+                           Term pubInYear, Term pubInPage, Term pubInPageLink) {
+    static NameTerms of(VerbatimRecord v) {
+      if (ColdpTerm.NameUsage.equals(v.getType())) {
+        return new NameTerms(ColdpTerm.nameStatus, ColdpTerm.genericName, ColdpTerm.nameRemarks, ColdpTerm.nameReferenceID,
+          ColdpTerm.nameAlternativeID, ColdpTerm.namePublishedInYear, ColdpTerm.namePublishedInPage, ColdpTerm.namePublishedInPageLink);
       }
+      // against COolDP specs, but people do sometimes use genericName also in Name files and we dont wanna break these
+      Term genusName = v.hasTerm(ColdpTerm.genericName) ? ColdpTerm.genericName : ColdpTerm.genus;
+      return new NameTerms(ColdpTerm.status, genusName, ColdpTerm.remarks, ColdpTerm.referenceID,
+        ColdpTerm.alternativeID, ColdpTerm.publishedInYear, ColdpTerm.publishedInPage, ColdpTerm.publishedInPageLink);
     }
+  }
 
-    Optional<ParsedNameUsage> optPNU = nameInterpreter.interpret(v.getRaw(ColdpTerm.ID), v.get(ColdpTerm.rank), Rank.UNRANKED,
+  /**
+   * The name of a ColDP Name or NameUsage record as the import interprets it, without the properties only ColDP knows
+   * and without the published in reference which needs the store.
+   * Also used by the interpreter corpus tools, so they see exactly what an import sees.
+   */
+  public static Optional<ParsedNameUsage> interpretName(NameInterpreter nameInterpreter, VerbatimRecord v) {
+    return interpretName(nameInterpreter, NameTerms.of(v), v);
+  }
+
+  private static Optional<ParsedNameUsage> interpretName(NameInterpreter nameInterpreter, NameTerms t, VerbatimRecord v) {
+    return nameInterpreter.interpret(v.getRaw(ColdpTerm.ID), v.get(ColdpTerm.rank), Rank.UNRANKED,
         v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
-        v.getFirst(pubInYearTerm, ColdpTerm.namePublishedInYear, ColdpTerm.publishedInYear),
-        v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet), v.get(ColdpTerm.cultivarEpithet),
+        v.getFirst(t.pubInYear, ColdpTerm.namePublishedInYear, ColdpTerm.publishedInYear),
+        v.get(ColdpTerm.uninomial), v.get(t.genusName), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet), v.get(ColdpTerm.cultivarEpithet),
         ColdpTerm.combinationAuthorship, ColdpTerm.combinationExAuthorship, ColdpTerm.combinationAuthorshipYear,
         ColdpTerm.basionymAuthorship, ColdpTerm.basionymExAuthorship,ColdpTerm.basionymAuthorshipYear,
-        ColdpTerm.notho, ColdpTerm.originalSpelling, ColdpTerm.code, nomStatusTerm,
-        ColdpTerm.link, remarksTerm, altIdTerm, v);
+        ColdpTerm.notho, ColdpTerm.originalSpelling, ColdpTerm.code, t.nomStatus,
+        ColdpTerm.link, t.remarks, t.altId, v);
+  }
+
+  Optional<NameData> interpretName(VerbatimRecord v) {
+    final NameTerms t = NameTerms.of(v);
+    final Term refIdTerm = t.refId;
+    final Term pubInYearTerm = t.pubInYear;
+    final Term pubInPageTerm = t.pubInPage;
+    final Term pubInPageLinkTerm = t.pubInPageLink;
+
+    Optional<ParsedNameUsage> optPNU = interpretName(nameInterpreter, t, v);
     var opt = optPNU.map(NameData::new);
     if (opt.isPresent()) {
       NameData nd = opt.get();

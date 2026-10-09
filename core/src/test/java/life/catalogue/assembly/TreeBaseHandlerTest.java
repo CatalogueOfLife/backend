@@ -80,6 +80,39 @@ public class TreeBaseHandlerTest {
   }
 
   /**
+   * A decision changing the name parses its scientific name together with its own authorship,
+   * and keeps that authorship as the editor wrote it.
+   */
+  @Test
+  public void applyDecisionName() {
+    // a changed name is matched again
+    TreeBaseHandler h = new UselessHandler(1, null, factory, mock(NameIndex.class), 0, SECTOR, null, null, null, null);
+    EditorialDecision d = new EditorialDecision();
+    d.setMode(EditorialDecision.Mode.UPDATE);
+    d.setName(Name.newBuilder().scientificName("Abies alba").authorship("(L.)  Mill.").build());
+
+    Name n = h.applyDecision(new Taxon(Name.newBuilder().scientificName("Abies albus").authorship("Smith").build()), d).usage.getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("(L.)  Mill.", n.getAuthorship());
+    assertEquals(List.of("Mill."), n.getCombinationAuthorship().getAuthors());
+    assertEquals(List.of("L."), n.getBasionymAuthorship().getAuthors());
+    assertEquals("alba", n.getSpecificEpithet());
+
+    // an authorship that only comes in the name string is kept
+    d.setName(Name.newBuilder().scientificName("Abies alba Mill.").build());
+    n = h.applyDecision(new Taxon(Name.newBuilder().scientificName("Abies albus").authorship("Smith").build()), d).usage.getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Mill.", n.getAuthorship());
+    assertEquals(List.of("Mill."), n.getCombinationAuthorship().getAuthors());
+
+    // a blank name changes nothing but the authorship
+    d.setName(Name.newBuilder().scientificName(" ").authorship("Mill.").build());
+    n = h.applyDecision(new Taxon(Name.newBuilder().scientificName("Abies alba").authorship("Smith").build()), d).usage.getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Mill.", n.getAuthorship());
+  }
+
+  /**
    * A decision always carries an environment set, empty unless it changes environments.
    * Changing only the status must keep the environments of the taxon.
    */

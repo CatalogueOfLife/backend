@@ -651,23 +651,22 @@ public abstract class TreeBaseHandler implements TreeHandler {
             Name n = u.getName();
             Name n2 = ed.getName();
 
+            Optional<ParsedNameUsage> nat = Optional.empty();
             if (n2.getScientificName() != null) {
-              // parse a new name!
-              final String name = n2.getScientificName() + " " + coalesce(n2.getAuthorship(), "");
+              // parse a new name, together with the decision's authorship
               NomCode code = coalesce(n2.getCode(), n.getCode());
               Rank rank = coalesce(n2.getRank(), n.getRank());
-              ParsedNameUsage nat = NameParser.PARSER.parse(name, rank, code, VerbatimRecord.VOID).orElseGet(() -> {
-                LOG.warn("Unparsable decision name {}", name);
-                // add the full, unparsed authorship in this case to not lose it
-                ParsedNameUsage nat2 = new ParsedNameUsage();
-                nat2.getName().setScientificName(n2.getScientificName());
-                nat2.getName().setAuthorship(n2.getAuthorship());
-                return nat2;
-              });
+              nat = NameParser.PARSER.parse(n2.getScientificName(), n2.getAuthorship(), rank, code, VerbatimRecord.VOID);
+              if (nat.isEmpty()) {
+                LOG.warn("Blank decision name {} ignored", n2.getScientificName());
+              }
+            }
+            if (nat.isPresent()) {
               // copy all pure name props
-              Name nn = nat.getName();
+              Name nn = nat.get().getName();
               n.setScientificName(nn.getScientificName());
-              n.setAuthorship(nn.getAuthorship());
+              // the authorship as the editor wrote it, or as it came in the name string
+              n.setAuthorship(coalesce(n2.getAuthorship(), nn.getAuthorship()));
               n.setType(nn.getType());
               n.setRank(nn.getRank());
               n.setUninomial(nn.getUninomial());
@@ -680,9 +679,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
               n.setNotho(nn.getNotho());
               n.setCombinationAuthorship(nn.getCombinationAuthorship());
               n.setBasionymAuthorship(nn.getBasionymAuthorship());
-            }
 
-            if (n2.getAuthorship() != null) {
+            } else if (n2.getAuthorship() != null) {
               // just change the authorship, even if it was included in the name already
               n.setAuthorship(n2.getAuthorship());
               ParsedAuthorship an = NameParser.PARSER.parseAuthorship(n2.getAuthorship()).orElseGet(() -> {

@@ -12,6 +12,7 @@ import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.RelationData;
+import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.*;
@@ -361,8 +362,12 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
-    Optional<ParsedNameUsage> opt = nameInterpreter.interpret(taxonID(v), v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), Rank.UNRANKED,
+  /**
+   * The name of a DwC record as the import interprets it, without the published in reference which needs the store.
+   * Also used by the interpreter corpus tools, so they see exactly what an import sees.
+   */
+  public static Optional<ParsedNameUsage> interpretName(NameInterpreter nameInterpreter, String id, VerbatimRecord v) {
+    return nameInterpreter.interpret(id, v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), Rank.UNRANKED,
       v.get(DwcTerm.scientificName),v.get(DwcTerm.scientificNameAuthorship), v.get(DwcTerm.namePublishedInYear),
       null, v.getFirst(DwcTerm.genericName, DwcTerm.genus), v.getFirst(DwcTerm.infragenericEpithet),
       v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), v.get(DwcTerm.cultivarEpithet),
@@ -370,6 +375,10 @@ public class DwcInterpreter extends InterpreterBase {
       null, null, DwcTerm.nomenclaturalCode, DwcTerm.nomenclaturalStatus,
       DcTerm.references, null, DwcTerm.scientificNameID, v
     );
+  }
+
+  private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
+    Optional<ParsedNameUsage> opt = interpretName(nameInterpreter, taxonID(v), v);
 
     // publishedIn
     if (opt.isPresent()) {

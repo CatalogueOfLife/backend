@@ -203,6 +203,35 @@ public class NameParserTest {
       "Ophiopeza fallax (Lütken, 1869) Peters");
   }
 
+  /**
+   * The taxonomic note is parsed from name and authorship together, so it can be spelled differently from the one in
+   * the authorship, or be all the authorship holds. Found in the interpreter corpus.
+   */
+  @Test
+  public void noteFromNameAndAuthorship() throws Exception {
+    String label = parse("Ammonifex emend. Miroshnichenko & al. , 2008", "Huber & Stetter, 1996 emend. Miroshnichenko et al., 2008",
+      Rank.GENUS, NomCode.BACTERIAL).getLabel();
+    assertTrue(label, label.startsWith("Ammonifex Huber & Stetter"));
+    assertFalse(label, label.contains("emend"));
+    assertLabel("Sclerotinia cinerea sensu", "auct NZ", Rank.SPECIES, NomCode.BOTANICAL, "Sclerotinia cinerea");
+    // a note in the name string only leaves the authorship alone
+    assertLabel("Abies alba sensu Smith 1999", "Mill.", Rank.SPECIES, NomCode.BOTANICAL, "Abies alba Mill.");
+    // an authorship that is a word of the note only
+    assertLabel("Abies alba sensu lato", "L.", Rank.SPECIES, NomCode.BOTANICAL, "Abies alba L.");
+  }
+
+  /**
+   * A taxonomic note is removed from the authorship with a regular expression made from the note,
+   * which must match the characters of the note literally. Braces made it throw, found in the interpreter corpus.
+   */
+  @Test
+  public void noteWithRegexCharacters() throws Exception {
+    var pnu = NameParser.PARSER.parse("Coccus adonidum", "Auctorum ({non} Linnaeus, 1767), 1767", Rank.SPECIES, null, new IssueContainer.Simple()).get();
+    assertNotNull(pnu.getTaxonomicNote());
+    assertFalse(pnu.getName().getLabel(), pnu.getName().getLabel().contains(pnu.getTaxonomicNote()));
+    assertTrue("x a{1} * b+ y".matches(".*" + NameParser.note2pattern("a{1} *b+") + ".*"));
+  }
+
   private static void assertLabel(String name, String authorship, Rank rank, NomCode code, String expected) {
     Name n = NameParser.PARSER.parse(name, authorship, rank, code, new IssueContainer.Simple()).get().getName();
     assertEquals(expected, n.getLabel());
@@ -563,12 +592,12 @@ public class NameParserTest {
    */
   @Test
   public void testEmpty() throws Exception {
-    assertEquals(Optional.empty(), NameParser.PARSER.parse((String)null));
-    assertEquals(Optional.empty(), NameParser.PARSER.parse(""));
-    assertEquals(Optional.empty(), NameParser.PARSER.parse(" "));
-    assertEquals(Optional.empty(), NameParser.PARSER.parse("\t"));
-    assertEquals(Optional.empty(), NameParser.PARSER.parse("\n"));
-    assertEquals(Optional.empty(), NameParser.PARSER.parse("\t\n"));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse((String) null, Rank.UNRANKED, null, IssueContainer.VOID));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("", Rank.UNRANKED, null, IssueContainer.VOID));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse(" ", Rank.UNRANKED, null, IssueContainer.VOID));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("\t", Rank.UNRANKED, null, IssueContainer.VOID));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("\n", Rank.UNRANKED, null, IssueContainer.VOID));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse("\t\n", Rank.UNRANKED, null, IssueContainer.VOID));
   }
   
   /**
