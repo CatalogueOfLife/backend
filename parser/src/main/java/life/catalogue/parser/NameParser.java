@@ -40,14 +40,17 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   public static final NameParser PARSER = new NameParser();
   private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:]+)\\s*");
   private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[]+)\\s*");
-  private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
-  private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?");
+  // UNICODE_CHARACTER_CLASS: Java's \b is ASCII-only, so without it the "et" of Behçet is a word ("Behç &")
+  private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*", Pattern.UNICODE_CHARACTER_CLASS);
+  private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?", Pattern.UNICODE_CHARACTER_CLASS);
   private static final Pattern LEADING_PUNCT = Pattern.compile("^\\s*[.;,]\\s*");
-  private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*\\b(sic|corrig)\\b[.!\\s]*[\\])]?\\s*");
+  private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*\\b(sic|corrig)\\b[.!\\s]*[\\])]?\\s*", Pattern.UNICODE_CHARACTER_CLASS);
 
   private static final String YEAR = "[12][0-9][0-9][0-9?]";
   private static final Pattern COMMA_BEFORE_YEAR = Pattern.compile("(?<!,)\\s+("+YEAR+")");
   private static final Pattern COMMA_AT_END = Pattern.compile("\\s*[,;:]\\s*$");
+  // empty brackets, e.g. left behind by a removed taxonomic note: "Matsumoto, 1917 ()", or an unclosed one at the end
+  private static final Pattern EMPTY_BRACKETS = Pattern.compile("\\s*(?:\\(\\s*\\)|\\[\\s*]|\\{\\s*}|[(\\[{]\\s*$)");
   private static final Pattern NO_CHARS = Pattern.compile("^[^a-zA-Z0-9]+$");
   private static final Pattern NORM_WHITESPACE = Pattern.compile("(?:\\\\[nr]|\\s)+");
 
@@ -157,7 +160,14 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
         // keep authorship issues in a separate container
         // so we can filter out non authorship related issues before we add them to the verbatim record
         IssueContainer ic = new IssueContainer.Simple();
-        copyToPNU(pnAuthorship, pnu, ic);
+        copyToPNU(pnAuthorship, pnu, ic, false);
+        // the unparsed rest of the authorship stays in the original authorship string kept below,
+        // so it must not also be part of the scientific name - the label would show it twice
+        String rest = removeTrailing(pnu.getName().getUnparsed(), pnAuthorship.getUnparsed());
+        if (rest != null) {
+          pnu.getName().setUnparsed(StringUtils.trimToNull(rest));
+          pnu.getName().rebuildScientificName();
+        }
         // ignore issues related to the epithet - we only parse authorships here
         removeEpithetIssues(ic);
         ic.getIssues().forEach(v::add);
@@ -242,6 +252,9 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       name = SIC_CORRIG.matcher(name).replaceFirst("");
     }
 
+    // remove empty brackets, also those a removed taxonomic note left behind
+    name = EMPTY_BRACKETS.matcher(name).replaceAll("");
+
     // normalise different usages of ampersand, and, et &amp; to always use &
     name = NORM_AND.matcher(name).replaceAll(" & ");
     name = NORM_ET_AL.matcher(name).replaceAll("et al.");
@@ -265,6 +278,24 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     return pnu.getName().getAuthorship();
   }
 
+  /**
+   * Removes a trailing part from a string, ignoring whitespace in both.
+   * @return the string without the tail, possibly empty, or null if it does not end with the tail
+   */
+  @VisibleForTesting
+  static String removeTrailing(@Nullable String s, @Nullable String tail) {
+    if (s == null || StringUtils.isBlank(tail)) return null;
+    String t = StringUtils.deleteWhitespace(tail);
+    int i = s.length();
+    int j = t.length();
+    while (j > 0 && i > 0) {
+      char c = s.charAt(--i);
+      if (Character.isWhitespace(c)) continue;
+      if (c != t.charAt(--j)) return null;
+    }
+    return j == 0 ? s.substring(0, i) : null;
+  }
+
   static <T> void setIfNull(T val, Supplier<T> getter, Consumer<T> setter) {
     if (val != null && getter.get() == null) {
       setter.accept(val);
@@ -278,6 +309,13 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * @param issues
    */
   private static void copyToPNU(ParsedAuthorship pn, ParsedNameUsage pnu, IssueContainer issues){
+    copyToPNU(pn, pnu, issues, true);
+  }
+
+  /**
+   * @param copyUnparsed if false the unparsed portion of the authorship is not copied to the name
+   */
+  private static void copyToPNU(ParsedAuthorship pn, ParsedNameUsage pnu, IssueContainer issues, boolean copyUnparsed){
     pnu.getName().setCombinationAuthorship(pn.getCombinationAuthorship());
     pnu.getName().setBasionymAuthorship(pn.getBasionymAuthorship());
     // propagate notes and unparsed bits found in authorship if not already existing
@@ -296,7 +334,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     if (pn instanceof ParsedName pnn && pnn.isOriginalSpelling() != null) {
       pnu.getName().setOriginalSpelling(pnn.isOriginalSpelling());
     }
-    if (pn.getUnparsed() != null) {
+    if (copyUnparsed && pn.getUnparsed() != null) {
       pnu.getName().setUnparsed(pn.getUnparsed());
     }
     if (pn.isExtinct()) {
@@ -385,7 +423,11 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
           if (inf.rank() != null && inf.rank().isSpeciesOrBelow()) {
             issues.add(Issue.INDETERMINED);
           }
-          parseAuthorshipIntoName(pnu, authorship, issues);
+          // the parser keeps the authorship of an informal name in its phrase ("Geranium" + "L." -> "Geranium sp. L."),
+          // which is the name's unparsed portion now. Adding it as authorship as well would double it in the label
+          if (removeTrailing(pnu.getName().getUnparsed(), authorship) == null) {
+            parseAuthorshipIntoName(pnu, authorship, issues);
+          }
         }
         case ParseResult.Unparsable e -> {
           pnu = new ParsedNameUsage();

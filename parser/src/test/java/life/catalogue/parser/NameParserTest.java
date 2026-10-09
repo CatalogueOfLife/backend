@@ -130,6 +130,84 @@ public class NameParserTest {
         .nothingElse();
   }
 
+  /**
+   * https://api.checklistbank.org/dataset/1048/diff?attempts=9..10
+   * An author whose name ends in "et" after a non-ASCII letter (Behçet) must not have it read as the
+   * conjunction "et": Java's \b is ASCII-only, so "ç|et" counted as a word boundary.
+   */
+  @Test
+  public void nonAsciiLetterBeforeConjunction() throws Exception {
+    assertEquals("A. Ilçim & L. Behçet", normalizeAuthorship("A. Ilçim & L. Behçet", null));
+    assertEquals("Öztürk & Ağaçet", normalizeAuthorship("Öztürk et Ağaçet", null));
+    assertEquals("Smith et al., 2020", normalizeAuthorship("Smith et al 2020", null));
+    assertEquals("Görand & Müllerund", normalizeAuthorship("Görand and Müllerund", null));
+
+    Name n = new Name();
+    n.setScientificName("Geranium kalenderianum");
+    n.setAuthorship("A. Ilçim & L. Behçet");
+    n.setRank(Rank.SPECIES);
+    n.setCode(NomCode.BOTANICAL);
+    NameParser.PARSER.parse(n, new IssueContainer.Simple());
+    assertEquals("A. Ilçim & L. Behçet", n.getAuthorship());
+    assertEquals(List.of("A.Ilçim", "L.Behçet"), n.getCombinationAuthorship().getAuthors());
+  }
+
+  /**
+   * The leftover of a separately given authorship that only parses partly is already in the authorship,
+   * so it must not be added to the scientific name as well, which doubled it in the label.
+   * https://api.checklistbank.org/dataset/1027/taxon/18-.08-.28-.00-.001-.000-.011-.-
+   */
+  @Test
+  public void partlyParsedAuthorshipIsNotDoubled() throws Exception {
+    assertLabel("Pachypus baroniensis", "Ahrens, Bazzato, Lopez, etal, 2026", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Pachypus baroniensis Ahrens, Bazzato, Lopez, etal, 2026");
+    assertLabel("Anasterias suteri", "(deLoriol, 1894)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Anasterias suteri (deLoriol, 1894)");
+    assertLabel("Udara etsuzoi", "Eliot & kawazoé, 1983", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Udara etsuzoi Eliot & kawazoé, 1983");
+    assertLabel("Asteroschematinae", "Verrill, 1899 emended Okanishi et al., 2011", Rank.SUBFAMILY, NomCode.ZOOLOGICAL,
+      "Asteroschematinae Verrill, 1899 emended Okanishi et al., 2011");
+    assertLabel("Carinomiformes", "Chernyshev, 1995, stat.", Rank.ORDER, NomCode.ZOOLOGICAL,
+      "Carinomiformes Chernyshev, 1995, stat.");
+    // the parser keeps the authorship of an informal name in its phrase
+    assertLabel("Geranium", "L.", Rank.SPECIES, NomCode.BOTANICAL, "Geranium sp. L.");
+    assertLabel("Trachyderes sp.", "Dupont, 1838", Rank.SPECIES, NomCode.ZOOLOGICAL, "Trachyderes sp. Dupont, 1838");
+    // an unparsed rest of the name itself stays in the scientific name
+    assertLabel("Abies alba Mill. foo 1234 bar", null, Rank.SPECIES, NomCode.BOTANICAL, "Abies alba foo 1234 bar Mill.");
+    assertLabel("Abies alba Mill. foo 1234 bar", "Mill.", Rank.SPECIES, NomCode.BOTANICAL, "Abies alba foo 1234 bar Mill.");
+  }
+
+  /**
+   * A taxonomic note removed from the authorship must take its brackets along, not leave "()" or "[]" behind.
+   */
+  @Test
+  public void removedNoteLeavesNoEmptyBrackets() throws Exception {
+    assertLabel("Astroceras pergamena", "Matsumoto, 1917 (non Lyman, 1879)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Astroceras pergamena Matsumoto, 1917");
+    assertLabel("Listriolobus", "Fischer, 1926 [not Spengel, 1912]", Rank.GENUS, NomCode.ZOOLOGICAL,
+      "Listriolobus Fischer, 1926");
+    assertLabel("Aspidiophorus ontarionensis", "Schwank, 1990 [sensu Schwank & Kånneby, 2014]", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Aspidiophorus ontarionensis Schwank, 1990");
+    assertLabel("Dysteria lanceolata", "(sensu Calkins, 1902) Kahl, 1931", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Dysteria lanceolata Kahl, 1931");
+    assertLabel("Acanthodiscus", "MacCallum, 1916 (nec 1918)", Rank.GENUS, NomCode.ZOOLOGICAL,
+      "Acanthodiscus MacCallum, 1916");
+    assertLabel("Dactylogyrus simplex", "Mizelle, 1937 (nec Bychowsky, 1936; nec Birgi & Lambert, 1987)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Dactylogyrus simplex Mizelle, 1937");
+    assertLabel("Asterias alta", "Philippi (MS) in Quijada, 1911 [not seen]", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Asterias alta Philippi (MS) in Quijada, 1911");
+    // empty brackets in the source
+    assertLabel("Ervilia monostylus", "() Dujardin", Rank.SPECIES, NomCode.ZOOLOGICAL, "Ervilia monostylus Dujardin");
+    // a basionym authorship stays
+    assertLabel("Ophiopeza fallax", "(Lütken, 1869) Peters (non Peters, 1851)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Ophiopeza fallax (Lütken, 1869) Peters");
+  }
+
+  private static void assertLabel(String name, String authorship, Rank rank, NomCode code, String expected) {
+    Name n = NameParser.PARSER.parse(name, authorship, rank, code, new IssueContainer.Simple()).get().getName();
+    assertEquals(expected, n.getLabel());
+  }
+
   static String normalizeAuthorship(String authorship, String taxnote) {
     ParsedNameUsage pnu = new ParsedNameUsage();
     pnu.setName(new Name());
