@@ -152,6 +152,36 @@ public class NameParserTest {
     assertEquals(List.of("A.Ilçim", "L.Behçet"), n.getCombinationAuthorship().getAuthors());
   }
 
+  /**
+   * The leftover of a separately given authorship that only parses partly is already in the authorship,
+   * so it must not be added to the scientific name as well, which doubled it in the label.
+   * https://api.checklistbank.org/dataset/1027/taxon/18-.08-.28-.00-.001-.000-.011-.-
+   */
+  @Test
+  public void partlyParsedAuthorshipIsNotDoubled() throws Exception {
+    assertLabel("Pachypus baroniensis", "Ahrens, Bazzato, Lopez, etal, 2026", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Pachypus baroniensis Ahrens, Bazzato, Lopez, etal, 2026");
+    assertLabel("Anasterias suteri", "(deLoriol, 1894)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Anasterias suteri (deLoriol, 1894)");
+    assertLabel("Udara etsuzoi", "Eliot & kawazoé, 1983", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Udara etsuzoi Eliot & kawazoé, 1983");
+    assertLabel("Asteroschematinae", "Verrill, 1899 emended Okanishi et al., 2011", Rank.SUBFAMILY, NomCode.ZOOLOGICAL,
+      "Asteroschematinae Verrill, 1899 emended Okanishi et al., 2011");
+    assertLabel("Carinomiformes", "Chernyshev, 1995, stat.", Rank.ORDER, NomCode.ZOOLOGICAL,
+      "Carinomiformes Chernyshev, 1995, stat.");
+    // the parser keeps the authorship of an informal name in its phrase
+    assertLabel("Geranium", "L.", Rank.SPECIES, NomCode.BOTANICAL, "Geranium sp. L.");
+    assertLabel("Trachyderes sp.", "Dupont, 1838", Rank.SPECIES, NomCode.ZOOLOGICAL, "Trachyderes sp. Dupont, 1838");
+    // an unparsed rest of the name itself stays in the scientific name
+    assertLabel("Abies alba Mill. foo 1234 bar", null, Rank.SPECIES, NomCode.BOTANICAL, "Abies alba foo 1234 bar Mill.");
+    assertLabel("Abies alba Mill. foo 1234 bar", "Mill.", Rank.SPECIES, NomCode.BOTANICAL, "Abies alba foo 1234 bar Mill.");
+  }
+
+  private static void assertLabel(String name, String authorship, Rank rank, NomCode code, String expected) {
+    Name n = NameParser.PARSER.parse(name, authorship, rank, code, new IssueContainer.Simple()).get().getName();
+    assertEquals(expected, n.getLabel());
+  }
+
   static String normalizeAuthorship(String authorship, String taxnote) {
     ParsedNameUsage pnu = new ParsedNameUsage();
     pnu.setName(new Name());
