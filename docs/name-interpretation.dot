@@ -1,0 +1,58 @@
+// How ChecklistBank interprets names - see NAMES.md.
+// Render: dot -Tsvg name-interpretation.dot -o name-interpretation.svg
+//         dot -Tpdf name-interpretation.dot -o name-interpretation.pdf
+//         dot -Tpng -Gdpi=200 name-interpretation.dot -o name-interpretation.png
+digraph names {
+  graph [rankdir=TB, fontname="Helvetica", nodesep=0.35, ranksep=0.42, pad=0.35, bgcolor="white", newrank=true]
+  node  [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, fillcolor="#f3f6f9",
+         color="#5b7083", fontcolor="#1f2d3a", penwidth=1.2, margin="0.22,0.1"]
+  edge  [color="#5b7083", arrowsize=0.7, fontname="Helvetica", fontsize=10, fontcolor="#5b7083"]
+
+  // the formats
+  coldp [label=<<b>ColDP</b><br/>Name or NameUsage record>, fillcolor="#dbe8f5", color="#3d6a99"]
+  dwca  [label=<<b>Darwin Core Archive</b><br/>Taxon record>, fillcolor="#dbe8f5", color="#3d6a99"]
+  tt    [label=<<b>TextTree</b><br/>name line>, fillcolor="#dbe8f5", color="#3d6a99"]
+  { rank=same; coldp; dwca; tt }
+
+  columns [label=<<b>Read the name columns</b><br/>scientific name · authorship · rank · code · status<br/>name atoms · author atoms · notho · original spelling>]
+  settings [label=<<b>Dataset settings</b><br/>nomenclatural code<br/>prefer name atoms<br/>dont infer ranks<br/>epithet add hyphen<br/>extinct>,
+            shape=note, style="filled", fillcolor="#fdf6e3", color="#b38f2e"]
+
+  useatoms [label=<Complete name atoms,<br/>and atoms preferred or<br/>no scientific name?>, shape=diamond, style="filled",
+            fillcolor="#fff4d6", color="#b38f2e", margin="0.05,0.05"]
+
+  atoms   [label=<<b>Rebuild the name from its atoms</b><br/>† extinct · × hybrid sign<br/>epithets cleaned>]
+  sciname [label=<<b>Take the scientific name</b><br/>as given>]
+  line    [label=<<b>Take the name line</b><br/>[rank] · CODE inherited<br/>from the parent>]
+
+  parser [label=<<b>NAME PARSER</b><br/>name and authorship parsed together<br/><font point-size="10">name type · parts · rank · code · authors · years<br/>† · signs of doubt · nomenclatural and taxonomic notes</font>>,
+          fillcolor="#dcefe2", color="#3c8c5a", penwidth=1.8]
+
+  atomswin [label=<<b>Name atoms given?</b><br/>they win over the parsed parts –<br/>unless the parser found another kind of name,<br/>e.g. <i>Scoloplos</i> sp. 1>]
+
+  name  [label=<<b>Name</b><br/>rank · code · authorship<br/>nomenclatural status · year of publication>, fillcolor="#e9e3f4", color="#6b55a0"]
+  usage [label=<<b>Taxon or synonym</b><br/>taxonomic status · extinct · provisional<br/>name phrase · according to>, fillcolor="#e9e3f4", color="#6b55a0"]
+  issues [label=<<b>Issues</b><br/>for anything that looked wrong>, shape=note, style="filled", fillcolor="#fbe4e2", color="#b5544a"]
+
+  coldp -> columns
+  dwca  -> columns
+  columns -> useatoms
+  useatoms -> atoms   [label=" yes"]
+  useatoms -> sciname [label=" no"]
+  tt -> line
+  atoms   -> parser [label=" with the\n authorship"]
+  sciname -> parser [label=" with the\n authorship"]
+  line    -> parser
+  parser -> atomswin -> name -> usage
+
+  settings -> useatoms [style=dashed, color="#b38f2e", arrowhead=vee]
+  settings -> name     [style=dashed, color="#b38f2e", arrowhead=vee, label=" code, ranks", fontcolor="#b38f2e"]
+  settings -> usage    [style=dashed, color="#b38f2e", arrowhead=vee, label=" extinct", fontcolor="#b38f2e"]
+
+  parser -> issues [style=dotted, color="#b5544a", arrowhead=vee]
+  name   -> issues [style=dotted, color="#b5544a", arrowhead=vee]
+  usage  -> issues [style=dotted, color="#b5544a", arrowhead=vee]
+  { rank=same; columns; settings }
+  { rank=same; atoms; sciname; line }
+  { rank=same; usage; issues }
+}

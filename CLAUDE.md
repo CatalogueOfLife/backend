@@ -358,7 +358,9 @@ All project documentation lives in `docs/`. Two kinds, distinguished by filename
 
 - **`ALL-CAPS.md` — human-facing reference for CURRENT behavior.** What the code does today
   (`API.md`, `IDENTIFIER.md`, `XRELEASE.md`, `HIERARCHY-SYNC.md`, `DOI.md`, `OPENREFINE.md`,
-  `DATASET-TEMPLATES.md`, `AUTHORMAP-GENERATOR.md`). These are living documents: when behavior
+  `DATASET-TEMPLATES.md`, `AUTHORMAP-GENERATOR.md`, `NAMES.md`, `INTERPRETER-CORPUS.md`). `NAMES.md` is also the
+  ChecklistBank about page on names, with its diagram `name-interpretation.dot` rendered to svg, pdf and png
+  next to it. These are living documents: when behavior
   changes, update them. They must never describe a plan or a future state.
 - **`YYYY-MM-DD-lower-case-name.md` — dated design records from agent/superpower sessions.** The
   intent, goals, explicit non-goals and rejected alternatives behind one change, as of that date.
