@@ -78,26 +78,26 @@ All confirmed in the code, 5, 6, 7 and 9 also in the fixture run of the harness,
     quoting it: `Auctorum ({non} Linnaeus, 1767), 1767` threw a `PatternSyntaxException` out of the interpreter, the
     only 3 exceptions of the 67.5 million records of the parser corpus.
 
-Upstream defects for gbif/name-parser-rust, to be filed rather than worked around, with the corpus rows they affect
-where measured (phase 1 and the phase 2 experiment below):
+Upstream defects, filed on gbif/name-parser-rust on 2026-10-09 (#62-#73) rather than worked around, with the corpus
+rows they affect where measured (phase 1 and the phase 2 experiment below):
 
 | defect | rows |
 |---|---:|
-| no warning when a separate authorship differs from the one in the name string, also the authorship of the species in an infraspecific name string; `apply_authorship` merges instead of replacing (`(Valenciennes, 1826)` + `Achille Valenciennes`) | ~10-20k real conflicts |
-| a year suffix letter is dropped from the year (`Schedl, 1964a`) | 51,416 |
-| a bracketed year loses its brackets, which say the date was inferred (`Westwood, [1851]`) | 28,779 |
-| the homoglyph table merges distinct letters, 18 pairs: `ě`→`ĕ`, `Ő`→`Ö`, pinyin `ǎǐǒǔ`→breve, `ț`→`ţ`, … (`Bechyně`, `Vězda`, `Štěpánek`); shared with name-parser-api's `homoglyphs.txt` | 10,644 |
-| `(Approved Lists 1980)` of a bacterial authorship is dropped | 9,780 |
-| a leading `ex` is dropped (`(ex Winogradsky, 1929) Blackall et al., 1986`), a second `ex` author too (`Degen ex Nyár. ex Csürös`) | 5,657 |
-| `MS` (manuscript) is read as the initials `M.S.` (`Stephens (ex Kirby MS) 1828` → `ex M.S.Kirby`) | 2,673 |
-| a capitalised `Et Al.` is read as an author `Al.` | 2,508 |
-| a malformed sic in a separate authorship is not recognised: `(sic) Leichmann 1896`, `X, 1881 sic.`, `(X, 1883) [sic.]`, `corrig.Yoon et al.`; also `Smith corrig., 1900` | 92 |
-| case normalisation of all capital authors: `MCCORD` → `Mccord`, `DE SAUSSURE` → `DE Saussure` | |
-| a soft hyphen splits an epithet (`novae­zelandiae Hirn` → epithet `novae`, author `zelandiae Hirn`) | |
-| a partial separate authorship replaces the name's unparsed rest instead of adding to it | |
-| `MS` inside basionym brackets makes no manuscript name (`(Kuroda MS in Kira, 1959)`) | |
-| `und` is no author separator (mostly in references) | 50 |
-| (api) `parseAuthorship` returns a `ParsedAuthorship`, which cannot carry `originalSpelling` | |
+| #62 no warning when a separate authorship differs from the one in the name string, also the authorship of the species in an infraspecific name string; `apply_authorship` merges instead of replacing (`(Valenciennes, 1826)` + `Achille Valenciennes`) | ~10-20k real conflicts |
+| #63 a year suffix letter is dropped from the year (`Schedl, 1964a`) | 51,416 |
+| #64 a bracketed year loses its brackets, which say the date was inferred (`Westwood, [1851]`) | 28,779 |
+| #65 the homoglyph table merges distinct letters, 18 pairs: `ě`→`ĕ`, `Ő`→`Ö`, pinyin `ǎǐǒǔ`→breve, `ț`→`ţ`, … (`Bechyně`, `Vězda`, `Štěpánek`); shared with name-parser-api's `homoglyphs.txt` | 10,644 |
+| #69 `(Approved Lists 1980)` of a bacterial authorship is dropped | 9,780 |
+| #66 a leading `ex` is dropped (`(ex Winogradsky, 1929) Blackall et al., 1986`), a second `ex` author too (`Degen ex Nyár. ex Csürös`) | 5,657 |
+| #67 `MS` (manuscript) is read as the initials `M.S.` (`Stephens (ex Kirby MS) 1828` → `ex M.S.Kirby`) | 2,673 |
+| #68 a capitalised `Et Al.` is read as an author `Al.` | 2,508 |
+| #70 a malformed sic in a separate authorship is not recognised: `(sic) Leichmann 1896`, `X, 1881 sic.`, `(X, 1883) [sic.]`, `corrig.Yoon et al.`; also `Smith corrig., 1900` | 92 |
+| #72 case normalisation of all capital authors: `MCCORD` → `Mccord`, `DE SAUSSURE` → `DE Saussure` | |
+| #73 a soft hyphen splits an epithet (`novae­zelandiae Hirn` → epithet `novae`, author `zelandiae Hirn`) | |
+| #71 a partial separate authorship replaces the name's unparsed rest instead of adding to it | |
+| #67 `MS` inside basionym brackets makes no manuscript name (`(Kuroda MS in Kira, 1959)`) | |
+| not filed: `und` is no author separator (mostly in references) | 50 |
+| not filed: (api) `parseAuthorship` returns a `ParsedAuthorship`, which cannot carry `originalSpelling`; CLB no longer needs it | |
 
 ## Outcome
 
