@@ -177,6 +177,32 @@ public class NameParserTest {
     assertLabel("Abies alba Mill. foo 1234 bar", "Mill.", Rank.SPECIES, NomCode.BOTANICAL, "Abies alba foo 1234 bar Mill.");
   }
 
+  /**
+   * A taxonomic note removed from the authorship must take its brackets along, not leave "()" or "[]" behind.
+   */
+  @Test
+  public void removedNoteLeavesNoEmptyBrackets() throws Exception {
+    assertLabel("Astroceras pergamena", "Matsumoto, 1917 (non Lyman, 1879)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Astroceras pergamena Matsumoto, 1917");
+    assertLabel("Listriolobus", "Fischer, 1926 [not Spengel, 1912]", Rank.GENUS, NomCode.ZOOLOGICAL,
+      "Listriolobus Fischer, 1926");
+    assertLabel("Aspidiophorus ontarionensis", "Schwank, 1990 [sensu Schwank & Kånneby, 2014]", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Aspidiophorus ontarionensis Schwank, 1990");
+    assertLabel("Dysteria lanceolata", "(sensu Calkins, 1902) Kahl, 1931", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Dysteria lanceolata Kahl, 1931");
+    assertLabel("Acanthodiscus", "MacCallum, 1916 (nec 1918)", Rank.GENUS, NomCode.ZOOLOGICAL,
+      "Acanthodiscus MacCallum, 1916");
+    assertLabel("Dactylogyrus simplex", "Mizelle, 1937 (nec Bychowsky, 1936; nec Birgi & Lambert, 1987)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Dactylogyrus simplex Mizelle, 1937");
+    assertLabel("Asterias alta", "Philippi (MS) in Quijada, 1911 [not seen]", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Asterias alta Philippi (MS) in Quijada, 1911");
+    // empty brackets in the source
+    assertLabel("Ervilia monostylus", "() Dujardin", Rank.SPECIES, NomCode.ZOOLOGICAL, "Ervilia monostylus Dujardin");
+    // a basionym authorship stays
+    assertLabel("Ophiopeza fallax", "(Lütken, 1869) Peters (non Peters, 1851)", Rank.SPECIES, NomCode.ZOOLOGICAL,
+      "Ophiopeza fallax (Lütken, 1869) Peters");
+  }
+
   private static void assertLabel(String name, String authorship, Rank rank, NomCode code, String expected) {
     Name n = NameParser.PARSER.parse(name, authorship, rank, code, new IssueContainer.Simple()).get().getName();
     assertEquals(expected, n.getLabel());

@@ -49,6 +49,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final String YEAR = "[12][0-9][0-9][0-9?]";
   private static final Pattern COMMA_BEFORE_YEAR = Pattern.compile("(?<!,)\\s+("+YEAR+")");
   private static final Pattern COMMA_AT_END = Pattern.compile("\\s*[,;:]\\s*$");
+  // empty brackets, e.g. left behind by a removed taxonomic note: "Matsumoto, 1917 ()", or an unclosed one at the end
+  private static final Pattern EMPTY_BRACKETS = Pattern.compile("\\s*(?:\\(\\s*\\)|\\[\\s*]|\\{\\s*}|[(\\[{]\\s*$)");
   private static final Pattern NO_CHARS = Pattern.compile("^[^a-zA-Z0-9]+$");
   private static final Pattern NORM_WHITESPACE = Pattern.compile("(?:\\\\[nr]|\\s)+");
 
@@ -249,6 +251,9 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     if (pnu.getName().isOriginalSpelling() != null) {
       name = SIC_CORRIG.matcher(name).replaceFirst("");
     }
+
+    // remove empty brackets, also those a removed taxonomic note left behind
+    name = EMPTY_BRACKETS.matcher(name).replaceAll("");
 
     // normalise different usages of ampersand, and, et &amp; to always use &
     name = NORM_AND.matcher(name).replaceAll(" & ");
