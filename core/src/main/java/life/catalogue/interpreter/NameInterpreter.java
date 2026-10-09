@@ -14,6 +14,7 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.RankUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -424,6 +425,9 @@ public class NameInterpreter {
     return a;
   }
 
+  /**
+   * @return the authors of a pipe separated list, an empty list for none as the parser has it, never null
+   */
   private static List<String> parseAuthors(String author) {
     if (author != null){
       return Arrays.stream(StringUtils.split(author, '|'))
@@ -431,7 +435,7 @@ public class NameInterpreter {
                    .filter(Objects::nonNull)
                    .collect(Collectors.toList());
     }
-    return null;
+    return new ArrayList<>();
   }
 
   private static String cleanAuthor(String author) {

@@ -117,7 +117,9 @@ public enum Field {
     if (a.hasExAuthors()) {
       sb.append(String.join("|", a.getExAuthors())).append(" ex ");
     }
-    sb.append(String.join("|", a.getAuthors()));
+    if (a.getAuthors() != null) {
+      sb.append(String.join("|", a.getAuthors()));
+    }
     if (a.isAnonymous()) {
       sb.append(" {anon}");
     }
