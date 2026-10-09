@@ -130,6 +130,28 @@ public class NameParserTest {
         .nothingElse();
   }
 
+  /**
+   * https://api.checklistbank.org/dataset/1048/diff?attempts=9..10
+   * An author whose name ends in "et" after a non-ASCII letter (Behçet) must not have it read as the
+   * conjunction "et": Java's \b is ASCII-only, so "ç|et" counted as a word boundary.
+   */
+  @Test
+  public void nonAsciiLetterBeforeConjunction() throws Exception {
+    assertEquals("A. Ilçim & L. Behçet", normalizeAuthorship("A. Ilçim & L. Behçet", null));
+    assertEquals("Öztürk & Ağaçet", normalizeAuthorship("Öztürk et Ağaçet", null));
+    assertEquals("Smith et al., 2020", normalizeAuthorship("Smith et al 2020", null));
+    assertEquals("Görand & Müllerund", normalizeAuthorship("Görand and Müllerund", null));
+
+    Name n = new Name();
+    n.setScientificName("Geranium kalenderianum");
+    n.setAuthorship("A. Ilçim & L. Behçet");
+    n.setRank(Rank.SPECIES);
+    n.setCode(NomCode.BOTANICAL);
+    NameParser.PARSER.parse(n, new IssueContainer.Simple());
+    assertEquals("A. Ilçim & L. Behçet", n.getAuthorship());
+    assertEquals(List.of("A.Ilçim", "L.Behçet"), n.getCombinationAuthorship().getAuthors());
+  }
+
   static String normalizeAuthorship(String authorship, String taxnote) {
     ParsedNameUsage pnu = new ParsedNameUsage();
     pnu.setName(new Name());

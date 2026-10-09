@@ -40,10 +40,11 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   public static final NameParser PARSER = new NameParser();
   private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:]+)\\s*");
   private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[]+)\\s*");
-  private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
-  private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?");
+  // UNICODE_CHARACTER_CLASS: Java's \b is ASCII-only, so without it the "et" of Behçet is a word ("Behç &")
+  private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*", Pattern.UNICODE_CHARACTER_CLASS);
+  private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?", Pattern.UNICODE_CHARACTER_CLASS);
   private static final Pattern LEADING_PUNCT = Pattern.compile("^\\s*[.;,]\\s*");
-  private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*\\b(sic|corrig)\\b[.!\\s]*[\\])]?\\s*");
+  private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*\\b(sic|corrig)\\b[.!\\s]*[\\])]?\\s*", Pattern.UNICODE_CHARACTER_CLASS);
 
   private static final String YEAR = "[12][0-9][0-9][0-9?]";
   private static final Pattern COMMA_BEFORE_YEAR = Pattern.compile("(?<!,)\\s+("+YEAR+")");
