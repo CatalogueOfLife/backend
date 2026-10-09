@@ -78,10 +78,26 @@ All confirmed in the code, 5, 6, 7 and 9 also in the fixture run of the harness,
     quoting it: `Auctorum ({non} Linnaeus, 1767), 1767` threw a `PatternSyntaxException` out of the interpreter, the
     only 3 exceptions of the 67.5 million records of the parser corpus.
 
-Upstream defects for gbif/name-parser-rust, to be filed rather than worked around: no warning when a separate
-authorship differs from the one in the name string, and `apply_authorship` merges instead of replacing; a partial
-separate authorship replaces the name's unparsed rest; `und` is no author separator; `"Smith corrig., 1900"` is not
-recognised; `parseAuthorship` returns a `ParsedAuthorship`, which cannot carry `originalSpelling`.
+Upstream defects for gbif/name-parser-rust, to be filed rather than worked around, with the corpus rows they affect
+where measured (phase 1 and the phase 2 experiment below):
+
+| defect | rows |
+|---|---:|
+| no warning when a separate authorship differs from the one in the name string, also the authorship of the species in an infraspecific name string; `apply_authorship` merges instead of replacing (`(Valenciennes, 1826)` + `Achille Valenciennes`) | ~10-20k real conflicts |
+| a year suffix letter is dropped from the year (`Schedl, 1964a`) | 51,416 |
+| a bracketed year loses its brackets, which say the date was inferred (`Westwood, [1851]`) | 28,779 |
+| the homoglyph table merges distinct letters, 18 pairs: `ě`→`ĕ`, `Ő`→`Ö`, pinyin `ǎǐǒǔ`→breve, `ț`→`ţ`, … (`Bechyně`, `Vězda`, `Štěpánek`); shared with name-parser-api's `homoglyphs.txt` | 10,644 |
+| `(Approved Lists 1980)` of a bacterial authorship is dropped | 9,780 |
+| a leading `ex` is dropped (`(ex Winogradsky, 1929) Blackall et al., 1986`), a second `ex` author too (`Degen ex Nyár. ex Csürös`) | 5,657 |
+| `MS` (manuscript) is read as the initials `M.S.` (`Stephens (ex Kirby MS) 1828` → `ex M.S.Kirby`) | 2,673 |
+| a capitalised `Et Al.` is read as an author `Al.` | 2,508 |
+| a malformed sic in a separate authorship is not recognised: `(sic) Leichmann 1896`, `X, 1881 sic.`, `(X, 1883) [sic.]`, `corrig.Yoon et al.`; also `Smith corrig., 1900` | 92 |
+| case normalisation of all capital authors: `MCCORD` → `Mccord`, `DE SAUSSURE` → `DE Saussure` | |
+| a soft hyphen splits an epithet (`novae­zelandiae Hirn` → epithet `novae`, author `zelandiae Hirn`) | |
+| a partial separate authorship replaces the name's unparsed rest instead of adding to it | |
+| `MS` inside basionym brackets makes no manuscript name (`(Kuroda MS in Kira, 1959)`) | |
+| `und` is no author separator (mostly in references) | 50 |
+| (api) `parseAuthorship` returns a `ParsedAuthorship`, which cannot carry `originalSpelling` | |
 
 ## Outcome
 
@@ -136,3 +152,42 @@ Two consequences matter for phase 2:
 Regressions accepted for upstream fixes: 92 rows lose a malformed sic marker of a separate authorship the old regex
 recovered and the parser does not (`(sic) Henneberg 1903`, `sic) Audureau 1940`, `(…) sic.`, `[sic[`); a manuscript
 `MS` inside basionym brackets is no longer seen (`(Kuroda MS in Kira, 1959)`).
+
+### Phase 2, measured but not decided
+
+Branch `exp/authorship-from-atoms` (3627f4b4a, off phase 1): a separate authorship is rendered from its parsed atoms
+like any other, only a partly parsed one is kept as given. Existing tests that pin verbatim authorship strings fail
+there, it is an experiment. Corpus diff against phase 1: 4,561,253 rows change (6.8%), 1,294,362 in more than
+whitespace, punctuation, case or diacritics. Only the authorship string and the label change.
+
+What it gains:
+
+| change | rows |
+|---|---:|
+| whitespace only, initials joined: `P. D. Sell` → `P.D.Sell`, `C. B. Adams` → `C.B.Adams` | 2,702,394 |
+| the year or basionym brackets of the name string the authorship column lacks: `Dodd` → `Dodd, 1914`, `Macquart` → `(Macquart, 1851)` | ~381,000 |
+| punctuation: a comma before the year, `Rea (1922)` → `Rea, 1922` | 377,209 |
+| surname-first initials: `Rehn, J.A.G., 1919` → `J.A.G.Rehn, 1919`, `CHEMSAK J. A.,NOGUERA F. A.,1993` → `J.A.Chemsak & F.A.Noguera, 1993` | ~367,000 |
+| all capital authors: `PARKER, 1949` → `Parker, 1949` | 179,305 |
+| placeholders gone: `Missing`, `Not specified`, `<Unspecified Agent>` (label `Typhlosaurus Wiegmann, 1834`) | 49,778 |
+| the terminal authorship of an infraspecific name string instead of the species' in the column: `Vicia sativa L. var. macrocarpa Moris` + `L.` → `Moris` | part of 96,622 `other` |
+| the scientific name repeated in the authorship column: `Rotala densiflora (Roem. & Schult.) Koehne` → `(Roem. & Schult.) Koehne` | ~11,600 |
+
+What it loses, mostly through the parser defects above, which it would carry into every label:
+
+| change | rows |
+|---|---:|
+| `in` and `apud` citations: `Bentham in Bentham & J.D. Hooker, 1873` → `Bentham, 1873` - a policy question, the atoms deliberately keep the author only | 241,410 |
+| year suffix letters | 51,416 |
+| bracketed years | 28,779 |
+| homoglyph letters | 10,644 |
+| `(Approved Lists 1980)` | 9,780 |
+| a leading `ex` | 5,657 |
+| bacterial authors cut to `et al.` without comma by the formatter's ICNP rule: `Giovannoni, Schabtach & Castenholz, 1995` → `Giovannoni et al. 1995` | 5,394 |
+| `MS` as initials | 2,673 |
+| `Et Al.` as an author | 2,508 |
+
+Phase 2 is not ready as it is. Options for Markus: wait for the parser fixes and measure again with this branch; or
+render from the atoms only where they say more than the authorship string (a year, brackets, other authors, or the
+string is a placeholder), which keeps the larger gains and none of the losses but leaves the cosmetic normalisation
+undone.
