@@ -1,7 +1,8 @@
 # Simplifying name interpretation, measured on the ChecklistBank corpus
 
 Date: 2026-10-09
-Status: phase 0 (the corpus harness) implemented on `feat/interpreter-corpus`. Phases 1 and 2 not yet implemented.
+Status: phases 0 (the corpus harness) and 1 (one parse, bug fixes) implemented on `feat/interpreter-corpus`.
+Phase 2 not yet decided.
 
 ## Why
 
@@ -57,7 +58,7 @@ The goal is to rely on the parsed data and rebuild name and authorship from it. 
 
 ## Findings of the code review
 
-All confirmed in the code, 5, 6, 7 and 9 also in the fixture run of the harness.
+All confirmed in the code, 5, 6, 7 and 9 also in the fixture run of the harness, 1, 3, 4 and 10 in the corpus.
 
 1. `INCONSISTENT_AUTHORSHIP` is dead since 026d4849d: it compares the combined parse, in which the separate
    authorship already won, with a parse of that same authorship. `"Aus bus Smith, 1900"` + `"(L.) Mill."` raises
@@ -73,6 +74,9 @@ All confirmed in the code, 5, 6, 7 and 9 also in the fixture run of the harness.
    fallback would throw a NullPointerException.
 9. A ColDP record whose atoms are preferred loses an authorship and a sic/corrig given only inside its scientific name
    (`Bacteroides corrig. Castellani & Chalmers, 1919` with genericName `Bacteroides` keeps neither).
+10. The regular expression that removes a taxonomic note from the authorship string was built from the note without
+    quoting it: `Auctorum ({non} Linnaeus, 1767), 1767` threw a `PatternSyntaxException` out of the interpreter, the
+    only 3 exceptions of the 67.5 million records of the parser corpus.
 
 Upstream defects for gbif/name-parser-rust, to be filed rather than worked around: no warning when a separate
 authorship differs from the one in the name string, and `apply_authorship` merges instead of replacing; a partial
@@ -81,4 +85,54 @@ recognised; `parseAuthorship` returns a `ParsedAuthorship`, which cannot carry `
 
 ## Outcome
 
-To be filled in as the phases land.
+### Phase 0
+
+The parser corpus of 67,471,137 rows runs in 13 to 16 minutes on 14 threads; 278,867 rows have no name (ColDP records
+without a scientific name, the parser corpus has no atoms). The export script and its IT are in place, the export has
+not been run on prod yet.
+
+### Phase 1
+
+Implemented as planned, with these deviations:
+
+- `NameParser.parse(String)` stays: it implements the `Parser` interface, it is not dead code. `determineType`,
+  `parseAuthorshipIntoName`, `removeEpithetIssues`, `removeTrailing` and the sic/corrig recovery are gone.
+- An unparsable name keeps its authorship as given, without the old containment check: `Name.getLabel()` already
+  leaves out an authorship the name string holds.
+- An informal name keeps a separate authorship that is not in its phrase as a cleaned string, without parsed atoms.
+- The taxonomic note of the combined parse can come from the name string, the authorship or both, spelled differently
+  (`& al.` and `et al.`), or be all the authorship holds (`sensu` + `auct NZ`). `noteInAuthorship` decides what to
+  remove from the authorship string; the first corpus run showed each of these cases.
+- Bugs 3 and 4 were thought to be theoretical but are not: an informal phrase next to an unparsed rest
+  (`Otitesella uluzi complex sp. 1 ex Ficus sp. samfya ag.` lost `sp. 1`), and `in litt.` makes a manuscript name
+  without a nomenclatural note that parses to a status (821 corpus rows now MANUSCRIPT).
+- Atomised names now get their code inferred from their authorship: ACEF animal subspecies lose their `subsp.` marker,
+  as zoological trinomials do (`NormalizerACEFIT`, `AcefInterpreterTest`).
+
+Corpus diff against the baseline, parser corpus: 435,870 of 67,471,137 rows changed (0.65%), 432,688 significantly.
+Almost all of it is the parser's combined parse surviving instead of being overwritten by the second parse of the
+separate authorship, which most often holds less than the name string - no year (`Dumbletonius Dugdale, 1986` +
+`Dugdale`) or no brackets (`Arippara disticha (Turner, 1904)` + `Turner`):
+
+| change | rows |
+|---|---:|
+| `INCONSISTENT_AUTHORSHIP` no longer raised | 424,601 |
+| combination authorship atoms changed / removed / added | 320,317 / 84,853 / 19,032 |
+| published in year added (from the year of the name string) / removed / changed | 288,001 / 7,923 / 293 |
+| basionym authorship atoms added | 87,685 |
+| label changed in more than punctuation and whitespace | 537: 320 a doubled authorship or year gone, most others junk input either way (`(to be filled)`, `Lasiocoma petrophiloides (auct. non DC.) ) H. Bol.; Compton`) |
+| exceptions | 3 → 0 |
+
+Two consequences matter for phase 2:
+
+- `INCONSISTENT_AUTHORSHIP` flagged a name string holding *more* than the authorship as often as a real conflict. The
+  real conflicts are an authorship of the species next to an infraspecific name string, e.g.
+  `Cyprinus carpio Linnaeus, 1758 ssp. murgo Dybowski, 1869` + `Linnaeus, 1758`: the parser keeps the terminal
+  authorship of the name string without a word, the flag is gone. It needs a parser warning (upstream 1).
+- The atoms and the kept verbatim authorship string now disagree wherever the parser preferred the name string: the
+  label still reads `Cyprinus carpio murgo Linnaeus, 1758` while the atoms say Dybowski, 1869, `Typhlosaurus
+  <Unspecified Agent>` while they say Wiegmann, 1834. Rebuilding the authorship from the atoms (phase 2) resolves it.
+
+Regressions accepted for upstream fixes: 92 rows lose a malformed sic marker of a separate authorship the old regex
+recovered and the parser does not (`(sic) Henneberg 1903`, `sic) Audureau 1940`, `(…) sic.`, `[sic[`); a manuscript
+`MS` inside basionym brackets is no longer seen (`(Kuroda MS in Kira, 1959)`).

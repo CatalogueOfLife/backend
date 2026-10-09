@@ -12,7 +12,6 @@ import org.gbif.dwc.terms.DwcTerm;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
@@ -111,6 +110,9 @@ public class InterpreterCorpusRunner {
    */
   public String run(File input, File outDir, double fraction, long seed, int threads, long limit) throws Exception {
     Instant start = Instant.now();
+    // what runs is what was built when it started, edits made while it runs do not count
+    String code = RunInfo.git();
+    String parser = RunInfo.nameParser();
     ForkJoinPool pool = new ForkJoinPool(threads);
     long read = 0;
     CorpusReader.Kind kind;
@@ -134,7 +136,7 @@ public class InterpreterCorpusRunner {
     } finally {
       pool.shutdown();
     }
-    String meta = meta(input, kind, fraction, seed, threads, limit, Duration.between(start, Instant.now()));
+    String meta = meta(input, kind, fraction, seed, threads, limit, code, parser, Duration.between(start, Instant.now()));
     Files.writeString(new File(outDir, META).toPath(), meta, StandardCharsets.UTF_8);
     return meta;
   }
@@ -148,7 +150,8 @@ public class InterpreterCorpusRunner {
     }
   }
 
-  private String meta(File input, CorpusReader.Kind kind, double fraction, long seed, int threads, long limit, Duration took) {
+  private String meta(File input, CorpusReader.Kind kind, double fraction, long seed, int threads, long limit,
+                      String code, String parser, Duration took) {
     StringBuilder sb = new StringBuilder();
     sb.append("input: ").append(input.getAbsolutePath()).append(" (").append(kind).append(")\n");
     sb.append("sample: fraction ").append(fraction).append(", seed ").append(seed);
@@ -156,8 +159,8 @@ public class InterpreterCorpusRunner {
       sb.append(", limit ").append(limit);
     }
     sb.append('\n');
-    sb.append("code: ").append(RunInfo.git()).append('\n');
-    sb.append("name parser: ").append(RunInfo.nameParser()).append('\n');
+    sb.append("code: ").append(code).append('\n');
+    sb.append("name parser: ").append(parser).append('\n');
     sb.append("interpreters: ").append(interpreters.size()).append(" setting combinations\n");
     sb.append(String.format("records: %,d interpreted (%,d weighted): %,d OK (%,d), %,d NONE (%,d), %,d ERROR (%,d)%n",
       counts.get(0) + counts.get(1) + counts.get(2), counts.get(3) + counts.get(4) + counts.get(5),

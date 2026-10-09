@@ -261,7 +261,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
 
 
     u = usageByID("1-1");
-    assertEquals("Anterhynchium alecto subsp. lalepi", u.usage.getName().getScientificName());
+    // zoological, inferred from the authorship parsed with the atoms: no subsp. marker
+    assertEquals("Anterhynchium alecto lalepi", u.usage.getName().getScientificName());
     assertEquals("(Cheesm.i.l.)", u.usage.getName().getAuthorship());
     v = verbatim(u.usage.getName());
     assertFalse(v.contains(Issue.UNPARSABLE_AUTHORSHIP));
@@ -280,7 +281,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acefInfraspecies() throws Exception {
     normalize(10);
     UsageData u = usageByID("Scr-13-.01-.01-.00-.001-.001-.014-.b");
-    assertEquals("Odontotrypes (Thorectomimus) farkaci subsp. habaensis", u.usage.getName().getScientificName());
+    // zoological, inferred from the authorship parsed with the atoms: no subsp. marker
+    assertEquals("Odontotrypes (Thorectomimus) farkaci habaensis", u.usage.getName().getScientificName());
     assertEquals("Ochi, Kon & Bai, 2018", u.usage.getName().getAuthorship());
     assertEquals(Rank.SUBSPECIES, u.usage.getName().getRank());
 
@@ -355,7 +357,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
     assertNull(t);
 
     t = usageByID("ib");
-    assertEquals("Scyloxes asiatica subsp. carambula", t.usage.getName().getScientificName());
+    // zoological, inferred from the authorship parsed with the atoms: no subsp. marker
+    assertEquals("Scyloxes asiatica carambula", t.usage.getName().getScientificName());
     assertEquals("Dunin, 2001", t.usage.getName().getAuthorship());
     assertEquals(Rank.SUBSPECIES, t.usage.getName().getRank());
 

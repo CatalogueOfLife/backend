@@ -9,6 +9,7 @@ import life.catalogue.importer.store.ImportStore;
 
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import org.junit.Ignore;
@@ -47,11 +48,13 @@ public class AcefInterpreterTest extends InterpreterTestAbstractBase<AcefInterpr
     assertEquals(1, n.getBasionymAuthorship().getAuthors().size());
     assertEquals("new combination, valid: No", n.getRemarks());
 
-    // same but without rank marker in epithet
+    // same but without rank marker in epithet.
+    // The authorship parsed with the atoms makes it zoological, which writes a subspecies without its rank marker
     v.put(AcefTerm.InfraSpeciesEpithet, "triscipta");
     nu = interpreter.interpretSynonym(v).get();
     n = nu.nd.getName();
-    assertEquals("Cerynia albata subsp. triscipta", n.getScientificName());
+    assertEquals(NomCode.ZOOLOGICAL, n.getCode());
+    assertEquals("Cerynia albata triscipta", n.getScientificName());
     assertEquals("(Walker, 1858)", n.getAuthorship());
     assertEquals(Rank.SUBSPECIES, n.getRank());
     assertNull(n.getUninomial());

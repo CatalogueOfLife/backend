@@ -82,10 +82,15 @@ public class InterpreterCorpusTest {
     // the separate authorship keeps its verbatim spelling, the atoms are normalised
     assertEquals("(Huter et al.) P. D. Sell & Whitehead", get(rows, 8, Field.AUTHORSHIP));
     assertEquals("P.D.Sell|Whitehead", get(rows, 8, Field.COMBINATION_AUTHORSHIP));
-    // a different authorship in the name string is not flagged...
+    // a different authorship in the name string is not flagged, the separate one wins...
     assertNull(get(rows, 9, Field.ISSUES));
-    // ...a partly different one is
-    assertEquals("INCONSISTENT_AUTHORSHIP", get(rows, 10, Field.ISSUES));
+    assertEquals("Mill.", get(rows, 9, Field.COMBINATION_AUTHORSHIP));
+    assertEquals("L.", get(rows, 9, Field.BASIONYM_AUTHORSHIP));
+    // ...and a partly different one is merged into the authorship of the name string by the parser
+    assertNull(get(rows, 10, Field.ISSUES));
+    assertEquals("Mill.", get(rows, 10, Field.AUTHORSHIP));
+    assertEquals("Mill.", get(rows, 10, Field.COMBINATION_AUTHORSHIP));
+    assertEquals("L.", get(rows, 10, Field.BASIONYM_AUTHORSHIP));
     // the same ColDP record in a dataset without a code and in one with a code
     assertNull(get(rows, 20, Field.CODE));
     assertEquals("BOTANICAL", get(rows, 19, Field.CODE));
@@ -99,9 +104,16 @@ public class InterpreterCorpusTest {
     assertEquals("VIRUS", get(rows, 15, Field.CODE));
     // the name status column of a NameUsage
     assertEquals("MANUSCRIPT", get(rows, 30, Field.NOM_STATUS));
-    // an exception is recorded as the outcome of its row: a dagger as the only epithet
-    assertEquals(InterpreterCorpusRunner.ERROR, get(rows, 24, Field.STATUS));
-    assertTrue(get(rows, 24, Field.ERROR).startsWith("NullPointerException"));
+    // a hybrid uninomial atom, its code inferred from the authorship
+    assertEquals("GENERIC", get(rows, 23, Field.NOTHO));
+    assertEquals("BOTANICAL", get(rows, 23, Field.CODE));
+    // a dagger as the only epithet leaves an indetermined genus
+    assertEquals(InterpreterCorpusRunner.OK, get(rows, 24, Field.STATUS));
+    assertEquals("true", get(rows, 24, Field.EXTINCT));
+    assertEquals("INFORMAL", get(rows, 24, Field.NAME_TYPE));
+    // hyphens only for epithets of several words
+    assertEquals("MULTI_WORD_EPITHET", get(rows, 25, Field.ISSUES));
+    assertNull(get(rows, 26, Field.ISSUES));
   }
 
   @Test
@@ -150,7 +162,7 @@ public class InterpreterCorpusTest {
     rows.get(8L)[Field.AUTHORSHIP.ordinal()] = "(Huter & al.) P.D.Sell et Whitehead"; // separator
     rows.get(7L)[Field.RANK.ordinal()] = "GENUS";              // structure
     rows.get(11L)[Field.ISSUES.ordinal()] = "DOUBTFUL_NAME";   // issue added
-    rows.get(24L)[Field.STATUS.ordinal()] = InterpreterCorpusRunner.OK;
+    rows.get(24L)[Field.STATUS.ordinal()] = InterpreterCorpusRunner.ERROR;
     try (BufferedWriter w = CorpusIO.writer(new File(after, InterpreterCorpusRunner.OUTPUT))) {
       w.write(Field.header());
       w.write('\n');
@@ -174,7 +186,7 @@ public class InterpreterCorpusTest {
     assertEquals("TEXT separator", changes.get("8 AUTHORSHIP"));
     assertEquals("CHANGED", changes.get("7 RANK"));
     assertEquals("ADDED DOUBTFUL_NAME", changes.get("11 ISSUES"));
-    assertEquals("ERROR->OK", changes.get("24 STATUS"));
+    assertEquals("OK->ERROR", changes.get("24 STATUS"));
     assertEquals(6, changes.size());
   }
 }

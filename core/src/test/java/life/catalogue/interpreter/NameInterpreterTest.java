@@ -9,6 +9,7 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.HashMap;
@@ -742,6 +743,61 @@ public class NameInterpreterTest {
     assertEquals(List.of(), n.getBasionymAuthorship().getExAuthors());
     assertNull(n.getBasionymAuthorship().getYear());
     assertFalse(v.hasIssues());
+  }
+
+  /**
+   * A hybrid marker on a uninomial atom marks the generic name part as the hybrid, as it does on a genus atom.
+   */
+  @Test
+  public void hybridUninomialAtom() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("genus", null, "P.Fourn.", null,
+      "× Agropogon", null, null, null, null, v).getName();
+    assertEquals("Agropogon", n.getUninomial());
+    assertEquals(Set.of(NamePart.GENERIC), n.getNotho());
+    assertEquals("P.Fourn.", n.getAuthorship());
+  }
+
+  /**
+   * Only an epithet made of several words is a multi word epithet that gets hyphenated.
+   */
+  @Test
+  public void singleWordEpithetIsNoMultiWordEpithet() throws Exception {
+    ib.settings.enable(Setting.EPITHET_ADD_HYPHEN);
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("species", null, null, null,
+      null, "Cosmopterix", null, "pulchrimella", null, v).getName();
+    assertEquals("Cosmopterix pulchrimella", n.getScientificName());
+    assertFalse(v.contains(Issue.MULTI_WORD_EPITHET));
+  }
+
+  /**
+   * An epithet atom holding nothing but an extinct dagger must not end the interpretation with an exception.
+   */
+  @Test
+  public void daggerOnlyEpithet() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var pnu = interpret("species", null, null, null,
+      null, "Abies", null, "†", null, v);
+    assertTrue(pnu.isExtinct());
+    assertEquals("Abies", pnu.getName().getGenus());
+    assertNull(pnu.getName().getSpecificEpithet());
+  }
+
+  /**
+   * The authorship of an atomised name is parsed together with the name rebuilt from the atoms, like a scientific
+   * name with its authorship, so its nomenclatural code is inferred from the authorship as well.
+   */
+  @Test
+  public void atomisedNameInfersCodeFromAuthorship() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("subspecies", null, "(Huter et al.) P. D. Sell & Whitehead", null,
+      null, "Cerastium", null, "ligusticum", "granulatum", v).getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals("Cerastium ligusticum subsp. granulatum", n.getScientificName());
+    assertEquals("(Huter et al.) P. D. Sell & Whitehead", n.getAuthorship());
+    assertEquals(List.of("P.D.Sell", "Whitehead"), n.getCombinationAuthorship().getAuthors());
+    assertEquals(List.of("Huter", "al."), n.getBasionymAuthorship().getAuthors());
   }
 
   /**

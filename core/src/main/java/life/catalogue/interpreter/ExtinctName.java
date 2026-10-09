@@ -21,7 +21,10 @@ public class ExtinctName {
         name = trimToNull(m.replaceAll(""));
         dagger = true;
       }
-      m = SciNameNormalizer.removeHybridSignGenus.matcher(name);
+    }
+    // a dagger can be all there was
+    if (name != null) {
+      var m = SciNameNormalizer.removeHybridSignGenus.matcher(name);
       if (m.find()) {
         name = trimToNull(m.replaceFirst("$1"));
         hybrid = true;
