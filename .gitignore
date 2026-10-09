@@ -26,6 +26,8 @@ webservice/**/ManualLiveDebugging.java
 /webservice/src/main/resources/logback.xml
 
 requirements.md
+# prod export of the interpreter corpus, see docs/INTERPRETER-CORPUS.md
+/interpreter-corpus.tsv.gz
 .claude/*
 !.claude/skills/
 .worktrees/
