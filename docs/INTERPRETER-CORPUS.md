@@ -57,7 +57,8 @@ prod.
 `--fraction` keeps a share of the rows chosen by their line number and the seed, so two runs over the same input
 always read the same rows. A 1% sample of the parser corpus takes half a minute on 14 threads, the whole of it about
 45 minutes. The run writes `interpreted.tsv.gz`, one row per record in input order, and `meta.txt` with the input,
-the sample, the git commit (and whether the working tree had changes) and the name parser jar it ran with. A record
+the sample, the git commit (and whether the working tree had changes) and the path of the name parser jar it ran with -
+set `-Dcorpus.code=...` instead to describe a run built from a copy of the sources outside git. A record
 the interpreter throws on is a row with status `ERROR` and the exception, not the end of the run.
 
 **3. Diff** two runs over the same input:
