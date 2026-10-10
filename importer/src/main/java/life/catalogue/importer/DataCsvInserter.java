@@ -134,11 +134,23 @@ public abstract class DataCsvInserter implements DataInserter {
     runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
     final AtomicInteger counter = new AtomicInteger(0);
     final AtomicInteger success = new AtomicInteger(0);
+    final AtomicInteger failed = new AtomicInteger(0);
     interpretedClassTerms.add(classTerm);
     reader.stream(classTerm).forEach(rec -> {
       runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
       store.put(rec);
-      if (proc.test(rec)) {
+      boolean ok;
+      try {
+        ok = proc.test(rec);
+      } catch (InterruptedRuntimeException e) {
+        throw e;
+      } catch (RuntimeException e) {
+        // a single bad record must not fail the entire import, see #1627
+        ok = false;
+        failed.incrementAndGet();
+        LOG.error("Failed to interpret {} record {} line {} of {}", classTerm.prefixedName(), rec.getId(), rec.getLine(), rec.getFile(), e);
+      }
+      if (ok) {
         success.incrementAndGet();
       } else {
         rec.add(Issue.NOT_INTERPRETED);
@@ -150,6 +162,9 @@ public abstract class DataCsvInserter implements DataInserter {
       counter.incrementAndGet();
     });
     LOG.info("Inserted {} verbatim, {} successfully processed {}", counter.get(), success.get(), classTerm.prefixedName());
+    if (failed.get() > 0) {
+      LOG.warn("{} {} records failed with an exception", failed.get(), classTerm.prefixedName());
+    }
     vcounter += counter.get();
   }
   
