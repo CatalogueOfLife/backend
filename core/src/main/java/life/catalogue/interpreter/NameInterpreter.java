@@ -178,6 +178,8 @@ public class NameInterpreter {
       final String authorshipToParse = useAuthorAtoms ? null : authorship;
       ParsedNameUsage pnu;
       if (useAtoms) {
+        // issues about the atoms only apply if they are used in the end
+        final IssueContainer atomIssues = IssueContainer.simple();
         ParsedNameUsage atomPNU = new ParsedNameUsage();
         Name atom = new Name();
         atom.setRank(rank);
@@ -188,8 +190,8 @@ public class NameInterpreter {
         atomPNU.setName(atom);
 
         set(atomPNU, atom::setCultivarEpithet, cultivar, NamePart.INFRASPECIFIC);
-        set(atomPNU, atom::setInfraspecificEpithet, sanitizeEpithet(infraspecies, issues), NamePart.INFRASPECIFIC);
-        set(atomPNU, atom::setSpecificEpithet, sanitizeEpithet(species, issues), NamePart.SPECIFIC);
+        set(atomPNU, atom::setInfraspecificEpithet, sanitizeEpithet(infraspecies, atomIssues), NamePart.INFRASPECIFIC);
+        set(atomPNU, atom::setSpecificEpithet, sanitizeEpithet(species, atomIssues), NamePart.SPECIFIC);
         set(atomPNU, atom::setInfragenericEpithet, infraGenus, NamePart.INFRAGENERIC);
         set(atomPNU, atom::setGenus, genus, NamePart.GENERIC);
         set(atomPNU, atom::setUninomial, uninomial, NamePart.GENERIC);
@@ -198,9 +200,9 @@ public class NameInterpreter {
         if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null) {
           if (atom.getUninomial() == null) {
             atom.setUninomial(atom.getGenus());
-            issues.add(Issue.UNINOMIAL_FIELD_MISPLACED);
+            atomIssues.add(Issue.UNINOMIAL_FIELD_MISPLACED);
           } else if (!atom.getUninomial().equals(atom.getGenus())) {
-            issues.add(Issue.INCONSISTENT_NAME);
+            atomIssues.add(Issue.INCONSISTENT_NAME);
           }
           atom.setGenus(null); // ignore genus if
         }
@@ -208,9 +210,9 @@ public class NameInterpreter {
         if (rank.isInfragenericStrictly() && atom.getUninomial() != null) {
           if (atom.getInfragenericEpithet() == null) {
             atom.setInfragenericEpithet(atom.getUninomial()); // swap
-            issues.add(Issue.INFRAGENERIC_FIELD_MISPLACED);
+            atomIssues.add(Issue.INFRAGENERIC_FIELD_MISPLACED);
           } else if (!atom.getUninomial().equals(atom.getInfragenericEpithet())) {
-            issues.add(Issue.INCONSISTENT_NAME);
+            atomIssues.add(Issue.INCONSISTENT_NAME);
           }
           atom.setUninomial(null); // no uninomial for infragenerics
         }
@@ -218,12 +220,7 @@ public class NameInterpreter {
 
         // parse the name rebuilt from the atoms with the authorship to detect name type and potential problems,
         // and to parse the authorship together with the name, as for a scientific name
-        Name label = new Name();
-        label.setScientificName(atom.getLabel());
-        label.setAuthorship(authorshipToParse);
-        label.setRank(rank);
-        label.setCode(code);
-        Optional<ParsedNameUsage> parsed = NameParser.PARSER.parse(label, issues);
+        Optional<ParsedNameUsage> parsed = NameParser.PARSER.parse(atom.getLabel(), authorshipToParse, rank, code, atomIssues);
         if (parsed.isEmpty()) {
           // only really happens for blank strings
           LOG.info("No name given for {}", id);
@@ -231,18 +228,27 @@ public class NameInterpreter {
         }
         pnu = parsed.get();
         final Name pn = pnu.getName();
-        if (atomPNU.isExtinct()) {
-          pnu.setExtinct(true);
-        }
         // the atoms only ever claim the default type (SCIENTIFIC, or OTHER for viruses).
         // Whenever the parser classifies the reconstructed label as something else - unparsable,
         // but also an INFORMAL name like "Scoloplos sp. 1" whose epithet is an indetermination
         // marker - the parser wins and the atoms must not be used.
         // See https://github.com/CatalogueOfLife/data/issues/1568
+        // The label is rebuilt from sanitised atoms, e.g. with lowercased epithets, so the verbatim scientific name
+        // is parsed instead whenever there is one: "Hibiscus sp. Carnarvon (S.van Leeuwen 5110)" given with
+        // the specificEpithet "sp. Carnarvon (S.van Leeuwen 5110)" or the hybrid formula "Acacia adsurgens x Acacia rhodophloia"
+        // given with the specificEpithet "adsurgens x rhodophloia".
+        // See https://github.com/CatalogueOfLife/backend/issues/1628
         if (!pn.getType().isParsable() || pn.getType() != atom.getType()) {
-          LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.getLabel(), pn.getType());
+          if (StringUtils.isNotBlank(sciname)) {
+            LOG.info("Atomized name {} appears to be of type {}. Use scientific name {}", atom.getLabel(), pn.getType(), sciname);
+            pnu = NameParser.PARSER.parse(sciname, authorshipToParse, rank, code, issues).get();
+          } else {
+            LOG.info("Atomized name {} appears to be of type {}. Use the parsed atoms", atom.getLabel(), pn.getType());
+            issues.add(atomIssues);
+          }
 
         } else {
+          issues.add(atomIssues);
           if (pnu.isDoubtful()) { // we might found brackets in the parsed genus
             atom.setGenus(pn.getGenus());
           }
@@ -272,15 +278,13 @@ public class NameInterpreter {
           pn.setUnparsed(null);
           pn.rebuildScientificName();
         }
+        if (atomPNU.isExtinct()) {
+          pnu.setExtinct(true);
+        }
 
       } else if (StringUtils.isNotBlank(sciname)) {
         // be careful, this infers ranks from the name!
-        Name n = new Name();
-        n.setScientificName(sciname);
-        n.setRank(rank);
-        n.setCode(code);
-        n.setAuthorship(authorshipToParse);
-        pnu = NameParser.PARSER.parse(n, issues).get();
+        pnu = NameParser.PARSER.parse(sciname, authorshipToParse, rank, code, issues).get();
 
       } else {
         LOG.info("No name given for {}", id);
@@ -472,16 +476,25 @@ public class NameInterpreter {
     return true;
   }
 
+  /**
+   * Lowercases an epithet only if it is a single word, or made one by EPITHET_ADD_HYPHEN.
+   * Several words are rather a phrase like "sp. Carnarvon (S.van Leeuwen 5110)" whose proper nouns keep their case,
+   * see https://github.com/CatalogueOfLife/backend/issues/1628
+   */
   private String sanitizeEpithet(String epithet, IssueContainer issues) {
-    if (epithet != null && !epithet.equals(epithet.toLowerCase())) {
-      issues.add(Issue.UPPERCASE_EPITHET);
-      epithet = epithet.trim().toLowerCase();
-    } else {
-      epithet = trimToNull(epithet);
+    epithet = trimToNull(epithet);
+    if (epithet == null) {
+      return null;
     }
-    if (epithet != null && settings.isEnabled(Setting.EPITHET_ADD_HYPHEN) && WHITESPACE.matcher(epithet).find()) {
+    if (settings.isEnabled(Setting.EPITHET_ADD_HYPHEN) && WHITESPACE.matcher(epithet).find()) {
       epithet = WHITESPACE.matcher(epithet).replaceAll("-");
       issues.add(Issue.MULTI_WORD_EPITHET);
+    }
+    if (!epithet.equals(epithet.toLowerCase())) {
+      issues.add(Issue.UPPERCASE_EPITHET);
+      if (!WHITESPACE.matcher(epithet).find()) {
+        epithet = epithet.toLowerCase();
+      }
     }
     return epithet;
   }

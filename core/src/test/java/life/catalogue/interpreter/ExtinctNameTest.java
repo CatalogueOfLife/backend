@@ -20,6 +20,10 @@ public class ExtinctNameTest {
     assertName("x Agropogon", "Agropogon", false, true);
     assertName("X Cuprocyparis", "Cuprocyparis", false, true);
     assertName("× mitsutae", "mitsutae", false, true);
+    assertName("x mitsutae", "mitsutae", false, true);
+    // a sign between two epithets is a hybrid formula, not a notho marker, see #1629
+    assertName("adsurgens x rhodophloia", "adsurgens x rhodophloia", false, false);
+    assertName("adsurgens × rhodophloia", "adsurgens × rhodophloia", false, false);
     // a capital X glued to the name is part of it, found as a bacterial genus atom by the interpreter corpus
     assertName("XBB1006", "XBB1006", false, false);
     assertName("Xanthium", "Xanthium", false, false);
