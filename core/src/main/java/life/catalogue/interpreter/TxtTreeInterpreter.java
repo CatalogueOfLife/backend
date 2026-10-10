@@ -208,7 +208,8 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
     u.generatedId = uid == null;
     u.usage.setId(ObjectUtils.coalesce(uid, String.valueOf(tn.id)));
     u.usage.setLink(link);
-    u.usage.setAccordingToId(pnu.getTaxonomicNote());
+    // a taxonomic note like "sensu Smith 1999" is the name phrase as in ColDP, it used to end up as the accordingToId
+    u.usage.setNamePhrase(pnu.getTaxonomicNote());
     // COMMENT
     u.usage.setRemarks(tn.comment);
     return u;
