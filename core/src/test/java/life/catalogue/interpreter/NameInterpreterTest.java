@@ -171,6 +171,66 @@ public class NameInterpreterTest {
   }
 
   /**
+   * APNI atomises phrase names, putting the whole phrase into the specificEpithet. Once the parser rejects the atoms
+   * the verbatim scientific name is used, not the label rebuilt from atoms with a lowercased epithet.
+   * https://github.com/CatalogueOfLife/backend/issues/1628
+   */
+  @Test
+  public void rejectedAtomsUseScientificName() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("species", "Hibiscus sp. Carnarvon (S.van Leeuwen 5110)", "WA Herbarium", null,
+      null, "Hibiscus", null, "sp. Carnarvon (S.van Leeuwen 5110)", null, v).getName();
+    assertEquals(NameType.INFORMAL, n.getType());
+    assertEquals("Hibiscus", n.getGenus());
+    assertTrue(n.getLabel(), n.getLabel().contains("Carnarvon (S.van Leeuwen 5110)"));
+    assertFalse(v.contains(Issue.UPPERCASE_EPITHET));
+
+    v = new VerbatimRecord();
+    n = interpret("species", "Caladenia sp. A", null, null,
+      null, "Caladenia", null, "sp. A", null, v).getName();
+    assertEquals(NameType.INFORMAL, n.getType());
+    assertEquals("Caladenia sp. A", n.getLabel());
+
+    // without a scientific name the case of a phrase in the atoms is kept as well
+    v = new VerbatimRecord();
+    n = interpret("species", null, null, null,
+      null, "Caladenia", null, "sp. A", null, v).getName();
+    assertEquals(NameType.INFORMAL, n.getType());
+    assertEquals("Caladenia sp. A", n.getLabel());
+    assertTrue(v.contains(Issue.UPPERCASE_EPITHET));
+
+    // a single word epithet is still lowercased
+    v = new VerbatimRecord();
+    n = interpret("species", null, null, null,
+      null, "Caladenia", null, "Alba", null, v).getName();
+    assertEquals(NameType.SCIENTIFIC, n.getType());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertTrue(v.contains(Issue.UPPERCASE_EPITHET));
+  }
+
+  /**
+   * A hybrid formula in an epithet atom is no nothospecies with both epithets glued together.
+   * https://github.com/CatalogueOfLife/backend/issues/1629
+   */
+  @Test
+  public void hybridFormulaAtom() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("species", "Acacia adsurgens x Acacia rhodophloia", "Maiden & Blakely x Acacia rhodophloia Maslin", null,
+      null, "Acacia", null, "adsurgens x rhodophloia", null, v).getName();
+    assertEquals(NameType.FORMULA, n.getType());
+    assertTrue(n.getNotho().isEmpty());
+    assertNotEquals("adsurgensrhodophloia", n.getSpecificEpithet());
+
+    // a leading sign is still the notho marker
+    v = new VerbatimRecord();
+    n = interpret("species", null, "Maiden", null,
+      null, "Acacia", null, "x rhodophloia", null, v).getName();
+    assertEquals(NameType.SCIENTIFIC, n.getType());
+    assertEquals("rhodophloia", n.getSpecificEpithet());
+    assertEquals(Set.of(NamePart.SPECIFIC), n.getNotho());
+  }
+
+  /**
    * The same trust must survive for genuinely determined names - atoms still win there.
    */
   @Test
