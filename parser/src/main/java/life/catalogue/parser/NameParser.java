@@ -9,10 +9,12 @@ import life.catalogue.api.vocab.NomStatus;
 
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.rust.NameParserRust;
+import org.gbif.nameparser.util.UnicodeUtils;
 
 import javax.annotation.Nullable;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -50,6 +52,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final Pattern EMPTY_BRACKETS = Pattern.compile("\\s*(?:\\(\\s*\\)|\\[\\s*]|\\{\\s*}|[(\\[{]\\s*$)");
   private static final Pattern NO_CHARS = Pattern.compile("^[^a-zA-Z0-9]+$");
   private static final Pattern NO_LETTERS_DIGITS = Pattern.compile("[^\\p{L}\\p{N}]+");
+  private static final Pattern TRAILING_PUNCTUATION = Pattern.compile("[\\s\\p{P}&&[^)\\]]]+$");
   // the first word of a note
   private static final Pattern NOTE_START = Pattern.compile("^[^\\p{L}]*(\\p{L}*).*$", Pattern.DOTALL);
   private static final Pattern NORM_WHITESPACE = Pattern.compile("(?:\\\\[nr]|\\s)+");
@@ -143,6 +146,12 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     if (containsIgnoringWhitespace(authorship, n.getUnparsed())) {
       n.setUnparsed(null);
       n.rebuildScientificName();
+    } else if (n.getUnparsed() != null) {
+      String unparsed = removeTrailingAuthorship(n.getUnparsed(), authorship);
+      if (!Objects.equals(unparsed, n.getUnparsed())) {
+        n.setUnparsed(unparsed);
+        n.rebuildScientificName();
+      }
     }
     setNormalizeAuthorship(pnu, authorship, noteInAuthorship(pnu.getTaxonomicNote(), authorship));
   }
@@ -169,6 +178,34 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     String first = NOTE_START.matcher(taxNote).replaceFirst("$1").toLowerCase();
     return !first.isEmpty() && Pattern.compile("\\b" + Pattern.quote(first) + "\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CHARACTER_CLASS)
       .matcher(authorship).find() ? taxNote : null;
+  }
+
+  /**
+   * Removes the authorship from the end of the unparsed rest of a name, comparing ASCII folded letters and digits only:
+   * "Aries Linnæus, 1758" with the authorship "Linnaeus 1758" leaves "Aries", see #1621
+   *
+   * @return the unparsed rest without the trailing authorship, null if nothing is left
+   */
+  @VisibleForTesting
+  static String removeTrailingAuthorship(String unparsed, String authorship) {
+    final String key = asciiLettersAndDigits(authorship);
+    if (key.isEmpty()) return unparsed;
+    String tail = "";
+    for (int i = unparsed.length(); i > 0; i--) {
+      tail = asciiLettersAndDigits(unparsed.substring(i - 1, i)) + tail;
+      if (tail.length() >= key.length()) {
+        // the authorship has to start a word of its own
+        if (tail.equals(key) && (i == 1 || !Character.isLetterOrDigit(unparsed.charAt(i - 2)))) {
+          return StringUtils.trimToNull(TRAILING_PUNCTUATION.matcher(unparsed.substring(0, i - 1)).replaceFirst(""));
+        }
+        break;
+      }
+    }
+    return unparsed;
+  }
+
+  private static String asciiLettersAndDigits(String x) {
+    return NO_LETTERS_DIGITS.matcher(UnicodeUtils.foldToAscii(x)).replaceAll("").toLowerCase();
   }
 
   private static boolean containsIgnoringWhitespace(@Nullable String text, @Nullable String part) {

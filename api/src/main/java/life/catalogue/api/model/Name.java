@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
+import life.catalogue.common.tax.SciNameNormalizer;
 
 import org.gbif.nameparser.api.*;
 
@@ -22,7 +23,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
-import static life.catalogue.common.text.StringUtils.rmWS;
 
 /**
  * A parsed or unparsed name with strictly nomenclatural properties.
@@ -879,11 +879,19 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       sb.append(" ");
       sb.append(preAuthorship);
     }
-    if (authorship != null && name != null && !rmWS(name.toLowerCase()).contains(rmWS(authorship.toLowerCase()))) {
+    // compare ASCII folded forms without punctuation: "Linnaeus, 1758" in the name is "Linnæus 1758", see #1621
+    if (authorship != null && name != null && !asciiKey(scientificName).contains(asciiKey(authorship))) {
       sb.append(" ");
       sb.append(authorship);
     }
     return sb;
+  }
+
+  /**
+   * @return the lower case ASCII folded words, without punctuation and padded by spaces to compare whole words only
+   */
+  private static String asciiKey(String x) {
+    return " " + SciNameNormalizer.normalizedAscii(x).toLowerCase() + " ";
   }
 
   public String getBasionymNameId() {
