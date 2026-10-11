@@ -1,0 +1,3 @@
+id	scientificName	scientificNameAuthorship	taxonRank	kingdom
+1	Abies cilicica subsp. isaurica	Coode & Cullen, 1965	subspecies	
+2	Abies cilicica subsp. pindrow	Coode & Cullen, 1965	subspecies	Plantae

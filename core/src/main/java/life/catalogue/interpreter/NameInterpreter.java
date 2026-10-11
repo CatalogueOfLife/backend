@@ -58,6 +58,16 @@ public class NameInterpreter {
     dontInferRanks = settings.isEnabled(Setting.DONT_INFER_RANKS);
   }
 
+  /**
+   * @return a copy of this interpreter that interprets names without a code of their own with the given one,
+   *         e.g. a code decided from the classification of an import
+   */
+  public NameInterpreter withCode(NomCode code) {
+    var copy = new DatasetSettings(settings);
+    copy.put(Setting.NOMENCLATURAL_CODE, code);
+    return new NameInterpreter(copy, preferAtoms);
+  }
+
   public Optional<ParsedNameUsage> interpret(SimpleName sn, IssueContainer issues) {
     if (sn == null) {
       issues.add(Issue.NOT_INTERPRETED);
@@ -367,6 +377,8 @@ public class NameInterpreter {
       // applies default dataset code if we cannot find or parse any
       // Always make sure this happens BEFORE we update the canonical scientific name
       ObjectUtils.setIfNotNull(pnu.getName()::setCode, code);
+      // a code neither the record nor the dataset gave is the parser's guess, if any
+      pnu.setCodeGiven(code != null);
 
       // name status can be explicitly given or as part of the nom notes from the authorship
       // dont store the explicit name status, it only remains as verbatim and interpreted data

@@ -1,5 +1,6 @@
 package life.catalogue.importer.acef;
 
+import life.catalogue.importer.InterpreterBase;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
@@ -270,4 +271,9 @@ public class AcefInserter extends DataCsvInserter {
     }
   }
   
+
+  @Override
+  public Optional<InterpreterBase> interpreter() {
+    return Optional.ofNullable(inter);
+  }
 }

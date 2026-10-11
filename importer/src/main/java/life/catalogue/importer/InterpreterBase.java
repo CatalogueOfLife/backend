@@ -19,6 +19,7 @@ import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
@@ -54,6 +55,7 @@ public class InterpreterBase {
   protected final NameInterpreter nameInterpreter;
   private final Gazetteer distributionStandard;
   protected final ReferenceFactory refFactory;
+  private final Map<NomCode, NameInterpreter> codeInterpreters = new EnumMap<>(NomCode.class);
 
   /**
    * @param settings
@@ -159,6 +161,22 @@ public class InterpreterBase {
         NameValidator.flagSuspicousPhrase(u.getNamePhrase(), v, Issue.NAME_PHRASE_UNLIKELY);
       }
     }
+  }
+
+  /**
+   * Interprets the name of a verbatim record again as if the given code had been supplied,
+   * e.g. a code decided from the final classification of the import.
+   * @return the name interpreted again, empty if the format cannot interpret names again
+   */
+  public Optional<ParsedNameUsage> reinterpretName(String id, VerbatimRecord v, NomCode code) {
+    return Optional.empty();
+  }
+
+  /**
+   * @return the name interpreter for names without a code of their own that interprets them with the given code
+   */
+  protected NameInterpreter nameInterpreter(NomCode code) {
+    return codeInterpreters.computeIfAbsent(code, nameInterpreter::withCode);
   }
 
   public DatasetSettings getSettings() {

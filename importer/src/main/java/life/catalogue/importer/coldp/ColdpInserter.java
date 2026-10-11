@@ -1,5 +1,7 @@
 package life.catalogue.importer.coldp;
 
+import life.catalogue.importer.InterpreterBase;
+import java.util.Optional;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.Treatment;
 import life.catalogue.api.model.VerbatimRecord;
@@ -211,5 +213,10 @@ public class ColdpInserter extends DataCsvInserter {
         bibIns.insertAll();
       }
     }
+  }
+
+  @Override
+  public Optional<InterpreterBase> interpreter() {
+    return Optional.ofNullable(inter);
   }
 }

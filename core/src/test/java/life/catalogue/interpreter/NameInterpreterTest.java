@@ -925,4 +925,33 @@ public class NameInterpreterTest {
 
     assertFalse(v.hasIssues());
   }
+
+  /**
+   * A code the parser inferred is not marked as given, so the import can still decide it from the final classification.
+   * https://github.com/CatalogueOfLife/backend/issues/1624
+   */
+  @Test
+  public void inferredCode() {
+    var pnu = interpret("subspecies", "Abies cilicica subsp. isaurica", "Coode & Cullen, 1965", new VerbatimRecord());
+    assertEquals(NomCode.ZOOLOGICAL, pnu.getName().getCode());
+    assertFalse(pnu.isCodeGiven());
+
+    // a code of the record is given
+    pnu = interpret("subspecies", "Abies cilicica subsp. isaurica", "Coode & Cullen, 1965", null,
+      null, null, null, null, null, null,
+      null, null, "botanical", null, new VerbatimRecord());
+    assertEquals(NomCode.BOTANICAL, pnu.getName().getCode());
+    assertTrue(pnu.isCodeGiven());
+
+    // so is the code of the dataset settings, also for a copy of the interpreter with another code
+    var botIb = ib.withCode(NomCode.BOTANICAL);
+    pnu = botIb.interpret("1", "subspecies", null, "Abies cilicica subsp. isaurica", "Coode & Cullen, 1965", null,
+      null, null, null, null, null, null,
+      null, null, null, null, null, null,
+      null, null, null, null,
+      null, null, null, new VerbatimRecord()).get();
+    assertEquals(NomCode.BOTANICAL, pnu.getName().getCode());
+    assertEquals("Abies cilicica subsp. isaurica Coode & Cullen, 1965", pnu.getName().getLabel());
+    assertTrue(pnu.isCodeGiven());
+  }
 }

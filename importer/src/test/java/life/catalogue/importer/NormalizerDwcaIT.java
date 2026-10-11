@@ -10,6 +10,7 @@ import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.UsageData;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
@@ -646,6 +647,61 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   public void wormsUncertain() throws Exception {
     normalize(55);
     assertTree();
+  }
+
+  /**
+   * The parser infers a zoological code from an authorship with a year. The taxon group of the final classification,
+   * here built from the kingdom column, beats that guess, and so does the code of the dataset. A flat record without
+   * any classification keeps the guess. https://github.com/CatalogueOfLife/backend/issues/1624
+   */
+  @Test
+  public void denormedClassificationDecidesCode() throws Exception {
+    normalize(64);
+    assertEquals(NomCode.ZOOLOGICAL, store.names().objByID("1").getName().getCode());
+    var n = store.names().objByID("2").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals("Abies cilicica subsp. pindrow Coode & Cullen, 1965", n.getLabel());
+  }
+
+  @Test
+  public void datasetCodeBeatsInferredCode() throws Exception {
+    normalize(64, NomCode.BOTANICAL);
+    var n = store.names().objByID("1").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals("Abies cilicica subsp. isaurica Coode & Cullen, 1965", n.getLabel());
+  }
+
+  /**
+   * A parent-child hierarchy without classification columns: the taxon group of the final tree decides the code,
+   * and a name is interpreted again as if that code had been given.
+   * https://github.com/CatalogueOfLife/backend/issues/1624
+   */
+  @Test
+  public void treeDecidesCode() throws Exception {
+    normalize(65);
+
+    // a plant with a year in its authorship
+    var n = store.names().objByID("4").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals(Rank.SUBSPECIES, n.getRank());
+    assertEquals("Abies cilicica subsp. isaurica Coode & Cullen, 1965", n.getLabel());
+    assertFalse(vByNameID("4").contains(Issue.NOMENCLATURAL_CODE_DIFFERS));
+    // its synonym
+    assertEquals(NomCode.BOTANICAL, store.names().objByID("5").getName().getCode());
+    // a code of the record wins
+    assertEquals(NomCode.ZOOLOGICAL, store.names().objByID("6").getName().getCode());
+
+    // a zoological parse made Urban a subgenus, a botanical one makes it the basionym author of the record without rank
+    n = store.names().objByID("8").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals(Rank.UNRANKED, n.getRank());
+    assertEquals("Humiriastrum", n.getUninomial());
+    assertNull(n.getInfragenericEpithet());
+    assertEquals(List.of("Urban"), n.getBasionymAuthorship().getAuthors());
+
+    // diatoms are algae, which follow two codes: a zoological guess is kept, a bacterial one is not
+    assertEquals(NomCode.ZOOLOGICAL, store.names().objByID("13").getName().getCode());
+    assertNull(store.names().objByID("14").getName().getCode());
   }
 
   /**

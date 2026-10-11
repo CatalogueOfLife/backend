@@ -1,5 +1,6 @@
 package life.catalogue.importer.dwca;
 
+import life.catalogue.importer.InterpreterBase;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
@@ -506,4 +507,9 @@ public class DwcaInserter extends DataCsvInserter {
     return ds;
   }
   
+
+  @Override
+  public Optional<InterpreterBase> interpreter() {
+    return Optional.ofNullable(inter);
+  }
 }

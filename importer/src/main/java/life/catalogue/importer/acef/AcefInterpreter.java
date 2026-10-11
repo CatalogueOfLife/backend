@@ -1,5 +1,6 @@
 package life.catalogue.importer.acef;
 
+import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
@@ -93,7 +94,7 @@ public class AcefInterpreter extends InterpreterBase {
   
   private Optional<NameUsageData> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
-    return interpretName(idTerm, v).map(nat -> {
+    return interpretName(nameInterpreter, v.getRaw(idTerm), v).map(nat -> {
       var u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v, null,
         synonym ? AcefTerm.AcceptedTaxonID : null, Collections.emptyMap());
       // status matches up?
@@ -164,13 +165,18 @@ public class AcefInterpreter extends InterpreterBase {
   /**
    * @return a parsed name or in case of AcceptedInfraSpecificTaxa
    */
-  private Optional<ParsedNameUsage> interpretName(Term idTerm, VerbatimRecord v) {
+  @Override
+  public Optional<ParsedNameUsage> reinterpretName(String id, VerbatimRecord v, NomCode code) {
+    return interpretName(nameInterpreter(code), id, v);
+  }
+
+  private Optional<ParsedNameUsage> interpretName(NameInterpreter nameInterpreter, String id, VerbatimRecord v) {
     final Optional<ParsedNameUsage> opt;
     if (v.getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
       final var spID = v.getRaw(AcefTerm.ParentSpeciesID);
       final var sp = store.names().objByID(spID);
       if (sp != null && sp.getName().getRank() != Rank.GENUS) {
-        opt = nameInterpreter.interpret(v.getRaw(idTerm), v.get(AcefTerm.InfraSpeciesMarker), Rank.SUBSPECIES,
+        opt = nameInterpreter.interpret(id, v.get(AcefTerm.InfraSpeciesMarker), Rank.SUBSPECIES,
           null, v.get(AcefTerm.InfraSpeciesAuthorString),null,
           null, sp.getName().getGenus(), sp.getName().getInfragenericEpithet(), sp.getName().getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet), null,
           null,null,null,null,null,null,
@@ -207,7 +213,7 @@ public class AcefInterpreter extends InterpreterBase {
         // we shortcut building the ACEF virus name here as we don't want the genus classification to end up in the full name
         ParsedNameUsage nat = new ParsedNameUsage();
         nat.setName(new Name());
-        nat.getName().setId(v.get(idTerm));
+        nat.getName().setId(id);
         nat.getName().setType(NameType.OTHER);
         nat.getName().setCode(NomCode.VIRUS);
         String fullname = v.get(AcefTerm.SpeciesEpithet).trim() + " " + v.get(AcefTerm.AuthorString).trim();
@@ -218,7 +224,7 @@ public class AcefInterpreter extends InterpreterBase {
         opt = Optional.of(nat);
 
       } else {
-        opt = nameInterpreter.interpret(v.getRaw(idTerm), v.get(AcefTerm.InfraSpeciesMarker), rank, null, v.get(authorTerm),null,
+        opt = nameInterpreter.interpret(id, v.get(AcefTerm.InfraSpeciesMarker), rank, null, v.get(authorTerm),null,
           null, v.get(AcefTerm.Genus), v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet), v.get(AcefTerm.InfraSpeciesEpithet), null,
           null,null,null,null,null, null,
           null,null,null, AcefTerm.GSDNameStatus, null,null, null, v);

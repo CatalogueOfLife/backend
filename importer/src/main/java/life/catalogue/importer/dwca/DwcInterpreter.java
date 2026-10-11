@@ -16,6 +16,7 @@ import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -375,6 +376,11 @@ public class DwcInterpreter extends InterpreterBase {
       null, null, DwcTerm.nomenclaturalCode, DwcTerm.nomenclaturalStatus,
       DcTerm.references, null, DwcTerm.scientificNameID, v
     );
+  }
+
+  @Override
+  public Optional<ParsedNameUsage> reinterpretName(String id, VerbatimRecord v, NomCode code) {
+    return interpretName(nameInterpreter(code), id, v);
   }
 
   private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {

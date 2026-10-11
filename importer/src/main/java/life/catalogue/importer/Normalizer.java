@@ -76,6 +76,8 @@ public class Normalizer implements Callable<Boolean> {
   private final DatasetWithSettings dataset;
   private final Validator validator;
   private MappingInfos meta;
+  // the interpreter of the format, to interpret names again with a code decided from their classification
+  private InterpreterBase interpreter;
   // parsing is expensive so we cache the higher taxa names that we need to parse a lot
   private final LoadingCache<RanKnName, ParsedHigherName> parseCache = Caffeine.newBuilder()
     .maximumSize(10000)
@@ -240,8 +242,11 @@ public class Normalizer implements Callable<Boolean> {
       }
     });
 
-    LOG.info("Validate name usages");
-    TreeWalker.walkTree(store, new TreeWalker.StartEndHandler() {
+    LOG.info("Decide missing codes and validate name usages");
+    // the codes have to be decided before the usages are validated, which compares them with their parents.
+    // A dataset code is given for all names, and text trees pass codes down to their children while interpreting
+    final CodeAssigner codeAssigner = dataset.getCode() == null && interpreter != null ? new CodeAssigner(store, interpreter) : null;
+    final TreeWalker.StartEndHandler validator = new TreeWalker.StartEndHandler() {
       final ParentStack<TreeCleanerAndValidator.XLinneanNameUsage> parents = new ParentStack();
 
       @Override
@@ -265,7 +270,13 @@ public class Normalizer implements Callable<Boolean> {
 
       @Override
       public void end(NameUsageData data, TreeWalker.WalkerContext ctxt) {}
-    });
+    };
+    if (codeAssigner == null) {
+      TreeWalker.walkTree(store, validator);
+    } else {
+      TreeWalker.walkTree(store, codeAssigner, validator);
+      codeAssigner.logStats();
+    }
 
     LOG.info("Validate bare names");
     store.names().allBareNames().forEach(nn -> {
@@ -1238,6 +1249,7 @@ public class Normalizer implements Callable<Boolean> {
       // data
       inserter.insertAll();
       meta = inserter.getMappingFlags();
+      interpreter = inserter.interpreter().orElse(null);
       store.reportDuplicates();
       inserter.reportBadFks();
       // lookout for local logo file

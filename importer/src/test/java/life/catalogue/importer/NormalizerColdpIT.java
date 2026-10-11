@@ -749,4 +749,22 @@ public class NormalizerColdpIT extends NormalizerITBase {
     });
   }
 
+
+  /**
+   * The taxon group of the final tree decides the code of names without one, and ColDP names are interpreted again
+   * with it. https://github.com/CatalogueOfLife/backend/issues/1624
+   */
+  @Test
+  public void treeDecidesCode() throws Exception {
+    normalize(46);
+    var n = store.names().objByID("3").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals("Abies cilicica subsp. isaurica Coode & Cullen, 1965", n.getLabel());
+
+    n = store.names().objByID("4").getName();
+    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertEquals("Humiriastrum", n.getUninomial());
+    assertNull(n.getInfragenericEpithet());
+    assertEquals(List.of("Urban"), n.getBasionymAuthorship().getAuthors());
+  }
 }

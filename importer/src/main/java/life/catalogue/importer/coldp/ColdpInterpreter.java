@@ -19,6 +19,7 @@ import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collections;
@@ -334,6 +335,11 @@ public class ColdpInterpreter extends InterpreterBase {
    */
   public static Optional<ParsedNameUsage> interpretName(NameInterpreter nameInterpreter, VerbatimRecord v) {
     return interpretName(nameInterpreter, NameTerms.of(v), v);
+  }
+
+  @Override
+  public Optional<ParsedNameUsage> reinterpretName(String id, VerbatimRecord v, NomCode code) {
+    return interpretName(nameInterpreter(code), v);
   }
 
   private static Optional<ParsedNameUsage> interpretName(NameInterpreter nameInterpreter, NameTerms t, VerbatimRecord v) {
