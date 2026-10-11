@@ -173,6 +173,18 @@
         <updatePolicy>always</updatePolicy>
       </snapshots>
     </repository>
+    <!-- the gbif group above does not serve the metadata of every snapshot, e.g. name-parser-rust -->
+    <repository>
+      <id>gbif-snapshots</id>
+      <url>https://repository.gbif.org/repository/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+    </repository>
     <repository>
       <id>gbif-thirdparty</id>
       <url>https://repository.gbif.org/repository/thirdparty/</url>
