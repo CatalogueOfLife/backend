@@ -13,6 +13,8 @@ import org.gbif.nameparser.util.UnicodeUtils;
 
 import javax.annotation.Nullable;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,12 +52,18 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final Pattern COMMA_AT_END = Pattern.compile("\\s*[,;:]\\s*$");
   // empty brackets, e.g. left behind by a removed taxonomic note: "Matsumoto, 1917 ()", or an unclosed one at the end
   private static final Pattern EMPTY_BRACKETS = Pattern.compile("\\s*(?:\\(\\s*\\)|\\[\\s*]|\\{\\s*}|[(\\[{]\\s*$)");
+  // a comma or semicolon left in front of a closing bracket, e.g. by a removed taxonomic note: "(Smith, 1879, )"
+  private static final Pattern PUNCT_BEFORE_CLOSING = Pattern.compile("\\s*[,;]\\s*([)\\]}])");
   private static final Pattern NO_CHARS = Pattern.compile("^[^a-zA-Z0-9]+$");
   private static final Pattern NO_LETTERS_DIGITS = Pattern.compile("[^\\p{L}\\p{N}]+");
   private static final Pattern TRAILING_PUNCTUATION = Pattern.compile("[\\s\\p{P}&&[^)\\]]]+$");
   // the first word of a note
   private static final Pattern NOTE_START = Pattern.compile("^[^\\p{L}]*(\\p{L}*).*$", Pattern.DOTALL);
   private static final Pattern NORM_WHITESPACE = Pattern.compile("(?:\\\\[nr]|\\s)+");
+  // hyphens in disguise, e.g. the non-breaking hyphen
+  private static final Pattern HYPHENS = Pattern.compile("[\\u2010\\u2011\\u2012\\u2043\\u2212\\uFE63\\uFF0D]");
+  private static final Pattern IN_COLON = Pattern.compile("\\b(in)\\s*:", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CHARACTER_CLASS);
+  private static final String DAGGER = "\u2020";
 
   private static final Map<String, Issue> WARN_TO_ISSUE = ImmutableMap.<String, Issue>builder()
       .put(Warnings.NULL_EPITHET, Issue.NULL_EPITHET)
@@ -268,7 +276,17 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       name = SIC_CORRIG.matcher(name).replaceFirst("");
     }
 
+    // broken characters the parser already dropped from the authorship atoms, see data#1765
+    name = HYPHENS.matcher(name).replaceAll("-");
+    name = replaceHomoglyphs(name);
+    if (pnu.isExtinct()) {
+      name = name.replace(DAGGER, " ");
+    }
+    name = IN_COLON.matcher(name).replaceAll("$1");
+    name = balanceBrackets(name);
+
     // remove empty brackets, also those a removed taxonomic note left behind
+    name = PUNCT_BEFORE_CLOSING.matcher(name).replaceAll("$1");
     name = EMPTY_BRACKETS.matcher(name).replaceAll("");
 
     // normalise different usages of ampersand, and, et &amp; to always use &
@@ -292,6 +310,68 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     // apply to parsed name
     pnu.getName().setAuthorship(StringUtils.trimToNull(name));
     return pnu.getName().getAuthorship();
+  }
+
+  /**
+   * Replaces letters of other scripts which are homoglyphs of a latin letter, e.g. a cyrillic С, unless the authorship
+   * is written in another script: it is as soon as one of its non latin letters is no such homoglyph.
+   * A homoglyph keeps its case, as a small cyrillic в or т is listed as a homoglyph of a capital B or T.
+   * A lone small greek letter is no homoglyph either, it numbers a variety: "α. afiaticus".
+   */
+  @VisibleForTesting
+  static String replaceHomoglyphs(String x) {
+    int[] cps = x.codePoints().toArray();
+    StringBuilder sb = new StringBuilder(x.length());
+    boolean changed = false;
+    for (int i = 0; i < cps.length; i++) {
+      final int cp = cps[i];
+      if (Character.isLetter(cp) && Character.UnicodeScript.of(cp) != Character.UnicodeScript.LATIN) {
+        if (Character.isLowerCase(cp) && Character.UnicodeScript.of(cp) == Character.UnicodeScript.GREEK
+            && (i == 0 || !Character.isLetter(cps[i - 1])) && (i + 1 == cps.length || !Character.isLetter(cps[i + 1]))) {
+          return x;
+        }
+        String repl = UnicodeUtils.replaceHomoglyphs(Character.toString(cp), false);
+        if (repl.isEmpty() || Character.UnicodeScript.of(repl.codePointAt(0)) != Character.UnicodeScript.LATIN) {
+          return x;
+        }
+        sb.append(Character.isLowerCase(cp) ? repl.toLowerCase() : repl);
+        changed = true;
+      } else {
+        sb.appendCodePoint(cp);
+      }
+    }
+    return changed ? sb.toString() : x;
+  }
+
+  /**
+   * Completes brackets which are never closed or were never opened, as they mostly lost their partner by truncation:
+   * "(Butler, 1876" becomes "(Butler, 1876)" and "L.) Mill." becomes "(L.) Mill.".
+   * A closing bracket of another kind than the open one takes its kind: "[Denis & Schiff.) 1775" becomes "[Denis & Schiff.] 1775".
+   */
+  @VisibleForTesting
+  static String balanceBrackets(String x) {
+    final String opening = "([{";
+    final String closing = ")]}";
+    Deque<Character> open = new ArrayDeque<>();
+    StringBuilder prefix = new StringBuilder();
+    StringBuilder sb = new StringBuilder(x.length() + 2);
+    for (int i = 0; i < x.length(); i++) {
+      char c = x.charAt(i);
+      if (opening.indexOf(c) >= 0) {
+        open.push(c);
+      } else if (closing.indexOf(c) >= 0) {
+        if (open.isEmpty()) {
+          prefix.insert(0, opening.charAt(closing.indexOf(c)));
+        } else {
+          c = closing.charAt(opening.indexOf(open.pop()));
+        }
+      }
+      sb.append(c);
+    }
+    while (!open.isEmpty()) {
+      sb.append(closing.charAt(opening.indexOf(open.pop())));
+    }
+    return prefix.isEmpty() && sb.toString().equals(x) ? x : prefix.append(sb).toString();
   }
 
   static <T> void setIfNull(T val, Supplier<T> getter, Consumer<T> setter) {

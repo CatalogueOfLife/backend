@@ -364,6 +364,63 @@ public class NameParserTest {
     assertEquals("Phytoplasma", n.getGenus());
   }
 
+  /**
+   * The authorship string is kept as given, but not the broken characters of
+   * https://github.com/CatalogueOfLife/data/issues/1765 and 1766 the parser already dropped from the authorship atoms.
+   */
+  @Test
+  public void authorshipCharacters() throws Exception {
+    // non breaking hyphens
+    Name n = parse("Opegaster gorgonioi", "Aguilar‑Aguilar, 2025", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Aguilar-Aguilar, 2025", n.getAuthorship());
+    n = parse("Scaphytopius ancorus", "Arias\u2011Paco & Godoy, 2025", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Arias-Paco & Godoy, 2025", n.getAuthorship());
+
+    // a cyrillic homoglyph in an otherwise latin authorship
+    n = parse("Ochetosoma megametricum", "(Talbot, 1934) Caballero y С. & Vogelsang, 1947", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("(Talbot, 1934) Caballero y C. & Vogelsang, 1947", n.getAuthorship());
+
+    // homoglyphs keep their case
+    n = parse("Abies alba", "Villalo\u0432os-Guerrero & \u0412akken, 2018", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Villalobos-Guerrero & Bakken, 2018", n.getAuthorship());
+    n = parse("Abies alba", "Krupi\u0442sky, 2018", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Krupitsky, 2018", n.getAuthorship());
+    // greek capitals as initials are replaced, a lone small greek letter is no homoglyph but numbers a variety
+    n = parse("Abies alba", "C. \u0391. Meyer", Rank.SPECIES, NomCode.BOTANICAL);
+    assertEquals("C. A. Meyer", n.getAuthorship());
+    n = parse("Abies alba", "(Laxmann, 1769) \u03B1. afiaticus", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertTrue(n.getAuthorship().contains("\u03B1"));
+
+    // a cyrillic authorship stays cyrillic
+    n = parse("Abies alba", "Скворцов, 1966", Rank.SPECIES, NomCode.BOTANICAL);
+    assertEquals("Скворцов, 1966", n.getAuthorship());
+    n = parse("Abies alba", "Смит & Скворцов, 1966", Rank.SPECIES, NomCode.BOTANICAL);
+    assertEquals("Смит & Скворцов, 1966", n.getAuthorship());
+
+    // the dagger of an extinct name
+    var pnu = NameParser.PARSER.parse("Stylina waltoni", "(Milne Edwards & Haime, 1851) †", Rank.SPECIES, NomCode.ZOOLOGICAL, new IssueContainer.Simple()).get();
+    assertTrue(pnu.isExtinct());
+    assertEquals("(Milne Edwards & Haime, 1851)", pnu.getName().getAuthorship());
+
+    // unbalanced brackets are completed, they mostly lost their partner by truncation
+    n = parse("Aricidea (Aricidea)", "[Webster, 1879", Rank.SUBGENUS, NomCode.ZOOLOGICAL);
+    assertEquals("[Webster, 1879]", n.getAuthorship());
+    n = parse("Colotis lais", "(Butler, 1876", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("(Butler, 1876)", n.getAuthorship());
+    n = parse("Jania pedunculata var. adhaerens", "J.V.Lamouroux) A.S.Harvey, Woelkerling & Reviers, 2020", Rank.VARIETY, NomCode.BOTANICAL);
+    assertEquals("(J.V.Lamouroux) A.S.Harvey, Woelkerling & Reviers, 2020", n.getAuthorship());
+    n = parse("Bombyx lacertula", "[Denis & Schiffermueller) 1775", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("[Denis & Schiffermueller], 1775", n.getAuthorship());
+
+    // a taxonomic note removed from inside a bracket leaves no comma behind
+    n = parse("Aus bus", "(Smith, 1879, sensu stricto)", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("(Smith, 1879)", n.getAuthorship());
+
+    // a colon after an in
+    n = parse("Pseudocharopinus tenshken", "Montes, Castro-Romero & Bovcon, 2025 in: Montes, Castro-Romero & Bovcon, 2025", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertEquals("Montes, Castro-Romero & Bovcon, 2025 in Montes, Castro-Romero & Bovcon, 2025", n.getAuthorship());
+  }
+
   static Name parse(String name, String authorship, Rank rank, NomCode code) {
     return NameParser.PARSER.parse(name, authorship, rank, code, new IssueContainer.Simple()).get().getName();
   }

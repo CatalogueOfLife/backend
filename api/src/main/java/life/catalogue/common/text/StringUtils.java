@@ -29,7 +29,10 @@ public class StringUtils {
   private static final CharMatcher NON_DIGITLETTER = CharMatcher.javaLetterOrDigit().negate();
   private static final Pattern WHITESPACE = Pattern.compile("\\s+");
   private static final Pattern SPACE = Pattern.compile("[\\u00A0\\u2000-\\u200A\\u2028\\u2029\\u202F]"); // https://en.wikipedia.org/wiki/General_Punctuation
-  private static final Pattern INVISIBLE = Pattern.compile("[\\u200B-\\u200F\\u202A-\\u202C\\u202F\\u2060-\\u206F]");
+  // invisible format characters, incl the soft hyphen and the byte order mark (zero width no-break space)
+  // a word broken by a soft hyphen in front of a capital is a double name, e.g. Miranda-Ribeiro
+  private static final Pattern SOFT_HYPHEN_CAPITAL = Pattern.compile("\\u00AD(?=\\p{Lu})");
+  private static final Pattern INVISIBLE = Pattern.compile("[\\u00AD\\u061C\\u180E\\u200B-\\u200F\\u202A-\\u202C\\u202F\\u2060-\\u206F\\uFEFF\\uFFF9-\\uFFFB]");
   public static final Pattern EMAIL_EXTRACTION = Pattern.compile("\\b[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+){1,10}\\b");
 
   private StringUtils() {}
@@ -407,7 +410,9 @@ public class StringUtils {
     if (value == null)
       return value;
     return INVISIBLE.matcher(
-      SPACE.matcher(value).replaceAll(" ")
+      SOFT_HYPHEN_CAPITAL.matcher(
+        SPACE.matcher(value).replaceAll(" ")
+      ).replaceAll("-")
     ).replaceAll("");
   }
 

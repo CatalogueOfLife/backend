@@ -51,7 +51,7 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   private static final Pattern HEX_UNICODE = Pattern.compile("\\\\u([0-9a-fA-F]{4})");
   private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-fA-F]{4})}");
   private static final Pattern ANGLE_UNICODE = Pattern.compile("<U\\+?([0-9a-f]{4})>", Pattern.CASE_INSENSITIVE);
-  private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
+  private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} */? *>", Pattern.CASE_INSENSITIVE);
 
   private Integer id;
   private Integer datasetKey;
@@ -221,7 +221,7 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     if (UnicodeUtils.containsHomoglyphs(x)) {
       issues.add(Issue.HOMOGLYPH_CHARACTERS);
     }
-    if (UnicodeUtils.containsHomoglyphs(x)) {
+    if (UnicodeUtils.containsDiacritics(x)) {
       issues.add(Issue.DIACRITIC_CHARACTERS);
     }
     return x;
