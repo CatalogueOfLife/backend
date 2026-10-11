@@ -1,0 +1,6 @@
+id	scientificName	scientificNameAuthorship	acceptedNameUsageID	taxonRank	taxonomicStatus	nomenclaturalCode
+1	Abarenicola claparedi	(Levinsen, 1883)		Species	accepted	ICZN
+2	Abarenicola claparedei	[auct. misspelling]	1	Species	unaccepted	ICZN
+3	Abarenicola claparedii	[auct. lapsus]	1	Species	unaccepted	ICZN
+4	Abarenicola claparedeii	[auct. misspelling for 'claparedi']	1	Species	unaccepted	ICZN
+5	Abarenicola pacifica	[auct.]	1	Species	unaccepted	ICZN

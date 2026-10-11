@@ -649,6 +649,25 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   }
 
   /**
+   * WoRMS marks misspellings in the authorship, "[auct. misspelling]" or "[auct. lapsus]". They stay synonyms
+   * without an accordingTo reference "misspelling", while a plain "[auct.]" is still misapplied.
+   * See https://github.com/CatalogueOfLife/backend/issues/1618
+   */
+  @Test
+  public void wormsMisspellings() throws Exception {
+    normalize(63);
+
+    for (String id : new String[]{"2", "3", "4"}) {
+      var u = store.nameUsage(id).ud;
+      assertEquals(id, TaxonomicStatus.SYNONYM, u.usage.getStatus());
+      assertNull(id, u.usage.getAccordingToId());
+      assertEquals("1", accepted(u).ud.getId());
+      assertFalse(id, u.usage.getLabel().contains("sensu"));
+    }
+    assertEquals(TaxonomicStatus.MISAPPLIED, store.nameUsage("5").ud.usage.getStatus());
+  }
+
+  /**
    * WoRMS style status values that carry a nomenclatural rather than a taxonomic statement.
    * See https://github.com/CatalogueOfLife/backend/issues/1571
    */

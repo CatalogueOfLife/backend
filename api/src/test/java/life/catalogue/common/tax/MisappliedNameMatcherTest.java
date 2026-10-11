@@ -39,6 +39,14 @@ public class MisappliedNameMatcherTest {
     misapplied("auct Döring 2189");
     misapplied("auct nec Döring 2189");
     misapplied("nec Döring 2189");
+    misapplied("auct. Errington 1981");
+
+    // a misspelling is a nomenclatural matter, https://github.com/CatalogueOfLife/backend/issues/1618
+    nonMisapplied("auct. misspelling");
+    nonMisapplied("auct. lapsus");
+    nonMisapplied("auct. misspelling for 'immatura'");
+    nonMisapplied("auct. err.");
+    nonMisapplied("misspelling");
   }
 
   private void nonMisapplied(String accordingTo) {

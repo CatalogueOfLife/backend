@@ -47,7 +47,8 @@ public class InterpreterBase {
   
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
-  static final Pattern SEC_REF = Pattern.compile("^\\s*(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?)(.{3,})$", Pattern.CASE_INSENSITIVE);
+  // a sensu reference, but not a misspelling like auct. misspelling or auct. lapsus
+  static final Pattern SEC_REF = Pattern.compile("^\\s*(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?|misspel|lapsus|err(?:or)?\\b|orth\\b)(.{3,})$", Pattern.CASE_INSENSITIVE);
   protected final ImportStore store;
   protected final DatasetSettings settings;
   protected final NameInterpreter nameInterpreter;

@@ -123,6 +123,14 @@ public class InterpreterBaseTest {
     assertSecRef("sensu Turcz., p.p.", "Turcz., p.p.");
     assertSecRef("auct. Jurtzev, p.p.", "Jurtzev, p.p.");
     assertSecRef("auct. Whittaker 1981", "Whittaker 1981");
+    assertSecRef("auct. Errington 1981", "Errington 1981");
+
+    // misspellings are no sensu references, https://github.com/CatalogueOfLife/backend/issues/1618
+    assertNoSecRef("auct. misspelling");
+    assertNoSecRef("auct. lapsus");
+    assertNoSecRef("auct. misspelling for 'immatura'");
+    assertNoSecRef("auct. err.");
+    assertNoSecRef("sensu orth. var.");
   }
 
   void assertSecRef(String authorship, String expected) {
