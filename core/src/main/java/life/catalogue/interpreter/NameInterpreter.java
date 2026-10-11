@@ -379,6 +379,9 @@ public class NameInterpreter {
       ObjectUtils.setIfNotNull(pnu.getName()::setCode, code);
       // a code neither the record nor the dataset gave is the parser's guess, if any
       pnu.setCodeGiven(code != null);
+      if (code == null && pnu.getName().getCode() != null) {
+        issues.add(Issue.NOMENCLATURAL_CODE_INFERRED);
+      }
 
       // name status can be explicitly given or as part of the nom notes from the authorship
       // dont store the explicit name status, it only remains as verbatim and interpreted data

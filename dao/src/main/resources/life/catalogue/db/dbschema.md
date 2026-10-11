@@ -11,6 +11,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-12 issue for an inferred nomenclatural code
+Names whose code neither their record nor the dataset gave are flagged with a new INFO issue,
+see https://github.com/CatalogueOfLife/backend/issues/1624. Run before the deploy.
+```sql
+ALTER TYPE ISSUE ADD VALUE 'NOMENCLATURAL_CODE_INFERRED';
+```
+
 #### 2026-10-11 bracketed authorship years
 name-parser-api 5.4 flags a year given in square brackets (`Authorship.bracketedYear`), a year known only from
 evidence outside the work: "Toleria aegerides (Strand, [1916])". The year itself stays plain, the flag brings the

@@ -577,7 +577,8 @@ public class NameInterpreterTest {
       null, "Boyeria", null, "vinosa", null, v);
     assertNull(pnu.getTaxonomicNote());
     n = pnu.getName();
-    assertFalse(v.hasIssues());
+    // only the code guessed from the year
+    assertEquals(Set.of(Issue.NOMENCLATURAL_CODE_INFERRED), v.getIssues());
 
     // explicit unranked should stay: https://github.com/CatalogueOfLife/backend/issues/1136
     pnu = interpret("no rank", "cellular organisms", null, v);
@@ -932,16 +933,26 @@ public class NameInterpreterTest {
    */
   @Test
   public void inferredCode() {
-    var pnu = interpret("subspecies", "Abies cilicica subsp. isaurica", "Coode & Cullen, 1965", new VerbatimRecord());
+    VerbatimRecord v = new VerbatimRecord();
+    var pnu = interpret("subspecies", "Abies cilicica subsp. isaurica", "Coode & Cullen, 1965", v);
     assertEquals(NomCode.ZOOLOGICAL, pnu.getName().getCode());
     assertFalse(pnu.isCodeGiven());
+    assertTrue(v.contains(Issue.NOMENCLATURAL_CODE_INFERRED));
 
     // a code of the record is given
+    v = new VerbatimRecord();
     pnu = interpret("subspecies", "Abies cilicica subsp. isaurica", "Coode & Cullen, 1965", null,
       null, null, null, null, null, null,
-      null, null, "botanical", null, new VerbatimRecord());
+      null, null, "botanical", null, v);
     assertEquals(NomCode.BOTANICAL, pnu.getName().getCode());
     assertTrue(pnu.isCodeGiven());
+    assertFalse(v.contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+
+    // no code at all is not flagged
+    v = new VerbatimRecord();
+    pnu = interpret("species", "Abies alba", "Mill.", v);
+    assertNull(pnu.getName().getCode());
+    assertFalse(v.contains(Issue.NOMENCLATURAL_CODE_INFERRED));
 
     // so is the code of the dataset settings, also for a copy of the interpreter with another code
     var botIb = ib.withCode(NomCode.BOTANICAL);

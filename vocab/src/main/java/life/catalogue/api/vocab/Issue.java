@@ -538,7 +538,11 @@ public enum Issue {
 
   POTENTIALLY_EXTINCT(NAME_USAGE, Level.WARNING,
       "A merged source flags this taxon as extinct, while the taxon itself is not flagged as extinct. "
-      + "The extinct flag has not been changed, so it might be extinct and should be reviewed.")
+      + "The extinct flag has not been changed, so it might be extinct and should be reviewed."),
+
+  NOMENCLATURAL_CODE_INFERRED(NAME, Level.INFO,
+      "The nomenclatural code was given neither by the record nor by the dataset. "
+      + "It was derived from the taxonomic group of the name's classification or, failing that, guessed from its authorship.")
   ;
 
   /**

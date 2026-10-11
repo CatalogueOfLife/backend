@@ -4,6 +4,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.dao.ParentStack;
@@ -83,6 +84,7 @@ public class CodeAssigner implements TreeWalker.StartEndHandler {
       // the guess is not one of the codes of the group
       n.setCode(null);
       n.rebuildScientificName();
+      flagInferred(n, null, false);
       nu.nd.pnu.setCodeGiven(true);
       store.names().update(nu.nd);
       dropped++;
@@ -98,18 +100,33 @@ public class CodeAssigner implements TreeWalker.StartEndHandler {
       if (pnu.isPresent()) {
         copyParsedName(pnu.get().getName(), n);
         // keep issues of the new interpretation
-        store.put(v);
+        flagInferred(n, v, true);
         reinterpreted++;
       }
     }
     if (pnu.isEmpty()) {
       n.setCode(code);
       n.rebuildScientificName();
+      flagInferred(n, null, true);
       recoded++;
     }
     // decided once, also for a name of several usages
     nu.nd.pnu.setCodeGiven(true);
     store.names().update(nu.nd);
+  }
+
+  private void flagInferred(Name n, @Nullable VerbatimRecord v, boolean inferred) {
+    if (v == null && n.getVerbatimKey() != null) {
+      v = store.getVerbatim(n.getVerbatimKey());
+    }
+    if (v != null) {
+      if (inferred) {
+        v.add(Issue.NOMENCLATURAL_CODE_INFERRED);
+      } else {
+        v.remove(Issue.NOMENCLATURAL_CODE_INFERRED);
+      }
+      store.put(v);
+    }
   }
 
   /**

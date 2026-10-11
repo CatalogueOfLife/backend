@@ -407,7 +407,8 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
 
       } else if(u.getId().equals("cult")) {
-        assertEquals(3, v.getIssues().size());
+        assertEquals(4, v.getIssues().size());
+        assertTrue(v.contains(Issue.NOMENCLATURAL_CODE_INFERRED));
         assertTrue(v.contains(Issue.INCONSISTENT_NAME));
         assertTrue(v.contains(Issue.PARENT_GENUS_MISSING));
         assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
@@ -475,7 +476,8 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertEquals("E.A. Smith, 1886", nn.getName().getAuthorship());
 
     VerbatimRecord v = vByNameID(key);
-    assertTrue(v.getIssues().isEmpty());
+    // the dataset has no code, the year makes it zoological
+    assertEquals(Set.of(Issue.NOMENCLATURAL_CODE_INFERRED), v.getIssues());
 
 
     var rels = nn.getRelations(NomRelType.BASIONYM);
@@ -493,7 +495,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
     nn = nameByID("urn:lsid:marinespecies.org:taxname:1252864");
     v = vByNameID(key);
-    assertTrue(v.getIssues().isEmpty());
+    assertEquals(Set.of(Issue.NOMENCLATURAL_CODE_INFERRED), v.getIssues());
     rels = nn.getRelations(NomRelType.BASIONYM);
     assertEquals(1, rels.size());
     assertEquals(key, rels.getFirst().getToID());

@@ -542,14 +542,16 @@ public class NormalizerDwcaIT extends NormalizerITBase {
           assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
           assertTrue(v.getIssues().contains(Issue.PUBLISHED_YEAR_CONFLICT));
           assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-          assertEquals(3, v.getIssues().size());
+          assertTrue(v.getIssues().contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+          assertEquals(4, v.getIssues().size());
           assertEquals((Integer)2021, n.getPublishedInYear());
         } else {
           assertEquals("Tomanovic & Kavallieratos, 2020", n.getAuthorship());
           assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
           assertEquals((Integer)2020, n.getPublishedInYear());
           assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-          assertEquals(2, v.getIssues().size());
+          assertTrue(v.getIssues().contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+          assertEquals(3, v.getIssues().size());
         }
 
       } else if (id < 20 || id == 23){
@@ -669,6 +671,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     var n = store.names().objByID("1").getName();
     assertEquals(NomCode.BOTANICAL, n.getCode());
     assertEquals("Abies cilicica subsp. isaurica Coode & Cullen, 1965", n.getLabel());
+    assertFalse(vByNameID("1").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
   }
 
   /**
@@ -686,10 +689,14 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertEquals(Rank.SUBSPECIES, n.getRank());
     assertEquals("Abies cilicica subsp. isaurica Coode & Cullen, 1965", n.getLabel());
     assertFalse(vByNameID("4").contains(Issue.NOMENCLATURAL_CODE_DIFFERS));
+    // decided by the classification
+    assertTrue(vByNameID("4").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+    assertTrue(vByNameID("1").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
     // its synonym
     assertEquals(NomCode.BOTANICAL, store.names().objByID("5").getName().getCode());
     // a code of the record wins
     assertEquals(NomCode.ZOOLOGICAL, store.names().objByID("6").getName().getCode());
+    assertFalse(vByNameID("6").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
 
     // a zoological parse made Urban a subgenus, a botanical one makes it the basionym author of the record without rank
     n = store.names().objByID("8").getName();
@@ -701,7 +708,9 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
     // diatoms are algae, which follow two codes: a zoological guess is kept, a bacterial one is not
     assertEquals(NomCode.ZOOLOGICAL, store.names().objByID("13").getName().getCode());
+    assertTrue(vByNameID("13").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
     assertNull(store.names().objByID("14").getName().getCode());
+    assertFalse(vByNameID("14").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
   }
 
   /**

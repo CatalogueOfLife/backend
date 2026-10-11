@@ -70,7 +70,8 @@ public class PgImportESIT extends PgImportITBase {
     assertFacetValue(facet, TaxonomicStatus.BARE_NAME, 2);
 
     facet = resp.getFacets().get(NameUsageSearchParameter.ISSUE);
-    assertEquals(6, facet.size());
+    assertEquals(7, facet.size());
+    assertFacetValue(facet, Issue.NOMENCLATURAL_CODE_INFERRED, 1);
     assertFacetValue(facet, Issue.INCONSISTENT_NAME, 1);
     assertFacetValue(facet, Issue.PARTIAL_DATE, 2);
     assertFacetValue(facet, Issue.PARENT_SPECIES_MISSING, 1);
