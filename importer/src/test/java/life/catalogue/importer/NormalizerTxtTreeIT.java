@@ -44,6 +44,25 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     assertEquals(t.usage.getLabel(), accs.getFirst().nd.getName().getLabel());
   }
 
+  /**
+   * A taxonomic note is the name phrase, as in ColDP, and never a reference id
+   */
+  @Test
+  public void taxonomicNote() throws Exception {
+    normalize(10);
+    store.debug();
+    UsageData u = usageByID("3");
+    assertFalse(u.isSynonym());
+    assertEquals("Abies alba Mill.", u.usage.getName().getLabel());
+    assertEquals("sensu Smith 1999", u.usage.getNamePhrase());
+    assertNull(u.usage.getAccordingToId());
+
+    u = usageByID("4");
+    assertTrue(u.isSynonym());
+    assertEquals("sensu Jones 2001", u.usage.getNamePhrase());
+    assertNull(u.usage.getAccordingToId());
+  }
+
   @Test
   public void californicum() throws Exception {
     normalize(2);

@@ -908,4 +908,16 @@ public class NameParserTest {
       return add(NP.IMPRINT);
     }
   }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1621
+   */
+  @Test
+  public void removeTrailingAuthorship() throws Exception {
+    assertEquals("Aries", NameParser.removeTrailingAuthorship("Aries Linnæus, 1758", "Linnaeus 1758"));
+    assertEquals("Aries", NameParser.removeTrailingAuthorship("Aries (Linnæus, 1758)", "(Linnaeus 1758)"));
+    assertNull(NameParser.removeTrailingAuthorship("Champion, 1923", "Champion 1923"));
+    assertEquals("Aries Linnæus, 1758", NameParser.removeTrailingAuthorship("Aries Linnæus, 1758", "Mill."));
+    assertEquals("Aries Linnæus, 1758", NameParser.removeTrailingAuthorship("Aries Linnæus, 1758", "nnaeus 1758"));
+  }
 }

@@ -14,6 +14,8 @@ public class NameUsageBaseTest {
     assertEquals("MolluscaBase 2016", NameUsageBase.abbreviate("MolluscaBase (2016). Accessed at http://www.molluscabase.org on 2016-12-07"));
     assertEquals("Söderström 2015", NameUsageBase.abbreviate("Söderström L., Hagborg A., von Konrat M. & al. (2015). World checklist of hornworts and  liverworts. PhytoKeys 59: 1–828. doi: 10.3897/phytokeys.59.6261"));
     assertEquals("Ping-Ping 2008", NameUsageBase.abbreviate( "Ping-Ping, Chen, Nico Nieser, and Ivor Lansbury. Notes on aquatic and semiaquatic bugs (Hemiptera: Heteroptera: Nepomorpha, Gerromorpha) from Malesia with description of three new species. Acta Entomologica Musei Nationalis Pragae, vol. 48, no. 2. (2008)"));
+    // a non ASCII last letter belongs to the name, #1623
+    assertEquals("Vujić 2018", NameUsageBase.abbreviate("Vujić, Ante, Gunilla Ståhls & Snežana Radenković. 2018. Hidden European diversity"));
     assertEquals("Møller 2000", NameUsageBase.abbreviate("Møller, Nils. A new species of Tetraripis from Thailand, with a critical assessment of the generic classification of the subfamily Rhagoveliinae (Hemiptera, Gerromorpha, Veliidae). Tijdschrift voor Entomologie, vol. 142, no. 2. (2000)"));
     assertEquals("A new species 2000", NameUsageBase.abbreviate("A new species of Tetraripis from Thailand, with a critical assessment of the generic classification of the subfamily Rhagoveliinae (Hemiptera, Gerromorpha, Veliidae). Tijdschrift voor Entomologie, vol. 142, no. 2. (2000)"));
     assertEquals("ANewSpeciesOfTetrari… 1888", NameUsageBase.abbreviate("ANewSpeciesOfTetraripisFromThailandWithACriticalAssessmentOfTheGenericClassification (1888) yeahyeah"));

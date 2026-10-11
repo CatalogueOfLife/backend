@@ -706,6 +706,29 @@ public class NormalizerColdpIT extends NormalizerITBase {
   /**
    * Structured ISO distributions not interpreted properly ending up as TEXT before.
    */
+  /**
+   * A denormalised species column with the epithet only must not create a fake genus.
+   * https://github.com/CatalogueOfLife/backend/issues/1626
+   */
+  @Test
+  public void speciesEpithetColumn() throws Exception {
+    normalize(45);
+    store.debug();
+
+    var u = usageByID("1");
+    var sp = store.usages().parent(u);
+    assertEquals("Chalcionellus blanchii", store.name(sp).getName().getScientificName());
+    assertEquals(Rank.SPECIES, store.name(sp).getName().getRank());
+    var gen = store.usages().parent(sp);
+    assertEquals("Chalcionellus", store.name(gen).getName().getScientificName());
+
+    // no genus to go with the epithet: skip the species
+    u = usageByID("2");
+    var fam = store.usages().parent(u);
+    assertEquals("Poaceae", store.name(fam).getName().getScientificName());
+    assertTrue(store.getVerbatim(u.usage.getVerbatimKey()).contains(Issue.CLASSIFICATION_NOT_APPLIED));
+  }
+
   @Test
   public void donaldDistributions() throws Exception {
     normalize(43);

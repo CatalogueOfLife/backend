@@ -2,6 +2,7 @@ package life.catalogue.importer;
 
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
@@ -46,6 +47,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -742,6 +744,9 @@ public class Normalizer implements Callable<Boolean> {
       cl.setSpecies(null);
     }
 
+    // a species column holding only the epithet(s) needs the genus, see #1626
+    fixSpeciesEpithet(taxon, cl, clOrig);
+
     // now reconstruct the given classification with the parentID field
     // reusing existing taxa if possible, otherwise creating new ones
     // and at the very end apply that classification to the taxon
@@ -805,6 +810,33 @@ public class Normalizer implements Callable<Boolean> {
     if (parentID != null) {
       store.usages().assignParent(taxon.ud, parentID);
     }
+  }
+
+  /**
+   * Some sources fill the flat species column with the epithet only, sometimes followed by the infraspecific one:
+   * genus Chalcionellus with species "blanchii blanchii". Parsed on its own that becomes the fake genus Blanchii,
+   * so the first epithet is prefixed with the genus of the record. Without any genus the species is not applied.
+   */
+  private void fixSpeciesEpithet(NameUsageData taxon, Classification cl, Classification clOrig) {
+    String species = StringUtils.trimToNull(cl.getSpecies());
+    if (species == null || !startsLowerCase(species)) return;
+    String genus = ObjectUtils.coalesce(StringUtils.trimToNull(cl.getGenus()), StringUtils.trimToNull(clOrig.getGenus()));
+    if (genus == null) {
+      cl.setSpecies(null);
+      store.addIssues(taxon.ud.usage, Issue.CLASSIFICATION_NOT_APPLIED);
+    } else {
+      cl.setSpecies(genus + " " + StringUtils.split(species)[0]);
+    }
+  }
+
+  private static boolean startsLowerCase(String x) {
+    for (int i = 0; i < x.length(); i++) {
+      char c = x.charAt(i);
+      if (Character.isLetter(c)) {
+        return Character.isLowerCase(c);
+      }
+    }
+    return false;
   }
 
   private Rank nextLinneanRankOfParents(UsageData u) {
