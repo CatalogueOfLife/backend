@@ -57,6 +57,39 @@ public class AuthorAtomsTest {
     }
   }
 
+  @Test
+  public void years() {
+    var a = Authorship.yearAuthors("1916", "Strand");
+    assertEquals("1916", AuthorAtoms.encodeYear(a));
+    a.setBracketedYear(true);
+    assertEquals("[1916]", AuthorAtoms.encodeYear(a));
+    assertNull(AuthorAtoms.encodeYear(new Authorship()));
+
+    assertDecodedYear(null, false, null);
+    assertDecodedYear("1916", false, "1916");
+    assertDecodedYear("[1916]", true, "1916");
+    assertDecodedYear("[ 1916 ]", true, "1916");
+    assertDecodedYear("[]", false, "[]");
+
+    for (String year : new String[]{null, "1916"}) {
+      for (boolean bracketed : new boolean[]{false, true}) {
+        a = new Authorship();
+        a.setYear(year);
+        a.setBracketedYear(bracketed && year != null);
+        var a2 = new Authorship();
+        AuthorAtoms.decodeYear(AuthorAtoms.encodeYear(a), a2);
+        assertEquals(a, a2);
+      }
+    }
+  }
+
+  private static void assertDecodedYear(String year, boolean bracketed, String expected) {
+    var a = new Authorship();
+    AuthorAtoms.decodeYear(year, a);
+    assertEquals(bracketed, a.isBracketedYear());
+    assertEquals(expected, a.getYear());
+  }
+
   private static void assertDecoded(List<String> authors, boolean anonymous, String... expected) {
     var a = new Authorship();
     AuthorAtoms.decode(authors, a);

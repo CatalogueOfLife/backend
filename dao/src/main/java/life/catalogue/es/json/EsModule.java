@@ -92,9 +92,10 @@ public class EsModule extends SimpleModule {
     @JsonIgnore abstract String getLabelHtml();
   }
 
-  // Nearly no name is published anonymously: keep the flag out of the _source unless it is set
+  // Nearly no name is published anonymously or with a bracketed year: keep the flags out of the _source unless set
   abstract static class AuthorshipMixIn {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT) abstract boolean isAnonymous();
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT) abstract boolean isBracketedYear();
   }
 
   // Override @JsonIgnore from SectorScoped so sectorMode is serialized into ES documents.

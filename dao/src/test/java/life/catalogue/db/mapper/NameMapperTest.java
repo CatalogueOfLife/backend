@@ -90,6 +90,8 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     n.setUnparsed("bla bli blub");
     n.getBasionymAuthorship().setYear("1798");
     n.getBasionymAuthorship().setAnonymous(true);
+    // name-parser-api 5.4 flags a year given in square brackets
+    n.getBasionymAuthorship().setBracketedYear(true);
     n.getCombinationAuthorship().setAuthors(List.of("Denis", "Schiffermüller"));
     // name-parser-api 5.2 keeps a sanctioning author per authorship
     n.getCombinationAuthorship().setSanctioningAuthor("Fr.");
@@ -101,6 +103,7 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   void updateTestObj(Name n) {
     n.setAuthorship("Berta & Tomate");
     n.getCombinationAuthorship().setAnonymous(true);
+    n.getCombinationAuthorship().setBracketedYear(true);
   }
 
   /**
@@ -117,6 +120,8 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     Name n2 = nameMapper.get(n.getKey());
     assertFalse(n2.getCombinationAuthorship().isAnonymous());
     assertFalse(n2.getBasionymAuthorship().isAnonymous());
+    assertFalse(n2.getCombinationAuthorship().isBracketedYear());
+    assertFalse(n2.getBasionymAuthorship().isBracketedYear());
   }
   
   @Test

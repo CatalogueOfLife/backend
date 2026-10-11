@@ -177,13 +177,13 @@ public class ColdpExtendedExport extends ArchiveExport {
     if (a != null) {
       writer.set(ColdpTerm.combinationAuthorship, AuthorAtoms.encode(a, n.getCode()), "|");
       writer.set(ColdpTerm.combinationExAuthorship, a.getExAuthors(), "|");
-      writer.set(ColdpTerm.combinationAuthorshipYear, a.getYear());
+      writer.set(ColdpTerm.combinationAuthorshipYear, AuthorAtoms.encodeYear(a));
     }
     a = n.getBasionymAuthorship();
     if (a != null) {
       writer.set(ColdpTerm.basionymAuthorship, AuthorAtoms.encode(a, n.getCode()), "|");
       writer.set(ColdpTerm.basionymExAuthorship, a.getExAuthors(), "|");
-      writer.set(ColdpTerm.basionymAuthorshipYear, a.getYear());
+      writer.set(ColdpTerm.basionymAuthorshipYear, AuthorAtoms.encodeYear(a));
     }
     // other
     writer.set(ColdpTerm.originalSpelling, n.isOriginalSpelling());

@@ -60,6 +60,22 @@ public class ApiModuleTest {
     assertFalse(json, json.contains("combinationAuthorship"));
   }
 
+  @Test
+  public void bracketedYear() throws IOException {
+    Name n = new Name();
+    n.setScientificName("Toleria aegerides");
+    n.getBasionymAuthorship().setYear("1916");
+    String json = ApiModule.MAPPER.writeValueAsString(n);
+    assertFalse(json, json.contains("bracketedYear"));
+
+    n.getBasionymAuthorship().setBracketedYear(true);
+    json = ApiModule.MAPPER.writeValueAsString(n);
+    assertTrue(json, json.contains("\"bracketedYear\":true"));
+    Name n2 = ApiModule.MAPPER.readValue(json, Name.class);
+    assertTrue(n2.getBasionymAuthorship().isBracketedYear());
+    assertFalse(n2.getCombinationAuthorship().isBracketedYear());
+  }
+
   /**
    * name-parser-api 5.2 moved the sanctioning author onto the authorship.
    * JSON written before, e.g. the names of stored decisions, keeps it on the name.

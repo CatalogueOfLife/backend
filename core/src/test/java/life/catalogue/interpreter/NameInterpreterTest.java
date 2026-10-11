@@ -275,6 +275,23 @@ public class NameInterpreterTest {
     assertEquals("Bailly", n.getAuthorship());
   }
 
+  /**
+   * ColDP has no column for a bracketed year, the year atom keeps its square brackets
+   */
+  @Test
+  public void bracketedYearAtom() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+    var n = interpret("species", "Toleria aegerides", null, null, null, "Toleria", null, "aegerides", null, null,
+      null, null, null, "Strand", null, "[1916]",
+      null, null, "zoological", null, v).getName();
+    assertTrue(n.getBasionymAuthorship().isBracketedYear());
+    assertEquals("1916", n.getBasionymAuthorship().getYear());
+    assertFalse(n.getCombinationAuthorship().isBracketedYear());
+    assertEquals("(Strand, [1916])", n.getAuthorship());
+    assertFalse(v.getIssues().toString(), v.contains(Issue.UNPARSABLE_YEAR));
+    assertFalse(v.getIssues().toString(), v.contains(Issue.UNLIKELY_YEAR));
+  }
+
   @Test
   public void inlineRankMarkerIsAdopted() {
     // an explicit rank marker in the name string is the user stating the rank, not an inference

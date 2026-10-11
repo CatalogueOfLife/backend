@@ -144,7 +144,7 @@ public class NameUsageArchiverIT {
     try (SqlSession session = factory.openSession(true);
          Statement st = session.getConnection().createStatement()
     ) {
-      st.execute("UPDATE name SET basionym_anonymous=true, combination_anonymous=true," +
+      st.execute("UPDATE name SET basionym_anonymous=true, combination_anonymous=true, combination_bracketed_year=true," +
         " basionym_sanctioning_author='Fr.', sanctioning_author='Pers.' WHERE dataset_key=13 AND id='nd'");
     }
     archiver.archiveProject(archiver.ranking(PROJECT), true, false);
@@ -153,7 +153,10 @@ public class NameUsageArchiverIT {
     assertTrue(d.getCombinationAuthorship().isAnonymous());
     assertEquals("Fr.", d.getBasionymAuthorship().getSanctioningAuthor());
     assertEquals("Pers.", d.getCombinationAuthorship().getSanctioningAuthor());
+    assertTrue(d.getCombinationAuthorship().isBracketedYear());
+    assertFalse(d.getBasionymAuthorship().isBracketedYear());
     assertFalse(get("E").getName().getCombinationAuthorship().isAnonymous());
+    assertFalse(get("E").getName().getCombinationAuthorship().isBracketedYear());
 
     try (SqlSession session = factory.openSession(true)) {
       var names = session.getMapper(ArchivedNameUsageMapper.class).processArchivedNames(PROJECT, false);
@@ -161,6 +164,7 @@ public class NameUsageArchiverIT {
       for (Name n : names) {
         if (n.getCombinationAuthorship().isAnonymous()) {
           assertEquals("D", n.getId());
+          assertTrue(n.getCombinationAuthorship().isBracketedYear());
           anonymous++;
         }
       }

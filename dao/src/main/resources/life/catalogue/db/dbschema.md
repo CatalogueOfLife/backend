@@ -11,6 +11,21 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-11 bracketed authorship years
+name-parser-api 5.4 flags a year given in square brackets (`Authorship.bracketedYear`), a year known only from
+evidence outside the work: "Toleria aegerides (Strand, [1916])". The year itself stays plain, the flag brings the
+brackets back in the label. Run before the deploy, like the still pending 2026-10-07 change it can go together with:
+the old app's column lists ignore the new columns, and a constant default only touches the catalog. No backfill - rows
+get the flag when their dataset is re-imported or re-synced.
+```sql
+ALTER TABLE name
+  ADD COLUMN basionym_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN combination_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE name_usage_archive
+  ADD COLUMN n_basionym_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN n_combination_bracketed_year BOOLEAN NOT NULL DEFAULT FALSE;
+```
+
 #### 2026-10-08 exports drop excel, tax groups and truncation
 Excel exports are gone, and a classification export always comes with taxonomic groups, so `dataset_export` loses
 `excel`, `add_tax_group` and `truncated`, which only the Excel row limit ever filled. Two steps, as the old and the

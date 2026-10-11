@@ -19,6 +19,9 @@ import javax.annotation.Nullable;
  * lone code specific "Anon." or "anon.", attributed authors each in square brackets,
  * as ICZN Recommendation 51D cites them.
  * See https://github.com/CatalogueOfLife/backend/issues/1611
+ *
+ * Likewise there is no column for {@link Authorship#isBracketedYear()}, a year known only from evidence outside the
+ * work, so the year column keeps its square brackets as ICZN Recommendation 22A.2.3 cites it: [1916].
  */
 public class AuthorAtoms {
   private static final Pattern ANONYMOUS = Pattern.compile("^anon(?:\\.|ymous|ymus)?$", Pattern.CASE_INSENSITIVE);
@@ -55,6 +58,28 @@ public class AuthorAtoms {
 
     } else {
       a.setAuthors(authors);
+    }
+  }
+
+  /**
+   * @return the year to write for the given authorship, in square brackets if it is a bracketed year
+   */
+  @Nullable
+  public static String encodeYear(Authorship a) {
+    return a.isBracketedYear() && a.getYear() != null ? "[" + a.getYear() + "]" : a.getYear();
+  }
+
+  /**
+   * Sets the year of the authorship, and its bracketed year flag if the year is given in square brackets.
+   * @param year the year as read, can be null
+   */
+  public static void decodeYear(@Nullable String year, Authorship a) {
+    Matcher m = year == null ? null : BRACKETED.matcher(year);
+    if (m != null && m.matches() && !m.group(1).isEmpty()) {
+      a.setBracketedYear(true);
+      a.setYear(m.group(1));
+    } else {
+      a.setYear(year);
     }
   }
 

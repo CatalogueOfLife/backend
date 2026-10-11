@@ -331,6 +331,39 @@ public class NameParserTest {
     assertEquals("(Wulfen : Fr.) Schum.", n.getAuthorship());
   }
 
+  /**
+   * name-parser-api 5.4 flags a year known only from evidence outside the work, given in square brackets.
+   */
+  @Test
+  public void bracketedYear() throws Exception {
+    Name n = parse("Toleria aegerides (Strand, [1916])", null, Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertTrue(n.getBasionymAuthorship().isBracketedYear());
+    assertEquals("1916", n.getBasionymAuthorship().getYear());
+    assertFalse(n.getCombinationAuthorship().isBracketedYear());
+    assertEquals("(Strand, [1916])", n.getAuthorship());
+
+    n = parse("Lycaena virgaureae", "Denis & Schiffermüller, [1775]", Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertTrue(n.getCombinationAuthorship().isBracketedYear());
+    assertEquals("1775", n.getCombinationAuthorship().getYear());
+    assertEquals("Denis & Schiffermüller, [1775]", n.getAuthorship());
+
+    n = parse("Toleria aegerides (Strand, 1916)", null, Rank.SPECIES, NomCode.ZOOLOGICAL);
+    assertFalse(n.getBasionymAuthorship().isBracketedYear());
+    assertEquals("(Strand, 1916)", n.getAuthorship());
+  }
+
+  /**
+   * name-parser-api 5.4 keeps the Candidatus prefix of an informal name.
+   */
+  @Test
+  public void informalCandidatus() throws Exception {
+    var pnu = NameParser.PARSER.parse("Candidatus Phytoplasma sp. ASHY", null, Rank.SPECIES, null, new IssueContainer.Simple()).get();
+    Name n = pnu.getName();
+    assertEquals(NameType.INFORMAL, n.getType());
+    assertTrue(n.isCandidatus());
+    assertEquals("Phytoplasma", n.getGenus());
+  }
+
   static Name parse(String name, String authorship, Rank rank, NomCode code) {
     return NameParser.PARSER.parse(name, authorship, rank, code, new IssueContainer.Simple()).get().getName();
   }

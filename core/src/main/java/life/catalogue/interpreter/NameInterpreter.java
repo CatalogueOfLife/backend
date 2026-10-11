@@ -425,7 +425,7 @@ public class NameInterpreter {
     Authorship a = new Authorship();
     AuthorAtoms.decode(parseAuthors(author), a);
     a.setExAuthors(parseAuthors(ex));
-    a.setYear(year);
+    AuthorAtoms.decodeYear(year, a);
     return a;
   }
 

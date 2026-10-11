@@ -165,6 +165,10 @@ public class ApiModule extends SimpleModule {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     abstract boolean isAnonymous();
 
+    // only written for the few years known from outside the work, given in square brackets
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    abstract boolean isBracketedYear();
+
   }
 
   /**
