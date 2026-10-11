@@ -521,11 +521,15 @@ public class NormalizerColdpIT extends NormalizerITBase {
   public void badlyNestedRanks() throws Exception {
     normalize(11);
 
-    for (String id : List.of("3","4","7")) {
+    // 10 is an unranked trinomial under a subspecies. Its classification makes it zoological and so a subspecies itself
+    var n10 = store.names().objByID("10").getName();
+    assertEquals(NomCode.ZOOLOGICAL, n10.getCode());
+    assertEquals(Rank.SUBSPECIES, n10.getRank());
+    for (String id : List.of("3","4","7","10")) {
       var t = usageByID(id);
       assertTrue("Missing issue for "+id, hasIssues(t, Issue.CLASSIFICATION_RANK_ORDER_INVALID));
     }
-    for (String id : List.of("1","2","8a","8","9","10","11","12","13","14")) {
+    for (String id : List.of("1","2","8a","8","9","11","12","13","14")) {
       var t = usageByID(id);
       assertFalse("Wrong issue for "+id, hasIssues(t, Issue.CLASSIFICATION_RANK_ORDER_INVALID));
     }
