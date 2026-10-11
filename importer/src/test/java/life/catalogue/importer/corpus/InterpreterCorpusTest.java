@@ -86,11 +86,11 @@ public class InterpreterCorpusTest {
     assertNull(get(rows, 9, Field.ISSUES));
     assertEquals("Mill.", get(rows, 9, Field.COMBINATION_AUTHORSHIP));
     assertEquals("L.", get(rows, 9, Field.BASIONYM_AUTHORSHIP));
-    // ...and a partly different one is merged into the authorship of the name string by the parser
+    // ...also against a contradicting combination author: the basionym author of the name string is not merged in
     assertNull(get(rows, 10, Field.ISSUES));
     assertEquals("Mill.", get(rows, 10, Field.AUTHORSHIP));
     assertEquals("Mill.", get(rows, 10, Field.COMBINATION_AUTHORSHIP));
-    assertEquals("L.", get(rows, 10, Field.BASIONYM_AUTHORSHIP));
+    assertNull(get(rows, 10, Field.BASIONYM_AUTHORSHIP));
     // the same ColDP record in a dataset without a code and in one with a code
     assertNull(get(rows, 20, Field.CODE));
     assertEquals("BOTANICAL", get(rows, 19, Field.CODE));
