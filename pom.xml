@@ -169,11 +169,10 @@
       <id>gbif-all</id>
       <url>https://repository.gbif.org/repository/gbif</url>
       <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
+        <enabled>false</enabled>
       </snapshots>
     </repository>
-    <!-- the gbif group above does not serve the metadata of every snapshot, e.g. name-parser-rust -->
+    <!-- the gbif group above serves no snapshot metadata at all -->
     <repository>
       <id>gbif-snapshots</id>
       <url>https://repository.gbif.org/repository/snapshots</url>
@@ -188,10 +187,16 @@
     <repository>
       <id>gbif-thirdparty</id>
       <url>https://repository.gbif.org/repository/thirdparty/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
     <repository>
       <id>maven-central</id>
       <url>https://repo1.maven.org/maven2/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
   </repositories>
 
