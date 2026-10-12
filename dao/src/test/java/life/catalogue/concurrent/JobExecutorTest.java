@@ -17,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -517,6 +518,17 @@ public class JobExecutorTest {
   }
 
   /**
+   * A job is FINISHED before its onFinish runs, which is where a DatasetBlockingJob releases its lock and BlockJob records
+   * it in finished. Anything done there has to be awaited after the status, not asserted right away.
+   */
+  private static void await(String message, BooleanSupplier condition) throws InterruptedException {
+    for (int i = 0; i < 400 && !condition.getAsBoolean(); i++) {
+      TimeUnit.MILLISECONDS.sleep(5);
+    }
+    assertTrue(message, condition.getAsBoolean());
+  }
+
+  /**
    * A job blocked by a dataset lock must not hold the only worker of its lane while it waits,
    * and runs as soon as the dataset is unlocked.
    */
@@ -540,8 +552,8 @@ public class JobExecutorTest {
 
       DatasetLock.unlock(7, holder);
       awaitStatus(blocked, JobStatus.FINISHED);
-      assertTrue(finished.contains(blocked.getKey()));
-      assertTrue("the job released its own lock", DatasetLock.isLocked(7).isEmpty());
+      await("the job finished", () -> finished.contains(blocked.getKey()));
+      await("the job released its own lock", () -> DatasetLock.isLocked(7).isEmpty());
     } finally {
       ex.stop();
       DatasetLock.unlockAll(holder);
@@ -611,6 +623,13 @@ public class JobExecutorTest {
           throw new IllegalStateException("the other shared job never ran");
         }
       }
+
+      @Override
+      protected void onFinishLocked() throws Exception {
+        super.onFinishLocked();
+        // a job is FINISHED before its onFinish releases the lock. Widen that gap, as a loaded build agent does
+        TimeUnit.MILLISECONDS.sleep(200);
+      }
     }
     var j1 = new SharedJob();
     var j2 = new SharedJob();
@@ -618,7 +637,7 @@ public class JobExecutorTest {
     exec.submit(j2);
     awaitStatus(j1, JobStatus.FINISHED);
     awaitStatus(j2, JobStatus.FINISHED);
-    assertTrue(DatasetLock.isLocked(8).isEmpty());
+    await("both shared jobs released their lock", () -> DatasetLock.isLocked(8).isEmpty());
   }
 
   /**
