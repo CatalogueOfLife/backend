@@ -12,6 +12,8 @@ import life.catalogue.basgroup.HomotypicConsolidator;
 import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.common.date.DateUtils;
 import life.catalogue.common.text.CitationUtils;
+import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.concurrent.DatasetLock;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
@@ -27,14 +29,14 @@ import life.catalogue.matching.nidx.NameIndex;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
@@ -61,8 +63,28 @@ public class XRelease extends ProjectRelease {
   private XReleaseConfig xCfg;
   private TreeMergeHandlerConfig mergeCfg;
   private XIdProvider usageIdGen;
-  private int failedSyncs;
+  // merge sectors that did not make it into the release, see getFailedSectors()
+  private final List<FailedSector> failedSectors = new ArrayList<>();
+  // source datasets we hold a shared lock on while merging them
+  private final Set<Integer> lockedSources = new HashSet<>();
   private int tmpProjectKey;
+
+  /**
+   * A merge sector that did not make it into the release and why. A failed sector does not fail the release, so this is
+   * how it gets noticed: the job params, failed-sectors.tsv in the release report, the release notes and the email.
+   */
+  public record FailedSector(int sectorKey, int subjectDatasetKey, String reason) {
+    @Override
+    public String toString() {
+      return "sector " + sectorKey + " of dataset " + subjectDatasetKey + ": " + reason;
+    }
+  }
+
+  /**
+   * The params of a release plus the merge sectors that failed.
+   */
+  public record XReleaseParams(int projectKey, Integer baseReleaseKey, Integer newDatasetKey, List<FailedSector> failedSectors) {
+  }
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherFactory matcherFactory, NameIndex nidx, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
@@ -77,6 +99,12 @@ public class XRelease extends ProjectRelease {
     fullUser.setKey(userKey);
     sectorProjectKey = DSID.root(projectKey);
     LOG.info("Build extended release for project {} from public release {}", projectKey, this.baseReleaseKey);
+  }
+
+  @Override
+  public Object getParams() {
+    var p = (CopyParams) super.getParams();
+    return new XReleaseParams(p.projectKey(), p.baseReleaseKey(), p.newDatasetKey(), List.copyOf(failedSectors));
   }
 
   @VisibleForTesting
@@ -370,6 +398,11 @@ public class XRelease extends ProjectRelease {
     }
 
     newDataset.appendNotes(String.format("Base release %s.", baseReleaseKey));
+    if (!failedSectors.isEmpty()) {
+      newDataset.appendNotes(String.format("%s merge sectors failed and are missing: %s.", failedSectors.size(),
+        failedSectors.stream().map(fs -> fs.sectorKey() + " (dataset " + fs.subjectDatasetKey() + ")").collect(Collectors.joining(", "))
+      ));
+    }
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetMapper.class).update(newDataset);
     }
@@ -515,65 +548,75 @@ public class XRelease extends ProjectRelease {
     final LocalDateTime start = LocalDateTime.now();
     final int size = sectors.size();
     int counter = 0;
-    failedSyncs = 0;
+    failedSectors.clear();
     // sequential id generators for extended records
     final Supplier<String> nameIdGen = new XIdGen();
     final Supplier<String> typeMaterialIdGen = new XIdGen();
     updateState(ImportState.INSERTING);
-    for (Sector s : sectors) {
-      if (counter >= maxSectors) {
-        LOG.warn("Stop merging as we reached the debug limit of {} sectors", maxSectors);
-        break;
-      }
+    // sources are read live from their partitions for the whole merge, so they must not be imported meanwhile
+    final Map<Integer, String> refusedSources = lockSources();
+    try {
+      for (Sector s : sectors) {
+        if (counter >= maxSectors) {
+          LOG.warn("Stop merging as we reached the debug limit of {} sectors", maxSectors);
+          break;
+        }
 
-      LOG.info("Merge {}. #{} out of {}", s, counter++, size);
-      // the sector might not have been copied to the xrelease yet - we only copied all sectors from the base release, not the project.
-      // create only if missing
-      try (SqlSession session = factory.openSession(true)) {
-        SectorMapper sm = session.getMapper(SectorMapper.class);
-        if (!sm.exists(s)) {
-          // the sector belongs to the tmp project,
-          // but the targetID points to the project ids, not the tmp dataset ids which use the stable base release identifiers
-          SectorSync.rematchSectorTarget(s, s.getDatasetKey(), session);
-          sm.createWithID(s);
-        }
-      }
-      checkIfCancelled();
-      SectorSync ss;
-      try {
-        // sector syncs require the project key where we store all sync attempts
-        var skey = DSID.of(projectKey, s.getId());
-        ss = syncFactory.release(skey, tmpProjectKey, mergeCfg, matcher, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
-        ss.runEmbedded(syncFactory.getJobDao());
-        if (ss.getStatus() != JobStatus.FINISHED){
-          failedSyncs++;
-          if (mergeCfg.xCfg.failOnSyncErrors) {
-            throw new SyncException(ss.lastException());
-          }
-          LOG.error("Failed to sync {} with status={}, error={}", s, ss.getStatus(), ss.getState().getError(), ss.lastException());
-        } else {
-          // copy remaining merge decisions
-          copyMergeDecisions(ss.getDecisions().values());
-          // copy attempts to local instances as it finished successfully
-          s.setSyncAttempt(ss.getState().getAttempt());
-          // and also update our release copy!
-          try (SqlSession session = factory.openSession(true)) {
-            SectorMapper sm = session.getMapper(SectorMapper.class);
-            sm.updateReleaseAttempts(DSID.of(projectKey, s.getId()), newDatasetKey);
-          }
-        }
-      } catch (NotFoundException e) {
-        failedSyncs++;
-        LOG.error("Sector {} was deleted. No sync possible", s);
-        // remove from release
+        LOG.info("Merge {}. #{} out of {}", s, counter++, size);
+        // the sector might not have been copied to the xrelease yet - we only copied all sectors from the base release, not the project.
+        // create only if missing
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
-          sm.delete(DSID.of(newDatasetKey, s.getId()));
+          if (!sm.exists(s)) {
+            // the sector belongs to the tmp project,
+            // but the targetID points to the project ids, not the tmp dataset ids which use the stable base release identifiers
+            SectorSync.rematchSectorTarget(s, s.getDatasetKey(), session);
+            sm.createWithID(s);
+          }
+        }
+        checkIfCancelled();
+        if (refusedSources.containsKey(s.getSubjectDatasetKey())) {
+          fail(s, refusedSources.get(s.getSubjectDatasetKey()));
+          continue;
+        }
+        SectorSync ss;
+        try {
+          // sector syncs require the project key where we store all sync attempts
+          var skey = DSID.of(projectKey, s.getId());
+          ss = syncFactory.release(skey, tmpProjectKey, mergeCfg, matcher, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
+          ss.runEmbedded(syncFactory.getJobDao());
+          if (ss.getStatus() != JobStatus.FINISHED){
+            fail(s, ss.getStatus() + ": " + Objects.requireNonNullElse(ss.getState().getError(), "no error recorded"));
+            if (mergeCfg.xCfg.failOnSyncErrors) {
+              throw new SyncException(ss.lastException());
+            }
+            LOG.error("Failed to sync {} with status={}, error={}", s, ss.getStatus(), ss.getState().getError(), ss.lastException());
+          } else {
+            // copy remaining merge decisions
+            copyMergeDecisions(ss.getDecisions().values());
+            // copy attempts to local instances as it finished successfully
+            s.setSyncAttempt(ss.getState().getAttempt());
+            // and also update our release copy!
+            try (SqlSession session = factory.openSession(true)) {
+              SectorMapper sm = session.getMapper(SectorMapper.class);
+              sm.updateReleaseAttempts(DSID.of(projectKey, s.getId()), newDatasetKey);
+            }
+          }
+        } catch (NotFoundException e) {
+          fail(s, "sector was deleted");
+          LOG.error("Sector {} was deleted. No sync possible", s);
+          // remove from release
+          try (SqlSession session = factory.openSession(true)) {
+            SectorMapper sm = session.getMapper(SectorMapper.class);
+            sm.delete(DSID.of(newDatasetKey, s.getId()));
+          }
         }
       }
+    } finally {
+      unlockSources();
     }
-
-    LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
+    writeFailedSectors();
+    LOG.info("All {} sectors merged, {} failed", counter, failedSectors.size());
     DateUtils.logDuration(LOG, "Merging sectors", start);
     matcher=null; // release matcher memory
   }
@@ -615,7 +658,68 @@ public class XRelease extends ProjectRelease {
   }
 
   public int getFailedSyncs() {
-    return failedSyncs;
+    return failedSectors.size();
+  }
+
+  public List<FailedSector> getFailedSectors() {
+    return failedSectors;
+  }
+
+  private void fail(Sector s, String reason) {
+    var fs = new FailedSector(s.getId(), s.getSubjectDatasetKey(), reason);
+    LOG.warn("Merge sector failed: {}", fs);
+    failedSectors.add(fs);
+  }
+
+  /**
+   * Takes a shared lock on every source dataset of the merge sectors, so an import of a source waits until the merge
+   * is done. A source that is locked exclusively by a running import, or is empty, e.g. after an import failed while
+   * deleting its old data, is refused: merging it would drop its names from the release.
+   *
+   * @return the refused sources with the reason why
+   */
+  private Map<Integer, String> lockSources() {
+    Map<Integer, String> refused = new HashMap<>();
+    try (SqlSession session = factory.openSession(true)) {
+      var nm = session.getMapper(NameMapper.class);
+      for (var s : sectors) {
+        int key = s.getSubjectDatasetKey();
+        if (lockedSources.contains(key) || refused.containsKey(key)) continue;
+        var holder = DatasetLock.tryLock(key, getKey(), DatasetLock.Mode.SHARED);
+        if (holder != null) {
+          refused.put(key, "source dataset " + key + " is being changed by job " + holder + ", e.g. an import");
+        } else {
+          lockedSources.add(key);
+          if (!nm.hasData(key)) {
+            refused.put(key, "source dataset " + key + " is empty");
+          }
+        }
+      }
+    }
+    LOG.info("Locked {} merge sources, refused {}: {}", lockedSources.size(), refused.size(), refused);
+    return refused;
+  }
+
+  private void unlockSources() {
+    lockedSources.forEach(key -> DatasetLock.unlock(key, getKey()));
+    LOG.info("Unlocked {} merge sources", lockedSources.size());
+    lockedSources.clear();
+  }
+
+  /**
+   * Writes failed-sectors.tsv to the release report, always, so its absence never has to be interpreted.
+   */
+  private void writeFailedSectors() {
+    File f = new File(cfg.reportDir(projectKey, attempt), "failed-sectors.tsv");
+    f.getParentFile().mkdirs();
+    try (var w = UTF8IoUtils.writerFromFile(f)) {
+      w.write("sectorKey\tsubjectDatasetKey\treason\n");
+      for (var fs : failedSectors) {
+        w.write(fs.sectorKey() + "\t" + fs.subjectDatasetKey() + "\t" + fs.reason().replaceAll("\\s+", " ") + "\n");
+      }
+    } catch (IOException e) {
+      LOG.error("Failed to write the failed sectors report {}", f, e);
+    }
   }
 
   /**

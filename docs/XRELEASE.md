@@ -41,6 +41,13 @@ The key innovation is a **two-phase copy**: base release → temporary project (
 - Creates `XIdProvider` for ID generation, removes existing IDs from temp dataset
 
 #### 2e. `mergeSectors()` — Sector Sync
+Merge sources are read live from their dataset partitions for the whole merge, which takes more than a day for COL.
+Before merging, the XRelease takes a **shared** `DatasetLock` on every source dataset and releases them once the merge
+is done. An import takes an **exclusive** lock on its dataset, so an import of a source waits until the merge is over -
+the `JobExecutor` parks it without occupying a worker. A source that is locked exclusively already, i.e. is being
+imported, or that has no data, e.g. after an import failed while deleting the old data, is refused: its sectors are
+skipped as failed sectors.
+
 For each sector (ordered by priority):
 1. Creates sector in temp project if missing, re-matching target taxon
 2. Runs `SectorSync` via `SyncFactory.release()` which traverses the source dataset tree:
@@ -49,7 +56,11 @@ For each sector (ordered by priority):
    - Applies editorial decisions (BLOCK, MERGE, etc.)
    - Uses `TreeMergeHandlerConfig` for incertae sedis placement and name blocking
 3. On success: copies merge decisions, records sync attempt
-4. On failure: increments `failedSyncs`, optionally throws if `failOnSyncErrors=true`
+4. On failure: records a `FailedSector`, optionally throws if `failOnSyncErrors=true`
+
+Failed sectors, refused ones included, never fail the release by themselves (apart from `failOnSyncErrors`), so they are
+reported in four places: the job `params` (`failedSectors`), `failed-sectors.tsv` in the release report, the notes of
+the release dataset and the completion email.
 
 The single `UsageMatcher` instance is shared across all sector syncs for efficiency.
 
@@ -107,9 +118,12 @@ families at a time. Names outside any family are never grouped. Within a family 
 Issues are written once all families are done.
 
 **Misspelling consolidation** (`misspellingConsolidation`) runs in the same per family task afterwards. It walks the
-family's accepted names in alphabetical order and compares each one with the 10 before it: same rank, identical
-authorship string, full names at most one edit apart (`ModifiedDamerauLevenshtein`), code compliant name types only.
-The less trusted name becomes a synonym of the other with `MISSPELLING_CONSOLIDATION`; no relation is created. Two equally
+family's accepted bi- and trinomials in alphabetical order and compares each one with the 10 before it: same rank,
+identical authorship string, full names at most one edit apart (`ModifiedDamerauLevenshtein`), code compliant name types
+only. Uninomials are never compared - genera or families one letter apart are too often distinct names, see
+[#1363](https://github.com/CatalogueOfLife/backend/issues/1363) - and neither are virus names.
+The less trusted name becomes a synonym of the other with `MISSPELLING_CONSOLIDATION` through `convertToSynonym`, which
+moves its descendants to the correctly spelled name; no relation is created. Two equally
 trusted names from the project or from the base release are both kept, see Known Issues for merge sources. As only
 alphabetical neighbours are compared, a misspelling in the first letters is never found.
 
@@ -271,8 +285,10 @@ today stores them as `IDENTIFIER`, and all the exemption still let through were 
 like `R ogas eurinus` or `A[mpelis] rufaxilla`, 246 of them in the September 2026 COL XR. It holds
 whatever the sector's `nameTypes` say.
 
-The second applies only to sectors without their own `nameTypes` filter, and a `REVIEWED` decision
-overrides it. Viruses are exempt because the parser types every virus name `OTHER` and sets the
+The second applies unless the sector itself lists `nameTypes`, and a `REVIEWED` decision
+overrides it. Name types a sector inherits from a profile do not count: COL's "Project defaults" profile lists `other`
+for every sector, which kept the filter from ever firing until [#1636](https://github.com/CatalogueOfLife/backend/issues/1636).
+`SectorRunnable` keeps the resolved setting sources for that. Viruses are exempt because the parser types every virus name `OTHER` and sets the
 `VIRUS` code. Everything else of type `OTHER` is a string the parser could not understand, like
 `0` or `=Papilio dorylas Denis & Schiffermüller, 1775`. Creating one does harm beyond the junk name:
 a merged match below it patches the classification of the existing base usage, so TaiCOL's family
@@ -316,5 +332,5 @@ worked scenario.
 2. **Unimplemented**: `cleanImplicitTaxa()` only logs a warning — placeholder for future work.
 3. **Typo in mapper**: `detectParentSynonyms` method name has a typo (should be `detectParentSynonyms`).
 4. **Double semicolons**: Lines 148, 239 have `;;` — cosmetic.
-5. **Misspelling ties**: in misspelling consolidation two names from the same merge source are equally trusted, yet one of them is still synonymized - the one sorting later. Two distinct species of one author one letter apart, e.g. *Aus bus* L. and *Aus cus* L., are lumped that way. The `isConsolidated()` guard on the comparison window never fires either, as `ConsolidationName.consolidatedId` is never set.
+5. **Misspelling ties**: in misspelling consolidation two names from the same merge source are equally trusted, yet one of them is still synonymized - the one sorting later. Two distinct species of one author one letter apart, e.g. *Aus bus* L. and *Aus cus* L., are lumped that way.
 6. **`newDatasetKey` dual use**: The field is temporarily reassigned to `tmpProjectKey` during `prepWork()` (line 180) and restored later (line 210). This implicit state mutation makes the code fragile and hard to follow — methods called between these lines must be aware which dataset `newDatasetKey` currently refers to.
