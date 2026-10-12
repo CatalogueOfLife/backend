@@ -11,6 +11,26 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-12 decision subjects carry their parent
+A decision rematch after a source changed its ids moved a block made for a stray onto the real homonym, as the UI
+never sent the subject's parent: https://github.com/CatalogueOfLife/backend/issues/1639
+New decisions copy their subject, parent name included, from the usage. This backfills the parent name and a missing
+authorship of existing decisions whose subject still resolves to a usage of the same name. Run after the deploy:
+the old app compares the parent strictly to the direct parent and would break decisions on the next re-import of a
+source that inserted a rank level.
+```sql
+UPDATE decision d SET
+  subject_parent = pn.scientific_name,
+  subject_authorship = coalesce(d.subject_authorship, n.authorship)
+FROM name_usage u
+  JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+  JOIN name_usage p ON p.dataset_key=u.dataset_key AND p.id=u.parent_id
+  JOIN name pn ON pn.dataset_key=p.dataset_key AND pn.id=p.name_id
+WHERE u.dataset_key=d.subject_dataset_key AND u.id=d.subject_id
+  AND d.subject_parent IS NULL
+  AND lower(n.scientific_name) = lower(d.subject_name);
+```
+
 #### 2026-10-12 col may set session_replication_role
 `DatasetDao.deleteData` deletes a dataset from all partitioned tables with `session_replication_role = replica`,
 skipping the per row foreign key checks. They picked the wrong index over the dead rows of already deleted children
