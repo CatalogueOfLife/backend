@@ -7,6 +7,7 @@ import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
+import life.catalogue.dao.SectorSettingsResolver;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameMapper;
@@ -381,6 +382,9 @@ public class SectorSync extends SectorRunnable {
       if (projectTarget) {
         // releases index everything at the end, only a project needs to reindex the usages a merge enriched
         handler.trackUpdatedUsages();
+      }
+      if (settings != null && SectorSettingsResolver.SECTOR.equals(settings.getSources().get("nameTypes"))) {
+        handler.nameTypesBySector();
       }
       return handler;
     }

@@ -36,6 +36,8 @@ abstract class SectorRunnable extends BackgroundJob {
   protected final DSID<Integer> sectorKey;
   protected final int subjectDatasetKey;
   protected Sector sector;
+  // the settings the sync uses and the level each comes from, resolved when the sector is loaded
+  protected EffectiveSectorSettings settings;
   final boolean validateSector;
   final SqlSessionFactory factory;
   final NameUsageIndexService indexService;
@@ -333,9 +335,9 @@ abstract class SectorRunnable extends BackgroundJob {
       }
       // the settings a sync uses: built-in defaults, the matching profiles of the project, then the sector itself
       var profiles = session.getMapper(SectorProfileMapper.class).listMatching(sectorKey);
-      var effective = SectorSettingsResolver.resolve(s, profiles);
-      SyncSettings.copy(effective.getSettings(), s);
-      LOG.info("Sector {} uses {} matching profiles. Setting sources: {}", sectorKey, profiles.size(), effective.getSources());
+      settings = SectorSettingsResolver.resolve(s, profiles);
+      SyncSettings.copy(settings.getSettings(), s);
+      LOG.info("Sector {} uses {} matching profiles. Setting sources: {}", sectorKey, profiles.size(), settings.getSources());
 
       if (validate) {
         // assert that target & subject actually exist
