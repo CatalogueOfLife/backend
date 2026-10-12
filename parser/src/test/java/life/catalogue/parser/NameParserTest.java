@@ -621,6 +621,27 @@ public class NameParserTest {
     assertIssue("Acer campestre L. cv. 'Elsrijk' Broerse", Rank.CULTIVAR, NomCode.CULTIVARS, Issue.SUPERFLUOUS_AUTHORSHIP);
   }
 
+  /**
+   * VASCAN gives botanical autonyms with the species authorship inside the name string and again as the authorship,
+   * which belongs to the species and must not become the authorship of the autonym.
+   */
+  @Test
+  public void autonymWithSpeciesAuthorship() throws Exception {
+    for (String name : new String[]{"Eriocoma nelsonii (Scribner) Romaschenko subsp. nelsonii", "Eriocoma nelsonii subsp. nelsonii"}) {
+      var issues = new IssueContainer.Simple();
+      var n = NameParser.PARSER.parse(name, "(Scribner) Romaschenko", Rank.SUBSPECIES, NomCode.BOTANICAL, issues).get().getName();
+      assertEquals("Eriocoma nelsonii subsp. nelsonii", n.getScientificName());
+      if (name.contains("Scribner")) {
+        assertNull(name, n.getAuthorship());
+        assertFalse(name, n.hasAuthorship());
+        assertTrue(issues.contains(Issue.SUPERFLUOUS_AUTHORSHIP));
+      } else {
+        // nothing tells us it belongs to the species, keep it as given
+        assertEquals("(Scribner) Romaschenko", n.getAuthorship());
+      }
+    }
+  }
+
   @Test
   public void publishedInYear() throws Exception {
     var issues = new IssueContainer.Simple();

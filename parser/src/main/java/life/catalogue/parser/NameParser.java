@@ -475,7 +475,11 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       switch (parserInternal.parse(n.getScientificName(), authorship, n.getRank(), n.getCode())) {
         case ParseResult.Parsed p -> {
           pnu = fromParsedName(n, p.name(), issues);
-          if (authorship != null) {
+          // the parser gave the separate authorship to the species or genus part of the name string, e.g. the species
+          // author of an autonym in "Eriocoma nelsonii (Scribner) Romaschenko subsp. nelsonii" + "(Scribner) Romaschenko".
+          // It is no authorship of this name then, keeping it would label the autonym with the species author
+          boolean superfluous = !p.name().hasAuthorship() && (p.name().hasSpecificAuthorship() || p.name().hasGenericAuthorship());
+          if (authorship != null && !superfluous) {
             keepAuthorship(pnu, authorship);
           }
         }
