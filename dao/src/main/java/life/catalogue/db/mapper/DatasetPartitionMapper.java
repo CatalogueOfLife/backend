@@ -19,8 +19,6 @@ import com.google.common.collect.Lists;
  *
  * The number of partitions is fixed when the database is initialised, see the init command and its --num argument.
  * It can only be changed afterwards by the repartition command, which rebalances all data into a new number of partitions.
- * Beware that repartitioning is currently broken on PG 17.1 and above,
- * see https://github.com/CatalogueOfLife/backend/issues/1424
  *
  * Because partitions are hashed, deleting a dataset cannot drop a partition.
  * It is a regular DELETE by dataset_key across all partitioned tables, see DatasetDao.deleteData
