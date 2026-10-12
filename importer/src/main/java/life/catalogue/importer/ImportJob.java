@@ -17,7 +17,7 @@ import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.BackgroundJob;
-import life.catalogue.concurrent.DatasetJob;
+import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.api.vocab.JobLane;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
@@ -81,7 +81,7 @@ import jakarta.validation.Validator;
  * It can be cancelled by an according method at any time. Duplicate detection in the job executor
  * is just based on the datasetKey which allows multiple imports for the same dataset to be easily detected.
  */
-public class ImportJob extends DatasetJob {
+public class ImportJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(ImportJob.class);
   private final ImportRequest req;
   private final DatasetWithSettings dws;
@@ -223,15 +223,18 @@ public class ImportJob extends DatasetJob {
     return req;
   }
   
+  /**
+   * An import replaces all data of its dataset, so it waits for every job that reads the dataset, like an export or an
+   * extended release merging it, and they wait for the import.
+   */
   @Override
-  public void execute() throws Exception {
-    super.execute(); // sets the dataset MDC
+  protected void runWithLock() throws Exception {
     req.start();
     importDataset();
   }
 
   @Override
-  protected void onFinish() throws Exception {
+  protected void onFinishLocked() throws Exception {
     if (unchanged) {
       // the attempt and its metrics were deleted again, so without this nothing records that we looked
       setStep("unchanged");
@@ -323,7 +326,8 @@ public class ImportJob extends DatasetJob {
 
   @Override
   protected void checkIfCancelled() throws InterruptedException {
-    Exceptions.interruptIfCancelled("Import " + di.attempt() + " was cancelled");
+    // the attempt only exists once the import runs, the dataset lock is checked before
+    Exceptions.interruptIfCancelled(di == null ? "Import of dataset " + datasetKey + " was cancelled" : "Import " + di.attempt() + " was cancelled");
   }
 
   /**

@@ -8,7 +8,6 @@ import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -17,24 +16,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Marks a Runnable that requires a dataset lock to run.
+ * A job that requires a lock on its dataset to run, EXCLUSIVE unless lockMode() says otherwise.
+ * A job that cannot get its lock fails fast with a DatasetBlockedException. The JobExecutor then parks it
+ * without occupying a worker and runs it again once the dataset got unlocked.
  */
 public abstract class DatasetBlockingJob extends DatasetJob {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetBlockingJob.class);
 
-  private int retry = 0;
   private boolean skipLock;
 
   public DatasetBlockingJob(int datasetKey, int userKey, @Nullable JobPriority priority) {
     super(datasetKey, userKey, priority);
   }
 
+  /**
+   * Runs the job without a lock, e.g. when it runs embedded in another job that holds the lock already.
+   */
   public void skipLock() {
     this.skipLock = true;
   }
 
-  public int getRetry() {
-    return retry;
+  /**
+   * @return the lock the job needs on its dataset. EXCLUSIVE by default, jobs that only read their dataset can share it.
+   */
+  public DatasetLock.Mode lockMode() {
+    return DatasetLock.Mode.EXCLUSIVE;
   }
 
   protected abstract void runWithLock() throws Exception;
@@ -42,37 +48,15 @@ public abstract class DatasetBlockingJob extends DatasetJob {
   @Override
   public final void execute() throws Exception {
     checkIfCancelled();
-    // we track attempts to run this job - it can be blocked
-    retry++;
-    // did we try several times already so it seems there is a longer running job blocking and the executor is rather idle
-    if (retry >25) {
-      TimeUnit.MINUTES.sleep(5);
-    } else if (retry >10) {
-      TimeUnit.MINUTES.sleep(1);
-    } else if (retry >5) {
-      TimeUnit.SECONDS.sleep(10);
-    } else if (retry >2) {
-      TimeUnit.SECONDS.sleep(1);
-    } else if (!skipLock){
-      TimeUnit.MILLISECONDS.sleep(100);
+    if (!skipLock) {
+      UUID holder = DatasetLock.tryLock(datasetKey, getKey(), lockMode());
+      if (holder != null) {
+        LOG.info("Failed to acquire {} lock for dataset {} from {} job {}. Blocked by job {}", lockMode(), datasetKey, getClass().getSimpleName(), getKey(), holder);
+        throw new DatasetBlockedException(holder, datasetKey);
+      }
     }
-    checkIfCancelled();
-
-    UUID proc;
-    if (skipLock) {
-      proc = getKey();
-    } else {
-      // try to acquire a lock, otherwise fail
-      proc = DatasetLock.lock(datasetKey, getKey());
-    }
-
-    if (getKey().equals(proc)) {
-      LoggingUtils.setDatasetMDC(datasetKey, getClass());
-      runWithLock();
-    } else {
-      LOG.info("Failed to acquire lock for dataset {} from {} job {} #{}. Blocked by currently running job {}", datasetKey, this.getClass().getSimpleName(), getKey(), retry, proc);
-      throw new DatasetBlockedException(proc, datasetKey);
-    }
+    LoggingUtils.setDatasetMDC(datasetKey, getClass());
+    runWithLock();
   }
 
   @Override
@@ -81,7 +65,8 @@ public abstract class DatasetBlockingJob extends DatasetJob {
       onFinishLocked();
     } finally {
       if (!skipLock) {
-        DatasetLock.unlock(datasetKey);
+        // only ever releases a lock this job holds, not the one of a job it was blocked by
+        DatasetLock.unlock(datasetKey, getKey());
       }
     }
   }

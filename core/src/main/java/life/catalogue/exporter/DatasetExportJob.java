@@ -116,6 +116,14 @@ public abstract class DatasetExportJob extends DatasetBlockingJob {
    * Cancelled before the export ever started: drop the waiting db record entirely
    * rather than leaving it stuck in WAITING. No archive file exists yet at this point.
    */
+  /**
+   * An export only reads its dataset, so exports share it with each other and with an extended release merging it.
+   */
+  @Override
+  public DatasetLock.Mode lockMode() {
+    return DatasetLock.Mode.SHARED;
+  }
+
   @Override
   protected void onCancelBeforeStart() {
     LOG.info("Delete waiting export {} that was cancelled before it started", getKey());
