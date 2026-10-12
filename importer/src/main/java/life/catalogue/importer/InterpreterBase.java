@@ -220,11 +220,13 @@ public class InterpreterBase {
 
   protected List<TaxonProperty> interpretProperty(VerbatimRecord rec, BiConsumer<TaxonProperty, VerbatimRecord> addReference,
                                                   Term property, Term value, @Nullable Term ordinal, @Nullable Term page, @Nullable Term remarks) {
-    if (rec.hasTerm(property) && rec.hasTerm(value)) {
+    // the cleaned value can be blank even if the raw one is not, e.g. a description of just <br/> or &nbsp;
+    String val = getFormattedText(rec, value);
+    if (rec.hasTerm(property) && !StringUtils.isBlank(val)) {
       var tp = new TaxonProperty();
       tp.setVerbatimKey(rec.getId());
       tp.setProperty(rec.get(property));
-      tp.setValue(getFormattedText(rec, value));
+      tp.setValue(val);
       if (page != null) {
         tp.setPage(rec.get(page));
       }

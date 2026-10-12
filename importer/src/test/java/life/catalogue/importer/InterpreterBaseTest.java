@@ -153,6 +153,27 @@ public class InterpreterBaseTest {
   }
 
   /**
+   * A value that cleans to nothing is no property, the column is NOT NULL.
+   * The GBIF backbone import failed on a description of just markup.
+   */
+  @Test
+  public void blankPropertyValue() throws Exception {
+    for (String x : List.of("<br/>", "<p> </p>", "&nbsp;", "\u200B", "<img src=\"x.png\">")) {
+      VerbatimRecord v = new VerbatimRecord();
+      v.put(ColdpTerm.property, "general");
+      v.put(ColdpTerm.value, x);
+      assertTrue(x, ib.interpretProperty(v, (tp, rec) -> {}, ColdpTerm.property, ColdpTerm.value, null, null, null).isEmpty());
+    }
+
+    VerbatimRecord v = new VerbatimRecord();
+    v.put(ColdpTerm.property, "general");
+    v.put(ColdpTerm.value, "<p>Big tree</p>");
+    var props = ib.interpretProperty(v, (tp, rec) -> {}, ColdpTerm.property, ColdpTerm.value, null, null, null);
+    assertEquals(1, props.size());
+    assertEquals("Big tree", props.get(0).getValue());
+  }
+
+  /**
    * A bare name state that still links to an accepted usage is a synonym, not a bare name.
    * See https://github.com/CatalogueOfLife/backend/issues/1571
    */
