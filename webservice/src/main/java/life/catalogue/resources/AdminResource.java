@@ -408,16 +408,16 @@ public class AdminResource {
    * against the reference checklist and flags them with a PLACEMENT_CONFLICT.
    * See https://github.com/CatalogueOfLife/backend/issues/1608
    *
-   * @param reference optional reference checklist overriding the configured importer.placementReference
+   * @param references optional reference checklists overriding the configured importer.placementReferences
    */
   @POST
   @Path("/placement-check")
   public JobInfo placementCheck(@QueryParam("datasetKey") Integer datasetKey,
                                 @QueryParam("datasetType") DatasetType type,
-                                @QueryParam("reference") String reference,
+                                @QueryParam("reference") List<String> references,
                                 @Auth User user) {
-    String ref = reference != null ? reference : cfg.importer.placementReference;
-    Preconditions.checkArgument(ref != null, "No placement reference configured or given");
+    List<String> ref = references != null && !references.isEmpty() ? references : cfg.importer.placementReferences;
+    Preconditions.checkArgument(!ref.isEmpty(), "No placement reference configured or given");
     if (datasetKey != null) {
       return runJob(new PlacementCheckJob(user.getKey(), datasetKey, ref, factory, matcherFactory, diDao, indexService));
     }

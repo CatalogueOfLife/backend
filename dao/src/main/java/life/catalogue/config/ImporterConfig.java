@@ -1,5 +1,7 @@
 package life.catalogue.config;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import jakarta.validation.Valid;
@@ -42,13 +44,14 @@ public class ImporterConfig {
   public int callbackTimeout = 10;
 
   /**
-   * The reference checklist accepted genera are checked against for a placement in a taxonomic group the reference does
-   * not know them in, flagged as PLACEMENT_CONFLICT. Same syntax as the ADD_IDENTIFIERS_FROM setting: a dataset key or a
-   * project key with an LR or LXR suffix for its latest public (extended) release. Null disables the check.
+   * The reference checklists accepted genera are checked against for a placement in a taxonomic group none of them
+   * knows them in, flagged as PLACEMENT_CONFLICT. Their genera are pooled, so a genus any reference knows is no conflict.
+   * Same syntax as the ADD_IDENTIFIERS_FROM setting: a dataset key or a project key with an LR or LXR suffix for its
+   * latest public (extended) release. Defaults to the COL base release and IRMNG, empty disables the check.
    * See https://github.com/CatalogueOfLife/backend/issues/1608
    */
-  @Nullable
-  public String placementReference = "3LR";
+  @NotNull
+  public List<String> placementReferences = List.of("3LR", "2007");
 
   @Valid
   @NotNull

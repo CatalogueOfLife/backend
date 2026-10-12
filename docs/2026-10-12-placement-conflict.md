@@ -29,8 +29,8 @@ Two layers, agreed in the session of 2026-10-12.
 
 **Shield at the source.** Wrong placements are a property of the source, so they are caught once, at import time,
 where they can be reviewed - not decided again in every merge. `PlacementChecker` flags an accepted genus with the new
-`Issue.PLACEMENT_CONFLICT` if its group in the source is disparate to the group of every genus of that name in a
-reference checklist, the latest public COL release by default. Every import runs it, `PlacementCheckJob` runs it on
+`Issue.PLACEMENT_CONFLICT` if its group in the source is disparate to the group of every genus of that name in the
+pooled reference checklists, the latest public COL release and IRMNG by default. Every import runs it, `PlacementCheckJob` runs it on
 datasets already imported, and `GET /dataset/placementConflict` reports the datasets with at least a share (default
 10%) of conflicting accepted genera. Only accepted genera are ever flagged, so that share needs no new metric: it is
 the import's `PLACEMENT_CONFLICT` issue count over its accepted `GENUS` count, both already in `dataset_import`.
@@ -61,13 +61,21 @@ the import's `PLACEMENT_CONFLICT` issue count over its accepted `GENUS` count, b
 
 ## Outcome
 
-- The reference is configurable as `importer.placementReference` with the `ADD_IDENTIFIERS_FROM` syntax, default
-  `3LR`. A reference that cannot be resolved only disables the check, it never fails an import.
+- The references are configurable as `importer.placementReferences` with the `ADD_IDENTIFIERS_FROM` syntax, default
+  `[3LR, 2007]`. A reference that cannot be resolved is left out, it never fails an import.
+- IRMNG was added after replaying the checker on 500 random article datasets (1,458 accepted genera). COL alone
+  flagged 4 genera, all false positives from COL gaps (*Duboisia* Stremme, *Chitona* Schmidt, *Cryptodesmus* Novis &
+  Visnovsky, *Acantholepis*); pooled with IRMNG only *Acantholepis* remained, which neither knows. Of the misplacements
+  reported in #1608 COL alone caught 3 of 4, the pool all 4 (*Trouessartia* is missing from the COL base release).
+  IRMNG alone is no better than COL: it lacks cicada genera and *Platygaster* Latreille.
+- The *Platygaster* without authorship under Diptera from Systema Dipterorum sits in the COL base release itself, so
+  no check against it can flag it - a data fix, likely the synonym *Platygaster* Zetterstedt of *Glabellula*.
 - Not solved: a species whose only same-named genus in the project is a synonym in another group (*Oribates* →
   *Gyros*, *Celaeno* → *Noctilio*) when no accepted genus of that name exists yet, as long as neither the record nor
   its dataset tells a group. The matcher prefers an accepted candidate, which covers the case once the right genus
   exists.
 - A source whose codes are inferred from its authorship style can still mislead: `Jung & Lee, 2021` reads as
   zoological, which makes a bacterium a eukaryote.
-- Follow-up: investigate IRMNG as a second reference. It is more complete at genus level and holds many more
-  unavailable names and homonyms than the COL base release.
+- Parked: matching every dataset at genus level and below against COL and storing the overlap in the import metrics,
+  to spot datasets that could contribute new species - as was done against the GBIF backbone before. Cheap with the
+  file based matcher, but the reference changes monthly and reprocessing every dataset each month is not wanted.

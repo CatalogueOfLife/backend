@@ -29,7 +29,8 @@ import static org.mockito.Mockito.when;
  */
 public class PlacementCheckerTest {
   // canonical names index ids of the genera
-  static final Map<String, Integer> NIDX = Map.of("Platygaster", 10, "Curvularia", 20, "Paracoccus", 30, "Novus", 40);
+  static final Map<String, Integer> NIDX = Map.of("Platygaster", 10, "Curvularia", 20, "Paracoccus", 30, "Novus", 40, "Duboisia", 50);
+  NameIndex ni;
   UsageMatcher matcher;
   PlacementChecker checker;
 
@@ -49,15 +50,16 @@ public class PlacementCheckerTest {
     add(store, "curv", "Curvularia", Rank.GENUS, "fu", "Boedijn, 1933");
     add(store, "para1", "Paracoccus", Rank.GENUS, "he", "Ezzat & McConnell, 1956");
     add(store, "para2", "Paracoccus", Rank.GENUS, "ba", "Davis, 1969");
+    add(store, "dub1", "Duboisia", Rank.GENUS, "pl", "R.Br.");
 
-    var ni = mock(NameIndex.class);
+    ni = mock(NameIndex.class);
     when(ni.match(any(SimpleName.class), anyBoolean(), anyBoolean())).thenAnswer(inv -> {
       SimpleName sn = inv.getArgument(0);
       var nidx = NIDX.get(sn.getName());
       return nidx == null ? NameMatch.noMatch() : NameMatch.match(nidx);
     });
     matcher = new UsageMatcher(1, ni, store, false);
-    checker = new PlacementChecker(matcher, false);
+    checker = new PlacementChecker(List.of(matcher), false);
   }
 
   static void add(UsageMatcherMemStore store, String id, String name, Rank rank, String parent, String authorship) {
@@ -120,6 +122,25 @@ public class PlacementCheckerTest {
     assertTrue(checker.check(genus("Curvularia", "Smith, 2020"), cl("Plantae", "Poaceae")).isEmpty());
     // the same author still conflicts
     assertTrue(checker.check(genus("Curvularia", "Boedijn, 1933"), cl("Plantae", "Poaceae")).isPresent());
+  }
+
+  @Test
+  public void referencesArePooled() {
+    // the fossil bovid Duboisia Stremme, 1911 is missing from the first reference, which only knows the plant
+    var bovid = cl("Animalia", "Mammalia", "Artiodactyla", "Bovidae");
+    assertTrue(checker.check(genus("Duboisia", null), bovid).isPresent());
+
+    // a second reference that knows it vetoes the flag
+    var store2 = new UsageMatcherMemStore(2);
+    add(store2, "an", "Animalia", Rank.KINGDOM, null, null);
+    add(store2, "ma", "Mammalia", Rank.CLASS, "an", null);
+    add(store2, "dub2", "Duboisia", Rank.GENUS, "ma", "Stremme, 1911");
+    var pooled = new PlacementChecker(List.of(matcher, new UsageMatcher(2, ni, store2, false)), false);
+    assertTrue(pooled.check(genus("Duboisia", null), bovid).isEmpty());
+    assertEquals(List.of(1, 2), pooled.getReferenceDatasetKeys());
+
+    // while a genus misplaced in the eyes of both stays flagged
+    assertTrue(pooled.check(genus("Curvularia", null), cl("Plantae", "Poaceae")).isPresent());
   }
 
   @Test

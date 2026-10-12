@@ -23,21 +23,21 @@ import org.slf4j.LoggerFactory;
 public class PlacementCheckSchedulerJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(PlacementCheckSchedulerJob.class);
   private final DatasetType type;
-  private final String reference;
+  private final List<String> references;
   private final SqlSessionFactory factory;
   private final JobExecutor exec;
   private final UsageMatcherFactory matcherFactory;
   private final DatasetImportDao diDao;
   private final NameUsageIndexService indexService;
 
-  public record Params(DatasetType type, String reference) {
+  public record Params(DatasetType type, List<String> references) {
   }
 
-  public PlacementCheckSchedulerJob(int userKey, DatasetType type, String reference, SqlSessionFactory factory, JobExecutor exec,
+  public PlacementCheckSchedulerJob(int userKey, DatasetType type, List<String> references, SqlSessionFactory factory, JobExecutor exec,
                                     UsageMatcherFactory matcherFactory, DatasetImportDao diDao, NameUsageIndexService indexService) {
     super(userKey);
     this.type = type;
-    this.reference = reference;
+    this.references = references;
     this.factory = factory;
     this.exec = exec;
     this.matcherFactory = matcherFactory;
@@ -47,7 +47,7 @@ public class PlacementCheckSchedulerJob extends BackgroundJob {
 
   @Override
   public Object getParams() {
-    return new Params(type, reference);
+    return new Params(type, references);
   }
 
   @Override
@@ -65,9 +65,9 @@ public class PlacementCheckSchedulerJob extends BackgroundJob {
     try (SqlSession session = factory.openSession()) {
       keys = session.getMapper(DatasetMapper.class).searchKeys(req, DatasetMapper.MAGIC_ADMIN_USER_KEY);
     }
-    LOG.info("Schedule placement checks for {} {} datasets against {}", keys.size(), type, reference);
+    LOG.info("Schedule placement checks for {} {} datasets against {}", keys.size(), type, references);
     for (int key : keys) {
-      exec.submit(new PlacementCheckJob(getUserKey(), key, reference, factory, matcherFactory, diDao, indexService));
+      exec.submit(new PlacementCheckJob(getUserKey(), key, references, factory, matcherFactory, diDao, indexService));
     }
   }
 }

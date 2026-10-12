@@ -28,7 +28,6 @@ import life.catalogue.matching.UsageMatcherFactory;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -68,7 +67,7 @@ public class PgImport implements Callable<Boolean> {
   
   private final ImportStore store;
   private final int batchSize;
-  private final @Nullable String placementReference;
+  private final List<String> placementReferences;
   private final SqlSessionFactory sessionFactory;
   private final DatasetDao datasetDao;
   private final NameUsageIndexService indexService;
@@ -106,7 +105,7 @@ public class PgImport implements Callable<Boolean> {
     this.userKey = userKey;
     this.store = store;
     this.batchSize = cfg.batchSize;
-    this.placementReference = cfg.placementReference;
+    this.placementReferences = cfg.placementReferences;
     this.sessionFactory = sessionFactory;
     this.indexService = indexService;
     this.datasetDao = datasetDao;
@@ -440,7 +439,9 @@ public class PgImport implements Callable<Boolean> {
       matchTarget = null;
       matchScope = null;
     }
-    final PlacementChecker placementChecker = placementChecker();
+    // a safeguard, not part of the import: references that cannot be opened only weaken or disable the check
+    final PlacementChecker placementChecker = matcherFactory == null ? null
+      : PlacementChecker.open(placementReferences, matcherFactory, sessionFactory, dataset.getKey());
     try (var indexer = indexService.buildDatasetIndexingHandler(dataset.getKey())) {
       // load all decisions so we can include them in the ES usage index later
       final Map<String, List<SimpleDecision>> decisions = new HashMap<>();
@@ -668,45 +669,12 @@ public class PgImport implements Callable<Boolean> {
     }
   }
 
-  /**
-   * Opens the placement check against the configured reference checklist.
-   * The check is a safeguard, not part of the import: a reference that cannot be resolved or has no matcher only
-   * disables it, the import goes on.
-   *
-   * @return the checker, holding a lease on the reference matcher, or null if the check does not run
-   */
-  private @Nullable PlacementChecker placementChecker() {
-    if (matcherFactory == null || placementReference == null) {
-      return null;
-    }
-    try {
-      var spec = AddIdentifiersSpec.parse(placementReference);
-      int refKey = spec.resolveDatasetKey(sessionFactory);
-      if (refKey == dataset.getKey()) {
-        return null;
-      }
-      var matcher = matcherFactory.get(refKey);
-      if (matcher == null) {
-        LOG.warn("No matcher for placement reference {} (resolved={}), skip the placement check of dataset {}", placementReference, refKey, dataset.getKey());
-        return null;
-      }
-      LOG.info("Check the placement of genera in dataset {} against {} resolved={}", dataset.getKey(), placementReference, refKey);
-      return new PlacementChecker(matcher, true);
-    } catch (IllegalStateException e) {
-      // no such release, e.g. on a fresh environment
-      LOG.warn("Cannot resolve placement reference {}, skip the placement check of dataset {}: {}", placementReference, dataset.getKey(), e.getMessage());
-      return null;
-    } catch (IOException | RuntimeException e) {
-      LOG.warn("Cannot use placement reference {}, skip the placement check of dataset {}", placementReference, dataset.getKey(), e);
-      return null;
-    }
-  }
 
   private boolean checkPlacement(PlacementChecker checker, Taxon taxon, List<SimpleName> ancestors) {
     try {
       var conflict = checker.check(new SimpleName(taxon), ancestors);
       conflict.ifPresent(c -> LOG.info("Genus {} [{}] placed in {} is known in {} only in {}",
-        taxon.getLabel(), taxon.getId(), c.group(), checker.getReferenceDatasetKey(), c.referenceGroups()));
+        taxon.getLabel(), taxon.getId(), c.group(), checker.getReferenceDatasetKeys(), c.referenceGroups()));
       return conflict.isPresent();
     } catch (RuntimeException e) {
       LOG.warn("Placement check failed for genus {} [{}]", taxon.getLabel(), taxon.getId(), e);

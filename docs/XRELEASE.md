@@ -354,14 +354,21 @@ Literature sources regularly file a genus under the classification of the paper'
 fungus under the plant family of its host, a parasite under its vector, a feather mite under its bird. Merged as is,
 such a genus attracts every later species of that name into the wrong kingdom.
 
-`PlacementChecker` judges the accepted genera of a source against a reference checklist, by default the latest public
-COL release (`importer.placementReference: 3LR`, null disables it). A genus is flagged with `PLACEMENT_CONFLICT` on
-its verbatim record only if its group in the source is disparate to the group of *every* genus of that name in the
-reference. It stays silent whenever the evidence is thin: a source group of eukaryotes or none, a genus the
-reference does not hold, a reference genus without a known group, or an authored source genus whose authorship
-differs from every reference genus - a homonym the reference lacks.
+`PlacementChecker` judges the accepted genera of a source against reference checklists, by default the latest public
+COL release and IRMNG (`importer.placementReferences: [3LR, 2007]`, empty disables it). Their genera are pooled: a
+genus is flagged with `PLACEMENT_CONFLICT` on its verbatim record only if its group in the source is disparate to the
+group of *every* genus of that name in *any* reference. It stays silent whenever the evidence is thin: a source group
+of eukaryotes or none, a genus no reference holds, a reference genus without a known group, or an authored source
+genus whose authorship differs from every reference genus - a homonym the references lack.
 
-- Every import runs the check while it inserts the usages; a missing reference only skips it.
+Pooling is what makes the flag trustworthy. Replayed on 500 random article datasets (1,458 accepted genera), COL
+alone flagged 4 genera, all of them real genera COL happens to lack, e.g. the fossil bovid *Duboisia* Stremme. With
+IRMNG pooled in only 1 remained, while all the misplacements reported in #1608 were still caught - *Trouessartia*
+under birds only thanks to IRMNG, as the COL base release lacks the genus. IRMNG alone would be no better than COL:
+it lacks cicada genera and the wasp *Platygaster* Latreille. A reference that cannot be resolved or has no matcher is
+left out.
+
+- Every import runs the check while it inserts the usages; missing references only weaken or skip it.
 - `PlacementCheckJob` runs it on a dataset already imported - `POST /admin/placement-check?datasetKey=` or
   `?datasetType=ARTICLE` for all public external datasets of a type - replacing the earlier flags, recounting the
   issues of the latest import and reindexing the genera concerned. Unchanged sources skip their reimport, so this is

@@ -42,22 +42,23 @@ public class PlacementCheckJob extends DatasetBlockingJob {
   private final UsageMatcherFactory matcherFactory;
   private final DatasetImportDao diDao;
   private final NameUsageIndexService indexService;
-  private final String reference;
+  private final List<String> references;
   private int genera;
   private int conflicts;
 
-  public record Params(String reference) {
+  public record Params(List<String> references) {
   }
 
   /**
-   * @param reference the reference checklist, a dataset key or a project key with an LR or LXR suffix, e.g. 3LR
+   * @param references the reference checklists, dataset keys or project keys with an LR or LXR suffix, e.g. 3LR
    */
-  public PlacementCheckJob(int userKey, int datasetKey, String reference, SqlSessionFactory factory,
+  public PlacementCheckJob(int userKey, int datasetKey, List<String> references, SqlSessionFactory factory,
                            UsageMatcherFactory matcherFactory, DatasetImportDao diDao, NameUsageIndexService indexService) {
     super(datasetKey, userKey, JobPriority.LOW);
     DaoUtils.notProject(datasetKey);
-    this.reference = Preconditions.checkNotNull(reference, "A placement reference is required");
-    AddIdentifiersSpec.parse(reference); // fail early on a bad reference
+    Preconditions.checkArgument(references != null && !references.isEmpty(), "A placement reference is required");
+    references.forEach(AddIdentifiersSpec::parse); // fail early on a bad reference
+    this.references = List.copyOf(references);
     this.factory = factory;
     this.matcherFactory = matcherFactory;
     this.diDao = diDao;
@@ -66,7 +67,7 @@ public class PlacementCheckJob extends DatasetBlockingJob {
 
   @Override
   public Object getParams() {
-    return new Params(reference);
+    return new Params(references);
   }
 
   @Override
@@ -76,16 +77,13 @@ public class PlacementCheckJob extends DatasetBlockingJob {
 
   @Override
   protected void runWithLock() throws Exception {
-    int refKey = AddIdentifiersSpec.parse(reference).resolveDatasetKey(factory);
-    Preconditions.checkArgument(refKey != datasetKey, "Dataset %s cannot be checked against itself", datasetKey);
-    var matcher = matcherFactory.get(refKey);
-    if (matcher == null) {
-      throw new IllegalStateException("No matcher exists for the placement reference " + reference + " resolved=" + refKey);
+    var checker = PlacementChecker.open(references, matcherFactory, factory, datasetKey);
+    if (checker == null) {
+      throw new IllegalStateException("None of the placement references " + references + " can be used");
     }
-    LOG.info("Check the placement of genera in dataset {} against {} resolved={}", datasetKey, reference, refKey);
     setStep("checking genera");
     List<TaxonWithClassification> flagged = new ArrayList<>();
-    try (var checker = new PlacementChecker(matcher, true);
+    try (checker;
          SqlSession session = factory.openSession()
     ) {
       try (var cursor = session.getMapper(NameUsageMapper.class).processDatasetWithClassification(datasetKey, Rank.GENUS, Rank.GENUS, false, false)) {
@@ -96,7 +94,7 @@ public class PlacementCheckJob extends DatasetBlockingJob {
             var conflict = checker.check(new SimpleName(t), t.getClassification());
             if (conflict.isPresent()) {
               LOG.info("Genus {} [{}] placed in {} by {} is known in {} only in {}", t.getLabel(), t.getId(), conflict.get().group(),
-                t.getClassification(), refKey, conflict.get().referenceGroups());
+                t.getClassification(), checker.getReferenceDatasetKeys(), conflict.get().referenceGroups());
               flagged.add(t);
             }
           }
