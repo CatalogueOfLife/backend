@@ -1,0 +1,9 @@
+Alloherpesviridae [family] {ID=allo CODE=VIRUS}
+  Batravirus [genus] {ID=bat PRIO=1}
+    Batravirus ranidallo1 [species] {ID=r1 PRIO=1}
+    Batravirus ranidallo2 [species] {ID=r2 PRIO=5}
+    Batravirus ranidallo3 [species] {ID=r3 PRIO=5}
+Asteraceae [family] {ID=ast CODE=BOTANICAL}
+  Senecio Sm. [genus] {ID=sen PRIO=1}
+    Senecio vulgaris L. [species] {ID=vul PRIO=1}
+    Senecio vulgarsi L. [species] {ID=vul2 PRIO=5}

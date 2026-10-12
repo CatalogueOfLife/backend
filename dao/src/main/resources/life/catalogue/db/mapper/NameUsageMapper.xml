@@ -65,7 +65,7 @@
   </sql>
 
   <sql id="SELECT_CONSOLIDATION_NAME">
-    u.id, n.scientific_name, n.authorship, n.type, n.rank, u.status, u.parent_id, u.sector_key
+    u.id, n.scientific_name, n.authorship, n.type, n.rank, n.code, u.status, u.parent_id, u.sector_key
   </sql>
 
   <sql id="SELECT_SIMPLE_VERBATIM">
@@ -1096,7 +1096,7 @@
       JOIN x ON x.id = u.parent_id
       WHERE u.dataset_key=#{startID.datasetKey} AND NOT is_synonym(u.status)
     )
-    SELECT id, scientific_name, authorship, type, rank, status, sector_key
+    SELECT id, scientific_name, authorship, type, rank, code, status, sector_key
     FROM x
     ORDER BY x.scientific_name, x.authorship
   </select>

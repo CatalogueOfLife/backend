@@ -26,6 +26,7 @@ import life.catalogue.matching.similarity.StringSimilarity;
 import life.catalogue.parser.NomCodeParser;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -399,6 +400,11 @@ public class HomotypicConsolidator {
       final LinkedList<ConsolidationName> window = new LinkedList<>();
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       PgUtils.consume(() -> num.processTreeConsolidationName(DSID.of(datasetKey, tax.getId())), sn -> {
+        // ICTV names parse as scientific names without authorship, and valid ones are often a single edit apart,
+        // e.g. Batravirus ranidallo1 and ranidallo2. Keep them out of the window too, so no other name can absorb them.
+        if (sn.getCode() == NomCode.VIRUS) {
+          return;
+        }
         if (NomCodeParser.isCodeCompliant(sn.getType())) {
           consolidateMisspelling(sn, window);
         }

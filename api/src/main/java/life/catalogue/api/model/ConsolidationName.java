@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
@@ -21,6 +22,7 @@ public class ConsolidationName implements HasID<String> {
   private String authorship;
   private Rank rank;
   private NameType type;
+  private NomCode code;
   private TaxonomicStatus status;
   private Integer sectorKey;
   private String consolidatedId;
@@ -68,6 +70,14 @@ public class ConsolidationName implements HasID<String> {
 
   public void setType(NameType type) {
     this.type = type;
+  }
+
+  public NomCode getCode() {
+    return code;
+  }
+
+  public void setCode(NomCode code) {
+    this.code = code;
   }
 
   public TaxonomicStatus getStatus() {
@@ -143,6 +153,7 @@ public class ConsolidationName implements HasID<String> {
       Objects.equals(authorship, that.authorship) &&
       rank == that.rank &&
       type == that.type &&
+      code == that.code &&
       status == that.status &&
       Objects.equals(sectorKey, that.sectorKey) &&
       Objects.equals(consolidatedId, that.consolidatedId);
@@ -150,6 +161,6 @@ public class ConsolidationName implements HasID<String> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, authorship, rank, type, status, sectorKey, consolidatedId);
+    return Objects.hash(id, name, authorship, rank, type, code, status, sectorKey, consolidatedId);
   }
 }
