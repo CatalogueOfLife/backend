@@ -16,11 +16,13 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapperTest;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.SectorProfileMapper;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 
 import java.net.URI;
@@ -274,6 +276,42 @@ public class DatasetDaoTest extends DaoTestBase {
     dao.delete(proj.getKey(), Users.TESTER);
     assertEquals(0, countProfiles(proj.getKey()));
     assertEquals(0, countProfiles(pubRelease));
+  }
+
+  /**
+   * deleteData skips the foreign key checks for the whole dataset delete
+   * and leaves the pooled connection with its triggers enabled again.
+   */
+  @Test
+  public void deleteDataSkipsChecksAndRestoresRole() throws Exception {
+    final int key = TestDataRule.APPLE.key;
+    try (SqlSession session = factory().openSession(true)) {
+      assertTrue(count(session, "name_usage", key) > 0);
+      assertTrue(session.getMapper(DatasetPartitionMapper.class).canSkipTriggers());
+
+      dao.deleteData(key, session);
+
+      for (String t : DatasetPartitionMapper.PARTITIONED_TABLES) {
+        assertEquals(t, 0, count(session, t, key));
+      }
+      assertEquals("origin", replicationRole(session));
+    }
+  }
+
+  private static int count(SqlSession session, String table, int datasetKey) throws Exception {
+    try (var st = session.getConnection().createStatement();
+         var rs = st.executeQuery("SELECT count(*) FROM " + table + " WHERE dataset_key=" + datasetKey)) {
+      rs.next();
+      return rs.getInt(1);
+    }
+  }
+
+  private static String replicationRole(SqlSession session) throws Exception {
+    try (var st = session.getConnection().createStatement();
+         var rs = st.executeQuery("SHOW session_replication_role")) {
+      rs.next();
+      return rs.getString(1);
+    }
   }
 
   private void createProfile(int datasetKey) {

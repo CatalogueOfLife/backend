@@ -11,6 +11,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-12 col may set session_replication_role
+`DatasetDao.deleteData` deletes a dataset from all partitioned tables with `session_replication_role = replica`,
+skipping the per row foreign key checks. They picked the wrong index over the dead rows of already deleted children
+and stalled the re-imports of WFO (44h) and Wikidata (2 weeks projected). Without the grant the deletes run with
+checks as before and log a warning, so it can be run before or after the deploy. Run as superuser on prod and test.
+It also lets the repartition command run without temporary superuser rights.
+```sql
+GRANT SET ON PARAMETER session_replication_role TO col;
+```
+
 #### 2026-10-12 issue for an inferred nomenclatural code
 Names whose code neither their record nor the dataset gave are flagged with a new INFO issue,
 see https://github.com/CatalogueOfLife/backend/issues/1624. Run before the deploy.

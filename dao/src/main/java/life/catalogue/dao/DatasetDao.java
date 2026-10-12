@@ -518,7 +518,14 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   /**
-   * Deletes all data from partitioned tables, clears the usage counter and removed sequences if existing
+   * Deletes all data from partitioned tables, clears the usage counter and removed sequences if existing.
+   *
+   * Every foreign key into a partitioned table comes from another partitioned table of the same dataset,
+   * so deleting a dataset from all of them cannot leave a dangling reference and their per row checks are skipped
+   * if the session may. They are not only redundant but can be fatal: once a child is deleted, its dead rows make the
+   * planner pick any index leading with dataset_key for the check of the parent, which then walks all of them for
+   * every parent row. Deleting the references of WFO took 44h that way, the verbatim records of Wikidata 2 weeks.
+   * Skipping triggers also skips the usage counter trigger, which has nothing to update since the counter is gone.
    */
   public void deleteData(int key, SqlSession session) {
     var dpm = session.getMapper(DatasetPartitionMapper.class);
@@ -526,7 +533,24 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     dpm.deleteUsageCounter(key);
     // delete data from partitions
     LOG.info("Delete partitioned data for dataset {}", key);
-    Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES).forEach(t -> dpm.deleteData(t, key));
+    final boolean skipChecks = dpm.canSkipTriggers();
+    if (skipChecks) {
+      dpm.skipTriggers();
+    } else {
+      LOG.warn("Delete dataset {} with foreign key checks, grant SET ON PARAMETER session_replication_role to skip them", key);
+    }
+    try {
+      Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES).forEach(t -> dpm.deleteData(t, key));
+    } finally {
+      if (skipChecks) {
+        try {
+          dpm.restoreTriggers();
+        } catch (RuntimeException e) {
+          // an aborted transaction rejects the reset, but its rollback reverts the setting anyway
+          LOG.error("Failed to restore session_replication_role after deleting dataset {}", key, e);
+        }
+      }
+    }
     DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dpm.dropTable(t, key));
     // drop id sequences
     dpm.deleteSequences(key);
