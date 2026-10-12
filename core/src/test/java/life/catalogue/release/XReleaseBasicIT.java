@@ -7,6 +7,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
+import life.catalogue.concurrent.DatasetLock;
 import life.catalogue.concurrent.EmailNotificationTemplateTest;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.config.MatchingConfig;
@@ -15,6 +16,8 @@ import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
@@ -26,10 +29,15 @@ import life.catalogue.matching.UsageMatcherFactory;
 
 import org.gbif.nameparser.api.NameType;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
@@ -40,6 +48,7 @@ import org.mockito.Mock;
 import jakarta.validation.Validation;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -149,6 +158,58 @@ public class XReleaseBasicIT {
 
     // test email templates
     EmailNotificationTemplateTest.testTemplates(xrel);
+  }
+
+
+  /**
+   * Merge sources are read live for the whole merge, so a source that an import changes or emptied must not be merged.
+   * Neither fails the release, but both have to show up as failed sectors.
+   * https://github.com/CatalogueOfLife/backend/issues/1634 and #1635
+   */
+  @Test
+  public void refusedSources() throws Exception {
+    // an import of 101 is running
+    final UUID importJob = UUID.randomUUID();
+    assertNull(DatasetLock.tryLock(101, importJob, DatasetLock.Mode.EXCLUSIVE));
+    // and 102 lost its data to a failed import
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(NameMatchMapper.class).deleteByDataset(102);
+      session.getMapper(NameUsageMapper.class).deleteByDataset(102);
+      session.getMapper(NameMapper.class).deleteByDataset(102);
+    }
+    try {
+      var xrel = projectCopyFactory.buildExtendedRelease(13, Users.TESTER);
+      var cfg = new ProjectReleaseConfig();
+      cfg.metadata.alias = "COL{date,yy}";
+      xrel.setPrCfg(cfg);
+      xrel.run();
+      assertEquals(JobStatus.FINISHED, xrel.getStatus());
+
+      var failed = xrel.getFailedSectors();
+      assertEquals(Set.of(101, 102), failed.stream().map(XRelease.FailedSector::subjectDatasetKey).collect(Collectors.toSet()));
+      for (var fs : failed) {
+        assertTrue(fs.reason(), fs.reason().contains(fs.subjectDatasetKey() == 101 ? "being changed by job " + importJob : "is empty"));
+      }
+      // job params
+      var params = (XRelease.XReleaseParams) xrel.getParams();
+      assertEquals(failed, params.failedSectors());
+      // release report
+      File report = new File(this.cfg.release.reportDir(projectKey, xrel.attempt), "failed-sectors.tsv");
+      assertEquals(failed.size() + 1, Files.readAllLines(report.toPath()).size());
+      // release notes
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
+        var d = session.getMapper(DatasetMapper.class).get(xrel.newDatasetKey);
+        assertTrue(d.getNotes(), d.getNotes().contains(failed.size() + " merge sectors failed"));
+      }
+      // the release let go of the sources it merged, but not of the lock the import holds
+      assertTrue(DatasetLock.isLocked(100).isEmpty());
+      assertTrue(DatasetLock.isLocked(102).isEmpty());
+      assertEquals(Set.of(importJob), DatasetLock.holders(101));
+
+      EmailNotificationTemplateTest.testTemplates(xrel);
+    } finally {
+      DatasetLock.unlockAll(importJob);
+    }
   }
 
 }

@@ -54,6 +54,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int vernaculars = 0; // vernacular names added to existing usages
   // ids of existing usages an update changed. Only tracked on request, see trackUpdatedUsages()
   private @Nullable Set<String> updatedUsageIds;
+  // true if the sector itself, not one of its profiles, lists the name types to merge. See nameTypesBySector()
+  private boolean nameTypesBySector;
   private Throwable exception;
   private final @Nullable TreeMergeHandlerConfig cfg;
   private final String nameIdScope;
@@ -575,10 +577,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
         return incIgnored(IgnoreReason.RANK, u);
       }
       // a ranked name the parser could not make sense of is no name to merge, e.g. a family "0" that became the parent of
-      // existing base genera. Viruses are OTHER too, but carry the virus code. An explicit sector name type filter or a
-      // reviewed decision has the final say. See https://github.com/CatalogueOfLife/data/issues/1730
+      // existing base genera. Viruses are OTHER too, but carry the virus code. A name type filter set on the sector itself
+      // or a reviewed decision has the final say - a profile default like COL's "Project defaults", which admits OTHER for
+      // every sector, does not. See https://github.com/CatalogueOfLife/data/issues/1730 and #1636
       if (u.getName().getType() == NameType.OTHER && u.getName().getCode() != NomCode.VIRUS
-          && (sector.getNameTypes() == null || sector.getNameTypes().isEmpty())
+          && !nameTypesBySector
           && (decision == null || decision.getMode() != EditorialDecision.Mode.REVIEWED)) {
         return incIgnored(IgnoreReason.NAME_OTHER, u);
       }
@@ -1140,6 +1143,15 @@ public class TreeMergeHandler extends TreeBaseHandler {
    */
   void trackUpdatedUsages() {
     updatedUsageIds = new HashSet<>();
+  }
+
+  /**
+   * Lets the name type filter of the sector decide about ranked OTHER names. Only to be called if the sector lists the
+   * name types itself: a sync copies the settings its profiles resolve onto the sector, so a non empty list alone
+   * does not tell a reviewed exception for this sector from a project wide default.
+   */
+  void nameTypesBySector() {
+    nameTypesBySector = true;
   }
 
   /**

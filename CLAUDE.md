@@ -165,7 +165,11 @@ a free text `step`, not a status - the old `ImportState` enum column is gone fro
 The executor has three lanes (`JobLane`: DEFAULT, IMPORT, SYNC - a vocab enum, so it is served at
 `/vocab/joblane` and persisted as the `job.lane` column), each with its own worker pool and priority
 queue so a long import cannot starve an export; `getSerialBy()` serializes jobs sharing a key within a lane
-(sector syncs of one project). `ImportManager`/`SyncManager` own neither thread pools nor a lifecycle - they
+(sector syncs of one project). A `DatasetBlockingJob` locks its dataset through `DatasetLock`, EXCLUSIVE by default
+(imports, releases, deletes) or SHARED for readers (exports); an XRelease also takes SHARED locks on its merge sources
+while it merges them. A job that finds its dataset locked fails fast with a `DatasetBlockedException` and the executor
+parks it per dataset, holding no worker, until `DatasetLock` reports the dataset unlocked. Locks are held by job key,
+so a job can only release its own. `ImportManager`/`SyncManager` own neither thread pools nor a lifecycle - they
 only validate, submit and cancel; imports left stale by a shutdown are resubmitted by a handler the executor
 invokes from `start()` (`JobExecutor.onStaleJobs`). Every path that hands a task to a worker goes through the
 single `dispatch()`.

@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -252,7 +253,11 @@ public class JobExecutorTest {
   class BlockJob extends DatasetBlockingJob {
 
     public BlockJob() {
-      super(1, 1, JobPriority.MEDIUM);
+      this(1);
+    }
+
+    public BlockJob(int datasetKey) {
+      super(datasetKey, 1, JobPriority.MEDIUM);
       System.out.println(getClass().getSimpleName() + " " + getKey());
     }
 
@@ -492,6 +497,128 @@ public class JobExecutorTest {
     }
     exec.stop();
     assertEquals(6, finished.size());
+  }
+
+  /**
+   * Holds an exclusive lock on dataset 7 for a job that is not known to the executor, like an extended release
+   * locking a source it merges.
+   */
+  private UUID lockDataset7() {
+    var holder = UUID.randomUUID();
+    assertNull(DatasetLock.tryLock(7, holder, DatasetLock.Mode.EXCLUSIVE));
+    return holder;
+  }
+
+  private void awaitStatus(BackgroundJob job, JobStatus status) throws InterruptedException {
+    for (int i = 0; i < 400 && job.getStatus() != status; i++) {
+      TimeUnit.MILLISECONDS.sleep(5);
+    }
+    assertEquals(status, job.getStatus());
+  }
+
+  /**
+   * A job blocked by a dataset lock must not hold the only worker of its lane while it waits,
+   * and runs as soon as the dataset is unlocked.
+   */
+  @Test
+  public void blockedJobHoldsNoWorker() throws Exception {
+    MarkJob.RAN.clear();
+    var ex = singleThreaded();
+    ex.start();
+    var holder = lockDataset7();
+    try {
+      var blocked = new BlockJob(7);
+      ex.submit(blocked);
+      awaitStatus(blocked, JobStatus.BLOCKED);
+      assertEquals(1, ex.queueSize());
+
+      // the single worker is free for other jobs
+      var other = new MarkJob(2, 1);
+      ex.submit(other);
+      awaitStatus(other, JobStatus.FINISHED);
+      assertEquals(JobStatus.BLOCKED, blocked.getStatus());
+
+      DatasetLock.unlock(7, holder);
+      awaitStatus(blocked, JobStatus.FINISHED);
+      assertTrue(finished.contains(blocked.getKey()));
+      assertTrue("the job released its own lock", DatasetLock.isLocked(7).isEmpty());
+    } finally {
+      ex.stop();
+      DatasetLock.unlockAll(holder);
+    }
+  }
+
+  @Test
+  public void cancelLockParked() throws Exception {
+    var ex = singleThreaded();
+    ex.start();
+    var holder = lockDataset7();
+    try {
+      var blocked = new BlockJob(7);
+      ex.submit(blocked);
+      awaitStatus(blocked, JobStatus.BLOCKED);
+      ex.cancel(blocked.getKey(), user.getKey());
+      assertEquals(JobStatus.CANCELED, blocked.getStatus());
+      assertTrue(ex.hasEmptyQueue());
+
+      DatasetLock.unlock(7, holder);
+      TimeUnit.MILLISECONDS.sleep(50);
+      assertFalse("a cancelled job never runs", finished.contains(blocked.getKey()));
+      assertEquals(JobStatus.CANCELED, blocked.getStatus());
+    } finally {
+      ex.stop();
+      DatasetLock.unlockAll(holder);
+    }
+  }
+
+  @Test
+  public void stopCancelsLockParked() throws Exception {
+    var ex = singleThreaded();
+    ex.start();
+    var holder = lockDataset7();
+    try {
+      var blocked = new BlockJob(7);
+      ex.submit(blocked);
+      awaitStatus(blocked, JobStatus.BLOCKED);
+      ex.stop();
+      assertEquals(JobStatus.CANCELED, blocked.getStatus());
+    } finally {
+      DatasetLock.unlockAll(holder);
+    }
+  }
+
+  /**
+   * Jobs that share their lock run at the same time: both wait for each other, which would never end if one was
+   * blocked by the other.
+   */
+  @Test
+  public void sharedLocksRunTogether() throws Exception {
+    var latch = new CountDownLatch(2);
+    class SharedJob extends BlockJob {
+      SharedJob() {
+        super(8);
+      }
+
+      @Override
+      public DatasetLock.Mode lockMode() {
+        return DatasetLock.Mode.SHARED;
+      }
+
+      @Override
+      protected void runWithLock() throws Exception {
+        latch.countDown();
+        if (!latch.await(5, TimeUnit.SECONDS)) {
+          throw new IllegalStateException("the other shared job never ran");
+        }
+      }
+    }
+    var j1 = new SharedJob();
+    var j2 = new SharedJob();
+    exec.submit(j1);
+    exec.submit(j2);
+    awaitStatus(j1, JobStatus.FINISHED);
+    awaitStatus(j2, JobStatus.FINISHED);
+    assertTrue(DatasetLock.isLocked(8).isEmpty());
   }
 
   /**

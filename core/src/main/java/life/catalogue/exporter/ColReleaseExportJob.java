@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.concurrent.DatasetBlockingJob;
+import life.catalogue.concurrent.DatasetLock;
 import life.catalogue.api.vocab.JobPriority;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.img.ImageService;
@@ -65,6 +66,14 @@ public class ColReleaseExportJob extends DatasetBlockingJob {
         default -> throw new IllegalArgumentException("Export format " + format + " is not supported yet");
       });
     }
+  }
+
+  /**
+   * An export only reads its dataset, so exports share it with each other and with an extended release merging it.
+   */
+  @Override
+  public DatasetLock.Mode lockMode() {
+    return DatasetLock.Mode.SHARED;
   }
 
   @Override

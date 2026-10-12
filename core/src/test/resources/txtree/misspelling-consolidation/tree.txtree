@@ -1,0 +1,11 @@
+Leporidae [family] {ID=lep CODE=ZOOLOGICAL}
+  Sylvilagus Gray, 1867 [genus] {ID=syl PRIO=1}
+    Sylvilagus fulvescens J.A.Allen, 1912 [species] {ID=ful PRIO=1}
+  Silvilagus Gray, 1867 [genus] {ID=sil PRIO=5}
+    Silvilagus fulvescens J.A.Allen, 1912 [species] {ID=ful2 PRIO=5}
+      Silvilagus fulvescens minor Nelson, 1909 [subspecies] {ID=min PRIO=5}
+Chrysomelidae [family] {ID=chr CODE=ZOOLOGICAL}
+  Cephaloleia Chevrolat, 1836 [genus] {ID=cep PRIO=1}
+    Cephaloleia sulcipes Baly, 1885 [species] {ID=sul PRIO=1}
+    Cephaloleia fulcipes Baly, 1885 [species] {ID=ful3 PRIO=5}
+      Cephaloleia fulcipes minor Uhmann, 1930 [subspecies] {ID=fulmin PRIO=5}

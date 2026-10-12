@@ -228,6 +228,22 @@ public class SectorSyncIT extends SectorSyncTestBase {
   }
 
   /**
+   * A profile default that admits OTHER names for every sector, as COL's "Project defaults" does, is no reviewed
+   * exception for a sector and must not open the door to family "0". https://github.com/CatalogueOfLife/backend/issues/1636
+   */
+  @Test
+  public void mergeIgnoresOtherNamesOfProfileDefaults() throws Exception {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      projectDefaults.getSettings().setNameTypes(Set.of(NameType.FORMULA, NameType.SCIENTIFIC, NameType.OTHER));
+      session.getMapper(SectorProfileMapper.class).update(projectDefaults);
+    }
+    var culex = mergeFamilyZero(null);
+    assertNull("family 0 must not be merged", getByName(Datasets.COL, Rank.FAMILY, "0"));
+    assertEquals("Culex stays directly below Diptera", "diptera", culex.getParentId());
+    assertNotNull("virus names are OTHER and must still merge", getByName(Datasets.COL, Rank.SPECIES, "Culex zero virus 1"));
+  }
+
+  /**
    * An explicit sector name type filter has the final say and can still merge OTHER names.
    */
   @Test

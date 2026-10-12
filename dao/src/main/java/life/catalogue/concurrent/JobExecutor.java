@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -47,6 +48,8 @@ import com.codahale.metrics.Timer;
  * which may run in parallel across projects but never within the same project.
  *
  * The executor supports notification of errors via email and blocking jobs that depend on a locked access to a single dataset.
+ * A DatasetBlockingJob that finds its dataset locked fails fast and is parked here, without a worker, until the dataset
+ * is unlocked - the executor listens to DatasetLock for that.
  * If a JobDao is given, every job is persisted to the job table with all its status changes.
  */
 public class JobExecutor implements Managed, Idle, SomeExecutor {
@@ -57,6 +60,9 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   private final Map<JobLane, PriorityBlockingQueue<Runnable>> queues = new EnumMap<>(JobLane.class);
   private final ConcurrentMap<UUID, ComparableFutureTask> futures = new ConcurrentHashMap<>();
   private final SerialGate gate = new SerialGate();
+  // blocked jobs waiting for a dataset lock, by dataset key. Not in any lane queue, they hold no worker
+  private final Map<Integer, List<ComparableFutureTask>> lockParked = new HashMap<>();
+  private final IntConsumer unlockListener = this::unparkLocked;
   private final UserCrudDao udao;
   private final @Nullable EmailNotification emailer;
   private final @Nullable JobDao jobDao; // optional - without it jobs are not persisted, e.g. in CLI tools
@@ -83,6 +89,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
         exec.allowCoreThreadTimeOut(true);
         execs.put(lane, exec);
       }
+      DatasetLock.addListener(unlockListener);
       // last, as the handlers resubmit and therefore need the pools
       for (var handler : staleHandlers) {
         try {
@@ -116,6 +123,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
         ExecutorUtils.shutdownNow(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
       }
       execs = null;
+      DatasetLock.removeListener(unlockListener);
       // a queued job never reached run(), so nothing else will ever record an end for it
       for (var ftask : discarded) {
         cancelBeforeStart(ftask);
@@ -127,7 +135,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
   }
 
   /**
-   * Empties every lane queue and the serial gate.
+   * Empties every lane queue, the serial gate and the parking for dataset locks.
    * @return the tasks that were waiting and will now never run
    */
   private List<ComparableFutureTask> drainQueued() {
@@ -139,6 +147,10 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     }
     // a gate active task sits in a lane queue and is drained above; only the parked ones live in the gate alone
     drained.addAll(gate.clear());
+    synchronized (lockParked) {
+      lockParked.values().forEach(drained::addAll);
+      lockParked.clear();
+    }
     return drained;
   }
 
@@ -237,15 +249,27 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
 
     private final BackgroundJob task;
     // monotonic submission sequence as a FIFO tie breaker for jobs of equal priority
-    private final long seq = SEQ.incrementAndGet();
+    private final long seq;
 
     public BackgroundJob getTask() {
       return task;
     }
 
     ComparableFutureTask(BackgroundJob runnable) {
+      this(runnable, SEQ.incrementAndGet());
+    }
+
+    private ComparableFutureTask(BackgroundJob runnable, long seq) {
       super(runnable, null);
       this.task = runnable;
+      this.seq = seq;
+    }
+
+    /**
+     * A future runs only once, so a job that has to run again gets a new one. It keeps its place among jobs of equal priority.
+     */
+    ComparableFutureTask rerun() {
+      return new ComparableFutureTask(task, seq);
     }
 
     @Override
@@ -411,12 +435,16 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       } catch (CancellationException e) {
         // the task was cancelled while queued but slipped past purge - nothing to do
       } catch (ExecutionException e) {
-        // resubmit blocked jobs. DatasetBlockingJob implements some waiting rules based on number of attempts
-        if (e.getCause() instanceof DatasetBlockedException && job instanceof DatasetBlockingJob) {
-          DatasetBlockedException be = (DatasetBlockedException) e.getCause();
-          DatasetBlockingJob bj = (DatasetBlockingJob) job;
-          LOG.info("Resubmit job {} #{} which requires a lock on dataset {} and is blocked by {}", job.getKey(), bj.getRetry(), be.datasetKey, be.blockedBy);
-          JobExecutor.this.submit(job);
+        // a job blocked by a dataset lock waits for it to be released, without holding a worker
+        if (e.getCause() instanceof DatasetBlockedException be && job instanceof DatasetBlockingJob bj) {
+          parkBlocked(bj, ftask, be);
+        }
+      }
+      if (job.getStatus().isDone()) {
+        // whatever locks a job took for its own purposes, e.g. on the sources an extended release merges, end with it
+        var released = DatasetLock.unlockAll(job.getKey());
+        if (!released.isEmpty()) {
+          LOG.warn("Job {} ended still holding locks on datasets {}", job.getKey(), released);
         }
       }
       // mail on error if configured
@@ -427,6 +455,79 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
           LOG.error("Failed to send error email for job {}", job.getKey(), e);
         }
       }
+    }
+  }
+
+  /**
+   * Parks a job that could not get the lock on its dataset until the dataset is unlocked.
+   * The lock might have been released in the meantime, while the unlock listener found nothing to unpark yet,
+   * so availability is checked again under the same monitor the listener uses.
+   */
+  private void parkBlocked(DatasetBlockingJob job, ComparableFutureTask ftask, DatasetBlockedException be) {
+    var next = ftask.rerun();
+    futures.put(job.getKey(), next);
+    synchronized (lockParked) {
+      if (!DatasetLock.isAvailable(be.datasetKey, job.getKey(), job.lockMode())) {
+        LOG.info("Park {} job {} until dataset {} is unlocked by job {}", job.getJobName(), job.getKey(), be.datasetKey, be.blockedBy);
+        lockParked.computeIfAbsent(be.datasetKey, k -> new ArrayList<>()).add(next);
+        return;
+      }
+    }
+    LOG.info("Rerun {} job {} as dataset {} got unlocked meanwhile", job.getJobName(), job.getKey(), be.datasetKey);
+    requeue(next);
+  }
+
+  /**
+   * Called by DatasetLock whenever a dataset got unlocked. Requeues all jobs parked for it.
+   * Those that still conflict are parked again when they fail to get their lock.
+   */
+  private void unparkLocked(int datasetKey) {
+    List<ComparableFutureTask> tasks;
+    synchronized (lockParked) {
+      tasks = lockParked.remove(datasetKey);
+    }
+    if (tasks != null) {
+      for (var t : tasks) {
+        LOG.info("Unpark job {} as dataset {} got unlocked", t.task.getKey(), datasetKey);
+        requeue(t);
+      }
+    }
+  }
+
+  private boolean removeLockParked(ComparableFutureTask ftask) {
+    synchronized (lockParked) {
+      for (var tasks : lockParked.values()) {
+        if (tasks.remove(ftask)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Hands a task that was parked back to the pools, passing the serial gate again. Gives it a final state
+   * if that fails because the executor was stopped meanwhile.
+   */
+  private void requeue(ComparableFutureTask ftask) {
+    try {
+      enqueue(ftask);
+    } catch (RuntimeException e) {
+      LOG.warn("Failed to requeue job {}, cancelling it", ftask.task.getKey(), e);
+      futures.remove(ftask.task.getKey());
+      cancelBeforeStart(ftask);
+    }
+  }
+
+  /**
+   * Hands a task to its pool, unless it has to wait behind the running job of its serial key.
+   */
+  private void enqueue(ComparableFutureTask ftask) {
+    Object serial = ftask.task.getSerialBy();
+    if (serial != null && !gate.tryAcquire(serial, ftask)) {
+      LOG.info("Park {} job {} behind the running job serialized by {}", ftask.task.getJobName(), ftask.task.getKey(), serial);
+    } else {
+      dispatch(ftask);
     }
   }
 
@@ -452,7 +553,8 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
 
   /**
    * The single place a task is handed to a worker pool. Every path that starts a job goes through here -
-   * the submit tail and the serial gate promotion - so a gate on running work only has to be applied once.
+   * the submit tail, the serial gate promotion and the rerun of a job blocked by a dataset lock - so a gate on running
+   * work only has to be applied once.
    */
   private void dispatch(ComparableFutureTask ftask) {
     var pools = execs;
@@ -479,7 +581,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
 
   /**
    * Every job the executor still owns that has not started yet, wherever it currently sits: a lane queue,
-   * the serial gate, or a worker parked on the pause gate. Reading this off the jobs rather than off the
+   * the serial gate, the parking for a dataset lock, or a worker parked on the pause gate. Reading this off the jobs rather than off the
    * queues is what keeps a paused executor honest - a task a worker has already taken is out of its
    * PriorityBlockingQueue but has not begun, and used to be invisible to the whole queue API.
    */
@@ -509,7 +611,8 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
       final JobStatus st = job.getStatus();
       f.cancel(true);
       if (st == JobStatus.WAITING || st == JobStatus.BLOCKED) {
-        if (job.getSerialBy() == null || !gate.removeParked(f)) {
+        // a job parked for a dataset lock sits in no lane queue and released its serial key when it got blocked
+        if (!removeLockParked(f) && (job.getSerialBy() == null || !gate.removeParked(f))) {
           // the job sat in an executor queue: remove it and release its serial key if it held one
           execs.get(job.getLane()).purge();
           releaseSerialAndPromote(job, f);
@@ -608,12 +711,7 @@ public class JobExecutor implements Managed, Idle, SomeExecutor {
     var ftask = new ComparableFutureTask(job);
     futures.put(job.getKey(), ftask);
     try {
-      Object serial = job.getSerialBy();
-      if (serial != null && !gate.tryAcquire(serial, ftask)) {
-        LOG.info("Park {} job {} behind the running job serialized by {}", job.getJobName(), job.getKey(), serial);
-      } else {
-        dispatch(ftask);
-      }
+      enqueue(ftask);
     } catch (RuntimeException e) {
       futures.remove(job.getKey());
       if (newJob && jobDao != null) {
