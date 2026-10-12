@@ -9,6 +9,7 @@ import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.BaseDecisionMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
 
 import java.util.Objects;
 
@@ -150,6 +151,8 @@ public abstract class RematcherBase<
 
   /**
    * Tries to strictly and uniquely match a simple name instance to a given dataset.
+   * An id that still resolves to a usage with the same name and rank is kept, whatever else changed about it:
+   * a source keeping its ids tells us best that it is the same usage, even after it moved elsewhere in the tree.
    * If multiple matches exist it tries to select the previously matched usage, if that does not exist the originally assigned usage.
    * If both do not exist and we have multiple matches do not match to any of them and return null.
    *
@@ -159,6 +162,14 @@ public abstract class RematcherBase<
    * @return the unique match or null
    */
   private NameUsage matchUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn, String originalId){
+    if (sn.getId() != null) {
+      var u = session.getMapper(NameUsageMapper.class).get(DSID.of(datasetKey, sn.getId()));
+      if (u != null && u.getName().getScientificName().equalsIgnoreCase(sn.getName())
+          && (sn.getRank() == null || sn.getRank() == u.getRank())) {
+        LOG.debug("{} {} still links to usage {} in dataset {}", obj.getClass().getSimpleName(), obj.getKey(), sn, datasetKey);
+        return u;
+      }
+    }
     var result = mdao.matchDataset(sn, datasetKey);
     LOG.info("Match {} {} from project {} to dataset {}: {}", obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, result);
 

@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.search.FacetValue;
 import life.catalogue.db.mapper.DecisionMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 
 import java.util.ArrayList;
@@ -52,6 +53,50 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
     try (SqlSession session = factory.openSession()) {
       return session.getMapper(DecisionMapper.class).listProjectKeys(subjectDatasetKey);
     }
+  }
+
+  @Override
+  public DSID<Integer> create(EditorialDecision obj, int user) {
+    try (SqlSession session = factory.openSession()) {
+      obj.setSubject(refreshSubject(obj.getSubjectDatasetKey(), obj.getSubject(), null, session.getMapper(NameUsageMapper.class)));
+    }
+    return super.create(obj, user);
+  }
+
+  @Override
+  protected void updateBefore(EditorialDecision obj, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
+    obj.setSubject(refreshSubject(obj.getSubjectDatasetKey(), obj.getSubject(), old.getSubject(), session.getMapper(NameUsageMapper.class)));
+  }
+
+  /**
+   * The subject is a denormalised copy of the linked usage, so a rematch after the source changed its ids can tell
+   * homonyms apart: https://github.com/CatalogueOfLife/backend/issues/1639
+   * A newly linked id copies name, authorship, rank, code, status and the parent name from its usage, the parent of a
+   * synonym being its accepted name. The parent is kept as a name, as the ids it would otherwise refer to are just
+   * what changes in a re-import.
+   * The stored link is kept while its id is unchanged, so a stale link stays visible until it gets rematched.
+   * An id that does not resolve keeps what was given, so the broken link can still be rematched by name.
+   */
+  static SimpleNameLink refreshSubject(Integer datasetKey, SimpleNameLink link, SimpleNameLink old, NameUsageMapper num) {
+    if (link == null || link.getId() == null || datasetKey == null) {
+      return link;
+    }
+    if (old != null && link.getId().equals(old.getId())) {
+      return old;
+    }
+    SimpleName sn = num.getSimple(DSID.of(datasetKey, link.getId()));
+    if (sn == null) {
+      return link;
+    }
+    var subject = SimpleNameLink.of(sn);
+    subject.setParent(null);
+    if (sn.getParent() != null) {
+      SimpleName parent = num.getSimple(DSID.of(datasetKey, sn.getParent()));
+      if (parent != null) {
+        subject.setParent(parent.getName());
+      }
+    }
+    return subject;
   }
 
   @Override

@@ -33,8 +33,8 @@ public class DecisionRematcher extends RematcherBase<EditorialDecision, Decision
   void match(EditorialDecision obj) {
     if (obj.getSubject() != null) {
       final EditorialDecision old = new EditorialDecision(obj);
-      obj.getSubject().setId(null);
       NameUsage u = matchSubjectUniquely(obj.getSubjectDatasetKey(), obj, obj.getSubject(), obj.getOriginalSubjectId());
+      obj.getSubject().setId(null);
       if (u != null) {
         // see if we already have another decision with the same subject ID
         EditorialDecision ed2 = mapper.getBySubject(projectKey, obj.getSubjectDatasetKey(), u.getId());
@@ -45,6 +45,11 @@ public class DecisionRematcher extends RematcherBase<EditorialDecision, Decision
         }
       }
       if (updateCounter(true, old.getSubject().getId(), obj.getSubject().getId())) {
+        if (obj.getSubject().getId() != null) {
+          LOG.info("Decision {} in project {} moved from {} [{}] with parent {} to {} [{}] with parent id {}",
+            obj.getId(), projectKey, old.getSubject().getLabel(), old.getSubject().getId(), old.getSubject().getParent(),
+            u.getLabel(), u.getId(), u.getParentId());
+        }
         dao.update(obj, old, userKey, session);
       }
     }
