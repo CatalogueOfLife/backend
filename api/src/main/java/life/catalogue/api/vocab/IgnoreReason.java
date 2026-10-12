@@ -26,6 +26,12 @@ public enum IgnoreReason {
    */
   AMBIGUOUS_HOMONYM(u -> u.getName().getAuthorship()),
   /**
+   * A genus flagged with {@link Issue#PLACEMENT_CONFLICT} in its source that the project holds no single genus of the
+   * same name for, so neither the source placement nor any project genus can be trusted. Skipped with its subtree.
+   * @see <a href="https://github.com/CatalogueOfLife/backend/issues/1608">#1608</a>
+   */
+  PLACEMENT_CONFLICT(),
+  /**
    * The name is on the blockedNames list or matches one of the blockedNamePatterns of the sector or its profiles.
    */
   BLOCKED_NAME(u -> u.getName().getLabel()),

@@ -46,6 +46,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final MatchingUtils utils;
   private final AuthorComparator authComp;
   private final TaxGroupAnalyzer groupAnalyzer;
+  // the lowest group the whole source covers, a fallback for usages whose own classification tells none
+  private final @Nullable TaxGroup sourceGroup;
+  // verbatim keys of the source genera whose placement contradicts the reference, see PlacementChecker
+  private final Set<Integer> placementConflicts;
   private int counter = 0;  // all source usages
   private int ignored = 0;
   private int thrown = 0;
@@ -74,6 +78,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
     this.cfg = cfg;
     this.matcher = matcherSupplier.apply(batchSession);
     groupAnalyzer = new TaxGroupAnalyzer();
+    sourceGroup = source == null ? null : TaxGroupAnalyzer.lowestCommonGroup(source.getTaxonomicGroupScope());
+    placementConflicts = Set.copyOf(vrmRO.listKeysByIssue(sector.getSubjectDatasetKey(), Issue.PLACEMENT_CONFLICT));
+    LOG.info("Source {} covers taxonomic group {} and has {} genera with a placement conflict", sector.getSubjectDatasetKey(), sourceGroup, placementConflicts.size());
     utils = new MatchingUtils(nameIndex);
     // same construction as UsageMatcher: reuse the names index own comparator when available so
     // author matching (used to disambiguate bare-name merge candidates) behaves identically
@@ -253,11 +260,24 @@ public class TreeMergeHandler extends TreeBaseHandler {
     boolean unique = nu.getName().getRank().isSupraspecific() && cfg != null && cfg.xCfg.enforceUnique(nu.getName());
     boolean markMatch = false;
 
+    // The source placed this genus in a group the reference does not know it in, e.g. a fungus under the plant family of
+    // its host. Its classification cannot be trusted, so match it without one and cut it off for its descendants too.
+    // See https://github.com/CatalogueOfLife/backend/issues/1608
+    final boolean placementConflict = nu.isTaxon() && nu.getVerbatimKey() != null && placementConflicts.contains(nu.getVerbatimKey());
+    if (placementConflict) {
+      parents.mark();
+    }
+
     // find out matching - even if we ignore the name in the merge we want the parents matched for classification comparisons
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
     var snc = new SimpleNameClassified<SimpleNameCached>(nusn);
-    snc.setClassification(parents.classificationSN(1));
+    if (placementConflict) {
+      snc.setClassification(List.of());
+    } else {
+      snc.setClassification(parents.classificationSN(1));
+      snc.setGroup(sourceGroup);
+    }
     UsageMatch match = matcher.match(snc, true, unique);
     // remove matches to genera for unranked source names as genera often are homonyms with higher names and can cause serious trouble
     if (match.isMatch() && nu.getRank().otherOrUnranked() && match.usage.getRank().isGenusGroup()) {
@@ -314,13 +334,29 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
     }
 
-    // An existing usage shares this canonical name but carries different authorship, and neither the
-    // ranks the two classifications share nor their taxonomic group can tell a real homonym from the
-    // very same taxon. Creating the name would fabricate a duplicate genus, so drop it and its whole
-    // subtree instead - a genus we cannot place with confidence contributes nothing rather than a
-    // second copy. See https://github.com/CatalogueOfLife/data/issues/1718
+    // A genus with a placement conflict joins the project genus of its name if there is a single one to join, without
+    // updating it. Without one there is nowhere to put it but under the wrong host, so it is dropped with its subtree.
+    if (placementConflict) {
+      if (match.isMatch()) {
+        LOG.info("Attach {} {} [{}] from {} with a placement conflict to {} ignoring its source classification {}",
+          nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, match.usage, parents.classificationToString());
+        match = UsageMatch.snap(match.usage, targetDatasetKey, match.alternatives);
+      } else {
+        LOG.warn("Skip {} {} [{}] from {} and its entire subtree: its source classification {} contradicts the reference and the project has no single {} of that name to attach to",
+          nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, parents.classificationToString(), nu.getName().getRank());
+        parents.markSubtreeAsSkipped();
+        incIgnored(IgnoreReason.PLACEMENT_CONFLICT, nu);
+        return;
+      }
+    }
+
+    // Existing usages share this canonical name, but neither authorship, the ranks the classifications share nor
+    // their taxonomic groups can tell a real homonym from the very same taxon, or which of several homonyms it is.
+    // Creating the name would fabricate a duplicate, picking one would guess, so drop it and its whole subtree
+    // instead - a name we cannot place with confidence contributes nothing rather than a second copy.
+    // See https://github.com/CatalogueOfLife/data/issues/1718 and https://github.com/CatalogueOfLife/backend/issues/1608
     if (!match.isMatch() && match.unresolvedHomonym) {
-      LOG.warn("Skip {} {} [{}] from {} and its entire subtree: another {} of the same name but different authorship exists in {}, and neither the ranks they share nor their taxonomic group can tell them apart. Source classification: {}",
+      LOG.warn("Skip {} {} [{}] from {} and its entire subtree: other {} of the same name exist in {}, and neither authorship, the ranks they share nor their taxonomic group can tell them apart. Source classification: {}",
         nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, nu.getName().getRank(), targetDatasetKey, parents.classificationToString());
       parents.markSubtreeAsSkipped();
       incIgnored(IgnoreReason.AMBIGUOUS_HOMONYM, nu);
@@ -365,7 +401,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
     } else {
       // *** CREATE ***
       if ( nu.isTaxon() && syncTaxa && !isAmbiguousGenus(nu) ||  nu.isSynonym() && syncSynonyms) {
-        sn = create(nu, parent, mod);
+        try {
+          sn = create(nu, parent, mod);
+        } catch (UnresolvedHomonymException e) {
+          // the genus the species needs cannot be told apart from homonyms of other groups. Guessing one puts it into a
+          // different kingdom, a new genus duplicates one of them, so the species is dropped with its subtree.
+          LOG.warn("Skip {} {} [{}] from {} and its entire subtree: its genus {} cannot be told apart from homonyms of disparate groups in {}. Source classification: {}",
+            nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, e.genus, targetDatasetKey, parents.classificationToString());
+          parents.markSubtreeAsSkipped();
+          incIgnored(IgnoreReason.AMBIGUOUS_HOMONYM, nu);
+          return;
+        }
       }
     }
 
@@ -595,16 +641,35 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   /**
    * Use the same usage matching to find existing taxa
+   *
+   * @throws UnresolvedHomonymException for a genus that cannot be told apart from existing homonyms of disparate groups
    */
   @Override
   protected Usage findExisting(Name n, Usage parent) {
     var snc = utils.toSimpleNameClassified(new Taxon(n), parents.classificationSN());
+    snc.setGroup(sourceGroup);
     var m = matcher.match(snc, true, false);
     // make sure rank is correct - canonical matches are across ranks
     if (m.usage != null && m.usage.getRank() == n.getRank()) {
       return usage(m.usage);
     }
+    if (m.unresolvedHomonym && n.getRank() == Rank.GENUS) {
+      throw new UnresolvedHomonymException(n.getLabel());
+    }
     return null;
+  }
+
+  /**
+   * Thrown while creating the implicit genus of a species that cannot be told apart from existing homonyms.
+   * It aborts the creation of the species before anything is persisted.
+   */
+  static class UnresolvedHomonymException extends RuntimeException {
+    final String genus;
+
+    UnresolvedHomonymException(String genus) {
+      super("Unresolved genus homonym " + genus);
+      this.genus = genus;
+    }
   }
 
   @Override

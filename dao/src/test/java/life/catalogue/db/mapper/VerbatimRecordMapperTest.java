@@ -85,6 +85,23 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
   }
 
   @Test
+  public void removeAndListIssue() {
+    insertTestData();
+    DSID<Integer> vkey = DSID.of(datasetKey, 8);
+    assertTrue(mapper().listKeysByIssue(datasetKey, Issue.PLACEMENT_CONFLICT).isEmpty());
+
+    mapper().addIssue(vkey, Issue.PLACEMENT_CONFLICT);
+    assertEquals(List.of(8), mapper().listKeysByIssue(datasetKey, Issue.PLACEMENT_CONFLICT));
+
+    mapper().removeIssue(datasetKey, Issue.PLACEMENT_CONFLICT);
+    assertTrue(mapper().listKeysByIssue(datasetKey, Issue.PLACEMENT_CONFLICT).isEmpty());
+    // other issues are kept
+    var issues = mapper().getIssues(vkey);
+    assertEquals(1, issues.getIssues().size());
+    assertTrue(issues.contains(Issue.BASIONYM_ID_INVALID));
+  }
+
+  @Test
   public void count() {
     // count apples. rely on import metrics for quick counts so derive them first
     generateDatasetImport(DATASET11.getKey());

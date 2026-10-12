@@ -118,6 +118,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       {"protected", List.of("src")}, // XReleaseConfig.protectedGroups shields the Carabus subtree from merges
       {"bareauthorship", List.of("src")}, // bare-name merge candidates must be filtered by authorship, see readme.md
       {"genushomonyms", List.of("src")}, // genus homonyms decided by the lowest shared rank, see readme.md
+      {"placementconflict", List.of("article", "species")}, // misplaced source genera and homonyms of disparate groups, see readme.md
       {"environment", List.of("src")}, // merges fill in missing environments & temporal ranges, never extinct, see readme.md
       {"profiles", List.of("src")} // sector profiles cascade and their blocklists reach the merge, see readme.md
     });
@@ -684,6 +685,36 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     // a skipped genus must not leave its species orphaned under the nearest matched parent.
     assertNull("The descendants of a skipped genus must be skipped too",
       getByName(Datasets.COL, Rank.SPECIES, "Cus secundus"));
+  }
+
+  public void placementconflictValidate() {
+    // the article filed the fungus Curvularia under the grass family of its host. Its genus was flagged with a
+    // placement conflict, so it joins the single project Curvularia instead of creating a grass genus of that name
+    var curvularia = listByName(Datasets.COL, Rank.GENUS, "Curvularia");
+    assertEquals("A misplaced genus must not be duplicated under its host", 1, curvularia.size());
+    assertEquals("Boedijn, 1933", curvularia.get(0).getName().getAuthorship());
+    var nanningensis = getByName(Datasets.COL, Rank.SPECIES, "Curvularia nanningensis");
+    assertNotNull(nanningensis);
+    assertEquals(curvularia.get(0).getId(), nanningensis.getParentId());
+
+    // species that came with nothing but their genus name, which exists in disparate groups: skipped, not guessed
+    assertNull("A species must not be placed in a homonym genus of another order",
+      getByName(Datasets.COL, Rank.SPECIES, "Platygaster mayi"));
+    assertNull("A species must not be placed in a homonym genus of another kingdom",
+      getByName(Datasets.COL, Rank.SPECIES, "Paracoccus rhizosphaerae"));
+    assertEquals(2, listByName(Datasets.COL, Rank.GENUS, "Platygaster").size());
+    assertEquals(2, listByName(Datasets.COL, Rank.GENUS, "Paracoccus").size());
+
+    // the bacterial code alone tells the bacterium from the scale insect
+    var aestuarii = getByName(Datasets.COL, Rank.SPECIES, "Paracoccus aestuarii");
+    assertNotNull(aestuarii);
+    assertEquals("Davis, 1969", getByID(aestuarii.getParentId()).getName().getAuthorship());
+
+    // the accepted mite genus wins over the moth synonym of the same name
+    var badius = getByName(Datasets.COL, Rank.SPECIES, "Oribates badius");
+    assertNotNull(badius);
+    assertEquals(TaxonomicStatus.ACCEPTED, badius.getStatus());
+    assertEquals("Latreille, 1802", getByID(badius.getParentId()).getName().getAuthorship());
   }
 
   void assertVNames(DSID<String> key, int num, VernacularNameMapper vnm) {

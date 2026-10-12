@@ -41,6 +41,15 @@ public class ImporterConfig {
   @Min(1)
   public int callbackTimeout = 10;
 
+  /**
+   * The reference checklist accepted genera are checked against for a placement in a taxonomic group the reference does
+   * not know them in, flagged as PLACEMENT_CONFLICT. Same syntax as the ADD_IDENTIFIERS_FROM setting: a dataset key or a
+   * project key with an LR or LXR suffix for its latest public (extended) release. Null disables the check.
+   * See https://github.com/CatalogueOfLife/backend/issues/1608
+   */
+  @Nullable
+  public String placementReference = "3LR";
+
   @Valid
   @NotNull
   public ContinuousImportConfig continuous = new ContinuousImportConfig();
