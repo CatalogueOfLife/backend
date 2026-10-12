@@ -77,7 +77,7 @@ public class PgImportESIT extends PgImportITBase {
     assertFacetValue(facet, Issue.PARENT_SPECIES_MISSING, 1);
     assertFacetValue(facet, Issue.RANK_NAME_SUFFIX_CONFLICT, 1);
     assertFacetValue(facet, Issue.NO_SPECIES_INCLUDED, 1);
-    assertFacetValue(facet, Issue.MISSING_AUTHORSHIP, 16);
+    assertFacetValue(facet, Issue.MISSING_AUTHORSHIP, 15);
 
     facet = resp.getFacets().get(NameUsageSearchParameter.DECISION_MODE);
     assertEquals(0, facet.size());

@@ -306,4 +306,44 @@ public class NameValidatorTest {
     nb.rank(Rank.FAMILY);
     verify(nb.uninomial("Asteraceae").build(), Issue.MISSING_AUTHORSHIP);
   }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1632
+   */
+  @Test
+  public void botanicalAutonymsHaveNoAuthorship() throws Exception {
+    var nb = Name.newBuilder()
+      .type(NameType.SCIENTIFIC)
+      .genus("Glycine")
+      .specificEpithet("sericea")
+      .infraspecificEpithet("sericea")
+      .rank(Rank.VARIETY)
+      .code(NomCode.BOTANICAL);
+    assertNoMissingAuthorship(nb.build());
+    assertNoMissingAuthorship(nb.rank(Rank.SUBSPECIES).build());
+    // without a code it could be zoological
+    verify(nb.code(null).build(), Issue.MISSING_AUTHORSHIP);
+    // zoological nominotypical subspecies carry the species author
+    verify(nb.code(NomCode.ZOOLOGICAL).build(), Issue.MISSING_AUTHORSHIP);
+    // no autonym
+    verify(nb.code(NomCode.BOTANICAL).infraspecificEpithet("alba").build(), Issue.MISSING_AUTHORSHIP);
+    // the species itself needs an author
+    verify(nb.infraspecificEpithet(null).rank(Rank.SPECIES).build(), Issue.MISSING_AUTHORSHIP);
+
+    // infrageneric autonyms
+    nb = Name.newBuilder()
+      .type(NameType.SCIENTIFIC)
+      .genus("Abies")
+      .infragenericEpithet("Abies")
+      .rank(Rank.SECTION_BOTANY)
+      .code(NomCode.BOTANICAL);
+    assertNoMissingAuthorship(nb.build());
+    verify(nb.infragenericEpithet("Pseudotsuga").build(), Issue.MISSING_AUTHORSHIP);
+  }
+
+  private static void assertNoMissingAuthorship(Name n) {
+    VerbatimRecord v = new VerbatimRecord();
+    NameValidator.flagIssues(n, n.getType(), v);
+    assertFalse(v.contains(Issue.MISSING_AUTHORSHIP));
+  }
 }

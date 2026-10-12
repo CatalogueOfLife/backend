@@ -9,6 +9,7 @@ import life.catalogue.parser.NomCodeParser;
 
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
@@ -142,7 +143,7 @@ public class NameValidator {
     if (!StringUtils.isBlank(n.getScientificName()) && Objects.equals(n.getScientificName(), n.getAuthorship())) {
       v.add(Issue.AUTHORSHIP_UNLIKELY);
     }
-    if (NomCodeParser.isCodeCompliant(type) && StringUtils.isBlank(n.getAuthorship())) {
+    if (NomCodeParser.isCodeCompliant(type) && StringUtils.isBlank(n.getAuthorship()) && !isBotanicalAutonym(n)) {
       v.add(Issue.MISSING_AUTHORSHIP);
     }
     if (isIndetAuthorship(n.getAuthorship())) {
@@ -151,6 +152,21 @@ public class NameValidator {
     return v.hasChanged() ? v.container : null;
   }
   
+  /**
+   * Botanical autonyms like Glycine sericea var. sericea or Abies sect. Abies are established automatically and by
+   * design carry no authorship (ICN Art. 22.1 and 26.1), so they are not missing one.
+   * Zoological nominotypical names are not exempt, they are cited with the author of the species,
+   * and neither are names without a code, as the dataset default code has been applied before.
+   */
+  private static boolean isBotanicalAutonym(FormattableName n) {
+    if (n.getCode() != NomCode.BOTANICAL) {
+      return false;
+    }
+    boolean infragenericAutonym = n.getGenus() != null && n.getSpecificEpithet() == null
+      && n.getGenus().equals(n.getInfragenericEpithet());
+    return n.isAutonym() || infragenericAutonym;
+  }
+
   public static boolean hasUnmatchedBrackets(String x) {
     return !Strings.isNullOrEmpty(x) && OPEN_BRACKETS.countIn(x) != CLOSE_BRACKETS.countIn(x);
   }

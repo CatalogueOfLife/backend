@@ -91,8 +91,10 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertEquals(2, v.getIssues().size());
         assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
         assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
+      } else if (u.getId().equals("1001a")){ // botanical autonym without authorship #1632
+        assertTrue(v.getIssues().isEmpty());
       } else if (n.getName().getRank().isSuprageneric() ||
-        Set.of("1006-s1", "1006-s2", "100", "102", "1001a", "hybrid", "1005").contains(n.getId())
+        Set.of("1006-s1", "1006-s2", "100", "102", "hybrid", "1005").contains(n.getId())
       ) {
         assertEquals(1, v.getIssues().size());
         assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
@@ -418,8 +420,10 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
         assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
 
+      } else if (u.getId().equals("1001a")){ // botanical autonym without authorship #1632
+        assertTrue(v.getIssues().isEmpty());
       } else if (n.getName().getRank().isSuprageneric() ||
-        Set.of("1006-s1", "1006-s2", "100", "102", "1001a", "hybrid", "1005").contains(n.getId())
+        Set.of("1006-s1", "1006-s2", "100", "102", "hybrid", "1005").contains(n.getId())
       ) {
         assertEquals(1, v.getIssues().size());
         assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
