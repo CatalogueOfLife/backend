@@ -144,7 +144,9 @@ public class NameValidator {
     if (!StringUtils.isBlank(n.getScientificName()) && Objects.equals(n.getScientificName(), n.getAuthorship())) {
       v.add(Issue.AUTHORSHIP_UNLIKELY);
     }
-    if (NomCodeParser.isCodeCompliant(type) && StringUtils.isBlank(n.getAuthorship()) && !isBotanicalAutonym(n)) {
+    // the ICVCN does not cite authors at all
+    if (NomCodeParser.isCodeCompliant(type) && StringUtils.isBlank(n.getAuthorship()) && !isBotanicalAutonym(n)
+        && n.getCode() != NomCode.VIRUS) {
       v.add(Issue.MISSING_AUTHORSHIP);
     }
     if (isIndetAuthorship(n.getAuthorship())) {
@@ -284,8 +286,8 @@ public class NameValidator {
         LOG.info("{} part contains whitespace: {}", part, n.getLabel());
         issues.add(Issue.UNUSUAL_NAME_CHARACTERS);
       }
-      // non ascii chars
-      if (NON_LETTER.matcher(part).find()) {
+      // non ascii chars. ICTV species epithets may contain digits, e.g. Acajnonavirus acj9
+      if (n.getCode() != NomCode.VIRUS && NON_LETTER.matcher(part).find()) {
         LOG.info("{} part contains non ASCII letters: {}", part, n.getLabel());
         issues.add(Issue.UNUSUAL_NAME_CHARACTERS);
       }

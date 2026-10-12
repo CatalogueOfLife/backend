@@ -342,6 +342,33 @@ public class NameValidatorTest {
     verify(nb.infragenericEpithet("Pseudotsuga").build(), Issue.MISSING_AUTHORSHIP);
   }
 
+  /**
+   * ICTV names parse as scientific names, but the ICVCN cites no authors and allows digits in species epithets.
+   * https://github.com/CatalogueOfLife/backend/issues/1638
+   */
+  @Test
+  public void virusNames() throws Exception {
+    var nb = Name.newBuilder()
+      .type(NameType.SCIENTIFIC)
+      .genus("Acajnonavirus")
+      .specificEpithet("acj9")
+      .rank(Rank.SPECIES)
+      .code(NomCode.VIRUS);
+    verify(nb.build());
+    verify(nb.genus("Ahphunavirus").specificEpithet("yong1").build());
+    // other parsed name rules still apply
+    verify(nb.specificEpithet("Yong1").build(), Issue.UPPERCASE_EPITHET);
+    // the same names under another code are flagged
+    verify(nb.specificEpithet("yong1").code(NomCode.ZOOLOGICAL).build(), Issue.MISSING_AUTHORSHIP, Issue.UNUSUAL_NAME_CHARACTERS);
+
+    nb = Name.newBuilder()
+      .type(NameType.SCIENTIFIC)
+      .uninomial("Adnaviria")
+      .rank(Rank.REALM)
+      .code(NomCode.VIRUS);
+    verify(nb.build());
+  }
+
   private static void assertNoMissingAuthorship(Name n) {
     VerbatimRecord v = new VerbatimRecord();
     NameValidator.flagIssues(n, n.getType(), v);
