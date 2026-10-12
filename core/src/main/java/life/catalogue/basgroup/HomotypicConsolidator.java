@@ -233,6 +233,9 @@ public class HomotypicConsolidator {
         // the executor would swallow it silently and leave the rest of the group unconsolidated
         LOG.error("Homotypic consolidation of {} failed", tax, e);
       } finally {
+        // both passes track their changes in the usage map, so it only goes once they are done
+        usages = null;
+        relatedNames.clear();
         session = null;
         LoggingUtils.removeJobMDC();
       }
@@ -359,8 +362,6 @@ public class HomotypicConsolidator {
       session.commit();
       LOG.info("Discovered {} new basionym, {} homotypic, {} based on and {} spelling relations. Created {} basionym placeholders and converted {} taxa into synonyms in {}",
         newBasionymRelations, newHomotypicRelations, newBasedOnRelations, newSpellingRelations, newBasionyms, synCounter, tax);
-      usages = null;
-      relatedNames.clear();
     }
 
     /**
@@ -405,6 +406,11 @@ public class HomotypicConsolidator {
         if (sn.getCode() == NomCode.VIRUS) {
           return;
         }
+        // only bi- and trinomials: uninomials one letter apart are far too often distinct genera or families,
+        // and a genus would take its whole subtree along. See https://github.com/CatalogueOfLife/backend/issues/1363
+        if (sn.getRank() == null || !sn.getRank().isSpeciesOrBelow()) {
+          return;
+        }
         if (NomCodeParser.isCodeCompliant(sn.getType())) {
           consolidateMisspelling(sn, window);
         }
@@ -436,12 +442,15 @@ public class HomotypicConsolidator {
             syn = n1;
           }
           if (acc != null) {
-            var accLNU = load(session, acc.getId());
-            var synLNU = load(session, syn.getId());
-            updateParentAndStatus(synLNU.getId(), accLNU.getId(), TaxonomicStatus.SYNONYM, session.getMapper(NameUsageMapper.class));
-            addIssue(synLNU.getId(), Issue.MISSPELLING_CONSOLIDATION);
+            // moves the descendants of the misspelled name too, they must not stay below a synonym
+            convertToSynonym(load(session, syn.getId()), load(session, acc.getId()), Issue.MISSPELLING_CONSOLIDATION, session);
+            syn.setConsolidatedId(acc.getId());
             if (synCounter % 1000 == 0) {
               session.commit();
+            }
+            if (syn == n1) {
+              // a synonym now, it must not be moved again to another name of the window
+              break;
             }
           }
         }
