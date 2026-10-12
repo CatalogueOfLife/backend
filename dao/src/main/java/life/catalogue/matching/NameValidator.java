@@ -47,10 +47,11 @@ public class NameValidator {
   // rank & indetermination markers that sources sometimes put in their authorship column instead of an author
   private static final String INDET_MARKER = "(?:sp|spp|ssp|subsp|var|forma|cf|aff|indet|gen|nov|n)";
   // the entire authorship is nothing but markers, brackets, question marks and numbers, e.g. "sp.", "sp. 1", "? sp.".
-  // case insensitive is safe here: a lone "Sp." has no author token behind it, so it cannot be an abbreviated surname
+  // case insensitive is safe here: a lone "Sp." has no author token behind it, so it cannot be an abbreviated surname.
+  // Every marker has to end a word, otherwise markers glue into a surname: "Forman" is forma + n
   @VisibleForTesting
   static final Pattern INDET_AUTHORSHIP_ONLY = Pattern.compile(
-    "^[\\s()\\[\\]?\uff1f.,]*(?:" + INDET_MARKER + "\\.?[\\s()\\[\\]?\uff1f.,]*){1,4}$", Pattern.CASE_INSENSITIVE);
+    "^[\\s()\\[\\]?\uff1f.,]*(?:" + INDET_MARKER + "\\b\\.?[\\s()\\[\\]?\uff1f.,]*){1,4}$", Pattern.CASE_INSENSITIVE);
   // the authorship starts with a marker and trails junk, e.g. "sp. CCZ _ 165", "sp. A Soto-Adames, 2010".
   // deliberately CASE SENSITIVE: title case "Sp. Bate, 1856" is the carcinologist Charles Spence Bate,
   // and "Willd., Sp. Pl." / "Hook., Sp. Fil." are book citations - none of them may match

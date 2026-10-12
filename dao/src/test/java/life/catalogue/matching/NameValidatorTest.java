@@ -40,7 +40,7 @@ public class NameValidatorTest {
     for (String a : new String[]{
       "sp.", "sp", "Sp.", "SP.", "spp.", "cf.", "aff.", "indet.",
       "sp. 1", "sp. 2", "sp. 3", "sp. 1.", "sp. nov.", "sp.nov.", "sp. nov. 1", "n. sp.", "gen. nov.",
-      "? sp.", "? sp. 1", "(?) (?) sp.", "?", "(?)", "  sp.  ",
+      "? sp.", "? sp. 1", "(?) (?) sp.", "?", "(?)", "  sp.  ", "forma n", "cf. sp.", "sp.spp.",
       "sp. A", "sp. A-D", "sp. AS 30", "sp. CCZ _ 165", "sp. (NHM _ 381",
       "sp. A Soto-Adames, 2010", "sp. 1 Franz et al., 2018", "sp. 2 (undescribed",
       "aff. Vitrinella sp. 1 (sensu Blatterer, 2019"
@@ -64,6 +64,7 @@ public class NameValidatorTest {
       "Sp. Bate, 1856", "(Sp. Bate, 1856)", "Sp. Bate, 1862", "Sp. Schn., 1906", "Sp. Schneider",
       "Willd., Sp. Pl.", "Hook., Sp. Fil.", "C. P. Sm., Sp. Lup.", "L. Sp. Pl.",
       "Nov\u00e1k, 1950", "Nov, 1997", "F. Muell.", "Mill.", "L.",
+      "Forman", "(Forman)", "Varn", "Gennov",
       "L. Li & S. H. Li, sp. nov.", "Bing Liu & Rioual, sp. nov.", "Liu & Xu\uff0csp. nov."
     }) {
       assertFalse("must not be flagged as indet authorship: " + a, NameValidator.isIndetAuthorship(a));
