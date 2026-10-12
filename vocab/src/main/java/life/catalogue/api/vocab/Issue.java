@@ -542,7 +542,12 @@ public enum Issue {
 
   NOMENCLATURAL_CODE_INFERRED(NAME, Level.INFO,
       "The nomenclatural code was given neither by the record nor by the dataset. "
-      + "It was derived from the taxonomic group of the name's classification or, failing that, guessed from its authorship.")
+      + "It was derived from the taxonomic group of the name's classification or, failing that, guessed from its authorship."),
+
+  PLACEMENT_CONFLICT(NAME_USAGE, Level.WARNING,
+      "The accepted genus is placed in a taxonomic group the reference checklist does not know it in, "
+      + "e.g. a fungus filed under the plant family of its host. "
+      + "Only flagged when every genus of that name in the reference belongs to a disparate group.")
   ;
 
   /**

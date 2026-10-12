@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -375,6 +376,21 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   public List<Duplicate.IntKeys> listDuplicates(int minCount, @Nullable UUID publisherKey) {
     try (SqlSession session = factory.openSession()){
       return session.getMapper(DatasetMapper.class).duplicates(minCount, publisherKey);
+    }
+  }
+
+  /**
+   * Public external datasets whose latest import flagged at least the given share of its accepted genera with a
+   * placement conflict. See https://github.com/CatalogueOfLife/backend/issues/1608
+   *
+   * @param minRatio minimum share of conflicting accepted genera, 0-1
+   */
+  public ResultPage<PlacementConflicts> listPlacementConflicts(double minRatio, @Nullable DatasetType type, Page page) {
+    Preconditions.checkArgument(minRatio >= 0 && minRatio <= 1, "minRatio must be between 0 and 1");
+    try (SqlSession session = factory.openSession()){
+      var dm = session.getMapper(DatasetMapper.class);
+      var result = dm.listPlacementConflicts(minRatio, type, page);
+      return new ResultPage<>(page, result, () -> dm.countPlacementConflicts(minRatio, type));
     }
   }
 

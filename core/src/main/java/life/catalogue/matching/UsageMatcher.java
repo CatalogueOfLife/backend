@@ -155,8 +155,11 @@ public class UsageMatcher implements AutoCloseable {
     }
     var existing = store().usagesByCanonicalId(snc.getNamesIndexId());
     if (existing != null && !existing.isEmpty()) {
-      // we modify the existing list, so use a copy
-      var match = filterCandidates(snc, new ArrayList<>(existing), verbose);
+      // we modify the existing list, so use a copy. Order it by id, so the last resort pick is the same
+      // between runs - a store's own order follows hash sets and changes with every new id it holds
+      var candidates = new ArrayList<>(existing);
+      candidates.sort(Comparator.comparing(SimpleName::getId));
+      var match = filterCandidates(snc, candidates, verbose);
       // AMBIGUOUS remains unchanged, any other match is classified from the labels
       if (match.isMatch() && match.type != MatchType.AMBIGUOUS) {
         MatchType computed = labelType(snc, match.usage);
@@ -383,7 +386,7 @@ public class UsageMatcher implements AutoCloseable {
             // side supplies. Only when the groups do not contradict each other is this truly undecidable -
             // and then the name must be skipped rather than inserted as a duplicate.
             if (!groupAnalyzed) {
-              group = groupAnalyzer.analyze(nu, nu.getClassification());
+              group = queryGroup(nu, nu.getClassification());
               groupAnalyzed = true;
             }
             if (classificationMatches(group, nu, u)) {
@@ -433,14 +436,14 @@ public class UsageMatcher implements AutoCloseable {
       // replace alternatives with instances that have a classification
       updateAlt(alt, existing);
       // check classification for all others
-      if (nu.hasClassification() && !existing.isEmpty()) {
+      if ((nu.hasClassification() || nu.getGroup() != null) && !existing.isEmpty()) {
         // trim parents when a marker exists
         var parentsCopy = nu.getClassification();
         var markerIdx = CollectionUtils.lastIndexOf(nu.getClassification(), sn -> sn.marked);
         if (markerIdx >= 0) {
           parentsCopy = nu.getClassification().subList(markerIdx, nu.getClassification().size());
         }
-        var group = groupAnalyzer.analyze(nu, parentsCopy);
+        var group = queryGroup(nu, parentsCopy);
         if (existing.removeIf(rn -> !classificationMatches(group, nu, rn))) {
           LOG.debug("Removed matches for {} usage {} with classifications not in {} group", nu.getRank(), nu.getLabel(), group);
         }
@@ -597,6 +600,16 @@ public class UsageMatcher implements AutoCloseable {
         }
       }
 
+      // Nothing told the remaining candidates apart. The tie breaks below - the deepest classified candidate or
+      // simply the first - would put the name into whichever group happens to win and flip it between releases:
+      // species of Platygaster under the flies, bacteria under the scale insects. Candidates of disparate groups
+      // are homonyms this name cannot be placed among, so say so instead of guessing.
+      // See https://github.com/CatalogueOfLife/backend/issues/1608
+      if (nu.getRank() != null && nu.getRank().isSupraspecific() && spansDisparateGroups(existing)) {
+        LOG.debug("{} ambiguous homonyms of disparate groups encountered for {} in source {}", existing.size(), nu.getLabel(), datasetKey);
+        return UsageMatch.unresolvedHomonym(MatchType.AMBIGUOUS, alt, datasetKey);
+      }
+
       // now look for the candidate with the lowest classification - no matter if it matches
       lowest = null;
       best = null;
@@ -619,7 +632,7 @@ public class UsageMatcher implements AutoCloseable {
         return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey, alt);
       }
 
-      LOG.debug("{} ambiguous names matched for {}. Pick randomly", existing.size(), nu.getLabel());
+      LOG.debug("{} ambiguous names matched for {}. Pick the first by id", existing.size(), nu.getLabel());
       return UsageMatch.match(MatchType.AMBIGUOUS, existing.get(0), datasetKey, alt);
     }
   }
@@ -690,7 +703,7 @@ public class UsageMatcher implements AutoCloseable {
     return ba != null ? ba.getYear() : null;
   }
 
-  private ScientificName parseSciName(SimpleName sn) {
+  static ScientificName parseSciName(SimpleName sn) {
     Name n = new Name();
     var optAuthor = NameParser.PARSER.parseAuthorship(sn.getAuthorship());
     if (optAuthor.isPresent()) {
@@ -792,6 +805,41 @@ public class UsageMatcher implements AutoCloseable {
         if (u.getRank() == rank) {
           return true;
         }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The taxonomic group of the name being matched, analyzed from the given classification.
+   * A group set on the query serves as the fallback when the classification yields none, or only the eukaryotes every
+   * animal, plant and fungus shares: the group of a whole source dataset for a species that came with nothing but its
+   * genus. See https://github.com/CatalogueOfLife/backend/issues/1608
+   */
+  private TaxGroup queryGroup(SimpleNameClassified<SimpleNameCached> nu, List<SimpleNameCached> classification) {
+    var group = groupAnalyzer.analyze(nu, classification);
+    var fallback = nu.getGroup();
+    if (fallback != null && (group == null || (group != fallback && group.contains(fallback)))) {
+      return fallback;
+    }
+    return group;
+  }
+
+  /**
+   * @return true if at least two of the candidates belong to disparate taxonomic groups.
+   *         Candidates without a known group contradict nothing.
+   */
+  private boolean spansDisparateGroups(List<SimpleNameClassified<SimpleNameCached>> candidates) {
+    List<TaxGroup> groups = new ArrayList<>(candidates.size());
+    for (var c : candidates) {
+      var g = groupAnalyzer.analyze(c, c.getClassification());
+      if (g != null) {
+        for (var g2 : groups) {
+          if (g.isDisparateTo(g2)) {
+            return true;
+          }
+        }
+        groups.add(g);
       }
     }
     return false;

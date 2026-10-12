@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.JobSearchRequest;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
@@ -10,6 +11,7 @@ import life.catalogue.db.type2.StringCount;
 import org.gbif.dwc.terms.Term;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -75,6 +77,11 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   void create(@Param("imp") DatasetImport datasetImport);
   
   void update(@Param("imp") DatasetImport datasetImport);
+
+  /**
+   * Replaces only the issue counts of an import, e.g. after a job flagged more of the dataset's records.
+   */
+  void updateIssuesCount(@Param("key") int datasetKey, @Param("attempt") int attempt, @Param("issuesCount") Map<Issue, Integer> issuesCount);
 
   void delete(@Param("key") int datasetKey, @Param("attempt") int attempt);
 

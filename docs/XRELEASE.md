@@ -326,6 +326,60 @@ Species and below are untouched by this and keep the stricter rule that authorsh
 two same-named species in one genus are classic homonyms. See `txtree/genushomonyms/readme.md` for the
 worked scenario.
 
+#### Homonyms without authorship or classification
+
+The rules above need an authored incoming genus. Two other paths reach a genus homonym with no authorship to compare:
+a source genus without authorship, and the implicit genus `TreeBaseHandler.createImplicit` looks up for a species
+that came with nothing but its genus name (ZooBank, single paper datasets). For those:
+
+- **No guessing between disparate groups.** When nothing - authorship, the shared ranks, the taxonomic group of the
+  incoming name - told the remaining candidates apart and they belong to disparate `TaxGroup`s, the matcher returns
+  no match flagged as an unresolved homonym instead of falling through to its tie breaks (the deepest classified
+  candidate, then the first). The merge skips such a name with its subtree as `AMBIGUOUS_HOMONYM`; for an implicit
+  genus that means the species that needed it. Candidates of one lineage still go to the tie breaks, which are
+  stable now: candidates are ordered by id, where the order of the in-memory store used to follow a hash set and
+  flipped the pick between releases.
+- **A group for the whole source.** The lowest group shared by the source dataset's `taxonomicGroupScope` serves as
+  the group of a merged name whose own classification yields none or only eukaryotes (`UsageMatcher.queryGroup`).
+  The dataset title is not used: a paper on the disease of a grass names the grass.
+- **Placement conflicts.** A source genus flagged with `Issue.PLACEMENT_CONFLICT` (below) is matched without its
+  source classification, which is cut off for its descendants too (the `marked` parent). A single project genus of
+  that name - or a group of candidates one lineage tie break picks from - takes it as a `snap`, so its species attach
+  there and nothing of the project genus is updated. Without one the genus is skipped with its subtree, counted
+  under `IgnoreReason.PLACEMENT_CONFLICT`. It is never created under the source's parents.
+
+#### Placement conflicts
+
+Literature sources regularly file a genus under the classification of the paper's subject rather than its own: a
+fungus under the plant family of its host, a parasite under its vector, a feather mite under its bird. Merged as is,
+such a genus attracts every later species of that name into the wrong kingdom.
+
+`PlacementChecker` judges the accepted genera of a source against reference checklists, by default the latest public
+COL release and IRMNG (`importer.placementReferences: [3LR, 2007]`, empty disables it). Their genera are pooled: a
+genus is flagged with `PLACEMENT_CONFLICT` on its verbatim record only if its group in the source is disparate to the
+group of *every* genus of that name in *any* reference. It stays silent whenever the evidence is thin: a source group
+of eukaryotes or none, a genus no reference holds, a reference genus without a known group, or an authored source
+genus whose authorship differs from every reference genus - a homonym the references lack.
+
+Pooling is what makes the flag trustworthy. Replayed on 500 random article datasets (1,458 accepted genera), COL
+alone flagged 4 genera, all of them real genera COL happens to lack, e.g. the fossil bovid *Duboisia* Stremme. With
+IRMNG pooled in only 1 remained, while all the misplacements reported in #1608 were still caught - *Trouessartia*
+under birds only thanks to IRMNG, as the COL base release lacks the genus. IRMNG alone would be no better than COL:
+it lacks cicada genera and the wasp *Platygaster* Latreille. A reference that cannot be resolved or has no matcher is
+left out.
+
+- Every import runs the check while it inserts the usages; missing references only weaken or skip it.
+- `PlacementCheckJob` runs it on a dataset already imported - `POST /admin/placement-check?datasetKey=` or
+  `?datasetType=ARTICLE` for all public external datasets of a type - replacing the earlier flags, recounting the
+  issues of the latest import and reindexing the genera concerned. Unchanged sources skip their reimport, so this is
+  how existing datasets get flagged.
+- `GET /dataset/placementConflict?minRatio=0.1&type=` lists the public external datasets whose latest import flagged
+  at least that share of its accepted genera, highest share first. As only accepted genera are ever flagged, the
+  share is the import's `PLACEMENT_CONFLICT` issue count over its accepted `GENUS` count, both from the import
+  metrics. It is the list to send to data publishers like Plazi.
+
+See `txtree/placementconflict/readme.md` and [#1608](https://github.com/CatalogueOfLife/backend/issues/1608).
+
 ## Known Issues / Technical Debt
 
 1. **Dead code**: `synonymizeMisspelledBinomials()` (line ~675) is never called. Despite its javadoc it does not synonymize misspellings but is a verbatim copy of `flagDuplicatesAsProvisional()`. Should be removed.

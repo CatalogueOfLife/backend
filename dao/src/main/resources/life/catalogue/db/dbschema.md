@@ -11,6 +11,15 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-12 placement conflict issue
+Imports flag accepted genera whose placement contradicts every genus of that name in the COL base release, e.g. a
+fungus filed under the plant family of its host, and the extended release merge no longer trusts their placement:
+https://github.com/CatalogueOfLife/backend/issues/1608
+Run before the deploy, the new app writes the value on its first import.
+```sql
+ALTER TYPE ISSUE ADD VALUE 'PLACEMENT_CONFLICT';
+```
+
 #### 2026-10-12 decision subjects carry their parent
 A decision rematch after a source changed its ids moved a block made for a stray onto the real homonym, as the UI
 never sent the subject's parent: https://github.com/CatalogueOfLife/backend/issues/1639

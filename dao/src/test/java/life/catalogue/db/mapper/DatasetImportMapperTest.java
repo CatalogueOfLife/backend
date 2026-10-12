@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
+import static life.catalogue.api.TestEntityGenerator.DATASET12;
 import static org.junit.Assert.*;
 
 
@@ -343,6 +344,53 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
 
     // while the dataset still points at the last one that worked
     assertEquals(ok.getAttempt(), mapper().current(datasetKey).getAttempt());
+  }
+
+  /**
+   * The placement conflict report divides the flagged by the accepted genera of a dataset's latest import.
+   * See https://github.com/CatalogueOfLife/backend/issues/1608
+   */
+  @Test
+  public void placementConflicts() throws Exception {
+    DatasetImport d = create(JobStatus.FINISHED);
+    // the report only lists external datasets, DATASET11 is a project
+    d.setDatasetKey(DATASET12.getKey());
+    d.setTaxaByRankCount(Map.of(Rank.GENUS, 10, Rank.SPECIES, 100));
+    d.setIssuesCount(Map.of(Issue.PLACEMENT_CONFLICT, 3, Issue.MISSING_AUTHORSHIP, 50));
+    createJob(session(), d);
+    mapper().create(d);
+    final int datasetKey = d.getDatasetKey();
+    var dm = mapper(DatasetMapper.class);
+    // not the latest import of the dataset yet
+    assertTrue(dm.listPlacementConflicts(0.1, null, new Page()).isEmpty());
+
+    dm.updateLastImport(datasetKey, d.getAttempt(), null);
+    commit();
+    var list = dm.listPlacementConflicts(0.1, null, new Page());
+    assertEquals(1, list.size());
+    assertEquals(1, dm.countPlacementConflicts(0.1, null));
+    var pc = list.get(0);
+    assertEquals(datasetKey, (int) pc.getDatasetKey());
+    assertEquals(d.getAttempt(), (int) pc.getAttempt());
+    assertEquals(10, pc.getGenera());
+    assertEquals(3, pc.getConflicts());
+    assertEquals(0.3, pc.getRatio(), 0.0001);
+    assertEquals(DatasetType.OTHER, pc.getType());
+    assertEquals(1, dm.listPlacementConflicts(0.3, DatasetType.OTHER, new Page()).size());
+    assertTrue(dm.listPlacementConflicts(0.3, DatasetType.ARTICLE, new Page()).isEmpty());
+    assertTrue(dm.listPlacementConflicts(0.31, null, new Page()).isEmpty());
+    assertEquals(0, dm.countPlacementConflicts(0.31, null));
+
+    // a placement check job recounts the issues of that very import
+    mapper().updateIssuesCount(datasetKey, d.getAttempt(), Map.of(Issue.PLACEMENT_CONFLICT, 6));
+    commit();
+    assertEquals(0.6, dm.listPlacementConflicts(0.5, null, new Page()).get(0).getRatio(), 0.0001);
+    assertEquals(Map.of(Issue.PLACEMENT_CONFLICT, 6), mapper().get(datasetKey, d.getAttempt()).getIssuesCount());
+
+    // and without conflicts the dataset drops off the report
+    mapper().updateIssuesCount(datasetKey, d.getAttempt(), Map.of());
+    commit();
+    assertTrue(dm.listPlacementConflicts(0, null, new Page()).isEmpty());
   }
 
   @Test

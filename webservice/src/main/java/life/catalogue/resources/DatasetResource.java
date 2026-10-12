@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
@@ -85,6 +86,19 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   public List<Duplicate.IntKeys> listDuplicates(@QueryParam("minCount") @DefaultValue("2") int minCount,  @QueryParam("gbifPublisherKey") UUID gbifPublisherKey) {
     Preconditions.checkArgument(minCount>1, "minCount parameter must be greater than 1");
     return dao.listDuplicates(minCount, gbifPublisherKey);
+  }
+
+  /**
+   * Lists datasets whose latest import placed at least minRatio of its accepted genera in a taxonomic group the
+   * reference checklist does not know them in, flagged as PLACEMENT_CONFLICT. See
+   * https://github.com/CatalogueOfLife/backend/issues/1608
+   */
+  @GET
+  @Path("placementConflict")
+  public ResultPage<PlacementConflicts> listPlacementConflicts(@QueryParam("minRatio") @DefaultValue("0.1") double minRatio,
+                                                               @QueryParam("type") DatasetType type,
+                                                               @Valid @BeanParam Page page) {
+    return dao.listPlacementConflicts(minRatio, type, page);
   }
 
   @GET

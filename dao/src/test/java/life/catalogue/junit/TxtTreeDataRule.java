@@ -53,6 +53,8 @@ import de.undercouch.citeproc.bibtex.BibTeXConverter;
 public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TxtTreeDataRule.class);
   private static final String KEY_PRIO = "PRIO";
+  // issues to flag on a verbatim record of the usage, e.g. {ISSUE=PLACEMENT_CONFLICT}
+  private static final String KEY_ISSUE = "ISSUE";
 
   final private boolean keepOrder;
   final private boolean buildMetrics;
@@ -66,6 +68,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   private ReferenceMapper rm;
   private SectorMapper secm;
   private VernacularNameMapper vm;
+  private VerbatimRecordMapper vrm;
   private AtomicInteger refID = new AtomicInteger(0);
   private Map<Long, String> usageIDs = new HashMap<>();
 
@@ -182,8 +185,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     if (d.getOrigin() == DatasetOrigin.PROJECT) {
       session.getMapper(DatasetPartitionMapper.class).createSequences(d.getKey());
     } else {
-      // always create vernacular sequence so we can insert easily
+      // always create vernacular & verbatim sequences so we can insert easily
       session.getMapper(DatasetPartitionMapper.class).createIdSequence("vernacular_name", d.getKey());
+      session.getMapper(DatasetPartitionMapper.class).createIdSequence("verbatim", d.getKey());
     }
     session.commit();
   }
@@ -345,6 +349,15 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     if (parent != null) {
       u.setParentId(usageIDs.get(parent.id));
     }
+    if (tn.infos.containsKey(KEY_ISSUE)) {
+      var v = new VerbatimRecord();
+      v.setDatasetKey(datasetKey);
+      for (var x : tn.infos.get(KEY_ISSUE)) {
+        v.add(Issue.valueOf(x));
+      }
+      vrm.create(v);
+      u.setVerbatimKey(v.getId());
+    }
     if (nat.getTaxonomicNote() != null) {
       Reference r = new Reference();
       r.setId(String.valueOf(refID.getAndIncrement()));
@@ -377,6 +390,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       secm = session.getMapper(SectorMapper.class);
       rm = session.getMapper(ReferenceMapper.class);
       vm = session.getMapper(VernacularNameMapper.class);
+      vrm = session.getMapper(VerbatimRecordMapper.class);
     }
   }
 

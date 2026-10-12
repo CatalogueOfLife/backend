@@ -21,6 +21,7 @@ import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.matching.AddIdentifiersSpec;
 import life.catalogue.matching.IdentifierScopeResolver;
+import life.catalogue.matching.PlacementChecker;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherFactory;
@@ -66,6 +67,7 @@ public class PgImport implements Callable<Boolean> {
   
   private final ImportStore store;
   private final int batchSize;
+  private final List<String> placementReferences;
   private final SqlSessionFactory sessionFactory;
   private final DatasetDao datasetDao;
   private final NameUsageIndexService indexService;
@@ -103,6 +105,7 @@ public class PgImport implements Callable<Boolean> {
     this.userKey = userKey;
     this.store = store;
     this.batchSize = cfg.batchSize;
+    this.placementReferences = cfg.placementReferences;
     this.sessionFactory = sessionFactory;
     this.indexService = indexService;
     this.datasetDao = datasetDao;
@@ -387,6 +390,7 @@ public class PgImport implements Callable<Boolean> {
   private static class UsageNXtra {
     UsageData data;
     NameUsageWrapper nuw;
+    boolean placementConflict;
 
     public UsageNXtra(UsageData data) {
       this.data = data;
@@ -435,6 +439,9 @@ public class PgImport implements Callable<Boolean> {
       matchTarget = null;
       matchScope = null;
     }
+    // a safeguard, not part of the import: references that cannot be opened only weaken or disable the check
+    final PlacementChecker placementChecker = matcherFactory == null ? null
+      : PlacementChecker.open(placementReferences, matcherFactory, sessionFactory, dataset.getKey());
     try (var indexer = indexService.buildDatasetIndexingHandler(dataset.getKey())) {
       // load all decisions so we can include them in the ES usage index later
       final Map<String, List<SimpleDecision>> decisions = new HashMap<>();
@@ -506,12 +513,18 @@ public class PgImport implements Callable<Boolean> {
               taxonMapper.create(updateUser(u.asTaxon()));
               tCounter.incrementAndGet();
               Taxon acc = u.asTaxon();
+              // the walker stack holds the accepted ancestors, the taxon itself is not pushed yet
+              boolean placementConflict = placementChecker != null && checkPlacement(placementChecker, acc, parents);
+              if (placementConflict && u.getVerbatimKey() != null) {
+                verbatimRecordMapper.addIssue(vKey.id(u.getVerbatimKey()), Issue.PLACEMENT_CONFLICT);
+              }
 
               // push new postgres key onto stack for this taxon as we traverse in depth first
               // ES indexes only id,rank & name
               var sn = new SimpleName(acc.getId(), acc.getName().getScientificName(), acc.getName().getRank());
               parents.push(sn);
               nx = new UsageNXtra(u);
+              nx.placementConflict = placementConflict;
               parentsN.push(nx);
               mBuilder.start(sn.getId());
 
@@ -611,6 +624,9 @@ public class PgImport implements Callable<Boolean> {
                 nx.nuw.getIssues().add(Issue.NO_SPECIES_INCLUDED);
                 verbatimRecordMapper.addIssue(vKey.id(nx.data.getVerbatimKey()), Issue.NO_SPECIES_INCLUDED);
               }
+              if (nx.placementConflict) {
+                nx.nuw.getIssues().add(Issue.PLACEMENT_CONFLICT);
+              }
               indexer.accept(nx.nuw);
             }
           }
@@ -647,6 +663,22 @@ public class PgImport implements Callable<Boolean> {
           LOG.warn("Failed to release match target matcher for dataset {}", matchTarget.getDatasetKey(), e);
         }
       }
+      if (placementChecker != null) {
+        placementChecker.close();
+      }
+    }
+  }
+
+
+  private boolean checkPlacement(PlacementChecker checker, Taxon taxon, List<SimpleName> ancestors) {
+    try {
+      var conflict = checker.check(new SimpleName(taxon), ancestors);
+      conflict.ifPresent(c -> LOG.info("Genus {} [{}] placed in {} is known in {} only in {}",
+        taxon.getLabel(), taxon.getId(), c.group(), checker.getReferenceDatasetKeys(), c.referenceGroups()));
+      return conflict.isPresent();
+    } catch (RuntimeException e) {
+      LOG.warn("Placement check failed for genus {} [{}]", taxon.getLabel(), taxon.getId(), e);
+      return false;
     }
   }
 

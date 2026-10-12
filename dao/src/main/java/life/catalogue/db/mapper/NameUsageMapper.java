@@ -5,6 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Environment;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
@@ -255,6 +256,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Warning, this does not return bare name IDs, only true usage IDs!
    */
   List<String> listUsageIDsByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
+
+  /**
+   * List the ids of all usages in a given dataset whose own verbatim record carries the given issue.
+   */
+  List<String> listUsageIDsByVerbatimIssue(@Param("datasetKey") int datasetKey, @Param("issue") Issue issue);
 
   /**
    * Warning, this does not return bare names, only true usages!

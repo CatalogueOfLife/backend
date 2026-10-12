@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.CRUD;
@@ -274,6 +275,19 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @return list of duplicate titles, each with all dataset keys listed in it.
    */
   List<Duplicate.IntKeys> duplicates(@Param("minCount") Integer minCount, @Param("gbifPublisherKey") UUID gbifPublisherKey);
+
+  /**
+   * Lists public external datasets whose latest import flagged at least the given share of its accepted genera
+   * with a PLACEMENT_CONFLICT, highest share first.
+   *
+   * @param minRatio minimum share of conflicting accepted genera, 0-1
+   * @param type optional dataset type filter
+   */
+  List<PlacementConflicts> listPlacementConflicts(@Param("minRatio") double minRatio,
+                                                  @Nullable @Param("type") DatasetType type,
+                                                  @Param("page") Page page);
+
+  int countPlacementConflicts(@Param("minRatio") double minRatio, @Nullable @Param("type") DatasetType type);
 
   /**
    * @param inclDeleted optional include also deleted datasets, default false
