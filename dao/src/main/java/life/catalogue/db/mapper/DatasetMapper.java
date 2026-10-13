@@ -277,17 +277,21 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Duplicate.IntKeys> duplicates(@Param("minCount") Integer minCount, @Param("gbifPublisherKey") UUID gbifPublisherKey);
 
   /**
-   * Lists public external datasets whose latest import flagged at least the given share of its accepted genera
-   * with a PLACEMENT_CONFLICT, highest share first.
+   * Lists public external datasets whose latest import flagged at least the given share and number of its accepted
+   * genera with a PLACEMENT_CONFLICT, highest share first.
    *
    * @param minRatio minimum share of conflicting accepted genera, 0-1
+   * @param minConflicts minimum number of conflicting accepted genera
    * @param type optional dataset type filter
    */
   List<PlacementConflicts> listPlacementConflicts(@Param("minRatio") double minRatio,
+                                                  @Param("minConflicts") int minConflicts,
                                                   @Nullable @Param("type") DatasetType type,
                                                   @Param("page") Page page);
 
-  int countPlacementConflicts(@Param("minRatio") double minRatio, @Nullable @Param("type") DatasetType type);
+  int countPlacementConflicts(@Param("minRatio") double minRatio,
+                              @Param("minConflicts") int minConflicts,
+                              @Nullable @Param("type") DatasetType type);
 
   /**
    * @param inclDeleted optional include also deleted datasets, default false

@@ -380,17 +380,19 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   /**
-   * Public external datasets whose latest import flagged at least the given share of its accepted genera with a
-   * placement conflict. See https://github.com/CatalogueOfLife/backend/issues/1608
+   * Public external datasets whose latest import flagged at least the given share and number of its accepted genera
+   * with a placement conflict. See https://github.com/CatalogueOfLife/backend/issues/1608
    *
    * @param minRatio minimum share of conflicting accepted genera, 0-1
+   * @param minConflicts minimum number of conflicting accepted genera, at least 1
    */
-  public ResultPage<PlacementConflicts> listPlacementConflicts(double minRatio, @Nullable DatasetType type, Page page) {
+  public ResultPage<PlacementConflicts> listPlacementConflicts(double minRatio, int minConflicts, @Nullable DatasetType type, Page page) {
     Preconditions.checkArgument(minRatio >= 0 && minRatio <= 1, "minRatio must be between 0 and 1");
+    Preconditions.checkArgument(minConflicts >= 1, "minConflicts must be at least 1");
     try (SqlSession session = factory.openSession()){
       var dm = session.getMapper(DatasetMapper.class);
-      var result = dm.listPlacementConflicts(minRatio, type, page);
-      return new ResultPage<>(page, result, () -> dm.countPlacementConflicts(minRatio, type));
+      var result = dm.listPlacementConflicts(minRatio, minConflicts, type, page);
+      return new ResultPage<>(page, result, () -> dm.countPlacementConflicts(minRatio, minConflicts, type));
     }
   }
 

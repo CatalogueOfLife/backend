@@ -538,7 +538,7 @@
         (di.issues_by_issue_count -> 'PLACEMENT_CONFLICT')::int AS conflicts
       ) x
     WHERE d.deleted IS NULL AND NOT d.private AND d.origin = 'EXTERNAL'
-      AND x.genera > 0 AND x.conflicts > 0
+      AND x.genera > 0 AND x.conflicts > 0 AND x.conflicts >= #{minConflicts}
       AND x.conflicts::float / x.genera >= #{minRatio}
     <if test="type != null">
       AND d.type = #{type}::DATASETTYPE

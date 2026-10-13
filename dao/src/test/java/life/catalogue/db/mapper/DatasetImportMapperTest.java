@@ -362,13 +362,13 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     final int datasetKey = d.getDatasetKey();
     var dm = mapper(DatasetMapper.class);
     // not the latest import of the dataset yet
-    assertTrue(dm.listPlacementConflicts(0.1, null, new Page()).isEmpty());
+    assertTrue(dm.listPlacementConflicts(0.1, 1, null, new Page()).isEmpty());
 
     dm.updateLastImport(datasetKey, d.getAttempt(), null);
     commit();
-    var list = dm.listPlacementConflicts(0.1, null, new Page());
+    var list = dm.listPlacementConflicts(0.1, 1, null, new Page());
     assertEquals(1, list.size());
-    assertEquals(1, dm.countPlacementConflicts(0.1, null));
+    assertEquals(1, dm.countPlacementConflicts(0.1, 1, null));
     var pc = list.get(0);
     assertEquals(datasetKey, (int) pc.getDatasetKey());
     assertEquals(d.getAttempt(), (int) pc.getAttempt());
@@ -376,21 +376,25 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals(3, pc.getConflicts());
     assertEquals(0.3, pc.getRatio(), 0.0001);
     assertEquals(DatasetType.OTHER, pc.getType());
-    assertEquals(1, dm.listPlacementConflicts(0.3, DatasetType.OTHER, new Page()).size());
-    assertTrue(dm.listPlacementConflicts(0.3, DatasetType.ARTICLE, new Page()).isEmpty());
-    assertTrue(dm.listPlacementConflicts(0.31, null, new Page()).isEmpty());
-    assertEquals(0, dm.countPlacementConflicts(0.31, null));
+    assertEquals(1, dm.listPlacementConflicts(0.3, 1, DatasetType.OTHER, new Page()).size());
+    assertTrue(dm.listPlacementConflicts(0.3, 1, DatasetType.ARTICLE, new Page()).isEmpty());
+    assertTrue(dm.listPlacementConflicts(0.31, 1, null, new Page()).isEmpty());
+    assertEquals(0, dm.countPlacementConflicts(0.31, 1, null));
+    // at least that many conflicting genera
+    assertEquals(1, dm.countPlacementConflicts(0.1, 3, null));
+    assertTrue(dm.listPlacementConflicts(0.1, 4, null, new Page()).isEmpty());
+    assertEquals(0, dm.countPlacementConflicts(0.1, 4, null));
 
     // a placement check job recounts the issues of that very import
     mapper().updateIssuesCount(datasetKey, d.getAttempt(), Map.of(Issue.PLACEMENT_CONFLICT, 6));
     commit();
-    assertEquals(0.6, dm.listPlacementConflicts(0.5, null, new Page()).get(0).getRatio(), 0.0001);
+    assertEquals(0.6, dm.listPlacementConflicts(0.5, 1, null, new Page()).get(0).getRatio(), 0.0001);
     assertEquals(Map.of(Issue.PLACEMENT_CONFLICT, 6), mapper().get(datasetKey, d.getAttempt()).getIssuesCount());
 
     // and without conflicts the dataset drops off the report
     mapper().updateIssuesCount(datasetKey, d.getAttempt(), Map.of());
     commit();
-    assertTrue(dm.listPlacementConflicts(0, null, new Page()).isEmpty());
+    assertTrue(dm.listPlacementConflicts(0, 1, null, new Page()).isEmpty());
   }
 
   @Test

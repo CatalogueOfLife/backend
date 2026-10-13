@@ -373,8 +373,8 @@ left out.
   `?datasetType=ARTICLE` for all public external datasets of a type - replacing the earlier flags, recounting the
   issues of the latest import and reindexing the genera concerned. Unchanged sources skip their reimport, so this is
   how existing datasets get flagged.
-- `GET /dataset/placementConflict?minRatio=0.1&type=` lists the public external datasets whose latest import flagged
-  at least that share of its accepted genera, highest share first. As only accepted genera are ever flagged, the
+- `GET /dataset/placementConflict?minRatio=0.1&minConflicts=1&type=` lists the public external datasets whose latest
+  import flagged at least that share and that number of its accepted genera, highest share first. As only accepted genera are ever flagged, the
   share is the import's `PLACEMENT_CONFLICT` issue count over its accepted `GENUS` count, both from the import
   metrics. It is the list to send to data publishers like Plazi.
 

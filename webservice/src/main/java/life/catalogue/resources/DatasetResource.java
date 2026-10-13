@@ -89,16 +89,17 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   /**
-   * Lists datasets whose latest import placed at least minRatio of its accepted genera in a taxonomic group the
-   * reference checklist does not know them in, flagged as PLACEMENT_CONFLICT. See
+   * Lists datasets whose latest import placed at least minRatio and at least minConflicts of its accepted genera in a
+   * taxonomic group the reference checklist does not know them in, flagged as PLACEMENT_CONFLICT. See
    * https://github.com/CatalogueOfLife/backend/issues/1608
    */
   @GET
   @Path("placementConflict")
   public ResultPage<PlacementConflicts> listPlacementConflicts(@QueryParam("minRatio") @DefaultValue("0.1") double minRatio,
+                                                               @QueryParam("minConflicts") @DefaultValue("1") int minConflicts,
                                                                @QueryParam("type") DatasetType type,
                                                                @Valid @BeanParam Page page) {
-    return dao.listPlacementConflicts(minRatio, type, page);
+    return dao.listPlacementConflicts(minRatio, minConflicts, type, page);
   }
 
   @GET
