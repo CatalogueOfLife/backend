@@ -6,6 +6,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.TaxonExtension;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.SectorForeignProcessable;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TaxonBatchable;
 import life.catalogue.db.TaxonProcessable;
@@ -16,7 +17,7 @@ import java.util.List;
 
 public interface TaxonExtensionMapper<T extends ExtensionEntity>
   extends DatasetProcessable<TaxonExtension<T>>, SectorProcessable<T>, TaxonProcessable<T>,
-          TaxonBatchable<TaxonExtension<T>>, CopyDataset {
+          TaxonBatchable<TaxonExtension<T>>, SectorForeignProcessable<TaxonExtension<T>>, CopyDataset {
 
 	T get(@Param("key") DSID<Integer> key);
 

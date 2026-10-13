@@ -13,6 +13,7 @@ import org.apache.ibatis.annotations.Param;
 public interface TaxonConceptRelationMapper extends Create<TaxonConceptRelation>,
                                                     DatasetProcessable<TaxonConceptRelation>,
                                                     SectorProcessable<TaxonConceptRelation>,
+                                                    SectorForeignProcessable<TaxonConceptRelation>,
                                                     TaxonProcessable<TaxonConceptRelation>,
                                                     TaxonBatchable<TaxonConceptRelation>,
                                                     CopyDataset {

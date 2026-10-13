@@ -13,6 +13,7 @@ import org.apache.ibatis.annotations.Param;
 public interface SpeciesInteractionMapper extends Create<SpeciesInteraction>,
                                                     DatasetProcessable<SpeciesInteraction>,
                                                     SectorProcessable<SpeciesInteraction>,
+                                                    SectorForeignProcessable<SpeciesInteraction>,
                                                     TaxonProcessable<SpeciesInteraction>,
                                                     TaxonBatchable<SpeciesInteraction>,
                                                     CopyDataset {

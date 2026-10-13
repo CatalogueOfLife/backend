@@ -160,6 +160,20 @@
     WHERE d.dataset_key=#{key.datasetKey} AND d.sector_key = #{key.id}
   </select>
 
+  <!-- entities of other sectors or of none attached to usages of the sector. See SectorForeignProcessable -->
+  <select id="listForeignBySector" parameterType="map" resultMap="distributionExtResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM distribution d
+    WHERE d.dataset_key = #{key.datasetKey} AND d.sector_key IS DISTINCT FROM #{key.id}
+      AND d.taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>)
+  </select>
+
+  <delete id="deleteForeignBySector" parameterType="map">
+    DELETE FROM distribution
+    WHERE dataset_key = #{key.datasetKey} AND sector_key IS DISTINCT FROM #{key.id}
+      AND taxon_id IN (<include refid="life.catalogue.db.Common.sectorUsageIds"/>)
+  </delete>
+
   <delete id="deleteBySector" parameterType="map">
     DELETE FROM distribution
     WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}

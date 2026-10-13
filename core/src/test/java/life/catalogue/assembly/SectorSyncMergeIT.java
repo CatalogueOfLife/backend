@@ -3,6 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.GenericArea;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.*;
@@ -20,6 +21,7 @@ import life.catalogue.release.XReleaseConfig;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 
 import org.apache.ibatis.io.Resources;
@@ -463,6 +465,111 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       assertEquals(2, vnames.size());
       vnames.forEach(vn -> assertEquals(info.sectors.get(1).getId(), vn.getSectorKey()));
     }
+  }
+
+  /**
+   * Editors can attach any extension to a usage of a sector, and a relation of another sector can point into it.
+   * A resync of the sector gives its usages new ids and must take all of them along, while the taxon properties
+   * the sector owns itself are deleted with it. https://github.com/CatalogueOfLife/backend/issues/1585
+   */
+  @Test
+  public void resyncSectorWhoseUsagesCarryForeignEntities() throws Throwable {
+    Assume.assumeTrue("vernacular".equals(project));
+    var factory = syncFactoryRule.factory(NameUsageIndexService.passThru());
+    var mcfg = info.buildMergeConfig();
+    final Sector v1 = info.sectors.get(0);
+    final int user = TestDataRule.TEST_USER.getKey();
+    sync(factory, mcfg, v1);
+
+    final var aedes = getByName(Datasets.COL, Rank.SPECIES, "Aedes albopictus");
+    final var musca = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+    // the project's own phylum, which no sector owns
+    final var arthropoda = getByName(Datasets.COL, Rank.PHYLUM, "Arthropoda");
+    assertEquals(v1.getId(), aedes.getSectorKey());
+    assertNull(arthropoda.getSectorKey());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var d = new Distribution();
+      d.copyArea(new GenericArea("Europe"));
+      session.getMapper(DistributionMapper.class).create(withUser(d, user), aedes.getId());
+
+      var m = new Media();
+      m.setUrl(URI.create("https://example.org/aedes.jpg"));
+      session.getMapper(MediaMapper.class).create(withUser(m, user), aedes.getId());
+
+      var pm = session.getMapper(TaxonPropertyMapper.class);
+      pm.create(withUser(property("habitat", "urban", null), user), aedes.getId());
+      // a property the sector owns itself is deleted with it
+      pm.create(withUser(property("habitat", "copied", v1.getId()), user), aedes.getId());
+
+      var t = new Treatment();
+      t.setDatasetKey(Datasets.COL);
+      t.setId(aedes.getId());
+      t.setDocument("Bites in daylight");
+      t.setFormat(TreatmentFormat.PLAIN_TEXT);
+      session.getMapper(TreatmentMapper.class).create(withUser(t, user));
+
+      // only the related end is in the sector
+      var si = new SpeciesInteraction();
+      si.setDatasetKey(Datasets.COL);
+      si.setType(SpeciesInteractionType.EATS);
+      si.setTaxonId(arthropoda.getId());
+      si.setRelatedTaxonId(aedes.getId());
+      session.getMapper(SpeciesInteractionMapper.class).create(withUser(si, user));
+
+      // both ends are in the sector
+      var tc = new TaxonConceptRelation();
+      tc.setDatasetKey(Datasets.COL);
+      tc.setType(TaxonConceptRelType.OVERLAPS);
+      tc.setTaxonId(aedes.getId());
+      tc.setRelatedTaxonId(musca.getId());
+      session.getMapper(TaxonConceptRelationMapper.class).create(withUser(tc, user));
+    }
+
+    sync(factory, mcfg, v1);
+
+    final var aedes2 = getByName(Datasets.COL, Rank.SPECIES, "Aedes albopictus");
+    final var musca2 = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+    assertNotEquals("a sync gives its usages new ids", aedes.getId(), aedes2.getId());
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      assertEquals(1, session.getMapper(DistributionMapper.class).listByTaxon(aedes2).size());
+      assertEquals(1, session.getMapper(MediaMapper.class).listByTaxon(aedes2).size());
+      var props = session.getMapper(TaxonPropertyMapper.class).listByTaxon(aedes2);
+      assertEquals(1, props.size());
+      assertEquals("urban", props.getFirst().getValue());
+      assertNotNull(session.getMapper(TreatmentMapper.class).get(aedes2));
+      assertNull(session.getMapper(TreatmentMapper.class).get(aedes));
+
+      var sis = session.getMapper(SpeciesInteractionMapper.class).listByRelatedTaxon(aedes2);
+      assertEquals(1, sis.size());
+      assertEquals(arthropoda.getId(), sis.getFirst().getTaxonId());
+
+      var tcs = session.getMapper(TaxonConceptRelationMapper.class).listByTaxon(aedes2);
+      assertEquals(1, tcs.size());
+      assertEquals(musca2.getId(), tcs.getFirst().getRelatedTaxonId());
+    }
+  }
+
+  private static void sync(SyncFactory factory, TreeMergeHandlerConfig mcfg, Sector s) {
+    SectorSync ss = factory.project(s, null, TestDataRule.TEST_USER.getKey());
+    ss.setMergeCfg(mcfg);
+    ss.run();
+    assertEquals("sync of sector " + s.getId() + " failed: " + ss.getState().getError(), JobStatus.FINISHED, ss.getStatus());
+  }
+
+  private static TaxonProperty property(String property, String value, Integer sectorKey) {
+    var p = new TaxonProperty();
+    p.setDatasetKey(Datasets.COL);
+    p.setSectorKey(sectorKey);
+    p.setProperty(property);
+    p.setValue(value);
+    return p;
+  }
+
+  private static <T extends DatasetScopedEntity<?>> T withUser(T obj, int user) {
+    obj.setDatasetKey(Datasets.COL);
+    obj.setCreatedBy(user);
+    obj.setModifiedBy(user);
+    return obj;
   }
 
   private static void assertReindexed(NameUsageIndexService index, SyncFactory factory, Sector s, TreeMergeHandlerConfig mcfg,

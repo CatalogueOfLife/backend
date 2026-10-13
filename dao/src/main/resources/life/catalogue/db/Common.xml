@@ -18,5 +18,10 @@
         LIMIT 1
     </sql>
 
+    <!-- the ids of the usages of the sector key. See SectorForeignProcessable -->
+    <sql id="sectorUsageIds">
+        SELECT su.id FROM name_usage su WHERE su.dataset_key = #{key.datasetKey} AND su.sector_key = #{key.id}
+    </sql>
+
 </mapper>
 

@@ -84,8 +84,9 @@ See [`2026-09-05-release-source-provenance.md`](2026-09-05-release-source-proven
 
 Calls `SectorProcessable#deleteBySector(DSID)` on every mapper in `SectorProcessable.MAPPERS`,
 deleting in the order required by foreign keys (vernacular → distribution → media →
-species_interaction → name_usage → name → reference → verbatim_source). Anything tagged with this
-sector's id from a previous run is gone before phase 1 starts, so the sync is repeatable.
+species_interaction → taxon_concept_rel → treatment → taxon_property → name_usage → name → reference →
+verbatim_source). Anything tagged with this sector's id from a previous run is gone before phase 1 starts, so the
+sync is repeatable.
 
 ### 2. Phase 1 — Upward classification copy
 
