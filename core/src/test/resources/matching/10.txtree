@@ -1,0 +1,9 @@
+Plantae [kingdom]
+  Tracheophyta [phylum]
+    Magnoliopsida [class]
+      Malpighiales [order]
+        Euphorbiaceae Juss. [family]
+          Euphorbia L. [genus] {ID=Euphorbia}
+            Euphorbia lathyris L. [species] {ID=lathyris}
+            Euphorbia peplis L. [species] {ID=peplis}
+            Euphorbia peplus L. [species] {ID=peplus}

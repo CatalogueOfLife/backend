@@ -521,6 +521,16 @@ public class UsageMatcher implements AutoCloseable {
       });
     }
 
+    // The names index stems epithets, so one canonical id can hold distinct names like Euphorbia peplis and
+    // Euphorbia peplus. If some candidates are spelled exactly like the query, the others are only stemmed
+    // variants of it. See https://github.com/CatalogueOfLife/backend/issues/1566
+    if (existing.size() > 1 && nu.getName() != null) {
+      final String name = SciNameNormalizer.normalizeWhitespaceAndPunctuation(nu.getName());
+      if (existing.stream().anyMatch(u -> sameSpelling(u, name))) {
+        existing.removeIf(u -> !sameSpelling(u, name));
+      }
+    }
+
     // return a match if we have exactly one candidate left!
     if (existing.size() == 1) {
       if (snap) {
@@ -635,6 +645,14 @@ public class UsageMatcher implements AutoCloseable {
       LOG.debug("{} ambiguous names matched for {}. Pick the first by id", existing.size(), nu.getLabel());
       return UsageMatch.match(MatchType.AMBIGUOUS, existing.get(0), datasetKey, alt);
     }
+  }
+
+  /**
+   * @param normName query name already normalized by {@link SciNameNormalizer#normalizeWhitespaceAndPunctuation}
+   * @return true if the candidate name is spelled like the query, ignoring case, whitespace and punctuation
+   */
+  private static boolean sameSpelling(SimpleName u, String normName) {
+    return u.getName() != null && normName.equalsIgnoreCase(SciNameNormalizer.normalizeWhitespaceAndPunctuation(u.getName()));
   }
 
   /**

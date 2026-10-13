@@ -336,6 +336,35 @@ public class UsageMatcherIT {
   }
 
   /**
+   * The names index stems epithets, so Euphorbia peplis and Euphorbia peplus share one canonical id.
+   * The exact spelling decides between them, while a gender variant still matches through the stem.
+   * https://github.com/CatalogueOfLife/backend/issues/1566
+   */
+  @Test
+  public void stemmedEpithets() throws InterruptedException {
+    loadDataset(10);
+
+    var m = match(null, "Euphorbia peplus", null, cl());
+    assertMatch(m, "peplus");
+    assertNotEquals(MatchType.AMBIGUOUS, m.type);
+
+    m = match(Rank.SPECIES, "Euphorbia peplis", null, cl());
+    assertMatch(m, "peplis");
+    assertNotEquals(MatchType.AMBIGUOUS, m.type);
+
+    // authorship without a rank is no qualified name
+    m = match(null, "Euphorbia peplus", "L.", cl());
+    assertMatch(m, "peplus");
+    // a qualified name whose label differs from both candidates
+    m = match(Rank.SPECIES, "Euphorbia peplus", "L", cl());
+    assertMatch(m, "peplus");
+
+    // a gender variant without an exact spelling still matches
+    m = match(Rank.SPECIES, "Euphorbia lathyrus", null, cl());
+    assertMatch(m, "lathyris");
+  }
+
+  /**
    * Monomial homonyms & suprageneric_rank filter
    */
   @Test
