@@ -441,6 +441,30 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     assertReindexed(index, factory, info.sectors.get(1), mcfg, Rank.SPECIES, "Aedes albopictus");
   }
 
+  /**
+   * v2 adds german names to Aedes albopictus, a usage created by v1. Syncing v1 again deletes that usage,
+   * which the foreign vernacular names must not block. https://github.com/CatalogueOfLife/backend/issues/1585
+   */
+  @Test
+  public void resyncSectorWhoseUsagesCarryAnotherSectorsVernaculars() throws Throwable {
+    Assume.assumeTrue("vernacular".equals(project));
+    var factory = syncFactoryRule.factory(NameUsageIndexService.passThru());
+    var mcfg = info.buildMergeConfig();
+    for (Sector s : List.of(info.sectors.get(0), info.sectors.get(1), info.sectors.get(0))) {
+      SectorSync ss = factory.project(s, null, TestDataRule.TEST_USER.getKey());
+      ss.setMergeCfg(mcfg);
+      ss.run();
+      assertEquals("sync of sector " + s.getId() + " failed: " + ss.getState().getError(), JobStatus.FINISHED, ss.getStatus());
+    }
+    // the names v2 added to usages of v1 are attached to their new usages again
+    validateVernacular();
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var vnames = session.getMapper(VernacularNameMapper.class).listByTaxon(getByName(Datasets.COL, Rank.SPECIES, "Aedes albopictus"));
+      assertEquals(2, vnames.size());
+      vnames.forEach(vn -> assertEquals(info.sectors.get(1).getId(), vn.getSectorKey()));
+    }
+  }
+
   private static void assertReindexed(NameUsageIndexService index, SyncFactory factory, Sector s, TreeMergeHandlerConfig mcfg,
                                       Rank rank, String name) {
     Mockito.clearInvocations(index);

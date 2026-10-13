@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.TaxonExtension;
 import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.VernacularNameUsage;
 import life.catalogue.api.search.VernacularSearchRequest;
@@ -24,5 +25,20 @@ public interface VernacularNameMapper extends TaxonExtensionMapper<VernacularNam
   }
 
   List<VernacularName> listByTaxonFiltered(@Param("key") DSID<String> key, @Param("lang") String language);
+
+  /**
+   * Lists the vernacular names that other sectors - or editors - attached to the usages of the given sector.
+   * Their foreign key would keep the sector from deleting its usages, which a sync does.
+   *
+   * @param key the sector key
+   * @return the foreign vernacular names, each with the source id of its usage as the taxonID, not the usage id
+   */
+  List<TaxonExtension<VernacularName>> listForeignBySector(@Param("key") DSID<Integer> key);
+
+  /**
+   * Deletes the vernacular names listed by {@link #listForeignBySector}.
+   * @return number of deleted vernacular names
+   */
+  int deleteForeignBySector(@Param("key") DSID<Integer> key);
 
 }

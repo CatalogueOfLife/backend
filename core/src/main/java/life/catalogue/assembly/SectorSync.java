@@ -13,6 +13,8 @@ import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
+import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.es.indexing.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.matching.IdentifierScopeResolver;
@@ -61,6 +63,8 @@ public class SectorSync extends SectorRunnable {
   private List<SimpleName> foreignChildren;
   // map with foreign child id to original parent name
   private final Map<String, Name> foreignChildrenParents = new HashMap<>();
+  // source id -> vernacular names other sectors or editors attached to the usage this sector copied from it
+  private final Map<String, List<VernacularName>> foreignVernaculars = new HashMap<>();
   private final UsageIdGen usageIdGen;
   private final Supplier<String> nameIdGen;
   private final Supplier<String> typeMaterialIdGen;
@@ -142,6 +146,7 @@ public class SectorSync extends SectorRunnable {
     }
     try {
       if (projectTarget) {
+        detachForeignVernaculars();
         deleteOld();
         // from here on the project no longer holds what the last successful attempt measured,
         // so a failure must not leave sector.sync_attempt pointing at it - see pinFailedAttempt()
@@ -161,6 +166,12 @@ public class SectorSync extends SectorRunnable {
         // run these even if we get errors in the main tree copying
         setStep(ImportState.MATCHING);
         rematchForeignChildren();
+        // never mask the error of a failed sync with this one
+        try {
+          reattachForeignVernaculars();
+        } catch (RuntimeException e) {
+          LOG.error("Failed to attach the vernacular names of other sectors to sector {} again", sectorKey, e);
+        }
         relinkAttachedSectors();
         rematchEstimates();
       }
@@ -336,6 +347,81 @@ public class SectorSync extends SectorRunnable {
     }
   }
   
+  /**
+   * Takes the vernacular names other sectors (merge sectors) or editors attached to the usages of this sector off them,
+   * remembering them by the source id of their usage. Their foreign key is enforced and would fail {@link #deleteOld()}.
+   */
+  private void detachForeignVernaculars() {
+    int detached = 0;
+    try (SqlSession session = factory.openSession(false)) {
+      VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
+      for (TaxonExtension<VernacularName> vn : vm.listForeignBySector(sector)) {
+        foreignVernaculars.computeIfAbsent(vn.getTaxonID(), k -> new ArrayList<>()).add(vn.getObj());
+        detached++;
+      }
+      vm.deleteForeignBySector(sector);
+      session.commit();
+    }
+    LOG.info("Detached {} vernacular names other sectors attached to usages of sector {}", detached, sectorKey);
+  }
+
+  /**
+   * Attaches the vernacular names taken off by {@link #detachForeignVernaculars()} to the taxon of this sector that
+   * copies their source usage now: the new one after a sync, still the old one if the sync failed before deleting it.
+   * Names whose source usage is no longer synced as a taxon are dropped with a warning; a merge sector brings its own
+   * back on its next sync.
+   */
+  private void reattachForeignVernaculars() {
+    if (foreignVernaculars.isEmpty()) return;
+    final Map<Integer, String> sourceIdsByVSKey = new HashMap<>();
+    final Map<String, String> taxonIdsBySourceId = new HashMap<>();
+    // autoCommit=false keeps the cursors alive
+    try (SqlSession session = factory.openSession(false)) {
+      try (var cursor = session.getMapper(VerbatimSourceMapper.class).processSector(sector)) {
+        for (VerbatimSource v : cursor) {
+          if (v.getSourceId() != null && foreignVernaculars.containsKey(v.getSourceId())) {
+            sourceIdsByVSKey.put(v.getId(), v.getSourceId());
+          }
+        }
+      }
+      try (var cursor = session.getMapper(NameUsageMapper.class).processSectorSimple(sector)) {
+        for (SimpleNameVerbatim u : cursor) {
+          String sourceId = u.getVerbatimSourceKey() == null ? null : sourceIdsByVSKey.get(u.getVerbatimSourceKey());
+          if (sourceId != null && u.getStatus() != null && u.getStatus().isTaxon()) {
+            taxonIdsBySourceId.putIfAbsent(sourceId, u.getId());
+          }
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to read the usages of sector " + sectorKey, e);
+    }
+
+    int attached = 0;
+    int dropped = 0;
+    try (SqlSession session = factory.openSession(false)) {
+      VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
+      for (var e : foreignVernaculars.entrySet()) {
+        String taxonId = e.getKey() == null ? null : taxonIdsBySourceId.get(e.getKey());
+        if (taxonId == null) {
+          dropped += e.getValue().size();
+        } else {
+          for (VernacularName vn : e.getValue()) {
+            vn.setId(null);
+            vm.create(vn, taxonId);
+            attached++;
+          }
+        }
+      }
+      session.commit();
+    }
+    foreignVernaculars.clear();
+    if (dropped > 0) {
+      LOG.warn("Dropped {} vernacular names of other sectors whose taxon is no longer synced by sector {}", dropped, sectorKey);
+      state.addWarning(String.format("%d vernacular names of other sectors were dropped, as their taxon is no longer synced", dropped));
+    }
+    LOG.info("Attached {} vernacular names of other sectors to sector {} again", attached, sectorKey);
+  }
+
   private void processForeignChildren(BiConsumer<NameUsageMapper, SimpleName> processor) {
     int counter = 0;
     try (SqlSession session = factory.openSession(ExecutorType.BATCH, false)) {

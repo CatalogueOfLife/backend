@@ -210,6 +210,31 @@
     WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id}
   </delete>
 
+  <resultMap id="vernacularBySourceResultMap" type="TaxonExtension">
+    <id column="id"/>
+    <result property="taxonID" column="source_id"/>
+    <association property="obj" autoMapping="true" javaType="VernacularName">
+      <id property="id" column="id"/>
+    </association>
+  </resultMap>
+
+  <!-- names of other sectors or none, keyed by the source id of the sector usage they are attached to -->
+  <select id="listForeignBySector" parameterType="map" resultMap="vernacularBySourceResultMap">
+    SELECT <include refid="SELECT"/>, v.source_id
+    FROM <include refid="FROM"/>
+      JOIN name_usage u ON u.dataset_key=vn.dataset_key AND u.id=vn.taxon_id
+      LEFT JOIN verbatim_source v ON v.dataset_key=u.dataset_key AND v.id=u.verbatim_source_key
+    WHERE vn.dataset_key = #{key.datasetKey} AND u.sector_key = #{key.id}
+      AND vn.sector_key IS DISTINCT FROM #{key.id}
+  </select>
+
+  <delete id="deleteForeignBySector" parameterType="map">
+    DELETE FROM vernacular_name vn
+    USING name_usage u
+    WHERE vn.dataset_key = #{key.datasetKey} AND u.dataset_key = #{key.datasetKey} AND u.id=vn.taxon_id
+      AND u.sector_key = #{key.id} AND vn.sector_key IS DISTINCT FROM #{key.id}
+  </delete>
+
   <update id="removeSectorKey" parameterType="map">
     UPDATE vernacular_name SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
