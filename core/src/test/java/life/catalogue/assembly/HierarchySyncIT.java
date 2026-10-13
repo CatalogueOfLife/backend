@@ -3,6 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.GenericArea;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.config.IdentifierScopeConfig;
 import life.catalogue.config.MatchingConfig;
@@ -26,6 +27,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -1193,6 +1195,93 @@ public class HierarchySyncIT {
   }
 
   /**
+   * Editors attach any extension to any usage, the imported ancestors included. Their foreign keys would fail the
+   * delete of the previous imports, so every kind has to survive a re-sync, relations with either end imported.
+   */
+  @Test
+  public void foreignEntitiesOnImportedTaxaSurviveResync() throws Exception {
+    runHierarchySync();
+    final String felidae = getByName(PROJECT_KEY, Rank.FAMILY, "Felidae").getId();
+    final String canidae = getByName(PROJECT_KEY, Rank.FAMILY, "Canidae").getId();
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var d = new Distribution();
+      d.copyArea(new GenericArea("Europe"));
+      s.getMapper(DistributionMapper.class).create(withUser(d), felidae);
+
+      var m = new Media();
+      m.setUrl(URI.create("https://example.org/felidae.jpg"));
+      s.getMapper(MediaMapper.class).create(withUser(m), felidae);
+
+      var p = new TaxonProperty();
+      p.setProperty("habitat");
+      p.setValue("forest");
+      s.getMapper(TaxonPropertyMapper.class).create(withUser(p), felidae);
+
+      var t = new Treatment();
+      t.setId(felidae);
+      t.setDocument("Cats");
+      t.setFormat(TreatmentFormat.PLAIN_TEXT);
+      s.getMapper(TreatmentMapper.class).create(withUser(t));
+
+      // only one end is imported
+      var si = new SpeciesInteraction();
+      si.setType(SpeciesInteractionType.EATS);
+      si.setTaxonId(P_Lynx);
+      si.setRelatedTaxonId(felidae);
+      s.getMapper(SpeciesInteractionMapper.class).create(withUser(si));
+
+      // both ends are imported
+      var tc = new TaxonConceptRelation();
+      tc.setType(TaxonConceptRelType.OVERLAPS);
+      tc.setTaxonId(felidae);
+      tc.setRelatedTaxonId(canidae);
+      s.getMapper(TaxonConceptRelationMapper.class).create(withUser(tc));
+    }
+
+    HierarchySync sync = runHierarchySync();
+
+    assertTrue("nothing may be dropped: " + sync.getState().getWarnings(), sync.getState().getWarnings().isEmpty());
+    final var key = DSID.of(PROJECT_KEY, felidae);
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      assertEquals(1, s.getMapper(DistributionMapper.class).listByTaxon(key).size());
+      assertEquals(1, s.getMapper(MediaMapper.class).listByTaxon(key).size());
+      assertEquals(1, s.getMapper(TaxonPropertyMapper.class).listByTaxon(key).size());
+      assertEquals("Cats", s.getMapper(TreatmentMapper.class).get(key).getDocument());
+
+      var sis = s.getMapper(SpeciesInteractionMapper.class).listByRelatedTaxon(key);
+      assertEquals(1, sis.size());
+      assertEquals(P_Lynx, sis.getFirst().getTaxonId());
+
+      var tcs = s.getMapper(TaxonConceptRelationMapper.class).listByTaxon(key);
+      assertEquals(1, tcs.size());
+      assertEquals(canidae, tcs.getFirst().getRelatedTaxonId());
+    }
+  }
+
+  /**
+   * An entity attached to an import whose source taxon is gone has nothing to go back to. It is dropped with a warning.
+   */
+  @Test
+  public void foreignEntityOnDroppedImportIsDropped() throws Exception {
+    runHierarchySync();
+    final String felidae = getByName(PROJECT_KEY, Rank.FAMILY, "Felidae").getId();
+    try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var d = new Distribution();
+      d.copyArea(new GenericArea("Europe"));
+      s.getMapper(DistributionMapper.class).create(withUser(d), felidae);
+    }
+    // the source dissolves Felidae
+    setParent(targetKey, T_Felis, T_Animalia);
+    deleteUsage(targetKey, T_Felidae);
+
+    HierarchySync sync = runHierarchySync();
+
+    assertNull(getByName(PROJECT_KEY, Rank.FAMILY, "Felidae"));
+    assertTrue("the sync should warn about the dropped entity: " + sync.getState().getWarnings(),
+      sync.getState().getWarnings().contains("1 entities of other sectors were dropped, as their taxon is no longer imported"));
+  }
+
+  /**
    * The source dropped a taxon the project still refers to. Whatever is left pointing at the deleted import loses its
    * parent and is flagged, instead of dangling: a missing parent aborts releases and a synonym without accepted aborts
    * the search index.
@@ -1244,6 +1333,13 @@ public class HierarchySyncIT {
   static final String P_Custom_syn = "p_custom_syn";
 
   // ---------- helpers ----------
+
+  private static <T extends DatasetScopedEntity<?>> T withUser(T obj) {
+    obj.setDatasetKey(PROJECT_KEY);
+    obj.setCreatedBy(USER);
+    obj.setModifiedBy(USER);
+    return obj;
+  }
 
   private static Sector createMergeSector() {
     try (SqlSession s = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {

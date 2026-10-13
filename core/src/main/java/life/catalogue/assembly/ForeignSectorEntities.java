@@ -6,6 +6,8 @@ import life.catalogue.db.mapper.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -15,9 +17,10 @@ import org.slf4j.LoggerFactory;
 /**
  * The entities other sectors or editors attached to the usages of a sector, see {@link SectorForeignProcessable}.
  * A sync takes them off before it deletes its usages, as their enforced foreign keys would fail the delete, and attaches
- * them again afterwards to the usages copying the same source usages - the sync gives them new ids. Every end of a
- * relation that pointed into the sector is rewired, ends outside of it are left alone. Entities whose usage is no
- * longer synced are dropped; a merge sector brings its own back on its next sync.
+ * them again afterwards to the usages representing the same source usages - a sector sync gives them new ids, a
+ * hierarchy sync may resolve them to existing project usages. Every end of a relation that pointed into the sector is
+ * rewired, ends outside of it are left alone. Entities whose usage is no longer synced are dropped; a merge sector
+ * brings its own back on its next sync. Only ever used against a project, as only a project sync deletes anything.
  * See https://github.com/CatalogueOfLife/backend/issues/1585
  */
 class ForeignSectorEntities {
@@ -28,8 +31,8 @@ class ForeignSectorEntities {
   private final Map<Class<? extends SectorForeignProcessable<?>>, List<?>> detached = new LinkedHashMap<>();
   // usage of the sector a detached entity was attached to -> the source id it copied, null if it has none
   private final Map<String, String> sourceIds = new HashMap<>();
-  // source id -> usage of the sector that copies it now
-  private final Map<String, String> usageIds = new HashMap<>();
+  // usage of the sector a detached entity was attached to -> the usage representing it now
+  private UnaryOperator<String> newIds;
   private int attached;
   private int dropped;
 
@@ -70,8 +73,36 @@ class ForeignSectorEntities {
    */
   void reattach() {
     if (detached.isEmpty()) return;
+    final Map<String, String> usageIds;
     try (SqlSession session = factory.openSession(false)) {
-      readUsageIds(session);
+      usageIds = readUsageIds(session);
+    }
+    reattach(usageIds::get);
+  }
+
+  /**
+   * Attaches the detached entities to the usages that represent their source usages now. Idempotent, every entity is
+   * attached at most once: those that cannot be resolved are dropped.
+   * @param usageBySourceId resolves a source usage id to the id of the usage representing it now, null if there is none
+   */
+  void reattach(Function<String, String> usageBySourceId) {
+    reattachTo(id -> {
+      String sourceId = sourceIds.get(id);
+      return sourceId == null ? null : usageBySourceId.apply(sourceId);
+    });
+  }
+
+  /**
+   * Puts the detached entities back where they were, for a sync that failed before it deleted its usages.
+   */
+  void restore() {
+    reattachTo(UnaryOperator.identity());
+  }
+
+  private void reattachTo(UnaryOperator<String> newIds) {
+    if (detached.isEmpty()) return;
+    this.newIds = newIds;
+    try (SqlSession session = factory.openSession(false)) {
       for (var e : detached.entrySet()) {
         for (Object entity : e.getValue()) {
           if (attach(session, e.getKey(), entity)) {
@@ -95,7 +126,8 @@ class ForeignSectorEntities {
   }
 
   /**
-   * @return number of entities that were dropped, as the usage they were attached to is no longer synced
+   * @return number of entities that were dropped, as the usage they were attached to is no longer synced,
+   *         or a treatment because the usage representing it now already has one
    */
   int getDropped() {
     return dropped;
@@ -113,8 +145,11 @@ class ForeignSectorEntities {
         // a treatment's own id is the taxon id
         String taxonId = remap(t.getId());
         if (taxonId == null) return false;
+        // a hierarchy sync can resolve to an existing project usage with its own treatment
+        var tm = session.getMapper(TreatmentMapper.class);
+        if (tm.get(DSID.of(sector.getDatasetKey(), taxonId)) != null) return false;
         t.setId(taxonId);
-        session.getMapper(TreatmentMapper.class).create(t);
+        tm.create(t);
       }
       case SpeciesInteraction si -> {
         if (lost(si.getTaxonId()) || lost(si.getRelatedTaxonId())) return false;
@@ -134,13 +169,12 @@ class ForeignSectorEntities {
   }
 
   /**
-   * @return the id of the usage that copies the source usage of a former sector usage now, null if there is none.
+   * @return the id of the usage that represents the source usage of a former sector usage now, null if there is none.
    *         Ids outside the sector stay as they are.
    */
   private String remap(String id) {
     if (id == null || !sourceIds.containsKey(id)) return id;
-    String sourceId = sourceIds.get(id);
-    return sourceId == null ? null : usageIds.get(sourceId);
+    return newIds.apply(id);
   }
 
   /**
@@ -189,7 +223,11 @@ class ForeignSectorEntities {
     }
   }
 
-  private void readUsageIds(SqlSession session) {
+  /**
+   * @return source id -> usage of the sector that copies it now
+   */
+  private Map<String, String> readUsageIds(SqlSession session) {
+    final Map<String, String> usageIds = new HashMap<>();
     final Set<String> wanted = new HashSet<>(sourceIds.values());
     wanted.remove(null);
     final Map<Integer, String> sourceIdsByVSKey = new HashMap<>();
@@ -219,6 +257,7 @@ class ForeignSectorEntities {
     } catch (IOException e) {
       throw new RuntimeException("Failed to read the usages of sector " + sector.getKey(), e);
     }
+    return usageIds;
   }
 
   private static String entityName(Class<?> mapperClass) {
