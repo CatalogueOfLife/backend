@@ -376,7 +376,8 @@ left out.
 - `GET /dataset/placementConflict?minRatio=0.1&minConflicts=1&type=` lists the public external datasets whose latest
   import flagged at least that share and that number of its accepted genera, highest share first. As only accepted genera are ever flagged, the
   share is the import's `PLACEMENT_CONFLICT` issue count over its accepted `GENUS` count, both from the import
-  metrics. It is the list to send to data publishers like Plazi.
+  metrics. It is the list to send to data publishers like Plazi. Asked for `text/csv` or `text/tab-separated-values`,
+  or as `placementConflict.csv` / `.tsv`, it answers all rows unpaged with a header row.
 
 See `txtree/placementconflict/readme.md` and [#1608](https://github.com/CatalogueOfLife/backend/issues/1608).
 

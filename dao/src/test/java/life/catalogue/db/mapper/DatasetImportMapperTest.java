@@ -369,6 +369,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     var list = dm.listPlacementConflicts(0.1, 1, null, new Page());
     assertEquals(1, list.size());
     assertEquals(1, dm.countPlacementConflicts(0.1, 1, null));
+    // unpaged, as used by the CSV download
+    assertEquals(1, dm.listPlacementConflicts(0.1, 1, null, null).size());
     var pc = list.get(0);
     assertEquals(datasetKey, (int) pc.getDatasetKey());
     assertEquals(d.getAttempt(), (int) pc.getAttempt());

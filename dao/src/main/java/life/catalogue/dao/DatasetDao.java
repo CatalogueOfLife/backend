@@ -396,6 +396,24 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
+  private static final Object[] PLACEMENT_CONFLICT_HEADERS = {"datasetKey", "title", "type", "attempt", "genera", "conflicts", "ratio"};
+
+  /**
+   * All rows of {@link #listPlacementConflicts} unpaged, with a header row first, for a CSV or TSV download.
+   */
+  public Stream<Object[]> streamPlacementConflicts(double minRatio, int minConflicts, @Nullable DatasetType type) {
+    Preconditions.checkArgument(minRatio >= 0 && minRatio <= 1, "minRatio must be between 0 and 1");
+    Preconditions.checkArgument(minConflicts >= 1, "minConflicts must be at least 1");
+    List<PlacementConflicts> result;
+    try (SqlSession session = factory.openSession()){
+      result = session.getMapper(DatasetMapper.class).listPlacementConflicts(minRatio, minConflicts, type, null);
+    }
+    return Stream.concat(
+      Stream.<Object[]>of(PLACEMENT_CONFLICT_HEADERS),
+      result.stream().map(p -> new Object[]{p.getDatasetKey(), p.getTitle(), p.getType(), p.getAttempt(), p.getGenera(), p.getConflicts(), p.getRatio()})
+    );
+  }
+
   private void postDoiDeletionForSources(DatasetSourceMapper psm, int datasetKey){
     psm.listReleaseSourcesSimple(datasetKey, false).stream()
       .filter(d -> d.getDoi() != null && d.getDoi().isCOL())
