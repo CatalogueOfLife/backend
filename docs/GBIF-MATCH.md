@@ -15,7 +15,8 @@ GET /v2/species/match/metadata
 ## Request
 | Parameter | |
 |---|---|
-| `scientificName`, `authorship`, `rank`, `code` | the name to match, interpreted like `/match/nameusage` |
+| `scientificName`, `scientificNameAuthorship`, `taxonRank`, `code` | the name to match, interpreted like `/match/nameusage`. `authorship` and `rank` are accepted as aliases |
+| `verbatimTaxonRank` | used as the rank if `taxonRank` is blank |
 | `genericName`, `specificEpithet`, `infraspecificEpithet` | joined into the name if `scientificName` is blank |
 | `kingdom` … `species` | the classification, all ranks of `Classification` are bound |
 | `usageKey`, `taxonID` | look a usage up by its id instead of matching a name |

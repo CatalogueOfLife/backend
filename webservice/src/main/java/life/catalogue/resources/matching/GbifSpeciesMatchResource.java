@@ -55,7 +55,10 @@ public class GbifSpeciesMatchResource {
                                   @QueryParam("usageKey") String usageKey,
                                   @QueryParam("taxonID") String taxonID,
                                   @QueryParam("scientificName") String scientificName,
+                                  @QueryParam("scientificNameAuthorship") String scientificNameAuthorship,
                                   @QueryParam("authorship") String authorship,
+                                  @QueryParam("taxonRank") String taxonRank,
+                                  @QueryParam("verbatimTaxonRank") String verbatimTaxonRank,
                                   @QueryParam("rank") String rank,
                                   @QueryParam("code") String code,
                                   @QueryParam("genericName") String genericName,
@@ -75,7 +78,10 @@ public class GbifSpeciesMatchResource {
     }
     String name = StringUtils.isBlank(scientificName) ? joinEpithets(genericName, specificEpithet, infraspecificEpithet) : scientificName;
     IssueContainer issues = new IssueContainer.Simple();
-    var sn = AbstractNameUsageMatchingResource.interpret(null, null, null, name, authorship, code, rank, null, classification, issues);
+    // GBIF's parameter names first, the CLB ones of /match/nameusage are accepted as aliases
+    String author = StringUtils.firstNonBlank(scientificNameAuthorship, authorship);
+    String rnk = StringUtils.firstNonBlank(taxonRank, verbatimTaxonRank, rank);
+    var sn = AbstractNameUsageMatchingResource.interpret(null, null, null, name, author, code, rnk, null, classification, issues);
     UsageMatch m = MatchingJob.interpretAndMatch(sn, sn.getClassification(), issues, verbose, !strict, interpreter, utils, matcher);
     return GbifMatchMapper.map(sn, m, verbose, System.currentTimeMillis() - start);
   }

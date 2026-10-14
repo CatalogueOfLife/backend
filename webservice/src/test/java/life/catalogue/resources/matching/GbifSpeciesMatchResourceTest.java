@@ -72,7 +72,7 @@ public class GbifSpeciesMatchResourceTest {
   }
 
   GbifNameUsageMatch match(String name, boolean strict) {
-    return resource.match(null, null, null, name, null, null, null, null, null, null, strict, false, new Classification());
+    return resource.match(null, null, null, name, null, null, null, null, null, null, null, null, null, strict, false, new Classification());
   }
 
   @Test
@@ -107,28 +107,44 @@ public class GbifSpeciesMatchResourceTest {
     assertEquals("Abies alba", GbifSpeciesMatchResource.joinEpithets("Abies", " alba ", null));
     assertNull(GbifSpeciesMatchResource.joinEpithets(null, " ", null));
 
-    var m = resource.match(null, null, null, null, null, null, null, "Abies", "alba", null, false, false, new Classification());
+    var m = resource.match(null, null, null, null, null, null, null, null, null, null, "Abies", "alba", null, false, false, new Classification());
     assertEquals("S", m.usage.key);
   }
 
   @Test
+  public void gbifParamNames() {
+    // GBIF's scientificNameAuthorship + taxonRank, the CLB names authorship + rank are aliases
+    var m = resource.match(null, null, null, "Abies alba", "Mill.", null, "species", null, null, null, null, null, null, false, false, new Classification());
+    assertEquals("S", m.usage.key);
+    assertEquals("EXACT", m.diagnostics.matchType);
+
+    m = resource.match(null, null, null, "Abies alba", null, "Mill.", null, "species", "genus", null, null, null, null, false, false, new Classification());
+    assertEquals("S", m.usage.key);
+    assertEquals("EXACT", m.diagnostics.matchType);
+
+    // verbatimTaxonRank is used when taxonRank is missing: a genus rank does not fit the species name
+    m = resource.match(null, null, null, "Abies alba", "Mill.", null, null, "genus", null, null, null, null, null, true, false, new Classification());
+    assertNull(m.usage);
+  }
+
+  @Test
   public void usageKey() {
-    var m = resource.match(null, "SYN", null, null, null, null, null, null, null, null, false, false, null);
+    var m = resource.match(null, "SYN", null, null, null, null, null, null, null, null, null, null, null, false, false, null);
     assertEquals("SYN", m.usage.key);
     assertEquals("EXACT", m.diagnostics.matchType);
     assertEquals("S", m.acceptedUsage.key);
 
-    m = resource.match(null, null, "nope", null, null, null, null, null, null, null, false, false, null);
+    m = resource.match(null, null, "nope", null, null, null, null, null, null, null, null, null, null, false, false, null);
     assertNull(m.usage);
     assertEquals("NONE", m.diagnostics.matchType);
   }
 
   @Test
   public void checklistKey() {
-    var m = resource.match(CHECKLIST, null, null, "Abies", null, null, null, null, null, null, false, false, new Classification());
+    var m = resource.match(CHECKLIST, null, null, "Abies", null, null, null, null, null, null, null, null, null, false, false, new Classification());
     assertEquals("G", m.usage.key);
     assertThrows(IllegalArgumentException.class,
-      () -> resource.match(UUID.randomUUID(), null, null, "Abies", null, null, null, null, null, null, false, false, new Classification())
+      () -> resource.match(UUID.randomUUID(), null, null, "Abies", null, null, null, null, null, null, null, null, null, false, false, new Classification())
     );
   }
 
