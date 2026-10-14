@@ -273,7 +273,9 @@ def cmd_match(a):
 
 # ---------------------------------------------------------------- report
 def none_current(r):
-  return not r["cur_taxonkey"] or "TAXON_MATCH_NONE" in r["cur_issues"] or r["cur_kingdomkey"] in ("", "0")
+  if "_live_type" in r:  # a live answer: a match to a domain or realm has no kingdom
+    return not r["cur_taxonkey"]
+  return not r["cur_taxonkey"] or "TAXON_MATCH_NONE" in r["cur_issues"] or r["cur_kingdomkey"] == "0"
 
 
 def gbif_type(r):
