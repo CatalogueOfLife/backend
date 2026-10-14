@@ -6,7 +6,8 @@ Modelled on GBIF's pre-backbone-release impact reports (gbif/pipelines gbif/inge
 
 Name matching only: no taxonID, scientificNameID or taxonConceptID is ever sent to either service.
 
-  match   <download.zip|tsv> --out proposed.tsv   match every verbatim row >= --min-occurrences against CLB
+  match   <download.zip|tsv> --out proposed.tsv   match every verbatim row >= --min-occurrences against CLB,
+                                                  with --gbif also against a GBIF matching-ws, live and without ids
   report  proposed.tsv --out DIR [--verify v.tsv]  categorise, write DIR/diff.tsv and DIR/report.html
   verify  DIR/diff.tsv --out verify.tsv            re-ask live api.gbif.org for the top differing rows
 
@@ -63,7 +64,8 @@ CURRENT = ["taxonkey", "acceptedtaxonkey"] + [r + "key" for r in RANKS] + \
 MATCH_FIELDS = ["matchType", "confidence", "note", "usageKey", "usageName", "usageRank", "usageStatus",
                 "acceptedKey", "acceptedName"] + [r + "Key" for r in RANKS] + [r + "Name" for r in RANKS]
 PROPOSED = ["clb_" + f for f in MATCH_FIELDS] + ["clb_error"]
-OUT_COLS = ["row", "occurrences", "id_flag"] + VERBATIM + IDS + ["cur_" + c for c in CURRENT] + PROPOSED
+LIVE = ["gbif_" + f for f in MATCH_FIELDS] + ["gbif_error"]
+OUT_COLS = ["row", "occurrences", "id_flag"] + VERBATIM + IDS + ["cur_" + c for c in CURRENT] + PROPOSED + LIVE
 
 # categories, most severe first
 CATEGORIES = [
@@ -213,18 +215,26 @@ def cmd_match(a):
     log(f"resuming after row {done}")
   client = Client(a.base)
   base_path = urllib.parse.urlparse(a.base).path.rstrip("/")
+  gbif = Client(a.gbif) if a.gbif else None
+  gbif_path = urllib.parse.urlparse(a.gbif).path.rstrip("/") if a.gbif else ""
 
   def work(item):
     rownum, rec = item
     params = match_params(rec)
     if a.checklist_key:
       params.append(("checklistKey", a.checklist_key))
-    resp, err = client.get(base_path + "/v2/species/match?" + urllib.parse.urlencode(params)) if params else (None, "no name")
+    query = urllib.parse.urlencode(params)
+    resp, err = client.get(base_path + "/v2/species/match?" + query) if params else (None, "no name")
     m = parse_match(resp)
+    gm, gerr = {f: "" for f in MATCH_FIELDS}, ""
+    if gbif:
+      gresp, gerr = gbif.get(gbif_path + "/v2/species/match?" + query) if params else (None, "no name")
+      gm = parse_match(gresp)
     out = [str(rownum), rec.get("occurrences", ""), id_flag(rec)]
     out += [rec.get(c, "") for c in VERBATIM + IDS]
     out += [rec.get(c, "") for c in CURRENT]
     out += [m[f] for f in MATCH_FIELDS] + [clean(err or "")]
+    out += [gm[f] for f in MATCH_FIELDS] + [clean(gerr or "")]
     return "\t".join(out)
 
   def todo():
@@ -269,6 +279,8 @@ def none_current(r):
 def gbif_type(r):
   if none_current(r):
     return "NONE"
+  if r.get("_live_type"):
+    return r["_live_type"]
   issues = r["cur_issues"]
   for t in ("FUZZY", "HIGHERRANK", "AGGREGATE"):
     if "TAXON_MATCH_" + t in issues:
@@ -306,24 +318,30 @@ def categorise(r):
 def read_verify(path):
   live = {}
   if path:
-    for rec in read_tsv(path, lower=True):
+    for rec in read_tsv(path):
       live[rec["row"]] = rec
   return live
 
 
+def live_answer(r, prefix="gbif_"):
+  """The live GBIF answer stored in a match result row, None if GBIF was not asked or failed."""
+  if not r.get(prefix + "matchType") or r.get(prefix + "error"):
+    return None
+  return {f: r[prefix + f] for f in MATCH_FIELDS}
+
+
 def apply_live(r, v):
-  """Replaces the stored GBIF interpretation by the live, id free GBIF answer."""
-  r["cur_taxonkey"] = v["usagekey"]
-  r["cur_acceptedtaxonkey"] = v["acceptedkey"]
+  """Replaces the stored GBIF interpretation by the live, id free GBIF answer v (MATCH_FIELDS keys)."""
+  r["_stored_taxonkey"] = r["cur_taxonkey"]
+  r["cur_taxonkey"] = v["usageKey"]
+  r["cur_acceptedtaxonkey"] = v["acceptedKey"]
   for rk in RANKS:
-    r["cur_" + rk + "key"] = v[rk + "key"]
-  r["cur_scientificname"] = v["usagename"]
-  r["cur_acceptedscientificname"] = v["acceptedname"]
-  r["cur_taxonrank"] = v["usagerank"]
-  issues = {"FUZZY": "TAXON_MATCH_FUZZY", "HIGHERRANK": "TAXON_MATCH_HIGHERRANK", "NONE": "TAXON_MATCH_NONE"}
-  r["cur_issues"] = issues.get(v["matchtype"], "") if v["usagekey"] else "TAXON_MATCH_NONE"
-  if not v["usagekey"]:
-    r["cur_kingdomkey"] = ""
+    r["cur_" + rk + "key"] = v[rk + "Key"]
+  r["cur_scientificname"] = v["usageName"]
+  r["cur_acceptedscientificname"] = v["acceptedName"]
+  r["cur_taxonrank"] = v["usageRank"]
+  r["cur_issues"] = "" if v["usageKey"] else "TAXON_MATCH_NONE"
+  r["_live_type"] = v["matchType"] if v["usageKey"] else ""
 
 
 def verbatim_label(r):
@@ -346,15 +364,20 @@ def cmd_report(a):
   top = defaultdict(list)  # category -> heap of (occ, row)
   names_by_cat = defaultdict(Counter)  # category -> verbatim name -> occurrences
   total_occ, verified = 0, 0
+  stale = Counter()  # id_flag -> occurrences whose stored interpretation differs from live GBIF
   diff_path = os.path.join(a.out, "diff.tsv")
   with open(diff_path, "w", encoding="utf-8") as diff:
     diff.write("\t".join(["category", "verified_live"] + OUT_COLS + ["gbif_url", "clb_url"]) + "\n")
     for r in read_tsv(a.proposed):
       n = int(r["occurrences"] or 0)
-      v = live.get(r["row"])
+      v = live_answer(r) or live_answer(live.get(r["row"]) or {}, prefix="")
       if v:
+        stored_none = none_current(r)
+        stored = r["cur_taxonkey"]
         apply_live(r, v)
         verified += 1
+        if (stored_none and r["cur_taxonkey"]) or (not stored_none and stored != r["cur_taxonkey"]):
+          stale[r["id_flag"]] += n
       cat = categorise(r)
       rows[cat] += 1
       occ[cat] += n
@@ -381,7 +404,7 @@ def cmd_report(a):
       elif n > h[0][0]:
         heapq.heapreplace(h, item)
   sort_tsv(diff_path)
-  write_html(a, rows, occ, occ_id, total_occ, cross, by_kingdom, top, names_by_cat, names, verified)
+  write_html(a, rows, occ, occ_id, total_occ, cross, by_kingdom, top, names_by_cat, names, verified, stale)
   log(f"wrote {diff_path} and {os.path.join(a.out, 'report.html')}")
 
 
@@ -401,7 +424,7 @@ def sort_tsv(path):
     log(f"could not sort {path}: {e}")
 
 
-def write_html(a, rows, occ, occ_id, total_occ, cross, by_kingdom, top, names_by_cat, names, verified):
+def write_html(a, rows, occ, occ_id, total_occ, cross, by_kingdom, top, names_by_cat, names, verified, stale):
   e = html.escape
   total_rows = sum(rows.values())
 
@@ -429,7 +452,9 @@ text-align:left;vertical-align:top}th{color:var(--muted);font-weight:600}td.n{te
   p.append("<h1>GBIF matching-ws vs CLB matcher</h1>\n")
   p.append(f"<p class=muted>{total_rows:,} distinct verbatim inputs with {total_occ:,} occurrences, "
            f"compared by name only against COL checklist <code>{COL_CHECKLIST}</code>. "
-           f"{verified:,} rows re-checked live against api.gbif.org. "
+           f"GBIF's answer is live and id free for {verified:,} rows, the stored occurrence interpretation for the rest. "
+           f"For {sum(stale.values()):,} occurrences the stored interpretation differs from live GBIF, "
+           f"{stale['1']:,} of them possibly matched by id. "
            f"Generated {time.strftime('%Y-%m-%d %H:%M')}.</p>\n")
 
   p.append("<h2>Categories</h2>\n<div class=wrap><table>\n<tr><th>Category</th><th>Meaning</th><th>Inputs</th>"
@@ -475,6 +500,8 @@ text-align:left;vertical-align:top}th{color:var(--muted);font-weight:600}td.n{te
         gb += "<br><span class=muted>possibly id matched</span>"
       if r["_live"]:
         gb += "<br><span class=muted>live</span>"
+        if r.get("_stored_taxonkey") and r["_stored_taxonkey"] != r["cur_taxonkey"]:
+          gb += f"<br><span class=muted>stored: <code>{e(r['_stored_taxonkey'])}</code></span>"
       cb = (f"{e(r['clb_usageName'] or '-')} <code>{e(r['clb_usageKey'])}</code> "
             f"<span class=muted>{e(r['clb_matchType'])} {e(r['clb_usageRank'])} {e(r['clb_confidence'])}</span>")
       if r["clb_acceptedKey"] and r["clb_acceptedKey"] != r["clb_usageKey"]:
@@ -529,6 +556,7 @@ def main():
   m.add_argument("input", help="GBIF SQL_TSV_ZIP download, or its unzipped TSV")
   m.add_argument("--out", default="proposed.tsv")
   m.add_argument("--base", default="http://localhost:8080", help="CLB matching server")
+  m.add_argument("--gbif", help="GBIF matching-ws to ask live as well, e.g. https://api.gbif.org or a local container")
   m.add_argument("--min-occurrences", type=int, default=1)
   m.add_argument("--threads", type=int, default=16)
   m.add_argument("--limit", type=int, help="stop after this many input rows, for trials")
