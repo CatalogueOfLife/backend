@@ -38,6 +38,11 @@ public class FixedNameUsageMatchingResource extends AbstractNameUsageMatchingRes
     return matcher;
   }
 
+  @Override
+  protected boolean closeAfterMatch() {
+    return false; // the one matcher of this resource lives as long as the server
+  }
+
   @POST
   @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_CSV_ALT1, MoreMediaTypes.TEXT_CSV_ALT2,
     MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_TSV_ALT1, MoreMediaTypes.TEXT_WILDCARD})

@@ -363,9 +363,18 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   public static UsageMatch interpretAndMatch(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
                                        NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
   ) {
-    var snc = interpret(sn, classification, issues, interpreter, utils);
     // external match requests fall back to a higher rank match when the name itself cannot be matched
-    return snc.isPresent() ? matcher.match(snc.get(), false, verbose, true) : UsageMatch.empty(0);
+    return interpretAndMatch(sn, classification, issues, verbose, true, interpreter, utils, matcher);
+  }
+
+  /**
+   * @param higherRank if true falls back to a higher rank match when the name itself cannot be matched
+   */
+  public static UsageMatch interpretAndMatch(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
+                                       boolean higherRank, NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
+  ) {
+    var snc = interpret(sn, classification, issues, interpreter, utils);
+    return snc.isPresent() ? matcher.match(snc.get(), false, verbose, higherRank) : UsageMatch.empty(0);
   }
 
   /**

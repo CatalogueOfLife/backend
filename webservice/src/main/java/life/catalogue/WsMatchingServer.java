@@ -24,6 +24,7 @@ import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.parser.NameParser;
 import life.catalogue.resources.VersionResource;
 import life.catalogue.resources.matching.FixedNameUsageMatchingResource;
+import life.catalogue.resources.matching.GbifSpeciesMatchResource;
 import life.catalogue.resources.parser.NameParserResource;
 
 import org.apache.commons.io.FileUtils;
@@ -118,6 +119,7 @@ public class WsMatchingServer extends Application<WsMatchingServerConfig> {
     j.register(new NameParserResource());
     j.register(new life.catalogue.resources.parser.openrefine.NameReconciliationResource(cfg.apiURI, cfg.clbURI));
     j.register(new FixedNameUsageMatchingResource(cfg.matching, dataset, matcher));
+    j.register(new GbifSpeciesMatchResource(dataset, matcher, cfg.gbifChecklistKey));
     j.register(new VersionResource(cfg.versionString(), LocalDateTime.now()));
 
     cfg.logDirectories();

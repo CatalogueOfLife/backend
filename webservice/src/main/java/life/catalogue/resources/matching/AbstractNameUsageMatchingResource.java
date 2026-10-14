@@ -43,21 +43,34 @@ public abstract class AbstractNameUsageMatchingResource {
   public abstract UsageMatcher singleMatchMatcher(int datasetKey);
 
   /**
+   * @return true if the matcher handed out by {@link #singleMatchMatcher(int)} is leased per request and must be closed
+   *   after each match. A long lived matcher owned by the resource must not be closed.
+   */
+  protected boolean closeAfterMatch() {
+    return true;
+  }
+
+  /**
    * @param sn will be matched to the nidx here, no need for a matched instance
    */
   private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleNameCached> sn, IssueContainer issues, boolean verbose) {
     UsageMatch match;
-    try (var matcher = singleMatchMatcher(datasetKey)) {
+    var matcher = singleMatchMatcher(datasetKey);
+    try {
       if (utils == null) {
         utils = new MatchingUtils(matcher.getNameIndex());
       }
       match = MatchingJob.interpretAndMatch(sn, sn.getClassification(), issues, verbose, interpreter, utils, matcher);
+    } finally {
+      if (closeAfterMatch()) {
+        matcher.close();
+      }
     }
     return new UsageMatchWithOriginal(match, issues, sn, null);
   }
 
 
-  private static SimpleNameClassified<SimpleNameCached> interpret(String id,
+  static SimpleNameClassified<SimpleNameCached> interpret(String id,
                                                             String q,
                                                             String name,
                                                             String sciname,
