@@ -2,11 +2,16 @@ package life.catalogue.es;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.InfoGroup;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.es.json.EsModule;
 
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import org.junit.Test;
@@ -14,6 +19,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertTrue;
@@ -119,6 +125,45 @@ public class EsModuleTest {
     System.out.println("SPECIES ordinal: " + Rank.SPECIES.ordinal());
     // Rank.SPECIES should be serialized as its ordinal integer, not as the string "SPECIES"
     assertTrue("Rank must be an integer in JSON, got: " + json, json.contains("\"rank\":" + Rank.SPECIES.ordinal()));
+  }
+
+  /**
+   * taxon-ws reads the very index the backend writes, but is released on its own schedule.
+   * A document written by a newer backend - a new property, issue or enum value - must still be readable
+   * by an older reader, with the values it does not know dropped. See gbif/gbif-web#2080.
+   */
+  @Test
+  public void tolerantReader() throws JsonProcessingException {
+    ObjectMapper mapper = EsModule.contentMapper();
+    Name name = new Name();
+    name.setRank(Rank.SPECIES);
+    name.setScientificName("Abies alba");
+    name.setCode(NomCode.BOTANICAL);
+    Taxon taxon = new Taxon(name);
+    taxon.setStatus(TaxonomicStatus.ACCEPTED);
+    NameUsageWrapper nuw = new NameUsageWrapper(taxon);
+    nuw.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.MISSING_AUTHORSHIP));
+    nuw.setSecondarySourceGroups(EnumSet.of(InfoGroup.AUTHORSHIP));
+    nuw.setGroup(TaxGroup.Plants);
+
+    ObjectNode root = (ObjectNode) mapper.readTree(mapper.writeValueAsString(nuw));
+    root.put("someFutureProperty", "x");
+    root.withArray("issues").add("SOME_FUTURE_ISSUE");
+    root.withArray("secondarySourceGroups").add("SOME_FUTURE_GROUP");
+    root.put("group", "SomeFutureGroup");
+    ObjectNode n = (ObjectNode) root.path("usage").path("name");
+    n.put("code", "SOME_FUTURE_CODE");
+    n.put("someFutureNameProperty", 1);
+
+    NameUsageWrapper result = mapper.readValue(mapper.writeValueAsString(root), NameUsageWrapper.class);
+    assertEquals(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.MISSING_AUTHORSHIP), result.getIssues());
+    assertEquals(EnumSet.of(InfoGroup.AUTHORSHIP), result.getSecondarySourceGroups());
+    assertNull(result.getGroup());
+    Name rn = result.getUsage().getName();
+    assertEquals("Abies alba", rn.getScientificName());
+    assertNull(rn.getCode());
+    assertEquals(Rank.SPECIES, rn.getRank());
+    assertEquals(TaxonomicStatus.ACCEPTED, result.getUsage().getStatus());
   }
 
 }

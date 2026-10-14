@@ -106,7 +106,12 @@ public class EsModule extends SimpleModule {
 
   private static ObjectMapper configureMapper(ObjectMapper mapper) {
     mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
+    // taxon-ws reads the same index but is released on its own schedule: a document written by a newer backend,
+    // with a new property or enum value (above all a new issue), must not fail an older reader. See gbif/gbif-web#2080
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    mapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL);
+    // ... and an unknown value is dropped from a collection, not kept as null
+    mapper.setDefaultSetterInfo(JsonSetter.Value.forContentNulls(Nulls.SKIP));
     mapper.registerModule(new JavaTimeModule());
     mapper.registerModule(new EsModule());
     //TODO: still needed ???
