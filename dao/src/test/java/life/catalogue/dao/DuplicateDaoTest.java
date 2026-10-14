@@ -240,6 +240,19 @@ public class DuplicateDaoTest {
     return result.getResult();
   }
 
+  @Test
+  public void csv() {
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, MatchingMode.STRICT, null, 2, datasetKey, null, null, null, null, null,
+      null, null, null, null, null, null, Datasets.COL);
+    List<Object[]> rows = dao.stream(req).toList();
+    assertEquals("sourceDatasetKey", rows.get(0)[0]);
+    assertEquals("sourceDataset", rows.get(0)[1]);
+    assertTrue(rows.size() > 1);
+    for (Object[] row : rows) {
+      assertEquals(rows.get(0).length, row.length);
+    }
+  }
+
   private static void assertComplete(int expectedSize, List<Duplicate> dups, int minSize) {
     assertEquals(expectedSize, dups.size());
     for (Duplicate d : dups) {

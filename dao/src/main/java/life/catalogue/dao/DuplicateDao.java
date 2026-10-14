@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DuplicateMapper;
 import life.catalogue.db.mapper.SectorMapper;
 
@@ -39,7 +40,7 @@ public class DuplicateDao {
   private static final Logger LOG = LoggerFactory.getLogger(DuplicateDao.class);
   private static final Object[][] EXPORT_HEADERS = new Object[1][];
   static {
-    EXPORT_HEADERS[0] = new Object[]{"sourceDatasetKey", "ID", "decision", "status", "rank", "label", "scientificName", "authorship", "genus", "specificEpithet", "infraspecificEpithet", "accepted", "classification"};
+    EXPORT_HEADERS[0] = new Object[]{"sourceDatasetKey", "sourceDataset", "ID", "decision", "status", "rank", "label", "scientificName", "authorship", "genus", "specificEpithet", "infraspecificEpithet", "accepted", "classification"};
   }
 
 
@@ -47,6 +48,17 @@ public class DuplicateDao {
   private final LoadingCache<DSID<Integer>, Integer> sectorCache = Caffeine.newBuilder()
                                             .maximumSize(10000)
                                             .build(this::getSectorDatasetKey);
+
+  private final LoadingCache<Integer, String> datasetLabelCache = Caffeine.newBuilder()
+                                            .maximumSize(10000)
+                                            .build(this::getDatasetLabel);
+
+  private String getDatasetLabel(@NonNull Integer datasetKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      var d = session.getMapper(DatasetMapper.class).getSimple(datasetKey);
+      return d == null ? null : ObjectUtils.firstNonNull(d.getAlias(), d.getTitle());
+    }
+  }
 
   private Integer getSectorDatasetKey(@NonNull DSID<Integer> sectorKey) {
     try (SqlSession session = factory.openSession(true)) {
@@ -210,7 +222,7 @@ public class DuplicateDao {
   }
 
   /**
-   * @return ID	Decision	Status	scientificName	Authorship	Genus	specificEpithet	infraspecificEpithet	Accepted	Rank	Classification
+   * @return sourceDatasetKey	sourceDataset	ID	Decision	Status	scientificName	Authorship	Genus	specificEpithet	infraspecificEpithet	Accepted	Rank	Classification
    */
   public Stream<Object[]> stream(DuplicateRequest req) {
     var all = findOrList(req, null);
@@ -224,21 +236,25 @@ public class DuplicateDao {
   }
 
   private Stream<Object[]> mapCSV(Duplicate d) {
-    // "sourceDatasetKey", "ID", "decision", "status", "rank", "label", "scientificName", "authorship", "genus", "specificEpithet", "infraspecificEpithet", "accepted", "classification"};
-    return d.getUsages().stream().map(u -> new Object[]{
-      u.getUsage().getSectorKey() == null ? null : sectorCache.get(u.getUsage().getSectorDSID()),
-      u.getUsage().getId(),
-      u.getDecision() == null ? null : u.getDecision().getMode(),
-      u.getUsage().getStatus(),
-      u.getUsage().getRank(),
-      u.getUsage().getLabel(),
-      u.getUsage().getName().getScientificName(),
-      u.getUsage().getName().getAuthorship(),
-      u.getUsage().getName().getGenus(),
-      u.getUsage().getName().getSpecificEpithet(),
-      u.getUsage().getName().getInfraspecificEpithet(),
-      u.getUsage().isSynonym() ? ((Synonym) u.getUsage()).getAccepted().getLabel() : null,
-      concat(u.getClassification())
+    // "sourceDatasetKey", "sourceDataset", "ID", "decision", "status", "rank", "label", "scientificName", "authorship", "genus", "specificEpithet", "infraspecificEpithet", "accepted", "classification"};
+    return d.getUsages().stream().map(u -> {
+      Integer srcKey = u.getUsage().getSectorKey() == null ? null : sectorCache.get(u.getUsage().getSectorDSID());
+      return new Object[]{
+        srcKey,
+        srcKey == null ? null : datasetLabelCache.get(srcKey),
+        u.getUsage().getId(),
+        u.getDecision() == null ? null : u.getDecision().getMode(),
+        u.getUsage().getStatus(),
+        u.getUsage().getRank(),
+        u.getUsage().getLabel(),
+        u.getUsage().getName().getScientificName(),
+        u.getUsage().getName().getAuthorship(),
+        u.getUsage().getName().getGenus(),
+        u.getUsage().getName().getSpecificEpithet(),
+        u.getUsage().getName().getInfraspecificEpithet(),
+        u.getUsage().isSynonym() ? ((Synonym) u.getUsage()).getAccepted().getLabel() : null,
+        concat(u.getClassification())
+      };
     });
   }
 
