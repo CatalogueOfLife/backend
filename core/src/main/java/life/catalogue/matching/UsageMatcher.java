@@ -92,6 +92,8 @@ public class UsageMatcher implements AutoCloseable {
   /**
    * This first parsed the name and matches it to the names index,
    * before calling the actual match method which requires the names index ids to be present.
+   * A name not yet in the names index is inserted, so only use this for names held in ChecklistBank
+   * (imports, syncs) and never for external queries.
    *
    * @param sn
    * @return
@@ -501,6 +503,15 @@ public class UsageMatcher implements AutoCloseable {
       if (onlyUseIfExact && !matchExact) {
         match = null;
       }
+      // the same string is no reason to prefer a provisional duplicate over a usage of better standing with
+      // compatible authorship, e.g. Hübner, [1813] vs Hübner, 1813. See https://github.com/CatalogueOfLife/backend/issues/1657
+      if (match != null && match.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED) {
+        final var provisional = match;
+        if (existing.stream().anyMatch(u -> u != provisional
+          && u.getStatus() != TaxonomicStatus.PROVISIONALLY_ACCEPTED && !differentAuthorship(u, nu))) {
+          match = null;
+        }
+      }
       if (match != null) {
         return UsageMatch.match(match, datasetKey, alt);
       }
@@ -801,6 +812,11 @@ public class UsageMatcher implements AutoCloseable {
     return candidateName.equalsIgnoreCase(parentName) ? Lineage.SAME : Lineage.CONFLICT;
   }
 
+  /**
+   * The candidate itself counts as part of its lineage. Queries often list the name itself in their classification,
+   * e.g. Hemiptera with order=Hemiptera, and without it a synonym classified below that very taxon, the genus
+   * Hemiptera Germar, would look closer classified than the order. See https://github.com/CatalogueOfLife/backend/issues/1657
+   */
   private Rank lowestClassificationMatch(SimpleNameClassified<SimpleNameCached> candidate, List<SimpleNameCached> parents) {
     Rank lowest = null;
     if (parents != null) {
@@ -808,7 +824,8 @@ public class UsageMatcher implements AutoCloseable {
         // does the exact same name & rank exist in the parents list?
         if (p.getRank() != null && p.getRank().notOtherOrUnranked()) {
           var cp = candidate.getByRank(p.getRank());
-          if (cp != null && cp.getName().equalsIgnoreCase(p.getName()) && (lowest == null || lowest.higherThan(p.getRank()))) {
+          boolean self = candidate.getRank() == p.getRank() && candidate.getName().equalsIgnoreCase(p.getName());
+          if ((self || cp != null && cp.getName().equalsIgnoreCase(p.getName())) && (lowest == null || lowest.higherThan(p.getRank()))) {
             lowest = p.getRank();
           }
         }

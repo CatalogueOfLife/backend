@@ -49,12 +49,21 @@ public class MatchingUtils {
   }
 
   /**
-   * @return the classified name, matched to the names index!
+   * @return the classified name, matched to the names index which may get the name inserted!
    */
   public SimpleNameClassified<SimpleNameCached> toSimpleNameClassified(NameUsageBase nu, List<SimpleNameCached> classification) {
+    return toSimpleNameClassified(nu, classification, true);
+  }
+
+  /**
+   * @param allowInserts if true a name not yet in the names index is added to it.
+   *                     Only names held in ChecklistBank may ever be inserted, never names of external queries.
+   * @return the classified name, matched to the names index
+   */
+  public SimpleNameClassified<SimpleNameCached> toSimpleNameClassified(NameUsageBase nu, List<SimpleNameCached> classification, boolean allowInserts) {
     SimpleNameClassified<SimpleNameCached> snc = null;
     if (nu != null) {
-      snc = new SimpleNameClassified<>(nu, nidxAndMatchIfNeeded(nu, true));
+      snc = new SimpleNameClassified<>(nu, nidxAndMatchIfNeeded(nu, allowInserts));
       snc.setClassification(classification);
     }
     return snc;
