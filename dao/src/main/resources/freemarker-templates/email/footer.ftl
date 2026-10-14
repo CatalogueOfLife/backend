@@ -15,7 +15,7 @@ https://www.${domain!"checklistbank.org"}/dataset/${job.dataset2.key?c}
 ---
 ChecklistBank: https://www.${domain!"checklistbank.org"}
 Mailinglist: ${mailinglist!"https://lists.gbif.org/mailman/listinfo/col-users"}
-Support : ${replyTo!support@catalogueoflife.org}
+Support : ${replyTo!"support@catalogueoflife.org"}
 
 <#if job.error?has_content>
 ---

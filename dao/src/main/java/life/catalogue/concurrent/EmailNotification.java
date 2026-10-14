@@ -1,5 +1,6 @@
 package life.catalogue.concurrent;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.User;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.config.MailConfig;
@@ -159,6 +160,19 @@ public class EmailNotification {
 
     public UUID getKey() {
       return key;
+    }
+
+    /**
+     * The message of a request error that failed the job, e.g. a missing column in a matching upload,
+     * so the user sees what to fix without reading the stacktrace. Null for any other error.
+     */
+    public String getErrorMessage() {
+      for (Throwable t = job.getError(); t != null; t = t.getCause() == t ? null : t.getCause()) {
+        if (t instanceof IllegalArgumentException || t instanceof NotFoundException) {
+          return t.getMessage();
+        }
+      }
+      return null;
     }
 
     public String getFrom() {
