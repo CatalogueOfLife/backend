@@ -174,7 +174,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     int counter = 0;
     for (var tm : store.typeMaterial().values()) {
       counter++;
-      assertEquals(tm.getNameId(), t4.getId());
+      assertEquals(1, tm.getNames().size());
+      assertEquals(tm.getNames().get(0).getNameId(), t4.getId());
     }
     assertEquals(2, counter);
 

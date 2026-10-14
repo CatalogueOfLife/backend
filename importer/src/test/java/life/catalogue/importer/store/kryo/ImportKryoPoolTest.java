@@ -65,8 +65,8 @@ public class ImportKryoPoolTest {
     m.setId("1234");
     m.setDatasetKey(77);
     m.setCitation("swedrftgzhujk");
-    m.setStatus(TypeStatus.HOLOTYPE);
-    m.setNameId("12345678");
+    m.addName("12345678", TypeStatus.HOLOTYPE);
+    m.addName("12345679", TypeStatus.ISOTYPE);
     m.setCollector("Collector");
     m.setRemarks("Remarks");
     m.setCountry(Country.GERMANY);

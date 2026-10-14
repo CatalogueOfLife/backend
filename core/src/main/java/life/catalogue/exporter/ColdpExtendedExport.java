@@ -21,9 +21,12 @@ import org.gbif.dwc.terms.Term;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -341,9 +344,27 @@ public class ColdpExtendedExport extends ArchiveExport {
   void write(TypeMaterial tm) {
     writer.set(ColdpTerm.ID, tm.getId());
     writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(tm.getSectorKey()));
-    writer.set(ColdpTerm.nameID, nameUsageKeyMap.getFirst(tm.getNameId()));
+    // ColDP concatenates the typified names and gives their status in the same order
+    List<String> nameIDs = new ArrayList<>();
+    List<TypeStatus> status = new ArrayList<>();
+    for (var tn : tm.getNames()) {
+      String nameID = nameUsageKeyMap.getFirst(tn.getNameId());
+      if (nameID != null) {
+        nameIDs.add(nameID);
+        status.add(tn.getStatus());
+      }
+    }
+    writer.set(ColdpTerm.nameID, String.join(",", nameIDs));
     writer.set(ColdpTerm.citation, tm.getCitation());
-    writer.set(ColdpTerm.status, tm.getStatus());
+    if (new HashSet<>(status).size() == 1) {
+      // a single value applies to all names
+      writer.set(ColdpTerm.status, status.get(0));
+    } else {
+      writer.set(ColdpTerm.status, status.stream()
+        .map(s -> s == null ? "" : PermissiveEnumSerde.enumValueName(s))
+        .collect(Collectors.joining(","))
+      );
+    }
     writer.set(ColdpTerm.referenceID, tm.getReferenceId());
     writer.set(ColdpTerm.country, tm.getCountry(), Country::getIso2LetterCode);
     writer.set(ColdpTerm.locality, tm.getLocality());

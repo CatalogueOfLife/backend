@@ -226,13 +226,15 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
       for (String val : vals) {
         var tm = new TypeMaterial();
         var m = TYPE_MATERIAL.matcher(val);
+        TypeStatus status = null;
         if (m.find()) {
-          var status = parse(TypeStatusParser.PARSER, m.group(1)).orNull(Issue.TYPE_STATUS_INVALID, u.issues);
-          tm.setStatus(status);
+          status = parse(TypeStatusParser.PARSER, m.group(1)).orNull(Issue.TYPE_STATUS_INVALID, u.issues);
           tm.setCitation(decode(m.group(2)));
         } else {
           tm.setCitation(decode(val));
         }
+        // the name is only known once it is persisted, see TxtTreeDao
+        tm.addName(null, status);
         u.typeMaterial.add(tm);
       }
     }

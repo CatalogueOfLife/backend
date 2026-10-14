@@ -405,7 +405,7 @@
   </select>
   <select id="countTypeMaterialByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count
-    FROM type_material WHERE dataset_key = #{key}
+    FROM type_material_name WHERE dataset_key = #{key}
     GROUP BY status
   </select>
   <select id="countTaxaByRank" resultType="StringCount">

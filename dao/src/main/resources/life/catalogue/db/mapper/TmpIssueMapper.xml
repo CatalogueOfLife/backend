@@ -39,7 +39,8 @@
       WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
     UNION
     SELECT nu.id, v.issues
-      FROM nu JOIN type_material x ON x.name_id=nu.name_id   JOIN ${vtable} v ON x.${vfk}=v.id
+      FROM nu JOIN type_material_name tn ON tn.dataset_key=#{datasetKey} AND tn.name_id=nu.name_id
+        JOIN type_material x ON x.dataset_key=tn.dataset_key AND x.id=tn.type_material_id   JOIN ${vtable} v ON x.${vfk}=v.id
       WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
     UNION
     SELECT nu.id, v.issues

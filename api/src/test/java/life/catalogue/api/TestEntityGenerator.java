@@ -588,8 +588,7 @@ public class TestEntityGenerator {
     TypeMaterial tm = new TypeMaterial();
     tm.setDatasetKey(datasetKey);
     tm.setId(id);
-    tm.setNameId(nameID);
-    tm.setStatus(TypeStatus.HOLOTYPE);
+    tm.addName(nameID, TypeStatus.HOLOTYPE);
     tm.setCitation("UGANDA: adult ♂, CW 21.5, CL 14.4, CH 7.4, FW 6.5 mm, Imatong Mountains, near border with South Sudan (3.79° N, 32.87° E), at 2,134 m asl, 11 Aug. 1955, L.C. Beadle (NHM 1955.11.8.26–27).");
     tm.setCountry(Country.UGANDA);
     tm.setLocality("Imatong Mountains, near border with South Sudan");

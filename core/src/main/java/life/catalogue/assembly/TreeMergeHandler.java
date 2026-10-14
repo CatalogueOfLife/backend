@@ -1039,40 +1039,45 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (entities.contains(EntityType.TYPE_MATERIAL)) {
       n = lazilyLoad(n, existingUsage);
       final var mapper = batchSession.getMapper(TypeMaterialMapper.class);
-      List<TypeMaterial> existingTMs = null;
+      List<TypeDesignation> existingTDs = null;
       tmloop:
-      for (var tm : mapper.listByName(src)) {
+      for (var td : mapper.listDesignations(src)) {
         // we only want to add type material with important states
-        if (tm.getStatus() == null || !tm.getStatus().isPrimary()) {
+        if (td.getStatus() == null || !td.getStatus().isPrimary()) {
           continue;
         }
         // does it exist already?
         // lazily query existing material
-        if (existingTMs == null) {
-          existingTMs = mapper.listByName(n);
+        if (existingTDs == null) {
+          existingTDs = mapper.listDesignations(n);
         }
-        for (var etm : existingTMs) {
-          if (sameType(tm, etm)) {
+        for (var etd : existingTDs) {
+          if (sameType(td, etd)) {
             continue tmloop;
           }
         }
         // a new type
-        tm.setNameId(n.getId());
-        tm.setVerbatimSourceKey(verbatimSourceKey(vs));
-        tm.setSectorKey(sector.getId());
-        tm.setDatasetKey(targetDatasetKey);
-        tm.applyUser(user);
-        // check if the entity refers to a reference which we need to lookup / copy
-        String ridCopy = lookupOrCreateReference(tm.getReferenceId());
-        tm.setReferenceId(ridCopy);
-        try {
-          mapper.create(tm);
-        } catch (Exception e) {
-          // ID might be used already - skip or try with no id instead?
-          tm.setId(null);
+        var tm = td.getTypeMaterial();
+        var link = new TypifiedName(n.getId(), td.getStatus());
+        String copyId = typeMaterialIds.get(tm.getId());
+        if (copyId != null) {
+          // the specimen was copied already for another name of this sync
+          mapper.createName(targetDatasetKey, copyId, link);
+        } else {
+          tm.setId(typeMaterialIds.issue(tm.getId()));
+          tm.setVerbatimKey(null);
+          // only names merged by this sync are linked
+          tm.setNames(new ArrayList<>(List.of(link)));
+          tm.setVerbatimSourceKey(verbatimSourceKey(vs));
+          tm.setSectorKey(sector.getId());
+          tm.setDatasetKey(targetDatasetKey);
+          tm.applyUser(user);
+          // check if the entity refers to a reference which we need to lookup / copy
+          String ridCopy = lookupOrCreateReference(tm.getReferenceId());
+          tm.setReferenceId(ridCopy);
           mapper.create(tm);
         }
-        existingTMs.add(tm);
+        existingTDs.add(new TypeDesignation(n.getId(), td.getStatus(), tm));
       }
     }
 
@@ -1164,15 +1169,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
       ( vn1.getLatin() != null && lc(rmWS(vn1.getLatin())).equalsIgnoreCase(lc(rmWS(vn2.getLatin()))) );
   }
 
-  private static boolean sameType(TypeMaterial mt1, TypeMaterial tm2) {
+  private static boolean sameType(TypeDesignation td1, TypeDesignation td2) {
+    final var mt1 = td1.getTypeMaterial();
+    final var tm2 = td2.getTypeMaterial();
     return (
         rmWS(mt1.getId()).equalsIgnoreCase(rmWS(tm2.getId()))
       ) || (
         // only keep one holo
-        mt1.getStatus() == TypeStatus.HOLOTYPE && tm2.getStatus() == TypeStatus.HOLOTYPE
+        td1.getStatus() == TypeStatus.HOLOTYPE && td2.getStatus() == TypeStatus.HOLOTYPE
       ) || (
         // only keep one lectotype
-        mt1.getStatus() == TypeStatus.LECTOTYPE && tm2.getStatus() == TypeStatus.LECTOTYPE
+        td1.getStatus() == TypeStatus.LECTOTYPE && td2.getStatus() == TypeStatus.LECTOTYPE
       ) || (
         Objects.equals( rmWS(mt1.getInstitutionCode()), rmWS(tm2.getInstitutionCode()) ) &&
         Objects.equals( rmWS(mt1.getCatalogNumber()), rmWS(tm2.getCatalogNumber()) )

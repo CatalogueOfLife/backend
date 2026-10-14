@@ -777,4 +777,45 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertNull(n.getInfragenericEpithet());
     assertEquals(List.of("Urban"), n.getBasionymAuthorship().getAuthors());
   }
+
+  /**
+   * A type specimen typifying several names through comma concatenated nameID and status values
+   * https://github.com/CatalogueOfLife/backend/issues/1645
+   */
+  @Test
+  public void typeMaterialNames() throws Exception {
+    normalize(47);
+
+    // tm8 has no existing name at all, the one without ID gets a generated one
+    assertEquals(7, store.typeMaterial().size());
+    assertNull(store.typeMaterial().get("tm8"));
+
+    assertNames(store.typeMaterial().get("tm1"), "n1", TypeStatus.HOLOTYPE, "n2", TypeStatus.HOLOTYPE);
+    assertNames(store.typeMaterial().get("tm2"), "n1", TypeStatus.HOLOTYPE, "n3", TypeStatus.ISOTYPE);
+    assertNames(store.typeMaterial().get("tm3"), "n1", TypeStatus.LECTOTYPE, "n3", TypeStatus.LECTOTYPE);
+    assertNames(store.typeMaterial().get("tm4"), "n3", TypeStatus.HOLOTYPE);
+    assertNames(store.typeMaterial().get("tm5"), "n1", TypeStatus.HOLOTYPE, "n2", TypeStatus.ISOTYPE, "n3", TypeStatus.OTHER);
+    assertNames(store.typeMaterial().get("tm7"), "n,4", TypeStatus.HOLOTYPE);
+    var noID = store.typeMaterial().values().stream().filter(tm -> "6".equals(tm.getCatalogNumber())).findFirst().get();
+    assertNames(noID, "n2", TypeStatus.PARATYPE);
+
+    // issues
+    for (var v : (Iterable<VerbatimRecord>) store.verbatimList(ColdpTerm.TypeMaterial)::iterator) {
+      String id = v.getRaw(ColdpTerm.ID);
+      switch (id == null ? "" : id) {
+        case "tm4" -> assertEquals(Set.of(Issue.NAME_ID_INVALID), v.getIssues());
+        case "tm5" -> assertEquals(Set.of(Issue.TYPE_STATUS_INVALID), v.getIssues());
+        case "tm8" -> assertEquals(Set.of(Issue.NAME_ID_INVALID, Issue.NOT_INTERPRETED), v.getIssues());
+        default -> assertTrue(id + " " + v.getIssues(), v.getIssues().isEmpty());
+      }
+    }
+  }
+
+  private static void assertNames(TypeMaterial tm, Object... nameStatus) {
+    List<TypifiedName> expected = new java.util.ArrayList<>();
+    for (int i = 0; i < nameStatus.length; i = i + 2) {
+      expected.add(new TypifiedName((String) nameStatus[i], (TypeStatus) nameStatus[i + 1]));
+    }
+    assertEquals(expected, tm.getNames());
+  }
 }

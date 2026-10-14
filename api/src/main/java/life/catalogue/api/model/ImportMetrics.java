@@ -75,6 +75,7 @@ public class ImportMetrics implements ImportAttempt {
   private Integer taxonCount;
   private Integer taxonPropertyCount;
   private Integer treatmentCount;
+  // number of type specimens, each can typify several names
   private Integer typeMaterialCount;
   private Integer vernacularCount;
 
@@ -93,6 +94,7 @@ public class ImportMetrics implements ImportAttempt {
   private Map<Rank, Integer> taxaByRankCount = new HashMap<>();
   private Map<String, Integer> taxaByScrutinizerCount = new HashMap<>();
   private Map<TaxonConceptRelType, Integer> taxonConceptRelationsByTypeCount = new HashMap<>();
+  // counts typified names, i.e. a specimen counts once for every name it typifies
   private Map<TypeStatus, Integer> typeMaterialByStatusCount = new HashMap<>();
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = new HashMap<>();
   private Map<Origin, Integer> usagesByOriginCount = new HashMap<>();

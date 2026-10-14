@@ -10,9 +10,10 @@
     m.sector_key,
     m.verbatim_key,
     m.verbatim_source_key,
-    m.name_id,
+    (SELECT json_agg(json_build_object('nameId', tn.name_id, 'status', tn.status) ORDER BY tn.name_id)
+      FROM type_material_name tn WHERE tn.dataset_key=m.dataset_key AND tn.type_material_id=m.id
+    ) AS names,
     m.citation,
-    m.status,
     m.locality,
     m.country,
     m.latitude,
@@ -37,7 +38,6 @@
 
   <sql id="COLS">
     dataset_key,
-    name_id,
     <include refid="COLS_COPY">
       <property name="alias" value=""/>
     </include>
@@ -49,7 +49,6 @@
     ${alias}verbatim_key,
     ${alias}verbatim_source_key,
     ${alias}citation,
-    ${alias}status,
     ${alias}locality,
     ${alias}country,
     ${alias}latitude,
@@ -72,13 +71,11 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{nameId},
     #{id},
     #{sectorKey},
     #{verbatimKey},
     #{verbatimSourceKey},
     #{citation},
-    #{status}::TYPESTATUS,
     #{locality},
     #{country},
     #{latitude},
@@ -104,12 +101,18 @@
   <resultMap id="typeResultMap" type="TypeMaterial" autoMapping="true">
     <id property="id" column="id"/>
     <result property="coordinate" column="coordinate" typeHandler="life.catalogue.db.type.PointTypeHandler"/>
+    <result property="names" column="names" typeHandler="life.catalogue.db.type2.JsonTypifiedNamesHandler"/>
   </resultMap>
+
+  <sql id="typifies">
+    EXISTS (SELECT TRUE FROM type_material_name tn WHERE tn.dataset_key=m.dataset_key AND tn.type_material_id=m.id AND ${cond})
+  </sql>
 
   <select id="listByName" resultMap="typeResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE m.dataset_key = #{key.datasetKey} AND m.name_id = #{key.id}
+    WHERE m.dataset_key = #{key.datasetKey}
+      AND <include refid="typifies"><property name="cond" value="tn.name_id = #{key.id}"/></include>
     ORDER BY m.id
   </select>
 
@@ -117,17 +120,33 @@
   <select id="listByNames" resultMap="typeResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-      JOIN unnest(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler}) AS batch(bid) ON batch.bid=m.name_id
     WHERE m.dataset_key = #{datasetKey}
+      AND <include refid="typifies"><property name="cond" value="tn.name_id = ANY(#{ids, typeHandler=life.catalogue.db.type.StringArrayTypeHandler})"/></include>
   </select>
 
-  <delete id="deleteByName" parameterType="map">
-    DELETE FROM type_material
+  <!-- specimens linked to the name and no other -->
+  <delete id="deleteSpecimensByName" parameterType="map">
+    DELETE FROM type_material m
+    WHERE m.dataset_key = #{key.datasetKey}
+      AND <include refid="typifies"><property name="cond" value="tn.name_id = #{key.id}"/></include>
+      AND NOT <include refid="typifies"><property name="cond" value="tn.name_id != #{key.id}"/></include>
+  </delete>
+
+  <delete id="deleteLinksByName" parameterType="map">
+    DELETE FROM type_material_name
     WHERE dataset_key = #{key.datasetKey} AND name_id = #{key.id}
   </delete>
 
-  <delete id="deleteByTemp" parameterType="map">
-    DELETE FROM type_material
+  <!-- specimens linked only to names in the temp table -->
+  <delete id="deleteSpecimensByTemp" parameterType="map">
+    DELETE FROM type_material m
+    WHERE m.dataset_key = #{datasetKey}
+      AND <include refid="typifies"><property name="cond" value="tn.name_id IN (SELECT nid FROM _tmp_nu)"/></include>
+      AND NOT <include refid="typifies"><property name="cond" value="tn.name_id NOT IN (SELECT nid FROM _tmp_nu)"/></include>
+  </delete>
+
+  <delete id="deleteLinksByTemp" parameterType="map">
+    DELETE FROM type_material_name
     USING _tmp_nu tmp
     WHERE dataset_key=#{datasetKey} AND name_id = tmp.nid
   </delete>
@@ -138,22 +157,47 @@
     WHERE m.dataset_key = #{key.datasetKey} AND m.id = #{key.id}
   </select>
 
-  <insert id="create" parameterType="TypeMaterial" keyProperty="id">
+  <insert id="createSpecimen" parameterType="TypeMaterial" keyProperty="id">
     INSERT INTO type_material (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
 
-  <insert id="copyDataset" parameterType="map">
-    INSERT INTO type_material (dataset_key, name_id, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT #{newDatasetKey}, coalesce(<if test="mapIds">m.id2,</if>name_id), <include refid="COLS_COPY"><property name="alias" value="t."/></include>, t.created, t.modified
+  <insert id="createNames" parameterType="TypeMaterial">
+    INSERT INTO type_material_name (dataset_key, type_material_id, name_id, status)
+    VALUES
+    <foreach item="tn" collection="names" separator=",">
+      (#{datasetKey}, #{id}, #{tn.nameId}, #{tn.status}::TYPESTATUS)
+    </foreach>
+  </insert>
+
+  <insert id="createName" parameterType="map">
+    INSERT INTO type_material_name (dataset_key, type_material_id, name_id, status)
+    VALUES (#{datasetKey}, #{id}, #{tn.nameId}, #{tn.status}::TYPESTATUS)
+  </insert>
+
+  <delete id="deleteNames" parameterType="TypeMaterial">
+    DELETE FROM type_material_name
+    WHERE dataset_key=#{datasetKey} AND type_material_id = #{id}
+  </delete>
+
+  <insert id="copySpecimens" parameterType="map">
+    INSERT INTO type_material (dataset_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT #{newDatasetKey}, <include refid="COLS_COPY"><property name="alias" value="t."/></include>, t.created, t.modified
     FROM type_material t
-    <if test="mapIds">
-      LEFT JOIN idmap_name_${datasetKey} m ON m.id=t.name_id
-    </if>
     WHERE t.dataset_key=#{datasetKey}
   </insert>
 
-  <update id="update" parameterType="TypeMaterial" keyProperty="id">
+  <insert id="copyNames" parameterType="map">
+    INSERT INTO type_material_name (dataset_key, type_material_id, name_id, status)
+    SELECT #{newDatasetKey}, tn.type_material_id, coalesce(<if test="mapIds">m.id2,</if>tn.name_id), tn.status
+    FROM type_material_name tn
+    <if test="mapIds">
+      LEFT JOIN idmap_name_${datasetKey} m ON m.id=tn.name_id
+    </if>
+    WHERE tn.dataset_key=#{datasetKey}
+  </insert>
+
+  <update id="updateSpecimen" parameterType="TypeMaterial" keyProperty="id">
     UPDATE type_material
     SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
     WHERE dataset_key=#{datasetKey} AND id = #{id}
@@ -192,9 +236,15 @@
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
-  <delete id="deleteOrphans" parameterType="map">
+  <delete id="deleteOrphanLinks" parameterType="map">
+    DELETE FROM type_material_name tn
+    WHERE NOT EXISTS (SELECT NULL FROM name n WHERE n.dataset_key=tn.dataset_key AND tn.name_id = n.id)
+    AND tn.dataset_key=#{datasetKey}
+  </delete>
+
+  <delete id="deleteOrphanSpecimens" parameterType="map">
     DELETE FROM type_material t
-    WHERE NOT EXISTS (SELECT NULL FROM name n WHERE n.dataset_key=t.dataset_key AND t.name_id = n.id)
+    WHERE NOT EXISTS (SELECT NULL FROM type_material_name tn WHERE tn.dataset_key=t.dataset_key AND tn.type_material_id = t.id)
     <if test="before!=null">
       AND t.modified &lt; #{before}
     </if>

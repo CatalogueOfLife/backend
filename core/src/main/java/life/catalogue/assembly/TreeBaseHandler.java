@@ -6,6 +6,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.ReferenceDao;
+import life.catalogue.dao.TypeMaterialIds;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.matching.nidx.NameIndex;
@@ -76,6 +77,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Supplier<String> nameIdGen;
   protected final UsageIdGen usageIdGen;
   protected final Supplier<String> typeMaterialIdGen;
+  // copies of source type specimens, so a specimen typifying several names is copied once
+  protected final TypeMaterialIds typeMaterialIds;
   protected int vsIdGen;
   // counter
   protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
@@ -100,6 +103,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     this.nameIdGen = nameIdGen;
     this.usageIdGen = usageIdGen;
     this.typeMaterialIdGen = typeMaterialIdGen;
+    this.typeMaterialIds = new TypeMaterialIds(typeMaterialIdGen);
     this.entities = new HashSet<>(Preconditions.checkNotNull(sector.getEntities(), "Sector entities required"));
     LOG.info("Include entities: {}", Joiner.on(", ").join(entities));
     syncNames = entities.contains(EntityType.NAME) || entities.contains(EntityType.NAME_USAGE);
@@ -346,7 +350,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
     // copy usage with all associated information. This assigns a new id !!!
     CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user, entities,
-      nameIdGen, typeMaterialIdGen, usageIdGen::issue,
+      nameIdGen, typeMaterialIds, usageIdGen::issue,
       this::lookupOrCreateReference, this::lookupOrCreateReference
     );
     // match name

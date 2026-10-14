@@ -1629,9 +1629,7 @@ CREATE TABLE type_material (
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  name_id TEXT NOT NULL,
   citation TEXT,
-  status TYPESTATUS,
   country TEXT,
   locality TEXT,
   latitude TEXT,
@@ -1652,15 +1650,26 @@ CREATE TABLE type_material (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
-  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference
 ) PARTITION BY HASH (dataset_key);
 
-CREATE INDEX ON type_material (dataset_key, name_id);
 CREATE INDEX ON type_material (dataset_key, sector_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_source_key);
 CREATE INDEX ON type_material (dataset_key, reference_id);
+
+-- the names a type specimen typifies, each with its own type status
+CREATE TABLE type_material_name (
+  dataset_key INTEGER NOT NULL,
+  type_material_id TEXT NOT NULL,
+  name_id TEXT NOT NULL,
+  status TYPESTATUS,
+  PRIMARY KEY (dataset_key, type_material_id, name_id),
+  FOREIGN KEY (dataset_key, type_material_id) REFERENCES type_material ON DELETE CASCADE,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON type_material_name (dataset_key, name_id);
 
 
 CREATE TABLE name_match (

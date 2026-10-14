@@ -1,0 +1,9 @@
+ID	nameID	status	citation	catalogNumber
+tm1	n1,n2	holotype	one status for two names	1
+tm2	n1,n3	holotype,isotype	a status per name	2
+tm3	n1, n3	lectotype	blanks around the comma	3
+tm4	n3,nope	holotype	one name does not exist	4
+tm5	n1,n2,n3	holotype,isotype	fewer statuses than names	5
+	n2	paratype	no ID	6
+tm7	n,4	holotype	a single name id with a comma	7
+tm8	nope	holotype	no name exists	8
