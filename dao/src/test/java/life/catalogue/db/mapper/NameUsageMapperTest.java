@@ -78,6 +78,17 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
       .forEach(u -> assertTrue(u.isSynonym()));
     mapper().processDatasetWithClassification(testDataRule.testData.key, null, null, false, false)
       .forEach(u -> assertTrue(u.isTaxon()));
+    // synonyms alone carry the classification of their accepted taxon root-2, root first, followed by root-2 itself
+    var syns = new ArrayList<NameUsageBase>();
+    mapper().processDatasetWithClassification(testDataRule.testData.key, null, null, true, false).forEach(syns::add);
+    assertEquals(2, syns.size());
+    for (var u : syns) {
+      var cl = ((SynonymWithClassification) u).getClassification();
+      assertEquals(2, cl.size());
+      assertEquals(List.of("1", "root-2"), cl.stream().map(SimpleName::getId).toList());
+      assertEquals(List.of("Animalia", "Larus fuscus"), cl.stream().map(SimpleName::getName).toList());
+      assertEquals(List.of(Rank.KINGDOM, Rank.SPECIES), cl.stream().map(SimpleName::getRank).toList());
+    }
   }
 
   @Test

@@ -146,6 +146,39 @@ public class ColdpExtendedExportIT extends ExportTest {
   }
 
   /**
+   * Synonyms carry the classification of their accepted taxon including the accepted taxon itself, see #1556.
+   * In the apple data s1 and s2 are synonyms of the species root-2 Larus fuscus, classified in Animalia.
+   */
+  @Test
+  public void synonymClassification() throws Exception {
+    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertSynonymClassification(exp);
+
+    // a subtree export traverses the tree instead, its synonyms in a pass of their own
+    req.setRoot(new SimpleName("root-2"));
+    exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    exp.run();
+    assertSynonymClassification(exp);
+  }
+
+  private void assertSynonymClassification(ColdpExtendedExport exp) throws IOException {
+    assertExportExists(exp.getArchive());
+    var rows = readArchiveTsv(exp.getArchive(), ColdpTerm.NameUsage.simpleName() + ".tsv");
+    for (String id : List.of("root-2", "s1", "s2")) {
+      var row = rows.stream().filter(r -> id.equals(r.get(ColdpTerm.ID))).findFirst().orElse(null);
+      assertNotNull(id + " usage missing from export", row);
+      assertEquals("Animalia", row.get(ColdpTerm.kingdom));
+      if (id.equals("root-2")) {
+        // the classification of a taxon never holds the taxon itself
+        assertTrue(StringUtils.isBlank(row.get(ColdpTerm.species)));
+      } else {
+        assertEquals("Larus fuscus", row.get(ColdpTerm.species));
+      }
+    }
+  }
+
+  /**
    * Reads a tabular file from the zipped export archive into a list of column maps keyed by ColdpTerm.
    */
   private List<Map<ColdpTerm, String>> readArchiveTsv(java.io.File archive, String entryName) throws IOException {

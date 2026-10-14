@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
@@ -104,6 +105,10 @@ public class ColdpExtendedExport extends ArchiveExport {
 
     if (u.isSynonym()) {
       writer.set(ClbTerm.taxGroup, taxGroups.get(u.getParentId()));
+      // the classification of the accepted taxon including itself
+      if (u instanceof SynonymWithClassification s) {
+        writeClassification(s.getClassification());
+      }
 
     } else {
       TaxonWithClassification t = (TaxonWithClassification) u;
@@ -121,11 +126,15 @@ public class ColdpExtendedExport extends ArchiveExport {
       writer.set(ColdpTerm.temporalRangeEnd, t.getTemporalRangeEnd());
       writer.set(ColdpTerm.environment, t.getEnvironments(), PermissiveEnumSerde::enumValueName);
       writer.set(ColdpTerm.ordinal, t.getOrdinal());
-      if (t.getClassification() != null) {
-        for (var ht : t.getClassification()) {
-          if (RankUtils.RANK2COLDP.containsKey(ht.getRank())) {
-            writer.set(RankUtils.RANK2COLDP.get(ht.getRank()), ht.getName());
-          }
+      writeClassification(t.getClassification());
+    }
+  }
+
+  private void writeClassification(List<SimpleName> classification) {
+    if (classification != null) {
+      for (var ht : classification) {
+        if (RankUtils.RANK2COLDP.containsKey(ht.getRank())) {
+          writer.set(RankUtils.RANK2COLDP.get(ht.getRank()), ht.getName());
         }
       }
     }

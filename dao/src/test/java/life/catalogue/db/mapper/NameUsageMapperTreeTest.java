@@ -5,8 +5,10 @@ import life.catalogue.junit.TestDataRule;
 import life.catalogue.junit.TxtTreeDataRule;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -70,6 +72,27 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
     Assert.assertFalse(syn.list.isEmpty());
     Assert.assertTrue(syn.list.stream().allMatch(id -> id.startsWith("s")));
     Assert.assertTrue(acc.list.stream().allMatch(id -> id.startsWith("t")));
+
+    // a synonym takes the classification of its accepted taxon, root first, followed by the accepted taxon itself
+    Map<String, NameUsageBase> taxa = new HashMap<>();
+    mapper().processTree(ttp, false, false, true, false, false).forEach(u -> taxa.put(u.getId(), u));
+    AtomicInteger synCounter = new AtomicInteger();
+    mapper().processTree(ttp, false, false, true, false, true).forEach(u -> {
+      var t = (TaxonWithClassification) taxa.get(u.getParentId());
+      if (t == null) return; // synonym of a synonym
+      synCounter.incrementAndGet();
+      var expected = new ArrayList<String>();
+      if (t.getClassification() != null) {
+        t.getClassification().forEach(p -> expected.add(p.getId()));
+      }
+      expected.add(t.getId());
+      var cl = ((SynonymWithClassification) u).getClassification();
+      Assert.assertEquals(expected, cl.stream().map(SimpleName::getId).toList());
+      var last = cl.getLast();
+      Assert.assertEquals(t.getName().getScientificName(), last.getName());
+      Assert.assertEquals(t.getName().getRank(), last.getRank());
+    });
+    Assert.assertTrue(synCounter.get() > 0);
   }
 
   @Test

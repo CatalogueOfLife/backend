@@ -270,12 +270,16 @@
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
   </resultMap>
 
+  <resultMap id="synonymClassificationResultMap" type="SynonymWithClassification" autoMapping="true" extends="life.catalogue.db.mapper.SynonymMapper.synonymResultMap">
+    <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+  </resultMap>
+
   <resultMap id="usageClassificationResultMap" type="NameUsageBase" autoMapping="true">
     <id property="id" column="id"/>
     <id property="datasetKey" column="dataset_key"/>
     <discriminator column="is_synonym" javaType="boolean">
       <case value="false" resultType="TaxonWithClassification" resultMap="taxonClassificationResultMap"/>
-      <case value="true" resultType="Synonym" resultMap="life.catalogue.db.mapper.SynonymMapper.synonymResultMap"/>
+      <case value="true" resultType="SynonymWithClassification" resultMap="synonymClassificationResultMap"/>
     </discriminator>
   </resultMap>
 
@@ -817,14 +821,30 @@
     </where>
   </select>
 
-  <!-- synonyms have no taxon_metrics row, so a synonyms only cursor does not join it -->
+  <!-- synonyms have no taxon_metrics row of their own. A synonyms only cursor gives them the classification of their
+       accepted taxon followed by that taxon itself, root first like the array stored in taxon_metrics.
+       A mixed cursor (synonym=null) leaves them without one. -->
   <select id="processDatasetWithClassification" parameterType="map" resultMap="usageClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT_BASE"/>, <if test="synonym != true">tm.classification,</if> <include refid="BASIONYM_COLS"/>
+    SELECT <include refid="SELECT_BASE"/>,
+    <choose>
+      <when test="synonym == true">
+        CASE WHEN a.id IS NOT NULL THEN array_append(tm.classification, ROW(a.id, an.rank, an.scientific_name, an.authorship)::simple_name) END AS classification,
+      </when>
+      <otherwise>tm.classification,</otherwise>
+    </choose>
+    <include refid="BASIONYM_COLS"/>
     <if test="inclCitations">, rpub.citation AS n_published_in_citation, racc.citation AS according_to</if>
     FROM <include refid="FROM_BASE"/>
-      <if test="synonym != true">
-        LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
-      </if>
+      <choose>
+        <when test="synonym == true">
+          LEFT JOIN name_usage a ON a.dataset_key=u.dataset_key AND a.id=u.parent_id AND NOT is_synonym(a.status)
+          LEFT JOIN name an ON an.dataset_key=u.dataset_key AND an.id=a.name_id
+          LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=a.id
+        </when>
+        <otherwise>
+          LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
+        </otherwise>
+      </choose>
       <include refid="BASIONYM_JOIN">
         <property name="dk" value="#{datasetKey}"/>
         <property name="nameIdCol" value="u.name_id"/>
@@ -1041,7 +1061,17 @@
       WHERE u.dataset_key=#{param.datasetKey} AND
       <include refid="WHERE_START"/>
     UNION
-      SELECT <include refid="SELECT_BASE"/> <include refid="DEPTH_FIRST"/>, tm.classification
+      SELECT <include refid="SELECT_BASE"/> <include refid="DEPTH_FIRST"/>,
+      <choose>
+        <!-- x is the parent row, so a synonym takes the classification of its accepted taxon followed by that taxon itself -->
+        <when test="synonym == true">
+          CASE WHEN is_synonym(u.status) AND NOT x.is_synonym
+            THEN array_append(x.classification, ROW(x.id, x.n_rank, x.n_scientific_name, x.n_authorship)::simple_name)
+            ELSE tm.classification
+          END AS classification
+        </when>
+        <otherwise>tm.classification</otherwise>
+      </choose>
       FROM <include refid="FROM_BASE"/>
         LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
       JOIN x ON x.id = u.parent_id

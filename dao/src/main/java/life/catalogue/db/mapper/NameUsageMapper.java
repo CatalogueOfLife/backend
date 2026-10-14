@@ -341,7 +341,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    *
    * @param synonym if given only returns synonyms (true) or accepted names (false), otherwise both in any order.
    *                The archive exporters ask for the accepted names first, so a synonym can rely on what its
-   *                accepted taxon already told them.
+   *                accepted taxon already told them. Only the synonyms alone (true) come with a classification:
+   *                that of their accepted taxon followed by the accepted taxon itself.
    * @param inclCitations if true also joins in the publishedIn and accordingTo reference citations
    *                      (Name.publishedInCitation, NameUsageBase.accordingTo). Only DwC-A writes citations
    *                      inline, and they are wide, so ColDP does not ask for them.
@@ -546,6 +547,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    *                     need it and it costs a scan of the dataset's BASIONYM relations, so it is opt in.
    * @param synonym if given only returns synonyms (true) or accepted names (false) of the traversed tree.
    *                Accepted names alone are cheaper to get with params.synonyms=false, which does not traverse synonyms at all.
+   *                Only the synonyms alone (true) come with a classification: that of their accepted taxon followed by
+   *                the accepted taxon itself.
    */
   Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params,
                                     @Param("depthFirst") boolean depthFirst,
