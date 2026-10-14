@@ -13,6 +13,7 @@ import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.type2.StringCount;
+import life.catalogue.dw.auth.AuthFilter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
@@ -127,8 +128,11 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("simple")
-  public List<DatasetSimple> projectSourceSimple(@QueryParam("id") List<Integer> keys) {
-    return dao.listSimple(keys);
+  public List<DatasetSimple> projectSourceSimple(@QueryParam("id") List<Integer> keys, @Auth Optional<User> user) {
+    // a private dataset the user cannot read gets a null entry, just like an unknown key, see #1643
+    return dao.listSimple(keys).stream()
+      .map(d -> d == null || !d.isPrivat() || user.map(u -> AuthFilter.hasReadAccess(u, d.getKey())).orElse(false) ? d : null)
+      .toList();
   }
 
   @GET

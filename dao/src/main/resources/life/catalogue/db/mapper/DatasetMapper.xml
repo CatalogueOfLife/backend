@@ -244,10 +244,12 @@
 
   <resultMap id="datasetSimpleResultMap" type="DatasetSimple" autoMapping="true">
     <id property="key" column="key"/>
+    <result property="privat" column="private"/>
   </resultMap>
 
   <resultMap id="datasetGBIFResultMap" type="DatasetGBIF" autoMapping="true">
     <id property="key" column="key"/>
+    <result property="privat" column="private"/>
   </resultMap>
 
   <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">

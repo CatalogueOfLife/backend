@@ -635,7 +635,9 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     }
 
     // a fully populated dataset so SELECT_SIMPLE and the copy constructor are compared on non null values
+    // and a private one, as the property privat does not auto map from the column private, #1643
     Dataset d = create();
+    d.setPrivat(true);
     mapper().create(d);
     commit();
 
@@ -646,6 +648,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     assertNotNull(ds.getUrl());
     assertNotNull(ds.getGbifKey());
     assertNotNull(ds.getGbifPublisherKey());
+    assertTrue(ds.isPrivat());
     // never imported, so no attempt and no data
     assertNull(ds.getAttempt());
     assertFalse(ds.hasData());
