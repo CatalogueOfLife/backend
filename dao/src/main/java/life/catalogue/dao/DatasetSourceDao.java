@@ -307,7 +307,8 @@ public class DatasetSourceDao {
    *
    * @param datasetKey of the project or release
    * @param sourceKey  dataset key of the source in the project/release
-   * @param merged defines whether to calculate metrics for all sectors (null), only from merge sectors (true) or non merge (false)
+   * @param merged defines whether to calculate metrics for all sectors (null), only from merge sectors (true) or all others (false),
+   *               i.e. attach, union and hierarchy sectors
    * @return
    */
   public SourceMetrics sourceMetrics(int datasetKey, int sourceKey, @Nullable Boolean merged) {
@@ -329,8 +330,9 @@ public class DatasetSourceDao {
       if (merged != null && merged) {
         modes.add(Sector.Mode.MERGE);
       } else if (merged != null) {
-        modes.add(Sector.Mode.ATTACH);
-        modes.add(Sector.Mode.UNION);
+        for (Sector.Mode mode : Sector.Mode.values()) {
+          if (mode != Sector.Mode.MERGE) modes.add(mode);
+        }
       }
       // a release? use mother project in that case
       if (info.origin.isRelease()) {
