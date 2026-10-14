@@ -92,6 +92,8 @@ public class UsageMatcher implements AutoCloseable {
   /**
    * This first parsed the name and matches it to the names index,
    * before calling the actual match method which requires the names index ids to be present.
+   * A name not yet in the names index is inserted, so only use this for names held in ChecklistBank
+   * (imports, syncs) and never for external queries.
    *
    * @param sn
    * @return
