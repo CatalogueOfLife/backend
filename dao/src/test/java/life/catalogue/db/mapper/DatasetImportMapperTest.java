@@ -170,6 +170,42 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   }
 
   /**
+   * A release writes its import metrics against the project and the release dataset carries the same attempt.
+   * Project duplications write project metrics too, but produce no release.
+   */
+  @Test
+  public void releaseKey() throws Exception {
+    DatasetImport rel = createBoth(JobStatus.FINISHED);
+    int releaseKey = createDataset(DatasetOrigin.RELEASE, rel.getDatasetKey(), rel.getAttempt());
+    DatasetImport dup = createBoth(JobStatus.FINISHED);
+    createDataset(DatasetOrigin.PROJECT, dup.getDatasetKey(), dup.getAttempt());
+    DatasetImport failed = createBoth(JobStatus.FAILED);
+    commit();
+
+    assertEquals(releaseKey, (int) mapper().get(rel.getDatasetKey(), rel.getAttempt()).getReleaseKey());
+    assertNull(mapper().get(dup.getDatasetKey(), dup.getAttempt()).getReleaseKey());
+    assertNull(mapper().get(failed.getDatasetKey(), failed.getAttempt()).getReleaseKey());
+
+    var req = new JobSearchRequest();
+    req.setDatasetKey(rel.getDatasetKey());
+    var imports = mapper().list(req, new Page());
+    assertEquals(3, imports.size());
+    for (var di : imports) {
+      assertEquals(di.getAttempt() == rel.getAttempt() ? (Integer) releaseKey : null, di.getReleaseKey());
+    }
+  }
+
+  private int createDataset(DatasetOrigin origin, int sourceKey, int attempt) {
+    var d = DatasetMapperTest.create();
+    d.setOrigin(origin);
+    d.setSourceKey(sourceKey);
+    var dm = mapper(DatasetMapper.class);
+    dm.create(d);
+    dm.updateLastImport(d.getKey(), attempt, null);
+    return d.getKey();
+  }
+
+  /**
    * Mirrors the generic job fields of the metrics into its existing job record.
    */
   private void updateJob(ImportMetrics m) {

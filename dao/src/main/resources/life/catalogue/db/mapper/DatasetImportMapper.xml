@@ -24,7 +24,8 @@
     di.verbatim_by_term_count,
     di.verbatim_by_row_type_count,
     di.merged_taxa_by_rank_count,
-    di.merged_synonyms_by_rank_count
+    di.merged_synonyms_by_rank_count,
+    r.key AS release_key
   </sql>
 
   <!-- shared with sector import metrics -->
@@ -146,6 +147,9 @@
 
   <sql id="FROM">
     dataset_import di LEFT JOIN job j ON j.key = di.job_key
+      <!-- a release writes its metrics against the project and its dataset carries the same attempt -->
+      LEFT JOIN dataset r ON r.source_key = di.dataset_key AND r.attempt = di.attempt
+        AND r.origin IN ('RELEASE'::DATASETORIGIN, 'XRELEASE'::DATASETORIGIN)
   </sql>
 
   <sql id="WHERE">
