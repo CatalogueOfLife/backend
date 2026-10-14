@@ -14,6 +14,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Pure mapping from a CLB usage match to the response of the GBIF v2 species match service.
  * Kept free of HTTP concerns so it can be unit tested in isolation.
@@ -31,6 +33,9 @@ public class GbifMatchMapper {
     var gm = new GbifNameUsageMatch();
     gm.diagnostics.timeTaken = millis;
     MatchType type = m == null || m.type == null ? MatchType.NONE : m.type;
+    if (type == MatchType.VARIANT && m.isMatch() && sameNameWithoutAuthorship(query, m.usage)) {
+      type = MatchType.EXACT;
+    }
     if (m != null && m.isMatch()) {
       setUsage(gm, m.usage);
       gm.diagnostics.matchType = gbifType(type == MatchType.AMBIGUOUS ? labelType(query, m.usage) : type);
@@ -78,7 +83,19 @@ public class GbifMatchMapper {
   }
 
   private static MatchType labelType(@Nullable SimpleName query, SimpleName usage) {
-    return query == null ? MatchType.EXACT : UsageMatcher.labelType(query, usage);
+    if (query == null || sameNameWithoutAuthorship(query, usage)) {
+      return MatchType.EXACT;
+    }
+    return UsageMatcher.labelType(query, usage);
+  }
+
+  /**
+   * A query without authorship that has exactly the usage's name is an EXACT match for GBIF.
+   * The CLB matcher compares full labels and calls it a VARIANT as the authorship is missing.
+   */
+  static boolean sameNameWithoutAuthorship(@Nullable SimpleName query, SimpleName usage) {
+    return query != null && StringUtils.isBlank(query.getAuthorship()) && query.getName() != null
+      && StringUtils.normalizeSpace(query.getName()).equalsIgnoreCase(StringUtils.normalizeSpace(usage.getName()));
   }
 
   static String gbifStatus(@Nullable TaxonomicStatus status) {

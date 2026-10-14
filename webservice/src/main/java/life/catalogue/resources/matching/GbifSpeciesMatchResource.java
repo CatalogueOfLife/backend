@@ -11,6 +11,8 @@ import life.catalogue.matching.UsageMatcher;
 import life.catalogue.resources.matching.gbif.GbifMatchMapper;
 import life.catalogue.resources.matching.gbif.GbifNameUsageMatch;
 
+import org.gbif.nameparser.api.Rank;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -76,14 +78,64 @@ public class GbifSpeciesMatchResource {
     if (id != null) {
       return GbifMatchMapper.map(null, lookup(id), verbose, System.currentTimeMillis() - start);
     }
-    String name = StringUtils.isBlank(scientificName) ? joinEpithets(genericName, specificEpithet, infraspecificEpithet) : scientificName;
-    IssueContainer issues = new IssueContainer.Simple();
     // GBIF's parameter names first, the CLB ones of /match/nameusage are accepted as aliases
     String author = StringUtils.firstNonBlank(scientificNameAuthorship, authorship);
     String rnk = StringUtils.firstNonBlank(taxonRank, verbatimTaxonRank, rank);
-    var sn = AbstractNameUsageMatchingResource.interpret(null, null, null, name, author, code, rnk, null, classification, issues);
-    UsageMatch m = MatchingJob.interpretAndMatch(sn, sn.getClassification(), issues, verbose, !strict, interpreter, utils, matcher);
-    return GbifMatchMapper.map(sn, m, verbose, System.currentTimeMillis() - start);
+    Classification cl = classification == null ? new Classification() : new Classification(classification);
+    String name = scientificName;
+    if (StringUtils.isBlank(name)) {
+      // like GBIF the genus of the classification completes a name given as epithets only
+      String genus = StringUtils.firstNonBlank(genericName, StringUtils.isBlank(specificEpithet) ? null : cl.getGenus());
+      name = joinEpithets(genus, specificEpithet, infraspecificEpithet);
+    }
+    if (StringUtils.isBlank(name) && !cl.isEmpty()) {
+      // no name at all: match the lowest taxon of the classification, as GBIF does
+      Rank lowest = cl.getLowestExistingRank();
+      name = cl.getByRank(lowest);
+      rnk = lowest.name();
+      cl.clearRankAndBelow(lowest);
+    }
+    if (StringUtils.isBlank(name)) {
+      return GbifMatchMapper.map(null, UsageMatch.empty(matcher.getDatasetKey()), verbose, System.currentTimeMillis() - start);
+    }
+
+    IssueContainer issues = new IssueContainer.Simple();
+    var query = interpret(name, author, code, rnk, cl, issues);
+    UsageMatch m = query == null ? UsageMatch.empty(matcher.getDatasetKey()) : matcher.match(query, false, verbose, !strict);
+    String note = null;
+    // Provisional: a supplied rank that contradicts the name, a subspecies sent as SPECIES or a genus as SPECIES,
+    // keeps the matcher from finding the name. If so retry with the rank the parser reads from the name.
+    // The matcher itself should weigh such a rank, see the GBIF impact report.
+    if (query != null && rnk != null && !isExactOrVariant(m)) {
+      var parsed = interpret(name, author, code, null, cl, new IssueContainer.Simple());
+      if (parsed != null && parsed.getRank() != query.getRank()) {
+        UsageMatch m2 = matcher.match(parsed, false, verbose, !strict);
+        if (isExactOrVariant(m2) || (!m.isMatch() && m2.isMatch())) {
+          note = "taxonRank " + rnk + " ignored as it contradicts the name";
+          m = m2;
+          query = parsed;
+        }
+      }
+    }
+    var gm = GbifMatchMapper.map(query, m, verbose, System.currentTimeMillis() - start);
+    if (note != null) {
+      gm.diagnostics.note = gm.diagnostics.note == null ? note : gm.diagnostics.note + "; " + note;
+    }
+    return gm;
+  }
+
+  private static boolean isExactOrVariant(UsageMatch m) {
+    return m.isMatch() && (m.type == MatchType.EXACT || m.type == MatchType.VARIANT);
+  }
+
+  /**
+   * @return the parsed name matched to the names index as the usage matcher expects it, null if it cannot be parsed
+   */
+  @Nullable
+  private SimpleNameClassified<SimpleNameCached> interpret(String name, String author, String code, @Nullable String rank,
+                                                          Classification cl, IssueContainer issues) {
+    var sn = AbstractNameUsageMatchingResource.interpret(null, null, null, name, author, code, rank, null, cl, issues);
+    return MatchingJob.interpret(sn, sn.getClassification(), issues, interpreter, utils).orElse(null);
   }
 
   @GET

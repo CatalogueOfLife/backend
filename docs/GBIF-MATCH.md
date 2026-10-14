@@ -17,12 +17,20 @@ GET /v2/species/match/metadata
 |---|---|
 | `scientificName`, `scientificNameAuthorship`, `taxonRank`, `code` | the name to match, interpreted like `/match/nameusage`. `authorship` and `rank` are accepted as aliases |
 | `verbatimTaxonRank` | used as the rank if `taxonRank` is blank |
-| `genericName`, `specificEpithet`, `infraspecificEpithet` | joined into the name if `scientificName` is blank |
+| `genericName`, `specificEpithet`, `infraspecificEpithet` | joined into the name if `scientificName` is blank. Without `genericName` the `genus` of the classification completes epithets |
 | `kingdom` … `species` | the classification, all ranks of `Classification` are bound |
 | `usageKey`, `taxonID` | look a usage up by its id instead of matching a name |
 | `strict` | no higher rank fallback when the name itself does not match |
 | `verbose` | include the alternatives the matcher considered |
 | `checklistKey` | optional; a key other than the server's configured `gbifChecklistKey` is a 400 |
+
+Without any name the lowest taxon of the classification is matched with its rank, as GBIF does; with no
+classification either the answer is NONE.
+
+A supplied rank that contradicts the name - a subspecies or a genus sent as `SPECIES`, common in GBIF occurrences -
+keeps the matcher from finding it. Provisionally, when the first match is neither EXACT nor VARIANT and the parser
+reads another rank from the name, the name is matched again with the parsed rank. The second answer is taken if it
+is EXACT or VARIANT, or if the first found nothing, and `diagnostics.note` says `taxonRank <rank> ignored`.
 
 `gbifChecklistKey` in the server config defaults to the `gbifKey` of the matching dataset. A release usually has
 none - the COL checklist key `7ddf754f-d193-4cc9-b351-99906754a03b` belongs to the project - so set it explicitly.
@@ -43,7 +51,8 @@ for a synonym, its accepted name) and `diagnostics` with `matchType`, `confidenc
 | NONE, UNSUPPORTED | NONE | 100 |
 
 Confidences are fixed per match type, the scores of the OpenRefine reconciliation. Whenever the GBIF type differs
-from the CLB one, `diagnostics.note` says `clb matchType=<type>`. Alternatives carry a match type but no confidence.
+from the CLB one, `diagnostics.note` says `clb matchType=<type>`. Alternatives carry a match type but no confidence. A query without authorship that has exactly the usage's name is
+EXACT, as for GBIF, although the CLB matcher calls it a VARIANT of the full label.
 CLB statuses map to GBIF ones: `PROVISIONALLY_ACCEPTED` and `BARE_NAME` are `DOUBTFUL`, `AMBIGUOUS_SYNONYM` is
 `PROPARTE_SYNONYM`.
 

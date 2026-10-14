@@ -35,7 +35,8 @@ public class GbifSpeciesMatchResourceTest {
     "Pinaceae", 2,
     "Abies", 3,
     "Abies alba", 4,
-    "Abies pectinata", 5
+    "Abies pectinata", 5,
+    "Abies alba subsp. apennina", 6
   );
   GbifSpeciesMatchResource resource;
 
@@ -64,6 +65,7 @@ public class GbifSpeciesMatchResourceTest {
     store.add(usage("G", "F", Rank.GENUS, TaxonomicStatus.ACCEPTED, "Abies", "Mill."));
     store.add(usage("S", "G", Rank.SPECIES, TaxonomicStatus.ACCEPTED, "Abies alba", "Mill."));
     store.add(usage("SYN", "S", Rank.SPECIES, TaxonomicStatus.SYNONYM, "Abies pectinata", "DC."));
+    store.add(usage("SSP", "S", Rank.SUBSPECIES, TaxonomicStatus.ACCEPTED, "Abies alba subsp. apennina", "Brullo et al."));
 
     var d = new Dataset();
     d.setKey(3);
@@ -122,9 +124,11 @@ public class GbifSpeciesMatchResourceTest {
     assertEquals("S", m.usage.key);
     assertEquals("EXACT", m.diagnostics.matchType);
 
-    // verbatimTaxonRank is used when taxonRank is missing: a genus rank does not fit the species name
+    // verbatimTaxonRank is used when taxonRank is missing: a genus rank does not fit the species name,
+    // so the name is matched again with its parsed rank
     m = resource.match(null, null, null, "Abies alba", "Mill.", null, null, "genus", null, null, null, null, null, true, false, new Classification());
-    assertNull(m.usage);
+    assertEquals("S", m.usage.key);
+    assertTrue(m.diagnostics.note.contains("taxonRank genus ignored"));
   }
 
   @Test
@@ -148,9 +152,62 @@ public class GbifSpeciesMatchResourceTest {
     );
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  GbifNameUsageMatch match(String name, String taxonRank, String specificEpithet, Classification cl) {
+    return resource.match(null, null, null, name, null, null, taxonRank, null, null, null, null, specificEpithet, null, false, false, cl);
+  }
+
+  @Test
   public void missingName() {
-    match(null, false);
+    var m = match(null, false);
+    assertNull(m.usage);
+    assertEquals("NONE", m.diagnostics.matchType);
+  }
+
+  @Test
+  public void classificationOnly() {
+    // GBIF matches the lowest taxon of the classification when there is no name
+    var cl = new Classification();
+    cl.setKingdom("Plantae");
+    cl.setFamily("Pinaceae");
+    var m = match(null, null, null, cl);
+    assertEquals("F", m.usage.key);
+    assertEquals("EXACT", m.diagnostics.matchType);
+  }
+
+  @Test
+  public void epithetWithClassificationGenus() {
+    var cl = new Classification();
+    cl.setFamily("Pinaceae");
+    cl.setGenus("Abies");
+    var m = match(null, null, "alba", cl);
+    assertEquals("S", m.usage.key);
+  }
+
+  @Test
+  public void authorlessIsExact() {
+    var m = match("Abies alba", false);
+    assertEquals("S", m.usage.key);
+    assertEquals("EXACT", m.diagnostics.matchType);
+    assertEquals(100, (int) m.diagnostics.confidence);
+  }
+
+  @Test
+  public void contradictingRank() {
+    // a subspecies sent as SPECIES, as many GBIF occurrences do
+    var m = match("Abies alba subsp. apennina", "species", null, new Classification());
+    assertEquals("SSP", m.usage.key);
+    assertEquals("EXACT", m.diagnostics.matchType);
+    assertTrue(m.diagnostics.note.contains("taxonRank species ignored"));
+
+    // a genus sent as SPECIES
+    m = match("Abies", "species", null, new Classification());
+    assertEquals("G", m.usage.key);
+    assertTrue(m.diagnostics.note.contains("taxonRank species ignored"));
+
+    // a fitting rank is left alone
+    m = match("Abies alba", "species", null, new Classification());
+    assertEquals("S", m.usage.key);
+    assertNull(m.diagnostics.note);
   }
 
   @Test
@@ -159,6 +216,6 @@ public class GbifSpeciesMatchResourceTest {
     assertEquals("3", md.mainIndex.clbDatasetKey);
     assertEquals(CHECKLIST.toString(), md.mainIndex.datasetKey);
     assertEquals("Firs", md.mainIndex.datasetTitle);
-    assertEquals(5, (int) md.mainIndex.nameUsageCount);
+    assertEquals(6, (int) md.mainIndex.nameUsageCount);
   }
 }
