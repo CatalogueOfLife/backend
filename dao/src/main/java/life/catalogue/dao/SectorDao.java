@@ -194,6 +194,8 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       } else if (origin != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " is not a project but of origin " + origin);
       }
+      // a source under an incompatible license would only fail at every sync, so refuse the sector right away
+      requireCompatibleLicense(s, session.getMapper(DatasetMapper.class));
 
       // check if source is a placeholder node
       parsePlaceholderRank(s);
@@ -254,6 +256,15 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
 
       session.commit();
       return s.getKey();
+    }
+  }
+
+  private static void requireCompatibleLicense(Sector s, DatasetMapper dm) {
+    Dataset project = dm.get(s.getDatasetKey());
+    Dataset source = s.getSubjectDatasetKey() == null ? null : dm.get(s.getSubjectDatasetKey());
+    if (project != null && source != null && !License.isCompatible(source.getLicense(), project.getLicense())) {
+      throw new IllegalArgumentException(String.format("License %s of source dataset %s %s is not compatible with license %s of project %s",
+        source.getLicense(), source.getKey(), source.getTitle(), project.getLicense(), project.getKey()));
     }
   }
 
