@@ -52,3 +52,32 @@ CLB statuses map to GBIF ones: `PROVISIONALLY_ACCEPTED` and `BARE_NAME` are `DOU
   `Puma concolar` falls back to the genus where GBIF matches `Puma concolor`.
 - The `exclude`, `scientificNameID` and `taxonConceptID` parameters.
 - IUCN `additionalStatus`, the nested set `left`/`right` values and the parsed name parts of a usage.
+
+## Impact comparison with GBIF
+`webservice/py/gbif_impact.py` compares this service with GBIF's matching-ws on real GBIF occurrence names, in the
+spirit of GBIF's pre-backbone-release impact reports. It compares name matching only: no `taxonID`,
+`scientificNameID` or `taxonConceptID` is ever sent.
+
+1. A GBIF SQL download (`SQL_TSV_ZIP`) of every distinct verbatim name and classification, with the stored
+   interpretation and an occurrence count:
+   ```sql
+   SELECT v_kingdom, v_phylum, v_class, v_order, v_superfamily, v_family, v_subfamily, v_tribe, v_subtribe,
+     v_genus, v_subgenus, v_scientificname, v_scientificnameauthorship, v_taxonrank, v_verbatimtaxonrank,
+     v_genericname, v_specificepithet, v_infraspecificepithet, v_nomenclaturalcode,
+     v_taxonid, v_scientificnameid, v_taxonconceptid,
+     taxonkey, acceptedtaxonkey, kingdomkey, phylumkey, classkey, orderkey, familykey, genuskey, specieskey,
+     scientificname, acceptedscientificname, taxonrank, taxonomicstatus,
+     ARRAY_JOIN(taxonomicissue, ';') AS issues, COUNT(*) AS occurrences
+   FROM occurrence
+   GROUP BY <every column above but the count>
+   ```
+   SQL downloads support no `HAVING`, so occurrence thresholds are applied locally. The id columns only flag rows
+   GBIF may have matched by id.
+2. A `WsMatchingServer` for the release GBIF indexed (`matchingServerBuild --key <release>`, then `server`).
+3. `gbif_impact.py match download.zip --min-occurrences 1000` calls `/v2/species/match` for every row and writes
+   the stored and the CLB result side by side. It is resumable.
+4. `gbif_impact.py report proposed.tsv --out report` puts every row into a category - from `DIFF_KINGDOM` down to
+   `SAME` - weighted by occurrences, and writes `diff.tsv` with debug links to both services plus `report.html`.
+5. `gbif_impact.py verify report/diff.tsv --top 500` re-asks live api.gbif.org without ids. Passing the result to
+   `report --verify` replaces the stored interpretation for those rows, telling stale or id based GBIF matches
+   from real name matching differences.
