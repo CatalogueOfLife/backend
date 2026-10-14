@@ -28,8 +28,9 @@ Without any name the lowest taxon of the classification is matched with its rank
 classification either the answer is NONE.
 
 A supplied rank that contradicts the name - a subspecies or a genus sent as `SPECIES`, common in GBIF occurrences -
-keeps the matcher from finding it. Provisionally, when the first match is neither EXACT nor VARIANT and the parser
-reads another rank from the name, the name is matched again with the parsed rank. The second answer is taken if it
+keeps the matcher from finding it. Provisionally, when the first match is neither EXACT nor VARIANT and the rank
+contradicts the name - the parser reads another rank from a binomial or trinomial, or a single word comes with a
+species or lower rank - the name is matched again without the supplied rank. The second answer is taken if it
 is EXACT or VARIANT, or if the first found nothing, and `diagnostics.note` says `taxonRank <rank> ignored`.
 
 `gbifChecklistKey` in the server config defaults to the `gbifKey` of the matching dataset. A release usually has

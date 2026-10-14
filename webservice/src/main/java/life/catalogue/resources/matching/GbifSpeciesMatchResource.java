@@ -8,6 +8,7 @@ import life.catalogue.matching.MatchingJob;
 import life.catalogue.matching.MatchingUtils;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
+import life.catalogue.parser.NameParser;
 import life.catalogue.resources.matching.gbif.GbifMatchMapper;
 import life.catalogue.resources.matching.gbif.GbifNameUsageMatch;
 
@@ -106,9 +107,9 @@ public class GbifSpeciesMatchResource {
     // Provisional: a supplied rank that contradicts the name, a subspecies sent as SPECIES or a genus as SPECIES,
     // keeps the matcher from finding the name. If so retry with the rank the parser reads from the name.
     // The matcher itself should weigh such a rank, see the GBIF impact report.
-    if (query != null && rnk != null && !isExactOrVariant(m)) {
+    if (query != null && !isExactOrVariant(m) && rankContradictsName(name, query.getRank())) {
       var parsed = interpret(name, author, code, null, cl, new IssueContainer.Simple());
-      if (parsed != null && parsed.getRank() != query.getRank()) {
+      if (parsed != null) {
         UsageMatch m2 = matcher.match(parsed, false, verbose, !strict);
         if (isExactOrVariant(m2) || (!m.isMatch() && m2.isMatch())) {
           note = "taxonRank " + rnk + " ignored as it contradicts the name";
@@ -122,6 +123,25 @@ public class GbifSpeciesMatchResource {
       gm.diagnostics.note = gm.diagnostics.note == null ? note : gm.diagnostics.note + "; " + note;
     }
     return gm;
+  }
+
+  /**
+   * True if the given rank contradicts the rank the parser reads from the name alone: a trinomial or a binomial
+   * sent with another rank, or a single word sent as SPECIES or lower. A name the parser cannot rank is only
+   * contradicted by a species or lower rank.
+   */
+  static boolean rankContradictsName(String name, @Nullable Rank given) {
+    if (given == null) {
+      return false;
+    }
+    Rank parsed = NameParser.PARSER.parse(name).map(pnu -> pnu.getName().getRank()).orElse(null);
+    if (parsed == null || parsed == Rank.UNRANKED || parsed == Rank.OTHER) {
+      return given.isSpeciesOrBelow();
+    }
+    if (parsed == Rank.INFRASPECIFIC_NAME) {
+      return !given.isInfraspecific();
+    }
+    return parsed != given;
   }
 
   private static boolean isExactOrVariant(UsageMatch m) {

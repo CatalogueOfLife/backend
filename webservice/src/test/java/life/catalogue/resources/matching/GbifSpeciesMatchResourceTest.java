@@ -132,6 +132,17 @@ public class GbifSpeciesMatchResourceTest {
   }
 
   @Test
+  public void rankContradictsName() {
+    assertTrue(GbifSpeciesMatchResource.rankContradictsName("Oryctolagus cuniculus cuniculus", Rank.SPECIES));
+    assertFalse(GbifSpeciesMatchResource.rankContradictsName("Oryctolagus cuniculus cuniculus", Rank.SUBSPECIES));
+    assertTrue(GbifSpeciesMatchResource.rankContradictsName("Macropus Shaw, 1790", Rank.SPECIES));
+    assertFalse(GbifSpeciesMatchResource.rankContradictsName("Macropus Shaw, 1790", Rank.GENUS));
+    assertFalse(GbifSpeciesMatchResource.rankContradictsName("Pipistrellus kuhlii (Natterer in Kuhl, 1817)", Rank.SPECIES));
+    assertTrue(GbifSpeciesMatchResource.rankContradictsName("Polygonum aviculare", Rank.SPECIES_AGGREGATE));
+    assertFalse(GbifSpeciesMatchResource.rankContradictsName("Polygonum aviculare", null));
+  }
+
+  @Test
   public void usageKey() {
     var m = resource.match(null, "SYN", null, null, null, null, null, null, null, null, null, null, null, false, false, null);
     assertEquals("SYN", m.usage.key);
@@ -203,6 +214,11 @@ public class GbifSpeciesMatchResourceTest {
     m = match("Abies", "species", null, new Classification());
     assertEquals("G", m.usage.key);
     assertTrue(m.diagnostics.note.contains("taxonRank species ignored"));
+
+    // a rank the name does not contradict is never retried, e.g. a species with a wrong author stays HIGHERRANK
+    m = match("Abies alba Linnaeus", "species", null, new Classification());
+    assertEquals("HIGHERRANK", m.diagnostics.matchType);
+    assertNull(m.diagnostics.note);
 
     // a fitting rank is left alone
     m = match("Abies alba", "species", null, new Classification());
