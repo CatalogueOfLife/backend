@@ -18,7 +18,8 @@ The name links and their status move from `type_material` into the new partition
 Two steps, as the old and the new app run side by side during a deploy.
 
 **1. Before the deploy.** Creates the link table with as many hash partitions as `type_material` has and copies the
-existing links. The old app keeps writing `type_material.name_id` and never sees the new table.
+existing links. The old app keeps writing `type_material.name_id` and never sees the new table. `name_id` loses its
+NOT NULL here, as the new app inserts type material without it until step 2 drops the column.
 ```sql
 CREATE TABLE type_material_name (
   dataset_key INTEGER NOT NULL,
@@ -38,6 +39,7 @@ BEGIN
   END LOOP;
 END $$;
 CREATE INDEX ON type_material_name (dataset_key, name_id);
+ALTER TABLE type_material ALTER COLUMN name_id DROP NOT NULL;
 
 INSERT INTO type_material_name (dataset_key, type_material_id, name_id, status)
 SELECT dataset_key, id, name_id, status FROM type_material;
