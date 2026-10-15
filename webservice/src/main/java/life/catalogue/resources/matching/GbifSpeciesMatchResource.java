@@ -3,6 +3,7 @@ package life.catalogue.resources.matching;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.MatchingJob;
 import life.catalogue.matching.MatchingUtils;
@@ -97,18 +98,20 @@ public class GbifSpeciesMatchResource {
       return GbifMatchMapper.map(null, UsageMatch.empty(matcher.getDatasetKey()), verbose, System.currentTimeMillis() - start);
     }
 
+    // GBIF's strict parameter is the STRICT matching mode
+    final MatchingMode mode = strict ? MatchingMode.STRICT : MatchingMode.DEFAULT;
     IssueContainer issues = new IssueContainer.Simple();
     // the assembled name carries the authorship
     var query = interpret(name, null, code, rnk, cl, issues);
-    UsageMatch m = query == null ? UsageMatch.empty(matcher.getDatasetKey()) : matcher.match(query, false, verbose, !strict);
+    UsageMatch m = query == null ? UsageMatch.empty(matcher.getDatasetKey()) : matcher.match(query, false, verbose, mode.higherRank());
     String note = null;
     // Provisional: a supplied rank that contradicts the name, a subspecies sent as SPECIES or a genus as SPECIES,
     // keeps the matcher from finding the name. If so retry with the rank the parser reads from the name.
     // The matcher itself should weigh such a rank, see the GBIF impact report. A strict match keeps the rank.
-    if (!strict && query != null && !isExactOrVariant(m) && rankContradictsName(name, query.getRank())) {
+    if (mode != MatchingMode.STRICT && query != null && !isExactOrVariant(m) && rankContradictsName(name, query.getRank())) {
       var parsed = interpret(name, null, code, null, cl, new IssueContainer.Simple());
       if (parsed != null) {
-        UsageMatch m2 = matcher.match(parsed, false, verbose, !strict);
+        UsageMatch m2 = matcher.match(parsed, false, verbose, mode.higherRank());
         if (isExactOrVariant(m2) || (!m.isMatch() && m2.isMatch())) {
           note = "taxonRank " + rnk + " ignored as it contradicts the name";
           m = m2;

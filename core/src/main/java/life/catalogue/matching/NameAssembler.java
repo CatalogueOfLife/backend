@@ -52,7 +52,7 @@ public class NameAssembler {
     }
 
     // no usable name given, assemble it from the pieces as best we can
-    Rank clRank = cl.getLowestExistingRank();
+    Rank clRank = lowestRank(cl);
     if (genus == null && (clRank == null || clRank.isSuprageneric())) {
       if (specificEpithet != null || infraspecificEpithet != null || authorship != null) {
         // only epithets without any genus - nothing that can be matched
@@ -87,6 +87,18 @@ public class NameAssembler {
     }
     String name = pn.canonicalNameWithoutAuthorship();
     return new Result(authorship == null ? name : name + " " + authorship, rank, false);
+  }
+
+  /**
+   * @return the lowest rank of the classification with a name, ignoring blank and literal null values
+   */
+  private static Rank lowestRank(Classification cl) {
+    for (Rank r : Classification.RANKS.reversed()) {
+      if (clean(cl.getByRank(r)) != null) {
+        return r;
+      }
+    }
+    return null;
   }
 
   /**

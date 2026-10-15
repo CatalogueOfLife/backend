@@ -20,7 +20,7 @@ GET /v2/species/match/metadata
 | `genericName`, `specificEpithet`, `infraspecificEpithet` | joined into the name if `scientificName` is blank. Without `genericName` the `genus` of the classification completes epithets |
 | `kingdom` … `species` | the classification, all ranks of `Classification` are bound |
 | `usageKey`, `taxonID` | look a usage up by its id instead of matching a name |
-| `strict` | no higher rank fallback when the name itself does not match |
+| `strict` | no higher rank fallback when the name itself does not match, the `STRICT` matching mode of `/match/nameusage` |
 | `verbose` | include the alternatives the matcher considered |
 | `checklistKey` | optional; a key other than the server's configured `gbifChecklistKey` is a 400 |
 
