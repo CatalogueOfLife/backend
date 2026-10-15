@@ -3,6 +3,7 @@ package life.catalogue.matching;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.CollectionUtils;
@@ -130,14 +131,46 @@ public class UsageMatcher implements AutoCloseable {
   /**
    * Like {@link #match(SimpleNameClassified, boolean, boolean)} but with an optional higher rank fallback.
    * If {@code higherRank} is true and the name itself does not match any usage, the matcher walks up the
-   * ranks and tries to match a higher rank usage instead, see {@link #matchHigherRank(SimpleNameClassified, boolean)}.
+   * ranks and tries to match a higher rank usage instead, see {@link #matchHigherRank(SimpleNameClassified, boolean, boolean)}.
    * The fallback is opt-in because callers like the assembly merge rely on an empty match to create new usages
-   * and must not be redirected to a higher rank taxon.
+   * and must not be redirected to a higher rank taxon. The taxonomic group veto is always strict here.
    */
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, boolean higherRank) throws NotFoundException {
-    var m = match(snc, allowInserts, verbose);
+    return match(snc, allowInserts, verbose, higherRank, false);
+  }
+
+  /**
+   * Matches an external query and writes nothing, not even to the names index. The mode decides how strictly:
+   * STRICT never falls back to a higher rank taxon and keeps the taxonomic group veto. RELAXED falls back to a higher
+   * rank taxon and relaxes the group veto: a candidate whose group conflicts with the query's then is no longer removed
+   * but only loses against candidates of a compatible group. That holds for a bi- or trinomial classified only by a top
+   * level group like a kingdom - such names are hardly ever homonyms across groups - and for any name between
+   * overlapping groups (see {@link TaxGroup#overlaps}), never for a candidate with a different authorship.
+   * Merges must never relax groups, a false merge is far worse than a duplicate under another classification,
+   * so they use {@link #match(SimpleNameClassified, boolean, boolean)} instead.
+   * See https://github.com/CatalogueOfLife/backend/issues/1650
+   *
+   * @param mode RELAXED if null
+   * @throws IllegalArgumentException for FUZZY, which is not available yet
+   */
+  public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, @Nullable MatchingMode mode, boolean verbose)
+      throws NotFoundException {
+    mode = readOnlyMode(mode);
+    return match(snc, false, verbose, mode.higherRank(), mode.relaxedGroups());
+  }
+
+  private static MatchingMode readOnlyMode(@Nullable MatchingMode mode) {
+    if (mode == MatchingMode.FUZZY) {
+      throw new IllegalArgumentException("Fuzzy name matching is not available yet");
+    }
+    return mode == null ? MatchingMode.RELAXED : mode;
+  }
+
+  private UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, boolean higherRank,
+                           boolean relaxedGroups) throws NotFoundException {
+    var m = matchName(snc, allowInserts, verbose, relaxedGroups);
     if (higherRank && !m.isMatch()) {
-      var hr = matchHigherRank(snc, verbose);
+      var hr = matchHigherRank(snc, verbose, relaxedGroups);
       if (hr.isMatch()) {
         return hr;
       }
@@ -149,15 +182,19 @@ public class UsageMatcher implements AutoCloseable {
    * Matches a query that has no usable name but a classification, e.g. epithets without any genus.
    * Like the higher rank fallback of a name that is not found it walks up from the lowest taxon of the
    * classification, so a match is always {@link MatchType#HIGHERRANK}.
+   * It writes nothing and, being a higher rank match, finds nothing in STRICT mode.
+   * @param mode RELAXED if null, see {@link #match(SimpleNameClassified, MatchingMode, boolean)}
    * @return a HIGHERRANK match or an empty NONE match
    */
-  public UsageMatch matchClassification(@Nullable List<SimpleNameCached> classification, boolean verbose) throws NotFoundException {
-    if (classification == null || classification.isEmpty()) {
+  public UsageMatch matchClassification(@Nullable List<SimpleNameCached> classification, @Nullable MatchingMode mode, boolean verbose)
+      throws NotFoundException {
+    mode = readOnlyMode(mode);
+    if (!mode.higherRank() || classification == null || classification.isEmpty()) {
       return UsageMatch.empty(datasetKey, MatchType.NONE);
     }
     var snc = new SimpleNameClassified<SimpleNameCached>();
     snc.setClassification(classification);
-    return matchHigherRank(snc, verbose);
+    return matchHigherRank(snc, verbose, mode.relaxedGroups());
   }
 
   /**
@@ -167,6 +204,11 @@ public class UsageMatcher implements AutoCloseable {
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose) throws NotFoundException {
+    return matchName(snc, allowInserts, verbose, false);
+  }
+
+  private UsageMatch matchName(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, boolean relaxedGroups)
+      throws NotFoundException {
     if (snc.getNamesIndexId() == null) {
       return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey);
     }
@@ -179,7 +221,7 @@ public class UsageMatcher implements AutoCloseable {
       // between runs - a store's own order follows hash sets and changes with every new id it holds
       var candidates = new ArrayList<>(existing);
       candidates.sort(Comparator.comparing(SimpleName::getId));
-      var match = filterCandidates(snc, candidates, verbose);
+      var match = filterCandidates(snc, candidates, verbose, relaxedGroups);
       // AMBIGUOUS remains unchanged, any other match is classified from the labels
       if (match.isMatch() && match.type != MatchType.AMBIGUOUS) {
         MatchType computed = labelType(snc, match.usage);
@@ -212,7 +254,8 @@ public class UsageMatcher implements AutoCloseable {
    *
    * @return a HIGHERRANK match or an empty NONE match if no higher rank usage could be matched
    */
-  private UsageMatch matchHigherRank(SimpleNameClassified<SimpleNameCached> snc, boolean verbose) throws NotFoundException {
+  private UsageMatch matchHigherRank(SimpleNameClassified<SimpleNameCached> snc, boolean verbose, boolean relaxedGroups)
+      throws NotFoundException {
     for (var q : higherRankCandidates(snc)) {
       // make sure the higher name is matched to the names index, but never insert
       if (q.getNamesIndexId() == null) {
@@ -221,7 +264,7 @@ public class UsageMatcher implements AutoCloseable {
       if (q.getNamesIndexId() == null) {
         continue; // not in the names index, try the next higher rank
       }
-      var match = match(q, false, verbose);
+      var match = matchName(q, false, verbose, relaxedGroups);
       // keep walking upwards if the higher rank itself is unmatched or ambiguous
       if (match.isMatch() && match.type != MatchType.AMBIGUOUS) {
         LOG.debug("Matched {} {} to higher rank {} {}", snc.getRank(), snc.getLabel(), match.usage.getRank(), match.usage.getLabel());
@@ -378,7 +421,8 @@ public class UsageMatcher implements AutoCloseable {
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch filterCandidates(SimpleNameClassified<SimpleNameCached> nu, List<SimpleNameClassified<SimpleNameCached>> existing, boolean verbose) throws NotFoundException {
+  private UsageMatch filterCandidates(SimpleNameClassified<SimpleNameCached> nu, List<SimpleNameClassified<SimpleNameCached>> existing,
+                                      boolean verbose, boolean relaxedGroups) throws NotFoundException {
     final boolean qualifiedName = nu.hasAuthorship() && nu.getRank() != null && nu.getRank() != Rank.UNRANKED;
 
     // if set to true during filtering the final match will be a snap, not a true match
@@ -438,7 +482,7 @@ public class UsageMatcher implements AutoCloseable {
               group = queryGroup(nu, nu.getClassification());
               groupAnalyzed = true;
             }
-            if (classificationMatches(group, nu, u)) {
+            if (groupFit(group, nu, u, false) != GroupFit.CONFLICT) {
               unresolvedHomonym = true;
             }
           }
@@ -493,8 +537,16 @@ public class UsageMatcher implements AutoCloseable {
           parentsCopy = nu.getClassification().subList(markerIdx, nu.getClassification().size());
         }
         var group = queryGroup(nu, parentsCopy);
-        if (existing.removeIf(rn -> !classificationMatches(group, nu, rn))) {
+        Map<SimpleNameClassified<SimpleNameCached>, GroupFit> fits = new IdentityHashMap<>();
+        for (var rn : existing) {
+          fits.put(rn, groupFit(group, nu, rn, relaxedGroups));
+        }
+        if (existing.removeIf(rn -> fits.get(rn) == GroupFit.CONFLICT)) {
           LOG.debug("Removed matches for {} usage {} with classifications not in {} group", nu.getRank(), nu.getLabel(), group);
+        }
+        // a soft conflict only survives if no candidate of a compatible group is left
+        if (existing.stream().anyMatch(rn -> fits.get(rn) == GroupFit.COMPATIBLE)) {
+          existing.removeIf(rn -> fits.get(rn) == GroupFit.SOFT);
         }
       }
     }
@@ -927,18 +979,64 @@ public class UsageMatcher implements AutoCloseable {
     return false;
   }
 
-  // if authors are missing require the classification to not contradict!
-  private boolean classificationMatches(TaxGroup group, SimpleNameClassified<SimpleNameCached> nu, SimpleNameClassified<SimpleNameCached> candidate) {
+  /**
+   * How the taxonomic group of a candidate fits the group of the query.
+   */
+  private enum GroupFit {
+    COMPATIBLE,
+    /** a conflicting group that only loses against compatible candidates, in matching that writes nothing */
+    SOFT,
+    CONFLICT
+  }
+
+  /**
+   * A bi- or trinomial with an equal authorship is the same name, whatever group its placement suggests: real homonyms
+   * across groups, the wasp Agathis montana Shestakov and the plant Agathis montana de Laub., have different authors.
+   * That generalises https://github.com/CatalogueOfLife/backend/issues/1430 and applies to merges too.
+   * Relaxed groups only ever soften a conflict, see {@link #match(SimpleNameClassified, MatchingMode, boolean)}.
+   */
+  private GroupFit groupFit(TaxGroup group, SimpleNameClassified<SimpleNameCached> nu, SimpleNameClassified<SimpleNameCached> candidate,
+                            boolean relaxedGroups) {
     if (group == null) {
-      return true;
-    }
-    // avoid classification group comparison for species and below which have the exact same authorship
-    // https://github.com/CatalogueOfLife/backend/issues/1430
-    if (nu.getRank().isSpeciesOrBelow() && nu.getAuthorship() != null && nu.getAuthorship().equals(candidate.getAuthorship())) {
-      return true;
+      return GroupFit.COMPATIBLE;
     }
     var candidateGroup = groupAnalyzer.analyze(candidate, candidate.getClassification());
-    return !group.isDisparateTo(candidateGroup);
+    if (!group.isDisparateTo(candidateGroup)) {
+      return GroupFit.COMPATIBLE;
+    }
+    final boolean multinomial = isBiOrTrinomial(nu, candidate);
+    if (multinomial && equalAuthorship(candidate, nu)) {
+      return GroupFit.COMPATIBLE;
+    }
+    if (relaxedGroups && !differentAuthorship(candidate, nu) && ((multinomial && isTopLevel(group)) || group.overlaps(candidateGroup))) {
+      return GroupFit.SOFT;
+    }
+    return GroupFit.CONFLICT;
+  }
+
+  /**
+   * @return true for a broad group like Animals, Plants, Bacteria or Eukaryotes, which is all a query classified by
+   *         little more than a kingdom tells. A more specific group, e.g. Angiosperms from a plant family, is evidence
+   *         worth its veto: Sabia parviflora with family Sabiaceae must not match an animal of the same name.
+   */
+  private static boolean isTopLevel(TaxGroup group) {
+    return group.classification().size() <= 1;
+  }
+
+  /**
+   * @return true if the query is a bi- or trinomial. External queries often come without a rank,
+   *         then the candidate sharing its canonical name tells.
+   */
+  private static boolean isBiOrTrinomial(SimpleNameCached nu, SimpleNameCached candidate) {
+    Rank r = nu.getRank() != null && nu.getRank().notOtherOrUnranked() ? nu.getRank() : candidate.getRank();
+    return r != null && r.isSpeciesOrBelow();
+  }
+
+  /**
+   * @return true if both names have an authorship and it compares {@link Equality#EQUAL}
+   */
+  private boolean equalAuthorship(SimpleNameCached u, SimpleNameCached nu) {
+    return u.hasAuthorship() && nu.hasAuthorship() && authComp.compare(parseSciName(u), parseSciName(nu)) == Equality.EQUAL;
   }
 
   /**

@@ -199,6 +199,19 @@ public class GbifSpeciesMatchResourceTest {
   }
 
   @Test
+  public void kingdomConflict() {
+    // like GBIF a plant filed under animals matches unless strict
+    var cl = new Classification();
+    cl.setKingdom("Animalia");
+    var m = match("Abies alba", null, null, cl);
+    assertEquals("S", m.usage.key);
+
+    m = resource.match(null, null, null, "Abies alba", null, null, null, null, null, null, null, null, null, true, false, cl);
+    assertNull(m.usage);
+    assertEquals("NONE", m.diagnostics.matchType);
+  }
+
+  @Test
   public void epithetWithClassificationGenus() {
     var cl = new Classification();
     cl.setFamily("Pinaceae");

@@ -62,7 +62,7 @@ public abstract class AbstractNameUsageMatchingResource {
       if (utils == null) {
         utils = new MatchingUtils(matcher.getNameIndex());
       }
-      match = MatchingJob.interpretAndMatch(sn, sn.getClassification(), issues, verbose, mode.higherRank(), interpreter, utils, matcher);
+      match = MatchingJob.interpretAndMatch(sn, sn.getClassification(), issues, verbose, mode, interpreter, utils, matcher);
     } finally {
       if (closeAfterMatch()) {
         matcher.close();

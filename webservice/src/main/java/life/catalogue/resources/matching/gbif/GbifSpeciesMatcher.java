@@ -78,16 +78,16 @@ public class GbifSpeciesMatcher {
     }
     if (StringUtils.isBlank(name)) {
       // no usable name, e.g. epithets without any genus: like GBIF match the classification as a higher rank
-      UsageMatch m = strict ? UsageMatch.empty(matcher.getDatasetKey()) : matcher.matchClassification(cl.asSimpleNameCached(), verbose);
+      UsageMatch m = matcher.matchClassification(cl.asSimpleNameCached(), strict ? MatchingMode.STRICT : MatchingMode.RELAXED, verbose);
       return GbifMatchMapper.map(null, m, verbose, System.currentTimeMillis() - start);
     }
 
     // GBIF's strict parameter is the STRICT matching mode
-    final MatchingMode mode = strict ? MatchingMode.STRICT : MatchingMode.DEFAULT;
+    final MatchingMode mode = strict ? MatchingMode.STRICT : MatchingMode.RELAXED;
     IssueContainer issues = new IssueContainer.Simple();
     // the assembled name carries the authorship
     var query = interpret(name, null, code, rnk, cl, issues);
-    UsageMatch m = query == null ? UsageMatch.empty(matcher.getDatasetKey()) : matcher.match(query, false, verbose, mode.higherRank());
+    UsageMatch m = query == null ? UsageMatch.empty(matcher.getDatasetKey()) : matcher.match(query, mode, verbose);
     String note = null;
     // Provisional: a supplied rank that contradicts the name, a subspecies sent as SPECIES or a genus as SPECIES,
     // keeps the matcher from finding the name. If so retry with the rank the parser reads from the name.
@@ -95,7 +95,7 @@ public class GbifSpeciesMatcher {
     if (mode != MatchingMode.STRICT && query != null && !isExactOrVariant(m) && rankContradictsName(name, query.getRank())) {
       var parsed = interpret(name, null, code, null, cl, new IssueContainer.Simple());
       if (parsed != null) {
-        UsageMatch m2 = matcher.match(parsed, false, verbose, mode.higherRank());
+        UsageMatch m2 = matcher.match(parsed, mode, verbose);
         if (isExactOrVariant(m2) || (!m.isMatch() && m2.isMatch())) {
           note = "taxonRank " + rnk + " ignored as it contradicts the name";
           m = m2;

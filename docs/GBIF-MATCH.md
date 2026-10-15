@@ -35,7 +35,7 @@ datasets and most private datasets answer 404. Names are only looked up in the n
 | `genericName`, `specificEpithet`, `infraspecificEpithet` | joined into the name if `scientificName` is blank. Without `genericName` the `genus` of the classification completes epithets |
 | `kingdom` … `species` | the classification, all ranks of `Classification` are bound |
 | `usageKey`, `taxonID` | look a usage up by its id instead of matching a name |
-| `strict` | no higher rank fallback when the name itself does not match, the `STRICT` matching mode of `/match/nameusage` |
+| `strict` | the `STRICT` matching mode of `/match/nameusage`: no higher rank fallback and a strict taxonomic group veto, see below. Otherwise `RELAXED` |
 | `verbose` | include the alternatives the matcher considered |
 | `checklistKey` | matching server only, optional; a key other than the server's configured `gbifChecklistKey` is a 400. The dataset scoped path ignores it, the path names the dataset |
 
@@ -47,6 +47,13 @@ epithets. Without any of these the lowest taxon of the classification is matched
 classification either the answer is NONE. Epithets without any genus cannot be matched themselves, so only their
 classification is, as a HIGHERRANK match like GBIF's, and not at all with `strict`. `/match/nameusage` and matching
 jobs do the same unless the mode is STRICT.
+
+A classification that puts the name into another taxonomic group than a usage (`TaxGroup`) rules the usage out in
+STRICT mode, as it does in GBIF's strict mode. RELAXED, the default, only prefers usages of a compatible group, and
+like GBIF matches plankton filed under `kingdom=Animalia` or lichens under `Plantae`. That is for a bi- or trinomial
+given with nothing more specific than a kingdom, and for any name between the overlapping protists and animals,
+protists and fungi, or fungi and plants. A different authorship always rules a usage out, and a more specific group
+keeps its veto. Merges never relax groups. See [2026-10-15-group-veto.md](2026-10-15-group-veto.md).
 
 A supplied rank that contradicts the name - a subspecies or a genus sent as `SPECIES`, common in GBIF occurrences -
 keeps the matcher from finding it. Provisionally, when the first match is neither EXACT nor VARIANT and the rank

@@ -106,6 +106,17 @@ public class FixedNameUsageMatchingResourceTest {
     assertFalse(m.isMatch());
   }
 
+  @Test
+  public void kingdomConflict() throws Exception {
+    // a plant filed under animals: RELAXED treats the conflicting group as a preference, STRICT as a veto
+    var cl = new Classification();
+    cl.setKingdom("Animalia");
+    var m = match("Abies alba", null, null, null, cl);
+    assertEquals("S", m.usage.getId());
+    m = match("Abies alba", null, null, MatchingMode.STRICT, cl);
+    assertFalse(m.isMatch());
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void nothing() throws Exception {
     match(null, null, null, null, new Classification());
@@ -117,7 +128,7 @@ public class FixedNameUsageMatchingResourceTest {
     assertEquals("G", m.usage.getId());
     assertEquals(MatchType.HIGHERRANK, m.type);
 
-    m = match("Abies nordmanniana", null, null, MatchingMode.DEFAULT, new Classification());
+    m = match("Abies nordmanniana", null, null, MatchingMode.RELAXED, new Classification());
     assertEquals("G", m.usage.getId());
 
     // strict never falls back to a higher rank

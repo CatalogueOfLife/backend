@@ -76,4 +76,41 @@ public class TaxGroupTest {
     assertFalse(Animals.isDisparateTo(Chordates));
 
   }
+
+  /**
+   * Overlaps hold between a declared group itself and its partner or any group below that partner,
+   * never between two more specific groups.
+   */
+  @Test
+  public void overlaps() {
+    assertOverlap(true, Animals, Protists);
+    assertOverlap(true, Animals, Algae);
+    assertOverlap(true, Insects, Protists);
+    assertOverlap(true, Plants, Fungi);
+    assertOverlap(true, Plants, Ascomycetes);
+    assertOverlap(true, Fungi, Protists);
+    assertOverlap(true, Fungi, Algae);
+
+    assertOverlap(false, Insects, Algae);
+    assertOverlap(false, Angiosperms, Ascomycetes);
+    assertOverlap(false, Animals, Plants);
+    assertOverlap(false, Animals, Fungi);
+    assertOverlap(false, Plants, Protists);
+    assertOverlap(false, Bacteria, Protists);
+    assertOverlap(false, Prokaryotes, Animals);
+    assertOverlap(false, Viruses, Animals);
+    // groups that are not disparate do not overlap, they simply agree
+    assertOverlap(false, Algae, Plants);
+    assertOverlap(false, Insects, Animals);
+    assertOverlap(false, Animals, Animals);
+    assertFalse(Animals.overlaps(null));
+
+    assertEquals(Set.of("Animals", "Fungi"), Protists.getOverlaps());
+    assertNull(Insects.getOverlaps());
+  }
+
+  static void assertOverlap(boolean expected, TaxGroup g1, TaxGroup g2) {
+    assertEquals(g1 + " ~ " + g2, expected, g1.overlaps(g2));
+    assertEquals(g2 + " ~ " + g1, expected, g2.overlaps(g1));
+  }
 }

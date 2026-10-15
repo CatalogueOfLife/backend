@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestion;
+import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
@@ -158,7 +159,7 @@ public abstract class AbstractReconciliationResource {
       return new OpenRefineModel.Result();
     }
     // like any external match request, fall back to a higher rank match when the name itself cannot be matched
-    UsageMatch match = matcher.match(query.get(), false, true, true);
+    UsageMatch match = matcher.match(query.get(), MatchingMode.RELAXED, true);
     return OpenRefineMapper.toResult(query.get(), match);
   }
 
