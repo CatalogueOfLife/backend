@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Impact report comparing GBIF's species matching (matching-ws, as stored in the interpreted occurrences)
-with the CLB usage matcher behind the GBIF compatible /v2/species/match of a WsMatchingServer.
+with the CLB usage matcher behind the GBIF compatible /match/gbif of a WsMatchingServer.
 Modelled on GBIF's pre-backbone-release impact reports (gbif/pipelines gbif/ingestion/pre-backbone-release).
 
 Name matching only: no taxonID, scientificNameID or taxonConceptID is ever sent to either service.
@@ -128,7 +128,7 @@ def url(base, params, gbif=False):
   if gbif:
     q.append(("checklistKey", COL_CHECKLIST))
   q.append(("verbose", "true"))
-  return base.rstrip("/") + "/v2/species/match?" + urllib.parse.urlencode(q)
+  return base.rstrip("/") + ("/v2/species/match?" if gbif else "/match/gbif?") + urllib.parse.urlencode(q)
 
 
 class Client:
@@ -224,7 +224,7 @@ def cmd_match(a):
     if a.checklist_key:
       params.append(("checklistKey", a.checklist_key))
     query = urllib.parse.urlencode(params)
-    resp, err = client.get(base_path + "/v2/species/match?" + query) if params else (None, "no name")
+    resp, err = client.get(base_path + "/match/gbif?" + query) if params else (None, "no name")
     m = parse_match(resp)
     gm, gerr = {f: "" for f in MATCH_FIELDS}, ""
     if gbif:

@@ -58,7 +58,7 @@ public class WsMatchingServerConfig extends Configuration implements CorsBundleC
   public MatchingConfig matching = new MatchingConfig();
 
   /**
-   * The GBIF checklist key the GBIF compatible /v2/species/match service answers for.
+   * The GBIF checklist key the GBIF compatible /match/gbif service answers for.
    * Defaults to the gbifKey of the matching dataset, which a release usually lacks - the COL checklist key
    * belongs to the project, not to its releases.
    */

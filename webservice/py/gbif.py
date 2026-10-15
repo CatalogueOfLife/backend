@@ -10,5 +10,5 @@ class ClbUser(FastHttpUser):
 
   @task(3)
   def match(self):
-    with self.rest("GET", "/v2/species/match", scientificName=random.choice(names), scientificNameAuthorship=random.choice(authors), bust=random.randint(1, 99999999999)) as resp:
+    with self.rest("GET", "/match/gbif", scientificName=random.choice(names), scientificNameAuthorship=random.choice(authors), bust=random.randint(1, 99999999999)) as resp:
       pass

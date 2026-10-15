@@ -56,7 +56,7 @@ public class GbifNameUsageMatch {
   }
 
   /**
-   * GBIF's metadata about the checklist a match service instance serves, see /v2/species/match/metadata.
+   * GBIF's metadata about the checklist a match service instance serves, see /match/gbif/metadata.
    */
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public static class Metadata {

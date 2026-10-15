@@ -15,12 +15,13 @@ import jakarta.ws.rs.core.MediaType;
 
 /**
  * A GBIF compatible species match service, mimicking the v2 API of https://github.com/gbif/matching-ws
- * on top of the single persistent usage matcher of a matching server.
+ * on top of the single persistent usage matcher of a matching server. It is served below /match/gbif like the
+ * dataset scoped variant, GBIF's own /v2/species/match path is left to a proxy should CLB ever replace it.
  * Not supported are fuzzy matching, the exclude, scientificNameID and taxonConceptID parameters,
  * IUCN additionalStatus and the nested set left/right values.
  * The main and the bundle server offer the same per dataset under {@link DatasetGbifMatchResource}.
  */
-@Path("/v2/species/match")
+@Path("/match/gbif")
 @Produces(MediaType.APPLICATION_JSON)
 public class GbifSpeciesMatchResource {
   private final Dataset dataset;

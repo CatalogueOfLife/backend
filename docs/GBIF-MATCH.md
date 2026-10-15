@@ -8,16 +8,19 @@ request and response. Three servers offer it:
 
 | Server | Path | Resource |
 |---|---|---|
-| `WsMatchingServer` | `/v2/species/match`, GBIF's own path, for its single dataset | `GbifSpeciesMatchResource` |
+| `WsMatchingServer` | `/match/gbif`, for its single dataset | `GbifSpeciesMatchResource` |
 | `WsServer` | `/dataset/{key}/match/gbif` | `DatasetGbifMatchResource` |
 | `WsBundleServer` | `/match/gbif`, rewritten to `/dataset/{releaseKey}/match/gbif` | `DatasetGbifMatchResource` |
 
 ```
-GET /v2/species/match?scientificName=Bacillus&kingdom=Bacteria&verbose=true
-GET /v2/species/match/metadata
+GET /match/gbif?scientificName=Bacillus&kingdom=Bacteria&verbose=true
+GET /match/gbif/metadata
 GET /dataset/3LXR/match/gbif?scientificName=Bacillus&kingdom=Bacteria
 GET /dataset/3LXR/match/gbif/metadata
 ```
+
+None of them serves GBIF's own `/v2/species/match` path. Should CLB ever replace matching-ws behind the GBIF API,
+the proxy in front (varnish) maps that path to `/match/gbif`.
 
 The dataset scoped path only serves a dataset with a persistent matcher store, which every published dataset above
 `matching.pgMatcherThreshold` usages has. Other than `/match/nameusage` it neither falls back to matching against
@@ -106,7 +109,7 @@ spirit of GBIF's pre-backbone-release impact reports. It compares name matching 
    SQL downloads support no `HAVING`, so occurrence thresholds are applied locally. The id columns only flag rows
    GBIF may have matched by id.
 2. A `WsMatchingServer` for the release GBIF indexed (`matchingServerBuild --key <release>`, then `server`).
-3. `gbif_impact.py match download.zip --min-occurrences 1000` calls `/v2/species/match` for every row and writes
+3. `gbif_impact.py match download.zip --min-occurrences 1000` calls `/match/gbif` for every row and writes
    the stored and the CLB result side by side. It is resumable.
 4. `gbif_impact.py report proposed.tsv --out report` puts every row into a category - from `DIFF_KINGDOM` down to
    `SAME` - weighted by occurrences, and writes `diff.tsv` with debug links to both services plus `report.html`.
