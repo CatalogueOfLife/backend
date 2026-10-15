@@ -23,6 +23,8 @@ import org.gbif.nameparser.api.RankGroup;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,6 +146,21 @@ public class UsageMatcher implements AutoCloseable {
   }
 
   /**
+   * Matches a query that has no usable name but a classification, e.g. epithets without any genus.
+   * Like the higher rank fallback of a name that is not found it walks up from the lowest taxon of the
+   * classification, so a match is always {@link MatchType#HIGHERRANK}.
+   * @return a HIGHERRANK match or an empty NONE match
+   */
+  public UsageMatch matchClassification(@Nullable List<SimpleNameCached> classification, boolean verbose) throws NotFoundException {
+    if (classification == null || classification.isEmpty()) {
+      return UsageMatch.empty(datasetKey, MatchType.NONE);
+    }
+    var snc = new SimpleNameClassified<SimpleNameCached>();
+    snc.setClassification(classification);
+    return matchHigherRank(snc, verbose);
+  }
+
+  /**
    * Matches the given usage by looking up candidates by their canonical names index id
    * and then filtering them by various properties and the parent classification.
    * @param snc usage to match. The classification does not need to be matched to the nidx!
@@ -256,6 +273,9 @@ public class UsageMatcher implements AutoCloseable {
    * @return a map of rank to the derived uninomial/binomial name, empty if the name is not a bi/trinomial
    */
   private Map<Rank, SimpleNameCached> derivedHigherNames(SimpleNameClassified<SimpleNameCached> snc) {
+    if (snc.getName() == null) {
+      return Collections.emptyMap();
+    }
     var opt = NameParser.PARSER.parse(snc);
     if (opt.isPresent()) {
       var n = opt.get().getName();

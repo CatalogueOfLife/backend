@@ -389,6 +389,10 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   public static UsageMatch interpretAndMatch(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
                                        boolean higherRank, NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
   ) {
+    if (higherRank && StringUtils.isBlank(sn.getName()) && classification != null && !classification.isEmpty()) {
+      // no usable name, e.g. epithets without any genus: only the classification can be matched
+      return matcher.matchClassification(classification, verbose);
+    }
     var snc = interpret(sn, classification, issues, interpreter, utils);
     return snc.isPresent() ? matcher.match(snc.get(), false, verbose, higherRank) : UsageMatch.empty(0);
   }

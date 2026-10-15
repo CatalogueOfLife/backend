@@ -184,6 +184,21 @@ public class GbifSpeciesMatchResourceTest {
   }
 
   @Test
+  public void epithetWithoutGenus() {
+    // like GBIF an epithet without any genus only matches the classification, as a higher rank
+    var cl = new Classification();
+    cl.setKingdom("Plantae");
+    cl.setFamily("Pinaceae");
+    var m = match(null, null, "Pinaceae", cl);
+    assertEquals("F", m.usage.key);
+    assertEquals("HIGHERRANK", m.diagnostics.matchType);
+
+    m = resource.match(null, null, null, null, null, null, null, null, null, null, null, "Pinaceae", null, true, false, cl);
+    assertNull(m.usage);
+    assertEquals("NONE", m.diagnostics.matchType);
+  }
+
+  @Test
   public void epithetWithClassificationGenus() {
     var cl = new Classification();
     cl.setFamily("Pinaceae");

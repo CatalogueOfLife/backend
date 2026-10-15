@@ -91,6 +91,21 @@ public class FixedNameUsageMatchingResourceTest {
     assertEquals("F", m.usage.getId());
   }
 
+  @Test
+  public void epithetWithoutGenus() throws Exception {
+    // an epithet without any genus gives no name, but the classification still matches as a higher rank
+    var cl = new Classification();
+    cl.setKingdom("Plantae");
+    cl.setFamily("Pinaceae");
+    var m = match(null, null, "Pinaceae", null, cl);
+    assertEquals("F", m.usage.getId());
+    assertEquals(MatchType.HIGHERRANK, m.type);
+
+    // strict never falls back to a higher rank
+    m = match(null, null, "Pinaceae", MatchingMode.STRICT, cl);
+    assertFalse(m.isMatch());
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void nothing() throws Exception {
     match(null, null, null, null, new Classification());

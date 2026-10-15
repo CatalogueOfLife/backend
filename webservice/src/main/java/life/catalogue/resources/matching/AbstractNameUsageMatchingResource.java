@@ -92,11 +92,12 @@ public abstract class AbstractNameUsageMatchingResource {
       .orElse(() -> new EnumNote<>(TaxonomicStatus.ACCEPTED, null), Issue.TAXONOMIC_STATUS_INVALID, issues);
 
     var sn = SimpleNameClassified.snc(id, iRank, iCode, iStatus.val, ObjectUtils.coalesce(sciname, name, q), authorship);
-    if (StringUtils.isBlank(sn.getName())) {
-      throw new IllegalArgumentException("Missing name");
-    }
     if (classification != null) {
       sn.setClassification(classification.asSimpleNameCached());
+    }
+    // without a name, e.g. epithets without any genus, only the classification can be matched
+    if (StringUtils.isBlank(sn.getName()) && (sn.getClassification() == null || sn.getClassification().isEmpty())) {
+      throw new IllegalArgumentException("Missing name");
     }
     return sn;
   }

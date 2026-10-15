@@ -44,7 +44,9 @@ The name is built from its pieces like matching-ws does (`NameAssembler`, a port
 `genus` of the classification or `genericName`, and a missing authorship is appended. A `scientificName` that is
 only an epithet, or none at all, is assembled from the genus, the classification's `subgenus` and `species`, and the
 epithets. Without any of these the lowest taxon of the classification is matched with its rank, as GBIF does; with no
-classification either the answer is NONE. Epithets without any genus give NONE.
+classification either the answer is NONE. Epithets without any genus cannot be matched themselves, so only their
+classification is, as a HIGHERRANK match like GBIF's, and not at all with `strict`. `/match/nameusage` and matching
+jobs do the same unless the mode is STRICT.
 
 A supplied rank that contradicts the name - a subspecies or a genus sent as `SPECIES`, common in GBIF occurrences -
 keeps the matcher from finding it. Provisionally, when the first match is neither EXACT nor VARIANT and the rank

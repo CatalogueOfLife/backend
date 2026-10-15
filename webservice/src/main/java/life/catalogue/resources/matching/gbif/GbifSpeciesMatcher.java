@@ -77,7 +77,9 @@ public class GbifSpeciesMatcher {
       cl.clearRankAndBelow(assembled.rank());
     }
     if (StringUtils.isBlank(name)) {
-      return GbifMatchMapper.map(null, UsageMatch.empty(matcher.getDatasetKey()), verbose, System.currentTimeMillis() - start);
+      // no usable name, e.g. epithets without any genus: like GBIF match the classification as a higher rank
+      UsageMatch m = strict ? UsageMatch.empty(matcher.getDatasetKey()) : matcher.matchClassification(cl.asSimpleNameCached(), verbose);
+      return GbifMatchMapper.map(null, m, verbose, System.currentTimeMillis() - start);
     }
 
     // GBIF's strict parameter is the STRICT matching mode

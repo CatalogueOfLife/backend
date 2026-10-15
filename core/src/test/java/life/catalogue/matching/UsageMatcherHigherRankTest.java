@@ -11,6 +11,7 @@ import life.catalogue.matching.nidx.NameIndex;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -90,5 +91,19 @@ public class UsageMatcherHigherRankTest {
     // the name itself at its own rank is no higher taxon
     assertHigher("ch", match("Dinosauria", Rank.CLASS,
       new SimpleNameCached(null, "Dinosauria", Rank.CLASS), new SimpleNameCached(null, "Chordata", Rank.PHYLUM)));
+  }
+
+  /**
+   * A query without a usable name, like epithets without any genus, can still match its classification.
+   */
+  @Test
+  public void classificationOnly() throws Exception {
+    assertHigher("re", matcher.matchClassification(
+      List.of(new SimpleNameCached(null, "Reptilia", Rank.CLASS), new SimpleNameCached(null, "Chordata", Rank.PHYLUM)), false));
+    // unknown lower taxa are skipped
+    assertHigher("ch", matcher.matchClassification(
+      List.of(new SimpleNameCached(null, "Dinosauria", Rank.ORDER), new SimpleNameCached(null, "Chordata", Rank.PHYLUM)), false));
+    assertFalse(matcher.matchClassification(List.of(), false).isMatch());
+    assertFalse(matcher.matchClassification(null, false).isMatch());
   }
 }
