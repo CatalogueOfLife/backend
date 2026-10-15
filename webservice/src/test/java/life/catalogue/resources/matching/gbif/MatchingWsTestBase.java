@@ -42,7 +42,8 @@ public abstract class MatchingWsTestBase {
     HOMONYMS(false, "homonyms without evidence should give their lowest shared higher taxon or nothing, CatalogueOfLife/backend#1651"),
     AUTHOR_TIE(false, "of two compatible authorships the closer one should win, CatalogueOfLife/backend#1652"),
     OTU_CASE(false, "a lowercase BOLD BIN is not normalised by the name parser, gbif/name-parser-rust#119"),
-    KINGDOM(true, "a name contradicting the supplied kingdom is no match, not the kingdom, CatalogueOfLife/backend#1650"),
+    KINGDOM(true, "a bi- or trinomial given with nothing but a contradicting kingdom matches in RELAXED mode, "
+      + "GBIF falls back to the kingdom, CatalogueOfLife/backend#1650"),
     GENUS_GROUP(true, "the genus group ranks stay strict, a subgenus is no genus, CatalogueOfLife/backend#1661"),
     RANK_RETRY(true, "a binomial sent as an aggregate is matched again with its parsed rank and finds the species"),
     INDET(true, "indet marks an indetermined name and is no epithet"),

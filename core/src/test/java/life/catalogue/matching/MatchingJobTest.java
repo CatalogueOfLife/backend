@@ -1,6 +1,7 @@
 package life.catalogue.matching;
 
 import life.catalogue.TestConfigs;
+import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.concurrent.BackgroundJob;
@@ -56,7 +57,7 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   public void setUp() throws Exception {
     this.cfg = TestConfigs.build();
     var matcher = mock(UsageMatcher.class);
-    when(matcher.match(any(), anyBoolean(), anyBoolean(), anyBoolean())).thenReturn(UsageMatch.empty(0));
+    when(matcher.match(any(), any(MatchingMode.class), anyBoolean())).thenReturn(UsageMatch.empty(0));
     matcherFactory = mock(UsageMatcherFactory.class);
     when(matcherFactory.persistent(anyInt())).thenReturn(matcher);
     when(matcherFactory.getNameIndex()).thenReturn(NameIndexFactory.passThru());

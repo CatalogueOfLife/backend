@@ -367,34 +367,34 @@ public abstract class AbstractMatchingJob extends DatasetJob {
     if (mode == MatchingMode.FUZZY) {
       throw new IllegalArgumentException("Fuzzy name matching is not available yet");
     }
-    return mode == null ? MatchingMode.DEFAULT : mode;
+    return mode == null ? MatchingMode.RELAXED : mode;
   }
 
   private UsageMatchWithOriginal match(IssueName n, UsageMatcher matcher) {
     UsageMatch match = interpretAndMatch(n.name, MatchingUtils.toSimpleNameCached(n.name.getClassification()), n.issues, false,
-      req.getMode().higherRank(), interpreter, utils, matcher);
+      req.getMode(), interpreter, utils, matcher);
     return new UsageMatchWithOriginal(match, n.issues, n.name, n.line);
   }
 
   public static UsageMatch interpretAndMatch(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
                                        NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
   ) {
-    // external match requests fall back to a higher rank match when the name itself cannot be matched
-    return interpretAndMatch(sn, classification, issues, verbose, true, interpreter, utils, matcher);
+    return interpretAndMatch(sn, classification, issues, verbose, MatchingMode.RELAXED, interpreter, utils, matcher);
   }
 
   /**
-   * @param higherRank if true falls back to a higher rank match when the name itself cannot be matched
+   * Matches an external query, writing nothing. See {@link UsageMatcher#match(SimpleNameClassified, MatchingMode, boolean)}.
+   * @param mode RELAXED if null
    */
   public static UsageMatch interpretAndMatch(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
-                                       boolean higherRank, NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
+                                       @Nullable MatchingMode mode, NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
   ) {
-    if (higherRank && StringUtils.isBlank(sn.getName()) && classification != null && !classification.isEmpty()) {
-      // no usable name, e.g. epithets without any genus: only the classification can be matched
-      return matcher.matchClassification(classification, verbose);
+    if (StringUtils.isBlank(sn.getName()) && classification != null && !classification.isEmpty()) {
+      // no usable name, e.g. epithets without any genus: only the classification can be matched, never in STRICT mode
+      return matcher.matchClassification(classification, mode, verbose);
     }
     var snc = interpret(sn, classification, issues, interpreter, utils);
-    return snc.isPresent() ? matcher.match(snc.get(), false, verbose, higherRank) : UsageMatch.empty(0);
+    return snc.isPresent() ? matcher.match(snc.get(), mode, verbose) : UsageMatch.empty(0);
   }
 
   /**

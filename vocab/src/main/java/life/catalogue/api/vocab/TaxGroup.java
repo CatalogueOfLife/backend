@@ -78,6 +78,24 @@ public enum TaxGroup {
     }
   }
 
+  /**
+   * Disparate groups whose names are not kept apart as strictly, as the same nomenclatural code governs both sides and
+   * the kingdom placement of their taxa changed a lot: protozoa used to be animals, slime moulds and other protists were
+   * treated as fungi, and fungi as plants. Data still files plankton under Animalia or lichens under Plantae.
+   * Symmetric, see {@link #overlaps(TaxGroup)}.
+   */
+  private static final Map<TaxGroup, Set<TaxGroup>> OVERLAPS = new EnumMap<>(TaxGroup.class);
+  static {
+    overlap(Protists, Animals);
+    overlap(Protists, Fungi);
+    overlap(Fungi, Plants);
+  }
+
+  private static void overlap(TaxGroup g1, TaxGroup g2) {
+    OVERLAPS.computeIfAbsent(g1, k -> EnumSet.noneOf(TaxGroup.class)).add(g2);
+    OVERLAPS.computeIfAbsent(g2, k -> EnumSet.noneOf(TaxGroup.class)).add(g1);
+  }
+
   final private String phylopic;
   final private String description;
   final LinkedHashSet<TaxGroup> parents = new LinkedHashSet<>();
@@ -129,6 +147,25 @@ public enum TaxGroup {
       return false;
     }
     return true;
+  }
+
+  /**
+   * True if the two disparate groups overlap, so a conflict between them is a weaker one. That is the case if one of the
+   * two groups is itself declared to overlap with the other one or a group containing it: Animals overlap with Protists
+   * and with Algae below them, Insects with Protists, but Insects never with Algae - two more specific groups contradict.
+   * Groups that are not disparate do not overlap, they agree.
+   */
+  public boolean overlaps(TaxGroup other) {
+    return other != null && isDisparateTo(other) && (overlapsPartner(this, other) || overlapsPartner(other, this));
+  }
+
+  private static boolean overlapsPartner(TaxGroup declared, TaxGroup other) {
+    for (var partner : OVERLAPS.getOrDefault(declared, Set.of())) {
+      if (partner.contains(other)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
@@ -193,6 +230,14 @@ public enum TaxGroup {
 
   public Set<String> getParents() {
     return parents.isEmpty() ? null : parents.stream().map(Enum::name).collect(Collectors.toSet());
+  }
+
+  /**
+   * @return the groups this group is declared to overlap with, see {@link #overlaps(TaxGroup)}
+   */
+  public Set<String> getOverlaps() {
+    var o = OVERLAPS.get(this);
+    return o == null ? null : o.stream().map(Enum::name).collect(Collectors.toSet());
   }
 
   @JsonIgnore

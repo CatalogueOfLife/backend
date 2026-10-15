@@ -72,10 +72,10 @@ public class MatchingRowMapperTest {
 
   @Test
   public void supportedMode() {
-    assertEquals(MatchingMode.DEFAULT, AbstractMatchingJob.supportedMode(null));
+    assertEquals(MatchingMode.RELAXED, AbstractMatchingJob.supportedMode(null));
     assertEquals(MatchingMode.STRICT, AbstractMatchingJob.supportedMode(MatchingMode.STRICT));
     assertThrows(IllegalArgumentException.class, () -> AbstractMatchingJob.supportedMode(MatchingMode.FUZZY));
-    assertTrue(MatchingMode.DEFAULT.higherRank());
+    assertTrue(MatchingMode.RELAXED.higherRank());
     assertFalse(MatchingMode.STRICT.higherRank());
   }
 }

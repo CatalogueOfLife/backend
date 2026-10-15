@@ -5,6 +5,7 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.nidx.NameIndex;
 
@@ -98,12 +99,16 @@ public class UsageMatcherHigherRankTest {
    */
   @Test
   public void classificationOnly() throws Exception {
+    var chordata = new SimpleNameCached(null, "Chordata", Rank.PHYLUM);
     assertHigher("re", matcher.matchClassification(
-      List.of(new SimpleNameCached(null, "Reptilia", Rank.CLASS), new SimpleNameCached(null, "Chordata", Rank.PHYLUM)), false));
+      List.of(new SimpleNameCached(null, "Reptilia", Rank.CLASS), chordata), MatchingMode.RELAXED, false));
     // unknown lower taxa are skipped
     assertHigher("ch", matcher.matchClassification(
-      List.of(new SimpleNameCached(null, "Dinosauria", Rank.ORDER), new SimpleNameCached(null, "Chordata", Rank.PHYLUM)), false));
-    assertFalse(matcher.matchClassification(List.of(), false).isMatch());
-    assertFalse(matcher.matchClassification(null, false).isMatch());
+      List.of(new SimpleNameCached(null, "Dinosauria", Rank.ORDER), chordata), MatchingMode.RELAXED, false));
+    assertFalse(matcher.matchClassification(List.of(), MatchingMode.RELAXED, false).isMatch());
+    assertFalse(matcher.matchClassification(null, MatchingMode.RELAXED, false).isMatch());
+    // a classification only gives a higher rank match, which STRICT never does
+    var reptiles = List.of(new SimpleNameCached(null, "Reptilia", Rank.CLASS));
+    assertFalse(matcher.matchClassification(reptiles, MatchingMode.STRICT, false).isMatch());
   }
 }
