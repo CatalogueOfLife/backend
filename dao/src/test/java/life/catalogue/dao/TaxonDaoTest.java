@@ -1,6 +1,8 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.model.TypeDesignation;
 import life.catalogue.api.model.TypeMaterial;
+import life.catalogue.api.vocab.TypeStatus;
 import life.catalogue.api.vocab.area.Country;
 
 import org.junit.Test;
@@ -13,16 +15,24 @@ public class TaxonDaoTest {
   @Test
   public void typeContent() {
     var tm = new TypeMaterial();
-    String x = TaxonDao.typeContent(tm);
+    var d = new TypeDesignation("n1", null, tm);
+    String x = TaxonDao.typeContent(d);
     assertEquals("", x);
 
     tm.setCollector("COL");
-    x = TaxonDao.typeContent(tm);
+    x = TaxonDao.typeContent(d);
     assertEquals("col|col", x);
 
     tm.setCountry(Country.GERMANY);
-    x = TaxonDao.typeContent(tm);
+    x = TaxonDao.typeContent(d);
     assertEquals("col|germany|col", x);
+
+    // the status is the designations, not the specimens
+    d.setStatus(TypeStatus.HOLOTYPE);
+    x = TaxonDao.typeContent(d);
+    assertEquals("col|holotype|germany|col", x);
+    // the name is not part of it
+    assertEquals(x, TaxonDao.typeContent(new TypeDesignation("n2", TypeStatus.HOLOTYPE, tm)));
   }
 
   @Test

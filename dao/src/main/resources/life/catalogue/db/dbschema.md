@@ -11,6 +11,52 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-14 type material typifies several names
+A type specimen can typify several names, each with its own type status, as ColDP allows with comma concatenated
+`nameID` and `status` values: https://github.com/CatalogueOfLife/backend/issues/1645
+The name links and their status move from `type_material` into the new partitioned `type_material_name` table.
+Two steps, as the old and the new app run side by side during a deploy.
+
+**1. Before the deploy.** Creates the link table with as many hash partitions as `type_material` has and copies the
+existing links. The old app keeps writing `type_material.name_id` and never sees the new table. `name_id` loses its
+NOT NULL here, as the new app inserts type material without it until step 2 drops the column.
+```sql
+CREATE TABLE type_material_name (
+  dataset_key INTEGER NOT NULL,
+  type_material_id TEXT NOT NULL,
+  name_id TEXT NOT NULL,
+  status TYPESTATUS,
+  PRIMARY KEY (dataset_key, type_material_id, name_id),
+  FOREIGN KEY (dataset_key, type_material_id) REFERENCES type_material ON DELETE CASCADE,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
+) PARTITION BY HASH (dataset_key);
+DO $$
+DECLARE
+  num INTEGER := (SELECT count(*) FROM pg_inherits WHERE inhparent = 'type_material'::regclass);
+BEGIN
+  FOR i IN 0..num-1 LOOP
+    EXECUTE format('CREATE TABLE type_material_name_mod%s PARTITION OF type_material_name FOR VALUES WITH (modulus %s, remainder %s)', i, num, i);
+  END LOOP;
+END $$;
+CREATE INDEX ON type_material_name (dataset_key, name_id);
+ALTER TABLE type_material ALTER COLUMN name_id DROP NOT NULL;
+
+INSERT INTO type_material_name (dataset_key, type_material_id, name_id, status)
+SELECT dataset_key, id, name_id, status FROM type_material;
+```
+
+**2. After the deploy**, once the old app is gone. Copies the links the old app wrote since step 1, then drops the
+old columns, which the new app neither reads nor writes. Type material the old app deleted in between takes its links
+with it through the cascade.
+```sql
+INSERT INTO type_material_name (dataset_key, type_material_id, name_id, status)
+SELECT dataset_key, id, name_id, status FROM type_material
+ON CONFLICT DO NOTHING;
+ALTER TABLE type_material DROP COLUMN name_id, DROP COLUMN status;
+```
+Existing copies of one specimen made per name are not merged; a re-import of a source that concatenates its name ids
+yields one specimen with all its names.
+
 #### 2026-10-12 placement conflict issue
 Imports flag accepted genera whose placement contradicts every genus of that name in the COL base release, e.g. a
 fungus filed under the plant family of its host, and the extended release merge no longer trusts their placement:

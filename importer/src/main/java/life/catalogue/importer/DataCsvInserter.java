@@ -321,11 +321,23 @@ public abstract class DataCsvInserter implements DataInserter {
       if (opt.isPresent()) {
         TypeMaterial tm = opt.get();
         tm.setVerbatimKey(rec.getId());
-        if (store.names().exists(tm.getNameId())) {
+        // keep the specimen for the names that exist
+        var names = new ArrayList<TypifiedName>();
+        for (var tn : tm.getNames()) {
+          if (store.names().exists(tn.getNameId())) {
+            names.add(tn);
+          } else {
+            rec.add(Issue.NAME_ID_INVALID);
+          }
+        }
+        if (tm.getNames().isEmpty()) {
+          rec.add(Issue.NAME_ID_INVALID);
+        }
+        if (!names.isEmpty()) {
+          tm.setNames(names);
           store.typeMaterial().create(tm);
           return true;
         }
-        rec.add(Issue.NAME_ID_INVALID);
       }
       return false;
     });

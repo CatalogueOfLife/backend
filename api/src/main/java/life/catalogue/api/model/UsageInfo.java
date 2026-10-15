@@ -33,7 +33,7 @@ public class UsageInfo {
   /**
    * Lookup of types for a given nameID
    */
-  private Map<String, List<TypeMaterial>> typeMaterial = new HashMap<>();
+  private Map<String, List<TypeDesignation>> typeMaterial = new HashMap<>();
 
   /**
    * Lookup of referenceID to reference so the same reference can be shared across different objects
@@ -225,15 +225,15 @@ public class UsageInfo {
     this.decisions = decisions;
   }
 
-  public List<TypeMaterial> getTypeMaterial(String nameID) {
+  public List<TypeDesignation> getTypeMaterial(String nameID) {
     return typeMaterial.getOrDefault(nameID, Collections.emptyList());
   }
 
-  public Map<String, List<TypeMaterial>> getTypeMaterial() {
+  public Map<String, List<TypeDesignation>> getTypeMaterial() {
     return typeMaterial;
   }
 
-  public void setTypeMaterial(Map<String, List<TypeMaterial>> typeMaterial) {
+  public void setTypeMaterial(Map<String, List<TypeDesignation>> typeMaterial) {
     this.typeMaterial = typeMaterial;
   }
 

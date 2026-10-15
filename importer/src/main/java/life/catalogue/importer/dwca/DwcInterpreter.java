@@ -421,8 +421,7 @@ public class DwcInterpreter extends InterpreterBase {
       if (status.isPresent()) {
         TypeMaterial m = new TypeMaterial();
         m.setId(rec.getRaw(DwcTerm.occurrenceID));
-        m.setNameId(taxonID(rec)); // needs to point to a Name.ID !!!
-        m.setStatus(status.get());
+        m.addName(taxonID(rec), status.get()); // needs to point to a Name.ID !!!
         m.setCitation(rec.get(DwcTerm.verbatimLabel));
         m.setLocality(rec.get(DwcTerm.locality));
         m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(DwcTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));

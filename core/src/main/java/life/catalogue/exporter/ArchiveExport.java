@@ -464,10 +464,14 @@ public abstract class ArchiveExport extends DatasetExportJob {
               }
             });
           } else {
+            // a type specimen can typify names of different batches
+            Set<Object> written = new HashSet<>();
             for (List<String> batch : batches(nameIDs)) {
               checkIfCancelledRuntime();
               for (T x : mapper.listByNames(datasetKey, batch)) {
-                writeRelation(x, consumer);
+                if (written.add(x.getId())) {
+                  writeRelation(x, consumer);
+                }
               }
             }
           }

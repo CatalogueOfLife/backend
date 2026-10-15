@@ -51,6 +51,7 @@ public interface DatasetPartitionMapper {
       "name_rel",
       "name_match",
       "type_material",
+      "type_material_name",
       "name_usage",
       "taxon_concept_rel",
       "species_interaction",

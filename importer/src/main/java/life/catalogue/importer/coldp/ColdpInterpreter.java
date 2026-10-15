@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
@@ -39,6 +41,7 @@ public class ColdpInterpreter extends InterpreterBase {
   private static final EnumNote<TaxonomicStatus> SYN_NOTE = new EnumNote<>(TaxonomicStatus.SYNONYM, null);
   private static final EnumNote<TaxonomicStatus> ACC_NOTE = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings(); // for multi value ID fields
+  private static final Splitter TRIMMED_COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
 
   ColdpInterpreter(DatasetSettings settings, MappingInfos metadata, ReferenceFactory refFactory, ImportStore store) {
     super(settings, refFactory, store, true);
@@ -198,9 +201,8 @@ public class ColdpInterpreter extends InterpreterBase {
   Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
     TypeMaterial m = new TypeMaterial();
     m.setId(rec.getRaw(ColdpTerm.ID));
-    m.setNameId(rec.getRaw(ColdpTerm.nameID));
+    interpretTypifiedNames(m, rec);
     m.setCitation(rec.get(ColdpTerm.citation));
-    m.setStatus(SafeParser.parse(TypeStatusParser.PARSER, rec.get(ColdpTerm.status)).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec));
     m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(ColdpTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
     m.setLocality(rec.get(ColdpTerm.locality));
     m.setLatitude(rec.get(ColdpTerm.latitude));
@@ -222,6 +224,43 @@ public class ColdpInterpreter extends InterpreterBase {
     m.setRemarks(getRemarks(rec));
     setReference(m, rec);
     return Optional.of(m);
+  }
+
+  /**
+   * ColDP allows several comma concatenated name ids for a specimen,
+   * with a single status for all of them or a comma concatenated status per name in the same order.
+   * Whether the names exist is checked by the inserter.
+   */
+  private void interpretTypifiedNames(TypeMaterial m, VerbatimRecord rec) {
+    String raw = rec.getRaw(ColdpTerm.nameID);
+    if (StringUtils.isBlank(raw)) {
+      return;
+    }
+    final List<String> nameIDs;
+    if (store.names().exists(raw)) {
+      // a single id which might well contain a comma
+      nameIDs = List.of(raw);
+    } else {
+      nameIDs = TRIMMED_COMMA_SPLITTER.splitToStream(raw).distinct().toList();
+    }
+    String status = rec.get(ColdpTerm.status);
+    List<String> statusValues = nameIDs.size() > 1 && status != null ? Splitter.on(',').trimResults().splitToList(status) : null;
+    if (statusValues == null || statusValues.size() == 1) {
+      // a single value applies to all names
+      TypeStatus ts = parseTypeStatus(status, rec);
+      nameIDs.forEach(id -> m.addName(id, ts));
+    } else {
+      if (statusValues.size() != nameIDs.size()) {
+        rec.add(Issue.TYPE_STATUS_INVALID);
+      }
+      for (int i = 0; i < nameIDs.size(); i++) {
+        m.addName(nameIDs.get(i), i < statusValues.size() ? parseTypeStatus(statusValues.get(i), rec) : TypeStatus.OTHER);
+      }
+    }
+  }
+
+  private static TypeStatus parseTypeStatus(String status, VerbatimRecord rec) {
+    return SafeParser.parse(TypeStatusParser.PARSER, status).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec);
   }
 
   List<VernacularName> interpretVernacular(VerbatimRecord rec) {

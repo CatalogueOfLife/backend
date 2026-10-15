@@ -1,0 +1,6 @@
+ID	parentID	status	rank	scientificName	authorship	code
+g1		accepted	genus	Abies	Mill.	ICN
+n1	g1	accepted	species	Abies alba	Mill.	ICN
+n2	n1	synonym	species	Picea alba	(Mill.) Link	ICN
+n3	g1	accepted	species	Abies nova	Link	ICN
+n,4	g1	accepted	species	Abies comma	Link	ICN

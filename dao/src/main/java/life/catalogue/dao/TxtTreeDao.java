@@ -307,7 +307,8 @@ public class TxtTreeDao {
         var tm = session.getMapper(TypeMaterialMapper.class);
         for (var m : tu.typeMaterial) {
           fill(m, datasetKey, user);
-          m.setNameId(n.getId());
+          // the interpreter knows the status, but not the name yet
+          m.getNames().forEach(tn -> tn.setNameId(n.getId()));
           tm.create(m);
         }
       }
