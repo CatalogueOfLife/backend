@@ -1,0 +1,507 @@
+{
+    "synonym": true,
+    "usage":
+    {
+        "key": "B2DHN",
+        "name": "Polygala vulgaris var. confusa Fiori",
+        "canonicalName": "Polygala vulgaris confusa",
+        "authorship": "Fiori",
+        "rank": "VARIETY",
+        "code": "BOTANICAL",
+        "genus": "Polygala",
+        "specificEpithet": "vulgaris",
+        "infraspecificEpithet": "confusa",
+        "candidatus": false,
+        "type": "SCIENTIFIC",
+        "extinct": false,
+        "combinationAuthorship":
+        {
+            "authors":
+            [
+                "Fiori"
+            ]
+        },
+        "doubtful": false,
+        "manuscript": false,
+        "warnings":
+        [],
+        "trinomial": false,
+        "abbreviated": false,
+        "autonym": false,
+        "binomial": false,
+        "incomplete": false,
+        "indetermined": false,
+        "phraseName": false
+    },
+    "acceptedUsage":
+    {
+        "key": "5KKQ6",
+        "name": "Polygala vulgaris subsp. insubrica (Chodat) Arrigoni",
+        "canonicalName": "Polygala vulgaris insubrica",
+        "authorship": "(Chodat) Arrigoni",
+        "rank": "SUBSPECIES",
+        "code": "BOTANICAL",
+        "genus": "Polygala",
+        "specificEpithet": "vulgaris",
+        "infraspecificEpithet": "insubrica",
+        "candidatus": false,
+        "type": "SCIENTIFIC",
+        "extinct": false,
+        "combinationAuthorship":
+        {
+            "authors":
+            [
+                "Arrigoni"
+            ]
+        },
+        "basionymAuthorship":
+        {
+            "authors":
+            [
+                "Chodat"
+            ]
+        },
+        "doubtful": false,
+        "manuscript": false,
+        "warnings":
+        [],
+        "trinomial": false,
+        "abbreviated": false,
+        "autonym": false,
+        "binomial": false,
+        "incomplete": false,
+        "indetermined": false,
+        "phraseName": false
+    },
+    "classification":
+    [
+        {
+            "key": "5T6MX",
+            "name": "Biota",
+            "rank": "UNRANKED"
+        },
+        {
+            "key": "P",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+        },
+        {
+            "key": "TP",
+            "name": "Tracheophyta",
+            "rank": "PHYLUM"
+        },
+        {
+            "key": "MG",
+            "name": "Magnoliopsida",
+            "rank": "CLASS"
+        },
+        {
+            "key": "383",
+            "name": "Fabales",
+            "rank": "ORDER"
+        },
+        {
+            "key": "627KC",
+            "name": "Polygalaceae",
+            "rank": "FAMILY"
+        },
+        {
+            "key": "63NFF",
+            "name": "Polygala",
+            "rank": "GENUS"
+        },
+        {
+            "key": "4L8K5",
+            "name": "Polygala vulgaris",
+            "rank": "SPECIES"
+        },
+        {
+            "key": "5KKQ6",
+            "name": "Polygala vulgaris insubrica",
+            "rank": "SUBSPECIES"
+        }
+    ],
+    "diagnostics":
+    {
+        "matchType": "VARIANT",
+        "confidence": 94,
+        "status": "SYNONYM",
+        "note": "Similarity: name=93; authorship=0; classification=34; rank=-30; status=0; score=97; nextMatch=5",
+        "timeTaken": 92,
+        "alternatives":
+        [
+            {
+                "synonym": true,
+                "usage":
+                {
+                    "key": "9ZKFJ",
+                    "name": "Polygala vulgaris var. comosa (Schkuhr) Regel",
+                    "canonicalName": "Polygala vulgaris comosa",
+                    "authorship": "(Schkuhr) Regel",
+                    "rank": "VARIETY",
+                    "code": "BOTANICAL",
+                    "genus": "Polygala",
+                    "specificEpithet": "vulgaris",
+                    "infraspecificEpithet": "comosa",
+                    "candidatus": false,
+                    "type": "SCIENTIFIC",
+                    "extinct": false,
+                    "combinationAuthorship":
+                    {
+                        "authors":
+                        [
+                            "Regel"
+                        ]
+                    },
+                    "basionymAuthorship":
+                    {
+                        "authors":
+                        [
+                            "Schkuhr"
+                        ]
+                    },
+                    "doubtful": false,
+                    "manuscript": false,
+                    "warnings":
+                    [],
+                    "trinomial": false,
+                    "abbreviated": false,
+                    "autonym": false,
+                    "binomial": false,
+                    "incomplete": false,
+                    "indetermined": false,
+                    "phraseName": false
+                },
+                "acceptedUsage":
+                {
+                    "key": "5KKMX",
+                    "name": "Polygala comosa subsp. comosa",
+                    "canonicalName": "Polygala comosa comosa",
+                    "rank": "SUBSPECIES",
+                    "code": "BOTANICAL",
+                    "genus": "Polygala",
+                    "specificEpithet": "comosa",
+                    "infraspecificEpithet": "comosa",
+                    "candidatus": false,
+                    "type": "SCIENTIFIC",
+                    "extinct": false,
+                    "doubtful": false,
+                    "manuscript": false,
+                    "warnings":
+                    [],
+                    "trinomial": false,
+                    "abbreviated": false,
+                    "autonym": false,
+                    "binomial": false,
+                    "incomplete": false,
+                    "indetermined": false,
+                    "phraseName": false
+                },
+                "classification":
+                [
+                    {
+                        "key": "5T6MX",
+                        "name": "Biota",
+                        "rank": "UNRANKED"
+                    },
+                    {
+                        "key": "P",
+                        "name": "Plantae",
+                        "rank": "KINGDOM"
+                    },
+                    {
+                        "key": "TP",
+                        "name": "Tracheophyta",
+                        "rank": "PHYLUM"
+                    },
+                    {
+                        "key": "MG",
+                        "name": "Magnoliopsida",
+                        "rank": "CLASS"
+                    },
+                    {
+                        "key": "383",
+                        "name": "Fabales",
+                        "rank": "ORDER"
+                    },
+                    {
+                        "key": "627KC",
+                        "name": "Polygalaceae",
+                        "rank": "FAMILY"
+                    },
+                    {
+                        "key": "63NFF",
+                        "name": "Polygala",
+                        "rank": "GENUS"
+                    },
+                    {
+                        "key": "4L7D6",
+                        "name": "Polygala comosa",
+                        "rank": "SPECIES"
+                    },
+                    {
+                        "key": "5KKMX",
+                        "name": "Polygala comosa comosa",
+                        "rank": "SUBSPECIES"
+                    }
+                ],
+                "diagnostics":
+                {
+                    "matchType": "VARIANT",
+                    "confidence": 9,
+                    "status": "SYNONYM",
+                    "note": "Similarity: name=5; authorship=0; classification=34; rank=-30; status=0; score=9",
+                    "timeTaken": 0
+                }
+            },
+            {
+                "synonym": true,
+                "usage":
+                {
+                    "key": "94FQG",
+                    "name": "Polygala vulgaris var. comosa (Schkuhr) Döll",
+                    "canonicalName": "Polygala vulgaris comosa",
+                    "authorship": "(Schkuhr) Döll",
+                    "rank": "VARIETY",
+                    "code": "BOTANICAL",
+                    "genus": "Polygala",
+                    "specificEpithet": "vulgaris",
+                    "infraspecificEpithet": "comosa",
+                    "candidatus": false,
+                    "type": "SCIENTIFIC",
+                    "extinct": false,
+                    "combinationAuthorship":
+                    {
+                        "authors":
+                        [
+                            "Döll"
+                        ]
+                    },
+                    "basionymAuthorship":
+                    {
+                        "authors":
+                        [
+                            "Schkuhr"
+                        ]
+                    },
+                    "doubtful": false,
+                    "manuscript": false,
+                    "warnings":
+                    [],
+                    "trinomial": false,
+                    "abbreviated": false,
+                    "autonym": false,
+                    "binomial": false,
+                    "incomplete": false,
+                    "indetermined": false,
+                    "phraseName": false
+                },
+                "acceptedUsage":
+                {
+                    "key": "5KKMX",
+                    "name": "Polygala comosa subsp. comosa",
+                    "canonicalName": "Polygala comosa comosa",
+                    "rank": "SUBSPECIES",
+                    "code": "BOTANICAL",
+                    "genus": "Polygala",
+                    "specificEpithet": "comosa",
+                    "infraspecificEpithet": "comosa",
+                    "candidatus": false,
+                    "type": "SCIENTIFIC",
+                    "extinct": false,
+                    "doubtful": false,
+                    "manuscript": false,
+                    "warnings":
+                    [],
+                    "trinomial": false,
+                    "abbreviated": false,
+                    "autonym": false,
+                    "binomial": false,
+                    "incomplete": false,
+                    "indetermined": false,
+                    "phraseName": false
+                },
+                "classification":
+                [
+                    {
+                        "key": "5T6MX",
+                        "name": "Biota",
+                        "rank": "UNRANKED"
+                    },
+                    {
+                        "key": "P",
+                        "name": "Plantae",
+                        "rank": "KINGDOM"
+                    },
+                    {
+                        "key": "TP",
+                        "name": "Tracheophyta",
+                        "rank": "PHYLUM"
+                    },
+                    {
+                        "key": "MG",
+                        "name": "Magnoliopsida",
+                        "rank": "CLASS"
+                    },
+                    {
+                        "key": "383",
+                        "name": "Fabales",
+                        "rank": "ORDER"
+                    },
+                    {
+                        "key": "627KC",
+                        "name": "Polygalaceae",
+                        "rank": "FAMILY"
+                    },
+                    {
+                        "key": "63NFF",
+                        "name": "Polygala",
+                        "rank": "GENUS"
+                    },
+                    {
+                        "key": "4L7D6",
+                        "name": "Polygala comosa",
+                        "rank": "SPECIES"
+                    },
+                    {
+                        "key": "5KKMX",
+                        "name": "Polygala comosa comosa",
+                        "rank": "SUBSPECIES"
+                    }
+                ],
+                "diagnostics":
+                {
+                    "matchType": "VARIANT",
+                    "confidence": 9,
+                    "status": "SYNONYM",
+                    "note": "Similarity: name=5; authorship=0; classification=34; rank=-30; status=0; score=9",
+                    "timeTaken": 0
+                }
+            },
+            {
+                "synonym": true,
+                "usage":
+                {
+                    "key": "5KKQ4",
+                    "name": "Polygala vulgaris subsp. comosa (Schkuhr) Celak.",
+                    "canonicalName": "Polygala vulgaris comosa",
+                    "authorship": "(Schkuhr) Celak.",
+                    "rank": "SUBSPECIES",
+                    "code": "BOTANICAL",
+                    "genus": "Polygala",
+                    "specificEpithet": "vulgaris",
+                    "infraspecificEpithet": "comosa",
+                    "candidatus": false,
+                    "type": "SCIENTIFIC",
+                    "extinct": false,
+                    "combinationAuthorship":
+                    {
+                        "authors":
+                        [
+                            "Celak."
+                        ]
+                    },
+                    "basionymAuthorship":
+                    {
+                        "authors":
+                        [
+                            "Schkuhr"
+                        ]
+                    },
+                    "doubtful": false,
+                    "manuscript": false,
+                    "warnings":
+                    [],
+                    "trinomial": false,
+                    "abbreviated": false,
+                    "autonym": false,
+                    "binomial": false,
+                    "incomplete": false,
+                    "indetermined": false,
+                    "phraseName": false
+                },
+                "acceptedUsage":
+                {
+                    "key": "5KKMX",
+                    "name": "Polygala comosa subsp. comosa",
+                    "canonicalName": "Polygala comosa comosa",
+                    "rank": "SUBSPECIES",
+                    "code": "BOTANICAL",
+                    "genus": "Polygala",
+                    "specificEpithet": "comosa",
+                    "infraspecificEpithet": "comosa",
+                    "candidatus": false,
+                    "type": "SCIENTIFIC",
+                    "extinct": false,
+                    "doubtful": false,
+                    "manuscript": false,
+                    "warnings":
+                    [],
+                    "trinomial": false,
+                    "abbreviated": false,
+                    "autonym": false,
+                    "binomial": false,
+                    "incomplete": false,
+                    "indetermined": false,
+                    "phraseName": false
+                },
+                "classification":
+                [
+                    {
+                        "key": "5T6MX",
+                        "name": "Biota",
+                        "rank": "UNRANKED"
+                    },
+                    {
+                        "key": "P",
+                        "name": "Plantae",
+                        "rank": "KINGDOM"
+                    },
+                    {
+                        "key": "TP",
+                        "name": "Tracheophyta",
+                        "rank": "PHYLUM"
+                    },
+                    {
+                        "key": "MG",
+                        "name": "Magnoliopsida",
+                        "rank": "CLASS"
+                    },
+                    {
+                        "key": "383",
+                        "name": "Fabales",
+                        "rank": "ORDER"
+                    },
+                    {
+                        "key": "627KC",
+                        "name": "Polygalaceae",
+                        "rank": "FAMILY"
+                    },
+                    {
+                        "key": "63NFF",
+                        "name": "Polygala",
+                        "rank": "GENUS"
+                    },
+                    {
+                        "key": "4L7D6",
+                        "name": "Polygala comosa",
+                        "rank": "SPECIES"
+                    },
+                    {
+                        "key": "5KKMX",
+                        "name": "Polygala comosa comosa",
+                        "rank": "SUBSPECIES"
+                    }
+                ],
+                "diagnostics":
+                {
+                    "matchType": "VARIANT",
+                    "confidence": 9,
+                    "status": "SYNONYM",
+                    "note": "Similarity: name=5; authorship=0; classification=34; rank=-30; status=0; score=9",
+                    "timeTaken": 0
+                }
+            }
+        ]
+    }
+}

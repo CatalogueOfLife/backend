@@ -78,6 +78,7 @@ import life.catalogue.release.PublisherChangeListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.legacy.LegacyWebserviceResource;
+import life.catalogue.resources.matching.DatasetGbifMatchResource;
 import life.catalogue.resources.matching.openrefine.DefaultReconciliationResource;
 import life.catalogue.resources.matching.openrefine.ReconciliationResource;
 import life.catalogue.resources.parser.ResolverResource;
@@ -496,6 +497,8 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetBreakdownResource(tdao));
     j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
     j.register(new NameUsageMatchingResource(cfg.matching, executor, getSqlSessionFactory(), matcherFactory));
+    // GBIF v2 species match, only over persistent matcher stores
+    j.register(new DatasetGbifMatchResource(matcherFactory, getSqlSessionFactory()));
     // OpenRefine reconciliation service over the name matcher (dataset-scoped + default COL backbone)
     j.register(new ReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, cfg.getApiUri(), cfg.clbURI));
     j.register(new DefaultReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, coljersey.getCache(), cfg.getApiUri(), cfg.clbURI));

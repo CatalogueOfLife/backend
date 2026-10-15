@@ -225,7 +225,10 @@ public class UsageMatcher implements AutoCloseable {
     // dedupe by rank, explicit classification wins over derived names
     Map<Rank, SimpleNameCached> byRank = new HashMap<>();
     for (var p : classification) {
-      if (isHigher(p.getRank(), origRank)) {
+      // another name at the very rank of the query is where the source places it, Dinosauria [class] in class Reptilia
+      boolean sameRankOtherName = origRank != null && p.getRank() == origRank && p.getName() != null
+        && !p.getName().equalsIgnoreCase(snc.getName());
+      if (isHigher(p.getRank(), origRank) || sameRankOtherName) {
         byRank.putIfAbsent(p.getRank(), p);
       }
     }
@@ -248,16 +251,20 @@ public class UsageMatcher implements AutoCloseable {
   }
 
   /**
-   * Derives the genus and, for infraspecific names, the species from a bi- or trinomial name.
+   * Derives the genus and, for infraspecific names, the species from a bi- or trinomial name,
+   * also from indetermined ones like Xysticus sp. or Panthera pardus ssp.
    * @return a map of rank to the derived uninomial/binomial name, empty if the name is not a bi/trinomial
    */
   private Map<Rank, SimpleNameCached> derivedHigherNames(SimpleNameClassified<SimpleNameCached> snc) {
     var opt = NameParser.PARSER.parse(snc);
     if (opt.isPresent()) {
       var n = opt.get().getName();
-      if (n.getGenus() != null && n.getSpecificEpithet() != null) {
+      // an indetermined name lacks its lowest epithet, Xysticus sp. or Panthera pardus ssp.
+      boolean indet = n.getRank() != null && n.getRank().isSpeciesOrBelow()
+        && (n.getSpecificEpithet() == null || n.getRank().isInfraspecific() && n.getInfraspecificEpithet() == null);
+      if (n.getGenus() != null && (n.getSpecificEpithet() != null || indet)) {
         Map<Rank, SimpleNameCached> map = new HashMap<>();
-        if (n.getInfraspecificEpithet() != null) {
+        if (n.getSpecificEpithet() != null && (n.getInfraspecificEpithet() != null || indet)) {
           map.put(Rank.SPECIES, derivedName(n.getGenus() + " " + n.getSpecificEpithet(), Rank.SPECIES, snc.getCode()));
         }
         map.put(Rank.GENUS, derivedName(n.getGenus(), Rank.GENUS, snc.getCode()));

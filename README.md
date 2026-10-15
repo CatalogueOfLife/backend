@@ -69,7 +69,7 @@ The same jar provides several Dropwizard applications:
 |---|---|
 | `WsServer` | The main read/write server with imports, syncs, releases and exports. The jar's default main class |
 | `WsROServer` | A read-only server for the public API, run next to `WsServer` in production |
-| `WsMatchingServer` | A standalone name matching service for a single dataset, see the `matchingServerBuild` command |
+| `WsMatchingServer` | A standalone name matching service for a single dataset, see the `matchingServerBuild` command. Also serves the GBIF v2 species match API, see [GBIF-MATCH.md](docs/GBIF-MATCH.md) |
 | `WsBundleServer` | Serves a single release from its own Postgres & Elasticsearch, see [BUNDLE.md](docs/BUNDLE.md) |
 
 Start any but the default one with `java -cp target/webservice-*-SNAPSHOT.jar life.catalogue.WsROServer server config.yml`.
