@@ -289,7 +289,31 @@ public class UsageMatcher implements AutoCloseable {
     return r.higherThan(ref);
   }
 
+  /**
+   * Above genus a name keeps its identity across the ranks of its major group: Osteichthyes is a class in one
+   * classification and a parvphylum in another, Bacteria a kingdom, superkingdom or domain, and a family group name
+   * moves between family, subfamily and tribe. Two concrete ranks of the same group therefore do not differ.
+   * The groups are the ranks above the family group and the family group itself. Genus group, species and
+   * infraspecific ranks stay strict, as the same name there often is a different taxon:
+   * a nominotypical subgenus, a species aggregate or a variety next to a subspecies.
+   * A candidate of the exact rank still wins, see the strict tie-break in filterCandidates.
+   * See https://github.com/CatalogueOfLife/backend/issues/1658 and https://github.com/CatalogueOfLife/backend/issues/1659
+   */
+  @VisibleForTesting
+  static boolean sameSupragenericGroup(Rank r1, Rank r2) {
+    if (r1 == null || r2 == null || r1.isUncomparable() || r2.isUncomparable()) {
+      return false;
+    }
+    if (r1.isFamilyGroup() || r2.isFamilyGroup()) {
+      return r1.isFamilyGroup() && r2.isFamilyGroup();
+    }
+    return r1.isSuprageneric() && r2.isSuprageneric();
+  }
+
   private static boolean ranksDiffer(Rank r1, Supplier<Optional<Rank>> r1pSupplier, Rank r2, List<SimpleNameCached> r2parents) {
+    if (sameSupragenericGroup(r1, r2)) {
+      return false;
+    }
     var eq = RankComparator.compare(r1, r2);
     if (eq == Equality.UNKNOWN) {
       if (r1 == Rank.UNRANKED || r2 == Rank.UNRANKED) {

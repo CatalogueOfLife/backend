@@ -234,4 +234,22 @@ public class OpenRefineMapperTest {
     assertEquals("Puma concolor", queries.get("q0").query);
     assertEquals(Integer.valueOf(3), queries.get("q1").limit);
   }
+
+  @Test
+  public void otherRankLowersTheScore() {
+    // Osteichthyes asked for as a class, held as a parvphylum
+    var usage = name("1", Rank.PARVPHYLUM, "Osteichthyes", null);
+    var result = OpenRefineMapper.toResult(name(null, Rank.CLASS, "Osteichthyes", null), UsageMatch.match(MatchType.EXACT, usage, 3, null));
+    assertEquals(95.0, result.result.get(0).score, 0.0001);
+    assertFalse("a rank-differing match must not auto-match", result.result.get(0).match);
+
+    // subclass vs class share their major rank
+    usage = name("2", Rank.CLASS, "Copepoda", null);
+    result = OpenRefineMapper.toResult(name(null, Rank.SUBCLASS, "Copepoda", null), UsageMatch.match(MatchType.VARIANT, usage, 3, null));
+    assertEquals(96.0, result.result.get(0).score, 0.0001);
+
+    // a higher rank match differs in rank by definition
+    assertEquals(50.0, OpenRefineMapper.score(MatchType.HIGHERRANK, Rank.SPECIES, Rank.GENUS), 0.0001);
+    assertEquals(100.0, OpenRefineMapper.score(MatchType.EXACT, Rank.UNRANKED, Rank.GENUS), 0.0001);
+  }
 }

@@ -35,6 +35,19 @@ public class RankComparator {
     return Equality.DIFFERENT;
   }
 
+  /**
+   * Points to take off a match score when the matched usage has another concrete rank than the query asked for,
+   * which the matcher allows within the major rank groups above genus.
+   * @return 0 for the same, a missing or a vague rank, 2 for ranks sharing their major rank (subclass and class),
+   *         5 for any other concrete rank (phylum and class, kingdom and domain)
+   */
+  public static int scorePenalty(@Nullable Rank query, @Nullable Rank usage) {
+    if (query == null || usage == null || query == usage || query.isUncomparable() || usage.isUncomparable()) {
+      return 0;
+    }
+    return query.getMajorRank() == usage.getMajorRank() ? 2 : 5;
+  }
+
   public static Equality compareVagueRanks(Rank vague, Rank r2) {
     switch (vague) {
       case SUPRAGENERIC_NAME:
