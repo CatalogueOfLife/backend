@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
  */
 public class UsageMatcherGroupConflictTest {
   static final Map<String, Integer> NIDX = Map.of(
-    "Tripos", 10, "Tripos furca", 11, "Bracon hebetor", 20, "Duplex simplex", 30, "Capillaria", 40
+    "Tripos", 10, "Tripos furca", 11, "Bracon hebetor", 20, "Duplex simplex", 30, "Capillaria", 40, "Gryllus campestris", 50
   );
   UsageMatcher matcher;
 
@@ -42,12 +42,15 @@ public class UsageMatcherGroupConflictTest {
     add(store, "hym", "Hymenoptera", Rank.ORDER, "ins", null);
     add(store, "bh", "Bracon hebetor", Rank.SPECIES, "hym", "Say, 1836");
     add(store, "dsa", "Duplex simplex", Rank.SPECIES, "hym", "Smith, 1900");
+    add(store, "gc", "Gryllus campestris", Rank.SPECIES, "hym", "Linnaeus, 1758");
 
     add(store, "ch", "Chromista", Rank.KINGDOM, null, null);
     add(store, "mio", "Miozoa", Rank.PHYLUM, "ch", null);
     add(store, "tri", "Tripos", Rank.GENUS, "mio", "Bory de Saint-Vincent, 1823");
     add(store, "trf", "Tripos furca", Rank.SPECIES, "tri", "(Ehrenberg) F.Gómez, 2013");
     add(store, "dsp", "Duplex simplex", Rank.SPECIES, "mio", "Jones, 1950");
+    // a misplaced duplicate of the cricket, written like the query
+    add(store, "gcx", "Gryllus campestris", Rank.SPECIES, "mio", "Linnaeus 1758");
 
     add(store, "fu", "Fungi", Rank.KINGDOM, null, null);
     add(store, "asc", "Ascomycota", Rank.PHYLUM, "fu", null);
@@ -115,6 +118,17 @@ public class UsageMatcherGroupConflictTest {
     assertFalse(match(mode, "Tripos", "Bory de Saint-Vincent, 1823", kingdom("Animalia")).isMatch());
     // and never a different authorship
     assertFalse(match(mode, "Bracon hebetor", "L.", kingdom("Plantae")).isMatch());
+    equalAuthorshipOnlyRescues(mode);
+  }
+
+  /**
+   * An equal authorship only rescues a usage of another group if no usage of a compatible group is left,
+   * so a misplaced duplicate never wins over the usage in place.
+   */
+  void equalAuthorshipOnlyRescues(MatchingMode mode) {
+    var insects = new SimpleNameCached(null, "Insecta", Rank.CLASS);
+    assertMatch("gc", match(mode, "Gryllus campestris", "Linnaeus 1758", kingdom("Animalia"), insects));
+    assertMatch("gc", match(mode, "Gryllus campestris", "Linnaeus, 1758", kingdom("Animalia"), insects));
   }
 
   @Test
@@ -128,6 +142,7 @@ public class UsageMatcherGroupConflictTest {
     // a candidate of a compatible group wins over one of a conflicting group
     assertMatch("dsa", match(MatchingMode.RELAXED, "Duplex simplex", null, kingdom("Animalia")));
     assertMatch("dsp", match(MatchingMode.RELAXED, "Duplex simplex", null, kingdom("Chromista"), new SimpleNameCached(null, "Miozoa", Rank.PHYLUM)));
+    equalAuthorshipOnlyRescues(MatchingMode.RELAXED);
   }
 
   @Test

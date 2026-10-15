@@ -984,7 +984,7 @@ public class UsageMatcher implements AutoCloseable {
    */
   private enum GroupFit {
     COMPATIBLE,
-    /** a conflicting group that only loses against compatible candidates, in matching that writes nothing */
+    /** a conflicting group that is only kept if no candidate of a compatible group is left */
     SOFT,
     CONFLICT
   }
@@ -992,8 +992,10 @@ public class UsageMatcher implements AutoCloseable {
   /**
    * A bi- or trinomial with an equal authorship is the same name, whatever group its placement suggests: real homonyms
    * across groups, the wasp Agathis montana Shestakov and the plant Agathis montana de Laub., have different authors.
-   * That generalises https://github.com/CatalogueOfLife/backend/issues/1430 and applies to merges too.
-   * Relaxed groups only ever soften a conflict, see {@link #match(SimpleNameClassified, MatchingMode, boolean)}.
+   * So it is no conflict, but only a rescue for when no candidate of a compatible group is left - a misplaced duplicate
+   * must never win over the usage in place. That generalises https://github.com/CatalogueOfLife/backend/issues/1430
+   * and applies to merges too. Relaxed groups only ever soften a conflict, see
+   * {@link #match(SimpleNameClassified, MatchingMode, boolean)}.
    */
   private GroupFit groupFit(TaxGroup group, SimpleNameClassified<SimpleNameCached> nu, SimpleNameClassified<SimpleNameCached> candidate,
                             boolean relaxedGroups) {
@@ -1006,7 +1008,7 @@ public class UsageMatcher implements AutoCloseable {
     }
     final boolean multinomial = isBiOrTrinomial(nu, candidate);
     if (multinomial && equalAuthorship(candidate, nu)) {
-      return GroupFit.COMPATIBLE;
+      return GroupFit.SOFT;
     }
     if (relaxedGroups && !differentAuthorship(candidate, nu) && ((multinomial && isTopLevel(group)) || group.overlaps(candidateGroup))) {
       return GroupFit.SOFT;

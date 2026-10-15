@@ -35,7 +35,10 @@ and only matching that writes nothing gets more lenient.
 Two rules:
 
 1. **Everywhere, merges included.** A bi- or trinomial whose authorship compares EQUAL (`AuthorComparator`) to the
-   candidate's is the same name, whatever group its placement suggests.
+   candidate's is the same name, whatever group its placement suggests. It only rescues the candidate, though: a
+   candidate of a compatible group still wins. Without that, a DOUBTFUL duplicate of *Gryllus campestris* Linnæus,
+   1758, misplaced into another group, beat the accepted cricket on the label tie-break. So rule 1 changes nothing
+   wherever a compatible candidate exists.
    - Real homonyms of bi- and trinomials across groups have different authors: the wasp *Agathis montana* Shestakov
      and the plant *Agathis montana* de Laub., the gastropod *Ficus variegata* Röding and the plant *Ficus variegata*
      Blume.
@@ -103,6 +106,17 @@ with Ascomycetes: two specific groups contradict. `isDisparateTo` is unchanged.
   the writing ones.
 
 ## Outcome
+
+- **Replay against release 315557.** Every differing row of the ≥10 occurrence GBIF impact run was replayed, plus
+  every 20th row that already agreed with GBIF.
+  - Results before the rescue-only fix of rule 1:
+    - 1,631 inputs / 277k occurrences that GBIF matched in another kingdom now give the same usage as GBIF.
+    - A further ~1,200 inputs / ~150k occurrences moved to the same usage, partly through the epithet fix of d51aa7e68.
+    - Of the agreeing sample, 16 of 328,771 rows changed.
+  - Some of those 16 were plants filed under Animalia, now matching the plant where GBIF stops at the kingdom.
+  - Others exposed misplacements in the release itself: *Leishmania tropica*, *Trypanosoma cruzi* and the gregarine
+    *Psychodiella* sit under Hexapoda there. RELAXED matching now finds those usages by name through the
+    Protists ~ Animals overlap, where GBIF falls back to the genus or family.
 
 - **Known GBIF difference.** The two `Known.KINGDOM` cases of the ported matching-ws tests stay marked, but the reason
   turned around. *Puma concolor* with `kingdom=Plantae` now matches the cat in RELAXED mode, while GBIF's fixture
