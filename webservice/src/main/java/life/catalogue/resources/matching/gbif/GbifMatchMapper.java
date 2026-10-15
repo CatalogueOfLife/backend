@@ -9,6 +9,8 @@ import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.resources.matching.openrefine.OpenRefineMapper;
 
+import org.gbif.nameparser.api.Rank;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +44,7 @@ public class GbifMatchMapper {
     } else {
       gm.diagnostics.matchType = gbifType(MatchType.NONE);
     }
-    gm.diagnostics.confidence = confidence(type);
+    gm.diagnostics.confidence = confidence(type, query == null ? null : query.getRank(), m != null && m.isMatch() ? m.usage.getRank() : null);
     if (gm.diagnostics.matchType == null || !gm.diagnostics.matchType.equals(type.name())) {
       gm.diagnostics.note = "clb matchType=" + type;
     }
@@ -59,14 +61,15 @@ public class GbifMatchMapper {
   }
 
   /**
-   * A confidence of 0-100 derived from the CLB match type alone, using the OpenRefine scores.
+   * A confidence of 0-100 derived from the CLB match type, using the OpenRefine scores,
+   * lowered slightly when the usage has another rank than the query asked for.
    * No match is a confident answer, just as GBIF reports it.
    */
-  static int confidence(MatchType type) {
+  static int confidence(MatchType type, @Nullable Rank queryRank, @Nullable Rank usageRank) {
     if (type == null || type == MatchType.NONE || type == MatchType.UNSUPPORTED) {
       return 100;
     }
-    return (int) OpenRefineMapper.score(type);
+    return (int) OpenRefineMapper.score(type, queryRank, usageRank);
   }
 
   /**

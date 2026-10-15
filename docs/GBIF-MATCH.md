@@ -51,7 +51,9 @@ for a synonym, its accepted name) and `diagnostics` with `matchType`, `confidenc
 | HIGHERRANK | HIGHERRANK | 50 |
 | NONE, UNSUPPORTED | NONE | 100 |
 
-Confidences are fixed per match type, the scores of the OpenRefine reconciliation. Whenever the GBIF type differs
+Confidences follow the match type, the scores of the OpenRefine reconciliation. Above genus the matcher accepts a
+usage of another rank in the same major group (Osteichthyes asked for as a class, held as a parvphylum); such a
+match loses 2 points if both ranks share their major rank (subclass and class) and 5 otherwise. Whenever the GBIF type differs
 from the CLB one, `diagnostics.note` says `clb matchType=<type>`. Alternatives carry a match type but no confidence. A query without authorship that has exactly the usage's name is
 EXACT, as for GBIF, although the CLB matcher calls it a VARIANT of the full label.
 CLB statuses map to GBIF ones: `PROVISIONALLY_ACCEPTED` and `BARE_NAME` are `DOUBTFUL`, `AMBIGUOUS_SYNONYM` is

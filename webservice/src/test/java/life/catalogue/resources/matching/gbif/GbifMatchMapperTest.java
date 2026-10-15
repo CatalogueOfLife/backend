@@ -130,4 +130,18 @@ public class GbifMatchMapperTest {
     assertEquals(75, (int) m.diagnostics.confidence);
     assertEquals("clb matchType=AMBIGUOUS", m.diagnostics.note);
   }
+
+  @Test
+  public void otherRankLowersConfidence() {
+    var osteichthyes = usage("O", Rank.PARVPHYLUM, TaxonomicStatus.ACCEPTED, "Osteichthyes", null);
+    var query = usage(null, Rank.CLASS, TaxonomicStatus.ACCEPTED, "Osteichthyes", null);
+    var m = GbifMatchMapper.map(query, UsageMatch.match(MatchType.EXACT, osteichthyes, 3, null), false, 1);
+    assertEquals("EXACT", m.diagnostics.matchType);
+    assertEquals(95, (int) m.diagnostics.confidence);
+
+    // no penalty without a rank in the query
+    query.setRank(null);
+    m = GbifMatchMapper.map(query, UsageMatch.match(MatchType.EXACT, osteichthyes, 3, null), false, 1);
+    assertEquals(100, (int) m.diagnostics.confidence);
+  }
 }
