@@ -112,9 +112,11 @@ spirit of GBIF's pre-backbone-release impact reports. It compares name matching 
    GBIF may have matched by id.
 2. A `WsMatchingServer` for the release GBIF indexed (`matchingServerBuild --key <release>`, then `server`).
 3. `gbif_impact.py match download.zip --min-occurrences 1000` calls `/match/gbif` for every row and writes
-   the stored and the CLB result side by side. It is resumable.
+   the stored and the CLB result side by side. It is resumable. The `/metadata` of both services, with the
+   ChecklistBank dataset key of the release they index, is kept in `proposed.meta.json`.
 4. `gbif_impact.py report proposed.tsv --out report` puts every row into a category - from `DIFF_KINGDOM` down to
    `SAME` - weighted by occurrences, and writes `diff.tsv` with debug links to both services plus `report.html`.
+   The report opens with the release both services matched against, and links every COL id to its taxon page.
 5. `gbif_impact.py verify report/diff.tsv --top 500` re-asks live api.gbif.org without ids. Passing the result to
    `report --verify` replaces the stored interpretation for those rows, telling stale or id based GBIF matches
    from real name matching differences.

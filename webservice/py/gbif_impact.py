@@ -193,6 +193,26 @@ def parse_match(resp):
   return d
 
 
+def meta_path(proposed):
+  """The metadata of the matched services is kept next to the match result, proposed.tsv -> proposed.meta.json."""
+  return os.path.splitext(proposed)[0] + ".meta.json"
+
+
+def fetch_meta(base, gbif):
+  """The /metadata of a CLB matching server or a GBIF matching-ws, with the release they index."""
+  path = urllib.parse.urlparse(base).path.rstrip("/") + ("/v2/species/match/metadata" if gbif else "/match/gbif/metadata")
+  resp, err = Client(base).get(path)
+  return {"base": base, "metadata": resp, "error": err}
+
+
+def release_of(service):
+  """(clbDatasetKey, alias, title, usages) of the release a service indexes, None if unknown."""
+  idx = ((service or {}).get("metadata") or {}).get("mainIndex") or {}
+  if not idx.get("clbDatasetKey"):
+    return None
+  return idx.get("clbDatasetKey"), idx.get("datasetAlias"), idx.get("datasetTitle"), idx.get("nameUsageCount")
+
+
 def id_flag(rec):
   """1 if GBIF may have matched this row by one of its ids rather than by name."""
   if not any(rec.get(c) for c in IDS):
@@ -213,6 +233,15 @@ def cmd_match(a):
       if last and not last.startswith("row\t"):
         done = int(last.split("\t", 1)[0])
     log(f"resuming after row {done}")
+  if done == 0 or not os.path.exists(meta_path(a.out)):
+    meta = {"clb": fetch_meta(a.base, False), "gbif": fetch_meta(a.gbif, True) if a.gbif else None,
+            "started": time.strftime("%Y-%m-%d %H:%M")}
+    with open(meta_path(a.out), "w", encoding="utf-8") as f:
+      json.dump(meta, f, indent=2)
+    clb_rel, gbif_rel = release_of(meta["clb"]), release_of(meta["gbif"])
+    log(f"CLB release {clb_rel}" + (f", GBIF release {gbif_rel}" if a.gbif else ""))
+    if a.gbif and clb_rel and gbif_rel and clb_rel[0] != gbif_rel[0]:
+      log(f"WARNING: CLB matches against dataset {clb_rel[0]}, GBIF against {gbif_rel[0]}")
   client = Client(a.base)
   base_path = urllib.parse.urlparse(a.base).path.rstrip("/")
   gbif = Client(a.gbif) if a.gbif else None
@@ -406,7 +435,14 @@ def cmd_report(a):
       elif n > h[0][0]:
         heapq.heapreplace(h, item)
   sort_tsv(diff_path)
-  write_html(a, rows, occ, occ_id, total_occ, cross, by_kingdom, top, names_by_cat, names, verified, stale)
+  if os.path.exists(meta_path(a.proposed)):
+    with open(meta_path(a.proposed), encoding="utf-8") as f:
+      meta = json.load(f)
+  else:
+    # a match result from before the metadata was kept: ask the CLB server now, which may have changed since
+    meta = {"clb": fetch_meta(a.base, False), "gbif": None, "fetched_at_report": True}
+  log(f"release CLB {release_of(meta.get('clb'))}, GBIF {release_of(meta.get('gbif'))}")
+  write_html(a, rows, occ, occ_id, total_occ, cross, by_kingdom, top, names_by_cat, names, verified, stale, meta)
   log(f"wrote {diff_path} and {os.path.join(a.out, 'report.html')}")
 
 
@@ -426,12 +462,55 @@ def sort_tsv(path):
     log(f"could not sort {path}: {e}")
 
 
-def write_html(a, rows, occ, occ_id, total_occ, cross, by_kingdom, top, names_by_cat, names, verified, stale):
+def release_html(meta):
+  """The release both services match against, first thing in the report."""
+  e = html.escape
+  clb, gbif = release_of(meta.get("clb")), release_of(meta.get("gbif"))
+  rel = clb or gbif
+  if rel is None:
+    return "<p class=bad><b>Release unknown</b>: no metadata of the matched services.</p>\n"
+  key, alias, title, usages = rel
+  usages = f", {usages:,} name usages" if isinstance(usages, int) else ""
+  out = [f"<p class=release><b>Release {e(str(alias or ''))} - ChecklistBank dataset "
+         f"<a href='https://www.checklistbank.org/dataset/{e(str(key))}'>{e(str(key))}</a></b> "
+         f"({e(str(title or ''))}{usages})"]
+  if gbif and clb and gbif[0] != clb[0]:
+    out.append(f" <span class=bad>but GBIF matched against dataset {e(str(gbif[0]))} {e(str(gbif[1] or ''))}</span>")
+  elif gbif:
+    out.append(", indexed by both services")
+  elif meta.get("fetched_at_report"):
+    out.append(", read from the CLB server when the report was written, not when it matched")
+  if meta.get("captured_after_run"):
+    out.append(f" <span class=muted>(metadata captured {e(str(meta['captured_after_run']))}, after the match run)</span>")
+  out.append(".<br><span class=muted>")
+  for label, s in (("CLB", meta.get("clb")), ("GBIF matching-ws", meta.get("gbif"))):
+    if s:
+      m = s.get("metadata") or {}
+      sha = ((m.get("buildInfo") or {}).get("sha") or "")[:9]
+      out.append(f"{label}: <code>{e(s.get('base') or '')}</code>"
+                 + (f" build {e(sha)}" if sha else "") + (f" index created {e(str(m.get('created', '')))}" if m else "")
+                 + (f" <span class=bad>{e(s.get('error') or '')}</span>" if s.get("error") else "") + "<br>")
+  out.append("</span></p>\n")
+  return "".join(out)
+
+
+def write_html(a, rows, occ, occ_id, total_occ, cross, by_kingdom, top, names_by_cat, names, verified, stale, meta):
   e = html.escape
   total_rows = sum(rows.values())
 
   def pct(x, total):
     return f"{100.0 * x / total:.2f}%" if total else ""
+
+  # both services answer with ids of the same COL release, so every id links to its taxon page
+  rel = release_of(meta.get("clb")) or release_of(meta.get("gbif"))
+
+  def taxon(key):
+    if not key:
+      return ""
+    if not rel:
+      return f"<code>{e(key)}</code>"
+    href = f"https://www.checklistbank.org/dataset/{urllib.parse.quote(str(rel[0]))}/taxon/{urllib.parse.quote(key, safe='')}"
+    return f"<a href='{e(href)}'><code>{e(key)}</code></a>"
 
   p = []
   p.append("""<!doctype html>
@@ -448,10 +527,11 @@ h1{font-size:22px}h2{font-size:18px;margin-top:32px;border-bottom:1px solid var(
 table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border-bottom:1px solid var(--line);padding:4px 6px;
 text-align:left;vertical-align:top}th{color:var(--muted);font-weight:600}td.n{text-align:right;font-variant-numeric:tabular-nums}
 .wrap{overflow-x:auto}code{font-size:12px;color:var(--muted)}a{color:var(--accent)}.bad{color:var(--bad)}
-.muted{color:var(--muted)}details{background:var(--card);border-radius:6px;padding:6px 10px;margin:8px 0}
+.muted{color:var(--muted)}.release{background:var(--card);border-radius:6px;padding:8px 12px}details{background:var(--card);border-radius:6px;padding:6px 10px;margin:8px 0}
 </style></head><body>
 """)
   p.append("<h1>GBIF matching-ws vs CLB matcher</h1>\n")
+  p.append(release_html(meta))
   p.append(f"<p class=muted>{total_rows:,} distinct verbatim inputs with {total_occ:,} occurrences, "
            f"compared by name only against COL checklist <code>{COL_CHECKLIST}</code>. "
            f"GBIF's answer is live and id free for {verified:,} rows, the stored occurrence interpretation for the rest. "
@@ -494,20 +574,20 @@ text-align:left;vertical-align:top}th{color:var(--muted);font-weight:600}td.n{te
     p.append("<div class=wrap><table>\n<tr><th>Occ.</th><th>Verbatim name</th><th>Verbatim classification</th>"
              "<th>GBIF</th><th>CLB</th><th>Links</th></tr>\n")
     for n, _, r in sorted(top[cat], key=lambda t: -t[0]):
-      gb = (f"{e(r['cur_scientificname'] or '-')} <code>{e(r['cur_taxonkey'])}</code> "
+      gb = (f"{e(r['cur_scientificname'] or '-')} {taxon(r['cur_taxonkey'])} "
             f"<span class=muted>{e(gbif_type(r))} {e(r['cur_taxonrank'])}</span>")
       if r["cur_acceptedtaxonkey"] and r["cur_acceptedtaxonkey"] != r["cur_taxonkey"]:
-        gb += f"<br><span class=muted>= {e(r['cur_acceptedscientificname'])}</span>"
+        gb += f"<br><span class=muted>= {e(r['cur_acceptedscientificname'])} {taxon(r['cur_acceptedtaxonkey'])}</span>"
       if r["id_flag"] == "1":
         gb += "<br><span class=muted>possibly id matched</span>"
       if r["_live"]:
         gb += "<br><span class=muted>live</span>"
         if r.get("_stored_taxonkey") and r["_stored_taxonkey"] != r["cur_taxonkey"]:
-          gb += f"<br><span class=muted>stored: <code>{e(r['_stored_taxonkey'])}</code></span>"
-      cb = (f"{e(r['clb_usageName'] or '-')} <code>{e(r['clb_usageKey'])}</code> "
+          gb += f"<br><span class=muted>stored: {taxon(r['_stored_taxonkey'])}</span>"
+      cb = (f"{e(r['clb_usageName'] or '-')} {taxon(r['clb_usageKey'])} "
             f"<span class=muted>{e(r['clb_matchType'])} {e(r['clb_usageRank'])} {e(r['clb_confidence'])}</span>")
       if r["clb_acceptedKey"] and r["clb_acceptedKey"] != r["clb_usageKey"]:
-        cb += f"<br><span class=muted>= {e(r['clb_acceptedName'])}</span>"
+        cb += f"<br><span class=muted>= {e(r['clb_acceptedName'])} {taxon(r['clb_acceptedKey'])}</span>"
       if r["clb_note"]:
         cb += f"<br><span class=muted>{e(r['clb_note'])}</span>"
       if r["clb_error"]:
