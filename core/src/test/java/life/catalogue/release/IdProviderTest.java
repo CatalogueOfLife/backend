@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.TestConfigs;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -49,7 +50,7 @@ public class IdProviderTest {
 
   @Before
   public void init() throws IOException {
-    cfg = new ReleaseConfig();
+    cfg = TestConfigs.releaseConfig();
     prCfg = new ProjectReleaseConfig();
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
