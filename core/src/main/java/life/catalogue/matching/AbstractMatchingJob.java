@@ -369,7 +369,9 @@ public abstract class AbstractMatchingJob extends DatasetJob {
   }
 
   /**
-   * Parses a name to be matched and matches it to the names index.
+   * Parses a name to be matched and looks it up in the names index.
+   * This is the entry point for all external match queries, so it never inserts into the names index:
+   * the index is only ever built from names held in ChecklistBank.
    * @return the name as the usage matcher expects it, empty and flagged as unparsable if it cannot be parsed
    */
   public static Optional<SimpleNameClassified<SimpleNameCached>> interpret(SimpleName sn, List<SimpleNameCached> classification,
@@ -382,7 +384,7 @@ public abstract class AbstractMatchingJob extends DatasetJob {
       if (nu.getRank() == Rank.UNRANKED) {
         nu.getName().setRank(null);
       }
-      return Optional.of(utils.toSimpleNameClassified(nu, classification));
+      return Optional.of(utils.toSimpleNameClassified(nu, classification, false));
     }
     issues.add(Issue.UNPARSABLE_NAME);
     return Optional.empty();

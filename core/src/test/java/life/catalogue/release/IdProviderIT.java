@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.TestConfigs;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.area.Gazetteer;
@@ -78,7 +79,7 @@ public class IdProviderIT {
 
   @Test
   public void mapIds() throws Exception {
-    init(new ReleaseConfig(), new ProjectReleaseConfig());
+    init(TestConfigs.releaseConfig(), new ProjectReleaseConfig());
     // verify archived names got loaded
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       assertNotNull( session.getMapper(ArchivedNameUsageMapper.class).get(DSID.of(projectKey, "M")));
@@ -117,7 +118,7 @@ public class IdProviderIT {
 
   @Test
   public void ignoreLastRelease() throws Exception {
-    var cfg = new ReleaseConfig();
+    var cfg = TestConfigs.releaseConfig();
     var prCfg = new ProjectReleaseConfig();
     prCfg.ignoredReleases = List.of(13);
     init(cfg, prCfg);
@@ -163,7 +164,7 @@ public class IdProviderIT {
   public void mapNameIds() throws Exception {
     var prCfg = new ProjectReleaseConfig();
     prCfg.stableNameIds = true;
-    init(new ReleaseConfig(), prCfg);
+    init(TestConfigs.releaseConfig(), prCfg);
 
     provider.mapAllIds();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
@@ -192,7 +193,7 @@ public class IdProviderIT {
 
   @Test
   public void nameIdsAreOffByDefault() throws Exception {
-    init(new ReleaseConfig(), new ProjectReleaseConfig());
+    init(TestConfigs.releaseConfig(), new ProjectReleaseConfig());
     provider.mapAllIds();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       assertEquals(0, session.getMapper(IdMapMapper.class).countName(projectKey));

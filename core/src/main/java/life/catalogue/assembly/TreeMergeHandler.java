@@ -994,7 +994,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         LOG.debug("Updated {} with gender {}", n.getScientificName(), n.getGender());
       }
       if (!src.getRank().isUncomparable() && n.getRank().isUncomparable()
-        && RankComparator.compareVagueRanks(n.getRank(), src.getRank()) != Equality.DIFFERENT
+        && RankComparator.compare(n.getRank(), src.getRank()) != Equality.DIFFERENT
       ) {
         upd.add(InfoGroup.RANK);
         n.setRank(src.getRank());

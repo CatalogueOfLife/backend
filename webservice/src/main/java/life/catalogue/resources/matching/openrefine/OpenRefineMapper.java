@@ -4,6 +4,7 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.matching.RankComparator;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
 
@@ -11,6 +12,8 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -41,6 +44,18 @@ public class OpenRefineMapper {
   }
 
   /**
+   * The score of the match type, slightly lowered when the usage has another rank than the query asked for,
+   * see {@link RankComparator#scorePenalty(Rank, Rank)}. A higher rank match differs in rank by definition.
+   */
+  public static double score(MatchType type, @Nullable Rank queryRank, @Nullable Rank usageRank) {
+    double score = score(type);
+    if (score > 0 && type != MatchType.HIGHERRANK) {
+      score -= RankComparator.scorePenalty(queryRank, usageRank);
+    }
+    return score;
+  }
+
+  /**
    * Maps a usage match (primary + alternatives) to an OpenRefine result for a single query.
    * Alternatives are scored by comparing their label to the query like the primary match,
    * but never above the primary: they are candidates the matcher considered and did not choose,
@@ -54,14 +69,15 @@ public class OpenRefineMapper {
     if (match != null && match.isMatch()) {
       // OpenRefine auto-matches a cell when a single candidate has match=true.
       // Only do that for unambiguous exact hits.
-      boolean autoMatch = match.type == MatchType.EXACT;
-      var primary = toCandidate(match.usage, match.type, autoMatch);
+      Rank qRank = query == null ? null : query.getRank();
+      boolean autoMatch = match.type == MatchType.EXACT && RankComparator.scorePenalty(qRank, match.usage.getRank()) == 0;
+      var primary = toCandidate(query, match.usage, match.type, autoMatch);
       maxAltScore = primary.score;
       result.result.add(primary);
     }
     if (match != null && match.alternatives != null) {
       for (var alt : match.alternatives) {
-        var c = toCandidate(alt, UsageMatcher.labelType(query, alt), false);
+        var c = toCandidate(query, alt, UsageMatcher.labelType(query, alt), false);
         if (maxAltScore != null) {
           c.score = Math.min(c.score, maxAltScore);
         }
@@ -71,11 +87,11 @@ public class OpenRefineMapper {
     return result;
   }
 
-  static OpenRefineModel.Candidate toCandidate(SimpleNameClassified<SimpleNameCached> u, MatchType type, boolean match) {
+  static OpenRefineModel.Candidate toCandidate(@Nullable SimpleName query, SimpleNameClassified<SimpleNameCached> u, MatchType type, boolean match) {
     var c = new OpenRefineModel.Candidate();
     c.id = u.getId();
     c.name = u.getLabel();
-    c.score = score(type);
+    c.score = score(type, query == null ? null : query.getRank(), u.getRank());
     c.match = match;
     c.type.add(TAXON_TYPE);
     return c;
