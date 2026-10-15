@@ -6,9 +6,12 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.MatchingJob;
 import life.catalogue.matching.MatchingUtils;
+import life.catalogue.matching.NameAssembler;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.parser.NameParser;
+import life.catalogue.parser.RankParser;
+import life.catalogue.parser.SafeParser;
 import life.catalogue.resources.matching.gbif.GbifMatchMapper;
 import life.catalogue.resources.matching.gbif.GbifNameUsageMatch;
 
@@ -16,8 +19,6 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -83,32 +84,29 @@ public class GbifSpeciesMatchResource {
     String author = StringUtils.firstNonBlank(scientificNameAuthorship, authorship);
     String rnk = StringUtils.firstNonBlank(taxonRank, verbatimTaxonRank, rank);
     Classification cl = classification == null ? new Classification() : new Classification(classification);
-    String name = scientificName;
-    if (StringUtils.isBlank(name)) {
-      // like GBIF the genus of the classification completes a name given as epithets only
-      String genus = StringUtils.firstNonBlank(genericName, StringUtils.isBlank(specificEpithet) ? null : cl.getGenus());
-      name = joinEpithets(genus, specificEpithet, infraspecificEpithet);
-    }
-    if (StringUtils.isBlank(name) && !cl.isEmpty()) {
+    // like GBIF build the name from all its pieces: an abbreviated genus, epithets only, or else the classification
+    Rank parsedRank = SafeParser.parse(RankParser.PARSER, rnk).orNull();
+    var assembled = NameAssembler.build(scientificName, author, genericName, specificEpithet, infraspecificEpithet, parsedRank, cl);
+    String name = assembled.name();
+    if (assembled.fromClassification()) {
       // no name at all: match the lowest taxon of the classification, as GBIF does
-      Rank lowest = cl.getLowestExistingRank();
-      name = cl.getByRank(lowest);
-      rnk = lowest.name();
-      cl.clearRankAndBelow(lowest);
+      rnk = assembled.rank().name();
+      cl.clearRankAndBelow(assembled.rank());
     }
     if (StringUtils.isBlank(name)) {
       return GbifMatchMapper.map(null, UsageMatch.empty(matcher.getDatasetKey()), verbose, System.currentTimeMillis() - start);
     }
 
     IssueContainer issues = new IssueContainer.Simple();
-    var query = interpret(name, author, code, rnk, cl, issues);
+    // the assembled name carries the authorship
+    var query = interpret(name, null, code, rnk, cl, issues);
     UsageMatch m = query == null ? UsageMatch.empty(matcher.getDatasetKey()) : matcher.match(query, false, verbose, !strict);
     String note = null;
     // Provisional: a supplied rank that contradicts the name, a subspecies sent as SPECIES or a genus as SPECIES,
     // keeps the matcher from finding the name. If so retry with the rank the parser reads from the name.
-    // The matcher itself should weigh such a rank, see the GBIF impact report.
-    if (query != null && !isExactOrVariant(m) && rankContradictsName(name, query.getRank())) {
-      var parsed = interpret(name, author, code, null, cl, new IssueContainer.Simple());
+    // The matcher itself should weigh such a rank, see the GBIF impact report. A strict match keeps the rank.
+    if (!strict && query != null && !isExactOrVariant(m) && rankContradictsName(name, query.getRank())) {
+      var parsed = interpret(name, null, code, null, cl, new IssueContainer.Simple());
       if (parsed != null) {
         UsageMatch m2 = matcher.match(parsed, false, verbose, !strict);
         if (isExactOrVariant(m2) || (!m.isMatch() && m2.isMatch())) {
@@ -181,16 +179,5 @@ public class GbifSpeciesMatchResource {
       // no such usage
     }
     return UsageMatch.empty(matcher.getDatasetKey());
-  }
-
-  /**
-   * @return the epithets joined into a name, null if there are none
-   */
-  static String joinEpithets(String genericName, String specificEpithet, String infraspecificEpithet) {
-    String name = Stream.of(genericName, specificEpithet, infraspecificEpithet)
-      .filter(StringUtils::isNotBlank)
-      .map(String::trim)
-      .collect(Collectors.joining(" "));
-    return name.isEmpty() ? null : name;
   }
 }

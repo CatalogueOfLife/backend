@@ -106,11 +106,15 @@ public class GbifSpeciesMatchResourceTest {
 
   @Test
   public void epithets() {
-    assertEquals("Abies alba", GbifSpeciesMatchResource.joinEpithets("Abies", " alba ", null));
-    assertNull(GbifSpeciesMatchResource.joinEpithets(null, " ", null));
-
-    var m = resource.match(null, null, null, null, null, null, null, null, null, null, "Abies", "alba", null, false, false, new Classification());
+    var m = resource.match(null, null, null, null, null, null, null, null, null, null, "Abies", " alba ", null, false, false, new Classification());
     assertEquals("S", m.usage.key);
+
+    // an abbreviated genus is expanded by the classification
+    var cl = new Classification();
+    cl.setGenus("Abies");
+    m = resource.match(null, null, null, "A. alba", null, null, null, null, null, null, null, null, null, false, false, cl);
+    assertEquals("S", m.usage.key);
+    assertEquals("EXACT", m.diagnostics.matchType);
   }
 
   @Test
@@ -126,9 +130,14 @@ public class GbifSpeciesMatchResourceTest {
 
     // verbatimTaxonRank is used when taxonRank is missing: a genus rank does not fit the species name,
     // so the name is matched again with its parsed rank
-    m = resource.match(null, null, null, "Abies alba", "Mill.", null, null, "genus", null, null, null, null, null, true, false, new Classification());
+    m = resource.match(null, null, null, "Abies alba", "Mill.", null, null, "genus", null, null, null, null, null, false, false, new Classification());
     assertEquals("S", m.usage.key);
     assertTrue(m.diagnostics.note.contains("taxonRank genus ignored"));
+
+    // a strict match keeps the supplied rank
+    m = resource.match(null, null, null, "Abies alba", "Mill.", null, null, "genus", null, null, null, null, null, true, false, new Classification());
+    assertNull(m.usage);
+    assertEquals("NONE", m.diagnostics.matchType);
   }
 
   @Test

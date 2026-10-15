@@ -24,14 +24,19 @@ GET /v2/species/match/metadata
 | `verbose` | include the alternatives the matcher considered |
 | `checklistKey` | optional; a key other than the server's configured `gbifChecklistKey` is a 400 |
 
-Without any name the lowest taxon of the classification is matched with its rank, as GBIF does; with no
-classification either the answer is NONE.
+The name is built from its pieces like matching-ws does (`NameAssembler`, a port of its `NameNRank`): a given
+`scientificName` is used as is, an abbreviated or missing genus (`P. concolor`, `? concolor`) is expanded with the
+`genus` of the classification or `genericName`, and a missing authorship is appended. A `scientificName` that is
+only an epithet, or none at all, is assembled from the genus, the classification's `subgenus` and `species`, and the
+epithets. Without any of these the lowest taxon of the classification is matched with its rank, as GBIF does; with no
+classification either the answer is NONE. Epithets without any genus give NONE.
 
 A supplied rank that contradicts the name - a subspecies or a genus sent as `SPECIES`, common in GBIF occurrences -
 keeps the matcher from finding it. Provisionally, when the first match is neither EXACT nor VARIANT and the rank
 contradicts the name - the parser reads another rank from a binomial or trinomial, or a single word comes with a
 species or lower rank - the name is matched again without the supplied rank. The second answer is taken if it
 is EXACT or VARIANT, or if the first found nothing, and `diagnostics.note` says `taxonRank <rank> ignored`.
+A `strict` match never retries.
 
 `gbifChecklistKey` in the server config defaults to the `gbifKey` of the matching dataset. A release usually has
 none - the COL checklist key `7ddf754f-d193-4cc9-b351-99906754a03b` belongs to the project - so set it explicitly.
@@ -47,9 +52,9 @@ for a synonym, its accepted name) and `diagnostics` with `matchType`, `confidenc
 | VARIANT | VARIANT | 98 |
 | CANONICAL | EXACT | 90 |
 | AMBIGUOUS, a usage was picked | EXACT or VARIANT of the picked usage | 75 |
-| AMBIGUOUS, unresolved homonym | NONE | 75 |
+| AMBIGUOUS, unresolved homonym | NONE | none |
 | HIGHERRANK | HIGHERRANK | 50 |
-| NONE, UNSUPPORTED | NONE | 100 |
+| NONE, UNSUPPORTED | NONE | none |
 
 Confidences follow the match type, the scores of the OpenRefine reconciliation. Above genus the matcher accepts a
 usage of another rank in the same major group (Osteichthyes asked for as a class, held as a parvphylum); such a

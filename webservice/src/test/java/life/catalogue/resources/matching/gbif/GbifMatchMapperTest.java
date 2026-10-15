@@ -135,15 +135,16 @@ public class GbifMatchMapperTest {
     assertNull(m.classification);
     assertFalse(m.synonym);
     assertEquals("NONE", m.diagnostics.matchType);
-    assertEquals(100, (int) m.diagnostics.confidence);
+    // there is no match to be confident about
+    assertNull(m.diagnostics.confidence);
     assertNull(m.diagnostics.alternatives);
 
-    // an unresolved homonym has no usage, but is less confident than a plain no match
+    // an unresolved homonym has no usage either, the note tells it apart from a plain no match
     var homonym = UsageMatch.unresolvedHomonym(MatchType.AMBIGUOUS, List.of(), 3);
     m = GbifMatchMapper.map(null, homonym, false, 0);
     assertNull(m.usage);
     assertEquals("NONE", m.diagnostics.matchType);
-    assertEquals(75, (int) m.diagnostics.confidence);
+    assertNull(m.diagnostics.confidence);
     assertEquals("clb matchType=AMBIGUOUS", m.diagnostics.note);
   }
 
