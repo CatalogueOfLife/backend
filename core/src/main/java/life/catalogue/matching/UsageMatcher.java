@@ -18,6 +18,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.RankGroup;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -300,7 +301,7 @@ public class UsageMatcher implements AutoCloseable {
    * Above genus a name keeps its identity across the ranks of its major group: Osteichthyes is a class in one
    * classification and a parvphylum in another, Bacteria a kingdom, superkingdom or domain, and a family group name
    * moves between family, subfamily and tribe. Two concrete ranks of the same group therefore do not differ.
-   * The groups are the ranks above the family group and the family group itself. Genus group, species and
+   * The groups are the suprafamilial ranks and the family group, see {@link RankGroup}. Genus group, species and
    * infraspecific ranks stay strict, as the same name there often is a different taxon:
    * a nominotypical subgenus, a species aggregate or a variety next to a subspecies.
    * A candidate of the exact rank still wins, see the strict tie-break in filterCandidates.
@@ -308,13 +309,8 @@ public class UsageMatcher implements AutoCloseable {
    */
   @VisibleForTesting
   static boolean sameSupragenericGroup(Rank r1, Rank r2) {
-    if (r1 == null || r2 == null || r1.isUncomparable() || r2.isUncomparable()) {
-      return false;
-    }
-    if (r1.isFamilyGroup() || r2.isFamilyGroup()) {
-      return r1.isFamilyGroup() && r2.isFamilyGroup();
-    }
-    return r1.isSuprageneric() && r2.isSuprageneric();
+    return r1 != null && r1.isConcrete() && r1.sameGroup(r2) && r2.isConcrete()
+      && (r1.getGroup() == RankGroup.SUPRAFAMILIAL || r1.getGroup() == RankGroup.FAMILY);
   }
 
   private static boolean ranksDiffer(Rank r1, Supplier<Optional<Rank>> r1pSupplier, Rank r2, List<SimpleNameCached> r2parents) {

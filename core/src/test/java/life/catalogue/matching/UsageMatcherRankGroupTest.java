@@ -123,6 +123,10 @@ public class UsageMatcherRankGroupTest {
     assertFalse(UsageMatcher.sameSupragenericGroup(Rank.ORDER, Rank.SUPERFAMILY));
     assertFalse(UsageMatcher.sameSupragenericGroup(Rank.TRIBE, Rank.GENUS));
     assertFalse(UsageMatcher.sameSupragenericGroup(Rank.GENUS, Rank.SUBGENUS));
+    // a supergenus is genus group, which stays strict
+    assertFalse(UsageMatcher.sameSupragenericGroup(Rank.SUPERGENUS, Rank.ORDER));
+    assertFalse(UsageMatcher.sameSupragenericGroup(Rank.SUPERGENUS, Rank.GENUS));
+    assertTrue(UsageMatcher.sameSupragenericGroup(Rank.FALANX, Rank.ORDER));
     assertFalse(UsageMatcher.sameSupragenericGroup(Rank.SPECIES, Rank.SUBSPECIES));
     assertFalse(UsageMatcher.sameSupragenericGroup(Rank.SUPRAGENERIC_NAME, Rank.FAMILY));
     assertFalse(UsageMatcher.sameSupragenericGroup(Rank.UNRANKED, Rank.FAMILY));

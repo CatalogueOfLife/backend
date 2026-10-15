@@ -24,6 +24,17 @@ public class RankComparatorTest {
     assertEquals(Equality.UNKNOWN, RankComparator.compare(Rank.SUPRAGENERIC_NAME, Rank.FAMILY));
     assertEquals(Equality.UNKNOWN, RankComparator.compare(Rank.SUPRAGENERIC_NAME, Rank.KINGDOM));
     assertEquals(Equality.DIFFERENT, RankComparator.compare(Rank.SUPRAGENERIC_NAME, Rank.SPECIES));
+    // a supergenus belongs to the genus group, not above it
+    assertEquals(Equality.DIFFERENT, RankComparator.compare(Rank.SUPRAGENERIC_NAME, Rank.SUPERGENUS));
+    assertEquals(Equality.DIFFERENT, RankComparator.compare(Rank.SUPRAGENERIC_NAME, Rank.INFRAGENERIC_NAME));
+    assertEquals(Equality.UNKNOWN, RankComparator.compare(Rank.SUBGENUS, Rank.INFRAGENERIC_NAME));
+    assertEquals(Equality.DIFFERENT, RankComparator.compare(Rank.GENUS, Rank.INFRAGENERIC_NAME));
+    assertEquals(Equality.UNKNOWN, RankComparator.compare(Rank.VARIETY, Rank.INFRASUBSPECIFIC_NAME));
+    assertEquals(Equality.DIFFERENT, RankComparator.compare(Rank.SUBSPECIES, Rank.INFRASUBSPECIFIC_NAME));
+    // vague ranks compare the same in both directions
+    assertEquals(Equality.UNKNOWN, RankComparator.compare(Rank.INFRASPECIFIC_NAME, Rank.INFRASUBSPECIFIC_NAME));
+    assertEquals(Equality.UNKNOWN, RankComparator.compare(Rank.INFRASUBSPECIFIC_NAME, Rank.INFRASPECIFIC_NAME));
+    assertEquals(Equality.DIFFERENT, RankComparator.compare(Rank.OTHER, Rank.INFRASPECIFIC_NAME));
   }
 
   @Test
