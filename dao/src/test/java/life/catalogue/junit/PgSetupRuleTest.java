@@ -12,6 +12,7 @@ import life.catalogue.db.type.BaseEnumSetTypeHandler;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.RankGroup;
 
 import java.io.IOException;
 import java.sql.Array;
@@ -110,6 +111,7 @@ public class PgSetupRuleTest {
     enums.remove(NameField.class);
     enums.remove(DoiResolution.class);
     enums.remove(TabularFormat.class);
+    enums.remove(RankGroup.class);
     // ImportState is only used in java code now, feeding the free text job step. The db tracks JobStatus instead.
     enums.remove(ImportState.class);
     // remove enums not used in coldp
