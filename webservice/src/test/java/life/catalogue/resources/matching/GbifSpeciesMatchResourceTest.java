@@ -141,17 +141,6 @@ public class GbifSpeciesMatchResourceTest {
   }
 
   @Test
-  public void rankContradictsName() {
-    assertTrue(GbifSpeciesMatchResource.rankContradictsName("Oryctolagus cuniculus cuniculus", Rank.SPECIES));
-    assertFalse(GbifSpeciesMatchResource.rankContradictsName("Oryctolagus cuniculus cuniculus", Rank.SUBSPECIES));
-    assertTrue(GbifSpeciesMatchResource.rankContradictsName("Macropus Shaw, 1790", Rank.SPECIES));
-    assertFalse(GbifSpeciesMatchResource.rankContradictsName("Macropus Shaw, 1790", Rank.GENUS));
-    assertFalse(GbifSpeciesMatchResource.rankContradictsName("Pipistrellus kuhlii (Natterer in Kuhl, 1817)", Rank.SPECIES));
-    assertTrue(GbifSpeciesMatchResource.rankContradictsName("Polygonum aviculare", Rank.SPECIES_AGGREGATE));
-    assertFalse(GbifSpeciesMatchResource.rankContradictsName("Polygonum aviculare", null));
-  }
-
-  @Test
   public void usageKey() {
     var m = resource.match(null, "SYN", null, null, null, null, null, null, null, null, null, null, null, false, false, null);
     assertEquals("SYN", m.usage.key);

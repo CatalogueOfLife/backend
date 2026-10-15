@@ -82,6 +82,11 @@ public class WsBundleServerIT {
 
       // matching is global and already keyless
       assertEquals(200, get(client, api + "/match/nameusage?q=Larus%20fuscus").getStatus());
+      // the GBIF species match is dataset scoped and reached keyless through the rewrite
+      var gbif = get(client, api + "/match/gbif?scientificName=Larus%20fuscus");
+      assertEquals(200, gbif.getStatus());
+      assertTrue(gbif.readEntity(String.class).contains("diagnostics"));
+      assertEquals(200, get(client, api + "/dataset/" + KEY + "/match/gbif/metadata").getStatus());
 
       // first boot indexing filled elastic from the bundled postgres
       assertTrue("elastic was never filled from the bundled database", awaitIndexed(client, api));

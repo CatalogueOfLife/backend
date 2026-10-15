@@ -1,16 +1,28 @@
 # GBIF compatible species match
 
-The DB-free `WsMatchingServer` also answers GBIF's v2 species match API, the one of
+CLB answers GBIF's v2 species match API, the one of
 [gbif/matching-ws](https://github.com/gbif/matching-ws) behind `https://api.gbif.org/v2/species/match`,
-so a client of that API can be pointed at a CLB matching server instead.
-It is served by `GbifSpeciesMatchResource` on top of the server's single persistent usage matcher -
-the same matcher, interpretation and higher rank fallback as `/match/nameusage` - and only translates
-request and response.
+so a client of that API can be pointed at CLB instead. `GbifSpeciesMatcher` runs it on top of a persistent usage
+matcher - the same matcher, interpretation and higher rank fallback as `/match/nameusage` - and only translates
+request and response. Three servers offer it:
+
+| Server | Path | Resource |
+|---|---|---|
+| `WsMatchingServer` | `/v2/species/match`, GBIF's own path, for its single dataset | `GbifSpeciesMatchResource` |
+| `WsServer` | `/dataset/{key}/match/gbif` | `DatasetGbifMatchResource` |
+| `WsBundleServer` | `/match/gbif`, rewritten to `/dataset/{releaseKey}/match/gbif` | `DatasetGbifMatchResource` |
 
 ```
 GET /v2/species/match?scientificName=Bacillus&kingdom=Bacteria&verbose=true
 GET /v2/species/match/metadata
+GET /dataset/3LXR/match/gbif?scientificName=Bacillus&kingdom=Bacteria
+GET /dataset/3LXR/match/gbif/metadata
 ```
+
+The dataset scoped path only serves a dataset with a persistent matcher store, which every published dataset above
+`matching.pgMatcherThreshold` usages has. Other than `/match/nameusage` it neither falls back to matching against
+live postgres data nor schedules a store build, as it is meant for occurrence scale traffic: every project, small
+datasets and most private datasets answer 404. Names are only looked up in the names index, never added to it.
 
 ## Request
 | Parameter | |
@@ -22,7 +34,7 @@ GET /v2/species/match/metadata
 | `usageKey`, `taxonID` | look a usage up by its id instead of matching a name |
 | `strict` | no higher rank fallback when the name itself does not match, the `STRICT` matching mode of `/match/nameusage` |
 | `verbose` | include the alternatives the matcher considered |
-| `checklistKey` | optional; a key other than the server's configured `gbifChecklistKey` is a 400 |
+| `checklistKey` | matching server only, optional; a key other than the server's configured `gbifChecklistKey` is a 400. The dataset scoped path ignores it, the path names the dataset |
 
 The name is built from its pieces like matching-ws does (`NameAssembler`, a port of its `NameNRank`): a given
 `scientificName` is used as is, an abbreviated or missing genus (`P. concolor`, `? concolor`) is expanded with the
@@ -38,8 +50,9 @@ species or lower rank - the name is matched again without the supplied rank. The
 is EXACT or VARIANT, or if the first found nothing, and `diagnostics.note` says `taxonRank <rank> ignored`.
 A `strict` match never retries.
 
-`gbifChecklistKey` in the server config defaults to the `gbifKey` of the matching dataset. A release usually has
-none - the COL checklist key `7ddf754f-d193-4cc9-b351-99906754a03b` belongs to the project - so set it explicitly.
+`gbifChecklistKey` in the matching server config defaults to the `gbifKey` of the matching dataset. A release
+usually has none - the COL checklist key `7ddf754f-d193-4cc9-b351-99906754a03b` belongs to the project - so set it
+explicitly. The metadata of the dataset scoped path report the dataset's own `gbifKey`.
 
 ## Response
 The matching-ws JSON: `usage`, `acceptedUsage`, `synonym`, `classification` (root first, ending with the usage or,

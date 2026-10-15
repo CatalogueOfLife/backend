@@ -59,7 +59,8 @@ written against `api.checklistbank.org` needs no changes.
 
 Rewritten first path segments: `archive`, `decision`, `duplicate`, `estimate`, `import`, `issues`,
 `logo`, `name`, `nameusage`, `patch`, `reconcile`, `reference`, `sector`, `source`, `synonym`,
-`taxon`, `tree`, `verbatim`, `verbatimsource`, `vernacular`. Everything else — `/parser`, `/vocab`,
+`taxon`, `tree`, `verbatim`, `verbatimsource`, `vernacular`, plus the one path `match/gbif` - the GBIF
+species match, see [GBIF-MATCH.md](GBIF-MATCH.md). Everything else — `/parser`, `/vocab`,
 `/version`, `/nidx`, `/job`, `/match/nameusage`, openapi — is global and untouched.
 
 Two consequences worth knowing:

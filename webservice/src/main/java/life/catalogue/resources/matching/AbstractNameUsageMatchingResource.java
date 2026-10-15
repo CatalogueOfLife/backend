@@ -72,7 +72,7 @@ public abstract class AbstractNameUsageMatchingResource {
   }
 
 
-  static SimpleNameClassified<SimpleNameCached> interpret(String id,
+  public static SimpleNameClassified<SimpleNameCached> interpret(String id,
                                                             String q,
                                                             String name,
                                                             String sciname,
