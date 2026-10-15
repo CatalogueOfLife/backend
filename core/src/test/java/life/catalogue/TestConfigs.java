@@ -23,7 +23,7 @@ public class TestConfigs implements ExporterConfig {
   public NormalizerConfig normalizer = new NormalizerConfig();
   public MatchingConfig matching = new MatchingConfig();
   public ImgConfig img = new ImgConfig();
-  public ReleaseConfig release = new ReleaseConfig();
+  public ReleaseConfig release = releaseConfig();
   public ProjectReleaseConfig projectRelease = new ProjectReleaseConfig();
   public JobConfig job = new JobConfig();
   public GbifConfig gbif = new GbifConfig();
@@ -51,7 +51,20 @@ public class TestConfigs implements ExporterConfig {
     return cfg;
   }
 
+  /**
+   * A release config writing to its own temp dirs. The defaults below /tmp/col are shared by every build on a host,
+   * and the tests deleting their reports afterwards removed the reports of a concurrent build mid release.
+   */
+  public static ReleaseConfig releaseConfig() {
+    var cfg = new ReleaseConfig();
+    cfg.reportDir = Files.createTempDir();
+    cfg.colDownloadDir = Files.createTempDir();
+    return cfg;
+  }
+
   public void removeCfgDirs() {
+    FileUtils.deleteQuietly(release.reportDir);
+    FileUtils.deleteQuietly(release.colDownloadDir);
     FileUtils.deleteQuietly(job.downloadDir);
     FileUtils.deleteQuietly(normalizer.scratchDir);
     FileUtils.deleteQuietly(normalizer.archiveDir);

@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.TestConfigs;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncTestBase;
@@ -55,7 +56,7 @@ public class IdProviderReleaseIT {
     .outerRule(dataRule)
     .around(matchingRule);
 
-  final ReleaseConfig cfg = new ReleaseConfig();
+  final ReleaseConfig cfg = TestConfigs.releaseConfig();
   final ProjectReleaseConfig prCfg = new ProjectReleaseConfig();
   final NameUsageArchiver archiver = new NameUsageArchiver(SqlSessionFactoryRule.getSqlSessionFactory());
 
