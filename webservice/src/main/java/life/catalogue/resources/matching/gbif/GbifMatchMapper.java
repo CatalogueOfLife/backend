@@ -13,6 +13,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -35,7 +36,7 @@ public class GbifMatchMapper {
     var gm = new GbifNameUsageMatch();
     gm.diagnostics.timeTaken = millis;
     MatchType type = m == null || m.type == null ? MatchType.NONE : m.type;
-    if (type == MatchType.VARIANT && m.isMatch() && sameNameWithoutAuthorship(query, m.usage)) {
+    if (type == MatchType.VARIANT && m.isMatch() && sameName(query, m.usage)) {
       type = MatchType.EXACT;
     }
     if (m != null && m.isMatch()) {
@@ -86,19 +87,28 @@ public class GbifMatchMapper {
   }
 
   private static MatchType labelType(@Nullable SimpleName query, SimpleName usage) {
-    if (query == null || sameNameWithoutAuthorship(query, usage)) {
+    if (query == null || sameName(query, usage)) {
       return MatchType.EXACT;
     }
     return UsageMatcher.labelType(query, usage);
   }
 
   /**
-   * A query without authorship that has exactly the usage's name is an EXACT match for GBIF.
-   * The CLB matcher compares full labels and calls it a VARIANT as the authorship is missing.
+   * For GBIF a match of exactly the same name is EXACT, whatever the authorship says, and a VARIANT means a fuzzy
+   * match of a differently spelled name, which GBIF flags on its occurrences. The CLB matcher compares full labels
+   * and calls a different authorship or subgenus a VARIANT, so the names are compared without both here.
+   * A spelling variant sharing the stemmed names index entry, like peplis and peplus, stays a VARIANT.
    */
-  static boolean sameNameWithoutAuthorship(@Nullable SimpleName query, SimpleName usage) {
-    return query != null && StringUtils.isBlank(query.getAuthorship()) && query.getName() != null
-      && StringUtils.normalizeSpace(query.getName()).equalsIgnoreCase(StringUtils.normalizeSpace(usage.getName()));
+  static boolean sameName(@Nullable SimpleName query, SimpleName usage) {
+    return query != null && query.getName() != null && usage.getName() != null
+      && withoutSubgenus(query.getName()).equalsIgnoreCase(withoutSubgenus(usage.getName()));
+  }
+
+  // a subgenus in round brackets after the genus of a bi- or trinomial
+  private static final Pattern SUBGENUS = Pattern.compile("^(\\S+) \\([^)]+\\)(?= )");
+
+  private static String withoutSubgenus(String name) {
+    return SUBGENUS.matcher(StringUtils.normalizeSpace(name)).replaceFirst("$1");
   }
 
   static String gbifStatus(@Nullable TaxonomicStatus status) {

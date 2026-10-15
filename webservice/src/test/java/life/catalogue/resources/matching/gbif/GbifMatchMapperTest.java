@@ -108,8 +108,24 @@ public class GbifMatchMapperTest {
     assertEquals(1, m.diagnostics.alternatives.size());
     var alt = m.diagnostics.alternatives.getFirst();
     assertEquals("G2", alt.usage.key);
-    assertEquals("VARIANT", alt.diagnostics.matchType);
+    // the same name, so EXACT for GBIF although the authorship differs
+    assertEquals("EXACT", alt.diagnostics.matchType);
     assertNull(alt.diagnostics.confidence);
+  }
+
+  @Test
+  public void sameNameIsExact() {
+    var pipiens = usage("C", Rank.SPECIES, TaxonomicStatus.ACCEPTED, "Culex (Culex) pipiens", "Linnaeus, 1758");
+    var query = usage(null, Rank.SPECIES, TaxonomicStatus.ACCEPTED, "Culex pipiens", "(Linnaeus, 1758)");
+    var m = GbifMatchMapper.map(query, UsageMatch.match(MatchType.VARIANT, pipiens, 3, null), false, 0);
+    assertEquals("EXACT", m.diagnostics.matchType);
+    assertEquals(100, (int) m.diagnostics.confidence);
+
+    // a spelling variant sharing the stemmed names index entry stays a variant
+    var peplus = usage("P", Rank.SPECIES, TaxonomicStatus.ACCEPTED, "Euphorbia peplus", "L.");
+    query = usage(null, Rank.SPECIES, TaxonomicStatus.ACCEPTED, "Euphorbia peplis", "L.");
+    m = GbifMatchMapper.map(query, UsageMatch.match(MatchType.VARIANT, peplus, 3, null), false, 0);
+    assertEquals("VARIANT", m.diagnostics.matchType);
   }
 
   @Test

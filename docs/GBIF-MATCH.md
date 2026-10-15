@@ -54,8 +54,10 @@ for a synonym, its accepted name) and `diagnostics` with `matchType`, `confidenc
 Confidences follow the match type, the scores of the OpenRefine reconciliation. Above genus the matcher accepts a
 usage of another rank in the same major group (Osteichthyes asked for as a class, held as a parvphylum); such a
 match loses 2 points if both ranks share their major rank (subclass and class) and 5 otherwise. Whenever the GBIF type differs
-from the CLB one, `diagnostics.note` says `clb matchType=<type>`. Alternatives carry a match type but no confidence. A query without authorship that has exactly the usage's name is
-EXACT, as for GBIF, although the CLB matcher calls it a VARIANT of the full label.
+from the CLB one, `diagnostics.note` says `clb matchType=<type>`. Alternatives carry a match type but no confidence. A query with exactly the usage's name is
+EXACT, as for GBIF, whatever the authorship says and with or without a subgenus, although the CLB matcher calls
+it a VARIANT of the full label. GBIF reads a VARIANT as a fuzzy match of a differently spelled name, so only
+spelling variants that share a stemmed names index entry (Euphorbia peplis, peplus) stay VARIANT.
 CLB statuses map to GBIF ones: `PROVISIONALLY_ACCEPTED` and `BARE_NAME` are `DOUBTFUL`, `AMBIGUOUS_SYNONYM` is
 `PROPARTE_SYNONYM`.
 
