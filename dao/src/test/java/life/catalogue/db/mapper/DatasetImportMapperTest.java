@@ -383,6 +383,30 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   }
 
   /**
+   * GET /dataset/{key}/import pages through the attempts with an offset instead of an ever growing limit.
+   * See https://github.com/CatalogueOfLife/backend/issues/1647
+   */
+  @Test
+  public void pageByOffset() throws Exception {
+    final int datasetKey = createBoth(JobStatus.FINISHED).getDatasetKey();
+    createBoth(JobStatus.FAILED);
+    createBoth(JobStatus.FINISHED);
+    commit();
+
+    JobSearchRequest req = new JobSearchRequest();
+    req.setDatasetKey(datasetKey);
+    var all = mapper().list(req, new Page(0, 3));
+    assertEquals(3, all.size());
+
+    for (int offset = 0; offset < 3; offset++) {
+      var page = mapper().list(req, new Page(offset, 1));
+      assertEquals(1, page.size());
+      assertEquals(all.get(offset).getAttempt(), page.get(0).getAttempt());
+    }
+    assertTrue(mapper().count(req) >= 3);
+  }
+
+  /**
    * The placement conflict report divides the flagged by the accepted genera of a dataset's latest import.
    * See https://github.com/CatalogueOfLife/backend/issues/1608
    */
