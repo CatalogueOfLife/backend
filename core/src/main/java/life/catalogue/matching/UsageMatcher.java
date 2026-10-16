@@ -22,6 +22,8 @@ import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.RankGroup;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -43,6 +45,10 @@ import com.google.common.base.Supplier;
  */
 public class UsageMatcher implements AutoCloseable {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcher.class);
+  // an abbreviated lower case rank marker after the genus, var. subsp. f. nothosubsp.
+  private static final Pattern RANK_MARKER = Pattern.compile("(?<=\\s)[a-z]{1,12}\\.(?=\\s)");
+  // the subgenus in brackets right after the genus of a bi- or trinomial
+  private static final Pattern SUBGENUS = Pattern.compile("^(\\S+)\\s+\\([^)]*\\)(?=\\s+\\S)");
   // lenient publication-year tolerance when disambiguating homonyms by a year-only authorship:
   // years within this many years of each other are treated as the same (dates are often cited off by one)
   private final static int YEAR_DIFF_ALLOWED = 1;
@@ -131,12 +137,12 @@ public class UsageMatcher implements AutoCloseable {
   /**
    * Like {@link #match(SimpleNameClassified, boolean, boolean)} but with an optional higher rank fallback.
    * If {@code higherRank} is true and the name itself does not match any usage, the matcher walks up the
-   * ranks and tries to match a higher rank usage instead, see {@link #matchHigherRank(SimpleNameClassified, boolean, boolean)}.
+   * ranks and tries to match a higher rank usage instead, see {@link #matchHigherRank(SimpleNameClassified, boolean, MatchingMode)}.
    * The fallback is opt-in because callers like the assembly merge rely on an empty match to create new usages
    * and must not be redirected to a higher rank taxon. The taxonomic group veto is always strict here.
    */
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, boolean higherRank) throws NotFoundException {
-    return match(snc, allowInserts, verbose, higherRank, false);
+    return match(snc, allowInserts, verbose, higherRank, null);
   }
 
   /**
@@ -156,7 +162,7 @@ public class UsageMatcher implements AutoCloseable {
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, @Nullable MatchingMode mode, boolean verbose)
       throws NotFoundException {
     mode = readOnlyMode(mode);
-    return match(snc, false, verbose, mode.higherRank(), mode.relaxedGroups());
+    return match(snc, false, verbose, mode.higherRank(), mode);
   }
 
   private static MatchingMode readOnlyMode(@Nullable MatchingMode mode) {
@@ -166,11 +172,14 @@ public class UsageMatcher implements AutoCloseable {
     return mode == null ? MatchingMode.RELAXED : mode;
   }
 
+  /**
+   * @param mode the mode of an external query, null for names held in ChecklistBank, which always match strictly
+   */
   private UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, boolean higherRank,
-                           boolean relaxedGroups) throws NotFoundException {
-    var m = matchName(snc, allowInserts, verbose, relaxedGroups);
+                           @Nullable MatchingMode mode) throws NotFoundException {
+    var m = matchName(snc, allowInserts, verbose, mode);
     if (higherRank && !m.isMatch()) {
-      var hr = matchHigherRank(snc, verbose, relaxedGroups);
+      var hr = matchHigherRank(snc, verbose, mode);
       if (hr.isMatch()) {
         return hr;
       }
@@ -194,7 +203,7 @@ public class UsageMatcher implements AutoCloseable {
     }
     var snc = new SimpleNameClassified<SimpleNameCached>();
     snc.setClassification(classification);
-    return matchHigherRank(snc, verbose, mode.relaxedGroups());
+    return matchHigherRank(snc, verbose, mode);
   }
 
   /**
@@ -204,10 +213,10 @@ public class UsageMatcher implements AutoCloseable {
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose) throws NotFoundException {
-    return matchName(snc, allowInserts, verbose, false);
+    return matchName(snc, allowInserts, verbose, null);
   }
 
-  private UsageMatch matchName(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, boolean relaxedGroups)
+  private UsageMatch matchName(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, @Nullable MatchingMode mode)
       throws NotFoundException {
     if (snc.getNamesIndexId() == null) {
       return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey);
@@ -221,7 +230,7 @@ public class UsageMatcher implements AutoCloseable {
       // between runs - a store's own order follows hash sets and changes with every new id it holds
       var candidates = new ArrayList<>(existing);
       candidates.sort(Comparator.comparing(SimpleName::getId));
-      var match = filterCandidates(snc, candidates, verbose, relaxedGroups);
+      var match = filterCandidates(snc, candidates, verbose, mode);
       // AMBIGUOUS remains unchanged, any other match is classified from the labels
       if (match.isMatch() && match.type != MatchType.AMBIGUOUS) {
         MatchType computed = labelType(snc, match.usage);
@@ -254,7 +263,7 @@ public class UsageMatcher implements AutoCloseable {
    *
    * @return a HIGHERRANK match or an empty NONE match if no higher rank usage could be matched
    */
-  private UsageMatch matchHigherRank(SimpleNameClassified<SimpleNameCached> snc, boolean verbose, boolean relaxedGroups)
+  private UsageMatch matchHigherRank(SimpleNameClassified<SimpleNameCached> snc, boolean verbose, @Nullable MatchingMode mode)
       throws NotFoundException {
     for (var q : higherRankCandidates(snc)) {
       // make sure the higher name is matched to the names index, but never insert
@@ -264,7 +273,7 @@ public class UsageMatcher implements AutoCloseable {
       if (q.getNamesIndexId() == null) {
         continue; // not in the names index, try the next higher rank
       }
-      var match = matchName(q, false, verbose, relaxedGroups);
+      var match = matchName(q, false, verbose, mode);
       // keep walking upwards if the higher rank itself is unmatched or ambiguous
       if (match.isMatch() && match.type != MatchType.AMBIGUOUS) {
         LOG.debug("Matched {} {} to higher rank {} {}", snc.getRank(), snc.getLabel(), match.usage.getRank(), match.usage.getLabel());
@@ -418,12 +427,14 @@ public class UsageMatcher implements AutoCloseable {
   /**
    * @param nu         usage to be match
    * @param existing   candidates with the same names index id to be matched against
+   * @param mode       the mode of an external query, null for names held in ChecklistBank
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
   private UsageMatch filterCandidates(SimpleNameClassified<SimpleNameCached> nu, List<SimpleNameClassified<SimpleNameCached>> existing,
-                                      boolean verbose, boolean relaxedGroups) throws NotFoundException {
+                                      boolean verbose, @Nullable MatchingMode mode) throws NotFoundException {
     final boolean qualifiedName = nu.hasAuthorship() && nu.getRank() != null && nu.getRank() != Rank.UNRANKED;
+    final boolean relaxedGroups = mode != null && mode.relaxedGroups();
 
     // if set to true during filtering the final match will be a snap, not a true match
     boolean snap = false;
@@ -438,7 +449,13 @@ public class UsageMatcher implements AutoCloseable {
     // name match requests from outside often come with no rank
     // we dont want them to be filtered by rank, so we allow unranked
     if (nu.getRank() != null && nu.getRank() != Rank.UNRANKED) {
-      existing.removeIf(u -> ranksDiffer(u.getRank(), () -> concreteParentRank(u), nu.getRank(), nu.getClassification()));
+      // A rank given apart from an infraspecific name that shows no rank marker is only what the caller believes it
+      // to be, so in relaxed mode it does not rule out the other infraspecific ranks: Anas platyrhynchos domesticus
+      // sent as a variety is the form. A name with a marker keeps it strict, var. and subsp. are often different taxa.
+      // See https://github.com/CatalogueOfLife/backend/issues/1659
+      final boolean rankHint = mode != null && mode.relaxedRanks() && nu instanceof QueryName q && q.isUnmarkedRank();
+      existing.removeIf(u -> ranksDiffer(u.getRank(), () -> concreteParentRank(u), nu.getRank(), nu.getClassification())
+        && !(rankHint && u.getRank().isInfraspecific()));
       // require strict rank match in case it exists at least once
       if (existing.size() > 1 && contains(existing, nu.getRank())) {
         existing.removeIf(u -> u.getRank() != nu.getRank());
@@ -568,6 +585,13 @@ public class UsageMatcher implements AutoCloseable {
       });
     }
 
+    // A misapplied name is the name used for another taxon, so it loses to a candidate of the name itself.
+    // See https://github.com/CatalogueOfLife/backend/issues/1651
+    if (existing.size() > 1 && nu.getStatus() != TaxonomicStatus.MISAPPLIED
+        && existing.stream().anyMatch(u -> u.getStatus() != TaxonomicStatus.MISAPPLIED)) {
+      existing.removeIf(u -> u.getStatus() == TaxonomicStatus.MISAPPLIED);
+    }
+
     // first try exact single match with authorship - dont remove matches from the candidate list!
     if (qualifiedName) {
       boolean matchExact = false;
@@ -629,15 +653,32 @@ public class UsageMatcher implements AutoCloseable {
         }
         return false;
       });
+      // the authorship is evidence without a rank too: a single candidate with an equal one is the name
+      var equal = existing.stream().filter(u -> equalAuthorship(u, nu)).toList();
+      if (equal.size() == 1) {
+        existing.removeIf(u -> u != equal.getFirst());
+      }
     }
 
     // The names index stems epithets, so one canonical id can hold distinct names like Euphorbia peplis and
     // Euphorbia peplus. If some candidates are spelled exactly like the query, the others are only stemmed
     // variants of it. See https://github.com/CatalogueOfLife/backend/issues/1566
+    // A query without a subgenus tells nothing about it, so the candidates' subgenus is no part of their spelling then:
+    // Aphis nerii is the accepted Aphis (Aphis) nerii as much as its homonym synonyms Aphis nerii.
+    // See https://github.com/CatalogueOfLife/backend/issues/1651
     if (existing.size() > 1 && nu.getName() != null) {
+      final boolean subgenus = SUBGENUS.matcher(nu.getName()).find();
+      final Function<String, String> spelling = n -> subgenus ? n : withoutSubgenus(n);
       final String name = SciNameNormalizer.normalizeWhitespaceAndPunctuation(nu.getName());
-      if (existing.stream().anyMatch(u -> sameSpelling(u, name))) {
-        existing.removeIf(u -> !sameSpelling(u, name));
+      if (existing.stream().anyMatch(u -> sameSpelling(spelling.apply(u.getName()), name))) {
+        existing.removeIf(u -> !sameSpelling(spelling.apply(u.getName()), name));
+      } else {
+        // a query whose rank marker differs from the candidates' still prefers the epithets spelled like its own:
+        // Anas platyrhynchos domesticus sent as a variety is the form domesticus, not the subspecies domestica
+        final String bare = withoutRankMarkers(nu.getName());
+        if (existing.stream().anyMatch(u -> sameSpelling(withoutRankMarkers(spelling.apply(u.getName())), bare))) {
+          existing.removeIf(u -> !sameSpelling(withoutRankMarkers(spelling.apply(u.getName())), bare));
+        }
       }
     }
 
@@ -661,21 +702,7 @@ public class UsageMatcher implements AutoCloseable {
     }
 
     // all synonyms pointing to the same accepted? then it won't matter much for snapping
-    SimpleNameClassified<SimpleNameCached> synonym = null;
-    String parentID = null;
-    for (var u : existing) {
-      if (u.getStatus().isTaxon()) {
-        synonym = null;
-        break;
-      }
-      if (parentID == null) {
-        parentID = u.getParent();
-        synonym = u;
-      } else if (!parentID.equals(u.getParent())) {
-        synonym = null;
-        break;
-      }
-    }
+    var synonym = synonymOfOneAccepted(existing);
     if (synonym != null) {
       return UsageMatch.snap(synonym, datasetKey, alt);
     }
@@ -684,6 +711,11 @@ public class UsageMatcher implements AutoCloseable {
     existing.removeIf(u -> u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     if (existing.size() == 1) {
       return UsageMatch.snap(existing.getFirst(), datasetKey, alt);
+    }
+    // without them the others may all be synonyms of one accepted name
+    synonym = synonymOfOneAccepted(existing);
+    if (synonym != null) {
+      return UsageMatch.snap(synonym, datasetKey, alt);
     }
 
     if (existing.isEmpty()) {
@@ -721,12 +753,13 @@ public class UsageMatcher implements AutoCloseable {
       }
 
       // Nothing told the remaining candidates apart. The tie breaks below - the deepest classified candidate or
-      // simply the first - would put the name into whichever group happens to win and flip it between releases:
-      // species of Platygaster under the flies, bacteria under the scale insects. Candidates of disparate groups
-      // are homonyms this name cannot be placed among, so say so instead of guessing.
-      // See https://github.com/CatalogueOfLife/backend/issues/1608
-      if (nu.getRank() != null && nu.getRank().isSupraspecific() && spansDisparateGroups(existing)) {
-        LOG.debug("{} ambiguous homonyms of disparate groups encountered for {} in source {}", existing.size(), nu.getLabel(), datasetKey);
+      // simply the first - would put the name into whichever taxon happens to win and flip it between releases:
+      // species of Platygaster under the flies, bacteria under the scale insects. So they only pick among duplicates
+      // of one name. Real homonyms, or candidates that might be, are names this one cannot be placed among: they span
+      // disparate groups, have different authorships or lack one to compare. Say so instead of guessing.
+      // See https://github.com/CatalogueOfLife/backend/issues/1608 and https://github.com/CatalogueOfLife/backend/issues/1651
+      if (mayBeHomonyms(existing)) {
+        LOG.debug("{} ambiguous homonyms encountered for {} in source {}", existing.size(), nu.getLabel(), datasetKey);
         return UsageMatch.unresolvedHomonym(MatchType.AMBIGUOUS, alt, datasetKey);
       }
 
@@ -758,11 +791,44 @@ public class UsageMatcher implements AutoCloseable {
   }
 
   /**
+   * @return the first candidate if all of them are synonyms of the same accepted name, otherwise null
+   */
+  @Nullable
+  private static SimpleNameClassified<SimpleNameCached> synonymOfOneAccepted(List<SimpleNameClassified<SimpleNameCached>> candidates) {
+    String parentID = null;
+    for (var u : candidates) {
+      if (u.getStatus().isTaxon() || parentID != null && !parentID.equals(u.getParent())) {
+        return null;
+      }
+      parentID = u.getParent();
+    }
+    return candidates.isEmpty() ? null : candidates.getFirst();
+  }
+
+  /**
    * @param normName query name already normalized by {@link SciNameNormalizer#normalizeWhitespaceAndPunctuation}
    * @return true if the candidate name is spelled like the query, ignoring case, whitespace and punctuation
    */
-  private static boolean sameSpelling(SimpleName u, String normName) {
-    return u.getName() != null && normName.equalsIgnoreCase(SciNameNormalizer.normalizeWhitespaceAndPunctuation(u.getName()));
+  private static boolean sameSpelling(@Nullable String name, String normName) {
+    return name != null && normName.equalsIgnoreCase(SciNameNormalizer.normalizeWhitespaceAndPunctuation(name));
+  }
+
+  /**
+   * @return the name normalized by {@link SciNameNormalizer#normalizeWhitespaceAndPunctuation} without its rank markers,
+   *         the abbreviated lower case words like var., subsp. or f. that follow the genus
+   */
+  @VisibleForTesting
+  static String withoutRankMarkers(@Nullable String name) {
+    return name == null ? null : SciNameNormalizer.normalizeWhitespaceAndPunctuation(RANK_MARKER.matcher(name).replaceAll(" "));
+  }
+
+  /**
+   * @return the name without the subgenus in brackets that follows the genus of a bi- or trinomial.
+   *         A subgenus name itself, Aus (Bus), is kept.
+   */
+  @VisibleForTesting
+  static String withoutSubgenus(@Nullable String name) {
+    return name == null ? null : SUBGENUS.matcher(name).replaceFirst("$1");
   }
 
   /**
@@ -957,6 +1023,25 @@ public class UsageMatcher implements AutoCloseable {
       return fallback;
     }
     return group;
+  }
+
+  /**
+   * @return true unless all candidates are duplicates of one name: they have an authorship, no two of them compare
+   *         DIFFERENT and they belong to no disparate taxonomic groups. Without an authorship a homonym cannot be
+   *         told from a duplicate.
+   */
+  private boolean mayBeHomonyms(List<SimpleNameClassified<SimpleNameCached>> candidates) {
+    if (candidates.stream().anyMatch(u -> !u.hasAuthorship())) {
+      return true;
+    }
+    for (int i = 0; i < candidates.size(); i++) {
+      for (int j = i + 1; j < candidates.size(); j++) {
+        if (differentAuthorship(candidates.get(i), candidates.get(j))) {
+          return true;
+        }
+      }
+    }
+    return spansDisparateGroups(candidates);
   }
 
   /**

@@ -107,7 +107,7 @@ public class MatchingWsServiceTest extends MatchingWsTestBase {
   public void testHomonyms() {
     // Oenanthe
     Classification cl = cl();
-    known(Known.HOMONYMS); assertNoMatch("Oenanthe", cl);
+    assertNoMatch("Oenanthe", cl);
 
     cl.setKingdom("Animalia");
     assertMatch("Oenanthe", cl, 2492483);
@@ -118,7 +118,7 @@ public class MatchingWsServiceTest extends MatchingWsTestBase {
 
     // Acanthophora
     cl = cl();
-    known(Known.HOMONYMS); assertNoMatch("Acanthophora", cl);
+    assertNoMatch("Acanthophora", cl);
 
     // there are 3 genera in animalia, 2 synonyms and 1 accepted but they differ at phylum level
     cl.setKingdom("Animalia");

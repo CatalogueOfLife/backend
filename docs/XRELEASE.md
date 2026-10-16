@@ -332,13 +332,17 @@ The rules above need an authored incoming genus. Two other paths reach a genus h
 a source genus without authorship, and the implicit genus `TreeBaseHandler.createImplicit` looks up for a species
 that came with nothing but its genus name (ZooBank, single paper datasets). For those:
 
-- **No guessing between disparate groups.** When nothing - authorship, the shared ranks, the taxonomic group of the
-  incoming name - told the remaining candidates apart and they belong to disparate `TaxGroup`s, the matcher returns
-  no match flagged as an unresolved homonym instead of falling through to its tie breaks (the deepest classified
-  candidate, then the first). The merge skips such a name with its subtree as `AMBIGUOUS_HOMONYM`; for an implicit
-  genus that means the species that needed it. Candidates of one lineage still go to the tie breaks, which are
-  stable now: candidates are ordered by id, where the order of the in-memory store used to follow a hash set and
-  flipped the pick between releases.
+- **No guessing between homonyms.** When nothing - authorship, the shared ranks, the taxonomic group of the incoming
+  name, the name itself over its misapplications, a single accepted name among synonyms or synonyms of one accepted
+  name - told the remaining candidates apart, the matcher only falls through
+  to its tie breaks (the deepest classified candidate, then the first) for duplicates of one name: every candidate
+  has an authorship, no two of them compare DIFFERENT and none belong to disparate `TaxGroup`s. Anything else, at any
+  rank, is no match flagged as an unresolved homonym. The merge skips such a name with its subtree as
+  `AMBIGUOUS_HOMONYM`; for an implicit genus or species that means the name that needed it. Without an authorship a
+  homonym cannot be told from a duplicate, so an authorless duplicate in the project costs the source name and its
+  subtree: a duplicate in COL is bad, a false merge is worse. The tie breaks are stable: candidates are ordered by id,
+  where the order of the in-memory store used to follow a hash set and flipped the pick between releases. See
+  [#1651](https://github.com/CatalogueOfLife/backend/issues/1651).
 - **A group for the whole source.** The lowest group shared by the source dataset's `taxonomicGroupScope` serves as
   the group of a merged name whose own classification yields none or only eukaryotes (`UsageMatcher.queryGroup`).
   The dataset title is not used: a paper on the disease of a grass names the grass.

@@ -39,6 +39,8 @@ public class AuthorComparator {
   private final AuthorshipNormalizer normalizer;
   static final int MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP = 4;
   static final int MIN_JARO_SURNAME_DISTANCE = 90;
+  // years an authorship may differ from one only equal by the work it was published in, X in Y against Y
+  static final int IN_YEAR_DIFF_ALLOWED = 1;
   private final int minCommonSubstring;
   
   public AuthorComparator(AuthorshipNormalizer normalizer) {
@@ -202,6 +204,26 @@ public class AuthorComparator {
   private Equality compareAuthorteam(@Nullable Authorship a1, @Nullable Authorship a2,
                                      final int minCommonSubstring, final int maxAuthorLengthWithoutLookup, final int jaroDistance,
                                      NomCode code
+  ) {
+    Equality equality = compareTeams(a1, a2, minCommonSubstring, maxAuthorLengthWithoutLookup, jaroDistance, code);
+    // X in Y: the name is X's, published in a work of Y, and cited either way, Natterer in Kuhl as Kuhl.
+    // Two in citations are told apart by their own authors, Natterer in Kuhl is not Smith in Kuhl.
+    // As Y may well have named the same epithet himself a few years on, the work only tells when the years agree.
+    // See https://github.com/CatalogueOfLife/backend/issues/1652
+    if (equality != Equality.EQUAL && a1 != null && a2 != null && a1.hasInAuthors() != a2.hasInAuthors()
+        && new YearComparator(IN_YEAR_DIFF_ALLOWED, a1.getYear(), a2.getYear()).compare() != Equality.DIFFERENT) {
+      var in = a1.hasInAuthors() ? new Authorship(a1.getInAuthors()) : new Authorship(a2.getInAuthors());
+      var other = a1.hasInAuthors() ? a2 : a1;
+      if (compareTeams(in, other, minCommonSubstring, maxAuthorLengthWithoutLookup, jaroDistance, code) == Equality.EQUAL) {
+        return Equality.EQUAL;
+      }
+    }
+    return equality;
+  }
+
+  private Equality compareTeams(@Nullable Authorship a1, @Nullable Authorship a2,
+                                final int minCommonSubstring, final int maxAuthorLengthWithoutLookup, final int jaroDistance,
+                                NomCode code
   ) {
     // convert to all lower case, ascii only, no punctuation but commas seperating authors and normed whitespace
     List<String> authorTeam1 = normalizer.lookup(AuthorshipNormalizer.normalize(a1, code), maxAuthorLengthWithoutLookup, code);

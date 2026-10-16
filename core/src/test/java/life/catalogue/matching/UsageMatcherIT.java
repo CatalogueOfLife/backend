@@ -371,9 +371,10 @@ public class UsageMatcherIT {
   public void bacteria() throws InterruptedException {
     loadDataset(5);
 
-    // no match for a homonym
+    // no match for a homonym, the domain and the stick insect genus are both accepted
     var m = match(null, "Bacteria", null, cl());
-    assertMatch(m, "BacG");
+    assertNoMatch(m);
+    assertTrue(m.unresolvedHomonym);
 
     // match with domain rank
     m = match(Rank.DOMAIN, "Bacteria", null, cl());

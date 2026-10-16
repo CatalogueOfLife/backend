@@ -156,6 +156,35 @@ public class AuthorComparatorTest {
   }
 
   /**
+   * X in Y: the name is X's, published in a work of Y, and cited either way. The year still has to agree.
+   * See https://github.com/CatalogueOfLife/backend/issues/1652
+   */
+  @Test
+  public void compareIn() throws Exception {
+    assertTrue(parse("Natterer in Kuhl, 1817").hasInAuthors());
+    assertAuth("Natterer in Kuhl, 1817", Equality.EQUAL, "Kuhl, 1817");
+    assertAuth("Natterer in Kuhl, 1817", Equality.EQUAL, "Natterer, 1817");
+    assertAuth("Kuhl, 1817", Equality.EQUAL, "Natterer in Kuhl, 1817");
+    assertAuth("Natterer in Kuhl", Equality.EQUAL, "Kuhl");
+    assertAuth("Boucher ex DC. in Lam. & DC.", Equality.EQUAL, "Lam.");
+    // the year still has to agree, within a year when only the work tells: Kuhl may have named another bus later on
+    assertAuth("Natterer in Kuhl, 1817", Equality.DIFFERENT, "Kuhl, 1850");
+    assertAuth("Natterer in Kuhl, 1817", Equality.DIFFERENT, "Kuhl, 1822");
+    assertAuth("Natterer in Kuhl, 1817", Equality.EQUAL, "Kuhl, 1818");
+    assertAuth("Natterer in Kuhl, 1817", Equality.EQUAL, "Natterer, 1822");
+    assertAuth("Natterer in Kuhl, 1817", Equality.DIFFERENT, "Smith, 1817");
+    // names published in the same work are told apart by their own authors
+    assertAuth("Natterer in Kuhl, 1817", Equality.EQUAL, "Natterer in Kuhl, 1817");
+    assertAuth("Natterer in Kuhl, 1817", Equality.DIFFERENT, "Smith in Kuhl, 1817");
+    // in the basionym authorship
+    assertAuth(null, null, "Natterer in Kuhl", "1817", Equality.EQUAL, null, null, "Kuhl", "1817");
+    // strict and authors first comparisons too
+    assertAuthStrict("Natterer in Kuhl", "1817", true, "Kuhl", "1817", NomCode.ZOOLOGICAL);
+    assertAuthStrict("Natterer in Kuhl", "1817", false, "Smith", "1817", NomCode.ZOOLOGICAL);
+    assertEquals(Equality.EQUAL, comp.compareAuthorsFirst(parse("Natterer in Kuhl, 1817"), parse("Kuhl, 1817")));
+  }
+
+  /**
    * Et al should match to a more extensive list of authors.
    */
   @Test
