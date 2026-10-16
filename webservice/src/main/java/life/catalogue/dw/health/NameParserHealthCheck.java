@@ -30,8 +30,8 @@ public class NameParserHealthCheck extends HealthCheck {
       if (name.isBinomial() &&
           name.getGenus().equals("Abies") &&
           name.getSpecificEpithet().equals("alba") &&
-          name.getBasionymAuthorship().getAuthors().equals(Lists.newArrayList("L.")) &&
-          name.getCombinationAuthorship().getAuthors().equals(Lists.newArrayList("Mill.")) &&
+          Lists.newArrayList("L.").equals(name.getBasionymAuthorship().getAuthors()) &&
+          Lists.newArrayList("Mill.").equals(name.getCombinationAuthorship().getAuthors()) &&
           result.get().getTaxonomicNote().equals("sec Döring 1999")
           ) {
         return Result.healthy();

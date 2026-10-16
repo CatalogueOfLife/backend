@@ -179,7 +179,6 @@ public class ApiModule extends SimpleModule {
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "result")
   @JsonSubTypes({
     @JsonSubTypes.Type(value = ParseResult.Parsed.class, name = "parsed"),
-    @JsonSubTypes.Type(value = ParseResult.Informal.class, name = "informal"),
     @JsonSubTypes.Type(value = ParseResult.Unparsable.class, name = "unparsable")
   })
   abstract static class ParseResultMixIn {

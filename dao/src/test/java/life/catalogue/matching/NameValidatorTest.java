@@ -154,7 +154,7 @@ public class NameValidatorTest {
     n.setUninomial("Abies");
     verify(n, Issue.MISSING_AUTHORSHIP);
     
-    n.getCombinationAuthorship().getAuthors().add("Mill.");
+    n.getCombinationAuthorship().addAuthor("Mill.");
     n.rebuildAuthorship();
     verify(n);
     

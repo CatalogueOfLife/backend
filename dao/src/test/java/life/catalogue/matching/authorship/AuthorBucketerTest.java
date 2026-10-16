@@ -66,7 +66,7 @@ public class AuthorBucketerTest {
 
   private static Authorship buildAuthorship(String author) {
     Authorship a = new Authorship();
-    a.getAuthors().add(author);
+    a.addAuthor(author);
     return a;
   }
 

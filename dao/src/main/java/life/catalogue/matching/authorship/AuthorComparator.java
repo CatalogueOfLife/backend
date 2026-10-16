@@ -88,7 +88,7 @@ public class AuthorComparator {
       // if authors are not the same we allow a positive year comparison to override it as author comparison is very difficult
       Equality yresult = new YearComparator(a1.getYear(), a2.getYear()).compare();
       if (yresult != Equality.UNKNOWN) {
-        if (yresult == Equality.DIFFERENT || a1.getAuthors().isEmpty()  || a2.getAuthors().isEmpty()) {
+        if (yresult == Equality.DIFFERENT || !a1.hasAuthors() || !a2.hasAuthors()) {
           result = yresult;
         } else {
           // year EQUAL, i.e. very close by
