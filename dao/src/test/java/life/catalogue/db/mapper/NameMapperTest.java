@@ -124,6 +124,37 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     assertFalse(n2.getBasionymAuthorship().isBracketedYear());
   }
   
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1664
+   */
+  @Test
+  public void emptyAuthorsStoredAsNull() throws Exception {
+    Name n = TestEntityGenerator.newName("sk4");
+    n.getCombinationAuthorship().setAuthors(List.of("L."));
+    n.getCombinationAuthorship().setExAuthors(List.of());
+    n.getBasionymAuthorship().setAuthors(null);
+    nameMapper.create(n);
+    commit();
+
+    try (var st = connection().createStatement();
+         var rs = st.executeQuery("SELECT combination_authors, combination_ex_authors, basionym_authors, basionym_ex_authors " +
+           "FROM name WHERE dataset_key=" + n.getDatasetKey() + " AND id='" + n.getId() + "'")
+    ) {
+      assertTrue(rs.next());
+      assertArrayEquals(new String[]{"L."}, (String[]) rs.getArray(1).getArray());
+      assertNull(rs.getArray(2));
+      assertNull(rs.getArray(3));
+      assertNull(rs.getArray(4));
+    }
+
+    Name n2 = nameMapper.get(n.getKey());
+    assertEquals(List.of("L."), n2.getCombinationAuthorship().getAuthors());
+    // NULL leaves the list unset, as name-parser-api 6 constructs an authorship
+    assertNull(n2.getCombinationAuthorship().getExAuthors());
+    assertNull(n2.getBasionymAuthorship().getAuthors());
+    assertNull(n2.getBasionymAuthorship().getExAuthors());
+  }
+
   @Test
   public void roundtrip2() throws Exception {
     Name n1 = TestEntityGenerator.newName("sk1");

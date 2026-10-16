@@ -299,16 +299,16 @@
   <resultMap id="linneanUsageResultMap" type="LinneanNameUsage" autoMapping="true">
     <id property="id" column="id"/>
     <association property="combinationAuthorship" javaType="Authorship">
-      <result property="authors" column="combination_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
-      <result property="exAuthors" column="combination_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
+      <result property="authors" column="combination_authors" typeHandler="life.catalogue.db.type.AuthorListTypeHandler"/>
+      <result property="exAuthors" column="combination_ex_authors" typeHandler="life.catalogue.db.type.AuthorListTypeHandler"/>
       <result property="year" column="combination_year"/>
       <result property="anonymous" column="combination_anonymous"/>
       <result property="bracketedYear" column="combination_bracketed_year"/>
       <result property="sanctioningAuthor" column="sanctioning_author"/>
     </association>
     <association property="basionymAuthorship" javaType="Authorship">
-      <result property="authors" column="basionym_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
-      <result property="exAuthors" column="basionym_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
+      <result property="authors" column="basionym_authors" typeHandler="life.catalogue.db.type.AuthorListTypeHandler"/>
+      <result property="exAuthors" column="basionym_ex_authors" typeHandler="life.catalogue.db.type.AuthorListTypeHandler"/>
       <result property="year" column="basionym_year"/>
       <result property="anonymous" column="basionym_anonymous"/>
       <result property="bracketedYear" column="basionym_bracketed_year"/>

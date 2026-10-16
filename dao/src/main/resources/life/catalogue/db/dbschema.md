@@ -11,6 +11,36 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-16 empty author lists are stored as NULL
+Names wrote an empty `TEXT[]` for every author list without authors, about 16 bytes per column and row where a NULL
+costs a bit in the null bitmap. Ex authors in particular are rarely used: https://github.com/CatalogueOfLife/backend/issues/1664
+The app now writes NULL for empty lists and reads NULL and `'{}'` alike, so this can run before or after the deploy.
+Names written through the app from now on carry NULL, while releases copy their names in SQL and keep what the
+project has.
+```sql
+ALTER TABLE name
+  ALTER COLUMN basionym_authors DROP DEFAULT,
+  ALTER COLUMN basionym_ex_authors DROP DEFAULT,
+  ALTER COLUMN combination_authors DROP DEFAULT,
+  ALTER COLUMN combination_ex_authors DROP DEFAULT;
+ALTER TABLE name_usage_archive
+  ALTER COLUMN n_basionym_authors DROP DEFAULT,
+  ALTER COLUMN n_basionym_ex_authors DROP DEFAULT,
+  ALTER COLUMN n_combination_authors DROP DEFAULT,
+  ALTER COLUMN n_combination_ex_authors DROP DEFAULT;
+```
+Optional backfill, one partition at a time and off peak, as it rewrites nearly every row. A plain `VACUUM` only makes
+the space reusable for new rows, `VACUUM FULL` or `pg_repack` returns it to the OS. List the partitions with
+`SELECT inhrelid::regclass FROM pg_inherits WHERE inhparent = 'name'::regclass` and run for each:
+```sql
+UPDATE <partition> SET
+  basionym_authors = nullif(basionym_authors, '{}'),
+  basionym_ex_authors = nullif(basionym_ex_authors, '{}'),
+  combination_authors = nullif(combination_authors, '{}'),
+  combination_ex_authors = nullif(combination_ex_authors, '{}')
+WHERE basionym_authors = '{}' OR basionym_ex_authors = '{}' OR combination_authors = '{}' OR combination_ex_authors = '{}';
+```
+
 #### 2026-10-14 type material typifies several names
 A type specimen can typify several names, each with its own type status, as ColDP allows with comma concatenated
 `nameID` and `status` values: https://github.com/CatalogueOfLife/backend/issues/1645

@@ -588,10 +588,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       data.put("infraspecific_epithet", pn.getInfraspecificEpithet());
       data.put("cultivar_epithet", pn.getCultivarEpithet());
       data.put("basionym_authors", str(pn.getBasionymAuthorship().getAuthors()));
-      data.put("basionym_ex_authors", str(pn.getBasionymAuthorship().getAuthors()));
+      data.put("basionym_ex_authors", str(pn.getBasionymAuthorship().getExAuthors()));
       data.put("basionym_year", pn.getBasionymAuthorship().getYear());
       data.put("combination_authors", str(pn.getCombinationAuthorship().getAuthors()));
-      data.put("combination_ex_authors", str(pn.getCombinationAuthorship().getAuthors()));
+      data.put("combination_ex_authors", str(pn.getCombinationAuthorship().getExAuthors()));
       data.put("combination_year", pn.getCombinationAuthorship().getYear());
       // after the 6 author columns PgAuthorshipNormalizer reads in a row
       data.put("basionym_anonymous", str(pn.getBasionymAuthorship().isAnonymous()));
@@ -629,8 +629,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     return val == null ? null : val.name();
   }
   private static String str(List<String> arr) {
-    // author lists are null until set since name-parser-api 6
-    return PgCopyUtils.buildPgArray(arr == null ? new String[0] : arr.toArray(new String[0]));
+    // author lists are null until set since name-parser-api 6, empty ones are NULL in the db, see AuthorListTypeHandler
+    if (arr == null || arr.isEmpty()) return null;
+    return PgCopyUtils.buildPgArray(arr.toArray(new String[0]));
   }
   private static String str(Set<? extends Enum<?>> set) {
     return set == null || set.isEmpty() ? null
