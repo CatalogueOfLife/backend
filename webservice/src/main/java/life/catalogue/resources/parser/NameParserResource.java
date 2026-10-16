@@ -177,7 +177,8 @@ public class NameParserResource {
 
   /**
    * Parses a single name with the GBIF name parser and returns its raw result without any CLB interpretation:
-   * no issues, no {@link Name} built. The "result" property tells a parsed, informal and unparsable name apart.
+   * no issues, no {@link Name} built. The "result" property tells a parsed and an unparsable name apart; an informal
+   * name is parsed, with its type INFORMAL.
    */
   @GET
   @Path("native")

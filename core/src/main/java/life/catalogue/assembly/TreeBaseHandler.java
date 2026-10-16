@@ -691,7 +691,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
                 LOG.warn("Unparsable decision authorship {}", n2.getAuthorship());
                 // add the full, unparsed authorship in this case to not lose it
                 ParsedName pn2 = new ParsedName();
-                pn2.getCombinationAuthorship().getAuthors().add(n2.getAuthorship());
+                pn2.getCombinationAuthorship().addAuthor(n2.getAuthorship());
                 return pn2;
               });
               n.setCombinationAuthorship(an.getCombinationAuthorship());

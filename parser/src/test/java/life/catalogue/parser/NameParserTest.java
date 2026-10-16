@@ -110,7 +110,7 @@ public class NameParserTest {
     assertNull(n.getBasionymAuthorship().getYear());
 
     assertEquals(2, n.getCombinationAuthorship().getAuthors().size());
-    assertEquals(0, n.getCombinationAuthorship().getExAuthors().size());
+    assertFalse(n.getCombinationAuthorship().hasExAuthors());
     assertNull(n.getCombinationAuthorship().getYear());
 
     assertFalse(issues.hasIssues());
@@ -287,7 +287,7 @@ public class NameParserTest {
     // a separate authorship string is kept as given
     Name n = parse("Aodon", "Anonymous, 1798", Rank.GENUS, NomCode.ZOOLOGICAL);
     assertTrue(n.getCombinationAuthorship().isAnonymous());
-    assertTrue(n.getCombinationAuthorship().getAuthors().isEmpty());
+    assertFalse(n.getCombinationAuthorship().hasAuthors());
     assertEquals("1798", n.getCombinationAuthorship().getYear());
     assertEquals("Anonymous, 1798", n.getAuthorship());
 
@@ -301,7 +301,7 @@ public class NameParserTest {
     // an anonymous basionym
     n = parse("Agaricus muscarius", "(anon.) Baker", Rank.SPECIES, null);
     assertTrue(n.getBasionymAuthorship().isAnonymous());
-    assertTrue(n.getBasionymAuthorship().getAuthors().isEmpty());
+    assertFalse(n.getBasionymAuthorship().hasAuthors());
     assertFalse(n.getCombinationAuthorship().isAnonymous());
     assertEquals(List.of("Baker"), n.getCombinationAuthorship().getAuthors());
 
@@ -784,7 +784,7 @@ public class NameParserTest {
     Authorship a = new Authorship();
     a.setYear(year);
     for (String x : authors) {
-      a.getAuthors().add(x);
+      a.addAuthor(x);
     }
     assertEquals(a, pa.getCombinationAuthorship());
   }
@@ -852,17 +852,17 @@ public class NameParserTest {
               break;
             case AUTH:
               assertNull(n.getCombinationAuthorship().getYear());
-              assertTrue(n.getCombinationAuthorship().getAuthors().isEmpty());
+              assertFalse(n.getCombinationAuthorship().hasAuthors());
               break;
             case EXAUTH:
-              assertTrue(n.getCombinationAuthorship().getExAuthors().isEmpty());
+              assertFalse(n.getCombinationAuthorship().hasExAuthors());
               break;
             case BAS:
               assertNull(n.getBasionymAuthorship().getYear());
-              assertTrue(n.getBasionymAuthorship().getAuthors().isEmpty());
+              assertFalse(n.getBasionymAuthorship().hasAuthors());
               break;
             case EXBAS:
-              assertTrue(n.getBasionymAuthorship().getExAuthors().isEmpty());
+              assertFalse(n.getBasionymAuthorship().hasExAuthors());
               break;
             case SANCT:
               assertNull(n.getCombinationAuthorship().getSanctioningAuthor());

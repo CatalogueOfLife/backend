@@ -255,7 +255,7 @@ public class NameInterpreterTest {
       "Anon.", null, "1798", null, null, null,
       null, null, "zoological", null, v).getName();
     assertTrue(n.getCombinationAuthorship().isAnonymous());
-    assertTrue(n.getCombinationAuthorship().getAuthors().isEmpty());
+    assertFalse(n.getCombinationAuthorship().hasAuthors());
     assertEquals("1798", n.getCombinationAuthorship().getYear());
     assertEquals("Anon., 1798", n.getAuthorship());
 
@@ -533,7 +533,7 @@ public class NameInterpreterTest {
     assertEquals("1941", n.getBasionymAuthorship().getYear());
     assertEquals("Ristorcelli", n.getBasionymAuthorship().getAuthors().get(0));
     assertEquals("Van ty", n.getBasionymAuthorship().getAuthors().get(1));
-    assertTrue(n.getBasionymAuthorship().getExAuthors().isEmpty());
+    assertFalse(n.getBasionymAuthorship().hasExAuthors());
 
     // https://github.com/CatalogueOfLife/backend/issues/788
     pnu = interpret("superfamily", "Eucnidoideae ined.", "ined.", v);
@@ -797,8 +797,8 @@ public class NameInterpreterTest {
     assertEquals("Rosicky, 1955", n.getAuthorship());
     assertEquals(List.of("Rosicky"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1955", n.getCombinationAuthorship().getYear());
-    assertEquals(List.of(), n.getBasionymAuthorship().getAuthors());
-    assertEquals(List.of(), n.getBasionymAuthorship().getExAuthors());
+    assertFalse(n.getBasionymAuthorship().hasAuthors());
+    assertFalse(n.getBasionymAuthorship().hasExAuthors());
     assertNull(n.getBasionymAuthorship().getYear());
     assertFalse(v.hasIssues());
 
@@ -817,8 +817,8 @@ public class NameInterpreterTest {
     assertEquals("Desbrochers des Loges, 1881", n.getAuthorship());
     assertEquals(List.of("Desbrochers des Loges"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1881", n.getCombinationAuthorship().getYear());
-    assertEquals(List.of(), n.getBasionymAuthorship().getAuthors());
-    assertEquals(List.of(), n.getBasionymAuthorship().getExAuthors());
+    assertFalse(n.getBasionymAuthorship().hasAuthors());
+    assertFalse(n.getBasionymAuthorship().hasExAuthors());
     assertNull(n.getBasionymAuthorship().getYear());
     assertFalse(v.hasIssues());
   }

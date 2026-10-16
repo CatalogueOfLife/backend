@@ -45,7 +45,8 @@ public class NameParserResourceTest {
   @Test
   public void nativeJsonNamesItsResult() throws Exception {
     assertResult("parsed", "Abies alba Mill.");
-    assertResult("informal", "Rhizobium sp. RMCC TR1811");
+    // an informal name is parsed
+    assertResult("parsed", "Rhizobium sp. RMCC TR1811");
     assertResult("unparsable", "BOLD:AAA1234");
   }
 

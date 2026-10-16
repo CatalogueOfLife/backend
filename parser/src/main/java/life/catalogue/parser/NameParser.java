@@ -471,7 +471,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       final String authorship = StringUtils.trimToNull(n.getAuthorship());
       // one parse of name and authorship together: the parser decides between the separate authorship and one in the
       // name string, infers the code from both and moves notes and sic/corrig out of the authorship.
-      // 5.0.0: parse() never throws — it returns a sealed three-way ParseResult.
+      // parse() never throws — it returns a sealed ParseResult. Informal names are parsed names of type INFORMAL,
+      // flagged INDETERMINED by the parser itself when they lack an epithet their rank asks for.
       switch (parserInternal.parse(n.getScientificName(), authorship, n.getRank(), n.getCode())) {
         case ParseResult.Parsed p -> {
           pnu = fromParsedName(n, p.name(), issues);
@@ -479,26 +480,11 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
           // author of an autonym in "Eriocoma nelsonii (Scribner) Romaschenko subsp. nelsonii" + "(Scribner) Romaschenko".
           // It is no authorship of this name then, keeping it would label the autonym with the species author
           boolean superfluous = !p.name().hasAuthorship() && (p.name().hasSpecificAuthorship() || p.name().hasGenericAuthorship());
-          if (authorship != null && !superfluous) {
-            keepAuthorship(pnu, authorship);
-          }
-        }
-        case ParseResult.Informal inf -> {
-          // 5.0.0 semistructured band: a supraspecific anchor carrying a provisional designation
-          // (e.g. "Rhizobium sp. RMCC TR1811", "Bartonella group"). Rebuild the type=INFORMAL
-          // ParsedName the 4.x parser used to return so all downstream handling stays unchanged.
-          pnu = fromParsedName(n, inf.toParsedName(), issues);
-          // 5.0's Informal result is lean (no warnings). A species-level informal ("Genus sp./
-          // species N") is indeterminate, so re-flag it: NameInterpreter keys its rank inference on
-          // INFORMAL + INDETERMINED and would otherwise drop the parser's rank (e.g. SPECIES) to
-          // UNRANKED, exactly as the 4.x INFORMAL + INDETERMINED signal drove it.
-          if (inf.rank() != null && inf.rank().isSpeciesOrBelow()) {
-            issues.add(Issue.INDETERMINED);
-          }
           // the parser keeps the authorship of an informal name in its phrase ("Geranium" + "L." -> "Geranium sp. L."),
           // which is the name's unparsed portion now. Adding it as authorship as well would double it in the label
-          if (authorship != null && !containsIgnoringWhitespace(pnu.getName().getUnparsed(), authorship)) {
-            setNormalizeAuthorship(pnu, authorship, null);
+          boolean inPhrase = p.name().isPhraseName() && containsIgnoringWhitespace(p.name().getPhrase(), authorship);
+          if (authorship != null && !superfluous && !inPhrase) {
+            keepAuthorship(pnu, authorship);
           }
         }
         case ParseResult.Unparsable e -> {

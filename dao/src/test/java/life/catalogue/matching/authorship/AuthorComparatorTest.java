@@ -68,7 +68,7 @@ public class AuthorComparatorTest {
     p1.getCombinationAuthorship().setAuthors(Lists.newArrayList("Reich."));
 
     p2 = new Name();
-    p2.getCombinationAuthorship().getAuthors().add("");
+    p2.getCombinationAuthorship().setAuthors(Lists.newArrayList(""));
     assertEquals(Equality.UNKNOWN, comp.compare(p1, p2));
     
     p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("Reichen."));
@@ -661,9 +661,9 @@ public class AuthorComparatorTest {
     // AuthorComparator.compare(Author, Author, ...), regardless of NomCode or the author map. "DC." vs "de Candolle" has no
     // such common-prefix relationship (surnames "dc" vs "candolle"), so it correctly isolates the author-map lookup behavior.
     var dc = new org.gbif.nameparser.api.Authorship();
-    dc.getAuthors().add("DC.");
+    dc.addAuthor("DC.");
     var candolle = new org.gbif.nameparser.api.Authorship();
-    candolle.getAuthors().add("Augustin Pyramus de Candolle");
+    candolle.addAuthor("Augustin Pyramus de Candolle");
 
     // botany: abbreviation expands, so they match
     assertEquals(Equality.EQUAL, comp.compareAuthorteam(dc, candolle, org.gbif.nameparser.api.NomCode.BOTANICAL));
@@ -728,7 +728,7 @@ public class AuthorComparatorTest {
   public void anonymous() throws Exception {
     Authorship anon = parse("Anon.");
     assertTrue(anon.isAnonymous());
-    assertTrue(anon.getAuthors().isEmpty());
+    assertFalse(anon.hasAuthors());
 
     // two anonymous works are the same, unless both attribute their authors
     assertAuth("Anon.", Equality.EQUAL, "anon.");

@@ -806,8 +806,8 @@ public class UsageMatcher implements AutoCloseable {
     var ca = a.getCombinationAuthorship();
     var ba = a.getBasionymAuthorship();
     boolean hasYear = (ca != null && ca.getYear() != null) || (ba != null && ba.getYear() != null);
-    boolean hasAuthors = (ca != null && (ca.isAnonymous() || !ca.getAuthors().isEmpty()))
-                         || (ba != null && (ba.isAnonymous() || !ba.getAuthors().isEmpty()));
+    boolean hasAuthors = (ca != null && (ca.isAnonymous() || ca.hasAuthors()))
+                         || (ba != null && (ba.isAnonymous() || ba.hasAuthors()));
     return hasYear && !hasAuthors;
   }
 
