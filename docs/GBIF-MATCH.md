@@ -61,6 +61,12 @@ show its rank: a trinomial without a rank marker given with a rank, `Anas platyr
 `taxonRank=variety`, matches a usage of another infraspecific rank, the form, in RELAXED mode. A usage of the given
 rank still wins. Merges keep all infraspecific ranks apart. See #1659.
 
+An authorship cited with the work the name was published in, `X in Y`, is the name of X and is also cited by Y alone:
+*Pipistrellus kuhlii* (Natterer in Kuhl, 1817) matches *Pipistrellus kuhlii* (Kuhl, 1817), in merges and stable ids
+too. The years have to agree within one year then, as Y may have named the same epithet himself later on, and two
+names published in the same work are told apart by their own authors.
+The parser keeps `Y` as `Authorship.inAuthors`. See #1652.
+
 Homonyms are not guessed. What tells candidates apart is evidence only:
 - an authorship equal to the query's, with or without a rank;
 - the classification;

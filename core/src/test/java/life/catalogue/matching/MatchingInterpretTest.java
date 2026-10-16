@@ -68,6 +68,18 @@ public class MatchingInterpretTest {
       .genus("Aus").specificEpithet("bus").infraspecificEpithet("cus").rank(Rank.VARIETY).build()));
   }
 
+  /**
+   * The authors of the work a name was published in stay part of the query's authorship, the matcher compares them.
+   * See https://github.com/CatalogueOfLife/backend/issues/1652
+   */
+  @Test
+  public void inAuthorsKept() {
+    assertEquals("(Natterer in Kuhl, 1817)", query(Rank.SPECIES, "Pipistrellus kuhlii (Natterer in Kuhl, 1817)").getAuthorship());
+    var sn = SimpleName.sn(Rank.SPECIES, "Pipistrellus kuhlii", "(Natterer in Kuhl, 1817)");
+    var q = AbstractMatchingJob.interpret(sn, List.of(), new IssueContainer.Simple(), interpreter, utils).get();
+    assertEquals("(Natterer in Kuhl, 1817)", q.getAuthorship());
+  }
+
   private QueryName query(Rank rank, String name) {
     return AbstractMatchingJob.interpret(SimpleName.sn(rank, name), List.of(), new IssueContainer.Simple(), interpreter, utils).get();
   }
