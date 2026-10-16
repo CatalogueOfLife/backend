@@ -38,26 +38,16 @@ public class DatasetImportResource {
 
 
   /**
-   * The import attempts of a dataset, newest first, as a plain list - by default only the latest one.
-   * Kept a list for its many clients; {@link #pageImports} is the same with a total.
-   */
-  @GET
-  public List<DatasetImport> getImports(@PathParam("key") int key,
-                                        @Valid @BeanParam JobSearchRequest req,
-                                        @QueryParam("offset") @DefaultValue("0") int offset,
-                                        @QueryParam("limit") @DefaultValue("1") int limit) {
-    return pageImports(key, req, new Page(offset, limit)).getResult();
-  }
-
-  /**
-   * The import attempts of a dataset, newest first, as a regular result page with a total.
+   * The import attempts of a dataset, newest first. Defaults to the latest attempt only, so limit and offset
+   * are plain parameters rather than a {@link Page} bean param, which defaults to a limit of 10.
    * See https://github.com/CatalogueOfLife/backend/issues/1647
    */
   @GET
-  @Path("page")
-  public ResultPage<DatasetImport> pageImports(@PathParam("key") int key,
+  public ResultPage<DatasetImport> getImports(@PathParam("key") int key,
                                               @Valid @BeanParam JobSearchRequest req,
-                                              @Valid @BeanParam Page page) {
+                                              @QueryParam("offset") @DefaultValue("0") int offset,
+                                              @QueryParam("limit") @DefaultValue("1") int limit) {
+    var page = new Page(offset, limit);
     // a release? use mother project in that case
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(key);
     if (info.origin.isRelease()) {

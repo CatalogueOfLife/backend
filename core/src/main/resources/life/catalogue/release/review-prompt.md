@@ -103,7 +103,7 @@ and `grep` instead of reading them whole.
 | purpose | request |
 |---|---|
 | release metadata | `GET /dataset/{key}` |
-| whole-release metrics (counts per rank, per status, issue counts) | `GET /dataset/{key}/import?limit=1` |
+| whole-release metrics (counts per rank, per status, issue counts) | `GET /dataset/{key}/import`, a result page holding the latest attempt |
 | the sources that went into a release | `GET /dataset/{key}/source` |
 | metrics of one source inside a release | `GET /dataset/{key}/source/{sourceKey}/metrics` |
 | name diff between two releases | `GET /dataset/{key}/diff/{key2}?minRank=order&authorship=false&synonyms=false` |
