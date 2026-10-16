@@ -311,8 +311,22 @@ public class NameInterpreterTest {
     assertEquals(Rank.UNRANKED, rank("Festuca rubra pruinosa"));  // -> INFRASPECIFIC_NAME
     assertEquals(Rank.UNRANKED, rank("Aeshna subarctica"));       // -> SPECIES
     assertEquals(Rank.UNRANKED, rank("Aeshna (Aeshna) subarctica"));
-    assertEquals(Rank.UNRANKED, rank("Quercus (Cerris)"));        // -> INFRAGENERIC_NAME
     assertEquals(Rank.UNRANKED, rank("Poaceae"));                 // -> FAMILY by suffix
+  }
+
+  /**
+   * An infrageneric epithet in brackets after the genus, with no species epithet following, is a name below the genus.
+   * The vague rank leaves open which one, but is no genus: Chaetoceros (Hyalochaete) is not the plant genus Hyalochaete.
+   */
+  @Test
+  public void bracketedInfragenericIsAdopted() {
+    assertEquals(Rank.INFRAGENERIC_NAME, rank("Quercus (Cerris)"));
+    assertEquals(Rank.INFRAGENERIC_NAME, rank("Chaetoceros (Hyalochaete) spp."));
+    assertEquals(Rank.INFRAGENERIC_NAME, rank("Aedes (Stegomyia)"));
+    // with a zoological authorship the parser knows it is a subgenus
+    assertEquals(Rank.SUBGENUS, rank("Aedes (Stegomyia) Theobald, 1901"));
+    // a given rank still wins
+    assertEquals(Rank.SUBGENUS, ib.interpret(SimpleName.sn(Rank.SUBGENUS, "Aedes (Stegomyia)"), new VerbatimRecord()).get().getName().getRank());
   }
 
   @Test

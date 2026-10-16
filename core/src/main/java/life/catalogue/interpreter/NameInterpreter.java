@@ -139,9 +139,15 @@ public class NameInterpreter {
    * (e.g. "subsp.", "var.", "f.", "subg.", "sect.") as opposed to the name structure alone.
    * A bi- or trinomial without any marker yields SPECIES or the vague INFRASPECIFIC_NAME, and a uninomial
    * yields UNRANKED or a suffix based suprageneric rank - none of which is a statement by the user.
+   * An infrageneric epithet in brackets after the genus with no species epithet following is a marker too:
+   * Chaetoceros (Hyalochaete) can only be a name below the genus, so it keeps the vague INFRAGENERIC_NAME, which
+   * leaves subgenus and section open but rules out the plant genus Hyalochaete that shares its canonical name.
    */
   private static boolean hasExplicitRankMarker(Name n) {
     Rank r = n.getRank();
+    if (r == Rank.INFRAGENERIC_NAME) {
+      return n.getGenus() != null && n.getInfragenericEpithet() != null && n.getSpecificEpithet() == null;
+    }
     return r != null && r.notOtherOrUnranked() && !r.isUncomparable()
            && (r.isInfraspecific() || r.isInfragenericStrictly());
   }
