@@ -2,6 +2,7 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -9,6 +10,8 @@ import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NamesIndexConfig;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
@@ -43,6 +46,30 @@ public class MatchingInterpretTest {
     assertTrue(snc.isPresent());
     assertNull(snc.get().getNamesIndexId());
     assertEquals(0, ni.size());
+  }
+
+  /**
+   * Interpretation rebuilds the name from the given rank, only the query tells whether it had a rank marker.
+   * See https://github.com/CatalogueOfLife/backend/issues/1659
+   */
+  @Test
+  public void unmarkedRank() {
+    assertTrue(query(Rank.VARIETY, "Anas platyrhynchos domesticus").isUnmarkedRank());
+    assertTrue(query(Rank.VARIETY, "Anas  platyrhynchos domesticus Linnaeus, 1758").isUnmarkedRank());
+    assertTrue(query(Rank.SUBSPECIES, "Urtica dioica dioica").isUnmarkedRank());
+    assertFalse(query(Rank.VARIETY, "Anas platyrhynchos var. domesticus").isUnmarkedRank());
+    // the given rank overrules the marker of the name, which still is a marker
+    assertFalse(query(Rank.VARIETY, "Anas platyrhynchos f. domesticus").isUnmarkedRank());
+    // no rank given at all
+    assertFalse(query(null, "Urtica dioica dioica").isUnmarkedRank());
+    assertFalse(query(Rank.SPECIES, "Urtica dioica").isUnmarkedRank());
+    // an epithet that only starts like another is no match
+    assertFalse(AbstractMatchingJob.unmarkedRank("Aus bus cusa", Name.newBuilder()
+      .genus("Aus").specificEpithet("bus").infraspecificEpithet("cus").rank(Rank.VARIETY).build()));
+  }
+
+  private QueryName query(Rank rank, String name) {
+    return AbstractMatchingJob.interpret(SimpleName.sn(rank, name), List.of(), new IssueContainer.Simple(), interpreter, utils).get();
   }
 
   @Test

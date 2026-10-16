@@ -55,6 +55,12 @@ given with nothing more specific than a kingdom, and for any name between the ov
 protists and fungi, or fungi and plants. A different authorship always rules a usage out, and a more specific group
 keeps its veto. Merges never relax groups. See [2026-10-15-group-veto.md](2026-10-15-group-veto.md).
 
+Ranks above the genus match within their major group, Osteichthyes as a class matches the parvphylum. Infraspecific
+ranks stay strict, as subspecies, variety and form of one name are often different taxa, unless the name does not
+show its rank: a trinomial without a rank marker given with a rank, `Anas platyrhynchos domesticus` with
+`taxonRank=variety`, matches a usage of another infraspecific rank, the form, in RELAXED mode. A usage of the given
+rank still wins. Merges keep all infraspecific ranks apart. See #1659.
+
 A supplied rank that contradicts the name - a subspecies or a genus sent as `SPECIES`, common in GBIF occurrences -
 keeps the matcher from finding it. Provisionally, when the first match is neither EXACT nor VARIANT and the rank
 contradicts the name - the parser reads another rank from a binomial or trinomial, or a single word comes with a

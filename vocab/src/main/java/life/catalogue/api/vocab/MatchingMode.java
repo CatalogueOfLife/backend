@@ -13,6 +13,8 @@ public enum MatchingMode {
    * a usage of a compatible group still wins, but a usage of another group is no longer ruled out if the query is a
    * bi- or trinomial classified only by a broad group like a kingdom, or if the two groups overlap, e.g. protists filed
    * under animals. A different authorship always rules a usage out.
+   * A rank given apart from an infraspecific name without a rank marker is a preference too: a usage of that rank still
+   * wins, but a usage of another infraspecific rank is no longer ruled out.
    * The duplicate search compares names exactly, as in STRICT.
    */
   RELAXED,
@@ -41,6 +43,13 @@ public enum MatchingMode {
    * @return true if name matching relaxes the taxonomic group veto
    */
   public boolean relaxedGroups() {
+    return this != STRICT;
+  }
+
+  /**
+   * @return true if name matching takes a rank given apart from an infraspecific name without a rank marker as a preference
+   */
+  public boolean relaxedRanks() {
     return this != STRICT;
   }
 }

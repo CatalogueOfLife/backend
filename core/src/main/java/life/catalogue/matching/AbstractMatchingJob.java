@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.regex.Pattern;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -44,6 +45,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.univocity.parsers.common.AbstractParser;
 import com.univocity.parsers.common.AbstractWriter;
@@ -403,8 +405,8 @@ public abstract class AbstractMatchingJob extends DatasetJob {
    * the index is only ever built from names held in ChecklistBank.
    * @return the name as the usage matcher expects it, empty and flagged as unparsable if it cannot be parsed
    */
-  public static Optional<SimpleNameClassified<SimpleNameCached>> interpret(SimpleName sn, List<SimpleNameCached> classification,
-                                                                          IssueContainer issues, NameInterpreter interpreter, MatchingUtils utils
+  public static Optional<QueryName> interpret(SimpleName sn, List<SimpleNameCached> classification,
+                                              IssueContainer issues, NameInterpreter interpreter, MatchingUtils utils
   ) {
     var opt = interpreter.interpret(sn, issues);
     if (opt.isPresent()) {
@@ -413,10 +415,27 @@ public abstract class AbstractMatchingJob extends DatasetJob {
       if (nu.getRank() == Rank.UNRANKED) {
         nu.getName().setRank(null);
       }
-      return Optional.of(utils.toSimpleNameClassified(nu, classification, false));
+      var snc = utils.toSimpleNameClassified(nu, classification, false);
+      return Optional.of(new QueryName(snc, classification, unmarkedRank(sn.getName(), nu.getName())));
     }
     issues.add(Issue.UNPARSABLE_NAME);
     return Optional.empty();
+  }
+
+  /**
+   * @param query the name as it was queried
+   * @param n the interpreted name, which shows the rank marker of its rank whether the query had one or not
+   * @return true if the interpreted name is infraspecific, but the queried name has no rank marker between its epithets,
+   *         e.g. Anas platyrhynchos domesticus sent with the rank variety
+   */
+  @VisibleForTesting
+  static boolean unmarkedRank(@Nullable String query, Name n) {
+    if (query == null || n.getRank() == null || !n.getRank().isInfraspecific()
+        || n.getSpecificEpithet() == null || n.getInfraspecificEpithet() == null) {
+      return false;
+    }
+    return Pattern.compile("(?<!\\p{L})" + Pattern.quote(n.getSpecificEpithet()) + "\\s+" + Pattern.quote(n.getInfraspecificEpithet()) + "(?!\\p{L})",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE).matcher(query).find();
   }
 
   private static class MappedStream {
