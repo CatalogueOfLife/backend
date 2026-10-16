@@ -143,18 +143,25 @@ public class UsageMatcherInfraspecificRankTest {
   public void exactRankWins() throws Exception {
     assertMatch("aav", matcher.match(query("Abies alba var. acutifolia", "Abies alba acutifolia", Rank.VARIETY, true), MatchingMode.RELAXED, false));
     assertMatch("aaf", matcher.match(query("Abies alba f. acutifolia", "Abies alba acutifolia", Rank.FORM, true), MatchingMode.RELAXED, false));
-    // a rank neither of them has leaves both
+    // a rank neither of them has leaves both, and as they have no authorship to tell homonyms from duplicates the species
     var m = matcher.match(query("Abies alba subsp. acutifolia", "Abies alba acutifolia", Rank.SUBSPECIES, true), MatchingMode.RELAXED, false);
-    assertEquals(MatchType.AMBIGUOUS, m.type);
+    assertEquals(MatchType.HIGHERRANK, m.type);
+    assertMatch("aa", m);
   }
 
   @Test
   public void unrankedTrinomial() throws Exception {
-    // without marker or rank neither the subspecies nor the variety is the name, whatever GBIF picks
+    // without marker or rank neither the subspecies nor the variety is the name, whatever GBIF picks.
+    // Lacking an authorship they are unresolved homonyms, so a higher rank fallback takes the species
     var q = query("Urtica dioica dioica", "Urtica dioica dioica", Rank.UNRANKED, false);
-    assertEquals(MatchType.AMBIGUOUS, matcher.match(q, MatchingMode.RELAXED, false).type);
-    assertEquals(MatchType.AMBIGUOUS, matcher.match(q, MatchingMode.STRICT, false).type);
-    assertEquals(MatchType.AMBIGUOUS, matchInternal(q).type);
+    var m = matcher.match(q, MatchingMode.STRICT, false);
+    assertEquals(MatchType.AMBIGUOUS, m.type);
+    assertTrue(m.unresolvedHomonym);
+    m = matcher.match(q, MatchingMode.RELAXED, false);
+    assertEquals(MatchType.HIGHERRANK, m.type);
+    assertMatch("ud", m);
+    assertTrue(matcher.match(new SimpleNameClassified<>(q), false, false).unresolvedHomonym);
+    assertEquals(MatchType.HIGHERRANK, matchInternal(q).type);
 
     // the variety written with its marker stays the variety
     var v = query("Urtica dioica var. dioica", "Urtica dioica dioica", Rank.VARIETY, false);

@@ -22,6 +22,7 @@ import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.RankGroup;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,8 @@ public class UsageMatcher implements AutoCloseable {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcher.class);
   // an abbreviated lower case rank marker after the genus, var. subsp. f. nothosubsp.
   private static final Pattern RANK_MARKER = Pattern.compile("(?<=\\s)[a-z]{1,12}\\.(?=\\s)");
+  // the subgenus in brackets right after the genus of a bi- or trinomial
+  private static final Pattern SUBGENUS = Pattern.compile("^(\\S+)\\s+\\([^)]*\\)(?=\\s+\\S)");
   // lenient publication-year tolerance when disambiguating homonyms by a year-only authorship:
   // years within this many years of each other are treated as the same (dates are often cited off by one)
   private final static int YEAR_DIFF_ALLOWED = 1;
@@ -582,6 +585,13 @@ public class UsageMatcher implements AutoCloseable {
       });
     }
 
+    // A misapplied name is the name used for another taxon, so it loses to a candidate of the name itself.
+    // See https://github.com/CatalogueOfLife/backend/issues/1651
+    if (existing.size() > 1 && nu.getStatus() != TaxonomicStatus.MISAPPLIED
+        && existing.stream().anyMatch(u -> u.getStatus() != TaxonomicStatus.MISAPPLIED)) {
+      existing.removeIf(u -> u.getStatus() == TaxonomicStatus.MISAPPLIED);
+    }
+
     // first try exact single match with authorship - dont remove matches from the candidate list!
     if (qualifiedName) {
       boolean matchExact = false;
@@ -643,21 +653,31 @@ public class UsageMatcher implements AutoCloseable {
         }
         return false;
       });
+      // the authorship is evidence without a rank too: a single candidate with an equal one is the name
+      var equal = existing.stream().filter(u -> equalAuthorship(u, nu)).toList();
+      if (equal.size() == 1) {
+        existing.removeIf(u -> u != equal.getFirst());
+      }
     }
 
     // The names index stems epithets, so one canonical id can hold distinct names like Euphorbia peplis and
     // Euphorbia peplus. If some candidates are spelled exactly like the query, the others are only stemmed
     // variants of it. See https://github.com/CatalogueOfLife/backend/issues/1566
+    // A query without a subgenus tells nothing about it, so the candidates' subgenus is no part of their spelling then:
+    // Aphis nerii is the accepted Aphis (Aphis) nerii as much as its homonym synonyms Aphis nerii.
+    // See https://github.com/CatalogueOfLife/backend/issues/1651
     if (existing.size() > 1 && nu.getName() != null) {
+      final boolean subgenus = SUBGENUS.matcher(nu.getName()).find();
+      final Function<String, String> spelling = n -> subgenus ? n : withoutSubgenus(n);
       final String name = SciNameNormalizer.normalizeWhitespaceAndPunctuation(nu.getName());
-      if (existing.stream().anyMatch(u -> sameSpelling(u, name))) {
-        existing.removeIf(u -> !sameSpelling(u, name));
+      if (existing.stream().anyMatch(u -> sameSpelling(spelling.apply(u.getName()), name))) {
+        existing.removeIf(u -> !sameSpelling(spelling.apply(u.getName()), name));
       } else {
         // a query whose rank marker differs from the candidates' still prefers the epithets spelled like its own:
         // Anas platyrhynchos domesticus sent as a variety is the form domesticus, not the subspecies domestica
         final String bare = withoutRankMarkers(nu.getName());
-        if (existing.stream().anyMatch(u -> sameSpelling(withoutRankMarkers(u.getName()), bare))) {
-          existing.removeIf(u -> !sameSpelling(withoutRankMarkers(u.getName()), bare));
+        if (existing.stream().anyMatch(u -> sameSpelling(withoutRankMarkers(spelling.apply(u.getName())), bare))) {
+          existing.removeIf(u -> !sameSpelling(withoutRankMarkers(spelling.apply(u.getName())), bare));
         }
       }
     }
@@ -682,21 +702,7 @@ public class UsageMatcher implements AutoCloseable {
     }
 
     // all synonyms pointing to the same accepted? then it won't matter much for snapping
-    SimpleNameClassified<SimpleNameCached> synonym = null;
-    String parentID = null;
-    for (var u : existing) {
-      if (u.getStatus().isTaxon()) {
-        synonym = null;
-        break;
-      }
-      if (parentID == null) {
-        parentID = u.getParent();
-        synonym = u;
-      } else if (!parentID.equals(u.getParent())) {
-        synonym = null;
-        break;
-      }
-    }
+    var synonym = synonymOfOneAccepted(existing);
     if (synonym != null) {
       return UsageMatch.snap(synonym, datasetKey, alt);
     }
@@ -705,6 +711,11 @@ public class UsageMatcher implements AutoCloseable {
     existing.removeIf(u -> u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     if (existing.size() == 1) {
       return UsageMatch.snap(existing.getFirst(), datasetKey, alt);
+    }
+    // without them the others may all be synonyms of one accepted name
+    synonym = synonymOfOneAccepted(existing);
+    if (synonym != null) {
+      return UsageMatch.snap(synonym, datasetKey, alt);
     }
 
     if (existing.isEmpty()) {
@@ -742,12 +753,13 @@ public class UsageMatcher implements AutoCloseable {
       }
 
       // Nothing told the remaining candidates apart. The tie breaks below - the deepest classified candidate or
-      // simply the first - would put the name into whichever group happens to win and flip it between releases:
-      // species of Platygaster under the flies, bacteria under the scale insects. Candidates of disparate groups
-      // are homonyms this name cannot be placed among, so say so instead of guessing.
-      // See https://github.com/CatalogueOfLife/backend/issues/1608
-      if (nu.getRank() != null && nu.getRank().isSupraspecific() && spansDisparateGroups(existing)) {
-        LOG.debug("{} ambiguous homonyms of disparate groups encountered for {} in source {}", existing.size(), nu.getLabel(), datasetKey);
+      // simply the first - would put the name into whichever taxon happens to win and flip it between releases:
+      // species of Platygaster under the flies, bacteria under the scale insects. So they only pick among duplicates
+      // of one name. Real homonyms, or candidates that might be, are names this one cannot be placed among: they span
+      // disparate groups, have different authorships or lack one to compare. Say so instead of guessing.
+      // See https://github.com/CatalogueOfLife/backend/issues/1608 and https://github.com/CatalogueOfLife/backend/issues/1651
+      if (mayBeHomonyms(existing)) {
+        LOG.debug("{} ambiguous homonyms encountered for {} in source {}", existing.size(), nu.getLabel(), datasetKey);
         return UsageMatch.unresolvedHomonym(MatchType.AMBIGUOUS, alt, datasetKey);
       }
 
@@ -779,13 +791,24 @@ public class UsageMatcher implements AutoCloseable {
   }
 
   /**
+   * @return the first candidate if all of them are synonyms of the same accepted name, otherwise null
+   */
+  @Nullable
+  private static SimpleNameClassified<SimpleNameCached> synonymOfOneAccepted(List<SimpleNameClassified<SimpleNameCached>> candidates) {
+    String parentID = null;
+    for (var u : candidates) {
+      if (u.getStatus().isTaxon() || parentID != null && !parentID.equals(u.getParent())) {
+        return null;
+      }
+      parentID = u.getParent();
+    }
+    return candidates.isEmpty() ? null : candidates.getFirst();
+  }
+
+  /**
    * @param normName query name already normalized by {@link SciNameNormalizer#normalizeWhitespaceAndPunctuation}
    * @return true if the candidate name is spelled like the query, ignoring case, whitespace and punctuation
    */
-  private static boolean sameSpelling(SimpleName u, String normName) {
-    return sameSpelling(u.getName(), normName);
-  }
-
   private static boolean sameSpelling(@Nullable String name, String normName) {
     return name != null && normName.equalsIgnoreCase(SciNameNormalizer.normalizeWhitespaceAndPunctuation(name));
   }
@@ -797,6 +820,15 @@ public class UsageMatcher implements AutoCloseable {
   @VisibleForTesting
   static String withoutRankMarkers(@Nullable String name) {
     return name == null ? null : SciNameNormalizer.normalizeWhitespaceAndPunctuation(RANK_MARKER.matcher(name).replaceAll(" "));
+  }
+
+  /**
+   * @return the name without the subgenus in brackets that follows the genus of a bi- or trinomial.
+   *         A subgenus name itself, Aus (Bus), is kept.
+   */
+  @VisibleForTesting
+  static String withoutSubgenus(@Nullable String name) {
+    return name == null ? null : SUBGENUS.matcher(name).replaceFirst("$1");
   }
 
   /**
@@ -991,6 +1023,25 @@ public class UsageMatcher implements AutoCloseable {
       return fallback;
     }
     return group;
+  }
+
+  /**
+   * @return true unless all candidates are duplicates of one name: they have an authorship, no two of them compare
+   *         DIFFERENT and they belong to no disparate taxonomic groups. Without an authorship a homonym cannot be
+   *         told from a duplicate.
+   */
+  private boolean mayBeHomonyms(List<SimpleNameClassified<SimpleNameCached>> candidates) {
+    if (candidates.stream().anyMatch(u -> !u.hasAuthorship())) {
+      return true;
+    }
+    for (int i = 0; i < candidates.size(); i++) {
+      for (int j = i + 1; j < candidates.size(); j++) {
+        if (differentAuthorship(candidates.get(i), candidates.get(j))) {
+          return true;
+        }
+      }
+    }
+    return spansDisparateGroups(candidates);
   }
 
   /**

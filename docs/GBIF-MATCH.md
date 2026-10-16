@@ -61,6 +61,19 @@ show its rank: a trinomial without a rank marker given with a rank, `Anas platyr
 `taxonRank=variety`, matches a usage of another infraspecific rank, the form, in RELAXED mode. A usage of the given
 rank still wins. Merges keep all infraspecific ranks apart. See #1659.
 
+Homonyms are not guessed. What tells candidates apart is evidence only:
+- an authorship equal to the query's, with or without a rank;
+- the classification;
+- the name itself over its misapplications;
+- a single accepted name among synonyms, or synonyms that all belong to one accepted name, provisional usages aside;
+- the spelling, where a query without a subgenus ignores the candidates' subgenus, so `Aphis nerii` is the accepted
+  `Aphis (Aphis) nerii`.
+
+If that leaves several candidates, a usage is only picked if they are duplicates of one name: all have an authorship,
+none compare different and none belong to disparate groups. Otherwise the candidates are an unresolved homonym,
+answered as NONE with the candidates as alternatives, or in RELAXED mode by the higher rank fallback. A bare
+`Navicula`, `Ciliophora` or `Tetilla` therefore matches nothing, and `Urtica dioica dioica` the species. See #1651.
+
 A supplied rank that contradicts the name - a subspecies or a genus sent as `SPECIES`, common in GBIF occurrences -
 keeps the matcher from finding it. Provisionally, when the first match is neither EXACT nor VARIANT and the rank
 contradicts the name - the parser reads another rank from a binomial or trinomial, or a single word comes with a

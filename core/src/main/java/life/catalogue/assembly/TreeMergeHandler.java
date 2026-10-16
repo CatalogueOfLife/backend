@@ -404,10 +404,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
         try {
           sn = create(nu, parent, mod);
         } catch (UnresolvedHomonymException e) {
-          // the genus the species needs cannot be told apart from homonyms of other groups. Guessing one puts it into a
-          // different kingdom, a new genus duplicates one of them, so the species is dropped with its subtree.
-          LOG.warn("Skip {} {} [{}] from {} and its entire subtree: its genus {} cannot be told apart from homonyms of disparate groups in {}. Source classification: {}",
-            nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, e.genus, targetDatasetKey, parents.classificationToString());
+          // the genus or species the name needs cannot be told apart from its homonyms. Guessing one puts it into
+          // another taxon, maybe another kingdom, a new one duplicates one of them, so the name is dropped with its subtree.
+          LOG.warn("Skip {} {} [{}] from {} and its entire subtree: the {} it needs cannot be told apart from its homonyms in {}. Source classification: {}",
+            nu.getName().getRank(), nu.getName().getLabel(), nu.getId(), sector, e.name, targetDatasetKey, parents.classificationToString());
           parents.markSubtreeAsSkipped();
           incIgnored(IgnoreReason.AMBIGUOUS_HOMONYM, nu);
           return;
@@ -642,7 +642,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   /**
    * Use the same usage matching to find existing taxa
    *
-   * @throws UnresolvedHomonymException for a genus that cannot be told apart from existing homonyms of disparate groups
+   * @throws UnresolvedHomonymException for a name that cannot be told apart from existing homonyms
    */
   @Override
   protected Usage findExisting(Name n, Usage parent) {
@@ -653,22 +653,22 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (m.usage != null && m.usage.getRank() == n.getRank()) {
       return usage(m.usage);
     }
-    if (m.unresolvedHomonym && n.getRank() == Rank.GENUS) {
-      throw new UnresolvedHomonymException(n.getLabel());
+    if (m.unresolvedHomonym) {
+      throw new UnresolvedHomonymException(n.getRank() + " " + n.getLabel());
     }
     return null;
   }
 
   /**
-   * Thrown while creating the implicit genus of a species that cannot be told apart from existing homonyms.
-   * It aborts the creation of the species before anything is persisted.
+   * Thrown while looking up the implicit genus or species of a name that cannot be told apart from existing homonyms.
+   * It aborts the creation of the name before anything is persisted.
    */
   static class UnresolvedHomonymException extends RuntimeException {
-    final String genus;
+    final String name;
 
-    UnresolvedHomonymException(String genus) {
-      super("Unresolved genus homonym " + genus);
-      this.genus = genus;
+    UnresolvedHomonymException(String name) {
+      super("Unresolved homonym " + name);
+      this.name = name;
     }
   }
 
