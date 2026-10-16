@@ -317,7 +317,7 @@ public class MatchingWsServiceTest extends MatchingWsTestBase {
 
     cl.setFamily("Maldanidae");
     assertMatch("BOLD:AAX3687", cl, 993172099);
-    known(Known.OTU_CASE); assertMatch("bold:aax3687", cl, 993172099);
+    assertMatch("bold:aax3687", cl, 993172099);
 
     assertNoMatch("BOLD:AAX3688", cl);
     assertNoMatch("BOLD:AAY3687", cl);

@@ -41,7 +41,6 @@ public abstract class MatchingWsTestBase {
     EXCLUDE(false, "excluding taxa by key is not supported yet"),
     HOMONYMS(false, "homonyms without evidence should give their lowest shared higher taxon or nothing, CatalogueOfLife/backend#1651"),
     AUTHOR_TIE(false, "of two compatible authorships the closer one should win, CatalogueOfLife/backend#1652"),
-    OTU_CASE(false, "a lowercase BOLD BIN is not normalised by the name parser, gbif/name-parser-rust#119"),
     KINGDOM(true, "a bi- or trinomial given with nothing but a contradicting kingdom matches in RELAXED mode, "
       + "GBIF falls back to the kingdom, CatalogueOfLife/backend#1650"),
     GENUS_GROUP(true, "the genus group ranks stay strict, a subgenus is no genus, CatalogueOfLife/backend#1661"),

@@ -629,7 +629,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     return val == null ? null : val.name();
   }
   private static String str(List<String> arr) {
-    return PgCopyUtils.buildPgArray(arr.toArray(new String[0]));
+    // author lists are null until set since name-parser-api 6
+    return PgCopyUtils.buildPgArray(arr == null ? new String[0] : arr.toArray(new String[0]));
   }
   private static String str(Set<? extends Enum<?>> set) {
     return set == null || set.isEmpty() ? null
