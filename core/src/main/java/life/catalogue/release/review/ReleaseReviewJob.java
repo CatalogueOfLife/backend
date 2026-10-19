@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.SectorMetricsDiff;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.config.ReleaseConfig;
@@ -42,7 +43,8 @@ import org.slf4j.LoggerFactory;
  *     editor rights over the API and the bot deliberately has none - and because no release can be asked
  *     for its sector sync metrics over the API at all. For a similar reason it mounts the release reports of
  *     both releases, which live on the download host the sandbox cannot reach: the ID reports as they are,
- *     and the job log as a digest, since the log itself runs to several GB;
+ *     and the job log as a digest, since the log itself runs to several GB. An extended release also gets the
+ *     GBIF impact reports GBIF published for it, if there are any yet;
  *  3. it writes the result to the release report directory, which is what makes a review durable and
  *     publicly linkable.
  *
@@ -63,6 +65,7 @@ public class ReleaseReviewJob extends BackgroundJob {
   static final String LOG_DIGEST_FILE = "job-log-digest.md";
   static final String ID_REPORTS_DIR = "id-reports";
   static final String PREFIX_PREVIOUS = "previous-";
+  static final String GBIF_IMPACT_DIR = "gbif-impact";
   /** an ID report bigger than this is left out rather than failing the review */
   static final long MAX_UPLOAD_BYTES = 200L * 1024 * 1024;
   private static final ContentType TEXT = ContentType.create("text/plain", StandardCharsets.UTF_8);
@@ -189,8 +192,17 @@ public class ReleaseReviewJob extends BackgroundJob {
     mountIdReports(client, mounts, reports, "this release", reportDir, "");
     mountIdReports(client, mounts, reports, "the previous release", prevReportDir, PREFIX_PREVIOUS);
 
+    StringBuilder impact = new StringBuilder();
+    if (release.getOrigin() == DatasetOrigin.XRELEASE) {
+      setStep("uploading GBIF impact reports");
+      var gbif = cfg.gbifImpactURI == null ? null : new GbifImpactReports(cfg.gbifImpactURI, cfg.gbifMatchMetadataURI, http);
+      mountGbifImpact(client, mounts, impact, gbif, releaseKey);
+    } else {
+      impact.append("- **not applicable:** GBIF only builds impact reports for extended releases\n");
+    }
+
     setStep("starting session");
-    String task = renderPrompt(release, prevKey, history, reports.toString().strip());
+    String task = renderPrompt(release, prevKey, history, reports.toString().strip(), impact.toString().strip());
     String sessionId = client.createSession(task, mounts);
     info.setSessionId(sessionId);
     store.write(projectKey, attempt, info);
@@ -275,6 +287,58 @@ public class ReleaseReviewJob extends BackgroundJob {
       reports.append("; not mounted: ").append(String.join(", ", skipped));
     }
     reports.append('\n');
+  }
+
+  /**
+   * Mounts the GBIF impact reports of an extended release, the newest one of every scope. They are not the
+   * release's own reports and GBIF may not have built them yet, so neither their absence nor a failure to
+   * fetch them fails the review - the agent is told what is missing instead.
+   */
+  static void mountGbifImpact(ManagedAgentsClient client, List<ManagedAgentsClient.Mount> mounts, StringBuilder impact,
+                              @Nullable GbifImpactReports gbif, int releaseKey) throws IOException {
+    if (gbif == null) {
+      impact.append("- **not available:** no location of the GBIF impact reports is configured\n");
+      return;
+    }
+    List<GbifImpactReports.Report> listed;
+    try {
+      listed = gbif.list(releaseKey);
+    } catch (IOException e) {
+      LOG.warn("Failed to read the GBIF impact report index", e);
+      impact.append("- **not available:** the GBIF impact reports - their index could not be read: ").append(e.getMessage()).append('\n');
+      return;
+    }
+    if (listed.isEmpty()) {
+      impact.append("- **not available:** GBIF has not published an impact report for release ").append(releaseKey).append(" yet\n");
+      return;
+    }
+    try {
+      var current = gbif.current();
+      if (current != null) {
+        impact.append("- **current** is release `").append(current.releaseKey()).append('`')
+          .append(current.alias() == null ? "" : " (" + current.alias() + ")")
+          .append(", the release GBIF matches occurrences against in production")
+          .append(current.created() == null ? "" : ", its matching index built " + current.created())
+          .append('\n');
+      }
+    } catch (IOException e) {
+      LOG.warn("Failed to read the GBIF match metadata", e);
+      impact.append("- **not known:** which release GBIF matches against in production: ").append(e.getMessage()).append('\n');
+    }
+    for (var r : listed) {
+      byte[] content;
+      try {
+        content = gbif.download(r, MAX_UPLOAD_BYTES);
+      } catch (IOException e) {
+        LOG.warn("Failed to download GBIF impact report {}", r.filename(), e);
+        impact.append("- **not available:** `").append(r.filename()).append("` - ").append(e.getMessage()).append('\n');
+        continue;
+      }
+      mounts.add(new ManagedAgentsClient.Mount(client.uploadFile(GBIF_IMPACT_DIR + "-" + r.filename(), content, TEXT),
+        "/" + GBIF_IMPACT_DIR + "/" + r.filename()));
+      impact.append("- `").append(SANDBOX_UPLOADS).append(GBIF_IMPACT_DIR).append('/').append(r.filename()).append("` - ")
+        .append(r.name()).append(": ").append(r.description()).append('\n');
+    }
   }
 
   /**
@@ -363,7 +427,8 @@ public class ReleaseReviewJob extends BackgroundJob {
     return html.size() == 1 ? html.get(0) : null;
   }
 
-  private String renderPrompt(Dataset release, int prevKey, List<Dataset> history, String releaseReports) throws Exception {
+  private String renderPrompt(Dataset release, int prevKey, List<Dataset> history, String releaseReports,
+                              String gbifImpactReports) throws Exception {
     String prevAlias = history.stream()
       .filter(d -> d.getKey() != null && d.getKey() == prevKey)
       .map(ReleaseReviewJob::label)
@@ -385,6 +450,7 @@ public class ReleaseReviewJob extends BackgroundJob {
       .replace("{{sectorMetricsPath}}", SANDBOX_METRICS_PATH)
       .replace("{{reportsURI}}", rCfg.reportURI(projectKey, attempt).toString())
       .replace("{{releaseReports}}", releaseReports)
+      .replace("{{gbifImpactReports}}", gbifImpactReports)
       .replace("{{outputPath}}", SANDBOX_OUTPUT_PATH);
   }
 

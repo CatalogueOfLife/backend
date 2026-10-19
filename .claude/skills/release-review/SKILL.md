@@ -12,7 +12,7 @@ Managed Agents sandbox and hands the agent `core/src/main/resources/life/catalog
 Here you gather those inputs yourself and then follow the very same prompt.
 
 **The checklist and the report structure live only in `review-prompt.md`.** Read it in full before you start
-and follow its checklist (10 steps) and report structure (9 sections) exactly. Do not keep a copy of the checklist
+and follow its checklist (11 steps) and report structure (10 sections) exactly. Do not keep a copy of the checklist
 in this skill - the two would drift apart. This file only says how to fill in what the job would have mounted.
 
 ## 1. Resolve the release pair
@@ -90,7 +90,7 @@ Fetch `GET /dataset/{key}` for both, for alias, attempt and issued date, and
 | `{{reportsURI}}` | `https://download.checklistbank.org/releases/{projectKey}/{attempt}` (`ReleaseConfig.reportURI`) |
 | `{{releaseKey}}`, `{{previousReleaseKey}}`, `{{projectKey}}`, `{{attempt}}`, `{{origin}}`, aliases | from step 1 |
 | `{{releaseHistory}}` | the table you built in step 1, newest first |
-| `{{sectorMetricsPath}}`, `{{releaseReports}}` | the files you build in step 3 |
+| `{{sectorMetricsPath}}`, `{{releaseReports}}`, `{{gbifImpactReports}}` | the files you build in step 3 |
 | `{{outputPath}}` | `release-review-{releaseKey}.html` in the scratchpad (cloud session) or the current directory |
 | `${{secretName}}` | `$CLB_TOKEN`, see below |
 
@@ -147,6 +147,39 @@ directory, which is the quickest way to see which reports exist before downloadi
   `superseded.tsv`, `unstable.txt`) can hold hundreds of thousands of lines - `wc`, `cut`, `sort | uniq -c`,
   `grep`, never read them whole.
 - A report that 404s is *not available*: list it as such, as the job does, and do not work around it.
+
+**GBIF impact reports** - extended releases only (`ORIGIN` is `XRELEASE`). For a base release, checklist step 10
+does not apply, so skip this. GBIF publishes them at `download.gbif.org/catalogueoflife/` some time after a candidate
+exists and lists them in an `index.json`, which is the same list the GBIF Impact Tool at `{{clbURI}}/tools/gbif-impact`
+offers. That host has no cookie challenge. Take the entries whose `colKey` is the release key. If a scope (the part
+of the filename between the key and the date) was generated more than once, keep only its newest `created`.
+`GbifImpactReports.select` does the same:
+
+```bash
+G=https://download.gbif.org/catalogueoflife
+mkdir -p gbif-impact
+curl -sSf -o gbif-impact/index.json "$G/index.json"
+jq -r --arg k "$KEY" '[.reports[] | select(.colKey == $k)
+    | . + {scope: (.filename | capture("^report-[0-9]+-(?<s>.+)-[0-9]{4}-[0-9]{2}-[0-9]{2}[.]").s)}]
+  | group_by(.scope)[] | max_by(.created) | .filename' gbif-impact/index.json > gbif-impact/files.txt
+while read -r f; do curl -sSf -o "gbif-impact/$f" "$G/$f"; done < gbif-impact/files.txt
+```
+
+The "current" side of every report is the release GBIF matches against in production. GBIF's species match
+metadata of the COL XR checklist names it, as the job does:
+
+```bash
+curl -sSf "https://api.gbif.org/v2/species/match/metadata?checklistKey=7ddf754f-d193-4cc9-b351-99906754a03b" \
+  | jq '{releaseKey: .mainIndex.clbDatasetKey, alias: .mainIndex.datasetAlias, created}'
+```
+
+Put it at the top of the list, as `- **current** is release `315557` (COL26.6 XR), ...`. It is meant to be `PREV`
+once GBIF follows the monthly changeover, but it can lag behind. The prompt says what that means for the findings.
+
+Each report has a few MB to a few tens of MB of tab-separated text. Use `awk -F'\t'` and never read one whole.
+No entry for the release is normal, because GBIF may not have built them yet. Say that in the report as *not
+available*, as the job does. List every file with its `name` and `description` from the index as
+`{{gbifImpactReports}}`, since the description carries the occurrence threshold of the report.
 
 ## 4. Drill down in the full log
 
