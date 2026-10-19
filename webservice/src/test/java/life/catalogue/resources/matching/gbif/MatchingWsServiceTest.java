@@ -580,9 +580,9 @@ public class MatchingWsServiceTest extends MatchingWsTestBase {
     cl.setKingdom("Plantae");
     // THIS SETS the genus too
     known(Known.GENUS_GROUP); var m = assertMatch("Centaurea subg. Jacea", cl, 3148240, MatchType.EXACT);
-    if (m.usage != null) {
-      assertEquals("Jacea", m.usage.canonicalName);
-    }
+    // the subgenus is not the genus Jacea, it falls back to its own genus
+    assertEquals(MatchType.HIGHERRANK.name(), m.diagnostics.matchType);
+    assertEquals("Centaurea", m.usage.canonicalName);
   }
 
   /**

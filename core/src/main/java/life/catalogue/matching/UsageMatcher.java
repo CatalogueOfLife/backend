@@ -321,7 +321,8 @@ public class UsageMatcher implements AutoCloseable {
 
   /**
    * Derives the genus and, for infraspecific names, the species from a bi- or trinomial name,
-   * also from indetermined ones like Xysticus sp. or Panthera pardus ssp.
+   * also from indetermined ones like Xysticus sp. or Panthera pardus ssp., and the genus of an infrageneric name
+   * like Chaetoceros (Hyalochaete).
    * @return a map of rank to the derived uninomial/binomial name, empty if the name is not a bi/trinomial
    */
   private Map<Rank, SimpleNameCached> derivedHigherNames(SimpleNameClassified<SimpleNameCached> snc) {
@@ -334,7 +335,8 @@ public class UsageMatcher implements AutoCloseable {
       // an indetermined name lacks its lowest epithet, Xysticus sp. or Panthera pardus ssp.
       boolean indet = n.getRank() != null && n.getRank().isSpeciesOrBelow()
         && (n.getSpecificEpithet() == null || n.getRank().isInfraspecific() && n.getInfraspecificEpithet() == null);
-      if (n.getGenus() != null && (n.getSpecificEpithet() != null || indet)) {
+      boolean infrageneric = n.getInfragenericEpithet() != null && n.getSpecificEpithet() == null;
+      if (n.getGenus() != null && (n.getSpecificEpithet() != null || indet || infrageneric)) {
         Map<Rank, SimpleNameCached> map = new HashMap<>();
         if (n.getSpecificEpithet() != null && (n.getInfraspecificEpithet() != null || indet)) {
           map.put(Rank.SPECIES, derivedName(n.getGenus() + " " + n.getSpecificEpithet(), Rank.SPECIES, snc.getCode()));
