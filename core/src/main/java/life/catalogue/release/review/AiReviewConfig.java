@@ -101,6 +101,19 @@ public class AiReviewConfig {
   @NotNull
   public String botUser = "claude-review";
 
+  /**
+   * Where GBIF publishes the impact reports of COL extended releases, the directory holding their index.json.
+   * The job downloads them, since the sandbox cannot reach that host. Null leaves them out of every review.
+   */
+  public URI gbifImpactURI = URI.create("https://download.gbif.org/catalogueoflife/");
+
+  /**
+   * GBIF's species match metadata of the COL XR checklist, which names the release GBIF matches against in
+   * production - the "current" side of the impact reports. Null leaves the reports without it.
+   */
+  public URI gbifMatchMetadataURI = URI.create(
+    "https://api.gbif.org/v2/species/match/metadata?checklistKey=7ddf754f-d193-4cc9-b351-99906754a03b");
+
   public URI resolve(String path) {
     return api.resolve(path);
   }
@@ -119,6 +132,7 @@ public class AiReviewConfig {
       ", timeoutMinutes=" + timeoutMinutes +
       ", apiURI=" + apiURI +
       ", botUser='" + botUser + '\'' +
+      ", gbifImpactURI=" + gbifImpactURI +
       '}';
   }
 }

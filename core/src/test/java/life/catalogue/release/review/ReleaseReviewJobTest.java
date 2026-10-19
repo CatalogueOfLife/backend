@@ -28,7 +28,7 @@ public class ReleaseReviewJobTest {
       .distinct()
       .sorted(Comparator.naturalOrder())
       .toList();
-    assertEquals(List.of("apiURI", "attempt", "clbURI", "origin", "outputPath", "previousReleaseAlias",
+    assertEquals(List.of("apiURI", "attempt", "clbURI", "gbifImpactReports", "origin", "outputPath", "previousReleaseAlias",
       "previousReleaseKey", "projectKey", "releaseAlias", "releaseHistory", "releaseKey", "releaseReports",
       "reportsURI", "secretName", "sectorMetricsPath"), placeholders);
   }
