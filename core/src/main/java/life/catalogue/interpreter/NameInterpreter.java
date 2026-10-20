@@ -142,9 +142,14 @@ public class NameInterpreter {
    * An infrageneric epithet in brackets after the genus with no species epithet following is a marker too:
    * Chaetoceros (Hyalochaete) can only be a name below the genus, so it keeps the vague INFRAGENERIC_NAME, which
    * leaves subgenus and section open but rules out the plant genus Hyalochaete that shares its canonical name.
+   * An indetermined name, flagged by the parser, states its rank by the marker standing in for the missing epithet:
+   * Xysticus sp. or Chaetoceros (Hyalochaete) spp. are species, never the genus whose canonical name they share.
    */
-  private static boolean hasExplicitRankMarker(Name n) {
+  private static boolean hasExplicitRankMarker(Name n, IssueContainer issues) {
     Rank r = n.getRank();
+    if (r != null && r.notOtherOrUnranked() && issues.contains(Issue.INDETERMINED)) {
+      return true;
+    }
     if (r == Rank.INFRAGENERIC_NAME) {
       return n.getGenus() != null && n.getInfragenericEpithet() != null && n.getSpecificEpithet() == null;
     }
@@ -333,7 +338,7 @@ public class NameInterpreter {
         )){
           rank = inferred;
         }
-      } else if (rank.otherOrUnranked() && hasExplicitRankMarker(pnu.getName())) {
+      } else if (rank.otherOrUnranked() && hasExplicitRankMarker(pnu.getName(), issues)) {
         // A rank marker written into the name string is the user stating the rank, not an inference from the
         // name structure - so honour it even when inference is off. Without this the marker only atomizes the
         // name and its rank is dropped, leaving e.g. a match request for "Festuca rubra subsp. pruinosa"

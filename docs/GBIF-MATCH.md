@@ -61,12 +61,17 @@ show its rank: a trinomial without a rank marker given with a rank, `Anas platyr
 `taxonRank=variety`, matches a usage of another infraspecific rank, the form, in RELAXED mode. A usage of the given
 rank still wins. Merges keep all infraspecific ranks apart. See #1659.
 
-A genus followed by an infrageneric epithet in brackets, `Chaetoceros (Hyalochaete)` or `Chaetoceros (Hyalochaete) spp.`,
-is a name below that genus even without a rank marker, so it gets the vague rank `INFRAGENERIC_NAME`. The names index
+A genus followed by an infrageneric epithet in brackets, `Chaetoceros (Hyalochaete)`, is a name below that genus even
+without a rank marker, so it gets the vague rank `INFRAGENERIC_NAME`. With a dated author, `Aedes (Stegomyia) Theobald, 1901`,
+the parser knows it is a zoological subgenus. The names index
 only knows the epithet, which the name shares with the plant genus *Hyalochaete*. A genus therefore never matches,
 only a subgenus, section or other rank below the genus. Failing that, the RELAXED higher rank fallback takes the genus
 the name was given in. That includes a subgenus that is a genus elsewhere: `Lasioglossum (Dialictus)` gives
 *Lasioglossum*, not the genus *Dialictus*, as it already did with `taxonRank=subgenus`.
+
+An indetermined name states its rank by the marker that stands in for the missing epithet: `Xysticus sp.` and
+`Chaetoceros (Hyalochaete) spp.` are species, `Panthera pardus ssp.` a subspecies. They never match the genus or
+species they share a canonical name with as if it were the same name, only as a HIGHERRANK match in RELAXED mode, as GBIF does.
 
 An authorship cited with the work the name was published in, `X in Y`, is the name of X and is also cited by Y alone:
 *Pipistrellus kuhlii* (Natterer in Kuhl, 1817) matches *Pipistrellus kuhlii* (Kuhl, 1817), in merges and stable ids

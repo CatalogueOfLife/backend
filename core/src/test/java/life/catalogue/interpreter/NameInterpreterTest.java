@@ -321,12 +321,23 @@ public class NameInterpreterTest {
   @Test
   public void bracketedInfragenericIsAdopted() {
     assertEquals(Rank.INFRAGENERIC_NAME, rank("Quercus (Cerris)"));
-    assertEquals(Rank.INFRAGENERIC_NAME, rank("Chaetoceros (Hyalochaete) spp."));
     assertEquals(Rank.INFRAGENERIC_NAME, rank("Aedes (Stegomyia)"));
     // with a zoological authorship the parser knows it is a subgenus
     assertEquals(Rank.SUBGENUS, rank("Aedes (Stegomyia) Theobald, 1901"));
     // a given rank still wins
     assertEquals(Rank.SUBGENUS, ib.interpret(SimpleName.sn(Rank.SUBGENUS, "Aedes (Stegomyia)"), new VerbatimRecord()).get().getName().getRank());
+  }
+
+  /**
+   * The marker of an indetermined name stands in for its missing epithet and states the rank,
+   * so Chaetoceros (Hyalochaete) spp. is a species and not the plant genus Hyalochaete.
+   */
+  @Test
+  public void indeterminedRankIsAdopted() {
+    assertEquals(Rank.SPECIES, rank("Xysticus sp."));
+    assertEquals(Rank.SPECIES, rank("Chaetoceros spp."));
+    assertEquals(Rank.SPECIES, rank("Chaetoceros (Hyalochaete) spp."));
+    assertEquals(Rank.SUBSPECIES, rank("Panthera pardus ssp."));
   }
 
   @Test

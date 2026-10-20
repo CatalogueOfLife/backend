@@ -87,6 +87,19 @@ public class UsageMatcherInfragenericTest {
     assertEquals("hya", match("Hyalochaete", MatchingMode.STRICT).usage.getId());
   }
 
+  /**
+   * An indetermined species is no genus, but falls back to it as a higher rank match.
+   */
+  @Test
+  public void indetermined() throws Exception {
+    for (String name : List.of("Aedes sp.", "Aedes spp.")) {
+      var m = match(name, MatchingMode.RELAXED);
+      assertEquals(name, MatchType.HIGHERRANK, m.type);
+      assertEquals(name, "aedes", m.usage.getId());
+      assertFalse(name, match(name, MatchingMode.STRICT).isMatch());
+    }
+  }
+
   @Test
   public void subgenus() throws Exception {
     var m = match("Aedes (Stegomyia) Theobald, 1901", MatchingMode.STRICT);
