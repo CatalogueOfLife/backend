@@ -89,9 +89,14 @@ families at a time. Names outside any family are never grouped. Within a family 
    full names are at least 92% similar (`ScientificNameSimilarity`), e.g. *Aphanizomenon holsaticum* / *holtsaticum*
    Richter.
 3. Splits each key into groups by basionym author, or combination author for names without brackets
-   (`BasionymSorter`). The most trusted original name of a group becomes its basionym; among equally trusted ones the
-   alphabetically first label, so the choice does not depend on the order the names are read in. A name by the author
-   before an "ex" (Desf. in Desf. ex F.Dietr.) joins that group as the name it is based on, chosen the same way.
+   (`BasionymSorter`). The most trusted original name of a group becomes its basionym, but a name with the
+   nomenclatural status `ORTHOGRAPHIC_VARIANT` never does as long as another original name is no variant. Among equally
+   trusted names the evidence of the data decides: a name the data gives a basionym of its own or corrects the spelling
+   of is no original name, and an unavailable name is unlikely to be one. Only then the alphabetically first label wins,
+   so the choice does not depend on the order the names are read in. The taxonomic status is deliberately no evidence:
+   an accepted name missing its brackets looks like an original name, while the true original often lives on as its
+   synonym. A name by the author before an "ex" (Desf. in Desf. ex F.Dietr.) joins that group as the name it is
+   based on, chosen the same way.
    Original names of one author in different genera stay separate groups when a single source lists them separately,
    i.e. with the same priority and not linked by synonymy or a name relation. Without that evidence they are lumped,
    since a missing bracket is the likelier explanation. A recombination joins one of those separate groups only if it
@@ -105,12 +110,18 @@ families at a time. Names outside any family are never grouped. Within a family 
    recombination to the basionym, `HOMOTYPIC` between the recombinations of a group without one, `BASED_ON` from the
    name with the "ex" author to the name it is based on. Every further original name is related to the basionym or
    based on name as well:
-   - an orthographic variant - same genus and rank, only the terminal epithet spelled differently, gender endings
-     included - gets a `SPELLING_CORRECTION` from the basionym to the variant, i.e. from the most trusted source's
-     spelling to the others. The grouper cannot know which spelling is correct, source priority decides.
-   - anything else - the same name at another rank missing its brackets, another species or subgenus, or a name of
-     another genus lumped by step 3, a misspelled genus included - gets `HOMOTYPIC` towards the basionym.
-   - duplicates, the same name and rank maybe cited with a different authorship, get no relation at all.
+   - an orthographic variant - same rank, only the terminal epithet spelled differently, gender endings included, or
+     only the genus misspelled by a single letter (*Coriphaena* / *Coryphaena hippurus*) - gets a
+     `SPELLING_CORRECTION` from the basionym to the variant, i.e. from the most trusted source's spelling to the others.
+     The grouper cannot know which spelling is correct, source priority and the evidence of step 3 decide.
+   - anything else - the same name at another rank missing its brackets, another species, or a name of another genus
+     lumped by step 3 - gets `HOMOTYPIC` towards the basionym.
+   - duplicates, the same name and rank maybe cited with a different authorship or with and without a subgenus, which
+     is not part of a species name (*Machimus erevanensis* / *Machimus (Machimus) erevanensis*), get no relation at all.
+
+   No relation is created between two names the data already relates as homotypic, directly or through a single
+   other name such as the correct spelling two misspellings both point to. It would only add a second, possibly
+   contradicting claim about the same group.
 6. Turns every usage of a less trusted source, accepted or synonym, into a synonym of the primary's accepted name,
    moving its descendants along and flagging `HOMOTYPIC_CONSOLIDATION`. A converted name identical to that accepted
    name or to one of its synonyms is deleted. Usages from a source as trusted as the primary's are kept as they are.

@@ -86,6 +86,7 @@
     u.name_id,
     n.type,
     n.code,
+    n.nom_status,
     n.scientific_name,
     n.authorship,
     n.rank,

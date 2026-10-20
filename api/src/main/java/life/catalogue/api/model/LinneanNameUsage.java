@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.*;
@@ -20,6 +21,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
   private String nameId;
   private NameType type;
   private NomCode code;
+  private NomStatus nomStatus;
   private String scientificName;
   private String authorship;
   private Rank rank;
@@ -45,6 +47,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     this.nameId = other.nameId;
     this.type = other.type;
     this.code = other.code;
+    this.nomStatus = other.nomStatus;
     this.scientificName = other.scientificName;
     this.authorship = other.authorship;
     this.rank = other.rank;
@@ -68,6 +71,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     nameId = nu.getName().getId();
     type = nu.getName().getType();
     code = nu.getName().getCode();
+    nomStatus = nu.getName().getNomStatus();
     scientificName = nu.getName().getScientificName();
     authorship = nu.getName().getAuthorship();
     rank = nu.getName().getRank();
@@ -135,6 +139,14 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
 
   public void setNameId(String nameId) {
     this.nameId = nameId;
+  }
+
+  public NomStatus getNomStatus() {
+    return nomStatus;
+  }
+
+  public void setNomStatus(NomStatus nomStatus) {
+    this.nomStatus = nomStatus;
   }
 
   public NameType getType() {
@@ -321,6 +333,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
       Objects.equals(nameId, that.nameId) &&
       type == that.type &&
       code == that.code &&
+      nomStatus == that.nomStatus &&
       Objects.equals(scientificName, that.scientificName) &&
       Objects.equals(authorship, that.authorship) &&
       rank == that.rank &&
@@ -336,7 +349,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, parentId, sectorKey, verbatimSourceKey, status, extinct, nameId, type, code, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship);
+    return Objects.hash(id, parentId, sectorKey, verbatimSourceKey, status, extinct, nameId, type, code, nomStatus, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship);
   }
 
   @Override

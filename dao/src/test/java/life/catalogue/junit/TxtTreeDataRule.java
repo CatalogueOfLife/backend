@@ -13,6 +13,7 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.parser.EnvironmentParser;
 import life.catalogue.parser.NameParser;
 import life.catalogue.parser.NomCodeParser;
+import life.catalogue.parser.NomStatusParser;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
 import life.catalogue.printer.PrinterFactory;
@@ -261,6 +262,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     }
     if (tn.infos.containsKey(TxtTreeTerm.PUB.name())) {
       n.setPublishedInId(tn.infos.get(TxtTreeTerm.PUB.name())[0]);
+    }
+    if (tn.infos.containsKey(TxtTreeTerm.NOM.name())) {
+      n.setNomStatus(NomStatusParser.PARSER.parseOrNull(tn.infos.get(TxtTreeTerm.NOM.name())[0]));
     }
 
     n.setDatasetKey(src.key);

@@ -1,19 +1,13 @@
 package life.catalogue.basgroup;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameRelation;
-import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.common.io.Resources;
-import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.junit.*;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -54,7 +48,7 @@ public class HomotypicConsolidatorOctomeriaIT {
 
   @Test
   public void colombiana() throws Exception {
-    loadRelations();
+    HomotypicConsolidatorIT.loadRelations(datasetKey, DIR + "relations.tsv");
     var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey,
       lnu -> lnu.getSectorKey() == null ? 0 : lnu.getSectorKey()
     );
@@ -77,31 +71,6 @@ public class HomotypicConsolidatorOctomeriaIT {
 
     // all names come from one source, so nothing is consolidated
     SectorSyncIT.assertTree("homconsolidation-48jz6", datasetKey, null, Resources.stream(DIR + "expected.txtree"));
-  }
-
-  /**
-   * Loads the relations of the source data: usage id, related usage id, relation type, created by.
-   */
-  private void loadRelations() throws IOException {
-    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true);
-         var br = new BufferedReader(new InputStreamReader(Resources.stream(DIR + "relations.tsv"), StandardCharsets.UTF_8))
-    ) {
-      var num = session.getMapper(NameUsageMapper.class);
-      var nrm = session.getMapper(NameRelationMapper.class);
-      String line;
-      while ((line = br.readLine()) != null) {
-        if (line.isBlank()) continue;
-        var cols = line.split("\t");
-        var nr = new NameRelation();
-        nr.setDatasetKey(datasetKey);
-        nr.setNameId(num.get(DSID.of(datasetKey, cols[0])).getName().getId());
-        nr.setRelatedNameId(num.get(DSID.of(datasetKey, cols[1])).getName().getId());
-        nr.setType(NomRelType.valueOf(cols[2].toUpperCase().replace(' ', '_')));
-        nr.setCreatedBy(Integer.parseInt(cols[3]));
-        nr.setModifiedBy(nr.getCreatedBy());
-        nrm.create(nr);
-      }
-    }
   }
 
   /**
