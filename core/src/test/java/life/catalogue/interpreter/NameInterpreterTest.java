@@ -2,6 +2,7 @@ package life.catalogue.interpreter;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.coldp.ColdpTerm;
 
@@ -126,6 +127,32 @@ public class NameInterpreterTest {
       }
     }
     return map;
+  }
+
+  /**
+   * WoRMS states misspellings only in the name remarks: https://github.com/CatalogueOfLife/backend/issues/1662
+   */
+  @Test
+  public void misspellingFromRemarks() throws Exception {
+    assertMisspelling(null, "misspelling - incorrect subsequent spelling", NomStatus.ORTHOGRAPHIC_VARIANT, true);
+    assertMisspelling(null, "misspelling", NomStatus.ORTHOGRAPHIC_VARIANT, true);
+    // a compatible status is refined
+    assertMisspelling(NomStatus.NOT_ESTABLISHED, "misspelling - incorrect original spelling", NomStatus.ORTHOGRAPHIC_VARIANT, true);
+    // a contradicting status stays
+    assertMisspelling(NomStatus.ACCEPTABLE, "misspelling", NomStatus.ACCEPTABLE, false);
+    // only remarks that are nothing but the statement count
+    assertMisspelling(null, "unaccepted", null, false);
+    assertMisspelling(null, "considered a misspelling by Smith 1990, but see Jones 2001", null, false);
+    assertMisspelling(null, null, null, false);
+  }
+
+  static void assertMisspelling(NomStatus given, String remarks, NomStatus expected, boolean derived) {
+    var n = new Name();
+    n.setNomStatus(given);
+    var v = new VerbatimRecord();
+    NameInterpreter.deriveMisspellingFromRemarks(n, remarks, v);
+    assertEquals(remarks, expected, n.getNomStatus());
+    assertEquals(remarks, derived, v.contains(Issue.DERIVED_NOMENCLATURAL_STATUS));
   }
 
   /**
