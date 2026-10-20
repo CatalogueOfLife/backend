@@ -75,7 +75,7 @@ public class TaxonomicStatusParserTest extends EnumNoteParserTestBase<TaxonomicS
     assertParse(SYNONYM, "alternative representation");
     assertParse(BARE_NAME, null, NomStatus.DOUBTFUL, "taxon inquirendum");
     assertParse(SYNONYM, HOMOTYPIC_NOTE, "superseded rank");
-    assertParse(SYNONYM, HOMOTYPIC_NOTE, NomStatus.NOT_ESTABLISHED, "misspelling - incorrect subsequent spelling");
+    assertParse(SYNONYM, HOMOTYPIC_NOTE, NomStatus.ORTHOGRAPHIC_VARIANT, "misspelling - incorrect subsequent spelling");
     assertParse(BARE_NAME, null, NomStatus.DOUBTFUL, "nomen dubium");
     assertParse(SYNONYM, null, NomStatus.NOT_ESTABLISHED, "nomen nudum");
     assertParse(SYNONYM, null, NomStatus.UNACCEPTABLE, "junior homonym");
@@ -84,7 +84,7 @@ public class TaxonomicStatusParserTest extends EnumNoteParserTestBase<TaxonomicS
     assertParse(BARE_NAME, "uncertain");
     assertParse(BARE_NAME, null, NomStatus.NOT_ESTABLISHED, "unavailable name");
     assertParse(SYNONYM, HOMOTYPIC_NOTE, "incorrect grammatical agreement of specific epithet");
-    assertParse(SYNONYM, HOMOTYPIC_NOTE, NomStatus.NOT_ESTABLISHED, "misspelling - incorrect original spelling");
+    assertParse(SYNONYM, HOMOTYPIC_NOTE, NomStatus.ORTHOGRAPHIC_VARIANT, "misspelling - incorrect original spelling");
     assertParse(PROVISIONALLY_ACCEPTED, "temporary name");
     assertParse(SYNONYM, HOMOTYPIC_NOTE, "unjustified emendation");
     assertParse(MISAPPLIED, "misapplication");

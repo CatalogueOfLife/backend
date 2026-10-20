@@ -547,7 +547,11 @@ public enum Issue {
   PLACEMENT_CONFLICT(NAME_USAGE, Level.WARNING,
       "The accepted genus is placed in a taxonomic group the reference checklist does not know it in, "
       + "e.g. a fungus filed under the plant family of its host. "
-      + "Only flagged when every genus of that name in the reference belongs to a disparate group.")
+      + "Only flagged when every genus of that name in the reference belongs to a disparate group."),
+
+  SPELLING_CORRECTION_IMPLAUSIBLE(NAME, Level.WARNING,
+      "A spelling correction relates two names that differ in far more than their spelling. "
+      + "The relation has been ignored, as it would merge distinct homotypic groups.")
   ;
 
   /**

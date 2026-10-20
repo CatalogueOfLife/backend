@@ -619,7 +619,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertNull(usageByID("704264-az"));
     var nn = nameByID("704264-az");
     var n = nn.getName();
-    assertEquals(NomStatus.NOT_ESTABLISHED, n.getNomStatus());
+    assertEquals(NomStatus.ORTHOGRAPHIC_VARIANT, n.getNomStatus());
     assertEquals("Cassine congonha", n.getScientificName());
     assertTree();
   }
