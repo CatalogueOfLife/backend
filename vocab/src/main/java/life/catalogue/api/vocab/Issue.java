@@ -532,9 +532,10 @@ public enum Issue {
       + "Usually a source that supplies the marker in its own authorship column, e.g. scientificName=Berkeleyia with authorship=sp."),
 
   DERIVED_NOMENCLATURAL_STATUS(NAME, Level.INFO,
-      "The nomenclatural status was not given explicitly, but derived from the taxonomic status. "
+      "The nomenclatural status was not given explicitly, but derived from the taxonomic status or the name remarks. "
       + "Sources often squeeze a nomenclatural statement into their single status column, "
-      + "e.g. dwc:taxonomicStatus=\"nomen nudum\" or \"junior homonym\"."),
+      + "e.g. dwc:taxonomicStatus=\"nomen nudum\" or \"junior homonym\", "
+      + "or state a misspelling only in the remarks, e.g. \"misspelling - incorrect subsequent spelling\"."),
 
   POTENTIALLY_EXTINCT(NAME_USAGE, Level.WARNING,
       "A merged source flags this taxon as extinct, while the taxon itself is not flagged as extinct. "
@@ -547,7 +548,11 @@ public enum Issue {
   PLACEMENT_CONFLICT(NAME_USAGE, Level.WARNING,
       "The accepted genus is placed in a taxonomic group the reference checklist does not know it in, "
       + "e.g. a fungus filed under the plant family of its host. "
-      + "Only flagged when every genus of that name in the reference belongs to a disparate group.")
+      + "Only flagged when every genus of that name in the reference belongs to a disparate group."),
+
+  SPELLING_CORRECTION_IMPLAUSIBLE(NAME, Level.WARNING,
+      "A spelling correction relates two names that differ in far more than their spelling. "
+      + "The relation has been ignored, as it would merge distinct homotypic groups.")
   ;
 
   /**

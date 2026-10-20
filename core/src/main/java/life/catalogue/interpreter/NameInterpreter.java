@@ -29,6 +29,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import static life.catalogue.parser.SafeParser.parse;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
@@ -410,6 +412,7 @@ public class NameInterpreter {
       }
       // the parser flags a manuscript name itself, which is the weakest source
       pnu.getName().setNomStatus(ObjectUtils.coalesce(status, statusAuthorship, pnu.getName().getNomStatus()));
+      deriveMisspellingFromRemarks(pnu.getName(), remarks, issues);
       if (nomStatus != null && (pnu.getName().getNomStatus() == null || !nomStatus.trim().equalsIgnoreCase(pnu.getName().getNomStatus().name()))) {
         // add raw status to remarks
         pnu.getName().addRemarks(nomStatus);
@@ -441,6 +444,24 @@ public class NameInterpreter {
    * @param n the name, already through interpret() so any explicit nomStatus is resolved
    * @param fromTaxonomicStatus the status the taxonomic status value implies, usually null
    */
+  /**
+   * Sources like WoRMS state a misspelling only in the remarks of a name, e.g. "misspelling - incorrect subsequent spelling".
+   * If the entire remarks are such a statement, the name gets the status ORTHOGRAPHIC_VARIANT,
+   * unless it already has a status that contradicts it. A status compatible with it, i.e. NOT_ESTABLISHED, is refined.
+   * Remarks that only mention a misspelling among other text are left alone.
+   * See https://github.com/CatalogueOfLife/backend/issues/1662
+   */
+  @VisibleForTesting
+  static void deriveMisspellingFromRemarks(Name n, @Nullable String remarks, IssueContainer issues) {
+    if (remarks == null || n.getNomStatus() == NomStatus.ORTHOGRAPHIC_VARIANT) return;
+    if (NomStatusParser.PARSER.parseOrNull(remarks) == NomStatus.ORTHOGRAPHIC_VARIANT
+        && (n.getNomStatus() == null || n.getNomStatus().isCompatible(NomStatus.ORTHOGRAPHIC_VARIANT))
+    ) {
+      n.setNomStatus(NomStatus.ORTHOGRAPHIC_VARIANT);
+      issues.add(Issue.DERIVED_NOMENCLATURAL_STATUS);
+    }
+  }
+
   public static void deriveNomStatus(Name n, @Nullable NomStatus fromTaxonomicStatus, IssueContainer issues) {
     if (n == null || fromTaxonomicStatus == null || n.getNomStatus() != null) return;
     n.setNomStatus(fromTaxonomicStatus);

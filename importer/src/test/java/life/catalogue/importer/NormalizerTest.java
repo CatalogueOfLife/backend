@@ -5,6 +5,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -15,7 +16,9 @@ import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.parser.NameParser;
 import org.apache.commons.io.FileUtils;
+import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
@@ -72,6 +75,28 @@ class NormalizerTest {
         } finally {
             FileUtils.deleteQuietly(cfg.scratchDir);
         }
+    }
+
+    /**
+     * https://github.com/CatalogueOfLife/backend/issues/1662
+     */
+    @Test
+    void isPlausibleSpellingCorrection() throws Exception {
+        assertPlausible("Coryphaena hippurus Linnaeus, 1758", "Coriphaena hippurus Linnaeus, 1758", true);
+        assertPlausible("Coryphaena scomberoides Valenciennes, 1833", "Coryphaena scomberoïdes Valenciennes, 1833", true);
+        assertPlausible("Bembidion pallideguttula Jensen-Haarup, 1910", "Bembidium pallideguttula Jensen-Haarup, 1910", true);
+        assertPlausible("Aus smithi Miller", "Aus smithii Miller", true);
+        assertPlausible("Trachelosiphon colombianum Schltr.", "Trachelosiphon columbianum Schltr.", true);
+        // WoRMS relating an accepted name to the misspelling of one of its synonyms
+        assertPlausible("Coryphaena hippurus Linnaeus, 1758", "Coryphaena scomberoïdes Valenciennes, 1833", false);
+        assertPlausible("Coryphaena hippurus Linnaeus, 1758", "Coryphaena equiselis Linnaeus, 1758", false);
+    }
+
+    static void assertPlausible(String n1, String n2, boolean expected) throws Exception {
+        var name1 = NameParser.PARSER.parse(n1, Rank.SPECIES, null, VerbatimRecord.VOID).get().getName();
+        var name2 = NameParser.PARSER.parse(n2, Rank.SPECIES, null, VerbatimRecord.VOID).get().getName();
+        assertEquals(expected, Normalizer.isPlausibleSpellingCorrection(name1, name2), n1 + " vs " + n2);
+        assertEquals(expected, Normalizer.isPlausibleSpellingCorrection(name2, name1), n2 + " vs " + n1);
     }
 
     UsageData build(int id) {

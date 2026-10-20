@@ -11,6 +11,17 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-20 nomenclatural status for misspellings
+Incorrect spellings and orthographic variants get their own status instead of the broad NOT_ESTABLISHED, so they can
+be told apart from homotypic synonyms and are never chosen as the original name of a homotypic group:
+https://github.com/CatalogueOfLife/backend/issues/1662
+Spelling corrections between names that differ in far more than their spelling are dropped on import and flagged.
+Run before the deploy, taxon-ws shares the db. Existing names only get the status once their dataset is re-imported.
+```sql
+ALTER TYPE NOMSTATUS ADD VALUE 'ORTHOGRAPHIC_VARIANT';
+ALTER TYPE ISSUE ADD VALUE 'SPELLING_CORRECTION_IMPLAUSIBLE';
+```
+
 #### 2026-10-20 graft-chimaera flag on names
 name-parser 6.0 flags a graft-chimaera (`+Crataegomespilus`) with `graftChimaera` instead of notho GENERIC, so names
 keep the `+` marker only if the flag is stored. Run before the deploy, taxon-ws shares the db. Existing graft-chimaeras

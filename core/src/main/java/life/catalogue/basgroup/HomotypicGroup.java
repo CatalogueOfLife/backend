@@ -19,7 +19,32 @@ import com.google.common.base.Joiner;
  */
 public class HomotypicGroup<T> {
   private static final Joiner joiner = Joiner.on("; ").skipNulls();
+
+  /**
+   * What the data says about a name being the original one of its group, see {@link #addBasionym(Object, int, String)}.
+   */
+  public interface Evidence<T> {
+    /**
+     * @return true if the name is known to be a misspelling of another name. It never becomes the basionym or based on name
+     * of a group unless all original names are.
+     */
+    default boolean isVariant(T obj) {
+      return false;
+    }
+
+    /**
+     * @return how much the data speaks against the name being the original one, compared between equally trusted names only.
+     *   Lower is better.
+     */
+    default int penalty(T obj) {
+      return 0;
+    }
+  }
+
+  public static final Evidence<?> NO_EVIDENCE = new Evidence<>() {};
+
   private final NomCode code;
+  private final Evidence<T> evidence;
   private final T primary; // the primary name represented by the epithet and authorship
   private final String epithet;
   private final Authorship authorship;
@@ -37,10 +62,20 @@ public class HomotypicGroup<T> {
   private final List<T> basedOnVariations = new ArrayList<>(); // orth vars of the based on name
 
   public HomotypicGroup(T primary, String epithet, Authorship authorship, @Nullable NomCode code) {
+    this(primary, epithet, authorship, code, null);
+  }
+
+  @SuppressWarnings("unchecked")
+  public HomotypicGroup(T primary, String epithet, Authorship authorship, @Nullable NomCode code, @Nullable Evidence<T> evidence) {
     this.primary = primary;
     this.epithet = epithet;
     this.authorship = authorship;
     this.code = code;
+    this.evidence = evidence == null ? (Evidence<T>) NO_EVIDENCE : evidence;
+  }
+
+  public Evidence<T> getEvidence() {
+    return evidence;
   }
 
   public T getPrimary() {
@@ -60,7 +95,9 @@ public class HomotypicGroup<T> {
 
   /**
    * Keeps the most trusted original name as the basionym, all others become its variations.
-   * Equally trusted names are ordered by their label, so the choice does not depend on the order they are added in.
+   * A known misspelling never wins over a name that is not one, whatever its priority.
+   * Equally trusted names are decided by the evidence of the data, e.g. a name the source gives a basionym of its own is
+   * no original name, and only then by their label, so the choice does not depend on the order they are added in.
    *
    * @param label the label of the name, if null an equally trusted basionym stays
    */
@@ -69,7 +106,7 @@ public class HomotypicGroup<T> {
       this.basionym = obj;
       this.basionymPriority = basionymPriority;
       this.basionymLabel = label;
-    } else if (precedes(basionymPriority, label, this.basionymPriority, this.basionymLabel)) {
+    } else if (precedes(obj, basionymPriority, label, this.basionym, this.basionymPriority, this.basionymLabel)) {
       basionymVariations.add(this.basionym);
       this.basionym = obj;
       this.basionymPriority = basionymPriority;
@@ -80,11 +117,21 @@ public class HomotypicGroup<T> {
   }
 
   /**
-   * @return true if the first name is more trusted than the second or equally trusted and alphabetically first
+   * @return true if the first name is no misspelling while the second is, or else more trusted than the second,
+   *   or equally trusted and with less evidence against it, or else alphabetically first
    */
-  private static boolean precedes(int prio, @Nullable String label, int prio2, @Nullable String label2) {
+  private boolean precedes(T obj, int prio, @Nullable String label, T obj2, int prio2, @Nullable String label2) {
+    boolean variant = evidence.isVariant(obj);
+    if (variant != evidence.isVariant(obj2)) {
+      return !variant;
+    }
     if (prio != prio2) {
       return prio < prio2;
+    }
+    int penalty = evidence.penalty(obj);
+    int penalty2 = evidence.penalty(obj2);
+    if (penalty != penalty2) {
+      return penalty < penalty2;
     }
     return label != null && label2 != null && label.compareTo(label2) < 0;
   }
@@ -143,7 +190,7 @@ public class HomotypicGroup<T> {
 
   /**
    * Keeps the most trusted name as the one this group is based on, all others become its variations.
-   * Equally trusted names are ordered by their label like the basionym.
+   * Names are compared like the basionym.
    *
    * @param label the label of the name, if null an equally trusted based on name stays
    */
@@ -152,7 +199,7 @@ public class HomotypicGroup<T> {
       basedOn = obj;
       basedOnPriority = prio;
       basedOnLabel = label;
-    } else if (precedes(prio, label, basedOnPriority, basedOnLabel)) {
+    } else if (precedes(obj, prio, label, basedOn, basedOnPriority, basedOnLabel)) {
       basedOnVariations.add(basedOn);
       basedOn = obj;
       basedOnPriority = prio;

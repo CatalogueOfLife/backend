@@ -38,10 +38,18 @@ public class NomStatusParserTest extends ParserTestBase<NomStatus> {
     assertParse(NomStatus.ESTABLISHED, "http://purl.obolibrary.org/obo/NOMEN_0000228");
     assertParse(NomStatus.ESTABLISHED, "NOMEN_228");
 
-    assertParse(NomStatus.NOT_ESTABLISHED, "orthographia");
-    assertParse(NomStatus.NOT_ESTABLISHED, "orth var");
-    assertParse(NomStatus.NOT_ESTABLISHED, "orth. var.");
-    assertParse(NomStatus.NOT_ESTABLISHED, "orth.var.");
+    assertParse(NomStatus.ORTHOGRAPHIC_VARIANT, "orthographia");
+    assertParse(NomStatus.ORTHOGRAPHIC_VARIANT, "orth var");
+    assertParse(NomStatus.ORTHOGRAPHIC_VARIANT, "orth. var.");
+    assertParse(NomStatus.ORTHOGRAPHIC_VARIANT, "orth.var.");
+    assertParse(NomStatus.ORTHOGRAPHIC_VARIANT, "orthographic variant");
+    assertParse(NomStatus.ORTHOGRAPHIC_VARIANT, "misspelling");
+    assertParse(NomStatus.ORTHOGRAPHIC_VARIANT, "incorrect subsequent spelling");
+    assertParse(NomStatus.ORTHOGRAPHIC_VARIANT, "lapsus calami");
+    assertParse(NomStatus.ORTHOGRAPHIC_VARIANT, "ORTHOGRAPHIC_VARIANT");
+    assertParse(NomStatus.NOT_ESTABLISHED, "nomen nudum");
+    // an emendation is a name of its own, justified or not
+    assertParse(NomStatus.ACCEPTABLE, "justified emendation");
 
     assertParse(NomStatus.CONSERVED, "orth.cons.");
 
