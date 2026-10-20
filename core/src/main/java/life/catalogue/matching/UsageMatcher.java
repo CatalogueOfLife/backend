@@ -17,6 +17,7 @@ import life.catalogue.parser.NameParser;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.RankGroup;
@@ -219,6 +220,10 @@ public class UsageMatcher implements AutoCloseable {
   private UsageMatch matchName(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose, @Nullable MatchingMode mode)
       throws NotFoundException {
     if (snc.getNamesIndexId() == null) {
+      var anchor = matchAnchor(snc, verbose, mode);
+      if (anchor != null) {
+        return anchor;
+      }
       return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey);
     }
     if (snc.getClassification()==null) {
@@ -281,6 +286,63 @@ public class UsageMatcher implements AutoCloseable {
       }
     }
     return UsageMatch.empty(datasetKey, MatchType.NONE);
+  }
+
+  /**
+   * A placeholder is not in the names index, but one hanging off a real taxon is parsed anchored on it:
+   * "Mollusca incertae sedis" on Mollusca, "Cisticola unnamed" on Cisticola. The anchor is matched instead, using the
+   * classification of the placeholder, and only a usage ranked above the placeholder makes a HIGHERRANK match.
+   * Being a higher rank match it is never made in STRICT mode. Merges snap to it, see TreeMergeHandler.
+   * @return the HIGHERRANK match of the anchor, null if there is none
+   */
+  @Nullable
+  private UsageMatch matchAnchor(SimpleNameClassified<SimpleNameCached> snc, boolean verbose, @Nullable MatchingMode mode)
+      throws NotFoundException {
+    if (snc.getName() == null || mode != null && !mode.higherRank()) {
+      return null;
+    }
+    var opt = NameParser.PARSER.parse(snc);
+    if (opt.isEmpty() || opt.get().getName().getType() != NameType.PLACEHOLDER) {
+      return null;
+    }
+    String anchor = anchorName(opt.get().getName());
+    if (anchor == null) {
+      return null;
+    }
+    // the rank of the anchor is unknown, "Mollusca incertae sedis" ranked as a class hangs off a phylum
+    var q = new SimpleNameClassified<SimpleNameCached>(derivedName(anchor, Rank.UNRANKED, snc.getCode()), snc.getClassification());
+    q.setGroup(snc.getGroup());
+    q.applyMatch(nameIndex.match(q, false, false));
+    if (q.getNamesIndexId() == null) {
+      return null;
+    }
+    var m = matchName(q, false, verbose, mode);
+    if (m.isMatch() && m.type != MatchType.AMBIGUOUS && isHigher(m.usage.getRank(), snc.getRank())) {
+      LOG.debug("Matched {} {} to the {} {} it is anchored on", snc.getRank(), snc.getLabel(), m.usage.getRank(), m.usage.getLabel());
+      return UsageMatch.match(MatchType.HIGHERRANK, m.usage, datasetKey, m.alternatives);
+    }
+    return null;
+  }
+
+  /**
+   * @return the uni-, bi- or trinomial a parsed placeholder is anchored on, null if it has none
+   */
+  @Nullable
+  private static String anchorName(Name n) {
+    if (n.getUninomial() != null) {
+      return n.getUninomial();
+    }
+    if (n.getGenus() == null) {
+      return null;
+    }
+    StringBuilder sb = new StringBuilder(n.getGenus());
+    if (n.getSpecificEpithet() != null) {
+      sb.append(" ").append(n.getSpecificEpithet());
+      if (n.getInfraspecificEpithet() != null) {
+        sb.append(" ").append(n.getInfraspecificEpithet());
+      }
+    }
+    return sb.toString();
   }
 
   /**

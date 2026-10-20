@@ -125,7 +125,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       {"placementconflict", List.of("article", "species")}, // misplaced source genera and homonyms of disparate groups, see readme.md
       {"environment", List.of("src")}, // merges fill in missing environments & temporal ranges, never extinct, see readme.md
       {"profiles", List.of("src")}, // sector profiles cascade and their blocklists reach the merge, see readme.md
-      {"nametypes", List.of("src")} // a name type filter drops parsed and unparsable names alike, see readme.md
+      {"nametypes", List.of("src")}, // a name type filter drops parsed and unparsable names alike, see readme.md
+      {"placeholder-anchor", List.of("src")} // placeholders snap to the taxon they are anchored on, see readme.md
     });
   }
 

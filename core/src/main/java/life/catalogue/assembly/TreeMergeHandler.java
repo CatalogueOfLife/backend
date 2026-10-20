@@ -286,6 +286,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
     } else {
       LOG.debug("{} matches {}", nu.getLabel(), match);
     }
+    // a placeholder matches the taxon it is anchored on, "Mollusca incertae sedis" its Mollusca, as a higher rank match.
+    // Its children attach there, but the placeholder never updates that taxon
+    if (match.type == MatchType.HIGHERRANK) {
+      match = UsageMatch.snap(match.usage, targetDatasetKey, match.alternatives);
+    }
     if (!match.isMatch() && unique) {
       for (var alt : match.alternatives) {
         if (alt.getRank() == nu.getName().getRank() && alt.getName().equalsIgnoreCase(nu.getName().getScientificName())) {
