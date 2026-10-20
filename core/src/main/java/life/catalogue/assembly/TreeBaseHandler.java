@@ -680,6 +680,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
               n.setInfraspecificEpithet(nn.getInfraspecificEpithet());
               n.setCultivarEpithet(nn.getCultivarEpithet());
               n.setCandidatus(nn.isCandidatus());
+              n.setGraftChimaera(nn.isGraftChimaera());
               n.setNotho(nn.getNotho());
               n.setCombinationAuthorship(nn.getCombinationAuthorship());
               n.setBasionymAuthorship(nn.getBasionymAuthorship());

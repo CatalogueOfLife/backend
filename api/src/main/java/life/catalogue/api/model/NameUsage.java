@@ -19,6 +19,7 @@ import static life.catalogue.api.vocab.NameField.BASIONYM_AUTHORS;
 import static life.catalogue.api.vocab.NameField.BASIONYM_EX_AUTHORS;
 import static life.catalogue.api.vocab.NameField.BASIONYM_YEAR;
 import static life.catalogue.api.vocab.NameField.CANDIDATUS;
+import static life.catalogue.api.vocab.NameField.GRAFT_CHIMAERA;
 import static life.catalogue.api.vocab.NameField.CODE;
 import static life.catalogue.api.vocab.NameField.COMBINATION_AUTHORS;
 import static life.catalogue.api.vocab.NameField.COMBINATION_EX_AUTHORS;
@@ -146,6 +147,9 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, VerbatimSourceE
     addIfSet(fields, CULTIVAR_EPITHET, name.getCultivarEpithet());
     if (name.isCandidatus()) {
       fields.add(CANDIDATUS);
+    }
+    if (name.isGraftChimaera()) {
+      fields.add(GRAFT_CHIMAERA);
     }
     addIfSet(fields, NOTHO, name.getNotho());
     if (name.getBasionymAuthorship() != null) {

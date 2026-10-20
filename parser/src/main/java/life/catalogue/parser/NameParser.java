@@ -542,6 +542,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       n.setCode(pn.getCode());
     }
     n.setCandidatus(pn.isCandidatus());
+    n.setGraftChimaera(pn.isGraftChimaera());
     if (pn.getNotho() != null) {
       pn.getNotho().forEach(n::addNotho);
     }

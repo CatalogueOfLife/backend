@@ -28,6 +28,8 @@ import static org.gbif.nameparser.util.NameFormatter.appendAuthorship;
  */
 public class NameFormatter {
   public static final char HYBRID_MARKER = '×';
+  /** The plus sign before the genus of a graft-chimaera, + Crataegomespilus. */
+  public static final char GRAFT_MARKER = '+';
   private static final String NOTHO_PREFIX = "notho";
   private static final Joiner AUTHORSHIP_JOINER = Joiner.on(", ").skipNulls();
   private static final Pattern AL = Pattern.compile("^al\\.?$");
@@ -40,7 +42,7 @@ public class NameFormatter {
   // matches only uninomials or binomials without any authorship
   private static String EPITHET = "[a-z0-9ïëöüäåéèčáàæœ-]+";
   @VisibleForTesting
-  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^(?:× )?[A-ZÆŒ]"+EPITHET           // (notho)genus
+  static Pattern LINNEAN_NAME_NO_AUTHOR = Pattern.compile("^(?:[×+] )?[A-ZÆŒ]"+EPITHET        // (notho)genus or graft-chimaera
                                                           + "(?: \\([A-ZÆŒ]"+EPITHET+"\\))?"  // infrageneric
                                                           + "(?: (?:× )?"+EPITHET             // (notho)species
                                                               +"(?: (?:× )?"+EPITHET+")?"     // (notho)subspecies
@@ -151,8 +153,12 @@ public class NameFormatter {
   /**
    * Wraps a name in italics, but keeps any hybrid marker (×) and its surrounding spaces outside the italic tags.
    * E.g. "Ophrys × varvarae" becomes "&lt;i&gt;Ophrys&lt;/i&gt; × &lt;i&gt;varvarae&lt;/i&gt;".
+   * The leading graft-chimaera marker of "+ Crataegomespilus" is kept outside as well.
    */
   private static String inItalicsKeepHybrid(String x) {
+    if (x.length() > 2 && x.charAt(0) == GRAFT_MARKER && x.charAt(1) == ' ') {
+      return GRAFT_MARKER + " " + inItalicsKeepHybrid(x.substring(2));
+    }
     if (x.indexOf(HYBRID_MARKER) < 0) {
       return inItalics(x);
     }
@@ -186,7 +192,10 @@ public class NameFormatter {
 
     if (n.getUninomial() != null) {
       // higher rank names being just a uninomial!
-      if (n.getNotho().contains(NamePart.GENERIC)) {
+      if (n.isGraftChimaera()) {
+        sb.append(GRAFT_MARKER)
+          .append(" ");
+      } else if (n.getNotho().contains(NamePart.GENERIC)) {
         sb.append(HYBRID_MARKER)
           .append(" ");
       }
@@ -397,7 +406,10 @@ public class NameFormatter {
   }
 
   private static StringBuilder appendGenus(StringBuilder sb, FormattableName n) {
-    if (n.getNotho().contains(NamePart.GENERIC)) {
+    if (n.isGraftChimaera()) {
+      sb.append(GRAFT_MARKER)
+        .append(" ");
+    } else if (n.getNotho().contains(NamePart.GENERIC)) {
       sb.append(HYBRID_MARKER)
         .append(" ");
     }

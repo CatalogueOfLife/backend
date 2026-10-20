@@ -365,6 +365,27 @@ public class NameParserTest {
   }
 
   /**
+   * name-parser 6.0 flags a graft-chimaera instead of reading its plus sign as a hybrid marker.
+   */
+  @Test
+  public void graftChimaera() throws Exception {
+    Name n = parse("+Crataegomespilus", null, Rank.GENUS, null);
+    assertTrue(n.isGraftChimaera());
+    assertTrue(n.getNotho().isEmpty());
+    assertEquals("Crataegomespilus", n.getUninomial());
+    assertEquals("+ Crataegomespilus", n.getScientificName());
+
+    n = parse("+ Laburnocytisus adamii", null, Rank.SPECIES, null);
+    assertTrue(n.isGraftChimaera());
+    assertTrue(n.getNotho().isEmpty());
+    assertEquals("Laburnocytisus", n.getGenus());
+    assertEquals("+ Laburnocytisus adamii", n.getScientificName());
+
+    n = parse("Abies alba", null, Rank.SPECIES, null);
+    assertFalse(n.isGraftChimaera());
+  }
+
+  /**
    * The authorship string is kept as given, but not the broken characters of
    * https://github.com/CatalogueOfLife/data/issues/1765 and 1766 the parser already dropped from the authorship atoms.
    */

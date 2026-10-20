@@ -293,6 +293,11 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
   }
 
   @Override
+  public boolean isGraftChimaera() {
+    return false;
+  }
+
+  @Override
   public String getNomenclaturalNote() {
     return null;
   }

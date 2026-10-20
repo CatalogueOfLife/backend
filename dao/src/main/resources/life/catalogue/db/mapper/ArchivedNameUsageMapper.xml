@@ -11,6 +11,7 @@
     <!-- Name mappings -->
     n_rank,
     n_candidatus,
+    n_graft_chimaera,
     n_notho,
     n_code,
     n_nom_status,
@@ -68,7 +69,7 @@
   <!-- The columns that make up the archived version of an id, paired by position with VERSION_VALUES.
        Include with property alias "" for insert and SET target lists, and "a." to compare. -->
   <sql id="VERSION_COLS">
-    ${alias}n_id, ${alias}n_rank, ${alias}n_candidatus, ${alias}n_notho, ${alias}n_code, ${alias}n_nom_status,
+    ${alias}n_id, ${alias}n_rank, ${alias}n_candidatus, ${alias}n_graft_chimaera, ${alias}n_notho, ${alias}n_code, ${alias}n_nom_status,
     ${alias}n_original_spelling, ${alias}n_gender_agreement, ${alias}n_gender, ${alias}n_origin, ${alias}n_type,
     ${alias}n_scientific_name, ${alias}n_authorship, ${alias}n_uninomial, ${alias}n_genus, ${alias}n_infrageneric_epithet,
     ${alias}n_specific_epithet, ${alias}n_infraspecific_epithet, ${alias}n_cultivar_epithet,
@@ -83,7 +84,7 @@
   </sql>
 
   <sql id="VERSION_VALUES">
-    n.id, n.rank, n.candidatus, n.notho, n.code, n.nom_status,
+    n.id, n.rank, n.candidatus, n.graft_chimaera, n.notho, n.code, n.nom_status,
     n.original_spelling, n.gender_agreement, n.gender, n.origin, n.type,
     n.scientific_name, n.authorship, n.uninomial, n.genus, n.infrageneric_epithet,
     n.specific_epithet, n.infraspecific_epithet, n.cultivar_epithet,
@@ -191,6 +192,7 @@
       <!-- Name mappings -->
       u.n_rank AS rank,
       u.n_candidatus AS candidatus,
+      u.n_graft_chimaera AS graft_chimaera,
       u.n_notho AS notho,
       u.n_code AS code,
       u.n_nom_status AS nom_status,

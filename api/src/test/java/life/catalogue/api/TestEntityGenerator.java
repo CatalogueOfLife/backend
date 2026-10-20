@@ -514,6 +514,7 @@ public class TestEntityGenerator {
       n.setInfragenericEpithet("Igen");
     }
     n.setCandidatus(true);
+    n.setGraftChimaera(true);
     n.setCultivarEpithet("Red Rose");
     n.setLink(URI.create("http://gbif.org"));
     n.setNotho(NamePart.SPECIFIC);

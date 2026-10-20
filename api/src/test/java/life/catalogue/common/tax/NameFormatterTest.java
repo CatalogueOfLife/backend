@@ -34,6 +34,23 @@ public class NameFormatterTest {
   }
 
   @Test
+  public void graftChimaera() throws Exception {
+    Name n = new Name();
+    n.setUninomial("Crataegomespilus");
+    n.setRank(Rank.GENUS);
+    n.setGraftChimaera(true);
+    assertEquals("+ Crataegomespilus", NameFormatter.scientificName(n));
+
+    n = new Name();
+    n.setGenus("Laburnocytisus");
+    n.setSpecificEpithet("adamii");
+    n.setRank(Rank.SPECIES);
+    n.setGraftChimaera(true);
+    assertEquals("+ Laburnocytisus adamii", NameFormatter.scientificName(n));
+    assertEquals("+ <i>Laburnocytisus adamii</i>", NameFormatter.scientificNameHtml("+ Laburnocytisus adamii", Rank.SPECIES));
+  }
+
+  @Test
   public void cultivars() throws Exception {
     Name n = new Name();
     n.setGenus("Brassica");

@@ -598,6 +598,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       data.put("combination_anonymous", str(pn.getCombinationAuthorship().isAnonymous()));
       data.put("notho", str(pn.getNotho()));
       data.put("candidatus", str(pn.isCandidatus()));
+      data.put("graft_chimaera", str(pn.isGraftChimaera()));
       data.put("unparsed", pn.getUnparsed());
       return data;
     }
