@@ -83,15 +83,15 @@ public class NameParserTest {
   }
 
   @Test
-  public void parseNameWithAuthorshipInfersBotanicalCode() throws InterruptedException {
+  public void parseNameWithAuthorshipInfersNoCode() throws InterruptedException {
     Name n = new Name();
     n.setScientificName("Cerastium ligusticum subsp. granulatum");
     n.setAuthorship("(Huter et al.) P. D. Sell & Whitehead");
     n.setRank(Rank.SUBSPECIES);
     ParsedNameUsage pnu = NameParser.PARSER.parse(n, IssueContainer.VOID).get();
-    // the recombination authorship implies the botanical code...
-    assertEquals(NomCode.BOTANICAL, pnu.getName().getCode());
-    // ...so the rebuilt scientific name keeps the botanical subsp. rank marker
+    // a recombination authorship is citation style shared across codes and implies no code
+    assertNull(pnu.getName().getCode());
+    // the rebuilt scientific name still keeps the subsp. rank marker
     assertEquals("Cerastium ligusticum subsp. granulatum", pnu.getName().getScientificName());
   }
 
@@ -590,10 +590,17 @@ public class NameParserTest {
     assertName("[unassigned] Cladobranchia", "[unassigned] Cladobranchia", NameType.PLACEHOLDER)
         .nothingElse();
     
+    // a placeholder hanging off a real taxon is anchored on it, the placeholder kept as the unparsed rest
     assertName("Biota incertae sedis", "Biota incertae sedis", NameType.PLACEHOLDER)
+        .monomial("Biota", Rank.UNRANKED)
+        .unparsed("incertae sedis")
+        .noIssue(Issue.PARTIALLY_PARSABLE_NAME)
         .nothingElse();
     
     assertName("Mollusca not assigned", "Mollusca not assigned", NameType.PLACEHOLDER)
+        .monomial("Mollusca", Rank.UNRANKED)
+        .unparsed("not assigned")
+        .noIssue(Issue.PARTIALLY_PARSABLE_NAME)
         .nothingElse();
   }
 

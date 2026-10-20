@@ -1,5 +1,5 @@
 Biota [unranked]
-  Animalia [kingdom]
+  Animalia [kingdom] {CODE=zoological}
     Arthropoda [phylum]
       Hexapoda [subphylum]
         Insecta [class]

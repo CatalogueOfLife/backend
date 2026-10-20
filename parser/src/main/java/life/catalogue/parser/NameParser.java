@@ -515,8 +515,9 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Uses an existing name instance to populate from a ParsedName instance
    */
   private static ParsedNameUsage fromParsedName(Name n, ParsedName pn, IssueContainer issues) {
-    // the Name class has no phrase, it becomes the start of the unparsed portion
-    if (!StringUtils.isBlank(pn.getPhrase())) {
+    // the Name class has no phrase, it becomes the start of the unparsed portion.
+    // The phrase of a placeholder anchored on a real taxon ("Biota incertae sedis") is the placeholder itself, nothing left unparsed
+    if (!StringUtils.isBlank(pn.getPhrase()) && pn.getType() != NameType.PLACEHOLDER) {
       pn.setState(ParsedName.State.PARTIAL);
     }
     ParsedNameUsage pnu = new ParsedNameUsage();

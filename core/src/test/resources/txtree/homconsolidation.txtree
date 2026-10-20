@@ -1,4 +1,4 @@
-Austiaceae [family]
+Austiaceae [family] {CODE=zoological}
   Aus bus L. [species] {PRIO=1}
     =Xus zus Zorn [species] {PRIO=1}
     Aus bus cus (Miller) [subspecies] {PRIO=1}
@@ -144,7 +144,7 @@ Karaceae [family] {CODE=zoological}
     Svetlana corsica africana [subspecies]
     Svetlana corsica nubium [subspecies]
       =Huron nubium [species]
-Langeraceae [family]
+Langeraceae [family] {CODE=zoological}
   Langerus [genus]
     Langerus vulgaris (Wheeler, 1906) [species]
       Langerus vulgaris atlantica (Wheeler, 1906) [subspecies]
@@ -154,7 +154,7 @@ Langeraceae [family]
     Persus natans DC. [species]
       =Solter vulgaris Wheeler, 1906 [species]
       =Persus vulgaris (Wheeler, 1906) [species]
-Moneraceae [family]
+Moneraceae [family] {CODE=zoological}
   Haplophthalmus [genus]
     Haplophthalmus mengii (Zaddach, 1844) [species] {PRIO=1}
       Haplophthalmus mengii mengii (Zaddach, 1844) [subspecies] {PRIO=1}
@@ -162,7 +162,7 @@ Moneraceae [family]
   Itea [genus]
     Itea mengii Zaddach, 1844 [species] {PRIO=3}
       Itea mengii mengii Zaddach, 1844 [subspecies] {PRIO=3}
-Phalacrocoracidae [family]
+Phalacrocoracidae [family] {CODE=zoological}
   Phalacrocorax Brisson, 1760 [genus]
     Phalacrocorax brasilianus (Gmelin, 1789) [species] {PRIO=1}
       =Carbo brasilianus (Gmelin, JF, 1789) [species] {PRIO=2}

@@ -577,8 +577,8 @@ public class NameInterpreterTest {
       null, "Boyeria", null, "vinosa", null, v);
     assertNull(pnu.getTaxonomicNote());
     n = pnu.getName();
-    // only the code guessed from the year
-    assertEquals(Set.of(Issue.NOMENCLATURAL_CODE_INFERRED), v.getIssues());
+    // a year is citation style shared across codes and implies no code
+    assertEquals(Set.of(), v.getIssues());
 
     // explicit unranked should stay: https://github.com/CatalogueOfLife/backend/issues/1136
     pnu = interpret("no rank", "cellular organisms", null, v);
@@ -892,14 +892,14 @@ public class NameInterpreterTest {
 
   /**
    * The authorship of an atomised name is parsed together with the name rebuilt from the atoms, like a scientific
-   * name with its authorship, so its nomenclatural code is inferred from the authorship as well.
+   * name with its authorship. Its style implies no nomenclatural code.
    */
   @Test
-  public void atomisedNameInfersCodeFromAuthorship() throws Exception {
+  public void atomisedNameWithAuthorship() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
     var n = interpret("subspecies", null, "(Huter et al.) P. D. Sell & Whitehead", null,
       null, "Cerastium", null, "ligusticum", "granulatum", v).getName();
-    assertEquals(NomCode.BOTANICAL, n.getCode());
+    assertNull(n.getCode());
     assertEquals("Cerastium ligusticum subsp. granulatum", n.getScientificName());
     assertEquals("(Huter et al.) P. D. Sell & Whitehead", n.getAuthorship());
     assertEquals(List.of("P.D.Sell", "Whitehead"), n.getCombinationAuthorship().getAuthors());
@@ -934,8 +934,9 @@ public class NameInterpreterTest {
   @Test
   public void inferredCode() {
     VerbatimRecord v = new VerbatimRecord();
-    var pnu = interpret("subspecies", "Abies cilicica subsp. isaurica", "Coode & Cullen, 1965", v);
-    assertEquals(NomCode.ZOOLOGICAL, pnu.getName().getCode());
+    // a named hybrid is botanical
+    var pnu = interpret("species", "Abies ×borisii-regis", "Mattf.", v);
+    assertEquals(NomCode.BOTANICAL, pnu.getName().getCode());
     assertFalse(pnu.isCodeGiven());
     assertTrue(v.contains(Issue.NOMENCLATURAL_CODE_INFERRED));
 
