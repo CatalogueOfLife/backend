@@ -261,8 +261,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
 
 
     u = usageByID("1-1");
-    // zoological, inferred from the authorship parsed with the atoms: no subsp. marker
-    assertEquals("Anterhynchium alecto lalepi", u.usage.getName().getScientificName());
+    // no classification decides a code and the authorship implies none, so the subspecies keeps its subsp. marker
+    assertEquals("Anterhynchium alecto subsp. lalepi", u.usage.getName().getScientificName());
     assertEquals("(Cheesm.i.l.)", u.usage.getName().getAuthorship());
     v = verbatim(u.usage.getName());
     assertFalse(v.contains(Issue.UNPARSABLE_AUTHORSHIP));

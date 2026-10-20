@@ -1,0 +1,11 @@
+nameTypes:
+ - SCIENTIFIC
+# all ranks of the source, so no name is dropped for its rank before its type is looked at
+ranks:
+ - KINGDOM
+ - PHYLUM
+ - CLASS
+ - ORDER
+ - FAMILY
+ - GENUS
+ - SPECIES

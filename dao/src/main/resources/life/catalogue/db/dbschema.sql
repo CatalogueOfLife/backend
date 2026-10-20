@@ -1347,6 +1347,7 @@ CREATE TABLE name_usage_archive (
   -- shared with name table, keep manually in sync!
   n_rank RANK NOT NULL,
   n_candidatus BOOLEAN DEFAULT FALSE,
+  n_graft_chimaera BOOLEAN DEFAULT FALSE,
   n_notho NAMEPART[],
   n_code NOMCODE,
   n_nom_status NOMSTATUS,
@@ -1526,6 +1527,7 @@ CREATE TABLE name (
   -- shared with name_usage_archive, keep in sync!
   rank RANK NOT NULL,
   candidatus BOOLEAN DEFAULT FALSE,
+  graft_chimaera BOOLEAN DEFAULT FALSE,
   notho NAMEPART[],
   code NOMCODE,
   nom_status NOMSTATUS,

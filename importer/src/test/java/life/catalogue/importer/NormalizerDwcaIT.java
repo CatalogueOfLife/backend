@@ -312,7 +312,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     // verify results
     // check species name
     UsageData t = usageByID("10156");
-    assertEquals("'Prosthète'", t.usage.getName().getScientificName());
+    // a quoted name loses its quotes
+    assertEquals("Prosthète", t.usage.getName().getScientificName());
   }
   
   @Test
@@ -543,16 +544,14 @@ public class NormalizerDwcaIT extends NormalizerITBase {
           assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
           assertTrue(v.getIssues().contains(Issue.PUBLISHED_YEAR_CONFLICT));
           assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-          assertTrue(v.getIssues().contains(Issue.NOMENCLATURAL_CODE_INFERRED));
-          assertEquals(4, v.getIssues().size());
+          assertEquals(3, v.getIssues().size());
           assertEquals((Integer)2021, n.getPublishedInYear());
         } else {
           assertEquals("Tomanovic & Kavallieratos, 2020", n.getAuthorship());
           assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
           assertEquals((Integer)2020, n.getPublishedInYear());
           assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-          assertTrue(v.getIssues().contains(Issue.NOMENCLATURAL_CODE_INFERRED));
-          assertEquals(3, v.getIssues().size());
+          assertEquals(2, v.getIssues().size());
         }
 
       } else if (id < 20 || id == 23){
@@ -653,14 +652,14 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   }
 
   /**
-   * The parser infers a zoological code from an authorship with a year. The taxon group of the final classification,
-   * here built from the kingdom column, beats that guess, and so does the code of the dataset. A flat record without
-   * any classification keeps the guess. https://github.com/CatalogueOfLife/backend/issues/1624
+   * The taxon group of the final classification, here built from the kingdom column, decides the code, and so does the
+   * code of the dataset. A flat record without any classification has none, an authorship with a year implies no code.
+   * https://github.com/CatalogueOfLife/backend/issues/1624
    */
   @Test
   public void denormedClassificationDecidesCode() throws Exception {
     normalize(64);
-    assertEquals(NomCode.ZOOLOGICAL, store.names().objByID("1").getName().getCode());
+    assertNull(store.names().objByID("1").getName().getCode());
     var n = store.names().objByID("2").getName();
     assertEquals(NomCode.BOTANICAL, n.getCode());
     assertEquals("Abies cilicica subsp. pindrow Coode & Cullen, 1965", n.getLabel());
@@ -707,9 +706,10 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertNull(n.getInfragenericEpithet());
     assertEquals(List.of("Urban"), n.getBasionymAuthorship().getAuthors());
 
-    // diatoms are algae, which follow two codes: a zoological guess is kept, a bacterial one is not
-    assertEquals(NomCode.ZOOLOGICAL, store.names().objByID("13").getName().getCode());
-    assertTrue(vByNameID("13").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
+    // diatoms are algae, which follow two codes: the classification decides none, and an authorship with a year
+    // makes no guess either. A bacterial guess is not kept
+    assertNull(store.names().objByID("13").getName().getCode());
+    assertFalse(vByNameID("13").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
     assertNull(store.names().objByID("14").getName().getCode());
     assertFalse(vByNameID("14").contains(Issue.NOMENCLATURAL_CODE_INFERRED));
   }

@@ -79,6 +79,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   List<String> trees;
 
   ProjectTestInfo info;
+  // the imports of the last syncAndCompare, one per sector
+  final List<SectorImport> imports = new ArrayList<>();
 
 
   @Parameterized.Parameters(name = "{0}")
@@ -122,7 +124,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       {"genushomonyms", List.of("src")}, // genus homonyms decided by the lowest shared rank, see readme.md
       {"placementconflict", List.of("article", "species")}, // misplaced source genera and homonyms of disparate groups, see readme.md
       {"environment", List.of("src")}, // merges fill in missing environments & temporal ranges, never extinct, see readme.md
-      {"profiles", List.of("src")} // sector profiles cascade and their blocklists reach the merge, see readme.md
+      {"profiles", List.of("src")}, // sector profiles cascade and their blocklists reach the merge, see readme.md
+      {"nametypes", List.of("src")} // a name type filter drops parsed and unparsable names alike, see readme.md
     });
   }
 
@@ -301,6 +304,17 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     return usages.get(0);
   }
 
+  /**
+   * Placeholders, informal and other names are dropped for their type, whether parsed or not
+   */
+  public void nametypesValidate() {
+    var ignored = imports.get(0).getIgnoredByReasonCount();
+    assertEquals(2, (int) ignored.get(IgnoreReason.NAME_PLACEHOLDER));
+    assertEquals(2, (int) ignored.get(IgnoreReason.NAME_INFORMAL));
+    assertEquals(2, (int) ignored.get(IgnoreReason.NAME_OTHER));
+    assertEquals(3, ignored.size());
+  }
+
   public void literatureValidate() {
     // check if reference were copied - cant be done with text tree easily
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
@@ -362,8 +376,9 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Test
   public void syncAndCompare() throws Throwable {
     var mcfg = info.buildMergeConfig();
+    imports.clear();
     for (var s : info.sectors) {
-      sync(s, mcfg);
+      imports.add(sync(s, mcfg));
     }
     assertTree(project, Datasets.COL, null, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
 

@@ -145,6 +145,7 @@ public class CodeAssigner implements TreeWalker.StartEndHandler {
     n.setInfraspecificEpithet(src.getInfraspecificEpithet());
     n.setCultivarEpithet(src.getCultivarEpithet());
     n.setCandidatus(src.isCandidatus());
+    n.setGraftChimaera(src.isGraftChimaera());
     n.setNotho(src.getNotho());
     n.setCombinationAuthorship(src.getCombinationAuthorship());
     n.setBasionymAuthorship(src.getBasionymAuthorship());

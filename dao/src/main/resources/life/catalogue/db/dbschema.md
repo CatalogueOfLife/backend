@@ -11,6 +11,15 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-20 graft-chimaera flag on names
+name-parser 6.0 flags a graft-chimaera (`+Crataegomespilus`) with `graftChimaera` instead of notho GENERIC, so names
+keep the `+` marker only if the flag is stored. Run before the deploy, taxon-ws shares the db. Existing graft-chimaeras
+are only flagged once their dataset is re-imported.
+```sql
+ALTER TABLE name ADD COLUMN graft_chimaera BOOLEAN DEFAULT FALSE;
+ALTER TABLE name_usage_archive ADD COLUMN n_graft_chimaera BOOLEAN DEFAULT FALSE;
+```
+
 #### 2026-10-16 empty author lists are stored as NULL
 Names wrote an empty `TEXT[]` for every author list without authors, about 16 bytes per column and row where a NULL
 costs a bit in the null bitmap. Ex authors in particular are rarely used: https://github.com/CatalogueOfLife/backend/issues/1664

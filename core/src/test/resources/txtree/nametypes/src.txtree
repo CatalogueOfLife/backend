@@ -1,0 +1,11 @@
+Animalia [kingdom] {CODE=zoological}
+  Mollusca [phylum]
+    Mollusca incertae sedis [class]
+      Abra alba (W.Wood, 1802) [species]
+    [unassigned] Cladobranchia [order]
+      Doris verrucosa Linnaeus, 1758 [species]
+    Abra sp. Kent (A.B. 1234) [species]
+    Abra cf. alba [species]
+Viruses [kingdom]
+  Tobacco mosaic virus [species]
+  Tobamovirus tabaci [species]

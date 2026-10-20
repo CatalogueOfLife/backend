@@ -37,6 +37,9 @@ public interface FormattableName extends LinneanName, ScientificName, CombinedAu
   @JsonInclude(value = JsonInclude.Include.NON_DEFAULT)
   boolean isCandidatus();
 
+  @JsonInclude(value = JsonInclude.Include.NON_DEFAULT)
+  boolean isGraftChimaera();
+
   default Boolean isOriginalSpelling() {
     return null;
   }

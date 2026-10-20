@@ -369,8 +369,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
       parents.mark();
     }
 
-    // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly
-    if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()), mod, true)) {
+    // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly.
+    // The filters come first, so a name the matcher cannot handle, e.g. an unparsable placeholder without a names index
+    // id, is counted under the reason a filter of the sector gives it, just like a parsed one. It is never merged anyway
+    if (ignoreUsage(nu, decisions.get(nu.getId()), mod, true) || match.ignore) {
       // skip this taxon, but include children
       ignored++;
       return;
