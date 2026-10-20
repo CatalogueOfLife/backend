@@ -59,15 +59,17 @@ Two steps, as the old and the new app run side by side during a deploy.
 **1. Before the deploy.** Creates the link table with as many hash partitions as `type_material` has and copies the
 existing links. The old app keeps writing `type_material.name_id` and never sees the new table. `name_id` loses its
 NOT NULL here, as the new app inserts type material without it until step 2 drops the column.
+The foreign keys and the name index are only added after the copy: checked per row, the millions of links take hours
+in RI trigger lookups against the partitioned `name` and `type_material`, while `ADD FOREIGN KEY` validates each
+partition with a single join. That validation holds a SHARE ROW EXCLUSIVE lock on both, which blocks writes from the
+old app for its few minutes. Postgres 17 cannot add a `NOT VALID` foreign key to a partitioned table.
 ```sql
 CREATE TABLE type_material_name (
   dataset_key INTEGER NOT NULL,
   type_material_id TEXT NOT NULL,
   name_id TEXT NOT NULL,
   status TYPESTATUS,
-  PRIMARY KEY (dataset_key, type_material_id, name_id),
-  FOREIGN KEY (dataset_key, type_material_id) REFERENCES type_material ON DELETE CASCADE,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
+  PRIMARY KEY (dataset_key, type_material_id, name_id)
 ) PARTITION BY HASH (dataset_key);
 DO $$
 DECLARE
@@ -77,11 +79,14 @@ BEGIN
     EXECUTE format('CREATE TABLE type_material_name_mod%s PARTITION OF type_material_name FOR VALUES WITH (modulus %s, remainder %s)', i, num, i);
   END LOOP;
 END $$;
-CREATE INDEX ON type_material_name (dataset_key, name_id);
 ALTER TABLE type_material ALTER COLUMN name_id DROP NOT NULL;
 
 INSERT INTO type_material_name (dataset_key, type_material_id, name_id, status)
 SELECT dataset_key, id, name_id, status FROM type_material;
+
+CREATE INDEX ON type_material_name (dataset_key, name_id);
+ALTER TABLE type_material_name ADD FOREIGN KEY (dataset_key, type_material_id) REFERENCES type_material ON DELETE CASCADE;
+ALTER TABLE type_material_name ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED;
 ```
 
 **2. After the deploy**, once the old app is gone. Copies the links the old app wrote since step 1, then drops the
