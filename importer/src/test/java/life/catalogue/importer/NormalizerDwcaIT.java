@@ -196,6 +196,41 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     });
   }
 
+  /**
+   * The GBIF types and specimen extension holds type specimens and type names, #1071
+   */
+  @Test
+  public void typesAndSpecimen() throws Exception {
+    normalize(15);
+
+    // holotype of Achillea ptarmica
+    UsageData ptarmica = usageByID("2770");
+    assertEquals(1, store.typeMaterial().size());
+    TypeMaterial tm = store.typeMaterial().values().iterator().next();
+    assertEquals(1, tm.getNames().size());
+    assertEquals(ptarmica.nameID, tm.getNames().get(0).getNameId());
+    assertEquals(TypeStatus.HOLOTYPE, tm.getNames().get(0).getStatus());
+    assertEquals("original designation; designated by Mi.Ranke", tm.getRemarks());
+    assertNotNull(tm.getReferenceId());
+    assertEquals("my beloved text book", store.references().get(tm.getReferenceId()).getCitation());
+
+    // Achillea millefolium is the type species of Achillea
+    UsageData achillea = usageByID("770");
+    NameData millefolium = nameByID("2768");
+    assertEquals("Achillea millefolium", millefolium.getName().getScientificName());
+    var rels = store.names().relations(achillea.nameID);
+    assertEquals(1, rels.size());
+    NameRelation rel = rels.get(0);
+    assertEquals(NomRelType.TYPE, rel.getType());
+    assertEquals(achillea.nameID, rel.getNameId());
+    assertEquals(millefolium.getId(), rel.getRelatedNameId());
+    assertEquals("designated by M.Döring", rel.getRemarks());
+
+    for (var vkey : List.of(tm.getVerbatimKey(), rel.getVerbatimKey())) {
+      assertFalse(store.getVerbatim(vkey).contains(Issue.NOT_INTERPRETED));
+    }
+  }
+
   @Test
   public void testBdjCsv() throws Exception {
     normalize(17);

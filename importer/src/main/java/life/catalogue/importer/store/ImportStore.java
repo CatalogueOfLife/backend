@@ -188,6 +188,24 @@ public class ImportStore implements AutoCloseable {
    * A prefixed hybrid symbol will be ignored in both the query name and stored names.
    */
   public Set<String> usageIDsByName(String scientificName, @Nullable String authorship, @Nullable Rank rank, boolean inclUnranked) {
+    Set<String> taxa = new HashSet<>();
+    for (var n : namesByName(scientificName, authorship, rank, inclUnranked)) {
+      taxa.addAll(n.usageIDs);
+    }
+    return taxa;
+  }
+
+  /**
+   * Retuns a list of name ids that have a matching scientific name, rank & authorship.
+   * A prefixed hybrid symbol will be ignored in both the query name and stored names.
+   */
+  public Set<String> nameIDsByName(String scientificName, @Nullable String authorship, @Nullable Rank rank, boolean inclUnranked) {
+    return namesByName(scientificName, authorship, rank, inclUnranked).stream()
+      .map(NameData::getId)
+      .collect(Collectors.toSet());
+  }
+
+  private Set<NameData> namesByName(String scientificName, @Nullable String authorship, @Nullable Rank rank, boolean inclUnranked) {
     Set<String> nameIDs = names().nameIdsByName(scientificName);
     if (scientificName.charAt(0) != HYBRID_MARKER) {
       // try also to find the hybrid version of any monomial
@@ -212,12 +230,7 @@ public class ImportStore implements AutoCloseable {
     if (authorship != null) {
       names.removeIf(n -> n.getName().getAuthorship() != null && !authorship.equalsIgnoreCase(n.getName().getAuthorship()));
     }
-
-    Set<String> taxa = new HashSet<>();
-    for (var n : names) {
-      taxa.addAll(n.usageIDs);
-    }
-    return taxa;
+    return names;
   }
 
   public boolean createNameAndUsage(NameUsageData nu) {

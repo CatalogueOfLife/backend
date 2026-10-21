@@ -130,7 +130,7 @@ public abstract class DataCsvInserter implements DataInserter {
     vcounter += counter.get();
   }
 
-  private void processVerbatim(final CsvReader reader, final Term classTerm, Predicate<VerbatimRecord> proc) {
+  protected void processVerbatim(final CsvReader reader, final Term classTerm, Predicate<VerbatimRecord> proc) {
     runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
     final AtomicInteger counter = new AtomicInteger(0);
     final AtomicInteger success = new AtomicInteger(0);
@@ -316,31 +316,36 @@ public abstract class DataCsvInserter implements DataInserter {
   protected void interpretTypeMaterial(final CsvReader reader, final Term classTerm,
                                      Function<VerbatimRecord, Optional<TypeMaterial>> interpret
   ) {
-    processVerbatim(reader, classTerm, rec -> {
-      Optional<TypeMaterial> opt = interpret.apply(rec);
-      if (opt.isPresent()) {
-        TypeMaterial tm = opt.get();
-        tm.setVerbatimKey(rec.getId());
-        // keep the specimen for the names that exist
-        var names = new ArrayList<TypifiedName>();
-        for (var tn : tm.getNames()) {
-          if (store.names().exists(tn.getNameId())) {
-            names.add(tn);
-          } else {
-            rec.add(Issue.NAME_ID_INVALID);
-          }
-        }
-        if (tm.getNames().isEmpty()) {
-          rec.add(Issue.NAME_ID_INVALID);
-        }
-        if (!names.isEmpty()) {
-          tm.setNames(names);
-          store.typeMaterial().create(tm);
-          return true;
-        }
+    processVerbatim(reader, classTerm, rec -> interpret.apply(rec)
+      .map(tm -> createTypeMaterial(rec, tm))
+      .orElse(false)
+    );
+  }
+
+  /**
+   * Stores the type material for the names of it that exist.
+   * @return true if the type material was stored
+   */
+  protected boolean createTypeMaterial(VerbatimRecord rec, TypeMaterial tm) {
+    tm.setVerbatimKey(rec.getId());
+    // keep the specimen for the names that exist
+    var names = new ArrayList<TypifiedName>();
+    for (var tn : tm.getNames()) {
+      if (store.names().exists(tn.getNameId())) {
+        names.add(tn);
+      } else {
+        rec.add(Issue.NAME_ID_INVALID);
       }
-      return false;
-    });
+    }
+    if (tm.getNames().isEmpty()) {
+      rec.add(Issue.NAME_ID_INVALID);
+    }
+    if (!names.isEmpty()) {
+      tm.setNames(names);
+      store.typeMaterial().create(tm);
+      return true;
+    }
+    return false;
   }
 
   protected void interpretTreatment(final CsvReader reader, final Term classTerm,

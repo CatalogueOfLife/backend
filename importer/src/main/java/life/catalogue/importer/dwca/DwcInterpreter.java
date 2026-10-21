@@ -21,6 +21,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,8 @@ public class DwcInterpreter extends InterpreterBase {
   }
   private static final Set<String> IS_TRUE = Set.of("isinvasive", "invasive", "ishybrid", "hybrid");
   // WoRMS uses its custom Invasiveness term instead of dwc:degreeOfEstablishment, https://github.com/CatalogueOfLife/backend/issues/1511
+  // type statuses of the GBIF types and specimen extension that designate a type name, not a specimen
+  private static final Pattern TYPE_NAME_STATUS = Pattern.compile("^type[ _-]?(species|genus|subgenus|family|tribe)$", Pattern.CASE_INSENSITIVE);
   private static final Term WORMS_INVASIVENESS = UnknownTerm.build("http://www.marinespecies.org/traits/Invasiveness", "Invasiveness", false);
 
   private final Term idTerm;
@@ -349,9 +352,13 @@ public class DwcInterpreter extends InterpreterBase {
    * @param obj
    * @param v
    */
+  /**
+   * Sets the reference given as dc:source, or as dc:bibliographicCitation which the GBIF types and specimen extension
+   * uses for the publication of a type designation.
+   */
   private void setReference(Referenced obj, VerbatimRecord v) {
-    if (v.hasTerm(DcTerm.source)) {
-      Reference ref = refFactory.fromCitation(null, v.get(DcTerm.source), v);
+    if (v.hasTerm(DcTerm.source) || v.hasTerm(DcTerm.bibliographicCitation)) {
+      Reference ref = refFactory.fromCitation(null, v.getFirst(DcTerm.bibliographicCitation, DcTerm.source), v);
       if (ref != null) {
         if (ref.getVerbatimKey() == null) {
           // create new reference with verbatim key, we've never seen this before!
@@ -406,7 +413,54 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   /**
-   * Converts occurrences with type status to TypeMaterial instances
+   * True if a record of the GBIF types and specimen extension designates a type name, e.g. the type species of a genus,
+   * rather than a type specimen. A record without a type status is taken to give a type name if it has a scientific name.
+   */
+  boolean isTypeName(VerbatimRecord rec) {
+    if (rec.hasTerm(DwcTerm.typeStatus)) {
+      return TYPE_NAME_STATUS.matcher(rec.get(DwcTerm.typeStatus).trim()).matches();
+    }
+    return rec.hasTerm(DwcTerm.scientificName);
+  }
+
+  /**
+   * Converts a type name record of the GBIF types and specimen extension into a TYPE name relation
+   * from the name of the core taxon to its type name.
+   * The type name is looked up by its scientific name, authorship and rank among the names of the dataset,
+   * the related id remains empty unless there is exactly one such name.
+   */
+  Optional<RelationData<NomRelType>> interpretTypeName(VerbatimRecord rec) {
+    if (!rec.hasTerm(DwcTerm.scientificName)) {
+      return Optional.empty();
+    }
+    var rel = new RelationData<NomRelType>(NomRelType.TYPE, taxonID(rec), null);
+    rel.setRelatedScientificName(rec.get(DwcTerm.scientificName));
+    rel.setRemarks(typeDesignation(rec));
+    setReference(rel, rec);
+    interpretName(nameInterpreter, taxonID(rec), rec).ifPresent(pnu -> {
+      Name n = pnu.getName();
+      Rank rank = n.getRank() == null || n.getRank().isUncomparable() ? null : n.getRank();
+      var ids = store.nameIDsByName(n.getScientificName(), n.getAuthorship(), rank, true);
+      if (ids.size() == 1) {
+        rel.setToID(ids.iterator().next());
+      }
+    });
+    return Optional.of(rel);
+  }
+
+  private static String typeDesignation(VerbatimRecord rec) {
+    var sb = new StringJoiner("; ");
+    if (rec.hasTerm(GbifTerm.typeDesignationType)) {
+      sb.add(rec.get(GbifTerm.typeDesignationType) + " designation");
+    }
+    if (rec.hasTerm(GbifTerm.typeDesignatedBy)) {
+      sb.add("designated by " + rec.get(GbifTerm.typeDesignatedBy));
+    }
+    return sb.length() == 0 ? null : sb.toString();
+  }
+
+  /**
+   * Converts occurrences or GBIF types and specimen records with a type status to TypeMaterial instances
    */
   Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
     if (rec.hasTerm(DwcTerm.typeStatus)) {
@@ -426,7 +480,9 @@ public class DwcInterpreter extends InterpreterBase {
         m.setLocality(rec.get(DwcTerm.locality));
         m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(DwcTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
         try {
-          CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLatitude), rec.get(DwcTerm.decimalLongitude)).ifPresent(m::setCoordinate);
+          CoordParser.PARSER.parse(rec.getFirst(DwcTerm.decimalLatitude, DwcTerm.verbatimLatitude),
+            rec.getFirst(DwcTerm.decimalLongitude, DwcTerm.verbatimLongitude)
+          ).ifPresent(m::setCoordinate);
         } catch (UnparsableException e) {
           rec.add(Issue.LAT_LON_INVALID);
         }
@@ -436,12 +492,13 @@ public class DwcInterpreter extends InterpreterBase {
         m.setCatalogNumber(rec.get(DwcTerm.catalogNumber));
         m.setAssociatedSequences(rec.get(DwcTerm.associatedSequences));
         m.setHost(null);
-        m.setDate(rec.get(DwcTerm.eventDate));
+        m.setDate(rec.getFirst(DwcTerm.eventDate, DwcTerm.verbatimEventDate));
         m.setCollector(rec.get(DwcTerm.recordedBy));
         m.setLink(uri(rec, Issue.URL_INVALID, DcTerm.references));
         // pool other infos in remarks
         m.addRemarks(rec.get(DwcTerm.individualCount));
         m.addRemarks(rec.get(DwcTerm.sex));
+        m.addRemarks(typeDesignation(rec));
         setReference(m, rec);
         return Optional.of(m);
       }
