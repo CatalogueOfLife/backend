@@ -175,4 +175,20 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
     assertTrue(v.contains(Issue.DIACRITIC_CHARACTERS));
   }
 
+  @Test
+  public void distinctLettersAreNoHomoglyphs() throws Exception {
+    // czech and turkish authors of WFO
+    for (String author : new String[]{"Kirschner & Štěpánek", "Yıld. & Kılıç", "Prodan & Țopa"}) {
+      v = new VerbatimRecord(11, "myFile.txt", ColdpTerm.Name);
+      v.put(ColdpTerm.authorship, author);
+      assertEquals(author, v.get(ColdpTerm.authorship));
+      assertFalse(author, v.contains(Issue.HOMOGLYPH_CHARACTERS));
+    }
+    // a cyrillic Te
+    v = new VerbatimRecord(11, "myFile.txt", ColdpTerm.Name);
+    v.put(ColdpTerm.authorship, "R.Т.Craig");
+    v.get(ColdpTerm.authorship);
+    assertTrue(v.contains(Issue.HOMOGLYPH_CHARACTERS));
+  }
+
 }

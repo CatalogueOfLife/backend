@@ -74,7 +74,7 @@ public enum Issue {
       "The parsed scientific name string results in a different name then was given as the preferred atomized parts."),
   
   UNUSUAL_NAME_CHARACTERS(NAME, Level.WARNING,
-      "The name parts contain unusual characters."),
+      "The name parts or the authorship contain unusual characters."),
   
   MULTI_WORD_EPITHET(NAME, Level.WARNING,
       "At least one epithet contains multiple words before parsing."),
