@@ -17,6 +17,7 @@ public interface TempNameUsageRelated {
     SpeciesInteractionMapper.class,
     TaxonConceptRelationMapper.class,
     TreatmentMapper.class,
+    TaxonPropertyMapper.class,
     // usage
     NameUsageMapper.class,
     // name related

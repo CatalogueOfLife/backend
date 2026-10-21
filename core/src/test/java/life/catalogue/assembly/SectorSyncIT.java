@@ -781,6 +781,37 @@ public class SectorSyncIT extends SectorSyncTestBase {
     }
   }
 
+  /**
+   * Taxon properties of deleted usages must be removed too, as they reference the usage by a foreign key.
+   */
+  @Test
+  public void testDeletionWithTaxonProperty() throws Exception {
+    final int d2key = dataRule.mapKey(DataFormat.ACEF, 6);
+    NameUsageBase src = getByName(d2key, Rank.FAMILY, "Theridiidae");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    final DSID<Integer> s6 = createSector(Sector.Mode.ATTACH, src, trg);
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      sync(sm.get(s6));
+
+      NameUsageBase sp = getByName(Datasets.COL, Rank.SPECIES, "Latrodectus hesperus");
+      var tp = new TaxonProperty();
+      tp.setDatasetKey(Datasets.COL);
+      tp.setSectorKey(s6.getId());
+      tp.setProperty("size");
+      tp.setValue("12mm");
+      tp.applyUser(TestDataRule.TEST_USER);
+      var tpm = session.getMapper(TaxonPropertyMapper.class);
+      tpm.create(tp, sp.getId());
+      assertEquals(1, tpm.listByTaxon(sp).size());
+
+      delete(sm.get(s6));
+      assertNull(sm.get(s6));
+      assertTrue(tpm.listByTaxon(sp).isEmpty());
+    }
+  }
+
   @Test
   public void testImplicitGenus() throws Exception {
     final int d1key = dataRule.mapKey(DataFormat.COLDP, 0);
