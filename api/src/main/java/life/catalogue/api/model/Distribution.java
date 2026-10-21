@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  *
  */
-public class Distribution extends DatasetScopedEntity<Integer> implements ExtensionEntity, SameAs<Distribution> {
+public class Distribution extends DatasetScopedEntity<Integer> implements ExtensionEntity, DuplicateCheck<Distribution> {
 
   private Integer sectorKey;
   private Sector.Mode sectorMode;
@@ -174,18 +174,29 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
       Objects.equals(remarks, that.remarks);
   }
 
+  /**
+   * A distribution for the same area is a duplicate, even if its status or other details differ.
+   */
   @Override
-  public boolean sameAs(Distribution that) {
-    return Objects.equals(area, that.area) &&
-        establishmentMeans == that.establishmentMeans &&
-        degreeOfEstablishment == that.degreeOfEstablishment &&
-        Objects.equals(pathway, that.pathway) &&
-        threatStatus == that.threatStatus &&
-        Objects.equals(year, that.year) &&
-        season == that.season &&
-        Objects.equals(lifeStage, that.lifeStage) &&
-        Objects.equals(referenceId, that.referenceId) &&
-        Objects.equals(remarks, that.remarks);
+  public boolean isDuplicate(Distribution that) {
+    return sameArea(area, that.area);
+  }
+
+  /**
+   * Areas of the same gazetteer are the same if their ids match, ignoring case and their display names.
+   * Areas without an id, e.g. free text areas, are compared by their name instead.
+   */
+  static boolean sameArea(Area a1, Area a2) {
+    if (a1 == null || a2 == null) {
+      return a1 == a2;
+    }
+    if (a1.getGazetteer() != a2.getGazetteer()) {
+      return false;
+    }
+    if (a1.getId() != null && a2.getId() != null) {
+      return a1.getId().equalsIgnoreCase(a2.getId());
+    }
+    return a1.getName() != null && a1.getName().equalsIgnoreCase(a2.getName());
   }
 
   @Override

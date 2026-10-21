@@ -55,6 +55,11 @@ public interface NameRelationMapper extends Create<NameRelation>,
    */
   List<String> listRelatedNameIDs(@Param("key") DSID<String> key, @Param("types") Set<NomRelType> types);
 
+  /**
+   * @return true if the dataset has any records at all
+   */
+  boolean entityExists(@Param("datasetKey") int datasetKey);
+
   boolean exists(@Param("datasetKey") int datasetKey, @Param("from") String from, @Param("to") String to, @Param("type") NomRelType type);
 
   /**

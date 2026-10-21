@@ -23,6 +23,11 @@ public interface SpeciesInteractionMapper extends Create<SpeciesInteraction>,
   List<SpeciesInteraction> listByRelatedTaxon(@Param("key") DSID<String> key);
 
   /**
+   * @return true if the dataset has any records at all
+   */
+  boolean entityExists(@Param("datasetKey") int datasetKey);
+
+  /**
    * Returns the list of species interactions of a given type for a single taxon on the taxonId side of the relation only.
    */
   List<SpeciesInteraction> listByType(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId, @Param("type") SpeciesInteractionType type);

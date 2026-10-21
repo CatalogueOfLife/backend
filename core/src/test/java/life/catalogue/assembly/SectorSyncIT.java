@@ -781,6 +781,91 @@ public class SectorSyncIT extends SectorSyncTestBase {
     }
   }
 
+  /**
+   * Taxon properties of deleted usages must be removed too, as they reference the usage by a foreign key.
+   */
+  @Test
+  public void testDeletionWithTaxonProperty() throws Exception {
+    final int d2key = dataRule.mapKey(DataFormat.ACEF, 6);
+    NameUsageBase src = getByName(d2key, Rank.FAMILY, "Theridiidae");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    final DSID<Integer> s6 = createSector(Sector.Mode.ATTACH, src, trg);
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      sync(sm.get(s6));
+
+      NameUsageBase sp = getByName(Datasets.COL, Rank.SPECIES, "Latrodectus hesperus");
+      var tp = new TaxonProperty();
+      tp.setDatasetKey(Datasets.COL);
+      tp.setSectorKey(s6.getId());
+      tp.setProperty("size");
+      tp.setValue("12mm");
+      tp.applyUser(TestDataRule.TEST_USER);
+      var tpm = session.getMapper(TaxonPropertyMapper.class);
+      tpm.create(tp, sp.getId());
+      assertEquals(1, tpm.listByTaxon(sp).size());
+
+      delete(sm.get(s6));
+      assertNull(sm.get(s6));
+      assertTrue(tpm.listByTaxon(sp).isEmpty());
+    }
+  }
+
+  /**
+   * Species interactions are copied with their related taxon if that was synced too, otherwise with just its name.
+   */
+  @Test
+  public void speciesInteractions() throws Exception {
+    final int d2key = dataRule.mapKey(DataFormat.ACEF, 6);
+    NameUsageBase src = getByName(d2key, Rank.FAMILY, "Theridiidae");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    final DSID<Integer> s6 = createSector(Sector.Mode.ATTACH, src, trg);
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      // external source datasets have no id sequences
+      session.getMapper(DatasetPartitionMapper.class).createSequences(d2key);
+      var sim = session.getMapper(SpeciesInteractionMapper.class);
+      final var hesperus = getByName(d2key, Rank.SPECIES, "Latrodectus hesperus");
+      final var mactans = getByName(d2key, Rank.SPECIES, "Latrodectus mactans");
+      // outside of the sector
+      final var arthropoda = getByName(d2key, Rank.PHYLUM, "Arthropoda");
+      sim.create(interaction(d2key, SpeciesInteractionType.EATS, hesperus, mactans));
+      sim.create(interaction(d2key, SpeciesInteractionType.PARASITE_OF, mactans, arthropoda));
+
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      sync(sm.get(s6));
+
+      final var hesperus2 = getByName(Datasets.COL, Rank.SPECIES, "Latrodectus hesperus");
+      final var mactans2 = getByName(Datasets.COL, Rank.SPECIES, "Latrodectus mactans");
+      var sis = sim.listByTaxon(hesperus2);
+      assertEquals(1, sis.size());
+      assertEquals(SpeciesInteractionType.EATS, sis.getFirst().getType());
+      assertEquals(mactans2.getId(), sis.getFirst().getRelatedTaxonId());
+      assertEquals(s6.getId(), sis.getFirst().getSectorKey());
+
+      sis = sim.listByTaxon(mactans2);
+      assertEquals(1, sis.size());
+      assertNull(sis.getFirst().getRelatedTaxonId());
+      assertEquals("Arthropoda", sis.getFirst().getRelatedTaxonScientificName());
+
+      // a resync replaces them
+      sync(sm.get(s6));
+      final var hesperus3 = getByName(Datasets.COL, Rank.SPECIES, "Latrodectus hesperus");
+      assertEquals(1, sim.listByTaxon(hesperus3).size());
+    }
+  }
+
+  static SpeciesInteraction interaction(int datasetKey, SpeciesInteractionType type, NameUsageBase taxon, NameUsageBase related) {
+    var si = new SpeciesInteraction();
+    si.setDatasetKey(datasetKey);
+    si.setType(type);
+    si.setTaxonId(taxon.getId());
+    si.setRelatedTaxonId(related.getId());
+    si.applyUser(TestDataRule.TEST_USER);
+    return si;
+  }
+
   @Test
   public void testImplicitGenus() throws Exception {
     final int d1key = dataRule.mapKey(DataFormat.COLDP, 0);

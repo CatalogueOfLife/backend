@@ -37,6 +37,13 @@ public class CopyUtil {
   }
 
   /**
+   * @return the mapper class of a taxon extension entity type or null if the type is no taxon extension
+   */
+  public static Class<? extends TaxonExtensionMapper<? extends SectorScopedEntity<Integer>>> extensionMapper(EntityType type) {
+    return extMapper.get(type);
+  }
+
+  /**
    * Copies the given source taxon into the dataset and under the parent of targetParent.
    * The taxon and name source instance will be modified to represent the newly generated taxon and finally persisted.
    * The original id is retained and finally returned.

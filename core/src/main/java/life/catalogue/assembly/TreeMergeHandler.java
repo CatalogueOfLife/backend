@@ -4,7 +4,9 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.CopyUtil;
+import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.TaxonExtensionMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.interpreter.InterpreterUtils;
@@ -56,6 +58,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int created = 0;
   private int updated = 0; // updates
   private int vernaculars = 0; // vernacular names added to existing usages
+  private int extensions = 0; // distributions, media & taxon properties added to existing usages
+  // source name id -> target usage id of names matched to existing usages. Their target name ids are looked up lazily
+  private final Map<String, String> matchedNameUsageIds = new HashMap<>();
+  // extension types besides vernaculars which are added to existing usages
+  private static final List<EntityType> MERGED_EXTENSIONS = List.of(EntityType.DISTRIBUTION, EntityType.MEDIA, EntityType.TAXON_PROPERTY);
   // ids of existing usages an update changed. Only tracked on request, see trackUpdatedUsages()
   private @Nullable Set<String> updatedUsageIds;
   // true if the sector itself, not one of its profiles, lists the name types to merge. See nameTypesBySector()
@@ -138,6 +145,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
         if (!mapper.entityExists(sourceDatasetKey)) {
           entities.remove(EntityType.TYPE_MATERIAL);
           LOG.info("No type material in sector {}", sector);
+        }
+      }
+      for (var type : MERGED_EXTENSIONS) {
+        if (entities.contains(type) && !session.getMapper(CopyUtil.extensionMapper(type)).entityExists(sourceDatasetKey)) {
+          entities.remove(type);
+          LOG.info("No {} in sector {}", type, sector);
         }
       }
     }
@@ -396,11 +409,15 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // finally create or update records
     SimpleNameWithNidx sn = null;
+    // creating or updating changes the ids of the source usage instance
+    final String srcId = nu.getId();
+    final String srcNameId = nu.getName().getId();
     if (match.isMatch()) {
       // *** UPDATE ***
       update(nu, match);
       sn = match.usage;
       mod.createOrthVarRel = false; // dont create new name relations for spelling corrections
+      trackIds(srcId, sn.getId(), srcNameId, null);
 
     } else if (match.type == MatchType.AMBIGUOUS) {
       LOG.debug("Do not create new name as we had {} ambiguous matches for {}", match.alternatives.size(), nu.getLabel());
@@ -410,6 +427,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
       if ( nu.isTaxon() && syncTaxa && !isAmbiguousGenus(nu) ||  nu.isSynonym() && syncSynonyms) {
         try {
           sn = create(nu, parent, mod);
+          if (sn != null) {
+            trackIds(srcId, sn.getId(), srcNameId, nu.getName().getId());
+          }
         } catch (UnresolvedHomonymException e) {
           // the genus or species the name needs cannot be told apart from its homonyms. Guessing one puts it into
           // another taxon, maybe another kingdom, a new one duplicates one of them, so the name is dropped with its subtree.
@@ -737,6 +757,39 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   /**
+   * Adds the extension records of a source usage to an existing usage,
+   * skipping all that are duplicates of the existing ones, e.g. a distribution for an area that exists already.
+   */
+  private <T extends ExtensionEntity & DuplicateCheck<T>> void addExtensions(EntityType type, NameUsageBase nu, DSID<String> existingUsageKey, VerbatimSource vs) {
+    @SuppressWarnings("unchecked")
+    final var mapper = (TaxonExtensionMapper<T>) batchSession.getMapper(CopyUtil.extensionMapper(type));
+    List<T> existingRecords = null;
+    recloop:
+    for (T e : mapper.listByTaxon(nu)) {
+      // lazily query existing records
+      if (existingRecords == null) {
+        existingRecords = mapper.listByTaxon(existingUsageKey);
+      }
+      for (var ex : existingRecords) {
+        if (ex.isDuplicate(e)) {
+          continue recloop;
+        }
+      }
+      e.setId(null);
+      e.setVerbatimKey(null);
+      e.setVerbatimSourceKey(verbatimSourceKey(vs));
+      e.setSectorKey(sector.getId());
+      e.setDatasetKey(targetDatasetKey);
+      e.applyUser(user);
+      e.setReferenceId(lookupOrCreateReference(e.getReferenceId()));
+      mapper.create(e, existingUsageKey.getId());
+      existingRecords.add(e);
+      extensions++;
+      trackUpdated(existingUsageKey.getId());
+    }
+  }
+
+  /**
    * Lazily persist a new verbatim source if the key is not existing yet
    */
   private int verbatimSourceKey(VerbatimSource v) {
@@ -824,6 +877,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
             existingVNames.add(vn);
             vernaculars++;
             trackUpdated(existingUsageKey.getId());
+          }
+        }
+        // distributions, media & taxon properties
+        for (var type : MERGED_EXTENSIONS) {
+          if (entities.contains(type)) {
+            addExtensions(type, nu, existingUsageKey, vs);
           }
         }
         // environments, temporal range & extinct flag
@@ -1088,10 +1147,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
     }
 
-    // basionym / name relations
-    if (entities.contains(EntityType.NAME_RELATION)) {
-      // TODO: implement basionym/name rel updates
-    }
     // well known name identifier
     if (existingUsage != null && nameIdScope != null) {
       var nid = DSID.of(existingUsage.getDatasetKey(), nm.getNameIdByUsage(existingUsage.getDatasetKey(), existingUsage.getId()));
@@ -1196,9 +1251,45 @@ public class TreeMergeHandler extends TreeBaseHandler {
   /**
    * Copies all name and taxon relations based on ids collected during the accept calls by the tree traversal.
    */
+  /**
+   * Remembers the target ids of a synced source usage and its name, but only if needed to copy relations later.
+   * @param nameId the target name id or null if the usage was matched to an existing one, so it is looked up lazily
+   */
+  private void trackIds(String srcId, String usageId, String srcNameId, @Nullable String nameId) {
+    if (entities.contains(EntityType.SPECIES_INTERACTION)) {
+      usageIds.put(srcId, usageId);
+    }
+    if (entities.contains(EntityType.NAME_RELATION)) {
+      if (nameId == null) {
+        matchedNameUsageIds.put(srcNameId, usageId);
+      } else {
+        nameIds.put(srcNameId, nameId);
+      }
+    }
+  }
+
+  @Override
+  protected Collection<String> syncedSourceNameIds() {
+    var ids = new HashSet<>(nameIds.keySet());
+    ids.addAll(matchedNameUsageIds.keySet());
+    return ids;
+  }
+
+  @Override
+  protected String targetNameId(String sourceNameId) {
+    return nameIds.computeIfAbsent(sourceNameId, id -> {
+      var usageId = matchedNameUsageIds.get(id);
+      return usageId == null ? null : session.getMapper(NameMapper.class).getNameIdByUsage(targetDatasetKey, usageId);
+    });
+  }
+
+  /**
+   * Copies name relations and species interactions of synced names and usages, skipping those existing already.
+   */
   @Override
   public void copyRelations() {
-    // TODO: copy name & taxon relations
+    copyNameRelations(true);
+    copySpeciesInteractions(true);
     // implicit relations last, so we can check if we have duplicates
     super.copyRelations();
   }
@@ -1209,7 +1300,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     session.close();
     batchSession.commit();
     batchSession.close();
-    LOG.info("{}: Total processed={}, thrown={}, ignored={}, created={}, updated={}, vernaculars={}", sector, counter, thrown, ignored, created, updated, vernaculars);
+    LOG.info("{}: Total processed={}, thrown={}, ignored={}, created={}, updated={}, vernaculars={}, extensions={}", sector, counter, thrown, ignored, created, updated, vernaculars, extensions);
   }
 
   public int getUpdated() {
