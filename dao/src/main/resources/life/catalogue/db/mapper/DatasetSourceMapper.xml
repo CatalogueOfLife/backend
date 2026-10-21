@@ -208,6 +208,19 @@
     <include refid="PUBLISHER_CLAUSE"/>
   </select>
 
+  <select id="countReleaseSources" parameterType="map" resultType="integer">
+    SELECT count(*)
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE d.dataset_key = #{datasetKey}
+    <include refid="PUBLISHER_CLAUSE"/>
+  </select>
+
+  <!-- the project list unions an archived and a live branch that exclude each other, so it has exactly one row per src key -->
+  <select id="countProjectSources" parameterType="map" resultType="integer">
+    <include refid="SECTOR_SUBJECT_DATASETS"/>
+    SELECT count(*) FROM src
+  </select>
+
   <select id="getProjectSource" resultMap="datasetSourceProjectResultMap">
     WITH src AS (
       SELECT max(s.dataset_attempt) AS attempt, array_agg(distinct s.mode) AS sector_modes

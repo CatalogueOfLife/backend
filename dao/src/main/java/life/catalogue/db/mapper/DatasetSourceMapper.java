@@ -135,6 +135,22 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
                                          @Param("inclPublisherSources") boolean inclPublisherSources);
 
   /**
+   * Counts the sources listReleaseSourcesSimple would return, without materializing any of them.
+   * @param datasetKey the release dataset key
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a publisher configured
+   */
+  int countReleaseSources(@Param("datasetKey") int datasetKey,
+                          @Param("inclPublisherSources") boolean inclPublisherSources);
+
+  /**
+   * Counts the sources listProjectSourcesSimple would return, without materializing any of them.
+   * @param datasetKey the project key
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a publisher configured
+   */
+  int countProjectSources(@Param("datasetKey") int datasetKey,
+                          @Param("inclPublisherSources") boolean inclPublisherSources);
+
+  /**
    * Deletes a single source dataset for the given release
    * @param key the source dataset key
    * @param datasetKey the release dataset key. No project keys allowed!

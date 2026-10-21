@@ -181,6 +181,19 @@ public class DatasetSourceDao {
     }
   }
 
+  /**
+   * @return the number of sources listSimple returns when not splitting merge sources
+   */
+  public int count(int datasetKey, boolean inclPublisherSources){
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey, true).requireOrigin(RELEASE, XRELEASE, PROJECT);
+    try (SqlSession session = factory.openSession()) {
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      return info.origin.isRelease()
+        ? psm.countReleaseSources(datasetKey, inclPublisherSources)
+        : psm.countProjectSources(datasetKey, inclPublisherSources);
+    }
+  }
+
   public List<DatasetSimple> suggest(int datasetKey, String query, boolean inclMergeSources){
     DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
     try (SqlSession session = factory.openSession()) {

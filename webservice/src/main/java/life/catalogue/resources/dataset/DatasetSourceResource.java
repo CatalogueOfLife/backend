@@ -72,6 +72,16 @@ public class DatasetSourceResource {
     return ds;
   }
 
+  /**
+   * The number of sources the list above returns, without transferring them.
+   * With publisher sources a release easily has tens of thousands.
+   */
+  @GET
+  @Path("/count")
+  public int count(@PathParam("key") int datasetKey, @QueryParam("inclPublisherSources") boolean inclPublisherSources) {
+    return sourceDao.count(datasetKey, inclPublisherSources);
+  }
+
   @GET
   @Path("/suggest")
   public List<DatasetSimple> projectOrReleaseSourceSuggest(@PathParam("key") int datasetKey,
