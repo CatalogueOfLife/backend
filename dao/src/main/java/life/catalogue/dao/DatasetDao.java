@@ -753,11 +753,16 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       obj.setAlias(articleAlias(obj));
     }
     sanitize(obj);
-    // if list of creators for a project changes, adjust the max container author settings
+    // A release appends the source authors to the project creators, but only the project's own creators should be
+    // container authors of its sources. So the max container authors follow the number of project creators -
+    // unless the setting was changed manually, i.e. it differs from the old creator count, which then sticks.
     if (obj.getOrigin() == DatasetOrigin.PROJECT && CollectionUtils.size(obj.getCreator()) != CollectionUtils.size(old.getCreator())) {
       var ds = getSettings(obj.getKey());
-      ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, CollectionUtils.size(obj.getCreator()));
-      putSettings(obj.getKey(), ds, user);
+      Integer max = ds.getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS);
+      if (max == null || max == CollectionUtils.size(old.getCreator())) {
+        ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, CollectionUtils.size(obj.getCreator()));
+        putSettings(obj.getKey(), ds, user);
+      }
     }
     super.updateBefore(obj, old, user, mapper, session);
   }

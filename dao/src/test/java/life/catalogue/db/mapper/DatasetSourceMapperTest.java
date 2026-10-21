@@ -196,10 +196,10 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     commit();
 
     // COL container
-    // mapper takes these from the project
+    // mapper takes these from the project, with only the first 3 creators when not configured
     rs.setContainerKey(col.getKey());
     rs.setContainerTitle(col.getTitle());
-    rs.setContainerCreator(col.getCreator());
+    rs.setContainerCreator(col.getCreator().subList(0, 3));
     rs.setContainerPublisher(col.getPublisher());
     rs.setContainerVersion(col.getVersion());
     rs.setContainerIssued(col.getIssued());

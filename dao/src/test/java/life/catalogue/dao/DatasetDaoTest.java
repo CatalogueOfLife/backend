@@ -7,6 +7,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.event.EventBroker;
 import life.catalogue.common.date.FuzzyDate;
@@ -219,6 +220,40 @@ public class DatasetDaoTest extends DaoTestBase {
     dao.update(ds.getDataset(), Users.TESTER);
 
     assertEquals(upd.getLogo(), dao.get(d1.getKey()).getLogo());
+  }
+
+  /**
+   * The max container authors follow the number of project creators, unless they were set manually to another value.
+   */
+  @Test
+  public void maxContainerAuthorsFollowCreators() throws Exception {
+    Dataset proj = DatasetMapperTest.create();
+    proj.setOrigin(DatasetOrigin.PROJECT);
+    proj.setCreator(List.of(Agent.person("Anna", "Ast"), Agent.person("Bert", "Baum")));
+    dao.create(proj, Users.TESTER);
+    assertNull(dao.getSettings(proj.getKey()).getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS));
+
+    updateCreators(proj.getKey(), 3);
+    assertEquals((Integer) 3, dao.getSettings(proj.getKey()).getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS));
+    updateCreators(proj.getKey(), 4);
+    assertEquals((Integer) 4, dao.getSettings(proj.getKey()).getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS));
+
+    // a manual value sticks
+    var ds = dao.getSettings(proj.getKey());
+    ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, 2);
+    dao.putSettings(proj.getKey(), ds, Users.TESTER);
+    updateCreators(proj.getKey(), 5);
+    assertEquals((Integer) 2, dao.getSettings(proj.getKey()).getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS));
+  }
+
+  private void updateCreators(int key, int size) {
+    var d = dao.get(key);
+    List<Agent> creators = new java.util.ArrayList<>();
+    for (int i = 0; i < size; i++) {
+      creators.add(Agent.person("Given" + i, "Family" + i));
+    }
+    d.setCreator(creators);
+    dao.update(d, Users.TESTER);
   }
 
   @Test(expected = IllegalArgumentException.class)

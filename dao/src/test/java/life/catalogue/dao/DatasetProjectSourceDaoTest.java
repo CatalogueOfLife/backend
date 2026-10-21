@@ -10,6 +10,7 @@ import life.catalogue.junit.TestDataRule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class DatasetProjectSourceDaoTest extends DaoTestBase {
 
@@ -26,6 +27,9 @@ public class DatasetProjectSourceDaoTest extends DaoTestBase {
 
     dao.listSimple(TestDataRule.FISH.key, true, true).forEach(d -> {
       System.out.println(d.getKey() +": " + d.getTitle() + " " + d.isMerged());
+      // the container without its creators, which would repeat on every source
+      assertEquals((Integer) TestDataRule.FISH.key, d.getContainerKey());
+      assertNull(d.getContainerCreator());
     });
   }
 

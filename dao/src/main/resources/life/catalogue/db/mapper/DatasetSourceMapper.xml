@@ -11,7 +11,12 @@
     con.publisher AS containerPublisher,
     con.issued AS containerIssued,
     con.version AS containerVersion,
-    con.creator[:coalesce((con.settings->>'source max container authors')::int, 100)] AS containerCreator
+    <!-- releases rarely carry settings of their own, so the cap falls back to the project's -->
+    con.creator[:coalesce(
+      (con.settings->>'source max container authors')::int,
+      (SELECT (p.settings->>'source max container authors')::int FROM dataset p WHERE p.key = con.source_key),
+      3
+    )] AS containerCreator
   </sql>
 
   <sql id="SELECT_SIMPLE">

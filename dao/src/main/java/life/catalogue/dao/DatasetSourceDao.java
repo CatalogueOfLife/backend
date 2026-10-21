@@ -145,7 +145,6 @@ public class DatasetSourceDao {
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
       final var container = dm.get(datasetKey);
-      final var settings = dm.getSettings(info.keyOrProjectKey());
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (info.origin.isRelease()) {
         sources = psm.listReleaseSourcesSimple(datasetKey, inclPublisherSources);
@@ -156,7 +155,7 @@ public class DatasetSourceDao {
         final DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
         sources.forEach(d -> patch(d, datasetKey, pm));
       }
-      sources.forEach(d -> d.addContainer(container, settings));
+      sources.forEach(d -> d.addContainer(container));
       // should we create 2 copies of sources with merge and non merge sector modes?
       if (splitMerge) {
         var splitSources = new ArrayList<DatasetSourceMapper.SourceDataset>();

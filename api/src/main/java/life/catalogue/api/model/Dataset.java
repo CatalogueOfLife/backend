@@ -900,7 +900,12 @@ public class Dataset extends DataEntity<Integer> {
     }
   }
 
-  public void addContainer(Dataset container, DatasetSettings settings) {
+  /**
+   * Adds the container properties, but not the container creators.
+   * Listing the sources of a release repeated them on every single source: 64% of a 167 MB response for 21k sources.
+   * Archive exports drop them for the same reason.
+   */
+  public void addContainer(Dataset container) {
     if (container == null) {
       container = new Dataset();
     }
@@ -909,12 +914,6 @@ public class Dataset extends DataEntity<Integer> {
     containerVersion = container.version;
     containerPublisher = container.publisher;
     containerIssued = container.issued;
-    if (container.creator != null) {
-      // limit the max container creators
-      // con.creator[:coalesce((con.settings->>'source max container authors')::int, 100)] AS containerCreator
-      var max = ObjectUtils.coalesce(settings.getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS), 100);
-      containerCreator = container.creator.size() > max ? new ArrayList<>(container.creator.subList(0, max)) : new ArrayList<>(container.creator);
-    }
   }
 
   public String getIssn() {
