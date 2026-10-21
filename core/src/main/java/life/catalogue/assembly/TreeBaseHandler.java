@@ -84,6 +84,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
   protected final Map<NomRelType, Map<String, String>> nameRelsToBeCreated = new HashMap<>();
   private final Map<String, String> refIds = new HashMap<>();
+  // source usage id -> target usage id of all usages created or updated by this sync
+  protected final Map<String, String> usageIds = new HashMap<>();
+  // source name id -> target name id of all names created by this sync. See targetNameId()
+  protected final Map<String, String> nameIds = new HashMap<>();
   // from name to related name with given type
 
   protected int sCounter = 0;
@@ -752,6 +756,133 @@ public abstract class TreeBaseHandler implements TreeHandler {
       ed.getMode()== EditorialDecision.Mode.UPDATE && Boolean.TRUE.equals(ed.isKeepOriginalName()),
       originalName
     );
+  }
+
+  /**
+   * @return ids of all source names this sync created or updated a target name for
+   */
+  protected Collection<String> syncedSourceNameIds() {
+    return nameIds.keySet();
+  }
+
+  /**
+   * @return the target name id for a synced source name, or null if the source name was not synced
+   */
+  protected String targetNameId(String sourceNameId) {
+    return nameIds.get(sourceNameId);
+  }
+
+  /**
+   * Copies name relations between synced names.
+   * @param skipExisting if true relations existing already in the target are not copied again
+   */
+  protected void copyNameRelations(boolean skipExisting) {
+    if (!entities.contains(EntityType.NAME_RELATION)) return;
+    NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
+    if (!nrm.entityExists(sector.getSubjectDatasetKey())) {
+      LOG.info("No name relations in sector {}", sector);
+      return;
+    }
+    LOG.debug("Sync name relations from sector {}", sector.getKey());
+    batchSession.commit();
+    NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
+    int counter = 0;
+    Set<Integer> relIds = new HashSet<>();
+    var key = DSID.of(sector.getSubjectDatasetKey(), "");
+    // copy as targetNameId() might add to the synced names
+    for (String srcNameId : new ArrayList<>(syncedSourceNameIds())) {
+      for (NameRelation nr : nrm.listByName(key.id(srcNameId))) {
+        if (relIds.add(nr.getId())) {
+          String nameId = targetNameId(nr.getNameId());
+          String relatedNameId = targetNameId(nr.getRelatedNameId());
+          if (nameId == null || relatedNameId == null) {
+            LOG.info("Name relation {} outside of synced sector {}", nr.getKey(), sector.getKey());
+          } else if (skipExisting && nrm.exists(targetDatasetKey, nameId, relatedNameId, nr.getType())) {
+            LOG.debug("Name relation {} exists already in sector {}", nr.getKey(), sector.getKey());
+          } else {
+            updateFKs(nr);
+            nr.setSectorKey(sector.getId());
+            nr.setNameId(nameId);
+            nr.setRelatedNameId(relatedNameId);
+            nr.applyUser(user);
+            nrmWrite.create(nr);
+            if (counter++ % 2500 == 0) {
+              batchSession.commit();
+            }
+          }
+        }
+      }
+    }
+    batchSession.commit();
+    LOG.info("Synced {} name relations from sector {}", counter, sector.getKey());
+  }
+
+  /**
+   * Copies the species interactions of all synced usages.
+   * If the related taxon was not synced the interaction is kept with just the related taxon name.
+   * @param skipExisting if true interactions duplicating an existing one in the target are not copied
+   */
+  protected void copySpeciesInteractions(boolean skipExisting) {
+    if (!entities.contains(EntityType.SPECIES_INTERACTION)) return;
+    var sim = session.getMapper(SpeciesInteractionMapper.class);
+    if (!sim.entityExists(sector.getSubjectDatasetKey())) {
+      LOG.info("No species interactions in sector {}", sector);
+      return;
+    }
+    LOG.debug("Sync species interactions from sector {}", sector.getKey());
+    batchSession.commit();
+    var simWrite = batchSession.getMapper(SpeciesInteractionMapper.class);
+    int counter = 0;
+    var key = DSID.of(sector.getSubjectDatasetKey(), "");
+    for (var ids : usageIds.entrySet()) {
+      List<SpeciesInteraction> existing = null;
+      siloop:
+      for (var si : sim.listByTaxon(key.id(ids.getKey()))) {
+        si.setTaxonId(ids.getValue());
+        if (si.getRelatedTaxonId() != null) {
+          String relatedId = usageIds.get(si.getRelatedTaxonId());
+          if (relatedId == null && si.getRelatedTaxonScientificName() == null) {
+            // the related taxon was not synced, keep at least its name
+            var rel = numRO.getSimple(key.id(si.getRelatedTaxonId()));
+            si.setRelatedTaxonScientificName(rel == null ? null : rel.getLabel());
+          }
+          si.setRelatedTaxonId(relatedId);
+        }
+        if (skipExisting) {
+          if (existing == null) {
+            existing = sim.listByTaxon(DSID.of(targetDatasetKey, ids.getValue()));
+          }
+          for (var ex : existing) {
+            if (ex.isDuplicate(si)) {
+              continue siloop;
+            }
+          }
+          existing.add(si);
+        }
+        updateFKs(si);
+        si.setId(null);
+        si.setSectorKey(sector.getId());
+        si.setVerbatimSourceKey(null);
+        si.applyUser(user);
+        simWrite.create(si);
+        if (counter++ % 2500 == 0) {
+          batchSession.commit();
+        }
+      }
+    }
+    batchSession.commit();
+    LOG.info("Synced {} species interactions from sector {}", counter, sector.getKey());
+  }
+
+  protected void updateFKs(DatasetScopedEntity<?> obj){
+    obj.setDatasetKey(targetDatasetKey);
+    if (obj instanceof VerbatimEntity) {
+      ((VerbatimEntity)obj).setVerbatimKey(null);
+    }
+    if (obj instanceof Referenced) {
+      Referenced r = (Referenced) obj;
+      r.setReferenceId(lookupOrCreateReference(r.getReferenceId()));
+    }
   }
 
   @Override

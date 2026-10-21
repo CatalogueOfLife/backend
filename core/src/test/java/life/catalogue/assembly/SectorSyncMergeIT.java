@@ -641,6 +641,94 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     }
   }
 
+  /**
+   * A merge copies name relations and species interactions of both created and matched usages,
+   * skipping those existing already in the project.
+   */
+  @Test
+  public void mergeRelations() throws Throwable {
+    Assume.assumeTrue("vernacular".equals(project));
+    var factory = syncFactoryRule.factory(NameUsageIndexService.passThru());
+    var mcfg = info.buildMergeConfig();
+    final Sector v1 = info.sectors.get(0);
+    final int srcKey = v1.getSubjectDatasetKey();
+    final int user = TestDataRule.TEST_USER.getKey();
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      v1.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.NAME_RELATION, EntityType.SPECIES_INTERACTION));
+      session.getMapper(SectorMapper.class).update(v1);
+      // external source datasets have no id sequences
+      session.getMapper(DatasetPartitionMapper.class).createSequences(srcKey);
+
+      // both exist in the project already, Drosophila does not
+      final var musca = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+      final var diptera = getByName(Datasets.COL, Rank.ORDER, "Diptera");
+      var nrm = session.getMapper(NameRelationMapper.class);
+      nrm.create(withUser(nameRel(musca, diptera, NomRelType.HOMOTYPIC), user));
+      var sim = session.getMapper(SpeciesInteractionMapper.class);
+      sim.create(withUser(interaction(SpeciesInteractionType.EATS, musca, diptera), user));
+
+      final var sMusca = getByName(srcKey, Rank.SPECIES, "Musca domestica");
+      final var sDiptera = getByName(srcKey, Rank.ORDER, "Diptera");
+      final var sDroso = getByName(srcKey, Rank.SPECIES, "Drosophila melanogaster");
+      // existing ones
+      nrm.create(inDataset(nameRel(sMusca, sDiptera, NomRelType.HOMOTYPIC), srcKey, user));
+      sim.create(inDataset(interaction(SpeciesInteractionType.EATS, sMusca, sDiptera), srcKey, user));
+      // new ones between a matched and a created usage
+      nrm.create(inDataset(nameRel(sDroso, sMusca, NomRelType.SPELLING_CORRECTION), srcKey, user));
+      sim.create(inDataset(interaction(SpeciesInteractionType.EATS, sMusca, sDroso), srcKey, user));
+    }
+
+    // a resync replaces what the sector added before and must not duplicate anything
+    for (int x = 0; x < 2; x++) {
+      sync(factory, mcfg, v1);
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+        final var musca = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+        final var diptera = getByName(Datasets.COL, Rank.ORDER, "Diptera");
+        final var droso = getByName(Datasets.COL, Rank.SPECIES, "Drosophila melanogaster");
+        assertEquals(v1.getId(), droso.getSectorKey());
+
+        var rels = session.getMapper(NameRelationMapper.class).listByName(musca.getName());
+        assertEquals(1, rels.size());
+        assertEquals(diptera.getName().getId(), rels.getFirst().getRelatedNameId());
+        assertNull(rels.getFirst().getSectorKey());
+
+        rels = session.getMapper(NameRelationMapper.class).listByName(droso.getName());
+        assertEquals(1, rels.size());
+        assertEquals(NomRelType.SPELLING_CORRECTION, rels.getFirst().getType());
+        assertEquals(musca.getName().getId(), rels.getFirst().getRelatedNameId());
+        assertEquals(v1.getId(), rels.getFirst().getSectorKey());
+
+        var sis = session.getMapper(SpeciesInteractionMapper.class).listByTaxon(musca);
+        assertEquals(2, sis.size());
+        for (var si : sis) {
+          if (si.getRelatedTaxonId().equals(diptera.getId())) {
+            assertNull(si.getSectorKey());
+          } else {
+            assertEquals(droso.getId(), si.getRelatedTaxonId());
+            assertEquals(v1.getId(), si.getSectorKey());
+          }
+        }
+      }
+    }
+  }
+
+  private static NameRelation nameRel(NameUsageBase from, NameUsageBase to, NomRelType type) {
+    var nr = new NameRelation();
+    nr.setType(type);
+    nr.setNameId(from.getName().getId());
+    nr.setRelatedNameId(to.getName().getId());
+    return nr;
+  }
+
+  private static SpeciesInteraction interaction(SpeciesInteractionType type, NameUsageBase taxon, NameUsageBase related) {
+    var si = new SpeciesInteraction();
+    si.setType(type);
+    si.setTaxonId(taxon.getId());
+    si.setRelatedTaxonId(related.getId());
+    return si;
+  }
+
   private static Distribution distribution(Gazetteer gazetteer, String areaId, EstablishmentMeans means) {
     var d = new Distribution();
     d.setArea(new GenericArea(gazetteer, areaId));
