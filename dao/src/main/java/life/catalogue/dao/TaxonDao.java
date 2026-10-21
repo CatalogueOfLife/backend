@@ -390,8 +390,17 @@ public class TaxonDao extends NameUsageBaseDao<Taxon, TaxonMapper> implements Ta
         var v = vsm.getByUsage(usage);
         info.setSource(vsm.addSources(v));
       }
+      var vm = session.getMapper(VerbatimRecordMapper.class);
       if (usage.getVerbatimKey() != null) {
-        info.setVerbatim(session.getMapper(VerbatimRecordMapper.class).get(DSID.of(usage.getDatasetKey(), usage.getVerbatimKey())));
+        info.setVerbatim(vm.get(DSID.of(usage.getDatasetKey(), usage.getVerbatimKey())));
+      }
+      // a name can come from its own verbatim record, e.g. ColDP Name rows - its issues belong to the usage too
+      var nvk = usage.getName().getVerbatimKey();
+      if (nvk != null && !nvk.equals(usage.getVerbatimKey())) {
+        var ni = vm.getIssues(DSID.of(usage.getDatasetKey(), nvk));
+        if (ni != null) {
+          info.setNameIssues(ni.getIssues());
+        }
       }
     }
 

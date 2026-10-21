@@ -18,6 +18,8 @@ public class UsageInfo {
   private TaxGroup group;
   private VerbatimSource source;
   private VerbatimRecord verbatim;
+  // issues of the name's own verbatim record, e.g. a ColDP Name row separate from its Taxon row
+  private Set<Issue> nameIssues;
   private Treatment treatment;
   private List<NameUsageRelation> nameRelations;
   // taxa only
@@ -109,14 +111,33 @@ public class UsageInfo {
     this.verbatim = verbatim;
   }
 
+  /**
+   * @return the issues of the usage pooled with the ones of its name, as the search index does
+   */
   public Set<Issue> getIssues() {
+    Set<Issue> issues = null;
     if (verbatim != null) {
-      return verbatim.getIssues();
+      issues = verbatim.getIssues();
+    } else if (source != null) {
+      issues = source.getIssues();
     }
-    if (source != null) {
-      return source.getIssues();
+    if (nameIssues == null || nameIssues.isEmpty()) {
+      return issues;
     }
-    return null;
+    var pooled = EnumSet.copyOf(nameIssues);
+    if (issues != null) {
+      pooled.addAll(issues);
+    }
+    return pooled;
+  }
+
+  @JsonIgnore
+  public Set<Issue> getNameIssues() {
+    return nameIssues;
+  }
+
+  public void setNameIssues(Set<Issue> nameIssues) {
+    this.nameIssues = nameIssues;
   }
 
   public Synonymy getSynonyms() {
@@ -288,6 +309,7 @@ public class UsageInfo {
       group == usageInfo.group &&
       Objects.equals(source, usageInfo.source) &&
       Objects.equals(verbatim, usageInfo.verbatim) &&
+      Objects.equals(nameIssues, usageInfo.nameIssues) &&
       Objects.equals(treatment, usageInfo.treatment) &&
       Objects.equals(nameRelations, usageInfo.nameRelations) &&
       Objects.equals(synonyms, usageInfo.synonyms) &&
@@ -307,6 +329,6 @@ public class UsageInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(usage, publishedIn, classification, group, source, verbatim, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, estimates, typeMaterial, references, names, taxa, decisions);
+    return Objects.hash(usage, publishedIn, classification, group, source, verbatim, nameIssues, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, estimates, typeMaterial, references, names, taxa, decisions);
   }
 }
