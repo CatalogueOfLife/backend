@@ -3,6 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.area.Gazetteer;
 import life.catalogue.api.vocab.area.GenericArea;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
@@ -563,6 +564,94 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       assertEquals(1, tcs.size());
       assertEquals(musca2.getId(), tcs.getFirst().getRelatedTaxonId());
     }
+  }
+
+  /**
+   * A merge adds distributions, media and taxon properties to existing usages,
+   * but skips distributions of an existing area and properties of an existing key, even if their values differ.
+   */
+  @Test
+  public void mergeExtensionsIntoExistingUsages() throws Throwable {
+    Assume.assumeTrue("vernacular".equals(project));
+    var factory = syncFactoryRule.factory(NameUsageIndexService.passThru());
+    var mcfg = info.buildMergeConfig();
+    final Sector v1 = info.sectors.get(0);
+    final int srcKey = v1.getSubjectDatasetKey();
+    final int user = TestDataRule.TEST_USER.getKey();
+
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      v1.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.DISTRIBUTION, EntityType.MEDIA, EntityType.TAXON_PROPERTY));
+      session.getMapper(SectorMapper.class).update(v1);
+      // external source datasets have no id sequences
+      session.getMapper(DatasetPartitionMapper.class).createSequences(srcKey);
+
+      var dm = session.getMapper(DistributionMapper.class);
+      var pm = session.getMapper(TaxonPropertyMapper.class);
+      // the project's own usage
+      final var musca = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+      assertNull(musca.getSectorKey());
+      dm.create(withUser(distribution(Gazetteer.TDWG, "BZL", EstablishmentMeans.NATIVE), user), musca.getId());
+      pm.create(withUser(property("habitat", "houses", null), user), musca.getId());
+
+      // the source usage
+      final var src = getByName(srcKey, Rank.SPECIES, "Musca domestica");
+      dm.create(inDataset(distribution(Gazetteer.TDWG, "bzl", EstablishmentMeans.INTRODUCED), srcKey, user), src.getId());
+      dm.create(inDataset(distribution(Gazetteer.TDWG, "EUR", EstablishmentMeans.NATIVE), srcKey, user), src.getId());
+      pm.create(inDataset(property("habitat", "urban", null), srcKey, user), src.getId());
+      pm.create(inDataset(property("size", "7mm", null), srcKey, user), src.getId());
+      var m = new Media();
+      m.setUrl(URI.create("https://example.org/musca.jpg"));
+      session.getMapper(MediaMapper.class).create(inDataset(m, srcKey, user), src.getId());
+    }
+
+    // a resync replaces what the sector added before and must not duplicate anything
+    for (int x = 0; x < 2; x++) {
+      sync(factory, mcfg, v1);
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+        final var musca = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+        var dists = session.getMapper(DistributionMapper.class).listByTaxon(musca);
+        assertEquals(2, dists.size());
+        for (var d : dists) {
+          if (d.getArea().getId().equals("BZL")) {
+            assertEquals(EstablishmentMeans.NATIVE, d.getEstablishmentMeans());
+            assertNull(d.getSectorKey());
+          } else {
+            assertEquals("EUR", d.getArea().getId());
+            assertEquals(v1.getId(), d.getSectorKey());
+          }
+        }
+
+        var props = session.getMapper(TaxonPropertyMapper.class).listByTaxon(musca);
+        assertEquals(2, props.size());
+        for (var p : props) {
+          if (p.getProperty().equals("habitat")) {
+            assertEquals("houses", p.getValue());
+          } else {
+            assertEquals("size", p.getProperty());
+            assertEquals("7mm", p.getValue());
+            assertEquals(v1.getId(), p.getSectorKey());
+          }
+        }
+
+        var media = session.getMapper(MediaMapper.class).listByTaxon(musca);
+        assertEquals(1, media.size());
+        assertEquals(v1.getId(), media.getFirst().getSectorKey());
+        assertNotNull(media.getFirst().getVerbatimSourceKey());
+      }
+    }
+  }
+
+  private static Distribution distribution(Gazetteer gazetteer, String areaId, EstablishmentMeans means) {
+    var d = new Distribution();
+    d.setArea(new GenericArea(gazetteer, areaId));
+    d.setEstablishmentMeans(means);
+    return d;
+  }
+
+  private static <T extends DatasetScopedEntity<?>> T inDataset(T obj, int datasetKey, int user) {
+    withUser(obj, user);
+    obj.setDatasetKey(datasetKey);
+    return obj;
   }
 
   private static void sync(SyncFactory factory, TreeMergeHandlerConfig mcfg, Sector s) {

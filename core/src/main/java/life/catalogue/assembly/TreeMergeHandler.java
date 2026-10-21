@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.TaxonExtensionMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.interpreter.InterpreterUtils;
@@ -56,6 +57,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int created = 0;
   private int updated = 0; // updates
   private int vernaculars = 0; // vernacular names added to existing usages
+  private int extensions = 0; // distributions, media & taxon properties added to existing usages
+  // extension types besides vernaculars which are added to existing usages
+  private static final List<EntityType> MERGED_EXTENSIONS = List.of(EntityType.DISTRIBUTION, EntityType.MEDIA, EntityType.TAXON_PROPERTY);
   // ids of existing usages an update changed. Only tracked on request, see trackUpdatedUsages()
   private @Nullable Set<String> updatedUsageIds;
   // true if the sector itself, not one of its profiles, lists the name types to merge. See nameTypesBySector()
@@ -138,6 +142,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
         if (!mapper.entityExists(sourceDatasetKey)) {
           entities.remove(EntityType.TYPE_MATERIAL);
           LOG.info("No type material in sector {}", sector);
+        }
+      }
+      for (var type : MERGED_EXTENSIONS) {
+        if (entities.contains(type) && !session.getMapper(CopyUtil.extensionMapper(type)).entityExists(sourceDatasetKey)) {
+          entities.remove(type);
+          LOG.info("No {} in sector {}", type, sector);
         }
       }
     }
@@ -737,6 +747,39 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   /**
+   * Adds the extension records of a source usage to an existing usage,
+   * skipping all that are duplicates of the existing ones, e.g. a distribution for an area that exists already.
+   */
+  private <T extends ExtensionEntity & DuplicateCheck<T>> void addExtensions(EntityType type, NameUsageBase nu, DSID<String> existingUsageKey, VerbatimSource vs) {
+    @SuppressWarnings("unchecked")
+    final var mapper = (TaxonExtensionMapper<T>) batchSession.getMapper(CopyUtil.extensionMapper(type));
+    List<T> existingRecords = null;
+    recloop:
+    for (T e : mapper.listByTaxon(nu)) {
+      // lazily query existing records
+      if (existingRecords == null) {
+        existingRecords = mapper.listByTaxon(existingUsageKey);
+      }
+      for (var ex : existingRecords) {
+        if (ex.isDuplicate(e)) {
+          continue recloop;
+        }
+      }
+      e.setId(null);
+      e.setVerbatimKey(null);
+      e.setVerbatimSourceKey(verbatimSourceKey(vs));
+      e.setSectorKey(sector.getId());
+      e.setDatasetKey(targetDatasetKey);
+      e.applyUser(user);
+      e.setReferenceId(lookupOrCreateReference(e.getReferenceId()));
+      mapper.create(e, existingUsageKey.getId());
+      existingRecords.add(e);
+      extensions++;
+      trackUpdated(existingUsageKey.getId());
+    }
+  }
+
+  /**
    * Lazily persist a new verbatim source if the key is not existing yet
    */
   private int verbatimSourceKey(VerbatimSource v) {
@@ -824,6 +867,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
             existingVNames.add(vn);
             vernaculars++;
             trackUpdated(existingUsageKey.getId());
+          }
+        }
+        // distributions, media & taxon properties
+        for (var type : MERGED_EXTENSIONS) {
+          if (entities.contains(type)) {
+            addExtensions(type, nu, existingUsageKey, vs);
           }
         }
         // environments, temporal range & extinct flag
@@ -1209,7 +1258,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     session.close();
     batchSession.commit();
     batchSession.close();
-    LOG.info("{}: Total processed={}, thrown={}, ignored={}, created={}, updated={}, vernaculars={}", sector, counter, thrown, ignored, created, updated, vernaculars);
+    LOG.info("{}: Total processed={}, thrown={}, ignored={}, created={}, updated={}, vernaculars={}, extensions={}", sector, counter, thrown, ignored, created, updated, vernaculars, extensions);
   }
 
   public int getUpdated() {
