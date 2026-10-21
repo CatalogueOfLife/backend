@@ -507,7 +507,7 @@ public enum Issue {
     "Only matched to a higher rank in the configured target dataset; identifier added for the higher-ranked match."),
 
   DUPLICATE_DISTRIBUTIONS(NAME_USAGE, Level.WARNING,
-      "Same distribution record appears several times for the same taxon."),
+      "Several distribution records for the same area appear for the same taxon, even if their status differs."),
   DUPLICATE_MEDIA(NAME_USAGE, Level.WARNING,
       "Same media record appears several times for the same taxon."),
   DUPLICATE_VERNACULAR_NAMES(NAME_USAGE, Level.WARNING,
@@ -515,7 +515,7 @@ public enum Issue {
   DUPLICATE_ESTIMATES(NAME_USAGE, Level.WARNING,
       "Same species estimate record appears several times for the same taxon."),
   DUPLICATE_TAXON_PROPERTIES(NAME_USAGE, Level.WARNING,
-      "Same taxon property record appears several times for the same taxon."),
+      "The same property appears several times for the same taxon, even if its values differ."),
 
   AUTHORSHIP_UNCERTAIN(NAME, Level.WARNING,
       "The authorship is explicitly marked as uncertain in the name, e.g. a trailing question mark or alternative authors separated by 'or' or a slash."),

@@ -304,18 +304,18 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void flagRedundantRecords(NameUsageData nu, IssueContainer issues) {
-    flagSameAs(DUPLICATE_DISTRIBUTIONS, nu.ud.distributions, issues);
-    flagSameAs(DUPLICATE_MEDIA, nu.ud.media, issues);
-    flagSameAs(DUPLICATE_VERNACULAR_NAMES, nu.ud.vernacularNames, issues);
-    flagSameAs(DUPLICATE_ESTIMATES, nu.ud.estimates, issues);
-    flagSameAs(DUPLICATE_TAXON_PROPERTIES, nu.ud.properties, issues);
+    flagDuplicates(DUPLICATE_DISTRIBUTIONS, nu.ud.distributions, issues);
+    flagDuplicates(DUPLICATE_MEDIA, nu.ud.media, issues);
+    flagDuplicates(DUPLICATE_VERNACULAR_NAMES, nu.ud.vernacularNames, issues);
+    flagDuplicates(DUPLICATE_ESTIMATES, nu.ud.estimates, issues);
+    flagDuplicates(DUPLICATE_TAXON_PROPERTIES, nu.ud.properties, issues);
   }
 
-  private static <T extends SameAs<T>> void flagSameAs(Issue issue, Collection<T> coll, IssueContainer issues) {
+  private static <T extends DuplicateCheck<T>> void flagDuplicates(Issue issue, Collection<T> coll, IssueContainer issues) {
     for (var rec : coll) {
       if (rec != null) {
         for (var ex : coll) {
-          if (ex != rec && ex.sameAs(rec)) {
+          if (ex != rec && ex.isDuplicate(rec)) {
             issues.add(issue);
             return;
           }
@@ -647,15 +647,15 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void addSupplementaryInfos(UsageData acc, UsageData u) {
-    addIfNotTheSame(acc.distributions, u.distributions);
-    addIfNotTheSame(acc.media, u.media);
-    addIfNotTheSame(acc.vernacularNames, u.vernacularNames);
-    addIfNotTheSame(acc.estimates, u.estimates);
-    addIfNotTheSame(acc.properties, u.properties);
+    addIfNoDuplicate(acc.distributions, u.distributions);
+    addIfNoDuplicate(acc.media, u.media);
+    addIfNoDuplicate(acc.vernacularNames, u.vernacularNames);
+    addIfNoDuplicate(acc.estimates, u.estimates);
+    addIfNoDuplicate(acc.properties, u.properties);
     store.usages().update(acc);
   }
 
-  private <T extends SameAs<T>> void addIfNotTheSame(Collection<T> coll, Collection<T> toAdd) {
+  private <T extends DuplicateCheck<T>> void addIfNoDuplicate(Collection<T> coll, Collection<T> toAdd) {
     if (format == DataFormat.ACEF) {
       coll.addAll(toAdd);
     } else {
@@ -663,7 +663,7 @@ public class Normalizer implements Callable<Boolean> {
       for (var t : toAdd) {
         if (t != null) {
           for (var ex : coll) {
-            if (ex.sameAs(t)) {
+            if (ex.isDuplicate(t)) {
               continue outer;
             }
           }

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * A taxon concept relation between two taxa.
  */
-public class TaxonConceptRelation extends DatasetScopedEntity<Integer> implements ExtensionEntity, SameAs<TaxonConceptRelation> {
+public class TaxonConceptRelation extends DatasetScopedEntity<Integer> implements ExtensionEntity, DuplicateCheck<TaxonConceptRelation> {
   private Integer datasetKey;
   private Sector.Mode sectorMode;
   private Integer sectorKey;
@@ -140,7 +140,7 @@ public class TaxonConceptRelation extends DatasetScopedEntity<Integer> implement
   }
 
   @Override
-  public boolean sameAs(TaxonConceptRelation that) {
+  public boolean isDuplicate(TaxonConceptRelation that) {
     return type == that.type &&
         Objects.equals(taxonId, that.taxonId) &&
         Objects.equals(relatedTaxonId, that.relatedTaxonId) &&
