@@ -370,7 +370,7 @@ public class ImportStore implements AutoCloseable {
   }
 
   public Stream<VerbatimRecord> verbatimList(Term rowType) {
-    return verbatim.values().stream().filter(v -> v.getType().equals(rowType));
+    return verbatim.values().stream().filter(v -> rowType.equals(v.getType()));
   }
 
   public void debug() {

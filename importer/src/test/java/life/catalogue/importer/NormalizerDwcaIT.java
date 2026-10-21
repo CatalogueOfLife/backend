@@ -9,6 +9,7 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.UsageData;
 
+import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -226,9 +227,10 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertEquals(millefolium.getId(), rel.getRelatedNameId());
     assertEquals("designated by M.Döring", rel.getRemarks());
 
-    for (var vkey : List.of(tm.getVerbatimKey(), rel.getVerbatimKey())) {
-      assertFalse(store.getVerbatim(vkey).contains(Issue.NOT_INTERPRETED));
-    }
+    // the implicit higher taxa have verbatim records without a row type
+    assertEquals(2, store.verbatimList(GbifTerm.TypesAndSpecimen)
+      .peek(v -> assertFalse(v.contains(Issue.NOT_INTERPRETED)))
+      .count());
   }
 
   @Test
