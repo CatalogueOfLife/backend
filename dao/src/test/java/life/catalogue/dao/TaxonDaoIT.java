@@ -4,6 +4,7 @@ import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -137,6 +138,21 @@ public class TaxonDaoIT extends DaoTestBase {
       assertNotNull(rel.getUsageId());
       assertNotNull(rel.getRelatedUsageId());
     }
+  }
+
+  @Test
+  public void infoPoolsNameIssues() {
+    final var key = DSID.of(DATASET11.getKey(), TAXON1.getId());
+    // see apple.sql: the usage verbatim record 1 has issues, the one of its name, 5, has none
+    var before = tDao.getUsageInfo(key).getIssues();
+    assertFalse(before.contains(Issue.BLACKLISTED_EPITHET));
+
+    mapper(VerbatimRecordMapper.class).addIssue(DSID.of(DATASET11.getKey(), NAME1.getVerbatimKey()), Issue.BLACKLISTED_EPITHET);
+    commit();
+
+    var issues = tDao.getUsageInfo(key).getIssues();
+    assertTrue(issues.contains(Issue.BLACKLISTED_EPITHET));
+    assertTrue(issues.containsAll(before));
   }
 
   private static GenericArea area(Area area) {

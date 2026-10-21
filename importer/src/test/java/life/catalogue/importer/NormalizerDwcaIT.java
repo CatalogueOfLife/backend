@@ -9,6 +9,7 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.UsageData;
 
+import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -194,6 +195,42 @@ public class NormalizerDwcaIT extends NormalizerITBase {
         assertFalse(v.hasIssues());
       }
     });
+  }
+
+  /**
+   * The GBIF types and specimen extension holds type specimens and type names, #1071
+   */
+  @Test
+  public void typesAndSpecimen() throws Exception {
+    normalize(15);
+
+    // holotype of Achillea ptarmica
+    UsageData ptarmica = usageByID("2770");
+    assertEquals(1, store.typeMaterial().size());
+    TypeMaterial tm = store.typeMaterial().values().iterator().next();
+    assertEquals(1, tm.getNames().size());
+    assertEquals(ptarmica.nameID, tm.getNames().get(0).getNameId());
+    assertEquals(TypeStatus.HOLOTYPE, tm.getNames().get(0).getStatus());
+    assertEquals("original designation; designated by Mi.Ranke", tm.getRemarks());
+    assertNotNull(tm.getReferenceId());
+    assertEquals("my beloved text book", store.references().get(tm.getReferenceId()).getCitation());
+
+    // Achillea millefolium is the type species of Achillea
+    UsageData achillea = usageByID("770");
+    NameData millefolium = nameByID("2768");
+    assertEquals("Achillea millefolium", millefolium.getName().getScientificName());
+    var rels = store.names().relations(achillea.nameID);
+    assertEquals(1, rels.size());
+    NameRelation rel = rels.get(0);
+    assertEquals(NomRelType.TYPE, rel.getType());
+    assertEquals(achillea.nameID, rel.getNameId());
+    assertEquals(millefolium.getId(), rel.getRelatedNameId());
+    assertEquals("designated by M.Döring", rel.getRemarks());
+
+    // the implicit higher taxa have verbatim records without a row type
+    assertEquals(2, store.verbatimList(GbifTerm.TypesAndSpecimen)
+      .peek(v -> assertFalse(v.contains(Issue.NOT_INTERPRETED)))
+      .count());
   }
 
   @Test

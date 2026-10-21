@@ -88,9 +88,12 @@ public class DwcaInserter extends DataCsvInserter {
       inter::interpretTypeMaterial
     );
 
-    // https://github.com/CatalogueOfLife/backend/issues/1071
-    // TODO: read type specimen extension and create type material or name relation for type names
+    // the types and specimen extension mixes type specimens and type names, #1071
     // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
+    processVerbatim(reader, GbifTerm.TypesAndSpecimen, rec -> inter.isTypeName(rec) ?
+      inter.interpretTypeName(rec).map(rel -> addTypeName(rec, rel)).orElse(false) :
+      inter.interpretTypeMaterial(rec).map(tm -> createTypeMaterial(rec, tm)).orElse(false)
+    );
 
     insertTaxonEntities(reader, GbifTerm.Distribution,
         inter::interpretDistribution,
@@ -228,7 +231,27 @@ public class DwcaInserter extends DataCsvInserter {
     );
 
     // just add verbatim data for these well know extensions without interpreting any data!
-    insertVerbatimEntities(reader, GbifTerm.Image, GbifTerm.TypesAndSpecimen, DwcTerm.ResourceRelationship, DNA_EXTENSION);
+    insertVerbatimEntities(reader, GbifTerm.Image, DwcTerm.ResourceRelationship, DNA_EXTENSION);
+  }
+
+  /**
+   * Adds a type name relation if the type name was found, otherwise keeps the type name in the remarks of the typified name.
+   */
+  private boolean addTypeName(VerbatimRecord rec, RelationData<NomRelType> rel) {
+    var n = store.names().objByID(rel.getFromID());
+    if (n == null) {
+      rec.add(Issue.NAME_ID_INVALID);
+      return false;
+    }
+    rel.setVerbatimKey(rec.getId());
+    if (rel.getToID() != null && !rel.getToID().equals(rel.getFromID())) {
+      n.addRelation(rel);
+    } else {
+      String status = rec.getOrDefault(DwcTerm.typeStatus, "type");
+      n.getName().addRemarks(org.apache.commons.lang3.StringUtils.capitalize(status) + ": " + rel.getRelatedScientificName());
+    }
+    store.names().update(n);
+    return true;
   }
 
   private static class TaxRelContext {
