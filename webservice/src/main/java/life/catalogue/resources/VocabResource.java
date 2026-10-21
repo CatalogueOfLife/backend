@@ -319,7 +319,8 @@ public class VocabResource {
    * @param px width and height in pixels
    */
   @GET
-  @Path("taxgroup/{name}/icon/{px}.png")
+  // the .png suffix is stripped by SuffixAcceptRequestFilter before matching, turning it into Accept: image/png
+  @Path("taxgroup/{name}/icon/{px}")
   @Produces(MoreMediaTypes.IMG_PNG)
   public Response taxGroupIconPng(@PathParam("name") String name, @PathParam("px") int px) {
     var size = TaxGroup.size(px);
