@@ -123,8 +123,12 @@ public class NameInterpreter {
     NamePart nothoVal = parse(NamePartParser.PARSER, v.get(notho)).orNull(Issue.NOTHO_INVALID, v);
     Boolean originalSpellingVal = parse(BooleanParser.PARSER, v.get(originalSpelling)).orNull(Issue.ORIGINAL_SPELLING_INVALID, v);
 
+    // a given unranked, no rank or clade says the source has no rank, not that the name has none,
+    // so it allows to infer a rank just as no rank at all
+    final boolean allowToInferRank = vrank == null || rank == Rank.UNRANKED;
+
     // now the real thing
-    var opt = interpret(vrank==null,
+    var opt = interpret(allowToInferRank,
       id, code, rank, sciname, authorship, publishedInYear,
       uninomial, genus, infraGenus, species, infraspecies, cultivar,
       v.get(combAuthors), v.get(combExAuthors), v.get(combAuthorsYear), v.get(basAuthors), v.get(basExAuthors), v.get(basAuthorsYear),

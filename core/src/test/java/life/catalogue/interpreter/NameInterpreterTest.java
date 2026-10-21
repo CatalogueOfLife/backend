@@ -356,6 +356,42 @@ public class NameInterpreterTest {
   }
 
   /**
+   * A rank column stating unranked, no rank or clade says the source has no rank, not that the name has none.
+   * Atoms given with it get the rank their structure implies, just as without any rank.
+   */
+  @Test
+  public void unrankedAtomsGetStructuralRank() {
+    var n = atoms("unranked", null, "Trifolium", "Camptoneurum", null, null, "F.Herm.");
+    assertEquals(Rank.INFRAGENERIC_NAME, n.getRank());
+    assertEquals("F.Herm.", n.getAuthorship());
+    assertEquals("Trifolium", n.getGenus());
+    assertEquals("Camptoneurum", n.getInfragenericEpithet());
+    assertNull(n.getUninomial());
+
+    assertEquals(Rank.INFRASPECIFIC_NAME, atoms("unranked", null, "Festuca", null, "rubra", "pruinosa", null).getRank());
+    assertEquals(Rank.SPECIES, atoms("unranked", null, "Festuca", null, "rubra", null, null).getRank());
+    assertEquals(Rank.INFRAGENERIC_NAME, atoms("no rank", null, "Trifolium", "Camptoneurum", null, null, null).getRank());
+    assertEquals(Rank.INFRASPECIFIC_NAME, atoms("no rank", null, "Festuca", null, "rubra", "pruinosa", null).getRank());
+    // no suffix based ranks for uninomials
+    assertEquals(Rank.UNRANKED, atoms("unranked", "Poaceae", null, null, null, null, null).getRank());
+    // a concrete rank still wins
+    assertEquals(Rank.SUBGENUS, atoms("subgenus", null, "Trifolium", "Camptoneurum", null, null, null).getRank());
+    // a rank marker in the name string as well
+    assertEquals(Rank.SUBSPECIES, interpret("unranked", "Festuca rubra subsp. pruinosa", null, new VerbatimRecord()).getName().getRank());
+
+    // unless ranks must not be inferred
+    var settings = new DatasetSettings();
+    settings.put(Setting.DONT_INFER_RANKS, true);
+    ib = new NameInterpreter(settings, true);
+    assertEquals(Rank.UNRANKED, atoms("unranked", null, "Festuca", null, "rubra", "pruinosa", null).getRank());
+  }
+
+  private Name atoms(String rank, String uninomial, String genus, String infraGenus, String species, String infraspecies, String authorship) {
+    return interpret(rank, null, authorship, null, uninomial, genus, infraGenus, species, infraspecies, null,
+      null, null, "botanical", null, new VerbatimRecord()).getName();
+  }
+
+  /**
    * The marker of an indetermined name stands in for its missing epithet and states the rank,
    * so Chaetoceros (Hyalochaete) spp. is a species and not the plant genus Hyalochaete.
    */
