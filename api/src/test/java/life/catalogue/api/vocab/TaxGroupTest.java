@@ -1,5 +1,6 @@
 package life.catalogue.api.vocab;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -47,12 +48,33 @@ public class TaxGroupTest {
   }
 
   @Test
-  public void phylopics() {
+  public void icons() {
+    var composites = Set.of(Eukaryotes, Animals, Chordates);
     for (var g : TaxGroup.values()) {
-      assertNotNull(g.getPhylopic());
-      assertNotNull(g.getIcon());
-      assertNotNull(g.getIconSVG());
+      assertEquals(g.name(), composites.contains(g), g.getPhylopic() == null);
+      assertEquals("https://api.checklistbank.org/vocab/taxgroup/" + g.name() + "/icon.svg", g.getIconSVG().toString());
+      assertEquals("https://api.checklistbank.org/vocab/taxgroup/" + g.name() + "/icon/64.png", g.getIcon().toString());
+      assertNotNull(g.name(), g.iconResource(null));
+      for (var size : SIZE.values()) {
+        assertNotNull(g.name() + " " + size, g.iconResource(size));
+      }
     }
+    assertEquals(SIZE.PX128, TaxGroup.size(128));
+    assertNull(TaxGroup.size(20));
+  }
+
+  @Test
+  public void iconSources() {
+    for (var g : TaxGroup.values()) {
+      var src = IconSources.SOURCES.get(g);
+      assertNotNull(g.name(), src);
+      assertEquals(g.name(), src.phylopics.size(), g.getIconTaxa().size());
+      if (g.getPhylopic() != null) {
+        assertEquals(g.name(), List.of(g.getPhylopic()), src.phylopics);
+      }
+    }
+    assertEquals(List.of("Salmonella enterica"), Prokaryotes.getIconTaxa());
+    assertEquals(List.of("Betula pendula", "Boletus edulis", "Cervus elaphus"), Eukaryotes.getIconTaxa());
   }
 
   @Test

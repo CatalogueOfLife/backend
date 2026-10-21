@@ -13,6 +13,7 @@ import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class VocabResourceTest {
 
@@ -79,6 +80,40 @@ public class VocabResourceTest {
     try (Response resp = r.areaGeojson("FAO", "37/4/1")) {
       assertEquals(200, resp.getStatus());
     }
+  }
+
+  @Test
+  public void taxGroupIcons() throws Exception {
+    var r = new VocabResource((File) null, null);
+    try (Response resp = r.taxGroupIcon("eukaryotes")) {
+      assertEquals(200, resp.getStatus());
+      assertEquals("image/svg+xml", resp.getMediaType().toString());
+      assertTrue(new String(writeEntity(resp)).startsWith("<svg "));
+    }
+    try (Response resp = r.taxGroupIconPng("OtherFungi", 128)) {
+      assertEquals("image/png", resp.getMediaType().toString());
+      var png = writeEntity(resp);
+      assertEquals((byte) 0x89, png[0]);
+      assertEquals("PNG", new String(png, 1, 3));
+    }
+    assertThrows(NotFoundException.class, () -> r.taxGroupIcon("Dinosaurs"));
+    assertThrows(NotFoundException.class, () -> r.taxGroupIconPng("Plants", 20));
+  }
+
+  @Test
+  public void singleValue() {
+    var r = new VocabResource((File) null, null);
+    var chordates = r.value("taxgroup", "Chordates").orElseThrow();
+    assertEquals("chordates", chordates.get("name"));
+    assertTrue(r.value("taxgroup", "Dinosaurs").isEmpty());
+  }
+
+  @Test
+  public void taxGroupVocabListsIconTaxa() throws Exception {
+    var r = new VocabResource((File) null, null);
+    var chordates = r.values("taxgroup").stream().filter(m -> "chordates".equals(m.get("name"))).findFirst().orElseThrow();
+    assertEquals(java.util.List.of("Salmo trutta", "Turdus merula", "Rana temporaria"), chordates.get("iconTaxa"));
+    assertEquals("https://api.checklistbank.org/vocab/taxgroup/Chordates/icon.svg", chordates.get("iconSVG").toString());
   }
 
   @Test
