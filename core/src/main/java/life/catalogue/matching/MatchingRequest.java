@@ -24,7 +24,7 @@ public class MatchingRequest extends TreeTraversalParameter {
   private TabularFormat format;
   @QueryParam("sourceDatasetKey")
   private Integer sourceDatasetKey;
-  @DefaultValue("DEFAULT")
+  @DefaultValue("RELAXED")
   @QueryParam("mode")
   private MatchingMode mode = MatchingMode.RELAXED;
   private File upload;
