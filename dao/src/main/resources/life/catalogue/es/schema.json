@@ -189,6 +189,18 @@
                   }
                 }
               },
+              "canonicalName": {
+                "type": "keyword",
+                "doc_values": false,
+                "fields": {
+                  "search": {
+                    "type": "search_as_you_type",
+                    "analyzer": "sciname_ascii_index",
+                    "search_analyzer": "sciname_ascii",
+                    "max_shingle_size": 2
+                  }
+                }
+              },
               "scientificNameNormalized": {
                 "type": "text",
                 "analyzer": "standard_ascii"

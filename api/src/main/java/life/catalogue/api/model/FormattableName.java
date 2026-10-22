@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
 
 import org.gbif.nameparser.api.CombinedAuthorshipIF;
@@ -138,6 +139,17 @@ public interface FormattableName extends LinneanName, ScientificName, CombinedAu
   @JsonIgnore
   default String getScientificNameNormalized() {
     return SciNameNormalizer.normalize(getScientificName());
+  }
+
+  /**
+   * @return the canonical name if it differs from the scientific name, e.g. a binomial without its subgenus
+   * or a trinomial without its rank marker. Null otherwise, which keeps it sparse.
+   * Only used for the search index, so a name can be suggested without its subgenus, see #1676
+   */
+  @JsonIgnore
+  default String getCanonicalNameIfDifferent() {
+    String canonical = NameFormatter.canonicalName(this);
+    return canonical == null || canonical.equals(getScientificName()) ? null : canonical;
   }
 
   /**

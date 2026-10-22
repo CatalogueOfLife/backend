@@ -128,6 +128,35 @@ public class EsModuleTest {
   }
 
   /**
+   * The canonical name is only written if it differs from the scientific name, #1676
+   */
+  @Test
+  public void canonicalNameOnlyIfDifferent() throws JsonProcessingException {
+    ObjectMapper mapper = EsModule.contentMapper();
+    Name name = new Name();
+    name.setGenus("Aleochara");
+    name.setSpecificEpithet("composita");
+    name.setRank(Rank.SPECIES);
+    name.setCode(NomCode.ZOOLOGICAL);
+    name.rebuildScientificName();
+    Taxon taxon = new Taxon(name);
+    taxon.setStatus(TaxonomicStatus.ACCEPTED);
+
+    JsonNode root = mapper.readTree(mapper.writeValueAsString(new NameUsageWrapper(taxon)));
+    assertTrue(root.path("usage").path("name").path("canonicalName").isMissingNode());
+
+    name.setInfragenericEpithet("Coprochara");
+    name.rebuildScientificName();
+    String json = mapper.writeValueAsString(new NameUsageWrapper(taxon));
+    root = mapper.readTree(json);
+    assertEquals("Aleochara composita", root.path("usage").path("name").path("canonicalName").asText());
+
+    // and it is read back without trouble
+    NameUsageWrapper result = mapper.readValue(json, NameUsageWrapper.class);
+    assertEquals("Aleochara (Coprochara) composita", result.getUsage().getName().getScientificName());
+  }
+
+  /**
    * taxon-ws reads the very index the backend writes, but is released on its own schedule.
    * A document written by a newer backend - a new property, issue or enum value - must still be readable
    * by an older reader, with the values it does not know dropped. See gbif/gbif-web#2080.

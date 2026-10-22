@@ -82,6 +82,8 @@ public class EsModule extends SimpleModule {
     @JsonIgnore abstract String getLabelHtml();
     @JsonIgnore abstract String getBasionymOrCombinationAuthorship();
     @JsonIgnore(false) abstract String getScientificNameNormalized();
+    // the suggest searches it next to the scientific name, so a name is found without its subgenus or rank marker
+    @JsonIgnore(false) @JsonProperty("canonicalName") abstract String getCanonicalNameIfDifferent();
     @JsonIgnore(false) abstract String getAlphaIndex();
   }
 

@@ -100,6 +100,43 @@ public class NameFormatterTest {
     assertEquals("Spirulina", NameFormatter.canonicalName(n));
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1676
+   */
+  @Test
+  public void canonicalIfDifferent() throws Exception {
+    Name n = new Name();
+    n.setGenus("Puma");
+    n.setSpecificEpithet("concolor");
+    n.setRank(Rank.SPECIES);
+    n.setCode(NomCode.ZOOLOGICAL);
+    n.rebuildScientificName();
+    assertEquals("Puma concolor", n.getScientificName());
+    assertNull(n.getCanonicalNameIfDifferent());
+
+    n.setGenus("Aleochara");
+    n.setInfragenericEpithet("Coprochara");
+    n.setSpecificEpithet("composita");
+    n.rebuildScientificName();
+    assertEquals("Aleochara (Coprochara) composita", n.getScientificName());
+    assertEquals("Aleochara composita", n.getCanonicalNameIfDifferent());
+
+    n.setSpecificEpithet(null);
+    n.setRank(Rank.SUBGENUS);
+    n.rebuildScientificName();
+    assertEquals("Coprochara", n.getCanonicalNameIfDifferent());
+
+    n = new Name();
+    n.setGenus("Poa");
+    n.setSpecificEpithet("annua");
+    n.setInfraspecificEpithet("supina");
+    n.setRank(Rank.VARIETY);
+    n.setCode(NomCode.BOTANICAL);
+    n.rebuildScientificName();
+    assertEquals("Poa annua var. supina", n.getScientificName());
+    assertEquals("Poa annua supina", n.getCanonicalNameIfDifferent());
+  }
+
   @Test
   public void authors() throws Exception {
     Name n = new Name();

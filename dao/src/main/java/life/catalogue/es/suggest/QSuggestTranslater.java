@@ -10,6 +10,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.*;
 
 public class QSuggestTranslater extends QTranslator {
   private static final String FLD_SEARCH = "usage.name.scientificName.search";
+  private static final String FLD_CANONICAL_SEARCH = FLD_CANONICAL + ".search";
   /** Factor for reciprocal rank boost: score contribution ≈ RANK_FACTOR / rank.ordinal().
    *  At SPECIES (81) this yields ~1.23; at SUBSPECIES (85) ~1.18; at GENUS (70) ~1.43. */
   private static final double RANK_FACTOR = 100.0;
@@ -24,6 +25,8 @@ public class QSuggestTranslater extends QTranslator {
    * O(1) performance regardless of prefix length — no max_expansions needed.
    * Phrase semantics ensure all tokens are required in order, so "Phoca vit" cannot
    * match the genus "Phoca" alone.
+   * The canonical name, only indexed where it differs from the scientific name, is searched alike,
+   * so "Aleochara composita" finds "Aleochara (Coprochara) composita", #1676.
    * Scoring ignores BM25 (boostMode=Replace) and instead sums:
    *   - accepted boost (weight 1.1 for accepted names)
    *   - rank boost   (reciprocal of rank ordinal × RANK_FACTOR — higher ranks score higher)
@@ -31,9 +34,16 @@ public class QSuggestTranslater extends QTranslator {
   @Override
   public Query buildSciNameQuery() {
     return Query.of(q -> q.functionScore(fs -> fs
-        .query(inner -> inner.matchPhrasePrefix(m -> m
-        .field(FLD_SEARCH)
-        .query(request.getQ())
+      .query(inner -> inner.bool(b -> b
+        .should(s -> s.matchPhrasePrefix(m -> m
+          .field(FLD_SEARCH)
+          .query(request.getQ())
+        ))
+        .should(s -> s.matchPhrasePrefix(m -> m
+          .field(FLD_CANONICAL_SEARCH)
+          .query(request.getQ())
+        ))
+        .minimumShouldMatch("1")
       ))
       .functions(f -> f
         .filter(fq -> fq.term(t -> t
