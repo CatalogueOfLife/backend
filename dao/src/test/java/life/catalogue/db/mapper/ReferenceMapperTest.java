@@ -6,6 +6,8 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.search.ReferenceSearchRequest;
+import life.catalogue.api.search.VernacularNameUsage;
+import life.catalogue.api.search.VernacularSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Issue;
 
@@ -195,6 +197,32 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
     req.setQ(null);
     out = mapper().search(Datasets.COL, req, new Page());
     assertEquals(3, out.size());
+  }
+
+  /**
+   * Sector ids are only unique within a dataset, so a sector of another dataset with the same id must not
+   * multiply the references or vernacular names found by the subject dataset of their sector (#1478).
+   */
+  @Test
+  public void searchBySectorDataset() throws Exception {
+    try (var st = connection().createStatement()) {
+      st.execute("INSERT INTO sector (dataset_key, id, subject_dataset_key, mode, created_by, modified_by) VALUES " +
+        "(11, 1, 12, 'ATTACH', 1, 1), (12, 1, 12, 'ATTACH', 1, 1)");
+      st.execute("UPDATE reference SET sector_key=1 WHERE dataset_key=11 AND id='ref-1'");
+      st.execute("UPDATE vernacular_name SET sector_key=1 WHERE dataset_key=11 AND id=1");
+    }
+    commit();
+
+    var req = new ReferenceSearchRequest();
+    req.setSectorDatasetKey(12);
+    assertEquals(List.of("ref-1"), mapper().search(11, req, new Page()).stream().map(Reference::getId).toList());
+    assertEquals(1, mapper().searchCount(11, req));
+
+    var vreq = new VernacularSearchRequest();
+    vreq.setSectorDatasetKey(12);
+    var vm = mapper(VernacularNameMapper.class);
+    assertEquals(List.of("Apple"), vm.search(11, vreq, new Page()).stream().map(VernacularNameUsage::getName).toList());
+    assertEquals(1, vm.count(11, vreq));
   }
 
   @Test

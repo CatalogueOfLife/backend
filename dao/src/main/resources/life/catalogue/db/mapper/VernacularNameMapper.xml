@@ -70,7 +70,7 @@
   <sql id="SEARCH_WHERE">
     <if test="req != null">
       <if test="req.sectorDatasetKey != null">
-        JOIN sector s ON s.id=vn.sector_key
+        JOIN sector s ON s.dataset_key=vn.dataset_key AND s.id=vn.sector_key
       </if>
       <where>
         vn.dataset_key = #{datasetKey}
