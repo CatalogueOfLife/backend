@@ -51,6 +51,7 @@ import life.catalogue.matching.RematchArchiveJob;
 import life.catalogue.matching.RematchJob;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.release.LegacyIdMapJob;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -296,6 +297,27 @@ public class AdminResource {
   public JobInfo publisherSync(@Auth User user) {
     PublisherSyncJob job = new PublisherSyncJob(gbifSync.getRegistryCache(), factory, user.getKey());
     return runJob(job);
+  }
+
+  /**
+   * Maps the identifiers of a retired COL edition configured in release.legacyIdMaps to the given release.
+   * Each release gets its own dated file next to the monthly exports, which is never overwritten.
+   */
+  @POST
+  @Path("/legacy-idmap/{name}")
+  public Response legacyIdMap(@PathParam("name") String name, @QueryParam("release") Integer releaseKey, @Auth User user) {
+    if (releaseKey == null) {
+      throw new IllegalArgumentException("Request parameter release must be provided");
+    }
+    var map = cfg.release.legacyIdMaps.stream()
+      .filter(m -> m.name.equals(name))
+      .findFirst()
+      .orElseThrow(() -> new NotFoundException("No legacy id map " + name + " configured"));
+    var job = new LegacyIdMapJob(map, releaseKey, user.getKey(), cfg.release.colDownloadDir, factory, matcherFactory);
+    if (job.file().exists()) {
+      return Response.status(Response.Status.CONFLICT).entity(name + " id mapping exists already at " + job.file().getName()).build();
+    }
+    return Response.ok(runJob(job)).build();
   }
 
   @GET

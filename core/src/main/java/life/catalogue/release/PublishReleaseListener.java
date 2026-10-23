@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 
 import life.catalogue.event.EventBroker;
+import life.catalogue.matching.UsageMatcherFactory;
 
 import life.catalogue.exporter.ColReleaseExportJob;
 
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
  *  - archives the name usages of the release, see NameUsageArchiver
  * For COL releases it also does:
  *  - copies existing exports to the COL export folder
+ *  - maps the identifiers of retired COL editions to an extended release, see LegacyIdMapJob
  */
 public class PublishReleaseListener implements DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(PublishReleaseListener.class);
@@ -50,12 +52,14 @@ public class PublishReleaseListener implements DatasetListener {
   private final CloseableHttpClient httpClient;
   private final EventBroker bus;
   private final JobExecutor executor;
+  private final UsageMatcherFactory matcherFactory;
 
-  public PublishReleaseListener(ReleaseConfig rCfg, ExporterConfig eCfg, SqlSessionFactory factory,
+  public PublishReleaseListener(ReleaseConfig rCfg, ExporterConfig eCfg, SqlSessionFactory factory, UsageMatcherFactory matcherFactory,
                                  CloseableHttpClient httpClient, JobExecutor executor, EventBroker bus) {
     this.rCfg = rCfg;
     this.eCfg = eCfg;
     this.factory = factory;
+    this.matcherFactory = matcherFactory;
     this.executor = executor;
     this.httpClient = httpClient;
     this.archiver = new NameUsageArchiver(factory, new IgnoredReleases(factory));
@@ -71,6 +75,17 @@ public class PublishReleaseListener implements DatasetListener {
       executor.submit(expJob);
     } catch (Exception e) {
       LOG.error("Failed to generate COL exports for release {}", event.obj.getKey(), e);
+    }
+
+    // map the ids of retired COL editions to the extended release, one dated file per release
+    if (event.obj.getOrigin() == DatasetOrigin.XRELEASE) {
+      for (var map : rCfg.legacyIdMaps) {
+        try {
+          executor.submit(new LegacyIdMapJob(map, event.obj.getKey(), event.user, rCfg.colDownloadDir, factory, matcherFactory));
+        } catch (Exception e) {
+          LOG.error("Failed to map {} ids to release {}", map.name, event.obj.getKey(), e);
+        }
+      }
     }
 
     // symlink latest logs

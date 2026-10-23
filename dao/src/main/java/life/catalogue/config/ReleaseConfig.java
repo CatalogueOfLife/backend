@@ -2,6 +2,7 @@ package life.catalogue.config;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -32,6 +34,34 @@ public class ReleaseConfig {
 
   // the COL download directory with monthly and annual subfolder
   public File colDownloadDir = new File("/tmp/col");
+
+  /**
+   * Identifiers of retired COL editions to map to every published COL XR, see LegacyIdMapJob.
+   */
+  @Valid
+  @NotNull
+  public List<LegacyIdMap> legacyIdMaps = new ArrayList<>();
+
+  public static class LegacyIdMap {
+    /**
+     * Short name used in the mapping file name and as its column prefix, e.g. col19
+     */
+    @NotNull
+    public String name;
+
+    /**
+     * The ChecklistBank dataset of the edition, its usage ids being the internal record ids of the keys file
+     */
+    @NotNull
+    public Integer datasetKey;
+
+    /**
+     * TSV file, optionally gzipped, with a header row and the columns hash, id, status, scientificName, authorship
+     * sorted by id, see scripts/natural_keys.sh in the archives repository.
+     */
+    @NotNull
+    public File keys;
+  }
 
   public static File reportDir(File reportRoot, int datasetKey, int attempt) {
     return new File(reportDir(reportRoot, datasetKey), String.valueOf(attempt));
