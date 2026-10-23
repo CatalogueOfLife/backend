@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameIndexEntry;
+import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.junit.TestDataRule;
 
@@ -74,6 +75,34 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
     // the paging count must stay consistent with the filtered list, also excluding project usages
     assertEquals(3, (int) mapper().countByNamesIndexIDGlobalClassified(2));
     assertEquals(0, (int) mapper().countByNamesIndexIDGlobalClassified(1));
+  }
+
+  /**
+   * The global names index queries are anonymous, so a private dataset must never show up in them (#1214).
+   */
+  @Test
+  public void privateDatasetsHidden() throws Exception {
+    try (var st = connection().createStatement()) {
+      st.execute("UPDATE dataset SET private=true WHERE key=101");
+      st.execute("INSERT INTO vernacular_name (id, dataset_key, taxon_id, name, created_by, modified_by) VALUES " +
+        "(1, 101, 'u1', 'Weißtanne', 1, 1), (1, 102, 'u1x', 'Silver fir', 1, 1)");
+    }
+    commit();
+
+    var usages = mapper().listByNamesIndexIDGlobal(2, new Page());
+    assertEquals(Set.of(DSID.of(102, "u1x"), DSID.of(102, "u2x")), usages.stream().map(DSID::copy).collect(Collectors.toSet()));
+    assertEquals(2, (int) mapper().countByNamesIndexID(2, null));
+
+    var classified = mapper().listByNamesIndexIDGlobalClassified(2, new Page());
+    assertTrue(classified.stream().noneMatch(u -> u.getDatasetKey() == 101));
+    assertEquals(2, (int) mapper().countByNamesIndexIDGlobalClassified(2));
+
+    // u1 exists in the project 100 and the private 101
+    assertEquals(List.of(100), mapper().listByUsageID("u1", new Page()).stream().map(NameUsageBase::getDatasetKey).toList());
+    assertEquals(1, (int) mapper().countByUsageID("u1"));
+
+    var vernaculars = mapper(VernacularNameMapper.class).listByNamesIndexIDGlobal(2, new Page());
+    assertEquals(List.of("Silver fir"), vernaculars.stream().map(v -> v.getObj().getName()).toList());
   }
 
   @Test
