@@ -23,7 +23,8 @@ public interface TaxonProcessable<T> extends TempNameUsageRelated {
     MediaMapper.class,
     SpeciesInteractionMapper.class,
     TaxonConceptRelationMapper.class,
-    TreatmentMapper.class
+    TreatmentMapper.class,
+    TaxonPropertyMapper.class
   );
 
   List<T> listByTaxon(@Param("key") DSID<String> key);

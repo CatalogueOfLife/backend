@@ -548,6 +548,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     );
     copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key), Collections.emptyList());
+    copyPartitionedTable(pgc, "taxon_property", key, datasetEntityDefaults(key), Collections.emptyList());
+    copyPartitionedTable(pgc, "species_interaction", key, datasetEntityDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "taxon_metrics", key, datasetDefaults(key), Collections.emptyList());
   }
 

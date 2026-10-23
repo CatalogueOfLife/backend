@@ -163,7 +163,7 @@
   </update>
 
   <update id="updateTaxonID" parameterType="map">
-    UPDATE verbatim_source SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    UPDATE taxon_property SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
     WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
   </update>
 
