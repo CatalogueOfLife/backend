@@ -50,6 +50,8 @@ public class ReferenceFactory {
   private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)([12]\\d{3})($|\\D+)");
   private static final CharSet PUNCTUATIONS = CharSet.getInstance(".?!;:,");
   private static final Pattern NORM_WHITESPACE = Pattern.compile("\\s{2,}");
+  // a DOI within free text, see https://github.com/CatalogueOfLife/backend/issues/1159
+  private static final Pattern EMBEDDED_DOI = Pattern.compile("\\b10\\.\\d{4,9}/[^\\s\"<>]+");
   private static final String name     = "[\\p{L} -]+";
   private static final String initials = "(?:\\p{Lu}(?:\\. ?| ))*";
   // comma separated authors with (initials/firstname) surnames
@@ -226,6 +228,7 @@ public class ReferenceFactory {
     ref.setRemarks(remarks);
     ref.setCsl(csl);
     lookForDOI(ref);
+    lookForEmbeddedDOI(ref, issues, citation, csl.getTitle(), remarks);
     resolveDOI(ref, issues); // this can create a new csl instance!
     // if a full citation is given prefer that over a CSL generated one in case we do not have structured basics
     if (!StringUtils.isBlank(citation) && !ref.getCsl().hasTitleContainerOrAuthor()) {
@@ -318,6 +321,7 @@ public class ReferenceFactory {
       if (!StringUtils.isEmpty(publishedIn)) {
         ref.setCitation(citation);
         issues.add(Issue.CITATION_UNPARSED);
+        lookForEmbeddedDOI(ref, issues, citation);
       }
       ref.setYear(parseYear(publishedInYear));
     }
@@ -349,6 +353,7 @@ public class ReferenceFactory {
           }
         }
         issues.add(Issue.CITATION_UNPARSED);
+        lookForEmbeddedDOI(ref, issues, citation);
       }
     }
     return ref;
@@ -565,6 +570,56 @@ public class ReferenceFactory {
     ref.setId(id);
     ref.setDatasetKey(datasetKey);
     return ref;
+  }
+
+  /**
+   * Copies a DOI found within any of the given texts into the CSL DOI field and flags it,
+   * unless the reference has a DOI already.
+   */
+  private static void lookForEmbeddedDOI(Reference ref, IssueContainer issues, String... texts) {
+    if (ref.getCsl() == null || ref.getCsl().getDOI() == null) {
+      findEmbeddedDOI(texts).ifPresent(d -> {
+        if (ref.getCsl() == null) {
+          ref.setCsl(new CslData(ref.getId()));
+        }
+        ref.getCsl().setDOI(d);
+        issues.add(Issue.EMBEDDED_DOI);
+      });
+    }
+  }
+
+  @VisibleForTesting
+  static Optional<DOI> findEmbeddedDOI(String... texts) {
+    for (String text : texts) {
+      if (text != null) {
+        Matcher m = EMBEDDED_DOI.matcher(text);
+        while (m.find()) {
+          var doi = DOI.parse(trimDOI(m.group()));
+          if (doi.isPresent()) {
+            return doi;
+          }
+        }
+      }
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Removes trailing punctuation and closing brackets that are not opened within the DOI.
+   */
+  private static String trimDOI(String x) {
+    while (!x.isEmpty()) {
+      char c = x.charAt(x.length() - 1);
+      if (".,;:'".indexOf(c) >= 0
+        || c == ')' && StringUtils.countMatches(x, '(') < StringUtils.countMatches(x, ')')
+        || c == ']' && StringUtils.countMatches(x, '[') < StringUtils.countMatches(x, ']')
+      ) {
+        x = x.substring(0, x.length() - 1);
+      } else {
+        break;
+      }
+    }
+    return x;
   }
 
   /**
