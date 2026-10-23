@@ -33,6 +33,23 @@ public class NameDaoTest extends DaoTestBase {
     Assert.assertNotNull(n1.getAuthorshipNormalized());
   }
 
+  /**
+   * Relations can be listed from the related name too, see https://github.com/CatalogueOfLife/backend/issues/1175
+   */
+  @Test
+  public void inverseRelations() throws Exception {
+    // apple: name-2 is a spelling correction of name-3
+    var rels = dao.relations(DSID.of(11, "name-2"), false);
+    assertEquals(1, rels.size());
+    assertEquals("name-3", rels.get(0).getRelatedNameId());
+    Assert.assertTrue(dao.relations(DSID.of(11, "name-3"), false).isEmpty());
+
+    rels = dao.relations(DSID.of(11, "name-3"), true);
+    assertEquals(1, rels.size());
+    assertEquals("name-2", rels.get(0).getNameId());
+    Assert.assertTrue(dao.relations(DSID.of(11, "name-2"), true).isEmpty());
+  }
+
   @Test
   public void nameMatching() throws Exception {
     Name n = TestEntityGenerator.newName("n2");

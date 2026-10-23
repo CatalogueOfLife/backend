@@ -54,8 +54,9 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Na
 
   @GET
   @Path("{id}/relations")
-  public List<NameRelation> getRelations(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    return dao.relations(DSID.of(datasetKey, id));
+  public List<NameRelation> getRelations(@PathParam("key") int datasetKey, @PathParam("id") String id,
+                                         @QueryParam("inverse") boolean inverse) {
+    return dao.relations(DSID.of(datasetKey, id), inverse);
   }
 
   @GET

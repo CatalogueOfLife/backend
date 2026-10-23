@@ -940,6 +940,45 @@ public class NameInterpreterTest {
   }
 
   /**
+   * A year within a published year range is no conflict, see https://github.com/CatalogueOfLife/backend/issues/1397
+   */
+  @Test
+  public void publishedYearRange() throws Exception {
+    for (String range : new String[]{"1880-1887", "1880-87"}) {
+      VerbatimRecord v = new VerbatimRecord();
+      var n = interpret("species", "Abies alba", "Mill., 1885", range, null, null, null, null, null, v).getName();
+      assertEquals(1880, (int) n.getPublishedInYear());
+      assertFalse(range, v.contains(Issue.PUBLISHED_YEAR_CONFLICT));
+
+      v = new VerbatimRecord();
+      interpret("species", "Abies alba", "Mill., 1890", range, null, null, null, null, null, v);
+      assertTrue(range, v.contains(Issue.PUBLISHED_YEAR_CONFLICT));
+    }
+
+    VerbatimRecord v = new VerbatimRecord();
+    interpret("species", "Abies alba", "Mill., 1886", "1885", null, null, null, null, null, v);
+    assertTrue(v.contains(Issue.PUBLISHED_YEAR_CONFLICT));
+  }
+
+  /**
+   * A nothospecies of a nothogenus carries a hybrid marker on both its genus and its epithet atom, and an explicit notho
+   * term can only name one of them. Neither may drop the other, see https://github.com/CatalogueOfLife/backend/issues/1398
+   */
+  @Test
+  public void hybridGenusAndEpithetAtoms() throws Exception {
+    for (String notho : new String[]{null, "specific", "generic"}) {
+      VerbatimRecord v = new VerbatimRecord();
+      var n = interpret("species", "× Apseudathyrium × reichsteinii", null, null,
+        null, "× Apseudathyrium", null, "× reichsteinii", null, null,
+        notho, null, "botanical", null, v).getName();
+      assertEquals("Apseudathyrium", n.getGenus());
+      assertEquals("reichsteinii", n.getSpecificEpithet());
+      assertEquals(Set.of(NamePart.GENERIC, NamePart.SPECIFIC), n.getNotho());
+      assertEquals("× Apseudathyrium × reichsteinii", n.getScientificName());
+    }
+  }
+
+  /**
    * A hybrid marker on a uninomial atom marks the generic name part as the hybrid, as it does on a genus atom.
    */
   @Test

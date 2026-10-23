@@ -257,6 +257,7 @@ public class AuthFilter implements ContainerRequestFilter {
       Jws<Claims> jws = jwt.parse(token);
       return Optional.of(jws.getBody().getSubject())
         .map(idService::get)
+        .map(idService::touch)
         .map(AuthedUser::bearer)
         .orElseThrow(() -> {
           throw authenticationError("Bearer authentication failed");

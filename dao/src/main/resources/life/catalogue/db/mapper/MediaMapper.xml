@@ -185,6 +185,7 @@
     JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=nm.name_id
     JOIN media m ON m.dataset_key=nm.dataset_key AND m.taxon_id=u.id
     WHERE nm.index_id=#{nidx}
+      AND nm.dataset_key IN (SELECT d.key FROM dataset d WHERE <include refid="life.catalogue.db.mapper.NameUsageMapper.DATASET_PUBLIC"/>)
     ORDER BY m.dataset_key, m.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>

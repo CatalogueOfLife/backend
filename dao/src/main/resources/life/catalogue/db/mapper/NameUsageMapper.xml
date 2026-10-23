@@ -597,8 +597,10 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <!-- the global names index queries are anonymous, so they never show private datasets -->
   <sql id="DATASET_PUBLIC">
     d.deleted IS NULL
+    AND NOT d.private
     AND d.origin != 'PROJECT'::DATASETORIGIN
     AND <include refid="life.catalogue.db.mapper.DatasetMapper.NOT_TEMP"/>
   </sql>
@@ -613,7 +615,7 @@
   <select id="listByUsageID" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.id=#{id}
+    WHERE u.id=#{id} AND u.dataset_key IN (SELECT d.key FROM dataset d WHERE NOT d.private)
     ORDER BY u.dataset_key
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -645,7 +647,7 @@
   <select id="countByUsageID" resultType="integer">
     SELECT count(*)
     FROM name_usage
-    WHERE id=#{id}
+    WHERE id=#{id} AND dataset_key IN (SELECT d.key FROM dataset d WHERE NOT d.private)
   </select>
 
   <!--
