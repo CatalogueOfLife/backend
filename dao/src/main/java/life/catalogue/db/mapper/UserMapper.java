@@ -26,6 +26,8 @@ public interface UserMapper extends CRUD<Integer, User>, GlobalPageable<User> {
    */
   void block(@Param("key") int key, @Param("blocked") @Nullable LocalDateTime blocked);
 
+  void updateLastLogin(@Param("key") int key, @Param("lastLogin") LocalDateTime lastLogin);
+
   /**
    * @return full user info
    */

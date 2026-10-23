@@ -161,6 +161,23 @@ public class IdentityService {
     return optUser;
   }
 
+  /**
+   * Records a request of a user authenticated by a token as its last login.
+   * It costs nothing but a timestamp comparison as the db is written at most once a day per user.
+   */
+  User touch(User user) {
+    final var now = LocalDateTime.now();
+    if (user.getLastLogin() == null || user.getLastLogin().isBefore(now.minusDays(1))) {
+      user.setLastLogin(now);
+      try (SqlSession session = sqlSessionFactory.openSession(true)) {
+        session.getMapper(UserMapper.class).updateLastLogin(user.getKey(), now);
+      } catch (RuntimeException e) {
+        LOG.error("Failed to update the last login of user {}", user.getKey(), e);
+      }
+    }
+    return user;
+  }
+
   public int flushCache() {
     int num = cache.size();
     cache.clear();

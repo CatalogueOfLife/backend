@@ -128,6 +128,12 @@
     WHERE key = #{key}
   </update>
 
+  <update id="updateLastLogin" parameterType="map">
+    UPDATE "user"
+    SET last_login = #{lastLogin}
+    WHERE key = #{key}
+  </update>
+
   <update id="block" parameterType="map">
     UPDATE "user"
     SET blocked = #{blocked}
