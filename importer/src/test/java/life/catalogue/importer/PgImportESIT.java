@@ -70,7 +70,10 @@ public class PgImportESIT extends PgImportITBase {
     assertFacetValue(facet, TaxonomicStatus.BARE_NAME, 2);
 
     facet = resp.getFacets().get(NameUsageSearchParameter.ISSUE);
-    assertEquals(7, facet.size());
+    assertEquals(9, facet.size());
+    // Gundelia tournefortii is accepted in 3 taxon concepts, fake and hybrid are homotypic separate taxa
+    assertFacetValue(facet, Issue.DUPLICATE_ACCEPTED_NAME, 3);
+    assertFacetValue(facet, Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY, 2);
     assertFacetValue(facet, Issue.NOMENCLATURAL_CODE_INFERRED, 1);
     assertFacetValue(facet, Issue.INCONSISTENT_NAME, 1);
     assertFacetValue(facet, Issue.PARTIAL_DATE, 2);
