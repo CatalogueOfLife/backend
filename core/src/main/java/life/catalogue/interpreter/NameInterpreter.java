@@ -16,6 +16,7 @@ import org.gbif.nameparser.util.RankUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -373,11 +374,17 @@ public class NameInterpreter {
         }
       }
       if (pnu.getName().getCombinationAuthorship() != null && pnu.getName().getCombinationAuthorship().getYear() != null){
-        Integer year = InterpreterUtils.parseNomenYear(pnu.getName().getCombinationAuthorship().getYear(), issues);
+        final String authorYear = pnu.getName().getCombinationAuthorship().getYear();
+        Integer year = InterpreterUtils.parseNomenYear(authorYear, issues);
         if (year != null) {
-          if (pnu.getName().getPublishedInYear() == null) {
+          final Integer pubYear = pnu.getName().getPublishedInYear();
+          if (pubYear == null) {
             pnu.getName().setPublishedInYear(year);
-          } else if (!pnu.getName().getPublishedInYear().equals(year)) {
+          } else if (!pubYear.equals(year)
+              // a year range like 1880-1887 includes any year in it
+              && !InterpreterUtils.inYearRange(year, publishedInYear)
+              && !InterpreterUtils.inYearRange(pubYear, authorYear)
+          ) {
             issues.add(Issue.PUBLISHED_YEAR_CONFLICT);
           }
         }
@@ -389,7 +396,10 @@ public class NameInterpreter {
       pnu.getName().setLink(parse(UriParser.PARSER, link).orNull());
       pnu.getName().setRemarks(remarks);
 
-      ObjectUtils.setIfNotNull(pnu.getName()::setNotho, notho);
+      // the notho term names a single part only, so it adds to the hybrid markers found in the name
+      if (notho != null) {
+        addNotho(pnu.getName(), notho);
+      }
       ObjectUtils.setIfNotNull(pnu.getName()::setOriginalSpelling, originalSpelling);
       // applies default dataset code if we cannot find or parse any
       // Always make sure this happens BEFORE we update the canonical scientific name
@@ -513,9 +523,16 @@ public class NameInterpreter {
     if (epi.extinct) {
       pnu.setExtinct(true);
     }
-    if (epi.hybrid && pnu.getName().getNotho().isEmpty()) {
-      pnu.getName().setNotho(part);
+    // a nothospecies of a nothogenus carries markers on both parts
+    if (epi.hybrid) {
+      addNotho(pnu.getName(), part);
     }
+  }
+
+  private static void addNotho(Name n, NamePart part) {
+    var notho = EnumSet.of(part);
+    notho.addAll(n.getNotho());
+    n.setNotho(notho);
   }
 
 
