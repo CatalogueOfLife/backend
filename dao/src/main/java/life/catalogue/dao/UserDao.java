@@ -48,7 +48,7 @@ public class UserDao extends UserCrudDao {
   public void updateSettings(Map<String, String> settings, User user) {
     if (user != null && settings != null) {
       user.setSettings(settings);
-      try (SqlSession session = factory.openSession()){
+      try (SqlSession session = factory.openSession(true)){
         session.getMapper(UserMapper.class).update(user);
       }
     }
