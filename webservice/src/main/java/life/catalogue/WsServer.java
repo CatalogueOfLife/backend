@@ -77,7 +77,6 @@ import life.catalogue.release.PublishReleaseListener;
 import life.catalogue.release.PublisherChangeListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
-import life.catalogue.resources.legacy.LegacyWebserviceResource;
 import life.catalogue.resources.matching.DatasetGbifMatchResource;
 import life.catalogue.resources.matching.openrefine.DefaultReconciliationResource;
 import life.catalogue.resources.matching.openrefine.ReconciliationResource;
@@ -502,7 +501,6 @@ public class WsServer extends Application<WsServerConfig> {
     // OpenRefine reconciliation service over the name matcher (dataset-scoped + default COL backbone)
     j.register(new ReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, cfg.getApiUri(), cfg.clbURI));
     j.register(new DefaultReconciliationResource(cfg.matching, suggestService, getSqlSessionFactory(), matcherFactory, coljersey.getCache(), cfg.getApiUri(), cfg.clbURI));
-    j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, fmsDao, syncManager, sprdao));
 

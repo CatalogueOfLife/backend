@@ -6,7 +6,6 @@ import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.UsageNameID;
-import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.type.UuidTypeHandler;
 import life.catalogue.db.type2.StringCount;
 
@@ -134,8 +133,6 @@ public class MybatisFactory {
     registry.registerAliases(ParsedName.class.getPackage().getName());
     // search package
     registry.registerAliases(NameUsageWrapper.class.getPackage().getName());
-    // legacy package
-    registry.registerAliases(LName.class.getPackage().getName());
     registry.registerAlias(StringCount.class);
     registry.registerAlias(UsageNameID.class);
     registry.registerAlias("SourceDataset", DatasetSourceMapper.SourceDataset.class);

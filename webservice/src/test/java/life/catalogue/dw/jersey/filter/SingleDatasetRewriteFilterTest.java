@@ -82,7 +82,6 @@ public class SingleDatasetRewriteFilterTest {
     "diff",       // DatasetDiffResource
     "editor",     // DatasetEditorResource, a write resource
     "export",     // DatasetExportResource, only the global /export is mounted
-    "legacy",     // LegacyWebserviceResource
     "match",      // served globally and already keyless by FixedNameUsageMatchingResource, only match/gbif is rewritten
     "review",     // DatasetReviewResource, rw server only - its POST triggers a paid AI review job
     "reviewer",   // DatasetReviewerResource, a write resource
@@ -109,7 +108,7 @@ public class SingleDatasetRewriteFilterTest {
   private static Set<String> datasetScopedRoots() throws IOException {
     Set<String> roots = new TreeSet<>();
     var cp = ClassPath.from(SingleDatasetRewriteFilter.class.getClassLoader());
-    for (String pkg : new String[]{"life.catalogue.resources.dataset", "life.catalogue.resources.legacy",
+    for (String pkg : new String[]{"life.catalogue.resources.dataset",
                                    "life.catalogue.resources.matching.openrefine", "life.catalogue.resources"}) {
       for (ClassPath.ClassInfo info : cp.getTopLevelClasses(pkg)) {
         Path p = info.load().getAnnotation(Path.class);
