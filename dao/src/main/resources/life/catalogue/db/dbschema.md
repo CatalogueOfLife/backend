@@ -11,6 +11,14 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-23 taxonomic status exclusion on sectors
+A new sector setting excludes usages by their taxonomic status from a sync, e.g. misapplied names:
+https://github.com/CatalogueOfLife/checklistbank/issues/1685
+Sector profiles keep it in their settings JSON and need no change. Run before the deploy, the old app ignores the column.
+```sql
+ALTER TABLE sector ADD COLUMN taxonomic_status_exclusion TAXONOMICSTATUS[] DEFAULT NULL;
+```
+
 #### 2026-10-20 nomenclatural status for misspellings
 Incorrect spellings and orthographic variants get their own status instead of the broad NOT_ESTABLISHED, so they can
 be told apart from homotypic synonyms and are never chosen as the original name of a homotypic group:

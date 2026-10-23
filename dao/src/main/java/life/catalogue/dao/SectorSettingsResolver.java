@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -78,6 +79,7 @@ public final class SectorSettingsResolver {
     new Nearest<>("code", SyncSettings::getCode, SyncSettings::setCode),
     new Nearest<>("authorshipUpdate", SyncSettings::getAuthorshipUpdate, SyncSettings::setAuthorshipUpdate),
     new Union<>("nameStatusExclusion", SyncSettings::getNameStatusExclusion, SyncSettings::setNameStatusExclusion),
+    new Union<>("taxonomicStatusExclusion", SyncSettings::getTaxonomicStatusExclusion, SyncSettings::setTaxonomicStatusExclusion),
     new Union<>("issueExclusion", SyncSettings::getIssueExclusion, SyncSettings::setIssueExclusion),
     new Union<>("blockedNames", SyncSettings::getBlockedNames, SyncSettings::setBlockedNames),
     new Union<>("blockedNamePatterns", SyncSettings::getBlockedNamePatterns, SyncSettings::setBlockedNamePatterns)
@@ -106,6 +108,7 @@ public final class SectorSettingsResolver {
     d.setEntities(EnumSet.allOf(EntityType.class));
     d.setNameTypes(EnumSet.noneOf(NameType.class));
     d.setNameStatusExclusion(EnumSet.noneOf(NomStatus.class));
+    d.setTaxonomicStatusExclusion(EnumSet.noneOf(TaxonomicStatus.class));
     d.setCopyAccordingTo(false);
     d.setRemoveOrdinals(false);
     d.setCreateImplicitNames(true);

@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -20,6 +21,7 @@ public class SectorSettings implements SyncSettings {
   private Set<EntityType> entities;
   private Set<NameType> nameTypes;
   private Set<NomStatus> nameStatusExclusion;
+  private Set<TaxonomicStatus> taxonomicStatusExclusion;
   private String nameFilter;
   private Boolean extinctFilter;
   private Boolean copyAccordingTo;
@@ -78,6 +80,16 @@ public class SectorSettings implements SyncSettings {
   @Override
   public void setNameStatusExclusion(Set<NomStatus> nameStatusExclusion) {
     this.nameStatusExclusion = nameStatusExclusion;
+  }
+
+  @Override
+  public Set<TaxonomicStatus> getTaxonomicStatusExclusion() {
+    return taxonomicStatusExclusion;
+  }
+
+  @Override
+  public void setTaxonomicStatusExclusion(Set<TaxonomicStatus> taxonomicStatusExclusion) {
+    this.taxonomicStatusExclusion = taxonomicStatusExclusion;
   }
 
   @Override
@@ -189,6 +201,7 @@ public class SectorSettings implements SyncSettings {
            && Objects.equals(entities, that.entities)
            && Objects.equals(nameTypes, that.nameTypes)
            && Objects.equals(nameStatusExclusion, that.nameStatusExclusion)
+           && Objects.equals(taxonomicStatusExclusion, that.taxonomicStatusExclusion)
            && Objects.equals(nameFilter, that.nameFilter)
            && Objects.equals(extinctFilter, that.extinctFilter)
            && Objects.equals(copyAccordingTo, that.copyAccordingTo)
@@ -203,7 +216,8 @@ public class SectorSettings implements SyncSettings {
 
   @Override
   public int hashCode() {
-    return Objects.hash(ranks, entities, nameTypes, nameStatusExclusion, nameFilter, extinctFilter, copyAccordingTo,
-      removeOrdinals, createImplicitNames, code, authorshipUpdate, issueExclusion, blockedNames, blockedNamePatterns);
+    return Objects.hash(ranks, entities, nameTypes, nameStatusExclusion, taxonomicStatusExclusion, nameFilter, extinctFilter,
+      copyAccordingTo, removeOrdinals, createImplicitNames, code, authorshipUpdate, issueExclusion, blockedNames,
+      blockedNamePatterns);
   }
 }

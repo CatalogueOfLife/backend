@@ -19,6 +19,7 @@ for any number of sectors at once, in a **sector profile** of the project. The d
 | `code` | nom. code | Force this code onto every synced name | nearest | tree syncs |
 | `authorshipUpdate` | NONE, MISSING, ALWAYS | Copy the source authorship onto matched names | nearest | HIERARCHY |
 | `nameStatusExclusion` | nom. status | Names with these statuses are not synced | union | tree syncs |
+| `taxonomicStatusExclusion` | taxonomic status | Usages with these statuses are not synced, e.g. `misapplied`. An excluded accepted taxon takes its synonyms along | union | tree syncs |
 | `issueExclusion` | issues | Names whose source record carries one of these issues are not synced | union | tree syncs |
 | `blockedNames` | names | Names never synced, matched with or without authorship, case insensitive | union | tree syncs |
 | `blockedNamePatterns` | regex | Case insensitive patterns searched in the name label; a match is never synced | union | tree syncs |
@@ -26,7 +27,7 @@ for any number of sectors at once, in a **sector profile** of the project. The d
 **Tree syncs** are ATTACH, UNION and MERGE sectors. A HIERARCHY sector applies none of the filters; it only reads
 `authorshipUpdate`. A filtered taxon is skipped together with its synonyms, while its children attach to the next kept
 parent. An editorial decision of mode REVIEWED keeps a usage whatever the filters say. The sector import counts every
-skipped usage by reason, e.g. `BLOCKED_NAME` or `ISSUE_EXCLUSION`.
+skipped usage by reason, e.g. `BLOCKED_NAME`, `ISSUE_EXCLUSION` or `TAXONOMIC_STATUS`.
 
 `blockedNamePatterns` are matched with an unanchored `find()` against the name label, which includes the authorship.
 A pattern therefore cannot be restricted to the name portion, and one broad enough to catch a rank marker also hits

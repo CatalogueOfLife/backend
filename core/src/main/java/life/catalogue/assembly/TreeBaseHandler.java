@@ -120,7 +120,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     if (sector.getNameStatusExclusion() != null && !sector.getNameStatusExclusion().isEmpty())  {
-      LOG.info("Include only name status: {}", Joiner.on(", ").join(sector.getNameStatusExclusion()));
+      LOG.info("Exclude name status: {}", Joiner.on(", ").join(sector.getNameStatusExclusion()));
+    }
+
+    if (sector.getTaxonomicStatusExclusion() != null && !sector.getTaxonomicStatusExclusion().isEmpty())  {
+      LOG.info("Exclude taxonomic status: {}", Joiner.on(", ").join(sector.getTaxonomicStatusExclusion()));
     }
 
     Pattern filter = null;
@@ -590,6 +594,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // apply name status filter if exists
     if (n.getNomStatus() != null && sector.getNameStatusExclusion() != null && sector.getNameStatusExclusion().contains(n.getNomStatus())) {
       return incIgnored(IgnoreReason.NOMENCLATURAL_STATUS, u);
+    }
+    // apply taxonomic status filter if exists. An excluded taxon takes its synonyms along, see IGNORED_PARENT above
+    if (u.getStatus() != null && sector.getTaxonomicStatusExclusion() != null && sector.getTaxonomicStatusExclusion().contains(u.getStatus())) {
+      return incIgnored(IgnoreReason.TAXONOMIC_STATUS, u);
     }
     if (blocklist.isBlocked(n)) {
       return incIgnored(IgnoreReason.BLOCKED_NAME, u);

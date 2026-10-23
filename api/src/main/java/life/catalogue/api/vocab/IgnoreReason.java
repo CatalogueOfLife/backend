@@ -39,6 +39,10 @@ public enum IgnoreReason {
    * The source name record carries an issue listed in the issueExclusion of the sector or its profiles.
    */
   ISSUE_EXCLUSION(),
+  /**
+   * The usage has a taxonomic status listed in the taxonomicStatusExclusion of the sector or its profiles.
+   */
+  TAXONOMIC_STATUS(NameUsageBase::getStatus),
   // ignored name types - one reason per NameType, named to match the NameType value
   NAME_SCIENTIFIC(),
   NAME_FORMULA(),

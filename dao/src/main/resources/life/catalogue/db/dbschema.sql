@@ -1193,6 +1193,7 @@ CREATE TABLE sector (
   entities ENTITYTYPE[] DEFAULT NULL,
   name_types NAMETYPE[] DEFAULT NULL,
   name_status_exclusion NOMSTATUS[] DEFAULT NULL,
+  taxonomic_status_exclusion TAXONOMICSTATUS[] DEFAULT NULL,
   extinct_filter BOOLEAN,
   name_filter TEXT,
   copy_according_to BOOLEAN,
