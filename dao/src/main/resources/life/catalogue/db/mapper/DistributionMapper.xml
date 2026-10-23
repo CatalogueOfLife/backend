@@ -154,6 +154,15 @@
     )
   </select>
 
+  <!-- taxa with different threat status for the same area, ignoring NOT_EVALUATED -->
+  <select id="listTaxonIDsWithAmbiguousThreatStatus" resultType="string">
+    SELECT DISTINCT taxon_id
+    FROM distribution
+    WHERE dataset_key = #{datasetKey} AND threat_status IS NOT NULL AND threat_status != 'NOT_EVALUATED'
+    GROUP BY taxon_id, gazetteer, coalesce(area_id, area)
+    HAVING count(DISTINCT threat_status) > 1
+  </select>
+
   <select id="processSector" parameterType="map" resultMap="distributionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

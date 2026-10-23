@@ -3,11 +3,14 @@ package life.catalogue.release;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.assembly.TreeMergeHandler;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.IssueAdder;
 import life.catalogue.dao.ParentStack;
 import life.catalogue.db.PgUtils;
+import life.catalogue.db.mapper.DistributionMapper;
+import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.NameValidator;
 
@@ -47,6 +50,8 @@ import org.slf4j.LoggerFactory;
  *  4) remove empty genera generated in the xrelease (can be configured to be skipped)
  *
  *  5) flag species that have been described before the genus was published
+ *
+ *  6) flag extant taxa below extinct ones, homotypic names outside the synonymy and ambiguous threat status
  *
  * Use {@link #validate(SqlSession)} to traverse a whole dataset.
  */
@@ -129,6 +134,22 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
     var num = session.getMapper(NameUsageMapper.class);
     PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false, true), this);
     parents.flush();
+    validateDataset(session);
+  }
+
+  /**
+   * Validations across the whole dataset that a single tree traversal cannot do.
+   * The ids are read completely before any issue is written, so reads and writes can use different sessions.
+   */
+  private void validateDataset(SqlSession session) {
+    // homotypic names should be synonyms of the same taxon, see #1158
+    var ids = session.getMapper(NameRelationMapper.class).listUsageIDsOutsideHomotypicSynonymy(datasetKey, NomRelType.HOMOTYPIC_RELATIONS);
+    LOG.info("Flag {} usages of homotypic names outside the synonymy", ids.size());
+    ids.forEach(id -> issueAdder.addIssue(id, Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
+    // red list status of merged synonyms, see #1480
+    ids = session.getMapper(DistributionMapper.class).listTaxonIDsWithAmbiguousThreatStatus(datasetKey);
+    LOG.info("Flag {} taxa with an ambiguous threat status", ids.size());
+    ids.forEach(id -> issueAdder.addIssue(id, Issue.REDLIST_STATUS_AMBIGUOUS));
   }
 
   public static class XLinneanNameUsage extends LinneanNameUsage {
@@ -184,6 +205,11 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
     } else {
       // push to stack to make sure our hierarchy is up to date and we have removed unused leaf nodes
       parents.push(sn);
+      // an explicitly extant taxon cannot be classified below an extinct one, see #1349
+      if (Boolean.FALSE.equals(sn.getExtinct())
+          && parents.getParents().stream().anyMatch(p -> p != sn && Boolean.TRUE.equals(p.getExtinct()))) {
+        issues.add(Issue.EXTINCT_INCONSISTENT);
+      }
       if (sn.getRank().isSpeciesOrBelow()) {
         // flag authorship problem for zoological "autonyms"
         if (sn.getCode()== NomCode.ZOOLOGICAL && sn.isAutonym()) {

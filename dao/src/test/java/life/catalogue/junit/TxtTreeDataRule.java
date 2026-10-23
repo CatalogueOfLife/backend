@@ -293,7 +293,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       sm.create(s);
     } else {
       Taxon t = new Taxon();
-      t.setExtinct(tn.extinct);
+      t.setExtinct(tn.extinct ? true : null); // without a dagger nothing is said about being extant
       // ENV & CHRONO as read by the production TxtTreeInterpreter
       if (tn.infos.containsKey(TxtTreeTerm.ENV.name())) {
         for (var x : tn.infos.get(TxtTreeTerm.ENV.name())) {

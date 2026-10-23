@@ -11,6 +11,20 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-23 new validation issues
+Six new issues flagged on import, in releases and project validation:
+duplicate accepted names (#1218), homotypic names outside the synonymy (#1158), inconsistent extinct flags (#1349),
+unusually long values (#1233), DOIs embedded in references (#1159) and ambiguous red list status (#1480).
+Run before the deploy, taxon-ws shares the db. Existing data only gets the issues once re-imported, released or validated.
+```sql
+ALTER TYPE ISSUE ADD VALUE 'DUPLICATE_ACCEPTED_NAME';
+ALTER TYPE ISSUE ADD VALUE 'HOMOTYPIC_NAME_OUTSIDE_SYNONYMY';
+ALTER TYPE ISSUE ADD VALUE 'EXTINCT_INCONSISTENT';
+ALTER TYPE ISSUE ADD VALUE 'UNUSUAL_VALUE_LENGTH';
+ALTER TYPE ISSUE ADD VALUE 'EMBEDDED_DOI';
+ALTER TYPE ISSUE ADD VALUE 'REDLIST_STATUS_AMBIGUOUS';
+```
+
 #### 2026-10-23 taxonomic status exclusion on sectors
 A new sector setting excludes usages by their taxonomic status from a sync, e.g. misapplied names:
 https://github.com/CatalogueOfLife/checklistbank/issues/1685

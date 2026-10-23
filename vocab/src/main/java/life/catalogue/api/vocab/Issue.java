@@ -552,7 +552,33 @@ public enum Issue {
 
   SPELLING_CORRECTION_IMPLAUSIBLE(NAME, Level.WARNING,
       "A spelling correction relates two names that differ in far more than their spelling. "
-      + "The relation has been ignored, as it would merge distinct homotypic groups.")
+      + "The relation has been ignored, as it would merge distinct homotypic groups."),
+
+  DUPLICATE_ACCEPTED_NAME(NAME_USAGE, Level.WARNING,
+      "Several accepted taxa have the same name and rank under the same nomenclatural code, regardless of their authorship. "
+      + "Only one of them can be correct, the others should be synonyms or bare names. "
+      + "Homonyms under different codes are not flagged."),
+
+  HOMOTYPIC_NAME_OUTSIDE_SYNONYMY(NAME_USAGE, Level.WARNING,
+      "The name is related to another name by a homotypic relation, e.g. a basionym, "
+      + "but the usages of both names do not share an accepted taxon. "
+      + "Homotypic names should be synonyms of the same taxon."),
+
+  EXTINCT_INCONSISTENT(NAME_USAGE, Level.WARNING,
+      "The taxon is flagged as not extinct, but it is classified below an extinct taxon."),
+
+  UNUSUAL_VALUE_LENGTH(ANY, Level.WARNING,
+      "At least one value of the record is far longer than expected for its term, e.g. an identifier with more than 200 characters. "
+      + "Often indicates a broken delimiter or quotation that merged several columns or records into one value."),
+
+  EMBEDDED_DOI(REFERENCE, Level.INFO,
+      "The reference had no DOI, but its citation, title or remarks contain one. "
+      + "The DOI has been extracted into the DOI field."),
+
+  REDLIST_STATUS_AMBIGUOUS(NAME_USAGE, Level.WARNING,
+      "The taxon has more than one threat status for the same area, "
+      + "usually because the status of a synonym was merged into its accepted taxon. "
+      + "The taxon concepts of the red list and the checklist might differ.")
   ;
 
   /**

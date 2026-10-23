@@ -59,6 +59,9 @@ import com.google.common.base.Preconditions;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import jakarta.validation.Validator;
 
 import static life.catalogue.api.vocab.Issue.*;
@@ -293,6 +296,8 @@ public class Normalizer implements Callable<Boolean> {
       }
     });
 
+    flagHomotypicNamesOutsideSynonymy();
+
     // verify reference truncation
     LOG.info("Validate references");
     for (Reference r : store.references()) {
@@ -375,6 +380,110 @@ public class Normalizer implements Callable<Boolean> {
       Exceptions.runtimeInterruptIfCancelled();
     });
     LOG.info("Matched {} of {} names, {} unmatched", matchedCount.get(), matchedCount.get() + unmatchedCount.get(), unmatchedCount.get());
+    flagDuplicateAcceptedNames();
+  }
+
+  private record AcceptedName(String id, Integer verbatimKey, @Nullable NomCode code) {
+    boolean sameCode(AcceptedName other) {
+      return code == null || other.code == null || code == other.code;
+    }
+  }
+
+  /**
+   * @return a key combining the names index id and the rank of an accepted usage, or null if the name has no index id
+   */
+  private Long canonicalRankKey(UsageData u) {
+    var nd = store.name(u);
+    if (nd == null || nd.getName().getNamesIndexId() == null) {
+      return null;
+    }
+    return (long) nd.getName().getNamesIndexId() << 16 | nd.getName().getRank().ordinal();
+  }
+
+  /**
+   * Flags accepted taxa that share their canonical name and rank with another accepted taxon under the same code,
+   * regardless of their authorship: only one of them can be correct, see #1218.
+   * Homonyms under different codes are legitimate, a missing code does not separate names.
+   * Accepted usages are counted first, so only the duplicated ones are kept in memory.
+   */
+  private void flagDuplicateAcceptedNames() {
+    final Long2IntOpenHashMap counts = new Long2IntOpenHashMap();
+    store.usages().allTaxa().forEach(u -> {
+      Long key = canonicalRankKey(u);
+      if (key != null) {
+        counts.addTo(key, 1);
+      }
+    });
+    final Long2ObjectMap<List<AcceptedName>> duplicates = new Long2ObjectOpenHashMap<>();
+    store.usages().allTaxa().forEach(u -> {
+      Long key = canonicalRankKey(u);
+      if (key != null && counts.get((long) key) > 1) {
+        duplicates.computeIfAbsent((long) key, k -> new ArrayList<>())
+          .add(new AcceptedName(u.getId(), u.getVerbatimKey(), store.name(u).getName().getCode()));
+      }
+    });
+    final AtomicInteger flagged = new AtomicInteger();
+    for (var group : duplicates.values()) {
+      for (var an : group) {
+        if (group.stream().anyMatch(other -> other != an && an.sameCode(other))) {
+          store.addIssues(an.verbatimKey(), Issue.DUPLICATE_ACCEPTED_NAME);
+          flagged.incrementAndGet();
+        }
+      }
+    }
+    LOG.info("Flagged {} duplicate accepted names", flagged);
+  }
+
+  /**
+   * @return the usages of a name that take part in a synonymy, i.e. no bare names and no misapplied names
+   */
+  private List<UsageData> synonymyUsages(NameData nd) {
+    return nd.usageIDs.stream()
+      .map(store.usages()::objByID)
+      .filter(u -> u != null && !u.isBareName() && u.usage.getStatus() != TaxonomicStatus.MISAPPLIED)
+      .collect(Collectors.toList());
+  }
+
+  /**
+   * @return the ids of all accepted taxa of a name: its taxa and the accepted taxa of its (pro parte) synonyms
+   */
+  private Set<String> acceptedIDs(List<UsageData> usages) {
+    Set<String> ids = new HashSet<>();
+    for (var u : usages) {
+      if (u.isTaxon()) {
+        ids.add(u.getId());
+      } else {
+        store.usages().accepted(u).forEach(a -> ids.add(a.getId()));
+      }
+    }
+    return ids;
+  }
+
+  /**
+   * Flags the usages of names in a homotypic relation whose usages share no accepted taxon,
+   * e.g. a basionym accepted as another taxon or a synonym of it. See #1158
+   */
+  private void flagHomotypicNamesOutsideSynonymy() {
+    LOG.info("Flag homotypic names outside the synonymy");
+    final AtomicInteger flagged = new AtomicInteger();
+    store.names().all().forEach(nd -> {
+      for (var rel : nd.getRelations()) {
+        if (rel.getType().isHomotypic() && rel.getToID() != null && !rel.getToID().equals(nd.getId())) {
+          var related = store.names().objByID(rel.getToID());
+          if (related == null) continue;
+          var usages = synonymyUsages(nd);
+          var relatedUsages = synonymyUsages(related);
+          var acc = acceptedIDs(usages);
+          var relatedAcc = acceptedIDs(relatedUsages);
+          if (!acc.isEmpty() && !relatedAcc.isEmpty() && Collections.disjoint(acc, relatedAcc)) {
+            usages.forEach(u -> store.addIssues(u, Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
+            relatedUsages.forEach(u -> store.addIssues(u, Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
+            flagged.incrementAndGet();
+          }
+        }
+      }
+    });
+    LOG.info("Flagged {} homotypic relations between names outside the synonymy", flagged);
   }
 
   private void normalize() throws InterruptedException {
