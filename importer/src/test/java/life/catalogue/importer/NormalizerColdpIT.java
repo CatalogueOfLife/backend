@@ -81,9 +81,15 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertNotNull(v);
       var n = store.name(u);
       if (u.getId().equals("fake")) {
-        assertEquals(2, v.getIssues().size());
+        assertEquals(3, v.getIssues().size());
         assertTrue(v.contains(Issue.PARTIAL_DATE));
         assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
+        // homotypic relations to hybrid, a separate taxon
+        assertTrue(v.contains(Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
+      } else if (u.getId().equals("hybrid")){
+        assertEquals(2, v.getIssues().size());
+        assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
+        assertTrue(v.contains(Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
       } else if (u.getId().equals("cult")){
         assertEquals(1, v.getIssues().size());
         assertTrue(v.contains(Issue.INCONSISTENT_NAME));
@@ -404,9 +410,16 @@ public class NormalizerColdpIT extends NormalizerITBase {
       System.out.println(u.getId()+" "+v.getIssues());
       var n = store.names().objByID(u.nameID);
       if (u.getId().equals("fake")) {
-        assertEquals(2, v.getIssues().size());
+        assertEquals(3, v.getIssues().size());
         assertTrue(v.contains(Issue.PARTIAL_DATE));
         assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
+        // homotypic relations to hybrid, a separate taxon
+        assertTrue(v.contains(Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
+
+      } else if(u.getId().equals("hybrid")) {
+        assertEquals(2, v.getIssues().size());
+        assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
+        assertTrue(v.contains(Issue.HOMOTYPIC_NAME_OUTSIDE_SYNONYMY));
 
       } else if(u.getId().equals("cult")) {
         assertEquals(4, v.getIssues().size());

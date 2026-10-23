@@ -89,7 +89,7 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
       t.setOrdinal(ordinal);
       interpretTypeMaterial(tn, u);
       // DAGGER
-      t.setExtinct(tn.extinct);
+      t.setExtinct(tn.extinct ? true : null); // without a dagger nothing is said about being extant
       // ENVIRONMENT
       if (hasDataItem(ENV, tn)) {
         String[] vals = rmDataItem(ENV, tn);

@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DoiResolution;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.terms.BiboOntTerm;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.coldp.ColdpTerm;
@@ -73,6 +74,65 @@ public class ReferenceFactoryTest {
     assertEquals(doi, r.getCsl().getDOI());
     assertEquals(citation.getCitationText(), r.getCitation());
     assertEquals(citation.getTitle(), r.getCsl().getTitle());
+  }
+
+  /**
+   * DOIs given within the citation, title or remarks instead of the DOI field:
+   * https://github.com/CatalogueOfLife/backend/issues/1159
+   */
+  @Test
+  public void embeddedDOI() {
+    VerbatimRecord v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "1");
+    v.put(ColdpTerm.citation, "Smith, J. (2001). A study. Zootaxa 12: 1-3. https://doi.org/10.11646/zootaxa.1234.1.1.");
+    var r = rf.fromColDP(v);
+    assertEquals("10.11646/zootaxa.1234.1.1", r.getCsl().getDOI());
+    assertTrue(v.contains(Issue.EMBEDDED_DOI));
+
+    v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "2");
+    v.put(ColdpTerm.author, "Smith, J.");
+    v.put(ColdpTerm.title, "A study doi:10.1000/xyz123");
+    r = rf.fromColDP(v);
+    assertEquals("10.1000/xyz123", r.getCsl().getDOI());
+    assertTrue(v.contains(Issue.EMBEDDED_DOI));
+
+    // closing brackets that are not part of the DOI
+    v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "3");
+    v.put(ColdpTerm.citation, "Smith (2001)");
+    v.put(ColdpTerm.remarks, "online first (DOI: 10.1093/zoolinnean/zlab042)");
+    r = rf.fromColDP(v);
+    assertEquals("10.1093/zoolinnean/zlab042", r.getCsl().getDOI());
+    assertTrue(v.contains(Issue.EMBEDDED_DOI));
+
+    // an explicit DOI wins and is not flagged
+    v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "4");
+    v.put(ColdpTerm.doi, doi);
+    v.put(ColdpTerm.citation, "Smith (2001) https://doi.org/10.1000/xyz123");
+    r = rf.fromColDP(v);
+    assertEquals(doi, r.getCsl().getDOI());
+    assertFalse(v.contains(Issue.EMBEDDED_DOI));
+
+    // no DOI at all
+    v = new VerbatimRecord();
+    v.put(ColdpTerm.ID, "5");
+    v.put(ColdpTerm.citation, "Smith (2001) Zootaxa 10.12: 1-3");
+    r = rf.fromColDP(v);
+    assertNull(r.getCsl().getDOI());
+    assertFalse(v.contains(Issue.EMBEDDED_DOI));
+
+    // DwC citations
+    v = new VerbatimRecord();
+    r = rf.fromDWC("6", "Smith 2001. A study. ZooKeys 123: 4-5. https://doi.org/10.3897/zookeys.123.456", "2001", v);
+    assertEquals("10.3897/zookeys.123.456", r.getCsl().getDOI());
+    assertTrue(v.contains(Issue.EMBEDDED_DOI));
+
+    v = new VerbatimRecord();
+    r = rf.fromCitation("7", "Smith 2001. A study. doi: 10.3897/zookeys.123.457", v);
+    assertEquals("10.3897/zookeys.123.457", r.getCsl().getDOI());
+    assertTrue(v.contains(Issue.EMBEDDED_DOI));
   }
 
   @Test
@@ -152,9 +212,11 @@ public class ReferenceFactoryTest {
     assertEquals("206", r.getCsl().getVolume());
     assertEquals("119", r.getCsl().getPage());
     assertNull(r.getRemarks());
-    assertNull(r.getCsl().getDOI());
+    // the DOI is only given within the full reference, see #1159
+    assertEquals("10.3897/phytokeys.206.89338", r.getCsl().getDOI());
+    assertTrue(v.contains(Issue.EMBEDDED_DOI));
     assertNull(r.getCsl().getURL());
-    assertEquals("Zhang, Z., Zhang, M.-J., Zhang, J.-H., Zhang, D.-S., & Li, H.-Q. (2022). Ficus motuoensis (Moraceae), a new species from southwest China. PhytoKeys, 206, 119.", r.getCitation());
+    assertEquals("Zhang, Z., Zhang, M.-J., Zhang, J.-H., Zhang, D.-S., & Li, H.-Q. (2022). Ficus motuoensis (Moraceae), a new species from southwest China. PhytoKeys, 206, 119. https://doi.org/10.3897/phytokeys.206.89338", r.getCitation());
   }
 
   @Test

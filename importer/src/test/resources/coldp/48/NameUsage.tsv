@@ -1,0 +1,18 @@
+ID	parentID	status	rank	scientificName	authorship	code
+pl		accepted	kingdom	Plantae		botanical
+an		accepted	kingdom	Animalia		zoological
+g1	pl	accepted	genus	Abies	Mill.	botanical
+s1	g1	accepted	species	Abies alba	Mill.	botanical
+s2	g1	accepted	species	Abies alba	L.	botanical
+s3	g1	accepted	species	Abies grandis	Lindl.	botanical
+s4	s3	synonym	species	Abies grandis	Hook.	botanical
+g2	an	accepted	genus	Abies	Smith	zoological
+g3	an	accepted	genus	Pica	Brisson, 1760	zoological
+g4	an	accepted	genus	Pica	Brisson, 1760
+v1	pl	accepted	genus	Vicia	L.	botanical
+v2	v1	accepted	species	Vicia faba	L.	botanical
+v3	v2	synonym	species	Faba vulgaris	Moench	botanical
+v4	v1	accepted	species	Vicia cracca	L.	botanical
+v5	v1	accepted	species	Vicia sativa	L.	botanical
+v6	v5	synonym	species	Ervum cracca	(L.) Trautv.	botanical
+v7	pl	accepted	species	Faba faba	(L.) Rob.	botanical
