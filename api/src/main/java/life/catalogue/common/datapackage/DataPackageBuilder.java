@@ -13,7 +13,6 @@ import life.catalogue.common.text.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.io.IOException;
@@ -68,14 +67,18 @@ public class DataPackageBuilder {
   static {
     Map<ColdpTerm, Map<ColdpTerm, Class<? extends Enum<?>>>> map = new HashMap<>(Map.of(
         ColdpTerm.code, Map.of(ColdpTerm.ID, NomCode.class),
-        ColdpTerm.country, Map.of(ColdpTerm.ID, Country.class),
         ColdpTerm.environment, Map.of(ColdpTerm.ID, Environment.class),
         ColdpTerm.format, Map.of(ColdpTerm.ID, TreatmentFormat.class),
         ColdpTerm.gazetteer, Map.of(ColdpTerm.ID, Gazetteer.class),
         ColdpTerm.nameStatus, Map.of(ColdpTerm.ID, NomStatus.class),
-        ColdpTerm.rank, Map.of(ColdpTerm.ID, Rank.class),
         ColdpTerm.notho, Map.of(ColdpTerm.ID, NamePart.class),
         ColdpTerm.sex, Map.of(ColdpTerm.ID, Sex.class)
+    ));
+    // the spec only recommends ISO codes for authors and type material
+    map.put(ColdpTerm.country, Map.of(
+        ColdpTerm.VernacularName, Country.class,
+        ColdpTerm.Author, NoEnum.class,
+        ColdpTerm.TypeMaterial, NoEnum.class
     ));
     map.put(ColdpTerm.type, Map.of(
         ColdpTerm.Reference, CSLType.class,
@@ -304,12 +307,6 @@ public class DataPackageBuilder {
   }
   
   private List<String> enumValues(ColdpTerm rowType, ColdpTerm t) {
-    // special cases
-    switch (t) {
-      case country:
-        return enumValues(Country.class, Country::getIso2LetterCode, null);
-    }
-    
     Class<? extends Enum> enumClass;
     var resources = enums.get(t);
     if (resources.size() == 1 && resources.containsKey(ColdpTerm.ID)) {
@@ -317,7 +314,10 @@ public class DataPackageBuilder {
     } else {
       enumClass = resources.get(rowType);
     }
-
+    // special cases
+    if (enumClass == Country.class) {
+      return enumValues(Country.class, Country::getIso2LetterCode, null);
+    }
     return enumValues(enumClass, PermissiveEnumSerde::enumValueName, null);
   }
   

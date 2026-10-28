@@ -7,9 +7,9 @@ import life.catalogue.common.io.Resources;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class DataPackageBuilderTest {
 
@@ -36,5 +36,31 @@ public class DataPackageBuilderTest {
         });
       }
     });
+  }
+
+  @Test
+  public void typesAndEnums() throws IOException {
+    var dp = new DataPackageBuilder()
+        .docs()
+        .build(new PackageDescriptor());
+
+    assertEquals(Field.TYPE_STRING, field(dp, "reference", "issued").getType());
+    assertEquals(Field.TYPE_STRING, field(dp, "taxon", "scrutinizerDate").getType());
+    assertEquals(Field.TYPE_DATETIME, field(dp, "name", "modified").getType());
+    // spec only recommends a vocabulary for rank and author/type material countries
+    assertFalse(field(dp, "name", "rank").getConstraints().containsKey(Field.CONSTRAINT_KEY_ENUM));
+    assertFalse(field(dp, "author", "country").getConstraints().containsKey(Field.CONSTRAINT_KEY_ENUM));
+    assertFalse(field(dp, "typematerial", "country").getConstraints().containsKey(Field.CONSTRAINT_KEY_ENUM));
+    var countries = (List<String>) field(dp, "vernacularname", "country").getConstraints().get(Field.CONSTRAINT_KEY_ENUM);
+    assertTrue(countries.contains("DE"));
+  }
+
+  private static Field field(DataPackage dp, String resource, String name) {
+    return dp.getResources().stream()
+        .filter(r -> r.getName().equals(resource))
+        .findFirst().orElseThrow()
+        .getSchema().getFields().stream()
+        .filter(f -> f.getName().equals(name))
+        .findFirst().orElseThrow();
   }
 }

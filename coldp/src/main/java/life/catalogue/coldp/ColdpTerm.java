@@ -110,7 +110,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   accordingToPageLink,
   scrutinizer,
   scrutinizerID,
-  scrutinizerDate(Date.class),
+  scrutinizerDate,
   provisional(Boolean.class),
   //referenceID,
   extinct(Boolean.class),
