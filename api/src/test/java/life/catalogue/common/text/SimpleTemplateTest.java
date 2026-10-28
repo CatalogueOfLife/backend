@@ -128,6 +128,10 @@ public class SimpleTemplateTest {
     assertEquals("Shrug 2020-10-09. Mum: Shreg, Grandmother: Clair", SimpleTemplate.render("{name} {born}. Mum: {mother.name}, Grandmother: {mother.mother.name}", shrug));
 
     assertEquals("Hi Clair, Mark, Shreg, Shreg !!!", SimpleTemplate.render("Hi {puppets} !!!", new ListContainer(List.of(clair, mark, shreg, shreg))));
+    // nested properties of another type
+    assertEquals("Mum born 2020", SimpleTemplate.render("Mum born {mother.born.year}", shrug));
+    // null intermediate
+    assertEquals("Mum: , Dad: Mark", SimpleTemplate.render("Mum: {father.mother.name}, Dad: {father.name}", shreg));
   }
 
   @Test(expected = IllegalArgumentException.class)

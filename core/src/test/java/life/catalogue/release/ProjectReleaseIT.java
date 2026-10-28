@@ -41,6 +41,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.sql.Connection;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,6 +98,26 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     pr.initJob();
     assertEquals("CoL20.10", pr.newDataset.getAlias());
     assertEquals("Catalogue of Life", pr.newDataset.getTitle());
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1681
+   */
+  @Test
+  public void defaultReleaseAlias() throws Exception {
+    try(SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset d = dm.get(projectKey);
+      d.setTitle("Harmonized species names used under the EU nature directives");
+      d.setAlias("EEACOL");
+      dm.update(d);
+    }
+
+    ProjectRelease pr = buildRelease();
+    pr.prCfg.metadata.alias = null;
+    pr.initJob();
+    assertEquals("EEACOL-" + LocalDate.now(), pr.newDataset.getAlias());
+    assertEquals("Harmonized species names used under the EU nature directives", pr.newDataset.getTitle());
   }
 
   private void assertSameTree(int datasetKey, String resourceName) throws IOException {
