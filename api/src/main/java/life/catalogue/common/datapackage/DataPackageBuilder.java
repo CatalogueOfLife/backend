@@ -70,8 +70,10 @@ public class DataPackageBuilder {
         ColdpTerm.environment, Map.of(ColdpTerm.ID, Environment.class),
         ColdpTerm.format, Map.of(ColdpTerm.ID, TreatmentFormat.class),
         ColdpTerm.gazetteer, Map.of(ColdpTerm.ID, Gazetteer.class),
+        ColdpTerm.gender, Map.of(ColdpTerm.ID, Gender.class),
         ColdpTerm.nameStatus, Map.of(ColdpTerm.ID, NomStatus.class),
         ColdpTerm.notho, Map.of(ColdpTerm.ID, NamePart.class),
+        ColdpTerm.season, Map.of(ColdpTerm.ID, Season.class),
         ColdpTerm.sex, Map.of(ColdpTerm.ID, Sex.class)
     ));
     // the spec only recommends ISO codes for authors and type material

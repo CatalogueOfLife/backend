@@ -53,6 +53,8 @@ public class DataPackageBuilderTest {
     assertFalse(field(dp, "typematerial", "country").getConstraints().containsKey(Field.CONSTRAINT_KEY_ENUM));
     var countries = (List<String>) field(dp, "vernacularname", "country").getConstraints().get(Field.CONSTRAINT_KEY_ENUM);
     assertTrue(countries.contains("DE"));
+    assertEquals(List.of("masculine", "feminine", "neuter"), field(dp, "nameusage", "gender").getConstraints().get(Field.CONSTRAINT_KEY_ENUM));
+    assertTrue(((List<String>) field(dp, "distribution", "season").getConstraints().get(Field.CONSTRAINT_KEY_ENUM)).contains("wet"));
   }
 
   private static Field field(DataPackage dp, String resource, String name) {
