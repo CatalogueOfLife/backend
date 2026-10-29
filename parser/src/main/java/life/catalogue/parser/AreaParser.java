@@ -3,7 +3,6 @@ package life.catalogue.parser;
 import life.catalogue.api.vocab.area.Area;
 import life.catalogue.api.vocab.area.GenericArea;
 import life.catalogue.api.vocab.area.Gazetteer;
-import life.catalogue.common.kryo.AreaSerializer;
 
 import java.util.Optional;
 import java.util.Set;

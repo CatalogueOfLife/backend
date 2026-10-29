@@ -67,6 +67,10 @@
           <artifactId>parser</artifactId>
       </dependency>
       <dependency>
+          <groupId>org.catalogueoflife</groupId>
+          <artifactId>nomenclature</artifactId>
+      </dependency>
+      <dependency>
         <groupId>org.catalogueoflife</groupId>
         <artifactId>pgcopy</artifactId>
       </dependency>
@@ -85,6 +89,10 @@
       <dependency>
         <groupId>org.gbif</groupId>
         <artifactId>text-tree</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.gbif</groupId>
+        <artifactId>gbif-api</artifactId>
       </dependency>
 
       <!-- mybatis / DB -->

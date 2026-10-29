@@ -21,16 +21,8 @@
             <groupId>org.catalogueoflife</groupId>
             <artifactId>api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.catalogueoflife</groupId>
-            <artifactId>kryo</artifactId>
-        </dependency>
 
         <!-- gbif-->
-        <dependency>
-            <groupId>org.gbif</groupId>
-            <artifactId>gbif-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.gbif</groupId>
             <artifactId>name-parser-api</artifactId>
@@ -68,6 +60,11 @@
         </dependency>
 
         <!-- TEST SCOPE -->
+      <dependency>
+        <groupId>org.gbif</groupId>
+        <artifactId>gbif-api</artifactId>
+        <scope>test</scope>
+      </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>

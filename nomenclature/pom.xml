@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.catalogueoflife</groupId>
+    <artifactId>motherpom</artifactId>
+    <version>1.7.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>nomenclature</artifactId>
+  <name>CLB nomenclature</name>
+  <description>Pure nomenclatural decisions on the COL API model: name relation rules, homotypic grouping,
+    author comparison, string similarity and name validation. No database, search index or other storage.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
+      <artifactId>api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
+      <artifactId>parser</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <!-- TEST SCOPE -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.catalogueoflife</groupId>
+      <artifactId>api</artifactId>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
