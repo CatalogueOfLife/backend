@@ -1,12 +1,15 @@
 package life.catalogue.resources.dataset;
 
+import life.catalogue.api.model.JobInfo;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
 import life.catalogue.basgroup.HomotypicConsolidationJob;
+import life.catalogue.basgroup.NameRelationCleanerJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.JobDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
@@ -57,17 +60,33 @@ public class DatasetJobResource {
     exec.submit(job);
   }
 
+  /**
+   * Groups homotypic names, entirely or below a root taxon.
+   * The name relations are cleaned up first unless cleanRelations is false, as in an extended release.
+   */
   @POST
   @Path("{key}/consolidate-homotypic")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void homotypicGrouping(@PathParam("key") int key, @QueryParam("taxonID") String taxonID, @Auth User user) {
-    HomotypicConsolidationJob job;
-    if (StringUtils.isBlank(taxonID)) {
-      job = new HomotypicConsolidationJob(factory, key, user.getKey());
-    } else {
-      job = new HomotypicConsolidationJob(factory, key, user.getKey(), taxonID);
-    }
+  public JobInfo homotypicGrouping(@PathParam("key") int key,
+                                   @QueryParam("taxonID") String taxonID,
+                                   @QueryParam("cleanRelations") @DefaultValue("true") boolean cleanRelations,
+                                   @Auth User user) {
+    var job = new HomotypicConsolidationJob(factory, key, user.getKey(), StringUtils.trimToNull(taxonID), cleanRelations);
     exec.submit(job);
+    return JobDao.buildInfo(job);
+  }
+
+  /**
+   * Removes name relations that contradict their names or each other, entirely or below a root taxon,
+   * as an extended release does before grouping homotypic names.
+   */
+  @POST
+  @Path("{key}/clean-name-relations")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public JobInfo cleanNameRelations(@PathParam("key") int key, @QueryParam("taxonID") String taxonID, @Auth User user) {
+    var job = new NameRelationCleanerJob(factory, key, user.getKey(), StringUtils.trimToNull(taxonID));
+    exec.submit(job);
+    return JobDao.buildInfo(job);
   }
 
   @POST

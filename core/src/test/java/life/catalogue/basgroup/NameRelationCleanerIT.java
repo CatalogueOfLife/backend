@@ -1,5 +1,6 @@
 package life.catalogue.basgroup;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.Issue;
@@ -19,7 +20,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Relations as WoRMS delivers them: https://github.com/CatalogueOfLife/data/issues/1815
@@ -90,6 +91,42 @@ public class NameRelationCleanerIT {
     ).consolidate();
     HomotypicConsolidatorIT.assertNoLoop(datasetKey);
     assertEquals(Set.of(), HomotypicConsolidatorIT.assertGrouperRelations(datasetKey));
+  }
+
+  /**
+   * Limited to the Cichlidae only the Tilapia relations are cleaned, all other families stay as they are.
+   */
+  @Test
+  public void cleanSubtree() throws Exception {
+    HomotypicConsolidatorIT.loadRelations(datasetKey, DIR + "relations.tsv");
+    var factory = SqlSessionFactoryRule.getSqlSessionFactory();
+    var before = relations();
+    // 4 basionyms of misspellings, the spelling correction of another genus and a duplicate
+    assertEquals(6, new NameRelationCleaner(factory, datasetKey, "cich").clean());
+
+    var after = relations();
+    assertFalse(after.contains("Tilapia sparmani Smith, 1840 BASIONYM Tilapia sparrmanii Smith, 1840"));
+    assertTrue(after.contains("Chromis sparrmanni (Smith, 1840) BASIONYM Tilapia sparrmanii Smith, 1840"));
+    before.removeIf(r -> r.contains("Tilapia") || r.contains("Chromis"));
+    after.removeIf(r -> r.contains("Tilapia") || r.contains("Chromis"));
+    assertEquals(before, after);
+    assertIssues("tsp1", Issue.NAME_RELATION_CONFLICT);
+    assertIssues("neq");
+  }
+
+  @Test
+  public void jobs() throws Exception {
+    var factory = SqlSessionFactoryRule.getSqlSessionFactory();
+    final int user = TestDataRule.TEST_USER.getKey();
+    assertEquals(new HomotypicConsolidationJob.ConsolidationParams(datasetKey, null, true),
+      new HomotypicConsolidationJob(factory, datasetKey, user).getParams());
+    assertEquals(new HomotypicConsolidationJob.ConsolidationParams(datasetKey, "cich", false),
+      new HomotypicConsolidationJob(factory, datasetKey, user, "cich", false).getParams());
+    assertEquals(new NameRelationCleanerJob.CleanerParams(datasetKey, "cich"),
+      new NameRelationCleanerJob(factory, datasetKey, user, "cich").getParams());
+    // the root must be an existing accepted name
+    assertThrows(NotFoundException.class, () -> new NameRelationCleanerJob(factory, datasetKey, user, "nope"));
+    assertThrows(IllegalArgumentException.class, () -> new NameRelationCleanerJob(factory, datasetKey, user, "tsp1"));
   }
 
   private void assertIssues(String usageID, Issue... expected) {

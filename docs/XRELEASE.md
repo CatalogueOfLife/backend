@@ -84,7 +84,11 @@ data managed in the project first, then the sectors of the base release, then th
 do not fit their names, contradict each other or merely repeat another one, so the grouping does not build on them,
 and flags the usages of both names. Datasets and the base release keep these relations as imported; the importer
 judges them by the same `NameRelationRules` and only flags them. Relations created by the grouper (`createdBy` 14)
-are left alone, exact duplicates are collapsed without an issue. Per pair of names:
+are left alone, exact duplicates are collapsed without an issue. The same cleanup runs on projects and releases
+without a release: standalone as `NameRelationCleanerJob` (`POST /dataset/{key}/clean-name-relations`) and first in
+every `HomotypicConsolidationJob` (`POST /dataset/{key}/consolidate-homotypic`) unless `cleanRelations=false`. Both
+take an optional root `taxonID`, which limits the cleanup to pairs of which at least one name has a usage in that
+subtree. Per pair of names:
 1. A `SPELLING_CORRECTION` between canonical names more than max(3, length/5) edits apart goes,
    `SPELLING_CORRECTION_IMPLAUSIBLE`, e.g. WoRMS relating *Coryphaena hippurus* to *C. scomberoïdes*, the misspelling
    of its synonym.

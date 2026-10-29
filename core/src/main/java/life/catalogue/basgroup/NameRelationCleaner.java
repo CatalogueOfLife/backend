@@ -3,16 +3,20 @@ package life.catalogue.basgroup;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameRelation;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.basgroup.NameRelationRules.Rel;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.dao.IssueAdder;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import java.util.*;
+
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -28,6 +32,7 @@ import com.google.common.collect.Iterables;
  * the usages of both names, so it stays visible why a relation is gone.
  * The rules are those of {@link NameRelationRules}, exact duplicates are collapsed without an issue.
  * Relations created by the homotypic grouper are left alone.
+ * With a root taxon only pairs of names are judged of which at least one name has a usage in its subtree.
  */
 public class NameRelationCleaner {
   private static final Logger LOG = LoggerFactory.getLogger(NameRelationCleaner.class);
@@ -35,10 +40,20 @@ public class NameRelationCleaner {
 
   private final SqlSessionFactory factory;
   private final int datasetKey;
+  @Nullable
+  private final String taxonID;
 
   public NameRelationCleaner(SqlSessionFactory factory, int datasetKey) {
+    this(factory, datasetKey, null);
+  }
+
+  /**
+   * @param taxonID optional root taxon limiting the cleanup to its subtree, synonyms included
+   */
+  public NameRelationCleaner(SqlSessionFactory factory, int datasetKey, @Nullable String taxonID) {
     this.factory = factory;
     this.datasetKey = datasetKey;
+    this.taxonID = taxonID;
   }
 
   /**
@@ -70,6 +85,9 @@ public class NameRelationCleaner {
             && !Objects.equals(nr.getCreatedBy(), Users.HOMOTYPIC_GROUPER)) {
           pairs.computeIfAbsent(NamePair.of(nr), k -> new ArrayList<>()).add(nr);
         }
+      }
+      if (taxonID != null) {
+        limitToSubtree(session, pairs);
       }
       LOG.info("Check {} pairs of names with several relations or a spelling correction in dataset {}", pairs.size(), datasetKey);
       var names = loadNames(session, pairs.keySet());
@@ -113,6 +131,28 @@ public class NameRelationCleaner {
     removed.forEach((issue, cnt) -> LOG.info("Removed {} name relations with {} in dataset {}", cnt, issue, datasetKey));
     flagged.forEach((issue, cnt) -> LOG.info("Kept {} name relations flagged with {} in dataset {}", cnt, issue, datasetKey));
     return duplicates + removed.values().stream().mapToInt(Integer::intValue).sum();
+  }
+
+  /**
+   * Removes all pairs of which neither name has a usage in the subtree of the root taxon.
+   * Only the names of the pairs are kept while the subtree is traversed, so a large subtree costs no memory.
+   */
+  private void limitToSubtree(SqlSession session, Map<NamePair, List<NameRelation>> pairs) {
+    Set<String> candidates = new HashSet<>();
+    for (var p : pairs.keySet()) {
+      candidates.add(p.id1());
+      candidates.add(p.id2());
+    }
+    Set<String> inScope = new HashSet<>();
+    var traversal = TreeTraversalParameter.dataset(datasetKey, taxonID);
+    traversal.setSynonyms(true);
+    PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processTreeLinneanUsage(traversal, false, false), u -> {
+      if (candidates.contains(u.getNameId())) {
+        inScope.add(u.getNameId());
+      }
+    });
+    pairs.keySet().removeIf(p -> !inScope.contains(p.id1()) && !inScope.contains(p.id2()));
+    LOG.info("Limit the cleanup of dataset {} to {} pairs of names in the subtree of {}", datasetKey, pairs.size(), taxonID);
   }
 
   private void addIssues(Map<String, Set<Issue>> issues) {
