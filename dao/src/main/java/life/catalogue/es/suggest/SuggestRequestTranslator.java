@@ -3,7 +3,6 @@ package life.catalogue.es.suggest;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.es.query.FiltersTranslator;
-import life.catalogue.es.query.QTranslator;
 import life.catalogue.es.query.SortByTranslator;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
@@ -25,7 +24,7 @@ class SuggestRequestTranslator {
       Query qQuery = new QSuggestTranslater(request).translate();
       return Query.of(q -> q.bool(b -> b.filter(filterQuery).must(qQuery)));
     }
-    return new QTranslator(request).translate();
+    return new QSuggestTranslater(request).translate();
   }
 
   private final NameUsageSuggestRequest request;

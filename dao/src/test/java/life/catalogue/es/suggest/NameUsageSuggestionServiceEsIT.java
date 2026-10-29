@@ -296,6 +296,13 @@ public class NameUsageSuggestionServiceEsIT extends EsTestBase {
     assertFirst("Puma", Rank.GENUS, "75F9", "Puma Jardine, 1834");
     assertFirst("Puma con", Rank.SPECIES, "4QHKG", "Puma concolor (Linnaeus, 1771)");
     assertFirst("Puma concolor", Rank.SPECIES, "4QHKG", "Puma concolor (Linnaeus, 1771)");
+    // authorship only matches as part of the exact full label, checklistbank#1552
+    assertFirst("Puma Jardine, 1834", Rank.GENUS, "75F9", "Puma Jardine, 1834");
+    assertFirst("puma jardine, 1834", Rank.GENUS, "75F9", "Puma Jardine, 1834");
+    var req = new NameUsageSuggestRequest();
+    req.setDatasetFilter(DS1);
+    req.setQ("Puma Jardine");
+    assertTrue(service.suggest(req).isEmpty());
   }
 
   private void assertFirst(String query, Rank rank, String uid, String label) {

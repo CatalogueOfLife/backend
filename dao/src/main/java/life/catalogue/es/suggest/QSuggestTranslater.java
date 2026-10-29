@@ -27,6 +27,9 @@ public class QSuggestTranslater extends QTranslator {
    * match the genus "Phoca" alone.
    * The canonical name, only indexed where it differs from the scientific name, is searched alike,
    * so "Aleochara composita" finds "Aleochara (Coprochara) composita", #1676.
+   * Authorship is not searched, but the inherited {@link #translate()} also adds the exact, case insensitive match
+   * on the full scientific name, canonical name and label. A pasted complete name "Puma Jardine, 1834" is therefore
+   * found, a partial authorship "Puma Jardine" is not, see checklistbank#1552.
    * Scoring ignores BM25 (boostMode=Replace) and instead sums:
    *   - accepted boost (weight 1.1 for accepted names)
    *   - rank boost   (reciprocal of rank ordinal × RANK_FACTOR — higher ranks score higher)
