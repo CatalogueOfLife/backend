@@ -1,8 +1,8 @@
 # A nomenclature module for the pure name logic
 
 Date: 2026-10-29
-Branch: `feat/nomenclature-module`
-Status: implemented on the branch, not merged. Issue [#1682](https://github.com/CatalogueOfLife/backend/issues/1682).
+Status: merged 2026-10-29 in PR [#1683](https://github.com/CatalogueOfLife/backend/pull/1683), not deployed. Issue
+[#1682](https://github.com/CatalogueOfLife/backend/issues/1682) stays open for step 3, the homotypic grouping planner.
 
 ## Problem
 
