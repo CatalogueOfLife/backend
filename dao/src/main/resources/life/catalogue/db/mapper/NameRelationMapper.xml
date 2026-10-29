@@ -210,21 +210,19 @@
   <!--
     Two directed EXISTS rather than one OR, so the name_id and related_name_id indices stay usable.
   -->
-  <select id="listSpellingConflicts" resultMap="nameRelResultMap">
+  <select id="listConflictCandidates" resultMap="nameRelResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE nr.dataset_key = #{datasetKey}
       AND (nr.type = 'SPELLING_CORRECTION'
-        OR nr.type = 'BASIONYM' AND (
-          EXISTS (
-            SELECT NULL FROM name_rel sc
-            WHERE sc.dataset_key = nr.dataset_key AND sc.type = 'SPELLING_CORRECTION'
-              AND sc.name_id = nr.name_id AND sc.related_name_id = nr.related_name_id
-          ) OR EXISTS (
-            SELECT NULL FROM name_rel sc
-            WHERE sc.dataset_key = nr.dataset_key AND sc.type = 'SPELLING_CORRECTION'
-              AND sc.name_id = nr.related_name_id AND sc.related_name_id = nr.name_id
-          )
+        OR EXISTS (
+          SELECT NULL FROM name_rel o
+          WHERE o.dataset_key = nr.dataset_key AND o.id != nr.id
+            AND o.name_id = nr.name_id AND o.related_name_id = nr.related_name_id
+        ) OR EXISTS (
+          SELECT NULL FROM name_rel o
+          WHERE o.dataset_key = nr.dataset_key AND o.id != nr.id
+            AND o.name_id = nr.related_name_id AND o.related_name_id = nr.name_id
         )
       )
   </select>

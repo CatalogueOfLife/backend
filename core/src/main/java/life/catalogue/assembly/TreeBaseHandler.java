@@ -82,7 +82,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected int vsIdGen;
   // counter
   protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
-  protected final Map<NomRelType, Map<String, String>> nameRelsToBeCreated = new HashMap<>();
+  // implicit name relations to be created at the end, an accepted name can have several original spellings
+  protected final Map<NomRelType, Set<NameIdPair>> nameRelsToBeCreated = new HashMap<>();
+  protected record NameIdPair(String nameId, String relatedNameId) {}
   private final Map<String, String> refIds = new HashMap<>();
   // source usage id -> target usage id of all usages created or updated by this sync
   protected final Map<String, String> usageIds = new HashMap<>();
@@ -262,8 +264,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
       && Boolean.TRUE.equals(mod.usage.getName().isOriginalSpelling())) {
       // find name id of accepted parent, the current name!
       var nid = nm.getNameIdByUsage(targetDatasetKey, sn.getParentId());
-      nameRelsToBeCreated.computeIfAbsent(NomRelType.SPELLING_CORRECTION, k -> new HashMap<>())
-                         .put(nid, mod.usage.getName().getId());
+      nameRelsToBeCreated.computeIfAbsent(NomRelType.SPELLING_CORRECTION, k -> new LinkedHashSet<>())
+                         .add(new NameIdPair(nid, mod.usage.getName().getId()));
     }
 
     // in case of updates from decisions, track also the original name as a synonym -
@@ -896,16 +898,21 @@ public abstract class TreeBaseHandler implements TreeHandler {
   @Override
   public void copyRelations() {
     batchSession.commit();
+    NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
     NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
     for (var type : nameRelsToBeCreated.entrySet()) {
       int counter = 0;
-      for (var rel : type.getValue().entrySet()) {
+      for (var rel : type.getValue()) {
+        // the source often relates a name to its original spelling already
+        if (nrm.exists(targetDatasetKey, rel.nameId(), rel.relatedNameId(), type.getKey())) {
+          continue;
+        }
         var nr = new NameRelation();
         nr.setDatasetKey(targetDatasetKey);
         nr.setSectorKey(sector.getId());
         nr.setType(type.getKey());
-        nr.setNameId(rel.getKey());
-        nr.setRelatedNameId(rel.getValue());
+        nr.setNameId(rel.nameId());
+        nr.setRelatedNameId(rel.relatedNameId());
         nr.applyUser(Users.RELEASER);
         nrmWrite.create(nr);
         if (counter++ % 2500 == 0) {

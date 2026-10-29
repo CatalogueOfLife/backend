@@ -104,30 +104,33 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
    * https://github.com/CatalogueOfLife/data/issues/1815
    */
   @Test
-  public void listSpellingConflicts() throws Exception {
+  public void listConflictCandidates() throws Exception {
     final int dk = NAME1.getDatasetKey();
-    // apple.sql holds a spelling correction name-2 -> name-3
-    assertEquals(1, mapper().listSpellingConflicts(dk).size());
+    // apple.sql holds a spelling correction name-2 -> name-3, spelling corrections are always candidates
+    assertEquals(1, mapper().listConflictCandidates(dk).size());
 
-    // a basionym of the same pair in the opposite direction conflicts, others do not
+    // a basionym of the same pair in the opposite direction is a candidate, a single relation of another pair is not
     var bas = newNameRelation(NomRelType.BASIONYM);
-    bas.setNameId(NAME2.getId());
-    bas.setRelatedNameId("name-3");
+    bas.setNameId("name-3");
+    bas.setRelatedNameId(NAME2.getId());
     mapper().create(bas);
     mapper().create(newNameRelation(NomRelType.BASIONYM));
-    var basedOn = newNameRelation(NomRelType.BASED_ON);
-    basedOn.setNameId(NAME2.getId());
-    basedOn.setRelatedNameId("name-3");
-    mapper().create(basedOn);
     commit();
+    assertEquals(Set.of(NomRelType.SPELLING_CORRECTION, NomRelType.BASIONYM), types(mapper().listConflictCandidates(dk)));
+    assertEquals(2, mapper().listConflictCandidates(dk).size());
 
-    var rels = mapper().listSpellingConflicts(dk);
-    assertEquals(Set.of(NomRelType.SPELLING_CORRECTION, NomRelType.BASIONYM), rels.stream().map(NameRelation::getType).collect(Collectors.toSet()));
-    assertEquals(2, rels.size());
+    // an exact duplicate makes both relations candidates
+    mapper().create(newNameRelation(NomRelType.BASIONYM));
+    commit();
+    assertEquals(4, mapper().listConflictCandidates(dk).size());
 
     assertEquals(1, mapper().delete(bas.getKey()));
     commit();
-    assertEquals(1, mapper().listSpellingConflicts(dk).size());
+    assertEquals(3, mapper().listConflictCandidates(dk).size());
+  }
+
+  private static Set<NomRelType> types(List<NameRelation> rels) {
+    return rels.stream().map(NameRelation::getType).collect(Collectors.toSet());
   }
 
   void assertUsageIdsExist(List<NameUsageRelation> rels, boolean related) {

@@ -11,3 +11,17 @@ Coryphaenidae [family] {ID=cory CODE=zoological}
     =Coriphaena hippurus Linnaeus, 1758 [species] {ID=cori PRIO=1}
     =Coryphaena scomberoides Valenciennes, 1833 [species] {ID=scom PRIO=1}
     =Coryphaena scomberoïdes Valenciennes, 1833 [species] {ID=scom2 PRIO=1}
+Hydractiniidae [family] {ID=hydr CODE=zoological}
+  Hydradendrium Carter, 1880 [genus] {ID=hydg PRIO=1}
+    Hydradendrium spinosum Carter, 1880 [species] {ID=hyds PRIO=1}
+Tetrigidae [family] {ID=tetr CODE=zoological}
+  Neuquenina Rosas Costa, 1959 [genus] {ID=neqa PRIO=1}
+    =Neuquenia Rehn, 1943 [genus] {ID=neq PRIO=1}
+Curculionidae [family] {ID=curc CODE=zoological}
+  Eupholus Boisduval, 1835 [genus] {ID=eup PRIO=1}
+    =Eupholus Guérin-Méneville, 1838 [genus] {ID=eup2 PRIO=1}
+  Aus bus Smith, 1850 [species] {ID=abus PRIO=1}
+  Bus bus (Smith, 1850) [species] {ID=bbus PRIO=2}
+Termitidae [family] {ID=term CODE=zoological}
+  Termes destructor Smeathman, 1781 [species] {ID=tdes PRIO=1}
+  Termes destructor De Geer, 1778 [species] {ID=tdes2 PRIO=1}

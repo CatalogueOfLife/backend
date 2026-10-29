@@ -578,7 +578,17 @@ public enum Issue {
   REDLIST_STATUS_AMBIGUOUS(NAME_USAGE, Level.WARNING,
       "The taxon has more than one threat status for the same area, "
       + "usually because the status of a synonym was merged into its accepted taxon. "
-      + "The taxon concepts of the red list and the checklist might differ.")
+      + "The taxon concepts of the red list and the checklist might differ."),
+
+  NAME_RELATION_CONFLICT(NAME, Level.WARNING,
+      "Two names are related in contradicting ways, e.g. both as basionym and as spelling correction, "
+      + "as later homonym and as homotypic names, or by the same relation in both directions. "
+      + "Extended releases keep only the relation that fits the names, judged by their authorship, rank and year."),
+
+  NAME_RELATION_REDUNDANT(NAME, Level.INFO,
+      "A homotypic name relation repeats what a more specific relation between the same two names already says, "
+      + "e.g. next to a basionym or replacement name, or it is given in both directions. "
+      + "Extended releases keep only one relation.")
   ;
 
   /**

@@ -4,7 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
-import life.catalogue.basgroup.NameRelationCleaner;
+import life.catalogue.basgroup.NameRelationRules;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.lang.Exceptions;
@@ -489,7 +489,7 @@ public class Normalizer implements Callable<Boolean> {
     insertBasionymRelations();
     // deduplicate name relations
     reduceRedundantNameRels();
-    flagImplausibleSpellingCorrections();
+    flagRelationConflicts();
 
     // cleanup synonym & parent relations
     resolveSynonymChains();
@@ -615,26 +615,41 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   /**
-   * Flags spelling corrections between names that differ in far more than their spelling,
-   * e.g. a source relating an accepted name to the misspelling of one of its synonyms.
-   * The relation is kept as the source delivers it, extended releases ignore it as it would merge two homotypic groups:
-   * https://github.com/CatalogueOfLife/backend/issues/1662
+   * Flags name relations that do not fit the names they relate, contradict each other or repeat another one,
+   * e.g. a misspelling related as basionym and as spelling correction of the correct name.
+   * The relations are kept as the source delivers them, extended releases drop those judged wrong:
+   * https://github.com/CatalogueOfLife/data/issues/1815
    */
-  private void flagImplausibleSpellingCorrections() {
-    AtomicInteger counter = new AtomicInteger();
+  private void flagRelationConflicts() {
+    CountMap<Issue> counter = new CountMap<>();
     store.names().all().forEach(n -> {
+      // relations of this name grouped by the related name
+      Map<String, List<RelationData<NomRelType>>> byRelated = new HashMap<>();
       for (var r : n.relations) {
-        if (r.getType() == NomRelType.SPELLING_CORRECTION) {
-          var n2 = store.names().objByID(r.getToID());
-          if (n2 != null && !NameRelationCleaner.isPlausibleSpellingCorrection(n.getName(), n2.getName())) {
-            LOG.debug("Implausible spelling correction {} -> {}", n.getName().getLabel(), n2.getName().getLabel());
-            store.addIssues(r.getVerbatimKey() != null ? r : n, Issue.SPELLING_CORRECTION_IMPLAUSIBLE);
-            counter.incrementAndGet();
-          }
+        if (r.getToID() != null && !r.getToID().equals(n.getId())) {
+          byRelated.computeIfAbsent(r.getToID(), k -> new ArrayList<>()).add(r);
         }
       }
+      byRelated.forEach((relatedId, rels) -> {
+        var n2 = store.names().objByID(relatedId);
+        if (n2 == null) return;
+        var reverse = n2.relations.stream().filter(r -> n.getId().equals(r.getToID())).toList();
+        // judge each pair once, from the name with the smaller id if both hold relations
+        if (!reverse.isEmpty() && n.getId().compareTo(relatedId) > 0) return;
+        Map<NameRelationRules.Rel, RelationData<NomRelType>> pair = new LinkedHashMap<>();
+        rels.forEach(r -> pair.putIfAbsent(new NameRelationRules.Rel(r.getType(), n.getId(), relatedId), r));
+        reverse.forEach(r -> pair.putIfAbsent(new NameRelationRules.Rel(r.getType(), relatedId, n.getId()), r));
+        if (pair.size() > 1 || pair.keySet().stream().anyMatch(r -> r.type() == NomRelType.SPELLING_CORRECTION)) {
+          for (var v : NameRelationRules.check(n.getName(), n2.getName(), pair.keySet())) {
+            var r = pair.get(v.rel());
+            LOG.debug("{} relation {} -> {}: {}", v.rel().type(), v.rel().from(), v.rel().to(), v.issue());
+            store.addIssues(r.getVerbatimKey() != null ? r : (n.getId().equals(v.rel().from()) ? n : n2), v.issue());
+            counter.inc(v.issue());
+          }
+        }
+      });
     });
-    LOG.info("{} implausible spelling corrections flagged", counter);
+    counter.forEach((issue, cnt) -> LOG.info("{} name relations flagged with {}", cnt, issue));
   }
 
   private void removeOrphanSynonyms() {

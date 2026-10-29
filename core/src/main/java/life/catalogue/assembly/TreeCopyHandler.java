@@ -50,6 +50,12 @@ public class TreeCopyHandler extends TreeBaseHandler {
    */
   @Override
   public void copyRelations() {
+    // the last buffered siblings must be synced before, or their relations are lost
+    try {
+      processLast();
+    } catch (InterruptedException e) {
+      throw wrapException(e);
+    }
     copyNameRelations(false);
     copySpeciesInteractions(false);
     if (entities.contains(EntityType.TAXON_CONCEPT_RELATION)) {

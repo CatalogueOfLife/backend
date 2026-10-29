@@ -1,0 +1,9 @@
+nameID	relatedNameID	type
+spar	tsp1	spelling correction
+tsp1	spar	basionym
+spar	csp2	spelling correction
+csp2	spar	basionym
+eup2	eup	homotypic
+eup2	eup	later homonym
+neqa	neq	replacement name
+neq	neqa	homotypic

@@ -1,0 +1,10 @@
+ID	parentID	status	rank	scientificName	authorship	code
+an		accepted	kingdom	Animalia		zoological
+cich	an	accepted	family	Cichlidae		zoological
+spar	cich	accepted	species	Tilapia sparrmanii	Smith, 1840	zoological
+tsp1	spar	synonym	species	Tilapia sparmani	Smith, 1840	zoological
+csp2	spar	synonym	species	Chromis sparrmanni	(Smith, 1840)	zoological
+eup	an	accepted	genus	Eupholus	Boisduval, 1835	zoological
+eup2	eup	synonym	genus	Eupholus	Guérin-Méneville, 1838	zoological
+neqa	an	accepted	genus	Neuquenina	Rosas Costa, 1959	zoological
+neq	neqa	synonym	genus	Neuquenia	Rehn, 1943	zoological

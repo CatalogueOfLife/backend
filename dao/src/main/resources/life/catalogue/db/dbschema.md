@@ -11,6 +11,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2026-10-29 name relation conflicts
+Two new issues for name relations that contradict each other or merely repeat another one, e.g. WoRMS relating a
+misspelling both as basionym and as spelling correction: https://github.com/CatalogueOfLife/data/issues/1815
+Imports only flag them, extended releases drop the relation that does not fit the names.
+Run before the deploy, taxon-ws shares the db. Sources only get the issues once re-imported.
+```sql
+ALTER TYPE ISSUE ADD VALUE 'NAME_RELATION_CONFLICT';
+ALTER TYPE ISSUE ADD VALUE 'NAME_RELATION_REDUNDANT';
+```
+
 #### 2026-10-23 new validation issues
 Six new issues flagged on import, in releases and project validation:
 duplicate accepted names (#1218), homotypic names outside the synonymy (#1158), inconsistent extinct flags (#1349),

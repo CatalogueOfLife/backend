@@ -136,10 +136,11 @@ public class HomotypicConsolidator {
    * The name relations the data holds for a single name.
    *
    * @param homotypic ids of names directly related by a homotypic relation
+   * @param homonyms ids of names directly related as later homonyms, i.e. never homotypic
    * @param hasBasionym true if the data gives the name a basionym, i.e. it is no original name
    * @param misspelled true if the data corrects the spelling of the name, i.e. it is the variant spelling
    */
-  private record DataRelations(Set<String> homotypic, boolean hasBasionym, boolean misspelled) {
+  private record DataRelations(Set<String> homotypic, Set<String> homonyms, boolean hasBasionym, boolean misspelled) {
     boolean notOriginal() {
       return hasBasionym || misspelled;
     }
@@ -440,12 +441,15 @@ public class HomotypicConsolidator {
         var nrm = session.getMapper(NameRelationMapper.class);
         var key = DSID.of(datasetKey, id);
         Set<String> ids = new HashSet<>();
+        Set<String> homonyms = new HashSet<>();
         boolean hasBasionym = false;
         boolean misspelled = false;
         for (var nr : nrm.listByName(key)) {
           if (isHomotypicEvidence(nr)) {
             ids.add(nr.getRelatedNameId());
             hasBasionym = hasBasionym || nr.getType() == NomRelType.BASIONYM;
+          } else if (nr.getType() == NomRelType.LATER_HOMONYM) {
+            homonyms.add(nr.getRelatedNameId());
           }
         }
         for (var nr : nrm.listByRelatedName(key)) {
@@ -453,9 +457,11 @@ public class HomotypicConsolidator {
             ids.add(nr.getNameId());
             // the spelling correction points from the correct spelling to the variant
             misspelled = misspelled || nr.getType() == NomRelType.SPELLING_CORRECTION;
+          } else if (nr.getType() == NomRelType.LATER_HOMONYM) {
+            homonyms.add(nr.getNameId());
           }
         }
-        return new DataRelations(ids, hasBasionym, misspelled);
+        return new DataRelations(ids, homonyms, hasBasionym, misspelled);
       });
     }
 
@@ -714,12 +720,17 @@ public class HomotypicConsolidator {
     /**
      * Creates a relation unless one of that type exists or the data links both names already,
      * which would only add a second, possibly contradicting claim about the same homotypic group.
+     * Names the data relates as later homonyms are never homotypic and get no relation either.
      *
      * @return true if a relation was created
      */
     private boolean createRelationIfNotExisting(LinneanNameUsage from, LinneanNameUsage to, NomRelType relType, NameRelationMapper mapper) {
       if (linkedByData(from, to)) {
         LOG.debug("Data links {} and {} already, skip {} relation", from.getLabel(), to.getLabel(), relType);
+        return false;
+      }
+      if (dataRelations(from.getNameId()).homonyms().contains(to.getNameId())) {
+        LOG.debug("Data relates {} and {} as homonyms, skip {} relation", from.getLabel(), to.getLabel(), relType);
         return false;
       }
       if (!mapper.exists(datasetKey, from.getNameId(), to.getNameId(), relType)) {

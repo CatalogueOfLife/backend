@@ -81,16 +81,31 @@ data managed in the project first, then the sectors of the base release, then th
 (lower is more trusted; merge sectors without one come last).
 
 **`NameRelationCleaner`** runs first, always, on the whole temporary project. It removes source name relations that
-contradict their names or each other, so the grouping does not build on them. Datasets and the base release keep
-these relations as imported; the importer only flags `SPELLING_CORRECTION_IMPLAUSIBLE`. Relations created by the
-grouper (`createdBy` 14) are left alone.
-- A `SPELLING_CORRECTION` between canonical names more than max(3, length/5) edits apart is removed, e.g. WoRMS relating
-  *Coryphaena hippurus* to *C. scomberoïdes*, the misspelling of its synonym. It would merge distinct homotypic groups.
-- Two names related both as `BASIONYM` and as `SPELLING_CORRECTION`, in either direction, keep only the relation that
-  fits them. Orthographic variants of the same combination lose the `BASIONYM`, e.g. *Tilapia sparmani* and
-  *T. sparrmanii*. Another combination, i.e. another rank or a genus more than one edit off, loses the
-  `SPELLING_CORRECTION`, e.g. *Chromis sparrmanni* and *T. sparrmanii*. Names that tell neither keep both. WoRMS
-  exports its misspellings with both relations (data#1815).
+do not fit their names, contradict each other or merely repeat another one, so the grouping does not build on them,
+and flags the usages of both names. Datasets and the base release keep these relations as imported; the importer
+judges them by the same `NameRelationRules` and only flags them. Relations created by the grouper (`createdBy` 14)
+are left alone, exact duplicates are collapsed without an issue. Per pair of names:
+1. A `SPELLING_CORRECTION` between canonical names more than max(3, length/5) edits apart goes,
+   `SPELLING_CORRECTION_IMPLAUSIBLE`, e.g. WoRMS relating *Coryphaena hippurus* to *C. scomberoïdes*, the misspelling
+   of its synonym.
+2. A `LATER_HOMONYM` is never homotypic: any homotypic relation besides it goes, `NAME_RELATION_CONFLICT`.
+3. A `BASIONYM` next to a `SPELLING_CORRECTION`, `REPLACEMENT_NAME`, `SUPERFLUOUS` or `BASED_ON` relation stays only if
+   it is a plausible basionym and the other relation goes; otherwise the basionym goes, `NAME_RELATION_CONFLICT`. WoRMS
+   exports its misspellings with both relations (data#1815), e.g. *Tilapia sparmani* Smith, 1840 as basionym of
+   *T. sparrmanii* Smith, 1840.
+4. A `BASIONYM` next to a `TYPE` relation: each is judged on its own and the implausible one goes, but only if the other
+   is plausible, `NAME_RELATION_CONFLICT`. A plausible type relates a name to one of the next lower rank group, e.g. a
+   genus to its type species.
+5. The same relation in both directions keeps the direction that fits: for basionyms and types the plausible one, for
+   basionyms, replacement names, later homonyms, superfluous and based on names the one from the younger to the older
+   name, otherwise the one pointing at the unacceptable or unavailable name. If nothing tells both stay. Either way
+   `NAME_RELATION_CONFLICT`.
+6. A `HOMOTYPIC` relation next to a more specific homotypic one, or given in both directions, is redundant and goes,
+   `NAME_RELATION_REDUNDANT`.
+
+A **plausible basionym** relates two names of the same rank group, i.e. species and below, the genus group or the
+family group; the rank itself may change, e.g. a subspecies raised to species or a subgenus to genus (ICN Art. 6.10).
+The name having the basionym cites its basionym authorship in brackets, the basionym itself has none.
 
 **`HomotypicConsolidator`** (`homotypicConsolidation`) works family by family, `homotypicConsolidationThreads`
 families at a time. Names outside any family are never grouped. Within a family it:
@@ -133,7 +148,7 @@ families at a time. Names outside any family are never grouped. Within a family 
 
    No relation is created between two names the data already relates as homotypic, directly or through a single
    other name such as the correct spelling two misspellings both point to. It would only add a second, possibly
-   contradicting claim about the same group.
+   contradicting claim about the same group. Names the data relates as later homonyms get no relation either.
 6. Turns every usage of a less trusted source, accepted or synonym, into a synonym of the primary's accepted name,
    moving its descendants along and flagging `HOMOTYPIC_CONSOLIDATION`. A converted name identical to that accepted
    name or to one of its synonyms is deleted. Usages from a source as trusted as the primary's are kept as they are.

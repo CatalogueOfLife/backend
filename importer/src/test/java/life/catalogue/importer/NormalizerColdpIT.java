@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
@@ -698,6 +699,32 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertEquals(1, un.getSpiRelations().size());
     var v = store.getVerbatim(un.getSpiRelations().getFirst().getVerbatimKey());
     assertTrue(v.getIssues().isEmpty());
+  }
+
+  /**
+   * Name relations that contradict each other or repeat another one are kept as delivered, but flagged.
+   * https://github.com/CatalogueOfLife/data/issues/1815
+   */
+  @Test
+  public void relationConflicts() throws Exception {
+    normalize(49);
+    assertRelation("tsp1", NomRelType.BASIONYM, "spar", Issue.NAME_RELATION_CONFLICT);
+    assertRelation("spar", NomRelType.SPELLING_CORRECTION, "tsp1");
+    assertRelation("spar", NomRelType.SPELLING_CORRECTION, "csp2", Issue.SPELLING_CORRECTION_IMPLAUSIBLE);
+    assertRelation("csp2", NomRelType.BASIONYM, "spar");
+    assertRelation("eup2", NomRelType.HOMOTYPIC, "eup", Issue.NAME_RELATION_CONFLICT);
+    assertRelation("eup2", NomRelType.LATER_HOMONYM, "eup");
+    assertRelation("neq", NomRelType.HOMOTYPIC, "neqa", Issue.NAME_RELATION_REDUNDANT);
+    assertRelation("neqa", NomRelType.REPLACEMENT_NAME, "neq");
+  }
+
+  private void assertRelation(String nameID, NomRelType type, String relatedID, Issue... expected) {
+    var rels = nameByID(nameID).getRelations(type).stream().filter(r -> relatedID.equals(r.getToID())).toList();
+    assertEquals(nameID + " " + type + " " + relatedID, 1, rels.size());
+    var issues = store.getVerbatim(rels.getFirst().getVerbatimKey()).getIssues().stream()
+      .filter(i -> i == Issue.NAME_RELATION_CONFLICT || i == Issue.NAME_RELATION_REDUNDANT || i == Issue.SPELLING_CORRECTION_IMPLAUSIBLE)
+      .collect(Collectors.toSet());
+    assertEquals(nameID + " " + type + " " + relatedID, Set.of(expected), issues);
   }
 
   /**
