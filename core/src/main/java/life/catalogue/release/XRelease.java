@@ -9,6 +9,7 @@ import life.catalogue.assembly.SyncException;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.TreeMergeHandlerConfig;
 import life.catalogue.basgroup.HomotypicConsolidator;
+import life.catalogue.basgroup.NameRelationCleaner;
 import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.common.date.DateUtils;
 import life.catalogue.common.text.CitationUtils;
@@ -352,6 +353,8 @@ public class XRelease extends ProjectRelease {
 
   protected void homotypicGrouping() throws InterruptedException {
     checkIfCancelled();
+    // drop relations of the sources that contradict their names or each other, the grouping relies on them
+    new NameRelationCleaner(factory, newDatasetKey).clean();
     // detect and group basionyms
     final var prios = new SectorPriority(getDatasetKey(), factory);
     if (xCfg.homotypicConsolidation) {

@@ -1,0 +1,15 @@
+spar	csp2	spelling correction	10
+spar	tsp1	spelling correction	10
+spar	tsp2	spelling correction	10
+spar	tsp3	spelling correction	10
+spar	tsp4	spelling correction	10
+csp1	spar	basionym	10
+csp2	spar	basionym	10
+tsp1	spar	basionym	10
+tsp2	spar	basionym	10
+tsp3	spar	basionym	10
+tsp4	spar	basionym	10
+hipp	scom2	spelling correction	10
+scom	scom2	spelling correction	10
+scom2	scom	basionym	10
+cori	hipp	basionym	10

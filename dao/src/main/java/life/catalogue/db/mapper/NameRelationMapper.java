@@ -69,6 +69,18 @@ public interface NameRelationMapper extends Create<NameRelation>,
   boolean exists(@Param("datasetKey") int datasetKey, @Param("from") String from, @Param("to") String to, @Param("type") NomRelType type);
 
   /**
+   * Lists all spelling corrections of a dataset together with the basionym relations
+   * between two names that are also related by a spelling correction, in either direction.
+   */
+  List<NameRelation> listSpellingConflicts(@Param("datasetKey") int datasetKey);
+
+  /**
+   * Deletes a single name relation.
+   * @return number of deleted name relations
+   */
+  int delete(@Param("key") DSID<Integer> key);
+
+  /**
    * Deletes all name relations that have no or broken links to a name or related name.
    * @param datasetKey the datasetKey to restrict the deletion to
    * @param before optional timestamp to restrict deletions to orphans before the given time

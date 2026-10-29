@@ -552,7 +552,7 @@ public enum Issue {
 
   SPELLING_CORRECTION_IMPLAUSIBLE(NAME, Level.WARNING,
       "A spelling correction relates two names that differ in far more than their spelling. "
-      + "The relation has been ignored, as it would merge distinct homotypic groups."),
+      + "Extended releases ignore the relation, as it would merge distinct homotypic groups."),
 
   DUPLICATE_ACCEPTED_NAME(NAME_USAGE, Level.WARNING,
       "Several accepted taxa have the same name and rank under the same nomenclatural code, regardless of their authorship. "

@@ -12,6 +12,7 @@ import life.catalogue.api.vocab.Users;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -97,6 +98,36 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
     res = nameRelationMapper.listUsageRelByRelatedName(NAME2);
     assertEquals(3, res.size());
     assertUsageIdsExist(res, false);
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/1815
+   */
+  @Test
+  public void listSpellingConflicts() throws Exception {
+    final int dk = NAME1.getDatasetKey();
+    // apple.sql holds a spelling correction name-2 -> name-3
+    assertEquals(1, mapper().listSpellingConflicts(dk).size());
+
+    // a basionym of the same pair in the opposite direction conflicts, others do not
+    var bas = newNameRelation(NomRelType.BASIONYM);
+    bas.setNameId(NAME2.getId());
+    bas.setRelatedNameId("name-3");
+    mapper().create(bas);
+    mapper().create(newNameRelation(NomRelType.BASIONYM));
+    var basedOn = newNameRelation(NomRelType.BASED_ON);
+    basedOn.setNameId(NAME2.getId());
+    basedOn.setRelatedNameId("name-3");
+    mapper().create(basedOn);
+    commit();
+
+    var rels = mapper().listSpellingConflicts(dk);
+    assertEquals(Set.of(NomRelType.SPELLING_CORRECTION, NomRelType.BASIONYM), rels.stream().map(NameRelation::getType).collect(Collectors.toSet()));
+    assertEquals(2, rels.size());
+
+    assertEquals(1, mapper().delete(bas.getKey()));
+    commit();
+    assertEquals(1, mapper().listSpellingConflicts(dk).size());
   }
 
   void assertUsageIdsExist(List<NameUsageRelation> rels, boolean related) {

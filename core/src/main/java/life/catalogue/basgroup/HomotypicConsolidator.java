@@ -58,8 +58,8 @@ public class HomotypicConsolidator {
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_ORDER = Comparator.comparing(u -> STATUS_ORDER.indexOf(u.getStatus()));
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_RANK_ORDER = PREFERRED_STATUS_ORDER.thenComparing(LinneanNameUsage::getRank);
   private static final int MAX_NAME_DIFF = 1;
-  private static final int MAX_GENUS_DIFF = 1;
-  private static final ModifiedDamerauLevenshtein GENUS_DISTANCE = new ModifiedDamerauLevenshtein();
+  static final int MAX_GENUS_DIFF = 1;
+  static final ModifiedDamerauLevenshtein GENUS_DISTANCE = new ModifiedDamerauLevenshtein();
   // evidence against a name being the original one of its group, see DataRelations
   private static final int PENALTY_NOT_ORIGINAL = 4;
   private static final int PENALTY_UNAVAILABLE = 2;

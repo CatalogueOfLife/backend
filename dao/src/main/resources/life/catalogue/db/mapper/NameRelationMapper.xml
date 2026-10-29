@@ -207,6 +207,33 @@
     )
   </select>
 
+  <!--
+    Two directed EXISTS rather than one OR, so the name_id and related_name_id indices stay usable.
+  -->
+  <select id="listSpellingConflicts" resultMap="nameRelResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE nr.dataset_key = #{datasetKey}
+      AND (nr.type = 'SPELLING_CORRECTION'
+        OR nr.type = 'BASIONYM' AND (
+          EXISTS (
+            SELECT NULL FROM name_rel sc
+            WHERE sc.dataset_key = nr.dataset_key AND sc.type = 'SPELLING_CORRECTION'
+              AND sc.name_id = nr.name_id AND sc.related_name_id = nr.related_name_id
+          ) OR EXISTS (
+            SELECT NULL FROM name_rel sc
+            WHERE sc.dataset_key = nr.dataset_key AND sc.type = 'SPELLING_CORRECTION'
+              AND sc.name_id = nr.related_name_id AND sc.related_name_id = nr.name_id
+          )
+        )
+      )
+  </select>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM name_rel
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </delete>
+
   <delete id="deleteOrphans" parameterType="map">
     DELETE FROM name_rel r
     WHERE (

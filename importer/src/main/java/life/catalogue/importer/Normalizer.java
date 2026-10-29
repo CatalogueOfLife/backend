@@ -4,10 +4,10 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.basgroup.NameRelationCleaner;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.lang.Exceptions;
-import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.DatasetDao;
@@ -30,7 +30,6 @@ import life.catalogue.interpreter.ExtinctName;
 import life.catalogue.interpreter.RanKnName;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.matching.similarity.ModifiedDamerauLevenshtein;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 
@@ -71,8 +70,6 @@ import static life.catalogue.api.vocab.Issue.*;
  */
 public class Normalizer implements Callable<Boolean> {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
-  private static final int MIN_SPELLING_EDITS = 3;
-  private static final ModifiedDamerauLevenshtein SPELLING_DISTANCE = new ModifiedDamerauLevenshtein();
   private final DataFormat format;
   private final Path sourceDir;
   private final int datasetKey;
@@ -492,7 +489,7 @@ public class Normalizer implements Callable<Boolean> {
     insertBasionymRelations();
     // deduplicate name relations
     reduceRedundantNameRels();
-    dropImplausibleSpellingCorrections();
+    flagImplausibleSpellingCorrections();
 
     // cleanup synonym & parent relations
     resolveSynonymChains();
@@ -618,50 +615,26 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   /**
-   * Drops spelling corrections between names that differ in far more than their spelling,
+   * Flags spelling corrections between names that differ in far more than their spelling,
    * e.g. a source relating an accepted name to the misspelling of one of its synonyms.
-   * Such a relation would merge two homotypic groups into one: https://github.com/CatalogueOfLife/backend/issues/1662
+   * The relation is kept as the source delivers it, extended releases ignore it as it would merge two homotypic groups:
+   * https://github.com/CatalogueOfLife/backend/issues/1662
    */
-  private void dropImplausibleSpellingCorrections() {
+  private void flagImplausibleSpellingCorrections() {
     AtomicInteger counter = new AtomicInteger();
     store.names().all().forEach(n -> {
-      var iter = n.relations.iterator();
-      var changed = false;
-      while (iter.hasNext()) {
-        var r = iter.next();
+      for (var r : n.relations) {
         if (r.getType() == NomRelType.SPELLING_CORRECTION) {
           var n2 = store.names().objByID(r.getToID());
-          if (n2 != null && !isPlausibleSpellingCorrection(n.getName(), n2.getName())) {
-            LOG.debug("Ignore spelling correction {} -> {}", n.getName().getLabel(), n2.getName().getLabel());
+          if (n2 != null && !NameRelationCleaner.isPlausibleSpellingCorrection(n.getName(), n2.getName())) {
+            LOG.debug("Implausible spelling correction {} -> {}", n.getName().getLabel(), n2.getName().getLabel());
             store.addIssues(r.getVerbatimKey() != null ? r : n, Issue.SPELLING_CORRECTION_IMPLAUSIBLE);
-            iter.remove();
-            changed = true;
             counter.incrementAndGet();
           }
         }
       }
-      if (changed) {
-        store.names().update(n);
-      }
     });
-    LOG.info("{} implausible spelling corrections removed", counter);
-  }
-
-  /**
-   * @return true if the canonical names of both names are so close that one can be a spelling of the other:
-   *   they must not differ in more than a fifth of their characters, with at least 3 edits allowed.
-   */
-  @VisibleForTesting
-  static boolean isPlausibleSpellingCorrection(Name n1, Name n2) {
-    String c1 = NameFormatter.canonicalName(n1);
-    String c2 = NameFormatter.canonicalName(n2);
-    if (c1 == null || c2 == null) {
-      return true;
-    }
-    c1 = c1.toLowerCase();
-    c2 = c2.toLowerCase();
-    int maxEdits = Math.max(MIN_SPELLING_EDITS, Math.max(c1.length(), c2.length()) / 5);
-    return SPELLING_DISTANCE.getEditDistance(c1, c2) <= maxEdits;
+    LOG.info("{} implausible spelling corrections flagged", counter);
   }
 
   private void removeOrphanSynonyms() {

@@ -80,6 +80,18 @@ Runs on the temporary project once all sectors are merged. Wherever sources comp
 data managed in the project first, then the sectors of the base release, then the merge sectors by their `priority`
 (lower is more trusted; merge sectors without one come last).
 
+**`NameRelationCleaner`** runs first, always, on the whole temporary project. It removes source name relations that
+contradict their names or each other, so the grouping does not build on them. Datasets and the base release keep
+these relations as imported; the importer only flags `SPELLING_CORRECTION_IMPLAUSIBLE`. Relations created by the
+grouper (`createdBy` 14) are left alone.
+- A `SPELLING_CORRECTION` between canonical names more than max(3, length/5) edits apart is removed, e.g. WoRMS relating
+  *Coryphaena hippurus* to *C. scomberoïdes*, the misspelling of its synonym. It would merge distinct homotypic groups.
+- Two names related both as `BASIONYM` and as `SPELLING_CORRECTION`, in either direction, keep only the relation that
+  fits them. Orthographic variants of the same combination lose the `BASIONYM`, e.g. *Tilapia sparmani* and
+  *T. sparrmanii*. Another combination, i.e. another rank or a genus more than one edit off, loses the
+  `SPELLING_CORRECTION`, e.g. *Chromis sparrmanni* and *T. sparrmanii*. Names that tell neither keep both. WoRMS
+  exports its misspellings with both relations (data#1815).
+
 **`HomotypicConsolidator`** (`homotypicConsolidation`) works family by family, `homotypicConsolidationThreads`
 families at a time. Names outside any family are never grouped. Within a family it:
 1. Collects all names of species rank or below, accepted and synonyms, except autonyms, unparsed names, identifiers
