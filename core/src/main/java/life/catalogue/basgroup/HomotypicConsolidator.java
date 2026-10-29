@@ -49,8 +49,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import it.unimi.dsi.fastutil.Pair;
-
 public class HomotypicConsolidator {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidator.class);
   private static final List<TaxonomicStatus> STATUS_ORDER = List.of(TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED, TaxonomicStatus.SYNONYM, TaxonomicStatus.AMBIGUOUS_SYNONYM);
@@ -283,7 +281,7 @@ public class HomotypicConsolidator {
 
       // now compare authorships for each epithet group
       for (var epithetGroup : epithets.entrySet()) {
-        var groups = basSorter.groupBasionyms(tax.getCode(), epithetGroup.getKey(), epithetGroup.getValue(), a -> a, this::flagConsolidationIssue, this::linked, evidence);
+        var groups = basSorter.groupBasionyms(tax.getCode(), epithetGroup.getKey(), epithetGroup.getValue(), a -> a, this::linked, evidence);
         // go through groups and persistent basionym relations where needed
         for (var group : groups) {
           // we only need to work on groups with at least 2 names
@@ -664,10 +662,6 @@ public class HomotypicConsolidator {
           }
         }
       }
-    }
-
-    private void flagConsolidationIssue(Pair<LinneanNameUsage, Issue> obj) {
-      addIssue(obj.key().getId(), obj.value());
     }
 
     /**

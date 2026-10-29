@@ -105,10 +105,7 @@ public class HomotypicGroupingResource {
       }
     // finally compare authorships for each epithet group
     for (Map.Entry<String, List<VerbatimName>> epithetGroup : epithets.entrySet()) {
-      gr.groups.addAll(basSorter.groupBasionyms(code, epithetGroup.getKey(), epithetGroup.getValue(),
-        a -> a.parsed,
-        b -> b.first().issues.add(b.second())
-      ));
+      gr.groups.addAll(basSorter.groupBasionyms(code, epithetGroup.getKey(), epithetGroup.getValue(), a -> a.parsed));
     }
     return gr;
   }

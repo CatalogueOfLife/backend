@@ -2,7 +2,6 @@ package life.catalogue.basgroup;
 
 import life.catalogue.api.model.FormattableName;
 import life.catalogue.api.model.HasID;
-import life.catalogue.api.vocab.Issue;
 import life.catalogue.matching.authorship.AuthorComparator;
 
 import org.gbif.nameparser.api.Authorship;
@@ -10,17 +9,13 @@ import org.gbif.nameparser.api.NomCode;
 
 import java.util.*;
 import java.util.function.BiPredicate;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
 
 import javax.annotation.Nullable;
 
-import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import it.unimi.dsi.fastutil.Pair;
 
 /**
  * A utility to sort a collection of parsed names into sets sharing the same basionym judging only the authorship NOT epithets.
@@ -29,7 +24,7 @@ import it.unimi.dsi.fastutil.Pair;
  * Authors often published the same epithet in several genera of one family, so the authorship alone cannot tell
  * Epidendrum mathewsii Rchb.f. from Altensteinia matthewsii Rchb.f. An authorship group holding original names of
  * several genera that a source lists separately is therefore split, and its recombinations only join one of them when
- * the data links them, see {@link #groupBasionyms(NomCode, String, List, Function, Consumer, BiPredicate)}.
+ * the data links them, see {@link #groupBasionyms(NomCode, String, List, Function, BiPredicate)}.
  */
 public class BasionymSorter<T extends HasID<String>> {
   private static final Logger LOG = LoggerFactory.getLogger(BasionymSorter.class);
@@ -60,7 +55,7 @@ public class BasionymSorter<T extends HasID<String>> {
      * names with ex authors first, then recombinations, then original and last names without authors
      */
     @Override
-    public int compareTo(@NotNull TNamePair<T> o) {
+    public int compareTo(TNamePair<T> o) {
       var a1 = name.getBasionymOrCombinationAuthorship();
       var a2 = o.name.getBasionymOrCombinationAuthorship();
 
@@ -83,14 +78,12 @@ public class BasionymSorter<T extends HasID<String>> {
    * @param epithet
    * @param names names to group. Order does not matter.
    * @param nameResolver function that resolves the original instance into a FormattableName
-   * @param issueConsumer
    * @return
    */
   public Collection<HomotypicGroup<T>> groupBasionyms(NomCode code, String epithet, List<T> names,
-                                                      Function<T, ? extends FormattableName> nameResolver,
-                                                      Consumer<Pair<T, Issue>> issueConsumer
+                                                      Function<T, ? extends FormattableName> nameResolver
   ) {
-    return groupBasionyms(code, epithet, names, nameResolver, issueConsumer, (a, b) -> false);
+    return groupBasionyms(code, epithet, names, nameResolver, (a, b) -> false);
   }
 
   /**
@@ -98,7 +91,6 @@ public class BasionymSorter<T extends HasID<String>> {
    * @param epithet
    * @param names names to group. Order does not matter.
    * @param nameResolver function that resolves the original instance into a FormattableName
-   * @param issueConsumer
    * @param linked true if the data itself says the two names are homotypic, e.g. by synonymy or an existing name relation.
    *               Only asked for names of an authorship group with original names in several genera,
    *               to decide which of them are the same name and which original the recombinations belong to.
@@ -106,10 +98,9 @@ public class BasionymSorter<T extends HasID<String>> {
    */
   public Collection<HomotypicGroup<T>> groupBasionyms(NomCode code, String epithet, List<T> names,
                                                       Function<T, ? extends FormattableName> nameResolver,
-                                                      Consumer<Pair<T, Issue>> issueConsumer,
                                                       BiPredicate<T, T> linked
   ) {
-    return groupBasionyms(code, epithet, names, nameResolver, issueConsumer, linked, null);
+    return groupBasionyms(code, epithet, names, nameResolver, linked, null);
   }
 
   /**
@@ -118,7 +109,6 @@ public class BasionymSorter<T extends HasID<String>> {
    */
   public Collection<HomotypicGroup<T>> groupBasionyms(NomCode code, String epithet, List<T> names,
                                                       Function<T, ? extends FormattableName> nameResolver,
-                                                      Consumer<Pair<T, Issue>> issueConsumer,
                                                       BiPredicate<T, T> linked,
                                                       @Nullable HomotypicGroup.Evidence<T> evidence
   ) {
