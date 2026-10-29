@@ -30,13 +30,17 @@ import com.google.common.collect.Iterables;
  * another one, before the homotypic grouping of an extended release relies on them.
  * Datasets keep these relations as they were imported and are only flagged, the release removes them and flags
  * the usages of both names, so it stays visible why a relation is gone.
- * The rules are those of {@link NameRelationRules}, exact duplicates are collapsed without an issue.
+ * The rules are those of {@link NameRelationRules}, applied by a {@link NameRelationJudge}, exact duplicates are collapsed
+ * without an issue.
  * Relations created by the homotypic grouper are left alone.
  * With a root taxon only pairs of names are judged of which at least one name has a usage in its subtree.
  */
 public class NameRelationCleaner {
   private static final Logger LOG = LoggerFactory.getLogger(NameRelationCleaner.class);
   private static final int BATCH_SIZE = 1000;
+  private static final NameRelationJudge<NameRelation> JUDGE = new NameRelationJudge<>(
+    nr -> new Rel(nr.getType(), nr.getNameId(), nr.getRelatedNameId())
+  );
 
   private final SqlSessionFactory factory;
   private final int datasetKey;
@@ -57,70 +61,49 @@ public class NameRelationCleaner {
   }
 
   /**
-   * The two names of a relation, in no particular order.
-   */
-  private record NamePair(String id1, String id2) {
-    static NamePair of(NameRelation nr) {
-      return nr.getNameId().compareTo(nr.getRelatedNameId()) <= 0
-        ? new NamePair(nr.getNameId(), nr.getRelatedNameId())
-        : new NamePair(nr.getRelatedNameId(), nr.getNameId());
-    }
-  }
-
-  /**
    * @return the number of deleted relations
    */
   public int clean() {
     int duplicates = 0;
-    int checked = 0;
+    int judged = 0;
     final CountMap<Issue> removed = new CountMap<>();
     final CountMap<Issue> flagged = new CountMap<>();
     // name id -> issues for all its usages
     final Map<String, Set<Issue>> issues = new HashMap<>();
     try (SqlSession session = factory.openSession(false)) {
       var nrm = session.getMapper(NameRelationMapper.class);
-      Map<NamePair, List<NameRelation>> pairs = new HashMap<>();
+      List<NameRelation> rels = new ArrayList<>();
       for (var nr : nrm.listConflictCandidates(datasetKey)) {
-        if (nr.getRelatedNameId() != null && !nr.getNameId().equals(nr.getRelatedNameId())
-            && !Objects.equals(nr.getCreatedBy(), Users.HOMOTYPIC_GROUPER)) {
-          pairs.computeIfAbsent(NamePair.of(nr), k -> new ArrayList<>()).add(nr);
+        if (!Objects.equals(nr.getCreatedBy(), Users.HOMOTYPIC_GROUPER)) {
+          rels.add(nr);
         }
       }
       if (taxonID != null) {
-        limitToSubtree(session, pairs);
+        limitToSubtree(session, rels);
       }
-      LOG.info("Check {} pairs of names with several relations or a spelling correction in dataset {}", pairs.size(), datasetKey);
-      var names = loadNames(session, pairs.keySet());
+      LOG.info("Check {} name relations sharing their names with another relation or of a spelling correction in dataset {}",
+        rels.size(), datasetKey);
+      var names = loadNames(session, rels);
 
-      for (var entry : pairs.entrySet()) {
-        var n1 = names.get(entry.getKey().id1());
-        var n2 = names.get(entry.getKey().id2());
-        if (n1 == null || n2 == null) continue;
-        // collapse exact duplicates, keeping the first relation
-        Map<Rel, NameRelation> rels = new LinkedHashMap<>();
-        for (var nr : entry.getValue()) {
-          var rel = new Rel(nr.getType(), nr.getNameId(), nr.getRelatedNameId());
-          if (rels.putIfAbsent(rel, nr) != null) {
-            LOG.debug("Remove duplicate {} relation between {} and {}", nr.getType(), n1.getLabel(), n2.getLabel());
-            nrm.delete(DSID.of(datasetKey, nr.getId()));
-            duplicates++;
-          }
+      for (var pair : JUDGE.judge(rels, names::get)) {
+        for (var nr : pair.duplicates()) {
+          LOG.debug("Remove duplicate {} relation between {} and {}", nr.getType(), pair.n1().getLabel(), pair.n2().getLabel());
+          nrm.delete(DSID.of(datasetKey, nr.getId()));
+          duplicates++;
         }
-        Set<Rel> deleted = new HashSet<>();
-        for (var v : NameRelationRules.check(n1, n2, rels.keySet())) {
+        for (var v : pair.verdicts()) {
           if (v.remove()) {
-            if (deleted.add(v.rel())) {
-              LOG.debug("Remove {} relation between {} and {}: {}", v.rel().type(), n1.getLabel(), n2.getLabel(), v.issue());
-              nrm.delete(DSID.of(datasetKey, rels.get(v.rel()).getId()));
-              removed.inc(v.issue());
-            }
+            LOG.debug("Remove {} relation between {} and {}: {}",
+              v.relation().getType(), pair.n1().getLabel(), pair.n2().getLabel(), v.issue());
+            nrm.delete(DSID.of(datasetKey, v.relation().getId()));
+            removed.inc(v.issue());
           } else {
             flagged.inc(v.issue());
           }
-          issues.computeIfAbsent(n1.getId(), k -> EnumSet.noneOf(Issue.class)).add(v.issue());
-          issues.computeIfAbsent(n2.getId(), k -> EnumSet.noneOf(Issue.class)).add(v.issue());
+          issues.computeIfAbsent(pair.n1().getId(), k -> EnumSet.noneOf(Issue.class)).add(v.issue());
+          issues.computeIfAbsent(pair.n2().getId(), k -> EnumSet.noneOf(Issue.class)).add(v.issue());
         }
-        if (++checked % BATCH_SIZE == 0) {
+        if (++judged % BATCH_SIZE == 0) {
           session.commit();
         }
       }
@@ -134,15 +117,11 @@ public class NameRelationCleaner {
   }
 
   /**
-   * Removes all pairs of which neither name has a usage in the subtree of the root taxon.
-   * Only the names of the pairs are kept while the subtree is traversed, so a large subtree costs no memory.
+   * Removes all relations of which neither name has a usage in the subtree of the root taxon.
+   * Only the names of the relations are kept while the subtree is traversed, so a large subtree costs no memory.
    */
-  private void limitToSubtree(SqlSession session, Map<NamePair, List<NameRelation>> pairs) {
-    Set<String> candidates = new HashSet<>();
-    for (var p : pairs.keySet()) {
-      candidates.add(p.id1());
-      candidates.add(p.id2());
-    }
+  private void limitToSubtree(SqlSession session, List<NameRelation> rels) {
+    Set<String> candidates = nameIds(rels);
     Set<String> inScope = new HashSet<>();
     var traversal = TreeTraversalParameter.dataset(datasetKey, taxonID);
     traversal.setSynonyms(true);
@@ -151,8 +130,19 @@ public class NameRelationCleaner {
         inScope.add(u.getNameId());
       }
     });
-    pairs.keySet().removeIf(p -> !inScope.contains(p.id1()) && !inScope.contains(p.id2()));
-    LOG.info("Limit the cleanup of dataset {} to {} pairs of names in the subtree of {}", datasetKey, pairs.size(), taxonID);
+    rels.removeIf(nr -> !inScope.contains(nr.getNameId()) && !inScope.contains(nr.getRelatedNameId()));
+    LOG.info("Limit the cleanup of dataset {} to {} name relations in the subtree of {}", datasetKey, rels.size(), taxonID);
+  }
+
+  private static Set<String> nameIds(Collection<NameRelation> rels) {
+    Set<String> ids = new HashSet<>();
+    for (var nr : rels) {
+      ids.add(nr.getNameId());
+      if (nr.getRelatedNameId() != null) {
+        ids.add(nr.getRelatedNameId());
+      }
+    }
+    return ids;
   }
 
   private void addIssues(Map<String, Set<Issue>> issues) {
@@ -168,12 +158,8 @@ public class NameRelationCleaner {
     }
   }
 
-  private Map<String, Name> loadNames(SqlSession session, Collection<NamePair> pairs) {
-    Set<String> ids = new HashSet<>();
-    for (var p : pairs) {
-      ids.add(p.id1());
-      ids.add(p.id2());
-    }
+  private Map<String, Name> loadNames(SqlSession session, Collection<NameRelation> rels) {
+    Set<String> ids = nameIds(rels);
     var nm = session.getMapper(NameMapper.class);
     Map<String, Name> names = new HashMap<>();
     for (var batch : Iterables.partition(ids, BATCH_SIZE)) {

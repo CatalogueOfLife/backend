@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.basgroup.NameRelationJudge;
 import life.catalogue.basgroup.NameRelationRules;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
@@ -70,6 +71,9 @@ import static life.catalogue.api.vocab.Issue.*;
  */
 public class Normalizer implements Callable<Boolean> {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
+  private static final NameRelationJudge<DirectedRelation> RELATION_JUDGE = new NameRelationJudge<>(
+    r -> new NameRelationRules.Rel(r.rel().getType(), r.from(), r.rel().getToID())
+  );
   private final DataFormat format;
   private final Path sourceDir;
   private final int datasetKey;
@@ -615,6 +619,12 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   /**
+   * A relation of the import store together with the id of the name holding it.
+   */
+  private record DirectedRelation(String from, RelationData<NomRelType> rel) {
+  }
+
+  /**
    * Flags name relations that do not fit the names they relate, contradict each other or repeat another one,
    * e.g. a misspelling related as basionym and as spelling correction of the correct name.
    * The relations are kept as the source delivers them, extended releases drop those judged wrong:
@@ -636,16 +646,14 @@ public class Normalizer implements Callable<Boolean> {
         var reverse = n2.relations.stream().filter(r -> n.getId().equals(r.getToID())).toList();
         // judge each pair once, from the name with the smaller id if both hold relations
         if (!reverse.isEmpty() && n.getId().compareTo(relatedId) > 0) return;
-        Map<NameRelationRules.Rel, RelationData<NomRelType>> pair = new LinkedHashMap<>();
-        rels.forEach(r -> pair.putIfAbsent(new NameRelationRules.Rel(r.getType(), n.getId(), relatedId), r));
-        reverse.forEach(r -> pair.putIfAbsent(new NameRelationRules.Rel(r.getType(), relatedId, n.getId()), r));
-        if (pair.size() > 1 || pair.keySet().stream().anyMatch(r -> r.type() == NomRelType.SPELLING_CORRECTION)) {
-          for (var v : NameRelationRules.check(n.getName(), n2.getName(), pair.keySet())) {
-            var r = pair.get(v.rel());
-            LOG.debug("{} relation {} -> {}: {}", v.rel().type(), v.rel().from(), v.rel().to(), v.issue());
-            store.addIssues(r.getVerbatimKey() != null ? r : (n.getId().equals(v.rel().from()) ? n : n2), v.issue());
-            counter.inc(v.issue());
-          }
+        List<DirectedRelation> pair = new ArrayList<>();
+        rels.forEach(r -> pair.add(new DirectedRelation(n.getId(), r)));
+        reverse.forEach(r -> pair.add(new DirectedRelation(relatedId, r)));
+        for (var v : RELATION_JUDGE.judgePair(n.getName(), n2.getName(), pair).verdicts()) {
+          var r = v.relation();
+          LOG.debug("{} relation {} -> {}: {}", r.rel().getType(), r.from(), r.rel().getToID(), v.issue());
+          store.addIssues(r.rel().getVerbatimKey() != null ? r.rel() : (n.getId().equals(r.from()) ? n : n2), v.issue());
+          counter.inc(v.issue());
         }
       });
     });
